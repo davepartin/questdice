@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#04060d">
+  <title>QuestDice</title>
+  <meta name="description" content="Roll your body. Break the dark. A cooperative fantasy dice campaign for one to six friends.">
+  <meta property="og:title" content="QuestDice">
+  <meta property="og:description" content="Roll your body. Break the dark.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='6' width='52' height='52' rx='12' fill='%23151d34' stroke='%23ffd23d' stroke-width='4'/%3E%3Ccircle cx='22' cy='22' r='5' fill='%23ffd23d'/%3E%3Ccircle cx='42' cy='42' r='5' fill='%23ffd23d'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23ffd23d'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Oxanium:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-frame">
+    <canvas id="fx" class="stage-canvas" aria-hidden="true"></canvas>
+    <div class="chrome">
+      <button id="help" type="button" aria-label="How to play">?</button>
+      <button id="mute" type="button" aria-label="Toggle sound" aria-pressed="false">🔊</button>
+    </div>
+    <main id="app" class="hud" aria-live="polite"></main>
+  </div>
+  <div id="toast" role="status"></div>
+  <div id="modal"></div>
+  <noscript><p style="padding:2rem;color:#fff">QuestDice needs JavaScript.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

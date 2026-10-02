@@ -1,0 +1,262 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
+  playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
+} from '../js/engine.js';
+import { WEAPONS, MONSTERS } from '../js/data.js';
+
+const board = (o) => {
+  const b = {};
+  for (const s of ['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE']) b[s] = { v: 1, bound: false };
+  for (const [k, v] of Object.entries(o)) b[k] = { v, bound: false };
+  return b;
+};
+// Weapon die faces (index = v-1) for reference: sword 0r,1b,3r,4r; bow 0b,1r,2r,3r.
+const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1 });
+const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1 });
+
+test('weapon face budgets: sum to 7, with documented exceptions', () => {
+  // Bow is intentionally 6 (synergy engine). Sword/Shield as written in the design doc sum to 8: an
+  // open question in docs/DESIGN.md, kept here so a change is a conscious decision.
+  const exceptions = { bow: 6, sword: 8, shield: 8 };
+  for (const [id, w] of Object.entries(WEAPONS)) {
+    if (w.hidden) continue;
+    const sum = w.faces.reduce((a, f) => a + f.v, 0);
+    assert.equal(sum, exceptions[id] ?? 7, id);
+    assert.ok(w.faces.some((f) => f.v === 0 || f.v === 1), `${id} has a risk face`);
+  }
+});
+
+test('universal number language on cardinal dice', () => {
+  const h = knight();
+  // head=1 loot, left hand=2 pierce, right hand=3 magic, feet=4 magic. heart 6 so no amp.
+  const ev = evaluate(h, board({ N: 1, W: 2, E: 3, S: 4, C: 6, NW: 1, NE: 1 }));
+  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 3);
+});
+
+test('heart amplifies only matching cardinal dice', () => {
+  const h = knight();
+  const ev = evaluate(h, board({ N: 2, W: 2, E: 3, S: 2, C: 2 }));
+  assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s: 2 each, plus +2 amp each
+  assert.equal(ev.magic, 2);
+});
+
+test('lane = weapon + strength; weapon color decides attack vs block', () => {
+  const h = knight();
+  // NW sword idx2 -> 3 red; NE shield idx2 -> 3 blue. hands 4 and 1.
+  const ev = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 3 }));
+  assert.equal(ev.lanes.L.value, 3 + 4); assert.equal(ev.lanes.L.color, 'r');
+  assert.equal(ev.lanes.R.color, 'b');
+  assert.equal(ev.atk, 7); assert.equal(ev.block, 7);
+});
+
+test('surge doubles only that hand strength; mend heals by strength; spark gives magic', () => {
+  const h = knight();
+  assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 2), null);
+  assert.equal(specialFace(h, 'SW', 3), 'MEND'); assert.equal(specialFace(h, 'SW', 4), 'SURGE');
+  const ev = evaluate(h, board({ NW: 3, W: 3, SW: 4, SE: 3, E: 2, NE: 1, C: 3 }));
+  assert.equal(ev.lanes.L.value, 3 + 3 + 3); // surge adds the strength a second time
+  const ev2 = evaluate(h, board({ SW: 3, W: 3, C: 3 }));
+  assert.equal(ev2.heal, 3);
+  const ev3 = evaluate(h, board({ SE: 3, E: 4, C: 3 }));
+  assert.ok(ev3.magic >= 4);
+});
+
+test('heart 5 / 6 pump the best lane of the matching color', () => {
+  const h = knight();
+  const base = evaluate(h, board({ NW: 3, W: 2, NE: 3, E: 2, C: 3 }));
+  const six = evaluate(h, board({ NW: 3, W: 2, NE: 3, E: 2, C: 6 }));
+  assert.equal(six.atk - base.atk, 4);
+  const five = evaluate(h, board({ NW: 3, W: 2, NE: 3, E: 2, C: 5 }));
+  assert.equal(five.block - base.block, 4);
+});
+
+test('top-row triple needs a two-handed weapon; vertical triple gives +10 block', () => {
+  const k = knight();
+  assert.equal(isTwoHanded(k), false);
+  assert.equal(evaluate(k, board({ NW: 3, N: 3, NE: 3, C: 5 })).offense3, false, 'one-handed setups never get the top-row bonus');
+  const r = ranger();
+  assert.equal(isTwoHanded(r), true);
+  // bow faces: idx0 0b, idx1 1r, idx2 2r, idx3 3r  -> v = idx. Head 2 matches both weapon 2s.
+  const hit = evaluate(r, board({ NW: 3, N: 2, NE: 3, C: 6 }));
+  assert.equal(hit.offense3, true);
+  const miss = evaluate(r, board({ NW: 3, N: 2, NE: 4, C: 6 }));
+  assert.equal(miss.offense3, false);
+  const blanks = evaluate(r, board({ NW: 1, N: 1, NE: 1, C: 6 })); // two blanks (0) never match a d4 head
+  assert.equal(blanks.offense3, false);
+  const v = evaluate(k, board({ N: 3, C: 3, S: 3, NW: 1, NE: 1 }));
+  assert.equal(v.defense3, true);
+  assert.ok(v.block >= 10);
+});
+
+test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
+  const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
+  // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5; both bow dice are blanks (v=0)
+  const b = board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 });
+  const atk = evaluate(r, b, { straight: 'atk' });
+  const gold = evaluate(r, b, { straight: 'gold' });
+  assert.equal(atk.straight, 5); assert.equal(atk.straightBonus, 10);
+  assert.equal(atk.atk - gold.atk, 10);
+  assert.equal(gold.gold - atk.gold, 10);
+  // a 1-2-3-4 is only four long: no payout
+  assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
+});
+
+test('rarity adds pips to the blank first, then the top faces', () => {
+  const base = weaponFaces({ id: 'sword', rarity: 0 }).map((f) => f.v);
+  assert.deepEqual(base, [0, 1, 3, 4]);
+  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 1 }).map((f) => f.v), [1, 1, 3, 4]);
+  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 2 }).map((f) => f.v), [1, 1, 3, 5]);
+  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 3 }).map((f) => f.v), [1, 1, 4, 5]);
+});
+
+function duel(hero, enemyId, intent, boardSpec, opts = {}) {
+  const quest = { enemies: [enemyId], hpMult: opts.hpMult ?? 1, flat: 0, rewardMult: 1, kind: 'battle' };
+  const b = newBattle(hero, quest, makeRng(7), 1);
+  startRoll(b);
+  b.board = board(boardSpec);
+  b.enemies[0].intent = intent;
+  return b;
+}
+
+test('pierce ignores a monster guard; plain attack does not', () => {
+  const h = knight();
+  const guard = { n: 'Duck', v: 'guard', f: 5, m: 0 };
+  const b = duel(h, 'goblin', guard, { NW: 3, W: 4, C: 6, NE: 1, E: 1, N: 4, S: 4 });
+  const e = b.enemies[0]; const hp = e.hp;
+  const rep = resolve(b, { target: 0 });
+  assert.equal(rep.guarded, 5);
+  assert.equal(hp - e.hp, Math.max(0, rep.T.atk - 5) + rep.T.pierce);
+});
+
+test('block absorbs strikes but not pierce', () => {
+  const h = knight();
+  const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 6, m: 0 }, { NW: 1, W: 1, NE: 4, E: 4, C: 3, N: 4, S: 4 });
+  b.enemies[0].hp = 999; b.enemies[0].maxHp = 999;
+  const hp0 = b.hp;
+  const rep = resolve(b, {});
+  assert.equal(rep.taken, Math.max(0, 6 - rep.T.block));
+  assert.equal(b.hp, hp0 - rep.taken + 0 > b.maxHp ? b.maxHp : hp0 - rep.taken + rep.healed);
+  const b2 = duel(h, 'goblin', { n: 'Bomb', v: 'pierce', f: 6, m: 0 }, { NW: 1, W: 1, NE: 4, E: 4, C: 3, N: 4, S: 4 });
+  b2.enemies[0].hp = 999; b2.enemies[0].maxHp = 999;
+  assert.equal(resolve(b2, {}).taken, 6);
+});
+
+test('a killed monster does not strike back', () => {
+  const h = knight();
+  const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 9, m: 0 }, { NW: 4, W: 4, NE: 4, E: 4, C: 6, N: 4, S: 4 }, { hpMult: 0.1 });
+  const rep = resolve(b, {});
+  assert.equal(b.outcome, 'victory'); assert.equal(rep.taken, 0);
+});
+
+test('Last Stand: survive lethal damage once at 1 HP, then die', () => {
+  const h = knight();
+  const mk = () => { const b = duel(h, 'ogre', { n: 'Stab', v: 'strike', f: 500, m: 0 }, { NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 }); return b; };
+  const b = mk();
+  const rep = resolve(b, {});
+  assert.equal(rep.lastStand, true); assert.equal(b.hp, 1); assert.equal(b.outcome, null);
+  b.enemies[0].intent = { n: 'Stab', v: 'strike', f: 500, m: 0 }; startRoll(b); b.board = board({ NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 });
+  resolve(b, {});
+  assert.equal(b.outcome, 'defeat');
+});
+
+test('stagger cancels a wind-up; otherwise the next round is a Slam', () => {
+  const h = knight();
+  const wind = { n: 'Wind-Up', v: 'charge', f: 0, m: 0 };
+  const hit = duel(h, 'ogre', wind, { NW: 4, W: 4, NE: 1, E: 1, C: 6, N: 4, S: 4 }); // big enough to cross 25% of 96
+  hit.enemies[0].staggerAt = 1;
+  resolve(hit, {});
+  assert.equal(hit.enemies[0].intent.n !== 'Slam', true);
+  const miss = duel(h, 'ogre', wind, { NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 });
+  miss.enemies[0].staggerAt = 9999;
+  resolve(miss, {});
+  assert.equal(miss.enemies[0].intent.n, 'Slam');
+  assert.equal(miss.enemies[0].intent.slam, true);
+});
+
+test('rerolls: first action is free, later actions cost 1 Magic per die, bound dice are locked', () => {
+  const h = knight();
+  const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
+  startRoll(b);
+  b.board.N.bound = false;
+  const m0 = b.magic;
+  assert.equal(rerollInfo(b).kind, 'free');
+  assert.ok(reroll(b, ['N', 'S', 'W']));
+  assert.equal(b.magic, m0);
+  assert.equal(rerollInfo(b).kind, 'paid');
+  assert.ok(reroll(b, ['N', 'S']));
+  assert.equal(b.magic, m0 - 2);
+  b.board.W.bound = true;
+  assert.equal(reroll(b, ['W']), false);
+  assert.equal(reroll(b, ['N', 'S', 'E', 'C']), false, 'a Knight rerolls at most 3 dice per action');
+});
+
+test('cards spend Magic, work once per battle, and free-reroll cards skip the cost', () => {
+  const h = knight();
+  const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
+  startRoll(b); b.magic = 5;
+  assert.ok(playCard(b, 'cleave')); assert.equal(b.magic, 3); assert.equal(b.mods.atk, 6);
+  assert.equal(playCard(b, 'cleave'), false);
+  const w = newHero({ name: 'W', cls: 'wizard', seed: 3 });
+  const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1);
+  startRoll(b2); b2.magic = 3;
+  assert.ok(playCard(b2, 'foresee'));
+  assert.equal(rerollInfo(b2).kind, 'card');
+  const before = b2.magic;
+  assert.ok(reroll(b2, ['N', 'S', 'W']));
+  assert.equal(b2.magic, before);
+});
+
+test('heart nudge moves the center die by one for 1 Magic', () => {
+  const h = knight();
+  const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
+  startRoll(b); b.board.C.v = 3; b.magic = 2;
+  assert.ok(nudge(b, 1)); assert.equal(b.board.C.v, 4); assert.equal(b.magic, 1);
+  b.board.C.v = 6; assert.equal(nudge(b, 1), false);
+});
+
+test('leveling and gear', () => {
+  const h = knight();
+  const before = maxHpOf(h);
+  assert.equal(gainXp(h, 28), 1);
+  assert.equal(h.level, 2); assert.equal(h.pendingPerks, 1); assert.equal(maxHpOf(h), before + 4);
+  const bow = makeWeapon('bow', 1);
+  h.bag.push(bow);
+  assert.ok(equip(h, bow.uid));
+  assert.equal(isTwoHanded(h), true);
+  assert.ok(h.bag.some((w) => w.id === 'sword') && h.bag.some((w) => w.id === 'shield'));
+  const dag = makeWeapon('dagger', 0);
+  h.bag.push(dag);
+  assert.ok(equip(h, dag.uid, 'NE'));
+  assert.equal(isTwoHanded(h), false);
+  assert.equal(h.loadout.NW.id, 'fists'); assert.equal(h.loadout.NE.id, 'dagger');
+});
+
+test('quests are deterministic per hero seed and step; boss on step 10', () => {
+  const h = knight();
+  assert.deepEqual(questsFor(h), questsFor(h));
+  h.campaign.step = 10;
+  assert.equal(questsFor(h)[0].kind, 'boss');
+  h.campaign.step = 5;
+  assert.equal(questsFor(h)[0].kind, 'elite');
+});
+
+test('monsters: every face table has six faces and a valid verb', () => {
+  const verbs = new Set(['strike', 'pierce', 'guard', 'mend', 'charge', 'howl', 'bind', 'drain', 'pilfer', 'summon']);
+  for (const [id, m] of Object.entries(MONSTERS)) {
+    assert.equal(m.faces.length, 6, id);
+    for (const f of [...m.faces, ...(m.rage ? m.rage.faces : [])]) assert.ok(verbs.has(f.v), `${id} ${f.n}`);
+    if (m.rage) assert.equal(m.rage.faces.length, 6, id);
+    if (m.faces.some((f) => f.v === 'charge')) assert.ok(m.slam, `${id} needs a slam`);
+    if (m.faces.some((f) => f.v === 'summon')) assert.ok(m.adds, `${id} needs adds`);
+  }
+});
+
+test('rage: a boss at half health swaps to its rage table', () => {
+  const h = knight();
+  const b = duel(h, 'goblinking', { n: 'Scepter', v: 'strike', f: 0, m: 0 }, { NW: 4, W: 4, NE: 4, E: 4, C: 6, N: 4, S: 4 });
+  const e = b.enemies[0]; e.hp = Math.ceil(e.maxHp * 0.55);
+  const rep = resolve(b, {});
+  assert.ok(e.raged || e.hp <= 0, 'raged once under half'); if (e.hp > 0) assert.deepEqual(rep.raged, [e.uid]);
+});

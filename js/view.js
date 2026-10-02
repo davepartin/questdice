@@ -1,0 +1,207 @@
+// View builders: pure functions that turn game state into DOM. Flow and input live in ui.js.
+import { h } from './dom.js';
+import * as D from './data.js';
+import * as E from './engine.js';
+
+export const ICON = { gold: '🪙', pierce: '◆', magic: '✦', atk: '⚔', block: '🛡', heal: '✚', stagger: '✸' };
+export const SLOT_NAME = {
+  NW: 'Left weapon', N: 'Head', NE: 'Right weapon', W: 'Left hand', C: 'Heart',
+  E: 'Right hand', SW: 'Left special', S: 'Feet', SE: 'Right special',
+};
+const SHORT = { NW: 'Weapon', N: 'Head', NE: 'Weapon', W: 'Strength', C: 'Heart', E: 'Strength', SW: 'Special', S: 'Feet', SE: 'Special' };
+export const RARITY_CLASS = ['bronze', 'silver', 'gold', 'diamond'];
+
+const fxText = (fx) => Object.entries(fx).map(([k, v]) => `${ICON[k === 'loot' ? 'gold' : k] || ''}${v}`).join(' ');
+
+export function dieSpec(hero, slot, v) {
+  const role = D.ROLE[slot];
+  if (role === 'weapon') {
+    const f = E.weaponFaces(hero.loadout[slot])[v - 1];
+    return { main: String(f.v), tone: f.c === 'r' ? 'red' : 'blue', chip: f.fx ? fxText(f.fx) : (f.v === 0 ? 'blank' : ''), chipKind: f.fx ? 'c-magic' : 'c-dim', blank: f.v === 0, glyph: f.c === 'r' ? '⚔' : '🛡' };
+  }
+  if (role === 'special') {
+    const sym = E.specialFace(hero, slot, v);
+    return { main: sym ? D.SYMBOL_INFO[sym].glyph : '—', tone: sym ? 'sym' : '', chip: sym ? D.SYMBOL_INFO[sym].name : 'blank', chipKind: sym ? 'c-pierce' : 'c-dim', blank: !sym };
+  }
+  let chip = ''; let chipKind = '';
+  if (role === 'heart') {
+    if (v <= 4) { chip = `${['🪙', '◆', '✦', '✦'][v - 1]} amp`; chipKind = ['c-gold', 'c-pierce', 'c-magic', 'c-magic'][v - 1]; }
+    else if (v === 5) { chip = '🛡 +4'; chipKind = 'c-block'; } else { chip = '⚔ +4'; chipKind = 'c-atk'; }
+    return { main: String(v), tone: 'heart', chip, chipKind, blank: false };
+  }
+  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : 4];
+  if (v === 1) { chip = `🪙 +${r[0]}`; chipKind = 'c-gold'; } else if (v === 2) { chip = `◆ +${r[1]}`; chipKind = 'c-pierce'; }
+  else if (v === 3) { chip = `✦ +${r[2]}`; chipKind = 'c-magic'; } else if (v === 4) { chip = `✦ +${r[3]}`; chipKind = 'c-magic'; }
+  return { main: String(v), tone: '', chip, chipKind, blank: false };
+}
+
+export function paintDie(el, hero, slot, v) {
+  const s = dieSpec(hero, slot, v);
+  el.querySelector('.num').textContent = s.main;
+  const chip = el.querySelector('.chip');
+  chip.textContent = s.chip; chip.className = `chip ${s.chipKind || ''}`;
+  el.classList.toggle('blank', !!s.blank);
+  el.dataset.tone = s.tone || '';
+}
+export function dieEl(hero, slot, die, { selected = false, onclick, twohand = false, dim = false, tabindex } = {}) {
+  const role = D.ROLE[slot];
+  const sides = role === 'weapon' ? 4 : E.sidesOf(hero, slot);
+  const el = h('button', {
+    class: `die die--${role} ${selected ? 'sel' : ''} ${die.bound ? 'bound' : ''} ${twohand ? 'twohand' : ''} ${dim ? 'dim' : ''}`,
+    'data-slot': slot, type: 'button', onclick, tabindex, 'aria-label': `${SLOT_NAME[slot]}`, 'aria-pressed': selected ? 'true' : 'false',
+  },
+  h('span', { class: 'role' }, SHORT[slot]),
+  h('span', { class: 'num' }),
+  h('span', { class: 'chip' }),
+  h('span', { class: 'size' }, role === 'weapon' ? (twohand ? '2H' : '1H') : `d${sides}`),
+  die.bound ? h('span', { class: 'lock', 'aria-hidden': 'true' }, '🔒') : null);
+  paintDie(el, hero, slot, die.v);
+  return el;
+}
+
+export function describeDie(hero, slot, v) {
+  const role = D.ROLE[slot]; const name = SLOT_NAME[slot];
+  if (role === 'weapon') {
+    const inst = hero.loadout[slot]; const f = E.weaponFaces(inst)[v - 1]; const w = D.WEAPONS[inst.id];
+    return `${name} · ${D.RARITY[inst.rarity]} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this lane attacks' : 'BLUE, so this lane defends'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
+  }
+  if (role === 'special') {
+    const sym = E.specialFace(hero, slot, v);
+    return sym ? `${name}: ${D.SYMBOL_INFO[sym].name}. ${D.SYMBOL_INFO[sym].text}` : `${name}: a blank. Two faces of every special die are always empty.`;
+  }
+  if (role === 'heart') {
+    const t = ['Every other 1 you roll on head, hands and feet pays +2 🪙 extra.', 'Every other 2 you roll pierces +2 extra.', 'Every other 3 you roll gives +2 ✦ extra.', 'Every other 4 you roll gives +1 ✦ extra.', 'Your best BLUE lane gets +4 block.', 'Your best RED lane gets +4 attack.'][v - 1];
+    return `Heart (d6) shows ${v}. ${t}`;
+  }
+  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : 4];
+  const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to its lane. ` : `${name} (d4) shows ${v}. `;
+  const eff = v === 1 ? `1 → +${r[0]} 🪙 gold.` : v === 2 ? `2 → +${r[1]} ◆ pierce.` : v === 3 ? `3 → +${r[2]} ✦ magic.` : v === 4 ? `4 → +${r[3]} ✦ magic.` : 'High numbers are pure power.';
+  return base + eff;
+}
+
+export function hpBar(cur, max, { cls = '', label = true } = {}) {
+  const pct = Math.max(0, Math.min(100, (cur / max) * 100));
+  return h('div', { class: `bar ${cls}` }, h('div', { class: 'bar-fill', style: { width: `${pct}%` } }),
+    label ? h('span', { class: 'bar-text' }, `${Math.max(0, Math.ceil(cur))}/${max}`) : null);
+}
+
+// ------------------------------------------------------------------ forecast
+export function forecastEl(ev, mods) {
+  const row = h('div', { class: 'forecast' });
+  const chip = (cls, icon, label, n) => row.append(h('div', { class: `fchip ${cls} ${n ? '' : 'zero'}` }, h('span', { class: 'fi' }, icon), h('b', {}, String(n)), h('small', {}, label)));
+  chip('c-atk', ICON.atk, 'attack', ev.atk + mods.atk);
+  chip('c-pierce', ICON.pierce, 'pierce', ev.pierce + mods.pierce);
+  chip('c-block', ICON.block, 'block', ev.block + mods.block);
+  chip('c-magic', ICON.magic, 'magic', ev.magic);
+  chip('c-heal', ICON.heal, 'heal', ev.heal + mods.heal);
+  chip('c-gold', ICON.gold, 'gold', ev.gold);
+  return row;
+}
+export function synergyNotes(ev, mods) {
+  const out = [];
+  if (ev.offense3) out.push({ kind: 'good', text: '⚔ Top-row triple! +10 attack' });
+  if (ev.defense3) out.push({ kind: 'good', text: '🛡 Head·Heart·Feet triple! +10 block' });
+  if (ev.straight) out.push({ kind: 'good', text: `★ ${ev.straight}-straight! +${ev.straightBonus}` });
+  if (ev.stagger + mods.stagger) out.push({ kind: '', text: `${ICON.stagger} ${ev.stagger + mods.stagger} stagger` });
+  if (mods.weaken) out.push({ kind: '', text: `Foes hit ${mods.weaken} softer` });
+  return out;
+}
+
+// ------------------------------------------------------------------ enemies
+export function intentInfo(e) {
+  const i = e.intent; if (!i) return null;
+  const r = E.intentRange(e);
+  const rng = r ? (r[0] === r[1] ? `${r[0]}` : `${r[0]}–${r[1]}`) : '';
+  switch (i.v) {
+    case 'strike': return { icon: i.slam ? '💥' : '⚔', tone: i.slam ? 'slam' : 'atk', title: i.n, text: `${rng} damage · block stops it` };
+    case 'pierce': return { icon: '◆', tone: 'pierce', title: i.n, text: `${rng} piercing · block can’t stop it` };
+    case 'guard': return { icon: '🛡', tone: 'block', title: i.n, text: `blocks ${rng} of your non-piercing damage` };
+    case 'mend': return { icon: '✚', tone: 'heal', title: i.n, text: `heals ${rng}` };
+    case 'charge': return { icon: '⚡', tone: 'charge', title: i.n, text: `SLAM next round. Deal ${e.staggerAt}+ this round to break it` };
+    case 'howl': return { icon: '📣', tone: 'buff', title: i.n, text: `every foe’s next strike +${i.k}` };
+    case 'bind': return { icon: '⛓', tone: 'bind', title: i.n, text: `locks ${i.k} of your dice next round` };
+    case 'drain': return { icon: '☾', tone: 'drain', title: i.n, text: `${rng} damage and steals ${i.k} ✦` };
+    case 'pilfer': return { icon: '🪙', tone: 'gold', title: i.n, text: `${rng} damage; steals gold if it hits` };
+    case 'summon': return { icon: '✦', tone: 'summon', title: i.n, text: `calls ${i.k} reinforcement${i.k > 1 ? 's' : ''}` };
+    default: return { icon: '?', tone: '', title: i.n, text: '' };
+  }
+}
+export function enemyCard(e, { targeted = false, onclick, showText = false } = {}) {
+  const dead = e.hp <= 0; const info = !dead && intentInfo(e);
+  return h('button', {
+    class: `ecard tier-${e.tier} ${dead ? 'dead' : ''} ${targeted ? 'targeted' : ''} ${e.raged ? 'raged' : ''}`, type: 'button',
+    'data-uid': e.uid, onclick, disabled: dead, 'aria-label': e.name,
+  },
+  h('div', { class: 'eportrait' }, h('span', {}, e.glyph)),
+  h('div', { class: 'ename' }, e.name, e.raged ? h('em', {}, ` · ${e.rageName}`) : null),
+  hpBar(e.hp, e.maxHp, { cls: 'enemy-bar' }),
+  info ? h('div', { class: `intent ${info.tone}` }, h('span', { class: 'iicon' }, info.icon), h('div', { class: 'itext' }, h('b', {}, info.title), showText ? h('small', {}, info.text) : h('small', {}, info.text.split(' · ')[0].split('. ')[0]))) : null,
+  e.carried ? h('div', { class: 'carried' }, `carrying ${e.carried} 🪙`) : null);
+}
+
+// ------------------------------------------------------------------ weapons
+export function weaponCard(inst, { actions = [], note = '', compact = false } = {}) {
+  const w = D.WEAPONS[inst.id]; const faces = E.weaponFaces(inst);
+  return h('div', { class: `wcard rar-${RARITY_CLASS[inst.rarity]} ${compact ? 'compact' : ''}` },
+    h('div', { class: 'whead' },
+      h('span', { class: 'wglyph' }, w.glyph || '✊'),
+      h('div', { class: 'wtitle' }, h('b', {}, w.name), h('small', {}, `${D.RARITY[inst.rarity]} · ${w.hands === 2 ? 'two-handed' : 'one-handed'}`))),
+    h('div', { class: 'wfaces' }, faces.map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, String(f.v), f.fx ? h('i', {}, fxText(f.fx)) : null))),
+    compact ? null : h('p', { class: 'wtag' }, w.tag),
+    note ? h('p', { class: 'wnote' }, note) : null,
+    actions.length ? h('div', { class: 'wactions' }, actions) : null);
+}
+
+// ------------------------------------------------------------------ report
+export function reportLines(rep, b) {
+  const name = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Foe';
+  const L = [];
+  const t = name(rep.targetUid);
+  L.push({ kind: 'you', text: `You strike ${t}: ${rep.T.atk} attack${rep.guarded ? ` (${rep.guarded} guarded)` : ''}${rep.T.pierce ? ` + ${rep.T.pierce} ◆ pierce` : ''} → ${rep.dealt} damage.` });
+  if (rep.ev.offense3) L.push({ kind: 'good', text: 'Top-row triple! +10 attack.' });
+  if (rep.ev.defense3) L.push({ kind: 'good', text: 'Head·Heart·Feet triple! +10 block.' });
+  if (rep.ev.straight) L.push({ kind: 'good', text: `${rep.ev.straight}-straight!` });
+  for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks!` });
+  for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
+  for (const a of rep.acts) {
+    const n = name(a.uid);
+    if (a.v === 'strike' || a.v === 'drain' || a.v === 'pilfer') L.push({ kind: a.net > 0 ? 'bad' : 'meh', text: `${n} ${a.name}: ${a.d}${a.ab ? `, you block ${a.ab}` : ''} → ${a.net} damage.` });
+    else if (a.v === 'pierce') L.push({ kind: 'bad', text: `${n} ${a.name}: ${a.d} piercing damage.` });
+    else if (a.v === 'guard') L.push({ kind: 'meh', text: `${n} braces (${a.name}).` });
+    else if (a.v === 'mend') L.push({ kind: 'meh', text: `${n} mends ${a.healed || 0}.` });
+    else if (a.v === 'charge') L.push({ kind: a.cancelled ? 'good' : 'bad', text: a.cancelled ? `${n}’s wind-up is cancelled.` : `${n} winds up. A Slam is coming.` });
+    else if (a.v === 'howl') L.push({ kind: 'bad', text: `${n} howls. The pack grows bolder.` });
+    else if (a.v === 'bind') L.push({ kind: 'bad', text: `${n} casts ${a.name}. ${rep.bound} die locked next round.` });
+    else if (a.v === 'summon') L.push({ kind: 'bad', text: `${n} calls for help.` });
+  }
+  if (rep.goldStolen) L.push({ kind: 'bad', text: `A thief takes ${rep.goldStolen} 🪙. Kill it to get it back.` });
+  if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from you.` });
+  for (const u of rep.raged) L.push({ kind: 'bad', text: `${name(u)} flies into a rage!` });
+  if (rep.healed) L.push({ kind: 'good', text: `You heal ${rep.healed}.` });
+  if (rep.lastStand) L.push({ kind: 'bad', text: 'LAST STAND. You cling to life.' });
+  const gains = [];
+  if (rep.T.magic) gains.push(`+${rep.T.magic} ✦`); if (rep.T.gold) gains.push(`+${rep.T.gold} 🪙`);
+  if (gains.length) L.push({ kind: 'meh', text: `Gathered ${gains.join('  ')}.` });
+  return L;
+}
+
+// ------------------------------------------------------------------ rules text
+export function howToPlay() {
+  const p = (...c) => h('p', {}, ...c);
+  return h('div', { class: 'howto' },
+    h('h2', {}, 'How to play'),
+    p('Your nine dice are your ', h('b', {}, 'body'), '. Roll them, shape the result with a few rerolls, then lock in. You and the monsters resolve together, and your blow lands first.'),
+    h('h3', {}, 'Reading the board'),
+    p(h('b', {}, 'Hands'), ' are strength. A weapon die sits above each hand and adds its number; its ', h('b', { class: 'red' }, 'red'), ' or ', h('b', { class: 'blue' }, 'blue'), ' colour decides whether that side ', h('b', {}, 'attacks'), ' or ', h('b', {}, 'blocks'), '.'),
+    p(h('b', {}, 'Head, hands and feet'), ' always pay out: 1 = 🪙 gold, 2 = ◆ pierce (ignores block), 3 and 4 = ✦ magic. Big numbers are pure power.'),
+    p(h('b', {}, 'Heart'), ' (the d6 in the middle) amplifies matching dice on your own board. A 5 boosts your best block; a 6 your best attack.'),
+    p(h('b', {}, 'Specials'), ' (lower corners) always have two blank faces. Their symbols use your hand’s number: ✚ heal, ✦ magic, ⚡ doubles that hand.'),
+    h('h3', {}, 'Each round'),
+    p(h('b', {}, '1. Reset.'), ' Monsters roll their ', h('b', {}, 'Intention'), ' first and show it to you. You see what is coming. Spend ✦ to heal or recharge a card, then roll.'),
+    p(h('b', {}, '2. Shape.'), ' The first reroll is free (tap up to 3 dice). Two more cost 1 ✦ per die. Cards, healing and heart nudges cost ✦ too.'),
+    p(h('b', {}, '3. Lock in.'), ' Tap a monster to choose your target. Triples (+10) and 5-straights pay extra.'),
+    h('h3', {}, 'Monsters'),
+    p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round, unless you deal enough damage in one round to ', h('b', {}, 'stagger'), ' it. Bosses change their ways at half health.'),
+    h('h3', {}, 'Between fights'),
+    p(h('b', {}, 'Camp'), ' is where gold lives: bigger dice, new weapons, and a save point. Magic only matters inside a fight.'));
+}

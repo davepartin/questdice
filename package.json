@@ -1,0 +1,1 @@
+{"name":"questdice","version":"0.1.0","private":true,"type":"module","scripts":{"sim":"node tools/sim.mjs","test":"node --test test/*.test.mjs"}}

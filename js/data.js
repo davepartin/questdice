@@ -1,0 +1,287 @@
+// QuestDice — static game data. Pure data, no DOM, safe to import from node.
+// Every number here is a tuning knob; see docs/DESIGN.md for the reasoning.
+
+export const SLOTS = ['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE'];
+export const ROLE = {
+  NW: 'weapon', NE: 'weapon', N: 'head', S: 'feet',
+  W: 'hand', E: 'hand', C: 'heart', SW: 'special', SE: 'special',
+};
+// Each side of the body is a "lane": weapon (corner) + strength (hand) + special (lower corner).
+export const LANES = {
+  L: { weapon: 'NW', hand: 'W', special: 'SW' },
+  R: { weapon: 'NE', hand: 'E', special: 'SE' },
+};
+export const CARDINALS = ['N', 'W', 'E', 'S']; // head, hands, feet: the "always contribute" dice
+
+export const MAGIC_CAP = 12;
+export const MAX_LEVEL = 20;
+export const REROLL_ACTIONS = 3;
+export const SYNERGY_BONUS = 10;
+export const HEAL_COST = 2; // magic
+export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
+export const NUDGE_COST = 1;
+export const RECHARGE_COST = 3;
+export const SURVIVE_HP = 1; // Last Stand
+
+// Universal number language: [loot on 1, pierce on 2, magic on 3, magic on 4], by die size.
+export const RES_BY_SIZE = {
+  4: [2, 2, 2, 1],
+  6: [2, 3, 3, 1],
+  8: [3, 3, 3, 2],
+  10: [3, 4, 4, 2],
+};
+// Heart amplifier: bonus per *other* cardinal die that matches the heart. Faces 1-4.
+export const HEART_AMP = [2, 2, 2, 1];
+export const HEART_COLOR_BONUS = 4; // faces 5 (blue) and 6 (red)
+
+// Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
+export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };
+
+export const RARITY = ['Bronze', 'Silver', 'Gold', 'Diamond'];
+export const RARITY_WEIGHTS = [70, 22, 7, 1];
+export const RARITY_SELL = [6, 14, 34, 90];
+
+// Faces are [value, color]; color r = offense (red), b = defense (blue). `fx` is the weapon's icon.
+const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
+export const WEAPONS = {
+  fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles.',
+    faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
+  dagger: { name: 'Dagger', hands: 1, lean: 'off', glyph: '🗡️', price: 30,
+    tag: 'Small, safe, reliable. A 3 mends 1.',
+    faces: [F(0, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })] },
+  bracer: { name: 'Bracer', hands: 1, lean: 'def', glyph: '🛡️', price: 30,
+    tag: 'Nimble guard. A 3 sparks 1 magic.',
+    faces: [F(0, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })] },
+  sword: { name: 'Sword', hands: 1, lean: 'off', glyph: '⚔️', price: 40,
+    tag: 'Wider swings. A 4 pierces for 1.',
+    faces: [F(0, 'r'), F(1, 'b'), F(3, 'r'), F(4, 'r', { pierce: 1 })] },
+  shield: { name: 'Shield', hands: 1, lean: 'def', glyph: '🛡️', price: 40,
+    tag: 'A real wall. The red 1 is a bash that staggers.',
+    faces: [F(0, 'b'), F(1, 'r', { stagger: 3 }), F(3, 'b'), F(4, 'b')] },
+  spear: { name: 'Spear', hands: 1, lean: 'off', glyph: '🔱', price: 45,
+    tag: 'Reach. A 4 pierces for 2.',
+    faces: [F(0, 'r'), F(1, 'b'), F(2, 'r'), F(4, 'r', { pierce: 2 })] },
+  bow: { name: 'Bow', hands: 2, lean: 'off', glyph: '🏹', price: 70,
+    tag: 'Two-handed and agile. Best odds at triples. A red 3 pierces.',
+    faces: [F(0, 'b'), F(1, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })] },
+  longsword: { name: 'Long Sword', hands: 2, lean: 'off', glyph: '⚔️', price: 75,
+    tag: 'Two-handed and swingy. A 4 staggers.',
+    faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r', { stagger: 3 })] },
+  staff: { name: 'Staff', hands: 2, lean: 'off', glyph: '🪄', price: 75,
+    tag: 'Two-handed channel. A 4 gives 2 magic.',
+    faces: [F(0, 'b'), F(1, 'b'), F(2, 'r'), F(4, 'r', { magic: 2 })] },
+};
+export const LOOT_WEIGHTS = {
+  dagger: 10, bracer: 8, sword: 10, shield: 10, spear: 8, bow: 7, longsword: 7, staff: 7,
+};
+
+// Special dice: always exactly two blanks, then the symbols repeat as the die grows.
+export const SPECIAL_SYMBOLS = {
+  SW: ['MEND', 'SURGE'],
+  SE: ['SPARK', 'SURGE'],
+};
+export const SYMBOL_INFO = {
+  MEND: { glyph: '✚', name: 'Mend', text: 'Heal HP equal to your left-hand strength.' },
+  SPARK: { glyph: '✦', name: 'Spark', text: 'Gain Magic equal to your right-hand strength.' },
+  SURGE: { glyph: '⚡', name: 'Surge', text: 'Doubles this hand’s strength in its lane.' },
+};
+
+// Strength / special upgrade ladder: [from size, gold, minimum hero level].
+export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
+export const SPECIAL_STEPS = { 4: [50, 4], 6: [120, 9], 8: [250, 14] };
+export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
+
+export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
+
+// -------------------------------------------------------------------------------------------
+// Classes. The board is identical for everyone; the class lives in the card menu.
+// A card is { id, name, cost, text, fx }. fx keys: atk, pierce, block, heal, magic, stagger,
+// weaken (enemy damage -N this round), free (a free reroll action of N dice).
+// -------------------------------------------------------------------------------------------
+export const CLASSES = {
+  knight: {
+    name: 'Knight', glyph: '⚔️', hp: 34, startMagic: 3, rerollDice: 3,
+    blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
+    weapons: ['sword', 'shield'],
+    cards: [
+      { id: 'cleave', name: 'Cleave', cost: 2, fx: { atk: 6 }, text: '+6 attack.' },
+      { id: 'shieldwall', name: 'Shield Wall', cost: 2, fx: { block: 8 }, text: '+8 block.' },
+      { id: 'rally', name: 'Rally Cry', cost: 3, fx: { atk: 4, block: 4 }, text: '+4 attack, +4 block.' },
+      { id: 'crush', name: 'Crushing Blow', cost: 3, fx: { pierce: 4, stagger: 6 }, text: '+4 pierce and +6 stagger.', unlock: 4 },
+    ],
+  },
+  ranger: {
+    name: 'Ranger', glyph: '🏹', hp: 28, startMagic: 3, rerollDice: 4,
+    blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
+    weapons: ['bow'],
+    cards: [
+      { id: 'aimed', name: 'Aimed Shot', cost: 2, fx: { pierce: 5 }, text: '+5 pierce.' },
+      { id: 'volley', name: 'Volley', cost: 2, fx: { atk: 6 }, text: '+6 attack.' },
+      { id: 'snare', name: 'Snare', cost: 2, fx: { weaken: 3, stagger: 4 }, text: 'Enemies hit 3 softer; +4 stagger.' },
+      { id: 'sprint', name: 'Sprint', cost: 1, fx: { free: 4 }, text: 'A free reroll action of 4 dice.', unlock: 4 },
+    ],
+  },
+  wizard: {
+    name: 'Wizard', glyph: '🧙', hp: 26, startMagic: 4, rerollDice: 3,
+    blurb: 'Magic is your ammunition. A staff, a big pool of Magic, and a spell for every problem.',
+    weapons: ['staff'],
+    cards: [
+      { id: 'arcbolt', name: 'Arc Bolt', cost: 2, fx: { atk: 4, pierce: 3 }, text: '+4 attack, +3 pierce.' },
+      { id: 'foresee', name: 'Foresee', cost: 1, fx: { free: 3 }, text: 'A free reroll action of 3 dice.' },
+      { id: 'barrier', name: 'Barrier', cost: 2, fx: { block: 7 }, text: '+7 block.' },
+      { id: 'siphon', name: 'Siphon', cost: 3, fx: { pierce: 4, magic: 3 }, text: '+4 pierce, +3 Magic.', unlock: 4 },
+    ],
+  },
+  dwarf: {
+    name: 'Dwarf Warden', glyph: '🪓', hp: 38, startMagic: 2, rerollDice: 3,
+    blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
+    weapons: ['spear', 'shield'],
+    cards: [
+      { id: 'stonehide', name: 'Stonehide', cost: 2, fx: { block: 10 }, text: '+10 block.' },
+      { id: 'bulwark', name: 'Bulwark Smash', cost: 2, fx: { atk: 5, stagger: 5 }, text: '+5 attack, +5 stagger.' },
+      { id: 'grudge', name: 'Grudge', cost: 3, fx: { atk: 8 }, text: '+8 attack.' },
+      { id: 'hearth', name: 'Hearthsong', cost: 3, fx: { heal: 8, block: 4 }, text: 'Heal 8, +4 block.', unlock: 4 },
+    ],
+  },
+  bard: {
+    name: 'Bard', glyph: '🪕', hp: 28, startMagic: 3, rerollDice: 3,
+    blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
+    weapons: ['dagger', 'bracer'],
+    cards: [
+      { id: 'mending', name: 'Mending Song', cost: 2, fx: { heal: 8 }, text: 'Heal 8.' },
+      { id: 'hymn', name: 'Battle Hymn', cost: 2, fx: { atk: 4, block: 4 }, text: '+4 attack, +4 block.' },
+      { id: 'discord', name: 'Discord', cost: 2, fx: { weaken: 4 }, text: 'Enemies hit 4 softer.' },
+      { id: 'encore', name: 'Encore', cost: 3, fx: { free: 3, magic: 2 }, text: 'A free reroll action of 3 dice and +2 Magic.', unlock: 4 },
+    ],
+  },
+};
+
+// -------------------------------------------------------------------------------------------
+// Perks: one pick every level, three offered. Stat tweaks that compose without special cases.
+// -------------------------------------------------------------------------------------------
+export const PERKS = {
+  vitality: { name: 'Vitality', text: '+6 max HP.', max: 5, mod: { maxHp: 6 } },
+  reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic.', max: 3, mod: { startMagic: 1 } },
+  quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 } },
+  keen: { name: 'Keen Edge', text: '+1 to every red lane.', max: 3, mod: { redBonus: 1 } },
+  ward: { name: 'Ironward', text: '+1 to every blue lane.', max: 3, mod: { blueBonus: 1 } },
+  piercer: { name: 'Piercing Pips', text: 'Each 2 you roll on a cardinal die pierces +1.', max: 3, mod: { pierceBonus: 1 } },
+  greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen.', max: 3, mod: { goldPct: 0.25 } },
+  grit: { name: 'Last Stand Grit', text: 'Last Stand leaves you with +4 HP.', max: 2, mod: { lastStandHp: 4 } },
+  frugal: { name: 'Frugal Mender', text: 'The Heal card costs 1 less Magic (minimum 1).', max: 1, mod: { healCost: -1 } },
+};
+
+// -------------------------------------------------------------------------------------------
+// Bestiary. Faces: v = verb, f = flat, m = multiplier of the Power die, k = extra parameter.
+//   strike  damage (blockable)         pierce  damage that ignores block
+//   guard   this round the monster blocks f+m*power of your non-pierce damage
+//   mend    heals itself               charge  wind-up; next round it Slams unless staggered
+//   howl    every monster's next strike +k bind  lock k of your dice next round
+//   drain   strike, and steal k Magic  pilfer  strike, steal gold if it connects; returned on its death
+//   summon  call k reinforcements (the monster's `adds` id)
+// -------------------------------------------------------------------------------------------
+const S = (n, f, m, extra = {}) => ({ n, v: 'strike', f, m, ...extra });
+export const MONSTERS = {
+  goblin: {
+    name: 'Goblin Skulker', glyph: '👺', hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
+    faces: [S('Stab', 1, 1), S('Stab', 1, 1), { n: 'Pilfer', v: 'pilfer', f: 0, m: 1 },
+      { n: 'Duck', v: 'guard', f: 1, m: 1 }, S('Slash', 2, 1), { n: 'Fire Bomb', v: 'pierce', f: 1, m: 1 }],
+  },
+  wolf: {
+    name: 'Dire Wolf', glyph: '🐺', hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
+    faces: [S('Bite', 1, 1), S('Bite', 1, 1), { n: 'Howl', v: 'howl', f: 0, m: 0, k: 2 },
+      S('Lunge', 0, 2), S('Bite', 1, 1), S('Rend', 2, 1)],
+  },
+  cultist: {
+    name: 'Ashen Cultist', glyph: '🧙', hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
+    faces: [{ n: 'Hex', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
+      { n: 'Ward', v: 'guard', f: 0, m: 2 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
+      S('Bolt', 1, 1), { n: 'Hex', v: 'bind', f: 0, m: 0, k: 2 }],
+  },
+  ogre: {
+    name: 'Hill Ogre', glyph: '👹', hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',
+    slam: { f: 2, m: 2 },
+    faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+  },
+  goblinking: {
+    name: 'The Goblin King', glyph: '👑', hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss',
+    slam: { f: 3, m: 2 }, adds: 'goblin',
+    faces: [S('Scepter', 1, 1), S('Scepter', 1, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
+      { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
+      { n: 'Fire Bombs', v: 'pierce', f: 2, m: 1 }],
+    rage: {
+      name: 'Greed-Mad', power: 14,
+      faces: [S('Frenzy', 2, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
+        { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
+        { n: 'Fire Bombs', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+    },
+  },
+  // ---- Act II (draft numbers, untuned) ----
+  skeleton: {
+    name: 'Bone Soldier', glyph: '💀', hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion',
+    faces: [S('Slash', 1, 1), S('Slash', 1, 1), { n: 'Shield Up', v: 'guard', f: 2, m: 1 },
+      S('Stab', 2, 1), { n: 'Bone Throw', v: 'pierce', f: 1, m: 1 }, S('Slash', 1, 1)],
+  },
+  wraith: {
+    name: 'Wraith', glyph: '👻', hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
+    faces: [{ n: 'Chill', v: 'pierce', f: 0, m: 1 }, { n: 'Chill', v: 'pierce', f: 0, m: 1 },
+      { n: 'Drain', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Wail', v: 'bind', f: 0, m: 0, k: 2 },
+      { n: 'Phase', v: 'guard', f: 0, m: 2 }, S('Touch', 1, 1)],
+  },
+  spider: {
+    name: 'Crypt Spider', glyph: '🕷️', hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
+    faces: [S('Bite', 1, 1), { n: 'Web', v: 'bind', f: 0, m: 0, k: 2 }, { n: 'Venom', v: 'pierce', f: 1, m: 1 },
+      { n: 'Skitter', v: 'guard', f: 1, m: 1 }, S('Pounce', 0, 2), S('Bite', 1, 1)],
+  },
+  bonewarden: {
+    name: 'Bone Warden', glyph: '🦴', hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite',
+    slam: { f: 3, m: 2 }, adds: 'skeleton',
+    faces: [S('Cleave', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Wall', v: 'guard', f: 2, m: 1 },
+      { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 }, S('Smash', 0, 2), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+  },
+  lich: {
+    name: 'The Hollow Lich', glyph: '☠️', hp: 230, power: 12, xp: 140, gold: 120, tier: 'boss',
+    slam: { f: 4, m: 2 }, adds: 'skeleton',
+    faces: [{ n: 'Soul Bolt', v: 'pierce', f: 2, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 },
+      { n: 'Drain Life', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 2 },
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Armor', v: 'guard', f: 2, m: 1 }],
+    rage: {
+      name: 'Unbound', power: 14,
+      faces: [{ n: 'Soul Storm', v: 'pierce', f: 3, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 2 },
+        { n: 'Drain Life', v: 'drain', f: 1, m: 1, k: 4 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 3 },
+        { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+    },
+  },
+};
+
+// -------------------------------------------------------------------------------------------
+// Campaign: acts of ten quests. Each step offers two quests; the tenth is the boss.
+// -------------------------------------------------------------------------------------------
+export const ACTS = [
+  {
+    id: 1, name: 'The Ashen Marches', tag: 'Goblins, wolves, and a fire that will not die.',
+    places: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'Smoke Hollow', 'The Toll Bridge', 'Ashfall Camp', 'Gallows Hill'],
+    pool: [['goblin', 'goblin'], ['wolf'], ['wolf', 'goblin'], ['cultist', 'goblin'], ['wolf', 'wolf'], ['cultist'], ['cultist', 'wolf']],
+    elite: [['ogre'], ['ogre', 'goblin']],
+    boss: ['goblinking'],
+  },
+  {
+    id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organize.',
+    places: ['The Weeping Stair', 'Ossuary Gate', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
+    pool: [['skeleton', 'skeleton'], ['wraith'], ['spider', 'skeleton'], ['wraith', 'skeleton'], ['spider', 'spider'], ['spider']],
+    elite: [['bonewarden']],
+    boss: ['lich'],
+  },
+];
+export const QUESTS_PER_ACT = 10;
+export const ELITE_STEPS = [5];
+
+// Party scaling (index = players - 1). Only 1 player is tuned today.
+export const PARTY = {
+  hp: [1, 1.8, 2.5, 3.1, 3.6, 4.0],
+  adds: [0, 0, 0, 1, 1, 2],
+};
+
+export const ENEMY_CAP = 4;
