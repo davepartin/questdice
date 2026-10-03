@@ -43,6 +43,10 @@ const LIB = {
   scales: { kind: 'scales', tex: {}, m: {} },
   parchment: { kind: 'parchment', tex: {}, m: {} },
   rune: { kind: 'rune', tex: {}, m: { emissive: 0xffffff, emissiveIntensity: 1.0 } },
+  // [monsters-b]
+  ogreHideB: { kind: 'hideB', tex: {}, m: {} },
+  kingHideB: { kind: 'hideB', tex: { tint: 0x86a64a, dark: 0x1f3010, mottle: 0x5a7a2a, warts: 0.9, crease: 0.8 }, m: {} },
+  brocadeB: { kind: 'brocadeB', tex: {}, m: {} },
 };
 
 /**

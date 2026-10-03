@@ -301,6 +301,44 @@ const P = {
       return { h: 0.6 + grit * 0.1 - edge * 0.4, c: mul(c, 1 - edge * 0.6), r: 0.55 + grit * 0.2, ao: 1 - edge * 0.5, e: mul(gl, edge * 0.12 + line * 0.05) };
     };
   },
+  // [monsters-b] Thick monster hide: mottled colour, deep creases, pores, sparse warts, faint scars.
+  hideB({ tint = 0x9a8c62, dark = 0x3c2f1c, mottle = 0x6c6a46, warts = 0.7, crease = 1, pores = 1 } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const mo = hex(mottle);
+    return (u, v, { N }) => {
+      const big = N.fbm(u * 3, v * 3, { oct: 4, tile: 3 }) * 0.5 + 0.5;
+      const blot = N.fbm(u * 7 + 2, v * 7, { oct: 4, tile: 7 }) * 0.5 + 0.5;
+      const wp = N.fbm(u * 4 + 5, v * 4, { oct: 2, tile: 4 }) * 0.12;
+      const rid = 1 - Math.abs(N.fbm((u + wp) * 6, (v + wp) * 6, { oct: 3, tile: 6 })) * 2;
+      const cr = smooth(0.62, 0.95, rid) * crease;
+      const fine = 1 - Math.abs(N.fbm(u * 22, v * 22, { oct: 2, tile: 22 })) * 2;
+      const fcr = smooth(0.75, 0.97, fine) * 0.5 * crease;
+      const pr = N.worley(u * 44, v * 44, 44); const pit = smooth(0.17, 0.02, pr.d1) * pores;
+      const ww = N.worley(u * 5, v * 5, 5); const wart = smooth(0.24, 0.05, ww.d1) * (ww.id > 165 ? 1 : 0) * warts;
+      let c = mixc(lo, hi, clamp(0.28 + big * 0.55 + blot * 0.25));
+      c = mixc(c, mo, smooth(0.5, 0.85, blot) * 0.4);
+      c = mul(c, 1 - cr * 0.55 - fcr * 0.3 - pit * 0.22);
+      c = mixc(c, [c[0] * 1.2 + 0.05, c[1] * 1.05, c[2] * 0.95], wart * 0.6);
+      c = mixc(c, mul(hex(0x6a2a1a), 1), wart * smooth(0.12, 0.0, ww.d1) * 0.35);
+      return { h: 0.55 + blot * 0.08 - cr * 0.3 - fcr * 0.12 - pit * 0.1 + wart * 0.55, c, r: 0.62 + blot * 0.2 - wart * 0.15 + cr * 0.15, ao: 1 - cr * 0.5 - pit * 0.2 };
+    };
+  },
+  // [monsters-b] Moth-eaten crimson brocade: dark velvet, a faint gold diamond lattice, stains.
+  brocadeB({ tint = 0x9a1f26, dark = 0x2a0508, gold = 0xd6a53c } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const go = hex(gold);
+    return (u, v, { N }) => {
+      const pile = N.fbm(u * 60, v * 60, { oct: 2, tile: 60 }) * 0.5 + 0.5;
+      const stain = N.fbm(u * 3, v * 3, { oct: 5, tile: 3 }) * 0.5 + 0.5;
+      const dx = Math.abs(((u * 6) % 1) - 0.5) + Math.abs(((v * 6) % 1) - 0.5); // diamond lattice
+      const line = smooth(0.06, 0.0, Math.abs(dx - 0.42)) * 0.6;
+      const dot = smooth(0.09, 0.02, Math.hypot(((u * 6) % 1) - 0.5, ((v * 6) % 1) - 0.5));
+      const wv = Math.sin(u * 150) * Math.sin(v * 150) * 0.5 + 0.5;
+      let c = mixc(lo, hi, clamp(0.35 + pile * 0.3 + stain * 0.4 - 0.1));
+      c = mul(c, 0.82 + wv * 0.18);
+      c = mixc(c, mul(go, 0.75), clamp(line + dot * 0.5) * 0.55);
+      c = mul(c, 0.65 + 0.35 * smooth(0.15, 0.7, stain));
+      return { h: 0.5 + wv * 0.12 + (line + dot) * 0.12, c, r: 0.85 - (line + dot) * 0.3, m: (line + dot) * 0.3, ao: 0.7 + pile * 0.3 };
+    };
+  },
 };
 
 const DEFAULT_SIZE = { default: 256 };
