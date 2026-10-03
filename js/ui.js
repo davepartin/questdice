@@ -6,19 +6,40 @@ import * as E from './engine.js';
 import * as D from './data.js';
 import * as SV from './save.js';
 import * as V from './view.js';
+import * as R from './roads.js';
+import * as Net from './net.js';
+import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
 
 const S = {
-  hero: null, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
+  hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
   tab: 'forge', lastReport: null, focus: null, rewards: null, timers: [],
 };
 const fresh = () => E.makeRng((Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0);
 function mount(...nodes) {
   S.timers.forEach(clearInterval); S.timers = [];
-  const r = $('#app'); r.replaceChildren(...nodes.filter(Boolean)); r.scrollTop = 0; r.classList.remove('rise'); void r.offsetWidth; r.classList.add('rise');
+  const r = $('#app');
+  const y = S.holdScroll ? r.scrollTop : 0;
+  r.replaceChildren(...nodes.filter(Boolean));
+  r.scrollTop = y;
+  if (!S.holdScroll) { r.classList.remove('rise'); void r.offsetWidth; r.classList.add('rise'); }
 }
+const isParty = () => (S.battle?.fighters?.length || 0) > 1;
+const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
 function persist() {
-  if (!S.hero) return;
-  if (!SV.saveHero(S.hero)) toast('Could not save. Is browser storage blocked?', 'bad');
+  if (S.net) return;
+  if (S.company?.kind === 'company') {
+    if (!SV.saveCompany(S.company)) toast('Could not save. Is browser storage blocked?', 'bad');
+    return;
+  }
+  const hero = S.company?.members?.[0] || S.hero;
+  if (!hero) return;
+  if (!SV.saveHero(hero)) toast('Could not save. Is browser storage blocked?', 'bad');
+}
+function concludeRoadEffects() {
+  const c = S.company?.campaign || S.hero?.campaign;
+  if (!c) return;
+  E.spendBlessings(c);
+  E.clearAmbush(c);
 }
 const actOf = (hero) => D.ACTS[(hero.campaign.act - 1) % D.ACTS.length];
 const actName = (hero) => { const c = hero.campaign; const cyc = Math.floor((c.act - 1) / D.ACTS.length); return actOf(hero).name + (cyc ? ` · Ascent ${cyc + 1}` : ''); };
@@ -33,10 +54,24 @@ function cmd(kicker, title, sub, onclick, { tone = '', disabled = false, glyph =
     h('span', { class: 'cmd-go' }, '›'));
 }
 function heroChip() {
+  if (S.company?.kind === 'company') {
+    const n = S.company.members.length;
+    return h('div', { class: 'herochip' }, h('span', { class: 'hc-glyph' }, '⚔'),
+      h('div', {}, h('b', {}, S.company.name), h('small', {}, `${n} ${n === 1 ? 'hero' : 'heroes'}`)),
+      h('div', { class: 'hc-res' }, h('span', { class: 'c-gold' }, `🪙 ${E.companyGold(S.company.members)}`)));
+  }
   const hero = S.hero; const c = D.CLASSES[hero.cls];
   return h('div', { class: 'herochip' }, h('span', { class: 'hc-glyph' }, c.glyph),
     h('div', {}, h('b', {}, hero.name), h('small', {}, `Lv ${hero.level} ${c.name}`)),
     h('div', { class: 'hc-res' }, h('span', { class: 'c-gold' }, `🪙 ${hero.gold}`)));
+}
+function bodyWrap(board, hero) {
+  const c = D.CLASSES[hero.cls];
+  return h('div', { class: 'body' },
+    h('div', { class: 'body-caption' }, h('span', {}, c.glyph), h('b', {}, hero.name), h('small', {}, 'head · hands · heart · feet')),
+    h('div', { class: 'body-stage' },
+      V.characterMat(hero),
+      board));
 }
 function xpBar(hero) {
   const need = D.xpToNext(hero.level);
@@ -70,38 +105,65 @@ export function bindChrome() {
 
 // ------------------------------------------------------------------ title
 export function showTitle() {
-  S.hero = null; S.battle = null; S.busy = false;
-  const heroes = SV.listHeroes();
-  const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
+  Net.disconnect();
+  S.net = null; S.holdScroll = false;
+  S.hero = null; S.company = null; S.battle = null; S.busy = false;
+  const saves = SV.listSaves();
+  const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s} ${['N', 'W', 'E', 'S', 'C'].includes(s) ? 'limb' : ''}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
   const tick = () => { $$('.td span', grid).forEach((n, i) => { if (Math.random() < 0.35) { n.textContent = String(1 + Math.floor(Math.random() * (i === 4 ? 6 : 4))); n.parentElement.classList.remove('pop'); void n.parentElement.offsetWidth; n.parentElement.classList.add('pop'); } }); };
   const items = [
     h('header', { class: 'title-art' }, grid, h('h1', { class: 'logo' }, 'QUEST', h('span', {}, 'DICE')), h('p', { class: 'tagline' }, 'Roll your body. Break the dark.')),
   ];
-  if (heroes.length) {
-    items.push(h('div', { class: 't-eyebrow mb' }, 'Your heroes'));
-    items.push(h('nav', { class: 'dock' }, heroes.map((x) => cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, `Level ${x.level} ${D.CLASSES[x.cls].name}`, () => unlock(x.name), { glyph: D.CLASSES[x.cls].glyph, tone: 'solo' }))));
+  const seat = Net.savedSeat();
+  if (seat) items.push(cmd('Table', `Rejoin ${seat.code}`, 'This phone still has a seat.', () => resume(), { glyph: '⚔', tone: 'versus' }));
+  if (saves.length) {
+    items.push(h('div', { class: 't-eyebrow mb' }, 'On this device'));
+    items.push(h('nav', { class: 'dock' }, saves.map((x) => {
+      const sub = x.kind === 'company'
+        ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}`
+        : `Level ${x.level} ${D.CLASSES[x.cls].name}`;
+      return cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, sub, () => unlock(x.name, x.kind), { glyph: x.kind === 'company' ? '⚔' : D.CLASSES[x.cls].glyph, tone: x.kind === 'company' ? 'versus' : 'solo' });
+    })));
   }
-  items.push(h('div', { class: 't-eyebrow mb' }, heroes.length ? 'More' : 'Begin'));
+  items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
   items.push(h('nav', { class: 'dock' },
-    cmd('01 · Hero', 'Forge a new hero', 'Pick a class, name them, set a password.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
-    cmd('02 · Party', 'Play with friends', '2–6 players: coming soon.', () => {}, { glyph: '👥', disabled: true, tone: 'versus' }),
+    cmd('01 · Hero', 'Forge a new hero', 'One body of dice. A whole road.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
+    cmd('02 · Together', 'Play on your own phone', 'One to six heroes. Each decides at the same time, and the fight runs when every choice is in.', showTogether, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
   items.push(h('div', { class: 'row center' }, ghost('How to play', showHowTo)));
   mount(...items);
   S.timers.push(setInterval(tick, 1400));
 }
-function unlock(name) {
+function adopt(saved, kind) {
+  if (kind === 'company') {
+    S.company = saved;
+    S.hero = saved.members[0];
+  } else {
+    S.company = { kind: 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
+    S.hero = saved;
+  }
+  S.seat = 0;
+}
+function unlock(name, kind = 'hero') {
   const pw = h('input', { type: 'password', class: 'input', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password' });
   const msg = h('p', { class: 'form-msg' });
   const go = async () => {
-    try { S.hero = await SV.openHero(name, pw.value); $('#modal').replaceChildren(); sfx.coin(); showBoard(); }
-    catch (e) { msg.textContent = e.message; sfx.error(); }
+    try {
+      const saved = kind === 'company' ? await SV.openCompany(name, pw.value) : await SV.openHero(name, pw.value);
+      adopt(saved, kind);
+      $('#modal').replaceChildren(); sfx.coin(); showRoadOrBoard();
+    } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, 'Enter your password to open this hero.'), pw, msg,
-    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(name); if (c) copyCode(c); }), ghost('Cancel', () => close()), primary('Open', go)),
-    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { SV.deleteHero(name); close(); showTitle(); } } }, 'Delete this hero'))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, kind === 'company' ? 'Enter the company password. This save still shares one device. A new table gives every hero their own phone.' : 'Enter your password to open this hero.'), pw, msg,
+    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = kind === 'company' ? SV.exportCompanyCode(name) : SV.exportCode(name); if (c) copyCode(c); }), ghost('Cancel', () => close()), primary('Open', go)),
+    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { if (kind === 'company') SV.deleteCompany(name); else SV.deleteHero(name); close(); showTitle(); } } }, kind === 'company' ? 'Delete this company' : 'Delete this hero'))));
   setTimeout(() => pw.focus(), 50);
+}
+function currentCode() {
+  if (S.company?.kind === 'company') return SV.exportCompanyCode(S.company.name);
+  if (S.hero) return SV.exportCode(S.hero.name);
+  return null;
 }
 function copyCode(code) {
   const done = () => toast('Soul Code copied. Keep it safe.', 'good');
@@ -109,11 +171,11 @@ function copyCode(code) {
 }
 function showCode(code) {
   const ta = h('textarea', { class: 'input code', readonly: true, rows: 6 }, code);
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries your hero and password.'), ta, h('div', { class: 'row end' }, primary('Done', () => close()))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries this save and its password.'), ta, h('div', { class: 'row end' }, primary('Done', () => close()))));
   setTimeout(() => ta.select(), 50);
 }
 function showImport() {
-  const ta = h('textarea', { class: 'input code', rows: 5, placeholder: 'QD1.…' });
+  const ta = h('textarea', { class: 'input code', rows: 5, placeholder: 'QD1.… or QD2.…' });
   const msg = h('p', { class: 'form-msg' });
   const go = (overwrite = false) => {
     try { const name = SV.importCode(ta.value, { overwrite }); $('#modal').replaceChildren(); toast(`${name} has arrived.`, 'good'); sfx.coin(); showTitle(); }
@@ -149,7 +211,7 @@ function showCreate() {
     try {
       const hero = E.newHero({ name: n, cls });
       await SV.createSave(hero, pw.value);
-      S.hero = hero; sfx.level(); showBoard();
+      adopt(hero, 'hero'); sfx.level(); showRoadOrBoard();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   mount(h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a hero')),
@@ -157,19 +219,62 @@ function showCreate() {
     section('Class', grid, detail), msg, primary('Begin the campaign', go, { cls: 'wide' }));
 }
 
+function showCreateCompany() {
+  let seats = [{ name: '', cls: 'knight' }];
+  const cname = h('input', { class: 'input', maxlength: 24, placeholder: 'Company name', 'aria-label': 'Company name', autocomplete: 'off' });
+  const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
+  const msg = h('p', { class: 'form-msg' });
+  const seatsEl = h('div', { class: 'col' });
+  const paint = () => {
+    seatsEl.replaceChildren(...seats.map((seat, i) => h('div', { class: 'panel seat' },
+      h('div', { class: 'row between' }, h('b', {}, `Hero ${i + 1}`), seats.length > 1 ? ghost('Remove', () => { seats.splice(i, 1); sfx.select(); paint(); }, { cls: 'small' }) : null),
+      h('input', { class: 'input', maxlength: 16, placeholder: 'Name', value: seat.name, 'aria-label': `Hero ${i + 1} name`, oninput: (e) => { seat.name = e.target.value; } }),
+      h('div', { class: 'class-grid' }, Object.entries(D.CLASSES).map(([id, c]) => h('button', {
+        type: 'button', class: `class-pick ${seat.cls === id ? 'on' : ''}`,
+        onclick: () => { seat.cls = id; sfx.select(); paint(); },
+      }, h('span', {}, c.glyph), h('b', {}, c.name.split(' ')[0])))))));
+  };
+  paint();
+  const go = async () => {
+    const companyName = cname.value.trim().replace(/\s+/g, ' ');
+    if (companyName.length < 2) { msg.textContent = 'Name the company (2–24 characters).'; sfx.error(); return; }
+    if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); return; }
+    const roster = seats.map((s) => ({ name: s.name.trim().replace(/\s+/g, ' '), cls: s.cls }));
+    if (roster.some((r) => r.name.length < 2)) { msg.textContent = 'Every hero needs a name.'; sfx.error(); return; }
+    if (new Set(roster.map((r) => r.name.toLowerCase())).size !== roster.length) { msg.textContent = 'Each hero needs a different name.'; sfx.error(); return; }
+    if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser.'; sfx.error(); return; }
+    try {
+      const company = E.newCompany({ name: companyName, roster });
+      await SV.createCompany(company, pw.value);
+      adopt(company, 'company'); sfx.level(); showRoadOrBoard();
+    } catch (e) { msg.textContent = e.message; sfx.error(); }
+  };
+  mount(
+    h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a company')),
+    section('The company', cname, pw, h('p', { class: 'fine' }, 'One password opens the whole company on this device. Each hero keeps their own gold, dice and level. The road is shared.')),
+    section('The heroes', seatsEl, h('div', { class: 'row' }, seats.length < 6 ? ghost('Add a hero', () => { seats.push({ name: '', cls: 'wizard' }); sfx.select(); paint(); }, { cls: 'small' }) : h('span', { class: 'fine' }, 'Six is a full table.'))),
+    msg, primary('Take the road', go, { cls: 'wide' }));
+}
+
 // ------------------------------------------------------------------ quest board
 function showBoard() {
-  const hero = S.hero; const c = hero.campaign; const quests = E.questsFor(hero); persist();
+  const hero = membersOf()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); persist();
+  const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0);
+  const ambush = c.ambush?.length;
   const path = h('div', { class: 'path' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
     const n = i + 1; const st = n < c.step ? 'done' : n === c.step ? 'now' : '';
     return h('div', { class: `node ${st} ${n === D.QUESTS_PER_ACT ? 'boss' : D.ELITE_STEPS.includes(n) ? 'elite' : ''}` }, n === D.QUESTS_PER_ACT ? '👑' : D.ELITE_STEPS.includes(n) ? '☠' : n < c.step ? '✓' : String(n));
   }));
   mount(
     h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
-    xpBar(hero),
+    S.company?.kind === 'company'
+      ? h('div', { class: 'levels' }, S.company.members.map((m) => h('span', {}, `${D.CLASSES[m.cls].glyph} ${m.name} · Lv ${m.level} · 🪙 ${m.gold}`)))
+      : xpBar(hero),
     h('header', { class: 'act' }, h('div', { class: 't-eyebrow' }, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), h('h2', {}, actName(hero)), h('p', { class: 'muted' }, actOf(hero).tag)),
     path,
-    tip('board', 'Each quest offers two roads. Standard is lighter. Perilous hits harder but pays 1.5× gold and XP. Every fight ends at camp, where you can spend gold and save.'),
+    blessings.length ? h('p', { class: 'boon' }, blessings.map((b) => b.text).join(' · ')) : null,
+    ambush ? h('p', { class: 'warn' }, 'An ambush is waiting on whichever road you take.') : null,
+    tip('board', 'Each quest offers two roads. Standard is lighter. Perilous hits harder but pays 1.5× gold and XP. The computer has already spoken for this stretch of road.'),
     h('div', { class: 't-eyebrow mb' }, quests.length > 1 ? 'Choose your road' : 'The road ends here'),
     h('div', { class: 'quests' }, quests.map(questCard)),
     h('div', { class: 'row' }, ghost('⛺ Visit camp', () => showCamp({ fromBoard: true })), ghost('My hero', () => { S.tab = 'hero'; showCamp({ fromBoard: true }); })));
@@ -187,23 +292,68 @@ function questCard(q) {
     h('span', { class: 'cmd-go' }, '›'));
 }
 function menu() {
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, S.hero?.name || 'Menu'),
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, S.company?.name || S.hero?.name || 'Menu'),
     h('div', { class: 'col' },
       ghost('How to play', () => { close(); showHowTo(); }),
-      S.hero ? ghost('Copy Soul Code', () => { const c = SV.exportCode(S.hero.name); if (c) copyCode(c); }) : null,
+      ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       ghost('Save & return to title', () => { persist(); close(); showTitle(); }),
       ghost('Close', () => close()))));
 }
 
+function showRoadOrBoard() {
+  const hero = membersOf()[0];
+  if (hero && R.roadIsOpen(hero)) showRoad();
+  else showBoard();
+}
+function showRoad() {
+  const members = membersOf();
+  const hero = members[0];
+  const ev = R.ensureRoad(hero, members);
+  persist();
+  mount(
+    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
+    h('article', { class: 'road' },
+      h('div', { class: 'road-kicker' }, ev.kicker),
+      h('h2', {}, ev.title),
+      h('p', { class: 'road-tell' }, ev.tell)),
+    h('div', { class: 't-eyebrow mb' }, 'What do you do?'),
+    h('div', { class: 'quests' }, ev.choices.map((ch) => h('button', {
+      class: 'qcard road-choice', type: 'button', disabled: !ch.ok,
+      onclick: () => {
+        const res = R.chooseRoad(hero, members, ch.id);
+        if (!res) { sfx.error(); toast(ch.ok ? 'The road will not take that.' : 'You cannot afford that.'); return; }
+        sfx.card(); persist(); showRoadResult(res);
+      },
+    }, h('div', { class: 'qbody' }, h('b', {}, ch.label), h('small', {}, ch.hint)), h('span', { class: 'cmd-go' }, '›')))),
+    tip('road', 'The computer runs the road the way it runs the monsters. It knows your names. A choice can pay you, wound you, or change the next fight. Reloading before you choose shows the same scene.'));
+}
+function showRoadResult(res) {
+  mount(
+    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
+    h('article', { class: 'road' },
+      h('div', { class: 'road-kicker' }, 'The road answers'),
+      h('h2', {}, res.title),
+      h('p', { class: 'road-tell' }, res.text)),
+    primary('Onward', showBoard, { cls: 'wide big' }));
+}
+
 // ------------------------------------------------------------------ battle: reset
 function startQuest(q) {
-  S.quest = q; S.battle = E.newBattle(S.hero, q, fresh(), 1); S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  const members = membersOf();
+  const quest = E.withAmbush(q, members[0].campaign);
+  S.quest = quest;
+  S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
+  S.hero = members[0];
+  S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
   renderReset();
 }
 function refresh() { if (S.battle.phase === 'shape') renderBattle(); else renderReset(); }
 function spendHeal() {
+  if (isParty()) E.focusFighter(S.battle, S.battle.active);
   const b = S.battle; const hp = b.hp;
-  if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
+  const ok = E.healSpend(b);
+  if (isParty()) E.commitFighter(S.battle);
+  if (!ok) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
   sfx.heal(); refresh(); floater($('.hero-hp'), `+${b.hp - hp}`, 'heal');
 }
 function enemyTelegraph(e) {
@@ -213,7 +363,53 @@ function enemyTelegraph(e) {
     h('div', { class: 'tele-copy' }, h('b', {}, e.name), h('small', { class: 'muted' }, `${Math.ceil(e.hp)}/${e.maxHp} HP`),
       h('div', { class: `intent big ${info.tone}` }, h('span', { class: 'iicon' }, info.icon), h('div', { class: 'itext' }, h('b', {}, info.title), h('small', {}, info.text)))));
 }
+function touchFighter(i, fn) {
+  E.focusFighter(S.battle, i);
+  const ok = fn();
+  E.commitFighter(S.battle);
+  return ok;
+}
+function renderPartyReset() {
+  const b = S.battle;
+  const alive = b.enemies.filter((e) => e.hp > 0);
+  const rep = S.lastReport;
+  const lines = rep?.party
+    ? V.partyReportLines(rep, b)
+    : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'bar' : 'bars'} the way. Highest Feet draws the heat.` }];
+  const wind = alive.filter((e) => e.intent?.slam);
+  const first = b.fighters.find((f) => f.hp > 0);
+  const blessings = (S.company?.campaign?.blessings || []).map((bl) => bl.text).filter(Boolean);
+  mount(
+    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'Reset'), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
+    section(rep ? `Round ${rep.round}` : 'The fight begins', h('ul', { class: 'log' }, lines.map((l) => h('li', { class: l.kind }, l.text)))),
+    blessings.length ? h('p', { class: 'boon' }, blessings.join(' · ')) : null,
+    tip('party-reset', 'This saved company still shares one device. Whoever rolls the highest Feet takes the largest share of the retaliation. Each hero’s block only covers their own share.'),
+    h('div', { class: 't-eyebrow mb' }, 'The monsters have shown their hand'),
+    h('div', { class: 'teles' }, alive.map(enemyTelegraph)),
+    wind.length ? h('p', { class: 'warn' }, `⚠ A Slam is coming: ${wind.map((e) => e.name).join(', ')}.`) : null,
+    first ? bodyWrap(h('div', { class: 'board board-empty', 'aria-hidden': 'true' }), first.hero) : null,
+    h('div', { class: 't-eyebrow mb' }, 'The company'),
+    ...b.fighters.map((f, i) => {
+      const hero = f.hero;
+      const spent = E.cardsOf(hero).filter((k) => f.used[k.id]);
+      return h('div', { class: 'panel mate-spend' },
+        h('div', { class: 'row between' }, h('b', {}, `${D.CLASSES[hero.cls].glyph} ${hero.name}`), h('span', { class: 'magic-badge' }, `✦ ${f.magic}`)),
+        V.hpBar(f.hp, f.maxHp, { cls: 'hero-bar' }),
+        f.hp <= 0 ? h('p', { class: 'muted' }, 'Down for this fight.') : h('div', { class: 'row' },
+          ghost(`✚ Heal +${D.HEAL_AMOUNT} · ${E.healCostOf(hero)}✦`, () => {
+            if (!touchFighter(i, () => E.healSpend(S.battle))) { sfx.error(); toast('Not enough ✦ Magic, or already full.'); return; }
+            sfx.heal(); renderPartyReset();
+          }, { cls: 'small', disabled: f.magic < E.healCostOf(hero) || f.hp >= f.maxHp }),
+          ...spent.map((k) => ghost(`Recharge ${k.name}`, () => {
+            if (!touchFighter(i, () => E.recharge(S.battle, k.id))) { sfx.error(); toast('Not enough ✦ Magic.'); return; }
+            sfx.magic(); renderPartyReset();
+          }, { cls: 'small', disabled: f.magic < D.RECHARGE_COST }))));
+    }),
+    primary(first ? `🎲 Roll ${first.hero.name}` : 'The company has fallen', first ? rollDice : () => defeat(false), { cls: 'wide big' }));
+}
 function renderReset() {
+  if (S.net) { renderNet(); return; }
+  if (isParty()) return renderPartyReset();
   const b = S.battle; const hero = S.hero; const alive = b.enemies.filter((e) => e.hp > 0);
   const rep = S.lastReport;
   const lines = rep ? V.reportLines(rep, b) : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'block' : 'blocks'} the way.` }];
@@ -233,11 +429,18 @@ function renderReset() {
       cards.length ? h('div', { class: 'cardlist' }, cards.map((k) => h('div', { class: `mini-card ${b.used[k.id] ? 'spent' : ''}` },
         h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`),
         b.used[k.id] ? ghost(`Recharge · ${D.RECHARGE_COST}✦`, () => { if (E.recharge(b, k.id)) { sfx.magic(); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); } }, { disabled: b.magic < D.RECHARGE_COST, cls: 'small' }) : h('em', {}, 'Ready')))) : null),
+    bodyWrap(h('div', { class: 'board board-empty', 'aria-hidden': 'true' }), hero),
     primary('🎲 Roll the dice', rollDice, { cls: 'wide big' }));
 }
 async function rollDice() {
   if (S.busy) return; const b = S.battle;
-  E.startRoll(b); S.sel.clear(); S.focus = null; S.straight = 'atk';
+  if (isParty()) {
+    const i = b.fighters.findIndex((f) => f.hp > 0);
+    if (i < 0) return defeat(false);
+    E.startFighter(b, i);
+    S.hero = b.hero; S.sel.clear(); S.focus = null; S.straight = 'atk'; S.target = b.fighters[i].target || 0;
+  } else E.startRoll(b);
+  if (!isParty()) { S.sel.clear(); S.focus = null; S.straight = 'atk'; }
   sfx.roll(); renderBattle(); await flicker(D.SLOTS);
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} locked by a hex.`, 'bad'); sfx.hurt(); }
 }
@@ -272,10 +475,10 @@ function toggle(slot) {
 async function doReroll() {
   if (S.busy) return; const b = S.battle; const slots = [...S.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
-  E.reroll(b, slots); S.sel.clear(); sfx.roll(); renderBattle(); await flicker(slots);
+  E.reroll(b, slots); if (isParty()) E.commitFighter(b); S.sel.clear(); sfx.roll(); renderBattle(); await flicker(slots);
 }
-function doNudge(dir) { const b = S.battle; if (S.busy) return; if (!E.nudge(b, dir)) { sfx.error(); toast(b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; } sfx.magic(); renderBattle(); }
-function doCard(id) { const b = S.battle; if (S.busy) return; if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; } sfx.card(); renderBattle(); buzz(20); }
+function doNudge(dir) { const b = S.battle; if (S.busy) return; if (!E.nudge(b, dir)) { sfx.error(); toast(b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; } if (isParty()) E.commitFighter(b); sfx.magic(); renderBattle(); }
+function doCard(id) { const b = S.battle; if (S.busy) return; if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; } if (isParty()) E.commitFighter(b); sfx.card(); renderBattle(); buzz(20); }
 
 // Re-render only the bits that depend on selection/forecast so dice do not rebuild mid-animation.
 function updateLive() {
@@ -292,8 +495,11 @@ function rerollLabel(info) {
   return n ? `Reroll ${n} ${n === 1 ? 'die' : 'dice'} · ${cost ? `${cost}✦` : 'free'}` : `Reroll up to ${info.dice} · ${info.perDie ? `${info.perDie}✦ each` : 'free'}`;
 }
 function renderBattle() {
-  const b = S.battle; const hero = S.hero;
+  if (S.net) { renderNet(); return; }
+  const b = S.battle;
   if (b.phase !== 'shape') return renderReset();
+  if (isParty()) { E.focusFighter(b, b.active); S.hero = b.hero; }
+  const hero = S.hero;
   if (!b.enemies[S.target] || b.enemies[S.target].hp <= 0) S.target = Math.max(0, b.enemies.findIndex((e) => e.hp > 0));
   const ev = E.evaluate(hero, b.board, { straight: S.straight });
   const info = E.rerollInfo(b); const two = E.isTwoHanded(hero);
@@ -305,15 +511,18 @@ function renderBattle() {
   const notes = V.synergyNotes(ev, b.mods);
   const cards = E.cardsOf(hero);
   const pips = h('div', { class: 'pips', 'aria-label': 'Reroll actions left' }, Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', { class: 'free' }, `+${b.freeActions.length} free`) : null);
+  const nextMate = isParty() ? b.fighters.find((g, i) => i > b.active && g.hp > 0) : null;
+  const lockLabel = !isParty() ? '🔒 Lock in' : nextMate ? `🔒 Lock in · then ${nextMate.hero.name}` : '🔒 Lock in · monsters answer';
   mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, S.quest.name), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
-    h('div', { class: 'ecards', 'data-n': b.enemies.filter((e) => e.hp > 0).length }, b.enemies.map((e, i) => V.enemyCard(e, { targeted: i === S.target && e.hp > 0, onclick: () => { if (S.busy) return; S.target = i; sfx.select(); renderBattle(); } }))),
+    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, isParty() ? `${D.CLASSES[hero.cls].name} · round ${b.round}` : S.quest.name), h('h2', {}, isParty() ? hero.name : `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
+    isParty() ? V.rosterEl(b.fighters, b.active) : null,
+    h('div', { class: 'ecards', 'data-n': b.enemies.filter((e) => e.hp > 0).length }, b.enemies.map((e, i) => V.enemyCard(e, { targeted: i === S.target && e.hp > 0, onclick: () => { if (S.busy) return; S.target = i; if (isParty()) b.fighters[b.active].target = i; sfx.select(); renderBattle(); } }))),
     h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(b.hp, b.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${b.magic}`)),
     b.boundNow ? h('p', { class: 'warn' }, `⛓ ${b.boundNow} of your dice ${b.boundNow > 1 ? 'are' : 'is'} hexed and cannot be rerolled.`) : null,
     h('div', { id: 'live' },
+      bodyWrap(board, hero),
       V.forecastEl(ev, b.mods),
       h('div', { class: 'notes' }, notes.map((n) => h('span', { class: `note ${n.kind}` }, n.text))),
-      board,
       h('p', { id: 'focus', class: 'focus' }, S.focus ? V.describeDie(hero, S.focus, b.board[S.focus].v) : 'Tap dice to select them for a reroll. Tap a monster to choose your target.')),
     h('div', { class: 'actions' },
       h('div', { class: 'row between' }, pips, h('div', { class: 'row tight' },
@@ -325,13 +534,57 @@ function renderBattle() {
     ev.straight ? h('div', { class: 'straight' }, h('span', {}, `★ ${ev.straight}-straight worth ${ev.straightBonus}`), h('div', { class: 'seg' },
       h('button', { type: 'button', class: S.straight === 'atk' ? 'on' : '', onclick: () => { S.straight = 'atk'; renderBattle(); } }, '⚔ Attack'),
       h('button', { type: 'button', class: S.straight === 'gold' ? 'on' : '', onclick: () => { S.straight = 'gold'; renderBattle(); } }, '🪙 Gold'))) : null,
-    primary('🔒 Lock in', lockIn, { cls: 'wide big lock' }));
+    primary(lockLabel, lockIn, { cls: 'wide big lock' }));
   updateLive();
 }
 
 // ------------------------------------------------------------------ resolve
+async function lockParty() {
+  const b = S.battle;
+  E.focusFighter(b, b.active);
+  E.commitFighter(b);
+  b.fighters[b.active].straight = S.straight;
+  b.fighters[b.active].target = S.target;
+  S.busy = true; sfx.lock(); buzz(20);
+  const next = b.fighters.findIndex((g, i) => i > b.active && g.hp > 0);
+  if (next >= 0) {
+    banner(`Pass to ${b.fighters[next].hero.name}`, 'gold');
+    E.startFighter(b, next);
+    S.hero = b.hero; S.sel.clear(); S.focus = null; S.straight = 'atk'; S.target = b.fighters[next].target || 0;
+    S.busy = false;
+    renderBattle();
+    await flicker(D.SLOTS);
+    if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} locked by a hex.`, 'bad'); sfx.hurt(); }
+    return;
+  }
+  const rep = E.resolveParty(b);
+  S.lastReport = rep;
+  await sleep(280);
+  for (const s of rep.strikes) {
+    const tEl = $(`.ecard[data-uid="${s.targetUid}"]`);
+    if (s.dealt > 0) { floater(tEl, `−${s.dealt}`, 'dmg'); tEl?.classList.add('hit'); }
+  }
+  if (rep.strikes.some((s) => s.dealt > 0)) { sfx.hit(); burstAt($(`.ecard[data-uid="${rep.strikes[0].targetUid}"]`), '#ff8a7a', 18); shake(0.7); }
+  for (const e of b.enemies) {
+    const bar = $(`.ecard[data-uid="${e.uid}"] .bar-fill`);
+    if (bar) bar.style.width = `${Math.max(0, (e.hp / e.maxHp) * 100)}%`;
+    if (e.hp <= 0) $(`.ecard[data-uid="${e.uid}"]`)?.classList.add('dead');
+  }
+  await sleep(520);
+  if (rep.fighters.some((f) => f.taken > 0)) { sfx.hurt(); shake(0.8); }
+  if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); }
+  if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); }
+  if (rep.fighters.some((f) => f.lastStand)) { banner('LAST STAND', 'bad'); sfx.rage(); }
+  await sleep(rep.raged.length || rep.staggered.length ? 900 : 640);
+  S.busy = false; S.sel.clear(); S.focus = null;
+  if (b.outcome === 'victory') showVictory();
+  else if (b.outcome === 'defeat') defeat(false);
+  else renderReset();
+}
 async function lockIn() {
-  if (S.busy) return; const b = S.battle; S.busy = true; sfx.lock(); buzz(30);
+  if (S.busy) return;
+  if (isParty()) return lockParty();
+  const b = S.battle; S.busy = true; sfx.lock(); buzz(30);
   $('.board')?.classList.add('locked'); $$('.die').forEach((d) => d.classList.remove('sel'));
   const ev = E.evaluate(S.hero, b.board, { straight: S.straight });
   if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
@@ -360,11 +613,13 @@ async function lockIn() {
 
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
+  if (isParty()) return showPartyVictory();
   const b = S.battle; const hero = S.hero; const r = E.battleRewards(b);
   const lvBefore = hero.level;
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
   const quest = S.quest;
+  concludeRoadEffects();
   E.advanceCampaign(hero); persist();
   S.rewards = { ...r, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: null, quest, offer: null };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
@@ -389,8 +644,54 @@ function renderVictory() {
     perks, loot,
     primary(ready ? '⛺ To camp' : 'Choose a perk and spoils to continue', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
 }
+function showPartyVictory() {
+  const b = S.battle;
+  const r = E.partyRewards(b);
+  const levels = {};
+  for (const f of b.fighters) {
+    const g = r.gold[f.hero.name] || 0;
+    levels[f.hero.name] = f.hero.level;
+    f.hero.gold = Math.max(0, f.hero.gold + g);
+    f.hero.stats.goldEarned += Math.max(0, g);
+    f.hero.stats.battles++;
+    E.gainXp(f.hero, r.xp);
+  }
+  concludeRoadEffects();
+  E.advanceCampaign(b.fighters[0].hero);
+  persist();
+  S.rewards = { party: true, ...r, levels, pickedBy: {}, picker: 0, offer: null, offering: null, quest: S.quest };
+  sfx.win();
+  if (b.fighters.some((f) => f.hero.level > levels[f.hero.name])) setTimeout(sfx.level, 700);
+  renderPartyVictory();
+}
+function renderPartyVictory() {
+  const R = S.rewards;
+  const pending = S.company.members.find((m) => m.pendingPerks > 0);
+  if (pending && (!R.offer || R.offering !== pending.name)) { R.offering = pending.name; R.offer = E.offerPerks(pending, fresh()); }
+  if (!pending) { R.offer = null; R.offering = null; }
+  const perks = pending && R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${pending.name} · choose a perk`),
+    h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(pending, id); R.offer = null; sfx.level(); persist(); renderPartyVictory(); } },
+      h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
+  const picker = R.order[R.picker];
+  const lootDone = R.picker >= R.order.length;
+  const loot = !lootDone ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `${picker} chooses · contrib ${R.contrib[picker] || 0}`),
+    h('div', { class: 'loot' }, R.drops.map((inst, i) => R.pickedBy[i] ? null : V.weaponCard(inst, { actions: [primary('Take', () => { const who = S.company.members.find((m) => m.name === picker); who.bag.push(inst); R.pickedBy[i] = picker; R.picker++; sfx.coin(); persist(); renderPartyVictory(); }, { cls: 'small' })] }))))
+    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, 'The packs are full. One weapon stays on the road.'),
+      h('div', { class: 'cardlist' }, Object.entries(R.pickedBy).map(([i, name]) => h('div', { class: 'mini-card' }, h('b', {}, name), h('small', {}, `${D.RARITY[R.drops[i].rarity]} ${D.WEAPONS[R.drops[i].id].name}`)))));
+  const ready = !pending && lootDone;
+  mount(
+    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The company is still standing.')),
+    h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `+${R.xp} XP each`),
+      h('div', { class: 'cardlist' }, S.company.members.map((m) => h('div', { class: 'mini-card' }, h('b', {}, m.name), h('small', {}, `${R.gold[m.name] >= 0 ? '+' : ''}${R.gold[m.name]} 🪙 · contrib ${R.contrib[m.name] || 0}${m.level > R.levels[m.name] ? ` · level ${m.level}` : ''}`))))),
+    perks, loot,
+    primary(ready ? '⛺ To camp' : 'Perks and spoils first', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
+}
 function defeat(retreat) {
-  const hero = S.hero; const loss = Math.floor(hero.gold * 0.15); hero.gold -= loss; hero.stats.defeats++; persist();
+  concludeRoadEffects();
+  const heroes = isParty() ? S.battle.fighters.map((f) => f.hero) : [S.hero];
+  let loss = 0;
+  for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
+  persist();
   sfx.lose();
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
     h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow.' : 'The dark wins this round. It does not get to keep you.')),
@@ -400,19 +701,38 @@ function defeat(retreat) {
 
 // ------------------------------------------------------------------ camp
 function showCamp({ fromBoard = false } = {}) {
-  S.battle = null; persist(); renderCamp(fromBoard);
+  S.battle = null;
+  if (S.company?.members?.length) {
+    if (!S.company.members[S.seat]) S.seat = 0;
+    S.hero = S.company.members[S.seat];
+  }
+  persist(); renderCamp(fromBoard);
+}
+function seatBar(fromBoard) {
+  if ((S.company?.members.length || 0) < 2) return null;
+  return h('div', { class: 'seats' }, S.company.members.map((m, i) => h('button', {
+    type: 'button', class: S.seat === i ? 'on' : '',
+    onclick: () => { S.seat = i; S.hero = m; sfx.select(); renderCamp(fromBoard); },
+  }, h('b', {}, `${D.CLASSES[m.cls].glyph} ${m.name}`), h('small', {}, `Lv ${m.level} · 🪙 ${m.gold}`))));
 }
 function renderCamp(fromBoard) {
   const hero = S.hero; const tabs = [['forge', '🔨 Forge'], ['gear', '🎒 Gear'], ['hero', '📜 Hero']];
   const body = S.tab === 'gear' ? campGear() : S.tab === 'hero' ? campHero() : campForge();
+  const perkHero = (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
+  if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, fresh()); S.perkFor = perkHero.name; }
+  if (!perkHero) { S.perkOffer = null; S.perkFor = null; }
+  const perkPanel = perkHero && S.perkOffer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${perkHero.name} still owes a perk`),
+    h('div', { class: 'perks' }, S.perkOffer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); persist(); renderCamp(fromBoard); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
   mount(
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm'), h('h2', {}, 'Camp')), heroChip()),
-    h('p', { class: 'muted' }, 'You are healed and your cards are ready. Gold is spent here; Magic only matters in a fight.'),
-    tip('camp', 'Bigger Strength dice are the heart of growing stronger, but each size unlocks at a certain level. Weapons you find can be equipped here or sold for gold. Your hero saves automatically.'),
+    h('p', { class: 'muted' }, S.company?.kind === 'company' ? 'Each hero spends their own gold. The peddler is shared. The road ahead is shared too.' : 'You are healed and your cards are ready. Gold is spent here; Magic only matters in a fight.'),
+    seatBar(fromBoard),
+    perkPanel,
+    tip('camp', 'Bigger hand dice are how a hero grows, and each size waits on a level. Weapons can be equipped or sold. The company saves on its own.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
     body,
-    h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = SV.exportCode(hero.name); if (c) copyCode(c); }, { cls: 'small' })),
-    primary('🗺 To the quest board', showBoard, { cls: 'wide big' }));
+    h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }, { cls: 'small' })),
+    primary('🗺 To the road', showRoadOrBoard, { cls: 'wide big' }));
 }
 function upgradeRow(kind, slot, label) {
   const hero = S.hero; const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : D.SPECIAL_STEPS;
@@ -455,8 +775,16 @@ function campHero() {
       h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`)),
     section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level.')),
     section('Class cards', h('div', { class: 'cardlist' }, c.cards.map((k) => h('div', { class: `mini-card ${(k.unlock ?? 1) > hero.level ? 'spent' : ''}` }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`), (k.unlock ?? 1) > hero.level ? h('em', {}, `Unlocks at level ${k.unlock}`) : null)))),
-    section('Always available', h('div', { class: 'cardlist' }, h('div', { class: 'mini-card' }, h('b', {}, 'Heal'), h('small', {}, `${E.healCostOf(hero)}✦ · restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'mini-card' }, h('b', {}, 'Heart nudge'), h('small', {}, `${D.NUDGE_COST}✦ · move your heart die up or down by 1`)))));
+    section('Always available', h('div', { class: 'cardlist' }, h('div', { class: 'mini-card' }, h('b', {}, 'Heal'), h('small', {}, `${E.healCostOf(hero)}✦ · restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'mini-card' }, h('b', {}, 'Heart nudge'), h('small', {}, `${D.NUDGE_COST}✦ · move your heart die up or down by 1`)))),
+    chronicleBlock());
+}
+function chronicleBlock() {
+  const log = (S.company?.campaign || S.hero?.campaign)?.chronicle || [];
+  if (!log.length) return null;
+  return section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 8).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text)))));
 }
 
 // Test/debug hook: only exposed when the page is opened with ?debug.
+attachRoom({ S, mount, primary, ghost, section, cmd, bodyWrap, banner, showTitle, showHowTo, flicker });
+export async function boot() { await bootNet(showTitle); }
 export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset };

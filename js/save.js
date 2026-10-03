@@ -3,7 +3,19 @@
 // hero travel between devices until cloud saves exist (see docs/DESIGN.md, Saving).
 
 const PREFIX = 'questdice.hero.';
+const CPREFIX = 'questdice.company.';
 const key = (name) => PREFIX + name.trim().toLowerCase();
+const ckey = (name) => CPREFIX + name.trim().toLowerCase();
+
+export function bindCompany(company) {
+  const c = company.campaign;
+  c.blessings = c.blessings || [];
+  c.seenRoads = c.seenRoads || [];
+  c.chronicle = c.chronicle || [];
+  c.campFlags = c.campFlags || {};
+  for (const m of company.members) m.campaign = c;
+  return company;
+}
 
 async function sha(text) {
   if (globalThis.crypto?.subtle) {
@@ -55,16 +67,80 @@ export function saveHero(hero) {
 }
 export function deleteHero(name) { store()?.removeItem(key(name)); }
 
+function readCompany(raw) {
+  const rec = JSON.parse(raw);
+  bindCompany(rec.company);
+  return rec;
+}
+export function listCompanies() {
+  const s = store(); if (!s) return [];
+  const out = [];
+  for (let i = 0; i < s.length; i++) {
+    const k = s.key(i);
+    if (!k?.startsWith(CPREFIX)) continue;
+    try {
+      const r = readCompany(s.getItem(k));
+      const lead = r.company.members[0];
+      out.push({
+        kind: 'company', name: r.company.name, cls: lead.cls, level: lead.level,
+        act: r.company.campaign.act, step: r.company.campaign.step, saved: r.saved,
+        size: r.company.members.length,
+        classes: r.company.members.map((m) => m.cls),
+      });
+    } catch { /* skip corrupt entry */ }
+  }
+  return out;
+}
+export function listSaves() {
+  const heroes = listHeroes().map((h) => ({ ...h, kind: 'hero', size: 1, classes: [h.cls] }));
+  return [...heroes, ...listCompanies()].sort((a, b) => b.saved - a.saved);
+}
+export const companyExists = (name) => !!store()?.getItem(ckey(name));
+export async function createCompany(company, password) {
+  if (companyExists(company.name)) throw new Error('A company with that name already exists on this device.');
+  bindCompany(company);
+  const salt = randSalt();
+  const rec = { salt, hash: await sha(salt + password), company, saved: Date.now(), v: 2 };
+  store().setItem(ckey(company.name), JSON.stringify(rec));
+  return rec;
+}
+export async function openCompany(name, password) {
+  const raw = store()?.getItem(ckey(name));
+  if (!raw) throw new Error('No company by that name.');
+  const rec = readCompany(raw);
+  if ((await sha(rec.salt + password)) !== rec.hash) throw new Error('Wrong password.');
+  return rec.company;
+}
+export function saveCompany(company) {
+  const s = store(); const raw = s?.getItem(ckey(company.name));
+  if (!raw) return false;
+  const rec = JSON.parse(raw); bindCompany(company); rec.company = company; rec.saved = Date.now();
+  s.setItem(ckey(company.name), JSON.stringify(rec)); return true;
+}
+export function deleteCompany(name) { store()?.removeItem(ckey(name)); }
+
 const b64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)));
 export function exportCode(name) {
   const raw = store()?.getItem(key(name)); if (!raw) return null;
   return 'QD1.' + b64(raw);
 }
+export function exportCompanyCode(name) {
+  const raw = store()?.getItem(ckey(name)); if (!raw) return null;
+  return 'QD2.' + b64(raw);
+}
 export function importCode(code, { overwrite = false } = {}) {
   const t = code.trim();
-  if (!t.startsWith('QD1.')) throw new Error('That does not look like a Soul Code.');
+  const company = t.startsWith('QD2.');
+  if (!t.startsWith('QD1.') && !company) throw new Error('That does not look like a Soul Code.');
   let rec; try { rec = JSON.parse(unb64(t.slice(4))); } catch { throw new Error('The Soul Code is damaged.'); }
+  if (company) {
+    if (!rec?.company?.name || !rec.hash || !rec.salt) throw new Error('The Soul Code is incomplete.');
+    if (companyExists(rec.company.name) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.company.name; throw e; }
+    bindCompany(rec.company);
+    store().setItem(ckey(rec.company.name), JSON.stringify(rec));
+    return rec.company.name;
+  }
   if (!rec?.hero?.name || !rec.hash || !rec.salt) throw new Error('The Soul Code is incomplete.');
   if (heroExists(rec.hero.name) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.hero.name; throw e; }
   store().setItem(key(rec.hero.name), JSON.stringify(rec));

@@ -4,18 +4,27 @@
 
 A cooperative fantasy dice campaign for one to six friends, built on the same 3×3 board idea as [Fleet Dice](https://davepartin.github.io/fleetdice/). Your nine dice are your body: heart in the middle, head and feet above and below, a strength die in each hand, a weapon and a special gift in each corner. You roll yourself, shape the result with a few rerolls, and fight monsters that tell you what they are about to do.
 
-**Status:** the solo game is playable from title screen to Act II. Party play (2 to 6 players) is designed but not built yet.
+**Status:** solo play runs from the title screen through Act II. A table seats one to six heroes, each on their own phone. One hero can start alone. Everyone decides at the same time as the monsters, and the fight runs when every choice is in. The party numbers are still the starting table.
 
 ## Play it
 
-It is a static site with no build step. Because it uses ES modules, open it through a web server rather than double-clicking the file:
+Solo is a static site with no build step. Because it uses ES modules, open it through a web server rather than double-clicking the file:
 
 ```bash
 python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-To publish it, enable **GitHub Pages** for this repository (Settings → Pages → deploy from `main`, root folder). Everything is plain files.
+To play together, one person runs the table. It serves the game and gathers each phone's choices. No extra packages.
+
+```bash
+node server.mjs
+# or: npm start
+```
+
+It prints an address. One to six phones on that Wi-Fi open the address and enter the four-letter code. One phone can play the table alone. The host's `localhost` address only works on the host's own machine.
+
+To publish the solo game, enable **GitHub Pages** for this repository (Settings → Pages → deploy from `main`, root folder). Everything is plain files. The shared table needs the server process; Pages cannot host it.
 
 ## What is in it
 
@@ -24,7 +33,9 @@ To publish it, enable **GitHub Pages** for this repository (Settings → Pages �
 - **Telegraphed monsters** that show their Intention before you roll, with Wind-Ups you can stagger, bosses that rage at half health, and moves that bind your dice, drain your Magic, steal your gold and call for help.
 - **Two Acts** (twenty quests, two bosses), then an endless Ascent.
 - **Leveling to 20**, a perk every level, bigger dice at Camp, and loot after every fight.
-- **Saved heroes** behind a name and password, plus a **Soul Code** to move a hero between devices.
+- **One to six heroes, each on their own phone.** Each hero keeps their own gold, dice and level. Feet decide who draws the monsters' heat. Healing and blocking count toward who picks the loot. The fight waits until every hero has locked in.
+- **Road events.** Between quests the computer narrates a seeded scene and offers a real choice. The same company meets the same crossroads if you reload before you choose.
+- **Saved heroes and saved companies** behind a name and password, plus a **Soul Code** (`QD1` for a hero, `QD2` for a company) to move a save between devices.
 - Synthesized sound, haptics on phones, reduced-motion support, and a first-run tutorial.
 
 ## The documents
@@ -44,12 +55,17 @@ node tools/bestiary.mjs   # prints the monster tables as markdown
 
 ```
 index.html          the shell
+server.mjs          the table: static files plus the room each phone joins
 css/style.css       Fleet Dice palette and every component
 js/data.js          ALL the numbers: dice, weapons, classes, perks, monsters, acts
 js/engine.js        the rules, pure and deterministic, no DOM
-js/save.js          heroes, passwords, Soul Codes (localStorage)
+js/table.js         company rules for many phones: locks, then one resolve
+js/roads.js         the computer's road: seeded scenes and their consequences
+js/save.js          heroes, companies, passwords, Soul Codes (localStorage)
 js/view.js          draws dice, enemies, weapons, reports
-js/ui.js            screens and input
+js/ui.js            solo screens and input
+js/roomui.js        the phone screens for a shared table
+js/net.js           this phone's seat at the table
 js/audio.js         synthesized sound
 js/fx.js            embers, sparks, screen shake
 tools/sim.mjs       the balance bot

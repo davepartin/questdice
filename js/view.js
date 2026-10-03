@@ -2,13 +2,16 @@
 import { h } from './dom.js';
 import * as D from './data.js';
 import * as E from './engine.js';
+import { drawDie, kickDie, watchDie } from './die3d.js';
+
+export { characterMat } from './mat.js';
 
 export const ICON = { gold: '🪙', pierce: '◆', magic: '✦', atk: '⚔', block: '🛡', heal: '✚', stagger: '✸' };
 export const SLOT_NAME = {
   NW: 'Left weapon', N: 'Head', NE: 'Right weapon', W: 'Left hand', C: 'Heart',
   E: 'Right hand', SW: 'Left special', S: 'Feet', SE: 'Right special',
 };
-const SHORT = { NW: 'Weapon', N: 'Head', NE: 'Weapon', W: 'Strength', C: 'Heart', E: 'Strength', SW: 'Special', S: 'Feet', SE: 'Special' };
+const LIMBS = new Set(['N', 'W', 'C', 'E', 'S']);
 export const RARITY_CLASS = ['bronze', 'silver', 'gold', 'diamond'];
 
 const fxText = (fx) => Object.entries(fx).map(([k, v]) => `${ICON[k === 'loot' ? 'gold' : k] || ''}${v}`).join(' ');
@@ -42,20 +45,25 @@ export function paintDie(el, hero, slot, v) {
   chip.textContent = s.chip; chip.className = `chip ${s.chipKind || ''}`;
   el.classList.toggle('blank', !!s.blank);
   el.dataset.tone = s.tone || '';
+  const extra = s.chip && s.chip !== 'blank' ? `, ${s.chip}` : '';
+  el.setAttribute('aria-label', `${SLOT_NAME[slot]} showing ${s.main}${extra}`);
+  if (el.classList.contains('rolling')) kickDie(el);
+  else drawDie(el);
 }
 export function dieEl(hero, slot, die, { selected = false, onclick, twohand = false, dim = false, tabindex } = {}) {
   const role = D.ROLE[slot];
   const sides = role === 'weapon' ? 4 : E.sidesOf(hero, slot);
   const el = h('button', {
-    class: `die die--${role} ${selected ? 'sel' : ''} ${die.bound ? 'bound' : ''} ${twohand ? 'twohand' : ''} ${dim ? 'dim' : ''}`,
-    'data-slot': slot, type: 'button', onclick, tabindex, 'aria-label': `${SLOT_NAME[slot]}`, 'aria-pressed': selected ? 'true' : 'false',
+    class: `die die--${role} ${LIMBS.has(slot) ? 'limb' : 'corner'} ${selected ? 'sel' : ''} ${die.bound ? 'bound' : ''} ${twohand ? 'twohand' : ''} ${dim ? 'dim' : ''}`,
+    'data-slot': slot, 'data-sides': String(sides), type: 'button', onclick, tabindex,
+    'aria-label': `${SLOT_NAME[slot]}`, 'aria-pressed': selected ? 'true' : 'false',
   },
-  h('span', { class: 'role' }, SHORT[slot]),
+  h('canvas', { class: 'die-canvas', width: '2', height: '2', 'aria-hidden': 'true' }),
   h('span', { class: 'num' }),
   h('span', { class: 'chip' }),
-  h('span', { class: 'size' }, role === 'weapon' ? (twohand ? '2H' : '1H') : `d${sides}`),
   die.bound ? h('span', { class: 'lock', 'aria-hidden': 'true' }, '🔒') : null);
   paintDie(el, hero, slot, die.v);
+  watchDie(el);
   return el;
 }
 
@@ -186,6 +194,52 @@ export function reportLines(rep, b) {
 }
 
 // ------------------------------------------------------------------ rules text
+export function partyReportLines(rep, b) {
+  const name = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Foe';
+  const L = [];
+  if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} has the highest Feet and draws the monsters’ heat.` });
+  for (const s of rep.strikes || []) {
+    L.push({ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` });
+    if (s.ev?.offense3) L.push({ kind: 'good', text: `${s.name} lands a top-row triple.` });
+    if (s.ev?.defense3) L.push({ kind: 'good', text: `${s.name} lands a head·heart·feet triple.` });
+    if (s.ev?.straight) L.push({ kind: 'good', text: `${s.name} rolls a ${s.ev.straight}-straight.` });
+  }
+  for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
+  for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
+  for (const a of rep.acts) {
+    const n = name(a.uid);
+    if (a.v === 'strike' || a.v === 'drain' || a.v === 'pilfer') L.push({ kind: a.net > 0 ? 'bad' : 'meh', text: `${n} ${a.name}: ${a.d}, split by Feet${a.ab ? `, ${a.ab} blocked` : ''} → ${a.net} damage.` });
+    else if (a.v === 'pierce') L.push({ kind: 'bad', text: `${n} ${a.name}: ${a.d} piercing, split across the company.` });
+    else if (a.v === 'guard') L.push({ kind: 'meh', text: `${n} braces (${a.name}).` });
+    else if (a.v === 'mend') L.push({ kind: 'meh', text: `${n} mends ${a.healed || 0}.` });
+    else if (a.v === 'charge') L.push({ kind: a.cancelled ? 'good' : 'bad', text: a.cancelled ? `${n}’s wind-up breaks.` : `${n} winds up. A Slam is coming.` });
+    else if (a.v === 'howl') L.push({ kind: 'bad', text: `${n} howls. The pack grows bolder.` });
+    else if (a.v === 'bind') L.push({ kind: 'bad', text: `${n} hexes ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` });
+    else if (a.v === 'summon') L.push({ kind: 'bad', text: `${n} calls for help.` });
+  }
+  if (rep.goldStolen) L.push({ kind: 'bad', text: `A thief takes ${rep.goldStolen} 🪙 from ${rep.leader}. Kill it to get the purse back.` });
+  if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from ${rep.leader}.` });
+  for (const u of rep.raged) L.push({ kind: 'bad', text: `${name(u)} flies into a rage.` });
+  for (const f of rep.fighters || []) {
+    if (f.down) continue;
+    if (f.taken) L.push({ kind: 'bad', text: `${f.name} takes ${f.taken}${f.absorbed ? ` (${f.absorbed} blocked)` : ''}.` });
+    if (f.healed) L.push({ kind: 'good', text: `${f.name} heals ${f.healed}.` });
+    if (f.lastStand) L.push({ kind: 'bad', text: `${f.name} makes a Last Stand.` });
+  }
+  return L;
+}
+
+export function rosterEl(fighters, active = -1) {
+  return h('div', { class: 'roster' }, fighters.map((f, i) => {
+    const c = D.CLASSES[f.hero.cls];
+    const feet = f.board ? ` · feet ${f.board.S.v}` : '';
+    return h('div', { class: `mate ${i === active ? 'on' : ''} ${f.hp <= 0 ? 'down' : ''}` },
+      h('div', { class: 'mate-name' }, h('span', {}, c.glyph), h('b', {}, f.hero.name)),
+      hpBar(f.hp, f.maxHp, { cls: 'hero-bar', label: true }),
+      h('small', {}, `✦ ${f.magic}${feet}${f.hp <= 0 ? ' · down' : ''}`));
+  }));
+}
+
 export function howToPlay() {
   const p = (...c) => h('p', {}, ...c);
   return h('div', { class: 'howto' },
@@ -202,6 +256,10 @@ export function howToPlay() {
     p(h('b', {}, '3. Lock in.'), ' Tap a monster to choose your target. Triples (+10) and 5-straights pay extra.'),
     h('h3', {}, 'Monsters'),
     p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round, unless you deal enough damage in one round to ', h('b', {}, 'stagger'), ' it. Bosses change their ways at half health.'),
+    h('h3', {}, 'The company'),
+    p('One to six heroes, each on their own phone. The monsters choose when the round opens, and every hero shapes their own dice at the same time. Other phones see who has locked in, not the dice. When every hero has locked, the fight runs once. Highest ', h('b', {}, 'Feet'), ' draws the most damage. Healing and blocking count toward who picks loot first.'),
+    h('h3', {}, 'The road'),
+    p('Between quests the road speaks. It knows your names. Some choices pay, some bite, and some only change the next fight. The same company meets the same scene if you reload before you choose.'),
     h('h3', {}, 'Between fights'),
     p(h('b', {}, 'Camp'), ' is where gold lives: bigger dice, new weapons, and a save point. Magic only matters inside a fight.'));
 }

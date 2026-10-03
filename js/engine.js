@@ -69,7 +69,7 @@ export function heroMods(hero) {
   for (const id of hero.perks) for (const [k, v] of Object.entries(PERKS[id].mod)) m[k] += v;
   return m;
 }
-export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp;
+export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => CLASSES[hero.cls].startMagic + heroMods(hero).startMagic;
 export const rerollDiceOf = (hero) => CLASSES[hero.cls].rerollDice + heroMods(hero).rerollDice;
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
@@ -221,14 +221,44 @@ export function intentRange(e) {
 }
 
 // ------------------------------------------------------------------------------- battle
+// Road-event boons. Combat blessings apply for the whole battle they were snapshotted into.
+// The campaign list is decremented only when that battle actually ends (spendBlessings).
+export function pullBlessings(hero) {
+  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, stagger: 0, openingAtk: 0, weaken: 0 };
+  for (const bl of hero.campaign?.blessings || []) {
+    if (bl.who && bl.who !== hero.name) continue;
+    o.startHp += bl.startHp || 0; o.wound += bl.wound || 0; o.startMagic += bl.startMagic || 0;
+    o.atk += bl.atk || 0; o.block += bl.block || 0; o.stagger += bl.stagger || 0; o.openingAtk += bl.openingAtk || 0;
+    o.weaken += bl.weaken || 0;
+  }
+  return o;
+}
+export function spendBlessings(campaign) {
+  if (!campaign?.blessings) return;
+  campaign.blessings = campaign.blessings
+    .map((bl) => ({ ...bl, fights: (bl.fights ?? 1) - 1 }))
+    .filter((bl) => bl.fights > 0);
+}
+export function clearAmbush(campaign) { if (campaign) campaign.ambush = null; }
+export function withAmbush(quest, campaign) {
+  const extra = campaign?.ambush;
+  if (!extra?.length) return quest;
+  const enemies = [...quest.enemies];
+  for (const a of extra) for (let n = 0; n < a.count; n++) enemies.push(a.id);
+  return { ...quest, enemies: enemies.slice(0, ENEMY_CAP), ambushed: true };
+}
+
 export function newBattle(hero, quest, rng, players = 1) {
   const sc = partyScale(players);
   const enemies = [];
   for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult }, rng));
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, rewardMult: quest.rewardMult }, rng));
+  const boon = pullBlessings(hero);
+  const maxHp = maxHpOf(hero) + Math.max(0, boon.startHp || 0);
   const b = {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
-    hp: maxHpOf(hero), maxHp: maxHpOf(hero), magic: Math.min(MAGIC_CAP, startMagicOf(hero)),
+    hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
+    magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: REROLL_ACTIONS, freeActions: [], used: {}, lastStandUsed: false,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
@@ -305,9 +335,11 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const { hero } = b;
   const ev = evaluate(hero, b.board, { straight });
   const m = b.mods;
+  const boon = b.boon || {};
   const T = {
-    atk: ev.atk + m.atk, pierce: ev.pierce + m.pierce, block: ev.block + m.block, heal: ev.heal + m.heal,
-    magic: ev.magic, gold: ev.gold, stagger: ev.stagger + m.stagger,
+    atk: ev.atk + m.atk + (boon.atk || 0) + (b.round === 1 ? (boon.openingAtk || 0) : 0),
+    pierce: ev.pierce + m.pierce, block: ev.block + m.block + (boon.block || 0), heal: ev.heal + m.heal,
+    magic: ev.magic, gold: ev.gold, stagger: ev.stagger + m.stagger + (boon.stagger || 0),
   };
   const rep = {
     round: b.round, ev, T, dealt: 0, guarded: 0, targetUid: null, killed: [], staggered: [], raged: [], summoned: [],
@@ -318,7 +350,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
-  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken); e.buffUsed = e.buff; e.buff = 0; }
+  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; }
 
   // 1. Your strike.
   let tgt = b.enemies[target];
@@ -474,9 +506,12 @@ export function shopStock(hero) {
   if (c.shop && c.shop.step === `${c.act}.${c.step}`) return c.shop.items;
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop'));
   const mult = [1, 2.3, 5, 11];
+  const flags = c.campFlags || {};
+  const priceMod = Math.max(0.4, 1 - (flags.discount || 0) + (flags.hike || 0));
   const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4) }).map((inst) => ({
-    inst, price: Math.round(WEAPONS[inst.id].price * mult[inst.rarity]), sold: false,
+    inst, price: Math.max(1, Math.round(WEAPONS[inst.id].price * mult[inst.rarity] * priceMod)), sold: false,
   }));
+  if (flags.discount || flags.hike) c.campFlags = {};
   c.shop = { step: `${c.act}.${c.step}`, items };
   return items;
 }
@@ -536,3 +571,316 @@ export function advanceCampaign(hero) {
   c.wins++; c.shop = null;
   if (c.step >= QUESTS_PER_ACT) { c.act++; c.step = 1; } else c.step++;
 }
+
+// ------------------------------------------------------------------------------- company battles
+// A company resolves once, after every living hero has locked a board. The computer has
+// already rolled every monster intention for the round. Feet decide who draws the
+// retaliation: the leader takes 2/(n+1), everyone else 1/(n+1). Phones gather the locks.
+// The math does not care which device rolled them.
+
+export function newCompany({ name, roster, seed }) {
+  const campaign = {
+    act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0,
+    blessings: [], seenRoads: [], campFlags: {}, ambush: null, chronicle: [],
+  };
+  const members = roster.map((r, i) => {
+    const hero = newHero({ name: r.name, cls: r.cls, seed: (campaign.seed + i * 997) >>> 0 });
+    hero.campaign = campaign;
+    return hero;
+  });
+  return { kind: 'company', v: 2, name, campaign, members };
+}
+
+export function splitInt(total, weights) {
+  const t = Math.max(0, total | 0);
+  if (!weights.length) return [];
+  const sum = weights.reduce((a, b) => a + b, 0) || 1;
+  const raw = weights.map((w) => (t * w) / sum);
+  const base = raw.map((x) => Math.floor(x));
+  let left = t - base.reduce((a, b) => a + b, 0);
+  const order = raw.map((x, i) => ({ i, frac: x - Math.floor(x) })).sort((a, b) => b.frac - a.frac || a.i - b.i);
+  for (let k = 0; k < left; k++) base[order[k % order.length].i] += 1;
+  return base;
+}
+
+// Living fighters who have rolled. Leader is highest Feet, then highest hands, then a coin flip.
+export function rankFighters(fighters, rng) {
+  const rows = fighters.filter((f) => f.hp > 0 && f.board).map((f) => ({
+    f, feet: f.board.S.v, hands: f.board.W.v + f.board.E.v, coin: rng(),
+  }));
+  rows.sort((a, b) => b.feet - a.feet || b.hands - a.hands || b.coin - a.coin);
+  return rows;
+}
+export function shareWeights(ranked) {
+  const n = ranked.length;
+  if (n <= 1) return ranked.map(() => 1);
+  return ranked.map((_, i) => (i === 0 ? 2 : 1));
+}
+
+function makeFighter(hero) {
+  const boon = pullBlessings(hero);
+  const maxHp = maxHpOf(hero) + Math.max(0, boon.startHp || 0);
+  return {
+    hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
+    magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
+    board: null, actionsLeft: REROLL_ACTIONS, freeActions: [], used: {}, mods: blankMods(),
+    nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
+    stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
+  };
+}
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned'];
+export function focusFighter(b, i) {
+  const f = b.fighters[i];
+  b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
+  for (const k of MIRROR) b[k] = f[k];
+  return f;
+}
+export function commitFighter(b) {
+  const f = b.fighters[b.active];
+  if (!f) return;
+  for (const k of MIRROR) f[k] = b[k];
+}
+
+export function newPartyBattle(heroes, quest, rng) {
+  const players = heroes.length;
+  const sc = partyScale(players);
+  const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1;
+  const enemies = [];
+  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, rewardMult }, rng));
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, rewardMult }, rng));
+  const b = {
+    kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),
+    active: 0, round: 0, phase: 'reset', outcome: null, report: null, stolen: 0,
+  };
+  beginPartyRound(b);
+  focusFighter(b, 0);
+  return b;
+}
+function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
+export function beginPartyRound(b) {
+  b.round += 1; b.phase = 'reset';
+  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.straight = 'atk'; }
+  for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
+}
+export function startFighter(b, i) {
+  focusFighter(b, i);
+  if (b.fighters[i].hp <= 0) return false;
+  startRoll(b);
+  commitFighter(b);
+  b.phase = 'shape';
+  return true;
+}
+
+function totalsFor(f) {
+  const ev = evaluate(f.hero, f.board, { straight: f.straight || 'atk' });
+  const m = f.mods || blankMods();
+  const boon = f.boon || {};
+  const round = f._round || 1;
+  const T = {
+    atk: ev.atk + (m.atk || 0) + (boon.atk || 0) + (round === 1 ? (boon.openingAtk || 0) : 0),
+    pierce: ev.pierce + (m.pierce || 0),
+    block: ev.block + (m.block || 0) + (boon.block || 0),
+    heal: ev.heal + (m.heal || 0),
+    magic: ev.magic, gold: ev.gold,
+    stagger: ev.stagger + (m.stagger || 0) + (boon.stagger || 0),
+  };
+  return { ev, T };
+}
+
+export function resolveParty(b) {
+  // Cards stack: two heroes can both soften a blow. A road blessing is one fact about the fight, so it applies once.
+  const cardWeaken = b.fighters.reduce((a, f) => a + ((f.mods && f.mods.weaken) || 0), 0);
+  const boonWeaken = b.fighters.reduce((a, f) => Math.max(a, (f.boon && f.boon.weaken) || 0), 0);
+  const weaken = cardWeaken + boonWeaken;
+  for (const f of b.fighters) f._round = b.round;
+  const acting = b.fighters.filter((f) => f.hp > 0 && f.board);
+  for (const f of acting) {
+    const { ev, T } = totalsFor(f);
+    f.ev = ev; f.T = T;
+    if (ev.offense3 || ev.defense3) f.hero.stats.triples++;
+    if (ev.straight) f.hero.stats.straights++;
+    f.goldEarned += T.gold;
+    f.hero.stats.rounds++;
+  }
+  const alive = b.enemies.filter((e) => e.hp > 0);
+  for (const e of alive) {
+    e.p = die(b.rng, e.powerDie);
+    e.mag = magnitude(e, e.intent, e.p, weaken);
+    e.buffUsed = e.buff; e.buff = 0;
+  }
+  const order = rankFighters(acting, b.rng);
+  const rep = {
+    round: b.round, party: true, leader: order[0]?.f.hero.name || '', strikes: [],
+    killed: [], staggered: [], raged: [], summoned: [], acts: [],
+    fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
+  };
+  const guardLeft = new Map();
+  for (const e of alive) if (e.intent?.v === 'guard') guardLeft.set(e.uid, e.mag);
+  const pressure = new Map();
+  for (const { f } of order) {
+    let tgt = b.enemies[f.target];
+    if (!tgt || tgt.hp <= 0) tgt = b.enemies.find((e) => e.hp > 0);
+    if (!tgt) break;
+    const T = f.T;
+    const pool = guardLeft.get(tgt.uid) || 0;
+    const guarded = Math.min(pool, T.atk);
+    if (guardLeft.has(tgt.uid)) guardLeft.set(tgt.uid, pool - guarded);
+    const dmg = Math.max(0, T.atk - guarded) + T.pierce;
+    const dealt = Math.min(tgt.hp, dmg);
+    tgt.hp = Math.max(0, tgt.hp - dmg);
+    f.stats.dealt += dealt;
+    f.contrib += dealt;
+    const bag = pressure.get(tgt.uid) || { dmg: 0, stagger: 0 };
+    bag.dmg += dmg; bag.stagger += T.stagger; pressure.set(tgt.uid, bag);
+    const killed = tgt.hp <= 0;
+    if (killed) {
+      rep.killed.push(tgt.uid); f.contrib += 3;
+      let pot = tgt.carried;
+      const victims = [...b.fighters].filter((v) => v.purseLost > 0).sort((a, c) => c.purseLost - a.purseLost);
+      for (const v of victims) {
+        const back = Math.min(pot, v.purseLost); v.goldEarned += back; v.purseLost -= back; pot -= back;
+      }
+      tgt.carried = 0;
+    }
+    rep.strikes.push({
+      name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
+      killed, ev: f.ev, T,
+    });
+  }
+  for (const e of b.enemies) {
+    if (e.hp <= 0 || e.intent?.v !== 'charge') continue;
+    const bag = pressure.get(e.uid) || { dmg: 0, stagger: 0 };
+    if (bag.dmg + bag.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; rep.staggered.push(e.uid); }
+  }
+  // Monsters answer the living. Damage is split by Feet; each hero's block soaks only their share.
+  const snap = order.map((r) => r.f);
+  const weights = shareWeights(order);
+  const blocks = snap.map((f) => f.T.block);
+  const taken = snap.map(() => 0);
+  const absorbed = snap.map(() => 0);
+  const strikeHit = (e, pierceIt) => {
+    const parts = splitInt(e.mag, weights);
+    const nets = [];
+    parts.forEach((part, i) => {
+      if (pierceIt) { taken[i] += part; nets.push(part); return; }
+      const ab = Math.min(blocks[i], part); blocks[i] -= ab; absorbed[i] += ab; taken[i] += part - ab; nets.push(part - ab);
+    });
+    return { d: e.mag, net: nets.reduce((a, n) => a + n, 0), ab: parts.reduce((a, p, i) => a + (p - (nets[i] || 0)), 0), parts, nets };
+  };
+  const leader = snap[0];
+  const livingNow = () => b.enemies.filter((e) => e.hp > 0);
+  for (const e of b.enemies) {
+    if (e.hp <= 0 || !e.intent || e.fresh) continue;
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p };
+    switch (i.v) {
+      case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
+      case 'pierce': { Object.assign(act, strikeHit(e, true)); break; }
+      case 'drain': { Object.assign(act, strikeHit(e, false)); rep.magicStolen += i.k; act.drain = i.k; break; }
+      case 'pilfer': {
+        Object.assign(act, strikeHit(e, false));
+        if (act.net > 0 && leader) {
+          const purse = leader.hero.gold + Math.max(0, leader.goldEarned);
+          const take = Math.min(purse, 6);
+          leader.goldEarned -= take; leader.purseLost = (leader.purseLost || 0) + take;
+          e.carried += take; rep.goldStolen += take;
+        }
+        break;
+      }
+      case 'guard': break;
+      case 'mend': { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + e.mag); act.healed = e.hp - before; break; }
+      case 'charge': if (!e.cancelled) e.windup = true; else act.cancelled = true; break;
+      case 'howl': for (const o of livingNow()) o.buff += i.k; break;
+      case 'bind': if (leader) { leader.nextBound += i.k; rep.bound += i.k; } break;
+      case 'summon': {
+        const room = ENEMY_CAP - livingNow().length; const add = MONSTERS[e.id].adds;
+        for (let n = 0; n < Math.min(i.k, room); n++) {
+          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0 }, b.rng);
+          s.fresh = true; b.enemies.push(s); rep.summoned.push(s.uid);
+        }
+        break;
+      }
+      default: break;
+    }
+    rep.acts.push(act);
+  }
+  for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
+  for (const e of livingNow()) {
+    const rg = MONSTERS[e.id].rage;
+    if (rg && !e.raged && e.hp <= e.maxHp / 2) { e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid); }
+  }
+  // Drain comes out of the leader. Heal lands before damage. Last Stand is once per hero.
+  if (leader && rep.magicStolen) {
+    const have = leader.magic + (leader.T?.magic || 0);
+    rep.magicStolen = Math.min(have, rep.magicStolen);
+  }
+  snap.forEach((f, i) => {
+    const T = f.T;
+    const hpBefore = f.hp;
+    const healed = Math.max(0, Math.min(f.maxHp, hpBefore + T.heal) - hpBefore);
+    let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
+    let lastStand = false;
+    if (hp <= 0 && !f.lastStandUsed) {
+      f.lastStandUsed = true; lastStand = true; hp = SURVIVE_HP + heroMods(f.hero).lastStandHp;
+    }
+    f.hp = Math.max(0, Math.min(f.maxHp, hp));
+    f.stats.healed += healed; f.stats.taken += taken[i];
+    f.contrib += healed * 1.25 + absorbed[i] * 0.8 + (i === 0 ? 3 : 0);
+    if (f.ev.offense3 || f.ev.defense3 || f.ev.straight) f.contrib += 4;
+    let magic = f.magic + T.magic;
+    if (f === leader && rep.magicStolen) magic -= rep.magicStolen;
+    f.magic = Math.max(0, Math.min(MAGIC_CAP, magic));
+    rep.fighters.push({
+      name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed, lastStand,
+      hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib,
+    });
+  });
+  // Heroes who never rolled (already down) still appear, unchanged.
+  for (const f of b.fighters) if (!snap.includes(f)) {
+    rep.fighters.push({ name: f.hero.name, taken: 0, absorbed: 0, healed: 0, lastStand: false, hpAfter: f.hp, magicAfter: f.magic, gold: 0, feet: 0, leader: false, contrib: f.contrib, down: true });
+  }
+  b.report = rep;
+  const foes = b.enemies.filter((e) => e.hp > 0).length;
+  const heroesUp = b.fighters.filter((f) => f.hp > 0).length;
+  if (foes === 0) { b.outcome = 'victory'; b.phase = 'done'; }
+  else if (heroesUp === 0) { b.outcome = 'defeat'; b.phase = 'done'; }
+  else beginPartyRound(b);
+  return rep;
+}
+
+export function partyRewards(b) {
+  const { quest } = b;
+  const dead = b.enemies;
+  const xp = dead.reduce((a, e) => a + e.xp, 0);
+  const baseKills = dead.reduce((a, e) => a + e.gold, 0);
+  const ranked = [...b.fighters].sort((a, c) => c.contrib - a.contrib || a.hero.name.localeCompare(c.hero.name));
+  const n = Math.max(1, ranked.length);
+  const parts = splitInt(baseKills, ranked.map(() => 1));
+  const gold = {};
+  ranked.forEach((f, i) => {
+    const gm = 1 + heroMods(f.hero).goldPct;
+    const killShare = Math.round(parts[i] * gm);
+    gold[f.hero.name] = killShare + f.goldEarned;
+  });
+  const sample = ranked[0]?.hero;
+  const rng = makeRng(hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'drops'));
+  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
+  const drops = rollDrops(rng, n + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + sample.campaign.act - 1 });
+  return { xp, gold, drops, order: ranked.map((f) => f.hero.name), contrib: Object.fromEntries(b.fighters.map((f) => [f.hero.name, Math.round(f.contrib)])) };
+}
+
+export function companyGold(members) { return members.reduce((a, m) => a + m.gold, 0); }
+export function payCompany(members, amount) {
+  if (companyGold(members) < amount) return false;
+  let left = amount;
+  const order = [...members].sort((a, b) => b.gold - a.gold);
+  for (const m of order) { const take = Math.min(m.gold, left); m.gold -= take; left -= take; }
+  return true;
+}
+export function grantCompany(members, amount) {
+  if (!members.length || amount <= 0) return;
+  // Equal shares. Any remainder lands in the poorest purse.
+  const order = [...members].sort((a, b) => a.gold - b.gold || a.name.localeCompare(b.name));
+  const shares = splitInt(amount, order.map(() => 1));
+  order.forEach((m, i) => { m.gold += shares[i]; });
+}
+export function grantXpEach(members, xp) { for (const m of members) gainXp(m, xp); }

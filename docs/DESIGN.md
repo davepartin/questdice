@@ -285,7 +285,7 @@ Monsters are covered fully in [BESTIARY.md](BESTIARY.md). The short version:
 
 ## 10. One to six players
 
-QuestDice is built for one to six. **Solo is built first** so every system can be tested and tuned before adding the complexity of a party. The engine already accepts a player count; the interface is solo today.
+QuestDice seats one to six heroes. One hero can take the road alone. Friends join the same table from their own phones, up to six. Everyone decides at the same time, the monsters included, and the round runs when every choice has arrived. The numbers for two through six are in the engine. Only the solo numbers have been tuned.
 
 ### 10.1 How a quest adjusts
 
@@ -322,11 +322,20 @@ Solo, there is no one to split with, so the Feet die only pays out and joins syn
 
 ### 10.3 How a party plays together
 
-- **Simultaneous.** Everyone rolls and shapes at once. The round resolves when the last person locks in. A short timer is an option for impatient tables.
-- **Shared target.** The party agrees (or the leader picks) which monster to hit, or each player may choose their own.
-- **Fleet Dice style joining.** A four-digit code and a link. No account needed.
-- **Host-authoritative.** One device runs the rules. Because the engine takes its randomness from an injected seed, a battle is reproducible: clients send only what they chose (rerolls, cards, target, lock-in) and the host replies with results. This keeps cheating out and lets a dropped player rejoin.
-- **Variety by encounter.** Whole party versus one big monster; or a **ghost duel**, where each player fights an individual opponent at the same time; or a **swarm** of twenty small monsters where each player can only engage one at a time, so the party must spread out.
+The table seats one to six. One person runs `node server.mjs` and opens a table. They can take the road alone, or read out the four-letter code and the address so friends can sit down on their own phones before the road starts. Gold, dice, level and perks stay on each hero. The campaign, the peddler and the road are shared. A hero forged from the title screen never needs the server.
+
+- **One decision window.** When a round opens, the monsters lock an intention and show it. At the same time, each hero heals, rolls and shapes on their own phone. A phone shows the other heroes as choosing or locked in. It does not show their dice.
+- **The fight runs when every choice is in.** The last lock resolves the round once. Then the next round opens and the monsters choose again. A hero can take a lock back until that moment.
+- **A dropped phone can rejoin** while the server is still running. The host can skip a hero who cannot get back, for that round only: they do not strike and they do not draw heat.
+- **The road and the quest are one company choice.** Any phone can make it. Camp is personal. Each hero spends their own gold, then marks ready.
+- **Each hero picks a target.** The Feet leader's strike meets a guarding monster first. That guard is one pool for the round, not a fresh wall for every hero.
+- **Feet split the retaliation.** The leader's weight is 2 and everyone else's is 1. The damage is handed out as whole numbers, largest remainder first, and a tie in the remainder goes to the earlier hero. Each hero's block soaks only their own share. Pierce ignores that block.
+- **Bind, drain and pilfer hit the Feet leader.** A stolen purse comes home to the hero it was taken from when that monster dies. It is not paid a second time to whoever contributed most.
+- **Contribution orders the loot.** The score is damage dealt, plus healing × 1.25, plus damage absorbed × 0.8, plus 3 for leading that round, plus 4 for a triple or a straight, plus 3 for a kill. Kill gold is split equally, and Gold Sense applies to each share. Gold printed on the dice stays with the hero who rolled it. Every hero receives the full XP, because the level curve was tuned per hero. Drops are the player count plus one. The company picks in contribution order, one weapon each.
+- **Stagger** is the sum of the damage and the stagger dealt to that monster this round. One hero does not have to land it alone. A weaken blessing is one fact about the fight, so it applies once. Weaken from cards still stacks.
+- **Defeat** still costs 15% gold from every hero. Level, gear and perks stay.
+
+The server holds the company in memory and runs the rules. Phones send choices. A saved company from the earlier one-device game can still be opened on that device. Ghost duels and swarms of twenty are still ideas, not encounters.
 
 ---
 
@@ -404,7 +413,13 @@ Act II numbers are a first draft. When the list of Acts runs out, the road loops
 
 Quest names and the order of encounters are generated from a **campaign seed**, so a hero sees the same road every time they reload.
 
-**Defeat is not the end.** A fallen or retreating hero returns to Camp having lost 15% of their gold. Level, gear and perks are safe. Try again.
+**The road speaks before the quest board.** The computer is the dungeon master for the walk between fights, not only for the monsters. Scenes live in `js/roads.js`. The same seed, act and step always produce the same crossroads, so a reload before you choose shows the same scene. A choice can pay gold, spend it, hand over a weapon, wound the next fight, bless it, call an ambush, or carve a permanent +2 HP into the Bridge of Names. That bonus is capped at 10 and lives on the hero.
+
+Blessings last one battle. They are copied onto the fight when it starts and spent only when that fight actually ends, so leaving in the middle of a battle does not eat them. A peddler's discount is not a combat blessing. It waits until the next time the shop lays out new stock.
+
+The first step of a new campaign is always the Nine-Stone Gate, and it is a gift. Boss steps prefer a boss omen. The company will not hear the same scene again while another is still available.
+
+**Defeat is not the end.** A fallen or retreating company returns to Camp having lost 15% of each hero's gold. Level, gear and perks are safe. Try again.
 
 ---
 
@@ -416,8 +431,9 @@ A hero is saved by **name and password**. Heroes live in the browser's local sto
 
 Two things soften that:
 
-- **Soul Code.** Any hero can be exported as a short code and imported on another device or restored after clearing data. The code carries the hero and the password hash, so it should be treated like a password.
-- **Cloud saves (planned).** The right long-term answer is a small server that stores a hero against a name and password hash with rate limiting. It is also what four-digit party codes will need. See the roadmap.
+- **Soul Code.** Any hero can be exported as a short code and imported on another device or restored after clearing data. A solo code starts with `QD1`. A company code starts with `QD2`. The code carries the save and the password hash, so it should be treated like a password.
+- **A company is a different save.** It has its own name and password. The heroes inside it share one campaign. An older solo hero stays a solo hero. Opening one does not convert it. A hero and a company may share a display name, because they live under different keys.
+- **Cloud saves (planned).** The right long-term answer is a small server that stores a save against a name and password hash with rate limiting. It is also what four-digit party codes will need. See the roadmap.
 
 ---
 
@@ -460,6 +476,12 @@ Each of these changed or settled something from the original brainstorm. They ar
 13. **Weapon die size stays d4.** The notes said bigger dice later; growth lives on the hands and specials, and rarity covers weapon improvement.
 14. **Monster health is not a strict per-player formula.** It is a table (10.1), and fights target four to eight rounds.
 15. **Feet in solo** have no combat role beyond payouts and synergy. Initiative begins at two players.
+16. **Each hero plays on their own phone.** A four-letter code. The table seats one to six, and one hero can start it alone. Monsters and heroes decide in the same window, and the round resolves once when every living hero has locked. A hero forged from the title stays a local save with no server. A company saved on one device can still be opened there.
+17. **Party guard is one pool per monster per round**, spent in Feet order, leader first. One hero still plays by the old rule.
+18. **Party stagger is the sum** of damage and stagger dealt to that monster this round.
+19. **The Feet split uses weights 2 and 1**, as whole numbers. Bind, drain and pilfer hit the leader. Dice gold is personal. Kill gold is split, and Gold Sense applies to each share. Every hero gets the full XP. Loot is one more drop than there are heroes, picked in contribution order.
+20. **The road is a seeded dungeon master**, not a model call. Blessings are snapshotted when a fight starts and spent when it ends. Camp discounts live apart from combat blessings, so ending a fight does not forget the peddler. A weaken blessing applies once for the whole fight. Weaken from cards still stacks.
+21. **Permanent +HP from the Bridge of Names** is stored on the hero and capped at 10. A blessing that says "start with +4 HP" raises that fight's maximum. A wound subtracts from that raised maximum. Camp heals you to full, so a bonus that did not raise the maximum would do nothing.
 
 ---
 
@@ -472,7 +494,7 @@ Each of these changed or settled something from the original brainstorm. They ar
 5. The full roster of weapons (eight exist; more are cheap to add).
 6. Whether rarity should do more than adjust pips.
 7. A **mid-fight Reset spending** question: today Reset allows healing and recharging; should it also allow weapon swaps?
-8. Party balance for two to six players. Nothing beyond the starting table has been tested.
+8. Party balance for two to six players. One hero uses the tuned solo numbers. Nothing beyond that has been tuned.
 9. A name that is not "QuestDice" (a working title).
 10. Statuses beyond bind and drain (poison, burn, fear) and elemental weaknesses.
 
@@ -485,6 +507,7 @@ Each of these changed or settled something from the original brainstorm. They ar
 | **0. Foundations** | Engine, data, balance simulator, tests | Done |
 | **1. Solo playable** | One hero, full battle loop, Reset, Camp, quest board, levels, perks, loot, passwords, Soul Code, two Acts, tutorial tips | Done |
 | **2. Solo polish** | Hand-drawn art and monster portraits, music, dice animation, a first-run tutorial battle, more weapons and cards, Act III | Next |
-| **3. Party play** | Server and room codes, 2–6 players, initiative split, contribution score, party loot rules, reconnect | Planned |
+| **3. Party rules** | Feet initiative, contribution loot, road events the computer narrates | Done |
+| **3b. Each phone** | Room code, simultaneous decisions, resolve when every lock is in, rejoin while the server is up | Done |
 | **4. Cloud saves** | Name and password stored server-side with proper rate limiting | Planned |
 | **5. Live content** | New Acts, seasons, weekly challenge seeds | Later |
