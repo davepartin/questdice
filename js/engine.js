@@ -551,12 +551,16 @@ export function questsFor(hero) {
   const s = c.step;
   const base = (1 + 0.05 * (s - 1)) * (1 + 0.2 * actIdx) * (1 + 0.8 * cycle);
   const flat = 2 + Math.floor((s - 1) / 3) + 3 * cycle;
-  const mk = (kind, enemies, extra = {}) => ({
-    id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies,
-    name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${pick(rng, PREFIX)} ${pick(rng, act.places)}`,
+  const mk = (kind, enemies, extra = {}) => {
+    const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
+    const place = kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, act.places);
+    return {
+    id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
+    name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
     hpMult: base * (extra.perilous ? 1.25 : 1), flat: flat + (extra.perilous ? 1 : 0),
     rewardMult: extra.perilous ? 1.5 : 1, perilous: !!extra.perilous,
-  });
+    };
+  };
   if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
   const poolPick = () => pick(rng, act.pool);
   if (ELITE_STEPS.includes(s)) return [mk('elite', pick(rng, act.elite)), mk('battle', poolPick(), { perilous: true })];

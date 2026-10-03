@@ -9,6 +9,8 @@ import * as V from './view.js';
 import * as R from './roads.js';
 import * as Net from './net.js';
 import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
+import * as B3 from './g3/battle3d.js';
+import { world } from './g3/world.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -345,7 +347,12 @@ function startQuest(q) {
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  if (world.available && !isParty() && !S.net) { quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
   renderReset();
+}
+// What the 3D battle needs from this module.
+function battleCtx() {
+  return { S, menu: battleMenu, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 function refresh() { if (S.battle.phase === 'shape') renderBattle(); else renderReset(); }
 function spendHeal() {
@@ -462,7 +469,7 @@ async function flicker(slots) {
 function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('How to play', () => { close(); showHowTo(); }),
-      ghost('Retreat (lose 15% gold)', () => { close(); defeat(true); }), ghost('Back to the fight', () => close()))));
+      ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {
   if (S.busy) return; const b = S.battle; const info = E.rerollInfo(b);
@@ -786,5 +793,9 @@ function chronicleBlock() {
 
 // Test/debug hook: only exposed when the page is opened with ?debug.
 attachRoom({ S, mount, primary, ghost, section, cmd, bodyWrap, banner, showTitle, showHowTo, flicker });
-export async function boot() { await bootNet(showTitle); }
-export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset };
+export async function boot() {
+  const gl = await world.boot($('#gl'));
+  if (gl) $('.app-frame').classList.add('has-gl');
+  await bootNet(showTitle);
+}
+export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3 };

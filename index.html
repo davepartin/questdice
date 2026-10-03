@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#04060d">
   <title>QuestDice</title>
+  <script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
   <meta name="description" content="Roll your body. Break the dark. A fantasy dice campaign for one to six heroes, each on their own phone.">
   <meta property="og:title" content="QuestDice">
   <meta property="og:description" content="Roll your body. Break the dark.">
@@ -13,15 +14,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Oxanium:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/g3.css">
 </head>
 <body>
   <div class="app-frame">
+    <canvas id="gl" aria-hidden="true"></canvas>
     <canvas id="fx" class="stage-canvas" aria-hidden="true"></canvas>
     <div class="chrome">
       <button id="help" type="button" aria-label="How to play">?</button>
       <button id="mute" type="button" aria-label="Toggle sound" aria-pressed="false">🔊</button>
     </div>
     <main id="app" class="hud" aria-live="polite"></main>
+    <div id="b3" class="b3-layer"></div>
   </div>
   <div id="toast" role="status"></div>
   <div id="modal"></div>
