@@ -402,7 +402,7 @@ function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(
 
 // ------------------------------------------------------------------------------------------ lock in: perform the round
 async function lockIn() {
-  try { await lockInInner(); } catch (e) { console.error('lockIn failed', e); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
+  try { await lockInInner(); } catch (e) { console.error('lockIn failed', e.stack); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
 }
 async function lockInInner() {
   if (B.busy) return; B.busy = true;
@@ -419,7 +419,7 @@ async function lockInInner() {
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); C.banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = []; if (ev.offense3) l.push('NW', 'N', 'NE'); if (ev.defense3) l.push('N', 'C', 'S');
-    bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
+    if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
     await wait(0.55);
   } else await wait(0.25);
 
