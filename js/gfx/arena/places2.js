@@ -3,12 +3,13 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rr, scatter, inClear, smoothstep, CLEAR, instanced, finishGeo, xf } from './common.js';
 import { applyPalette, buildBackdrop, defaultPropMats } from './kit.js';
-import { dryTree, pine, pineCard, rock, slab, cattail } from './flora.js';
+import { dryTree, pine, pineCard, pineTrunk, rock, slab, cattail } from './flora.js';
 import { hillsHeight, vcolorFn, grassField, rockField, treePoint, placeTrees } from './helpers.js';
 import { texMat, rockTex, needleTex, soilTex, ashTex, bannerTex, glintTex } from './tex.js';
+import { canvasTex } from './common.js';
 import { Emitter } from './fx.js';
 import { waterMaterial } from './ground.js';
-import { barrel, crate, skull, bone, ribcage, brazier, ruinWall, toppledCart, fenceRun, wagon, steppingStone, wheel } from './props.js';
+import { barrel, crate, skull, bone, ribcage, brazier, ruinWall, toppledCart, fenceRun, wagon, steppingStone, wheel, farmhouse } from './props.js';
 
 const LOOK = (o) => ({ bloom: 0.45, bloomRadius: 0.5, bloomThreshold: 1.05, vignette: 0.5, sat: 1.1, contrast: 1.1, tilt: 0.1, focusY: 0.5, grain: 0.04, exposure: 1.0, shadowTint: 0xdbf0ff, highTint: 0xfff0dc, aberration: 0.0004, ...o });
 const ENV = (top, hor, gnd, warm, cold) => ({ top, horizon: hor, ground: gnd, lights: [{ color: warm, intensity: 14, pos: [-6, 3, 4], size: 4 }, { color: cold, intensity: 7, pos: [5, 6, -6], size: 5 }, { color: 0xffffff, intensity: 1.2, pos: [0, 9, 0], size: 5 }] });
@@ -39,10 +40,16 @@ function flagBanner(c, p, { h = 4, tex, w = 1.3, len = 1.9, yaw = 0 }) {
 }
 function pinesAt(c, { pos, scale = [1, 1.5], frost = 0.1, color = [0.55, 0.62, 0.58], tex = {} }) {
   const near = [0, 1, 2].map((i) => pine(c.seed * 9 + i, { h: 8 + i, r: 1.9, tiers: 9, K: 8, frost, color }));
+  const trunks = [0, 1, 2].map((i) => pineTrunk(c.seed * 9 + i, { h: 8 + i }));
   const mat = c.arenaMat(`pine|${frost}`, () => texMat(needleTex(tex), { repeat: 1, vertexColors: true, envMapIntensity: 0.3 }), { wind: 1, windK: 0.004, windSpeed: 1.1 });
+  const bark = c.arenaMat('pineBark', () => c.libMat('bark', { tint: 0x4a3c34, dark: 0x0a0806 }).clone(), { wind: 1, windK: 0.0015 }, { vertexColors: true });
   const lists = near.map(() => []);
-  pos.forEach(([x, z, s]) => { const v = Math.floor(c.rng() * 3); const sc = rr(c.rng, scale[0], scale[1]) * (s || 1); const k = rr(c.rng, 0.65, 1); lists[v].push({ p: [x, c.hAt(x, z) - 0.1, z], r: c.rng() * 6.28, s: sc, c: new THREE.Color(k, k, k) }); });
-  near.forEach((g, i) => { const n = lists[i].filter((it) => Math.abs(it.p[0]) < 13 && it.p[2] > -14); const f = lists[i].filter((it) => !(Math.abs(it.p[0]) < 13 && it.p[2] > -14)); if (f.length) c.addInstanced(g, mat, f); if (n.length) c.addInstanced(g, mat, n, { cast: true }); });
+  pos.forEach(([x, z, s]) => { const v = Math.floor(c.rng() * 3); const sc = rr(c.rng, scale[0], scale[1]) * (s || 1); const k = rr(c.rng, 0.65, 1); lists[v].push({ p: [x, c.hAt(x, z) - 0.1, z], r: c.rng() * 6.28, s: sc, c: new THREE.Color(k, k, k) }); if (Math.abs(x) < 16 && z > -26) c.blobs.push({ p: [x, z], s: [2.6 * sc, 2.6 * sc], a: 0.65, y: c.hAt(x, z) }); });
+  near.forEach((g, i) => {
+    const n = lists[i].filter((it) => Math.abs(it.p[0]) < 13 && it.p[2] > -14); const f = lists[i].filter((it) => !(Math.abs(it.p[0]) < 13 && it.p[2] > -14));
+    if (f.length) { c.addInstanced(g, mat, f); c.addInstanced(trunks[i], bark, f); }
+    if (n.length) { c.addInstanced(g, mat, n, { cast: true }); c.addInstanced(trunks[i], bark, n, { cast: true }); }
+  });
 }
 function eyes(c, pts, color = 0xffd040, k = 2.2) {
   pts.forEach(([x, y, z], i) => { for (const s of [-1, 1]) c.glows.push({ p: [x + s * 0.09, y, z], s: 0.16, c: color, k, flick: 0.15, seed: i * 2 + (s > 0 ? 1 : 0) }); });
@@ -81,10 +88,10 @@ export function cinderFord(c) {
     sky: { hor: 0x2a3858, mid: 0x1a2444, top: 0x070b1c, glows: [{ az: 18, w: 26, h: 4.5, color: 0xff6a24, k: 1.15 }, { az: -30, w: 50, h: 5, color: 0x4a70b8, k: 0.5 }], moon: { on: 1, az: -22, el: 3.4, size: 2.4, color: 0xd8e6ff }, stars: 0.9, cloud: 0.5, cloudDark: 0x141c34, cloudLit: 0x6a8ad0 },
     fog: { base: 0x1c2a40, dens: 0.0105, fall: 0.25, height: 0.6, glow: 0.8 },
     env: ENV(0x18285a, 0x5a78c0, 0x0a0e18, 0xff8a4a, 0x7aa0ff),
-    key: { color: 0xa8c4ff, intensity: 2.1, pos: [-4.8, 4.2, 4.4] },
-    rim: { color: 0xff8a50, intensity: 1.2, pos: [4, 4, -9] },
-    hemi: { sky: 0x3a4a78, ground: 0x2a2a30, intensity: 0.5 },
-    look: LOOK({ bloom: 0.85, sat: 1.05, contrast: 1.12, shadowTint: 0xb0d0ff, highTint: 0xfff0e0 }),
+    key: { color: 0xff9aa0, intensity: 2.0, pos: [-4.8, 3.4, 4.4] },
+    rim: { color: 0x38d8d0, intensity: 2.8, pos: [4, 4, -9] },
+    hemi: { sky: 0x3a4a68, ground: 0x3a2a30, intensity: 0.45 },
+    look: LOOK({ sat: 1.05, contrast: 1.12, shadowTint: 0xb0d0ff, highTint: 0xfff0e0 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 16, haze: 0.6, color: 0x141c30, seed: 3, rim: 0x6a8ad0, rimK: 0.5 }, { radius: 150, arc: 1.9, top: 9, mode: 0, haze: 0.45, color: 0x0c1220, seed: 4, toothW: 4, toothH: 5 }] });
   defaultPropMats(c, { wood: 0x3a3028 });
@@ -138,10 +145,10 @@ export function ravensRest(c) {
     sky: { hor: 0x424a5a, mid: 0x2a3042, top: 0x0c101c, glows: [{ az: 5, w: 70, h: 6, color: 0x8a9cc0, k: 0.7 }, { az: 55, w: 25, h: 4, color: 0xff6a30, k: 0.35 }], moon: { on: 1, az: 12, el: 3.2, size: 3.0, color: 0xdce8ff }, stars: 0.6, cloud: 0.7, cloudDark: 0x1c2232, cloudLit: 0x8aa0c8 },
     fog: { base: 0x2a3244, dens: 0.0125, fall: 0.28, height: 0.7, glow: 0.7 },
     env: ENV(0x20305a, 0x7088b0, 0x0a0c12, 0xff9a60, 0x8aa8ff),
-    key: { color: 0xb8ccff, intensity: 2.0, pos: [-4.6, 4.4, 4.6] },
-    rim: { color: 0xffa070, intensity: 1.0, pos: [4, 4, -9] },
-    hemi: { sky: 0x4a5878, ground: 0x30302c, intensity: 0.55 },
-    look: LOOK({ sat: 0.82, contrast: 1.14, vignette: 0.56, bloom: 0.8, shadowTint: 0xb8d0ff, highTint: 0xf0f0f4 }),
+    key: { color: 0x7a84ff, intensity: 1.9, pos: [-4.6, 4.0, 4.6] },
+    rim: { color: 0xffc060, intensity: 2.8, pos: [4, 4, -9] },
+    hemi: { sky: 0x30386a, ground: 0x2a2a28, intensity: 0.5 },
+    look: LOOK({ sat: 0.82, contrast: 1.14, vignette: 0.56, shadowTint: 0xb8d0ff, highTint: 0xf0f0f4 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 20, haze: 0.55, color: 0x1a2030, seed: 5, rim: 0x9ab0e0, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 11, mode: 2, haze: 0.4, color: 0x10141e, seed: 6, toothW: 7, toothH: 8 }] });
   defaultPropMats(c, { wood: 0x3a342e, stone: 0x6a6c72 });
@@ -212,10 +219,10 @@ export function wolfwoodEdge(c) {
     sky: { hor: 0x1a3048, mid: 0x0e1c34, top: 0x040814, glows: [{ az: 0, w: 55, h: 5, color: 0x4a82c0, k: 0.8 }], moon: { on: 1, az: -18, el: 3.3, size: 2.2, color: 0xe4f0ff }, stars: 1.0, cloud: 0.35, cloudDark: 0x0c1428, cloudLit: 0x4a78b8 },
     fog: { base: 0x14263a, dens: 0.013, fall: 0.3, height: 0.7, glow: 0.8 },
     env: ENV(0x0c1c48, 0x3a6ab0, 0x080c14, 0x8ab0ff, 0x5a90ff),
-    key: { color: 0x9cc0ff, intensity: 2.3, pos: [-4.4, 4.8, 4.2] },
-    rim: { color: 0xc0d8ff, intensity: 1.5, pos: [4, 5, -9] },
-    hemi: { sky: 0x3a5a90, ground: 0x182030, intensity: 0.6 },
-    look: LOOK({ bloom: 0.8, sat: 1.0, contrast: 1.15, vignette: 0.58, shadowTint: 0x9cc8ff, highTint: 0xe8f0ff, exposure: 1.05 }),
+    key: { color: 0xdce8ff, intensity: 2.4, pos: [-5.6, 2.8, 4.0] },
+    rim: { color: 0x30d8c8, intensity: 3.0, pos: [4, 5, -9] },
+    hemi: { sky: 0x203a58, ground: 0x182030, intensity: 0.5 },
+    look: LOOK({ sat: 1.0, contrast: 1.15, vignette: 0.58, shadowTint: 0x9cc8ff, highTint: 0xe8f0ff, exposure: 1.05 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 16, mode: 1, haze: 0.55, color: 0x0a1424, seed: 7, toothW: 5, toothH: 9, rim: 0x6a9ae0, rimK: 0.35 }, { radius: 150, arc: 1.9, top: 8, mode: 1, haze: 0.42, color: 0x070e1a, seed: 8, toothW: 4, toothH: 8 }] });
   defaultPropMats(c, { wood: 0x3a2e26 });
@@ -224,7 +231,9 @@ export function wolfwoodEdge(c) {
   for (let z = 4; z > -70; z -= 3.0 + rng() * 1.6) for (const sx of [-1, 1]) { const x = sx * (6.6 + rng() * 2.2 + (z < -10 ? (-z - 10) * 0.05 : 0)); pos.push([x, z + rng(), 1]); pos.push([sx * (11 + rng() * 5), z + rng() * 2, 1.2]); if (z < -4) pos.push([sx * (17 + rng() * 10), z, 1.3]); }
   for (let x = -7; x < 7; x += 3.2 + rng() * 1.5) { const z = -20 - rng() * 18; pos.push([x, z, 1.1]); }
   for (let x = -40; x < 40; x += 3 + rng() * 2) { pos.push([x, -44 - rng() * 14, 1.5]); pos.push([x + 1.2, -58 - rng() * 14, 1.7]); }
-  pinesAt(c, { pos: pos.filter((p) => !inClear(p[0], p[1], 0.8)).slice(0, c.n(190) + 90), frost: 0.12 });
+  const frame = [[-8.0, 1.5, 1.45], [8.3, -0.5, 1.5], [-7.2, -6, 1.3], [7.6, -7, 1.35], [-10, 5, 1.6], [10.5, 4, 1.5]];
+  pinesAt(c, { pos: frame.concat(pos.filter((p) => !inClear(p[0], p[1], 0.8)).slice(0, c.n(190) + 90)), frost: 0.12 });
+  for (let i = 0; i < 9; i++) { const sx = rng() < 0.5 ? -1 : 1; const x = sx * rr(rng, 6.3, 13); const z = rr(rng, -14, 7); const len = rr(rng, 2, 4.5); const r0 = rr(rng, 0.14, 0.3); B.cyl('wood', [r0 * 0.85, r0, len, 8], { p: [x, r0 * 0.8, z], r: [0, rng() * 3.14, Math.PI / 2 + (rng() - 0.5) * 0.1] }, [0.7, 0.72, 0.8], { uv: 0.7 }); c.blobs.push({ p: [x, z], s: [len * 0.9, 1.1], a: 0.5, rot: rng() * 3 }); }
   // far cards
   const cards = [0, 1].map((i) => pineCard(c.seed + i, { h: 10, w: 3 }));
   const cardM = c.arenaMat('pinecard', () => new THREE.MeshStandardMaterial({ vertexColors: true, color: 0x24343c, roughness: 1, side: THREE.DoubleSide }), {});
@@ -233,7 +242,7 @@ export function wolfwoodEdge(c) {
   const ep = []; for (let i = 0; i < 9; i++) { const sx = i % 2 ? 1 : -1; const x = sx * rr(rng, 8, 20); const z = rr(rng, -26, -4); ep.push([x, c.hAt(x, z) + rr(rng, 0.5, 0.9), z]); }
   eyes(c, ep, 0xffd040, 2.4);
   // frost + stones + stumps
-  rockField(c, { n: 36, tint: 0x66707c, dark: 0x14181e, big: [0.4, 1.3], area: { x: [-26, 26], z: [-30, 10] }, pebbles: 40, lichen: 0.2, tintMul: [0.85, 0.95, 1.1] });
+  rockField(c, { n: 40, tint: 0x66707c, dark: 0x14181e, big: [0.5, 1.5], area: { x: [-26, 26], z: [-30, 10] }, pebbles: 40, lichen: 0.85, tintMul: [0.85, 1.0, 1.1] });
   grassField(c, { n: 800, tint: [0.55, 0.68, 0.74], root: [0.04, 0.06, 0.07], hmin: 0.18, hmax: 0.5, wind: 0.8 });
   for (let i = 0; i < 6; i++) { const x = (rng() < 0.5 ? -1 : 1) * rr(rng, 5.8, 9); B.cyl('wood', [0.2, 0.28, rr(rng, 0.4, 0.9), 7], { p: [x, 0.3, rr(rng, -4, 6)] }, [0.6, 0.6, 0.65]); }
   for (let i = 0; i < 7; i++) { const x = (rng() < 0.5 ? -1 : 1) * rr(rng, 5.6, 10); bone(B, { p: [x, 0.03, rr(rng, -4, 7)], r: [0, rng() * 3, 0] }, { len: 0.45 }); }
@@ -261,38 +270,50 @@ export function smokeHollow(c) {
       { set: soilTex({ tint: 0x4a3c32, dark: 0x120c0a, seed: 42, pebble: 0.5 }), scale: 0.3 },
       { kind: 'grass', tint: 0x3a3828, dark: 0x0c0c08, scale: 0.42, size: 512, seed: 43, opts: { dry: 0.9, dryTint: 0x4a4430 } },
       { kind: 'cobble', tint: 0x3a3632, dark: 0x100e0c, scale: 0.35, seed: 44 },
-      { set: ashTex({ tint: 0x504a46, dark: 0x0e0c0b, seed: 45, cracks: 1.0 }), scale: 0.24 },
+      { set: ashTex({ tint: 0x5a544e, dark: 0x0e0c0b, seed: 45, cracks: 1.7 }), scale: 0.24 },
     ],
-    thresholds: [0.7, 3, 0.36], wet: [0.84, 0.15], nstr: 2.2, tintMul: 0xf0e4dc,
+    thresholds: [0.7, 3, 0.3], wet: [0.84, 0.15], nstr: 2.2, tintMul: 0xf0e4dc,
   };
   applyPalette(c, {
     sky: { hor: 0x5a2c1c, mid: 0x2a1a1c, top: 0x0c0a10, glows: [{ az: 0, w: 60, h: 8, color: 0xff6a20, k: 0.9 }, { az: -50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }, { az: 50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }], moon: { on: 0 }, stars: 0.0, cloud: 0.9, cloudDark: 0x241816, cloudLit: 0xff6a30 },
     fog: { base: 0x1c0c08, dens: 0.0085, fall: 0.2, height: 0.55, glow: 0.35 },
     env: ENV(0x241418, 0xc0582a, 0x120a08, 0xff8a4a, 0x6a60a0),
-    key: { color: 0xffa060, intensity: 2.2, pos: [-4.4, 3.6, 5.4] },
-    rim: { color: 0xff7a40, intensity: 1.3, pos: [4, 4, -9] },
-    hemi: { sky: 0x5a3a30, ground: 0x4a2a1a, intensity: 0.55 },
-    look: LOOK({ bloom: 0.95, sat: 1.0, contrast: 1.1, vignette: 0.6, shadowTint: 0xffd8c8, highTint: 0xffd8b0, exposure: 0.98 }),
+    key: { color: 0xb8aca0, intensity: 1.7, pos: [-4.4, 3.6, 5.4] },
+    rim: { color: 0xff5020, intensity: 3.2, pos: [4, 4, -9] },
+    hemi: { sky: 0x40302a, ground: 0x3a2418, intensity: 0.4 },
+    look: LOOK({ sat: 1.0, contrast: 1.1, vignette: 0.6, shadowTint: 0xffd8c8, highTint: 0xffd8b0, exposure: 0.98 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 170, arc: 1.9, top: 22, haze: 0.5, color: 0x2a1614, seed: 9, rim: 0xff5a20, rimK: 0.5 }, { radius: 120, arc: 1.9, top: 14, mode: 2, haze: 0.4, color: 0x180e0c, seed: 10, toothW: 6, toothH: 8 }] });
   defaultPropMats(c, { wood: 0x3a2a20 });
-  // burning wagons and timber
-  wagon(B, rng, { p: [-8.5, 0, -2], r: 0.6 }); wagon(B, rng, { p: [9, 0, -6], r: -0.4 }); wagon(B, rng, { p: [-13, 0, -14], r: 1.2 }); wagon(B, rng, { p: [14, 0, -22], r: 2.4 });
-  c.fire({ p: [-8.5, 0.9, -2], w: 1.6, h: 3.2, power: 1.1, light: true, lightI: 50, lightDist: 16, embers: 20, smoke: 0.5, tongues: 3 });
-  c.fire({ p: [9, 0.9, -6], w: 1.4, h: 2.8, power: 1.0, light: true, lightI: 44, lightDist: 15, embers: 16, smoke: 0.5, tongues: 3 });
-  c.fire({ p: [-13, 0.9, -14], w: 2, h: 4, power: 1.1, embers: 14, smoke: 0.6, tongues: 3, glow: 0.8 });
-  c.fire({ p: [14, 0.9, -22], w: 2, h: 4, power: 1.0, embers: 10, smoke: 0.6, tongues: 3, glow: 1.2 });
-  c.fire({ p: [0, 0.5, -34], w: 5, h: 9, power: 1.2, embers: 12, smoke: 0.8, tongues: 4, glow: 0.9 });
-  c.fire({ p: [-24, 0.5, -30], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 0.8 });
-  c.fire({ p: [25, 0.5, -36], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 0.8 });
+  // ---- near silhouettes: charred skeleton trees framing both edges (foreground layer)
+  const skel = [0, 1, 2].map((i) => dryTree(c.seed * 61 + i, { h: 4.2 + i * 1.1, r: 0.22, limbs: 5, spread: 0.95, depth: 3, curl: 0.8, droop: 0.25, radial: 6, lean: 0.4, bark: [0.09, 0.08, 0.075], tip: [0.14, 0.12, 0.11] }));
+  const skelMat = c.arenaMat('skelBark', () => c.libMat('bark', { tint: 0x2a2420, dark: 0x050404 }).clone(), { wind: 1, windK: 0.008 }, { vertexColors: true });
+  const sp = [[-7.8, 2, 1.25], [8.2, 0, 1.3], [-8.6, -6, 1.1], [9, -8, 1.2], [-11.5, 5, 1.4], [12, 3, 1.3]];
+  for (let i = 0; i < c.n(18); i++) { const sx = rng() < 0.5 ? -1 : 1; sp.push([sx * rr(rng, 10, 28), rr(rng, -34, 4), rr(rng, 0.9, 1.4)]); }
+  const slists = placeTrees(c, skel, sp, { material: skelMat, scale: [1, 1.2] });
+  const sf = slists.flat().filter((it) => it.p[2] < 4 && it.p[2] > -20).slice(0, 5);
+  sf.forEach((it, i) => { const v = skel[it.v]; const w = treePoint(it, v.tips[(i * 3 + 1) % v.tips.length]); c.fire({ p: [w[0], w[1] - 0.1, w[2]], w: 0.5, h: 1.0, power: 0.9, embers: 4, tongues: 1, glow: 0.7, light: i === 0, lightI: 40, lightDist: 14 }); });
+  // ---- mid-ground story: ruined cottage, collapsed cart, burning wagons, rubble walls
+  farmhouse(B, rng, { p: [-15, c.hAt(-15, -15), -15], r: 0.6 }, { w: 7, d: 5, h: 2.8 });
+  c.fire({ p: [-15, 2.6, -15], w: 2.6, h: 4.5, power: 1.0, embers: 12, smoke: 0.5, tongues: 3, glow: 0.7 });
+  toppledCart(B, rng, { p: [8.6, 0, -3.8], r: -0.7 });
+  wagon(B, rng, { p: [-8.8, 0, -3], r: 0.6 }); wagon(B, rng, { p: [12, 0, -12], r: -0.4 }); wagon(B, rng, { p: [16, 0, -24], r: 2.4 });
+  c.fire({ p: [-8.8, 0.9, -3], w: 1.4, h: 2.6, power: 1.0, light: true, lightI: 46, lightDist: 15, embers: 16, smoke: 0.4, tongues: 3 });
+  c.fire({ p: [12, 0.9, -12], w: 1.4, h: 2.8, power: 0.9, embers: 12, smoke: 0.5, tongues: 3, glow: 0.7 });
+  ruinWall(B, rng, { len: 7, h: 2.6, p: [-18, 0, -8], yaw: 0.5 }); ruinWall(B, rng, { len: 6, h: 2.2, p: [20, 0, -16], yaw: -0.6 });
   for (let i = 0; i < 30; i++) { const sx = rng() < 0.5 ? -1 : 1; const x = sx * rr(rng, 6.2, 22); const z = rr(rng, -30, 6); const len = rr(rng, 1.5, 4.5); B.box('woodChar', [len, 0.2, 0.2], { p: [x, 0.18 + (rng() < 0.3 ? 0.3 : 0), z], r: [0, rng() * 3.14, (rng() - 0.5) * 0.3] }, [0.8, 0.8, 0.8]); }
   for (let i = 0; i < 9; i++) { const sx = rng() < 0.5 ? -1 : 1; const x = sx * rr(rng, 7, 20); const z = rr(rng, -30, 0); const h = rr(rng, 1.2, 3.4); B.box('woodChar', [0.22, h, 0.22], { p: [x, h / 2, z], r: [(rng() - 0.5) * 0.2, rng(), (rng() - 0.5) * 0.2] }, [0.7, 0.7, 0.7]); }
-  ruinWall(B, rng, { len: 7, h: 2.6, p: [-17, 0, -8], yaw: 0.5 }); ruinWall(B, rng, { len: 6, h: 2.2, p: [18, 0, -12], yaw: -0.6 });
   barrel(B, { p: [6.8, 0, 3.5], r: [0, 0, 1.4] }); crate(B, { p: [-6.6, 0, 4] }); crate(B, { p: [-6.3, 0, 4.8], r: 0.5 });
-  for (let i = 0; i < 6; i++) skull(B, { p: [(rng() < 0.5 ? -1 : 1) * rr(rng, 5.6, 9), 0, rr(rng, -4, 7)], r: rng() * 6 });
+  for (let i = 0; i < 8; i++) skull(B, { p: [(rng() < 0.5 ? -1 : 1) * rr(rng, 5.6, 9), 0, rr(rng, -4, 7)], r: rng() * 6 });
+  // ---- far: burning village on the hill + smoke columns
+  c.fire({ p: [0, 0.5, -34], w: 4, h: 7, power: 1.1, embers: 10, smoke: 0.9, tongues: 4, glow: 0.7 });
+  c.fire({ p: [-24, 0.5, -30], w: 3, h: 6, power: 0.9, embers: 6, smoke: 0.8, glow: 0.6 });
+  c.fire({ p: [25, 0.5, -36], w: 3, h: 6, power: 0.9, embers: 6, smoke: 0.8, glow: 0.6 });
+  c.smokeSources.push({ p: [-30, 6, -48], rate: 0.6, size: 7 }, { p: [34, 6, -52], rate: 0.6, size: 7 }, { p: [8, 4, -44], rate: 0.5, size: 6 });
+  farmhouse(B, rng, { p: [-24, c.hAt(-24, -34), -34], r: 0.4 }, { w: 6, d: 4, h: 2.6 }); farmhouse(B, rng, { p: [26, c.hAt(26, -40), -40], r: -0.5 }, { w: 7, d: 5, h: 3 });
   rockField(c, { n: 36, tint: 0x4a4440, dark: 0x120e0c, big: [0.4, 1.4], area: { x: [-26, 26], z: [-30, 10] }, pebbles: 50 });
-  grassField(c, { n: 300, tint: [0.4, 0.34, 0.2], root: [0.04, 0.03, 0.02], hmin: 0.15, hmax: 0.4 });
-  for (let i = 0; i < 16; i++) c.scorches.push({ p: [rr(rng, -12, 12), rr(rng, -8, 8)], s: [rr(rng, 2, 5), rr(rng, 1.5, 4)], rot: rng() * 6, a: 0.8 });
+  grassField(c, { n: 260, tint: [0.3, 0.26, 0.16], root: [0.03, 0.025, 0.02], hmin: 0.15, hmax: 0.4 });
+  for (let i = 0; i < 22; i++) c.scorches.push({ p: [rr(rng, -14, 14), rr(rng, -9, 9)], s: [rr(rng, 2, 5), rr(rng, 1.5, 4)], rot: rng() * 6, a: 0.85 });
   // thick smoke layers, underlit
   [[0, 3.5, -16, 70, 30], [-10, 5, -10, 50, 26], [12, 6, -20, 60, 30], [0, 8, -30, 100, 40], [0, 2.2, -6, 50, 22]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: 0x24120c, dens: 0.2, scale: 0.55, speed: 0.6, seed: i * 2.7 }));
   [[0, 0, -12, 80, 14], [0, 0, -26, 100, 18], [0, 0, -40, 130, 24]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x2a140e, dens: 0.3 - i * 0.06, scale: 0.55, speed: 0.4, seed: 5 + i }));
@@ -338,10 +359,10 @@ export function tollBridge(c) {
     sky: { hor: 0x40303c, mid: 0x1e1c38, top: 0x080a1a, glows: [{ az: -8, w: 28, h: 5, color: 0xff7a30, k: 0.9 }, { az: 36, w: 40, h: 4, color: 0x5a78c0, k: 0.5 }], moon: { on: 1, az: 32, el: 3.4, size: 2.2, color: 0xd8e4ff }, stars: 0.8, cloud: 0.5, cloudDark: 0x1a1a30, cloudLit: 0xff8a50 },
     fog: { base: 0x241c30, dens: 0.0105, fall: 0.22, height: 0.6, glow: 0.8 },
     env: ENV(0x1c2050, 0xa06a50, 0x0c0a10, 0xff8a40, 0x7a90ff),
-    key: { color: 0xffa868, intensity: 2.3, pos: [-4.6, 3.8, 5.0] },
-    rim: { color: 0x7a90ff, intensity: 1.5, pos: [4, 5, -9] },
-    hemi: { sky: 0x42466a, ground: 0x3a2a20, intensity: 0.5 },
-    look: LOOK({ bloom: 0.9, sat: 1.08, contrast: 1.12, shadowTint: 0xc0d8ff, highTint: 0xfff0d8 }),
+    key: { color: 0xb090ff, intensity: 2.0, pos: [-4.6, 3.8, 5.0] },
+    rim: { color: 0xff7a30, intensity: 3.0, pos: [4, 5, -9] },
+    hemi: { sky: 0x383460, ground: 0x3a2a20, intensity: 0.45 },
+    look: LOOK({ sat: 1.08, contrast: 1.12, shadowTint: 0xc0d8ff, highTint: 0xfff0d8 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 16, haze: 0.58, color: 0x1a1830, seed: 11, rim: 0xff7a40, rimK: 0.4 }] });
   defaultPropMats(c, { wood: 0x4a3626 });
@@ -442,10 +463,10 @@ export function ashfallCamp(c) {
     sky: { hor: 0x5a2a20, mid: 0x30203a, top: 0x0c0a1c, glows: [{ az: 0, w: 55, h: 6, color: 0xff6a24, k: 0.85 }, { az: -45, w: 40, h: 5, color: 0xd0402a, k: 0.45 }], moon: { on: 0 }, stars: 0.6, cloud: 0.6, cloudDark: 0x241828, cloudLit: 0xff6a30 },
     fog: { base: 0x30161a, dens: 0.0125, fall: 0.2, height: 0.6, glow: 0.8 },
     env: ENV(0x241848, 0xd0602a, 0x120a0a, 0xff8a40, 0x6a70ff),
-    key: { color: 0xff9a54, intensity: 2.4, pos: [-4.4, 3.4, 5.4] },
-    rim: { color: 0x6a80ff, intensity: 1.4, pos: [4, 5, -9] },
-    hemi: { sky: 0x4a3a5a, ground: 0x4a2a18, intensity: 0.5 },
-    look: LOOK({ bloom: 0.95, sat: 1.1, contrast: 1.12, shadowTint: 0xc8dcff, highTint: 0xffe8cc }),
+    key: { color: 0xe8b050, intensity: 2.3, pos: [-4.4, 3.4, 5.4] },
+    rim: { color: 0x30c8c0, intensity: 2.8, pos: [4, 5, -9] },
+    hemi: { sky: 0x2a3a50, ground: 0x4a2a18, intensity: 0.42 },
+    look: LOOK({ sat: 1.1, contrast: 1.12, shadowTint: 0xc8dcff, highTint: 0xffe8cc }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 14, haze: 0.6, color: 0x24142a, seed: 13, rim: 0xff5a20, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 8, mode: 2, haze: 0.45, color: 0x180c1c, seed: 14, toothW: 6, toothH: 6 }] });
   defaultPropMats(c, { wood: 0x4a3626 });
@@ -497,15 +518,15 @@ export function gallowsHill(c) {
       : { hor: 0x2a3050, mid: 0x161a38, top: 0x060818, glows: [{ az: 14, w: 35, h: 5, color: 0x6a88d0, k: 0.8 }, { az: -60, w: 30, h: 4, color: 0xff6a30, k: 0.35 }], moon: { on: 1, az: -8, el: 3.8, size: elite ? 2.2 : 4.4, color: moonCol }, stars: 1.0, cloud: elite ? 0.8 : 0.4, cloudDark: 0x141830, cloudLit: 0x7a90c8 },
     fog: boss ? { base: 0x2a0c10, dens: 0.0078, fall: 0.22, height: 0.6, glow: 0.45 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
     env: boss ? ENV(0x300c1c, 0xc03a28, 0x100808, 0xff7a40, 0x8a60c0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
-    key: boss ? { color: 0xff8a50, intensity: 2.6, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0xb8d0ff, intensity: elite ? 1.7 : 2.3, pos: [-4.6, 4.6, 4.8] },
-    rim: boss ? { color: 0xff3a2a, intensity: 2.2, pos: [4, 5, -9] } : { color: 0xffa070, intensity: 1.1, pos: [4, 5, -9] },
-    hemi: boss ? { sky: 0x5a2a3a, ground: 0x3a1a14, intensity: 0.5 } : { sky: 0x3a4a78, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.55 },
-    look: LOOK(boss ? { bloom: 1.0, sat: 1.12, contrast: 1.15, vignette: 0.58, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { bloom: 0.8, sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
+    key: boss ? { color: 0xa83024, intensity: 0.9, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
+    rim: boss ? { color: 0xff4030, intensity: 3.0, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
+    hemi: boss ? { sky: 0x3a1a24, ground: 0x2a1410, intensity: 0.35 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
+    look: LOOK(boss ? { sat: 1.12, contrast: 1.15, vignette: 0.58, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { bloom: 0.8, sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: boss ? 12 : 10, haze: 0.55, color: boss ? 0x24101a : 0x121826, seed: 15, rim: boss ? 0xff3a20 : 0x7a98d8, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 6, mode: 2, haze: 0.4, color: boss ? 0x180a10 : 0x0a0e18, seed: 16, toothW: 8, toothH: 9 }] });
   defaultPropMats(c, { wood: 0x3a3028 });
   // the gallows
-  const gx = -9.5; const gzz = -3.5;
+  const gx = -7.6; const gzz = -5.0;
   B.with({ p: [gx, 0, gzz], r: 0.35 }, () => {
     B.box('wood', [4.2, 0.4, 3.2], { p: [0, 0.2, 0] }, [0.7, 0.65, 0.6], { uv: 0.8 });
     for (let i = 0; i < 4; i++) B.box('wood', [0.9, 0.04, 0.5], { p: [-3 + i * 0.2, 0.1 + i * 0.1, 0.0] }, [0.6, 0.6, 0.6], { ao: 0 });
@@ -524,30 +545,47 @@ export function gallowsHill(c) {
   rockField(c, { n: 30, tint: 0x66625a, dark: 0x1a1816, big: [0.4, 1.4], area: { x: [-30, 30], z: [-35, 10] }, pebbles: 50 });
   for (let i = 0; i < 7; i++) skull(B, { p: [(rng() < 0.5 ? -1 : 1) * rr(rng, 5.8, 9), 0, rr(rng, -4, 7)], r: rng() * 6 });
   for (let i = 0; i < 4; i++) { const x = (rng() < 0.5 ? -1 : 1) * rr(rng, 9, 14); const z = rr(rng, -10, 2); B.cyl('wood', [0.04, 0.05, 1.5, 5], { p: [x, 0.7, z], r: [0, 0, (rng() - 0.5) * 0.3] }, [0.6, 0.6, 0.6]); B.box('wood', [0.5, 0.3, 0.05], { p: [x + 0.2, 1.4, z] }, [0.6, 0.55, 0.5]); }
-  c.fire({ p: [6.8, 0.8, -1.5], w: 0.5, h: 0.9, power: 0.9, light: true, lightColor: 0xff8a40, lightI: boss ? 40 : 22, lightDist: 12, embers: 6, tongues: 2, glow: 0.9 });
-  brazier(B, { p: [6.8, 0, -1.5] }, { h: 0.8 });
+  if (!boss) { c.fire({ p: [6.8, 0.8, -1.5], w: 0.5, h: 0.9, power: 0.9, light: true, lightColor: 0xff8a40, lightI: 22, lightDist: 12, embers: 6, tongues: 2, glow: 0.9 }); brazier(B, { p: [6.8, 0, -1.5] }, { h: 0.8 }); }
   if (boss) {
-    // throne ruins, gold hoard, braziers, banners, gold glints
-    B.with({ p: [0.4, 0, -9.5] }, () => {
-      for (let i = 0; i < 4; i++) B.box('stone', [7 - i * 1.2, 0.35, 5 - i * 0.9], { p: [0, 0.18 + i * 0.35, 0] }, [0.6, 0.58, 0.58], { cast: false, uv: 0.4 });
-      B.box('stone', [1.6, 1.0, 1.6], { p: [0, 1.9, -0.4] }, [0.6, 0.58, 0.58], { cast: false }); B.box('stone', [1.7, 3.0, 0.5], { p: [0, 3.5, -1.0] }, [0.55, 0.53, 0.53], { cast: false }); B.box('stone', [0.5, 1.4, 1.6], { p: [-0.9, 2.9, -0.4] }, [0.55, 0.53, 0.53], { cast: false }); B.box('stone', [0.5, 1.0, 1.6], { p: [0.9, 2.7, -0.4] }, [0.55, 0.53, 0.53], { cast: false });
-      B.box('gold', [1.0, 0.3, 1.0], { p: [0, 2.5, -0.4] }, [1, 1, 1], { cast: false, ao: 0 }); B.box('gold', [1.2, 0.2, 0.1], { p: [0, 5.1, -1.0] }, [1, 1, 1], { cast: false, ao: 0 });
-      for (const x of [-5, 5]) { B.cyl('stone', [0.5, 0.6, 5, 8], { p: [x, 2.5, -1] }, [0.6, 0.6, 0.6], { cast: false }); B.cyl('stone', [0.5, 0.6, 2.5, 8], { p: [x * 1.7, 1.2, 1], r: [0, 0, 0.9] }, [0.55, 0.55, 0.55], { cast: false }); }
+    // ONE dominant firelight: a great pyre right behind the king, so he is a silhouette ringed in flame.
+    const KX = 0.4; const KZ = -1.8;
+    c.fire({ p: [KX, 0.3, -6.4], w: 2.6, h: 4.8, power: 1.5, light: true, lightColor: 0xff6a28, lightI: 150, lightDist: 26, embers: 40, smoke: 0.6, tongues: 4, glow: 0.8 });
+    for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; B.cyl('woodChar', [0.12, 0.15, 3.0, 6], { p: [KX + Math.cos(a) * 1.0, 1.1, -6.4 + Math.sin(a) * 1.0], r: [Math.sin(a) * 0.5, a, -Math.cos(a) * 0.5] }, [0.8, 0.8, 0.8], { cast: false }); }
+    // the dais: a flush rune-ringed stone disc under the king + a ring of broken pillars
+    const dg = new THREE.CircleGeometry(3.5, 56).rotateX(-Math.PI / 2);
+    const runeTex = canvasTex2('dais-rune');
+    const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0x8a7a76, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 1.3, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
+    const dais = new THREE.Mesh(dg, dm); dais.position.set(KX, 0.022, KZ); dais.receiveShadow = true; c.add(dais); c.tris += 112;
+    c.ticks.push((dt, t) => { dm.emissiveIntensity = 1.0 + 0.4 * Math.sin(t * 2.1) + 0.15 * Math.sin(t * 7.3); });
+    for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28 + 0.2; const R = 4.6; const h = rr(rng, 0.8, 2.6); B.cyl('stone', [0.38, 0.46, h, 7], { p: [KX + Math.cos(a) * R, h / 2, KZ + Math.sin(a) * R * 0.9 - 0.8], r: [(rng() - 0.5) * 0.12, 0, (rng() - 0.5) * 0.12] }, [0.55, 0.5, 0.5], { cast: true }); }
+    // stairs climbing to a bone throne behind the pyre
+    for (let i = 0; i < 6; i++) B.box('stone', [9 - i * 0.9, 0.36, 1.3], { p: [KX, 0.18 + i * 0.36, -9.6 - i * 1.2] }, [0.5, 0.46, 0.46], { cast: false, uv: 0.4 });
+    const TY = 2.2; const TZ = -17.2;
+    B.box('stone', [6, 0.5, 4], { p: [KX, TY - 0.2, TZ] }, [0.5, 0.46, 0.46], { cast: false });
+    B.with({ p: [KX, TY, TZ] }, () => {
+      B.box('bone', [1.5, 0.7, 1.3], { p: [0, 0.35, 0] }, [1, 0.92, 0.8], { cast: false }); B.box('bone', [1.7, 2.8, 0.35], { p: [0, 2.0, -0.6] }, [0.95, 0.9, 0.78], { cast: false });
+      for (const s of [-1, 1]) { B.cyl('bone', [0.09, 0.12, 2.6, 6], { p: [s * 1.0, 1.6, -0.5], r: [0, 0, s * 0.12] }, [1, 0.92, 0.8], { cast: false }); B.cone('bone', [0.12, 1.5, 6], { p: [s * 1.25, 3.3, -0.55], r: [0, 0, -s * 0.5] }, [1, 0.92, 0.8], { cast: false });
+        for (let k = 0; k < 4; k++) B.geo('bone', new THREE.TorusGeometry(1.0 - k * 0.12, 0.07, 5, 12, Math.PI), { p: [s * (0.9 + k * 0.05), 1.1 + k * 0.5, -0.4], r: [0, Math.PI / 2, 0], s: [1, 1, 1] }, [1, 0.93, 0.82], { cast: false }); }
+      skull(B, { p: [0, 3.35, -0.55], r: 0 }, { }); for (let k = 0; k < 5; k++) skull(B, { p: [-1.2 + k * 0.6, 0.02, 1.0], r: k }, { });
+      B.box('gold', [1.0, 0.18, 0.9], { p: [0, 0.78, 0.05] }, [1, 1, 1], { cast: false, ao: 0 });
     });
-    // hoard heaps
-    for (const [x, z, s] of [[-4.6, -8.5, 1.5], [5.5, -9.5, 1.7], [0.6, -7.2, 1.0], [-7.5, -14, 2.0], [8.5, -13, 1.8]]) {
-      const g = new THREE.SphereGeometry(1.4 * s, 14, 8, 0, 6.283, 0, 1.2).scale(1.3, 0.55, 1); const d = (await0(g, c.seed + z)); B.geo('gold', d, { p: [x, c.hAt(x, z) - 0.1, z] }, [0.9, 0.8, 0.7], { cast: true, uv: 0.5, ao: 0.4 });
-      for (let i = 0; i < 40; i++) { const a = rng() * 6.28; const r = Math.sqrt(rng()) * 1.5 * s; B.cyl('gold', [0.09, 0.09, 0.02, 8], { p: [x + Math.cos(a) * r, 0.45 * s * Math.max(0.1, 1 - r / (1.6 * s)) + 0.06, z + Math.sin(a) * r * 0.8], r: [rr(rng, -0.7, 0.7), rng() * 6, rr(rng, -0.7, 0.7)] }, [1, 1, 1], { ao: 0 }); }
-      B.cyl('gold', [0.1, 0.06, 0.25, 8], { p: [x + 0.6 * s, 0.7 * s, z - 0.2], r: [0.3, 0, 0.4] }, [1, 1, 1], { ao: 0 }); B.box('wood', [0.9, 0.5, 0.6], { p: [x - 1.0 * s, 0.25, z + 0.8], r: 0.5 }, [0.6, 0.45, 0.35], {});
-      c.glows.push({ p: [x, 0.8 * s, z], s: 3 * s, c: 0xffb840, k: 0.5, flick: 0.3, seed: x });
+    // gibbets / cages hung from posts, gallows frame, pyres flanking
+    const cage = (x, z, h = 3.4) => { B.cyl('wood', [0.09, 0.12, h + 0.8, 6], { p: [x, (h + 0.8) / 2, z] }, [0.5, 0.45, 0.4]); B.box('wood', [1.4, 0.12, 0.12], { p: [x + 0.65, h + 0.8, z] }, [0.5, 0.45, 0.4], { ao: 0 }); B.cyl('iron', [0.012, 0.012, 0.8, 4], { p: [x + 1.2, h + 0.4, z] }, [0.6, 0.6, 0.6], { ao: 0 });
+      for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; B.cyl('iron', [0.02, 0.02, 1.1, 4], { p: [x + 1.2 + Math.cos(a) * 0.32, h - 0.35, z + Math.sin(a) * 0.32] }, [0.5, 0.5, 0.5], { ao: 0 }); } B.tor('iron', [0.32, 0.02, 4, 12], { p: [x + 1.2, h + 0.2, z], r: [Math.PI / 2, 0, 0] }, [0.5, 0.5, 0.5], { ao: 0 }); B.tor('iron', [0.32, 0.02, 4, 12], { p: [x + 1.2, h - 0.9, z], r: [Math.PI / 2, 0, 0] }, [0.5, 0.5, 0.5], { ao: 0 }); skull(B, { p: [x + 1.2, h - 0.95, z], r: 0.4 }); };
+    cage(-6.5, -2.5); cage(6.2, -3.6, 3.0); cage(-9, -10, 3.6); cage(9.5, -9, 3.2);
+    for (const [x, z] of [[-5.2, -9], [6.2, -10]]) { for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; B.cyl('woodChar', [0.1, 0.12, 2.0, 5], { p: [x + Math.cos(a) * 0.7, 0.8, z + Math.sin(a) * 0.7], r: [Math.sin(a) * 0.45, a, -Math.cos(a) * 0.45] }, [0.8, 0.8, 0.8], { cast: false }); } c.fire({ p: [x, 0.3, z], w: 1.3, h: 2.6, power: 1.1, embers: 14, smoke: 0.3, tongues: 3, glow: 0.7 }); }
+    // gold hoards flanking the dais (muted; lit by the pyre)
+    for (const [x, z, s] of [[-5.2, -5.2, 1.3], [5.8, -6.0, 1.5], [-9, -14, 1.8], [9.5, -14, 1.7]]) {
+      const g = new THREE.SphereGeometry(1.4 * s, 14, 8, 0, 6.283, 0, 1.2).scale(1.3, 0.55, 1); B.geo('gold', await0(g, c.seed + z), { p: [x, c.hAt(x, z) - 0.1, z] }, [0.8, 0.7, 0.6], { cast: true, uv: 0.5, ao: 0.4 });
+      for (let i = 0; i < 36; i++) { const a = rng() * 6.28; const r = Math.sqrt(rng()) * 1.5 * s; B.cyl('gold', [0.09, 0.09, 0.02, 8], { p: [x + Math.cos(a) * r, 0.45 * s * Math.max(0.1, 1 - r / (1.6 * s)) + 0.06, z + Math.sin(a) * r * 0.8], r: [rr(rng, -0.7, 0.7), rng() * 6, rr(rng, -0.7, 0.7)] }, [0.9, 0.9, 0.9], { ao: 0 }); }
+      B.cyl('gold', [0.1, 0.06, 0.25, 8], { p: [x + 0.6 * s, 0.7 * s, z - 0.2], r: [0.3, 0, 0.4] }, [0.9, 0.9, 0.9], { ao: 0 });
     }
-    for (const [x, z] of [[-6, -6], [7, -7], [-3.5, -12], [4, -13], [-10, -9], [11, -10]]) { brazier(B, { p: [x, 0, z] }, { h: 1.3 }); c.fire({ p: [x, 1.5, z], w: 0.8, h: 1.7, power: 1.3, embers: 10, tongues: 2, glow: 1.2, light: x === -6 || x === 7, lightI: 40, lightDist: 14 }); }
-    const crown = bannerTex('#5a0e10', '#e8b040');
-    flagBanner(c, [-7.4, 0, -4], { h: 6.5, tex: crown, w: 1.6, len: 2.6 }); flagBanner(c, [8.0, 0, -5.5], { h: 6.5, tex: crown, w: 1.6, len: 2.6, yaw: 0.3 }); flagBanner(c, [-1.8, 0, -16], { h: 8, tex: crown, w: 2, len: 3.2 }); flagBanner(c, [3, 0, -17], { h: 8, tex: crown, w: 2, len: 3.2 });
-    // glints
-    const glint = new Emitter(c.stage, c.group, { max: 120, sprite: glintTex(), blending: 'add', order: 9, rate: 8 * (0.4 + c.q * 0.6), spawn: () => { const hp = [[-4.6, -8.5], [5.5, -9.5], [0.6, -7.2], [-7.5, -14], [8.5, -13]][Math.floor(rng() * 5)]; return { pos: [hp[0] + rr(rng, -1.6, 1.6), rr(rng, 0.3, 1.1), hp[1] + rr(rng, -1.2, 1.2)], vel: [0, 0.03, 0], life: 1.1, size: 0.02, sizeEnd: 0.4, color: 0xffe08a, colorEnd: 0xffc040, alpha: 1, alphaEnd: 0, rot: rng() * 3, spin: 1 }; } });
+    const crown = bannerTex('#4a0a0e', '#d8a038');
+    flagBanner(c, [-7.8, 0, -6.8], { h: 6.8, tex: crown, w: 1.6, len: 2.6 }); flagBanner(c, [8.2, 0, -7.2], { h: 6.8, tex: crown, w: 1.6, len: 2.6, yaw: 0.3 }); flagBanner(c, [-3.6, 0, -15], { h: 8.4, tex: crown, w: 2, len: 3.2 }); flagBanner(c, [4.4, 0, -15], { h: 8.4, tex: crown, w: 2, len: 3.2 });
+    const glint = new Emitter(c.stage, c.group, { max: 120, sprite: glintTex(), blending: 'add', order: 9, rate: 7 * (0.4 + c.q * 0.6), spawn: () => { const hp = [[-5.2, -5.2], [5.8, -6.0], [-9, -14], [9.5, -14]][Math.floor(rng() * 4)]; return { pos: [hp[0] + rr(rng, -1.6, 1.6), rr(rng, 0.3, 1.1), hp[1] + rr(rng, -1.2, 1.2)], vel: [0, 0.03, 0], life: 1.1, size: 0.02, sizeEnd: 0.4, color: 0xffe08a, colorEnd: 0xffc040, alpha: 1, alphaEnd: 0, rot: rng() * 3, spin: 1 }; } });
     c.extra.push(glint);
-    c.ambient = { ash: 20, ambientEmbers: 30, wind: 1.0 };
+    c.blobs.push({ p: [KX, KZ], s: [3.2, 2.6], a: 0.9 });
+    c.ambient = { ash: 18, ambientEmbers: 22, wind: 1.0 };
     c.stormy = true;
   } else if (elite) {
     // ogre camp remains: giant bones, a cooking pot over a smouldering fire, a looming rock formation
@@ -567,6 +605,18 @@ export function gallowsHill(c) {
   if (boss) c.smokeSources.push({ p: [-20, 2, -30], rate: 0.3, size: 5 }, { p: [22, 2, -34], rate: 0.3, size: 5 });
   c.puddles = [[-5.8, 2, 1.3], [6.5, 4, 1.4], [-3, -4.2, 1.1]];
   c.puddleOpts = { deep: boss ? 0x180808 : 0x0a0c18, shallow: boss ? 0x3a1818 : 0x283040, spark: boss ? 0xff5a30 : 0xff9a60, tl: 0.05, tlCol: 0x06060c, mirror: 0.15 };
+}
+let _rockSet = null;
+function rockTexSet() { return _rockSet || (_rockSet = (() => { const s = rockTex({ tint: 0x6a5a58, dark: 0x1a1210, seed: 91 }); s.map.wrapS = s.map.wrapT = THREE.RepeatWrapping; s.map.repeat.set(3, 3); s.normalMap.repeat.set(3, 3); return s; })()); }
+function canvasTex2(name) {
+  return canvasTex(name, 512, (g, s) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, s, s); g.translate(s / 2, s / 2); g.strokeStyle = '#ff3a1a'; g.lineCap = 'round';
+    for (const [r, w] of [[0.46, 0.012], [0.4, 0.006], [0.2, 0.01]]) { g.lineWidth = s * w; g.beginPath(); g.arc(0, 0, s * r, 0, 6.283); g.stroke(); }
+    g.lineWidth = s * 0.008;
+    for (let i = 0; i < 24; i++) { const a = i / 24 * 6.283; g.beginPath(); g.moveTo(Math.cos(a) * s * 0.41, Math.sin(a) * s * 0.41); g.lineTo(Math.cos(a) * s * 0.455, Math.sin(a) * s * 0.455); g.stroke(); }
+    g.beginPath(); for (let i = 0; i < 5; i++) { const a = -1.571 + i * 2.513; const x = Math.cos(a) * s * 0.2; const y = Math.sin(a) * s * 0.2; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); g.stroke();
+    g.fillStyle = 'rgba(255,60,20,.25)'; g.beginPath(); g.arc(0, 0, s * 0.18, 0, 6.283); g.fill();
+  }, { srgb: true });
 }
 function await0(g, seed) { // displaced mound (sync helper)
   const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i); const y = p.getY(i); const z = p.getZ(i); const n = Math.sin(x * 3.1 + seed) * Math.cos(z * 2.7) * 0.08 + Math.sin(x * 9 + z * 7) * 0.025; p.setY(i, y + n * (y > 0.05 ? 1 : 0)); }

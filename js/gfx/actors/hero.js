@@ -35,8 +35,8 @@ function mats() {
   const W0 = { tint: 0xffffff };
   MATS.cloth = mat('cloth', { ...vc, ...W0, dark: 0xb4b4b4, metalness: 0, repeat: 3 });
   MATS.leather = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 7 });
-  MATS.metal = mat('iron', { ...vc, ...W0, color: 0xa4b8e0, dark: 0xc0c4cc, metalness: 0.95, roughness: 0.55, envMapIntensity: 1.9, repeat: 2.5, normalScale: 0.6 });
-  MATS.dark = mat('iron', { ...vc, ...W0, color: 0xb0bce0, dark: 0x8c8c94, metalness: 0.9, roughness: 0.75, envMapIntensity: 1.5, repeat: 2.5, normalScale: 0.8 });
+  MATS.metal = mat('iron', { ...vc, ...W0, color: 0xece8e0, dark: 0xc0c4cc, metalness: 0.92, roughness: 0.68, envMapIntensity: 1.6, repeat: 2.5, normalScale: 0.6 });
+  MATS.dark = mat('iron', { ...vc, ...W0, color: 0xd8d6d4, dark: 0x8c8c94, metalness: 0.9, roughness: 0.75, envMapIntensity: 1.5, repeat: 2.5, normalScale: 0.8 });
   MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xf0f0f0, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.15 });
   MATS.hair = mat('furDark', { ...vc, ...W0, dark: 0x909090, metalness: 0, roughness: 0.85, repeat: 2 });
   MATS.eye = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
@@ -210,14 +210,14 @@ function addHead(ctx, hs) { // hs: face spec
 // ---- shared armour / cape builders
 function pauldron(ctx, side, { r = 0.11, n = 4, col, col2, trim, tier2 = false }) {
   const { sk } = ctx; const sx = side === 'L' ? 1 : -1; const c = sx > 0 ? Math.PI / 2 : -Math.PI / 2;
-  const tilt = { r: [0, 0, -sx * 0.32] };
+  const tilt = { r: [0, 0, -sx * 0.5] };
   for (let i = 0; i < n; i++) {
-    const y = 0.075 - i * 0.04; const rad = r * (1 + 0.04 * i);
-    const lame = loft([{ y: y + 0.03, rx: rad * 0.9, rz: rad * 0.98, ox: sx * 0.022 }, { y: y - 0.022, rx: rad, rz: rad * 1.04, ox: sx * 0.022 }], { N: 22, ring: { a0: c - 2.2, a1: c + 2.2, open: true }, thick: 0.006 });
+    const y = 0.07 - i * 0.045; const rad = r * (1 + 0.07 * i);
+    const lame = loft([{ y: y + 0.03, rx: rad * 0.9, rz: rad * 0.98, ox: sx * 0.022 }, { y: y - 0.022, rx: rad, rz: rad * 1.04, ox: sx * 0.022 }], { N: 22, ring: { a0: c - 1.75, a1: c + 1.75, open: true }, thick: 0.006 });
     sk.add('metal', tint(X(lame, tilt), i % 2 ? col2 : col, (x, yy) => 0.78 + 0.22 * sstep(y - 0.03, y + 0.03, yy)), `arm${side}`, null);
-    sk.add('metal', tint(X(torus(rad * 1.0, 0.0045, 22, 5), { p: [sx * 0.022, y - 0.022, 0], r: [Math.PI / 2, 0, 0], s: [1, 1.04, 1] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.32)), trim), `arm${side}`, null);
+    sk.add('metal', tint(X(torus(rad * 1.0, 0.0045, 22, 5), { p: [sx * 0.022, y - 0.022, 0], r: [Math.PI / 2, 0, 0], s: [1, 1.04, 1] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.5)), trim), `arm${side}`, null);
   }
-  const dome = X(sphereShell(r * 0.86, 0.34, 18), { p: [sx * 0.022, 0.095, 0], s: [1, 0.55, 1.0] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.32));
+  const dome = X(sphereShell(r * 0.6, 0.3, 14), { p: [sx * 0.02, 0.085, 0], s: [1, 0.5, 1.0] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.5));
   sk.add('metal', tint(dome, col2), `arm${side}`, null);
   sk.add('metal', tint(rivets([[sx * 0.09, 0.09, 0.02, sx, 1, 0], [sx * 0.07, 0.1, 0.07, 0, 1, 1], [sx * 0.07, 0.1, -0.07, 0, 1, -1]], 0.009), trim), `arm${side}`, null);
   if (tier2) sk.add('2:metal', tint(X(new THREE.ConeGeometry(0.02, 0.1, 8), { p: [sx * (r + 0.03), 0.1, 0], r: [0, 0, -sx * 1.15] }), trim), `arm${side}`, null);

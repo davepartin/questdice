@@ -64,13 +64,10 @@ export function dryTree(seed, o = {}) {
 export function pine(seed, { h = 7, r = 1.7, tiers = 10, K = 10, frost = 0.0, dead = 0, color = [0.55, 0.62, 0.58] } = {}) {
   const rng = mulberry32(seed);
   const parts = [];
-  // trunk
-  const trunk = new THREE.CylinderGeometry(0.06 * h * 0.12, 0.2 * h * 0.12, h * 0.95, 6, 2, true).translate(0, h * 0.475, 0);
-  parts.push(finishGeo(trunk, { color: [0.25, 0.18, 0.13], uv: 0.4 }));
   const pos = []; const col = [];
   for (let t = 0; t < tiers; t++) {
     const k = t / (tiers - 1);
-    const yb = h * (0.14 + 0.82 * k * 0.95); const rad = r * (1.0 - k * 0.92) * (0.9 + rng() * 0.2) + 0.12;
+    const yb = h * (0.27 + 0.69 * k * 0.95); const rad = r * (1.0 - k * 0.92) * (0.9 + rng() * 0.2) + 0.12;
     const hgt = h * (0.2 + 0.05 * (1 - k)); const yTop = yb + hgt;
     const ring = [];
     for (let i = 0; i < K * 2; i++) {
@@ -101,6 +98,15 @@ export function pine(seed, { h = 7, r = 1.7, tiers = 10, K = 10, frost = 0.0, de
 }
 
 // Cheap flat pine card for the far wall: 3 stacked triangles in one plane + a cross plane.
+// Real trunk for a pine: tapered, root-flared, charcoal bark with a slight lean. Instanced alongside the foliage.
+export function pineTrunk(seed, { h = 8 } = {}) {
+  const rng = mulberry32(seed + 5);
+  const pts = []; const lean = (rng() - 0.5) * 0.4;
+  for (let i = 0; i <= 5; i++) { const t = i / 5; pts.push([lean * t * t, -0.2 + h * 0.97 * t, lean * 0.6 * t * t]); }
+  const g = tube(pts, (t) => 0.3 * (1 - t * 0.85) + 0.22 * Math.pow(1 - t, 8), { segs: 8, radial: 7 });
+  return finishGeo(g, { color: [0.7, 0.62, 0.56], uv: 0.35 });
+}
+
 export function pineCard(seed, { h = 8, w = 3 } = {}) {
   const rng = mulberry32(seed); const pos = []; const col = [];
   for (let c = 0; c < 2; c++) {

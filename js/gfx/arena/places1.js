@@ -34,10 +34,10 @@ export function burntOrchard(c) {
     sky: { hor: 0x8a2c20, mid: 0x3c2048, top: 0x120c2c, glows: [{ az: -10, w: 30, h: 5.5, color: 0xff5a1a, k: 1.3 }, { az: 38, w: 55, h: 4.5, color: 0xd0402a, k: 0.45 }, { az: -72, w: 40, h: 4, color: 0x9a2a48, k: 0.35 }], moon: { on: 0 }, stars: 0.5, cloud: 0.72, cloudDark: 0x261630, cloudLit: 0xff6a30 },
     fog: { base: 0x4a1c1c, dens: 0.0095, fall: 0.2, height: 0.6, glow: 0.85 },
     env: { top: 0x2a2050, horizon: 0xff6a30, ground: 0x140a0c, lights: [{ color: 0xff9a5a, intensity: 16, pos: [-6, 3, 4], size: 4 }, { color: 0x7a80ff, intensity: 7, pos: [5, 6, -6], size: 5 }, { color: 0xffffff, intensity: 1.2, pos: [0, 9, 0], size: 5 }] },
-    key: { color: 0xff9d5e, intensity: 2.3, pos: [-4.4, 3.6, 5.4] },
-    rim: { color: 0x6a82ff, intensity: 1.4, pos: [5, 5, -10] },
-    hemi: { sky: 0x3a3454, ground: 0x4a2c1a, intensity: 0.42 },
-    look: LOOK({ bloom: 0.8, exposure: 0.92, vignette: 0.55, sat: 1.12, contrast: 1.15, tilt: 0.14, shadowTint: 0xc8e4ff, highTint: 0xfff0d8 }),
+    key: { color: 0xffa858, intensity: 2.4, pos: [-4.4, 3.6, 5.4] },
+    rim: { color: 0x8a64ff, intensity: 2.8, pos: [5, 5, -10] },
+    hemi: { sky: 0x3a2e5a, ground: 0x4a2c1a, intensity: 0.4 },
+    look: LOOK({ exposure: 0.92, vignette: 0.55, sat: 1.12, contrast: 1.15, tilt: 0.14, shadowTint: 0xc8e4ff, highTint: 0xfff0d8 }),
   });
   buildBackdrop(c, {
     ground,

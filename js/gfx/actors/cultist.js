@@ -8,7 +8,7 @@ import { Actor } from './base.js';
 import { Particles } from '../particles.js';
 import { sprite as spriteTex } from '../tex.js';
 import {
-  THREE, sdf, smax, U, mirX, BUMP, sculpt, Kit, tpm, std, glowMat, finish, spike, leaf, turned, paintGeo, ropeGeo, sampleSurface, flapGeo, Hang, Follow,
+  setRim, contactShadow, updateShadow, THREE, sdf, smax, U, mirX, BUMP, sculpt, Kit, tpm, std, glowMat, finish, spike, leaf, turned, paintGeo, ropeGeo, sampleSurface, flapGeo, Hang, Follow,
   mulberry32, makeNoise, rad, clamp, lerp, sstep, sn, ease,
 } from './parts.js';
 
@@ -49,6 +49,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const tc = new THREE.Color(); const sc = new THREE.Color();
   const EMBER = 0xff6a1a;
 
+  setRim(0xc070ff);
   // ---- materials
   const robeDark = tpm('cinderCloth', { tint: 0x3a3633, dark: 0x0a0908, seed: 3, roughness: 1 }, { scale: 3, nrm: 0.8, ember: EMBER, side: THREE.DoubleSide });
   const robeAsh = tpm('cinderCloth', { tint: 0x8a857e, dark: 0x1e1c1a, seed: 5, roughness: 1 }, { scale: 3, nrm: 0.8, ember: EMBER, side: THREE.DoubleSide });
@@ -105,9 +106,9 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
 
   // skirts: charcoal under-robe, ash over-robe (open front), ragged glowing hems, swaying
   const hangs = [];
-  const skirt1 = robeGeo({ yTop: 0.06, yBot: -0.94, rTop: 0.16, rBot: 0.29, nA: 64, nT: 20, folds: 8, foldAmp: 0.035, jag: 0.1, seed: seed + 1, base: [0.3, 0.29, 0.28], glow: 1.1 });
-  const skirt2 = robeGeo({ yTop: 0.05, yBot: -0.72, rTop: 0.18, rBot: 0.32, nA: 56, nT: 18, gap: 1.2, folds: 6, foldAmp: 0.045, jag: 0.22, seed: seed + 2, base: [0.62, 0.6, 0.57], glow: 1.0 });
-  const skirt3 = robeGeo({ yTop: 0.06, yBot: -0.5, rTop: 0.19, rBot: 0.27, nA: 24, nT: 12, gap: Math.PI * 1.35, folds: 4, foldAmp: 0.05, jag: 0.3, seed: seed + 3, base: [0.45, 0.43, 0.4], glow: 1.2 });
+  const skirt1 = robeGeo({ yTop: 0.06, yBot: -0.94, rTop: 0.16, rBot: 0.29, nA: 96, nT: 20, folds: 11, foldAmp: 0.06, jag: 0.1, seed: seed + 1, base: [0.3, 0.29, 0.28], glow: 1.1 });
+  const skirt2 = robeGeo({ yTop: 0.05, yBot: -0.72, rTop: 0.18, rBot: 0.32, nA: 84, nT: 18, gap: 1.2, folds: 9, foldAmp: 0.07, jag: 0.22, seed: seed + 2, base: [0.62, 0.6, 0.57], glow: 1.0 });
+  const skirt3 = robeGeo({ yTop: 0.06, yBot: -0.5, rTop: 0.19, rBot: 0.27, nA: 24, nT: 12, gap: Math.PI * 1.35, folds: 7, foldAmp: 0.08, jag: 0.3, seed: seed + 3, base: [0.45, 0.43, 0.4], glow: 1.2 });
   skirt3.rotateY(Math.PI);
   for (const [g, mt, len] of [[skirt1, robeDark, 1.0], [skirt2, robeAsh, 0.78], [skirt3, robeAsh, 0.56]]) {
     const hg = new Hang(g, { top: 0.06, len }); const m = kit.mesh(hips, g, mt); m.frustumCulled = false; hangs.push(hg);
@@ -201,7 +202,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   // hood: thick shell that frames the mask, falls to a point at the back
   const hoodF = (() => {
     const outer = U(0.06, sdf.ell(0, 0.09, -0.015, 0.145, 0.165, 0.18), sdf.cap([0, 0.1, -0.1], [0, -0.1, -0.3], 0.1, 0.03), sdf.cap([-0.14, 0.0, 0.0], [0.14, 0.0, 0.0], 0.1, 0.1));
-    const inner = sdf.ell(0, 0.075, 0.03, 0.112, 0.14, 0.17);
+    const inner = sdf.ell(0, 0.07, 0.0, 0.105, 0.14, 0.16);
     const open = sdf.box(0, 0.05, 0.22, 0.095, 0.17, 0.12, 0.05);
     const chinCut = sdf.box(0, -0.2, 0.0, 0.5, 0.15, 0.5);
     return (x, y, z) => Math.max(outer(x, y, z), -inner(x, y, z) * 1, -(open(x, y, z)) * 1, -(chinCut(x, y, z)) * 0 - Math.max(0, 0) + (y < -0.07 ? 0 : 0) , -(y + 0.09) * 0 - 0);
@@ -280,6 +281,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   let emitAcc = 0;
 
   // ================================================================ anchors
+  contactShadow(a, 0.55, 0.55, 0.6);
+  a.root.scale.setScalar(1.15); a.height = 1.95 * 1.15; a.radius = 0.6;
   a.anchor('head', head, 0, 0.3, 0.0);
   a.anchor('chest', chest, 0, 0.05, 0.14);
   a.anchor('feet', a.model, 0, 0.02, 0);
@@ -380,7 +383,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const wardOn = new Set(['guard', 'tele_guard']); const hexOn = new Set(['hex', 'tele_hex']);
   a.onUpdate = (dt, t) => {
     const cn = a.animator.cur?.name; const ct = a.animator.cur?.t ?? 0; const alive = a.alive;
-    follow.update(dt); followH.update(dt);
+    follow.update(dt); followH.update(dt); updateShadow(a);
     const fade = a.dissolving ? Math.max(0, 1 - a._uDissolve.value * 2.5) : 1;
     hangs.forEach((h, i) => h.update(follow.x * (0.5 + i * 0.1) + 0.012 * Math.sin(t * 1.1 + i), follow.z * 0.5 + 0.012 * Math.sin(t * 0.9 + i * 2), 0.01 + 0.004 * i, t, i * 1.7, follow.y * 0.2));
     // flame: lively tongues + deterministic flicker of the one point light

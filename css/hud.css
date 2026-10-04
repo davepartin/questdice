@@ -153,6 +153,10 @@
 .pl-call.tone-slam { background: repeating-linear-gradient(-45deg, #ff6a4a 0 8px, #ee4a2a 8px 16px); color: #1a0402; }
 @keyframes callIn { from { opacity: 0; transform: scaleY(.3); } } @keyframes callPulse { 50% { filter: brightness(1.25); } }
 
+/* three foes on a phone: squeeze the plate, keep the figure big */
+.b3-plates.compact .b3-plate { padding: .34rem .36rem .38rem; gap: .22rem; } .b3-plates.compact .pl-name { font-size: .62rem; letter-spacing: .03em; } .b3-plates.compact .pl-intent { gap: .3rem; padding: .2rem .28rem .2rem .2rem; }
+.b3-plates.compact .med { width: 1.9rem; height: 1.9rem; } .b3-plates.compact .in-fig b { font-size: 1.2rem; } .b3-plates.compact .in-fig small, .b3-plates.compact .in-hint { display: none; } .b3-plates.compact .in-name { font-size: .55rem; letter-spacing: .06em; }
+.b3-plates.compact .pl-call b { font-size: .52rem; letter-spacing: .03em; } .b3-plates.compact .pl-call small { font-size: .5rem; } .b3-plates.compact .pl-chips .chip { font-size: .5rem; } .b3-plates.compact .pl-bar.bar .bar-num { font-size: .44rem; }
 /* ================================================================== ribbon */
 .b3-ribbon { position: absolute; left: .7rem; right: .7rem; top: calc(7.4rem + var(--safe-t)); display: flex; justify-content: center; pointer-events: none; transition: opacity .3s; }
 .b3-ribbon p { max-width: 36rem; padding: .22rem .9rem; border-radius: 2rem; background: linear-gradient(90deg, transparent, rgba(8,8,16,.72) 14%, rgba(8,8,16,.72) 86%, transparent); font-size: .72rem; line-height: 1.3; color: var(--h-dim); text-align: center; text-shadow: 0 1px 3px #000; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -347,6 +351,10 @@ body.in-battle .chrome { z-index: 40; }
   .bcard { min-width: 6.9rem; } .fc-n { font-size: 1.22rem; } .fc small { font-size: .46rem; letter-spacing: .1em; }
   .hb-cta .hb-tx b { font-size: .98rem; letter-spacing: .05em; } .hb-reroll .hb-tx b { font-size: .8rem; }
   .b3-hero { gap: .5rem; } .hb-medal { width: 3.1rem; height: 3.1rem; }
+}
+@media (max-height: 900px) and (max-aspect-ratio: 5/4) {
+  .b3-dock { gap: .32rem; } .hb-cta, .hb-reroll { min-height: 3.1rem; } .hb-ghost { min-height: 3.1rem; } .hb-mini { width: 2.75rem; min-width: 2.75rem; height: 2.75rem; min-height: 2.75rem; }
+  .bc-art { width: 2.1rem; height: 2.5rem; font-size: 1.3rem; } .bcard { padding-top: .26rem; padding-bottom: .26rem; } .b3-pips small { display: none; }
 }
 @media (max-height: 680px) and (max-aspect-ratio: 5/4) {
   .b3-dock { gap: .3rem; padding-top: 1rem; } .bc-art { width: 2rem; height: 2.4rem; font-size: 1.25rem; } .bcard { min-width: 6.9rem; } .hb-cta, .hb-reroll, .hb-ghost { min-height: 3rem; } .hb-cta { min-height: 3.1rem; }

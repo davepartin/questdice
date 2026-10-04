@@ -10,7 +10,7 @@ import { Actor } from './base.js';
 import { sprite as spriteTex } from '../tex.js';
 import {
   THREE, sdf, smax, U, mirX, BUMP, sculpt, Kit, tpm, glowMat, finish, spike, leaf, turned, paintGeo, ropeGeo, sampleSurface, legIK,
-  mulberry32, makeNoise, rad, clamp, lerp, sstep, sn, ease, qFromDir, Follow, Hang, bumpGeo, rayHit, flapGeo,
+  setRim, contactShadow, updateShadow, mulberry32, makeNoise, rad, clamp, lerp, sstep, sn, ease, qFromDir, Follow, Hang, bumpGeo, rayHit, flapGeo,
 } from './parts.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -25,16 +25,17 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const tc = new THREE.Color(); const sc = new THREE.Color();
 
   // ---- per-seed variation
-  const hue = rr(0.32, 0.4);
-  const skinTint = new THREE.Color().setHSL(hue, rr(0.34, 0.45), rr(0.27, 0.33)).getHex();
+  const hue = rr(0.19, 0.26);
+  const skinTint = new THREE.Color().setHSL(hue, rr(0.32, 0.42), rr(0.29, 0.35)).getHex();
   const skinDark = new THREE.Color().setHSL(hue, 0.5, 0.07).getHex();
   const vestHue = [0x5a3a24, 0x4a4f36, 0x6a2e26, 0x3b3f4a][Math.floor(rng() * 4)];
   const knifeSide = rng() < 0.5 ? R : L;      // hand that holds the dagger
   const offSide = -knifeSide;                  // free hand: throws the bomb, carries the buckler
   const earTorn = [rng() < 0.9, rng() < 0.65];
 
+  setRim(0xb4ff5a);
   // ---- materials (all from the shared library, triplanar + vertex colours)
-  const skin = tpm('skinGoblin', { tint: skinTint, dark: skinDark, seed: 3 + (seed % 5), color: 0xa4b49c }, { scale: 5, nrm: 0.6 });
+  const skin = tpm('skinGoblin', { tint: skinTint, dark: skinDark, seed: 3 + (seed % 5), color: 0xa4b49c }, { scale: 5, nrm: 0.6, ember: 0xff3018, emberK: 0.7 });
   const leather = tpm('leather', { tint: vestHue, dark: 0x0c0705, seed: 5, roughness: 0.85 }, { scale: 14, nrm: 0.7 });
   const cloth = tpm('cloth', { tint: 0x8a7a5a, dark: 0x1c140a, seed: 2 }, { scale: 9 });
   const clothDS = tpm('cloth', { tint: 0x8a7a5a, dark: 0x1c140a, seed: 4 }, { scale: 9, side: THREE.DoubleSide });
@@ -54,7 +55,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const head = a.joint('head', neck, 0, 0.1, 0.09); head.scale.setScalar(1.2);
   const jaw = a.joint('jaw', head, 0, 0.035, 0.0); jaw.rotation.x = 0.2;
   const lids = a.joint('lids', head, 0, 0.096, 0.1);
-  spine.rotation.x = 0.12; chest.rotation.x = 0.22; neck.rotation.x = -0.3; head.rotation.x = -0.06;
+  spine.rotation.x = 0.2; chest.rotation.x = 0.3; neck.rotation.x = -0.4; head.rotation.x = -0.1;
   const th = {}; const kn = {}; const an = {}; const ft = {}; const sh = {}; const el = {}; const wr = {}; const hd = {};
   for (const sx of [R, L]) {
     const k = sx === R ? 'R' : 'L';
@@ -74,7 +75,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const ik = { [R]: a.joint('ikR', a.model, 0, 0, 0), [L]: a.joint('ikL', a.model, 0, 0, 0) };
 
   const S = (joint, f, min, max, hBase, color, o = {}) => {
-    const g = sculpt(f, { min, max, h: hBase * Q, color, aoR: o.aoR ?? 1.3, aoK: o.aoK ?? 0.9 });
+    const g = sculpt(f, { min, max, h: hBase * Q, color, aoR: o.aoR ?? 1.6, aoK: o.aoK ?? 1.0 });
     kit.add(joint, g, o.mat || skin, o.xf || {});
     return g;
   };
@@ -120,7 +121,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const brw = Math.exp(-(((y - 0.122) / 0.02) ** 2)) * sstep(0.05, 0.1, z); c.multiply(sc.setRGB(1 - brw * 0.1, 1 - brw * 0.15, 1 - brw * 0.2));
     const flush = Math.exp(-(((Math.abs(x) - 0.066) / 0.02) ** 2 + ((y - 0.06) / 0.02) ** 2)); c.lerp(sc.setRGB(1.0, 0.8, 0.7), flush * 0.35);
   };
-  skinList.push({ joint: head, g: S(head, BUMP(headF, { amp: 0.0008, freq: 40, seed: seed + 3 }), [-0.12, 0.0, -0.11], [0.12, 0.2, 0.21], 0.0048, headCol, { aoR: 1.4 }) });
+  skinList.push({ joint: head, g: S(head, BUMP(headF, { amp: 0.0008, freq: 40, seed: seed + 3 }), [-0.12, 0.0, -0.11], [0.12, 0.2, 0.21], 0.0054, headCol, { aoR: 1.4 }) });
 
   // lower jaw: heavy underbite chin, lower lip, tongue; hinged at the cheek
   const jawF = (() => {
@@ -181,7 +182,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const j = earJ[sx]; const torn = earTorn[i];
     const notch = torn ? [{ u: rr(0.6, 0.8), d: rr(0.45, 0.7), w: 0.06, side: 1 }, { u: rr(0.35, 0.5), d: 0.45, w: 0.045, side: -1 }, { u: 0.9, d: 0.3, w: 0.04, side: 1 }] : [];
     const geo = leaf({ len: 0.26, halfW: (u) => 0.072 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.1 + u * 0.9)), 0.75) * Math.pow(1 - u * 0.985, 0.55) * (0.5 + 0.5 * Math.min(1, u * 4)), thick: 0.0045, cup: 0.014, bend: 0.2, notch, jag: torn ? 0.1 : 0.03, seed: seed + i, segU: Math.round(22 / Math.sqrt(Q)), segV: 8, col: 0xffffff, edgeCol: 0xc09080 });
-    kit.add(j, geo, skin, { q: basisQ([sx * 0.85, 0.42, -0.3], [sx * 0.25, 0.0, 1]) });
+    kit.add(j, geo, skin, { q: basisQ([sx * 0.85, 0.42, -0.3], [sx * 0.25, 0.0, 1]), ember: 0.5 });
     kit.add(j, new THREE.SphereGeometry(0.022, 10, 8), skin, { s: [1, 1, 0.8] });
     if (i === 0 && torn) kit.add(j, new THREE.TorusGeometry(0.01, 0.0018, 6, 14), iron, { p: [sx * 0.13, 0.058, -0.03], r: [0.4, 0.8, 0.1] });
   }
@@ -196,7 +197,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const chestF = U(0.03, sdf.ell(0, 0.065, 0.035, 0.135, 0.125, 0.11, [0.42, 0, 0]), sdf.ell(0, 0.135, -0.055, 0.095, 0.075, 0.07, [0.2, 0, 0]),
     sdf.cap([-0.15, 0.115, 0.03], [0.15, 0.115, 0.03], 0.04, 0.04), sdf.cap([0, 0.1, 0.02], [0, 0.13, 0.09], 0.05, 0.042), mirX(sdf.cap([0.012, 0.118, 0.1], [0.118, 0.128, 0.06], 0.0105, 0.0105)));
   const bodyCol = (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(1, 1, 1); crevice(c, ao); const belly = sstep(0.0, 0.1, z) * sstep(0.05, 0.0, y); c.lerp(sc.setRGB(1.0, 0.95, 0.75), belly * 0.25); };
-  skinList.push({ joint: chest, g: S(chest, ribsMod(chestF), [-0.24, -0.2, -0.18], [0.24, 0.24, 0.22], 0.0075, bodyCol) });
+  skinList.push({ joint: chest, g: S(chest, ribsMod(chestF), [-0.24, -0.2, -0.18], [0.24, 0.24, 0.22], 0.0085, bodyCol) });
   const bellyF = U(0.035, sdf.ell(0, 0.06, 0.05, 0.112, 0.105, 0.1), sdf.ell(0, 0.015, 0.03, 0.125, 0.065, 0.095));
   skinList.push({ joint: spine, g: S(spine, bellyF, [-0.18, -0.12, -0.14], [0.18, 0.24, 0.18], 0.0085, bodyCol) });
   skinList.push({ joint: hips, g: S(hips, sdf.ell(0, -0.01, 0.005, 0.115, 0.085, 0.09), [-0.17, -0.16, -0.14], [0.17, 0.12, 0.14], 0.009, plain) });
@@ -276,7 +277,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const band = Math.abs((x * 0.82 - y * 0.57) - 0.01);
     c.lerp(tc.setRGB(0.32, 0.2, 0.13), sstep(0.0165, 0.013, band) * 0.9);
   };
-  S(chest, vestF, [-0.24, -0.12, -0.2], [0.24, 0.26, 0.2], 0.0078, vestCol, { mat: leather, aoK: 0.8, aoR: 0.9 });
+  S(chest, vestF, [-0.24, -0.12, -0.2], [0.24, 0.26, 0.2], 0.009, vestCol, { mat: leather, aoK: 0.8, aoR: 0.9 });
   {
     const hit = rayHit(vestF, [0.04, 0.0, 0.3], [0, 0, -1], 0.5);
     if (hit) {
@@ -312,8 +313,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     };
     const hollow1 = (x, y, z) => Math.max(p1(x, y, z), -(Math.hypot(x - sx * 0.012, y + 0.004, z) - 0.074));
     const hollow2 = (x, y, z) => Math.max(p2(x, y, z), -(Math.hypot(x - sx * 0.034, y + 0.034, z) - 0.074));
-    kit.add(jn, sculpt(hollow1, { min: [-0.13, -0.1, -0.12], max: [0.13, 0.12, 0.12], h: 0.0062 * Q * 0.9, color: pc, aoK: 0.7 }), iron);
-    kit.add(jn, sculpt(hollow2, { min: [-0.14, -0.13, -0.12], max: [0.14, 0.1, 0.12], h: 0.0062 * Q * 0.9, color: pc, aoK: 0.7 }), iron);
+    kit.add(jn, sculpt(hollow1, { min: [-0.13, -0.1, -0.12], max: [0.13, 0.12, 0.12], h: 0.0078 * Q * 0.9, color: pc, aoK: 0.7 }), iron);
+    kit.add(jn, sculpt(hollow2, { min: [-0.14, -0.13, -0.12], max: [0.14, 0.1, 0.12], h: 0.0078 * Q * 0.9, color: pc, aoK: 0.7 }), iron);
     for (const [px, py, pz] of [[sx * 0.05, 0.062, 0.025], [sx * 0.07, 0.035, -0.02], [sx * 0.015, 0.075, -0.035], [sx * 0.06, -0.012, 0.045]]) kit.add(jn, new THREE.SphereGeometry(0.0055, 8, 6), iron, { p: [px, py, pz] });
   }
   {
@@ -409,6 +410,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   }
 
   // ================================================================ anchors, IK, build
+  contactShadow(a, 0.5, 0.5, 0.6);
+  a.root.scale.setScalar(1.3); a.height = 1.25 * 1.3; a.radius = 0.65;
   a.anchor('head', head, 0, 0.25, 0.05);
   a.anchor('chest', chest, 0, 0.06, 0.15);
   a.anchor('feet', a.model, 0, 0.02, 0);
@@ -441,7 +444,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const clips = {};
   clips.idle = { loop: true, dur: 2.8, fn: (t, P) => {
     const w = sn(t, 1 / 2.8);
-    stance(P, { drop: 0.005, shiftX: w * 0.018, lean: sn(t, 1 / 2.8, 0.25) * 0.015 });
+    stance(P, { drop: 0.045, shiftX: w * 0.018, spread: 0.03, lean: 0.05 + sn(t, 1 / 2.8, 0.25) * 0.015 }); P.pos('ikR', 0, 0.035 + 0.01 * w, 0.07);
     P.rot('hips', 0, 0, w * 0.035);
     breathe(P, t);
     P.rot('spine', sn(t, 0.42, 0.1) * 0.015, sn(t, 1 / 5.6) * 0.04, 0);
@@ -578,7 +581,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   a.onUpdate = (dt, t) => {
     const cur = a.animator.cur; const cn = cur?.name; const ct = cur?.t ?? 0;
     if (cn !== 'die') { solveIK[R](); solveIK[L](); }
-    follow.update(dt);
+    follow.update(dt); updateShadow(a);
     hangObj.update(follow.x * 0.5 + 0.012 * Math.sin(t * 1.7), follow.z * 0.5 + 0.01 * Math.sin(t * 1.3 + 1), 0.006, t, 0, follow.y * 0.2);
     const rel = a.userData.bomb.release;
     potHand.visible = (cn === 'throw' && ct > 0.16 && ct < rel) || cn === 'tele_cast';

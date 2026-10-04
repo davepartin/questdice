@@ -36,6 +36,7 @@ export const world = {
       this.stage = createStage(canvas);
       this.director = new Director(this.stage);
       this.stage.start();
+      try { (await import('./portrait.js')).shareRenderer(this.stage.renderer, () => this.stage.env); } catch { /* portraits fall back to their own renderer */ }
       this.available = true;
       window.__stage = this.stage;
       return true;

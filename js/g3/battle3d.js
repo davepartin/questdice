@@ -162,8 +162,9 @@ function addPlate(e) {
 }
 function sizePlates() {
   const n = Math.max(1, B.b.enemies.filter((e) => e.hp > 0).length); const w = window.innerWidth;
-  const px = landscape() ? Math.min(188, Math.max(148, w * 0.15)) : Math.max(132, Math.min(172, (w - 24) / n));
+  const px = landscape() ? Math.min(188, Math.max(148, w * 0.15)) : Math.max(104, Math.min(172, Math.floor((w - 16 - 8 * (n - 1)) / n)));
   B.hud.plates.style.setProperty('--plw', `${Math.round(px)}px`);
+  B.hud.plates.classList.toggle('compact', px < 150 && !landscape());
 }
 function intentNode(v) {
   return [HK.medallion(v.shape, v.icon),
@@ -231,8 +232,10 @@ function positionPlates() {
   };
   if (rows === 1) place(items); else { const a = items.filter((_, i) => i % 2 === 0); const b2 = items.filter((_, i) => i % 2 === 1); place(a); place(b2); for (const it of b2) it.y -= it.h + GAP; }
   const NS = items.length;
+  const obs = [hud.cards, hud.dock, landscape() ? hud.hero : null].filter((n) => n && n.offsetHeight).map((n) => n.getBoundingClientRect()).filter((r) => r.height > 4);
   for (const it of items) {
-    const y = Math.max(it.h + topSafe, it.y);
+    let y = Math.max(it.h + topSafe, it.y);
+    for (const r of obs) if (it.x + it.w / 2 > r.left && it.x - it.w / 2 < r.right && y > r.top - 8 && y - it.h < r.bottom) y = Math.max(it.h + topSafe, r.top - 8);
     it.el.style.transform = `translate3d(${it.x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
     const l = it.el._lead; const ln = l.firstChild; const dot = l.lastChild;
     ln.setAttribute('x1', it.x.toFixed(1)); ln.setAttribute('y1', (y - 1).toFixed(1)); ln.setAttribute('x2', it.hx.toFixed(1)); ln.setAttribute('y2', (it.hy - 2).toFixed(1));
@@ -399,7 +402,7 @@ function rerollText(info) {
   if (info.kind === 'none') return { label: 'No rerolls left', sub: 'actions spent' };
   const n = B.sel.size; const cost = info.perDie * n;
   if (n) return { label: `Reroll ${n} ${n === 1 ? 'die' : 'dice'}`, sub: cost ? HK.costGem(cost) : 'free' };
-  return { label: `Reroll up to ${info.dice}`, sub: info.perDie ? [HK.costGem(info.perDie), ' each'] : 'first one is free' };
+  return { label: `Reroll up to ${info.dice}`, sub: info.perDie ? [HK.costGem(info.perDie), ' each'] : 'first is free' };
 }
 export function renderShape() {
   if (B.ended) return;
