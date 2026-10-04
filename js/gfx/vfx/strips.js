@@ -243,6 +243,7 @@ export function createStrips(scene) {
 
   return {
     trail, beam, bolt,
+    get meshes() { return [...trails, ...beams, ...bolts].map((x) => x.mesh); },
     update(dt, time) { updateTrails(dt); updateBeams(dt, time); updateBolts(dt); },
     get busy() { return liveTrails.length + liveBeams.length + liveBolts.length; },
   };

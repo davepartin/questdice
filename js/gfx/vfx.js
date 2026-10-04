@@ -1195,6 +1195,20 @@ export function createVfx(stage, opts = {}) {
   }
 
   // ---------------------------------------------------------------------------------------------
+  // Keep effect geometry out of the GTAO depth/normal pre-pass: flat transparent quads would otherwise
+  // punch black rectangles of "occlusion" into the picture at --q high.
+  // ---------------------------------------------------------------------------------------------
+  const aoSkip = () => [...Object.values(sys).map((x) => x.object), ...rings.map((x) => x.mesh), ...decals.map((x) => x.mesh), ...slashes.map((x) => x.mesh), ...shields.map((x) => x.mesh),
+    ...pillars.map((x) => x.mesh), ...shellsP.map((x) => x.mesh), ...glyphs.map((x) => x.mesh), ...rifts.map((x) => x.mesh), ...strips.meshes, ...text.pool.map((x) => x.mesh), text.bmesh, overlay, ...(chainMesh ? chainMesh.map((x) => x.mesh) : [])];
+  if (stage.post?.gtao && !stage.post.gtao._vfxHooked) {
+    const g = stage.post.gtao; const orig = g.render.bind(g); g._vfxHooked = true;
+    g.render = function (...args) {
+      const list = aoSkip(); const vis = list.map((o) => o.visible); list.forEach((o) => { o.visible = false; });
+      try { return orig(...args); } finally { list.forEach((o, i) => { o.visible = vis[i]; }); }
+    };
+  }
+
+  // ---------------------------------------------------------------------------------------------
   // frame loop
   // ---------------------------------------------------------------------------------------------
   const off = stage.onFrame((dt, t) => {

@@ -99,15 +99,15 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   S(chest, torsoF, [-0.34, -0.42, -0.22], [0.34, 0.42, 0.22], 0.012, clothCol([0.62, 0.6, 0.57]), { mat: robeSolid, ember: bodyEmber });
   // the sash/over-tabard: front panel hanging from the chest
   // mantle / cowl draped over the shoulders (thick folds, glowing frayed edge)
-  const cowlF = U(0.05, sdf.eltorus(0, 0.24, 0.0, 0.27, 0.2, 0.065, [-0.15, 0, 0]), sdf.eltorus(0, 0.17, 0.02, 0.29, 0.22, 0.05, [-0.15, 0, 0]), sdf.cap([0, 0.3, -0.02], [0, 0.34, 0.03], 0.1, 0.08));
+  const cowlF = U(0.05, sdf.eltorus(0, 0.25, 0.0, 0.23, 0.17, 0.05, [-0.15, 0, 0]), sdf.eltorus(0, 0.18, 0.02, 0.25, 0.19, 0.04, [-0.15, 0, 0]), sdf.cap([0, 0.3, -0.02], [0, 0.34, 0.03], 0.1, 0.08));
   const cowlFold = (x, y, z) => { const d = cowlF(x, y, z); return d + 0.006 * Math.sin(Math.atan2(x, z) * 11 + y * 25); };
-  S(chest, cowlFold, [-0.4, 0.04, -0.3], [0.4, 0.42, 0.32], 0.011, clothCol([0.42, 0.4, 0.38]), { mat: robeSolid, ember: (x, y, z) => sstep(0.19, 0.12, y) * 0.5 });
+  S(chest, cowlFold, [-0.4, 0.04, -0.3], [0.4, 0.42, 0.32], 0.011, clothCol([0.42, 0.4, 0.38]), { mat: robeSolid, ember: (x, y, z) => sstep(0.17, 0.12, y) * 0.3 });
 
   // skirts: charcoal under-robe, ash over-robe (open front), ragged glowing hems, swaying
   const hangs = [];
-  const skirt1 = robeGeo({ yTop: 0.06, yBot: -0.94, rTop: 0.17, rBot: 0.36, nA: 64, nT: 20, folds: 8, foldAmp: 0.035, jag: 0.1, seed: seed + 1, base: [0.3, 0.29, 0.28], glow: 1.1 });
-  const skirt2 = robeGeo({ yTop: 0.05, yBot: -0.72, rTop: 0.19, rBot: 0.4, nA: 56, nT: 18, gap: 1.2, folds: 6, foldAmp: 0.045, jag: 0.22, seed: seed + 2, base: [0.62, 0.6, 0.57], glow: 1.0 });
-  const skirt3 = robeGeo({ yTop: 0.06, yBot: -0.5, rTop: 0.2, rBot: 0.33, nA: 24, nT: 12, gap: Math.PI * 1.35, folds: 4, foldAmp: 0.05, jag: 0.3, seed: seed + 3, base: [0.45, 0.43, 0.4], glow: 1.2 });
+  const skirt1 = robeGeo({ yTop: 0.06, yBot: -0.94, rTop: 0.16, rBot: 0.29, nA: 64, nT: 20, folds: 8, foldAmp: 0.035, jag: 0.1, seed: seed + 1, base: [0.3, 0.29, 0.28], glow: 1.1 });
+  const skirt2 = robeGeo({ yTop: 0.05, yBot: -0.72, rTop: 0.18, rBot: 0.32, nA: 56, nT: 18, gap: 1.2, folds: 6, foldAmp: 0.045, jag: 0.22, seed: seed + 2, base: [0.62, 0.6, 0.57], glow: 1.0 });
+  const skirt3 = robeGeo({ yTop: 0.06, yBot: -0.5, rTop: 0.19, rBot: 0.27, nA: 24, nT: 12, gap: Math.PI * 1.35, folds: 4, foldAmp: 0.05, jag: 0.3, seed: seed + 3, base: [0.45, 0.43, 0.4], glow: 1.2 });
   skirt3.rotateY(Math.PI);
   for (const [g, mt, len] of [[skirt1, robeDark, 1.0], [skirt2, robeAsh, 0.78], [skirt3, robeAsh, 0.56]]) {
     const hg = new Hang(g, { top: 0.06, len }); const m = kit.mesh(hips, g, mt); m.frustumCulled = false; hangs.push(hg);
@@ -136,7 +136,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   for (const s of [R, L]) {
     const upper = U(0.03, sdf.cap([0, 0, 0], [s * 0.02, -0.3, 0.02], 0.068, 0.082), sdf.sphere(0, 0.0, 0, 0.075));
     S(sh[s], upper, [-0.18, -0.42, -0.16], [0.18, 0.12, 0.16], 0.011, clothCol([0.55, 0.53, 0.5]), { mat: robeSolid });
-    const lower = (x, y, z) => Math.max(sdf.cap([0, 0.0, 0], [0, -0.27, 0.0], 0.08, 0.125)(x, y, z), sleeveCuff(x, y, z));
+    const lower = (x, y, z) => Math.max(sdf.cap([0, 0.0, 0], [0, -0.27, 0.0], 0.07, 0.1)(x, y, z), sleeveCuff(x, y, z));
     S(el[s], lower, [-0.2, -0.42, -0.2], [0.2, 0.1, 0.2], 0.011, clothCol([0.5, 0.48, 0.46]), { mat: robeSolid, ember: (x, y, z) => sstep(-0.22, -0.28, y) * 0.55 });
     // hand: gaunt long fingers, bound with wrappings (wrap bands tint the vertex colours)
     const fist = s === R;

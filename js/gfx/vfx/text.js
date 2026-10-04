@@ -124,9 +124,9 @@ export function createText(stage, scene) {
       // rise: fast then easing
       const rise = s.rise * 1.1 * (1 - Math.exp(-t * 3.4));
       const dist = s.base.distanceTo(_cp);
-      const phone = aspect < 1.2 ? Math.min(1.7, 1.2 / aspect) : 1;
+      const phone = aspect < 1.2 ? Math.max(0.7, aspect / 1.2 + 0.25) : 1; // portrait already magnifies (narrow hfov)
       const unit = (dist / 11) * phone; // keep a stable on-screen size at any camera distance
-      const h = 1.3 * s.size * unit * sc;
+      const h = 1.15 * s.size * unit * sc;
       s.mesh.scale.set(h * 2, h, 1);
       _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, rise * unit, s.dxz * t).add(s.base);
       if (s.crit && t < 0.25) { _v.x += Math.sin(t * 150) * 0.03 * unit; _v.y += Math.cos(t * 130) * 0.02 * unit; }
@@ -182,5 +182,5 @@ export function createText(stage, scene) {
     bm.opacity = Math.min(1, s.t / 0.06) * (k > 0.7 ? 1 - (k - 0.7) / 0.3 : 1);
     bm.color.setScalar(s.hdr);
   }
-  return { damageNumber, banner, update(dt) { update(dt); updateBanner(dt); }, pool };
+  return { damageNumber, banner, bmesh, update(dt) { update(dt); updateBanner(dt); }, pool };
 }
