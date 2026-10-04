@@ -37,7 +37,7 @@ function mats() {
   MATS.leather = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 7 });
   MATS.metal = mat('steel', { ...vc, ...W0, dark: 0xb8bcc4, metalness: 0.85, roughness: 0.7, envMapIntensity: 1.7, repeat: 2 });
   MATS.dark = mat('iron', { ...vc, ...W0, dark: 0x9a9a9a, metalness: 0.8, roughness: 0.85, envMapIntensity: 1.4, repeat: 2 });
-  MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xdcdcdc, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.35 });
+  MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xf0f0f0, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.15 });
   MATS.hair = mat('furDark', { ...vc, ...W0, dark: 0x909090, metalness: 0, roughness: 0.85, repeat: 2 });
   MATS.eye = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
   MATS.glow = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveIntensity: 2.2, vertexColors: false });
@@ -83,6 +83,7 @@ function buildFace(sp, rng) {
     const eyeD = Math.hypot(Math.abs(x) - 0.035, y - 0.116, z - 0.082);
     let a = 1 - 0.45 * gauss(eyeD, 0.026) - 0.28 * gauss(y - 0.052, 0.012) * (z > 0.06 ? 1 : 0) * gauss(x, 0.03) - 0.25 * sstep(0.03, -0.01, y);
     a *= 0.88 + 0.12 * sstep(-0.02, 0.1, y);
+    if (sp.shadowTop) a *= 1 - sp.shadowTop * sstep(0.095, 0.15, y);
     return Math.max(0.35, a);
   });
   // warm the cheeks / lips
@@ -305,12 +306,12 @@ function costumeRanger(ctx) {
     const sx = s === 'L' ? 1 : -1;
     sk.add('leather', tint(X(sphereShell(0.085, 0.55, 14), { p: [sx * 0.012, 0.03, 0], s: [1.1, 0.7, 1.0], r: [0, 0, sx * -0.4] }), 0x3a2a1a), `arm${s}`, null);
   }
-  addHead(ctx, { jaw: 1.0, chin: 1.0, brow: 1.2, nose: 1.05, eye: S.eye, browTilt: -0.35, smirk: 0.5 });
+  addHead(ctx, { jaw: 1.0, chin: 1.0, brow: 1.2, nose: 1.05, eye: S.eye, browTilt: -0.35, smirk: 0.5, shadowTop: 0.55 });
   // hood: deep, casting shadow on the upper face
   const hood = loft([-0.05, 0.02, 0.1, 0.17, 0.23, 0.275, 0.29].map((y, i) => ({ y, rx: [0.115, 0.122, 0.128, 0.126, 0.112, 0.082, 0.04][i], rz: [0.125, 0.14, 0.15, 0.148, 0.13, 0.1, 0.05][i], oz: [-0.02, -0.025, -0.03, -0.03, -0.03, -0.03, -0.03][i], n: 2.2 })), { N: 28, ring: { a0: 0.9, a1: TAU - 0.9, open: true }, thick: 0.004 });
   sk.add('cloth', tint(hood, S.cloth, (x, y, z) => 0.5 + 0.5 * sstep(-0.05, 0.28, y)), 'head', null);
-  const peak = loft([{ y: 0.115, rx: 0.1, rz: 0.12, oz: 0.0 }, { y: 0.19, rx: 0.098, rz: 0.134, oz: 0.01 }, { y: 0.24, rx: 0.06, rz: 0.1, oz: 0.0 }], { N: 20, ring: { a0: -1.0, a1: 1.0, open: true }, thick: 0.004 });
-  sk.add('cloth', tint(peak, S.cloth2), 'head', null);
+  const peak = loft([{ y: 0.25, rx: 0.1, rz: 0.12, oz: -0.01 }, { y: 0.19, rx: 0.108, rz: 0.142, oz: 0.0 }, { y: 0.15, rx: 0.1, rz: 0.146, oz: 0.004 }], { N: 22, ring: { a0: -1.25, a1: 1.25, open: true }, thick: 0.004 });
+  sk.add('cloth', tint(peak, S.cloth2, (x, y) => 0.45 + 0.55 * sstep(0.15, 0.25, y)), 'head', null);
   // eyes glint
   for (const s of [-1, 1]) sk.add('glow', X(new THREE.SphereGeometry(0.0035, 6, 4), { p: [s * 0.034, 0.118, 0.0905] }), 'head', null, { uv: 0 });
   // lower-face scarf
@@ -451,7 +452,7 @@ function costumeDwarf(ctx) {
     sk.add('metal', tint(tube([[s * 0.1, 0.2, 0], [s * 0.19, 0.22, 0.01], [s * 0.25, 0.3, 0.04], [s * 0.22, 0.38, 0.07]], (t) => 0.026 * (1 - t * 0.85), { segs: 18, radial: 8 }), 0xe0d8c0, (x, y) => 0.8 + 0.2 * sstep(0.2, 0.38, y)), 'head', null);
     sk.add('metal', tint(X(torus(0.027, 0.005, 12, 5), { p: [s * 0.14, 0.205, 0.0], r: [0, Math.PI / 2, 0] }), S.trim), 'head', null);
   }
-  const rv = []; for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; rv.push([Math.sin(a) * 0.116, 0.14, Math.cos(a) * 0.126 - 0.008, Math.sin(a), 0, Math.cos(a)]); }
+  const rv = []; for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; rv.push([Math.sin(a) * 0.122, 0.165, Math.cos(a) * 0.134 - 0.008, Math.sin(a), 0, Math.cos(a)]); }
   sk.add('metal', tint(rivets(rv, 0.008), S.trim), 'head', null);
   // huge braided beard with metal rings
   const rng = ctx.rng; const bc = S.hair; const beard = [];

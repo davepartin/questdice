@@ -7,21 +7,23 @@ import { h, $, $$, toast, buzz } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
-import { sfx } from '../audio.js';
+import { sfx, music } from '../audio.js';
 import { world } from './world.js';
 import { intentClips } from '../gfx/actors/common.js';
 import * as THREE from 'three';
 
+const stopWindups = () => { for (const h of B.windups.splice(0)) { try { h.stop(); } catch { /* ignore */ } } };
 let C = null;                // context from ui.js
 const B = {
   bw: null, b: null, hero: null, quest: null, root: null, plates: new Map(), sel: new Set(), target: 0, focus: null,
-  straight: 'atk', busy: false, ringMesh: null, swing: 0, log: null, lastRep: null, ended: false, ro: null, off: null,
+  straight: 'atk', windups: [], busy: false, ringMesh: null, swing: 0, log: null, lastRep: null, ended: false, ro: null, off: null,
 };
 export const battleState = B;
 
 const wait = (s) => world.stage.wait(s);
 const race = (p, s = 2.2) => Promise.race([p, wait(s)]);
 const vfx = (name, ...a) => { try { return B.bw.vfx[name]?.(...a) ?? Promise.resolve(); } catch (e) { console.warn('vfx', name, e); return Promise.resolve(); } };
+const raw = (name, ...a) => { try { return B.bw.vfx[name]?.(...a); } catch (e) { console.warn('vfx', name, e); } };
 const v3 = (a) => (a.isVector3 ? a : new THREE.Vector3(...a));
 
 const EPITHET = {
@@ -64,6 +66,7 @@ export async function start(ctx) {
   await wait(1.1);
   B.busy = false;
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
+  music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   renderReset();
 }
 
@@ -265,11 +268,12 @@ export function renderReset() {
   setHud({ phase: 'reset' });
   targetEnemy();
   B.sel.clear();
+  stopWindups();
   // monsters telegraph
   for (const e of b.enemies) {
     const a = actorOf(e); if (!a || e.hp <= 0) continue;
     if (a.alive) { const c = intentClips(e.intent); a.play(c.tele, { fade: 0.25 }); }
-    if (e.intent?.slam || e.intent?.v === 'charge') { vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
+    if (e.intent?.slam || e.intent?.v === 'charge') { const h = raw('aura', a, { kind: 'windup', color: 0xff3a2a, urgency: e.intent.slam ? 1 : 0.5 }); if (h?.stop) B.windups.push(h); }
   }
   updatePlates();
   bw.hero.play('idle', { fade: 0.3 });
@@ -398,6 +402,7 @@ async function lockIn() {
   const ev = E.evaluate(hero, b.board, { straight: B.straight });
   bw.tray.lock?.();
   setHud({ phase: 'resolve' }); B.hud.bar.replaceChildren(); B.hud.cards.replaceChildren(); B.hud.caption.replaceChildren();
+  stopWindups();
   const target = targetEnemy();
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
@@ -503,7 +508,7 @@ async function lockIn() {
 
 async function win() {
   const bw = B.bw; B.busy = true;
-  bw.arena.setMood?.('victory');
+  bw.arena.setMood?.('victory'); music.setMood?.('victory');
   bw.director.set('victory', { lambda: 2.2 });
   bw.hero.play('victory', { fade: 0.2 }); sfx.win();
   bw.stage.flash(0xffe9a0, 0.25);
