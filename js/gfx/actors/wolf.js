@@ -11,7 +11,7 @@ import {
 
 export function create({ seed = 1, quality = 'high', id } = {}) {
   const Q = (quality === 'low' ? 2.9 : quality === 'med' ? 2.2 : 1.75) / 1.75;     // voxel multiplier relative to high
-  const TUFT = quality === 'low' ? 0.4 : quality === 'med' ? 0.7 : 1;
+  const TUFT = quality === 'low' ? 0.35 : quality === 'med' ? 0.6 : 0.78;
   const rng = mulberry32(seed * 6271 + 5);
   const rr = (a, b) => a + (b - a) * rng();
   const NZ = makeNoise(seed + 11);
@@ -21,7 +21,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const tc = new THREE.Color(); const sc = new THREE.Color();
   const warm = rr(0, 1);
 
-  const fur = tpm('pelt', { tint: 0xaaa49a, dark: 0x2a2824, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 1.1 });
+  const fur = tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 1.1 });
   const leather = tpm('leatherDark', { seed: 7 }, { scale: 14, nrm: 0.7 });
   const iron = tpm('iron', { seed: 4, metalness: 0.75, roughness: 0.9 }, { scale: 6, nrm: 0.8 });
   const eyeM = glowMat(0xffa21a, 1.7, { rough: 0.2 });
@@ -63,7 +63,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const pelt = (lightBelow = 0.55, base = 0.9) => (x, y, z, nx, ny, nz, ao, c) => {
     const n = 0.5 + 0.5 * NZ.n3(x * 6, y * 6, z * 6); const n2 = 0.5 + 0.5 * NZ.n3(x * 21 + 3, y * 21, z * 21);
     const lo = sstep(0.15, -0.55, ny);
-    c.setRGB(1.0, 0.98, 0.95).multiplyScalar(base * (0.62 + n * 0.55));
+    c.setRGB(0.95, 0.93, 0.9).multiplyScalar(base * (0.55 + n * 0.6));
     c.lerp(tc.setRGB(0.95, 0.9, 0.8), lo * lightBelow * (0.6 + 0.4 * n2));
     c.multiply(sc.setScalar(0.85 + 0.3 * n2));
   };
@@ -99,13 +99,13 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const neckG2 = S(neck2, U(0.07, sdf.cap([0, -0.02, -0.08], [0, 0.0, 0.27], 0.16, 0.13), sdf.ell(0, -0.07, 0.08, 0.1, 0.1, 0.16)), [-0.28, -0.3, -0.2], [0.28, 0.3, 0.42], 0.024, pelt(0.4));
 
   // ---- head
-  const hSkull = sdf.ell(0, 0.02, 0.07, 0.115, 0.125, 0.16);
-  const hBrow = mirX(sdf.cap([0.08, 0.1, 0.1], [0.045, 0.085, 0.21], 0.032, 0.026));
-  const hMuz = U(0.03, sdf.cap([0, -0.01, 0.15], [0, -0.045, 0.46], 0.07, 0.044), sdf.ell(0, -0.04, 0.32, 0.062, 0.046, 0.16));
-  const hStop = sdf.ell(0, 0.045, 0.22, 0.05, 0.05, 0.06);
-  const hCheek = mirX(sdf.ell(0.095, -0.03, 0.06, 0.05, 0.08, 0.1));
-  const hSock = mirX(sdf.ell(0.07, 0.052, 0.185, 0.026, 0.022, 0.034));
-  const hNose = sdf.sphere(0, -0.012, 0.49, 0.026);
+  const hSkull = U(0.05, sdf.ell(0, 0.045, 0.05, 0.1, 0.12, 0.15), sdf.ell(0, 0.09, 0.0, 0.085, 0.09, 0.1));
+  const hBrow = mirX(sdf.cap([0.078, 0.108, 0.07], [0.04, 0.088, 0.2], 0.03, 0.022));
+  const hMuz = U(0.03, sdf.cap([0, 0.02, 0.15], [0, -0.012, 0.46], 0.068, 0.04), sdf.ell(0, -0.025, 0.32, 0.058, 0.042, 0.16));
+  const hStop = sdf.ell(0, 0.07, 0.19, 0.04, 0.05, 0.07);
+  const hCheek = mirX(sdf.ell(0.085, -0.04, 0.04, 0.045, 0.07, 0.09));
+  const hSock = mirX(sdf.ell(0.062, 0.062, 0.2, 0.024, 0.02, 0.032));
+  const hNose = sdf.sphere(0, -0.01, 0.485, 0.028);
   const hBase = U(0.02, U(0.045, hSkull, hBrow, hMuz, hStop, hCheek), hNose);
   const hFull = (x, y, z) => Math.max(hBase(x, y, z), -(y + 0.098 - 0.0 * z), -hSock(x, y, z));  // flat underside: the jaw is separate
   const hCol = (x, y, z, nx, ny, nz, ao, c) => {
@@ -148,7 +148,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
       col[i * 3] = tc.r; col[i * 3 + 1] = tc.g; col[i * 3 + 2] = tc.b; em[i] = e;
     }
     eg.setAttribute('color', new THREE.BufferAttribute(col, 3)); eg.setAttribute('aEmber', new THREE.BufferAttribute(em, 1));
-    kit.add(eyes, eg, eyeM, { p: [s * 0.066, 0, 0], r: [0.0, s * 0.45, 0] });
+    kit.add(eyes, eg, eyeM, { p: [s * 0.058, 0.01, 0.01], r: [0.0, s * 0.5, s * -0.35] });
     // brow fur ridge shading / lids: a darker half-ellipsoid hooding the eye
     kit.add(eyes, new THREE.SphereGeometry(0.021, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), fur, { p: [s * 0.066, 0.001, -0.001], r: [rad(-25), 0, s * rad(-20)], tint: 0x403c38, untex: true });
   }
@@ -165,7 +165,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   for (const s of [L, R]) kit.add(lip[s], new THREE.SphereGeometry(1, 14, 10), fur, { p: [s * 0.0, 0.01, 0.0], s: [0.034, 0.03, 0.09], tint: 0x8a857c });
 
   // ---- limbs
-  const legCol = (x, y, z, nx, ny, nz, ao, c) => { pelt(0.05, 1.0)(x, y, z, nx, ny, nz, ao, c); const inner = sstep(0.0, 0.06, -Math.sign(x || 1) * x * 0 + (0.0)); c.multiplyScalar(0.8 + 0.4 * sstep(-0.3, -0.05, y * 0 + z * 0)); void inner; c.multiplyScalar(0.72); };
+  const legCol = (x, y, z, nx, ny, nz, ao, c) => { pelt(0.05, 1.0)(x, y, z, nx, ny, nz, ao, c); const inner = sstep(0.0, 0.06, -Math.sign(x || 1) * x * 0 + (0.0)); c.multiplyScalar(0.8 + 0.4 * sstep(-0.3, -0.05, y * 0 + z * 0)); void inner; c.multiplyScalar(0.7); };
   for (const s of [L, R]) {
     S(sh[s], U(0.05, sdf.cap([0, 0, 0], [0, -0.34, -0.05], 0.14, 0.095), sdf.ell(0, -0.05, 0.02, 0.12, 0.16, 0.14)), [-0.22, -0.46, -0.22], [0.22, 0.14, 0.2], 0.018, legCol);
     S(el[s], U(0.03, sdf.cap([0, 0, 0], [0, -0.36, 0.03], 0.092, 0.056), sdf.sphere(0, 0.0, -0.03, 0.075)), [-0.18, -0.5, -0.18], [0.18, 0.12, 0.18], 0.016, legCol);
@@ -203,6 +203,11 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     furSweep(legFlow, [0.04, 0.09], 60, 0.005, el[s], proxy(sdf.cap([0, 0, 0], [0, -0.36, 0.03], 0.082, 0.05), [-0.2, -0.5, -0.2], [0.2, 0.14, 0.2]));
     furSweep(legFlow, [0.06, 0.13], 110, 0.007, hp[s], proxy(U(0.07, sdf.cap([0, 0, 0], [0, -0.35, 0.16], 0.15, 0.09), sdf.ell(s * 0.02, -0.08, -0.02, 0.12, 0.2, 0.16)), [-0.32, -0.5, -0.3], [0.32, 0.2, 0.42]));
     furSweep(legFlow, [0.04, 0.09], 60, 0.005, kn[s], proxy(sdf.cap([0, 0, 0], [0, -0.3, -0.2], 0.09, 0.05), [-0.2, -0.45, -0.38], [0.2, 0.14, 0.22]));
+  }
+  for (const s of [L, R]) {
+    const pawProxy = (f, min, max) => sculpt(f, { min, max, h: 0.02 * Q, aoK: 0, color: (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.4, 0.38, 0.36); } });
+    furSweep((p, d) => d.set(0, -0.4, 0.5).normalize(), [0.03, 0.06], 55, 0.0045, wr[s], pawProxy(sdf.ell(0, -0.1, 0.09, 0.075, 0.05, 0.11), [-0.15, -0.2, -0.05], [0.15, 0.03, 0.25]));
+    furSweep((p, d) => d.set(0, -0.4, 0.5).normalize(), [0.03, 0.06], 55, 0.0045, hk[s], pawProxy(sdf.ell(0, -0.235, 0.1, 0.075, 0.05, 0.11), [-0.15, -0.32, -0.05], [0.15, -0.14, 0.25]));
   }
   tail.forEach((j, i) => {
     const pr = sculpt(sdf.cap([0, 0, 0], [0, [-0.03, -0.07, -0.1, -0.02][i], [-0.2, -0.18, -0.15, -0.22][i]], tailR[i] + 0.012, i < 3 ? tailR[i + 1] + 0.012 : 0.03), { min: [-0.16, -0.25, -0.34], max: [0.16, 0.16, 0.12], h: 0.03 * Q, aoK: 0, color: (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.45, 0.43, 0.4); if (i === 3) c.multiplyScalar(0.6); } });

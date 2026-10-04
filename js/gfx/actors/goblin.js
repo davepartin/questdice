@@ -120,7 +120,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const brw = Math.exp(-(((y - 0.122) / 0.02) ** 2)) * sstep(0.05, 0.1, z); c.multiply(sc.setRGB(1 - brw * 0.1, 1 - brw * 0.15, 1 - brw * 0.2));
     const flush = Math.exp(-(((Math.abs(x) - 0.066) / 0.02) ** 2 + ((y - 0.06) / 0.02) ** 2)); c.lerp(sc.setRGB(1.0, 0.8, 0.7), flush * 0.35);
   };
-  skinList.push({ joint: head, g: S(head, BUMP(headF, { amp: 0.0008, freq: 40, seed: seed + 3 }), [-0.12, 0.0, -0.11], [0.12, 0.2, 0.21], 0.0042, headCol, { aoR: 1.4 }) });
+  skinList.push({ joint: head, g: S(head, BUMP(headF, { amp: 0.0008, freq: 40, seed: seed + 3 }), [-0.12, 0.0, -0.11], [0.12, 0.2, 0.21], 0.0048, headCol, { aoR: 1.4 }) });
 
   // lower jaw: heavy underbite chin, lower lip, tongue; hinged at the cheek
   const jawF = (() => {
@@ -141,7 +141,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     c.lerp(sc.setRGB(0.62, 0.2, 0.22), inM);
     crevice(c, ao);
   };
-  skinList.push({ joint: jaw, g: S(jaw, BUMP(jawF, { amp: 0.0006, freq: 40, seed: seed + 8 }), [-0.1, -0.08, -0.03], [0.1, 0.07, 0.17], 0.0042, jawCol, { xf: { p: [0, -0.035, 0] } }) });
+  skinList.push({ joint: jaw, g: S(jaw, BUMP(jawF, { amp: 0.0006, freq: 40, seed: seed + 8 }), [-0.1, -0.08, -0.03], [0.1, 0.07, 0.17], 0.0046, jawCol, { xf: { p: [0, -0.035, 0] } }) });
 
   // eyes (one merged mesh: big yellow slit eyes; glow comes from the per-vertex ember mask)
   for (const sx of [R, L]) {

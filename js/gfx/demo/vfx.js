@@ -134,6 +134,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     footstep: (o) => vfx.footstep(mons[2].worldAnchor('feet'), true, o),
     dust: (o) => vfx.dust(V(0, 0, 0), o),
     death: (o) => vfx.death(mons[0], { coins: 6, ...o }),
+    blockSpark: (o) => vfx.blockSpark(H().add(V(0.6, 0, -0.3)), o),
     muzzle: (o) => vfx.muzzle(handR(), { dir: V(0.3, 0, -1), ...o }),
     'num:dmg': (o) => vfx.damageNumber(mons[0].worldAnchor('head'), '12', o),
     'num:crit': (o) => vfx.damageNumber(mons[1].worldAnchor('head'), '27', { kind: 'crit', ...o }),

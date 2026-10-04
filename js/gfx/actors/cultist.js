@@ -27,7 +27,7 @@ function robeGeo({ yTop = 0, yBot = -0.9, rTop = 0.19, rBot = 0.36, rz = 0.9, nA
       pos.push(Math.sin(th) * rr, y, Math.cos(th) * rr * rz);
       const sh = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(folds * th + 1.2)); c.setRGB(base[0], base[1], base[2]).multiplyScalar(sh * (0.8 + 0.4 * N.n3(th * 4, t * 3, seed + 5) * 0.5 + 0.2) * (1 - 0.4 * (1 - t)));
       col.push(c.r, c.g, c.b);
-      const hem = Math.pow(sstep(0.62, 1, t), 2.2) * (0.5 + 0.8 * hemN) * glow;
+      const hem = Math.pow(sstep(0.78, 1, t), 2.4) * (0.45 + 0.7 * hemN) * glow;
       emb.push(hem);
     }
   }
@@ -101,7 +101,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   // mantle / cowl draped over the shoulders (thick folds, glowing frayed edge)
   const cowlF = U(0.05, sdf.eltorus(0, 0.24, 0.0, 0.27, 0.2, 0.065, [-0.15, 0, 0]), sdf.eltorus(0, 0.17, 0.02, 0.29, 0.22, 0.05, [-0.15, 0, 0]), sdf.cap([0, 0.3, -0.02], [0, 0.34, 0.03], 0.1, 0.08));
   const cowlFold = (x, y, z) => { const d = cowlF(x, y, z); return d + 0.006 * Math.sin(Math.atan2(x, z) * 11 + y * 25); };
-  S(chest, cowlFold, [-0.4, 0.04, -0.3], [0.4, 0.42, 0.32], 0.011, clothCol([0.42, 0.4, 0.38]), { mat: robeSolid, ember: (x, y, z) => sstep(0.2, 0.12, y) * 0.9 });
+  S(chest, cowlFold, [-0.4, 0.04, -0.3], [0.4, 0.42, 0.32], 0.011, clothCol([0.42, 0.4, 0.38]), { mat: robeSolid, ember: (x, y, z) => sstep(0.19, 0.12, y) * 0.5 });
 
   // skirts: charcoal under-robe, ash over-robe (open front), ragged glowing hems, swaying
   const hangs = [];
@@ -137,7 +137,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const upper = U(0.03, sdf.cap([0, 0, 0], [s * 0.02, -0.3, 0.02], 0.068, 0.082), sdf.sphere(0, 0.0, 0, 0.075));
     S(sh[s], upper, [-0.18, -0.42, -0.16], [0.18, 0.12, 0.16], 0.011, clothCol([0.55, 0.53, 0.5]), { mat: robeSolid });
     const lower = (x, y, z) => Math.max(sdf.cap([0, 0.0, 0], [0, -0.27, 0.0], 0.08, 0.125)(x, y, z), sleeveCuff(x, y, z));
-    S(el[s], lower, [-0.2, -0.42, -0.2], [0.2, 0.1, 0.2], 0.011, clothCol([0.5, 0.48, 0.46]), { mat: robeSolid, ember: (x, y, z) => sstep(-0.16, -0.27, y) * 0.9 });
+    S(el[s], lower, [-0.2, -0.42, -0.2], [0.2, 0.1, 0.2], 0.011, clothCol([0.5, 0.48, 0.46]), { mat: robeSolid, ember: (x, y, z) => sstep(-0.22, -0.28, y) * 0.55 });
     // hand: gaunt long fingers, bound with wrappings (wrap bands tint the vertex colours)
     const fist = s === R;
     const fing = [];
@@ -207,7 +207,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     return (x, y, z) => Math.max(outer(x, y, z), -inner(x, y, z) * 1, -(open(x, y, z)) * 1, -(chinCut(x, y, z)) * 0 - Math.max(0, 0) + (y < -0.07 ? 0 : 0) , -(y + 0.09) * 0 - 0);
   })();
   const hoodShell = (x, y, z) => { const d = hoodF(x, y, z); return d; };
-  S(head, BUMP(hoodShell, { amp: 0.005, freq: 14, seed: seed + 5, oct: 2 }), [-0.24, -0.25, -0.36], [0.24, 0.3, 0.3], 0.0085, (x, y, z, nx, ny, nz, ao, c) => { clothCol([0.36, 0.34, 0.32])(x, y, z, nx, ny, nz, ao, c); const inside = sstep(0.0, 0.06, z - 0.0) * (nz < -0.1 ? 0 : 0); c.multiplyScalar(0.3 + 0.7 * ao); void inside; }, { mat: robeSolid, ember: (x, y, z) => sstep(0.0, 0.1, z) * sstep(0.04, 0.0, Math.abs(Math.abs(x) - 0.104)) * 0.4 * 0 });
+  S(head, BUMP(hoodShell, { amp: 0.0025, freq: 9, seed: seed + 5, oct: 1 }), [-0.24, -0.25, -0.36], [0.24, 0.3, 0.3], 0.0085, (x, y, z, nx, ny, nz, ao, c) => { clothCol([0.36, 0.34, 0.32])(x, y, z, nx, ny, nz, ao, c); const inside = sstep(0.0, 0.06, z - 0.0) * (nz < -0.1 ? 0 : 0); c.multiplyScalar(0.3 + 0.7 * ao); void inside; }, { mat: robeSolid, ember: (x, y, z) => sstep(0.0, 0.1, z) * sstep(0.04, 0.0, Math.abs(Math.abs(x) - 0.104)) * 0.4 * 0 });
   // dark void inside the hood
   kit.add(head, new THREE.SphereGeometry(0.1, 14, 10), std(0x020101, { rough: 1 }), { p: [0, 0.07, 0.0], s: [1, 1.2, 1.0] });
 
