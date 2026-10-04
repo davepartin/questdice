@@ -251,6 +251,11 @@ function makeRing() {
 function ringUpdate(t) {
   const e = B.b.enemies[B.target]; const a = e && B.bw.actors.get(e.uid);
   const show = !!(a && e.hp > 0 && a.root.visible);
+  // Prefer the VFX library's animated dashed target ring when it exists.
+  if (B.bw.vfx.targetRing && !B.bw.vfx.stub) {
+    if (!B.tring && a) { try { B.tring = B.bw.vfx.targetRing(a, { color: 0xff5a3a }); } catch (err) { console.warn('targetRing', err); B.tring = null; B.noTring = true; } }
+    if (B.tring) { B.ringMesh.visible = false; if (show) { B.tring.move?.(a); } B.tring.setVisible?.(show); return; }
+  }
   B.ringMesh.visible = show;
   if (!show) return;
   B.ringMesh.position.x += (a.root.position.x - B.ringMesh.position.x) * 0.35;
