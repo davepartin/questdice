@@ -138,7 +138,7 @@ void main(){
   vec2 gr = (vec2(ax - a0, az - a0) * 0.9 + vec2(bx - b0, bz - b0) * 0.6) / e * 0.12;
   vec3 N = normalize(vec3(-gr.x * uRough, 1.0, -gr.y * uRough));
   vec3 R = reflect(-V, N); R.y = max(R.y, 0.015);
-  vec3 sky = (qdSkyGrad(R) + qdHorizonGlow(R, 1.2)) * uSkyMul;
+  vec3 sky = (qdSkyGrad(R) * 1.4 + qdHorizonGlow(R, 3.2) * 1.5) * uSkyMul;
   float md = max(dot(R, uMoonDir), 0.0);
   sky += uMoonCol * (pow(md, 900.0) * 6.0 + pow(md, 60.0) * 0.5) * uMoonOn;
   // tree-line / far silhouette in the reflection

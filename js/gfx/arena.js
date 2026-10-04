@@ -5,9 +5,11 @@
 // marks.tray; the camera suggestion is marks.camera / marks.cameraPortrait. Keep the clear zone prop-free.
 import { createCtx, finalize, makeArenaObject, MARKS } from './arena/kit.js';
 import { burntOrchard } from './arena/places1.js';
+import { cinderFord, ravensRest, wolfwoodEdge, smokeHollow, tollBridge, ashfallCamp, gallowsHill } from './arena/places2.js';
 
 const PLACES = {
-  'burnt orchard': burntOrchard,
+  'burnt orchard': burntOrchard, 'cinder ford': cinderFord, "ravens' rest": ravensRest, 'wolfwood edge': wolfwoodEdge, 'smoke hollow': smokeHollow,
+  'the toll bridge': tollBridge, 'ashfall camp': ashfallCamp, 'gallows hill': gallowsHill,
 };
 export const PLACE_NAMES = ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'Smoke Hollow', 'The Toll Bridge', 'Ashfall Camp', 'Gallows Hill'];
 const norm = (s) => String(s || '').replace(/[’‘`]/g, "'").trim().toLowerCase();

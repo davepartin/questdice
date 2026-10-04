@@ -172,7 +172,7 @@ export function cattail(seed, { h = 1.5 } = {}) {
 // ---------------------------------------------------------------------------------------------------
 // Rocks: displaced icospheres, flattened, with baked AO (dark underside, lit crown). Flat-faceted.
 // ---------------------------------------------------------------------------------------------------
-export function rock(seed, { detail = 1, amp = 0.38, freq = 1.3, flat = 0.7, ridged = false, strata = 0 } = {}) {
+export function rock(seed, { detail = 1, amp = 0.38, freq = 1.3, flat = 0.7, ridged = false, strata = 0, uv = 0.6 } = {}) {
   let g = new THREE.IcosahedronGeometry(1, detail);
   g = displace(g, { amp, freq, seed, oct: 3, ridged });
   g.scale(1, flat, 1);
@@ -180,7 +180,7 @@ export function rock(seed, { detail = 1, amp = 0.38, freq = 1.3, flat = 0.7, rid
   g.computeVertexNormals();
   g.translate(0, 0.0, 0);
   paint(g, (x, y, z, c) => { const k = 0.35 + 0.65 * Math.max(0, Math.min(1, (y + 0.5 * flat) / (1.0 * flat))); c.setRGB(k, k * 0.98, k * 0.96); });
-  return finishGeo(g, { uv: 0.6 });
+  return finishGeo(g, { uv });
 }
 
 // A tall monolith / crag slab: segmented box pushed around by ridged noise.

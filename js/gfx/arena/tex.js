@@ -21,8 +21,8 @@ export function rockTex({ tint = 0x6a665e, dark = 0x1c1a18, seed = 3, lichen = 0
   return build('rock', { tint, dark, seed, lichen, lichenAmt }, (u, v, { N }) => {
     const strata = N.fbm(u * 2.2, v * 9, { oct: 4, tile: 0 }) * 0.5 + 0.5;
     const big = N.fbm(u * 3, v * 3, { oct: 5, tile: 3 }) * 0.5 + 0.5;
-    const w = N.worley(u * 5, v * 5, 5);
-    const crack = smooth(0.07, 0.0, w.d2 - w.d1) * smooth(0.3, 0.6, big);
+    const rl = Math.abs(N.fbm(u * 6 + 3, v * 6, { oct: 4, tile: 6 }));
+    const crack = smooth(0.05, 0.0, rl) * smooth(0.3, 0.6, big);
     const grit = N.fbm(u * 28, v * 28, { oct: 3, tile: 28 }) * 0.5 + 0.5;
     const l = N.fbm(u * 6 + 4, v * 6 + 9, { oct: 4, tile: 6 }) * 0.5 + 0.5;
     const lich = lichenAmt * smooth(0.62, 0.78, l) * smooth(0.3, 0.7, grit);

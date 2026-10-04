@@ -87,7 +87,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   const dishG = mergeGeometries(dishes.map((g) => plain(g)).map((g) => { g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3)); return g; }));
   // (re-apply the vertex colours: merge needs matching attributes)
   { const cols = []; dishes.forEach((g) => cols.push(g.attributes.color)); const arr = new Float32Array(cols.reduce((n, c) => n + c.array.length, 0)); let o = 0; cols.forEach((c) => { arr.set(c.array, o); o += c.array.length; }); dishG.setAttribute('color', new THREE.BufferAttribute(arr, 3)); }
-  const dishMat = new THREE.MeshStandardMaterial({ vertexColors: true, color: 0x6a6270, roughness: 0.42, metalness: 0.85, side: THREE.DoubleSide, envMapIntensity: 0.9 });
+  const dishMat = new THREE.MeshStandardMaterial({ vertexColors: true, color: 0x5e5450, roughness: 0.6, metalness: 0.3, side: THREE.DoubleSide, envMapIntensity: 0.25 });
   const dishMesh = new THREE.Mesh(dishG, dishMat); dishMesh.receiveShadow = true; dishMesh.name = 'dishes';
   // ---- brass: rims, corner caps, studs, inner frame inlay, rosettes
   const brassParts = [...rims];
@@ -110,7 +110,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const s = new THREE.SphereGeometry(0.05, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2); s.translate(gx * PITCH, 0.0, gz * PITCH);
     if (!(Math.abs(gx) < 1 && Math.abs(gz) < 1)) brassParts.push(s);
   }
-  const brassG = worldUV(merge(brassParts), 1.4);
+  const brassG = worldUV(merge(brassParts), 0.35);
   const brassMat = mat('bronze', { repeat: 1, roughness: 0.75 }).clone(); brassMat.side = THREE.DoubleSide; brassMat.color.set(0xffe6b0); brassMat.envMapIntensity = 1.4;
   const brass = new THREE.Mesh(brassG, brassMat); brass.castShadow = true; brass.receiveShadow = true; brass.name = 'brass';
   // ---- glow bands (one draw, per-socket uniforms)
@@ -131,7 +131,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   const decal = new THREE.Mesh(flat(new THREE.PlaneGeometry(2 * FH, 2 * FH)), decalMat); decal.position.y = 0.002; decal.renderOrder = 1; decal.name = 'decals'; decal.receiveShadow = true;
   // ---- body: apron, legs, plinth, iron bands
   const bodyParts = [box(2 * FH + 0.02, 0.26, 2 * FH + 0.02, 0, -0.18, 0)]; // under-field filler
-  const apron = new THREE.BoxGeometry(4.3, 0.36, 4.3); apron.translate(0, -0.6, 0); bodyParts.push(apron);
+  const apron = new THREE.BoxGeometry(4.55, 0.4, 4.55); apron.translate(0, -0.5, 0); bodyParts.push(apron);
   const step = new THREE.BoxGeometry(3.7, 0.12, 3.7); step.translate(0, -0.84, 0); bodyParts.push(step);
   const plinth = new THREE.BoxGeometry(4.45, 0.1, 4.45); plinth.translate(0, -0.87, 0);
   const legs = [];
@@ -141,21 +141,21 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   const bodyG = worldUV(merge([...bodyParts, ...legs, plinth]), 0.5);
   paint(bodyG, (x, y, z, c) => { const k = 0.55 + 0.45 * THREE.MathUtils.clamp((y + 0.95) / 0.7, 0, 1); c.setRGB(k, k * 0.96, k * 0.92); });
-  const bodyMat = mat('stoneDark', { repeat: 1.2, roughness: 1 }).clone(); bodyMat.vertexColors = true; bodyMat.color.set(0x8a7a6a);
+  const bodyMat = mat('stoneDark', { repeat: 1.2, roughness: 1 }).clone(); bodyMat.vertexColors = true; bodyMat.emissive = new THREE.Color(0x2a1a0e); bodyMat.emissiveIntensity = 0.6; bodyMat.color.set(0xd8c8b8);
   const body = new THREE.Mesh(bodyG, bodyMat); body.castShadow = true; body.receiveShadow = true; body.name = 'body';
   const ironParts = [];
-  for (const y of [-0.43, -0.78]) { for (const sx of [-1, 1]) { ironParts.push(box(4.34, 0.04, 0.05, 0, y, sx * 2.15)); ironParts.push(box(0.05, 0.04, 4.34, sx * 2.15, y, 0)); } }
+  for (const y of [-0.3, -0.7]) { for (const sx of [-1, 1]) { ironParts.push(box(4.6, 0.05, 0.05, 0, y, sx * 2.3)); ironParts.push(box(0.05, 0.05, 4.6, sx * 2.3, y, 0)); } }
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const b = new THREE.CylinderGeometry(0.285, 0.285, 0.045, 4, 1); b.rotateY(Math.PI / 4); b.translate(sx * 1.88, -0.7, sz * 1.88); ironParts.push(b); }
   const ironG = worldUV(merge(ironParts), 1.2);
   const ironMat = mat('iron', { repeat: 1, roughness: 0.8 }).clone(); ironMat.color.set(0xbbbbc4);
   const iron = new THREE.Mesh(ironG, ironMat); iron.castShadow = true; iron.receiveShadow = true; iron.name = 'iron';
   // ---- sigil plaque on the front apron
   const plaqueMat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.6, emissive: 0xffffff, emissiveIntensity: 0.35 });
-  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.3), plaqueMat); plaque.position.set(0, -0.6, 2.152); plaque.name = 'sigil';
+  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.3), plaqueMat); plaque.position.set(0, -0.5, 2.278); plaque.name = 'sigil';
   table.add(body, iron, frame, field, dishMesh, brass, glow, decal, plaque);
 
   // ---- local lights (no shadows): a warm key above, a cool rim behind
-  const keyLight = new THREE.PointLight(0xffd2a0, 30, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
+  const keyLight = new THREE.PointLight(0xffd2a0, 48, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
   const rimLight = new THREE.PointLight(0x78a4ff, 14, 0, 2); rimLight.position.set(2.6, 1.9, -2.8); rimLight.name = 'trayRim';
   object.add(keyLight, rimLight);
 
@@ -457,7 +457,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
       s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.04 * Math.sin(time * 5 + s.i)); s.ring.position.y = 0.012;
       s.ring.material.color.setHex(s.selected ? 0xffe9a8 : 0xcfe8ff);
-      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * 0.55 * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
+      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * 0.2 * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
       if (s.chains) {
         const tk = s.bound ? 1 : 0; s.chains.k += (tk - s.chains.k) * (1 - Math.exp(-7 * dt));
         s.chains.group.visible = s.chains.k > 0.01; s.chains.group.position.set(s.pos.x, die.mesh.position.y, s.pos.z);

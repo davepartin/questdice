@@ -62,7 +62,7 @@ export function grassField(c, { n = 700, tint = [0.9, 0.9, 0.5], root = [0.07, 0
 
 // Rocks of all sizes: tiny pebbles inside the clear zone (flush with the ground), boulders outside.
 export function rockField(c, { n = 60, tint = 0x77726a, dark = 0x1e1c1a, big = [0.5, 1.6], area = { x: [-40, 40], z: [-60, 12] }, pebbles = 40, lichen = 0, seedOff = 0, strata = 0, tintMul = [1, 1, 1], ridged = false } = {}) {
-  const geos = [0, 1, 2, 3].map((i) => rock(c.seed * 7 + i * 13 + seedOff, { detail: 1, amp: 0.34 + i * 0.03, freq: 1.2 + i * 0.25, flat: 0.55 + (i % 2) * 0.25, ridged: ridged && i > 1, strata }));
+  const geos = [0, 1, 2, 3].map((i) => rock(c.seed * 7 + i * 13 + seedOff, { detail: 1, amp: 0.34 + i * 0.03, freq: 1.2 + i * 0.25, flat: 0.55 + (i % 2) * 0.25, ridged: ridged && i > 1, strata, uv: 0.7 / Math.max(1, big[1]) }));
   const m = c.arenaMat(`rock|${tint}|${dark}|${lichen}`, () => texMat(rockTex({ tint, dark, seed: 6 + seedOff, lichenAmt: lichen, lichen: 0x5a6a3a }), { repeat: 1, vertexColors: true, envMapIntensity: 0.5 }), {});
   const nBig = c.n(n); const nPeb = c.n(pebbles);
   geos.forEach((g, gi) => {

@@ -10,7 +10,7 @@ import * as THREE from 'three';
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 // Edge length / radius of each die (metres). Tuned so the five different shapes read as the same weight.
-export const SIZES = { 4: { edge: 1.1 }, 6: { edge: 0.74 }, 8: { edge: 0.78 }, 10: { rho: 0.47, h: 0.50 } };
+export const SIZES = { 4: { edge: 0.96 }, 6: { edge: 0.65 }, 8: { edge: 0.69 }, 10: { rho: 0.415, h: 0.44 } };
 
 function baseSolid(sides) {
   let verts; let faces;

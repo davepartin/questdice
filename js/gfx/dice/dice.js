@@ -71,7 +71,7 @@ function makeMaterial(atlas, theme, quality) {
     roughness: 1, metalness: 1, normalScale: new THREE.Vector2(1, 1),
     clearcoat: quality === 'low' ? 0.6 : 1, clearcoatRoughness: 0.035, ior: 1.52, specularIntensity: 1,
     envMapIntensity: 1.0,
-    emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 1.5 : 1,
+    emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
     sheen: theme === 'bone' ? 0.4 : 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
@@ -120,7 +120,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.
   return m;
 }
 
-const R_BY = { 4: 0.05, 6: 0.058, 8: 0.042, 10: 0.04 };
+const R_BY = { 4: 0.044, 6: 0.05, 8: 0.037, 10: 0.035 };
 
 /** Build a die mesh for a spec (spec.theme, spec.sides, spec.labels[label-1]). */
 export function createDie({ spec, quality = 'high' }) {

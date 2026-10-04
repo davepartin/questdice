@@ -26,7 +26,7 @@ const lineFS = /* glsl */`
     float shimmer = 0.85 + 0.15 * sin(u * 40.0 - uTime * 9.0);
     float a = (trail * shimmer + head) * (core * core * 0.9 + 0.15 * core) * uFade;
     vec3 col = mix(uColor, vec3(1.0), head * 0.35 + core * core * 0.25);
-    gl_FragColor = vec4(col * a * 2.0, a);
+    gl_FragColor = vec4(col * a * 4.0, a);
   }`;
 
 export function createFX({ root, stage, getCenter, dieHeight }) {
@@ -86,7 +86,7 @@ export function createFX({ root, stage, getCenter, dieHeight }) {
 
   // ---- synergy light line
   const lines = [];
-  function highlight(points, color, { hold = 1.5, sweep = 0.55, radius = 0.05 } = {}) {
+  function highlight(points, color, { hold = 1.5, sweep = 0.55, radius = 0.085 } = {}) {
     const col = colorOf(color, 0xff4d4d);
     const pts = points.map((p) => p.clone());
     const curve = pts.length > 2 ? new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.3) : new THREE.LineCurve3(pts[0], pts[1] || pts[0].clone().add(new THREE.Vector3(0.01, 0, 0)));
