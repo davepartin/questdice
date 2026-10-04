@@ -521,7 +521,7 @@ export function gallowsHill(c) {
     key: boss ? { color: 0xa83024, intensity: 0.9, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
     rim: boss ? { color: 0xff4030, intensity: 3.0, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
     hemi: boss ? { sky: 0x1c3048, ground: 0x2a1410, intensity: 0.4 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
-    look: LOOK(boss ? { sat: 1.12, contrast: 1.15, vignette: 0.58, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { bloom: 0.8, sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
+    look: LOOK(boss ? { exposure: 0.88, sat: 1.0, contrast: 1.2, vignette: 0.62, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: boss ? 12 : 10, haze: 0.55, color: boss ? 0x24101a : 0x121826, seed: 15, rim: boss ? 0xff3a20 : 0x7a98d8, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 6, mode: 2, haze: 0.4, color: boss ? 0x180a10 : 0x0a0e18, seed: 16, toothW: 8, toothH: 9 }] });
   defaultPropMats(c, { wood: 0x3a3028 });
@@ -549,14 +549,14 @@ export function gallowsHill(c) {
   if (boss) {
     // ONE dominant firelight: a great pyre right behind the king, so he is a silhouette ringed in flame.
     const KX = 0.4; const KZ = -1.8;
-    c.fire({ p: [KX, 0.3, -6.4], w: 2.6, h: 4.8, power: 1.5, light: true, lightColor: 0xff6a28, lightI: 150, lightDist: 26, embers: 40, smoke: 0.6, tongues: 4, glow: 0.8 });
-    for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; B.cyl('woodChar', [0.12, 0.15, 3.0, 6], { p: [KX + Math.cos(a) * 1.0, 1.1, -6.4 + Math.sin(a) * 1.0], r: [Math.sin(a) * 0.5, a, -Math.cos(a) * 0.5] }, [0.8, 0.8, 0.8], { cast: false }); }
+    c.fire({ p: [KX, 0.3, -7.6], w: 2.2, h: 4.2, power: 1.05, light: true, lightColor: 0xff7a30, lightI: 70, lightDist: 22, embers: 40, smoke: 0.6, tongues: 3, glow: 0.35 });
+    for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; B.cyl('woodChar', [0.12, 0.15, 3.0, 6], { p: [KX + Math.cos(a) * 1.0, 1.1, -7.6 + Math.sin(a) * 1.0], r: [Math.sin(a) * 0.5, a, -Math.cos(a) * 0.5] }, [0.8, 0.8, 0.8], { cast: false }); }
     // the dais: a flush rune-ringed stone disc under the king + a ring of broken pillars
     const dg = new THREE.CircleGeometry(3.5, 56).rotateX(-Math.PI / 2);
     const runeTex = canvasTex2('dais-rune');
-    const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0x8a7a76, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 1.3, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
+    const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0x8a7a76, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
     const dais = new THREE.Mesh(dg, dm); dais.position.set(KX, 0.022, KZ); dais.receiveShadow = true; c.add(dais); c.tris += 112;
-    c.ticks.push((dt, t) => { dm.emissiveIntensity = 1.0 + 0.4 * Math.sin(t * 2.1) + 0.15 * Math.sin(t * 7.3); });
+    c.ticks.push((dt, t) => { dm.emissiveIntensity = 0.55 + 0.2 * Math.sin(t * 2.1) + 0.08 * Math.sin(t * 7.3); });
     for (let i = 0; i < 7; i++) { const a = Math.PI + 0.35 + i / 6 * (Math.PI - 0.7); const R = 4.8; const h = rr(rng, 0.8, 2.6); B.cyl('stone', [0.38, 0.46, h, 7], { p: [KX + Math.cos(a) * R, h / 2, KZ + Math.sin(a) * R * 0.9 - 0.8], r: [(rng() - 0.5) * 0.12, 0, (rng() - 0.5) * 0.12] }, [0.55, 0.5, 0.5], { cast: true }); }
     // stairs climbing to a bone throne behind the pyre
     for (let i = 0; i < 6; i++) B.box('stone', [9 - i * 0.9, 0.36, 1.3], { p: [KX, 0.18 + i * 0.36, -9.6 - i * 1.2] }, [0.5, 0.46, 0.46], { cast: false, uv: 0.4 });
@@ -573,7 +573,7 @@ export function gallowsHill(c) {
     const cage = (x, z, h = 3.4) => { B.cyl('wood', [0.09, 0.12, h + 0.8, 6], { p: [x, (h + 0.8) / 2, z] }, [0.5, 0.45, 0.4]); B.box('wood', [1.4, 0.12, 0.12], { p: [x + 0.65, h + 0.8, z] }, [0.5, 0.45, 0.4], { ao: 0 }); B.cyl('iron', [0.012, 0.012, 0.8, 4], { p: [x + 1.2, h + 0.4, z] }, [0.6, 0.6, 0.6], { ao: 0 });
       for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; B.cyl('iron', [0.02, 0.02, 1.1, 4], { p: [x + 1.2 + Math.cos(a) * 0.32, h - 0.35, z + Math.sin(a) * 0.32] }, [0.5, 0.5, 0.5], { ao: 0 }); } B.tor('iron', [0.32, 0.02, 4, 12], { p: [x + 1.2, h + 0.2, z], r: [Math.PI / 2, 0, 0] }, [0.5, 0.5, 0.5], { ao: 0 }); B.tor('iron', [0.32, 0.02, 4, 12], { p: [x + 1.2, h - 0.9, z], r: [Math.PI / 2, 0, 0] }, [0.5, 0.5, 0.5], { ao: 0 }); skull(B, { p: [x + 1.2, h - 0.95, z], r: 0.4 }); };
     cage(-6.5, -2.5); cage(6.2, -3.6, 3.0); cage(-9, -10, 3.6); cage(9.5, -9, 3.2);
-    for (const [x, z] of [[-5.2, -9], [6.2, -10]]) { for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; B.cyl('woodChar', [0.1, 0.12, 2.0, 5], { p: [x + Math.cos(a) * 0.7, 0.8, z + Math.sin(a) * 0.7], r: [Math.sin(a) * 0.45, a, -Math.cos(a) * 0.45] }, [0.8, 0.8, 0.8], { cast: false }); } c.fire({ p: [x, 0.3, z], w: 1.3, h: 2.6, power: 1.1, embers: 14, smoke: 0.3, tongues: 3, glow: 0.7 }); }
+    for (const [x, z] of [[-5.2, -9], [6.2, -10]]) { for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; B.cyl('woodChar', [0.1, 0.12, 2.0, 5], { p: [x + Math.cos(a) * 0.7, 0.8, z + Math.sin(a) * 0.7], r: [Math.sin(a) * 0.45, a, -Math.cos(a) * 0.45] }, [0.8, 0.8, 0.8], { cast: false }); } c.fire({ p: [x, 0.3, z], w: 1.1, h: 2.2, power: 0.9, embers: 14, smoke: 0.3, tongues: 2, glow: 0.3 }); }
     // gold hoards flanking the dais (muted; lit by the pyre)
     for (const [x, z, s] of [[-5.2, -5.2, 1.3], [5.8, -6.0, 1.5], [-9, -14, 1.8], [9.5, -14, 1.7]]) {
       const g = new THREE.SphereGeometry(1.4 * s, 14, 8, 0, 6.283, 0, 1.2).scale(1.3, 0.55, 1); B.geo('gold', await0(g, c.seed + z), { p: [x, c.hAt(x, z) - 0.1, z] }, [0.8, 0.7, 0.6], { cast: true, uv: 0.5, ao: 0.4 });

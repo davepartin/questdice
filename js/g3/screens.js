@@ -30,8 +30,8 @@ Object.assign(SHOTS, {
   's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
   's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-1.0, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.0, 1.25, -0.5], fov: 52 } },
   's-camp': { land: { pos: [3.2, 1.7, 6.2], look: [-0.2, 0.95, 0], fov: 36 }, port: { pos: [2.6, 1.9, 7.2], look: [-0.2, 0.95, 0], fov: 50 } },
-  's-victory': { land: { pos: [1.4, 1.35, 5.6], look: [-1.6, 1.4, 1.6], fov: 34 }, port: { pos: [0.9, 1.6, 6.2], look: [-1.3, 1.35, 1.6], fov: 48 } },
-  's-defeat': { land: { pos: [0.6, 0.9, 4.6], look: [-1.9, 0.75, 1.6], fov: 34 }, port: { pos: [0.3, 1.1, 5.4], look: [-1.5, 0.8, 1.6], fov: 48 } },
+  's-victory': { land: { pos: [0.3, 1.25, 5.0], look: [-2.3, 1.2, 0.7], fov: 36 }, port: { pos: [-0.6, 1.4, 6.4], look: [-2.2, 1.2, 0.7], fov: 50 } },
+  's-defeat': { land: { pos: [0.0, 0.9, 4.4], look: [-2.3, 0.8, 0.7], fov: 34 }, port: { pos: [-0.8, 1.1, 5.8], look: [-2.2, 0.8, 0.7], fov: 48 } },
 });
 
 // ---------------------------------------------------------------------------------------------- bookkeeping
@@ -343,7 +343,7 @@ export function release() { own.token++; own.objs = []; own.offs = []; own.arena
 export function victory() {
   const bw = world.battle; if (!bw) return null;
   if (bw._victory) return bw; bw._victory = true;
-  bw.arena.setMood?.('victory');
+  bw.arena.setMood?.('victory'); if (bw.tray?.object) bw.tray.object.visible = false;
   bw.hero.play('victory', { restart: true });
   setLook({ bloom: 0.85, exposure: 1.06, sat: 1.12 });
   world.director.set('s-victory', { lambda: 1.4 });
@@ -356,7 +356,7 @@ export function victory() {
 }
 export function defeat() {
   const bw = world.battle; if (!bw) return null;
-  bw.arena.setMood?.('calm');
+  bw.arena.setMood?.('calm'); if (bw.tray?.object) bw.tray.object.visible = false;
   bw.hero.play('lastStand', { restart: true });
   setLook({ bloom: 0.5, sat: 0.55, exposure: 0.82, vignette: 0.9, contrast: 1.12 });
   world.director.set('s-defeat', { lambda: 0.9 });
