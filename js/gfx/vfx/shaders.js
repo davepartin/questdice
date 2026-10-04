@@ -142,7 +142,7 @@ const DOME_FS = /* glsl */`
     // appear: cells pop in bottom-up with a random stagger
     float vis = smoothstep(cell * 0.45, cell * 0.45 + 0.35, uAppear * 1.45 - (1.0 - p.y) * 0.2);
     float shimmer = 0.5 + 0.5 * sin(uTime * 2.0 + cell * 40.0);
-    float base = 0.05 + 0.12 * shimmer * cell;
+    float base = 0.03 + 0.1 * shimmer * cell;
     float lit = 0.0; float wave = 0.0; float flash = 0.0;
     for (int i = 0; i < 4; i++) {
       float t = uTime - uHit[i].w;
@@ -156,7 +156,7 @@ const DOME_FS = /* glsl */`
       }
     }
     float e = edge * (0.55 + 0.5 * shimmer) + edge * wave * 2.4;
-    float a = (base + fres * 0.55 + e * 0.8 + lit * (0.28 + edge * 0.6) + wave * 0.35 + flash * 1.4) * vis;
+    float a = (base + fres * 0.4 + e * 0.8 + lit * (0.28 + edge * 0.6) + wave * 0.35 + flash * 1.4) * vis;
     vec3 c = uColor * uHdr * (base + fres * 0.9 + e * 1.1 + lit * 0.9 + wave * 0.8) + vec3(1.0) * flash * 2.2 + vec3(0.8, 0.95, 1.0) * edge * wave * 1.2;
     gl_FragColor = vec4(c * vis, clamp(a, 0.0, 1.0) * uAlpha);
   }`;
@@ -253,7 +253,7 @@ const SHELL_FS = /* glsl */`
   void main(){
     float f = 1.0 - abs(dot(normalize(vN), normalize(vView)));
     float n = fbm(vUv * vec2(10.0, 6.0) + uTime * 0.8);
-    float a = (pow(f, 2.2) * 1.1 + 0.08) * (0.6 + 0.8 * n) * uAlpha;
+    float a = (pow(f, 2.4) * 0.8 + 0.03) * (0.6 + 0.8 * n) * uAlpha;
     vec3 c = uColor * uHdr * a * 1.8 + vec3(1.0) * pow(f, 6.0) * uAlpha;
     gl_FragColor = vec4(c, clamp(a, 0.0, 1.0));
   }`;

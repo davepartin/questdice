@@ -746,8 +746,8 @@ export function createVfx(stage, opts = {}) {
     sparks(R, B, n(26), { color: 0xffffff, colorEnd: color, speed: [4, 13], spread: 2, size: 0.035, life: [0.2, 0.5], grav: -4, hdr: 3 });
     ring({ at: B, flat: true, color, r: 1.8, dur: 0.4, thick: 0.08, hdr: 2.4, noise: 0.6 });
     ring({ at: B, color: 0xffffff, r: 1.2, dur: 0.22, thick: 0.06, hdr: 2.4 });
-    lightFlash(B, color, 200, 0.4, 14, 0.02);
-    shake(0.45); stage.flash?.(color, 0.22);
+    lightFlash(B, color, 80, 0.35, 9, 0.02);
+    shake(0.45); stage.flash?.(color, 0.1);
     return later(0.03).then(() => B);
   }
   function nova(at, o = {}) {
@@ -872,12 +872,12 @@ export function createVfx(stage, opts = {}) {
   function coinSpill(R, p, count, { power = 1, spread = 1.4, floor = groundY + 0.05 } = {}) {
     for (let i = 0; i < count; i++) {
       const a = R.r() * TAU; const sp = R.rr(0.5, spread);
-      sys.coin.emit({ pos: [p.x + R.pm(0.1), p.y, p.z + R.pm(0.1)], vel: [Math.cos(a) * sp, R.rr(4, 7.5) * power, Math.sin(a) * sp], life: R.rr(1.5, 2.2), size: 0.2, sizeEnd: 0.2, color: 0xffffff, hdr: 1.2, alpha: 1, alphaEnd: 0, fade: 8, gravity: -17, drag: 0.1, rot: R.r() * TAU, spin: R.rr(10, 22) * (R.r() < 0.5 ? 1 : -1), mode: 'coin', floor, bounce: 0.45 });
+      sys.coin.emit({ pos: [p.x + R.pm(0.1), p.y, p.z + R.pm(0.1)], vel: [Math.cos(a) * sp, R.rr(4, 7.5) * power, Math.sin(a) * sp], life: R.rr(1.5, 2.2), size: 0.34, sizeEnd: 0.34, color: 0xffffff, hdr: 1.3, alpha: 1, alphaEnd: 0, fade: 8, gravity: -17, drag: 0.1, rot: R.r() * TAU, spin: R.rr(10, 22) * (R.r() < 0.5 ? 1 : -1), mode: 'coin', floor, bounce: 0.45 });
       if (i % 2 === 0) sys.star.emit({ pos: [p.x + R.pm(0.3), p.y + R.rr(0.2, 1.2), p.z + R.pm(0.3)], life: R.rr(0.2, 0.5), size: 0.3, sizeEnd: 0.05, color: 0xffe9a0, hdr: 2.8, alpha: 1, alphaEnd: 0, rot: R.r() * TAU, spin: R.pm(3), seed: 1 });
     }
   }
   function goldGain(at, o = {}) {
-    const p = toV(at); const R = rngOf(o); const count = n(o.count ?? 10);
+    const p = toV(at); const R = rngOf(o); const count = n(o.count ?? 14);
     flare(p, { color: 0xffe9a0, size: 1.3, life: 0.2, hdr: 2.6, R });
     glowPop(p, C.gold, 1.8, 0.3, 0.6, 2);
     ring({ at: p, color: C.gold, r: 0.8, dur: 0.3, thick: 0.07, hdr: 2.2, noise: 0.2 });
@@ -998,7 +998,7 @@ export function createVfx(stage, opts = {}) {
   function auraRage(p, feet, rad, o, R) {
     const color = o.color ?? 0xff5a1a;
     camBasis();
-    flare(_p.set(feet.x, 0.9, feet.z), { color: 0xffe0b0, size: 4, life: 0.26, hdr: 3.2, R });
+    flare(_p.set(feet.x, 0.9, feet.z), { color: 0xffe0b0, size: 2.6, life: 0.22, hdr: 2.8, R });
     shell({ at: _p.set(feet.x, 0.9, feet.z), color, r: rad * 1.6, dur: 0.45, hdr: 2.2 });
     ring({ at: feet, flat: true, color, r: rad * 3, dur: 0.7, thick: 0.12, hdr: 2.4, noise: 0.7, y: groundY });
     ring({ at: feet, flat: true, color: 0xffe0b0, r: rad * 2, dur: 0.5, thick: 0.07, hdr: 2.4, noise: 0.5, y: groundY, delay: 0.06 });
@@ -1016,7 +1016,7 @@ export function createVfx(stage, opts = {}) {
     smokePuffs(R, _p.set(feet.x, 0.4, feet.z), n(6), { color: 0x2a2220, size: 0.9, grow: 2.6, life: [1.2, 1.9], alpha: 0.5, spread: rad * 0.6, rise: 1.2 });
     dustRing(R, feet, n(12), { r: rad, size: 0.8, speed: 4, color: 0x7a5e48, alpha: 0.45 });
     lightFlash(_p.set(feet.x, 1.2, feet.z), color, 200, 0.8, 14, 0.03);
-    shake(1.0); stage.flash?.(0xff8a40, 0.28); stage.hurt?.(0.35);
+    shake(1.0); stage.flash?.(0xff8a40, 0.1); stage.hurt?.(0.35);
     return later(0.12);
   }
   // chain ring for hex
@@ -1026,7 +1026,7 @@ export function createVfx(stage, opts = {}) {
     if (!chainMesh) {
       chainMesh = [];
       for (let j = 0; j < 2; j++) {
-        const mesh = new THREE.InstancedMesh(new THREE.TorusGeometry(0.1, 0.022, 8, 14), new THREE.MeshStandardMaterial({ color: 0x2a2036, metalness: 1, roughness: 0.35, emissive: 0x7a30ff, emissiveIntensity: 0.9 }), N);
+        const mesh = new THREE.InstancedMesh(new THREE.TorusGeometry(0.2, 0.045, 8, 16), new THREE.MeshStandardMaterial({ color: 0x2a2036, metalness: 1, roughness: 0.35, emissive: 0x7a30ff, emissiveIntensity: 0.9 }), N);
         mesh.frustumCulled = false; mesh.visible = false; mesh.renderOrder = 6; scene.add(mesh); chainMesh.push({ mesh, busy: false });
       }
     }
@@ -1150,9 +1150,9 @@ export function createVfx(stage, opts = {}) {
     lightFlash(_p.set(feet.x, 0.8 * size, feet.z), color, 70 * size, 0.9, 10, 0.05);
     // embers pour off the dissolving body: lifted along its height for ~1.2 s
     task(1.3, (dt, k) => {
-      let c = 90 * dt * Q * size * (1 - k * 0.6); while (c > 0) { if (c < 1 && R.r() > c) break; c -= 1;
+      let c = 170 * dt * Q * size * (1 - k * 0.6); while (c > 0) { if (c < 1 && R.r() > c) break; c -= 1;
         const a = R.r() * TAU; const rr_ = R.rr(0, 0.5) * size; const y = R.rr(0.1, 1.5) * size;
-        sys.ember.emit({ pos: [chest.x + Math.cos(a) * rr_, groundY + y, chest.z + Math.sin(a) * rr_], vel: [R.pm(0.5), R.rr(0.8, 3.6), R.pm(0.5)], life: R.rr(1.0, 2.2), size: R.rr(0.04, 0.1) * size, sizeEnd: 0.01, color: 0xffc060, colorEnd: color === 0xff7a1a ? 0xff2a08 : color, hdr: 2.6, alpha: 1, alphaEnd: 0, turbulence: 1.6, drag: 0.35, gravity: 0.6, fade: 1.6 });
+        sys.ember.emit({ pos: [chest.x + Math.cos(a) * rr_, groundY + y, chest.z + Math.sin(a) * rr_], vel: [R.pm(0.5), R.rr(0.8, 3.6), R.pm(0.5)], life: R.rr(1.0, 2.2), size: R.rr(0.06, 0.14) * size, sizeEnd: 0.01, color: 0xffc060, colorEnd: color === 0xff7a1a ? 0xff2a08 : color, hdr: 2.6, alpha: 1, alphaEnd: 0, turbulence: 1.6, drag: 0.35, gravity: 0.6, fade: 1.6 });
       }
       if (R.r() < dt * 14) sys.smoke.emit({ pos: [chest.x + R.pm(0.5 * size), groundY + R.rr(0.2, 1.4) * size, chest.z + R.pm(0.5 * size)], vel: [R.pm(0.3), R.rr(0.4, 1.0), R.pm(0.3)], life: R.rr(1.4, 2.2), size: 0.7 * size, sizeEnd: 1.8 * size, color: 0x3a3632, alpha: 0.4, alphaEnd: 0, fadeIn: 0.15, rot: R.r() * TAU, spin: R.pm(0.3) });
     });

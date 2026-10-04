@@ -92,7 +92,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
   const H = () => hero.worldAnchor('chest', new THREE.Vector3());
   const heroFeet = () => hero.worldAnchor('feet', new THREE.Vector3());
   const handR = () => H().add(V(0.3, 0.1, 0.4));
-  const diceCenter = V(-0.4, 0.15, 3.6);
+  const diceCenter = V(-0.6, 0.15, 1.2);
   const PRE = {
     slash: (o) => vfx.slash(M(0), o),
     slash2: (o) => vfx.slash(M(1), { dir: -2.4, ...o }),
@@ -126,7 +126,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     rage: (o) => vfx.aura(mons[2], { kind: 'rage', radius: 1.6, ...o }),
     hex: (o) => vfx.aura(diceCenter, { kind: 'hex', radius: 1.4, y: 0.5, ...o }),
     howl: (o) => vfx.aura(mons[1], { kind: 'howl', radius: 1.2, ...o }),
-    summon: (o) => vfx.aura(V(2.0, 0, -3.4), { kind: 'summon', radius: 1.1, ...o }),
+    summon: (o) => vfx.aura(V(-1.2, 0, -3.0), { kind: 'summon', radius: 1.1, ...o }),
     drain: (o) => vfx.aura(M(1), { kind: 'drain', from: H(), ...o }),
     mend: (o) => vfx.aura(mons[1], { kind: 'mend', radius: 1.0, ...o }),
     buff: (o) => vfx.aura(hero, { kind: 'buff', radius: 1.0, ...o }),

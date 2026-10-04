@@ -32,16 +32,17 @@ const MATS = {};
 function mats() {
   if (MATS.cloth) return MATS;
   const vc = { vertexColors: true };
-  MATS.cloth = mat('cloth', { ...vc, metalness: 0, repeat: 1 });
-  MATS.leather = mat('leather', { ...vc, metalness: 0.05, roughness: 0.9, repeat: 1 });
-  MATS.metal = mat('steel', { ...vc, metalness: 0.88, roughness: 0.62, envMapIntensity: 1.6 });
-  MATS.dark = mat('iron', { ...vc, metalness: 0.85, roughness: 0.8, envMapIntensity: 1.3 });
-  MATS.skin = mat('skinHuman', { ...vc, metalness: 0, roughness: 0.85 });
-  MATS.hair = mat('furDark', { ...vc, metalness: 0, roughness: 0.9 });
+  const W0 = { tint: 0xffffff };
+  MATS.cloth = mat('cloth', { ...vc, ...W0, dark: 0xb4b4b4, metalness: 0, repeat: 3 });
+  MATS.leather = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 2.5 });
+  MATS.metal = mat('steel', { ...vc, ...W0, dark: 0xb8bcc4, metalness: 0.85, roughness: 0.7, envMapIntensity: 1.7, repeat: 2 });
+  MATS.dark = mat('iron', { ...vc, ...W0, dark: 0x9a9a9a, metalness: 0.8, roughness: 0.85, envMapIntensity: 1.4, repeat: 2 });
+  MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xdcdcdc, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.35 });
+  MATS.hair = mat('furDark', { ...vc, ...W0, dark: 0x909090, metalness: 0, roughness: 0.85, repeat: 2 });
   MATS.eye = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
   MATS.glow = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveIntensity: 2.2, vertexColors: false });
-  MATS.clothSim = mat('cloth', { ...vc, metalness: 0, repeat: 2, side: THREE.DoubleSide });
-  MATS.leatherSim = mat('leather', { ...vc, metalness: 0.05, roughness: 0.9, repeat: 2, side: THREE.DoubleSide });
+  MATS.clothSim = mat('cloth', { ...vc, ...W0, dark: 0xb4b4b4, metalness: 0, repeat: 3, side: THREE.DoubleSide });
+  MATS.leatherSim = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 2.5, side: THREE.DoubleSide });
   return MATS;
 }
 
@@ -89,15 +90,15 @@ function buildFace(sp, rng) {
   out.skin.push(skull);
   const ex = 0.034; const ey = 0.116; const ez = 0.075;
   for (const s of [-1, 1]) {
-    const eye = new THREE.SphereGeometry(0.0138, 14, 10); const iris = X(new THREE.SphereGeometry(0.0082, 12, 8), { s: [1, 1, 0.45], p: [0, 0, 0.0108] });
-    const pupil = X(new THREE.SphereGeometry(0.0042, 8, 6), { s: [1, 1, 0.4], p: [0, 0, 0.0128] });
-    const glint = X(new THREE.SphereGeometry(0.0022, 6, 4), { p: [0.003 * s, 0.003, 0.0138] });
+    const eye = new THREE.SphereGeometry(0.0158, 14, 10); const iris = X(new THREE.SphereGeometry(0.0098, 12, 8), { s: [1, 1, 0.45], p: [0, 0, 0.0124] });
+    const pupil = X(new THREE.SphereGeometry(0.0048, 8, 6), { s: [1, 1, 0.4], p: [0, 0, 0.0145] });
+    const glint = X(new THREE.SphereGeometry(0.0026, 6, 4), { p: [0.0035 * s, 0.0035, 0.0158] });
     const e = merge([tint(eye, 0xe8e4dc, (x, y) => 0.8 + 0.2 * y / 0.0138), tint(iris, sp.eye ?? 0x4a6a8a), tint(pupil, 0x08080a), tint(glint, 0xffffff)]);
     out.eye.push(X(e, { p: [s * ex, ey, ez - 0.0005], r: [0, s * 0.12, 0] }));
     // upper lid + lower lid slivers (skin colour) give the eye shape
-    const lid = new THREE.SphereGeometry(0.0152, 14, 8, 0, TAU, 0, Math.PI * (0.36 + (sp.lid ?? 0)));
+    const lid = new THREE.SphereGeometry(0.0172, 14, 8, 0, TAU, 0, Math.PI * (0.36 + (sp.lid ?? 0)));
     out.skin.push(tint(X(lid, { p: [s * ex, ey + 0.001, ez - 0.0005], r: [0.25, s * 0.12, 0] }), skinC));
-    const lid2 = new THREE.SphereGeometry(0.0152, 14, 8, 0, TAU, Math.PI * 0.8, Math.PI * 0.2);
+    const lid2 = new THREE.SphereGeometry(0.0172, 14, 8, 0, TAU, Math.PI * 0.8, Math.PI * 0.2);
     out.skin.push(tint(X(lid2, { p: [s * ex, ey - 0.002, ez - 0.0005], r: [0.1, s * 0.12, 0] }), skinC.clone().multiplyScalar(0.96)));
     // brows
     const brow = X(new THREE.CapsuleGeometry(0.0042 * (sp.browT ?? 1), 0.026, 4, 6), { p: [s * (ex + 0.0025), ey + 0.0235, ez + 0.012], r: [0, 0, Math.PI / 2 + s * (sp.browTilt ?? -0.28)], s: [1, 1, 1] });
@@ -108,7 +109,7 @@ function buildFace(sp, rng) {
   // nose: bridge + tip + nostril wings
   const nose = [];
   nose.push(X(new THREE.ConeGeometry(0.011, 0.04, 8), { p: [0, 0.098, 0.088], r: [Math.PI * 0.43, 0, 0], s: [1, 1, 0.8 * (sp.nose ?? 1)] }));
-  nose.push(X(new THREE.SphereGeometry(0.0125, 10, 8), { p: [0, 0.083, 0.102 + 0.004 * (sp.nose ?? 1)], s: [0.95, 0.9, 1.0] }));
+  nose.push(X(new THREE.SphereGeometry(0.0098, 10, 8), { p: [0, 0.085, 0.1 + 0.003 * (sp.nose ?? 1)], s: [0.95, 0.9, 1.0] }));
   for (const s of [-1, 1]) nose.push(X(new THREE.SphereGeometry(0.0072, 8, 6), { p: [s * 0.0105, 0.081, 0.095], s: [1, 0.9, 0.9] }));
   out.skin.push(tint(merge(nose), skinC.clone().multiplyScalar(0.97)));
   // mouth: lips + dark line + optional smirk
@@ -603,7 +604,7 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     if (two) {
       const fam = nw.id; const side = fam === 'bow' ? 'L' : 'R';
       const w = createWeapon(nw.id, nw.rarity | 0, opts); place(w, side, nw.id);
-      if (fam === 'bow') { a.userData.bow = w; const arrow = createArrow(nw.rarity | 0); arrow.rotation.set(0, 0, 0); w.userData.nock.add(arrow); arrow.visible = false; a.userData.arrow = arrow; S.weapons.push(arrow); w.userData.setDraw(0); }
+      if (fam === 'bow') { a.userData.bow = w; const arrow = createArrow(nw.rarity | 0); arrow.rotation.set(0, 0, 0); w.userData.nock.add(arrow); arrow.visible = false; a.userData.arrow = arrow; w.userData.setDraw(0); }
       if (fam === 'staff') { a.userData.staff = w; }
       S.main = w; S.mainSide = side;
     } else {

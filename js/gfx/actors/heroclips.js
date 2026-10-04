@@ -48,7 +48,7 @@ export function applyPose(P, pose, info) {
 const sp = (rx = 0, ry = 0, rz = 0) => [rx, ry, rz];
 
 function carry(fam, shield) {
-  const o = shield ? { Oarm: sp(-22, 0, -4), Ofore: sp(-80) } : { Oarm: sp(-6, 0, -6), Ofore: sp(-30) };
+  const o = shield ? { Oarm: sp(-6, 0, -16), Ofore: sp(-48) } : { Oarm: sp(-6, 0, -6), Ofore: sp(-30) };
   switch (fam) {
     case 'spear': return { Aarm: sp(-12, 0, 6), Afore: sp(-45), Ahand: sp(25), ...o, thighA: sp(-3), thighO: sp(3) };
     case 'bow': return { Aarm: sp(-18, 0, 8), Afore: sp(-30), Ahand: sp(0), Oarm: sp(-8, 0, -6), Ofore: sp(-30) };

@@ -126,7 +126,7 @@ export function createText(stage, scene) {
       const dist = s.base.distanceTo(_cp);
       const phone = aspect < 1.2 ? Math.min(1.7, 1.2 / aspect) : 1;
       const unit = (dist / 11) * phone; // keep a stable on-screen size at any camera distance
-      const h = 0.95 * s.size * unit * sc;
+      const h = 1.3 * s.size * unit * sc;
       s.mesh.scale.set(h * 2, h, 1);
       _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, rise * unit, s.dxz * t).add(s.base);
       if (s.crit && t < 0.25) { _v.x += Math.sin(t * 150) * 0.03 * unit; _v.y += Math.cos(t * 130) * 0.02 * unit; }

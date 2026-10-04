@@ -34,7 +34,7 @@ export function vcolorFn(seed = 1, { dark = 0.4, light = 1.0, far = [6, 16], tin
 }
 
 // Grass tufts everywhere; shorter / sparser inside the clear zone.
-export function grassField(c, { n = 700, tint = [0.9, 0.9, 0.5], root = [0.07, 0.07, 0.03], hmin = 0.25, hmax = 0.6, wind = 1.0, rejectFn = null, innerKeep = 0.12, area = { x: [-40, 40], z: [-50, 14] }, density = null, spread = 0.2, blades = 7, color = null, windK = 0.55 } = {}) {
+export function grassField(c, { n = 700, tint = [0.9, 0.9, 0.5], root = [0.07, 0.07, 0.03], hmin = 0.25, hmax = 0.6, wind = 1.0, rejectFn = null, innerKeep = 0.12, area = { x: [-40, 40], z: [-50, 14] }, density = null, spread = 0.22, blades = 11, color = null, windK = 0.55 } = {}) {
   const count = c.n(n);
   const geos = [0, 1, 2].map((i) => grassTuft(c.seed * 11 + i * 17, { blades, h: 0.5, w: 0.075, spread, rootCol: root, tipCol: [1, 1, 1] }));
   const per = Math.ceil(count / geos.length);
@@ -54,7 +54,7 @@ export function grassField(c, { n = 700, tint = [0.9, 0.9, 0.5], root = [0.07, 0
       const inner = inClear(x, z);
       const s = rr(c.rng, hmin, hmax) * (inner ? 0.55 : 1) * (0.7 + 0.6 * smoothstep(8, 30, Math.hypot(x, z)));
       const col = color ? color(x, z) : [tint[0] * rr(c.rng, 0.6, 1.1), tint[1] * rr(c.rng, 0.6, 1.1), tint[2] * rr(c.rng, 0.6, 1.1)];
-      items.push({ p: [x, c.hAt(x, z) - 0.02, z], r: c.rng() * 6.28, s: [s * rr(c.rng, 0.8, 1.2), s * rr(c.rng, 0.8, 1.2) * 1.8, s * rr(c.rng, 0.8, 1.2)], c: new THREE.Color(col[0], col[1], col[2]) });
+      items.push({ p: [x, c.hAt(x, z) - 0.02, z], r: c.rng() * 6.28, s: [s * rr(c.rng, 0.8, 1.2), s * rr(c.rng, 0.8, 1.2) * 1.25, s * rr(c.rng, 0.8, 1.2)], c: new THREE.Color(col[0], col[1], col[2]) });
     }
     c.addInstanced(g, mat, items);
   });

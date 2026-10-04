@@ -36,7 +36,7 @@ export const MARKS = {
 const MOODS = {
   calm: { fire: 1, keyMix: 0, keyK: 1, rimK: 1, sky: [1, 1, 1], horMix: 0, storm: 0, ember: 1, bloom: 0, exp: 1, hemiK: 1, glowK: 1, tint: 0 },
   battle: { fire: 1.35, keyMix: 0.35, keyK: 1.22, rimK: 1.1, sky: [1.08, 0.96, 0.94], horMix: 0.12, storm: 0, ember: 1.9, bloom: 0.1, exp: 1.02, hemiK: 0.95, glowK: 1.25, tint: 0 },
-  boss: { fire: 1.7, keyMix: 0.25, keyK: 1.15, rimK: 1.7, sky: [1.25, 0.72, 0.72], horMix: 0.55, storm: 1, ember: 3.0, bloom: 0.2, exp: 1.04, hemiK: 0.9, glowK: 1.7, tint: 0 },
+  boss: { fire: 1.35, keyMix: 0.25, keyK: 1.1, rimK: 1.6, sky: [1.15, 0.78, 0.78], horMix: 0.4, storm: 1, ember: 3.0, bloom: 0.0, exp: 0.97, hemiK: 0.9, glowK: 1.2, tint: 0 },
   victory: { fire: 0.5, keyMix: 0.7, keyK: 1.18, rimK: 0.7, sky: [1.12, 1.05, 0.9], horMix: 0.65, storm: 0, ember: 0.45, bloom: 0.05, exp: 1.08, hemiK: 1.35, glowK: 0.8, tint: 1 },
   camp: { fire: 0.9, keyMix: 0.5, keyK: 0.85, rimK: 0.75, sky: [1.0, 0.92, 0.88], horMix: 0.15, storm: 0, ember: 0.7, bloom: 0.1, exp: 1.0, hemiK: 1.15, glowK: 0.95, tint: 0 },
 };

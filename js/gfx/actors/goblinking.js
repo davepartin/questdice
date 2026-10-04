@@ -15,7 +15,8 @@ const rotM = (x, y, z) => new THREE.Matrix4().makeRotationFromEuler(new THREE.Eu
 const trM = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
 
 export function create({ seed = 1, quality = 'high' } = {}) {
-  const QK = quality === 'low' ? 1.7 : quality === 'med' ? 1.3 : 1;
+  const QK = quality === 'low' ? 3.0 : quality === 'med' ? 2.3 : 1.8;
+  const QF = quality === 'low' ? 2.2 : quality === 'med' ? 1.7 : 1.4;
   const HQ = quality === 'high' ? 1 : quality === 'med' ? 0.6 : 0.35;
   const R = mkRng(seed * 4231 + 5);
   const rr = (a, b) => a + (b - a) * R();
@@ -52,10 +53,10 @@ export function create({ seed = 1, quality = 'high' } = {}) {
 
   // ---------------------------------------------------------------- materials
   const skin = mat('kingHideB', { vertexColors: true, roughness: 0.85 });
-  const gold = mat('gold', { vertexColors: true, roughness: 0.42, envMapIntensity: 0.85, color: 0xffeab0, side: THREE.DoubleSide });
-  const goldR = mat('gold', { roughness: 0.3, envMapIntensity: 1.0, color: 0xfff0c0, side: THREE.DoubleSide });
+  const gold = solid(0xffe27a, { rough: 0.38, metal: 1, vertexColors: true, side: THREE.DoubleSide, envMapIntensity: 1.1 });
+  const goldR = solid(0xffe898, { rough: 0.2, metal: 1, side: THREE.DoubleSide, envMapIntensity: 1.2 });
   const leather = mat('leatherDark', { vertexColors: true, side: THREE.DoubleSide });
-  const fur = mat('fur', { vertexColors: true, side: THREE.DoubleSide, tint: 0xd8cfc0, dark: 0x6a5e50 });
+  const fur = mat('fur', { vertexColors: true, side: THREE.DoubleSide, tint: 0xcdb88a, dark: 0x5a4a30 });
   const bone = mat('bone', { vertexColors: true });
   const clay = mat('dirt', { vertexColors: true, tint: 0x8a4a2a, dark: 0x2a1408 });
   const ruby = gem(0xff1030, { emissive: 0xff0820, ei: 1.6 });
@@ -72,7 +73,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const lump = { seed, lump: 0.01, lumpFreq: 7, mottle: 0.35 };
   const FLD = {};
   const grime = (x, y, z, c) => { const g = smoothstep(0.4, 0.0, y); c.multiplyScalar(1 - g * 0.4); };
-  const mesh = (key, f, joint, o = {}) => { FLD[key] = f; M.push(joint, skin, meshField(f, { h: (o.h || 0.03) * QK, uvScale: 1.1, ao: 0.9, shade: grime, ...o }), null); };
+  const mesh = (key, f, joint, o = {}) => { FLD[key] = f; M.push(joint, skin, meshField(f, { uvScale: 1.1, ao: 0.9, shade: grime, ...o, h: (o.h || 0.04) * (o.h && o.h < 0.025 ? QF : QK) }), null); };
   const GRN = { belly: 0xb8c880, dark: 0x7a8c50, pink: 0xc89a8a };
 
   // ================================================================ BODY
@@ -86,23 +87,23 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     for (const sx of [-1, 1]) { f.sph([sx * 0.15, C[1] - 0.08, C[2] + 0.12], 0.09, { k: 0.07 }); f.sph([sx * 0.095, C[1] + 0.02, C[2] + 0.19], 0.055, { sub: true, k: 0.03 }); f.sph([sx * 0.035, C[1] - 0.14, C[2] + 0.36], 0.02, { sub: true, k: 0.015 }); }
     f.ell([0, C[1] - 0.08, C[2] + 0.18], [0.14, 0.08, 0.1], { k: 0.07 });
     f.cap([0, C[1] - 0.02, C[2] + 0.2], [0, C[1] - 0.1, C[2] + 0.42], 0.055, 0.04, { k: 0.05 }); f.cap([0, C[1] - 0.1, C[2] + 0.42], [0, C[1] - 0.2, C[2] + 0.38], 0.04, 0.032, { k: 0.04 }); // hooked nose
-    mesh('head', f, head, { h: 0.014, aoSamples: [0.03, 0.07, 0.15] }); }
+    mesh('head', f, head, { h: 0.022, aoSamples: [0.03, 0.07, 0.15] }); }
   { const f = new Field({ ...lump, lump: 0.004, lumpFreq: 10 });
-    f.ell([0, C[1] - 0.2, C[2] + 0.2], [0.17, 0.08, 0.12], { k: 0.06 }); for (const sx of [-1, 1]) f.cap([sx * 0.17, C[1] - 0.1, C[2] + 0.0], [sx * 0.1, C[1] - 0.2, C[2] + 0.24], 0.06, 0.06, { k: 0.05 }); mesh('jaw', f, jaw, { h: 0.014 }); }
+    f.ell([0, C[1] - 0.2, C[2] + 0.2], [0.17, 0.08, 0.12], { k: 0.06 }); for (const sx of [-1, 1]) f.cap([sx * 0.17, C[1] - 0.1, C[2] + 0.0], [sx * 0.1, C[1] - 0.2, C[2] + 0.24], 0.06, 0.06, { k: 0.05 }); mesh('jaw', f, jaw, { h: 0.022 }); }
   for (const [S, sx] of Object.entries(side)) {
-    { const f = new Field({ ...lump, lump: 0.004, lumpFreq: 10 }); f.cap([sx * 0.22, C[1] + 0.1, C[2] + 0.1], [sx * 0.03, C[1] + 0.07, C[2] + 0.22], 0.045, 0.05, { k: 0.04 }); mesh('brow' + S, f, J['brow' + S], { h: 0.012 }); }
-    { const f = new Field({ ...lump, lump: 0.003, lumpFreq: 12 }); f.cap([sx * 0.2, C[1], C[2] - 0.02], [sx * 0.46, C[1] + 0.08, C[2] - 0.08], 0.05, 0.03, { k: 0.04 }); f.cap([sx * 0.46, C[1] + 0.08, C[2] - 0.08], [sx * 0.64, C[1] + 0.2, C[2] - 0.14], 0.03, 0.012, { k: 0.03 }); mesh('ear' + S, f, J['ear' + S], { h: 0.012, ao: 0.6 }); }
+    { const f = new Field({ ...lump, lump: 0.004, lumpFreq: 10 }); f.cap([sx * 0.22, C[1] + 0.1, C[2] + 0.1], [sx * 0.03, C[1] + 0.07, C[2] + 0.22], 0.045, 0.05, { k: 0.04 }); mesh('brow' + S, f, J['brow' + S], { h: 0.02 }); }
+    { const f = new Field({ ...lump, lump: 0.003, lumpFreq: 12 }); f.cap([sx * 0.2, C[1], C[2] - 0.02], [sx * 0.46, C[1] + 0.08, C[2] - 0.08], 0.05, 0.03, { k: 0.04 }); f.cap([sx * 0.46, C[1] + 0.08, C[2] - 0.08], [sx * 0.64, C[1] + 0.2, C[2] - 0.14], 0.03, 0.012, { k: 0.03 }); mesh('ear' + S, f, J['ear' + S], { h: 0.02, ao: 0.6 }); }
     { const f = new Field(lump); f.sph([sx * 0.55, 1.6, 0], 0.2, { k: 0.1 }); f.cap([sx * 0.55, 1.6, 0], [sx * 0.58, 1.2, 0.02], 0.2, 0.15, { k: 0.1 }); mesh('arm' + S, f, J['sh' + S], { h: 0.03 }); }
     { const f = new Field(lump); f.sph([sx * 0.58, 1.18, 0.02], 0.15, { k: 0.05 }); f.cap([sx * 0.58, 1.18, 0.02], [sx * 0.6, 0.84, 0.1], 0.15, 0.11, { k: 0.08 }); f.ell([sx * 0.6, 0.74, 0.1], [0.13, 0.13, 0.15], { k: 0.06 });
-      for (let i = 0; i < 4; i++) f.cap([sx * 0.6 + (i - 1.5) * 0.045, 0.74, 0.2], [sx * 0.6 + (i - 1.5) * 0.05, 0.66, 0.24], 0.032, 0.026, { k: 0.02 }); mesh('fore' + S, f, J['el' + S], { h: 0.022 }); }
+      for (let i = 0; i < 4; i++) f.cap([sx * 0.6 + (i - 1.5) * 0.045, 0.74, 0.2], [sx * 0.6 + (i - 1.5) * 0.05, 0.66, 0.24], 0.032, 0.026, { k: 0.02 }); mesh('fore' + S, f, J['el' + S], { h: 0.03 }); }
     { const f = new Field(lump); f.cap([sx * 0.22, 0.85, 0], [sx * 0.24, 0.46, 0.05], 0.22, 0.16, { k: 0.08 }); f.sph([sx * 0.24, 0.42, 0.05], 0.16, { k: 0.04 }); mesh('thigh' + S, f, J['hip' + S], { h: 0.03 }); }
-    { const f = new Field(lump); f.sph([sx * 0.24, 0.42, 0.05], 0.16, { k: 0.04 }); f.cap([sx * 0.24, 0.42, 0.05], [sx * 0.24, 0.12, 0], 0.16, 0.1, { k: 0.08 }); mesh('shin' + S, f, J['kn' + S], { h: 0.026 }); }
-    { const f = new Field(lump); f.sph([sx * 0.24, 0.1, 0], 0.1, { k: 0.04 }); f.ell([sx * 0.24, 0.06, 0.14], [0.13, 0.06, 0.22], { k: 0.05 }); for (let i = 0; i < 3; i++) f.cap([sx * 0.24 + (i - 1) * 0.08, 0.06, 0.28], [sx * 0.24 + (i - 1) * 0.09, 0.05, 0.4], 0.045, 0.04, { k: 0.03 }); mesh('foot' + S, f, J['ft' + S], { h: 0.022 }); }
+    { const f = new Field(lump); f.sph([sx * 0.24, 0.42, 0.05], 0.16, { k: 0.04 }); f.cap([sx * 0.24, 0.42, 0.05], [sx * 0.24, 0.12, 0], 0.16, 0.1, { k: 0.08 }); mesh('shin' + S, f, J['kn' + S], { h: 0.035 }); }
+    { const f = new Field(lump); f.sph([sx * 0.24, 0.1, 0], 0.1, { k: 0.04 }); f.ell([sx * 0.24, 0.06, 0.14], [0.13, 0.06, 0.22], { k: 0.05 }); for (let i = 0; i < 3; i++) f.cap([sx * 0.24 + (i - 1) * 0.08, 0.06, 0.28], [sx * 0.24 + (i - 1) * 0.09, 0.05, 0.4], 0.045, 0.04, { k: 0.03 }); mesh('foot' + S, f, J['ft' + S], { h: 0.03 }); }
   }
 
   // ================================================================ DETAILS
-  const sphG = new THREE.SphereGeometry(1, 10, 8); const cylG = new THREE.CylinderGeometry(1, 1, 1, 12).translate(0, 0.5, 0);
-  const spikeG = new THREE.ConeGeometry(1, 1, 6).translate(0, 0.5, 0); const studG = new THREE.SphereGeometry(1, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  const sphG = new THREE.SphereGeometry(1, 7, 5); const cylG = new THREE.CylinderGeometry(1, 1, 1, 12).translate(0, 0.5, 0);
+  const spikeG = new THREE.ConeGeometry(1, 1, 5).translate(0, 0.5, 0); const studG = new THREE.SphereGeometry(1, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2);
   const col = (h, v = 0.1) => new THREE.Color(h).multiplyScalar(1 - v + R() * v * 2);
   const gcol = () => col(0xffe9a0, 0.12);
   // warts
@@ -116,8 +117,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     M.push(J['eye' + S], pupilM, new THREE.SphereGeometry(0.015, 8, 6), trM(e0[0] - sx * 0.006, e0[1] - 0.006, e0[2] + 0.043));
     M.push(J['lid' + S], skin, new THREE.SphereGeometry(0.054, 16, 10, 0, Math.PI * 2, 0, 1.95), trM(...e0), col(0x9ab060, 0.05));
     // gold ring in each ear (and a stud)
-    M.push(J['ear' + S], gold, new THREE.TorusGeometry(0.05, 0.009, 8, 18), new THREE.Matrix4().compose(V(sx * 0.46, C[1] - 0.03, C[2] - 0.08), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0)), V(1, 1, 1)));
-    M.push(J['ear' + S], gold, new THREE.TorusGeometry(0.04, 0.008, 8, 16), new THREE.Matrix4().compose(V(sx * 0.58, C[1] + 0.12, C[2] - 0.11), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0)), V(1, 1, 1)));
+    M.push(J['ear' + S], gold, new THREE.TorusGeometry(0.05, 0.009, 8, 18), new THREE.Matrix4().compose(V(sx * 0.40, C[1] - 0.005, C[2] - 0.075), new THREE.Quaternion(), V(1, 1, 1)));
+    M.push(J['ear' + S], gold, new THREE.TorusGeometry(0.04, 0.008, 8, 16), new THREE.Matrix4().compose(V(sx * 0.57, C[1] + 0.13, C[2] - 0.115), new THREE.Quaternion(), V(1, 1, 1)));
     M.push(J['ear' + S], emer, sphG, new THREE.Matrix4().compose(V(sx * 0.3, C[1] + 0.03, C[2] - 0.04), new THREE.Quaternion(), V(0.012, 0.012, 0.012)));
     // tusks
     M.strand(jaw, bone, [sx * 0.105, C[1] - 0.21, C[2] + 0.31], [sx * 0.1, 1, 0.3], 0.1, 0.02, { rings: 3, radial: 6, r1: 0.15, color: 0xdccfa8, bend: [sx * 0.08, 0.0, 0.06] });
@@ -142,10 +143,10 @@ export function create({ seed = 1, quality = 'high' } = {}) {
 
   // ---- ARMOUR: mismatched gold plates that hug the body
   const torso = unionField([FLD.chest, FLD.belly], 0.12);
-  const plateMesh = (src, joint, mtl, o, h = 0.01) => { const sh = shellField(src, { bevel: 0.01, ...o }); M.push(joint, mtl, meshField(sh, { h: h * QK, uvScale: 1.6, ao: 0.5, aoSamples: [0.02, 0.05] }), null); return sh; };
+  const plateMesh = (src, joint, mtl, o, h = 0.02) => { const sh = shellField(src, { bevel: 0.01, ...o }); M.push(joint, mtl, meshField(sh, { h: h * QK / 1.35, uvScale: 1.6, ao: 0.5, aoSamples: [0.02, 0.05] }), null); return sh; };
   const hammer = (x, y, z, o) => { o.setRGB(1, 1, 1).multiplyScalar(0.72 + 0.18 * Math.sin(x * 47) * Math.sin(z * 41 + y * 23)); };
   // breastplate stretched over the gut (front only, rim lifted)
-  plateMesh(torso, spine, gold, { off: 0.03, t: 0.016, region: (x, y, z) => Math.max(-(z - 0.05), Math.abs(y - 1.2) - 0.38, Math.abs(x) - 0.52), bounds: [[-0.8, 0.6, -0.2], [0.8, 1.85, 0.9]], colorAt: hammer }, 0.011);
+  plateMesh(torso, spine, gold, { off: 0.03, t: 0.016, region: (x, y, z) => Math.max(-(z - 0.05), Math.abs(y - 1.2) - 0.38, Math.abs(x) - 0.52), bounds: [[-0.8, 0.6, -0.2], [0.8, 1.85, 0.9]], colorAt: hammer }, 0.02);
   // rivets around the plate and a central embossed boss + a gem
   for (let i = 0; i < Math.round(26 * HQ + 8); i++) { const an = (i / (26 * HQ + 8)) * 6.283; const x = Math.sin(an) * 0.47; const y = 1.2 + Math.cos(an) * 0.33; const h = torso.shoot([x, y, 1.4], [0, 0, -1], 2); if (h) M.push(spine, gold, studG, place(A3(h.p.clone().addScaledVector(h.n, 0.04)), A3(h.n), 0.014), gcol()); }
   { const h = torso.shoot([0, 1.18, 1.4], [0, 0, -1], 2); if (h) { M.push(spine, goldR, new THREE.CylinderGeometry(0.1, 0.12, 0.03, 18), new THREE.Matrix4().compose(h.p.clone().addScaledVector(h.n, 0.05), new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), h.n), V(1, 1, 1))); M.push(spine, ruby, new THREE.OctahedronGeometry(1, 0), place(A3(h.p.clone().addScaledVector(h.n, 0.085)), A3(h.n), [0.055, 0.04, 0.055])); } }
@@ -154,13 +155,13 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   { const h = torso.shoot([0, 0.8, 1.4], [0, 0, -1], 2); if (h) { M.push(spine, goldR, new THREE.BoxGeometry(0.2, 0.13, 0.03), new THREE.Matrix4().compose(h.p.clone().addScaledVector(h.n, 0.05), new THREE.Quaternion(), V(1, 1, 1))); M.push(spine, emer, sphG, trM(h.p.x, h.p.y, h.p.z + 0.075).multiply(new THREE.Matrix4().makeScale(0.035, 0.035, 0.02))); } }
   // big pauldron on the right shoulder (club-hand side), small one on the left
   for (const [S, c, rad, off] of [['R', V(-0.56, 1.76, 0.0), 0.3, 0.035], ['L', V(0.55, 1.72, 0.05), 0.18, 0.03]]) {
-    plateMesh(FLD['arm' + S], J['sh' + S], gold, { off, t: 0.017, region: (x, y, z) => V(x, y, z).sub(c).length() - rad, bounds: [[-1, 1.2, -0.5], [1, 2.1, 0.5]], colorAt: hammer }, 0.011);
+    plateMesh(FLD['arm' + S], J['sh' + S], gold, { off, t: 0.017, region: (x, y, z) => V(x, y, z).sub(c).length() - rad, bounds: [[-1, 1.2, -0.5], [1, 2.1, 0.5]], colorAt: hammer }, 0.02);
     const ctr = V((S === 'R' ? -1 : 1) * 0.55, 1.6, 0); const axis = c.clone().sub(ctr).normalize(); const u = V(0, 0, 1).cross(axis).normalize(); const v = axis.clone().cross(u);
     for (let k = 0; k < 9; k++) { const an = (k / 9) * 6.283; const q = c.clone().addScaledVector(u, Math.cos(an) * rad * 0.8).addScaledVector(v, Math.sin(an) * rad * 0.8); const h = FLD['arm' + S].shoot(A3(ctr), A3(q.sub(ctr)), 1); if (h) M.push(J['sh' + S], gold, studG, place(A3(h.p.clone().addScaledVector(h.n, off + 0.017)), A3(h.n), 0.013), gcol()); }
     if (S === 'R') { const h = FLD.armR.shoot(A3(ctr), [-0.2, 1, 0.1], 1); if (h) M.push(J.shR, gold, spikeG, place(A3(h.p.clone().addScaledVector(h.n, 0.04)), A3(h.n), [0.04, 0.15, 0.04]), gcol()); }
   }
   // greaves (mismatched: one polished, one hammered)
-  for (const [S] of [['R'], ['L']]) plateMesh(FLD['shin' + S], J['kn' + S], S === 'R' ? goldR : gold, { off: 0.02, t: 0.014, region: (x, y, z) => Math.max(Math.abs(y - 0.26) - 0.11, -(z + 0.02)), bounds: [[-0.6, 0.0, -0.4], [0.6, 0.6, 0.4]], colorAt: hammer }, 0.009);
+  for (const [S] of [['R'], ['L']]) plateMesh(FLD['shin' + S], J['kn' + S], S === 'R' ? goldR : gold, { off: 0.02, t: 0.014, region: (x, y, z) => Math.max(Math.abs(y - 0.26) - 0.11, -(z + 0.02)), bounds: [[-0.6, 0.0, -0.4], [0.6, 0.6, 0.4]], colorAt: hammer }, 0.02);
   // heaps of chains, medallions and coins stuck all over
   { const loops = [[0.0, 0.0], [0.07, 0.1], [0.14, 0.2]];
     loops.forEach(([dy, dz], li) => { const pts = []; for (let i = 0; i <= 14; i++) { const t = i / 14; const x = -0.34 + t * 0.68; const h = FLD.chest.shoot([x, 1.95 - 0.38 * Math.sin(Math.PI * t) * (0.9 + li * 0.2) - dy, 1.2], [0, -0.2, -1], 2); if (h) pts.push(h); }
@@ -168,11 +169,11 @@ export function create({ seed = 1, quality = 'high' } = {}) {
         M.push(chest, gold, new THREE.TorusGeometry(0.014, 0.004, 5, 8), new THREE.Matrix4().compose(a0.clone().lerp(b0, 0.5), new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), d.clone().normalize()), V(1, 1, 1)).multiply(rotM(0, 0, i * 1.57)).multiply(new THREE.Matrix4().makeScale(d.length() * 35, 1, 1)), gcol()); }
       const m = pts[7]; if (m && li !== 1) M.push(chest, goldR, new THREE.CylinderGeometry(0.05 + li * 0.012, 0.05 + li * 0.012, 0.01, 16), new THREE.Matrix4().compose(m.p.clone().addScaledVector(m.n, 0.045), new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), m.n), V(1, 1, 1))); }); }
   for (const [key, joint, box, n] of [['chest', chest, [[-0.45, 1.3, -0.35], [0.45, 1.8, 0.4]], 22], ['belly', spine, [[-0.55, 0.7, -0.2], [0.55, 1.35, 0.7]], 26], ['arm' + 'L', J.shL, [[0.4, 1.2, -0.2], [0.8, 1.7, 0.2]], 8], ['thighL', J.hipL, [[0.0, 0.4, -0.2], [0.5, 0.85, 0.3]], 8]]) {
-    for (const { p, n: nn } of FLD[key].scatter(Math.round(n * HQ + 4), box, null, R)) { const s = rr(0.026, 0.04); M.push(joint, goldR, new THREE.CylinderGeometry(s, s, 0.007, 14), place(A3(p.clone().addScaledVector(nn, 0.004)), A3(nn), 1, R() * 6), gcol()); }
+    for (const { p, n: nn } of FLD[key].scatter(Math.round(n * HQ + 4), box, null, R)) { const s = rr(0.026, 0.04); M.push(joint, goldR, new THREE.CylinderGeometry(s, s, 0.007, 8), place(A3(p.clone().addScaledVector(nn, 0.004)), A3(nn), 1, R() * 6), gcol()); }
   }
   // fur collar: lumpy fat torus + fur strands
   { const f = new Field({ seed: seed + 9, lump: 0.02, lumpFreq: 8 }); f.torus([0, 1.8, 0.04], 0.27, 0.085, { k: 0.05 }); f.torus([0, 1.76, -0.03], 0.31, 0.07, { k: 0.05 });
-    M.push(chest, fur, meshField(f, { h: 0.024 * QK, uvScale: 2, ao: 0.8 }), null);
+    M.push(chest, fur, meshField(f, { h: 0.034 * QK / 1.35, uvScale: 2, ao: 0.8 }), null);
     for (let i = 0; i < Math.round(150 * HQ + 30); i++) { const an = R() * 6.283; const r0 = 0.27 + rr(-0.03, 0.08); const y = 1.8 + rr(-0.02, 0.1); const p = [Math.sin(an) * r0, y, 0.04 + Math.cos(an) * r0 * 0.9]; M.strand(chest, fur, p, [Math.sin(an) * 0.5, 1, Math.cos(an) * 0.5], rr(0.05, 0.1), 0.006, { rings: 2, radial: 3, r1: 0.1, color: col(0xeee6d6, 0.15), bend: [Math.sin(an) * 0.2, -0.2, Math.cos(an) * 0.2] }); } }
   // bombs on the belt + pouch
   for (let i = 0; i < 3; i++) { const x = 0.25 + i * 0.09; M.push(spine, clay, new THREE.SphereGeometry(0.05, 10, 8), trM(-x + 0.3, 0.72 - i * 0.015, 0.5 - i * 0.02)); M.strand(spine, leather, [0.3 - x, 0.77 - i * 0.015, 0.5 - i * 0.02], [0.1, 1, 0], 0.04, 0.004, { rings: 1, radial: 3, r1: 1, color: 0x1a1008 }); }
@@ -189,7 +190,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     sk.ell([0, 0.012, -0.006], [0.07, 0.066, 0.078], { k: 0.02 }).ell([0, -0.042, 0.046], [0.046, 0.04, 0.042], { k: 0.02 }).ell([0, -0.076, 0.035], [0.03, 0.022, 0.034], { k: 0.012 });
     for (const sx of [-1, 1]) { sk.sph([sx * 0.028, -0.006, 0.063], 0.022, { sub: true, k: 0.01 }); sk.sph([sx * 0.042, -0.03, 0.05], 0.016, { k: 0.015 }); }
     sk.ell([0, -0.04, 0.086], [0.01, 0.018, 0.012], { sub: true, k: 0.008 });
-    M.push(weapon, goldR, meshField(sk, { h: 0.0085 * QK, uvScale: 5, ao: 0.8, aoSamples: [0.015, 0.04, 0.08] }), lm(trM(0, 1.5, 0).multiply(rotM(0.3, 0, 0)).multiply(new THREE.Matrix4().makeScale(1.35, 1.35, 1.35))));
+    M.push(weapon, goldR, meshField(sk, { h: 0.014 * QK / 1.35, uvScale: 5, ao: 0.8, aoSamples: [0.015, 0.04, 0.08] }), lm(trM(0, 1.5, 0).multiply(rotM(0.3, 0, 0)).multiply(new THREE.Matrix4().makeScale(1.35, 1.35, 1.35))));
     for (let i = 0; i < 6; i++) { const an = (i / 6) * 6.283; M.strand(weapon, goldR, A3(V(Math.sin(an) * 0.03, 1.38, Math.cos(an) * 0.03).applyMatrix4(Mw)), A3(V(Math.sin(an) * 0.35, 1, Math.cos(an) * 0.35).transformDirection(Mw)), 0.14, 0.012, { rings: 2, radial: 4, r1: 0.35, color: 0xffe9a0 }); }
     M.push(weapon, ruby, new THREE.IcosahedronGeometry(0.06, 1), lm(trM(0, 1.62, 0.04)));
   }

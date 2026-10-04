@@ -86,7 +86,7 @@ export function cinderFord(c) {
     hemi: { sky: 0x3a4a78, ground: 0x2a2a30, intensity: 0.5 },
     look: LOOK({ bloom: 0.85, sat: 1.05, contrast: 1.12, shadowTint: 0xb0d0ff, highTint: 0xfff0e0 }),
   });
-  buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 16, haze: 0.6, color: 0x141c30, seed: 3, rim: 0x6a8ad0, rimK: 0.5 }, { radius: 150, arc: 1.9, top: 9, mode: 1, haze: 0.45, color: 0x0c1220, seed: 4, toothW: 4, toothH: 5 }] });
+  buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: 16, haze: 0.6, color: 0x141c30, seed: 3, rim: 0x6a8ad0, rimK: 0.5 }, { radius: 150, arc: 1.9, top: 9, mode: 0, haze: 0.45, color: 0x0c1220, seed: 4, toothW: 4, toothH: 5 }] });
   defaultPropMats(c, { wood: 0x3a3028 });
   // river + ripples
   const wm = waterMaterial(c.U, { deep: 0x0a1424, shallow: 0x2a4050, spark: 0xff8a40, ripple: 1.0, flow: 1.2, tl: 0.075, tlCol: 0x060a14, sparkK: 1.6 }, 'RIVER');
@@ -149,7 +149,7 @@ export function ravensRest(c) {
   const crags = [0, 1, 2].map((i) => rock(c.seed + i * 3, { detail: 2, amp: 0.5, freq: 1.1, flat: 1.7, ridged: true, uv: 0.09 }));
   const cm = c.arenaMat('crag', () => texMat(rockTex({ tint: 0x6a6c74, dark: 0x181a20, seed: 31, lichenAmt: 0.4, lichen: 0x4a5a4a }), { repeat: 1, vertexColors: true }), {});
   const cl = [[], [], []];
-  [[-11, -4, 5], [-15, -14, 7.5], [-22, -26, 11], [12, -6, 4.5], [16, -18, 8], [24, -30, 12], [-8, -34, 9], [6, -40, 12], [-30, -12, 10], [32, -10, 9]].forEach(([x, z, s]) => { cl[Math.floor(rng() * 3)].push({ p: [x, c.hAt(x, z) - s * 0.2, z], r: rng() * 6, s: [s, s * rr(rng, 0.9, 1.3), s * 0.85], c: new THREE.Color(0.8, 0.8, 0.85) }); });
+  [[-14, -3, 2.6], [-17, -12, 4], [-24, -22, 7], [14.5, -5, 2.4], [18, -16, 4.2], [26, -28, 8], [-8, -34, 7], [6, -40, 9], [-32, -10, 7], [34, -8, 7]].forEach(([x, z, s]) => { cl[Math.floor(rng() * 3)].push({ p: [x, c.hAt(x, z) - s * 0.2, z], r: rng() * 6, s: [s, s * rr(rng, 0.9, 1.3), s * 0.85], c: new THREE.Color(0.8, 0.8, 0.85) }); });
   crags.forEach((g, i) => { const near = cl[i].filter((it) => Math.abs(it.p[0]) < 14 && it.p[2] > -16); const far = cl[i].filter((it) => !near.includes(it)); if (far.length) c.addInstanced(g, cm, far); if (near.length) c.addInstanced(g, cm, near, { cast: true }); });
   // standing stones in an arc behind the field
   const sl = [0, 1, 2].map((i) => slab(c.seed * 5 + i, { w: 1.3, h: 3.2 + i * 0.6, d: 0.8 }));
@@ -267,7 +267,7 @@ export function smokeHollow(c) {
   };
   applyPalette(c, {
     sky: { hor: 0x5a2c1c, mid: 0x2a1a1c, top: 0x0c0a10, glows: [{ az: 0, w: 60, h: 8, color: 0xff6a20, k: 0.9 }, { az: -50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }, { az: 50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }], moon: { on: 0 }, stars: 0.0, cloud: 0.9, cloudDark: 0x241816, cloudLit: 0xff6a30 },
-    fog: { base: 0x2a120c, dens: 0.0105, fall: 0.18, height: 0.5, glow: 0.55 },
+    fog: { base: 0x1c0c08, dens: 0.0085, fall: 0.2, height: 0.55, glow: 0.35 },
     env: ENV(0x241418, 0xc0582a, 0x120a08, 0xff8a4a, 0x6a60a0),
     key: { color: 0xffa060, intensity: 2.2, pos: [-4.4, 3.6, 5.4] },
     rim: { color: 0xff7a40, intensity: 1.3, pos: [4, 4, -9] },
@@ -280,11 +280,11 @@ export function smokeHollow(c) {
   wagon(B, rng, { p: [-8.5, 0, -2], r: 0.6 }); wagon(B, rng, { p: [9, 0, -6], r: -0.4 }); wagon(B, rng, { p: [-13, 0, -14], r: 1.2 }); wagon(B, rng, { p: [14, 0, -22], r: 2.4 });
   c.fire({ p: [-8.5, 0.9, -2], w: 1.6, h: 3.2, power: 1.1, light: true, lightI: 50, lightDist: 16, embers: 20, smoke: 0.5, tongues: 3 });
   c.fire({ p: [9, 0.9, -6], w: 1.4, h: 2.8, power: 1.0, light: true, lightI: 44, lightDist: 15, embers: 16, smoke: 0.5, tongues: 3 });
-  c.fire({ p: [-13, 0.9, -14], w: 2, h: 4, power: 1.1, embers: 14, smoke: 0.6, tongues: 3, glow: 1.2 });
+  c.fire({ p: [-13, 0.9, -14], w: 2, h: 4, power: 1.1, embers: 14, smoke: 0.6, tongues: 3, glow: 0.8 });
   c.fire({ p: [14, 0.9, -22], w: 2, h: 4, power: 1.0, embers: 10, smoke: 0.6, tongues: 3, glow: 1.2 });
-  c.fire({ p: [0, 0.5, -34], w: 5, h: 9, power: 1.2, embers: 12, smoke: 0.8, tongues: 4, glow: 1.5 });
-  c.fire({ p: [-24, 0.5, -30], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 1.3 });
-  c.fire({ p: [25, 0.5, -36], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 1.3 });
+  c.fire({ p: [0, 0.5, -34], w: 5, h: 9, power: 1.2, embers: 12, smoke: 0.8, tongues: 4, glow: 0.9 });
+  c.fire({ p: [-24, 0.5, -30], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 0.8 });
+  c.fire({ p: [25, 0.5, -36], w: 4, h: 7, power: 1.0, embers: 8, smoke: 0.6, glow: 0.8 });
   for (let i = 0; i < 30; i++) { const sx = rng() < 0.5 ? -1 : 1; const x = sx * rr(rng, 6.2, 22); const z = rr(rng, -30, 6); const len = rr(rng, 1.5, 4.5); B.box('woodChar', [len, 0.2, 0.2], { p: [x, 0.18 + (rng() < 0.3 ? 0.3 : 0), z], r: [0, rng() * 3.14, (rng() - 0.5) * 0.3] }, [0.8, 0.8, 0.8]); }
   for (let i = 0; i < 9; i++) { const sx = rng() < 0.5 ? -1 : 1; const x = sx * rr(rng, 7, 20); const z = rr(rng, -30, 0); const h = rr(rng, 1.2, 3.4); B.box('woodChar', [0.22, h, 0.22], { p: [x, h / 2, z], r: [(rng() - 0.5) * 0.2, rng(), (rng() - 0.5) * 0.2] }, [0.7, 0.7, 0.7]); }
   ruinWall(B, rng, { len: 7, h: 2.6, p: [-17, 0, -8], yaw: 0.5 }); ruinWall(B, rng, { len: 6, h: 2.2, p: [18, 0, -12], yaw: -0.6 });
@@ -294,8 +294,8 @@ export function smokeHollow(c) {
   grassField(c, { n: 300, tint: [0.4, 0.34, 0.2], root: [0.04, 0.03, 0.02], hmin: 0.15, hmax: 0.4 });
   for (let i = 0; i < 16; i++) c.scorches.push({ p: [rr(rng, -12, 12), rr(rng, -8, 8)], s: [rr(rng, 2, 5), rr(rng, 1.5, 4)], rot: rng() * 6, a: 0.8 });
   // thick smoke layers, underlit
-  [[0, 3.5, -16, 70, 30], [-10, 5, -10, 50, 26], [12, 6, -20, 60, 30], [0, 8, -30, 100, 40], [0, 2.2, -6, 50, 22]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: 0x2a1610, dens: 0.34, scale: 0.55, speed: 0.6, seed: i * 2.7 }));
-  [[0, 0, -12, 80, 14], [0, 0, -26, 100, 18], [0, 0, -40, 130, 24]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x331a14, dens: 0.4 - i * 0.07, scale: 0.55, speed: 0.4, seed: 5 + i }));
+  [[0, 3.5, -16, 70, 30], [-10, 5, -10, 50, 26], [12, 6, -20, 60, 30], [0, 8, -30, 100, 40], [0, 2.2, -6, 50, 22]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: 0x24120c, dens: 0.2, scale: 0.55, speed: 0.6, seed: i * 2.7 }));
+  [[0, 0, -12, 80, 14], [0, 0, -26, 100, 18], [0, 0, -40, 130, 24]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x2a140e, dens: 0.3 - i * 0.06, scale: 0.55, speed: 0.4, seed: 5 + i }));
   c.puddles = [[-6.5, 2.4, 1.5], [6.8, 3.5, 1.3], [-3.5, -4, 1.1]];
   c.puddleOpts = { deep: 0x140a08, shallow: 0x3a2018, spark: 0xff7a30, tl: 0.05, tlCol: 0x120806, mirror: 0.1 };
   c.smokeOpts = { smokeCol: 0xff7a34, smokeEnd: 0x1e1818 };
@@ -493,9 +493,9 @@ export function gallowsHill(c) {
   const moonCol = boss ? 0xff9a7a : 0xf0f4ff;
   applyPalette(c, {
     sky: boss
-      ? { hor: 0x7a1c14, mid: 0x3a1020, top: 0x120610, glows: [{ az: 0, w: 60, h: 6, color: 0xff3a14, k: 1.1 }, { az: -50, w: 40, h: 5, color: 0xc01a1a, k: 0.6 }, { az: 50, w: 40, h: 5, color: 0xc01a1a, k: 0.6 }], moon: { on: 1, az: -10, el: 4.0, size: 3.4, color: moonCol }, stars: 0.2, cloud: 0.85, cloudDark: 0x2a0c14, cloudLit: 0xff3a20 }
+      ? { hor: 0x7a1c14, mid: 0x3a1020, top: 0x120610, glows: [{ az: 0, w: 60, h: 6, color: 0xff3a14, k: 0.8 }, { az: -50, w: 40, h: 5, color: 0xc01a1a, k: 0.45 }, { az: 50, w: 40, h: 5, color: 0xc01a1a, k: 0.45 }], moon: { on: 1, az: -10, el: 4.0, size: 3.4, color: moonCol }, stars: 0.2, cloud: 0.85, cloudDark: 0x2a0c14, cloudLit: 0xff3a20 }
       : { hor: 0x2a3050, mid: 0x161a38, top: 0x060818, glows: [{ az: 14, w: 35, h: 5, color: 0x6a88d0, k: 0.8 }, { az: -60, w: 30, h: 4, color: 0xff6a30, k: 0.35 }], moon: { on: 1, az: -8, el: 3.8, size: elite ? 2.2 : 4.4, color: moonCol }, stars: 1.0, cloud: elite ? 0.8 : 0.4, cloudDark: 0x141830, cloudLit: 0x7a90c8 },
-    fog: boss ? { base: 0x3a1214, dens: 0.0115, fall: 0.2, height: 0.6, glow: 0.8 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
+    fog: boss ? { base: 0x2a0c10, dens: 0.0078, fall: 0.22, height: 0.6, glow: 0.45 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
     env: boss ? ENV(0x300c1c, 0xc03a28, 0x100808, 0xff7a40, 0x8a60c0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
     key: boss ? { color: 0xff8a50, intensity: 2.6, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0xb8d0ff, intensity: elite ? 1.7 : 2.3, pos: [-4.6, 4.6, 4.8] },
     rim: boss ? { color: 0xff3a2a, intensity: 2.2, pos: [4, 5, -9] } : { color: 0xffa070, intensity: 1.1, pos: [4, 5, -9] },
@@ -539,7 +539,7 @@ export function gallowsHill(c) {
       const g = new THREE.SphereGeometry(1.4 * s, 14, 8, 0, 6.283, 0, 1.2).scale(1.3, 0.55, 1); const d = (await0(g, c.seed + z)); B.geo('gold', d, { p: [x, c.hAt(x, z) - 0.1, z] }, [0.9, 0.8, 0.7], { cast: true, uv: 0.5, ao: 0.4 });
       for (let i = 0; i < 40; i++) { const a = rng() * 6.28; const r = Math.sqrt(rng()) * 1.5 * s; B.cyl('gold', [0.09, 0.09, 0.02, 8], { p: [x + Math.cos(a) * r, 0.45 * s * Math.max(0.1, 1 - r / (1.6 * s)) + 0.06, z + Math.sin(a) * r * 0.8], r: [rr(rng, -0.7, 0.7), rng() * 6, rr(rng, -0.7, 0.7)] }, [1, 1, 1], { ao: 0 }); }
       B.cyl('gold', [0.1, 0.06, 0.25, 8], { p: [x + 0.6 * s, 0.7 * s, z - 0.2], r: [0.3, 0, 0.4] }, [1, 1, 1], { ao: 0 }); B.box('wood', [0.9, 0.5, 0.6], { p: [x - 1.0 * s, 0.25, z + 0.8], r: 0.5 }, [0.6, 0.45, 0.35], {});
-      c.glows.push({ p: [x, 0.8 * s, z], s: 4 * s, c: 0xffb840, k: 0.3, flick: 0.3, seed: x });
+      c.glows.push({ p: [x, 0.8 * s, z], s: 3 * s, c: 0xffb840, k: 0.5, flick: 0.3, seed: x });
     }
     for (const [x, z] of [[-6, -6], [7, -7], [-3.5, -12], [4, -13], [-10, -9], [11, -10]]) { brazier(B, { p: [x, 0, z] }, { h: 1.3 }); c.fire({ p: [x, 1.5, z], w: 0.8, h: 1.7, power: 1.3, embers: 10, tongues: 2, glow: 1.2, light: x === -6 || x === 7, lightI: 40, lightDist: 14 }); }
     const crown = bannerTex('#5a0e10', '#e8b040');
@@ -562,8 +562,8 @@ export function gallowsHill(c) {
     c.fire({ p: [9.2, 0.1, -5], w: 0.9, h: 1.4, power: 1.0, light: true, lightColor: 0xff7a30, lightI: 34, lightDist: 13, embers: 12, smoke: 0.3, tongues: 3 });
     c.ambient = { ash: 10, ambientEmbers: 4, wind: 0.6, ashColor: 0x8a8a90 };
   } else { c.ambient = { ash: 3, ambientEmbers: 2, wind: 1.0, ashColor: 0xb0b8d0 }; }
-  [[0, 0.4, -8, 50, 16], [-12, 0.6, -14, 50, 18], [10, 0.5, -4, 26, 12], [0, 1, -26, 100, 30]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, elite ? y * 0.6 : y, z], w, d, col: boss ? 0x4a1c24 : 0x34425e, dens: elite ? 0.55 : 0.34, scale: 0.9, speed: boss ? 1.2 : 0.9, seed: i * 2.7 }));
-  [[0, 0, -22, 90, 9], [0, 0, -40, 130, 12]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: boss ? 0x4a1a24 : 0x2a3a58, dens: 0.45, scale: 0.7, speed: 0.6, seed: 9 + i }));
+  [[0, 0.4, -8, 50, 16], [-12, 0.6, -14, 50, 18], [10, 0.5, -4, 26, 12], [0, 1, -26, 100, 30]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, elite ? y * 0.6 : y, z], w, d, col: boss ? 0x4a1c24 : 0x34425e, dens: elite ? 0.55 : boss ? 0.12 : 0.34, scale: 0.9, speed: boss ? 1.2 : 0.9, seed: i * 2.7 }));
+  [[0, 0, -22, 90, 9], [0, 0, -40, 130, 12]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: boss ? 0x3a1018 : 0x2a3a58, dens: boss ? 0.2 : 0.45, scale: 0.7, speed: 0.6, seed: 9 + i }));
   if (boss) c.smokeSources.push({ p: [-20, 2, -30], rate: 0.3, size: 5 }, { p: [22, 2, -34], rate: 0.3, size: 5 });
   c.puddles = [[-5.8, 2, 1.3], [6.5, 4, 1.4], [-3, -4.2, 1.1]];
   c.puddleOpts = { deep: boss ? 0x180808 : 0x0a0c18, shallow: boss ? 0x3a1818 : 0x283040, spark: boss ? 0xff5a30 : 0xff9a60, tl: 0.05, tlCol: 0x06060c, mirror: 0.15 };

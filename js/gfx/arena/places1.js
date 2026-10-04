@@ -37,7 +37,7 @@ export function burntOrchard(c) {
     key: { color: 0xff9d5e, intensity: 2.3, pos: [-4.4, 3.6, 5.4] },
     rim: { color: 0x6a82ff, intensity: 1.4, pos: [5, 5, -10] },
     hemi: { sky: 0x3a3454, ground: 0x4a2c1a, intensity: 0.42 },
-    look: LOOK({ bloom: 0.95, vignette: 0.52, sat: 1.12, contrast: 1.12, tilt: 0.14, shadowTint: 0xc8e4ff, highTint: 0xfff0d8 }),
+    look: LOOK({ bloom: 0.8, exposure: 0.92, vignette: 0.55, sat: 1.12, contrast: 1.15, tilt: 0.14, shadowTint: 0xc8e4ff, highTint: 0xfff0d8 }),
   });
   buildBackdrop(c, {
     ground,
@@ -80,8 +80,8 @@ export function burntOrchard(c) {
 
   // ------------------------------------------------------------------ the farm at the end of the lane
   farmhouse(B, rng, { p: [-3.5, c.hAt(-3.5, -50) , -50], r: 0.15 }, { w: 10, d: 6.5, h: 3.6 });
-  for (const [dx, dz, h, w] of [[-3.6, -3, 8, 3], [0.8, -2.8, 7, 2.6], [3.2, -1, 9.5, 3.4], [-1, 1.6, 5.5, 2.2], [2, 2.0, 6, 2.4]]) c.fire({ p: [-3.5 + dx, c.hAt(-3.5, -50) + 2.8, -50 + dz], w, h, power: 1.3, embers: 22, smoke: dx === 0.8 ? 0.4 : 0.25, tongues: 3, glow: 1.4 });
-  c.glows.push({ p: [-3.5, 4, -52], s: 55, c: 0xff5a1a, k: 0.35, flick: 0.3, seed: 4 });
+  for (const [dx, dz, h, w] of [[-3.6, -3, 8, 3], [0.8, -2.8, 7, 2.6], [3.2, -1, 9.5, 3.4], [-1, 1.6, 5.5, 2.2], [2, 2.0, 6, 2.4]]) c.fire({ p: [-3.5 + dx, c.hAt(-3.5, -50) + 2.8, -50 + dz], w, h, power: 1.1, embers: 22, smoke: dx === 0.8 ? 0.4 : 0.25, tongues: 3, glow: 0.7 });
+  c.glows.push({ p: [-3.5, 4, -52], s: 40, c: 0xff5a1a, k: 0.18, flick: 0.3, seed: 4 });
   // barn / outbuildings, burning too
   farmhouse(B, rng, { p: [-24, c.hAt(-24, -58), -58], r: 0.7 }, { w: 7, d: 5, h: 3 });
   c.fire({ p: [-24, c.hAt(-24, -58) + 2.5, -58], w: 4, h: 7, power: 1.1, embers: 10, smoke: 0.3, glow: 1.2 });
@@ -120,8 +120,8 @@ export function burntOrchard(c) {
 
   // ------------------------------------------------------------------ atmosphere
   const fogCol = 0x42243a; const fogCol2 = 0x5a2a30;
-  [[-12, 0.5, -9, 34, 22], [12, 0.7, -16, 36, 24], [0, 0.9, -26, 70, 36], [-2, 1.3, -38, 90, 40], [-8, 0.4, 3, 18, 12], [9, 0.4, 2, 16, 10]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: i % 2 ? fogCol2 : fogCol, dens: i < 4 ? 0.42 : 0.2, scale: 0.9, speed: 0.8, seed: i * 1.9 }));
-  [[-4, 0, -20, 70, 11], [6, 0, -32, 90, 14], [0, 0, -46, 120, 16]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x5a2a30, dens: 0.55 - i * 0.1, scale: 0.7, speed: 0.6, seed: 5 + i * 2.7 }));
+  [[-12, 0.5, -9, 34, 22], [12, 0.7, -16, 36, 24], [0, 0.9, -26, 70, 36], [-2, 1.3, -38, 90, 40], [-8, 0.4, 3, 18, 12], [9, 0.4, 2, 16, 10]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: i % 2 ? fogCol2 : fogCol, dens: i < 4 ? 0.2 : 0.1, scale: 0.9, speed: 0.8, seed: i * 1.9 }));
+  [[-4, 0, -20, 70, 11], [6, 0, -32, 90, 14], [0, 0, -46, 120, 16]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x5a2a30, dens: 0.3 - i * 0.07, scale: 0.7, speed: 0.6, seed: 5 + i * 2.7 }));
   c.smokeOpts = { smokeCol: 0xff7a34, smokeEnd: 0x2a2030 };
   c.ambient = { ash: 22, ambientEmbers: 9, wind: 0.8 };
 }

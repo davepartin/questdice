@@ -554,7 +554,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   } };
   clips.die = { dur: 1.15, fn: (t, P) => {
     const kk = clamp(t / 1.15); const stag = Math.sin(clamp(t / 0.25) * Math.PI);
-    P.pos('root', 0, -0.36 * ease.out(clamp((t - 0.3) / 0.6)), -0.18 * ease.out(clamp(t / 0.9)));
+    P.pos('root', 0, 0.12 * ease.out(clamp((t - 0.3) / 0.6)), -0.05 * ease.out(clamp(t / 0.9)));
     P.rot('root', -1.4 * ease.in(clamp((t - 0.1) / 0.8)), 0, 0.15 * kk);
     P.rot('hips', 0.2 * stag, 0, 0); P.rot('spine', -0.3 * kk, 0, 0); P.rot('neck', -0.4 * kk, 0, 0); P.rot('head', -0.5 * kk + 0.3 * stag, 0.3 * kk, 0.2 * kk);
     face(P, { jawD: 0.55 * ease.out(clamp(t / 0.2)), lid: 0, earBack: 0.6, earUp: -0.7 * kk, blink: clamp((t - 0.55) / 0.2) * 0.9 });

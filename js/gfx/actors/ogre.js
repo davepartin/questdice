@@ -16,8 +16,9 @@ const trM = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
 const SKIN = { belly: 0xcfc4a2, scar: 0xd6a08e, dark: 0x8a7a64, mud: 0x6a5a40, pale: 0xcfc4a0 };
 
 export function create({ seed = 1, quality = 'high' } = {}) {
-  const QK = quality === 'low' ? 1.7 : quality === 'med' ? 1.3 : 1;
-  const HQ = quality === 'high' ? 1 : quality === 'med' ? 0.6 : 0.35; // detail-count multiplier
+  const QK = quality === 'low' ? 3.0 : quality === 'med' ? 2.5 : 2.0; // body skin cell scale
+  const QF = quality === 'low' ? 2.2 : quality === 'med' ? 1.7 : 1.4; // face cell scale
+  const HQ = quality === 'high' ? 0.7 : quality === 'med' ? 0.45 : 0.25; // detail-count multiplier
   const R = mkRng(seed * 7919 + 17);
   const rr = (a, b) => a + (b - a) * R();
   const a = new Actor({ name: 'ogre', height: 3.2, radius: 1.1 });
@@ -82,8 +83,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const skinOpt = { uvScale: 0.9, ao: 0.9 };
   const lump = { seed, lump: 0.012, lumpFreq: 6, mottle: 0.4 };
   const FLD = {};
-  const grime = (x, y, z, c) => { const g = smoothstep(0.75, 0.0, y); c.multiplyScalar(1 - g * 0.5); c.lerp(new THREE.Color(0x4a3c28), g * 0.25); };
-  const mesh = (key, f, joint, o = {}) => { FLD[key] = f; M.push(joint, o.mat || skin, meshField(f, { h: (o.h || 0.035) * QK, shade: grime, ...skinOpt, ...o }), null); };
+  const grime = (x, y, z, c) => { const g = smoothstep(0.75, 0.0, y); c.multiplyScalar((0.72 + 0.28 * Math.sin(x * 9 + 1) * Math.sin(y * 7 + z * 5)) * (1 - g * 0.5)); c.lerp(new THREE.Color(0x4a3c28), g * 0.25); };
+  const mesh = (key, f, joint, o = {}) => { FLD[key] = f; M.push(joint, o.mat || skin, meshField(f, { shade: grime, ...skinOpt, ...o, h: (o.h || 0.035) * (o.h && o.h < 0.02 ? QF : QK) }), null); };
 
   // ================================================================ BODY FIELDS
   { const f = new Field(lump);
@@ -117,11 +118,11 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     }
     f.ell([0, C[1] - 0.1, C[2] + 0.22], [0.17, 0.11, 0.13], { k: 0.08 });
     f.ell([0, C[1] - 0.06, C[2] + 0.35], [0.085, 0.075, 0.08], { k: 0.05 });
-    mesh('head', f, head, { h: 0.016, aoSamples: [0.03, 0.07, 0.15] }); }
+    mesh('head', f, head, { h: 0.019, aoSamples: [0.03, 0.07, 0.15] }); }
   { const f = new Field({ ...lump, lump: 0.006, lumpFreq: 9 });
     f.ell([0, C[1] - 0.22, C[2] + 0.27], [0.2, 0.11, 0.15], { k: 0.08 });
     for (const sx of [-1, 1]) f.cap([sx * 0.2, C[1] - 0.12, C[2] + 0.02], [sx * 0.12, C[1] - 0.22, C[2] + 0.34], 0.07, 0.08, { k: 0.06 });
-    mesh('jaw', f, jaw, { h: 0.016 }); }
+    mesh('jaw', f, jaw, { h: 0.019 }); }
   for (const [S, sx] of Object.entries(side)) {
     { const f = new Field({ ...lump, lump: 0.006, lumpFreq: 9 });
       f.cap([sx * 0.265, C[1] + 0.085, C[2] + 0.17], [sx * 0.04, C[1] + 0.05, C[2] + 0.27], 0.07, 0.075, { k: 0.06 });
@@ -158,8 +159,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   }
 
   // ================================================================ DETAILS
-  const coneG = new THREE.ConeGeometry(1, 1, 6).translate(0, 0.5, 0);
-  const sphG = new THREE.SphereGeometry(1, 8, 6);
+  const coneG = new THREE.ConeGeometry(1, 1, 5).translate(0, 0.5, 0);
+  const sphG = new THREE.SphereGeometry(1, 6, 4);
   const cylG = new THREE.CylinderGeometry(1, 1, 1, 8).translate(0, 0.5, 0);
   const col = (h, v = 0.12) => new THREE.Color(h).multiplyScalar(1 - v + R() * v * 2);
   const A3 = (v) => [v.x, v.y, v.z];
@@ -173,7 +174,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
       M.strand(joint, hairM, A3(p), dir, L, thick * rr(0.8, 1.4), { bend: [rr(-0.1, 0.1), -rr(0.2, 0.6), rr(-0.1, 0.1)], rings: 3, radial: 3, color: col(hairCols[(R() * hairCols.length) | 0], 0.15), r1: 0.1 });
     }
   };
-  hairPatch(FLD.chest, chest, [[-0.7, 2.15, -0.5], [0.7, 2.6, 0.0]], 260, (p, n) => n.y > 0.1 && n.z < 0.3, [0.1, 0.2], 0.006);          // hump / back mane
+  hairPatch(FLD.chest, chest, [[-0.7, 2.15, -0.5], [0.7, 2.6, 0.0]], 150, (p, n) => n.y > 0.1 && n.z < 0.3, [0.1, 0.2], 0.006);          // hump / back mane
   hairPatch(FLD.chest, chest, [[-0.4, 1.9, 0.3], [0.4, 2.2, 0.6]], 70, (p, n) => n.z > 0.5, [0.04, 0.09], 0.0045);                        // chest tufts
   hairPatch(FLD.head, head, [[-0.2, 2.78, 0.1], [0.2, 2.95, 0.4]], 50, (p, n) => n.y > 0.4, [0.06, 0.14], 0.006);                         // crest
   for (const [S, sx] of Object.entries(side)) {
@@ -259,8 +260,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const pelvisShape = new Field({}); pelvisShape.ell([0, 1.18, -0.02], [0.52, 0.36, 0.44], { k: 0.12 }).ell([0, 1.1, -0.2], [0.5, 0.34, 0.3], { k: 0.12 });
   const torsoAll = unionField([FLD.belly, pelvisShape, FLD.chest], 0.12);
   const bnd = (lo, hi) => [lo, hi];
-  const studG = new THREE.SphereGeometry(1, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2); // dome stud, base at y=0, up +Y
-  const spikeG = new THREE.ConeGeometry(1, 1, 6).translate(0, 0.5, 0);
+  const studG = new THREE.SphereGeometry(1, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2); // dome stud, base at y=0, up +Y
+  const spikeG = new THREE.ConeGeometry(1, 1, 5).translate(0, 0.5, 0);
   const ringsAround = (F, joint, mtl, yy, n, rad, off, size, from = [0, 0, 0], jitter = 0, aoff = 0) => {
     for (let i = 0; i < n; i++) {
       const ang = aoff + (i / n) * Math.PI * 2; const dir = [Math.sin(ang), jitter * rr(-1, 1), Math.cos(ang)];
@@ -274,16 +275,16 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     f.ell([0, 0.012, -0.006], [0.07, 0.066, 0.078], { k: 0.02 }).ell([0, -0.042, 0.046], [0.046, 0.04, 0.042], { k: 0.02 }).ell([0, -0.076, 0.035], [0.03, 0.022, 0.034], { k: 0.012 });
     for (const sx of [-1, 1]) { f.sph([sx * 0.042, -0.03, 0.05], 0.016, { k: 0.015 }); f.sph([sx * 0.028, -0.006, 0.063], 0.022, { sub: true, k: 0.01 }); f.sph([sx * 0.02, -0.088, 0.062], 0.013, { sub: true, k: 0.008 }); }
     f.ell([0, -0.04, 0.086], [0.01, 0.018, 0.012], { sub: true, k: 0.008 });
-    return meshField(f, { h: 0.0105 * QK, uvScale: 5, ao: 0.9, aoSamples: [0.015, 0.04, 0.08] });
+    return meshField(f, { h: 0.022 * QK / 1.35, uvScale: 5, ao: 0.9, aoSamples: [0.015, 0.04, 0.08] });
   })();
   const skullAt = (joint, p, n, s = 1, roll = 0, up = [0, 1, 0], pre = null) => {
     const f = V(...n).normalize(); const u0 = V(...up); const u = u0.sub(f.clone().multiplyScalar(u0.dot(f))); if (u.lengthSq() < 1e-4) u.set(0, 0, 1).sub(f.clone().multiplyScalar(f.z)); u.normalize();
     const r = u.clone().cross(f).normalize(); const mtx = new THREE.Matrix4().makeBasis(r, u, f).multiply(rotM(0, 0, roll)); mtx.scale(V(s, s, s)); mtx.setPosition(...p);
-    M.push(joint, bone, skullGeo, pre ? pre.clone().multiply(mtx) : mtx, col(0xcbbd9c, 0.1)); };
+    M.push(joint, bone, skullGeo, pre ? pre.clone().multiply(mtx) : mtx, col(0x9a8e74, 0.1)); };
   // ---- belt (studded leather) with buckle + trophies
-  const belt = shellField(torsoAll, { off: 0.012, t: 0.028, region: (x, y) => Math.abs(y - 1.2) - 0.085, bevel: 0.012, bounds: [[-1, 1.0, -0.9], [1, 1.4, 1.1]],
+  const belt = shellField(torsoAll, { off: 0.012, t: 0.034, region: (x, y) => Math.abs(y - 1.2) - 0.085, bevel: 0.012, bounds: [[-1, 1.0, -0.9], [1, 1.4, 1.1]],
     colorAt: (x, y, z, o) => { o.setRGB(1, 1, 1); o.multiplyScalar(0.8 + 0.2 * Math.sin(x * 40 + z * 31)); } });
-  M.push(spine, leather, meshField(belt, { h: 0.012 * QK, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
+  M.push(spine, leather, meshField(belt, { h: 0.03 * QK / 1.35, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
   ringsAround(torsoAll, spine, iron, 1.245, Math.round(34 * HQ + 8), 0, 0.05, 0.014, [0, 0, 0.0]);
   ringsAround(torsoAll, spine, iron, 1.155, Math.round(34 * HQ + 8), 0, 0.05, 0.014, [0, 0, 0.0], 0, 0.05);
   { // buckle plate: iron slab + central boss + rusty rivets
@@ -296,7 +297,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const hang = (joint, p, len, kind) => {
     M.strand(joint, leather, p, [0, -1, 0], len, 0.006, { rings: 2, radial: 3, r1: 1, color: 0x1a120c });
     const q = [p[0], p[1] - len, p[2]];
-    if (kind === 'skull') skullAt(joint, [q[0], q[1] - 0.05, q[2] + 0.02], [0, 0, 1], 1.15, rr(-0.3, 0.3));
+    if (kind === 'skull') skullAt(joint, [q[0], q[1] - 0.05, q[2] + 0.02], [0, 0, 1], 0.9, rr(-0.3, 0.3));
     if (kind === 'bone') { M.push(joint, bone, new THREE.CylinderGeometry(0.014, 0.014, 0.22, 7), new THREE.Matrix4().compose(V(q[0], q[1] - 0.1, q[2]), new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0, 0.3)), V(1, 1, 1)), 0xcfc2a4); for (const s of [1, -1]) M.push(joint, bone, sphG, new THREE.Matrix4().compose(V(q[0] - s * 0.027, q[1] - 0.1 + s * 0.104, q[2] + s * 0.02), new THREE.Quaternion(), V(0.026, 0.02, 0.022)), 0xcfc2a4); }
     if (kind === 'tooth') M.strand(joint, bone, [q[0], q[1], q[2]], [0, -1, 0.1], 0.12, 0.022, { rings: 3, radial: 6, r1: 0.2, color: 0xc9b98f, bend: [0, 0, 0.1] });
   };
@@ -308,7 +309,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   { const P0 = V(0.55, 2.3, 0); const nrm = V(1, -1, 0).normalize();
     const strapF = shellField(unionField([FLD.chest, FLD.belly], 0.12), { off: 0.012, t: 0.024, region: (x, y, z) => Math.abs(V(x, y, z).sub(P0).dot(nrm)) - 0.075, bevel: 0.01, bounds: [[-1, 1.0, -0.9], [1, 2.6, 1.1]],
       colorAt: (x, y, z, o) => { o.setRGB(1, 1, 1); o.multiplyScalar(0.75 + 0.25 * Math.sin(y * 50 + x * 40)); } });
-    M.push(chest, leather, meshField(strapF, { h: 0.012 * QK, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
+    M.push(chest, leather, meshField(strapF, { h: 0.03 * QK / 1.35, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
     const tang = V(-1.1, -1.1, 0).normalize();
     for (let i = 0; i < 16; i++) { // studs along the front of the strap
       const t = i / 15; const o = P0.clone().addScaledVector(tang, -0.18 + t * 1.5); const hh = strapF.shoot([o.x, o.y, 1.2], [0, 0, -1], 1.6); if (!hh) continue;
@@ -326,7 +327,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     for (const [c, rad, mt, i] of plates) {
       const sh = shellField(F, { off: 0.03 + i * 0.008, t: 0.017, region: (x, y, z) => V(x, y, z).sub(c).length() - rad, bevel: 0.012, bounds: [[0.4, 1.8, -0.7], [1.5, 2.8, 0.7]],
         colorAt: (x, y, z, o) => { o.setRGB(1, 1, 1); o.multiplyScalar(0.8 + 0.3 * Math.sin(x * 55) * Math.sin(z * 47 + y * 20)); } });
-      M.push(J.shL, mt, meshField(sh, { h: 0.011 * QK, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
+      M.push(J.shL, mt, meshField(sh, { h: 0.025 * QK / 1.35, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
       const axis = c.clone().sub(ctr).normalize(); const u = V(0, 0, 1).cross(axis).normalize(); const v = axis.clone().cross(u);
       const n = Math.round(11 * HQ + 4);
       for (let k = 0; k < n; k++) { const an = (k / n) * Math.PI * 2 + i; const q = c.clone().addScaledVector(u, Math.cos(an) * rad * 0.78).addScaledVector(v, Math.sin(an) * rad * 0.78); const dir = q.clone().sub(ctr);
@@ -334,12 +335,12 @@ export function create({ seed = 1, quality = 'high' } = {}) {
       if (i === 0) for (const [dx, dz] of [[0, 0], [0.13, 0.08], [-0.1, 0.1]]) { const hh = F.shoot([0.92 + dx, 2.9, dz], [0, -1, 0], 1.2); if (hh) M.push(J.shL, iron, spikeG, place(A3(hh.p.clone().addScaledVector(hh.n, 0.04)), A3(hh.n), [0.036, 0.16 - Math.abs(dx) * 0.4, 0.036]), 0x7a7a80); }
     }
     const strap = shellField(F, { off: 0.008, t: 0.02, region: (x, y) => Math.abs(y - 1.85) - 0.055, bevel: 0.01, bounds: [[0.4, 1.6, -0.7], [1.5, 2.1, 0.7]] });
-    M.push(J.shL, leather, meshField(strap, { h: 0.012 * QK, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
+    M.push(J.shL, leather, meshField(strap, { h: 0.02 * QK / 1.35, uvScale: 1.6, ao: 0.6, aoSamples: [0.02, 0.05] }), null);
     const hh = F.shoot([0.92, 1.85, 1.0], [0, 0, -1], 1.5); if (hh) M.push(J.shL, iron, new THREE.BoxGeometry(0.07, 0.09, 0.02), new THREE.Matrix4().compose(hh.p.clone().addScaledVector(hh.n, 0.04), new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), hh.n), V(1, 1, 1)), 0x8a8a90); }
   // ---- left wrist: rusted manacle with a broken chain
   { const F = FLD.foreL; const man = shellField(F, { off: 0.006, t: 0.024, region: (x, y) => Math.abs(y - 0.6) - 0.075, bevel: 0.012, bounds: [[0.6, 0.3, -0.4], [1.3, 0.9, 0.4]],
       colorAt: (x, y, z, o) => { o.setRGB(1, 1, 1); o.multiplyScalar(0.7 + 0.3 * Math.sin(x * 33) * Math.sin(z * 37)); } });
-    M.push(J.elL, rust, meshField(man, { h: 0.011 * QK, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
+    M.push(J.elL, rust, meshField(man, { h: 0.025 * QK / 1.35, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
     M.push(J.elL, rust, new THREE.TorusGeometry(0.045, 0.014, 8, 14), new THREE.Matrix4().compose(V(1.14, 0.58, 0.07), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0)), V(1, 1, 1)));
     for (const dy of [-0.05, 0.05]) { const hh = F.shoot([0.92, 0.6 + dy, 0.07], [1, 0, 0], 1); if (hh) M.push(J.elL, iron, studG, place(A3(hh.p.clone().addScaledVector(hh.n, 0.03)), A3(hh.n), 0.02), 0x808086); }
     // chain: three heavy links + a snapped link (parented to the swinging 'chain' joints)
@@ -348,7 +349,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   // ---- right knee bandage
   { const F = FLD.shinR; const bandage = shellField(F, { off: 0.006, t: 0.014, region: (x, y) => Math.abs(y - 0.64) - 0.12, bevel: 0.008, bounds: [[-0.8, 0.4, -0.35], [-0.1, 0.9, 0.45]],
       colorAt: (x, y, z, o) => { const w = Math.sin((y * 90 + x * 40 + z * 55)); o.setRGB(1, 1, 1).multiplyScalar(0.78 + 0.22 * w); const bl = smoothstep(0.17, 0.0, V(x + 0.62, y - 0.62, z - 0.25).length()); o.lerp(new THREE.Color(0x6a1a14), bl * 0.75); } });
-    M.push(J.knR, cloth, meshField(bandage, { h: 0.011 * QK, uvScale: 2.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
+    M.push(J.knR, cloth, meshField(bandage, { h: 0.025 * QK / 1.35, uvScale: 2.5, ao: 0.5, aoSamples: [0.02, 0.05] }), null);
     M.strand(J.knR, cloth, [-0.54, 0.62, 0.22], [-0.3, -1, 0.6], 0.2, 0.02, { rings: 4, radial: 4, r1: 0.9, color: 0xb8a888, bend: [0.0, -0.1, 0.12] }); }
 
   // ---- loincloth: fur-and-hide panels hanging from the belt (each pivots on its own joint)
@@ -391,12 +392,12 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     f.cap([0.1, 0.55, 0.0], [0.26, 0.72, 0.03], 0.045, 0.035, { k: 0.04 }); f.cap([-0.08, 0.95, -0.1], [-0.2, 1.08, -0.2], 0.05, 0.04, { k: 0.04 });
     f.stain([0, 1.5, 0], 0.5, 0x2a1a10, 0.5);
     const Mw = weapon.matrixWorld;
-    M.push(club, barkM, meshField(f, { h: 0.026 * QK, uvScale: 1.1, ao: 0.9, shade: (x, y, z, c) => { c.multiplyScalar(0.75 + 0.25 * smoothstep(-0.4, 1.3, y)); } }), Mw);
+    M.push(club, barkM, meshField(f, { h: 0.042 * QK / 1.35, uvScale: 1.1, ao: 0.9, shade: (x, y, z, c) => { c.multiplyScalar(0.75 + 0.25 * smoothstep(-0.4, 1.3, y)); } }), Mw);
     const lm = (m) => Mw.clone().multiply(m);
     // iron bands
     for (const [yb, wd, mt] of [[1.12, 0.06, iron], [1.38, 0.05, rust], [0.3, 0.05, iron]]) {
       const band = shellField(f, { off: 0.012, t: 0.02, region: (x, y) => Math.abs(y - yb) - wd, bevel: 0.008, bounds: [[-0.5, yb - 0.1, -0.5], [0.5, yb + 0.1, 0.5]], colorAt: (x, y, z, o) => { o.setRGB(1, 1, 1).multiplyScalar(0.7 + 0.3 * Math.sin(x * 40 + z * 33)); } });
-      M.push(club, mt, meshField(band, { h: 0.011 * QK, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), Mw);
+      M.push(club, mt, meshField(band, { h: 0.025 * QK / 1.35, uvScale: 1.5, ao: 0.5, aoSamples: [0.02, 0.05] }), Mw);
       const n = 12; for (let k = 0; k < n; k++) { const an = (k / n) * 6.28; const hh = f.shoot([0, yb, 0], [Math.sin(an), 0, Math.cos(an)], 1); if (hh) M.push(club, mt, studG, lm(place(A3(hh.p.clone().addScaledVector(hh.n, 0.032)), A3(hh.n), 0.016))); }
     }
     // nails and spikes all over the head

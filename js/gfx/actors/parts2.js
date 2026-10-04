@@ -191,6 +191,7 @@ export function shellField(src, { off = 0.02, t = 0.012, region, bevel = 0.012, 
     dist: (x, y, z) => { const d = src.dist(x, y, z); const sh = abs(d - off) - t; return region ? smax(sh, region(x, y, z), bevel) : sh; },
     colorAt: colorAt || ((x, y, z, out) => out.setRGB(1, 1, 1)), bmin: bounds[0], bmax: bounds[1],
     grad: Field.prototype.grad, project: Field.prototype.project, shoot: Field.prototype.shoot, scatter: Field.prototype.scatter,
+    cull: (x, y, z) => src.dist(x, y, z) < off - t * 0.2,
   };
   return f;
 }
@@ -211,8 +212,8 @@ export function unionField(fields, k = 0.15) {
 // ------------------------------------------------------------------------------------------------
 const CORN = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]];
 const EDGE = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
-export function meshField(F, { min, max, h = 0.03, ao = 0.85, uvScale = 1, shade, aoSamples = [0.05, 0.12, 0.26], refine = 2 } = {}) {
-  min = min || F.bmin; max = max || F.bmax;
+export function meshField(F, { min, max, h = 0.03, ao = 0.85, uvScale = 1, shade, aoSamples = [0.05, 0.12, 0.26], refine = 2, cull } = {}) {
+  min = min || F.bmin; max = max || F.bmax; if (cull === undefined && F.cull) cull = F.cull;
   const nx = Math.ceil((max[0] - min[0]) / h) + 1; const ny = Math.ceil((max[1] - min[1]) / h) + 1; const nz = Math.ceil((max[2] - min[2]) / h) + 1;
   const vals = new Float32Array(nx * ny * nz);
   const at = (i, j, k) => i + nx * (j + ny * k);
@@ -270,6 +271,7 @@ export function meshField(F, { min, max, h = 0.03, ao = 0.85, uvScale = 1, shade
     if (shade) shade(x, y, z, col);
     C[v * 3] = col.r; C[v * 3 + 1] = col.g; C[v * 3 + 2] = col.b;
   }
+  if (cull) { const K = []; for (let t = 0; t < I.length; t += 3) { const a0 = I[t]; const b0 = I[t + 1]; const c0 = I[t + 2]; if (!cull((P[a0 * 3] + P[b0 * 3] + P[c0 * 3]) / 3, (P[a0 * 3 + 1] + P[b0 * 3 + 1] + P[c0 * 3 + 1]) / 3, (P[a0 * 3 + 2] + P[b0 * 3 + 2] + P[c0 * 3 + 2]) / 3)) K.push(a0, b0, c0); } I.length = 0; for (const k of K) I.push(k); }
   // expand to non-indexed with per-triangle triplanar UVs
   const nt = I.length / 3; const pos = new Float32Array(nt * 9); const nor = new Float32Array(nt * 9); const uv = new Float32Array(nt * 6); const cc = new Float32Array(nt * 9);
   for (let t = 0; t < nt; t++) {
