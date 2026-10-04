@@ -280,11 +280,14 @@ export class Kit {
 // ------------------------------------------------------------------------------------------------
 // Materials: shared library entries, vertex-coloured and flagged for the triplanar hook.
 // ------------------------------------------------------------------------------------------------
-export function tpm(name, o = {}, { scale = 2.2, nrm = 1, ember = null, emberK = 1.5, side } = {}) {
+let DEFAULT_RIM = [0.5, 0.5, 0.5];
+export function setRim(color) { DEFAULT_RIM = new THREE.Color(color).toArray(); }   // per-enemy accent for the fresnel rim term
+export function tpm(name, o = {}, { scale = 2.2, nrm = 1, ember = null, emberK = 1.5, side, rim, rimK = 0.6, shell = null } = {}) {
   const m = libMat(name, { vertexColors: true, ...o }).clone();
   m.name = name;
   if (side !== undefined) m.side = side;
-  m.userData.tp = { scale, nrm, ember: ember == null ? null : new THREE.Color(ember).multiplyScalar(emberK).toArray() };
+  m.userData.tp = { scale, nrm, ember: ember == null ? null : new THREE.Color(ember).multiplyScalar(emberK).toArray(), rim: (rim ? new THREE.Color(rim).toArray() : DEFAULT_RIM).map((v) => v * rimK), shell };
+  if (shell != null) { m.alphaToCoverage = false; m.side = THREE.DoubleSide; }
   return m;
 }
 export function emis(color, ei = 2, { rough = 0.4, metal = 0, base = null, ...rest } = {}) {
@@ -299,16 +302,16 @@ export function std(color, { rough = 0.6, metal = 0, ...rest } = {}) {
 const TP_VS_DECL = 'varying vec3 vTpP; varying vec3 vTpN; varying vec3 vTpX; varying vec3 vTpY; varying vec3 vTpZ; attribute float aEmber; varying float vEmber;';
 const TP_VS_BODY = 'vTpP = position; vTpN = normal; vTpX = normalMatrix * vec3(1.,0.,0.); vTpY = normalMatrix * vec3(0.,1.,0.); vTpZ = normalMatrix * vec3(0.,0.,1.); vEmber = aEmber;';
 const TP_FS_DECL = `varying vec3 vTpP; varying vec3 vTpN; varying vec3 vTpX; varying vec3 vTpY; varying vec3 vTpZ; varying float vEmber;
-  uniform float uTpS; uniform float uTpN; uniform vec3 uTpEm;
+  uniform float uTpS; uniform float uTpN; uniform vec3 uTpEm; uniform vec3 uTpRim; uniform float uShell;
   vec3 tpW(){ vec3 w = pow(abs(normalize(vTpN)) + 1e-3, vec3(5.0)); return w / (w.x + w.y + w.z); }
   vec4 tpTex(sampler2D t){ vec3 w = tpW(); return texture2D(t, vTpP.zy * uTpS) * w.x + texture2D(t, vTpP.xz * uTpS) * w.y + texture2D(t, vTpP.xy * uTpS) * w.z; }`;
 function applyTriplanar(sh, tp) {
   sh.uniforms.uTpS = { value: tp.scale }; sh.uniforms.uTpN = { value: tp.nrm };
-  sh.uniforms.uTpEm = { value: new THREE.Color().fromArray(tp.ember || [0, 0, 0]) };
+  sh.uniforms.uTpEm = { value: new THREE.Color().fromArray(tp.ember || [0, 0, 0]) }; sh.uniforms.uTpRim = { value: new THREE.Color().fromArray(tp.rim || [0, 0, 0]) }; sh.uniforms.uShell = { value: tp.shell ?? -1 };
   sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${TP_VS_DECL}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${TP_VS_BODY}`);
   sh.fragmentShader = sh.fragmentShader
     .replace('#include <common>', `#include <common>\n${TP_FS_DECL}`)
-    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif`)
+    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif\n if (uShell >= 0.0) { vec3 cs = floor(vTpP * 95.0); float hs = fract(sin(dot(cs, vec3(12.9898, 78.233, 37.719))) * 43758.5453); if (hs < uShell * 0.92) discard; diffuseColor.rgb *= mix(0.5, 1.25, uShell); }`)
     .replace('#include <roughnessmap_fragment>', `float roughnessFactor = roughness;\n#ifdef USE_ROUGHNESSMAP\n roughnessFactor *= tpTex(roughnessMap).g;\n#endif`)
     .replace('#include <metalnessmap_fragment>', `float metalnessFactor = metalness;\n#ifdef USE_METALNESSMAP\n metalnessFactor *= tpTex(metalnessMap).b;\n#endif`)
     .replace('#include <normal_fragment_maps>', `#ifdef USE_NORMALMAP_TANGENTSPACE
@@ -319,7 +322,7 @@ function applyTriplanar(sh, tp) {
         vec3 pO = vec3(0.0, nX.y, nX.x) * w.x + vec3(nY.x, 0.0, nY.y) * w.y + vec3(nZ.x, nZ.y, 0.0) * w.z;
         normal = normalize(normal + (vTpX * pO.x + vTpY * pO.y + vTpZ * pO.z) * normalScale.x * uTpN); }
     #endif`)
-    .replace('#include <emissivemap_fragment>', `#ifdef USE_EMISSIVEMAP\n totalEmissiveRadiance *= tpTex(emissiveMap).rgb;\n#endif\n totalEmissiveRadiance += uTpEm * max(vEmber, 0.0);`);
+    .replace('#include <emissivemap_fragment>', `#ifdef USE_EMISSIVEMAP\n totalEmissiveRadiance *= tpTex(emissiveMap).rgb;\n#endif\n totalEmissiveRadiance += uTpEm * max(vEmber, 0.0);\n { float fr = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0); totalEmissiveRadiance += uTpRim * fr; }`);
 }
 // Call instead of a.finalize(): installs the triplanar hook on every cloned material that asked for it.
 export function finish(a) {
@@ -328,7 +331,7 @@ export function finish(a) {
     const tp = m.userData.tp; if (!tp) continue;
     const prev = m.onBeforeCompile; const prevKey = m.customProgramCacheKey;
     m.onBeforeCompile = (sh, r) => { prev?.call(m, sh, r); applyTriplanar(sh, tp); };
-    m.customProgramCacheKey = () => `${prevKey ? prevKey.call(m) : ''}|qdtp`;
+    m.customProgramCacheKey = () => `${prevKey ? prevKey.call(m) : ''}|qdtp2`;
     m.needsUpdate = true;
   }
   return a;
@@ -628,3 +631,19 @@ export function flapGeo({ w = 0.2, h = 0.3, nx = 8, ny = 10, jag = 0.15, seed = 
 }
 // place a sphere-ish bump (wart / stud) on a surface sample
 export function bumpGeo(r, flat = 0.6, seg = 8) { const g = new THREE.SphereGeometry(r, seg, Math.max(4, seg - 2)); g.scale(1, flat, 1); return g; }
+
+// Soft contact-shadow ellipse on the ground under an actor (radius ~ foot spread); fades with the dissolve.
+let _shadowTex = null;
+export function contactShadow(a, rx = 0.5, rz = 0.5, strength = 0.6) {
+  if (!_shadowTex && typeof document !== 'undefined') {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128); _shadowTex = new THREE.CanvasTexture(c);
+  }
+  const m = new THREE.MeshBasicMaterial({ map: _shadowTex, transparent: true, opacity: strength, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, color: 0x000000 });
+  m.userData.noActorClone = true;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m); mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.012; mesh.scale.set(rx, rz, 1); mesh.castShadow = false; mesh.receiveShadow = false; mesh.renderOrder = 1; mesh.name = 'contactShadow';
+  a.model.add(mesh); a.userData.shadow = { mesh, strength };
+  return mesh;
+}
+export function updateShadow(a) { const s = a.userData.shadow; if (s) s.mesh.material.opacity = s.strength * Math.max(0, 1 - (a.dissolving || !a.alive ? Math.min(1, a._uDissolve.value * 2.5 + 0.15) : 0)); }

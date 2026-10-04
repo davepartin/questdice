@@ -20,11 +20,11 @@ const OFFENSIVE = new Set(['sword', 'longsword', 'dagger', 'spear', 'bow', 'staf
 
 // ------------------------------------------------------------------------------------------ class specs
 const SPEC = {
-  knight: { scale: 1.0, W: 1.13, skin: 0xd8a47c, accent: 0xc02a3a, glow: 0xff6a4a, cloth: 0x9a1f2a, cloth2: 0x6a1420, steel: 0xa6aebc, steelDark: 0x626a78, trim: 0xe0b858, leather: 0x3e281a, hair: 0x3a2a1c, eye: 0x4a6a8a },
-  ranger: { scale: 1.0, W: 1.0, skin: 0xcf9a74, accent: 0x45e08b, glow: 0x9aff9a, cloth: 0x2f4d2c, cloth2: 0x1c301c, steel: 0xa8b0b8, steelDark: 0x5a6068, trim: 0xb08a4a, leather: 0x5a3a22, hair: 0x2c1e14, eye: 0x7ad6a0 },
-  wizard: { scale: 1.0, W: 0.97, skin: 0xd9ac88, accent: 0x4db4ff, glow: 0x7ac8ff, cloth: 0x2a46a0, cloth2: 0x1a2c68, steel: 0xb8c0d0, steelDark: 0x6a7288, trim: 0xe6c050, leather: 0x4a3020, hair: 0xc8ccd4, eye: 0x4a90d8 },
-  dwarf: { scale: 0.8, W: 1.32, skin: 0xcf9470, accent: 0xff8a2a, glow: 0xff7a2a, cloth: 0x4a3626, cloth2: 0x30221a, steel: 0x7a828e, steelDark: 0x3c4048, trim: 0xd08844, leather: 0x4a2e1c, hair: 0xa8541e, eye: 0x6a4a2a },
-  bard: { scale: 1.0, W: 0.97, skin: 0xe0b08c, accent: 0x2fd8c8, glow: 0x6af0e0, cloth: 0x1c8c88, cloth2: 0x125a5c, steel: 0xb8bfca, steelDark: 0x6a7280, trim: 0xe8bc48, leather: 0x6a4026, hair: 0x7a3a1e, eye: 0x3a8a6a },
+  knight: { scale: 1.1, W: 1.13, skin: 0xd8a47c, accent: 0xc02a3a, glow: 0xff6a4a, cloth: 0x9a1f2a, cloth2: 0x6a1420, steel: 0xa6aebc, steelDark: 0x626a78, trim: 0xe0b858, leather: 0x3e281a, hair: 0x3a2a1c, eye: 0x4a6a8a },
+  ranger: { scale: 1.08, W: 1.0, skin: 0xcf9a74, accent: 0x45e08b, glow: 0x9aff9a, cloth: 0x2f4d2c, cloth2: 0x1c301c, steel: 0xa8b0b8, steelDark: 0x5a6068, trim: 0xb08a4a, leather: 0x5a3a22, hair: 0x2c1e14, eye: 0x7ad6a0 },
+  wizard: { scale: 1.1, W: 0.97, skin: 0xd9ac88, accent: 0x4db4ff, glow: 0x7ac8ff, cloth: 0x2a46a0, cloth2: 0x1a2c68, steel: 0xb8c0d0, steelDark: 0x6a7288, trim: 0xe6c050, leather: 0x4a3020, hair: 0xc8ccd4, eye: 0x4a90d8 },
+  dwarf: { scale: 0.9, W: 1.32, skin: 0xcf9470, accent: 0xff8a2a, glow: 0xff7a2a, cloth: 0x4a3626, cloth2: 0x30221a, steel: 0x7a828e, steelDark: 0x3c4048, trim: 0xd08844, leather: 0x4a2e1c, hair: 0xa8541e, eye: 0x6a4a2a },
+  bard: { scale: 1.08, W: 0.97, skin: 0xe0b08c, accent: 0x2fd8c8, glow: 0x6af0e0, cloth: 0x1c8c88, cloth2: 0x125a5c, steel: 0xb8bfca, steelDark: 0x6a7280, trim: 0xe8bc48, leather: 0x6a4026, hair: 0x7a3a1e, eye: 0x3a8a6a },
 };
 
 // ------------------------------------------------------------------------------------------ materials
@@ -35,8 +35,8 @@ function mats() {
   const W0 = { tint: 0xffffff };
   MATS.cloth = mat('cloth', { ...vc, ...W0, dark: 0xb4b4b4, metalness: 0, repeat: 3 });
   MATS.leather = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 7 });
-  MATS.metal = mat('steel', { ...vc, ...W0, dark: 0xb8bcc4, metalness: 0.85, roughness: 0.7, envMapIntensity: 1.7, repeat: 2 });
-  MATS.dark = mat('iron', { ...vc, ...W0, dark: 0x9a9a9a, metalness: 0.8, roughness: 0.85, envMapIntensity: 1.4, repeat: 2 });
+  MATS.metal = mat('iron', { ...vc, ...W0, color: 0xa4b8e0, dark: 0xc0c4cc, metalness: 0.95, roughness: 0.55, envMapIntensity: 1.9, repeat: 2.5, normalScale: 0.6 });
+  MATS.dark = mat('iron', { ...vc, ...W0, color: 0xb0bce0, dark: 0x8c8c94, metalness: 0.9, roughness: 0.75, envMapIntensity: 1.5, repeat: 2.5, normalScale: 0.8 });
   MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xf0f0f0, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.15 });
   MATS.hair = mat('furDark', { ...vc, ...W0, dark: 0x909090, metalness: 0, roughness: 0.85, repeat: 2 });
   MATS.eye = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
@@ -206,82 +206,131 @@ function addHead(ctx, hs) { // hs: face spec
   sk.add('skin', tint(neck, spec.skin, (x, y) => 0.8 + 0.2 * sstep(-0.03, 0.1, y)), 'neck', (x, y) => [['neck', 1]]);
 }
 
-function costumeKnight(ctx) {
-  const { sk, spec, W, a } = ctx; const S = spec;
-  const steel = S.steel; const dk = S.steelDark;
-  addLegs(ctx, { pants: 0x2a2c33, boots: 0x3a3d46, bootKey: 'metal', pantsKey: 'cloth' });
-  // greaves + knee cops
-  for (const s of ['L', 'R']) {
-    const gr = loft([0.05, 0.15, 0.28, 0.4].map((d, i) => ({ y: -d, rx: [0.05, 0.062, 0.058, 0.05][i] + 0.004, rz: [0.058, 0.066, 0.06, 0.052][i] + 0.004, a0: -2.5, a1: 2.5 })), { N: 14, ring: { a0: -2.5, a1: 2.5, open: true }, thick: 0.004 });
-    sk.add('metal', tint(gr, steel, (x, y) => 0.7 + 0.3 * sstep(-0.4, -0.05, y)), `shin${s}`, limbW(`shin${s}`, { parent: `thigh${s}`, child: `foot${s}`, len: 0.43, r: 0.02, rp: 0.02 }));
-    sk.add('metal', tint(X(sph(0.058, [0, 0.0, 0.03], [1, 0.9, 0.8], 12, 8)), steel), `thigh${s}`, null);
-    const cop = X(sph(0.058, [0, -0.43, 0.035], [1, 0.9, 0.8], 12, 8)); sk.add('metal', tint(cop, steel), `thigh${s}`, null);
-    sk.add('metal', tint(rivets([[0.0, -0.43, 0.088, 0, 0, 1]], 0.01), S.trim), `thigh${s}`, null);
+
+// ---- shared armour / cape builders
+function pauldron(ctx, side, { r = 0.11, n = 4, col, col2, trim, tier2 = false }) {
+  const { sk } = ctx; const sx = side === 'L' ? 1 : -1; const c = sx > 0 ? Math.PI / 2 : -Math.PI / 2;
+  const tilt = { r: [0, 0, -sx * 0.32] };
+  for (let i = 0; i < n; i++) {
+    const y = 0.075 - i * 0.04; const rad = r * (1 + 0.04 * i);
+    const lame = loft([{ y: y + 0.03, rx: rad * 0.9, rz: rad * 0.98, ox: sx * 0.022 }, { y: y - 0.022, rx: rad, rz: rad * 1.04, ox: sx * 0.022 }], { N: 22, ring: { a0: c - 2.2, a1: c + 2.2, open: true }, thick: 0.006 });
+    sk.add('metal', tint(X(lame, tilt), i % 2 ? col2 : col, (x, yy) => 0.78 + 0.22 * sstep(y - 0.03, y + 0.03, yy)), `arm${side}`, null);
+    sk.add('metal', tint(X(torus(rad * 1.0, 0.0045, 22, 5), { p: [sx * 0.022, y - 0.022, 0], r: [Math.PI / 2, 0, 0], s: [1, 1.04, 1] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.32)), trim), `arm${side}`, null);
   }
-  // torso: arming doublet + breastplate shell
-  const body = loft(torsoSecs(W, { chest: 1.0 }), { N: 26, capBottom: true, capTop: true });
-  sk.addModel('cloth', tint(body, 0x2e2e36, (x, y) => 0.8 + 0.2 * sstep(0.85, 1.3, y)), stackW(BODYSTACK, 0.07));
-  const chestSecs = [{ y: 1.04, rx: 0.17 * W, rz: 0.113 }, { y: 1.12, rx: 0.185 * W, rz: 0.125 }, { y: 1.22, rx: 0.2 * W, rz: 0.135 }, { y: 1.33, rx: 0.218 * W, rz: 0.142 }, { y: 1.43, rx: 0.205 * W, rz: 0.125 }, { y: 1.5, rx: 0.16 * W, rz: 0.1 }].map((s) => ({ ...s, rx: s.rx + 0.01, rz: s.rz + 0.012, n: 2.5 }));
-  const front = loft(chestSecs, { N: 22, ring: { a0: -1.95, a1: 1.95, open: true }, thick: 0.007 });
-  sk.addModel('metal', tint(front, steel, (x, y, z) => (0.62 + 0.38 * sstep(1.0, 1.4, y)) * (0.8 + 0.2 * sstep(-0.2, 0.2, z))), stackW(BODYSTACK, 0.05));
-  const back = loft(chestSecs, { N: 22, ring: { a0: Math.PI - 1.2, a1: Math.PI + 1.2, open: true }, thick: 0.007 });
-  sk.addModel('metal', tint(back, dk, (x, y, z) => 0.7 + 0.3 * sstep(1.0, 1.4, y)), stackW(BODYSTACK, 0.05));
-  // breastplate ridge + gold trim line
-  const ridge = loft([{ y: 1.05, rx: 0.006, rz: 0.004, oz: 0.128 }, { y: 1.2, rx: 0.01, rz: 0.006, oz: 0.152 }, { y: 1.34, rx: 0.012, rz: 0.006, oz: 0.158 }, { y: 1.46, rx: 0.006, rz: 0.004, oz: 0.128 }], { N: 6, capTop: true, capBottom: true });
-  sk.addModel('metal', tint(ridge, S.trim), stackW(BODYSTACK, 0.05));
-  // fauld (waist lames)
-  for (let i = 0; i < 3; i++) {
-    const y = 0.97 - i * 0.045; const f = loft([{ y: y + 0.03, rx: (0.165 + i * 0.012) * W, rz: 0.112 + i * 0.01 }, { y: y - 0.02, rx: (0.178 + i * 0.012) * W, rz: 0.12 + i * 0.01 }], { N: 22, thick: 0.004 });
-    sk.addModel('metal', tint(f, steel, () => 0.78 - i * 0.05), stackW([['hips', 0], ['spine', 1.03]], 0.05));
-  }
-  // gorget
-  const gor = loft([{ y: 1.5, rx: 0.1 * W, rz: 0.08 }, { y: 1.57, rx: 0.075, rz: 0.07 }, { y: 1.6, rx: 0.07, rz: 0.066 }], { N: 18, thick: 0.004 });
-  sk.addModel('metal', tint(gor, steel), stackW(BODYSTACK, 0.05));
-  addBelt(ctx, { color: S.leather, buckle: S.trim, pouches: [{ x: -0.16 * W, z: 0.02, w: 0.06, h: 0.07, d: 0.04, ry: -1.4 }] });
-  // arms: sleeves of mail (dark), vambraces, pauldrons
-  addArms(ctx, { sleeve: 0x3a3c46, glove: 0x4a4d58, sleeveKey: 'dark', gloveKey: 'metal', fat: 1.08 });
+  const dome = X(sphereShell(r * 0.86, 0.34, 18), { p: [sx * 0.022, 0.095, 0], s: [1, 0.55, 1.0] }).applyMatrix4(new THREE.Matrix4().makeRotationZ(-sx * 0.32));
+  sk.add('metal', tint(dome, col2), `arm${side}`, null);
+  sk.add('metal', tint(rivets([[sx * 0.09, 0.09, 0.02, sx, 1, 0], [sx * 0.07, 0.1, 0.07, 0, 1, 1], [sx * 0.07, 0.1, -0.07, 0, 1, -1]], 0.009), trim), `arm${side}`, null);
+  if (tier2) sk.add('2:metal', tint(X(new THREE.ConeGeometry(0.02, 0.1, 8), { p: [sx * (r + 0.03), 0.1, 0], r: [0, 0, -sx * 1.15] }), trim), `arm${side}`, null);
+}
+function couter(ctx, side, col, trim) {
+  const { sk } = ctx; const sx = side === 'L' ? 1 : -1;
+  sk.add('metal', tint(X(sph(0.054, [0, 0, 0.0], [1, 1.05, 1], 12, 8)), col), `fore${side}`, null);
+  sk.add('metal', tint(X(new THREE.ConeGeometry(0.03, 0.09, 6), { p: [sx * 0.035, 0.0, -0.05], r: [-1.35, 0, -sx * 0.5] }), col), `fore${side}`, null);
+  sk.add('metal', tint(X(torus(0.052, 0.005, 14, 5), { p: [0, -0.045, 0], r: [Math.PI / 2, 0, 0] }), trim), `fore${side}`, null);
+}
+function legArmor(ctx, col, col2, trim, { fat = 1 } = {}) {
+  const { sk } = ctx;
   for (const s of ['L', 'R']) {
     const sx = s === 'L' ? 1 : -1;
-    const vamb = loft([0.04, 0.1, 0.18, 0.25].map((d, i) => ({ y: -d, rx: [0.05, 0.048, 0.043, 0.038][i] + 0.005, rz: [0.05, 0.048, 0.043, 0.038][i] + 0.005 })), { N: 14, thick: 0.004 });
+    const cu = loft([0.04, 0.12, 0.24, 0.36].map((d, i) => ({ y: -d, rx: [0.108, 0.104, 0.094, 0.082][i] * fat, rz: [0.108, 0.104, 0.096, 0.086][i] * fat })), { N: 18, ring: { a0: -2.7, a1: 2.7, open: true }, thick: 0.006 });
+    sk.add('metal', tint(cu, col, (x, y) => 0.72 + 0.28 * sstep(-0.4, -0.05, y)), `thigh${s}`, limbW(`thigh${s}`, { parent: 'hips', child: `shin${s}`, len: 0.43, r: 0.02, rp: 0.03 }));
+    for (const d of [0.14, 0.26]) sk.add('metal', tint(X(torus(0.098 * fat - d * 0.1, 0.005, 18, 5), { p: [0, -d, 0], r: [Math.PI / 2, 0, 0] }), trim), `thigh${s}`, null);
+    const pol = X(sph(0.066 * fat, [0, -0.43, 0.04], [1.05, 1, 0.8], 14, 9));
+    sk.add('metal', tint(pol, col), `thigh${s}`, null);
+    sk.add('metal', tint(X(new THREE.ConeGeometry(0.03, 0.08, 6), { p: [sx * 0.075, -0.43, 0.02], r: [0, 0, -sx * 1.5] }), col2), `thigh${s}`, null);
+    sk.add('metal', tint(X(torus(0.07 * fat, 0.006, 16, 5), { p: [0, -0.4, 0.0], r: [Math.PI / 2, 0, 0] }), trim), `thigh${s}`, null);
+    const gr = loft([0.03, 0.14, 0.27, 0.4].map((d, i) => ({ y: -d, rx: [0.064, 0.074, 0.068, 0.056][i] * fat, rz: [0.07, 0.078, 0.072, 0.06][i] * fat })), { N: 16, ring: { a0: -2.9, a1: 2.9, open: true }, thick: 0.005 });
+    sk.add('metal', tint(gr, col, (x, y) => 0.7 + 0.3 * sstep(-0.4, -0.05, y)), `shin${s}`, limbW(`shin${s}`, { parent: `thigh${s}`, child: `foot${s}`, len: 0.43, r: 0.02, rp: 0.02 }));
+    sk.add('metal', tint(X(new THREE.BoxGeometry(0.008, 0.3, 0.02), { p: [0, -0.2, 0.075] }), trim), `shin${s}`, null);
+    // sabaton: armoured foot with pointed toe and lames
+    const sab = merge([X(sph(0.066 * fat, [0, -0.035, 0.07], [0.88, 0.52, 1.8], 14, 9)), X(new THREE.ConeGeometry(0.03, 0.08, 8), { p: [0, -0.04, 0.2], r: [Math.PI / 2, 0, 0] })]);
+    sk.add('metal', tint(sab, col2), `foot${s}`, null);
+    for (let i = 0; i < 3; i++) sk.add('metal', tint(X(torus(0.052 * fat, 0.005, 12, 5), { p: [0, -0.035, 0.05 + i * 0.045], r: [0, 0, 0], s: [1, 0.7, 1] }), trim), `foot${s}`, null);
+  }
+}
+// two-layer cape with a centre slit: outer halves + a shorter darker underlayer, frayed hems, spring cloth
+function capeLayers(ctx, { joint = 'chest', color, color2, len = 0.95, wTop = 0.4, wBot = 0.66, top = 0.2, zBack = -0.14, slit = 0.02, tatter = 0.07, trim }) {
+  const { W } = ctx;
+  const mk = (sign) => ({ joint, cols: 6, rows: 11, material: MATS.clothSim, tatter, uvScale: [2, 3], stiff: [26, 4.2],
+    colorFn: (u, v) => new THREE.Color(color).multiplyScalar(0.62 + 0.38 * (1 - v) * (0.9 + 0.1 * Math.sin(u * 22))).lerp(new THREE.Color(trim || color), v > 0.95 ? 0.7 : 0),
+    restFn: (u, v) => { const half = (wTop + (wBot - wTop) * v) * W * 0.5; const x = sign * (slit * (0.3 + v) + u * half); return [x, top - v * len, zBack - 0.06 * v + (0.05 * Math.sin(u * 9 + sign + v * 1.5) + 0.02 * Math.sin(u * 23 + v * 4)) * (0.15 + v) - 0.03 * Math.abs(u - 0.3) * (1 - v)]; } });
+  ctx.cloth.push(mk(1), mk(-1));
+  ctx.cloth.push({ joint, cols: 8, rows: 9, material: MATS.clothSim, tatter: tatter * 0.8, uvScale: [2, 3], stiff: [30, 6],
+    colorFn: (u, v) => new THREE.Color(color2).multiplyScalar(0.55 + 0.35 * (1 - v)),
+    restFn: (u, v) => [(u - 0.5) * (wTop * 0.85 + (wBot - wTop) * 0.6 * v) * W, top - 0.02 - v * len * 0.82, zBack + 0.035 - 0.035 * v] });
+}
+
+function costumeKnight(ctx) {
+  const { sk, spec, W } = ctx; const S = spec;
+  const steel = S.steel; const dk = S.steelDark; const trim = S.trim;
+  addLegs(ctx, { pants: 0x25272e, boots: 0x30333b, bootKey: 'dark', pantsKey: 'cloth', fat: 1.12 });
+  legArmor(ctx, steel, dk, trim, { fat: 1.08 });
+  // gambeson body under the plates
+  const body = loft(torsoSecs(W, { chest: 1.0 }), { N: 26, capBottom: true, capTop: true });
+  sk.addModel('cloth', tint(body, 0x2a2a32, (x, y) => 0.8 + 0.2 * sstep(0.85, 1.3, y)), stackW(BODYSTACK, 0.07));
+  // stepped cuirass: pectoral plate, three belly lames, fauld
+  const pecSecs = [{ y: 1.22, rx: 0.2 * W, rz: 0.134 }, { y: 1.32, rx: 0.226 * W, rz: 0.15 }, { y: 1.42, rx: 0.215 * W, rz: 0.14 }, { y: 1.5, rx: 0.17 * W, rz: 0.108 }].map((q) => ({ ...q, rx: q.rx + 0.012, rz: q.rz + 0.016, n: 2.5 }));
+  const pec = loft(pecSecs, { N: 24, ring: { a0: -2.0, a1: 2.0, open: true }, thick: 0.008 });
+  sk.addModel('metal', tint(pec, steel, (x, y, z) => (0.7 + 0.3 * sstep(1.2, 1.45, y)) * (0.85 + 0.15 * sstep(-0.2, 0.2, z))), stackW(BODYSTACK, 0.05));
+  const keel = loft([{ y: 1.22, rx: 0.006, rz: 0.004, oz: 0.15 }, { y: 1.32, rx: 0.013, rz: 0.008, oz: 0.172 }, { y: 1.44, rx: 0.008, rz: 0.005, oz: 0.15 }], { N: 6, capTop: true, capBottom: true });
+  sk.addModel('metal', tint(keel, trim), stackW(BODYSTACK, 0.05));
+  for (let i = 0; i < 3; i++) {
+    const y0 = 1.2 - i * 0.07; const k = 0.012 * i;
+    const lm = loft([{ y: y0 + 0.045, rx: (0.19 + 0.0 * i) * W + 0.012 + k, rz: 0.128 + 0.012 + k }, { y: y0 - 0.03, rx: 0.2 * W + 0.02 + k, rz: 0.136 + 0.02 + k }], { N: 22, ring: { a0: -2.4, a1: 2.4, open: true }, thick: 0.006 });
+    sk.addModel('metal', tint(lm, i % 2 ? dk : steel, (x, y) => 0.8 + 0.2 * sstep(y0 - 0.03, y0 + 0.04, y)), stackW(BODYSTACK, 0.04));
+    sk.addModel('metal', tint(X(torus(0.2 * W + 0.02 + k, 0.004, 24, 5), { p: [0, y0 - 0.03, 0], r: [Math.PI / 2, 0, 0], s: [1, 0.68 + 0.0, 1] }), trim), stackW(BODYSTACK, 0.04));
+  }
+  for (let i = 0; i < 3; i++) {
+    const y = 0.99 - i * 0.05;
+    const f = loft([{ y: y + 0.03, rx: (0.168 + i * 0.016) * W, rz: 0.114 + i * 0.014 }, { y: y - 0.024, rx: (0.186 + i * 0.016) * W, rz: 0.128 + i * 0.014 }], { N: 24, thick: 0.005 });
+    sk.addModel('metal', tint(f, i % 2 ? dk : steel, (x, yy) => 0.78 + 0.2 * sstep(y - 0.024, y + 0.03, yy)), stackW([['hips', 0], ['spine', 1.03]], 0.05));
+  }
+  // back plate: two plates + spine ridge + straps
+  const backP = loft(pecSecs.map((q) => ({ ...q })), { N: 22, ring: { a0: Math.PI - 1.35, a1: Math.PI + 1.35, open: true }, thick: 0.007 });
+  sk.addModel('metal', tint(backP, dk, (x, y) => 0.7 + 0.3 * sstep(1.2, 1.45, y)), stackW(BODYSTACK, 0.05));
+  for (let i = 0; i < 3; i++) { const y0 = 1.17 - i * 0.07; sk.addModel('metal', tint(loft([{ y: y0 + 0.045, rx: 0.19 * W + 0.014, rz: 0.13 + 0.012 }, { y: y0 - 0.03, rx: 0.2 * W + 0.022, rz: 0.14 + 0.02 }], { N: 20, ring: { a0: Math.PI - 1.5, a1: Math.PI + 1.5, open: true }, thick: 0.006 }), i % 2 ? steel : dk), stackW(BODYSTACK, 0.04)); }
+  sk.addModel('metal', tint(loft([{ y: 1.0, rx: 0.008, rz: 0.006, oz: -0.14 }, { y: 1.3, rx: 0.012, rz: 0.008, oz: -0.168 }, { y: 1.46, rx: 0.008, rz: 0.006, oz: -0.14 }], { N: 6, capTop: true, capBottom: true }), trim), stackW(BODYSTACK, 0.05));
+  for (const sd of [-1, 1]) sk.addModel('leather', tint(tube([[sd * 0.16 * W, 1.42, -0.06], [sd * 0.06, 1.28, -0.17], [-sd * 0.05, 1.08, -0.15], [-sd * 0.15 * W, 0.98, -0.07]], 0.016, { segs: 16, radial: 5 }), S.leather), stackW(BODYSTACK, 0.05));
+  sk.addModel('metal', tint(X(new THREE.BoxGeometry(0.04, 0.03, 0.012), { p: [0, 1.2, -0.168] }), trim), stackW(BODYSTACK, 0.05));
+  // gorget: stacked collar lames
+  for (let i = 0; i < 3; i++) { const y = 1.5 + i * 0.03; sk.addModel('metal', tint(loft([{ y: y - 0.02, rx: (0.115 - i * 0.012) * W, rz: 0.092 - i * 0.008 }, { y: y + 0.02, rx: (0.105 - i * 0.012) * W, rz: 0.085 - i * 0.008 }], { N: 20, thick: 0.005 }), i % 2 ? dk : steel), stackW(BODYSTACK, 0.04)); }
+  sk.addModel('metal', tint(X(torus(0.112 * W, 0.006, 22, 5), { p: [0, 1.495, 0], r: [Math.PI / 2, 0, 0] }), trim), stackW(BODYSTACK, 0.04));
+  addBelt(ctx, { color: S.leather, buckle: trim, y: 0.98, pouches: [{ x: -0.17 * W, z: 0.03, w: 0.06, h: 0.07, d: 0.04, ry: -1.4 }, { x: -0.06, z: -0.13, w: 0.1, h: 0.06, d: 0.04, ry: 3.14 }] });
+  addArms(ctx, { sleeve: 0x30323c, glove: 0x3a3d48, sleeveKey: 'dark', gloveKey: 'dark', fat: 1.18 });
+  for (const s of ['L', 'R']) {
+    const vamb = loft([0.04, 0.1, 0.18, 0.25].map((d, i) => ({ y: -d, rx: [0.058, 0.056, 0.05, 0.044][i] + 0.006, rz: [0.058, 0.056, 0.05, 0.044][i] + 0.006 })), { N: 14, thick: 0.004 });
     sk.add('metal', tint(vamb, steel, (x, y) => 0.7 + 0.3 * sstep(-0.25, -0.04, y)), `fore${s}`, limbW(`fore${s}`, { parent: `arm${s}`, child: `hand${s}`, len: 0.27, r: 0.01, rp: 0.01 }));
-    const elbow = X(sph(0.046, [0, 0, -0.01], [1, 1, 1], 10, 8)); sk.add('metal', tint(elbow, steel), `fore${s}`, null);
-    // pauldron: three overlapping lames
-    for (let i = 0; i < 3; i++) {
-      const sh = X(sphereShell(0.108 - i * 0.008, 0.6 + i * 0.05, 18), { p: [sx * (0.015 + i * 0.002), 0.045 - i * 0.04, 0], s: [1.15, 0.75 - i * 0.02, 1.05], r: [0, 0, sx * (-0.45 + i * 0.1)] });
-      sk.add('metal', tint(sh, i === 0 ? steel : dk, () => 0.85 - i * 0.05), `arm${s}`, null);
-    }
-    sk.add('metal', tint(rivets([[sx * 0.075, 0.1, 0.0, sx, 1, 0], [sx * 0.05, 0.11, 0.06, 0, 1, 1], [sx * 0.05, 0.11, -0.06, 0, 1, -1]], 0.009), S.trim), `arm${s}`, null);
-    // upper arm cop + couter
-    sk.add('metal', tint(loft([0.1, 0.2, 0.26].map((d, i) => ({ y: -d, rx: 0.056 - i * 0.003, rz: 0.056 - i * 0.003 })), { N: 14, thick: 0.004 }), dk), `arm${s}`, limbW(`arm${s}`, { parent: 'chest', child: `fore${s}`, len: 0.29, r: 0.01, rp: 0.01 }));
+    sk.add('metal', tint(X(torus(0.052, 0.005, 14, 5), { p: [0, -0.26, 0], r: [Math.PI / 2, 0, 0] }), trim), `fore${s}`, null);
+    sk.add('dark', tint(X(sph(0.05, [0, -0.07, 0.02], [1, 1.5, 1.1], 10, 8), {}), steel), `hand${s}`, null);
+    couter(ctx, s, steel, trim);
+    pauldron(ctx, s, { r: 0.118, n: 4, col: steel, col2: dk, trim, tier2: true });
+    sk.add('metal', tint(loft([0.1, 0.2, 0.27].map((d, i) => ({ y: -d, rx: 0.062 - i * 0.004, rz: 0.062 - i * 0.004 })), { N: 14, thick: 0.004 }), dk), `arm${s}`, limbW(`arm${s}`, { parent: 'chest', child: `fore${s}`, len: 0.29, r: 0.01, rp: 0.01 }));
   }
   addHead(ctx, { jaw: 1.1, chin: 1.0, brow: 1.1, nose: 1.0, eye: S.eye, browTilt: -0.3 });
-  // great helm with glowing slit
-  const helmSecs = [-0.02, 0.03, 0.09, 0.15, 0.2, 0.24, 0.265].map((y, i) => ({ y, rx: [0.098, 0.106, 0.113, 0.115, 0.108, 0.088, 0.04][i], rz: [0.106, 0.116, 0.124, 0.126, 0.119, 0.098, 0.044][i], n: 2.2, oz: -0.008 }));
+  // great helm with glowing slit, tall crest and a big plume
+  const helmSecs = [-0.02, 0.03, 0.09, 0.15, 0.2, 0.24, 0.272].map((y, i) => ({ y, rx: [0.1, 0.108, 0.115, 0.117, 0.11, 0.09, 0.04][i], rz: [0.108, 0.118, 0.126, 0.128, 0.121, 0.1, 0.044][i], n: 2.2, oz: -0.008 }));
   const helm = loft(helmSecs, { N: 28, capTop: true, thick: 0.004 });
-  sk.add('metal', tint(helm, steel, (x, y, z) => 0.62 + 0.38 * sstep(0.0, 0.22, y) * (0.85 + 0.15 * sstep(-0.1, 0.1, z))), 'head', null);
-  const crest = loft([{ y: 0.06, rx: 0.006, rz: 0.12, oz: -0.008 }, { y: 0.15, rx: 0.012, rz: 0.13, oz: -0.01 }, { y: 0.27, rx: 0.006, rz: 0.05, oz: -0.012 }], { N: 6 });
-  sk.add('metal', tint(crest, S.trim), 'head', null);
-  const brow = X(new THREE.BoxGeometry(0.21, 0.016, 0.02), { p: [0, 0.148, 0.108], r: [0.15, 0, 0] });
-  sk.add('metal', tint(brow, dk), 'head', null);
-  const slit = X(new THREE.BoxGeometry(0.13, 0.014, 0.012), { p: [0, 0.118, 0.115] });
-  sk.add('glow', slit, 'head', null, { uv: 0 });
-  const vents = []; for (let i = 0; i < 5; i++) for (const s of [-1, 1]) vents.push(X(new THREE.CylinderGeometry(0.003, 0.003, 0.012, 6), { p: [s * 0.07, 0.04 + i * 0.012, 0.1 + 0.0], r: [Math.PI / 2, 0, 0] }));
+  sk.add('metal', tint(helm, steel, (x, y, z) => 0.66 + 0.34 * sstep(0.0, 0.22, y) * (0.85 + 0.15 * sstep(-0.1, 0.1, z))), 'head', null);
+  sk.add('metal', tint(loft([{ y: 0.04, rx: 0.008, rz: 0.13, oz: -0.008 }, { y: 0.16, rx: 0.016, rz: 0.142, oz: -0.01 }, { y: 0.3, rx: 0.012, rz: 0.07, oz: -0.014 }, { y: 0.34, rx: 0.004, rz: 0.03, oz: -0.016 }], { N: 6 }), trim), 'head', null);
+  sk.add('metal', tint(X(new THREE.BoxGeometry(0.225, 0.018, 0.022), { p: [0, 0.148, 0.112], r: [0.15, 0, 0] }), dk), 'head', null);
+  sk.add('metal', tint(X(new THREE.BoxGeometry(0.014, 0.12, 0.014), { p: [0, 0.09, 0.126] }), dk), 'head', null);
+  sk.add('glow', X(new THREE.BoxGeometry(0.14, 0.014, 0.012), { p: [0, 0.118, 0.12] }), 'head', null, { uv: 0 });
+  const vents = []; for (let i = 0; i < 6; i++) for (const sd of [-1, 1]) vents.push(X(new THREE.CylinderGeometry(0.003, 0.003, 0.012, 6), { p: [sd * 0.072, 0.03 + i * 0.012, 0.1], r: [Math.PI / 2, 0, 0] }));
   sk.add('dark', tint(merge(vents), 0x050505), 'head', null);
-  sk.add('metal', tint(rivets([[0.095, 0.14, 0.04, 1, 0, 0.3], [-0.095, 0.14, 0.04, -1, 0, 0.3], [0.0, 0.2, 0.09, 0, 1, 0.4]], 0.008), S.trim), 'head', null);
-  // plume on its own joint
+  sk.add('metal', tint(rivets([[0.098, 0.14, 0.04, 1, 0, 0.3], [-0.098, 0.14, 0.04, -1, 0, 0.3], [0.0, 0.2, 0.09, 0, 1, 0.4]], 0.008), trim), 'head', null);
   const plume = [];
-  for (let i = 0; i < 9; i++) { const sw = (i - 4) * 0.012; plume.push(tint(tube([[sw * 0.5, 0.0, 0], [sw, 0.05, -0.05], [sw * 1.3, 0.04, -0.14], [sw * 1.6, -0.06, -0.24], [sw * 1.8, -0.2, -0.28]], (t) => 0.014 * (1 - t * 0.7), { segs: 14, radial: 5 }), i % 2 ? S.cloth : S.cloth2)); }
+  for (let i = 0; i < 13; i++) { const sw = (i - 6) * 0.011; const L = 1 + Math.abs(i - 6) * -0.04; plume.push(tint(tube([[sw * 0.5, 0.0, 0], [sw, 0.09, -0.05], [sw * 1.4, 0.1, -0.16], [sw * 1.8, 0.0, -0.3 * L], [sw * 2.1, -0.18, -0.38 * L], [sw * 2.2, -0.34, -0.4 * L]], (t) => 0.018 * (1 - t * 0.7), { segs: 16, radial: 5 }), i % 2 ? S.cloth : S.cloth2)); }
   sk.add('cloth', merge(plume), 'plume', null);
-  ctx.sways.push(['head', ['plume'], { gain: 1.4, wind: 0.04 }]);
-  // cloth: tabard front/back with emblem, short cape
+  ctx.sways.push(['head', ['plume'], { gain: 1.6, wind: 0.05 }]);
+  // tabard (emblem) front/back, knee-length two-layer cape
   const em = emblemTexture('crown', { a: '#9a1f2a', b: '#f0d070', c: '#1a1210' });
   const tabMat = new THREE.MeshStandardMaterial({ map: em, side: THREE.DoubleSide, roughness: 0.85, metalness: 0, vertexColors: true });
-  ctx.cloth.push({ joint: 'hips', cols: 6, rows: 8, material: tabMat, uvScale: [1, 1], restFn: (u, v) => [(u - 0.5) * (0.27 + 0.05 * v) * W, 0.07 - v * 0.62, 0.122 + 0.025 * v + 0.012 * Math.sin(u * Math.PI) * (1 - v)], stiff: [40, 9] });
-  ctx.cloth.push({ joint: 'hips', cols: 6, rows: 8, material: MATS.clothSim, colorFn: () => new THREE.Color(S.cloth2), uvScale: [2, 3], restFn: (u, v) => [(u - 0.5) * (0.27 + 0.05 * v) * W, 0.07 - v * 0.55, -0.118 - 0.03 * v], stiff: [40, 9] });
-  ctx.cloth.push({ joint: 'chest', cols: 10, rows: 10, material: MATS.clothSim, tatter: 0.04, colorFn: (u, v) => new THREE.Color(S.cloth).multiplyScalar(0.85 + 0.2 * Math.sin(u * 20) * v * 0.3 + 0.15 * (1 - v)), uvScale: [3, 3], restFn: (u, v) => [(u - 0.5) * (0.4 + 0.2 * v) * W, 0.2 - v * 0.82, -0.135 - 0.05 * v + 0.02 * Math.sin(u * 14) * v], stiff: [26, 5] });
-  // level tier 2: extra pauldron spikes + gold trim
-  for (const s of ['L', 'R']) { const sx = s === 'L' ? 1 : -1; sk.add('2:metal', tint(X(new THREE.ConeGeometry(0.018, 0.08, 8), { p: [sx * 0.1, 0.09, 0], r: [0, 0, -sx * 1.2] }), S.trim), `arm${s}`, null); }
-  sk.addModel('2:metal', tint(X(torus(0.12, 0.007, 20, 6), { p: [0, 1.52, 0], r: [Math.PI / 2, 0, 0], s: [1.1, 1, 0.9] }), S.trim), stackW(BODYSTACK, 0.05));
+  const fold = (u, v) => 0.014 * Math.sin(u * 14 + v * 2.5) * (0.3 + v);
+  ctx.cloth.push({ joint: 'hips', cols: 8, rows: 8, material: tabMat, uvScale: [1, 1], restFn: (u, v) => [(u - 0.5) * (0.28 + 0.06 * v) * W, 0.07 - v * 0.64, 0.17 + 0.03 * v + fold(u, v)], stiff: [40, 8] });
+  ctx.cloth.push({ joint: 'hips', cols: 6, rows: 8, material: MATS.clothSim, colorFn: () => new THREE.Color(S.cloth2), uvScale: [2, 3], restFn: (u, v) => [(u - 0.5) * (0.28 + 0.05 * v) * W, 0.07 - v * 0.58, -0.15 - 0.03 * v + fold(u, v)], stiff: [40, 8] });
+  capeLayers(ctx, { color: S.cloth, color2: S.cloth2, len: 1.0, wTop: 0.42, wBot: 0.7, top: 0.2, zBack: -0.185, trim: S.trim });
+  sk.addModel('metal', tint(X(torus(0.075, 0.008, 12, 5), { p: [0.0, 1.47, -0.115] }), trim), stackW(BODYSTACK, 0.04));
+  sk.addModel('2:metal', tint(X(torus(0.125, 0.007, 20, 6), { p: [0, 1.53, 0], r: [Math.PI / 2, 0, 0], s: [1.1, 1, 0.9] }), trim), stackW(BODYSTACK, 0.05));
   return { weaponScaleHint: 1 };
 }
 
@@ -332,7 +381,7 @@ function costumeRanger(ctx) {
   const strapQ = tint(tube([[0.1, 1.46, -0.04], [0.0, 1.3, -0.14], [-0.14, 1.06, -0.08]], 0.014, { segs: 14, radial: 4 }), 0x2a1a10);
   sk.addModel('leather', strapQ, stackW(BODYSTACK, 0.05));
   // cloaks: long tattered cloak + shoulder cape
-  ctx.cloth.push({ joint: 'chest', cols: 12, rows: 12, material: MATS.clothSim, tatter: 0.07, colorFn: (u, v) => new THREE.Color(S.cloth).multiplyScalar(0.65 + 0.25 * (1 - v) + 0.1 * Math.sin(u * 30)), uvScale: [3, 3], restFn: (u, v) => [(u - 0.5) * (0.42 + 0.34 * v) * W, 0.2 - v * 1.12, -0.14 - 0.07 * v + 0.03 * Math.sin(u * 16) * v], stiff: [24, 3.5] });
+  capeLayers(ctx, { color: S.cloth, color2: S.cloth2, len: 1.15, wTop: 0.44, wBot: 0.8, top: 0.2, zBack: -0.19, tatter: 0.12, trim: S.cloth2 });
   ctx.cloth.push({ joint: 'chest', cols: 10, rows: 5, material: MATS.clothSim, tatter: 0.05, colorFn: (u, v) => new THREE.Color(S.cloth2).multiplyScalar(0.8 + 0.2 * (1 - v)), uvScale: [3, 1.5], restFn: (u, v) => [(u - 0.5) * (0.44 + 0.2 * v) * W, 0.24 - v * 0.42, -0.095 - 0.12 * (1 - Math.abs(u - 0.5) * 2) * 0.0 - 0.06 * v], stiff: [30, 6] });
   for (const s of ['L', 'R']) sk.add('2:leather', tint(X(sph(0.035, [0, 0.04, 0.0], [1.2, 0.7, 1.2], 8, 6)), S.trim), `arm${s}`, null);
 }
@@ -409,6 +458,7 @@ function costumeDwarf(ctx) {
     sk.add('dark', tint(gr, S.steel, (x, y) => 0.6 + 0.4 * sstep(-0.4, -0.05, y)), `shin${s}`, limbW(`shin${s}`, { parent: `thigh${s}`, child: `foot${s}`, len: 0.43, r: 0.02, rp: 0.02 }));
     sk.add('dark', tint(X(sph(0.07, [0, -0.43, 0.04], [1, 0.9, 0.8], 12, 8)), S.steel), `thigh${s}`, null);
   }
+  legArmor(ctx, S.steel, S.steelDark, S.trim, { fat: 1.2 });
   const body = loft(torsoSecs(W, { chest: 1.02, waist: 1.05 }), { N: 28, capBottom: true, capTop: true });
   sk.addModel('dark', tint(body, 0x40434c, (x, y) => 0.7 + 0.3 * sstep(0.85, 1.3, y)), stackW(BODYSTACK, 0.07));
   const chestSecs = [{ y: 1.04, rx: 0.17 * W, rz: 0.113 }, { y: 1.14, rx: 0.19 * W, rz: 0.128 }, { y: 1.26, rx: 0.215 * W, rz: 0.14 }, { y: 1.38, rx: 0.226 * W, rz: 0.138 }, { y: 1.47, rx: 0.2 * W, rz: 0.115 }].map((s) => ({ ...s, rx: s.rx + 0.012, rz: s.rz + 0.014, n: 2.6 }));
@@ -434,7 +484,8 @@ function costumeDwarf(ctx) {
     const vamb = loft([0.04, 0.1, 0.18, 0.25].map((d, i) => ({ y: -d, rx: [0.062, 0.062, 0.056, 0.05][i] + 0.006, rz: [0.062, 0.062, 0.056, 0.05][i] + 0.006 })), { N: 14, thick: 0.005 });
     sk.add('dark', tint(vamb, S.steel, (x, y) => 0.65 + 0.35 * sstep(-0.25, -0.04, y)), `fore${s}`, limbW(`fore${s}`, { parent: `arm${s}`, child: `hand${s}`, len: 0.27, r: 0.01, rp: 0.01 }));
     sk.add('metal', tint(X(torus(0.064, 0.006, 16, 5), { p: [0, -0.04, 0], r: [Math.PI / 2, 0, 0] }), S.trim), `fore${s}`, null);
-    for (let i = 0; i < 3; i++) { const sh = X(sphereShell(0.135 - i * 0.01, 0.6 + i * 0.05, 18), { p: [sx * (0.02 + i * 0.004), 0.05 - i * 0.045, 0], s: [1.2, 0.8, 1.15], r: [0, 0, sx * (-0.4 + i * 0.1)] }); sk.add('dark', tint(sh, i === 0 ? S.steel : S.steelDark), `arm${s}`, null); }
+    pauldron(ctx, s, { r: 0.15, n: 4, col: S.steel, col2: S.steelDark, trim: S.trim });
+    couter(ctx, s, S.steel, S.trim);
     sk.add('metal', tint(rivets([[sx * 0.11, 0.1, 0.0, sx, 1, 0], [sx * 0.07, 0.12, 0.07, 0, 1, 1], [sx * 0.07, 0.12, -0.07, 0, 1, -1]], 0.012), S.trim), `arm${s}`, null);
     // spikes on tier 2
     sk.add('2:metal', tint(X(new THREE.ConeGeometry(0.022, 0.1, 8), { p: [sx * 0.14, 0.11, 0], r: [0, 0, -sx * 1.15] }), S.trim), `arm${s}`, null);
@@ -471,7 +522,7 @@ function costumeDwarf(ctx) {
   for (const sd of [-1, 1]) sk.add('hair', lock([[sd * 0.004, 0.066, 0.105], [sd * 0.035, 0.062, 0.115], [sd * 0.07, 0.05, 0.11], [sd * 0.085, 0.01, 0.1], [sd * 0.08, -0.06, 0.11]], 0.02, 0.006, bc), 'head');
   // leather apron (cloth)
   ctx.cloth.push({ joint: 'hips', cols: 6, rows: 6, material: MATS.leatherSim, colorFn: () => new THREE.Color(S.leather), uvScale: [2, 2], restFn: (u, v) => [(u - 0.5) * 0.3 * W, 0.06 - v * 0.42, 0.13 * (W * 0.9) + 0.02 * v], stiff: [40, 10] });
-  ctx.cloth.push({ joint: 'chest', cols: 10, rows: 8, material: MATS.clothSim, tatter: 0.03, colorFn: (u, v) => new THREE.Color(S.cloth2).multiplyScalar(0.8 + 0.2 * (1 - v)), uvScale: [3, 3], restFn: (u, v) => [(u - 0.5) * (0.42 + 0.14 * v) * W, 0.18 - v * 0.7, -0.14 * W * 0.95 - 0.03 * v], stiff: [26, 5] });
+  capeLayers(ctx, { color: S.cloth, color2: S.cloth2, len: 0.8, wTop: 0.44, wBot: 0.62, top: 0.18, zBack: -0.2 * W * 0.8, trim: S.trim });
 }
 
 function costumeBard(ctx) {
@@ -534,7 +585,7 @@ function costumeBard(ctx) {
   for (let i = 0; i < 4; i++) sk.addModel('metal', tint(cylBetween([0, 0, 0], [0, 0.0, 0], 0.001, 0.001, 3), S.trim).applyMatrix4(lq), stackW(BODYSTACK, 0.05));
   sk.addModel('leather', tint(tube([[0.1, 1.46, -0.03], [0.0, 1.32, -0.13], [-0.13, 1.1, -0.1]], 0.016, { segs: 14, radial: 5 }), 0x3a2216), stackW(BODYSTACK, 0.05));
   // flowing cape
-  ctx.cloth.push({ joint: 'chest', cols: 10, rows: 11, material: MATS.clothSim, tatter: 0.03, colorFn: (u, v) => new THREE.Color(S.cloth2).lerp(new THREE.Color(S.trim), v > 0.93 ? 0.8 : 0).multiplyScalar(0.7 + 0.3 * (1 - v)), uvScale: [3, 3], restFn: (u, v) => [(u - 0.5) * (0.36 + 0.22 * v) * W, 0.2 - v * 0.9, -0.195 - 0.05 * v + 0.02 * Math.sin(u * 12) * v], stiff: [22, 3] });
+  capeLayers(ctx, { color: S.cloth2, color2: S.cloth, len: 1.0, wTop: 0.4, wBot: 0.72, top: 0.2, zBack: -0.2, tatter: 0.05, trim: S.trim });
   for (const s of ['L', 'R']) sk.add('2:metal', tint(X(torus(0.052, 0.005, 14, 5), { p: [0, -0.2, 0], r: [Math.PI / 2, 0, 0] }), S.trim), `fore${s}`, null);
 }
 function box0(w, h, d) { return new THREE.BoxGeometry(w, h, d); }
@@ -594,12 +645,25 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
 
   const defLoad = () => { const w = CLASSES[cls].weapons; return w.length === 1 ? { NW: { id: w[0], rarity: 0 }, NE: { id: w[0], rarity: 0 } } : { NW: { id: w[0], rarity: 0 }, NE: { id: w[1], rarity: 0 } }; };
 
+  const adoptCache = new Map();
+  function adopt(obj) {
+    obj.traverse((o) => {
+      if (!o.isMesh) return;
+      const swap = (m) => {
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return m;
+        if (!adoptCache.has(m)) { const c = m.clone(); c.userData = { ...m.userData, base: m }; if (c.emissive) { c.userData.emissive0 = c.emissive.clone(); c.userData.emissiveI0 = c.emissiveIntensity; } a._hookDissolve(c); adoptCache.set(m, c); a.mats.push(c); }
+        return adoptCache.get(m);
+      };
+      o.material = swap(o.material);
+    });
+  }
   function clearWeapons() { for (const w of S.weapons) { w.parent?.remove(w); w.userData.dispose?.(); } S.weapons = []; a.userData.bow = a.userData.staff = a.userData.arrow = null; }
   function mountWeapons(lo) {
     clearWeapons();
     const nw = lo.NW; const ne = lo.NE; const two = WEAPONS[nw.id].hands === 2;
     const opts = { quality, style: cls === 'dwarf' ? 'round' : 'heater', emblem: cls === 'knight' ? 'crown' : cls === 'dwarf' ? 'rune' : undefined, accent: spec.accent };
     const place = (w, side, id) => {
+      if (id === 'shield') w.scale.setScalar(cls === 'dwarf' ? 1.1 : 1.3);
       if (id === 'bracer') { const fore = a.joints[`fore${side}`]; w.rotation.y = side === 'L' ? Math.PI / 2 : -Math.PI / 2; w.position.set(0, -0.16, 0); fore.add(w); }
       else grip[side].add(w);
       S.weapons.push(w);
@@ -615,7 +679,8 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
       const wr = createWeapon(ne.id, ne.rarity | 0, opts); place(wr, 'R', ne.id);
       S.mainL = wl; S.mainR = wr;
     }
-    // adopt: weapon materials are per-instance (their update() drives them), so they are not cloned
+    for (const w of S.weapons) adopt(w);
+    a.mats = a.mats.filter((m, i, arr) => arr.indexOf(m) === i);
     // attack info
     const info = { shield: false, twoHand: two };
     if (two) { info.fam = nw.id; info.A = nw.id === 'bow' ? 'L' : 'R'; info.offIK = nw.id === 'staff' || nw.id === 'longsword'; }
@@ -669,7 +734,7 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     for (const w of S.weapons) w.userData.update?.(dt, t);
     if (S.orbLight) { const st = a.userData.staff; const c = st?.userData.charge || 0; S.orbLight.intensity = (2.4 + 0.8 * Math.sin(t * 7.1 + Math.sin(t * 2.3) * 2) + 0.5 * Math.sin(t * 3.3)) * (1 + c * 2.5); }
     const dis = a.dissolving ? Math.min(1, a._dissT / (a._dissDur || 1)) : 0;
-    for (const w of S.weapons) w.visible = dis < 0.55;
+    if (dis > 0.02) for (const w of S.weapons) w.traverse((o) => { if (o.isMesh && !(o.material.isMeshStandardMaterial)) o.visible = false; if (o.isSprite) o.visible = false; });
     if (S.orbLight) S.orbLight.visible = dis < 0.5 && a.alive;
     // decay staff charge toward zero outside channel clips
     const st = a.userData.staff; if (st && !['attack', 'attack2', 'cast'].includes(a.animator.name)) st.userData.charge = (st.userData.charge || 0) * Math.max(0, 1 - dt * 4);

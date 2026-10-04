@@ -168,7 +168,7 @@ export function makeFogLayers(U, items) {
       _m.compose(_p, _q, _s); mesh.setMatrixAt(i, _m);
       if (kind === 'wall') { /* anchor: bottom edge at p.y */ }
       _c.set(it.col ?? 0x445566); mesh.setColorAt(i, _c);
-      aP.set([it.dens ?? 0.3, it.scale ?? 1, it.speed ?? 1, it.seed ?? i * 1.7], i * 4);
+      aP.set([(it.dens ?? 0.3) * 0.55, it.scale ?? 1, it.speed ?? 1, it.seed ?? i * 1.7], i * 4);
     });
     if (kind === 'wall') geo.translate(0, 0.5, 0);
     geo.setAttribute('aP', new THREE.InstancedBufferAttribute(aP, 4));

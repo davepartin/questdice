@@ -339,10 +339,9 @@ function cardTiles(reset) {
     return HK.abilityCard(k, { spent, reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh });
   });
 }
-const healBtn = (compact) => {
+const healBtn = () => {
   const cost = E.healCostOf(B.hero); const dis = B.busy || B.b.magic < cost || B.b.hp >= B.b.maxHp;
-  return HK.button({ kind: compact ? 'mini' : 'ghost', icon: 'heal', label: compact ? null : `Heal +${D.HEAL_AMOUNT}`, sub: compact ? null : HK.costGem(cost), onclick: doHeal, disabled: dis, cls: 'k-heal', aria: `Heal ${D.HEAL_AMOUNT} health for ${cost} magic`,
-    ...(compact ? { label: null } : {}) });
+  return HK.button({ kind: 'mini', icon: 'heal', badge: HK.costGem(cost, 'badge'), onclick: doHeal, disabled: dis, cls: 'k-heal', aria: `Heal ${D.HEAL_AMOUNT} health for ${cost} magic` });
 };
 
 export function renderReset() {
@@ -366,8 +365,8 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true));
   B.hud.bar.replaceChildren(
-    healBtn(false),
-    HK.button({ kind: 'cta', icon: 'dice', label: 'Roll the dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' }));
+    healBtn(),
+    HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' }));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -430,7 +429,7 @@ export function renderShape() {
   const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
     straight,
-    h('div', { class: 'b3-tools' }, pips, h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn(true))),
+    h('div', { class: 'b3-tools' }, pips, h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn())),
     h('div', { class: 'b3-acts' },
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: rr.label }),
       HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, aria: 'Lock in your dice and fight' }))].filter(Boolean));

@@ -35,8 +35,8 @@ export const MARKS = {
 // Mood targets (multipliers / blends against the place's calm palette).
 const MOODS = {
   calm: { fire: 1, keyMix: 0, keyK: 1, rimK: 1, sky: [1, 1, 1], horMix: 0, storm: 0, ember: 1, bloom: 0, exp: 1, hemiK: 1, glowK: 1, tint: 0 },
-  battle: { fire: 1.35, keyMix: 0.35, keyK: 1.22, rimK: 1.1, sky: [1.08, 0.96, 0.94], horMix: 0.12, storm: 0, ember: 1.9, bloom: 0.1, exp: 1.02, hemiK: 0.95, glowK: 1.25, tint: 0 },
-  boss: { fire: 1.35, keyMix: 0.25, keyK: 1.1, rimK: 1.6, sky: [1.15, 0.78, 0.78], horMix: 0.4, storm: 1, ember: 3.0, bloom: 0.0, exp: 0.97, hemiK: 0.9, glowK: 1.2, tint: 0 },
+  battle: { fire: 1.25, keyMix: 0.25, keyK: 1.15, rimK: 1.1, sky: [1.05, 0.97, 0.96], horMix: 0.1, storm: 0, ember: 1.9, bloom: 0.03, exp: 1.0, hemiK: 0.95, glowK: 1.1, tint: 0 },
+  boss: { fire: 1.2, keyMix: 0.15, keyK: 1.05, rimK: 1.5, sky: [1.15, 0.78, 0.78], horMix: 0.4, storm: 1, ember: 3.0, bloom: 0.0, exp: 0.97, hemiK: 0.9, glowK: 1.05, tint: 0 },
   victory: { fire: 0.5, keyMix: 0.7, keyK: 1.18, rimK: 0.7, sky: [1.12, 1.05, 0.9], horMix: 0.65, storm: 0, ember: 0.45, bloom: 0.05, exp: 1.08, hemiK: 1.35, glowK: 0.8, tint: 1 },
   camp: { fire: 0.9, keyMix: 0.5, keyK: 0.85, rimK: 0.75, sky: [1.0, 0.92, 0.88], horMix: 0.15, storm: 0, ember: 0.7, bloom: 0.1, exp: 1.0, hemiK: 1.15, glowK: 0.95, tint: 0 },
 };
@@ -76,9 +76,9 @@ export function createCtx(stage, { place, kind, seed, quality, enemyCount }) {
       c.flames.push({ p: [p[0] + Math.cos(a) * w * 0.28, p[1], p[2] + Math.sin(a) * w * 0.28], w: w * rr(rng, 0.55, 0.8), h: h * rr(rng, 0.6, 0.85), seed: s + i * 3.3 + 1, power: power * 0.9 });
     }
     if (glow) {
-      c.glows.push({ p: [p[0], p[1] + h * 0.4, p[2]], s: h * 2.2 * glow, c: 0xff7a2a, k: 0.5 * power, flick: 0.7, seed: s });
-      c.glows.push({ p: [p[0], p[1] + h * 0.5, p[2]], s: h * 6 * glow, c: 0xff5a14, k: 0.1 * power, flick: 0.5, seed: s + 1 });
-      c.glows.push({ p: [p[0], p[1] + h * 0.25, p[2]], s: h * 0.8, c: 0xffd890, k: 0.5 * power, flick: 0.9, seed: s + 2 });
+      c.glows.push({ p: [p[0], p[1] + h * 0.4, p[2]], s: h * 1.8 * glow, c: 0xff7a2a, k: 0.28 * power, flick: 0.7, seed: s });
+      c.glows.push({ p: [p[0], p[1] + h * 0.5, p[2]], s: h * 4 * glow, c: 0xff5a14, k: 0.045 * power, flick: 0.5, seed: s + 1 });
+      c.glows.push({ p: [p[0], p[1] + h * 0.25, p[2]], s: h * 0.7, c: 0xffd890, k: 0.3 * power, flick: 0.9, seed: s + 2 });
     }
     if (embers) c.emberSources.push({ p: [p[0], p[1] + h * 0.5, p[2]], rate: embers * (0.5 + c.q * 0.5), h, w });
     if (smoke) c.smokeSources.push({ p: [p[0], p[1] + h * 0.9, p[2]], rate: smoke, size: Math.max(1.2, h * 0.9) });
@@ -112,8 +112,8 @@ export function applyPalette(c, pal) {
   U.uMoonCol.value.set(m.color ?? 0xcfe0ff); U.uMoonSize.value = (m.size ?? 2) * D2R;
   U.uStars.value = s.stars ?? 0.7; U.uCloud.value = s.cloud ?? 0.55; U.uCloudDark.value.set(s.cloudDark ?? 0x1a1424); U.uCloudLit.value.set(s.cloudLit ?? 0xff7a40);
   const f = pal.fog;
-  U.uFogBase.value.set(f.base); U.uFogDens.value = f.dens; U.uFogFall.value = f.fall ?? 0.22; U.uFogHeight.value = f.height ?? 0.65; U.uFogGlow.value = f.glow ?? 0.5;
-  stage.scene.fog = new THREE.FogExp2(f.base, f.dens);
+  U.uFogBase.value.set(f.base); U.uFogDens.value = f.dens * 0.75; U.uFogFall.value = f.fall ?? 0.22; U.uFogHeight.value = f.height ?? 0.65; U.uFogGlow.value = (f.glow ?? 0.5) * 0.75;
+  stage.scene.fog = new THREE.FogExp2(f.base, f.dens * 0.75);
   stage.scene.background = C(s.hor).multiplyScalar(0.5);
   c.horBase = C(s.hor); c.baseSkyMul = new THREE.Color(1, 1, 1);
   // IBL
@@ -301,7 +301,8 @@ export function makeArenaObject(c, marksOverride = {}) {
   }
   c.rngSim = mulberry32(c.seed * 31 + 7);
   const arena = {
-    group, marks: { ...MARKS, ...marksOverride, monsters: (n = c.enemyCount, kind = c.kind) => MARKS.monsters(n, kind) },
+    group, rim: lights.rim, key: lights.key, hemi: lights.hemi, lights,
+    marks: { ...MARKS, ...marksOverride, monsters: (n = c.enemyCount, kind = c.kind) => MARKS.monsters(n, kind) },
     place: c.place, kind: c.kind, stats: () => stats(c),
     update(dt, t) {
       if (!warmed) { warmed = true; arena.warm(); }

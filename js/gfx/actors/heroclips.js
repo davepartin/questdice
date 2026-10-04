@@ -59,13 +59,13 @@ function carry(fam, shield) {
 }
 function ready(fam, shield) {
   const base = carry(fam, shield);
-  const r = { spine: sp(5, -8, 0), chest: sp(2, -6), head: sp(-3, 6), hipsP: [0, -0.04, 0], thighA: sp(-14, 0, 0), shinA: sp(16), thighO: sp(10, 0, 0), shinO: sp(8) };
+  const r = { spine: sp(6, -22, 0), chest: sp(2, -8), head: sp(-3, 20), hipsP: [0, -0.09, 0], thighA: sp(-26, 0, 0), shinA: sp(34), thighO: sp(14, 0, 0), shinO: sp(18) };
   switch (fam) {
     case 'spear': return { ...r, Aarm: sp(-35, 0, 12), Afore: sp(-70), Ahand: sp(55), Oarm: sp(-48, 0, -4), Ofore: sp(-95) };
     case 'bow': return { ...r, spine: sp(2, -30, 0), chest: sp(0, -10), head: sp(-2, 30), Aarm: sp(-70, 0, 6), Afore: sp(-12), Oarm: sp(-30, 0, -20), Ofore: sp(-110) };
     case 'staff': return { ...r, Aarm: sp(-40, 0, -8), Afore: sp(-70), Ahand: sp(25), Oarm: sp(-55, 0, 6), Ofore: sp(-85) };
     case 'longsword': return { ...r, Aarm: sp(-50, 0, -4), Afore: sp(-85), Ahand: sp(10), Oarm: sp(-55, 0, 6), Ofore: sp(-85) };
-    default: return { ...r, Aarm: sp(-45, 0, 14), Afore: sp(-85), Ahand: sp(0), Oarm: shield ? sp(-52, 0, -6) : sp(-40, 0, -14), Ofore: shield ? sp(-98) : sp(-75) };
+    default: return { ...r, Aarm: sp(-74, 0, 12), Afore: sp(-56), Ahand: sp(-22), Oarm: shield ? sp(-40, 0, -8) : sp(-40, 0, -14), Ofore: shield ? sp(-90) : sp(-75) };
   }
   void base;
 }
@@ -85,7 +85,7 @@ export function buildClips(a, info) {
   clips.idle = {
     loop: true, dur: 3.2, fn: (t, P) => {
       const s = Math.sin(t / 3.2 * Math.PI * 2); const s2 = Math.sin(t / 3.2 * Math.PI * 4 + 0.6); const wsh = Math.sin(t / 3.2 * Math.PI * 2 - 0.9);
-      apply(P, { ...cy, spine: sp(2, -4, 0), thighA: sp(-3), thighO: sp(2) });
+      apply(P, mix(rd, cy, 0.3));
       P.rot('chest', s * 0.022, 0, 0); P.rot('spine', s * 0.012, 0, wsh * 0.012); P.pos('hips', wsh * 0.007, s2 * 0.003 - 0.002, 0);
       P.rot('head', -s * 0.018 + 0.02, Math.sin(t / 3.2 * Math.PI * 2 * 0.5) * 0.06, 0); P.rot('neck', -s * 0.01, 0, 0);
       P.rot('armL', 0, 0, s * 0.012); P.rot('armR', 0, 0, -s * 0.012); P.rot('thighL', 0, 0, wsh * 0.01); P.rot('thighR', 0, 0, wsh * 0.01);

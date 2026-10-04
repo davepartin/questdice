@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { Actor } from './base.js';
 import { mat, solid, gem } from '../mats.js';
 import { sinT, ramp01 } from '../rig.js';
-import { Field, shellField, unionField, meshField, Merge, Puffs, place, withEvents, own, rng as mkRng, smoothstep } from './parts2.js';
+import { sprite } from '../tex.js';
+import { addRim, Field, shellField, unionField, meshField, Merge, Puffs, place, withEvents, own, rng as mkRng, smoothstep } from './parts2.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const D = Math.PI / 180;
@@ -53,16 +54,16 @@ export function create({ seed = 1, quality = 'high' } = {}) {
 
   // ---------------------------------------------------------------- materials
   const skin = mat('kingHideB', { vertexColors: true, roughness: 0.85 });
-  const gold = solid(0xffe27a, { rough: 0.38, metal: 1, vertexColors: true, side: THREE.DoubleSide, envMapIntensity: 1.1 });
-  const goldR = solid(0xffe898, { rough: 0.2, metal: 1, side: THREE.DoubleSide, envMapIntensity: 1.2 });
+  const gold = solid(0xe6b84e, { rough: 0.35, metal: 0.9, vertexColors: true, side: THREE.DoubleSide, envMapIntensity: 0.75 });
+  const goldR = gold; // one gold material (draw-call budget)
   const leather = mat('leatherDark', { vertexColors: true, side: THREE.DoubleSide });
   const fur = mat('fur', { vertexColors: true, side: THREE.DoubleSide, tint: 0xcdb88a, dark: 0x5a4a30 });
   const bone = mat('bone', { vertexColors: true });
   const clay = mat('dirt', { vertexColors: true, tint: 0x8a4a2a, dark: 0x2a1408 });
-  const ruby = gem(0xff1030, { emissive: 0xff0820, ei: 1.6 });
-  const emer = gem(0x10c850, { emissive: 0x06602a, ei: 0.7 });
-  const rubyS = gem(0xff1030, { emissive: 0xff0820, ei: 0.9 });
-  const eyeM = solid(0xffd040, { rough: 0.3, emissive: 0xffb000, ei: 1.0 });
+  const ruby = gem(0xff1030, { emissive: 0xff0820, ei: 2.2 });
+  const emer = gem(0x10c850, { emissive: 0x10c060, ei: 1.8 });
+  const rubyS = gem(0xff1030, { emissive: 0xff1030, ei: 1.6 });
+  const eyeM = solid(0xffd040, { rough: 0.3, emissive: 0xffb000, ei: 2.2 });
   const pupilM = solid(0x0a0604, { rough: 0.3 });
   const mouthM = solid(0x3a0f12, { rough: 0.5 });
   const flameM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
@@ -135,8 +136,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     for (let i = 0; i < 24; i++) { const an = (i / 24) * 6.283; M.push(crown, gold, new THREE.BoxGeometry(0.075, 0.1, 0.05), new THREE.Matrix4().compose(V(base[0] + Math.sin(an) * 0.215, base[1], base[2] + Math.cos(an) * 0.215), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, an, 0)), V(1, 1, 1)), gcol()); }
     M.push(crown, gold, new THREE.TorusGeometry(0.215, 0.022, 8, 28), new THREE.Matrix4().compose(V(...base).add(V(0, -0.05, 0)), new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0)), V(1, 1, 1)));
     M.push(crown, gold, new THREE.TorusGeometry(0.215, 0.016, 8, 28), new THREE.Matrix4().compose(V(...base).add(V(0, 0.045, 0)), new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0)), V(1, 1, 1)));
-    for (let i = 0; i < nS; i++) { const an = (i / nS) * 6.283; const h = i % 2 ? 0.2 : 0.3; const px = base[0] + Math.sin(an) * 0.215; const pz = base[2] + Math.cos(an) * 0.215;
-      M.push(crown, gold, spikeG, place([px, base[1] + 0.04, pz], [Math.sin(an) * 0.18, 1, Math.cos(an) * 0.18], [0.05, h + rr(-0.03, 0.03), 0.034]), gcol());
+    for (let i = 0; i < nS; i++) { const an = (i / nS) * 6.283; const h = i % 2 ? 0.34 : 0.5; const px = base[0] + Math.sin(an) * 0.215; const pz = base[2] + Math.cos(an) * 0.215;
+      M.push(crown, gold, spikeG, place([px, base[1] + 0.04, pz], [Math.sin(an) * 0.5, 1, Math.cos(an) * 0.5], [0.055, h + rr(-0.04, 0.04), 0.038]), gcol());
       if (i % 3 === 0) M.push(crown, i % 2 ? emer : ruby, new THREE.OctahedronGeometry(1, 0), place([px + Math.sin(an) * 0.03, base[1] - 0.01, pz + Math.cos(an) * 0.03], [Math.sin(an), 0.3, Math.cos(an)], [0.032, 0.05, 0.032]));
       else M.push(crown, i % 2 ? rubyS : emer, sphG, trM(px + Math.sin(an) * 0.03, base[1] + 0.0, pz + Math.cos(an) * 0.03).multiply(new THREE.Matrix4().makeScale(0.02, 0.02, 0.02))); }
     M.push(crown, ruby, new THREE.OctahedronGeometry(1, 0), place([0, base[1] + 0.0, base[2] + 0.245], [0, 0.2, 1], [0.05, 0.075, 0.05])); }
@@ -144,7 +145,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   // ---- ARMOUR: mismatched gold plates that hug the body
   const torso = unionField([FLD.chest, FLD.belly], 0.12);
   const plateMesh = (src, joint, mtl, o, h = 0.02) => { const sh = shellField(src, { bevel: 0.01, ...o }); M.push(joint, mtl, meshField(sh, { h: h * QK / 1.35, uvScale: 1.6, ao: 0.5, aoSamples: [0.02, 0.05] }), null); return sh; };
-  const hammer = (x, y, z, o) => { o.setRGB(1, 1, 1).multiplyScalar(0.72 + 0.18 * Math.sin(x * 47) * Math.sin(z * 41 + y * 23)); };
+  const hammer = (x, y, z, o) => { o.setRGB(1, 1, 1).multiplyScalar(0.62 + 0.2 * Math.sin(x * 47) * Math.sin(z * 41 + y * 23)); };
   // breastplate stretched over the gut (front only, rim lifted)
   plateMesh(torso, spine, gold, { off: 0.03, t: 0.016, region: (x, y, z) => Math.max(-(z - 0.05), Math.abs(y - 1.2) - 0.38, Math.abs(x) - 0.52), bounds: [[-0.8, 0.6, -0.2], [0.8, 1.85, 0.9]], colorAt: hammer }, 0.02);
   // rivets around the plate and a central embossed boss + a gem
@@ -206,7 +207,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const cloakPos = new Float32Array(nC * nR * 3); const prevPos = new Float32Array(nC * nR * 3); const rest = [];
   const chestW = new THREE.Vector3(); const cloakRoot = new THREE.Group(); a.root.add(cloakRoot);
   const pinW = (i, out) => { out.copy(pinsLocal[i]); chest.localToWorld(out); return a.root.worldToLocal(out); };
-  { const tmp = V(0, 0, 0); for (let r = 0; r < nR; r++) for (let i = 0; i < nC; i++) { pinW(i, tmp); const k = (r * nC + i) * 3; const u = i / (nC - 1) - 0.5; cloakPos[k] = tmp.x * (1 + 0.5 * r / nR); cloakPos[k + 1] = tmp.y - r * 0.105; cloakPos[k + 2] = tmp.z - r * 0.025; prevPos[k] = cloakPos[k]; prevPos[k + 1] = cloakPos[k + 1]; prevPos[k + 2] = cloakPos[k + 2]; } }
+  { const tmp = V(0, 0, 0); for (let r = 0; r < nR; r++) for (let i = 0; i < nC; i++) { pinW(i, tmp); const k = (r * nC + i) * 3; const u = i / (nC - 1) - 0.5; cloakPos[k] = tmp.x * (1 + 0.9 * r / nR); cloakPos[k + 1] = tmp.y - r * 0.105; cloakPos[k + 2] = tmp.z - r * 0.025; prevPos[k] = cloakPos[k]; prevPos[k + 1] = cloakPos[k + 1]; prevPos[k + 2] = cloakPos[k + 2]; } }
   const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.BufferAttribute(cloakPos, 3));
   const cuv = new Float32Array(nC * nR * 2); for (let r = 0; r < nR; r++) for (let i = 0; i < nC; i++) { cuv[(r * nC + i) * 2] = (i / (nC - 1)) * 1.6; cuv[(r * nC + i) * 2 + 1] = (r / (nR - 1)) * 2.2; }
   cg.setAttribute('uv', new THREE.BufferAttribute(cuv, 2));
@@ -234,12 +235,22 @@ export function create({ seed = 1, quality = 'high' } = {}) {
         const sat = (j, L) => { const dx = cloakPos[j] - cloakPos[k]; const dy = cloakPos[j + 1] - cloakPos[k + 1]; const dz = cloakPos[j + 2] - cloakPos[k + 2]; const d = Math.hypot(dx, dy, dz) || 1e-6; const df = (d - L) / d * 0.5;
           const kp = r === 0; const jp = (j / 3 | 0) < nC; if (!kp) { cloakPos[k] += dx * df * (jp ? 2 : 1); cloakPos[k + 1] += dy * df * (jp ? 2 : 1); cloakPos[k + 2] += dz * df * (jp ? 2 : 1); } if (!jp) { cloakPos[j] -= dx * df * (kp ? 2 : 1); cloakPos[j + 1] -= dy * df * (kp ? 2 : 1); cloakPos[j + 2] -= dz * df * (kp ? 2 : 1); } };
         if (r < nR - 1) sat(((r + 1) * nC + i) * 3, 0.107);
-        if (i < nC - 1) sat((r * nC + i + 1) * 3, r === 0 ? (pinsLocal[1].x - pinsLocal[0].x) * 1.0 + 0.0 : 0.09 + 0.045 * r / nR);
+        if (i < nC - 1) sat((r * nC + i + 1) * 3, r === 0 ? (pinsLocal[1].x - pinsLocal[0].x) * 1.0 + 0.0 : 0.09 + 0.08 * r / nR);
         if (r > 0) for (const [cx, cy, cz, rad] of colSph) { const dx = cloakPos[k] - cx; const dy = cloakPos[k + 1] - cy; const dz = cloakPos[k + 2] - cz; const d = Math.hypot(dx, dy, dz); if (d < rad + 0.03) { const s = (rad + 0.03) / (d || 1e-6); cloakPos[k] = cx + dx * s; cloakPos[k + 1] = cy + dy * s; cloakPos[k + 2] = cz + dz * s; } }
         if (cloakPos[k + 1] < 0.02) cloakPos[k + 1] = 0.02;
       }
     }
   };
+
+  // shoulder trophies: tattered crimson banners with golden fringe, hung from the pauldron spikes
+  for (const [S, sx] of Object.entries(side)) {
+    const bg = new THREE.PlaneGeometry(0.2, 0.5, 2, 5); const bp = bg.attributes.position; for (let i = 0; i < bp.count; i++) { const y = bp.getY(i); bp.setZ(i, Math.sin(y * 9 + sx) * 0.02 + (0.25 - y) * 0.05); if (y < -0.2) bp.setY(i, y - Math.abs(Math.sin(i * 12.9)) * 0.06); } bg.computeVertexNormals();
+    M.push(J['sh' + S], mat('brocadeB', { side: THREE.DoubleSide }), bg, trM(sx * 0.66, 1.36, -0.1).multiply(rotM(0, sx * 0.25, 0)));
+    M.push(J['sh' + S], gold, new THREE.BoxGeometry(0.24, 0.025, 0.03), trM(sx * 0.66, 1.62, -0.1).multiply(rotM(0, sx * 0.25, 0)));
+    for (let k = 0; k < 4; k++) M.strand(J['sh' + S], gold, [sx * (0.58 + k * 0.05), 1.1 + R() * 0.03, -0.1], [0, -1, 0], 0.06, 0.008, { rings: 1, radial: 4, r1: 0.5, color: 0xffe9a0 });
+  }
+  // pool of hot light on the ground (cheap additive decal; the ruby is the only real light)
+  { const pool = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: sprite('glow'), color: new THREE.Color(1.0, 0.55, 0.15).multiplyScalar(0.55), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.03; pool.userData.noActorClone = true; pool.material.userData.noActorClone = true; pool.castShadow = false; pool.receiveShadow = false; a.root.add(pool); a.userData.pool = pool; }
 
   M.build();
   // scepter light (the only light) + anchors
@@ -256,7 +267,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const CHN = ['hips', 'spine', 'chest', 'shR', 'elR', 'handR'];
   const apply = (P, pose) => { for (const key in pose) { const v = pose[key]; if (key === 'weapon') { const sum = CHN.reduce((q, j) => q + (pose[j] ? pose[j][0] : 0), 0); P.rot('weapon', (v[0] - sum - 20.05) * D, v[1] * D, v[2] * D); } else if (key.endsWith('.p')) P.pos(key.slice(0, -2), v[0], v[1], v[2]); else P.rot(key, v[0] * D, v[1] * D, v[2] * D); } };
   const mk = (b, o) => ({ ...b, ...o });
-  const STAND = { spine: [4, 0, 0], chest: [2, 0, 0], head: [4, 0, 0], jaw: [4, 0, 0], 'hips.p': [0, -0.03, 0], hipL: [-3, 0, 4], hipR: [-3, 0, -4], knL: [5, 0, 0], knR: [5, 0, 0], shL: [-8, 0, 12], elL: [-30, 0, 0], shR: [-35, 0, -8], elR: [-60, 0, 0], weapon: [35, 0, 0], browL: [0, 0, -6], browR: [0, 0, 6], lidL: [0.15, 0, 0], lidR: [0.15, 0, 0], 'ch.p': [0, 0, 0], 'ch2.p': [0.4, 0.1, 0] };
+  const STAND = { spine: [4, 0, 0], chest: [2, 0, 0], head: [4, 0, 0], jaw: [4, 0, 0], 'hips.p': [0, -0.03, 0], hipL: [-3, 0, 4], hipR: [-3, 0, -4], knL: [5, 0, 0], knR: [5, 0, 0], shL: [-8, 0, 12], elL: [-30, 0, 0], shR: [-55, 0, -14], elR: [-75, 0, 0], weapon: [12, 0, 0], browL: [0, 0, -6], browR: [0, 0, 6], lidL: [0.15, 0, 0], lidR: [0.15, 0, 0], 'ch.p': [0, 0, 0], 'ch2.p': [0.4, 0.1, 0] };
   const clips = {};
   clips.idle = { loop: true, dur: 5.6, fn: (t, P) => {
     const b = sinT(t, 1 / 2.8); const w = sinT(t, 1 / 5.6); const j = a.userData.rageK || 0; const jit = j * (sinT(t, 9) * 0.01 + sinT(t, 13.3, 0.3) * 0.008);
@@ -273,7 +284,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   clips.tele_strike = { loop: true, dur: 1.5, fn: (t, P) => { apply(P, raised({ shR: [-135, 0, -22], elR: [-70, 0, 0], jaw: [8, 0, 0], 'ch2.p': [0.8, 0.5, 0] })); P.rot('chest', sinT(t, 1 / 1.5) * 0.03, 0, 0); P.rot('weapon', sinT(t, 3) * 0.015, 0, 0); } };
   const holdWind = (ik) => (t, P) => { const cur = a.animator.cur; const T = cur && /charge|slam/.test(cur.name) ? cur.t : 9; const k = EZ.io(Math.min(1, T / 0.6)); const tr = 0.012 * k * (1 + ik);
     apply(P, lerpP(STAND, raised({ shR: [-165, 0, -10], jaw: [34, 0, 0], head: [-22, 0, 0], spine: [-14, 0, 0], chest: [-16, 0, 0], 'hips.p': [0, 0.02, -0.08], ftL: [18, 0, 0], ftR: [18, 0, 0], 'ch.p': [1, 0, 0], 'ch2.p': [1, 1, 1] }), Math.min(1.08, k + (T < 0.8 ? Math.sin(T / 0.8 * Math.PI) * 0.1 : 0))));
-    P.rot('spine', sinT(t, 9) * tr, 0, sinT(t, 7, 0.4) * tr); P.rot('chest', sinT(t, 11, 0.3) * tr, 0, 0); P.rot('head', sinT(t, 13) * tr * 1.5, sinT(t, 8) * tr, 0); P.rot('shR', sinT(t, 12) * tr, 0, 0); P.rot('weapon', sinT(t, 10, 0.6) * tr * 2, 0, sinT(t, 8) * tr * 2); P.rot('shL', sinT(t, 14) * tr, 0, 0); P.pos('hips', sinT(t, 15) * 0.004, 0, 0); P.rot('jaw', Math.max(0, sinT(t, 5)) * 0.1, 0, 0); };
+    P.rot('spine', sinT(t, 9) * tr, 0, sinT(t, 7, 0.4) * tr); P.rot('chest', sinT(t, 11, 0.3) * tr, 0, 0); P.rot('head', sinT(t, 13) * tr * 1.5, sinT(t, 8) * tr, 0); P.rot('shR', sinT(t, 12) * tr, 0, 0); P.rot('weapon', sinT(t, 10, 0.6) * tr * 2, 0, sinT(t, 8) * tr * 2); P.rot('shL', sinT(t, 14) * tr, 0, 0); P.pos('hips', sinT(t, 15) * 0.004, 0, 0); P.rot('jaw', Math.max(0, sinT(t, 5)) * 0.1, 0, 0); const pu = Math.max(0, sinT(t, 2.2)) * k; P.scl('chest', 1 + pu * 0.05, 1 + pu * 0.04, 1 + pu * 0.05); P.scl('spine', 1 + pu * 0.04, 1, 1 + pu * 0.04); P.pos('hips', 0, 0, 0.1 * (1 - k) * Math.sin(Math.min(1, T / 0.4) * Math.PI)); };
   clips.charge = { loop: true, dur: 1.4, fn: holdWind(0) }; clips.tele_charge = { loop: true, dur: 1.4, fn: holdWind(0) }; clips.tele_slam = { loop: true, dur: 1.4, fn: holdWind(1) };
   clips.tele_guard = { loop: true, dur: 1.8, fn: (t, P) => { const b = sinT(t, 1 / 1.8); apply(P, mk(STAND, { spine: [8, 0, 0], head: [2, 0, 0], jaw: [10, 0, 0], shL: [-75, 0, 10], elL: [-70, 0, 0], shR: [-30, 0, -30], elR: [-90, 0, 0], weapon: [60, 0, 0], 'ch.p': [0.2, 1, 0], 'ch2.p': [0.7, 0.3, 0], lidL: [0.4, 0, 0], lidR: [0.4, 0, 0] })); P.rot('chest', b * 0.03, 0, 0); } };
   clips.tele_summon = { loop: true, dur: 1.6, fn: (t, P) => { const b = sinT(t, 1 / 1.6); apply(P, raised({ shR: [-170, 0, -22], elR: [-10, 0, 0], jaw: [40, 0, 0], head: [-26, 0, 0], shL: [-20, 0, 70], elL: [-20, 0, 0], 'ch.p': [0.7, 0, 0], 'ch2.p': [1, 0.7, 0.6] })); P.rot('head', 0, 0, sinT(t, 9) * 0.02); P.rot('chest', b * 0.04, 0, 0); P.rot('weapon', sinT(t, 1 / 1.6) * 0.06, 0, sinT(t, 1.4) * 0.08); } };
@@ -282,7 +293,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   clips.attack = { dur: 1.4, events: { hit: 0.72 }, fn: (t, P) => { apply(P, track([[0, STAND], [0.4, raised({ shR: [-150, 0, -14], jaw: [14, 0, 0] }), 'io'], [0.56, raised({ shR: [-162, 0, -14], spine: [-14, 0, 0], jaw: [10, 0, 0] }), 'io'], [0.72, down(), 'in2'], [0.82, down({ 'hips.p': [0, -0.17, 0.14] }), 'out'], [1.4, STAND, 'io']], t));
     const imp = t > 0.72 && t < 1.2 ? Math.exp(-(t - 0.72) * 8) * sinT(t - 0.72, 8) : 0; P.rot('spine', imp * 0.05, 0, 0); P.rot('head', imp * 0.08, 0, 0); } };
   clips.attack2 = { dur: 1.3, events: { hit: 0.62 }, fn: (t, P) => { const back = mk(STAND, { spine: [4, -30, 0], chest: [2, -34, 0], head: [4, 18, 0], jaw: [22, 0, 0], shR: [-50, -60, -50], elR: [-20, 0, 0], weapon: [85, 0, -30], browL: [0, 0, -22], browR: [0, 0, 22] }); const thr = mk(back, { spine: [10, 36, 0], chest: [8, 40, 0], head: [2, -20, 0], shR: [-40, 70, -20], weapon: [85, 0, 30], 'hips.p': [0, -0.08, 0.06] }); apply(P, track([[0, STAND], [0.34, back, 'io'], [0.62, thr, 'in2'], [0.76, thr, 'out'], [1.3, STAND, 'io']], t)); } };
-  clips.slam = { dur: 2.4, events: { hit: 1.4, shake: 1.4 }, fn: (t, P) => { const top = raised({ shR: [-170, 0, -8], spine: [-20, 0, 0], chest: [-22, 0, 0], head: [-30, 0, 0], jaw: [60, 0, 0], 'ch.p': [1, 0, 0], 'ch2.p': [1, 1, 1], ftL: [18, 0, 0], ftR: [18, 0, 0], 'hips.p': [0, 0.03, -0.1] });
+  clips.slam = { dur: 2.4, events: { hit: 1.4, shake: 1.4, crack: 1.4 }, fn: (t, P) => { const top = raised({ shR: [-170, 0, -8], spine: [-20, 0, 0], chest: [-22, 0, 0], head: [-30, 0, 0], jaw: [60, 0, 0], 'ch.p': [1, 0, 0], 'ch2.p': [1, 1, 1], ftL: [18, 0, 0], ftR: [18, 0, 0], 'hips.p': [0, 0.03, -0.1] });
     apply(P, track([[0, STAND], [0.7, top, 'io'], [1.15, mk(top, { spine: [-26, 0, 0], head: [-36, 0, 0] }), 'io'], [1.4, down({ spine: [34, 0, 0], chest: [26, 0, 0], 'hips.p': [0, -0.24, 0.18], knL: [44, 0, 0], knR: [44, 0, 0], weapon: [125, 0, 0] }), 'in2'], [1.5, down({ spine: [38, 0, 0], 'hips.p': [0, -0.27, 0.2], knL: [46, 0, 0], knR: [46, 0, 0] }), 'out'], [1.95, down(), 'io'], [2.4, STAND, 'io']], t));
     if (t > 0.7 && t < 1.4) { const m = ramp01(t, 0.7, 1.15); P.rot('chest', sinT(t, 12) * 0.015 * m, 0, 0); P.rot('shR', sinT(t, 14) * 0.012 * m, 0, 0); } const imp = t > 1.4 && t < 2 ? Math.exp(-(t - 1.4) * 5) * sinT(t - 1.4, 7) : 0; P.rot('spine', imp * 0.06, 0, 0); P.rot('head', imp * 0.09, 0, 0); } };
   clips.stomp = clips.slam;
@@ -324,7 +335,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     a.root.updateMatrixWorld(true);
     if (!own_.skin) { own_.skin = own(a, skin); own_.eye = own(a, eyeM); own_.ruby = own(a, ruby); own_.rubyS = own(a, rubyS); own_.skinC = own_.skin.color.clone(); own_.bomb = null; }
     const rk = a.userData.rageK += (rageTarget - a.userData.rageK) * Math.min(1, dt * 2.2);
-    const flare = Math.min(1.2, Math.max(0, ch.position.x)) + rk * 0.25; const shieldK = Math.min(1, Math.max(0, ch.position.y)); const bombVis = ch.position.z > 0.5;
+    const flare = Math.min(1.2, Math.max(0, ch.position.x)) + rk * 0.25 + 0.3 + 0.08 * Math.sin(t * 1.3); const shieldK = Math.min(1, Math.max(0, ch.position.y)); const bombVis = ch.position.z > 0.5;
     const ruby0 = Math.max(0, ch2.position.x); const fury = Math.min(1.2, Math.max(0, ch2.position.y)) + rk * 0.6; const steam = Math.max(0, ch2.position.z);
     bombs.forEach((b) => { b.visible = bombVis; });
     // springs: belly, head lag, ears
@@ -340,6 +351,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     own_.eye.emissive.setRGB(1, 0.78 - 0.7 * rk, 0.15 - 0.1 * rk); own_.eye.emissiveIntensity = 0.9 + fury * 1.8 + (rk > 0.1 ? (1.2 * rk + 0.4 * Math.sin(t * 9) * rk) : 0); own_.eye.userData.emissiveI0 = own_.eye.emissiveIntensity; own_.eye.userData.emissive0.copy(own_.eye.emissive);
     const rb = 0.9 + ruby0 * 2.6 + rk * 3 + 0.35 * Math.sin(t * 6.3); own_.ruby.emissiveIntensity = rb; own_.ruby.userData.emissiveI0 = rb; own_.ruby.emissive.setRGB(1, 0.05 + rk * 0.8, 0.1 + rk * 0.75); own_.ruby.userData.emissive0.copy(own_.ruby.emissive);
     rubyLight.intensity = 0.3 + ruby0 * 0.9 + rk * 1.2 + 0.12 * Math.sin(t * 11.3) + 0.08 * Math.sin(t * 5.1); rubyLight.color.setRGB(1, 0.15 + rk * 0.6, 0.2 + rk * 0.55);
+    if (a.userData.pool) { a.userData.pool.material.color.setRGB(1.0, 0.5 - rk * 0.25, 0.14).multiplyScalar(0.45 + rk * 0.35 + 0.05 * Math.sin(t * 3)); a.userData.pool.visible = a.alive; }
     // shield aura
     shield.visible = shieldK > 0.01; if (shield.visible) { shield.scale.setScalar(0.6 + 0.4 * shieldK); shieldM.opacity = shieldK * (0.16 + 0.05 * Math.sin(t * 6)); shield.rotation.z = t * 0.4; shield.userData.t = t; }
     // cloak physics (fixed substeps)
@@ -365,5 +377,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
+  addRim(a, { col: 0x30e8c0, k: 1.0, pow: 2.4, skip: (m) => m === own(a, eyeM) || m === own(a, ruby) });
   return a;
 }

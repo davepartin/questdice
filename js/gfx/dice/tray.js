@@ -75,7 +75,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   SLOT_ORDER.forEach((s, i) => {
     const p = slotPos(s);
     const dg = new THREE.LatheGeometry(dishProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg * 4); dg.translate(p.x, 0, p.z);
-    paint(dg, (x, y, z, c) => { const r = Math.hypot(x - p.x, z - p.z); const k = THREE.MathUtils.clamp((r - 0.3) / 0.25, 0, 1); c.setRGB(0.5 - 0.3 * k + 0.08, 0.46 - 0.26 * k + 0.07, 0.46 - 0.24 * k + 0.08); });
+    paint(dg, (x, y, z, c) => { const r = Math.hypot(x - p.x, z - p.z); const k = THREE.MathUtils.clamp((r - 0.3) / 0.25, 0, 1); c.setRGB(0.22 + 0.25 * k, 0.2 + 0.23 * k, 0.2 + 0.22 * k); });
     dishes.push(dg);
     const rg = new THREE.LatheGeometry(rimProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg * 4); rg.translate(p.x, 0, p.z); rims.push(rg);
     const bg = new THREE.LatheGeometry(bandProfile.map(([r, y]) => new THREE.Vector2(r, y + 0.003)), seg * 4); bg.translate(p.x, 0, p.z);
@@ -122,7 +122,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     vertexShader: `attribute float aSock; attribute float aV; uniform float uG[9]; uniform vec3 uCol[9]; varying vec3 vC; varying float vV;
       void main(){ int i = int(aSock + 0.5); vC = uCol[i] * uG[i]; vV = aV; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: `varying vec3 vC; varying float vV;
-      void main(){ float a = smoothstep(0.0, 0.5, vV) * (0.55 + 0.45 * smoothstep(0.55, 1.0, vV)); gl_FragColor = vec4(vC * a * 2.2, a); }`,
+      void main(){ float a = smoothstep(0.0, 0.5, vV) * (0.55 + 0.45 * smoothstep(0.55, 1.0, vV)); gl_FragColor = vec4(vC * a * 1.2, a); }`,
   });
   const glow = new THREE.Mesh(glowG, glowMat); glow.renderOrder = 3; glow.frustumCulled = false; glow.name = 'socketGlow';
   // ---- decal overlay (stitching, runes, icons, bracket)
@@ -155,7 +155,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   table.add(body, iron, frame, field, dishMesh, brass, glow, decal, plaque);
 
   // ---- local lights (no shadows): a warm key above, a cool rim behind
-  const keyLight = new THREE.PointLight(0xffd2a0, 48, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
+  const keyLight = new THREE.PointLight(0xffe2c4, 40, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
   const rimLight = new THREE.PointLight(0x78a4ff, 14, 0, 2); rimLight.position.set(2.6, 1.9, -2.8); rimLight.name = 'trayRim';
   object.add(keyLight, rimLight);
 
@@ -218,7 +218,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   let theme = CLASS_THEME.knight; let twoHanded = false;
   function applyTheme(hero) {
     theme = CLASS_THEME[hero.cls] || CLASS_THEME.knight;
-    leatherMat.color.set(theme.leather); brassMat.color.set(theme.trim).lerp(new THREE.Color(0xffe6b0), 0.55);
+    leatherMat.color.set(theme.leather).multiplyScalar(0.55); brassMat.color.set(theme.trim).lerp(new THREE.Color(0xffe6b0), 0.55);
     plaqueMat.map = new THREE.CanvasTexture(paintSigil({ theme })); plaqueMat.map.colorSpace = THREE.SRGBColorSpace; plaqueMat.map.anisotropy = 8; plaqueMat.emissiveMap = plaqueMat.map; plaqueMat.needsUpdate = true;
     const art = paintDecals({ size: decalSize, FH, pitch: PITCH, theme, hero, twoHanded, dishR: DISH_TOP, weaponIds: { NW: hero.loadout.NW.id, NE: hero.loadout.NE.id } });
     for (const [k, c] of [['map', art.albedo], ['emissiveMap', art.emissive]]) {
@@ -418,7 +418,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
       s.hopV += (-s.hop * 260 - s.hopV * 14) * dt; s.hop += s.hopV * dt; if (s.hop < 0) { s.hop = 0; s.hopV = Math.max(0, s.hopV); }
       s.flash = Math.max(0, s.flash - dt * 2.6); s.glowBoost = Math.max(0, s.glowBoost - dt * 1.3);
-      const dimT = s.bound ? 0.85 : s.dimmed ? 0.6 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
+      const dimT = s.bound ? 0.85 : s.dimmed ? 0.6 : tray.locked ? 0.22 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
       // ---- pose
       let lifted = true;
       if (s.anim?.kind === 'roll') {
@@ -427,7 +427,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
         s.pos.copy(_p); s.quat.copy(_q); lifted = false;
         while (an.ev < plan.events.length && plan.events[an.ev].t <= lt) {
           const e = plan.events[an.ev++];
-          if (e.kind === 'hit') { if (e.speed > 2.2) { tray.onSound?.('hit', { slot, speed: e.speed }); fx.impact(s.pos.x, s.pos.z, e.speed); } } else { tray.onSound?.('settle', { slot, speed: 2 }); fx.dustPuff(s.home.x, s.home.z, 3); fx.ring(s.home.x, 0.01, s.home.z, 0xffe0a0, { dur: 0.4, s0: 0.8, s1: 1.7, a: 0.4 }); }
+          if (e.kind === 'hit') { if (e.speed > 2.2) { tray.onSound?.('hit', { slot, speed: e.speed, level: Math.min(1, e.speed / 12) }); fx.impact(s.pos.x, s.pos.z, e.speed); } } else { s.wobble = 0; tray.onSound?.('settle', { slot, speed: 2, level: 0.4 }); fx.dustPuff(s.home.x, s.home.z, 3); fx.ring(s.home.x, 0.01, s.home.z, 0xffe0a0, { dur: 0.4, s0: 0.8, s1: 1.7, a: 0.4 }); }
         }
         if (lt >= plan.T) { s.anim = null; s.pos.set(s.home.x, restY(s), s.home.z); s.quat.copy(plan.qFinal); }
       } else if (s.anim?.kind === 'flip') {
@@ -439,7 +439,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       const baseY = lifted ? restY(s) : s.pos.y;
       const sinkY = -0.05 * lockK;
       die.mesh.position.set(s.pos.x, baseY + (lifted ? s.lift + s.hop + sinkY : 0), s.pos.z);
-      die.mesh.quaternion.copy(s.quat);
+      if (s.wobble != null) { s.wobble += dt; const w = 0.07 * Math.exp(-s.wobble * 6.5) * Math.sin(s.wobble * 34); if (s.wobble > 0.9) s.wobble = null; _q.setFromAxisAngle(_wob.set(Math.cos(s.i * 2.1), 0, Math.sin(s.i * 2.1)), w); die.mesh.quaternion.copy(_q).multiply(s.quat); } else die.mesh.quaternion.copy(s.quat);
       // ---- shader state
       const U = die.uniforms;
       U.uTime.value = time; die.mesh.updateWorldMatrix(true, false); die.updateCamera(stage.camera);
@@ -455,7 +455,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       // ---- rings, halo, chain, hex
       s.ring.visible = rimK > 0.01 || s.ring.material.opacity > 0.01;
       const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
-      s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.04 * Math.sin(time * 5 + s.i)); s.ring.position.y = 0.012;
+      s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.07 * Math.sin(time * 6 + s.i)); s.ring.position.y = 0.012;
       s.ring.material.color.setHex(s.selected ? 0xffe9a8 : 0xcfe8ff);
       s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * 0.2 * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
       if (s.chains) {
@@ -490,7 +490,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     fx.update(dt, time);
     if (rollJob && !anyRolling) finishRoll(false);
   };
-  const _c2 = new THREE.Quaternion();
+  const _c2 = new THREE.Quaternion(); const _wob = new THREE.Vector3();
   let off = null;
   if (auto) off = stage.onFrame((dt, t) => tray.update(dt, t));
 

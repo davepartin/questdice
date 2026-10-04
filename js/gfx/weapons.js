@@ -63,6 +63,13 @@ function runeTexture(r, kind = 'blade') {
     }
   }, { srgb: !dia, aniso: 4 });
 }
+function glyphTexture(r) {
+  return canvasTex(`wep-glyph|${r}`, 128, 512, (g, w, h) => {
+    const rng = mulberry32(7 + r * 13); g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.lineCap = 'round'; g.strokeStyle = '#fff'; g.lineWidth = 2.6;
+    for (let i = 0; i < 9; i++) { const cy = h * (0.12 + i * 0.065); const cx = w * 0.5; g.beginPath(); const k = 1 + Math.floor(rng() * 4);
+      g.moveTo(cx, cy - 12); g.lineTo(cx, cy + 12); if (k & 1) { g.moveTo(cx - 8, cy - 4); g.lineTo(cx, cy + 2); g.lineTo(cx + 8, cy - 6); } if (k & 2) { g.moveTo(cx - 8, cy + 9); g.lineTo(cx + 8, cy + 4); } g.stroke(); }
+  }, { srgb: true, aniso: 4 });
+}
 // engraved leather / trim stripes, used on shields and quivers elsewhere
 export function emblemTexture(kind, { a = '#8a1c24', b = '#f0d070', c = '#1a1a1a' } = {}) {
   return canvasTex(`emblem|${kind}|${a}|${b}|${c}`, 512, 512, (g, w, h) => {
@@ -104,10 +111,12 @@ export function emblemTexture(kind, { a = '#8a1c24', b = '#f0d070', c = '#1a1a1a
 
 // ----------------------------------------------------------------------------------------------- materials
 const matCache = new Map();
-function metal(color, { rough = 0.3, metalness = 0.86, name = 'm', map = null, bump = null, bumpScale = 1.5, env = 1.2, emissive = 0x000000, ei = 0 } = {}) {
+const r0g = (name) => (name === 'blade1' ? 0.35 : 0.55);
+function metal(color, { rough = 0.3, metalness = 0.9, glyph = null, name = 'm', map = null, bump = null, bumpScale = 1.5, env = 1.2, emissive = 0x000000, ei = 0 } = {}) {
+  if (glyph) { emissive = PAL[+name.slice(5)]?.glow ?? 0xffffff; ei = r0g(name); }
   const key = `${name}|${color}|${rough}|${map?.uuid}|${emissive}|${ei}`;
   if (matCache.has(key)) return matCache.get(key);
-  const m = new THREE.MeshStandardMaterial({ color, metalness: metalness, roughness: rough, vertexColors: true, envMapIntensity: env, map, bumpMap: bump, bumpScale, emissive, emissiveIntensity: ei });
+  const m = new THREE.MeshStandardMaterial({ color, metalness: metalness, roughness: rough, vertexColors: true, envMapIntensity: env, map, bumpMap: bump, bumpScale, emissive, emissiveIntensity: ei, emissiveMap: glyph });
   matCache.set(key, m); return m;
 }
 function surf(kind, o, extra = {}) {
@@ -120,7 +129,7 @@ function weaponMats(r) {
   const rune = runeTexture(r);
   const M = {};
   if (!dia) {
-    M.blade = metal(0xffffff, { name: `blade${r}`, rough: r === 0 ? 0.46 : r === 1 ? 0.3 : 0.26, map: rune, bump: rune, bumpScale: r === 0 ? 0.4 : 1.5, env: 1.7 });
+    M.blade = metal(0xffffff, { name: `blade${r}`, glyph: r >= 1 ? glyphTexture(r) : null, rough: r === 0 ? 0.46 : r === 1 ? 0.3 : 0.26, map: rune, bump: rune, bumpScale: r === 0 ? 0.4 : 1.5, env: 1.7 });
   } else {
     M.blade = null; // created per instance (animated)
   }
@@ -191,7 +200,7 @@ function bladeGeo({ y0 = 0, len = 0.7, w0 = 0.028, w1 = 0.022, leaf = 0, t = 0.0
   prep(g);
   if (fuller) shade(g, (x, y, z) => { const u = (y - y0) / len; const w = wAt(Math.min(1, (y - y0) / bodyLen)); return (Math.abs(z) < w * 0.37 && u > fuller.u0 + 0.01 && u < fuller.u1 - 0.01 && Math.abs(x) < t - fuller.d * 0.45) ? 0.5 : 1; });
   // darken the very edge a touch so the bevel reads
-  shade(g, (x, y, z) => 1 - 0.18 * sstep(0.8, 1, Math.abs(z) / wMax));
+  shade(g, (x, y, z) => 1 + 0.35 * sstep(0.75, 1, Math.abs(z) / wMax));
   return g;
 }
 
@@ -303,16 +312,16 @@ function buildSword(r, P, pal, { long = false } = {}) {
   const S = long ? 1.0 : 1;
   const L = long ? 1.0 : 0.72;
   const gy0 = long ? -0.2 : -0.068; const gy1 = long ? 0.06 : 0.058; const guardY = gy1 + 0.014; const bladeY0 = guardY + 0.014;
-  const w = long ? 0.034 : 0.028; const t = long ? 0.0062 : 0.0055;
+  const w = long ? 0.05 : 0.042; const t = long ? 0.0075 : 0.0068;
   const style = Math.min(3, r);
   // blade
-  const fuller = r === 0 ? { d: 0.0012, u0: 0.04, u1: 0.62 } : { d: 0.0024, u0: 0.04, u1: 0.74 };
+  const fuller = r === 0 ? { d: 0.0026, u0: 0.04, u1: 0.66 } : { d: 0.0036, u0: 0.04, u1: 0.78 };
   const bg = bladeGeo({ y0: bladeY0, len: L, w0: w, w1: w * (r === 0 ? 0.78 : 0.7), leaf: r === 0 ? 0.0 : 0.05, t, fuller, tip: long ? 0.13 : 0.1 });
   P.add('blade', bg, r === 3 ? 0xffffff : (r === 0 ? PAL[0].blade : 0xffffff), (x, y) => 1);
   // ricasso + guard blocks
   P.add('trim', X(merge([new THREE.BoxGeometry(0.012, 0.02, w * 1.9)]), { p: [0, bladeY0 + 0.006, 0] }), pal.trimDark);
   P.add('trim', lathePart([[0, guardY - 0.014], [0.014, guardY - 0.014], [0.013, guardY + 0.0], [0.011, guardY + 0.016], [0, guardY + 0.016]], 12), pal.trimDark);
-  guard(r, guardY, long ? 0.24 : 0.19, P, pal, { big: long ? 1.18 : 1 });
+  guard(r, guardY, long ? 0.3 : 0.24, P, pal, { big: long ? 1.3 : 1.15 });
   // grip
   const gripCol = r === 0 ? 0x4c2e1c : r === 1 ? 0x20242e : r === 2 ? 0x5a1c22 : 0x143a50;
   gripWrap(gy0, gy1, long ? 0.0165 : 0.0155, { color: gripCol, coreColor: 0x120a06, turns: long ? 26 : 14, ring: r >= 1, ringColor: pal.trim }, P);
@@ -327,7 +336,7 @@ function buildSword(r, P, pal, { long = false } = {}) {
 
 function buildDagger(r, P, pal) {
   const gy0 = -0.058; const gy1 = 0.045; const guardY = gy1 + 0.011; const by0 = guardY + 0.01;
-  const L = 0.27; const w = 0.0235;
+  const L = 0.27; const w = 0.033;
   const fuller = r === 0 ? null : { d: 0.0018, u0: 0.05, u1: 0.55 };
   const bg = bladeGeo({ y0: by0, len: L, w0: w * 0.78, w1: w * 0.5, leaf: 0.55, t: 0.0048, fuller, tip: 0.075, bend: r >= 1 ? 0.006 : 0 });
   P.add('blade', bg, r === 0 ? PAL[0].blade : 0xffffff);
@@ -452,7 +461,7 @@ function buildSpear(r, P, pal) {
   P.add('trim', lathe([[0.0185, yt - 0.3], [0.022, yt - 0.29], [0.021, yt - 0.28], [0.0185, yt - 0.27], [0.0185, yt - 0.04], [0.026, yt - 0.02], [0.03, yt + 0.0], [0.026, yt + 0.025], [0.0, yt + 0.03]], 14), pal.trim);
   for (const y of [yt - 0.22, yt - 0.1]) P.add('dark', X(torus(0.0195, 0.0032, 12, 5), { p: [0, y, 0], r: [Math.PI / 2, 0, 0] }), pal.trimDark);
   // head
-  const hl = r === 0 ? 0.26 : r === 1 ? 0.3 : 0.32; const hw = r === 0 ? 0.034 : r === 1 ? 0.04 : 0.044;
+  const hl = r === 0 ? 0.26 : r === 1 ? 0.3 : 0.32; const hw = r === 0 ? 0.044 : r === 1 ? 0.052 : 0.056;
   const fuller = r === 0 ? null : { d: 0.003, u0: 0.1, u1: 0.8 };
   const hg = bladeGeo({ y0: yt + 0.02, len: hl, w0: hw * 0.75, w1: hw * 0.2, leaf: r === 0 ? 0.55 : 0.75, t: 0.0075, fuller, tip: hl * 0.5 });
   P.add('blade', hg, r === 0 ? PAL[0].blade : 0xffffff);
@@ -679,6 +688,7 @@ export function createWeapon(id, rarity = 0, o = {}) {
   // materials per role
   const roleMat = { ...M };
   const shimmer = [];
+  const roleMesh = {};
   if (r === 3) { roleMat.blade = crystalMaterial(r, o.accent3); shimmer.push(roleMat.blade); }
   if (id === 'shield') {
     const fm = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceMap, vertexColors: true, roughness: 0.55, metalness: 0.35, envMapIntensity: 1.0, bumpMap: faceMap, bumpScale: 0.8 });
@@ -689,7 +699,7 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const q = QUAL[o.quality || 'high'] || 1; void q;
   for (const role of Object.keys(P.list)) {
     const g = P.merged(role); if (!g) continue;
-    const m = new THREE.Mesh(g, roleMat[role]); m.castShadow = true; m.receiveShadow = true; m.name = `${id}-${role}`; group.add(m);
+    const m = new THREE.Mesh(g, roleMat[role]); m.castShadow = true; m.receiveShadow = true; m.name = `${id}-${role}`; m.userData.role = role; group.add(m); roleMesh[role] = m;
     if (role === 'blade' && r === 3) {
       m.userData.shimmer = true;
       const halo = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x2ab8e0, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide, toneMapped: true }));
@@ -706,15 +716,16 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const wob = (r + 1) * 1.3;
   ud.update = (dt, t) => {
     if (dia) {
-      for (const m of shimmer) { const e = m.emissiveMap; if (e) { e.offset.y = ((t * 0.16) % 1); } m.emissiveIntensity = 0.65 + 0.3 * Math.sin(t * 2.3) + 0.12 * Math.sin(t * 5.1 + 1); if (m === roleMat.face) m.emissiveIntensity = 0.45 + 0.3 * Math.sin(t * 2.3); }
-      M.glow.emissiveIntensity = 2.0 + 0.9 * Math.sin(t * 3.1 + wob);
-    } else if (r === 2) { M.glow.emissiveIntensity = 1.6 + 0.4 * Math.sin(t * 2.0); M.gem.emissiveIntensity = 0.5 + 0.2 * Math.sin(t * 1.7); }
+      for (const rl of ['blade', 'face']) { const m = roleMesh[rl]?.material; if (!m || !m.emissiveMap || (rl === 'blade' && !dia) ) continue; const e = m.emissiveMap; if (e) { e.offset.y = ((t * 0.16) % 1); } m.emissiveIntensity = 0.65 + 0.3 * Math.sin(t * 2.3) + 0.12 * Math.sin(t * 5.1 + 1); if (rl === 'face') m.emissiveIntensity = 0.45 + 0.3 * Math.sin(t * 2.3); }
+      if (roleMesh.glow) roleMesh.glow.material.emissiveIntensity = 2.0 + 0.9 * Math.sin(t * 3.1 + wob);
+    } else if (r === 2) { if (roleMesh.glow) roleMesh.glow.material.emissiveIntensity = 1.6 + 0.4 * Math.sin(t * 2.0); if (roleMesh.gem) roleMesh.gem.material.emissiveIntensity = 0.5 + 0.2 * Math.sin(t * 1.7); }
+    if (r >= 1 && r < 3 && roleMesh.blade) roleMesh.blade.material.emissiveIntensity = (r === 1 ? 0.3 : 0.5) + 0.15 * Math.sin(t * 2.2);
     if (st) {
       const pulse = 0.5 + 0.5 * Math.sin(t * 2.0); const fl = 0.5 + 0.5 * Math.sin(t * 7.3 + Math.sin(t * 3.1) * 2);
-      st.orbMat.emissiveIntensity = 1.9 + 0.9 * pulse + 0.25 * fl; st.core.rotation.y = t * 0.9; st.core.rotation.x = t * 0.6;
+      const om = st.orb.material; om.emissiveIntensity = 1.9 + 0.9 * pulse + 0.25 * fl; st.core.rotation.y = t * 0.9; st.core.rotation.x = t * 0.6;
       const k = ud.charge || 0; // 0..1 extra when channeling
       st.gs.scale.setScalar((0.42 + 0.1 * pulse + 0.05 * fl) * (1 + k * 1.2)); st.gs.material.opacity = (0.65 + 0.2 * pulse) * (ud.fade ?? 1);
-      st.orbMat.emissiveIntensity += k * 3;
+      om.emissiveIntensity += k * 3;
       st.rings.forEach((rg, i) => { rg.rotation.x = Math.PI / 2 + Math.sin(t * (0.8 + i * 0.6)) * 0.45; rg.rotation.y = t * (0.7 + i * 0.5); });
     }
   };

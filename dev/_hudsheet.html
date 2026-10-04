@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/g3.css"><link rel="stylesheet" href="/css/hud.css">
+<style>body{background:radial-gradient(80% 60% at 50% 30%,#2a2438,#0b0a12);overflow:auto;height:auto;padding:12px;color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:flex-start}
+.sheet .b3-plate,.sheet .b3-hero,.sheet .b3-dock,.sheet .b3-cards{position:static!important;transform:none!important}
+.sheet .b3-dock{width:380px!important;padding:6px!important}.sheet .b3-hero{width:380px!important}.sheet .b3-cards{width:380px!important;flex-direction:row;flex-wrap:wrap}
+.cell .ic{font-size:40px}.cell{display:grid;justify-items:center;font:10px sans-serif;gap:4px;width:64px}
+</style></head><body class="in-battle"><div class="b3-layer on sheet" style="position:static;display:block"><div class="b3" id="root" style="position:static"></div></div>
+<script type="module">
+import * as HK from '/js/g3/hudkit.js';
+import { h } from '/js/dom.js';
+import * as D from '/js/data.js';
+const root=document.getElementById('root');
+const names=['atk','block','pierce','magic','heal','gold','stagger','bind','drain','pilfer','howl','summon','windup','slam','heart','dice','lock','reroll','menu','crown','rank','star','weaken','chev','knight','ranger','wizard','dwarf','bard','note'];
+root.append(h('div',{class:'row'},names.map(n=>h('div',{class:'cell'},HK.icon(n),n))));
+const tones=[['hex','atk','strike'],['octagon','slam','slam'],['diamond','pierce','pierce'],['shield','block','guard'],['circle','heal','mend'],['octagon','windup','windup'],['circle','howl','howl'],['circle','bind','bind'],['circle','drain','drain'],['hex','pilfer','pilfer'],['circle','summon','summon']];
+root.append(h('div',{class:'row'},tones.map(([s,i,t])=>h('div',{class:`tone-${t}`},HK.medallion(s,i)))));
+// fake enemies
+const mk=(name,tier,hp,max,intent,extra={})=>({name,tier,hp,maxHp:max,intent,staggerAt:21,flat:2,buff:0,powerDie:8,...extra});
+const E=await import('/js/engine.js');
+const plate=(e)=>{const r={name:h('span',{class:'pl-name'},e.name),hp:HK.bar({cls:'pl-bar',seg:8}),chips:h('div',{class:'pl-chips'}),intent:h('div',{class:'pl-intent'}),call:h('div',{class:'pl-call'})};
+ const v=HK.intentView(e);HK.setBar(r.hp,e.hp,e.maxHp);
+ r.intent.className=`pl-intent tone-${v.tone}${v.hazard?' hazard':''}`;r.intent.replaceChildren(HK.medallion(v.shape,v.icon),h('div',{class:'in-main'},h('b',{class:'in-name'},v.title),h('div',{class:'in-fig'},h('b',{},v.fig),h('small',{},v.unit,v.subIcon?HK.icon(v.subIcon):null)),h('small',{class:'in-hint'},v.hint)));
+ if(v.call){r.call.className=`pl-call on tone-${v.tone}`;r.call.replaceChildren(HK.icon(v.call.ico||'windup'),h('span',{},h('b',{},v.call.head),h('small',{},v.call.sub)));}
+ const ic=e.tier==='boss'?'crown':e.tier==='elite'?'rank':null;
+ if(e.carried)r.chips.append(h('span',{class:'chip gold'},HK.icon('gold'),h('b',{},String(e.carried))));
+ return h('button',{class:`b3-plate tier-${e.tier} has-intent ${e.t?'targeted':''}`,style:{position:'relative',width:e.tier==='minion'?'170px':'210px'}},h('i',{class:'pl-frame'}),h('span',{class:'pl-reticle'},h('i'),h('b',{},'TARGET')),h('div',{class:'pl-head'},ic?h('span',{class:'pl-tier'},HK.icon(ic)):null,r.name,r.chips),r.hp,r.intent,r.call);};
+const I=(v,f,m,k=1,n='Move',slam)=>({v,f,m,k,n,slam});
+const list=[mk('Goblin Skulker','minion',30,30,I('strike',2,1,1,'Stab'),{t:1}),mk('Dire Wolf','minion',22,40,I('strike',2,1,1,'Lunge')),mk('Ashen Cultist','minion',34,34,I('bind',0,0,2,'Hex')),mk('Cultist','minion',10,34,I('drain',1,1,2,'Siphon')),mk('Goblin','minion',30,30,I('pilfer',1,1,1,'Pilfer'),{carried:6}),
+ mk('Hill Ogre','elite',60,84,I('charge',0,0,1,'Wind-Up'),{t:1}),mk('Hill Ogre','elite',84,84,I('strike',2,2,1,'Slam',true)),mk('Goblin King','boss',70,100,I('summon',0,0,1,'Rally!')),mk('Goblin','minion',30,30,I('guard',2,1,1,'Duck')),mk('Goblin','minion',30,30,I('pierce',2,1,1,'Fire Bomb')),mk('Wolf','minion',30,40,I('howl',0,0,2,'Howl')),mk('Mender','minion',30,40,I('mend',2,1,1,'Mend'))];
+root.append(h('div',{class:'row'},list.map(plate)));
+// hero
+const hero=D.CLASSES.knight; 
+const fake={name:'Dave',cls:'knight',level:3};
+// forecast
+const fc=HK.forecastStrip(); HK.setForecast(fc,{atk:12,pierce:3,block:7,magic:2,heal:0,gold:4}); HK.setNotes(fc,[{key:'a',kind:'good',icon:'atk',text:'TRIPLE!',sub:'top row · +10 attack'},{key:'b',kind:'good',icon:'star',text:'4-STRAIGHT',sub:'+6'},{key:'c',kind:'',icon:'stagger',text:'6 stagger'}]);
+const idle=HK.forecastStrip(); idle.classList.add('idle');
+const dock=h('div',{class:'b3-dock'},fc,h('div',{class:'b3-caption'},h('p',{class:'tip'},HK.rich('Left hand · Strength 3: adds 3 to its lane. 2 → +2 ◆ pierce and 1 → +1 🪙 gold.'))),h('div',{class:'b3-bar'},
+ h('div',{class:'b3-straight'},h('span',{class:'st-l'},HK.icon('star'),h('b',{},'4-straight'),h('em',{},'+6 to')),h('div',{class:'seg'},h('button',{class:'on'},HK.icon('atk'),'Attack'),h('button',{},HK.icon('gold'),'Gold'))),
+ h('div',{class:'b3-tools'},h('div',{class:'b3-pips'},h('small',{},'REROLLS'),h('i',{class:'on'}),h('i',{class:'on'}),h('i')),h('div',{class:'b3-mini'},HK.button({kind:'mini',icon:h('span',{class:'nudge'},HK.icon('heart'),h('i',{class:'dn'}))}),HK.button({kind:'mini',icon:'heal',badge:HK.costGem(2,'badge')}),HK.button({kind:'mini',icon:'heal',disabled:true,badge:HK.costGem(2,'badge')}))),
+ h('div',{class:'b3-acts'},HK.button({kind:'reroll',icon:'reroll',label:'Reroll 2 dice',sub:HK.costGem(2)}),HK.button({kind:'cta',icon:'lock',label:'Lock in'})),
+ ));
+const cards=D.CLASSES.knight.cards.map((k,i)=>HK.abilityCard(k,{spent:i===1,reset:false,afford:i!==2,rechargeCost:3,disabled:i===1||i===2}));
+root.append(h('div',{class:'row'},h('div',{},dock),h('div',{},h('div',{class:'b3-cards'},cards),h('div',{class:'b3-cards',style:{marginTop:'8px'}},D.CLASSES.wizard.cards.map((k,i)=>HK.abilityCard(k,{spent:i===0,reset:true,afford:true,rechargeCost:3,disabled:i!==0})))),
+ h('div',{},(()=>{const hh=h('div',{class:'b3-hero'},HK.heroMedal('knight',3),h('div',{class:'hb-main'},h('div',{class:'hb-id'},h('b',{class:'hb-name'},'Dave'),h('small',{class:'hb-cls'},'Knight')),(()=>{const b=HK.bar({cls:'hb-hp',seg:7});b.prepend(h('span',{class:'hb-heart'},HK.icon('heart')));HK.setBar(b,22,34);return b;})(),h('div',{class:'hb-magic'},h('span',{class:'hb-mi'},HK.icon('magic')),h('b',{class:'hb-mn'},'7'),(()=>{const g=HK.gems(12);HK.setGems(g,7);return g;})())));return hh;})(), idle)));
+const hostB=h('div',{style:{position:'relative',height:'160px',width:'100%',background:'#222'}});root.append(hostB);
+HK.banner(hostB,'TRIPLE!  +10','gold');
+window.__ready=true;
+</script></body></html>

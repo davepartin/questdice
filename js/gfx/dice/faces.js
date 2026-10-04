@@ -76,13 +76,13 @@ const dpaths = new Map();
 function digitPath(d) { if (!dpaths.has(d)) dpaths.set(d, new Path2D(DIGITS[d === 9 ? 6 : d])); return dpaths.get(d); }
 // Stroke the numeral `text` centred at (x, y) with total height `h` px. Caller sets stroke/fill style.
 // `grow` adds extra stroke width (px) for outlines.
-export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 19, under = true } = {}) {
+export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under = true } = {}) {
   const k = h / 80; const n = text.length;
   const wDigit = 50 * k * (n > 1 ? 0.8 : 1);
   const gap = n > 1 ? -2 * k : 0;
   const total = n * wDigit + (n - 1) * gap;
   ctx.save();
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = 'butt';
   for (let i = 0; i < n; i++) {
     const d = +text[i];
     const cx = x - total / 2 + i * (wDigit + gap) + wDigit / 2;
@@ -102,8 +102,8 @@ export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 19, under =
 
 // ------------------------------------------------------------------------------- themes
 const T = {
-  bone: { name: 'bone', core: '#efe3c6', mid: '#cdbb8e', edge: '#8a7448', rough: 0.18, trim: ['#e6c675', '#b88a34', '#6e4a14'], trimRough: 0.28, num: 'ink' },
-  smoke: { name: 'smoke', core: '#5e5248', mid: '#352d27', edge: '#120e0c', rough: 0.1, trim: ['#e9edf4', '#9aa4b4', '#4c5564'], trimRough: 0.22, num: 'bone' },
+  bone: { name: 'bone', core: '#f4ecd8', mid: '#d6c9a6', edge: '#8c7a56', rough: 0.18, trim: ['#d8d2c0', '#8e8672', '#4a4436'], trimRough: 0.28, num: 'ink' },
+  smoke: { name: 'smoke', core: '#4a4440', mid: '#2a2624', edge: '#0c0a0a', rough: 0.1, trim: ['#e9edf4', '#9aa4b4', '#4c5564'], trimRough: 0.22, num: 'bone' },
   heart: { name: 'heart', core: '#f4a822', mid: '#c4620a', edge: '#5e1e04', rough: 0.07, trim: ['#fff0b0', '#ffc94a', '#a8700f'], trimRough: 0.2, num: 'ink' },
   amethyst: { name: 'amethyst', core: '#7a3ee0', mid: '#4a1c9c', edge: '#170733', rough: 0.07, trim: ['#f0e8ff', '#b4a2e4', '#5a4a8e'], trimRough: 0.2, num: 'glow' },
   weapon: { name: 'weapon', rough: 0.08, trim: ['#ffe9a8', '#d9a83e', '#6e4a14'], trimRough: 0.2, num: 'metal' },
@@ -112,8 +112,8 @@ export const THEMES = T;
 const WPN = {
   r: { core: '#e02a36', mid: '#8a0f1e', edge: '#150407', metal: ['#fffbe8', '#ffd96a', '#e0962a'], rim: '#3a0a10' },
   b: { core: '#2f8cf5', mid: '#124a9e', edge: '#040a18', metal: ['#ffffff', '#d4e8ff', '#8ab4e0'], rim: '#06142a' },
-  rBlank: { core: '#54181f', mid: '#2e0b11', edge: '#0a0305' },
-  bBlank: { core: '#1d3a5c', mid: '#0e1f35', edge: '#03070d' },
+  rBlank: { core: '#8a1626', mid: '#4a0a14', edge: '#0a0305' },
+  bBlank: { core: '#245a9a', mid: '#10305a', edge: '#03070d' },
 };
 
 // ------------------------------------------------------------------------------- atlas
@@ -201,7 +201,7 @@ function tex(canvas, srgb) {
   return t;
 }
 
-const NUM_K = { 4: 1.12, 6: 1.3, 8: 1.4, 10: 1.55 };
+const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
 
 /**
  * Paint the atlas for a die.
@@ -317,6 +317,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       } else if (th.num === 'bone') {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
+      layer(ctxs, { A: 'rgba(0,0,0,0.55)' }, (c) => { c.save(); c.translate(numH * 0.03, numH * 0.04); drawNumeral(c, txt, 0, ny, numH, { grow: numH * 0.02 }); c.restore(); });
       layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow: -numH * 0.01 }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, 0, ny, numH));
     }

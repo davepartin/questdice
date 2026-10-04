@@ -25,7 +25,7 @@ const rng = (seed) => { let s = seed >>> 0 || 1; return () => { s = (s * 1664525
 // ---------------------------------------------------------------------------------------------- shots
 // land = wide screens, port = tall phones. Hero stands near the world origin in every scene.
 Object.assign(SHOTS, {
-  's-title': { land: { pos: [2.1, 1.05, 6.4], look: [-0.2, 1.55, 0.4], fov: 34 }, port: { pos: [1.2, 1.15, 7.2], look: [-0.1, 1.5, 0.4], fov: 46 } },
+  's-title': { land: { pos: [2.6, 1.15, 8.4], look: [-0.55, 1.45, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-0.5, 1.4, 0.4], fov: 46 } },
   's-create': { land: { pos: [0.6, 1.5, 5.6], look: [0, 1.0, 0], fov: 36 }, port: { pos: [0.4, 1.5, 6.6], look: [0, 1.05, 0], fov: 48 } },
   's-create-in': { land: { pos: [0.5, 1.35, 3.9], look: [0, 1.15, 0], fov: 34 }, port: { pos: [0.3, 1.4, 4.9], look: [0, 1.15, 0], fov: 46 } },
   's-road': { land: { pos: [-1.2, 1.7, 6.8], look: [0.6, 1.5, -2], fov: 40 }, port: { pos: [-0.8, 1.8, 7.4], look: [0.3, 1.5, -2], fov: 56 } },
@@ -206,6 +206,12 @@ function pedestal({ pos = [0, 0, 0], color = 0xffc060 } = {}) {
   return g;
 }
 
+// Warm rim from behind-left plus a cool fill from the camera side so a hero reads against a bright sky.
+function rimKit({ target = [0, 1.2, 0], warm = 0xffa050, cool = 0x7090c8, rim = 4.2, fill = 1.6 } = {}) {
+  const t = new THREE.Object3D(); t.position.set(...target); add(t);
+  const r = new THREE.DirectionalLight(warm, rim); r.position.set(target[0] - 3, target[1] + 2.5, target[2] - 4); r.target = t; add(r);
+  const f = new THREE.DirectionalLight(cool, fill); f.position.set(target[0] + 4, target[1] + 1.2, target[2] + 5); f.target = t; add(f);
+}
 const CLASS_COLOR = { knight: 0xff6a4a, ranger: 0x7aff9a, wizard: 0x6ab8ff, dwarf: 0xffa040, bard: 0x4ae8d8 };
 
 // ---------------------------------------------------------------------------------------------- scene modes
@@ -219,8 +225,9 @@ function check(token) { if (token !== own.token) throw Object.assign(new Error('
 const MODES = {
   async title({ cls = 'knight', hero: saved } = {}, token) {
     await arenaFor('Burnt Orchard', { seed: 11, mood: 'calm' }); check(token);
-    setLook({ vignette: 0.7, bloom: 0.8, exposure: 0.95 });
+    setLook({ vignette: 0.75, bloom: 0.55, exposure: 0.82 });
     const hero = await makeHero(cls, { loadout: saved?.loadout, level: saved?.level || 1 }); check(token);
+    rimKit({ target: [-0.9, 1.2, 1.5] });
     hero.root.position.set(-0.9, 0, 1.5); hero.root.rotation.y = 0.55; add(hero.root);
     hero.play('ready', { restart: true });
     emberField({ box: [-6, 0, -3, 6, 3.5, 6], rate: 18 });
@@ -335,6 +342,7 @@ export function release() { own.token++; own.objs = []; own.offs = []; own.arena
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
 export function victory() {
   const bw = world.battle; if (!bw) return null;
+  if (bw._victory) return bw; bw._victory = true;
   bw.arena.setMood?.('victory');
   bw.hero.play('victory', { restart: true });
   setLook({ bloom: 0.85, exposure: 1.06, sat: 1.12 });

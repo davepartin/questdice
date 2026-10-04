@@ -33,7 +33,7 @@ export const quadGeo = new THREE.PlaneGeometry(2, 2);
 // ---------------------------------------------------------------------------------------------
 const RING_FS = /* glsl */`
   ${NOISE}
-  uniform vec3 uColor; uniform float uK; uniform float uR0; uniform float uThick; uniform float uAlpha; uniform float uHdr; uniform float uNoise; uniform float uSeed; uniform float uEase;
+  uniform vec3 uColor; uniform float uK; uniform float uR0; uniform float uThick; uniform float uAlpha; uniform float uHdr; uniform float uNoise; uniform float uSeed; uniform float uEase; uniform float uTrail; uniform float uHold;
   varying vec2 vUv;
   void main(){
     vec2 p = vUv * 2.0 - 1.0; float r = length(p); float ang = atan(p.y, p.x);
@@ -41,18 +41,18 @@ const RING_FS = /* glsl */`
     float rc = mix(uR0, 0.9, e);
     float d = r - rc;
     float th = uThick * (1.0 - 0.55 * uK) + 0.004;
-    float prof = d > 0.0 ? exp(-d * d / (th * th * 0.22)) : exp(d / (th * 1.5));
+    float prof = d > 0.0 ? exp(-d * d / (th * th * 0.22)) : exp(d / (th * uTrail));
     float core = exp(-d * d / (th * th * 0.035));
     float n = vn(vec2(ang * 2.5 + uSeed, uK * 3.0)) * 0.6 + vn(vec2(ang * 11.0 + uSeed * 3.0, 4.0)) * 0.55 + 0.35;
     float spokes = mix(1.0, n, uNoise);
-    float fade = pow(1.0 - uK, 1.3) * smoothstep(0.0, 0.04, uK + 0.04);
+    float fade = mix(pow(1.0 - uK, 1.3) * smoothstep(0.0, 0.04, uK + 0.04), 1.0, uHold);
     vec3 c = uColor * uHdr * prof * spokes + vec3(1.0, 0.97, 0.9) * core * 1.2 * spokes;
     float a = clamp((prof * 0.85 + core) * spokes, 0.0, 1.0) * fade * uAlpha;
     if (a < 0.003) discard;
     gl_FragColor = vec4(c, a);
   }`;
 export function ringMaterial() {
-  return mat(PASS_VS, RING_FS, { uColor: col(), uK: num(), uR0: num(0.05), uThick: num(0.07), uAlpha: num(1), uHdr: num(1.6), uNoise: num(0.4), uSeed: num(0), uEase: num(2.6) },
+  return mat(PASS_VS, RING_FS, { uColor: col(), uK: num(), uR0: num(0.05), uThick: num(0.07), uAlpha: num(1), uHdr: num(1.6), uNoise: num(0.4), uSeed: num(0), uEase: num(2.6), uTrail: num(1.2), uHold: num(0) },
     { polygonOffset: true });
 }
 
@@ -206,11 +206,11 @@ const RIFT_FS = /* glsl */`
     if (d > 0.22) discard;
     float inside = smoothstep(0.02, -0.03, d);
     float sw = fbm(vec2(ang * 1.6 + r * 6.0 - uTime * 1.6, r * 3.0 + uTime * 0.4));
-    float void_ = (0.35 + 0.65 * (1.0 - r / max(R, 0.01))) * inside;
-    float rim = exp(-d * d / 0.0030) * (0.55 + 0.9 * sw);
+    float void_ = (0.7 + 0.3 * (1.0 - r / max(R, 0.01))) * inside;
+    float rim = exp(-d * d / 0.0060) * (0.6 + 1.1 * sw);
     float halo = exp(-max(d, 0.0) * 12.0) * step(0.0, d) * 0.7;
-    vec3 c = vec3(0.01, 0.03, 0.02) * void_ + uColor * uHdr * (rim * 1.7 + halo * 0.8 + inside * sw * sw * 0.8);
-    float a = clamp(void_ * 0.92 + rim + halo * 0.6 + inside * sw * 0.4, 0.0, 1.0) * uAlpha;
+    vec3 c = vec3(0.0, 0.012, 0.006) * void_ + uColor * uHdr * (rim * 2.0 + halo * 0.9 + inside * sw * sw * 0.55 * smoothstep(0.5, 1.0, r / max(R, 0.01)));
+    float a = clamp(void_ * 0.97 + rim + halo * 0.6, 0.0, 1.0) * uAlpha;
     gl_FragColor = vec4(c, a);
   }`;
 export function riftMaterial() {
@@ -276,4 +276,49 @@ const OVERLAY_FS = /* glsl */`
   }`;
 export function overlayMaterial() {
   return mat(PASS_VS, OVERLAY_FS, { uColor: col(0xff2a1a), uAmt: num(0), uHole: num(0.45) }, { depthTest: false });
+}
+
+// ---------------------------------------------------------------------------------------------
+// Danger disc: hazard-striped filled zone with an advancing wavefront (boss slam telegraph)
+// ---------------------------------------------------------------------------------------------
+const DISC_FS = /* glsl */`
+  uniform vec3 uColor; uniform float uK; uniform float uTime; uniform float uAlpha;
+  varying vec2 vUv;
+  void main(){
+    vec2 p = vUv * 2.0 - 1.0; float r = length(p);
+    if (r > 1.0) discard;
+    float stripes = smoothstep(0.38, 0.5, abs(fract((p.x * 0.8 + p.y) * 4.5 - uTime * 0.3) - 0.5));
+    float front = uK * 0.96;
+    float filled = smoothstep(front, front - 0.1, r);
+    float fill = (0.05 + 0.16 * uK) * (0.55 + 0.45 * stripes) * (0.6 + 0.9 * filled);
+    float edge = exp(-pow((r - 0.985) / 0.018, 2.0)) * (0.7 + 0.4 * uK);
+    float wave = exp(-pow((r - front) / 0.028, 2.0)) * 1.0;
+    float vign = smoothstep(0.25, 1.0, r) * 0.07 * (0.5 + uK);
+    float g = fill + edge + wave + vign;
+    gl_FragColor = vec4(uColor * (fill * 1.5 + edge * 1.5 + wave * 1.8 + vign), clamp(g, 0.0, 1.0) * uAlpha);
+  }`;
+export function discMaterial() {
+  return mat(PASS_VS, DISC_FS, { uColor: col(0xff2a1a), uK: num(0), uTime: num(0), uAlpha: num(1) }, { polygonOffset: true });
+}
+
+// ---------------------------------------------------------------------------------------------
+// Target ring: animated dashed glowing selection ring, projected on the ground
+// ---------------------------------------------------------------------------------------------
+const TARGET_FS = /* glsl */`
+  uniform vec3 uColor; uniform float uTime; uniform float uAlpha; uniform float uDash;
+  varying vec2 vUv;
+  void main(){
+    vec2 p = vUv * 2.0 - 1.0; float r = length(p); float a = atan(p.y, p.x);
+    float band = exp(-pow((r - 0.86) / 0.04, 2.0));
+    float glow = exp(-pow((r - 0.86) / 0.13, 2.0)) * 0.4;
+    float dash = smoothstep(0.30, 0.52, sin(a * uDash + uTime * 1.7) * 0.5 + 0.5);
+    float dash2 = smoothstep(0.55, 0.7, sin(a * uDash * 2.0 - uTime * 2.6) * 0.5 + 0.5);
+    float outer = exp(-pow((r - 0.975) / 0.012, 2.0)) * (0.25 + 0.4 * dash2);
+    float ticks = pow(abs(cos(a * 2.0 + uTime * 0.6)), 30.0) * smoothstep(0.58, 0.64, r) * smoothstep(0.80, 0.74, r);
+    float pulse = 0.85 + 0.15 * sin(uTime * 4.0);
+    float g = (band * (0.25 + 0.75 * dash) + outer + ticks * 0.8) * pulse + glow * pulse;
+    gl_FragColor = vec4(uColor * (g * 2.0) + vec3(1.0, 0.9, 0.85) * band * dash * 0.5, clamp(g, 0.0, 1.0) * uAlpha);
+  }`;
+export function targetMaterial() {
+  return mat(PASS_VS, TARGET_FS, { uColor: col(0xff4d3a), uTime: num(0), uAlpha: num(1), uDash: num(14) }, { polygonOffset: true });
 }

@@ -86,7 +86,8 @@ export function createText(stage, scene) {
   let rngSeq = 1; const rng = mulberry32(1234);
   const _q = new THREE.Quaternion(); const _v = new THREE.Vector3(); const _cp = new THREE.Vector3();
 
-  function damageNumber(pos, text, { kind = 'dmg', size = 1, delay = 0, seed } = {}) {
+  function damageNumber(pos, text, { kind = 'dmg', size = 1, delay = 0, seed, avoid = true } = {}) {
+    const o_avoid = avoid;
     let slot = pool.find((p) => !p.busy);
     if (!slot) { slot = pool.reduce((a, b) => (a.t > b.t ? a : b)); }
     const st = STYLES[kind] || STYLES.dmg;
@@ -98,7 +99,7 @@ export function createText(stage, scene) {
     for (const o of pool) if (o.busy && o !== slot && o.t < 0.5 && o.base.distanceToSquared(p) < 0.8) stack++;
     slot.base.y += stack * 0.45 * size;
     const r = seed != null ? mulberry32(seed) : rng; rngSeq++;
-    slot.dx = (r() - 0.5) * 0.9; slot.dxz = (r() - 0.5) * 0.3;
+    slot.dx = (r() < 0.5 ? -1 : 1) * (0.25 + r() * 0.55); slot.dxz = (r() - 0.5) * 0.3; slot.avoid = o_avoid;
     slot.rise = st.rise * (0.9 + r() * 0.25); slot.size = st.size * size; slot.hdr = st.hdr; slot.life = st.life; slot.kind = kind;
     slot.t = -delay; slot.busy = true; slot.crit = kind === 'crit'; slot.m.opacity = 0; slot.mesh.visible = false; slot.rot = (r() - 0.5) * 0.18;
     return new Promise((res) => stage.wait(delay + 0.08).then(res));
@@ -128,7 +129,8 @@ export function createText(stage, scene) {
       const unit = (dist / 11) * phone; // keep a stable on-screen size at any camera distance
       const h = 1.15 * s.size * unit * sc;
       s.mesh.scale.set(h * 2, h, 1);
-      _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, rise * unit, s.dxz * t).add(s.base);
+      // nameplates sit above the head: start the number at chest height and fan it sideways so it never rises into the plate
+      _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, (rise * (s.avoid ? 0.7 : 1) - (s.avoid ? 0.55 : 0)) * unit, s.dxz * t).add(s.base);
       if (s.crit && t < 0.25) { _v.x += Math.sin(t * 150) * 0.03 * unit; _v.y += Math.cos(t * 130) * 0.02 * unit; }
       s.mesh.position.copy(_v);
       s.mesh.quaternion.copy(_q); s.mesh.rotateZ(s.rot * (t < 0.2 ? 1 - t / 0.2 : 0) + s.rot * 0.3);

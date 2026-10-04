@@ -10,7 +10,7 @@ import { Emitter } from './fx.js';
 import { waterMaterial } from './ground.js';
 import { barrel, crate, skull, bone, ribcage, brazier, ruinWall, toppledCart, fenceRun, wagon, steppingStone, wheel } from './props.js';
 
-const LOOK = (o) => ({ bloom: 0.85, bloomRadius: 0.6, bloomThreshold: 0.78, vignette: 0.5, sat: 1.1, contrast: 1.1, tilt: 0.12, focusY: 0.5, grain: 0.04, exposure: 1.0, shadowTint: 0xdbf0ff, highTint: 0xfff0dc, aberration: 0.0014, ...o });
+const LOOK = (o) => ({ bloom: 0.45, bloomRadius: 0.5, bloomThreshold: 1.05, vignette: 0.5, sat: 1.1, contrast: 1.1, tilt: 0.1, focusY: 0.5, grain: 0.04, exposure: 1.0, shadowTint: 0xdbf0ff, highTint: 0xfff0dc, aberration: 0.0004, ...o });
 const ENV = (top, hor, gnd, warm, cold) => ({ top, horizon: hor, ground: gnd, lights: [{ color: warm, intensity: 14, pos: [-6, 3, 4], size: 4 }, { color: cold, intensity: 7, pos: [5, 6, -6], size: 5 }, { color: 0xffffff, intensity: 1.2, pos: [0, 9, 0], size: 5 }] });
 
 // ---- shared bits ------------------------------------------------------------------------------------

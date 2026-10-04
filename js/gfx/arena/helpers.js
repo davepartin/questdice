@@ -98,6 +98,7 @@ export function placeTrees(c, variants, positions, { material, scale = [0.85, 1.
     const s = rr(c.rng, scale[0], scale[1]) * (sMul || 1);
     const k = 1 - tintVar * c.rng();
     lists[v].push({ p: [x, c.hAt(x, z) - 0.08, z], r: c.rng() * 6.28, s, c: new THREE.Color(k, k * 0.98, k * 0.96), v });
+    if (Math.abs(x) < 18 && z > -30) c.blobs.push({ p: [x, z], s: [2.2 * s, 2.0 * s], a: 0.6, y: c.hAt(x, z) });
   });
   const meshes = variants.map((g, i) => {
     const near = lists[i].filter((it) => Math.abs(it.p[0]) < 13 && it.p[2] > -14);

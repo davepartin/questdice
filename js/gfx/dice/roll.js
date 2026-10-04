@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
 import { restQuat } from './poly.js';
 
-export const ROLL = { g: 30, h: 1 / 240, pick: 0.12, phys: 1.08, restitution: 0.38, mu: 0.6, dishDepth: 0.055 };
+export const ROLL = { g: 30, h: 1 / 240, pick: 0.12, phys: 1.08, restitution: 0.46, mu: 0.6, dishDepth: 0.055 };
 
 const _q = new THREE.Quaternion(); const _q2 = new THREE.Quaternion();
 
@@ -59,7 +59,7 @@ function simulate(P) {
           // contact point velocity
           const cvx = vx + (wy * rz - wz * ry); const cvy = vy + (wz * rx - wx * rz); const cvz = vz + (wx * ry - wy * rx);
           if (cvy < 0) {
-            const e = -cvy < 1.4 ? 0 : e0;
+            const e = -cvy < 1.0 ? 0 : e0;
             const k = invM + invI * (rx * rx + rz * rz);
             const j = -(1 + e) * cvy / k;
             vy += j * invM; wx += invI * (-rz * j); wz += invI * (rx * j);

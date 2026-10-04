@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { Actor } from './base.js';
 import { mat, solid } from '../mats.js';
 import { sinT, ramp01 } from '../rig.js';
-import { Field, shellField, unionField, meshField, Merge, Puffs, place, solveArm, withEvents, own, rng as mkRng, smoothstep } from './parts2.js';
+import { addRim, Field, shellField, unionField, meshField, Merge, Puffs, place, solveArm, withEvents, own, rng as mkRng, smoothstep } from './parts2.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const D = Math.PI / 180;
@@ -65,13 +65,14 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const chain2 = jt('chain2', chain, 0.92, 0.38, 0.2);
 
   // ---------------------------------------------------------------- materials
-  const skin = mat('ogreHideB', { vertexColors: true, roughness: 0.95 });
+  const skin = mat('ogreHideB', { vertexColors: true, roughness: 0.9, physical: true, clearcoat: 0.18, clearcoatRoughness: 0.45 });
+  const skinWet = mat('ogreHideB', { vertexColors: true, roughness: 0.55, physical: true, clearcoat: 0.8, clearcoatRoughness: 0.2 });
   const bone = mat('bone', { vertexColors: true, roughness: 0.85 });
-  const iron = mat('iron', { vertexColors: true, roughness: 1.2, side: THREE.DoubleSide });
   const rust = mat('rust', { vertexColors: true, roughness: 1.0, side: THREE.DoubleSide });
+  const iron = rust; // one metal material (draw-call budget)
   const leather = mat('leatherDark', { vertexColors: true, side: THREE.DoubleSide });
   const hairM = mat('furDark', { vertexColors: true, side: THREE.DoubleSide });
-  const cloth = mat('cloth', { vertexColors: true, side: THREE.DoubleSide, tint: 0xa89a78, dark: 0x4a3e28 });
+  const cloth = leather;
   const barkM = mat('bark', { vertexColors: true, roughness: 1 });
   const eyeM = solid(0xffa626, { rough: 0.3, emissive: 0xff7a10, ei: 1.1 });
   const pupilM = solid(0x0a0604, { rough: 0.3 });
@@ -96,7 +97,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     f.ell([0, 1.28, 0.34], [0.5, 0.3, 0.46], { k: 0.15, tint: SKIN.belly, tw: 0.8 });
     f.ell([0, 1.55, -0.18], [0.55, 0.42, 0.38], { k: 0.2 });
     f.sph([-0.55, 1.45, 0.0], 0.3, { k: 0.2 }).sph([0.55, 1.45, 0.0], 0.3, { k: 0.2 });
-    f.sph([0, 1.5, 0.88], 0.05, { sub: true, k: 0.05 });
+    f.sph([0, 1.5, 0.88], 0.05, { sub: true, k: 0.05 }); f.cap([-0.5, 1.28, 0.7], [0.5, 1.26, 0.74], 0.022, 0.022, { sub: true, k: 0.05 }); f.cap([-0.55, 1.62, 0.6], [0.55, 1.6, 0.64], 0.02, 0.02, { sub: true, k: 0.05 });
     f.stain([0, 1.5, 0.9], 0.16, 0x3a2a1c, 0.55);
     mesh('belly', f, spine, { h: 0.04 }); }
   { const f = new Field(lump);
@@ -106,28 +107,30 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     f.cap([0, 2.3, -0.15], [-0.72, 2.2, -0.04], 0.26, 0.28, { k: 0.15 }).cap([0, 2.3, -0.15], [0.72, 2.2, -0.04], 0.26, 0.28, { k: 0.15 });
     f.cap([0, 2.25, 0.02], [0, 2.52, 0.26], 0.3, 0.22, { k: 0.15 });
     f.ell([0, 1.95, -0.25], [0.7, 0.5, 0.35], { k: 0.2 });
+    f.ell([0, 2.42, -0.05], [0.52, 0.3, 0.36], { k: 0.2 }); f.sph([-0.42, 2.38, 0.0], 0.28, { k: 0.2 }); f.sph([0.4, 2.36, 0.02], 0.3, { k: 0.2 });
     mesh('chest', f, chest, { h: 0.04 }); }
   // --- head (cranium, snout, nose, cheeks, ears) ; brows and jaw are separate so they can animate
   { const f = new Field({ ...lump, lump: 0.006, lumpFreq: 9 });
     f.ell([C[0], C[1] + 0.04, C[2] - 0.04], [0.27, 0.25, 0.27], { k: 0.1 });
+    f.ell([0, C[1] - 0.06, C[2] + 0.35], [0.085, 0.075, 0.08], { k: 0.05, tint: 0xe0a090, tw: 0.8 });
     for (const sx of [-1, 1]) {
       f.sph([sx * 0.2, C[1] - 0.07, C[2] + 0.18], 0.1, { k: 0.08 });
       f.sph([sx * 0.115, C[1] + 0.0, C[2] + 0.25], 0.062, { sub: true, k: 0.03 });
-      f.ell([sx * 0.3, C[1] + 0.02, C[2] - 0.02], [0.045, 0.14, 0.09], { k: 0.05, rot: [0, 0, sx * -0.2] });
+      f.ell([sx * 0.3, C[1] + 0.02, C[2] - 0.02], [0.045, 0.14, 0.09], { k: 0.05, rot: [0, 0, sx * -0.2], tint: 0xe0a090, tw: 0.8 });
       f.sph([sx * 0.045, C[1] - 0.115, C[2] + 0.43], 0.03, { sub: true, k: 0.02 });
     }
     f.ell([0, C[1] - 0.1, C[2] + 0.22], [0.17, 0.11, 0.13], { k: 0.08 });
     f.ell([0, C[1] - 0.06, C[2] + 0.35], [0.085, 0.075, 0.08], { k: 0.05 });
-    mesh('head', f, head, { h: 0.019, aoSamples: [0.03, 0.07, 0.15] }); }
+    mesh('head', f, head, { mat: skinWet, h: 0.019, aoSamples: [0.03, 0.07, 0.15] }); }
   { const f = new Field({ ...lump, lump: 0.006, lumpFreq: 9 });
     f.ell([0, C[1] - 0.22, C[2] + 0.27], [0.2, 0.11, 0.15], { k: 0.08 });
     for (const sx of [-1, 1]) f.cap([sx * 0.2, C[1] - 0.12, C[2] + 0.02], [sx * 0.12, C[1] - 0.22, C[2] + 0.34], 0.07, 0.08, { k: 0.06 });
-    mesh('jaw', f, jaw, { h: 0.019 }); }
+    mesh('jaw', f, jaw, { h: 0.019, mat: skinWet }); }
   for (const [S, sx] of Object.entries(side)) {
     { const f = new Field({ ...lump, lump: 0.006, lumpFreq: 9 });
       f.cap([sx * 0.265, C[1] + 0.085, C[2] + 0.17], [sx * 0.04, C[1] + 0.05, C[2] + 0.27], 0.07, 0.075, { k: 0.06 });
       f.sph([sx * 0.2, C[1] + 0.1, C[2] + 0.17], 0.075, { k: 0.05 });
-      mesh('brow' + S, f, J['brow' + S], { h: 0.014, aoSamples: [0.03, 0.07, 0.15] }); }
+      mesh('brow' + S, f, J['brow' + S], { mat: skinWet, h: 0.014, aoSamples: [0.03, 0.07, 0.15] }); }
     { const f = new Field(lump);
       f.sph([sx * 0.92, 2.12, 0], 0.36, { k: 0.1 });
       f.cap([sx * 0.92, 2.1, 0], [sx * 0.92, 1.32, 0], 0.3, 0.22, { k: 0.1 });
@@ -137,8 +140,9 @@ export function create({ seed = 1, quality = 'high' } = {}) {
       f.sph([sx * 0.92, 1.3, 0], 0.22, { k: 0.05 });
       f.cap([sx * 0.92, 1.3, 0], [sx * 0.92, 0.5, 0.04], 0.24, 0.17, { k: 0.1 });
       f.ell([sx * 0.92, 1.0, 0.05], [0.24, 0.3, 0.22], { k: 0.1 });
-      f.ell([sx * 0.92, 0.34, 0.06], [0.2, 0.2, 0.22], { k: 0.08, tint: SKIN.dark, tw: 0.5 });
-      for (let i = 0; i < 4; i++) f.sph([sx * 0.92 + (i - 1.5) * 0.085, 0.4 - Math.abs(i - 1.5) * 0.015, 0.27], 0.065, { k: 0.04, tint: SKIN.dark, tw: 0.6 });
+      for (const dx of [-0.08, 0.0, 0.08]) f.cap([sx * 0.92 + dx, 0.95, -0.12], [sx * 0.92 + dx * 0.6, 0.55, -0.06], 0.02, 0.016, { k: 0.04 });
+      f.ell([sx * 0.92, 0.34, 0.06], [0.2, 0.2, 0.22], { k: 0.08, tint: 0xd49a88, tw: 0.7 });
+      for (let i = 0; i < 4; i++) { const fx = sx * 0.92 + (i - 1.5) * 0.085; f.cap([fx, 0.42 - Math.abs(i - 1.5) * 0.015, 0.2], [fx, 0.3 - Math.abs(i - 1.5) * 0.01, 0.31], 0.052, 0.042, { k: 0.02, tint: 0xcf8f80, tw: 0.8 }); }
       f.cap([sx * 0.76, 0.5, 0.2], [sx * 0.8, 0.34, 0.26], 0.06, 0.06, { k: 0.05 });
       mesh('fore' + S, f, J['el' + S], { h: 0.035 }); }
     { const f = new Field(lump);
@@ -148,13 +152,13 @@ export function create({ seed = 1, quality = 'high' } = {}) {
       mesh('thigh' + S, f, J['hip' + S], { h: 0.04 }); }
     { const f = new Field(lump);
       f.sph([sx * 0.42, 0.66, 0.08], 0.22, { k: 0.05 });
-      f.cap([sx * 0.42, 0.66, 0.08], [sx * 0.42, 0.16, 0.0], 0.22, 0.14, { k: 0.1 });
+      f.cap([sx * 0.42, 0.66, 0.08], [sx * 0.42, 0.16, 0.0], 0.22, 0.14, { k: 0.1, tint: 0x8a9a80, tw: 0.7 });
       f.ell([sx * 0.42, 0.45, -0.1], [0.2, 0.2, 0.18], { k: 0.1 });
       mesh('shin' + S, f, J['kn' + S], { h: 0.035 }); }
     { const f = new Field({ ...lump, lump: 0.008 });
       f.sph([sx * 0.42, 0.15, 0], 0.15, { k: 0.05 }).ell([sx * 0.42, 0.1, -0.1], [0.17, 0.1, 0.14], { k: 0.08 });
       f.ell([sx * 0.42, 0.09, 0.2], [0.24, 0.09, 0.3], { k: 0.08 });
-      for (let i = 0; i < 4; i++) { const ox = (i - 1.5) * 0.11; f.cap([sx * 0.42 + ox, 0.09, 0.42], [sx * 0.42 + ox * 1.25, 0.065, 0.58 - Math.abs(i - 1.5) * 0.03], 0.07, 0.06, { k: 0.04 }); }
+      for (let i = 0; i < 5; i++) { const ox = (i - 2) * 0.085 - sx * 0.01; const big = i === (sx < 0 ? 4 : 0); f.cap([sx * 0.42 + ox, 0.09, 0.42], [sx * 0.42 + ox * 1.2, 0.06, 0.58 - Math.abs(i - 2) * 0.03], big ? 0.07 : 0.052, big ? 0.06 : 0.044, { k: 0.03 }); }
       mesh('foot' + S, f, J['ft' + S], { h: 0.03 }); }
   }
 
@@ -413,6 +417,12 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     M.strand(club, leather, A3(V(0.07, 0.0, 0.02).applyMatrix4(Mw)), A3(V(0.2, -1, 0.3).transformDirection(Mw)), 0.34, 0.008, { rings: 4, radial: 3, r1: 0.9, color: 0x1a120c, bend: A3(V(0.05, -0.2, 0.0).transformDirection(Mw)) });
   }
 
+  // finger and toe nails
+  for (const [S, sx] of Object.entries(side)) {
+    for (let i = 0; i < 4; i++) { const fx = sx * 0.92 + (i - 1.5) * 0.085; M.strand(J['el' + S], bone, [fx, 0.285 - Math.abs(i - 1.5) * 0.01, 0.325], [0, -0.5, 1], 0.035, 0.03, { rings: 1, radial: 5, r1: 0.5, color: 0x6a5a40 }); }
+    for (let i = 0; i < 5; i++) { const ox = (i - 2) * 0.085 - sx * 0.01; M.strand(J['ft' + S], bone, [sx * 0.42 + ox * 1.2, 0.075, 0.6 - Math.abs(i - 2) * 0.03], [0, 0.1, 1], 0.045, 0.03, { rings: 1, radial: 5, r1: 0.4, color: 0x4a3c28 }); }
+  }
+
   M.build();
 
 
@@ -536,7 +546,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     apply(P, track([[0, STAND], [0.42, back, 'io'], [0.58, back, 'io'], [0.78, through, 'in2'], [0.92, through, 'out'], [1.5, STAND, 'io']], t));
   } };
   // ---- slam: the devastating follow-through (hit + shake at 1.55 s)
-  clips.slam = { dur: 2.7, events: { hit: 1.55, shake: 1.55 }, fn: (t, P) => {
+  clips.slam = { dur: 2.7, events: { hit: 1.55, shake: 1.55, crack: 1.55 }, fn: (t, P) => {
     const top = windup(1.1, 1); const rear = mk(windup(1.15, 1.2), { spine: [-24, 0, 0], chest: [-26, 0, 0], 'clubFree.p': [-0.04, 3.45, -0.2], clubFree: [-42, 0, -2], head: [-42, 0, 0], jaw: [80, 0, 0] });
     const hitP = clubDown({ spine: [34, 0, 0], chest: [26, 0, 0], head: [16, 0, 0], 'hips.p': [0, -0.32, 0.26], knL: [44, 0, 0], knR: [44, 0, 0], hipL: [-26, 0, 2], hipR: [-26, 0, -2], 'clubFree.p': [0, 0.95, 1.1] });
     apply(P, track([[0, STAND], [0.7, top, 'io'], [1.2, rear, 'io'], [1.55, hitP, 'in2'], [1.66, mk(hitP, { 'hips.p': [0, -0.36, 0.28], spine: [38, 0, 0] }), 'out'], [2.15, mk(hitP, { spine: [30, 0, 0], head: [8, 0, 0], jaw: [10, 0, 0], 'ch2.p': [-0.28, 0.9, 0.7] }), 'io'], [2.7, STAND, 'io']], t));
@@ -544,7 +554,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     const imp = t > 1.55 && t < 2.2 ? Math.exp(-(t - 1.55) * 5) * sinT(t - 1.55, 7) : 0; P.rot('spine', imp * 0.07, 0, 0); P.rot('head', imp * 0.1, 0, 0); P.pos('hips', 0, imp * 0.04, 0);
   } };
   // ---- stomp: lift the right leg, hold, stamp (hit + shake at 0.9 s)
-  clips.stomp = { dur: 1.6, events: { hit: 0.9, shake: 0.9 }, fn: (t, P) => {
+  clips.stomp = { dur: 1.6, events: { hit: 0.9, shake: 0.9, crack: 0.9 }, fn: (t, P) => {
     const up = mk(STAND, { spine: [-6, 0, -6], chest: [-8, 0, -8], neck: [-6, 0, 0], head: [-8, 0, 0], jaw: [38, 0, 0], 'hips.p': [0.2, 0.0, 0], hips: [0, 0, 6], hipR: [-84, 0, -6], knR: [96, 0, 0], ftR: [30, 0, 0], hipL: [2, 0, 4], knL: [8, 0, 0],
       shL: [-30, 0, 55], elL: [-20, 0, 0], shR: [-25, 0, -48], elR: [-45, 0, 0], clubPitch: [20, 0, 0], browL: [0, 0, 20], browR: [0, 0, -20], lidL: [0.6, 0, 0], lidR: [0.6, 0, 0], 'ch2.p': [-0.28, 0.7, 0.5] });
     const down = mk(up, { spine: [18, 0, 0], chest: [14, 0, 0], head: [10, 0, 0], jaw: [20, 0, 0], 'hips.p': [0.1, -0.28, 0.1], hips: [0, 0, 2], hipR: [-34, 0, -6], knR: [44, 0, 0], ftR: [-6, 0, 0], hipL: [-8, 0, 4], knL: [22, 0, 0], shL: [-45, 0, 38], shR: [-35, 0, -36], clubPitch: [58, 0, 0] });
@@ -611,7 +621,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     club.getWorldPosition(wv); const hv = wv.clone().sub(prev.hand).divideScalar(dt); const ha = hv.clone().sub(prev.hav); prev.hand.copy(wv); prev.hav.copy(hv);
     if (!prev.init) { prev.init = true; ca.set(0, 0, 0); ha.set(0, 0, 0); }
     const kick = (n, v) => { const s = sp(n, 90, 5); s.kick(Math.max(-9, Math.min(9, v))); return s.x; };
-    const bellyS = kick('belly', -ca.y * 0.9); const bellyZ = kick('bellyz', -ca.z * 0.5);
+    const br = Math.sin((a.t / 3.2) * 6.283); const bellyS = kick('belly', -ca.y * 0.9) + br * 0.9; const bellyZ = kick('bellyz', -ca.z * 0.5);
     spine.scale.set(1 + bellyS * 0.012, 1 + bellyS * 0.03, 1 - bellyS * 0.01 + bellyZ * 0.01);
     chest.rotation.x += kick('chestx', -ca.y * 0.2) * 0.006;
     head.rotation.x += kick('headx', ca.y * 0.8) * 0.01 - kick('headz', ca.z * 0.8) * 0.01; head.rotation.y += kick('heady', ca.x * 0.8) * 0.01;
@@ -646,6 +656,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
-  // dissolve-friendly: eyes keep their glow but follow the base class flash
+  addRim(a, { col: 0xff5a30, k: 0.55, pow: 2.6, skip: (m) => m === own(a, eyeM) }); // warm fake-SSS rim
   return a;
 }

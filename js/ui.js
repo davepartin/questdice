@@ -816,4 +816,4 @@ export async function boot() {
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
   await bootNet(showTitle);
 }
-export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR };
+export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory };

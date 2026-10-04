@@ -15,11 +15,11 @@ const ICONS = {
   heal: '<path class="f" d="M9.4 3 H14.6 V9.4 H21 V14.6 H14.6 V21 H9.4 V14.6 H3 V9.4 H9.4 Z"/><path class="h" d="M10.6 5 V10.6 H5"/>',
   gold: '<circle class="f" cx="12" cy="12" r="9.2"/><circle class="s" cx="12" cy="12" r="6" style="stroke-opacity:.55"/><path class="s" d="M12 8.4 V15.6 M9.8 10.2 H13.4 C14.4 10.2 14.4 12 13.4 12 H10.6 C9.6 12 9.6 13.8 10.6 13.8 H14.2" style="stroke-width:1.2"/>',
   stagger: '<path class="f" d="M12 1.2 L14 8 L21 5 L16.5 11 L23 14 L15.6 15.2 L16 22.6 L12 17.4 L8 22.6 L8.4 15.2 L1 14 L7.5 11 L3 5 L10 8 Z"/>',
-  bind: `<g transform="rotate(-40 12 12)"><rect class="f" x="1.8" y="8.6" width="11.4" height="6.8" rx="3.4"/><rect class="f" x="10.8" y="8.6" width="11.4" height="6.8" rx="3.4"/></g>`,
+  bind: '<g transform="rotate(-40 12 12)"><rect class="s" x="1.8" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/><rect class="s" x="10.6" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/></g>',
   drain: '<path class="f" d="M15.4 2.6 A9.6 9.6 0 1 0 21.6 15.8 A7.6 7.6 0 0 1 15.4 2.6 Z"/><path class="h" d="M11 5.4 A7 7 0 0 0 8 12"/>',
   pilfer: '<path class="f" d="M8.8 3 H15.2 L13.9 7 C17.8 8.8 20 12.8 20 16.2 C20 19.8 16.6 21.8 12 21.8 C7.4 21.8 4 19.8 4 16.2 C4 12.8 6.2 8.8 10.1 7 Z"/><path class="s" d="M9.4 7 H14.6"/><path class="h" d="M7 15.5 C7 13.5 8 12 9.5 11"/><circle class="p" cx="12" cy="15.8" r="1.6"/>',
   howl: '<path class="f" d="M2.6 9.6 V14.4 H6.8 L14.2 19.4 V4.6 L6.8 9.6 Z"/><path class="s" d="M17.4 8.6 C19 10.2 19 13.8 17.4 15.4 M19.8 5.8 C22.6 9 22.6 15 19.8 18.2"/>',
-  summon: '<ellipse class="f" cx="12" cy="12" rx="6.4" ry="9.6"/><ellipse class="s" cx="12" cy="12" rx="3" ry="5.6" style="stroke-opacity:.7"/><path class="p" d="M12 10.6 L12.7 11.3 L12 12 L11.3 11.3 Z"/><path class="s" d="M3 5 L4.4 6.4 M21 5 L19.6 6.4 M3 19 L4.4 17.6 M21 19 L19.6 17.6"/>',
+  summon: '<circle class="f" cx="12" cy="12" r="9.4"/><path class="s" d="M12 6.2 C16.4 6.2 18 11 15 13.6 C12.6 15.6 9 14 9.4 11 C9.7 9 12.2 8.6 13.2 10.2"/><path class="p" d="M12 11.4 L12.5 12 L12 12.6 L11.5 12 Z"/>',
   windup: '<path class="f" d="M13.8 1.8 L4.8 13.6 H11 L9.6 22.2 L19.4 9.8 H12.8 Z"/><path class="h" d="M13 5 L8.4 11"/>',
   slam: '<path class="f" d="M12 1.6 L14.6 7.6 L21 6.4 L17 11.6 L22 15 L15.4 15.6 L12 21.6 L8.6 15.6 L2 15 L7 11.6 L3 6.4 L9.4 7.6 Z"/><path class="s" d="M12 7 V15 M9 12.4 L12 15.4 L15 12.4" style="stroke-width:1.9"/>',
   heart: '<path class="f" d="M12 21.2 C5 15.6 2.4 12.2 2.4 8.6 C2.4 5.6 4.7 3.6 7.4 3.6 C9.4 3.6 11.2 4.7 12 6.3 C12.8 4.7 14.6 3.6 16.6 3.6 C19.3 3.6 21.6 5.6 21.6 8.6 C21.6 12.2 19 15.6 12 21.2 Z"/><path class="h" d="M6 8.4 C6 7 7 6 8.3 6"/>',
@@ -33,10 +33,10 @@ const ICONS = {
   weaken: '<path class="f" d="M12 21.6 L4 12.8 H8.6 V3 H15.4 V12.8 H20 Z"/>',
   chev: '<path class="f" d="M12 18.4 L3.6 7 H20.4 Z"/>',
   // class glyphs
-  knight: '<path class="f" d="M4.6 21.4 V11 C4.6 6.4 7.6 3.2 12 3.2 C16.4 3.2 19.4 6.4 19.4 11 V21.4 Z"/><path class="s" d="M7.6 12.6 H16.4" style="stroke-width:2"/><path class="h" d="M12 4.4 V11.4"/>',
+  knight: '<path class="f" d="M5 20.6 V10.6 C5 6 8 3 12 3 C16 3 19 6 19 10.6 V20.6 L16 18.4 H8 Z"/><path class="s" d="M7.4 11 H16.6" style="stroke-width:2"/><path class="s" d="M12 11 V17"/><path class="h" d="M8 7 C9 5.4 10.4 4.6 12 4.6"/>',
   ranger: '<path class="s" d="M7 3.4 C16.4 6.6 16.4 17.4 7 20.6"/><path class="h" d="M7 3.4 V20.6"/><path class="s" d="M3.6 12 H21 M17.4 8.4 L21 12 L17.4 15.6"/>',
   wizard: '<path class="f" d="M12 2.2 L18.4 19 H5.6 Z"/><path class="s" d="M3 19.8 H21"/><path class="p" d="M12 8.6 L12.9 10.9 L15.2 11.8 L12.9 12.7 L12 15 L11.1 12.7 L8.8 11.8 L11.1 10.9 Z"/>',
-  dwarf: '<path class="s" d="M6.4 21.4 L16.4 6.6"/><path class="f" d="M12.6 4.2 C18.4 2.2 22 5.8 20.6 10.2 C18.8 11.6 16.8 11.6 15.2 10.4 Z"/><path class="h" d="M14.6 5.4 C17 4.6 19 5.4 19.8 7"/>',
+  dwarf: '<path class="s" d="M12 2.6 V21.4"/><path class="f" d="M12 5 C7 3.6 3.6 6.4 3.8 10.4 C6.4 11.8 9.6 11.6 12 10 Z"/><path class="f" d="M12 5 C17 3.6 20.4 6.4 20.2 10.4 C17.6 11.8 14.4 11.6 12 10 Z"/>',
   bard: '<path class="f" d="M9.6 11.6 C5.4 11.6 3.6 16 6 18.8 C8.4 21.6 13.8 20.8 15.2 16.4 C15.8 14.4 14.6 12.4 12.6 11.8 Z"/><path class="s" d="M13 12.6 L20.2 4.2 M18.6 2.8 L21.4 5.6"/><circle class="p" cx="9.6" cy="16" r="1.5"/>',
   note: '<path class="s" d="M9 18 V5 L19 3 V16"/><circle class="f" cx="6.8" cy="18" r="2.6"/><circle class="f" cx="16.8" cy="16" r="2.6"/>',
 };
@@ -85,16 +85,16 @@ export function intentView(e) {
   const r = rng(e);
   switch (i.v) {
     case 'strike': return i.slam
-      ? { tone: 'slam', shape: 'octagon', icon: 'slam', title: i.n || 'Slam', fig: r, unit: 'SLAM damage', hint: 'Block it, or burst the foe', call: { head: 'SLAM THIS ROUND', sub: 'brace with block' }, hazard: true }
-      : { tone: 'strike', shape: 'hex', icon: 'atk', title: i.n, fig: r, unit: 'damage', hint: 'block reduces it' };
-    case 'pierce': return { tone: 'pierce', shape: 'diamond', icon: 'pierce', title: i.n, fig: r, unit: 'piercing', hint: 'ignores block' };
-    case 'guard': return { tone: 'guard', shape: 'shield', icon: 'block', title: i.n, fig: r, unit: 'guard', hint: 'absorbs your non-pierce damage' };
+      ? { tone: 'slam', shape: 'octagon', icon: 'slam', title: i.n || 'Slam', fig: r, unit: 'dmg', hint: 'Block it, or burst the foe', call: { head: 'SLAM THIS ROUND', sub: 'brace with block' }, hazard: true }
+      : { tone: 'strike', shape: 'hex', icon: 'atk', title: i.n, fig: r, unit: 'dmg', hint: 'block reduces it' };
+    case 'pierce': return { tone: 'pierce', shape: 'diamond', icon: 'pierce', title: i.n, fig: r, unit: 'pierce', hint: 'ignores block' };
+    case 'guard': return { tone: 'guard', shape: 'shield', icon: 'block', title: i.n, fig: r, unit: 'guard', hint: 'soaks non-pierce dmg' };
     case 'mend': return { tone: 'mend', shape: 'circle', icon: 'heal', title: i.n, fig: r, unit: 'heal', hint: 'heals itself' };
-    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: `${e.staggerAt}+`, unit: 'dmg to break', hint: 'it does nothing this round', call: { head: 'SLAM NEXT ROUND', sub: `deal ${e.staggerAt} to break`, ico: 'stagger' }, hazard: true };
-    case 'howl': return { tone: 'howl', shape: 'circle', icon: 'howl', title: i.n, fig: `+${i.k}`, unit: 'to every strike', hint: 'the pack grows bolder' };
+    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: `${e.staggerAt}+`, unit: 'to break', hint: 'it does nothing this round', call: { head: 'SLAM NEXT ROUND', sub: `deal ${e.staggerAt} to break`, ico: 'stagger' }, hazard: true };
+    case 'howl': return { tone: 'howl', shape: 'circle', icon: 'howl', title: i.n, fig: `+${i.k}`, unit: 'all hits', hint: 'the pack grows bolder' };
     case 'bind': return { tone: 'bind', shape: 'circle', icon: 'bind', title: i.n, fig: `${i.k}`, unit: i.k > 1 ? 'dice locked' : 'die locked', hint: 'cannot be rerolled next round' };
-    case 'drain': return { tone: 'drain', shape: 'circle', icon: 'drain', title: i.n, fig: r, unit: 'damage', hint: `steals ${i.k} magic`, subIcon: 'magic' };
-    case 'pilfer': return { tone: 'pilfer', shape: 'hex', icon: 'pilfer', title: i.n, fig: r, unit: 'damage', hint: 'steals gold if it hits', subIcon: 'gold' };
+    case 'drain': return { tone: 'drain', shape: 'circle', icon: 'drain', title: i.n, fig: r, unit: 'dmg', hint: `steals ${i.k} magic`, subIcon: 'magic' };
+    case 'pilfer': return { tone: 'pilfer', shape: 'hex', icon: 'pilfer', title: i.n, fig: r, unit: 'dmg', hint: 'steals gold if it hits', subIcon: 'gold' };
     case 'summon': return { tone: 'summon', shape: 'circle', icon: 'summon', title: i.n, fig: `+${i.k}`, unit: i.k > 1 ? 'foes' : 'foe', hint: 'reinforcements next round' };
     default: return { tone: 'strike', shape: 'hex', icon: 'atk', title: i.n || '?', fig: r, unit: '', hint: '' };
   }
@@ -150,11 +150,11 @@ export function setGems(el, v) {
 
 // ------------------------------------------------------------------------------------------------ buttons
 // Premium call-to-action and secondary buttons. `kind`: cta | reroll | ghost | mini.
-export function button({ label, sub, icon: ic, onclick, kind = 'ghost', disabled = false, id, aria, cls = '' }) {
+export function button({ label, sub, icon: ic, onclick, kind = 'ghost', disabled = false, id, aria, cls = '', badge }) {
   const b = h('button', { class: `hb hb-${kind} ${cls}`, type: 'button', id, disabled, 'aria-label': aria || (typeof label === 'string' ? label : undefined) },
     ic ? h('span', { class: 'hb-ic' }, typeof ic === 'string' ? icon(ic) : ic) : null,
     label != null ? h('span', { class: 'hb-tx' }, h('b', {}, label), sub ? h('small', {}, sub) : null) : null,
-    h('i', { class: 'hb-shine' }));
+    badge || null, h('i', { class: 'hb-shine' }));
   b.addEventListener('pointerdown', () => { if (!b.disabled) { buzz(8); replay(b, 'press'); } });
   b.addEventListener('click', (e) => { if (b.disabled) return; const r = b.getBoundingClientRect(); b.style.setProperty('--rx', `${e.clientX - r.left}px`); b.style.setProperty('--ry', `${e.clientY - r.top}px`); onclick?.(e); });
   return b;

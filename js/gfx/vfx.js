@@ -149,6 +149,7 @@ export function createVfx(stage, opts = {}) {
     const u = slot.mesh.material.uniforms; const R = o.r ?? 1;
     u.uColor.value.set(o.color ?? 0xffffff); u.uThick.value = o.thick ?? 0.08; u.uHdr.value = o.hdr ?? 1.8; u.uNoise.value = o.noise ?? 0.35; u.uR0.value = o.r0 ?? 0.04;
     u.uSeed.value = (seedCounter % 997) * 0.37; u.uEase.value = o.ease ?? 2.6; u.uAlpha.value = o.alpha ?? 1; u.uK.value = 0;
+    u.uTrail.value = o.trail ?? (o.flat ? 1.5 : 0.55); u.uHold.value = o.hold ? 1 : 0; slot.manual = !!o.manual;
     slot.at = toV(o.at, slot.at || new THREE.Vector3()); slot.dur = o.dur ?? 0.5; slot.t = -(o.delay ?? 0); slot.cam = !o.flat; slot.busy = true;
     slot.mesh.scale.set(R, R, 1);
     if (o.flat) { slot.mesh.rotation.set(-Math.PI / 2, 0, 0); slot.mesh.position.set(slot.at.x, (o.y ?? groundY) + 0.03, slot.at.z); slot.mesh.renderOrder = 6; slot.mesh.material.depthTest = true; } else { slot.mesh.position.copy(slot.at); slot.mesh.material.depthTest = false; slot.mesh.renderOrder = 12; }
@@ -160,6 +161,7 @@ export function createVfx(stage, opts = {}) {
     for (let i = ringLive.length - 1; i >= 0; i--) {
       const s = ringLive[i]; s.t += dt;
       if (s.t < 0) continue;
+      if (s.manual) { s.mesh.visible = true; if (s.cam) s.mesh.quaternion.copy(_cq); continue; }
       if (s.t >= s.dur) { s.busy = false; s.mesh.visible = false; ringLive.splice(i, 1); continue; }
       s.mesh.visible = true; s.mesh.material.uniforms.uK.value = s.t / s.dur;
       if (s.cam) s.mesh.quaternion.copy(_cq);
@@ -261,6 +263,8 @@ export function createVfx(stage, opts = {}) {
   for (let i = 0; i < 3; i++) { const m = new THREE.Mesh(SH.shellGeo, SH.shellMaterial()); m.visible = false; m.frustumCulled = false; m.renderOrder = 8; scene.add(m); shellsP.push({ mesh: m, busy: false }); }
   for (let i = 0; i < 3; i++) { const m = new THREE.Mesh(SH.quadGeo, SH.glyphMaterial()); m.rotation.x = -Math.PI / 2; m.visible = false; m.frustumCulled = false; m.renderOrder = 5; scene.add(m); glyphs.push({ mesh: m, busy: false }); }
   for (let i = 0; i < 2; i++) { const m = new THREE.Mesh(SH.quadGeo, SH.riftMaterial()); m.rotation.x = -Math.PI / 2; m.visible = false; m.frustumCulled = false; m.renderOrder = 5; scene.add(m); rifts.push({ mesh: m, busy: false }); }
+  const discs = [];
+  for (let i = 0; i < 3; i++) { const m = new THREE.Mesh(SH.quadGeo, SH.discMaterial()); m.rotation.x = -Math.PI / 2; m.visible = false; m.frustumCulled = false; m.renderOrder = 4; scene.add(m); discs.push({ mesh: m, busy: false }); }
   // pillar({ at, color, r, h, dur, hdr, rise })
   function pillar(o) {
     const s = pillars.find((x) => !x.busy); if (!s) return null;
@@ -368,14 +372,52 @@ export function createVfx(stage, opts = {}) {
   // IMPACT: layered burst per material
   // ---------------------------------------------------------------------------------------------
   const _d = new THREE.Vector3(); const _p = new THREE.Vector3();
+  // ---------------------------------------------------------------------------------------------
+  // hit feel: white emissive flash on the struck actor, element-coloured burst, hit-stop, chromatic punch
+  // ---------------------------------------------------------------------------------------------
+  const ELEMENT = { fire: 0xff7a1a, ice: 0x8fe8ff, poison: 0x7ad03a, holy: 0xffe9a0, arcane: 0xb07dff, lightning: 0x9fc8ff, blood: 0xc01818, shadow: 0x7a3dff };
+  const elementColor = (o) => (o && o.element ? ELEMENT[o.element] : undefined);
+  const vfxOpts = { hitStop: opts.hitStop ?? true, chroma: opts.chroma ?? true };
+  const hitTarget = (t, delay = 0, color = 0xffffff) => { if (t && typeof t.flash === 'function') later(delay).then(() => t.flash(color, 0.95)); };
+  // the whole stage freezes for `ms` of wall-clock time (real-time only; manual mode never freezes)
+  function hitStop(ms) {
+    if (!vfxOpts.hitStop || stage.manual || stage.frozen || ms < 8) return;
+    stage.frozen = true; setTimeout(() => { stage.frozen = false; }, ms);
+  }
+  let punch = 0; let baseAb = null;
+  function chromaPunch(a) { if (vfxOpts.chroma && stage.post?.uniforms?.uAberration) punch = Math.max(punch, Math.min(1, a)); }
+  function updatePunch(dt) {
+    const u = stage.post?.uniforms?.uAberration; if (!u) return;
+    if (punch <= 0.002) { if (baseAb !== null) { u.value = baseAb; baseAb = null; } punch = 0; return; }
+    if (baseAb === null) baseAb = u.value;
+    u.value = baseAb + punch * 0.0075; punch *= Math.exp(-dt * 10);
+  }
+  function impactFeel(kind, pw) {
+    const heavy = { blunt: 1, fire: 1, stone: 0.7, pierce: 0.6, steel: 0.5, flesh: 0.5, claw: 0.5, magic: 0.4, shield: 0.3 }[kind] ?? 0.4;
+    chromaPunch(heavy * Math.min(1.3, pw) * 0.9);
+    if (kind === 'blunt') hitStop(70 + 20 * Math.min(1, pw - 1)); else if (kind === 'fire') hitStop(60); else if (pw >= 1.05 && (kind === 'flesh' || kind === 'steel' || kind === 'claw' || kind === 'pierce')) hitStop(45);
+  }
+  // extra element-coloured sparkle burst on top of the base hit
+  function elementBurst(p, color, pw, R) {
+    const c = new THREE.Color(color);
+    for (let i = 0; i < n(10 * pw); i++) {
+      const d = randDir(R, _d); const sp = R.rr(2, 6);
+      sys.star.emit({ pos: p, vel: [d.x * sp, d.y * sp + 0.8, d.z * sp], life: R.rr(0.4, 0.8), size: 0.2 * R.rr(0.6, 1.3), sizeEnd: 0.03, color: c, hdr: 2.4, alpha: 1, alphaEnd: 0, drag: 2, rot: R.r() * TAU, spin: R.pm(6), fade: 1.8 });
+    }
+    sparks(R, p, n(12 * pw), { color: lerpHex(color, 0xffffff, 0.4), colorEnd: color, speed: [3, 9], spread: 2, size: 0.05, life: [0.25, 0.55], grav: -3 });
+    ring({ at: p, color, r: 1.1 * pw, dur: 0.28, thick: 0.05, hdr: 2.2, noise: 0.2 });
+    lightFlash(p, color, 30 * pw, 0.25, 6);
+  }
+
   function burst(kind, p, power, o, R) {
     camBasis();
+    impactFeel(kind, power);
     const pw = power; const dirV = o.dirV || null;
     const onGround = p.y < 0.45;
     switch (kind) {
       case 'flesh': {
         const c = o.color ?? 0xff5a3a;
-        flare(p, { color: lerpHex(c, 0xffffff, 0.55), size: 1.35 * pw, life: 0.13, hdr: 3, R });
+        flare(p, { color: lerpHex(c, 0xffffff, 0.55), size: 1.1 * pw, life: 0.12, hdr: 2.3, R });
         glowPop(p, c, 1.3 * pw, 0.2, 0.35);
         droplets(R, p, n(18 * pw), { color: o.blood ?? 0x9a0e0e, colorEnd: 0x2a0404, dirV, spread: 1.0, size: 0.075 });
         droplets(R, p, n(6 * pw), { color: o.blood ?? 0xc01818, colorEnd: 0x400606, speed: [5, 10], dirV, spread: 0.6, size: 0.05 });
@@ -503,8 +545,9 @@ export function createVfx(stage, opts = {}) {
 
   function impact(at, o = {}) {
     const p = toV(at); const R = rngOf(o); const kind = o.kind || 'flesh'; const power = o.power ?? 1;
-    const dirV = o.dir ? toV(o.dir).normalize() : null;
-    burst(kind, p, power, { ...o, dirV }, R);
+    const dirV = o.dir ? toV(o.dir).normalize() : null; const elc = elementColor(o);
+    burst(kind, p, power, { ...o, color: elc ?? o.color, dirV }, R); if (elc) elementBurst(p, elc, power, R);
+    hitTarget(at, 0);
     return later(0.02);
   }
 
@@ -545,25 +588,25 @@ export function createVfx(stage, opts = {}) {
     const ang = slashAngle(o, p, R, kind);
     camBasis();
     const dirV = new THREE.Vector3().addScaledVector(cr, Math.cos(ang)).addScaledVector(cu, Math.sin(ang)); // travel direction in the world
-    const tilt = o.tilt ?? R.pm(0.25);
+    const tilt = o.tilt ?? R.pm(0.25); const elc = elementColor(o);
     if (kind === 'blunt') {
       // anticipation tick then the smash
-      const c = o.color ?? 0xffb060;
-      return later(0.05).then(() => { burst('blunt', p, size, { color: c, dirV: new THREE.Vector3(0, 1, 0.3).normalize() }, R); return later(0.02); });
+      const c = elc ?? o.color ?? 0xffb060; hitTarget(at, 0.05);
+      return later(0.05).then(() => { burst('blunt', p, size, { color: c, dirV: new THREE.Vector3(0, 1, 0.3).normalize() }, R); if (elc) elementBurst(p, elc, size, R); return later(0.02); });
     }
     if (kind === 'claw') {
-      const c = o.color ?? 0xff3a30;
+      const c = elc ?? o.color ?? 0xff3a30; hitTarget(at, 0.075);
       for (let i = 0; i < 3; i++) {
         const off = (i - 1) * 0.34 * size;
-        crescent({ at: p, ang, size: 1.6 * size * (1 - Math.abs(i - 1) * 0.08), sy: 1.3, geo: 'claw', color: c, core: 0xffe0d8, hdr: 2.6, ox: 0, oy: off, delay: i * 0.025, dur: 0.3, run: 0.12, tailAt: 0.08, seed: R.r() * 10, tilt, grit: 0.7 });
+        crescent({ at: p, ang, size: 1.6 * size * (1 - Math.abs(i - 1) * 0.08), sy: 1.3, geo: 'claw', color: c, core: 0xffe0d8, hdr: 1.9, ox: 0, oy: off, delay: i * 0.025, dur: 0.3, run: 0.12, tailAt: 0.08, seed: R.r() * 10, tilt, grit: 0.7 });
       }
-      later(0.075).then(() => burst('claw', p, 0.9 * size, { color: c, dirV, blood: o.blood }, R));
+      later(0.075).then(() => { burst('claw', p, 0.9 * size, { color: c, dirV, blood: o.blood }, R); if (elc) elementBurst(p, elc, 0.9 * size, R); });
       return later(0.09);
     }
     // blade
-    const c = o.color ?? 0xff5a3c;
-    crescent({ at: p, ang, size: 1.25 * size, geo: 'blade', color: c, core: 0xfff2e6, hdr: 3, dur: 0.34, seed: R.r() * 10, tilt });
-    crescent({ at: p, ang, size: 1.5 * size, sy: 1.05, geo: 'thin', color: 0xffffff, core: 0xffffff, hdr: 1.8, delay: 0.015, dur: 0.3, run: 0.15, tailAt: 0.08, seed: R.r() * 10, tilt, grit: 0.5 });
+    const c = elc ?? o.color ?? 0xff5a3c; hitTarget(at, 0.085);
+    crescent({ at: p, ang, size: 1.25 * size, geo: 'blade', color: c, core: 0xfff2e6, hdr: 2.1, dur: 0.34, seed: R.r() * 10, tilt });
+    crescent({ at: p, ang, size: 1.5 * size, sy: 1.05, geo: 'thin', color: 0xffffff, core: 0xffffff, hdr: 1.25, delay: 0.015, dur: 0.3, run: 0.15, tailAt: 0.08, seed: R.r() * 10, tilt, grit: 0.5 });
     // sparks scraped off along the cut
     later(0.05).then(() => {
       camBasis();
@@ -574,7 +617,7 @@ export function createVfx(stage, opts = {}) {
         sys.spark.emit({ pos, vel: [d.x * sp, d.y * sp + 1, d.z * sp], life: R.rr(0.2, 0.45), size: 0.03, color: 0xfff0c8, colorEnd: 0xff5a20, hdr: 2.6, alpha: 1, alphaEnd: 0, gravity: -8, drag: 1.5, stretch: 0.05, fade: 1.8, mode: 'streak' });
       }
     });
-    later(0.085).then(() => burst(o.hit === 'steel' ? 'steel' : 'flesh', p, 1.05 * size, { color: c, dirV, blood: o.blood }, R));
+    later(0.085).then(() => { burst(o.hit === 'steel' ? 'steel' : 'flesh', p, 1.05 * size, { color: c, dirV, blood: o.blood }, R); if (elc) elementBurst(p, elc, 1.05 * size, R); });
     // extra white-hot flash + bladed sparks fan right at impact so the cut reads as a hit
     later(0.085).then(() => { sparks(R, p, n(20), { color: 0xfff4d0, colorEnd: 0xff6a20, speed: [5, 14], dirV, spread: 0.9, size: 0.035, life: [0.25, 0.5] }); });
     return later(0.085);
@@ -608,13 +651,13 @@ export function createVfx(stage, opts = {}) {
       g.scale.setScalar(1.3);
     } else if (kind === 'bomb') {
       const pts = [[0.001, 0], [0.12, 0.01], [0.2, 0.08], [0.25, 0.2], [0.22, 0.32], [0.13, 0.4], [0.11, 0.46], [0.15, 0.49], [0.15, 0.52], [0.001, 0.52]].map(([r, y]) => new THREE.Vector2(r, y));
-      const pot = add(new THREE.LatheGeometry(pts, 20), stdMat(0x7a4a2c, { rough: 0.85 }), 0, -0.26, 0);
+      const pot = add(new THREE.LatheGeometry(pts, 20), stdMat(0x9a6034, { rough: 0.8, emissive: 0x3a1a08, ei: 0.6 }), 0, -0.26, 0);
       add(new THREE.TorusGeometry(0.235, 0.018, 6, 20), stdMat(0x2a1a10, { rough: 0.9 }), 0, -0.1, 0, Math.PI / 2);
       add(new THREE.TorusGeometry(0.165, 0.014, 6, 20), stdMat(0x2a1a10, { rough: 0.9 }), 0, 0.13, 0, Math.PI / 2);
       add(new THREE.CylinderGeometry(0.014, 0.014, 0.16, 6), stdMat(0x2a2218, { rough: 1 }), 0.02, 0.32, 0).rotation.z = 0.35;
       pot.castShadow = false;
       g.userData.fuse = new THREE.Vector3(0.07, 0.4, 0);
-      g.scale.setScalar(1.15);
+      g.scale.setScalar(2.1);
     } else if (kind === 'pierce') {
       const m = add(new THREE.OctahedronGeometry(0.1, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xd8b8ff).multiplyScalar(2.2) }));
       m.scale.set(0.45, 0.45, 4.2);
@@ -661,10 +704,10 @@ export function createVfx(stage, opts = {}) {
       const vk = speed / (_pc.length() || 1);
       const tail = _pa.copy(_pc).normalize().multiplyScalar(-1);
       if (kind === 'fireball') {
-        sys.glow.emit({ pos, life: 0.09, size: 1.5, sizeEnd: 1.3, color: 0xff7a20, hdr: 2.2, alpha: 0.55, alphaEnd: 0.1 });
-        sys.glow.emit({ pos, life: 0.09, size: 0.95, sizeEnd: 0.85, color: 0xffcc60, hdr: 2.8, alpha: 0.9, alphaEnd: 0.2 });
-        sys.glow.emit({ pos, life: 0.09, size: 0.5, sizeEnd: 0.45, color: 0xffffff, hdr: 3.4, alpha: 1, alphaEnd: 0.4 });
-        for (let i = 0; i < 2; i++) sys.glow.emit({ pos: [pos.x + R.pm(0.12), pos.y + R.pm(0.12), pos.z + R.pm(0.12)], vel: [tail.x * 1.5 + R.pm(0.8), tail.y * 1.5 + R.pm(0.8) + 0.6, tail.z * 1.5 + R.pm(0.8)], life: R.rr(0.3, 0.55), size: 0.5, sizeEnd: 0.08, color: 0xffa030, colorEnd: 0xc01808, hdr: 2.2, alpha: 0.9, alphaEnd: 0, fade: 1.2 });
+        sys.glow.emit({ pos, life: 0.09, size: 0.85, sizeEnd: 0.75, color: 0xff7a20, hdr: 2.0, alpha: 0.5, alphaEnd: 0.1 });
+        sys.glow.emit({ pos, life: 0.09, size: 0.5, sizeEnd: 0.45, color: 0xffcc60, hdr: 2.6, alpha: 0.9, alphaEnd: 0.2 });
+        sys.glow.emit({ pos, life: 0.09, size: 0.26, sizeEnd: 0.24, color: 0xffffff, hdr: 3.0, alpha: 1, alphaEnd: 0.4 });
+        for (let i = 0; i < 2; i++) sys.glow.emit({ pos: [pos.x + R.pm(0.12), pos.y + R.pm(0.12), pos.z + R.pm(0.12)], vel: [tail.x * 1.5 + R.pm(0.8), tail.y * 1.5 + R.pm(0.8) + 0.6, tail.z * 1.5 + R.pm(0.8)], life: R.rr(0.3, 0.55), size: 0.3, sizeEnd: 0.05, color: 0xffa030, colorEnd: 0xc01808, hdr: 2.2, alpha: 0.9, alphaEnd: 0, fade: 1.2 });
         if (R.r() < 0.5) sys.spark.emit({ pos, vel: [tail.x * 3 + R.pm(2), tail.y * 3 + R.pm(2) + 1, tail.z * 3 + R.pm(2)], life: 0.35, size: 0.03, color: 0xffe0a0, colorEnd: 0xff4010, hdr: 2.6, gravity: -3, stretch: 0.06, mode: 'streak', alpha: 1, alphaEnd: 0 });
         if (R.r() < 0.4) sys.smoke.emit({ pos, vel: [R.pm(0.3), 0.3, R.pm(0.3)], life: 0.8, size: 0.3, sizeEnd: 0.9, color: 0x3a2c24, alpha: 0.35, alphaEnd: 0, fadeIn: 0.1, rot: R.r() * TAU });
         holds.set(pos, 0xff8a30, 22 + R.r() * 6, 7);
@@ -698,6 +741,7 @@ export function createVfx(stage, opts = {}) {
       if (obj) scene.remove(obj);
     });
     return p.then(() => {
+      hitTarget(to, 0); if (o.element) elementBurst(B, elementColor(o), o.power ?? def.pw, rngOf(o));
       if (o.impact !== false) {
         const dirV = _pc.subVectors(B, A).normalize().clone();
         const ik = o.impactKind || def.impact;
@@ -731,6 +775,7 @@ export function createVfx(stage, opts = {}) {
     const dirV = new THREE.Vector3().subVectors(B, A).normalize();
     const hold = holdLight();
     task(dur, (dt, k) => { hold.set(B, color, 30 * (1 - k * k) * (0.85 + 0.15 * Math.sin(T * 50)), 7); }, () => hold.release());
+    hitTarget(to, 0.07);
     return later(0.07).then(() => { burst(kind === 'pierce' ? 'pierce' : 'magic', B, o.power ?? 1.1, { color, dirV }, R); return B; });
   }
   function lightning(from, to, o = {}) {
@@ -922,7 +967,7 @@ export function createVfx(stage, opts = {}) {
     feet.y = groundY;
     const rad = o.radius ?? (target?.radius ? target.radius * 2.2 : 1.5);
     switch (kind) {
-      case 'windup': return auraWindup(target, feet, rad, o, R);
+      case 'windup': return auraWindup(target, feet, Math.max(rad, 1.9), o, R);
       case 'rage': return auraRage(p, feet, rad, o, R);
       case 'hex': return auraHex(p, feet, rad, o, R);
       case 'howl': { const m = target?.worldAnchor ? target.worldAnchor('mouth', new THREE.Vector3()) : p; return auraHowl(m, feet, rad, o, R); }
@@ -962,38 +1007,45 @@ export function createVfx(stage, opts = {}) {
     lightFlash(_p.set(feet.x, 1.2, feet.z), color, 35, 0.8);
     return later(0.25);
   }
+  // Ground-projected telegraph decal: 'slam' = hazard-striped danger disc whose wavefront grows to the rim
+  // as the hit nears + rotating rune ring; 'hex' = violet rotating ritual glyph with orbiting sigils.
+  // Returns a promise with { stop(), setProgress(k), active }.
+  function telegraph(target, o = {}) { return auraWindup(target, anchorFeet(target), o.radius ?? (target?.radius ? Math.max(1.9, target.radius * 2.6) : 2), { ...o, kind: o.kind || 'slam' }, rngOf(o)); }
+  function anchorFeet(t) { const f = toV(t, new THREE.Vector3()); if (t?.worldAnchor) t.worldAnchor('feet', f); f.y = groundY; return f; }
   function auraWindup(target, feet, rad, o, R) {
-    const color = o.color ?? 0xff3020; const dur = o.dur ?? Infinity;
-    const g = glyphs.find((x) => !x.busy); const pil = pillar({ at: feet, color, r: rad * 0.42, h: 2.6, dur: 1e6, hdr: 1.3, alpha: 0.5, grow: 0.5 });
-    const a = { stop() { a.stopping = true; }, t: 0, alive: true };
-    if (g) { g.busy = true; g.mesh.visible = true; const u = g.mesh.material.uniforms; u.uColor.value.set(color); u.uAlpha.value = 1; u.uHdr.value = o.hdr ?? 1.9; }
-    ring({ at: feet, flat: true, color, r: rad * 1.25, dur: 0.6, thick: 0.1, hdr: 2.6, noise: 0.3, y: groundY });
-    flare(_p.set(feet.x, 0.3, feet.z), { color: 0xffc0a0, size: 1.8, life: 0.22, hdr: 2.6, R });
-    shake(0.18);
-    const hold = null;
+    const kind = o.kind === 'hex' ? 'hex' : 'slam'; const hex = kind === 'hex';
+    const color = o.color ?? (hex ? 0x8a3dff : 0xff3a24); const dur = o.dur ?? Infinity; const fill = o.fill ?? 1.8;
+    const g = glyphs.find((x) => !x.busy); const d = hex ? null : discs.find((x) => !x.busy);
+    const a = { stop() { a.stopping = true; }, t: 0, alive: true, manual: null, setProgress(k) { a.manual = k; } };
+    if (g) { g.busy = true; g.mesh.visible = true; const u = g.mesh.material.uniforms; u.uColor.value.set(color); u.uAlpha.value = 1; u.uHdr.value = o.hdr ?? (hex ? 1.5 : 1.25); }
+    if (d) { d.busy = true; d.mesh.visible = true; const u = d.mesh.material.uniforms; u.uColor.value.set(color); u.uK.value = 0; }
+    ring({ at: feet, flat: true, color, r: rad * 1.2, dur: 0.55, thick: 0.05, hdr: 1.8, noise: 0.3, y: groundY });
+    if (!hex) { shake(0.14); chromaPunch(0.25); }
     const upd = (dt) => {
-      a.t += dt; const t = a.t; const k = Math.min(1, t / 0.55); const e = 1 - (1 - k) ** 3;
-      const fadeOut = a.stopping ? Math.max(0, 1 - (t - (a.stopT ?? (a.stopT = t))) / 0.35) : 1;
-      if (a.stopping && fadeOut <= 0) { a.alive = false; if (g) { g.busy = false; g.mesh.visible = false; } if (pil) pil.alpha = 0; pil && (pil.busy = false, pil.mesh.visible = false); return false; }
+      a.t += dt; const t = a.t; const k = Math.min(1, t / 0.5); const e = 1 - (1 - k) ** 3;
+      if (a.stopping && a.stopT === undefined) a.stopT = t;
+      const fadeOut = a.stopping ? Math.max(0, 1 - (t - a.stopT) / 0.35) : 1;
+      if (a.stopping && fadeOut <= 0) { a.alive = false; if (g) { g.busy = false; g.mesh.visible = false; } if (d) { d.busy = false; d.mesh.visible = false; } return false; }
       if (!a.stopping && t > dur) a.stopping = true;
+      const prog = a.manual ?? Math.min(1, t / fill);
       if (g) {
-        const u = g.mesh.material.uniforms; const sc = rad * (0.45 + 0.55 * e) * (1 + 0.03 * Math.sin(t * 7));
-        g.mesh.position.set(feet.x, groundY + 0.025, feet.z); g.mesh.scale.set(sc, sc, 1);
-        u.uTime.value = t * (1 + (o.urgency ?? 0)); u.uK.value = k; u.uAlpha.value = fadeOut; u.uPulse.value = Math.min(1, t * 0.15) + (o.urgency ?? 0);
+        const u = g.mesh.material.uniforms; const sc = rad * (0.5 + 0.5 * e) * (hex ? 0.85 : 0.9);
+        g.mesh.position.set(feet.x, groundY + 0.03, feet.z); g.mesh.scale.set(sc, sc, 1);
+        u.uTime.value = t * (hex ? 1.4 : 1 + prog); u.uK.value = k; u.uAlpha.value = fadeOut * (hex ? 1 : 0.8); u.uPulse.value = prog;
       }
-      if (pil) { pil.t = Math.min(pil.t, 5); pil.dur = 1e6; pil.alpha = 0.5 * fadeOut * (0.75 + 0.25 * Math.sin(t * 6)); pil.r = rad * 0.42; }
-      // embers drifting up off the glyph
-      let c = 34 * dt * Q * fadeOut; while (c > 0) { if (c < 1 && R.r() > c) break; c -= 1;
+      if (d) { const u = d.mesh.material.uniforms; d.mesh.position.set(feet.x, groundY + 0.02, feet.z); d.mesh.scale.set(rad * e, rad * e, 1); u.uK.value = prog; u.uTime.value = t; u.uAlpha.value = fadeOut * Math.min(1, t / 0.15); }
+      // embers drifting up off the decal (sparse and small: the decal itself must carry the read)
+      let c = (hex ? 14 : 22) * dt * Q * fadeOut; while (c > 0) { if (c < 1 && R.r() > c) break; c -= 1;
         const ang = R.r() * TAU; const rr_ = rad * R.rr(0.3, 0.95);
-        sys.ember.emit({ pos: [feet.x + Math.cos(ang) * rr_, groundY + 0.05, feet.z + Math.sin(ang) * rr_], vel: [R.pm(0.2), R.rr(0.8, 2.4), R.pm(0.2)], life: R.rr(0.9, 1.6), size: R.rr(0.04, 0.09), sizeEnd: 0.01, color: 0xff8a2a, colorEnd: 0xff2010, hdr: 2.4, alpha: 1, alphaEnd: 0, turbulence: 1.2, drag: 0.3, fade: 1.5 });
+        const sys_ = hex ? sys.diamond : sys.ember;
+        sys_.emit({ pos: [feet.x + Math.cos(ang) * rr_, groundY + 0.05, feet.z + Math.sin(ang) * rr_], vel: [R.pm(0.2), R.rr(0.6, 1.8), R.pm(0.2)], life: R.rr(0.9, 1.5), size: hex ? 0.2 : R.rr(0.035, 0.07), sizeEnd: 0.01, color: hex ? 0xb07dff : 0xff8a2a, colorEnd: hex ? 0x5a2aa8 : 0xff2010, hdr: 2.2, alpha: 1, alphaEnd: 0, turbulence: 1.2, drag: 0.3, fade: 1.5, rot: R.pm(0.3) });
       }
-      // screen-edge pulse: grows with urgency
-      vig(0xff2a18, fadeOut * (0.12 + 0.1 * Math.min(1, t * 0.3)) * (0.5 + 0.5 * Math.sin(t * 5.2)) * (0.6 + 0.4 * k));
+      if (!hex) vig(0xff2a18, fadeOut * (0.08 + 0.12 * prog) * (0.5 + 0.5 * Math.sin(t * (4 + prog * 5))));
       return true;
     };
     liveAuras.push({ upd });
     const p = later(0.45);
-    return withHandle(p, { stop: () => a.stop(), get active() { return a.alive; } });
+    return withHandle(p, { stop: () => a.stop(), setProgress: (k) => a.setProgress(k), get active() { return a.alive; } });
   }
   function auraRage(p, feet, rad, o, R) {
     const color = o.color ?? 0xff5a1a;
@@ -1022,17 +1074,19 @@ export function createVfx(stage, opts = {}) {
   // chain ring for hex
   let chainMesh = null;
   function auraHex(p, feet, rad, o, R) {
-    const color = o.color ?? 0x8a3dff; const dur = o.dur ?? 1.8; const N = 18; const cy = o.y ?? Math.max(0.5, p.y);
+    const color = o.color ?? 0x8a3dff; const dur = o.dur ?? 1.8; const N = 14; const cy = o.y ?? Math.max(0.5, p.y);
     if (!chainMesh) {
       chainMesh = [];
       for (let j = 0; j < 2; j++) {
-        const mesh = new THREE.InstancedMesh(new THREE.TorusGeometry(0.2, 0.045, 8, 16), new THREE.MeshStandardMaterial({ color: 0x2a2036, metalness: 1, roughness: 0.35, emissive: 0x7a30ff, emissiveIntensity: 0.9 }), N);
+        const mesh = new THREE.InstancedMesh(new THREE.TorusGeometry(0.3, 0.08, 10, 18), new THREE.MeshStandardMaterial({ color: 0x3a2e4e, metalness: 1, roughness: 0.3, emissive: 0x7a30ff, emissiveIntensity: 1.1 }), N);
         mesh.frustumCulled = false; mesh.visible = false; mesh.renderOrder = 6; scene.add(mesh); chainMesh.push({ mesh, busy: false });
       }
     }
     const cm = chainMesh.find((x) => !x.busy);
     const dummy = new THREE.Object3D();
     if (cm) { cm.busy = true; cm.mesh.visible = true; cm.mesh.material.emissive.set(color); }
+    { const g = glyphs.find((x) => !x.busy); if (g) { g.busy = true; g.mesh.visible = true; const gu = g.mesh.material.uniforms; gu.uColor.value.set(color); gu.uHdr.value = 1.6; gu.uK.value = 1; gu.uPulse.value = 0.3;
+      task(dur, (dt, k, el) => { const sc = rad * 1.35 * Math.min(1, 0.4 + el * 3); g.mesh.position.set(feet.x, groundY + 0.03, feet.z); g.mesh.scale.set(sc, sc, 1); gu.uTime.value = el * 1.4; gu.uAlpha.value = (k > 0.8 ? 1 - (k - 0.8) / 0.2 : 1) * Math.min(1, el * 5); }, () => { g.busy = false; g.mesh.visible = false; }); } }
     ring({ at: feet, flat: true, color, r: rad * 1.4, dur: 0.7, thick: 0.1, hdr: 2.2, noise: 0.5, y: groundY });
     ring({ at: _p.set(p.x, cy, p.z), color, r: rad * 1.1, dur: 0.4, thick: 0.07, hdr: 2.4 });
     flare(_p.set(p.x, cy, p.z), { color: 0xd8b8ff, size: 2.2, life: 0.22, hdr: 2.6, R });
@@ -1053,7 +1107,7 @@ export function createVfx(stage, opts = {}) {
           dummy.rotation.set(i % 2 ? Math.PI / 2 : 0, -a, i % 2 ? 0 : Math.PI / 2 * 0.0 + 0.0);
           if (i % 2 === 0) dummy.rotation.set(0, -a + Math.PI / 2, 0); else dummy.rotation.set(Math.PI / 2, -a + Math.PI / 2, 0);
           const sc = Math.max(0.001, fade * Math.min(1, el * 6));
-          dummy.scale.setScalar(sc * 1.3); dummy.updateMatrix(); cm.mesh.setMatrixAt(i, dummy.matrix);
+          dummy.scale.setScalar(sc * 1.5); dummy.updateMatrix(); cm.mesh.setMatrixAt(i, dummy.matrix);
         }
         cm.mesh.instanceMatrix.needsUpdate = true;
         cm.mesh.material.emissiveIntensity = 0.7 + 0.5 * Math.sin(el * 6);
@@ -1164,9 +1218,111 @@ export function createVfx(stage, opts = {}) {
       const wi = sys.wisp.emit({ pos: chest, life: 2.4, size: 0.5 * size, sizeEnd: 0.28 * size, color: 0xbfe8ff, hdr: 2.6, alpha: 1, alphaEnd: 0, fade: 4, path: { p0: [chest.x, chest.y, chest.z], c: mid, p1: top } });
       task(2.4, (dt, k) => { const a = sys.wisp.a.aPos.array; const i3 = wi * 3; if (R.r() < 0.85) sys.glow.emit({ pos: [a[i3] + R.pm(0.05), a[i3 + 1] - 0.15, a[i3 + 2] + R.pm(0.05)], life: 0.5, size: 0.28 * size, sizeEnd: 0.03, color: 0xa8d8ff, hdr: 2, alpha: 0.6 * (1 - k), alphaEnd: 0, fade: 1.2 }); });
     }
-    if (o.coins) coinSpill(R, _p.set(chest.x, groundY + 0.6, chest.z), n(o.coins), { power: 0.8, spread: 1.8 });
+    // ash column + low glow so the spot stays marked, and a shockwave for anything big
+    pillar({ at: feet, color: 0xff8a3a, r: 0.55 * size, h: 3.2 * size, dur: 1.4, hdr: 1.3, alpha: 0.55, grow: 0.4 });
+    smokePuffs(R, _p.set(feet.x, 0.5 * size, feet.z), n(8), { color: 0x4a4640, size: 0.8 * size, grow: 2.4, life: [1.4, 2.2], alpha: 0.45, spread: 0.5 * size, rise: 0.9 });
+    chromaPunch(0.5);
+    if (o.boss ?? size >= 2.2) { shockwave(feet, { radius: 3.5 * size, color: 0xffb060, shake: 0.9 }); chromaPunch(1); hitStop(120); crackDecal(feet, { size: 3 * size, color: 0xff8a30, dur: 2.6 }); }
+    const coinsN = o.coins ?? (size >= 1.4 ? Math.round(5 * size) : 0);
+    if (coinsN) coinSpill(R, _p.set(chest.x, groundY + 0.6, chest.z), n(coinsN), { power: 0.8, spread: 1.8 });
     return later(0.2);
   }
+
+  // ---------------------------------------------------------------------------------------------
+  // TARGET RING: animated dashed glowing selection ring projected on the ground
+  // ---------------------------------------------------------------------------------------------
+  const targetRings = [];
+  function targetRing(actor, o = {}) {
+    const m = new THREE.Mesh(SH.quadGeo, SH.targetMaterial()); m.rotation.x = -Math.PI / 2; m.frustumCulled = false; m.renderOrder = 4; scene.add(m);
+    const u = m.material.uniforms; u.uColor.value.set(o.color ?? 0xff4d3a); u.uDash.value = o.dashes ?? 14; u.uAlpha.value = o.alpha ?? 1;
+    const h = { mesh: m, actor: null, pos: new THREE.Vector3(), rad: 1, base: o.radius ?? 0, t: Math.random() * 6, visible: true, color: o.color ?? 0xff4d3a, dead: false, first: true };
+    const feetOf = (a, out) => { if (a?.worldAnchor) a.worldAnchor('feet', out); else toV(a, out); out.y = groundY; return out; };
+    const radiusOf = (a) => h.base || Math.max(0.95, (a?.radius || 0.6) * 1.55);
+    h.move = (a) => { h.actor = a; if (h.first && a) { feetOf(a, h.pos); h.rad = radiusOf(a); h.first = false; } return h; };
+    h.setColor = (c) => { h.color = c; u.uColor.value.set(c); return h; };
+    h.setVisible = (v) => { h.visible = v; m.visible = v && !!h.actor; return h; };
+    h.dispose = () => { h.dead = true; scene.remove(m); m.material.dispose(); const i = targetRings.indexOf(h); if (i >= 0) targetRings.splice(i, 1); };
+    h.move(actor); targetRings.push(h);
+    return h;
+  }
+  const _tf = new THREE.Vector3();
+  function updateTargetRings(dt) {
+    for (const h of targetRings) {
+      h.t += dt; const u = h.mesh.material.uniforms; u.uTime.value = h.t;
+      const a = h.actor; const show = h.visible && !!a && (a.root ? a.root.visible !== false : true);
+      h.mesh.visible = show; if (!show) continue;
+      if (a.worldAnchor) a.worldAnchor('feet', _tf); else toV(a, _tf);
+      const k = 1 - Math.exp(-14 * dt);
+      h.pos.x += (_tf.x - h.pos.x) * k; h.pos.z += (_tf.z - h.pos.z) * k;
+      const r = h.base || Math.max(0.95, (a.radius || 0.6) * 1.55); h.rad += (r - h.rad) * k;
+      const sc = h.rad * (1 + Math.sin(h.t * 4) * 0.025);
+      h.mesh.position.set(h.pos.x, groundY + 0.035, h.pos.z); h.mesh.scale.set(sc, sc, 1);
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // AMBIENT: optional additive particle layers that keep static frames alive. Default off.
+  //   vfx.ambient('embers' | 'dust' | 'ash' | 'fireflies' | 'leaves' | 'snow', { intensity, color, area }) -> { stop(), set(i) }
+  //   vfx.ambient(null) stops every layer. Embers come in three depths: far (tiny), mid, near (big and soft).
+  // ---------------------------------------------------------------------------------------------
+  const amb = {}; const ambLive = new Map();
+  function ambSys(name) {
+    if (amb[name]) return amb[name];
+    const def = { glow: ['glow', 'add', 520], dot: ['dot', 'add', 420], dotN: ['dot', 'normal', 520], leaf: ['chunk', 'normal', 120] }[name];
+    const q = new Quads({ max: def[2], map: vtex(def[0]), blend: def[1], depthTest: true, renderOrder: 6, name: `vfx-amb-${name}` });
+    q.object.visible = false; scene.add(q.object); amb[name] = q; sys[`amb_${name}`] = q; return q;
+  }
+  const AMBIENT = {
+    embers: { layers: [
+      { rate: 5, z: [-9, -4], make: (R, p, age) => ({ sys: 'glow', size: R.rr(0.045, 0.08), color: R.r() < 0.5 ? 0xff9a3a : 0xff5a1a, hdr: 1.8, alpha: 0.75, life: R.rr(7, 11), vy: R.rr(0.2, 0.5), turb: 0.5, fadeIn: 0.2 }) },
+      { rate: 4, z: [-4, 2.5], make: (R) => ({ sys: 'glow', size: R.rr(0.08, 0.14), color: R.r() < 0.5 ? 0xffb050 : 0xff6a20, hdr: 2.0, alpha: 0.85, life: R.rr(6, 9), vy: R.rr(0.3, 0.7), turb: 0.7, fadeIn: 0.2 }) },
+      { rate: 0.8, z: [3, 7], make: (R) => ({ sys: 'glow', size: R.rr(0.3, 0.55), color: 0xff8a30, hdr: 1.3, alpha: 0.22, life: R.rr(6, 9), vy: R.rr(0.35, 0.7), turb: 0.9, fadeIn: 0.3 }) }] },
+    dust: { layers: [
+      { rate: 9, z: [-5, 3], shaft: true, make: (R, p) => ({ sys: 'dot', size: R.rr(0.02, 0.045), color: 0xffe6b8, hdr: 1.6, alpha: p.inShaft ? 0.95 : 0.22, life: R.rr(8, 13), vy: R.rr(-0.04, 0.1), turb: 0.25, fadeIn: 0.3 }) }] },
+    ash: { layers: [
+      { rate: 9, z: [-7, 3], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.03, 0.06), color: R.r() < 0.5 ? 0x9a948c : 0x5a5650, alpha: 0.6, life: R.rr(9, 13), vy: -R.rr(0.3, 0.65), turb: 0.8, fadeIn: 0.1 }) },
+      { rate: 2.5, z: [3, 7], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.1, 0.17), color: 0x8a847c, alpha: 0.3, life: R.rr(9, 12), vy: -R.rr(0.4, 0.8), turb: 1, fadeIn: 0.1 }) }] },
+    fireflies: { layers: [
+      { rate: 2.4, z: [-6, 4], low: true, make: (R) => ({ sys: 'glow', size: R.rr(0.09, 0.15), color: R.r() < 0.7 ? 0xc8ff6a : 0xffe36a, hdr: 2.6, alpha: 0.95, life: R.rr(4, 7), vy: R.pm(0.1), turb: 1.3, fadeIn: 0.35, fade: 0.7 }) }] },
+    leaves: { layers: [
+      { rate: 2, z: [-6, 5], top: true, make: (R) => ({ sys: 'leaf', size: R.rr(0.07, 0.11), color: R.r() < 0.5 ? 0x8a5a2a : 0x6a4a22, alpha: 0.95, life: R.rr(9, 12), vy: -R.rr(0.35, 0.6), turb: 1.6, fadeIn: 0.05, spin: R.pm(3) }) }] },
+    snow: { layers: [
+      { rate: 16, z: [-7, 4], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.03, 0.055), color: 0xeef4ff, alpha: 0.85, life: R.rr(7, 10), vy: -R.rr(0.7, 1.1), turb: 0.5, fadeIn: 0.08 }) },
+      { rate: 2.5, z: [3, 7], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.09, 0.16), color: 0xdde8ff, alpha: 0.4, life: R.rr(7, 10), vy: -R.rr(0.9, 1.3), turb: 0.7, fadeIn: 0.08 }) }] },
+  };
+  AMBIENT.motes = AMBIENT.dust;
+  function ambient(kind, o = {}) {
+    if (!kind || kind === 'off') { for (const h of [...ambLive.values()]) h.stop(); return null; }
+    const spec = AMBIENT[kind]; if (!spec) return null;
+    ambLive.get(kind)?.stop();
+    const R = rngOf(o); const area = o.area || {}; const ax = area.x || [-10, 10]; const ay = area.y || [0, 6]; const cx = o.center ?? 0;
+    const h = { kind, intensity: o.intensity ?? 1, acc: spec.layers.map(() => 0), alive: true };
+    const place = (L) => {
+      const z = R.rr(L.z[0], L.z[1]); const x = R.rr(ax[0], ax[1]) + cx;
+      let y = R.rr(ay[0] + 0.1, ay[1]); const p = { inShaft: false };
+      if (L.low) y = R.rr(0.25, 2.4);
+      if (L.top) y = R.rr(1, ay[1] + 1);
+      if (L.shaft) { const f = R.r(); if (R.r() < 0.7) { const sx = -6 + f * 5 + R.pm(0.9); const sy = 6 - f * 5.5 + R.pm(0.5); p.inShaft = true; return { x: sx + cx, y: Math.max(0.2, sy), z, p }; } }
+      return { x, y, z, p };
+    };
+    const spawn = (L, age) => {
+      const q = place(L); const m = L.make(R, q.p);
+      const S = ambSys(m.sys); const drift = R.pm(0.15) + (kind === 'leaves' ? 0.25 : 0) + (kind === 'ash' ? 0.12 : 0);
+      S.emit({ pos: [q.x, q.y, q.z], vel: [drift, m.vy, R.pm(0.08)], life: m.life, age: age ?? 0, size: m.size, sizeEnd: m.size * (m.sys === 'glow' ? 0.6 : 1), color: o.color ?? m.color, hdr: m.hdr ?? 1, alpha: m.alpha * Math.min(1, h.intensity + 0.15), alphaEnd: 0, fadeIn: m.fadeIn ?? 0.15, fade: m.fade ?? 1.2, turbulence: m.turb, drag: 0.1, rot: R.r() * TAU, spin: m.spin ?? 0 });
+    };
+    // pre-warm so the frame is already alive the moment it is enabled
+    spec.layers.forEach((L) => { const cnt = Math.round(L.rate * 8 * h.intensity * Q); for (let i = 0; i < cnt; i++) spawn(L, R.r() * 7); });
+    h.upd = (dt) => {
+      if (!h.alive) return false;
+      spec.layers.forEach((L, i) => { h.acc[i] += L.rate * dt * Q * h.intensity; while (h.acc[i] >= 1) { h.acc[i] -= 1; spawn(L, 0); } });
+      return true;
+    };
+    h.set = (v) => { h.intensity = v; return h; };
+    h.stop = () => { h.alive = false; ambLive.delete(kind); };
+    ambLive.set(kind, h);
+    return h;
+  }
+  function updateAmbient(dt) { for (const h of ambLive.values()) h.upd(dt); }
 
   // ---------------------------------------------------------------------------------------------
   // misc wrappers
@@ -1199,7 +1355,7 @@ export function createVfx(stage, opts = {}) {
   // punch black rectangles of "occlusion" into the picture at --q high.
   // ---------------------------------------------------------------------------------------------
   const aoSkip = () => [...Object.values(sys).map((x) => x.object), ...rings.map((x) => x.mesh), ...decals.map((x) => x.mesh), ...slashes.map((x) => x.mesh), ...shields.map((x) => x.mesh),
-    ...pillars.map((x) => x.mesh), ...shellsP.map((x) => x.mesh), ...glyphs.map((x) => x.mesh), ...rifts.map((x) => x.mesh), ...strips.meshes, ...text.pool.map((x) => x.mesh), text.bmesh, overlay, ...(chainMesh ? chainMesh.map((x) => x.mesh) : [])];
+    ...pillars.map((x) => x.mesh), ...shellsP.map((x) => x.mesh), ...glyphs.map((x) => x.mesh), ...rifts.map((x) => x.mesh), ...strips.meshes, ...text.pool.map((x) => x.mesh), text.bmesh, overlay, ...discs.map((x) => x.mesh), ...targetRings.map((x) => x.mesh), ...(chainMesh ? chainMesh.map((x) => x.mesh) : [])];
   if (stage.post?.gtao && !stage.post.gtao._vfxHooked) {
     const g = stage.post.gtao; const orig = g.render.bind(g); g._vfxHooked = true;
     g.render = function (...args) {
@@ -1239,6 +1395,8 @@ export function createVfx(stage, opts = {}) {
     text.update(dt);
     updateLights(dt);
     updateOverlay();
+    updatePunch(dt);
+    updateTargetRings(dt); updateAmbient(dt);
   });
 
   // ---------------------------------------------------------------------------------------------
@@ -1260,6 +1418,12 @@ export function createVfx(stage, opts = {}) {
     banner3D: (textStr, o) => text.banner(textStr, o),
     // wrappers
     trail, muzzle, screenFlash, vignettePulse,
+    // telegraphs and selection
+    telegraph, targetRing,
+    // ambient layers (default off)
+    ambient,
+    // hit feel
+    hitStop, punch: chromaPunch, options: vfxOpts,
     // utilities
     screenToWorld, later,
     stats() { return { live: Object.fromEntries(Object.entries(sys).map(([k, s]) => [k, s.live])), lights: lights.map((l) => +l.l.intensity.toFixed(1)), tasks: tasks.length, timers: timers.length, rings: ringLive.length }; },

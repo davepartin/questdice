@@ -13,15 +13,15 @@ async function tryLoad(path) {
 
 // Staging marks (metres). See docs/GFX.md and the arena brief.
 export const MARKS = {
-  hero: [-2.3, 0, 0.7],
+  hero: [-2.5, 0, 1.5],
   tray: [0, 0.8, 4.9],
-  big: [0.5, 0, -2.1],
+  big: [0.5, 0, -0.9],
 };
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest
 // flank it; otherwise a row spread by count.
 export function enemyMarks(n, hasBig) {
-  if (hasBig) return [[0.5, -2.2], [-3.0, -0.9], [3.3, -0.9], [-1.8, 0.3], [2.4, 0.4]];
-  const rows = { 1: [[0.3, -1.5]], 2: [[-1.3, -1.4], [1.7, -1.6]], 3: [[-2.6, -1.2], [0.2, -1.9], [2.8, -1.2]], 4: [[-3.0, -1.0], [-1.0, -1.9], [1.2, -1.9], [3.2, -1.0]] };
+  if (hasBig) return [[0.5, -1.0], [-3.1, -0.2], [3.4, -0.2], [-1.9, 0.9], [2.5, 1.0]];
+  const rows = { 1: [[0.5, -0.3]], 2: [[-1.2, -0.2], [1.9, -0.5]], 3: [[-2.4, 0.0], [0.4, -0.8], [3.0, 0.0]], 4: [[-3.0, 0.1], [-1.0, -0.8], [1.3, -0.8], [3.3, 0.1]] };
   return rows[Math.min(4, Math.max(1, n))];
 }
 
@@ -49,7 +49,7 @@ export const world = {
     this.director.layout = null;
     this.director.attach();
     s.scene.fog = null; s.scene.environment = s.env; s.scene.background = new THREE.Color(0x05060c);
-    s.post.look({ bloom: 0.7, vignette: 0.55, grain: 0.045, aberration: 0.0016, sat: 1.08, contrast: 1.08, tilt: 0, exposure: 1 });
+    s.post.look({ bloom: 0.42, bloomThreshold: 1.0, vignette: 0.5, grain: 0.04, aberration: 0.0005, sat: 1.06, contrast: 1.1, tilt: 0, exposure: 1 });
   },
 
   // Build a battle: arena, hero, one actor per enemy, tray, vfx. Returns the handle the battle controller drives.

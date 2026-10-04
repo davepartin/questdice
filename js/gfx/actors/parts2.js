@@ -487,3 +487,22 @@ export const rng = mulberry32;
 export const lerpV = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 export const TAU = Math.PI * 2;
 export const ease = { inOut: (t) => t * t * (3 - 2 * t), out: (t) => 1 - (1 - t) ** 3, in: (t) => t * t * t, outBack: (t, s = 1.7) => 1 + (s + 1) * (t - 1) ** 3 + s * (t - 1) ** 2 };
+
+// Fresnel rim term injected into every cloned (standard) material of an actor, after finalize().
+// k: strength, col: rim colour, pow: falloff. Works alongside the base class dissolve hook.
+export function addRim(a, { col = 0x40e0c0, k = 0.8, pow = 3, skip } = {}) {
+  const u = { uRimCol: { value: new THREE.Color(col) }, uRimK: { value: k } };
+  for (const m of a.mats) {
+    if (!(m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) || (skip && skip(m))) continue;
+    const prev = m.onBeforeCompile;
+    m.onBeforeCompile = (sh, r) => {
+      prev?.(sh, r); sh.uniforms.uRimCol = u.uRimCol; sh.uniforms.uRimK = u.uRimK;
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRimCol; uniform float uRimK;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          { float rimF = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), ${pow.toFixed(1)}); totalEmissiveRadiance += uRimCol * rimF * uRimK; }`);
+    };
+    m.customProgramCacheKey = () => 'qd-dissolve-rim';
+    m.needsUpdate = true;
+  }
+  return u;
+}

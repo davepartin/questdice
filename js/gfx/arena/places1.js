@@ -11,7 +11,7 @@ import {
   wheel, barrel, crate, skull, bone, ribcage, plank, brazier, ruinWall, toppledCart, fenceRun, farmhouse, haystack, wagon, steppingStone,
 } from './props.js';
 
-const LOOK = (o) => ({ bloom: 0.85, bloomRadius: 0.6, bloomThreshold: 0.78, vignette: 0.5, sat: 1.1, contrast: 1.1, tilt: 0.12, focusY: 0.5, grain: 0.04, exposure: 1.0, shadowTint: 0xdbf0ff, highTint: 0xfff0dc, aberration: 0.0014, ...o });
+const LOOK = (o) => ({ bloom: 0.45, bloomRadius: 0.5, bloomThreshold: 1.05, vignette: 0.5, sat: 1.1, contrast: 1.1, tilt: 0.1, focusY: 0.5, grain: 0.04, exposure: 1.0, shadowTint: 0xdbf0ff, highTint: 0xfff0dc, aberration: 0.0004, ...o });
 
 // =====================================================================================================
 // BURNT ORCHARD

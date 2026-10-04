@@ -96,7 +96,7 @@ export class Quads {
     a.aPos.array[i * 3] = px; a.aPos.array[i * 3 + 1] = py; a.aPos.array[i * 3 + 2] = pz;
     a.aVel.array[i * 3] = this.vel[i * 3] = vx; a.aVel.array[i * 3 + 1] = this.vel[i * 3 + 1] = vy; a.aVel.array[i * 3 + 2] = this.vel[i * 3 + 2] = vz;
     const mode = typeof o.mode === 'string' ? MODE[o.mode] : (o.mode || 0);
-    const T = a.aT.array; T[i * 4] = 0; T[i * 4 + 1] = o.life ?? 1; T[i * 4 + 2] = o.rot ?? 0; T[i * 4 + 3] = mode;
+    const T = a.aT.array; T[i * 4] = o.age ?? 0; T[i * 4 + 1] = o.life ?? 1; T[i * 4 + 2] = o.rot ?? 0; T[i * 4 + 3] = mode;
     const S = a.aS.array; S[i * 4] = o.size ?? 0.1; S[i * 4 + 1] = o.sizeEnd ?? o.size ?? 0.1; S[i * 4 + 2] = o.stretch ?? 0.05; S[i * 4 + 3] = o.fadeIn ?? 0;
     const al = o.alpha ?? 1;
     _c.set(o.color ?? 0xffffff); const m = o.hdr ?? 1;
