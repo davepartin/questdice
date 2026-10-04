@@ -1,255 +1,211 @@
-// Dire Wolf: massive scarred grey wolf. SDF-sculpted body + hundreds of swept fur tufts, 4-leg IK, spring tail.
+// Dire Wolf: lean grey-brown wolf with a dark saddle, cream muzzle/chest/belly, a heavy ruff and a stalking pose.
+// SDF-sculpted body, shell fur + swept tufts only on the neck/shoulders/tail, 4-leg IK, spring tail.
 //
 // Rig: root > pelvis > chest > neck1 > neck2 > head > (jaw, eyes, earL/R, lipL/R); pelvis > tail1..4;
 //      chest > shoulderL/R > elbow > wrist (paw); pelvis > hipL/R > knee > hock (foot). IK targets ikFL ikFR ikHL ikHR.
-// Anchors: head chest feet mouth handR handL (front paws) weapon (=mouth) . Clips: see bottom.
+// Anchors: head chest feet mouth handR handL (front paws) weapon (=mouth).
 import { Actor } from './base.js';
 import {
-  THREE, sdf, smax, U, mirX, BUMP, sculpt, Kit, tpm, std, glowMat, finish, setRim, contactShadow, updateShadow, spike, leaf, turned, ropeGeo, sampleSurface, pushTuft, tuftGeo, legIK,
+  THREE, sdf, smax, U, mirX, BUMP, sculpt, Kit, tpm, std, glowMat, finish, setRim, contactShadow, updateShadow, spike, leaf, paintGeo, sampleSurface, pushTuft, tuftGeo, legIK,
   mulberry32, makeNoise, rad, clamp, lerp, sstep, sn, ease, Follow,
 } from './parts.js';
 
 export function create({ seed = 1, quality = 'high', id } = {}) {
-  const Q = (quality === 'low' ? 2.9 : quality === 'med' ? 2.2 : 1.75) / 1.75;     // voxel multiplier relative to high
-  const TUFT = quality === 'low' ? 0.35 : quality === 'med' ? 0.6 : 0.78;
+  const Q = (quality === 'low' ? 2.9 : quality === 'med' ? 2.2 : 1.75) / 1.75;
+  const TUFT = quality === 'low' ? 0.35 : quality === 'med' ? 0.6 : 0.9;
   const rng = mulberry32(seed * 6271 + 5);
-  const rr = (a, b) => a + (b - a) * rng();
   const NZ = makeNoise(seed + 11);
   const a = new Actor({ name: 'wolf', height: 1.2, radius: 0.9 });
   const kit = new Kit();
   const L = 1; const R = -1;
   const tc = new THREE.Color(); const sc = new THREE.Color();
-  const warm = rr(0, 1);
 
-  setRim(0xffb040);
-  const fur = tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 1.1, rimK: 1.1 });
-  const shellMats = [1, 2, 3].map((k) => tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 0.4, shell: k / 4, rimK: 1.1 }));
+  setRim(0xffc468);
+  const FUR = { tint: 0xb0aaa0, dark: 0x4a4540, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 };
+  const fur = tpm('pelt', FUR, { scale: 0.8, nrm: 0.3, rimK: 0.5 });
+  const shellMats = [1, 2, 3].map((k) => tpm('pelt', FUR, { scale: 0.8, nrm: 0.2, shell: k / 4, rimK: 0.5 }));
   const leather = tpm('leatherDark', { seed: 7 }, { scale: 14, nrm: 0.7 });
   const iron = tpm('iron', { seed: 4, metalness: 0.75, roughness: 0.9 }, { scale: 6, nrm: 0.8 });
-  const eyeM = glowMat(0xffa21a, 1.7, { rough: 0.2 });
-  const noseM = std(0x070605, { rough: 0.22 });
+  const eyeM = glowMat(0xffa21a, 2.0, { rough: 0.2 });
+  const noseM = std(0x070605, { rough: 0.18 });
 
-  // ------------------------------------------------------------------ skeleton
+  // ------------------------------------------------------------------ skeleton (sloped back: shoulders higher than the rump)
   const root = a.joint('root', a.model, 0, 0, 0);
-  const pelvis = a.joint('pelvis', root, 0, 0.82, -0.42);
-  const chest = a.joint('chest', pelvis, 0, 0.11, 0.82);
-  const neck1 = a.joint('neck1', chest, 0, 0.12, 0.3);
-  const neck2 = a.joint('neck2', neck1, 0, 0.05, 0.24);
-  const head = a.joint('head', neck2, 0, 0.03, 0.2); head.scale.setScalar(1.25);
-  neck1.rotation.x = 0.2; neck2.rotation.x = 0.08; head.rotation.x = -0.02; chest.rotation.x = -0.04;   // stalking: shoulders high, head low
-  const jaw = a.joint('jaw', head, 0, -0.04, 0.06); jaw.rotation.x = 0.06;
-  const eyes = a.joint('eyes', head, 0, 0.05, 0.19);
-  const ear = { [L]: a.joint('earL', head, 0.075, 0.13, 0.02), [R]: a.joint('earR', head, -0.075, 0.13, 0.02) };
-  const lip = { [L]: a.joint('lipL', head, 0.05, -0.04, 0.37), [R]: a.joint('lipR', head, -0.05, -0.04, 0.37) };
-  const tail = [a.joint('tail1', pelvis, 0, 0.06, -0.27)];
-  tail.push(a.joint('tail2', tail[0], 0, -0.03, -0.2), a.joint('tail3', tail[1], 0, -0.07, -0.18), a.joint('tail4', tail[2], 0, -0.1, -0.15));
+  const pelvis = a.joint('pelvis', root, 0, 0.73, -0.42);
+  const chest = a.joint('chest', pelvis, 0, 0.14, 0.78);
+  const neck1 = a.joint('neck1', chest, 0, 0.12, 0.28);
+  const neck2 = a.joint('neck2', neck1, 0, 0.05, 0.22);
+  const head = a.joint('head', neck2, 0, 0.03, 0.18);
+  const jaw = a.joint('jaw', head, 0, -0.035, 0.045); jaw.rotation.x = 0.1;
+  const eyes = a.joint('eyes', head, 0, 0.045, 0.16);
+  const ear = { [L]: a.joint('earL', head, 0.05, 0.095, 0.03), [R]: a.joint('earR', head, -0.05, 0.095, 0.03) };
+  const lip = { [L]: a.joint('lipL', head, 0.032, -0.05, 0.27), [R]: a.joint('lipR', head, -0.032, -0.05, 0.27) };
+  lip[L].rotation.x = -0.3; lip[R].rotation.x = -0.3;      // a permanent half-snarl
+  const tail = [a.joint('tail1', pelvis, 0, 0.04, -0.25)];
+  tail.push(a.joint('tail2', tail[0], 0, -0.03, -0.2), a.joint('tail3', tail[1], 0, -0.07, -0.18), a.joint('tail4', tail[2], 0, -0.1, -0.16));
   const sh = {}; const el = {}; const wr = {}; const hp = {}; const kn = {}; const hk = {};
   for (const s of [L, R]) {
     const k = s === L ? 'L' : 'R';
-    sh[s] = a.joint(`shoulder${k}`, chest, s * 0.19, -0.12, 0.14);
+    sh[s] = a.joint(`shoulder${k}`, chest, s * 0.125, -0.12, 0.14);
     el[s] = a.joint(`elbow${k}`, sh[s], 0, -0.34, -0.05);
-    wr[s] = a.joint(`wrist${k}`, el[s], 0, -0.36, 0.03);
-    hp[s] = a.joint(`hip${k}`, pelvis, s * 0.19, -0.04, -0.02);
-    kn[s] = a.joint(`knee${k}`, hp[s], 0, -0.3, 0.2);
-    hk[s] = a.joint(`hock${k}`, kn[s], 0, -0.3, -0.26);
+    wr[s] = a.joint(`wrist${k}`, el[s], 0, -0.36, 0.04);
+    hp[s] = a.joint(`hip${k}`, pelvis, s * 0.12, -0.04, -0.02);
+    kn[s] = a.joint(`knee${k}`, hp[s], 0, -0.27, 0.18);
+    hk[s] = a.joint(`hock${k}`, kn[s], 0, -0.27, -0.23);
   }
+  neck1.rotation.x = 0.16; neck2.rotation.x = 0.04; head.rotation.x = 0.0; chest.rotation.x = -0.05; pelvis.rotation.x = 0.0;
   const ikF = { [L]: a.joint('ikFL', a.model, 0, 0, 0), [R]: a.joint('ikFR', a.model, 0, 0, 0) };
   const ikH = { [L]: a.joint('ikHL', a.model, 0, 0, 0), [R]: a.joint('ikHR', a.model, 0, 0, 0) };
 
-  // ------------------------------------------------------------------ sculpt helpers
+  // ------------------------------------------------------------------ helpers
   const S = (joint, f, min, max, h, color, o = {}) => {
-    const g = sculpt(f, { min, max, h: h * Q * 2.1, color, aoR: o.aoR ?? 3.0, aoK: o.aoK ?? 0.85 });
-    kit.add(joint, g, o.mat || fur, o.xf || {});
-    return g;
+    const g = sculpt(f, { min, max, h: h * Q * 1.6, color, aoR: o.aoR ?? 2.4, aoK: o.aoK ?? 0.85 });
+    kit.add(joint, g, o.mat || fur, o.xf || {}); return g;
   };
-  // pelt colouring: dark saddle, light belly/chest/legs-inside, mottled by noise
-  const pelt = (lightBelow = 0.55, base = 0.9) => (x, y, z, nx, ny, nz, ao, c) => {
-    const n = 0.5 + 0.5 * NZ.n3(x * 6, y * 6, z * 6); const n2 = 0.5 + 0.5 * NZ.n3(x * 21 + 3, y * 21, z * 21);
-    const lo = sstep(0.15, -0.55, ny);
-    c.setRGB(1.0, 0.97, 0.93).multiplyScalar(base * (0.85 + n * 0.8));
-    c.lerp(tc.setRGB(0.95, 0.9, 0.8), lo * lightBelow * (0.6 + 0.4 * n2));
-    c.multiply(sc.setScalar(0.85 + 0.3 * n2));
-  };
-  const furSweep = (flow, len, n, r, joint, g, bendG = 0.0) => {
-    const pts = sampleSurface(g, Math.round(n * TUFT), rng);
-    const P = []; const C = []; const d = new THREE.Vector3(); const bend = new THREE.Vector3(0, -1, 0);
-    for (const q of pts) {
-      flow(q.p, d); d.addScaledVector(q.n, 0.55).normalize();
-      const l = lerp(len[0], len[1], rng());
-      const root = q.c.clone().multiplyScalar(0.75); const tip = q.c.clone().multiplyScalar(1.15 + rng() * 0.35).lerp(tc.setRGB(0.9, 0.86, 0.78), rng() * 0.2);
-      pushTuft(P, C, q.p.clone().addScaledVector(q.n, -0.012), d, l, r * (0.7 + rng() * 0.6), bend.clone().multiplyScalar(0.5 + bendG), root, tip);
-    }
-    if (P.length) kit.add(joint, tuftGeo(P, C), fur);
+  // coat colour: grey-brown body, darker saddle on the back, cream underside; medium-frequency mottling (no streaks)
+  const coat = (o = {}) => (x, y, z, nx, ny, nz, ao, c) => {
+    const n = 0.5 + 0.5 * NZ.n3(x * 7, y * 7, z * 7); const n2 = 0.5 + 0.5 * NZ.n3(x * 19 + 3, y * 19, z * 19 + 1);
+    c.setRGB(0.46, 0.43, 0.4).multiplyScalar(1.2 + (n - 0.5) * 0.7);
+    c.lerp(tc.setRGB(0.16, 0.15, 0.14), sstep(0.1, 0.8, ny + (n2 - 0.5) * 0.5) * (o.saddle ?? 0.9));
+    c.lerp(tc.setRGB(1.0, 0.9, 0.72), sstep(0.05, -0.65, ny + (n2 - 0.5) * 0.3) * (o.cream ?? 0.9));
+    if (o.fx) c.lerp(tc.setRGB(0.12, 0.1, 0.09), sstep(0.35, 0.8, nz) * o.fx);        // dark leg fronts
+    if (o.dark) c.multiplyScalar(o.dark);
+    c.multiplyScalar(0.8 + 0.4 * n2);
   };
 
-  // ------------------------------------------------------------------ body
-  const pelvisF = U(0.1, mirX(sdf.ell(0.17, -0.07, -0.06, 0.15, 0.23, 0.25)), sdf.ell(0, 0.02, -0.08, 0.2, 0.2, 0.3), sdf.cap([0, -0.1, 0.0], [0, -0.12, 0.62], 0.17, 0.21), sdf.cap([0, 0.15, -0.2], [0, 0.18, 0.55], 0.11, 0.14), sdf.sphere(0, 0.0, -0.3, 0.14));
-  const pelvisG = S(pelvis, pelvisF, [-0.42, -0.5, -0.5], [0.42, 0.45, 0.85], 0.032, pelt(0.45));
-  const chestF = U(0.1, sdf.ell(0, -0.05, 0, 0.23, 0.34, 0.42), sdf.ell(0, 0.2, 0.12, 0.15, 0.12, 0.24), mirX(sdf.ell(0.19, -0.05, 0.13, 0.1, 0.23, 0.2, [0, 0, 0.12])), sdf.ell(0, -0.3, 0.2, 0.13, 0.15, 0.2), sdf.cap([0, 0, -0.35], [0, 0.0, 0.3], 0.22, 0.24), sdf.cap([0, 0.05, 0.2], [0, 0.1, 0.42], 0.18, 0.16));
-  const scar = (x, y, z) => { // pale scar lines on the left flank and across the chest
-    const d1 = Math.abs((x - 0.21) * 0.9 + (z - 0.1) * 0.0) < 0.012 && y > -0.2 && y < 0.1 && Math.abs(z - 0.05 - y * 0.8) < 0.1 ? 1 : 0;
-    return d1;
-  };
-  const chestCol = (x, y, z, nx, ny, nz, ao, c) => {
-    pelt(0.6)(x, y, z, nx, ny, nz, ao, c);
-    const sc1 = sstep(0.012, 0.004, Math.abs(((x - 0.235) * 0.6 + (y - 0.04) * 0.8) - 0.01 * Math.sin(z * 30))) * sstep(0.3, 0.1, Math.abs(z - 0.1)) * (x > 0.1 ? 1 : 0);
-    const sc2 = sstep(0.012, 0.004, Math.abs((x + 0.06) * 0.7 + (y + 0.12) * 0.7 - 0.0)) * sstep(0.12, 0.03, Math.abs(z - 0.36)) * (z > 0.2 ? 1 : 0);
-    c.lerp(tc.setRGB(0.85, 0.68, 0.62), Math.max(sc1, sc2) * 0.8);
-  };
-  const chestG = S(chest, chestF, [-0.42, -0.55, -0.55], [0.42, 0.5, 0.7], 0.032, chestCol);
-  const neckF1 = U(0.08, sdf.cap([0, -0.02, -0.12], [0, 0.0, 0.3], 0.19, 0.15), sdf.ell(0, 0.05, 0.05, 0.14, 0.16, 0.22), sdf.ell(0, -0.1, 0.1, 0.12, 0.1, 0.2));
-  const neckG1 = S(neck1, neckF1, [-0.32, -0.35, -0.3], [0.32, 0.35, 0.5], 0.026, pelt(0.35));
-  const neckG2 = S(neck2, U(0.07, sdf.cap([0, -0.02, -0.08], [0, 0.0, 0.27], 0.16, 0.13), sdf.ell(0, -0.07, 0.08, 0.1, 0.1, 0.16)), [-0.28, -0.3, -0.2], [0.28, 0.3, 0.42], 0.024, pelt(0.4));
+  // ------------------------------------------------------------------ torso: deep narrow chest, tucked waist, sloped back
+  const pelvisF = U(0.08, mirX(sdf.ell(0.13, -0.07, -0.06, 0.12, 0.21, 0.25)), sdf.ell(0, 0.0, -0.08, 0.16, 0.19, 0.3), sdf.cap([0, -0.08, 0.05], [0, -0.1, 0.55], 0.1, 0.13), sdf.cap([0, 0.12, -0.2], [0, 0.14, 0.45], 0.075, 0.09), sdf.sphere(0, -0.01, -0.3, 0.11));
+  S(pelvis, pelvisF, [-0.35, -0.45, -0.5], [0.35, 0.4, 0.8], 0.026, coat({ cream: 0.8 }));
+  const chestF = U(0.08, sdf.ell(0, -0.06, 0.0, 0.17, 0.3, 0.38), sdf.ell(0, 0.17, 0.1, 0.1, 0.1, 0.22), mirX(sdf.ell(0.12, -0.05, 0.12, 0.07, 0.2, 0.17, [0, 0, 0.1])), sdf.ell(0, -0.26, 0.16, 0.11, 0.11, 0.2), sdf.cap([0, 0, -0.3], [0, 0, 0.25], 0.13, 0.15), sdf.cap([0, 0.04, 0.2], [0, 0.1, 0.4], 0.1, 0.085));
+  const chestCol = (x, y, z, nx, ny, nz, ao, c) => { coat({ cream: 1.0 })(x, y, z, nx, ny, nz, ao, c); const sc1 = sstep(0.01, 0.003, Math.abs((x - 0.17) * 0.6 + (y - 0.04) * 0.8)) * (x > 0.1 ? 1 : 0) * sstep(0.25, 0.1, Math.abs(z - 0.1)); c.lerp(tc.setRGB(0.9, 0.7, 0.62), sc1 * 0.7); };
+  const chestG = S(chest, chestF, [-0.35, -0.55, -0.5], [0.35, 0.5, 0.65], 0.026, chestCol);
+  const neckF1 = U(0.07, sdf.cap([0, -0.02, -0.12], [0, 0.0, 0.28], 0.1, 0.075), sdf.ell(0, 0.03, 0.05, 0.075, 0.09, 0.2), sdf.ell(0, -0.08, 0.1, 0.06, 0.06, 0.18));
+  const neckG1 = S(neck1, neckF1, [-0.28, -0.3, -0.28], [0.28, 0.3, 0.45], 0.022, coat({ cream: 0.9, saddle: 0.6 }));
+  const neckG2 = S(neck2, U(0.06, sdf.cap([0, -0.02, -0.08], [0, 0.0, 0.24], 0.08, 0.065), sdf.ell(0, -0.05, 0.08, 0.055, 0.06, 0.15)), [-0.25, -0.26, -0.2], [0.25, 0.26, 0.38], 0.02, coat({ cream: 0.9, saddle: 0.5 }));
 
-  // ---- shell fur: three inflated, strand-masked copies of the big masses (dark roots, light tips; the shader discards by strand hash)
-  const shellBody = (joint, f, min, max, col) => {
-    const g0 = sculpt(f, { min, max, h: 0.058 * Q, color: col, aoK: 0.6, aoR: 3 });
-    for (let k = 1; k <= 3; k++) {
-      const g = g0.clone(); const p = g.attributes.position; const n = g.attributes.normal;
-      for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) + n.getX(i) * k * 0.016, p.getY(i) + n.getY(i) * k * 0.016 - k * 0.004, p.getZ(i) + n.getZ(i) * k * 0.016);
-      kit.add(joint, g, shellMats[k - 1]);
-    }
-  };
-  shellBody(pelvis, pelvisF, [-0.42, -0.5, -0.5], [0.42, 0.45, 0.85], pelt(0.45));
-  shellBody(chest, chestF, [-0.42, -0.55, -0.55], [0.42, 0.5, 0.7], chestCol);
-
-  // ---- head
-  const hSkull = U(0.05, sdf.ell(0, 0.045, 0.05, 0.085, 0.11, 0.14), sdf.ell(0, 0.085, 0.0, 0.075, 0.085, 0.1));
-  const hBrow = mirX(sdf.cap([0.078, 0.108, 0.07], [0.04, 0.088, 0.2], 0.03, 0.022));
-  const hMuz = U(0.03, sdf.cap([0, 0.02, 0.15], [0, -0.01, 0.5], 0.07, 0.042), sdf.ell(0, -0.025, 0.33, 0.06, 0.045, 0.17));
-  const hStop = sdf.ell(0, 0.07, 0.19, 0.04, 0.05, 0.07);
-  const hCheek = mirX(sdf.ell(0.075, -0.04, 0.04, 0.04, 0.065, 0.09));
-  const hSock = mirX(sdf.ell(0.062, 0.062, 0.2, 0.024, 0.02, 0.032));
-  const hNose = sdf.sphere(0, -0.008, 0.505, 0.029);
-  const hBase = U(0.02, U(0.045, hSkull, hBrow, hMuz, hStop, hCheek), hNose);
-  const hFull = (x, y, z) => Math.max(hBase(x, y, z), -(y + 0.098 - 0.0 * z), -hSock(x, y, z));  // flat underside: the jaw is separate
+  // ------------------------------------------------------------------ head: narrow skull, straight wedge muzzle (~45% of head length), flat bridge
+  const hSkull = U(0.05, sdf.ell(0, 0.04, 0.06, 0.075, 0.085, 0.12), sdf.ell(0, 0.07, 0.01, 0.065, 0.07, 0.09));
+  const hBrow = mirX(sdf.cap([0.06, 0.082, 0.1], [0.032, 0.07, 0.19], 0.02, 0.016));
+  const hMuz = U(0.025, sdf.cap([0, 0.015, 0.16], [0, 0.0, 0.43], 0.05, 0.03), sdf.ell(0, -0.012, 0.32, 0.045, 0.03, 0.13));
+  const hCheek = mirX(sdf.ell(0.055, -0.03, 0.05, 0.03, 0.05, 0.08));
+  const hSock = mirX(sdf.ell(0.052, 0.052, 0.165, 0.02, 0.016, 0.026, [0, 0, 0.4]));
+  const hNose = sdf.ell(0, 0.002, 0.45, 0.03, 0.022, 0.03);
+  const hBase = U(0.02, U(0.035, hSkull, hBrow, hMuz, hCheek), hNose);
+  const hFull = (x, y, z) => Math.max(hBase(x, y, z), -(y + 0.062), -hSock(x, y, z));
   const hCol = (x, y, z, nx, ny, nz, ao, c) => {
-    pelt(0.7)(x, y, z, nx, ny, nz, ao, c);
-    const mask = sstep(0.25, 0.45, z) * sstep(0.15, -0.02, y - 0.0);                 // pale muzzle
-    c.lerp(tc.setRGB(0.88, 0.82, 0.72), mask * 0.7);
-    const eyeR = Math.exp(-(((Math.abs(x) - 0.07) / 0.03) ** 2 + ((y - 0.055) / 0.025) ** 2 + ((z - 0.19) / 0.05) ** 2)); c.multiplyScalar(1 - eyeR * 0.5);
-    const nosepad = sstep(0.5, 0.52, z + 0.0) * 1; c.lerp(tc.setRGB(0.02, 0.02, 0.02), nosepad);
-    const lipk = Math.exp(-(((y + 0.075) / 0.02) ** 2)) * sstep(0.3, 0.5, z); c.lerp(tc.setRGB(0.05, 0.04, 0.04), lipk * 0.7);
+    coat({ cream: 0.7, saddle: 0.7 })(x, y, z, nx, ny, nz, ao, c);
+    c.lerp(tc.setRGB(1.0, 0.92, 0.76), sstep(0.2, 0.36, z) * sstep(0.04, -0.01, y + 0.0) * 0.8);                // cream muzzle
+    c.lerp(tc.setRGB(0.12, 0.1, 0.09), sstep(0.24, 0.34, z) * sstep(-0.005, 0.03, y) * 0.55);                    // dark bridge stripe
+    c.multiplyScalar(1 - Math.exp(-(((Math.abs(x) - 0.052) / 0.03) ** 2 + ((y - 0.052) / 0.025) ** 2 + ((z - 0.165) / 0.05) ** 2)) * 0.6);
+    c.lerp(tc.setRGB(0.02, 0.02, 0.02), sstep(0.42, 0.44, z));
   };
-  const headG = S(head, hFull, [-0.25, -0.12, -0.15], [0.25, 0.25, 0.65], 0.015, hCol, { aoR: 1.6 });
-  // jaw
+  const headG = S(head, hFull, [-0.2, -0.1, -0.12], [0.2, 0.2, 0.55], 0.011, hCol, { aoR: 1.4 });
+  kit.add(head, new THREE.SphereGeometry(0.033, 18, 12), noseM, { p: [0, 0.0, 0.452], s: [1.0, 0.72, 0.8] });
   const jawF = (() => {
-    const ram = mirX(sdf.cap([0.07, -0.01, 0.02], [0.032, -0.02, 0.45], 0.04, 0.03));
-    const chin = sdf.ell(0, -0.03, 0.47, 0.042, 0.03, 0.05);
-    const under = sdf.ell(0, -0.04, 0.22, 0.066, 0.04, 0.19);
-    return U(0.02, ram, chin, under);
+    const ram = mirX(sdf.cap([0.05, -0.012, 0.0], [0.026, -0.022, 0.36], 0.032, 0.02));
+    const chin = sdf.ell(0, -0.022, 0.375, 0.03, 0.02, 0.04);
+    return U(0.018, ram, chin, sdf.ell(0, -0.03, 0.2, 0.05, 0.03, 0.17));
   })();
-  S(jaw, jawF, [-0.2, -0.2, -0.12], [0.2, 0.15, 0.6], 0.011, (x, y, z, nx, ny, nz, ao, c) => { pelt(0.9)(x, y, z, nx, ny, nz, ao, c); c.lerp(tc.setRGB(0.55, 0.12, 0.14), sstep(0.0, 0.03, y + 0.025) * sstep(0.5, 0.25, z) * 0.9); }, { xf: { p: [0, -0.0, 0] } });
-  // tongue + mouth interior tint is in the jaw colours; nose
-  kit.add(head, new THREE.SphereGeometry(0.032, 18, 12), noseM, { p: [0, -0.008, 0.518], s: [1.0, 0.72, 0.8] });
-  // teeth: big canines, small incisors, carnassials. ivory, untextured, on the fur material
-  const tooth = (jn, p, len, r, flip, ang = 0) => kit.add(jn, spike(len, r, { curve: 0.12, sides: 5, segs: 3, col0: 0x6a5a30, col1: 0xf0e8c8 }), fur, { p, r: [flip ? Math.PI : 0, 0, ang], untex: true });
+  S(jaw, jawF, [-0.15, -0.12, -0.1], [0.15, 0.1, 0.5], 0.01, (x, y, z, nx, ny, nz, ao, c) => { coat({ cream: 1.0 })(x, y, z, nx, ny, nz, ao, c); c.lerp(tc.setRGB(1.0, 0.92, 0.76), 0.6); c.lerp(tc.setRGB(0.5, 0.1, 0.12), sstep(0.0, 0.02, y + 0.012) * sstep(0.3, 0.15, z) * 0.9); });
+  // fangs: long canines, small incisors, carnassials; ivory, untextured
+  const tooth = (jn, p, len, r, flip, ang = 0) => kit.add(jn, spike(len, r, { curve: 0.1, sides: 5, segs: 3, col0: 0x6a5a30, col1: 0xf4ecd0 }), fur, { p, r: [flip ? Math.PI : 0, 0, ang], untex: true });
   for (const s of [L, R]) {
-    tooth(head, [s * 0.036, -0.088, 0.485], 0.075, 0.0125, true, s * 0.12);
-    tooth(jaw, [s * 0.03, 0.03, 0.455], 0.06, 0.0105, false, s * -0.1);
-    for (let i = 0; i < 3; i++) tooth(head, [s * (0.012 + i * 0.012), -0.09, 0.52 - i * 0.004], 0.018, 0.005, true);
-    for (let i = 0; i < 3; i++) tooth(jaw, [s * (0.012 + i * 0.01), 0.03, 0.48 - i * 0.004], 0.016, 0.0045, false);
-    for (let i = 0; i < 3; i++) { tooth(head, [s * 0.052, -0.09, 0.33 - i * 0.04], 0.026 - i * 0.003, 0.0085, true); tooth(jaw, [s * 0.045, 0.03, 0.32 - i * 0.04], 0.022, 0.0075, false); }
+    tooth(head, [s * 0.03, -0.062, 0.385], 0.062, 0.011, true, s * 0.1);
+    tooth(jaw, [s * 0.025, 0.022, 0.35], 0.05, 0.009, false, s * -0.08);
+    for (let i = 0; i < 3; i++) { tooth(head, [s * (0.01 + i * 0.01), -0.062, 0.42 - i * 0.004], 0.016, 0.0045, true); tooth(jaw, [s * (0.01 + i * 0.009), 0.022, 0.385 - i * 0.004], 0.014, 0.004, false); }
+    for (let i = 0; i < 3; i++) { tooth(head, [s * 0.04, -0.062, 0.3 - i * 0.035], 0.024 - i * 0.003, 0.0075, true); tooth(jaw, [s * 0.034, 0.022, 0.29 - i * 0.035], 0.02, 0.0065, false); }
   }
-  // eyes: amber, deep set, with a pinched dark pupil and a hot glint
+  // eyes: amber, slanted under a heavy brow, hot glint
   for (const s of [L, R]) {
-    const eg = new THREE.SphereGeometry(0.0235, 18, 14); const pp = eg.attributes.position; const col = new Float32Array(pp.count * 3); const em = new Float32Array(pp.count);
+    const eg = new THREE.SphereGeometry(0.0185, 18, 14); const pp = eg.attributes.position; const col = new Float32Array(pp.count * 3); const em = new Float32Array(pp.count);
     for (let i = 0; i < pp.count; i++) {
-      const x = pp.getX(i); const y = pp.getY(i); const z = pp.getZ(i); const rd = Math.hypot(x, y) / 0.0235; const fr = z > 0;
-      tc.set(0xffcf40).lerp(sc.set(0xe86a10), sstep(0.3, 0.9, rd)); let e = lerp(1.2, 0.5, sstep(0.2, 1, rd));
-      if (fr && (x / 0.0052) ** 2 + (y / 0.0095) ** 2 < 1) { tc.setRGB(0.01, 0.005, 0); e = 0; }
-      if (fr && Math.hypot(x - s * 0.006, y - 0.007) < 0.0028) { tc.setRGB(1, 1, 1); e = 2.4; }
+      const x = pp.getX(i); const y = pp.getY(i); const z = pp.getZ(i); const rd = Math.hypot(x, y) / 0.0185; const fr = z > 0;
+      tc.set(0xffd040).lerp(sc.set(0xe86a10), sstep(0.3, 0.9, rd)); let e = lerp(1.3, 0.5, sstep(0.2, 1, rd));
+      if (fr && (x / 0.0042) ** 2 + (y / 0.0085) ** 2 < 1) { tc.setRGB(0.01, 0.005, 0); e = 0; }
+      if (fr && Math.hypot(x - s * 0.006, y - 0.007) < 0.0028) { tc.setRGB(1, 1, 1); e = 2.6; }
       if (!fr) e = 0.3;
       col[i * 3] = tc.r; col[i * 3 + 1] = tc.g; col[i * 3 + 2] = tc.b; em[i] = e;
     }
     eg.setAttribute('color', new THREE.BufferAttribute(col, 3)); eg.setAttribute('aEmber', new THREE.BufferAttribute(em, 1));
-    kit.add(eyes, eg, eyeM, { p: [s * 0.058, 0.01, 0.01], r: [0.0, s * 0.5, s * -0.35] });
-    // brow fur ridge shading / lids: a darker half-ellipsoid hooding the eye
-    kit.add(eyes, new THREE.SphereGeometry(0.021, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), fur, { p: [s * 0.066, 0.001, -0.001], r: [rad(-25), 0, s * rad(-20)], tint: 0x403c38, untex: true });
+    kit.add(eyes, eg, eyeM, { p: [s * 0.05, 0.003, 0.0], r: [0.0, s * 0.55, s * -0.5] });
+    kit.add(eyes, new THREE.SphereGeometry(0.023, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), fur, { p: [s * 0.05, 0.004, -0.002], r: [rad(-30), 0, s * rad(-35)], tint: 0x2a2623, untex: true });
   }
-  // ears: leaf with notch and ragged edge; pinned back at rest
+  // ears: tall, pointed, tilted forward; dark tips; a notch torn from the left one
   for (const [i, s] of [L, R].entries()) {
-    const notch = i === 0 ? [{ u: 0.55, d: 0.55, w: 0.07, side: 1 }, { u: 0.8, d: 0.35, w: 0.05, side: -1 }] : [{ u: 0.7, d: 0.4, w: 0.05, side: -1 }];
-    const g = leaf({ len: 0.27, halfW: (u) => 0.1 * Math.pow(1 - u, 0.8) * Math.min(1, 0.4 + u * 5), thick: 0.006, cup: 0.02, bend: -0.12, notch, jag: 0.12, seed: seed + i, segU: 12, segV: 6, col: 0xffffff, edgeCol: 0x3a3430 });
-    kit.add(ear[s], g, fur, { r: [rad(-10), s * rad(10), s * rad(-18)], tint: 0xbcb4a8 });
-    const P = []; const C = []; const rimC = new THREE.Color(0.3, 0.28, 0.26); const tipC = new THREE.Color(0.75, 0.7, 0.62);
-    for (let k = 0; k < 14; k++) { const u = rng(); const w = 0.07 * (1 - u) * (rng() < 0.5 ? 1 : -1); pushTuft(P, C, new THREE.Vector3(w * 0.9, 0.2 * u * 0.95, 0.0), new THREE.Vector3(0.0, 1, 0.1).normalize(), 0.03, 0.005, new THREE.Vector3(0, 0, -1), rimC, tipC); }
-    kit.add(ear[s], tuftGeo(P, C), fur, { r: [rad(-10), s * rad(10), s * rad(-18)] });
+    const notch = i === 0 ? [{ u: 0.62, d: 0.5, w: 0.06, side: 1 }] : [];
+    const g = leaf({ len: 0.24, halfW: (u) => 0.06 * Math.pow(1 - u, 0.9) * Math.min(1, 0.5 + u * 4), thick: 0.005, cup: 0.014, bend: 0.1, notch, jag: i === 0 ? 0.1 : 0.04, seed: seed + i, segU: 12, segV: 5, col: 0xffffff, edgeCol: 0x3a3430 });
+    paintGeo(g, (x, y, z, c) => { c.setRGB(0.7, 0.6, 0.5); c.lerp(tc.setRGB(0.1, 0.08, 0.07), sstep(0.09, 0.2, y)); c.lerp(tc.setRGB(0.9, 0.78, 0.65), sstep(0.07, 0.0, y) * (z > 0 ? 0.5 : 0)); });
+    kit.add(ear[s], g, fur, { r: [rad(14), s * rad(-6), s * rad(-14)] });
+    const P = []; const C = []; for (let k = 0; k < 10; k++) { const u = 0.05 + rng() * 0.5; const w = 0.055 * (1 - u) * (rng() < 0.5 ? 1 : -1); pushTuft(P, C, new THREE.Vector3(w * 0.9, 0.24 * u, 0.004), new THREE.Vector3(0, 1, 0.2).normalize(), 0.025, 0.004, new THREE.Vector3(0, 0, -1), new THREE.Color(0.5, 0.45, 0.4), new THREE.Color(0.9, 0.82, 0.7)); }
+    kit.add(ear[s], tuftGeo(P, C), fur, { r: [rad(14), s * rad(-6), s * rad(-14)] });
   }
-  // lips (flews): lift to bare the fangs when snarling
-  for (const s of [L, R]) kit.add(lip[s], new THREE.SphereGeometry(1, 14, 10), fur, { p: [s * 0.0, 0.01, 0.0], s: [0.034, 0.03, 0.09], tint: 0x8a857c });
+  for (const s of [L, R]) kit.add(lip[s], new THREE.SphereGeometry(1, 14, 10), fur, { p: [0, 0.01, 0.0], s: [0.022, 0.022, 0.085], tint: 0xe6d6b8, untex: true });
 
-  // ---- limbs
-  const legCol = (x, y, z, nx, ny, nz, ao, c) => { pelt(0.05, 1.0)(x, y, z, nx, ny, nz, ao, c); const inner = sstep(0.0, 0.06, -Math.sign(x || 1) * x * 0 + (0.0)); c.multiplyScalar(0.8 + 0.4 * sstep(-0.3, -0.05, y * 0 + z * 0)); void inner; c.multiplyScalar(0.7); };
+  // ------------------------------------------------------------------ limbs: thin, long, digitigrade; big dark paws
+  const legF = coat({ cream: 0.3, saddle: 0.3, fx: 0.7, dark: 0.85 });
   for (const s of [L, R]) {
-    S(sh[s], U(0.05, sdf.cap([0, 0, 0], [0, -0.34, -0.05], 0.14, 0.095), sdf.ell(0, -0.05, 0.02, 0.12, 0.16, 0.14)), [-0.22, -0.46, -0.22], [0.22, 0.14, 0.2], 0.018, legCol);
-    S(el[s], U(0.03, sdf.cap([0, 0, 0], [0, -0.36, 0.03], 0.092, 0.056), sdf.sphere(0, 0.0, -0.03, 0.075)), [-0.18, -0.5, -0.18], [0.18, 0.12, 0.18], 0.016, legCol);
-    const toes = [-1, -0.35, 0.35, 1].map((t) => sdf.cap([t * 0.008, -0.08, 0.05], [t * 0.034, -0.105, 0.14 - Math.abs(t) * 0.012], 0.032, 0.026));
-    S(wr[s], U(0.02, sdf.cap([0, 0, 0], [0, -0.09, 0.06], 0.042, 0.05), sdf.ell(0, -0.1, 0.09, 0.07, 0.045, 0.1), ...toes), [-0.16, -0.22, -0.12], [0.16, 0.06, 0.28], 0.012, legCol);
-    for (const t of [-1, -0.35, 0.35, 1]) kit.add(wr[s], spike(0.04, 0.009, { curve: -0.3, col0: 0x2a2420, col1: 0xb8aa8a }), fur, { p: [t * 0.034, -0.11, 0.152 - Math.abs(t) * 0.012], r: [rad(95), 0, t * -0.1], untex: true });
-    // hind
-    S(hp[s], U(0.07, sdf.cap([0, 0, 0], [0, -0.3, 0.2], 0.17, 0.1), sdf.ell(s * 0.02, -0.08, -0.02, 0.14, 0.22, 0.19)), [-0.3, -0.5, -0.28], [0.3, 0.18, 0.4], 0.02, legCol);
-    S(kn[s], U(0.04, sdf.cap([0, 0, 0], [0, -0.3, -0.26], 0.1, 0.05), sdf.sphere(0, 0, 0.0, 0.09)), [-0.18, -0.42, -0.4], [0.18, 0.12, 0.2], 0.013, legCol);
-    const toesH = [-1, -0.35, 0.35, 1].map((t) => sdf.cap([t * 0.008, -0.16, 0.06], [t * 0.032, -0.185, 0.14 - Math.abs(t) * 0.012], 0.03, 0.024));
-    S(hk[s], U(0.02, sdf.cap([0, 0, 0], [0, -0.15, 0.05], 0.06, 0.05), sdf.ell(0, -0.17, 0.09, 0.075, 0.042, 0.11), sdf.sphere(0, 0.0, -0.02, 0.06), ...toesH), [-0.16, -0.32, -0.15], [0.16, 0.08, 0.28], 0.012, legCol);
-    for (const t of [-1, -0.35, 0.35, 1]) kit.add(hk[s], spike(0.038, 0.009, { curve: -0.3, col0: 0x2a2420, col1: 0xb8aa8a }), fur, { p: [t * 0.032, -0.2, 0.142 - Math.abs(t) * 0.012], r: [rad(95), 0, t * -0.1], untex: true });
-    // dewclaw
-    kit.add(wr[s], spike(0.03, 0.007, { curve: 0.3, col0: 0x2a2420, col1: 0xb8aa8a }), fur, { p: [s * 0.04, -0.06, -0.01], r: [rad(160), 0, 0], untex: true });
+    S(sh[s], U(0.04, sdf.cap([0, 0, 0], [0, -0.34, -0.05], 0.095, 0.062), sdf.ell(0, -0.06, 0.02, 0.085, 0.14, 0.12)), [-0.2, -0.5, -0.2], [0.2, 0.14, 0.2], 0.013, legF);
+    S(el[s], U(0.025, sdf.cap([0, 0, 0], [0, -0.36, 0.04], 0.06, 0.038), sdf.sphere(0, 0, -0.03, 0.06)), [-0.15, -0.54, -0.15], [0.15, 0.1, 0.18], 0.011, legF);
+    const toes = [-1, -0.35, 0.35, 1].map((t) => sdf.cap([t * 0.008, -0.04, 0.05], [t * 0.03, -0.062, 0.15 - Math.abs(t) * 0.012], 0.028, 0.022));
+    S(wr[s], U(0.02, sdf.cap([0, 0, 0], [0, -0.05, 0.05], 0.032, 0.04), sdf.ell(0, -0.045, 0.08, 0.06, 0.04, 0.1), ...toes), [-0.14, -0.2, -0.1], [0.14, 0.04, 0.28], 0.009, (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.1, 0.085, 0.075).multiplyScalar(0.8 + 0.4 * ao); });
+    for (const t of [-1, -0.35, 0.35, 1]) kit.add(wr[s], spike(0.04, 0.008, { curve: -0.3, col0: 0x1a1612, col1: 0x6a5c48 }), fur, { p: [t * 0.03, -0.065, 0.152 - Math.abs(t) * 0.012], r: [rad(95), 0, t * -0.1], untex: true });
+    // hind: slim thigh with a visible muscle, angled shin, long hock, big paw
+    S(hp[s], U(0.05, sdf.cap([0, 0, 0], [0, -0.27, 0.18], 0.125, 0.068), sdf.ell(s * 0.015, -0.07, -0.02, 0.12, 0.2, 0.17)), [-0.25, -0.46, -0.28], [0.25, 0.16, 0.38], 0.014, legF);
+    S(kn[s], U(0.03, sdf.cap([0, 0, 0], [0, -0.27, -0.23], 0.07, 0.04), sdf.sphere(0, 0, 0.0, 0.07)), [-0.14, -0.42, -0.4], [0.14, 0.1, 0.16], 0.011, legF);
+    const toesH = [-1, -0.35, 0.35, 1].map((t) => sdf.cap([t * 0.008, -0.14, 0.06], [t * 0.03, -0.16, 0.14 - Math.abs(t) * 0.012], 0.028, 0.022));
+    S(hk[s], U(0.02, sdf.cap([0, 0, 0], [0, -0.13, 0.05], 0.036, 0.034), sdf.ell(0, -0.15, 0.08, 0.06, 0.04, 0.1), sdf.sphere(0, 0.0, -0.02, 0.04), ...toesH), [-0.14, -0.28, -0.1], [0.14, 0.06, 0.26], 0.009, (x, y, z, nx, ny, nz, ao, c) => { const k = sstep(-0.1, 0.0, y); coat({ cream: 0.2, saddle: 0.2, dark: 0.85 })(x, y, z, nx, ny, nz, ao, c); c.lerp(tc.setRGB(0.1, 0.085, 0.075), 1 - k); });
+    for (const t of [-1, -0.35, 0.35, 1]) kit.add(hk[s], spike(0.038, 0.008, { curve: -0.3, col0: 0x1a1612, col1: 0x6a5c48 }), fur, { p: [t * 0.03, -0.17, 0.142 - Math.abs(t) * 0.012], r: [rad(95), 0, t * -0.1], untex: true });
   }
-  // tail: tapered bushy chain
-  const tailR = [0.085, 0.075, 0.065, 0.05];
-  tail.forEach((j, i) => S(j, sdf.cap([0, 0, 0], [0, i < 3 ? [-0.03, -0.07, -0.1][i] : -0.02, [-0.2, -0.18, -0.15, -0.22][i]], tailR[i], i < 3 ? tailR[i + 1] : 0.025), [-0.16, -0.25, -0.34], [0.16, 0.16, 0.12], 0.014, (x, y, z, nx, ny, nz, ao, c) => { pelt(0.2)(x, y, z, nx, ny, nz, ao, c); if (i === 3) c.multiplyScalar(0.55); }));
+  // bushy low tail
+  const tailR = [0.075, 0.075, 0.07, 0.05];
+  const tailF = (i) => sdf.cap([0, 0, 0], [0, i < 3 ? [-0.03, -0.07, -0.1][i] : -0.02, [-0.2, -0.18, -0.16, -0.22][i]], tailR[i], i < 3 ? tailR[i + 1] : 0.03);
+  tail.forEach((j, i) => S(j, tailF(i), [-0.16, -0.25, -0.34], [0.16, 0.16, 0.12], 0.016, (x, y, z, nx, ny, nz, ao, c) => { coat({ cream: 0.3, saddle: 0.8 })(x, y, z, nx, ny, nz, ao, c); if (i === 3) c.lerp(tc.setRGB(0.1, 0.09, 0.08), 0.7); }));
 
-  // ---- fur tufts: swept back along the body, hanging on legs; denser on mane/shoulders/ruff
-  const back = new THREE.Vector3(0, 0, -1);
-  const bodyFlow = (p, d) => d.set(0, -0.25, -1).normalize();
-  const maneFlow = (p, d) => d.set(0, 0.15, -1).normalize();
-  const legFlow = (p, d) => d.set(0, -1, -0.3).normalize();
-  furSweep(bodyFlow, [0.06, 0.14], 240, 0.0075, pelvis, pelvisG);
-  furSweep(bodyFlow, [0.07, 0.16], 260, 0.0078, chest, chestG);
-  furSweep(maneFlow, [0.1, 0.22], 220, 0.009, neck1, neckG1, 0.4);
-  furSweep(maneFlow, [0.09, 0.2], 170, 0.009, neck2, neckG2, 0.4);
-  furSweep((p, d) => d.set(0, 0.0, -1).normalize(), [0.04, 0.09], 220, 0.0055, head, headG);
-  const tailG = null; void tailG; void back;
-  for (const s of [L, R]) {
-    // legs: grab the sculpt geometry back from the kit lists is awkward, so scatter on simple proxies
-    const proxy = (f, min, max) => sculpt(f, { min, max, h: 0.03 * Q, aoK: 0 });
-    furSweep(legFlow, [0.05, 0.11], 90, 0.006, sh[s], proxy(U(0.05, sdf.cap([0, 0, 0], [0, -0.34, -0.05], 0.12, 0.085), sdf.ell(0, -0.05, 0.02, 0.1, 0.14, 0.12)), [-0.25, -0.5, -0.25], [0.25, 0.16, 0.22]));
-    furSweep(legFlow, [0.04, 0.09], 60, 0.005, el[s], proxy(sdf.cap([0, 0, 0], [0, -0.36, 0.03], 0.082, 0.05), [-0.2, -0.5, -0.2], [0.2, 0.14, 0.2]));
-    furSweep(legFlow, [0.06, 0.13], 110, 0.007, hp[s], proxy(U(0.07, sdf.cap([0, 0, 0], [0, -0.3, 0.2], 0.15, 0.09), sdf.ell(s * 0.02, -0.08, -0.02, 0.12, 0.2, 0.16)), [-0.32, -0.5, -0.3], [0.32, 0.2, 0.42]));
-    furSweep(legFlow, [0.04, 0.09], 60, 0.005, kn[s], proxy(sdf.cap([0, 0, 0], [0, -0.3, -0.26], 0.09, 0.05), [-0.2, -0.45, -0.42], [0.2, 0.14, 0.22]));
-  }
-  for (const s of [L, R]) {
-    const pawProxy = (f, min, max) => sculpt(f, { min, max, h: 0.02 * Q, aoK: 0, color: (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.4, 0.38, 0.36); } });
-    furSweep((p, d) => d.set(0, -0.4, 0.5).normalize(), [0.03, 0.06], 55, 0.0045, wr[s], pawProxy(sdf.ell(0, -0.1, 0.09, 0.075, 0.05, 0.11), [-0.15, -0.2, -0.05], [0.15, 0.03, 0.25]));
-    furSweep((p, d) => d.set(0, -0.4, 0.5).normalize(), [0.03, 0.06], 55, 0.0045, hk[s], pawProxy(sdf.ell(0, -0.17, 0.09, 0.075, 0.05, 0.11), [-0.15, -0.26, -0.05], [0.15, -0.08, 0.25]));
-  }
+  // ------------------------------------------------------------------ fur: shells + swept tufts only on neck, shoulders (chest) and tail
+  const shellBody = (joint, f, min, max, col) => {
+    const g0 = sculpt(f, { min, max, h: 0.06 * Q, color: col, aoK: 0.5, aoR: 3 });
+    for (let k = 1; k <= 3; k++) {
+      const g = g0.clone(); const p = g.attributes.position; const n = g.attributes.normal;
+      for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) + n.getX(i) * k * 0.01, p.getY(i) + n.getY(i) * k * 0.01 - k * 0.003, p.getZ(i) + n.getZ(i) * k * 0.01);
+      kit.add(joint, g, shellMats[k - 1]);
+    }
+  };
+  shellBody(chest, chestF, [-0.35, -0.55, -0.5], [0.35, 0.5, 0.65], chestCol);
+  shellBody(neck1, neckF1, [-0.28, -0.3, -0.28], [0.28, 0.3, 0.45], coat({ cream: 0.9, saddle: 0.6 }));
+  const furSweep = (flow, len, n, r, joint, g, bend = 0.3) => {
+    const pts = sampleSurface(g, Math.round(n * TUFT), rng); const P = []; const C = []; const d = new THREE.Vector3(); const bv = new THREE.Vector3(0, -1, 0);
+    for (const q of pts) {
+      flow(q.p, d); d.addScaledVector(q.n, 0.5).normalize(); const l = lerp(len[0], len[1], rng());
+      pushTuft(P, C, q.p.clone().addScaledVector(q.n, -0.012), d, l, r * (0.7 + rng() * 0.6), bv.clone().multiplyScalar(0.5 + bend), q.c.clone().multiplyScalar(0.7), q.c.clone().multiplyScalar(1.3 + rng() * 0.3));
+    }
+    if (P.length) kit.add(joint, tuftGeo(P, C), fur);
+  };
+  const mane = (p, d) => d.set(0, 0.1, -1).normalize();
+  furSweep(mane, [0.12, 0.26], 420, 0.009, neck1, neckG1, 0.5);
+  furSweep(mane, [0.1, 0.22], 280, 0.009, neck2, neckG2, 0.5);
+  furSweep((p, d) => d.set(0, -0.2, -1).normalize(), [0.07, 0.16], 220, 0.0085, chest, chestG, 0.4);
+  furSweep((p, d) => d.set(0, 0.0, -1).normalize(), [0.04, 0.09], 90, 0.0055, head, headG);
   tail.forEach((j, i) => {
-    const pr = sculpt(sdf.cap([0, 0, 0], [0, [-0.03, -0.07, -0.1, -0.02][i], [-0.2, -0.18, -0.15, -0.22][i]], tailR[i] + 0.012, i < 3 ? tailR[i + 1] + 0.012 : 0.03), { min: [-0.16, -0.25, -0.34], max: [0.16, 0.16, 0.12], h: 0.03 * Q, aoK: 0, color: (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.45, 0.43, 0.4); if (i === 3) c.multiplyScalar(0.6); } });
-    furSweep((p, d) => d.set(0, -0.3, -1).normalize(), [0.07, 0.16], 120, 0.0085, j, pr, 0.5);
+    const pr = sculpt(sdf.cap([0, 0, 0], [0, i < 3 ? [-0.03, -0.07, -0.1][i] : -0.02, [-0.2, -0.18, -0.16, -0.22][i]], tailR[i] + 0.012, i < 3 ? tailR[i + 1] + 0.012 : 0.04), { min: [-0.16, -0.25, -0.34], max: [0.16, 0.16, 0.12], h: 0.03 * Q, aoK: 0, color: (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.5, 0.43, 0.36); if (i === 3) c.multiplyScalar(0.3); else if (i < 2) c.multiplyScalar(0.6); } });
+    furSweep((p, d) => d.set(0, -0.3, -1).normalize(), [0.08, 0.2], 130, 0.009, j, pr, 0.6);
   });
-
-  // ---- collar remnant: torn leather band with a snapped chain hanging off an iron ring
+  // collar remnant: torn leather band with a snapped chain
   {
-    const ring = sdf.eltorus(0, 0, 0.0, 0.2, 0.19, 0.022, [0.25, 0, 0]);
-    const cut = sdf.box(0.0, -0.1, 0.0, 0.06, 0.2, 0.2);                 // gap at the throat, torn open
-    const collar = (x, y, z) => Math.max(ring(x, y, z), -Math.max(cut(x, y, z) * 1, 0.0) * 0 - ((Math.abs(x) < 0.05 && y < -0.1) ? 1 : -1) * 0.0);
-    S(neck1, (x, y, z) => Math.max(ring(x, y - 0.0, z - 0.0), -(sdf.box(0, -0.2, 0.0, 0.05, 0.1, 0.3)(x, y, z))), [-0.3, -0.3, -0.25], [0.3, 0.3, 0.25], 0.016, (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.55, 0.4, 0.3).multiplyScalar(0.6 + 0.4 * (0.5 + 0.5 * NZ.n3(x * 30, y * 30, z * 30))); }, { mat: leather, aoK: 0.6 });
-    void collar;
-    kit.add(neck1, new THREE.TorusGeometry(0.02, 0.006, 6, 14), iron, { p: [0.05, -0.19, 0.05], r: [0.3, 1.2, 0] });
-    for (let i = 0; i < 4; i++) kit.add(neck1, new THREE.TorusGeometry(0.014, 0.0045, 5, 10), iron, { p: [0.058, -0.225 - i * 0.022, 0.058], r: [i % 2 ? Math.PI / 2 : 0, i % 2 ? 0 : Math.PI / 2, 0.3] });
+    const ring = sdf.eltorus(0, 0, 0.0, 0.14, 0.13, 0.016, [0.25, 0, 0]);
+    S(neck1, (x, y, z) => Math.max(ring(x, y, z), -(sdf.box(0, -0.2, 0.0, 0.04, 0.1, 0.3)(x, y, z))), [-0.22, -0.22, -0.2], [0.22, 0.22, 0.2], 0.016, (x, y, z, nx, ny, nz, ao, c) => { c.setRGB(0.55, 0.4, 0.3).multiplyScalar(0.6 + 0.4 * (0.5 + 0.5 * NZ.n3(x * 30, y * 30, z * 30))); }, { mat: leather, aoK: 0.6 });
+    for (let i = 0; i < 4; i++) kit.add(neck1, new THREE.TorusGeometry(0.012, 0.004, 5, 10), iron, { p: [0.04, -0.14 - i * 0.02, 0.05], r: [i % 2 ? Math.PI / 2 : 0, i % 2 ? 0 : Math.PI / 2, 0.3] });
   }
 
   // ------------------------------------------------------------------ anchors / build / IK
-  a.anchor('head', head, 0, 0.35, 0.15);
+  contactShadow(a, 0.8, 1.4, 0.6);
+  a.root.scale.setScalar(1.5); a.height = 1.15 * 1.5; a.radius = 1.1;
+  a.anchor('head', head, 0, 0.3, 0.15);
   a.anchor('chest', chest, 0, 0.1, 0.22);
   a.anchor('feet', a.model, 0, 0.02, 0);
-  a.anchor('mouth', jaw, 0, -0.01, 0.5);
-  a.anchor('weapon', jaw, 0, -0.01, 0.5);
-  a.anchor('handR', wr[R], 0, -0.1, 0.12);
-  a.anchor('handL', wr[L], 0, -0.1, 0.12);
-  contactShadow(a, 0.85, 1.45, 0.6);
-  a.root.scale.setScalar(1.45); a.height = 1.2 * 1.45; a.radius = 1.1;
+  a.anchor('mouth', jaw, 0, -0.01, 0.42);
+  a.anchor('weapon', jaw, 0, -0.01, 0.42);
+  a.anchor('handR', wr[R], 0, -0.06, 0.12);
+  a.anchor('handL', wr[L], 0, -0.06, 0.12);
   kit.build();
   const ik = [];
   for (const s of [L, R]) {

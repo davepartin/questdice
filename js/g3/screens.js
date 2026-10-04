@@ -29,9 +29,9 @@ Object.assign(SHOTS, {
   's-create': { land: { pos: [0.8, 1.6, 7.4], look: [0, 1.2, 0], fov: 36 }, port: { pos: [0.5, 1.6, 8.8], look: [0, 1.2, 0], fov: 50 } },
   's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
   's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-1.0, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.0, 1.25, -0.5], fov: 52 } },
-  's-camp': { land: { pos: [3.2, 1.7, 6.2], look: [-0.2, 0.95, 0], fov: 36 }, port: { pos: [2.6, 1.9, 7.2], look: [-0.2, 0.95, 0], fov: 50 } },
-  's-victory': { land: { pos: [0.3, 1.25, 5.0], look: [-2.3, 1.2, 0.7], fov: 36 }, port: { pos: [-0.6, 1.4, 6.4], look: [-2.2, 1.2, 0.7], fov: 50 } },
-  's-defeat': { land: { pos: [0.0, 0.9, 4.4], look: [-2.3, 0.8, 0.7], fov: 34 }, port: { pos: [-0.8, 1.1, 5.8], look: [-2.2, 0.8, 0.7], fov: 48 } },
+  's-camp': { land: { pos: [2.8, 1.5, 6.0], look: [-0.9, 0.95, 0.2], fov: 38 }, port: { pos: [2.4, 1.7, 7.4], look: [-0.9, 0.95, 0.2], fov: 52 } },
+  's-victory': { land: { pos: [-0.5, 1.3, 5.4], look: [-3.2, 1.2, 0.7], fov: 36 }, port: { pos: [-1.6, 1.4, 6.8], look: [-3.1, 1.2, 0.7], fov: 50 } },
+  's-defeat': { land: { pos: [-0.8, 0.95, 4.6], look: [-3.2, 0.8, 0.7], fov: 34 }, port: { pos: [-1.8, 1.1, 6.0], look: [-3.1, 0.8, 0.7], fov: 48 } },
 });
 
 // ---------------------------------------------------------------------------------------------- bookkeeping
@@ -293,7 +293,7 @@ const MODES = {
     await arenaFor('Ravens’ Rest', { seed: 9, mood: 'camp' }); check(token);
     setLook({ vignette: 0.7, bloom: 0.9, exposure: 1.02, sat: 1.12 });
     const f = fire({ pos: [0, 0, 0], scale: 1.1, seed: 4, light: 1.4 });
-    logSeat([-1.9, 0, 0.5], 0.5, 1.5); logSeat([1.0, 0, 2.0], -0.9, 1.4);
+    logSeat([-1.9, 0, 0.5], 0.5, 1.5); logSeat([0.9, 0, -1.9], 0.2, 1.4);
     tent({ pos: [-3.3, 0, -2.4], yaw: 0.6, tint: 0x6a5a44 }); tent({ pos: [3.4, 0, -3.2], yaw: -0.5, w: 2.8, d: 3.4, h: 1.9, tint: 0x4e5a48 });
     // supply crates and a bedroll for story
     const crate = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.55, 0.55), mat('wood')); crate.position.set(2.2, 0.28, -1.0); crate.rotation.y = 0.4; crate.castShadow = true; add(crate);

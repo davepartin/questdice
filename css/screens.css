@@ -291,6 +291,7 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-camp-title h1 { font-size: 1.9rem; }
   .sx-scroll { padding: 1.3rem 1.2rem 1.2rem; } .sc-tell { font-size: 1.14rem; }
 }
+@media (max-width: 480px) { .sx-btn.compact .lbl { display: none; } }
 @media (max-width: 400px) { .sx-chip .ch-copy b { max-width: 6.5rem; } .sx-top-actions .sx-btn span.lbl { display: none; } .sx-top-actions .sx-btn { padding: .5rem .7rem; } .rail-btn { font-size: .6rem; letter-spacing: .04em; } .sx-wc.compact .wc-name { font-size: .88rem; } }
 /* landscape but short (phones sideways) */
 @media (min-aspect-ratio: 1085/1000) and (max-height: 520px) { .sx-side { padding-top: 3rem; gap: .5rem; } .sx-qcard { min-height: 15rem; } .qa { min-height: 7rem; } .lg-word span { font-size: 2.6rem; } .sx-title-brand { padding-top: 1rem; } }
