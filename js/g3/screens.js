@@ -25,10 +25,10 @@ const rng = (seed) => { let s = seed >>> 0 || 1; return () => { s = (s * 1664525
 // ---------------------------------------------------------------------------------------------- shots
 // land = wide screens, port = tall phones. Hero stands near the world origin in every scene.
 Object.assign(SHOTS, {
-  's-title': { land: { pos: [2.6, 1.15, 8.4], look: [-0.55, 1.45, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-0.5, 1.4, 0.4], fov: 46 } },
-  's-create': { land: { pos: [0.6, 1.5, 5.6], look: [0, 1.0, 0], fov: 36 }, port: { pos: [0.4, 1.5, 6.6], look: [0, 1.05, 0], fov: 48 } },
-  's-create-in': { land: { pos: [0.5, 1.35, 3.9], look: [0, 1.15, 0], fov: 34 }, port: { pos: [0.3, 1.4, 4.9], look: [0, 1.15, 0], fov: 46 } },
-  's-road': { land: { pos: [-1.2, 1.7, 6.8], look: [0.6, 1.5, -2], fov: 40 }, port: { pos: [-0.8, 1.8, 7.4], look: [0.3, 1.5, -2], fov: 56 } },
+  's-title': { land: { pos: [2.4, 0.85, 6.7], look: [-0.6, 1.3, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-0.5, 1.4, 0.4], fov: 46 } },
+  's-create': { land: { pos: [0.8, 1.6, 7.4], look: [0, 1.2, 0], fov: 36 }, port: { pos: [0.5, 1.6, 8.8], look: [0, 1.2, 0], fov: 50 } },
+  's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
+  's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-1.0, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.0, 1.25, -0.5], fov: 52 } },
   's-camp': { land: { pos: [3.2, 1.7, 6.2], look: [-0.2, 0.95, 0], fov: 36 }, port: { pos: [2.6, 1.9, 7.2], look: [-0.2, 0.95, 0], fov: 50 } },
   's-victory': { land: { pos: [1.4, 1.35, 5.6], look: [-1.6, 1.4, 1.6], fov: 34 }, port: { pos: [0.9, 1.6, 6.2], look: [-1.3, 1.35, 1.6], fov: 48 } },
   's-defeat': { land: { pos: [0.6, 0.9, 4.6], look: [-1.9, 0.75, 1.6], fov: 34 }, port: { pos: [0.3, 1.1, 5.4], look: [-1.5, 0.8, 1.6], fov: 48 } },
@@ -388,7 +388,7 @@ export const portraitQ = {
     return queue(key, async () => {
       const a = await createActor(id, { tier, seed: 5, quality: 'med' });
       a.play?.('ready', { restart: true, fade: 0 }); for (let i = 0; i < 12; i++) a.update(0.05, 0.05 * i);
-      const url = renderPortrait(a.root, { key, size, yaw, pitch: 0.08, fit, pad: tier === 'boss' ? 1.02 : 1.08, fov: 30 });
+      const url = renderPortrait(a.root, { key, size, yaw, pitch: 0.08, fit, pad: tier === 'boss' ? 0.98 : 1.0, fov: 30 });
       a.dispose?.();
       return url;
     });
@@ -412,7 +412,7 @@ export const portraitQ = {
       if (id === 'shield') w.rotation.y = -0.5;
       if (id === 'bracer') { w.rotation.x = -0.4; w.rotation.y = 0.6; }
       w.updateMatrixWorld(true); for (let i = 0; i < 8; i++) w.userData.update?.(0.05, 0.5 + i * 0.1);
-      const url = renderPortrait(holder, { key, size, yaw: id === 'shield' ? 0.25 : 0.5, pitch: 0.1, fit: 'full', pad: 1.05, fov: 24 });
+      const url = renderPortrait(holder, { key, size, yaw: id === 'shield' ? 0.25 : 0.5, pitch: 0.1, fit: 'full', pad: 1.3, fov: 24 });
       w.userData.dispose?.();
       return url;
     });

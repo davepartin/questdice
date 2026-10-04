@@ -130,7 +130,7 @@ const run = (fn) => safe((...args) => { const a = ac(); if (!a || !graph) return
 
 // wood click-clack: bandpassed noise tick + short pitched knock + low body. v = speed 0..2, pitch varies per call
 const dieClack = (a, t, v = 1, vol = 1) => {
-  const p = rnd(0.85, 1.25); const pk = Math.min(2, 0.6 + v * 0.8) * vol;
+  const p = rnd(0.85, 1.25); const pk = Math.min(3, (0.6 + v * 0.8) * 1.6) * vol;
   noise(a, t, { dur: 0.035, peak: 0.22 * pk, type: 'bandpass', f: 2400 * p, q: 3, send: 0.1 });
   osc(a, t, { type: 'triangle', f: 900 * p, to: 420 * p, dur: 0.05, peak: 0.1 * pk, att: 0.001 });
   osc(a, t, { type: 'sine', f: 190 * p, to: 110 * p, dur: 0.09, peak: 0.16 * pk, att: 0.001 });
@@ -140,8 +140,8 @@ const chimeNote = (a, t, f, peak = 0.08, dur = 0.5) => { osc(a, t, { f, dur, pea
 
 export const sfx = {
   // ---- UI
-  click: run((a, t) => { osc(a, t, { type: 'triangle', f: 520, to: 760, dur: 0.05, peak: 0.16 }); noise(a, t, { dur: 0.015, peak: 0.05, type: 'highpass', f: 4000 }); }),
-  select: run((a, t) => { osc(a, t, { type: 'triangle', f: 700, dur: 0.05, peak: 0.14 }); osc(a, t + 0.03, { type: 'sine', f: 1050, dur: 0.07, peak: 0.08, send: 0.2 }); }),
+  click: run((a, t) => { osc(a, t, { type: 'triangle', f: 520, to: 760, dur: 0.05, peak: 0.24 }); noise(a, t, { dur: 0.015, peak: 0.05, type: 'highpass', f: 4000 }); }),
+  select: run((a, t) => { osc(a, t, { type: 'triangle', f: 700, dur: 0.05, peak: 0.22 }); osc(a, t + 0.03, { type: 'sine', f: 1050, dur: 0.07, peak: 0.08, send: 0.2 }); }),
   uiOpen: run((a, t) => { noise(a, t, { dur: 0.16, peak: 0.14, type: 'bandpass', f: 600, to: 2600, q: 1.2 }); osc(a, t, { type: 'sine', f: 330, to: 560, dur: 0.14, peak: 0.12, send: 0.3 }); }),
   uiClose: run((a, t) => { noise(a, t, { dur: 0.13, peak: 0.12, type: 'bandpass', f: 2400, to: 500, q: 1.2 }); osc(a, t, { type: 'sine', f: 520, to: 280, dur: 0.12, peak: 0.1, send: 0.3 }); }),
   card: run((a, t) => { // paper swish then a bright chime

@@ -267,12 +267,12 @@ export function smokeHollow(c) {
     height: hillsHeight({ seed: 15, amp: 1.5, freq: 0.04, backRise: 9, backStart: -18, sideRise: 9, sideStart: 10 }),
     vcolor: vcolorFn(15, { dark: 0.35 }),
     layers: [
-      { set: soilTex({ tint: 0x4a3c32, dark: 0x120c0a, seed: 42, pebble: 0.5 }), scale: 0.3 },
+      { set: soilTex({ tint: 0x4e4a46, dark: 0x121110, seed: 42, pebble: 0.8 }), scale: 0.3 },
       { kind: 'grass', tint: 0x3a3828, dark: 0x0c0c08, scale: 0.42, size: 512, seed: 43, opts: { dry: 0.9, dryTint: 0x4a4430 } },
       { kind: 'cobble', tint: 0x3a3632, dark: 0x100e0c, scale: 0.35, seed: 44 },
-      { set: ashTex({ tint: 0x5a544e, dark: 0x0e0c0b, seed: 45, cracks: 1.7 }), scale: 0.24 },
+      { set: ashTex({ tint: 0x5a544e, dark: 0x0e0c0b, seed: 45, cracks: 1.2 }), scale: 0.24 },
     ],
-    thresholds: [0.7, 3, 0.3], wet: [0.84, 0.15], nstr: 2.2, tintMul: 0xf0e4dc,
+    thresholds: [0.7, 3, 0.36], wet: [0.84, 0.15], nstr: 2.2, tintMul: 0xe8e4e0,
   };
   applyPalette(c, {
     sky: { hor: 0x5a2c1c, mid: 0x2a1a1c, top: 0x0c0a10, glows: [{ az: 0, w: 60, h: 8, color: 0xff6a20, k: 0.9 }, { az: -50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }, { az: 50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }], moon: { on: 0 }, stars: 0.0, cloud: 0.9, cloudDark: 0x241816, cloudLit: 0xff6a30 },

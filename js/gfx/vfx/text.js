@@ -130,7 +130,7 @@ export function createText(stage, scene) {
       const h = 1.15 * s.size * unit * sc;
       s.mesh.scale.set(h * 2, h, 1);
       // nameplates sit above the head: start the number at chest height and fan it sideways so it never rises into the plate
-      _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, (rise * (s.avoid ? 0.7 : 1) - (s.avoid ? 0.55 : 0)) * unit, s.dxz * t).add(s.base);
+      _v.set(s.dx * (1 - Math.exp(-t * 3)) * unit, (s.avoid ? rise * 0.6 * unit - 1.0 : rise * unit), s.dxz * t).add(s.base);
       if (s.crit && t < 0.25) { _v.x += Math.sin(t * 150) * 0.03 * unit; _v.y += Math.cos(t * 130) * 0.02 * unit; }
       s.mesh.position.copy(_v);
       s.mesh.quaternion.copy(_q); s.mesh.rotateZ(s.rot * (t < 0.2 ? 1 - t / 0.2 : 0) + s.rot * 0.3);

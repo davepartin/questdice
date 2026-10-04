@@ -244,7 +244,7 @@ function questCard(q, idx) {
     h('span', { class: 'qc-tag' }, q.perilous ? ico('flame') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : ico('shield'), tag, q.perilous ? h('em', {}, '×1.5 rewards') : null),
     questArt(q),
     h('div', { class: 'qc-body' },
-      h('b', { class: 'qc-name' }, q.name), h('small', { class: 'qc-place' }, ico('pin'), place),
+      h('b', { class: 'qc-name' }, q.kind === 'boss' ? q.name : (q.name.replace(place, '').replace(/\s+(on|at|near|in|of|by)\s*$/i, '').trim() || q.name)), h('small', { class: 'qc-place' }, ico('pin'), place),
       h('small', { class: 'qc-foes' }, groupNames(q.enemies)),
       h('div', { class: 'qc-read' },
         h('div', { class: 'qr danger' }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `~${total} HP`)),

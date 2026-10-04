@@ -1,7 +1,7 @@
 /* QuestDice battle HUD. Everything is scoped under .b3-layer / .b3 (or body.in-battle for the few
    elements the game appends to <body>), so the classic DOM screens are untouched.
    Type: Cinzel for names and titles, Oxanium for figures and buttons. Glyphs are inline SVG (js/g3/hudkit.js). */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap');
+/* Cinzel is added by js/g3/hudkit.js (non-blocking <link>); the serif stack below is the fallback. */
 
 .b3-layer, body.in-battle {
   --h-atk: #ff4d4d; --h-block: #4db4ff; --h-magic: #ffd23d; --h-pierce: #b07dff; --h-heal: #45e08b; --h-gold: #f0b43c;
@@ -170,8 +170,10 @@
 .b3-ribbon.hide { opacity: 0; }
 
 /* ================================================================== dock */
-.b3-dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.2rem calc(.6rem + var(--safe-r)) calc(.6rem + var(--safe-b)) calc(.6rem + var(--safe-l)); display: flex; flex-direction: column; gap: .4rem; background: linear-gradient(0deg, rgba(3,4,10,.95) 62%, rgba(3,4,10,0)); transition: opacity .3s, filter .3s; }
-.b3-dock.is-resolving { opacity: .55; filter: saturate(.55); }
+.b3-dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.2rem calc(.6rem + var(--safe-r)) calc(.6rem + var(--safe-b)) calc(.6rem + var(--safe-l)); display: flex; flex-direction: column; gap: .4rem; background: linear-gradient(0deg, rgba(3,4,10,.95) 62%, rgba(3,4,10,0)); }
+/* never put filter/opacity on the dock itself: it would become the containing block of the fixed card column */
+.b3-dock > *, .b3-cards { transition: opacity .3s, filter .3s; }
+.b3-dock.is-resolving > *, .b3-dock.is-resolving .b3-cards { opacity: .5; filter: saturate(.55); }
 .b3-dock.is-resolving button { pointer-events: none; }
 /* outcome strip */
 .b3-fc { position: relative; container-type: inline-size; }
@@ -332,7 +334,6 @@ body.in-battle .chrome { z-index: 40; }
   .b3-dock { left: auto; right: calc(1rem + var(--safe-r)); bottom: calc(1rem + var(--safe-b)); width: min(var(--col), 24rem); padding: 0; background: none; gap: .5rem; }
   .b3-caption { position: absolute; right: 0; bottom: 100%; width: 100%; margin-bottom: 1.9rem; min-height: 0; } .b3-caption p { text-align: left; }
   .b3-caption p.captip::before { left: auto; right: 1.2rem; top: auto; bottom: -.28rem; transform: rotate(225deg); }
-  .b3-dock.is-resolving { background: none; }
   .b3-ribbon { top: calc(.8rem + var(--safe-t)); left: 14rem; right: 14rem; }
   .b3-plates { --plw: clamp(8.6rem, 12vw, 11rem); }
   .b3-plate:not(.tier-minion) .in-hint, .in-hint { display: block; }
@@ -345,6 +346,7 @@ body.in-battle .chrome { z-index: 40; }
   .hb-reroll { padding: .4rem .5rem; gap: .3rem; } .hb-reroll .hb-tx small { display: none; } .hb-reroll .hb-tx b { font-size: .74rem; } .hb-cta { padding: .4rem .5rem; } .hb-cta .hb-tx b { font-size: .92rem; letter-spacing: .04em; } .hb-cta .hb-ic { font-size: 1.2rem; }
   .hb-mini { width: 2.6rem; min-width: 2.6rem; height: 2.6rem; min-height: 2.6rem; } .b3-tools { gap: .3rem; } .b3-pips small { display: none; } .fseg button { padding: 0 .5rem; } .st-l em { display: none; }
 }
+@container (max-width: 250px) { .hb-cta .hb-ic { display: none; } .hb-cta .hb-tx b { font-size: .86rem; letter-spacing: .02em; } .hb-reroll .hb-ic { font-size: 1.05rem; } .hb-mini { width: 2.5rem; min-width: 2.5rem; } }
 /* roomy desktops */
 @media (min-width: 1500px) and (min-aspect-ratio: 5/4) { .b3 { font-size: 17px; } }
 /* short landscape phones: compact everything */

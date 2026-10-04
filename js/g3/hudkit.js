@@ -40,6 +40,9 @@ const ICONS = {
   bard: '<path class="f" d="M9.6 11.6 C5.4 11.6 3.6 16 6 18.8 C8.4 21.6 13.8 20.8 15.2 16.4 C15.8 14.4 14.6 12.4 12.6 11.8 Z"/><path class="s" d="M13 12.6 L20.2 4.2 M18.6 2.8 L21.4 5.6"/><circle class="p" cx="9.6" cy="16" r="1.5"/>',
   note: '<path class="s" d="M9 18 V5 L19 3 V16"/><circle class="f" cx="6.8" cy="18" r="2.6"/><circle class="f" cx="16.8" cy="16" r="2.6"/>',
 };
+try { // display serif for names and titles, loaded without blocking the HUD stylesheet
+  if (!document.getElementById('hud-font')) document.head.append(Object.assign(document.createElement('link'), { id: 'hud-font', rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap' }));
+} catch { /* ignore */ }
 const SVGNS = 'http://www.w3.org/2000/svg';
 export function iconSvg(name, inner = true) { return ICONS[name] || ICONS.star; }
 export function icon(name, cls = '') {
