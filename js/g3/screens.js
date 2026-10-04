@@ -25,10 +25,10 @@ const rng = (seed) => { let s = seed >>> 0 || 1; return () => { s = (s * 1664525
 // ---------------------------------------------------------------------------------------------- shots
 // land = wide screens, port = tall phones. Hero stands near the world origin in every scene.
 Object.assign(SHOTS, {
-  's-title': { land: { pos: [2.4, 0.85, 6.7], look: [-0.6, 1.3, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-0.5, 1.4, 0.4], fov: 46 } },
+  's-title': { land: { pos: [2.4, 0.85, 6.7], look: [-0.6, 1.3, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-1.0, 1.4, 0.4], fov: 46 } },
   's-create': { land: { pos: [0.8, 1.6, 7.4], look: [0, 1.2, 0], fov: 36 }, port: { pos: [0.5, 1.6, 8.8], look: [0, 1.2, 0], fov: 50 } },
   's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
-  's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-1.0, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.0, 1.25, -0.5], fov: 52 } },
+  's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-2.1, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.7, 1.25, -0.5], fov: 52 } },
   's-camp': { land: { pos: [2.8, 1.5, 6.0], look: [-0.9, 0.95, 0.2], fov: 38 }, port: { pos: [2.4, 1.7, 7.4], look: [-0.9, 0.95, 0.2], fov: 52 } },
   's-victory': { land: { pos: [-0.5, 1.3, 5.4], look: [-3.2, 1.2, 0.7], fov: 36 }, port: { pos: [-1.6, 1.4, 6.8], look: [-3.1, 1.2, 0.7], fov: 50 } },
   's-defeat': { land: { pos: [-0.8, 0.95, 4.6], look: [-3.2, 0.8, 0.7], fov: 34 }, port: { pos: [-1.8, 1.1, 6.0], look: [-3.1, 0.8, 0.7], fov: 48 } },
