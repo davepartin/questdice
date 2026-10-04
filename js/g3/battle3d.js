@@ -326,7 +326,7 @@ export function renderShape() {
   const lines = [];
   if (ev.offense3) lines.push(['NW', 'N', 'NE']);
   if (ev.defense3) lines.push(['N', 'C', 'S']);
-  bw.tray.highlight?.(lines.flat(), lines.length ? 'gold' : null);
+  if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.replaceChildren(V.forecastEl(ev, b.mods), h('div', { class: 'notes' }, V.synergyNotes(ev, b.mods).map((n) => h('span', { class: `note ${n.kind}` }, n.text))));
   B.hud.caption.replaceChildren(h('p', {}, B.focus ? V.describeDie(hero, B.focus, b.board[B.focus].v) : 'Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));

@@ -10,7 +10,7 @@ const W = Number(args.w || 1280); const H = Number(args.h || 720);
 fs.mkdirSync(out, { recursive: true });
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
 const p = await b.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1, hasTouch: !!args.touch });
-const logs = []; p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) logs.push(`[${m.type()}] ${m.text()}`); }); p.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+const logs = []; p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) logs.push(`[${m.type()}] ${m.text()}`); }); p.on('pageerror', (e) => logs.push(`[pageerror] ${e.stack}`));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
 await p.goto(`http://localhost:${port}/?debug&manual${args.q ? `&q=${args.q}` : ''}${args.dpr ? `&dpr=${args.dpr}` : ''}`);
 await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 60000 });
