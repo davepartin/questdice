@@ -220,7 +220,7 @@ function positionPlates() {
     el.style.display = vis ? '' : 'none'; el._lead.style.display = vis && e.hp > 0 ? '' : 'none';
     if (!vis) continue;
     const head = a.worldAnchor('head'); const p = project(head);
-    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 16 });
+    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 24 });
   }
   items.sort((a, b2) => a.hx - b2.hx);
   const total = items.reduce((s, it) => s + it.w, 0) + GAP * Math.max(0, items.length - 1);

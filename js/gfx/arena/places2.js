@@ -520,7 +520,7 @@ export function gallowsHill(c) {
     env: boss ? ENV(0x300c1c, 0xc03a28, 0x100808, 0xff7a40, 0x8a60c0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
     key: boss ? { color: 0xa83024, intensity: 0.9, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
     rim: boss ? { color: 0xff4030, intensity: 3.0, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
-    hemi: boss ? { sky: 0x3a1a24, ground: 0x2a1410, intensity: 0.35 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
+    hemi: boss ? { sky: 0x1c3048, ground: 0x2a1410, intensity: 0.4 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
     look: LOOK(boss ? { sat: 1.12, contrast: 1.15, vignette: 0.58, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { bloom: 0.8, sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: boss ? 12 : 10, haze: 0.55, color: boss ? 0x24101a : 0x121826, seed: 15, rim: boss ? 0xff3a20 : 0x7a98d8, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 6, mode: 2, haze: 0.4, color: boss ? 0x180a10 : 0x0a0e18, seed: 16, toothW: 8, toothH: 9 }] });
@@ -557,7 +557,7 @@ export function gallowsHill(c) {
     const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0x8a7a76, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 1.3, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
     const dais = new THREE.Mesh(dg, dm); dais.position.set(KX, 0.022, KZ); dais.receiveShadow = true; c.add(dais); c.tris += 112;
     c.ticks.push((dt, t) => { dm.emissiveIntensity = 1.0 + 0.4 * Math.sin(t * 2.1) + 0.15 * Math.sin(t * 7.3); });
-    for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28 + 0.2; const R = 4.6; const h = rr(rng, 0.8, 2.6); B.cyl('stone', [0.38, 0.46, h, 7], { p: [KX + Math.cos(a) * R, h / 2, KZ + Math.sin(a) * R * 0.9 - 0.8], r: [(rng() - 0.5) * 0.12, 0, (rng() - 0.5) * 0.12] }, [0.55, 0.5, 0.5], { cast: true }); }
+    for (let i = 0; i < 7; i++) { const a = Math.PI + 0.35 + i / 6 * (Math.PI - 0.7); const R = 4.8; const h = rr(rng, 0.8, 2.6); B.cyl('stone', [0.38, 0.46, h, 7], { p: [KX + Math.cos(a) * R, h / 2, KZ + Math.sin(a) * R * 0.9 - 0.8], r: [(rng() - 0.5) * 0.12, 0, (rng() - 0.5) * 0.12] }, [0.55, 0.5, 0.5], { cast: true }); }
     // stairs climbing to a bone throne behind the pyre
     for (let i = 0; i < 6; i++) B.box('stone', [9 - i * 0.9, 0.36, 1.3], { p: [KX, 0.18 + i * 0.36, -9.6 - i * 1.2] }, [0.5, 0.46, 0.46], { cast: false, uv: 0.4 });
     const TY = 2.2; const TZ = -17.2;

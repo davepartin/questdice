@@ -70,9 +70,9 @@ function makeMaterial(atlas, theme, quality) {
     map: T.map, normalMap: T.normalMap, roughnessMap: T.orm, metalnessMap: T.orm, clearcoatMap: T.orm,
     roughness: 1, metalness: 1, normalScale: new THREE.Vector2(1, 1),
     clearcoat: quality === 'low' ? 0.6 : 1, clearcoatRoughness: 0.035, ior: 1.52, specularIntensity: 1,
-    envMapIntensity: 1.0,
+    envMapIntensity: 0.5,
     emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
-    sheen: theme === 'bone' ? 0.4 : 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
+    sheen: 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
   m.color.setScalar({ bone: 0.78, smoke: 0.55, weapon: 0.7, heart: 0.7, amethyst: 0.75 }[theme] ?? 1);
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);

@@ -22,8 +22,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const warm = rr(0, 1);
 
   setRim(0xffb040);
-  const fur = tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 1.1 });
-  const shellMats = [1, 2, 3].map((k) => tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 0.4, shell: k / 4 }));
+  const fur = tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 1.1, rimK: 1.1 });
+  const shellMats = [1, 2, 3].map((k) => tpm('pelt', { tint: 0x8a857d, dark: 0x1c1a17, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 }, { scale: 2.4, nrm: 0.4, shell: k / 4, rimK: 1.1 }));
   const leather = tpm('leatherDark', { seed: 7 }, { scale: 14, nrm: 0.7 });
   const iron = tpm('iron', { seed: 4, metalness: 0.75, roughness: 0.9 }, { scale: 6, nrm: 0.8 });
   const eyeM = glowMat(0xffa21a, 1.7, { rough: 0.2 });
@@ -66,7 +66,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const pelt = (lightBelow = 0.55, base = 0.9) => (x, y, z, nx, ny, nz, ao, c) => {
     const n = 0.5 + 0.5 * NZ.n3(x * 6, y * 6, z * 6); const n2 = 0.5 + 0.5 * NZ.n3(x * 21 + 3, y * 21, z * 21);
     const lo = sstep(0.15, -0.55, ny);
-    c.setRGB(0.95, 0.93, 0.9).multiplyScalar(base * (0.55 + n * 0.6));
+    c.setRGB(1.0, 0.97, 0.93).multiplyScalar(base * (0.85 + n * 0.8));
     c.lerp(tc.setRGB(0.95, 0.9, 0.8), lo * lightBelow * (0.6 + 0.4 * n2));
     c.multiply(sc.setScalar(0.85 + 0.3 * n2));
   };
@@ -249,7 +249,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   a.anchor('handR', wr[R], 0, -0.1, 0.12);
   a.anchor('handL', wr[L], 0, -0.1, 0.12);
   contactShadow(a, 0.85, 1.45, 0.6);
-  a.root.scale.setScalar(1.3); a.height = 1.2 * 1.3; a.radius = 1.1;
+  a.root.scale.setScalar(1.45); a.height = 1.2 * 1.45; a.radius = 1.1;
   kit.build();
   const ik = [];
   for (const s of [L, R]) {

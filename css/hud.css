@@ -157,6 +157,12 @@
 .b3-plates.compact .b3-plate { padding: .34rem .36rem .38rem; gap: .22rem; } .b3-plates.compact .pl-name { font-size: .62rem; letter-spacing: .03em; } .b3-plates.compact .pl-intent { gap: .3rem; padding: .2rem .28rem .2rem .2rem; }
 .b3-plates.compact .med { width: 1.9rem; height: 1.9rem; } .b3-plates.compact .in-fig b { font-size: 1.2rem; } .b3-plates.compact .in-fig small, .b3-plates.compact .in-hint { display: none; } .b3-plates.compact .in-name { font-size: .55rem; letter-spacing: .06em; }
 .b3-plates.compact .pl-call b { font-size: .52rem; letter-spacing: .03em; } .b3-plates.compact .pl-call small { font-size: .5rem; } .b3-plates.compact .pl-chips .chip { font-size: .5rem; } .b3-plates.compact .pl-bar.bar .bar-num { font-size: .44rem; }
+/* demoted plates: the targeted foe shows full detail, the rest show icon + figure */
+.b3-plate:not(.targeted):not(.dead) { width: calc(var(--plw) * .78); padding: .3rem .34rem .34rem; gap: .2rem; }
+.b3-plate:not(.targeted) .in-name, .b3-plate:not(.targeted) .in-fig small, .b3-plate:not(.targeted) .in-hint, .b3-plate:not(.targeted) .bar-num { display: none; }
+.b3-plate:not(.targeted) .pl-name { font-size: .62rem; } .b3-plate:not(.targeted) .med { width: 2rem; height: 2rem; } .b3-plate:not(.targeted) .in-fig b { font-size: 1.3rem; }
+.b3-plate:not(.targeted) .pl-bar.bar { height: .5rem; } .b3-plate:not(.targeted) .pl-intent { gap: .3rem; padding: .16rem .3rem .16rem .2rem; }
+.b3-plate:not(.targeted) .pl-call small { display: none; } .b3-plate:not(.targeted) .pl-call b { font-size: .5rem; }
 /* ================================================================== ribbon */
 .b3-ribbon { position: absolute; left: .7rem; right: .7rem; top: calc(7.4rem + var(--safe-t)); display: flex; justify-content: center; pointer-events: none; transition: opacity .3s; }
 .b3-ribbon p { max-width: 36rem; padding: .22rem .9rem; border-radius: 2rem; background: linear-gradient(90deg, transparent, rgba(8,8,16,.72) 14%, rgba(8,8,16,.72) 86%, transparent); font-size: .72rem; line-height: 1.3; color: var(--h-dim); text-align: center; text-shadow: 0 1px 3px #000; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -328,9 +334,16 @@ body.in-battle .chrome { z-index: 40; }
   .b3-caption p.tip::before { left: auto; right: 1.2rem; top: auto; bottom: -.28rem; transform: rotate(225deg); }
   .b3-dock.is-resolving { background: none; }
   .b3-ribbon { top: calc(.8rem + var(--safe-t)); left: 14rem; right: 14rem; }
-  .b3-plates { --plw: clamp(9.6rem, 14vw, 12rem); }
+  .b3-plates { --plw: clamp(8.6rem, 12vw, 11rem); }
   .b3-plate:not(.tier-minion) .in-hint, .in-hint { display: block; }
   .b3-banner { top: 32%; }
+}
+/* narrow right column (about 1000px wide windows): nothing may overflow */
+.b3-bar { container-type: inline-size; }
+.b3-acts > *, .b3-bar > * { min-width: 0; } .hb-tx { overflow: hidden; } .hb-tx b { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@container (max-width: 290px) {
+  .hb-reroll { padding: .4rem .5rem; gap: .3rem; } .hb-reroll .hb-tx small { display: none; } .hb-reroll .hb-tx b { font-size: .74rem; } .hb-cta { padding: .4rem .5rem; } .hb-cta .hb-tx b { font-size: .92rem; letter-spacing: .04em; } .hb-cta .hb-ic { font-size: 1.2rem; }
+  .hb-mini { width: 2.6rem; min-width: 2.6rem; height: 2.6rem; min-height: 2.6rem; } .b3-tools { gap: .3rem; } .b3-pips small { display: none; } .seg button { padding: 0 .5rem; } .st-l em { display: none; }
 }
 /* roomy desktops */
 @media (min-width: 1500px) and (min-aspect-ratio: 5/4) { .b3 { font-size: 17px; } }

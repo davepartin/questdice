@@ -1040,7 +1040,7 @@ export function createVfx(stage, opts = {}) {
         const sys_ = hex ? sys.diamond : sys.ember;
         sys_.emit({ pos: [feet.x + Math.cos(ang) * rr_, groundY + 0.05, feet.z + Math.sin(ang) * rr_], vel: [R.pm(0.2), R.rr(0.6, 1.8), R.pm(0.2)], life: R.rr(0.9, 1.5), size: hex ? 0.2 : R.rr(0.035, 0.07), sizeEnd: 0.01, color: hex ? 0xb07dff : 0xff8a2a, colorEnd: hex ? 0x5a2aa8 : 0xff2010, hdr: 2.2, alpha: 1, alphaEnd: 0, turbulence: 1.2, drag: 0.3, fade: 1.5, rot: R.pm(0.3) });
       }
-      if (!hex) vig(0xff2a18, fadeOut * (0.08 + 0.12 * prog) * (0.5 + 0.5 * Math.sin(t * (4 + prog * 5))));
+      if (!hex) vig(0xff2a18, fadeOut * (0.03 + 0.07 * prog) * (0.5 + 0.5 * Math.sin(t * (4 + prog * 5))));
       return true;
     };
     liveAuras.push({ upd });
@@ -1274,11 +1274,11 @@ export function createVfx(stage, opts = {}) {
   }
   const AMBIENT = {
     embers: { layers: [
-      { rate: 5, z: [-9, -4], make: (R, p, age) => ({ sys: 'glow', size: R.rr(0.045, 0.08), color: R.r() < 0.5 ? 0xff9a3a : 0xff5a1a, hdr: 1.8, alpha: 0.75, life: R.rr(7, 11), vy: R.rr(0.2, 0.5), turb: 0.5, fadeIn: 0.2 }) },
-      { rate: 4, z: [-4, 2.5], make: (R) => ({ sys: 'glow', size: R.rr(0.08, 0.14), color: R.r() < 0.5 ? 0xffb050 : 0xff6a20, hdr: 2.0, alpha: 0.85, life: R.rr(6, 9), vy: R.rr(0.3, 0.7), turb: 0.7, fadeIn: 0.2 }) },
-      { rate: 0.8, z: [3, 7], make: (R) => ({ sys: 'glow', size: R.rr(0.3, 0.55), color: 0xff8a30, hdr: 1.3, alpha: 0.22, life: R.rr(6, 9), vy: R.rr(0.35, 0.7), turb: 0.9, fadeIn: 0.3 }) }] },
+      { rate: 9, z: [-9, -4], make: (R, p, age) => ({ sys: 'glow', size: R.rr(0.09, 0.16), color: R.r() < 0.5 ? 0xff9a3a : 0xff5a1a, hdr: 1.8, alpha: 0.75, life: R.rr(7, 11), vy: R.rr(0.2, 0.5), turb: 0.5, fadeIn: 0.2 }) },
+      { rate: 7, z: [-4, 2.5], make: (R) => ({ sys: 'glow', size: R.rr(0.14, 0.26), color: R.r() < 0.5 ? 0xffb050 : 0xff6a20, hdr: 2.0, alpha: 0.85, life: R.rr(6, 9), vy: R.rr(0.3, 0.7), turb: 0.7, fadeIn: 0.2 }) },
+      { rate: 1.4, z: [3, 7], make: (R) => ({ sys: 'glow', size: R.rr(0.5, 0.9), color: 0xff8a30, hdr: 1.4, alpha: 0.3, life: R.rr(6, 9), vy: R.rr(0.35, 0.7), turb: 0.9, fadeIn: 0.3 }) }] },
     dust: { layers: [
-      { rate: 9, z: [-5, 3], shaft: true, make: (R, p) => ({ sys: 'dot', size: R.rr(0.02, 0.045), color: 0xffe6b8, hdr: 1.6, alpha: p.inShaft ? 0.95 : 0.22, life: R.rr(8, 13), vy: R.rr(-0.04, 0.1), turb: 0.25, fadeIn: 0.3 }) }] },
+      { rate: 9, z: [-5, 3], shaft: true, make: (R, p) => ({ sys: 'dot', size: R.rr(0.04, 0.08), color: 0xffe6b8, hdr: 1.8, alpha: p.inShaft ? 0.95 : 0.22, life: R.rr(8, 13), vy: R.rr(-0.04, 0.1), turb: 0.25, fadeIn: 0.3 }) }] },
     ash: { layers: [
       { rate: 9, z: [-7, 3], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.03, 0.06), color: R.r() < 0.5 ? 0x9a948c : 0x5a5650, alpha: 0.6, life: R.rr(9, 13), vy: -R.rr(0.3, 0.65), turb: 0.8, fadeIn: 0.1 }) },
       { rate: 2.5, z: [3, 7], top: true, make: (R) => ({ sys: 'dotN', size: R.rr(0.1, 0.17), color: 0x8a847c, alpha: 0.3, life: R.rr(9, 12), vy: -R.rr(0.4, 0.8), turb: 1, fadeIn: 0.1 }) }] },

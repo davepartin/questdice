@@ -90,7 +90,7 @@ export function portrait(obj, o = {}) {
   const sphere = box.getBoundingSphere(new THREE.Sphere());
   const ctr = sphere.center.clone();
   const sz = box.getSize(new THREE.Vector3());
-  let target = ctr; let radius = sphere.radius;
+  let target = ctr; let radius = Math.max(sz.y * 0.5, Math.hypot(sz.x, sz.z) * 0.5 / Math.max(0.6, cam.aspect));
   if (fit === 'bust') { target = new THREE.Vector3(ctr.x, box.max.y - sz.y * 0.28, ctr.z); radius = Math.max(sz.x * 0.55, sz.y * 0.3); }
   if (fit === 'head') { target = new THREE.Vector3(ctr.x, box.max.y - sz.y * 0.13, ctr.z); radius = Math.max(sz.x * 0.3, sz.y * 0.16); }
   const dist = (radius * pad) / Math.sin((fov * Math.PI) / 360) * (size[0] > size[1] ? 1 : 1);
