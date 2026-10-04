@@ -7,6 +7,7 @@ import { h, $, $$, toast, buzz } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
+import * as HK from './hudkit.js';
 import { sfx, music } from '../audio.js';
 import { world } from './world.js';
 import { intentClips } from '../gfx/actors/common.js';
@@ -35,7 +36,7 @@ const EPITHET = {
 export async function start(ctx) {
   C = ctx;
   const { S } = C;
-  B.b = S.battle; B.hero = S.hero; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.target = 0; B.lastRep = null; B.straight = 'atk';
+  B.b = S.battle; B.hero = S.hero; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
@@ -60,7 +61,7 @@ export async function start(ctx) {
   world.stage.fadeTo(0, 0.9);
   // Boss / elite title card
   const big = b.enemies.find((e) => e.tier !== 'minion');
-  if (big && EPITHET[big.id]) { titleCard(...EPITHET[big.id]); sfx.rage?.(); await wait(0.9); }
+  if (big && EPITHET[big.id]) { titleCard(...EPITHET[big.id], big.tier); sfx.rage?.(); await wait(0.9); }
   world.director.set('intro', { snap: true }); await wait(0.5);
   world.director.set('battle', { lambda: 1.8 });
   await wait(1.1);
@@ -74,61 +75,127 @@ export function stop() {
   B.ended = true;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
   const layer = $('#b3'); layer.className = 'b3-layer'; layer.replaceChildren();
-  B.plates.clear();
+  B.plates.clear(); B.ro?.disconnect(); if (B.fit) window.removeEventListener('resize', B.fit);
   document.body.classList.remove('in-battle');
   $('#app').classList.remove('hidden');
 }
 
 // ------------------------------------------------------------------------------------------ HUD
+// Layout lives in css/hud.css (phone: hero strip on top and stacked dock; landscape: side columns).
+// Components are built once and updated in place so bars, gems and counts animate between states.
+const banner = (text, kind) => { try { HK.banner($('#b3'), text, kind); } catch (e) { C.banner?.(text, kind); } };
+const landscape = () => window.innerWidth / window.innerHeight >= 1.25;
 function buildHud() {
   const layer = $('#b3');
   B.root = h('div', { class: 'b3' });
-  B.hud = {
-    top: h('div', { class: 'b3-top' }),
-    plates: h('div', { class: 'b3-plates' }),
-    ribbon: h('div', { class: 'b3-ribbon' }),
-    hero: h('div', { class: 'b3-hero' }),
-    forecast: h('div', { class: 'b3-forecast' }),
-    caption: h('div', { class: 'b3-caption' }),
-    cards: h('div', { class: 'b3-cards' }),
-    bar: h('div', { class: 'b3-bar' }),
+  const hud = B.hud = {};
+  hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
+  hud.place = h('small', {}); hud.round = h('b', {});
+  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, hud.round));
+  hud.plates = h('div', { class: 'b3-plates' });
+  hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
+  hud.ribbon = h('div', { class: 'b3-ribbon' });
+  hud.hero = buildHero();
+  hud.forecast = HK.forecastStrip();
+  hud.caption = h('div', { class: 'b3-caption' });
+  hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Ability cards' });
+  hud.bar = h('div', { class: 'b3-bar' });
+  hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.cards, hud.bar);
+  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock);
+  const fit = () => {
+    const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
+    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? 54 : 0);
+    B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
+    sizePlates();
   };
-  B.hud.dock = h('div', { class: 'b3-dock' }, B.hud.forecast, B.hud.caption, B.hud.cards, B.hud.bar);
-  B.root.append(B.hud.top, B.hud.plates, B.hud.ribbon, B.hud.hero, B.hud.dock);
-  const fit = () => { const r = B.hud.dock.getBoundingClientRect(); const portrait = window.innerWidth / window.innerHeight < 1.25; world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? 54 : 0); };
-  B.fit = fit; new ResizeObserver(fit).observe(B.hud.dock); window.addEventListener('resize', fit); fit();
+  B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
   for (const [i, e] of B.b.enemies.entries()) addPlate(e, i);
+  fit();
 }
+
+function buildHero() {
+  const hero = B.hero; const cls = D.CLASSES[hero.cls];
+  const r = B.hr = {
+    name: h('b', { class: 'hb-name' }, hero.name), cls: h('small', { class: 'hb-cls' }, cls.name),
+    hp: HK.bar({ cls: 'hb-hp', seg: 8 }), mn: h('b', { class: 'hb-mn' }, '0'), gems: HK.gems(D.MAGIC_CAP),
+  };
+  r.hp.prepend(h('span', { class: 'hb-heart' }, HK.icon('heart')));
+  return h('div', { class: 'b3-hero' },
+    HK.heroMedal(hero.cls, hero.level),
+    h('div', { class: 'hb-main' },
+      h('div', { class: 'hb-id' }, r.name, r.cls),
+      r.hp,
+      h('div', { class: 'hb-magic', title: 'Magic' }, h('span', { class: 'hb-mi' }, HK.icon('magic')), r.mn, r.gems)));
+}
+function updateHero() {
+  const b = B.b; const r = B.hr; if (!r) return;
+  r.hp.style.setProperty('--seg', Math.max(4, Math.min(12, Math.round(b.maxHp / 5))));
+  const d = HK.setBar(r.hp, b.hp, b.maxHp);
+  if (d < -0.5) HK.replay(B.hud.hero, 'ouch');
+  if (d > 0.5) HK.replay(B.hud.hero, 'mend');
+  const prev = Number(r.mn.dataset.v ?? b.magic);
+  HK.countTo(r.mn, b.magic, { from: prev, dur: 320 });
+  if (b.magic !== prev) HK.replay(r.mn, 'pop');
+  HK.setGems(r.gems, b.magic);
+}
+
 function addPlate(e) {
+  const r = {
+    name: h('span', { class: 'pl-name' }, e.name), hp: HK.bar({ cls: 'pl-bar', seg: Math.max(4, Math.min(12, Math.round(e.maxHp / 10))) }),
+    chips: h('div', { class: 'pl-chips' }), intent: h('div', { class: 'pl-intent' }), call: h('div', { class: 'pl-call' }),
+  };
+  const tierIc = e.tier === 'boss' ? 'crown' : e.tier === 'elite' ? 'rank' : null;
   const el = h('button', { class: `b3-plate tier-${e.tier}`, type: 'button', 'data-uid': e.uid, onclick: () => selectTarget(e.uid), 'aria-label': e.name },
-    h('div', { class: 'pl-name' }, e.name),
-    h('div', { class: 'pl-bar' }, h('i', { class: 'pl-fill' }), h('i', { class: 'pl-ghost' }), h('b', {})),
-    h('div', { class: 'pl-intent' }),
-    h('div', { class: 'pl-carry' }));
+    h('i', { class: 'pl-frame' }),
+    h('span', { class: 'pl-reticle', 'aria-hidden': 'true' }, h('i', {}), h('b', {}, 'TARGET')),
+    h('div', { class: 'pl-head' }, tierIc ? h('span', { class: 'pl-tier' }, HK.icon(tierIc)) : null, r.name, r.chips),
+    r.hp, r.intent, r.call);
+  el._r = r;
+  const NS = 'http://www.w3.org/2000/svg';
+  const ln = document.createElementNS(NS, 'g'); ln.setAttribute('class', 'ld');
+  ln.innerHTML = '<line class="ld-l" x1="0" y1="0" x2="0" y2="0"/><circle class="ld-d" r="3"/>';
+  B.hud.leaders.append(ln); el._lead = ln;
   B.hud.plates.append(el); B.plates.set(e.uid, el);
-  updatePlate(e);
+  updatePlate(e); sizePlates();
   return el;
+}
+function sizePlates() {
+  const n = Math.max(1, B.b.enemies.filter((e) => e.hp > 0).length); const w = window.innerWidth;
+  const px = landscape() ? Math.min(188, Math.max(148, w * 0.15)) : Math.max(132, Math.min(172, (w - 24) / n));
+  B.hud.plates.style.setProperty('--plw', `${Math.round(px)}px`);
+}
+function intentNode(v) {
+  return [HK.medallion(v.shape, v.icon),
+    h('div', { class: 'in-main' }, h('b', { class: 'in-name' }, v.title),
+      h('div', { class: 'in-fig' }, h('b', {}, v.fig), h('small', {}, v.unit, v.subIcon ? HK.icon(v.subIcon) : null)),
+      h('small', { class: 'in-hint' }, v.hint))];
 }
 function updatePlate(e) {
   const el = B.plates.get(e.uid); if (!el) return;
-  const dead = e.hp <= 0;
+  const r = el._r; const dead = e.hp <= 0;
   el.classList.toggle('dead', dead);
   el.classList.toggle('raged', !!e.raged);
-  el.querySelector('.pl-name').textContent = e.raged ? `${e.name} · ${e.rageName}` : e.name;
-  const pct = Math.max(0, (e.hp / e.maxHp) * 100);
-  el.querySelector('.pl-fill').style.width = `${pct}%`;
-  setTimeout(() => { const g = el.querySelector('.pl-ghost'); if (g) g.style.width = `${pct}%`; }, 450);
-  el.querySelector('.pl-bar b').textContent = `${Math.max(0, Math.ceil(e.hp))}/${e.maxHp}`;
-  const box = el.querySelector('.pl-intent');
-  const info = !dead && B.showIntents !== false ? V.intentInfo(e) : null;
-  el.classList.toggle('has-intent', !!info);
-  if (info) {
-    box.className = `pl-intent ${info.tone}`;
-    box.replaceChildren(h('span', { class: 'iicon' }, info.icon), h('div', { class: 'itext' }, h('b', {}, info.title), h('small', {}, info.text.split(' · ')[0].split('. ')[0])));
-  } else box.replaceChildren();
-  el.querySelector('.pl-carry').textContent = e.carried ? `carrying ${e.carried} 🪙` : '';
+  r.name.textContent = e.name;
+  HK.setBar(r.hp, e.hp, e.maxHp);
+  const v = !dead && B.showIntents !== false ? HK.intentView(e) : null;
+  const sig = v ? [v.tone, v.title, v.fig, v.unit, v.hint, v.call?.sub].join('|') : '';
+  if (el._sig !== sig) {
+    el._sig = sig;
+    el.classList.toggle('has-intent', !!v);
+    r.intent.className = `pl-intent${v ? ` tone-${v.tone}${v.hazard ? ' hazard' : ''}` : ''}`;
+    r.intent.replaceChildren(...(v ? intentNode(v) : []));
+    r.call.className = `pl-call${v?.call ? ` on tone-${v.tone}` : ''}`;
+    r.call.replaceChildren(...(v?.call ? [HK.icon(v.call.ico || 'windup'), h('span', {}, h('b', {}, v.call.head), h('small', {}, v.call.sub))] : []));
+    if (v) HK.replay(r.intent, 'swap');
+    el.setAttribute('aria-label', v ? `${e.name}, ${e.hp} of ${e.maxHp} health. Intends ${v.title}: ${v.fig} ${v.unit}. ${v.call ? `${v.call.head}, ${v.call.sub}.` : v.hint}` : `${e.name}${dead ? ', defeated' : ''}`);
+  }
+  const chips = [];
+  if (e.carried) chips.push(h('span', { class: 'chip gold', title: 'Carrying stolen gold. Kill it to take it back.' }, HK.icon('gold'), h('b', {}, String(e.carried))));
+  if (e.raged) chips.push(h('span', { class: 'chip rage', title: e.rageName }, HK.icon('slam'), e.rageName || 'Enraged'));
+  r.chips.replaceChildren(...chips);
   el.classList.toggle('targeted', B.b.enemies[B.target]?.uid === e.uid && !dead);
+  el.setAttribute('aria-pressed', el.classList.contains('targeted') ? 'true' : 'false');
 }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 
@@ -139,24 +206,38 @@ function project(world3, out = {}) {
   out.x = (_p.x * 0.5 + 0.5) * w; out.y = (-_p.y * 0.5 + 0.5) * hh; out.z = _p.z; return out;
 }
 function positionPlates() {
-  const bw = B.bw; const w = world.stage.width; const hh = world.stage.height;
-  const placed = [];
+  const bw = B.bw; const w = world.stage.width;
+  const hud = B.hud; const GAP = 8;
+  // top limit: below the hero strip (phone) / top bar (landscape), and the ribbon
+  let topSafe = 8;
+  const rb = (n) => (n && n.offsetHeight ? n.getBoundingClientRect().bottom : 0);
+  topSafe = Math.max(topSafe, rb(hud.top) + 4, landscape() ? 0 : rb(hud.hero) + 4, rb(hud.ribbon) + 2);
+  const items = [];
   for (const e of B.b.enemies) {
     const el = B.plates.get(e.uid); const a = bw.actors.get(e.uid); if (!el || !a) continue;
+    const vis = a.root.visible && (e.hp > 0 || a.dissolving);
+    el.style.display = vis ? '' : 'none'; el._lead.style.display = vis && e.hp > 0 ? '' : 'none';
+    if (!vis) continue;
     const head = a.worldAnchor('head'); const p = project(head);
-    el.style.display = a.root.visible && (e.hp > 0 || a.dissolving) ? '' : 'none';
-    const pw = el.offsetWidth || 150;
-    let x = Math.max(pw / 2 + 6, Math.min(w - pw / 2 - 6, p.x));
-    const topSafe = w / hh < 1.25 ? 124 : 56;
-    let y = Math.max(el.offsetHeight + topSafe, p.y - 6);
-    for (const q of placed) {
-      if (Math.abs(q.x - x) < (q.w + pw) / 2 + 4 && Math.abs(q.y - y) < el.offsetHeight + 4) {
-        const dir = x >= q.x ? 1 : -1; const nx = q.x + dir * ((q.w + pw) / 2 + 6);
-        if (nx - pw / 2 >= 4 && nx + pw / 2 <= w - 4) x = nx; else y = q.y - el.offsetHeight - 6;
-      }
-    }
-    placed.push({ x, y, w: pw });
-    el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 16 });
+  }
+  items.sort((a, b2) => a.hx - b2.hx);
+  const total = items.reduce((s, it) => s + it.w, 0) + GAP * Math.max(0, items.length - 1);
+  const rows = total > w - 12 ? 2 : 1;
+  const place = (list) => {
+    for (const it of list) it.x = Math.max(it.w / 2 + 6, Math.min(w - it.w / 2 - 6, it.hx));
+    for (let i = 1; i < list.length; i++) { const q = list[i - 1]; const min = q.x + (q.w + list[i].w) / 2 + GAP; if (list[i].x < min) list[i].x = min; }
+    for (let i = list.length - 1; i >= 0; i--) { const mx = w - list[i].w / 2 - 6; if (list[i].x > mx) list[i].x = mx; if (i < list.length - 1) { const nx = list[i + 1]; const m2 = nx.x - (nx.w + list[i].w) / 2 - GAP; if (list[i].x > m2) list[i].x = m2; } }
+  };
+  if (rows === 1) place(items); else { const a = items.filter((_, i) => i % 2 === 0); const b2 = items.filter((_, i) => i % 2 === 1); place(a); place(b2); for (const it of b2) it.y -= it.h + GAP; }
+  const NS = items.length;
+  for (const it of items) {
+    const y = Math.max(it.h + topSafe, it.y);
+    it.el.style.transform = `translate3d(${it.x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+    const l = it.el._lead; const ln = l.firstChild; const dot = l.lastChild;
+    ln.setAttribute('x1', it.x.toFixed(1)); ln.setAttribute('y1', (y - 1).toFixed(1)); ln.setAttribute('x2', it.hx.toFixed(1)); ln.setAttribute('y2', (it.hy - 2).toFixed(1));
+    dot.setAttribute('cx', it.hx.toFixed(1)); dot.setAttribute('cy', (it.hy - 2).toFixed(1));
+    l.classList.toggle('on', it.el.classList.contains('targeted')); l.classList.toggle('far', NS > 0 && (y - it.hy) < -4);
   }
 }
 function makeRing() {
@@ -175,14 +256,14 @@ function ringUpdate(t) {
   B.ringMesh.scale.setScalar(r * (1 + Math.sin(t * 4) * 0.03));
   B.ringMesh.rotation.z = t * 0.6;
 }
-function titleCard(name, sub) {
-  const el = h('div', { class: 'b3-titlecard' }, h('div', { class: 'tc-bar' }), h('div', { class: 'tc-copy' }, h('small', {}, sub), h('b', {}, name)), h('div', { class: 'tc-bar' }));
-  B.root.append(el); setTimeout(() => el.remove(), 3200);
+function titleCard(name, sub, tier) {
+  const el = HK.titleCard(name, sub, tier);
+  B.root.append(el); setTimeout(() => el.remove(), 3800);
 }
 
 // ------------------------------------------------------------------------------------------ small helpers
 function floatAt(x, y, text, kind = '') {
-  const f = h('div', { class: `floater ${kind}`, style: { left: `${x}px`, top: `${y}px` } }, text);
+  const f = h('div', { class: `floater ${kind}`, style: { left: `${x}px`, top: `${y}px` } }, HK.rich(text));
   document.body.append(f); setTimeout(() => f.remove(), 1300);
 }
 function number(worldPos, text, kind = 'dmg') {
@@ -226,48 +307,43 @@ function idleTray() {
 }
 
 // ------------------------------------------------------------------------------------------ reset screen
-function heroBox() {
-  const b = B.b; const hero = B.hero; const cls = D.CLASSES[hero.cls];
-  const pct = Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100));
-  const gems = Array.from({ length: D.MAGIC_CAP }, (_, i) => h('i', { class: i < b.magic ? 'on' : '' }));
-  return [
-    h('div', { class: 'hb-id' }, h('span', { class: 'hb-glyph' }, cls.glyph), h('div', {}, h('b', {}, hero.name), h('small', {}, `Lv ${hero.level} ${cls.name}`))),
-    h('div', { class: 'hb-hp' }, h('i', { class: 'hb-fill', style: { width: `${pct}%` } }), h('span', {}, `${Math.max(0, Math.ceil(b.hp))}/${b.maxHp}`)),
-    h('div', { class: 'hb-magic' }, h('span', { class: 'hb-m-n' }, `✦ ${b.magic}`), h('div', { class: 'hb-gems' }, gems)),
-  ];
-}
-function top() {
-  const b = B.b;
-  return [
-    h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, '☰'),
-    h('div', { class: 'b3-round' }, h('small', {}, B.quest.name), h('b', {}, `Round ${b.round}`)),
-  ];
-}
-function ribbonText() {
+function ribbonNodes() {
   const b = B.b; const rep = B.lastRep;
-  if (!rep) return `${alive().map((e) => e.name).join(' and ')} ${alive().length > 1 ? 'bar' : 'bars'} the way.`;
-  return V.reportLines(rep, b).slice(0, 3).map((l) => l.text).join('  ');
+  if (!rep) return [`${alive().map((e) => e.name).join(' and ')} ${alive().length > 1 ? 'bar' : 'bars'} the way.`];
+  return V.reportLines(rep, b).slice(0, 3).flatMap((l, i) => [i ? h('i', { class: 'rb-sep' }) : null, h('span', { class: `rb-${l.kind || 'meh'}` }, HK.rich(l.text))]);
 }
 function setHud({ phase }) {
-  const hud = B.hud;
-  hud.top.replaceChildren(...top());
-  hud.hero.replaceChildren(...heroBox());
-  hud.ribbon.replaceChildren(h('p', {}, ribbonText()));
+  const hud = B.hud; const b = B.b;
+  hud.place.textContent = B.quest.name;
+  if (hud.round.dataset.r !== String(b.round)) { hud.round.dataset.r = String(b.round); hud.round.textContent = `Round ${b.round}`; HK.replay(hud.round, 'tick'); }
+  updateHero();
+  hud.ribbon.replaceChildren(h('p', {}, ...ribbonNodes()));
   hud.ribbon.classList.toggle('hide', phase !== 'reset');
-  if (phase === 'resolve') hud.forecast.replaceChildren();
+  hud.dock.classList.toggle('is-resolving', phase === 'resolve');
   B.root.dataset.phase = phase;
+}
+// Controls stay on screen (no reflow, no tray jump) but go quiet while a round plays out.
+function clearDock() {
+  B.hud.dock.classList.add('is-resolving');
+  for (const el of B.hud.dock.querySelectorAll('button')) el.disabled = true;
+  B.hud.caption.replaceChildren();
 }
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero;
   return E.cardsOf(hero).map((k) => {
     const spent = b.used[k.id];
     const onclick = reset ? (spent ? () => doRecharge(k.id) : null) : () => doCard(k.id);
-    const disabled = reset ? !(spent && b.magic >= D.RECHARGE_COST) : (spent || b.magic < k.cost);
-    return h('button', { class: `b3-card ${spent ? 'spent' : ''}`, type: 'button', disabled, onclick },
-      h('span', { class: 'bc-cost' }, `${reset && spent ? D.RECHARGE_COST : k.cost}✦`), h('b', {}, k.name), h('small', {}, spent ? (reset ? 'Recharge' : 'spent') : k.text));
+    const afford = b.magic >= k.cost;
+    const disabled = reset ? !(spent && b.magic >= D.RECHARGE_COST) : (spent || !afford);
+    const fresh = B.fresh === k.id; if (fresh) B.fresh = null;
+    return HK.abilityCard(k, { spent, reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh });
   });
 }
-function btn(label, onclick, { cls = '', disabled = false, id } = {}) { return h('button', { class: `b3-btn ${cls}`, type: 'button', id, onclick, disabled }, label); }
+const healBtn = (compact) => {
+  const cost = E.healCostOf(B.hero); const dis = B.busy || B.b.magic < cost || B.b.hp >= B.b.maxHp;
+  return HK.button({ kind: compact ? 'mini' : 'ghost', icon: 'heal', label: compact ? null : `Heal +${D.HEAL_AMOUNT}`, sub: compact ? null : HK.costGem(cost), onclick: doHeal, disabled: dis, cls: 'k-heal', aria: `Heal ${D.HEAL_AMOUNT} health for ${cost} magic`,
+    ...(compact ? { label: null } : {}) });
+};
 
 export function renderReset() {
   if (B.ended) return;
@@ -282,24 +358,28 @@ export function renderReset() {
     if (a.alive) { const c = intentClips(e.intent); a.play(c.tele, { fade: 0.25 }); }
     if (e.intent?.slam || e.intent?.v === 'charge') { const h = raw('aura', a, { kind: 'windup', color: 0xff3a2a, urgency: e.intent.slam ? 1 : 0.5 }); if (h?.stop) B.windups.push(h); }
   }
-  updatePlates();
+  updatePlates(); sizePlates();
   bw.hero.play('idle', { fade: 0.3 });
   idleTray();
-  B.hud.forecast.replaceChildren();
-  B.hud.caption.replaceChildren(h('p', {}, e0Warn()));
+  HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
+  B.hud.forecast.classList.add('idle');
+  B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true));
-  const wind = alive().find((e) => e.intent?.slam);
   B.hud.bar.replaceChildren(
-    btn(`✚ Heal +${D.HEAL_AMOUNT} · ${E.healCostOf(B.hero)}✦`, doHeal, { cls: 'ghost', disabled: b.magic < E.healCostOf(B.hero) || b.hp >= b.maxHp }),
-    btn('🎲  Roll the dice', doRoll, { cls: 'primary big', id: 'b3-roll' }));
+    healBtn(false),
+    HK.button({ kind: 'cta', icon: 'dice', label: 'Roll the dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' }));
+  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
+const caption = (content, cls = '') => h('p', { class: cls }, content);
 function e0Warn() {
   const wind = alive().filter((e) => e.intent?.slam);
   const charge = alive().filter((e) => e.intent?.v === 'charge');
-  if (wind.length) return `⚠ ${wind.map((e) => e.name).join(', ')} will SLAM. Brace with block, or burst it down.`;
-  if (charge.length) return `⚠ ${charge.map((e) => e.name).join(', ')} is winding up. Deal ${charge[0].staggerAt}+ in one round to break it.`;
+  const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);
+  if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block, or burst it down.');
+  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ` Deal ${charge[0].staggerAt}+ in one round to break it.`);
   return 'The monsters have shown their hand. Roll when you are ready.';
 }
+
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
@@ -316,10 +396,11 @@ async function doRoll() {
   B.busy = false;
   renderShape();
 }
-function rerollLabel(info) {
-  if (info.kind === 'none') return 'No rerolls left';
+function rerollText(info) {
+  if (info.kind === 'none') return { label: 'No rerolls left', sub: 'actions spent' };
   const n = B.sel.size; const cost = info.perDie * n;
-  return n ? `Reroll ${n} ${n === 1 ? 'die' : 'dice'} · ${cost ? `${cost}✦` : 'free'}` : `Reroll up to ${info.dice} · ${info.perDie ? `${info.perDie}✦ each` : 'free'}`;
+  if (n) return { label: `Reroll ${n} ${n === 1 ? 'die' : 'dice'}`, sub: cost ? HK.costGem(cost) : 'free' };
+  return { label: `Reroll up to ${info.dice}`, sub: info.perDie ? [HK.costGem(info.perDie), ' each'] : 'first one is free' };
 }
 export function renderShape() {
   if (B.ended) return;
@@ -334,22 +415,27 @@ export function renderShape() {
   if (ev.offense3) lines.push(['NW', 'N', 'NE']);
   if (ev.defense3) lines.push(['N', 'C', 'S']);
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
-  B.hud.forecast.replaceChildren(V.forecastEl(ev, b.mods), h('div', { class: 'notes' }, V.synergyNotes(ev, b.mods).map((n) => h('span', { class: `note ${n.kind}` }, n.text))));
-  B.hud.caption.replaceChildren(h('p', {}, B.focus ? V.describeDie(hero, B.focus, b.board[B.focus].v) : 'Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
+  B.hud.forecast.classList.remove('idle');
+  HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
+  HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
+  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'tip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
-  const pips = h('div', { class: 'b3-pips', 'aria-label': 'Reroll actions left' }, Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', {}, `+${b.freeActions.length}`) : null);
-  const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', {}, `★ ${ev.straight}-straight · ${ev.straightBonus}`),
-    h('div', { class: 'seg' }, h('button', { type: 'button', class: B.straight === 'atk' ? 'on' : '', onclick: () => { B.straight = 'atk'; renderShape(); } }, '⚔ Attack'),
-      h('button', { type: 'button', class: B.straight === 'gold' ? 'on' : '', onclick: () => { B.straight = 'gold'; renderShape(); } }, '🪙 Gold'))) : null;
+  const pips = h('div', { class: 'b3-pips', role: 'img', 'aria-label': `${b.actionsLeft} of ${D.REROLL_ACTIONS} reroll actions left${b.freeActions.length ? `, plus ${b.freeActions.length} free` : ''}` },
+    h('small', {}, 'REROLLS'), Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', {}, `+${b.freeActions.length}`) : null);
+  const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
+  const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`), h('em', {}, `+${ev.straightBonus} to`)),
+    h('div', { class: 'seg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
+  const cantNudge = (d) => B.busy || b.magic < D.NUDGE_COST || (d < 0 ? b.board.C.v <= 1 : b.board.C.v >= 6);
+  const nudge = (d) => HK.button({ kind: 'mini', icon: h('span', { class: 'nudge' }, HK.icon('heart'), h('i', { class: d < 0 ? 'dn' : 'up' })), onclick: () => doNudge(d), disabled: cantNudge(d), aria: `Nudge the heart die ${d < 0 ? 'down' : 'up'} one, costs ${D.NUDGE_COST} magic` });
+  const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
-    pips, straight,
-    h('div', { class: 'b3-mini' },
-      btn('♥▼', () => doNudge(-1), { cls: 'ghost sm', disabled: B.busy || b.magic < D.NUDGE_COST || b.board.C.v <= 1 }),
-      btn('♥▲', () => doNudge(1), { cls: 'ghost sm', disabled: B.busy || b.magic < D.NUDGE_COST || b.board.C.v >= 6 }),
-      btn(`✚ ${E.healCostOf(hero)}✦`, doHeal, { cls: 'ghost sm', disabled: B.busy || b.magic < E.healCostOf(hero) || b.hp >= b.maxHp })),
-    btn(rerollLabel(info), doReroll, { cls: 'reroll', id: 'b3-reroll', disabled: B.busy || !E.canReroll(b, [...B.sel]) }),
-    btn('🔒  Lock in', lockIn, { cls: 'primary big', id: 'b3-lock', disabled: B.busy })].filter(Boolean));
+    straight,
+    h('div', { class: 'b3-tools' }, pips, h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn(true))),
+    h('div', { class: 'b3-acts' },
+      HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: rr.label }),
+      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, aria: 'Lock in your dice and fight' }))].filter(Boolean));
 }
+
 function onPick(slot) {
   if (B.busy || B.ended || B.b.phase !== 'shape') return;
   const b = B.b; const info = E.rerollInfo(b);
@@ -385,13 +471,13 @@ function doHeal() {
 function doCard(id) {
   const b = B.b; if (B.busy) return;
   if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; }
-  sfx.card(); buzz(20);
+  sfx.card(); buzz(20); B.fresh = id;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
   const fx = k.fx; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xb07dff : fx.atk ? 0xff5a4a : 0xffd23d;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
   if (fx.heal) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${fx.heal}`, 'heal'); }
-  C.banner(k.name.toUpperCase(), fx.heal ? 'good' : 'gold');
+  banner(k.name.toUpperCase(), fx.heal ? 'good' : 'gold');
   renderShape();
 }
 function doRecharge(id) {
@@ -411,13 +497,13 @@ async function lockInInner() {
   B.sel.clear(); bw.tray.setSelected?.(new Set());
   const ev = E.evaluate(hero, b.board, { straight: B.straight });
   bw.tray.lock?.();
-  setHud({ phase: 'resolve' }); B.hud.bar.replaceChildren(); B.hud.cards.replaceChildren(); B.hud.caption.replaceChildren();
+  setHud({ phase: 'resolve' }); clearDock();
   stopWindups();
   const target = targetEnemy();
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
   if (ev.offense3 || ev.defense3 || ev.straight) {
-    sfx.synergy(); C.banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold');
+    sfx.synergy(); banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = []; if (ev.offense3) l.push('NW', 'N', 'NE'); if (ev.defense3) l.push('N', 'C', 'S');
     if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
     await wait(0.55);
@@ -455,7 +541,7 @@ async function lockInInner() {
     sfx.deathEmber?.(); vfx('death', a, { size: a.height });
     a.die({ dur: 1.2 }); updatePlate(b.enemies.find((e) => e.uid === uid));
   }
-  if (rep.staggered.length) { C.banner('STAGGERED!', 'gold'); sfx.synergy(); for (const uid of rep.staggered) { const a = bw.actors.get(uid); a?.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'steel', power: 1 }); stage.shake(0.9); } await wait(0.5); }
+  if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); for (const uid of rep.staggered) { const a = bw.actors.get(uid); a?.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'steel', power: 1 }); stage.shake(0.9); } await wait(0.5); }
   await wait(rep.killed.length ? 0.55 : 0.2);
 
   // ---------- 2. the survivors act
@@ -495,10 +581,10 @@ async function lockInInner() {
     addPlate(b.enemies[i]); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); a.play('spawn', { fade: 0 });
   }
   for (const uid of rep.raged) {
-    const a = bw.actors.get(uid); C.banner('ENRAGED!', 'bad'); sfx.rage(); stage.shake(1.2); stage.flash(0xff2a1a, 0.35);
+    const a = bw.actors.get(uid); banner('ENRAGED!', 'bad'); sfx.rage(); stage.shake(1.2); stage.flash(0xff2a1a, 0.35);
     a?.setRage?.(true); await race(a?.play('rage', { fade: 0.1 }) ?? Promise.resolve(), 1.8); vfx('aura', a, { kind: 'rage', color: 0xff3a1a });
   }
-  if (rep.lastStand) { C.banner('LAST STAND', 'bad'); sfx.rage(); bw.hero.once?.('lastStand', { back: 'idle' }); }
+  if (rep.lastStand) { banner('LAST STAND', 'bad'); sfx.rage(); bw.hero.once?.('lastStand', { back: 'idle' }); }
   if (rep.healed) { sfx.heal(); vfx('heal', bw.hero.worldAnchor('chest')); number(bw.hero.worldAnchor('head'), `+${rep.healed}`, 'heal'); }
   if (rep.T.magic) { vfx('magicGain', bw.tray.worldPos?.('E') ?? bw.hero.worldAnchor('chest')); }
   if (rep.T.gold) { vfx('goldGain', bw.tray.worldPos?.('W') ?? bw.hero.worldAnchor('chest')); }
@@ -522,7 +608,7 @@ async function win() {
   bw.director.set('victory', { lambda: 2.2 });
   bw.hero.play('victory', { fade: 0.2 }); sfx.win();
   bw.stage.flash(0xffe9a0, 0.25);
-  B.hud.bar.replaceChildren(); B.hud.cards.replaceChildren(); B.hud.forecast.replaceChildren(); B.hud.caption.replaceChildren();
+  clearDock();
   B.hud.ribbon.classList.add('hide');
   await wait(1.2);
   B.hud.ribbon.classList.remove('hide');

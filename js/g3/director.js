@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { damp } from '../gfx/util.js';
 
 // Each shot: land = wide screens, port = tall phones. Blended by aspect ratio.
-const SHOTS = {
+export const SHOTS = {
   battle: {
     land: { pos: [0.4, 4.7, 11.6], look: [0, 1.15, 0.5], fov: 40 },
     port: { pos: [0.2, 6.6, 12.2], look: [0, 0.6, 0.9], fov: 58 },
@@ -72,10 +72,14 @@ export class Director {
   attach() { this.off?.(); this.off = this.stage.onFrame((dt, t) => this.update(dt, t)); }
   // Reserve screen space for the HUD (px at the bottom/top): the 3D composition is centred in what is left.
   setSafe(bottom = 0, top = 0) { this.safe = { bottom, top }; this.applySafe(); }
+  // `layout(W, H)` (set by the menu screens) may return { left, right, top, bottom } px of DOM panel space instead.
   applySafe() {
-    const cam = this.stage.camera; const W = this.stage.width; const H = this.stage.height; const sh = ((this.safe?.bottom || 0) - (this.safe?.top || 0)) / 2;
-    if (Math.abs(sh) < 1) { cam.clearViewOffset(); return; }
-    cam.setViewOffset(W, H, 0, sh, W, H);
+    const cam = this.stage.camera; const W = this.stage.width; const H = this.stage.height;
+    const L = this.layout ? this.layout(W, H) : null;
+    const sh = L ? ((L.bottom || 0) - (L.top || 0)) / 2 : ((this.safe?.bottom || 0) - (this.safe?.top || 0)) / 2;
+    const sx = L ? ((L.right || 0) - (L.left || 0)) / 2 : 0;
+    if (Math.abs(sh) < 1 && Math.abs(sx) < 1) { cam.clearViewOffset(); return; }
+    cam.setViewOffset(W, H, sx, sh, W, H);
   }
   // kick the field of view for impact; decays on its own
   punch(k = 1) { this.punchK = Math.max(this.punchK, k); }

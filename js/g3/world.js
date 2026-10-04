@@ -46,6 +46,7 @@ export const world = {
     const s = this.stage;
     this.battle?.dispose?.(); this.battle = null;
     s.clearScene();
+    this.director.layout = null;
     this.director.attach();
     s.scene.fog = null; s.scene.environment = s.env; s.scene.background = new THREE.Color(0x05060c);
     s.post.look({ bloom: 0.7, vignette: 0.55, grain: 0.045, aberration: 0.0016, sat: 1.08, contrast: 1.08, tilt: 0, exposure: 1 });

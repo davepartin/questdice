@@ -11,20 +11,26 @@ import * as Net from './net.js';
 import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
 import * as B3 from './g3/battle3d.js';
 import { world } from './g3/world.js';
+import * as SCR from './g3/screens.js';
+import * as SCRUI from './g3/scrui.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
   tab: 'forge', lastReport: null, focus: null, rewards: null, timers: [],
 };
 const fresh = () => E.makeRng((Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0);
-function mount(...nodes) {
+// cls = '' draws the classic web-form look; a class name hands #app to the 3D-scene screens (g3/scrui.js).
+function mountAs(cls, ...nodes) {
   S.timers.forEach(clearInterval); S.timers = [];
+  (S.cleanups || []).splice(0).forEach((f) => { try { f(); } catch { /* ignore */ } });
   const r = $('#app');
   const y = S.holdScroll ? r.scrollTop : 0;
   r.replaceChildren(...nodes.filter(Boolean));
+  r.className = cls ? `hud scr ${cls}` : 'hud';
   r.scrollTop = y;
-  if (!S.holdScroll) { r.classList.remove('rise'); void r.offsetWidth; r.classList.add('rise'); }
+  if (!cls && !S.holdScroll) { r.classList.remove('rise'); void r.offsetWidth; r.classList.add('rise'); }
 }
+const mount = (...nodes) => mountAs('', ...nodes);
 const isParty = () => (S.battle?.fighters?.length || 0) > 1;
 const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
 function persist() {
@@ -100,7 +106,7 @@ function ghost(label, onclick, { disabled = false, cls = '' } = {}) {
 }
 export function showHowTo() { modal(h('div', {}, V.howToPlay(), h('div', { class: 'row end' }, primary('Got it', () => $('#modal').replaceChildren())))); }
 export function bindChrome() {
-  const mute = $('#mute'); const sync = () => { mute.textContent = isMuted() ? '🔇' : '🔊'; mute.setAttribute('aria-pressed', String(isMuted())); };
+  const mute = $('#mute'); const sync = () => { if (world.available || SCRUI.on()) SCRUI.chrome(isMuted()); else mute.textContent = isMuted() ? '🔇' : '🔊'; mute.setAttribute('aria-pressed', String(isMuted())); };
   sync(); mute.onclick = () => { setMuted(!isMuted()); sync(); sfx.click(); };
   $('#help').onclick = () => showHowTo();
 }
@@ -110,6 +116,7 @@ export function showTitle() {
   Net.disconnect();
   S.net = null; S.holdScroll = false;
   S.hero = null; S.company = null; S.battle = null; S.busy = false;
+  if (SCRUI.on()) return SCRUI.title();
   const saves = SV.listSaves();
   const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s} ${['N', 'W', 'E', 'S', 'C'].includes(s) ? 'limb' : ''}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
   const tick = () => { $$('.td span', grid).forEach((n, i) => { if (Math.random() < 0.35) { n.textContent = String(1 + Math.floor(Math.random() * (i === 4 ? 6 : 4))); n.parentElement.classList.remove('pop'); void n.parentElement.offsetWidth; n.parentElement.classList.add('pop'); } }); };
@@ -190,6 +197,7 @@ function showImport() {
 
 // ------------------------------------------------------------------ create
 function showCreate() {
+  if (SCRUI.on()) return SCRUI.create();
   let cls = 'knight';
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
@@ -260,6 +268,7 @@ function showCreateCompany() {
 
 // ------------------------------------------------------------------ quest board
 function showBoard() {
+  if (SCRUI.on()) return SCRUI.board();
   const hero = membersOf()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); persist();
   const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0);
   const ambush = c.ambush?.length;
@@ -308,6 +317,7 @@ function showRoadOrBoard() {
   else showBoard();
 }
 function showRoad() {
+  if (SCRUI.on()) return SCRUI.road();
   const members = membersOf();
   const hero = members[0];
   const ev = R.ensureRoad(hero, members);
@@ -330,6 +340,7 @@ function showRoad() {
     tip('road', 'The computer runs the road the way it runs the monsters. It knows your names. A choice can pay you, wound you, or change the next fight. Reloading before you choose shows the same scene.'));
 }
 function showRoadResult(res) {
+  if (SCRUI.on()) return SCRUI.roadResult(res);
   mount(
     h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
     h('article', { class: 'road' },
@@ -347,7 +358,7 @@ function startQuest(q) {
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
-  if (world.available && !isParty() && !S.net) { quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
+  if (world.available && !isParty() && !S.net) { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
   renderReset();
 }
 // What the 3D battle needs from this module.
@@ -634,6 +645,7 @@ function showVictory() {
 }
 function nextPerkOffer() { const hero = S.hero; if (hero.pendingPerks > 0 && !S.rewards.offer) S.rewards.offer = E.offerPerks(hero, fresh()); }
 function renderVictory() {
+  if (SCRUI.on() && !isParty() && world.battle) return SCRUI.victory();
   const R = S.rewards; const hero = S.hero; nextPerkOffer();
   const perks = R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `Level up! Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`),
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(hero, id); R.offer = null; sfx.level(); persist(); renderVictory(); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text), h('i', {}, `You have ${hero.perks.filter((p) => p === id).length}/${D.PERKS[id].max}`))))) : null;
@@ -700,6 +712,7 @@ function defeat(retreat) {
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
   persist();
   sfx.lose();
+  if (SCRUI.on() && !isParty() && world.battle) return SCRUI.defeat(retreat, loss);
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
     h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow.' : 'The dark wins this round. It does not get to keep you.')),
   section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust.` : 'You lost nothing but pride.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),
@@ -723,6 +736,7 @@ function seatBar(fromBoard) {
   }, h('b', {}, `${D.CLASSES[m.cls].glyph} ${m.name}`), h('small', {}, `Lv ${m.level} · 🪙 ${m.gold}`))));
 }
 function renderCamp(fromBoard) {
+  if (SCRUI.on()) return SCRUI.camp(fromBoard);
   const hero = S.hero; const tabs = [['forge', '🔨 Forge'], ['gear', '🎒 Gear'], ['hero', '📜 Hero']];
   const body = S.tab === 'gear' ? campGear() : S.tab === 'hero' ? campHero() : campForge();
   const perkHero = (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
@@ -791,11 +805,15 @@ function chronicleBlock() {
   return section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 8).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text)))));
 }
 
+SCRUI.bind({
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether, showImport, showHowTo, resume,
+  showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle,
+});
 // Test/debug hook: only exposed when the page is opened with ?debug.
 attachRoom({ S, mount, primary, ghost, section, cmd, bodyWrap, banner, showTitle, showHowTo, flicker });
 export async function boot() {
   const gl = await world.boot($('#gl'));
-  if (gl) $('.app-frame').classList.add('has-gl');
+  if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
   await bootNet(showTitle);
 }
-export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3 };
+export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR };
