@@ -44,9 +44,14 @@ const LIB = {
   parchment: { kind: 'parchment', tex: {}, m: {} },
   rune: { kind: 'rune', tex: {}, m: { emissive: 0xffffff, emissiveIntensity: 1.0 } },
   // [monsters-b]
-  ogreHideB: { kind: 'hideB', tex: {}, m: {} },
-  kingHideB: { kind: 'hideB', tex: { tint: 0x86a64a, dark: 0x1f3010, mottle: 0x5a7a2a, warts: 0.9, crease: 0.8 }, m: {} },
+  ogreHideB: { kind: 'hideB', tex: { normal: 1.2, crease: 0.3, tint: 0x857f58, dark: 0x2e2a1a, mottle: 0x5e6a44 }, m: {} },
+  kingHideB: { kind: 'hideB', tex: { tint: 0x86a64a, dark: 0x1f3010, mottle: 0x5a7a2a, warts: 0.9, crease: 0.3, normal: 1.2 }, m: {} },
   brocadeB: { kind: 'brocadeB', tex: {}, m: {} },
+  // [monsters-a] additions
+  skinGoblin: { kind: 'goblinSkin', tex: {}, m: {} },
+  pelt: { kind: 'pelt', tex: {}, m: {} },
+  cinderCloth: { kind: 'cinderCloth', tex: {}, m: { emissive: 0xffffff, emissiveIntensity: 1.6 } },
+  porcelain: { kind: 'porcelain', tex: {}, m: { emissive: 0xffffff, emissiveIntensity: 1.8 } },
 };
 
 /**

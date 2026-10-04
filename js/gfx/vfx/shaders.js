@@ -41,7 +41,7 @@ const RING_FS = /* glsl */`
     float rc = mix(uR0, 0.9, e);
     float d = r - rc;
     float th = uThick * (1.0 - 0.55 * uK) + 0.004;
-    float prof = d > 0.0 ? exp(-d * d / (th * th * 0.22)) : exp(d / (th * 3.2));
+    float prof = d > 0.0 ? exp(-d * d / (th * th * 0.22)) : exp(d / (th * 1.5));
     float core = exp(-d * d / (th * th * 0.035));
     float n = vn(vec2(ang * 2.5 + uSeed, uK * 3.0)) * 0.6 + vn(vec2(ang * 11.0 + uSeed * 3.0, 4.0)) * 0.55 + 0.35;
     float spokes = mix(1.0, n, uNoise);
@@ -86,7 +86,7 @@ export function crescentGeo({ theta = 1.15, width = 0.34, segs = 40, power = 0.8
   g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uv), 2));
   g.setIndex(idx);
   // centre the crescent on its middle so scaling/rotation pivots around the impact point
-  g.translate(0, -(Math.cos(0) - Math.cos(theta)) * 0.5 * 0.9, 0);
+  g.translate(0, -(1 - Math.cos(theta)) * 0.5, 0);
   return g;
 }
 const SLASH_FS = /* glsl */`
@@ -100,11 +100,11 @@ const SLASH_FS = /* glsl */`
     float vis = smoothstep(0.0, 0.035, behind) * smoothstep(uTail - 0.02, uTail + 0.3, u);
     float trail = exp(-behind * 2.2);
     float headGlow = exp(-behind * 28.0);
-    float body = pow(max(0.0, 1.0 - v), 1.9);
-    float edge = smoothstep(0.30, 0.0, v);
+    float body = pow(max(0.0, 1.0 - v), 1.25);
+    float edge = smoothstep(0.22, 0.0, v);
     float streak = 0.55 + 0.9 * vn(vec2(u * 7.0 - uHead * 3.0 + uSeed, v * 30.0));
     streak = mix(1.0, streak, uGrit);
-    vec3 c = uColor * uHdr * body * streak * (0.5 + trail) + uCore * (edge * edge * 1.6 + headGlow * 2.2 * (1.0 - v));
+    vec3 c = uColor * uHdr * body * streak * (0.5 + trail) + uCore * (edge * edge * 1.6 + headGlow * 1.1 * (1.0 - v));
     float a = clamp(body * streak * 0.95 + edge * 0.9 + headGlow * 0.7, 0.0, 1.0) * vis * (0.35 + 0.65 * trail) * uFade;
     gl_FragColor = vec4(c, a);
   }`;

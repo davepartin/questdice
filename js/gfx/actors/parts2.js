@@ -142,6 +142,32 @@ export class Field {
     for (let i = 0; i < 90 && t < maxT; i++) { const d = this.dist(q.x, q.y, q.z); if (d < 0.002) { const r = this.project(q, 2); return r; } t += mx(d * 0.8, 0.004); q.set(o[0] + d3.x * t, o[1] + d3.y * t, o[2] + d3.z * t); }
     return null;
   }
+  // first sign change of the field along a ray (works from inside or outside); returns { p, n } or null
+  shoot(o, dir, maxT = 3, step = 0.02) {
+    const d3 = new THREE.Vector3(...dir).normalize(); let t0 = 0; let d0 = this.dist(o[0], o[1], o[2]);
+    for (let t = step; t <= maxT; t += step) {
+      const d1 = this.dist(o[0] + d3.x * t, o[1] + d3.y * t, o[2] + d3.z * t);
+      if ((d0 < 0) !== (d1 < 0)) {
+        let lo = t0; let hi = t;
+        for (let i = 0; i < 9; i++) { const m = (lo + hi) / 2; const dm = this.dist(o[0] + d3.x * m, o[1] + d3.y * m, o[2] + d3.z * m); if ((dm < 0) === (d0 < 0)) lo = m; else hi = m; }
+        const tt = (lo + hi) / 2; const p = new THREE.Vector3(o[0] + d3.x * tt, o[1] + d3.y * tt, o[2] + d3.z * tt);
+        return { p, n: this.grad(p.x, p.y, p.z, 0.01) };
+      }
+      t0 = t; d0 = d1;
+    }
+    return null;
+  }
+  // random points on the surface inside a box, filtered by test(p, n)
+  scatter(count, box, test, rnd, tol = 0.012) {
+    const out = []; let tries = 0;
+    while (out.length < count && tries++ < count * 60) {
+      const q = [box[0][0] + rnd() * (box[1][0] - box[0][0]), box[0][1] + rnd() * (box[1][1] - box[0][1]), box[0][2] + rnd() * (box[1][2] - box[0][2])];
+      const r = this.project(q, 6); if (Math.abs(this.dist(r.p.x, r.p.y, r.p.z)) > tol) continue;
+      if (r.p.x < box[0][0] || r.p.x > box[1][0] || r.p.y < box[0][1] || r.p.y > box[1][1] || r.p.z < box[0][2] || r.p.z > box[1][2]) continue;
+      if (test && !test(r.p, r.n)) continue; out.push(r);
+    }
+    return out;
+  }
   colorAt(x, y, z, out) {
     out.setRGB(1, 1, 1);
     for (const p of this.add) {
@@ -160,11 +186,22 @@ export class Field {
 
 // Shell of another field (armour plates, helmets): thickness `t` at offset `off` from the source surface,
 // clipped by a region function (negative inside the region). Edges are bevelled by smooth intersection.
-export function shellField(src, { off = 0.02, t = 0.012, region, bevel = 0.012, bounds }) {
+export function shellField(src, { off = 0.02, t = 0.012, region, bevel = 0.012, bounds, colorAt }) {
   const f = {
     dist: (x, y, z) => { const d = src.dist(x, y, z); const sh = abs(d - off) - t; return region ? smax(sh, region(x, y, z), bevel) : sh; },
-    colorAt: (x, y, z, out) => out.setRGB(1, 1, 1), bmin: bounds[0], bmax: bounds[1],
-    grad: Field.prototype.grad, project: Field.prototype.project,
+    colorAt: colorAt || ((x, y, z, out) => out.setRGB(1, 1, 1)), bmin: bounds[0], bmax: bounds[1],
+    grad: Field.prototype.grad, project: Field.prototype.project, shoot: Field.prototype.shoot, scatter: Field.prototype.scatter,
+  };
+  return f;
+}
+
+// Smooth union of several fields (so shells/armour can hug a whole body made of separate meshes)
+export function unionField(fields, k = 0.15) {
+  const f = {
+    dist: (x, y, z) => { let d = fields[0].dist(x, y, z); for (let i = 1; i < fields.length; i++) d = smin(d, fields[i].dist(x, y, z), k); return d; },
+    colorAt: (x, y, z, out) => out.setRGB(1, 1, 1),
+    bmin: [0, 1, 2].map((i) => Math.min(...fields.map((q) => q.bmin[i]))), bmax: [0, 1, 2].map((i) => Math.max(...fields.map((q) => q.bmax[i]))),
+    grad: Field.prototype.grad, project: Field.prototype.project, shoot: Field.prototype.shoot, scatter: Field.prototype.scatter,
   };
   return f;
 }

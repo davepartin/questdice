@@ -44,7 +44,7 @@ export function makeTerrain(U, cfg, quality) {
 // ---------------------------------------------------------------------------------------------------
 function groundMaterial(U, cfg) {
   const L = cfg.layers;
-  const sets = L.map((l) => pbr(l.kind, { seed: l.seed || 1, tint: l.tint, dark: l.dark, size: l.size || 256, ...(l.opts || {}) }));
+  const sets = L.map((l) => l.set || pbr(l.kind, { seed: l.seed || 1, tint: l.tint, dark: l.dark, size: l.size || 256, ...(l.opts || {}) }));
   const ten = (s) => s.normalMap;
   const base = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.93, metalness: 0, vertexColors: true, envMapIntensity: 0.55 });
   const G = {
@@ -124,7 +124,7 @@ const WATER_FS = /* glsl */`
 varying vec3 vW; varying vec2 vUv; varying float vSeed; varying float vDepth;
 uniform sampler2D tNoise;
 uniform float uTime, uRipple, uFlow, uOpacity, uMirror, uTL, uTLJag, uFoam, uSparkK, uFogDens, uFogFall, uFogHeight, uFogGlow, uMoonSize, uMoonOn, uRough;
-uniform vec3 uDeep, uShallow, uSpark, uMoonDir, uMoonCol, uFogBase, uTLCol;
+uniform vec3 uDeep, uShallow, uSpark, uMoonDir, uMoonCol, uFogBase, uTLCol, uFireCol; uniform vec4 uFireP[4];
 ${SKYGRAD_PARS}
 ${GLOW_PARS}
 void main(){
@@ -160,6 +160,7 @@ void main(){
   float glowK = dot(qdHorizonGlow(R, 1.6), vec3(0.33));
   float sp = texture2D(tNoise, q * 3.3 + vec2(uTime * 0.04, -uTime * 0.05)).b * 0.6 + texture2D(tNoise, q * 7.1 - uTime * 0.03).g * 0.4;
   col += uSpark * pow(smoothstep(0.62, 0.92, sp), 2.5) * glowK * uSparkK * (0.4 + F);
+  for (int i = 0; i < 4; i++) { vec3 L = uFireP[i].xyz - vW; float dd = length(L); L /= max(dd, 0.1); float sp2 = pow(max(dot(R, L), 0.0), 36.0); col += uFireCol * uFireP[i].w * sp2 * 26.0 / (1.0 + dd * dd * 0.012) * (0.3 + F); }
   float foam = shore * smoothstep(0.55, 0.9, texture2D(tNoise, q * 2.2 + uTime * 0.02).b) * uFoam;
   col = mix(col, vec3(0.5, 0.55, 0.62) * (0.3 + glowK), foam * 0.6);
   // fog (same recipe as the standard patch)
@@ -182,7 +183,7 @@ export function waterMaterial(U, o = {}, mode = 'RIVER') {
     uniforms: {
       tNoise: { value: noiseTexture() }, uTime: U.uTime, uGP: U.uGP, uGC: U.uGC, uHor: U.uHor, uMid: U.uMid, uTop: U.uTop, uSkyMul: U.uSkyMul,
       uMoonDir: U.uMoonDir, uMoonCol: U.uMoonCol, uMoonSize: U.uMoonSize, uMoonOn: U.uMoonOn,
-      uFogBase: U.uFogBase, uFogDens: U.uFogDens, uFogFall: U.uFogFall, uFogHeight: U.uFogHeight, uFogGlow: U.uFogGlow,
+      uFogBase: U.uFogBase, uFogDens: U.uFogDens, uFogFall: U.uFogFall, uFogHeight: U.uFogHeight, uFogGlow: U.uFogGlow, uFireP: U.uFireP, uFireCol: U.uFireCol,
       uRipple: { value: ripple }, uFlow: { value: flow }, uOpacity: { value: opacity }, uMirror: { value: mirror }, uTL: { value: tl }, uTLJag: { value: tlJag }, uTLCol: { value: new THREE.Color(tlCol) },
       uFoam: { value: foam }, uSparkK: { value: sparkK }, uRough: { value: rough },
       uDeep: { value: new THREE.Color(deep) }, uShallow: { value: new THREE.Color(shallow) }, uSpark: { value: new THREE.Color(spark) },

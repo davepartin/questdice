@@ -64,14 +64,14 @@ const MAKERS = {
   flare(s = 256) { // hot core + anamorphic cross streaks + halo: the "impact flash" sprite
     const c = canvas(s); const g = c.getContext('2d');
     g.globalCompositeOperation = 'lighter';
-    radial(g, s, [[0, 1], [0.05, 0.9], [0.14, 0.45], [0.3, 0.14], [0.55, 0.03], [1, 0]]);
+    radial(g, s, [[0, 1], [0.035, 0.95], [0.08, 0.4], [0.18, 0.1], [0.4, 0.02], [1, 0]]);
     const streak = (sx, sy, a) => {
       g.save(); g.translate(s / 2, s / 2); g.scale(sx, sy);
       const gr = g.createRadialGradient(0, 0, 0, 0, 0, s / 2);
       gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(0.3, `rgba(255,255,255,${a * 0.5})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
       g.fillStyle = gr; g.beginPath(); g.arc(0, 0, s / 2, 0, Math.PI * 2); g.fill(); g.restore();
     };
-    streak(1, 0.035, 0.95); streak(0.035, 1, 0.55);
+    streak(1, 0.03, 1); streak(0.03, 1, 0.7); streak(0.55, 0.018, 0.5);
     g.save(); g.translate(s / 2, s / 2); g.rotate(Math.PI / 4); g.translate(-s / 2, -s / 2); g.scale(1, 1);
     g.restore();
     return toTex(c);

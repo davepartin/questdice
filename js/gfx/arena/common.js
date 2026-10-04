@@ -31,6 +31,7 @@ export function makeUniforms() {
     uSkyMul: { value: C(0xffffff) },
     uFogBase: { value: C(0x120c12) }, uFogDens: { value: 0.016 }, uFogFall: { value: 0.22 }, uFogHeight: { value: 0.65 }, uFogGlow: { value: 0.5 },
     uFlicker: { value: 1 },
+    uFireP: { value: [0, 1, 2, 3].map(() => new THREE.Vector4(0, -50, 0, 0)) }, uFireCol: { value: C(0xff6a20) },
   };
 }
 

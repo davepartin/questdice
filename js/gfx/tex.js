@@ -302,24 +302,23 @@ const P = {
     };
   },
   // [monsters-b] Thick monster hide: mottled colour, deep creases, pores, sparse warts, faint scars.
-  hideB({ tint = 0x9a8c62, dark = 0x3c2f1c, mottle = 0x6c6a46, warts = 0.7, crease = 1, pores = 1 } = {}) {
+  hideB({ tint = 0xa89a6c, dark = 0x4a3e26, mottle = 0x7a7850, warts = 0.7, crease = 1, pores = 1 } = {}) {
     const lo = hex(dark); const hi = hex(tint); const mo = hex(mottle);
     return (u, v, { N }) => {
-      const big = N.fbm(u * 3, v * 3, { oct: 4, tile: 3 }) * 0.5 + 0.5;
-      const blot = N.fbm(u * 7 + 2, v * 7, { oct: 4, tile: 7 }) * 0.5 + 0.5;
-      const wp = N.fbm(u * 4 + 5, v * 4, { oct: 2, tile: 4 }) * 0.12;
-      const rid = 1 - Math.abs(N.fbm((u + wp) * 6, (v + wp) * 6, { oct: 3, tile: 6 })) * 2;
-      const cr = smooth(0.62, 0.95, rid) * crease;
-      const fine = 1 - Math.abs(N.fbm(u * 22, v * 22, { oct: 2, tile: 22 })) * 2;
-      const fcr = smooth(0.75, 0.97, fine) * 0.5 * crease;
-      const pr = N.worley(u * 44, v * 44, 44); const pit = smooth(0.17, 0.02, pr.d1) * pores;
-      const ww = N.worley(u * 5, v * 5, 5); const wart = smooth(0.24, 0.05, ww.d1) * (ww.id > 165 ? 1 : 0) * warts;
-      let c = mixc(lo, hi, clamp(0.28 + big * 0.55 + blot * 0.25));
-      c = mixc(c, mo, smooth(0.5, 0.85, blot) * 0.4);
-      c = mul(c, 1 - cr * 0.55 - fcr * 0.3 - pit * 0.22);
-      c = mixc(c, [c[0] * 1.2 + 0.05, c[1] * 1.05, c[2] * 0.95], wart * 0.6);
-      c = mixc(c, mul(hex(0x6a2a1a), 1), wart * smooth(0.12, 0.0, ww.d1) * 0.35);
-      return { h: 0.55 + blot * 0.08 - cr * 0.3 - fcr * 0.12 - pit * 0.1 + wart * 0.55, c, r: 0.62 + blot * 0.2 - wart * 0.15 + cr * 0.15, ao: 1 - cr * 0.5 - pit * 0.2 };
+      const big = N.fbm(u * 2, v * 2, { oct: 4, tile: 2 }) * 0.5 + 0.5;
+      const blot = N.fbm(u * 6 + 2, v * 6, { oct: 4, tile: 6 }) * 0.5 + 0.5;
+      const wp = N.fbm(u * 4 + 5, v * 4, { oct: 2, tile: 4 }) * 0.1;
+      const rid = 1 - Math.abs(N.fbm((u + wp) * 9, (v + wp) * 9, { oct: 2, tile: 9 })) * 2;
+      const cr = smooth(0.8, 0.98, rid) * crease;
+      const fine = 1 - Math.abs(N.fbm(u * 28, v * 28, { oct: 2, tile: 28 })) * 2;
+      const fcr = smooth(0.8, 0.98, fine) * 0.6 * crease;
+      const pr = N.worley(u * 56, v * 56, 56); const pit = smooth(0.2, 0.03, pr.d1) * pores;
+      const ww = N.worley(u * 4, v * 4, 4); const wart = smooth(0.2, 0.05, ww.d1) * (ww.id > 170 ? 1 : 0) * warts;
+      let c = mixc(lo, hi, clamp(0.45 + big * 0.35 + blot * 0.3));
+      c = mixc(c, mo, smooth(0.45, 0.9, blot) * 0.35);
+      c = mul(c, 1 - cr * 0.28 - fcr * 0.18 - pit * 0.14);
+      c = mixc(c, [c[0] * 1.15 + 0.04, c[1] * 1.0, c[2] * 0.95], wart * 0.5);
+      return { h: 0.55 + blot * 0.06 - cr * 0.18 - fcr * 0.1 - pit * 0.08 + wart * 0.4, c, r: 0.62 + blot * 0.2 - wart * 0.15 + cr * 0.1, ao: 1 - cr * 0.3 - pit * 0.12 };
     };
   },
   // [monsters-b] Moth-eaten crimson brocade: dark velvet, a faint gold diamond lattice, stains.
@@ -337,6 +336,74 @@ const P = {
       c = mixc(c, mul(go, 0.75), clamp(line + dot * 0.5) * 0.55);
       c = mul(c, 0.65 + 0.35 * smooth(0.15, 0.7, stain));
       return { h: 0.5 + wv * 0.12 + (line + dot) * 0.12, c, r: 0.85 - (line + dot) * 0.3, m: (line + dot) * 0.3, ao: 0.7 + pile * 0.3 };
+    };
+  },
+  // ---- monsters-A presets (appended) ----------------------------------------------------------
+  // Leathery goblin hide: blotchy mottling, fine wrinkles, sparse pores, a few warts, purple-green veins.
+  goblinSkin({ tint = 0x6f8f3a, dark = 0x2c3a14, vein = 0x4a3a5a, wart = 0xb89a5a, warts = 0.5, wrinkle = 1 } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const vn = hex(vein); const wc = hex(wart);
+    return (u, v, { N }) => {
+      const blot = N.fbm(u * 4, v * 4, { oct: 5, tile: 4 }) * 0.5 + 0.5;
+      const blot2 = N.fbm(u * 9 + 3, v * 9, { oct: 3, tile: 9 }) * 0.5 + 0.5;
+      const wr = 1 - Math.abs(N.fbm(u * 14, v * 14 + 2, { oct: 3, tile: 14 }));
+      const wr2 = 1 - Math.abs(N.fbm(u * 30 + 5, v * 30, { oct: 2, tile: 30 }));
+      const pore = N.worley(u * 48, v * 48, 48);
+      const veinN = Math.abs(N.fbm(u * 6 + 2, v * 6 + 7, { oct: 4, tile: 6 }));
+      const vv = smooth(0.032, 0.0, veinN) * smooth(0.35, 0.65, blot);
+      const w = N.worley(u * 5, v * 5, 5);
+      const wartM = smooth(0.2, 0.04, w.d1) * (w.id > 205 ? 1 : 0) * warts;
+      const pit = smooth(0.14, 0.0, pore.d1) * (pore.id > 120 ? 1 : 0.35);
+      let c = mixc(lo, hi, clamp(0.25 + blot * 0.5 + blot2 * 0.3 + (wr * 0.12 - 0.05)));
+      c = mixc(c, vn, vv * 0.55);
+      c = mixc(c, wc, wartM * 0.5);
+      c = mul(c, 1 - pit * 0.28 - (1 - wr) * 0.12 * wrinkle);
+      const h = 0.5 + wr * 0.16 * wrinkle + wr2 * 0.09 - pit * 0.22 + wartM * 0.55 + vv * 0.12;
+      return { h, c, r: clamp(0.5 + blot * 0.25 - wartM * 0.1 + (1 - wr) * 0.15), ao: 0.75 + wr * 0.25 };
+    };
+  },
+  // Dire-wolf pelt: long clumped guard hairs with light tips and dark undercoat streaks.
+  pelt({ tint = 0x6e6a66, dark = 0x1a1816, light = 0xb8b0a2, streak = 120 } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const li = hex(light);
+    return (u, v, { N }) => {
+      const s = N.fbm(u * streak, v * 5, { oct: 3, tile: 0 }) * 0.5 + 0.5;
+      const s2 = N.n2(u * streak * 2.3, v * 9, streak * 2, 9) * 0.5 + 0.5;
+      const clump = N.fbm(u * 14, v * 3, { oct: 3, tile: 0 }) * 0.5 + 0.5;
+      const patch = N.fbm(u * 3, v * 3, { oct: 4, tile: 3 }) * 0.5 + 0.5;
+      const tipLight = smooth(0.55, 0.9, s2 * 0.65 + clump * 0.4);
+      let c = mixc(lo, hi, clamp(0.2 + s * 0.5 + patch * 0.35));
+      c = mixc(c, li, tipLight * 0.55 * smooth(0.3, 0.8, patch));
+      c = mul(c, 0.55 + 0.45 * smooth(0.0, 0.8, s));
+      return { h: s * 0.55 + s2 * 0.45 + clump * 0.2, c, r: 0.82 + s * 0.12, ao: 0.35 + s * 0.65 };
+    };
+  },
+  // Charred cloth with ember cracks (emissive): the Ashen Cultist's robes.
+  cinderCloth({ tint = 0x4a4642, dark = 0x0e0c0b, ember = 0xff6a1a, weave = 56, cracks = 0.5 } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const em = hex(ember);
+    return (u, v, { N }) => {
+      const a = Math.sin(u * weave * Math.PI * 2) * 0.5 + 0.5;
+      const b = Math.sin(v * weave * Math.PI * 2) * 0.5 + 0.5;
+      const over = (Math.floor(u * weave) + Math.floor(v * weave)) % 2 ? a : b;
+      const lint = N.fbm(u * 8, v * 8, { oct: 4, tile: 8 }) * 0.5 + 0.5;
+      const soot = N.fbm(u * 3 + 4, v * 3, { oct: 4, tile: 3 }) * 0.5 + 0.5;
+      const w = N.worley(u * 5 + lint * 0.25, v * 5, 5);
+      const crack = smooth(0.06, 0.0, w.d2 - w.d1) * smooth(0.4, 0.7, soot) * cracks;
+      let c = mixc(lo, hi, clamp(0.2 + over * 0.22 + lint * 0.45 * (1 - soot * 0.5)));
+      c = mixc(c, [0.03, 0.015, 0.01], crack);
+      return { h: over * 0.5 + lint * 0.12 - crack * 0.5, c, r: 0.93, ao: 0.6 + over * 0.4 - crack * 0.3, e: mul(em, crack * (0.6 + lint * 0.8)) };
+    };
+  },
+  // Cracked porcelain / bone mask with hairline cracks (emissive in the cracks).
+  porcelain({ tint = 0xe6e0d2, dark = 0x9a9080, ember = 0xff6a1a, cracks = 0.8 } = {}) {
+    const lo = hex(dark); const hi = hex(tint); const em = hex(ember);
+    return (u, v, { N }) => {
+      const a = N.fbm(u * 5, v * 5, { oct: 5, tile: 5 }) * 0.5 + 0.5;
+      const fine = N.fbm(u * 40, v * 40, { oct: 2, tile: 40 }) * 0.5 + 0.5;
+      const w = N.worley(u * 3 + a * 0.35, v * 3 + a * 0.2, 3);
+      const crack = smooth(0.045, 0.0, w.d2 - w.d1) * cracks;
+      const hair = smooth(0.012, 0.0, Math.abs(N.fbm(u * 9 + 1, v * 9, { oct: 3, tile: 9 }))) * 0.7;
+      let c = mixc(lo, hi, clamp(0.55 + a * 0.35 + fine * 0.1));
+      c = mixc(c, [0.2, 0.12, 0.08], Math.max(crack, hair) * 0.8);
+      return { h: 0.6 + a * 0.1 + fine * 0.04 - Math.max(crack, hair) * 0.4, c, r: 0.32 + a * 0.2 + crack * 0.4, ao: 1 - crack * 0.4, e: mul(em, Math.max(0, crack - 0.35) * 0.9) };
     };
   },
 };

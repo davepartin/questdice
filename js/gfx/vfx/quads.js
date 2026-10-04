@@ -110,7 +110,7 @@ export class Quads {
       const q = this.path; const { p0, c, p1 } = o.path; this.hasPath[i] = 1;
       q[i * 9] = p0[0]; q[i * 9 + 1] = p0[1]; q[i * 9 + 2] = p0[2]; q[i * 9 + 3] = c[0]; q[i * 9 + 4] = c[1]; q[i * 9 + 5] = c[2]; q[i * 9 + 6] = p1[0]; q[i * 9 + 7] = p1[1]; q[i * 9 + 8] = p1[2];
     } else this.hasPath[i] = 0;
-    this.dirtyStatic = true; this.any = true;
+    this.dirtyStatic = true; this.any = true; this.object.visible = true;
     return i;
   }
   burst(n, make) { for (let i = 0; i < n; i++) this.emit(make(i, n)); }
@@ -149,7 +149,7 @@ export class Quads {
     a.aPos.needsUpdate = a.aVel.needsUpdate = a.aT.needsUpdate = true;
     if (this.dirtyStatic) { a.aS.needsUpdate = a.aC.needsUpdate = a.aC2.needsUpdate = a.aX.needsUpdate = true; this.dirtyStatic = false; }
     this.geo.instanceCount = this.hi;
-    if (!live) this.any = false;
+    if (!live) { this.any = false; this.object.visible = false; }
   }
   clear() { const T = this.a.aT.array; for (let i = 0; i < this.max; i++) { T[i * 4] = 1; T[i * 4 + 1] = 0; } this.any = true; this.update(0); this.hi = 0; this.geo.instanceCount = 0; }
 }
