@@ -95,10 +95,12 @@ a { color: var(--shield); }
     radial-gradient(circle at 50% 0%, rgba(244,241,232,.75) 0 .55rem, transparent .62rem),
     linear-gradient(90deg, transparent 44%, rgba(240,180,60,.5) 44% 56%, transparent 56%),
     linear-gradient(180deg, transparent 36%, rgba(240,180,60,.28) 36% 50%, transparent 50%); }
-.td { aspect-ratio: 1; border-radius: .7rem; background: linear-gradient(160deg, var(--hull-600), var(--hull-800)); border: 1.5px solid var(--hull-400); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; box-shadow: 0 8px 20px rgba(0,0,0,.5); }
-.td.limb:not(.td-C) { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 14px rgba(244,241,232,.22); }
-.td.td-NW, .td.td-NE { border-color: var(--attack); color: var(--attack-glow); } .td.td-SW, .td.td-SE { border-color: var(--pierce); color: var(--pierce-glow); }
-.td.td-C { border-color: var(--magic); color: var(--magic-glow); box-shadow: 0 0 22px rgba(255,210,61,.35); }
+.td { aspect-ratio: 1; border-radius: 22%; border: 0; display: grid; place-items: center; font-family: var(--font-logo); font-weight: 800; font-size: 1.35rem; color: #1a140e; background: linear-gradient(180deg, #fffdf8 0%, #f3ecdf 58%, #d4cbb8 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 0 #7a7266, 0 12px 16px rgba(0,0,0,.45); }
+.td.limb:not(.td-C) { color: #1a140e; }
+.td.td-NW { color: #fffaf8; background: linear-gradient(180deg, #ff9a92, #ff4d4d 58%, #c42832); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 0 #6e121c, 0 12px 16px rgba(0,0,0,.45); }
+.td.td-NE { color: #f4fbff; background: linear-gradient(180deg, #9ad4ff, #3aa4f5 58%, #1a6cb0); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 0 #0c3e66, 0 12px 16px rgba(0,0,0,.45); }
+.td.td-SW, .td.td-SE { color: #fbf8ff; background: linear-gradient(180deg, #d7b8ff, #b07dff 58%, #7a48c4); box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 6px 0 #3d206e, 0 12px 16px rgba(0,0,0,.45); }
+.td.td-C { color: #2a1c04; background: linear-gradient(180deg, #ffe98a, #ffd23d 55%, #d4a41a); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 0 #8a6410, 0 14px 18px rgba(0,0,0,.4); }
 .td.pop { animation: pop .45s var(--ease-slam); }
 @keyframes pop { 0% { transform: scale(.7) rotate(-12deg); } 100% { transform: none; } }
 .logo { font-family: var(--font-logo); font-size: clamp(2.4rem, 13vw, 3.4rem); letter-spacing: .02em; line-height: 1; color: var(--primary); text-shadow: 0 4px 0 #8f8a7c, 0 0 40px rgba(255,210,61,.25); }
