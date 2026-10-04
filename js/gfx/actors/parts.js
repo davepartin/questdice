@@ -311,7 +311,7 @@ function applyTriplanar(sh, tp) {
   sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${TP_VS_DECL}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${TP_VS_BODY}`);
   sh.fragmentShader = sh.fragmentShader
     .replace('#include <common>', `#include <common>\n${TP_FS_DECL}`)
-    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif\n if (uShell >= 0.0) { vec3 cs = floor(vTpP * 95.0); float hs = fract(sin(dot(cs, vec3(12.9898, 78.233, 37.719))) * 43758.5453); if (hs < uShell * 0.92) discard; diffuseColor.rgb *= mix(0.5, 1.25, uShell); }`)
+    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif\n if (uShell >= 0.0) { vec3 cs = floor(vTpP * 150.0); float hs = fract(sin(dot(cs, vec3(12.9898, 78.233, 37.719))) * 43758.5453); if (hs < uShell * 0.92) discard; diffuseColor.rgb *= mix(0.5, 1.25, uShell); }`)
     .replace('#include <roughnessmap_fragment>', `float roughnessFactor = roughness;\n#ifdef USE_ROUGHNESSMAP\n roughnessFactor *= tpTex(roughnessMap).g;\n#endif`)
     .replace('#include <metalnessmap_fragment>', `float metalnessFactor = metalness;\n#ifdef USE_METALNESSMAP\n metalnessFactor *= tpTex(metalnessMap).b;\n#endif`)
     .replace('#include <normal_fragment_maps>', `#ifdef USE_NORMALMAP_TANGENTSPACE

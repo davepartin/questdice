@@ -14,7 +14,7 @@ async function tryLoad(path) {
 // Staging marks (metres). See docs/GFX.md and the arena brief.
 export const MARKS = {
   hero: [-2.5, 0, 1.5],
-  tray: [0, 0.8, 4.9],
+  tray: [0, 0.7, 5.2],
   big: [0.5, 0, -0.9],
 };
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest
@@ -79,7 +79,7 @@ export const world = {
     // tray
     let tray;
     try { tray = trayMod ? trayMod.createTray({ stage, quality: stage.quality }) : stubTray(stage); } catch (e) { console.warn('[world] tray failed', e); tray = stubTray(stage); }
-    tray.object.position.set(...MARKS.tray); tray.object.scale.setScalar(0.86);
+    tray.object.position.set(...MARKS.tray); tray.object.scale.setScalar(0.74);
     stage.scene.add(tray.object);
     tray.setHero(hero);
     stage.onFrame((dt, t) => tray.update?.(dt, t));

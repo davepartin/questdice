@@ -22,8 +22,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
 
   setRim(0xffc468);
   const FUR = { tint: 0xb0aaa0, dark: 0x4a4540, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 };
-  const fur = tpm('pelt', FUR, { scale: 0.8, nrm: 0.3, rimK: 0.5 });
-  const shellMats = [1, 2, 3].map((k) => tpm('pelt', FUR, { scale: 0.8, nrm: 0.2, shell: k / 4, rimK: 0.5 }));
+  const fur = tpm('pelt', FUR, { scale: 7, nrm: 0.25, rimK: 0.4 });
+  const shellMats = [1, 2, 3].map((k) => tpm('pelt', FUR, { scale: 7, nrm: 0.15, shell: k / 4, rimK: 0.4 }));
   const leather = tpm('leatherDark', { seed: 7 }, { scale: 14, nrm: 0.7 });
   const iron = tpm('iron', { seed: 4, metalness: 0.75, roughness: 0.9 }, { scale: 6, nrm: 0.8 });
   const eyeM = glowMat(0xffa21a, 2.0, { rough: 0.2 });
@@ -65,12 +65,13 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   // coat colour: grey-brown body, darker saddle on the back, cream underside; medium-frequency mottling (no streaks)
   const coat = (o = {}) => (x, y, z, nx, ny, nz, ao, c) => {
     const n = 0.5 + 0.5 * NZ.n3(x * 7, y * 7, z * 7); const n2 = 0.5 + 0.5 * NZ.n3(x * 19 + 3, y * 19, z * 19 + 1);
-    c.setRGB(0.46, 0.43, 0.4).multiplyScalar(1.2 + (n - 0.5) * 0.7);
-    c.lerp(tc.setRGB(0.16, 0.15, 0.14), sstep(0.1, 0.8, ny + (n2 - 0.5) * 0.5) * (o.saddle ?? 0.9));
+    c.setRGB(0.44, 0.41, 0.38).multiplyScalar(1.0 + (n - 0.5) * 0.7);
+    c.lerp(tc.setRGB(0.1, 0.095, 0.09), sstep(-0.15, 0.45, ny + (n2 - 0.5) * 0.5) * (o.saddle ?? 0.95));
     c.lerp(tc.setRGB(1.0, 0.9, 0.72), sstep(0.05, -0.65, ny + (n2 - 0.5) * 0.3) * (o.cream ?? 0.9));
     if (o.fx) c.lerp(tc.setRGB(0.12, 0.1, 0.09), sstep(0.35, 0.8, nz) * o.fx);        // dark leg fronts
     if (o.dark) c.multiplyScalar(o.dark);
     c.multiplyScalar(0.8 + 0.4 * n2);
+    c.r *= c.r; c.g *= c.g; c.b *= c.b; c.multiplyScalar(1.1);          // sRGB-ish authoring -> linear vertex colours
   };
 
   // ------------------------------------------------------------------ torso: deep narrow chest, tucked waist, sloped back
