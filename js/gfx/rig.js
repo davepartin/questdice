@@ -62,7 +62,7 @@ export class Animator {
   update(dt) {
     if (!this.cur) return;
     const base = this._write(this.cur, dt);
-    const over = this.over ? this._write(this.over, dt) : null;
+    const over = this.over ? this._write(this.over, dt) : null; const overW = this.over ? this.over.weight : 0;
     if (this.over?.done && this.over.t > this.over.clip.dur + 0.001) this.over = null;
     this.fadeT = Math.min(this.fade, this.fadeT + dt);
     const w = this.fade > 0 ? this.fadeT / this.fade : 1; const ew = w * w * (3 - 2 * w);
@@ -72,7 +72,7 @@ export class Animator {
       const tp = r.p.clone(); const ts = r.s.clone();
       this._e.set(0, 0, 0); let rx = 0; let ry = 0; let rz = 0;
       if (b) { tp.x += b.p[0]; tp.y += b.p[1]; tp.z += b.p[2]; ts.x *= b.s[0]; ts.y *= b.s[1]; ts.z *= b.s[2]; rx += b.r[0]; ry += b.r[1]; rz += b.r[2]; }
-      if (o) { const ow = this.over.weight; tp.x += o.p[0] * ow; tp.y += o.p[1] * ow; tp.z += o.p[2] * ow; ts.x *= 1 + (o.s[0] - 1) * ow; ts.y *= 1 + (o.s[1] - 1) * ow; ts.z *= 1 + (o.s[2] - 1) * ow; rx += o.r[0] * ow; ry += o.r[1] * ow; rz += o.r[2] * ow; }
+      if (o) { const ow = overW; tp.x += o.p[0] * ow; tp.y += o.p[1] * ow; tp.z += o.p[2] * ow; ts.x *= 1 + (o.s[0] - 1) * ow; ts.y *= 1 + (o.s[1] - 1) * ow; ts.z *= 1 + (o.s[2] - 1) * ow; rx += o.r[0] * ow; ry += o.r[1] * ow; rz += o.r[2] * ow; }
       this._e.set(rx, ry, rz, 'XYZ');
       const tq = r.q.clone().multiply(this._q.setFromEuler(this._e));
       if (ew < 1 && this._snap?.[n]) {
