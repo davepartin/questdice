@@ -125,6 +125,8 @@ export function createStage(canvas, opts = {}) {
     render(dt);
     return S;
   };
+  // Tick the simulation (tweens, waits, animation) without rendering: cheap fast-forward for tests.
+  S.simulate = (seconds, dt = 1 / 30) => { const n = Math.max(1, Math.round(seconds / dt)); for (let i = 0; i < n; i++) tick(dt); return S; };
   S.advance = (seconds, dt = 1 / 30) => { const n = Math.max(1, Math.round(seconds / dt)); for (let i = 0; i < n - 1; i++) tick(dt); return S.step(1, dt); };
 
   // Real-time loop.

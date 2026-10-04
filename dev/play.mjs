@@ -14,8 +14,9 @@ const logs = []; p.on('console', (m) => { if (['error', 'warning'].includes(m.ty
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
 await p.goto(`http://localhost:${port}/?debug&manual${args.q ? `&q=${args.q}` : ''}${args.dpr ? `&dpr=${args.dpr}` : ''}`);
 await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 60000 });
-const pump = (s) => p.evaluate((s) => window.QD.world.stage.advance(s), s);
-const shot = async (n) => { await p.screenshot({ path: path.join(out, `${n}.png`) }); console.log('wrote', path.join(out, `${n}.png`)); };
+const pump = (s) => p.evaluate((s) => window.QD.world.stage.simulate(s), s);
+const render = () => p.evaluate(() => window.QD.world.stage.step(1));
+const shot = async (n) => { await render(); await p.screenshot({ path: path.join(out, `${n}.png`) }); console.log('wrote', path.join(out, `${n}.png`)); };
 const until = async (expr, max = 30) => { for (let i = 0; i < max * 4; i++) { if (await p.evaluate(`!!(${expr})`)) return true; await pump(0.25); } console.log('until timeout:', expr); return false; };
 const setup = async () => {
   await p.evaluate((cls) => { const { S, E, showBoard } = window.QD; const hero = E.newHero({ name: 'Dave', cls: cls || 'knight', seed: 7 }); S.hero = hero; S.company = { members: [hero] }; showBoard(); }, args.cls);
