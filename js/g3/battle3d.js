@@ -147,8 +147,14 @@ function positionPlates() {
     el.style.display = a.root.visible && (e.hp > 0 || a.dissolving) ? '' : 'none';
     const pw = el.offsetWidth || 150;
     let x = Math.max(pw / 2 + 6, Math.min(w - pw / 2 - 6, p.x));
-    let y = Math.max(el.offsetHeight + 56, p.y - 6);
-    for (const q of placed) if (Math.abs(q.x - x) < (q.w + pw) / 2 && Math.abs(q.y - y) < el.offsetHeight + 4) y = q.y - el.offsetHeight - 6;
+    const topSafe = w / hh < 1.25 ? 124 : 56;
+    let y = Math.max(el.offsetHeight + topSafe, p.y - 6);
+    for (const q of placed) {
+      if (Math.abs(q.x - x) < (q.w + pw) / 2 + 4 && Math.abs(q.y - y) < el.offsetHeight + 4) {
+        const dir = x >= q.x ? 1 : -1; const nx = q.x + dir * ((q.w + pw) / 2 + 6);
+        if (nx - pw / 2 >= 4 && nx + pw / 2 <= w - 4) x = nx; else y = q.y - el.offsetHeight - 6;
+      }
+    }
     placed.push({ x, y, w: pw });
     el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
   }

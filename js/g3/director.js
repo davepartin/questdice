@@ -6,8 +6,8 @@ import { damp } from '../gfx/util.js';
 // Each shot: land = wide screens, port = tall phones. Blended by aspect ratio.
 const SHOTS = {
   battle: {
-    land: { pos: [0.5, 3.9, 9.6], look: [0, 1.1, 0.4], fov: 40 },
-    port: { pos: [0.2, 5.5, 8.6], look: [0, 0.7, 0.2], fov: 62 },
+    land: { pos: [0.4, 4.7, 11.6], look: [0, 1.15, 0.5], fov: 40 },
+    port: { pos: [0.2, 6.6, 12.2], look: [0, 0.6, 0.9], fov: 58 },
   },
   intro: {
     land: { pos: [-3.5, 2.2, 11.5], look: [0, 1.5, -1], fov: 42 },
@@ -48,7 +48,7 @@ export class Director {
     this._v = new THREE.Vector3(); this.manualOverride = false;
     this.set('battle', { snap: true });
     this.safe = { bottom: 0, top: 0 };
-    stage.onFrame((dt, t) => this.update(dt, t));
+    this.attach();
     stage.onResize = () => this.applySafe();
   }
   // 0 = wide landscape, 1 = tall portrait
@@ -68,6 +68,8 @@ export class Director {
     this.tgt.pos.copy(r.pos); this.tgt.look.copy(r.look); this.tgt.fov = r.fov;
     if (snap) { this.cur.pos.copy(r.pos); this.cur.look.copy(r.look); this.cur.fov = r.fov; this.apply(0); }
   }
+  // (Re)register the per-frame hook: stage.clearScene() drops all frame hooks, so world.clear() re-attaches.
+  attach() { this.off?.(); this.off = this.stage.onFrame((dt, t) => this.update(dt, t)); }
   // Reserve screen space for the HUD (px at the bottom/top): the 3D composition is centred in what is left.
   setSafe(bottom = 0, top = 0) { this.safe = { bottom, top }; this.applySafe(); }
   applySafe() {
