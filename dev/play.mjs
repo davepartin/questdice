@@ -10,14 +10,14 @@ const W = Number(args.w || 1280); const H = Number(args.h || 720);
 fs.mkdirSync(out, { recursive: true });
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
 const p = await b.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1, hasTouch: !!args.touch });
-const logs = []; p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) logs.push(`[${m.type()}] ${m.text()}`); }); p.on('pageerror', (e) => logs.push(`[pageerror] ${e.stack}`));
+const logs = []; p.on('console', (m) => { if (['error', 'warning'].includes(m.type()) || (process.env.LOGS && m.type() === 'log')) logs.push(`[${m.type()}] ${m.text()}`); }); p.on('pageerror', (e) => logs.push(`[pageerror] ${e.stack}`));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
 await p.goto(`http://localhost:${port}/?debug&manual${args.q ? `&q=${args.q}` : ''}${args.dpr ? `&dpr=${args.dpr}` : ''}`);
 await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 60000 });
-const pump = (s) => p.evaluate((s) => window.QD.world.stage.simulate(s), s);
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
 const render = () => p.evaluate(() => window.QD.world.stage.step(1));
 const shot = async (n) => { await render(); await p.screenshot({ path: path.join(out, `${n}.png`) }); console.log('wrote', path.join(out, `${n}.png`)); };
-const until = async (expr, max = 30) => { for (let i = 0; i < max * 4; i++) { if (await p.evaluate(`!!(${expr})`)) return true; await pump(0.25); } console.log('until timeout:', expr); return false; };
+const until = async (expr, max = 30) => { for (let i = 0; i < max * 4; i++) { if (await p.evaluate(`!!(${expr})`)) return true; await pump(0.25); await p.waitForTimeout(60); } console.log('until timeout:', expr); return false; };
 const setup = async () => {
   await p.evaluate((cls) => { const { S, E, showBoard } = window.QD; const hero = E.newHero({ name: 'Dave', cls: cls || 'knight', seed: 7 }); S.hero = hero; S.company = { members: [hero] }; showBoard(); }, args.cls);
   await pump(0.3);

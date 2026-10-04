@@ -22,7 +22,7 @@ export const battleState = B;
 
 const wait = (s) => world.stage.wait(s);
 const race = (p, s = 2.2) => Promise.race([p, wait(s)]);
-const vfx = (name, ...a) => { try { return B.bw.vfx[name]?.(...a) ?? Promise.resolve(); } catch (e) { console.warn('vfx', name, e); return Promise.resolve(); } };
+const vfx = (name, ...a) => { try { const p = B.bw.vfx[name]?.(...a); return p && p.then ? Promise.race([p, world.stage.wait(2.2)]) : Promise.resolve(); } catch (e) { console.warn('vfx', name, e); return Promise.resolve(); } };
 const raw = (name, ...a) => { try { return B.bw.vfx[name]?.(...a); } catch (e) { console.warn('vfx', name, e); } };
 const v3 = (a) => (a.isVector3 ? a : new THREE.Vector3(...a));
 
@@ -253,7 +253,8 @@ function setHud({ phase }) {
   hud.top.replaceChildren(...top());
   hud.hero.replaceChildren(...heroBox());
   hud.ribbon.replaceChildren(h('p', {}, ribbonText()));
-  hud.ribbon.classList.toggle('hide', phase === 'shape');
+  hud.ribbon.classList.toggle('hide', phase !== 'reset');
+  if (phase === 'resolve') hud.forecast.replaceChildren();
   B.root.dataset.phase = phase;
 }
 function cardTiles(reset) {
@@ -401,6 +402,9 @@ function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(
 
 // ------------------------------------------------------------------------------------------ lock in: perform the round
 async function lockIn() {
+  try { await lockInInner(); } catch (e) { console.error('lockIn failed', e); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
+}
+async function lockInInner() {
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const hero = B.hero; const stage = world.stage;
   sfx.lock(); buzz(30);
