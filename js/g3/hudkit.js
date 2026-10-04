@@ -119,14 +119,14 @@ export function replay(el, cls) { el.classList.remove(cls); void el.offsetWidth;
 // ------------------------------------------------------------------------------------------------ bars & gems
 // A health bar: ornate frame, a trailing damage ghost, segment ticks, a number.
 export function bar({ cls = '', seg = 8, num = true } = {}) {
-  const el = h('div', { class: `bar ${cls}`, style: { '--seg': seg }, role: 'meter', 'aria-valuemin': '0' },
-    h('i', { class: 'bar-ghost' }), h('i', { class: 'bar-fill' }), h('i', { class: 'bar-ticks' }), num ? h('b', { class: 'bar-num' }) : null);
+  const el = h('div', { class: `hbar ${cls}`, style: { '--seg': seg }, role: 'meter', 'aria-valuemin': '0' },
+    h('i', { class: 'hbar-ghost' }), h('i', { class: 'hbar-fill' }), h('i', { class: 'hbar-ticks' }), num ? h('b', { class: 'hbar-num' }) : null);
   el._pct = null;
   return el;
 }
 export function setBar(el, cur, max, { label } = {}) {
   const pct = Math.max(0, Math.min(100, (cur / Math.max(1, max)) * 100));
-  const fill = el.querySelector('.bar-fill'); const ghost = el.querySelector('.bar-ghost'); const num = el.querySelector('.bar-num');
+  const fill = el.querySelector('.hbar-fill'); const ghost = el.querySelector('.hbar-ghost'); const num = el.querySelector('.hbar-num');
   const prev = el._pct;
   fill.style.width = `${pct}%`;
   if (prev == null || pct >= prev) { ghost.style.transition = 'none'; ghost.style.width = `${pct}%`; void ghost.offsetWidth; ghost.style.transition = ''; }
@@ -192,8 +192,8 @@ export function setNotes(el, notes) {
   const seen = el._seen; const keys = new Set(notes.map((n) => n.key));
   el._notes.replaceChildren(...notes.map((n) => {
     const fresh = !seen.has(n.key);
-    return h('div', { class: `note ${n.kind || ''} ${fresh ? 'fresh' : ''}` }, h('span', { class: 'note-ic' }, icon(n.icon || 'star')),
-      h('span', { class: 'note-tx' }, h('b', {}, n.text), n.sub ? h('small', {}, n.sub) : null),
+    return h('div', { class: `fnote ${n.kind || ''} ${fresh ? 'fresh' : ''}` }, h('span', { class: 'fnote-ic' }, icon(n.icon || 'star')),
+      h('span', { class: 'fnote-tx' }, h('b', {}, n.text), n.sub ? h('small', {}, n.sub) : null),
       n.kind === 'good' ? h('span', { class: 'sparkles', 'aria-hidden': 'true' }, h('i', {}), h('i', {}), h('i', {}), h('i', {})) : null);
   }));
   for (const k of [...seen]) if (!keys.has(k)) seen.delete(k);

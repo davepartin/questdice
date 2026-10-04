@@ -153,8 +153,8 @@ function addPlate(e) {
     r.hp, r.intent, r.call);
   el._r = r;
   const NS = 'http://www.w3.org/2000/svg';
-  const ln = document.createElementNS(NS, 'g'); ln.setAttribute('class', 'ld');
-  ln.innerHTML = '<line class="ld-l" x1="0" y1="0" x2="0" y2="0"/><circle class="ld-d" r="3"/>';
+  const ln = document.createElementNS(NS, 'g'); ln.setAttribute('class', 'b3ld');
+  ln.innerHTML = '<line class="b3ld-l" x1="0" y1="0" x2="0" y2="0"/><circle class="b3ld-d" r="3"/>';
   B.hud.leaders.append(ln); el._lead = ln;
   B.hud.plates.append(el); B.plates.set(e.uid, el);
   updatePlate(e); sizePlates();
@@ -192,8 +192,8 @@ function updatePlate(e) {
     el.setAttribute('aria-label', v ? `${e.name}, ${e.hp} of ${e.maxHp} health. Intends ${v.title}: ${v.fig} ${v.unit}. ${v.call ? `${v.call.head}, ${v.call.sub}.` : v.hint}` : `${e.name}${dead ? ', defeated' : ''}`);
   }
   const chips = [];
-  if (e.carried) chips.push(h('span', { class: 'chip gold', title: 'Carrying stolen gold. Kill it to take it back.' }, HK.icon('gold'), h('b', {}, String(e.carried))));
-  if (e.raged) chips.push(h('span', { class: 'chip rage', title: e.rageName }, HK.icon('slam'), e.rageName || 'Enraged'));
+  if (e.carried) chips.push(h('span', { class: 'plchip gold', title: 'Carrying stolen gold. Kill it to take it back.' }, HK.icon('gold'), h('b', {}, String(e.carried))));
+  if (e.raged) chips.push(h('span', { class: 'plchip rage', title: e.rageName }, HK.icon('slam'), e.rageName || 'Enraged'));
   r.chips.replaceChildren(...chips);
   el.classList.toggle('targeted', B.b.enemies[B.target]?.uid === e.uid && !dead);
   el.setAttribute('aria-pressed', el.classList.contains('targeted') ? 'true' : 'false');
@@ -402,7 +402,7 @@ function rerollText(info) {
   if (info.kind === 'none') return { label: 'No rerolls left', sub: 'actions spent' };
   const n = B.sel.size; const cost = info.perDie * n;
   if (n) return { label: `Reroll ${n} ${n === 1 ? 'die' : 'dice'}`, sub: cost ? HK.costGem(cost) : 'free' };
-  return { label: `Reroll up to ${info.dice}`, sub: info.perDie ? [HK.costGem(info.perDie), ' each'] : 'first is free' };
+  return { label: 'Reroll', sub: info.perDie ? [`up to ${info.dice} · `, HK.costGem(info.perDie), ' each'] : `up to ${info.dice} · free` };
 }
 export function renderShape() {
   if (B.ended) return;
@@ -420,13 +420,13 @@ export function renderShape() {
   B.hud.forecast.classList.remove('idle');
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
   HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
-  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'tip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
+  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const pips = h('div', { class: 'b3-pips', role: 'img', 'aria-label': `${b.actionsLeft} of ${D.REROLL_ACTIONS} reroll actions left${b.freeActions.length ? `, plus ${b.freeActions.length} free` : ''}` },
     h('small', {}, 'REROLLS'), Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', {}, `+${b.freeActions.length}`) : null);
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`), h('em', {}, `+${ev.straightBonus} to`)),
-    h('div', { class: 'seg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
+    h('div', { class: 'fseg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
   const cantNudge = (d) => B.busy || b.magic < D.NUDGE_COST || (d < 0 ? b.board.C.v <= 1 : b.board.C.v >= 6);
   const nudge = (d) => HK.button({ kind: 'mini', icon: h('span', { class: 'nudge' }, HK.icon('heart'), h('i', { class: d < 0 ? 'dn' : 'up' })), onclick: () => doNudge(d), disabled: cantNudge(d), aria: `Nudge the heart die ${d < 0 ? 'down' : 'up'} one, costs ${D.NUDGE_COST} magic` });
   const rr = rerollText(info);

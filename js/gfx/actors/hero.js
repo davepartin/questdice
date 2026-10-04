@@ -21,7 +21,7 @@ const OFFENSIVE = new Set(['sword', 'longsword', 'dagger', 'spear', 'bow', 'staf
 // ------------------------------------------------------------------------------------------ class specs
 const SPEC = {
   knight: { scale: 1.1, W: 1.13, skin: 0xd8a47c, accent: 0xc02a3a, glow: 0xff6a4a, cloth: 0x9a1f2a, cloth2: 0x6a1420, steel: 0xa6aebc, steelDark: 0x626a78, trim: 0xe0b858, leather: 0x3e281a, hair: 0x3a2a1c, eye: 0x4a6a8a },
-  ranger: { scale: 1.08, W: 1.0, skin: 0xcf9a74, accent: 0x45e08b, glow: 0x9aff9a, cloth: 0x2f4d2c, cloth2: 0x1c301c, steel: 0xa8b0b8, steelDark: 0x5a6068, trim: 0xb08a4a, leather: 0x5a3a22, hair: 0x2c1e14, eye: 0x7ad6a0 },
+  ranger: { scale: 1.08, W: 1.0, skin: 0xcf9a74, accent: 0x45e08b, glow: 0x9aff9a, cloth: 0x437a3e, cloth2: 0x2c5030, steel: 0xa8b0b8, steelDark: 0x5a6068, trim: 0xb08a4a, leather: 0x5a3a22, hair: 0x2c1e14, eye: 0x7ad6a0 },
   wizard: { scale: 1.1, W: 0.97, skin: 0xd9ac88, accent: 0x4db4ff, glow: 0x7ac8ff, cloth: 0x2a46a0, cloth2: 0x1a2c68, steel: 0xb8c0d0, steelDark: 0x6a7288, trim: 0xe6c050, leather: 0x4a3020, hair: 0xc8ccd4, eye: 0x4a90d8 },
   dwarf: { scale: 0.9, W: 1.32, skin: 0xcf9470, accent: 0xff8a2a, glow: 0xff7a2a, cloth: 0x4a3626, cloth2: 0x30221a, steel: 0x7a828e, steelDark: 0x3c4048, trim: 0xd08844, leather: 0x4a2e1c, hair: 0xa8541e, eye: 0x6a4a2a },
   bard: { scale: 1.08, W: 0.97, skin: 0xe0b08c, accent: 0x2fd8c8, glow: 0x6af0e0, cloth: 0x1c8c88, cloth2: 0x125a5c, steel: 0xb8bfca, steelDark: 0x6a7280, trim: 0xe8bc48, leather: 0x6a4026, hair: 0x7a3a1e, eye: 0x3a8a6a },
