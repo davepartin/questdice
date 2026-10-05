@@ -61,7 +61,7 @@ export function drawPip(ctx, kind, x, y, size) {
 }
 export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
-const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend' };
+const SYM_ICON = { atk: 'sword', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend' };
 export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
   const ic = SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {
@@ -180,7 +180,7 @@ export const STYLES = {
 // CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
 // the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
 STYLES.clean = {
-  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.5, smoke: 0.44, heart: 0.3, amethyst: 0.62, weapon: 0.38 }, selfFlat: { bone: 0.85, smoke: 0.85, weapon: 0.85, amethyst: 0.85, heart: 0.95 }, selfK: 1.0, light: 0.5, neutralLight: true, swirl: 0, numScale: 1.12,
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.8, smoke: 0.8, heart: 0.7, amethyst: 0.85, weapon: 0.8 }, selfFlat: { bone: 1.5, smoke: 1.5, weapon: 1.6, amethyst: 1.5, heart: 1.5 }, selfK: 1.0, light: 0.9, neutralLight: true, swirl: 0, numScale: 1.12,
   wpn: {
     r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
     b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },

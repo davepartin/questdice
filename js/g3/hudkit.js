@@ -8,7 +8,7 @@ import * as E from '../engine.js';
 // 24x24 grid. Classes: f = duotone body, s = stroke only, h = highlight, p = solid.
 const R45 = 'transform="rotate(45 12 12)"';
 const ICONS = {
-  atk: '<path class="p" d="M12.00 1.00 L14.37 6.27 L19.78 4.22 L17.73 9.63 L23.00 12.00 L17.73 14.37 L19.78 19.78 L14.37 17.73 L12.00 23.00 L9.63 17.73 L4.22 19.78 L6.27 14.37 L1.00 12.00 L6.27 9.63 L4.22 4.22 L9.63 6.27 Z"/><path class="h" d="M12 4.5 V8"/>',
+  atk: '<path class="p" d="M12 1.5 L15 5 V15.5 H9 V5 Z M5.5 15.5 H18.5 V18.5 H5.5 Z M10.5 18.5 H13.5 V22.5 H10.5 Z"/><path class="h" d="M12 4.5 V13"/>',
   block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/><path class="h" d="M12 5 V19.6 M7.2 8.5 V12.5"/>',
   pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/><path class="h" d="M12 5.2 V15"/>',
   magic: '<path class="p" d="M12 2.4 L22.2 20.6 H1.8 Z"/><path class="h" d="M12 6.8 L16.2 14.6"/>',
@@ -29,7 +29,7 @@ const ICONS = {
   menu: '<path class="s" d="M4.5 7 H19.5 M4.5 12 H19.5 M4.5 17 H19.5" style="stroke-width:2.2"/>',
   crown: '<path class="f" d="M3 18.6 L2.4 7.2 L8 12 L12 4.6 L16 12 L21.6 7.2 L21 18.6 Z"/><path class="s" d="M3.6 21.2 H20.4"/>',
   rank: '<path class="s" d="M5 10.4 L12 4.4 L19 10.4 M5 18 L12 12 L19 18" style="stroke-width:2.2"/>',
-  star: '<path class="f" d="M12 2.2 L14.7 8.6 L21.6 9.2 L16.4 13.8 L18 20.6 L12 17 L6 20.6 L7.6 13.8 L2.4 9.2 L9.3 8.6 Z"/>',
+  star: '<path class="f" d="M12 2 L20 12 L12 22 L4 12 Z"/>',
   weaken: '<path class="f" d="M12 21.6 L4 12.8 H8.6 V3 H15.4 V12.8 H20 Z"/>',
   chev: '<path class="f" d="M12 18.4 L3.6 7 H20.4 Z"/>',
   // class glyphs
