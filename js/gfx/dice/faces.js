@@ -467,8 +467,10 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
       const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
       const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.4 : 0.56;
+      // a triangle face with two symbols uses its two lower corners so the pair sits level
+      const slotOf = (i, n) => (pts.length === 3 && n === 2 ? i + 1 : i);
       list.slice(0, ordered.length).forEach((kind, i) => {
-        const v = ordered[i].p; let bx = v[0] * kk; let by = v[1] * kk;
+        const v = ordered[slotOf(i, Math.min(list.length, ordered.length))].p; let bx = v[0] * kk; let by = v[1] * kk;
         let r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); let sz = r * (pts.length === 3 ? 1.5 : 1.8); let ow = Math.max(2, sz * 0.13);
         // the whole symbol (its bounding box plus outline) must sit inside the face: nudge toward the centre and shrink until it does
         const inside = () => { const h2 = (sz / 2 + ow * 1.2) * (pts.length === 3 ? 1.25 : 1); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => { const x = bx + a * h2; const y = by + b * h2; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };

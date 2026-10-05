@@ -46,7 +46,12 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = role === 'hand' ? 'smoke' : 'bone';
-      for (let v = 1; v <= sides; v++) labels.push({ text: String(v), pip: PIP_BY_NUM[v] || null });
+      // what the face pays is what it shows: one symbol per point of gold / pierce / magic
+      const size = role === 'hand' ? hero.strength[slot] : 4;
+      for (let v = 1; v <= sides; v++) {
+        const pip = PIP_BY_NUM[v] || null; const n = pip ? D.RES_BY_SIZE[size]?.[v - 1] || 1 : 0;
+        labels.push({ text: String(v), pip, corners: pip ? Array(n).fill(pip) : undefined });
+      }
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   }
