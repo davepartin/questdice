@@ -1,0 +1,13 @@
+import { chromium } from 'playwright-core';
+const out = process.argv[2];
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
+const p = await b.newPage({ viewport: { width: 462, height: 783 }, hasTouch: true });
+const problems = []; p.on('pageerror', (e) => problems.push(e.message));
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+const shot = async (n) => { await pump(0.5); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/${n}.png` }); };
+await p.evaluate(() => window.QD.showCreate()); await pump(10); await shot('c0');
+await p.mouse.move(231, 600); await p.mouse.wheel(0, 200); await pump(1); await shot('c1');
+console.log(await p.evaluate(() => JSON.stringify({ st: document.querySelector('.sx-side').scrollTop, off: window.QD.world.director.scrollPx, vt: document.querySelector('.sx-viewport').style.transform, view: window.QD.world.stage.camera.view })));
+console.log(problems.join('|') || 'ok'); await b.close();
