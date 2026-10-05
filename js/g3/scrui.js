@@ -371,8 +371,8 @@ export function defeat(retreat, loss) {
 const TABS = [['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 function upgradeRow(kind, slot, label, hint) {
-  const hero = X.S.hero; const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : D.SPECIAL_STEPS;
-  const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : E.specialUpgrade(hero, slot);
+  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : kind === 'speed' ? D.SPEED_STEPS : D.SPECIAL_STEPS;
+  const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
   const gate = steps[size]?.[1]; const locked = u.next && hero.level < gate;
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
@@ -458,6 +458,7 @@ function forgeTab() {
     eyebrow('Strength dice'),
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
+    upgradeRow('speed', 'S', 'Feet · speed', 'Your initiative die. A monster must roll higher than you to strike first.'),
     eyebrow('Magical powers'),
     h('p', { class: 'tab-intro' }, 'Spend magic in battle. Most work once a fight; the weaker ones come back every round. Upgrades add dice and numbers. A super unlocks at level 5.'),
     ...E.cardsOf(hero).map((k) => powerRow(hero, k)),

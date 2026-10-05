@@ -392,9 +392,9 @@ test('initiative: round 1 is always yours; ties and lower rolls go to you; a hig
   b1.enemies[0].hp = b1.enemies[0].maxHp = 999;
   const r1 = resolve(b1, {});
   assert.equal(r1.init.forced, true); assert.equal(r1.init.first, 'hero'); assert.deepEqual(r1.early, []);
-  // a feet 4 can never lose to a d4
+  // a feet 4 can never lose to a d4 monster (the ogre)
   for (let seed = 1; seed < 20; seed++) {
-    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 3, m: 0 }, spec(4)); b.enemies[0].hp = b.enemies[0].maxHp = 999; b.round = 2;
+    const b = duel(h, 'ogre', { n: 'Stab', v: 'strike', f: 3, m: 0 }, spec(4)); b.enemies[0].hp = b.enemies[0].maxHp = 999; b.round = 2;
     const r = resolve(b, {}); assert.equal(r.init.first, 'hero');
   }
   // a feet 1 loses to anything higher, and then the monster's blow lands before yours
@@ -416,4 +416,14 @@ test('a monster that acts first can drop you before you swing (no Last Stand lef
     if (r.early.length) { assert.equal(r.heroDown, true); assert.equal(r.dealt, 0); assert.equal(b.outcome, 'defeat'); return; }
   }
   assert.fail('never saw the monster win initiative');
+});
+
+test('speed: classes start at different feet sizes, monsters have their own initiative die, and speed can be bought', async () => {
+  const D = await import('../js/data.js');
+  const E = await import('../js/engine.js');
+  const dwarf = newHero({ name: 'D', cls: 'dwarf', seed: 1 }); const ranger = newHero({ name: 'R', cls: 'ranger', seed: 1 });
+  assert.ok(E.feetSize(ranger) > E.feetSize(dwarf)); assert.equal(E.sidesOf(ranger, 'S'), E.feetSize(ranger));
+  assert.ok(D.MONSTERS.wolf.init > D.MONSTERS.ogre.init);
+  dwarf.gold = 9999; dwarf.level = 20; const before = E.feetSize(dwarf);
+  assert.equal(E.upgradeDie(dwarf, 'speed', 'S'), true); assert.equal(E.feetSize(dwarf), D.NEXT_SIZE[before]);
 });

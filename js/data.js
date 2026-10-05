@@ -131,6 +131,8 @@ export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s streng
 // Strength / special upgrade ladder: [from size, gold, minimum hero level].
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
 export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
+// Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
+export const SPEED_STEPS = { 4: [60, 2], 6: [140, 5], 8: [300, 9] };
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
@@ -142,6 +144,7 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // -------------------------------------------------------------------------------------------
 export const CLASSES = {
   knight: {
+    feet: 4,
     name: 'Knight', glyph: '⚔️', hp: 34, startMagic: 3, rerollDice: 3,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
@@ -153,6 +156,7 @@ export const CLASSES = {
     ],
   },
   ranger: {
+    feet: 8,
     name: 'Ranger', glyph: '🏹', hp: 28, startMagic: 3, rerollDice: 4,
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
@@ -164,6 +168,7 @@ export const CLASSES = {
     ],
   },
   wizard: {
+    feet: 6,
     name: 'Wizard', glyph: '🧙', hp: 26, startMagic: 4, rerollDice: 3,
     blurb: 'Magic is your ammunition. A staff, a big pool of Magic, and a spell for every problem.',
     weapons: ['staff'],
@@ -176,6 +181,7 @@ export const CLASSES = {
     ],
   },
   dwarf: {
+    feet: 4,
     name: 'Dwarf Warden', glyph: '🪓', hp: 38, startMagic: 2, rerollDice: 3,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['spear', 'shield'],
@@ -187,6 +193,7 @@ export const CLASSES = {
     ],
   },
   bard: {
+    feet: 6,
     name: 'Bard', glyph: '🪕', hp: 28, startMagic: 3, rerollDice: 3,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
     weapons: ['dagger', 'bracer'],
@@ -226,30 +233,30 @@ export const PERKS = {
 const S = (n, f, m, extra = {}) => ({ n, v: 'strike', f, m, ...extra });
 export const MONSTERS = {
   goblin: {
-    name: 'Goblin Skulker', glyph: '👺', hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
+    name: 'Goblin Skulker', glyph: '👺', init: 6, hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
     faces: [S('Stab', 1, 1), S('Stab', 1, 1), { n: 'Pilfer', v: 'pilfer', f: 0, m: 1 },
       { n: 'Duck', v: 'guard', f: 1, m: 1 }, S('Slash', 2, 1), { n: 'Fire Bomb', v: 'pierce', f: 1, m: 1 }],
   },
   wolf: {
-    name: 'Dire Wolf', glyph: '🐺', hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
+    name: 'Dire Wolf', glyph: '🐺', init: 8, hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
     faces: [S('Bite', 1, 1), S('Bite', 1, 1), { n: 'Howl', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lunge', 0, 2), S('Bite', 1, 1), S('Rend', 2, 1)],
   },
   cultist: {
-    name: 'Ashen Cultist', glyph: '🧙', hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
+    name: 'Ashen Cultist', glyph: '🧙', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
     faces: [{ n: 'Hex', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
       { n: 'Ward', v: 'guard', f: 0, m: 2 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
       S('Bolt', 1, 1), { n: 'Hex', v: 'bind', f: 0, m: 0, k: 2 }],
   },
   ogre: {
-    name: 'Hill Ogre', glyph: '👹', hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',
+    name: 'Hill Ogre', glyph: '👹', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',
     slam: { f: 2, m: 2 },
     faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   goblinking: {
-    name: 'The Goblin King', glyph: '👑', hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss',
+    name: 'The Goblin King', glyph: '👑', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss',
     slam: { f: 3, m: 2 }, adds: 'goblin',
     faces: [S('Scepter', 1, 1), S('Scepter', 1, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
@@ -263,29 +270,29 @@ export const MONSTERS = {
   },
   // ---- Act II (draft numbers, untuned) ----
   skeleton: {
-    name: 'Bone Soldier', glyph: '💀', hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion',
+    name: 'Bone Soldier', glyph: '💀', init: 4, hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion',
     faces: [S('Slash', 1, 1), S('Slash', 1, 1), { n: 'Shield Up', v: 'guard', f: 2, m: 1 },
       S('Stab', 2, 1), { n: 'Bone Throw', v: 'pierce', f: 1, m: 1 }, S('Slash', 1, 1)],
   },
   wraith: {
-    name: 'Wraith', glyph: '👻', hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
+    name: 'Wraith', glyph: '👻', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
     faces: [{ n: 'Chill', v: 'pierce', f: 0, m: 1 }, { n: 'Chill', v: 'pierce', f: 0, m: 1 },
       { n: 'Drain', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Wail', v: 'bind', f: 0, m: 0, k: 2 },
       { n: 'Phase', v: 'guard', f: 0, m: 2 }, S('Touch', 1, 1)],
   },
   spider: {
-    name: 'Crypt Spider', glyph: '🕷️', hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
+    name: 'Crypt Spider', glyph: '🕷️', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
     faces: [S('Bite', 1, 1), { n: 'Web', v: 'bind', f: 0, m: 0, k: 2 }, { n: 'Venom', v: 'pierce', f: 1, m: 1 },
       { n: 'Skitter', v: 'guard', f: 1, m: 1 }, S('Pounce', 0, 2), S('Bite', 1, 1)],
   },
   bonewarden: {
-    name: 'Bone Warden', glyph: '🦴', hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite',
+    name: 'Bone Warden', glyph: '🦴', init: 4, hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite',
     slam: { f: 3, m: 2 }, adds: 'skeleton',
     faces: [S('Cleave', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Wall', v: 'guard', f: 2, m: 1 },
       { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 }, S('Smash', 0, 2), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   lich: {
-    name: 'The Hollow Lich', glyph: '☠️', hp: 230, power: 12, xp: 140, gold: 120, tier: 'boss',
+    name: 'The Hollow Lich', glyph: '☠️', init: 6, hp: 230, power: 12, xp: 140, gold: 120, tier: 'boss',
     slam: { f: 4, m: 2 }, adds: 'skeleton',
     faces: [{ n: 'Soul Bolt', v: 'pierce', f: 2, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Drain Life', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 2 },

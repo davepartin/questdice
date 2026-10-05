@@ -370,7 +370,8 @@ function showFoeInfo(e) {
   const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   B.hud.info.replaceChildren(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
-    h('p', { class: 'fi-hp' }, `Health ${Math.max(0, e.hp)} of ${e.maxHp}`),
+    h('p', { class: 'fi-hp' }, `Health ${Math.max(0, e.hp)} of ${e.maxHp}  ·  Initiative d${def.init || 4}`),
+    h('p', { class: 'fi-init' }, `It rolls a d${def.init || 4} each round; you roll your feet die (d${E.feetSize(B.hero)}). Higher roll strikes first, ties go to you.`),
     v ? h('p', { class: 'fi-now' }, h('b', {}, 'Next: '), `${v.title} ${v.fig} ${v.unit}. ${v.hint || ''}`) : null,
     h('b', { class: 'fi-t' }, 'Everything it can do'), h('ul', { class: 'fi-list' }, faces));
   B.hud.info.classList.add('open'); sfx.select();

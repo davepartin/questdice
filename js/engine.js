@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
@@ -106,9 +106,19 @@ export function unlockDie(hero, slot) {
   if (slot === 'NE' && !hero.loadout.NE) hero.loadout.NE = { uid: `fists-R`, id: 'fists', rarity: 0 };
   return true;
 }
+// The feet die is the initiative die. Each class starts at its own size (hero.speed.S) and can grow it at camp.
+export function feetSize(hero) { hero.speed = hero.speed || { S: CLASSES[hero.cls]?.feet || 4 }; return hero.speed.S; }
+export function speedUpgrade(hero) {
+  const size = feetSize(hero); const step = SPEED_STEPS[size];
+  if (!step) return { ok: false, why: 'Max size' };
+  if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
+  if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
+  return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
+}
 export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
-    case 'head': case 'feet': return 4;
+    case 'head': return 4;
+    case 'feet': return feetSize(hero);
     case 'weapon': return Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
@@ -531,8 +541,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
 
   // Initiative: the first round always goes to you. After that each monster rolls a d4 against your feet die; ties go to you.
   const initV = ev.init; const early = [];
-  rep.init = { hero: initV, foes: [], first: 'hero', forced: b.round === 1 };
-  for (const e of alive) { e.init = b.round === 1 ? null : die(b.rng, 4); rep.init.foes.push({ uid: e.uid, init: e.init }); if (e.init != null && e.init > initV) early.push(e); }
+  rep.init = { hero: initV, heroDie: feetSize(hero), foes: [], first: 'hero', forced: b.round === 1 };
+  for (const e of alive) { e.init = b.round === 1 ? null : die(b.rng, MONSTERS[e.id]?.init || 4); rep.init.foes.push({ uid: e.uid, init: e.init, die: MONSTERS[e.id]?.init || 4 }); if (e.init != null && e.init > initV) early.push(e); }
   if (early.length) rep.init.first = 'foes';
   rep.early = early.map((e) => e.uid);
   actFor(early, true);
@@ -630,9 +640,9 @@ export function specialUpgrade(hero, slot) {
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
 }
 export function upgradeDie(hero, kind, slot) {
-  const r = kind === 'strength' ? strengthUpgrade(hero, slot) : specialUpgrade(hero, slot);
+  const r = kind === 'strength' ? strengthUpgrade(hero, slot) : kind === 'speed' ? speedUpgrade(hero) : specialUpgrade(hero, slot);
   if (!r.ok) return false;
-  hero.gold -= r.cost; hero[kind][slot] = r.next; return true;
+  hero.gold -= r.cost; feetSize(hero); hero[kind][slot] = r.next; return true;
 }
 // ---- forging (Tier) and training (Size) a weapon. Both cost gold; instances are found by uid (a two-hander sits in both hands).
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
