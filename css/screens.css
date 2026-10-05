@@ -322,3 +322,10 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 .tal-opt .ico svg { width: 1.6rem; height: 1.6rem; } .tal-opt b { font-size: .72rem; color: #fff; } .tal-opt small { font-size: .6rem; color: var(--dim); } .tal-opt:disabled { opacity: .35; cursor: default; }
 .tal-opt.c-atk .ico, .tal-slot.c-atk { color: #ff4b4b; } .tal-opt.c-block .ico, .tal-slot.c-block { color: #3aa4ff; } .tal-opt.c-pierce .ico, .tal-slot.c-pierce { color: #ff8a1a; }
 .tal-opt.c-magic .ico, .tal-slot.c-magic { color: #b66cff; } .tal-opt.c-heal .ico, .tal-slot.c-heal { color: #38e87a; } .tal-opt.c-gold .ico, .tal-slot.c-gold { color: #ffd21a; }
+
+.sx-diff { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; } .df-opt { display: grid; gap: .15rem; padding: .5rem .4rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(255,255,255,.04); color: inherit; cursor: pointer; text-align: center; }
+.df-opt b { font-family: var(--font-display); font-size: .9rem; color: #fff; } .df-opt small { font-size: .62rem; color: var(--dim); line-height: 1.25; } .df-opt.on { border-color: var(--gold); background: linear-gradient(180deg, rgba(64,44,18,.8), rgba(24,16,10,.8)); box-shadow: 0 0 18px rgba(255,180,60,.2); }
+.sx-check { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .35rem 0; font-size: .82rem; color: var(--dim); } .sx-check input { width: 1.2rem; height: 1.2rem; accent-color: #e0a020; flex: none; }
+label.sx-check { justify-content: flex-start; cursor: pointer; }
+.tal-hand { flex-basis: 100%; color: var(--gold-hi) !important; }
+.sx-tip { flex-wrap: wrap; }

@@ -8,6 +8,7 @@ import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
 import * as HK from './hudkit.js';
+import * as Coach from '../coach.js';
 import { sfx, music } from '../audio.js';
 import { world } from './world.js';
 import { intentClips } from '../gfx/actors/common.js';
@@ -36,7 +37,7 @@ const EPITHET = {
 export async function start(ctx) {
   C = ctx;
   const { S } = C;
-  B.b = S.battle; B.hero = S.hero; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  B.b = S.battle; B.hero = S.hero; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
@@ -87,6 +88,16 @@ export function stop() {
 // Components are built once and updated in place so bars, gems and counts animate between states.
 const banner = (text, kind) => { try { HK.banner($('#b3'), text, kind); } catch (e) { C.banner?.(text, kind); } };
 const landscape = () => window.innerWidth / window.innerHeight >= 1.25;
+// ---- beginner hints: one small card at a time, once per hero each, off when the player turns hints off
+function hint(key) {
+  const hero = B.hero; if (B.ended || !Coach.wantHint(hero, key)) return;
+  if (B.hud.coach.dataset.key) return; // one at a time
+  const H = Coach.HINTS[key]; if (!H) return;
+  const done = (off) => { Coach.seeHint(hero, key); if (off) Coach.setHints(false); B.hud.coach.dataset.key = ''; B.hud.coach.replaceChildren(); C.persist?.(); };
+  B.hud.coach.dataset.key = key;
+  B.hud.coach.replaceChildren(h('div', { class: 'b3-coachcard', role: 'note' }, HK.icon('shine'), h('div', { class: 'cc-tx' }, h('b', {}, H.title), h('p', {}, H.text)),
+    h('div', { class: 'cc-act' }, h('button', { type: 'button', class: 'cc-ok', onclick: () => done(false) }, 'Got it'), h('button', { type: 'button', class: 'cc-off', onclick: () => done(true) }, 'Hints off'))));
+}
 function buildHud() {
   const layer = $('#b3');
   B.root = h('div', { class: 'b3' });
@@ -94,7 +105,7 @@ function buildHud() {
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
   hud.place = h('small', {}); hud.round = h('b', {});
   hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, hud.round));
-  hud.plates = h('div', { class: 'b3-plates' });
+  hud.plates = h('div', { class: 'b3-plates' }); hud.coach = h('div', { class: 'b3-coach' });
   hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
@@ -103,7 +114,7 @@ function buildHud() {
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Ability cards' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.cards, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock);
+  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.plates.getBoundingClientRect().bottom + 4) : 0);
@@ -216,7 +227,7 @@ function stripPlates() {
     if (vis && el.classList.contains('targeted')) tgt = el;
   }
   if (tgt && B._scrolledTo !== tgt) { B._scrolledTo = tgt; const c = hud.plates; c.scrollTo({ left: Math.max(0, tgt.offsetLeft - 8), behavior: 'smooth' }); }
-  const r = hud.plates.getBoundingClientRect(); const safeTop = Math.round(r.bottom + 2);
+  const r = hud.plates.getBoundingClientRect(); const safeTop = Math.round(r.bottom + 2); B.root.style.setProperty('--strip-bottom', `${safeTop}px`);
   if (B._safeTop !== safeTop) { B._safeTop = safeTop; B.fit?.(); }
 }
 const _p = new THREE.Vector3();
@@ -387,6 +398,7 @@ const healBtn = () => {
 
 export function renderReset() {
   B.bw?.tray?.setLink?.(null);
+  B.resets = (B.resets || 0) + 1; setTimeout(() => hint(B.resets > 1 ? 'b_round2' : 'b_roll'), 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   setHud({ phase: 'reset' });
@@ -460,6 +472,13 @@ export function renderShape() {
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
   HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
+  // one card at a time, in teaching order: read the tiles, then target, triple, paid rerolls, lock in
+  hint('b_shape');
+  if (!Coach.wantHint(B.hero, 'b_shape')) {
+    if (B.b.enemies.filter((e) => e.hp > 0).length > 1) hint('b_target');
+    if (ev.offense3 || ev.defense3) hint('b_triple');
+    if (E.rerollInfo(b).kind === 'paid') hint('b_paid'); else if (b.actionsLeft < E.rerollTotal()) hint('b_lock');
+  }
   bw.tray.setLink?.([ev.offense3 ? { slots: ['NW', 'N', 'NE'], color: 0xff3b3b } : null, ev.defense3 ? { slots: ['N', 'C', 'S'], color: 0x3aa4ff } : null].filter(Boolean));
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));

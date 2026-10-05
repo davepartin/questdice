@@ -424,3 +424,12 @@ body.in-battle .chrome { z-index: 40; }
 }
 .hb-reroll .hb-tx small { font-size: .58rem; letter-spacing: 0; }
 .hb-reroll { padding-left: .6rem; padding-right: .6rem; }
+
+/* beginner hint card in the battle */
+.b3-coach { position: absolute; left: calc(.6rem + var(--safe-l)); right: calc(.6rem + var(--safe-r)); top: calc(var(--strip-bottom, 12.5rem) + .3rem); z-index: 6; pointer-events: none; display: flex; justify-content: center; }
+.b3-coachcard { pointer-events: auto; display: flex; gap: .6rem; align-items: flex-start; max-width: 25rem; padding: .6rem .7rem; border-radius: .8rem; background: linear-gradient(180deg, rgba(36,30,18,.96), rgba(14,11,8,.96)); box-shadow: 0 0 0 1.5px rgba(255,214,140,.65), 0 14px 34px rgba(0,0,0,.6); animation: ccIn .35s var(--ease-slam, ease-out); }
+.b3-coachcard > .ic { flex: none; font-size: 1.3rem; color: var(--gild-hi); margin-top: .1rem; } .cc-tx b { display: block; font-family: var(--serif, inherit); font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; color: var(--gild-hi); margin-bottom: .15rem; } .cc-tx p { margin: 0; font-size: .78rem; line-height: 1.35; color: #f1ead8; }
+.cc-act { display: flex; flex-direction: column; gap: .3rem; flex: none; } .cc-act button { font: 800 .68rem var(--disp, inherit); letter-spacing: .08em; text-transform: uppercase; padding: .35rem .6rem; border-radius: 999px; border: 0; cursor: pointer; }
+.cc-ok { background: linear-gradient(180deg, #ffe08a, #e0a020); color: #2a1804; } .cc-off { background: rgba(255,255,255,.1); color: #d8d2c0; }
+@keyframes ccIn { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (min-aspect-ratio: 5/4) { .b3-coach { left: 50%; right: auto; top: 4.6rem; transform: translateX(-50%); width: min(26rem, 44vw); } }

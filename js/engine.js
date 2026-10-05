@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
 } from './data.js';
@@ -66,7 +66,7 @@ export function newHero({ name, cls, seed, full = false }) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
     v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0,
-    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], loadout, bag: [],
+    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0 },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
@@ -297,7 +297,14 @@ export function withAmbush(quest, campaign) {
   return { ...quest, enemies: enemies.slice(0, ENEMY_CAP), ambushed: true };
 }
 
-export function newBattle(hero, quest, rng, players = 1) {
+// Apply the hero's difficulty to a quest (monster health, flat damage, gold). Done once per battle.
+export const difficultyOf = (hero) => DIFFICULTY[hero?.difficulty] || DIFFICULTY.normal;
+function withDifficulty(hero, quest) {
+  const d = difficultyOf(hero);
+  return { ...quest, hpMult: (quest.hpMult ?? 1) * d.hp, flat: (quest.flat ?? 0) + d.flat, rewardMult: (quest.rewardMult ?? 1) * d.gold };
+}
+export function newBattle(hero, quest0, rng, players = 1) {
+  const quest = withDifficulty(hero, quest0);
   const sc = partyScale(players);
   const enemies = [];
   for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult }, rng));

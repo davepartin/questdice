@@ -96,22 +96,28 @@ export const LOOT_WEIGHTS = {
 export const TALENT_SYMS = {
   atk: { name: 'Attack', text: 'Attack equal to your hand strength.' },
   block: { name: 'Block', text: 'Block equal to your hand strength.' },
-  pierce: { name: 'Pierce', text: 'Pierce: three quarters of your hand strength, ignoring block.' },
   magic: { name: 'Magic', text: 'Magic equal to your hand strength.' },
   heal: { name: 'Heal', text: 'Heal twice your hand strength.' },
   gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW'];
-export const UNLOCK_COST = { SW: 20, SE: 35, NE: 30 };
+export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less than one fight pays, so a new player can buy it at their first camp
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 export const TALENT_MAX_SAME = 2;
 export const TALENT_PER_FACE = 2;
 export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
 export const TALENT_FACES = { 4: 1, 6: 3 };
+// (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {
-  knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'pierce', SE: 'atk' }, wizard: { SW: 'magic', SE: 'pierce' },
+  knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'block', SE: 'atk' }, wizard: { SW: 'magic', SE: 'heal' },
   dwarf: { SW: 'block', SE: 'heal' }, bard: { SW: 'gold', SE: 'magic' },
+};
+// Difficulty scales the monsters only (never the rules): health, and flat damage added to every hit.
+export const DIFFICULTY = {
+  easy: { name: 'Easy', text: 'Gentler monsters. Learn the dice at your own pace.', hp: 0.8, flat: -1, gold: 1 },
+  normal: { name: 'Normal', text: 'The intended game.', hp: 1, flat: 0, gold: 1 },
+  hard: { name: 'Hard', text: 'Tougher, harder-hitting monsters. Pays 15% more gold.', hp: 1.3, flat: 2, gold: 1.15 },
 };
 // Display helpers for the old flat UI and captions.
 export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙' };

@@ -7,6 +7,7 @@ import * as D from './data.js';
 import * as SV from './save.js';
 import * as V from './view.js';
 import * as R from './roads.js';
+import { hintsOn, setHints } from './coach.js';
 import * as Net from './net.js';
 import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
 import * as B3 from './g3/battle3d.js';
@@ -306,6 +307,7 @@ function menu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, S.company?.name || S.hero?.name || 'Menu'),
     h('div', { class: 'col' },
       ghost('How to play', () => { close(); showHowTo(); }),
+      ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       ghost('Save & return to title', () => { persist(); close(); showTitle(); }),
       ghost('Close', () => close()))));
@@ -363,7 +365,7 @@ function startQuest(q) {
 }
 // What the 3D battle needs from this module.
 function battleCtx() {
-  return { S, menu: battleMenu, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+  return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 function refresh() { if (S.battle.phase === 'shape') renderBattle(); else renderReset(); }
 function spendHeal() {
@@ -480,6 +482,7 @@ async function flicker(slots) {
 function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('How to play', () => { close(); showHowTo(); }),
+      ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {

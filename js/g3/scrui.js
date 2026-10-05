@@ -8,6 +8,7 @@ import * as D from '../data.js';
 import * as SV from '../save.js';
 import * as R from '../roads.js';
 import * as Net from '../net.js';
+import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
@@ -90,10 +91,12 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // First-run coach tip, remembered in the save like the classic one.
 function tipBox(key, text) {
-  const hero = X.S.hero; if (!hero) return null; hero.tips = hero.tips || {};
-  if (hero.tips[key]) return null;
-  return h('div', { class: 'sx-tip' }, ico('shine'), h('p', {}, text), h('button', { class: 'sx-btn sx-link', type: 'button', onclick: (e) => { hero.tips[key] = 1; X.persist(); e.currentTarget.closest('.sx-tip').remove(); } }, 'Got it'));
+  const hero = X.S.hero; if (!hero || !Coach.wantHint(hero, key)) return null;
+  return h('div', { class: 'sx-tip' }, ico('shine'), h('p', {}, text), h('button', { class: 'sx-btn sx-link', type: 'button', onclick: (e) => { Coach.seeHint(hero, key); X.persist(); e.currentTarget.closest('.sx-tip').remove(); } }, 'Got it'),
+    h('button', { class: 'sx-btn sx-link', type: 'button', onclick: (e) => { Coach.setHints(false); e.currentTarget.closest('.sx-tip').remove(); } }, 'Hints off'));
 }
+// A named hint from coach.js (title + text).
+function coachBox(key) { const H = Coach.HINTS[key]; if (!H) return null; return tipBox(key, `${H.title}. ${H.text}`); }
 
 // ------------------------------------------------------------------------------------------------ logo
 function dieFace(v, slot) {
@@ -164,6 +167,11 @@ export function create() {
   const name = h('input', { class: 'sx-input', id: 'hero-name', maxlength: 16, placeholder: 'Thessaly Vane', autocomplete: 'off', 'aria-label': 'Hero name' });
   const pw = h('input', { class: 'sx-input', id: 'hero-pw', type: 'password', placeholder: '3 or more characters', autocomplete: 'new-password', 'aria-label': 'Password' });
   const msg = h('p', { class: 'form-msg', role: 'alert' });
+  let diff = 'normal'; let skipHints = !Coach.hintsOn();
+  const diffRow = h('div', { class: 'sx-diff', role: 'radiogroup', 'aria-label': 'Difficulty' });
+  const paintDiff = () => diffRow.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff), onclick: () => { diff = id; sfx.select(); paintDiff(); } }, h('b', {}, d.name), h('small', {}, d.text))));
+  paintDiff();
+  const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
   const info = h('div', { class: 'sx-classinfo' });
   const paint = () => {
@@ -188,7 +196,7 @@ export function create() {
     if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); pw.focus(); return; }
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     if (busy) return; busy = true;
-    try { const hero = E.newHero({ name: n, cls }); await SV.createSave(hero, pw.value); X.adopt(hero, 'hero'); sfx.level(); X.showRoadOrBoard(); } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
+    try { const hero = E.newHero({ name: n, cls }); hero.difficulty = diff; Coach.setHints(!skipHints); await SV.createSave(hero, pw.value); X.adopt(hero, 'hero'); sfx.level(); X.showRoadOrBoard(); } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
   };
   [name, pw].forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
   mountAs('create',
@@ -197,6 +205,7 @@ export function create() {
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow('New hero'), h('h1', { class: 'sx-h1' }, 'Forge a hero')),
         rail, info, flourish(),
+        eyebrow('Difficulty'), diffRow, hintsBox,
         h('div', { class: 'sx-form' }, h('label', { for: 'hero-name' }, 'Name', name), h('label', { for: 'hero-pw' }, 'Password', pw), h('p', { class: 'fine' }, 'The password only guards this hero on this device.'), msg),
         h('div', { class: 'sx-cta' }, btn('Begin the campaign', go, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('create');
@@ -286,7 +295,7 @@ export function road() {
   }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
-      scrollCard(ev.kicker, ev.title, ev.tell), eyebrow('What do you do?'), choices, tipBox('road', 'The computer runs the road the way it runs the monsters. It knows your names. A choice can pay you, wound you, or change the next fight.'))));
+      scrollCard(ev.kicker, ev.title, ev.tell), eyebrow('What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
@@ -325,11 +334,12 @@ export function victory(first) {
   const loot = Rw.picked == null
     ? panel('sx-loot', eyebrow('Choose your spoils', 'gold'), h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [btn('Take', () => { hero.bag.push(inst); Rw.picked = i; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'primary', icon: 'bag' })] }))))
     : panel('sx-loot done', h('p', { class: 'muted' }, `You took the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
+  const lootHint = Rw.picked == null ? (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot')) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, 'The way is open.'), flourish()),
-      rewards, perks, loot,
+      rewards, perks, lootHint, loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory();
   // fill / count animations
@@ -396,6 +406,8 @@ function unlockSection(hero) {
         h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
         btn(`Add die · ${u.cost}`, () => { if (E.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
 }
+const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 2, gold: 0.5 };
+const symAvg = (hero, slot, k) => { const hand = hero.strength[slot === 'SW' ? 'W' : 'E']; return ((hand + 1) / 2 * (SYM_MULT[k] || 1)).toFixed(1).replace('.0', ''); };
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
   const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
@@ -413,10 +425,10 @@ function talentCard(hero, slot) {
   const picker = picking ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
     const left = D.TALENT_MAX_SAME - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= D.TALENT_PER_FACE;
     const can = left > 0 && !full && hero.gold >= info.cost;
-    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (E.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= D.TALENT_PER_FACE ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `${left} left`));
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (E.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= D.TALENT_PER_FACE ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `about +${symAvg(hero, slot, k)} · ${left} left`));
   }), h('small', { class: 'tal-cost' }, `Each symbol costs ${info.cost} gold. Tap a placed symbol to take it off.`)) : null;
   return h('div', { class: 'sx-urow tal-die' },
-    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`)),
+    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Powered by your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']} (about ${((hero.strength[slot === 'SW' ? 'W' : 'E'] + 1) / 2).toFixed(1)} a roll)`)),
     h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
       h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'))),
     h('div', { class: 'tal-strip syms' }, symFaces),
@@ -426,18 +438,21 @@ function talentCard(hero, slot) {
 }
 function forgeTab() {
   const hero = X.S.hero;
+  const hasTalent = ['SW', 'SE'].some((k) => E.isActive(hero, k));
+  const weapons = [...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()];
   return h('div', { class: 'sx-tab forge' },
-    h('p', { class: 'tab-intro' }, 'Bigger dice hit harder. Each size waits on your level.'),
+    h('p', { class: 'fine center gold-line' }, `You carry ${hero.gold} gold.`),
+    unlockSection(hero),
+    hasTalent ? coachBox('c_talent') : null,
+    hasTalent ? eyebrow('Talent dice') : null,
+    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face can hold two symbols, and no die can hold more than two of the same.') : null,
+    ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     eyebrow('Strength dice'),
+    h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
     eyebrow('Weapons'),
     h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
-    ...[...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map(weaponRow),
-    unlockSection(hero),
-    eyebrow('Talent dice'),
-    h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face can hold two symbols, and no die can hold more than two of the same.'),
-    ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
-    h('p', { class: 'fine center' }, `You carry ${hero.gold} gold.`));
+    ...weapons.map(weaponRow));
 }
 function gearTab() {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
@@ -452,6 +467,7 @@ function gearTab() {
   });
   const stock = E.shopStock(hero);
   return h('div', { class: 'sx-tab gear' },
+    coachBox('g_gear'),
     eyebrow('On your body'), h('div', { class: `wc-grid worn n${worn.length}` }, worn),
     h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Only two-handed weapons land the top-row triple.'),
     eyebrow(`Pack · ${bag.length}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
@@ -465,6 +481,8 @@ function heroTab() {
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     h('div', { class: 'ci-meters' }, meter('Health', E.maxHpOf(hero), 60, 'heart', 'm-hp'), meter('Starting Magic', E.startMagicOf(hero), 8, 'spark', 'm-mag'), meter('Dice per reroll', E.rerollDiceOf(hero), 6, 'reroll', 'm-dice')),
+    eyebrow('Difficulty'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
+    h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),
     eyebrow('Class cards'), h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > hero.level ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > hero.level ? h('em', {}, `Level ${k.unlock}`) : null))),
@@ -484,7 +502,7 @@ export function camp(fromBoard) {
   mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm'), h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      seats, perkPanel, tipBox('camp', 'Bigger hand dice are how a hero grows. Weapons can be equipped or sold, and your hero wears them live.'),
+      seats, perkPanel, (X.members()[0].tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
       tabs, h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;

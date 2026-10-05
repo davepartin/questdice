@@ -5,8 +5,8 @@ import { RULES, QUESTS_PER_ACT } from '../js/data.js';
 
 const BUILDS = {
   none: () => [],
-  focus: (cls) => ({ knight: ['atk', 'block'], ranger: ['pierce', 'atk'], wizard: ['magic', 'pierce'], dwarf: ['block', 'heal'], bard: ['gold', 'magic'] }[cls]),
-  allAtk: () => ['atk'], allHeal: () => ['heal'], allGold: () => ['gold'], allMagic: () => ['magic'], allBlock: () => ['block'], allPierce: () => ['pierce'],
+  focus: (cls) => ({ knight: ['atk', 'block'], ranger: ['atk', 'block'], wizard: ['magic', 'heal'], dwarf: ['block', 'heal'], bard: ['gold', 'magic'] }[cls]),
+  allAtk: () => ['atk'], allHeal: () => ['heal'], allGold: () => ['gold'], allMagic: () => ['magic'], allBlock: () => ['block'],
 };
 function camp(hero, rng, build) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
@@ -54,4 +54,4 @@ const OLD = { free: 1, paid: 2, diceBonus: 0 }; const NEW = { free: 3, paid: 3, 
 report('A old rerolls, starter talents', OLD, 'none');
 report('B new rerolls, starter talents', NEW, 'none');
 report('C new rerolls + class-focus builds', NEW, 'focus');
-for (const k of ['allAtk', 'allHeal', 'allGold', 'allMagic', 'allBlock', 'allPierce']) report(`D new rerolls + ${k}`, NEW, k);
+for (const k of ['allAtk', 'allHeal', 'allGold', 'allMagic', 'allBlock']) report(`D new rerolls + ${k}`, NEW, k);
