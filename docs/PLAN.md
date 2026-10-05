@@ -181,3 +181,11 @@ procedural Three.js), what is good, the realistic ceiling, and a verdict. Write 
 
 - **2026-10-05 (session 3, menus + main):** pushed everything to `main` with the owner's go-ahead (fast-forward). Menu/camp/create screens now use the symbol language: `js/g3/icons.js` `spark` = filled triangle (magic), `pierce` = up-arrow, `coin` = solid disc, new `burst` for attack;
   colours in `css/screens.css` (`.fx.c-*`, magic meter and card cost badges purple). Still old: classic flat UI + party mode (`css/style.css`, `js/mat.js`, `js/die3d.js`). Next per owner: rules changes (Tier/Size/auction), five-fight playthrough, boss/wolf polish.
+
+- **2026-10-05 (session 3, RULES: Tier / Size / forge / train / auction; owner confirmed nothing is live, anything may change):**
+  DONE in engine + tests (54 pass, sim still clears Act I): (1) Tier never changes numbers: `weaponFaces` adds the weapon's next `bonus` fx per tier (`WEAPONS[x].bonus` in data.js, Silver 1, Gold 2, Diamond 3);
+  (2) Size: `inst.size` (default 4) = faces; extra faces carry numbers 5.. and alternate colour; `sidesOf` for a weapon = min(weapon size, hand strength) (NW<-W, NE<-E);
+  (3) gold sinks: `forgeInfo/forgeWeapon` (FORGE_COST 40/120/300, x1.4 two-handed) and `trainInfo/trainWeapon` (WEAPON_SIZE_STEPS 30/80/180; a weapon can only be trained up to your biggest hand); both act on every copy with the same uid (two-handers);
+  (4) `js/auction.js`: sealed bids, winner pays own bid, tie -> rebid higher among tied, tie twice -> weapon taken, no bids -> unsold, `soloOffer` fixed price, `line(kind)` humour banks; tests in `test/auction.test.mjs`;
+  (5) Camp > Forge tab has a Weapons section (Forge Silver / Train d6 buttons); dice art shows each face's corner symbols from `weaponFaces` fx.
+  TODO: put the traveller into the road events (solo = fixed price from `soloOffer`; group = `auction.js` flow, needs the 3D party/online layer), show tier bonuses on weapon cards, balance pass (d6+ weapons raise attack a lot), rarity drop odds vs forge costs, update the old flat UI (`js/ui.js`) if it must keep working.

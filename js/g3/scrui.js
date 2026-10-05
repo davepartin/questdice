@@ -371,12 +371,25 @@ function upgradeRow(kind, slot, label, hint) {
       u.next ? h('small', { class: 'ur-next' }, `d${size} → d${u.next}`, locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, 'Fully grown')),
     u.next ? btn(String(u.cost), () => { if (E.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
+// A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
+function weaponRow(inst) {
+  const hero = X.S.hero; const w = D.WEAPONS[inst.id]; const size = E.weaponSize(inst);
+  const f = E.forgeInfo(hero, inst.uid); const t = E.trainInfo(hero, inst.uid);
+  const note = !t.next ? 'Biggest die' : t.why === 'hands' ? `d${t.next} needs a d${t.next} hand first` : `d${size} → d${t.next}`;
+  return h('div', { class: 'sx-urow wrow' },
+    h('div', { class: 'ur-copy' }, h('b', {}, `${w.name}`), h('small', {}, `${D.RARITY[inst.rarity | 0]} · d${size}`), h('small', { class: 'ur-next' }, note)),
+    f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
+    t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
+}
 function forgeTab() {
   const hero = X.S.hero;
   return h('div', { class: 'sx-tab forge' },
     h('p', { class: 'tab-intro' }, 'Bigger dice hit harder. Each size waits on your level.'),
     eyebrow('Strength dice'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
+    eyebrow('Weapons'),
+    h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
+    ...[...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map(weaponRow),
     eyebrow('Special dice'),
     upgradeRow('special', 'SW', 'Left special', 'Mend and Surge. Two blank faces always.'), upgradeRow('special', 'SE', 'Right special', 'Spark and Surge. Two blank faces always.'),
     h('p', { class: 'fine center' }, `You carry ${hero.gold} gold.`));

@@ -27,8 +27,11 @@ export function dieSpecs(hero) {
     if (role === 'weapon') {
       theme = 'weapon';
       const inst = hero.loadout[slot]; const wid = inst.id;
-      labels = E.weaponFaces(inst).map((f) => ({
-        text: f.v === 0 ? null : String(f.v), blank: f.v === 0, tone: f.c, pip: f.fx ? FX_PIP[Object.keys(f.fx)[0]] || null : null, wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? 'bow' : wid === 'staff' ? 'staff' : 'longsword') : wid === 'fists' ? 'fist' : wid,
+      const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold' };
+      labels = E.weaponFaces(inst).slice(0, sides).map((f) => ({
+        text: f.v === 0 ? null : String(f.v), blank: f.v === 0, tone: f.c, pip: f.fx ? FX_PIP[Object.keys(f.fx)[0]] || null : null,
+        corners: f.v === 0 ? undefined : [f.c === 'b' ? 'def' : 'atk', ...Object.keys(f.fx || {}).map((k) => FXK[k]).filter(Boolean)],
+        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? 'bow' : wid === 'staff' ? 'staff' : 'longsword') : wid === 'fists' ? 'fist' : wid,
       }));
     } else if (role === 'special') {
       theme = 'amethyst';

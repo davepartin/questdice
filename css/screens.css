@@ -301,3 +301,8 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-screen .sx-menu > *, .sx-screen .sx-quests > *, .sx-screen .sx-choices > *, .sx-screen .perk-row > *, .sx-screen .loot-row > *, .sx-screen .sx-tab > * { opacity: 1; }
   .sx-victory.anim .vc-lvl { opacity: 1; transform: none; }
 }
+
+/* a carried weapon in the forge: its name and state on the left, forge and train stacked on the right */
+.sx-urow.wrow { grid-template-columns: 1fr auto; }
+.sx-urow.wrow .ur-copy { grid-column: 1; grid-row: 1 / span 2; }
+.sx-urow.wrow .ur-buy, .sx-urow.wrow .ur-max { grid-column: 2; grid-row: auto; min-width: 11rem; justify-content: center; }

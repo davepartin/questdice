@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, SPECIAL_SYMBOLS, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP,
+  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -37,11 +37,20 @@ let uidCounter = 0;
 export const newUid = (rng) => `u${(++uidCounter).toString(36)}${Math.floor((rng ? rng() : Math.random()) * 1e6).toString(36)}`;
 
 // ------------------------------------------------------------------------------- weapons
+// A weapon's faces. SIZE (inst.size, default d4) sets how many faces and so the number range; TIER (inst.rarity) adds corner
+// bonus symbols and never changes a number. Extra faces beyond the first four carry the next numbers, alternating colours.
+export const weaponSize = (inst) => inst.size || 4;
 export function weaponFaces(inst) {
-  const faces = WEAPONS[inst.id].faces.map((f) => ({ ...f }));
-  const idx = faces.map((_, i) => i).sort((a, b) => faces[a].v - faces[b].v);
-  const order = [idx[0], idx[idx.length - 1], idx[idx.length - 2]]; // blank, then the top two faces
-  for (let k = 0; k < (inst.rarity | 0) && k < order.length; k++) faces[order[k]].v += 1;
+  const def = WEAPONS[inst.id];
+  const faces = def.faces.map((f) => (f.fx ? { ...f, fx: { ...f.fx } } : { ...f }));
+  const first = def.lean === 'def' ? 'b' : 'r';
+  for (let i = 4; i < weaponSize(inst); i++) faces.push({ v: i + 1, c: (i - 4) % 2 === 0 ? first : (first === 'r' ? 'b' : 'r') });
+  const bonus = def.bonus || [];
+  for (let k = 0; k < (inst.rarity | 0) && k < bonus.length; k++) {
+    const f = faces[bonus[k].face]; if (!f || f.v === 0) continue;
+    f.fx = f.fx || {};
+    for (const [key, n] of Object.entries(bonus[k].fx)) f.fx[key] = (f.fx[key] || 0) + n;
+  }
   return faces;
 }
 export function makeWeapon(id, rarity = 0, rng) { return { uid: newUid(rng), id, rarity }; }
@@ -80,7 +89,8 @@ export function cardsOf(hero) {
 // ------------------------------------------------------------------------------- dice
 export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
-    case 'head': case 'feet': case 'weapon': return 4;
+    case 'head': case 'feet': return 4;
+    case 'weapon': return Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
@@ -499,6 +509,32 @@ export function upgradeDie(hero, kind, slot) {
   const r = kind === 'strength' ? strengthUpgrade(hero, slot) : specialUpgrade(hero, slot);
   if (!r.ok) return false;
   hero.gold -= r.cost; hero[kind][slot] = r.next; return true;
+}
+// ---- forging (Tier) and training (Size) a weapon. Both cost gold; instances are found by uid (a two-hander sits in both hands).
+const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
+const handsMul = (inst) => (WEAPONS[inst.id].hands === 2 ? 1.4 : 1);
+export function forgeInfo(hero, uid) {
+  const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
+  const inst = c[0]; const next = (inst.rarity | 0) + 1;
+  if (inst.id === 'fists' || next > 3 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
+  const cost = Math.round(FORGE_COST[next] * handsMul(inst));
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
+}
+export function forgeWeapon(hero, uid) {
+  const r = forgeInfo(hero, uid); if (!r.ok) return false;
+  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
+}
+export function trainInfo(hero, uid) {
+  const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
+  const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
+  if (inst.id === 'fists' || !next) return { ok: false, why: 'max' };
+  if (next > Math.max(hero.strength.W, hero.strength.E)) return { ok: false, why: 'hands', next };
+  const cost = Math.round(WEAPON_SIZE_STEPS[size] * handsMul(inst));
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
+}
+export function trainWeapon(hero, uid) {
+  const r = trainInfo(hero, uid); if (!r.ok) return false;
+  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.size = r.next; return true;
 }
 export const sellValue = (inst) => Math.round(RARITY_SELL[inst.rarity] * (WEAPONS[inst.id].hands === 2 ? 1.4 : 1));
 export function shopStock(hero) {

@@ -40,6 +40,10 @@ export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };
 export const RARITY = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 export const RARITY_WEIGHTS = [70, 22, 7, 1];
 export const RARITY_SELL = [6, 14, 34, 90];
+// TIER (Bronze..Diamond) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
+export const FORGE_COST = [0, 40, 120, 300];            // gold to reach Silver, Gold, Diamond (two-handed x1.4)
+// SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
+export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a weapon from this size to the next
 
 // Faces are [value, color]; color r = offense (red), b = defense (blue). `fx` is the weapon's icon.
 const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
@@ -48,28 +52,36 @@ export const WEAPONS = {
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
   dagger: { name: 'Dagger', hands: 1, lean: 'off', glyph: '🗡️', price: 30,
     tag: 'Small, safe, reliable. A 3 mends 1.',
-    faces: [F(0, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })] },
+    faces: [F(0, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })],
+    bonus: [{ face: 1, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   bracer: { name: 'Bracer', hands: 1, lean: 'def', glyph: '🛡️', price: 30,
     tag: 'Nimble guard. A 3 sparks 1 magic.',
-    faces: [F(0, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })] },
+    faces: [F(0, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })],
+    bonus: [{ face: 1, fx: { heal: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 3, fx: { heal: 1 } }] },
   sword: { name: 'Sword', hands: 1, lean: 'off', glyph: '⚔️', price: 40,
     tag: 'Wider swings. A 4 pierces for 1.',
-    faces: [F(0, 'r'), F(1, 'b'), F(3, 'r'), F(4, 'r', { pierce: 1 })] },
+    faces: [F(0, 'r'), F(1, 'b'), F(3, 'r'), F(4, 'r', { pierce: 1 })],
+    bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   shield: { name: 'Shield', hands: 1, lean: 'def', glyph: '🛡️', price: 40,
     tag: 'A real wall. The red 1 is a bash that staggers.',
-    faces: [F(0, 'b'), F(1, 'r', { stagger: 3 }), F(3, 'b'), F(4, 'b')] },
+    faces: [F(0, 'b'), F(1, 'r', { stagger: 3 }), F(3, 'b'), F(4, 'b')],
+    bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { stagger: 2 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', glyph: '🔱', price: 45,
     tag: 'Reach. A 4 pierces for 2.',
-    faces: [F(0, 'r'), F(1, 'b'), F(2, 'r'), F(4, 'r', { pierce: 2 })] },
+    faces: [F(0, 'r'), F(1, 'b'), F(2, 'r'), F(4, 'r', { pierce: 2 })],
+    bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   bow: { name: 'Bow', hands: 2, lean: 'off', glyph: '🏹', price: 70,
     tag: 'Two-handed and agile. Best odds at triples. A red 3 pierces.',
-    faces: [F(0, 'b'), F(1, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })] },
+    faces: [F(0, 'b'), F(1, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
+    bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', glyph: '⚔️', price: 75,
     tag: 'Two-handed and swingy. A 4 staggers.',
-    faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r', { stagger: 3 })] },
+    faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r', { stagger: 3 })],
+    bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { stagger: 2 } }] },
   staff: { name: 'Staff', hands: 2, lean: 'off', glyph: '🪄', price: 75,
     tag: 'Two-handed channel. A 4 gives 2 magic.',
-    faces: [F(0, 'b'), F(1, 'b'), F(2, 'r'), F(4, 'r', { magic: 2 })] },
+    faces: [F(0, 'b'), F(1, 'b'), F(2, 'r'), F(4, 'r', { magic: 2 })],
+    bonus: [{ face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
 };
 export const LOOT_WEIGHTS = {
   dagger: 10, bracer: 8, sword: 10, shield: 10, spear: 8, bow: 7, longsword: 7, staff: 7,

@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
+  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon,
 } from '../js/engine.js';
-import { WEAPONS, MONSTERS } from '../js/data.js';
+import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -103,12 +104,52 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
 });
 
-test('rarity adds pips to the blank first, then the top faces', () => {
-  const base = weaponFaces({ id: 'sword', rarity: 0 }).map((f) => f.v);
-  assert.deepEqual(base, [0, 1, 3, 4]);
-  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 1 }).map((f) => f.v), [1, 1, 3, 4]);
-  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 2 }).map((f) => f.v), [1, 1, 3, 5]);
-  assert.deepEqual(weaponFaces({ id: 'sword', rarity: 3 }).map((f) => f.v), [1, 1, 4, 5]);
+test('tier adds corner bonus symbols and never changes a number', () => {
+  const nums = (r) => weaponFaces({ id: 'sword', rarity: r }).map((f) => f.v);
+  for (const r of [1, 2, 3]) assert.deepEqual(nums(r), [0, 1, 3, 4]);
+  const fx = (r) => weaponFaces({ id: 'sword', rarity: r }).map((f) => f.fx || null);
+  assert.deepEqual(fx(0), [null, null, null, { pierce: 1 }]);
+  assert.deepEqual(fx(1), [null, null, { pierce: 1 }, { pierce: 1 }]);
+  assert.deepEqual(fx(2)[1], { magic: 1 });
+  assert.deepEqual(fx(3)[3], { pierce: 2 });
+});
+
+test('a weapon die is as big as its size, capped by the hand that holds it', () => {
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 });
+  assert.equal(sidesOf(h, 'NW'), 4);
+  h.loadout.NW.size = 6; // bigger weapon, small hand: still a d4
+  assert.equal(sidesOf(h, 'NW'), 4);
+  h.strength.W = 6;
+  assert.equal(sidesOf(h, 'NW'), 6);
+  assert.equal(sidesOf(h, 'NE'), 4); // the other lane is untouched
+  const f = weaponFaces(h.loadout.NW);
+  assert.deepEqual(f.map((x) => x.v), [0, 1, 3, 4, 5, 6]);
+  assert.equal(f[4].c, 'r'); assert.equal(f[5].c, 'b'); // extra faces alternate colour, offence first
+});
+
+test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 });
+  const uid = h.loadout.NW.uid;
+  h.gold = 1000;
+  assert.equal(trainInfo(h, uid).why, 'hands');
+  assert.equal(trainWeapon(h, uid), false);
+  h.strength.W = 6; assert.equal(trainWeapon(h, uid), true);
+  assert.equal(h.loadout.NW.size, 6); assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4]);
+  assert.equal(trainInfo(h, uid).why, 'hands'); // d8 needs a d8 hand
+  assert.equal(forgeWeapon(h, uid), true); assert.equal(h.loadout.NW.rarity, 1);
+  assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4] - FORGE_COST[1]);
+  h.gold = 0; assert.equal(forgeInfo(h, uid).why, 'gold');
+  // a two-hander sits in both hands: forging it updates both copies, once
+  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); r.gold = 1000; const ru = r.loadout.NW.uid;
+  assert.equal(r.loadout.NE.uid, ru); assert.equal(forgeWeapon(r, ru), true);
+  assert.equal(r.loadout.NW.rarity, 1); assert.equal(r.loadout.NE.rarity, 1);
+  assert.equal(r.gold, 1000 - Math.round(FORGE_COST[1] * 1.4));
+});
+
+test('the best tier cannot be forged further and fists cannot be improved', () => {
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.gold = 9999; const uid = h.loadout.NW.uid;
+  for (let i = 0; i < 3; i++) assert.equal(forgeWeapon(h, uid), true);
+  assert.equal(h.loadout.NW.rarity, 3); assert.equal(forgeInfo(h, uid).why, 'max');
 });
 
 function duel(hero, enemyId, intent, boardSpec, opts = {}) {
