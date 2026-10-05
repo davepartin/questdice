@@ -457,3 +457,28 @@ body.in-battle .chrome { z-index: 40; }
 
 .bcard.super-ready { animation: superGlow 1.4s ease-in-out infinite; } @keyframes superGlow { 50% { box-shadow: 0 0 0 1.5px #ffd21a, 0 0 22px rgba(255,210,26,.7); } }
 .bc-step.rel i { width: auto; padding: 0 .45rem; border-radius: 999px; background: #ffd21a; color: #2a1804; box-shadow: none; font-size: .78rem; }
+
+/* POWERS: one button opens a sheet with the four or five powers; Close puts it away */
+.b3-sheet { position: absolute; left: calc(.6rem + var(--safe-l)); right: calc(.6rem + var(--safe-r)); bottom: calc(var(--dock-top, 12rem) + .4rem); z-index: 9; display: none; flex-direction: column; gap: .5rem; padding: .6rem; border-radius: .9rem; background: rgba(12,9,22,.97); box-shadow: 0 0 0 1.5px rgba(166,77,255,.75), 0 18px 44px rgba(0,0,0,.7); pointer-events: auto; max-height: 62vh; overflow-y: auto; animation: ccIn .25s var(--ease-slam, ease-out); }
+.b3-sheet.open { display: flex; }
+.sh-head { display: flex; align-items: center; justify-content: space-between; } .sh-head b { font-family: var(--serif, inherit); font-size: .9rem; letter-spacing: .1em; text-transform: uppercase; color: #d9b4ff; }
+.sh-x { font: 800 .72rem var(--disp, inherit); letter-spacing: .08em; text-transform: uppercase; padding: .4rem .9rem; border-radius: 999px; border: 0; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; }
+.b3-sheet .b3-cards { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; overflow: visible; margin: 0; padding: 0; width: auto; bottom: auto; flex-direction: row; }
+.b3-sheet .bcard { min-width: 0; width: auto; }
+@media (min-aspect-ratio: 5/4) { .b3-sheet { right: auto; left: calc(1rem + var(--safe-l)); width: min(34rem, 50vw); bottom: calc(var(--hero-h, 5rem) + 3.4rem); } }
+.b3-powers { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .8rem .35rem .4rem; border: 0; border-radius: 999px; cursor: pointer; color: #fff; font: 800 .8rem var(--disp, inherit); letter-spacing: .06em; text-transform: uppercase; background: linear-gradient(180deg, #b66cff, #6a2bd0 52%, #4c1aa0); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.45), 0 0 0 1.5px #2a0e5e, 0 4px 14px rgba(120,60,220,.45); }
+.bp-tri { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.18); font-size: 1.2rem; } .bp-tri .ic { color: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+.bp-n { position: absolute; right: -.25rem; top: -.35rem; min-width: 1.2rem; height: 1.2rem; padding: 0 .25rem; border-radius: 999px; display: grid; place-items: center; font: 800 .7rem var(--disp, inherit); font-style: normal; background: #ffd21a; color: #2a1804; }
+.b3-powers.super { animation: superGlow 1.4s ease-in-out infinite; }
+.b3-tools { justify-content: space-between; }
+
+/* compact monster plates: name, life bar with its fraction, one small chip for what it plans */
+.b3-plates .b3-plate .pl-call, .b3-plates .b3-plate .in-name, .b3-plates .b3-plate .in-hint, .b3-plates .b3-plate .in-fig small, .b3-plates .b3-plate .pl-reticle { display: none !important; }
+.b3-plates .b3-plate .pl-intent { padding: .12rem .3rem; gap: .3rem; } .b3-plates .b3-plate .med { width: 1.5rem; height: 1.5rem; } .b3-plates .b3-plate .in-fig b { font-size: 1rem; }
+.b3-plates .b3-plate .hbar-num, .b3-plates .b3-plate .bar-num { display: block !important; font-size: .6rem; }
+.b3-plates .b3-plate { padding: .3rem .4rem .34rem; gap: .18rem; }
+.b3-info { bottom: auto; top: 12rem; } .b3-info:not(.open) { display: none; }
+.b3-info .fi-hp, .b3-info .fi-now { margin: 0; font-size: .8rem; color: #f1ead8; } .b3-info .fi-t { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: #d9b4ff; }
+.fi-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; } .fi-list li { display: flex; flex-direction: column; font-size: .76rem; color: #d8d2c0; } .fi-list b { color: #fff; font-size: .8rem; }
+@media (min-aspect-ratio: 5/4) { .b3-info { top: 6rem; bottom: auto; } }
+@media (max-width: 420px) { .b3-tools .hb-mini { width: 2.3rem; min-width: 2.3rem; height: 2.3rem; min-height: 2.3rem; } .b3-powers { padding-right: .6rem; font-size: .72rem; } .b3-pips i { width: .65rem; height: .65rem; } .b3-tools { gap: .25rem; } }

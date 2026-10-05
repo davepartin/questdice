@@ -45,7 +45,7 @@ export async function start(ctx) {
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); // let the loader paint before heavy procedural work
   const b = B.b;
   const bw = await world.buildBattle({ quest: B.quest, hero: B.hero, enemies: b.enemies });
-  B.bw = bw;
+  B.bw = bw; B.trayBase = bw.tray.object.scale.x;
   bw.tray.onPick = onPick;
   bw.tray.onSound = (kind, o) => { if (kind === 'hit') (sfx.dieHit || sfx.settle)?.(o?.speed); else (sfx.dieSettle || sfx.settle)?.(); };
   bw.stage.canvas.addEventListener('pointerup', pickEnemy);
@@ -111,16 +111,20 @@ function buildHud() {
   hud.hero = buildHero();
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
-  hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Ability cards' });
+  hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
+  hud.sheet = h('div', { class: 'b3-sheet', role: 'dialog', 'aria-label': 'Magical powers' },
+    h('div', { class: 'sh-head' }, h('b', {}, 'Magical powers'), h('button', { type: 'button', class: 'sh-x', 'aria-label': 'Close powers', onclick: () => togglePowers(false) }, 'Close')), hud.cards);
+  hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
-  hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.cards, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock, hud.coach);
+  hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
+  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock, hud.sheet, hud.info, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, Math.round(hud.plates.getBoundingClientRect().bottom + 4));
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     sizePlates();
-    const cr = hud.cards.getBoundingClientRect(); if (cr.height > 4) B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - cr.bottom)}px`);
+    B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
+    fitTray();
   };
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
@@ -128,6 +132,19 @@ function buildHud() {
   fit();
 }
 
+// Keep the whole dice board between the monster strip and the dock: shrink the tray until its near edge clears the dock (phones only).
+function fitTray() {
+  const bw = B.bw; if (!bw || landscape() || !B.hud) return;
+  const cam = world.stage.camera; const W = world.stage.width; const H = world.stage.height;
+  const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
+  const r = world.director.resolve('battle'); const c = cam.clone(); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
+  const sh = ((world.director.safe?.bottom || 0) - (world.director.safe?.top || 0)) / 2; // the director's view offset
+  const obj = bw.tray.object; const v = new THREE.Vector3();
+  const edge = (zl, y) => { v.set(0, y, zl).multiply(obj.scale).add(obj.position).project(c); return (-v.y * 0.5 + 0.5) * H - sh; };
+  let k = 1.0; obj.scale.setScalar(k * B.trayBase);
+  for (let i = 0; i < 14 && edge(2.55, 0.5) > dockTop - 4; i++) { k *= 0.96; obj.scale.setScalar(k * B.trayBase); }
+  B.trayK = k; void stripBottom;
+}
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
   const r = B.hr = {
@@ -334,7 +351,19 @@ function selectTarget(uid) {
   if (B.busy) return;
   const i = B.b.enemies.findIndex((e) => e.uid === uid);
   if (i < 0 || B.b.enemies[i].hp <= 0) return;
+  if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   B.target = i; sfx.select(); updatePlates();
+}
+const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round unless you stagger it', howl: 'Howls: every monster hits harder next round', bind: 'Hexes: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
+function showFoeInfo(e) {
+  const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
+  const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
+  const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  B.hud.info.replaceChildren(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('p', { class: 'fi-hp' }, `Health ${Math.max(0, e.hp)} of ${e.maxHp}`),
+    v ? h('p', { class: 'fi-now' }, h('b', {}, 'Next: '), `${v.title} ${v.fig} ${v.unit}. ${v.hint || ''}`) : null,
+    h('b', { class: 'fi-t' }, 'Everything it can do'), h('ul', { class: 'fi-list' }, faces));
+  B.hud.info.classList.add('open'); sfx.select();
 }
 // Raycast monsters for tap-to-target.
 const ray = new THREE.Raycaster(); const v2 = new THREE.Vector2(); let downAt = null;
@@ -397,12 +426,23 @@ function cardTiles(reset) {
       h('i', { role: 'button', 'aria-label': 'One less magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.max(k.cost, x - 1); renderShape(); } }, '–'),
       h('i', { role: 'button', 'aria-label': 'One more magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); renderShape(); } }, '+')) : null;
     const superReady = k.kind === 'super' && !st.early && !st.spent && afford && !reset;
-    if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; setTimeout(() => { const el = B.hud.cards.querySelector('.bcard.super-ready'); el?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior: 'smooth' }); if (!B.superToast) { B.superToast = true; toast(`${k.name} is ready!`); } }, 200); }
+    if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; setTimeout(() => { const el = B.hud.cards.querySelector('.bcard.super-ready'); if (!B.superToast) { B.superToast = true; toast(`${k.name} is ready!`); } }, 200); }
     const card = HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
     if (superReady) card.classList.add('super-ready');
     return card;
   });
 }
+function togglePowers(on) {
+  B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
+  if (B.sheetOpen) { sfx.select?.(); B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
+}
+const powersBtn = () => {
+  const b = B.b; const list = E.cardsOf(B.hero);
+  const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && b.magic >= k.cost; }).length;
+  const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && b.magic >= k.cost);
+  return h('button', { type: 'button', class: `b3-powers ${superReady ? 'super' : ''}`, 'aria-label': `Magical powers. ${ready} ready.`, onclick: () => togglePowers() },
+    h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Powers'), ready ? h('i', { class: 'bp-n' }, String(ready)) : null);
+};
 const healBtn = () => {
   const cost = E.healCostOf(B.hero); const dis = B.busy || B.b.magic < cost || B.b.hp >= B.b.maxHp;
   return HK.button({ kind: 'mini', icon: 'heal', badge: HK.costGem(cost, 'badge'), onclick: doHeal, disabled: dis, cls: 'k-heal', aria: `Heal ${D.HEAL_AMOUNT} health for ${cost} magic` });
@@ -431,9 +471,9 @@ export function renderReset() {
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
   B.hud.caption.replaceChildren(caption(e0Warn()));
-  B.hud.cards.replaceChildren(...cardTiles(true));
+  B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    healBtn(),
+    healBtn(), powersBtn(),
     HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' }));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
@@ -506,7 +546,7 @@ export function renderShape() {
   const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
     straight,
-    h('div', { class: 'b3-tools' }, pips, h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn())),
+    h('div', { class: 'b3-tools' }, pips, powersBtn(), h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn())),
     h('div', { class: 'b3-acts' },
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: rr.label }),
       HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, aria: 'Lock in your dice and fight' }))].filter(Boolean));
@@ -557,6 +597,7 @@ function doCard(id, opts = {}) {
   if (k.dice?.to === 'heal' || (!k.dice && fx.heal)) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${k.dice ? r.total : fx.heal}`, 'heal'); }
   const dice = r.released ? `  ⚡ x${r.released} = ${r.total}` : r.charged ? `  charge ${r.charged}` : r.rolls.length ? `  ${r.rolls.join(' + ')}${r.rolls.length > 1 ? ` = ${r.total}` : ''}` : '';
   banner(`${k.name.toUpperCase()}${dice}`, fx.heal ? 'good' : 'gold');
+  B.sheetOpen = false; B.hud.sheet.classList.remove('open');
   renderShape();
 }
 function doRecharge(id) {
