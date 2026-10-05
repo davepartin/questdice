@@ -656,6 +656,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
-  addRim(a, { col: 0xff6a3a, k: 0.9, pow: 2.4, skip: (m) => m === own(a, eyeM) }); // warm fake-SSS rim
+  addRim(a, { col: 0xffb080, k: 0.35, pow: 3.2, skip: (m) => m === own(a, eyeM) }); // warm fake-SSS rim
   return a;
 }

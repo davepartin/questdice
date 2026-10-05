@@ -20,9 +20,9 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const L = 1; const R = -1;
   const tc = new THREE.Color(); const sc = new THREE.Color();
 
-  setRim(0xffc468);
-  const FUR = { tint: 0xb0aaa0, dark: 0x4a4540, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 };
-  const fur = tpm('pelt', FUR, { scale: 7, nrm: 0.25, rimK: 0.4 });
+  setRim(0xffe0a8);
+  const FUR = { tint: 0xd8d0c4, dark: 0x6a625a, seed: 2 + (seed % 4), color: 0xffffff, roughness: 1 };
+  const fur = tpm('pelt', FUR, { scale: 7, nrm: 0.25, rimK: 0.7 });
   const shellMats = [1, 2, 3].map((k) => tpm('pelt', FUR, { scale: 7, nrm: 0.15, shell: k / 4, rimK: 0.0 }));
   const leather = tpm('leatherDark', { seed: 7 }, { scale: 14, nrm: 0.7 });
   const iron = tpm('iron', { seed: 4, metalness: 0.75, roughness: 0.9 }, { scale: 6, nrm: 0.8 });

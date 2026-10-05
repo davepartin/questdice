@@ -378,6 +378,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
-  addRim(a, { col: 0x30e8c0, k: 0.8, pow: 2.2, skip: (m) => m === own(a, eyeM) || m === own(a, ruby) });
+  addRim(a, { col: 0xd8f0c0, k: 0.3, pow: 3.2, skip: (m) => m === own(a, eyeM) || m === own(a, ruby) });
   return a;
 }
