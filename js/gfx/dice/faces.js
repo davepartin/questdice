@@ -399,8 +399,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- numeral / symbol
     const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
     const hasPip = !!spec.pip && !blank && !CN && !heartBig;
-    const numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
-    const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
+    const numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : poly.sides === 4 ? 0.52 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const ny = CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
@@ -466,12 +466,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
       const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
-      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.5 : 0.56;
+      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.4 : 0.56;
       list.slice(0, ordered.length).forEach((kind, i) => {
         const v = ordered[i].p; let bx = v[0] * kk; let by = v[1] * kk;
-        let r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); let sz = r * 1.8; let ow = Math.max(2, sz * 0.13);
+        let r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); let sz = r * (pts.length === 3 ? 1.5 : 1.8); let ow = Math.max(2, sz * 0.13);
         // the whole symbol (its bounding box plus outline) must sit inside the face: nudge toward the centre and shrink until it does
-        const inside = () => { const h2 = sz / 2 + ow * 1.2; return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => { const x = bx + a * h2; const y = by + b * h2; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
+        const inside = () => { const h2 = (sz / 2 + ow * 1.2) * (pts.length === 3 ? 1.25 : 1); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => { const x = bx + a * h2; const y = by + b * h2; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
         for (let it = 0; it < 40 && !inside(); it++) { bx *= 0.97; by *= 0.97; sz *= 0.97; ow = Math.max(2, sz * 0.13); }
         layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
         layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
