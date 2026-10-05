@@ -406,3 +406,21 @@ body.in-battle .chrome { z-index: 40; }
 /* the reroll button's second line ("up to 3 · 1 each") must never wrap on a narrow phone */
 .hb-reroll .hb-tx small { white-space: nowrap; font-size: .64rem; display: inline-flex; align-items: center; gap: .2rem; }
 .hb-reroll .hb-tx { min-width: 0; }
+
+/* PHONE: monster stats are one strip under the hero panel; the 3D scene below it is small; the dice take the rest */
+@media (max-aspect-ratio: 5/4) {
+  .b3-plates { inset: auto; left: 0; right: 0; top: 7rem; display: flex; gap: .4rem; overflow-x: auto; overflow-y: hidden; padding: .15rem calc(.6rem + var(--safe-l)) .25rem calc(.6rem + var(--safe-r)); pointer-events: auto; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .b3-plates::-webkit-scrollbar { display: none; }
+  .b3-leaders { display: none; }
+  .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
+    position: relative; flex: 1 0 9.6rem; width: auto; min-width: 9.6rem; max-width: 15rem; transform: none !important; scroll-snap-align: start; pointer-events: auto; padding: .34rem .42rem .4rem; gap: .22rem; opacity: 1; filter: none;
+  }
+  .b3-plates .b3-plate.dead { display: none; }
+  .b3-plates .b3-plate:not(.targeted) { opacity: .78; filter: saturate(.8); }
+  .b3-plates .b3-plate:not(.targeted) .in-name, .b3-plates .b3-plate .in-hint { display: none; }
+  .b3-plates .b3-plate .pl-name { font-size: .66rem; } .b3-plates .b3-plate .med { width: 1.9rem; height: 1.9rem; } .b3-plates .b3-plate .in-fig b { font-size: 1.25rem; }
+  .b3-plates .b3-plate .pl-reticle { display: none; } .b3-plates .b3-plate.targeted .pl-reticle { display: none; }
+  .b3-plates .b3-plate .pl-call small { display: none; }
+}
+.hb-reroll .hb-tx small { font-size: .58rem; letter-spacing: 0; }
+.hb-reroll { padding-left: .6rem; padding-right: .6rem; }

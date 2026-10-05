@@ -106,7 +106,7 @@ function buildHud() {
   B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
-    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.hero.getBoundingClientRect().bottom + 84) : 0);
+    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.plates.getBoundingClientRect().bottom + 4) : 0);
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     sizePlates();
   };
@@ -202,6 +202,23 @@ function updatePlate(e) {
 }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 
+// Phone: the monsters' stat plates are a fixed strip under the hero panel (scrolls sideways with many foes) so the dice own the screen.
+// Tap a plate or a monster to choose a target.
+function stripPlates() {
+  const hud = B.hud; const hb = hud.hero.getBoundingClientRect().bottom;
+  hud.plates.style.top = `${Math.round(hb + 6)}px`;
+  let tgt = null;
+  for (const e of B.b.enemies) {
+    const el = B.plates.get(e.uid); const a = B.bw.actors.get(e.uid); if (!el || !a) continue;
+    const vis = a.root.visible && (e.hp > 0 || a.dissolving);
+    el.style.display = vis ? '' : 'none'; el._lead.style.display = 'none'; el.style.transform = '';
+    el.classList.remove('tiny');
+    if (vis && el.classList.contains('targeted')) tgt = el;
+  }
+  if (tgt && B._scrolledTo !== tgt) { B._scrolledTo = tgt; const c = hud.plates; c.scrollTo({ left: Math.max(0, tgt.offsetLeft - 8), behavior: 'smooth' }); }
+  const r = hud.plates.getBoundingClientRect(); const safeTop = Math.round(r.bottom + 2);
+  if (B._safeTop !== safeTop) { B._safeTop = safeTop; B.fit?.(); }
+}
 const _p = new THREE.Vector3();
 function project(world3, out = {}) {
   const cam = world.stage.camera; _p.copy(world3).project(cam);
@@ -209,6 +226,7 @@ function project(world3, out = {}) {
   out.x = (_p.x * 0.5 + 0.5) * w; out.y = (-_p.y * 0.5 + 0.5) * hh; out.z = _p.z; return out;
 }
 function positionPlates() {
+  if (!landscape()) return stripPlates();
   const bw = B.bw; const w = world.stage.width;
   const hud = B.hud; const GAP = 8;
   // top limit: below the hero strip (phone) / top bar (landscape), and the ribbon
