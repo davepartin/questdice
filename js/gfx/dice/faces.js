@@ -14,6 +14,8 @@ const SVG = {
   spark: 'M50 2 C54 34 66 46 98 50 C66 54 54 66 50 98 C46 66 34 54 2 50 C34 46 46 34 50 2 Z',
   surge: 'M62 2 L18 56 H44 L34 98 L84 38 H56 Z',
   pierce: 'M50 2 L90 50 L50 98 L10 50 Z',
+  arrow: 'M50 3 L90 46 H64 V97 H36 V46 H10 Z',
+  tri: 'M50 6 L96 90 H4 Z',
   coin: 'M50 4 A46 46 0 1 1 49.9 4 Z M50 20 A30 30 0 1 0 50.1 20 Z',
   shield: 'M50 4 L90 16 V50 C90 74 72 90 50 98 C28 90 10 74 10 50 V16 Z',
   sword: 'M50 0 L60 14 V68 H40 V14 Z M18 68 H82 V80 H18 Z M44 80 H56 V94 H44 Z M50 100 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0',
@@ -56,7 +58,23 @@ export function drawPip(ctx, kind, x, y, size) {
   if (kind === 'stagger') ctx.fill(burst()); else ctx.fill(iconPath({ gold: 'coin', pierce: 'pierce', magic: 'spark', heal: 'mend' }[kind] || 'spark'), kind === 'gold' ? 'evenodd' : 'nonzero');
   ctx.restore();
 }
-export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a' };
+export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff' };
+// The corner symbol language: one shape + one colour per meaning.
+const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'coin', heal: 'mend', stagger: 'fist' };
+export function drawSym(ctx, kind, x, y, size) {
+  const ic = SYM_ICON[kind] || 'spark';
+  if (ic === 'burst') { ctx.save(); ctx.translate(x, y); const k = size / 100; ctx.scale(k, k); ctx.translate(-50, -50); ctx.fill(starPath(8, 50, 26)); ctx.restore(); } else drawIcon(ctx, ic, x, y, size);
+}
+// distance from point to the polygon's nearest edge (px)
+function edgeGap(pts, x, y) {
+  let m = 1e9;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i]; const b = pts[(i + 1) % pts.length]; const dx = b[0] - a[0]; const dy = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy)));
+    m = Math.min(m, Math.hypot(x - (a[0] + t * dx), y - (a[1] + t * dy)));
+  }
+  return m;
+}
 
 // ------------------------------------------------------------------------------- numerals
 // Skeletons in a 50 x 80 box (stroke centre-lines). Thick strokes make them read like chisel-cut capitals.
@@ -124,7 +142,7 @@ const WPN = {
 export const STYLES = {
   classic: { name: 'classic', bodyK: 1, selfK: 1, light: 1, swirl: 1, pipDisc: null, pipK: 1, numW: false, ink: false },
   clear: {
-    name: 'clear', bodyK: 0.9, selfK: 1.7, light: 1.2, swirl: 0.3, pipDisc: 'dark', pipK: 1.35, numW: true, ink: true, numScale: 1.12,
+    name: 'clear', bodyK: 0.9, selfK: 1.7, light: 1.2, swirl: 0.3, pipDisc: 'dark', pipK: 1.35, corners: true, numW: true, ink: true, numScale: 1.12,
     wpn: {
       r: { core: '#ff3b3b', mid: '#e0151f', edge: '#6a0510', metal: ['#ffffff', '#ffffff', '#ffe8e8'], rim: '#3a0a10' },
       b: { core: '#3aa4ff', mid: '#1470f0', edge: '#06307a', metal: ['#ffffff', '#ffffff', '#e4f2ff'], rim: '#06142a' },
@@ -133,13 +151,13 @@ export const STYLES = {
     themes: {
       bone: { core: '#fffaf0', mid: '#f0e4c4', edge: '#b8a47a', trim: ['#f2eee0', '#b4ac98', '#6a6450'] },
       smoke: { core: '#8a94a8', mid: '#5c6678', edge: '#2a3040', num: 'bone' },
-      heart: { core: '#ffc23a', mid: '#f08a10', edge: '#9a3a04' },
+      heart: { core: '#f0609a', mid: '#c02866', edge: '#58082e' },
       amethyst: { core: '#a066ff', mid: '#6a30d8', edge: '#2a0e66' },
     },
-    pip: { gold: '#ffc61a', pierce: '#b14dff', magic: '#2fe0ff', heal: '#38ff8c', stagger: '#ff7a1a' },
+    pip: { gold: '#ffd21a', pierce: '#ff8a1a', magic: '#a64dff', heal: '#38e87a', stagger: '#e8eef8', atk: '#ff3b3b', def: '#3aa4ff' },
   },
   vivid: {
-    name: 'vivid', bodyK: 0.8, selfK: 2.4, light: 0.9, swirl: 0.15, pipDisc: 'light', pipK: 1.35, numW: true, ink: true, numScale: 1.18,
+    name: 'vivid', bodyK: 0.8, selfK: 2.4, light: 0.9, swirl: 0.15, pipDisc: 'light', pipK: 1.35, corners: true, numW: true, ink: true, numScale: 1.18,
     wpn: {
       r: { core: '#ff2a2a', mid: '#ff1010', edge: '#a00008', metal: ['#ffffff', '#ffffff', '#fff0f0'], rim: '#3a0a10' },
       b: { core: '#2a8cff', mid: '#0a5cff', edge: '#0430a0', metal: ['#ffffff', '#ffffff', '#eef6ff'], rim: '#06142a' },
@@ -148,10 +166,10 @@ export const STYLES = {
     themes: {
       bone: { core: '#ffffff', mid: '#f6eed8', edge: '#c8b88c', trim: ['#fff8e8', '#c8c0aa', '#7a7458'] },
       smoke: { core: '#a8b4ca', mid: '#7a889e', edge: '#3a4458', num: 'bone' },
-      heart: { core: '#ffd048', mid: '#ff9a14', edge: '#b04a04' },
+      heart: { core: '#ff70a8', mid: '#d02c70', edge: '#640a34' },
       amethyst: { core: '#b878ff', mid: '#7a3cf0', edge: '#34128a' },
     },
-    pip: { gold: '#ffb800', pierce: '#a830ff', magic: '#00d4ff', heal: '#18f070', stagger: '#ff6a00' },
+    pip: { gold: '#ffd000', pierce: '#ff7a00', magic: '#9a38ff', heal: '#18f070', stagger: '#e8eef8', atk: '#ff2a2a', def: '#2a8cff' },
   },
 };
 let ST = STYLES.classic;
@@ -347,8 +365,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     }
 
     // ---- numeral / symbol
-    const hasPip = !!spec.pip && !blank;
-    const numH = inR * nk * (hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const CN = ST.corners && !blank;
+    const hasPip = !!spec.pip && !blank && !CN;
+    const numH = inR * nk * (CN ? 0.64 : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
@@ -359,7 +378,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
         const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
-      } else if (th.num === 'ink' && ST.ink && !spec.tone) { fillA = '#140808'; rr = 0.12; } else if (th.num === 'ink') {
+      } else if (th.num === 'ink' && ST.ink && (!spec.tone || ST.corners)) { fillA = '#140808'; rr = 0.12; } else if (th.num === 'ink') {
         fillA = spec.tone === 'b' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a78d8', '#143a86', '#0a1c4a']) : spec.tone === 'r' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#e04a3c', '#a01418', '#5a0408']) : lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a2416', '#1c0f08', '#0a0504']);
         rr = 0.12;
       } else if (th.num === 'bone') {
@@ -370,9 +389,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, 0, ny, numH));
     }
     if (spec.sym && !blank) {
-      const sym = { MEND: 'mend', SPARK: 'spark', SURGE: 'surge' }[spec.sym];
-      const col = { MEND: ['#a0ffcc', '#33e08c', '#12904f'], SPARK: ['#fff2a8', '#ffd23d', '#d98a08'], SURGE: ['#f4ecff', '#c8aaff', '#8a62e8'] }[spec.sym];
-      const glowC = { MEND: [0.2, 1.0, 0.55], SPARK: [1.0, 0.85, 0.2], SURGE: [0.82, 0.7, 1.0] }[spec.sym];
+      const sym = { MEND: 'mend', SPARK: ST.corners ? 'tri' : 'spark', SURGE: 'surge' }[spec.sym];
+      const col = { MEND: ['#a0ffcc', '#33e08c', '#12904f'], SPARK: ST.corners ? ['#e6c8ff', '#a64dff', '#6a20c0'] : ['#fff2a8', '#ffd23d', '#d98a08'], SURGE: ['#f4ecff', '#c8aaff', '#8a62e8'] }[spec.sym];
+      const glowC = { MEND: [0.2, 1.0, 0.55], SPARK: ST.corners ? [0.62, 0.3, 1.0] : [1.0, 0.85, 0.2], SURGE: [0.82, 0.7, 1.0] }[spec.sym];
       const sz = inR * 1.75;
       layer(ctxs, { H: 'rgb(30,30,30)', A: 'rgba(8,2,20,0.95)', O: 'rgb(0,150,0)' }, (c) => drawIcon(c, sym, 0, inR * 0.02, sz * 1.14));
       layer(ctxs, { H: 'rgb(78,78,78)', A: lin(ctxs.A, 0, -sz / 2, 0, sz / 2, col), O: 'rgb(0,40,0)', E: `rgb(${glowC.map((x) => Math.round(x * 255)).join(',')})` }, (c) => drawIcon(c, sym, 0, inR * 0.02, sz));
@@ -384,8 +403,26 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { H: 'rgb(40,40,40)', A: ST.pipDisc === 'light' ? 'rgba(20,10,30,0.95)' : 'rgba(0,0,0,0.9)', O: 'rgb(0,140,0)' }, (c) => drawPip(c, spec.pip, 0, py, ps * (ST.pipDisc ? 1.12 : 1.28)));
       layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[spec.pip], O: 'rgb(0,60,0)', E: spec.pip === 'gold' ? 'rgb(150,100,10)' : `${PIP_COLOR[spec.pip]}` }, (c) => drawPip(c, spec.pip, 0, py, ps));
     }
+    // ---- corner symbols: the face's meaning (attack / defense), its resource, and any tier bonuses
+    if (CN) {
+      const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
+      const list = spec.corners || [typeSym, spec.pip].filter(Boolean);
+      // corners ordered clockwise from the top-most
+      const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
+      const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
+      const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
+      const kk = pts.length === 4 && poly.sides !== 10 ? 0.6 : 0.66;
+      list.slice(0, ordered.length).forEach((kind, i) => {
+        const v = ordered[i].p; const bx = v[0] * kk; const by = v[1] * kk;
+        const r = Math.min(edgeGap(pts, bx, by) * 0.92, inR * 0.38);
+        const dk = ST.pipDisc === 'light';
+        layer(ctxs, { H: 'rgb(60,60,60)', A: dk ? '#fffaf0' : 'rgba(14,8,28,0.96)', O: 'rgb(0,120,0)' }, (c) => { c.beginPath(); c.arc(bx, by, r, 0, Math.PI * 2); c.fill(); });
+        layer(ctxs, { H: 'rgb(44,44,44)', A: dk ? 'rgba(20,10,30,0.95)' : 'rgba(0,0,0,0.9)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, r * 1.78));
+        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, r * 1.55));
+      });
+    }
     // ---- colour badge (heart 5 / 6)
-    if (spec.mark) {
+    if (spec.mark && !CN) {
       const bs = inR * 0.4; const bx = 0; const by = inR * 0.68;
       const ic = spec.mark === 'atk' ? 'sword' : 'shield'; const cc = spec.mark === 'atk' ? '#b0141c' : '#1c58b8';
       layer(ctxs, { H: 'rgb(40,40,40)', A: 'rgba(0,0,0,0.85)', O: 'rgb(0,140,0)' }, (c) => drawIcon(c, ic, bx, by, bs * 1.2));
@@ -401,7 +438,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   ctxs.O.save(); ctxs.O.translate(tx, ty); ctxs.O.fillStyle = `rgb(0,${Math.round(th.trimRough * 255)},255)`; ctxs.O.fillRect(-S / 2, -S / 2, S, S); ctxs.O.restore();
 
   const normalC = normalFromHeight(Hc, 3.4, Math.max(1, Math.round(1.6 * qk)));
-  const needE = faces.some((f) => f && (f.sym || f.pip || (theme === 'weapon' && !f.blank)));
+  const needE = faces.some((f) => f && (f.sym || f.pip || f.corners || (ST.corners && (f.mark || (theme === 'weapon' && !f.blank))) || (theme === 'weapon' && !f.blank)));
   const textures = {
     map: tex(A, true), orm: tex(O, false), normalMap: tex(normalC, false), emissiveMap: needE ? tex(E, true) : null,
   };

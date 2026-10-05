@@ -26,7 +26,22 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     ['NW', 'NE'], ['W', 'E'], ['SW', 'SE'],
   ];
   const dice = []; const pitch = num('pitch', 1.5) * num('scale', 1);
-  const place = (spec, x, z) => {
+  let tier = num('tier', -1); const EXTRA = ['pierce', 'magic', 'gold', 'heal'];
+  const withTier = (spec) => {
+    if (tier < 0) return spec;
+    const cap = spec.sides === 6 ? 4 : 3;
+    const labels = spec.labels.map((l, i) => {
+      if (l.blank || l.sym) return l;
+      const base = [spec.role === 'weapon' ? (l.tone === 'b' ? 'def' : 'atk') : l.mark === 'atk' ? 'atk' : l.mark === 'block' ? 'def' : null, l.pip].filter(Boolean);
+      const want = tier >= 3 ? cap : Math.min(cap, Math.max(base.length, tier + 1));
+      const corners = base.slice(); let k = i;
+      while (corners.length < want) { const e = EXTRA[k++ % 4]; if (!corners.includes(e)) corners.push(e); }
+      return { ...l, corners };
+    });
+    return { ...spec, labels };
+  };
+  const place = (spec0, x, z) => {
+    const spec = withTier(spec0);
     const die = createDie({ spec, quality: stage.quality });
     const labels = spec.labels.map((l, i) => ({ l, v: i + 1 }));
     let v = labels[labels.length - 1].v;
@@ -46,6 +61,18 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     h.strength = { W: [4, 6, 8, 10][r], E: [4, 6, 8, 10][r] }; h.special = { SW: [4, 6, 8, 10][r], SE: [4, 6, 8, 10][r] };
     const d = dieSpecs(h);
     rows.forEach((s, ri) => { if (d[s]) place(d[s], (r - 1.5) * pitch, (ri - 2.5) * pitch); });
+  }
+  if (params.get('mode') === 'tiers') {
+    dice.forEach((d) => { d.mesh.removeFromParent(); }); dice.length = 0;
+    const cfg = [['NW', 4], ['W', 6], ['W', 8], ['W', 10], ['C', 6]];
+    cfg.forEach(([slot, sd], ri) => {
+      for (let t = 0; t < 4; t++) {
+        const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
+        h.loadout = { NW: { uid: 'a', id: 'sword', rarity: 3 }, NE: { uid: 'b', id: 'shield', rarity: 3 } };
+        h.strength = { W: sd, E: sd };
+        tier = t; place(dieSpecs(h)[slot], (t - 1.5) * pitch, (ri - 2) * pitch);
+      }
+    });
   }
   stage.onFrame((dt, t) => dice.forEach((d) => { d.uniforms.uTime.value = t; d.updateCamera(stage.camera); }));
   window.__qd.dice = dice;

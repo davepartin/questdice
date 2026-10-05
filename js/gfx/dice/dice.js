@@ -77,7 +77,7 @@ function makeMaterial(atlas, theme, quality) {
   m.color.setScalar(({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1) * diceStyle().bodyK);
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
-    uTime: { value: 0 }, uInner: { value: inn.k }, uInnerCol: { value: new THREE.Vector3(...inn.col) }, uInnerTint: { value: inn.tint },
+    uTime: { value: 0 }, uInner: { value: inn.k }, uInnerCol: { value: new THREE.Vector3(...(theme === 'heart' && diceStyle().corners ? [1.0, 0.3, 0.55] : inn.col)) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
     uSide: { value: 1 }, uSelf: { value: ({ weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2) * diceStyle().selfK }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
