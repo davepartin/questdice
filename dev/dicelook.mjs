@@ -2,7 +2,7 @@
 import { chromium } from 'playwright-core';
 const out = process.argv[2]; const cls = process.argv[3] || 'knight';
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
-const p = await b.newPage({ viewport: { width: 430, height: 932 }, hasTouch: true });
+const p = await b.newPage({ viewport: { width: 430, height: 932 }, hasTouch: true, deviceScaleFactor: process.env.DSF ? +process.env.DSF : 1 });
 p.on('pageerror', (e) => console.log('ERR', e.message));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
 await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
@@ -12,4 +12,4 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(2); await p.evaluate(() => document.querySelector("#b3-roll")?.click()); await pump(4); for (let k = 0; k < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); k++) await pump(1);
-await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: out }); await b.close();
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: out, clip: process.env.CLIP ? (([x,y,w,h]) => ({x,y,width:w,height:h}))(process.env.CLIP.split(',').map(Number)) : undefined }); await b.close();

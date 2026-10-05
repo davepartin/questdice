@@ -338,7 +338,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (ST.clean && theme === 'heart') { core = '#2a2e3c'; mid = '#222634'; edge = '#12141c'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (ST.clean && theme === 'heart') { core = '#2a2e3c'; mid = '#222634'; edge = '#12141c'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#2a7f87'; mid = '#1d6068'; edge = '#0e3a40'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
@@ -382,8 +382,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       if (!ST.clean) cracks(ctxs, rnd, Rpx * 0.9, 6, Math.max(1.2, inR * 0.025));
       if (!ST.clean) { A.save(); const sg = A.createRadialGradient(0, 0, 0, 0, 0, inR * 0.8); sg.addColorStop(0, 'rgba(0,0,0,0.5)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); A.fillStyle = sg; A.fillRect(-S / 2, -S / 2, S, S); A.restore(); }
       // faint void sigil: a slashed ring (a miss) engraved shallow
-      const ring = (c) => { c.lineWidth = inR * 0.07; c.beginPath(); c.arc(0, 0, inR * 0.42, 0, Math.PI * 2); c.moveTo(-inR * 0.3, inR * 0.3); c.lineTo(inR * 0.3, -inR * 0.3); c.stroke(); };
-      layer(ctxs, { A: 'rgba(0,0,0,0.55)', H: 'rgb(96,96,96)' }, ring);
+      const ring = (c) => { c.lineWidth = inR * 0.13; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, inR * 0.46, 0, Math.PI * 2); c.moveTo(-inR * 0.33, inR * 0.33); c.lineTo(inR * 0.33, -inR * 0.33); c.stroke(); };
+      layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)', E: 'rgb(255,255,255)' }, ring);
     }
 
     // ---- watermark (weapon identity), shallow
