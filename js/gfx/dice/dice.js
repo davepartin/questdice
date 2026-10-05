@@ -88,7 +88,7 @@ function makeMaterial(atlas, theme, quality) {
   const u = {
     uTime: { value: 0 }, uInner: { value: diceStyle().clean ? 0 : inn.k }, uInnerCol: { value: new THREE.Vector3(...(theme === 'heart' && diceStyle().corners ? [1.0, 0.3, 0.55] : theme === 'amethyst' && diceStyle().corners ? [0.85, 0.9, 1.0] : inn.col)) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
-    uSide: { value: 1 }, uSelf: { value: ({ weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2) * diceStyle().selfK }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
+    uSide: { value: 1 }, uSelf: { value: diceStyle().selfFlat ?? ({ weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2) * diceStyle().selfK }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {

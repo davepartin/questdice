@@ -179,7 +179,7 @@ export const STYLES = {
 // CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
 // the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
 STYLES.clean = {
-  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.86, smoke: 0.8, heart: 0.9, amethyst: 0.9, weapon: 0.9 }, selfK: 1.0, light: 1.0, swirl: 0, numScale: 1.12,
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.5, smoke: 0.44, heart: 0.36, amethyst: 0.62, weapon: 0.38 }, selfFlat: 0.85, selfK: 1.0, light: 0.5, neutralLight: true, swirl: 0, numScale: 1.12,
   wpn: {
     r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
     b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },
