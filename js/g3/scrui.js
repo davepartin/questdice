@@ -147,9 +147,19 @@ export function title() {
 }
 
 // ------------------------------------------------------------------------------------------------ create
-function meter(label, value, max, icon, cls) {
-  return h('div', { class: `sx-meter ${cls}` }, h('div', { class: 'mt-head' }, ico(icon), h('span', {}, label), h('b', {}, String(value))),
-    h('div', { class: 'mt-cells', 'aria-hidden': 'true' }, Array.from({ length: max }, (_, i) => h('i', { class: i < value ? 'on' : '' }))));
+function meter(label, value, max, icon, cls, note = '', shown = null, on = null) {
+  return h('div', { class: `sx-meter ${cls}` }, h('div', { class: 'mt-head' }, ico(icon), h('span', {}, label), h('b', {}, String(shown ?? value))),
+    h('div', { class: 'mt-cells', 'aria-hidden': 'true' }, Array.from({ length: max }, (_, i) => h('i', { class: i < (on ?? value) ? 'on' : '' }))),
+    note ? h('small', { class: 'mt-note' }, note) : null);
+}
+// The four numbers that describe a hero, each with a plain-words caption (size ladder for initiative: d4 d6 d8 d10).
+function heroStats(hp, magic, feet, rerollDice) {
+  const rung = [4, 6, 8, 10].indexOf(feet) + 1;
+  return h('div', { class: 'ci-meters' },
+    meter('Health', hp, 40, 'heart', 'm-hp', 'How much damage you can take.'),
+    meter('Initiative', feet, 4, 'boot', 'm-init', 'Your feet die. A bigger die means you strike before the monsters more often.', `d${feet}`, rung),
+    meter('Starting magic', magic, 5, 'spark', 'm-mag', 'Magic you begin each fight with. It pays for rerolls and powers.'),
+    meter('Rerolls', rerollDice, 4, 'reroll', 'm-dice', 'How many dice you may re-throw at once.'));
 }
 function faceChips(inst) {
   return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx ? h('span', { class: 'wf-fx' }, fxItems(f.fx)) : null)));
@@ -183,7 +193,7 @@ export function create() {
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
       h('div', { class: 'ci-head' }, h('h2', {}, c.name), h('p', {}, c.blurb)),
-      h('div', { class: 'ci-meters' }, meter('Health', c.hp, 40, 'heart', 'm-hp'), meter('Magic', c.startMagic, 5, 'spark', 'm-mag'), meter('Dice per reroll', c.rerollDice, 4, 'reroll', 'm-dice')),
+      heroStats(c.hp, c.startMagic, c.feet || 4, c.rerollDice),
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
       eyebrow('Magical powers'),
@@ -203,7 +213,7 @@ export function create() {
     h('div', { class: 'sx-split' },
       h('div', { class: 'sx-viewport' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), h('p', { class: 'sx-hint' }, h('span', {}, 'Drag to turn'))),
       h('div', { class: 'sx-side' },
-        h('div', { class: 'sx-sidehead' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow('New hero'), h('h1', { class: 'sx-h1' }, 'Forge a hero')),
+        h('div', { class: 'sx-sidehead' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow('Step 1 of 1'), h('h1', { class: 'sx-h1' }, 'Choose your hero')),
         rail, info, flourish(),
         eyebrow('Difficulty'), diffRow, hintsBox,
         h('div', { class: 'sx-form' }, h('label', { for: 'hero-name' }, 'Name', name), h('label', { for: 'hero-pw' }, 'Password', pw), h('p', { class: 'fine' }, 'The password only guards this hero on this device.'), msg),
@@ -492,7 +502,7 @@ function heroTab() {
   return h('div', { class: 'sx-tab herotab' },
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
-    h('div', { class: 'ci-meters' }, meter('Health', E.maxHpOf(hero), 60, 'heart', 'm-hp'), meter('Starting Magic', E.startMagicOf(hero), 8, 'spark', 'm-mag'), meter('Dice per reroll', E.rerollDiceOf(hero), 6, 'reroll', 'm-dice')),
+    heroStats(E.maxHpOf(hero), E.startMagicOf(hero), E.feetSize(hero), E.rerollDiceOf(hero)),
     eyebrow('Difficulty'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),

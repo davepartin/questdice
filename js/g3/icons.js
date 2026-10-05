@@ -10,6 +10,7 @@ const P = {
   heart: '<path d="M12 20.5s-7.5-4.6-7.5-10.4A4.3 4.3 0 0112 7.8a4.3 4.3 0 017.5 2.3c0 5.8-7.5 10.4-7.5 10.4z" fill="currentColor" fill-opacity=".16"/>',
   spark: '<path d="M12 3l9.4 17H2.6z" fill="currentColor"/>',
   reroll: '<path d="M4.5 12a7.5 7.5 0 0112.9-5.2L20 9.2M20 4.5v4.7h-4.7M19.5 12a7.5 7.5 0 01-12.9 5.2L4 14.8M4 19.5v-4.7h4.7"/>',
+  boot: '<path d="M8 3.5h6V12c0 1.6 1.4 2.4 4 3.2 1.8.6 2.5 1.7 2.5 3.3V20H4v-5c0-1.6 3-2.4 4-4z" fill="currentColor" fill-opacity=".2"/>',
   coin: '<circle cx="12" cy="12" r="9" fill="currentColor"/>',
   dice: '<rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="currentColor" fill-opacity=".12"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/>',
   flame: '<path d="M12.2 2.8c.6 3.8 5.4 5.8 5.4 11a5.6 5.6 0 01-11.2 0c0-2 .9-3.4 2.3-4.6.1 1.9.9 3 2 3.4-.5-3.2-.2-6.3 1.5-9.8z" fill="currentColor" fill-opacity=".2"/>',
