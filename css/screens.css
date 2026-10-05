@@ -306,3 +306,19 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 .sx-urow.wrow { grid-template-columns: 1fr auto; }
 .sx-urow.wrow .ur-copy { grid-column: 1; grid-row: 1 / span 2; }
 .sx-urow.wrow .ur-buy, .sx-urow.wrow .ur-max { grid-column: 2; grid-row: auto; min-width: 11rem; justify-content: center; }
+
+/* talent dice editor in the camp forge */
+.sx-urow.tal-die { display: flex; flex-direction: column; align-items: stretch; gap: .65rem; }
+.tal-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .2rem .6rem; } .tal-head b { font-size: 1rem; } .tal-head small { color: var(--dim); font-size: .72rem; }
+.tal-strip { display: grid; gap: .4rem; } .tal-strip.fixed { grid-template-columns: repeat(3, 1fr); } .tal-strip.syms { grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr)); }
+.tal-face { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .4rem .3rem .5rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(255, 255, 255, .04); min-width: 0; }
+.tal-face small { font-size: .56rem; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; white-space: nowrap; } .tal-face.blank b, .tal-face.x2 b { font-family: var(--font-display); font-size: .95rem; color: #dfe6f2; line-height: 1.6rem; } .tal-face.blank b { color: var(--faint, #6c7388); font-weight: 600; font-size: .75rem; } .tal-face.x2 b { font-size: 1.4rem; }
+.tal-slots { display: flex; gap: .35rem; }
+.tal-slot { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed var(--hair); background: rgba(0, 0, 0, .25); color: var(--dim); font: 800 1.2rem var(--font-display); cursor: pointer; padding: 0; }
+.tal-slot:disabled { opacity: .3; cursor: default; } .tal-slot.open { border-color: var(--gold-hi); color: var(--gold-hi); box-shadow: 0 0 14px rgba(255, 214, 140, .4); }
+.tal-slot.full { border-style: solid; border-color: currentColor; background: rgba(255, 255, 255, .06); } .tal-slot .ico svg { width: 1.5rem; height: 1.5rem; }
+.tal-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; } .tal-pick .tal-cost { grid-column: 1 / -1; color: var(--dim); font-size: .72rem; text-align: center; }
+.tal-opt { display: grid; justify-items: center; gap: .1rem; padding: .45rem .2rem; border-radius: 8px; border: 1px solid var(--hair); background: rgba(255, 255, 255, .05); cursor: pointer; color: inherit; }
+.tal-opt .ico svg { width: 1.6rem; height: 1.6rem; } .tal-opt b { font-size: .72rem; color: #fff; } .tal-opt small { font-size: .6rem; color: var(--dim); } .tal-opt:disabled { opacity: .35; cursor: default; }
+.tal-opt.c-atk .ico, .tal-slot.c-atk { color: #ff4b4b; } .tal-opt.c-block .ico, .tal-slot.c-block { color: #3aa4ff; } .tal-opt.c-pierce .ico, .tal-slot.c-pierce { color: #ff8a1a; }
+.tal-opt.c-magic .ico, .tal-slot.c-magic { color: #b66cff; } .tal-opt.c-heal .ico, .tal-slot.c-heal { color: #38e87a; } .tal-opt.c-gold .ico, .tal-slot.c-gold { color: #ffd21a; }

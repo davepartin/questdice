@@ -1,5 +1,5 @@
 // Compares reroll rules and talent-die builds. node tools/sim2.mjs [campaigns=12]
-import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, upgradeDie, addTalent, takePerk, offerPerks, talentInfo, talentCount } from '../js/engine.js';
+import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, upgradeDie, addTalent, unlockDie, takePerk, offerPerks, talentInfo, talentCount } from '../js/engine.js';
 import { fight } from './sim.mjs';
 import { RULES, QUESTS_PER_ACT } from '../js/data.js';
 
@@ -10,6 +10,7 @@ const BUILDS = {
 };
 function camp(hero, rng, build) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
+  for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot);
   let acted = true;
   while (acted) {
     acted = false;

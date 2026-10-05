@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
 } from './data.js';
@@ -58,7 +58,7 @@ const fists = (side) => ({ uid: `fists-${side}`, id: 'fists', rarity: 0 });
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
 // ------------------------------------------------------------------------------- heroes
-export function newHero({ name, cls, seed }) {
+export function newHero({ name, cls, seed, full = false }) {
   const c = CLASSES[cls];
   const rng = makeRng(hashSeed(name, cls, seed ?? Date.now()));
   const loadout = {};
@@ -66,7 +66,7 @@ export function newHero({ name, cls, seed }) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
     v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0,
-    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, loadout, bag: [],
+    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], loadout, bag: [],
     campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0 },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
@@ -88,6 +88,24 @@ export function cardsOf(hero) {
 }
 
 // ------------------------------------------------------------------------------- dice
+// Which dice are on the hero's board. `dice: null` means all nine (older saves). A two-handed weapon always fills both weapon dice.
+export function isActive(hero, slot) {
+  if (!hero.dice) return true;
+  if (hero.dice.includes(slot)) return true;
+  return slot === 'NE' && WEAPONS[hero.loadout.NW.id].hands === 2;
+}
+export const activeSlots = (hero) => Object.keys(ROLE).filter((s) => isActive(hero, s));
+export function unlockInfo(hero, slot) {
+  if (isActive(hero, slot)) return { ok: false, why: 'have' };
+  const cost = UNLOCK_COST[slot]; if (cost == null) return { ok: false, why: 'no' };
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost };
+}
+export function unlockDie(hero, slot) {
+  const r = unlockInfo(hero, slot); if (!r.ok) return false;
+  hero.gold -= r.cost; hero.dice = [...(hero.dice || []), slot];
+  if (slot === 'NE' && !hero.loadout.NE) hero.loadout.NE = { uid: `fists-R`, id: 'fists', rarity: 0 };
+  return true;
+}
 export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
     case 'head': case 'feet': return 4;
@@ -161,10 +179,11 @@ export function evaluate(hero, board, opts = {}) {
 
   // Lanes: weapon (color + number) + hand strength + special symbol.
   for (const [key, lane] of Object.entries(LANES)) {
+    if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
     const wf = weaponFaces(inst)[val(lane.weapon) - 1];
     const str = val(lane.hand);
-    const sym = specialFace(hero, lane.special, val(lane.special));
+    const sym = isActive(hero, lane.special) ? specialFace(hero, lane.special, val(lane.special)) : null;
     const x2 = sym === 'X2'; const tsyms = Array.isArray(sym) ? sym : [];
     let value = wf.v + str + (x2 ? str : 0);
     if (wf.c === 'r') value += mods.redBonus; else value += mods.blueBonus;
@@ -188,7 +207,7 @@ export function evaluate(hero, board, opts = {}) {
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 
   // Synergy. Top row = weapon, head, weapon: only a two-handed weapon is eligible.
-  if (isTwoHanded(hero)) {
+  if (isTwoHanded(hero) && isActive(hero, 'NE')) {
     const a = weaponFaces(hero.loadout.NW)[val('NW') - 1].v;
     const b = weaponFaces(hero.loadout.NE)[val('NE') - 1].v;
     if (a === b && b === val('N') && a > 0) { out.offense3 = true; out.atk += SYNERGY_BONUS; }
@@ -196,10 +215,8 @@ export function evaluate(hero, board, opts = {}) {
   if (val('N') === val('C') && val('C') === val('S')) { out.defense3 = true; out.block += SYNERGY_BONUS; }
 
   // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
-  const nums = new Set([
-    val('N'), val('S'), val('C'), val('W'), val('E'),
-    weaponFaces(hero.loadout.NW)[val('NW') - 1].v, weaponFaces(hero.loadout.NE)[val('NE') - 1].v,
-  ]);
+  const nums = new Set([val('N'), val('S'), val('C'), val('W'), val('E'),
+    ...['NW', 'NE'].filter((k) => isActive(hero, k)).map((k) => weaponFaces(hero.loadout[k])[val(k) - 1].v)]);
   nums.delete(0); // a blank is a miss, not a number
   const sorted = [...nums].sort((x, y) => x - y);
   let best = 1, run = 1;
@@ -324,7 +341,7 @@ export function canReroll(b, slots) {
   const info = rerollInfo(b);
   if (info.kind === 'none' || !slots.length) return false;
   if (slots.length > info.dice) return false;
-  if (slots.some((s) => b.board[s].bound)) return false;
+  if (slots.some((s) => b.board[s].bound || !isActive(b.hero, s))) return false;
   return b.magic >= info.perDie * slots.length;
 }
 export function reroll(b, slots) {

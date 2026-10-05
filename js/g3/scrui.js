@@ -381,6 +381,49 @@ function weaponRow(inst) {
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
+// ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
+const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
+const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
+const DIE_NAME = { SW: 'Left talent die', SE: 'Right talent die', NE: 'Right weapon die' };
+const TAL = { slot: null, face: null };
+function unlockSection(hero) {
+  const rows = D.UNLOCK_ORDER.filter((s) => !E.isActive(hero, s));
+  if (!rows.length) return null;
+  return h('div', { class: 'tal-unlocks' }, eyebrow('New dice'),
+    h('p', { class: 'tab-intro' }, 'Your board starts with six dice. Add the rest here, one at a time, as you grow.'),
+    rows.map((slot) => { const u = E.unlockInfo(hero, slot); const talent = slot !== 'NE';
+      return h('div', { class: 'sx-urow wrow' },
+        h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
+        btn(`Add die · ${u.cost}`, () => { if (E.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
+}
+function talentCard(hero, slot) {
+  const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
+  const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
+  const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
+  const symFaces = Array.from({ length: info.faces }, (_, f) => {
+    const cur = faces[f] || [];
+    const slotsEl = Array.from({ length: D.TALENT_PER_FACE }, (_, i) => {
+      const k = cur[i]; const open = TAL.slot === slot && TAL.face === f && i === cur.length;
+      if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.TALENT_SYMS[k].name}. Tap to remove.`, onclick: tap(() => { E.removeTalent(hero, slot, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
+      return h('button', { class: `tal-slot ${open ? 'open' : ''}`, type: 'button', disabled: i > cur.length, 'aria-label': 'Add a symbol', onclick: tap(() => { TAL.slot = slot; TAL.face = f; X.renderCamp(); }) }, '+');
+    });
+    return h('div', { class: 'tal-face' }, h('small', {}, `Face ${f + 4}`), h('div', { class: 'tal-slots' }, slotsEl));
+  });
+  const picking = TAL.slot === slot && TAL.face != null;
+  const picker = picking ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
+    const left = D.TALENT_MAX_SAME - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= D.TALENT_PER_FACE;
+    const can = left > 0 && !full && hero.gold >= info.cost;
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (E.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= D.TALENT_PER_FACE ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `${left} left`));
+  }), h('small', { class: 'tal-cost' }, `Each symbol costs ${info.cost} gold. Tap a placed symbol to take it off.`)) : null;
+  return h('div', { class: 'sx-urow tal-die' },
+    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`)),
+    h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
+      h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'))),
+    h('div', { class: 'tal-strip syms' }, symFaces),
+    picker,
+    up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (E.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
+    up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
+}
 function forgeTab() {
   const hero = X.S.hero;
   return h('div', { class: 'sx-tab forge' },
@@ -390,8 +433,10 @@ function forgeTab() {
     eyebrow('Weapons'),
     h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
     ...[...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map(weaponRow),
-    eyebrow('Special dice'),
-    upgradeRow('special', 'SW', 'Left special', 'Mend and Surge. Two blank faces always.'), upgradeRow('special', 'SE', 'Right special', 'Spark and Surge. Two blank faces always.'),
+    unlockSection(hero),
+    eyebrow('Talent dice'),
+    h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face can hold two symbols, and no die can hold more than two of the same.'),
+    ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     h('p', { class: 'fine center' }, `You carry ${hero.gold} gold.`));
 }
 function gearTab() {

@@ -2,7 +2,7 @@
 import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
   cardsOf, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
-  rollSlot, canReroll, healCostOf, shopStock, buyItem,
+  rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
 
@@ -31,7 +31,7 @@ function expectedAfter(b, slots, rng, n = 14) {
 
 export function botRound(b, rng) {
   startRoll(b);
-  const slotsAll = Object.keys(ROLE);
+  const slotsAll = activeSlots(b.hero);
   for (let guard = 0; guard < 8; guard++) {
     const info = rerollInfo(b);
     if (info.kind === 'none') break;
@@ -75,6 +75,7 @@ export function fight(hero, quest, rng) {
 // Greedy camp: buy the best affordable strength/special upgrade; take the first perk.
 export function botCamp(hero, rng) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
+  for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   let acted = true;
   while (acted) {
     acted = false;

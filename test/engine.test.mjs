@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
-  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent,
+  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
 } from '../js/engine.js';
 import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST } from '../js/data.js';
 
@@ -14,8 +14,8 @@ const board = (o) => {
   return b;
 };
 // Weapon die faces (index = v-1) for reference: sword 0r,1b,3r,4r; bow 0b,1r,2r,3r.
-const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1 });
-const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1 });
+const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1, full: true });
+const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1, full: true });
 
 test('weapon face budgets: sum to 7, with documented exceptions', () => {
   // Bow is intentionally 6 (synergy engine). Sword/Shield as written in the design doc sum to 8: an
@@ -260,7 +260,7 @@ test('cards spend Magic, work once per battle, and free-reroll cards skip the co
   startRoll(b); b.magic = 5;
   assert.ok(playCard(b, 'cleave')); assert.equal(b.magic, 3); assert.equal(b.mods.atk, 6);
   assert.equal(playCard(b, 'cleave'), false);
-  const w = newHero({ name: 'W', cls: 'wizard', seed: 3 });
+  const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true });
   const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1);
   startRoll(b2); b2.magic = 3;
   assert.ok(playCard(b2, 'foresee'));
@@ -322,4 +322,25 @@ test('rage: a boss at half health swaps to its rage table', () => {
   const e = b.enemies[0]; e.hp = Math.ceil(e.maxHp * 0.55);
   const rep = resolve(b, {});
   assert.ok(e.raged || e.hp <= 0, 'raged once under half'); if (e.hp > 0) assert.deepEqual(rep.raged, [e.uid]);
+});
+
+test('a new hero starts with six dice and camp unlocks the rest one at a time', () => {
+  const h = newHero({ name: 'N', cls: 'knight', seed: 1 });
+  assert.deepEqual(activeSlots(h).sort(), ['C', 'E', 'N', 'NW', 'S', 'W']);
+  assert.equal(isActive(h, 'SW'), false); assert.equal(unlockInfo(h, 'SW').why, 'gold');
+  h.gold = 100; assert.ok(unlockDie(h, 'SW')); assert.equal(isActive(h, 'SW'), true); assert.ok(h.gold < 100);
+  assert.equal(unlockDie(h, 'SW'), false); // already have it
+  assert.ok(unlockDie(h, 'NE')); assert.ok(unlockDie(h, 'SE')); assert.equal(activeSlots(h).length, 9);
+  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); assert.equal(isActive(r, 'NE'), true); // a two-hander fills both weapon dice
+});
+
+test('dice that are not on the board contribute nothing and cannot be rerolled', () => {
+  const h = newHero({ name: 'N', cls: 'knight', seed: 1 });
+  const full = knight();
+  const bd = board({ NW: 4, NE: 4, SW: 4, SE: 4, W: 3, E: 3, C: 3 });
+  const a = evaluate(h, bd); const f = evaluate(full, bd);
+  assert.ok(a.atk + a.block + a.heal + a.magic < f.atk + f.block + f.heal + f.magic);
+  assert.equal(a.lanes.R, undefined); assert.ok(a.lanes.L);
+  const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b); b.magic = 9;
+  assert.equal(reroll(b, ['NE']), false); assert.equal(reroll(b, ['SW']), false); assert.ok(reroll(b, ['N']));
 });

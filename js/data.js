@@ -101,6 +101,10 @@ export const TALENT_SYMS = {
   heal: { name: 'Heal', text: 'Heal twice your hand strength.' },
   gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
 };
+// A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
+export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW'];
+export const UNLOCK_COST = { SW: 20, SE: 35, NE: 30 };
+export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 export const TALENT_MAX_SAME = 2;
 export const TALENT_PER_FACE = 2;
 export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot

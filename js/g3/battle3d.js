@@ -343,7 +343,7 @@ function idleTray() {
   const b = B.b; const tray = B.bw.tray;
   const dummy = {}; for (const s of D.SLOTS) dummy[s] = { v: 1 };
   tray.show(b.board || dummy);
-  for (const s of D.SLOTS) tray.setDimmed?.(s, !b.board);
+  for (const s of D.SLOTS) tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s));
   tray.setSelected?.(new Set());
 }
 
@@ -429,7 +429,7 @@ async function doRoll() {
   E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
-  for (const s of D.SLOTS) bw.tray.setDimmed?.(s, false);
+  for (const s of D.SLOTS) bw.tray.setDimmed?.(s, !E.isActive(B.hero, s));
   renderShape();
   await bw.tray.roll(b.board);
   for (const s of D.SLOTS) bw.tray.setBound?.(s, !!b.board[s].bound);
@@ -480,6 +480,7 @@ export function renderShape() {
 }
 
 function onPick(slot) {
+  if (!E.isActive(B.hero, slot)) { sfx.error(); toast('Not unlocked yet. Visit camp to add this die.'); return; }
   if (B.busy || B.ended || B.b.phase !== 'shape') return;
   const b = B.b; const info = E.rerollInfo(b);
   B.focus = slot;

@@ -1,0 +1,35 @@
+// Camp: unlock dice, grow and fill the talent dice by tapping; then peek at the battle with the new board.
+import { chromium } from 'playwright-core';
+import fs from 'node:fs'; import path from 'node:path';
+const out = process.argv[2]; fs.mkdirSync(out, { recursive: true });
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gl-blocklist', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
+const p = await b.newPage({ viewport: { width: 430, height: 932 }, hasTouch: true });
+const problems = []; p.on('pageerror', (e) => problems.push(e.message)); p.on('console', (m) => { if (m.type() === 'error' && !/ERR_CERT|Failed to load/.test(m.text())) problems.push(m.text()); });
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+const shot = async (n) => { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: path.join(out, `${n}.png`) }); };
+const hero = () => p.evaluate(() => { const h = window.QD.S.hero; return { gold: h.gold, dice: h.dice, special: h.special, talent: h.talent }; });
+await p.evaluate(() => { const { S, E, showBoard, showCamp } = window.QD; const h = E.newHero({ name: 'Dave', cls: 'wizard', seed: 3 }); h.gold = 300; h.level = 5; S.hero = h; S.company = { members: [h] }; showCamp({ fromBoard: true }); });
+await pump(2);
+const scroll = (txt) => p.evaluate((t) => document.querySelectorAll('.sx-eye').forEach((e) => { if (new RegExp(t, 'i').test(e.textContent)) e.scrollIntoView({ block: 'start' }); }), txt);
+await scroll('New dice'); await pump(0.5); await shot('1-new-dice');
+await p.evaluate(() => [...document.querySelectorAll('.tal-unlocks .ur-buy')][0]?.click()); await pump(1);
+console.log('after unlock', JSON.stringify(await hero()));
+await scroll('Talent dice'); await pump(0.5);
+await p.evaluate(() => document.querySelector('.tal-die .tal-slot:not(.full):not(:disabled)')?.click()); await pump(0.6); await shot('2-picker');
+await p.evaluate(() => [...document.querySelectorAll('.tal-opt')].find((x) => /Heal/.test(x.textContent))?.click()); await pump(0.6);
+await p.evaluate(() => document.querySelector('.tal-die .tal-slot:not(.full):not(:disabled)')?.click()); await pump(0.4);
+await p.evaluate(() => [...document.querySelectorAll('.tal-opt')].find((x) => /Heal/.test(x.textContent))?.click()); await pump(0.6);
+await p.evaluate(() => document.querySelector('.tal-die .tal-slot:not(.full):not(:disabled)')?.click()); await pump(0.4);
+await p.evaluate(() => [...document.querySelectorAll('.tal-opt')].find((x) => /Heal/.test(x.textContent))?.click()); await pump(0.6);
+console.log('after 3 heals (3rd must fail)', JSON.stringify((await hero()).talent));
+await p.evaluate(() => [...document.querySelectorAll('.tal-opt')].find((x) => /Gold/.test(x.textContent))?.click()); await pump(0.6);
+await p.evaluate(() => [...document.querySelectorAll('.tal-die .ur-buy')].find((x) => /Grow/.test(x.textContent))?.click()); await pump(1);
+await scroll('Talent dice'); await shot('3-talent');
+console.log('final', JSON.stringify(await hero()));
+await p.evaluate(() => { const { S, E, showBoard } = window.QD; S.hero.campaign.step = 1; showBoard(); }); await pump(1);
+await p.evaluate(() => window.QD.startQuest(window.QD.E.questsFor(window.QD.S.hero)[0]));
+for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
+await p.evaluate(() => document.querySelector('#b3-roll').click()); await pump(3); await shot('4-battle');
+console.log(problems.length ? `PROBLEMS: ${[...new Set(problems)].join(' | ')}` : 'no console errors'); await b.close();
