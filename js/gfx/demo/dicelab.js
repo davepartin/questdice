@@ -46,7 +46,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     const die = createDie({ spec, quality: stage.quality });
     const labels = spec.labels.map((l, i) => ({ l, v: i + 1 }));
     let v = labels[labels.length - 1].v;
-    if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
+    if (pick === 'surge') { const w = labels.find((o) => o.l.sym === 'SURGE'); if (w) v = w.v; } else if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
     if (params.has('lean')) setD4Lean(num('lean', 0.6));
     die.mesh.quaternion.copy(leanQuat(die.poly, restQuat(die.poly, v, 0, -1, 0), v));
     die.mesh.scale.setScalar(num('scale', 1));

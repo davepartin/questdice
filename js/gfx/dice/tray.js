@@ -31,7 +31,7 @@ const RC = { NW: [0, 0], N: [1, 0], NE: [2, 0], W: [0, 1], C: [1, 1], E: [2, 1],
 export const slotPos = (slot) => new THREE.Vector3((RC[slot][0] - 1) * PITCH, 0, (RC[slot][1] - 1) * PITCH);
 
 const DEFAULT_HERO = { cls: 'knight', loadout: { NW: { id: 'sword', rarity: 0 }, NE: { id: 'shield', rarity: 0 } }, strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 } };
-const ROLE_GLOW = { head: 0xffe6b0, feet: 0xffe6b0, hand: 0xa8c8e8, heart: 0xffb82e, special: 0xa66bff };
+const ROLE_GLOW = { head: 0xffe6b0, feet: 0xffe6b0, hand: 0xa8c8e8, heart: 0xffb82e, special: 0xd8e0f0 };
 const SLOT_ORDER = D.SLOTS;
 
 function rrPath(p, hw, r) {

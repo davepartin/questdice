@@ -156,7 +156,7 @@ export const STYLES = {
       bone: { core: '#fffaf0', mid: '#f0e4c4', edge: '#b8a47a', trim: ['#f2eee0', '#b4ac98', '#6a6450'] },
       smoke: { core: '#8a94a8', mid: '#5c6678', edge: '#2a3040', num: 'bone' },
       heart: { core: '#f0609a', mid: '#c02866', edge: '#58082e' },
-      amethyst: { core: '#a066ff', mid: '#6a30d8', edge: '#2a0e66' },
+      amethyst: { core: '#c4ccd8', mid: '#7e8898', edge: '#303846', neutral: true, trim: ['#f2f4f8', '#a8b0be', '#505868'] },
     },
     pip: { gold: '#ffd21a', pierce: '#ff8a1a', magic: '#a64dff', heal: '#38e87a', stagger: '#e8eef8', atk: '#ff3b3b', def: '#3aa4ff' },
   },
@@ -171,7 +171,7 @@ export const STYLES = {
       bone: { core: '#ffffff', mid: '#f6eed8', edge: '#c8b88c', trim: ['#fff8e8', '#c8c0aa', '#7a7458'] },
       smoke: { core: '#a8b4ca', mid: '#7a889e', edge: '#3a4458', num: 'bone' },
       heart: { core: '#ff70a8', mid: '#d02c70', edge: '#640a34' },
-      amethyst: { core: '#b878ff', mid: '#7a3cf0', edge: '#34128a' },
+      amethyst: { core: '#d4dae6', mid: '#8a95a8', edge: '#363e4e', neutral: true, trim: ['#f6f8fb', '#b4bccb', '#586070'] },
     },
     pip: { gold: '#ffd000', pierce: '#ff7a00', magic: '#9a38ff', heal: '#18f070', stagger: '#e8eef8', atk: '#ff2a2a', def: '#2a8cff' },
   },
@@ -318,7 +318,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (theme === 'amethyst' && blank) { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
@@ -346,6 +346,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       swirls(A, rnd, Rpx, ['#a83a04', '#c25a08', '#7a2204'], 12, 0.5, inR * 0.4);
       swirls(A, rnd, Rpx, ['#fff2a0', '#ffd860'], 8, 0.4, inR * 0.2);
       speckle(A, rnd, Rpx, '#fff6c0', 50, 1.5 * qk, 0.6);
+    } else if (theme === 'amethyst' && th.neutral) {
+      swirls(A, rnd, Rpx, blank ? ['#0c0e12', '#1c2028'] : ['#3c4452', '#58626f'], 10, 0.4 * sw + 0.1, inR * 0.4);
+      if (!blank) { swirls(A, rnd, Rpx, ['#ffffff', '#dfe5ef'], 7, 0.3, inR * 0.15); speckle(A, rnd, Rpx, '#ffffff', 45, 1.3 * qk, 0.5); }
     } else if (theme === 'amethyst') {
       if (!blank) { swirls(A, rnd, Rpx, ['#2a0c5a', '#4a1a9a'], 10, 0.5, inR * 0.4); swirls(A, rnd, Rpx, ['#d8b8ff', '#b88aff'], 9, 0.35, inR * 0.16); speckle(A, rnd, Rpx, '#f0e0ff', 55, 1.4 * qk, 0.6); } else swirls(A, rnd, Rpx, ['#0a0414', '#1c1030'], 10, 0.6, inR * 0.4);
     }
@@ -392,10 +395,23 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow: -numH * 0.01 }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, 0, ny, numH));
     }
-    if (spec.sym && !blank) {
-      const sym = { MEND: 'mend', SPARK: ST.corners ? 'tri' : 'spark', SURGE: 'surge' }[spec.sym];
-      const col = { MEND: ['#a0ffcc', '#33e08c', '#12904f'], SPARK: ST.corners ? ['#e6c8ff', '#a64dff', '#6a20c0'] : ['#fff2a8', '#ffd23d', '#d98a08'], SURGE: ['#f4ecff', '#c8aaff', '#8a62e8'] }[spec.sym];
-      const glowC = { MEND: [0.2, 1.0, 0.55], SPARK: ST.corners ? [0.62, 0.3, 1.0] : [1.0, 0.85, 0.2], SURGE: [0.82, 0.7, 1.0] }[spec.sym];
+    if (spec.sym && !blank && ST.corners) {
+      // special dice: heal plus, magic triangle, or a bold "2x" -- the same shapes and colours as everywhere else
+      if (spec.sym === 'SURGE') {
+        const th2 = inR * 1.2; const ny2 = inR * 0.04; const xx = -inR * 0.32; const kx = inR * 0.58; const ky = inR * 0.27;
+        const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, ny2 - ky); c.lineTo(kx + ky, ny2 + ky); c.moveTo(kx + ky, ny2 - ky); c.lineTo(kx - ky, ny2 + ky); c.stroke(); };
+        const wgt = th2 * 0.2;
+        layer(ctxs, { H: 'rgb(34,34,34)', A: '#ffffff', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.2 }); times(c, wgt + th2 * 0.16); });
+        layer(ctxs, { H: 'rgb(78,78,78)', A: '#10131c', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); });
+      } else {
+        const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.55; const ow = sz * 0.1;
+        layer(ctxs, { H: 'rgb(34,34,34)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, sz, ow * 2));
+        layer(ctxs, { H: 'rgb(78,78,78)', A: PIP_COLOR[kind], O: 'rgb(0,40,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, 0, inR * 0.02, sz));
+      }
+    } else if (spec.sym && !blank) {
+      const sym = { MEND: 'mend', SPARK: 'spark', SURGE: 'surge' }[spec.sym];
+      const col = { MEND: ['#a0ffcc', '#33e08c', '#12904f'], SPARK: ['#fff2a8', '#ffd23d', '#d98a08'], SURGE: ['#f4ecff', '#c8aaff', '#8a62e8'] }[spec.sym];
+      const glowC = { MEND: [0.2, 1.0, 0.55], SPARK: [1.0, 0.85, 0.2], SURGE: [0.82, 0.7, 1.0] }[spec.sym];
       const sz = inR * 1.75;
       layer(ctxs, { H: 'rgb(30,30,30)', A: 'rgba(8,2,20,0.95)', O: 'rgb(0,150,0)' }, (c) => drawIcon(c, sym, 0, inR * 0.02, sz * 1.14));
       layer(ctxs, { H: 'rgb(78,78,78)', A: lin(ctxs.A, 0, -sz / 2, 0, sz / 2, col), O: 'rgb(0,40,0)', E: `rgb(${glowC.map((x) => Math.round(x * 255)).join(',')})` }, (c) => drawIcon(c, sym, 0, inR * 0.02, sz));
