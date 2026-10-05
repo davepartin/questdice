@@ -1,6 +1,7 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
-import { CLASSES } from './data.js';
+import { CLASSES, WEAPONS, RARITY } from './data.js';
+import { soloOffer, line } from './auction.js';
 import {
   hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach,
 } from './engine.js';
@@ -576,6 +577,41 @@ export const ROADS = [
   },
 ];
 
+// The roadside traveller: not on every road, but every second or third fight. He names a price; the player takes it or leaves it.
+// (With a company he is an auction instead: see auction.js.)
+ROADS.push({
+  id: 'traveller', when: 'special', kicker: 'A stranger on the road', title: 'The Traveller',
+  tell: ({ campaign: c }) => {
+    const t = c.traveller; const w = WEAPONS[t.inst.id];
+    return `A stranger steps out from behind a tree that was definitely not there a moment ago. ${line('greet', () => 0.5)} He is holding a ${RARITY[t.inst.rarity | 0]} ${w.name}. "${t.price} gold. Take it or leave it. I will not be offended. I will be slightly offended."`;
+  },
+  choices: [
+    {
+      id: 'buy',
+      label: ({ campaign: c }) => `Buy the ${WEAPONS[c.traveller.inst.id].name}`,
+      hint: ({ campaign: c }) => `${c.traveller.price} gold. It goes into your pack.`,
+      can: ({ campaign: c, members }) => companyGold(members) >= c.traveller.price,
+      apply: (ctx) => {
+        const t = ctx.campaign.traveller;
+        payCompany(ctx.members, t.price);
+        const m = [...ctx.members].sort((a, b) => a.bag.length - b.bag.length)[0]; m.bag.push({ ...t.inst });
+        note(ctx, 'The Traveller', `Bought a ${WEAPONS[t.inst.id].name} for ${t.price} gold.`);
+        return `${line('won', ctx.rng)} The ${WEAPONS[t.inst.id].name} is in ${m.name}'s pack.`;
+      },
+    },
+    {
+      id: 'leave',
+      label: () => 'Walk on',
+      hint: () => 'Keep your gold.',
+      apply: (ctx) => { note(ctx, 'The Traveller', 'Declined a stranger\'s wares.'); return line('unsold', ctx.rng); },
+    },
+  ],
+});
+
+// A road event comes every second fight (before fights 3, 5, 7, 9) and always before the boss.
+export const roadSlot = (c) => c.step >= 3 && (c.step % 2 === 1 || c.step >= 10);
+const travellerDue = (c) => (c.wins || 0) - (c.travellerAt || 0) >= 2 + (hashSeed(c.seed, c.act, c.step, 'trav') & 1);
+
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
   if (opening) return ROADS.filter((e) => e.when === 'opening');
@@ -594,6 +630,10 @@ export function ensureRoad(hero, members) {
     if (fresh.length) pool = fresh;
     const weights = pool.map((e) => (c.step >= 10 && e.when === 'boss' ? 5 : 1));
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
+    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && travellerDue(c)) {
+      c.road.id = 'traveller'; c.travellerAt = c.wins || 0;
+      c.traveller = soloOffer(c.seed, { act: c.act, step: c.step });
+    }
   }
   return present(c.road.id, hero, members);
 }
@@ -601,6 +641,8 @@ export function roadIsOpen(hero) {
   const c = hero.campaign;
   if (!c) return false;
   const key = `${c.act}.${c.step}`;
+  const opening = c.act === 1 && c.step === 1 && !(c.wins > 0);
+  if (!opening && !roadSlot(c)) return false; // most fights follow straight on from camp
   return !(c.road && c.road.key === key && c.road.done);
 }
 function present(id, hero, members) {
