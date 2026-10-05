@@ -14,7 +14,7 @@ async function tryLoad(path) {
 // Staging marks (metres). See docs/GFX.md and the arena brief.
 export const MARKS = {
   hero: [-2.5, 0, 1.5],
-  tray: [0, 0.7, 4.5],
+  tray: [0, 0.7, 3.9],
   big: [0.5, 0, -0.9],
 };
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest
@@ -35,6 +35,7 @@ export const world = {
       if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return false;
       this.stage = createStage(canvas);
       this.director = new Director(this.stage);
+      try { (await import('../gfx/dice/faces.js')).setDiceStyle('clear'); } catch (e) { console.warn('[world] dice style', e); }
       this.stage.start();
       try { (await import('./portrait.js')).shareRenderer(this.stage.renderer, () => this.stage.env); } catch { /* portraits fall back to their own renderer */ }
       this.available = true;
@@ -79,7 +80,8 @@ export const world = {
     // tray
     let tray;
     try { tray = trayMod ? trayMod.createTray({ stage, quality: stage.quality }) : stubTray(stage); } catch (e) { console.warn('[world] tray failed', e); tray = stubTray(stage); }
-    tray.object.position.set(...MARKS.tray); tray.object.scale.setScalar(0.74);
+    const pk = this.director.portrait; // phones get a slightly smaller tray so the monsters keep their room
+    tray.object.position.set(MARKS.tray[0], MARKS.tray[1], MARKS.tray[2] + 0.4 * pk); tray.object.scale.setScalar(0.82 - 0.1 * pk);
     stage.scene.add(tray.object);
     tray.setHero(hero);
     stage.onFrame((dt, t) => tray.update?.(dt, t));
