@@ -209,7 +209,7 @@ function showCreate() {
     grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } }, h('span', {}, c.glyph), h('b', {}, c.name))));
     const c = D.CLASSES[cls];
     detail.replaceChildren(h('p', {}, c.blurb),
-      h('div', { class: 'stats' }, h('span', {}, `❤ ${c.hp} HP`), h('span', {}, `✦ ${c.startMagic} start`), h('span', {}, `⟳ ${c.rerollDice} dice/reroll`)),
+      h('div', { class: 'stats' }, h('span', {}, `❤ ${c.hp} HP`), h('span', {}, `⚡ d${c.feet || 4} initiative`)),
       h('p', { class: 'fine' }, 'Wields: ', c.weapons.map((w) => D.WEAPONS[w].name).join(' + ')),
       h('div', { class: 'cardlist' }, c.cards.filter((k) => (k.unlock ?? 1) <= 1).map((k) => h('div', { class: 'mini-card' }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`)))));
   };
@@ -793,7 +793,7 @@ function campHero() {
   const hero = S.hero; const c = D.CLASSES[hero.cls];   const perkCount = {}; hero.perks.forEach((p) => { perkCount[p] = (perkCount[p] || 0) + 1; });
   return h('div', { class: 'col' },
     section(`${hero.name} · Level ${hero.level} ${c.name}`, xpBar(hero),
-      h('div', { class: 'stats' }, h('span', {}, `❤ ${E.maxHpOf(hero)} HP`), h('span', {}, `✦ ${E.startMagicOf(hero)} start`), h('span', {}, `⟳ ${E.rerollDiceOf(hero)} dice/reroll`)),
+      h('div', { class: 'stats' }, h('span', {}, `❤ ${E.maxHpOf(hero)} HP`), h('span', {}, `⚡ d${E.feetSize(hero)} initiative`)),
       h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`)),
     section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level.')),
     section('Class cards', h('div', { class: 'cardlist' }, c.cards.map((k) => h('div', { class: `mini-card ${(k.unlock ?? 1) > hero.level ? 'spent' : ''}` }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`), (k.unlock ?? 1) > hero.level ? h('em', {}, `Unlocks at level ${k.unlock}`) : null)))),

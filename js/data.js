@@ -18,6 +18,9 @@ export const MAX_LEVEL = 20;
 // Rerolls: `free` actions cost nothing, then `paid` actions cost 1 magic per die. Each action rerolls up to the class's dice (+diceBonus).
 // (Mutable so the balance simulator can compare rule sets.)
 export const RULES = { free: 3, paid: 3, diceBonus: 1 };
+// The same for every hero (not a class choice): magic at the start of a fight, and dice you may reroll at once.
+export const START_MAGIC = 4;
+export const REROLL_DICE = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const HEAL_COST = 2; // magic
@@ -144,7 +147,7 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 export const CLASSES = {
   knight: {
     feet: 4,
-    name: 'Knight', glyph: '⚔️', hp: 34, startMagic: 3, rerollDice: 3,
+    name: 'Knight', glyph: '⚔️', hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
     cards: [
@@ -156,7 +159,7 @@ export const CLASSES = {
   },
   ranger: {
     feet: 8,
-    name: 'Ranger', glyph: '🏹', hp: 28, startMagic: 3, rerollDice: 4,
+    name: 'Ranger', glyph: '🏹', hp: 28,
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
     cards: [
@@ -168,7 +171,7 @@ export const CLASSES = {
   },
   wizard: {
     feet: 6,
-    name: 'Wizard', glyph: '🧙', hp: 26, startMagic: 4, rerollDice: 3,
+    name: 'Wizard', glyph: '🧙', hp: 26,
     blurb: 'Magic is your ammunition. A staff, a big pool of Magic, and a spell for every problem.',
     weapons: ['staff'],
     cards: [
@@ -181,7 +184,7 @@ export const CLASSES = {
   },
   dwarf: {
     feet: 4,
-    name: 'Dwarf Warden', glyph: '🪓', hp: 38, startMagic: 2, rerollDice: 3,
+    name: 'Dwarf Warden', glyph: '🪓', hp: 38,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['spear', 'shield'],
     cards: [
@@ -193,7 +196,7 @@ export const CLASSES = {
   },
   bard: {
     feet: 6,
-    name: 'Bard', glyph: '🪕', hp: 28, startMagic: 3, rerollDice: 3,
+    name: 'Bard', glyph: '🪕', hp: 28,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
     weapons: ['dagger', 'bracer'],
     cards: [

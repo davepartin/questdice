@@ -153,13 +153,11 @@ function meter(label, value, max, icon, cls, note = '', shown = null, on = null)
     note ? h('small', { class: 'mt-note' }, note) : null);
 }
 // The four numbers that describe a hero, each with a plain-words caption (size ladder for initiative: d4 d6 d8 d10).
-function heroStats(hp, magic, feet, rerollDice) {
+function heroStats(hp, feet) {
   const rung = [4, 6, 8, 10].indexOf(feet) + 1;
   return h('div', { class: 'ci-meters' },
     meter('Health', hp, 40, 'heart', 'm-hp', 'How much damage you can take.'),
-    meter('Initiative', feet, 4, 'boot', 'm-init', 'Your feet die. A bigger die means you strike before the monsters more often.', `d${feet}`, rung),
-    meter('Starting magic', magic, 5, 'spark', 'm-mag', 'Magic you begin each fight with. It pays for rerolls and powers.'),
-    meter('Rerolls', rerollDice, 4, 'reroll', 'm-dice', 'How many dice you may re-throw at once.'));
+    meter('Initiative', feet, 4, 'boot', 'm-init', 'Your feet die. A bigger die means you strike before the monsters more often.', `d${feet}`, rung));
 }
 function faceChips(inst) {
   return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx ? h('span', { class: 'wf-fx' }, fxItems(f.fx)) : null)));
@@ -193,7 +191,8 @@ export function create() {
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
       h('div', { class: 'ci-head' }, h('h2', {}, c.name), h('p', {}, c.blurb)),
-      heroStats(c.hp, c.startMagic, c.feet || 4, c.rerollDice),
+      heroStats(c.hp, c.feet || 4),
+      h('p', { class: 'ci-rule' }, `Every hero starts each fight with ${D.START_MAGIC} magic and may reroll ${D.REROLL_DICE} dice at a time.`),
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
       eyebrow('Magical powers'),
@@ -502,7 +501,7 @@ function heroTab() {
   return h('div', { class: 'sx-tab herotab' },
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
-    heroStats(E.maxHpOf(hero), E.startMagicOf(hero), E.feetSize(hero), E.rerollDiceOf(hero)),
+    heroStats(E.maxHpOf(hero), E.feetSize(hero)),
     eyebrow('Difficulty'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),

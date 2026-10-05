@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
@@ -79,9 +79,9 @@ export function heroMods(hero) {
   return m;
 }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
-export const startMagicOf = (hero) => CLASSES[hero.cls].startMagic + heroMods(hero).startMagic;
+export const startMagicOf = (hero) => START_MAGIC + heroMods(hero).startMagic;
 export const rerollTotal = () => RULES.free + RULES.paid;
-export const rerollDiceOf = (hero) => CLASSES[hero.cls].rerollDice + RULES.diceBonus + heroMods(hero).rerollDice;
+export const rerollDiceOf = (hero) => REROLL_DICE + heroMods(hero).rerollDice;
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
 export function cardsOf(hero) {
   return CLASSES[hero.cls].cards.filter((c) => (c.unlock ?? 1) <= hero.level);

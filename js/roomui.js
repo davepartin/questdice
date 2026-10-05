@@ -379,7 +379,7 @@ function campHero(view) {
   const log = hero.campaign?.chronicle || [];
   return h('div', { class: 'col' },
     ctx.section(`${hero.name} · Level ${hero.level} ${c.name}`,
-      h('div', { class: 'stats' }, h('span', {}, `❤ ${E.maxHpOf(hero)} HP`), h('span', {}, `✦ ${E.startMagicOf(hero)} start`), h('span', {}, `⟳ ${E.rerollDiceOf(hero)} dice/reroll`))),
+      h('div', { class: 'stats' }, h('span', {}, `❤ ${E.maxHpOf(hero)} HP`), h('span', {}, `⚡ d${E.feetSize(hero)} initiative`))),
     ctx.section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level.')),
     log.length ? ctx.section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 6).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text))))) : null);
 }
