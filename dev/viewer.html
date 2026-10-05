@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuestDice asset viewer</title>
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/build/three.module.js", "three/addons/": "../vendor/three/examples/jsm/" } }
+</script>
+<style>html,body{margin:0;height:100%;background:#05060c;overflow:hidden}#wrap{position:fixed;inset:0}canvas{display:block}</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c"></canvas></div>
+<script type="module">
+import * as THREE from 'three';
+import { createStage } from '../js/gfx/core.js';
+import * as U from '../js/gfx/util.js';
+
+// ?m=gfx/demo/materials.js  -> imports ../js/<m> and calls its `demo(ctx)`.
+const params = new URLSearchParams(location.search);
+const stage = createStage(document.getElementById('c'), { manual: params.has('manual') || params.has('shot') });
+window.__qd = { stage, THREE, ready: false, error: null, ctx: null };
+
+// Convenience for asset demos: neutral three-point rig, floor, camera framing, optional turntable.
+const ctx = {
+  stage, THREE, U, params,
+  num: (k, d) => (params.has(k) ? Number(params.get(k)) : d),
+  vec: (k, d) => (params.has(k) ? params.get(k).split(',').map(Number) : d),
+  cam(pos, look = [0, 1, 0], fov) {
+    stage.camera.position.set(...pos); stage.camera.lookAt(...look); if (fov) { stage.camera.fov = fov; stage.camera.updateProjectionMatrix(); }
+    const p = ctx.vec('cam', null); const l = ctx.vec('look', null); const f = ctx.num('fov', null);
+    if (p) stage.camera.position.set(...p);
+    if (l) stage.camera.lookAt(...l); else if (p) stage.camera.lookAt(...look);
+    if (f) { stage.camera.fov = f; stage.camera.updateProjectionMatrix(); }
+  },
+  stdLights({ floor = true, shadow = 2048 } = {}) {
+    const key = new THREE.DirectionalLight(0xffd2a0, 3.2); key.position.set(-4, 7, 5); key.castShadow = true;
+    key.shadow.mapSize.set(shadow, shadow); key.shadow.camera.left = -6; key.shadow.camera.right = 6; key.shadow.camera.top = 6; key.shadow.camera.bottom = -6; key.shadow.camera.far = 30; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03;
+    const rim = new THREE.DirectionalLight(0x7aa8ff, 2.2); rim.position.set(5, 4, -6);
+    const fill = new THREE.HemisphereLight(0x8aa0d8, 0x2a2018, 0.5);
+    stage.scene.add(key, rim, fill);
+    if (floor) {
+      const f = new THREE.Mesh(new THREE.CircleGeometry(12, 64), new THREE.MeshStandardMaterial({ color: 0x1a1816, roughness: 0.95 }));
+      f.rotation.x = -Math.PI / 2; f.receiveShadow = true; stage.scene.add(f);
+    }
+    return { key, rim, fill };
+  },
+  turntable(obj, speed) { const s = speed ?? ctx.num('turn', 0); const a = ctx.num('yaw', 0); obj.rotation.y = a; if (s) stage.onFrame((dt) => { obj.rotation.y += dt * s; }); },
+};
+window.__qd.ctx = ctx;
+
+try {
+  const mod = await import('../js/' + (params.get('m') || 'gfx/demo/materials.js'));
+  await mod.demo(ctx);
+  stage.start();
+  stage.step(2);
+  window.__qd.ready = true;
+} catch (e) { console.error(e); window.__qd.error = String(e && e.stack || e); window.__qd.ready = true; }
+</script>
+</body>
+</html>

@@ -43,6 +43,8 @@ To publish the solo game, enable **GitHub Pages** for this repository (Settings 
 | File | What it covers |
 |---|---|
 | [`docs/DESIGN.md`](docs/DESIGN.md) | The whole game: the board, the dice, the rules, classes, progression, the campaign, party play, balance, every design decision, and the roadmap. |
+| [`docs/PLAN.md`](docs/PLAN.md) | The ongoing plan, status, known bugs and handoff log shared between working sessions. Read this first when picking the project up. |
+| [`docs/GFX.md`](docs/GFX.md) | The 3D graphics contract: conventions, actor/dice/arena APIs, and how to take screenshots. |
 | [`docs/BESTIARY.md`](docs/BESTIARY.md) | Enemy mechanics, every monster's table, and how to add a new one. |
 
 ## For developers
