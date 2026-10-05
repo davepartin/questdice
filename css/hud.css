@@ -482,3 +482,7 @@ body.in-battle .chrome { z-index: 40; }
 .fi-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; } .fi-list li { display: flex; flex-direction: column; font-size: .76rem; color: #d8d2c0; } .fi-list b { color: #fff; font-size: .8rem; }
 @media (min-aspect-ratio: 5/4) { .b3-info { top: 6rem; bottom: auto; } }
 @media (max-width: 420px) { .b3-tools .hb-mini { width: 2.3rem; min-width: 2.3rem; height: 2.3rem; min-height: 2.3rem; } .b3-powers { padding-right: .6rem; font-size: .72rem; } .b3-pips i { width: .65rem; height: .65rem; } .b3-tools { gap: .25rem; } }
+
+/* magic this roll will bank, shown next to the magic counter while you shape the roll */
+.hb-pend { margin-left: .35rem; color: #d9b8ff; font-size: .72rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.hb-pend:empty { display: none; }

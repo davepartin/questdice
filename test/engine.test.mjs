@@ -5,7 +5,7 @@ import {
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
 } from '../js/engine.js';
-import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST } from '../js/data.js';
+import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, RES_BY_SIZE } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -422,4 +422,12 @@ test('speed: classes start at different feet sizes, monsters have their own init
   assert.ok(D.MONSTERS.wolf.init > D.MONSTERS.ogre.init);
   dwarf.gold = 9999; dwarf.level = 20; const before = E.feetSize(dwarf);
   assert.equal(E.upgradeDie(dwarf, 'speed', 'S'), true); assert.equal(E.feetSize(dwarf), D.NEXT_SIZE[before]);
+});
+
+test('a d4 hand showing 4 pays one magic each: two hands, two magic (what the triangle on the face shows)', () => {
+  const h = knight();
+  const ev = evaluate(h, board({ W: 4, E: 4, N: 2, S: 2, C: 5, NW: 1, NE: 1 }));
+  assert.equal(ev.magic, 2); // head shows 2 (pierce), feet are initiative: only the two hands pay magic
+  // and every face's symbol count is exactly what it pays: d4 [2 gold, 2 pierce, 2 magic, 1 magic]
+  assert.deepEqual(RES_BY_SIZE[4], [2, 2, 2, 1]);
 });
