@@ -188,7 +188,6 @@ export function reportLines(rep, b) {
   if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from you.` });
   for (const u of rep.raged) L.push({ kind: 'bad', text: `${name(u)} flies into a rage!` });
   if (rep.healed) L.push({ kind: 'good', text: `You heal ${rep.healed}.` });
-  if (rep.lastStand) L.push({ kind: 'bad', text: 'LAST STAND. You cling to life.' });
   const gains = [];
   if (rep.T.magic) gains.push(`+${rep.T.magic} ✦`); if (rep.T.gold) gains.push(`+${rep.T.gold} 🪙`);
   if (gains.length) L.push({ kind: 'meh', text: `Gathered ${gains.join('  ')}.` });
@@ -242,7 +241,6 @@ export function partyReportLines(rep, b) {
     if (f.down) continue;
     if (f.taken) L.push({ kind: 'bad', text: `${f.name} takes ${f.taken}${f.absorbed ? ` (${f.absorbed} blocked)` : ''}.` });
     if (f.healed) L.push({ kind: 'good', text: `${f.name} heals ${f.healed}.` });
-    if (f.lastStand) L.push({ kind: 'bad', text: `${f.name} makes a Last Stand.` });
   }
   return L;
 }

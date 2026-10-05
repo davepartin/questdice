@@ -193,7 +193,7 @@ Then, in order:
 3. **Survivors act.** Each living monster does what it telegraphed. Strikes are reduced by your block, shared as one pool across all of them in order. Pierce is not reduced.
 4. **Rage.** A boss at half health or lower changes its ways, starting next round.
 5. **You.** Heal is applied, then damage. Magic and gold are gathered.
-6. **Last Stand.** If you would fall, you survive once per battle at 1 HP (more with a perk). A second time, you fall.
+6. **No Last Stand.** At 0 HP a hero falls. There is no second chance mid-fight (removed by design).
 
 Block that goes unused is simply lost. It does not carry over to the next round, which is why leaning on defense against a monster that is guarding or winding up is a deliberate bet rather than a free one.
 
@@ -365,7 +365,7 @@ Small, composable, Gloomhaven-flavored choices. Each has a limit so no hero stac
 | Ironward | +1 to every blue lane | 3 |
 | Piercing Pips | Each 2 rolled on a cardinal die pierces +1 | 3 |
 | Gold Sense | +25% gold from dice and the fallen | 3 |
-| Last Stand Grit | Last Stand leaves +4 HP | 2 |
+| Stout Heart (was Last Stand Grit) | +4 max HP | 2 |
 | Frugal Mender | The Heal card costs 1 less Magic (minimum 1) | 1 |
 
 ### 11.3 Camp: the Forge, the Pack and the peddler

@@ -211,15 +211,11 @@ test('a killed monster does not strike back', () => {
   assert.equal(b.outcome, 'victory'); assert.equal(rep.taken, 0);
 });
 
-test('Last Stand: survive lethal damage once at 1 HP, then die', () => {
+test('no Last Stand: lethal damage means defeat', () => {
   const h = knight();
-  const mk = () => { const b = duel(h, 'ogre', { n: 'Stab', v: 'strike', f: 500, m: 0 }, { NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 }); return b; };
-  const b = mk();
+  const b = duel(h, 'ogre', { n: 'Stab', v: 'strike', f: 500, m: 0 }, { NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 });
   const rep = resolve(b, {});
-  assert.equal(rep.lastStand, true); assert.equal(b.hp, 1); assert.equal(b.outcome, null);
-  b.enemies[0].intent = { n: 'Stab', v: 'strike', f: 500, m: 0 }; startRoll(b); b.board = board({ NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 });
-  resolve(b, {});
-  assert.equal(b.outcome, 'defeat');
+  assert.equal(rep.lastStand, undefined); assert.equal(b.hp, 0); assert.equal(b.outcome, 'defeat');
 });
 
 test('stagger cancels a wind-up; otherwise the next round is a Slam', () => {
@@ -408,10 +404,10 @@ test('initiative: round 1 is always yours; ties and lower rolls go to you; a hig
   assert.ok(sawEarly > 5);
 });
 
-test('a monster that acts first can drop you before you swing (no Last Stand left)', () => {
+test('a monster that acts first can drop you before you swing', () => {
   const h = knight();
   for (let seed = 1; seed < 60; seed++) {
-    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 999, m: 0 }, { NW: 4, W: 4, NE: 4, E: 4, C: 6, N: 4, S: 1 }); b.round = 2; b.lastStandUsed = true; b.rng = makeRng(seed);
+    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 999, m: 0 }, { NW: 4, W: 4, NE: 4, E: 4, C: 6, N: 4, S: 1 }); b.round = 2; b.rng = makeRng(seed);
     const r = resolve(b, {});
     if (r.early.length) { assert.equal(r.heroDown, true); assert.equal(r.dealt, 0); assert.equal(b.outcome, 'defeat'); return; }
   }

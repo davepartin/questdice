@@ -24,7 +24,6 @@ export const HEAL_COST = 2; // magic
 export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
-export const SURVIVE_HP = 1; // Last Stand
 
 // Universal number language: [loot on 1, pierce on 2, magic on 3, magic on 4], by die size.
 export const RES_BY_SIZE = {
@@ -217,7 +216,7 @@ export const PERKS = {
   ward: { name: 'Ironward', text: '+1 to every blue lane.', max: 3, mod: { blueBonus: 1 } },
   piercer: { name: 'Piercing Pips', text: 'Each 2 you roll on a cardinal die pierces +1.', max: 3, mod: { pierceBonus: 1 } },
   greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen.', max: 3, mod: { goldPct: 0.25 } },
-  grit: { name: 'Last Stand Grit', text: 'Last Stand leaves you with +4 HP.', max: 2, mod: { lastStandHp: 4 } },
+  grit: { name: 'Stout Heart', text: '+4 max HP.', max: 2, mod: { maxHp: 4 } },
   frugal: { name: 'Frugal Mender', text: 'The Heal card costs 1 less Magic (minimum 1).', max: 1, mod: { healCost: -1 } },
 };
 

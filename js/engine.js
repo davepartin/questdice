@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
@@ -457,7 +457,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   };
   const rep = {
     round: b.round, ev, T, dealt: 0, guarded: 0, targetUid: null, killed: [], staggered: [], raged: [], summoned: [],
-    acts: [], taken: 0, absorbed: 0, healed: 0, lastStand: false, magicStolen: 0, goldStolen: 0, bound: 0, hpBefore: b.hp,
+    acts: [], taken: 0, absorbed: 0, healed: 0, magicStolen: 0, goldStolen: 0, bound: 0, hpBefore: b.hp,
   };
   if (ev.offense3) hero.stats.triples++;
   if (ev.straight) hero.stats.straights++;
@@ -546,7 +546,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   if (early.length) rep.init.first = 'foes';
   rep.early = early.map((e) => e.uid);
   actFor(early, true);
-  const heroDown = early.length > 0 && b.lastStandUsed && Math.min(b.maxHp, b.hp + T.heal) - rep.taken <= 0;
+  const heroDown = early.length > 0 && Math.min(b.maxHp, b.hp + T.heal) - rep.taken <= 0;
   if (heroDown) { rep.heroDown = true; rep.targetUid = null; } else {
     strike();
     actFor(b.enemies.filter((e) => !early.includes(e)), false);
@@ -564,9 +564,6 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   let hp = Math.min(b.maxHp, b.hp + T.heal) - rep.taken;
   rep.healed = Math.max(0, Math.min(b.maxHp, hpBeforeHit + T.heal) - hpBeforeHit);
   b.stats.healed += rep.healed; b.stats.taken += rep.taken;
-  if (hp <= 0 && !b.lastStandUsed) {
-    b.lastStandUsed = true; rep.lastStand = true; hp = SURVIVE_HP + heroMods(hero).lastStandHp;
-  }
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
   const stolen = Math.min(b.magic + T.magic, rep.magicStolen); rep.magicStolen = stolen;
   b.magic = Math.max(0, Math.min(MAGIC_CAP, b.magic + T.magic - stolen));
@@ -987,7 +984,7 @@ export function resolveParty(b) {
   rep.order = line.map((x) => (x.kind === 'hero' ? { kind: 'hero', name: x.f.hero.name, v: heroInit.get(x.f) } : { kind: 'foe', uid: x.e.uid, name: x.e.name, v: x.e.init }));
   const runningHp = (f) => { const i = snap.indexOf(f); return Math.min(f.maxHp, f.hp + f.T.heal) - taken[i]; };
   for (const x of line) {
-    if (x.kind === 'hero') { if (x.f.lastStandUsed && runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
+    if (x.kind === 'hero') { if (runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
   }
   for (const e of b.enemies) {
     if (e.hp <= 0 || e.intent?.v !== 'charge') continue;
@@ -999,7 +996,7 @@ export function resolveParty(b) {
     const rg = MONSTERS[e.id].rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) { e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid); }
   }
-  // Drain comes out of the leader. Heal lands before damage. Last Stand is once per hero.
+  // Drain comes out of the leader. Heal lands before damage. There is no Last Stand: at 0 HP a hero falls.
   if (leader && rep.magicStolen) {
     const have = leader.magic + (leader.T?.magic || 0);
     rep.magicStolen = Math.min(have, rep.magicStolen);
@@ -1009,10 +1006,6 @@ export function resolveParty(b) {
     const hpBefore = f.hp;
     const healed = Math.max(0, Math.min(f.maxHp, hpBefore + T.heal) - hpBefore);
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
-    let lastStand = false;
-    if (hp <= 0 && !f.lastStandUsed) {
-      f.lastStandUsed = true; lastStand = true; hp = SURVIVE_HP + heroMods(f.hero).lastStandHp;
-    }
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     f.stats.healed += healed; f.stats.taken += taken[i];
     f.contrib += healed * 1.25 + absorbed[i] * 0.8 + (i === 0 ? 3 : 0);
@@ -1021,13 +1014,13 @@ export function resolveParty(b) {
     if (f === leader && rep.magicStolen) magic -= rep.magicStolen;
     f.magic = Math.max(0, Math.min(MAGIC_CAP, magic));
     rep.fighters.push({
-      name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed, lastStand,
+      name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed,
       hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib,
     });
   });
   // Heroes who never rolled (already down) still appear, unchanged.
   for (const f of b.fighters) if (!snap.includes(f)) {
-    rep.fighters.push({ name: f.hero.name, taken: 0, absorbed: 0, healed: 0, lastStand: false, hpAfter: f.hp, magicAfter: f.magic, gold: 0, feet: 0, leader: false, contrib: f.contrib, down: true });
+    rep.fighters.push({ name: f.hero.name, taken: 0, absorbed: 0, healed: 0, hpAfter: f.hp, magicAfter: f.magic, gold: 0, feet: 0, leader: false, contrib: f.contrib, down: true });
   }
   b.report = rep;
   const foes = b.enemies.filter((e) => e.hp > 0).length;

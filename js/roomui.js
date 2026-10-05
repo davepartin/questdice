@@ -81,7 +81,6 @@ function announce(prev, view) {
   if (!rep || rep.round === prev.battle?.report?.round) return;
   if (rep.staggered?.length) { ctx.banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.raged?.length) { ctx.banner('ENRAGED!', 'bad'); sfx.rage(); }
-  if (rep.fighters?.some((f) => f.lastStand)) { ctx.banner('LAST STAND', 'bad'); sfx.rage(); }
 }
 
 async function act(cmd) {

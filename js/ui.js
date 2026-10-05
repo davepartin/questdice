@@ -595,7 +595,6 @@ async function lockParty() {
   if (rep.fighters.some((f) => f.taken > 0)) { sfx.hurt(); shake(0.8); }
   if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); }
-  if (rep.fighters.some((f) => f.lastStand)) { banner('LAST STAND', 'bad'); sfx.rage(); }
   await sleep(rep.raged.length || rep.staggered.length ? 900 : 640);
   S.busy = false; S.sel.clear(); S.focus = null;
   if (b.outcome === 'victory') showVictory();
@@ -623,11 +622,10 @@ async function lockIn() {
   else if (rep.acts.some((a) => a.d > 0 || a.mag > 0)) { sfx.block(); floater(hpEl, 'Blocked!', 'block'); }
   if (rep.absorbed > 0 && rep.taken > 0) floater(hpEl, `🛡 ${rep.absorbed}`, 'block');
   if (rep.healed) { sfx.heal(); floater(hpEl, `+${rep.healed}`, 'heal'); }
-  if (rep.lastStand) { banner('LAST STAND', 'bad'); sfx.rage(); }
   if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); shake(1.6); }
   if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.acts.some((a) => a.v === 'charge' && !a.cancelled)) sfx.windup();
-  await sleep(rep.lastStand || rep.raged.length || rep.staggered.length ? 1100 : 800);
+  await sleep(rep.raged.length || rep.staggered.length ? 1100 : 800);
   S.busy = false; S.sel.clear(); S.focus = null;
   if (b.outcome === 'victory') showVictory(); else if (b.outcome === 'defeat') defeat(false); else renderReset();
 }
