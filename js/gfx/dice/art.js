@@ -99,8 +99,8 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
   };
   const ox = FH - 0.16; // icon column offset
   const wL = weaponIcon(weaponIds?.NW || 'sword'); const wR = weaponIcon(weaponIds?.NE || 'sword');
-  iconAt('helmet', 0, -ox + 0.0, 0.25); iconAt('boots', 0, ox, 0.25);
-  iconAt('gauntlet', -ox, 0, 0.27, false); iconAt('gauntlet', ox, 0, 0.27, true);
+  iconAt('helmet', 0, -ox + 0.0, 0.31); iconAt('boots', 0, ox, 0.31);
+  iconAt('gauntlet', -ox, 0, 0.34, false); iconAt('gauntlet', ox, 0, 0.34, true);
   iconAt(wL, -ox, -pitch, 0.3, false); iconAt(wR, ox, -pitch, 0.3, true);
   iconAt('mend', -ox, pitch, 0.24, false, null, '#4fe69a'); iconAt('spark', ox, pitch, 0.24, false, null, '#ffd23d');
 

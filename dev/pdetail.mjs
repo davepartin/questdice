@@ -11,7 +11,7 @@ await p.evaluate((cls) => { const { S, E, showBoard } = window.QD; const h = E.n
 await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
-await pump(3); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(5);
+await pump(3); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(9);
 await p.evaluate(() => { window.QD.S.battle.magic = 8; window.QD.B3.renderShape(); }); await pump(0.5);
 await p.evaluate(() => document.querySelector('.b3-powers')?.click()); await pump(0.5); await shot('1-sheet');
 await p.evaluate(() => document.querySelector('.bcard')?.click()); await pump(0.5); await shot('2-detail');

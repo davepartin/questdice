@@ -109,6 +109,8 @@ function buildHud() {
   hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
+  hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
+  hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
@@ -117,11 +119,11 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock, hud.sheet, hud.info, hud.coach);
+  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.dock, hud.sheet, hud.info, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, Math.round(hud.plates.getBoundingClientRect().bottom + 4));
-    B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
+    B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`); B.root.style.setProperty('--plates-b', `${Math.round(hud.plates.getBoundingClientRect().bottom + 6)}px`);
     sizePlates();
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
     fitTray();
@@ -140,20 +142,27 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
   const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
   const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
-  const HALF = 2.0; const NEAR = 2.55; const need = 40; // px kept above the board for the monsters
-  let best = null;
-  for (let tilt = 0; tilt <= 0.56; tilt += 0.04) {
+  const HALF = 2.0; const EDGE = 2.1; const need = 34; // the dice rows span about +-2.1; the altar frame beyond that may slide under the totals
+  dir.tilt = 0; const r0 = dir.resolve('battle'); const d0 = r0.pos.clone().sub(r0.look); const p0 = Math.asin(d0.y / d0.length());
+  const fits = (tilt) => {
     dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
     const pt = (x, y, z) => { v.set(x, y, z).multiply(obj.scale).add(obj.position).project(c); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H - sh]; };
-    for (let k = 1.7; k >= 0.3; k -= 0.03) {
+    for (let k = 1.9; k >= 0.3; k -= 0.03) {
       obj.scale.setScalar(k * B.trayBase);
-      const nl = pt(-HALF, 0.5, NEAR); const nr = pt(HALF, 0.5, NEAR); const far = pt(0, 0.5, -NEAR);
-      if (nr[0] - nl[0] > W * 0.97 || nl[1] > dockTop - 4 || far[1] < stripBottom + need) continue;
-      if (!best || k > best.k + 0.001) best = { k, tilt }; break;
+      const nl = pt(-HALF, 0.5, EDGE); const nr = pt(HALF, 0.5, EDGE); const far = pt(0, 0.5, -EDGE);
+      if (nr[0] - nl[0] > W * 0.97 || nl[1] > dockTop + 6 || far[1] < stripBottom + need) continue;
+      return k;
     }
+    return 0.3;
+  };
+  // look down on the board: about 70 degrees; only lower the camera if the board would otherwise be too small
+  let best = null;
+  for (const deg of [70, 66, 62, 58, 54, 50, 46, 42]) {
+    const tilt = p0 - (deg * Math.PI) / 180; const k = fits(tilt);
+    if (!best || k > best.k + 0.001) best = { k, tilt, deg };
+    if (k >= 0.85) { best = { k, tilt, deg }; break; }
   }
-  best = best || { k: 0.3, tilt: 0.56 };
-  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k;
+  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k; B.trayDeg = best.deg;
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -179,6 +188,8 @@ function updateHero() {
   HK.countTo(r.mn, b.magic, { from: prev, dur: 320 });
   if (b.magic !== prev) HK.replay(r.mn, 'pop');
   HK.setGems(r.gems, b.magic);
+  const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
+  const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
 }
 
 function addPlate(e) {
@@ -244,7 +255,7 @@ function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 // Phone: the monsters' stat plates are a fixed strip under the hero panel (scrolls sideways with many foes) so the dice own the screen.
 // Tap a plate or a monster to choose a target.
 function stripPlates() {
-  const hud = B.hud; const hb = landscape() ? 64 : hud.hero.getBoundingClientRect().bottom;
+  const hud = B.hud; const hb = landscape() ? 64 : hud.top.getBoundingClientRect().bottom;
   hud.plates.style.top = `${Math.round(hb + 6)}px`;
   let tgt = null;
   for (const e of B.b.enemies) {
@@ -422,22 +433,20 @@ function clearDock() {
   B.hud.caption.replaceChildren();
 }
 const UTIL = [
-  { id: 'u:heart', name: 'Turn the heart', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
-  { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal ${D.HEAL_AMOUNT} health right now.` },
-  { id: 'u:bigheal', name: 'Big heal', kind: 'util', cost: E.BIG_HEAL.cost, fx: { heal: E.BIG_HEAL.hp }, text: `Save up ${E.BIG_HEAL.cost} magic and heal ${E.BIG_HEAL.hp} health, once per battle.` },
+  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
+  { id: 'u:heal', name: 'Heal', kind: 'util', cost: E.BIG_HEAL.cost, fx: { heal: E.BIG_HEAL.hp }, text: `Save up ${E.BIG_HEAL.cost} magic and heal ${E.BIG_HEAL.hp} health, once per battle.` },
 ];
-const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
+const utilCost = (u) => u.cost;
 function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
   if (!shape) why = 'Roll your dice first. You use powers while you shape the roll.';
   else if (u.id === 'u:heart') why = b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
-  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
   else if (b.used.bigheal) why = 'Already used this battle.'; else if (b.hp >= b.maxHp) why = 'You are at full health.'; else if (b.magic < cost) why = `Needs ${cost} magic. You have ${b.magic}.`;
   return { cost, why };
 }
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
-  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (b.used.bigheal ? 'USED' : 'ONCE') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (us.why) el.classList.add('is-off'); return el; });
+  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:heal' ? (b.used.bigheal ? 'USED' : 'ONCE') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (u.id === 'u:heart') { const art = el.querySelector('.bc-art'); if (art) { art.replaceChildren(HK.icon('heart')); art.classList.add('heart-art'); } } if (us.why) el.classList.add('is-off'); return el; });
   return [...E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
@@ -498,8 +507,8 @@ function showPowerDetail(id) {
 function showUtilDetail(id) {
   const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
-  const uses = id === 'u:bigheal' ? 'Once per battle.' : 'Any time you are shaping a roll, as often as you can pay.';
-  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.BIG_HEAL.hp} health for ${cost} magic, once. A better rate than the small heal, but you have to save up for it.`;
+  const uses = id === 'u:heal' ? 'Once per battle.' : 'Any time you are shaping a roll, as often as you can pay.';
+  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : `Heals ${E.BIG_HEAL.hp} health for ${cost} magic, once per battle. You have to save up for it, so use it when it counts.`;
   const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
@@ -508,7 +517,7 @@ function showUtilDetail(id) {
     why ? h('p', { class: 'pd-why' }, why) : null,
     h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'),
       ...(id === 'u:heart' ? [nudgeBtn(-1, 'Turn down'), nudgeBtn(1, 'Turn up')]
-        : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, `Use · ${cost} magic`)])));
+        : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); doBigHeal(); } }, `Use · ${cost} magic`)])));
   B.hud.info.classList.add('open'); sfx.select();
 }
 function doBigHeal() {
@@ -526,7 +535,7 @@ const powersBtn = () => {
   const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && b.magic >= k.cost; }).length;
   const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && b.magic >= k.cost);
   return h('button', { type: 'button', class: `b3-powers ${superReady ? 'super' : ''}`, 'aria-label': `Magical powers. ${ready} ready.`, onclick: () => togglePowers() },
-    h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Powers'), ready ? h('i', { class: 'bp-n' }, String(ready)) : null);
+    h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers'), ready ? h('i', { class: 'bp-n' }, String(ready)) : null);
 };
 
 export function renderReset() {
@@ -554,7 +563,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -590,7 +599,7 @@ function rerollText(info) {
   const ord = info.kind === 'free' ? `${D.RULES.free + D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.free}` : info.kind === 'paid' ? `${D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.paid}` : 'free card';
   const base = info.kind === 'paid' ? 'Magic reroll' : 'Reroll';
   if (n) return { label: `${base} ${n}`, sub: info.kind === 'paid' ? [`${ord} · `, HK.costGem(cost)] : ord };
-  return { label: base, sub: info.kind === 'paid' ? [`${ord} · `, HK.costGem(1), ' a die'] : ord };
+  return { label: base, sub: info.kind === 'paid' ? [`tap dice · ${ord} · `, HK.costGem(1), ' each'] : `tap dice · ${ord}` };
 }
 export function renderShape() {
   if (B.ended) return;
@@ -626,9 +635,9 @@ export function renderShape() {
   B.hud.bar.replaceChildren(...[
     straight,
     h('div', { class: 'b3-acts b3-acts3' },
-      HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: `${rr.label}` }),
+      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
       powersBtn(),
-      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, aria: 'Lock in your dice and fight' }))].filter(Boolean));
+      HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || E.rerollInfo(b).kind === 'none', cls: 'blue', aria: `${rr.label}` }))].filter(Boolean));
 }
 
 function onPick(slot) {

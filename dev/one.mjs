@@ -10,7 +10,7 @@ await p.evaluate(() => { const { S, E, showBoard } = window.QD; const h = E.newH
 await pump(1);
 await p.evaluate((en) => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = en; window.QD.startQuest(q); }, enemies);
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
-await pump(2); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4);
+await pump(3); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(9);
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}.png` });
-console.log(JSON.stringify(await p.evaluate(() => ({ plates: document.querySelector('.b3-plates')?.getBoundingClientRect().bottom, dock: document.querySelector('.b3-dock')?.getBoundingClientRect().top, tiles: document.querySelector('.b3-dock .fs')?.getBoundingClientRect().height, trayK: window.QD.B3.battleState?.trayK }))));
+console.log(JSON.stringify(await p.evaluate(() => ({ plates: document.querySelector('.b3-plates')?.getBoundingClientRect().bottom, dock: document.querySelector('.b3-dock')?.getBoundingClientRect().top, tiles: document.querySelector('.b3-dock .fs')?.getBoundingClientRect().height, deg: window.QD.B3.battleState?.trayDeg, k: window.QD.B3.battleState?.trayK }))));
 console.log(problems.join('|') || 'ok'); await b.close();

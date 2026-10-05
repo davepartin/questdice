@@ -26,10 +26,10 @@ const SVG = {
   bow: 'M74 2 C14 18 14 82 74 98 L72 92 C28 76 28 24 72 8 Z M72 6 H76 V94 H72 Z M18 48 H92 V53 H18 Z M96 50 L82 40 V60 Z M18 44 L10 40 V60 L18 56 Z',
   staff: 'M47 36 H53 V100 H47 Z M50 4 A15 15 0 1 1 49.9 4 Z M30 30 C26 16 36 4 42 2 C32 12 34 24 42 30 Z M70 30 C74 16 64 4 58 2 C68 12 66 24 58 30 Z',
   bracer: 'M22 6 H78 L86 32 H14 Z M12 38 H88 L80 66 H20 Z M20 72 H80 L84 94 H16 Z',
-  helmet: 'M14 56 C14 22 32 6 50 6 C68 6 86 22 86 56 V90 H66 V74 H34 V90 H14 Z M32 44 H68 V56 H32 Z',
-  boots: 'M26 6 H58 V48 C58 56 64 60 78 64 C92 68 96 76 96 86 V94 H14 V72 C14 62 26 56 26 46 Z',
+  helmet: 'M12 92 V48 C12 22 29 5 50 5 C71 5 88 22 88 48 V92 H67 V78 H33 V92 Z M24 38 H76 V50 H24 Z M45 50 H55 V70 H45 Z M47 -1 H53 V6 H47 Z',
+  boots: 'M24 4 H60 V16 H24 Z M24 19 H60 V46 C60 55 66 59 80 63 C93 67 97 75 97 82 H12 V68 C12 60 24 55 24 46 Z M10 85 H98 V96 H10 Z',
   heart: 'M50 94 C8 62 0 36 18 18 C32 4 48 12 50 28 C52 12 68 4 82 18 C100 36 92 62 50 94 Z',
-  gauntlet: 'M20 48 H78 V92 H20 Z M20 48 V32 C20 24 34 24 34 32 V40 C34 24 48 20 48 32 V38 C48 24 62 22 62 34 V40 C62 28 78 28 78 40 V48 Z M78 60 C92 56 98 66 90 76 L78 78 Z',
+  gauntlet: 'M20 96 V64 H78 V96 Z M20 62 V40 C20 31 32 31 32 40 V30 C32 21 44 21 44 30 V27 C44 18 56 18 56 27 V32 C56 24 68 24 68 34 V62 Z M70 50 C84 44 95 55 87 67 L70 70 Z M33 42 H34.6 V58 H33 Z M45 32 H46.6 V58 H45 Z M57 36 H58.6 V58 H57 Z',
   skull: 'M50 4 C24 4 12 22 12 42 C12 54 18 60 24 64 V82 H38 V74 H44 V82 H56 V74 H62 V82 H76 V64 C82 60 88 54 88 42 C88 22 76 4 50 4 Z',
   fist: 'M20 48 H78 V92 H20 Z M22 48 V34 C22 26 34 26 34 34 V42 C34 26 48 22 48 34 V40 C48 26 62 24 62 36 V42 C62 30 78 30 78 42 V50 Z',
 };
@@ -39,7 +39,7 @@ export function iconPath(name) {
   return paths.get(name);
 }
 export const hasIcon = (n) => !!SVG[n];
-const evenodd = new Set(['helmet', 'coin', 'shield']);
+const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
 export function drawIcon(ctx, name, x, y, size, { stroke = 0 } = {}) {
   ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(s, s); ctx.translate(-50, -50);
@@ -88,7 +88,7 @@ const DIGITS = {
   1: 'M12 26 L28 9 V71 M12 71 H44',
   2: 'M9 24 C9 5 41 5 41 24 C41 40 12 52 9 71 H43',
   3: 'M9 17 C14 5 41 6 41 23 C41 34 31 38 21 38 C33 38 43 44 43 55 C43 74 14 78 7 62',
-  4: 'M34 71 V9 L8 52 H46',
+  4: 'M40 72 V8 M40 20 L4 57 H50',
   5: 'M40 9 H14 L11 36 C22 30 43 34 43 53 C43 74 13 77 7 62',
   6: 'M38 12 C20 14 8 30 8 50 C8 64 15 72 26 72 C37 72 43 63 43 53 C43 43 36 36 26 36 C18 36 10 41 8 50',
   7: 'M7 11 H43 L21 71',

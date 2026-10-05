@@ -409,7 +409,7 @@ body.in-battle .chrome { z-index: 40; }
 
 /* PHONE: monster stats are one strip under the hero panel; the 3D scene below it is small; the dice take the rest */
 @media (max-aspect-ratio: 5/4) {
-  .b3-plates { inset: auto; left: 0; right: 0; top: 7rem; display: flex; gap: .4rem; overflow-x: auto; overflow-y: hidden; padding: .15rem calc(.6rem + var(--safe-l)) .25rem calc(.6rem + var(--safe-r)); pointer-events: auto; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .b3-plates { inset: auto; left: 0; right: 0; top: calc(3.9rem + var(--safe-t)); display: flex; gap: .4rem; overflow-x: auto; overflow-y: hidden; padding: .15rem calc(.6rem + var(--safe-l)) .25rem calc(.6rem + var(--safe-r)); pointer-events: auto; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
   .b3-plates::-webkit-scrollbar { display: none; }
   .b3-leaders { display: none; }
   .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
@@ -509,3 +509,35 @@ body.in-battle .chrome { z-index: 40; }
 .b3-bar .b3-acts3 { flex: 1 0 100%; display: flex; gap: .45rem; margin: 0; } .b3-acts3 > * { flex: 1 1 0; min-width: 0; min-height: 3.6rem; }
 .b3-acts3 .b3-powers { border-radius: .8rem; justify-content: center; padding: .3rem .4rem; gap: .35rem; font-size: .78rem; } .b3-acts3 .b3-powers .bp-n { top: -.45rem; right: -.2rem; }
 .b3-acts3 .hb-cta, .b3-acts3 .hb-reroll, .b3-acts3 .hb-ghost { min-height: 3.6rem; } .b3-acts3.reset .hb-cta { flex: 2 1 0; }
+
+/* phones: your health is a thermometer down the left edge of the board and your magic a chip on the right (no top bar) */
+.b3-therm, .b3-magchip { display: none; }
+@media (max-aspect-ratio: 5/4) {
+  .b3-hero { display: none; }
+  .b3-therm { position: absolute; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: .25rem; left: calc(.25rem + var(--safe-l)); top: var(--plates-b, 9rem); bottom: calc(var(--dock-top, 12rem) + .6rem); width: 1.5rem; pointer-events: none; }
+  .b3-therm .th-n { font-family: var(--disp); font-weight: 800; font-size: .78rem; color: #fff; text-shadow: 0 1px 3px #000; }
+  .b3-therm .th-bar { position: relative; flex: 1; width: .85rem; border-radius: .5rem; background: rgba(8,6,14,.7); box-shadow: inset 0 0 0 1.5px rgba(255,226,170,.45), 0 2px 8px rgba(0,0,0,.5); overflow: hidden; }
+  .b3-therm .th-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: linear-gradient(0deg, #ff7a2a, #ffb04a); transition: height .4s; border-radius: .5rem; }
+  .b3-therm.low .th-fill { background: linear-gradient(0deg, #e02a2a, #ff6a4a); animation: thLow 1s ease-in-out infinite; }
+  .b3-therm .th-h { color: #ff8a7a; width: 1.1rem; height: 1.1rem; display: grid; place-items: center; } .b3-therm .th-h svg { width: 100%; height: 100%; }
+  .b3-therm.ouch { animation: b3ouch .5s; } .b3-therm.mend { animation: b3mend .7s; }
+  .b3-magchip { position: absolute; z-index: 4; display: inline-flex; align-items: center; gap: .25rem; right: calc(.3rem + var(--safe-r)); top: var(--plates-b, 9rem); padding: .15rem .45rem; border-radius: 999px; background: rgba(12,8,24,.78); box-shadow: inset 0 0 0 1.5px rgba(190,140,255,.6); color: #d9b8ff; font-family: var(--disp); font-weight: 800; font-size: .9rem; pointer-events: none; }
+  .b3-magchip svg { width: .9rem; height: .9rem; }
+}
+@keyframes thLow { 50% { opacity: .6; } }
+
+/* bottom bar: Lock in is a small square on the left (hard to hit by accident), Powers in the middle, the big blue Roll / Reroll button on the right */
+.b3-acts3 { align-items: stretch; }
+.b3-acts3 .hb-cta.sq, .b3-acts3 .hb-cta#b3-lock { flex: 0 0 4.6rem; min-width: 4.6rem; flex-direction: column; gap: .15rem; padding: .3rem .2rem; text-align: center; justify-content: center; }
+.b3-acts3 .sq .hb-tx { text-align: center; } .b3-acts3 .sq .hb-tx b { font-size: .68rem; letter-spacing: .06em; white-space: nowrap; overflow: visible; max-width: none; }
+.b3-acts3 .sq .hb-ic, .b3-acts3 .sq svg { width: 1.5rem; height: 1.5rem; }
+.b3-acts3 .blue { flex: 1.5 1 0; background: linear-gradient(180deg, #4cb4ff, #1f6fe0) !important; border-color: #a8d8ff !important; color: #fff !important; box-shadow: 0 6px 18px rgba(30,110,230,.4), inset 0 1px 0 rgba(255,255,255,.4) !important; }
+.b3-acts3 .blue .hb-tx b, .b3-acts3 .blue .hb-tx small { color: #fff; text-shadow: 0 1px 2px rgba(0,30,90,.6); }
+.b3-acts3 .blue:disabled { filter: grayscale(.8) brightness(.7); box-shadow: none !important; }
+.b3-acts3.reset .hb-cta.blue { flex: 1.5 1 0; }
+
+/* Powers button: a purple triangle in a white circle; the heart power wears a red heart */
+.b3-powers .bp-tri { background: #fff !important; color: #7a2ae0 !important; box-shadow: 0 0 0 2px rgba(255,255,255,.55), 0 2px 8px rgba(40,0,90,.5) !important; }
+.b3-powers .bp-tri svg { color: #7a2ae0; fill: #7a2ae0; }
+.b3-acts3 .b3-powers b { font-size: .72rem; line-height: 1.05; text-align: left; white-space: normal; }
+.bcard .bc-art.heart-art { color: #ff3b4a; } .bcard .bc-art.heart-art svg { color: #ff3b4a; fill: #ff3b4a; filter: drop-shadow(0 0 4px rgba(255,60,80,.6)); }
