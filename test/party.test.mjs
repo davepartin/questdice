@@ -297,3 +297,18 @@ test('party initiative: the round plays high to low, ties go to the heroes, roun
   const r1 = resolveParty(b1);
   assert.equal(r1.init.forced, true); assert.equal(r1.order.at(-1).kind, 'foe'); assert.equal(r1.order[0].kind, 'hero');
 });
+
+test('a monster killed before its initiative does nothing; one that is faster still lands its blow', () => {
+  let slow = 0; let fast = 0;
+  for (let seed = 1; seed < 80; seed++) {
+    const c = company();
+    const b = partyFight(c.members, strike, 1); b.round = 2; b.rng = makeRng(seed);
+    b.fighters[0].mods.atk = 80; b.fighters[0].board.S.v = 3;
+    const e = b.enemies[0]; const rep = resolveParty(b);
+    const foe = rep.init.foes[0].init;
+    const takenTotal = rep.fighters.reduce((a, f) => a + f.taken, 0);
+    if (foe <= 3) { slow++; assert.equal(rep.acts.length, 0); assert.equal(takenTotal, 0); assert.equal(e.hp, 0); } // dead before it could act
+    else { fast++; assert.ok(rep.acts.length === 1); assert.ok(takenTotal > 0); } // beat the hero's initiative, so it swings first
+  }
+  assert.ok(slow > 5 && fast > 5);
+});
