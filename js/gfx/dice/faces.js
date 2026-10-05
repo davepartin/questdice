@@ -69,6 +69,7 @@ export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
     const p = starPath(8, 50, fat ? 36 : 26); if (stroke) { ctx.lineWidth = stroke / k; ctx.lineJoin = 'round'; ctx.stroke(p); } ctx.fill(p); ctx.restore();
   } else drawIcon(ctx, ic, x, y, size, { stroke });
 }
+function pointIn(pts, x, y) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { if ((pts[i][1] > y) !== (pts[j][1] > y) && x < ((pts[j][0] - pts[i][0]) * (y - pts[i][1])) / (pts[j][1] - pts[i][1]) + pts[i][0]) c = !c; } return c; }
 // distance from point to the polygon's nearest edge (px)
 function edgeGap(pts, x, y) {
   let m = 1e9;
@@ -467,8 +468,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
       const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.5 : 0.56;
       list.slice(0, ordered.length).forEach((kind, i) => {
-        const v = ordered[i].p; const bx = v[0] * kk; const by = v[1] * kk;
-        const r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); const sz = r * 2.0; const ow = Math.max(2, sz * 0.13);
+        const v = ordered[i].p; let bx = v[0] * kk; let by = v[1] * kk;
+        let r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); let sz = r * 1.8; let ow = Math.max(2, sz * 0.13);
+        // the whole symbol (its bounding box plus outline) must sit inside the face: nudge toward the centre and shrink until it does
+        const inside = () => { const h2 = sz / 2 + ow * 1.2; return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => { const x = bx + a * h2; const y = by + b * h2; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
+        for (let it = 0; it < 40 && !inside(); it++) { bx *= 0.97; by *= 0.97; sz *= 0.97; ow = Math.max(2, sz * 0.13); }
         layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
         layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
       });
