@@ -49,12 +49,20 @@ export const available = () => !!world.available;
 
 export function layout(spec) {
   const d = world.director; if (!d) return;
+  d.scrollPx = 0;
   if (!spec) { d.layout = null; d.applySafe(); return; }
   d.layout = (W, H) => {
     const port = d.portrait > 0.5; const s = (port ? spec.port : spec.land) || {};
-    return { left: (s.left || 0) * W, right: (s.right || 0) * W, top: (s.top || 0) * H, bottom: (s.bottom || 0) * H };
+    // phones: the whole screen scrolls, so the picture rides up with the page (the view window moves down by the scroll)
+    return { left: (s.left || 0) * W, right: (s.right || 0) * W, top: (s.top || 0) * H, bottom: (s.bottom || 0) * H + (port ? 2 * (d.scrollPx || 0) : 0) };
   };
   d.applySafe();
+}
+// Phones: the page scrolled `px`; carry the 3D picture (and the Back button over it) up with it.
+export function scrolled(px = 0) {
+  const d = world.director; if (!d) return;
+  const port = d.portrait > 0.5; d.scrollPx = port ? px : 0; d.applySafe();
+  const v = document.querySelector('.sx-viewport'); if (v) v.style.transform = port && px ? `translateY(${-px}px)` : '';
 }
 
 // Arena: rebuilt only when the place changes (or after a battle left the stage in another mode).

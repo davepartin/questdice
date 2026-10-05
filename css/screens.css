@@ -274,10 +274,13 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-title-brand { padding: 2.2rem 0 0; align-items: center; } .sx-logo { grid-template-columns: auto auto; justify-content: center; gap: .2rem .8rem; } .lg-dice { width: 4.2rem; } .lg-word span { font-size: clamp(2.5rem, 13vw, 3.5rem); } .lg-tag { justify-content: center; margin-top: .6rem; letter-spacing: .2em; font-size: .64rem; } .lg-tag i { max-width: 2rem; }
   .sx-title-menu { justify-content: flex-end; padding: 0; max-height: calc(var(--sheet) * 100dvh); align-self: end; }
   .sx-plaque { min-height: 3.5rem; padding: .45rem .7rem .45rem .55rem; } .pl-ico { width: 2.3rem; height: 2.3rem; } .sx-plaque.is-primary { min-height: 4.2rem; } .sx-plaque.is-primary .pl-copy b { font-size: 1.15rem; } .pl-copy b { font-size: 1rem; } .sx-plaque:hover:not(:disabled) { transform: none; }
-  .sx-viewport { right: 0; bottom: calc(var(--sheet) * 100dvh); }
-  .sx-side { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-width: none; min-width: 0; height: calc(var(--sheet) * 100dvh); padding: 1.1rem 1rem calc(.8rem + var(--safe-b)); border-radius: 20px 20px 0 0; border-top: 1px solid var(--hair); box-shadow: 0 -20px 60px rgba(0, 0, 0, .55); gap: .7rem; }
-  .sx-side::before { position: absolute; width: auto; min-width: 0; left: 0; right: 0; top: 0; bottom: 0; border-radius: 20px 20px 0 0; background: linear-gradient(180deg, rgba(14, 14, 26, .86), rgba(5, 6, 12, .95)); -webkit-mask-image: none; mask-image: none; position: fixed; top: auto; height: calc(var(--sheet) * 100dvh); }
-  .sx-side::after { content: ''; position: sticky; order: -1; display: block; width: 2.6rem; height: 4px; border-radius: 4px; background: rgba(255, 214, 140, .35); margin: -.4rem auto -.1rem; flex: none; }
+  /* one tall scroll: the first screenful is the 3D picture (a transparent spacer), then the sheet, all moving together */
+  .sx-screen { --gap: calc((1 - var(--sheet)) * 100dvh); }
+  .sx-side { left: 0; right: 0; top: 0; bottom: 0; width: auto; max-width: none; min-width: 0; height: auto; padding: 0 1rem calc(1rem + var(--safe-b)); border-radius: 0; border: 0; box-shadow: none; gap: .7rem; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+    background: linear-gradient(180deg, transparent 0, transparent var(--gap), rgba(14, 14, 26, .9) calc(var(--gap) + 1.6rem), rgba(5, 6, 12, .96) calc(var(--gap) + 20rem)); background-attachment: local; }
+  .sx-side::before { content: ''; order: -2; position: static; display: block; flex: none; width: auto; min-width: 0; height: var(--gap); background: none; -webkit-mask-image: none; mask-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; }
+  .sx-side::after { content: ''; order: -1; display: block; width: 2.6rem; height: 4px; border-radius: 4px; background: rgba(255, 214, 140, .35); margin: .5rem auto .1rem; flex: none; }
+  .sx-viewport { right: 0; bottom: calc(var(--sheet) * 100dvh); will-change: transform; z-index: 3; } .sx-viewport .sx-hint { display: none; }
   .sx-sidehead .sx-eye { display: none; } .sx-h1 { font-size: 1.5rem; }
   .sx-hint { bottom: calc(var(--sheet) * 100dvh + .6rem); }
   .ci-meters { gap: .5rem; } .ci-head h2 { font-size: 1.4rem; } .ci-head p { font-size: .84rem; }
