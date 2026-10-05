@@ -41,7 +41,7 @@ function plaque({ eyebrow: eb, title, sub, icon, onclick, tone = '', primary = f
 const coin = (n, cls = '') => h('span', { class: `sx-coin ${cls}` }, ico('coin'), h('b', {}, String(n)));
 function pips(n, max, cls = '') { return h('span', { class: `sx-pips ${cls}`, 'aria-label': `${n} of ${max}` }, Array.from({ length: max }, (_, i) => h('i', { class: i < n ? 'on' : '' }))); }
 function fxItems(fx) {
-  const map = { atk: ['sword', 'c-atk'], pierce: ['pierce', 'c-pierce'], block: ['shield', 'c-block'], heal: ['plus', 'c-heal'], magic: ['spark', 'c-magic'], stagger: ['stagger', 'c-gold'], loot: ['coin', 'c-gold'], gold: ['coin', 'c-gold'], weaken: ['skull', 'c-dim'], free: ['reroll', 'c-block'] };
+  const map = { atk: ['burst', 'c-atk'], pierce: ['pierce', 'c-pierce'], block: ['shield', 'c-block'], heal: ['plus', 'c-heal'], magic: ['spark', 'c-magic'], stagger: ['stagger', 'c-gold'], loot: ['coin', 'c-gold'], gold: ['coin', 'c-gold'], weaken: ['skull', 'c-dim'], free: ['reroll', 'c-block'] };
   return Object.entries(fx).map(([k, v]) => { const [ic, c] = map[k] || ['spark', '']; return h('span', { class: `fx ${c}` }, ico(ic), String(v)); });
 }
 // An image that shimmers until a (queued) portrait arrives.
