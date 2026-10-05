@@ -402,3 +402,7 @@ body.in-battle .chrome { z-index: 40; }
   .b3-hero .hb-hp { flex: 1; min-width: 0; } .b3 .b3-hero .hb-hp.hbar { height: .95rem; } .b3-hero .hb-hp .hbar-num { font-size: .62rem; }
   .b3-hero .hb-magic { flex: none; gap: .2rem; } .b3-hero .hb-magic > :last-child { display: none; }
 }
+
+/* the reroll button's second line ("up to 3 · 1 each") must never wrap on a narrow phone */
+.hb-reroll .hb-tx small { white-space: nowrap; font-size: .64rem; display: inline-flex; align-items: center; gap: .2rem; }
+.hb-reroll .hb-tx { min-width: 0; }

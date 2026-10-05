@@ -1,0 +1,27 @@
+// New-player path: title -> create hero -> board -> reload -> continue (save/load).
+import { chromium } from 'playwright-core';
+import fs from 'node:fs';
+import path from 'node:path';
+const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith('--') ? [...a, [v.slice(2), all[i + 1] && !all[i + 1].startsWith('--') ? all[i + 1] : true]] : a), []));
+const port = args.port || 8135; const out = args.out || 'shots/newgame'; fs.mkdirSync(out, { recursive: true });
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+const p = await ctx.newPage(); const problems = [];
+p.on('console', (m) => { if (m.type() === 'error' && !/ERR_CERT|Failed to load resource/.test(m.text())) problems.push(`[console] ${m.text()}`); });
+p.on('pageerror', (e) => problems.push(`[pageerror] ${e.message}`));
+const open = async () => { await p.goto(`http://localhost:${port}/?debug&manual&q=low`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 }); };
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+const shot = async (n) => { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: path.join(out, `${n}.png`) }); };
+const texts = () => p.evaluate(() => [...document.querySelectorAll('button')].filter((x) => x.offsetParent).map((x) => x.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean));
+await open(); await pump(2); await shot('title'); console.log('title buttons', JSON.stringify(await texts()));
+await p.evaluate(() => { const bt = [...document.querySelectorAll('button')].find((x) => /new|begin|start|play/i.test(x.textContent)); bt?.click(); }); await pump(2); await shot('after-title-click');
+console.log('next buttons', JSON.stringify(await texts()));
+console.log('inputs', await p.evaluate(() => [...document.querySelectorAll('input')].map((i) => `${i.type}:${i.placeholder || i.name || i.id}`)));
+await p.evaluate(() => { const ins = [...document.querySelectorAll('input')]; const set = (i, v) => { i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })); }; if (ins[0]) set(ins[0], 'Brigid'); if (ins[1]) set(ins[1], 'hunter22'); });
+await p.evaluate(() => { [...document.querySelectorAll('button')].find((x) => /ranger/i.test(x.textContent))?.click(); }); await pump(1);
+await p.evaluate(() => { [...document.querySelectorAll('button')].find((x) => /begin the campaign/i.test(x.textContent))?.click(); }); await pump(3); await shot('after-create');
+console.log('after create buttons', JSON.stringify(await texts()));
+console.log('hero', await p.evaluate(() => { const h = window.QD.S.hero; return h && `${h.name} ${h.cls} L${h.level}`; }));
+await open(); await pump(2); await shot('reloaded'); console.log('after reload buttons', JSON.stringify(await texts()));
+console.log(problems.length ? `PROBLEMS:\n${[...new Set(problems)].join('\n')}` : 'no console errors');
+await b.close();
