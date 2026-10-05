@@ -11,23 +11,22 @@ const FONT = "'Archivo Black','Oxanium','Arial Black','Impact','Liberation Sans'
 const STYLES = {
   dmg:    { grad: ['#fffbe0', '#ffd34a', '#ff6a1c', '#c4120c'], stroke: '#1c0204', glow: '#ff3a14', hdr: 1.35, size: 1, rise: 1.0, life: 1.15 },
   crit:   { grad: ['#ffffff', '#fff1a0', '#ffb81c', '#e05a00'], stroke: '#3a0a00', glow: '#ffc233', hdr: 1.9, size: 1.45, rise: 1.25, life: 1.6, burst: true },
-  pierce: { grad: ['#fbf3ff', '#d2aaff', '#9b5cff', '#4a1fa8'], stroke: '#10052a', glow: '#b07dff', hdr: 1.5, size: 1.1, rise: 1.0, life: 1.2, icon: 'diamond' },
+  pierce: { grad: ['#fff4e0', '#ffc47a', '#ff8a1a', '#a84a00'], stroke: '#2a1000', glow: '#ff8a1a', hdr: 1.5, size: 1.1, rise: 1.0, life: 1.2, icon: 'arrow' },
   block:  { grad: ['#f2fcff', '#8fd8ff', '#3a98ff', '#1650b0'], stroke: '#03112a', glow: '#4db4ff', hdr: 1.4, size: 1.0, rise: 0.85, life: 1.1, icon: 'shield' },
   heal:   { grad: ['#f4ffe6', '#9af0b0', '#35d27c', '#0f8a48'], stroke: '#03200f', glow: '#45e08b', hdr: 1.4, size: 1.0, rise: 1.1, life: 1.25, icon: 'cross' },
-  magic:  { grad: ['#fffde8', '#ffeb7a', '#ffc21f', '#cf8200'], stroke: '#2a1c00', glow: '#ffd23d', hdr: 1.5, size: 0.95, rise: 1.0, life: 1.2, icon: 'star' },
-  gold:   { grad: ['#fff8d0', '#ffd96a', '#f0b43c', '#a8761c'], stroke: '#2a1800', glow: '#f0b43c', hdr: 1.4, size: 0.9, rise: 1.0, life: 1.2, icon: 'coin' },
+  magic:  { grad: ['#f6eaff', '#c995ff', '#a64dff', '#5b1fb0'], stroke: '#10052a', glow: '#a64dff', hdr: 1.5, size: 0.95, rise: 1.0, life: 1.2, icon: 'tri' },
+  gold:   { grad: ['#fffbd8', '#ffe45a', '#ffd21a', '#b88a00'], stroke: '#2a1800', glow: '#ffd21a', hdr: 1.4, size: 0.9, rise: 1.0, life: 1.2, icon: 'coin' },
   miss:   { grad: ['#f2f4f8', '#b8bfcc', '#8890a2', '#5a6272'], stroke: '#0a0c12', glow: '#8890a2', hdr: 1.0, size: 0.8, rise: 0.6, life: 0.9, italic: true },
 };
 
 function drawIcon(g, kind, cx, cy, r, st) {
   g.save();
   g.lineJoin = 'round';
-  const path = { diamond: () => diamondPath(g, cx, cy, r * 1.05, 0.7), cross: () => crossPath(g, cx, cy, r, 0.4), star: () => star4Path(g, cx, cy, r * 1.15, 0.28), shield: () => shieldPath(g, cx, cy, r * 0.95), coin: () => { g.beginPath(); g.arc(cx, cy, r * 0.95, 0, Math.PI * 2); } }[kind];
+  const path = { arrow: () => { const k = r * 1.1; g.beginPath(); g.moveTo(cx, cy - k); g.lineTo(cx + k * 0.95, cy - k * 0.05); g.lineTo(cx + k * 0.35, cy - k * 0.05); g.lineTo(cx + k * 0.35, cy + k); g.lineTo(cx - k * 0.35, cy + k); g.lineTo(cx - k * 0.35, cy - k * 0.05); g.lineTo(cx - k * 0.95, cy - k * 0.05); g.closePath(); }, tri: () => { const k = r * 1.15; g.beginPath(); g.moveTo(cx, cy - k); g.lineTo(cx + k, cy + k * 0.8); g.lineTo(cx - k, cy + k * 0.8); g.closePath(); }, diamond: () => diamondPath(g, cx, cy, r * 1.05, 0.7), cross: () => crossPath(g, cx, cy, r, 0.4), star: () => star4Path(g, cx, cy, r * 1.15, 0.28), shield: () => shieldPath(g, cx, cy, r * 0.95), coin: () => { g.beginPath(); g.arc(cx, cy, r * 0.95, 0, Math.PI * 2); } }[kind];
   path();
   g.shadowColor = st.glow; g.shadowBlur = r * 0.55; g.lineWidth = r * 0.5; g.strokeStyle = st.stroke; g.stroke(); g.shadowBlur = 0;
   const gr = g.createLinearGradient(0, cy - r, 0, cy + r); gr.addColorStop(0, st.grad[0]); gr.addColorStop(0.45, st.grad[1]); gr.addColorStop(1, st.grad[2]);
   g.fillStyle = gr; path(); g.fill();
-  if (kind === 'coin') { g.lineWidth = r * 0.12; g.strokeStyle = 'rgba(120,70,10,.8)'; g.beginPath(); g.arc(cx, cy, r * 0.62, 0, Math.PI * 2); g.stroke(); }
   g.restore();
 }
 

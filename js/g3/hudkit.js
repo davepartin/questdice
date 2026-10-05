@@ -8,12 +8,12 @@ import * as E from '../engine.js';
 // 24x24 grid. Classes: f = duotone body, s = stroke only, h = highlight, p = solid.
 const R45 = 'transform="rotate(45 12 12)"';
 const ICONS = {
-  atk: `<g ${R45}><path class="f" d="M12 1.6 L14.2 4.6 V15 H9.8 V4.6 Z"/><path class="h" d="M12 4.5 V13.5"/><path class="f" d="M6.6 15 H17.4 V17.3 H6.6 Z"/><path class="s" d="M12 17.3 V20.6"/><circle class="p" cx="12" cy="21.6" r="1.3"/></g>`,
+  atk: '<path class="p" d="M12.00 1.00 L14.37 6.27 L19.78 4.22 L17.73 9.63 L23.00 12.00 L17.73 14.37 L19.78 19.78 L14.37 17.73 L12.00 23.00 L9.63 17.73 L4.22 19.78 L6.27 14.37 L1.00 12.00 L6.27 9.63 L4.22 4.22 L9.63 6.27 Z"/><path class="h" d="M12 4.5 V8"/>',
   block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/><path class="h" d="M12 5 V19.6 M7.2 8.5 V12.5"/>',
-  pierce: '<path class="f" d="M12 1.8 L19.4 12 L12 22.2 L4.6 12 Z"/><path class="h" d="M12 4.6 V19.4 M7.4 12 H16.6"/>',
-  magic: '<path class="f" d="M12 1.8 L14.5 9.5 L22.2 12 L14.5 14.5 L12 22.2 L9.5 14.5 L1.8 12 L9.5 9.5 Z"/><path class="h" d="M12 5.5 V8.5"/>',
+  pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/><path class="h" d="M12 5.2 V15"/>',
+  magic: '<path class="p" d="M12 2.4 L22.2 20.6 H1.8 Z"/><path class="h" d="M12 6.8 L16.2 14.6"/>',
   heal: '<path class="f" d="M9.4 3 H14.6 V9.4 H21 V14.6 H14.6 V21 H9.4 V14.6 H3 V9.4 H9.4 Z"/><path class="h" d="M10.6 5 V10.6 H5"/>',
-  gold: '<circle class="f" cx="12" cy="12" r="9.2"/><circle class="s" cx="12" cy="12" r="6" style="stroke-opacity:.55"/><path class="s" d="M12 8.4 V15.6 M9.8 10.2 H13.4 C14.4 10.2 14.4 12 13.4 12 H10.6 C9.6 12 9.6 13.8 10.6 13.8 H14.2" style="stroke-width:1.2"/>',
+  gold: '<circle class="p" cx="12" cy="12" r="9.6"/><path class="h" d="M7 8.6 A6 6 0 0 1 11 6"/>',
   stagger: '<path class="f" d="M12 1.2 L14 8 L21 5 L16.5 11 L23 14 L15.6 15.2 L16 22.6 L12 17.4 L8 22.6 L8.4 15.2 L1 14 L7.5 11 L3 5 L10 8 Z"/>',
   bind: '<g transform="rotate(-40 12 12)"><rect class="s" x="1.8" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/><rect class="s" x="10.6" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/></g>',
   drain: '<path class="f" d="M15.4 2.6 A9.6 9.6 0 1 0 21.6 15.8 A7.6 7.6 0 0 1 15.4 2.6 Z"/><path class="h" d="M11 5.4 A7 7 0 0 0 8 12"/>',

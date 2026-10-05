@@ -6,7 +6,7 @@ import { Particles } from '../particles.js';
 import { sprite } from '../tex.js';
 import { mulberry32 } from '../noise.js';
 
-export const PULSE_COLORS = { gold: 0xf0b43c, pierce: 0xb07dff, magic: 0xffd23d, atk: 0xff4d4d, block: 0x4db4ff, heal: 0x45e08b };
+export const PULSE_COLORS = { gold: 0xffd21a, pierce: 0xff8a1a, magic: 0xa64dff, atk: 0xff3b3b, block: 0x3aa4ff, heal: 0x38e87a };
 export const NAMED = { red: 0xff4d4d, blue: 0x4db4ff, gold: 0xffd23d, yellow: 0xffd23d, purple: 0xb07dff, green: 0x45e08b, white: 0xfff4d8 };
 const colorOf = (c, d = 0xffd23d) => (typeof c === 'number' ? c : NAMED[c] ?? PULSE_COLORS[c] ?? (typeof c === 'string' ? new THREE.Color(c).getHex() : d));
 

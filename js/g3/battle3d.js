@@ -493,7 +493,7 @@ function doCard(id) {
   if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
-  const fx = k.fx; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xb07dff : fx.atk ? 0xff5a4a : 0xffd23d;
+  const fx = k.fx; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xff8a1a : fx.atk ? 0xff5a4a : 0xa64dff;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
   if (fx.heal) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${fx.heal}`, 'heal'); }
@@ -539,10 +539,10 @@ async function lockInInner() {
   const hitP = new Promise((res) => bw.hero.play(heroClip, { fade: 0.08, onEvent: (en) => { if (en === 'hit' || en === 'release') res(); } }).then(res));
   await race(hitP, 1.6);
   const chest = tAct.worldAnchor('chest'); const headP = tAct.worldAnchor('head');
-  const hcol = rep.T.pierce > 0 && rep.T.atk === 0 ? 0xb07dff : 0xff5a4a;
+  const hcol = rep.T.pierce > 0 && rep.T.atk === 0 ? 0xff8a1a : 0xff5a4a;
   if (rep.dealt > 0 || rep.guarded > 0) {
     if (ranged) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'arrow', color: 0xffe0a0 });
-    else if (caster) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xb07dff });
+    else if (caster) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
     else vfx('slash', chest, { color: hcol, kind: 'blade' });
   }
   if (rep.guarded > 0 && tEnemy?.intent?.v === 'guard') { vfx('shield', chest, { color: 0xffd23d, dur: 0.8 }); number(headP, `Guarded ${rep.guarded}`, 'block'); sfx.block(); }
@@ -550,7 +550,7 @@ async function lockInInner() {
     sfx.hit(); stage.shake(0.5 + Math.min(0.5, rep.dealt / 40)); bw.director.punch(Math.min(1, 0.5 + rep.dealt / 30));
     vfx('impact', chest, { kind: 'flesh', power: Math.min(1, rep.dealt / 25) });
     tAct.hurt(); number(headP, `−${rep.dealt}`, 'dmg');
-    if (rep.T.pierce) { vfx('beam', bw.hero.worldAnchor('chest'), chest, { color: 0xb07dff, dur: 0.25 }); number(headP.clone().add(new THREE.Vector3(0.5, 0.35, 0)), `◆ ${rep.T.pierce}`, 'pierce'); }
+    if (rep.T.pierce) { vfx('beam', bw.hero.worldAnchor('chest'), chest, { color: 0xff8a1a, dur: 0.25 }); number(headP.clone().add(new THREE.Vector3(0.5, 0.35, 0)), `◆ ${rep.T.pierce}`, 'pierce'); }
   } else if (!rep.guarded) { number(headP, '0', 'meh'); sfx.block(); }
   if (tEnemy) updatePlate(tEnemy);
   for (const e of b.enemies) updatePlate(e);
@@ -581,7 +581,7 @@ async function lockInInner() {
     if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }
     if (dmgVerb && (act.v === 'pierce' || a.has('throw') && /Bomb|Ember|Bone/.test(act.name))) {
       await race(ev2, 1.2);
-      await vfx('projectile', a.worldAnchor('handR'), heroChest, { kind: /Bomb/.test(act.name) ? 'bomb' : /Ember|Bolt/.test(act.name) ? 'fireball' : act.v === 'pierce' ? 'pierce' : 'bone', color: act.v === 'pierce' ? 0xb07dff : 0xff8a2a });
+      await vfx('projectile', a.worldAnchor('handR'), heroChest, { kind: /Bomb/.test(act.name) ? 'bomb' : /Ember|Bolt/.test(act.name) ? 'fireball' : act.v === 'pierce' ? 'pierce' : 'bone', color: act.v === 'pierce' ? 0xff8a1a : 0xff8a2a });
     } else await race(ev2, 1.4);
     if (dmgVerb) {
       if (act.net > 0) {
