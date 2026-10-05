@@ -411,7 +411,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
 
   // ================================================================ anchors, IK, build
   contactShadow(a, 0.5, 0.5, 0.6);
-  a.root.scale.setScalar(1.3); a.height = 1.25 * 1.3; a.radius = 0.65;
+  a.root.scale.setScalar(1.45); a.height = 1.25 * 1.45; a.radius = 0.65;
   a.anchor('head', head, 0, 0.25, 0.05);
   a.anchor('chest', chest, 0, 0.06, 0.15);
   a.anchor('feet', a.model, 0, 0.02, 0);

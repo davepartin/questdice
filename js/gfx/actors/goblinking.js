@@ -21,7 +21,8 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   const HQ = quality === 'high' ? 1 : quality === 'med' ? 0.6 : 0.35;
   const R = mkRng(seed * 4231 + 5);
   const rr = (a, b) => a + (b - a) * R();
-  const a = new Actor({ name: 'goblinking', height: 2.3, radius: 0.9 });
+  const a = new Actor({ name: 'goblinking', height: 2.9, radius: 1.1 });
+  a.model.scale.setScalar(1.25);
   const ABS = {};
   const jt = (name, parent, x, y, z) => { const p = parent ? ABS[parent.name] : [0, 0, 0]; ABS[name] = [x, y, z]; return a.joint(name, parent || a.model, x - p[0], y - p[1], z - p[2]); };
 
@@ -54,15 +55,15 @@ export function create({ seed = 1, quality = 'high' } = {}) {
 
   // ---------------------------------------------------------------- materials
   const skin = mat('kingHideB', { vertexColors: true, roughness: 0.85 });
-  const gold = solid(0xe6b84e, { rough: 0.35, metal: 0.9, vertexColors: true, side: THREE.DoubleSide, envMapIntensity: 0.75 });
+  const gold = solid(0xd8c88e, { rough: 0.42, metal: 0.9, vertexColors: true, side: THREE.DoubleSide, envMapIntensity: 0.55 });
   const goldR = gold; // one gold material (draw-call budget)
   const leather = mat('leatherDark', { vertexColors: true, side: THREE.DoubleSide });
   const fur = mat('fur', { vertexColors: true, side: THREE.DoubleSide, tint: 0xcdb88a, dark: 0x5a4a30 });
   const bone = mat('bone', { vertexColors: true });
   const clay = mat('dirt', { vertexColors: true, tint: 0x8a4a2a, dark: 0x2a1408 });
-  const ruby = gem(0xff1030, { emissive: 0xff0820, ei: 2.2 });
-  const emer = gem(0x10c850, { emissive: 0x10c060, ei: 1.8 });
-  const rubyS = gem(0xff1030, { emissive: 0xff1030, ei: 1.6 });
+  const ruby = gem(0xff1030, { emissive: 0xff0820, ei: 1.4 });
+  const emer = gem(0x10c850, { emissive: 0x10c060, ei: 1.1 });
+  const rubyS = gem(0xff1030, { emissive: 0xff1030, ei: 1.0 });
   const eyeM = solid(0xffd040, { rough: 0.3, emissive: 0xffb000, ei: 2.2 });
   const pupilM = solid(0x0a0604, { rough: 0.3 });
   const mouthM = solid(0x3a0f12, { rough: 0.5 });
@@ -250,13 +251,13 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     for (let k = 0; k < 4; k++) M.strand(J['sh' + S], gold, [sx * (0.58 + k * 0.05), 1.1 + R() * 0.03, -0.1], [0, -1, 0], 0.06, 0.008, { rings: 1, radial: 4, r1: 0.5, color: 0xffe9a0 });
   }
   // pool of hot light on the ground (cheap additive decal; the ruby is the only real light)
-  { const pool = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: sprite('glow'), color: new THREE.Color(1.0, 0.55, 0.15).multiplyScalar(0.55), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.03; pool.userData.noActorClone = true; pool.material.userData.noActorClone = true; pool.castShadow = false; pool.receiveShadow = false; a.root.add(pool); a.userData.pool = pool; }
+  { const pool = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: sprite('glow'), color: new THREE.Color(1.0, 0.55, 0.15).multiplyScalar(0.3), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.03; pool.userData.noActorClone = true; pool.material.userData.noActorClone = true; pool.castShadow = false; pool.receiveShadow = false; a.root.add(pool); a.userData.pool = pool; }
 
   M.build();
   // scepter light (the only light) + anchors
   const rubyLight = new THREE.PointLight(0xff2030, 0.6, 2.2, 2); rubyLight.position.set(0, 1.62, 0.04); weapon.add(rubyLight);
   const flame = new Puffs(quality === 'low' ? 40 : 90); a.root.add(flame.mesh);
-  a.anchor('head', head, 0, 0.62, 0); a.anchor('chest', chest, 0, 0.1, 0.5); a.anchor('feet', a.model, 0, 0.02, 0); a.anchor('mouth', jaw, 0, -0.04, 0.28);
+  a.anchor('head', head, 0, 1.1, 0); a.anchor('chest', chest, 0, 0.1, 0.5); a.anchor('feet', a.model, 0, 0.02, 0); a.anchor('mouth', jaw, 0, -0.04, 0.28);
   a.anchor('handR', J.handR, 0, 0, 0); a.anchor('handL', J.handL, 0, 0, 0); a.anchor('weapon', weapon, 0, 1.62, 0.04); a.anchor('crown', crown, 0, 0.2, 0); a.anchor('ruby', weapon, 0, 1.62, 0.04);
 
   // ================================================================ POSES & CLIPS
@@ -349,9 +350,9 @@ export function create({ seed = 1, quality = 'high' } = {}) {
     // rage: skin flush, eyes, ruby
     own_.skin.color.copy(own_.skinC).lerp(new THREE.Color(1.6, 0.55, 0.4), rk * 0.55);
     own_.eye.emissive.setRGB(1, 0.78 - 0.7 * rk, 0.15 - 0.1 * rk); own_.eye.emissiveIntensity = 0.9 + fury * 1.8 + (rk > 0.1 ? (1.2 * rk + 0.4 * Math.sin(t * 9) * rk) : 0); own_.eye.userData.emissiveI0 = own_.eye.emissiveIntensity; own_.eye.userData.emissive0.copy(own_.eye.emissive);
-    const rb = 0.9 + ruby0 * 2.6 + rk * 3 + 0.35 * Math.sin(t * 6.3); own_.ruby.emissiveIntensity = rb; own_.ruby.userData.emissiveI0 = rb; own_.ruby.emissive.setRGB(1, 0.05 + rk * 0.8, 0.1 + rk * 0.75); own_.ruby.userData.emissive0.copy(own_.ruby.emissive);
+    const rb = 0.8 + ruby0 * 1.4 + rk * 1.6 + 0.35 * Math.sin(t * 6.3); own_.ruby.emissiveIntensity = rb; own_.ruby.userData.emissiveI0 = rb; own_.ruby.emissive.setRGB(1, 0.05 + rk * 0.8, 0.1 + rk * 0.75); own_.ruby.userData.emissive0.copy(own_.ruby.emissive);
     rubyLight.intensity = 0.3 + ruby0 * 0.9 + rk * 1.2 + 0.12 * Math.sin(t * 11.3) + 0.08 * Math.sin(t * 5.1); rubyLight.color.setRGB(1, 0.15 + rk * 0.6, 0.2 + rk * 0.55);
-    if (a.userData.pool) { a.userData.pool.material.color.setRGB(1.0, 0.5 - rk * 0.25, 0.14).multiplyScalar(0.45 + rk * 0.35 + 0.05 * Math.sin(t * 3)); a.userData.pool.visible = a.alive; }
+    if (a.userData.pool) { a.userData.pool.material.color.setRGB(1.0, 0.5 - rk * 0.25, 0.14).multiplyScalar(0.18 + rk * 0.2 + 0.03 * Math.sin(t * 3)); a.userData.pool.visible = a.alive; }
     // shield aura
     shield.visible = shieldK > 0.01; if (shield.visible) { shield.scale.setScalar(0.6 + 0.4 * shieldK); shieldM.opacity = shieldK * (0.16 + 0.05 * Math.sin(t * 6)); shield.rotation.z = t * 0.4; shield.userData.t = t; }
     // cloak physics (fixed substeps)
@@ -377,6 +378,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
-  addRim(a, { col: 0x30e8c0, k: 1.0, pow: 2.4, skip: (m) => m === own(a, eyeM) || m === own(a, ruby) });
+  addRim(a, { col: 0x30e8c0, k: 0.8, pow: 2.2, skip: (m) => m === own(a, eyeM) || m === own(a, ruby) });
   return a;
 }

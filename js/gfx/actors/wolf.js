@@ -71,7 +71,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     if (o.fx) c.lerp(tc.setRGB(0.12, 0.1, 0.09), sstep(0.35, 0.8, nz) * o.fx);        // dark leg fronts
     if (o.dark) c.multiplyScalar(o.dark);
     c.multiplyScalar(0.8 + 0.4 * n2);
-    c.r *= c.r; c.g *= c.g; c.b *= c.b; c.multiplyScalar(1.1);          // sRGB-ish authoring -> linear vertex colours
+    c.r *= c.r; c.g *= c.g; c.b *= c.b; c.multiplyScalar(1.7);          // sRGB-ish authoring -> linear vertex colours
   };
 
   // ------------------------------------------------------------------ torso: deep narrow chest, tucked waist, sloped back

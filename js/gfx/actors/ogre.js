@@ -429,7 +429,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   // ================================================================ ANCHORS
   a.anchor('nostrilL', head, 0.045, C[1] - 0.12 - ABS.head[1], C[2] + 0.43 - ABS.head[2]);
   a.anchor('nostrilR', head, -0.045, C[1] - 0.12 - ABS.head[1], C[2] + 0.43 - ABS.head[2]);
-  a.anchor('head', head, 0, 0.62, 0.0); a.anchor('chest', chest, 0, 0.1, 0.55); a.anchor('feet', a.model, 0, 0.02, 0);
+  a.anchor('head', head, 0, 0.85, 0.0); a.anchor('chest', chest, 0, 0.1, 0.55); a.anchor('feet', a.model, 0, 0.02, 0);
   a.anchor('mouth', jaw, 0, -0.05, 0.38); a.anchor('handR', J.handR, 0, 0, 0); a.anchor('handL', J.handL, 0, 0, 0);
   a.anchor('weapon', club, 0, 1.55, 0);
   a.anchor('shoulderL', J.shL, 0, 0.2, 0); a.anchor('shoulderR', J.shR, 0, 0.2, 0);
@@ -456,7 +456,7 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   const mk = (base, o) => ({ ...base, ...o });
   const STAND = {
-    spine: [5, 0, 0], chest: [3, 0, 0], neck: [-8, 0, 0], head: [5, 0, 0], jaw: [7, 0, 0], 'hips.p': [0, -0.04, 0],
+    spine: [3, 0, 0], chest: [2, 0, 0], neck: [-14, 0, 0], head: [-3, 0, 0], jaw: [7, 0, 0], 'hips.p': [0, -0.04, 0],
     hipL: [-3, 0, 2], hipR: [-3, 0, -2], knL: [6, 0, 0], knR: [6, 0, 0], ftL: [-3, 0, 0], ftR: [-3, 0, 0],
     shL: [-6, 0, 5], elL: [-12, 0, 0], shR: [-20, 0, -7], elR: [-50, 0, 0], clubPitch: [38, 0, 0],
     browL: [0, 0, 8], browR: [0, 0, -8], lidL: [0.25, 0, 0], lidR: [0.25, 0, 0], 'ch2.p': [-0.28, 0.2, 0.0],
@@ -656,6 +656,6 @@ export function create({ seed = 1, quality = 'high' } = {}) {
   };
   withEvents(a);
   a.finalize();
-  addRim(a, { col: 0xff5a30, k: 0.55, pow: 2.6, skip: (m) => m === own(a, eyeM) }); // warm fake-SSS rim
+  addRim(a, { col: 0xff6a3a, k: 0.9, pow: 2.4, skip: (m) => m === own(a, eyeM) }); // warm fake-SSS rim
   return a;
 }

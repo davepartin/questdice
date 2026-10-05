@@ -14,7 +14,7 @@ async function tryLoad(path) {
 // Staging marks (metres). See docs/GFX.md and the arena brief.
 export const MARKS = {
   hero: [-2.5, 0, 1.5],
-  tray: [0, 0.7, 5.2],
+  tray: [0, 0.7, 4.5],
   big: [0.5, 0, -0.9],
 };
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest

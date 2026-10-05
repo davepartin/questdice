@@ -35,8 +35,8 @@ function mats() {
   const W0 = { tint: 0xffffff };
   MATS.cloth = mat('cloth', { ...vc, ...W0, dark: 0xb4b4b4, metalness: 0, repeat: 3 });
   MATS.leather = mat('leather', { ...vc, ...W0, dark: 0x8c8c8c, metalness: 0.05, roughness: 0.85, repeat: 7 });
-  MATS.metal = mat('iron', { ...vc, ...W0, color: 0xece8e0, dark: 0xc0c4cc, metalness: 0.92, roughness: 0.68, envMapIntensity: 1.6, repeat: 2.5, normalScale: 0.6 });
-  MATS.dark = mat('iron', { ...vc, ...W0, color: 0xd8d6d4, dark: 0x8c8c94, metalness: 0.9, roughness: 0.75, envMapIntensity: 1.5, repeat: 2.5, normalScale: 0.8 });
+  MATS.metal = mat('iron', { ...vc, ...W0, color: 0xece8e0, dark: 0xc0c4cc, metalness: 0.74, roughness: 0.55, envMapIntensity: 1.5, repeat: 2.5, normalScale: 0.6 });
+  MATS.dark = mat('iron', { ...vc, ...W0, color: 0xd8d6d4, dark: 0x8c8c94, metalness: 0.7, roughness: 0.62, envMapIntensity: 1.4, repeat: 2.5, normalScale: 0.8 });
   MATS.skin = mat('skinHuman', { ...vc, ...W0, dark: 0xf0f0f0, metalness: 0, roughness: 0.78, repeat: 14, normalScale: 0.15 });
   MATS.hair = mat('furDark', { ...vc, ...W0, dark: 0x909090, metalness: 0, roughness: 0.85, repeat: 2 });
   MATS.eye = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
