@@ -454,7 +454,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- corner symbols: the face's meaning (attack / defense), its resource, and any tier bonuses
     if (CN) {
       const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
-      const list = ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text], 'boost'] : (spec.corners || [typeSym, spec.pip].filter(Boolean));
+      const list = ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text]] : (spec.corners || [typeSym, spec.pip].filter(Boolean));
       // corners ordered clockwise from the top-most
       const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
