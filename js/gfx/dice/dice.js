@@ -44,14 +44,10 @@ export function dieSpecs(hero) {
     } else if (role === 'heart') {
       theme = 'heart';
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
-    } else if (role === 'feet') {
-      // the feet die is the initiative die: just its number and a boot (it pays no resource)
-      theme = 'bone';
-      for (let v = 1; v <= sides; v++) labels.push({ text: String(v), corners: ['boot'] });
     } else {
       theme = role === 'hand' ? 'smoke' : 'bone';
       // what the face pays is what it shows: one symbol per point of gold / pierce / magic
-      const size = role === 'hand' ? hero.strength[slot] : 4;
+      const size = role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4;
       for (let v = 1; v <= sides; v++) {
         const pip = PIP_BY_NUM[v] || null; const n = pip ? D.RES_BY_SIZE[size]?.[v - 1] || 1 : 0;
         labels.push({ text: String(v), pip, corners: pip ? Array(n).fill(pip) : undefined });

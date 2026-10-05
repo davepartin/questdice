@@ -159,7 +159,7 @@ function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
   const r = B.hr = {
     name: h('b', { class: 'hb-name' }, hero.name), cls: h('small', { class: 'hb-cls' }, cls.name),
-    hp: HK.bar({ cls: 'hb-hp', seg: 8 }), mn: h('b', { class: 'hb-mn' }, '0'), pend: h('span', { class: 'hb-pend', title: 'Magic this roll will bank when you lock in' }), gems: HK.gems(D.MAGIC_CAP),
+    hp: HK.bar({ cls: 'hb-hp', seg: 8 }), mn: h('b', { class: 'hb-mn' }, '0'), gems: HK.gems(D.MAGIC_CAP),
   };
   r.hp.prepend(h('span', { class: 'hb-heart' }, HK.icon('heart')));
   return h('div', { class: 'b3-hero' },
@@ -167,7 +167,7 @@ function buildHero() {
     h('div', { class: 'hb-main' },
       h('div', { class: 'hb-id' }, r.name, r.cls),
       r.hp,
-      h('div', { class: 'hb-magic', title: 'Magic' }, h('span', { class: 'hb-mi' }, HK.icon('magic')), r.mn, r.pend, r.gems)));
+      h('div', { class: 'hb-magic', title: 'Magic' }, h('span', { class: 'hb-mi' }, HK.icon('magic')), r.mn, r.gems)));
 }
 function updateHero() {
   const b = B.b; const r = B.hr; if (!r) return;
@@ -480,7 +480,6 @@ export function renderReset() {
   bw.hero.play('idle', { fade: 0.3 });
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
-  if (B.hr?.pend) B.hr.pend.textContent = '';
   B.hud.forecast.classList.add('idle');
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
@@ -536,7 +535,6 @@ export function renderShape() {
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.classList.remove('idle');
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
-  if (B.hr?.pend) B.hr.pend.textContent = ev.magic > 0 ? `+${ev.magic} when you lock in` : '';
   HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
   // one card at a time, in teaching order: read the tiles, then target, triple, paid rerolls, lock in

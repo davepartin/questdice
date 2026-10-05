@@ -158,8 +158,8 @@ export function rollBoard(hero, rng) {
   return board;
 }
 
-// The feet die is the INITIATIVE die (its number decides who acts first); head and hands are the dice that pay resources.
-const PAYERS = CARDINALS.filter((s) => s !== 'S');
+// The feet die pays symbols like the head and hands, and its number is also the INITIATIVE (who acts first).
+const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the feet number is ALSO the initiative
 // ------------------------------------------------------------------------------- evaluation
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 export function evaluate(hero, board, opts = {}) {
@@ -169,7 +169,7 @@ export function evaluate(hero, board, opts = {}) {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, stagger: 0,
     lanes: {}, offense3: false, defense3: false, straight: 0, straightBonus: 0, notes: [],
   };
-  const res = (slot) => RES_BY_SIZE[ROLE[slot] === 'hand' ? hero.strength[slot] : 4];
+  const res = (slot) => RES_BY_SIZE[ROLE[slot] === 'hand' ? hero.strength[slot] : ROLE[slot] === 'feet' ? feetSize(hero) : 4];
 
   // Universal number language on the four cardinal dice.
   for (const s of PAYERS) {

@@ -29,17 +29,17 @@ test('weapon face budgets: sum to 7, with documented exceptions', () => {
   }
 });
 
-test('universal number language on head and hands (feet are the initiative die)', () => {
+test('universal number language on head, hands and feet (the feet number is also initiative)', () => {
   const h = knight();
-  // head=1 loot, left hand=2 pierce, right hand=3 magic. Feet=4 pays nothing: it is initiative. heart 6 so no amp.
+  // head=1 loot, left hand=2 pierce, right hand=3 magic, feet=4 magic (and initiative 4). heart 6 so no amp.
   const ev = evaluate(h, board({ N: 1, W: 2, E: 3, S: 4, C: 6, NW: 1, NE: 1 }));
-  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 2); assert.equal(ev.init, 4);
+  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 3); assert.equal(ev.init, 4);
 });
 
 test('heart amplifies only matching cardinal dice', () => {
   const h = knight();
   const ev = evaluate(h, board({ N: 2, W: 2, E: 3, S: 2, C: 2 }));
-  assert.equal(ev.pierce, 2 * 2 + 2 * 2); // two paying 2s (head, left hand): 2 each, plus +2 amp each; the feet do not pay
+  assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s (head, left hand, feet): 2 each, plus +2 amp each
   assert.equal(ev.magic, 2);
 });
 

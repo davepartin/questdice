@@ -32,8 +32,7 @@ export function dieSpec(hero, slot, v) {
     else if (v === 5) { chip = '🛡 +4'; chipKind = 'c-block'; } else { chip = '⚔ +4'; chipKind = 'c-atk'; }
     return { main: String(v), tone: 'heart', chip, chipKind, blank: false };
   }
-  if (role === 'feet') return { main: String(v), tone: '', chip: `⚡ initiative ${v}`, chipKind: 'c-dim', blank: false };
-  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : 4];
+  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
   if (v === 1) { chip = `🪙 +${r[0]}`; chipKind = 'c-gold'; } else if (v === 2) { chip = `◆ +${r[1]}`; chipKind = 'c-pierce'; }
   else if (v === 3) { chip = `✦ +${r[2]}`; chipKind = 'c-magic'; } else if (v === 4) { chip = `✦ +${r[3]}`; chipKind = 'c-magic'; }
   return { main: String(v), tone: '', chip, chipKind, blank: false };
@@ -82,11 +81,11 @@ export function describeDie(hero, slot, v) {
     const t = ['Every other 1 you roll on head, hands and feet pays +2 🪙 extra.', 'Every other 2 you roll pierces +2 extra.', 'Every other 3 you roll gives +2 ✦ extra.', 'Every other 4 you roll gives +1 ✦ extra.', 'Your best BLUE lane gets +4 block.', 'Your best RED lane gets +4 attack.'][v - 1];
     return `Heart (d6) shows ${v}. ${t}`;
   }
-  if (role === 'feet') return `${name} (d${E.feetSize(hero)}) shows ${v}: your initiative. Each round every monster rolls its own die too (tap a monster twice to see it). A monster that rolls higher strikes before you; ties go to you. Round 1 is always yours. It still counts for triples and straights.`;
-  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : 4];
+  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
   const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to its lane. ` : `${name} (d4) shows ${v}. `;
   const eff = v === 1 ? `1 → +${r[0]} 🪙 gold.` : v === 2 ? `2 → +${r[1]} ◆ pierce.` : v === 3 ? `3 → +${r[2]} ✦ magic.` : v === 4 ? `4 → +${r[3]} ✦ magic.` : 'High numbers are pure power.';
-  return base + eff;
+  const ini = role === 'feet' ? ` It is also your initiative (${v}): each round every monster rolls its own die, a higher roll strikes first, ties go to you. Round 1 is always yours.` : '';
+  return base + eff + ini;
 }
 
 export function hpBar(cur, max, { cls = '', label = true } = {}) {
