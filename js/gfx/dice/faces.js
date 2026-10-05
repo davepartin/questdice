@@ -392,13 +392,13 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
 
     // ---- heart (clean): the boosted symbol fills the whole face in its own colour; the number sits on top
     if (heartBig) {
-      const kind = HEART_KIND[+spec.text]; const big = inR * 2.05;
+      const kind = HEART_KIND[+spec.text]; const big = inR * 1.72;
       layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
     }
     // ---- numeral / symbol
     const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
     const hasPip = !!spec.pip && !blank && !CN && !heartBig;
-    const numH = inR * nk * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const numH = inR * nk * (heartBig ? 0.72 : 1) * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
