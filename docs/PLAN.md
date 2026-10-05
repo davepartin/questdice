@@ -219,3 +219,4 @@ procedural Three.js), what is good, the realistic ceiling, and a verdict. Write 
 
 - **2026-10-05 (session 3, dice lighting):** clean dice are now mostly self-lit (`selfFlat` 0.85, low `bodyK`) so the arena's orange light and the tray's warm/blue lights cannot wash or tint them; tray key/rim lights are neutral white at half strength for this style (`neutralLight`, `light: 0.5`). Heart faces keep their saturated colours; the heal plus on the talent die stays green.
 - **2026-10-05:** heart die faces no longer carry a '+' (owner request); each face shows only the colour and the symbol of what it boosts.
+- **2026-10-05 (heart die v2):** in the clean style the heart die is a dark neutral cube whose face is mostly the boosted symbol (gold disc, orange arrow, purple triangle x2, blue shield, red burst) filling the face, with the white number on top. See heartBig in faces.js.

@@ -62,11 +62,11 @@ export function drawPip(ctx, kind, x, y, size) {
 export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
 const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend' };
-export function drawSym(ctx, kind, x, y, size, stroke = 0) {
+export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
   const ic = SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {
     ctx.save(); ctx.translate(x, y); const k = size / 100; ctx.scale(k, k); ctx.translate(-50, -50);
-    const p = starPath(8, 50, 26); if (stroke) { ctx.lineWidth = stroke / k; ctx.lineJoin = 'round'; ctx.stroke(p); } ctx.fill(p); ctx.restore();
+    const p = starPath(8, 50, fat ? 36 : 26); if (stroke) { ctx.lineWidth = stroke / k; ctx.lineJoin = 'round'; ctx.stroke(p); } ctx.fill(p); ctx.restore();
   } else drawIcon(ctx, ic, x, y, size, { stroke });
 }
 // distance from point to the polygon's nearest edge (px)
@@ -179,7 +179,7 @@ export const STYLES = {
 // CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
 // the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
 STYLES.clean = {
-  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.5, smoke: 0.44, heart: 0.36, amethyst: 0.62, weapon: 0.38 }, selfFlat: 0.85, selfK: 1.0, light: 0.5, neutralLight: true, swirl: 0, numScale: 1.12,
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.5, smoke: 0.44, heart: 0.3, amethyst: 0.62, weapon: 0.38 }, selfFlat: { bone: 0.85, smoke: 0.85, weapon: 0.85, amethyst: 0.85, heart: 0.95 }, selfK: 1.0, light: 0.5, neutralLight: true, swirl: 0, numScale: 1.12,
   wpn: {
     r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
     b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },
@@ -331,12 +331,13 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
 
     // ---- colours for this face
     const blank = !!spec.blank;
+    const heartBig = ST.clean && theme === 'heart' && !blank;
     let core; let mid; let edge; let rough = th.rough; const resin = blank ? 0 : 255;
     if (theme === 'weapon') {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (ST.clean && theme === 'heart') { const hc = new THREE.Color(HEART_FACE[+spec.text] || '#ffffff'); core = hc.clone().lerp(new THREE.Color('#ffffff'), 0.06).getStyle(); mid = hc.getStyle(); edge = hc.clone().multiplyScalar(0.55).getStyle(); } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (ST.clean && theme === 'heart') { core = '#2a2e3c'; mid = '#222634'; edge = '#12141c'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
@@ -389,9 +390,14 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { A: spec.tone === 'b' ? 'rgba(160,210,255,0.16)' : 'rgba(255,170,130,0.16)', H: 'rgb(112,112,112)' }, (c) => drawIcon(c, spec.wm, 0, inR * 0.02, inR * 1.7));
     }
 
+    // ---- heart (clean): the boosted symbol fills the whole face in its own colour; the number sits on top
+    if (heartBig) {
+      const kind = HEART_KIND[+spec.text]; const big = inR * 2.05;
+      layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
+    }
     // ---- numeral / symbol
-    const CN = ST.corners && !blank && spec.sym !== 'TALENT';
-    const hasPip = !!spec.pip && !blank && !CN;
+    const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
+    const hasPip = !!spec.pip && !blank && !CN && !heartBig;
     const numH = inR * nk * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
@@ -468,7 +474,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       });
     }
     // ---- colour badge (heart 5 / 6)
-    if (spec.mark && !CN) {
+    if (spec.mark && !CN && !heartBig) {
       const bs = inR * 0.4; const bx = 0; const by = inR * 0.68;
       const ic = spec.mark === 'atk' ? 'sword' : 'shield'; const cc = spec.mark === 'atk' ? '#b0141c' : '#1c58b8';
       layer(ctxs, { H: 'rgb(40,40,40)', A: 'rgba(0,0,0,0.85)', O: 'rgb(0,140,0)' }, (c) => drawIcon(c, ic, bx, by, bs * 1.2));
