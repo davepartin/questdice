@@ -202,41 +202,73 @@ export function drawDie(el) {
   let front = faces[0];
   for (const f of faces) if (f.n[2] > front.n[2]) front = f;
 
+  if (!spinning) {
+    const poly = front.pts.map(project);
+    drawToken(ctx, poly, face, edge, px);
+    paintFace(ctx, el, poly, face, ink, tone, px);
+    return;
+  }
+
   for (const f of faces) {
     const poly = f.pts.map(project);
     const lambert = Math.max(0, dot(f.n, light));
     const up = Math.max(0, -f.n[1]);
-    const side = mix(mix(face, 0.5, '#140c12'), up * 0.35, '#fff6e4');
+    const side = mix(mix(face, 0.45, '#140c12'), up * 0.4, '#fff6e4');
     trace(ctx, poly);
     ctx.lineJoin = 'round';
-    if (f === front) {
-      ctx.fillStyle = face;
-      ctx.fill();
-    } else {
-      ctx.fillStyle = mix(side, 1 - (0.35 + lambert * 0.65), '#10080c');
-      ctx.fill();
-      ctx.lineWidth = Math.max(1, px * 0.012);
-      ctx.strokeStyle = edge;
-      ctx.stroke();
-    }
-    if (f === front) {
-      gloss(ctx, poly);
-      trace(ctx, poly);
-      ctx.lineWidth = Math.max(1.4, px * 0.02);
-      ctx.strokeStyle = 'rgba(255,248,236,.78)';
-      ctx.stroke();
-      const c = centroid(poly);
-      const size = Math.min(spanOf(poly) * 0.46, faceSize(poly) * 1.35);
-      const label = (el.querySelector('.num')?.textContent || '').trim();
-      const chip = (el.querySelector('.chip')?.textContent || '').trim();
-      const dy = chip && chip !== 'blank' ? -size * 0.16 : 0;
-      drawMark(ctx, label || '–', c[0], c[1] + dy, size, ink, tone);
-      if (chip && chip !== 'blank') drawMark(ctx, chip, c[0], c[1] + size * 0.42, size * 0.34, mix(ink, 0.25, face), tone, spanOf(poly) * 0.85);
-      if (el.classList.contains('syn')) halo(ctx, poly, 'rgba(255,210,61,.95)', px);
-      else if (el.classList.contains('sel')) halo(ctx, poly, 'rgba(255,255,255,.9)', px);
-      else if (el.classList.contains('focus')) halo(ctx, poly, 'rgba(244,241,232,.55)', px);
-    }
+    ctx.fillStyle = f === front ? face : mix(side, 1 - (0.4 + lambert * 0.6), '#10080c');
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, px * 0.012);
+    ctx.strokeStyle = edge;
+    ctx.stroke();
+    if (f === front) paintFace(ctx, el, poly, face, ink, tone, px);
   }
+}
+
+function drawToken(ctx, poly, face, edge, px) {
+  const depth = Math.max(8, px * 0.078);
+  const back = poly.map((p) => [p[0] + depth * 0.22, p[1] + depth]);
+  const c = centroid(poly);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (let i = 0; i < poly.length; i++) {
+    const j = (i + 1) % poly.length;
+    const quad = [poly[i], poly[j], back[j], back[i]];
+    const midY = (poly[i][1] + poly[j][1]) / 2;
+    const midX = (poly[i][0] + poly[j][0]) / 2;
+    const lit = midY < c[1] - 1 || midX < c[0] - 1;
+    trace(ctx, quad);
+    ctx.fillStyle = lit ? mix(face, 0.5, '#fff8ee') : mix(face, 0.58, '#160a10');
+    ctx.fill();
+  }
+  trace(ctx, back);
+  ctx.lineWidth = Math.max(1, px * 0.01);
+  ctx.strokeStyle = edge;
+  ctx.stroke();
+  trace(ctx, poly);
+  ctx.fillStyle = face;
+  ctx.fill();
+  ctx.lineWidth = Math.max(3, px * 0.04);
+  ctx.strokeStyle = face;
+  ctx.stroke();
+  gloss(ctx, poly);
+  trace(ctx, poly);
+  ctx.lineWidth = Math.max(1.4, px * 0.018);
+  ctx.strokeStyle = 'rgba(255,250,242,.9)';
+  ctx.stroke();
+}
+
+function paintFace(ctx, el, poly, face, ink, tone, px) {
+  const c = centroid(poly);
+  const size = Math.min(spanOf(poly) * 0.5, faceSize(poly) * 1.45);
+  const label = (el.querySelector('.num')?.textContent || '').trim();
+  const chip = (el.querySelector('.chip')?.textContent || '').trim();
+  const dy = chip && chip !== 'blank' ? -size * 0.14 : 0;
+  drawMark(ctx, label || '–', c[0], c[1] + dy, size, ink, tone);
+  if (chip && chip !== 'blank') drawMark(ctx, chip, c[0], c[1] + size * 0.4, size * 0.32, mix(ink, 0.2, face), tone, spanOf(poly) * 0.9);
+  if (el.classList.contains('syn')) halo(ctx, poly, 'rgba(255,210,61,.95)', px);
+  else if (el.classList.contains('sel')) halo(ctx, poly, 'rgba(255,255,255,.9)', px);
+  else if (el.classList.contains('focus')) halo(ctx, poly, 'rgba(244,241,232,.55)', px);
 }
 
 function trace(ctx, poly) {
@@ -332,11 +364,17 @@ function drawMark(ctx, text, x, y, size, color, tone, maxW) {
       s *= 0.88;
       ctx.font = `800 ${s}px ${FONT}`;
     }
-    const shadow = tone === 'red' || tone === 'blue' || tone === 'sym' ? 'rgba(0,0,0,.55)' : 'rgba(40,22,8,.40)';
-    ctx.fillStyle = shadow;
-    ctx.fillText(text, s * 0.04, s * 0.08);
+    const lightInk = tone === 'red' || tone === 'blue' || tone === 'sym';
+    const shadow = lightInk ? 'rgba(0,0,0,.55)' : 'rgba(40,22,8,.45)';
+    ctx.lineWidth = Math.max(1, s * 0.07);
+    ctx.strokeStyle = shadow;
+    ctx.strokeText(text, s * 0.05, s * 0.09);
     ctx.fillStyle = color;
     ctx.fillText(text, 0, 0);
+    if (lightInk) {
+      ctx.fillStyle = 'rgba(255,255,255,.22)';
+      ctx.fillText(text, 0, -s * 0.035);
+    }
   }
   ctx.restore();
 }
