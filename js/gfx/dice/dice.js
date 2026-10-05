@@ -79,7 +79,7 @@ function makeMaterial(atlas, theme, quality) {
   const u = {
     uTime: { value: 0 }, uInner: { value: inn.k }, uInnerCol: { value: new THREE.Vector3(...inn.col) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
-    uSide: { value: 1 }, uSelf: { value: { weapon: 0.34, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2 }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
+    uSide: { value: 1 }, uSelf: { value: { weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2 }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
@@ -114,7 +114,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.
     vec3 tint = mix(uInnerCol, normalize(qAlb + 0.02) * 1.5, uInnerTint);
     qInner = tint * (v * 1.2 + 0.1 + 0.25 * (1.0 - qNV)) * uInner * qRes;
   }
-  totalEmissiveRadiance = (totalEmissiveRadiance + qInner + qAlb * uSelf * (0.4 + 0.6 * qRes)) * qDim + uFlash + uRim * pow(1.0 - qNV, 2.2);
+  totalEmissiveRadiance = (totalEmissiveRadiance + qInner + qAlb * uSelf * (0.75 + 0.25 * qRes)) * qDim + uFlash + uRim * pow(1.0 - qNV, 2.2);
 }`);
   };
   m.customProgramCacheKey = () => 'qdice-die-1';

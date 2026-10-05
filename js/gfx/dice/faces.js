@@ -112,8 +112,8 @@ export const THEMES = T;
 const WPN = {
   r: { core: '#e02a36', mid: '#8a0f1e', edge: '#150407', metal: ['#fffbe8', '#ffd96a', '#e0962a'], rim: '#3a0a10' },
   b: { core: '#2f8cf5', mid: '#124a9e', edge: '#040a18', metal: ['#ffffff', '#d4e8ff', '#8ab4e0'], rim: '#06142a' },
-  rBlank: { core: '#8a1626', mid: '#4a0a14', edge: '#0a0305' },
-  bBlank: { core: '#245a9a', mid: '#10305a', edge: '#03070d' },
+  rBlank: { core: '#b01a2c', mid: '#5a0c18', edge: '#0a0305' },
+  bBlank: { core: '#2a6cc0', mid: '#123a70', edge: '#03070d' },
 };
 
 // ------------------------------------------------------------------------------- atlas
