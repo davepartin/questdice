@@ -20,7 +20,7 @@ export function burntOrchard(c) {
   const { rng, B } = c;
   const ground = {
     height: hillsHeight({ seed: 3, amp: 1.6, freq: 0.03, backRise: 4.5, backStart: -42, sideRise: 3, sideStart: 16 }),
-    vcolor: vcolorFn(3, { dark: 0.38 }),
+    vcolor: vcolorFn(3, { dark: 0.45, tintVar: 0.32 }),
     layers: [
       { set: soilTex({ tint: 0x6a5238, dark: 0x1a1008, seed: 2, pebble: 0.6 }), scale: 0.3 },
       { kind: 'grass', tint: 0x4c4c28, dark: 0x12140a, scale: 0.42, size: 512, seed: 3, opts: { dry: 0.7, dryTint: 0x7a6a34 } },
@@ -114,6 +114,9 @@ export function burntOrchard(c) {
   // scorch marks and ash drifts around the field
   for (let i = 0; i < 12; i++) { const sx = rng() < 0.5 ? -1 : 1; c.scorches.push({ p: [sx * rr(rng, 4, 10), rr(rng, -6, 8)], s: [rr(rng, 1.8, 4.5), rr(rng, 1.5, 3.5)], rot: rng() * 6.28, a: rr(rng, 0.5, 1) }); }
   for (let i = 0; i < 5; i++) c.scorches.push({ p: [rr(rng, -4.8, 4.8), rr(rng, -4, 6.5)], s: [rr(rng, 1.2, 2.4), rr(rng, 1.0, 2.0)], rot: rng() * 6.28, a: 0.55 });
+  c.paths = [];
+  for (let i = 0; i < 9; i++) c.paths.push({ p: [rr(rng, -4.5, 4.5), -5 + i * 1.7], s: [rr(rng, 3, 6), rr(rng, 0.5, 1.1)], rot: 1.57 + rr(rng, -0.25, 0.25), a: rr(rng, 0.6, 1) });
+  for (let i = 0; i < 8; i++) c.scorches.push({ p: [rr(rng, -5, 5), rr(rng, -4, 7)], s: [rr(rng, 0.5, 1.4), rr(rng, 0.4, 1.1)], rot: rng() * 6, a: 0.6 });
   // puddles of ember-lit water
   c.puddles = [[-6.5, -0.5, 2.2], [7.2, 2.5, 1.8], [-8.5, 3.5, 1.4], [5.9, -3.2, 1.2], [-4.2, -4.8, 1.6], [3.5, 8.4, 1.5], [-12, -10, 3.4], [13, -9, 2.8]];
   c.puddleOpts = { deep: 0x140a0c, shallow: 0x3a2018, spark: 0xff7a30, tl: 0.06, tlCol: 0x120508, mirror: 0.12 };

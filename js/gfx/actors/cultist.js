@@ -222,7 +222,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     const below = wp.y; const above = 2.12 - wp.y;           // base touches the ground, tip at ~2.1 m
     const pts = []; const nPts = 16;
     for (let i = 0; i <= nPts; i++) { const t = i / nPts; const y = lerp(-below, above - 0.12, t); pts.push([0.018 * Math.sin(t * 7 + seed) + 0.01 * Math.sin(t * 17), y, 0.016 * Math.cos(t * 5.3 + 1) + 0.008 * Math.sin(t * 13)]); }
-    const geo = ropeGeo(pts, (t) => 0.021 * (0.8 + 0.5 * Math.sin(t * 40) * 0.12 + (t > 0.9 ? 0.4 * (t - 0.9) * 10 : 0)) * (1 - 0.15 * t), { segs: 80, radial: 8 });
+    const geo = ropeGeo(pts, (t) => 0.03 * (0.85 + 0.06 * Math.sin(t * 40) + (t > 0.9 ? 0.5 * (t - 0.9) * 10 : 0)) * (1 - 0.15 * t), { segs: 80, radial: 8 });
     paintGeo(geo, (x, y, z, c) => { const n = 0.5 + 0.5 * NZ.n3(x * 30, y * 20, z * 30); c.setScalar(0.55 + n * 0.5); });
     kit.add(staff, geo, wood, { ember: 0 });
     // knots and a bound-on charm
@@ -255,8 +255,8 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     g.setAttribute('color', new THREE.BufferAttribute(cl, 3)); g.translate(0, 0.11, 0);
     const m = new THREE.Mesh(g, fireM); m.renderOrder = 6; m.rotation.y = i * 1.3; m.userData.k = i; flame.add(m); tongues.push(m);
   }
-  const flameGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex('glow'), color: 0xff7a22, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); flameGlow.position.y = 0.1; flameGlow.scale.setScalar(0.7); flame.add(flameGlow);
-  const light = new THREE.PointLight(0xff7a2a, 2.6, 6, 2); light.position.set(0, 0.12, 0.05); light.castShadow = false; flame.add(light);
+  const flameGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex('glow'), color: 0xff7a22, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); flameGlow.position.y = 0.1; flameGlow.scale.setScalar(1.0); flame.add(flameGlow);
+  const light = new THREE.PointLight(0xff7a2a, 4.2, 7, 2); light.position.set(0, 0.12, 0.05); light.castShadow = false; flame.add(light);
   a.userData.light = light;
 
   // fireball prop (appears in the off hand during Ember casts) and sigil / ward effects
@@ -269,7 +269,7 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
   const sigil = new THREE.Group(); sigil.position.set(0, 1.3, 0.55); fx.add(sigil); sigil.visible = false;
   {
     const mk = (tex, sz, col) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex(tex), color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); sp.scale.setScalar(sz); sigil.add(sp); return sp; };
-    sigil.userData.parts = [mk('ring', 0.7, 0x9a5aff), mk('star', 0.5, 0xc08aff), mk('ring', 0.42, 0x6a3acc)];
+    sigil.userData.parts = [mk('ring', 0.7, 0x9a5aff), mk('star', 0.5, 0xc08aff), mk('ring', 0.42, 0x6a3acc)]; mk('glow', 1.5, 0x8a40ff); mk('glow', 0.6, 0xe0b0ff);
   }
   const wardRing = new THREE.Group(); wardRing.position.set(0, 1.2, 0); fx.add(wardRing); wardRing.visible = false;
   const wardEmbers = [];
@@ -389,13 +389,14 @@ export function create({ seed = 1, quality = 'high', id } = {}) {
     // flame: lively tongues + deterministic flicker of the one point light
     const fl = 0.8 + 0.2 * Math.sin(t * 13.1) * Math.sin(t * 7.3) + 0.1 * Math.sin(t * 27);
     tongues.forEach((m, i) => { const k = m.userData.k; m.scale.set(1 + 0.15 * Math.sin(t * 9 + k * 2), (0.85 + 0.35 * Math.sin(t * 11 + k * 1.7) * fl) * (1 - k * 0.1), 1 + 0.15 * Math.cos(t * 8 + k)); m.rotation.y = k * 1.3 + t * (1.5 + k * 0.4); m.rotation.z = 0.08 * Math.sin(t * 6 + k) + followH.x * 0.3; m.visible = alive; });
-    flame.scale.setScalar(fade); flameGlow.scale.setScalar(0.7 * fl * fade); light.intensity = 2.6 * fl * fade; light.visible = fade > 0.02;
+    flame.scale.setScalar(fade); flameGlow.scale.setScalar(1.0 * fl * fade); light.intensity = 4.2 * fl * fade; light.visible = fade > 0.02;
     // fireball in the off hand while gathering/hurling
     const fb = (cn === 'tele_cast' || cn === 'tele_siphon') || ((cn === 'throw' || cn === 'cast') && ct < a.userData.fireball.release);
     fireball.visible = fb; if (fb) { const s2 = (cn === 'throw' || cn === 'cast') ? ease.out(clamp(ct / 0.35)) : 0.7 + 0.3 * Math.sin(t * 3); fireball.scale.setScalar(Math.max(0.2, s2 * (0.9 + 0.1 * Math.sin(t * 19)))); fireball.userData.gl.material.opacity = 0.8 + 0.2 * Math.sin(t * 15); }
     // hex sigil and ward embers
     const hexing = hexOn.has(cn); sigil.visible = hexing && alive;
     if (hexing) { const k = cn === 'hex' ? ease.out(clamp(ct / 0.6)) * (1 - ease.io(clamp((ct - 1.2) / 0.4))) : 0.9; sigil.scale.setScalar(Math.max(0.01, k)); const [r1, st, r2] = sigil.userData.parts; r1.material.rotation = t * 1.2; st.material.rotation = -t * 0.8; r2.material.rotation = t * 2.1; sigil.position.set(0, 1.55 + 0.05 * Math.sin(t * 2), 0.55); }
+    if (hexing && rng() < 0.6) ash.emit({ pos: [sigil.position.x + (rng() - 0.5) * 0.5, sigil.position.y + (rng() - 0.5) * 0.4, sigil.position.z + (rng() - 0.5) * 0.3], vel: [(rng() - 0.5) * 0.2, 0.15, (rng() - 0.5) * 0.2], life: 1.4, size: 0.04, color: 0xb070ff, colorEnd: 0x4020a0, alpha: 1, turbulence: 0.8 });
     const warding = wardOn.has(cn); wardRing.visible = warding && alive;
     if (warding) wardEmbers.forEach((sp, i) => { const an = t * 1.4 + (i / wardEmbers.length) * Math.PI * 2; sp.position.set(Math.sin(an) * 0.55, Math.sin(t * 2 + i) * 0.08 + (i % 3) * 0.12 - 0.1, Math.cos(an) * 0.45); sp.scale.setScalar(0.1 * (0.7 + 0.5 * Math.sin(t * 9 + i * 2))); });
     // ash and ember motes drifting off the shoulders

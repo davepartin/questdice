@@ -253,7 +253,7 @@ function capeLayers(ctx, { joint = 'chest', color, color2, len = 0.95, wTop = 0.
   const { W } = ctx;
   const mk = (sign) => ({ joint, cols: 6, rows: 11, material: MATS.clothSim, tatter, uvScale: [2, 3], stiff: [26, 4.2],
     colorFn: (u, v) => new THREE.Color(color).multiplyScalar(0.62 + 0.38 * (1 - v) * (0.9 + 0.1 * Math.sin(u * 22))).lerp(new THREE.Color(trim || color), v > 0.95 ? 0.7 : 0),
-    restFn: (u, v) => { const half = (wTop + (wBot - wTop) * v) * W * 0.5; const x = sign * (slit * (0.3 + v) + u * half); return [x, top - v * len, zBack - 0.06 * v + (0.05 * Math.sin(u * 9 + sign + v * 1.5) + 0.02 * Math.sin(u * 23 + v * 4)) * (0.15 + v) - 0.03 * Math.abs(u - 0.3) * (1 - v)]; } });
+    restFn: (u, v) => { const half = (wTop + (wBot - wTop) * v) * W * 0.5; const x = sign * (slit * (0.3 + v) + u * half); return [x, top - v * len, zBack - 0.06 * v + (0.07 * Math.sin(u * 8 + sign + v * 1.5) + 0.03 * Math.sin(u * 21 + v * 4)) * (0.15 + v) - 0.03 * Math.abs(u - 0.3) * (1 - v)]; } });
   ctx.cloth.push(mk(1), mk(-1));
   ctx.cloth.push({ joint, cols: 8, rows: 9, material: MATS.clothSim, tatter: tatter * 0.8, uvScale: [2, 3], stiff: [30, 6],
     colorFn: (u, v) => new THREE.Color(color2).multiplyScalar(0.55 + 0.35 * (1 - v)),
@@ -627,6 +627,9 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
   // ---- cloth
   const cloths = ctx.cloth.map((c, i) => new Cloth(a, { seed: seed + i * 17, parent: a.model, ...c, material: c.material }));
   // ---- anchors
+  const shTex = canvasTex('hero-blob', 128, 128, (g, w, hh) => { const r = g.createRadialGradient(w / 2, hh / 2, 4, w / 2, hh / 2, w / 2); r.addColorStop(0, 'rgba(0,0,0,0.75)'); r.addColorStop(0.55, 'rgba(0,0,0,0.38)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, w, hh); });
+  const blob = new THREE.Mesh(new THREE.PlaneGeometry(1.5 * Math.max(1, W * 0.9), 1.2 * Math.max(1, W * 0.9)), new THREE.MeshBasicMaterial({ map: shTex, transparent: true, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+  blob.rotation.x = -Math.PI / 2; blob.position.set(0, 0.012, -0.05); blob.renderOrder = 1; blob.userData.noActorClone = true; a.root.add(blob); a.userData.blob = blob;
   a.anchor('head', head, 0, 0.36, 0); a.anchor('chest', chest, 0, 0.08, 0.16); a.anchor('feet', a.model, 0, 0.02, 0);
   a.anchor('mouth', head, 0, 0.055, 0.1); a.anchor('handL', a.joints.handL, 0, -0.06, 0); a.anchor('handR', a.joints.handR, 0, -0.06, 0);
   a.anchor('weapon', a.model, 0, 1.2, 0.5); a.anchor('staffTip', a.model, 0, 1.8, 0.2);
@@ -734,6 +737,8 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     for (const w of S.weapons) w.userData.update?.(dt, t);
     if (S.orbLight) { const st = a.userData.staff; const c = st?.userData.charge || 0; S.orbLight.intensity = (2.4 + 0.8 * Math.sin(t * 7.1 + Math.sin(t * 2.3) * 2) + 0.5 * Math.sin(t * 3.3)) * (1 + c * 2.5); }
     const dis = a.dissolving ? Math.min(1, a._dissT / (a._dissDur || 1)) : 0;
+    blob.material.opacity = 1 - Math.min(1, dis * 1.6);
+    for (const c of cloths) c.windT = t;
     if (dis > 0.02) for (const w of S.weapons) w.traverse((o) => { if (o.isMesh && !(o.material.isMeshStandardMaterial)) o.visible = false; if (o.isSprite) o.visible = false; });
     if (S.orbLight) S.orbLight.visible = dis < 0.5 && a.alive;
     // decay staff charge toward zero outside channel clips

@@ -91,6 +91,7 @@ export function createVfx(stage, opts = {}) {
     coin: new Quads({ max: 120, map: vtex('coin'), blend: 'normal', depthTest: true, renderOrder: 9, name: 'vfx-coin' }),
     cross: new Quads({ max: 120, map: vtex('cross'), blend: 'add', depthTest: false, renderOrder: 10, name: 'vfx-cross' }),
     diamond: new Quads({ max: 120, map: vtex('diamond'), blend: 'add', depthTest: false, renderOrder: 10, name: 'vfx-diamond' }),
+    flame: new Quads({ max: 700, map: vtex('flame'), blend: 'add', depthTest: true, renderOrder: 9, name: 'vfx-flame' }),
     wisp: new Quads({ max: 24, map: vtex('wisp'), blend: 'add', depthTest: false, renderOrder: 10, name: 'vfx-wisp' }),
     ringB: new Quads({ max: 40, map: vtex('ring'), blend: 'add', depthTest: false, renderOrder: 10, name: 'vfx-ringb' }),
   };
@@ -417,8 +418,8 @@ export function createVfx(stage, opts = {}) {
     switch (kind) {
       case 'flesh': {
         const c = o.color ?? 0xff5a3a;
-        flare(p, { color: lerpHex(c, 0xffffff, 0.55), size: 1.1 * pw, life: 0.12, hdr: 2.3, R });
-        glowPop(p, c, 1.3 * pw, 0.2, 0.35);
+        flare(p, { color: lerpHex(c, 0xffffff, 0.55), size: 0.8 * pw, life: 0.09, hdr: 1.9, R });
+        glowPop(p, c, 0.8 * pw, 0.14, 0.2);
         droplets(R, p, n(18 * pw), { color: o.blood ?? 0x9a0e0e, colorEnd: 0x2a0404, dirV, spread: 1.0, size: 0.075 });
         droplets(R, p, n(6 * pw), { color: o.blood ?? 0xc01818, colorEnd: 0x400606, speed: [5, 10], dirV, spread: 0.6, size: 0.05 });
         sparks(R, p, n(10 * pw), { color: 0xffc080, colorEnd: 0xff3a10, speed: [3, 9], dirV, spread: 1.2, size: 0.032 });
@@ -430,9 +431,9 @@ export function createVfx(stage, opts = {}) {
       }
       case 'steel': {
         const c = o.color ?? 0xffe9b0;
-        flare(p, { color: 0xfff6dc, size: 1.4 * pw, life: 0.12, hdr: 3.2, R });
+        flare(p, { color: 0xfff6dc, size: 1.0 * pw, life: 0.09, hdr: 2.2, R });
         flare(p, { color: 0xffd890, size: 0.8 * pw, life: 0.09, hdr: 2.2, rot: R.r() * TAU, streak: false });
-        glowPop(p, 0xffb050, 1.1 * pw, 0.16, 0.4);
+        glowPop(p, 0xffb050, 0.7 * pw, 0.12, 0.25);
         sparks(R, p, n(34 * pw), { color: 0xfff4d0, colorEnd: 0xff7a20, speed: [5, 15], dirV, spread: 1.8, size: 0.055, life: [0.28, 0.6], hdr: 2.8 });
         sparks(R, p, n(8 * pw), { color: 0xffffff, colorEnd: 0xffb050, speed: [9, 18], dirV, spread: 0.9, size: 0.03, life: [0.15, 0.3], stretch: 0.09 });
         embers(R, p, n(8 * pw), { speed: [0.6, 3], life: [0.5, 1.1], size: 0.04 });
@@ -525,8 +526,8 @@ export function createVfx(stage, opts = {}) {
       }
       case 'claw': {
         const c = o.color ?? 0xff3a30;
-        flare(p, { color: 0xffd0c8, size: 1.35 * pw, life: 0.13, hdr: 2.8, R });
-        glowPop(p, c, 2 * pw, 0.24, 0.6);
+        flare(p, { color: 0xffd0c8, size: 0.8 * pw, life: 0.09, hdr: 1.9, R });
+        glowPop(p, c, 0.8 * pw, 0.14, 0.2);
         droplets(R, p, n(22 * pw), { color: o.blood ?? 0xa01010, colorEnd: 0x300404, dirV, spread: 1.0, size: 0.08 });
         sparks(R, p, n(12 * pw), { color: 0xff8a70, colorEnd: 0xff2a10, speed: [3, 9], dirV, spread: 1.2, size: 0.03 });
         smokePuffs(R, p, n(2 * pw), { color: 0x6a2a20, size: 0.45, grow: 2, life: [0.5, 0.8], alpha: 0.3 });
@@ -551,6 +552,45 @@ export function createVfx(stage, opts = {}) {
     return later(0.02);
   }
 
+  // layered flame tongue: red outer, orange body, white-yellow core (same texture, three tints)
+  function flameTongue(R, p, { scale = 1, vel = [0, 1.2, 0], life = 0.7, color } = {}) {
+    const L = [[1.0, color ?? 0xff3a0a, 0xa01000, 0.55, 1.5], [0.72, 0xff8a1a, 0xff3a0a, 0.8, 2.0], [0.42, 0xffe08a, 0xff9a30, 0.95, 2.6]];
+    const rot = R.pm(0.18);
+    for (const [k, c0, c1, al, hdr] of L) sys.flame.emit({ pos: p, vel: [vel[0] * (1.2 - k * 0.2), vel[1], vel[2] * (1.2 - k * 0.2)], life: life * (0.75 + 0.25 * k), size: 0.9 * scale * k, sizeEnd: 0.45 * scale * k, aspect: 1.9, color: c0, colorEnd: c1, hdr, alpha: al, alphaEnd: 0, fade: 1.4, grow: 0.7, rot: rot + R.pm(0.08), turbulence: 1.4, drag: 0.6 });
+  }
+  const flames = [];
+  // persistent fire: vfx.flame(pos, { scale, color, sparks, light }) -> { move(pos), set(scale), stop() }
+  function flame(at, o = {}) {
+    const R = rngOf(o); const pos = toV(at); const h = { pos, scale: o.scale ?? 1, alive: true, acc: 0, color: o.color, hold: o.light ? holdLight() : null, t: 0 };
+    h.move = (a) => { toV(a, h.pos); return h; }; h.set = (s_) => { h.scale = s_; return h; };
+    h.stop = () => { h.alive = false; h.hold?.release(); const i = flames.indexOf(h); if (i >= 0) flames.splice(i, 1); };
+    h.upd = (dt) => {
+      h.t += dt; h.acc += dt * 26 * Q * Math.max(0.4, h.scale);
+      while (h.acc >= 1) { h.acc -= 1; const sc = h.scale;
+        flameTongue(R, [h.pos.x + R.pm(0.18 * sc), h.pos.y, h.pos.z + R.pm(0.18 * sc)], { scale: sc * R.rr(0.7, 1.15), vel: [R.pm(0.25), 0.9 + R.r() * 0.9, R.pm(0.25)], life: R.rr(0.55, 0.95), color: h.color });
+        if (R.r() < 0.22) sys.ember.emit({ pos: [h.pos.x + R.pm(0.2 * sc), h.pos.y + 0.3 * sc, h.pos.z + R.pm(0.2 * sc)], vel: [R.pm(0.5), R.rr(1, 2.6), R.pm(0.5)], life: R.rr(0.9, 1.8), size: R.rr(0.03, 0.06), sizeEnd: 0.01, color: 0xffa040, colorEnd: 0xff3010, hdr: 2.2, alpha: 1, alphaEnd: 0, turbulence: 1.4, fade: 1.5 });
+        if (R.r() < 0.05) sys.smoke.emit({ pos: [h.pos.x, h.pos.y + 1.1 * sc, h.pos.z], vel: [R.pm(0.2), 0.6, R.pm(0.2)], life: 1.6, size: 0.3 * sc, sizeEnd: 0.9 * sc, color: 0x3a3430, alpha: 0.25, alphaEnd: 0, fadeIn: 0.2, rot: R.r() * TAU });
+      }
+      h.hold?.set(_p.set(h.pos.x, h.pos.y + 0.7 * h.scale, h.pos.z), 0xff8a30, (14 + Math.sin(h.t * 23) * 3 + Math.sin(h.t * 37) * 2) * h.scale, 7);
+      return true;
+    };
+    flames.push(h); return h;
+  }
+  function updateFlames(dt) { for (const f of flames) f.upd(dt); }
+  // ambient layers per place (names as in the quest data)
+  const PLACE_AMBIENT = [
+    [/orchard/i, [['embers', 0.8], ['ash', 0.7]]], [/wolfwood/i, [['leaves', 0.8], ['dust', 0.7]]], [/hollow/i, [['ash', 1]]],
+    [/ashfall|camp/i, [['embers', 1]]], [/gallows/i, [['embers', 1.5], ['ash', 1.4]]], [/ford/i, [['fireflies', 1], ['dust', 0.4]]],
+    [/bridge/i, [['dust', 0.9], ['embers', 0.4]]], [/raven/i, [['dust', 0.8], ['fireflies', 0.5]]],
+  ];
+  function ambientFor(place, o = {}) {
+    api.ambient(null);
+    const hit = PLACE_AMBIENT.find(([re]) => re.test(String(place || '')));
+    const layers = hit ? hit[1] : [['dust', 0.6]];
+    const hs = layers.map(([k, i]) => api.ambient(k, { intensity: i * (o.intensity ?? 1) }));
+    return { stop() { hs.forEach((h) => h?.stop()); }, layers: layers.map((l) => l[0]) };
+  }
+
   // big fiery explosion (bomb, fireball)
   function explode(p, pw, R, o = {}) {
     const hot = o.color ?? 0xff8a2a;
@@ -559,7 +599,8 @@ export function createVfx(stage, opts = {}) {
     shell({ at: p, color: hot, r: 1.9 * pw, dur: 0.38, hdr: 2.2 });
     for (let i = 0; i < n(16); i++) { // rolling fireball billows
       const d = randDir(R, _d); const sp = R.rr(0.8, 3.6) * pw;
-      sys.glow.emit({ pos: [p.x + d.x * 0.15, p.y + d.y * 0.15, p.z + d.z * 0.15], vel: [d.x * sp, Math.abs(d.y) * sp * 0.6 + 0.6, d.z * sp], life: R.rr(0.4, 0.8), size: 0.7 * pw * R.rr(0.7, 1.2), sizeEnd: 1.9 * pw, color: 0xffd070, colorEnd: 0xff3a08, hdr: 2.8, hdrEnd: 1.2, alpha: 0.95, alphaEnd: 0, drag: 2.2, fade: 1.3, grow: 0.5 });
+      sys.glow.emit({ pos: [p.x + d.x * 0.15, p.y + d.y * 0.15, p.z + d.z * 0.15], vel: [d.x * sp, Math.abs(d.y) * sp * 0.6 + 0.6, d.z * sp], life: R.rr(0.4, 0.7), size: 0.5 * pw * R.rr(0.7, 1.2), sizeEnd: 1.2 * pw, color: 0xffb050, colorEnd: 0xff3a08, hdr: 1.6, alpha: 0.5, alphaEnd: 0, drag: 2.2, fade: 1.3, grow: 0.5 });
+      flameTongue(R, [p.x + d.x * 0.3, Math.max(groundY + 0.1, p.y + d.y * 0.2), p.z + d.z * 0.3], { scale: 1.5 * pw * R.rr(0.8, 1.3), vel: [d.x * sp * 0.5, 1.4 + Math.abs(d.y) * sp * 0.5, d.z * sp * 0.5], life: R.rr(0.5, 0.9) });
     }
     smokePuffs(R, _p.set(p.x, p.y + 0.3, p.z), n(9), { color: 0x2a2622, size: 0.9 * pw, grow: 2.8, life: [1.1, 1.8], alpha: 0.6, spread: 0.5 * pw, rise: 1.0, speed: [0.3, 1.6] });
     sparks(R, p, n(40), { color: 0xfff0c0, colorEnd: 0xff4a10, speed: [6, 18], spread: 2, size: 0.045, life: [0.4, 0.9], grav: -9, hdr: 2.8 });
@@ -1396,7 +1437,7 @@ export function createVfx(stage, opts = {}) {
     updateLights(dt);
     updateOverlay();
     updatePunch(dt);
-    updateTargetRings(dt); updateAmbient(dt);
+    updateTargetRings(dt); updateAmbient(dt); updateFlames(dt);
   });
 
   // ---------------------------------------------------------------------------------------------
@@ -1421,7 +1462,7 @@ export function createVfx(stage, opts = {}) {
     // telegraphs and selection
     telegraph, targetRing,
     // ambient layers (default off)
-    ambient,
+    ambient, ambientFor, flame,
     // hit feel
     hitStop, punch: chromaPunch, options: vfxOpts,
     // utilities

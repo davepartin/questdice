@@ -86,7 +86,7 @@ export function buildClips(a, info) {
     loop: true, dur: 3.2, fn: (t, P) => {
       const s = Math.sin(t / 3.2 * Math.PI * 2); const s2 = Math.sin(t / 3.2 * Math.PI * 4 + 0.6); const wsh = Math.sin(t / 3.2 * Math.PI * 2 - 0.9);
       apply(P, mix(rd, cy, 0.3));
-      P.rot('chest', s * 0.022, 0, 0); P.rot('spine', s * 0.012, 0, wsh * 0.012); P.pos('hips', wsh * 0.007, s2 * 0.003 - 0.002, 0);
+      P.rot('chest', s * 0.04, 0, 0); P.rot('spine', s * 0.02, 0, wsh * 0.014); P.rot('armL', s * 0.03, 0, 0); P.rot('armR', s * 0.03, 0, 0); P.rot('foreA'.replace('A', info.A), s2 * 0.03, 0, 0); P.pos('hips', wsh * 0.007, s2 * 0.003 - 0.002, 0);
       P.rot('head', -s * 0.018 + 0.02, Math.sin(t / 3.2 * Math.PI * 2 * 0.5) * 0.06, 0); P.rot('neck', -s * 0.01, 0, 0);
       P.rot('armL', 0, 0, s * 0.012); P.rot('armR', 0, 0, -s * 0.012); P.rot('thighL', 0, 0, wsh * 0.01); P.rot('thighR', 0, 0, wsh * 0.01);
       if (fam === 'bow') bowDraw(0);

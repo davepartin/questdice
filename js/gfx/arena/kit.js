@@ -119,7 +119,7 @@ export function applyPalette(c, pal) {
   // IBL
   stage.environment(pal.env);
   // lights
-  const key = new THREE.DirectionalLight(pal.key.color, pal.key.intensity);
+  const key = new THREE.DirectionalLight(pal.key.color, pal.key.intensity * 1.25);
   const kp = pal.key.pos; const tgt = new THREE.Object3D(); tgt.position.set(0, 0, 0.8);
   key.position.set(kp[0] * 2.6, kp[1] * 2.6, kp[2] * 2.6 + 0.8); key.target = tgt;
   key.castShadow = true; const sz = c.quality === 'low' ? 1024 : 2048;
@@ -127,9 +127,9 @@ export function applyPalette(c, pal) {
   const sc = key.shadow.camera; sc.left = -9.5; sc.right = 9.5; sc.top = 9.5; sc.bottom = -9.5; sc.near = 2; sc.far = 60;
   key.shadow.bias = -0.0005; key.shadow.normalBias = 0.035; key.shadow.radius = 3.5; key.shadow.blurSamples = 12;
   const rim = new THREE.DirectionalLight(pal.rim.color, pal.rim.intensity); rim.position.set(...pal.rim.pos); rim.target = tgt;
-  const hemi = new THREE.HemisphereLight(pal.hemi.sky, pal.hemi.ground, pal.hemi.intensity);
+  const hemi = new THREE.HemisphereLight(pal.hemi.sky, pal.hemi.ground, pal.hemi.intensity * 0.85);
   group.add(key, tgt, rim, hemi);
-  c.lights = { key, rim, hemi, tgt, keyBase: C(pal.key.color), keyI: pal.key.intensity, rimI: pal.rim.intensity, hemiI: pal.hemi.intensity };
+  c.lights = { key, rim, hemi, tgt, keyBase: C(pal.key.color), keyI: pal.key.intensity * 1.25, rimI: pal.rim.intensity, hemiI: pal.hemi.intensity * 0.85 };
   // post
   stage.post.look(pal.look);
   c.lookBase = { ...pal.look };
@@ -180,6 +180,7 @@ export function finalize(c, opts = {}) {
   const marks = [{ p: [MARKS.hero[0], MARKS.hero[2]], s: [1.5, 1.2], a: 0.9, y: c.hAt(MARKS.hero[0], MARKS.hero[2]) }];
   for (const m of MARKS.monsters(c.enemyCount, c.kind)) marks.push({ p: [m[0], m[2]], s: c.kind === 'standard' ? [1.6, 1.3] : [3.0, 2.4], a: 0.9, y: 0 });
   c.add(makeDecals(U, [...marks, ...c.blobs], { kind: 'blob', opacity: 0.6 }));
+  if (c.paths && c.paths.length) c.add(makeDecals(U, c.paths, { kind: 'scorch', color: 0x2a1c12, opacity: 0.5, lift: 0.011 }));
   if (c.scorches.length) c.add(makeDecals(U, c.scorches, { kind: 'scorch', color: 0x050403, opacity: 0.85, lift: 0.012 }));
   if (c.puddles && c.puddles.length) {
     const geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);

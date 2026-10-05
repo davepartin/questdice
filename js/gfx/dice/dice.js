@@ -74,12 +74,12 @@ function makeMaterial(atlas, theme, quality) {
     emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
     sheen: 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
-  m.color.setScalar({ bone: 0.78, smoke: 0.55, weapon: 0.7, heart: 0.7, amethyst: 0.75 }[theme] ?? 1);
+  m.color.setScalar({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1);
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
     uTime: { value: 0 }, uInner: { value: inn.k }, uInnerCol: { value: new THREE.Vector3(...inn.col) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
-    uSide: { value: 1 }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
+    uSide: { value: 1 }, uSelf: { value: { weapon: 0.34, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2 }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
@@ -91,7 +91,7 @@ function makeMaterial(atlas, theme, quality) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vOP; varying vec3 vWN;
-uniform float uTime, uInner, uInnerTint, uSide, uDim; uniform vec3 uInnerCol, uCamObj, uFocusDir; uniform vec2 uFocusRange; uniform vec3 uFlash, uRim;
+uniform float uTime, uInner, uInnerTint, uSide, uDim, uSelf; uniform vec3 uInnerCol, uCamObj, uFocusDir; uniform vec2 uFocusRange; uniform vec3 uFlash, uRim;
 ${GLSL_NOISE}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
 float qFocus = smoothstep(uFocusRange.x, uFocusRange.y, dot(normalize(vWN), uFocusDir));
@@ -114,7 +114,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.
     vec3 tint = mix(uInnerCol, normalize(qAlb + 0.02) * 1.5, uInnerTint);
     qInner = tint * (v * 1.2 + 0.1 + 0.25 * (1.0 - qNV)) * uInner * qRes;
   }
-  totalEmissiveRadiance = (totalEmissiveRadiance + qInner) * qDim + uFlash + uRim * pow(1.0 - qNV, 2.2);
+  totalEmissiveRadiance = (totalEmissiveRadiance + qInner + qAlb * uSelf * (0.4 + 0.6 * qRes)) * qDim + uFlash + uRim * pow(1.0 - qNV, 2.2);
 }`);
   };
   m.customProgramCacheKey = () => 'qdice-die-1';

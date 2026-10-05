@@ -248,11 +248,12 @@ export function wolfwoodEdge(c) {
   for (let i = 0; i < 7; i++) { const x = (rng() < 0.5 ? -1 : 1) * rr(rng, 5.6, 10); bone(B, { p: [x, 0.03, rr(rng, -4, 7)], r: [0, rng() * 3, 0] }, { len: 0.45 }); }
   skull(B, { p: [-6.4, 0, 2.5], r: 1 });
   // moonlight shafts through the pines + low mist
-  c.shaftOpts = { color: 0x8ab4ff, alpha: 0.2 };
+  c.shaftOpts = { color: 0xa8c8ff, alpha: 0.5 };
   [[-12, 16, -14], [-5, 18, -22], [8, 17, -18], [15, 15, -10], [2, 18, -30]].forEach(([x, y, z], i) => c.shafts.push({ top: [x, y, z], dir: [0.35, -1, 0.25], len: 20, w: 2 + (i % 3), seed: i * 1.3 }));
-  [[0, 0.4, -6, 50, 14], [-12, 0.7, -12, 50, 16], [12, 0.6, -10, 40, 16], [0, 1.0, -20, 90, 30], [0, 0.3, 4, 30, 12]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: 0x3a5a7a, dens: 0.5, scale: 0.9, speed: 1.0, seed: i * 2.3 }));
+  [[0, 0.25, -6, 50, 14], [-12, 0.35, -12, 50, 16], [12, 0.3, -10, 40, 16], [0, 0.6, -20, 90, 30], [0, 0.2, 4, 30, 12], [-4, 0.3, -2, 20, 10]].forEach(([x, y, z, w, d], i) => c.fogLayers.push({ kind: 'flat', p: [x, y, z], w, d, col: 0x6a90b0, dens: 0.7, scale: 0.9, speed: 1.0, seed: i * 2.3 }));
   [[0, 0, -12, 70, 10], [0, 0, -22, 90, 12], [0, 0, -34, 120, 16], [0, 0, -50, 140, 18]].forEach(([x, y, z, w, h], i) => c.fogLayers.push({ kind: 'wall', p: [x, y, z], w, d: h, col: 0x2e4a6a, dens: 0.5 - i * 0.05, scale: 0.7, speed: 0.5, seed: 8 + i * 2 }));
-  c.fire({ p: [6.4, 0.1, -3.6], w: 0.35, h: 0.6, power: 0.6, light: true, lightColor: 0xff9a50, lightI: 8, lightDist: 8, embers: 3, tongues: 1, glow: 0.7 });
+  c.fire({ p: [-8.2, 0.1, -5.5], w: 0.9, h: 1.5, power: 1.0, light: true, lightColor: 0xffa050, lightI: 42, lightDist: 15, embers: 14, tongues: 3, glow: 0.8 });
+  for (let i = 0; i < 5; i++) B.cyl('woodChar', [0.07, 0.09, 1.0, 5], { p: [-8.2, 0.12, -5.5], r: [0, i * 1.2, Math.PI / 2 - 0.15] }, [0.9, 0.9, 0.9]);
   c.ambient = { ash: 0, ambientEmbers: 0, wind: 0.4 };
   const flakes = new Emitter(c.stage, c.group, { max: Math.round(300 * (0.4 + c.q * 0.6)), sprite: 'dot', blending: 'add', order: 5, rate: 18, spawn: () => ({ pos: [rr(rng, -12, 12), rr(rng, 0.2, 5), rr(rng, -14, 8)], vel: [rr(rng, -0.1, 0.2), -0.05, rr(rng, -0.1, 0.1)], life: 6, size: 0.004, sizeEnd: 0.04, color: 0xbcd8ff, colorEnd: 0xbcd8ff, alpha: 0.8, alphaEnd: 0.0, turbulence: 0.5 }) });
   c.extra.push(flakes);
@@ -275,15 +276,15 @@ export function smokeHollow(c) {
     thresholds: [0.7, 3, 0.36], wet: [0.84, 0.15], nstr: 2.2, tintMul: 0xe8e4e0,
   };
   applyPalette(c, {
-    sky: { hor: 0x5a2c1c, mid: 0x2a1a1c, top: 0x0c0a10, glows: [{ az: 0, w: 60, h: 8, color: 0xff6a20, k: 0.9 }, { az: -50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }, { az: 50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }], moon: { on: 0 }, stars: 0.0, cloud: 0.9, cloudDark: 0x241816, cloudLit: 0xff6a30 },
+    sky: { hor: 0x4a2a22, mid: 0x242030, top: 0x0a0a12, glows: [{ az: 0, w: 60, h: 8, color: 0xff6a20, k: 0.9 }, { az: -50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }, { az: 50, w: 40, h: 6, color: 0xc04a1c, k: 0.45 }], moon: { on: 0 }, stars: 0.0, cloud: 0.9, cloudDark: 0x241816, cloudLit: 0xff6a30 },
     fog: { base: 0x1c0c08, dens: 0.0085, fall: 0.2, height: 0.55, glow: 0.35 },
     env: ENV(0x241418, 0xc0582a, 0x120a08, 0xff8a4a, 0x6a60a0),
     key: { color: 0xb8aca0, intensity: 1.7, pos: [-4.4, 3.6, 5.4] },
     rim: { color: 0xff5020, intensity: 3.2, pos: [4, 4, -9] },
-    hemi: { sky: 0x40302a, ground: 0x3a2418, intensity: 0.4 },
+    hemi: { sky: 0x2a4050, ground: 0x3a2418, intensity: 0.5 },
     look: LOOK({ sat: 1.0, contrast: 1.1, vignette: 0.6, shadowTint: 0xffd8c8, highTint: 0xffd8b0, exposure: 0.98 }),
   });
-  buildBackdrop(c, { ground, ridges: [{ radius: 170, arc: 1.9, top: 22, haze: 0.5, color: 0x2a1614, seed: 9, rim: 0xff5a20, rimK: 0.5 }, { radius: 120, arc: 1.9, top: 14, mode: 2, haze: 0.4, color: 0x180e0c, seed: 10, toothW: 6, toothH: 8 }] });
+  buildBackdrop(c, { ground, ridges: [{ radius: 170, arc: 1.9, top: 24, haze: 0.38, color: 0x1a0e0e, seed: 9, rim: 0xff5a20, rimK: 0.8 }, { radius: 120, arc: 1.9, top: 14, mode: 2, haze: 0.22, color: 0x0c0707, seed: 10, toothW: 6, toothH: 9, rim: 0xff4a18, rimK: 0.6 }, { radius: 80, arc: 1.9, top: 6, mode: 1, haze: 0.12, color: 0x070404, seed: 12, toothW: 3, toothH: 5 }] });
   defaultPropMats(c, { wood: 0x3a2a20 });
   // ---- near silhouettes: charred skeleton trees framing both edges (foreground layer)
   const skel = [0, 1, 2].map((i) => dryTree(c.seed * 61 + i, { h: 4.2 + i * 1.1, r: 0.22, limbs: 5, spread: 0.95, depth: 3, curl: 0.8, droop: 0.25, radial: 6, lean: 0.4, bark: [0.09, 0.08, 0.075], tip: [0.14, 0.12, 0.11] }));
@@ -518,9 +519,9 @@ export function gallowsHill(c) {
       : { hor: 0x2a3050, mid: 0x161a38, top: 0x060818, glows: [{ az: 14, w: 35, h: 5, color: 0x6a88d0, k: 0.8 }, { az: -60, w: 30, h: 4, color: 0xff6a30, k: 0.35 }], moon: { on: 1, az: -8, el: 3.8, size: elite ? 2.2 : 4.4, color: moonCol }, stars: 1.0, cloud: elite ? 0.8 : 0.4, cloudDark: 0x141830, cloudLit: 0x7a90c8 },
     fog: boss ? { base: 0x2a0c10, dens: 0.0078, fall: 0.22, height: 0.6, glow: 0.45 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
     env: boss ? ENV(0x300c1c, 0xc03a28, 0x100808, 0xff7a40, 0x8a60c0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
-    key: boss ? { color: 0xa83024, intensity: 0.9, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
+    key: boss ? { color: 0xffd2a8, intensity: 2.2, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
     rim: boss ? { color: 0xff4030, intensity: 3.0, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
-    hemi: boss ? { sky: 0x1c3048, ground: 0x2a1410, intensity: 0.4 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
+    hemi: boss ? { sky: 0x2a5068, ground: 0x2a1410, intensity: 0.6 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
     look: LOOK(boss ? { exposure: 0.88, sat: 1.0, contrast: 1.2, vignette: 0.62, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
   });
   buildBackdrop(c, { ground, ridges: [{ radius: 190, arc: 1.9, top: boss ? 12 : 10, haze: 0.55, color: boss ? 0x24101a : 0x121826, seed: 15, rim: boss ? 0xff3a20 : 0x7a98d8, rimK: 0.5 }, { radius: 140, arc: 1.9, top: 6, mode: 2, haze: 0.4, color: boss ? 0x180a10 : 0x0a0e18, seed: 16, toothW: 8, toothH: 9 }] });
@@ -549,12 +550,12 @@ export function gallowsHill(c) {
   if (boss) {
     // ONE dominant firelight: a great pyre right behind the king, so he is a silhouette ringed in flame.
     const KX = 0.4; const KZ = -1.8;
-    c.fire({ p: [KX, 0.3, -7.6], w: 2.2, h: 4.2, power: 1.05, light: true, lightColor: 0xff7a30, lightI: 70, lightDist: 22, embers: 40, smoke: 0.6, tongues: 3, glow: 0.35 });
+    c.fire({ p: [KX, 0.3, -7.6], w: 2.2, h: 4.2, power: 1.05, light: true, lightColor: 0xff7a30, lightI: 55, lightDist: 14, embers: 40, smoke: 0.6, tongues: 3, glow: 0.35 });
     for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; B.cyl('woodChar', [0.12, 0.15, 3.0, 6], { p: [KX + Math.cos(a) * 1.0, 1.1, -7.6 + Math.sin(a) * 1.0], r: [Math.sin(a) * 0.5, a, -Math.cos(a) * 0.5] }, [0.8, 0.8, 0.8], { cast: false }); }
     // the dais: a flush rune-ringed stone disc under the king + a ring of broken pillars
     const dg = new THREE.CircleGeometry(3.5, 56).rotateX(-Math.PI / 2);
     const runeTex = canvasTex2('dais-rune');
-    const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0x8a7a76, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
+    const dm = c.arenaMat('dais', () => new THREE.MeshStandardMaterial({ map: rockTexSet().map, normalMap: rockTexSet().normalMap, color: 0xc8b8a8, roughness: 0.75, emissive: 0xff2a10, emissiveMap: runeTex, emissiveIntensity: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), {});
     const dais = new THREE.Mesh(dg, dm); dais.position.set(KX, 0.022, KZ); dais.receiveShadow = true; c.add(dais); c.tris += 112;
     c.ticks.push((dt, t) => { dm.emissiveIntensity = 0.55 + 0.2 * Math.sin(t * 2.1) + 0.08 * Math.sin(t * 7.3); });
     for (let i = 0; i < 7; i++) { const a = Math.PI + 0.35 + i / 6 * (Math.PI - 0.7); const R = 4.8; const h = rr(rng, 0.8, 2.6); B.cyl('stone', [0.38, 0.46, h, 7], { p: [KX + Math.cos(a) * R, h / 2, KZ + Math.sin(a) * R * 0.9 - 0.8], r: [(rng() - 0.5) * 0.12, 0, (rng() - 0.5) * 0.12] }, [0.55, 0.5, 0.5], { cast: true }); }

@@ -1,7 +1,7 @@
 // Procedural sprite sheets for the combat VFX (canvas-drawn, white-on-alpha so they can be tinted).
 // Everything is cached by name. Safe to import from node (returns null textures without a DOM).
 import * as THREE from 'three';
-import { mulberry32 } from '../noise.js';
+import { mulberry32, makeNoise } from '../noise.js';
 import { sprite as baseSprite } from '../tex.js';
 
 const isBrowser = typeof document !== 'undefined';
@@ -214,6 +214,21 @@ const MAKERS = {
     const n = 11;
     for (let i = 0; i < n; i++) branch(m, m, (i / n) * Math.PI * 2 + R() * 0.4, s * (0.28 + R() * 0.2), s * 0.022, 0);
     radial(g, s, [[0, 0.5], [0.12, 0.2], [0.3, 0]]);
+    return toTex(c);
+  },
+  flame(s = 128) { // upright flame tongue: wavy, tapered, hot at the base (tinted per layer)
+    const c = canvas(s, s * 2); const g = c.getContext('2d'); const W = s; const H = s * 2; const img = g.createImageData(W, H); const N = makeNoise(31);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const v = 1 - y / (H - 1); // 0 bottom .. 1 top
+      const nx = (x / (W - 1)) * 2 - 1;
+      const wob = N.fbm(nx * 1.6 + 3, v * 2.8, { oct: 3 }) * 0.5 * Math.sin(Math.PI * Math.min(1, v * 1.1)) ;
+      const hw = 0.62 * Math.pow(Math.max(0, 1 - v), 0.75) * (0.35 + 0.65 * Math.min(1, v * 5));
+      const d = Math.abs(nx - wob) / Math.max(0.02, hw);
+      let a = Math.max(0, 1 - d * d);
+      a = Math.pow(a, 1.1) * (0.55 + 0.45 * (1 - v)) * Math.min(1, v * 14 + 0.1);
+      const i = (y * W + x) * 4; img.data[i] = img.data[i + 1] = img.data[i + 2] = 255; img.data[i + 3] = Math.min(255, a * 255);
+    }
+    g.putImageData(img, 0, 0);
     return toTex(c);
   },
   scorch(s = 128) { // dark soft burn mark for normal blending

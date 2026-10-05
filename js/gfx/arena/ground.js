@@ -90,6 +90,7 @@ function groundMaterial(U, cfg) {
         vec4 gws = pow(gw * (0.2 + gh * 1.6), vec4(1.7)); gws /= (gws.x + gws.y + gws.z + gws.w + 1e-4);
         vec3 gAlb = (gc0 * gws.x + gc1 * gws.y + gc2 * gws.z + gc3 * gws.w) * uTint;
         float gWet = smoothstep(uWet.x, uWet.x + 0.1, gnB.b * 0.6 + gnA.r * 0.4) * uWet.y;
+        gAlb *= 1.25;
         gAlb *= (0.72 + 0.56 * gnA.g) * (0.92 + 0.16 * gnB.r);
         gAlb *= 1.0 - gWet * 0.45;
         float gRough = mix(0.94, 0.22, gWet);

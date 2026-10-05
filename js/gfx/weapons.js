@@ -198,7 +198,7 @@ function bladeGeo({ y0 = 0, len = 0.7, w0 = 0.028, w1 = 0.022, leaf = 0, t = 0.0
   const wMax = Math.max(w0, w1) * (1 + leaf);
   planar(g, (x, y, z) => z / (2 * wMax) + 0.5, (x, y) => (y - y0) / len);
   prep(g);
-  if (fuller) shade(g, (x, y, z) => { const u = (y - y0) / len; const w = wAt(Math.min(1, (y - y0) / bodyLen)); return (Math.abs(z) < w * 0.37 && u > fuller.u0 + 0.01 && u < fuller.u1 - 0.01 && Math.abs(x) < t - fuller.d * 0.45) ? 0.5 : 1; });
+  if (fuller) shade(g, (x, y, z) => { const u = (y - y0) / len; const w = wAt(Math.min(1, (y - y0) / bodyLen)); return (Math.abs(z) < w * 0.37 && u > fuller.u0 + 0.01 && u < fuller.u1 - 0.01 && Math.abs(x) < t - fuller.d * 0.45) ? 0.38 : 1; });
   // darken the very edge a touch so the bevel reads
   shade(g, (x, y, z) => 1 + 0.35 * sstep(0.75, 1, Math.abs(z) / wMax));
   return g;
@@ -365,7 +365,7 @@ function heaterOutline(w = 0.25, top = 0.32, bot = -0.38, seg = 20) {
   for (let i = seg - 1; i >= 0; i--) { const t = i / seg; pts.push([-hw * Math.cos(t * Math.PI / 2) ** 0.8, lerp(top - 0.04, bot, t ** 1.35)]); }
   return pts;
 }
-const dishZ = (x, y) => -(x * x) * 0.9 - (Math.max(0, -y - 0.05) ** 2) * 0.25 - (y > 0.15 ? (y - 0.15) ** 2 * 0.3 : 0);
+const dishZ = (x, y) => -(x * x) * 1.5 - (Math.max(0, -y - 0.05) ** 2) * 0.3 - (y > 0.15 ? (y - 0.15) ** 2 * 0.3 : 0);
 function buildShield(r, P, pal, o, F) {
   const style = o.style || 'heater';
   const emblem = o.emblem ?? (style === 'round' ? 'rune' : 'crown');
@@ -409,6 +409,8 @@ function buildShield(r, P, pal, o, F) {
     P.add('leather', X(box3(0.026, 0.12, 0.012), { p: [0, 0.0, 0.06] }), 0x3a2216);
     P.add('trim', cylBetween([0, -0.06, 0.052], [0, 0.06, 0.052], 0.009, 0.009, 8), pal.trimDark);
     P.add('leather', X(box3(0.34, 0.03, 0.01), { p: [0, 0.2, 0.062] }), 0x2e1a10);
+    P.add('trim', tube([[0, 0.28, 0.085 + dishZ(0, 0.28) + 0.02], [0, 0.0, 0.085 + 0.034], [0, -0.3, 0.085 + dishZ(0, -0.3) + 0.02], [0, -0.4, 0.085 + dishZ(0, -0.4) + 0.02]], 0.01, { segs: 24, radial: 6 }), pal.trim);
+    P.add('trim', X(torus(0.12, 0.007, 36, 6), { p: [0, 0.02, bz + 0.0] }), pal.trimDark);
     // gem / crystal details by rarity
     if (r >= 2) { P.add('gem', X(gemCut(0.022, 8), { p: [0, 0.02, bz + 0.052], r: [Math.PI / 2, 0, 0] }), pal.gem); P.add('trim', X(torus(0.03, 0.005, 14, 6), { p: [0, 0.02, bz + 0.046] }), pal.trim); }
     if (r === 3) P.add('glow', X(torus(0.19, 0.0045, 40, 6), { p: [0, -0.02, 0.095], s: [1, 1.35, 1] }), 0xffffff);

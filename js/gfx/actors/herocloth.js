@@ -60,9 +60,10 @@ export class Cloth {
         for (let i = 0; i < nx; i++) {
           const k = (j * nx + i) * 3;
           if (j === 0) { p[k] = rw[k]; p[k + 1] = rw[k + 1]; p[k + 2] = rw[k + 2]; q[k] = p[k]; q[k + 1] = p[k + 1]; q[k + 2] = p[k + 2]; continue; }
+          const wd = this.windT !== undefined ? Math.sin(this.windT * 1.9 + i * 0.7 + j * 0.4) * 0.35 * v : 0;
           for (let c = 0; c < 3; c++) {
             const cur = p[k + c]; let vel = (cur - q[k + c]) * this.drag; q[k + c] = cur;
-            let nxt = cur + vel - (c === 1 ? this.g * h * h : 0);
+            let nxt = cur + vel - (c === 1 ? this.g * h * h : 0) + (c === 2 ? wd * h * h * 6 : 0);
             nxt += (rw[k + c] - nxt) * a;
             p[k + c] = nxt;
           }

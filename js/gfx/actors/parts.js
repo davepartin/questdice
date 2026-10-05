@@ -311,7 +311,7 @@ function applyTriplanar(sh, tp) {
   sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${TP_VS_DECL}`).replace('#include <begin_vertex>', `#include <begin_vertex>\n${TP_VS_BODY}`);
   sh.fragmentShader = sh.fragmentShader
     .replace('#include <common>', `#include <common>\n${TP_FS_DECL}`)
-    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif\n if (uShell >= 0.0) { vec3 cs = floor(vTpP * 150.0); float hs = fract(sin(dot(cs, vec3(12.9898, 78.233, 37.719))) * 43758.5453); if (hs < uShell * 0.92) discard; diffuseColor.rgb *= mix(0.5, 1.25, uShell); }`)
+    .replace('#include <map_fragment>', `#ifdef USE_MAP\n diffuseColor *= mix(tpTex(map), vec4(1.0), step(vEmber, -0.5));\n#endif\n if (uShell >= 0.0) { vec3 cs = floor(vTpP * 150.0); float hs = fract(sin(dot(cs, vec3(12.9898, 78.233, 37.719))) * 43758.5453); if (hs < 0.4 + uShell * 0.55) discard; diffuseColor.rgb *= mix(0.3, 0.85, uShell); }`)
     .replace('#include <roughnessmap_fragment>', `float roughnessFactor = roughness;\n#ifdef USE_ROUGHNESSMAP\n roughnessFactor *= tpTex(roughnessMap).g;\n#endif`)
     .replace('#include <metalnessmap_fragment>', `float metalnessFactor = metalness;\n#ifdef USE_METALNESSMAP\n metalnessFactor *= tpTex(metalnessMap).b;\n#endif`)
     .replace('#include <normal_fragment_maps>', `#ifdef USE_NORMALMAP_TANGENTSPACE
@@ -322,7 +322,7 @@ function applyTriplanar(sh, tp) {
         vec3 pO = vec3(0.0, nX.y, nX.x) * w.x + vec3(nY.x, 0.0, nY.y) * w.y + vec3(nZ.x, nZ.y, 0.0) * w.z;
         normal = normalize(normal + (vTpX * pO.x + vTpY * pO.y + vTpZ * pO.z) * normalScale.x * uTpN); }
     #endif`)
-    .replace('#include <emissivemap_fragment>', `#ifdef USE_EMISSIVEMAP\n totalEmissiveRadiance *= tpTex(emissiveMap).rgb;\n#endif\n totalEmissiveRadiance += uTpEm * max(vEmber, 0.0);\n { float fr = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0); totalEmissiveRadiance += uTpRim * fr; }`);
+    .replace('#include <emissivemap_fragment>', `#ifdef USE_EMISSIVEMAP\n totalEmissiveRadiance *= tpTex(emissiveMap).rgb;\n#endif\n totalEmissiveRadiance += uTpEm * max(vEmber, 0.0);\n { float fr = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0); float occ = clamp(dot(vColor.rgb, vec3(0.333)) * 3.2, 0.12, 1.0); totalEmissiveRadiance += uTpRim * fr * occ; }`);
 }
 // Call instead of a.finalize(): installs the triplanar hook on every cloned material that asked for it.
 export function finish(a) {

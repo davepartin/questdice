@@ -219,8 +219,8 @@ function positionPlates() {
     const vis = a.root.visible && (e.hp > 0 || a.dissolving);
     el.style.display = vis ? '' : 'none'; el._lead.style.display = vis && e.hp > 0 ? '' : 'none';
     if (!vis) continue;
-    const head = a.worldAnchor('head'); const p = project(head);
-    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 24 });
+    const head = a.worldAnchor('head').clone(); head.y += (a.height || 1.5) * 0.15; const p = project(head);
+    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 22 });
   }
   items.sort((a, b2) => a.hx - b2.hx);
   const total = items.reduce((s, it) => s + it.w, 0) + GAP * Math.max(0, items.length - 1);
@@ -234,6 +234,9 @@ function positionPlates() {
   const NS = items.length;
   const obs = [hud.cards, hud.dock, landscape() ? hud.hero : null].filter((n) => n && n.offsetHeight).map((n) => n.getBoundingClientRect()).filter((r) => r.height > 4);
   for (const it of items) {
+    // no room above the head: shrink to icon + figure instead of sitting on the monster's face
+    if (!it.el.classList.contains('tiny')) it.el._fullH = it.h;
+    const tiny = it.y - (it.el._fullH || 90) < topSafe; it.el.classList.toggle('tiny', tiny);
     let y = Math.max(it.h + topSafe, it.y);
     for (const r of obs) if (it.x + it.w / 2 > r.left && it.x - it.w / 2 < r.right && y > r.top - 8 && y - it.h < r.bottom) y = Math.max(it.h + topSafe, r.top - 8);
     it.el.style.transform = `translate3d(${it.x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;

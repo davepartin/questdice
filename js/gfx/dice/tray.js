@@ -469,7 +469,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     // ---- socket glow uniforms
     for (const slot of SLOT_ORDER) {
       const s = S[slot];
-      let g = 0.5 + 0.18 * Math.sin(time * 1.2 + s.i * 0.9);
+      let g = 0.34 + 0.12 * Math.sin(time * 1.2 + s.i * 0.9);
       g *= s.bound ? 0.25 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
@@ -481,10 +481,10 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       if (!s.die) { _m.makeScale(0, 0, 0); blobs.setMatrixAt(i, _m); return; }
       const mp = s.die.mesh.position; const h = Math.max(0, mp.y - restY(s));
       const inDish = Math.hypot(mp.x - s.home.x, mp.z - s.home.z) < 0.5 && h < 0.3;
-      const sc = 1.25 + h * 0.5;
+      const sc = 1.35 + h * 0.5;
       _p.set(mp.x, inDish ? -DEPTH + 0.004 : 0.006 + 0.0, mp.z); _s.set(sc, 1, sc); _q.identity();
       _m.compose(_p, _q, _s); blobs.setMatrixAt(i, _m);
-      const f = Math.min(1, 0.0 + h * 0.9 + (s.bound ? 0 : 0)); _c.setScalar(0.38 + f * 0.62); blobs.setColorAt(i, _c);
+      const f = Math.min(1, 0.0 + h * 0.9 + (s.bound ? 0 : 0)); _c.setScalar(0.22 + f * 0.78); blobs.setColorAt(i, _c);
     });
     blobs.instanceMatrix.needsUpdate = true; if (blobs.instanceColor) blobs.instanceColor.needsUpdate = true;
     fx.update(dt, time);

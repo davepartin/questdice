@@ -163,6 +163,10 @@
 .b3-plate:not(.targeted) .pl-name { font-size: .62rem; } .b3-plate:not(.targeted) .med { width: 2rem; height: 2rem; } .b3-plate:not(.targeted) .in-fig b { font-size: 1.3rem; }
 .b3-plate:not(.targeted) .pl-bar.hbar { height: .5rem; } .b3-plate:not(.targeted) .pl-intent { gap: .3rem; padding: .16rem .3rem .16rem .2rem; }
 .b3-plate:not(.targeted) .pl-call small { display: none; } .b3-plate:not(.targeted) .pl-call b { font-size: .5rem; }
+/* tiny: no head-room, or a crowded phone. Icon + figure only. */
+.b3-plate.tiny:not(.dead) { width: calc(var(--plw) * .62); padding: .22rem .28rem .26rem; } .b3-plate.tiny .pl-name, .b3-plate.tiny .in-name, .b3-plate.tiny .bar-num, .b3-plate.tiny .hbar-num, .b3-plate.tiny .pl-call, .b3-plate.tiny .pl-reticle { display: none; }
+.b3-plate.tiny .med { width: 1.6rem; height: 1.6rem; } .b3-plate.tiny .in-fig b { font-size: 1.05rem; } .b3-plate.tiny .pl-head { min-height: 0; } .b3-plate.tiny .pl-tier { font-size: .8rem; } .b3-plate.tiny .pl-bar.hbar { height: .4rem; }
+.b3-plates.compact .b3-plate:not(.targeted):not(.dead) { width: calc(var(--plw) * .74); } .b3-plates.compact .b3-plate:not(.targeted) .pl-name { font-size: .55rem; }
 /* ================================================================== ribbon */
 .b3-ribbon { position: absolute; left: .7rem; right: .7rem; top: calc(7.4rem + var(--safe-t)); display: flex; justify-content: center; pointer-events: none; transition: opacity .3s; }
 .b3-ribbon p { max-width: 36rem; padding: .22rem .9rem; border-radius: 2rem; background: linear-gradient(90deg, transparent, rgba(8,8,16,.72) 14%, rgba(8,8,16,.72) 86%, transparent); font-size: .72rem; line-height: 1.3; color: var(--h-dim); text-align: center; text-shadow: 0 1px 3px #000; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -199,6 +203,7 @@
 .sparkles { position: absolute; inset: 0; pointer-events: none; } .sparkles i { position: absolute; width: .45rem; height: .45rem; background: radial-gradient(circle, #fff 0 25%, rgba(255,230,140,.9) 40%, transparent 70%); border-radius: 50%; opacity: 0; animation: spark 1.6s ease-out infinite; }
 .sparkles i:nth-child(1) { left: 8%; top: -10%; animation-delay: 0s; } .sparkles i:nth-child(2) { left: 40%; top: -25%; animation-delay: .4s; } .sparkles i:nth-child(3) { left: 72%; top: -15%; animation-delay: .8s; } .sparkles i:nth-child(4) { left: 94%; top: 20%; animation-delay: 1.2s; }
 @keyframes spark { 0% { opacity: 0; transform: scale(.2); } 25% { opacity: 1; transform: scale(1.4); } 100% { opacity: 0; transform: translateY(-.6rem) scale(.4); } }
+@media (max-aspect-ratio: 5/4) { .fs-notes { bottom: auto; top: calc(100% + .25rem); } .b3-dock:has(.fnote) .b3-caption p { opacity: 0; } }
 /* caption: a tooltip */
 .b3-caption { position: relative; min-height: 2.1rem; display: flex; justify-content: center; align-items: center; }
 .b3-caption:empty { display: none; }
@@ -329,8 +334,16 @@ body.in-battle .chrome { z-index: 40; }
 @media (min-aspect-ratio: 5/4) {
   .b3-top { left: calc(1rem + var(--safe-l)); top: calc(.8rem + var(--safe-t)); }
   .b3-hero { left: calc(1rem + var(--safe-l)); right: auto; top: auto; bottom: calc(1rem + var(--safe-b)); width: var(--col); }
-  .b3-cards { position: fixed; left: calc(1rem + var(--safe-l)); width: var(--col); bottom: calc(1.5rem + var(--safe-b) + var(--hero-h, 5rem)); flex-direction: column; overflow: visible; padding: 0; margin: 0; gap: .4rem; }
-  .bcard { flex: none; min-width: 0; padding-right: .55rem; } .bc-text { display: block; } .bc-body { gap: .08rem; }
+  .b3-cards { position: fixed; left: calc(1rem + var(--safe-l)); width: var(--col); bottom: calc(1.4rem + var(--safe-b) + var(--hero-h, 5rem)); flex-direction: row; overflow: visible; padding: 0; margin: 0; gap: .3rem; }
+  .bcard { flex: 1 1 0; min-width: 0; grid-template-columns: 1fr; justify-items: center; gap: .15rem; padding: .3rem .2rem .3rem; text-align: center; }
+  .bc-art { width: 2.1rem; height: 2.3rem; font-size: 1.3rem; } .bc-body { align-items: center; gap: .05rem; width: 100%; } .bc-name { padding-right: 0; font-size: .54rem; letter-spacing: .02em; max-width: 100%; } .bc-chips { justify-content: center; gap: .15rem; } .bc-chip { font-size: .66rem; } .bc-text { display: none; }
+  .bc-cost { right: .15rem; top: .15rem; padding: .04rem .26rem .04rem .16rem; font-size: .62rem; } .bc-flag { right: 50%; transform: translateX(50%); bottom: .15rem; font-size: .42rem; letter-spacing: .08em; }
+  .bcard.st-spent .bc-chips, .bcard.st-recharge .bc-chips { visibility: hidden; }
+  /* outcome strip and the heart / heal tools read as one panel */
+  .b3-dock { gap: 0; } .b3-fc { padding: .4rem .4rem .5rem; border-radius: .8rem .8rem 0 0; background: var(--glass); box-shadow: inset 0 0 0 1px rgba(255,226,170,.2); }
+  .b3-bar { gap: .45rem; } .b3-tools { order: -1; margin: 0 0 .1rem; padding: .3rem .4rem .35rem; border-radius: 0 0 .8rem .8rem; background: var(--glass); box-shadow: inset 0 0 0 1px rgba(255,226,170,.2); }
+  .b3-bar > .hb-cta:only-child, .b3-bar > .hb-mini { margin-top: .5rem; } .b3-bar > .b3-straight, .b3-bar > .b3-acts { margin-top: .1rem; } .b3-acts { margin-top: .45rem; }
+  .b3-caption { margin-bottom: 1.4rem; }
   .b3-dock { left: auto; right: calc(1rem + var(--safe-r)); bottom: calc(1rem + var(--safe-b)); width: min(var(--col), 24rem); padding: 0; background: none; gap: .5rem; }
   .b3-caption { position: absolute; right: 0; bottom: 100%; width: 100%; margin-bottom: 1.9rem; min-height: 0; } .b3-caption p { text-align: left; }
   .b3-caption p.captip::before { left: auto; right: 1.2rem; top: auto; bottom: -.28rem; transform: rotate(225deg); }
@@ -353,7 +366,7 @@ body.in-battle .chrome { z-index: 40; }
 @media (max-height: 480px) and (min-aspect-ratio: 5/4) {
   .b3 { --col: clamp(12.5rem, 25vw, 16rem); }
   .b3-hero { padding: .3rem .6rem .3rem .3rem; } .hb-medal { width: 2.8rem; height: 2.8rem; } .hb-core { font-size: 1.35rem; } .hb-name { font-size: .85rem; }
-  .bcard { padding: .22rem .4rem .22rem .26rem; } .bc-art { width: 1.9rem; height: 2.2rem; font-size: 1.2rem; } .bc-text { display: none; } .bc-name { font-size: .66rem; } .b3-cards { gap: .28rem; bottom: calc(1.3rem + var(--safe-b) + var(--hero-h, 4rem)); }
+  .bc-art { width: 1.7rem; height: 1.8rem; font-size: 1.1rem; } .b3-cards { bottom: calc(1.2rem + var(--safe-b) + var(--hero-h, 4rem)); }
   .hb-cta, .hb-reroll, .hb-ghost { min-height: 2.9rem; } .hb-cta .hb-tx b { font-size: .95rem; } .hb-mini { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
   .fc { padding: .2rem 0; } .fc-n { font-size: 1.15rem; } .fc small { display: none; } .fc-ic { margin-bottom: 0; }
   .b3-caption p { font-size: .66rem; padding: .25rem .5rem; } .b3-dock { gap: .35rem; }
