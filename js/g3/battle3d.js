@@ -222,13 +222,21 @@ function positionPlates() {
     el.style.display = vis ? '' : 'none'; el._lead.style.display = vis && e.hp > 0 ? '' : 'none';
     if (!vis) continue;
     const head = a.worldAnchor('head').clone(); head.y += (a.height || 1.5) * 0.15; const p = project(head);
-    items.push({ e, el, hx: p.x, hy: p.y, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 22 });
+    const it = { e, el, hx: p.x, hy: p.y, ax: p.x, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 22 };
+    if (e.tier !== 'minion') {
+      // big monsters: the plate stands beside the body so it never sits on the face
+      const hh = a.height || 3; const top = project(head); const low = head.clone(); low.y -= hh * 0.5; const mid = project(low);
+      const halfW = Math.abs(mid.y - top.y) * 0.5 * 0.62;
+      const side = top.x < w / 2 ? 1 : -1;
+      it.ax = top.x + side * (halfW + it.w / 2 + 4); it.y = mid.y + it.h * 0.55; it.big = true;
+    }
+    items.push(it);
   }
-  items.sort((a, b2) => a.hx - b2.hx);
+  items.sort((a, b2) => a.ax - b2.ax);
   const total = items.reduce((s, it) => s + it.w, 0) + GAP * Math.max(0, items.length - 1);
   const rows = total > w - 12 ? 2 : 1;
   const place = (list) => {
-    for (const it of list) it.x = Math.max(it.w / 2 + 6, Math.min(w - it.w / 2 - 6, it.hx));
+    for (const it of list) it.x = Math.max(it.w / 2 + 6, Math.min(w - it.w / 2 - 6, it.ax));
     for (let i = 1; i < list.length; i++) { const q = list[i - 1]; const min = q.x + (q.w + list[i].w) / 2 + GAP; if (list[i].x < min) list[i].x = min; }
     for (let i = list.length - 1; i >= 0; i--) { const mx = w - list[i].w / 2 - 6; if (list[i].x > mx) list[i].x = mx; if (i < list.length - 1) { const nx = list[i + 1]; const m2 = nx.x - (nx.w + list[i].w) / 2 - GAP; if (list[i].x > m2) list[i].x = m2; } }
   };

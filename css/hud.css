@@ -391,3 +391,14 @@ body.in-battle .chrome { z-index: 40; }
 @media (prefers-reduced-motion: reduce) {
   .b3 *, .b3-banner, .b3-banner *, .b3-titlecard, .b3-titlecard *, .b3-round-fl { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* phone: the hero strip is one slim row so the monsters keep the screen */
+@media (max-aspect-ratio: 5/4) {
+  .b3-hero { top: calc(3.2rem + var(--safe-t)); padding: .2rem .65rem .2rem .22rem; gap: .45rem; border-radius: 1.4rem .6rem .6rem 1.4rem; box-shadow: 0 5px 14px rgba(0,0,0,.4); }
+  .b3-hero .hb-medal { width: 2.2rem; height: 2.2rem; padding: 2px; } .b3-hero .hb-core { font-size: 1.05rem; }
+  .b3-hero .hb-lv { min-width: 1rem; height: 1rem; font-size: .55rem; right: -.28rem; bottom: -.22rem; }
+  .b3-hero .hb-main { display: flex; align-items: center; gap: .5rem; }
+  .b3-hero .hb-id { flex: none; } .b3-hero .hb-cls { display: none; } .b3-hero .hb-name { font-size: .78rem; }
+  .b3-hero .hb-hp { flex: 1; min-width: 0; } .b3 .b3-hero .hb-hp.hbar { height: .95rem; } .b3-hero .hb-hp .hbar-num { font-size: .62rem; }
+  .b3-hero .hb-magic { flex: none; gap: .2rem; } .b3-hero .hb-magic > :last-child { display: none; }
+}

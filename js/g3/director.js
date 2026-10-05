@@ -6,7 +6,7 @@ import { damp } from '../gfx/util.js';
 // Each shot: land = wide screens, port = tall phones. Blended by aspect ratio.
 export const SHOTS = {
   battle: {
-    land: { pos: [0.4, 8.4, 11.8], look: [0, 0.6, 2.6], fov: 42 },
+    land: { pos: [0.4, 8.4, 11.8], look: [0, 1.5, 2.4], fov: 44 },
     port: { pos: [-0.2, 9.8, 12.8], look: [-0.3, 1.0, 2.2], fov: 63 },
   },
   intro: {

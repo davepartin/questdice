@@ -26,6 +26,7 @@ const FH = 2.18;           // half width of the leather field
 const FO = 2.35;           // half width of the outer frame
 const DISH_TOP = 0.54;     // socket radius at the surface
 const DEPTH = ROLL.dishDepth;
+const DIE_SCALE = 1.22;     // dice are drawn this much larger than their physics body so they fill their sockets and read from afar
 const RC = { NW: [0, 0], N: [1, 0], NE: [2, 0], W: [0, 1], C: [1, 1], E: [2, 1], SW: [0, 2], S: [1, 2], SE: [2, 2] };
 export const slotPos = (slot) => new THREE.Vector3((RC[slot][0] - 1) * PITCH, 0, (RC[slot][1] - 1) * PITCH);
 
@@ -214,7 +215,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   function buildDie(s, spec) {
     if (s.die) { diceGroup.remove(s.die.mesh); s.die.dispose(); }
     s.spec = spec; s.die = createDie({ spec, quality });
-    s.die.mesh.userData.slot = s.slot; diceGroup.add(s.die.mesh); tray.diceMeshes[s.slot] = s.die.mesh;
+    s.die.mesh.scale.setScalar(DIE_SCALE); s.die.mesh.userData.slot = s.slot; diceGroup.add(s.die.mesh); tray.diceMeshes[s.slot] = s.die.mesh;
     s.value = Math.min(Math.max(1, s.value), spec.sides);
     placeAtRest(s);
   }
@@ -441,7 +442,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       }
       const baseY = lifted ? restY(s) : s.pos.y;
       const sinkY = -0.05 * lockK;
-      die.mesh.position.set(s.pos.x, baseY + (lifted ? s.lift + s.hop + sinkY : 0), s.pos.z);
+      die.mesh.position.set(s.pos.x, baseY + (DIE_SCALE - 1) * (die.inR + d4Lift(die.poly)) + (lifted ? s.lift + s.hop + sinkY : 0), s.pos.z);
       if (s.wobble != null) { s.wobble += dt; const w = 0.07 * Math.exp(-s.wobble * 6.5) * Math.sin(s.wobble * 34); if (s.wobble > 0.9) s.wobble = null; _q.setFromAxisAngle(_wob.set(Math.cos(s.i * 2.1), 0, Math.sin(s.i * 2.1)), w); die.mesh.quaternion.copy(_q).multiply(s.quat); } else die.mesh.quaternion.copy(s.quat);
       // ---- shader state
       const U = die.uniforms;
