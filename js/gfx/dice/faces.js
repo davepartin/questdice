@@ -18,7 +18,7 @@ const SVG = {
   tri: 'M50 6 L96 90 H4 Z',
   disc: 'M50 4 A46 46 0 1 1 49.9 4 Z',
   coin: 'M50 4 A46 46 0 1 1 49.9 4 Z M50 20 A30 30 0 1 0 50.1 20 Z',
-  shield: 'M50 4 L90 16 V50 C90 74 72 90 50 98 C28 90 10 74 10 50 V16 Z',
+  shield: 'M4 4 L50 15 L96 4 V46 C96 74 74 90 50 98 C26 90 4 74 4 46 Z M47.5 24 H52.5 V86 H47.5 Z',
   sword: 'M50 0 L60 14 V68 H40 V14 Z M18 68 H82 V80 H18 Z M44 80 H56 V94 H44 Z M50 100 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0',
   dagger: 'M50 6 L59 22 V60 H41 V22 Z M26 60 H74 V70 H26 Z M44 70 H56 V90 H44 Z',
   longsword: 'M50 0 L58 10 V72 H42 V10 Z M14 72 H86 V83 H14 Z M44 83 H56 V96 H44 Z',
@@ -39,7 +39,7 @@ export function iconPath(name) {
   return paths.get(name);
 }
 export const hasIcon = (n) => !!SVG[n];
-const evenodd = new Set(['helmet', 'coin']);
+const evenodd = new Set(['helmet', 'coin', 'shield']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
 export function drawIcon(ctx, name, x, y, size, { stroke = 0 } = {}) {
   ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(s, s); ctx.translate(-50, -50);
