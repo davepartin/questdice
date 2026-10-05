@@ -60,11 +60,9 @@ Status legend: [x] done, [~] partly / unverified, [ ] not started.
 
 **Part 1: Playable 3D solo battle** [~]
 - [x] Reset > Roll > Shape > Lock > Resolve with 3D hero, monsters, dice tray, VFX, HUD. A full fight to victory was run headlessly.
-- [ ] **BUG (P0): the camera crops the dice tray.** A tweak made the near rows of the tray fall off the bottom of the screen in landscape. A reframe was
-  just applied in `js/g3/director.js` (`battle` shot: land pos [0.5,5.0,11.2] look [0,0.9,1.4] fov 38; port pos [0.3,6.2,11.4] look [0,0.8,1.6] fov 50) and
-  `js/g3/world.js` (`MARKS.tray` z 4.5, tray scale 0.74) but it is **UNVERIFIED**. First task of the next session: run
-  `node dev/gallery.mjs --only goblins,king --q low --w 1000 --h 563` and a portrait run (`--w 390 --h 844`), confirm ALL nine dice are fully
-  visible and tappable, with the HUD dock not covering them, in both orientations. Do not proceed until this is true.
+- [x] **FIXED: camera cropped the dice tray.** Verified 2026-10-05 in `dev/gallery.mjs` at 1000x563 and 390x844 (`--q low`): all nine dice fully visible and
+  clear of the HUD dock, hero and both monsters in frame. Shot `battle`: land pos [0.5,5.0,11.2] look [0,0.9,1.4] fov 38; port pos [-0.2,6.4,11.8] look [-0.4,0.8,1.6] fov 54;
+  `MARKS.tray` z 4.5 scale 0.74. Re-verify after ANY change to director/world marks/tray size, and for the king/ogre scenes (big monsters) too.
 - [ ] Play 5 quests in a row through the real flow (create > board > battle > victory > camp > board x5), no console errors.
 - [ ] Target ring from `vfx.targetRing` and `vfx.ambientFor(place)` are wired (`battle3d.js`) but never seen in a real frame.
 
