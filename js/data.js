@@ -19,7 +19,7 @@ export const REROLL_ACTIONS = 3;
 export const SYNERGY_BONUS = 10;
 export const HEAL_COST = 2; // magic
 export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
-export const NUDGE_COST = 1;
+export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
 export const SURVIVE_HP = 1; // Last Stand
 

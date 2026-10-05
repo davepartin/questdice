@@ -368,6 +368,7 @@ const healBtn = () => {
 };
 
 export function renderReset() {
+  B.bw?.tray?.setLink?.(null);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   setHud({ phase: 'reset' });
@@ -440,6 +441,8 @@ export function renderShape() {
   B.hud.forecast.classList.remove('idle');
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
   HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
+  // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
+  bw.tray.setLink?.([ev.offense3 ? { slots: ['NW', 'N', 'NE'], color: 0xff3b3b } : null, ev.defense3 ? { slots: ['N', 'C', 'S'], color: 0x3aa4ff } : null].filter(Boolean));
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const pips = h('div', { class: 'b3-pips', role: 'img', 'aria-label': `${b.actionsLeft} of ${D.REROLL_ACTIONS} reroll actions left${b.freeActions.length ? `, plus ${b.freeActions.length} free` : ''}` },
@@ -448,7 +451,7 @@ export function renderShape() {
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`), h('em', {}, `+${ev.straightBonus} to`)),
     h('div', { class: 'fseg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
   const cantNudge = (d) => B.busy || b.magic < D.NUDGE_COST || (d < 0 ? b.board.C.v <= 1 : b.board.C.v >= 6);
-  const nudge = (d) => HK.button({ kind: 'mini', icon: h('span', { class: 'nudge' }, HK.icon('heart'), h('i', { class: d < 0 ? 'dn' : 'up' })), onclick: () => doNudge(d), disabled: cantNudge(d), aria: `Nudge the heart die ${d < 0 ? 'down' : 'up'} one, costs ${D.NUDGE_COST} magic` });
+  const nudge = (d) => HK.button({ kind: 'mini', icon: h('span', { class: 'nudge' }, HK.icon('heart'), h('i', { class: d < 0 ? 'dn' : 'up' })), badge: HK.costGem(D.NUDGE_COST, 'badge'), onclick: () => doNudge(d), disabled: cantNudge(d), aria: `Nudge the heart die ${d < 0 ? 'down' : 'up'} one, costs ${D.NUDGE_COST} magic` });
   const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
     straight,

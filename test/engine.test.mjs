@@ -5,7 +5,7 @@ import {
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon,
 } from '../js/engine.js';
-import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS } from '../js/data.js';
+import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -249,11 +249,12 @@ test('cards spend Magic, work once per battle, and free-reroll cards skip the co
   assert.equal(b2.magic, before);
 });
 
-test('heart nudge moves the center die by one for 1 Magic', () => {
+test('heart nudge moves the center die by one for its Magic cost', () => {
   const h = knight();
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
-  startRoll(b); b.board.C.v = 3; b.magic = 2;
+  startRoll(b); b.board.C.v = 3; b.magic = NUDGE_COST + 1;
   assert.ok(nudge(b, 1)); assert.equal(b.board.C.v, 4); assert.equal(b.magic, 1);
+  b.magic = NUDGE_COST - 1; assert.equal(nudge(b, 1), false); b.magic = NUDGE_COST + 1; b.board.C.v = 3; nudge(b, 1);
   b.board.C.v = 6; assert.equal(nudge(b, 1), false);
 });
 

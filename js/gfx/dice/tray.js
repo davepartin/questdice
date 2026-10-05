@@ -350,6 +350,25 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     return h.promise;
   };
   tray.clearHighlight = () => fx.clearHighlights();
+  // A glowing bar tying the dice of a triple together (slots in order), drawn just above the dice. `setLink(null)` clears it.
+  const link = new THREE.Group(); link.name = 'link'; object.add(link);
+  const linkMats = [];
+  tray.setLink = function setLink(groups) { // groups: [{ slots:[...], color }] (or null)
+    while (link.children.length) { const c = link.children.pop(); c.geometry.dispose(); }
+    linkMats.length = 0;
+    for (const g of groups || []) {
+      if (!g.slots || g.slots.length < 2) continue;
+      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(g.color ?? 0xffd23d).multiplyScalar(1.1), transparent: true, opacity: 0.8, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+      linkMats.push(mat);
+      const pts = g.slots.map((sl) => { const p = slotPos(sl); return new THREE.Vector3(p.x, 0.75, p.z); });
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i]; const p1 = pts[i + 1]; const len = p0.distanceTo(p1);
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, len, 8, 1, true), mat);
+        m.position.copy(p0).add(p1).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p1.clone().sub(p0).normalize()); m.renderOrder = 20; link.add(m);
+      }
+      for (const p of pts) { const n = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), mat); n.position.copy(p); n.renderOrder = 20; link.add(n); }
+    }
+  };
   let lockK = 0; let lockFlare = 0;
   tray.lock = function lock() { if (tray.locked) return tray; tray.locked = true; lockFlare = 1; for (const slot of SLOT_ORDER) { const p = S[slot].home; fx.ring(p.x, 0.01, p.z, 0xffd98a, { dur: 0.8, s0: 0.8, s1: 2.8, a: 1.1 }); fx.sparkBurst(p.x, 0.06, p.z, 8, 0xffd98a, { speed: 1.2, up: 1.2, size: 0.04, life: 0.6 }); } tray.onSound?.('lock', { slot: null, speed: 1 }); return tray; };
   tray.unlock = function unlock() { tray.locked = false; lockFlare = 0.4; return tray; };
@@ -412,6 +431,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   };
   tray.update = function update(dt, t) {
     tray.time += dt; const time = tray.time;
+    for (const lm of linkMats) lm.opacity = 0.5 + 0.3 * Math.sin(time * 5);
     const a = away(); _view.copy(viewDir());
     lockK += ((tray.locked ? 1 : 0) - lockK) * (1 - Math.exp(-9 * dt)); lockFlare = Math.max(0, lockFlare - dt * 1.4);
     let anyRolling = false;
