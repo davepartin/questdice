@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
-  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
+  sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
 } from '../js/engine.js';
-import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST } from '../js/data.js';
+import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -254,20 +254,49 @@ test('rerolls: first action is free, later actions cost 1 Magic per die, bound d
   assert.equal(reroll(b, ['N', 'S', 'E', 'C']), false, 'a Knight rerolls at most 3 dice per action');
 });
 
-test('cards spend Magic, work once per battle, and free-reroll cards skip the cost', () => {
+test('powers spend Magic and work once per battle; at-will powers return every round', () => {
   const h = knight();
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
   startRoll(b); b.magic = 5;
-  assert.ok(playCard(b, 'cleave')); assert.equal(b.magic, 3); assert.equal(b.mods.atk, 6);
-  assert.equal(playCard(b, 'cleave'), false);
-  const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true });
-  const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1);
-  startRoll(b2); b2.magic = 3;
-  assert.ok(playCard(b2, 'foresee'));
-  assert.equal(rerollInfo(b2).kind, 'card');
-  const before = b2.magic;
-  assert.ok(reroll(b2, ['N', 'S', 'W']));
-  assert.equal(b2.magic, before);
+  const r = castPower(b, 'cleave'); assert.ok(r); assert.equal(b.magic, 3); assert.equal(r.rolls.length, 2);
+  assert.equal(b.mods.atk, r.total); assert.equal(b.mods.splash, Math.floor(r.total / 2));
+  assert.equal(castPower(b, 'cleave'), null);
+  assert.ok(castPower(b, 'shieldwall')); assert.equal(b.mods.block, 4); assert.equal(castPower(b, 'shieldwall'), null); // once a round
+  beginReset(b); startRoll(b); assert.ok(castPower(b, 'shieldwall')); // back next round
+  const w = newHero({ name: 'W', cls: 'ranger', seed: 3, full: true });
+  const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1); startRoll(b2); b2.magic = 3;
+  assert.ok(playCard(b2, 'quickdraw')); assert.equal(rerollInfo(b2).kind, 'card');
+  const before = b2.magic; assert.ok(reroll(b2, ['N', 'S'])); assert.equal(b2.magic, before);
+});
+
+test('scale powers: more magic, more dice; round powers grow; supers wait for round 3, hit everyone and cannot be recharged', () => {
+  const r = ranger(); r.level = 8;
+  const b = newBattle(r, questsFor(r)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
+  const a = castPower(b, 'aimed', { x: 5 }); assert.equal(a.rolls.length, 5); assert.equal(b.magic, 7); assert.equal(b.mods.pierce, a.total);
+  assert.equal(castPower(b, 'rain'), null); // round 1: too early
+  const k = knight(); k.level = 8; k.powerLevel = { cleave: 2 };
+  const b2 = newBattle(k, { ...questsFor(k)[0], enemies: ['goblin', 'goblin', 'wolf'] }, makeRng(4), 1);
+  beginReset(b2); beginReset(b2); beginReset(b2); startRoll(b2); b2.magic = 12; // round 3
+  assert.equal(castPower(b2, 'cleave').rolls.length, 4); // 2 dice + 2 levels
+  assert.ok(castPower(b2, 'judgment')); assert.equal(b2.mods.aoe, Math.round(12 * 1.25 * 0 + 12 * (1 + 0.25 * 0)));
+  b2.board.NW.v = 1; const hp0 = b2.enemies.map((e) => e.hp);
+  const rep = resolve(b2, { target: 0 });
+  assert.ok(rep.splashed.length >= 2 && b2.enemies.slice(1).every((e, i) => e.hp < hp0[i + 1] || e.hp === 0), 'every other monster takes area damage');
+  b2.used.judgment = true; b2.magic = 12; assert.equal(recharge(b2, 'judgment'), false);
+});
+
+test('power upgrades cost gold and make numbers and dice bigger', () => {
+  const h = knight(); h.gold = 500;
+  assert.equal(powerUpgradeInfo(h, 'cleave').cost, 60); assert.ok(upgradePower(h, 'cleave')); assert.equal(h.gold, 440);
+  assert.ok(upgradePower(h, 'cleave')); assert.equal(upgradePower(h, 'cleave'), false); assert.equal(powerLevel(h, 'cleave'), 2);
+  assert.equal(upgradePower(h, 'nonsense'), false);
+});
+
+test('every class has at least three powers, at least one at will, and a super', () => {
+  for (const [id, c] of Object.entries(CLASSES)) {
+    assert.ok(c.cards.length >= 4, id); assert.ok(c.cards.some((k) => k.atwill), `${id} at-will`); assert.ok(c.cards.some((k) => (k.unlock || 1) >= 5), `${id} super`);
+    assert.ok(c.cards.every((k) => k.fx && k.text && k.cost > 0), id);
+  }
 });
 
 test('heart nudge moves the center die by one for its Magic cost', () => {

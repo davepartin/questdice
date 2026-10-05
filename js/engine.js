@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
 } from './data.js';
@@ -315,17 +315,17 @@ export function newBattle(hero, quest0, rng, players = 1) {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, lastStandUsed: false,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   beginReset(b);
   return b;
 }
-const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0 });
+const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0, splash: 0, aoe: 0 });
 
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods();
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {};
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 export function startRoll(b) {
@@ -370,19 +370,55 @@ export function healSpend(b) {
   if (b.magic < cost || b.hp >= b.maxHp) return false;
   b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + HEAL_AMOUNT); b.stats.healed += b.hp - before; return true;
 }
-export function playCard(b, id) {
+// ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
+export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
+const scaleNum = (v, lvl) => Math.round(v * (1 + 0.25 * lvl));
+export function powerCost(card, x) { return card.kind === 'scale' ? Math.max(card.cost, Math.min(card.max, x ?? card.cost)) : card.cost; }
+export function powerState(b, card) {
+  const spent = card.atwill ? !!(b.usedRound && b.usedRound[card.id]) : !!b.used[card.id];
+  const early = !!(card.minRound && b.round < card.minRound);
+  return { spent, early, canPay: b.magic >= card.cost };
+}
+export function castPower(b, id, { x } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
-  if (!card || b.used[id] || b.magic < card.cost || b.phase !== 'shape') return false;
-  b.magic -= card.cost; b.used[id] = true;
-  for (const [k, v] of Object.entries(card.fx)) {
-    if (k === 'free') b.freeActions.push(v);
-    else if (k === 'magic') b.magic = Math.min(MAGIC_CAP, b.magic + v);
-    else b.mods[k] += v;
+  if (!card || b.phase !== 'shape') return null;
+  const st = powerState(b, card); if (st.spent || st.early) return null;
+  const cost = powerCost(card, x); if (b.magic < cost) return null;
+  b.magic -= cost;
+  if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
+  const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
+  const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(MAGIC_CAP, b.magic + v); else b.mods[k] = (b.mods[k] || 0) + v; };
+  if (card.dice) { // roll them
+    const n = card.dice.n + lvl + (card.kind === 'scale' ? cost - card.cost : 0);
+    for (let i = 0; i < n; i++) out.rolls.push(1 + Math.floor(b.rng() * card.dice.s));
+    out.total = out.rolls.reduce((a, v) => a + v, 0); out.die = card.dice.s;
+    add(card.dice.to, out.total);
+    if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+  } else if (card.kind === 'round') {
+    out.total = scaleNum(card.per * b.round, lvl); add('atk', out.total);
+    if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+  } else if (card.kind === 'luck') {
+    const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
+    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(5, lvl)); else { add('atk', scaleNum(9, lvl)); add('magic', 2); }
+    out.total = r;
+  } else {
+    for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v : scaleNum(v, lvl));
   }
-  return true;
+  if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
+  b.lastCast = out; return out;
+}
+export const playCard = (b, id, opts) => !!castPower(b, id, opts);
+export function powerUpgradeInfo(hero, id) {
+  const lvl = powerLevel(hero, id); if (lvl >= POWER_UPGRADE.length) return { ok: false, why: 'max', lvl };
+  const cost = POWER_UPGRADE[lvl]; return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, lvl, next: lvl + 1 };
+}
+export function upgradePower(hero, id) {
+  if (!cardsOf(hero).some((c) => c.id === id)) return false;
+  const r = powerUpgradeInfo(hero, id); if (!r.ok) return false;
+  hero.gold -= r.cost; hero.powerLevel = { ...(hero.powerLevel || {}), [id]: r.next }; return true;
 }
 export function recharge(b, id) {
-  if (!b.used[id] || b.magic < RECHARGE_COST) return false;
+  if (!b.used[id] || b.magic < RECHARGE_COST || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
   b.magic -= RECHARGE_COST; b.used[id] = false; return true;
 }
 
@@ -420,6 +456,18 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.stats.dealt += rep.dealt;
   if (tgt.intent.v === 'charge' && tgt.hp > 0 && dmg + T.stagger >= tgt.staggerAt) { tgt.windup = false; tgt.cancelled = true; rep.staggered.push(tgt.uid); }
   if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
+  // splash (to the others) and area damage (to everyone), from powers
+  rep.splashed = [];
+  if (m.splash > 0 || m.aoe > 0) {
+    for (const e of b.enemies) {
+      if (e.hp <= 0 && e !== tgt) continue;
+      const hit = (e === tgt ? 0 : m.splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
+      const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
+      rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
+      if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
+      else if (e.intent && e.intent.v === 'charge' && e.hp > 0 && hit + T.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; if (!rep.staggered.includes(e.uid)) rep.staggered.push(e.uid); }
+    }
+  }
 
   // 2. Survivors act.
   let block = T.block;

@@ -215,15 +215,17 @@ export function synergyList(ev, mods) {
 // ------------------------------------------------------------------------------------------------ ability cards
 const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', stagger: 'stagger', weaken: 'weaken', free: 'dice' };
 export function cardTone(fx) { return fx.heal ? 'heal' : fx.block && !fx.atk ? 'block' : fx.pierce ? 'pierce' : fx.atk ? 'atk' : fx.block ? 'block' : fx.free ? 'free' : fx.weaken ? 'weaken' : 'magic'; }
-export function abilityCard(k, { spent, reset, afford, rechargeCost, onclick, disabled, fresh }) {
+export function abilityCard(k, { spent, reset, afford, rechargeCost, onclick, disabled, fresh, flag, cost, stepper, level = 0, locked = false }) {
   const tone = cardTone(k.fx); const art = FX_ICON[Object.keys(k.fx)[0]] || 'magic';
   const chips = Object.entries(k.fx).map(([f, v]) => h('span', { class: `bc-chip t-${FX_ICON[f] === 'dice' ? 'free' : f}` }, icon(FX_ICON[f] || 'star'), h('b', {}, f === 'free' ? `${v}` : `+${v}`)));
   const state = spent ? (reset ? 'recharge' : 'spent') : (reset ? 'ready' : afford ? 'play' : 'low');
   const el = h('button', { class: `bcard tone-${tone} st-${state} ${fresh ? 'just' : ''}`, type: 'button', disabled, onclick, 'aria-label': `${k.name}. ${k.text} ${spent ? (reset ? `Recharge for ${rechargeCost} magic.` : 'Already used.') : `Costs ${k.cost} magic.`}`, title: k.text },
     h('span', { class: 'bc-art' }, icon(art), h('i', { class: 'bc-glint' })),
     h('span', { class: 'bc-body' }, h('b', { class: 'bc-name' }, k.name), h('span', { class: 'bc-chips' }, chips), h('small', { class: 'bc-text' }, k.text)),
-    h('span', { class: 'bc-cost' }, spent && reset ? icon('reroll') : icon('magic'), h('b', {}, String(spent && reset ? rechargeCost : k.cost))),
-    spent ? h('span', { class: 'bc-flag' }, reset ? 'RECHARGE' : 'SPENT') : null);
+    h('span', { class: 'bc-cost' }, spent && reset ? icon('reroll') : icon('magic'), h('b', {}, String(spent && reset ? rechargeCost : (cost ?? k.cost)))),
+    spent && !flag ? h('span', { class: 'bc-flag' }, reset ? 'RECHARGE' : 'SPENT') : flag ? h('span', { class: `bc-flag ${locked ? 'lock' : 'tag'}` }, flag) : null,
+    level ? h('span', { class: 'bc-lvl', 'aria-label': `Level ${level}` }, '★'.repeat(level)) : null,
+    stepper || null);
   el.addEventListener('pointerdown', () => { if (!el.disabled) { buzz(10); replay(el, 'press'); } });
   return el;
 }

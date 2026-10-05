@@ -1,7 +1,7 @@
 // Balance simulator: a simple bot plays the real engine. Usage: node tools/sim.mjs [battles] [class]
 import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
-  cardsOf, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
+  cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
@@ -48,14 +48,18 @@ export function botRound(b, rng) {
   }
   // heal when hurt
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
-  // cards: lean on them when the round matters
+  // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
+  const foes = b.enemies.filter((e) => e.hp > 0).length;
   for (const c of cardsOf(b.hero)) {
-    if (b.used[c.id] || b.magic < c.cost) continue;
-    const f = c.fx;
-    if (f.heal && b.hp > b.maxHp * 0.6) continue;
+    const st = powerState(b, c); if (st.spent || st.early) continue;
+    const f = c.fx; const x = c.kind === 'scale' ? Math.min(c.max, Math.max(c.cost, Math.floor(b.magic / 2))) : c.cost;
+    if (b.magic < x) continue;
+    if (f.heal && !c.dice && b.hp > b.maxHp * 0.6) continue;
+    if (c.dice?.to === 'heal' && b.hp > b.maxHp * 0.6) continue;
     if (f.free) continue;
-    if (b.magic - c.cost < 1 && b.hp > b.maxHp * 0.5) continue;
-    playCard(b, c.id);
+    if (c.kind === 'super' && foes < 2 && b.round < 4) continue;
+    if (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5)) continue;
+    castPower(b, c.id, { x });
   }
   // target: weakest, but prefer an enemy winding up
   const alive = b.enemies.map((e, i) => ({ e, i })).filter((x) => x.e.hp > 0);
@@ -75,6 +79,7 @@ export function fight(hero, quest, rng) {
 // Greedy camp: buy the best affordable strength/special upgrade; take the first perk.
 export function botCamp(hero, rng) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
+  for (const k of cardsOf(hero)) if (hero.gold > 260) upgradePower(hero, k.id);
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   let acted = true;
   while (acted) {

@@ -186,7 +186,7 @@ export function create() {
       h('div', { class: 'ci-meters' }, meter('Health', c.hp, 40, 'heart', 'm-hp'), meter('Magic', c.startMagic, 5, 'spark', 'm-mag'), meter('Dice per reroll', c.rerollDice, 4, 'reroll', 'm-dice')),
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
-      eyebrow('Cards in your hand'),
+      eyebrow('Magical powers'),
       h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > 1 ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > 1 ? h('em', {}, `Level ${k.unlock}`) : null))));
   };
   paint();
@@ -436,6 +436,14 @@ function talentCard(hero, slot) {
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (E.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
     up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
 }
+// Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
+const KIND_NAME = { flat: 'Fixed', dice: 'Rolls dice', scale: 'More magic, more dice', round: 'Grows each round', luck: 'Roll for luck', super: 'Super: once, round 3+' };
+function powerRow(hero, k) {
+  const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
+  return h('div', { class: 'sx-urow wrow' },
+    h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, k.text), h('small', { class: 'ur-next' }, `${KIND_NAME[k.kind] || ''} · ${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`)),
+    u.next ? btn(`Level ${u.next} · ${u.cost}`, () => { if (E.upgradePower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${k.name} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+}
 function forgeTab() {
   const hero = X.S.hero;
   const hasTalent = ['SW', 'SE'].some((k) => E.isActive(hero, k));
@@ -450,6 +458,9 @@ function forgeTab() {
     eyebrow('Strength dice'),
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
+    eyebrow('Magical powers'),
+    h('p', { class: 'tab-intro' }, 'Spend magic in battle. Most work once a fight; the weaker ones come back every round. Upgrades add dice and numbers. A super unlocks at level 5.'),
+    ...E.cardsOf(hero).map((k) => powerRow(hero, k)),
     eyebrow('Weapons'),
     h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
     ...weapons.map(weaponRow));
@@ -485,7 +496,7 @@ function heroTab() {
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),
-    eyebrow('Class cards'), h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > hero.level ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > hero.level ? h('em', {}, `Level ${k.unlock}`) : null))),
+    eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > hero.level ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > hero.level ? h('em', {}, `Level ${k.unlock}`) : null))),
     eyebrow('Always available'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal'), h('small', {}, `Restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart nudge'), h('small', {}, 'Move your heart die by 1'))),
     log.length ? [eyebrow('The road remembers'), h('div', { class: 'ht-log' }, log.slice(0, 8).map((e) => h('div', {}, h('b', {}, e.title), h('small', {}, e.text))))] : null);
 }

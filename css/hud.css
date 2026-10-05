@@ -449,3 +449,8 @@ body.in-battle .chrome { z-index: 40; }
 @media (max-aspect-ratio: 5/4) { .b3-ribbon { display: none; } }
 /* phone: the hint card sits over the card row (never over the monsters, the stat strip or the dice) */
 @media (max-aspect-ratio: 5/4) { .b3-coach { top: auto; bottom: calc(var(--cards-bottom, 7.5rem) - .2rem); } .b3-coachcard { padding: .5rem .6rem; } .cc-tx p { font-size: .74rem; } }
+
+/* powers: kind tags, stars, the magic stepper */
+.bc-flag.tag { background: rgba(255,214,140,.16); color: var(--gild-hi); } .bc-flag.lock { background: rgba(255,255,255,.1); color: #aeb4c6; }
+.bc-lvl { position: absolute; left: .35rem; top: .22rem; font-size: .5rem; letter-spacing: .05em; color: #ffd21a; text-shadow: 0 0 6px rgba(255,210,26,.6); }
+.bc-step { position: absolute; left: .3rem; bottom: .22rem; display: inline-flex; gap: .2rem; z-index: 2; } .bc-step i { width: 1.35rem; height: 1.35rem; display: grid; place-items: center; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font: 800 .9rem var(--disp, inherit); font-style: normal; box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); cursor: pointer; }

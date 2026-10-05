@@ -382,14 +382,20 @@ function clearDock() {
   B.hud.caption.replaceChildren();
 }
 function cardTiles(reset) {
-  const b = B.b; const hero = B.hero;
+  const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
   return E.cardsOf(hero).map((k) => {
-    const spent = b.used[k.id];
-    const onclick = reset ? (spent ? () => doRecharge(k.id) : null) : () => doCard(k.id);
-    const afford = b.magic >= k.cost;
-    const disabled = reset ? !(spent && b.magic >= D.RECHARGE_COST) : (spent || !afford);
+    const st = E.powerState(b, k);
+    const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
+    const canRecharge = !k.atwill && k.kind !== 'super';
+    const onclick = reset ? (st.spent && canRecharge ? () => doRecharge(k.id) : null) : () => doCard(k.id);
+    const afford = b.magic >= x;
+    const disabled = reset ? !(st.spent && canRecharge && b.magic >= D.RECHARGE_COST) : (st.spent || st.early || !afford);
     const fresh = B.fresh === k.id; if (fresh) B.fresh = null;
-    return HK.abilityCard(k, { spent, reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh });
+    const flag = st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
+    const stepper = k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
+      h('i', { role: 'button', 'aria-label': 'One less magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.max(k.cost, x - 1); renderShape(); } }, '–'),
+      h('i', { role: 'button', 'aria-label': 'One more magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); renderShape(); } }, '+')) : null;
+    return HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
   });
 }
 const healBtn = () => {
@@ -401,7 +407,7 @@ export function renderReset() {
   B.bw?.tray?.setLink?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
-  setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1) hint('b_round2'); }, 300);
+  setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   setHud({ phase: 'reset' });
@@ -536,14 +542,16 @@ function doHeal() {
 }
 function doCard(id) {
   const b = B.b; if (B.busy) return;
-  if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; }
-  sfx.card(); buzz(20); B.fresh = id;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
-  const fx = k.fx; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xff8a1a : fx.atk ? 0xff5a4a : 0xa64dff;
+  const r = E.castPower(b, id, { x: B.powerX?.[id] });
+  if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
+  sfx.card(); buzz(20); B.fresh = id;
+  const fx = { ...k.fx, ...(k.dice ? { [k.dice.to]: r.total } : {}) }; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xff8a1a : fx.atk ? 0xff5a4a : 0xa64dff;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
-  if (fx.heal) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${fx.heal}`, 'heal'); }
-  banner(k.name.toUpperCase(), fx.heal ? 'good' : 'gold');
+  if (k.dice?.to === 'heal' || (!k.dice && fx.heal)) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${k.dice ? r.total : fx.heal}`, 'heal'); }
+  const dice = r.rolls.length ? `  ${r.rolls.join(' + ')}${r.rolls.length > 1 ? ` = ${r.total}` : ''}` : '';
+  banner(`${k.name.toUpperCase()}${dice}`, fx.heal ? 'good' : 'gold');
   renderShape();
 }
 function doRecharge(id) {
@@ -598,6 +606,11 @@ async function lockInInner() {
     tAct.hurt(); number(headP, `−${rep.dealt}`, 'dmg');
     if (rep.T.pierce) { vfx('beam', bw.hero.worldAnchor('chest'), chest, { color: 0xff8a1a, dur: 0.25 }); number(headP.clone().add(new THREE.Vector3(0.5, 0.35, 0)), `◆ ${rep.T.pierce}`, 'pierce'); }
   } else if (!rep.guarded) { number(headP, '0', 'meh'); sfx.block(); }
+  for (const sp of rep.splashed || []) { // splash / area damage on the other monsters
+    if (sp.uid === rep.targetUid || sp.dealt <= 0) continue;
+    const a = bw.actors.get(sp.uid); if (!a) continue;
+    a.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'flesh', power: Math.min(1, sp.dealt / 20) }); number(a.worldAnchor('head'), `−${sp.dealt}`, 'dmg');
+  }
   if (tEnemy) updatePlate(tEnemy);
   for (const e of b.enemies) updatePlate(e);
   stage.hitStop?.(0.06);
