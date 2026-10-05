@@ -515,12 +515,12 @@ export function gallowsHill(c) {
   const moonCol = boss ? 0xff9a7a : 0xf0f4ff;
   applyPalette(c, {
     sky: boss
-      ? { hor: 0x7a1c14, mid: 0x3a1020, top: 0x120610, glows: [{ az: 0, w: 60, h: 6, color: 0xff3a14, k: 0.8 }, { az: -50, w: 40, h: 5, color: 0xc01a1a, k: 0.45 }, { az: 50, w: 40, h: 5, color: 0xc01a1a, k: 0.45 }], moon: { on: 1, az: -10, el: 4.0, size: 3.4, color: moonCol }, stars: 0.2, cloud: 0.85, cloudDark: 0x2a0c14, cloudLit: 0xff3a20 }
+      ? { hor: 0x4a2418, mid: 0x261424, top: 0x0c0810, glows: [{ az: 0, w: 40, h: 4, color: 0xff6a2a, k: 0.45 }, { az: -50, w: 30, h: 4, color: 0x9a3a2a, k: 0.25 }, { az: 50, w: 30, h: 4, color: 0x9a3a2a, k: 0.25 }], moon: { on: 1, az: -10, el: 4.0, size: 3.4, color: moonCol }, stars: 0.2, cloud: 0.85, cloudDark: 0x2a0c14, cloudLit: 0xff3a20 }
       : { hor: 0x2a3050, mid: 0x161a38, top: 0x060818, glows: [{ az: 14, w: 35, h: 5, color: 0x6a88d0, k: 0.8 }, { az: -60, w: 30, h: 4, color: 0xff6a30, k: 0.35 }], moon: { on: 1, az: -8, el: 3.8, size: elite ? 2.2 : 4.4, color: moonCol }, stars: 1.0, cloud: elite ? 0.8 : 0.4, cloudDark: 0x141830, cloudLit: 0x7a90c8 },
-    fog: boss ? { base: 0x2a0c10, dens: 0.0078, fall: 0.22, height: 0.6, glow: 0.45 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
-    env: boss ? ENV(0x300c1c, 0xc03a28, 0x100808, 0xff7a40, 0x8a60c0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
-    key: boss ? { color: 0xffd2a8, intensity: 2.2, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
-    rim: boss ? { color: 0xff4030, intensity: 3.0, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
+    fog: boss ? { base: 0x1c1216, dens: 0.0042, fall: 0.3, height: 0.5, glow: 0.2 } : { base: elite ? 0x141a28 : 0x1c2440, dens: elite ? 0.016 : 0.0105, fall: elite ? 0.45 : 0.25, height: 0.7, glow: 0.7 },
+    env: boss ? ENV(0x201420, 0x8a4a3a, 0x0e0a0a, 0xffa060, 0x8a70b0) : ENV(0x141c4a, 0x5a78b8, 0x0a0c12, 0xff9a60, 0x8aa8ff),
+    key: boss ? { color: 0xffe4c8, intensity: 2.2, pos: [-4.4, 3.8, 5.2] } : { color: elite ? 0xa0b4e8 : 0x8890b8, intensity: elite ? 1.7 : 1.6, pos: [-4.6, 4.6, 4.8] },
+    rim: boss ? { color: 0xff7a50, intensity: 2.2, pos: [4, 5, -9] } : { color: elite ? 0xff8a50 : 0xd02838, intensity: elite ? 2.4 : 2.8, pos: [4, 5, -9] },
     hemi: boss ? { sky: 0x2a5068, ground: 0x2a1410, intensity: 0.6 } : { sky: 0x2a3050, ground: 0x2a2a28, intensity: elite ? 0.4 : 0.5 },
     look: LOOK(boss ? { exposure: 0.88, sat: 1.0, contrast: 1.2, vignette: 0.62, shadowTint: 0xffc8c8, highTint: 0xffe0b8 } : { sat: elite ? 0.85 : 1.0, contrast: 1.15, vignette: elite ? 0.66 : 0.56, shadowTint: 0xb0ccff, highTint: 0xf0f0ff, exposure: elite ? 0.95 : 1.02 }),
   });
