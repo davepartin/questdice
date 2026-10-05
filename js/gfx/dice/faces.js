@@ -61,9 +61,12 @@ export function drawPip(ctx, kind, x, y, size) {
 export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff' };
 // The corner symbol language: one shape + one colour per meaning.
 const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'coin', heal: 'mend', stagger: 'fist' };
-export function drawSym(ctx, kind, x, y, size) {
+export function drawSym(ctx, kind, x, y, size, stroke = 0) {
   const ic = SYM_ICON[kind] || 'spark';
-  if (ic === 'burst') { ctx.save(); ctx.translate(x, y); const k = size / 100; ctx.scale(k, k); ctx.translate(-50, -50); ctx.fill(starPath(8, 50, 26)); ctx.restore(); } else drawIcon(ctx, ic, x, y, size);
+  if (ic === 'burst') {
+    ctx.save(); ctx.translate(x, y); const k = size / 100; ctx.scale(k, k); ctx.translate(-50, -50);
+    const p = starPath(8, 50, 26); if (stroke) { ctx.lineWidth = stroke / k; ctx.lineJoin = 'round'; ctx.stroke(p); } ctx.fill(p); ctx.restore();
+  } else drawIcon(ctx, ic, x, y, size, { stroke });
 }
 // distance from point to the polygon's nearest edge (px)
 function edgeGap(pts, x, y) {
@@ -411,14 +414,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
       const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
-      const kk = pts.length === 4 && poly.sides !== 10 ? 0.6 : 0.66;
+      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : 0.56;
       list.slice(0, ordered.length).forEach((kind, i) => {
         const v = ordered[i].p; const bx = v[0] * kk; const by = v[1] * kk;
-        const r = Math.min(edgeGap(pts, bx, by) * 0.92, inR * 0.38);
-        const dk = ST.pipDisc === 'light';
-        layer(ctxs, { H: 'rgb(60,60,60)', A: dk ? '#fffaf0' : 'rgba(14,8,28,0.96)', O: 'rgb(0,120,0)' }, (c) => { c.beginPath(); c.arc(bx, by, r, 0, Math.PI * 2); c.fill(); });
-        layer(ctxs, { H: 'rgb(44,44,44)', A: dk ? 'rgba(20,10,30,0.95)' : 'rgba(0,0,0,0.9)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, r * 1.78));
-        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, r * 1.55));
+        const r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); const sz = r * 2.0; const ow = Math.max(2, sz * 0.13);
+        layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
+        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
       });
     }
     // ---- colour badge (heart 5 / 6)
