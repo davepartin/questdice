@@ -16,6 +16,7 @@ const SVG = {
   pierce: 'M50 2 L90 50 L50 98 L10 50 Z',
   arrow: 'M50 3 L90 46 H64 V97 H36 V46 H10 Z',
   tri: 'M50 6 L96 90 H4 Z',
+  disc: 'M50 4 A46 46 0 1 1 49.9 4 Z',
   coin: 'M50 4 A46 46 0 1 1 49.9 4 Z M50 20 A30 30 0 1 0 50.1 20 Z',
   shield: 'M50 4 L90 16 V50 C90 74 72 90 50 98 C28 90 10 74 10 50 V16 Z',
   sword: 'M50 0 L60 14 V68 H40 V14 Z M18 68 H82 V80 H18 Z M44 80 H56 V94 H44 Z M50 100 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0',
@@ -60,7 +61,7 @@ export function drawPip(ctx, kind, x, y, size) {
 }
 export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff' };
 // The corner symbol language: one shape + one colour per meaning.
-const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'coin', heal: 'mend', stagger: 'fist' };
+const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist' };
 export function drawSym(ctx, kind, x, y, size, stroke = 0) {
   const ic = SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {
@@ -419,7 +420,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         const v = ordered[i].p; const bx = v[0] * kk; const by = v[1] * kk;
         const r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); const sz = r * 2.0; const ow = Math.max(2, sz * 0.13);
         layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
-        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
+        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
       });
     }
     // ---- colour badge (heart 5 / 6)
