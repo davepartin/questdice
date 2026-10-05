@@ -382,6 +382,12 @@ export function healSpend(b) {
   if (b.magic < cost || b.hp >= b.maxHp) return false;
   b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + HEAL_AMOUNT); b.stats.healed += b.hp - before; return true;
 }
+// A bigger heal for a bigger spend: once per battle.
+export const BIG_HEAL = { cost: 6, hp: 10 };
+export function healBig(b) {
+  if (b.used.bigheal || b.magic < BIG_HEAL.cost || b.hp >= b.maxHp) return false;
+  b.magic -= BIG_HEAL.cost; b.used.bigheal = true; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + BIG_HEAL.hp); b.stats.healed += b.hp - before; return true;
+}
 // ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
 const scaleNum = (v, lvl) => Math.round(v * (1 + 0.25 * lvl));

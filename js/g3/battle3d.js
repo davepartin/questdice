@@ -140,9 +140,9 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
   const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
   const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
-  const HALF = 2.3; const NEAR = 2.55; const need = 46; // px kept above the board for the monsters
+  const HALF = 2.0; const NEAR = 2.55; const need = 40; // px kept above the board for the monsters
   let best = null;
-  for (let tilt = 0; tilt <= 0.52; tilt += 0.04) {
+  for (let tilt = 0; tilt <= 0.56; tilt += 0.04) {
     dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
     const pt = (x, y, z) => { v.set(x, y, z).multiply(obj.scale).add(obj.position).project(c); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H - sh]; };
     for (let k = 1.7; k >= 0.3; k -= 0.03) {
@@ -152,7 +152,7 @@ function fitTray() {
       if (!best || k > best.k + 0.001) best = { k, tilt }; break;
     }
   }
-  best = best || { k: 0.3, tilt: 0.52 };
+  best = best || { k: 0.3, tilt: 0.56 };
   dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k;
 }
 function buildHero() {
@@ -369,7 +369,7 @@ function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
   const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
-  B.hud.info.replaceChildren(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+  fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
     h('p', { class: 'fi-hp' }, `Health ${Math.max(0, e.hp)} of ${e.maxHp}  ·  Initiative d${def.init || 4}`),
     h('p', { class: 'fi-init' }, `It rolls a d${def.init || 4} each round; you roll your feet die (d${E.feetSize(B.hero)}). Higher roll strikes first, ties go to you.`),
     v ? h('p', { class: 'fi-now' }, h('b', {}, 'Next: '), `${v.title} ${v.fig} ${v.unit}. ${v.hint || ''}`) : null,
@@ -421,27 +421,101 @@ function clearDock() {
   for (const el of B.hud.dock.querySelectorAll('button')) el.disabled = true;
   B.hud.caption.replaceChildren();
 }
+const UTIL = [
+  { id: 'u:heart', name: 'Turn the heart', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
+  { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal ${D.HEAL_AMOUNT} health right now.` },
+  { id: 'u:bigheal', name: 'Big heal', kind: 'util', cost: E.BIG_HEAL.cost, fx: { heal: E.BIG_HEAL.hp }, text: `Save up ${E.BIG_HEAL.cost} magic and heal ${E.BIG_HEAL.hp} health, once per battle.` },
+];
+const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
+function utilState(u, shape) {
+  const b = B.b; const cost = utilCost(u); let why = '';
+  if (!shape) why = 'Roll your dice first. You use powers while you shape the roll.';
+  else if (u.id === 'u:heart') why = b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
+  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
+  else if (b.used.bigheal) why = 'Already used this battle.'; else if (b.hp >= b.maxHp) why = 'You are at full health.'; else if (b.magic < cost) why = `Needs ${cost} magic. You have ${b.magic}.`;
+  return { cost, why };
+}
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
-  return E.cardsOf(hero).map((k) => {
+  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (b.used.bigheal ? 'USED' : 'ONCE') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (us.why) el.classList.add('is-off'); return el; });
+  return [...E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
     const canRecharge = !k.atwill && k.kind !== 'super';
-    const onclick = reset ? (st.spent && canRecharge ? () => doRecharge(k.id) : null) : () => doCard(k.id);
+    const onclick = () => showPowerDetail(k.id);
     const afford = b.magic >= x;
-    const disabled = reset ? !(st.spent && canRecharge && b.magic >= D.RECHARGE_COST) : (st.spent || st.early || !afford);
+    const disabled = false; const unavailable = reset ? !(st.spent && canRecharge && b.magic >= D.RECHARGE_COST) : (st.spent || st.early || !afford);
     const fresh = B.fresh === k.id; if (fresh) B.fresh = null;
     const flag = k.kind === 'charge' && stored ? `${stored} STORED` : st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
     const releaseBtn = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && b.usedRound[`${k.id}:release`]) ? h('span', { class: 'bc-step rel' }, h('i', { role: 'button', 'aria-label': `Release ${stored} charges`, onclick: (e) => { e.stopPropagation(); doCard(k.id, { release: true }); } }, `⚡ ${stored}`)) : null;
-    const stepper = releaseBtn || k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
+    const stepper = null; void releaseBtn; const _unusedStepper = k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
       h('i', { role: 'button', 'aria-label': 'One less magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.max(k.cost, x - 1); renderShape(); } }, '–'),
       h('i', { role: 'button', 'aria-label': 'One more magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); renderShape(); } }, '+')) : null;
     const superReady = k.kind === 'super' && !st.early && !st.spent && afford && !reset;
     if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; setTimeout(() => { const el = B.hud.cards.querySelector('.bcard.super-ready'); if (!B.superToast) { B.superToast = true; toast(`${k.name} is ready!`); } }, 200); }
     const card = HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
     if (superReady) card.classList.add('super-ready');
+    if (unavailable) card.classList.add('is-off');
     return card;
-  });
+  }), ...utils];
+}
+// Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Cancel.
+const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean));
+function showPowerDetail(id) {
+  const b = B.b; const hero = B.hero; const k = E.cardsOf(hero).find((c) => c.id === id); if (!k) return;
+  const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0; B.powerX = B.powerX || {};
+  const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
+  const shape = b.phase === 'shape'; const canRecharge = !k.atwill && k.kind !== 'super';
+  const word = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal' };
+  const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
+  const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
+    : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
+    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Release them any round for ${k.per} each. They stay stored between rounds.`
+    : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
+    : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
+  const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'
+    : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.')
+    : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
+  const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  const again = () => showPowerDetail(id);
+  const stepRow = k.kind === 'scale' && !st.spent && shape ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
+    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = Math.max(k.cost, x - 1); again(); } }, '–'), h('b', {}, String(x)),
+    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); again(); } }, '+')) : null;
+  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && b.usedRound[`${k.id}:release`])
+    ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
+  const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
+  const useBtn = rechargeBtn || h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`);
+  fillInfo(
+    h('div', { class: 'sh-head' }, h('b', {}, k.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('p', { class: 'pd-text' }, k.text),
+    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, how), h('dt', {}, 'Cost'), h('dd', {}, k.kind === 'scale' ? `${k.cost}–${k.max} magic (you choose)` : k.kind === 'charge' ? `${k.cost} magic per charge` : `${k.cost} magic`)),
+    stored ? h('p', { class: 'pd-state' }, `${stored} charge${stored > 1 ? 's' : ''} stored.`) : null,
+    stepRow, releaseRow,
+    !rechargeBtn && reasons ? h('p', { class: 'pd-why' }, reasons) : null,
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'), useBtn));
+  B.hud.info.classList.add('open'); sfx.select();
+}
+function showUtilDetail(id) {
+  const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);
+  const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  const uses = id === 'u:bigheal' ? 'Once per battle.' : 'Any time you are shaping a roll, as often as you can pay.';
+  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.BIG_HEAL.hp} health for ${cost} magic, once. A better rate than the small heal, but you have to save up for it.`;
+  const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
+  fillInfo(
+    h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('p', { class: 'pd-text' }, u.text),
+    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, body), h('dt', {}, 'Cost'), h('dd', {}, `${cost} magic`)),
+    why ? h('p', { class: 'pd-why' }, why) : null,
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'),
+      ...(id === 'u:heart' ? [nudgeBtn(-1, 'Turn down'), nudgeBtn(1, 'Turn up')]
+        : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, `Use · ${cost} magic`)])));
+  B.hud.info.classList.add('open'); sfx.select();
+}
+function doBigHeal() {
+  const b = B.b; if (B.busy) return; const before = b.hp;
+  if (!E.healBig(b)) { sfx.error(); return; }
+  sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
+  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 function togglePowers(on) {
   B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
@@ -453,10 +527,6 @@ const powersBtn = () => {
   const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && b.magic >= k.cost);
   return h('button', { type: 'button', class: `b3-powers ${superReady ? 'super' : ''}`, 'aria-label': `Magical powers. ${ready} ready.`, onclick: () => togglePowers() },
     h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Powers'), ready ? h('i', { class: 'bp-n' }, String(ready)) : null);
-};
-const healBtn = () => {
-  const cost = E.healCostOf(B.hero); const dis = B.busy || B.b.magic < cost || B.b.hp >= B.b.maxHp;
-  return HK.button({ kind: 'mini', icon: 'heal', badge: HK.costGem(cost, 'badge'), onclick: doHeal, disabled: dis, cls: 'k-heal', aria: `Heal ${D.HEAL_AMOUNT} health for ${cost} magic` });
 };
 
 export function renderReset() {
@@ -484,8 +554,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    healBtn(), powersBtn(),
-    HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' }));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', id: 'b3-roll', onclick: doRoll, aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -515,10 +584,13 @@ async function doRoll() {
   renderShape();
 }
 function rerollText(info) {
-  if (info.kind === 'none') return { label: 'No rerolls left', sub: 'actions spent' };
+  const b = B.b;
+  if (info.kind === 'none') return { label: 'No rerolls', sub: 'all used' };
   const n = B.sel.size; const cost = info.perDie * n;
-  if (n) return { label: `Reroll ${n} ${n === 1 ? 'die' : 'dice'}`, sub: cost ? HK.costGem(cost) : 'free' };
-  return { label: 'Reroll', sub: info.perDie ? [`up to ${info.dice} · `, HK.costGem(info.perDie), ' each'] : `up to ${info.dice} · free` };
+  const ord = info.kind === 'free' ? `${D.RULES.free + D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.free}` : info.kind === 'paid' ? `${D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.paid}` : 'free card';
+  const base = info.kind === 'paid' ? 'Magic reroll' : 'Reroll';
+  if (n) return { label: `${base} ${n}`, sub: info.kind === 'paid' ? [`${ord} · `, HK.costGem(cost)] : ord };
+  return { label: base, sub: info.kind === 'paid' ? [`${ord} · `, HK.costGem(1), ' a die'] : ord };
 }
 export function renderShape() {
   if (B.ended) return;
@@ -547,19 +619,15 @@ export function renderShape() {
   bw.tray.setLink?.([ev.offense3 ? { slots: ['NW', 'N', 'NE'], color: 0xff3b3b } : null, ev.defense3 ? { slots: ['N', 'C', 'S'], color: 0x3aa4ff } : null].filter(Boolean));
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
-  const pips = h('div', { class: 'b3-pips', role: 'img', 'aria-label': `${b.actionsLeft} of ${D.REROLL_ACTIONS} reroll actions left${b.freeActions.length ? `, plus ${b.freeActions.length} free` : ''}` },
-    h('small', {}, 'REROLLS'), Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', {}, `+${b.freeActions.length}`) : null);
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`), h('em', {}, `+${ev.straightBonus} to`)),
     h('div', { class: 'fseg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
-  const cantNudge = (d) => B.busy || b.magic < D.NUDGE_COST || (d < 0 ? b.board.C.v <= 1 : b.board.C.v >= 6);
-  const nudge = (d) => HK.button({ kind: 'mini', icon: h('span', { class: 'nudge' }, HK.icon('heart'), h('i', { class: d < 0 ? 'dn' : 'up' })), badge: HK.costGem(D.NUDGE_COST, 'badge'), onclick: () => doNudge(d), disabled: cantNudge(d), aria: `Nudge the heart die ${d < 0 ? 'down' : 'up'} one, costs ${D.NUDGE_COST} magic` });
   const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
     straight,
-    h('div', { class: 'b3-tools' }, pips, powersBtn(), h('div', { class: 'b3-mini' }, nudge(-1), nudge(1), healBtn())),
-    h('div', { class: 'b3-acts' },
-      HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: rr.label }),
+    h('div', { class: 'b3-acts b3-acts3' },
+      HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || !E.canReroll(b, [...B.sel]), aria: `${rr.label}` }),
+      powersBtn(),
       HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, aria: 'Lock in your dice and fight' }))].filter(Boolean));
 }
 
@@ -586,7 +654,7 @@ async function doReroll() {
 function doNudge(dir) {
   const b = B.b; if (B.busy) return;
   if (!E.nudge(b, dir)) { sfx.error(); toast(b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape();
+  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
 }
 function doHeal() {
   const b = B.b; if (B.busy) return; const before = b.hp;
@@ -594,7 +662,7 @@ function doHeal() {
   sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
   vfx('heal', hp, { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 });
   B.bw.hero.once?.('drink');
-  refresh();
+  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 function doCard(id, opts = {}) {
   const b = B.b; if (B.busy) return;
