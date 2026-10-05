@@ -284,3 +284,16 @@ test('the road is seeded, a choice sticks, and a toll you cannot pay does not', 
   c.campaign.road.done = false;
   assert.equal(chooseRoad(c.members[0], c.members, 'carve'), null);
 });
+
+test('party initiative: the round plays high to low, ties go to the heroes, round 1 is the heroes first', () => {
+  const c = company();
+  const b = partyFight(c.members, strike); b.round = 2;
+  b.fighters[0].board.S.v = 3; b.fighters[1].board.S.v = 1;
+  const rep = resolveParty(b);
+  const vs = rep.order.map((x) => x.v);
+  assert.deepEqual(vs, [...vs].sort((x, y) => y - x));
+  for (let i = 1; i < rep.order.length; i++) if (rep.order[i].v === rep.order[i - 1].v) assert.ok(!(rep.order[i - 1].kind === 'foe' && rep.order[i].kind === 'hero'));
+  const b1 = partyFight(company().members, strike);
+  const r1 = resolveParty(b1);
+  assert.equal(r1.init.forced, true); assert.equal(r1.order.at(-1).kind, 'foe'); assert.equal(r1.order[0].kind, 'hero');
+});

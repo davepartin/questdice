@@ -199,25 +199,41 @@ export function reportLines(rep, b) {
 export function partyReportLines(rep, b) {
   const name = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Foe';
   const L = [];
-  if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} has the highest Feet and draws the monsters’ heat.` });
-  for (const s of rep.strikes || []) {
-    L.push({ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` });
-    if (s.ev?.offense3) L.push({ kind: 'good', text: `${s.name} lands a top-row triple.` });
-    if (s.ev?.defense3) L.push({ kind: 'good', text: `${s.name} lands a head·heart·feet triple.` });
-    if (s.ev?.straight) L.push({ kind: 'good', text: `${s.name} rolls a ${s.ev.straight}-straight.` });
+  if (rep.order?.length) {
+    const seq = rep.order.map((x) => `${x.name}${x.v != null ? ` ⚡${x.v}` : ''}`).join('  →  ');
+    L.push({ kind: 'meh', text: rep.init?.forced ? `Round 1: the heroes always go first. ${seq}` : `Initiative (high to low, ties to the heroes): ${seq}` });
   }
-  for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
-  for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
-  for (const a of rep.acts) {
+  if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} is quickest and draws the monsters’ heat (a double share of every blow).` });
+  const heroLines = (s) => {
+    const o = [{ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` }];
+    if (s.ev?.offense3) o.push({ kind: 'good', text: `${s.name} lands a top-row triple.` });
+    if (s.ev?.defense3) o.push({ kind: 'good', text: `${s.name} lands a head·heart·feet triple.` });
+    if (s.ev?.straight) o.push({ kind: 'good', text: `${s.name} rolls a ${s.ev.straight}-straight.` });
+    if (s.killed) o.push({ kind: 'good', text: `${name(s.targetUid)} falls.` });
+    return o;
+  };
+  const foeLine = (a) => {
     const n = name(a.uid);
-    if (a.v === 'strike' || a.v === 'drain' || a.v === 'pilfer') L.push({ kind: a.net > 0 ? 'bad' : 'meh', text: `${n} ${a.name}: ${a.d}, split by Feet${a.ab ? `, ${a.ab} blocked` : ''} → ${a.net} damage.` });
-    else if (a.v === 'pierce') L.push({ kind: 'bad', text: `${n} ${a.name}: ${a.d} piercing, split across the company.` });
-    else if (a.v === 'guard') L.push({ kind: 'meh', text: `${n} braces (${a.name}).` });
-    else if (a.v === 'mend') L.push({ kind: 'meh', text: `${n} mends ${a.healed || 0}.` });
-    else if (a.v === 'charge') L.push({ kind: a.cancelled ? 'good' : 'bad', text: a.cancelled ? `${n}’s wind-up breaks.` : `${n} winds up. A Slam is coming.` });
-    else if (a.v === 'howl') L.push({ kind: 'bad', text: `${n} howls. The pack grows bolder.` });
-    else if (a.v === 'bind') L.push({ kind: 'bad', text: `${n} hexes ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` });
-    else if (a.v === 'summon') L.push({ kind: 'bad', text: `${n} calls for help.` });
+    if (a.v === 'strike' || a.v === 'drain' || a.v === 'pilfer') return { kind: a.net > 0 ? 'bad' : 'meh', text: `${n} ${a.name}: ${a.d}, split by initiative${a.ab ? `, ${a.ab} blocked` : ''} → ${a.net} damage.` };
+    if (a.v === 'pierce') return { kind: 'bad', text: `${n} ${a.name}: ${a.d} piercing, split across the company.` };
+    if (a.v === 'guard') return { kind: 'meh', text: `${n} braces (${a.name}).` };
+    if (a.v === 'mend') return { kind: 'meh', text: `${n} mends ${a.healed || 0}.` };
+    if (a.v === 'charge') return { kind: a.cancelled ? 'good' : 'bad', text: a.cancelled ? `${n}’s wind-up breaks.` : `${n} winds up. A Slam is coming.` };
+    if (a.v === 'howl') return { kind: 'bad', text: `${n} howls. The pack grows bolder.` };
+    if (a.v === 'bind') return { kind: 'bad', text: `${n} hexes ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` };
+    if (a.v === 'summon') return { kind: 'bad', text: `${n} calls for help.` };
+    return null;
+  };
+  if (rep.order?.length) {
+    for (const x of rep.order) {
+      if (x.kind === 'hero') { const s = (rep.strikes || []).find((q) => q.name === x.name); if (s) L.push(...heroLines(s)); else if (rep.fallen?.includes(x.name)) L.push({ kind: 'bad', text: `${x.name} is dropped before they can swing.` }); }
+      else { const a = (rep.acts || []).find((q) => q.uid === x.uid); const l = a && foeLine(a); if (l) L.push(l); }
+    }
+    for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
+  } else {
+    for (const s of rep.strikes || []) L.push(...heroLines(s));
+    for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
+    for (const a of rep.acts) { const l = foeLine(a); if (l) L.push(l); }
   }
   if (rep.goldStolen) L.push({ kind: 'bad', text: `A thief takes ${rep.goldStolen} 🪙 from ${rep.leader}. Kill it to get the purse back.` });
   if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from ${rep.leader}.` });

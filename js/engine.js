@@ -893,10 +893,27 @@ export function resolveParty(b) {
   const guardLeft = new Map();
   for (const e of alive) if (e.intent?.v === 'guard') guardLeft.set(e.uid, e.mag);
   const pressure = new Map();
-  for (const { f } of order) {
+  // Monsters answer the living. Damage is split by Feet; each hero's block soaks only their share.
+  const snap = order.map((r) => r.f);
+  const weights = shareWeights(order);
+  const blocks = snap.map((f) => f.T.block);
+  const taken = snap.map(() => 0);
+  const absorbed = snap.map(() => 0);
+  const strikeHit = (e, pierceIt) => {
+    const parts = splitInt(e.mag, weights);
+    const nets = [];
+    parts.forEach((part, i) => {
+      if (pierceIt) { taken[i] += part; nets.push(part); return; }
+      const ab = Math.min(blocks[i], part); blocks[i] -= ab; absorbed[i] += ab; taken[i] += part - ab; nets.push(part - ab);
+    });
+    return { d: e.mag, net: nets.reduce((a, n) => a + n, 0), ab: parts.reduce((a, p, i) => a + (p - (nets[i] || 0)), 0), parts, nets };
+  };
+  const leader = snap[0];
+  const livingNow = () => b.enemies.filter((e) => e.hp > 0);
+  const strikeFor = (f) => {
     let tgt = b.enemies[f.target];
     if (!tgt || tgt.hp <= 0) tgt = b.enemies.find((e) => e.hp > 0);
-    if (!tgt) break;
+    if (!tgt) return;
     const T = f.T;
     const pool = guardLeft.get(tgt.uid) || 0;
     const guarded = Math.min(pool, T.atk);
@@ -922,31 +939,9 @@ export function resolveParty(b) {
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
       killed, ev: f.ev, T,
     });
-  }
-  for (const e of b.enemies) {
-    if (e.hp <= 0 || e.intent?.v !== 'charge') continue;
-    const bag = pressure.get(e.uid) || { dmg: 0, stagger: 0 };
-    if (bag.dmg + bag.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; rep.staggered.push(e.uid); }
-  }
-  // Monsters answer the living. Damage is split by Feet; each hero's block soaks only their share.
-  const snap = order.map((r) => r.f);
-  const weights = shareWeights(order);
-  const blocks = snap.map((f) => f.T.block);
-  const taken = snap.map(() => 0);
-  const absorbed = snap.map(() => 0);
-  const strikeHit = (e, pierceIt) => {
-    const parts = splitInt(e.mag, weights);
-    const nets = [];
-    parts.forEach((part, i) => {
-      if (pierceIt) { taken[i] += part; nets.push(part); return; }
-      const ab = Math.min(blocks[i], part); blocks[i] -= ab; absorbed[i] += ab; taken[i] += part - ab; nets.push(part - ab);
-    });
-    return { d: e.mag, net: nets.reduce((a, n) => a + n, 0), ab: parts.reduce((a, p, i) => a + (p - (nets[i] || 0)), 0), parts, nets };
   };
-  const leader = snap[0];
-  const livingNow = () => b.enemies.filter((e) => e.hp > 0);
-  for (const e of b.enemies) {
-    if (e.hp <= 0 || !e.intent || e.fresh) continue;
+  const actFor = (e) => {
+    if (e.hp <= 0 || !e.intent || e.fresh) return;
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p };
     switch (i.v) {
       case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
@@ -978,6 +973,26 @@ export function resolveParty(b) {
       default: break;
     }
     rep.acts.push(act);
+  };
+  // The round plays in initiative order: every hero acts on their Feet roll and every monster on its own die.
+  // Higher goes first; ties go to the heroes; round 1 is always the heroes' (then the monsters).
+  const forced = b.round === 1;
+  const heroInit = new Map(order.map((r) => [r.f, r.feet]));
+  for (const e of alive) e.init = forced ? null : die(b.rng, MONSTERS[e.id]?.init || 4);
+  const line = [];
+  order.forEach((r, k) => line.push({ kind: 'hero', f: r.f, v: forced ? 99 : r.feet, tie: 0, k }));
+  alive.forEach((e, k) => line.push({ kind: 'foe', e, v: forced ? -1 : e.init, tie: 1, k }));
+  line.sort((x, y) => y.v - x.v || x.tie - y.tie || x.k - y.k);
+  rep.init = { forced, heroes: order.map((r) => ({ name: r.f.hero.name, init: r.feet, die: feetSize(r.f.hero) })), foes: alive.map((e) => ({ uid: e.uid, init: e.init, die: MONSTERS[e.id]?.init || 4 })) };
+  rep.order = line.map((x) => (x.kind === 'hero' ? { kind: 'hero', name: x.f.hero.name, v: heroInit.get(x.f) } : { kind: 'foe', uid: x.e.uid, name: x.e.name, v: x.e.init }));
+  const runningHp = (f) => { const i = snap.indexOf(f); return Math.min(f.maxHp, f.hp + f.T.heal) - taken[i]; };
+  for (const x of line) {
+    if (x.kind === 'hero') { if (x.f.lastStandUsed && runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
+  }
+  for (const e of b.enemies) {
+    if (e.hp <= 0 || e.intent?.v !== 'charge') continue;
+    const bag = pressure.get(e.uid) || { dmg: 0, stagger: 0 };
+    if (bag.dmg + bag.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; rep.staggered.push(e.uid); const ac = rep.acts.find((x) => x.uid === e.uid); if (ac) ac.cancelled = true; }
   }
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {

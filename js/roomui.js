@@ -442,7 +442,7 @@ function teles(enemies) {
       const info = V.intentInfo(e);
       return h('div', { class: `tele ${info.tone}` },
         h('div', { class: 'tele-portrait' }, e.glyph),
-        h('div', { class: 'tele-copy' }, h('b', {}, e.name), h('small', { class: 'muted' }, `${Math.ceil(e.hp)}/${e.maxHp} HP`),
+        h('div', { class: 'tele-copy' }, h('b', {}, e.name), h('small', { class: 'muted' }, `${Math.ceil(e.hp)}/${e.maxHp} HP · ⚡ d${D.MONSTERS[e.id]?.init || 4}`),
           h('div', { class: `intent big ${info.tone}` }, h('span', { class: 'iicon' }, info.icon), h('div', { class: 'itext' }, h('b', {}, info.title), h('small', {}, info.text)))));
     })),
     wind.length ? h('p', { class: 'warn' }, `⚠ A Slam is coming: ${wind.map((e) => e.name).join(', ')}.`) : null);
