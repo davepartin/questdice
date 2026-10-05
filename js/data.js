@@ -171,6 +171,7 @@ export const CLASSES = {
       { id: 'bolt', name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce.' },
       { id: 'arcbolt', name: 'Arc Bolt', kind: 'scale', cost: 2, max: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 Magic = 1d8, each extra Magic adds a die (up to 5d8).' },
       { id: 'barrier', name: 'Barrier', kind: 'flat', cost: 2, fx: { block: 7 }, text: '+7 block.' },
+      { id: 'coil', name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: 5, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 Magic stores a charge (up to 4). Release them any round for 5 attack per charge, half splashing.', unlock: 3 },
       { id: 'meteor', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others.', unlock: 5 },
     ],
   },

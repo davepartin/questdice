@@ -384,18 +384,23 @@ function clearDock() {
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
   return E.cardsOf(hero).map((k) => {
-    const st = E.powerState(b, k);
+    const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
     const canRecharge = !k.atwill && k.kind !== 'super';
     const onclick = reset ? (st.spent && canRecharge ? () => doRecharge(k.id) : null) : () => doCard(k.id);
     const afford = b.magic >= x;
     const disabled = reset ? !(st.spent && canRecharge && b.magic >= D.RECHARGE_COST) : (st.spent || st.early || !afford);
     const fresh = B.fresh === k.id; if (fresh) B.fresh = null;
-    const flag = st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
-    const stepper = k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
+    const flag = k.kind === 'charge' && stored ? `${stored} STORED` : st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
+    const releaseBtn = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && b.usedRound[`${k.id}:release`]) ? h('span', { class: 'bc-step rel' }, h('i', { role: 'button', 'aria-label': `Release ${stored} charges`, onclick: (e) => { e.stopPropagation(); doCard(k.id, { release: true }); } }, `⚡ ${stored}`)) : null;
+    const stepper = releaseBtn || k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
       h('i', { role: 'button', 'aria-label': 'One less magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.max(k.cost, x - 1); renderShape(); } }, '–'),
       h('i', { role: 'button', 'aria-label': 'One more magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); renderShape(); } }, '+')) : null;
-    return HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
+    const superReady = k.kind === 'super' && !st.early && !st.spent && afford && !reset;
+    if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; setTimeout(() => { const el = B.hud.cards.querySelector('.bcard.super-ready'); el?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior: 'smooth' }); if (!B.superToast) { B.superToast = true; toast(`${k.name} is ready!`); } }, 200); }
+    const card = HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
+    if (superReady) card.classList.add('super-ready');
+    return card;
   });
 }
 const healBtn = () => {
@@ -540,17 +545,17 @@ function doHeal() {
   B.bw.hero.once?.('drink');
   refresh();
 }
-function doCard(id) {
+function doCard(id, opts = {}) {
   const b = B.b; if (B.busy) return;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
-  const r = E.castPower(b, id, { x: B.powerX?.[id] });
+  const r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
   const fx = { ...k.fx, ...(k.dice ? { [k.dice.to]: r.total } : {}) }; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xff8a1a : fx.atk ? 0xff5a4a : 0xa64dff;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
   if (k.dice?.to === 'heal' || (!k.dice && fx.heal)) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${k.dice ? r.total : fx.heal}`, 'heal'); }
-  const dice = r.rolls.length ? `  ${r.rolls.join(' + ')}${r.rolls.length > 1 ? ` = ${r.total}` : ''}` : '';
+  const dice = r.released ? `  ⚡ x${r.released} = ${r.total}` : r.charged ? `  charge ${r.charged}` : r.rolls.length ? `  ${r.rolls.join(' + ')}${r.rolls.length > 1 ? ` = ${r.total}` : ''}` : '';
   banner(`${k.name.toUpperCase()}${dice}`, fx.heal ? 'good' : 'gold');
   renderShape();
 }

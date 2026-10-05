@@ -379,9 +379,17 @@ export function powerState(b, card) {
   const early = !!(card.minRound && b.round < card.minRound);
   return { spent, early, canPay: b.magic >= card.cost };
 }
-export function castPower(b, id, { x } = {}) {
+export function castPower(b, id, { x, release } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
+  if (card.kind === 'charge' && release) { // let the stored charges go
+    b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
+    if (!n || (b.usedRound && b.usedRound[key])) return null;
+    (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
+    const lvl = powerLevel(b.hero, id); const total = scaleNum(card.per * n, lvl);
+    b.mods.atk += total; if (card.splash === 'half') b.mods.splash += Math.floor(total / 2);
+    b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n }; return b.lastCast;
+  }
   const st = powerState(b, card); if (st.spent || st.early) return null;
   const cost = powerCost(card, x); if (b.magic < cost) return null;
   b.magic -= cost;
@@ -397,6 +405,8 @@ export function castPower(b, id, { x } = {}) {
   } else if (card.kind === 'round') {
     out.total = scaleNum(card.per * b.round, lvl); add('atk', out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+  } else if (card.kind === 'charge') {
+    b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];
   } else if (card.kind === 'luck') {
     const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
     if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(5, lvl)); else { add('atk', scaleNum(9, lvl)); add('magic', 2); }

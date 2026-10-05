@@ -9,7 +9,7 @@ Upgrades (gold 60, then 140): +25% numbers, +1 die on dice powers, +aoe on super
 |---|---|---|---|---|
 | Knight | Shield Up +4 block | Cleave 2d6 + half splash | Rally Cry atk/block/heal | Judgment: +14 atk, 12 to all |
 | Ranger | Quick Draw (free reroll of 2) | Aimed Shot 2-5d6 pierce (scale) | Snare | Rain of Arrows: 9 to all |
-| Wizard | Magic Missile +3 pierce | Arc Bolt 1-5d8 (scale) | Barrier | Meteor: 4 x round, half splash |
+| Wizard | Magic Missile +3 pierce; Storm Coil stores a charge (level 3), release for 5 each, half splash | Arc Bolt 1-5d8 (scale) | Barrier | Meteor: 4 x round, half splash |
 | Dwarf | Shield Bash +2 atk, +3 stagger | Stonehide 2d6 block | Grudge: 2 x round attack | Avalanche: atk, block, 10 to all |
 | Bard | Lucky Verse (d6 table) | Mending Song 2d6 heal | Discord | Finale: atk, heal, block, 8 to all |
 

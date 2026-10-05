@@ -373,3 +373,14 @@ test('dice that are not on the board contribute nothing and cannot be rerolled',
   const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b); b.magic = 9;
   assert.equal(reroll(b, ['NE']), false); assert.equal(reroll(b, ['SW']), false); assert.ok(reroll(b, ['N']));
 });
+
+test('a charge power stores magic across rounds and releases it as one big hit with splash', () => {
+  const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true }); w.level = 4;
+  const b = newBattle(w, questsFor(w)[0], makeRng(6), 1); startRoll(b); b.magic = 9;
+  assert.equal(castPower(b, 'coil', { release: true }), null); // nothing stored yet
+  assert.equal(castPower(b, 'coil').charged, 1); assert.equal(castPower(b, 'coil'), null); // one charge a round
+  beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 2);
+  beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7);
+  assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
+});
