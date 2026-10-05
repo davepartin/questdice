@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import * as D from '../../data.js';
 import * as E from '../../engine.js';
 import { makePoly, roundedGeometry, restQuat, readLabel } from './poly.js';
-import { buildAtlas } from './faces.js';
+import { buildAtlas, diceStyle } from './faces.js';
 
 export { makePoly, restQuat, readLabel };
 
@@ -74,12 +74,12 @@ function makeMaterial(atlas, theme, quality) {
     emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
     sheen: 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
-  m.color.setScalar({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1);
+  m.color.setScalar(({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1) * diceStyle().bodyK);
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
     uTime: { value: 0 }, uInner: { value: inn.k }, uInnerCol: { value: new THREE.Vector3(...inn.col) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
-    uSide: { value: 1 }, uSelf: { value: { weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2 }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
+    uSide: { value: 1 }, uSelf: { value: ({ weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2) * diceStyle().selfK }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {

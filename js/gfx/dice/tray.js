@@ -14,6 +14,7 @@ import { sprite } from '../tex.js';
 import { mulberry32, hashStr } from '../noise.js';
 import * as D from '../../data.js';
 import { dieSpecs, createDie, restQuat } from './dice.js';
+import { diceStyle } from './faces.js';
 import { planRoll, samplePlan, ROLL } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
 import { createFX, PULSE_COLORS } from './fx.js';
@@ -155,8 +156,8 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   table.add(body, iron, frame, field, dishMesh, brass, glow, decal, plaque);
 
   // ---- local lights (no shadows): a warm key above, a cool rim behind
-  const keyLight = new THREE.PointLight(0xffeedd, 14, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
-  const rimLight = new THREE.PointLight(0x78a4ff, 9, 0, 2); rimLight.position.set(2.6, 1.9, -2.8); rimLight.name = 'trayRim';
+  const keyLight = new THREE.PointLight(0xffeedd, 14 * diceStyle().light, 0, 2); keyLight.position.set(-1.8, 3.6, 2.6); keyLight.name = 'trayKey';
+  const rimLight = new THREE.PointLight(0x78a4ff, 9 * diceStyle().light, 0, 2); rimLight.position.set(2.6, 1.9, -2.8); rimLight.name = 'trayRim';
   object.add(keyLight, rimLight);
 
   // ---- contact shadows (multiply-blended instanced blobs: fade by lightening the instance colour)

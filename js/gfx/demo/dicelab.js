@@ -1,0 +1,58 @@
+// Dice lab: every kind of die at once under one camera, to judge readability.
+//   ?m=gfx/demo/dicelab.js&style=classic|clear|vivid&view=top|tilt|low|phone&scale=1&pick=pip|max|min
+import * as THREE from 'three';
+import * as E from '../../engine.js';
+import { dieSpecs, createDie, restQuat } from '../dice/dice.js';
+import { setDiceStyle } from '../dice/faces.js';
+
+export async function demo({ stage, stdLights, cam, params, num }) {
+  const lk = setDiceStyle(params.get('style') || 'classic').light;
+  stage.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8078, num('hemi', 0.5)));
+  const kl = new THREE.PointLight(0xffeedd, 14 * (num('light', 1) * lk), 0, 2); kl.position.set(-1.8, 5.5, 3.2); stage.scene.add(kl);
+  const rl = new THREE.PointLight(0x78a4ff, 9 * num('light', 1) * lk * lk, 0, 2); rl.position.set(3.6, 2.4, -3); stage.scene.add(rl);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x2a221c, roughness: 0.9 }));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; stage.scene.add(floor);
+
+  const specs = [];
+  // weapon dice: sword (red lane) and shield (blue lane) at rarity 0..3 -> d4, d6, d8, d10
+  for (let r = 0; r < 4; r++) {
+    const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
+    h.loadout = { NW: { uid: 'a', id: 'sword', rarity: r }, NE: { uid: 'b', id: 'shield', rarity: r } };
+    h.strength = { W: 8, E: 6 }; h.special = { SW: 10, SE: 8 };
+    const d = dieSpecs(h); specs.push([d.NW, d.NE, d.W, d.E, d.SW, d.SE, d.NW === d.NE ? null : null].filter(Boolean));
+  }
+  const pick = params.get('pick') || 'pip';
+  const rowsDefs = [
+    ['NW', 'NE'], ['W', 'E'], ['SW', 'SE'],
+  ];
+  const dice = []; const pitch = num('pitch', 1.5) * num('scale', 1);
+  const place = (spec, x, z) => {
+    const die = createDie({ spec, quality: stage.quality });
+    const labels = spec.labels.map((l, i) => ({ l, v: i + 1 }));
+    let v = labels[labels.length - 1].v;
+    if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
+    die.mesh.quaternion.copy(restQuat(die.poly, v, 0, -1, 0));
+    die.mesh.scale.setScalar(num('scale', 1));
+    die.mesh.position.set(x, die.inR * num('scale', 1), z);
+    die.setView(new THREE.Vector3(0, 0.62, 0.78)); die.setRest(1);
+    stage.scene.add(die.mesh); dice.push(die);
+  };
+  // columns by rarity (d4 d6 d8 d10), rows: red weapon, blue weapon, strength(bone), hand(smoke), special, heart
+  const h6 = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
+  const rows = ['NW', 'NE', 'W', 'SW', 'SE', 'C'];
+  for (let r = 0; r < 4; r++) {
+    const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
+    h.loadout = { NW: { uid: 'a', id: 'sword', rarity: r }, NE: { uid: 'b', id: 'shield', rarity: r } };
+    h.strength = { W: [4, 6, 8, 10][r], E: [4, 6, 8, 10][r] }; h.special = { SW: [4, 6, 8, 10][r], SE: [4, 6, 8, 10][r] };
+    const d = dieSpecs(h);
+    rows.forEach((s, ri) => { if (d[s]) place(d[s], (r - 1.5) * pitch, (ri - 2.5) * pitch); });
+  }
+  stage.onFrame((dt, t) => dice.forEach((d) => { d.uniforms.uTime.value = t; d.updateCamera(stage.camera); }));
+  window.__qd.dice = dice;
+  const view = params.get('view') || 'top'; const k = num('scale', 1);
+  if (params.has('cx')) { const cx = num('cx', 0); const cz = num('cz', 0); const h = num('h', 3); cam([cx, h, cz + 0.01], [cx, 0, cz], 40); } else if (view === 'top') cam([0, 14 * k, 0.01], [0, 0, 0], 40);
+  else if (view === 'tilt') cam([0, 12 * k, 7 * k], [0, 0, 0.3], 38);
+  else if (view === 'low') cam([0, 6 * k, 12 * k], [0, 0, 0], 38);
+  else cam([0, 14 * k, 5 * k], [0, 0, 0], 52);
+  stage.post.look({ bloom: 0.35 });
+}

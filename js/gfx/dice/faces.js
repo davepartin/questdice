@@ -116,6 +116,53 @@ const WPN = {
   bBlank: { core: '#2a6cc0', mid: '#123a70', edge: '#03070d' },
 };
 
+// ------------------------------------------------------------------------------- style presets
+// A style re-skins every die for readability without touching the rules or geometry. `classic` is the original look.
+//  bodyK/selfK  brighten the resin (albedo multiplier / self-light); light  scales the tray lights
+//  swirl        strength of the dark marbling; pipDisc  backing disc behind resource symbols ('dark'|'light'|null)
+//  ink          numerals on pale dice: dark ink with a pale groove; numW  numerals on weapon dice: white with dark outline
+export const STYLES = {
+  classic: { name: 'classic', bodyK: 1, selfK: 1, light: 1, swirl: 1, pipDisc: null, pipK: 1, numW: false, ink: false },
+  clear: {
+    name: 'clear', bodyK: 0.9, selfK: 1.7, light: 1.2, swirl: 0.3, pipDisc: 'dark', pipK: 1.35, numW: true, ink: true, numScale: 1.12,
+    wpn: {
+      r: { core: '#ff3b3b', mid: '#e0151f', edge: '#6a0510', metal: ['#ffffff', '#ffffff', '#ffe8e8'], rim: '#3a0a10' },
+      b: { core: '#3aa4ff', mid: '#1470f0', edge: '#06307a', metal: ['#ffffff', '#ffffff', '#e4f2ff'], rim: '#06142a' },
+      rBlank: { core: '#8a1424', mid: '#4a0a14', edge: '#12040a' }, bBlank: { core: '#1c4c92', mid: '#10305e', edge: '#04101e' },
+    },
+    themes: {
+      bone: { core: '#fffaf0', mid: '#f0e4c4', edge: '#b8a47a', trim: ['#f2eee0', '#b4ac98', '#6a6450'] },
+      smoke: { core: '#8a94a8', mid: '#5c6678', edge: '#2a3040', num: 'bone' },
+      heart: { core: '#ffc23a', mid: '#f08a10', edge: '#9a3a04' },
+      amethyst: { core: '#a066ff', mid: '#6a30d8', edge: '#2a0e66' },
+    },
+    pip: { gold: '#ffc61a', pierce: '#b14dff', magic: '#2fe0ff', heal: '#38ff8c', stagger: '#ff7a1a' },
+  },
+  vivid: {
+    name: 'vivid', bodyK: 0.8, selfK: 2.4, light: 0.9, swirl: 0.15, pipDisc: 'light', pipK: 1.35, numW: true, ink: true, numScale: 1.18,
+    wpn: {
+      r: { core: '#ff2a2a', mid: '#ff1010', edge: '#a00008', metal: ['#ffffff', '#ffffff', '#fff0f0'], rim: '#3a0a10' },
+      b: { core: '#2a8cff', mid: '#0a5cff', edge: '#0430a0', metal: ['#ffffff', '#ffffff', '#eef6ff'], rim: '#06142a' },
+      rBlank: { core: '#7a1020', mid: '#400812', edge: '#10040a' }, bBlank: { core: '#18428a', mid: '#0e2a58', edge: '#04101e' },
+    },
+    themes: {
+      bone: { core: '#ffffff', mid: '#f6eed8', edge: '#c8b88c', trim: ['#fff8e8', '#c8c0aa', '#7a7458'] },
+      smoke: { core: '#a8b4ca', mid: '#7a889e', edge: '#3a4458', num: 'bone' },
+      heart: { core: '#ffd048', mid: '#ff9a14', edge: '#b04a04' },
+      amethyst: { core: '#b878ff', mid: '#7a3cf0', edge: '#34128a' },
+    },
+    pip: { gold: '#ffb800', pierce: '#a830ff', magic: '#00d4ff', heal: '#18f070', stagger: '#ff6a00' },
+  },
+};
+let ST = STYLES.classic;
+export const diceStyle = () => ST;
+export function setDiceStyle(name) {
+  ST = STYLES[name] || STYLES.classic;
+  Object.assign(PIP_COLOR, ST.pip || CLASSIC_PIP);
+  return ST;
+}
+const CLASSIC_PIP = { ...PIP_COLOR };
+
 // ------------------------------------------------------------------------------- atlas
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 const cache = new Map();
@@ -210,9 +257,10 @@ const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
  * @param theme  'bone'|'smoke'|'heart'|'amethyst'|'weapon'
  */
 export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
-  const ck = `${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
+  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
-  const th = T[theme];
+  const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
+  const WP = ST.wpn || WPN; const sw = ST.swirl;
   const n = poly.faces.length; const cells = n + 1;
   const cols = n <= 4 ? 3 : n <= 8 ? 3 : 4; const rows = Math.ceil(cells / cols);
   const qk = { high: 1, med: 0.75, low: 0.5 }[quality] ?? 1;
@@ -246,7 +294,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     let core; let mid; let edge; let rough = th.rough; const resin = blank ? 0 : 255;
     if (theme === 'weapon') {
       const t = spec.tone === 'b' ? 'b' : 'r';
-      const P = blank ? WPN[`${t}Blank`] : WPN[t];
+      const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
     } else if (theme === 'amethyst' && blank) { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
@@ -261,7 +309,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
       const light = spec.tone === 'b' ? ['#7cc4ff', '#2f8cf5'] : ['#ff7a5a', '#ff3a3a'];
-      swirls(A, rnd, Rpx, dark, 14, 0.7, inR * 0.5);
+      swirls(A, rnd, Rpx, dark, 14, 0.7 * sw, inR * 0.5);
       if (!blank) swirls(A, rnd, Rpx, light, 8, 0.38, inR * 0.22);
       speckle(A, rnd, Rpx, blank ? '#888' : '#fff', 40, 1.4 * qk, 0.4);
     } else if (theme === 'bone') {
@@ -300,18 +348,18 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
 
     // ---- numeral / symbol
     const hasPip = !!spec.pip && !blank;
-    const numH = inR * nk * (hasPip ? 0.82 : 1);
-    const ny = hasPip ? -inR * 0.2 : -inR * 0.04;
+    const numH = inR * nk * (hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
-      const grow = numH * (th.num === 'ink' ? 0.14 : 0.16);
-      const grooveA = th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
+      const grow = numH * (ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16);
+      const grooveA = ST.ink && th.num === 'ink' ? '#fffaf0' : ST.numW && th.num === 'metal' ? 'rgba(10,0,8,0.96)' : th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
       layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,70,255)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow }));
       let fillA; let metal = 0; let rr = 0.3;
-      if (th.num === 'metal') {
-        const M = WPN[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
-      } else if (th.num === 'ink') {
+      if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
+        const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
+      } else if (th.num === 'ink' && ST.ink && !spec.tone) { fillA = '#140808'; rr = 0.12; } else if (th.num === 'ink') {
         fillA = spec.tone === 'b' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a78d8', '#143a86', '#0a1c4a']) : spec.tone === 'r' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#e04a3c', '#a01418', '#5a0408']) : lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a2416', '#1c0f08', '#0a0504']);
         rr = 0.12;
       } else if (th.num === 'bone') {
@@ -331,8 +379,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     }
     // ---- resource pip under the numeral
     if (hasPip) {
-      const ps = inR * 0.46; const py = inR * 0.66;
-      layer(ctxs, { H: 'rgb(40,40,40)', A: 'rgba(0,0,0,0.9)', O: 'rgb(0,140,0)' }, (c) => drawPip(c, spec.pip, 0, py, ps * 1.28));
+      const ps = inR * 0.46 * ST.pipK; const py = inR * (ST.pipDisc ? 0.52 : 0.66);
+      if (ST.pipDisc) layer(ctxs, { H: 'rgb(60,60,60)', A: ST.pipDisc === 'light' ? '#fffaf0' : 'rgba(14,8,28,0.96)', O: 'rgb(0,120,0)' }, (c) => { c.beginPath(); c.arc(0, py, ps * 0.78, 0, Math.PI * 2); c.fill(); });
+      layer(ctxs, { H: 'rgb(40,40,40)', A: ST.pipDisc === 'light' ? 'rgba(20,10,30,0.95)' : 'rgba(0,0,0,0.9)', O: 'rgb(0,140,0)' }, (c) => drawPip(c, spec.pip, 0, py, ps * (ST.pipDisc ? 1.12 : 1.28)));
       layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[spec.pip], O: 'rgb(0,60,0)', E: spec.pip === 'gold' ? 'rgb(150,100,10)' : `${PIP_COLOR[spec.pip]}` }, (c) => drawPip(c, spec.pip, 0, py, ps));
     }
     // ---- colour badge (heart 5 / 6)
