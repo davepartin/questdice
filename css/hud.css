@@ -432,4 +432,20 @@ body.in-battle .chrome { z-index: 40; }
 .cc-act { display: flex; flex-direction: column; gap: .3rem; flex: none; } .cc-act button { font: 800 .68rem var(--disp, inherit); letter-spacing: .08em; text-transform: uppercase; padding: .35rem .6rem; border-radius: 999px; border: 0; cursor: pointer; }
 .cc-ok { background: linear-gradient(180deg, #ffe08a, #e0a020); color: #2a1804; } .cc-off { background: rgba(255,255,255,.1); color: #d8d2c0; }
 @keyframes ccIn { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
-@media (min-aspect-ratio: 5/4) { .b3-coach { left: 50%; right: auto; top: 4.6rem; transform: translateX(-50%); width: min(26rem, 44vw); } }
+@media (min-aspect-ratio: 5/4) { .b3-coach { left: calc(1rem + var(--safe-l)); right: auto; top: 5.2rem; width: min(22rem, 30vw); justify-content: flex-start; } }
+
+/* LANDSCAPE: the same fixed strip, centred along the top, so no stat box ever sits on a monster */
+@media (min-aspect-ratio: 5/4) {
+  .b3-plates { inset: auto; left: 50%; transform: translateX(-50%); width: min(46rem, 58vw); top: 4rem; display: flex; justify-content: center; gap: .5rem; overflow-x: auto; pointer-events: auto; scrollbar-width: none; }
+  .b3-plates::-webkit-scrollbar { display: none; }
+  .b3-leaders { display: none; }
+  .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss { position: relative; flex: 0 1 11.5rem; width: auto; min-width: 9.4rem; transform: none !important; pointer-events: auto; opacity: 1; filter: none; padding: .38rem .5rem .44rem; }
+  .b3-plates .b3-plate.dead { display: none; }
+  .b3-plates .b3-plate:not(.targeted) { opacity: .8; }
+  .b3-plates .b3-plate .pl-reticle { display: none; } .b3-plates .b3-plate:not(.targeted) .in-name, .b3-plates .b3-plate .in-hint { display: none; }
+}
+
+@media (min-aspect-ratio: 5/4) { .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss { flex-basis: 14rem; min-width: 12.5rem; } }
+@media (max-aspect-ratio: 5/4) { .b3-ribbon { display: none; } }
+/* phone: the hint card sits over the card row (never over the monsters, the stat strip or the dice) */
+@media (max-aspect-ratio: 5/4) { .b3-coach { top: auto; bottom: calc(var(--cards-bottom, 7.5rem) - .2rem); } .b3-coachcard { padding: .5rem .6rem; } .cc-tx p { font-size: .74rem; } }

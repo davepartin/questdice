@@ -650,6 +650,8 @@ export function questsFor(hero) {
   for (let tries = 0; tries < 6 && bq.join() === a.join(); tries++) bq = poolPick();
   const weight = (f) => f.reduce((t, id) => t + MONSTERS[id].hp, 0);
   if (weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road
+  // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
+  if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
   return [mk('battle', a), mk('battle', bq, { perilous: true })];
 }
 export function advanceCampaign(hero) {

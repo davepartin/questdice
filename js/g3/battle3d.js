@@ -117,9 +117,10 @@ function buildHud() {
   B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
-    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.plates.getBoundingClientRect().bottom + 4) : 0);
+    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, Math.round(hud.plates.getBoundingClientRect().bottom + 4));
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     sizePlates();
+    const cr = hud.cards.getBoundingClientRect(); if (cr.height > 4) B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - cr.bottom)}px`);
   };
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
@@ -216,7 +217,7 @@ function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 // Phone: the monsters' stat plates are a fixed strip under the hero panel (scrolls sideways with many foes) so the dice own the screen.
 // Tap a plate or a monster to choose a target.
 function stripPlates() {
-  const hud = B.hud; const hb = hud.hero.getBoundingClientRect().bottom;
+  const hud = B.hud; const hb = landscape() ? 64 : hud.hero.getBoundingClientRect().bottom;
   hud.plates.style.top = `${Math.round(hb + 6)}px`;
   let tgt = null;
   for (const e of B.b.enemies) {
@@ -237,7 +238,7 @@ function project(world3, out = {}) {
   out.x = (_p.x * 0.5 + 0.5) * w; out.y = (-_p.y * 0.5 + 0.5) * hh; out.z = _p.z; return out;
 }
 function positionPlates() {
-  if (!landscape()) return stripPlates();
+  return stripPlates();
   const bw = B.bw; const w = world.stage.width;
   const hud = B.hud; const GAP = 8;
   // top limit: below the hero strip (phone) / top bar (landscape), and the ribbon
@@ -398,7 +399,9 @@ const healBtn = () => {
 
 export function renderReset() {
   B.bw?.tray?.setLink?.(null);
-  B.resets = (B.resets || 0) + 1; setTimeout(() => hint(B.resets > 1 ? 'b_round2' : 'b_roll'), 300);
+  B.resets = (B.resets || 0) + 1;
+  const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
+  setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1) hint('b_round2'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   setHud({ phase: 'reset' });

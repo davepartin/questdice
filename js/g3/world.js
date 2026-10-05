@@ -70,7 +70,7 @@ export const world = {
     // hero
     const heroActor = await createActor('hero', { cls: hero.cls, loadout: hero.loadout, level: hero.level, seed: hero.campaign?.seed || 1, quality: stage.quality });
     heroActor.root.position.set(...MARKS.hero);
-    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(0.7); heroActor.root.position.set(-1.9, 0, 1.1); }
+    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(0.85); heroActor.root.position.set(-2.2, 0, 1.0); }
     const eMarks = enemyMarks(enemies.length, enemies.some((e) => e.tier !== 'minion'));
     const faceHeroYaw = (x, z) => Math.atan2(MARKS.hero[0] - x, MARKS.hero[2] - z);
     const mid = eMarks.reduce((a, p) => [a[0] + p[0] / eMarks.length, a[1] + p[1] / eMarks.length], [0, 0]);
@@ -106,7 +106,7 @@ export const world = {
         const a = await createActor(e.id, { tier: e.tier, seed: (e.uid.length * 7919) >>> 0, quality: stage.quality });
         const m = this.slotFor(index, list);
         a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? 1.6 : 0.5) : 0));
-        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(0.62); // phones: the miniature battle is a small scene, the dice are the game
+        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(0.85); // phones: the miniature battle is a small scene, the dice are the game
         a.root.rotation.y = Math.atan2(MARKS.hero[0] - m[0], MARKS.hero[2] - m[1]) * 0.5;
         a.userData.uid = e.uid;
         stage.scene.add(a.root);
