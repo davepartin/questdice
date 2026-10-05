@@ -214,7 +214,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   function buildDie(s, spec) {
     if (s.die) { diceGroup.remove(s.die.mesh); s.die.dispose(); }
-    s.spec = spec; s.die = createDie({ spec, quality });
+    s.spec = spec; s.die = createDie({ spec, quality: 'high' }); // dice are few and small on screen: always paint their faces sharp
     s.die.mesh.scale.setScalar(DIE_SCALE); s.die.mesh.userData.slot = s.slot; diceGroup.add(s.die.mesh); tray.diceMeshes[s.slot] = s.die.mesh;
     s.value = Math.min(Math.max(1, s.value), spec.sides);
     placeAtRest(s);

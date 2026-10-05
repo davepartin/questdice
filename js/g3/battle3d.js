@@ -106,7 +106,7 @@ function buildHud() {
   B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.dock);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
-    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? 54 : 0);
+    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.hero.getBoundingClientRect().bottom + 84) : 0);
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     sizePlates();
   };
@@ -240,7 +240,9 @@ function positionPlates() {
     for (let i = 1; i < list.length; i++) { const q = list[i - 1]; const min = q.x + (q.w + list[i].w) / 2 + GAP; if (list[i].x < min) list[i].x = min; }
     for (let i = list.length - 1; i >= 0; i--) { const mx = w - list[i].w / 2 - 6; if (list[i].x > mx) list[i].x = mx; if (i < list.length - 1) { const nx = list[i + 1]; const m2 = nx.x - (nx.w + list[i].w) / 2 - GAP; if (list[i].x > m2) list[i].x = m2; } }
   };
-  if (rows === 1) place(items); else { const a = items.filter((_, i) => i % 2 === 0); const b2 = items.filter((_, i) => i % 2 === 1); place(a); place(b2); for (const it of b2) it.y -= it.h + GAP; }
+  if (rows === 1) place(items); else { const a = items.filter((_, i) => i % 2 === 0); const b2 = items.filter((_, i) => i % 2 === 1); place(a); place(b2); for (const it of b2) { it.y -= it.h + GAP; it.row = 1; } }
+  // phone: plates sit in their own row under the hero strip (never on the monsters); a leader line points down to each head
+  if (!landscape()) for (const it of items) it.y = topSafe + it.h + 2 + (it.row || 0) * (it.h + GAP);
   const NS = items.length;
   const obs = [hud.cards, hud.dock, landscape() ? hud.hero : null].filter((n) => n && n.offsetHeight).map((n) => n.getBoundingClientRect()).filter((r) => r.height > 4);
   for (const it of items) {

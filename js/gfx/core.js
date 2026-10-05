@@ -18,7 +18,7 @@ export function detectQuality() {
   if (q === 'low' || q === 'med' || q === 'high') return q;
   const mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
   const cores = navigator.hardwareConcurrency || 4;
-  if (mobile) return cores >= 8 ? 'med' : 'low';
+  if (mobile) return cores >= 6 ? 'med' : 'low'; // current iPhones report 6 cores; they have the power for med
   return 'high';
 }
 
@@ -41,7 +41,7 @@ export function createStage(canvas, opts = {}) {
   scene.add(camera);
 
   const post = createPost(renderer, scene, camera, { quality, ao: opts.ao ?? true });
-  const maxDpr = quality === 'high' ? 2 : quality === 'med' ? 1.5 : 1;
+  const maxDpr = quality === 'low' ? 1.5 : 2; // phones are 3x screens: rendering at 1x looked pixelated
   const dprCap = Number(params.get('dpr')) || maxDpr;
   const shakeNoise = makeNoise(5);
 

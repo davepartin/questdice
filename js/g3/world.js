@@ -81,7 +81,7 @@ export const world = {
     let tray;
     try { tray = trayMod ? trayMod.createTray({ stage, quality: stage.quality }) : stubTray(stage); } catch (e) { console.warn('[world] tray failed', e); tray = stubTray(stage); }
     const pk = this.director.portrait; // phones get a slightly smaller tray so the monsters keep their room
-    tray.object.position.set(MARKS.tray[0], MARKS.tray[1], MARKS.tray[2] + 0.4 * pk); tray.object.scale.setScalar(1.12 - 0.06 * pk);
+    tray.object.position.set(MARKS.tray[0], MARKS.tray[1], MARKS.tray[2] - 0.9 * pk); tray.object.scale.setScalar(1.12 - 0.26 * pk);
     stage.scene.add(tray.object);
     tray.setHero(hero);
     stage.onFrame((dt, t) => tray.update?.(dt, t));
