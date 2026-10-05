@@ -17,7 +17,7 @@ await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 })
 const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
 const shot = async (n) => { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: path.join(out, `${n}.png`) }); };
 const log = (...a) => console.log(...a);
-await p.evaluate((cls) => { const { S, E, showBoard } = window.QD; const hero = E.newHero({ name: 'Dave', cls: cls || 'knight', seed: 11 }); S.hero = hero; S.company = { members: [hero] }; showBoard(); }, args.cls);
+await p.evaluate(([cls, strong]) => { const { S, E, showBoard } = window.QD; const hero = E.newHero({ name: 'Dave', cls: cls || 'knight', seed: 11 }); if (strong) { hero.level = 10; hero.strength = { W: 8, E: 8 }; hero.special = { SW: 8, SE: 8 }; hero.gold = 400; } S.hero = hero; S.company = { members: [hero] }; showBoard(); }, [args.cls, !!args.strong]);
 await pump(1);
 const seenShots = new Set();
 const screenOf = () => p.evaluate(() => {
