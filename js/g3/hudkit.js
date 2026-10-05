@@ -8,7 +8,7 @@ import * as E from '../engine.js';
 // 24x24 grid. Classes: f = duotone body, s = stroke only, h = highlight, p = solid.
 const R45 = 'transform="rotate(45 12 12)"';
 const ICONS = {
-  atk: '<path class="p" d="M12 1.5 L15 5 V15.5 H9 V5 Z M5.5 15.5 H18.5 V18.5 H5.5 Z M10.5 18.5 H13.5 V22.5 H10.5 Z"/><path class="h" d="M12 4.5 V13"/>',
+  atk: '<path class="p" d="M12.00 1.00 L14.37 6.27 L19.78 4.22 L17.73 9.63 L23.00 12.00 L17.73 14.37 L19.78 19.78 L14.37 17.73 L12.00 23.00 L9.63 17.73 L4.22 19.78 L6.27 14.37 L1.00 12.00 L6.27 9.63 L4.22 4.22 L9.63 6.27 Z"/><path class="h" d="M12 4.5 V8"/>',
   block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/><path class="h" d="M12 5 V19.6 M7.2 8.5 V12.5"/>',
   pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/><path class="h" d="M12 5.2 V15"/>',
   magic: '<path class="p" d="M12 2.4 L22.2 20.6 H1.8 Z"/><path class="h" d="M12 6.8 L16.2 14.6"/>',
@@ -165,7 +165,7 @@ export function button({ label, sub, icon: ic, onclick, kind = 'ghost', disabled
 export function costGem(n, cls = '') { return h('span', { class: `cost ${cls}` }, icon('magic'), h('b', {}, String(n))); }
 
 // ------------------------------------------------------------------------------------------------ outcome strip (forecast)
-const OUT = [['atk', 'attack', 'Attack'], ['pierce', 'pierce', 'Pierce'], ['block', 'block', 'Block'], ['magic', 'magic', 'Magic'], ['heal', 'heal', 'Heal'], ['gold', 'gold', 'Gold']];
+const OUT = [['atk', 'atk', 'Attack'], ['pierce', 'pierce', 'Pierce'], ['block', 'block', 'Block'], ['magic', 'magic', 'Magic'], ['heal', 'heal', 'Heal'], ['gold', 'gold', 'Gold']];
 export function forecastStrip() {
   const chips = {};
   const strip = h('div', { class: 'fs', role: 'group', 'aria-label': 'Outcome forecast' }, OUT.map(([k, ic, label]) => {
