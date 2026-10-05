@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import * as E from '../../engine.js';
 import { dieSpecs, createDie, restQuat } from '../dice/dice.js';
+import { leanQuat, d4Lift, setD4Lean } from '../dice/poly.js';
 import { setDiceStyle } from '../dice/faces.js';
 
 export async function demo({ stage, stdLights, cam, params, num }) {
@@ -46,9 +47,10 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     const labels = spec.labels.map((l, i) => ({ l, v: i + 1 }));
     let v = labels[labels.length - 1].v;
     if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
-    die.mesh.quaternion.copy(restQuat(die.poly, v, 0, -1, 0));
+    if (params.has('lean')) setD4Lean(num('lean', 0.6));
+    die.mesh.quaternion.copy(leanQuat(die.poly, restQuat(die.poly, v, 0, -1, 0), v));
     die.mesh.scale.setScalar(num('scale', 1));
-    die.mesh.position.set(x, die.inR * num('scale', 1), z);
+    die.mesh.position.set(x, (die.inR + d4Lift(die.poly)) * num('scale', 1), z);
     die.setView(new THREE.Vector3(0, 0.62, 0.78)); die.setRest(1);
     stage.scene.add(die.mesh); dice.push(die);
   };

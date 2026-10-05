@@ -9,7 +9,7 @@
 
 import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
-import { restQuat } from './poly.js';
+import { restQuat, leanQuat, d4Lift } from './poly.js';
 
 export const ROLL = { g: 30, h: 1 / 240, pick: 0.12, phys: 1.08, restitution: 0.46, mu: 0.6, dishDepth: 0.055 };
 
@@ -184,11 +184,11 @@ export function planRoll(items, statics, opts = {}) {
     }
     best.attempts = Math.min(best.attempts, maxAttempts);
     const last = (steps - 1) * 7;
-    const pFinal = new THREE.Vector3(it.sock.x, -ROLL.dishDepth + poly.inR, it.sock.z);
+    const pFinal = new THREE.Vector3(it.sock.x, -ROLL.dishDepth + poly.inR + d4Lift(poly), it.sock.z);
     const plan = {
       slot: it.slot, pose: best.sim.pose, steps, h, T: pick + ROLL.phys, pick, delay, mode,
       events: best.sim.events.map((e) => ({ t: pick + e.s * h, speed: e.speed, kind: e.kind, pos: [best.sim.pose[e.s * 7], 0, best.sim.pose[e.s * 7 + 2]] })),
-      qFinal: qTarget, pFinal, matched: best.ok, physMatched: best.matched, attempts: best.attempts, yawErr: best.yawErr,
+      qFinal: leanQuat(poly, qTarget, it.label), pFinal, matched: best.ok, physMatched: best.matched, attempts: best.attempts, yawErr: best.yawErr,
       restedAt: best.sim.rested >= 0 ? pick + best.sim.rested * h : null, start: it.start, sock: it.sock, qPhys: best.qf.clone(),
     };
     plan.events.push({ t: plan.T, speed: 1, kind: 'settle', pos: [it.sock.x, 0, it.sock.z] });

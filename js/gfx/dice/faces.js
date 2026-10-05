@@ -371,7 +371,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- numeral / symbol
     const CN = ST.corners && !blank;
     const hasPip = !!spec.pip && !blank && !CN;
-    const numH = inR * nk * (CN ? 0.64 : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const numH = inR * nk * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
@@ -415,11 +415,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
       const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
-      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : 0.56;
+      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.5 : 0.56;
       list.slice(0, ordered.length).forEach((kind, i) => {
         const v = ordered[i].p; const bx = v[0] * kk; const by = v[1] * kk;
         const r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); const sz = r * 2.0; const ow = Math.max(2, sz * 0.13);
-        layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
+        layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
         layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
       });
     }

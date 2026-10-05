@@ -236,6 +236,29 @@ export function roundedGeometry(poly, { r = 0.04, seg = 3, uvOf, trimUV }) {
 // d4: the label's face tilts toward the viewer instead (a tetrahedron has no flat top): it rests on the face
 // opposite the numeral's apex, with the numbered face turned toward `topDir` negated (the camera).
 const _m1 = new THREE.Matrix4(); const _m2 = new THREE.Matrix4();
+// The d4 cannot lie with its number face flat, but players must read it from above: present it leaned back toward the
+// camera (visual only; physics and the roll still resolve on the true resting pose). `setD4Lean(0)` turns it off.
+let D4_LEAN = 0.6;
+export const setD4Lean = (r) => { D4_LEAN = r; };
+const _Y = new THREE.Vector3(0, 1, 0);
+export function leanQuat(poly, q, label, out = new THREE.Quaternion()) {
+  out.copy(q);
+  if (poly.sides !== 4 || !D4_LEAN) return out;
+  const n = poly.faces[poly.labelFace[label - 1]].n.clone().applyQuaternion(q); n.y = 0;
+  if (n.lengthSq() < 1e-6) return out;
+  n.normalize();
+  const axis = new THREE.Vector3().crossVectors(_Y, n).normalize();
+  return out.premultiply(new THREE.Quaternion().setFromAxisAngle(axis, -D4_LEAN));
+}
+// how far the leaned d4 must rise so its lowest corner still touches the floor
+const _lift = new Map();
+export function d4Lift(poly) {
+  if (poly.sides !== 4 || !D4_LEAN) return 0;
+  const key = D4_LEAN; if (_lift.has(poly) && _lift.get(poly).k === key) return _lift.get(poly).v;
+  const q0 = restQuat(poly, 1, 0, -1, 0); const q1 = leanQuat(poly, q0, 1);
+  const minY = (q) => poly.verts.reduce((m, v) => Math.min(m, v.clone().applyQuaternion(q).y), 1e9);
+  const v = Math.max(0, minY(q0) - minY(q1)); _lift.set(poly, { k: key, v }); return v;
+}
 export function restQuat(poly, label, awayX, awayZ, jitter = 0, out = new THREE.Quaternion()) {
   const f = poly.faces[poly.labelFace[label - 1]];
   const ang = Math.atan2(awayX, -awayZ) + jitter; // yaw of "away from the camera" about +Y (0 = -Z)

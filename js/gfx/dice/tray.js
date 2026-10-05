@@ -14,6 +14,7 @@ import { sprite } from '../tex.js';
 import { mulberry32, hashStr } from '../noise.js';
 import * as D from '../../data.js';
 import { dieSpecs, createDie, restQuat } from './dice.js';
+import { leanQuat, d4Lift } from './poly.js';
 import { diceStyle } from './faces.js';
 import { planRoll, samplePlan, ROLL } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
@@ -176,7 +177,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     };
   });
   const centerOf = (slot) => { const s = S[slot]; return new THREE.Vector3(s.home.x, (s.die ? s.die.inR : 0.4) - DEPTH + s.lift + 0.1, s.home.z); };
-  const restY = (s) => -DEPTH + s.die.inR;
+  const restY = (s) => -DEPTH + s.die.inR + d4Lift(s.die.poly);
 
   // selection ring, halo and hover ring per slot (only visible when used)
   const ringTex = sprite('ring'); const glowTex = sprite('glow');
@@ -207,6 +208,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     if (!s.die) return;
     const a = away();
     restQuat(s.die.poly, s.value, a[0], a[1], jitterFor(s.slot, s.value), s.quat);
+    leanQuat(s.die.poly, s.quat, s.value, s.quat);
     s.pos.set(s.home.x, restY(s), s.home.z);
   }
   function buildDie(s, spec) {
