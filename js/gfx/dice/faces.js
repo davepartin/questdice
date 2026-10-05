@@ -398,7 +398,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (spec.sym && !blank && ST.corners) {
       // special dice: heal plus, magic triangle, or a bold "2x" -- the same shapes and colours as everywhere else
       if (spec.sym === 'SURGE') {
-        const th2 = inR * 1.2; const ny2 = inR * 0.04; const xx = -inR * 0.32; const kx = inR * 0.58; const ky = inR * 0.27;
+        const th2 = inR * 1.2; const ny2 = inR * 0.04; const xx = -inR * 0.26; const kx = inR * 0.45; const ky = inR * 0.27;
         const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, ny2 - ky); c.lineTo(kx + ky, ny2 + ky); c.moveTo(kx + ky, ny2 - ky); c.lineTo(kx - ky, ny2 + ky); c.stroke(); };
         const wgt = th2 * 0.2;
         layer(ctxs, { H: 'rgb(34,34,34)', A: '#ffffff', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.2 }); times(c, wgt + th2 * 0.16); });
