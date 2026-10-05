@@ -20,7 +20,7 @@ export const MARKS = {
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest
 // flank it; otherwise a row spread by count.
 export function enemyMarks(n, hasBig) {
-  if (hasBig) return [[0.5, -1.0], [-3.1, -0.2], [3.4, -0.2], [-1.9, 0.9], [2.5, 1.0]];
+  if (hasBig) return [[0.5, -1.9], [-3.1, -0.2], [3.4, -0.2], [-1.9, 0.9], [2.5, 1.0]];
   const rows = { 1: [[0.5, -0.3]], 2: [[-1.2, -0.2], [1.9, -0.5]], 3: [[-2.4, 0.0], [0.4, -0.8], [3.0, 0.0]], 4: [[-3.0, 0.1], [-1.0, -0.8], [1.3, -0.8], [3.3, 0.1]] };
   return rows[Math.min(4, Math.max(1, n))];
 }
