@@ -535,10 +535,10 @@ export function camp(fromBoard) {
 // ------------------------------------------------------------------------------------------------ plumbing
 // Phones: the page is one tall scroll (the 3D picture is the first screenful and scrolls away with everything else).
 function mountAs(cls, ...nodes) {
-  const app = $('#app'); const prev = $('.sx-side'); const kind = cls.trim().split(/\s+/)[0];
+  const app = $('#app'); const prev = $('.sx-side, .sx-board-main'); const kind = cls.trim().split(/\s+/)[0];
   const same = prev && app?.classList.contains('sx-screen') && app.classList.contains(kind); const y = same ? prev.scrollTop : 0;
   X.mountAs(`sx-screen ${cls}`, ...nodes);
-  const side = $('.sx-side'); if (!side) return;
+  const side = $('.sx-side, .sx-board-main'); if (!side) return;
   side.addEventListener('scroll', () => SCR.scrolled?.(side.scrollTop), { passive: true });
   side.scrollTop = y; SCR.scrolled?.(y);
 }

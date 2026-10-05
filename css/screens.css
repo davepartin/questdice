@@ -284,7 +284,10 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-sidehead .sx-eye { display: none; } .sx-h1 { font-size: 1.5rem; }
   .sx-hint { bottom: calc(var(--sheet) * 100dvh + .6rem); }
   .ci-meters { gap: .5rem; } .ci-head h2 { font-size: 1.4rem; } .ci-head p { font-size: .84rem; }
-  .sx-board-main { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-width: none; height: calc(var(--sheet) * 100dvh); padding: .9rem .8rem calc(.8rem + var(--safe-b)); border-radius: 20px 20px 0 0; background: linear-gradient(180deg, rgba(14, 14, 26, .86), rgba(5, 6, 12, .95)); border-top: 1px solid var(--hair); box-shadow: 0 -20px 60px rgba(0, 0, 0, .55); gap: .55rem; }
+  .sx-board-main { left: 0; right: 0; top: 0; bottom: 0; width: auto; max-width: none; height: auto; padding: 0 .8rem calc(.8rem + var(--safe-b)); border-radius: 0; border: 0; box-shadow: none; gap: .55rem; overscroll-behavior-y: contain;
+    background: linear-gradient(180deg, transparent 0, transparent var(--gap), rgba(14, 14, 26, .9) calc(var(--gap) + 1.6rem), rgba(5, 6, 12, .96) calc(var(--gap) + 20rem)); background-attachment: local; }
+  .sx-board-main::before { content: ''; display: block; flex: none; height: var(--gap); pointer-events: none; }
+  .sx-board > .sx-top { will-change: transform; }
   .sx-board-head { padding: .2rem .2rem .4rem; border: 0; background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; } .sx-act { font-size: 1.7rem; } .sx-acttag { display: none; } .sx-trail { margin: .5rem 0 .9rem; } .tr-gem { width: 1.5rem; height: 1.5rem; } .tr-node.now .tr-gem { width: 1.9rem; height: 1.9rem; } .tr-node.elite .tr-gem { width: 1.8rem; height: 1.8rem; } .tr-node.boss .tr-gem { width: 2.1rem; height: 2.1rem; }
   .sx-quests { grid-template-columns: 1fr; flex: none; }
   .sx-qcard { display: grid; grid-template-columns: 7.4rem 1fr; grid-template-rows: 1fr auto; min-height: 0; } .qa { grid-row: 1 / span 2; min-height: 0; padding: 1.9rem .2rem 0; } .qc-tag { left: .5rem; top: .5rem; font-size: .56rem; padding: .15rem .45rem; } .qc-tag em { display: none; } .qc-body { border-top: 0; border-left: 1px solid var(--hair-2); padding: .55rem .8rem .3rem; } .qc-name { font-size: 1.1rem; } .qc-read { margin-top: .35rem; padding-top: .4rem; } .qr { grid-template-columns: 3.6rem auto 1fr; } .qc-go { grid-column: 2; padding: .2rem 0 .6rem; font-size: .66rem; justify-content: flex-start; padding-left: .8rem; } .sx-qcard:hover { transform: none; }
@@ -331,4 +334,4 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 .sx-check { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .35rem 0; font-size: .82rem; color: var(--dim); } .sx-check input { width: 1.2rem; height: 1.2rem; accent-color: #e0a020; flex: none; }
 label.sx-check { justify-content: flex-start; cursor: pointer; }
 .tal-hand { flex-basis: 100%; color: var(--gold-hi) !important; }
-.sx-tip { flex-wrap: wrap; }
+.sx-tip { flex-wrap: wrap; } .sx-tip p { flex: 1 1 calc(100% - 2.4rem); min-width: 0; margin: 0; } .sx-tip .sx-btn { flex: 0 0 auto; } .sx-tip .sx-btn:nth-of-type(1) { margin-left: 1.9rem; }

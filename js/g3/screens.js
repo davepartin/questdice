@@ -62,7 +62,7 @@ export function layout(spec) {
 export function scrolled(px = 0) {
   const d = world.director; if (!d) return;
   const port = d.portrait > 0.5; d.scrollPx = port ? px : 0; d.applySafe();
-  const v = document.querySelector('.sx-viewport'); if (v) v.style.transform = port && px ? `translateY(${-px}px)` : '';
+  for (const v of document.querySelectorAll('.sx-viewport, .sx-board > .sx-top')) v.style.transform = port && px ? `translateY(${-px}px)` : '';
 }
 
 // Arena: rebuilt only when the place changes (or after a battle left the stage in another mode).
