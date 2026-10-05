@@ -67,12 +67,14 @@ export async function start(ctx) {
   await wait(1.1);
   B.busy = false;
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
+  try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
   music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   renderReset();
 }
 
 export function stop() {
   B.ended = true;
+  try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
   const layer = $('#b3'); layer.className = 'b3-layer'; layer.replaceChildren();
   B.plates.clear(); B.ro?.disconnect(); if (B.fit) window.removeEventListener('resize', B.fit);
