@@ -462,7 +462,7 @@ export function renderReset() {
   B.bw?.tray?.setLink?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
-  setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
+  setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   setHud({ phase: 'reset' });
@@ -639,6 +639,51 @@ async function lockInInner() {
     await wait(0.55);
   } else await wait(0.25);
 
+  // ---------- initiative: who goes first this round
+  {
+    const ini = rep.init; const nm = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Monster';
+    if (ini.forced) { banner('YOU STRIKE FIRST', 'gold'); }
+    else {
+      for (const f of ini.foes) { const a = bw.actors.get(f.uid); if (a) number(a.worldAnchor('head'), `⚡ ${f.init}`, f.init > ini.hero ? 'hurt' : 'block'); }
+      number(bw.hero.worldAnchor('head'), `⚡ ${ini.hero}`, 'pierce');
+      const quick = ini.foes.filter((f) => rep.early.includes(f.uid)).map((f) => nm(f.uid));
+      banner(quick.length ? `${quick.length > 1 ? 'MONSTERS' : quick[0].toUpperCase()} STRIKE${quick.length > 1 ? '' : 'S'} FIRST` : `YOU STRIKE FIRST  ⚡${ini.hero}`, quick.length ? 'bad' : 'gold');
+    }
+    sfx.synergy?.();
+    await wait(ini.forced ? 0.6 : 1.1);
+  }
+  const playAct = async (act) => {
+    const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) return;
+    const intent = { v: act.v, n: act.name, slam: act.name === 'Slam' };
+    const clips = intentClips(intent);
+    const heroChest = bw.hero.worldAnchor('chest');
+    const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
+    const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
+    if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
+    if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
+    if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'hex', color: 0x9a4aff }); }
+    if (act.v === 'summon') { sfx.summon?.(); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); }
+    if (act.v === 'guard') { vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 }); }
+    if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }
+    if (dmgVerb && (act.v === 'pierce' || a.has('throw') && /Bomb|Ember|Bone/.test(act.name))) {
+      await race(ev2, 1.2);
+      await vfx('projectile', a.worldAnchor('handR'), heroChest, { kind: /Bomb/.test(act.name) ? 'bomb' : /Ember|Bolt/.test(act.name) ? 'fireball' : act.v === 'pierce' ? 'pierce' : 'bone', color: act.v === 'pierce' ? 0xff8a1a : 0xff8a2a });
+    } else await race(ev2, 1.4);
+    if (dmgVerb) {
+      if (act.net > 0) {
+        sfx.hurt(); buzz(60); stage.shake(act.net >= 8 ? 1.0 : 0.7); stage.hurt(Math.min(1, 0.4 + act.net / 14)); bw.director.punch(0.7);
+        vfx('impact', heroChest, { kind: 'flesh', power: Math.min(1, act.net / 14) });
+        bw.hero.hurt(); number(bw.hero.worldAnchor('head'), `−${act.net}`, 'hurt');
+      }
+      if (act.ab > 0) { vfx('shield', heroChest, { color: 0x4db4ff, radius: 1.0, dur: 0.8 }); sfx.block(); bw.hero.once?.('block', { back: 'idle' }); number(bw.hero.worldAnchor('head').clone().add(new THREE.Vector3(0.6, -0.3, 0)), `🛡 ${act.ab}`, 'block'); }
+      if (act.net <= 0 && !act.ab) number(bw.hero.worldAnchor('head'), 'Blocked!', 'block');
+    }
+    await wait(0.3);
+  };
+  // monsters that rolled higher than your feet strike before you
+  if (rep.acts.some((a) => a.early)) { bw.director.set('defend', { lambda: 3.5 }); for (const act of rep.acts.filter((a) => a.early)) await playAct(act); }
+  if (rep.heroDown) { for (const e of b.enemies) updatePlate(e); B.busy = false; bw.tray.unlock?.(); return lose(); }
+
   // ---------- 1. your strike
   const tAct = bw.actors.get(rep.targetUid); const tEnemy = b.enemies.find((e) => e.uid === rep.targetUid);
   bw.director.set('attack', { lambda: 5 });
@@ -681,34 +726,7 @@ async function lockInInner() {
 
   // ---------- 2. the survivors act
   bw.director.set('defend', { lambda: 3.5 });
-  for (const act of rep.acts) {
-    const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) continue;
-    const intent = { v: act.v, n: act.name, slam: act.name === 'Slam' };
-    const clips = intentClips(intent);
-    const heroChest = bw.hero.worldAnchor('chest');
-    const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
-    const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
-    if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
-    if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
-    if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'hex', color: 0x9a4aff }); }
-    if (act.v === 'summon') { sfx.summon?.(); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); }
-    if (act.v === 'guard') { vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 }); }
-    if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }
-    if (dmgVerb && (act.v === 'pierce' || a.has('throw') && /Bomb|Ember|Bone/.test(act.name))) {
-      await race(ev2, 1.2);
-      await vfx('projectile', a.worldAnchor('handR'), heroChest, { kind: /Bomb/.test(act.name) ? 'bomb' : /Ember|Bolt/.test(act.name) ? 'fireball' : act.v === 'pierce' ? 'pierce' : 'bone', color: act.v === 'pierce' ? 0xff8a1a : 0xff8a2a });
-    } else await race(ev2, 1.4);
-    if (dmgVerb) {
-      if (act.net > 0) {
-        sfx.hurt(); buzz(60); stage.shake(act.net >= 8 ? 1.0 : 0.7); stage.hurt(Math.min(1, 0.4 + act.net / 14)); bw.director.punch(0.7);
-        vfx('impact', heroChest, { kind: 'flesh', power: Math.min(1, act.net / 14) });
-        bw.hero.hurt(); number(bw.hero.worldAnchor('head'), `−${act.net}`, 'hurt');
-      }
-      if (act.ab > 0) { vfx('shield', heroChest, { color: 0x4db4ff, radius: 1.0, dur: 0.8 }); sfx.block(); bw.hero.once?.('block', { back: 'idle' }); number(bw.hero.worldAnchor('head').clone().add(new THREE.Vector3(0.6, -0.3, 0)), `🛡 ${act.ab}`, 'block'); }
-      if (act.net <= 0 && !act.ab) number(bw.hero.worldAnchor('head'), 'Blocked!', 'block');
-    }
-    await wait(0.3);
-  }
+  for (const act of rep.acts.filter((x) => !x.early)) await playAct(act);
   // reinforcements, rage
   for (const uid of rep.summoned) {
     const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;

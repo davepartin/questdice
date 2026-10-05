@@ -59,9 +59,9 @@ export function drawPip(ctx, kind, x, y, size) {
   if (kind === 'stagger') ctx.fill(burst()); else ctx.fill(iconPath({ gold: 'coin', pierce: 'pierce', magic: 'spark', heal: 'mend' }[kind] || 'spark'), kind === 'gold' ? 'evenodd' : 'nonzero');
   ctx.restore();
 }
-export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
+export const PIP_COLOR = { boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
-const SYM_ICON = { atk: 'sword', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend' };
+const SYM_ICON = { atk: 'sword', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend', boot: 'boots' };
 export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
   const ic = SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {

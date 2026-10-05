@@ -29,17 +29,17 @@ test('weapon face budgets: sum to 7, with documented exceptions', () => {
   }
 });
 
-test('universal number language on cardinal dice', () => {
+test('universal number language on head and hands (feet are the initiative die)', () => {
   const h = knight();
-  // head=1 loot, left hand=2 pierce, right hand=3 magic, feet=4 magic. heart 6 so no amp.
+  // head=1 loot, left hand=2 pierce, right hand=3 magic. Feet=4 pays nothing: it is initiative. heart 6 so no amp.
   const ev = evaluate(h, board({ N: 1, W: 2, E: 3, S: 4, C: 6, NW: 1, NE: 1 }));
-  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 3);
+  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 2); assert.equal(ev.init, 4);
 });
 
 test('heart amplifies only matching cardinal dice', () => {
   const h = knight();
   const ev = evaluate(h, board({ N: 2, W: 2, E: 3, S: 2, C: 2 }));
-  assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s: 2 each, plus +2 amp each
+  assert.equal(ev.pierce, 2 * 2 + 2 * 2); // two paying 2s (head, left hand): 2 each, plus +2 amp each; the feet do not pay
   assert.equal(ev.magic, 2);
 });
 
@@ -383,4 +383,37 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
   const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7);
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
+});
+
+test('initiative: round 1 is always yours; ties and lower rolls go to you; a higher roll strikes first', () => {
+  const h = knight();
+  const spec = (S) => ({ NW: 1, W: 1, NE: 1, E: 1, C: 6, N: 4, S });
+  const b1 = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 3, m: 0 }, spec(1));
+  b1.enemies[0].hp = b1.enemies[0].maxHp = 999;
+  const r1 = resolve(b1, {});
+  assert.equal(r1.init.forced, true); assert.equal(r1.init.first, 'hero'); assert.deepEqual(r1.early, []);
+  // a feet 4 can never lose to a d4
+  for (let seed = 1; seed < 20; seed++) {
+    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 3, m: 0 }, spec(4)); b.enemies[0].hp = b.enemies[0].maxHp = 999; b.round = 2;
+    const r = resolve(b, {}); assert.equal(r.init.first, 'hero');
+  }
+  // a feet 1 loses to anything higher, and then the monster's blow lands before yours
+  let sawEarly = 0;
+  for (let seed = 1; seed < 40; seed++) {
+    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 3, m: 0 }, spec(1)); b.enemies[0].hp = b.enemies[0].maxHp = 999; b.round = 2; b.rng = makeRng(seed);
+    const r = resolve(b, {}); const foe = r.init.foes[0].init;
+    assert.equal(r.init.first, foe > 1 ? 'foes' : 'hero');
+    if (foe > 1) { sawEarly++; assert.equal(r.acts[0].early, true); }
+  }
+  assert.ok(sawEarly > 5);
+});
+
+test('a monster that acts first can drop you before you swing (no Last Stand left)', () => {
+  const h = knight();
+  for (let seed = 1; seed < 60; seed++) {
+    const b = duel(h, 'goblin', { n: 'Stab', v: 'strike', f: 999, m: 0 }, { NW: 4, W: 4, NE: 4, E: 4, C: 6, N: 4, S: 1 }); b.round = 2; b.lastStandUsed = true; b.rng = makeRng(seed);
+    const r = resolve(b, {});
+    if (r.early.length) { assert.equal(r.heroDown, true); assert.equal(r.dealt, 0); assert.equal(b.outcome, 'defeat'); return; }
+  }
+  assert.fail('never saw the monster win initiative');
 });

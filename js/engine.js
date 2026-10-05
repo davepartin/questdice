@@ -148,19 +148,21 @@ export function rollBoard(hero, rng) {
   return board;
 }
 
+// The feet die is the INITIATIVE die (its number decides who acts first); head and hands are the dice that pay resources.
+const PAYERS = CARDINALS.filter((s) => s !== 'S');
 // ------------------------------------------------------------------------------- evaluation
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const val = (s) => board[s].v;
   const out = {
-    atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, stagger: 0,
+    init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, stagger: 0,
     lanes: {}, offense3: false, defense3: false, straight: 0, straightBonus: 0, notes: [],
   };
   const res = (slot) => RES_BY_SIZE[ROLE[slot] === 'hand' ? hero.strength[slot] : 4];
 
   // Universal number language on the four cardinal dice.
-  for (const s of CARDINALS) {
+  for (const s of PAYERS) {
     const v = val(s); const r = res(s);
     if (v === 1) out.gold += r[0];
     else if (v === 2) { out.pierce += r[1] + mods.pierceBonus; }
@@ -171,7 +173,7 @@ export function evaluate(hero, board, opts = {}) {
   const hv = val('C');
   out.heart = hv;
   if (hv <= 4) {
-    const matches = CARDINALS.filter((s) => val(s) === hv).length;
+    const matches = PAYERS.filter((s) => val(s) === hv).length;
     const amp = HEART_AMP[hv - 1] * matches;
     if (hv === 1) out.gold += amp; else if (hv === 2) out.pierce += amp; else out.magic += amp;
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
@@ -454,33 +456,36 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const alive = b.enemies.filter((e) => e.hp > 0);
   for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; }
 
-  // 1. Your strike.
-  let tgt = b.enemies[target];
-  if (!tgt || tgt.hp <= 0) tgt = alive[0];
-  rep.targetUid = tgt.uid;
-  const guard = tgt.intent.v === 'guard' ? tgt.mag : 0;
-  const dmg = Math.max(0, T.atk - guard) + T.pierce;
-  rep.guarded = Math.min(guard, T.atk);
-  rep.dealt = Math.min(tgt.hp, dmg);
-  tgt.hp = Math.max(0, tgt.hp - dmg);
-  b.stats.dealt += rep.dealt;
-  if (tgt.intent.v === 'charge' && tgt.hp > 0 && dmg + T.stagger >= tgt.staggerAt) { tgt.windup = false; tgt.cancelled = true; rep.staggered.push(tgt.uid); }
-  if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
-  // splash (to the others) and area damage (to everyone), from powers
-  rep.splashed = [];
-  if (m.splash > 0 || m.aoe > 0) {
-    for (const e of b.enemies) {
-      if (e.hp <= 0 && e !== tgt) continue;
-      const hit = (e === tgt ? 0 : m.splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
-      const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
-      rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
-      if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
-      else if (e.intent && e.intent.v === 'charge' && e.hp > 0 && hit + T.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; if (!rep.staggered.includes(e.uid)) rep.staggered.push(e.uid); }
-    }
-  }
-
-  // 2. Survivors act.
   let block = T.block;
+  // Your strike.
+  let tgt = null;
+  const strike = () => {
+    tgt = b.enemies[target];
+    if (!tgt || tgt.hp <= 0) tgt = alive[0];
+    rep.targetUid = tgt.uid;
+    const guard = tgt.intent.v === 'guard' ? tgt.mag : 0;
+    const dmg = Math.max(0, T.atk - guard) + T.pierce;
+    rep.guarded = Math.min(guard, T.atk);
+    rep.dealt = Math.min(tgt.hp, dmg);
+    tgt.hp = Math.max(0, tgt.hp - dmg);
+    b.stats.dealt += rep.dealt;
+    if (tgt.intent.v === 'charge' && tgt.hp > 0 && dmg + T.stagger >= tgt.staggerAt) { tgt.windup = false; tgt.cancelled = true; rep.staggered.push(tgt.uid); }
+    if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
+    // splash (to the others) and area damage (to everyone), from powers
+    rep.splashed = [];
+    if (m.splash > 0 || m.aoe > 0) {
+      for (const e of b.enemies) {
+        if (e.hp <= 0 && e !== tgt) continue;
+        const hit = (e === tgt ? 0 : m.splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
+        const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
+        rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
+        if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
+        else if (e.intent && e.intent.v === 'charge' && e.hp > 0 && hit + T.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; if (!rep.staggered.includes(e.uid)) rep.staggered.push(e.uid); }
+      }
+    }
+
+
+  };
   const strikeHit = (e, pierceIt) => {
     const d = e.mag;
     let net = d; let ab = 0;
@@ -489,9 +494,10 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     return { d, net, ab };
   };
   const living = () => b.enemies.filter((e) => e.hp > 0);
-  for (const e of b.enemies) {
+  const actFor = (list, early) => {
+  for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, early, init: e.init ?? null };
     switch (i.v) {
       case 'strike': { const r = strikeHit(e, false); Object.assign(act, r); break; }
       case 'pierce': { const r = strikeHit(e, true); Object.assign(act, r); break; }
@@ -520,6 +526,20 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
       default: break;
     }
     rep.acts.push(act);
+  }
+  };
+
+  // Initiative: the first round always goes to you. After that each monster rolls a d4 against your feet die; ties go to you.
+  const initV = ev.init; const early = [];
+  rep.init = { hero: initV, foes: [], first: 'hero', forced: b.round === 1 };
+  for (const e of alive) { e.init = b.round === 1 ? null : die(b.rng, 4); rep.init.foes.push({ uid: e.uid, init: e.init }); if (e.init != null && e.init > initV) early.push(e); }
+  if (early.length) rep.init.first = 'foes';
+  rep.early = early.map((e) => e.uid);
+  actFor(early, true);
+  const heroDown = early.length > 0 && b.lastStandUsed && Math.min(b.maxHp, b.hp + T.heal) - rep.taken <= 0;
+  if (heroDown) { rep.heroDown = true; rep.targetUid = null; } else {
+    strike();
+    actFor(b.enemies.filter((e) => !early.includes(e)), false);
   }
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
 
