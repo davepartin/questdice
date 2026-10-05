@@ -1,7 +1,7 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
 import { CLASSES, WEAPONS, RARITY } from './data.js';
-import { soloOffer, line } from './auction.js';
+import { gambleOffer, line, revealLine, GAMBLE_ODDS } from './auction.js';
 import {
   hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach,
 } from './engine.js';
@@ -581,29 +581,26 @@ export const ROADS = [
 // (With a company he is an auction instead: see auction.js.)
 ROADS.push({
   id: 'traveller', when: 'special', kicker: 'A stranger on the road', title: 'The Traveller',
-  tell: ({ campaign: c }) => {
-    const t = c.traveller; const w = WEAPONS[t.inst.id];
-    return `A stranger steps out from behind a tree that was definitely not there a moment ago. ${line('greet', () => 0.5)} He is holding a ${RARITY[t.inst.rarity | 0]} ${w.name}. "${t.price} gold. Take it or leave it. I will not be offended. I will be slightly offended."`;
-  },
+  tell: ({ campaign: c }) => `A stranger steps out from behind a tree that was definitely not there a moment ago. ${line('greet', () => 0.5)} He is holding a small bundle wrapped in what might be a tablecloth. "${c.traveller.price} gold for what is inside. I will not tell you what it is. I do not know myself. That is the beauty of it."`,
   choices: [
     {
       id: 'buy',
-      label: ({ campaign: c }) => `Buy the ${WEAPONS[c.traveller.inst.id].name}`,
-      hint: ({ campaign: c }) => `${c.traveller.price} gold. It goes into your pack.`,
+      label: ({ campaign: c }) => `Buy the bundle · ${c.traveller.price} gold`,
+      hint: () => `A weapon. ${Math.round(GAMBLE_ODDS[0] * 100)}% Bronze, ${Math.round(GAMBLE_ODDS[1] * 100)}% Silver, ${Math.round(GAMBLE_ODDS[2] * 100)}% Gold, ${Math.round(GAMBLE_ODDS[3] * 100)}% Diamond.`,
       can: ({ campaign: c, members }) => companyGold(members) >= c.traveller.price,
       apply: (ctx) => {
-        const t = ctx.campaign.traveller;
+        const t = ctx.campaign.traveller; const name = WEAPONS[t.inst.id].name; const tier = RARITY[t.inst.rarity | 0];
         payCompany(ctx.members, t.price);
         const m = [...ctx.members].sort((a, b) => a.bag.length - b.bag.length)[0]; m.bag.push({ ...t.inst });
-        note(ctx, 'The Traveller', `Bought a ${WEAPONS[t.inst.id].name} for ${t.price} gold.`);
-        return `${line('won', ctx.rng)} The ${WEAPONS[t.inst.id].name} is in ${m.name}'s pack.`;
+        note(ctx, 'The Traveller', `Paid ${t.price} gold for a bundle: a ${tier} ${name}.`);
+        return `You unwrap it. A ${tier} ${name}. ${revealLine(t.inst.rarity, ctx.rng)} It goes into ${m.name}'s pack.`;
       },
     },
     {
       id: 'leave',
       label: () => 'Walk on',
-      hint: () => 'Keep your gold.',
-      apply: (ctx) => { note(ctx, 'The Traveller', 'Declined a stranger\'s wares.'); return line('unsold', ctx.rng); },
+      hint: () => 'Keep your gold. Wonder about the bundle.',
+      apply: (ctx) => { note(ctx, 'The Traveller', 'Declined a stranger\'s bundle.'); return `${line('unsold', ctx.rng)} You will think about that bundle for the rest of the day.`; },
     },
   ],
 });
@@ -632,7 +629,7 @@ export function ensureRoad(hero, members) {
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
     if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && travellerDue(c)) {
       c.road.id = 'traveller'; c.travellerAt = c.wins || 0;
-      c.traveller = soloOffer(c.seed, { act: c.act, step: c.step });
+      c.traveller = gambleOffer(c.seed, { act: c.act, step: c.step });
     }
   }
   return present(c.road.id, hero, members);

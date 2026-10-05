@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { judge, newLot, submit, settle, makeOffers, soloOffer, line, LINE_KINDS, basePrice } from '../js/auction.js';
+import { judge, newLot, submit, settle, makeOffers, soloOffer, gambleOffer, gamblePrice, GAMBLE_ODDS, revealLine, line, LINE_KINDS, basePrice } from '../js/auction.js';
 import { newHero } from '../js/engine.js';
 
 const lot = (gold = { a: 100, b: 100, c: 100 }) => newLot(makeOffers(7)[0], gold);
@@ -60,4 +60,13 @@ test('alone there is just a price', () => {
 test('the traveller has something to say for every occasion', () => {
   for (const k of LINE_KINDS) assert.ok(line(k).length > 10);
   assert.ok(LINE_KINDS.includes('taken') && LINE_KINDS.includes('rebid'));
+});
+
+test('the solo traveller is a gamble: flat price, hidden prize, odds that add up, and the same prize on every reload', () => {
+  assert.ok(Math.abs(GAMBLE_ODDS.reduce((a, b) => a + b, 0) - 1) < 1e-9);
+  const g = gambleOffer(9, { act: 1, step: 3 }); assert.equal(g.price, gamblePrice(1)); assert.equal(gambleOffer(9, { act: 1, step: 3 }).inst.rarity, g.inst.rarity);
+  assert.ok(gamblePrice(2) > gamblePrice(1));
+  const tally = [0, 0, 0, 0]; for (let s = 0; s < 800; s++) tally[gambleOffer(s, { act: 1, step: 3 }).inst.rarity]++;
+  assert.ok(tally[0] > tally[1] && tally[1] > tally[2] && tally[2] > tally[3] && tally[3] > 0, `odds ${tally}`);
+  for (let t = 0; t < 4; t++) assert.ok(revealLine(t).length > 10);
 });

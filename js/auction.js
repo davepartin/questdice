@@ -54,6 +54,18 @@ export function soloOffer(seed, { act = 1, step = 1 } = {}) {
   return { inst, price: Math.round(basePrice(inst) * (0.85 + rng() * 0.3)) };
 }
 
+// The solo traveller is a gamble: a wrapped weapon at a flat price. You do not learn what is inside until you have paid.
+// Most are plain, a few are very good, now and then a Diamond. The prize is fixed by the campaign seed, so reloading cannot reroll it.
+export const GAMBLE_ODDS = [0.5, 0.3, 0.15, 0.05];
+export const gamblePrice = (act = 1) => 70 + 25 * (act - 1);
+export function gambleOffer(seed, { act = 1, step = 1 } = {}) {
+  const rng = makeRng(hashSeed(seed, act, step, 'gamble-traveller'));
+  let r = rng(); let tier = 0;
+  for (let i = 0; i < GAMBLE_ODDS.length; i++) { r -= GAMBLE_ODDS[i]; if (r < 0) { tier = i; break; } }
+  const [inst] = rollDrops(rng, 1, { minRarity: tier }); inst.rarity = tier;
+  return { inst, price: gamblePrice(act), odds: GAMBLE_ODDS };
+}
+
 // ---- the traveller's patter (the game is meant to be funny)
 const LINES = {
   greet: [
@@ -86,11 +98,18 @@ const LINES = {
     'Better luck next time. Or at least a better bluff.',
     'You could have bid more. We both know it. We all know it.',
   ],
+  reveal: [
+    ['Bronze', 'Ah. Bronze. Well. It is a weapon. It is technically a weapon.', 'Bronze. I did say it was a gamble. I did not say it was a good one.'],
+    ['Silver', 'Silver! Not bad. Not bad at all. I am a little jealous and a little relieved.', 'Silver, and still warm from the ditch.'],
+    ['Gold', 'Gold! I may have underpriced it. I will not be telling my wife.', 'Gold! Please do not tell the other travellers. They will want one.'],
+    ['Diamond', 'DIAMOND. I am going to sit down. Do not look at me.', 'A Diamond. I want to be clear that I had no idea. I had every idea.'],
+  ],
   solo: [
     'Just the one customer? I shall not mention the pressure.',
     'Take it or leave it. I will not be offended. I will be slightly offended.',
   ],
 };
-export const LINE_KINDS = Object.keys(LINES);
+export const LINE_KINDS = Object.keys(LINES).filter((k) => k !== 'reveal');
+export function revealLine(tier, rng = Math.random) { const e = LINES.reveal[tier | 0]; return e[1 + Math.floor(rng() * 2)]; }
 export function line(kind, rng = Math.random) { const l = LINES[kind]; return l[Math.floor(rng() * l.length)]; }
 export const tierName = (inst) => RARITY[inst.rarity | 0];
