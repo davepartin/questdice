@@ -398,7 +398,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- numeral / symbol
     const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
     const hasPip = !!spec.pip && !blank && !CN && !heartBig;
-    const numH = inR * nk * (heartBig ? 0.72 : 1) * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    const numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
