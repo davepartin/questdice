@@ -132,18 +132,28 @@ function buildHud() {
   fit();
 }
 
-// Keep the whole dice board between the monster strip and the dock: shrink the tray until its near edge clears the dock (phones only).
+// Phones: make the dice board as wide as the screen. Lower the camera (foreshorten) until the full-width board also fits
+// between the monster strip and the dock; the monsters stand behind it in whatever space is left.
 function fitTray() {
   const bw = B.bw; if (!bw || landscape() || !B.hud) return;
-  const cam = world.stage.camera; const W = world.stage.width; const H = world.stage.height;
+  const dir = world.director; const cam = world.stage.camera; const W = world.stage.width; const H = world.stage.height;
   const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
-  const r = world.director.resolve('battle'); const c = cam.clone(); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
-  const sh = ((world.director.safe?.bottom || 0) - (world.director.safe?.top || 0)) / 2; // the director's view offset
-  const obj = bw.tray.object; const v = new THREE.Vector3();
-  const edge = (zl, y) => { v.set(0, y, zl).multiply(obj.scale).add(obj.position).project(c); return (-v.y * 0.5 + 0.5) * H - sh; };
-  let k = 1.0; obj.scale.setScalar(k * B.trayBase);
-  for (let i = 0; i < 14 && edge(2.55, 0.5) > dockTop - 4; i++) { k *= 0.96; obj.scale.setScalar(k * B.trayBase); }
-  B.trayK = k; void stripBottom;
+  const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
+  const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
+  const HALF = 2.3; const NEAR = 2.55; const need = 46; // px kept above the board for the monsters
+  let best = null;
+  for (let tilt = 0; tilt <= 0.52; tilt += 0.04) {
+    dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
+    const pt = (x, y, z) => { v.set(x, y, z).multiply(obj.scale).add(obj.position).project(c); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H - sh]; };
+    for (let k = 1.7; k >= 0.3; k -= 0.03) {
+      obj.scale.setScalar(k * B.trayBase);
+      const nl = pt(-HALF, 0.5, NEAR); const nr = pt(HALF, 0.5, NEAR); const far = pt(0, 0.5, -NEAR);
+      if (nr[0] - nl[0] > W * 0.97 || nl[1] > dockTop - 4 || far[1] < stripBottom + need) continue;
+      if (!best || k > best.k + 0.001) best = { k, tilt }; break;
+    }
+  }
+  best = best || { k: 0.3, tilt: 0.52 };
+  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k;
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -384,7 +394,7 @@ function idleTray() {
   const b = B.b; const tray = B.bw.tray;
   const dummy = {}; for (const s of D.SLOTS) dummy[s] = { v: 1 };
   tray.show(b.board || dummy);
-  for (const s of D.SLOTS) tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s));
+  for (const s of D.SLOTS) { tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s)); tray.setVacant?.(s, !E.isActive(B.hero, s)); }
   tray.setSelected?.(new Set());
 }
 
@@ -495,7 +505,7 @@ async function doRoll() {
   E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
-  for (const s of D.SLOTS) bw.tray.setDimmed?.(s, !E.isActive(B.hero, s));
+  for (const s of D.SLOTS) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
   renderShape();
   await bw.tray.roll(b.board);
   for (const s of D.SLOTS) bw.tray.setBound?.(s, !!b.board[s].bound);
@@ -553,7 +563,7 @@ export function renderShape() {
 }
 
 function onPick(slot) {
-  if (!E.isActive(B.hero, slot)) { sfx.error(); toast('Not unlocked yet. Visit camp to add this die.'); return; }
+  if (!E.isActive(B.hero, slot)) { sfx.error(); toast('An empty socket. Buy this die at camp and it goes right here.'); return; }
   if (B.busy || B.ended || B.b.phase !== 'shape') return;
   const b = B.b; const info = E.rerollInfo(b);
   B.focus = slot;

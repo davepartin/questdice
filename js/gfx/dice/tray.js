@@ -189,6 +189,17 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     s.halo = new THREE.Mesh(flat(new THREE.PlaneGeometry(2.3, 2.3)), new THREE.MeshBasicMaterial({ map: glowTex, color: 0xffd98a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, opacity: 0 }));
     s.halo.position.set(s.home.x, 0.008, s.home.z); s.halo.visible = false; s.halo.renderOrder = 8; object.add(s.halo);
   }
+  // an empty socket for a die the hero has not bought yet: a dashed ring with a plus, where it will go
+  const vacTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); g.lineCap = 'round';
+    g.fillStyle = 'rgba(255,233,168,0.07)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#ffe9a8'; g.lineWidth = 9; g.setLineDash([26, 20]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+    g.lineWidth = 18; g.beginPath(); g.moveTo(-40, 0); g.lineTo(40, 0); g.moveTo(0, -40); g.lineTo(0, 40); g.stroke();
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
+  for (const slot of SLOT_ORDER) {
+    const s = S[slot];
+    s.vac = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ map: vacTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.85 }));
+    s.vac.position.set(s.home.x, 0.03, s.home.z); s.vac.visible = false; s.vac.renderOrder = 7; object.add(s.vac);
+  }
   const hexTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); const hexP = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
     hexP(118); g.fillStyle = 'rgba(14,4,26,0.78)'; g.fill(); g.lineWidth = 7; g.strokeStyle = '#a05cff'; g.shadowColor = '#b070ff'; g.shadowBlur = 16; hexP(112); g.stroke(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(190,140,255,0.6)'; hexP(86); g.stroke(); hexP(60); g.stroke();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
@@ -302,6 +313,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     return tray;
   };
   tray.setDimmed = function setDimmed(slot, on = true) { if (S[slot]) S[slot].dimmed = !!on; return tray; };
+  tray.setVacant = function setVacant(slot, on = true) { const s = S[slot]; if (s) { s.vacant = !!on; s.vac.visible = !!on; if (s.die) s.die.mesh.visible = !on; } return tray; };
   function buildChains(s) {
     const R = s.die.poly.outR + 0.07; const N = 22;
     const group = new THREE.Group(); group.visible = false;
@@ -437,6 +449,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     let anyRolling = false;
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; const die = s.die; if (!die) continue;
+      die.mesh.visible = !s.vacant; if (s.vacant) s.vac.material.opacity = 0.6 + 0.25 * Math.sin(time * 2 + s.i);
       // ---- springs: lift (selected/hover), hop (pulses)
       const target = (s.selected ? 0.12 : s.hover ? 0.04 : 0);
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
@@ -502,7 +515,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     // ---- blob shadows
     SLOT_ORDER.forEach((slot, i) => {
       const s = S[slot];
-      if (!s.die) { _m.makeScale(0, 0, 0); blobs.setMatrixAt(i, _m); return; }
+      if (!s.die || s.vacant) { _m.makeScale(0, 0, 0); blobs.setMatrixAt(i, _m); return; }
       const mp = s.die.mesh.position; const h = Math.max(0, mp.y - restY(s));
       const inDish = Math.hypot(mp.x - s.home.x, mp.z - s.home.z) < 0.5 && h < 0.3;
       const sc = 1.35 + h * 0.5;

@@ -44,7 +44,7 @@ export class Director {
     this.stage = stage;
     this.cur = { pos: new THREE.Vector3(0, 3, 9), look: new THREE.Vector3(0, 1, 0), fov: 40 };
     this.tgt = { pos: new THREE.Vector3(0, 3, 9), look: new THREE.Vector3(0, 1, 0), fov: 40 };
-    this.shot = 'battle'; this.punchK = 0; this.lambda = 3.2; this.sway = 1; this.offset = new THREE.Vector3();
+    this.shot = 'battle'; this.tilt = 0; this.punchK = 0; this.lambda = 3.2; this.sway = 1; this.offset = new THREE.Vector3();
     this._v = new THREE.Vector3(); this.manualOverride = false;
     this.set('battle', { snap: true });
     this.safe = { bottom: 0, top: 0 };
@@ -56,11 +56,17 @@ export class Director {
   resolve(name) {
     const s = SHOTS[name] || SHOTS.battle; const k = this.portrait;
     const l = (a, b) => a + (b - a) * k;
-    return {
+    const out = {
       pos: new THREE.Vector3(l(s.land.pos[0], s.port.pos[0]), l(s.land.pos[1], s.port.pos[1]), l(s.land.pos[2], s.port.pos[2])),
       look: new THREE.Vector3(l(s.land.look[0], s.port.look[0]), l(s.land.look[1], s.port.look[1]), l(s.land.look[2], s.port.look[2])),
       fov: l(s.land.fov, s.port.fov),
     };
+    // phones: the battle camera can be lowered (tilt, radians) so a wide board is foreshortened instead of shrunk
+    if (name === 'battle' && this.tilt) {
+      const d = out.pos.clone().sub(out.look); const len = d.length(); const pitch = Math.asin(d.y / len) - this.tilt; const flat = Math.hypot(d.x, d.z) || 1;
+      out.pos.set(out.look.x + d.x / flat * Math.cos(pitch) * len, out.look.y + Math.sin(pitch) * len, out.look.z + d.z / flat * Math.cos(pitch) * len);
+    }
+    return out;
   }
   set(name, { snap = false, lambda } = {}) {
     this.shot = name; this.lambda = lambda ?? 3.2;
