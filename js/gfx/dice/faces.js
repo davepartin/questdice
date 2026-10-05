@@ -180,7 +180,7 @@ export const STYLES = {
 // CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
 // the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
 STYLES.clean = {
-  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.8, smoke: 0.8, heart: 0.7, amethyst: 0.85, weapon: 0.8 }, selfFlat: { bone: 1.5, smoke: 1.5, weapon: 1.6, amethyst: 1.5, heart: 1.5 }, selfK: 1.0, light: 0.9, neutralLight: true, swirl: 0, numScale: 1.12,
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.9, smoke: 0.9, heart: 0.8, amethyst: 0.95, weapon: 0.9 }, selfFlat: { bone: 0.5, smoke: 0.5, weapon: 0.55, amethyst: 0.5, heart: 0.55 }, selfK: 1.0, light: 1.0, neutralLight: true, swirl: 0, numScale: 1.12,
   wpn: {
     r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
     b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },
@@ -383,7 +383,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       if (!ST.clean) { A.save(); const sg = A.createRadialGradient(0, 0, 0, 0, 0, inR * 0.8); sg.addColorStop(0, 'rgba(0,0,0,0.5)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); A.fillStyle = sg; A.fillRect(-S / 2, -S / 2, S, S); A.restore(); }
       // faint void sigil: a slashed ring (a miss) engraved shallow
       const ring = (c) => { c.lineWidth = inR * 0.13; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, inR * 0.46, 0, Math.PI * 2); c.moveTo(-inR * 0.33, inR * 0.33); c.lineTo(inR * 0.33, -inR * 0.33); c.stroke(); };
-      layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)', E: 'rgb(255,255,255)' }, ring);
+      layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring);
     }
 
     // ---- watermark (weapon identity), shallow
