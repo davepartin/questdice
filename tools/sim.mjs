@@ -32,7 +32,7 @@ function expectedAfter(b, slots, rng, n = 14) {
 export function botRound(b, rng) {
   startRoll(b);
   const slotsAll = Object.keys(ROLE);
-  for (let guard = 0; guard < 4; guard++) {
+  for (let guard = 0; guard < 8; guard++) {
     const info = rerollInfo(b);
     if (info.kind === 'none') break;
     const free = slotsAll.filter((s) => !b.board[s].bound);

@@ -372,7 +372,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     }
 
     // ---- numeral / symbol
-    const CN = ST.corners && !blank;
+    const CN = ST.corners && !blank && spec.sym !== 'TALENT';
     const hasPip = !!spec.pip && !blank && !CN;
     const numH = inR * nk * (CN ? (poly.sides === 6 ? 0.55 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
     const ny = hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
@@ -395,7 +395,16 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow: -numH * 0.01 }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, 0, ny, numH));
     }
-    if (spec.sym && !blank && ST.corners) {
+    if (spec.sym === 'TALENT' && !blank) {
+      // talent faces: one big symbol, or two side by side, centred (the same shapes and colours as everywhere else)
+      const list = (spec.syms || []).slice(0, 2); const two = list.length === 2;
+      const sz = inR * (two ? 1.0 : 1.5); const ow = sz * 0.1;
+      list.forEach((kind, i) => {
+        const bx = two ? (i ? 1 : -1) * inR * 0.5 : 0;
+        layer(ctxs, { H: 'rgb(34,34,34)', A: kind === 'atk' || kind === 'def' ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind === 'block' ? 'def' : kind, bx, inR * 0.02, sz, ow * 2));
+        layer(ctxs, { H: 'rgb(78,78,78)', A: PIP_COLOR[kind === 'block' ? 'def' : kind], O: 'rgb(0,40,0)', E: PIP_COLOR[kind === 'block' ? 'def' : kind] }, (c) => drawSym(c, kind === 'block' ? 'def' : kind, bx, inR * 0.02, sz));
+      });
+    } else if (spec.sym && !blank && ST.corners) {
       // special dice: heal plus, magic triangle, or a bold "2x" -- the same shapes and colours as everywhere else
       if (spec.sym === 'SURGE') {
         const th2 = inR * 1.2; const ny2 = inR * 0.04; const xx = -inR * 0.26; const kx = inR * 0.45; const ky = inR * 0.24;
@@ -457,7 +466,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   ctxs.O.save(); ctxs.O.translate(tx, ty); ctxs.O.fillStyle = `rgb(0,${Math.round(th.trimRough * 255)},255)`; ctxs.O.fillRect(-S / 2, -S / 2, S, S); ctxs.O.restore();
 
   const normalC = normalFromHeight(Hc, 3.4, Math.max(1, Math.round(1.6 * qk)));
-  const needE = faces.some((f) => f && (f.sym || f.pip || f.corners || (ST.corners && (f.mark || (theme === 'weapon' && !f.blank))) || (theme === 'weapon' && !f.blank)));
+  const needE = faces.some((f) => f && (f.sym || f.syms || f.pip || f.corners || (ST.corners && (f.mark || (theme === 'weapon' && !f.blank))) || (theme === 'weapon' && !f.blank)));
   const textures = {
     map: tex(A, true), orm: tex(O, false), normalMap: tex(normalC, false), emissiveMap: needE ? tex(E, true) : null,
   };

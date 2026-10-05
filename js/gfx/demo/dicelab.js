@@ -19,7 +19,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
   for (let r = 0; r < 4; r++) {
     const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
     h.loadout = { NW: { uid: 'a', id: 'sword', rarity: r }, NE: { uid: 'b', id: 'shield', rarity: r } };
-    h.strength = { W: 8, E: 6 }; h.special = { SW: 10, SE: 8 };
+    h.strength = { W: 8, E: 6 }; h.special = { SW: 6, SE: 6 }; h.talent = { SW: [['heal','atk'],['gold'],['block','block']], SE: [['magic','pierce'],['atk'],[]] };
     const d = dieSpecs(h); specs.push([d.NW, d.NE, d.W, d.E, d.SW, d.SE, d.NW === d.NE ? null : null].filter(Boolean));
   }
   const pick = params.get('pick') || 'pip';
@@ -46,7 +46,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
     const die = createDie({ spec, quality: stage.quality });
     const labels = spec.labels.map((l, i) => ({ l, v: i + 1 }));
     let v = labels[labels.length - 1].v;
-    if (pick === 'surge') { const w = labels.find((o) => o.l.sym === 'SURGE'); if (w) v = w.v; } else if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
+    if (pick === 'talent') { const w = labels.find((o) => o.l.sym === 'TALENT'); if (w) v = w.v; } else if (pick === 'surge') { const w = labels.find((o) => o.l.sym === 'SURGE'); if (w) v = w.v; } else if (pick === 'pip') { const w = labels.find((o) => o.l.pip === 'pierce') || labels.find((o) => o.l.pip) || labels.find((o) => o.l.sym); if (w) v = w.v; } else if (pick === 'min') v = 1;
     if (params.has('lean')) setD4Lean(num('lean', 0.6));
     die.mesh.quaternion.copy(leanQuat(die.poly, restQuat(die.poly, v, 0, -1, 0), v));
     die.mesh.scale.setScalar(num('scale', 1));
@@ -60,7 +60,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
   for (let r = 0; r < 4; r++) {
     const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
     h.loadout = { NW: { uid: 'a', id: 'sword', rarity: r }, NE: { uid: 'b', id: 'shield', rarity: r } };
-    h.strength = { W: [4, 6, 8, 10][r], E: [4, 6, 8, 10][r] }; h.special = { SW: [4, 6, 8, 10][r], SE: [4, 6, 8, 10][r] };
+    h.strength = { W: [4, 6, 8, 10][r], E: [4, 6, 8, 10][r] }; h.special = { SW: r % 2 ? 6 : 4, SE: r % 2 ? 6 : 4 }; h.talent = { SW: [['heal', 'atk'], ['gold'], ['block', 'block']], SE: [['magic', 'pierce'], ['atk'], []] };
     const d = dieSpecs(h);
     rows.forEach((s, ri) => { if (d[s]) place(d[s], (r - 1.5) * pitch, (ri - 2.5) * pitch); });
   }

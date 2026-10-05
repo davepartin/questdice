@@ -15,7 +15,10 @@ export const CARDINALS = ['N', 'W', 'E', 'S']; // head, hands, feet: the "always
 
 export const MAGIC_CAP = 12;
 export const MAX_LEVEL = 20;
-export const REROLL_ACTIONS = 3;
+// Rerolls: `free` actions cost nothing, then `paid` actions cost 1 magic per die. Each action rerolls up to the class's dice (+diceBonus).
+// (Mutable so the balance simulator can compare rule sets.)
+export const RULES = { free: 3, paid: 3, diceBonus: 1 };
+export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const HEAL_COST = 2; // magic
 export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
@@ -87,20 +90,34 @@ export const LOOT_WEIGHTS = {
   dagger: 10, bracer: 8, sword: 10, shield: 10, spear: 8, bow: 7, longsword: 7, staff: 7,
 };
 
-// Special dice: always exactly two blanks, then the symbols repeat as the die grows.
-export const SPECIAL_SYMBOLS = {
-  SW: ['MEND', 'SURGE'],
-  SE: ['SPARK', 'SURGE'],
+// TALENT dice (the bottom corners; the old "special" dice). Faces: two blanks, a 2x (doubles that hand's strength in its lane),
+// then symbol faces: one on a d4, three on a d6. Each symbol face holds up to two symbols; any one symbol may appear at most twice on a die.
+// A symbol is worth the strength rolled on the hand above the die.
+export const TALENT_SYMS = {
+  atk: { name: 'Attack', text: 'Attack equal to your hand strength.' },
+  block: { name: 'Block', text: 'Block equal to your hand strength.' },
+  pierce: { name: 'Pierce', text: 'Pierce: three quarters of your hand strength, ignoring block.' },
+  magic: { name: 'Magic', text: 'Magic equal to your hand strength.' },
+  heal: { name: 'Heal', text: 'Heal twice your hand strength.' },
+  gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
 };
-export const SYMBOL_INFO = {
-  MEND: { glyph: '✚', name: 'Mend', text: 'Heal HP equal to your left-hand strength.' },
-  SPARK: { glyph: '✦', name: 'Spark', text: 'Gain Magic equal to your right-hand strength.' },
-  SURGE: { glyph: '⚡', name: 'Surge', text: 'Doubles this hand’s strength in its lane.' },
+export const TALENT_MAX_SAME = 2;
+export const TALENT_PER_FACE = 2;
+export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
+export const TALENT_FACES = { 4: 1, 6: 3 };
+export const CLASS_TALENT = {
+  knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'pierce', SE: 'atk' }, wizard: { SW: 'magic', SE: 'pierce' },
+  dwarf: { SW: 'block', SE: 'heal' }, bard: { SW: 'gold', SE: 'magic' },
 };
+// Display helpers for the old flat UI and captions.
+export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙' };
+export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ? sym.map((x) => TALENT_GLYPH[x]).join('') : '');
+export const talentName = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
+export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s strength in its lane.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
 
 // Strength / special upgrade ladder: [from size, gold, minimum hero level].
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
-export const SPECIAL_STEPS = { 4: [50, 4], 6: [120, 9], 8: [250, 14] };
+export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);

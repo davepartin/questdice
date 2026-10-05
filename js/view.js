@@ -24,7 +24,7 @@ export function dieSpec(hero, slot, v) {
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
-    return { main: sym ? D.SYMBOL_INFO[sym].glyph : '—', tone: sym ? 'sym' : '', chip: sym ? D.SYMBOL_INFO[sym].name : 'blank', chipKind: sym ? 'c-pierce' : 'c-dim', blank: !sym };
+    return { main: sym ? D.talentLabel(sym) : '—', tone: sym ? 'sym' : '', chip: sym ? D.talentName(sym) : 'blank', chipKind: sym ? 'c-pierce' : 'c-dim', blank: !sym };
   }
   let chip = ''; let chipKind = '';
   if (role === 'heart') {
@@ -75,7 +75,7 @@ export function describeDie(hero, slot, v) {
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
-    return sym ? `${name}: ${D.SYMBOL_INFO[sym].name}. ${D.SYMBOL_INFO[sym].text}` : `${name}: a blank. Two faces of every special die are always empty.`;
+    return sym ? `${name}: ${D.talentName(sym)}. ${D.talentText(sym)}` : `${name}: a blank. Two faces of every talent die are always empty.`;
   }
   if (role === 'heart') {
     const t = ['Every other 1 you roll on head, hands and feet pays +2 🪙 extra.', 'Every other 2 you roll pierces +2 extra.', 'Every other 3 you roll gives +2 ✦ extra.', 'Every other 4 you roll gives +1 ✦ extra.', 'Your best BLUE lane gets +4 block.', 'Your best RED lane gets +4 attack.'][v - 1];

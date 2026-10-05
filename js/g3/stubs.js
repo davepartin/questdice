@@ -32,7 +32,7 @@ export function stubTray(stage) {
   const colOf = (slot, v) => {
     const r = D.ROLE[slot];
     if (r === 'weapon' && hero) { const f = E.weaponFaces(hero.loadout[slot])[v - 1]; return { c: f?.c === 'r' ? '#a01c24' : '#1c5ca0', t: String(f?.v ?? v) }; }
-    if (r === 'special' && hero) { const s = E.specialFace(hero, slot, v); return { c: s ? '#5a2a9a' : '#2a2a30', t: s ? D.SYMBOL_INFO[s].glyph : '–' }; }
+    if (r === 'special' && hero) { const s = E.specialFace(hero, slot, v); return { c: s ? '#5a2a9a' : '#2a2a30', t: s ? D.talentLabel(s) : '–' }; }
     if (r === 'heart') return { c: '#a07a14', t: String(v) };
     return { c: '#4a4438', t: String(v) };
   };

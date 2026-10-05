@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
-  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon,
+  sidesOf, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent,
 } from '../js/engine.js';
-import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST } from '../js/data.js';
+import { WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -52,16 +52,36 @@ test('lane = weapon + strength; weapon color decides attack vs block', () => {
   assert.equal(ev.atk, 7); assert.equal(ev.block, 7);
 });
 
-test('surge doubles only that hand strength; mend heals by strength; spark gives magic', () => {
-  const h = knight();
+test('talent die: 2x doubles that hand, symbols are worth the hand strength, a face may hold two', () => {
+  const h = knight(); h.special.SW = 6; h.talent.SW = [['heal', 'atk'], [], ['gold']];
   assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 2), null);
-  assert.equal(specialFace(h, 'SW', 3), 'MEND'); assert.equal(specialFace(h, 'SW', 4), 'SURGE');
-  const ev = evaluate(h, board({ NW: 3, W: 3, SW: 4, SE: 3, E: 2, NE: 1, C: 3 }));
-  assert.equal(ev.lanes.L.value, 3 + 3 + 3); // surge adds the strength a second time
-  const ev2 = evaluate(h, board({ SW: 3, W: 3, C: 3 }));
-  assert.equal(ev2.heal, 3);
-  const ev3 = evaluate(h, board({ SE: 3, E: 4, C: 3 }));
-  assert.ok(ev3.magic >= 4);
+  assert.equal(specialFace(h, 'SW', 3), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal', 'atk']);
+  assert.equal(specialFace(h, 'SW', 5), null); // an empty symbol face is a blank
+  const ev = evaluate(h, board({ NW: 3, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 }));
+  assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
+  const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal x2 and attack on one face
+  assert.equal(ev2.heal, 6); assert.ok(ev2.atk >= 3);
+  const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
+  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 2); // gold is half of 4
+});
+
+test('talent slots cost the same, hold two of a symbol per face, but never more than two of one symbol per die', () => {
+  const h = knight(); h.gold = 500; h.special.SW = 6; h.talent.SW = [[], [], []];
+  assert.ok(addTalent(h, 'SW', 0, 'atk')); assert.ok(addTalent(h, 'SW', 0, 'atk')); // two of the same on one face
+  assert.equal(addTalent(h, 'SW', 1, 'atk'), false); // a third attack on the die
+  assert.equal(addTalent(h, 'SW', 0, 'heal'), false); // face full
+  assert.ok(addTalent(h, 'SW', 1, 'heal')); assert.equal(h.gold, 500 - 3 * TALENT_SLOT_COST);
+  const poor = knight(); poor.gold = 0; assert.equal(addTalent(poor, 'SE', 0, 'gold'), false);
+  const d4 = knight(); d4.gold = 500; assert.equal(addTalent(d4, 'SW', 1, 'gold'), false); // a d4 has one symbol face
+});
+
+test('rerolls: four dice, three free then three paid at one magic a die', () => {
+  const h = knight(); const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b);
+  b.magic = 5; const slots = ['NW', 'N', 'NE', 'W'];
+  for (let i = 0; i < 3; i++) { assert.equal(rerollInfo(b).kind, 'free'); assert.equal(rerollInfo(b).dice, 4); assert.ok(reroll(b, slots)); }
+  assert.equal(b.magic, 5); assert.equal(rerollInfo(b).kind, 'paid');
+  assert.ok(reroll(b, slots)); assert.equal(b.magic, 1); assert.equal(reroll(b, slots), false); // not enough magic
+  assert.equal(reroll(b, slots.slice(0, 1)), true);
 });
 
 test('heart 5 / 6 pump the best lane of the matching color', () => {
@@ -225,6 +245,7 @@ test('rerolls: first action is free, later actions cost 1 Magic per die, bound d
   assert.equal(rerollInfo(b).kind, 'free');
   assert.ok(reroll(b, ['N', 'S', 'W']));
   assert.equal(b.magic, m0);
+  reroll(b, ['N']); reroll(b, ['N']); // three free actions in all
   assert.equal(rerollInfo(b).kind, 'paid');
   assert.ok(reroll(b, ['N', 'S']));
   assert.equal(b.magic, m0 - 2);

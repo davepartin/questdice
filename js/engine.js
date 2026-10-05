@@ -2,9 +2,9 @@
 // battles are reproducible and the balance simulator (tools/sim.mjs) can run the same code.
 
 import {
-  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, REROLL_ACTIONS, SYNERGY_BONUS, HEAL_COST,
+  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, SURVIVE_HP, RES_BY_SIZE, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, SPECIAL_SYMBOLS, STRENGTH_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, TALENT_SYMS, TALENT_MAX_SAME, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
 } from './data.js';
@@ -66,7 +66,7 @@ export function newHero({ name, cls, seed }) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
     v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0,
-    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, loadout, bag: [],
+    strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, loadout, bag: [],
     campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0 },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
@@ -80,7 +80,8 @@ export function heroMods(hero) {
 }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => CLASSES[hero.cls].startMagic + heroMods(hero).startMagic;
-export const rerollDiceOf = (hero) => CLASSES[hero.cls].rerollDice + heroMods(hero).rerollDice;
+export const rerollTotal = () => RULES.free + RULES.paid;
+export const rerollDiceOf = (hero) => CLASSES[hero.cls].rerollDice + RULES.diceBonus + heroMods(hero).rerollDice;
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
 export function cardsOf(hero) {
   return CLASSES[hero.cls].cards.filter((c) => (c.unlock ?? 1) <= hero.level);
@@ -97,12 +98,30 @@ export function sidesOf(hero, slot) {
     default: throw new Error(`bad slot ${slot}`);
   }
 }
-// special die faces: 2 blanks first, then the symbols repeat. index = roll - 1.
+// Talent die faces: 1-2 blank, 3 = 2x, 4+ = symbol faces. Returns null (blank), 'X2', or an array of symbols (a face with none is blank).
 export function specialFace(hero, slot, v) {
   const n = hero.special[slot];
   if (v <= 2 || v > n) return null;
-  const syms = SPECIAL_SYMBOLS[slot];
-  return syms[(v - 3) % syms.length];
+  if (v === 3) return 'X2';
+  const syms = (hero.talent?.[slot]?.[v - 4]) || [];
+  return syms.length ? syms : null;
+}
+export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
+export function talentInfo(hero, slot) {
+  const faces = TALENT_FACES[hero.special[slot]] || 1; const cur = hero.talent?.[slot] || [];
+  return { faces, slots: faces * TALENT_PER_FACE, used: cur.flat().length, cost: TALENT_SLOT_COST };
+}
+// Put a symbol on a symbol face (0-based). Every slot costs the same. At most two of one symbol per die, at most two symbols per face.
+export function addTalent(hero, slot, face, sym) {
+  if (!TALENT_SYMS[sym]) return false;
+  const t = talentInfo(hero, slot); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
+  hero.talent = hero.talent || {}; const faces = (hero.talent[slot] = hero.talent[slot] || []);
+  while (faces.length < t.faces) faces.push([]);
+  if (faces[face].length >= TALENT_PER_FACE || talentCount(hero, slot, sym) >= TALENT_MAX_SAME) return false;
+  hero.gold -= t.cost; faces[face].push(sym); return true;
+}
+export function removeTalent(hero, slot, face, idx) {
+  const f = hero.talent?.[slot]?.[face]; if (!f || idx < 0 || idx >= f.length) return false; f.splice(idx, 1); return true;
 }
 export function rollSlot(hero, slot, rng) { return { v: die(rng, sidesOf(hero, slot)), bound: false }; }
 export function rollBoard(hero, rng) {
@@ -146,15 +165,18 @@ export function evaluate(hero, board, opts = {}) {
     const wf = weaponFaces(inst)[val(lane.weapon) - 1];
     const str = val(lane.hand);
     const sym = specialFace(hero, lane.special, val(lane.special));
-    let value = wf.v + str + (sym === 'SURGE' ? str : 0);
+    const x2 = sym === 'X2'; const tsyms = Array.isArray(sym) ? sym : [];
+    let value = wf.v + str + (x2 ? str : 0);
     if (wf.c === 'r') value += mods.redBonus; else value += mods.blueBonus;
-    const L = { key, color: wf.c, weapon: wf.v, str, sym, value, amp: 0, fx: wf.fx || null };
+    const L = { key, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
       out.gold += wf.fx.loot || 0; out.stagger += wf.fx.stagger || 0;
     }
-    if (sym === 'MEND') out.heal += str;
-    if (sym === 'SPARK') out.magic += str;
+    for (const t of tsyms) {
+      if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += Math.round(str * 0.75);
+      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += 2 * str; else if (t === 'gold') out.gold += Math.ceil(str / 2);
+    }
     out.lanes[key] = L;
   }
   // Heart 5/6 pump the best lane of the matching color.
@@ -269,7 +291,7 @@ export function newBattle(hero, quest, rng, players = 1) {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: REROLL_ACTIONS, freeActions: [], used: {}, lastStandUsed: false,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, lastStandUsed: false,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   beginReset(b);
@@ -284,7 +306,7 @@ export function beginReset(b) {
 }
 export function startRoll(b) {
   b.board = rollBoard(b.hero, b.rng);
-  b.actionsLeft = REROLL_ACTIONS; b.freeActions = []; b.phase = 'shape';
+  b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
   const slots = Object.keys(ROLE).filter((s) => s !== 'C');
   for (let i = 0; i < b.nextBound && slots.length; i++) {
     const s = slots.splice(Math.floor(b.rng() * slots.length), 1)[0];
@@ -295,7 +317,7 @@ export function startRoll(b) {
 export function rerollInfo(b) {
   if (b.freeActions.length) return { kind: 'card', dice: b.freeActions[0], perDie: 0, left: b.freeActions.length };
   if (b.actionsLeft <= 0) return { kind: 'none', dice: 0, perDie: 0, left: 0 };
-  const first = b.actionsLeft === REROLL_ACTIONS;
+  const first = b.actionsLeft > RULES.paid;
   return { kind: first ? 'free' : 'paid', dice: rerollDiceOf(b.hero), perDie: first ? 0 : 1, left: b.actionsLeft };
 }
 export function canReroll(b, slots) {
@@ -663,7 +685,7 @@ function makeFighter(hero) {
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: REROLL_ACTIONS, freeActions: [], used: {}, mods: blankMods(),
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(),
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
   };

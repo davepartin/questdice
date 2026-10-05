@@ -35,7 +35,12 @@ export function dieSpecs(hero) {
       }));
     } else if (role === 'special') {
       theme = 'amethyst';
-      for (let v = 1; v <= sides; v++) { const sym = E.specialFace(hero, slot, v); labels.push(sym ? { sym, text: sym } : { blank: true }); }
+      for (let v = 1; v <= sides; v++) {
+        const sym = E.specialFace(hero, slot, v);
+        if (sym === 'X2') labels.push({ sym: 'SURGE', text: 'X2' });
+        else if (Array.isArray(sym)) labels.push({ sym: 'TALENT', syms: sym, text: 'T', corners: sym });
+        else labels.push({ blank: true });
+      }
     } else if (role === 'heart') {
       theme = 'heart';
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
