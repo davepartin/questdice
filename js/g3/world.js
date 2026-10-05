@@ -35,7 +35,7 @@ export const world = {
       if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return false;
       this.stage = createStage(canvas);
       this.director = new Director(this.stage);
-      try { (await import('../gfx/dice/faces.js')).setDiceStyle('clear'); } catch (e) { console.warn('[world] dice style', e); }
+      try { (await import('../gfx/dice/faces.js')).setDiceStyle('clean'); } catch (e) { console.warn('[world] dice style', e); }
       this.stage.start();
       try { (await import('./portrait.js')).shareRenderer(this.stage.renderer, () => this.stage.env); } catch { /* portraits fall back to their own renderer */ }
       this.available = true;

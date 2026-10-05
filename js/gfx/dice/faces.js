@@ -59,9 +59,9 @@ export function drawPip(ctx, kind, x, y, size) {
   if (kind === 'stagger') ctx.fill(burst()); else ctx.fill(iconPath({ gold: 'coin', pierce: 'pierce', magic: 'spark', heal: 'mend' }[kind] || 'spark'), kind === 'gold' ? 'evenodd' : 'nonzero');
   ctx.restore();
 }
-export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff' };
+export const PIP_COLOR = { gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
-const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist' };
+const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend' };
 export function drawSym(ctx, kind, x, y, size, stroke = 0) {
   const ic = SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {
@@ -176,6 +176,24 @@ export const STYLES = {
     pip: { gold: '#ffd000', pierce: '#ff7a00', magic: '#9a38ff', heal: '#18f070', stagger: '#e8eef8', atk: '#ff2a2a', def: '#2a8cff' },
   },
 };
+// CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
+// the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
+STYLES.clean = {
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.86, smoke: 0.8, heart: 0.9, amethyst: 0.9, weapon: 0.9 }, selfK: 1.0, light: 1.0, swirl: 0, numScale: 1.12,
+  wpn: {
+    r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
+    b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },
+    rBlank: { core: '#8a2a34', mid: '#64202a', edge: '#2a0a10' }, bBlank: { core: '#1f4f8c', mid: '#173a68', edge: '#071526' },
+  },
+  themes: {
+    bone: { core: '#f8f0dc', mid: '#efe3c2', edge: '#c9b88e', trim: ['#f4ecd6', '#c2b690', '#7c7054'], num: 'ink', rough: 0.35 },
+    smoke: { core: '#ecd6a4', mid: '#dcc088', edge: '#b09560', trim: ['#f4e6c0', '#c0a672', '#7a6642'], num: 'ink', rough: 0.35 },
+    heart: { core: '#ffffff', mid: '#dddddd', edge: '#888888', trim: ['#fff2d0', '#e8b84c', '#8a5a14'], num: 'metal', rough: 0.3 },
+    amethyst: { core: '#237f86', mid: '#14565c', edge: '#082a30', neutral: true, trim: ['#cfeeee', '#6fb4b4', '#2c6264'], num: 'metal', rough: 0.4 },
+  },
+};
+const HEART_FACE = { 1: '#f2b81c', 2: '#ff8a1a', 3: '#a64dff', 4: '#a64dff', 5: '#3aa4ff', 6: '#ff3b3b' };
+const HEART_KIND = { 1: 'gold', 2: 'pierce', 3: 'magic', 4: 'magic', 5: 'def', 6: 'atk' };
 let ST = STYLES.classic;
 export const diceStyle = () => ST;
 export function setDiceStyle(name) {
@@ -318,17 +336,17 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (ST.clean && theme === 'heart') { const hc = new THREE.Color(HEART_FACE[+spec.text] || '#ffffff'); core = hc.clone().lerp(new THREE.Color('#ffffff'), 0.06).getStyle(); mid = hc.getStyle(); edge = hc.clone().multiplyScalar(0.55).getStyle(); } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#4a505c'; mid = '#303640'; edge = '#14171e'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
     ctxs.O.fillStyle = `rgb(${resin},${Math.round(rough * 255)},0)`; ctxs.O.fillRect(-S / 2, -S / 2, S, S);
     const A = ctxs.A;
     const g = A.createRadialGradient(0, -inR * 0.1, 0, 0, 0, Rpx * 1.05);
-    g.addColorStop(0, core); g.addColorStop(0.55, mid); g.addColorStop(1, edge);
+    if (ST.clean) { g.addColorStop(0, core); g.addColorStop(0.8, mid); g.addColorStop(1, edge); } else { g.addColorStop(0, core); g.addColorStop(0.55, mid); g.addColorStop(1, edge); }
     A.fillStyle = g; A.beginPath(); pts.forEach((p, i) => (i ? A.lineTo(p[0], p[1]) : A.moveTo(p[0], p[1]))); A.closePath(); A.fill();
     A.save(); A.beginPath(); pts.forEach((p, i) => (i ? A.lineTo(p[0], p[1]) : A.moveTo(p[0], p[1]))); A.closePath(); A.clip();
-    if (theme === 'weapon') {
+    if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
       const light = spec.tone === 'b' ? ['#7cc4ff', '#2f8cf5'] : ['#ff7a5a', '#ff3a3a'];
       swirls(A, rnd, Rpx, dark, 14, 0.7 * sw, inR * 0.5);
@@ -355,12 +373,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     A.restore();
     // darker rim toward the polygon edge (ambient occlusion in the paint)
     A.save(); A.beginPath(); pts.forEach((p, i) => (i ? A.lineTo(p[0], p[1]) : A.moveTo(p[0], p[1]))); A.closePath(); A.clip();
-    A.lineWidth = inR * 0.12; A.strokeStyle = 'rgba(0,0,0,0.35)'; A.stroke(); A.restore();
+    A.lineWidth = inR * 0.12; A.strokeStyle = ST.clean ? 'rgba(0,0,0,0.16)' : 'rgba(0,0,0,0.35)'; A.stroke(); A.restore();
 
     // ---- blank: scratches and scorch, no glow
     if (blank) {
-      cracks(ctxs, rnd, Rpx * 0.9, 6, Math.max(1.2, inR * 0.025));
-      A.save(); const sg = A.createRadialGradient(0, 0, 0, 0, 0, inR * 0.8); sg.addColorStop(0, 'rgba(0,0,0,0.5)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); A.fillStyle = sg; A.fillRect(-S / 2, -S / 2, S, S); A.restore();
+      if (!ST.clean) cracks(ctxs, rnd, Rpx * 0.9, 6, Math.max(1.2, inR * 0.025));
+      if (!ST.clean) { A.save(); const sg = A.createRadialGradient(0, 0, 0, 0, 0, inR * 0.8); sg.addColorStop(0, 'rgba(0,0,0,0.5)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); A.fillStyle = sg; A.fillRect(-S / 2, -S / 2, S, S); A.restore(); }
       // faint void sigil: a slashed ring (a miss) engraved shallow
       const ring = (c) => { c.lineWidth = inR * 0.07; c.beginPath(); c.arc(0, 0, inR * 0.42, 0, Math.PI * 2); c.moveTo(-inR * 0.3, inR * 0.3); c.lineTo(inR * 0.3, -inR * 0.3); c.stroke(); };
       layer(ctxs, { A: 'rgba(0,0,0,0.55)', H: 'rgb(96,96,96)' }, ring);
@@ -436,7 +454,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- corner symbols: the face's meaning (attack / defense), its resource, and any tier bonuses
     if (CN) {
       const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
-      const list = spec.corners || [typeSym, spec.pip].filter(Boolean);
+      const list = ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text], 'boost'] : (spec.corners || [typeSym, spec.pip].filter(Boolean));
       // corners ordered clockwise from the top-most
       const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
       const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);

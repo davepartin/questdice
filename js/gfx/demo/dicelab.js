@@ -56,7 +56,7 @@ export async function demo({ stage, stdLights, cam, params, num }) {
   };
   // columns by rarity (d4 d6 d8 d10), rows: red weapon, blue weapon, strength(bone), hand(smoke), special, heart
   const h6 = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
-  const rows = ['NW', 'NE', 'W', 'SW', 'SE', 'C'];
+  const rows = ['NW', 'NE', 'N', 'W', 'SW', 'C'];
   for (let r = 0; r < 4; r++) {
     const h = E.newHero({ name: 'T', cls: 'knight', seed: 7 });
     h.loadout = { NW: { uid: 'a', id: 'sword', rarity: r }, NE: { uid: 'b', id: 'shield', rarity: r } };

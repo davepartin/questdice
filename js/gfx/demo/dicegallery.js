@@ -3,8 +3,10 @@
 import * as THREE from 'three';
 import * as E from '../../engine.js';
 import { dieSpecs, createDie, restQuat } from '../dice/dice.js';
+import { setDiceStyle } from '../dice/faces.js';
 
 export async function demo({ stage, stdLights, cam, params, num }) {
+  setDiceStyle(params.get('style') || 'classic');
   stdLights({ floor: false });
   const hero = E.newHero({ name: 'Test', cls: params.get('cls') || 'knight', seed: 7 });
   if (params.has('weapons')) { const [a, b] = params.get('weapons').split(','); hero.loadout = { NW: { uid: 'a', id: a, rarity: num('rarity', 0) }, NE: { uid: 'b', id: b || a, rarity: num('rarity', 0) } }; }

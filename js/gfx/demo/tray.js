@@ -4,8 +4,10 @@ import * as THREE from 'three';
 import * as E from '../../engine.js';
 import * as D from '../../data.js';
 import { createTray } from '../dice/tray.js';
+import { setDiceStyle } from '../dice/faces.js';
 
 export async function demo({ stage, stdLights, cam, params, num }) {
+  setDiceStyle(params.get('style') || 'classic');
   stdLights({ floor: false });
   const floor = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.MeshStandardMaterial({ color: 0x1a1612, roughness: 0.95 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.92; floor.receiveShadow = true; stage.scene.add(floor);
