@@ -337,7 +337,7 @@ export async function enter(mode, opts = {}, key = null) {
 }
 export const current = () => own.handle;
 // Called when a battle (or anything else) takes the stage: forget everything.
-export function release() { own.token++; own.objs = []; own.offs = []; own.arena = null; own.arenaOff = null; own.place = null; own.handle = null; own.mode = null; own.key = null; layout(null); }
+export function release() { cancelPortraits(); own.token++; own.objs = []; own.offs = []; own.arena = null; own.arenaOff = null; own.place = null; own.handle = null; own.mode = null; own.key = null; layout(null); }
 
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
 export function victory() {
@@ -367,14 +367,16 @@ export function leaveBattleStage() { try { stage().scene.userData.victoryOff?.()
 
 // ---------------------------------------------------------------------------------------------- portraits (cached, queued)
 const pq = []; let pbusy = false; const pmem = new Map();
+// Drop queued (not yet started) portrait jobs, e.g. when a quest starts and the battle needs the main thread.
+export function cancelPortraits() { for (const j of pq.splice(0)) { pmem.delete(j.key); j.resolve(null); } }
 function pump() {
   if (pbusy) return; const job = pq.shift(); if (!job) return;
   pbusy = true;
   const go = async () => {
     try { job.resolve(await job.fn()); } catch (e) { console.warn('[portrait]', job.key, e); job.resolve(null); }
-    pbusy = false; setTimeout(pump, 16);
+    pbusy = false; setTimeout(pump, 140); // breathing room so taps and clicks are handled between portrait builds
   };
-  (window.requestIdleCallback || ((f) => setTimeout(f, 8)))(go, { timeout: 400 });
+  (window.requestIdleCallback || ((f) => setTimeout(f, 8)))(go, { timeout: 1500 });
 }
 function queue(key, fn) {
   if (pmem.has(key)) return pmem.get(key);
@@ -386,7 +388,7 @@ export const portraitQ = {
   monster(id, { tier = D.MONSTERS[id]?.tier || 'minion', size = [360, 360], fit = 'full', yaw = 0.5 } = {}) {
     const key = `m:${id}:${fit}`;
     return queue(key, async () => {
-      const a = await createActor(id, { tier, seed: 5, quality: 'med' });
+      const a = await createActor(id, { tier, seed: 5, quality: 'low' });
       a.play?.('ready', { restart: true, fade: 0 }); for (let i = 0; i < 12; i++) a.update(0.05, 0.05 * i);
       const url = renderPortrait(a.root, { key, size, yaw, pitch: 0.08, fit, pad: tier === 'boss' ? 0.98 : 1.0, fov: 30 });
       a.dispose?.();
