@@ -209,8 +209,9 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
 
   // =========================================================================== hero / dice
   const camLocal = new THREE.Vector3();
+  const trayCam = () => (stage.trayCamera && stage.post?.trayPass?.enabled ? stage.trayCamera : stage.camera);
   function away() {
-    const cam = stage.camera; camLocal.copy(cam.position); object.worldToLocal(camLocal);
+    const cam = stage.trayCamera && stage.post?.trayPass?.enabled ? stage.trayCamera : stage.camera; camLocal.copy(cam.position); object.worldToLocal(camLocal);
     const l = Math.hypot(camLocal.x, camLocal.z);
     if (l < 0.5) return [0, -1];
     return [-camLocal.x / l, -camLocal.z / l];
@@ -390,7 +391,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   // =========================================================================== positions for the HUD
   tray.worldPos = function worldPos(slot, { dy = 0.45 } = {}) { const s = S[slot]; const v = new THREE.Vector3(s.home.x, -DEPTH + (s.die?.inR || 0.4) + s.lift + dy, s.home.z); return object.localToWorld(v); };
   tray.projectSlot = function projectSlot(slot, { dy = 0.9 } = {}) {
-    const v = tray.worldPos(slot, { dy }); v.project(stage.camera);
+    const v = tray.worldPos(slot, { dy }); v.project(trayCam());
     const w = stage.width; const h = stage.height;
     return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, visible: v.z < 1 && v.z > -1, ndc: { x: v.x, y: v.y } };
   };
@@ -400,7 +401,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   const canvas = stage.canvas; const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
   function pickAt(clientX, clientY, slack = 1) {
     const r = canvas.getBoundingClientRect(); const px = clientX - r.left; const py = clientY - r.top;
-    ndc.set((px / r.width) * 2 - 1, -(py / r.height) * 2 + 1); ray.setFromCamera(ndc, stage.camera);
+    ndc.set((px / r.width) * 2 - 1, -(py / r.height) * 2 + 1); ray.setFromCamera(ndc, trayCam());
     const meshes = SLOT_ORDER.map((sl) => S[sl].die?.mesh).filter(Boolean);
     const hit = ray.intersectObjects(meshes, false)[0];
     if (hit) return hit.object.userData.slot;
@@ -408,9 +409,9 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; if (!s.die) continue;
       const c = new THREE.Vector3(s.home.x, -DEPTH + s.die.inR + s.lift, s.home.z); object.localToWorld(c);
-      const sp = c.clone().project(stage.camera);
+      const sp = c.clone().project(trayCam());
       const sx = (sp.x * 0.5 + 0.5) * r.width; const sy = (-sp.y * 0.5 + 0.5) * r.height;
-      const edge = c.clone().add(new THREE.Vector3().setFromMatrixColumn(stage.camera.matrixWorld, 0).multiplyScalar(0.72 * slack)); edge.project(stage.camera);
+      const edge = c.clone().add(new THREE.Vector3().setFromMatrixColumn(trayCam().matrixWorld, 0).multiplyScalar(0.72 * slack)); edge.project(trayCam());
       const rad = Math.max(22, Math.abs((edge.x * 0.5 + 0.5) * r.width - sx));
       const d = Math.hypot(px - sx, py - sy) / rad;
       if (d < 1 && d < bd) { bd = d; best = slot; }
@@ -480,7 +481,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       if (s.wobble != null) { s.wobble += dt; const w = 0.07 * Math.exp(-s.wobble * 6.5) * Math.sin(s.wobble * 34); if (s.wobble > 0.9) s.wobble = null; _q.setFromAxisAngle(_wob.set(Math.cos(s.i * 2.1), 0, Math.sin(s.i * 2.1)), w); die.mesh.quaternion.copy(_q).multiply(s.quat); } else die.mesh.quaternion.copy(s.quat);
       // ---- shader state
       const U = die.uniforms;
-      U.uTime.value = time; die.mesh.updateWorldMatrix(true, false); die.updateCamera(stage.camera);
+      U.uTime.value = time; die.mesh.updateWorldMatrix(true, false); die.updateCamera(trayCam());
       const airK = THREE.MathUtils.clamp((die.mesh.position.y - restY(s)) / 0.5, 0, 1);
       s.rest += ((1 - airK) - s.rest) * (1 - Math.exp(-14 * dt));
       die.setRest(s.rest); die.setView(_view);

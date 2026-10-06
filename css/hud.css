@@ -562,3 +562,19 @@ body.in-battle .chrome { z-index: 40; }
   .b3-plates .pl-intent { flex-direction: row; flex-wrap: nowrap; padding: .06rem .12rem !important; gap: .15rem; } .b3-plates .in-main { display: flex !important; } .b3-plates .in-fig { display: flex; } .b3-plates .in-fig b { font-size: .66rem !important; letter-spacing: -.02em; white-space: nowrap; }
   .b3-plates .med { width: .95rem !important; height: .95rem !important; flex: none; }
 }
+
+/* ===== split screen on phones: the battlefield above, a golden line, then the control area (the dice table) below ===== */
+.b3-divider { display: none; }
+@media (max-aspect-ratio: 5/4) {
+  .b3-divider { display: flex; position: absolute; z-index: 5; left: 0; right: 0; top: calc(var(--line-y, 46%) - 9px); height: 18px; align-items: center; gap: .5rem; pointer-events: none; padding: 0 .4rem;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0, rgba(0,0,0,.55) 40%, rgba(0,0,0,.55) 60%, rgba(0,0,0,0) 100%); }
+  .b3-divider i { flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(180deg, #ffe6a0, #d6962a 45%, #7a4a12); box-shadow: 0 1px 0 rgba(0,0,0,.6), 0 0 8px rgba(255,190,80,.35), inset 0 1px 0 rgba(255,255,255,.5); }
+  .b3-divider b { font-family: var(--disp); font-size: .56rem; letter-spacing: .28em; color: #f0cc7a; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+  .b3-therm { top: calc(var(--line-y, 50%) + 14px) !important; }
+  .b3-magchip { top: calc(3.9rem + var(--safe-t)) !important; }
+}
+/* the straight chooser floats over the table's front edge instead of pushing the whole dock (and the dice) up */
+@media (max-aspect-ratio: 5/4) {
+  .b3-bar { position: relative; }
+  .b3-bar > .b3-straight { position: absolute; left: 0; right: 0; bottom: calc(100% + .35rem); flex: none; z-index: 6; background-color: rgba(18, 10, 30, .94); }
+}

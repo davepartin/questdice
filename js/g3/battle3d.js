@@ -122,6 +122,7 @@ function buildHud() {
   hud.hero = buildHero();
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
+  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('i', {}), h('b', {}, 'YOUR DICE'), h('i', {}));
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
@@ -130,7 +131,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.dock, hud.sheet, hud.info, hud.coach);
+  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -149,33 +150,29 @@ function buildHud() {
 // between the monster strip and the dock; the monsters stand behind it in whatever space is left.
 function fitTray() {
   const bw = B.bw; if (!bw || landscape() || !B.hud) return;
-  const dir = world.director; const cam = world.stage.camera; const W = world.stage.width; const H = world.stage.height;
-  const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.top.getBoundingClientRect().bottom;
-  const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
-  const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
-  const HALF = 1.72; const EDGE = 2.0; const need = 34; // the dice rows span about +-2.1; the altar frame beyond that may slide under the totals
-  dir.tilt = 0; const r0 = dir.resolve('battle'); const d0 = r0.pos.clone().sub(r0.look); const p0 = Math.asin(d0.y / d0.length());
-  const fits = (tilt) => {
-    dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
-    const pt = (x, y, z) => { v.set(x, y, z).multiply(obj.scale).add(obj.position).project(c); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H - sh]; };
-    for (let k = 1.34; k >= 0.3; k -= 0.03) { // capped: this is the dice size we like
-      obj.scale.setScalar(k * B.trayBase);
-      const nl = pt(-HALF, 0.5, EDGE); const nr = pt(HALF, 0.5, EDGE); const far = pt(0, 0.5, -EDGE);
-      B.dbg = { nlY: nl[1], farY: far[1], dockTop, wid: nr[0] - nl[0], W, k }; if (nr[0] - nl[0] > W * 0.99 || nl[1] > dockTop - 75 || far[1] < stripBottom + need) continue;
-      return k;
-    }
-    return 0.3;
-  };
-  // look down on the board: about 70 degrees; only lower the camera if the board would otherwise be too small
-  // look down at ~70 degrees; if the dice (at their liked size) would run into the buttons, slide the board away from the camera a little
-  if (B.trayZ0 == null) B.trayZ0 = obj.position.z;
-  let best = null;
-  for (const dz of [0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0, 1.25]) {
-    obj.position.z = B.trayZ0 - dz; const tilt = p0 - (70 * Math.PI) / 180; const k = fits(tilt);
-    best = { k, tilt, deg: 70, dz }; if (k >= 1.33) break;
+  const dir = world.director; const stage = world.stage; const W = stage.width; const H = stage.height;
+  if (!stage.post.trayPass.enabled) return;
+  const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
+  const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
+  let PITCH = (60 * Math.PI) / 180; const LOOK = new THREE.Vector3(0, 0.1, 0.1); const HALF = 1.78; const EDGE = 2.1;
+  cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
+  const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
+  const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]; };
+  const want = dockTop + 26; const minLine = Math.max(topBar + 170, H * 0.36); // the table's front edge sits just above the totals; the battlefield keeps at least this much
+  let d = 10; let shift = 0; let lineY = 0;
+  PITCH = (46 * Math.PI) / 180; B.trayDeg = 46;
+  for (let frac = 0.9; frac >= 0.5; frac -= 0.01) { // as wide as the screen if the band allows; otherwise as wide as fits
+    let lo = 4; let hi = 60; for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const nl = pt(-HALF, 0.4, EDGE); const nr = pt(HALF, 0.4, EDGE); if (nr[0] - nl[0] > W * frac) lo = d; else hi = d; }
+    place(d); const farY = pt(0, 0.9, -EDGE - 0.15)[1]; const nearY = pt(0, 0.0, EDGE + 0.6)[1];
+    shift = nearY - want; lineY = farY - shift - 14; B.trayFrac = frac;
+    if (lineY >= minLine) break;
   }
-  obj.position.z = B.trayZ0 - best.dz;
-  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k; B.trayDeg = best.deg; B.trayDz = best.dz;
+  const farY = 0, nearY = 0; void farY; void nearY;
+  cam.setViewOffset(W, H, 0, shift, W, H);
+  stage.post.trayPass.band = { y: lineY, h: H - lineY };
+  B.lineY = lineY; B.root.style.setProperty('--line-y', `${Math.round(lineY)}px`);
+  dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
+  B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];

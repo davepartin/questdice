@@ -46,7 +46,7 @@ export function createStage(canvas, opts = {}) {
   const shakeNoise = makeNoise(5);
 
   const S = {
-    renderer, scene, camera, post, quality, manual, canvas,
+    renderer, scene, camera, post, trayScene: post.trayPass.scene, trayCamera: post.trayPass.camera, quality, manual, canvas,
     time: 0, frame: 0, frozen: false, width: 1, height: 1, dpr: 1,
     env: null,
     _frameFns: new Set(), _tweens: [], _waits: [], _shake: 0, _flash: 0, _hurt: 0, _raf: 0, _last: 0, _viewTarget: null,
@@ -70,7 +70,7 @@ export function createStage(canvas, opts = {}) {
   S.environment = function environment(o) {
     S.env?.dispose?.();
     S.env = makeEnvironment(renderer, o);
-    scene.environment = S.env;
+    scene.environment = S.env; S.trayScene.environment = S.env;
     return S.env;
   };
   S.onFrame = (fn) => { S._frameFns.add(fn); return () => S._frameFns.delete(fn); };
@@ -158,6 +158,8 @@ export function createStage(canvas, opts = {}) {
       scene.remove(c);
       c.traverse?.((o) => { o.geometry?.dispose?.(); });
     }
+    for (const c of [...S.trayScene.children]) { S.trayScene.remove(c); c.traverse?.((o) => { o.geometry?.dispose?.(); }); }
+    post.trayPass.enabled = false; S.trayCamera.clearViewOffset();
     S._frameFns.clear(); S._tweens.length = 0; S._waits.length = 0;
   };
 

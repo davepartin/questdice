@@ -70,7 +70,7 @@ export const world = {
     // hero
     const heroActor = await createActor('hero', { cls: hero.cls, loadout: hero.loadout, level: hero.level, seed: hero.campaign?.seed || 1, quality: stage.quality });
     heroActor.root.position.set(...MARKS.hero);
-    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(0.85); heroActor.root.position.set(-2.2, 0, 1.0); }
+    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(0.9); heroActor.root.position.set(-2.0, 0, 1.2); }
     const eMarks = enemyMarks(enemies.length, enemies.some((e) => e.tier !== 'minion'));
     const faceHeroYaw = (x, z) => Math.atan2(MARKS.hero[0] - x, MARKS.hero[2] - z);
     const mid = eMarks.reduce((a, p) => [a[0] + p[0] / eMarks.length, a[1] + p[1] / eMarks.length], [0, 0]);
@@ -81,9 +81,19 @@ export const world = {
     // tray
     let tray;
     try { tray = trayMod ? trayMod.createTray({ stage, quality: stage.quality }) : stubTray(stage); } catch (e) { console.warn('[world] tray failed', e); tray = stubTray(stage); }
-    const pk = this.director.portrait; // phones get a slightly smaller tray so the monsters keep their room
-    tray.object.position.set(MARKS.tray[0], MARKS.tray[1], MARKS.tray[2] - 0.9 * pk); tray.object.scale.setScalar(1.12 - 0.2 * pk);
-    stage.scene.add(tray.object);
+    const pk = this.director.portrait;
+    const split = pk > 0.5; // phones: the dice table is its own picture in a band at the bottom ("the control area"), the battlefield is above it
+    if (split) {
+      tray.object.position.set(0, 0, 0); tray.object.scale.setScalar(1);
+      // a dark leather floor so the band reads as a different place from the battlefield
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 0.95, metalness: 0.05 }));
+      floor.rotation.x = -Math.PI / 2; floor.position.y = -0.9; stage.trayScene.add(floor);
+      const hemi = new THREE.HemisphereLight(0xffeedd, 0x302018, 1.0); stage.trayScene.add(hemi);
+      stage.trayScene.add(tray.object); stage.post.trayPass.enabled = true;
+    } else {
+      tray.object.position.set(MARKS.tray[0], MARKS.tray[1], MARKS.tray[2] - 0.9 * pk); tray.object.scale.setScalar(1.12 - 0.2 * pk);
+      stage.scene.add(tray.object);
+    }
     tray.setHero(hero);
     stage.onFrame((dt, t) => tray.update?.(dt, t));
 
@@ -105,8 +115,8 @@ export const world = {
       async addEnemy(e, index, list = enemies) {
         const a = await createActor(e.id, { tier: e.tier, seed: (e.uid.length * 7919) >>> 0, quality: stage.quality });
         const m = this.slotFor(index, list);
-        a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? 1.0 : -0.5) : 0));
-        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(1.15); // the monsters now have the whole top band to themselves // phones: the miniature battle is a small scene, the dice are the game
+        a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? -0.2 : -1.6) : 0));
+        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(1.0); // phones: the miniature battle is a small scene, the dice are the game
         a.root.rotation.y = Math.atan2(MARKS.hero[0] - m[0], MARKS.hero[2] - m[1]) * 0.5;
         a.userData.uid = e.uid;
         stage.scene.add(a.root);

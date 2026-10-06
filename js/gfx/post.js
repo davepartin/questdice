@@ -97,6 +97,18 @@ export function createPost(renderer, scene, camera, { quality = 'high', ao = tru
     gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
     composer.addPass(gtao);
   }
+  // A second scene (the dice table) drawn over the first with its own camera, but only in a band at the bottom of the screen (scissored).
+  class TrayPass extends RenderPass {
+    constructor(sc, cam) { super(sc, cam); this.clear = false; this.clearDepth = true; this.enabled = false; this.band = { y: 0, h: 0 }; }
+    render(rend, writeBuffer, readBuffer, dt, mask) {
+      const rt = this.renderToScreen ? null : readBuffer; const hpx = Math.max(0, Math.round(this.band.h * rend.getPixelRatio()));
+      if (rt && hpx > 0) { rt.scissorTest = true; rt.scissor.set(0, 0, rt.width, hpx); rt.viewport.set(0, 0, rt.width, rt.height); }
+      super.render(rend, writeBuffer, readBuffer, dt, mask);
+      if (rt) rt.scissorTest = false;
+    }
+  }
+  const trayPass = new TrayPass(new THREE.Scene(), new THREE.PerspectiveCamera(36, 1, 0.1, 100));
+  composer.addPass(trayPass);
   const bloom = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), quality === 'low' ? 0.5 : 0.7, 0.55, 0.82);
   composer.addPass(bloom);
   const output = new OutputPass();
@@ -113,6 +125,7 @@ export function createPost(renderer, scene, camera, { quality = 'high', ao = tru
       grade.uniforms.uRes.value.set(w * dpr, h * dpr);
       smaa?.setSize(w * dpr, h * dpr);
     },
+    trayPass,
     setCamera(cam) { renderPass.camera = cam; if (gtao) gtao.camera = cam; },
     setScene(sc) { renderPass.scene = sc; if (gtao) gtao.scene = sc; },
     render(dt, t) { grade.uniforms.uTime.value = t; composer.render(dt); },
