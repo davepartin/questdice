@@ -416,15 +416,16 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     let ny = CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     let nx = 0;
     // chord width of the face polygon at height y (px, y down)
-    const chordAt = (y) => { const xs = []; for (let i = 0; i < pts.length; i++) { const A1 = pts[i]; const B1 = pts[(i + 1) % pts.length]; if ((A1[1] <= y && B1[1] > y) || (B1[1] <= y && A1[1] > y)) xs.push(A1[0] + ((y - A1[1]) / (B1[1] - A1[1])) * (B1[0] - A1[0])); } return xs.length > 1 ? Math.max(...xs) - Math.min(...xs) : 0; };
-    const ymin = Math.min(...pts.map((p) => p[1])); const ymax = Math.max(...pts.map((p) => p[1]));
+    const ptsIn = pts.map((p) => [p[0] * 0.8, p[1] * 0.8]); // placement happens inside a shrunken face: the bevel and the view angle eat the outer edge
+    const chordAt = (y) => { const xs = []; for (let i = 0; i < ptsIn.length; i++) { const A1 = ptsIn[i]; const B1 = ptsIn[(i + 1) % ptsIn.length]; if ((A1[1] <= y && B1[1] > y) || (B1[1] <= y && A1[1] > y)) xs.push(A1[0] + ((y - A1[1]) / (B1[1] - A1[1])) * (B1[0] - A1[0])); } return xs.length > 1 ? Math.max(...xs) - Math.min(...xs) : 0; };
+    const ymin = Math.min(...ptsIn.map((p) => p[1])); const ymax = Math.max(...ptsIn.map((p) => p[1]));
     // symbols sit in one tidy row (as low on the face as it fits); the numeral then takes the clearest space beside or above it
     const placeRow = () => {
       const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
       const list = (ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text]] : (spec.corners || [typeSym, spec.pip].filter(Boolean))).slice(0, 4);
       const n = list.length; if (!n) return [];
       let best = null;
-      for (let szf = poly.sides === 4 ? 0.56 : 0.6; szf >= 0.2 && !best; szf -= 0.02) {
+      for (let szf = poly.sides === 4 ? 0.5 : 0.54; szf >= 0.18 && !best; szf -= 0.02) {
         const sz = inR * szf; const ow = Math.max(2, sz * 0.13); const half = sz / 2 + ow * 1.2; const pitchX = sz * 1.3;
         for (let y = ymax - half - inR * 0.1; y >= ymin + half; y -= inR * 0.03) {
           const w = Math.min(chordAt(y - half * 0.85), chordAt(y + half * 0.85)); const need = (n - 1) * pitchX + sz + ow * 2.4 + sz * 0.1;
@@ -441,7 +442,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const txt0 = String(spec.text); const growK = ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16; const ul = txt0 === '6' || txt0 === '9';
       const numBox = () => { const k = numH / 80; const sxk = txt0.length > 1 ? 0.8 : 1; const w = txt0.length * 50 * k * sxk - (txt0.length - 1) * 2 * k + 16 * k * sxk + numH * growK; const hh = 78 * k + numH * growK + (ul ? numH * 0.2 : 0); return { hw: w / 2, hh: hh / 2 }; };
       const gapAt = (X, Y) => { const b = numBox(); let g = 1e9; for (const P of placements) { const dx = Math.max(0, Math.abs(X - P.bx) - (b.hw + P.sz / 2 + P.ow)); const dy = Math.max(0, Math.abs(Y - P.by) - (b.hh + P.sz / 2 + P.ow)); g = Math.min(g, dx === 0 && dy === 0 ? -1 : Math.hypot(dx, dy)); } return g; };
-      const fitsAt = (X, Y) => { const b = numBox(); return [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [0, 1]].every(([a2, c2]) => { const x = X + a2 * b.hw * 0.8; const y = Y + c2 * b.hh * 0.88; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
+      const fitsAt = (X, Y) => { const b = numBox(); return [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [0, 1]].every(([a2, c2]) => { const x = X + a2 * b.hw * 0.8; const y = Y + c2 * b.hh * 0.88; return edgeGap(ptsIn, x, y) > 0 && pointIn(ptsIn, x, y); }); };
       const numH0 = numH; const ny0 = ny; let done = false;
       for (let tries = 0; tries < 40 && !done; tries++) {
         const want = numH * 0.1; let best = null;
