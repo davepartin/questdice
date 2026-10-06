@@ -146,7 +146,7 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // -------------------------------------------------------------------------------------------
 export const CLASSES = {
   knight: {
-    feet: 4, hands: 6, // slow but strong: d6 hands from the start
+    feet: 4, hands: 6, // slow but strong: one d6 hand (left) from the start
     name: 'Knight', glyph: '⚔️', hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
@@ -183,7 +183,7 @@ export const CLASSES = {
     ],
   },
   dwarf: {
-    feet: 4, hands: 6, // slow but strong: d6 hands from the start
+    feet: 4, hands: 6, // slow but strong: one d6 hand (left) from the start
     name: 'Dwarf Warden', glyph: '🪓', hp: 38,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['spear', 'shield'],
