@@ -504,8 +504,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         const nyx = ny2 + th2 * 0.3875 - ky - th2 * 0.07; // x sits low: its bottom lines up with the foot of the 2
         const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, nyx - ky); c.lineTo(kx + ky, nyx + ky); c.moveTo(kx + ky, nyx - ky); c.lineTo(kx - ky, nyx + ky); c.stroke(); };
         const wgt = th2 * 0.2;
-        layer(ctxs, { H: 'rgb(34,34,34)', A: '#ffffff', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.2 }); times(c, wgt + th2 * 0.16); });
-        layer(ctxs, { H: 'rgb(78,78,78)', A: '#10131c', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); });
+        layer(ctxs, { H: 'rgb(34,34,34)', A: '#05060a', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.085 }); times(c, wgt + th2 * 0.085); }); // a thin black outline
+        layer(ctxs, { H: 'rgb(78,78,78)', A: '#ffffff', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); }); // white numeral
       } else {
         const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.05; const ow = sz * 0.1;
         layer(ctxs, { H: 'rgb(34,34,34)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, sz, ow * 2));
