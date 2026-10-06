@@ -142,6 +142,7 @@ function buildHud() {
   };
   const moreCheck = () => { const p = hud.plates; const more = !landscape() && p.scrollHeight - p.scrollTop - p.clientHeight > 6; hud.more.classList.toggle('on', more); };
   hud.plates.addEventListener('scroll', moreCheck, { passive: true }); B.moreCheck = moreCheck; setInterval(() => { if (B.root?.isConnected) moreCheck(); }, 400);
+  B.fitOff?.(); B.fitOff = world.stage.onFrame(() => { if (landscape() || !B.root?.isConnected) return; const sig = `${world.stage.width}|${world.stage.height}|${Math.round(hud.dock.getBoundingClientRect().top)}|${Math.round(hud.top.getBoundingClientRect().bottom)}|${world.stage.post.trayPass.enabled}`; if (sig !== B.fitSig) { B.fitSig = sig; fit(); } });
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
   for (const [i, e] of B.b.enemies.entries()) addPlate(e, i);
@@ -553,6 +554,7 @@ const powersBtn = () => {
 };
 
 export function renderReset() {
+  try { B.fit?.(); } catch { /* ignore */ }
   B.bw?.tray?.setLink?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };

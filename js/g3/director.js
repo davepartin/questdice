@@ -7,7 +7,7 @@ import { damp } from '../gfx/util.js';
 export const SHOTS = {
   battle: {
     land: { pos: [0.4, 9.2, 12.4], look: [0, 0.8, 2.8], fov: 50 },
-    port: { pos: [0.3, 4.4, 11.2], look: [0, 1.1, -0.6], fov: 44 },
+    port: { pos: [0.2, 5.4, 14.5], look: [0, 1.6, -0.8], fov: 44 },
   },
   intro: {
     land: { pos: [-3.5, 2.2, 11.5], look: [0, 1.5, -1], fov: 42 },

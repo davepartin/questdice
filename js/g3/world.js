@@ -25,6 +25,10 @@ export function enemyMarks(n, hasBig) {
   return rows[Math.min(4, Math.max(1, n))];
 }
 
+// How tall each monster stands, as a multiple of the hero (so a goblin reads small and an ogre reads huge next to your hero).
+export const SIZE_VS_HERO = { goblin: 0.72, wolf: 0.9, cultist: 1.0, ogre: 1.6, goblinking: 1.55, skeleton: 1.0, wraith: 1.15, spider: 0.75, bonewarden: 1.7, lich: 1.6 };
+const HERO_H = 1.98;
+
 export const world = {
   stage: null, director: null, vfx: null, available: false, mode: null, battle: null,
 
@@ -70,7 +74,7 @@ export const world = {
     // hero
     const heroActor = await createActor('hero', { cls: hero.cls, loadout: hero.loadout, level: hero.level, seed: hero.campaign?.seed || 1, quality: stage.quality });
     heroActor.root.position.set(...MARKS.hero);
-    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(0.9); heroActor.root.position.set(-2.0, 0, 1.2); }
+    if (this.director.portrait > 0.5) { heroActor.root.scale.setScalar(1.0); heroActor.root.position.set(-1.6, 0, 2.6); }
     const eMarks = enemyMarks(enemies.length, enemies.some((e) => e.tier !== 'minion'));
     const faceHeroYaw = (x, z) => Math.atan2(MARKS.hero[0] - x, MARKS.hero[2] - z);
     const mid = eMarks.reduce((a, p) => [a[0] + p[0] / eMarks.length, a[1] + p[1] / eMarks.length], [0, 0]);
@@ -78,6 +82,15 @@ export const world = {
     stage.scene.add(heroActor.root);
     stage.onFrame((dt, t) => heroActor.update(dt, t));
 
+    if (this.director.portrait > 0.5) { // scale props: a tree and a far mountain tell you how big everything is
+      const bark = new THREE.MeshStandardMaterial({ color: 0x2a1c14, roughness: 1 }); const leaf = new THREE.MeshStandardMaterial({ color: 0x1f3a2a, roughness: 1 }); const rock = new THREE.MeshStandardMaterial({ color: 0x3a2e38, roughness: 1 });
+      const tree = (x, z, h) => { const g = new THREE.Group(); const t = new THREE.Mesh(new THREE.CylinderGeometry(0.16 * h / 5, 0.26 * h / 5, h * 0.4, 7), bark); t.position.y = h * 0.2; g.add(t);
+        for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry((1.5 - i * 0.35) * h / 5, h * (0.42 - i * 0.04), 8), leaf); c.position.y = h * (0.42 + i * 0.22); g.add(c); }
+        g.position.set(x, 0, z); return g; };
+      stage.scene.add(tree(-4.6, -4.8, 6.2), tree(5.0, -6.5, 7.4), tree(-6.8, -9, 8.4));
+      const m = new THREE.Mesh(new THREE.ConeGeometry(9, 11, 5), rock); m.position.set(3, 3.5, -22); m.scale.set(1.6, 1, 1); stage.scene.add(m);
+      const m2 = new THREE.Mesh(new THREE.ConeGeometry(7, 8, 5), rock); m2.position.set(-12, 2.5, -20); stage.scene.add(m2);
+    }
     // tray
     let tray;
     try { tray = trayMod ? trayMod.createTray({ stage, quality: stage.quality }) : stubTray(stage); } catch (e) { console.warn('[world] tray failed', e); tray = stubTray(stage); }
@@ -116,7 +129,7 @@ export const world = {
         const a = await createActor(e.id, { tier: e.tier, seed: (e.uid.length * 7919) >>> 0, quality: stage.quality });
         const m = this.slotFor(index, list);
         a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? -0.2 : -1.6) : 0));
-        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(1.0); // phones: the miniature battle is a small scene, the dice are the game
+        const pk2 = this.director.portrait; const rel = SIZE_VS_HERO[e.id]; if (rel && a.height) { const crowd = Math.max(0.78, 1 - 0.06 * Math.max(0, list.length - 3)); a.root.scale.setScalar((rel * HERO_H / a.height) * crowd * (pk2 > 0.5 ? 1 : 1)); } // phones: the miniature battle is a small scene, the dice are the game
         a.root.rotation.y = Math.atan2(MARKS.hero[0] - m[0], MARKS.hero[2] - m[1]) * 0.5;
         a.userData.uid = e.uid;
         stage.scene.add(a.root);
