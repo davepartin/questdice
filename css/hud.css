@@ -541,3 +541,24 @@ body.in-battle .chrome { z-index: 40; }
 .b3-powers .bp-tri svg { color: #7a2ae0; fill: #7a2ae0; }
 .b3-acts3 .b3-powers b { font-size: .72rem; line-height: 1.05; text-align: left; white-space: normal; }
 .bcard .bc-art.heart-art { color: #ff3b4a; } .bcard .bc-art.heart-art svg { color: #ff3b4a; fill: #ff3b4a; filter: drop-shadow(0 0 4px rgba(255,60,80,.6)); }
+
+/* ===== phones v4: monsters are small square tiles stacked down the right edge (4 letters, hp, a tiny bar, the next move) ===== */
+@media (max-aspect-ratio: 5/4) {
+  .b3-magchip { top: calc(3.9rem + var(--safe-t)) !important; right: .35rem !important; }
+  .b3-plates { position: absolute; inset: auto !important; right: .35rem !important; left: auto !important; top: calc(6.5rem + var(--safe-t)) !important; width: 4.1rem; display: flex !important; flex-direction: column; gap: .3rem; overflow: visible !important; padding: 0 !important; transform: none !important; pointer-events: none; }
+  .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
+    position: relative !important; display: flex !important; flex-direction: column; align-items: stretch; flex: none !important; width: 4.1rem !important; min-width: 0 !important; max-width: none !important;
+    padding: .22rem .26rem .26rem !important; gap: .12rem; border-radius: .5rem; pointer-events: auto; opacity: .95; filter: none; transform: none !important; scroll-snap-align: none;
+  }
+  .b3-plates .b3-plate.targeted { box-shadow: 0 0 0 2px #ff8a3a, 0 0 14px rgba(255,120,50,.5); }
+  .b3-plates .pl-head { min-height: 0; justify-content: center; } .b3-plates .pl-head .pl-chips, .b3-plates .pl-reticle, .b3-plates .pl-call, .b3-plates .in-name, .b3-plates .in-hint, .b3-plates .in-fig small { display: none !important; }
+  .b3-plates .pl-name { font-size: .7rem; letter-spacing: .06em; text-align: center; width: 100%; overflow: visible; text-overflow: clip; white-space: nowrap; }
+  .b3-plates .pl-tier { display: none; }
+  .b3-plates .pl-bar.hbar { height: .32rem; } .b3-plates .pl-bar .hbar-num { position: static; display: block; text-align: center; font-size: .64rem; line-height: 1; letter-spacing: 0; order: -1; margin-bottom: .1rem; text-shadow: none; } .b3-plates .pl-bar.hbar { display: flex; flex-direction: column; height: auto; background: none; box-shadow: none; }
+  .b3-plates .pl-bar .hbar-ghost, .b3-plates .pl-bar .hbar-fill, .b3-plates .pl-bar .hbar-ticks { position: relative; display: block; height: .3rem; width: 100%; } .b3-plates .pl-bar .hbar-ghost { margin-bottom: -.3rem; }
+  .b3-plates .pl-intent { display: flex; justify-content: center; align-items: center; gap: .2rem; padding: .08rem .1rem !important; border-radius: .4rem; } .b3-plates .med { width: 1.15rem; height: 1.15rem; } .b3-plates .in-fig b { font-size: .8rem; } .b3-plates .in-main { display: flex; }
+}
+@media (max-aspect-ratio: 5/4) {
+  .b3-plates .pl-intent { flex-direction: row; flex-wrap: nowrap; padding: .06rem .12rem !important; gap: .15rem; } .b3-plates .in-main { display: flex !important; } .b3-plates .in-fig { display: flex; } .b3-plates .in-fig b { font-size: .66rem !important; letter-spacing: -.02em; white-space: nowrap; }
+  .b3-plates .med { width: .95rem !important; height: .95rem !important; flex: none; }
+}

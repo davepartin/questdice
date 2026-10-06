@@ -14,7 +14,7 @@ async function tryLoad(path) {
 // Staging marks (metres). See docs/GFX.md and the arena brief.
 export const MARKS = {
   hero: [-3.2, 0, 0.8],
-  tray: [0, 0.7, 4.5],
+  tray: [0, 0.3, 4.5],
   big: [0.5, 0, -0.9],
 };
 // Marks for the monsters' back row. With a big monster (elite/boss) slot 0 is its centre-back mark and the rest
@@ -105,8 +105,8 @@ export const world = {
       async addEnemy(e, index, list = enemies) {
         const a = await createActor(e.id, { tier: e.tier, seed: (e.uid.length * 7919) >>> 0, quality: stage.quality });
         const m = this.slotFor(index, list);
-        a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? 1.6 : 0.5) : 0));
-        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(0.85); // phones: the miniature battle is a small scene, the dice are the game
+        a.root.position.set(m[0], 0, m[1] + (this.director.portrait > 0.5 ? (e.tier !== 'minion' ? 1.0 : -0.5) : 0));
+        const pk2 = this.director.portrait; if (pk2 > 0.5) a.root.scale.setScalar(1.15); // the monsters now have the whole top band to themselves // phones: the miniature battle is a small scene, the dice are the game
         a.root.rotation.y = Math.atan2(MARKS.hero[0] - m[0], MARKS.hero[2] - m[1]) * 0.5;
         a.userData.uid = e.uid;
         stage.scene.add(a.root);

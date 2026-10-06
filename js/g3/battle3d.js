@@ -70,6 +70,9 @@ export async function start(ctx) {
   // the dice are the game: keep the grade clean over every arena (light bloom and vignette, no tilt blur, neutral tints, a bright exposure)
   const c0 = bw.arena.c || bw.arena; if (c0.lookBase) { c0.lookBase.bloom = 0.12; c0.lookBase.exposure = Math.max(1.12, c0.lookBase.exposure ?? 1); }
   world.stage.post.look({ bloom: 0.12, vignette: 0.26, grain: 0.015, aberration: 0, tilt: 0, sat: 1.12, contrast: 1.12, shadowTint: 0xffffff, highTint: 0xffffff, exposure: Math.max(1.12, c0.lookBase?.exposure ?? 1.12) });
+  if (!landscape()) { // phones: light the monsters so they read from above
+    const L = new THREE.PointLight(0xfff0dc, 26, 0, 2); L.position.set(0.5, 6.5, -1.5); L.name = 'foeLight'; world.stage.scene.add(L); B.foeLight = L;
+  }
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
   music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
@@ -77,7 +80,7 @@ export async function start(ctx) {
 }
 
 export function stop() {
-  B.ended = true;
+  B.ended = true; if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
   try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
   const layer = $('#b3'); layer.className = 'b3-layer'; layer.replaceChildren();
@@ -125,7 +128,7 @@ function buildHud() {
   B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.dock, hud.sheet, hud.info, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
-    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, Math.round(hud.plates.getBoundingClientRect().bottom + 4));
+    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`); B.root.style.setProperty('--plates-b', `${Math.round(hud.plates.getBoundingClientRect().bottom + 6)}px`);
     sizePlates();
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
@@ -142,7 +145,7 @@ function buildHud() {
 function fitTray() {
   const bw = B.bw; if (!bw || landscape() || !B.hud) return;
   const dir = world.director; const cam = world.stage.camera; const W = world.stage.width; const H = world.stage.height;
-  const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
+  const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.top.getBoundingClientRect().bottom;
   const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
   const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
   const HALF = 1.72; const EDGE = 2.0; const need = 34; // the dice rows span about +-2.1; the altar frame beyond that may slide under the totals
@@ -150,22 +153,24 @@ function fitTray() {
   const fits = (tilt) => {
     dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
     const pt = (x, y, z) => { v.set(x, y, z).multiply(obj.scale).add(obj.position).project(c); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H - sh]; };
-    for (let k = 1.9; k >= 0.3; k -= 0.03) {
+    for (let k = 1.34; k >= 0.3; k -= 0.03) { // capped: this is the dice size we like
       obj.scale.setScalar(k * B.trayBase);
       const nl = pt(-HALF, 0.5, EDGE); const nr = pt(HALF, 0.5, EDGE); const far = pt(0, 0.5, -EDGE);
-      if (nr[0] - nl[0] > W * 0.99 || nl[1] > dockTop + 6 || far[1] < stripBottom + need) continue;
+      B.dbg = { nlY: nl[1], farY: far[1], dockTop, wid: nr[0] - nl[0], W, k }; if (nr[0] - nl[0] > W * 0.99 || nl[1] > dockTop - 75 || far[1] < stripBottom + need) continue;
       return k;
     }
     return 0.3;
   };
   // look down on the board: about 70 degrees; only lower the camera if the board would otherwise be too small
+  // look down at ~70 degrees; if the dice (at their liked size) would run into the buttons, slide the board away from the camera a little
+  if (B.trayZ0 == null) B.trayZ0 = obj.position.z;
   let best = null;
-  for (const deg of [70, 66, 62, 58, 54, 50, 46, 42]) {
-    const tilt = p0 - (deg * Math.PI) / 180; const k = fits(tilt);
-    if (!best || k > best.k + 0.001) best = { k, tilt, deg };
-    if (k >= 0.85) { best = { k, tilt, deg }; break; }
+  for (const dz of [0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0, 1.25]) {
+    obj.position.z = B.trayZ0 - dz; const tilt = p0 - (70 * Math.PI) / 180; const k = fits(tilt);
+    best = { k, tilt, deg: 70, dz }; if (k >= 1.33) break;
   }
-  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k; B.trayDeg = best.deg;
+  obj.position.z = B.trayZ0 - best.dz;
+  dir.tilt = best.tilt; obj.scale.setScalar(best.k * B.trayBase); B.trayK = best.k; B.trayDeg = best.deg; B.trayDz = best.dz;
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -232,7 +237,7 @@ function updatePlate(e) {
   const r = el._r; const dead = e.hp <= 0;
   el.classList.toggle('dead', dead);
   el.classList.toggle('raged', !!e.raged);
-  r.name.textContent = e.name;
+  r.name.textContent = landscape() ? e.name : (D.MONSTERS[e.id]?.short || e.name.slice(0, 4).toUpperCase());
   HK.setBar(r.hp, e.hp, e.maxHp);
   const v = !dead && B.showIntents !== false ? HK.intentView(e) : null;
   const sig = v ? [v.tone, v.title, v.fig, v.unit, v.hint, v.call?.sub].join('|') : '';
@@ -259,7 +264,7 @@ function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 // Tap a plate or a monster to choose a target.
 function stripPlates() {
   const hud = B.hud; const hb = landscape() ? 64 : hud.top.getBoundingClientRect().bottom;
-  hud.plates.style.top = `${Math.round(hb + 6)}px`;
+  if (landscape()) hud.plates.style.top = `${Math.round(hb + 6)}px`; else hud.plates.style.top = '';
   let tgt = null;
   for (const e of B.b.enemies) {
     const el = B.plates.get(e.uid); const a = B.bw.actors.get(e.uid); if (!el || !a) continue;

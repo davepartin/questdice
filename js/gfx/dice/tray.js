@@ -142,7 +142,8 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const lg = new THREE.CylinderGeometry(0.27, 0.22, 0.34, 4, 1); lg.rotateY(Math.PI / 4); lg.translate(sx * 1.88, -0.76, sz * 1.88); legs.push(lg);
     const cap = new THREE.CylinderGeometry(0.33, 0.33, 0.07, 4, 1); cap.rotateY(Math.PI / 4); cap.translate(sx * 1.88, -0.9, sz * 1.88); legs.push(cap);
   }
-  const bodyG = worldUV(merge([...bodyParts, ...legs, plinth]), 0.5);
+  const slim = !!(typeof window !== 'undefined' && window.__SLIM_TRAY !== false); // a low slab: no apron, legs or plinth, so the board lies on the ground
+  const bodyG = worldUV(merge(slim ? [bodyParts[0]] : [...bodyParts, ...legs, plinth]), 0.5);
   paint(bodyG, (x, y, z, c) => { const k = 0.55 + 0.45 * THREE.MathUtils.clamp((y + 0.95) / 0.7, 0, 1); c.setRGB(k, k * 0.96, k * 0.92); });
   const bodyMat = mat('stoneDark', { repeat: 1.2, roughness: 1 }).clone(); bodyMat.vertexColors = true; bodyMat.emissive = new THREE.Color(0x2a1a0e); bodyMat.emissiveIntensity = 0.6; bodyMat.color.set(0xd8c8b8);
   const body = new THREE.Mesh(bodyG, bodyMat); body.castShadow = true; body.receiveShadow = true; body.name = 'body';
@@ -154,7 +155,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   const iron = new THREE.Mesh(ironG, ironMat); iron.castShadow = true; iron.receiveShadow = true; iron.name = 'iron';
   // ---- sigil plaque on the front apron
   const plaqueMat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.6, emissive: 0xffffff, emissiveIntensity: 0.35 });
-  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.3), plaqueMat); plaque.position.set(0, -0.5, 2.278); plaque.name = 'sigil';
+  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.3), plaqueMat); plaque.position.set(0, -0.12, 2.278); plaque.name = 'sigil';
   table.add(body, iron, frame, field, dishMesh, brass, glow, decal, plaque);
 
   // ---- local lights (no shadows): a warm key above, a cool rim behind
