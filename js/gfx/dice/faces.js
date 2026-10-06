@@ -111,13 +111,13 @@ function fourGlyph(ctx, outline) {
   ctx.fillText('4', 0, 0);
   ctx.restore();
 }
-export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under = true } = {}) {
+export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under = true, cap = 'butt' } = {}) {
   const k = h / 80; const n = text.length;
   const wDigit = 50 * k * (n > 1 ? 0.8 : 1);
   const gap = n > 1 ? -2 * k : 0;
   const total = n * wDigit + (n - 1) * gap;
   ctx.save();
-  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = grow > 0 ? 'square' : 'butt'; // an outline pass runs past the stroke ends, so the ends get an outline too
+  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = cap;
   for (let i = 0; i < n; i++) {
     const d = +text[i];
     const cx = x - total / 2 + i * (wDigit + gap) + wDigit / 2;
@@ -472,9 +472,10 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
-      const grow = Math.min(9, Math.max(5, numH * 0.075)); // a thin 3-5 px outline all round, not a fat halo
-      const grooveA = ST.ink && th.num === 'ink' ? '#fffaf0' : ST.numW && th.num === 'metal' ? 'rgba(10,0,8,0.96)' : th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
-      layer(ctxs, { H: 'rgb(100,100,100)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow }));
+      // dark numerals on a light die need no outline at all; white numerals on a coloured die get an even 2 px black outline (no shadow, no relief)
+      const darkOnLight = th.num === 'ink' && ST.ink && (!spec.tone || ST.corners);
+      const grow = 4; // total extra width, so 2 px each side
+      if (!darkOnLight) layer(ctxs, { H: 'rgb(128,128,128)', A: ST.numW && th.num === 'metal' ? '#05060a' : 'rgba(0,0,0,0.9)', O: 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow, cap: 'round' }));
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
         const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
@@ -485,7 +486,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
       // (no offset drop shadow: a clean thin outline only)
-      layer(ctxs, { H: 'rgb(116,116,116)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: -numH * 0.01 }));
+      layer(ctxs, { H: 'rgb(128,128,128)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: 0, cap: darkOnLight ? 'butt' : 'round' }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, nx, ny, numH));
     }
     if (spec.sym === 'TALENT' && !blank) {
@@ -504,8 +505,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         const nyx = ny2 + th2 * 0.3875 - ky - th2 * 0.07; // x sits low: its bottom lines up with the foot of the 2
         const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, nyx - ky); c.lineTo(kx + ky, nyx + ky); c.moveTo(kx + ky, nyx - ky); c.lineTo(kx - ky, nyx + ky); c.stroke(); };
         const wgt = th2 * 0.2;
-        layer(ctxs, { H: 'rgb(34,34,34)', A: '#05060a', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: Math.min(9, th2 * 0.075) }); times(c, wgt + Math.min(9, th2 * 0.075)); }); // a thin black outline
-        layer(ctxs, { H: 'rgb(78,78,78)', A: '#ffffff', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); }); // white numeral
+        layer(ctxs, { H: 'rgb(128,128,128)', A: '#05060a', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: 4, cap: 'round' }); times(c, wgt + 4); }); // a thin black outline
+        layer(ctxs, { H: 'rgb(128,128,128)', A: '#ffffff', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: 0, cap: 'round' }); times(c, wgt); }); // white numeral
       } else {
         const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.05; const ow = sz * 0.1;
         layer(ctxs, { H: 'rgb(34,34,34)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, sz, ow * 2));
