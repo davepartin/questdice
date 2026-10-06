@@ -450,7 +450,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- keep the numeral clear of the symbols: search the face for the clearest spot (shrinking a little if it must)
     let numGap = null;
     if (placements.length && spec.text != null && !spec.sym) {
-      const txt0 = String(spec.text); const growK = ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16; const ul = txt0 === '6' || txt0 === '9';
+      const txt0 = String(spec.text); const growK = 0.075; const ul = txt0 === '6' || txt0 === '9';
       const numBox = () => { const k = numH / 80; const sxk = txt0.length > 1 ? 0.8 : 1; const w = txt0.length * 50 * k * sxk - (txt0.length - 1) * 2 * k + 16 * k * sxk + numH * growK; const hh = 78 * k + numH * growK + (ul ? numH * 0.2 : 0); return { hw: w / 2, hh: hh / 2 }; };
       const gapAt = (X, Y) => { const b = numBox(); let g = 1e9; for (const P of placements) { const dx = Math.max(0, Math.abs(X - P.bx) - (b.hw + P.sz / 2 + P.ow)); const dy = Math.max(0, Math.abs(Y - P.by) - (b.hh + P.sz / 2 + P.ow)); g = Math.min(g, dx === 0 && dy === 0 ? -1 : Math.hypot(dx, dy)); } return g; };
       const fitsAt = (X, Y) => { const b = numBox(); return [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [0, 1]].every(([a2, c2]) => { const x = X + a2 * b.hw * 0.8; const y = Y + c2 * b.hh * 0.88; return edgeGap(ptsIn, x, y) > 0 && pointIn(ptsIn, x, y); }); };
@@ -472,9 +472,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
-      const grow = numH * (ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16);
+      const grow = Math.min(9, Math.max(5, numH * 0.075)); // a thin 3-5 px outline all round, not a fat halo
       const grooveA = ST.ink && th.num === 'ink' ? '#fffaf0' : ST.numW && th.num === 'metal' ? 'rgba(10,0,8,0.96)' : th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
-      layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow }));
+      layer(ctxs, { H: 'rgb(100,100,100)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow }));
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
         const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
@@ -484,8 +484,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       } else if (th.num === 'bone') {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
-      layer(ctxs, { A: 'rgba(0,0,0,0.55)' }, (c) => { c.save(); c.translate(numH * 0.03, numH * 0.04); drawNumeral(c, txt, nx, ny, numH, { grow: numH * 0.02 }); c.restore(); });
-      layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: -numH * 0.01 }));
+      // (no offset drop shadow: a clean thin outline only)
+      layer(ctxs, { H: 'rgb(116,116,116)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: -numH * 0.01 }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, nx, ny, numH));
     }
     if (spec.sym === 'TALENT' && !blank) {
@@ -504,7 +504,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         const nyx = ny2 + th2 * 0.3875 - ky - th2 * 0.07; // x sits low: its bottom lines up with the foot of the 2
         const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, nyx - ky); c.lineTo(kx + ky, nyx + ky); c.moveTo(kx + ky, nyx - ky); c.lineTo(kx - ky, nyx + ky); c.stroke(); };
         const wgt = th2 * 0.2;
-        layer(ctxs, { H: 'rgb(34,34,34)', A: '#05060a', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.085 }); times(c, wgt + th2 * 0.085); }); // a thin black outline
+        layer(ctxs, { H: 'rgb(34,34,34)', A: '#05060a', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: Math.min(9, th2 * 0.075) }); times(c, wgt + Math.min(9, th2 * 0.075)); }); // a thin black outline
         layer(ctxs, { H: 'rgb(78,78,78)', A: '#ffffff', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); }); // white numeral
       } else {
         const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.05; const ow = sz * 0.1;
