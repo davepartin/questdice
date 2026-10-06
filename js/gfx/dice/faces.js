@@ -88,7 +88,7 @@ const DIGITS = {
   1: 'M12 26 L28 9 V71 M12 71 H44',
   2: 'M9 24 C9 5 41 5 41 24 C41 40 12 52 9 71 H43',
   3: 'M9 17 C14 5 41 6 41 23 C41 34 31 38 21 38 C33 38 43 44 43 55 C43 74 14 78 7 62',
-  4: 'M42 76 V6 L2 44 V50 H50',
+  4: 'M52 78 V8 L-6 54 H62',
   5: 'M40 9 H14 L11 36 C22 30 43 34 43 53 C43 74 13 77 7 62',
   6: 'M38 12 C20 14 8 30 8 50 C8 64 15 72 26 72 C37 72 43 63 43 53 C43 43 36 36 26 36 C18 36 10 41 8 50',
   7: 'M7 11 H43 L21 71',
@@ -124,8 +124,8 @@ export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under =
     ctx.save();
     ctx.translate(cx, y); ctx.scale(k * (n > 1 ? 0.8 : 1), k); ctx.translate(-25, -40);
     if (d === 9) { ctx.translate(25, 40); ctx.rotate(Math.PI); ctx.translate(-25, -40); }
-    ctx.lineWidth = weight + grow / (k * (n > 1 ? 0.8 : 1));
-    if (d === 4) fourGlyph(ctx, grow / (k * (n > 1 ? 0.8 : 1))); else ctx.stroke(digitPath(d));
+    ctx.lineWidth = d === 4 ? weight * 0.88 + (grow / (k * (n > 1 ? 0.8 : 1))) * 0.8 : weight + grow / (k * (n > 1 ? 0.8 : 1)); // the 4 is drawn lighter so its counter stays open
+    ctx.stroke(digitPath(d));
     ctx.restore();
   }
   if (under && (text === '6' || text === '9')) {
