@@ -551,7 +551,7 @@ function toggle(slot) {
   const b = ctx.S.battle;
   const info = E.rerollInfo(b);
   ctx.S.focus = slot;
-  if (b.board[slot].bound) { sfx.error(); toast('That die is hexed. It cannot be rerolled this round.', 'bad'); updateLive(); return; }
+  if (b.board[slot].bound) { sfx.error(); toast('That die is tangled. It cannot be rerolled this round.', 'bad'); updateLive(); return; }
   if (ctx.S.sel.has(slot)) ctx.S.sel.delete(slot);
   else if (info.kind === 'none') { sfx.error(); toast('No reroll actions left.'); }
   else if (ctx.S.sel.size >= info.dice) { sfx.error(); toast(`You can reroll up to ${info.dice} dice at a time.`); }

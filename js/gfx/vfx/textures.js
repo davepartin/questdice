@@ -169,16 +169,6 @@ const MAKERS = {
       g.lineWidth = s * (long ? 0.01 : 0.005);
       g.beginPath(); g.moveTo(m + Math.cos(a) * r0, m + Math.sin(a) * r0); g.lineTo(m + Math.cos(a) * r1, m + Math.sin(a) * r1); g.stroke();
     }
-    // runes in the band
-    g.lineWidth = s * 0.008;
-    for (let i = 0; i < 24; i++) {
-      const a = ((i + 0.5) / 24) * Math.PI * 2; g.save(); g.translate(m + Math.cos(a) * s * 0.365, m + Math.sin(a) * s * 0.365); g.rotate(a + Math.PI / 2);
-      const h = s * 0.02;
-      g.beginPath(); g.moveTo(0, -h); g.lineTo(0, h);
-      const n = 1 + Math.floor(R() * 3);
-      for (let k = 0; k < n; k++) { const yy = (R() * 2 - 1) * h * 0.8; const dir = R() < 0.5 ? -1 : 1; g.moveTo(0, yy); g.lineTo(dir * h * (0.4 + R() * 0.5), yy + (R() - 0.3) * h * 0.8); }
-      g.stroke(); g.restore();
-    }
     return toTex(c);
   },
   glyphInner(s = 512) {
@@ -186,11 +176,7 @@ const MAKERS = {
     g.strokeStyle = 'white'; g.fillStyle = 'white'; g.lineCap = 'round'; g.lineJoin = 'round'; g.shadowColor = 'white'; g.shadowBlur = s * 0.012;
     g.lineWidth = s * 0.012; g.beginPath(); g.arc(m, m, s * 0.3, 0, Math.PI * 2); g.stroke();
     g.lineWidth = s * 0.007; g.beginPath(); g.arc(m, m, s * 0.255, 0, Math.PI * 2); g.stroke();
-    // a plain ward: a diamond and a circle inside the rings, with small studs at the cardinal points (no stars)
-    g.lineWidth = s * 0.011;
-    g.beginPath(); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * (Math.PI / 2); const x = m + Math.cos(a) * s * 0.3; const y = m + Math.sin(a) * s * 0.3; if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.stroke();
     g.lineWidth = s * 0.008; g.beginPath(); g.arc(m, m, s * 0.15, 0, Math.PI * 2); g.stroke();
-    for (let i = 0; i < 4; i++) { const a = -Math.PI / 2 + i * (Math.PI / 2); g.beginPath(); g.arc(m + Math.cos(a) * s * 0.3, m + Math.sin(a) * s * 0.3, s * 0.018, 0, Math.PI * 2); g.fill(); }
     g.beginPath(); g.arc(m, m, s * 0.03, 0, Math.PI * 2); g.fill();
     return toTex(c);
   },

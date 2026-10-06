@@ -245,10 +245,10 @@ export const MONSTERS = {
       S('Lunge', 0, 2), S('Bite', 1, 1), S('Rend', 2, 1)],
   },
   cultist: {
-    name: 'Ashen Cultist', glyph: '🧙', short: 'CULT', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
-    faces: [{ n: 'Hex', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
+    name: 'Ember Mage', glyph: '🔥', short: 'MAGE', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
+    faces: [{ n: 'Tangle', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
       { n: 'Ward', v: 'guard', f: 0, m: 2 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
-      S('Bolt', 1, 1), { n: 'Hex', v: 'bind', f: 0, m: 0, k: 2 }],
+      S('Bolt', 1, 1), { n: 'Tangle', v: 'bind', f: 0, m: 0, k: 2 }],
   },
   ogre: {
     name: 'Hill Ogre', glyph: '👹', short: 'OGRE', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',

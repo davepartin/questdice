@@ -388,7 +388,7 @@ function selectTarget(uid) {
   if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   B.target = i; sfx.select(); updatePlates();
 }
-const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Hexes: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
+const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Tangles: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
 function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
   const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
@@ -604,7 +604,7 @@ async function doRoll() {
   renderShape();
   await bw.tray.roll(b.board);
   for (const s of D.SLOTS) bw.tray.setBound?.(s, !!b.board[s].bound);
-  if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} locked by a hex.`, 'bad'); sfx.hurt(); }
+  if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
   renderShape();
 }
@@ -661,7 +661,7 @@ function onPick(slot) {
   if (B.busy || B.ended || B.b.phase !== 'shape') return;
   const b = B.b; const info = E.rerollInfo(b);
   B.focus = slot;
-  if (b.board[slot].bound) { sfx.error(); toast('That die is hexed. It cannot be rerolled this round.', 'bad'); renderShape(); return; }
+  if (b.board[slot].bound) { sfx.error(); toast('That die is tangled. It cannot be rerolled this round.', 'bad'); renderShape(); return; }
   if (B.sel.has(slot)) B.sel.delete(slot);
   else if (info.kind === 'none') { sfx.error(); toast('No reroll actions left.'); }
   else if (B.sel.size >= info.dice) { sfx.error(); toast(`You can reroll up to ${info.dice} dice at a time.`); }
@@ -755,7 +755,7 @@ async function lockInInner() {
     const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
     if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
     if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
-    if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'hex', color: 0x9a4aff }); }
+    if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'buff', color: 0x7ab4ff, dur: 1.1 }); }
     if (act.v === 'summon') { sfx.summon?.(); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); }
     if (act.v === 'guard') { vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 }); }
     if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }

@@ -268,7 +268,7 @@ export const sfx = {
   }),
   screech: run((a, t) => { voice(a, t, { f: 900, to: 1900, f2: 1300, dur: 0.5, peak: 0.1, formants: [1500, 3200], vib: 14, vibAmt: 0.05, rough: 80, breath: 0.3, att: 0.02, send: 0.3 }); }),
   squeal: run((a, t) => { voice(a, t, { f: 700, to: 1400, f2: 900, dur: 0.38, peak: 0.1, formants: [900, 2600], vib: 11, vibAmt: 0.06, rough: 60, breath: 0.15, att: 0.015, send: 0.2 }); voice(a, t + 0.17, { f: 800, to: 1500, f2: 800, dur: 0.3, peak: 0.07, formants: [1000, 2800], vib: 12, vibAmt: 0.05, rough: 60, att: 0.01, send: 0.2 }); }),
-  chant: run((a, t) => { // cultist: three low voices holding a droning minor cluster with a vowel sweep
+  chant: run((a, t) => { // mage: a low rumbling voice with a vowel sweep
     [[110, 0], [130.8, 0.05], [164.8, 0.1]].forEach(([f, d]) => voice(a, t + d, { f, dur: 1.6, peak: 0.07, formants: [500, 900], fto: [350, 1200], vib: 5, vibAmt: 0.012, rough: 0, breath: 0.12, att: 0.4, type: 'sawtooth', send: 0.6, q: 6 }));
   }),
 

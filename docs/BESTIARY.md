@@ -148,17 +148,17 @@ Base HP 40 · Power die d8 · XP 10 · gold 8
 
 *The pack animal. Alone it is a tough biter. Two together are dangerous, because a Howl makes every bite hit harder.*
 
-#### 🧙 Ashen Cultist — minion
+#### 🧙 Ember Mage — minion
 Base HP 34 · Power die d8 · XP 12 · gold 10
 
 | d6 | Intention |
 |---|---|
-| 1 | Hex (Bind k=1) |
+| 1 | Tangle (Bind k=1) |
 | 2 | Ember (Pierce 1–8) |
 | 3 | Ward (Guard 2–16) |
 | 4 | Siphon (Drain 1–8 k=2) |
 | 5 | Bolt (Strike 2–9) |
-| 6 | Hex (Bind k=2) |
+| 6 | Tangle (Bind k=2) |
 
 *The first spellcaster. It never hits very hard, but it takes things away from you: locked dice, drained Magic, a Ward that blunts your attack. Kill it early.*
 

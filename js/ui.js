@@ -462,7 +462,7 @@ async function rollDice() {
   } else E.startRoll(b);
   if (!isParty()) { S.sel.clear(); S.focus = null; S.straight = 'atk'; }
   sfx.roll(); renderBattle(); await flicker(D.SLOTS);
-  if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} locked by a hex.`, 'bad'); sfx.hurt(); }
+  if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
 }
 // Dice tumble: flicker random faces, then settle on the truth.
 async function flicker(slots) {
@@ -488,7 +488,7 @@ function battleMenu() {
 function toggle(slot) {
   if (S.busy) return; const b = S.battle; const info = E.rerollInfo(b);
   S.focus = slot;
-  if (b.board[slot].bound) { sfx.error(); toast('That die is hexed. It cannot be rerolled this round.', 'bad'); updateLive(); return; }
+  if (b.board[slot].bound) { sfx.error(); toast('That die is tangled. It cannot be rerolled this round.', 'bad'); updateLive(); return; }
   if (S.sel.has(slot)) S.sel.delete(slot);
   else { if (info.kind === 'none') { sfx.error(); toast('No reroll actions left.'); } else if (S.sel.size >= info.dice) { sfx.error(); toast(`You can reroll up to ${info.dice} dice at a time.`); } else { S.sel.add(slot); sfx.select(); } }
   updateLive();
@@ -575,7 +575,7 @@ async function lockParty() {
     S.busy = false;
     renderBattle();
     await flicker(D.SLOTS);
-    if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} locked by a hex.`, 'bad'); sfx.hurt(); }
+    if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
     return;
   }
   const rep = E.resolveParty(b);

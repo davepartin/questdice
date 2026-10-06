@@ -217,7 +217,7 @@ export function partyReportLines(rep, b) {
     if (a.v === 'mend') return { kind: 'meh', text: `${n} mends ${a.healed || 0}.` };
     if (a.v === 'charge') return { kind: a.cancelled ? 'good' : 'bad', text: a.cancelled ? `${n}’s wind-up breaks.` : `${n} winds up. A Slam is coming.` };
     if (a.v === 'howl') return { kind: 'bad', text: `${n} howls. The pack grows bolder.` };
-    if (a.v === 'bind') return { kind: 'bad', text: `${n} hexes ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` };
+    if (a.v === 'bind') return { kind: 'bad', text: `${n} tangles ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` };
     if (a.v === 'summon') return { kind: 'bad', text: `${n} calls for help.` };
     return null;
   };
