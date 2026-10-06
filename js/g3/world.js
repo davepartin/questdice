@@ -82,14 +82,15 @@ export const world = {
     stage.scene.add(heroActor.root);
     stage.onFrame((dt, t) => heroActor.update(dt, t));
 
-    if (this.director.portrait > 0.5) { // scale props: a tree and a far mountain tell you how big everything is
-      const bark = new THREE.MeshStandardMaterial({ color: 0x2a1c14, roughness: 1 }); const leaf = new THREE.MeshStandardMaterial({ color: 0x1f3a2a, roughness: 1 }); const rock = new THREE.MeshStandardMaterial({ color: 0x3a2e38, roughness: 1 });
-      const tree = (x, z, h) => { const g = new THREE.Group(); const t = new THREE.Mesh(new THREE.CylinderGeometry(0.16 * h / 5, 0.26 * h / 5, h * 0.4, 7), bark); t.position.y = h * 0.2; g.add(t);
-        for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry((1.5 - i * 0.35) * h / 5, h * (0.42 - i * 0.04), 8), leaf); c.position.y = h * (0.42 + i * 0.22); g.add(c); }
-        g.position.set(x, 0, z); return g; };
-      stage.scene.add(tree(-4.6, -4.8, 6.2), tree(5.0, -6.5, 7.4), tree(-6.8, -9, 8.4));
-      const m = new THREE.Mesh(new THREE.ConeGeometry(9, 11, 5), rock); m.position.set(3, 3.5, -22); m.scale.set(1.6, 1, 1); stage.scene.add(m);
-      const m2 = new THREE.Mesh(new THREE.ConeGeometry(7, 8, 5), rock); m2.position.set(-12, 2.5, -20); stage.scene.add(m2);
+    if (this.director.portrait > 0.5 && !window.__NOPROPS) { // scale props: weathered boulders and broken rock stacks (the land is burnt and bare, so no trees)
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0x2e2630, roughness: 1, flatShading: true });
+      const rockMat2 = new THREE.MeshStandardMaterial({ color: 0x3a2f36, roughness: 1, flatShading: true });
+      let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      const boulder = (x, z, r, mat) => { const g = new THREE.DodecahedronGeometry(r, 0); const pos = g.attributes.position;
+        for (let i = 0; i < pos.count; i++) { const k = 0.7 + rnd() * 0.6; pos.setXYZ(i, pos.getX(i) * k, pos.getY(i) * k * 0.8, pos.getZ(i) * k); }
+        g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.position.set(x, r * 0.45, z); m.rotation.y = rnd() * 6; return m; };
+      const stack = (x, z, r) => { const g = new THREE.Group(); g.add(boulder(0, 0, r, rockMat), boulder(r * 0.5, r * 0.3, r * 0.55, rockMat2)); const t = boulder(-r * 0.2, 0, r * 0.6, rockMat2); t.position.y = r * 1.1; g.add(t); g.position.set(x, 0, z); return g; };
+      stage.scene.add(boulder(-4.4, -2.2, 0.55, rockMat), boulder(-3.7, -2.9, 0.35, rockMat2), boulder(4.6, -3.2, 0.7, rockMat2), boulder(5.3, -2.4, 0.4, rockMat), boulder(-1.4, -5.6, 0.8, rockMat2), boulder(2.8, -6.2, 0.6, rockMat), stack(-5.4, -6.4, 0.9));
     }
     // tray
     let tray;
