@@ -29,18 +29,21 @@ test('weapon face budgets: sum to 7, with documented exceptions', () => {
   }
 });
 
-test('universal number language on head, hands and feet (the feet number is also initiative)', () => {
+test('universal number language on head, hands and feet: 1 heal, 2 pierce, 3 magic, 4 gold (2 each); feet also set initiative', () => {
   const h = knight();
-  // head=1 loot, left hand=2 pierce, right hand=3 magic, feet=4 magic (and initiative 4). heart 6 so no amp.
   const ev = evaluate(h, board({ N: 1, W: 2, E: 3, S: 4, C: 6, NW: 1, NE: 1 }));
-  assert.equal(ev.gold, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 3); assert.equal(ev.init, 4);
+  assert.equal(ev.heal, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 2); assert.equal(ev.gold, 2); assert.equal(ev.init, 4);
 });
 
-test('heart amplifies only matching cardinal dice', () => {
+test('heart 1-4 adds +2 per matching head/hand/feet die; heart 5 and 6 add +4 to every blue / red weapon lane', () => {
   const h = knight();
   const ev = evaluate(h, board({ N: 2, W: 2, E: 3, S: 2, C: 2 }));
-  assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s (head, left hand, feet): 2 each, plus +2 amp each
+  assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s: 2 each, +2 amp each
   assert.equal(ev.magic, 2);
+  const blue = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 5 })); // NW red 3, NE blue 3
+  assert.equal(blue.lanes.R.value, 3 + 4 + 4); assert.equal(blue.lanes.L.value, 3 + 4);
+  const red = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 6 }));
+  assert.equal(red.lanes.L.value, 3 + 4 + 4); assert.equal(red.lanes.R.value, 3 + 4);
 });
 
 test('lane = weapon + strength; weapon color decides attack vs block', () => {
@@ -60,7 +63,8 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   const ev = evaluate(h, board({ NW: 3, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 }));
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal x2 and attack on one face
-  assert.equal(ev2.heal, 6); assert.ok(ev2.atk >= 3);
+  const ev2b = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
+  assert.equal(ev2.heal - ev2b.heal, 6); assert.ok(ev2.atk >= 3);
   const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
   assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 2); // gold is half of 4
 });
@@ -424,10 +428,9 @@ test('speed: classes start at different feet sizes, monsters have their own init
   assert.equal(E.upgradeDie(dwarf, 'speed', 'S'), true); assert.equal(E.feetSize(dwarf), D.NEXT_SIZE[before]);
 });
 
-test('a d4 hand showing 4 pays one magic each: two hands, two magic (what the triangle on the face shows)', () => {
+test('every symbol pays its count: faces 1-4 of any die size pay 2 (heal, pierce, magic, gold)', () => {
   const h = knight();
-  const ev = evaluate(h, board({ W: 4, E: 4, N: 2, S: 2, C: 5, NW: 1, NE: 1 }));
-  assert.equal(ev.magic, 2); // head shows 2 (pierce), feet are initiative: only the two hands pay magic
-  // and every face's symbol count is exactly what it pays: d4 [2 gold, 2 pierce, 2 magic, 1 magic]
-  assert.deepEqual(RES_BY_SIZE[4], [2, 2, 2, 1]);
+  const ev = evaluate(h, board({ W: 4, E: 4, N: 3, S: 3, C: 5, NW: 1, NE: 1 }));
+  assert.equal(ev.gold, 4); assert.equal(ev.magic, 4);
+  for (const k of [4, 6, 8, 10]) assert.deepEqual(RES_BY_SIZE[k], [2, 2, 2, 2]);
 });

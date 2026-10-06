@@ -28,13 +28,13 @@ export function dieSpec(hero, slot, v) {
   }
   let chip = ''; let chipKind = '';
   if (role === 'heart') {
-    if (v <= 4) { chip = `${['🪙', '◆', '✦', '✦'][v - 1]} amp`; chipKind = ['c-gold', 'c-pierce', 'c-magic', 'c-magic'][v - 1]; }
+    if (v <= 4) { chip = `${['✚', '◆', '✦', '🪙'][v - 1]} amp`; chipKind = ['c-heal', 'c-pierce', 'c-magic', 'c-gold'][v - 1]; }
     else if (v === 5) { chip = '🛡 +4'; chipKind = 'c-block'; } else { chip = '⚔ +4'; chipKind = 'c-atk'; }
     return { main: String(v), tone: 'heart', chip, chipKind, blank: false };
   }
   const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
-  if (v === 1) { chip = `🪙 +${r[0]}`; chipKind = 'c-gold'; } else if (v === 2) { chip = `◆ +${r[1]}`; chipKind = 'c-pierce'; }
-  else if (v === 3) { chip = `✦ +${r[2]}`; chipKind = 'c-magic'; } else if (v === 4) { chip = `✦ +${r[3]}`; chipKind = 'c-magic'; }
+  if (v === 1) { chip = `✚ +${r[0]}`; chipKind = 'c-heal'; } else if (v === 2) { chip = `◆ +${r[1]}`; chipKind = 'c-pierce'; }
+  else if (v === 3) { chip = `✦ +${r[2]}`; chipKind = 'c-magic'; } else if (v === 4) { chip = `🪙 +${r[3]}`; chipKind = 'c-gold'; }
   return { main: String(v), tone: '', chip, chipKind, blank: false };
 }
 
@@ -78,12 +78,12 @@ export function describeDie(hero, slot, v) {
     return sym ? `${name}: ${D.talentName(sym)}. ${D.talentText(sym)}` : `${name}: a blank. Two faces of every talent die are always empty.`;
   }
   if (role === 'heart') {
-    const t = ['Every other 1 you roll on head, hands and feet pays +2 🪙 extra.', 'Every other 2 you roll pierces +2 extra.', 'Every other 3 you roll gives +2 ✦ extra.', 'Every other 4 you roll gives +1 ✦ extra.', 'Your best BLUE lane gets +4 block.', 'Your best RED lane gets +4 attack.'][v - 1];
+    const t = ['Every 1 on your head, hands and feet heals +2 more.', 'Every 2 on your head, hands and feet pierces +2 more.', 'Every 3 on your head, hands and feet gives +2 ✦ more.', 'Every 4 on your head, hands and feet gives +2 🪙 more.', 'Each BLUE weapon lane gets +4 block.', 'Each RED weapon lane gets +4 attack.'][v - 1];
     return `Heart (d6) shows ${v}. ${t}`;
   }
   const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
   const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to its lane. ` : `${name} (d4) shows ${v}. `;
-  const eff = v === 1 ? `1 → +${r[0]} 🪙 gold.` : v === 2 ? `2 → +${r[1]} ◆ pierce.` : v === 3 ? `3 → +${r[2]} ✦ magic.` : v === 4 ? `4 → +${r[3]} ✦ magic.` : 'High numbers are pure power.';
+  const eff = v === 1 ? `1 → heal ${r[0]} ✚.` : v === 2 ? `2 → +${r[1]} ◆ pierce.` : v === 3 ? `3 → +${r[2]} ✦ magic.` : v === 4 ? `4 → +${r[3]} 🪙 gold.` : 'High numbers are pure power.';
   const ini = role === 'feet' ? ` It is also your initiative (${v}): each round every monster rolls its own die, a higher roll strikes first, ties go to you. Round 1 is always yours.` : '';
   return base + eff + ini;
 }

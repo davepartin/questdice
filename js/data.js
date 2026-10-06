@@ -28,16 +28,12 @@ export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
 
-// Universal number language: [loot on 1, pierce on 2, magic on 3, magic on 4], by die size.
-export const RES_BY_SIZE = {
-  4: [2, 2, 2, 1],
-  6: [2, 3, 3, 1],
-  8: [3, 3, 3, 2],
-  10: [3, 4, 4, 2],
-};
-// Heart amplifier: bonus per *other* cardinal die that matches the heart. Faces 1-4.
-export const HEART_AMP = [2, 2, 2, 1];
-export const HEART_COLOR_BONUS = 4; // faces 5 (blue) and 6 (red)
+// Universal number language on head, hands and feet: face 1 = heal, 2 = pierce, 3 = magic, 4 = gold, 2 each on every die size.
+// Faces above 4 (the bigger dice) carry no symbol: they are pure number (strength, initiative).
+export const RES_BY_SIZE = { 4: [2, 2, 2, 2], 6: [2, 2, 2, 2], 8: [2, 2, 2, 2], 10: [2, 2, 2, 2] };
+// Heart amplifier: +2 per matching head / hand / feet die. Faces 1-4 (heal, pierce, magic, gold).
+export const HEART_AMP = [2, 2, 2, 2];
+export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
 export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };

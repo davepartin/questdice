@@ -171,21 +171,21 @@ export function evaluate(hero, board, opts = {}) {
   };
   const res = (slot) => RES_BY_SIZE[ROLE[slot] === 'hand' ? hero.strength[slot] : ROLE[slot] === 'feet' ? feetSize(hero) : 4];
 
-  // Universal number language on the four cardinal dice.
+  // Universal number language on head, hands and feet: 1 = heal, 2 = pierce, 3 = magic, 4 = gold (RES_BY_SIZE each).
   for (const s of PAYERS) {
     const v = val(s); const r = res(s);
-    if (v === 1) out.gold += r[0];
+    if (v === 1) out.heal += r[0];
     else if (v === 2) { out.pierce += r[1] + mods.pierceBonus; }
     else if (v === 3) out.magic += r[2];
-    else if (v === 4) out.magic += r[3];
+    else if (v === 4) out.gold += r[3];
   }
-  // Heart: amplifies matching cardinals on this board only.
+  // Heart 1-4: +2 more of the same for every matching 1 / 2 / 3 / 4 on head, hands and feet. Heart 5/6 are handled with the lanes.
   const hv = val('C');
   out.heart = hv;
   if (hv <= 4) {
     const matches = PAYERS.filter((s) => val(s) === hv).length;
     const amp = HEART_AMP[hv - 1] * matches;
-    if (hv === 1) out.gold += amp; else if (hv === 2) out.pierce += amp; else out.magic += amp;
+    if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
   }
 
@@ -210,11 +210,11 @@ export function evaluate(hero, board, opts = {}) {
     }
     out.lanes[key] = L;
   }
-  // Heart 5/6 pump the best lane of the matching color.
+  // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5) {
-    const want = hv === 5 ? 'b' : 'r';
-    const cand = Object.values(out.lanes).filter((l) => l.color === want).sort((a, b) => b.value - a.value)[0];
-    if (cand) { cand.value += HEART_COLOR_BONUS; cand.amp = HEART_COLOR_BONUS; out.notes.push(`Heart ${hv}: +${HEART_COLOR_BONUS} ${want === 'r' ? 'attack' : 'block'}`); }
+    const want = hv === 5 ? 'b' : 'r'; let n = 0;
+    for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += HEART_COLOR_BONUS; l.amp = HEART_COLOR_BONUS; n++; }
+    if (n) out.notes.push(`Heart ${hv}: +${HEART_COLOR_BONUS} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
   }
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 

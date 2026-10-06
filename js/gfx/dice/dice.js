@@ -15,7 +15,7 @@ import { buildAtlas, diceStyle } from './faces.js';
 export { makePoly, restQuat, readLabel };
 
 // ------------------------------------------------------------------------------- specs
-const PIP_BY_NUM = [null, 'gold', 'pierce', 'magic', 'magic'];
+const PIP_BY_NUM = [null, 'heal', 'pierce', 'magic', 'gold'];
 const FX_PIP = { heal: 'heal', magic: 'magic', pierce: 'pierce', stagger: 'stagger' };
 
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
@@ -45,7 +45,7 @@ export function dieSpecs(hero) {
       theme = 'heart';
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
-      theme = role === 'hand' ? 'smoke' : 'bone';
+      theme = 'bone'; // head, hands and feet are all the same white die
       // what the face pays is what it shows: one symbol per point of gold / pierce / magic
       const size = role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4;
       for (let v = 1; v <= sides; v++) {

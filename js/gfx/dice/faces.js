@@ -199,14 +199,14 @@ STYLES.clean = {
     rBlank: { core: '#8a2a34', mid: '#64202a', edge: '#2a0a10' }, bBlank: { core: '#1f4f8c', mid: '#173a68', edge: '#071526' },
   },
   themes: {
-    bone: { core: '#f8f0dc', mid: '#efe3c2', edge: '#c9b88e', trim: ['#f4ecd6', '#c2b690', '#7c7054'], num: 'ink', rough: 0.35 },
+    bone: { core: '#ffffff', mid: '#f6f1e6', edge: '#d8ceb4', trim: ['#f4ecd6', '#c2b690', '#7c7054'], num: 'ink', rough: 0.35 },
     smoke: { core: '#ecd6a4', mid: '#dcc088', edge: '#b09560', trim: ['#f4e6c0', '#c0a672', '#7a6642'], num: 'ink', rough: 0.35 },
     heart: { core: '#ffffff', mid: '#dddddd', edge: '#888888', trim: ['#fff2d0', '#e8b84c', '#8a5a14'], num: 'metal', rough: 0.3 },
     amethyst: { core: '#237f86', mid: '#14565c', edge: '#082a30', neutral: true, trim: ['#cfeeee', '#6fb4b4', '#2c6264'], num: 'metal', rough: 0.4 },
   },
 };
 const HEART_FACE = { 1: '#f2b81c', 2: '#ff8a1a', 3: '#a64dff', 4: '#a64dff', 5: '#3aa4ff', 6: '#ff3b3b' };
-const HEART_KIND = { 1: 'gold', 2: 'pierce', 3: 'magic', 4: 'magic', 5: 'def', 6: 'atk' };
+const HEART_KIND = { 1: 'heal', 2: 'pierce', 3: 'magic', 4: 'gold', 5: 'def', 6: 'atk' };
 let ST = STYLES.classic;
 export const diceStyle = () => ST;
 export function setDiceStyle(name) {
