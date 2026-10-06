@@ -142,7 +142,7 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const stripBottom = B.hud.plates.getBoundingClientRect().bottom;
   const sh = ((dir.safe?.bottom || 0) - (dir.safe?.top || 0)) / 2; // the director's view offset
   const obj = bw.tray.object; const v = new THREE.Vector3(); const c = cam.clone();
-  const HALF = 2.0; const EDGE = 2.1; const need = 34; // the dice rows span about +-2.1; the altar frame beyond that may slide under the totals
+  const HALF = 1.9; const EDGE = 2.05; const need = 34; // the dice rows span about +-2.1; the altar frame beyond that may slide under the totals
   dir.tilt = 0; const r0 = dir.resolve('battle'); const d0 = r0.pos.clone().sub(r0.look); const p0 = Math.asin(d0.y / d0.length());
   const fits = (tilt) => {
     dir.tilt = tilt; const r = dir.resolve('battle'); c.fov = r.fov; c.aspect = W / H; c.position.copy(r.pos); c.lookAt(r.look); c.updateProjectionMatrix(); c.updateMatrixWorld();
