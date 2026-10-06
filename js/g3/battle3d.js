@@ -71,7 +71,12 @@ export async function start(ctx) {
   const c0 = bw.arena.c || bw.arena; if (c0.lookBase) { c0.lookBase.bloom = 0.12; c0.lookBase.exposure = Math.max(1.12, c0.lookBase.exposure ?? 1); }
   world.stage.post.look({ bloom: 0.12, vignette: 0.26, grain: 0.015, aberration: 0, tilt: 0, sat: 1.12, contrast: 1.12, shadowTint: 0xffffff, highTint: 0xffffff, exposure: Math.max(1.12, c0.lookBase?.exposure ?? 1.12) });
   if (!landscape()) { // phones: light the monsters so they read from above
-    const L = new THREE.PointLight(0xfff0dc, 26, 0, 2); L.position.set(0.5, 6.5, -1.5); L.name = 'foeLight'; world.stage.scene.add(L); B.foeLight = L;
+    const L = new THREE.Group(); L.name = 'foeLight';
+    const key = new THREE.PointLight(0xfff4e6, 70, 0, 2); key.position.set(0.5, 5.0, -2.5); L.add(key);
+    const fill = new THREE.PointLight(0xdfe8ff, 28, 0, 2); fill.position.set(-4, 3.5, -2.5); L.add(fill);
+    const fill2 = new THREE.PointLight(0xfff0d8, 28, 0, 2); fill2.position.set(4.5, 3.5, -2.5); L.add(fill2);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x8a6a5a, 0.7); L.add(hemi);
+    world.stage.scene.add(L); B.foeLight = L;
   }
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
