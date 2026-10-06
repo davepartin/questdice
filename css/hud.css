@@ -287,7 +287,7 @@
 .b3-pips b { font-family: var(--disp); font-weight: 800; font-size: .72rem; color: var(--h-magic); }
 .b3-straight { flex: 1 0 100%; display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .22rem .3rem .22rem .6rem; border-radius: .7rem; background: linear-gradient(90deg, rgba(166,77,255,.2), rgba(166,77,255,.05)); box-shadow: inset 0 0 0 1px rgba(166,77,255,.5); font-family: var(--disp); }
 .st-l { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; color: #ffe98a; } .st-l b { font-weight: 800; letter-spacing: .06em; text-transform: uppercase; } .st-l em { font-style: normal; font-size: .66rem; color: var(--h-dim); } .st-l .ic { font-size: 1rem; }
-.fseg { display: flex; gap: .25rem; } .fseg button { display: inline-flex; align-items: center; gap: .3rem; min-height: 2.75rem; padding: 0 .75rem; border: 0; border-radius: .55rem; font-family: var(--disp); font-weight: 700; font-size: .78rem; color: #fff; background: rgba(0,0,0,.45); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); } .fseg button .ic { font-size: 1rem; }
+.fseg { display: flex; gap: .25rem; flex: 1; justify-content: flex-end; } .fseg button { display: inline-flex; align-items: center; gap: .3rem; min-height: 2.75rem; padding: 0 .75rem; border: 0; border-radius: .55rem; font-family: var(--disp); font-weight: 700; font-size: .78rem; color: #fff; background: rgba(0,0,0,.45); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); } .fseg button .ic { font-size: 1rem; }
 .fseg button.on { background: linear-gradient(180deg, #fff0b0, #ffcf3a); color: #2a1804; box-shadow: 0 0 12px rgba(255,200,60,.5); } .fseg button.on .ic { color: #6a2a00; filter: none; }
 
 /* ================================================================== moments */
@@ -357,7 +357,7 @@ body.in-battle .chrome { z-index: 40; }
 .b3-acts > *, .b3-bar > * { min-width: 0; } .hb-tx { overflow: hidden; } .hb-tx b { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 @container (max-width: 290px) {
   .hb-reroll { padding: .4rem .5rem; gap: .3rem; } .hb-reroll .hb-tx small { display: none; } .hb-reroll .hb-tx b { font-size: .74rem; } .hb-cta { padding: .4rem .5rem; } .hb-cta .hb-tx b { font-size: .92rem; letter-spacing: .04em; } .hb-cta .hb-ic { font-size: 1.2rem; }
-  .hb-mini { width: 2.6rem; min-width: 2.6rem; height: 2.6rem; min-height: 2.6rem; } .b3-tools { gap: .3rem; } .b3-pips small { display: none; } .fseg button { padding: 0 .5rem; } .st-l em { display: none; }
+  .hb-mini { width: 2.6rem; min-width: 2.6rem; height: 2.6rem; min-height: 2.6rem; } .b3-tools { gap: .3rem; } .b3-pips small { display: none; }
 }
 @container (max-width: 250px) { .hb-cta .hb-ic { display: none; } .hb-cta .hb-tx b { font-size: .86rem; letter-spacing: .02em; } .hb-reroll .hb-ic { font-size: 1.05rem; } .hb-mini { width: 2.5rem; min-width: 2.5rem; } }
 /* roomy desktops */
@@ -573,10 +573,10 @@ body.in-battle .chrome { z-index: 40; }
   .b3-therm { top: calc(var(--line-y, 50%) + 14px) !important; }
   .b3-magchip { top: calc(3.9rem + var(--safe-t)) !important; }
 }
-/* the straight chooser floats over the table's front edge instead of pushing the whole dock (and the dice) up */
+/* the straight chooser sits in the bar; the dock grows and the table lifts to make room, so the totals stay visible */
 @media (max-aspect-ratio: 5/4) {
-  .b3-bar { position: relative; }
-  .b3-bar > .b3-straight { position: absolute; left: 0; right: 0; bottom: calc(100% + .35rem); flex: none; z-index: 6; background-color: rgba(18, 10, 30, .94); }
+  .b3-bar > .b3-straight { flex: none; width: 100%; box-sizing: border-box; padding: .12rem .3rem .12rem .5rem; }
+  .fseg button { flex: 1; justify-content: center; min-height: 2.3rem; padding: 0 .5rem; font-size: .84rem; }
 }
 
 /* many monsters: the tile stack runs down the right edge, even past the line and alongside the dice */

@@ -659,8 +659,8 @@ export function renderShape() {
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
-  const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`), h('em', {}, `+${ev.straightBonus} to`)),
-    h('div', { class: 'fseg' }, seg('atk', 'atk', 'Attack'), seg('gold', 'gold', 'Gold'))) : null;
+  const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`)),
+    h('div', { class: 'fseg' }, seg('atk', 'atk', `Attack ${ev.straightBonus}`), seg('gold', 'gold', `Gold ${ev.straightBonus}`))) : null;
   const rr = rerollText(info);
   B.hud.bar.replaceChildren(...[
     straight,
