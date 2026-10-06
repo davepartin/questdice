@@ -116,7 +116,7 @@ function buildHud() {
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
   hud.place = h('small', {}); hud.round = h('b', {});
   hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, hud.round));
-  hud.plates = h('div', { class: 'b3-plates' }); hud.coach = h('div', { class: 'b3-coach' });
+  hud.plates = h('div', { class: 'b3-plates' }); hud.more = h('div', { class: 'b3-more', 'aria-hidden': 'true' }, '▾'); hud.coach = h('div', { class: 'b3-coach' });
   hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
@@ -131,7 +131,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach);
+  B.root.append(hud.leaders, hud.plates, hud.more, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -140,6 +140,8 @@ function buildHud() {
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
     fitTray();
   };
+  const moreCheck = () => { const p = hud.plates; const more = !landscape() && p.scrollHeight - p.scrollTop - p.clientHeight > 6; hud.more.classList.toggle('on', more); };
+  hud.plates.addEventListener('scroll', moreCheck, { passive: true }); B.moreCheck = moreCheck; setInterval(() => { if (B.root?.isConnected) moreCheck(); }, 400);
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
   for (const [i, e] of B.b.enemies.entries()) addPlate(e, i);
