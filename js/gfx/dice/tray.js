@@ -191,13 +191,13 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   // an empty socket for a die the hero has not bought yet: a dashed ring with a plus, where it will go
   const vacTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); g.lineCap = 'round';
-    g.fillStyle = 'rgba(255,233,168,0.07)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#ffe9a8'; g.lineWidth = 9; g.setLineDash([26, 20]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
-    g.lineWidth = 18; g.beginPath(); g.moveTo(-40, 0); g.lineTo(40, 0); g.moveTo(0, -40); g.lineTo(0, 40); g.stroke();
+    g.fillStyle = 'rgba(190,176,150,0.05)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#b4a888'; g.lineWidth = 7; g.setLineDash([22, 22]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+    g.lineWidth = 12; g.beginPath(); g.moveTo(-32, 0); g.lineTo(32, 0); g.moveTo(0, -32); g.lineTo(0, 32); g.stroke();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
   for (const slot of SLOT_ORDER) {
     const s = S[slot];
-    s.vac = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ map: vacTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.85 }));
+    s.vac = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ map: vacTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.32 }));
     s.vac.position.set(s.home.x, 0.03, s.home.z); s.vac.visible = false; s.vac.renderOrder = 7; object.add(s.vac);
   }
   const hexTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); const hexP = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
@@ -449,7 +449,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     let anyRolling = false;
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; const die = s.die; if (!die) continue;
-      die.mesh.visible = !s.vacant; if (s.vacant) s.vac.material.opacity = 0.6 + 0.25 * Math.sin(time * 2 + s.i);
+      die.mesh.visible = !s.vacant; if (s.vacant) s.vac.material.opacity = 0.3;
       // ---- springs: lift (selected/hover), hop (pulses)
       const target = (s.selected ? 0.12 : s.hover ? 0.04 : 0);
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
@@ -507,7 +507,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     for (const slot of SLOT_ORDER) {
       const s = S[slot];
       let g = 0.34 + 0.12 * Math.sin(time * 1.2 + s.i * 0.9);
-      g *= s.bound ? 0.25 : s.dimmed ? 0.55 : 1;
+      g *= s.bound ? 0.25 : s.vacant ? 0.18 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
       glowU.uG.value[s.i] = g;

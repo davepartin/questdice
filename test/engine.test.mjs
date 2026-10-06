@@ -139,7 +139,7 @@ test('tier adds corner bonus symbols and never changes a number', () => {
 });
 
 test('a weapon die is as big as its size, capped by the hand that holds it', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 });
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.strength = { W: 4, E: 4 };
   assert.equal(sidesOf(h, 'NW'), 4);
   h.loadout.NW.size = 6; // bigger weapon, small hand: still a d4
   assert.equal(sidesOf(h, 'NW'), 4);
@@ -152,7 +152,7 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
 });
 
 test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 });
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.strength = { W: 4, E: 4 };
   const uid = h.loadout.NW.uid;
   h.gold = 1000;
   assert.equal(trainInfo(h, uid).why, 'hands');
@@ -348,13 +348,13 @@ test('rage: a boss at half health swaps to its rage table', () => {
   assert.ok(e.raged || e.hp <= 0, 'raged once under half'); if (e.hp > 0) assert.deepEqual(rep.raged, [e.uid]);
 });
 
-test('a new hero starts with six dice and camp unlocks the rest one at a time', () => {
+test('a new hero starts with seven dice (one talent die included) and camp unlocks the rest', () => {
   const h = newHero({ name: 'N', cls: 'knight', seed: 1 });
-  assert.deepEqual(activeSlots(h).sort(), ['C', 'E', 'N', 'NW', 'S', 'W']);
-  assert.equal(isActive(h, 'SW'), false); assert.equal(unlockInfo(h, 'SW').why, 'gold');
-  h.gold = 100; assert.ok(unlockDie(h, 'SW')); assert.equal(isActive(h, 'SW'), true); assert.ok(h.gold < 100);
-  assert.equal(unlockDie(h, 'SW'), false); // already have it
-  assert.ok(unlockDie(h, 'NE')); assert.ok(unlockDie(h, 'SE')); assert.equal(activeSlots(h).length, 9);
+  assert.deepEqual(activeSlots(h).sort(), ['C', 'E', 'N', 'NW', 'S', 'SW', 'W']);
+  assert.equal(isActive(h, 'NE'), false); assert.equal(unlockInfo(h, 'NE').why, 'gold');
+  h.gold = 100; assert.ok(unlockDie(h, 'NE')); assert.equal(isActive(h, 'NE'), true); assert.ok(h.gold < 100);
+  assert.equal(unlockDie(h, 'NE'), false); // already have it
+  assert.equal(unlockDie(h, 'SW'), false); assert.ok(unlockDie(h, 'SE')); assert.equal(activeSlots(h).length, 9);
   const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); assert.equal(isActive(r, 'NE'), true); // a two-hander fills both weapon dice
 });
 
@@ -362,11 +362,12 @@ test('dice that are not on the board contribute nothing and cannot be rerolled',
   const h = newHero({ name: 'N', cls: 'knight', seed: 1 });
   const full = knight();
   const bd = board({ NW: 4, NE: 4, SW: 4, SE: 4, W: 3, E: 3, C: 3 });
+  assert.equal(isActive(h, 'SW'), true);
   const a = evaluate(h, bd); const f = evaluate(full, bd);
   assert.ok(a.atk + a.block + a.heal + a.magic < f.atk + f.block + f.heal + f.magic);
   assert.equal(a.lanes.R, undefined); assert.ok(a.lanes.L);
   const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b); b.magic = 9;
-  assert.equal(reroll(b, ['NE']), false); assert.equal(reroll(b, ['SW']), false); assert.ok(reroll(b, ['N']));
+  assert.equal(reroll(b, ['NE']), false); assert.equal(reroll(b, ['SE']), false); assert.ok(reroll(b, ['N']));
 });
 
 test('a charge power stores magic across rounds and releases it as one big hit with splash', () => {

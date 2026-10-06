@@ -103,7 +103,7 @@ export const TALENT_SYMS = {
   gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
-export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW'];
+export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
 export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less than one fight pays, so a new player can buy it at their first camp
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
@@ -134,7 +134,7 @@ export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s streng
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
 export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
-export const SPEED_STEPS = { 4: [60, 2], 6: [140, 5], 8: [300, 9] };
+export const SPEED_STEPS = { 4: [60, 2] }; // feet stop at d6: fast heroes start there, slow heroes can buy it
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
@@ -146,7 +146,7 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // -------------------------------------------------------------------------------------------
 export const CLASSES = {
   knight: {
-    feet: 4,
+    feet: 4, hands: 6, // slow but strong: d6 hands from the start
     name: 'Knight', glyph: '⚔️', hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
@@ -158,7 +158,7 @@ export const CLASSES = {
     ],
   },
   ranger: {
-    feet: 8,
+    feet: 6,
     name: 'Ranger', glyph: '🏹', hp: 28,
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
@@ -183,7 +183,7 @@ export const CLASSES = {
     ],
   },
   dwarf: {
-    feet: 4,
+    feet: 4, hands: 6, // slow but strong: d6 hands from the start
     name: 'Dwarf Warden', glyph: '🪓', hp: 38,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['spear', 'shield'],
