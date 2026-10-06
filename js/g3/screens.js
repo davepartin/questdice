@@ -416,16 +416,16 @@ export const portraitQ = {
       return url;
     });
   },
-  weapon(id, rarity = 0, { size = [220, 220] } = {}) {
+  weapon(id, rarity = 0, { size = [380, 380] } = {}) {
     const key = `w:${id}:${rarity}`;
     return queue(key, async () => {
       const w = createWeapon(id, rarity, { quality: 'med' }); const holder = new THREE.Group(); holder.add(w);
       const hands2 = D.WEAPONS[id].hands === 2;
-      w.rotation.z = id === 'bow' || id === 'shield' || id === 'bracer' ? 0 : (hands2 ? -0.5 : -0.62);
+      w.rotation.z = id === 'shield' || id === 'bracer' ? 0 : id === 'bow' ? -0.78 : id === 'staff' ? -0.72 : (hands2 ? -0.7 : -0.62); // long weapons lie on the diagonal so they fill the picture
       if (id === 'shield') w.rotation.y = -0.5;
       if (id === 'bracer') { w.rotation.x = -0.4; w.rotation.y = 0.6; }
       w.updateMatrixWorld(true); for (let i = 0; i < 8; i++) w.userData.update?.(0.05, 0.5 + i * 0.1);
-      const url = renderPortrait(holder, { key, size, yaw: id === 'shield' ? 0.25 : 0.5, pitch: 0.1, fit: 'full', pad: 1.3, fov: 24 });
+      const url = renderPortrait(holder, { key, size, yaw: id === 'shield' ? 0.25 : 0.5, pitch: 0.1, fit: 'full', pad: 1.1, fov: 24 });
       w.userData.dispose?.();
       return url;
     });

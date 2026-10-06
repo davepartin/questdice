@@ -335,3 +335,10 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 label.sx-check { justify-content: flex-start; cursor: pointer; }
 .tal-hand { flex-basis: 100%; color: var(--gold-hi) !important; }
 .sx-tip { flex-wrap: wrap; } .sx-tip p { flex: 1 1 calc(100% - 2.4rem); min-width: 0; margin: 0; } .sx-tip .sx-btn { flex: 0 0 auto; } .sx-tip .sx-btn:nth-of-type(1) { margin-left: 1.9rem; }
+
+/* weapon portraits: the picture fills its stage and is never cropped (the stage is a positioned box; the image sits inside it whole) */
+.wc-stage .wc-art { position: absolute; inset: 0; display: block; }
+.wc-stage .wc-art img { position: absolute; inset: 4% 4% 4% 4%; width: 92%; height: 92%; object-fit: contain; }
+.sx-wc.compact .wc-stage { aspect-ratio: 4 / 3; }
+.ci-weapons .sx-wc.compact .wc-stage { aspect-ratio: auto; min-height: 7rem; }
+@media (max-aspect-ratio: 1085/1000) { .ci-weapons .sx-wc { flex-direction: column; } .ci-weapons .wc-stage { width: auto; min-height: 11rem; aspect-ratio: 1 / 0.8; } }
