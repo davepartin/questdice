@@ -117,7 +117,7 @@ export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under =
   const gap = n > 1 ? -2 * k : 0;
   const total = n * wDigit + (n - 1) * gap;
   ctx.save();
-  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = grow > 0 ? 'square' : 'butt'; // an outline pass runs past the stroke ends, so the ends get an outline too
   for (let i = 0; i < n; i++) {
     const d = +text[i];
     const cx = x - total / 2 + i * (wDigit + gap) + wDigit / 2;
