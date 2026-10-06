@@ -161,13 +161,13 @@ function fitTray() {
   cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
   const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
   const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]; };
-  const want = dockTop + 64; const minLine = Math.max(topBar + 170, H * 0.34); // the table's front edge sits just above the totals; the battlefield keeps at least this much
+  const want = dockTop + 54; const minLine = Math.max(topBar + 170, H * 0.34); // the table's front edge sits just above the totals; the battlefield keeps at least this much
   let d = 10; let shift = 0; let lineY = 0;
   PITCH = (70 * Math.PI) / 180; B.trayDeg = 70;
   for (let frac = 0.9; frac >= 0.5; frac -= 0.01) { // as wide as the screen if the band allows; otherwise as wide as fits
     let lo = 4; let hi = 60; for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const nl = pt(-HALF, 0.4, EDGE); const nr = pt(HALF, 0.4, EDGE); if (nr[0] - nl[0] > W * frac) lo = d; else hi = d; }
     place(d); const farY = pt(0, 0.9, -EDGE - 0.15)[1]; const nearY = pt(0, 0.0, EDGE + 0.6)[1];
-    shift = nearY - want; lineY = farY - shift - 14; B.trayFrac = frac;
+    shift = nearY - want; lineY = farY - shift + 10; B.trayFrac = frac;
     if (lineY >= minLine) break;
   }
   const farY = 0, nearY = 0; void farY; void nearY;
