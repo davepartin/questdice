@@ -166,7 +166,7 @@ export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const val = (s) => board[s].v;
   const out = {
-    init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, stagger: 0,
+    init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0,
     lanes: {}, offense3: false, defense3: false, straight: 0, straightBonus: 0, notes: [],
   };
 
@@ -198,7 +198,7 @@ export function evaluate(hero, board, opts = {}) {
     const L = { key, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
-      out.gold += wf.fx.loot || 0; out.stagger += wf.fx.stagger || 0;
+      out.gold += wf.fx.loot || 0;
     }
     for (const t of tsyms) {
       if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += Math.round(str * 0.75);
@@ -248,7 +248,7 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1 } = {}, rn
   return {
     uid: newUid(rng), id, name: d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
     faces: d.faces, flat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
-    staggerAt: Math.max(4, Math.ceil(hp * 0.25)), xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
+    xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult,
   };
 }
@@ -281,11 +281,11 @@ export function intentRange(e) {
 // Road-event boons. Combat blessings apply for the whole battle they were snapshotted into.
 // The campaign list is decremented only when that battle actually ends (spendBlessings).
 export function pullBlessings(hero) {
-  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, stagger: 0, openingAtk: 0, weaken: 0 };
+  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, openingAtk: 0, weaken: 0 };
   for (const bl of hero.campaign?.blessings || []) {
     if (bl.who && bl.who !== hero.name) continue;
     o.startHp += bl.startHp || 0; o.wound += bl.wound || 0; o.startMagic += bl.startMagic || 0;
-    o.atk += bl.atk || 0; o.block += bl.block || 0; o.stagger += bl.stagger || 0; o.openingAtk += bl.openingAtk || 0;
+    o.atk += bl.atk || 0; o.block += bl.block || 0; o.openingAtk += bl.openingAtk || 0;
     o.weaken += bl.weaken || 0;
   }
   return o;
@@ -329,7 +329,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
   beginReset(b);
   return b;
 }
-const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0, splash: 0, aoe: 0 });
+const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, splash: 0, aoe: 0 });
 
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
@@ -455,10 +455,10 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const T = {
     atk: ev.atk + m.atk + (boon.atk || 0) + (b.round === 1 ? (boon.openingAtk || 0) : 0),
     pierce: ev.pierce + m.pierce, block: ev.block + m.block + (boon.block || 0), heal: ev.heal + m.heal,
-    magic: ev.magic, gold: ev.gold, stagger: ev.stagger + m.stagger + (boon.stagger || 0),
+    magic: ev.magic, gold: ev.gold,
   };
   const rep = {
-    round: b.round, ev, T, dealt: 0, guarded: 0, targetUid: null, killed: [], staggered: [], raged: [], summoned: [],
+    round: b.round, ev, T, dealt: 0, guarded: 0, targetUid: null, killed: [], raged: [], summoned: [],
     acts: [], taken: 0, absorbed: 0, healed: 0, magicStolen: 0, goldStolen: 0, bound: 0, hpBefore: b.hp,
   };
   if (ev.offense3) hero.stats.triples++;
@@ -481,7 +481,6 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     rep.dealt = Math.min(tgt.hp, dmg);
     tgt.hp = Math.max(0, tgt.hp - dmg);
     b.stats.dealt += rep.dealt;
-    if (tgt.intent.v === 'charge' && tgt.hp > 0 && dmg + T.stagger >= tgt.staggerAt) { tgt.windup = false; tgt.cancelled = true; rep.staggered.push(tgt.uid); }
     if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
@@ -492,7 +491,6 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
         const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
         rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
         if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
-        else if (e.intent && e.intent.v === 'charge' && e.hp > 0 && hit + T.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; if (!rep.staggered.includes(e.uid)) rep.staggered.push(e.uid); }
       }
     }
 
@@ -857,7 +855,6 @@ function totalsFor(f) {
     block: ev.block + (m.block || 0) + (boon.block || 0),
     heal: ev.heal + (m.heal || 0),
     magic: ev.magic, gold: ev.gold,
-    stagger: ev.stagger + (m.stagger || 0) + (boon.stagger || 0),
   };
   return { ev, T };
 }
@@ -886,12 +883,11 @@ export function resolveParty(b) {
   const order = rankFighters(acting, b.rng);
   const rep = {
     round: b.round, party: true, leader: order[0]?.f.hero.name || '', strikes: [],
-    killed: [], staggered: [], raged: [], summoned: [], acts: [],
+    killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };
   const guardLeft = new Map();
   for (const e of alive) if (e.intent?.v === 'guard') guardLeft.set(e.uid, e.mag);
-  const pressure = new Map();
   // Monsters answer the living. Damage is split by Feet; each hero's block soaks only their share.
   const snap = order.map((r) => r.f);
   const weights = shareWeights(order);
@@ -922,8 +918,6 @@ export function resolveParty(b) {
     tgt.hp = Math.max(0, tgt.hp - dmg);
     f.stats.dealt += dealt;
     f.contrib += dealt;
-    const bag = pressure.get(tgt.uid) || { dmg: 0, stagger: 0 };
-    bag.dmg += dmg; bag.stagger += T.stagger; pressure.set(tgt.uid, bag);
     const killed = tgt.hp <= 0;
     if (killed) {
       rep.killed.push(tgt.uid); f.contrib += 3;
@@ -987,11 +981,6 @@ export function resolveParty(b) {
   const runningHp = (f) => { const i = snap.indexOf(f); return Math.min(f.maxHp, f.hp + f.T.heal) - taken[i]; };
   for (const x of line) {
     if (x.kind === 'hero') { if (runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
-  }
-  for (const e of b.enemies) {
-    if (e.hp <= 0 || e.intent?.v !== 'charge') continue;
-    const bag = pressure.get(e.uid) || { dmg: 0, stagger: 0 };
-    if (bag.dmg + bag.stagger >= e.staggerAt) { e.windup = false; e.cancelled = true; rep.staggered.push(e.uid); const ac = rep.acts.find((x) => x.uid === e.uid); if (ac) ac.cancelled = true; }
   }
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {

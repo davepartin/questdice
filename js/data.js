@@ -68,9 +68,9 @@ export const WEAPONS = {
     faces: [F(0, 'r'), F(1, 'b'), F(3, 'r'), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   shield: { name: 'Shield', hands: 1, lean: 'def', glyph: '🛡️', price: 40,
-    tag: 'A real wall. The red 1 is a bash that staggers.',
-    faces: [F(0, 'b'), F(1, 'r', { stagger: 3 }), F(3, 'b'), F(4, 'b')],
-    bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { stagger: 2 } }] },
+    tag: 'A real wall. The red 1 is a bash that hits back.',
+    faces: [F(0, 'b'), F(1, 'r'), F(3, 'b'), F(4, 'b')],
+    bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', glyph: '🔱', price: 45,
     tag: 'Reach. A 4 pierces for 2.',
     faces: [F(0, 'r'), F(1, 'b'), F(2, 'r'), F(4, 'r', { pierce: 2 })],
@@ -80,9 +80,9 @@ export const WEAPONS = {
     faces: [F(0, 'b'), F(1, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', glyph: '⚔️', price: 75,
-    tag: 'Two-handed and swingy. A 4 staggers.',
-    faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r', { stagger: 3 })],
-    bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { stagger: 2 } }] },
+    tag: 'Two-handed and swingy. Big red faces.',
+    faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r')],
+    bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   staff: { name: 'Staff', hands: 2, lean: 'off', glyph: '🪄', price: 75,
     tag: 'Two-handed channel. A 4 gives 2 magic.',
     faces: [F(0, 'b'), F(1, 'b'), F(2, 'r'), F(4, 'r', { magic: 2 })],
@@ -141,7 +141,7 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 
 // -------------------------------------------------------------------------------------------
 // Classes. The board is identical for everyone; the class lives in the card menu.
-// A card is { id, name, cost, text, fx }. fx keys: atk, pierce, block, heal, magic, stagger,
+// A card is { id, name, cost, text, fx }. fx keys: atk, pierce, block, heal, magic,
 // weaken (enemy damage -N this round), free (a free reroll action of N dice).
 // -------------------------------------------------------------------------------------------
 export const CLASSES = {
@@ -154,7 +154,7 @@ export const CLASSES = {
       { id: 'cleave', name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Roll 2d6 attack. Half of it splashes on every other monster.' },
       { id: 'shieldwall', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
       { id: 'rally', name: 'Rally Cry', kind: 'flat', cost: 3, fx: { atk: 4, block: 4, heal: 4 }, text: '+4 attack, +4 block, heal 4.' },
-      { id: 'judgment', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14, stagger: 6 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster.', unlock: 5 },
+      { id: 'judgment', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster.', unlock: 5 },
     ],
   },
   ranger: {
@@ -164,7 +164,7 @@ export const CLASSES = {
     weapons: ['bow'],
     cards: [
       { id: 'aimed', name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Roll pierce dice: 2 Magic = 2d6, each extra Magic adds a die (up to 5d6).' },
-      { id: 'snare', name: 'Snare', kind: 'flat', cost: 2, fx: { weaken: 3, stagger: 4 }, text: 'Enemies hit 3 softer; +4 stagger.' },
+      { id: 'snare', name: 'Snare', kind: 'flat', cost: 2, fx: { weaken: 3 }, text: 'Enemies hit 3 softer this round.' },
       { id: 'quickdraw', name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll action of 2 dice.' },
       { id: 'rain', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster.', unlock: 5 },
     ],
@@ -189,7 +189,7 @@ export const CLASSES = {
     weapons: ['spear', 'shield'],
     cards: [
       { id: 'stonehide', name: 'Stonehide', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'block' }, fx: { block: 7 }, text: 'Roll 2d6 block.' },
-      { id: 'bulwark', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 2, stagger: 3 }, text: 'Every round: +2 attack, +3 stagger.' },
+      { id: 'bulwark', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack.' },
       { id: 'grudge', name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late.' },
       { id: 'avalanche', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster.', unlock: 5 },
     ],
@@ -227,7 +227,7 @@ export const PERKS = {
 // Bestiary. Faces: v = verb, f = flat, m = multiplier of the Power die, k = extra parameter.
 //   strike  damage (blockable)         pierce  damage that ignores block
 //   guard   this round the monster blocks f+m*power of your non-pierce damage
-//   mend    heals itself               charge  wind-up; next round it Slams unless staggered
+//   mend    heals itself               charge  wind-up; next round it Slams (brace with block, or kill it first)
 //   howl    every monster's next strike +k bind  lock k of your dice next round
 //   drain   strike, and steal k Magic  pilfer  strike, steal gold if it connects; returned on its death
 //   summon  call k reinforcements (the monster's `adds` id)

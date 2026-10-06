@@ -33,7 +33,7 @@ function partyFight(members, intent, hp = 999, enemy = 'goblin') {
   e.hp = hp; e.maxHp = Math.max(e.maxHp, hp); e.intent = intent; e.flat = 0; e.buff = 0;
   b.fighters.forEach((f, i) => {
     f.board = quiet(i === 0 ? 4 : 1);
-    f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0 };
+    f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0 };
     f.target = 0; f.straight = 'atk';
   });
   return b;
@@ -105,19 +105,6 @@ test('a killed monster does not strike the company', () => {
   assert.equal(rep.killed.length, 1);
 });
 
-test('two small hits stagger a wind-up that either hit would have left standing', () => {
-  const c = company();
-  const intent = { n: 'Wind', v: 'charge', f: 0, m: 0 };
-  const alone = partyFight(c.members, intent, 999, 'ogre');
-  const pressure = evaluate(c.members[0], alone.fighters[0].board);
-  alone.enemies[0].staggerAt = pressure.atk + pressure.stagger + 1;
-  alone.fighters[1].hp = 0; alone.fighters[1].board = null;
-  assert.equal(resolveParty(alone).staggered.length, 0);
-
-  const both = partyFight(c.members, intent, 999, 'ogre');
-  both.enemies[0].staggerAt = pressure.atk + pressure.stagger + 1;
-  assert.equal(resolveParty(both).staggered.length, 1);
-});
 
 test('a weaken blessing applies once; weaken cards still stack', () => {
   const c = company();
@@ -157,7 +144,7 @@ test('bind, drain and a stolen purse land on the feet leader', () => {
   theft.enemies[0].intent = { n: 'Stab', v: 'strike', f: 0, m: 0 };
   for (const f of theft.fighters) {
     f.board = quiet(f.hero.name === 'Ada' ? 4 : 1);
-    f.mods = { atk: f.hero.name === 'Ada' ? 40 : 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0 };
+    f.mods = { atk: f.hero.name === 'Ada' ? 40 : 0, pierce: 0, block: 0, heal: 0, weaken: 0 };
   }
   resolveParty(theft);
   assert.equal(ada.purseLost, 0);
@@ -174,7 +161,7 @@ test('opening attack is only the first round', () => {
 
   for (const f of b.fighters) {
     f.board = quiet(f.hero.name === 'Ada' ? 4 : 1);
-    f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0 };
+    f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0 };
   }
   b.enemies[0].intent = { n: 'Duck', v: 'guard', f: 0, m: 0 };
   b.enemies[0].hp = 999;

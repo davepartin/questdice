@@ -79,7 +79,6 @@ function announce(prev, view) {
   if (prev.phase === 'battle' && view.phase === 'defeat') { sfx.lose(); return; }
   const rep = view.battle?.report;
   if (!rep || rep.round === prev.battle?.report?.round) return;
-  if (rep.staggered?.length) { ctx.banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.raged?.length) { ctx.banner('ENRAGED!', 'bad'); sfx.rage(); }
 }
 
@@ -403,7 +402,7 @@ function hydrate(view) {
     phase: me.stage === 'shape' ? 'shape' : 'reset',
     round: btl.round, hero: me.hero, hp: me.hp, maxHp: me.maxHp, magic: me.magic,
     board: me.board, actionsLeft: me.actionsLeft, freeActions: me.freeActions || [],
-    used: me.used || {}, mods: me.mods || { atk: 0, pierce: 0, block: 0, heal: 0, stagger: 0, weaken: 0 },
+    used: me.used || {}, mods: me.mods || { atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0 },
     boundNow: me.boundNow || 0, enemies: btl.enemies,
   };
 }

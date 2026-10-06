@@ -222,18 +222,13 @@ test('no Last Stand: lethal damage means defeat', () => {
   assert.equal(rep.lastStand, undefined); assert.equal(b.hp, 0); assert.equal(b.outcome, 'defeat');
 });
 
-test('stagger cancels a wind-up; otherwise the next round is a Slam', () => {
+test('a wind-up cannot be broken by damage: the next round is always a Slam', () => {
   const h = knight();
   const wind = { n: 'Wind-Up', v: 'charge', f: 0, m: 0 };
-  const hit = duel(h, 'ogre', wind, { NW: 4, W: 4, NE: 1, E: 1, C: 6, N: 4, S: 4 }); // big enough to cross 25% of 96
-  hit.enemies[0].staggerAt = 1;
-  resolve(hit, {});
-  assert.equal(hit.enemies[0].intent.n !== 'Slam', true);
-  const miss = duel(h, 'ogre', wind, { NW: 1, W: 1, NE: 1, E: 1, C: 3, N: 4, S: 4 });
-  miss.enemies[0].staggerAt = 9999;
-  resolve(miss, {});
-  assert.equal(miss.enemies[0].intent.n, 'Slam');
-  assert.equal(miss.enemies[0].intent.slam, true);
+  const big = duel(h, 'ogre', wind, { NW: 4, W: 4, NE: 1, E: 1, C: 6, N: 4, S: 4 });
+  big.enemies[0].hp = big.enemies[0].maxHp = 9999;
+  resolve(big, {});
+  assert.equal(big.enemies[0].intent.n, 'Slam'); assert.equal(big.enemies[0].intent.slam, true);
 });
 
 test('rerolls: first action is free, later actions cost 1 Magic per die, bound dice are locked', () => {

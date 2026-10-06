@@ -593,9 +593,8 @@ async function lockParty() {
   }
   await sleep(520);
   if (rep.fighters.some((f) => f.taken > 0)) { sfx.hurt(); shake(0.8); }
-  if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); }
-  await sleep(rep.raged.length || rep.staggered.length ? 900 : 640);
+  await sleep(rep.raged.length ? 900 : 640);
   S.busy = false; S.sel.clear(); S.focus = null;
   if (b.outcome === 'victory') showVictory();
   else if (b.outcome === 'defeat') defeat(false);
@@ -623,9 +622,8 @@ async function lockIn() {
   if (rep.absorbed > 0 && rep.taken > 0) floater(hpEl, `🛡 ${rep.absorbed}`, 'block');
   if (rep.healed) { sfx.heal(); floater(hpEl, `+${rep.healed}`, 'heal'); }
   if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); shake(1.6); }
-  if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); }
   if (rep.acts.some((a) => a.v === 'charge' && !a.cancelled)) sfx.windup();
-  await sleep(rep.raged.length || rep.staggered.length ? 1100 : 800);
+  await sleep(rep.raged.length ? 1100 : 800);
   S.busy = false; S.sel.clear(); S.focus = null;
   if (b.outcome === 'victory') showVictory(); else if (b.outcome === 'defeat') defeat(false); else renderReset();
 }

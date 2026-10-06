@@ -469,7 +469,7 @@ function publicEnemy(e) {
   return {
     uid: e.uid, id: e.id, name: e.name, glyph: e.glyph, tier: e.tier,
     hp: e.hp, maxHp: e.maxHp, powerDie: e.powerDie, flat: e.flat, buff: e.buff,
-    intent: e.intent ? { ...e.intent } : null, staggerAt: e.staggerAt,
+    intent: e.intent ? { ...e.intent } : null,
     raged: !!e.raged, rageName: e.rageName || '', carried: e.carried || 0, windup: !!e.windup,
   };
 }

@@ -93,7 +93,7 @@ export function intentView(e) {
     case 'pierce': return { tone: 'pierce', shape: 'diamond', icon: 'pierce', title: i.n, fig: r, unit: 'pierce', hint: 'ignores block' };
     case 'guard': return { tone: 'guard', shape: 'shield', icon: 'block', title: i.n, fig: r, unit: 'guard', hint: 'soaks non-pierce dmg' };
     case 'mend': return { tone: 'mend', shape: 'circle', icon: 'heal', title: i.n, fig: r, unit: 'heal', hint: 'heals itself' };
-    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: `${e.staggerAt}+`, unit: 'to break', hint: 'it does nothing this round', call: { head: 'SLAM NEXT ROUND', sub: `deal ${e.staggerAt} to break`, ico: 'stagger' }, hazard: true };
+    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: 'SLAM', unit: 'next round', hint: 'brace with block', call: { head: 'SLAM NEXT ROUND', sub: `deal ${e.staggerAt} to break`, ico: 'stagger' }, hazard: true };
     case 'howl': return { tone: 'howl', shape: 'circle', icon: 'howl', title: i.n, fig: `+${i.k}`, unit: 'all hits', hint: 'the pack grows bolder' };
     case 'bind': return { tone: 'bind', shape: 'circle', icon: 'bind', title: i.n, fig: `${i.k}`, unit: i.k > 1 ? 'dice locked' : 'die locked', hint: 'cannot be rerolled next round' };
     case 'drain': return { tone: 'drain', shape: 'circle', icon: 'drain', title: i.n, fig: r, unit: 'dmg', hint: `steals ${i.k} magic`, subIcon: 'magic' };
@@ -207,7 +207,6 @@ export function synergyList(ev, mods) {
   if (ev.offense3) out.push({ key: 'o3', kind: 'good', icon: 'atk', text: 'TRIPLE!', sub: 'top row · +10 attack' });
   if (ev.defense3) out.push({ key: 'd3', kind: 'good', icon: 'block', text: 'TRIPLE!', sub: 'head · heart · feet · +10 block' });
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
-  if (ev.stagger + mods.stagger) out.push({ key: 'stg', kind: '', icon: 'stagger', text: `${ev.stagger + mods.stagger} stagger`, sub: '' });
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;
 }

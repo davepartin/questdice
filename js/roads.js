@@ -216,12 +216,12 @@ export const ROADS = [
       {
         id: 'read',
         label: (ctx) => has(ctx.members, 'wizard') ? `${named(ctx.members, 'wizard')} reads the coals` : 'Stir the coals and look for a sign',
-        hint: () => 'Next fight, the first reroll reaches one die further. Stagger comes easier.',
+        hint: () => 'Next fight, the first reroll reaches one die further. You hit a little harder.',
         apply: (ctx) => {
-          bless(ctx, { id: 'coals', name: 'Read the coals', text: '+3 stagger.', fights: 1, stagger: 3, startMagic: has(ctx.members, 'wizard') ? 1 : 0 });
+          bless(ctx, { id: 'coals', name: 'Read the coals', text: '+2 attack.', fights: 1, atk: 2, startMagic: has(ctx.members, 'wizard') ? 1 : 0 });
           note(ctx, 'Coals of a Dead Camp', 'The coals showed a wind-up, and how to break it.');
           const extra = has(ctx.members, 'wizard') ? ' The wizard pulls 1 Magic out of the heat as well.' : '';
-          return `In the ash, a bootprint faces the wrong way, and a charred diagram of a raised club. Next fight, stagger is +3.${extra}`;
+          return `In the ash, a bootprint faces the wrong way, and a charred diagram of a raised club. Next fight, you hit +2 harder.${extra}`;
         },
       },
       {
@@ -405,11 +405,11 @@ export const ROADS = [
       {
         id: 'seal',
         label: () => 'Seal the mound with a stone and a prayer',
-        hint: () => 'Next fight: +4 stagger. Hard things break.',
+        hint: () => 'Next fight: +3 block. Hard things hold.',
         apply: (ctx) => {
-          bless(ctx, { id: 'seal', name: 'A sealed mound', text: '+4 stagger.', fights: 1, stagger: 4 });
+          bless(ctx, { id: 'seal', name: 'A sealed mound', text: '+3 block.', fights: 1, block: 3 });
           note(ctx, 'Graves that Breathe', 'They sealed it. The breathing stopped.');
-          return 'The mound sighs, then forgets how. Next fight, stagger is +4. Wind-ups are for breaking.';
+          return 'The mound sighs, then forgets how. Next fight, you start with +3 block. Wind-ups are for bracing against.';
         },
       },
       {
@@ -513,11 +513,11 @@ export const ROADS = [
       {
         id: 'steel',
         label: () => 'Sharpen everything and speak plainly',
-        hint: () => 'The boss fight: +2 attack, +2 stagger.',
+        hint: () => 'The boss fight: +2 attack, +2 block.',
         apply: (ctx) => {
-          bless(ctx, { id: 'steel', name: 'The night before', text: '+2 attack, +2 stagger.', fights: 1, atk: 2, stagger: 2 });
+          bless(ctx, { id: 'steel', name: 'The night before', text: '+2 attack, +2 block.', fights: 1, atk: 2, block: 2 });
           note(ctx, 'The Night Before', 'They sharpened the steel and said the plan out loud.');
-          return 'The fire catches after all. The boss fight begins with +2 attack and +2 stagger. You have agreed who is standing in front.';
+          return 'The fire catches after all. The boss fight begins with +2 attack and +2 block. You have agreed who is standing in front.';
         },
       },
       {

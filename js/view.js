@@ -112,7 +112,6 @@ export function synergyNotes(ev, mods) {
   if (ev.offense3) out.push({ kind: 'good', text: '⚔ Top-row triple! +10 attack' });
   if (ev.defense3) out.push({ kind: 'good', text: '🛡 Head·Heart·Feet triple! +10 block' });
   if (ev.straight) out.push({ kind: 'good', text: `★ ${ev.straight}-straight! +${ev.straightBonus}` });
-  if (ev.stagger + mods.stagger) out.push({ kind: '', text: `${ICON.stagger} ${ev.stagger + mods.stagger} stagger` });
   if (mods.weaken) out.push({ kind: '', text: `Foes hit ${mods.weaken} softer` });
   return out;
 }
@@ -127,7 +126,7 @@ export function intentInfo(e) {
     case 'pierce': return { icon: '◆', tone: 'pierce', title: i.n, text: `${rng} piercing · block can’t stop it` };
     case 'guard': return { icon: '🛡', tone: 'block', title: i.n, text: `blocks ${rng} of your non-piercing damage` };
     case 'mend': return { icon: '✚', tone: 'heal', title: i.n, text: `heals ${rng}` };
-    case 'charge': return { icon: '⚡', tone: 'charge', title: i.n, text: `SLAM next round. Deal ${e.staggerAt}+ this round to break it` };
+    case 'charge': return { icon: '⚡', tone: 'charge', title: i.n, text: 'SLAM next round. Brace with block' };
     case 'howl': return { icon: '📣', tone: 'buff', title: i.n, text: `every foe’s next strike +${i.k}` };
     case 'bind': return { icon: '⛓', tone: 'bind', title: i.n, text: `locks ${i.k} of your dice next round` };
     case 'drain': return { icon: '☾', tone: 'drain', title: i.n, text: `${rng} damage and steals ${i.k} ✦` };
@@ -171,7 +170,6 @@ export function reportLines(rep, b) {
   if (rep.ev.offense3) L.push({ kind: 'good', text: 'Top-row triple! +10 attack.' });
   if (rep.ev.defense3) L.push({ kind: 'good', text: 'Head·Heart·Feet triple! +10 block.' });
   if (rep.ev.straight) L.push({ kind: 'good', text: `${rep.ev.straight}-straight!` });
-  for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks!` });
   for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
   for (const a of rep.acts) {
     const n = name(a.uid);
@@ -228,11 +226,9 @@ export function partyReportLines(rep, b) {
       if (x.kind === 'hero') { const s = (rep.strikes || []).find((q) => q.name === x.name); if (s) L.push(...heroLines(s)); else if (rep.fallen?.includes(x.name)) L.push({ kind: 'bad', text: `${x.name} is dropped before they can swing.` }); }
       else { const a = (rep.acts || []).find((q) => q.uid === x.uid); const l = a && foeLine(a); if (l) L.push(l); }
     }
-    for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
-  } else {
+    } else {
     for (const s of rep.strikes || []) L.push(...heroLines(s));
-    for (const u of rep.staggered) L.push({ kind: 'good', text: `${name(u)} is staggered. The wind-up breaks.` });
-    for (const a of rep.acts) { const l = foeLine(a); if (l) L.push(l); }
+      for (const a of rep.acts) { const l = foeLine(a); if (l) L.push(l); }
   }
   if (rep.goldStolen) L.push({ kind: 'bad', text: `A thief takes ${rep.goldStolen} 🪙 from ${rep.leader}. Kill it to get the purse back.` });
   if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from ${rep.leader}.` });
@@ -271,7 +267,7 @@ export function howToPlay() {
     p(h('b', {}, '2. Shape.'), ' The first reroll is free (tap up to 3 dice). Two more cost 1 ✦ per die. Cards, healing and heart nudges cost ✦ too.'),
     p(h('b', {}, '3. Lock in.'), ' Tap a monster to choose your target. Triples (+10) and 5-straights pay extra.'),
     h('h3', {}, 'Monsters'),
-    p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round, unless you deal enough damage in one round to ', h('b', {}, 'stagger'), ' it. Bosses change their ways at half health.'),
+    p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round. You cannot stop it, so brace with ', h('b', {}, 'block'), ' or kill the monster first. Bosses change their ways at half health.'),
     h('h3', {}, 'The company'),
     p('One to six heroes, each on their own phone. The monsters choose when the round opens, and every hero shapes their own dice at the same time. Other phones see who has locked in, not the dice. When every hero has locked, the fight runs once. Highest ', h('b', {}, 'Feet'), ' draws the most damage. Healing and blocking count toward who picks loot first.'),
     h('h3', {}, 'The road'),

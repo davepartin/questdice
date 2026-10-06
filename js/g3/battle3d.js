@@ -378,7 +378,7 @@ function selectTarget(uid) {
   if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   B.target = i; sfx.select(); updatePlates();
 }
-const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round unless you stagger it', howl: 'Howls: every monster hits harder next round', bind: 'Hexes: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
+const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Hexes: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
 function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
   const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
@@ -577,7 +577,7 @@ function e0Warn() {
   const charge = alive().filter((e) => e.intent?.v === 'charge');
   const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);
   if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block, or burst it down.');
-  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ` Deal ${charge[0].staggerAt}+ in one round to break it.`);
+  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' A big Slam is coming next round. Plan your block.');
   return 'The monsters have shown their hand. Roll when you are ready.';
 }
 
@@ -804,7 +804,6 @@ async function lockInInner() {
     sfx.deathEmber?.(); vfx('death', a, { size: a.height });
     a.die({ dur: 1.2 }); updatePlate(b.enemies.find((e) => e.uid === uid));
   }
-  if (rep.staggered.length) { banner('STAGGERED!', 'gold'); sfx.synergy(); for (const uid of rep.staggered) { const a = bw.actors.get(uid); a?.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'steel', power: 1 }); stage.shake(0.9); } await wait(0.5); }
   await wait(rep.killed.length ? 0.55 : 0.2);
 
   // ---------- 2. the survivors act
