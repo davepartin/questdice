@@ -26,7 +26,7 @@ const FH = 2.18;           // half width of the leather field
 const FO = 2.35;           // half width of the outer frame
 const DISH_TOP = 0.54;     // socket radius at the surface
 const DEPTH = ROLL.dishDepth;
-const DIE_SCALE = 1.4;     // dice are drawn this much larger than their physics body so they fill their sockets and read from afar
+const DIE_SCALE = 1.5;     // dice are drawn this much larger than their physics body so they fill their sockets and read from afar
 const RC = { NW: [0, 0], N: [1, 0], NE: [2, 0], W: [0, 1], C: [1, 1], E: [2, 1], SW: [0, 2], S: [1, 2], SE: [2, 2] };
 export const slotPos = (slot) => new THREE.Vector3((RC[slot][0] - 1) * PITCH, 0, (RC[slot][1] - 1) * PITCH);
 
