@@ -32,12 +32,14 @@ export function dieSpec(hero, slot, v) {
     else if (v === 5) { chip = '🛡 +4'; chipKind = 'c-block'; } else { chip = '⚔ +4'; chipKind = 'c-atk'; }
     return { main: String(v), tone: 'heart', chip, chipKind, blank: false };
   }
-  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
-  if (v === 1) { chip = `✚ +${r[0]}`; chipKind = 'c-heal'; } else if (v === 2) { chip = `◆ +${r[1]}`; chipKind = 'c-pierce'; }
-  else if (v === 3) { chip = `✦ +${r[2]}`; chipKind = 'c-magic'; } else if (v === 4) { chip = `🪙 +${r[3]}`; chipKind = 'c-gold'; }
+  chip = payChip(v); chipKind = payKind(v);
   return { main: String(v), tone: '', chip, chipKind, blank: false };
 }
 
+const PAY_ICON = { heal: '✚', pierce: '◆', magic: '✦', gold: '🪙' };
+const payWords = (v) => { const p = D.FACE_PAY[v]; return p ? Object.entries(p).map(([k, n]) => `${PAY_ICON[k]} ${n} ${k}`).join(' + ') : ''; };
+const payChip = (v) => { const p = D.FACE_PAY[v]; return p ? Object.entries(p).map(([k, n]) => `${PAY_ICON[k]}${n}`).join(' ') : ''; };
+const payKind = (v) => { const p = D.FACE_PAY[v]; const k = p && Object.keys(p)[0]; return k ? `c-${k}` : ''; };
 export function paintDie(el, hero, slot, v) {
   const s = dieSpec(hero, slot, v);
   el.querySelector('.num').textContent = s.main;
@@ -81,9 +83,8 @@ export function describeDie(hero, slot, v) {
     const t = ['Every 1 on your head, hands and feet heals +2 more.', 'Every 2 on your head, hands and feet pierces +2 more.', 'Every 3 on your head, hands and feet gives +2 ✦ more.', 'Every 4 on your head, hands and feet gives +2 🪙 more.', 'Each BLUE weapon lane gets +4 block.', 'Each RED weapon lane gets +4 attack.'][v - 1];
     return `Heart (d6) shows ${v}. ${t}`;
   }
-  const r = D.RES_BY_SIZE[role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4];
   const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to its lane. ` : `${name} (d4) shows ${v}. `;
-  const eff = v === 1 ? `1 → heal ${r[0]} ✚.` : v === 2 ? `2 → +${r[1]} ◆ pierce.` : v === 3 ? `3 → +${r[2]} ✦ magic.` : v === 4 ? `4 → +${r[3]} 🪙 gold.` : 'High numbers are pure power.';
+  const eff = payWords(v) ? `${v} → ${payWords(v)}.` : 'High numbers are pure power.';
   const ini = role === 'feet' ? ` It is also your initiative (${v}): each round every monster rolls its own die, a higher roll strikes first, ties go to you. Round 1 is always yours.` : '';
   return base + eff + ini;
 }

@@ -46,11 +46,10 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
-      // what the face pays is what it shows: one symbol per point of gold / pierce / magic
-      const size = role === 'hand' ? hero.strength[slot] : role === 'feet' ? E.feetSize(hero) : 4;
+      // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
       for (let v = 1; v <= sides; v++) {
-        const pip = PIP_BY_NUM[v] || null; const n = pip ? D.RES_BY_SIZE[size]?.[v - 1] || 1 : 0;
-        labels.push({ text: String(v), pip, corners: pip ? Array(n).fill(pip) : undefined });
+        const pay = D.FACE_PAY[v]; const corners = []; for (const k of ['heal', 'pierce', 'magic', 'gold']) for (let i = 0; i < (pay?.[k] || 0); i++) corners.push(k);
+        labels.push({ text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined });
       }
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };

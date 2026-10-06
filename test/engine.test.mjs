@@ -5,7 +5,7 @@ import {
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
 } from '../js/engine.js';
-import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, RES_BY_SIZE } from '../js/data.js';
+import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, RES_BY_SIZE, FACE_PAY } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -432,5 +432,8 @@ test('every symbol pays its count: faces 1-4 of any die size pay 2 (heal, pierce
   const h = knight();
   const ev = evaluate(h, board({ W: 4, E: 4, N: 3, S: 3, C: 5, NW: 1, NE: 1 }));
   assert.equal(ev.gold, 4); assert.equal(ev.magic, 4);
-  for (const k of [4, 6, 8, 10]) assert.deepEqual(RES_BY_SIZE[k], [2, 2, 2, 2]);
+  assert.deepEqual(FACE_PAY.slice(1, 5), [{ heal: 2 }, { pierce: 2 }, { magic: 2 }, { gold: 2 }]);
+  assert.deepEqual(FACE_PAY[9], { heal: 2, pierce: 2 }); assert.deepEqual(FACE_PAY[10], { magic: 2, gold: 2 });
+  const big = evaluate(h, board({ N: 5, W: 6, E: 7, S: 8, C: 6, NW: 1, NE: 1 }));
+  assert.equal(big.heal, 3); assert.equal(big.pierce, 3); assert.equal(big.magic, 3); assert.equal(big.gold, 3);
 });

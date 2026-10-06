@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
@@ -169,15 +169,11 @@ export function evaluate(hero, board, opts = {}) {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, stagger: 0,
     lanes: {}, offense3: false, defense3: false, straight: 0, straightBonus: 0, notes: [],
   };
-  const res = (slot) => RES_BY_SIZE[ROLE[slot] === 'hand' ? hero.strength[slot] : ROLE[slot] === 'feet' ? feetSize(hero) : 4];
 
-  // Universal number language on head, hands and feet: 1 = heal, 2 = pierce, 3 = magic, 4 = gold (RES_BY_SIZE each).
+  // Universal number language on head, hands and feet: FACE_PAY[v] (1 heal, 2 pierce, 3 magic, 4 gold at 2; 5-8 at 3; 9 and 10 pay two kinds).
   for (const s of PAYERS) {
-    const v = val(s); const r = res(s);
-    if (v === 1) out.heal += r[0];
-    else if (v === 2) { out.pierce += r[1] + mods.pierceBonus; }
-    else if (v === 3) out.magic += r[2];
-    else if (v === 4) out.gold += r[3];
+    const pay = FACE_PAY[val(s)]; if (!pay) continue;
+    out.heal += pay.heal || 0; out.pierce += (pay.pierce || 0) + (pay.pierce ? mods.pierceBonus : 0); out.magic += pay.magic || 0; out.gold += pay.gold || 0;
   }
   // Heart 1-4: +2 more of the same for every matching 1 / 2 / 3 / 4 on head, hands and feet. Heart 5/6 are handled with the lanes.
   const hv = val('C');
