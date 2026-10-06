@@ -51,7 +51,7 @@ export const world = {
     this.director.layout = null;
     this.director.attach();
     s.scene.fog = null; s.scene.environment = s.env; s.scene.background = new THREE.Color(0x05060c);
-    s.post.look({ bloom: 0.42, bloomThreshold: 1.0, vignette: 0.5, grain: 0.04, aberration: 0.0005, sat: 1.06, contrast: 1.1, tilt: 0, exposure: 1 });
+    s.post.look({ bloom: 0.16, bloomThreshold: 1.0, vignette: 0.3, grain: 0.02, aberration: 0, sat: 1.14, contrast: 1.14, tilt: 0, exposure: 1 });
   },
 
   // Build a battle: arena, hero, one actor per enemy, tray, vfx. Returns the handle the battle controller drives.

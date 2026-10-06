@@ -180,7 +180,7 @@ export const STYLES = {
 // CLEAN: the readable set. No marbling or speckle, flat colours. Head, feet and hands are ivory/tan, weapon faces are bright red or blue,
 // the heart's faces take the colour of what they boost (with a + beside the symbol), the talent dice are deep teal (a colour used nowhere else).
 STYLES.clean = {
-  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.9, smoke: 0.9, heart: 0.8, amethyst: 0.95, weapon: 0.9 }, selfFlat: { bone: 0.5, smoke: 0.5, weapon: 0.55, amethyst: 0.5, heart: 0.55 }, selfK: 1.0, light: 1.0, neutralLight: true, swirl: 0, numScale: 1.12,
+  ...STYLES.clear, name: 'clean', clean: true, bodyK: { bone: 0.72, smoke: 0.72, heart: 0.75, amethyst: 0.85, weapon: 0.8 }, selfFlat: { bone: 0.22, smoke: 0.22, weapon: 0.35, amethyst: 0.3, heart: 0.4 }, selfK: 1.0, light: 0.75, neutralLight: true, swirl: 0, numScale: 1.12,
   wpn: {
     r: { core: '#ff4646', mid: '#e8282f', edge: '#a40f1c', metal: ['#fff', '#fff', '#fff'], rim: '#3a0a10' },
     b: { core: '#3d9cff', mid: '#1f66ee', edge: '#0c3aa8', metal: ['#fff', '#fff', '#fff'], rim: '#06142a' },
@@ -406,11 +406,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
       const grow = numH * (ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16);
       const grooveA = ST.ink && th.num === 'ink' ? '#fffaf0' : ST.numW && th.num === 'metal' ? 'rgba(10,0,8,0.96)' : th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
-      layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,70,255)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow }));
+      layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow }));
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
         const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
-      } else if (th.num === 'ink' && ST.ink && (!spec.tone || ST.corners)) { fillA = '#140808'; rr = 0.12; } else if (th.num === 'ink') {
+      } else if (th.num === 'ink' && ST.ink && (!spec.tone || ST.corners)) { fillA = '#0c0606'; rr = 0.92; } else if (th.num === 'ink') {
         fillA = spec.tone === 'b' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a78d8', '#143a86', '#0a1c4a']) : spec.tone === 'r' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#e04a3c', '#a01418', '#5a0408']) : lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#3a2416', '#1c0f08', '#0a0504']);
         rr = 0.12;
       } else if (th.num === 'bone') {

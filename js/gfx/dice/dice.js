@@ -87,7 +87,7 @@ function makeMaterial(atlas, theme, quality) {
     emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
     sheen: 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
-  if (diceStyle().clean) { m.clearcoat = 0.12; m.clearcoatRoughness = 0.5; m.specularIntensity = 0.3; m.envMapIntensity = 0.2; if (m.emissiveMap) m.emissiveIntensity = 0.2; } // matte-satin plastic: flat faces must not mirror the lights
+  if (diceStyle().clean) { m.clearcoat = 0; m.clearcoatRoughness = 0.6; m.specularIntensity = 0.12; m.envMapIntensity = 0.08; if (m.emissiveMap) m.emissiveIntensity = 0.2; } // matte-satin plastic: flat faces must not mirror the lights
   m.color.setScalar(({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1) * (typeof diceStyle().bodyK === 'object' ? (diceStyle().bodyK[theme] ?? 1) : diceStyle().bodyK));
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
