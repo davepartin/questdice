@@ -51,6 +51,26 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
       a.save(); a.strokeStyle = '#d6a845'; a.lineWidth = w; a.setLineDash(dash); a.beginPath(); a.arc(cx, cz, rad, 0, Math.PI * 2); a.stroke(); a.restore();
     }
   }
+  // --- margin units: an icon plus its name, written along the border (reads upward on the left edge, downward on the right)
+  const ox = FH - 0.16; // icon column offset
+  const wL = weaponIcon(weaponIds?.NW || 'sword'); const wR = weaponIcon(weaponIds?.NE || 'sword');
+  const UNITS = [
+    { icon: 'helmet', text: ['HEAD'], x: 0, z: -ox, side: 't', size: 0.31 },
+    { icon: 'boots', text: ['FEET'], x: 0, z: ox, side: 'b', size: 0.31 },
+    { icon: 'gauntlet', text: ['STRENGTH', 'LEFT HAND'], x: -ox, z: 0, side: 'l', size: 0.34 },
+    { icon: 'gauntlet', text: ['STRENGTH', 'RIGHT HAND'], x: ox, z: 0, side: 'r', size: 0.34, flip: true },
+    { icon: wL, text: ['WEAPON LEFT'], x: -ox, z: -pitch, side: 'l', size: 0.3 },
+    { icon: wR, text: ['WEAPON RIGHT'], x: ox, z: -pitch, side: 'r', size: 0.3, flip: true },
+    { icon: 'mend', text: ['TALENT ONE'], x: -ox, z: pitch, side: 'l', size: 0.24, glow: '#4fe69a' },
+    { icon: 'spark', text: ['TALENT TWO'], x: ox, z: pitch, side: 'r', size: 0.24, glow: '#ffd23d' },
+  ];
+  a.font = `800 ${0.1 * k}px "Trebuchet MS", "Segoe UI", sans-serif`;
+  for (const u of UNITS) {
+    const lines = u.text.length; u.fs = lines > 1 ? 0.1 : 0.125; a.font = `800 ${u.fs * k}px "Trebuchet MS", "Segoe UI", sans-serif`;
+    u.L = Math.max(...u.text.map((t) => a.measureText(t).width + t.length * 0.012 * k)) / k;
+    u.U = u.size * 0.8 + 0.06 + u.L; // icon, gap, text
+    u.t = u.side === 't' || u.side === 'b' ? [1, 0] : u.side === 'l' ? [0, -1] : [0, 1];
+  }
   // --- frame-hugging gold line + runic band in the margin
   a.save(); a.strokeStyle = '#c99a36'; a.lineWidth = 0.012 * k; a.setLineDash([]);
   const mI = FH - 0.045; a.strokeRect(X(-mI), Z(-mI), 2 * mI * k, 2 * mI * k); a.restore();
@@ -58,9 +78,9 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
   for (const side of ['t', 'b', 'l', 'r']) {
     for (let i = 0; i < 26; i++) {
       const u = -FH + 0.32 + (i / 25) * (2 * FH - 0.64);
-      if (Math.abs(u) < 0.34) continue; // leave room for the icon
       const off = FH - 0.11;
       const x = side === 'l' ? -off : side === 'r' ? off : u; const z = side === 't' ? -off : side === 'b' ? off : u;
+      if (UNITS.some((n) => n.side === side && Math.abs((side === 't' || side === 'b' ? x - n.x : z - n.z)) < n.U / 2 + 0.09)) continue; // leave room for the icon and its name
       const rr = mulberry32(i * 31 + side.charCodeAt(0));
       for (const [c, col, lw] of [[a, '#a67c2e', 0.007 * k], [e, glow, 0.007 * k]]) {
         c.save(); c.strokeStyle = col; c.lineWidth = lw; c.lineCap = 'round'; c.globalAlpha = c === e ? 0.55 : 1;
@@ -97,12 +117,21 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
       c.restore();
     }
   };
-  const ox = FH - 0.16; // icon column offset
-  const wL = weaponIcon(weaponIds?.NW || 'sword'); const wR = weaponIcon(weaponIds?.NE || 'sword');
-  iconAt('helmet', 0, -ox + 0.0, 0.31); iconAt('boots', 0, ox, 0.31);
-  iconAt('gauntlet', -ox, 0, 0.34, false); iconAt('gauntlet', ox, 0, 0.34, true);
-  iconAt(wL, -ox, -pitch, 0.3, false); iconAt(wR, ox, -pitch, 0.3, true);
-  iconAt('mend', -ox, pitch, 0.24, false, null, '#4fe69a'); iconAt('spark', ox, pitch, 0.24, false, null, '#ffd23d');
+  for (const n of UNITS) {
+    const [tx, tz] = n.t; const ic = n.size * 0.8; const sh = n.U / 2 - ic / 2; const th = n.U / 2 - n.L / 2;
+    iconAt(n.icon, n.x - tx * sh, n.z - tz * sh, ic, !!n.flip, null, n.glow || glow);
+    const cx = n.x + tx * th; const cz = n.z + tz * th;
+    const rot = n.side === 'l' ? -Math.PI / 2 : n.side === 'r' ? Math.PI / 2 : 0;
+    a.save(); a.translate(X(cx), Z(cz)); a.rotate(rot); a.textAlign = 'center'; a.textBaseline = 'middle'; a.font = `800 ${n.fs * k}px "Trebuchet MS", "Segoe UI", sans-serif`;
+    if (a.letterSpacing !== undefined) a.letterSpacing = `${0.012 * k}px`;
+    const ls = n.text.length; const lh = n.fs * 1.08 * k;
+    n.text.forEach((t, i) => {
+      const yy = (i - (ls - 1) / 2) * lh;
+      a.lineJoin = 'round'; a.strokeStyle = 'rgba(0,0,0,0.85)'; a.lineWidth = 0.02 * k; a.strokeText(t, 0, yy);
+      a.fillStyle = '#f3d98a'; a.fillText(t, 0, yy);
+    });
+    a.restore();
+  }
 
   // --- two-handed bracket: a gold bar along the far margin linking both weapon sockets
   if (twoHanded) {

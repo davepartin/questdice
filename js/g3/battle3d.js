@@ -646,7 +646,7 @@ export function renderShape() {
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.classList.remove('idle');
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
-  HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods));
+  HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s'))); // the straight chooser in the bar says it already
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
   // one card at a time, in teaching order: read the tiles, then target, triple, paid rerolls, lock in
   hint('b_shape');

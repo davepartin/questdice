@@ -9,7 +9,7 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin','wolf']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(3);
-await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(8);
+for (let i = 0; i < 8 && !(await p.evaluate(() => !!window.QD.B3.battleState?.b?.board)); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
 await p.evaluate(() => { const B = window.QD.B3.battleState; const bd = B.b.board; ['N','S','C','W','E'].forEach((k,i) => { bd[k].v = i + 1; }); window.QD.B3.renderShape(); });
 await pump(1);
 console.log(await p.evaluate(() => !!document.querySelector('.b3-straight')));
