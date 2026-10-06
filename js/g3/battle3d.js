@@ -85,7 +85,7 @@ export async function start(ctx) {
 }
 
 export function stop() {
-  B.ended = true; if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
+  B.ended = true; if (B.marker) { B.marker.parent?.remove(B.marker); B.marker = null; } if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
   try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
   const layer = $('#b3'); layer.className = 'b3-layer'; layer.replaceChildren();
@@ -344,9 +344,23 @@ function makeRing() {
   const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff5a3a).multiplyScalar(2.2), transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
   const r = new THREE.Mesh(g, m); r.rotation.x = -Math.PI / 2; r.position.y = 0.04; r.renderOrder = 3; return r;
 }
+// A gold arrow bobs over the chosen monster's head, with a soft light on it, so the target stands out without moving the camera.
+function markerUpdate(a, show, t) {
+  if (!B.marker) {
+    const g = new THREE.Group(); g.name = 'targetMarker';
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.7, 4), new THREE.MeshBasicMaterial({ color: 0xffc94a, toneMapped: false })); cone.rotation.x = Math.PI; cone.rotation.y = Math.PI / 4; g.add(cone);
+    const lamp = new THREE.PointLight(0xfff0cc, 40, 0, 2); lamp.position.set(0, -1.2, 1.4); g.add(lamp);
+    g.visible = false; B.bw.stage.scene.add(g); B.marker = g;
+  }
+  B.marker.visible = !!show; if (!show) return;
+  const top = a.worldAnchor?.('head'); const base = top ? top.clone() : a.root.position.clone().setY((a.height || 2) * 0.9 * (a.root.scale?.y || 1));
+  const bob = Math.sin(t * 4) * 0.12; B.marker.position.set(base.x, base.y + 0.55 + bob, base.z);
+  B.marker.children[0].rotation.y = t * 1.6;
+}
 function ringUpdate(t) {
   const e = B.b.enemies[B.target]; const a = e && B.bw.actors.get(e.uid);
   const show = !!(a && e.hp > 0 && a.root.visible);
+  markerUpdate(a, show && B.b.enemies.filter((x) => x.hp > 0).length > 1, t);
   // Prefer the VFX library's animated dashed target ring when it exists.
   if (B.bw.vfx.targetRing && !B.bw.vfx.stub) {
     if (!B.tring && a) { try { B.tring = B.bw.vfx.targetRing(a, { color: 0xff5a3a }); } catch (err) { console.warn('targetRing', err); B.tring = null; B.noTring = true; } }
