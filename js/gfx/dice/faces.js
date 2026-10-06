@@ -330,6 +330,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   ctxs.A.fillStyle = '#000'; ctxs.A.fillRect(0, 0, W, Hh);
   ctxs.O.fillStyle = 'rgb(255,60,0)'; ctxs.O.fillRect(0, 0, W, Hh);
 
+  const audit = [];
   const cellCenter = (ci) => [((ci % cols) + 0.5) * S, (Math.floor(ci / cols) + 0.5) * S];
   const nk = NUM_K[poly.sides];
 
@@ -411,14 +412,57 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- numeral / symbol
     const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
     const hasPip = !!spec.pip && !blank && !CN && !heartBig;
-    const numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : poly.sides === 4 ? 0.52 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
-    const ny = CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
+    let numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : poly.sides === 4 ? 0.52 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    let ny = CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
+    let nx = 0;
+    // chord width of the face polygon at height y (px, y down)
+    const chordAt = (y) => { const xs = []; for (let i = 0; i < pts.length; i++) { const A1 = pts[i]; const B1 = pts[(i + 1) % pts.length]; if ((A1[1] <= y && B1[1] > y) || (B1[1] <= y && A1[1] > y)) xs.push(A1[0] + ((y - A1[1]) / (B1[1] - A1[1])) * (B1[0] - A1[0])); } return xs.length > 1 ? Math.max(...xs) - Math.min(...xs) : 0; };
+    const ymin = Math.min(...pts.map((p) => p[1])); const ymax = Math.max(...pts.map((p) => p[1]));
+    // symbols sit in one tidy row (as low on the face as it fits); the numeral then takes the clearest space beside or above it
+    const placeRow = () => {
+      const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
+      const list = (ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text]] : (spec.corners || [typeSym, spec.pip].filter(Boolean))).slice(0, 4);
+      const n = list.length; if (!n) return [];
+      let best = null;
+      for (let szf = poly.sides === 4 ? 0.56 : 0.6; szf >= 0.2 && !best; szf -= 0.02) {
+        const sz = inR * szf; const ow = Math.max(2, sz * 0.13); const half = sz / 2 + ow * 1.2; const pitchX = sz * 1.3;
+        for (let y = ymax - half - inR * 0.1; y >= ymin + half; y -= inR * 0.03) {
+          const w = Math.min(chordAt(y - half * 0.85), chordAt(y + half * 0.85)); const need = (n - 1) * pitchX + sz + ow * 2.4 + sz * 0.1;
+          if (w >= need) { best = { y, sz, ow, pitchX }; break; }
+        }
+      }
+      if (!best) { const sz = inR * 0.2; best = { y: ymax - sz, sz, ow: Math.max(2, sz * 0.13), pitchX: sz * 1.2 }; }
+      return list.map((kind, i) => ({ kind, bx: (i - (n - 1) / 2) * best.pitchX, by: best.y, sz: best.sz, ow: best.ow }));
+    };
+    const placements = CN ? placeRow() : [];
+    // ---- keep the numeral clear of the symbols: search the face for the clearest spot (shrinking a little if it must)
+    let numGap = null;
+    if (placements.length && spec.text != null && !spec.sym) {
+      const txt0 = String(spec.text); const growK = ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16; const ul = txt0 === '6' || txt0 === '9';
+      const numBox = () => { const k = numH / 80; const sxk = txt0.length > 1 ? 0.8 : 1; const w = txt0.length * 50 * k * sxk - (txt0.length - 1) * 2 * k + 16 * k * sxk + numH * growK; const hh = 78 * k + numH * growK + (ul ? numH * 0.2 : 0); return { hw: w / 2, hh: hh / 2 }; };
+      const gapAt = (X, Y) => { const b = numBox(); let g = 1e9; for (const P of placements) { const dx = Math.max(0, Math.abs(X - P.bx) - (b.hw + P.sz / 2 + P.ow)); const dy = Math.max(0, Math.abs(Y - P.by) - (b.hh + P.sz / 2 + P.ow)); g = Math.min(g, dx === 0 && dy === 0 ? -1 : Math.hypot(dx, dy)); } return g; };
+      const fitsAt = (X, Y) => { const b = numBox(); return [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [0, 1]].every(([a2, c2]) => { const x = X + a2 * b.hw * 0.8; const y = Y + c2 * b.hh * 0.88; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
+      const numH0 = numH; const ny0 = ny; let done = false;
+      for (let tries = 0; tries < 40 && !done; tries++) {
+        const want = numH * 0.1; let best = null;
+        for (let Y = ymin; Y <= ymax; Y += inR * 0.03) for (const X of [0, -inR * 0.12, inR * 0.12]) {
+          if (!fitsAt(X, Y)) continue; const g = gapAt(X, Y);
+          const score = Math.min(g, want * 1.6) - Math.hypot(X, Y - ny0) * 0.02;
+          if (!best || score > best.score) best = { X, Y, g, score };
+        }
+        if (best && best.g >= want) { nx = best.X; ny = best.Y; numGap = best.g; done = true; }
+        else if (numH > numH0 * 0.7) numH *= 0.96;
+        else { if (best) { nx = best.X; ny = best.Y; numGap = best.g; } done = true; }
+      }
+    }
+    audit.push({ fi, theme, sides: poly.sides, text: spec.text ?? null, gap: numGap, nx, ny, numH, scale: numH });
+
     if (spec.text != null && !blank && !spec.sym) {
       const txt = String(spec.text);
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
       const grow = numH * (ST.numW || ST.ink ? 0.2 : th.num === 'ink' ? 0.14 : 0.16);
       const grooveA = ST.ink && th.num === 'ink' ? '#fffaf0' : ST.numW && th.num === 'metal' ? 'rgba(10,0,8,0.96)' : th.num === 'ink' ? lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffe9a8', '#d9a83e', '#8a5a14']) : 'rgba(0,0,0,0.9)';
-      layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow }));
+      layer(ctxs, { H: 'rgb(34,34,34)', A: grooveA, O: th.num === 'ink' ? 'rgb(0,190,0)' : 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow }));
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
         const M = WP[spec.tone === 'b' ? 'b' : 'r'].metal; fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, M); metal = 70; rr = 0.3;
@@ -428,9 +472,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       } else if (th.num === 'bone') {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
-      layer(ctxs, { A: 'rgba(0,0,0,0.55)' }, (c) => { c.save(); c.translate(numH * 0.03, numH * 0.04); drawNumeral(c, txt, 0, ny, numH, { grow: numH * 0.02 }); c.restore(); });
-      layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, 0, ny, numH, { grow: -numH * 0.01 }));
-      if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, 0, ny, numH));
+      layer(ctxs, { A: 'rgba(0,0,0,0.55)' }, (c) => { c.save(); c.translate(numH * 0.03, numH * 0.04); drawNumeral(c, txt, nx, ny, numH, { grow: numH * 0.02 }); c.restore(); });
+      layer(ctxs, { H: 'rgb(70,70,70)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: -numH * 0.01 }));
+      if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, nx, ny, numH));
     }
     if (spec.sym === 'TALENT' && !blank) {
       // talent faces: one big symbol, or two side by side, centred (the same shapes and colours as everywhere else)
@@ -471,25 +515,10 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[spec.pip], O: 'rgb(0,60,0)', E: spec.pip === 'gold' ? 'rgb(150,100,10)' : `${PIP_COLOR[spec.pip]}` }, (c) => drawPip(c, spec.pip, 0, py, ps));
     }
     // ---- corner symbols: the face's meaning (attack / defense), its resource, and any tier bonuses
-    if (CN) {
-      const typeSym = theme === 'weapon' ? (spec.tone === 'b' ? 'def' : 'atk') : spec.mark === 'atk' ? 'atk' : spec.mark === 'block' ? 'def' : null;
-      const list = ST.clean && theme === 'heart' ? [HEART_KIND[+spec.text]] : (spec.corners || [typeSym, spec.pip].filter(Boolean));
-      // corners ordered clockwise from the top-most
-      const cs = pts.map((p) => ({ p, a: (Math.atan2(p[0], -p[1]) + Math.PI * 2) % (Math.PI * 2) })).sort((u, v) => u.a - v.a);
-      const topFirst = cs.findIndex((c) => c.a < 0.01 || c.a > Math.PI * 2 - 0.01);
-      const ordered = cs; // clockwise from 12 o'clock; slot 0 is the first corner at or after it
-      const kk = pts.length === 4 && poly.sides !== 10 ? 0.58 : pts.length === 3 ? 0.4 : 0.56;
-      // triangle faces fill the two bottom corners first (bottom-left, bottom-right), then the top
-      const slotOf = (i) => (pts.length === 3 ? [2, 1, 0][i] ?? i : i);
-      list.slice(0, ordered.length).forEach((kind, i) => {
-        const v = ordered[slotOf(i)].p; let bx = v[0] * kk; let by = v[1] * kk;
-        let r = Math.min(edgeGap(pts, bx, by) * 0.95, inR * 0.36); let sz = r * (pts.length === 3 ? 1.5 : 1.8); let ow = Math.max(2, sz * 0.13);
-        // the whole symbol (its bounding box plus outline) must sit inside the face: nudge toward the centre and shrink until it does
-        const inside = () => { const h2 = (sz / 2 + ow * 1.2) * (pts.length === 3 ? 1.25 : 1); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => { const x = bx + a * h2; const y = by + b * h2; return edgeGap(pts, x, y) > 0 && pointIn(pts, x, y); }); };
-        for (let it = 0; it < 40 && !inside(); it++) { bx *= 0.97; by *= 0.97; sz *= 0.97; ow = Math.max(2, sz * 0.13); }
-        layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
-        layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
-      });
+    for (const P of placements) {
+      const { kind, bx, by, sz, ow } = P;
+      layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
+      layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
     }
     // ---- colour badge (heart 5 / 6)
     if (spec.mark && !CN && !heartBig) {
@@ -514,7 +543,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   };
   const uvOf = (fi, x, y) => { const [cx, cy] = cellCenter(fi); return [(cx + (x / Hm) * (S / 2)) / W, 1 - (cy - (y / Hm) * (S / 2)) / Hh]; };
   const [tcx, tcy] = cellCenter(n);
-  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm };
+  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm, audit };
   cache.set(ck, out);
   return out;
 }
