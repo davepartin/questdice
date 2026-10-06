@@ -75,6 +75,9 @@ async function arenaFor(place, { seed = 5, mood = 'calm', look } = {}) {
   const mod = await import('../gfx/arena.js');
   const arena = mod.buildArena(st, { place, kind: 'standard', seed, enemyCount: 2 });
   own.arena = arena; own.place = place; world.mode = 'screens';
+  // the hero is the subject on these screens: no light shaft (it washes the figure out), a calmer glow
+  if (arena.c?.shaftMesh) arena.c.shaftMesh.visible = false; if (arena.c?.lookBase) { arena.c.lookBase.bloom = 0.2; arena.c.lookBase.vignette = 0.3; }
+  st.post.look({ vignette: 0.3, aberration: 0, grain: 0.015, tilt: 0 });
   own.arenaOff = st.onFrame((dt, t) => arena.update?.(dt, t));
   arena.setMoodNow?.(mood); arena.setMood(mood);
   return true;
