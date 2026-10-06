@@ -11,7 +11,7 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(3); for (let i = 0; i < 6 && !(await p.evaluate(() => !!document.querySelector('#b3-lock'))); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4); }
-await pump(2);
+await p.evaluate(() => { const bs = window.QD.B3.battleState; const t = bs.bw?.tray; for (const s of ['N','W','E','S']) t?.setValue?.(s, 4, { animate: false }); }); await pump(1);
 const variants = JSON.parse(process.argv[3]);
 for (const [name, look] of Object.entries(variants)) {
   await p.evaluate((look) => { const st = window.QD.world.stage; st.post.look(look); if (look.__js) eval(look.__js); }, look);
