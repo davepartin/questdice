@@ -304,7 +304,7 @@ export function makeArenaObject(c, marksOverride = {}) {
   const arena = {
     group, rim: lights.rim, key: lights.key, hemi: lights.hemi, lights,
     marks: { ...MARKS, ...marksOverride, monsters: (n = c.enemyCount, kind = c.kind) => MARKS.monsters(n, kind) },
-    place: c.place, kind: c.kind, stats: () => stats(c),
+    place: c.place, kind: c.kind, stats: () => stats(c), c,
     update(dt, t) {
       if (!warmed) { warmed = true; arena.warm(); }
       sim(dt, t);

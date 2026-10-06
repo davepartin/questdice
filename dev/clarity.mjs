@@ -8,7 +8,7 @@ await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFuncti
 const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; const n = Math.max(1, Math.round(s * 15)); for (let i = 0; i < n; i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
 await p.evaluate(() => { const { S, E, showBoard } = window.QD; const h = E.newHero({ name: 'Dave', cls: 'ranger', seed: 5 }); h.level = 6; h.full = true; h.dice = null; S.hero = h; S.company = { members: [h] }; h.campaign.step = 4; showBoard(); });
 await pump(1);
-await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; window.QD.startQuest(q); });
+await p.evaluate((process_place) => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; if (process_place) q.place = process_place; window.QD.startQuest(q); }, process.env.PLACE || null);
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(3); for (let i = 0; i < 6 && !(await p.evaluate(() => !!document.querySelector('#b3-lock'))); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4); }
 await p.evaluate(() => { const bs = window.QD.B3.battleState; const t = bs.bw?.tray; for (const s of ['N','W','E','S']) t?.setValue?.(s, 4, { animate: false }); }); await pump(1);

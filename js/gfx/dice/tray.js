@@ -455,7 +455,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
       s.hopV += (-s.hop * 260 - s.hopV * 14) * dt; s.hop += s.hopV * dt; if (s.hop < 0) { s.hop = 0; s.hopV = Math.max(0, s.hopV); }
       s.flash = Math.max(0, s.flash - dt * 2.6); s.glowBoost = Math.max(0, s.glowBoost - dt * 1.3);
-      const dimT = s.bound ? 0.85 : s.dimmed ? 0.6 : tray.locked ? 0.22 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
+      const dimT = s.bound ? 0.6 : s.dimmed ? 0.5 : tray.locked ? 0.08 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
       // ---- pose
       let lifted = true;
       if (s.anim?.kind === 'roll') {

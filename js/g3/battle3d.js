@@ -67,6 +67,9 @@ export async function start(ctx) {
   world.director.set('battle', { lambda: 1.8 });
   await wait(1.1);
   B.busy = false;
+  // the dice are the game: keep the grade clean over every arena (light bloom and vignette, no tilt blur, neutral tints, a bright exposure)
+  const c0 = bw.arena.c || bw.arena; if (c0.lookBase) { c0.lookBase.bloom = 0.12; c0.lookBase.exposure = Math.max(1.12, c0.lookBase.exposure ?? 1); }
+  world.stage.post.look({ bloom: 0.12, vignette: 0.26, grain: 0.015, aberration: 0, tilt: 0, sat: 1.12, contrast: 1.12, shadowTint: 0xffffff, highTint: 0xffffff, exposure: Math.max(1.12, c0.lookBase?.exposure ?? 1.12) });
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
   music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
