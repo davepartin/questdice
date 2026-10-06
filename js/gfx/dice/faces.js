@@ -351,7 +351,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (ST.clean && theme === 'heart') { core = '#2a2e3c'; mid = '#222634'; edge = '#12141c'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#2a7f87'; mid = '#1d6068'; edge = '#0e3a40'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (ST.clean && theme === 'heart') { core = '#15171f'; mid = '#0d0f15'; edge = '#05060a'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#2a7f87'; mid = '#1d6068'; edge = '#0e3a40'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
@@ -361,7 +361,14 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (ST.clean) { g.addColorStop(0, core); g.addColorStop(0.8, mid); g.addColorStop(1, edge); } else { g.addColorStop(0, core); g.addColorStop(0.55, mid); g.addColorStop(1, edge); }
     A.fillStyle = g; A.beginPath(); pts.forEach((p, i) => (i ? A.lineTo(p[0], p[1]) : A.moveTo(p[0], p[1]))); A.closePath(); A.fill();
     A.save(); A.beginPath(); pts.forEach((p, i) => (i ? A.lineTo(p[0], p[1]) : A.moveTo(p[0], p[1]))); A.closePath(); A.clip();
-    if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
+    if (ST.clean && theme === 'heart') {
+      // the heart die is black marble: deep stone with fine white and gold veins
+      const vein = (col, w, n, wob) => { A.strokeStyle = col; A.lineWidth = w; A.lineCap = 'round';
+        for (let i = 0; i < n; i++) { let x = (rnd() * 2 - 1) * Rpx; let y = (rnd() * 2 - 1) * Rpx; let a = rnd() * Math.PI * 2; A.beginPath(); A.moveTo(x, y);
+          for (let k = 0; k < 9; k++) { a += (rnd() - 0.5) * wob; x += Math.cos(a) * Rpx * 0.17; y += Math.sin(a) * Rpx * 0.17; A.lineTo(x, y); } A.stroke(); } };
+      A.globalAlpha = 0.5; vein('#8a90a6', inR * 0.07, 12, 1.6); A.globalAlpha = 0.95; vein('#eef0fb', inR * 0.024, 16, 1.2); A.globalAlpha = 0.8; vein('#e0b858', inR * 0.02, 8, 1.1); A.globalAlpha = 1;
+      const gl = A.createRadialGradient(-inR * 0.3, -inR * 0.4, 0, 0, 0, inR * 1.3); gl.addColorStop(0, 'rgba(255,255,255,0.10)'); gl.addColorStop(1, 'rgba(0,0,0,0.22)'); A.fillStyle = gl; A.fillRect(-S / 2, -S / 2, S, S);
+    } else if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
       const light = spec.tone === 'b' ? ['#7cc4ff', '#2f8cf5'] : ['#ff7a5a', '#ff3a3a'];
       swirls(A, rnd, Rpx, dark, 14, 0.7 * sw, inR * 0.5);
