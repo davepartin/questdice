@@ -122,7 +122,7 @@ function buildHud() {
   hud.hero = buildHero();
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
-  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('i', {}), h('b', {}, 'YOUR DICE'), h('i', {}));
+  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('i', {}));
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });

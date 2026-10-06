@@ -578,3 +578,10 @@ body.in-battle .chrome { z-index: 40; }
   .b3-bar { position: relative; }
   .b3-bar > .b3-straight { position: absolute; left: 0; right: 0; bottom: calc(100% + .35rem); flex: none; z-index: 6; background-color: rgba(18, 10, 30, .94); }
 }
+
+/* many monsters: the tile stack runs down the right edge, even past the line and alongside the dice */
+@media (max-aspect-ratio: 5/4) {
+  .b3-divider { z-index: 3; } .b3-plates { z-index: 6; }
+  .b3-plates { bottom: calc(var(--dock-top, 12rem) + .4rem) !important; flex-wrap: wrap-reverse; align-content: flex-start; flex-direction: column !important; max-height: none; }
+  .b3-plates:not(.many) { flex-wrap: nowrap; }
+}
