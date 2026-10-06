@@ -396,7 +396,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       if (!ST.clean) { A.save(); const sg = A.createRadialGradient(0, 0, 0, 0, 0, inR * 0.8); sg.addColorStop(0, 'rgba(0,0,0,0.5)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); A.fillStyle = sg; A.fillRect(-S / 2, -S / 2, S, S); A.restore(); }
       // faint void sigil: a slashed ring (a miss) engraved shallow
       const ring = (c) => { c.lineWidth = inR * 0.13; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, inR * 0.46, 0, Math.PI * 2); c.moveTo(-inR * 0.33, inR * 0.33); c.lineTo(inR * 0.33, -inR * 0.33); c.stroke(); };
-      layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring);
+      if (theme === 'weapon' && (spec.tone === 'r' || spec.tone === 'b')) {
+        // a blank weapon face shows what the weapon does, big: a red starburst (attack) or a blue shield (defense)
+        const kind = spec.tone === 'b' ? 'def' : 'atk'; const big = inR * 1.25;
+        layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
+      } else layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring);
     }
 
     // ---- watermark (weapon identity), shallow
