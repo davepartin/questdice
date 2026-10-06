@@ -99,6 +99,18 @@ const dpaths = new Map();
 function digitPath(d) { if (!dpaths.has(d)) dpaths.set(d, new Path2D(DIGITS[d === 9 ? 6 : d])); return dpaths.get(d); }
 // Stroke the numeral `text` centred at (x, y) with total height `h` px. Caller sets stroke/fill style.
 // `grow` adds extra stroke width (px) for outlines.
+// The 4 is a plain bold typeface glyph (a normal 4), fitted to the 50 x 80 digit box; `outline` is the extra edge in box units.
+const FOUR_FONT = '"Archivo Black", "Arial Black", "Helvetica Neue", Arial, sans-serif';
+function fourGlyph(ctx, outline) {
+  ctx.save();
+  ctx.font = `900 108px ${FOUR_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const w = ctx.measureText('4').width; const sx = Math.min(1, 50 / Math.max(1, w));
+  ctx.translate(25, 79); ctx.scale(sx, 1); ctx.lineJoin = 'round';
+  const lw = Math.max(0, outline + 7); // a little extra weight so it matches the chunky digits
+  if (lw > 0.5) { ctx.lineWidth = lw; ctx.strokeText('4', 0, 0); }
+  ctx.fillText('4', 0, 0);
+  ctx.restore();
+}
 export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under = true } = {}) {
   const k = h / 80; const n = text.length;
   const wDigit = 50 * k * (n > 1 ? 0.8 : 1);
@@ -113,7 +125,7 @@ export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under =
     ctx.translate(cx, y); ctx.scale(k * (n > 1 ? 0.8 : 1), k); ctx.translate(-25, -40);
     if (d === 9) { ctx.translate(25, 40); ctx.rotate(Math.PI); ctx.translate(-25, -40); }
     ctx.lineWidth = weight + grow / (k * (n > 1 ? 0.8 : 1));
-    ctx.stroke(digitPath(d));
+    if (d === 4) fourGlyph(ctx, grow / (k * (n > 1 ? 0.8 : 1))); else ctx.stroke(digitPath(d));
     ctx.restore();
   }
   if (under && (text === '6' || text === '9')) {
