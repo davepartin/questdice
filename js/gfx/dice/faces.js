@@ -491,23 +491,23 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     if (spec.sym === 'TALENT' && !blank) {
       // talent faces: one big symbol, or two side by side, centred (the same shapes and colours as everywhere else)
       const list = (spec.syms || []).slice(0, 2); const two = list.length === 2;
-      const sz = inR * (two ? 1.0 : 1.5); const ow = sz * 0.1;
+      const sz = inR * (two ? 0.7 : 1.0); const ow = sz * 0.1; // kept well inside the face so nothing touches the edge
       list.forEach((kind, i) => {
-        const bx = two ? (i ? 1 : -1) * inR * 0.5 : 0;
+        const bx = two ? (i ? 1 : -1) * inR * 0.4 : 0;
         layer(ctxs, { H: 'rgb(34,34,34)', A: kind === 'atk' || kind === 'def' ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind === 'block' ? 'def' : kind, bx, inR * 0.02, sz, ow * 2));
         layer(ctxs, { H: 'rgb(78,78,78)', A: PIP_COLOR[kind === 'block' ? 'def' : kind], O: 'rgb(0,40,0)', E: PIP_COLOR[kind === 'block' ? 'def' : kind] }, (c) => drawSym(c, kind === 'block' ? 'def' : kind, bx, inR * 0.02, sz));
       });
     } else if (spec.sym && !blank && ST.corners) {
       // special dice: heal plus, magic triangle, or a bold "2x" -- the same shapes and colours as everywhere else
       if (spec.sym === 'SURGE') {
-        const th2 = inR * 1.2; const ny2 = inR * 0.04; const xx = -inR * 0.26; const kx = inR * 0.45; const ky = inR * 0.24;
+        const th2 = inR * 0.9; const ny2 = inR * 0.04; const xx = -inR * 0.2; const kx = inR * 0.36; const ky = inR * 0.18;
         const nyx = ny2 + th2 * 0.3875 - ky - th2 * 0.07; // x sits low: its bottom lines up with the foot of the 2
         const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, nyx - ky); c.lineTo(kx + ky, nyx + ky); c.moveTo(kx + ky, nyx - ky); c.lineTo(kx - ky, nyx + ky); c.stroke(); };
         const wgt = th2 * 0.2;
         layer(ctxs, { H: 'rgb(34,34,34)', A: '#ffffff', O: 'rgb(0,150,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: th2 * 0.2 }); times(c, wgt + th2 * 0.16); });
         layer(ctxs, { H: 'rgb(78,78,78)', A: '#10131c', O: 'rgb(0,60,0)' }, (c) => { drawNumeral(c, '2', xx, ny2, th2, { grow: -th2 * 0.01 }); times(c, wgt); });
       } else {
-        const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.55; const ow = sz * 0.1;
+        const kind = spec.sym === 'MEND' ? 'heal' : 'magic'; const sz = inR * 1.05; const ow = sz * 0.1;
         layer(ctxs, { H: 'rgb(34,34,34)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,150,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, sz, ow * 2));
         layer(ctxs, { H: 'rgb(78,78,78)', A: PIP_COLOR[kind], O: 'rgb(0,40,0)', E: PIP_COLOR[kind] }, (c) => drawSym(c, kind, 0, inR * 0.02, sz));
       }
