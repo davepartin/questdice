@@ -211,7 +211,8 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   function paintSlotIcon(s, hero) {
     const name = s.role === 'weapon' ? weaponIcon(hero.loadout[s.slot]?.id) : SLOT_ICON[s.role];
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
-    const flip = s.slot === 'E' || s.slot === 'NE' || s.slot === 'SE';
+    const right = s.slot === 'E' || s.slot === 'NE' || s.slot === 'SE';
+    const flip = name === 'bow' ? !right : right; // the bow's arrow points out to its own side
     g.translate(128, 128);
     // a medallion that sits inside the socket circle (radius ~72px at this scale): dark inset disc, thin tan ring, icon well inside it
     g.fillStyle = 'rgba(28,16,8,0.55)'; g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.fill();
