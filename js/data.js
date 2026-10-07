@@ -131,7 +131,7 @@ export const CLASS_TALENT = {
 export const DIFFICULTY = {
   easy: { name: 'Easy', text: 'Gentler monsters. Learn the dice at your own pace.', hp: 0.8, flat: -1, gold: 1 },
   normal: { name: 'Normal', text: 'The intended game.', hp: 1, flat: 0, gold: 1 },
-  hard: { name: 'Hard', text: 'Tougher, harder-hitting monsters. Pays 15% more gold.', hp: 1.3, flat: 2, gold: 1.15 },
+  hard: { name: 'Hard', text: 'Tougher, harder-hitting monsters. Pays 15% more gold.', hp: 1.3, flat: 3, gold: 1.15 },
 };
 // Display helpers for the old flat UI and captions.
 export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙' };

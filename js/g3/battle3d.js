@@ -487,20 +487,21 @@ function clearDock() {
 const UTIL = [
   { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal ${D.HEAL_AMOUNT} health right now. As often as you can pay.` },
-  { id: 'u:bigheal', name: 'Big heal', kind: 'util', cost: E.BIG_HEAL.cost, fx: { heal: E.BIG_HEAL.hp }, text: `Save up ${E.BIG_HEAL.cost} magic and heal ${E.BIG_HEAL.hp} health, once per battle.` },
+  { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: `Drink a potion and heal ${E.POTION_HP} health. Free. You carry ${E.POTIONS} each battle.` },
 ];
 const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
 function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
-  if (!shape) why = 'Roll your dice first. You use powers while you shape the roll.';
+  if (!shape && u.id !== 'u:bigheal') why = 'Roll your dice first. You use powers while you shape the roll.'; // a potion can be drunk any time before you lock in
+  else if (!shape && b.phase !== 'reset') why = 'Not now.';
   else if (u.id === 'u:heart') why = b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
   else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
-  else if (b.used.bigheal) why = 'Already used this battle.'; else if (b.hp >= b.maxHp) why = 'You are at full health.'; else if (b.magic < cost) why = `Needs ${cost} magic. You have ${b.magic}.`;
+  else if (E.potionsLeft(b) <= 0) why = 'No potions left this battle.'; else if (b.hp >= b.maxHp) why = 'You are at full health.';
   return { cost, why };
 }
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
-  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (b.used.bigheal ? 'USED' : 'ONCE') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (u.id === 'u:heart') { const art = el.querySelector('.bc-art'); if (art) { art.replaceChildren(HK.icon('heart')); art.classList.add('heart-art'); } } if (us.why) el.classList.add('is-off'); return el; });
+  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (E.potionsLeft(b) ? `${E.potionsLeft(b)} LEFT` : 'USED') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (u.id === 'u:heart') { const art = el.querySelector('.bc-art'); if (art) { art.replaceChildren(HK.icon('heart')); art.classList.add('heart-art'); } } if (us.why) el.classList.add('is-off'); return el; });
   return [...E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
@@ -561,17 +562,17 @@ function showPowerDetail(id) {
 function showUtilDetail(id) {
   const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
-  const uses = id === 'u:bigheal' ? 'Once per battle.' : 'Any time you are shaping a roll, as often as you can pay.';
-  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.BIG_HEAL.hp} health for ${cost} magic, once per battle. A better rate than the small heal, but you have to save up for it.`;
+  const uses = id === 'u:bigheal' ? `${E.POTIONS} a battle. You have ${E.potionsLeft(b)} left.` : 'Any time you are shaping a roll, as often as you can pay.';
+  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.POTION_HP} health right away and costs no magic. Drink it before you roll or while you shape your dice. Your potions refill for the next battle.`;
   const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
     h('p', { class: 'pd-text' }, u.text),
-    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, body), h('dt', {}, 'Cost'), h('dd', {}, `${cost} magic`)),
+    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, body), h('dt', {}, 'Cost'), h('dd', {}, cost ? `${cost} magic` : 'Free')),
     why ? h('p', { class: 'pd-why' }, why) : null,
     h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'),
       ...(id === 'u:heart' ? [nudgeBtn(-1, 'Turn down'), nudgeBtn(1, 'Turn up')]
-        : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, `Use · ${cost} magic`)])));
+        : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, cost ? `Use · ${cost} magic` : 'Drink')])));
   B.hud.info.classList.add('open'); sfx.select();
 }
 function doBigHeal() {

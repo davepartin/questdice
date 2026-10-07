@@ -598,3 +598,4 @@ body.in-battle .chrome { z-index: 40; }
   .b3-more.on { display: block; }
 }
 @keyframes moreBob { 50% { transform: translateY(3px); } }
+.bcard .bc-cost.free b { font-size: .62rem; letter-spacing: .06em; }

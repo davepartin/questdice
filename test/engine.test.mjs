@@ -438,3 +438,14 @@ test('every symbol pays its count: faces 1-4 of any die size pay 2 (heal, pierce
   const big = evaluate(h, board({ N: 5, W: 6, E: 7, S: 8, C: 6, NW: 1, NE: 1 }));
   assert.equal(big.heal, 3); assert.equal(big.pierce, 3); assert.equal(big.magic, 3); assert.equal(big.gold, 3);
 });
+
+test('two free healing potions a battle, 10 health each, never above max', async () => {
+  const { drinkPotion, potionsLeft, POTIONS } = await import('../js/engine.js');
+  const h = newHero({ name: 'P', cls: 'knight', seed: 2 }); const b = newBattle(h, questsFor(h)[0], makeRng(1), 1);
+  assert.equal(potionsLeft(b), POTIONS);
+  assert.equal(drinkPotion(b), false, 'not at full health');
+  b.hp = b.maxHp - 15; const m = b.magic;
+  assert.equal(drinkPotion(b), true); assert.equal(b.hp, b.maxHp - 5); assert.equal(b.magic, m, 'potions cost no magic');
+  assert.equal(drinkPotion(b), true); assert.equal(b.hp, b.maxHp);
+  b.hp = 1; assert.equal(drinkPotion(b), false, 'only two'); assert.equal(potionsLeft(b), 0);
+});

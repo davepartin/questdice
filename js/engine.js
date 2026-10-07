@@ -343,7 +343,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: POTIONS,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   beginReset(b);
@@ -398,12 +398,17 @@ export function healSpend(b) {
   if (b.magic < cost || b.hp >= b.maxHp) return false;
   b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + HEAL_AMOUNT); b.stats.healed += b.hp - before; return true;
 }
-// A bigger heal for a bigger spend: once per battle.
-export const BIG_HEAL = { cost: 6, hp: 10 };
-export function healBig(b) {
-  if (b.used.bigheal || b.magic < BIG_HEAL.cost || b.hp >= b.maxHp) return false;
-  b.magic -= BIG_HEAL.cost; b.used.bigheal = true; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + BIG_HEAL.hp); b.stats.healed += b.hp - before; return true;
+// Healing potions: every hero carries POTIONS a battle. Free to drink, heals POTION_HP. In a party a potion can be thrown
+// to a friend (`to` = that fighter); solo it is always you. Any time before you lock in.
+export const POTIONS = 2; export const POTION_HP = 10;
+export const potionsLeft = (b) => (b.potions ?? POTIONS);
+export function drinkPotion(b, to = b) {
+  if (potionsLeft(b) <= 0 || !to || to.hp <= 0 || to.hp >= to.maxHp) return false;
+  b.potions = potionsLeft(b) - 1; const before = to.hp; to.hp = Math.min(to.maxHp, to.hp + POTION_HP);
+  (to.stats || b.stats).healed += to.hp - before; return true;
 }
+export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers)
+export const healBig = (b) => drinkPotion(b);
 // ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
 const scaleNum = (v, lvl) => Math.round(v * (1 + 0.25 * lvl));
@@ -780,7 +785,7 @@ export function questDanger(hero, quest0) {
   const perRound = Math.max(0, hit - Math.min(blockable, P.block * 1.2)) - P.heal * 0.5;
   const taken = Math.max(0, perRound) * rounds * 0.3; // monsters fall as the fight goes on, and rerolls, block powers and mending soak most of the rest
   const score = taken / P.hp;
-  const label = score < 0.25 ? 'Easy' : score < 0.35 ? 'Fair' : score < 0.45 ? 'Hard' : 'Deadly'; // calibrated on 3-act bot runs: ~96%, ~87%, ~72%, ~50% wins
+  const label = score < 0.35 ? 'Easy' : score < 0.5 ? 'Fair' : score < 0.7 ? 'Hard' : 'Deadly'; // calibrated on 3-act bot runs with potions: ~96%, ~85%, ~73%, ~45% wins
   return { score, label, rounds: Math.max(1, Math.round(rounds)), taken: Math.round(taken), foeHp: hp, deal: Math.round(deal) };
 }
 
@@ -793,7 +798,7 @@ export function questsFor(hero) {
   const s = c.step;
   const ai = Math.min(ACT_HP.length - 1, c.act - 1); // act 3+ reuses the act data with the act-3 growth until it has its own monsters
   const base = (1 + STEP_HP * (s - 1)) * ACT_HP[ai] * (1 + 0.6 * Math.max(0, cycle - (c.act > ACT_HP.length ? 1 : 0)));
-  const flat = 2 + Math.floor((s - 1) / 3) + ACT_FLAT[ai];
+  const flat = 3 + Math.floor((s - 1) / 3) + ACT_FLAT[ai]; // (3, not 2: every hero now carries two free potions)
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     const place = kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, act.places);
@@ -873,12 +878,12 @@ function makeFighter(hero) {
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(),
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: POTIONS,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
   };
 }
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;

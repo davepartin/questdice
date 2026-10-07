@@ -67,6 +67,14 @@ That gives the choice you described. A hero who has fallen behind takes the stea
 ahead takes the perilous road, levels faster and finds better weapons, and can lose. Losing is not the end: you retreat,
 keep your level and gear, and try again.
 
+## Healing potions
+
+Every hero carries **2 healing potions** each battle (this replaced the once-a-battle Big Heal). A potion heals 10, costs
+no magic, and can be drunk any time before you lock in, even before you roll. In party play a potion can be thrown to a
+friend (see docs/TEAMPLAY.md). To keep the challenge where it was, every monster hit got +1 (and Hard +1 more). With
+potions, the sensible player clears all three acts 9 times in 10; the Act I boss is won about 92% of the time on the
+first try, Act II's about 78%, Act III's about 83%; Hard difficulty clears Act I about 90%.
+
 ## Dice math
 
 A hand (Strength) die averages 2.5 on a d4, 3.5 on a d6, 4.5 on a d8 and 5.5 on a d10. Head, hands and feet pay the
@@ -125,10 +133,10 @@ How well the danger read predicts a real fight (all runs together):
 
 | Read | Danger score | Real wins |
 |---|---|---|
-| Easy | under 0.25 | about 96% |
-| Fair | 0.25 to 0.35 | about 87% |
-| Hard | 0.35 to 0.45 | about 72% |
-| Deadly | 0.45 and up | about 50% or less |
+| Easy | under 0.35 | about 96% |
+| Fair | 0.35 to 0.5 | about 85% |
+| Hard | 0.5 to 0.7 | about 73% |
+| Deadly | 0.7 and up | about 45% or less |
 
 Full step-by-step tables are in `docs/balance/run_*.txt`.
 

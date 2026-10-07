@@ -258,7 +258,7 @@ function questCard(q, idx) {
   const xp = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0);
   const gold = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].gold * q.rewardMult), 0);
   // danger is read from YOUR dice against these monsters: how much of your health the fight should cost
-  const dz = E.questDanger(X.members()[0], q); const danger = { Easy: dz.score < 0.12 ? 1 : 2, Fair: 3, Hard: 4, Deadly: 5 }[dz.label];
+  const dz = E.questDanger(X.members()[0], q); const danger = { Easy: dz.score < 0.18 ? 1 : 2, Fair: 3, Hard: 4, Deadly: 5 }[dz.label];
   const reward = Math.min(5, Math.max(1, Math.round((xp + gold) / 16)));
   const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : q.perilous ? 'Perilous' : 'Steady';
   const place = q.place || q.name;

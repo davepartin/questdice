@@ -2,7 +2,7 @@
 import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
-  rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie,
+  rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP,
   heroPower, equip, sellItem, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
@@ -48,7 +48,8 @@ export function botRound(b, rng) {
     if (!best || best.gain < 0.6) break;
     reroll(b, best.sub);
   }
-  // heal when hurt
+  // potions first (free), then magic heals, when hurt
+  while (b.hp <= b.maxHp - POTION_HP && b.hp < b.maxHp * 0.5 && drinkPotion(b)) { /* gulp */ }
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;

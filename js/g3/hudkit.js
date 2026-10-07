@@ -220,7 +220,7 @@ export function abilityCard(k, { spent, reset, afford, rechargeCost, onclick, di
   const el = h('button', { class: `bcard tone-${tone} st-${state} ${fresh ? 'just' : ''}`, type: 'button', disabled, onclick, 'aria-label': `${k.name}. ${k.text} ${spent ? (reset ? `Recharge for ${rechargeCost} magic.` : 'Already used.') : `Costs ${k.cost} magic.`}`, title: k.text },
     h('span', { class: 'bc-art' }, icon(art), h('i', { class: 'bc-glint' })),
     h('span', { class: 'bc-body' }, h('b', { class: 'bc-name' }, k.name), h('span', { class: 'bc-chips' }, chips), h('small', { class: 'bc-text' }, k.text)),
-    h('span', { class: 'bc-cost' }, spent && reset ? icon('reroll') : icon('magic'), h('b', {}, String(spent && reset ? rechargeCost : (cost ?? k.cost)))),
+    (cost ?? k.cost) === 0 && !(spent && reset) ? h('span', { class: 'bc-cost free' }, h('b', {}, 'FREE')) : h('span', { class: 'bc-cost' }, spent && reset ? icon('reroll') : icon('magic'), h('b', {}, String(spent && reset ? rechargeCost : (cost ?? k.cost)))),
     spent && !flag ? h('span', { class: 'bc-flag' }, reset ? 'RECHARGE' : 'SPENT') : flag ? h('span', { class: `bc-flag ${locked ? 'lock' : 'tag'}` }, flag) : null,
     level ? h('span', { class: 'bc-lvl', 'aria-label': `Level ${level}` }, '★'.repeat(level)) : null,
     stepper || null);

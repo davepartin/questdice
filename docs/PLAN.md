@@ -275,3 +275,7 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Road cards show Easy/Fair/Hard/Deadly from `questDanger` (calibrated: ~96/87/72/50% wins) and ~rounds.
 - Tools: tools/progress.mjs + progress-all.sh (campaign report by road policy), tools/dicemath.mjs. Runs saved in docs/balance/.
 - Open: Act III bestiary + art; Act II theme; party scaling per the table in BALANCE.md (hits x (n+1)/2, health ~0.87n).
+
+### Healing potions (solo now, party-ready)
+- `E.POTIONS = 2`, `E.POTION_HP = 10`, `drinkPotion(b, to = b)`, `potionsLeft(b)`; replaces Big Heal (old `healBig`/`BIG_HEAL` kept as aliases). Free; usable on the reset screen or while shaping. Party fighters carry `potions` (mirrored); `to` lets a hero throw one to a friend once party UI exists.
+- Compensation: base monster flat 2 -> 3 per hit; Hard flat +3. Danger labels re-banded (Easy <0.35, Fair <0.5, Hard <0.7). Lich stays (Dave likes it).
