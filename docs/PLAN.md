@@ -257,3 +257,6 @@ procedural Three.js), what is good, the realistic ceiling, and a verdict. Write 
 - Across = +10 attack: top row (both weapons' +N equal the head; any weapons, both spots in play, +0 never matches) and middle row (hand, heart, hand). Down the middle (head, heart, feet) = +10 block.
 - `evaluate` returns `ev.triples = [{ slots, kind, name }]`; `offense3`/`defense3` remain as "any attack / block triple". UI (3D tray links, banner, notes, flat UI) reads `ev.triples`.
 - Balance after this and the slow heroes' single hand: Normal 100%, Hard ~97% (was ~87%). May want toughening.
+
+### Deploy note (Oct 7)
+GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck at v20261006bz) although main kept getting pushes. If the live site looks stale, check repo Settings → Pages (source = deploy from branch main) and the Actions tab.
