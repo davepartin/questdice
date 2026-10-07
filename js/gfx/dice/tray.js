@@ -15,7 +15,8 @@ import { mulberry32, hashStr } from '../noise.js';
 import * as D from '../../data.js';
 import { dieSpecs, createDie, restQuat } from './dice.js';
 import { leanQuat, d4Lift } from './poly.js';
-import { diceStyle } from './faces.js';
+import { diceStyle, drawIcon } from './faces.js';
+import { weaponIcon } from './art.js';
 import { planRoll, samplePlan, ROLL } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
 import { createFX, PULSE_COLORS } from './fx.js';
@@ -190,17 +191,35 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     s.halo = new THREE.Mesh(flat(new THREE.PlaneGeometry(2.3, 2.3)), new THREE.MeshBasicMaterial({ map: glowTex, color: 0xffd98a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, opacity: 0 }));
     s.halo.position.set(s.home.x, 0.008, s.home.z); s.halo.visible = false; s.halo.renderOrder = 8; object.add(s.halo);
   }
-  // an empty socket for a die the hero has not bought yet: a dashed ring with a plus, where it will go
+  // an empty socket (no weapon, talent or hand there): a light diagonal line and the word EMPTY, in the same tan as the other socket marks
   const vacTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); g.lineCap = 'round';
-    g.fillStyle = 'rgba(190,176,150,0.05)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#b4a888'; g.lineWidth = 7; g.setLineDash([22, 22]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
-    g.lineWidth = 12; g.beginPath(); g.moveTo(-32, 0); g.lineTo(32, 0); g.moveTo(0, -32); g.lineTo(0, 32); g.stroke();
+    g.fillStyle = 'rgba(120,90,55,0.10)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#a98e62'; g.lineWidth = 6; g.setLineDash([20, 18]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+    g.lineWidth = 9; g.beginPath(); g.moveTo(-62, 62); g.lineTo(62, -62); g.stroke();
+    g.font = '800 30px "Trebuchet MS", "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#c9ae7c'; g.strokeStyle = 'rgba(40,24,10,0.85)'; g.lineWidth = 6; g.lineJoin = 'round'; g.strokeText('EMPTY', 0, 80); g.fillText('EMPTY', 0, 80);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
   for (const slot of SLOT_ORDER) {
     const s = S[slot];
     s.vac = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ map: vacTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.32 }));
     s.vac.position.set(s.home.x, 0.03, s.home.z); s.vac.visible = false; s.vac.renderOrder = 7; object.add(s.vac);
+    // what goes in this socket, shown before the dice are thrown (tan and brown, like the table)
+    s.ico = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, opacity: 0.95 }));
+    s.ico.position.set(s.home.x, 0.032, s.home.z); s.ico.visible = false; s.ico.renderOrder = 7; object.add(s.ico);
   }
+  const SLOT_ICON = { head: 'helmet', feet: 'boots', hand: 'gauntlet', heart: 'heart', special: 'surge' };
+  function paintSlotIcon(s, hero) {
+    const name = s.role === 'weapon' ? weaponIcon(hero.loadout[s.slot]?.id) : SLOT_ICON[s.role];
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+    const flip = s.slot === 'E' || s.slot === 'NE' || s.slot === 'SE';
+    g.translate(128, 128); if (flip) g.scale(-1, 1);
+    const sz = s.role === 'hand' ? 150 : s.role === 'heart' ? 138 : 132;
+    g.fillStyle = 'rgba(60,36,16,0.55)'; drawIcon(g, name, 3, 4, sz); // carved shadow
+    const gr = g.createLinearGradient(-sz / 2, -sz / 2, sz / 2, sz / 2); gr.addColorStop(0, '#e2c791'); gr.addColorStop(0.55, '#c49a5e'); gr.addColorStop(1, '#8c6034');
+    g.fillStyle = gr; g.strokeStyle = '#4a2c12'; drawIcon(g, name, 0, 0, sz, { stroke: 5 });
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    s.ico.material.map?.dispose?.(); s.ico.material.map = t; s.ico.material.needsUpdate = true;
+  }
+  tray.setWaiting = function setWaiting(on = true) { for (const slot of SLOT_ORDER) S[slot].waiting = !!on; return tray; }; // dice not thrown yet: icons show, dice stay off the table
   const hexTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); const hexP = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
     hexP(118); g.fillStyle = 'rgba(14,4,26,0.78)'; g.fill(); g.lineWidth = 7; g.strokeStyle = '#a05cff'; g.shadowColor = '#b070ff'; g.shadowBlur = 16; hexP(112); g.stroke(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(190,140,255,0.6)'; hexP(86); g.stroke(); hexP(60); g.stroke();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
@@ -255,6 +274,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const specs = dieSpecs(hero);
     for (const slot of SLOT_ORDER) { const s = S[slot]; if (!s.die || s.spec.key !== specs[slot].key) buildDie(s, specs[slot]); }
     applyTheme(hero);
+    for (const slot of SLOT_ORDER) paintSlotIcon(S[slot], hero);
     return tray;
   };
   tray.twoHanded = () => twoHanded;
@@ -292,6 +312,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       if (!used.has(slot)) { statics.push({ x: s.pos.x, y: s.pos.y, z: s.pos.z, r: rb }); continue; }
       const v = Math.min(Math.max(1, (board[slot]?.v ?? s.value) | 0), s.die.sides);
       s.anim = null;
+      if (s.waiting) { s.waiting = false; s.pos.set(s.home.x, 2.8, s.home.z + 2.4); } // first throw: the die comes in from above the table
       items.push({ slot, die: s.die, start: { pos: s.pos.clone(), quat: s.quat.clone() }, sock: s.home, label: v, away: a });
     }
     const plans = planRoll(items, statics, { seed: sd ?? ((seed * 2654435761 + tray.time * 1000) >>> 0), mode });
@@ -451,7 +472,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     let anyRolling = false;
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; const die = s.die; if (!die) continue;
-      die.mesh.visible = !s.vacant; if (s.vacant) s.vac.material.opacity = 0.3;
+      die.mesh.visible = !s.vacant && !s.waiting; s.ico.visible = !!s.waiting && !s.vacant; if (s.vacant) s.vac.material.opacity = 0.55;
       // ---- springs: lift (selected/hover), hop (pulses)
       const target = (s.selected ? 0.12 : s.hover ? 0.04 : 0);
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
@@ -509,7 +530,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     for (const slot of SLOT_ORDER) {
       const s = S[slot];
       let g = 0.34 + 0.12 * Math.sin(time * 1.2 + s.i * 0.9);
-      g *= s.bound ? 0.25 : s.vacant ? 0.18 : s.dimmed ? 0.55 : 1;
+      g *= s.bound ? 0.25 : s.vacant || s.waiting ? 0.18 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
       glowU.uG.value[s.i] = g;
@@ -517,7 +538,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     // ---- blob shadows
     SLOT_ORDER.forEach((slot, i) => {
       const s = S[slot];
-      if (!s.die || s.vacant) { _m.makeScale(0, 0, 0); blobs.setMatrixAt(i, _m); return; }
+      if (!s.die || s.vacant || s.waiting) { _m.makeScale(0, 0, 0); blobs.setMatrixAt(i, _m); return; }
       const mp = s.die.mesh.position; const h = Math.max(0, mp.y - restY(s));
       const inDish = Math.hypot(mp.x - s.home.x, mp.z - s.home.z) < 0.5 && h < 0.3;
       const sc = 1.35 + h * 0.5;

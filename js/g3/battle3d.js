@@ -434,6 +434,7 @@ function idleTray() {
   const dummy = {}; for (const s of D.SLOTS) dummy[s] = { v: 1 };
   tray.show(b.board || dummy);
   for (const s of D.SLOTS) { tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s)); tray.setVacant?.(s, !E.isActive(B.hero, s)); }
+  tray.setWaiting?.(!b.board); // before the throw the circles show what goes in them; the dice fly in on the roll
   tray.setSelected?.(new Set());
 }
 
