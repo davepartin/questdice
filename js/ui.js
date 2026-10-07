@@ -360,7 +360,7 @@ function startQuest(q) {
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
-  if (world.available && !isParty() && !S.net) { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
+  if (world.available && !S.net) { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
   renderReset();
 }
 // What the 3D battle needs from this module.
@@ -683,12 +683,13 @@ function showPartyVictory() {
   concludeRoadEffects();
   E.advanceCampaign(b.fighters[0].hero);
   persist();
-  S.rewards = { party: true, ...r, levels, pickedBy: {}, picker: 0, offer: null, offering: null, quest: S.quest };
+  S.rewards = { party: true, ...r, levels, draft: E.newDraft(r.order, r.drops.length), offer: null, offering: null, quest: S.quest };
   sfx.win();
   if (b.fighters.some((f) => f.hero.level > levels[f.hero.name])) setTimeout(sfx.level, 700);
   renderPartyVictory();
 }
 function renderPartyVictory() {
+  if (SCRUI.on() && world.battle) return SCRUI.partyVictory();
   const R = S.rewards;
   const pending = S.company.members.find((m) => m.pendingPerks > 0);
   if (pending && (!R.offer || R.offering !== pending.name)) { R.offering = pending.name; R.offer = E.offerPerks(pending, fresh()); }
@@ -696,10 +697,10 @@ function renderPartyVictory() {
   const perks = pending && R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${pending.name} · choose a perk`),
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(pending, id); R.offer = null; sfx.level(); persist(); renderPartyVictory(); } },
       h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
-  const picker = R.order[R.picker];
-  const lootDone = R.picker >= R.order.length;
-  const loot = !lootDone ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `${picker} chooses · contrib ${R.contrib[picker] || 0}`),
-    h('div', { class: 'loot' }, R.drops.map((inst, i) => R.pickedBy[i] ? null : V.weaponCard(inst, { actions: [primary('Take', () => { const who = S.company.members.find((m) => m.name === picker); who.bag.push(inst); R.pickedBy[i] = picker; R.picker++; sfx.coin(); persist(); renderPartyVictory(); }, { cls: 'small' })] }))))
+  const picker = E.draftWho(R.draft); R.pickedBy = R.draft.picked;
+  const lootDone = R.draft.done;
+  const loot = !lootDone ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `${picker} chooses · ${R.points[picker] || 0} points`), primary('Skip', () => { E.draftSkip(R.draft, picker); persist(); renderPartyVictory(); }, { cls: 'small' }),
+    h('div', { class: 'loot' }, R.drops.map((inst, i) => R.pickedBy[i] ? null : V.weaponCard(inst, { actions: [primary('Take', () => { const who = S.company.members.find((m) => m.name === picker); if (!E.takeDrop(who, inst)) { toast('That pack is full.'); return; } E.draftPick(R.draft, picker, i); sfx.coin(); persist(); renderPartyVictory(); }, { cls: 'small' })] }))))
     : h('section', { class: 'panel' }, h('p', { class: 'muted' }, 'The packs are full. One weapon stays on the road.'),
       h('div', { class: 'cardlist' }, Object.entries(R.pickedBy).map(([i, name]) => h('div', { class: 'mini-card' }, h('b', {}, name), h('small', {}, `${D.RARITY[R.drops[i].rarity]} ${D.WEAPONS[R.drops[i].id].name}`)))));
   const ready = !pending && lootDone;
@@ -718,7 +719,7 @@ function defeat(retreat) {
   if (S.battle) for (const hero of heroes) { const f = isParty() ? S.battle.fighters.find((x) => x.hero === hero) : S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
   persist();
   sfx.lose();
-  if (SCRUI.on() && !isParty() && world.battle) return SCRUI.defeat(retreat, loss);
+  if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss);
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
     h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow.' : 'The dark wins this round. It does not get to keep you.')),
   section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust.` : 'You lost nothing but pride.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),
@@ -812,7 +813,7 @@ function chronicleBlock() {
 }
 
 SCRUI.bind({
-  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether, showImport, showHowTo, resume,
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showCreateCompany, showTogether, showImport, showHowTo, resume, renderPartyVictory,
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle,
 });
 // Test/debug hook: only exposed when the page is opened with ?debug.

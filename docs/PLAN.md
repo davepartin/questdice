@@ -286,3 +286,11 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Points: POINTS in data.js; `award`, `pointsOf`, `roundPoints`; solo b.points, party f.points (=contrib). `recordBattle` -> hero.record (Hall of Fame on Hero tab). HUD counter `.b3-score`.
 - Rewards: partyRewards ranks by points, `place`, gold bonus PLACE_GOLD [0.5, 0.25] (2nd only with 3+); `newDraft/draftWho/draftPick/draftSkip` (table loot/pass use it). Party drops now sized like solo.
 - Potion belt: `potionUpgrade/upgradePotions` (2 -> 3 for 90 gold at level 4), Forge tab row.
+
+### 3D company battle (one phone, turns) — first cut
+- Title: "A company on one phone" -> flat showCreateCompany (works inside the 3D shell). startQuest now opens the 3D battle for companies too (not for S.net).
+- world.buildBattle({ heroes }) places every hero (phone marks keep them in the visible left half); `bw.setActiveHero(i, hero)` steps the active one forward and swaps the dice table.
+- battle3d: B.party; `setActive/nextToRoll/commit`; roll -> E.startFighter; Lock in says "then Bea" / "monsters answer"; `lockParty` passes the turn; `performParty` plays rep.order (team triples, Heartbeat, initiative, each strike with Moral Boost, each monster act split across heroes, fallen heroes). Roster chips (name, hp, points, turn/locked/down). Powers sheet has a Team actions tab (potion, share magic, revive) with a friend chooser.
+- scrui.partyVictory: places (1st; 2nd only with 3+), points, gold, XP, perks, spoils draft (take/skip, comes back around). Flat party victory also uses the draft.
+- Online room (each phone its own) still uses the flat roomui and needs `node server.mjs` on a laptop; GitHub Pages alone cannot host it. Next: hosting decision, then drive this same 3D battle from table playerView.
+- Tests/screens: dev/party3d.mjs (3 heroes to victory, screenshots docs/ingame/party_*.png).

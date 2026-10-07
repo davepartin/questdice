@@ -37,14 +37,14 @@ const EPITHET = {
 export async function start(ctx) {
   C = ctx;
   const { S } = C;
-  B.b = S.battle; B.hero = S.hero; if (world.director) world.director.pan = 0; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
   document.body.classList.add('in-battle');
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); // let the loader paint before heavy procedural work
   const b = B.b;
-  const bw = await world.buildBattle({ quest: B.quest, hero: B.hero, enemies: b.enemies });
+  const bw = await world.buildBattle({ quest: B.quest, hero: B.hero, enemies: b.enemies, heroes: B.party ? b.fighters.map((f) => f.hero) : null });
   B.bw = bw; B.trayBase = bw.tray.object.scale.x;
   bw.tray.onPick = onPick;
   bw.tray.onSound = (kind, o) => { if (kind === 'hit') (sfx.dieHit || sfx.settle)?.(o?.speed); else (sfx.dieSettle || sfx.settle)?.(); };
@@ -127,12 +127,17 @@ function buildHud() {
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
+  // company games: the sheet toggles between your magical powers and team actions on a friend
+  hud.tabs = B.party ? h('div', { class: 'sh-tabs', role: 'tablist' },
+    h('button', { type: 'button', class: 'on', 'data-tab': 'powers', onclick: () => setSheetTab('powers') }, 'Magical powers'),
+    h('button', { type: 'button', 'data-tab': 'team', onclick: () => setSheetTab('team') }, 'Team actions')) : h('b', {}, 'Magical powers');
   hud.sheet = h('div', { class: 'b3-sheet', role: 'dialog', 'aria-label': 'Magical powers' },
-    h('div', { class: 'sh-head' }, h('b', {}, 'Magical powers'), h('button', { type: 'button', class: 'sh-x', 'aria-label': 'Close powers', onclick: () => togglePowers(false) }, 'Close')), hud.cards);
+    h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x', 'aria-label': 'Close powers', onclick: () => togglePowers(false) }, 'Close')), hud.cards);
+  hud.roster = B.party ? h('div', { class: 'b3-roster', role: 'list', 'aria-label': 'The company' }) : null;
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(hud.leaders, hud.plates, hud.more, hud.top, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach);
+  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -177,6 +182,77 @@ function fitTray() {
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${Math.round(lineY)}px`);
   dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
   B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
+}
+// ------------------------------------------------------------------------------------------ company (one phone, turns)
+// Each living hero rolls and locks in turn; the monsters answer once everyone is locked. b mirrors the hero whose turn it
+// is (E.focusFighter); every change is written back with E.commitFighter.
+const commit = () => { if (B.party) E.commitFighter(B.b); };
+const nextToRoll = () => (B.party ? B.b.fighters.findIndex((f) => f.hp > 0 && !f.board) : -1);
+function setActive(i) {
+  const b = B.b; if (!B.party || i < 0) return;
+  E.focusFighter(b, i); B.active = i; B.hero = b.hero;
+  B.bw.setActiveHero(i, B.hero);
+  const fresh = buildHero(); B.hud.hero.replaceWith(fresh); B.hud.hero = fresh; B.ro?.observe?.(fresh);
+  B.hud.score.querySelector('b').dataset.v = String(E.pointsOf(b)); B.hud.score.querySelector('b').textContent = String(E.pointsOf(b));
+  renderRoster();
+}
+function renderRoster() {
+  const el = B.hud?.roster; if (!el) return; const b = B.b;
+  el.replaceChildren(...b.fighters.map((f, i) => {
+    const turn = i === B.active && f.hp > 0; const locked = !!f.board && i !== B.active; const down = f.hp <= 0;
+    return h('div', { class: `rs-chip ${turn ? 'turn' : ''} ${locked ? 'locked' : ''} ${down ? 'down' : ''}`, role: 'listitem', 'aria-label': `${f.hero.name}, ${Math.max(0, Math.ceil(f.hp))} of ${f.maxHp} health, ${E.pointsOf(f)} points` },
+      h('span', { class: 'rs-ic' }, down ? HK.icon('skull') : locked ? HK.icon('lock') : HK.icon(D.CLASSES[f.hero.cls] ? 'heart' : 'heart')),
+      h('b', { class: 'rs-name' }, f.hero.name),
+      h('i', { class: 'rs-hp' }, h('i', { style: { width: `${Math.max(0, Math.min(100, (f.hp / f.maxHp) * 100))}%` } })),
+      h('small', { class: 'rs-pts' }, String(E.pointsOf(f))));
+  }));
+}
+// Team actions: one a round, on a friend. Uses the same potions as your own list.
+const TEAM = [
+  { id: 'potion', name: 'Potion', icon: 'heal', text: `Throw one of your potions to a friend: +${E.POTION_HP} health. It comes out of your own potions.`, cost: () => 'Free' },
+  { id: 'magic', name: 'Share magic', icon: 'magic', text: `Pay ${D.SHARE_MAGIC} magic; your friend gains ${D.SHARE_MAGIC}.`, cost: () => `${D.SHARE_MAGIC} magic` },
+  { id: 'revive', name: 'Revive', icon: 'mend', text: `Once a battle: pay ${D.REVIVE_COST} magic and a fallen friend stands back up with ${D.REVIVE_HP} health.`, cost: () => `${D.REVIVE_COST} magic` },
+];
+function setSheetTab(tab) {
+  B.sheetTab = tab;
+  for (const bt of B.hud.tabs.querySelectorAll?.('button') || []) bt.classList.toggle('on', bt.dataset.tab === tab);
+  B.hud.cards.replaceChildren(...(tab === 'team' ? teamTiles() : cardTiles(B.b.phase !== 'shape')));
+}
+function teamTiles() {
+  const b = B.b; commit(); const me = b.fighters[B.active]; const usedRound = me.teamRound === b.round;
+  const tiles = TEAM.map((t) => {
+    const any = b.fighters.some((f, j) => j !== B.active && E.teamActionInfo(b, B.active, t.id, j).ok);
+    const flag = t.id === 'potion' ? `${E.potionsLeft(me)} LEFT` : t.id === 'revive' ? (me.reviveUsed ? 'USED' : 'ONCE') : 'ONCE A ROUND';
+    return HK.abilityCard({ id: `t:${t.id}`, name: t.name, kind: 'util', cost: t.id === 'potion' ? 0 : t.id === 'magic' ? D.SHARE_MAGIC : D.REVIVE_COST, fx: t.id === 'potion' ? { heal: E.POTION_HP } : {}, text: t.text },
+      { spent: false, reset: false, afford: any && !usedRound, onclick: () => showTeamDetail(t.id), disabled: false, fresh: false, flag, cost: t.id === 'potion' ? 0 : t.id === 'magic' ? D.SHARE_MAGIC : D.REVIVE_COST, stepper: null, level: 0 });
+  });
+  const note = h('p', { class: 'sh-note' }, usedRound ? 'You have used your team action this round.' : 'One team action a round. Pick it, then choose a friend.');
+  return [...tiles, note];
+}
+function showTeamDetail(kind) {
+  const b = B.b; commit(); const t = TEAM.find((x) => x.id === kind); const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  const friends = b.fighters.map((f, j) => ({ f, j })).filter(({ j }) => j !== B.active);
+  fillInfo(
+    h('div', { class: 'sh-head' }, h('b', {}, t.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('p', { class: 'pd-text' }, t.text),
+    h('div', { class: 'tm-friends' }, friends.map(({ f, j }) => {
+      const r = E.teamActionInfo(b, B.active, kind, j);
+      return h('button', { type: 'button', class: `tm-friend ${r.ok ? '' : 'no'}`, disabled: !r.ok, onclick: () => { close(); doTeam(kind, j); } },
+        h('b', {}, f.hero.name), h('small', {}, `${Math.max(0, Math.ceil(f.hp))} / ${f.maxHp} health · ${f.magic} magic`), r.ok ? h('span', { class: 'tm-go' }, kind === 'revive' ? 'Revive' : kind === 'magic' ? 'Give' : 'Throw') : h('em', {}, r.why));
+    })),
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel')));
+  B.hud.info.classList.add('open'); sfx.select();
+}
+function doTeam(kind, to) {
+  const b = B.b; if (B.busy) return; commit();
+  const before = { hp: b.fighters[to].hp, magic: b.fighters[to].magic };
+  const r = E.teamAction(b, B.active, kind, to);
+  if (!r.ok) { sfx.error(); toast(r.why); return; }
+  const fa = B.bw.heroes[to]; const friend = b.fighters[to];
+  if (kind === 'potion') { sfx.heal(); vfx('heal', fa.worldAnchor('chest'), { color: 0x45e08b }); number(fa.worldAnchor('head'), `+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
+  if (kind === 'magic') { sfx.magic(); vfx('aura', fa, { kind: 'buff', color: 0xa64dff, dur: 1.0 }); number(fa.worldAnchor('head'), `+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
+  if (kind === 'revive') { sfx.level?.(); vfx('aura', fa, { kind: 'summon', color: 0xfff0a0, dur: 1.4 }); fa.play('idle', { fade: 0.3 }); number(fa.worldAnchor('head'), `REVIVED +${friend.hp}`, 'heal'); banner(`${friend.hero.name.toUpperCase()} IS BACK!`, 'good'); }
+  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderRoster(); updateScore(); refresh();
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -466,7 +542,7 @@ function idleTray() {
 function ribbonNodes() {
   const b = B.b; const rep = B.lastRep;
   if (!rep) return [`${alive().map((e) => e.name).join(' and ')} ${alive().length > 1 ? 'bar' : 'bars'} the way.`];
-  return V.reportLines(rep, b).slice(0, 3).flatMap((l, i) => [i ? h('i', { class: 'rb-sep' }) : null, h('span', { class: `rb-${l.kind || 'meh'}` }, HK.rich(l.text))]);
+  return (rep.party ? V.partyReportLines(rep, b) : V.reportLines(rep, b)).slice(0, 3).flatMap((l, i) => [i ? h('i', { class: 'rb-sep' }) : null, h('span', { class: `rb-${l.kind || 'meh'}` }, HK.rich(l.text))]);
 }
 // Battle points: a small arcade counter beside the round. It ticks up when points land.
 function updateScore() {
@@ -585,12 +661,13 @@ function showUtilDetail(id) {
 function doBigHeal() {
   const b = B.b; if (B.busy) return; const before = b.hp;
   if (!E.healBig(b)) { sfx.error(); return; }
+  commit(); renderRoster();
   sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
   updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 function togglePowers(on) {
   B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
-  if (B.sheetOpen) { sfx.select?.(); B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
+  if (B.sheetOpen) { sfx.select?.(); if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
 }
 const powersBtn = () => {
   const b = B.b; const list = E.cardsOf(B.hero);
@@ -608,6 +685,7 @@ export function renderReset() {
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
+  if (B.party) { const nx = nextToRoll(); if (nx >= 0 && nx !== B.active) setActive(nx); else E.focusFighter(b, B.active); renderRoster(); }
   setHud({ phase: 'reset' });
   targetEnemy();
   B.sel.clear();
@@ -626,7 +704,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? `Roll · ${B.hero.name}` : 'Roll dice', sub: B.party ? `${b.fighters.filter((f) => f.hp > 0 && f.board).length} of ${b.fighters.filter((f) => f.hp > 0).length} ready` : 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -644,7 +722,7 @@ function e0Warn() {
 async function doRoll() {
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw;
-  E.startRoll(b);
+  if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
   for (const s of D.SLOTS) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
@@ -697,7 +775,7 @@ export function renderShape() {
   B.hud.bar.replaceChildren(...[
     straight,
     h('div', { class: 'b3-acts b3-acts3' },
-      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
+      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', sub: B.party ? lockSub() : undefined, id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
       powersBtn(),
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || E.rerollInfo(b).kind === 'none', cls: 'blue', aria: `${rr.label}` }))].filter(Boolean));
 }
@@ -717,7 +795,7 @@ function onPick(slot) {
 async function doReroll() {
   if (B.busy) return; const b = B.b; const slots = [...B.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
-  B.busy = true; E.reroll(b, slots); B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
+  B.busy = true; E.reroll(b, slots); commit(); B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
   renderShape();
   await B.bw.tray.roll(b.board, { slots });
   B.busy = false; renderShape();
@@ -725,12 +803,12 @@ async function doReroll() {
 function doNudge(dir) {
   const b = B.b; if (B.busy) return;
   if (!E.nudge(b, dir)) { sfx.error(); toast(b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
+  commit(); sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
 }
 function doHeal() {
   const b = B.b; if (B.busy) return; const before = b.hp;
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
-  sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
+  commit(); renderRoster(); sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
   vfx('heal', hp, { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 });
   B.bw.hero.once?.('drink');
   B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
@@ -740,7 +818,7 @@ function doCard(id, opts = {}) {
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
   const r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
-  sfx.card(); buzz(20); B.fresh = id;
+  commit(); sfx.card(); buzz(20); B.fresh = id;
   const fx = { ...k.fx, ...(k.dice ? { [k.dice.to]: r.total } : {}) }; const color = fx.heal ? 0x45e08b : fx.block ? 0x4db4ff : fx.pierce ? 0xff8a1a : fx.atk ? 0xff5a4a : 0xa64dff;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
@@ -752,7 +830,7 @@ function doCard(id, opts = {}) {
 }
 function doRecharge(id) {
   const b = B.b; if (B.busy) return;
-  if (E.recharge(b, id)) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
+  if (E.recharge(b, id)) { commit(); sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
 }
 function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(); }
 
@@ -760,7 +838,18 @@ function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(
 async function lockIn() {
   try { await lockInInner(); } catch (e) { console.error('lockIn failed', e.stack); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
 }
+// Company: who rolls after this hero (or the monsters, when everyone has locked)
+function lockSub() { const b = B.b; const nx = b.fighters.findIndex((f, i) => i !== B.active && f.hp > 0 && !f.board); return nx >= 0 ? `then ${b.fighters[nx].hero.name}` : 'monsters answer'; }
+async function lockParty() {
+  const b = B.b; B.busy = true; sfx.lock(); buzz(30);
+  commit(); const f = b.fighters[B.active]; f.target = B.target; f.straight = B.straight;
+  B.sel.clear(); B.bw.tray.setSelected?.(new Set());
+  const nx = nextToRoll();
+  if (nx >= 0) { b.phase = 'reset'; banner(`${f.hero.name.toUpperCase()} IS READY`, 'gold'); await wait(0.5); B.busy = false; return renderReset(); }
+  return performParty();
+}
 async function lockInInner() {
+  if (B.party) return lockParty();
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const hero = B.hero; const stage = world.stage;
   sfx.lock(); buzz(30);
@@ -893,11 +982,103 @@ async function lockInInner() {
   renderReset();
 }
 
+// Company round: everyone has locked; the monsters answer. Plays in initiative order (rep.order).
+async function performParty() {
+  const b = B.b; const bw = B.bw; const stage = world.stage;
+  bw.tray.lock?.(); setHud({ phase: 'resolve' }); clearDock(); stopWindups();
+  const rep = E.resolveParty(b); B.lastRep = rep;
+  const idxOf = (n) => b.fighters.findIndex((f) => f.hero.name === n);
+  const actorOfHero = (n) => bw.heroes[idxOf(n)];
+  // team triples and Heartbeat
+  for (const t of rep.team || []) {
+    sfx.synergy(); banner(`${t.label.toUpperCase()}  +${t.bonus}`, 'gold'); stage.flash(0xffd23d, 0.18);
+    for (const n of t.names) { const a = actorOfHero(n); if (a) vfx('aura', a, { kind: 'buff', color: t.row === 'headtoe' ? 0x4db4ff : 0xff5a4a, dur: 1.0 }); }
+    await wait(1.0);
+  }
+  if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const a of bw.heroes) vfx('aura', a, { kind: 'buff', color: 0xff6a9a, dur: 1.0 }); await wait(1.0); }
+  // initiative
+  if (rep.init.forced) banner('THE COMPANY STRIKES FIRST', 'gold');
+  else {
+    for (const x of rep.init.heroes) { const a = actorOfHero(x.name); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'pierce'); }
+    for (const x of rep.init.foes) { const a = bw.actors.get(x.uid); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'hurt'); }
+    banner(`${rep.leader.toUpperCase()} LEADS · TAKES THE MOST HITS`, 'gold');
+  }
+  await wait(rep.init.forced ? 0.6 : 1.1);
+  const snapNames = rep.fighters.filter((x) => !x.down).map((x) => x.name);
+  const strikes = rep.strikes.map((s) => ({ ...s })); const acts = rep.acts.map((a) => ({ ...a }));
+  bw.director.set('attack', { lambda: 4 });
+  for (const step of rep.order) {
+    if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep, actorOfHero); } }
+    else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames, actorOfHero); } }
+  }
+  for (const uid of rep.summoned) {
+    const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;
+    const a = await bw.addEnemy(b.enemies[i], i, b.enemies); addPlate(b.enemies[i]); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); a.play('spawn', { fade: 0 });
+  }
+  for (const uid of rep.raged) { const a = bw.actors.get(uid); banner('ENRAGED!', 'bad'); sfx.rage(); stage.shake(1.2); a?.setRage?.(true); await race(a?.play('rage', { fade: 0.1 }) ?? Promise.resolve(), 1.8); }
+  for (const x of rep.fighters) {
+    const a = actorOfHero(x.name); if (!a) continue;
+    if (x.healed > 0) { vfx('heal', a.worldAnchor('chest')); number(a.worldAnchor('head'), `+${x.healed}`, 'heal'); }
+    if (x.hpAfter <= 0 && !x.down) { a.play('die', { fade: 0.1 }); banner(`${x.name.toUpperCase()} IS DOWN`, 'bad'); }
+  }
+  bw.tray.unlock?.();
+  for (const e of b.enemies) updatePlate(e);
+  await wait(0.6);
+  B.busy = false;
+  bw.director.set('battle', { lambda: 2.2 });
+  if (b.outcome === 'victory') return win();
+  if (b.outcome === 'defeat') return lose();
+  B.active = -1; renderReset();
+}
+async function playStrike(s, rep, actorOfHero) {
+  const b = B.b; const bw = B.bw; const stage = world.stage;
+  const ha = actorOfHero(s.name); const ta = bw.actors.get(s.targetUid); if (!ha || !ta) return;
+  const m = (rep.moral || []).find((x) => x.to === s.name);
+  if (m) { banner(`MORAL BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); vfx('aura', ha, { kind: 'buff', color: 0xffd23d, dur: 0.9 }); await wait(0.5); }
+  const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = hero?.loadout.NW.id;
+  const hitP = new Promise((res) => ha.play((s.atk + s.pierce) > 0 ? ((B.swing++ % 2) ? 'attack2' : 'attack') : 'cast', { fade: 0.08, onEvent: (en) => { if (en === 'hit' || en === 'release') res(); } }).then(res));
+  await race(hitP, 1.4);
+  const chest = ta.worldAnchor('chest'); const head = ta.worldAnchor('head');
+  if (s.dealt > 0 || s.guarded > 0) {
+    if (wid === 'bow') await vfx('projectile', ha.worldAnchor('weapon'), chest, { kind: 'arrow', color: 0xffe0a0 });
+    else if (wid === 'staff') await vfx('projectile', ha.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
+    else vfx('slash', chest, { color: 0xff5a4a, kind: 'blade' });
+  }
+  if (s.guarded > 0) { vfx('shield', chest, { color: 0xffd23d, dur: 0.7 }); number(head, `Guarded ${s.guarded}`, 'block'); sfx.block(); }
+  if (s.dealt > 0) { sfx.hit(); stage.shake(0.4 + Math.min(0.5, s.dealt / 40)); vfx('impact', chest, { kind: 'flesh', power: Math.min(1, s.dealt / 25) }); ta.hurt(); number(head, `−${s.dealt}`, 'dmg'); }
+  else if (!s.guarded) number(head, '0', 'meh');
+  const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
+  if (s.killed) { sfx.deathEmber?.(); vfx('death', ta, { size: ta.height }); ta.die({ dur: 1.2 }); await wait(0.5); }
+  await wait(0.25);
+}
+async function playFoe(act, names, actorOfHero) {
+  const b = B.b; const bw = B.bw; const stage = world.stage;
+  const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) return;
+  const clips = intentClips({ v: act.v, n: act.name, slam: act.name === 'Slam' });
+  const lead = actorOfHero(names[0]) || bw.hero;
+  const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
+  if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
+  if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
+  if (act.v === 'guard') vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 });
+  if (act.v === 'mend') vfx('heal', a.worldAnchor('chest'));
+  if (act.v === 'bind') vfx('aura', lead, { kind: 'buff', color: 0x7ab4ff, dur: 1.0 });
+  await race(ev2, 1.3);
+  if (Array.isArray(act.parts)) {
+    act.parts.forEach((part, i) => {
+      const ha = actorOfHero(names[i]); if (!ha || part <= 0) return;
+      const net = act.nets?.[i] ?? part; const ab = part - net;
+      if (net > 0) { ha.hurt(); vfx('impact', ha.worldAnchor('chest'), { kind: 'flesh', power: Math.min(1, net / 14) }); number(ha.worldAnchor('head'), `−${net}`, 'hurt'); }
+      if (ab > 0) { vfx('shield', ha.worldAnchor('chest'), { color: 0x4db4ff, radius: 0.9, dur: 0.7 }); number(ha.worldAnchor('head').clone().add(new THREE.Vector3(0.5, -0.3, 0)), `🛡 ${ab}`, 'block'); }
+    });
+    if (act.net > 0) { sfx.hurt(); stage.shake(act.net >= 10 ? 0.9 : 0.6); } else if (act.ab > 0) sfx.block();
+  }
+  await wait(0.3);
+}
 async function win() {
   const bw = B.bw; B.busy = true;
   bw.arena.setMood?.('victory'); music.setMood?.('victory');
   bw.director.set('victory', { lambda: 2.2 });
-  bw.hero.play('victory', { fade: 0.2 }); sfx.win();
+  for (const [i, a] of (bw.heroes || [bw.hero]).entries()) if (!B.party || B.b.fighters[i].hp > 0) a.play('victory', { fade: 0.2 }); sfx.win();
   bw.stage.flash(0xffe9a0, 0.25);
   clearDock();
   B.hud.ribbon.classList.add('hide');

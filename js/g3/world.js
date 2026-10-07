@@ -59,7 +59,7 @@ export const world = {
   },
 
   // Build a battle: arena, hero, one actor per enemy, tray, vfx. Returns the handle the battle controller drives.
-  async buildBattle({ quest, hero, enemies }) {
+  async buildBattle({ quest, hero, enemies, heroes = null }) {
     this.clear();
     const stage = this.stage;
     const [arenaMod, trayMod, vfxMod, heroMod] = await Promise.all([
@@ -81,6 +81,27 @@ export const world = {
     heroActor.root.rotation.y = Math.atan2(mid[0] - MARKS.hero[0], mid[1] - MARKS.hero[2]);
     stage.scene.add(heroActor.root);
     stage.onFrame((dt, t) => heroActor.update(dt, t));
+    // a company: every hero stands on the field, the one whose turn it is a step forward
+    const heroActors = [heroActor];
+    if (heroes && heroes.length > 1) {
+      for (let i = 1; i < heroes.length; i++) {
+        const hh = heroes[i];
+        const a = await createActor('hero', { cls: hh.cls, loadout: hh.loadout, level: hh.level, seed: (hh.campaign?.seed || 1) + i * 977, quality: stage.quality });
+        a.root.rotation.y = heroActor.root.rotation.y; stage.scene.add(a.root); stage.onFrame((dt, t) => a.update(dt, t)); heroActors.push(a);
+      }
+    }
+    const partyMarks = (n, port) => { // [x, z] per hero; index 0 is the front spot
+      if (port) return [[-1.3, 2.5], [-2.1, 1.1], [-0.4, 3.0], [-0.9, 0.6], [-2.3, -0.2], [0.6, 3.0]].slice(0, n); // phones see about x -2..2.4 up front
+      return [[-3.2, 0.8], [-4.6, -0.6], [-2.0, 2.0], [-5.6, 0.9], [-4.2, 2.3], [-6.0, -1.4]].slice(0, n);
+    };
+    const placeHeroes = (active = 0) => {
+      if (heroActors.length < 2) return;
+      const port = this.director.portrait > 0.5; const marks = partyMarks(heroActors.length, port);
+      const order = [active, ...heroActors.map((_, i) => i).filter((i) => i !== active)];
+      const k = heroActors.length > 3 ? 0.74 : 0.82;
+      order.forEach((hi, slot) => { const m = marks[slot]; const a = heroActors[hi]; a.root.position.set(m[0], 0, m[1]); a.root.scale.setScalar(slot === 0 ? 1 : k); });
+    };
+    placeHeroes(0);
 
     if (this.director.portrait > 0.5 && !window.__NOPROPS) { // scale props: weathered boulders and broken rock stacks (the land is burnt and bare, so no trees)
       const rockMat = new THREE.MeshStandardMaterial({ color: 0x2e2630, roughness: 1, flatShading: true });
@@ -124,7 +145,9 @@ export const world = {
       return i === bigIdx ? 0 : Math.min(layout.length - 1, 1 + i - (i > bigIdx ? 1 : 0));
     };
     const bw = {
-      stage, arena, hero: heroActor, tray, vfx, actors, director: this.director, layout, slotOf,
+      stage, arena, hero: heroActor, heroes: heroActors, tray, vfx, actors, director: this.director, layout, slotOf,
+      // company: make hero i the one whose turn it is (stands forward; the dice table shows their dice)
+      setActiveHero(i, heroData) { if (!heroActors[i]) return; this.hero = heroActors[i]; placeHeroes(i); if (heroData) tray.setHero(heroData); },
       slotFor(i, list) { return layout[slotOf(i, list)]; },
       async addEnemy(e, index, list = enemies) {
         const a = await createActor(e.id, { tier: e.tier, seed: (e.uid.length * 7919) >>> 0, quality: stage.quality });
@@ -137,7 +160,7 @@ export const world = {
         actors.set(e.uid, a);
         return a;
       },
-      dispose() { for (const a of actors.values()) a.dispose?.(); heroActor.dispose?.(); tray.dispose?.(); arena.dispose?.(); },
+      dispose() { for (const a of actors.values()) a.dispose?.(); for (const a of heroActors) a.dispose?.(); tray.dispose?.(); arena.dispose?.(); },
     };
     stage.onFrame((dt, t) => { for (const a of actors.values()) a.update(dt, t); });
     await Promise.all(enemies.map((e, i) => bw.addEnemy(e, i)));

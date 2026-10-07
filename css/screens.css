@@ -364,3 +364,19 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-hof .hf-cell.gold b { color: #ffd04a; } .sx-hof .hf-cell.silver b { color: #d8dde8; }
 .vc-stat.pts div { color: #ffe08a; font-variant-numeric: tabular-nums; }
 .vc-best { display: block; font-style: normal; font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: #9fe0a8; }
+
+/* company victory: places and points */
+.sx-places .pl-list { display: grid; gap: .45rem; margin-top: .4rem; }
+.sx-places .pl-row { display: grid; grid-template-columns: 1.6rem auto 1fr auto; align-items: center; gap: .55rem; padding: .5rem .6rem; border-radius: .8rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.sx-places .pl-row.first { background: linear-gradient(90deg, rgba(255, 208, 74, .18), rgba(255, 208, 74, .04)); box-shadow: inset 0 0 0 1px rgba(255, 208, 74, .55); }
+.sx-places .pl-row.second { background: linear-gradient(90deg, rgba(216, 221, 232, .14), rgba(216, 221, 232, .03)); box-shadow: inset 0 0 0 1px rgba(216, 221, 232, .4); }
+.sx-places .pl-medal { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-family: var(--font-display); font-weight: 800; font-size: .85rem; color: #2a1804; }
+.sx-places .first .pl-medal { background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc93a 60%, #b07d12); }
+.sx-places .second .pl-medal { background: radial-gradient(circle at 35% 30%, #ffffff, #c9cfdc 60%, #7c8496); }
+.sx-places .pl-copy b { display: block; font-size: 1rem; } .sx-places .pl-copy small { color: var(--dim); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.sx-places .first .pl-copy small { color: #ffd04a; } .sx-places .second .pl-copy small { color: #d8dde8; }
+.sx-places .pl-nums { display: grid; justify-items: end; line-height: 1.05; }
+.sx-places .pl-nums b { font-family: var(--font-display); font-size: 1.2rem; color: #ffe08a; font-variant-numeric: tabular-nums; }
+.sx-places .pl-nums small { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.sx-places .pl-gold { display: inline-flex; align-items: center; gap: .2rem; font-size: .78rem; color: #f6c445; }
+.sx-places .pl-gold .ic { width: .85rem; height: .85rem; }
