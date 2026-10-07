@@ -123,7 +123,7 @@ function buildHud() {
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
   // on phones the line between the battlefield and the dice table is the hero's health bar
-  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' }), h('b', { class: 'dv-n' }, '0')));
+  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
@@ -350,14 +350,13 @@ function makeRing() {
 function markerUpdate(a, show, t) {
   if (!B.marker) {
     const g = new THREE.Group(); g.name = 'targetMarker';
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.7, 4), new THREE.MeshBasicMaterial({ color: 0xffc94a, toneMapped: false })); cone.rotation.x = Math.PI; cone.rotation.y = Math.PI / 4; g.add(cone);
+    g.add(new THREE.Object3D()); // (no arrow: the red ring already shows who you are fighting; only the soft light stays)
     const lamp = new THREE.PointLight(0xfff0cc, 40, 0, 2); lamp.position.set(0, -1.2, 1.4); g.add(lamp);
     g.visible = false; B.bw.stage.scene.add(g); B.marker = g;
   }
   B.marker.visible = !!show; if (!show) return;
   const top = a.worldAnchor?.('head'); const base = top ? top.clone() : a.root.position.clone().setY((a.height || 2) * 0.9 * (a.root.scale?.y || 1));
   const bob = Math.sin(t * 4) * 0.12; B.marker.position.set(base.x, base.y + 0.55 + bob, base.z);
-  B.marker.children[0].rotation.y = t * 1.6;
 }
 // Phones: slide the picture so the tallest creature stands near the top of the battlefield (no wasted sky),
 // while the nearest feet stay above the golden line. Small monsters pan the view down, a towering one keeps it high.
