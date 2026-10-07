@@ -10,6 +10,7 @@ import { mulberry32, hashStr } from '../noise.js';
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
 const SVG = {
+  talent: 'M77.1 46.5 L85.5 47.7 L85.5 60.3 L77.1 61.5 L73.3 70.7 L78.4 77.5 L69.5 86.4 L62.7 81.3 L53.5 85.1 L52.3 93.5 L39.7 93.5 L38.5 85.1 L29.3 81.3 L22.5 86.4 L13.6 77.5 L18.7 70.7 L14.9 61.5 L6.5 60.3 L6.5 47.7 L14.9 46.5 L18.7 37.3 L13.6 30.5 L22.5 21.6 L29.3 26.7 L38.5 22.9 L39.7 14.5 L52.3 14.5 L53.5 22.9 L62.7 26.7 L69.5 21.6 L78.4 30.5 L73.3 37.3 Z M65 54 A19 19 0 1 0 65 54.01 Z M46.0 40.0 L48.8 51.2 L60.0 54.0 L48.8 56.8 L46.0 68.0 L43.2 56.8 L32.0 54.0 L43.2 51.2 Z M86.0 2.0 L88.2 10.8 L97.0 13.0 L88.2 15.2 L86.0 24.0 L83.8 15.2 L75.0 13.0 L83.8 10.8 Z M92.0 28.5 L93.1 32.9 L97.5 34.0 L93.1 35.1 L92.0 39.5 L90.9 35.1 L86.5 34.0 L90.9 32.9 Z',
   mend: 'M37 8 H63 V37 H92 V63 H63 V92 H37 V63 H8 V37 H37 Z',
   spark: 'M50 2 C54 34 66 46 98 50 C66 54 54 66 50 98 C46 66 34 54 2 50 C34 46 46 34 50 2 Z',
   surge: 'M62 2 L18 56 H44 L34 98 L84 38 H56 Z',
@@ -39,7 +40,7 @@ export function iconPath(name) {
   return paths.get(name);
 }
 export const hasIcon = (n) => !!SVG[n];
-const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet']);
+const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
 export function drawIcon(ctx, name, x, y, size, { stroke = 0 } = {}) {
   ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(s, s); ctx.translate(-50, -50);

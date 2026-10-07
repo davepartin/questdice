@@ -207,7 +207,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     s.ico = new THREE.Mesh(flat(new THREE.PlaneGeometry(1.9, 1.9)), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, opacity: 0.95 }));
     s.ico.position.set(s.home.x, 0.032, s.home.z); s.ico.visible = false; s.ico.renderOrder = 7; object.add(s.ico);
   }
-  const SLOT_ICON = { head: 'helmet', feet: 'boots', hand: 'gauntlet', heart: 'heart', special: 'surge' };
+  const SLOT_ICON = { head: 'helmet', feet: 'boots', hand: 'gauntlet', heart: 'heart', special: 'talent' };
   function paintSlotIcon(s, hero) {
     const name = s.role === 'weapon' ? weaponIcon(hero.loadout[s.slot]?.id) : SLOT_ICON[s.role];
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
