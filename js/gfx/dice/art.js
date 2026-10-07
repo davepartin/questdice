@@ -64,14 +64,12 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
       units.push({ side: sd, x: 0, z, parts: [{ icon: ic, size: 0.31, at: -U / 2 + IC / 2 }, { text: t, at: U / 2 - t.L / 2 }] });
     }
   }
-  for (const [sd, flip, wi, wname, hand] of [['l', false, wL, 'WEAPON LEFT', 'LEFT HAND'], ['r', true, wR, 'WEAPON RIGHT', 'RIGHT HAND']]) {
-    const tw = T([wname], 0.09); const ts = T(['STRENGTH'], 0.09); const th = T([hand], 0.09); const half = 0.13;
-    // z grows downward; the left edge reads upward (first word lower), the right edge reads downward (first word higher)
-    const sz = sd === 'l' ? 1 : -1;
+  for (const [sd, flip, wi, wname, hand] of [['l', false, wL, 'LEFT', 'LEFT HAND'], ['r', true, wR, 'RIGHT', 'RIGHT HAND']]) {
+    const ts = T(['STRENGTH', hand], 0.1); const tw = T(['WEAPON', wname], 0.1);
+    // both edges read upward from the middle: fist, STRENGTH / hand, WEAPON / side, weapon icon in the corner
+    const c1 = -(0.17 + ts.L / 2); const c2 = c1 - ts.L / 2 - 0.07 - tw.L / 2; const zi = c2 - tw.L / 2 - GAP - IC / 2;
     units.push({ side: sd, x: sd === 'l' ? -ox : ox, flip, parts: [
-      { icon: wi, size: IC, at: ZW }, { text: tw, at: ZW + IC / 2 + GAP + tw.L / 2 },
-      { icon: 'gauntlet', size: 0.3, at: 0 },
-      { text: ts, at: sz * (half + ts.L / 2) }, { text: th, at: -sz * (half + th.L / 2) },
+      { icon: 'gauntlet', size: 0.3, at: 0 }, { text: ts, at: c1 }, { text: tw, at: c2 }, { icon: wi, size: IC, at: zi },
     ] });
   }
   for (const sd of ['l', 'r']) { // talent dice: names only, no symbol
@@ -130,7 +128,7 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
     }
   };
   for (const n of UNITS) {
-    const horiz = n.side === 't' || n.side === 'b'; const rot = n.side === 'l' ? -Math.PI / 2 : n.side === 'r' ? Math.PI / 2 : 0;
+    const horiz = n.side === 't' || n.side === 'b'; const rot = horiz ? 0 : -Math.PI / 2;
     // on the left edge the text reads upward, so 'at' (measured along +z) is mirrored for it
     for (const p of n.parts) {
       const along = p.at; const px = horiz ? n.x + along : n.x; const pz = horiz ? n.z : along;
