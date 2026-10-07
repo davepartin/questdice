@@ -165,9 +165,13 @@ function faceChips(inst) {
 // A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
 function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
   const w = D.WEAPONS[inst.id]; const r = RAR[inst.rarity | 0];
+  // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
+  const size = E.weaponSize(inst); const hero = X.S?.hero; const wi = hero && inst.id !== 'fists' && !String(inst.uid).startsWith('c-') ? E.wieldInfo(hero, inst) : null;
+  const need = size > 4 ? h('p', { class: `wc-need ${wi && !wi.ok ? 'short' : 'ok'}` }, ico(wi && !wi.ok ? 'lock' : 'check'),
+    wi && !wi.ok ? `Needs d${size} Strength${wi.two ? ' in both hands' : ''}. Rolls as a d${wi.rollsAs} until you train it.` : `Needs d${size} Strength${wi?.two ? ' in both hands' : ''}`) : null;
   return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${D.RARITY[inst.rarity | 0]} ${w.name}`), h('span', { class: 'wc-banner' }, D.RARITY[inst.rarity | 0]), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, w.hands === 2 ? 'Two-handed' : 'One-handed'), faceChips(inst), compact ? null : h('p', { class: 'wc-tag' }, w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
+    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact ? null : h('p', { class: 'wc-tag' }, w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
 }
 export function create() {
@@ -251,21 +255,21 @@ function questArt(q) {
   return wrap;
 }
 function questCard(q, idx) {
-  const total = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].hp * q.hpMult), 0);
   const xp = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0);
   const gold = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].gold * q.rewardMult), 0);
-  const danger = Math.min(5, Math.max(1, Math.round(total / 40) + (q.perilous ? 1 : 0)));
+  // danger is read from YOUR dice against these monsters: how much of your health the fight should cost
+  const dz = E.questDanger(X.members()[0], q); const danger = { Easy: 1, Fair: 2, Hard: dz.score < 0.32 ? 3 : 4, Deadly: 5 }[dz.label];
   const reward = Math.min(5, Math.max(1, Math.round((xp + gold) / 16)));
-  const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : q.perilous ? 'Perilous' : 'Standard';
+  const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : q.perilous ? 'Perilous' : 'Steady';
   const place = q.place || q.name;
   return h('button', { class: `sx-qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', style: { '--i': idx }, 'aria-label': `${tag}: ${q.name}. ${groupNames(q.enemies)}`, onclick: tap(() => X.startQuest(q)) },
-    h('span', { class: 'qc-tag' }, q.perilous ? ico('flame') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : ico('shield'), tag, q.perilous ? h('em', {}, '×1.5 rewards') : null),
+    h('span', { class: 'qc-tag' }, q.perilous ? ico('flame') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : ico('shield'), tag, q.perilous ? h('em', {}, `×${D.PERIL.reward} rewards`) : null),
     questArt(q),
     h('div', { class: 'qc-body' },
       h('b', { class: 'qc-name' }, q.kind === 'boss' ? q.name : (q.name.replace(place, '').replace(/\s+(on|at|near|in|of|by)\s*$/i, '').trim() || q.name)), h('small', { class: 'qc-place' }, ico('pin'), place),
       h('small', { class: 'qc-foes' }, groupNames(q.enemies)),
       h('div', { class: 'qc-read' },
-        h('div', { class: 'qr danger' }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `~${total} HP`)),
+        h('div', { class: `qr danger dz-${dz.label.toLowerCase()}` }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `${dz.label} for you · ~${dz.rounds} round${dz.rounds > 1 ? 's' : ''}`)),
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
     h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? 'Face the king' : 'Take this road'), ico('chevron')));
 }
@@ -340,9 +344,18 @@ export function victory(first) {
   h('div', { class: 'vc-xp' }, bar, h('small', {}, maxed ? 'Max level' : `${hero.xp} / ${need} XP to level ${lvNow + 1}`)));
   const perks = Rw.offer ? panel('sx-perks glow', eyebrow(`Level up. Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`, 'gold'),
     h('div', { class: 'perk-row' }, Rw.offer.map((id, i) => perkCard(id, hero, () => { E.takePerk(hero, id); Rw.offer = null; sfx.level(); X.persist(); X.renderVictory(); }, i)))) : null;
+  // Spoils: take one into your pack, or sell it on the spot for half its worth. A full pack must make room first.
+  const full = E.bagFull(hero); const done = () => { sfx.coin(); X.persist(); X.renderVictory(); };
+  const packStrip = full && Rw.picked == null ? h('div', { class: 'sx-pack' },
+    h('p', { class: 'pk-head' }, ico('bag'), h('b', {}, `Your pack is full (${hero.bag.length}/${D.BAG_MAX})`), h('small', {}, 'Sell one to make room, or sell the spoils.')),
+    h('div', { class: 'pk-list' }, hero.bag.map((it) => h('div', { class: 'pk-item' }, h('span', {}, `${D.RARITY[it.rarity | 0]} ${D.WEAPONS[it.id].name} · d${E.weaponSize(it)}`),
+      btn(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); done(); }, { kind: 'ghost', icon: 'coin', aria: `Sell ${D.WEAPONS[it.id].name} for ${E.sellValue(it)} gold` }))))) : null;
   const loot = Rw.picked == null
-    ? panel('sx-loot', eyebrow('Choose your spoils', 'gold'), h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [btn('Take', () => { hero.bag.push(inst); Rw.picked = i; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'primary', icon: 'bag' })] }))))
-    : panel('sx-loot done', h('p', { class: 'muted' }, `You took the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
+    ? panel('sx-loot', eyebrow(`Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`, 'gold'), packStrip, h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [
+      btn(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; Rw.picked = i; Rw.sold = false; done(); }, { kind: 'primary', icon: 'bag', disabled: full }),
+      btn(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); Rw.picked = i; Rw.sold = true; done(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell it now for ${E.sellValue(inst)} gold` }),
+    ] }))))
+    : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold.` : `You took the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
   const lootHint = Rw.picked == null ? (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot')) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
@@ -497,8 +510,8 @@ function gearTab() {
     coachBox('g_gear'),
     eyebrow('On your body'), h('div', { class: `wc-grid worn n${worn.length}` }, worn),
     h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across the top or middle row: +10 attack. Down the middle: +10 block.'),
-    eyebrow(`Pack · ${bag.length}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
-    eyebrow('The peddler'), h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price, cls: 'buy', aria: `Buy for ${it.price} gold` })] }))));
+    eyebrow(`Pack · ${bag.length} of ${D.BAG_MAX}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
+    eyebrow('The peddler'), h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))));
 }
 function heroTab() {
   const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; hero.perks.forEach((p) => { pc[p] = (pc[p] || 0) + 1; });

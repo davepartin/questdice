@@ -44,7 +44,16 @@ export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };
 
 export const RARITY = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 export const RARITY_WEIGHTS = [70, 22, 7, 1];
-export const RARITY_SELL = [6, 14, 34, 90];
+export const RARITY_SELL = [6, 14, 34, 90]; // (old flat sell table; selling now pays SELL_SHARE of a weapon's worth)
+// A weapon's worth = its base price x tier x size. The shop charges the full worth; selling returns half.
+export const RARITY_MULT = [1, 2, 4, 8];
+export const SIZE_VALUE = { 4: 1, 6: 1.5, 8: 2.2, 10: 3 };
+export const SELL_SHARE = 0.5;
+// You carry what you wield plus a small pack. A full pack means choosing: sell, swap, or leave the spoils.
+export const BAG_MAX = 4;
+// The size of a found weapon. A bigger die needs a hand (Strength) at least that big, or it rolls as the hand's size.
+// Weights for [d4, d6, d8, d10] by act; the boss always drops one a size up, the perilous road leans bigger.
+export const DROP_SIZES = { 1: [100, 0, 0, 0], 1.5: [70, 30, 0, 0], 2: [45, 45, 10, 0], 3: [15, 50, 30, 5] };
 // TIER (Bronze..Diamond) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
 export const FORGE_COST = [0, 40, 120, 300];            // gold to reach Silver, Gold, Diamond (two-handed x1.4)
 // SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
@@ -55,35 +64,35 @@ const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
-  dagger: { name: 'Dagger', hands: 1, lean: 'off', glyph: '🗡️', price: 30,
+  dagger: { name: 'Dagger', hands: 1, lean: 'off', glyph: '🗡️', price: 18,
     tag: 'Small, safe, reliable. A 3 mends 1.',
     faces: [F(0, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })],
     bonus: [{ face: 1, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
-  bracer: { name: 'Bracer', hands: 1, lean: 'def', glyph: '🛡️', price: 30,
+  bracer: { name: 'Bracer', hands: 1, lean: 'def', glyph: '🛡️', price: 18,
     tag: 'Nimble guard. A 3 sparks 1 magic.',
     faces: [F(0, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })],
     bonus: [{ face: 1, fx: { heal: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 3, fx: { heal: 1 } }] },
-  sword: { name: 'Sword', hands: 1, lean: 'off', glyph: '⚔️', price: 40,
+  sword: { name: 'Sword', hands: 1, lean: 'off', glyph: '⚔️', price: 24,
     tag: 'Wider swings. A 4 pierces for 1.',
     faces: [F(0, 'r'), F(1, 'b'), F(3, 'r'), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
-  shield: { name: 'Shield', hands: 1, lean: 'def', glyph: '🛡️', price: 40,
+  shield: { name: 'Shield', hands: 1, lean: 'def', glyph: '🛡️', price: 24,
     tag: 'A real wall. The red 1 is a bash that hits back.',
     faces: [F(0, 'b'), F(1, 'r'), F(3, 'b'), F(4, 'b')],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
-  spear: { name: 'Spear', hands: 1, lean: 'off', glyph: '🔱', price: 45,
+  spear: { name: 'Spear', hands: 1, lean: 'off', glyph: '🔱', price: 27,
     tag: 'Reach. A 4 pierces for 2.',
     faces: [F(0, 'r'), F(1, 'b'), F(2, 'r'), F(4, 'r', { pierce: 2 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
-  bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', glyph: '🏹', price: 70,
+  bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', glyph: '🏹', price: 42,
     tag: 'Two-handed: a bow in one hand and arrows in the other. Agile, with good odds at triples. A red 3 pierces.',
     faces: [F(0, 'b'), F(1, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
-  longsword: { name: 'Long Sword', hands: 2, lean: 'off', glyph: '⚔️', price: 75,
+  longsword: { name: 'Long Sword', hands: 2, lean: 'off', glyph: '⚔️', price: 45,
     tag: 'Two-handed and swingy. Big red faces.',
     faces: [F(0, 'r'), F(0, 'b'), F(3, 'r'), F(4, 'r')],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
-  staff: { name: 'Staff', hands: 2, lean: 'off', glyph: '🪄', price: 75,
+  staff: { name: 'Staff', hands: 2, lean: 'off', glyph: '🪄', price: 45,
     tag: 'Two-handed channel. A 4 gives 2 magic.',
     faces: [F(0, 'b'), F(1, 'b'), F(2, 'r'), F(4, 'r', { magic: 2 })],
     bonus: [{ face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
@@ -294,7 +303,7 @@ export const MONSTERS = {
       { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 }, S('Smash', 0, 2), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   lich: {
-    name: 'The Hollow Lich', glyph: '☠️', short: 'LICH', init: 6, hp: 230, power: 12, xp: 140, gold: 120, tier: 'boss',
+    name: 'The Hollow Lich', glyph: '☠️', short: 'LICH', init: 6, hp: 185, power: 12, xp: 140, gold: 120, tier: 'boss',
     slam: { f: 4, m: 2 }, adds: 'skeleton',
     faces: [{ n: 'Soul Bolt', v: 'pierce', f: 2, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Drain Life', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 2 },
@@ -328,6 +337,12 @@ export const ACTS = [
   },
 ];
 export const QUESTS_PER_ACT = 10;
+// How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
+// The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
+export const ACT_HP = [1, 1.25, 1.55];
+export const ACT_FLAT = [0, 2, 5];
+export const STEP_HP = 0.06;
+export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 export const ELITE_STEPS = [5];
 
 // Party scaling (index = players - 1). Only 1 player is tuned today.

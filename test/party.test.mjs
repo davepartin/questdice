@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, newBattle, startRoll, resolve, maxHpOf, shopStock,
   newCompany, splitInt, shareWeights, rankFighters, newPartyBattle, resolveParty, partyRewards,
-  spendBlessings,
+  spendBlessings, weaponValue,
 } from '../js/engine.js';
 import { ensureRoad, roadIsOpen, chooseRoad } from '../js/roads.js';
 import { WEAPONS, CLASSES } from '../js/data.js';
@@ -225,9 +225,8 @@ test('a camp discount is applied once, when the peddler lays out new stock', () 
   cutHero.campaign.campFlags = { discount: 0.25 };
   const full = shopStock(fullHero);
   const cut = shopStock(cutHero);
-  const mult = [1, 2.3, 5, 11];
   cut.forEach((it, i) => {
-    const price = Math.max(1, Math.round(WEAPONS[it.inst.id].price * mult[it.inst.rarity] * 0.75));
+    const price = Math.max(1, Math.round(weaponValue(it.inst) * 0.75));
     assert.equal(it.price, price);
     assert.ok(it.price < full[i].price);
   });

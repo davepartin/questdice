@@ -3,6 +3,7 @@ import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie,
+  heroPower, equip, sellItem, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
 
@@ -19,7 +20,8 @@ function subsets(slots, k) {
   return out;
 }
 
-function expectedAfter(b, slots, rng, n = 14) {
+const SAMPLES = Number(process.env.SIM_SAMPLES || 14); // fewer for long progression runs
+function expectedAfter(b, slots, rng, n = SAMPLES) {
   let sum = 0;
   for (let i = 0; i < n; i++) {
     const copy = { ...b.board };
@@ -87,10 +89,46 @@ export function botCamp(hero, rng) {
     for (const slot of ['W', 'E']) if (upgradeDie(hero, 'strength', slot)) acted = true;
     for (const slot of ['SW', 'SE']) if (upgradeDie(hero, 'special', slot)) acted = true;
   }
-  // gear: buy any upgrade in rarity we can afford, equipping the best-scoring layout is out of scope; just stash
+  // weapons: train them as the hands allow, then forge tiers with spare gold
+  const held = [...new Set(['NW', 'NE'].map((k) => hero.loadout[k]).filter((w) => w && w.id !== 'fists').map((w) => w.uid))];
+  for (const uid of held) while (trainWeapon(hero, uid)) { /* grow it */ }
+  for (const uid of held) if (hero.gold > 120) forgeWeapon(hero, uid);
+  // the peddler: buy a weapon only if wielding it is a real step up
   const items = shopStock(hero);
-  items.forEach((it, i) => { if (!it.sold && it.inst.rarity >= 1 && hero.gold >= it.price + 60) buyItem(hero, i); });
+  items.forEach((it, i) => {
+    if (it.sold || hero.gold < it.price + 30) return;
+    const r = bestSlotFor(hero, it.inst); if (r.gain < 1) return;
+    if (buyItem(hero, i)) { equip(hero, it.inst.uid, r.side); while (hero.bag.length) sellItem(hero, hero.bag[0].uid); }
+  });
 }
+
+// Gear sense: a weapon is worth wielding if the hero's average throw gets better with it.
+const gearScore = (h) => { const p = heroPower(h, 160); return p.dmg + 0.8 * p.block + 0.4 * p.heal + 0.4 * p.magic; };
+const cloneH = (h) => JSON.parse(JSON.stringify(h));
+function bestSlotFor(hero, inst) { // returns { gain, side } for wielding `inst` instead of what is held
+  const base = gearScore(hero); let best = { gain: -1e9, side: null };
+  for (const side of WEAPONS_SIDES(inst)) {
+    const h = cloneH(hero); h.bag.push({ ...inst }); if (!equip(h, inst.uid, side)) continue;
+    const g = gearScore(h) - base; if (g > best.gain) best = { gain: g, side };
+  }
+  return best;
+}
+const WEAPONS_SIDES = (inst) => (inst.id && ['bow', 'longsword', 'staff'].includes(inst.id) ? ['NW'] : ['NW', 'NE']);
+// Spoils: wield the drop that helps most; otherwise sell the most valuable one on the spot.
+export function botLoot(hero, drops) {
+  if (!drops?.length) return;
+  let pick = null;
+  for (const d of drops) { const r = bestSlotFor(hero, d); if (r.gain > 0.4 && (!pick || r.gain > pick.gain)) pick = { d, ...r }; }
+  if (pick) {
+    hero.bag.push(pick.d); equip(hero, pick.d.uid, pick.side);
+    while (hero.bag.length) sellItem(hero, hero.bag[0].uid); // the bot travels light: sell what it put down
+    return;
+  }
+  const best = [...drops].sort((a, b) => sellValueOf(b) - sellValueOf(a))[0];
+  sellDrop(hero, best);
+}
+const sellValueOf = (inst) => { const h = { gold: 0 }; sellDrop(h, inst); return h.gold; };
+void takeDrop; void isTwoHanded;
 
 export function campaign(cls, seed, acts = 1) {
   const rng = makeRng(seed);

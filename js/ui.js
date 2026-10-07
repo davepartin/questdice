@@ -647,9 +647,14 @@ function renderVictory() {
   const R = S.rewards; const hero = S.hero; nextPerkOffer();
   const perks = R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `Level up! Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`),
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(hero, id); R.offer = null; sfx.level(); persist(); renderVictory(); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text), h('i', {}, `You have ${hero.perks.filter((p) => p === id).length}/${D.PERKS[id].max}`))))) : null;
-  const loot = R.picked == null ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, 'Choose your spoils'),
-    h('div', { class: 'loot' }, R.drops.map((inst, i) => V.weaponCard(inst, { actions: [primary('Take', () => { hero.bag.push(inst); R.picked = i; sfx.coin(); persist(); renderVictory(); }, { cls: 'small' })] }))))
-    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, `You took the ${D.RARITY[R.drops[R.picked].rarity]} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
+  const full = E.bagFull(hero); const after = () => { sfx.coin(); persist(); renderVictory(); };
+  const loot = R.picked == null ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`),
+    full ? h('div', { class: 'cardlist' }, hero.bag.map((it) => h('div', { class: 'mini-card' }, h('b', {}, `${D.RARITY[it.rarity | 0]} ${D.WEAPONS[it.id].name}`), primary(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); after(); }, { cls: 'small' })))) : null,
+    h('div', { class: 'loot' }, R.drops.map((inst, i) => V.weaponCard(inst, { actions: [
+      primary(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; R.picked = i; R.sold = false; after(); }, { cls: 'small', disabled: full }),
+      primary(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); R.picked = i; R.sold = true; after(); }, { cls: 'small' }),
+    ] }))))
+    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.RARITY[R.drops[R.picked].rarity]} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold.` : `You took the ${D.RARITY[R.drops[R.picked].rarity]} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
   const ready = !R.offer && hero.pendingPerks === 0 && R.picked != null;
   mount(
     h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The way is open.')),

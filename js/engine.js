@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS,
+  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -53,7 +53,13 @@ export function weaponFaces(inst) {
   }
   return faces;
 }
-export function makeWeapon(id, rarity = 0, rng) { return { uid: newUid(rng), id, rarity }; }
+export function makeWeapon(id, rarity = 0, rng, size = 4) { const w = { uid: newUid(rng), id, rarity }; if (size > 4) w.size = size; return w; }
+// The hand that holds a weapon caps its die: a d6 weapon in a d4 hand rolls as a d4. `wieldInfo` says what a weapon needs.
+export function wieldInfo(hero, inst) {
+  const need = weaponSize(inst); const two = WEAPONS[inst.id]?.hands === 2;
+  const have = two ? Math.min(hero.strength.W, hero.strength.E) : Math.max(hero.strength.W, hero.strength.E);
+  return { need, have, ok: have >= need, rollsAs: Math.min(need, have), two };
+}
 // A two-hander fills both hands. The right-hand die is its own copy (the bow's arrows) so either hand can be forged and trained on its own.
 export const twinOf = (inst) => ({ ...inst, uid: `${inst.uid}~R`, twin: true });
 export function ensureTwin(hero) { // older saves share one uid between the two hands
@@ -589,14 +595,23 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
 }
 
 // ------------------------------------------------------------------------------- rewards & growth
-export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0 } = {}) {
+const SIZES = [4, 6, 8, 10];
+// Size weights for found weapons: early Act I is all d4, later steps and acts bring d6, d8, d10. `up` shifts one size bigger.
+export function dropSizeWeights(act, step, up = 0) {
+  const key = act >= 3 ? 3 : act === 2 ? 2 : step >= 4 ? 1.5 : 1;
+  const w = [...DROP_SIZES[key]];
+  for (let i = 0; i < up; i++) { const last = w.pop(); w.unshift(0); w[3] += last; } // shift the odds one size up (d10 keeps what falls off the end)
+  return w;
+}
+export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = [100, 0, 0, 0], minSize = 4 } = {}) {
   const drops = [];
   const ids = Object.keys(LOOT_WEIGHTS);
   for (let i = 0; i < count; i++) {
     const id = ids[weighted(rng, ids.map((k) => LOOT_WEIGHTS[k]))];
     const w = RARITY_WEIGHTS.map((x, r) => (r === 0 ? Math.max(1, x - rarityBoost * 4) : x + rarityBoost * (r === 1 ? 3 : r === 2 ? 1.5 : 0.5)));
     const rarity = Math.max(minRarity, weighted(rng, w));
-    drops.push(makeWeapon(id, rarity, rng));
+    const size = Math.max(minSize, SIZES[weighted(rng, sizes)] || 4);
+    drops.push(makeWeapon(id, rarity, rng, size));
   }
   return drops;
 }
@@ -609,7 +624,9 @@ export function battleRewards(b) {
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
-  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + hero.campaign.act - 1 });
+  const c = hero.campaign; const sizes = dropSizeWeights(c.act, c.step, quest.perilous ? 1 : 0);
+  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
+  if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
   return { xp, gold, drops };
 }
 export function gainXp(hero, xp) {
@@ -680,7 +697,13 @@ export function trainWeapon(hero, uid) {
   const r = trainInfo(hero, uid); if (!r.ok) return false;
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.size = r.next; return true;
 }
-export const sellValue = (inst) => Math.round(RARITY_SELL[inst.rarity] * (WEAPONS[inst.id].hands === 2 ? 1.4 : 1));
+// What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
+export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * RARITY_MULT[inst.rarity | 0] * (SIZE_VALUE[weaponSize(inst)] || 1)));
+export const sellValue = (inst) => (inst.id === 'fists' ? 0 : Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE)));
+void RARITY_SELL;
+export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
+export const bagFull = (hero) => bagRoom(hero) <= 0;
+export function sellDrop(hero, inst) { hero.gold += sellValue(inst); return true; } // sell spoils on the spot, without carrying them
 export function shopStock(hero) {
   const c = hero.campaign;
   if (c.shop && c.shop.step === `${c.act}.${c.step}`) return c.shop.items;
@@ -688,8 +711,9 @@ export function shopStock(hero) {
   const mult = [1, 2.3, 5, 11];
   const flags = c.campFlags || {};
   const priceMod = Math.max(0.4, 1 - (flags.discount || 0) + (flags.hike || 0));
-  const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4) }).map((inst) => ({
-    inst, price: Math.max(1, Math.round(WEAPONS[inst.id].price * mult[inst.rarity] * priceMod)), sold: false,
+  void mult;
+  const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4), sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({
+    inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false,
   }));
   if (flags.discount || flags.hike) c.campFlags = {};
   c.shop = { step: `${c.act}.${c.step}`, items };
@@ -697,7 +721,7 @@ export function shopStock(hero) {
 }
 export function buyItem(hero, i) {
   const it = shopStock(hero)[i];
-  if (!it || it.sold || hero.gold < it.price) return false;
+  if (!it || it.sold || hero.gold < it.price || bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }
 export function equip(hero, uid, side = 'NW') {
@@ -722,25 +746,60 @@ export function sellItem(hero, uid) {
   if (idx < 0) return false;
   hero.gold += sellValue(hero.bag[idx]); hero.bag.splice(idx, 1); return true;
 }
-export function takeDrop(hero, inst) { hero.bag.push(inst); }
+export function takeDrop(hero, inst) { if (bagFull(hero)) return false; hero.bag.push(inst); return true; }
+
+// ------------------------------------------------------------------------------- reading the odds
+// What a hero's dice give on an average throw (no rerolls): many random boards through the real rules. Same hero, same answer.
+const _powerCache = new Map();
+export function heroPower(hero, samples = 240) {
+  const key = JSON.stringify([hero.cls, hero.level, hero.strength, hero.special, hero.speed, hero.talent, hero.dice, hero.perks, hero.loadout.NW, hero.loadout.NE]);
+  if (_powerCache.has(key)) return _powerCache.get(key);
+  const rng = makeRng(hashSeed(key)); const t = { atk: 0, pierce: 0, block: 0, heal: 0, magic: 0, gold: 0 };
+  for (let i = 0; i < samples; i++) { const ev = evaluate(hero, rollBoard(hero, rng)); for (const k in t) t[k] += ev[k] || 0; }
+  for (const k in t) t[k] /= samples;
+  const out = { ...t, dmg: t.atk + t.pierce, hp: maxHpOf(hero) };
+  if (_powerCache.size > 200) _powerCache.clear();
+  _powerCache.set(key, out); return out;
+}
+// How a quest should go for this hero, from their dice against the monsters' health and hits.
+// score ~ the share of your health the fight is likely to cost (1 = all of it). Rerolls and powers are folded in as a flat lift.
+export function questDanger(hero, quest0) {
+  const quest = withDifficulty(hero, quest0); const P = heroPower(hero);
+  let hp = 0; let hit = 0; let blockable = 0;
+  for (const id of quest.enemies) {
+    const M = MONSTERS[id]; hp += Math.round(M.hp * (quest.hpMult ?? 1)); const ep = (M.power + 1) / 2;
+    let dmg = 0; let blk = 0;
+    for (const f of M.faces) { if (!DAMAGE_VERBS.has(f.v)) continue; const m = Math.max(0, f.f + f.m * ep + (quest.flat || 0)); dmg += m; if (f.v !== 'pierce') blk += m; }
+    hit += dmg / 6; blockable += blk / 6;
+  }
+  const deal = Math.max(1, P.dmg * 1.7); // rerolls and powers: a played round deals ~1.7x an average throw (measured on bot runs)
+  const rounds = hp / deal;
+  const perRound = Math.max(0, hit - Math.min(blockable, P.block * 1.2)) - P.heal * 0.5;
+  const taken = Math.max(0, perRound) * rounds * 0.3; // monsters fall as the fight goes on, and rerolls, block powers and mending soak most of the rest
+  const score = taken / P.hp;
+  const label = score < 0.15 ? 'Easy' : score < 0.25 ? 'Fair' : score < 0.4 ? 'Hard' : 'Deadly'; // calibrated on bot runs: ~97%, ~93%, ~75%, ~50% wins
+  return { score, label, rounds: Math.max(1, Math.round(rounds)), taken: Math.round(taken), foeHp: hp, deal: Math.round(deal) };
+}
 
 // ------------------------------------------------------------------------------- campaign
-const PREFIX = ['Ambush at', 'Trouble at', 'The Siege of', 'Showdown at', 'Night Raid on', 'Skirmish near'];
+const PREFIX =['Ambush at', 'Trouble at', 'The Siege of', 'Showdown at', 'Night Raid on', 'Skirmish near'];
 export function questsFor(hero) {
   const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
   const cycle = Math.floor((c.act - 1) / ACTS.length);
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'quests'));
   const s = c.step;
-  const base = (1 + 0.05 * (s - 1)) * (1 + 0.2 * actIdx) * (1 + 0.8 * cycle);
-  const flat = 2 + Math.floor((s - 1) / 3) + 3 * cycle;
+  const ai = Math.min(ACT_HP.length - 1, c.act - 1); // act 3+ reuses the act data with the act-3 growth until it has its own monsters
+  const base = (1 + STEP_HP * (s - 1)) * ACT_HP[ai] * (1 + 0.6 * Math.max(0, cycle - (c.act > ACT_HP.length ? 1 : 0)));
+  const flat = 2 + Math.floor((s - 1) / 3) + ACT_FLAT[ai];
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     const place = kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, act.places);
     return {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
-    hpMult: base * (extra.perilous ? 1.25 : 1), flat: flat + (extra.perilous ? 1 : 0),
-    rewardMult: extra.perilous ? 1.5 : 1, perilous: !!extra.perilous,
+    // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
+    hpMult: (kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1), flat: flat + (extra.perilous ? PERIL.flat : 0),
+    rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
   };
   if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
