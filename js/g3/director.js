@@ -44,7 +44,7 @@ export class Director {
     this.stage = stage;
     this.cur = { pos: new THREE.Vector3(0, 3, 9), look: new THREE.Vector3(0, 1, 0), fov: 40 };
     this.tgt = { pos: new THREE.Vector3(0, 3, 9), look: new THREE.Vector3(0, 1, 0), fov: 40 };
-    this.shot = 'battle'; this.tilt = 0; this.punchK = 0; this.lambda = 3.2; this.sway = 1; this.offset = new THREE.Vector3();
+    this.shot = 'battle'; this.pan = 0; this.tilt = 0; this.punchK = 0; this.lambda = 3.2; this.sway = 1; this.offset = new THREE.Vector3();
     this._v = new THREE.Vector3(); this.manualOverride = false;
     this.set('battle', { snap: true });
     this.safe = { bottom: 0, top: 0 };
@@ -82,7 +82,7 @@ export class Director {
   applySafe() {
     const cam = this.stage.camera; const W = this.stage.width; const H = this.stage.height;
     const L = this.layout ? this.layout(W, H) : null;
-    const sh = L ? ((L.bottom || 0) - (L.top || 0)) / 2 : ((this.safe?.bottom || 0) - (this.safe?.top || 0)) / 2;
+    const sh = (L ? ((L.bottom || 0) - (L.top || 0)) / 2 : ((this.safe?.bottom || 0) - (this.safe?.top || 0)) / 2) + (this.pan || 0); // pan: px the picture slides up (the battle frames itself to its creatures)
     const sx = L ? ((L.right || 0) - (L.left || 0)) / 2 : 0;
     if (Math.abs(sh) < 1 && Math.abs(sx) < 1) { cam.clearViewOffset(); return; }
     cam.setViewOffset(W, H, sx, sh, W, H);

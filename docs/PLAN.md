@@ -264,3 +264,6 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 ### Bow and arrows (two hands, two dice)
 - A two-hander's right-hand copy is its own object (`E.twinOf`, uid `<uid>~R`, `twin: true`; `E.ensureTwin` fixes old saves). Forge and Train act on one hand at a time, so the bow and its arrows level separately; both start identical. Putting the weapon away keeps the better hand. The Forge tab lists each hand ("Bow" / "Arrows"; other two-handers say "· left hand / right hand").
 - Board: bow icon in the left weapon circle, a bundle of arrows in the right one (`arrows` icon; dice watermark follows).
+
+### Battle framing follows creature height (phones)
+- `framePan` (battle3d.js) measures the tallest visible creature each frame and slides the picture (`director.pan`, added to the view offset) so its head sits ~16% down the battlefield; the nearest feet stay above the golden line and a head never goes under the header. Reset per battle.

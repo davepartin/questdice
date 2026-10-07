@@ -37,7 +37,7 @@ const EPITHET = {
 export async function start(ctx) {
   C = ctx;
   const { S } = C;
-  B.b = S.battle; B.hero = S.hero; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  B.b = S.battle; B.hero = S.hero; if (world.director) world.director.pan = 0; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
@@ -51,7 +51,7 @@ export async function start(ctx) {
   bw.stage.canvas.addEventListener('pointerup', pickEnemy);
   B.ringMesh = makeRing();
   bw.stage.scene.add(B.ringMesh);
-  bw.stage.onFrame((dt, t) => { if (!B.ended) { positionPlates(); ringUpdate(t); } });
+  bw.stage.onFrame((dt, t) => { if (!B.ended) { positionPlates(); ringUpdate(t); framePan(dt); } });
   buildHud();
   layer.classList.remove('loading');
   layer.querySelector('.b3-loading')?.remove();
@@ -358,6 +358,29 @@ function markerUpdate(a, show, t) {
   const top = a.worldAnchor?.('head'); const base = top ? top.clone() : a.root.position.clone().setY((a.height || 2) * 0.9 * (a.root.scale?.y || 1));
   const bob = Math.sin(t * 4) * 0.12; B.marker.position.set(base.x, base.y + 0.55 + bob, base.z);
   B.marker.children[0].rotation.y = t * 1.6;
+}
+// Phones: slide the picture so the tallest creature stands near the top of the battlefield (no wasted sky),
+// while the nearest feet stay above the golden line. Small monsters pan the view down, a towering one keeps it high.
+const _fb = new THREE.Box3(); const _fv = new THREE.Vector3();
+function framePan(dt) {
+  const dir = B.bw?.director; if (!dir || landscape() || !B.hud || !B.lineY || dir.shot !== 'battle') return;
+  const cam = B.bw.stage.camera; const topBar = B.hud.top.getBoundingClientRect().bottom; const W = B.bw.stage.width; const H = B.bw.stage.height;
+  const roots = [B.bw.hero?.root, ...[...B.bw.actors.entries()].filter(([uid]) => (B.b.enemies.find((e) => e.uid === uid)?.hp ?? 0) > 0).map(([, a]) => a.root)].filter((r) => r && r.visible);
+  if (!roots.length) return;
+  let top = 1e9; let foot = -1e9;
+  for (const r of roots) {
+    _fb.setFromObject(r); if (_fb.isEmpty()) continue;
+    const cx = (_fb.min.x + _fb.max.x) / 2; const cz = (_fb.min.z + _fb.max.z) / 2;
+    _fv.set(cx, _fb.max.y, cz).project(cam); top = Math.min(top, (-_fv.y * 0.5 + 0.5) * H);
+    _fv.set(cx, _fb.min.y, cz).project(cam); foot = Math.max(foot, (-_fv.y * 0.5 + 0.5) * H);
+  }
+  void W; if (top > 1e8) return;
+  const want = topBar + 0.16 * (B.lineY - topBar); // where the tallest head should sit
+  let delta = want - top; // + moves the picture down, - up
+  delta = Math.min(delta, B.lineY - 8 - foot); // keep the nearest feet above the line
+  delta = Math.max(delta, topBar + 4 - top); // but never lose a head under the header
+  const target = Math.max(-40, Math.min(140, dir.pan - delta));
+  dir.pan += (target - dir.pan) * (1 - Math.exp(-2.4 * dt)); dir.applySafe();
 }
 function ringUpdate(t) {
   const e = B.b.enemies[B.target]; const a = e && B.bw.actors.get(e.uid);
