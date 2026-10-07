@@ -58,19 +58,10 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
   const T = (lines, fs) => { a.font = FONT(fs); return { lines, fs, L: Math.max(...lines.map((t) => a.measureText(t).width + t.length * 0.012 * k)) / k }; };
   const IC = 0.3; const GAP = 0.05; const ZW = -(FH - 0.36); // weapon icons sit at the top corners
   const units = [];
-  { // head and feet: icon then name, centred on the top and bottom margins
-    for (const [ic, nm, z, sd] of [['helmet', 'HEAD', -ox, 't'], ['boots', 'FEET', ox, 'b']]) {
-      const t = T([nm], 0.11); const U = IC + GAP + t.L;
-      units.push({ side: sd, x: 0, z, parts: [{ icon: ic, size: 0.31, at: -U / 2 + IC / 2 }, { text: t, at: U / 2 - t.L / 2 }] });
-    }
-  }
-  for (const [sd, flip, wi, wname, hand] of [['l', false, wL, 'LEFT', 'LEFT HAND'], ['r', true, wR, 'RIGHT', 'RIGHT HAND']]) {
-    const ts = T(['STRENGTH', hand], 0.1); const tw = T(['WEAPON', wname], 0.1);
-    // both edges read upward from the middle: fist, STRENGTH / hand, WEAPON / side, weapon icon in the corner
-    const c1 = -(0.17 + ts.L / 2); const c2 = c1 - ts.L / 2 - 0.07 - tw.L / 2; const zi = c2 - tw.L / 2 - GAP - IC / 2;
-    units.push({ side: sd, x: sd === 'l' ? -ox : ox, flip, parts: [
-      { icon: 'gauntlet', size: 0.3, at: 0 }, { text: ts, at: c1 }, { text: tw, at: c2 }, { icon: wi, size: IC, at: zi },
-    ] });
+  // names only, no icons: HEAD and FEET centred top and bottom; each side reads STRENGTH – LEFT – WEAPON from the hand towards the weapon
+  for (const [nm, z, sd] of [['HEAD', -ox, 't'], ['FEET', ox, 'b']]) units.push({ side: sd, x: 0, z, parts: [{ text: T([nm], 0.11), at: 0 }] });
+  for (const [sd, line] of [['l', 'STRENGTH  –  LEFT  –  WEAPON'], ['r', 'WEAPON  –  RIGHT  –  STRENGTH']]) {
+    units.push({ side: sd, x: sd === 'l' ? -ox : ox, parts: [{ text: T([line], 0.1), at: -pitch / 2 }] });
   }
   for (const sd of ['l', 'r']) { // talent dice: names only, no symbol
     const t = T([sd === 'l' ? 'TALENT ONE' : 'TALENT TWO'], 0.11);
@@ -128,7 +119,7 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
     }
   };
   for (const n of UNITS) {
-    const horiz = n.side === 't' || n.side === 'b'; const rot = horiz ? 0 : -Math.PI / 2;
+    const horiz = n.side === 't' || n.side === 'b'; const rot = n.side === 'l' ? -Math.PI / 2 : n.side === 'r' ? Math.PI / 2 : 0; // left reads upward, right reads downward
     // on the left edge the text reads upward, so 'at' (measured along +z) is mirrored for it
     for (const p of n.parts) {
       const along = p.at; const px = horiz ? n.x + along : n.x; const pz = horiz ? n.z : along;
