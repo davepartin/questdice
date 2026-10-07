@@ -58,14 +58,14 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
   const T = (lines, fs) => { a.font = FONT(fs); return { lines, fs, L: Math.max(...lines.map((t) => a.measureText(t).width + t.length * 0.012 * k)) / k }; };
   const IC = 0.3; const GAP = 0.05; const ZW = -(FH - 0.36); // weapon icons sit at the top corners
   const units = [];
-  // names only, no icons: HEAD and FEET centred top and bottom; each side reads STRENGTH – LEFT – WEAPON from the hand towards the weapon
-  for (const [nm, z, sd] of [['HEAD', -ox, 't'], ['FEET', ox, 'b']]) units.push({ side: sd, x: 0, z, parts: [{ text: T([nm], 0.11), at: 0 }] });
+  // names only, no icons: FOCUS (head) and INITIATIVE (feet) centred top and bottom; each side reads STRENGTH – LEFT – WEAPON from the hand towards the weapon
+  for (const [nm, z, sd] of [['FOCUS', -ox, 't'], ['INITIATIVE', ox, 'b']]) units.push({ side: sd, x: 0, z, parts: [{ text: T([nm], 0.11), at: 0 }] });
   for (const [sd, line] of [['l', 'STRENGTH  –  LEFT  –  WEAPON'], ['r', 'WEAPON  –  RIGHT  –  STRENGTH']]) {
     units.push({ side: sd, x: sd === 'l' ? -ox : ox, parts: [{ text: T([line], 0.1), at: -pitch / 2 }] });
   }
   for (const sd of ['l', 'r']) { // talent dice: names only, no symbol
     const t = T([sd === 'l' ? 'TALENT ONE' : 'TALENT TWO'], 0.11);
-    units.push({ side: sd, x: sd === 'l' ? -ox : ox, parts: [{ text: t, at: pitch + 0.25 }] });
+    units.push({ side: sd, x: sd === 'l' ? -ox : ox, parts: [{ text: t, at: pitch }] });
   }
   const UNITS = units;
   for (const u of UNITS) { // span along the edge, so the runes keep clear
@@ -132,7 +132,7 @@ export function paintDecals({ size, FH, pitch, theme, hero, twoHanded, dishR, we
   }
 
   // --- two-handed bracket: a gold bar along the far margin linking both weapon sockets
-  if (twoHanded) {
+  if (false && twoHanded) { // the two-handed bar along the top border is retired: the EMPTY socket says it
     const zb = -(FH - 0.115); const x0 = -pitch; const x1 = pitch;
     for (const [c, mode] of [[a, 'a'], [e, 'e']]) {
       c.save();
