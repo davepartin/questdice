@@ -193,10 +193,11 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   // an empty socket (no weapon, talent or hand there): a light diagonal line and the word EMPTY, in the same tan as the other socket marks
   const vacTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); g.lineCap = 'round';
-    g.fillStyle = 'rgba(120,90,55,0.10)'; g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#a98e62'; g.lineWidth = 6; g.setLineDash([20, 18]); g.beginPath(); g.arc(0, 0, 104, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
-    g.lineWidth = 9; g.beginPath(); g.moveTo(-62, 62); g.lineTo(62, -62); g.stroke();
-    g.font = '800 30px "Trebuchet MS", "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#c9ae7c'; g.strokeStyle = 'rgba(40,24,10,0.85)'; g.lineWidth = 6; g.lineJoin = 'round'; g.strokeText('EMPTY', 0, 80); g.fillText('EMPTY', 0, 80);
+    g.fillStyle = 'rgba(28,16,8,0.35)'; g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#a98e62'; g.lineWidth = 3; g.setLineDash([10, 8]); g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+    g.lineWidth = 4; g.beginPath(); g.moveTo(-40, 40); g.lineTo(40, -40); g.stroke();
+    g.font = '800 22px "Trebuchet MS", "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.strokeStyle = 'rgba(28,16,8,0.95)'; g.lineWidth = 7; g.strokeText('EMPTY', 0, 1); g.fillStyle = '#d2b47e'; g.fillText('EMPTY', 0, 1);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
   for (const slot of SLOT_ORDER) {
     const s = S[slot];
@@ -211,11 +212,16 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const name = s.role === 'weapon' ? weaponIcon(hero.loadout[s.slot]?.id) : SLOT_ICON[s.role];
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
     const flip = s.slot === 'E' || s.slot === 'NE' || s.slot === 'SE';
-    g.translate(128, 128); if (flip) g.scale(-1, 1);
-    const sz = s.role === 'hand' ? 150 : s.role === 'heart' ? 138 : 132;
-    g.fillStyle = 'rgba(60,36,16,0.55)'; drawIcon(g, name, 3, 4, sz); // carved shadow
-    const gr = g.createLinearGradient(-sz / 2, -sz / 2, sz / 2, sz / 2); gr.addColorStop(0, '#e2c791'); gr.addColorStop(0.55, '#c49a5e'); gr.addColorStop(1, '#8c6034');
-    g.fillStyle = gr; g.strokeStyle = '#4a2c12'; drawIcon(g, name, 0, 0, sz, { stroke: 5 });
+    g.translate(128, 128);
+    // a medallion that sits inside the socket circle (radius ~72px at this scale): dark inset disc, thin tan ring, icon well inside it
+    g.fillStyle = 'rgba(28,16,8,0.55)'; g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(201,160,104,0.75)'; g.lineWidth = 2.5; g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.stroke();
+    g.save(); g.beginPath(); g.arc(0, 0, 57, 0, Math.PI * 2); g.clip(); if (flip) g.scale(-1, 1);
+    const sz = 74;
+    g.fillStyle = 'rgba(10,5,2,0.6)'; drawIcon(g, name, 1.5, 2.5, sz); // carved shadow
+    const gr = g.createLinearGradient(0, -sz / 2, 0, sz / 2); gr.addColorStop(0, '#ead2a0'); gr.addColorStop(0.5, '#cfa468'); gr.addColorStop(1, '#9a6c3c');
+    g.fillStyle = gr; drawIcon(g, name, 0, 0, sz);
+    g.restore();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
     s.ico.material.map?.dispose?.(); s.ico.material.map = t; s.ico.material.needsUpdate = true;
   }
