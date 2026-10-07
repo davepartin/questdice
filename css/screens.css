@@ -381,4 +381,15 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-places .pl-gold { display: inline-flex; align-items: center; gap: .2rem; font-size: .78rem; color: #f6c445; }
 .sx-places .pl-gold .ic { width: .85rem; height: .85rem; }
 /* phones: the title menu can always be scrolled, so no option is ever out of reach */
-@media (max-aspect-ratio: 1085/1000) { .sx-screen.title .sx-title-menu { pointer-events: auto; -webkit-overflow-scrolling: touch; } }
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen.title .sx-title-menu { pointer-events: auto; -webkit-overflow-scrolling: touch; }
+  /* bottom-aligned without flex-end, which makes overflow above the top unreachable */
+  .sx-screen.title .sx-title-menu { justify-content: flex-start; }
+  .sx-screen.title .sx-title-menu > :first-child { margin-top: auto; }
+  /* the menu may grow up to just under the logo, so short phones use the empty space before scrolling */
+  .sx-screen.title .sx-title-menu { max-height: calc(100dvh - 10.5rem - var(--safe-t) - var(--safe-b)); }
+}
+/* "More below": shown only while the menu has more to scroll */
+.sx-title-menu .sx-more { position: sticky; bottom: 0; align-self: center; display: none; margin-top: -.4rem; padding: .35rem .9rem; border-radius: 999px;
+  background: rgba(12,14,26,.92); border: 1px solid rgba(225,179,74,.5); color: #f1d38a; font: 700 .72rem/1 var(--font-ui, system-ui); letter-spacing: .14em; text-transform: uppercase; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+.sx-title-menu.more .sx-more { display: block; }

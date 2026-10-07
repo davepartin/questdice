@@ -37,9 +37,12 @@ export function floater(anchor, text, kind = '') {
   setTimeout(() => f.remove(), 1300);
 }
 export const buzz = (ms = 15) => { try { navigator.vibrate?.(ms); } catch { /* ignore */ } };
+// Close any open dialog. Always use this (not emptying #modal by hand): an empty but still "open" #modal
+// is an invisible full-screen layer that swallows every tap.
+export function closeModal() { const host = $('#modal'); host.replaceChildren(); host.classList.remove('open'); }
 export function modal(content, { dismiss = true } = {}) {
   const host = $('#modal');
-  const close = () => { host.replaceChildren(); host.classList.remove('open'); };
+  const close = closeModal;
   const card = h('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' }, content);
   const back = h('div', { class: 'modal-back', onclick: (e) => { if (dismiss && e.target === back) close(); } }, card);
   host.replaceChildren(back); host.classList.add('open');

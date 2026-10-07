@@ -129,6 +129,15 @@ function togetherChoice(menu) {
     plaque({ eyebrow: 'Many phones', title: 'Each on your own phone', sub: 'Everyone joins one table with a code.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
     plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: back }));
 }
+// "Saved games" opens in place: every hero and company on this phone, newest first, then Soul Code import.
+function savedChoice(menu, saves, saveSub, where) {
+  menu.replaceChildren(
+    h('div', { class: 'sx-eye menu-label' }, `Saved games · ${saves.length}`),
+    ...saves.map((x) => plaque({ eyebrow: where(x), title: x.name, sub: saveSub(x), iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), onclick: () => X.unlock(x.name, x.kind) })),
+    plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }),
+    plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: () => X.showTitle() }));
+  menu.closest('.sx-title-menu')?.scrollTo?.({ top: 0 });
+}
 // ------------------------------------------------------------------------------------------------ title
 export function title() {
   const S = X.S; const saves = SV.listSaves(); const seat = Net.savedSeat();
@@ -137,22 +146,32 @@ export function title() {
   S.cleanups = S.cleanups || [];
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'Main menu' });
   if (seat) menu.append(plaque({ eyebrow: 'Table', title: `Rejoin ${seat.code}`, sub: 'This phone still has a seat.', icon: 'people', tone: 'is-together', onclick: () => X.resume() }));
-  saves.forEach((x, i) => {
-    const company = x.kind === 'company';
-    const sub = company ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}` : `Level ${x.level} ${D.CLASSES[x.cls].name}`;
-    menu.append(plaque({ eyebrow: i === 0 ? 'Continue' : `Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, title: x.name, sub: i === 0 ? `${sub} · Act ${romans[x.act - 1] || x.act}, Quest ${x.step}` : sub, iconEl: company ? ico('people') : emblem(x.cls), primary: i === 0, onclick: () => X.unlock(x.name, x.kind) }));
-  });
+  // One "Continue" for the most recent game, and one "Saved games" door to all of them, so the home screen
+  // never hides buttons below the fold.
+  const saveSub = (x) => (x.kind === 'company' ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}` : `Level ${x.level} ${D.CLASSES[x.cls].name}`);
+  const where = (x) => `Act ${romans[x.act - 1] || x.act}, Quest ${x.step}`;
   const group = (label) => h('div', { class: 'sx-eye menu-label' }, label);
-  if (saves.length) menu.append(group('Begin anew'));
+  if (saves.length) {
+    const x = saves[0];
+    menu.append(plaque({ eyebrow: 'Continue', title: x.name, sub: `${saveSub(x)} · ${where(x)}`, iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), primary: true, onclick: () => X.unlock(x.name, x.kind) }));
+    menu.append(plaque({ eyebrow: 'Saved games', title: saves.length > 1 ? `All saved games (${saves.length})` : 'Saved games', sub: 'Every hero saved on this phone.', icon: 'book', onclick: () => savedChoice(menu, saves, saveSub, where) }));
+    menu.append(group('Begin anew'));
+  }
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: !saves.length, onclick: X.showCreate }),
-    plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Two to six heroes, one adventure.', icon: 'people', tone: 'is-together', onclick: () => togetherChoice(menu) }),
-    plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
+    plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Two to six heroes, one adventure.', icon: 'people', tone: 'is-together', onclick: () => togetherChoice(menu) }));
+  if (!saves.length) menu.append(plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
   mountAs('title',
     h('div', { class: 'sx-title-shell' },
       h('div', { class: 'sx-title-brand' }, logo()),
-      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, btn('How to play', X.showHowTo, { kind: 'link', icon: 'book' })))));
-  lay('title'); SCR.enter('title', { cls }, `title:${cls}`);
+      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, btn('How to play', X.showHowTo, { kind: 'link', icon: 'book' })), h('div', { class: 'sx-more', 'aria-hidden': 'true' }, '▾ More below'))));
+  lay('title');
+  const box = menu.parentElement;
+  const check = () => box.classList.toggle('more', box.scrollTop + box.clientHeight < box.scrollHeight - 12);
+  box.addEventListener('scroll', check, { passive: true });
+  const mo = new MutationObserver(() => requestAnimationFrame(check)); mo.observe(menu, { childList: true });
+  addEventListener('resize', check); S.cleanups.push(() => { mo.disconnect(); removeEventListener('resize', check); });
+  requestAnimationFrame(check); setTimeout(check, 400); SCR.enter('title', { cls }, `title:${cls}`);
 }
 
 // ------------------------------------------------------------------------------------------------ create

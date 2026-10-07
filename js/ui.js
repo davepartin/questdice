@@ -1,5 +1,5 @@
 // Screens and input. Rules live in engine.js, drawing helpers in view.js.
-import { h, $, $$, sleep, toast, floater, buzz, modal } from './dom.js';
+import { h, $, $$, sleep, toast, floater, buzz, modal, closeModal } from './dom.js';
 import { burstAt, shake } from './fx.js';
 import { sfx, isMuted, setMuted } from './audio.js';
 import * as E from './engine.js';
@@ -105,7 +105,7 @@ function primary(label, onclick, { disabled = false, cls = '' } = {}) {
 function ghost(label, onclick, { disabled = false, cls = '' } = {}) {
   return h('button', { class: `btn btn-ghost ${cls}`, type: 'button', disabled, onclick: () => { sfx.click(); onclick(); } }, label);
 }
-export function showHowTo() { modal(h('div', {}, V.howToPlay(), h('div', { class: 'row end' }, primary('Got it', () => $('#modal').replaceChildren())))); }
+export function showHowTo() { modal(h('div', {}, V.howToPlay(), h('div', { class: 'row end' }, primary('Got it', () => closeModal())))); }
 export function bindChrome() {
   const mute = $('#mute'); const sync = () => { if (world.available || SCRUI.on()) SCRUI.chrome(isMuted()); else mute.textContent = isMuted() ? '🔇' : '🔊'; mute.setAttribute('aria-pressed', String(isMuted())); };
   sync(); mute.onclick = () => { setMuted(!isMuted()); sync(); sfx.click(); };
@@ -161,7 +161,7 @@ function unlock(name, kind = 'hero') {
     try {
       const saved = kind === 'company' ? await SV.openCompany(name, pw.value) : await SV.openHero(name, pw.value);
       adopt(saved, kind);
-      $('#modal').replaceChildren(); sfx.coin(); showRoadOrBoard();
+      closeModal(); sfx.coin(); showRoadOrBoard();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
@@ -188,12 +188,12 @@ function showImport() {
   const ta = h('textarea', { class: 'input code', rows: 5, placeholder: 'QD1.… or QD2.…' });
   const msg = h('p', { class: 'form-msg' });
   const go = (overwrite = false) => {
-    try { const name = SV.importCode(ta.value, { overwrite }); $('#modal').replaceChildren(); toast(`${name} has arrived.`, 'good'); sfx.coin(); showTitle(); }
+    try { const name = SV.importCode(ta.value, { overwrite }); closeModal(); toast(`${name} has arrived.`, 'good'); sfx.coin(); showTitle(); }
     catch (e) {
       if (e.code === 'EXISTS') { msg.textContent = `${e.name} already lives on this device.`; msg.append(' ', h('a', { href: '#', onclick: (ev) => { ev.preventDefault(); go(true); } }, 'Replace them')); } else { msg.textContent = e.message; sfx.error(); }
     }
   };
-  modal(h('div', { class: 'form' }, h('h2', {}, 'Bring a hero here'), h('p', { class: 'muted' }, 'Paste a Soul Code exported from another device.'), ta, msg, h('div', { class: 'row end' }, ghost('Cancel', () => $('#modal').replaceChildren()), primary('Import', () => go(false)))));
+  modal(h('div', { class: 'form' }, h('h2', {}, 'Bring a hero here'), h('p', { class: 'muted' }, 'Paste a Soul Code exported from another device.'), ta, msg, h('div', { class: 'row end' }, ghost('Cancel', () => closeModal()), primary('Import', () => go(false)))));
 }
 
 // ------------------------------------------------------------------ create
