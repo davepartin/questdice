@@ -1,0 +1,12 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--no-sandbox','--disable-dev-shm-usage'] });
+const p = await b.newPage({ viewport: { width: 430, height: 932 }, hasTouch: true, deviceScaleFactor: 2 });
+p.on('pageerror', (e) => console.log('ERR', e.message));
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done','1'); localStorage.setItem('qd.hints','off'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; for (let i = 0; i < Math.round(s*15); i++) { st.simulate(1/15,1/30); await new Promise(r=>setTimeout(r,0)); } }, s);
+await p.evaluate(() => { const { S, E, showCamp } = window.QD; const h = E.newHero({ name: 'Dave', cls: 'ranger', seed: 5 }); h.level = 5; h.gold = 500; S.hero = h; S.company = { members: [h] }; h.campaign.step = 3; showCamp({ fromBoard: false }); });
+await pump(8);
+await p.evaluate(() => [...document.querySelectorAll('button,[role=tab]')].find((e) => /forge/i.test(e.textContent) && e.textContent.length < 20)?.click()); await pump(3);
+console.log(await p.evaluate(() => [...document.querySelectorAll('.wrow')].map((e) => e.innerText.replace(/\n/g, ' | ')).join('\n')));
+await p.screenshot({ path: 'docs/ingame/forge_bow.png' }); await b.close();

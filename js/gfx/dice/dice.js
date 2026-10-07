@@ -32,7 +32,7 @@ export function dieSpecs(hero) {
       labels = E.weaponFaces(inst).slice(0, sides).map((f) => ({
         text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
         corners: Object.keys(f.fx || {}).map((k) => FXK[k]).filter(Boolean),
-        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? 'bow' : wid === 'staff' ? 'staff' : 'longsword') : wid === 'fists' ? 'fist' : wid,
+        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : 'longsword') : wid === 'fists' ? 'fist' : wid,
       }));
     } else if (role === 'special') {
       theme = 'amethyst';

@@ -260,3 +260,7 @@ procedural Three.js), what is good, the realistic ceiling, and a verdict. Write 
 
 ### Deploy note (Oct 7)
 GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck at v20261006bz) although main kept getting pushes. If the live site looks stale, check repo Settings → Pages (source = deploy from branch main) and the Actions tab.
+
+### Bow and arrows (two hands, two dice)
+- A two-hander's right-hand copy is its own object (`E.twinOf`, uid `<uid>~R`, `twin: true`; `E.ensureTwin` fixes old saves). Forge and Train act on one hand at a time, so the bow and its arrows level separately; both start identical. Putting the weapon away keeps the better hand. The Forge tab lists each hand ("Bow" / "Arrows"; other two-handers say "· left hand / right hand").
+- Board: bow icon in the left weapon circle, a bundle of arrows in the right one (`arrows` icon; dice watermark follows).

@@ -209,10 +209,10 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   const SLOT_ICON = { head: 'helmet', feet: 'boots', hand: 'gauntlet', heart: 'heart', special: 'talent' };
   function paintSlotIcon(s, hero) {
-    const name = s.role === 'weapon' ? weaponIcon(hero.loadout[s.slot]?.id) : SLOT_ICON[s.role];
+    const wi = hero.loadout[s.slot]; const name = s.role === 'weapon' ? (wi?.twin && wi.id === 'bow' ? 'arrows' : weaponIcon(wi?.id)) : SLOT_ICON[s.role];
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
     const right = s.slot === 'E' || s.slot === 'NE' || s.slot === 'SE';
-    const flip = name === 'bow' ? !right : right; // the bow's arrow points out to its own side
+    const flip = name === 'bow' ? !right : name === 'arrows' ? false : right; // the bow's arrow points out to its own side
     g.translate(128, 128);
     // a medallion that sits inside the socket circle (radius ~72px at this scale): dark inset disc, thin tan ring, icon well inside it
     g.fillStyle = 'rgba(28,16,8,0.55)'; g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.fill();

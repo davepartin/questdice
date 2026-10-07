@@ -54,6 +54,12 @@ export function weaponFaces(inst) {
   return faces;
 }
 export function makeWeapon(id, rarity = 0, rng) { return { uid: newUid(rng), id, rarity }; }
+// A two-hander fills both hands. The right-hand die is its own copy (the bow's arrows) so either hand can be forged and trained on its own.
+export const twinOf = (inst) => ({ ...inst, uid: `${inst.uid}~R`, twin: true });
+export function ensureTwin(hero) { // older saves share one uid between the two hands
+  const { NW, NE } = hero.loadout;
+  if (NW && NE && WEAPONS[NW.id].hands === 2 && NE.id === NW.id && !NE.twin) hero.loadout.NE = { ...NE, uid: `${NW.uid}~R`, twin: true };
+}
 const fists = (side) => ({ uid: `fists-${side}`, id: 'fists', rarity: 0 });
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
@@ -62,7 +68,7 @@ export function newHero({ name, cls, seed, full = false }) {
   const c = CLASSES[cls];
   const rng = makeRng(hashSeed(name, cls, seed ?? Date.now()));
   const loadout = {};
-  if (c.weapons.length === 1) { const w = makeWeapon(c.weapons[0], 0, rng); loadout.NW = w; loadout.NE = { ...w }; }
+  if (c.weapons.length === 1) { const w = makeWeapon(c.weapons[0], 0, rng); loadout.NW = w; loadout.NE = twinOf(w); }
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
     v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0,
@@ -650,6 +656,7 @@ export function upgradeDie(hero, kind, slot) {
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
 const handsMul = (inst) => (WEAPONS[inst.id].hands === 2 ? 1.4 : 1);
 export function forgeInfo(hero, uid) {
+  ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const next = (inst.rarity | 0) + 1;
   if (inst.id === 'fists' || next > 3 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
@@ -661,6 +668,7 @@ export function forgeWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
 }
 export function trainInfo(hero, uid) {
+  ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
   if (inst.id === 'fists' || !next) return { ok: false, why: 'max' };
@@ -697,10 +705,12 @@ export function equip(hero, uid, side = 'NW') {
   if (idx < 0) return false;
   const inst = hero.bag[idx]; const w = WEAPONS[inst.id];
   hero.bag.splice(idx, 1);
-  const stash = (it) => { if (it && it.id !== 'fists' && !hero.bag.some((x) => x.uid === it.uid)) hero.bag.push(it); };
+  const nw = hero.loadout.NW; const ne = hero.loadout.NE; // putting a two-hander away keeps the better of its two hands
+  if (ne?.twin && nw && nw.id === ne.id) { nw.rarity = Math.max(nw.rarity | 0, ne.rarity | 0); if (nw.size || ne.size) nw.size = Math.max(nw.size | 0, ne.size | 0) || undefined; }
+  const stash = (it) => { if (it && it.id !== 'fists' && !it.twin && !hero.bag.some((x) => x.uid === it.uid)) hero.bag.push(it); };
   if (w.hands === 2) {
     stash(hero.loadout.NW); stash(hero.loadout.NE);
-    hero.loadout.NW = inst; hero.loadout.NE = { ...inst };
+    hero.loadout.NW = inst; hero.loadout.NE = twinOf(inst);
   } else {
     if (isTwoHanded(hero)) { stash(hero.loadout.NW); hero.loadout.NW = fists('L'); hero.loadout.NE = fists('R'); }
     stash(hero.loadout[side]); hero.loadout[side] = inst;

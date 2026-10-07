@@ -364,7 +364,7 @@ export function victory(first) {
 }
 export function defeat(retreat, loss) {
   const S = X.S; const hero = S.hero;
-  const lines = [['Level', `${hero.level}`, 'hero'], ['Gear', `${Object.values(hero.loadout).filter((w, i, a) => a.findIndex((x) => x.uid === w.uid) === i).length + hero.bag.length} weapons`, 'bag'], ['Perks', `${hero.perks.length}`, 'star']];
+  const lines = [['Level', `${hero.level}`, 'hero'], ['Gear', `${Object.values(hero.loadout).filter((w, i, a) => !w.twin && a.findIndex((x) => x.uid === w.uid) === i).length + hero.bag.length} weapons`, 'bag'], ['Perks', `${hero.perks.length}`, 'star']];
   mountAs('defeat', h('div', { class: 'sx-split sx-defeat' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'df-head' }, eyebrow(S.quest?.name || ''), h('h1', { class: 'df-title' }, retreat ? 'You withdraw' : 'You have fallen'), h('p', {}, retreat ? 'A wise person lives to fight tomorrow.' : 'The dark wins this round. It does not get to keep you.'), flourish()),
@@ -391,12 +391,12 @@ function upgradeRow(kind, slot, label, hint) {
     u.next ? btn(String(u.cost), () => { if (E.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
-function weaponRow(inst) {
+function weaponRow(inst, label = '') {
   const hero = X.S.hero; const w = D.WEAPONS[inst.id]; const size = E.weaponSize(inst);
   const f = E.forgeInfo(hero, inst.uid); const t = E.trainInfo(hero, inst.uid);
   const note = !t.next ? 'Biggest die' : t.why === 'hands' ? `d${t.next} needs a d${t.next} hand first` : `d${size} → d${t.next}`;
   return h('div', { class: 'sx-urow wrow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, `${w.name}`), h('small', {}, `${D.RARITY[inst.rarity | 0]} · d${size}`), h('small', { class: 'ur-next' }, note)),
+    h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.RARITY[inst.rarity | 0]} · d${size}`), h('small', { class: 'ur-next' }, note)),
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
@@ -453,10 +453,16 @@ function powerRow(hero, k) {
     h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, k.text), h('small', { class: 'ur-next' }, `${KIND_NAME[k.kind] || ''} · ${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`)),
     u.next ? btn(`Level ${u.next} · ${u.cost}`, () => { if (E.upgradePower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${k.name} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
+const weaponRowFor = (inst, label) => weaponRow(inst, label);
 function forgeTab() {
   const hero = X.S.hero;
   const hasTalent = ['SW', 'SE'].some((k) => E.isActive(hero, k));
-  const weapons = [...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()];
+  E.ensureTwin(hero);
+  const wdef = D.WEAPONS[hero.loadout.NW.id];
+  // a two-hander lists each hand on its own (the bow, then its arrows) so either die can be forged or trained
+  const weapons = E.isTwoHanded(hero)
+    ? [weaponRowFor(hero.loadout.NW, wdef.twinName ? wdef.name : `${wdef.name} · left hand`), weaponRowFor(hero.loadout.NE, wdef.twinName || `${wdef.name} · right hand`)]
+    : [...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map((i) => weaponRowFor(i, ''));
   return h('div', { class: 'sx-tab forge' },
     h('p', { class: 'fine center gold-line' }, `You carry ${hero.gold} gold.`),
     unlockSection(hero),
@@ -473,7 +479,7 @@ function forgeTab() {
     ...E.cardsOf(hero).map((k) => powerRow(hero, k)),
     eyebrow('Weapons'),
     h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
-    ...weapons.map(weaponRow));
+    ...weapons);
 }
 function gearTab() {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);

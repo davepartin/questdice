@@ -165,11 +165,13 @@ test('training a weapon needs the hand first, and gold; forging a tier costs gol
   assert.equal(forgeWeapon(h, uid), true); assert.equal(h.loadout.NW.rarity, 1);
   assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4] - FORGE_COST[1]);
   h.gold = 0; assert.equal(forgeInfo(h, uid).why, 'gold');
-  // a two-hander sits in both hands: forging it updates both copies, once
+  // a two-hander sits in both hands, but each hand's die (the bow, then its arrows) is forged on its own
   const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); r.gold = 1000; const ru = r.loadout.NW.uid;
-  assert.equal(r.loadout.NE.uid, ru); assert.equal(forgeWeapon(r, ru), true);
-  assert.equal(r.loadout.NW.rarity, 1); assert.equal(r.loadout.NE.rarity, 1);
+  assert.equal(r.loadout.NE.twin, true); assert.notEqual(r.loadout.NE.uid, ru);
+  assert.equal(forgeWeapon(r, ru), true);
+  assert.equal(r.loadout.NW.rarity, 1); assert.equal(r.loadout.NE.rarity, 0, 'the arrows stay as they were');
   assert.equal(r.gold, 1000 - Math.round(FORGE_COST[1] * 1.4));
+  assert.equal(forgeWeapon(r, r.loadout.NE.uid), true); assert.equal(r.loadout.NE.rarity, 1);
 });
 
 test('the best tier cannot be forged further and fists cannot be improved', () => {
