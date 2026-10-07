@@ -146,6 +146,7 @@ async function onRequest(req, res) {
       send(res, out.status, out.body);
       return;
     }
+    if (url.pathname === '/api/ping') { send(res, 200, { questdice: true }); return; }
     const snap = url.pathname.match(/^\/api\/room\/([A-Za-z0-9]{4})$/);
     const events = url.pathname.match(/^\/api\/room\/([A-Za-z0-9]{4})\/events$/);
     if ((snap || events) && req.method === 'GET') {

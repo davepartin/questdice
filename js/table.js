@@ -4,6 +4,7 @@
 import { CLASSES, SLOTS } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
+import { pack, unpack } from './pack.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const clean = (s, max) => String(s || '').trim().replace(/\s+/g, ' ').slice(0, max);
@@ -40,7 +41,13 @@ export function playerByToken(table, token) {
 export function command(table, playerId, cmd) {
   const player = table.players.find((p) => p.id === playerId);
   if (!player) return fail('You are not at this table.');
+  // The dice roller is rebuilt from the seed and move number, so a table saved online rolls the same as one in memory.
+  if (table.battle) table.battle.rng = E.makeRng(E.hashSeed(table.seed, 'move', table.seq));
+  const before = E.uidCount();
+  E.uidCount(table.uids || 0);
   const res = dispatch(table, player, cmd || {});
+  table.uids = E.uidCount();
+  E.uidCount(Math.max(before, table.uids));
   if (res.ok) table.seq += 1;
   return res;
 }
@@ -413,8 +420,6 @@ function enterVictory(table) {
     xp: r.xp, gold: r.gold, drops: r.drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
     levels, draft: E.newDraft(r.order, r.drops.length), questName: table.quest?.name || '',
   };
-  Object.defineProperty(table.rewards, 'picker', { get() { return this.draft.done ? this.order.length : this.draft.turn % this.order.length; }, enumerable: true });
-  Object.defineProperty(table.rewards, 'picked', { get() { return this.draft.picked; }, enumerable: true });
   table.phase = 'victory';
   table.players.forEach((p) => { p.ready = false; });
   settleVictory(table);
@@ -553,8 +558,8 @@ export function playerView(table, playerId) {
     const r = table.rewards;
     base.victory = {
       questName: r.questName, xp: r.xp, gold: r.gold, contrib: r.contrib, levels: r.levels,
-      order: r.order, picker: r.picker, picked: r.picked, drops: r.drops,
-      waiting: r.order[r.picker] || null,
+      order: r.order, picker: r.draft.done ? r.order.length : r.draft.turn % r.order.length, picked: r.draft.picked, drops: r.drops,
+      waiting: E.draftWho(r.draft),
     };
     base.hero = me ? clone(me) : null;
     base.perkOffer = me ? ensureOffer(table, me) : null;
@@ -570,3 +575,11 @@ export function playerView(table, playerId) {
 }
 
 export { host };
+
+// Save a table as text (for an online room) and load it back.
+export function saveTable(table) { return pack(table); }
+export function loadTable(text) {
+  const table = unpack(text);
+  if (table.battle) table.battle.rng = E.makeRng(E.hashSeed(table.seed, 'move', table.seq));
+  return table;
+}

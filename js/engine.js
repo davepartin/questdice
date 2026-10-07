@@ -34,6 +34,8 @@ function weighted(rng, weights) {
   return weights.length - 1;
 }
 let uidCounter = 0;
+// A table played online keeps its own count, so every phone hands out the same ids (see table.js command).
+export const uidCount = (n) => { if (n != null) uidCounter = n; return uidCounter; };
 export const newUid = (rng) => `u${(++uidCounter).toString(36)}${Math.floor((rng ? rng() : Math.random()) * 1e6).toString(36)}`;
 
 // ------------------------------------------------------------------------------- weapons

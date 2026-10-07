@@ -17,6 +17,14 @@ export function attachRoom(c) { ctx = c; }
 export const inRoom = () => !!ctx?.S?.net;
 
 export async function bootNet(fallback) {
+  // A shared invite link: ?join=CODE opens the join screen with the code filled in.
+  const params = new URLSearchParams(location.search);
+  const invite = (params.get('join') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  if (invite) {
+    params.delete('join');
+    history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}${location.hash}`);
+    if (Net.savedSeat()?.code !== invite) { fallback(); renderJoin(invite); return; }
+  }
   if (!Net.savedSeat()) { fallback(); return; }
   try {
     const view = await Net.snapshot();
@@ -54,7 +62,7 @@ function openTable(view) {
 
 function applyView(view) {
   if (!view || !ctx?.S?.net) return;
-  if (state.view && view.seq === state.view.seq) return;
+  if (state.view && view.code === state.view.code && view.seq <= state.view.seq) return; // never step back to an older table
   const prev = state.view;
   const slots = changedSlots(prev, view);
   ctx.S.holdScroll = !!(prev && view.phase === 'battle' && prev.phase === 'battle' && prev.battle?.me?.stage === 'shape' && view.battle?.me?.stage === 'shape');
@@ -157,7 +165,7 @@ function renderEntry() {
     h('div', { class: 'topline' }, ctx.ghost('‹ Back', () => ctx.showTitle(), { cls: 'small' }), h('h2', {}, 'Play together')),
     ctx.section('',
       h('p', {}, 'One to six heroes, each on their own phone. You decide at the same time, and the monsters decide then too. When every choice is in, the fight runs.'),
-      h('p', { class: 'fine' }, 'The host runs node server.mjs and reads the address out loud. One hero can take the road alone. A hero forged from the title never needs the server.')),
+      h('p', { class: 'fine' }, 'The host opens a table and shares the four-letter code (or the invite link). Everyone needs the internet. One hero can take the road alone.')),
     ctx.cmd('Host', 'Open a table', 'You get a code. One to six heroes.', () => renderHost(), { glyph: '⚔', tone: 'versus' }),
     ctx.cmd('Join', 'I have a code', 'Sit down as your own hero.', () => renderJoin(), { glyph: '🎲', tone: 'tutorial' }));
 }
@@ -191,9 +199,9 @@ function renderHost() {
     ctx.section('Your hero', grid, detail),
     msg, ctx.primary('Open the table', go, { cls: 'wide' }));
 }
-function renderJoin() {
+function renderJoin(prefill = '') {
   let cls = 'bard';
-  const code = h('input', { class: 'input room-code-input', maxlength: 4, placeholder: 'CODE', 'aria-label': 'Room code', autocapitalize: 'characters', autocomplete: 'off' });
+  const code = h('input', { class: 'input room-code-input', maxlength: 4, placeholder: 'CODE', 'aria-label': 'Room code', autocapitalize: 'characters', autocomplete: 'off', value: prefill });
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Your hero’s name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const msg = h('p', { class: 'form-msg' });
   const holder = h('div');
@@ -219,6 +227,13 @@ function renderJoin() {
     msg, ctx.primary('Sit down', go, { cls: 'wide' }));
 }
 
+function shareInvite(view) {
+  const url = view.links[0];
+  const text = `Join ${view.name} in QuestDice. Code ${view.code}.`;
+  if (navigator.share) { navigator.share({ title: 'QuestDice', text, url }).catch(() => {}); return; }
+  navigator.clipboard?.writeText(url).then(() => toast('Invite link copied.'), () => toast(url));
+}
+
 // ---------------------------------------------------------------- lobby
 function renderLobby(view) {
   const waiting = view.players.filter((p) => !p.ready).map((p) => p.name);
@@ -235,7 +250,8 @@ function renderLobby(view) {
     h('p', { class: 'muted center' }, 'One to six heroes. Each plays on their own phone.'),
     h('p', { class: 'fine center' }, seats),
     view.links?.length ? h('div', { class: 'room-links' }, h('p', { class: 'fine' }, 'On their phone, open:'), ...view.links.map((u) => h('a', { href: u }, u))) : null,
-    h('div', { class: 'row center' }, ctx.ghost('Copy code', () => copyCode(view.code), { cls: 'small' })),
+    h('div', { class: 'row center' }, ctx.ghost('Copy code', () => copyCode(view.code), { cls: 'small' }),
+      view.links?.length ? ctx.ghost('Share invite', () => shareInvite(view), { cls: 'small' }) : null),
     ctx.section('Heroes', h('div', { class: 'col' }, view.players.map((p) => h('div', { class: 'row between' },
       h('b', {}, `${D.CLASSES[p.cls].glyph} ${p.name}${p.host ? ' · host' : ''}`),
       h('span', { class: 'fine' }, p.ready ? 'Ready' : 'Choosing'))))),

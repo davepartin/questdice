@@ -294,3 +294,13 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - scrui.partyVictory: places (1st; 2nd only with 3+), points, gold, XP, perks, spoils draft (take/skip, comes back around). Flat party victory also uses the draft.
 - Online room (each phone its own) still uses the flat roomui and needs `node server.mjs` on a laptop; GitHub Pages alone cannot host it. Next: hosting decision, then drive this same 3D battle from table playerView.
 - Tests/screens: dev/party3d.mjs (3 heroes to victory, screenshots docs/ingame/party_*.png).
+
+## Online rooms on Firebase (7 Oct 2026)
+
+- Project `questdice-eef50` (set up by Dave with Claude in Chrome): anonymous sign-in, Firestore (nam5, Spark), rules from `firestore.rules`.
+- `js/cloud.js`: a room is `qdRooms/{CODE}`; every move runs `table.js` `command` inside a Firestore transaction on the phone. `js/net.js` uses the laptop server only when `/api/ping` answers (node server.mjs), otherwise the cloud.
+- `js/pack.js` saves the table as text while keeping shared objects shared (the hero in the seat, the company and the battle stay one object). The battle's dice roller and the item-id counter are rebuilt each move from the table, so every phone rolls the same.
+- Fixed on the way: the spoils draft used live getters that froze when saved.
+- Invite links: `?join=CODE` opens Join with the code filled in; the lobby has Share invite.
+- Verified live: `dev/cloudlive.mjs` (two phones, simultaneous moves, a full round) and a rules probe (strangers cannot write, join a started table, delete or list rooms). `test/cloud.test.mjs` plays a 3-hero company with save/load after every move.
+- Next: the online screens still use the flat style; drive the 3D party battle from each phone's own view.
