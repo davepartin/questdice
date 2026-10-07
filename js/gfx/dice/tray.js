@@ -510,7 +510,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       // ---- shader state
       const U = die.uniforms;
       U.uTime.value = time; die.mesh.updateWorldMatrix(true, false); die.updateCamera(trayCam());
-      const airK = THREE.MathUtils.clamp((die.mesh.position.y - restY(s)) / 0.5, 0, 1);
+      const airK = THREE.MathUtils.clamp((baseY - restY(s)) / 0.5, 0, 1); // height above its socket (the mesh carries a scale offset, so measure the pose)
       s.rest += ((1 - airK) - s.rest) * (1 - Math.exp(-14 * dt));
       die.setRest(s.rest); die.setView(_view);
       // highlight sweep flash

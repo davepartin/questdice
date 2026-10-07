@@ -28,9 +28,10 @@ export function dieSpecs(hero) {
       theme = 'weapon';
       const inst = hero.loadout[slot]; const wid = inst.id;
       const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold' };
+      // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
       labels = E.weaponFaces(inst).slice(0, sides).map((f) => ({
-        text: f.v === 0 ? null : String(f.v), blank: f.v === 0, tone: f.c, pip: f.fx ? FX_PIP[Object.keys(f.fx)[0]] || null : null,
-        corners: f.v === 0 ? undefined : [f.c === 'b' ? 'def' : 'atk', ...Object.keys(f.fx || {}).map((k) => FXK[k]).filter(Boolean)],
+        text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
+        corners: Object.keys(f.fx || {}).map((k) => FXK[k]).filter(Boolean),
         wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? 'bow' : wid === 'staff' ? 'staff' : 'longsword') : wid === 'fists' ? 'fist' : wid,
       }));
     } else if (role === 'special') {
@@ -158,9 +159,9 @@ export function createDie({ spec, quality = 'high' }) {
     radius: r, inR: poly.inR, physVerts,
     // direction a viewer reads the die from (d4 reads the face turned toward the camera)
     setView(dirWorld) {
-      if (spec.sides === 4) { u.uFocusDir.value.copy(dirWorld); u.uFocusRange.value.set(0.8, 0.94); } else { u.uFocusDir.value.set(0, 1, 0); u.uFocusRange.value.set(0.52, 0.82); }
+      if (spec.sides === 4) { u.uFocusDir.value.copy(dirWorld); u.uFocusRange.value.set(0.55, 0.78); } else { u.uFocusDir.value.set(0, 1, 0); u.uFocusRange.value.set(0.52, 0.82); }
     },
-    setRest(k01) { u.uSide.value = 1 - 0.4 * k01; },
+    setRest(k01) { u.uSide.value = 1 - 0.94 * k01; }, // at rest only the face you read stays lit; the sides go nearly dark
     updateCamera(camera) { mesh.updateMatrixWorld(); u.uCamObj.value.copy(camera.position); mesh.worldToLocal(u.uCamObj.value); },
     dispose() { material.dispose(); },
   };

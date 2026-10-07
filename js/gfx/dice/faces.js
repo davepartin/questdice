@@ -113,23 +113,32 @@ function fourGlyph(ctx, outline) {
   ctx.restore();
 }
 export function drawNumeral(ctx, text, x, y, h, { grow = 0, weight = 16, under = true, cap = 'butt' } = {}) {
-  const k = h / 80; const n = text.length;
-  const wDigit = 50 * k * (n > 1 ? 0.8 : 1);
-  const gap = n > 1 ? -2 * k : 0;
-  const total = n * wDigit + (n - 1) * gap;
+  const k = h / 80; const digits = text.replace('+', '').length;
+  const sx = digits > 1 ? 0.8 : 1; // two-digit numbers are narrowed so they fit
+  const cw = (ch) => (ch === '+' ? 46 : 50) * k * (ch === '+' ? 1 : sx); // a plus is a little narrower than a digit
+  const gap = text.length > 1 ? 5 * k : 0;
+  const total = [...text].reduce((t, ch) => t + cw(ch), 0) + (text.length - 1) * gap;
   ctx.save();
-  ctx.lineJoin = 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = cap;
-  for (let i = 0; i < n; i++) {
-    const d = +text[i];
-    const cx = x - total / 2 + i * (wDigit + gap) + wDigit / 2;
+  ctx.lineJoin = cap === 'round' ? 'round' : 'miter'; ctx.miterLimit = 2.2; ctx.lineCap = cap;
+  let at = x - total / 2;
+  for (const ch of text) {
+    const w = cw(ch); const cx = at + w / 2; at += w + gap;
+    if (ch === '+') { // a plus, the same weight as the digits, sitting on the digits' middle
+      const arm = 19 * k; const lw = weight * 0.95 * k + grow;
+      ctx.save(); ctx.lineWidth = lw; ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+      ctx.beginPath(); ctx.moveTo(cx - arm, y); ctx.lineTo(cx + arm, y); ctx.moveTo(cx, y - arm); ctx.lineTo(cx, y + arm); ctx.stroke(); ctx.restore();
+      continue;
+    }
+    const d = +ch;
     ctx.save();
-    ctx.translate(cx, y); ctx.scale(k * (n > 1 ? 0.8 : 1), k); ctx.translate(-25, -40);
+    ctx.translate(cx, y); ctx.scale(k * sx, k); ctx.translate(-25, -40);
     if (d === 9) { ctx.translate(25, 40); ctx.rotate(Math.PI); ctx.translate(-25, -40); }
-    ctx.lineWidth = weight + grow / (k * (n > 1 ? 0.8 : 1));
+    ctx.lineWidth = weight + grow / (k * sx);
     ctx.stroke(digitPath(d));
     ctx.restore();
   }
   if (under && (text === '6' || text === '9')) {
+    const wDigit = 50 * k;
     ctx.lineWidth = (weight * 0.45 * k) + grow; ctx.lineCap = 'butt';
     ctx.beginPath(); ctx.moveTo(x - wDigit * 0.3, y + h * 0.5 + h * 0.13); ctx.lineTo(x + wDigit * 0.3, y + h * 0.5 + h * 0.13); ctx.stroke();
   }
@@ -348,7 +357,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     const blank = !!spec.blank;
     const heartBig = ST.clean && theme === 'heart' && !blank;
     let core; let mid; let edge; let rough = th.rough; const resin = blank ? 0 : 255;
-    if (theme === 'weapon') {
+    const wface = ST.clean && theme === 'weapon' && spec.wface;
+    if (wface) { // a deep red or blue face; the big symbol on it is the bright colour
+      if (spec.wface === 'b') { core = '#1d4c94'; mid = '#163c78'; edge = '#0a1d40'; } else { core = '#8c1a22'; mid = '#72121a'; edge = '#3a070c'; }
+      rough = 0.4;
+    } else if (theme === 'weapon') {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
@@ -367,7 +380,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const vein = (col, w, n, wob) => { A.strokeStyle = col; A.lineWidth = w; A.lineCap = 'round';
         for (let i = 0; i < n; i++) { let x = (rnd() * 2 - 1) * Rpx; let y = (rnd() * 2 - 1) * Rpx; let a = rnd() * Math.PI * 2; A.beginPath(); A.moveTo(x, y);
           for (let k = 0; k < 9; k++) { a += (rnd() - 0.5) * wob; x += Math.cos(a) * Rpx * 0.17; y += Math.sin(a) * Rpx * 0.17; A.lineTo(x, y); } A.stroke(); } };
-      A.globalAlpha = 0.5; vein('#8a90a6', inR * 0.07, 12, 1.6); A.globalAlpha = 0.95; vein('#eef0fb', inR * 0.024, 16, 1.2); A.globalAlpha = 0.8; vein('#e0b858', inR * 0.02, 8, 1.1); A.globalAlpha = 1;
+      void vein; // smooth dark stone: no veins, so the number and its symbol have the face to themselves
       const gl = A.createRadialGradient(-inR * 0.3, -inR * 0.4, 0, 0, 0, inR * 1.3); gl.addColorStop(0, 'rgba(255,255,255,0.10)'); gl.addColorStop(1, 'rgba(0,0,0,0.22)'); A.fillStyle = gl; A.fillRect(-S / 2, -S / 2, S, S);
     } else if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
@@ -408,11 +421,11 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         // a blank weapon face shows what the weapon does, big: a red starburst (attack) or a blue shield (defense)
         const kind = spec.tone === 'b' ? 'def' : 'atk'; const big = inR * 1.25;
         layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
-      } else layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring);
+      } else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
     }
 
     // ---- watermark (weapon identity), shallow
-    if (spec.wm && !blank) {
+    if (spec.wm && !blank && !wface) {
       layer(ctxs, { A: spec.tone === 'b' ? 'rgba(160,210,255,0.16)' : 'rgba(255,170,130,0.16)', H: 'rgb(112,112,112)' }, (c) => drawIcon(c, spec.wm, 0, inR * 0.02, inR * 1.7));
     }
 
@@ -421,11 +434,15 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const kind = HEART_KIND[+spec.text]; const big = inR * 1.72;
       layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
     }
+    if (wface) { // the big symbol: starburst for attack, shield for block (a +0 face shows it faded)
+      const kind = spec.wface === 'b' ? 'def' : 'atk'; const big = inR * (poly.sides === 4 ? 1.62 : 1.7);
+      layer(ctxs, { H: 'rgb(60,60,60)', A: spec.zero ? (kind === 'def' ? '#3a7cd6' : '#cc3e46') : PIP_COLOR[kind], O: 'rgb(0,110,0)' }, (c) => drawSym(c, kind, 0, inR * 0.04, big, 0, true));
+    }
     // ---- numeral / symbol
     const CN = ST.corners && !blank && spec.sym !== 'TALENT' && !heartBig;
     const hasPip = !!spec.pip && !blank && !CN && !heartBig;
-    let numH = inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : poly.sides === 4 ? 0.52 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
-    let ny = CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
+    let numH = wface ? inR * nk * (poly.sides === 4 ? 0.6 : 0.62) : inR * nk * (heartBig ? 0.576 : 1) * (CN ? (poly.sides === 6 ? 0.55 : poly.sides === 4 ? 0.52 : 0.64) : hasPip ? (ST.pipDisc ? 0.5 : 0.82) : 1) * (ST.numScale && !hasPip ? ST.numScale : 1);
+    let ny = wface ? inR * 0.06 : CN && poly.sides === 4 ? inR * 0.1 : hasPip ? -inR * (ST.pipDisc ? 0.34 : 0.2) : -inR * 0.04;
     let nx = 0;
     // chord width of the face polygon at height y (px, y down)
     const ptsIn = pts.map((p) => [p[0] * 0.8, p[1] * 0.8]); // placement happens inside a shrunken face: the bevel and the view angle eat the outer edge
@@ -475,7 +492,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       // recess: groove outline (gold on ink dice) lower, inlay slightly higher than the groove
       // dark numerals on a light die need no outline at all; white numerals on a coloured die get an even 2 px black outline (no shadow, no relief)
       const darkOnLight = th.num === 'ink' && ST.ink && (!spec.tone || ST.corners);
-      const grow = 4; // total extra width, so 2 px each side
+      const grow = 5; // total extra width: an even dark edge about 2.5 px each side
       if (!darkOnLight) layer(ctxs, { H: 'rgb(128,128,128)', A: ST.numW && th.num === 'metal' ? '#05060a' : 'rgba(0,0,0,0.9)', O: 'rgb(0,150,0)' }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow, cap: 'round' }));
       let fillA; let metal = 0; let rr = 0.3;
       if (th.num === 'metal' && ST.numW) { fillA = '#ffffff'; metal = 0; rr = 0.25; } else if (th.num === 'metal') {
