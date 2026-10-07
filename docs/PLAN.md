@@ -267,3 +267,11 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 
 ### Battle framing follows creature height (phones)
 - `framePan` (battle3d.js) measures the tallest visible creature each frame and slides the picture (`director.pan`, added to the view offset) so its head sits ~16% down the battlefield; the nearest feet stay above the golden line and a head never goes under the header. Reset per battle.
+
+### Balance pass: weapons, pack, roads, three acts (see docs/BALANCE.md)
+- Strength gates weapon size (cards say so); sized drops by act; pack of 4; worth = price x tier x size, sell for half.
+- Bigger weapon faces lean to the weapon's colour (r,r,b repeating above 4) so growth adds attack, not just block.
+- Roads: perilous x1.3 hp, +3 a hit, x1.75 rewards; act growth ACT_HP [1,1.15,1.35] / ACT_FLAT [0,2,5]; elites/bosses skip act growth when native to the act; Lich 185 hp.
+- Road cards show Easy/Fair/Hard/Deadly from `questDanger` (calibrated: ~96/87/72/50% wins) and ~rounds.
+- Tools: tools/progress.mjs + progress-all.sh (campaign report by road policy), tools/dicemath.mjs. Runs saved in docs/balance/.
+- Open: Act III bestiary + art; Act II theme; party scaling per the table in BALANCE.md (hits x (n+1)/2, health ~0.87n).

@@ -150,7 +150,8 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
   assert.equal(sidesOf(h, 'NE'), 4); // the other lane is untouched
   const f = weaponFaces(h.loadout.NW);
   assert.deepEqual(f.map((x) => x.v), [0, 1, 3, 4, 5, 6]);
-  assert.equal(f[4].c, 'r'); assert.equal(f[5].c, 'b'); // extra faces alternate colour, offence first
+  assert.equal(f[4].c, 'r'); assert.equal(f[5].c, 'r'); // extra faces lean to the weapon's colour: two of it, then one of the other
+  h.strength.W = 8; h.loadout.NW.size = 8; assert.deepEqual(weaponFaces(h.loadout.NW).slice(4).map((x) => x.c), ['r', 'r', 'b', 'r']);
 });
 
 test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {

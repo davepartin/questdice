@@ -44,7 +44,10 @@ export function weaponFaces(inst) {
   const def = WEAPONS[inst.id];
   const faces = def.faces.map((f) => (f.fx ? { ...f, fx: { ...f.fx } } : { ...f }));
   const first = def.lean === 'def' ? 'b' : 'r';
-  for (let i = 4; i < weaponSize(inst); i++) faces.push({ v: i + 1, c: (i - 4) % 2 === 0 ? first : (first === 'r' ? 'b' : 'r') });
+  // bigger faces lean to the weapon's own colour (two of its colour, then one of the other), so a bigger attack weapon hits harder
+  // and a bigger guard weapon blocks more, instead of every size splitting half and half
+  const other = first === 'r' ? 'b' : 'r';
+  for (let i = 4; i < weaponSize(inst); i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
   const bonus = def.bonus || [];
   for (let k = 0; k < (inst.rarity | 0) && k < bonus.length; k++) {
     const f = faces[bonus[k].face]; if (!f || f.v === 0) continue;
@@ -777,7 +780,7 @@ export function questDanger(hero, quest0) {
   const perRound = Math.max(0, hit - Math.min(blockable, P.block * 1.2)) - P.heal * 0.5;
   const taken = Math.max(0, perRound) * rounds * 0.3; // monsters fall as the fight goes on, and rerolls, block powers and mending soak most of the rest
   const score = taken / P.hp;
-  const label = score < 0.15 ? 'Easy' : score < 0.25 ? 'Fair' : score < 0.4 ? 'Hard' : 'Deadly'; // calibrated on bot runs: ~97%, ~93%, ~75%, ~50% wins
+  const label = score < 0.25 ? 'Easy' : score < 0.35 ? 'Fair' : score < 0.45 ? 'Hard' : 'Deadly'; // calibrated on 3-act bot runs: ~96%, ~87%, ~72%, ~50% wins
   return { score, label, rounds: Math.max(1, Math.round(rounds)), taken: Math.round(taken), foeHp: hp, deal: Math.round(deal) };
 }
 

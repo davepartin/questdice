@@ -1,0 +1,34 @@
+Strength die (a hand) average: d4 2.5 · d6 3.5 · d8 4.5 · d10 5.5
+
+Head/hand/feet faces pay (per face): 1:2h  2:2p  3:2m  4:2g  5:3h  6:3p  7:3m  8:3g  9:2h+2p  10:2m+2g
+
+Weapon die, average added to its lane by size (red = attack, blue = block):
+  Dagger      d4 1.3r/0.5b  d6 2.7r/0.3b  d8 3.0r/1.1b  d10 3.3r/1.9b
+  Sword       d4 1.8r/0.3b  d6 3.0r/0.2b  d8 3.3r/1.0b  d10 3.5r/1.8b
+  Shield      d4 0.3r/1.8b  d6 0.2r/3.0b  d8 1.0r/3.3b  d10 1.8r/3.5b
+  Spear       d4 1.5r/0.3b  d6 2.8r/0.2b  d8 3.1r/1.0b  d10 3.4r/1.8b
+  Bow         d4 1.5r/0.0b  d6 2.8r/0.0b  d8 3.1r/0.9b  d10 3.4r/1.7b
+  Long Sword  d4 1.8r/0.0b  d6 3.0r/0.0b  d8 3.3r/0.9b  d10 3.5r/1.7b
+  Staff       d4 1.5r/0.3b  d6 2.8r/0.2b  d8 3.1r/1.0b  d10 3.4r/1.8b
+
+Whole board, average throw (no rerolls, no powers):
+  knight L1 start                          attack   6.3  pierce  3.0  block   1.9  heal  4.2  magic  2.0  gold  2.2  hp 34
+  knight end of Act I (all dice, d6 hands+weapons) attack  11.7  pierce  3.1  block   8.5  heal  4.7  magic  2.0  gold  2.0  hp 50
+  knight end of Act II (d8, gold tier)     attack  12.9  pierce  2.7  block  10.9  heal  4.1  magic  2.7  gold  2.6  hp 70
+  knight end of Act III (d10, diamond)     attack  14.3  pierce  3.1  block  12.5  heal  4.5  magic  2.9  gold  2.5  hp 90
+  ranger L1 start                          attack  10.1  pierce  3.2  block   2.8  heal  2.6  magic  2.1  gold  2.2  hp 28
+  ranger end of Act I (all dice, d6 hands+weapons) attack  17.1  pierce  3.6  block   2.9  heal  3.2  magic  1.8  gold  1.8  hp 44
+  ranger end of Act II (d8, gold tier)     attack  17.3  pierce  3.6  block   5.8  heal  2.8  magic  2.2  gold  2.3  hp 64
+  ranger end of Act III (d10, diamond)     attack  17.9  pierce  3.5  block  10.1  heal  2.9  magic  2.6  gold  2.5  hp 84
+  wizard L1 start                          attack   8.0  pierce  2.6  block   4.2  heal  2.6  magic  3.9  gold  2.1  hp 26
+  wizard end of Act I (all dice, d6 hands+weapons) attack  14.4  pierce  3.3  block   4.1  heal  5.2  magic  3.3  gold  1.7  hp 42
+  wizard end of Act II (d8, gold tier)     attack  15.5  pierce  3.0  block   6.5  heal  4.2  magic  3.9  gold  2.2  hp 62
+  wizard end of Act III (d10, diamond)     attack  16.1  pierce  3.0  block  10.0  heal  4.9  magic  4.3  gold  2.4  hp 82
+  dwarf L1 start                           attack   6.1  pierce  3.1  block   2.8  heal  2.6  magic  2.1  gold  2.2  hp 38
+  dwarf end of Act I (all dice, d6 hands+weapons) attack  10.4  pierce  3.2  block   9.2  heal  4.9  magic  1.9  gold  1.8  hp 54
+  dwarf end of Act II (d8, gold tier)      attack  11.3  pierce  3.0  block  11.4  heal  4.3  magic  2.6  gold  2.5  hp 74
+  dwarf end of Act III (d10, diamond)      attack  13.4  pierce  2.9  block  14.2  heal  4.5  magic  3.0  gold  2.7  hp 94
+  bard L1 start                            attack   5.2  pierce  2.6  block   1.7  heal  3.1  magic  2.0  gold  2.6  hp 28
+  bard end of Act I (all dice, d6 hands+weapons) attack  10.4  pierce  3.3  block   8.0  heal  3.3  magic  2.6  gold  2.4  hp 44
+  bard end of Act II (d8, gold tier)       attack  11.6  pierce  2.9  block  10.5  heal  3.0  magic  3.6  gold  2.7  hp 64
+  bard end of Act III (d10, diamond)       attack  13.6  pierce  3.2  block  12.4  heal  3.2  magic  3.5  gold  2.9  hp 84

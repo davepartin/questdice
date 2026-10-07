@@ -339,7 +339,7 @@ export const ACTS = [
 export const QUESTS_PER_ACT = 10;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1, 1.25, 1.55];
+export const ACT_HP = [1, 1.15, 1.35];
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
