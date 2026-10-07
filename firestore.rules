@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// =====================================================================
+//  QuestDice online rules — for the `questdice` Firebase project ONLY.
+//  (Never deploy this into `space-tribes`: a project has ONE set of rules,
+//  and this would replace Fleet Dice's.)
+//
+//  One collection: qdRooms/{CODE}. A room is the whole party table
+//  (heroes, battle, rewards) as JSON in `state`, plus who is seated.
+//  Every phone signs in anonymously. Moves run the game's own rules on the
+//  phone inside a transaction and write the new table back.
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+
+    match /qdRooms/{code} {
+      // You may open a room if you know its code. Nobody may list rooms.
+      allow get: if signedIn();
+      allow list: if false;
+
+      // The host creates the room and is its first and only seat.
+      allow create: if signedIn()
+        && request.resource.data.hostUid == me()
+        && request.resource.data.seatUids == [me()]
+        && request.resource.data.state is string
+        && request.resource.data.state.size() < 900000;
+
+      // Seated players may play (write the new table).
+      // A new player may take ONE seat while the room is still in the lobby, up to six.
+      allow update: if signedIn()
+        && request.resource.data.hostUid == resource.data.hostUid
+        && request.resource.data.state is string
+        && request.resource.data.state.size() < 900000
+        && (
+          (me() in resource.data.seatUids
+            && request.resource.data.seatUids.hasAll(resource.data.seatUids)
+            && request.resource.data.seatUids.size() <= 6)
+          ||
+          (resource.data.phase == 'lobby'
+            && !(me() in resource.data.seatUids)
+            && request.resource.data.seatUids.hasAll(resource.data.seatUids)
+            && request.resource.data.seatUids.size() == resource.data.seatUids.size() + 1
+            && me() in request.resource.data.seatUids
+            && request.resource.data.seatUids.size() <= 6)
+        );
+
+      // Only the host may close the room.
+      allow delete: if signedIn() && resource.data.hostUid == me();
+    }
+  }
+}
