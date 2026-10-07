@@ -261,7 +261,7 @@ export function howToPlay() {
     p(h('b', {}, 'Hands'), ' are strength. A weapon die sits above each hand and adds its number; its ', h('b', { class: 'red' }, 'red'), ' or ', h('b', { class: 'blue' }, 'blue'), ' colour decides whether that side ', h('b', {}, 'attacks'), ' or ', h('b', {}, 'blocks'), '.'),
     p(h('b', {}, 'Head, hands and feet'), ' always pay out: 1 = 🪙 gold, 2 = ◆ pierce (ignores block), 3 and 4 = ✦ magic. Big numbers are pure power.'),
     p(h('b', {}, 'Heart'), ' (the d6 in the middle) amplifies matching dice on your own board. A 5 boosts your best block; a 6 your best attack.'),
-    p(h('b', {}, 'Specials'), ' (lower corners) always have two blank faces. Their symbols use your hand’s number: ✚ heal, ✦ magic, ⚡ doubles that hand.'),
+    p(h('b', {}, 'Specials'), ' (lower corners) always have two blank faces. Their symbols use your hand’s number: ✚ heal, ✦ magic, 2× Strength doubles that hand’s Strength number (not the weapon’s +N).'),
     h('h3', {}, 'Each round'),
     p(h('b', {}, '1. Reset.'), ' Monsters roll their ', h('b', {}, 'Intention'), ' first and show it to you. You see what is coming. Spend ✦ to heal or recharge a card, then roll.'),
     p(h('b', {}, '2. Shape.'), ' The first reroll is free (tap up to 3 dice). Two more cost 1 ✦ per die. Cards, healing and heart nudges cost ✦ too.'),

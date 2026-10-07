@@ -507,7 +507,7 @@ function talentCard(hero, slot) {
   return h('div', { class: 'sx-urow tal-die' },
     h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Powered by your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']} (about ${((hero.strength[slot === 'SW' ? 'W' : 'E'] + 1) / 2).toFixed(1)} a roll)`)),
     h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
-      h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'))),
+      h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
     h('div', { class: 'tal-strip syms' }, symFaces),
     picker,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (E.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
