@@ -204,7 +204,7 @@ export function setNotes(el, notes) {
 }
 export function synergyList(ev, mods) {
   const out = [];
-  for (const t of ev.triples || []) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: 'TRIPLE!', sub: `${t.name} · +10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
+  for (const t of ev.triples || []) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: `${t.name.toUpperCase()}!`, sub: `+10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;

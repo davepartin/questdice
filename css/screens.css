@@ -353,3 +353,14 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-pack .pk-list { display: grid; gap: .3rem; }
 .sx-pack .pk-item { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .82rem; }
 .qr.danger.dz-easy small { color: #9fe0a8; } .qr.danger.dz-fair small { color: #ffe08a; } .qr.danger.dz-hard small { color: #ffb86a; } .qr.danger.dz-deadly small { color: #ff7a7a; }
+/* hall of fame (hero tab) and the battle points stat on the victory screen */
+.sx-hof { margin: .4rem 0 .8rem; }
+.sx-hof .hf-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; margin-top: .45rem; }
+.sx-hof .hf-row.two { grid-template-columns: repeat(2, 1fr); }
+.sx-hof .hf-cell { display: grid; justify-items: center; padding: .5rem .3rem; border-radius: .7rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 224, 138, .18); }
+.sx-hof .hf-cell b { font-family: var(--font-display); font-size: 1.15rem; color: #ffe08a; font-variant-numeric: tabular-nums; }
+.sx-hof .hf-cell.big b { font-size: 1.35rem; }
+.sx-hof .hf-cell small { color: var(--dim); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; }
+.sx-hof .hf-cell.gold b { color: #ffd04a; } .sx-hof .hf-cell.silver b { color: #d8dde8; }
+.vc-stat.pts div { color: #ffe08a; font-variant-numeric: tabular-nums; }
+.vc-best { display: block; font-style: normal; font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: #9fe0a8; }

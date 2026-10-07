@@ -599,3 +599,10 @@ body.in-battle .chrome { z-index: 40; }
 }
 @keyframes moreBob { 50% { transform: translateY(3px); } }
 .bcard .bc-cost.free b { font-size: .62rem; letter-spacing: .06em; }
+/* battle points: a small arcade counter beside the round */
+.b3-rline { display: flex; align-items: baseline; gap: .55rem; }
+.b3-score { display: inline-flex; align-items: baseline; gap: .25rem; font-family: var(--disp); color: #ffe08a; text-shadow: 0 1px 3px #000; }
+.b3-score i { font-style: normal; font-size: .55rem; letter-spacing: .14em; color: #e8c06a; opacity: .85; }
+.b3-score b { font-size: .95rem; font-weight: 800; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.b3-score.pop { animation: b3scorePop .5s ease-out; }
+@keyframes b3scorePop { 0% { transform: scale(1); } 35% { transform: scale(1.25); color: #fff6c8; } 100% { transform: scale(1); } }

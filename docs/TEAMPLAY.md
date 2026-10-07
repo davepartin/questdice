@@ -8,59 +8,44 @@ How often things happen (measured): one hero lands some triple on about 7 to 11%
 chasing it. So two heroes both landing triples in the same round is a few-times-an-adventure moment, which is the
 right rarity for a celebration.
 
-## Decided (from Dave)
+## Decided (from Dave) and built into the rules engine
 
-- **Healing potions.** Every hero carries 2 potions a battle (replacing the once-a-battle Big Heal). A potion heals 10
-  and can be drunk yourself or **thrown to a friend**: tap their portrait. Free (no magic), any time before lock-in.
-- **Team Attack.** Two heroes both land an attack triple (top or middle row) in the same round and hit the same monster:
-  each gets +10 attack on top of their own triple bonus. If their triples are the **same number**, it is a **Mirror
-  Strike**: +20 each.
-- **Team Block.** Two heroes both land the head-heart-feet triple in the same round: each gets +10 block (Mirror: +20).
-- Initiative already decides who strikes first and who draws the most damage (the leader takes a double share).
+**Triple names.** Weapons Triple (top row), Strength Triple (middle row), Head to Toe Triple (down the middle).
+Weapons and Strength give +10 attack; Head to Toe gives +10 block.
 
-## More ideas, simplest first
+**Team triples** (two or more heroes, same round, same row):
+- **Team Weapons Attack +10** each, when they hit the same monster.
+- **Team Strength Attack +10** each, when they hit the same monster.
+- **Team Head to Toe Block +10** each.
 
-**Automatic (no taps)**
+**Heartbeat (automatic).** If every hero's heart die shows the same face, each hero gains magic equal to the number of
+heroes (2 in a two-hero game, 6 in a six-hero game).
 
-1. **Focus Fire.** When every living hero targets the same monster, each gets +3 attack. Encourages one sentence across
-   the table: "Everyone on the ogre!"
-2. **Side by Side.** Two heroes who tie on initiative strike together: their attacks combine, and the first 5 points
-   ignore the monster's guard. Ties feel lucky instead of awkward.
-3. **Heartbeat.** If every hero's heart die shows the same face, everyone heals 5. Rare in a big party, a lovely moment.
-4. **Team Straight.** If the party's Feet (initiative) dice make a run (like 2, 3, 4) across three or more heroes, the
-   whole party strikes first this round, before every monster. Ties into the initiative system you already like.
-5. **Finishing Blow.** The hero who lands the killing hit on a monster gives the next hero in initiative order +4
-   attack ("I softened it, you finish the next one").
+**Moral Boost +3 (automatic).** The hero who lands a killing blow gives the next hero to act +3 attack (if nobody is
+left to act that round, it carries to the first hero next round).
 
-**One tap on a friend's portrait (each once a battle)**
+**Team actions: one per hero per round**, chosen from a Team Actions list beside Magical Powers:
+- **Healing potion to a friend.** It is the same potion as yours: every hero carries 2 a battle (3 with the Potion Belt
+  from camp), and one thrown to a friend is gone from your own list.
+- **Share magic.** Pay 2 magic; your friend gains 2.
+- **Revive.** Once a battle: pay 10 magic, a knocked-out friend stands back up with 10 health (acts next round).
 
-6. **Throw a Potion** (decided above).
-7. **Share Magic.** Give 2 of your magic to a friend. Lets the wizard charge a big spell with the bard's help.
-8. **Lend a Reroll.** Give one of your reroll actions to a friend who is one die away from a triple.
-9. **Cover.** Take the leader's double share of the monsters' hits this round, using your own block. A knight or dwarf
-   can protect the fragile wizard who rolled high Feet.
-10. **Revive.** A fallen hero sits out; a friend can spend both their potions to bring them back with 10 health.
+**Battle points** (solo and party; see POINTS in js/data.js): damage dealt 1 a point, damage blocked 0.5, healing
+yourself 0.5, healing a friend 2, killing blow 15, each triple 10, each team triple 20, a straight 10, magic given 4 each,
+a revive 40, being knocked out -40. A small counter beside the round shows your points. Each battle starts at 0; the
+camp Hero tab keeps a Hall of Fame: total points, battles, best battle, 1st places and 2nd places.
 
-**Class team powers (later, one per class, unlocked around level 5)**
+**Placing (party only).** 1st place trophy to the top scorer; 2nd place only with 3 or more heroes. The fallen's gold
+is shared evenly, then 1st gets half a share more and (3+ heroes) 2nd a quarter share more; everyone else the same.
 
-11. **Knight, Shield Wall:** your Shield Up block also covers every friend this round.
-12. **Ranger, Mark the Target:** the monster you hit takes +3 from every other hero this round.
-13. **Wizard, Arcane Link:** your Storm Coil charges can be released by a friend.
-14. **Dwarf, Hold the Line:** monsters must attack you first this round (you become the leader).
-15. **Bard, Chorus:** your Lucky Verse rolls once for every hero.
+**Spoils draft (party).** Heroes choose in order of points. On your turn take one weapon or skip; the turn moves on and
+comes back around until the spoils are gone or everyone skips in a row. Weapons cannot be traded between heroes; you
+can only sell them.
 
-**Monster moments that need a team**
+Not doing (Dave): Focus Fire, Side by Side, Team Straight, Cover, Lend a Reroll.
 
-16. **Brace Together.** When the Ogre or a boss winds up a Slam, the party sees a target ("Block 20 together to stop
-    it"). Everyone's block that round counts toward it. Success stuns the monster.
-17. **Break the Shield.** Some bosses raise a shield that only falls if two different heroes pierce it in the same round.
-
-**After the battle**
-
-18. **Spoils Draft.** Heroes pick spoils in order of who took the most damage in the battle, so whoever stood in front
-    (usually the high-initiative leader) chooses first. It rewards being brave, and it makes Feet matter twice.
-19. **Team Gold.** A shared purse for one group purchase per camp (a party banner, a feast that starts the next fight
-    with +1 magic for everyone).
+Still to build: the party screens in the 3D game (team actions list, choosing a friend, victory "You took 1st place!",
+the draft). The rules engine and the networked table already run all of the above.
 
 ## Content rule (Dave)
 

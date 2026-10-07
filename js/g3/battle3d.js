@@ -114,8 +114,8 @@ function buildHud() {
   B.root = h('div', { class: 'b3' });
   const hud = B.hud = {};
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
-  hud.place = h('small', {}); hud.round = h('b', {});
-  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, hud.round));
+  hud.place = h('small', {}); hud.round = h('b', {}); hud.score = h('span', { class: 'b3-score', 'aria-label': 'Battle points' }, h('i', {}, 'PTS'), h('b', {}, '0'));
+  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score)));
   hud.plates = h('div', { class: 'b3-plates' }); hud.more = h('div', { class: 'b3-more', 'aria-hidden': 'true' }, '▾'); hud.coach = h('div', { class: 'b3-coach' });
   hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
   hud.ribbon = h('div', { class: 'b3-ribbon' });
@@ -468,10 +468,17 @@ function ribbonNodes() {
   if (!rep) return [`${alive().map((e) => e.name).join(' and ')} ${alive().length > 1 ? 'bar' : 'bars'} the way.`];
   return V.reportLines(rep, b).slice(0, 3).flatMap((l, i) => [i ? h('i', { class: 'rb-sep' }) : null, h('span', { class: `rb-${l.kind || 'meh'}` }, HK.rich(l.text))]);
 }
+// Battle points: a small arcade counter beside the round. It ticks up when points land.
+function updateScore() {
+  const el = B.hud?.score?.querySelector('b'); if (!el) return; const pts = E.pointsOf(B.b);
+  const prev = Number(el.dataset.v ?? 0); if (pts === prev && el.dataset.v != null) return;
+  el.dataset.v = String(pts); HK.countTo(el, pts, { from: prev, dur: 500 }); if (pts > prev) HK.replay(B.hud.score, 'pop');
+}
 function setHud({ phase }) {
   const hud = B.hud; const b = B.b;
   hud.place.textContent = B.quest.name;
   if (hud.round.dataset.r !== String(b.round)) { hud.round.dataset.r = String(b.round); hud.round.textContent = `Round ${b.round}`; HK.replay(hud.round, 'tick'); }
+  updateScore();
   updateHero();
   hud.ribbon.replaceChildren(h('p', {}, ...ribbonNodes()));
   hud.ribbon.classList.toggle('hide', phase !== 'reset');
@@ -579,7 +586,7 @@ function doBigHeal() {
   const b = B.b; if (B.busy) return; const before = b.hp;
   if (!E.healBig(b)) { sfx.error(); return; }
   sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
+  updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 function togglePowers(on) {
   B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
@@ -766,7 +773,7 @@ async function lockInInner() {
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
   if (ev.offense3 || ev.defense3 || ev.straight) {
-    sfx.synergy(); banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold');
+    sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
     if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
     await wait(0.55);

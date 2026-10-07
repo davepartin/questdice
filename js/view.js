@@ -109,7 +109,7 @@ export function forecastEl(ev, mods) {
 }
 export function synergyNotes(ev, mods) {
   const out = [];
-  for (const t of ev.triples || []) out.push({ kind: 'good', text: `${t.kind === 'atk' ? '⚔' : '🛡'} ${t.name} triple! +10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
+  for (const t of ev.triples || []) out.push({ kind: 'good', text: `${t.kind === 'atk' ? '⚔' : '🛡'} ${t.name}! +10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
   if (ev.straight) out.push({ kind: 'good', text: `★ ${ev.straight}-straight! +${ev.straightBonus}` });
   if (mods.weaken) out.push({ kind: '', text: `Foes hit ${mods.weaken} softer` });
   return out;
@@ -166,7 +166,7 @@ export function reportLines(rep, b) {
   const L = [];
   const t = name(rep.targetUid);
   L.push({ kind: 'you', text: `You strike ${t}: ${rep.T.atk} attack${rep.guarded ? ` (${rep.guarded} guarded)` : ''}${rep.T.pierce ? ` + ${rep.T.pierce} ◆ pierce` : ''} → ${rep.dealt} damage.` });
-  for (const t of rep.ev.triples || []) L.push({ kind: 'good', text: `${t.name[0].toUpperCase()}${t.name.slice(1)} triple! +10 ${t.kind === 'atk' ? 'attack' : 'block'}.` });
+  for (const t of rep.ev.triples || []) L.push({ kind: 'good', text: `${t.name}! +10 ${t.kind === 'atk' ? 'attack' : 'block'}.` });
   if (rep.ev.straight) L.push({ kind: 'good', text: `${rep.ev.straight}-straight!` });
   for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
   for (const a of rep.acts) {
@@ -201,7 +201,7 @@ export function partyReportLines(rep, b) {
   if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} is quickest and draws the monsters’ heat (a double share of every blow).` });
   const heroLines = (s) => {
     const o = [{ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` }];
-    for (const t of s.ev?.triples || []) o.push({ kind: 'good', text: `${s.name} lands a ${t.name} triple.` });
+    for (const t of s.ev?.triples || []) o.push({ kind: 'good', text: `${s.name} lands a ${t.name}.` });
     if (s.ev?.straight) o.push({ kind: 'good', text: `${s.name} rolls a ${s.ev.straight}-straight.` });
     if (s.killed) o.push({ kind: 'good', text: `${name(s.targetUid)} falls.` });
     return o;

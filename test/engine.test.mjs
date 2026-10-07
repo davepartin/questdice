@@ -102,7 +102,7 @@ test('triples: top row and middle row give +10 attack each; head-heart-feet give
   // bow faces: idx0 0b, idx1 1r, idx2 2r, idx3 3r  -> v = idx. Head 2 matches both weapon 2s.
   const hit = evaluate(r, board({ NW: 3, N: 2, NE: 3, C: 6 }));
   assert.equal(hit.offense3, true);
-  assert.deepEqual(hit.triples.map((t) => t.name), ['top row']);
+  assert.deepEqual(hit.triples.map((t) => t.name), ['Weapons Triple']);
   const miss = evaluate(r, board({ NW: 3, N: 2, NE: 4, C: 6 }));
   assert.equal(miss.offense3, false);
   const blanks = evaluate(r, board({ NW: 1, N: 1, NE: 1, C: 6 })); // two +0 faces never match
@@ -110,7 +110,7 @@ test('triples: top row and middle row give +10 attack each; head-heart-feet give
   const k = knight();
   const base = evaluate(k, board({ W: 1, C: 2, E: 1 }));
   const mid = evaluate(k, board({ W: 1, C: 1, E: 1 }));
-  assert.ok(mid.triples.some((t) => t.name === 'middle row'), 'three 1s across the middle row is a triple');
+  assert.ok(mid.triples.some((t) => t.name === 'Strength Triple'), 'three 1s across the middle row is a triple');
   assert.equal(mid.atk - base.atk, 10, 'the middle-row triple adds 10 attack');
   const v = evaluate(k, board({ N: 3, C: 3, S: 3, NW: 1, NE: 1 }));
   assert.equal(v.defense3, true);

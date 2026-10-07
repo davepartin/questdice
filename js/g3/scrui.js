@@ -340,6 +340,7 @@ export function victory(first) {
   const rewards = panel('sx-rewards', h('div', { class: 'vc-row' },
     h('div', { class: 'vc-stat xp' }, h('small', {}, 'Experience'), h('div', {}, '+', xpNum)),
     h('div', { class: 'vc-stat gold' }, h('small', {}, Rw.gold >= 0 ? 'Gold' : 'Gold lost'), h('div', {}, ico('coin'), Rw.gold >= 0 ? '+' : '', goldNum)),
+    h('div', { class: 'vc-stat pts' }, h('small', {}, 'Battle points'), h('div', {}, String(Rw.points ?? 0)), hero.record?.best === Rw.points && hero.record?.battles > 1 ? h('em', { class: 'vc-best' }, 'New best!') : null),
     lvl),
   h('div', { class: 'vc-xp' }, bar, h('small', {}, maxed ? 'Max level' : `${hero.xp} / ${need} XP to level ${lvNow + 1}`)));
   const perks = Rw.offer ? panel('sx-perks glow', eyebrow(`Level up. Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`, 'gold'),
@@ -412,6 +413,14 @@ function weaponRow(inst, label = '') {
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.RARITY[inst.rarity | 0]} · d${size}`), h('small', { class: 'ur-next' }, note)),
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
+}
+// Potion belt: carry a third healing potion into every battle.
+function potionRow(hero) {
+  const u = E.potionUpgrade(hero); const cur = E.potionMaxOf(hero); const locked = u.why?.startsWith('Level');
+  return h('div', { class: 'sx-urow' },
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'), h('small', {}, `${cur} healing potions a battle, ${E.POTION_HP} health each.`),
+      u.next ? h('small', { class: 'ur-next' }, `${cur} → ${u.next} potions`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, 'Belt is full')),
+    u.next ? btn(String(u.cost), () => { if (E.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
 const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
@@ -487,6 +496,7 @@ function forgeTab() {
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
     upgradeRow('speed', 'S', 'Feet · speed', 'Your initiative die. A monster must roll higher than you to strike first.'),
+    potionRow(hero),
     eyebrow('Magical powers'),
     h('p', { class: 'tab-intro' }, 'Spend magic in battle. Most work once a fight; the weaker ones come back every round. Upgrades add dice and numbers. A super unlocks at level 5.'),
     ...E.cardsOf(hero).map((k) => powerRow(hero, k)),
@@ -509,9 +519,17 @@ function gearTab() {
   return h('div', { class: 'sx-tab gear' },
     coachBox('g_gear'),
     eyebrow('On your body'), h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-    h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across the top or middle row: +10 attack. Down the middle: +10 block.'),
+    h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple or Strength Triple (three alike across): +10 attack. Head to Toe Triple (down the middle): +10 block.'),
     eyebrow(`Pack · ${bag.length} of ${D.BAG_MAX}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
     eyebrow('The peddler'), h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))));
+}
+// The hero's lifetime score: every battle's points add up here, with party trophies.
+function hallOfFame(hero) {
+  const r = hero.record || { battles: 0, points: 0, best: 0, firsts: 0, seconds: 0 };
+  const cell = (label, v, cls = '') => h('div', { class: `hf-cell ${cls}` }, h('b', {}, String(v)), h('small', {}, label));
+  return h('section', { class: 'sx-hof' }, eyebrow('Hall of fame', 'gold'),
+    h('div', { class: 'hf-row' }, cell('Total points', r.points.toLocaleString(), 'big'), cell('Battles', r.battles), cell('Best battle', r.best)),
+    r.firsts || r.seconds ? h('div', { class: 'hf-row two' }, cell('1st place', r.firsts, 'gold'), cell('2nd place', r.seconds, 'silver')) : h('p', { class: 'fine' }, 'Trophies for 1st and 2nd place are won in party games.'));
 }
 function heroTab() {
   const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; hero.perks.forEach((p) => { pc[p] = (pc[p] || 0) + 1; });
@@ -521,6 +539,7 @@ function heroTab() {
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     heroStats(E.maxHpOf(hero), E.feetSize(hero)),
+    hallOfFame(hero),
     eyebrow('Difficulty'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),

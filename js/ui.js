@@ -605,7 +605,7 @@ async function lockIn() {
   const b = S.battle; S.busy = true; sfx.lock(); buzz(30);
   $('.board')?.classList.add('locked'); $$('.die').forEach((d) => d.classList.remove('sel'));
   const ev = E.evaluate(S.hero, b.board, { straight: S.straight });
-  if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
+  if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
   const target = S.target; const rep = E.resolve(b, { target, straight: S.straight }); S.lastReport = rep;
   await sleep(450);
   const tEl = $(`.ecard[data-uid="${rep.targetUid}"]`);
@@ -634,10 +634,11 @@ function showVictory() {
   const lvBefore = hero.level;
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
+  const points = E.pointsOf(b); E.recordBattle(hero, { points, heroes: 1, won: true });
   const quest = S.quest;
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: null, quest, offer: null };
+  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: null, quest, offer: null };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   renderVictory();
 }
@@ -677,6 +678,7 @@ function showPartyVictory() {
     f.hero.stats.goldEarned += Math.max(0, g);
     f.hero.stats.battles++;
     E.gainXp(f.hero, r.xp);
+    E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
   }
   concludeRoadEffects();
   E.advanceCampaign(b.fighters[0].hero);
@@ -713,6 +715,7 @@ function defeat(retreat) {
   const heroes = isParty() ? S.battle.fighters.map((f) => f.hero) : [S.hero];
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
+  if (S.battle) for (const hero of heroes) { const f = isParty() ? S.battle.fighters.find((x) => x.hero === hero) : S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
   persist();
   sfx.lose();
   if (SCRUI.on() && !isParty() && world.battle) return SCRUI.defeat(retreat, loss);
@@ -787,7 +790,7 @@ function campGear() {
   });
   const stock = E.shopStock(hero);
   return h('div', { class: 'col' },
-    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Only two-handed weapons can land the top-row triple.')),
+    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple and Strength Triple: +10 attack. Head to Toe Triple: +10 block.')),
     section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons.')),
     section('The peddler', h('div', { class: 'loot' }, stock.map((it, i) => V.weaponCard(it.inst, { actions: [it.sold ? h('em', { class: 'muted' }, 'Sold') : primary(`Buy 🪙 ${it.price}`, () => { if (E.buyItem(hero, i)) { sfx.coin(); persist(); renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { disabled: hero.gold < it.price, cls: 'small' })] })))));
 }

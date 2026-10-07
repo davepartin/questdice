@@ -14,8 +14,9 @@ const board = (o) => {
   for (const [k, v] of Object.entries(o)) b[k] = { v, bound: false };
   return b;
 };
-// Sword blank (red 0) and shield bash (red 1). Both lanes attack, so block stays 0. Heart 1 does not pump a color.
-const quiet = (feet, hands = 1) => board({ NW: 1, NE: 2, W: hands, E: hands, N: 4, S: feet, C: 1, SW: 1, SE: 1 });
+// Sword blank (red 0) and shield bash (red 1). Both lanes attack, so block stays 0. Heart 2 or 3 matches no head/hand/feet
+// here and pumps no colour; the two heroes get different hearts so no team triple or Heartbeat sneaks into these tests.
+const quiet = (feet, hands = 1) => board({ NW: 1, NE: 2, W: hands, E: hands, N: 4, S: feet, C: feet === 4 ? 2 : 3, SW: 1, SE: 1 });
 
 function company(seed = 4, roster) {
   return newCompany({
@@ -170,23 +171,97 @@ test('opening attack is only the first round', () => {
   assert.equal(second.strikes.find((s) => s.name === 'Ada').atk, bare);
 });
 
-test('kill gold splits, dice gold stays, Gold Sense applies per share, XP is not split', () => {
+test('kill gold splits by points: the top scorer gets half a share more; dice gold stays; Gold Sense per share; XP not split', () => {
   const c = company();
   c.members[1].perks.push('greed');
   const b = {
     quest,
     enemies: [{ xp: 8, gold: 10 }],
     fighters: [
-      { hero: c.members[0], contrib: 20, goldEarned: 3 },
-      { hero: c.members[1], contrib: 5, goldEarned: 0 },
+      { hero: c.members[0], points: 20, goldEarned: 3 },
+      { hero: c.members[1], points: 5, goldEarned: 0 },
     ],
   };
   const r = partyRewards(b);
   assert.equal(r.xp, 8);
-  assert.equal(r.order[0], 'Ada');
-  assert.equal(r.gold.Ada, 5 + 3);
-  assert.equal(r.gold.Bea, Math.round(5 * 1.25));
+  assert.equal(r.order[0], 'Ada'); assert.equal(r.place.Ada, 1); assert.equal(r.place.Bea, 2);
+  assert.equal(r.gold.Ada, Math.round(5 * 1.5) + 3);
+  assert.equal(r.gold.Bea, Math.round(5 * 1.25), 'with two heroes there is no runner-up bonus');
   assert.equal(r.drops.length, 3);
+});
+
+test('three heroes: 1st gets +50% of a share, 2nd +25%, the rest the even share', () => {
+  const c = company(4, [{ name: 'Ada', cls: 'knight' }, { name: 'Bea', cls: 'knight' }, { name: 'Cy', cls: 'knight' }]);
+  const b = { quest, enemies: [{ xp: 9, gold: 30 }], fighters: c.members.map((m, i) => ({ hero: m, points: [5, 50, 20][i], goldEarned: 0 })) };
+  const r = partyRewards(b);
+  assert.deepEqual(r.order, ['Bea', 'Cy', 'Ada']);
+  assert.equal(r.gold.Bea, 15); assert.equal(r.gold.Cy, Math.round(10 * 1.25)); assert.equal(r.gold.Ada, 10);
+});
+
+test('team triples: two Strength Triples on the same monster are a Team Strength Attack, +10 each', () => {
+  const c = company();
+  const b = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 });
+  b.fighters.forEach((f) => { f.board = board({ NW: 1, NE: 2, W: 2, E: 2, C: 2, N: 4, S: 1, SW: 1, SE: 1 }); });
+  const solo = evaluate(c.members[0], b.fighters[0].board).atk;
+  const rep = resolveParty(b);
+  assert.equal(rep.team.length, 1); assert.equal(rep.team[0].label, 'Team Strength Attack');
+  for (const s of rep.strikes) assert.ok(s.atk >= solo + 10);
+  assert.equal(rep.heartbeat.magic, 2, 'both hearts show 2: Heartbeat gives each hero 2 magic');
+});
+
+test('team attack needs the same monster', () => {
+  const c = company();
+  const b = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 });
+  b.enemies.push({ ...b.enemies[0], uid: 'other', hp: 999 });
+  b.fighters.forEach((f, i) => { f.board = board({ NW: 1, NE: 2, W: 2, E: 2, C: 2, N: 4, S: 1, SW: 1, SE: 1 }); f.target = i; });
+  const rep = resolveParty(b);
+  assert.equal(rep.team.length, 0);
+});
+
+test('Moral Boost: the killing blow gives the next hero +3 attack', () => {
+  const c = company();
+  const b = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 }, 1);
+  b.enemies.push({ ...b.enemies[0], uid: 'second', hp: 999, maxHp: 999 });
+  b.fighters[1].target = 1;
+  const rep = resolveParty(b);
+  assert.equal(rep.moral.length, 1); assert.equal(rep.moral[0].n, 3); assert.equal(rep.moral[0].to, 'Bea');
+});
+
+test('team actions: a thrown potion, shared magic, a revive; one a round', async () => {
+  const { teamAction } = await import('../js/engine.js');
+  const c = company();
+  const b = newPartyBattle(c.members, quest, makeRng(2));
+  const [A, B] = b.fighters;
+  B.hp = B.maxHp - 12; A.magic = 12; b.magic = 12; // hero 0 is the focused one: the battle mirrors their magic
+  assert.equal(teamAction(b, 0, 'potion', 1).ok, true); assert.equal(B.hp, B.maxHp - 2); assert.equal(A.potions, 1);
+  assert.equal(teamAction(b, 0, 'magic', 1).ok, false, 'one team action a round');
+  b.round++; const bm = B.magic;
+  assert.equal(teamAction(b, 0, 'magic', 1).ok, true); assert.equal(A.magic, 10); assert.equal(B.magic, bm + 2);
+  b.round++; B.hp = 0;
+  assert.equal(teamAction(b, 0, 'revive', 1).ok, true); assert.equal(B.hp, 10); assert.equal(A.magic, 0);
+  b.round++; B.hp = 0; A.magic = 12; b.magic = 12;
+  assert.equal(teamAction(b, 0, 'revive', 1).ok, false, 'one revive a battle');
+  assert.ok(A.points > 0);
+});
+
+test('the spoils draft goes by points, lets you skip, and comes back around', async () => {
+  const { newDraft, draftWho, draftPick, draftSkip } = await import('../js/engine.js');
+  const d = newDraft(['Bea', 'Ada', 'Cy'], 3);
+  assert.equal(draftWho(d), 'Bea'); assert.equal(draftSkip(d, 'Bea'), true);
+  assert.equal(draftPick(d, 'Ada', 2), true); assert.equal(draftPick(d, 'Ada', 1), false, 'not your turn');
+  assert.equal(draftPick(d, 'Cy', 0), true);
+  assert.equal(draftWho(d), 'Bea', 'it comes back around'); assert.equal(draftPick(d, 'Bea', 1), true);
+  assert.equal(d.done, true);
+  const e = newDraft(['A', 'B'], 3); draftSkip(e, 'A'); draftSkip(e, 'B'); assert.equal(e.done, true, 'everyone skipped in a row');
+});
+
+test('battle points add up; the lifetime record keeps 1st places (and 2nd only with 3+ heroes)', async () => {
+  const { recordBattle } = await import('../js/engine.js');
+  const h = newHero({ name: 'R', cls: 'knight', seed: 1 });
+  recordBattle(h, { points: 120, place: 1, heroes: 2 }); recordBattle(h, { points: 80, place: 2, heroes: 2 }); recordBattle(h, { points: 60, place: 2, heroes: 4 }); recordBattle(h, { points: 40 });
+  assert.deepEqual(h.record, { battles: 4, points: 300, best: 120, firsts: 1, seconds: 1, wins: 4 });
+  const b = newBattle(h, quest, makeRng(5), 1); startRoll(b); resolve(b, { target: 0 });
+  assert.ok(b.points > 0, 'a solo round scores points');
 });
 
 test('blessings raise this fight’s max HP, skip other heroes, and wait to be spent', () => {

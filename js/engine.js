@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -236,10 +236,10 @@ export function evaluate(hero, board, opts = {}) {
   if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
     const a = weaponFaces(hero.loadout.NW)[val('NW') - 1].v;
     const b = weaponFaces(hero.loadout.NE)[val('NE') - 1].v;
-    if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', name: 'top row' }); out.atk += SYNERGY_BONUS; }
+    if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', row: 'weapons', name: 'Weapons Triple' }); out.atk += SYNERGY_BONUS; }
   }
-  if (isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', name: 'middle row' }); out.atk += SYNERGY_BONUS; }
-  if (val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', name: 'head · heart · feet' }); out.block += SYNERGY_BONUS; }
+  if (isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
+  if (val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
   // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
@@ -343,7 +343,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: POTIONS,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionMaxOf(hero), points: 0,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   beginReset(b);
@@ -401,11 +401,41 @@ export function healSpend(b) {
 // Healing potions: every hero carries POTIONS a battle. Free to drink, heals POTION_HP. In a party a potion can be thrown
 // to a friend (`to` = that fighter); solo it is always you. Any time before you lock in.
 export const POTIONS = 2; export const POTION_HP = 10;
+export const potionMaxOf = (hero) => hero?.potionMax || POTIONS;
 export const potionsLeft = (b) => (b.potions ?? POTIONS);
 export function drinkPotion(b, to = b) {
   if (potionsLeft(b) <= 0 || !to || to.hp <= 0 || to.hp >= to.maxHp) return false;
   b.potions = potionsLeft(b) - 1; const before = to.hp; to.hp = Math.min(to.maxHp, to.hp + POTION_HP);
-  (to.stats || b.stats).healed += to.hp - before; return true;
+  const got = to.hp - before; (to.stats || b.stats).healed += got;
+  award(b, got * (to === b ? POINTS.healSelf : POINTS.healFriend));
+  return true;
+}
+// Potion belt: train it at camp to carry a third potion.
+export function potionUpgrade(hero) {
+  const cur = potionMaxOf(hero); const step = POTION_BELT[cur];
+  if (!step) return { ok: false, why: 'Max', cur };
+  if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: cur + 1, cur };
+  if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: cur + 1, cur };
+  return { ok: true, cost: step[0], next: cur + 1, cur };
+}
+export function upgradePotions(hero) { const r = potionUpgrade(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.potionMax = r.next; return true; }
+
+// ------------------------------------------------------------------------------- battle points
+// Arcade-style points (POINTS in data.js). `who` is a solo battle or a party fighter: both keep `.points`.
+export function award(who, n) { if (!who || !n) return 0; who.points = (who.points || 0) + n; return n; }
+export const pointsOf = (who) => Math.round(who?.points || 0);
+// What a round was worth, from its tallies.
+export function roundPoints({ dealt = 0, absorbed = 0, healed = 0, kills = 0, triples = 0, teamTriples = 0, straight = false, down = false } = {}) {
+  return dealt * POINTS.dealt + absorbed * POINTS.absorbed + healed * POINTS.healSelf + kills * POINTS.kill
+    + triples * POINTS.triple + teamTriples * POINTS.teamTriple + (straight ? POINTS.straight : 0) + (down ? POINTS.knockedOut : 0);
+}
+// A hero's lifetime record: every battle's points, plus party trophies (1st place; 2nd place only with 3+ heroes).
+export function recordBattle(hero, { points = 0, place = 0, heroes = 1, won = true } = {}) {
+  const r = (hero.record ||= { battles: 0, points: 0, best: 0, firsts: 0, seconds: 0, wins: 0 });
+  r.battles++; r.points += Math.max(0, Math.round(points)); r.best = Math.max(r.best, Math.round(points)); if (won) r.wins++;
+  if (heroes >= 2 && won && place === 1) r.firsts++;
+  if (heroes >= 3 && won && place === 2) r.seconds++;
+  return r;
 }
 export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers)
 export const healBig = (b) => drinkPotion(b);
@@ -493,7 +523,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const alive = b.enemies.filter((e) => e.hp > 0);
   for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; }
 
-  let block = T.block;
+  let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
   let tgt = null;
   const strike = () => {
@@ -594,6 +624,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.magic = Math.max(0, Math.min(MAGIC_CAP, b.magic + T.magic - stolen));
   rep.hpAfter = b.hp; rep.magicAfter = b.magic;
   hero.stats.rounds++;
+  rep.points = Math.round(roundPoints({ dealt: b.stats.dealt - (rep.dealtBefore ?? b.stats.dealt), absorbed: rep.absorbed, healed: rep.healed, kills: rep.killed.length, triples: (ev.triples || []).length, straight: !!ev.straight, down: b.hp <= 0 }));
+  award(b, rep.points);
 
   b.report = rep;
   if (living().length === 0) { b.outcome = 'victory'; b.phase = 'done'; }
@@ -878,12 +910,12 @@ function makeFighter(hero) {
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: POTIONS,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: potionMaxOf(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
   };
 }
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
@@ -941,6 +973,55 @@ function totalsFor(f) {
   return { ev, T };
 }
 
+// Team triples: two or more heroes landing the same kind of triple in one round each get TEAM_TRIPLE_BONUS more.
+// Attack rows (Weapons, Strength) only count when they hit the same monster. Heartbeat: if every hero's heart die shows
+// the same face, each gains magic equal to the number of heroes.
+const TEAM_LABEL = { weapons: 'Team Weapons Attack', strength: 'Team Strength Attack', headtoe: 'Team Head to Toe Block' };
+function teamBonuses(b, acting) {
+  const out = { team: [], heartbeat: null };
+  if (acting.length < 2) return out;
+  const tgtOf = (f) => { const t = b.enemies[f.target]; return t && t.hp > 0 ? t.uid : b.enemies.find((e) => e.hp > 0)?.uid; };
+  for (const row of ['weapons', 'strength', 'headtoe']) {
+    const who = acting.filter((f) => (f.ev.triples || []).some((t) => t.row === row));
+    if (who.length < 2) continue;
+    const groups = new Map();
+    for (const f of who) { const k = row === 'headtoe' ? 'all' : tgtOf(f); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(f); }
+    for (const g of groups.values()) {
+      if (g.length < 2) continue;
+      for (const f of g) { if (row === 'headtoe') f.T.block += TEAM_TRIPLE_BONUS; else f.T.atk += TEAM_TRIPLE_BONUS; f._team++; }
+      out.team.push({ row, label: TEAM_LABEL[row], names: g.map((f) => f.hero.name), bonus: TEAM_TRIPLE_BONUS });
+    }
+  }
+  const face = acting[0].board.C.v;
+  if (acting.every((f) => f.board.C.v === face)) { for (const f of acting) f.T.magic += acting.length; out.heartbeat = { face, magic: acting.length }; }
+  return out;
+}
+// TEAM ACTIONS: each living hero may take one per round, while the round is being shaped. `from`/`to` are fighter indexes.
+//   potion  throw one of your potions to a friend (+10 health)
+//   magic   pay SHARE_MAGIC magic, your friend gains it
+//   revive  once a battle: pay REVIVE_COST magic, a fallen friend stands back up with REVIVE_HP health (acts next round)
+export function teamActionInfo(b, from, kind, to) {
+  const F = b.fighters[from]; const T = b.fighters[to];
+  if (!F || !T || F === T) return { ok: false, why: 'Choose a friend.' };
+  if (b.outcome) return { ok: false, why: 'The battle is over.' };
+  if (F.hp <= 0) return { ok: false, why: 'You are down.' };
+  if (F.teamRound === b.round) return { ok: false, why: 'One team action a round.' };
+  if (kind === 'potion') { if (potionsLeft(F) <= 0) return { ok: false, why: 'No potions left.' }; if (T.hp <= 0) return { ok: false, why: `${T.hero.name} is down. Revive them.` }; if (T.hp >= T.maxHp) return { ok: false, why: `${T.hero.name} is at full health.` }; return { ok: true }; }
+  if (kind === 'magic') { if (F.magic < SHARE_MAGIC) return { ok: false, why: `Needs ${SHARE_MAGIC} magic.` }; if (T.hp <= 0) return { ok: false, why: `${T.hero.name} is down.` }; if (T.magic >= MAGIC_CAP) return { ok: false, why: `${T.hero.name} is full of magic.` }; return { ok: true }; }
+  if (kind === 'revive') { if (F.reviveUsed) return { ok: false, why: 'You have used your revive this battle.' }; if (T.hp > 0) return { ok: false, why: `${T.hero.name} is still standing.` }; if (F.magic < REVIVE_COST) return { ok: false, why: `Needs ${REVIVE_COST} magic.` }; return { ok: true }; }
+  return { ok: false, why: 'Unknown action.' };
+}
+export function teamAction(b, from, kind, to) {
+  if (b.fighters[b.active]) commitFighter(b);
+  const r = teamActionInfo(b, from, kind, to); if (!r.ok) { if (b.fighters[b.active]) focusFighter(b, b.active); return r; }
+  const F = b.fighters[from]; const T = b.fighters[to];
+  if (kind === 'potion') drinkPotion(F, T);
+  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(MAGIC_CAP, T.magic + SHARE_MAGIC) - T.magic; T.magic += got; award(F, SHARE_MAGIC * POINTS.magicGift); }
+  else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); T.board = null; award(F, POINTS.revive); }
+  F.teamRound = b.round; F.contrib = F.points;
+  if (b.fighters[b.active]) focusFighter(b, b.active);
+  return { ok: true };
+}
 export function resolveParty(b) {
   // Cards stack: two heroes can both soften a blow. A road blessing is one fact about the fight, so it applies once.
   const cardWeaken = b.fighters.reduce((a, f) => a + ((f.mods && f.mods.weaken) || 0), 0);
@@ -950,12 +1031,13 @@ export function resolveParty(b) {
   const acting = b.fighters.filter((f) => f.hp > 0 && f.board);
   for (const f of acting) {
     const { ev, T } = totalsFor(f);
-    f.ev = ev; f.T = T;
+    f.ev = ev; f.T = T; f._dealt = 0; f._kills = 0; f._team = 0;
     if (ev.offense3 || ev.defense3) f.hero.stats.triples++;
     if (ev.straight) f.hero.stats.straights++;
     f.goldEarned += T.gold;
     f.hero.stats.rounds++;
   }
+  const team = teamBonuses(b, acting);
   const alive = b.enemies.filter((e) => e.hp > 0);
   for (const e of alive) {
     e.p = die(b.rng, e.powerDie);
@@ -964,7 +1046,7 @@ export function resolveParty(b) {
   }
   const order = rankFighters(acting, b.rng);
   const rep = {
-    round: b.round, party: true, leader: order[0]?.f.hero.name || '', strikes: [],
+    round: b.round, party: true, leader: order[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };
@@ -987,22 +1069,24 @@ export function resolveParty(b) {
   };
   const leader = snap[0];
   const livingNow = () => b.enemies.filter((e) => e.hp > 0);
+  // Moral Boost: the killing blow gives the next hero to act +MORAL_BOOST attack (carried into next round if nobody is left).
+  let moral = b.moralNext || null; b.moralNext = null;
   const strikeFor = (f) => {
     let tgt = b.enemies[f.target];
     if (!tgt || tgt.hp <= 0) tgt = b.enemies.find((e) => e.hp > 0);
     if (!tgt) return;
     const T = f.T;
+    if (moral && moral.from !== f.hero.name) { T.atk += moral.n; rep.moral.push({ from: moral.from, to: f.hero.name, n: moral.n }); moral = null; }
     const pool = guardLeft.get(tgt.uid) || 0;
     const guarded = Math.min(pool, T.atk);
     if (guardLeft.has(tgt.uid)) guardLeft.set(tgt.uid, pool - guarded);
     const dmg = Math.max(0, T.atk - guarded) + T.pierce;
     const dealt = Math.min(tgt.hp, dmg);
     tgt.hp = Math.max(0, tgt.hp - dmg);
-    f.stats.dealt += dealt;
-    f.contrib += dealt;
+    f.stats.dealt += dealt; f._dealt += dealt;
     const killed = tgt.hp <= 0;
     if (killed) {
-      rep.killed.push(tgt.uid); f.contrib += 3;
+      rep.killed.push(tgt.uid); f._kills++; moral = { from: f.hero.name, n: MORAL_BOOST };
       let pot = tgt.carried;
       const victims = [...b.fighters].filter((v) => v.purseLost > 0).sort((a, c) => c.purseLost - a.purseLost);
       for (const v of victims) {
@@ -1064,6 +1148,7 @@ export function resolveParty(b) {
   for (const x of line) {
     if (x.kind === 'hero') { if (runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
   }
+  if (moral) b.moralNext = moral; // nobody left to act this round: it carries to the first hero next round
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {
     const rg = MONSTERS[e.id].rage;
@@ -1081,14 +1166,14 @@ export function resolveParty(b) {
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     f.stats.healed += healed; f.stats.taken += taken[i];
-    f.contrib += healed * 1.25 + absorbed[i] * 0.8 + (i === 0 ? 3 : 0);
-    if (f.ev.offense3 || f.ev.defense3 || f.ev.straight) f.contrib += 4;
+    const pts = Math.round(roundPoints({ dealt: f._dealt, absorbed: absorbed[i], healed, kills: f._kills, triples: (f.ev.triples || []).length, teamTriples: f._team, straight: !!f.ev.straight, down: hpBefore > 0 && f.hp <= 0 }));
+    award(f, pts); f.contrib = f.points;
     let magic = f.magic + T.magic;
     if (f === leader && rep.magicStolen) magic -= rep.magicStolen;
     f.magic = Math.max(0, Math.min(MAGIC_CAP, magic));
     rep.fighters.push({
       name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed,
-      hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib,
+      hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib, points: pts, total: pointsOf(f),
     });
   });
   // Heroes who never rolled (already down) still appear, unchanged.
@@ -1109,20 +1194,41 @@ export function partyRewards(b) {
   const dead = b.enemies;
   const xp = dead.reduce((a, e) => a + e.xp, 0);
   const baseKills = dead.reduce((a, e) => a + e.gold, 0);
-  const ranked = [...b.fighters].sort((a, c) => c.contrib - a.contrib || a.hero.name.localeCompare(c.hero.name));
+  // Ranked by battle points. The gold from the fallen is shared evenly; the top scorer gets PLACE_GOLD[0] of a share more,
+  // and (with three or more heroes) the runner-up PLACE_GOLD[1]. Everyone else gets the same even share.
+  const ranked = [...b.fighters].sort((a, c) => (c.points || 0) - (a.points || 0) || a.hero.name.localeCompare(c.hero.name));
   const n = Math.max(1, ranked.length);
   const parts = splitInt(baseKills, ranked.map(() => 1));
-  const gold = {};
+  const gold = {}; const place = {};
   ranked.forEach((f, i) => {
     const gm = 1 + heroMods(f.hero).goldPct;
-    const killShare = Math.round(parts[i] * gm);
+    const bonus = n >= 2 && i === 0 ? PLACE_GOLD[0] : n >= 3 && i === 1 ? PLACE_GOLD[1] : 0;
+    const killShare = Math.round(parts[i] * (1 + bonus) * gm);
     gold[f.hero.name] = killShare + f.goldEarned;
+    place[f.hero.name] = i + 1;
   });
   const sample = ranked[0]?.hero;
   const rng = makeRng(hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'drops'));
   const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
-  const drops = rollDrops(rng, n + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + sample.campaign.act - 1 });
-  return { xp, gold, drops, order: ranked.map((f) => f.hero.name), contrib: Object.fromEntries(b.fighters.map((f) => [f.hero.name, Math.round(f.contrib)])) };
+  const drops = rollDrops(rng, n + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + sample.campaign.act - 1, sizes: dropSizeWeights(sample.campaign.act, sample.campaign.step, quest.perilous ? 1 : 0) });
+  const points = Object.fromEntries(b.fighters.map((f) => [f.hero.name, pointsOf(f)]));
+  return { xp, gold, drops, order: ranked.map((f) => f.hero.name), place, points, contrib: points };
+}
+// The spoils draft: heroes choose in order of battle points. On your turn take a weapon or skip; the turn passes on and
+// comes back around. It ends when the spoils are gone or everyone skips in a row.
+export function newDraft(order, count) { return { order: [...order], turn: 0, left: count, picked: {}, skips: 0, done: count <= 0 || !order.length }; }
+export const draftWho = (d) => (d.done ? null : d.order[d.turn % d.order.length]);
+export function draftPick(d, name, index) {
+  if (d.done || draftWho(d) !== name || d.picked[index] != null) return false;
+  d.picked[index] = name; d.left--; d.skips = 0; d.turn++;
+  if (d.left <= 0) d.done = true;
+  return true;
+}
+export function draftSkip(d, name) {
+  if (d.done || draftWho(d) !== name) return false;
+  d.skips++; d.turn++;
+  if (d.skips >= d.order.length) d.done = true;
+  return true;
 }
 
 export function companyGold(members) { return members.reduce((a, m) => a + m.gold, 0); }

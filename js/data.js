@@ -337,6 +337,32 @@ export const ACTS = [
   },
 ];
 export const QUESTS_PER_ACT = 10;
+// BATTLE POINTS, like an arcade score. Every battle starts at 0; your hero keeps a lifetime total, and in party games the
+// battle's top scorer gets the 1st place trophy (2nd place too with 3+ heroes), first pick of the spoils, and more gold.
+export const POINTS = {
+  dealt: 1,          // per point of damage you deal
+  absorbed: 0.5,     // per point of damage your block stops
+  healSelf: 0.5,     // per health you mend on yourself
+  healFriend: 2,     // per health you give a friend (a thrown potion)
+  kill: 15,          // the killing blow
+  triple: 10,        // each triple you roll
+  teamTriple: 20,    // each team triple you share in
+  straight: 10,      // a straight
+  magicGift: 4,      // per magic you give a friend
+  revive: 40,        // bringing a fallen friend back
+  knockedOut: -40,   // falling in battle
+};
+// Party: the gold from the fallen is shared evenly, then the top scorer gets PLACE_GOLD[0] more (as a share of that split)
+// and, with three or more heroes, the runner-up PLACE_GOLD[1].
+export const PLACE_GOLD = [0.5, 0.25];
+// Team play
+export const TEAM_TRIPLE_BONUS = 10; // Team Weapons Attack / Team Strength Attack (same monster) / Team Head to Toe Block
+export const MORAL_BOOST = 3;        // the killing blow gives the next hero to act +3 attack
+export const SHARE_MAGIC = 2;        // a team action: pay 2 magic, a friend gains 2
+export const REVIVE_COST = 10;       // a team action, once a battle: 10 magic brings a fallen friend back
+export const REVIVE_HP = 10;
+// Potion belt: every hero starts with 2 potions a battle and can train a third at camp.
+export const POTION_BELT = { 2: [90, 4] }; // from 2 to 3: [gold, hero level]
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
 export const ACT_HP = [1, 1.15, 1.35];

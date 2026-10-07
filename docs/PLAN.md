@@ -279,3 +279,10 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 ### Healing potions (solo now, party-ready)
 - `E.POTIONS = 2`, `E.POTION_HP = 10`, `drinkPotion(b, to = b)`, `potionsLeft(b)`; replaces Big Heal (old `healBig`/`BIG_HEAL` kept as aliases). Free; usable on the reset screen or while shaping. Party fighters carry `potions` (mirrored); `to` lets a hero throw one to a friend once party UI exists.
 - Compensation: base monster flat 2 -> 3 per hit; Hard flat +3. Danger labels re-banded (Easy <0.35, Fair <0.5, Hard <0.7). Lich stays (Dave likes it).
+
+### Team rules + battle points (engine done; party screens to build)
+- Triple names: Weapons / Strength / Head to Toe (`t.row` = weapons|strength|headtoe).
+- Party: `teamBonuses` (team triples, same monster for attack rows; Heartbeat = +n magic), Moral Boost +3 (rep.moral, b.moralNext), `teamAction(b, from, kind, to)` potion|magic|revive (one per hero per round; revive once a battle, 10 magic, 10 hp). Table command `{ type: 'team', kind, to }`.
+- Points: POINTS in data.js; `award`, `pointsOf`, `roundPoints`; solo b.points, party f.points (=contrib). `recordBattle` -> hero.record (Hall of Fame on Hero tab). HUD counter `.b3-score`.
+- Rewards: partyRewards ranks by points, `place`, gold bonus PLACE_GOLD [0.5, 0.25] (2nd only with 3+); `newDraft/draftWho/draftPick/draftSkip` (table loot/pass use it). Party drops now sized like solo.
+- Potion belt: `potionUpgrade/upgradePotions` (2 -> 3 for 90 gold at level 4), Forge tab row.

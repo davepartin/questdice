@@ -76,6 +76,7 @@ function dispatch(table, player, cmd) {
     case 'retreat': return retreat(table);
     case 'loot': return loot(table, player, cmd);
     case 'pass-loot': return passLoot(table, player);
+    case 'team': return team(table, player, cmd);
     case 'rest': return rest(table);
     default: return fail('Unknown choice.');
   }
@@ -383,6 +384,15 @@ function retreat(table) {
   if (table.phase !== 'battle') return fail('You are not in a fight.');
   return enterDefeat(table, true);
 }
+// A team action on a friend: throw a potion, share magic, or revive (see E.teamAction). One per round.
+function team(table, player, cmd) {
+  if (table.phase !== 'battle') return fail('Not in a fight.');
+  const b = table.battle; const from = b.fighters.findIndex((f) => f.hero.name === player.hero?.name);
+  const to = b.fighters.findIndex((f) => f.hero.name === cmd.to);
+  if (from < 0) return fail('You are not in this fight.');
+  const r = E.teamAction(b, from, cmd.kind, to);
+  return r.ok ? ok() : fail(r.why);
+}
 function enterVictory(table) {
   const b = table.battle;
   const levels = {};
@@ -394,14 +404,17 @@ function enterVictory(table) {
     f.hero.stats.goldEarned += Math.max(0, g);
     f.hero.stats.battles++;
     E.gainXp(f.hero, r.xp);
+    E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
   }
   E.spendBlessings(table.company.campaign);
   E.clearAmbush(table.company.campaign);
   E.advanceCampaign(b.fighters[0].hero);
   table.rewards = {
-    xp: r.xp, gold: r.gold, drops: r.drops, order: r.order, contrib: r.contrib,
-    levels, picker: 0, picked: {}, questName: table.quest?.name || '',
+    xp: r.xp, gold: r.gold, drops: r.drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
+    levels, draft: E.newDraft(r.order, r.drops.length), questName: table.quest?.name || '',
   };
+  Object.defineProperty(table.rewards, 'picker', { get() { return this.draft.done ? this.order.length : this.draft.turn % this.order.length; }, enumerable: true });
+  Object.defineProperty(table.rewards, 'picked', { get() { return this.draft.picked; }, enumerable: true });
   table.phase = 'victory';
   table.players.forEach((p) => { p.ready = false; });
   settleVictory(table);
@@ -411,29 +424,29 @@ function settleVictory(table) {
   if (table.phase !== 'victory') return;
   const r = table.rewards;
   const perks = members(table).some((m) => m.pendingPerks > 0);
-  if (!perks && r.picker >= r.order.length) enterCamp(table);
+  if (!perks && r.draft.done) enterCamp(table);
 }
 function loot(table, player, cmd) {
   if (table.phase !== 'victory') return fail('No spoils yet.');
   const r = table.rewards;
-  const who = r.order[r.picker];
+  const who = E.draftWho(r.draft);
   if (player.hero.name !== who) return fail(`${who} is choosing.`);
   const i = String(cmd.index | 0);
   const inst = r.drops[i];
-  if (!inst || r.picked[i]) return fail('That weapon is gone.');
+  if (!inst || r.draft.picked[i]) return fail('That weapon is gone.');
+  if (E.bagFull(player.hero)) return fail('Your pack is full. Sell something first, or skip.');
   player.hero.bag.push(inst);
-  r.picked[i] = player.hero.name;
-  r.picker += 1;
+  E.draftPick(r.draft, who, i);
   settleVictory(table);
   return ok();
 }
 function passLoot(table, player) {
   if (table.phase !== 'victory') return fail('No spoils yet.');
   const r = table.rewards;
-  const who = r.order[r.picker];
-  if (!who) return fail('The packs are full.');
+  const who = E.draftWho(r.draft);
+  if (!who) return fail('The spoils are done.');
   if (player.hero.name !== who && player.id !== table.hostId) return fail(`${who} is choosing.`);
-  r.picker += 1;
+  E.draftSkip(r.draft, who);
   settleVictory(table);
   return ok();
 }
