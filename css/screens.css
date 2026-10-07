@@ -380,3 +380,5 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-places .pl-nums small { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
 .sx-places .pl-gold { display: inline-flex; align-items: center; gap: .2rem; font-size: .78rem; color: #f6c445; }
 .sx-places .pl-gold .ic { width: .85rem; height: .85rem; }
+/* phones: the title menu can always be scrolled, so no option is ever out of reach */
+@media (max-aspect-ratio: 1085/1000) { .sx-screen.title .sx-title-menu { pointer-events: auto; -webkit-overflow-scrolling: touch; } }

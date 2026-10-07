@@ -120,6 +120,15 @@ function logo({ animate = true } = {}) {
     h('p', { class: 'lg-tag' }, h('i'), h('span', {}, 'Roll your body. Break the dark.'), h('i')));
 }
 
+// "Play together" opens in place: share one phone, or each on your own.
+function togetherChoice(menu) {
+  const back = () => X.showTitle();
+  menu.replaceChildren(
+    h('div', { class: 'sx-eye menu-label' }, 'Play together'),
+    plaque({ eyebrow: 'One phone', title: 'Take turns on this phone', sub: 'Two to six heroes pass the phone.', icon: 'people', tone: 'is-together', onclick: X.showCreateCompany }),
+    plaque({ eyebrow: 'Many phones', title: 'Each on your own phone', sub: 'Everyone joins one table with a code.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
+    plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: back }));
+}
 // ------------------------------------------------------------------------------------------------ title
 export function title() {
   const S = X.S; const saves = SV.listSaves(); const seat = Net.savedSeat();
@@ -137,8 +146,7 @@ export function title() {
   if (saves.length) menu.append(group('Begin anew'));
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: !saves.length, onclick: X.showCreate }),
-    plaque({ eyebrow: 'Together', title: 'A company on one phone', sub: 'Two to six heroes take turns on this phone.', icon: 'people', tone: 'is-together', onclick: X.showCreateCompany }),
-    plaque({ eyebrow: 'Together', title: 'Play on your own phone', sub: 'One to six heroes, one table.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
+    plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Two to six heroes, one adventure.', icon: 'people', tone: 'is-together', onclick: () => togetherChoice(menu) }),
     plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
   mountAs('title',
     h('div', { class: 'sx-title-shell' },
