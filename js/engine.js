@@ -168,7 +168,7 @@ export function evaluate(hero, board, opts = {}) {
   const val = (s) => board[s].v;
   const out = {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0,
-    lanes: {}, offense3: false, defense3: false, straight: 0, straightBonus: 0, notes: [],
+    lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],
   };
 
   // Universal number language on head, hands and feet: FACE_PAY[v] (1 heal, 2 pierce, 3 magic, 4 gold at 2; 5-8 at 3; 9 and 10 pay two kinds).
@@ -215,13 +215,17 @@ export function evaluate(hero, board, opts = {}) {
   }
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 
-  // Synergy. Top row = weapon, head, weapon: only a two-handed weapon is eligible.
-  if (isTwoHanded(hero) && isActive(hero, 'NE')) {
+  // Triples. Across (top row: weapon, head, weapon by the weapons' +N; middle row: hand, heart, hand) = +10 attack each.
+  // Down (head, heart, feet) = +10 block. Every die in the line must be in play; a +0 weapon never matches.
+  out.triples = [];
+  if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
     const a = weaponFaces(hero.loadout.NW)[val('NW') - 1].v;
     const b = weaponFaces(hero.loadout.NE)[val('NE') - 1].v;
-    if (a === b && b === val('N') && a > 0) { out.offense3 = true; out.atk += SYNERGY_BONUS; }
+    if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', name: 'top row' }); out.atk += SYNERGY_BONUS; }
   }
-  if (val('N') === val('C') && val('C') === val('S')) { out.defense3 = true; out.block += SYNERGY_BONUS; }
+  if (isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', name: 'middle row' }); out.atk += SYNERGY_BONUS; }
+  if (val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', name: 'head · heart · feet' }); out.block += SYNERGY_BONUS; }
+  out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
   // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
   const nums = new Set([val('N'), val('S'), val('C'), val('W'), val('E'),

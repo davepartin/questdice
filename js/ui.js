@@ -527,8 +527,7 @@ function renderBattle() {
   const board = h('div', { class: `board ${two ? 'is2h' : ''}` }, D.SLOTS.map((slot) => V.dieEl(hero, slot, b.board[slot], {
     selected: S.sel.has(slot), onclick: () => toggle(slot), twohand: two && D.ROLE[slot] === 'weapon',
   })));
-  if (ev.offense3) ['NW', 'N', 'NE'].forEach((s) => $(`[data-slot="${s}"]`, board).classList.add('syn'));
-  if (ev.defense3) ['N', 'C', 'S'].forEach((s) => $(`[data-slot="${s}"]`, board).classList.add('syn'));
+  for (const t of ev.triples || []) t.slots.forEach((s) => $(`[data-slot="${s}"]`, board).classList.add('syn'));
   const notes = V.synergyNotes(ev, b.mods);
   const cards = E.cardsOf(hero);
   const pips = h('div', { class: 'pips', 'aria-label': 'Reroll actions left' }, Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', { class: 'free' }, `+${b.freeActions.length} free`) : null);

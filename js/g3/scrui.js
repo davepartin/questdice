@@ -490,7 +490,7 @@ function gearTab() {
   return h('div', { class: 'sx-tab gear' },
     coachBox('g_gear'),
     eyebrow('On your body'), h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-    h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Only two-handed weapons land the top-row triple.'),
+    h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across the top or middle row: +10 attack. Down the middle: +10 block.'),
     eyebrow(`Pack · ${bag.length}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
     eyebrow('The peddler'), h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price, cls: 'buy', aria: `Buy for ${it.price} gold` })] }))));
 }

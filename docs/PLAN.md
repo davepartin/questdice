@@ -252,3 +252,8 @@ procedural Three.js), what is good, the realistic ceiling, and a verdict. Write 
 - Weapon dice: every face is "+N" over a big symbol on a deep red (attack starburst) or deep blue (block shield) face; +0 shows the symbol faded. The weapon's extra effects (pierce, magic, heal, gold) stay as small symbols. `dieSpecs` sends `text: '+N', wface, zero`; `drawNumeral` draws a '+'.
 - At rest only the read face is lit: `setRest` drops the sides to ~6%. Fixed `airK` (the mesh's scale offset made every die look airborne, so the sides never dimmed). d4 focus window widened to 0.55–0.78 so their read face stays bright.
 - Heart die: smooth dark stone (no veins). Blank talent faces are plain. White numerals get a 2.5 px dark edge.
+
+### Triples (rule change)
+- Across = +10 attack: top row (both weapons' +N equal the head; any weapons, both spots in play, +0 never matches) and middle row (hand, heart, hand). Down the middle (head, heart, feet) = +10 block.
+- `evaluate` returns `ev.triples = [{ slots, kind, name }]`; `offense3`/`defense3` remain as "any attack / block triple". UI (3D tray links, banner, notes, flat UI) reads `ev.triples`.
+- Balance after this and the slow heroes' single hand: Normal 100%, Hard ~97% (was ~87%). May want toughening.

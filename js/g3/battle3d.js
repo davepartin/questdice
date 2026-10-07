@@ -642,8 +642,7 @@ export function renderShape() {
   bw.tray.setSelected?.(B.sel);
   // synergy lines glow
   const lines = [];
-  if (ev.offense3) lines.push(['NW', 'N', 'NE']);
-  if (ev.defense3) lines.push(['N', 'C', 'S']);
+  for (const t of ev.triples || []) lines.push(t.slots);
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.classList.remove('idle');
   HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
@@ -656,7 +655,7 @@ export function renderShape() {
     if (ev.offense3 || ev.defense3) hint('b_triple');
     if (E.rerollInfo(b).kind === 'paid') hint('b_paid'); else if (b.actionsLeft < E.rerollTotal()) hint('b_lock');
   }
-  bw.tray.setLink?.([ev.offense3 ? { slots: ['NW', 'N', 'NE'], color: 0xff3b3b } : null, ev.defense3 ? { slots: ['N', 'C', 'S'], color: 0x3aa4ff } : null].filter(Boolean));
+  bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
@@ -743,7 +742,7 @@ async function lockInInner() {
   B.lastRep = rep;
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); banner(ev.offense3 || ev.defense3 ? 'TRIPLE!  +10' : `${ev.straight}-STRAIGHT!`, 'gold');
-    const l = []; if (ev.offense3) l.push('NW', 'N', 'NE'); if (ev.defense3) l.push('N', 'C', 'S');
+    const l = (ev.triples || []).flatMap((t) => t.slots);
     if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
     await wait(0.55);
   } else await wait(0.25);

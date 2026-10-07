@@ -97,19 +97,21 @@ test('heart 5 / 6 pump the best lane of the matching color', () => {
   assert.equal(five.block - base.block, 4);
 });
 
-test('top-row triple needs a two-handed weapon; vertical triple gives +10 block', () => {
-  const k = knight();
-  assert.equal(isTwoHanded(k), false);
-  assert.equal(evaluate(k, board({ NW: 3, N: 3, NE: 3, C: 5 })).offense3, false, 'one-handed setups never get the top-row bonus');
+test('triples: top row and middle row give +10 attack each; head-heart-feet gives +10 block', () => {
   const r = ranger();
-  assert.equal(isTwoHanded(r), true);
   // bow faces: idx0 0b, idx1 1r, idx2 2r, idx3 3r  -> v = idx. Head 2 matches both weapon 2s.
   const hit = evaluate(r, board({ NW: 3, N: 2, NE: 3, C: 6 }));
   assert.equal(hit.offense3, true);
+  assert.deepEqual(hit.triples.map((t) => t.name), ['top row']);
   const miss = evaluate(r, board({ NW: 3, N: 2, NE: 4, C: 6 }));
   assert.equal(miss.offense3, false);
-  const blanks = evaluate(r, board({ NW: 1, N: 1, NE: 1, C: 6 })); // two blanks (0) never match a d4 head
+  const blanks = evaluate(r, board({ NW: 1, N: 1, NE: 1, C: 6 })); // two +0 faces never match
   assert.equal(blanks.offense3, false);
+  const k = knight();
+  const base = evaluate(k, board({ W: 1, C: 2, E: 1 }));
+  const mid = evaluate(k, board({ W: 1, C: 1, E: 1 }));
+  assert.ok(mid.triples.some((t) => t.name === 'middle row'), 'three 1s across the middle row is a triple');
+  assert.equal(mid.atk - base.atk, 10, 'the middle-row triple adds 10 attack');
   const v = evaluate(k, board({ N: 3, C: 3, S: 3, NW: 1, NE: 1 }));
   assert.equal(v.defense3, true);
   assert.ok(v.block >= 10);
