@@ -304,3 +304,10 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Invite links: `?join=CODE` opens Join with the code filled in; the lobby has Share invite.
 - Verified live: `dev/cloudlive.mjs` (two phones, simultaneous moves, a full round) and a rules probe (strangers cannot write, join a started table, delete or list rooms). `test/cloud.test.mjs` plays a 3-hero company with save/load after every move.
 - Next: the online screens still use the flat style; drive the 3D party battle from each phone's own view.
+
+## Learn to play (9 Oct 2026)
+
+- Home: new players see "Learn to play" as the first, gold button; returning players find it beside How to play under the menu.
+- `js/g3/tutorial.js` + `css/tutorial.css`: 13 short lessons (board, white dice symbols, hands as Strength, weapon dice, talent dice, heart, feet/initiative, the six counters, triples and straights, a round, powers/potions/camp, ready). Back/Next, swipe, progress bar, Skip. Pictures are real renders of the game's dice (`assets/tutorial/*.png`, made by `dev/tutart.mjs`).
+- Guided practice battle: a Knight ("You") against one goblin, never saved. `b.script` in the engine sets the first roll and first reroll (11 attack, then a Strength Triple for 21; `test/tutorial.test.mjs` keeps those numbers true). A spotlight and a card point at the goblin, health, Roll, the counters, the left lane, the middle row, Reroll, Lock In and Magic powers; while it waits for a tap, other taps get a gentle nudge. Round 2 is free play; winning (or losing) shows "You're ready, hero" with Forge my hero.
+- `dev/learn.mjs` walks the whole thing (home -> lessons -> guided battle -> done) and screenshots each step into docs/tutorial/.

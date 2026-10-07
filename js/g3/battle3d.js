@@ -53,6 +53,12 @@ export async function start(ctx) {
   bw.stage.scene.add(B.ringMesh);
   bw.stage.onFrame((dt, t) => { if (!B.ended) { positionPlates(); ringUpdate(t); framePan(dt); } });
   buildHud();
+  if (C.tut) C.tut.attach({
+    root: B.root, toast: (t) => toast(t),
+    diePoint: (slot) => { const q = B.bw.tray.projectSlot?.(slot, { dy: 0.3 }); if (!q) return null; const r = B.bw.stage.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; },
+    dieRadius: () => Math.max(26, Math.min(innerWidth, 520) * 0.085),
+    unscript: () => { if (B.b) B.b.script = null; },
+  });
   layer.classList.remove('loading');
   layer.querySelector('.b3-loading')?.remove();
   // Show the board once so the tray is not empty, dimmed, until the first roll.
@@ -85,6 +91,7 @@ export async function start(ctx) {
 }
 
 export function stop() {
+  C?.tut?.detach?.();
   B.ended = true; if (B.marker) { B.marker.parent?.remove(B.marker); B.marker = null; } if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
   try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
@@ -101,7 +108,7 @@ const banner = (text, kind) => { try { HK.banner($('#b3'), text, kind); } catch 
 const landscape = () => window.innerWidth / window.innerHeight >= 1.25;
 // ---- beginner hints: one small card at a time, once per hero each, off when the player turns hints off
 function hint(key) {
-  const hero = B.hero; if (B.ended || !Coach.wantHint(hero, key)) return;
+  const hero = B.hero; if (B.ended || !Coach.wantHint(hero, key) || (C.tut && !C.tut.off)) return;
   if (B.hud.coach.dataset.key) return; // one at a time
   const H = Coach.HINTS[key]; if (!H) return;
   const done = (off) => { Coach.seeHint(hero, key); if (off) Coach.setHints(false); B.hud.coach.dataset.key = ''; B.hud.coach.replaceChildren(); C.persist?.(); };
@@ -706,6 +713,7 @@ export function renderReset() {
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? `Roll · ${B.hero.name}` : 'Roll dice', sub: B.party ? `${b.fighters.filter((f) => f.hp > 0 && f.board).length} of ${b.fighters.filter((f) => f.hp > 0).length} ready` : 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
+  C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
 function e0Warn() {
@@ -720,7 +728,7 @@ function e0Warn() {
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
-  if (B.busy) return; B.busy = true;
+  if (B.busy || !guideSays('roll')) return; B.busy = true;
   const b = B.b; const bw = B.bw;
   if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
@@ -732,6 +740,7 @@ async function doRoll() {
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
   renderShape();
+  C.tut?.on('rolled');
 }
 function rerollText(info) {
   const b = B.b;
@@ -778,27 +787,32 @@ export function renderShape() {
       HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', sub: B.party ? lockSub() : undefined, id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
       powersBtn(),
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || E.rerollInfo(b).kind === 'none', cls: 'blue', aria: `${rr.label}` }))].filter(Boolean));
+  if (!B.busy) C.tut?.on('shape');
 }
+// The practice guide may hold a tap back until its card says so.
+function guideSays(action, arg) { if (!C.tut || C.tut.allow(action, arg)) return true; sfx.error(); toast(C.tut.blockedText(action)); return false; }
 
 function onPick(slot) {
   if (!E.isActive(B.hero, slot)) { sfx.error(); toast('An empty socket. Buy this die at camp and it goes right here.'); return; }
   if (B.busy || B.ended || B.b.phase !== 'shape') return;
+  if (!guideSays('pick', slot)) return;
   const b = B.b; const info = E.rerollInfo(b);
   B.focus = slot;
   if (b.board[slot].bound) { sfx.error(); toast('That die is tangled. It cannot be rerolled this round.', 'bad'); renderShape(); return; }
   if (B.sel.has(slot)) B.sel.delete(slot);
   else if (info.kind === 'none') { sfx.error(); toast('No reroll actions left.'); }
   else if (B.sel.size >= info.dice) { sfx.error(); toast(`You can reroll up to ${info.dice} dice at a time.`); }
-  else { B.sel.add(slot); sfx.select(); }
+  else { B.sel.add(slot); sfx.select(); C.tut?.on('picked', slot); }
   renderShape();
 }
 async function doReroll() {
-  if (B.busy) return; const b = B.b; const slots = [...B.sel];
+  if (B.busy || !guideSays('reroll')) return; const b = B.b; const slots = [...B.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
   B.busy = true; E.reroll(b, slots); commit(); B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
   renderShape();
   await B.bw.tray.roll(b.board, { slots });
   B.busy = false; renderShape();
+  C.tut?.on('rerolled');
 }
 function doNudge(dir) {
   const b = B.b; if (B.busy) return;
@@ -836,6 +850,8 @@ function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(
 
 // ------------------------------------------------------------------------------------------ lock in: perform the round
 async function lockIn() {
+  if (!B.busy && !guideSays('lock')) return;
+  if (C.tut && !B.busy) C.tut.on('locked');
   try { await lockInInner(); } catch (e) { console.error('lockIn failed', e.stack); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
 }
 // Company: who rolls after this hero (or the monsters, when everyone has locked)

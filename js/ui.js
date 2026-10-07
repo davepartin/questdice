@@ -14,6 +14,7 @@ import * as B3 from './g3/battle3d.js';
 import { world } from './g3/world.js';
 import * as SCR from './g3/screens.js';
 import * as SCRUI from './g3/scrui.js';
+import * as TUT from './g3/tutorial.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -35,7 +36,7 @@ const mount = (...nodes) => mountAs('', ...nodes);
 const isParty = () => (S.battle?.fighters?.length || 0) > 1;
 const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
 function persist() {
-  if (S.net) return;
+  if (S.net || S.practice) return; // the practice battle is never saved
   if (S.company?.kind === 'company') {
     if (!SV.saveCompany(S.company)) toast('Could not save. Is browser storage blocked?', 'bad');
     return;
@@ -115,7 +116,7 @@ export function bindChrome() {
 // ------------------------------------------------------------------ title
 export function showTitle() {
   Net.disconnect();
-  S.net = null; S.holdScroll = false;
+  S.net = null; S.holdScroll = false; S.practice = null; TUT.closeLessons();
   S.hero = null; S.company = null; S.battle = null; S.busy = false;
   if (SCRUI.on()) return SCRUI.title();
   const saves = SV.listSaves();
@@ -365,7 +366,19 @@ function startQuest(q) {
 }
 // What the 3D battle needs from this module.
 function battleCtx() {
+  if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
   return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+}
+// Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).
+function practice({ hero, quest, guide }) {
+  S.practice = { guide }; S.company = null; S.hero = hero; S.net = null;
+  S.quest = quest;
+  S.battle = E.newBattle(hero, quest, fresh(), 1);
+  S.battle.script = { rolls: [{ NW: 3, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 }], rerolls: [{ E: 4 }] };
+  S.battle.enemies[0].intent = { n: 'Slash', v: 'strike', f: 2, m: 1 }; // a plain hit to read in round 1
+  S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  if (world.available) { SCR.release(); B3.start(battleCtx()); return; }
+  S.practice.guide = null; renderReset(); // no 3D: the plain board, without the spotlight guide
 }
 function refresh() { if (S.battle.phase === 'shape') renderBattle(); else renderReset(); }
 function spendHeal() {
@@ -483,7 +496,7 @@ function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('How to play', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
-      ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }), ghost('Back to the fight', () => close()))));
+      S.practice ? ghost('Leave practice', () => { close(); B3.stop(); showTitle(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {
   if (S.busy) return; const b = S.battle; const info = E.rerollInfo(b);
@@ -812,9 +825,10 @@ function chronicleBlock() {
   return section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 8).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text)))));
 }
 
+TUT.bind({ showTitle, showCreate, practice });
 SCRUI.bind({
   S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showCreateCompany, showTogether, showImport, showHowTo, resume, renderPartyVictory,
-  showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle,
+  showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showLessons: () => TUT.showLessons(),
 });
 // Test/debug hook: only exposed when the page is opened with ?debug.
 attachRoom({ S, mount, primary, ghost, section, cmd, bodyWrap, banner, showTitle, showHowTo, flicker });
@@ -823,4 +837,4 @@ export async function boot() {
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
   await bootNet(showTitle);
 }
-export const debugApi = { S, E, D, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory };
+export const debugApi = { S, E, D, TUT, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory };

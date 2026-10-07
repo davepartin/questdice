@@ -157,14 +157,16 @@ export function title() {
     menu.append(plaque({ eyebrow: 'Saved games', title: saves.length > 1 ? `All saved games (${saves.length})` : 'Saved games', sub: 'Every hero saved on this phone.', icon: 'book', onclick: () => savedChoice(menu, saves, saveSub, where) }));
     menu.append(group('Begin anew'));
   }
+  // New players meet Learn to play first; returning players find it under the menu.
+  if (!saves.length) menu.append(plaque({ eyebrow: 'New here? Start here', title: 'Learn to play', sub: 'Three minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
   menu.append(
-    plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: !saves.length, onclick: X.showCreate }),
+    plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Two to six heroes, one adventure.', icon: 'people', tone: 'is-together', onclick: () => togetherChoice(menu) }));
   if (!saves.length) menu.append(plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
   mountAs('title',
     h('div', { class: 'sx-title-shell' },
       h('div', { class: 'sx-title-brand' }, logo()),
-      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, btn('How to play', X.showHowTo, { kind: 'link', icon: 'book' })), h('div', { class: 'sx-more', 'aria-hidden': 'true' }, '▾ More below'))));
+      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, saves.length ? btn('Learn to play', X.showLessons, { kind: 'ghost', icon: 'shine', cls: 'sx-learn' }) : null, btn('How to play', X.showHowTo, { kind: 'link', icon: 'help' })), h('div', { class: 'sx-more', 'aria-hidden': 'true' }, '▾ More below'))));
   lay('title');
   const box = menu.parentElement;
   const check = () => box.classList.toggle('more', box.scrollTop + box.clientHeight < box.scrollHeight - 12);

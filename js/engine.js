@@ -358,8 +358,12 @@ export function beginReset(b) {
   b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {};
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
+// The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
+// A slot it does not name rolls as usual. Normal battles have no script.
+const scripted = (hero, slot, v, rng) => (v != null ? { v: Math.min(Math.max(1, v), sidesOf(hero, slot)), bound: false } : rollSlot(hero, slot, rng));
 export function startRoll(b) {
-  b.board = rollBoard(b.hero, b.rng);
+  const plan = b.script?.rolls?.shift();
+  b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
   b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
   const slots = Object.keys(ROLE).filter((s) => s !== 'C');
   for (let i = 0; i < b.nextBound && slots.length; i++) {
@@ -386,7 +390,8 @@ export function reroll(b, slots) {
   const info = rerollInfo(b);
   b.magic -= info.perDie * slots.length;
   if (info.kind === 'card') b.freeActions.shift(); else b.actionsLeft -= 1;
-  for (const s of slots) b.board[s] = { ...rollSlot(b.hero, s, b.rng), bound: false };
+  const plan = b.script?.rerolls?.shift();
+  for (const s of slots) b.board[s] = { ...scripted(b.hero, s, plan?.[s], b.rng), bound: false };
   return true;
 }
 export function nudge(b, dir) {
