@@ -122,7 +122,8 @@ function buildHud() {
   hud.hero = buildHero();
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
-  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('i', {}));
+  // on phones the line between the battlefield and the dice table is the hero's health bar
+  hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' }), h('b', { class: 'dv-n' }, '0')));
   hud.forecast = HK.forecastStrip();
   hud.caption = h('div', { class: 'b3-caption' });
   hud.cards = h('div', { class: 'b3-cards', role: 'group', 'aria-label': 'Magical powers' });
@@ -202,6 +203,7 @@ function updateHero() {
   if (b.magic !== prev) HK.replay(r.mn, 'pop');
   HK.setGems(r.gems, b.magic);
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
+  const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
 }
 
