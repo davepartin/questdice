@@ -333,6 +333,10 @@ export const PERKS = {
 //   summon  call k reinforcements (the monster's `adds` id)
 // -------------------------------------------------------------------------------------------
 const S = (n, f, m, extra = {}) => ({ n, v: 'strike', f, m, ...extra });
+// Moves that change the right answer for a round (Dave: break the "read the box" habit):
+//   ward   Fire Ward: guards like a shield, and burns whoever hits it this round for k (+ half the act's flat). Hit something else, or accept the burn.
+//   stalk  Stalk: no attack now, but if it is not hurt this round it Pounces next round (its `pounce` strike). Hit it now.
+//   phase  Phase: normal attack passes straight through it this round; only pierce (and splash) can hurt it.
 export const MONSTERS = {
   goblin: {
     name: 'Goblin Skulker', glyph: '👺', short: 'GOBL', init: 6, hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
@@ -341,13 +345,14 @@ export const MONSTERS = {
   },
   wolf: {
     name: 'Dire Wolf', glyph: '🐺', short: 'WOLF', init: 8, hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
+    pounce: { f: 1, m: 2 }, // after a Stalk it was not hit out of
     faces: [S('Bite', 1, 1), S('Bite', 1, 1), { n: 'Howl', v: 'howl', f: 0, m: 0, k: 2 },
-      S('Lunge', 0, 2), S('Bite', 1, 1), S('Rend', 2, 1)],
+      S('Lunge', 0, 2), { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, S('Rend', 2, 1)],
   },
   cultist: {
     name: 'Ember Mage', glyph: '🔥', short: 'MAGE', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
     faces: [{ n: 'Tangle', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
-      { n: 'Ward', v: 'guard', f: 0, m: 2 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
+      { n: 'Fire Ward', v: 'ward', f: 0, m: 1, k: 4 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
       S('Bolt', 1, 1), { n: 'Tangle', v: 'bind', f: 0, m: 0, k: 2 }],
   },
   ogre: {
@@ -380,7 +385,7 @@ export const MONSTERS = {
     name: 'Wraith', glyph: '👻', short: 'WRTH', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
     faces: [{ n: 'Chill', v: 'pierce', f: 0, m: 1 }, { n: 'Chill', v: 'pierce', f: 0, m: 1 },
       { n: 'Drain', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Wail', v: 'bind', f: 0, m: 0, k: 2 },
-      { n: 'Phase', v: 'guard', f: 0, m: 2 }, S('Touch', 1, 1)],
+      { n: 'Phase', v: 'phase', f: 0, m: 0 }, S('Touch', 1, 1)],
   },
   spider: {
     name: 'Crypt Spider', glyph: '🕷️', short: 'SPDR', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
@@ -467,6 +472,10 @@ export const ACT_HP = [1, 1.15, 1.35];
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
+// The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
+// every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
+// The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
+export const ORDINARY = { flat: [3, 4, 1], lone: 2 };
 export const ELITE_STEPS = [5];
 
 // Party scaling (index = players - 1). Only 1 player is tuned today.

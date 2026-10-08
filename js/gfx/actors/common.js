@@ -13,6 +13,9 @@ const BY_VERB = {
   howl:    { tele: 'tele_howl',   act: 'howl' },
   bind:    { tele: 'tele_hex',    act: 'hex' },
   summon:  { tele: 'tele_summon', act: 'summon' },
+  ward:    { tele: 'tele_guard',  act: 'guard' },
+  stalk:   { tele: 'tele_charge', act: 'charge' },
+  phase:   { tele: 'tele_guard',  act: 'guard' },
 };
 // Move-name overrides: a Wolf's "Lunge" is a leap, a Goblin's "Fire Bomb" is a throw, etc.
 const BY_NAME = {
@@ -24,11 +27,11 @@ export function intentClips(intent) {
   if (!intent) return { tele: 'ready', act: 'idle' };
   const v = BY_VERB[intent.v] || {};
   const n = BY_NAME[intent.n] || {};
-  const slam = intent.slam ? BY_NAME.Slam : {};
+  const slam = intent.slam && !intent.pounce ? BY_NAME.Slam : {}; // a Pounce leaps instead
   return { tele: slam.tele || n.tele || v.tele || 'ready', act: slam.act || n.act || v.act || 'attack' };
 }
 // What a given intent looks like to the VFX layer, so the right projectile/aura appears.
 export const intentFx = (intent) => ({
   strike: 'melee', pierce: 'projectile', drain: 'siphon', pilfer: 'melee', guard: 'ward', mend: 'heal',
-  charge: 'windup', howl: 'howl', bind: 'hex', summon: 'summon',
+  charge: 'windup', howl: 'howl', bind: 'hex', summon: 'summon', ward: 'ward', stalk: 'windup', phase: 'ward',
 }[intent?.v] || 'melee');

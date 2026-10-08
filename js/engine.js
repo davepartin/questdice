@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary,
 } from './data.js';
 
@@ -325,6 +325,10 @@ export function rollIntent(e, rng) {
     const s = MONSTERS[e.id].slam;
     e.windup = false;
     e.intent = { n: 'Slam', v: 'strike', f: s.f, m: s.m, slam: true };
+  } else if (e.pounce) { // a Stalk nobody broke
+    const s = MONSTERS[e.id].pounce;
+    e.pounce = false;
+    e.intent = { n: 'Pounce', v: 'strike', f: s.f, m: s.m, slam: true, pounce: true };
   } else {
     e.intent = { ...e.faces[die(rng, 6) - 1] };
   }
@@ -332,6 +336,18 @@ export function rollIntent(e, rng) {
 }
 const DAMAGE_VERBS = new Set(['strike', 'pierce', 'drain', 'pilfer']);
 export const isDamageIntent = (i) => DAMAGE_VERBS.has(i.v);
+export const GUARD_VERBS = new Set(['guard', 'ward']);
+export const burnOf = (e) => (e?.intent?.v === 'ward' ? (e.intent.k || 0) + Math.floor((e.flat || 0) / 2) : 0); // Fire Ward's burn
+// After the round: a Stalker that took no harm will Pounce next round.
+function settleStalks(b, rep) {
+  rep.stalks = [];
+  for (const e of b.enemies) {
+    if (e.hp <= 0 || e.intent?.v !== 'stalk' || e.fresh) continue;
+    const broken = e.hp < (e.hp0 ?? e.hp);
+    if (!broken) e.pounce = true;
+    rep.stalks.push({ uid: e.uid, broken });
+  }
+}
 function magnitude(e, intent, p, weaken) {
   let m = intent.f + intent.m * p;
   if (isDamageIntent(intent)) m = Math.max(0, m + e.flat + e.buff - weaken);
@@ -594,7 +610,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
-  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; }
+  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
@@ -603,12 +619,15 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     tgt = b.enemies[target];
     if (!tgt || tgt.hp <= 0) tgt = alive[0];
     rep.targetUid = tgt.uid;
-    const guard = tgt.intent.v === 'guard' ? tgt.mag : 0;
+    const phase = tgt.intent.v === 'phase'; // normal attack passes through; pierce still lands
+    const guard = phase ? T.atk : GUARD_VERBS.has(tgt.intent.v) ? tgt.mag : 0;
     const dmg = Math.max(0, T.atk - guard) + T.pierce;
-    rep.guarded = Math.min(guard, T.atk);
+    rep.guarded = Math.min(guard, T.atk); if (phase) rep.phased = true;
     rep.dealt = Math.min(tgt.hp, dmg);
     tgt.hp = Math.max(0, tgt.hp - dmg);
     b.stats.dealt += rep.dealt;
+    const burn = rep.dealt > 0 ? burnOf(tgt) : 0; // Fire Ward: hitting it burns you (block does not help)
+    if (burn) { rep.burned = burn; rep.taken += burn; }
     if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
@@ -680,6 +699,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     strike();
     actFor(b.enemies.filter((e) => !early.includes(e)), false);
   }
+  settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
 
   // 3. Rage: bosses change their ways at half health.
@@ -929,6 +949,8 @@ export function questDanger(hero, quest0) {
 
 // ------------------------------------------------------------------------------- campaign
 const PREFIX =['Ambush at', 'Trouble at', 'The Siege of', 'Showdown at', 'Night Raid on', 'Skirmish near'];
+// The standard road's extra bite (data.js ORDINARY).
+export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.flat.length, act) - 1] || 0) + (enemies.length === 1 ? ORDINARY.lone : 0);
 export function questsFor(hero) {
   const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
   const cycle = Math.floor((c.act - 1) / ACTS.length);
@@ -937,6 +959,7 @@ export function questsFor(hero) {
   const ai = Math.min(ACT_HP.length - 1, c.act - 1); // act 3+ reuses the act data with the act-3 growth until it has its own monsters
   const base = (1 + STEP_HP * (s - 1)) * ACT_HP[ai] * (1 + 0.6 * Math.max(0, cycle - (c.act > ACT_HP.length ? 1 : 0)));
   const flat = 3 + Math.floor((s - 1) / 3) + ACT_FLAT[ai]; // (3, not 2: every hero now carries two free potions)
+  const lesson = c.act === 1 && s === 1 && !(c.wins > 0); // the first fight teaches; it stays gentle
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     const place = kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, act.places);
@@ -944,7 +967,8 @@ export function questsFor(hero) {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
     // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
-    hpMult: (kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1), flat: flat + (extra.perilous ? PERIL.flat : 0),
+    hpMult: (kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1),
+    flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
   };
@@ -1156,7 +1180,7 @@ export function resolveParty(b) {
   for (const e of alive) {
     e.p = die(b.rng, e.powerDie);
     e.mag = magnitude(e, e.intent, e.p, weaken);
-    e.buffUsed = e.buff; e.buff = 0;
+    e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp;
   }
   const order = rankFighters(acting, b.rng); // who acts first
   const heat = heatRank(acting, b.rng);      // who the monsters go after
@@ -1166,7 +1190,7 @@ export function resolveParty(b) {
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };
   const guardLeft = new Map();
-  for (const e of alive) if (e.intent?.v === 'guard') guardLeft.set(e.uid, e.mag);
+  for (const e of alive) if (GUARD_VERBS.has(e.intent?.v)) guardLeft.set(e.uid, e.mag);
   // Monsters answer the living. The slowest hero takes the double share; each hero's block soaks only their share.
   const snap = heat.map((r) => r.f);
   const weights = shareWeights(heat);
@@ -1192,13 +1216,16 @@ export function resolveParty(b) {
     if (!tgt) return;
     const T = f.T;
     if (moral && moral.from !== f.hero.name) { T.atk += moral.n; rep.moral.push({ from: moral.from, to: f.hero.name, n: moral.n }); moral = null; }
-    const pool = guardLeft.get(tgt.uid) || 0;
+    const phase = tgt.intent?.v === 'phase';
+    const pool = phase ? T.atk : guardLeft.get(tgt.uid) || 0;
     const guarded = Math.min(pool, T.atk);
     if (guardLeft.has(tgt.uid)) guardLeft.set(tgt.uid, pool - guarded);
     const dmg = Math.max(0, T.atk - guarded) + T.pierce;
     const dealt = Math.min(tgt.hp, dmg);
     tgt.hp = Math.max(0, tgt.hp - dmg);
     f.stats.dealt += dealt; f._dealt += dealt;
+    const burn = dealt > 0 ? burnOf(tgt) : 0; // Fire Ward burns the hero who hit it
+    if (burn) { const k = snap.indexOf(f); if (k >= 0) taken[k] += burn; }
     const killed = tgt.hp <= 0;
     if (killed) {
       rep.killed.push(tgt.uid); f._kills++; moral = { from: f.hero.name, n: MORAL_BOOST };
@@ -1211,7 +1238,7 @@ export function resolveParty(b) {
     }
     rep.strikes.push({
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
-      killed, ev: f.ev, T,
+      killed, ev: f.ev, T, burned: burn || 0, phased: phase,
     });
   };
   const actFor = (e) => {
@@ -1264,6 +1291,7 @@ export function resolveParty(b) {
     if (x.kind === 'hero') { if (runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
   }
   if (moral) b.moralNext = moral; // nobody left to act this round: it carries to the first hero next round
+  settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {
     const rg = MONSTERS[e.id].rage;

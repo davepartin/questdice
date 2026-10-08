@@ -392,3 +392,12 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   hues, list stagger delays and health bar ticks now show as designed).
 - Balance after Phases 4 and 5 (progress-all 3 acts, 4 campaigns a class, smart bot): 19/20 cleared, the same as after
   Phase 3 (ranger 3/4, the rest 4/4). Bosses win 94% / 84% / 79% by act; legendaries did not tip the curve.
+
+## Tension (Oct 2026)
+
+- Standard road hits harder: data.js ORDINARY { flat: [3, 4, 1] by act, lone: +2 }, via engine standardFlat; not the
+  perilous road, elites, bosses or the first lesson fight. tools/tension.mjs measures it.
+- New monster moves: Fire Ward (cultist, v 'ward', burns the hitter; burnOf), Stalk (wolf, v 'stalk'; unhurt -> Pounce
+  next round from MONSTERS.wolf.pounce; settleStalks), Phase (wraith, v 'phase'; only pierce hurts). Solo and company.
+  Intent plates: 🔥N, HIT!, ◆ONLY; the monster sheet and the coach hints explain them. Bot targets stalkers, avoids wards.
+- Fixed: the wind-up box said "deal undefined to break" (stagger was removed earlier); it now says "brace with block".

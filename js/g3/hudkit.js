@@ -20,6 +20,9 @@ const ICONS = {
   pilfer: '<path class="f" d="M8.8 3 H15.2 L13.9 7 C17.8 8.8 20 12.8 20 16.2 C20 19.8 16.6 21.8 12 21.8 C7.4 21.8 4 19.8 4 16.2 C4 12.8 6.2 8.8 10.1 7 Z"/><path class="s" d="M9.4 7 H14.6"/><path class="h" d="M7 15.5 C7 13.5 8 12 9.5 11"/><circle class="p" cx="12" cy="15.8" r="1.6"/>',
   howl: '<path class="f" d="M2.6 9.6 V14.4 H6.8 L14.2 19.4 V4.6 L6.8 9.6 Z"/><path class="s" d="M17.4 8.6 C19 10.2 19 13.8 17.4 15.4 M19.8 5.8 C22.6 9 22.6 15 19.8 18.2"/>',
   summon: '<circle class="f" cx="12" cy="12" r="9.4"/><path class="s" d="M12 6.2 C16.4 6.2 18 11 15 13.6 C12.6 15.6 9 14 9.4 11 C9.7 9 12.2 8.6 13.2 10.2"/><path class="p" d="M12 11.4 L12.5 12 L12 12.6 L11.5 12 Z"/>',
+  ward: '<path class="s" d="M12 2.5 L20 5.5 V11 C20 16 16.5 19.6 12 21.5 C7.5 19.6 4 16 4 11 V5.5 Z"/><path class="f" d="M12 7.2 C13.9 9.4 15.2 11 15.2 13.1 C15.2 15.1 13.7 16.6 12 16.6 C10.3 16.6 8.8 15.1 8.8 13.1 C8.8 11.8 9.5 10.8 10.3 10.1 C10.4 11.3 10.9 11.9 11.7 12.2 C11.3 10.4 11.4 8.8 12 7.2 Z"/>',
+  stalk: '<path class="s" d="M2.4 12 C5.4 7 8.9 5 12 5 C15.1 5 18.6 7 21.6 12 C18.6 17 15.1 19 12 19 C8.9 19 5.4 17 2.4 12 Z"/><ellipse class="f" cx="12" cy="12" rx="1.9" ry="4.4"/>',
+  phase: '<circle class="s" cx="12" cy="12" r="9.2" style="stroke-dasharray:3 2.6"/><path class="f" d="M8 17.6 V11 C8 8.7 9.8 6.8 12 6.8 C14.2 6.8 16 8.7 16 11 V17.6 L14.7 16.4 L13.3 17.6 L12 16.4 L10.7 17.6 L9.3 16.4 Z"/>',
   windup: '<path class="f" d="M13.8 1.8 L4.8 13.6 H11 L9.6 22.2 L19.4 9.8 H12.8 Z"/><path class="h" d="M13 5 L8.4 11"/>',
   slam: '<path class="f" d="M12 1.6 L14.6 7.6 L21 6.4 L17 11.6 L22 15 L15.4 15.6 L12 21.6 L8.6 15.6 L2 15 L7 11.6 L3 6.4 L9.4 7.6 Z"/><path class="s" d="M12 7 V15 M9 12.4 L12 15.4 L15 12.4" style="stroke-width:1.9"/>',
   heart: '<path class="f" d="M12 21.2 C5 15.6 2.4 12.2 2.4 8.6 C2.4 5.6 4.7 3.6 7.4 3.6 C9.4 3.6 11.2 4.7 12 6.3 C12.8 4.7 14.6 3.6 16.6 3.6 C19.3 3.6 21.6 5.6 21.6 8.6 C21.6 12.2 19 15.6 12 21.2 Z"/><path class="h" d="M6 8.4 C6 7 7 6 8.3 6"/>',
@@ -88,12 +91,15 @@ export function intentView(e) {
   const r = rng(e);
   switch (i.v) {
     case 'strike': return i.slam
-      ? { tone: 'slam', shape: 'octagon', icon: 'slam', title: i.n || 'Slam', fig: r, unit: 'dmg', hint: 'Block it, or burst the foe', call: { head: 'SLAM THIS ROUND', sub: 'brace with block' }, hazard: true }
+      ? { tone: 'slam', shape: 'octagon', icon: 'slam', title: i.n || 'Slam', fig: r, unit: 'dmg', hint: 'Block it, or burst the foe', call: { head: `${(i.n || 'Slam').toUpperCase()} THIS ROUND`, sub: 'brace with block' }, hazard: true }
       : { tone: 'strike', shape: 'hex', icon: 'atk', title: i.n, fig: r, unit: 'dmg', hint: 'block reduces it' };
     case 'pierce': return { tone: 'pierce', shape: 'diamond', icon: 'pierce', title: i.n, fig: r, unit: 'pierce', hint: 'ignores block' };
+    case 'ward': return { tone: 'ward', shape: 'shield', icon: 'ward', title: i.n, fig: `🔥${E.burnOf(e)}`, unit: `burn · guards ${r}`, hint: `hit it and it burns you for ${E.burnOf(e)}`, call: { head: 'BURNS IF HIT', sub: `${E.burnOf(e)} back to you · hit another`, ico: 'ward' } };
+    case 'stalk': return { tone: 'stalk', shape: 'octagon', icon: 'stalk', title: i.n, fig: 'HIT!', unit: 'or it pounces', hint: 'hit it now to break the stalk', call: { head: 'POUNCE NEXT ROUND', sub: 'unless you hit it now', ico: 'stalk' }, hazard: true };
+    case 'phase': return { tone: 'phase', shape: 'shield', icon: 'phase', title: i.n, fig: '◆ONLY', unit: 'pierce hurts', hint: 'normal attack passes through it', call: { head: 'ATTACKS PASS THROUGH', sub: 'only pierce hurts it now', ico: 'phase' } };
     case 'guard': return { tone: 'guard', shape: 'shield', icon: 'block', title: i.n, fig: r, unit: 'guard', hint: 'soaks non-pierce dmg' };
     case 'mend': return { tone: 'mend', shape: 'circle', icon: 'heal', title: i.n, fig: r, unit: 'heal', hint: 'heals itself' };
-    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: 'SLAM', unit: 'next round', hint: 'brace with block', call: { head: 'SLAM NEXT ROUND', sub: `deal ${e.staggerAt} to break`, ico: 'stagger' }, hazard: true };
+    case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: 'SLAM', unit: 'next round', hint: 'brace with block', call: { head: 'SLAM NEXT ROUND', sub: 'brace with block', ico: 'windup' }, hazard: true };
     case 'howl': return { tone: 'howl', shape: 'circle', icon: 'howl', title: i.n, fig: `+${i.k}`, unit: 'all hits', hint: 'the pack grows bolder' };
     case 'bind': return { tone: 'bind', shape: 'circle', icon: 'bind', title: i.n, fig: `${i.k}`, unit: i.k > 1 ? 'dice locked' : 'die locked', hint: 'cannot be rerolled next round' };
     case 'drain': return { tone: 'drain', shape: 'circle', icon: 'drain', title: i.n, fig: r, unit: 'dmg', hint: `steals ${i.k} magic`, subIcon: 'magic' };

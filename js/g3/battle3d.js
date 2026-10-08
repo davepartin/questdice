@@ -351,6 +351,7 @@ function updatePlate(e) {
   el.setAttribute('aria-pressed', el.classList.contains('targeted') ? 'true' : 'false');
 }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
+export const refreshPlates = () => updatePlates(); // (dev scripts)
 
 // Phone: the monsters' stat plates are a fixed strip under the hero panel (scrolls sideways with many foes) so the dice own the screen.
 // Tap a plate or a monster to choose a target.
@@ -511,7 +512,7 @@ function selectTarget(uid) {
   if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   B.target = i; sfx.select(); updatePlates();
 }
-const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Tangles: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements' };
+const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Tangles: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements', ward: 'Fire Ward: guards, and burns whoever hits it this round (block does not help)', stalk: 'Stalks: if you do not hurt it this round, it Pounces next round', phase: 'Phases: normal attack passes through it this round; only pierce hurts' };
 function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
   const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
@@ -905,7 +906,7 @@ async function lockInInner() {
   }
   const playAct = async (act) => {
     const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) return;
-    const intent = { v: act.v, n: act.name, slam: act.name === 'Slam' };
+    const intent = { v: act.v, n: act.name, slam: act.name === 'Slam' || act.name === 'Pounce', pounce: act.name === 'Pounce' };
     const clips = intentClips(intent);
     const heroChest = bw.hero.worldAnchor('chest');
     const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
@@ -915,6 +916,9 @@ async function lockInInner() {
     if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'buff', color: 0x7ab4ff, dur: 1.1 }); }
     if (act.v === 'summon') { sfx.summon?.(); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); }
     if (act.v === 'guard') { vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 }); }
+    if (act.v === 'ward') { vfx('shield', a.worldAnchor('chest'), { color: 0xff5a2a, radius: a.height * 0.55, dur: 1.0 }); }
+    if (act.v === 'phase') { vfx('aura', a, { kind: 'buff', color: 0x9ad8ff, dur: 1.0 }); }
+    if (act.v === 'stalk') { vfx('aura', a, { kind: 'windup', color: 0xffcc3a }); }
     if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }
     if (dmgVerb && (act.v === 'pierce' || a.has('throw') && /Bomb|Ember|Bone/.test(act.name))) {
       await race(ev2, 1.2);
@@ -951,7 +955,8 @@ async function lockInInner() {
     else if (caster) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
     else vfx('slash', chest, { color: hcol, kind: 'blade' });
   }
-  if (rep.guarded > 0 && tEnemy?.intent?.v === 'guard') { vfx('shield', chest, { color: 0xffd23d, dur: 0.8 }); number(headP, `Guarded ${rep.guarded}`, 'block'); sfx.block(); }
+  if (rep.phased) { vfx('aura', tAct, { kind: 'buff', color: 0x9ad8ff, dur: 0.8 }); number(headP.clone().add(new THREE.Vector3(0, 0.4, 0)), 'Passes through!', 'meh'); }
+  else if (rep.guarded > 0 && E.GUARD_VERBS.has(tEnemy?.intent?.v)) { vfx('shield', chest, { color: tEnemy.intent.v === 'ward' ? 0xff5a2a : 0xffd23d, dur: 0.8 }); number(headP, `Guarded ${rep.guarded}`, 'block'); sfx.block(); }
   if (rep.dealt > 0) {
     sfx.hit(); stage.shake(0.5 + Math.min(0.5, rep.dealt / 40)); bw.director.punch(Math.min(1, 0.5 + rep.dealt / 30));
     vfx('impact', chest, { kind: 'flesh', power: Math.min(1, rep.dealt / 25) });
@@ -962,6 +967,10 @@ async function lockInInner() {
     if (sp.uid === rep.targetUid || sp.dealt <= 0) continue;
     const a = bw.actors.get(sp.uid); if (!a) continue;
     a.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'flesh', power: Math.min(1, sp.dealt / 20) }); number(a.worldAnchor('head'), `−${sp.dealt}`, 'dmg');
+  }
+  if (rep.burned) { // Fire Ward: the hero who hit it burns
+    await wait(0.2); sfx.hurt(); buzz(60); vfx('impact', bw.hero.worldAnchor('chest'), { kind: 'fire', power: 0.7 }); stage.hurt(0.6);
+    bw.hero.hurt(); number(bw.hero.worldAnchor('head'), `🔥 −${rep.burned}`, 'hurt');
   }
   if (tEnemy) updatePlate(tEnemy);
   for (const e of b.enemies) updatePlate(e);
@@ -977,6 +986,11 @@ async function lockInInner() {
   // ---------- 2. the survivors act
   bw.director.set('defend', { lambda: 3.5 });
   for (const act of rep.acts.filter((x) => !x.early)) await playAct(act);
+  for (const st of rep.stalks || []) { // a Stalk ends: broken, or the wolf will pounce
+    const a = bw.actors.get(st.uid); if (!a) continue;
+    number(a.worldAnchor('head'), st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt');
+    if (!st.broken) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xffcc3a }); }
+  }
   // reinforcements, rage
   for (const uid of rep.summoned) {
     const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;
@@ -1034,6 +1048,7 @@ async function performParty() {
     if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep, actorOfHero); } }
     else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames, actorOfHero); } }
   }
+  for (const st of rep.stalks || []) { const a = bw.actors.get(st.uid); if (a) number(a.worldAnchor('head'), st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt'); }
   for (const uid of rep.summoned) {
     const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;
     const a = await bw.addEnemy(b.enemies[i], i, b.enemies); addPlate(b.enemies[i]); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); a.play('spawn', { fade: 0 });
@@ -1073,7 +1088,9 @@ async function playStrike(s, rep, actorOfHero) {
     else if (wid === 'staff') await vfx('projectile', ha.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
     else vfx('slash', chest, { color: 0xff5a4a, kind: 'blade' });
   }
-  if (s.guarded > 0) { vfx('shield', chest, { color: 0xffd23d, dur: 0.7 }); number(head, `Guarded ${s.guarded}`, 'block'); sfx.block(); }
+  if (s.phased) number(head, 'Passes through!', 'meh');
+  else if (s.guarded > 0) { vfx('shield', chest, { color: 0xffd23d, dur: 0.7 }); number(head, `Guarded ${s.guarded}`, 'block'); sfx.block(); }
+  if (s.burned) { vfx('impact', ha.worldAnchor('chest'), { kind: 'fire', power: 0.7 }); ha.hurt(); number(ha.worldAnchor('head'), `🔥 −${s.burned}`, 'hurt'); sfx.hurt(); }
   if (s.dealt > 0) { sfx.hit(); stage.shake(0.4 + Math.min(0.5, s.dealt / 40)); vfx('impact', chest, { kind: 'flesh', power: Math.min(1, s.dealt / 25) }); ta.hurt(); number(head, `−${s.dealt}`, 'dmg'); }
   else if (!s.guarded) number(head, '0', 'meh');
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);

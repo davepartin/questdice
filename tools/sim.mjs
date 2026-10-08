@@ -73,9 +73,10 @@ export function botRound(b, rng) {
     if (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5)) continue;
     castPower(b, c.id, { x });
   }
-  // target: weakest, but prefer an enemy winding up
+  // target: weakest, but hit a Stalker or a foe winding up first, and leave a Fire Ward or a Phasing foe alone when there is another
   const alive = b.enemies.map((e, i) => ({ e, i })).filter((x) => x.e.hp > 0);
-  alive.sort((a, c) => (c.e.intent.v === 'charge') - (a.e.intent.v === 'charge') || a.e.hp - c.e.hp);
+  const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0);
+  alive.sort((a, c) => want(c.e) - want(a.e) || a.e.hp - c.e.hp);
   const ev = evaluate(b.hero, b.board);
   const straight = b.hero.gold < 200 ? 'gold' : 'atk';
   return resolve(b, { target: alive[0].i, straight: ev.straight && straight === 'gold' && b.hp > b.maxHp * 0.6 ? 'gold' : 'atk' });

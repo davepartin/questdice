@@ -359,13 +359,15 @@ test('quests are deterministic per hero seed and step; boss on step 10', () => {
 });
 
 test('monsters: every face table has six faces and a valid verb', () => {
-  const verbs = new Set(['strike', 'pierce', 'guard', 'mend', 'charge', 'howl', 'bind', 'drain', 'pilfer', 'summon']);
+  const verbs = new Set(['strike', 'pierce', 'guard', 'mend', 'charge', 'howl', 'bind', 'drain', 'pilfer', 'summon', 'ward', 'stalk', 'phase']);
   for (const [id, m] of Object.entries(MONSTERS)) {
     assert.equal(m.faces.length, 6, id);
     for (const f of [...m.faces, ...(m.rage ? m.rage.faces : [])]) assert.ok(verbs.has(f.v), `${id} ${f.n}`);
     if (m.rage) assert.equal(m.rage.faces.length, 6, id);
     if (m.faces.some((f) => f.v === 'charge')) assert.ok(m.slam, `${id} needs a slam`);
     if (m.faces.some((f) => f.v === 'summon')) assert.ok(m.adds, `${id} needs adds`);
+    if (m.faces.some((f) => f.v === 'stalk')) assert.ok(m.pounce, `${id} needs a pounce`);
+    if (m.faces.some((f) => f.v === 'ward')) assert.ok(m.faces.find((f) => f.v === 'ward').k > 0, `${id} ward burns`);
   }
 });
 

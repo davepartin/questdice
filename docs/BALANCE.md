@@ -213,6 +213,8 @@ Before building it, the party simulator (`tools/sim2.mjs`) should be brought up 
 
 ## Tools
 
+- `tools/tension.mjs [fights] [classes]`: how dangerous ordinary fights feel (damage taken, potions, close calls). TUNE_FLAT=3,4,1 TUNE_LONE=2 try other standard-road settings.
+
 - `node tools/dicemath.mjs`: averages for every die, weapon and build.
 - `sh tools/progress-all.sh [acts] [runs per class] [steady|smart|bold]`: the campaign report, step by step, both roads.
 - `node tools/balance.mjs`: quick Act I clear rates by difficulty.
@@ -241,3 +243,25 @@ What it means:
 - **Bosses even it out.** Their big health rewards damage, so sword + shield and two attack weapons win about equally
   often against a boss when played well; the shield still loses a little less health.
 - All attack never came out ahead; at best it tied, and it always cost the most health.
+
+## Tension: ordinary fights with real danger (Oct 2026, `tools/tension.mjs`)
+
+Dave: "what is missing to make it fun?" The first answer was danger. The tension study (a bot of each class played to eight
+checkpoints, 30 fights per class per cell) measured what a player feels: damage taken as a share of max health (before
+potions and heals), potions drunk, and close calls (won after dropping to 30% health or less).
+
+| Standard road | win | damage taken | potions a fight | close calls |
+|---|---|---|---|---|
+| Before | 100% | 41% (Acts I–II: 23–46%) | 0.29 | 5% (Acts I–II: 0–8%) |
+| After (+3 / +4 / +1 a hit by act, +2 more for a lone monster) | 98% | about 55% (Acts I–II: 40–65%) | about 0.4 | about 13% |
+
+The perilous road was already dangerous (114% damage taken, 1.4 potions, 47% close calls) and is unchanged; a flat bump
+there dropped it to 64–71% wins. Act III's standard road was already tense, so it gets only +1.
+
+Three monster moves change the right answer for a round, so "read the box" is no longer the whole game:
+- **Fire Ward** (Ember Mage): guards, and burns whoever hits it for 4 (+ half the act's flat). Hit another monster, or accept the burn.
+- **Stalk** (Dire Wolf): no attack now; if it is not hurt this round it Pounces next round (1 + 2 x d8 + flat). Hit the wolf.
+- **Phase** (Wraith): normal attack passes through it this round; only pierce hurts.
+
+Campaign check (progress-all, 3 acts, 4 campaigns a class): 20/20 cleared; Act I standard fights end with 63–77% health
+(was 72–87%), bosses 88–90% / 81% / 85%.
