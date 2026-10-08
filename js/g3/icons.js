@@ -17,6 +17,7 @@ const P = {
   hammer: '<path d="M13.5 4.5l6 6-3 3-6-6z" fill="currentColor" fill-opacity=".2"/><path d="M11.5 9.2L3.8 17l3.2 3.2 7.8-7.7"/><path d="M12.5 3.5l2 2M18.5 9.5l2 2"/>',
   bag: '<path d="M6.2 8.5h11.6l1.1 11.5H5.1z" fill="currentColor" fill-opacity=".14"/><path d="M9 8.5V7a3 3 0 016 0v1.5M9.5 13.5h5"/>',
   scroll: '<path d="M7.5 3.8h10a2 2 0 012 2V17a3.2 3.2 0 01-3.2 3.2H7.8A3.2 3.2 0 014.6 17V6.7a2.9 2.9 0 012.9-2.9z" fill="currentColor" fill-opacity=".12"/><path d="M9 9h6M9 12.5h6M9 16h3.5"/>',
+  home: '<path d="M3.5 11.2L12 4l8.5 7.2" /><path d="M6 9.6V20h12V9.6" fill="currentColor" fill-opacity=".14"/><path d="M10 20v-5.2h4V20"/>',
   tent: '<path d="M2.8 20L12 4l9.2 16z" fill="currentColor" fill-opacity=".14"/><path d="M12 20v-6.5M9 20l3-6.5 3 6.5"/>',
   map: '<path d="M9 4.5l6 2 5.2-2v14l-5.2 2-6-2-5.2 2v-14z" fill="currentColor" fill-opacity=".12"/><path d="M9 4.5v14M15 6.5v14"/>',
   skull: '<path d="M12 3a7.2 7.2 0 00-7.2 7.2c0 2.6 1.2 4.2 3.2 5.2V19h8v-3.6c2-1 3.2-2.6 3.2-5.2A7.2 7.2 0 0012 3z" fill="currentColor" fill-opacity=".14"/><circle cx="9.2" cy="10.8" r="1.5" fill="currentColor"/><circle cx="14.8" cy="10.8" r="1.5" fill="currentColor"/><path d="M10.5 15.5v2M13.5 15.5v2"/>',

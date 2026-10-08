@@ -1140,6 +1140,7 @@ async function playFoe(act, names, actorOfHero) {
   await wait(0.3);
 }
 async function win() {
+  if (B.ended) return; // the player went home mid-round
   const bw = B.bw; B.busy = true;
   bw.arena.setMood?.('victory'); music.setMood?.('victory');
   bw.director.set('victory', { lambda: 2.2 });
@@ -1149,13 +1150,14 @@ async function win() {
   B.hud.ribbon.classList.add('hide');
   await wait(1.2);
   B.hud.ribbon.classList.remove('hide');
-  C.showVictory();
+  if (!B.ended) C.showVictory();
 }
 async function lose() {
+  if (B.ended) return;
   const bw = B.bw; B.busy = true;
   sfx.lose(); bw.hero.play('die', { fade: 0.1 }); bw.stage.fadeTo(0.7, 1.4);
   await wait(1.5);
-  C.defeat(false);
+  if (!B.ended) C.defeat(false);
 }
 export function leave() { stop(); }
 

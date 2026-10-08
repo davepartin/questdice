@@ -483,3 +483,14 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   Set in renderShape, cleared in renderReset.
 - Monster sheet (tap a monster twice): name, a stat line (health, speed), a big "Next" card in the move's colour with one
   sentence on how to get ready (readyText), then the other moves as small chips, each listed once.
+
+## Home button with "Are you sure?" (Oct 2026)
+
+- A house button sits in the top corner beside help and sound (`#home` in index.html, icon `home` in js/g3/icons.js),
+  shown whenever a game is open (hidden on the title, on creation screens and on online tables, which keep their own
+  "Leave this phone"). ui.js askHome() asks first: on the board, camp or road "Go home? Your hero is saved"; mid-fight
+  "Leave this fight? ... it starts over from the quest board. Potions you drank stay used"; in practice "Leave practice?".
+  Go home = stop the battle if one is running, persist, showTitle. Continue then picks up at the quest board.
+- The board Menu's "Save & return to title" and the battle menu (new "Go home" item, and "Leave practice") use the same pop-up.
+- battle3d win()/lose() check B.ended, so leaving mid-round never pops a victory or defeat screen over the home screen.
+- dev/home.mjs tests it in the browser (create a real save with save.js createSave, or Continue has nothing to show).

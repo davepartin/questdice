@@ -111,6 +111,22 @@ export function bindChrome() {
   const mute = $('#mute'); const sync = () => { if (world.available || SCRUI.on()) SCRUI.chrome(isMuted()); else mute.textContent = isMuted() ? '🔇' : '🔊'; mute.setAttribute('aria-pressed', String(isMuted())); };
   sync(); mute.onclick = () => { setMuted(!isMuted()); sync(); sfx.click(); };
   $('#help').onclick = () => showHowTo();
+  $('#home').onclick = () => { sfx.click(); askHome(); };
+  setInterval(syncHome, 400); syncHome();
+}
+// The Home button (top corner, beside help and sound): shown whenever a game is open on this phone. Online tables keep
+// their own "Leave this phone" (it hands the seat back), so it stays hidden there.
+function syncHome() { const b = $('#home'); if (b) b.hidden = !(S.hero || S.company || S.practice) || !!S.net; }
+// "Are you sure?" before going home. The hero is saved; a fight left halfway starts over from the quest board next time.
+function askHome() {
+  if (!(S.hero || S.company || S.practice) || S.net) return;
+  const midFight = !S.practice && S.battle && !S.battle.outcome && S.battle.phase !== 'done' && document.body.classList.contains('in-battle');
+  const who = S.company?.kind === 'company' ? 'Your company is' : 'Your hero is';
+  const [title, text] = S.practice ? ['Leave practice?', 'You can come back to Learn to play any time.']
+    : midFight ? ['Leave this fight?', `${who} saved. This fight will not count: when you come back, it starts over from the quest board. Potions you drank stay used.`]
+      : ['Go home?', `${who} saved. Tap Continue on the home screen to pick up right where you left off.`];
+  const close = modal(h('div', { class: 'form confirm-home' }, h('h2', {}, title), h('p', { class: 'muted' }, text),
+    h('div', { class: 'row end' }, ghost('Keep playing', () => close()), primary('Go home', () => { close(); if (document.body.classList.contains('in-battle')) B3.stop(); persist(); showTitle(); }))));
 }
 
 // ------------------------------------------------------------------ title
@@ -310,7 +326,7 @@ function menu() {
       ghost('How to play', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
-      ghost('Save & return to title', () => { persist(); close(); showTitle(); }),
+      ghost('Save & go home', () => { close(); askHome(); }),
       ghost('Close', () => close()))));
 }
 
@@ -496,7 +512,8 @@ function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('How to play', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
-      S.practice ? ghost('Leave practice', () => { close(); B3.stop(); showTitle(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }), ghost('Back to the fight', () => close()))));
+      S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }),
+      S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {
   if (S.busy) return; const b = S.battle; const info = E.rerollInfo(b);

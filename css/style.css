@@ -39,6 +39,7 @@ a { color: var(--shield); }
 @keyframes shake { 10%, 90% { transform: translate(calc(var(--shake) * -.25), 0); } 20%, 80% { transform: translate(calc(var(--shake) * .5), calc(var(--shake) * -.25)); } 30%, 50%, 70% { transform: translate(calc(var(--shake) * -1), calc(var(--shake) * .25)); } 40%, 60% { transform: translate(var(--shake), 0); } }
 
 .chrome { position: fixed; top: calc(.6rem + env(safe-area-inset-top, 0px)); right: .7rem; z-index: 30; display: flex; gap: .4rem; }
+.chrome button[hidden] { display: none !important; }
 .chrome button { width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,14,28,.7); backdrop-filter: blur(8px); font-weight: 800; font-family: var(--font-display); }
 
 .t-eyebrow { font-family: var(--font-display); font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--hull-300); }
