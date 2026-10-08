@@ -164,7 +164,8 @@ for gold today.
 ## Party play, 2 to 6 heroes (plan, not built)
 
 Today's party rules already do two good things: monsters roll once and every hero's attack goes into the same fight, and
-each round the hero with the best Feet (initiative) is the leader and takes a double share of the monsters' hits, while
+each round the hero with the lowest Feet (the slowest; a tie goes to whoever has more health) is the one the monsters go after
+(the "leader" in the code) and takes a double share of the monsters' hits, while
 everyone else takes a single share. Each hero's block soaks only their own share. Monster health is multiplied by party
 size (1, 1.8, 2.5, 3.1, 3.6, 4.0) and extra goblins join at 4+ players.
 

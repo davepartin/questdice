@@ -21,6 +21,10 @@ Weapons and Strength give +10 attack; Head to Toe gives +10 block.
 **Heartbeat (automatic).** If every hero's heart die shows the same face, each hero gains magic equal to the number of
 heroes (2 in a two-hero game, 6 in a six-hero game).
 
+**Who the monsters go after (Dave, Oct 2026).** The hero with the lowest Feet that round draws the attacks and takes a
+double share of every hit; everyone else takes a single share. A tie goes to the hero with more health right now. Feet
+still set initiative too: the highest Feet acts first. So a quick roll both strikes early and stays out of the line of fire.
+
 **Moral Boost +3 (automatic).** The hero who lands a killing blow gives the next hero to act +3 attack (if nobody is
 left to act that round, it carries to the first hero next round).
 

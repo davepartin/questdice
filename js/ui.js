@@ -408,7 +408,7 @@ function renderPartyReset() {
   const rep = S.lastReport;
   const lines = rep?.party
     ? V.partyReportLines(rep, b)
-    : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'bar' : 'bars'} the way. Highest Feet draws the heat.` }];
+    : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'bar' : 'bars'} the way. The slowest Feet draws the attacks.` }];
   const wind = alive.filter((e) => e.intent?.slam);
   const first = b.fighters.find((f) => f.hp > 0);
   const blessings = (S.company?.campaign?.blessings || []).map((bl) => bl.text).filter(Boolean);
@@ -416,7 +416,7 @@ function renderPartyReset() {
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'Reset'), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
     section(rep ? `Round ${rep.round}` : 'The fight begins', h('ul', { class: 'log' }, lines.map((l) => h('li', { class: l.kind }, l.text)))),
     blessings.length ? h('p', { class: 'boon' }, blessings.join(' · ')) : null,
-    tip('party-reset', 'This saved company still shares one device. Whoever rolls the highest Feet takes the largest share of the retaliation. Each hero’s block only covers their own share.'),
+    tip('party-reset', 'This saved company still shares one device. Whoever rolls the lowest Feet takes the largest share of the monsters’ hits (a tie goes to whoever has more health). Each hero’s block only covers their own share.'),
     h('div', { class: 't-eyebrow mb' }, 'The monsters have shown their hand'),
     h('div', { class: 'teles' }, alive.map(enemyTelegraph)),
     wind.length ? h('p', { class: 'warn' }, `⚠ A Slam is coming: ${wind.map((e) => e.name).join(', ')}.`) : null,

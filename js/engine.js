@@ -869,7 +869,8 @@ export function advanceCampaign(hero) {
 // ------------------------------------------------------------------------------- company battles
 // A company resolves once, after every living hero has locked a board. The computer has
 // already rolled every monster intention for the round. Feet decide who draws the
-// retaliation: the leader takes 2/(n+1), everyone else 1/(n+1). Phones gather the locks.
+// retaliation: the slowest hero (lowest Feet) is the one the monsters go after and takes 2/(n+1), everyone else 1/(n+1).
+// Phones gather the locks.
 // The math does not care which device rolled them.
 
 export function newCompany({ name, roster, seed }) {
@@ -897,12 +898,19 @@ export function splitInt(total, weights) {
   return base;
 }
 
-// Living fighters who have rolled. Leader is highest Feet, then highest hands, then a coin flip.
+// Living fighters who have rolled, in INITIATIVE order: highest Feet, then highest hands, then a coin flip.
 export function rankFighters(fighters, rng) {
   const rows = fighters.filter((f) => f.hp > 0 && f.board).map((f) => ({
     f, feet: f.board.S.v, hands: f.board.W.v + f.board.E.v, coin: rng(),
   }));
   rows.sort((a, b) => b.feet - a.feet || b.hands - a.hands || b.coin - a.coin);
+  return rows;
+}
+// Who the monsters go after (the "leader" of the round, who takes the double share): the slowest hero, lowest Feet.
+// A tie goes to the hero with more health right now, then a coin flip.
+export function heatRank(fighters, rng) {
+  const rows = fighters.filter((f) => f.hp > 0 && f.board).map((f) => ({ f, feet: f.board.S.v, hp: f.hp, coin: rng() }));
+  rows.sort((a, b) => a.feet - b.feet || b.hp - a.hp || b.coin - a.coin);
   return rows;
 }
 export function shareWeights(ranked) {
@@ -1051,17 +1059,18 @@ export function resolveParty(b) {
     e.mag = magnitude(e, e.intent, e.p, weaken);
     e.buffUsed = e.buff; e.buff = 0;
   }
-  const order = rankFighters(acting, b.rng);
+  const order = rankFighters(acting, b.rng); // who acts first
+  const heat = heatRank(acting, b.rng);      // who the monsters go after
   const rep = {
-    round: b.round, party: true, leader: order[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, moral: [],
+    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };
   const guardLeft = new Map();
   for (const e of alive) if (e.intent?.v === 'guard') guardLeft.set(e.uid, e.mag);
-  // Monsters answer the living. Damage is split by Feet; each hero's block soaks only their share.
-  const snap = order.map((r) => r.f);
-  const weights = shareWeights(order);
+  // Monsters answer the living. The slowest hero takes the double share; each hero's block soaks only their share.
+  const snap = heat.map((r) => r.f);
+  const weights = shareWeights(heat);
   const blocks = snap.map((f) => f.T.block);
   const taken = snap.map(() => 0);
   const absorbed = snap.map(() => 0);

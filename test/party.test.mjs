@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, newBattle, startRoll, resolve, maxHpOf, shopStock,
-  newCompany, splitInt, shareWeights, rankFighters, newPartyBattle, resolveParty, partyRewards,
+  newCompany, splitInt, shareWeights, rankFighters, heatRank, newPartyBattle, resolveParty, partyRewards,
   spendBlessings, weaponValue,
 } from '../js/engine.js';
 import { ensureRoad, roadIsOpen, chooseRoad } from '../js/roads.js';
@@ -33,7 +33,7 @@ function partyFight(members, intent, hp = 999, enemy = 'goblin') {
   const e = b.enemies[0];
   e.hp = hp; e.maxHp = Math.max(e.maxHp, hp); e.intent = intent; e.flat = 0; e.buff = 0;
   b.fighters.forEach((f, i) => {
-    f.board = quiet(i === 0 ? 4 : 1);
+    f.board = quiet(i === 0 ? 1 : 4); // Ada is slow (Feet 1), so the monsters go after her; Bea is quick (Feet 4)
     f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0 };
     f.target = 0; f.straight = 'atk';
   });
@@ -50,7 +50,17 @@ test('feet shares are the design table, as whole numbers', () => {
   assert.deepEqual(splitInt(5, [1, 1, 1]), [2, 2, 1]); // remainder prefers the earlier hero
 });
 
-test('feet, then hands, then a coin, decide the leader', () => {
+test('the slowest hero draws the attacks; a tie goes to more health, then a coin', () => {
+  const hero = (name, feet, hp = 10) => ({ hp, hero: { name }, board: quiet(feet) });
+  assert.equal(heatRank([hero('Ada', 4), hero('Bea', 1)], () => 0.5)[0].f.hero.name, 'Bea');
+  assert.equal(heatRank([hero('Ada', 2, 30), hero('Bea', 2, 12)], () => 0.5)[0].f.hero.name, 'Ada');
+  assert.equal(heatRank([hero('Ada', 2, 12), hero('Bea', 2, 30)], () => 0.5)[0].f.hero.name, 'Bea');
+  let i = 0; const coins = [0.2, 0.9];
+  assert.equal(heatRank([hero('Ada', 3), hero('Bea', 3)], () => coins[i++])[0].f.hero.name, 'Bea');
+  assert.equal(heatRank([hero('Ada', 1, 0), hero('Bea', 3)], () => 0.5)[0].f.hero.name, 'Bea', 'a fallen hero is never the target');
+});
+
+test('initiative: feet, then hands, then a coin, decide who acts first', () => {
   const hero = (name, feet, hands) => ({ hp: 10, hero: { name }, board: quiet(feet, hands) });
   const highFeet = rankFighters([hero('Ada', 4, 1), hero('Bea', 1, 4)], () => 0.99);
   assert.equal(highFeet[0].f.hero.name, 'Ada');
@@ -85,15 +95,15 @@ test('the leader’s block soaks only the leader’s share', () => {
   assert.equal(byName(rep, 'Bea').absorbed, 0);
 });
 
-test('a guarding monster has one pool, and the leader spends it first', () => {
+test('a guarding monster has one pool, and the fastest hero spends it first', () => {
   const c = company();
   const b = partyFight(c.members, { n: 'Duck', v: 'guard', f: 6, m: 0 });
   for (const f of b.fighters) f.mods.atk = 4 - evaluate(f.hero, f.board).atk;
   const rep = resolveParty(b);
   const ada = rep.strikes.find((s) => s.name === 'Ada');
   const bea = rep.strikes.find((s) => s.name === 'Bea');
-  assert.equal(ada.atk, 4); assert.equal(ada.guarded, 4); assert.equal(ada.dealt, 0);
-  assert.equal(bea.atk, 4); assert.equal(bea.guarded, 2); assert.equal(bea.dealt, 2);
+  assert.equal(bea.atk, 4); assert.equal(bea.guarded, 4); assert.equal(bea.dealt, 0); // Bea's Feet 4 acts first
+  assert.equal(ada.atk, 4); assert.equal(ada.guarded, 2); assert.equal(ada.dealt, 2);
 });
 
 test('a killed monster does not strike the company', () => {
@@ -121,7 +131,7 @@ test('a weaken blessing applies once; weaken cards still stack', () => {
   assert.equal(byName(rep2, 'Ada').taken + byName(rep2, 'Bea').taken, 4);
 });
 
-test('bind, drain and a stolen purse land on the feet leader', () => {
+test('bind, drain and a stolen purse land on the hero the monsters go after', () => {
   const c = company();
   c.members[0].gold = 10;
   const b = partyFight(c.members, { n: 'Hex', v: 'bind', f: 0, m: 0, k: 2 });
@@ -223,6 +233,7 @@ test('Moral Boost: the killing blow gives the next hero +3 attack', () => {
   const b = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 }, 1);
   b.enemies.push({ ...b.enemies[0], uid: 'second', hp: 999, maxHp: 999 });
   b.fighters[1].target = 1;
+  b.fighters[0].board.S.v = 4; b.fighters[1].board.S.v = 1; // Ada acts first and lands the killing blow; Bea is next
   const rep = resolveParty(b);
   assert.equal(rep.moral.length, 1); assert.equal(rep.moral[0].n, 3); assert.equal(rep.moral[0].to, 'Bea');
 });
@@ -364,7 +375,7 @@ test('a monster killed before its initiative does nothing; one that is faster st
   for (let seed = 1; seed < 80; seed++) {
     const c = company();
     const b = partyFight(c.members, strike, 1); b.round = 2; b.rng = makeRng(seed);
-    b.fighters[0].mods.atk = 80; b.fighters[0].board.S.v = 3;
+    b.fighters[0].mods.atk = 80; b.fighters[0].board.S.v = 3; b.fighters[1].board.S.v = 1; // Bea slower than Ada
     const e = b.enemies[0]; const rep = resolveParty(b);
     const foe = rep.init.foes[0].init;
     const takenTotal = rep.fighters.reduce((a, f) => a + f.taken, 0);

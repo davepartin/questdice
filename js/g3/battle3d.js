@@ -1013,13 +1013,14 @@ async function performParty() {
   }
   if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const a of bw.heroes) vfx('aura', a, { kind: 'buff', color: 0xff6a9a, dur: 1.0 }); await wait(1.0); }
   // initiative
-  if (rep.init.forced) banner('THE COMPANY STRIKES FIRST', 'gold');
+  if (rep.init.forced) { banner('THE COMPANY STRIKES FIRST', 'gold'); await wait(0.8); }
   else {
     for (const x of rep.init.heroes) { const a = actorOfHero(x.name); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'pierce'); }
     for (const x of rep.init.foes) { const a = bw.actors.get(x.uid); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'hurt'); }
-    banner(`${rep.leader.toUpperCase()} LEADS · TAKES THE MOST HITS`, 'gold');
   }
-  await wait(rep.init.forced ? 0.6 : 1.1);
+  // the slowest Feet draws the monsters (a tie: whoever has more health)
+  if (rep.leader && rep.fighters.filter((x) => !x.down).length > 1) banner(`MONSTERS TARGET ${rep.leader.toUpperCase()} · SLOWEST FEET`, 'bad');
+  await wait(1.1);
   const snapNames = rep.fighters.filter((x) => !x.down).map((x) => x.name);
   const strikes = rep.strikes.map((s) => ({ ...s })); const acts = rep.acts.map((a) => ({ ...a }));
   bw.director.set('attack', { lambda: 4 });

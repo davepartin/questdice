@@ -311,3 +311,10 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - `js/g3/tutorial.js` + `css/tutorial.css`: 13 short lessons (board, white dice symbols, hands as Strength, weapon dice, talent dice, heart, feet/initiative, the six counters, triples and straights, a round, powers/potions/camp, ready). Back/Next, swipe, progress bar, Skip. Pictures are real renders of the game's dice (`assets/tutorial/*.png`, made by `dev/tutart.mjs`).
 - Guided practice battle: a Knight ("You") against one goblin, never saved. `b.script` in the engine sets the first roll and first reroll (11 attack, then a Strength Triple for 21; `test/tutorial.test.mjs` keeps those numbers true). A spotlight and a card point at the goblin, health, Roll, the counters, the left lane, the middle row, Reroll, Lock In and Magic powers; while it waits for a tap, other taps get a gentle nudge. Round 2 is free play; winning (or losing) shows "You're ready, hero" with Forge my hero.
 - `dev/learn.mjs` walks the whole thing (home -> lessons -> guided battle -> done) and screenshots each step into docs/tutorial/.
+
+## Team play: the slowest hero draws the attacks (Oct 2026)
+
+- Was: highest Feet = the "leader" who took the double share. Now (Dave): lowest Feet draws the attacks; a tie goes to more
+  health right now, then a coin. `heatRank` in engine.js; initiative (`rankFighters`, highest Feet first) is unchanged.
+- Bind, drain and stolen purses land on the same hero. Battle banner each round: "MONSTERS TARGET <NAME> · SLOWEST FEET"
+  (round 1 included). Report line, How to play, the shared-phone tip, TEAMPLAY.md and BALANCE.md updated.

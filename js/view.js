@@ -201,7 +201,7 @@ export function partyReportLines(rep, b) {
     const seq = rep.order.map((x) => `${x.name}${x.v != null ? ` ⚡${x.v}` : ''}`).join('  →  ');
     L.push({ kind: 'meh', text: rep.init?.forced ? `Round 1: the heroes always go first. ${seq}` : `Initiative (high to low, ties to the heroes): ${seq}` });
   }
-  if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} is quickest and draws the monsters’ heat (a double share of every blow).` });
+  if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} had the slowest Feet, so the monsters went after them (a double share of every blow).` });
   const heroLines = (s) => {
     const o = [{ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` }];
     for (const t of s.ev?.triples || []) o.push({ kind: 'good', text: `${s.name} lands a ${t.name}.` });
@@ -269,7 +269,7 @@ export function howToPlay() {
     h('h3', {}, 'Monsters'),
     p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round. You cannot stop it, so brace with ', h('b', {}, 'block'), ' or kill the monster first. Bosses change their ways at half health.'),
     h('h3', {}, 'The company'),
-    p('One to six heroes, each on their own phone. The monsters choose when the round opens, and every hero shapes their own dice at the same time. Other phones see who has locked in, not the dice. When every hero has locked, the fight runs once. Highest ', h('b', {}, 'Feet'), ' draws the most damage. Healing and blocking count toward who picks loot first.'),
+    p('One to six heroes, each on their own phone. The monsters choose when the round opens, and every hero shapes their own dice at the same time. Other phones see who has locked in, not the dice. When every hero has locked, the fight runs once. The hero with the lowest ', h('b', {}, 'Feet'), ' draws the most damage (a tie goes to whoever has more health). Healing and blocking count toward who picks loot first.'),
     h('h3', {}, 'The road'),
     p('Between quests the road speaks. It knows your names. Some choices pay, some bite, and some only change the next fight. The same company meets the same scene if you reload before you choose.'),
     h('h3', {}, 'Between fights'),
