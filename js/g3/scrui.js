@@ -106,7 +106,7 @@ function logo() {
     h('img', { class: 'br-knight', src: 'assets/brand/knight.webp', alt: 'The Quest Dice knight, made of dice', draggable: 'false', decoding: 'async' }),
     h('div', { class: 'br-words' },
       h('h1', { class: 'br-title' }, h('img', { class: 'br-quest', src: 'assets/brand/quest.webp', alt: 'Quest', draggable: 'false' }), h('img', { class: 'br-dice', src: 'assets/brand/dice.webp', alt: 'Dice', draggable: 'false' })),
-      h('p', { class: 'br-tag' }, h('span', {}, 'Roll your body.'), h('span', {}, 'Break the dark.'))));
+      h('p', { class: 'br-tag' }, h('span', {}, 'Roll against'), h('span', {}, 'the dark.'))));
 }
 
 // "Play together" opens in place: share one phone, or each on your own.

@@ -140,7 +140,7 @@ export function showTitle() {
   const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s} ${['N', 'W', 'E', 'S', 'C'].includes(s) ? 'limb' : ''}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
   const tick = () => { $$('.td span', grid).forEach((n, i) => { if (Math.random() < 0.35) { n.textContent = String(1 + Math.floor(Math.random() * (i === 4 ? 6 : 4))); n.parentElement.classList.remove('pop'); void n.parentElement.offsetWidth; n.parentElement.classList.add('pop'); } }); };
   const items = [
-    h('header', { class: 'title-art' }, grid, h('h1', { class: 'logo' }, 'QUEST', h('span', {}, 'DICE')), h('p', { class: 'tagline' }, 'Roll your body. Break the dark.')),
+    h('header', { class: 'title-art' }, grid, h('h1', { class: 'logo' }, 'QUEST', h('span', {}, 'DICE')), h('p', { class: 'tagline' }, 'Roll against the dark.')),
   ];
   const seat = Net.savedSeat();
   if (seat) items.push(cmd('Table', `Rejoin ${seat.code}`, 'This phone still has a seat.', () => resume(), { glyph: '⚔', tone: 'versus' }));

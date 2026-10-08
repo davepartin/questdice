@@ -520,3 +520,5 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Link preview (what Messages shows for a texted link): index.html og:/twitter: tags point at assets/brand/og.jpg
   (1200x630, knight + words + tagline). iPhone home-screen icon: assets/brand/icon-180.png. Messages caches previews,
   so an old text of the link may stay plain. The earlier preview options A-H live in docs/ingame/preview_option_*.png.
+- Tagline (Dave, 10 Oct): **"Roll against the dark."** (was "Roll your body. Break the dark."). Home screen, classic title,
+  index.html description and og:description, and the link-preview picture assets/brand/og.jpg.
