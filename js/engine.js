@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
 } from './data.js';
@@ -110,8 +110,37 @@ export const startMagicOf = (hero) => START_MAGIC + heroMods(hero).startMagic;
 export const rerollTotal = () => RULES.free + RULES.paid;
 export const rerollDiceOf = (hero) => REROLL_DICE + heroMods(hero).rerollDice;
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
+// Powers: three slots (A big move, B every round, C charge), one power in each. hero.powers = { A: id, B: id, C: id };
+// a slot nobody chose holds the class's `start` power. hero.learned lists powers bought from the class library at camp.
+const libraryOf = (hero) => CLASSES[hero.cls].cards;
+const startPower = (hero, slot) => libraryOf(hero).find((c) => c.slot === slot && c.start);
+export const powerLearned = (hero, id) => !!libraryOf(hero).find((c) => c.id === id && (c.start || (hero.learned || []).includes(id)));
 export function cardsOf(hero) {
-  return CLASSES[hero.cls].cards.filter((c) => (c.unlock ?? 1) <= hero.level);
+  return POWER_SLOTS.map((slot) => {
+    const want = libraryOf(hero).find((c) => c.id === hero.powers?.[slot] && c.slot === slot);
+    return want && (want.unlock ?? 1) <= hero.level && powerLearned(hero, want.id) ? want : startPower(hero, slot);
+  }).filter(Boolean);
+}
+// The whole class library for camp: what each power is, whether it is learned, equipped, or waits on a level.
+export function powerLibrary(hero) {
+  const eq = new Set(cardsOf(hero).map((c) => c.id));
+  return libraryOf(hero).map((c) => ({ card: c, learned: powerLearned(hero, c.id), equipped: eq.has(c.id), gate: (c.unlock ?? 1) > hero.level ? c.unlock : 0 }));
+}
+export function learnInfo(hero, id) {
+  const c = libraryOf(hero).find((x) => x.id === id); if (!c) return { ok: false, why: 'unknown' };
+  if (powerLearned(hero, id)) return { ok: false, why: 'learned' };
+  if ((c.unlock ?? 1) > hero.level) return { ok: false, why: `Level ${c.unlock}`, cost: POWER_LEARN };
+  if (hero.gold < POWER_LEARN) return { ok: false, why: 'Need gold', cost: POWER_LEARN };
+  return { ok: true, cost: POWER_LEARN };
+}
+export function learnPower(hero, id) {
+  const r = learnInfo(hero, id); if (!r.ok) return false;
+  hero.gold -= r.cost; hero.learned = [...(hero.learned || []), id]; equipPower(hero, id); return true;
+}
+export function equipPower(hero, id) {
+  const c = libraryOf(hero).find((x) => x.id === id);
+  if (!c || !powerLearned(hero, id) || (c.unlock ?? 1) > hero.level) return false;
+  hero.powers = { ...(hero.powers || {}), [c.slot]: id }; return true;
 }
 
 // ------------------------------------------------------------------------------- dice
@@ -486,9 +515,14 @@ export function castPower(b, id, { x, release } = {}) {
     b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
     if (!n || (b.usedRound && b.usedRound[key])) return null;
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
-    const lvl = powerLevel(b.hero, id); const total = scaleNum(card.per * n, lvl);
-    b.mods.atk += total; if (card.splash === 'half') b.mods.splash += Math.floor(total / 2);
-    b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n }; return b.lastCast;
+    const lvl = powerLevel(b.hero, id); let total = 0;
+    const per = typeof card.per === 'number' ? { atk: card.per } : card.per;
+    for (const [k, v] of Object.entries(per)) {
+      const amt = scaleNum(v * n, lvl); total += amt;
+      if (k === 'gold') b.goldEarned = (b.goldEarned || 0) + amt; else b.mods[k] = (b.mods[k] || 0) + amt;
+      if (k === 'atk' && card.splash === 'half') b.mods.splash += Math.floor(amt / 2);
+    }
+    b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; return b.lastCast;
   }
   const st = powerState(b, card); if (st.spent || st.early) return null;
   const cost = powerCost(card, x); if (b.magic < cost) return null;

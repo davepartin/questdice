@@ -426,3 +426,15 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 /* the traveler: the open road, cool teal */
 .sx-zone.zn-trader { border: 1px solid rgba(90, 200, 200, .5); background: radial-gradient(120% 90% at 50% 0%, rgba(26, 92, 98, .45), rgba(8, 24, 30, .88) 70%); }
 .zn-trader .zn-tag { color: #dffcfb; background: linear-gradient(180deg, #2f8f93, #17575c); border: 1px solid #7ddcdc; }
+
+/* ---------------------------------------------------------------- camp: power slots A / B / C */
+.sx-pslot { display: flex; flex-direction: column; gap: .5rem; padding: .65rem; border-radius: 12px; border: 1px solid rgba(166, 77, 255, .32); background: linear-gradient(180deg, rgba(40, 22, 66, .55), rgba(12, 8, 22, .7)); }
+.ps-head { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.ps-letter { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: #1a0f04; background: linear-gradient(180deg, #ffeab8, #e2b24c); }
+.sx-pslot.s-B .ps-letter, .ci-slot.s-B { background: linear-gradient(180deg, #c9f7da, #38c878); } .sx-pslot.s-C .ps-letter, .ci-slot.s-C { background: linear-gradient(180deg, #e6d4ff, #a64dff); color: #fff; }
+.ps-head span { font-family: var(--font-display); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: .82rem; color: #f2e8ff; }
+.ps-head small { color: var(--dim); font-size: .76rem; }
+.ps-alt { opacity: .92; background: rgba(0, 0, 0, .22); }
+.ps-tag { margin-left: .45rem; font-style: normal; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: #6af0a8; }
+.ci-slot { display: inline-grid; place-items: center; width: 1.15rem; height: 1.15rem; margin-right: .1rem; border-radius: 50%; font-style: normal; font-family: var(--font-display); font-weight: 800; font-size: .68rem; color: #1a0f04; background: linear-gradient(180deg, #ffeab8, #e2b24c); vertical-align: 1px; }
+.ur-max.gate { color: var(--dim); letter-spacing: .05em; font-size: .72rem; display: inline-flex; align-items: center; gap: .2rem; }

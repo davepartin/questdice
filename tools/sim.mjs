@@ -56,6 +56,12 @@ export function botRound(b, rng) {
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;
+  // charges: release when full, when hurt, or when a foe is nearly down; otherwise keep storing
+  for (const c of cardsOf(b.hero)) {
+    if (c.kind !== 'charge') continue; const n = (b.charge && b.charge[c.id]) || 0;
+    const low = b.enemies.some((e) => e.hp > 0 && e.hp <= 12); const per = c.per || {};
+    if (n >= c.max || (n >= 2 && (low || (per.heal && b.hp < b.maxHp * 0.5) || (per.block && b.hp < b.maxHp * 0.5)))) castPower(b, c.id, { release: true });
+  }
   for (const c of cardsOf(b.hero)) {
     const st = powerState(b, c); if (st.spent || st.early) continue;
     const f = c.fx; const x = c.kind === 'scale' ? Math.min(c.max, Math.max(c.cost, Math.floor(b.magic / 2))) : c.cost;

@@ -135,6 +135,10 @@ export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
 // kinds: flat (fixed numbers) | dice (roll NdS) | scale (more Magic = more dice) | round (grows with the round number) | luck (roll for a table) | super (round gate, hits everyone).
 export const POWER_UPGRADE = [60, 140]; // gold to reach level 1, 2. Each level: +25% numbers, +1 die on dice powers.
+// Learning another power from your class library at camp (it then swaps freely into its slot). Supers also need level 5.
+export const POWER_LEARN = 50;
+export const POWER_SLOTS = ['A', 'B', 'C'];
+export const SLOT_NAME = { A: 'Big move', B: 'Every round', C: 'Charge' };
 export const TALENT_MAX_SAME = 2;
 export const TALENT_PER_FACE = 2;
 export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
@@ -176,11 +180,15 @@ export const CLASSES = {
     name: 'Knight', glyph: '⚔️', hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
+    // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
+    // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Roll 2d6 attack. Half of it splashes on every other monster.' },
-      { id: 'shieldwall', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
-      { id: 'rally', name: 'Rally Cry', kind: 'flat', cost: 3, fx: { atk: 4, block: 4, heal: 4 }, text: '+4 attack, +4 block, heal 4.' },
-      { id: 'judgment', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster.', unlock: 5 },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Roll 2d6 attack. Half of it splashes on every other monster.' },
+      { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster.', unlock: 5 },
+      { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
+      { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +3 attack and +3 block each.' },
+      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 5 each.' },
     ],
   },
   ranger: {
@@ -189,10 +197,12 @@ export const CLASSES = {
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Roll pierce dice: 2 Magic = 2d6, each extra Magic adds a die (up to 5d6).' },
-      { id: 'snare', name: 'Snare', kind: 'flat', cost: 2, fx: { weaken: 3 }, text: 'Enemies hit 3 softer this round.' },
-      { id: 'quickdraw', name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll action of 2 dice.' },
-      { id: 'rain', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster.', unlock: 5 },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 5d6).' },
+      { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster.', unlock: 5 },
+      { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice.' },
+      { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer.' },
+      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 4 pierce each.' },
+      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +5 block each.' },
     ],
   },
   wizard: {
@@ -201,11 +211,12 @@ export const CLASSES = {
     blurb: 'Magic is your ammunition. A staff, a big pool of Magic, and a spell for every problem.',
     weapons: ['staff'],
     cards: [
-      { id: 'bolt', name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce.' },
-      { id: 'arcbolt', name: 'Arc Bolt', kind: 'scale', cost: 2, max: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 Magic = 1d8, each extra Magic adds a die (up to 5d8).' },
-      { id: 'barrier', name: 'Barrier', kind: 'flat', cost: 2, fx: { block: 7 }, text: '+7 block.' },
-      { id: 'coil', name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: 5, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 Magic stores a charge (up to 4). Release them any round for 5 attack per charge, half splashing.', unlock: 3 },
-      { id: 'meteor', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others.', unlock: 5 },
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, max: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 magic = 1d8, each extra magic adds a die (up to 5d8).' },
+      { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others.', unlock: 5 },
+      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce.' },
+      { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 5 attack each, half splashing.' },
+      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 6 each.' },
     ],
   },
   dwarf: {
@@ -214,10 +225,12 @@ export const CLASSES = {
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['spear', 'shield'],
     cards: [
-      { id: 'stonehide', name: 'Stonehide', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'block' }, fx: { block: 7 }, text: 'Roll 2d6 block.' },
-      { id: 'bulwark', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack.' },
-      { id: 'grudge', name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late.' },
-      { id: 'avalanche', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster.', unlock: 5 },
+      { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late.' },
+      { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster.', unlock: 5 },
+      { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack.' },
+      { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
+      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +6 block each.' },
+      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +4 attack and +2 block each.' },
     ],
   },
   bard: {
@@ -226,10 +239,12 @@ export const CLASSES = {
     blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
     weapons: ['dagger', 'bracer'],
     cards: [
-      { id: 'mending', name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'Roll 2d6 and heal that much.' },
-      { id: 'discord', name: 'Discord', kind: 'flat', cost: 2, fx: { weaken: 4 }, text: 'Enemies hit 4 softer.' },
-      { id: 'luckyverse', name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 Magic, 3-4 +5 attack, 5-6 +9 attack and +2 Magic.' },
-      { id: 'finale', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster.', unlock: 5 },
+      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'Roll 2d6 and heal that much.' },
+      { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster.', unlock: 5 },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +5 attack, 5-6 +9 attack and +2 magic.' },
+      { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer.' },
+      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +3 attack and heal 3 each.' },
+      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 4 gold each.' },
     ],
   },
 };

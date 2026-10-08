@@ -600,7 +600,7 @@ function cardTiles(reset) {
     const afford = b.magic >= x;
     const disabled = false; const unavailable = reset ? !(st.spent && canRecharge && b.magic >= D.RECHARGE_COST) : (st.spent || st.early || !afford);
     const fresh = B.fresh === k.id; if (fresh) B.fresh = null;
-    const flag = k.kind === 'charge' && stored ? `${stored} STORED` : st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
+    const flag = k.kind === 'charge' ? `${stored}/${k.max}` : st.early ? `ROUND ${k.minRound}+` : k.atwill ? (st.spent ? 'USED' : 'EVERY ROUND') : k.kind === 'super' && !st.spent ? 'SUPER' : null;
     const releaseBtn = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && b.usedRound[`${k.id}:release`]) ? h('span', { class: 'bc-step rel' }, h('i', { role: 'button', 'aria-label': `Release ${stored} charges`, onclick: (e) => { e.stopPropagation(); doCard(k.id, { release: true }); } }, `⚡ ${stored}`)) : null;
     const stepper = null; void releaseBtn; const _unusedStepper = k.kind === 'scale' && !st.spent && !reset ? h('span', { class: 'bc-step' },
       h('i', { role: 'button', 'aria-label': 'One less magic', onclick: (e) => { e.stopPropagation(); B.powerX[k.id] = Math.max(k.cost, x - 1); renderShape(); } }, '–'),
@@ -610,8 +610,12 @@ function cardTiles(reset) {
     const card = HK.abilityCard(k, { spent: st.spent && !k.atwill || (k.atwill && st.spent), reset, afford, rechargeCost: D.RECHARGE_COST, onclick, disabled, fresh, flag: k.atwill && st.spent && reset ? null : flag, cost: x, stepper, level: E.powerLevel(hero, k.id), locked: st.early });
     if (superReady) card.classList.add('super-ready');
     if (unavailable) card.classList.add('is-off');
+    if (k.slot) card.classList.add('has-slot'); if (k.slot) card.prepend(h('span', { class: `bc-slot s-${k.slot}`, 'aria-hidden': 'true' }, h('b', {}, k.slot), h('small', {}, D.SLOT_NAME[k.slot])));
     return card;
-  }), ...utils];
+  }),
+  // under the three powers: Healing (your bought potions and magic-to-health), then the heart die
+  h('div', { class: 'bc-sec' }, HK.icon('heal'), 'Healing'), ...['u:bigheal', 'u:heal'].map((id) => utils[UTIL.findIndex((u) => u.id === id)]),
+  h('div', { class: 'bc-sec' }, HK.icon('heart'), 'Heart die'), utils[UTIL.findIndex((u) => u.id === 'u:heart')]].filter(Boolean);
 }
 // Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Cancel.
 const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean));
@@ -624,7 +628,7 @@ function showPowerDetail(id) {
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
   const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
     : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
-    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Release them any round for ${k.per} each. They stay stored between rounds.`
+    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Release them any round for ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${f === 'heal' ? 'heal ' : '+'}${v}${f === 'heal' ? '' : ` ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold' })[f] || f}`}`).join(' and ')} each. They stay stored between rounds.`
     : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
     : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
   const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'

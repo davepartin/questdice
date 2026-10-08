@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
+import { cardsOf, equipPower, learnPower, learnInfo,
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
@@ -274,11 +274,15 @@ test('scale powers: more magic, more dice; round powers grow; supers wait for ro
   const r = ranger(); r.level = 8;
   const b = newBattle(r, questsFor(r)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
   const a = castPower(b, 'aimed', { x: 5 }); assert.equal(a.rolls.length, 5); assert.equal(b.magic, 7); assert.equal(b.mods.pierce, a.total);
-  assert.equal(castPower(b, 'rain'), null); // round 1: too early
+  assert.equal(castPower(b, 'rain'), null); // not in a slot
+  r.learned = ['rain']; r.powers = { A: 'rain' }; const br = newBattle(r, questsFor(r)[0], makeRng(4), 1); startRoll(br); br.magic = 12;
+  assert.equal(castPower(br, 'rain'), null); // round 1: too early
   const k = knight(); k.level = 8; k.powerLevel = { cleave: 2 };
+  const b1 = newBattle(k, questsFor(k)[0], makeRng(4), 1); startRoll(b1); b1.magic = 12;
+  assert.equal(castPower(b1, 'cleave').rolls.length, 4); // 2 dice + 2 levels
+  k.learned = ['judgment']; k.powers = { A: 'judgment' };
   const b2 = newBattle(k, { ...questsFor(k)[0], enemies: ['goblin', 'goblin', 'wolf'] }, makeRng(4), 1);
   beginReset(b2); beginReset(b2); beginReset(b2); startRoll(b2); b2.magic = 12; // round 3
-  assert.equal(castPower(b2, 'cleave').rolls.length, 4); // 2 dice + 2 levels
   assert.ok(castPower(b2, 'judgment')); assert.equal(b2.mods.aoe, Math.round(12 * 1.25 * 0 + 12 * (1 + 0.25 * 0)));
   b2.board.NW.v = 1; const hp0 = b2.enemies.map((e) => e.hp);
   const rep = resolve(b2, { target: 0 });
@@ -291,6 +295,25 @@ test('power upgrades cost gold and make numbers and dice bigger', () => {
   assert.equal(powerUpgradeInfo(h, 'cleave').cost, 60); assert.ok(upgradePower(h, 'cleave')); assert.equal(h.gold, 440);
   assert.ok(upgradePower(h, 'cleave')); assert.equal(upgradePower(h, 'cleave'), false); assert.equal(powerLevel(h, 'cleave'), 2);
   assert.equal(upgradePower(h, 'nonsense'), false);
+});
+
+test('powers: three slots, a start power in each, learn another at camp and swap it in; charges release any effect', () => {
+  for (const [id, c] of Object.entries(CLASSES)) for (const slot of ['A', 'B', 'C']) {
+    assert.equal(c.cards.filter((k) => k.slot === slot && k.start).length, 1, `${id} ${slot} start`);
+    assert.ok(c.cards.filter((k) => k.slot === slot).length >= 2, `${id} ${slot} has a choice`);
+  }
+  const k = knight(); k.gold = 100;
+  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'shieldwall', 'rally']);
+  assert.equal(equipPower(k, 'press'), false, 'not learned yet');
+  assert.ok(learnPower(k, 'press')); assert.equal(k.gold, 50);
+  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'press', 'rally']);
+  assert.ok(equipPower(k, 'shieldwall')); assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'shieldwall', 'rally']);
+  assert.equal(learnInfo(k, 'judgment').ok, false, 'a super waits for level 5');
+  const b = newBattle(k, questsFor(k)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
+  castPower(b, 'rally'); b.usedRound = {}; castPower(b, 'rally');
+  const before = { atk: b.mods.atk, block: b.mods.block };
+  const rel = castPower(b, 'rally', { release: true });
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6);
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {

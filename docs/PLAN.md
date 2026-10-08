@@ -345,3 +345,13 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Metals raise numbers: Silver +1 on the lowest face, Gold +1 on the second-highest, Diamond +1 on the top (faces chosen
   from the Bronze layout, so three different faces), plus the corner abilities as before. Every weapon: 2.00 -> 2.75.
 - dev/newweapons.mjs and dev/holdweapons.mjs screenshot the cards and a hero holding them.
+
+## Phase 2: three power slots (Oct 2026)
+
+- Each class has six powers in its library (data.js CLASSES.cards, `slot` A/B/C, one `start` per slot): A a big move
+  (once a battle; the level-5 supers are A choices), B every round, C a charge (1 magic a round stores a charge, up to 4;
+  release for `per` each: attack, block, heal, pierce or gold). hero.powers = { A, B, C }; hero.learned.
+- Camp Forge tab: a panel per slot with the equipped power (upgrade) and the other power to Learn (50 gold, supers need
+  level 5) or Swap in. Battle sheet: A/B/C badges, then Healing (potion, heal with magic), then Heart die.
+- Engine: cardsOf = the three slotted powers; powerLibrary, learnInfo, learnPower, equipPower. Sim bot releases charges.
+- Not yet on the online table's camp (it never had power upgrades); online heroes use their start powers.

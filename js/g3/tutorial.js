@@ -165,7 +165,7 @@ const LESSONS = [
     title: 'Powers, potions and growing',
     art: () => h('div', { class: 'tu-pow' }, h('span', { class: 'tu-powbtn' }, h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers')), h('span', { class: 'tu-potion' }, HK.icon('heal'), h('b', {}, 'Potions'))),
     body: () => [
-      row(ic('magic'), 'Magic powers', 'The purple button opens your class’s powers, paid for with magic.'),
+      row(ic('magic'), 'Three magic powers', 'The purple button opens them, paid for with magic. A is your big move, once a battle. B is small and works every round. C stores a charge each round for you to let go when it counts. Learn others at camp.'),
       row(ic('heal'), 'Healing potions', `Buy them at camp (${D.POTION_PRICE[0]} gold in Act I) and carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}. Once you drink it, it’s gone, so restock before every road.`),
       row(ic('gold'), 'Camp', 'Win to earn gold, experience and sometimes a new weapon. At camp you buy new dice, bigger hands and talent symbols.'),
     ],

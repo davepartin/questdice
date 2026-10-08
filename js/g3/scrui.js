@@ -230,7 +230,8 @@ export function create() {
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
       eyebrow('Magical powers'),
-      h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > 1 ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > 1 ? h('em', {}, `Level ${k.unlock}`) : null))));
+      h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
+      h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
   };
   paint();
   const go = async () => {
@@ -545,7 +546,26 @@ function talentCard(hero, slot) {
     up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
 }
 // Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
-const KIND_NAME = { flat: 'Fixed', dice: 'Rolls dice', scale: 'More magic, more dice', round: 'Grows each round', luck: 'Roll for luck', super: 'Super: once, round 3+' };
+const KIND_NAME = { flat: 'Fixed', dice: 'Rolls dice', scale: 'More magic, more dice', round: 'Grows each round', luck: 'Roll for luck', super: 'Super: once, round 3+', charge: 'Store charges, release later' };
+// Magical powers at camp: three slots (A big move, B every round, C charge). The equipped power can be upgraded; the other
+// powers of the class library are learned here for gold, then swapped into their slot like a weapon into a hand.
+function powersSection(hero) {
+  const lib = E.powerLibrary(hero);
+  return D.POWER_SLOTS.map((slot) => {
+    const rows = lib.filter((x) => x.card.slot === slot);
+    const eq = rows.find((x) => x.equipped); const others = rows.filter((x) => !x.equipped);
+    return h('section', { class: `sx-pslot s-${slot}` },
+      h('header', { class: 'ps-head' }, h('b', { class: 'ps-letter' }, slot), h('span', {}, D.SLOT_NAME[slot]), h('small', {}, slot === 'A' ? 'strong, once a battle' : slot === 'B' ? 'small and cheap, use it each round' : 'store 1 magic a round, release when you choose')),
+      eq ? powerRow(hero, eq.card) : null,
+      ...others.map(({ card: k, learned, gate }) => {
+        const li = E.learnInfo(hero, k.id);
+        const action = learned ? btn('Swap in', () => { if (E.equipPower(hero, k.id)) { sfx.select(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', cls: 'ur-buy', aria: `Put ${k.name} in slot ${slot}` })
+          : gate ? h('span', { class: 'ur-max gate' }, ico('lock'), ` Level ${gate}`)
+            : btn(`Learn · ${li.cost}`, () => { if (E.learnPower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !li.ok, cls: `ur-buy ${!li.ok ? 'poor' : ''}`, aria: `Learn ${k.name} for ${li.cost} gold` });
+        return h('div', { class: 'sx-urow wrow ps-alt' }, h('div', { class: 'ur-copy' }, h('b', {}, k.name, learned ? h('em', { class: 'ps-tag' }, 'Learned') : null), h('small', {}, k.text)), action);
+      }));
+  });
+}
 function powerRow(hero, k) {
   const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
   return h('div', { class: 'sx-urow wrow' },
@@ -575,8 +595,8 @@ function forgeTab() {
     upgradeRow('speed', 'S', 'Feet · speed', 'Your initiative die. A monster must roll higher than you to strike first.'),
     potionRow(hero),
     eyebrow('Magical powers'),
-    h('p', { class: 'tab-intro' }, 'Spend magic in battle. Most work once a fight; the weaker ones come back every round. Upgrades add dice and numbers. A super unlocks at level 5.'),
-    ...E.cardsOf(hero).map((k) => powerRow(hero, k)),
+    h('p', { class: 'tab-intro' }, 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers.'),
+    ...powersSection(hero),
     eyebrow('Weapons'),
     h('p', { class: 'tab-intro' }, 'Forging raises a weapon’s tier and fills its corners with bonuses. Training grows its die, but never past the hand that holds it.'),
     ...weapons);
@@ -624,8 +644,8 @@ function heroTab() {
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),
-    eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, c.cards.map((k) => h('div', { class: `ci-card ${(k.unlock ?? 1) > hero.level ? 'locked' : ''}` }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, k.name), h('small', {}, k.text), (k.unlock ?? 1) > hero.level ? h('em', {}, `Level ${k.unlock}`) : null))),
-    eyebrow('Always available'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal'), h('small', {}, `Restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart nudge'), h('small', {}, 'Move your heart die by 1'))),
+    eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, E.cardsOf(hero).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
+    eyebrow('Healing'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal with magic'), h('small', {}, `Restore ${D.HEAL_AMOUNT} health`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, '0', ico('spark')), h('b', {}, 'Healing potion'), h('small', {}, `${E.potionStock(hero)} on your belt, ${E.potionHpOf(hero)} health each`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart change'), h('small', {}, 'Turn your heart die by 1'))),
     log.length ? [eyebrow('The road remembers'), h('div', { class: 'ht-log' }, log.slice(0, 8).map((e) => h('div', {}, h('b', {}, e.title), h('small', {}, e.text))))] : null);
 }
 export function camp(fromBoard) {
