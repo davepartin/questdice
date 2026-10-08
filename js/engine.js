@@ -106,7 +106,11 @@ export function heroMods(hero) {
   return m;
 }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
-export const startMagicOf = (hero) => START_MAGIC + heroMods(hero).startMagic;
+export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
+export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
+export const healAmountOf = (hero) => CLASSES[hero?.cls]?.healAmount ?? HEAL_AMOUNT;
+export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 2);
+export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
 export const rerollTotal = () => RULES.free + RULES.paid;
 export const rerollDiceOf = (hero) => REROLL_DICE + heroMods(hero).rerollDice;
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
@@ -165,7 +169,7 @@ export function unlockDie(hero, slot) {
 // The feet die is the initiative die. Each class starts at its own size (hero.speed.S) and can grow it at camp.
 export function feetSize(hero) { hero.speed = hero.speed || { S: CLASSES[hero.cls]?.feet || 4 }; return hero.speed.S; }
 export function speedUpgrade(hero) {
-  const size = feetSize(hero); const step = SPEED_STEPS[size];
+  const size = feetSize(hero); const step = size < maxFeetOf(hero) ? SPEED_STEPS[size] : null;
   if (!step) return { ok: false, why: 'Max size' };
   if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
@@ -382,7 +386,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
   const b = {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
-    magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
+    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
@@ -441,7 +445,7 @@ export function nudge(b, dir) {
 export function healSpend(b) {
   const cost = healCostOf(b.hero);
   if (b.magic < cost || b.hp >= b.maxHp) return false;
-  b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + HEAL_AMOUNT); b.stats.healed += b.hp - before; return true;
+  b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
 }
 // Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
 // Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
@@ -529,7 +533,7 @@ export function castPower(b, id, { x, release } = {}) {
   b.magic -= cost;
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
   const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
-  const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(MAGIC_CAP, b.magic + v); else b.mods[k] = (b.mods[k] || 0) + v; };
+  const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v); else b.mods[k] = (b.mods[k] || 0) + v; };
   if (card.dice) { // roll them
     const n = card.dice.n + lvl + (card.kind === 'scale' ? cost - card.cost : 0);
     for (let i = 0; i < n; i++) out.rolls.push(1 + Math.floor(b.rng() * card.dice.s));
@@ -553,7 +557,7 @@ export function castPower(b, id, { x, release } = {}) {
 }
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
-  const lvl = powerLevel(hero, id); if (lvl >= POWER_UPGRADE.length) return { ok: false, why: 'max', lvl };
+  const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };
   const cost = POWER_UPGRADE[lvl]; return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, lvl, next: lvl + 1 };
 }
 export function upgradePower(hero, id) {
@@ -686,7 +690,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.stats.healed += rep.healed; b.stats.taken += rep.taken;
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
   const stolen = Math.min(b.magic + T.magic, rep.magicStolen); rep.magicStolen = stolen;
-  b.magic = Math.max(0, Math.min(MAGIC_CAP, b.magic + T.magic - stolen));
+  b.magic = Math.max(0, Math.min(magicCapOf(b.hero), b.magic + T.magic - stolen));
   rep.hpAfter = b.hp; rep.magicAfter = b.magic;
   hero.stats.rounds++;
   rep.points = Math.round(roundPoints({ dealt: b.stats.dealt - (rep.dealtBefore ?? b.stats.dealt), absorbed: rep.absorbed, healed: rep.healed, kills: rep.killed.length, triples: (ev.triples || []).length, straight: !!ev.straight, down: b.hp <= 0 }));
@@ -982,7 +986,7 @@ function makeFighter(hero) {
   const maxHp = maxHpOf(hero) + Math.max(0, boon.startHp || 0);
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
-    magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
+    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
@@ -1080,7 +1084,7 @@ export function teamActionInfo(b, from, kind, to) {
   if (F.hp <= 0) return { ok: false, why: 'You are down.' };
   if (F.teamRound === b.round) return { ok: false, why: 'One team action a round.' };
   if (kind === 'potion') { if (potionsLeft(F) <= 0) return { ok: false, why: 'No potions left.' }; if (T.hp <= 0) return { ok: false, why: `${T.hero.name} is down. Revive them.` }; if (T.hp >= T.maxHp) return { ok: false, why: `${T.hero.name} is at full health.` }; return { ok: true }; }
-  if (kind === 'magic') { if (F.magic < SHARE_MAGIC) return { ok: false, why: `Needs ${SHARE_MAGIC} magic.` }; if (T.hp <= 0) return { ok: false, why: `${T.hero.name} is down.` }; if (T.magic >= MAGIC_CAP) return { ok: false, why: `${T.hero.name} is full of magic.` }; return { ok: true }; }
+  if (kind === 'magic') { if (F.magic < SHARE_MAGIC) return { ok: false, why: `Needs ${SHARE_MAGIC} magic.` }; if (T.hp <= 0) return { ok: false, why: `${T.hero.name} is down.` }; if (T.magic >= magicCapOf(T.hero)) return { ok: false, why: `${T.hero.name} is full of magic.` }; return { ok: true }; }
   if (kind === 'revive') { if (F.reviveUsed) return { ok: false, why: 'You have used your revive this battle.' }; if (T.hp > 0) return { ok: false, why: `${T.hero.name} is still standing.` }; if (F.magic < REVIVE_COST) return { ok: false, why: `Needs ${REVIVE_COST} magic.` }; return { ok: true }; }
   return { ok: false, why: 'Unknown action.' };
 }
@@ -1089,7 +1093,7 @@ export function teamAction(b, from, kind, to) {
   const r = teamActionInfo(b, from, kind, to); if (!r.ok) { if (b.fighters[b.active]) focusFighter(b, b.active); return r; }
   const F = b.fighters[from]; const T = b.fighters[to];
   if (kind === 'potion') drinkPotion(F, T);
-  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(MAGIC_CAP, T.magic + SHARE_MAGIC) - T.magic; T.magic += got; award(F, SHARE_MAGIC * POINTS.magicGift); }
+  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(magicCapOf(T.hero), T.magic + SHARE_MAGIC) - T.magic; T.magic += got; award(F, SHARE_MAGIC * POINTS.magicGift); }
   else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); T.board = null; award(F, POINTS.revive); }
   F.teamRound = b.round; F.contrib = F.points;
   if (b.fighters[b.active]) focusFighter(b, b.active);
@@ -1248,7 +1252,7 @@ export function resolveParty(b) {
     award(f, pts); f.contrib = f.points;
     let magic = f.magic + T.magic;
     if (f === leader && rep.magicStolen) magic -= rep.magicStolen;
-    f.magic = Math.max(0, Math.min(MAGIC_CAP, magic));
+    f.magic = Math.max(0, Math.min(magicCapOf(f.hero), magic));
     rep.fighters.push({
       name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed,
       hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib, points: pts, total: pointsOf(f),

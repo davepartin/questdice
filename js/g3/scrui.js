@@ -183,11 +183,13 @@ function meter(label, value, max, icon, cls, note = '', shown = null, on = null)
     note ? h('small', { class: 'mt-note' }, note) : null);
 }
 // The four numbers that describe a hero, each with a plain-words caption (size ladder for initiative: d4 d6 d8 d10).
-function heroStats(hp, feet) {
-  const rung = [4, 6, 8, 10].indexOf(feet) + 1;
+function heroStats(hp, feet, c = {}) {
+  const rung = [4, 6, 8, 10].indexOf(feet) + 1; const hands = c.hands || 4; const magic = c.startMagic ?? D.START_MAGIC;
   return h('div', { class: 'ci-meters' },
     meter('Health', hp, 40, 'heart', 'm-hp', 'How much damage you can take.'),
-    meter('Initiative', feet, 4, 'boot', 'm-init', 'Your feet die. A bigger die means you strike before the monsters more often.', `d${feet}`, rung));
+    meter('Speed', feet, 4, 'boot', 'm-init', 'Your feet die. A bigger die strikes before the monsters more often, and the slowest hero draws the attacks in a team game.', `d${feet}`, rung),
+    meter('Strength', hands, 4, 'hammer', 'm-str', 'Your strongest hand die. It powers the weapon above it.', `d${hands}`, [4, 6, 8, 10].indexOf(hands) + 1),
+    meter('Magic', magic, 6, 'spark', 'm-mag', `Magic at the start of every fight${c.magicCap ? `; holds up to ${c.magicCap}` : ''}.`, String(magic)));
 }
 function faceChips(inst) {
   return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx ? h('span', { class: 'wf-fx' }, fxItems(f.fx)) : null)));
@@ -225,8 +227,9 @@ export function create() {
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
       h('div', { class: 'ci-head' }, h('h2', {}, c.name), h('p', {}, c.blurb)),
-      heroStats(c.hp, c.feet || 4),
-      h('p', { class: 'ci-rule' }, `Every hero starts each fight with ${D.START_MAGIC} magic and may reroll ${D.REROLL_DICE} dice at a time.`),
+      c.trait ? h('p', { class: 'ci-trait' }, ico('shine'), c.trait) : null,
+      heroStats(c.hp, c.feet || 4, c),
+      h('p', { class: 'ci-rule' }, `Every hero has the same nine dice and may reroll ${D.REROLL_DICE} at a time. Classes differ in where they start.`),
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
       eyebrow('Magical powers'),
@@ -645,7 +648,7 @@ function heroTab() {
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),
     eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, E.cardsOf(hero).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
-    eyebrow('Healing'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal with magic'), h('small', {}, `Restore ${D.HEAL_AMOUNT} health`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, '0', ico('spark')), h('b', {}, 'Healing potion'), h('small', {}, `${E.potionStock(hero)} on your belt, ${E.potionHpOf(hero)} health each`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart change'), h('small', {}, 'Turn your heart die by 1'))),
+    eyebrow('Healing'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal with magic'), h('small', {}, `Restore ${E.healAmountOf(hero)} health`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, '0', ico('spark')), h('b', {}, 'Healing potion'), h('small', {}, `${E.potionStock(hero)} on your belt, ${E.potionHpOf(hero)} health each`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart change'), h('small', {}, 'Turn your heart die by 1'))),
     log.length ? [eyebrow('The road remembers'), h('div', { class: 'ht-log' }, log.slice(0, 8).map((e) => h('div', {}, h('b', {}, e.title), h('small', {}, e.text))))] : null);
 }
 export function camp(fromBoard) {

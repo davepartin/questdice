@@ -499,7 +499,7 @@ function renderReset(view) {
     teles(view.battle.enemies),
     ctx.section('You',
       h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(me.hp, me.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${me.magic}`)),
-      h('div', { class: 'row' }, ctx.ghost(`✚ Heal +${D.HEAL_AMOUNT} · ${E.healCostOf(hero)}✦`, () => { sfx.heal(); act({ type: 'heal' }); }, { cls: 'small', disabled: me.magic < E.healCostOf(hero) || me.hp >= me.maxHp })),
+      h('div', { class: 'row' }, ctx.ghost(`✚ Heal +${E.healAmountOf(hero)} · ${E.healCostOf(hero)}✦`, () => { sfx.heal(); act({ type: 'heal' }); }, { cls: 'small', disabled: me.magic < E.healCostOf(hero) || me.hp >= me.maxHp })),
       cards.length ? h('div', { class: 'cardlist' }, cards.map((k) => h('div', { class: 'mini-card spent' }, h('b', {}, k.name), ctx.ghost(`Recharge · ${D.RECHARGE_COST}✦`, () => act({ type: 'recharge', id: k.id }), { cls: 'small', disabled: me.magic < D.RECHARGE_COST })))) : null),
     ctx.bodyWrap(h('div', { class: 'board board-empty', 'aria-hidden': 'true' }), hero),
     waitingLine(view),

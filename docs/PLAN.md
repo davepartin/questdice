@@ -355,3 +355,12 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   level 5) or Swap in. Battle sheet: A/B/C badges, then Healing (potion, heal with magic), then Heart die.
 - Engine: cardsOf = the three slotted powers; powerLibrary, learnInfo, learnPower, equipPower. Sim bot releases charges.
 - Not yet on the online table's camp (it never had power upgrades); online heroes use their start powers.
+
+## Phase 3: class identities (Oct 2026)
+
+- Same nine dice for all; classes differ in health, speed (feet), strong hand, weapons and magic (data.js CLASSES):
+  Knight 34 / d4 / left d6 / Sword + Shield / 4 magic. Dwarf 40 / d4 / left d6 / Mace + Tower Shield / 3. Ranger 28 / d6
+  (the only class that can train feet to d8) / Bow / 4. Bard 30 / d6 / Dagger + Bracer / 5. Wizard 24 / d4 / Staff / 6,
+  holds 15 magic, Heal with magic gives 6, powers upgrade to level 3 (POWER_UPGRADE 60 / 140 / 260).
+- Engine: startMagicOf, magicCapOf, healAmountOf, powerLevelsOf, maxFeetOf. Creation screen: a trait line and four meters
+  (Health, Speed, Strength, Magic). progress-all.sh prints clears by class.

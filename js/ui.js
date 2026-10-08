@@ -429,7 +429,7 @@ function renderPartyReset() {
         h('div', { class: 'row between' }, h('b', {}, `${D.CLASSES[hero.cls].glyph} ${hero.name}`), h('span', { class: 'magic-badge' }, `✦ ${f.magic}`)),
         V.hpBar(f.hp, f.maxHp, { cls: 'hero-bar' }),
         f.hp <= 0 ? h('p', { class: 'muted' }, 'Down for this fight.') : h('div', { class: 'row' },
-          ghost(`✚ Heal +${D.HEAL_AMOUNT} · ${E.healCostOf(hero)}✦`, () => {
+          ghost(`✚ Heal +${E.healAmountOf(hero)} · ${E.healCostOf(hero)}✦`, () => {
             if (!touchFighter(i, () => E.healSpend(S.battle))) { sfx.error(); toast('Not enough ✦ Magic, or already full.'); return; }
             sfx.heal(); renderPartyReset();
           }, { cls: 'small', disabled: f.magic < E.healCostOf(hero) || f.hp >= f.maxHp }),
@@ -458,7 +458,7 @@ function renderReset() {
     section('You',
       h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(b.hp, b.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${b.magic}`)),
       h('div', { class: 'row' },
-        ghost(`✚ Heal +${D.HEAL_AMOUNT} HP · ${E.healCostOf(hero)}✦`, spendHeal, { disabled: b.magic < E.healCostOf(hero) || b.hp >= b.maxHp })),
+        ghost(`✚ Heal +${E.healAmountOf(hero)} HP · ${E.healCostOf(hero)}✦`, spendHeal, { disabled: b.magic < E.healCostOf(hero) || b.hp >= b.maxHp })),
       cards.length ? h('div', { class: 'cardlist' }, cards.map((k) => h('div', { class: `mini-card ${b.used[k.id] ? 'spent' : ''}` },
         h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`),
         b.used[k.id] ? ghost(`Recharge · ${D.RECHARGE_COST}✦`, () => { if (E.recharge(b, k.id)) { sfx.magic(); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); } }, { disabled: b.magic < D.RECHARGE_COST, cls: 'small' }) : h('em', {}, 'Ready')))) : null),

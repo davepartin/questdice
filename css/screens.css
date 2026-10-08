@@ -438,3 +438,7 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .ps-tag { margin-left: .45rem; font-style: normal; font-family: var(--font-display); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: #6af0a8; }
 .ci-slot { display: inline-grid; place-items: center; width: 1.15rem; height: 1.15rem; margin-right: .1rem; border-radius: 50%; font-style: normal; font-family: var(--font-display); font-weight: 800; font-size: .68rem; color: #1a0f04; background: linear-gradient(180deg, #ffeab8, #e2b24c); vertical-align: 1px; }
 .ur-max.gate { color: var(--dim); letter-spacing: .05em; font-size: .72rem; display: inline-flex; align-items: center; gap: .2rem; }
+.ci-trait { display: flex; align-items: center; gap: .45rem; margin: .1rem 0 .35rem; padding: .45rem .65rem; border-radius: 9px; background: rgba(240, 192, 96, .1); border: 1px solid rgba(240, 192, 96, .35); color: #ffe2a0; font-size: .86rem; line-height: 1.35; }
+.ci-trait .ico svg { width: 1rem; height: 1rem; }
+.m-str .mt-head .ico { color: #ff9a4a; } .m-str .mt-cells i.on { background: linear-gradient(90deg, #ff8a3a, #ffc08a); }
+.m-mag .mt-head .ico { color: #c08aff; } .m-mag .mt-cells i.on { background: linear-gradient(90deg, #8a3cf0, #c9a4ff); }

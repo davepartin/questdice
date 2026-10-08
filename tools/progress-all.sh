@@ -9,6 +9,7 @@ const files=fs.readdirSync(D).map(f=>JSON.parse(fs.readFileSync(D+'/'+f)));
 const agg={}; let clears=0,total=0;
 for(const r of files){clears+=r.clears;total+=r.total;for(const[k,A]of Object.entries(r.agg)){const T=(agg[k]||={kind:A.kind});for(const[f,v]of Object.entries(A))if(typeof v==='number')T[f]=(T[f]||0)+v;}}
 console.log('policy $POL, $ACTS act(s): cleared '+clears+'/'+total);
+console.log('by class: '+fs.readdirSync(D).map(f=>{const r=JSON.parse(fs.readFileSync(D+'/'+f));return f.replace('.json','')+' '+r.clears+'/'+r.total;}).join(', '));
 console.log('step   kind    steady win  rounds  hp | perilous win  rounds  hp | took P | lvl  gold  str  wpn  dmg/rd | danger S/P');
 for(const[k,A]of Object.entries(agg).sort(([a],[b])=>a<b?-1:1)){const f=(x,d=0)=>(x/A.n).toFixed(d);
 console.log(k+'  '+A.kind.padEnd(6)+'  '+(100*A.sw/A.n).toFixed(0).padStart(5)+'%  '+f(A.sr,1).padStart(6)+' '+(100*A.shp/A.n).toFixed(0).padStart(3)+'% | '+(A.pw?(100*A.pw/A.n).toFixed(0).padStart(9)+'%':'        - ')+'  '+(A.pw?f(A.pr,1).padStart(6):'     -')+' '+(A.pw?(100*A.php/A.n).toFixed(0).padStart(3)+'%':'   -')+' | '+(100*A.took/A.n).toFixed(0).padStart(5)+'% | '+f(A.lvl,1).padStart(4)+' '+f(A.gold).padStart(5)+' '+f(A.str,1).padStart(4)+' '+f(A.wpn,1).padStart(4)+' '+f(A.pow,1).padStart(6)+' | '+f(A.sd,2)+' / '+(A.pd?f(A.pd,2):'-'));}

@@ -134,7 +134,7 @@ export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less t
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
 // kinds: flat (fixed numbers) | dice (roll NdS) | scale (more Magic = more dice) | round (grows with the round number) | luck (roll for a table) | super (round gate, hits everyone).
-export const POWER_UPGRADE = [60, 140]; // gold to reach level 1, 2. Each level: +25% numbers, +1 die on dice powers.
+export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2. Each level: +25% numbers, +1 die on dice powers.
 // Learning another power from your class library at camp (it then swaps freely into its slot). Supers also need level 5.
 export const POWER_LEARN = 50;
 export const POWER_SLOTS = ['A', 'B', 'C'];
@@ -164,7 +164,7 @@ export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s streng
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
 export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
-export const SPEED_STEPS = { 4: [60, 2] }; // feet stop at d6: fast heroes start there, slow heroes can buy it
+export const SPEED_STEPS = { 4: [60, 2], 6: [140, 6] }; // feet stop at d6 (the Ranger alone can train them to d8)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
@@ -175,8 +175,12 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // weaken (enemy damage -N this round), free (a free reroll action of N dice).
 // -------------------------------------------------------------------------------------------
 export const CLASSES = {
+  // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
+  // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), healAmount (health per
+  // Heal with magic, default HEAL_AMOUNT), powerLevels (how far powers upgrade, default 2) and maxFeet (default 6).
   knight: {
-    feet: 4, hands: 6, // slow but strong: one d6 hand (left) from the start
+    feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
+    trait: 'Balanced: a strong left hand and a shield.',
     name: 'Knight', glyph: '⚔️', hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
@@ -192,7 +196,8 @@ export const CLASSES = {
     ],
   },
   ranger: {
-    feet: 6,
+    feet: 6, maxFeet: 8, startMagic: 4,
+    trait: 'The fastest: the only class that can train speed to a d8.',
     name: 'Ranger', glyph: '🏹', hp: 28,
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
@@ -206,9 +211,10 @@ export const CLASSES = {
     ],
   },
   wizard: {
-    feet: 6,
-    name: 'Wizard', glyph: '🧙', hp: 26,
-    blurb: 'Magic is your ammunition. A staff, a big pool of Magic, and a spell for every problem.',
+    feet: 4, startMagic: 6, magicCap: 15, healAmount: 6, powerLevels: 3,
+    trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic, powers grow to level 3.',
+    name: 'Wizard', glyph: '🧙', hp: 24,
+    blurb: 'A frail body and a deep well of magic. No shield, but a spell for every problem and healing to spare.',
     weapons: ['staff'],
     cards: [
       { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, max: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 magic = 1d8, each extra magic adds a die (up to 5d8).' },
@@ -220,10 +226,11 @@ export const CLASSES = {
     ],
   },
   dwarf: {
-    feet: 4, hands: 6, // slow but strong: one d6 hand (left) from the start
-    name: 'Dwarf Warden', glyph: '🪓', hp: 38,
+    feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
+    trait: 'The wall: the most health, a crushing mace and a tower shield.',
+    name: 'Dwarf Warden', glyph: '🪓', hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
-    weapons: ['spear', 'shield'],
+    weapons: ['mace', 'tower'],
     cards: [
       { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late.' },
       { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster.', unlock: 5 },
@@ -234,8 +241,9 @@ export const CLASSES = {
     ],
   },
   bard: {
-    feet: 6,
-    name: 'Bard', glyph: '🪕', hp: 28,
+    feet: 6, startMagic: 5,
+    trait: 'The steady helper: quick, steady weapons, more magic to share.',
+    name: 'Bard', glyph: '🪕', hp: 30,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
     weapons: ['dagger', 'bracer'],
     cards: [
