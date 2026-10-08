@@ -7,6 +7,7 @@ import * as D from './data.js';
 import * as SV from './save.js';
 import * as V from './view.js';
 import * as R from './roads.js';
+import * as ST from './story.js';
 import { hintsOn, setHints } from './coach.js';
 import * as Net from './net.js';
 import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
@@ -323,6 +324,7 @@ function questCard(q) {
 function menu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, S.company?.name || S.hero?.name || 'Menu'),
     h('div', { class: 'col' },
+      ghost('The story so far', () => { close(); showStorySoFar(); }),
       ghost('How to play', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
@@ -332,8 +334,24 @@ function menu() {
 
 function showRoadOrBoard() {
   const hero = membersOf()[0];
+  const beat = hero && !S.net && !S.practice ? ST.pending(hero.campaign)[0] : null; // a story beat comes first
+  if (beat) return showStory(beat);
   if (hero && R.roadIsOpen(hero)) showRoad();
   else showBoard();
+}
+function showStory({ id, act }) {
+  const hero = membersOf()[0]; const b = ST.beat(id, act);
+  const done = () => { ST.markSeen(hero.campaign, id, act); persist(); showRoadOrBoard(); };
+  if (SCRUI.on()) return SCRUI.story(b, done);
+  const close = modal(h('div', { class: 'form' }, h('small', { class: 't-eyebrow' }, b.kicker), h('h2', {}, b.title), ...b.text.map((t) => h('p', {}, t)),
+    h('div', { class: 'row end' }, primary('Continue', () => { close(); done(); }))), { dismiss: false });
+}
+// The story so far (board menu): every beat up to where the campaign stands.
+function showStorySoFar() {
+  const hero = membersOf()[0]; const list = ST.storySoFar(hero?.campaign);
+  modal(h('div', { class: 'form story-so-far' }, h('h2', {}, 'The story so far'),
+    ...list.map((b) => h('section', { class: 'ssf-beat' }, h('small', {}, b.kicker), h('h3', {}, b.title), ...b.text.map((t) => h('p', {}, t)))),
+    h('div', { class: 'row end' }, primary('Close', () => closeModal()))));
 }
 function showRoad() {
   if (SCRUI.on()) return SCRUI.road();
@@ -381,9 +399,10 @@ function startQuest(q) {
   renderReset();
 }
 // What the 3D battle needs from this module.
+// battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
   if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
-  return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+  return { S, menu: battleMenu, persist, banner, portrait: (id) => SCR.portraitQ.monster(id, ['wolf', 'spider'].includes(id) ? { yaw: 0.45, fit: 'bust' } : { yaw: 0, fit: 'bust' }), showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 // Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).
 function practice({ hero, quest, guide }) {

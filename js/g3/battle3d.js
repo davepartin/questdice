@@ -53,6 +53,8 @@ export async function start(ctx) {
   bw.stage.scene.add(B.ringMesh);
   bw.stage.onFrame((dt, t) => { if (!B.ended) { positionPlates(); ringUpdate(t); framePan(dt); } });
   buildHud();
+  // draw each monster's front portrait in the quiet moments, so its sheet opens with the picture ready
+  setTimeout(() => { if (!B.ended) for (const id of new Set(b.enemies.map((e) => e.id))) C.portrait?.(id); }, 2500);
   if (C.tut) C.tut.attach({
     root: B.root, toast: (t) => toast(t),
     diePoint: (slot) => { const q = B.bw.tray.projectSlot?.(slot, { dy: 0.3 }); if (!q) return null; const r = B.bw.stage.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; },
@@ -533,8 +535,11 @@ function showFoeInfo(e) {
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const seen = new Set([e.intent?.n]);
   const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
+  // a picture of the monster from the front (rendered once, then cached), beside its name and numbers
+  const img = h('img', { alt: e.name, draggable: 'false' }); const pic = h('div', { class: 'fi-pic shimmer' }, img);
+  Promise.resolve(C.portrait?.(e.id)).then((url) => { if (!url) { pic.classList.add('none'); return; } img.onload = () => pic.classList.remove('shimmer'); img.src = url; }).catch(() => pic.classList.add('none'));
   fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
-    h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`)),
+    h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
       h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), h('p', {}, readyText(e))),
       v.fig ? h('strong', { class: 'fi-fig' }, v.fig, v.unit && /^\d/.test(v.fig) ? h('small', {}, v.unit === 'dmg' ? 'damage' : v.unit) : null) : null) : null,

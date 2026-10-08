@@ -397,7 +397,7 @@ function queue(key, fn) {
 export const portraitQ = {
   has: (key) => hasPortrait(key),
   monster(id, { tier = D.MONSTERS[id]?.tier || 'minion', size = [360, 360], fit = 'full', yaw = 0.5 } = {}) {
-    const key = `m:${id}:${fit}`;
+    const key = `m:${id}:${fit}${yaw !== 0.5 ? `:y${yaw}` : ''}`; // yaw 0 = straight from the front (the monster sheet)
     return queue(key, async () => {
       const a = await createActor(id, { tier, seed: 5, quality: 'low' });
       a.play?.('ready', { restart: true, fade: 0 }); for (let i = 0; i < 12; i++) a.update(0.05, 0.05 * i);

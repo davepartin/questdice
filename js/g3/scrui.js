@@ -327,12 +327,24 @@ export function board() {
   lay('board'); SCR.enter('road', { hero, place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 
-// ------------------------------------------------------------------------------------------------ road events
-function scrollCard(kicker, titleText, body, ...rest) {
-  const first = String(body).trim();
-  return h('article', { class: 'sx-scroll' }, h('i', { class: 'sc-edge top' }), h('i', { class: 'sc-edge bot' }),
-    h('div', { class: 'sc-kicker' }, h('span', {}, kicker)), h('h1', { class: 'sc-title' }, titleText), flourish(),
-    h('p', { class: 'sc-tell' }, h('span', { class: 'dropcap' }, first.charAt(0)), first.slice(1)), ...rest);
+// ------------------------------------------------------------------------------------------------ road events and story
+// A story card (Dave did not love the old parchment scroll): a dark, gold-framed page in the game's own colours, a crest
+// with an icon on its top edge, the kicker and title, a gold rule, then the tale. Used for road events and story beats.
+function storyCard(kicker, titleText, body, { icon = 'road' } = {}, ...rest) {
+  const paras = (Array.isArray(body) ? body : [body]).map((t) => String(t).trim()).filter(Boolean);
+  return h('article', { class: 'sx-tale' }, h('span', { class: 'tl-crest', 'aria-hidden': 'true' }, ico(icon)),
+    h('div', { class: 'tl-kicker' }, kicker), h('h1', { class: 'tl-title' }, titleText), h('div', { class: 'tl-rule', 'aria-hidden': 'true' }, h('i'), h('b'), h('i')),
+    ...paras.map((t, i) => h('p', { class: 'tl-tell' }, i === 0 ? [h('span', { class: 'tl-cap' }, t.charAt(0)), t.slice(1)] : t)), ...rest);
+}
+// A story beat (js/story.js): the card over the road scene, and one button on.
+export function story(b, onDone) {
+  const hero = X.members()[0]; let done = false;
+  mountAs('road', h('div', { class: 'sx-split sx-road sx-storybeat' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
+      storyCard(b.kicker, b.title, b.text, { icon: b.icon }),
+      h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); onDone(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
+  const place = E.questsFor(hero)[0].place;
+  lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 export function road() {
   const members = X.members(); const hero = members[0]; const ev = R.ensureRoad(hero, members); X.persist();
@@ -342,7 +354,7 @@ export function road() {
   }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
-      scrollCard(ev.kicker, ev.title, ev.tell), eyebrow('What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
+      storyCard(ev.kicker, ev.title, ev.tell), eyebrow('What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
@@ -350,7 +362,7 @@ export function roadResult(res) {
   const hero = X.members()[0];
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
-      scrollCard('The road answers', res.title, res.text), h('div', { class: 'sx-cta' }, btn('Onward', X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
+      storyCard('The road answers', res.title, res.text), h('div', { class: 'sx-cta' }, btn('Onward', X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('road');
 }
 

@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261010m**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **101 passing**. Keep them green.
+  the last one used is **20261010o**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **106 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -63,8 +63,8 @@ sheet** (tap a monster twice: next move, how to get ready, other moves as chips)
 4. **Next (recommended 10 Oct):** make big moments feel big: Weapons Triple, a legendary drop, a revive, a boss falling (pause, light, sound, the number counting up).
 5. More teamwork in company games: moments that need two heroes at once (hold the line so a friend can strike, team combos,
    giving up a potion to save a friend).
-6. A story thread through the acts: who the enemy is and why it matters, light pushing back the dark, friends laying
-   themselves down for one another.
+6. ~~A story thread through the acts.~~ Done 10 Oct (see "Story thread" below). Ideas for more: a line from the story on
+   the boss's quest card, story beats in online rooms, and new chapters if Act III ever gets monsters of its own.
 7. Watch three or four real people play their first 20 minutes without helping (Dave's job; ask what he saw).
 
 Other open items:
@@ -492,3 +492,20 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - The board Menu's "Save & return to title" and the battle menu (new "Go home" item, and "Leave practice") use the same pop-up.
 - battle3d win()/lose() check B.ended, so leaving mid-round never pops a victory or defeat screen over the home screen.
 - dev/home.mjs tests it in the browser (create a real save with save.js createSave, or Continue has nothing to show).
+
+## Story thread, story card, monster pictures (Oct 2026)
+
+- `js/story.js` (pure, tested in test/story.test.mjs): the Dawn Lantern kept the Marches safe; the Goblin King stole its
+  flame out of greed (Act I), the Hollow Lich drained it from below out of cold emptiness (Act II); the heroes carry the
+  light home ("The light shines in the darkness, and the darkness has not overcome it"). Beats: a prologue / act opening at
+  quest 1 (after the last act's closing), a beat before the elite (quest 5) and before the boss (quest 10). The Ascents
+  (act 3 on) get their own openings, boss lines and a short closing. Seen beats live in campaign.storySeen ("id@act").
+  Edit the words in BEATS; keep it free of anything occult.
+- ui.js showRoadOrBoard shows a pending beat first (not online, not in practice), then the road event, then the board.
+  The board Menu has "The story so far" (every beat up to here). Screen: scrui.story().
+- Dave did not love the parchment scroll: road events and story beats now use `storyCard` (scrui.js; CSS .sx-tale): a
+  dark page with a double gold frame, a crest icon on the top edge, gold kicker, cream title, gold drop cap.
+- Monster sheet (tap a monster twice) shows a picture of the monster: from the front, head and shoulders; the wolf and
+  spider at a three-quarter turn so face and body both read (ui.js battleCtx().portrait -> screens portraitQ.monster with
+  yaw/fit; drawn in the background at battle start, then cached).
+- dev/story.mjs screenshots all of it.
