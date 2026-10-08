@@ -253,9 +253,9 @@ potions and heals), potions drunk, and close calls (won after dropping to 30% he
 | Standard road | win | damage taken | potions a fight | close calls |
 |---|---|---|---|---|
 | Before | 100% | 41% (Acts I–II: 23–46%) | 0.29 | 5% (Acts I–II: 0–8%) |
-| After (+3 / +4 / +1 a hit by act, +2 more for a lone monster) | 98% | about 55% (Acts I–II: 40–65%) | about 0.4 | about 13% |
+| After (+3 / +4 / +1 a hit by act, +2 more for a lone monster) | 99% | 53% (Acts I–II: 36–64%) | 0.39 | 11% (Acts I–II: 8–17%) |
 
-The perilous road was already dangerous (114% damage taken, 1.4 potions, 47% close calls) and is unchanged; a flat bump
+The perilous road was already dangerous (114% damage taken, 1.4 potions, 47% close calls) and is unchanged (84% wins); a flat bump
 there dropped it to 64–71% wins. Act III's standard road was already tense, so it gets only +1.
 
 Three monster moves change the right answer for a round, so "read the box" is no longer the whole game:
