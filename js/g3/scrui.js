@@ -99,25 +99,14 @@ function tipBox(key, text) {
 function coachBox(key) { const H = Coach.HINTS[key]; if (!H) return null; return tipBox(key, `${H.title}. ${H.text}`); }
 
 // ------------------------------------------------------------------------------------------------ logo
-function dieFace(v, slot) {
-  const spots = { 1: [[5, 5]], 2: [[3, 3], [7, 7]], 3: [[3, 3], [5, 5], [7, 7]], 4: [[3, 3], [7, 3], [3, 7], [7, 7]], 5: [[3, 3], [7, 3], [5, 5], [3, 7], [7, 7]], 6: [[3, 3], [7, 3], [3, 5], [7, 5], [3, 7], [7, 7]] }[v];
-  const tone = { NW: '#ff6a5a', NE: '#ff6a5a', SW: '#c79bff', SE: '#c79bff', C: '#ffd23d' }[slot] || '#f2ead2';
-  return `<svg viewBox="0 0 10 10" aria-hidden="true"><defs><linearGradient id="dg-${slot}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c3350"/><stop offset="1" stop-color="#0e1222"/></linearGradient></defs><rect x=".6" y=".6" width="8.8" height="8.8" rx="2.1" fill="url(#dg-${slot})" stroke="${tone}" stroke-width=".55"/><rect x="1.2" y="1.2" width="7.6" height="3" rx="1.6" fill="#fff" opacity=".07"/>${spots.map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".78" fill="${tone}"/>`).join('')}</svg>`;
-}
-function logo({ animate = true } = {}) {
-  const dice = h('div', { class: 'lg-dice', 'aria-hidden': 'true' }, D.SLOTS.map((s) => {
-    const el = h('i', { class: `ld ld-${s}` }); const v = 1 + Math.floor(Math.random() * (s === 'C' ? 6 : 4)); el.dataset.v = v; el.innerHTML = dieFace(v, s); return el;
-  }));
-  if (animate && !reduced()) {
-    X.S.timers.push(setInterval(() => {
-      const els = $$('.ld', dice); const el = els[Math.floor(Math.random() * els.length)]; const s = D.SLOTS[els.indexOf(el)];
-      el.classList.remove('tumble'); void el.offsetWidth; el.classList.add('tumble');
-      setTimeout(() => { const v = 1 + Math.floor(Math.random() * (s === 'C' ? 6 : 4)); el.dataset.v = v; el.innerHTML = dieFace(v, s); }, 260);
-    }, 1500));
-  }
-  return h('div', { class: 'sx-logo' }, dice,
-    h('h1', { class: 'lg-word', 'aria-label': 'QuestDice' }, h('span', { class: 'lg-quest' }, 'QUEST'), h('span', { class: 'lg-dice-word' }, 'DICE')),
-    h('p', { class: 'lg-tag' }, h('i'), h('span', {}, 'Roll your body. Break the dark.'), h('i')));
+// The home screen brand (Dave, Oct 2026): the Quest Dice knight, built from dice, with the QUEST / DICE lettering beside him
+// and the tagline under it. Art in assets/brand (cut from Dave's picture by dev/brandcut.mjs).
+function logo() {
+  return h('div', { class: 'sx-brand' },
+    h('img', { class: 'br-knight', src: 'assets/brand/knight.webp', alt: 'The Quest Dice knight, made of dice', draggable: 'false', decoding: 'async' }),
+    h('div', { class: 'br-words' },
+      h('h1', { class: 'br-title' }, h('img', { class: 'br-quest', src: 'assets/brand/quest.webp', alt: 'Quest', draggable: 'false' }), h('img', { class: 'br-dice', src: 'assets/brand/dice.webp', alt: 'Dice', draggable: 'false' })),
+      h('p', { class: 'br-tag' }, h('span', {}, 'Roll your body.'), h('span', {}, 'Break the dark.'))));
 }
 
 // "Play together" opens in place: share one phone, or each on your own.

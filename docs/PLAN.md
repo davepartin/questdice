@@ -509,3 +509,14 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   spider at a three-quarter turn so face and body both read (ui.js battleCtx().portrait -> screens portraitQ.monster with
   yaw/fit; drawn in the background at battle start, then cached).
 - dev/story.mjs screenshots all of it.
+
+## The Quest Dice knight: home screen and link preview (Oct 2026)
+
+- Dave supplied the brand art: a knight built from dice (red attack, blue shield, green heal, purple magic, gold heart and
+  feet ring) above "QUEST DICE" in bronze. dev/brandcut.mjs cuts it from its black background into assets/brand:
+  knight.webp, quest.webp and dice.webp (the words alone, for stacking), logo.webp (the one-line logo with flourishes).
+- Home screen (scrui.js logo(), CSS .sx-brand / .br-*): the knight with QUEST over DICE beside him and the tagline under
+  the words, on phones and wide screens. The title 3D scene no longer adds a 3D hero (the orchard, embers and fog stay).
+- Link preview (what Messages shows for a texted link): index.html og:/twitter: tags point at assets/brand/og.jpg
+  (1200x630, knight + words + tagline). iPhone home-screen icon: assets/brand/icon-180.png. Messages caches previews,
+  so an old text of the link may stay plain. The earlier preview options A-H live in docs/ingame/preview_option_*.png.

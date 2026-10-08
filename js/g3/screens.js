@@ -237,15 +237,15 @@ const MODES = {
   async title({ cls = 'knight', hero: saved } = {}, token) {
     await arenaFor('Burnt Orchard', { seed: 11, mood: 'calm' }); check(token);
     setLook({ vignette: 0.75, bloom: 0.55, exposure: 0.82 });
-    const hero = await makeHero(cls, { loadout: saved?.loadout, level: saved?.level || 1 }); check(token);
+    // the home screen's hero is now Dave's Quest Dice knight (a picture over this scene, assets/brand); the scene keeps the
+    // burnt orchard, the embers and the fog behind him
+    void cls; void saved;
     rimKit({ target: [-0.9, 1.2, 1.5] });
-    hero.root.position.set(-0.9, 0, 1.5); hero.root.rotation.y = 0.55; add(hero.root);
-    hero.play('ready', { restart: true });
     emberField({ box: [-6, 0, -3, 6, 3.5, 6], rate: 18 });
     groundFog();
     world.director.set('s-title', { snap: true, lambda: 1.2 }); drift(0.3, 0.1);
     music.setMood?.('title');
-    return { hero, arena: own.arena };
+    return { hero: null, arena: own.arena };
   },
   async create({ cls = 'knight' } = {}, token) {
     await arenaFor('Burnt Orchard', { seed: 11, mood: 'calm' }); check(token);

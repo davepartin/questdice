@@ -80,6 +80,16 @@
 .sx-title-brand { display: flex; flex-direction: column; justify-content: flex-start; padding: clamp(1.5rem, 9vh, 5rem) 0 0 clamp(.5rem, 3vw, 3rem); }
 .sx-title-menu { display: flex; flex-direction: column; justify-content: center; gap: .8rem; padding: 3.5rem 0 1rem 0; min-height: 0; overflow-y: auto; scrollbar-width: none; pointer-events: none; } .sx-title-menu::-webkit-scrollbar { display: none; }
 .sx-links { display: flex; justify-content: center; pointer-events: none; } .sx-links .sx-btn { pointer-events: auto; }
+/* home screen brand: the Quest Dice knight with QUEST / DICE beside him (art in assets/brand) */
+.sx-brand { display: flex; align-items: center; gap: clamp(.6rem, 2vw, 1.6rem); }
+.br-knight { flex: none; height: clamp(15rem, 62vh, 32rem); width: auto; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .7)) drop-shadow(0 0 40px rgba(255, 160, 60, .18)); animation: brRise 1s var(--ease-snap) both; }
+.br-words { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; animation: brRise 1s .15s var(--ease-snap) both; }
+.br-title { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; }
+.br-title img { display: block; height: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .7)) drop-shadow(0 0 24px rgba(255, 170, 60, .25)); }
+.br-quest { width: clamp(8rem, 16.5vw, 19rem); } .br-dice { width: clamp(5.7rem, 11.7vw, 13.5rem); margin-left: .2rem; }
+.br-tag { margin: .9rem 0 0 .25rem; display: flex; flex-direction: column; font-family: var(--font-display); font-weight: 700; font-size: clamp(.68rem, 1.3vw, .9rem); letter-spacing: .26em; text-transform: uppercase; color: #ffd98a; text-shadow: 0 2px 8px rgba(0, 0, 0, .8); }
+@keyframes brRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .br-knight, .br-words { animation: none; } }
 .sx-logo { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3rem 1.1rem; max-width: 40rem; }
 .lg-dice { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: clamp(4.4rem, 8vw, 6.4rem); transform: perspective(500px) rotateX(14deg) rotateZ(-3deg); filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .6)) drop-shadow(0 0 16px rgba(255, 150, 50, .25)); }
 .ld { display: block; aspect-ratio: 1; } .ld svg { width: 100%; height: 100%; display: block; } .ld-C svg { filter: drop-shadow(0 0 5px rgba(255, 210, 61, .7)); }
@@ -283,7 +293,8 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 @media (max-aspect-ratio: 1085/1000) {
   .sx-top { right: calc(var(--pad) + 5.8rem); } .sx-top-actions .sx-btn span.lbl { display: none; } .sx-top-actions .sx-btn { padding: .5rem .7rem; }
   .sx-title-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: calc(.6rem + var(--safe-t)) 1rem calc(.8rem + var(--safe-b)); }
-  .sx-title-brand { padding: 2.2rem 0 0; align-items: center; } .sx-logo { grid-template-columns: auto auto; justify-content: center; gap: .2rem .8rem; } .lg-dice { width: 4.2rem; } .lg-word span { font-size: clamp(2.5rem, 13vw, 3.5rem); } .lg-tag { justify-content: center; margin-top: .6rem; letter-spacing: .2em; font-size: .64rem; } .lg-tag i { max-width: 2rem; }
+  .sx-title-brand { padding: 2.6rem 0 0; align-items: center; }
+  .sx-brand { justify-content: center; gap: .5rem; } .br-knight { height: auto; width: min(58vw, 17rem); } .br-quest { width: min(34vw, 10rem); } .br-dice { width: min(24vw, 7.1rem); } .br-tag { font-size: .62rem; letter-spacing: .2em; margin-top: .6rem; } .sx-logo { grid-template-columns: auto auto; justify-content: center; gap: .2rem .8rem; } .lg-dice { width: 4.2rem; } .lg-word span { font-size: clamp(2.5rem, 13vw, 3.5rem); } .lg-tag { justify-content: center; margin-top: .6rem; letter-spacing: .2em; font-size: .64rem; } .lg-tag i { max-width: 2rem; }
   .sx-title-menu { justify-content: flex-end; padding: 0; max-height: calc(var(--sheet) * 100dvh); align-self: end; }
   .sx-plaque { min-height: 3.5rem; padding: .45rem .7rem .45rem .55rem; } .pl-ico { width: 2.3rem; height: 2.3rem; } .sx-plaque.is-primary { min-height: 4.2rem; } .sx-plaque.is-primary .pl-copy b { font-size: 1.15rem; } .pl-copy b { font-size: 1rem; } .sx-plaque:hover:not(:disabled) { transform: none; }
   /* one tall scroll: the first screenful is the 3D picture (a transparent spacer), then the sheet, all moving together */
@@ -399,7 +410,7 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
   .sx-screen.title .sx-title-menu { justify-content: flex-start; }
   .sx-screen.title .sx-title-menu > :first-child { margin-top: auto; }
   /* the menu may grow up to just under the logo, so short phones use the empty space before scrolling */
-  .sx-screen.title .sx-title-menu { max-height: calc(100dvh - 10.5rem - var(--safe-t) - var(--safe-b)); }
+  .sx-screen.title .sx-title-menu { max-height: calc(100dvh - min(58vw, 17rem) * .96 - 4.4rem - var(--safe-t) - var(--safe-b)); }
 }
 /* "More below": shown only while the menu has more to scroll */
 .sx-title-menu .sx-more { position: sticky; bottom: 0; align-self: center; display: none; margin-top: -.4rem; padding: .35rem .9rem; border-radius: 999px;
