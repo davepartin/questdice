@@ -202,6 +202,7 @@ export function partyReportLines(rep, b) {
     L.push({ kind: 'meh', text: rep.init?.forced ? `Round 1: the heroes always go first. ${seq}` : `Initiative (high to low, ties to the heroes): ${seq}` });
   }
   if (rep.leader) L.push({ kind: 'meh', text: `${rep.leader} had the slowest Feet, so the monsters went after them (a double share of every blow).` });
+  if (rep.shield?.held) L.push({ kind: 'good', text: `${rep.shield.name} held the line: ${rep.shield.blocked} blocked at double points, +10 for standing firm.` });
   const heroLines = (s) => {
     const o = [{ kind: 'you', text: `${s.name} strikes ${name(s.targetUid)}: ${s.atk} attack${s.guarded ? ` (${s.guarded} guarded)` : ''}${s.pierce ? ` + ${s.pierce} ◆ pierce` : ''} → ${s.dealt} damage.` }];
     for (const t of s.ev?.triples || []) o.push({ kind: 'good', text: `${s.name} lands a ${t.name}.` });

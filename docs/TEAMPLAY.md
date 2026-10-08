@@ -34,7 +34,8 @@ left to act that round, it carries to the first hero next round).
 - **Share magic.** Pay 2 magic; your friend gains 2.
 - **Revive.** Once a battle: pay 10 magic, a knocked-out friend stands back up with 10 health (acts next round).
 
-**Battle points** (solo and party; see POINTS in js/data.js): damage dealt 1 a point, damage blocked 0.5, healing
+**Battle points** (solo and party; see POINTS in js/data.js): damage dealt 1 a point, damage blocked 1 (2 while the
+monsters are targeting you in a team game, plus +10 "Held the line" if they swung at you and you are still standing), healing
 yourself 0.5, healing a friend 2, killing blow 15, each triple 10, each team triple 20, a straight 10, magic given 4 each,
 a revive 40, being knocked out -40. A small counter beside the round shows your points. Each battle starts at 0; the
 camp Hero tab keeps a Hall of Fame: total points, battles, best battle, 1st places and 2nd places.

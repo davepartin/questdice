@@ -1038,6 +1038,12 @@ async function performParty() {
     if (x.healed > 0) { vfx('heal', a.worldAnchor('chest')); number(a.worldAnchor('head'), `+${x.healed}`, 'heal'); }
     if (x.hpAfter <= 0 && !x.down) { a.play('die', { fade: 0.1 }); banner(`${x.name.toUpperCase()} IS DOWN`, 'bad'); }
   }
+  // the company's shield: the hero the monsters went after is still standing
+  if (rep.shield?.held) {
+    const a = actorOfHero(rep.shield.name);
+    if (a) { vfx('aura', a, { kind: 'buff', color: 0x4db4ff, dur: 1.0 }); number(a.worldAnchor('head'), `HELD THE LINE +${D.POINTS.heldLine}`, 'block'); }
+    banner(`${rep.shield.name.toUpperCase()} HELD THE LINE`, 'good'); sfx.block?.(); await wait(0.9);
+  }
   bw.tray.unlock?.();
   for (const e of b.enemies) updatePlate(e);
   await wait(0.6);

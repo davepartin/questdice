@@ -318,3 +318,5 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   health right now, then a coin. `heatRank` in engine.js; initiative (`rankFighters`, highest Feet first) is unchanged.
 - Bind, drain and stolen purses land on the same hero. Battle banner each round: "MONSTERS TARGET <NAME> · SLOWEST FEET"
   (round 1 included). Report line, How to play, the shared-phone tip, TEAMPLAY.md and BALANCE.md updated.
+- Tanks score (Dave): a blocked point is worth 1 (was 0.5). In team games the targeted hero is the company's shield: blocks
+  count 2 each and "Held the line" +10 if a monster swung at them and they are still standing (banner + report line).

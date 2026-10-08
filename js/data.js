@@ -341,7 +341,9 @@ export const QUESTS_PER_ACT = 10;
 // battle's top scorer gets the 1st place trophy (2nd place too with 3+ heroes), first pick of the spoils, and more gold.
 export const POINTS = {
   dealt: 1,          // per point of damage you deal
-  absorbed: 0.5,     // per point of damage your block stops
+  absorbed: 1,       // per point of damage your block stops (blocking is worth the same as hitting)
+  shieldBlock: 2,    // team games: per point you block while the monsters are targeting you (you are the company's shield)
+  heldLine: 10,      // team games: the monsters came at you and you are still standing at the end of the round
   healSelf: 0.5,     // per health you mend on yourself
   healFriend: 2,     // per health you give a friend (a thrown potion)
   kill: 15,          // the killing blow

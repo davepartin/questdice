@@ -384,3 +384,20 @@ test('a monster killed before its initiative does nothing; one that is faster st
   }
   assert.ok(slow > 5 && fast > 5);
 });
+
+test('the hero the monsters target is the shield: blocks count double, and standing firm holds the line', async () => {
+  const { roundPoints } = await import('../js/engine.js');
+  assert.equal(roundPoints({ absorbed: 6 }), 6, 'a block point is worth a damage point');
+  assert.equal(roundPoints({ absorbed: 6, shield: true, heldLine: true }), 22);
+  const c = company();
+  const b = partyFight(c.members, strike); // Ada (Feet 1) is targeted: 6 of the 9 comes at her
+  b.fighters[0].mods.block = 4; b.fighters[1].mods.block = 4;
+  const rep = resolveParty(b);
+  assert.deepEqual(rep.shield, { name: 'Ada', blocked: 4, held: true });
+  const ada = byName(rep, 'Ada'); const bea = byName(rep, 'Bea');
+  assert.equal(ada.absorbed, 4); assert.equal(bea.absorbed, 3);
+  // same dice and attack for both; the difference is the shield: 4 blocked x2 + 10, against Bea's 3 blocked x1
+  assert.equal(ada.points - bea.points, (4 * 2 + 10) - 3);
+  const quietRound = partyFight(c.members, { n: 'Duck', v: 'guard', f: 3, m: 0 });
+  assert.equal(resolveParty(quietRound).shield.held, false, 'no swing at the shield, no bonus');
+});

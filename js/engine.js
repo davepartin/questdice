@@ -432,8 +432,9 @@ export function upgradePotions(hero) { const r = potionUpgrade(hero); if (!r.ok)
 export function award(who, n) { if (!who || !n) return 0; who.points = (who.points || 0) + n; return n; }
 export const pointsOf = (who) => Math.round(who?.points || 0);
 // What a round was worth, from its tallies.
-export function roundPoints({ dealt = 0, absorbed = 0, healed = 0, kills = 0, triples = 0, teamTriples = 0, straight = false, down = false } = {}) {
-  return dealt * POINTS.dealt + absorbed * POINTS.absorbed + healed * POINTS.healSelf + kills * POINTS.kill
+// shield: in a company game the monsters targeted this hero, so each point blocked counts POINTS.shieldBlock; heldLine adds POINTS.heldLine.
+export function roundPoints({ dealt = 0, absorbed = 0, healed = 0, kills = 0, triples = 0, teamTriples = 0, straight = false, down = false, shield = false, heldLine = false } = {}) {
+  return dealt * POINTS.dealt + absorbed * (shield ? POINTS.shieldBlock : POINTS.absorbed) + (heldLine ? POINTS.heldLine : 0) + healed * POINTS.healSelf + kills * POINTS.kill
     + triples * POINTS.triple + teamTriples * POINTS.teamTriple + (straight ? POINTS.straight : 0) + (down ? POINTS.knockedOut : 0);
 }
 // A hero's lifetime record: every battle's points, plus party trophies (1st place; 2nd place only with 3+ heroes).
@@ -1182,7 +1183,11 @@ export function resolveParty(b) {
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     f.stats.healed += healed; f.stats.taken += taken[i];
-    const pts = Math.round(roundPoints({ dealt: f._dealt, absorbed: absorbed[i], healed, kills: f._kills, triples: (f.ev.triples || []).length, teamTriples: f._team, straight: !!f.ev.straight, down: hpBefore > 0 && f.hp <= 0 }));
+    // The hero the monsters went after is the company's shield: blocks count double, and standing at the end holds the line.
+    const shield = i === 0 && snap.length > 1;
+    const held = shield && absorbed[i] + taken[i] > 0 && f.hp > 0;
+    if (shield) rep.shield = { name: f.hero.name, blocked: absorbed[i], held };
+    const pts = Math.round(roundPoints({ dealt: f._dealt, absorbed: absorbed[i], healed, kills: f._kills, triples: (f.ev.triples || []).length, teamTriples: f._team, straight: !!f.ev.straight, down: hpBefore > 0 && f.hp <= 0, shield, heldLine: held }));
     award(f, pts); f.contrib = f.points;
     let magic = f.magic + T.magic;
     if (f === leader && rep.magicStolen) magic -= rep.magicStolen;
