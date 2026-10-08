@@ -390,3 +390,5 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   cloth colour. world.buildBattle passes each company hero's look. Battle roster chips carry the look's colour.
 - dom.js h(): style keys starting with `--` now use setProperty (custom properties never applied before, so class emblem
   hues, list stagger delays and health bar ticks now show as designed).
+- Balance after Phases 4 and 5 (progress-all 3 acts, 4 campaigns a class, smart bot): 19/20 cleared, the same as after
+  Phase 3 (ranger 3/4, the rest 4/4). Bosses win 94% / 84% / 79% by act; legendaries did not tip the curve.
