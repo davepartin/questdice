@@ -216,7 +216,7 @@ function renderRoster() {
 }
 // Team actions: one a round, on a friend. Uses the same potions as your own list.
 const TEAM = [
-  { id: 'potion', name: 'Potion', icon: 'heal', text: `Throw one of your potions to a friend: +${E.POTION_HP} health. It comes out of your own potions.`, cost: () => 'Free' },
+  { id: 'potion', name: 'Potion', icon: 'heal', text: 'Throw one of your potions to a friend to heal them. It comes out of your own belt.', cost: () => 'Free' },
   { id: 'magic', name: 'Share magic', icon: 'magic', text: `Pay ${D.SHARE_MAGIC} magic; your friend gains ${D.SHARE_MAGIC}.`, cost: () => `${D.SHARE_MAGIC} magic` },
   { id: 'revive', name: 'Revive', icon: 'mend', text: `Once a battle: pay ${D.REVIVE_COST} magic and a fallen friend stands back up with ${D.REVIVE_HP} health.`, cost: () => `${D.REVIVE_COST} magic` },
 ];
@@ -577,7 +577,7 @@ function clearDock() {
 const UTIL = [
   { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal ${D.HEAL_AMOUNT} health right now. As often as you can pay.` },
-  { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: `Drink a potion and heal ${E.POTION_HP} health. Free. You carry ${E.POTIONS} each battle.` },
+  { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: 'Drink a potion and heal right away. Potions are bought at camp; what you drink is gone until you buy more.' },
 ];
 const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
 function utilState(u, shape) {
@@ -586,12 +586,12 @@ function utilState(u, shape) {
   else if (!shape && b.phase !== 'reset') why = 'Not now.';
   else if (u.id === 'u:heart') why = b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
   else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
-  else if (E.potionsLeft(b) <= 0) why = 'No potions left this battle.'; else if (b.hp >= b.maxHp) why = 'You are at full health.';
+  else if (E.potionsLeft(b) <= 0) why = 'No potions left. Buy more at camp.'; else if (b.hp >= b.maxHp) why = 'You are at full health.';
   return { cost, why };
 }
 function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
-  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (E.potionsLeft(b) ? `${E.potionsLeft(b)} LEFT` : 'USED') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (u.id === 'u:heart') { const art = el.querySelector('.bc-art'); if (art) { art.replaceChildren(HK.icon('heart')); art.classList.add('heart-art'); } } if (us.why) el.classList.add('is-off'); return el; });
+  const utils = UTIL.map((u0) => { const u = { ...u0, cost: utilCost(u0), ...(u0.id === 'u:bigheal' ? { fx: { heal: E.potionHpOf(B.hero) } } : {}) }; const us = utilState(u0, !reset); const el = HK.abilityCard(u, { spent: false, reset, afford: !us.why, rechargeCost: D.RECHARGE_COST, onclick: () => showUtilDetail(u0.id), disabled: false, fresh: false, flag: u.id === 'u:bigheal' ? (E.potionsLeft(b) ? `${E.potionsLeft(b)} LEFT` : 'USED') : 'ANYTIME', cost: u.cost, stepper: null, level: 0, locked: false }); if (u.id === 'u:heart') { const art = el.querySelector('.bc-art'); if (art) { art.replaceChildren(HK.icon('heart')); art.classList.add('heart-art'); } } if (us.why) el.classList.add('is-off'); return el; });
   return [...E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
@@ -652,8 +652,8 @@ function showPowerDetail(id) {
 function showUtilDetail(id) {
   const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
-  const uses = id === 'u:bigheal' ? `${E.POTIONS} a battle. You have ${E.potionsLeft(b)} left.` : 'Any time you are shaping a roll, as often as you can pay.';
-  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.POTION_HP} health right away and costs no magic. Drink it before you roll or while you shape your dice. Your potions refill for the next battle.`;
+  const uses = id === 'u:bigheal' ? `You carry ${E.potionsLeft(b)}. Buy more at camp (${E.potionPriceOf(B.hero)} gold each).` : 'Any time you are shaping a roll, as often as you can pay.';
+  const body = id === 'u:heart' ? `Turn the heart die one step up or down. It costs ${cost} magic each time. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${D.HEAL_AMOUNT} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.potionHpOf(B.hero)} health right away and costs no magic. Drink it before you roll or while you shape your dice. It is gone once you drink it; buy more at camp.`;
   const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),

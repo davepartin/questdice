@@ -64,9 +64,9 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal and attack on one face
   const ev2b = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
-  assert.equal(ev2.heal - ev2b.heal, 3); // heal is worth the hand's number, 1 for 1 assert.ok(ev2.atk >= 3);
+  assert.equal(ev2.heal - ev2b.heal, 3); assert.ok(ev2.atk >= 3); // heal is worth the hand's number, 1 for 1
   const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
-  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 2); // gold is half of 4
+  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 4); // gold is one for one: a hand of 4 pays 4
 });
 
 test('talent slots cost the same, hold two of a symbol per face, but never more than two of one symbol per die', () => {

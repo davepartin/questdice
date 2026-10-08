@@ -381,7 +381,10 @@ function campGear(view) {
     return V.weaponCard(inst, { actions: acts });
   });
   const stock = hero.campaign?.shop?.items || [];
+  const pot = E.potionBuyInfo(hero);
   return h('div', { class: 'col' },
+    ctx.section('Healing potions', h('p', {}, `${pot.have} of ${pot.max} on your belt. Each heals ${E.potionHpOf(hero)}; once you drink one it is gone.`),
+      pot.have < pot.max ? ctx.primary(`Buy a potion 🪙 ${pot.price}`, () => act({ type: 'potion' }), { disabled: !pot.ok, cls: 'small' }) : h('em', { class: 'muted' }, 'Belt full')),
     ctx.section('Equipped', h('div', { class: 'loot' }, worn)),
     ctx.section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons.')),
     ctx.section('The peddler', stock.length ? h('div', { class: 'loot' }, stock.map((it, i) => V.weaponCard(it.inst, { actions: [it.sold ? h('em', { class: 'muted' }, 'Sold') : ctx.primary(`Buy 🪙 ${it.price}`, () => act({ type: 'buy', index: i }), { disabled: hero.gold < it.price, cls: 'small' })] }))) : h('p', { class: 'muted' }, 'The peddler is packing.')));

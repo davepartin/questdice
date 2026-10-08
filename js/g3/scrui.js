@@ -481,11 +481,21 @@ function weaponRow(inst, label = '') {
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
-// Potion belt: carry a third healing potion into every battle.
+// Supplies: healing potions are bought here and carried from battle to battle. Shown above the camp tabs.
+function suppliesPanel(hero) {
+  const r = E.potionBuyInfo(hero); const heal = E.potionHpOf(hero);
+  const vials = h('div', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
+  const buy = r.have >= r.max ? h('span', { class: 'sp-full' }, 'Belt full')
+    : btn(`Buy · ${r.price}`, () => { if (E.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion for ${r.price} gold` });
+  return h('section', { class: `sx-supplies ${r.have === 0 ? 'empty' : ''}` },
+    h('div', { class: 'sp-copy' }, h('b', {}, 'Healing potions'), h('small', {}, r.have === 0 ? `None left. Each heals ${heal}; get ready for the next fight.` : `Each heals ${heal}. Drink one any time before you lock in.`)),
+    vials, buy);
+}
+// Potion belt: carry a third healing potion.
 function potionRow(hero) {
   const u = E.potionUpgrade(hero); const cur = E.potionMaxOf(hero); const locked = u.why?.startsWith('Level');
   return h('div', { class: 'sx-urow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'), h('small', {}, `${cur} healing potions a battle, ${E.POTION_HP} health each.`),
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'), h('small', {}, `Holds ${cur} healing potions. Buy them at the top of camp.`),
       u.next ? h('small', { class: 'ur-next' }, `${cur} → ${u.next} potions`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, 'Belt is full')),
     u.next ? btn(String(u.cost), () => { if (E.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
@@ -504,7 +514,7 @@ function unlockSection(hero) {
         h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
         btn(`Add die · ${u.cost}`, () => { if (E.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
 }
-const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 1, gold: 0.5 };
+const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 1, gold: 1 };
 const symAvg = (hero, slot, k) => { const hand = hero.strength[slot === 'SW' ? 'W' : 'E']; return ((hand + 1) / 2 * (SYM_MULT[k] || 1)).toFixed(1).replace('.0', ''); };
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
@@ -583,12 +593,15 @@ function gearTab() {
     return weaponCard(inst, { actions: acts, compact: true });
   });
   const stock = E.shopStock(hero);
+  // three places a weapon can be, each its own panel with its heading centered on the top edge
+  const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}` },
+    h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
   return h('div', { class: 'sx-tab gear' },
     coachBox('g_gear'),
-    eyebrow('On your body'), h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-    h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple or Strength Triple (three alike across): +10 attack. Head to Toe Triple (down the middle): +10 block.'),
-    eyebrow(`Pack · ${bag.length} of ${D.BAG_MAX}`), bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.'),
-    eyebrow('The peddler'), h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))));
+    zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
+      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple or Strength Triple (three alike across): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
+    zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.')),
+    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] })))));
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {
@@ -628,7 +641,7 @@ export function camp(fromBoard) {
   mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm'), h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      seats, perkPanel, (X.members()[0].tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
+      seats, perkPanel, suppliesPanel(hero), (X.members()[0].tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
       tabs, h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;

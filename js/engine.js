@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -82,7 +82,7 @@ export function newHero({ name, cls, seed, full = false }) {
   if (c.weapons.length === 1) { const w = makeWeapon(c.weapons[0], 0, rng); loadout.NW = w; loadout.NE = twinOf(w); }
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
-    v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0,
+    v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0 },
@@ -219,8 +219,8 @@ export function evaluate(hero, board, opts = {}) {
       out.gold += wf.fx.loot || 0;
     }
     for (const t of tsyms) {
-      if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += Math.round(str * 0.75);
-      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += Math.ceil(str / 2);
+      if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += str;
+      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += str;
     }
     out.lanes[key] = L;
   }
@@ -345,7 +345,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionMaxOf(hero), points: 0,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
     mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   beginReset(b);
@@ -405,14 +405,20 @@ export function healSpend(b) {
   if (b.magic < cost || b.hp >= b.maxHp) return false;
   b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + HEAL_AMOUNT); b.stats.healed += b.hp - before; return true;
 }
-// Healing potions: every hero carries POTIONS a battle. Free to drink, heals POTION_HP. In a party a potion can be thrown
-// to a friend (`to` = that fighter); solo it is always you. Any time before you lock in.
-export const POTIONS = 2; export const POTION_HP = 10;
+// Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
+// Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
+// solo it is always you. Any time before you lock in. What you drink is gone until you buy more.
+export const POTIONS = 2; export const POTION_HP = POTION_HEAL[0];
+const actIdx = (hero) => Math.max(0, Math.min(2, (hero?.campaign?.act || 1) - 1));
 export const potionMaxOf = (hero) => hero?.potionMax || POTIONS;
+export const potionStock = (hero) => Math.min(potionMaxOf(hero), hero?.potions ?? potionMaxOf(hero)); // older saves arrive with a full belt
+export const potionHpOf = (hero) => POTION_HEAL[actIdx(hero)];
+export const potionPriceOf = (hero) => POTION_PRICE[actIdx(hero)];
 export const potionsLeft = (b) => (b.potions ?? POTIONS);
 export function drinkPotion(b, to = b) {
   if (potionsLeft(b) <= 0 || !to || to.hp <= 0 || to.hp >= to.maxHp) return false;
-  b.potions = potionsLeft(b) - 1; const before = to.hp; to.hp = Math.min(to.maxHp, to.hp + POTION_HP);
+  b.potions = potionsLeft(b) - 1; if (b.hero) b.hero.potions = b.potions; // gone from the belt for good
+  const before = to.hp; to.hp = Math.min(to.maxHp, to.hp + potionHpOf(b.hero));
   const got = to.hp - before; (to.stats || b.stats).healed += got;
   award(b, got * (to === b ? POINTS.healSelf : POINTS.healFriend));
   return true;
@@ -425,7 +431,15 @@ export function potionUpgrade(hero) {
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: cur + 1, cur };
   return { ok: true, cost: step[0], next: cur + 1, cur };
 }
-export function upgradePotions(hero) { const r = potionUpgrade(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.potionMax = r.next; return true; }
+export function upgradePotions(hero) { const r = potionUpgrade(hero); if (!r.ok) return false; const have = potionStock(hero); hero.gold -= r.cost; hero.potionMax = r.next; hero.potions = have; return true; }
+// Buying potions at camp: one at a time, up to what the belt holds.
+export function potionBuyInfo(hero) {
+  const have = potionStock(hero); const max = potionMaxOf(hero); const price = potionPriceOf(hero);
+  if (have >= max) return { ok: false, why: 'Belt full', have, max, price };
+  if (hero.gold < price) return { ok: false, why: 'Need gold', have, max, price };
+  return { ok: true, have, max, price };
+}
+export function buyPotion(hero) { const r = potionBuyInfo(hero); if (!r.ok) return false; hero.gold -= r.price; hero.potions = r.have + 1; return true; }
 
 // ------------------------------------------------------------------------------- battle points
 // Arcade-style points (POINTS in data.js). `who` is a solo battle or a party fighter: both keep `.points`.
@@ -445,7 +459,7 @@ export function recordBattle(hero, { points = 0, place = 0, heroes = 1, won = tr
   if (heroes >= 3 && won && place === 2) r.seconds++;
   return r;
 }
-export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers)
+export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers; the real amount is potionHpOf)
 export const healBig = (b) => drinkPotion(b);
 // ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
@@ -926,7 +940,7 @@ function makeFighter(hero) {
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(MAGIC_CAP, startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: potionMaxOf(hero), points: 0, reviveUsed: false, teamRound: 0,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
   };

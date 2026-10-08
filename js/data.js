@@ -103,13 +103,13 @@ export const LOOT_WEIGHTS = {
 
 // TALENT dice (the bottom corners; the old "special" dice). Faces: two blanks, a 2x (doubles that hand's strength in its lane),
 // then symbol faces: one on a d4, three on a d6. Each symbol face holds up to two symbols; any one symbol may appear at most twice on a die.
-// A symbol is worth the strength rolled on the hand above the die.
+// A symbol is worth the strength rolled on the hand above the die: one for one, every symbol (Dave).
 export const TALENT_SYMS = {
   atk: { name: 'Attack', text: 'Attack equal to your hand strength.' },
   block: { name: 'Block', text: 'Block equal to your hand strength.' },
   magic: { name: 'Magic', text: 'Magic equal to your hand strength.' },
   heal: { name: 'Heal', text: 'Heal equal to your hand strength.' },
-  gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
+  gold: { name: 'Gold', text: 'Gold equal to your hand strength.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
@@ -365,6 +365,11 @@ export const REVIVE_COST = 10;       // a team action, once a battle: 10 magic b
 export const REVIVE_HP = 10;
 // Potion belt: every hero starts with 2 potions a battle and can train a third at camp.
 export const POTION_BELT = { 2: [90, 4] }; // from 2 to 3: [gold, hero level]
+// Healing potions are bought at camp and carried from battle to battle (Dave): what you drink is gone until you buy more.
+// Price and strength grow with the act, so a potion stays worth carrying. A new hero leaves home with POTION_START.
+export const POTION_PRICE = [10, 20, 30];  // gold, Act I / II / III
+export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
+export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
 export const ACT_HP = [1, 1.15, 1.35];

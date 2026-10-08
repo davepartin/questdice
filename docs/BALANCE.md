@@ -216,3 +216,28 @@ Before building it, the party simulator (`tools/sim2.mjs`) should be brought up 
 - `node tools/dicemath.mjs`: averages for every die, weapon and build.
 - `sh tools/progress-all.sh [acts] [runs per class] [steady|smart|bold]`: the campaign report, step by step, both roads.
 - `node tools/balance.mjs`: quick Act I clear rates by difficulty.
+
+## Strategy: block with one hand, attack with the other? (Oct 2026, `tools/strategy.mjs`)
+
+Same hero, same quest, 200 fights per cell, at four checkpoints (Act I quest 5 and boss, Act II quest 5 and boss), Knight
+and Ranger. Two loadouts (sword + spear, sword + shield) and three play styles for rerolling:
+**All attack** (block is nearly worthless), **Steady mix** (block worth 0.8 of attack, the old bot), and
+**Read the box** (block is worth a lot up to the size of the coming hit and almost nothing beyond it).
+
+| Knight | sword + spear, all attack | sword + shield, read the box |
+|---|---|---|
+| Act I quest 5 (ogre + goblin) | 90% wins, 15 health lost | 99% wins, 6 lost |
+| Act I boss | 87%, 26 lost | 88%, 20 lost |
+| Act II quest 5 | 98%, 21 lost | 100%, 10 lost |
+| Act II boss (lich) | 81%, 37 lost | 87%, 28 lost |
+
+The Ranger shows the same thing more strongly (Act II quest 5: 87% and 25 lost, against 99% and 11 lost).
+
+What it means:
+- **How you reroll matters more than what you carry.** Reading the monster's box (go for blue faces when a big hit is
+  coming, red when it is small or the monster is bracing) was the best style in every single cell, for both loadouts.
+- **A shield in one hand roughly halves the health you lose in ordinary fights**, at the price of 1 to 2 more rounds.
+  Less health lost means less magic spent on healing and fewer potions bought.
+- **Bosses even it out.** Their big health rewards damage, so sword + shield and two attack weapons win about equally
+  often against a boss when played well; the shield still loses a little less health.
+- All attack never came out ahead; at best it tied, and it always cost the most health.

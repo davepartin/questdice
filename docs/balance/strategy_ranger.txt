@@ -1,0 +1,33 @@
+ranger, 200 fights per cell. win% · rounds · health lost per fight
+
+1.05 Night Raid on Ravens’ Rest (ogre, goblin) · hero level 2, hands d4/d4
+  sword + spear   All attack     76%   5.2 rds   17 hp
+  sword + spear   Steady mix     84%   5.7 rds   14 hp
+  sword + spear   Read the box   84%   6.0 rds   13 hp
+  sword + shield  All attack     80%   6.3 rds   15 hp
+  sword + shield  Steady mix     93%   7.7 rds   10 hp
+  sword + shield  Read the box   97%   7.8 rds    8 hp
+
+1.10 The Goblin King (goblinking) · hero level 4, hands d6/d6
+  sword + spear   All attack     76%   6.1 rds   26 hp
+  sword + spear   Steady mix     80%   6.3 rds   25 hp
+  sword + spear   Read the box   90%   6.5 rds   21 hp
+  sword + shield  All attack     73%   8.4 rds   26 hp
+  sword + shield  Steady mix     79%   9.8 rds   21 hp
+  sword + shield  Read the box   88%   9.9 rds   18 hp
+
+2.05 The Siege of Mourner’s Row (bonewarden) · hero level 6, hands d6/d6
+  sword + spear   All attack     87%   6.8 rds   25 hp
+  sword + spear   Steady mix     88%   7.2 rds   24 hp
+  sword + spear   Read the box   91%   7.4 rds   20 hp
+  sword + shield  All attack     89%   9.4 rds   23 hp
+  sword + shield  Steady mix     91%  11.3 rds   19 hp
+  sword + shield  Read the box   99%  11.4 rds   11 hp
+
+2.10 The Hollow Lich (lich) · hero level 8, hands d8/d8
+  sword + spear   All attack     60%   7.9 rds   42 hp
+  sword + spear   Steady mix     71%   9.1 rds   37 hp
+  sword + spear   Read the box   76%   9.4 rds   35 hp
+  sword + shield  All attack     57%   9.8 rds   44 hp
+  sword + shield  Steady mix     60%  11.9 rds   40 hp
+  sword + shield  Read the box   75%  12.6 rds   35 hp

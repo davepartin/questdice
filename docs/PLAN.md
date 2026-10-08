@@ -323,3 +323,16 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Dice roll playback at half speed (ROLL_PLAYBACK 0.5 in gfx/dice/roll.js): a roll now takes about 1.3 s instead of 0.67 s (dev/rolltime.mjs).
 - Heal symbol on talent dice is 1 for 1 with the hand's number (was 2x; Dave). Sim (3 acts, 15 campaigns, smart): still 14/15
   cleared; boss wins per try Act I 93->98%, Act II 82->76%, Act III 82->72%, ending health a few points lower. Watch Acts II-III.
+
+## Symbols one for one, potions bought at camp, camp gear panels (Oct 2026)
+
+- Every talent symbol pays the hand's number, one for one (gold was half). Clear: one symbol = one per point of Strength.
+- Potions: carried from battle to battle (hero.potions), bought at camp in a Supplies panel above the tabs: 10 / 20 / 30 gold
+  in Acts I / II / III, healing 10 / 15 / 20; belt holds 2 (3 with the Potion belt). New heroes start with 2; older saves
+  arrive full. Company and online table too (`{type:'potion'}`). Sim bot restocks at every camp.
+- Sim, 3 acts, 15 campaigns (`docs/balance/run_potions_gold1to1.txt`): cleared 15/15 (was 14/15); boss wins Act II 76->83%,
+  Act III 72->77%; gold in hand at the Act III boss 472 -> 306 (potions cost real money, gold symbols pay more).
+- Strategy study (`tools/strategy.mjs`, BALANCE.md): reading the box beats all-attack everywhere; a shield in one hand halves
+  health lost in ordinary fights; bosses even it out.
+- Camp Gear tab: three panels with their own look and a centered heading on the top edge: On your body (gold), Your pack
+  (leather), The traveler (teal).

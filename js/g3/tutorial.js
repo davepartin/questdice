@@ -5,6 +5,7 @@ import { h, $ } from '../dom.js';
 import * as HK from './hudkit.js';
 import { sfx } from '../audio.js';
 import * as E from '../engine.js';
+import * as D from '../data.js';
 
 let X = null;
 export function bind(x) { X = x; }
@@ -95,7 +96,7 @@ const LESSONS = [
       p('Each talent die works with the hand above it.'),
       row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Every talent die has two blank faces.'),
       row(img('talent-x2', 'xs'), '2× Strength', 'Counts that hand’s number twice in its weapon. A hand of 4 becomes 8.'),
-      row(img('talent-heal', 'xs'), 'Symbol faces', 'Pay that symbol, worth your hand’s number (gold pays half). You choose your symbols at camp.'),
+      row(img('talent-heal', 'xs'), 'Symbol faces', 'Pay that symbol: one for every point on your hand. A hand of 4 pays 4. You choose your symbols at camp.'),
     ],
   },
   {
@@ -162,10 +163,10 @@ const LESSONS = [
   },
   {
     title: 'Powers, potions and growing',
-    art: () => h('div', { class: 'tu-pow' }, h('span', { class: 'tu-powbtn' }, h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers')), h('span', { class: 'tu-potion' }, HK.icon('heal'), h('b', {}, `${E.POTIONS} potions`))),
+    art: () => h('div', { class: 'tu-pow' }, h('span', { class: 'tu-powbtn' }, h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers')), h('span', { class: 'tu-potion' }, HK.icon('heal'), h('b', {}, 'Potions'))),
     body: () => [
       row(ic('magic'), 'Magic powers', 'The purple button opens your class’s powers, paid for with magic.'),
-      row(ic('heal'), 'Healing potions', `You carry ${E.POTIONS} each battle. They are free and heal ${E.POTION_HP}.`),
+      row(ic('heal'), 'Healing potions', `Buy them at camp (${D.POTION_PRICE[0]} gold in Act I) and carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}. Once you drink it, it’s gone, so restock before every road.`),
       row(ic('gold'), 'Camp', 'Win to earn gold, experience and sometimes a new weapon. At camp you buy new dice, bigger hands and talent symbols.'),
     ],
   },

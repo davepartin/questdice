@@ -68,6 +68,7 @@ function dispatch(table, player, cmd) {
     case 'camp': return goCamp(table);
     case 'upgrade': return upgrade(table, player, cmd);
     case 'buy': return buy(table, player, cmd);
+    case 'potion': return potion(table, player);
     case 'equip': return equip(table, player, cmd);
     case 'sell': return sell(table, player, cmd);
     case 'perk': return perk(table, player, cmd);
@@ -204,6 +205,13 @@ function upgrade(table, player, cmd) {
   if (cmd.kind !== 'strength' && cmd.kind !== 'special') return fail('Unknown die.');
   if (!E.upgradeDie(player.hero, cmd.kind, cmd.slot)) return fail('That die will not grow yet.');
   player.ready = false;
+  return ok();
+}
+function potion(table, player) {
+  if (table.phase !== 'camp') return fail('Potions are sold at camp.');
+  const r = E.potionBuyInfo(player.hero);
+  if (!r.ok) return fail(r.why === 'Belt full' ? 'Your belt is full.' : 'Not enough gold.');
+  E.buyPotion(player.hero); player.ready = false;
   return ok();
 }
 function buy(table, player, cmd) {

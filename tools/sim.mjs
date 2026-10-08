@@ -2,12 +2,15 @@
 import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
-  rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP,
+  rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
 
-const score = (ev) => ev.atk + 0.8 * ev.block + 1.1 * ev.pierce + 0.55 * ev.magic + 0.25 * ev.gold + 0.5 * ev.heal;
+const baseScore = (ev) => ev.atk + 0.8 * ev.block + 1.1 * ev.pierce + 0.55 * ev.magic + 0.25 * ev.gold + 0.5 * ev.heal;
+// How the bot values a roll. tools/strategy.mjs swaps in other play styles (score(ev, battle)).
+let score = (ev) => baseScore(ev);
+export function setScore(fn) { score = fn || ((ev) => baseScore(ev)); }
 
 function subsets(slots, k) {
   const out = [];
@@ -26,7 +29,7 @@ function expectedAfter(b, slots, rng, n = SAMPLES) {
   for (let i = 0; i < n; i++) {
     const copy = { ...b.board };
     for (const s of slots) copy[s] = rollSlot(b.hero, s, rng);
-    sum += score(evaluate(b.hero, copy));
+    sum += score(evaluate(b.hero, copy), b);
   }
   return sum / n;
 }
@@ -38,7 +41,7 @@ export function botRound(b, rng) {
     const info = rerollInfo(b);
     if (info.kind === 'none') break;
     const free = slotsAll.filter((s) => !b.board[s].bound);
-    const base = score(evaluate(b.hero, b.board));
+    const base = score(evaluate(b.hero, b.board), b);
     let best = null;
     for (const sub of subsets(free, info.dice)) {
       if (!canReroll(b, sub)) continue;
@@ -82,6 +85,7 @@ export function fight(hero, quest, rng) {
 // Greedy camp: buy the best affordable strength/special upgrade; take the first perk.
 export function botCamp(hero, rng) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
+  while (buyPotion(hero)) { /* refill the belt first: potions are bought at camp now */ }
   for (const k of cardsOf(hero)) if (hero.gold > 260) upgradePower(hero, k.id);
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   let acted = true;

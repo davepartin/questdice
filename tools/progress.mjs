@@ -3,6 +3,7 @@
 //   node tools/progress.mjs [acts = 2] [campaigns per class = 4] [policy = steady|bold|smart] [class]
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle, sidesOf, weaponSize, heroPower, questDanger } from '../js/engine.js';
 import { botRound, botCamp, botLoot } from './sim.mjs';
+import { buyPotion } from '../js/engine.js';
 import { QUESTS_PER_ACT } from '../js/data.js';
 
 const ACTS = Number(process.argv[2] || 2); const N = Number(process.argv[3] || 4); const POLICY = process.argv[4] || 'smart';
@@ -35,7 +36,7 @@ for (const cls of classes) for (let s = 0; s < N; s++) {
     if (opts[1] && (POLICY === 'bold' || (POLICY === 'smart' && tP.win >= 0.8))) pick = 1;
     A.took += pick;
     const quest = opts[pick]; let b; let tries = 0;
-    do { b = newBattle(hero, quest, rng, 1); let g = 0; tries++; while (!b.outcome && g++ < 60) botRound(b, rng); } while (b.outcome === 'defeat' && tries < 4);
+    do { if (tries) while (buyPotion(hero)) { /* back at camp after a loss: restock */ } b = newBattle(hero, quest, rng, 1); let g = 0; tries++; while (!b.outcome && g++ < 60) botRound(b, rng); } while (b.outcome === 'defeat' && tries < 4);
     if (b.outcome !== 'victory') { alive = false; break; }
     const r = battleRewards(b); hero.gold += r.gold; gainXp(hero, r.xp); botLoot(hero, r.drops); advanceCampaign(hero); botCamp(hero, rng);
   }
