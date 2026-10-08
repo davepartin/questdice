@@ -321,3 +321,5 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 - Tanks score (Dave): a blocked point is worth 1 (was 0.5). In team games the targeted hero is the company's shield: blocks
   count 2 each and "Held the line" +10 if a monster swung at them and they are still standing (banner + report line).
 - Dice roll playback at half speed (ROLL_PLAYBACK 0.5 in gfx/dice/roll.js): a roll now takes about 1.3 s instead of 0.67 s (dev/rolltime.mjs).
+- Heal symbol on talent dice is 1 for 1 with the hand's number (was 2x; Dave). Sim (3 acts, 15 campaigns, smart): still 14/15
+  cleared; boss wins per try Act I 93->98%, Act II 82->76%, Act III 82->72%, ending health a few points lower. Watch Acts II-III.

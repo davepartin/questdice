@@ -62,9 +62,9 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   assert.equal(specialFace(h, 'SW', 5), null); // an empty symbol face is a blank
   const ev = evaluate(h, board({ NW: 3, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 }));
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
-  const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal x2 and attack on one face
+  const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal and attack on one face
   const ev2b = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
-  assert.equal(ev2.heal - ev2b.heal, 6); assert.ok(ev2.atk >= 3);
+  assert.equal(ev2.heal - ev2b.heal, 3); // heal is worth the hand's number, 1 for 1 assert.ok(ev2.atk >= 3);
   const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
   assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 2); // gold is half of 4
 });

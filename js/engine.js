@@ -220,7 +220,7 @@ export function evaluate(hero, board, opts = {}) {
     }
     for (const t of tsyms) {
       if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += Math.round(str * 0.75);
-      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += 2 * str; else if (t === 'gold') out.gold += Math.ceil(str / 2);
+      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += Math.ceil(str / 2);
     }
     out.lanes[key] = L;
   }

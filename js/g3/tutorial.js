@@ -95,7 +95,7 @@ const LESSONS = [
       p('Each talent die works with the hand above it.'),
       row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Every talent die has two blank faces.'),
       row(img('talent-x2', 'xs'), '2× Strength', 'Counts that hand’s number twice in its weapon. A hand of 4 becomes 8.'),
-      row(img('talent-heal', 'xs'), 'Symbol faces', 'Pay that symbol, worth your hand’s number. Heal pays double, gold pays half. You choose your symbols at camp.'),
+      row(img('talent-heal', 'xs'), 'Symbol faces', 'Pay that symbol, worth your hand’s number (gold pays half). You choose your symbols at camp.'),
     ],
   },
   {

@@ -108,7 +108,7 @@ export const TALENT_SYMS = {
   atk: { name: 'Attack', text: 'Attack equal to your hand strength.' },
   block: { name: 'Block', text: 'Block equal to your hand strength.' },
   magic: { name: 'Magic', text: 'Magic equal to your hand strength.' },
-  heal: { name: 'Heal', text: 'Heal twice your hand strength.' },
+  heal: { name: 'Heal', text: 'Heal equal to your hand strength.' },
   gold: { name: 'Gold', text: 'Gold: half your hand strength.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.

@@ -504,7 +504,7 @@ function unlockSection(hero) {
         h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
         btn(`Add die · ${u.cost}`, () => { if (E.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
 }
-const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 2, gold: 0.5 };
+const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 1, gold: 0.5 };
 const symAvg = (hero, slot, k) => { const hand = hero.strength[slot === 'SW' ? 'W' : 'E']; return ((hand + 1) / 2 * (SYM_MULT[k] || 1)).toFixed(1).replace('.0', ''); };
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
