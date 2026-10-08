@@ -120,10 +120,12 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   const atk = evaluate(r, b, { straight: 'atk' });
   const gold = evaluate(r, b, { straight: 'gold' });
   assert.equal(atk.straight, 5); assert.equal(atk.straightBonus, 10);
+  assert.deepEqual(atk.straightSlots, ['NW', 'S', 'C', 'W', 'E'], 'one die per number, low to high (for the magenta glow); the bow’s 1 comes first on the board');
   assert.equal(atk.atk - gold.atk, 10);
   assert.equal(gold.gold - atk.gold, 10);
   // a 1-2-3-4 is only four long: no payout
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
+  assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straightSlots, undefined);
 });
 
 test('metals raise numbers: Silver the lowest face, Gold the second-highest, Diamond the top; corners gain abilities', () => {

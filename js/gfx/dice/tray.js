@@ -33,6 +33,7 @@ export const slotPos = (slot) => new THREE.Vector3((RC[slot][0] - 1) * PITCH, 0,
 
 const DEFAULT_HERO = { cls: 'knight', loadout: { NW: { id: 'sword', rarity: 0 }, NE: { id: 'shield', rarity: 0 } }, strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 } };
 const ROLE_GLOW = { head: 0xffe6b0, feet: 0xffe6b0, hand: 0xa8c8e8, heart: 0xffb82e, special: 0xd8e0f0 };
+const STRAIGHT_GLOW = 0xff3ec8; // the dice in a straight: a magenta no other mark on the board uses
 const SLOT_ORDER = D.SLOTS;
 
 function rrPath(p, hw, r) {
@@ -272,9 +273,18 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     SLOT_ORDER.forEach((slot) => {
       let col = ROLE_GLOW[S[slot].role];
       if (S[slot].role === 'weapon') col = D.WEAPONS[hero.loadout[slot].id]?.lean === 'def' ? 0x4db4ff : 0xff4d4d;
-      glowU.uCol.value[S[slot].i].setHex(col);
+      S[slot].baseGlow = col; glowU.uCol.value[S[slot].i].setHex(S[slot].inStraight ? STRAIGHT_GLOW : col);
     });
   }
+  // Light the sockets under the dice that make a straight (null or [] clears it).
+  tray.setStraight = function setStraight(slots) {
+    const on = new Set(slots || []);
+    for (const slot of SLOT_ORDER) {
+      const s = S[slot]; const was = !!s.inStraight; s.inStraight = on.has(slot);
+      glowU.uCol.value[s.i].setHex(s.inStraight ? STRAIGHT_GLOW : s.baseGlow ?? 0xffffff);
+      if (s.inStraight && !was) s.glowBoost = Math.max(s.glowBoost, 1); // a little flare as it lights
+    }
+  };
   tray.setHero = function setHero(hero) {
     hero = hero || DEFAULT_HERO; tray.hero = hero;
     twoHanded = D.WEAPONS[hero.loadout.NW.id]?.hands === 2;
@@ -520,11 +530,13 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       U.uRim.value.setHex(0xffe6b0).multiplyScalar(rimK * 0.8);
       U.uDim.value = s.dim;
       // ---- rings, halo, chain, hex
-      s.ring.visible = rimK > 0.01 || s.ring.material.opacity > 0.01;
-      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
+      s.ring.visible = rimK > 0.01 || s.inStraight || s.ring.material.opacity > 0.01;
+      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.inStraight ? 1 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
       s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.07 * Math.sin(time * 6 + s.i)); s.ring.position.y = 0.012;
-      s.ring.material.color.setHex(s.selected ? 0xffe9a8 : 0xcfe8ff);
-      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * 0.2 * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
+      s.ring.material.color.setHex(s.selected ? 0xffe9a8 : s.inStraight ? STRAIGHT_GLOW : 0xcfe8ff);
+      if (s.inStraight && !s.selected) s.ring.scale.setScalar(1.12 + 0.06 * Math.sin(time * 4 + s.i * 0.7)); // a wider magenta ring that breathes
+      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * (s.inStraight ? 0.3 : 0.2) * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
+      if (s.halo.material.color) s.halo.material.color.setHex(s.inStraight && !s.selected ? STRAIGHT_GLOW : 0xffd98a);
       if (s.chains) {
         const tk = s.bound ? 1 : 0; s.chains.k += (tk - s.chains.k) * (1 - Math.exp(-7 * dt));
         s.chains.group.visible = s.chains.k > 0.01; s.chains.group.position.set(s.pos.x, die.mesh.position.y, s.pos.z);
@@ -539,6 +551,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       let g = 0.34 + 0.12 * Math.sin(time * 1.2 + s.i * 0.9);
       g *= s.bound ? 0.25 : s.vacant || s.waiting ? 0.18 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
+      if (s.inStraight) g = Math.max(g, 2.0 + 0.5 * Math.sin(time * 4 + s.i * 0.7)); // a strong magenta pulse
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
       glowU.uG.value[s.i] = g;
     }

@@ -401,3 +401,11 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   next round from MONSTERS.wolf.pounce; settleStalks), Phase (wraith, v 'phase'; only pierce hurts). Solo and company.
   Intent plates: 🔥N, HIT!, ◆ONLY; the monster sheet and the coach hints explain them. Bot targets stalkers, avoids wards.
 - Fixed: the wind-up box said "deal undefined to break" (stagger was removed earlier); it now says "brace with block".
+
+## Straight glow and a simpler monster sheet (Oct 2026)
+
+- evaluate returns `straightSlots` (one die per number, low to high). tray.setStraight lights those sockets magenta
+  (STRAIGHT_GLOW 0xff3ec8, a colour nothing else on the board uses): the socket band, a wider breathing ring and a halo.
+  Set in renderShape, cleared in renderReset.
+- Monster sheet (tap a monster twice): name, a stat line (health, speed), a big "Next" card in the move's colour with one
+  sentence on how to get ready (readyText), then the other moves as small chips, each listed once.

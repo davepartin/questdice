@@ -480,7 +480,15 @@ body.in-battle .chrome { z-index: 40; }
 .b3-plates .b3-plate { padding: .3rem .4rem .34rem; gap: .18rem; }
 .b3-info { bottom: auto; top: 12rem; } .b3-info:not(.open) { display: none; }
 .b3-info .fi-hp, .b3-info .fi-now { margin: 0; font-size: .8rem; color: #f1ead8; } .b3-info .fi-t { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: #d9b4ff; }
-.fi-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; } .fi-list li { display: flex; flex-direction: column; font-size: .76rem; color: #d8d2c0; } .fi-list b { color: #fff; font-size: .8rem; }
+/* monster sheet: a stat line, a big "next" card in the move's colour, then small chips for the other moves */
+.fi-stats { display: flex; gap: .9rem; font: 700 .78rem var(--disp, inherit); color: #e8e0cc; } .fi-stats span { display: inline-flex; align-items: center; gap: .3rem; } .fi-stats .ic { font-size: .95rem; color: #ff7a7a; } .fi-stats span + span .ic { color: #ffd04a; }
+.fi-next { display: flex; align-items: center; gap: .6rem; padding: .55rem .7rem; border-radius: .7rem; background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 30%, #0c0b14), color-mix(in srgb, var(--tc) 8%, #0c0b14)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc) 55%, transparent); }
+.fi-ic { flex: none; width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tc) 35%, #0c0b14); font-size: 1.4rem; color: var(--tcl); }
+.fi-nx { flex: 1; min-width: 0; display: flex; flex-direction: column; } .fi-nx small { font: 800 .58rem var(--disp, inherit); letter-spacing: .14em; text-transform: uppercase; color: var(--tcl); opacity: .8; }
+.fi-nx b { font: 800 1rem var(--disp, inherit); color: #fff; } .fi-nx p { margin: .1rem 0 0; font-size: .8rem; line-height: 1.3; color: #efe7d4; }
+.fi-fig { flex: none; display: flex; flex-direction: column; align-items: center; font: 800 1.5rem var(--disp, inherit); color: var(--tcl); text-shadow: 0 0 12px var(--tc); line-height: 1; } .fi-fig small { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: #cfc6b0; text-shadow: none; margin-top: .15rem; }
+.fi-moves { display: flex; flex-wrap: wrap; gap: .35rem; } .fi-mv { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .5rem; border-radius: 999px; background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); font-size: .72rem; color: #d8d2c0; }
+.fi-mv .ic { font-size: .9rem; color: #e8dcc0; } .fi-mv b { color: #fff; font-size: .74rem; }
 @media (min-aspect-ratio: 5/4) { .b3-info { top: 6rem; bottom: auto; } }
 @media (max-width: 420px) { .b3-tools .hb-mini { width: 2.3rem; min-width: 2.3rem; height: 2.3rem; min-height: 2.3rem; } .b3-powers { padding-right: .6rem; font-size: .72rem; } .b3-pips i { width: .65rem; height: .65rem; } .b3-tools { gap: .25rem; } }
 

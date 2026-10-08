@@ -512,16 +512,34 @@ function selectTarget(uid) {
   if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   B.target = i; sfx.select(); updatePlates();
 }
-const VERB = { strike: 'Strikes (block reduces it)', pierce: 'Pierces (ignores block)', guard: 'Guards: blocks your normal attack this round', mend: 'Heals itself', charge: 'Winds up: slams next round. Brace with block', howl: 'Howls: every monster hits harder next round', bind: 'Tangles: locks some of your dice next round', drain: 'Strikes and steals your magic', pilfer: 'Strikes and steals gold (kill it to get it back)', summon: 'Calls reinforcements', ward: 'Fire Ward: guards, and burns whoever hits it this round (block does not help)', stalk: 'Stalks: if you do not hurt it this round, it Pounces next round', phase: 'Phases: normal attack passes through it this round; only pierce hurts' };
+// The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
+const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
+  charge: ['windup', 'winds up a slam'], howl: ['howl', 'makes all hit harder'], bind: ['bind', 'locks your dice'], drain: ['drain', 'hits, steals magic'],
+  pilfer: ['pilfer', 'hits, steals gold'], summon: ['summon', 'calls for help'], ward: ['ward', 'burns you if hit'], stalk: ['stalk', 'pounces if not hit'], phase: ['phase', 'only pierce hurts'] };
+function readyText(e) {
+  const i = e.intent; if (!i) return '';
+  if (i.slam) return 'A big hit this round. Stack block, or finish it first.';
+  return {
+    strike: 'Your block takes it off.', pierce: 'Goes through block. Heal up, or finish it first.',
+    guard: 'Blocks your attack. Hit another monster, or use pierce.', ward: `Hit it and you burn for ${E.burnOf(e)}. Hit another, or block.`,
+    stalk: 'Hit it now, or it pounces next round.', phase: 'Attacks pass through. Only pierce hurts it now.',
+    charge: 'Slams next round. Save block, or finish it first.', howl: `Every monster hits ${i.k} harder next round.`,
+    bind: `${i.k} of your dice get locked next round.`, drain: `Steals ${i.k} magic. Block takes off the hit.`,
+    pilfer: 'Steals gold if it hits. Kill it to get it back.', summon: `Calls ${i.k} more next round.`, mend: 'Heals itself.',
+  }[i.v] || '';
+}
 function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
-  const faces = def.faces.map((f) => h('li', {}, h('b', {}, f.n), h('span', {}, VERB[f.v] || f.v)));
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  const seen = new Set([e.intent?.n]);
+  const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
   fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
-    h('p', { class: 'fi-hp' }, `Health ${Math.max(0, e.hp)} of ${e.maxHp}  ·  Initiative d${def.init || 4}`),
-    h('p', { class: 'fi-init' }, `It rolls a d${def.init || 4} each round; you roll your feet die (d${E.feetSize(B.hero)}). Higher roll strikes first, ties go to you.`),
-    v ? h('p', { class: 'fi-now' }, h('b', {}, 'Next: '), `${v.title} ${v.fig} ${v.unit}. ${v.hint || ''}`) : null,
-    h('b', { class: 'fi-t' }, 'Everything it can do'), h('ul', { class: 'fi-list' }, faces));
+    h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`)),
+    v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
+      h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), h('p', {}, readyText(e))),
+      v.fig ? h('strong', { class: 'fi-fig' }, v.fig, v.unit && /^\d/.test(v.fig) ? h('small', {}, v.unit === 'dmg' ? 'damage' : v.unit) : null) : null) : null,
+    others.length ? h('small', { class: 'fi-t' }, 'It might also') : null,
+    others.length ? h('div', { class: 'fi-moves' }, others.map((f) => { const [ic, txt] = MOVE[f.v] || ['atk', f.v]; return h('span', { class: 'fi-mv' }, HK.icon(ic), h('b', {}, f.n), h('small', {}, txt)); })) : null);
   B.hud.info.classList.add('open'); sfx.select();
 }
 // Raycast monsters for tap-to-target.
@@ -693,7 +711,7 @@ const powersBtn = () => {
 
 export function renderReset() {
   try { B.fit?.(); } catch { /* ignore */ }
-  B.bw?.tray?.setLink?.(null);
+  B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
@@ -782,6 +800,7 @@ export function renderShape() {
     if (E.rerollInfo(b).kind === 'paid') hint('b_paid'); else if (b.actionsLeft < E.rerollTotal()) hint('b_lock');
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
+  bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight light magenta underneath
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to choose your target.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);

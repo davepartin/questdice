@@ -291,13 +291,18 @@ export function evaluate(hero, board, opts = {}) {
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
   // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
-  const nums = new Set([val('N'), val('S'), val('C'), val('W'), val('E'),
-    ...['NW', 'NE'].filter((k) => isActive(hero, k)).map((k) => weaponFaces(hero.loadout[k])[val(k) - 1].v)]);
-  nums.delete(0); // a blank is a miss, not a number
-  const sorted = [...nums].sort((x, y) => x - y);
-  let best = 1, run = 1;
-  for (let i = 1; i < sorted.length; i++) { run = sorted[i] === sorted[i - 1] + 1 ? run + 1 : 1; best = Math.max(best, run); }
+  // which die shows each number (the first one in board order), so the tray can light the dice that make the straight
+  const numSlot = new Map();
+  for (const k of ['NW', 'N', 'NE', 'W', 'C', 'E', 'S']) {
+    if ((k === 'NW' || k === 'NE') && !isActive(hero, k)) continue;
+    const v = k === 'NW' || k === 'NE' ? weaponFaces(hero.loadout[k])[val(k) - 1].v : val(k);
+    if (v > 0 && !numSlot.has(v)) numSlot.set(v, k); // a blank is a miss, not a number
+  }
+  const sorted = [...numSlot.keys()].sort((x, y) => x - y);
+  let best = 1, run = 1, top = sorted[0];
+  for (let i = 1; i < sorted.length; i++) { run = sorted[i] === sorted[i - 1] + 1 ? run + 1 : 1; if (run > best) { best = run; top = sorted[i]; } }
   if (STRAIGHT[best]) {
+    out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];
     if ((opts.straight || 'atk') === 'gold') out.gold += out.straightBonus; else out.atk += out.straightBonus;
   }
