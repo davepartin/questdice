@@ -55,14 +55,12 @@ sheet** (tap a monster twice: next move, how to get ready, other moves as chips)
 **To do, in the order Dave and Claude agreed.** From the "what is missing to make it fun" answer (10 Oct):
 1. ~~Real danger in ordinary fights, and monster moves that break the "read the box" habit.~~ Done (Tension). Ask Dave how it
    feels on his phone; the numbers come from a bot. One setting tunes it: `ORDINARY` in `js/data.js`.
-2. **Next: teach one idea at a time over the first ten fights.** A new player meets nine dice, triples, the heart die, talent
-   symbols, three power slots, potions, metals, die sizes, temperaments and legendaries almost at once. Bring them in one by
-   one (for example: fight 1 weapons and hands, then the heart die, then the first power, then talent symbols), so players feel
-   they are growing, not studying. The coach hints (`js/coach.js`) and `START_DICE` / `UNLOCK_ORDER` in `js/data.js` are the
-   levers. Check with Dave before changing what a new hero starts with.
+2. ~~Teach one idea at a time over the first ten fights.~~ **Declined by Dave (10 Oct): do not change how the game
+   starts.** The tutorial already walks a new player through it, and he likes that each class starts with its own dice and
+   levels. Leave `START_DICE`, class starts and the opening flow as they are.
 3. Reasons to play again: a branching road map, shuffled events, small unlocks that carry to the next run (a class, a power, a
    harder mode), and a daily seed everyone plays and compares (good for Dave's church friends).
-4. Make big moments feel big: Weapons Triple, a legendary drop, a revive, a boss falling (pause, light, sound, the number counting up).
+4. **Next (recommended 10 Oct):** make big moments feel big: Weapons Triple, a legendary drop, a revive, a boss falling (pause, light, sound, the number counting up).
 5. More teamwork in company games: moments that need two heroes at once (hold the line so a friend can strike, team combos,
    giving up a potion to save a friend).
 6. A story thread through the acts: who the enemy is and why it matters, light pushing back the dark, friends laying
