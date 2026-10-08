@@ -320,3 +320,4 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   (round 1 included). Report line, How to play, the shared-phone tip, TEAMPLAY.md and BALANCE.md updated.
 - Tanks score (Dave): a blocked point is worth 1 (was 0.5). In team games the targeted hero is the company's shield: blocks
   count 2 each and "Held the line" +10 if a monster swung at them and they are still standing (banner + report line).
+- Dice roll playback at half speed (ROLL_PLAYBACK 0.5 in gfx/dice/roll.js): a roll now takes about 1.3 s instead of 0.67 s (dev/rolltime.mjs).

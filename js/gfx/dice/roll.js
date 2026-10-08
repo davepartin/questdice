@@ -12,6 +12,8 @@ import { mulberry32, hashStr } from '../noise.js';
 import { restQuat, leanQuat, d4Lift } from './poly.js';
 
 export const ROLL = { g: 30, h: 1 / 240, pick: 0.12, phys: 1.08, restitution: 0.46, mu: 0.6, dishDepth: 0.055 };
+// How fast a planned roll plays back on screen. 0.5 = twice as long as the simulation (Dave: the dice rolled too fast).
+export const ROLL_PLAYBACK = 0.5;
 
 const _q = new THREE.Quaternion(); const _q2 = new THREE.Quaternion();
 

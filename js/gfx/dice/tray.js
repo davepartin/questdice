@@ -17,7 +17,7 @@ import { dieSpecs, createDie, restQuat } from './dice.js';
 import { leanQuat, d4Lift } from './poly.js';
 import { diceStyle, drawIcon } from './faces.js';
 import { weaponIcon } from './art.js';
-import { planRoll, samplePlan, ROLL } from './roll.js';
+import { planRoll, samplePlan, ROLL, ROLL_PLAYBACK } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
 import { createFX, PULSE_COLORS } from './fx.js';
 
@@ -489,7 +489,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       // ---- pose
       let lifted = true;
       if (s.anim?.kind === 'roll') {
-        anyRolling = true; const an = s.anim; an.t += dt; const plan = an.plan; const lt = an.t - plan.delay;
+        anyRolling = true; const an = s.anim; an.t += dt * ROLL_PLAYBACK; const plan = an.plan; const lt = an.t - plan.delay;
         const r = samplePlan(plan, lt, _p, _q);
         s.pos.copy(_p); s.quat.copy(_q); lifted = false;
         while (an.ev < plan.events.length && plan.events[an.ev].t <= lt) {
