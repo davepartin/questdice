@@ -757,7 +757,8 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const group = new THREE.Group(); group.name = `weapon-${id}-${RNAMES[r]}`; const ud0 = group.userData;
   const P = new Parts(); const M = weaponMats(r);
   let info;
-  const faceMap = (id === 'shield' || id === 'tower') ? emblemTexture(o.emblem ?? (o.style === 'round' ? 'rune' : 'crown'), o.style === 'round' ? { a: '#6a3a1a', b: '#ffcf80', c: '#1c1008' } : { a: '#8a1c24', b: '#f0d070', c: '#14100a' }) : null;
+  const field = o.tint != null ? `#${new THREE.Color(o.tint).getHexString()}` : null; // a company hero's own colour on the shield
+  const faceMap = (id === 'shield' || id === 'tower') ? emblemTexture(o.emblem ?? (o.style === 'round' ? 'rune' : 'crown'), o.style === 'round' ? { a: field || '#6a3a1a', b: '#ffcf80', c: '#1c1008' } : { a: field || '#8a1c24', b: '#f0d070', c: '#14100a' }) : null;
   switch (id) {
     case 'sword': info = buildSword(r, P, pal); break;
     case 'longsword': info = buildSword(r, P, pal, { long: true }); break;

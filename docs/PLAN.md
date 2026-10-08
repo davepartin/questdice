@@ -380,3 +380,13 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   says why; the online table returns the same reason). A two-handed legendary fills both hands.
 - Looks: createWeapon maps a legendary to its model with a warm gold crystal and halo; cards get a gold Legendary banner,
   shine, and always show their rule. Splash shows as a burst corner on the die.
+
+## Phase 5: company looks (Oct 2026)
+
+- data.js HERO_LOOKS: each class has its own colours plus two alternate sets (Knight: Crimson, Steel blue, Black and gold;
+  Ranger: Forest, Autumn, Stone grey; Wizard: Sky blue, Violet, White and gold; Dwarf: Ember, Moss, Deep blue; Bard: Teal,
+  Plum, Sunflower). lookIndex(heroes, i) = how many heroes of the same class stand before this one (wraps after three).
+- hero.js create({ look }) swaps cloth, trim, accent, glow and hair; the Knight's tabard and the shield emblem follow the
+  cloth colour. world.buildBattle passes each company hero's look. Battle roster chips carry the look's colour.
+- dom.js h(): style keys starting with `--` now use setProperty (custom properties never applied before, so class emblem
+  hues, list stagger delays and health bar ticks now show as designed).

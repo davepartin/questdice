@@ -191,6 +191,30 @@ export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s streng
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
 export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
+// Company looks (Dave): a second or third hero of the same class wears another colour set, so every hero on the field is
+// easy to tell apart. Look 0 is the class's own colours; the others replace cloth, trim, accent, glow (and sometimes hair).
+// `hue` colours the hero's chip in the battle roster.
+export const HERO_LOOKS = {
+  knight: [{ name: 'Crimson', hue: '#ff6a4a' },
+    { name: 'Steel blue', hue: '#6aa8ff', cloth: 0x2a4a8a, cloth2: 0x1a2e5a, accent: 0x3a7ad8, glow: 0x6aa8ff, trim: 0xd8dce8 },
+    { name: 'Black and gold', hue: '#ffd060', cloth: 0x2a2a30, cloth2: 0x18181c, accent: 0xe0b858, glow: 0xffd060, trim: 0xe0b858, hair: 0x9a6a3a }],
+  ranger: [{ name: 'Forest', hue: '#7aff9a' },
+    { name: 'Autumn', hue: '#ffa040', cloth: 0x8a5a2a, cloth2: 0x5a3a1a, accent: 0xffa040, glow: 0xffc070, hair: 0x8a3a18 },
+    { name: 'Stone grey', hue: '#a8dcff', cloth: 0x4a5a6a, cloth2: 0x2e3a46, accent: 0x8ad0ff, glow: 0xb0e0ff, hair: 0xd8c08a }],
+  wizard: [{ name: 'Sky blue', hue: '#6ab8ff' },
+    { name: 'Violet', hue: '#c88aff', cloth: 0x6a2a8a, cloth2: 0x401a58, accent: 0xc070ff, glow: 0xd8a0ff, hair: 0x3a2a1c },
+    { name: 'White and gold', hue: '#ffe080', cloth: 0xd8d4c8, cloth2: 0x9a948a, accent: 0xffd060, glow: 0xfff0a0, hair: 0x6a4428 }],
+  dwarf: [{ name: 'Ember', hue: '#ffa040' },
+    { name: 'Moss', hue: '#8aff8a', cloth: 0x2e4a2a, cloth2: 0x1e3020, accent: 0x6ae070, glow: 0x8aff8a, hair: 0x2a1e14 },
+    { name: 'Deep blue', hue: '#7ac0ff', cloth: 0x2a3a5a, cloth2: 0x1a2640, accent: 0x5aa8ff, glow: 0x7ac0ff, hair: 0xd8c8a0 }],
+  bard: [{ name: 'Teal', hue: '#4ae8d8' },
+    { name: 'Plum', hue: '#ff8ac8', cloth: 0x8a2a5a, cloth2: 0x5a1a3c, accent: 0xff6ab0, glow: 0xff9ad0, hair: 0x2c1e14 },
+    { name: 'Sunflower', hue: '#ffd040', cloth: 0xb08a2a, cloth2: 0x6a5218, accent: 0xffd040, glow: 0xffe080, hair: 0x5a2a12 }],
+};
+// Which look a hero wears in a company: how many heroes of the same class stand before them (wrapping past the last look).
+export const lookIndex = (heroes, i) => (heroes || []).slice(0, i).filter((x) => x?.cls === heroes[i]?.cls).length % (HERO_LOOKS[heroes?.[i]?.cls]?.length || 1);
+export const lookOf = (heroes, i) => HERO_LOOKS[heroes?.[i]?.cls]?.[lookIndex(heroes, i)] || null;
+
 export const SPEED_STEPS = { 4: [60, 2], 6: [140, 6] }; // feet stop at d6 (the Ranger alone can train them to d8)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 

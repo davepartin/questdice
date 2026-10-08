@@ -205,9 +205,11 @@ function setActive(i) {
 }
 function renderRoster() {
   const el = B.hud?.roster; if (!el) return; const b = B.b;
+  const heroes = b.fighters.map((f) => f.hero);
   el.replaceChildren(...b.fighters.map((f, i) => {
     const turn = i === B.active && f.hp > 0; const locked = !!f.board && i !== B.active; const down = f.hp <= 0;
-    return h('div', { class: `rs-chip ${turn ? 'turn' : ''} ${locked ? 'locked' : ''} ${down ? 'down' : ''}`, role: 'listitem', 'aria-label': `${f.hero.name}, ${Math.max(0, Math.ceil(f.hp))} of ${f.maxHp} health, ${E.pointsOf(f)} points` },
+    const look = D.lookOf(heroes, i); // each chip wears its hero's colours, so two Knights read apart
+    return h('div', { class: `rs-chip ${turn ? 'turn' : ''} ${locked ? 'locked' : ''} ${down ? 'down' : ''}`, role: 'listitem', style: look ? { '--hue': look.hue } : null, 'aria-label': `${f.hero.name}${look && D.lookIndex(heroes, i) ? ` (${look.name})` : ''}, ${Math.max(0, Math.ceil(f.hp))} of ${f.maxHp} health, ${E.pointsOf(f)} points` },
       h('span', { class: 'rs-ic' }, down ? HK.icon('skull') : locked ? HK.icon('lock') : HK.icon(D.CLASSES[f.hero.cls] ? 'heart' : 'heart')),
       h('b', { class: 'rs-name' }, f.hero.name),
       h('i', { class: 'rs-hp' }, h('i', { style: { width: `${Math.max(0, Math.min(100, (f.hp / f.maxHp) * 100))}%` } })),

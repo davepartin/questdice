@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { Actor } from './base.js';
 import { mat } from '../mats.js';
 import { sprite } from '../tex.js';
-import { WEAPONS, CLASSES } from '../../data.js';
+import { WEAPONS, CLASSES, HERO_LOOKS } from '../../data.js';
 import { createWeapon, createArrow, emblemTexture } from '../weapons.js';
 import { lathe, tube, mergeGeometries } from '../util.js';
 import { mulberry32 } from '../noise.js';
@@ -323,7 +323,7 @@ function costumeKnight(ctx) {
   sk.add('cloth', merge(plume), 'plume', null);
   ctx.sways.push(['head', ['plume'], { gain: 1.6, wind: 0.05 }]);
   // tabard (emblem) front/back, knee-length two-layer cape
-  const em = emblemTexture('crown', { a: '#9a1f2a', b: '#f0d070', c: '#1a1210' });
+  const em = emblemTexture('crown', { a: `#${new THREE.Color(S.cloth).getHexString()}`, b: '#f0d070', c: '#1a1210' }); // the tabard follows the hero's colours
   const tabMat = new THREE.MeshStandardMaterial({ map: em, side: THREE.DoubleSide, roughness: 0.85, metalness: 0, vertexColors: true });
   const fold = (u, v) => 0.014 * Math.sin(u * 14 + v * 2.5) * (0.3 + v);
   ctx.cloth.push({ joint: 'hips', cols: 8, rows: 8, material: tabMat, uvScale: [1, 1], restFn: (u, v) => [(u - 0.5) * (0.28 + 0.06 * v) * W, 0.07 - v * 0.64, 0.17 + 0.03 * v + fold(u, v)], stiff: [40, 8] });
@@ -593,9 +593,11 @@ function box0(w, h, d) { return new THREE.BoxGeometry(w, h, d); }
 const COSTUME = { knight: costumeKnight, ranger: costumeRanger, wizard: costumeWizard, dwarf: costumeDwarf, bard: costumeBard };
 
 // ------------------------------------------------------------------------------------------ the actor
-export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality = 'high' } = {}) {
+export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality = 'high', look = 0 } = {}) {
   if (!SPEC[cls]) cls = 'knight';
-  const spec = SPEC[cls]; const M = mats();
+  // a company's second or third hero of a class wears another colour set (data.js HERO_LOOKS)
+  const alt = look > 0 ? HERO_LOOKS[cls]?.[look % HERO_LOOKS[cls].length] : null;
+  const spec = alt ? { ...SPEC[cls], ...Object.fromEntries(Object.entries(alt).filter(([, v]) => typeof v === 'number')) } : SPEC[cls]; const M = mats();
   const rng = mulberry32(seed * 7919 + cls.length);
   const a = new Actor({ name: `hero-${cls}`, height: 1.8 * spec.scale, radius: 0.5 * Math.max(1, spec.W * 0.9) });
   const W = spec.W;
@@ -666,7 +668,7 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     // a legendary poses and mounts as its ordinary model; only createWeapon sees its own id (for the golden look)
     const vis = (w) => (w && WEAPONS[w.id]?.legendary ? { ...w, id: WEAPONS[w.id].model, rarity: 3, legend: w.id } : w);
     const nw = vis(lo.NW); const ne = vis(lo.NE); const two = WEAPONS[nw.id].hands === 2;
-    const opts = { quality, style: cls === 'dwarf' ? 'round' : 'heater', emblem: cls === 'knight' ? 'crown' : cls === 'dwarf' ? 'rune' : undefined, accent: spec.accent };
+    const opts = { quality, style: cls === 'dwarf' ? 'round' : 'heater', emblem: cls === 'knight' ? 'crown' : cls === 'dwarf' ? 'rune' : undefined, accent: spec.accent, tint: alt ? spec.cloth : undefined };
     const place = (w, side, id) => {
       if (id === 'shield') w.scale.setScalar(cls === 'dwarf' ? 1.1 : 1.3);
       if (id === 'tower') w.scale.setScalar(1.15);

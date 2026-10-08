@@ -609,7 +609,8 @@ body.in-battle .chrome { z-index: 40; }
 /* company: roster chips under the round title, sheet tabs, friend chooser */
 .b3-roster { position: absolute; z-index: 5; left: calc(.6rem + var(--safe-l)); top: calc(3.9rem + var(--safe-t)); display: flex; flex-wrap: wrap; gap: .3rem; max-width: 66%; pointer-events: none; }
 .rs-chip { display: grid; grid-template-columns: auto auto auto; grid-template-rows: auto auto; column-gap: .3rem; align-items: center; padding: .2rem .45rem .25rem .35rem; border-radius: .6rem; background: rgba(12, 8, 20, .78); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); font-family: var(--disp); }
-.rs-chip .rs-ic { grid-row: 1 / 3; width: .95rem; height: .95rem; color: #ff6a6a; } .rs-chip .rs-ic svg { width: 100%; height: 100%; }
+.rs-chip .rs-ic { grid-row: 1 / 3; width: .95rem; height: .95rem; color: var(--hue, #ff6a6a); }
+.rs-chip { border-left: 3px solid var(--hue, transparent); } .rs-chip .rs-ic svg { width: 100%; height: 100%; }
 .rs-chip .rs-name { font-size: .66rem; font-weight: 800; color: #fff; letter-spacing: .03em; max-width: 4.6rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rs-chip .rs-pts { font-size: .62rem; color: #ffe08a; font-variant-numeric: tabular-nums; justify-self: end; }
 .rs-chip .rs-hp { grid-column: 2 / 4; display: block; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .15); overflow: hidden; margin-top: .15rem; }

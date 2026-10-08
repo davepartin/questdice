@@ -6,6 +6,7 @@ import { createStage } from '../gfx/core.js';
 import { createActor } from '../gfx/actors/index.js';
 import { Director } from './director.js';
 import { stubArena, stubTray, stubVfx } from './stubs.js';
+import * as D from '../data.js';
 
 async function tryLoad(path) {
   try { return await import(path); } catch (e) { if (!/Failed to fetch|404|Failed to resolve/i.test(String(e?.message))) console.warn(`[world] ${path} failed:`, e); return null; }
@@ -86,7 +87,7 @@ export const world = {
     if (heroes && heroes.length > 1) {
       for (let i = 1; i < heroes.length; i++) {
         const hh = heroes[i];
-        const a = await createActor('hero', { cls: hh.cls, loadout: hh.loadout, level: hh.level, seed: (hh.campaign?.seed || 1) + i * 977, quality: stage.quality });
+        const a = await createActor('hero', { cls: hh.cls, loadout: hh.loadout, level: hh.level, seed: (hh.campaign?.seed || 1) + i * 977, quality: stage.quality, look: D.lookIndex(heroes, i) });
         a.root.rotation.y = heroActor.root.rotation.y; stage.scene.add(a.root); stage.onFrame((dt, t) => a.update(dt, t)); heroActors.push(a);
       }
     }

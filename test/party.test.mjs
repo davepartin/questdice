@@ -401,3 +401,15 @@ test('the hero the monsters target is the shield: blocks count double, and stand
   const quietRound = partyFight(c.members, { n: 'Duck', v: 'guard', f: 3, m: 0 });
   assert.equal(resolveParty(quietRound).shield.held, false, 'no swing at the shield, no bonus');
 });
+
+test('company looks: a second and third hero of the same class wear other colours', async () => {
+  const { lookIndex, lookOf, HERO_LOOKS } = await import('../js/data.js');
+  const heroes = [{ cls: 'knight' }, { cls: 'wizard' }, { cls: 'knight' }, { cls: 'knight' }, { cls: 'wizard' }, { cls: 'knight' }];
+  assert.deepEqual(heroes.map((_, i) => lookIndex(heroes, i)), [0, 0, 1, 2, 1, 0]); // a fourth Knight wraps to the first look
+  assert.equal(lookOf(heroes, 2).name, HERO_LOOKS.knight[1].name);
+  for (const [cls, looks] of Object.entries(HERO_LOOKS)) {
+    assert.ok(looks.length >= 3, cls);
+    assert.equal(new Set(looks.map((l) => l.hue)).size, looks.length, `${cls} looks have different chip colours`);
+    for (const l of looks.slice(1)) assert.ok(typeof l.cloth === 'number' && typeof l.accent === 'number', `${cls} ${l.name} recolours cloth and accent`);
+  }
+});
