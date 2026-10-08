@@ -27,7 +27,7 @@ function rune(c, x, y, h, rnd) {
 }
 
 /** Weapon icon name for an equipped weapon id. */
-export const weaponIcon = (id) => ({ fists: 'fist', dagger: 'dagger', bracer: 'bracer', sword: 'sword', shield: 'shield', spear: 'spear', bow: 'bow', longsword: 'longsword', staff: 'staff' }[id] || 'sword');
+export const weaponIcon = (id) => ({ fists: 'fist', dagger: 'dagger', bracer: 'bracer', sword: 'sword', shield: 'shield', spear: 'spear', bow: 'bow', longsword: 'longsword', staff: 'staff', mace: 'mace', warhammer: 'warhammer', tower: 'tower' }[id] || 'sword');
 
 /**
  * @param o { size, FH, pitch, hero, theme, twoHanded, slotPos(slot)->{x,z}, dishR }

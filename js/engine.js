@@ -40,7 +40,7 @@ export const newUid = (rng) => `u${(++uidCounter).toString(36)}${Math.floor((rng
 
 // ------------------------------------------------------------------------------- weapons
 // A weapon's faces. SIZE (inst.size, default d4) sets how many faces and so the number range; TIER (inst.rarity) adds corner
-// bonus symbols and never changes a number. Extra faces beyond the first four carry the next numbers, alternating colours.
+// bonus symbols and raises one number (see below). Extra faces beyond the first four carry the next numbers.
 export const weaponSize = (inst) => inst.size || 4;
 export function weaponFaces(inst) {
   const def = WEAPONS[inst.id];
@@ -49,6 +49,15 @@ export function weaponFaces(inst) {
   // bigger faces lean to the weapon's own colour (two of its colour, then one of the other), so a bigger attack weapon hits harder
   // and a bigger guard weapon blocks more, instead of every size splitting half and half
   const other = first === 'r' ? 'b' : 'r';
+  // Metals raise numbers (Dave): Silver +1 on the lowest face, Gold +1 on the second-highest, Diamond +1 on the top face,
+  // so a Diamond rolls a number no Bronze can. A risky weapon keeps one blank. Only the four printed faces change.
+  const tier = Math.min(3, inst.rarity | 0);
+  if (tier && def.faces.length === 4 && inst.id !== 'fists') {
+    // three different faces, chosen from the Bronze layout: the lowest, the second-highest, the highest
+    const order = faces.slice(0, 4).map((f, i) => ({ v: f.v, i })).sort((a, b) => a.v - b.v || a.i - b.i);
+    const raise = [order[0].i, order[2].i, order[3].i];
+    for (let k = 0; k < tier; k++) faces[raise[k]].v += 1;
+  }
   for (let i = 4; i < weaponSize(inst); i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
   const bonus = def.bonus || [];
   for (let k = 0; k < (inst.rarity | 0) && k < bonus.length; k++) {

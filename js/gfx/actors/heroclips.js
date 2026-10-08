@@ -71,7 +71,8 @@ function ready(fam, shield) {
 }
 
 export function buildClips(a, info) {
-  const { fam, shield } = info;
+  const { shield } = info;
+  const fam = { mace: 'sword', warhammer: 'longsword' }[info.fam] || info.fam; // new weapons borrow a family's poses
   const rd = ready(fam, shield); const cy = carry(fam, shield);
   const run = (keys) => makeSampler(keys);
   const apply = (P, pose) => applyPose(P, pose, info);
@@ -137,7 +138,7 @@ export function buildClips(a, info) {
       [0.62, { ...rd, spine: sp(22, -34, 0), Aarm: sp(-50, 0, -22), Afore: sp(-26), hipsP: [0, -0.14, 0.2], thighA: sp(-46), shinA: sp(46), thighO: sp(26) }, 'o'],
       [1.15, rd, 's']]),
   };
-  const family = { sword: 'sword', dagger: 'sword', fists: 'sword', spear: 'spear', bow: 'bow', staff: 'staff', longsword: 'longsword' }[fam] || 'sword';
+  const family = { sword: 'sword', dagger: 'sword', fists: 'sword', mace: 'sword', spear: 'spear', bow: 'bow', staff: 'staff', longsword: 'longsword', warhammer: 'longsword' }[fam] || 'sword';
   const k1 = strikeKeys[family]; const k2 = strikeKeys[family === 'sword' ? 'sword2' : family];
   const hitT = { sword: 0.31, spear: 0.32, bow: 0.58, staff: 0.38, longsword: 0.43 }[family];
   const mkAttack = (keys, dur, hit, extra) => {

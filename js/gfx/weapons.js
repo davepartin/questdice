@@ -654,6 +654,85 @@ function buildBracer(r, P, pal) {
   return { tipY: 0.14, length: 0.3, grip2: null };
 }
 
+// -- mace (one hand): a wooden haft with a flanged steel head ----------------------------------------
+function buildMace(r, P, pal) {
+  const yb = -0.13; const yt = 0.36; const headY = yt + 0.06;
+  const woodCol = r === 0 ? 0x7a5432 : r === 1 ? 0x5e4a36 : r === 2 ? 0x4e321e : 0x223244;
+  P.add('wood', loft([{ y: yb, rx: 0.016, rz: 0.016 }, { y: yt, rx: 0.019, rz: 0.019 }], { N: 12, capTop: true, capBottom: true }), woodCol);
+  gripWrap(-0.11, 0.08, 0.0175, { color: r === 0 ? 0x5a3a22 : r === 1 ? 0x22262f : r === 2 ? 0x5a1c22 : 0x14384c, turns: 14, ring: true, ringColor: pal.trim }, P);
+  pommel(r, yb - 0.014, r, P, pal, 0.9);
+  // socket collar and the head core
+  P.add('trim', lathePart([[0.019, yt - 0.06], [0.026, yt - 0.05], [0.024, yt - 0.03], [0.03, yt - 0.01], [0.032, yt + 0.0]], 14), pal.trim);
+  const blade = r === 0 ? PAL[0].blade : 0xffffff;
+  P.add('blade', lathePart([[0, yt - 0.005], [0.044, yt + 0.008], [0.054, headY + 0.01], [0.044, headY + 0.07], [0.016, headY + 0.095], [0, headY + 0.1]], 16), blade);
+  // flanges: six fins around the head
+  const fins = 6 + (r >= 2 ? 2 : 0);
+  for (let i = 0; i < fins; i++) {
+    const a = (i / fins) * TAU;
+    const fin = new THREE.Shape([new THREE.Vector2(0, -0.065), new THREE.Vector2(0.04, -0.045), new THREE.Vector2(0.048, 0.026), new THREE.Vector2(0.016, 0.072), new THREE.Vector2(0, 0.078)].map((v) => v));
+    const g = new THREE.ExtrudeGeometry(fin, { depth: 0.01, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 1 });
+    g.translate(0.034, 0, -0.005);
+    P.add('blade', X(g, { p: [0, headY + 0.012, 0], r: [0, -a, 0] }), blade, (x, y) => 0.85 + 0.15 * (y + 0.05) / 0.11);
+  }
+  P.add('blade', X(new THREE.ConeGeometry(0.015, 0.065, 8), { p: [0, headY + 0.13, 0] }), blade);
+  P.add('dark', X(torus(0.036, 0.004, 16, 5), { p: [0, yt + 0.005, 0], r: [Math.PI / 2, 0, 0] }), pal.trimDark);
+  if (r >= 2) for (let i = 0; i < 4; i++) { const a = (i / 4) * TAU + TAU / 8; P.add('gem', X(gemCut(0.011, 8), { p: [Math.cos(a) * 0.052, headY + 0.016, Math.sin(a) * 0.052], r: [0, -a, Math.PI / 2] }), pal.gem); }
+  if (r === 3) P.add('glow', X(torus(0.022, 0.0022, 12, 5), { p: [0, yt - 0.03, 0], r: [Math.PI / 2, 0, 0] }), 0xffffff);
+  return { tipY: headY + 0.16, length: headY + 0.16 - yb + 0.03, grip2: null };
+}
+
+// -- war hammer (two hands): a long haft, a square striking face and a back spike --------------------
+function buildHammer(r, P, pal) {
+  const yb = -0.36; const yt = 0.62;
+  const woodCol = r === 0 ? 0x7a5432 : r === 1 ? 0x5e4a36 : r === 2 ? 0x4e321e : 0x223244;
+  P.add('wood', loft([{ y: yb, rx: 0.017, rz: 0.017 }, { y: yt, rx: 0.02, rz: 0.02 }], { N: 12, capTop: true, capBottom: true }), woodCol, (x, y) => 0.85 + 0.15 * Math.sin(y * 40));
+  gripWrap(-0.33, 0.06, 0.0185, { color: r === 0 ? 0x5a3a22 : r === 1 ? 0x22262f : r === 2 ? 0x5a1c22 : 0x14384c, turns: 24, ring: true, ringColor: pal.trim, wire: 0.003 }, P);
+  P.add('trim', lathe([[0, yb - 0.05], [0.012, yb - 0.04], [0.021, yb - 0.01], [0.021, yb + 0.04], [0, yb + 0.04]], 12), pal.trim);
+  // langets up to the head
+  for (let i = 0; i < 4; i++) { const a = (i / 4) * TAU + Math.PI / 4; P.add('trim', X(box3(0.006, 0.2, 0.0035), { p: [Math.cos(a) * 0.02, yt - 0.1, Math.sin(a) * 0.02], r: [0, -a + Math.PI / 2, 0] }), pal.trim); }
+  const blade = r === 0 ? PAL[0].blade : 0xffffff;
+  // head: a heavy block across the haft (along Z), a broad face on +Z and a curved spike on -Z
+  const hy = yt + 0.05;
+  P.add('blade', X(box3(0.115, 0.13, 0.27), { p: [0, hy, 0.03] }), blade, (x, y, z) => 0.82 + 0.18 * (z + 0.1) / 0.27);
+  P.add('blade', X(box3(0.135, 0.15, 0.045), { p: [0, hy, 0.18] }), blade);
+  P.add('blade', X(new THREE.ConeGeometry(0.048, 0.2, 4), { p: [0, hy, -0.2], r: [-Math.PI / 2, Math.PI / 4, 0] }), blade);
+  P.add('blade', X(new THREE.ConeGeometry(0.02, 0.1, 6), { p: [0, hy + 0.11, 0.03] }), blade);
+  for (const z of [-0.07, 0.12]) P.add('dark', X(box3(0.122, 0.138, 0.012), { p: [0, hy, z] }), pal.trimDark);
+  if (r >= 1) P.add('trim', X(box3(0.125, 0.018, 0.24), { p: [0, hy + 0.068, 0.03] }), pal.trim);
+  if (r >= 2) for (const sx of [-1, 1]) P.add('gem', X(gemCut(0.019, 8), { p: [sx * 0.058, hy, 0.05], r: [0, 0, -sx * Math.PI / 2] }), pal.gem);
+  if (r === 3) { P.add('glow', X(torus(0.023, 0.0024, 12, 5), { p: [0, yt - 0.18, 0], r: [Math.PI / 2, 0, 0] }), 0xffffff); P.add('glow', X(torus(0.023, 0.0024, 12, 5), { p: [0, 0.08, 0], r: [Math.PI / 2, 0, 0] }), 0xffffff); }
+  return { tipY: yt + 0.2, length: yt + 0.2 - yb + 0.05, grip2: [0, -0.24, 0] };
+}
+
+// -- tower shield (one hand): tall, nearly rectangular, gently curved ---------------------------------
+function buildTower(r, P, pal) {
+  const w = 0.24; const top = 0.44; const bot = -0.5; const c = 0.05; // chamfered corners
+  const outline = [[-w + c, top], [0, top + 0.02], [w - c, top], [w, top - c], [w, bot + c * 1.5], [w - c * 1.5, bot], [0, bot - 0.025], [-w + c * 1.5, bot], [-w, bot + c * 1.5], [-w, top - c]];
+  const shape = new THREE.Shape(outline.map((q) => new THREE.Vector2(q[0], q[1])));
+  const curve = (x) => -(x * x) * 1.6;
+  const g = new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2, curveSegments: 6, steps: 1 });
+  const p = g.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) + 0.085 + curve(p.getX(i)));
+  g.computeVertexNormals();
+  planar(g, (x) => x / (2 * w) + 0.5, (x, y) => (y - bot) / (top - bot));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(p.count * 3).fill(1), 3));
+  P.add('face', g, 0xffffff);
+  const rim = outline.map((q) => [q[0], q[1], 0.085 + 0.024 + curve(q[0])]);
+  P.add('trim', tube([...rim, rim[0]], 0.011, { segs: 120, radial: 7, closed: false }), pal.trim);
+  // two horizontal bands and a central boss
+  for (const y of [top - 0.12, bot + 0.14]) P.add('trim', tube([[-w, y, 0.11 + curve(w)], [0, y, 0.115], [w, y, 0.11 + curve(w)]], 0.008, { segs: 24, radial: 6 }), pal.trimDark);
+  P.add('trim', X(lathePart([[0, 0.0], [0.045, 0.0], [0.05, 0.01], [0.04, 0.03], [0.02, 0.042], [0, 0.046]], 18), { p: [0, 0.0, 0.112], r: [Math.PI / 2, 0, 0] }), pal.trim);
+  const rv = []; for (const q of rim.filter((_, i) => i % 1 === 0)) rv.push([q[0] * 0.9, q[1] * 0.95, q[2] - 0.004, 0, 0, 1]);
+  const rg = rivets(rv, 0.008, 8); if (rg) P.add('trim', rg, pal.trim);
+  const back = new THREE.ExtrudeGeometry(shape, { depth: 0.012, bevelEnabled: false, curveSegments: 4 });
+  const bp = back.attributes.position; for (let i = 0; i < bp.count; i++) bp.setZ(i, bp.getZ(i) + 0.07 + curve(bp.getX(i)));
+  back.computeVertexNormals(); P.add('wood', back, 0x5e4028);
+  P.add('leather', X(box3(0.028, 0.14, 0.012), { p: [0, 0.0, 0.06] }), 0x3a2216);
+  P.add('trim', cylBetween([0, -0.07, 0.052], [0, 0.07, 0.052], 0.009, 0.009, 8), pal.trimDark);
+  if (r >= 2) { P.add('gem', X(gemCut(0.022, 8), { p: [0, 0.0, 0.16], r: [Math.PI / 2, 0, 0] }), pal.gem); for (const y of [top - 0.12, bot + 0.14]) P.add('gem', X(gemCut(0.012, 8), { p: [0, y, 0.125], r: [Math.PI / 2, 0, 0] }), pal.gem); }
+  if (r === 3) P.add('glow', tube([...rim.map((q) => [q[0] * 0.86, q[1] * 0.9, q[2] - 0.006]), [rim[0][0] * 0.86, rim[0][1] * 0.9, rim[0][2] - 0.006]], 0.0035, { segs: 120, radial: 5 }), 0xffffff);
+  return { height: top - bot, tipY: top, length: top - bot + 0.04, grip2: null, faceW: 2 * w, faceH: top - bot };
+}
+
 // -- fists -------------------------------------------------------------------------------------------
 function buildFists(r, P, pal) {
   // hand wraps + a knuckle bar; origin at the middle of the fist, +Y along the grip axis
@@ -674,7 +753,7 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const group = new THREE.Group(); group.name = `weapon-${id}-${RNAMES[r]}`; const ud0 = group.userData;
   const P = new Parts(); const M = weaponMats(r);
   let info;
-  const faceMap = (id === 'shield') ? emblemTexture(o.emblem ?? (o.style === 'round' ? 'rune' : 'crown'), o.style === 'round' ? { a: '#6a3a1a', b: '#ffcf80', c: '#1c1008' } : { a: '#8a1c24', b: '#f0d070', c: '#14100a' }) : null;
+  const faceMap = (id === 'shield' || id === 'tower') ? emblemTexture(o.emblem ?? (o.style === 'round' ? 'rune' : 'crown'), o.style === 'round' ? { a: '#6a3a1a', b: '#ffcf80', c: '#1c1008' } : { a: '#8a1c24', b: '#f0d070', c: '#14100a' }) : null;
   switch (id) {
     case 'sword': info = buildSword(r, P, pal); break;
     case 'longsword': info = buildSword(r, P, pal, { long: true }); break;
@@ -685,6 +764,9 @@ export function createWeapon(id, rarity = 0, o = {}) {
     case 'staff': info = buildStaff(r, P, pal, group, o); break;
     case 'bracer': info = buildBracer(r, P, pal); break;
     case 'fists': info = buildFists(r, P, pal); break;
+    case 'mace': info = buildMace(r, P, pal); break;
+    case 'warhammer': info = buildHammer(r, P, pal); break;
+    case 'tower': info = buildTower(r, P, pal); break;
     default: throw new Error(`no model for ${id}`);
   }
   // materials per role
@@ -692,7 +774,7 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const shimmer = [];
   const roleMesh = {};
   if (r === 3) { roleMat.blade = crystalMaterial(r, o.accent3); shimmer.push(roleMat.blade); }
-  if (id === 'shield') {
+  if (id === 'shield' || id === 'tower') {
     const fm = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceMap, vertexColors: true, roughness: 0.55, metalness: 0.35, envMapIntensity: 1.0, bumpMap: faceMap, bumpScale: 0.8 });
     roleMat.face = fm;
     if (r === 3) { fm.emissive = new THREE.Color(0x35c4e4); fm.emissiveMap = faceMap; fm.emissiveIntensity = 0.5; shimmer.push(fm); }

@@ -336,3 +336,12 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   health lost in ordinary fights; bosses even it out.
 - Camp Gear tab: three panels with their own look and a centered heading on the top edge: On your body (gold), Your pack
   (leather), The traveler (teal).
+
+## Phase 1 of the review: metals and temperaments (Oct 2026)
+
+- Weapons in three temperaments, all summing to 8 at d4 Bronze (about +2 a roll): steady 1,2,2,3 (Dagger, Bracer, Bow),
+  balanced 0,2,3,3 (Sword, Shield, Staff), risky with two blanks (Spear 0,0,4,4 piercing; Mace 0,0,3,5; Tower Shield
+  0,0,4,4 blue; Long Sword 0,0,4,4; War Hammer 0,0,2,6). Eleven weapons; the three new ones have 3D models in gfx/weapons.js.
+- Metals raise numbers: Silver +1 on the lowest face, Gold +1 on the second-highest, Diamond +1 on the top (faces chosen
+  from the Bronze layout, so three different faces), plus the corner abilities as before. Every weapon: 2.00 -> 2.75.
+- dev/newweapons.mjs and dev/holdweapons.mjs screenshot the cards and a hero holding them.

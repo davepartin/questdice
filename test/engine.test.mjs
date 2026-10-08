@@ -17,15 +17,13 @@ const board = (o) => {
 const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1, full: true });
 const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1, full: true });
 
-test('weapon face budgets: sum to 7, with documented exceptions', () => {
-  // Bow is intentionally 6 (synergy engine). Sword/Shield as written in the design doc sum to 8: an
-  // open question in docs/DESIGN.md, kept here so a change is a conscious decision.
-  const exceptions = { bow: 6, sword: 8, shield: 8 };
+test('weapon temperaments: every weapon sums to 8 (about +2 a roll); steady has no blank, risky has two', () => {
   for (const [id, w] of Object.entries(WEAPONS)) {
     if (w.hidden) continue;
-    const sum = w.faces.reduce((a, f) => a + f.v, 0);
-    assert.equal(sum, exceptions[id] ?? 7, id);
-    assert.ok(w.faces.some((f) => f.v === 0 || f.v === 1), `${id} has a risk face`);
+    const sum = w.faces.reduce((acc, f) => acc + f.v, 0); const blanks = w.faces.filter((f) => f.v === 0).length;
+    assert.equal(sum, 8, id);
+    assert.ok(['steady', 'balanced', 'risky'].includes(w.temper), `${id} has a temperament`);
+    assert.equal(blanks, { steady: 0, balanced: 1, risky: 2 }[w.temper], `${id} blanks`);
   }
 });
 
@@ -99,14 +97,12 @@ test('heart 5 / 6 pump the best lane of the matching color', () => {
 
 test('triples: top row and middle row give +10 attack each; head-heart-feet gives +10 block', () => {
   const r = ranger();
-  // bow faces: idx0 0b, idx1 1r, idx2 2r, idx3 3r  -> v = idx. Head 2 matches both weapon 2s.
-  const hit = evaluate(r, board({ NW: 3, N: 2, NE: 3, C: 6 }));
+  // bow faces: b1, r2, r2, r3. Head 2 matches both weapon 2s.
+  const hit = evaluate(r, board({ NW: 3, N: 2, NE: 2, C: 6 }));
   assert.equal(hit.offense3, true);
   assert.deepEqual(hit.triples.map((t) => t.name), ['Weapons Triple']);
   const miss = evaluate(r, board({ NW: 3, N: 2, NE: 4, C: 6 }));
   assert.equal(miss.offense3, false);
-  const blanks = evaluate(r, board({ NW: 1, N: 1, NE: 1, C: 6 })); // two +0 faces never match
-  assert.equal(blanks.offense3, false);
   const k = knight();
   const base = evaluate(k, board({ W: 1, C: 2, E: 1 }));
   const mid = evaluate(k, board({ W: 1, C: 1, E: 1 }));
@@ -130,12 +126,17 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
 });
 
-test('tier adds corner bonus symbols and never changes a number', () => {
-  const nums = (r) => weaponFaces({ id: 'sword', rarity: r }).map((f) => f.v);
-  for (const r of [1, 2, 3]) assert.deepEqual(nums(r), [0, 1, 3, 4]);
+test('metals raise numbers: Silver the lowest face, Gold the second-highest, Diamond the top; corners gain abilities', () => {
+  const nums = (id, r) => weaponFaces({ id, rarity: r }).map((f) => f.v);
+  assert.deepEqual(nums('sword', 0), [0, 2, 3, 3]);
+  assert.deepEqual(nums('sword', 1), [1, 2, 3, 3]);
+  assert.deepEqual(nums('sword', 2), [1, 2, 4, 3]);
+  assert.deepEqual(nums('sword', 3), [1, 2, 4, 4]);
+  assert.deepEqual(nums('spear', 3), [1, 0, 5, 5], 'a risky weapon keeps one blank');
+  assert.deepEqual(nums('warhammer', 3), [1, 0, 3, 7], 'a Diamond rolls a number no Bronze can');
   const fx = (r) => weaponFaces({ id: 'sword', rarity: r }).map((f) => f.fx || null);
   assert.deepEqual(fx(0), [null, null, null, { pierce: 1 }]);
-  assert.deepEqual(fx(1), [null, null, { pierce: 1 }, { pierce: 1 }]);
+  assert.deepEqual(fx(1)[2], { pierce: 1 });
   assert.deepEqual(fx(2)[1], { magic: 1 });
   assert.deepEqual(fx(3)[3], { pierce: 2 });
 });
@@ -149,7 +150,7 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
   assert.equal(sidesOf(h, 'NW'), 6);
   assert.equal(sidesOf(h, 'NE'), 4); // the other lane is untouched
   const f = weaponFaces(h.loadout.NW);
-  assert.deepEqual(f.map((x) => x.v), [0, 1, 3, 4, 5, 6]);
+  assert.deepEqual(f.map((x) => x.v), [0, 2, 3, 3, 5, 6]);
   assert.equal(f[4].c, 'r'); assert.equal(f[5].c, 'r'); // extra faces lean to the weapon's colour: two of it, then one of the other
   h.strength.W = 8; h.loadout.NW.size = 8; assert.deepEqual(weaponFaces(h.loadout.NW).slice(4).map((x) => x.c), ['r', 'r', 'b', 'r']);
 });

@@ -16,7 +16,7 @@ import { Cloth, solveArm, Sway } from './herocloth.js';
 import { buildClips } from './heroclips.js';
 
 const JOINTS_ORDER = ['hips', 'spine', 'chest', 'neck', 'head', 'armL', 'foreL', 'handL', 'armR', 'foreR', 'handR', 'thighL', 'shinL', 'footL', 'thighR', 'shinR', 'footR'];
-const OFFENSIVE = new Set(['sword', 'longsword', 'dagger', 'spear', 'bow', 'staff', 'fists']);
+const OFFENSIVE = new Set(['sword', 'longsword', 'dagger', 'spear', 'bow', 'staff', 'fists', 'mace', 'warhammer']);
 
 // ------------------------------------------------------------------------------------------ class specs
 const SPEC = {
@@ -667,6 +667,7 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     const opts = { quality, style: cls === 'dwarf' ? 'round' : 'heater', emblem: cls === 'knight' ? 'crown' : cls === 'dwarf' ? 'rune' : undefined, accent: spec.accent };
     const place = (w, side, id) => {
       if (id === 'shield') w.scale.setScalar(cls === 'dwarf' ? 1.1 : 1.3);
+      if (id === 'tower') w.scale.setScalar(1.15);
       if (id === 'bracer') { const fore = a.joints[`fore${side}`]; w.rotation.y = side === 'L' ? Math.PI / 2 : -Math.PI / 2; w.position.set(0, -0.16, 0); fore.add(w); }
       else grip[side].add(w);
       S.weapons.push(w);
@@ -686,11 +687,11 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     a.mats = a.mats.filter((m, i, arr) => arr.indexOf(m) === i);
     // attack info
     const info = { shield: false, twoHand: two };
-    if (two) { info.fam = nw.id; info.A = nw.id === 'bow' ? 'L' : 'R'; info.offIK = nw.id === 'staff' || nw.id === 'longsword'; }
+    if (two) { info.fam = nw.id; info.A = nw.id === 'bow' ? 'L' : 'R'; info.offIK = nw.id === 'staff' || nw.id === 'longsword' || nw.id === 'warhammer'; }
     else {
       const offs = [['L', nw], ['R', ne]].filter(([, w]) => OFFENSIVE.has(w.id));
       info.A = offs.length ? offs[0][0] : 'L'; info.fam = offs.length ? offs[0][1].id : 'fists';
-      info.shield = nw.id === 'shield' || ne.id === 'shield';
+      info.shield = ['shield', 'tower'].includes(nw.id) || ['shield', 'tower'].includes(ne.id);
     }
     info.O = info.A === 'L' ? 'R' : 'L';
     S.info = info;
