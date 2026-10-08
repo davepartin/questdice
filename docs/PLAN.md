@@ -4,9 +4,83 @@
 what is broken. Two Claude accounts take turns on this project; neither remembers the other's chat. Everything the
 next session needs lives here and in the repo.
 
+## START HERE: the state of the game on 10 October 2026
+
+This section is current; the older sections below it are history (where they disagree, this section wins).
+
+**Who and where.** The owner is Dave (davepartin on GitHub), a pastor who plays on an iPhone and tests on the live site,
+https://davepartin.github.io/questdice/ (repo `davepartin/questdice`, GitHub Pages from `main`). He likes warm, plain,
+paragraph-style explanations, and a screenshot of every visible change. Keep the game free of anything demonic, satanic,
+cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons and the like are fine).
+
+**How we work.**
+- Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
+  `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
+- After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
+  the last one used is **20261010m**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **101 passing**. Keep them green.
+- Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
+  `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
+  Write results into `docs/BALANCE.md`.
+- Screenshots: start `node dev/serve.mjs 8135`, then run a `dev/*.mjs` Playwright script (each one is a worked example:
+  `dev/moves.mjs`, `dev/straightglow.mjs`, `dev/legendary.mjs`, `dev/looks.mjs`, `dev/classes.mjs`). Headless Chromium path:
+  `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` with SwiftShader; drive time with `window.QD.world.stage.simulate`.
+  Stop the server with `pkill -f '^node dev/serve'` (a pattern that matches your own shell kills the shell).
+- Online rooms use Firebase project **`questdice-eef50`** (see `docs/FIREBASE.md`). Never deploy QuestDice rules into the
+  `space-tribes` project: that is Fleet Dice's and would break it. The Firebase config values in the repo are public identifiers.
+- Do not put AI model names in commits, code or docs. Append a dated note to this file for every piece of work.
+
+**What the game has now (rules in `js/engine.js` + `js/data.js`, pure and tested).**
+- Nine dice per hero (weapons, head, hands, heart, feet, two talent dice); 4-dice rerolls, 3 free + 3 paid; triples, straights.
+- 11 weapons in three temperaments (steady / balanced / risky); metals Bronze to Diamond raise the numbers; 6 legendary weapons
+  (one in your hands at a time, from elites, bosses and now and then the traveler).
+- 5 classes with different starts (Wizard frail with the strongest magic, Ranger fastest, Dwarf the wall, Knight, Bard).
+- Magic powers in three slots (A big move, B every round, C charge), learned and swapped at camp; a Healing section
+  (potions bought at camp by act, magic to health).
+- Campaign: Act I (Ashen Marches) and Act II (Hollow Crypt) monsters; Act III replays Act I's monsters with bigger numbers.
+  Two roads each step (standard, perilous); elites at step 5, bosses at 10; road events; camp between fights.
+- Company play: 1-6 heroes on one phone (3D, turns) or online rooms (each on their own phone). The slowest feet draw the
+  monsters' attacks; the targeted hero scores as the company's shield; team actions; spoils draft by battle points; a second
+  or third hero of a class wears another colour set.
+- Learn to play: 13 lessons and a guided practice fight. Saved games behind Continue.
+
+**What we did most recently (7-10 Oct 2026), newest last.** Online rooms; 2x talent face label; saved games list and a
+frozen-screen fix; Learn to play; slowest-feet targeting and shield points; dice roll twice as long; symbols one for one;
+potions bought at camp; camp gear panels; a strategy study; the weapons/classes/powers review (`docs/REVIEW_GEAR_CLASSES_POWERS.md`)
+and all five of its phases (temperaments and metals, three power slots, class starts, legendaries, company looks); then
+Dave asked "what is missing to make it fun?" (answer below) and we did the first item: **tension** (the standard road hits
+harder; new monster moves Fire Ward, Stalk, Phase); then a **magenta glow under the dice in a straight** and a **short monster
+sheet** (tap a monster twice: next move, how to get ready, other moves as chips). Details are in the dated notes at the end.
+
+**To do, in the order Dave and Claude agreed.** From the "what is missing to make it fun" answer (10 Oct):
+1. ~~Real danger in ordinary fights, and monster moves that break the "read the box" habit.~~ Done (Tension). Ask Dave how it
+   feels on his phone; the numbers come from a bot. One setting tunes it: `ORDINARY` in `js/data.js`.
+2. **Next: teach one idea at a time over the first ten fights.** A new player meets nine dice, triples, the heart die, talent
+   symbols, three power slots, potions, metals, die sizes, temperaments and legendaries almost at once. Bring them in one by
+   one (for example: fight 1 weapons and hands, then the heart die, then the first power, then talent symbols), so players feel
+   they are growing, not studying. The coach hints (`js/coach.js`) and `START_DICE` / `UNLOCK_ORDER` in `js/data.js` are the
+   levers. Check with Dave before changing what a new hero starts with.
+3. Reasons to play again: a branching road map, shuffled events, small unlocks that carry to the next run (a class, a power, a
+   harder mode), and a daily seed everyone plays and compares (good for Dave's church friends).
+4. Make big moments feel big: Weapons Triple, a legendary drop, a revive, a boss falling (pause, light, sound, the number counting up).
+5. More teamwork in company games: moments that need two heroes at once (hold the line so a friend can strike, team combos,
+   giving up a potion to save a friend).
+6. A story thread through the acts: who the enemy is and why it matters, light pushing back the dark, friends laying
+   themselves down for one another.
+7. Watch three or four real people play their first 20 minutes without helping (Dave's job; ask what he saw).
+
+Other open items:
+- The online table's camp has no power learning yet; online heroes use their starting powers.
+- Act II monsters (skeleton, wraith, spider, bone warden, lich) still use a placeholder 3D actor; Act III has no monsters of
+  its own. Art for them is a big piece of work.
+- Audio has never been checked by a human ear.
+- The `dom.js` fix (CSS custom properties now apply) brought class-emblem colours and list stagger animations to life;
+  worth a look on a real phone.
+- Ideas not yet raised with Dave: carry wounds between fights (attrition), armor pieces (the helmet stays a number die for now).
+
 ## How to hand off (rules for both accounts)
 
-1. `git pull` the branch `claude/wizardly-newton-c0xpcq` before doing anything. Read this file, then `docs/GFX.md`.
+1. `git pull` (the working branch is `claude/wizardly-newton-c0xpcq`; `main` is the live site and gets every push too). Read this file, then `docs/GFX.md`.
 2. Work in **parts** (section 4). One part at a time. Finish it, run `npm test`, commit, push.
 3. Before stopping (or when you notice you are near a usage limit) append a dated entry to **Handoff log** (section 7):
    what you finished, what is half-done, what to do next. Commit and push that too. Never leave work uncommitted.
@@ -21,7 +95,7 @@ next session needs lives here and in the repo.
 
 QuestDice: cooperative fantasy dice campaign (1-6 players). Your 3x3 board of dice is your body. See `docs/DESIGN.md`
 (rules, all decisions) and `docs/BESTIARY.md`. The rules engine (`js/engine.js`, `js/data.js`, `js/table.js`, `js/roads.js`,
-`js/save.js`) is **done and tested** (`npm test`, 41 passing; `npm run sim` balance bot clears Act I 15/15 for every class).
+`js/save.js`) is **done and tested** (`npm test`; 101 passing as of 10 Oct 2026; see START HERE for the balance tools).
 Milestone the owner asked for: **solo campaign through the first five Act I monsters** looking AAA, then grow it.
 The five are: Goblin Skulker, Dire Wolf, Ember Mage, Hill Ogre (elite, quest 5), The Goblin King (boss).
 
@@ -69,7 +143,7 @@ Status legend: [x] done, [~] partly / unverified, [ ] not started.
 **Part 2: Game feel (needs a human)** [ ]
 - Owner plays one real fight on a local server and reports what feels wrong (rerolls, telegraph clarity, pacing, tap targets). Fix those before more art.
 - Wire `tray.onSound` to `sfx.dieHit/dieSettle`; listen to audio levels; check music mood changes (title/road/battle/boss/victory/camp).
-- Quest 5 (Ogre Wind-Up/Slam) and the boss (rage at half HP, summons) must be read and fought correctly: verify the telegraph UI ("deal N to break") with real play.
+- Quest 5 (Ogre Wind-Up/Slam) and the boss (rage at half HP, summons) must be read and fought correctly. (Stagger was removed: a wind-up always becomes a Slam; the box says "brace with block".)
 - First-run tutorial tips adapted to the 3D HUD (old DOM tips are not shown).
 
 **Part 3: Characters to ship quality** [~] (critic round 2 overall 5.3/10; realistic ceiling for procedural-only ~7-7.5)
