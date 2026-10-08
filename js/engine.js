@@ -7,6 +7,7 @@ import {
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -52,7 +53,7 @@ export function weaponFaces(inst) {
   // Metals raise numbers (Dave): Silver +1 on the lowest face, Gold +1 on the second-highest, Diamond +1 on the top face,
   // so a Diamond rolls a number no Bronze can. A risky weapon keeps one blank. Only the four printed faces change.
   const tier = Math.min(3, inst.rarity | 0);
-  if (tier && def.faces.length === 4 && inst.id !== 'fists') {
+  if (tier && def.faces.length === 4 && inst.id !== 'fists' && !def.legendary) { // a legendary's faces are fixed
     // three different faces, chosen from the Bronze layout: the lowest, the second-highest, the highest
     const order = faces.slice(0, 4).map((f, i) => ({ v: f.v, i })).sort((a, b) => a.v - b.v || a.i - b.i);
     const raise = [order[0].i, order[2].i, order[3].i];
@@ -226,7 +227,7 @@ export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const val = (s) => board[s].v;
   const out = {
-    init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0,
+    init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, splash: 0,
     lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],
   };
 
@@ -258,7 +259,7 @@ export function evaluate(hero, board, opts = {}) {
     const L = { key, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
-      out.gold += wf.fx.loot || 0;
+      out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
     }
     for (const t of tsyms) {
       if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += str;
@@ -281,6 +282,9 @@ export function evaluate(hero, board, opts = {}) {
     const a = weaponFaces(hero.loadout.NW)[val('NW') - 1].v;
     const b = weaponFaces(hero.loadout.NE)[val('NE') - 1].v;
     if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', row: 'weapons', name: 'Weapons Triple' }); out.atk += SYNERGY_BONUS; }
+    // Twinfang's twin shot: the bow and its arrows on the same number add a little more attack
+    const tw = WEAPONS[hero.loadout.NW.id].twinShot;
+    if (tw && hero.loadout.NE?.id === hero.loadout.NW.id && a === b && a > 0) { out.atk += tw; out.twinShot = tw; out.notes.push(`Twin shot +${tw}`); }
   }
   if (isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
   if (val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
@@ -608,10 +612,11 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
-    if (m.splash > 0 || m.aoe > 0) {
+    const splash = m.splash + (ev.splash || 0); // powers, and Dawnbreaker's top face
+    if (splash > 0 || m.aoe > 0) {
       for (const e of b.enemies) {
         if (e.hp <= 0 && e !== tgt) continue;
-        const hit = (e === tgt ? 0 : m.splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
+        const hit = (e === tgt ? 0 : splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
         const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
         rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
         if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
@@ -736,7 +741,23 @@ export function battleRewards(b) {
   const c = hero.campaign; const sizes = dropSizeWeights(c.act, c.step, quest.perilous ? 1 : 0);
   const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
   if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
+  addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   return { xp, gold, drops };
+}
+// Now and then an elite or boss leaves a legendary in place of the last ordinary drop: one nobody in the fight already carries.
+const carried = (hero) => [...Object.values(hero.loadout || {}), ...(hero.bag || [])].filter(Boolean).map((w) => w.id);
+export function legendaryChance(quest) {
+  const base = LEGENDARY_CHANCE[quest.kind] || 0;
+  return base ? base + (quest.perilous ? LEGENDARY_CHANCE.perilous : 0) : 0;
+}
+function addLegendary(drops, quest, heroes, seed) {
+  const p = legendaryChance(quest); if (!p || !drops.length) return null;
+  const rng = makeRng(seed); if (rng() >= p) return null;
+  const owned = new Set(heroes.flatMap(carried));
+  const pool = LEGENDARY.filter((id) => !owned.has(id)); if (!pool.length) return null;
+  const last = drops.length - 1;
+  drops[last] = makeWeapon(pick(rng, pool), 3, rng, weaponSize(drops[last]));
+  return drops[last];
 }
 export function gainXp(hero, xp) {
   hero.xp += xp; let gained = 0;
@@ -785,6 +806,7 @@ export function forgeInfo(hero, uid) {
   ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const next = (inst.rarity | 0) + 1;
+  if (isLegendary(inst)) return { ok: false, why: 'legendary' }; // a legendary's faces are fixed
   if (inst.id === 'fists' || next > 3 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
   const cost = Math.round(FORGE_COST[next] * handsMul(inst));
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
@@ -807,7 +829,7 @@ export function trainWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.size = r.next; return true;
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
-export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * RARITY_MULT[inst.rarity | 0] * (SIZE_VALUE[weaponSize(inst)] || 1)));
+export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[weaponSize(inst)] || 1)));
 export const sellValue = (inst) => (inst.id === 'fists' ? 0 : Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE)));
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
@@ -824,6 +846,12 @@ export function shopStock(hero) {
   const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4), sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({
     inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false,
   }));
+  // from Act II the traveler sometimes carries one legendary you do not already own
+  const lrng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop-legend'));
+  if (c.act >= 2 && lrng() < LEGENDARY_CHANCE.shop) {
+    const pool = LEGENDARY.filter((id) => !carried(hero).includes(id));
+    if (pool.length) { const inst = makeWeapon(pick(lrng, pool), 3, lrng, items[items.length - 1].inst.size || 4); items[items.length - 1] = { inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false }; }
+  }
   if (flags.discount || flags.hike) c.campFlags = {};
   c.shop = { step: `${c.act}.${c.step}`, items };
   return items;
@@ -833,9 +861,18 @@ export function buyItem(hero, i) {
   if (!it || it.sold || hero.gold < it.price || bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }
+// Only one legendary in your hands at a time (Dave). A two-handed legendary fills both hands, so it never meets another.
+export function canEquip(hero, uid, side = 'NW') {
+  const inst = hero.bag.find((w) => w.uid === uid);
+  if (!inst) return { ok: false, why: 'That weapon is not in your pack.' };
+  if (!isLegendary(inst) || WEAPONS[inst.id].hands === 2 || isTwoHanded(hero)) return { ok: true };
+  const other = hero.loadout[side === 'NW' ? 'NE' : 'NW'];
+  if (isLegendary(other)) return { ok: false, why: `Only one legendary in your hands at a time. Swap it in for ${WEAPONS[other.id].name} instead, in the same hand.` };
+  return { ok: true };
+}
 export function equip(hero, uid, side = 'NW') {
   const idx = hero.bag.findIndex((w) => w.uid === uid);
-  if (idx < 0) return false;
+  if (idx < 0 || !canEquip(hero, uid, side).ok) return false;
   const inst = hero.bag[idx]; const w = WEAPONS[inst.id];
   hero.bag.splice(idx, 1);
   const nw = hero.loadout.NW; const ne = hero.loadout.NE; // putting a two-hander away keeps the better of its two hands
@@ -1293,6 +1330,7 @@ export function partyRewards(b) {
   const rng = makeRng(hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'drops'));
   const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
   const drops = rollDrops(rng, n + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + sample.campaign.act - 1, sizes: dropSizeWeights(sample.campaign.act, sample.campaign.step, quest.perilous ? 1 : 0) });
+  addLegendary(drops, quest, b.fighters.map((f) => f.hero), hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'legend'));
   const points = Object.fromEntries(b.fighters.map((f) => [f.hero.name, pointsOf(f)]));
   return { xp, gold, drops, order: ranked.map((f) => f.hero.name), place, points, contrib: points };
 }

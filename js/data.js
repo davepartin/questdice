@@ -113,7 +113,34 @@ export const WEAPONS = {
     tag: 'Two-handed, all or nothing: two blanks, a 2 and a crushing 6.',
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
+  // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and
+  // then from the traveler. Their faces are fixed (no forging; training a size still works), about +10 at d4, and they use
+  // the `model` weapon's 3D shape. Only one legendary may be in your hands at a time.
+  dawnbreaker: { name: 'Dawnbreaker', model: 'sword', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '⚔️', price: 160,
+    tag: 'Legendary sword of the first light. Its 4 also hits every other monster for 2.',
+    faces: [F(1, 'r'), F(2, 'b'), F(3, 'r'), F(4, 'r', { splash: 2 })] },
+  oakheart: { name: 'Oakheart', model: 'shield', legendary: true, hands: 1, lean: 'def', temper: 'legendary', glyph: '🛡️', price: 160,
+    tag: 'Legendary shield of living oak. A blue 3 or 4 also heals 2.',
+    faces: [F(1, 'b'), F(2, 'r'), F(3, 'b', { heal: 2 }), F(4, 'b', { heal: 2 })] },
+  thunderspear: { name: 'Thunder Spear', model: 'spear', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '🔱', price: 160,
+    tag: 'Legendary spear that rings like a storm. Every red face pierces 1.',
+    faces: [F(1, 'r', { pierce: 1 }), F(1, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })] },
+  fortune: { name: 'Fortune’s Dagger', model: 'dagger', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '🗡️', price: 160,
+    tag: 'Legendary dagger with a lucky edge. Never blank, and a 3 also pays 3 gold.',
+    faces: [F(2, 'r'), F(2, 'b'), F(3, 'r', { loot: 3 }), F(3, 'r', { loot: 3 })] },
+  starfire: { name: 'Starfire Staff', model: 'staff', legendary: true, hands: 2, lean: 'off', temper: 'legendary', glyph: '🪄', price: 220,
+    tag: 'Legendary two-handed staff. Every face gives magic, the 4 gives 2.',
+    faces: [F(1, 'b', { magic: 1 }), F(2, 'b', { magic: 1 }), F(3, 'r', { magic: 1 }), F(4, 'r', { magic: 2 })] },
+  twinfang: { name: 'Twinfang Bow', twinName: 'Twinfang Arrows', model: 'bow', legendary: true, hands: 2, lean: 'off', temper: 'legendary', glyph: '🏹', price: 220,
+    twinShot: 3, tag: 'Legendary two-handed bow. Twin shot: when the bow and the arrows roll the same number, +3 attack.',
+    faces: [F(1, 'b'), F(2, 'r'), F(3, 'r', { pierce: 1 }), F(3, 'r', { pierce: 1 })] },
 };
+export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legendary);
+export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
+export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows
+export const tierName = (inst) => (isLegendary(inst) ? 'Legendary' : RARITY[(inst?.rarity | 0)] || 'Bronze');
+// The chance a fight's spoils hold a legendary you do not already carry, and the traveler's chance (Act II on) to bring one.
+export const LEGENDARY_CHANCE = { elite: 0.06, boss: 0.15, perilous: 0.03, shop: 0.05 };
 export const LOOT_WEIGHTS = {
   dagger: 10, bracer: 8, sword: 10, shield: 10, spear: 8, mace: 7, tower: 7, bow: 7, longsword: 7, staff: 7, warhammer: 5,
 };

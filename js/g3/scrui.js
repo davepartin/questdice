@@ -42,7 +42,7 @@ function plaque({ eyebrow: eb, title, sub, icon, onclick, tone = '', primary = f
 const coin = (n, cls = '') => h('span', { class: `sx-coin ${cls}` }, ico('coin'), h('b', {}, String(n)));
 function pips(n, max, cls = '') { return h('span', { class: `sx-pips ${cls}`, 'aria-label': `${n} of ${max}` }, Array.from({ length: max }, (_, i) => h('i', { class: i < n ? 'on' : '' }))); }
 function fxItems(fx) {
-  const map = { atk: ['burst', 'c-atk'], pierce: ['pierce', 'c-pierce'], block: ['shield', 'c-block'], heal: ['plus', 'c-heal'], magic: ['spark', 'c-magic'], stagger: ['stagger', 'c-gold'], loot: ['coin', 'c-gold'], gold: ['coin', 'c-gold'], weaken: ['skull', 'c-dim'], free: ['reroll', 'c-block'] };
+  const map = { atk: ['burst', 'c-atk'], pierce: ['pierce', 'c-pierce'], block: ['shield', 'c-block'], heal: ['plus', 'c-heal'], magic: ['spark', 'c-magic'], stagger: ['stagger', 'c-gold'], splash: ['stagger', 'c-atk'], loot: ['coin', 'c-gold'], gold: ['coin', 'c-gold'], weaken: ['skull', 'c-dim'], free: ['reroll', 'c-block'] };
   return Object.entries(fx).map(([k, v]) => { const [ic, c] = map[k] || ['spark', '']; return h('span', { class: `fx ${c}` }, ico(ic), String(v)); });
 }
 // An image that shimmers until a (queued) portrait arrives.
@@ -196,14 +196,14 @@ function faceChips(inst) {
 }
 // A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
 function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
-  const w = D.WEAPONS[inst.id]; const r = RAR[inst.rarity | 0];
+  const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
   // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
   const size = E.weaponSize(inst); const hero = X.S?.hero; const wi = hero && inst.id !== 'fists' && !String(inst.uid).startsWith('c-') ? E.wieldInfo(hero, inst) : null;
   const need = size > 4 ? h('p', { class: `wc-need ${wi && !wi.ok ? 'short' : 'ok'}` }, ico(wi && !wi.ok ? 'lock' : 'check'),
     wi && !wi.ok ? `Needs d${size} Strength${wi.two ? ' in both hands' : ''}. Rolls as a d${wi.rollsAs} until you train it.` : `Needs d${size} Strength${wi?.two ? ' in both hands' : ''}`) : null;
   return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
-    h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${D.RARITY[inst.rarity | 0]} ${w.name}`), h('span', { class: 'wc-banner' }, D.RARITY[inst.rarity | 0]), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact ? null : h('p', { class: 'wc-tag' }, w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
+    h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
+    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.legendary ? 'Legendary · ' : ''}${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact && !w.legendary ? null : h('p', { class: `wc-tag ${w.legendary ? 'legend' : ''}` }, w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
 }
 export function create() {
@@ -383,14 +383,14 @@ export function victory(first) {
   const full = E.bagFull(hero); const done = () => { sfx.coin(); X.persist(); X.renderVictory(); };
   const packStrip = full && Rw.picked == null ? h('div', { class: 'sx-pack' },
     h('p', { class: 'pk-head' }, ico('bag'), h('b', {}, `Your pack is full (${hero.bag.length}/${D.BAG_MAX})`), h('small', {}, 'Sell one to make room, or sell the spoils.')),
-    h('div', { class: 'pk-list' }, hero.bag.map((it) => h('div', { class: 'pk-item' }, h('span', {}, `${D.RARITY[it.rarity | 0]} ${D.WEAPONS[it.id].name} · d${E.weaponSize(it)}`),
+    h('div', { class: 'pk-list' }, hero.bag.map((it) => h('div', { class: 'pk-item' }, h('span', {}, `${D.tierName(it)} ${D.WEAPONS[it.id].name} · d${E.weaponSize(it)}`),
       btn(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); done(); }, { kind: 'ghost', icon: 'coin', aria: `Sell ${D.WEAPONS[it.id].name} for ${E.sellValue(it)} gold` }))))) : null;
   const loot = Rw.picked == null
     ? panel('sx-loot', eyebrow(`Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`, 'gold'), packStrip, h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [
       btn(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; Rw.picked = i; Rw.sold = false; done(); }, { kind: 'primary', icon: 'bag', disabled: full }),
       btn(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); Rw.picked = i; Rw.sold = true; done(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell it now for ${E.sellValue(inst)} gold` }),
     ] }))))
-    : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold.` : `You took the ${D.RARITY[Rw.drops[Rw.picked].rarity]} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
+    : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold.` : `You took the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
   const lootHint = Rw.picked == null ? (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot')) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
@@ -438,7 +438,7 @@ export function partyVictory() {
         btn(E.bagFull(picker) ? 'Pack full' : `Take · ${who}`, () => { if (!E.takeDrop(picker, inst)) return; E.draftPick(R.draft, who, i); sfx.coin(); again(); }, { kind: 'primary', icon: 'bag', disabled: E.bagFull(picker) }),
       ] }))),
       h('div', { class: 'sx-cta' }, btn(`Skip · ${who}`, () => { E.draftSkip(R.draft, who); sfx.select(); again(); }, { kind: 'ghost', cls: 'wide' })))
-    : panel('sx-loot done', h('div', { class: 'cardlist' }, Object.entries(R.draft.picked).length ? Object.entries(R.draft.picked).map(([i, name]) => h('p', { class: 'muted' }, `${name} took the ${D.RARITY[R.drops[i].rarity | 0]} ${D.WEAPONS[R.drops[i].id].name}.`)) : h('p', { class: 'muted' }, 'The spoils stay on the road.')));
+    : panel('sx-loot done', h('div', { class: 'cardlist' }, Object.entries(R.draft.picked).length ? Object.entries(R.draft.picked).map(([i, name]) => h('p', { class: 'muted' }, `${name} took the ${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}.`)) : h('p', { class: 'muted' }, 'The spoils stay on the road.')));
   const ready = !pending && R.draft.done;
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
@@ -481,8 +481,8 @@ function weaponRow(inst, label = '') {
   const f = E.forgeInfo(hero, inst.uid); const t = E.trainInfo(hero, inst.uid);
   const note = !t.next ? 'Biggest die' : t.why === 'hands' ? `d${t.next} needs a d${t.next} hand first` : `d${size} → d${t.next}`;
   return h('div', { class: 'sx-urow wrow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.RARITY[inst.rarity | 0]} · d${size}`), h('small', { class: 'ur-next' }, note)),
-    f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, 'BEST TIER'),
+    h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.tierName(inst)} · d${size}`), h('small', { class: 'ur-next' }, note)),
+    f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (E.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, f.why === 'legendary' ? 'LEGENDARY' : 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (E.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
 // Supplies: healing potions are bought here and carried from battle to battle. Shown above the camp tabs.
@@ -607,11 +607,12 @@ function forgeTab() {
 function gearTab() {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
   const sync = () => { sfx.card(); X.persist(); X.renderCamp(); };
+  const wear = (inst, side) => { const c = E.canEquip(hero, inst.uid, side); if (!c.ok) { sfx.error(); toast(c.why); return; } E.equip(hero, inst.uid, side); sync(); };
   const worn = two ? [weaponCard(hero.loadout.NW, { note: 'Both hands', cls: 'worn', badge: 'Equipped' })] : [weaponCard(hero.loadout.NW, { note: 'Left hand', cls: 'worn', badge: 'Left' }), weaponCard(hero.loadout.NE, { note: 'Right hand', cls: 'worn', badge: 'Right' })];
   const bag = hero.bag.map((inst) => {
     const w = D.WEAPONS[inst.id];
-    const acts = w.hands === 2 ? [btn('Equip', () => { E.equip(hero, inst.uid); sync(); }, { kind: 'ghost' })]
-      : [btn('Left', () => { E.equip(hero, inst.uid, 'NW'); sync(); }, { kind: 'ghost', aria: `Equip ${w.name} in left hand` }), btn('Right', () => { E.equip(hero, inst.uid, 'NE'); sync(); }, { kind: 'ghost', aria: `Equip ${w.name} in right hand` })];
+    const acts = w.hands === 2 ? [btn('Equip', () => wear(inst, 'NW'), { kind: 'ghost' })]
+      : [btn('Left', () => wear(inst, 'NW'), { kind: 'ghost', aria: `Equip ${w.name} in left hand` }), btn('Right', () => wear(inst, 'NE'), { kind: 'ghost', aria: `Equip ${w.name} in right hand` })];
     acts.push(btn(String(E.sellValue(inst)), () => { E.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell ${w.name} for ${E.sellValue(inst)} gold` }));
     return weaponCard(inst, { actions: acts, compact: true });
   });

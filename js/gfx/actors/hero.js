@@ -663,7 +663,9 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
   function clearWeapons() { for (const w of S.weapons) { w.parent?.remove(w); w.userData.dispose?.(); } S.weapons = []; a.userData.bow = a.userData.staff = a.userData.arrow = null; }
   function mountWeapons(lo) {
     clearWeapons();
-    const nw = lo.NW; const ne = lo.NE; const two = WEAPONS[nw.id].hands === 2;
+    // a legendary poses and mounts as its ordinary model; only createWeapon sees its own id (for the golden look)
+    const vis = (w) => (w && WEAPONS[w.id]?.legendary ? { ...w, id: WEAPONS[w.id].model, rarity: 3, legend: w.id } : w);
+    const nw = vis(lo.NW); const ne = vis(lo.NE); const two = WEAPONS[nw.id].hands === 2;
     const opts = { quality, style: cls === 'dwarf' ? 'round' : 'heater', emblem: cls === 'knight' ? 'crown' : cls === 'dwarf' ? 'rune' : undefined, accent: spec.accent };
     const place = (w, side, id) => {
       if (id === 'shield') w.scale.setScalar(cls === 'dwarf' ? 1.1 : 1.3);
@@ -674,13 +676,13 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
     };
     if (two) {
       const fam = nw.id; const side = fam === 'bow' ? 'L' : 'R';
-      const w = createWeapon(nw.id, nw.rarity | 0, opts); place(w, side, nw.id);
+      const w = createWeapon(nw.legend || nw.id, nw.rarity | 0, opts); place(w, side, nw.id);
       if (fam === 'bow') { a.userData.bow = w; const arrow = createArrow(nw.rarity | 0); arrow.rotation.set(0, 0, 0); w.userData.nock.add(arrow); arrow.visible = false; a.userData.arrow = arrow; w.userData.setDraw(0); }
       if (fam === 'staff') { a.userData.staff = w; }
       S.main = w; S.mainSide = side;
     } else {
-      const wl = createWeapon(nw.id, nw.rarity | 0, opts); place(wl, 'L', nw.id);
-      const wr = createWeapon(ne.id, ne.rarity | 0, opts); place(wr, 'R', ne.id);
+      const wl = createWeapon(nw.legend || nw.id, nw.rarity | 0, opts); place(wl, 'L', nw.id);
+      const wr = createWeapon(ne.legend || ne.id, ne.rarity | 0, opts); place(wr, 'R', ne.id);
       S.mainL = wl; S.mainR = wr;
     }
     for (const w of S.weapons) adopt(w);

@@ -364,3 +364,19 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   holds 15 magic, Heal with magic gives 6, powers upgrade to level 3 (POWER_UPGRADE 60 / 140 / 260).
 - Engine: startMagicOf, magicCapOf, healAmountOf, powerLevelsOf, maxFeetOf. Creation screen: a trait line and four meters
   (Health, Speed, Strength, Magic). progress-all.sh prints clears by class.
+- Balance after Phase 3 (progress-all 3 acts, 4 campaigns a class, smart bot): 19/20 cleared; bard, dwarf, knight and
+  wizard 4/4, ranger 3/4.
+
+## Phase 4: legendary weapons (Oct 2026)
+
+- Six named legendaries in WEAPONS (`legendary: true`, `model` = the ordinary weapon whose 3D shape and poses they borrow):
+  Dawnbreaker (sword; its 4 hits every other monster for 2), Oakheart (shield; blue 3 and 4 heal 2), Thunder Spear (every
+  red face pierces 1), Fortune's Dagger (never blank; a 3 pays 3 gold), Starfire Staff (two-handed; magic on every face),
+  Twinfang Bow (two-handed; twin shot +3 attack when bow and arrows match). About +10 at d4, faces fixed.
+- Found only in elite (6%) and boss (15%) spoils, +3% on the perilous road, and from Act II the traveler carries one 5% of
+  the time; never one somebody in the fight already carries. Rarity 3 on the instance (for visuals), tierName 'Legendary'.
+- No forging (forgeInfo why 'legendary'); training a size works. Worth their price (no metal multiplier).
+- One legendary in your hands at a time: canEquip / equip refuse a second one-handed legendary in the other hand (a toast
+  says why; the online table returns the same reason). A two-handed legendary fills both hands.
+- Looks: createWeapon maps a legendary to its model with a warm gold crystal and halo; cards get a gold Legendary banner,
+  shine, and always show their rule. Splash shows as a burst corner on the die.

@@ -73,7 +73,7 @@ export function describeDie(hero, slot, v) {
   const role = D.ROLE[slot]; const name = SLOT_NAME[slot];
   if (role === 'weapon') {
     const inst = hero.loadout[slot]; const f = E.weaponFaces(inst)[v - 1]; const w = D.WEAPONS[inst.id];
-    return `${name} · ${D.RARITY[inst.rarity]} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this lane attacks' : 'BLUE, so this lane defends'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
+    return `${name} · ${D.tierName(inst)} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this lane attacks' : 'BLUE, so this lane defends'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
@@ -153,7 +153,7 @@ export function weaponCard(inst, { actions = [], note = '', compact = false } = 
   return h('div', { class: `wcard rar-${RARITY_CLASS[inst.rarity]} ${compact ? 'compact' : ''}` },
     h('div', { class: 'whead' },
       h('span', { class: 'wglyph' }, w.glyph || '✊'),
-      h('div', { class: 'wtitle' }, h('b', {}, w.name), h('small', {}, `${D.RARITY[inst.rarity]} · ${w.hands === 2 ? 'two-handed' : 'one-handed'}`))),
+      h('div', { class: 'wtitle' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · ${w.hands === 2 ? 'two-handed' : 'one-handed'}`))),
     h('div', { class: 'wfaces' }, faces.map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, String(f.v), f.fx ? h('i', {}, fxText(f.fx)) : null))),
     compact ? null : h('p', { class: 'wtag' }, w.tag),
     note ? h('p', { class: 'wnote' }, note) : null,

@@ -1062,7 +1062,7 @@ async function playStrike(s, rep, actorOfHero) {
   const ha = actorOfHero(s.name); const ta = bw.actors.get(s.targetUid); if (!ha || !ta) return;
   const m = (rep.moral || []).find((x) => x.to === s.name);
   if (m) { banner(`MORAL BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); vfx('aura', ha, { kind: 'buff', color: 0xffd23d, dur: 0.9 }); await wait(0.5); }
-  const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = hero?.loadout.NW.id;
+  const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
   const hitP = new Promise((res) => ha.play((s.atk + s.pierce) > 0 ? ((B.swing++ % 2) ? 'attack2' : 'attack') : 'cast', { fade: 0.08, onEvent: (en) => { if (en === 'hit' || en === 'release') res(); } }).then(res));
   await race(hitP, 1.4);
   const chest = ta.worldAnchor('chest'); const head = ta.worldAnchor('head');

@@ -223,6 +223,7 @@ function buy(table, player, cmd) {
 function equip(table, player, cmd) {
   if (table.phase !== 'camp') return fail('Change gear at camp.');
   const side = cmd.side === 'NE' ? 'NE' : 'NW';
+  const can = E.canEquip(player.hero, cmd.uid, side); if (!can.ok) return fail(can.why);
   if (!E.equip(player.hero, cmd.uid, side)) return fail('That weapon is not in your pack.');
   player.ready = false;
   return ok();

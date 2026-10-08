@@ -143,12 +143,12 @@ function weaponMats(r) {
   M.glow = new THREE.MeshStandardMaterial({ color: 0x000000, vertexColors: false, emissive: p.glow, emissiveIntensity: 2.2, roughness: 0.4, metalness: 0 });
   return M;
 }
-function crystalMaterial(r, accent) {
+function crystalMaterial(r, accent, glow = 0x1aa4c8) {
   const rune = runeTexture(3);
   const c = new THREE.Color(accent ?? PAL[3].blade);
   const m = new THREE.MeshPhysicalMaterial({
     color: c.clone().multiplyScalar(0.6), vertexColors: true, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04,
-    emissive: new THREE.Color(0x1aa4c8), emissiveMap: rune.clone(), emissiveIntensity: 0.6, ior: 2.1, iridescence: 0.7, iridescenceIOR: 1.6, envMapIntensity: 2.2,
+    emissive: new THREE.Color(glow), emissiveMap: rune.clone(), emissiveIntensity: 0.6, ior: 2.1, iridescence: 0.7, iridescenceIOR: 1.6, envMapIntensity: 2.2,
     transparent: true, opacity: 0.92, specularIntensity: 1,
   });
   m.emissiveMap.needsUpdate = true; m.emissiveMap.wrapT = THREE.RepeatWrapping;
@@ -747,7 +747,11 @@ function buildFists(r, P, pal) {
 }
 
 // ----------------------------------------------------------------------------------------------- entry points
+// A legendary borrows its ordinary weapon's model, crowned with Diamond detail and a warm sunlit glow instead of ice blue.
+const LEGEND_GLOW = { blade: 0xffe7a0, emissive: 0xd88a1a, halo: 0xffc040, face: 0xffb030 };
 export function createWeapon(id, rarity = 0, o = {}) {
+  const legend = WEAPONS[id]?.legendary ? id : null;
+  if (legend) { id = WEAPONS[id].model; rarity = 3; }
   const r = Math.max(0, Math.min(3, rarity | 0)); const pal = PAL[r];
   const def = WEAPONS[id]; if (!def) throw new Error(`unknown weapon ${id}`);
   const group = new THREE.Group(); group.name = `weapon-${id}-${RNAMES[r]}`; const ud0 = group.userData;
@@ -773,11 +777,11 @@ export function createWeapon(id, rarity = 0, o = {}) {
   const roleMat = { ...M };
   const shimmer = [];
   const roleMesh = {};
-  if (r === 3) { roleMat.blade = crystalMaterial(r, o.accent3); shimmer.push(roleMat.blade); }
+  if (r === 3) { roleMat.blade = legend ? crystalMaterial(r, LEGEND_GLOW.blade, LEGEND_GLOW.emissive) : crystalMaterial(r, o.accent3); shimmer.push(roleMat.blade); }
   if (id === 'shield' || id === 'tower') {
     const fm = new THREE.MeshStandardMaterial({ color: 0xffffff, map: faceMap, vertexColors: true, roughness: 0.55, metalness: 0.35, envMapIntensity: 1.0, bumpMap: faceMap, bumpScale: 0.8 });
     roleMat.face = fm;
-    if (r === 3) { fm.emissive = new THREE.Color(0x35c4e4); fm.emissiveMap = faceMap; fm.emissiveIntensity = 0.5; shimmer.push(fm); }
+    if (r === 3) { fm.emissive = new THREE.Color(legend ? LEGEND_GLOW.face : 0x35c4e4); fm.emissiveMap = faceMap; fm.emissiveIntensity = 0.5; shimmer.push(fm); }
     if (r === 2) { fm.emissive = new THREE.Color(0xffd25a); fm.emissiveMap = faceMap; fm.emissiveIntensity = 0.12; }
   }
   const q = QUAL[o.quality || 'high'] || 1; void q;
@@ -786,13 +790,13 @@ export function createWeapon(id, rarity = 0, o = {}) {
     const m = new THREE.Mesh(g, roleMat[role]); m.castShadow = true; m.receiveShadow = true; m.name = `${id}-${role}`; m.userData.role = role; group.add(m); roleMesh[role] = m;
     if (role === 'blade' && r === 3) {
       m.userData.shimmer = true;
-      const halo = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x2ab8e0, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide, toneMapped: true }));
+      const halo = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: legend ? LEGEND_GLOW.halo : 0x2ab8e0, transparent: true, opacity: legend ? 0.3 : 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide, toneMapped: true }));
       halo.scale.set(1.9, 1, 1.22); halo.name = `${id}-halo`; group.add(halo); ud0.halo = halo;
     }
   }
   const tip = group.userData.tip || new THREE.Object3D(); tip.position.set(0, info.tipY ?? 0.5, 0); if (!tip.parent) group.add(tip);
   const ud = group.userData;
-  ud.id = id; ud.rarity = r; ud.family = id; ud.hands = def.hands; ud.length = info.length; ud.tip = tip; ud.mount = id === 'bracer' ? 'forearm' : 'grip';
+  ud.id = id; ud.legend = legend; ud.rarity = r; ud.family = id; ud.hands = def.hands; ud.length = info.length; ud.tip = tip; ud.mount = id === 'bracer' ? 'forearm' : 'grip';
   ud.sockets = { grip2: info.grip2 || null };
   ud.info = info;
   // animation hooks
@@ -818,5 +822,5 @@ export function createWeapon(id, rarity = 0, o = {}) {
   void glowMats;
   return group;
 }
-export const WEAPON_IDS = Object.keys(WEAPONS);
+export const WEAPON_IDS = Object.keys(WEAPONS); // (legendaries included: they draw as their model in gold light)
 export const RARITY_PALETTE = PAL;

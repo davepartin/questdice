@@ -420,7 +420,7 @@ export const portraitQ = {
     const key = `w:${id}:${rarity}`;
     return queue(key, async () => {
       const w = createWeapon(id, rarity, { quality: 'med' }); const holder = new THREE.Group(); holder.add(w);
-      const hands2 = D.WEAPONS[id].hands === 2;
+      const hands2 = D.WEAPONS[id].hands === 2; id = D.modelOf(id); // a legendary is posed like its model
       w.rotation.z = id === 'shield' || id === 'tower' || id === 'bracer' ? 0 : id === 'bow' ? -0.78 : id === 'staff' ? -0.72 : (hands2 ? -0.7 : -0.62); // long weapons lie on the diagonal so they fill the picture
       if (id === 'shield' || id === 'tower') w.rotation.y = -0.5;
       if (id === 'bracer') { w.rotation.x = -0.4; w.rotation.y = 0.6; }

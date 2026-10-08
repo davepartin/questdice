@@ -663,12 +663,12 @@ function renderVictory() {
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(hero, id); R.offer = null; sfx.level(); persist(); renderVictory(); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text), h('i', {}, `You have ${hero.perks.filter((p) => p === id).length}/${D.PERKS[id].max}`))))) : null;
   const full = E.bagFull(hero); const after = () => { sfx.coin(); persist(); renderVictory(); };
   const loot = R.picked == null ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`),
-    full ? h('div', { class: 'cardlist' }, hero.bag.map((it) => h('div', { class: 'mini-card' }, h('b', {}, `${D.RARITY[it.rarity | 0]} ${D.WEAPONS[it.id].name}`), primary(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); after(); }, { cls: 'small' })))) : null,
+    full ? h('div', { class: 'cardlist' }, hero.bag.map((it) => h('div', { class: 'mini-card' }, h('b', {}, `${D.tierName(it)} ${D.WEAPONS[it.id].name}`), primary(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); after(); }, { cls: 'small' })))) : null,
     h('div', { class: 'loot' }, R.drops.map((inst, i) => V.weaponCard(inst, { actions: [
       primary(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; R.picked = i; R.sold = false; after(); }, { cls: 'small', disabled: full }),
       primary(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); R.picked = i; R.sold = true; after(); }, { cls: 'small' }),
     ] }))))
-    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.RARITY[R.drops[R.picked].rarity]} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold.` : `You took the ${D.RARITY[R.drops[R.picked].rarity]} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
+    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold.` : `You took the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
   const ready = !R.offer && hero.pendingPerks === 0 && R.picked != null;
   mount(
     h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The way is open.')),
@@ -715,7 +715,7 @@ function renderPartyVictory() {
   const loot = !lootDone ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `${picker} chooses · ${R.points[picker] || 0} points`), primary('Skip', () => { E.draftSkip(R.draft, picker); persist(); renderPartyVictory(); }, { cls: 'small' }),
     h('div', { class: 'loot' }, R.drops.map((inst, i) => R.pickedBy[i] ? null : V.weaponCard(inst, { actions: [primary('Take', () => { const who = S.company.members.find((m) => m.name === picker); if (!E.takeDrop(who, inst)) { toast('That pack is full.'); return; } E.draftPick(R.draft, picker, i); sfx.coin(); persist(); renderPartyVictory(); }, { cls: 'small' })] }))))
     : h('section', { class: 'panel' }, h('p', { class: 'muted' }, 'The packs are full. One weapon stays on the road.'),
-      h('div', { class: 'cardlist' }, Object.entries(R.pickedBy).map(([i, name]) => h('div', { class: 'mini-card' }, h('b', {}, name), h('small', {}, `${D.RARITY[R.drops[i].rarity]} ${D.WEAPONS[R.drops[i].id].name}`)))));
+      h('div', { class: 'cardlist' }, Object.entries(R.pickedBy).map(([i, name]) => h('div', { class: 'mini-card' }, h('b', {}, name), h('small', {}, `${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}`)))));
   const ready = !pending && lootDone;
   mount(
     h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The company is still standing.')),

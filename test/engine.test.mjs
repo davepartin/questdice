@@ -19,7 +19,7 @@ const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1, full: true });
 
 test('weapon temperaments: every weapon sums to 8 (about +2 a roll); steady has no blank, risky has two', () => {
   for (const [id, w] of Object.entries(WEAPONS)) {
-    if (w.hidden) continue;
+    if (w.hidden || w.legendary) continue;
     const sum = w.faces.reduce((acc, f) => acc + f.v, 0); const blanks = w.faces.filter((f) => f.v === 0).length;
     assert.equal(sum, 8, id);
     assert.ok(['steady', 'balanced', 'risky'].includes(w.temper), `${id} has a temperament`);
