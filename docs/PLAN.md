@@ -541,3 +541,4 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   each real 3D die (engine dieSpecs + dice.js createDie) through a full turn into a 32-frame strip
   (assets/brand/die-*.webp, about 80 KB each); scrui.js floatDie plays the strip as a sprite while it bobs and drifts.
   Re-film after a change to the dice look. Sizes scale with the knight (CSS --dk).
+- 10 Oct: "How to play" renamed **Rules** everywhere (home screen link with a scroll icon, board/battle/room menus, the ? button, the sheet title), so it is not confused with "Learn to play" (the lessons and practice battle).

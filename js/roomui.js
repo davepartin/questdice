@@ -111,7 +111,7 @@ function leave() {
 function menu(view) {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, view?.name || 'Table'),
     h('div', { class: 'col' },
-      ctx.ghost('How to play', () => { close(); ctx.showHowTo(); }),
+      ctx.ghost('Rules', () => { close(); ctx.showHowTo(); }),
       view?.phase === 'battle' ? ctx.ghost('Retreat (lose 15% gold)', () => { close(); confirmRetreat(); }) : null,
       ctx.ghost('Leave this phone', () => { close(); leave(); }),
       ctx.ghost('Close', () => close()))));

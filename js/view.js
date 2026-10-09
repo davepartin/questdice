@@ -256,7 +256,7 @@ export function rosterEl(fighters, active = -1) {
 export function howToPlay() {
   const p = (...c) => h('p', {}, ...c);
   return h('div', { class: 'howto' },
-    h('h2', {}, 'How to play'),
+    h('h2', {}, 'Rules'),
     p('Your nine dice are your ', h('b', {}, 'body'), '. Roll them, shape the result with a few rerolls, then lock in. You and the monsters resolve together, and your blow lands first.'),
     h('h3', {}, 'Reading the board'),
     p(h('b', {}, 'Hands'), ' are strength. A weapon die sits above each hand and adds its number; its ', h('b', { class: 'red' }, 'red'), ' or ', h('b', { class: 'blue' }, 'blue'), ' colour decides whether that side ', h('b', {}, 'attacks'), ' or ', h('b', {}, 'blocks'), '.'),

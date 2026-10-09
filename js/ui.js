@@ -158,7 +158,7 @@ export function showTitle() {
     cmd('01 · Hero', 'Forge a new hero', 'One body of dice. A whole road.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
     cmd('02 · Together', 'Play on your own phone', 'One to six heroes. Each decides at the same time, and the fight runs when every choice is in.', showTogether, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
-  items.push(h('div', { class: 'row center' }, ghost('How to play', showHowTo)));
+  items.push(h('div', { class: 'row center' }, ghost('Rules', showHowTo)));
   mount(...items);
   S.timers.push(setInterval(tick, 1400));
 }
@@ -325,7 +325,7 @@ function menu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, S.company?.name || S.hero?.name || 'Menu'),
     h('div', { class: 'col' },
       ghost('The story so far', () => { close(); showStorySoFar(); }),
-      ghost('How to play', () => { close(); showHowTo(); }),
+      ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       ghost('Save & go home', () => { close(); askHome(); }),
@@ -529,7 +529,7 @@ async function flicker(slots) {
 // ------------------------------------------------------------------ battle: shape & lock
 function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
-    h('div', { class: 'col' }, ghost('How to play', () => { close(); showHowTo(); }),
+    h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }),
       S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));

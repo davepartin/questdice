@@ -176,7 +176,7 @@ export function title() {
   mountAs('title',
     h('div', { class: 'sx-title-shell' },
       h('div', { class: 'sx-title-brand' }, logo()),
-      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, saves.length ? btn('Learn to play', X.showLessons, { kind: 'ghost', icon: 'shine', cls: 'sx-learn' }) : null, btn('How to play', X.showHowTo, { kind: 'link', icon: 'help' })), h('div', { class: 'sx-more', 'aria-hidden': 'true' }, '▾ More below'))));
+      h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, saves.length ? btn('Learn to play', X.showLessons, { kind: 'ghost', icon: 'shine', cls: 'sx-learn' }) : null, btn('Rules', X.showHowTo, { kind: 'link', icon: 'scroll' })), h('div', { class: 'sx-more', 'aria-hidden': 'true' }, '▾ More below'))));
   lay('title');
   const box = menu.parentElement;
   const check = () => box.classList.toggle('more', box.scrollTop + box.clientHeight < box.scrollHeight - 12);
