@@ -485,7 +485,7 @@ export function startRoll(b) {
   const plan = b.script?.rolls?.shift();
   b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, s === 'P' && !b.hero.pet ? { v: 1, bound: false } : scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
   b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
-  const slots = Object.keys(ROLE).filter((s) => s !== 'C' && (s !== 'P' || isActive(b.hero, 'P')));
+  const slots = Object.keys(ROLE).filter((s) => s !== 'C' && s !== 'P'); // the pet's die is not on the board, so it is never tangled
   for (let i = 0; i < b.nextBound && slots.length; i++) {
     const s = slots.splice(Math.floor(b.rng() * slots.length), 1)[0];
     b.board[s].bound = true;
@@ -502,7 +502,7 @@ export function canReroll(b, slots) {
   const info = rerollInfo(b);
   if (info.kind === 'none' || !slots.length) return false;
   if (slots.length > info.dice) return false;
-  if (slots.some((s) => b.board[s].bound || !isActive(b.hero, s))) return false;
+  if (slots.some((s) => s === 'P' || b.board[s].bound || !isActive(b.hero, s))) return false; // the pet's die is one roll of luck (Dave)
   return b.magic >= info.perDie * slots.length;
 }
 export function reroll(b, slots) {

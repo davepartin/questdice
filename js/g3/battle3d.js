@@ -14,6 +14,7 @@ import { sfx, music } from '../audio.js';
 import { world } from './world.js';
 import { intentClips } from '../gfx/actors/common.js';
 import * as THREE from 'three';
+import { petImg } from './pets.js';
 
 const stopWindups = () => { for (const h of B.windups.splice(0)) { try { h.stop(); } catch { /* ignore */ } } };
 let C = null;                // context from ui.js
@@ -133,6 +134,9 @@ function buildHud() {
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
   hud.goldchip = h('div', { class: 'b3-magchip b3-goldchip', title: 'Gold' }, HK.icon('gold'), h('b', {}, '0')); // your gold, above the magic (Dave)
+  // the pet (Dave): off the board, a small badge by the gold and magic. Its die rolls once a round with the others and
+  // cannot be rerolled: a bit of luck. Tap it to read what it rolled.
+  hud.petchip = h('button', { type: 'button', class: 'b3-petchip', hidden: true, 'aria-label': 'Your pet', onclick: () => petInfo() }, h('img', { class: 'pc-pic', alt: '', draggable: 'false' }), h('span', { class: 'pc-die' }));
   // on phones the line between the battlefield and the dice table is the hero's health bar
   hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
   hud.forecast = HK.forecastStrip();
@@ -148,7 +152,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -175,7 +179,7 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
   const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
   let PITCH = (60 * Math.PI) / 180; const LOOK = new THREE.Vector3(0, 0.1, 0.1); const HALF = 1.78; const EDGE = 2.1;
-  const pet = !!B.hero?.pet; const PET_X = -3.66; const FRAME_X = 2.4; // with a pet, its stand (left of the frame) must stay on screen too
+  const pet = false; const PET_X = -3.66; // (the pet left the table for the HUD: the board alone is centred) const FRAME_X = 2.4; // with a pet, its stand (left of the frame) must stay on screen too
   if (pet) LOOK.x = (PET_X + FRAME_X) / 2; // and the pet and the board together sit in the middle of the screen
   cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
   const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
@@ -299,6 +303,29 @@ function updateHero() {
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
   const gc = B.hud.goldchip; if (gc) gc.querySelector('b').textContent = String(B.party ? E.companyGold(b.fighters.map((f) => f.hero)) : (B.hero?.gold ?? 0));
+  renderPet();
+}
+// The pet's badge: its picture and a little die face with what it rolled this round (? before the roll).
+const SYM_TINT = { atk: '#ff4b4b', pierce: '#ff8a1a', block: '#3aa4ff', heal: '#38e87a', magic: '#b46cff', gold: '#ffc21a' };
+function renderPet() {
+  const pc = B.hud?.petchip; if (!pc) return; const hero = B.hero; const pet = hero?.pet; const b = B.b;
+  pc.hidden = !pet; if (!pet) return;
+  pc.style.setProperty('--pc', D.PETS[pet.type]?.color || '#ffffff');
+  const img = pc.querySelector('.pc-pic'); const src = petImg(pet.type); if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+  const v = b.board?.P?.v; const key = b.board ? `${b.round}:${B.active ?? 0}:${v}` : 'wait';
+  if (pc.dataset.k === key) return; pc.dataset.k = key;
+  const die = pc.querySelector('.pc-die');
+  if (!b.board) { die.replaceChildren(h('b', { class: 'pc-q' }, '?')); pc.classList.add('waiting'); return; }
+  pc.classList.remove('waiting');
+  const syms = E.petFace(hero, v) || []; const pw = E.petPowerOf(hero);
+  die.replaceChildren(...(syms.length ? syms.map((k) => h('span', { class: 'pc-sym', style: { color: SYM_TINT[k] || '#fff' } }, HK.icon(k), h('b', {}, `${pw}`)))
+    : [h('b', { class: 'pc-blank' }, '–')]));
+  HK.replay(pc, 'pop'); B.bw?.tray?.petHop?.();
+}
+function petInfo() {
+  const hero = B.hero; const b = B.b; if (!hero?.pet) return; sfx.select?.();
+  const name = D.PETS[hero.pet.type]?.name || 'Your pet';
+  toast(b.board?.P ? `${V.describeDie(hero, 'P', b.board.P.v)} Pets roll once a round; no rerolls.` : `${name} rolls a die of luck with your dice each round. It cannot be rerolled.`);
 }
 
 function addPlate(e) {

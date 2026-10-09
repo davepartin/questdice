@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeRng, newHero, evaluate, isActive, activeSlots, sidesOf, rollBoard, petFace, petOffer, buyPet, newPet, addPetSymbol,
-  removePetSymbol, petTrainInfo, petGrowInfo, growPet, petPowerOf } from '../js/engine.js';
+  removePetSymbol, petTrainInfo, petGrowInfo, growPet, petPowerOf, newBattle, startRoll, canReroll, reroll, beginReset, questsFor } from '../js/engine.js';
 import { PETS, PET_PRICE, petKindMax, ROLE } from '../js/data.js';
 
 const board = (o) => {
@@ -84,3 +84,16 @@ test('Bristle the hedgehog starts with pierce, which talents lack, and trains it
   assert.equal(Object.keys(PETS).length, 6);
 });
 
+
+test('the pet die is one roll of luck a round: it cannot be rerolled and is never tangled (Dave)', () => {
+  const h = hero(); h.pet = newPet('bunny');
+  const b = newBattle(h, questsFor(h)[0], makeRng(4), 1);
+  for (let r = 0; r < 12; r++) {
+    startRoll(b); b.magic = 20;
+    assert.ok(b.board.P, 'the pet rolls with the board');
+    assert.equal(b.board.P.bound, false, 'never tangled');
+    assert.equal(canReroll(b, ['P']), false); assert.equal(canReroll(b, ['N', 'P']), false);
+    const v = b.board.P.v; assert.equal(reroll(b, ['P']), false); assert.equal(b.board.P.v, v);
+    beginReset(b);
+  }
+});

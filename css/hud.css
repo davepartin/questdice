@@ -936,3 +936,16 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
   .b3-top { right: calc(5rem + var(--safe-r)); }
 }
 .b3:has(.b3-sheet.open .pw-sigil) .b3-goldchip { visibility: hidden; }
+/* the pet (Dave): a small badge in the top-right, left of the magic: its picture and what its die rolled this round */
+.b3-petchip { position: absolute; z-index: 4; display: none; align-items: center; gap: .15rem; padding: 0 .4rem 0 .1rem; border: 0; border-radius: 999px; cursor: pointer;
+  right: calc(.35rem + 3.5rem + var(--safe-r)); top: calc(3.7rem + var(--safe-t)); height: 1.9rem; color: #fff; -webkit-tap-highlight-color: transparent;
+  background: rgba(12, 8, 24, .8); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc, #fff) 70%, transparent), 0 0 12px color-mix(in srgb, var(--pc, #fff) 30%, transparent); }
+.b3-petchip:not([hidden]) { display: inline-flex; }
+.b3-petchip .pc-pic { width: 2.3rem; height: 2.3rem; margin: -.4rem -.05rem -.2rem -.2rem; object-fit: contain; filter: drop-shadow(0 0 4px var(--pc, #fff)) drop-shadow(0 1px 2px #000); }
+.b3-petchip .pc-die { display: inline-flex; align-items: center; gap: .2rem; min-width: 1.45rem; height: 1.45rem; padding: 0 .28rem; border-radius: .35rem; justify-content: center;
+  background: color-mix(in srgb, var(--pc, #fff) 26%, #12061f); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc, #fff) 85%, transparent); font: 800 .8rem var(--disp, sans-serif); }
+.b3-petchip .pc-sym { display: inline-flex; align-items: center; gap: .05rem; } .b3-petchip .pc-sym .ic { width: .85rem; height: .85rem; } .b3-petchip .pc-sym b { color: #fff; }
+.b3-petchip .pc-blank, .b3-petchip .pc-q { color: #b8aec8; }
+.b3-petchip.pop { animation: pcPop .5s cubic-bezier(.2, 1.6, .4, 1); } @keyframes pcPop { 40% { transform: scale(1.18); } }
+@media (min-aspect-ratio: 5/4) { .b3-petchip { top: calc(1.1rem + var(--safe-t)); right: calc(1rem + var(--safe-r)); transform: scale(1.15); transform-origin: top right; } }
+.b3:has(.b3-sheet.open .pw-sigil) .b3-petchip { visibility: hidden; }

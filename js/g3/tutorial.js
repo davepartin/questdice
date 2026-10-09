@@ -225,9 +225,9 @@ const LESSONS = [
   {
     title: 'Grow at camp',
     eyebrow: 'Pets, potions and powers',
-    art: () => h('div', { class: 'tu-camp' }, boardPic({ base: 'petDice', hi: ['P'], dim: false, tags: { P: D.PETS.bunny.name } }),
+    art: () => h('div', { class: 'tu-camp' },
       h('div', { class: 'tu-petrow' }, ['ember', 'bristle', 'turtle', 'bunny', 'owl', 'penny'].map((t) => h('span', { class: 'tu-petchip', style: { '--pc': D.PETS[t].color } }, petPic(t))))),
-    say: 'Between fights you rest at camp. Grow your dice, and adopt a pet: it rolls its own die beside your board.',
+    say: 'Between fights you rest at camp. Grow your dice, and adopt a pet: it rolls a little die of luck every round, up by your gold and magic.',
     body: () => [
       row(petPic('bunny'), 'Pets', `The traveler brings one each camp (${D.PET_PRICE} gold). Train its die like a talent die and grow it to a d8.`),
       row(ic('heal'), 'Healing potions', `Carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}.`),

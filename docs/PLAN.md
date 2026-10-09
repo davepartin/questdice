@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011u**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **115 passing**. Keep them green.
+  the last one used is **20261011v**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **116 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -760,3 +760,19 @@ Test: "Arc Bolt: 2 magic a die" in test/engine.test.mjs. Balance tools not re-ru
   gold (battle3d hud.goldchip, class .b3-magchip.b3-goldchip; hero.gold, or the company's gold in a company game; it is the
   gold you carry, not this fight's takings). The round title stops short of it (.b3-top right 5rem).
   docs/ingame/battle_gold_chip.png.
+
+## The pet leaves the board for a badge (Dave, 11 Oct)
+
+Dave: "I like the dice board in the center... the pet can be small... you can't reroll it, it is just one time luck... a die
+that shows up small by the gold and magic." This replaces the pet stand described under "Pets" above.
+- Rules (engine.js): the pet die still rolls with the board every round and still pays (petFace x PET_POWER), but canReroll
+  refuses 'P' and monsters never tangle it (tangle candidates skip 'P'). Test in test/pets.test.mjs.
+- Board: tray.setHero always calls setPet(null), so no stand, sprite or die beside the board; fitTray no longer widens for
+  a pet, so the board is centred again. (The stand code in tray.js stays, unused.)
+- HUD (battle3d hud.petchip, renderPet, CSS .b3-petchip): phones, left of the magic badge; wide screens, the top-right
+  corner. The pet's picture and a small die face in its colour: each symbol it rolled with its value (e.g. a green plus
+  and 2), "–" for a blank, "?" before the roll; it pops when it lands. Tap: a toast with what it rolled.
+- Learn to play, camp lesson: the board picture with Sprig's stand is gone (the six pets row stays) and the line now says
+  the pet rolls a little die of luck every round, up by your gold and magic. The lesson stills (assets/tutorial/board-pet*)
+  are unused now.
+- Screenshots: docs/ingame/pet_badge_phone.png, pet_badge_wide.png. Online rooms never had pets.

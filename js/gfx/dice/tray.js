@@ -331,7 +331,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     for (const slot of ALL) { const s = S[slot]; if (!s.die || s.spec.key !== specs[slot].key) buildDie(s, specs[slot]); }
     applyTheme(hero);
     for (const slot of ALL) paintSlotIcon(S[slot], hero);
-    tray.setPet(hero.pet?.type || null);
+    tray.setPet(null); // the pet lives in the battle HUD now (a small badge by the gold and magic), not on a stand by the board (Dave)
     return tray;
   };
   // ---- the pet: a picture of it standing behind its die (a camera-facing sprite), shown only when the hero has one
@@ -419,7 +419,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   };
   tray.setDimmed = function setDimmed(slot, on = true) { if (S[slot]) S[slot].dimmed = !!on; return tray; };
   tray.setVacant = function setVacant(slot, on = true) {
-    if (slot === 'P') { if (on) tray.setPet(null); else tray.setPet(tray.hero?.pet?.type || null); return tray; } // no pet: no stand at all (never an EMPTY mark)
+    if (slot === 'P') { tray.setPet(null); return tray; } // (the pet is in the HUD now) // no pet: no stand at all (never an EMPTY mark)
     const s = S[slot]; if (s) { s.vacant = !!on; s.vac.visible = !!on; if (s.die) s.die.mesh.visible = !on; } return tray;
   };
   function buildChains(s) {
