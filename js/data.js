@@ -5,7 +5,23 @@ export const SLOTS = ['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE'];
 export const ROLE = {
   NW: 'weapon', NE: 'weapon', N: 'head', S: 'feet',
   W: 'hand', E: 'hand', C: 'heart', SW: 'special', SE: 'special',
+  P: 'pet', // the pet die, on its own stand left of the board (only when the hero has a pet)
 };
+// PETS (Dave, Oct 2026): the traveler sells one pet a camp. A pet is one die beside the board: one face always blank, the
+// rest hold symbols like a talent die (train them at camp). It starts with two of its own symbol. Each symbol pays the pet's
+// power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Colours follow their symbol.
+export const PETS = {
+  pup: { name: 'Ember Pup', kind: 'atk', color: '#ff5a4a', text: 'A brave little fox pup. Starts with two attack symbols.' },
+  turtle: { name: 'Shellback', kind: 'block', color: '#3aa4ff', text: 'A sturdy turtle. Starts with two block symbols.' },
+  bunny: { name: 'Sprig', kind: 'heal', color: '#38e87a', text: 'A gentle bunny with a leafy ear. Starts with two heal symbols.' },
+  owl: { name: 'Starling', kind: 'magic', color: '#b46cff', text: 'A wise little owl. Starts with two magic symbols.' },
+  magpie: { name: 'Pip', kind: 'gold', color: '#ffc21a', text: 'A magpie who loves shiny things. Starts with two gold symbols.' },
+};
+export const PET_PRICE = 90;          // gold, from the traveler
+export const PET_POWER = { 4: 2, 6: 3, 8: 4 }; // what each symbol pays, by die size
+export const PET_GROW = { 4: 80, 6: 180 };     // gold to grow the pet die to the next size (d4 -> d6 -> d8)
+export const PET_KIND_MAX = { 4: 4, 6: 6, 8: 8 }; // the pet's own symbol: up to one per side of the die (others twice, like talents), so a bigger pet hits harder
+export const petKindMax = (size) => PET_KIND_MAX[size] || 4;
 // Each side of the body is a "lane": weapon (corner) + strength (hand) + special (lower corner).
 export const LANES = {
   L: { weapon: 'NW', hand: 'W', special: 'SW' },

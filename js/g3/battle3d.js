@@ -157,7 +157,7 @@ function buildHud() {
   };
   const moreCheck = () => { const p = hud.plates; const more = !landscape() && p.scrollHeight - p.scrollTop - p.clientHeight > 6; hud.more.classList.toggle('on', more); };
   hud.plates.addEventListener('scroll', moreCheck, { passive: true }); B.moreCheck = moreCheck; setInterval(() => { if (B.root?.isConnected) moreCheck(); }, 400);
-  B.fitOff?.(); B.fitOff = world.stage.onFrame(() => { if (landscape() || !B.root?.isConnected) return; const sig = `${world.stage.width}|${world.stage.height}|${Math.round(hud.dock.getBoundingClientRect().top)}|${Math.round(hud.top.getBoundingClientRect().bottom)}|${world.stage.post.trayPass.enabled}`; if (sig !== B.fitSig) { B.fitSig = sig; fit(); } });
+  B.fitOff?.(); B.fitOff = world.stage.onFrame(() => { if (landscape() || !B.root?.isConnected) return; const sig = `${world.stage.width}|${world.stage.height}|${Math.round(hud.dock.getBoundingClientRect().top)}|${Math.round(hud.top.getBoundingClientRect().bottom)}|${world.stage.post.trayPass.enabled}|${!!B.hero?.pet}`; if (sig !== B.fitSig) { B.fitSig = sig; fit(); } });
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
   for (const [i, e] of B.b.enemies.entries()) addPlate(e, i);
@@ -173,6 +173,8 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
   const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
   let PITCH = (60 * Math.PI) / 180; const LOOK = new THREE.Vector3(0, 0.1, 0.1); const HALF = 1.78; const EDGE = 2.1;
+  const pet = !!B.hero?.pet; const PET_X = -3.66; const FRAME_X = 2.4; // with a pet, its stand (left of the frame) must stay on screen too
+  if (pet) LOOK.x = (PET_X + FRAME_X) / 2; // and the pet and the board together sit in the middle of the screen
   cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
   const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
   const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]; };
@@ -180,8 +182,10 @@ function fitTray() {
   let d = 10; let shift = 0; let lineY = 0;
   PITCH = (70 * Math.PI) / 180; B.trayDeg = 70;
   for (let frac = 0.9; frac >= 0.5; frac -= 0.01) { // as wide as the screen if the band allows; otherwise as wide as fits
-    let lo = 4; let hi = 60; for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const nl = pt(-HALF, 0.4, EDGE); const nr = pt(HALF, 0.4, EDGE); if (nr[0] - nl[0] > W * frac) lo = d; else hi = d; }
-    place(d); const farY = pt(0, 0.9, -EDGE - 0.15)[1]; const nearY = pt(0, 0.0, EDGE + 0.6)[1];
+    let lo = 4; let hi = 60; for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const nl = pt(-HALF, 0.4, EDGE); const nr = pt(HALF, 0.4, EDGE);
+      const tooWide = pet ? (pt(PET_X, 0.3, 0.9)[0] < 4 || pt(FRAME_X, 0.3, EDGE)[0] > W - 4 || nr[0] - nl[0] > W * frac) : nr[0] - nl[0] > W * frac; // too close: back the camera off
+      if (tooWide) lo = d; else hi = d; }
+    place(d); const farY = pt(LOOK.x, 0.9, -EDGE - 0.15)[1]; const nearY = pt(LOOK.x, 0.0, EDGE + 0.6)[1];
     shift = nearY - want; lineY = farY - shift + 10; B.trayFrac = frac;
     if (lineY >= minLine) break;
   }
@@ -562,11 +566,12 @@ function pickEnemy(e) {
   if (uid) selectTarget(uid);
 }
 
+const BOARD = [...D.SLOTS, 'P']; // the nine sockets and the pet's stand (hidden when the hero has no pet)
 function idleTray() {
   const b = B.b; const tray = B.bw.tray;
-  const dummy = {}; for (const s of D.SLOTS) dummy[s] = { v: 1 };
+  const dummy = {}; for (const s of BOARD) dummy[s] = { v: 1 };
   tray.show(b.board || dummy);
-  for (const s of D.SLOTS) { tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s)); tray.setVacant?.(s, !E.isActive(B.hero, s)); }
+  for (const s of BOARD) { tray.setDimmed?.(s, !b.board || !E.isActive(B.hero, s)); tray.setVacant?.(s, !E.isActive(B.hero, s)); }
   tray.setWaiting?.(!b.board); // before the throw the circles show what goes in them; the dice fly in on the roll
   tray.setSelected?.(new Set());
 }
@@ -763,10 +768,10 @@ async function doRoll() {
   if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
-  for (const s of D.SLOTS) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
+  for (const s of BOARD) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
   renderShape();
   await bw.tray.roll(b.board);
-  for (const s of D.SLOTS) bw.tray.setBound?.(s, !!b.board[s].bound);
+  for (const s of BOARD) bw.tray.setBound?.(s, !!b.board[s]?.bound);
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
   renderShape();

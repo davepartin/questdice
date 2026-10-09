@@ -13,6 +13,7 @@ import { sfx } from '../audio.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
+import { petSvg } from './pets.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -581,6 +582,58 @@ function talentCard(hero, slot) {
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (E.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
     up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
 }
+// ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
+const PET = { face: null };
+const petPic = (type, size = 84) => h('span', { class: 'pet-pic', 'aria-hidden': 'true', html: petSvg(type, size) });
+const petLeft = (hero, k) => (k === D.PETS[hero.pet.type].kind ? D.petKindMax(hero.pet.size) : D.TALENT_MAX_SAME) - hero.pet.faces.flat().filter((x) => x === k).length;
+function petOfferCard(hero) {
+  const o = E.petOffer(hero); if (!o) return null; const p = D.PETS[o.type];
+  const swap = hero.pet && !o.owned;
+  const adopt = () => { if (E.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train your pet in the Forge tab.`); } else { sfx.error(); toast('Not enough gold.'); } };
+  const ask = () => {
+    if (!swap) return adopt();
+    const old = D.PETS[hero.pet.type].name;
+    const close = modal(h('div', { class: 'form confirm-home' }, h('h2', {}, `Trade ${old} for ${p.name}?`),
+      h('p', { class: 'muted' }, `${old} goes home to a warm hearth, and its training goes too. ${p.name} starts fresh as a d4.`),
+      h('div', { class: 'row end' }, btn(`Keep ${old}`, () => close(), { kind: 'ghost' }), btn(`Adopt ${p.name}`, () => { close(); adopt(); }))));
+  };
+  const chip = (k) => (k ? symChip(k) : h('span', { class: 'fx blank' }, '·'));
+  return h('div', { class: 'pet-offer', style: { '--pc': p.color } }, petPic(o.type, 96),
+    h('div', { class: 'po-copy' }, h('small', { class: 'po-kicker' }, 'A pet for the road'), h('b', {}, p.name), h('small', {}, p.text),
+      h('div', { class: 'po-faces', 'aria-label': 'Its d4: one blank face, two symbols, one face to train' }, chip(null), chip(p.kind), chip(p.kind), h('span', { class: 'fx open' }, '+'))),
+    o.owned ? h('span', { class: 'sold-tag' }, 'With you')
+      : btn(`${swap ? 'Trade' : 'Adopt'} · ${o.price}`, ask, { icon: 'coin', iconAfter: true, disabled: hero.gold < o.price, cls: 'buy', aria: `Adopt ${p.name} for ${o.price} gold` }));
+}
+function petCard(hero) {
+  const pet = hero.pet; const p = D.PETS[pet.type]; const t = E.petTrainInfo(hero); const pw = E.petPowerOf(hero); const g = E.petGrowInfo(hero);
+  const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
+  const faces = Array.from({ length: t.faces }, (_, f) => {
+    const cur = pet.faces[f] || [];
+    const slotsEl = Array.from({ length: D.TALENT_PER_FACE }, (_, i) => {
+      const k = cur[i]; const open = PET.face === f && i === cur.length;
+      if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.TALENT_SYMS[k].name}. Tap to remove.`, onclick: tap(() => { E.removePetSymbol(hero, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
+      return h('button', { class: `tal-slot ${open ? 'open' : ''}`, type: 'button', disabled: i > cur.length, 'aria-label': 'Add a symbol', onclick: tap(() => { PET.face = f; X.renderCamp(); }) }, '+');
+    });
+    return h('div', { class: 'tal-face' }, h('small', {}, `Face ${f + 2}`), h('div', { class: 'tal-slots' }, slotsEl));
+  });
+  const picker = PET.face != null && PET.face < t.faces ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
+    const left = petLeft(hero, k); const full = (pet.faces[PET.face] || []).length >= D.TALENT_PER_FACE;
+    const can = left > 0 && !full && hero.gold >= t.cost;
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: pays ${pw}. ${left} left on this die.`, onclick: tap(() => { if (E.addPetSymbol(hero, PET.face, k)) { PET.face = (pet.faces[PET.face] || []).length >= D.TALENT_PER_FACE ? null : PET.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `+${pw} · ${left} left`));
+  }), h('small', { class: 'tal-cost' }, `Each symbol costs ${t.cost} gold. ${D.TALENT_SYMS[p.kind].name} can go on up to ${D.petKindMax(pet.size)} times; any other symbol twice. Tap a placed symbol to take it off.`)) : null;
+  return h('div', { class: 'sx-urow tal-die pet-die', style: { '--pc': p.color } },
+    h('div', { class: 'pet-head' }, petPic(pet.type, 72), h('div', { class: 'tal-head' }, h('b', {}, `${p.name} · d${pet.size}`), h('small', {}, `${t.used} of ${t.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Each symbol pays ${pw}${g.next ? ` (${D.PET_POWER[g.next]} once it grows to a d${g.next})` : ''}. Rolls beside your board, and you can reroll it like any die.`))),
+    h('div', { class: 'tal-strip syms pet-strip' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), faces),
+    picker,
+    g.next ? btn(`Grow to d${g.next} · ${g.cost}`, () => { if (E.growPet(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !g.ok, cls: `ur-buy ${!g.ok ? 'poor' : ''}`, aria: `Grow ${p.name} to a d${g.next} for ${g.cost} gold` }) : h('span', { class: 'ur-max' }, 'FULL GROWN'));
+}
+function petSection(hero) {
+  if (hero.pet) return [eyebrow('Your pet'), h('p', { class: 'tab-intro' }, 'Your pet rolls its own die beside the board. One face is always blank; put symbols on the rest. Grow the die and every symbol pays more.'), petCard(hero)];
+  const o = E.petOffer(hero); if (!o) return null;
+  return h('div', { class: 'sx-urow wrow pet-hint', style: { '--pc': D.PETS[o.type].color } }, petPic(o.type, 56),
+    h('div', { class: 'ur-copy' }, h('b', {}, 'A pet for the road'), h('small', {}, `The traveler has ${D.PETS[o.type].name} today, for ${o.price} gold. A pet rolls one more die beside your board.`)),
+    btn('See the traveler', () => { X.S.tab = 'gear'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }));
+}
 // Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
 const KIND_NAME = { flat: 'Fixed', dice: 'Rolls dice', scale: 'More magic, more dice', round: 'Grows each round', luck: 'Roll for luck', super: 'Super: once, round 3+', charge: 'Store charges, release later' };
 // Magical powers at camp: three slots (A big move, B every round, C charge). The equipped power can be upgraded; the other
@@ -625,6 +678,7 @@ function forgeTab() {
     hasTalent ? eyebrow('Talent dice') : null,
     hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face can hold two symbols, and no die can hold more than two of the same.') : null,
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
+    petSection(hero),
     eyebrow('Strength dice'),
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
@@ -659,7 +713,7 @@ function gearTab() {
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
       h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple or Strength Triple (three alike across): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons.')),
-    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] })))));
+    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (E.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))), petOfferCard(hero)));
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {

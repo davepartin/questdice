@@ -55,6 +55,11 @@ export function dieSpecs(hero) {
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   }
+  // the pet die (its own stand left of the board): face 1 is a paw print and always blank; the rest show their symbols like a talent die
+  const pet = hero.pet; const kind = pet ? D.PETS[pet.type]?.kind || 'atk' : 'atk';
+  const sides = pet ? E.sidesOf(hero, 'P') : 4; const theme = `pet-${kind}`; const labels = [];
+  for (let v = 1; v <= sides; v++) { const syms = pet ? E.petFace(hero, v) : null; labels.push(v === 1 ? { blank: true, paw: true } : syms ? { sym: 'TALENT', syms, text: 'T', corners: syms } : { blank: true }); }
+  out.P = { slot: 'P', role: 'pet', sides, theme, labels, pet: pet?.type || null, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   return out;
 }
 
@@ -76,8 +81,9 @@ const INNER = {
 };
 const BODY = { heart: [0.9, 0.78, 0.5], amethyst: [0.8, 0.7, 1], weapon: [1, 1, 1], smoke: [1, 1, 1], bone: [1, 1, 1] };
 
-function makeMaterial(atlas, theme, quality) {
+function makeMaterial(atlas, themeName, quality) {
   const T = atlas.textures;
+  const theme = themeName.startsWith('pet-') ? 'amethyst' : themeName; // a pet die is made like a talent die (its colours are in the atlas)
   const inn = INNER[theme];
   const m = new THREE.MeshPhysicalMaterial({
     map: T.map, normalMap: T.normalMap, roughnessMap: T.orm, metalnessMap: T.orm, clearcoatMap: T.orm,

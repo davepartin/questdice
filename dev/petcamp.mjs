@@ -1,0 +1,22 @@
+// Camp with pets: the traveler's offer (Gear tab), adopting, then the pet card in the Forge tab.  node dev/petcamp.mjs
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
+p.on('pageerror', (e) => console.log('ERR', e.message));
+await p.addInitScript(() => { try { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; for (let i = 0; i < Math.round(s * 15); i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+await p.evaluate(() => { const { S, E, showCamp } = window.QD; const h = E.newHero({ name: 'Dave', cls: 'knight', seed: 5 }); h.gold = 400; h.level = 3; h.campaign.step = 4;
+  S.hero = h; S.company = { members: [h] }; S.tab = 'gear'; showCamp({ fromBoard: true }); });
+await pump(3);
+const side = '.sx-side';
+const to = (sel, off = 90) => p.evaluate(([s, z, o]) => { const el = document.querySelector(s); const t = el.querySelector(z); el.scrollTop += t.getBoundingClientRect().top - o; }, [side, sel, off]);
+await to('.pet-offer', 300); await pump(0.5); await p.screenshot({ path: 'docs/ingame/pet_offer.png' });
+await p.evaluate(() => document.querySelector('.pet-offer .sx-btn').click()); await pump(0.6);
+console.log('pet', JSON.stringify(await p.evaluate(() => window.QD.S.hero.pet)), 'gold', await p.evaluate(() => window.QD.S.hero.gold));
+await p.evaluate(() => { const { S } = window.QD; S.tab = 'forge'; window.QD.showCamp({ fromBoard: true }); }); await pump(0.6);
+await to('.pet-die', 160); await pump(0.3);
+await p.evaluate(() => document.querySelectorAll('.pet-die .tal-slot:not(.full):not(:disabled)')[1]?.click()); await pump(0.5);
+await to('.pet-die', 160); await pump(0.3);
+await p.screenshot({ path: 'docs/ingame/pet_train.png' });
+await b.close();

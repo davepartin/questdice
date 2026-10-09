@@ -5,7 +5,8 @@
 //   node tools/tension.mjs [fights per cell = 60] [classes = all]
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle } from '../js/engine.js';
 import { botRound, botCamp, botLoot } from './sim.mjs';
-import { CLASSES, ORDINARY } from '../js/data.js';
+import { CLASSES, ORDINARY, PET_GROW } from '../js/data.js';
+if (process.env.TUNE_PETGROW) { const [a, b] = process.env.TUNE_PETGROW.split(',').map(Number); PET_GROW[4] = a; PET_GROW[6] = b; } // try pet growth prices
 if (process.env.TUNE_FLAT) ORDINARY.flat = process.env.TUNE_FLAT.split(',').map(Number); // try other settings without editing data.js
 if (process.env.TUNE_LONE) ORDINARY.lone = Number(process.env.TUNE_LONE);
 

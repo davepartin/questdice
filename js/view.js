@@ -7,7 +7,7 @@ import { drawDie, kickDie, watchDie } from './die3d.js';
 export { characterMat } from './mat.js';
 
 export const ICON = { gold: '🪙', pierce: '◆', magic: '✦', atk: '⚔', block: '🛡', heal: '✚', stagger: '✸' };
-export const SLOT_NAME = {
+export const SLOT_NAME = { P: 'Pet',
   NW: 'Left weapon', N: 'Head', NE: 'Right weapon', W: 'Left hand', C: 'Heart',
   E: 'Right hand', SW: 'Left special', S: 'Feet', SE: 'Right special',
 };
@@ -78,6 +78,11 @@ export function describeDie(hero, slot, v) {
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
     return sym ? `${name}: ${D.talentName(sym)}. ${D.talentText(sym)}` : `${name}: a blank. Two faces of every talent die are always empty.`;
+  }
+  if (role === 'pet') {
+    const p = D.PETS[hero.pet?.type]; const syms = E.petFace(hero, v); const pw = E.petPowerOf(hero);
+    if (!p) return 'The pet stand. Adopt a pet from the traveler at camp.';
+    return syms ? `${p.name} (d${hero.pet.size}) shows ${syms.map((k) => D.TALENT_SYMS[k].name).join(' and ')}: +${pw} each.` : v === 1 ? `${p.name} (d${hero.pet.size}): the paw. One face of every pet die is always blank.` : `${p.name} (d${hero.pet.size}): an empty face. Train it at camp to put a symbol here.`;
   }
   if (role === 'heart') {
     const t = ['Every 1 on your head, hands and feet heals +2 more.', 'Every 2 on your head, hands and feet pierces +2 more.', 'Every 3 on your head, hands and feet gives +2 ✦ more.', 'Every 4 on your head, hands and feet gives +2 🪙 more.', 'Each BLUE weapon lane gets +4 block.', 'Each RED weapon lane gets +4 attack.'][v - 1];

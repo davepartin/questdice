@@ -7,7 +7,7 @@ import {
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -159,6 +159,7 @@ export function equipPower(hero, id) {
 // ------------------------------------------------------------------------------- dice
 // Which dice are on the hero's board. `dice: null` means all nine (older saves). A two-handed weapon always fills both weapon dice.
 export function isActive(hero, slot) {
+  if (slot === 'P') return !!hero.pet; // the pet die only exists once a pet is bought
   if (!hero.dice) return true;
   if (hero.dice.includes(slot)) return true;
   return slot === 'NE' && WEAPONS[hero.loadout.NW.id].hands === 2;
@@ -192,6 +193,7 @@ export function sidesOf(hero, slot) {
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
+    case 'pet': return hero.pet?.size || 4;
     default: throw new Error(`bad slot ${slot}`);
   }
 }
@@ -203,6 +205,43 @@ export function specialFace(hero, slot, v) {
   const syms = (hero.talent?.[slot]?.[v - 4]) || [];
   return syms.length ? syms : null;
 }
+// ---- the pet die: face 1 is always blank; faces 2..n hold symbols (hero.pet.faces[v - 2])
+export function petFace(hero, v) {
+  const p = hero.pet; if (!p || v <= 1 || v > p.size) return null;
+  const syms = p.faces?.[v - 2] || []; return syms.length ? syms : null;
+}
+export const petPowerOf = (hero) => PET_POWER[hero.pet?.size || 4] || 2;
+export function newPet(type) { const k = PETS[type].kind; return { type, size: 4, faces: [[k], [k], []] }; }
+// The traveler's pet this camp (one a visit, by the campaign seed), unless the hero already has that one.
+export function petOffer(hero) {
+  const c = hero.campaign; if (!c) return null;
+  const types = Object.keys(PETS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'pet'));
+  const type = types[Math.floor(r() * types.length)];
+  return { type, price: PET_PRICE, owned: hero.pet?.type === type };
+}
+export function buyPet(hero) {
+  const o = petOffer(hero); if (!o || o.owned || hero.gold < o.price) return false;
+  hero.gold -= o.price; hero.pet = newPet(o.type); return true;
+}
+export function petTrainInfo(hero) {
+  const p = hero.pet; if (!p) return null;
+  return { faces: p.size - 1, slots: (p.size - 1) * TALENT_PER_FACE, used: p.faces.flat().length, cost: TALENT_SLOT_COST };
+}
+export function addPetSymbol(hero, face, sym) {
+  const p = hero.pet; if (!p || !TALENT_SYMS[sym]) return false;
+  const t = petTrainInfo(hero); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
+  while (p.faces.length < t.faces) p.faces.push([]);
+  const have = p.faces.flat().filter((x) => x === sym).length; const cap = sym === PETS[p.type].kind ? petKindMax(p.size) : TALENT_MAX_SAME;
+  if (p.faces[face].length >= TALENT_PER_FACE || have >= cap) return false;
+  hero.gold -= t.cost; p.faces[face].push(sym); return true;
+}
+export function removePetSymbol(hero, face, idx) { const f = hero.pet?.faces?.[face]; if (!f || idx < 0 || idx >= f.length) return false; f.splice(idx, 1); return true; }
+export function petGrowInfo(hero) {
+  const p = hero.pet; if (!p) return null; const cost = PET_GROW[p.size];
+  if (!cost) return { ok: false, why: 'Max', cur: p.size };
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'Need gold', cost, cur: p.size, next: p.size + 2 };
+}
+export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
   const faces = TALENT_FACES[hero.special[slot]] || 1; const cur = hero.talent?.[slot] || [];
@@ -223,7 +262,7 @@ export function removeTalent(hero, slot, face, idx) {
 export function rollSlot(hero, slot, rng) { return { v: die(rng, sidesOf(hero, slot)), bound: false }; }
 export function rollBoard(hero, rng) {
   const board = {};
-  for (const s of Object.keys(ROLE)) board[s] = rollSlot(hero, s, rng);
+  for (const s of Object.keys(ROLE)) board[s] = s === 'P' && !hero.pet ? { v: 1, bound: false } : rollSlot(hero, s, rng); // no pet: no roll (keeps the dice stream the same)
   return board;
 }
 
@@ -274,6 +313,12 @@ export function evaluate(hero, board, opts = {}) {
       else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += str;
     }
     out.lanes[key] = L;
+  }
+  // The pet die: each symbol on the face it shows pays the pet's power.
+  if (isActive(hero, 'P') && board.P) {
+    const syms = petFace(hero, val('P')) || []; const pw = petPowerOf(hero);
+    for (const t of syms) out[t] = (out[t] || 0) + pw;
+    out.pet = { syms, power: pw };
   }
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5) {
@@ -438,9 +483,9 @@ export function beginReset(b) {
 const scripted = (hero, slot, v, rng) => (v != null ? { v: Math.min(Math.max(1, v), sidesOf(hero, slot)), bound: false } : rollSlot(hero, slot, rng));
 export function startRoll(b) {
   const plan = b.script?.rolls?.shift();
-  b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
+  b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, s === 'P' && !b.hero.pet ? { v: 1, bound: false } : scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
   b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
-  const slots = Object.keys(ROLE).filter((s) => s !== 'C');
+  const slots = Object.keys(ROLE).filter((s) => s !== 'C' && (s !== 'P' || isActive(b.hero, 'P')));
   for (let i = 0; i < b.nextBound && slots.length; i++) {
     const s = slots.splice(Math.floor(b.rng() * slots.length), 1)[0];
     b.board[s].bound = true;

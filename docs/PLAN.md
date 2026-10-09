@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261010o**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **106 passing**. Keep them green.
+  the last one used is **20261011b**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **112 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -43,6 +43,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
   monsters' attacks; the targeted hero scores as the company's shield; team actions; spoils draft by battle points; a second
   or third hero of a class wears another colour set.
 - Learn to play: 13 lessons and a guided practice fight. Saved games behind Continue.
+- Pets (11 Oct): the traveler sells one pet a camp (90 gold). Its die rolls on a small stand left of the board; train it like
+  a talent die and grow it d4 → d6 → d8. See "Pets" at the end.
 
 **What we did most recently (7-10 Oct 2026), newest last.** Online rooms; 2x talent face label; saved games list and a
 frozen-screen fix; Learn to play; slowest-feet targeting and shield points; dice roll twice as long; symbols one for one;
@@ -543,3 +545,37 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   Re-film after a change to the dice look. Sizes scale with the knight (CSS --dk).
 - 10 Oct: "How to play" renamed **Rules** everywhere (home screen link with a scroll icon, board/battle/room menus, the ? button, the sheet title), so it is not confused with "Learn to play" (the lessons and practice battle).
 - 10 Oct: the floating dice moved behind the knight and made smaller (about 2rem, slightly dimmed), peeking out around his helmet, sword, shield and legs; none float in front of him any more.
+
+## Pets (Dave, 11 Oct)
+
+Dave: "a traveler can have one and you can pay for it... a single die... train it like a talent die... one side is always
+blank... cute and coloured by their starting symbol... placed in the black area to the left of the dice board."
+- Five pets (data.js PETS): Ember Pup (fox, attack, red), Shellback (turtle, block, blue), Sprig (bunny, heal, green),
+  Starling (owl, magic, purple), Pip (magpie, gold, yellow). Drawn as inline SVG in js/g3/pets.js (petSvg); preview with
+  dev/petsheet.mjs (docs/ingame/pets_sheet.png).
+- Rules (engine.js, tested in test/pets.test.mjs): hero.pet = { type, size, faces }. The traveler offers one pet a camp,
+  picked by the campaign seed (petOffer); PET_PRICE 90. A pet is a d4: face 1 always blank (it shows a paw), faces 2-3
+  start with its own symbol, face 4 empty. Train it like a talent die (addPetSymbol, 25 gold a symbol, two a face): its own
+  symbol up to one per side of the die (petKindMax: 4/6/8), any other symbol twice. Grow it to d6 (80 gold) and d8 (180).
+  Each symbol on the face it rolls pays PET_POWER (2 on a d4, 3 on a d6, 4 on a d8): a fully grown pet averages 4 of its
+  kind a roll. Buying another pet trades the old one (after an "are you sure"); training does not carry over.
+- The pet die is slot 'P' (ROLE.P = 'pet'), active only with a pet. Without one it is never rolled (rollBoard skips it, so
+  everyone else's dice stream is unchanged) and can never be tangled. It rerolls like any die.
+- Camp: Gear tab, the traveler's panel ends with the pet offer (Adopt / Trade). Forge tab, "Your pet" after the talent
+  dice: face strip (face 1 "blank", then symbol slots), the same picker as talents, and Grow. Without a pet, a hint row
+  points to the traveler.
+- Battle (tray.js): a small wooden stand with a brass-rimmed dish at PET_HOME (x -3.01, z 0.62), the pet as a camera-
+  facing sprite behind it (it bobs, and hops when its die lands), the die drawn a little smaller (PET_SCALE). Dice themes
+  'pet-atk' etc. in faces.js (a deep shade of the pet's colour; paw on face 1). roll.js: a die can carry its own walls
+  (`box`), so the pet die tumbles inside its stand. battle3d.js fitTray: with a pet, the camera centres the pet and the
+  board together and keeps the stand on screen (the board stays nearly full size). The caption explains the pet face.
+- Not in online rooms yet (their camp has no pet shop, and their 2D boards show nine dice).
+- Screenshots: docs/ingame/pet_offer.png, pet_train.png, pet_battle_740.png (iPhone with Safari bars), pet_battle_tall.png
+  (grown d6 turtle), pet_battle_wide.png (d8 owl), pet_selected.png. Scripts: dev/petcamp.mjs, dev/petbattle.mjs,
+  dev/petreroll.mjs. The sim bot adopts, trains and grows pets (tools/sim.mjs botPet; QD_PETS=0 turns that off).
+- Balance (tools/tension.mjs 30, all classes): without pets the standard road wins 99%, takes 49% of health, 9% close
+  calls; the perilous road wins 88%, 42% close calls. With the bot adopting pets: standard 99% / 43% / 6%, perilous 95%
+  win / 30% close calls. Pets make ordinary fights noticeably safer. Dearer growth (150/300, try it with
+  TUNE_PETGROW=150,300) made no difference: the d4 pet itself does it. Left as Dave asked for it; if fights feel too soft,
+  the dials are ORDINARY (data.js) or PET_POWER. Ask Dave.
+

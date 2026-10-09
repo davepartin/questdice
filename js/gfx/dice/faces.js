@@ -157,6 +157,20 @@ const T = {
   amethyst: { name: 'amethyst', core: '#7a3ee0', mid: '#4a1c9c', edge: '#170733', rough: 0.07, trim: ['#f0e8ff', '#b4a2e4', '#5a4a8e'], trimRough: 0.2, num: 'glow' },
   weapon: { name: 'weapon', rough: 0.08, trim: ['#ffe9a8', '#d9a83e', '#6e4a14'], trimRough: 0.2, num: 'metal' },
 };
+// Pet dice ('pet-atk', 'pet-block', ...): a deep shade of the pet's own colour, so its bright symbols stand out on it.
+export const PET_TINT = { atk: '#ff5a4a', block: '#3aa4ff', heal: '#38e87a', magic: '#b46cff', gold: '#ffc21a' };
+const shade = (hex, k) => { const c = new THREE.Color(hex).multiplyScalar(k); return `#${c.getHexString()}`; };
+const tint = (hex, k) => { const c = new THREE.Color(hex).lerp(new THREE.Color('#ffffff'), k); return `#${c.getHexString()}`; };
+for (const [k, col] of Object.entries(PET_TINT)) {
+  T[`pet-${k}`] = { name: `pet-${k}`, core: shade(col, 0.5), mid: shade(col, 0.36), edge: shade(col, 0.18), blankCore: shade(col, 0.32), blankMid: shade(col, 0.24), blankEdge: shade(col, 0.12), paw: tint(col, 0.35),
+    rough: 0.4, trim: [tint(col, 0.75), tint(col, 0.3), shade(col, 0.4)], trimRough: 0.2, num: 'metal', neutral: true };
+}
+export const isPetTheme = (theme) => typeof theme === 'string' && theme.startsWith('pet-');
+// A little paw print: the pet die's always-blank face
+function drawPaw(c, r) {
+  c.beginPath(); c.ellipse(0, r * 0.2, r * 0.3, r * 0.24, 0, 0, Math.PI * 2); c.fill();
+  for (const [x, y, rr] of [[-0.34, -0.12, 0.12], [-0.12, -0.32, 0.13], [0.12, -0.32, 0.13], [0.34, -0.12, 0.12]]) { c.beginPath(); c.ellipse(x * r, y * r, rr * r, rr * r * 1.18, 0, 0, Math.PI * 2); c.fill(); }
+}
 export const THEMES = T;
 const WPN = {
   r: { core: '#e02a36', mid: '#8a0f1e', edge: '#150407', metal: ['#fffbe8', '#ffd96a', '#e0962a'], rim: '#3a0a10' },
@@ -369,7 +383,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const t = spec.tone === 'b' ? 'b' : 'r';
       const P = blank ? WP[`${t}Blank`] : WP[t];
       core = P.core; mid = P.mid; edge = P.edge; if (blank) rough = 0.85;
-    } else if (ST.clean && theme === 'heart') { core = '#15171f'; mid = '#0d0f15'; edge = '#05060a'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#2a7f87'; mid = '#1d6068'; edge = '#0e3a40'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
+    } else if (isPetTheme(theme)) { if (blank) { core = th.blankCore; mid = th.blankMid; edge = th.blankEdge; rough = 0.8; } else { core = th.core; mid = th.mid; edge = th.edge; } } else if (ST.clean && theme === 'heart') { core = '#15171f'; mid = '#0d0f15'; edge = '#05060a'; } else if (theme === 'amethyst' && blank) { if (th.neutral) { core = '#2a7f87'; mid = '#1d6068'; edge = '#0e3a40'; } else { core = '#3e2c66'; mid = '#241840'; edge = '#0c0618'; } rough = 0.8; } else if (theme === 'heart' && spec.tone === 'b') { core = '#f4a822'; mid = '#c4620a'; edge = '#5e1e04'; } else { core = th.core; mid = th.mid; edge = th.edge; }
 
     // ---- body: fill whole cell with edge colour, then the face gradient, swirls, speckle
     ctxs.A.fillStyle = edge; ctxs.A.fillRect(-S / 2, -S / 2, S, S);
@@ -425,7 +439,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         // a blank weapon face shows what the weapon does, big: a red starburst (attack) or a blue shield (defense)
         const kind = spec.tone === 'b' ? 'def' : 'atk'; const big = inR * 1.25;
         layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
-      } else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
+      } else if (isPetTheme(theme)) { if (spec.paw) layer(ctxs, { A: th.paw, H: 'rgb(150,150,150)', O: 'rgb(0,120,0)' }, (c) => drawPaw(c, inR * 0.9)); } // the pet's always-blank face shows a paw
+      else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
     }
 
     // ---- watermark (weapon identity), shallow

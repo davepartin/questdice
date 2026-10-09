@@ -86,10 +86,15 @@ function simulate(P) {
         const vk = Math.exp(-2.0 * h); vx *= vk; vz *= vk;
         if (maxImpact > 0.9 && s * h - lastEvt > 0.05) { events.push({ s, speed: maxImpact, kind: 'hit' }); lastEvt = s * h; }
       } else { const ak = Math.exp(-0.12 * h); wx *= ak; wy *= ak; wz *= ak; }
-      // ---- tray walls (field is +-2.0 around the dice)
-      const lim = 1.95;
-      if (px > lim) { px = lim; vx = -Math.abs(vx) * 0.5; } else if (px < -lim) { px = -lim; vx = Math.abs(vx) * 0.5; }
-      if (pz > lim) { pz = lim; vz = -Math.abs(vz) * 0.5; } else if (pz < -lim) { pz = -lim; vz = Math.abs(vz) * 0.5; }
+      // ---- tray walls (field is +-2.0 around the dice). A die with its own stand (the pet) has its own walls, once it is low.
+      const B = P.box; const lim = 1.95;
+      if (!B) {
+        if (px > lim) { px = lim; vx = -Math.abs(vx) * 0.5; } else if (px < -lim) { px = -lim; vx = Math.abs(vx) * 0.5; }
+        if (pz > lim) { pz = lim; vz = -Math.abs(vz) * 0.5; } else if (pz < -lim) { pz = -lim; vz = Math.abs(vz) * 0.5; }
+      } else if (py < 0.9) {
+        if (px > B[1]) { px = B[1]; vx = -Math.abs(vx) * 0.5; } else if (px < B[0]) { px = B[0]; vx = Math.abs(vx) * 0.5; }
+        if (pz > B[3]) { pz = B[3]; vz = -Math.abs(vz) * 0.5; } else if (pz < B[2]) { pz = B[2]; vz = Math.abs(vz) * 0.5; }
+      }
       // ---- other dice (spheres; they are treated as immovable: the roller yields)
       for (const o of P.others) {
         const ox = o.moving ? o.arr[Math.min(s, o.n - 1) * 7] : o.x; const oy = o.moving ? o.arr[Math.min(s, o.n - 1) * 7 + 1] : o.y; const oz = o.moving ? o.arr[Math.min(s, o.n - 1) * 7 + 2] : o.z;
@@ -154,16 +159,16 @@ export function planRoll(items, statics, opts = {}) {
       const ax = rng() - 0.5; const ay = rng() - 0.5; const az = rng() - 0.5; const al = Math.hypot(ax, ay, az) || 1;
       const w0 = [(ax / al) * spin, (ay / al) * spin, (az / al) * spin];
       const q0 = [rng() - 0.5, rng() - 0.5, rng() - 0.5, rng() - 0.5]; const ql = Math.hypot(...q0); for (let i = 0; i < 4; i++) q0[i] /= ql;
-      const tx = it.sock.x + (rng() - 0.5) * 0.35; const tz = it.sock.z + (rng() - 0.5) * 0.35;
+      const sp0 = it.box ? 0.15 : 0.35; const tx = it.sock.x + (rng() - 0.5) * sp0; const tz = it.sock.z + (rng() - 0.5) * sp0;
       if (mode === 'throw') {
-        p0 = [it.sock.x + (rng() - 0.5) * 0.8, 1.9 + rng() * 0.6, it.sock.z + 1.8 + rng() * 0.7];
+        p0 = it.box ? [it.sock.x + (rng() - 0.5) * 0.3, 1.6 + rng() * 0.5, it.sock.z + 0.9 + rng() * 0.4] : [it.sock.x + (rng() - 0.5) * 0.8, 1.9 + rng() * 0.6, it.sock.z + 1.8 + rng() * 0.7];
         const vy0 = -1.0 - rng() * 3.0; const t = (vy0 + Math.sqrt(vy0 * vy0 + 2 * G * (p0[1] - poly.inR))) / G;
         v0 = [(tx - p0[0]) / t, vy0, (tz - p0[2]) / t];
       } else {
         p0 = [it.start.pos.x, it.start.pos.y, it.start.pos.z];
-        v0 = [(rng() - 0.5) * 1.6, 6.2 + rng() * 2.2, (rng() - 0.5) * 1.6];
+        v0 = it.box ? [(rng() - 0.5) * 0.6, 5.2 + rng() * 1.6, (rng() - 0.5) * 0.6] : [(rng() - 0.5) * 1.6, 6.2 + rng() * 2.2, (rng() - 0.5) * 1.6];
       }
-      const sim = simulate({ verts, nv: poly.verts.length, r: die.radius, invI, h, steps, rng, p0, v0, q0, w0, sx: it.sock.x, sz: it.sock.z, inR: poly.inR, rb, others });
+      const sim = simulate({ verts, nv: poly.verts.length, r: die.radius, invI, h, steps, rng, p0, v0, q0, w0, sx: it.sock.x, sz: it.sock.z, inR: poly.inR, rb, others: it.box ? [] : others, box: it.box || null });
       // ---- score
       const last = (steps - 1) * 7;
       const qf = new THREE.Quaternion(sim.pose[last + 3], sim.pose[last + 4], sim.pose[last + 5], sim.pose[last + 6]);
