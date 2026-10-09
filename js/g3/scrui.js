@@ -536,6 +536,14 @@ function potionRow(hero) {
       u.next ? h('small', { class: 'ur-next' }, `${cur} → ${u.next} potions`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, 'Belt is full')),
     u.next ? btn(String(u.cost), () => { if (E.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
+// The 4th reroll die: every reroll may take one more die, for good.
+function rerollDieRow(hero) {
+  const u = E.rerollDieInfo(hero);
+  return h('div', { class: 'sx-urow' },
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Reroll hand'), h('small', {}, `Each reroll can take up to ${u.cur} dice.`),
+      h('small', { class: 'ur-next' }, u.next ? `${u.cur} → ${u.next} dice a reroll, for good` : 'Your hand is as quick as it gets')),
+    u.next ? btn(String(u.cost), () => { if (E.buyRerollDie(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Reroll a 4th die for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+}
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
 const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
 const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
@@ -629,6 +637,7 @@ function forgeTab() {
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
     upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
     upgradeRow('speed', 'S', 'Feet · speed', 'Your initiative die. A monster must roll higher than you to strike first.'),
+    rerollDieRow(hero),
     potionRow(hero),
     eyebrow('Magical powers'),
     h('p', { class: 'tab-intro' }, 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers.'),

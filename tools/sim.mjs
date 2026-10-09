@@ -3,7 +3,7 @@ import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
-  heroPower, equip, sellItem, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
+  heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT } from '../js/data.js';
 
@@ -95,6 +95,7 @@ export function botCamp(hero, rng) {
   while (buyPotion(hero)) { /* refill the belt first: potions are bought at camp now */ }
   for (const k of cardsOf(hero)) if (hero.gold > 260) upgradePower(hero, k.id);
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
+  if (hero.gold >= 230) buyRerollDie(hero); // the 4th reroll die once there is a little to spare
   let acted = true;
   while (acted) {
     acted = false;

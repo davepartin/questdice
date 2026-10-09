@@ -157,7 +157,7 @@ const LESSONS = [
     body: () => [
       row(h('span', { class: 'tu-plate' }, h('b', {}, 'GOBLIN'), h('i', {}, HK.icon('atk'), '3-6')), 'Read the monsters', 'Each monster’s box shows what it plans this round and how hard it may hit.'),
       row(ic('dice'), 'Roll', 'Tap Roll dice to throw your whole body.'),
-      row(ic('reroll'), 'Reroll', 'Tap up to 4 dice, then Reroll. Three rerolls a round are free. After that, each die costs 1 magic.'),
+      row(ic('reroll'), 'Reroll', 'Tap up to 3 dice, then Reroll. Three rerolls a round are free. After that, each die costs 1 magic.'),
       row(ic('lock'), 'Lock in', 'Tap a monster to choose your target, then Lock In. You and the monsters act, fastest first.'),
     ],
   },

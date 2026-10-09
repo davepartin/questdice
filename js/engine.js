@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
@@ -113,7 +113,15 @@ export const healAmountOf = (hero) => CLASSES[hero?.cls]?.healAmount ?? HEAL_AMO
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 2);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
 export const rerollTotal = () => RULES.free + RULES.paid;
-export const rerollDiceOf = (hero) => REROLL_DICE + heroMods(hero).rerollDice;
+export const rerollDiceOf = (hero) => Math.min(REROLL_DICE_MAX, REROLL_DICE + (hero.rerollDie ? 1 : 0) + heroMods(hero).rerollDice);
+// The 4th reroll die: bought once at camp for REROLL_DIE_COST gold.
+export function rerollDieInfo(hero) {
+  const cur = rerollDiceOf(hero);
+  if (cur >= REROLL_DICE_MAX) return { ok: false, why: 'Max', cur };
+  if (hero.gold < REROLL_DIE_COST) return { ok: false, why: 'Need gold', cost: REROLL_DIE_COST, next: cur + 1, cur };
+  return { ok: true, cost: REROLL_DIE_COST, next: cur + 1, cur };
+}
+export function buyRerollDie(hero) { const r = rerollDieInfo(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.rerollDie = true; return true; }
 export const healCostOf = (hero) => Math.max(1, HEAL_COST + heroMods(hero).healCost);
 // Powers: three slots (A big move, B every round, C charge), one power in each. hero.powers = { A: id, B: id, C: id };
 // a slot nobody chose holds the class's `start` power. hero.learned lists powers bought from the class library at camp.
@@ -794,7 +802,7 @@ export function gainXp(hero, xp) {
 }
 export function offerPerks(hero, rng) {
   const have = (id) => hero.perks.filter((p) => p === id).length;
-  const avail = Object.keys(PERKS).filter((id) => have(id) < PERKS[id].max);
+  const avail = Object.keys(PERKS).filter((id) => !PERKS[id].retired && have(id) < PERKS[id].max);
   const out = [];
   while (out.length < 3 && avail.length) out.push(avail.splice(Math.floor(rng() * avail.length), 1)[0]);
   return out;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cardsOf, equipPower, learnPower, learnInfo,
+import { cardsOf, equipPower, learnPower, learnInfo, rerollDieInfo, buyRerollDie, rerollDiceOf, offerPerks,
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, isActive, activeSlots, unlockInfo, unlockDie,
@@ -77,13 +77,24 @@ test('talent slots cost the same, hold two of a symbol per face, but never more 
   const d4 = knight(); d4.gold = 500; assert.equal(addTalent(d4, 'SW', 1, 'gold'), false); // a d4 has one symbol face
 });
 
-test('rerolls: four dice, three free then three paid at one magic a die', () => {
+test('rerolls: three dice, three free then three paid at one magic a die', () => {
   const h = knight(); const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b);
-  b.magic = 5; const slots = ['NW', 'N', 'NE', 'W'];
-  for (let i = 0; i < 3; i++) { assert.equal(rerollInfo(b).kind, 'free'); assert.equal(rerollInfo(b).dice, 4); assert.ok(reroll(b, slots)); }
+  b.magic = 5; const slots = ['NW', 'N', 'W'];
+  for (let i = 0; i < 3; i++) { assert.equal(rerollInfo(b).kind, 'free'); assert.equal(rerollInfo(b).dice, 3); assert.ok(reroll(b, slots)); }
   assert.equal(b.magic, 5); assert.equal(rerollInfo(b).kind, 'paid');
-  assert.ok(reroll(b, slots)); assert.equal(b.magic, 1); assert.equal(reroll(b, slots), false); // not enough magic
+  assert.equal(reroll(b, [...slots, 'S']), false, 'four dice is one too many');
+  assert.ok(reroll(b, slots)); assert.equal(b.magic, 2); assert.equal(reroll(b, slots), false); // not enough magic
   assert.equal(reroll(b, slots.slice(0, 1)), true);
+});
+
+test('the 4th reroll die is bought once at camp for 200 gold; Quick Hands is no longer offered', () => {
+  const h = knight(); h.gold = 199;
+  assert.equal(rerollDieInfo(h).why, 'Need gold'); assert.equal(buyRerollDie(h), false);
+  h.gold = 250; assert.ok(buyRerollDie(h)); assert.equal(h.gold, 50); assert.equal(rerollDiceOf(h), 4);
+  assert.equal(rerollDieInfo(h).why, 'Max'); assert.equal(buyRerollDie(h), false);
+  const b = newBattle(h, questsFor(h)[0], makeRng(3), 1); startRoll(b); assert.equal(rerollInfo(b).dice, 4);
+  for (let s = 0; s < 40; s++) assert.ok(!offerPerks(knight(), makeRng(s)).includes('quick'));
+  const old = knight(); old.perks = ['quick', 'quick']; assert.equal(rerollDiceOf(old), 4, 'older heroes with Quick Hands keep one extra die, capped at 4');
 });
 
 test('heart 5 / 6 pump the best lane of the matching color', () => {

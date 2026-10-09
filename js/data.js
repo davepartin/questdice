@@ -20,7 +20,9 @@ export const MAX_LEVEL = 20;
 export const RULES = { free: 3, paid: 3, diceBonus: 1 };
 // The same for every hero (not a class choice): magic at the start of a fight, and dice you may reroll at once.
 export const START_MAGIC = 4;
-export const REROLL_DICE = 4;
+export const REROLL_DICE = 3; // dice per reroll (Dave, Oct 2026: 3 to start; a 4th is bought at camp)
+export const REROLL_DIE_COST = 200; // gold, once: every reroll may take a 4th die from then on
+export const REROLL_DICE_MAX = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const HEAL_COST = 2; // magic
@@ -314,7 +316,7 @@ export const CLASSES = {
 export const PERKS = {
   vitality: { name: 'Vitality', text: '+6 max HP.', max: 5, mod: { maxHp: 6 } },
   reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic.', max: 3, mod: { startMagic: 1 } },
-  quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 } },
+  quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it
   keen: { name: 'Keen Edge', text: '+1 to every red lane.', max: 3, mod: { redBonus: 1 } },
   ward: { name: 'Ironward', text: '+1 to every blue lane.', max: 3, mod: { blueBonus: 1 } },
   piercer: { name: 'Piercing Pips', text: 'Each 2 you roll on a cardinal die pierces +1.', max: 3, mod: { pierceBonus: 1 } },

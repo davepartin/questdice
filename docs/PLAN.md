@@ -528,3 +528,11 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   tip twinkles, and five of the game's own dice (white, gold heart, red, blue, purple talent) float and spin around him as
   little CSS 3D cubes (Fleet Dice style). Reduced-motion users get a still picture. The link preview og.jpg and the iPhone
   icon use the new knight.
+
+## Rerolls: 3 dice, and a 4th bought at camp (Dave, 10 Oct)
+
+- Each reroll takes up to 3 dice (data.js REROLL_DICE 3); 3 free rerolls a round, then 3 paid at 1 magic a die (unchanged).
+- Camp Forge tab, "Reroll hand": buy a 4th reroll die once for 200 gold (REROLL_DIE_COST; engine rerollDieInfo /
+  buyRerollDie; hero.rerollDie). Cap 4 (REROLL_DICE_MAX).
+- Quick Hands perk retired (no longer offered); heroes who took it keep +1 die, capped at 4. Sim bot buys the die at 230+ gold.
+- Balance (progress-all, 3 acts, 4 a class): 20/20 cleared, every class 4/4; bosses 90% / 82% / 88%.
