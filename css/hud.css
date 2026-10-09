@@ -909,3 +909,20 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 @media (prefers-reduced-motion: reduce) { .pw-pick .pp-arrow { animation: none; } }
 /* when a short screen scrolls the sheet, its title and Cancel stay pinned at the top */
 .b3-sheet:has(.pw-sigil) > .sh-head { position: sticky; top: -.55rem; z-index: 5; margin: -.55rem -.6rem 0; padding: .55rem .6rem .3rem; background: linear-gradient(180deg, rgb(24, 11, 44) 75%, rgba(24, 11, 44, 0)); }
+/* the powers sheet ends just above the counter boxes (Dave), not above the whole bottom panel */
+.b3-sheet:has(.pw-sigil) { bottom: var(--counters-top, calc(var(--dock-top, 12rem) + .4rem)); }
+/* ---- the big triangle behind the three powers (Dave): a background that gently moves */
+.pw-aura { position: absolute; left: -60%; top: -34%; width: 220%; height: 168%; overflow: visible; pointer-events: none; z-index: 0; }
+.pa-fill { animation: pwBreathe 5.2s ease-in-out infinite; }
+.pa-inner { fill: none; stroke: rgba(214, 170, 255, .26); stroke-width: 1; stroke-dasharray: 3 7; }
+.pa-edge { fill: none; stroke: url(#pwAG); stroke-width: 2.2; stroke-linejoin: round; opacity: .5; filter: drop-shadow(0 0 7px rgba(170, 90, 255, .95)); animation: paGlow 4.8s ease-in-out infinite; }
+@keyframes paGlow { 50% { opacity: .85; } }
+.pa-spark { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 3.5 96.5; filter: drop-shadow(0 0 5px #d9b4ff) drop-shadow(0 0 10px #a45cff); animation: paRun 8s linear infinite; }
+.pa-spark.s2 { animation-delay: -4s; }
+@keyframes paRun { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -100; } }
+.pa-node { fill: #ecd6ff; filter: drop-shadow(0 0 6px #b46cff); transform-box: fill-box; transform-origin: center; animation: paNode 2.6s ease-in-out infinite; }
+.pa-node.n2 { animation-delay: -.87s; } .pa-node.n3 { animation-delay: -1.73s; }
+@keyframes paNode { 50% { opacity: .45; transform: scale(.7); } }
+/* sparkles drift up through the big triangle */
+.pw-motes { display: block; inset: -12% -30% 0; z-index: 0; }
+@media (prefers-reduced-motion: reduce) { .pa-fill, .pa-edge, .pa-spark, .pa-node { animation: none !important; } .pa-spark { display: none; } }

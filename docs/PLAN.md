@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011n**). Phones otherwise keep old files.
+  the last one used is **20261011o**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **114 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -705,3 +705,10 @@ helpers should look like the triangle's powers; the sheet's purple border cut th
   scrolls; when a straight chooser or a two-line hint makes the sheet shorter, or on a 375x600 phone, it scrolls 25-70 px
   and stays whole. Shots: docs/ingame/powersfit_wizard_393x667_*.png, powersfit_wizard_375x600_C.png.
 - Not checked on a real iPhone yet (Dave).
+- 11 Oct, round 4 (Dave): the sheet reaches down to the top of the counter boxes (battle3d sheetToCounters measures the
+  first .fc when the sheet opens and sets --counters-top; it used to stop above the whole bottom panel). About 20 px
+  more; at 393x667 every power fits with no scrolling.
+- A larger triangle behind the three powers (powers.js `aura`, CSS .pw-aura / .pa-*): glowing edges with two sparks of
+  light running round them, a breathing glow inside, a soft pulsing light at each point, sparkles drifting up. One
+  upright triangle only (two crossed triangles would make a six-pointed star). Background only, no taps; still with
+  reduced motion.

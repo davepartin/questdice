@@ -708,9 +708,14 @@ function doBigHeal() {
   sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
   updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
+// The powers sheet reaches right down to the top of the counter boxes (Dave: "there is room, so let's use it").
+function sheetToCounters() {
+  const fc = B.hud.forecast?.querySelector('.fc'); if (!fc) return;
+  B.root.style.setProperty('--counters-top', `${Math.round(window.innerHeight - fc.getBoundingClientRect().top + 3)}px`);
+}
 function togglePowers(on) {
   B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
-  if (B.sheetOpen) { B.pwSel = null; sfx.select?.(); renderSheet(); } // opens with nothing chosen (Dave)
+  if (B.sheetOpen) { B.pwSel = null; sheetToCounters(); sfx.select?.(); renderSheet(); } // opens with nothing chosen (Dave)
 }
 const powersBtn = () => {
   const b = B.b; const list = E.cardsOf(B.hero);
