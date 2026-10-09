@@ -632,17 +632,19 @@ function cardTiles(reset) {
   });
   const util = (id) => { const u = UTIL.find((x) => x.id === id); return { u, ...utilState(u, !reset) }; };
   const pot = util('u:bigheal'); const heal = util('u:heal'); const heart = util('u:heart');
+  const full = b.hp >= b.maxHp;
+  pot.tag = E.potionsLeft(b) <= 0 ? 'NONE LEFT' : full ? 'FULL HP' : ''; heal.tag = !reset && full ? 'FULL HP' : ''; heart.tag = !reset && E.nudgedThisRound(b) ? 'USED' : '';
   const utils = [
-    { id: 'u:bigheal', name: 'Potion', icon: 'heal', tone: 'heal', why: pot.why, cost: 0, badge: `${E.potionsLeft(b)} LEFT`, flag: `${E.potionsLeft(b)} left · free to drink`, text: pot.u.text,
+    { id: 'u:bigheal', name: 'Potion', icon: 'heal', tone: 'heal', why: pot.why, tag: pot.tag, cost: 0, badge: `${E.potionsLeft(b)} LEFT`, flag: `${E.potionsLeft(b)} left · free to drink`, text: pot.u.text,
       body: `Heal ${E.potionHpOf(hero)} right away. Once it is gone it is gone; buy more at camp.`, actions: [{ label: 'Drink a potion', fn: () => doBigHeal() }] },
-    { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
+    { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, tag: heal.tag, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
-    { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
+    { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
       body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 or 6 pumps your blue or red weapons.',
       actions: [{ label: 'Turn down', alt: true, disabled: (b.board?.C.v ?? 1) <= 1, fn: () => doNudge(-1) }, { label: 'Turn up', disabled: (b.board?.C.v ?? 6) >= 6, fn: () => doNudge(1) }] },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
-    select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); },
+    select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
     step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = Math.max(k.cost, Math.min(k.max, x)); sfx.click?.(); renderSheet(); },
     use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
@@ -708,7 +710,7 @@ function doBigHeal() {
 }
 function togglePowers(on) {
   B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
-  if (B.sheetOpen) { sfx.select?.(); renderSheet(); }
+  if (B.sheetOpen) { B.pwSel = null; sfx.select?.(); renderSheet(); } // opens with nothing chosen (Dave)
 }
 const powersBtn = () => {
   const b = B.b; const list = E.cardsOf(B.hero);

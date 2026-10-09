@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011m**). Phones otherwise keep old files.
+  the last one used is **20261011n**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **114 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -685,3 +685,23 @@ each one should feel special once you click the button."
   why until tapped; Meteor (wizard A, level 5) is a 'round' power, so unlike the other level-5 supers it can be recharged
   and does not hit every monster; Lucky Verse's 1-2 (magic only) still says "Add it to my roll"; docs/POWERS.md is out of
   date (it lists the old four-power table and "stagger").
+
+## Magic powers, round 3 (Dave, 11 Oct)
+
+Dave (iPhone screenshot): a power was already open when the sheet opened, so it was not clear you pick one above; the
+helpers should look like the triangle's powers; the sheet's purple border cut through the Cast button.
+- Opens with nothing chosen (battle3d togglePowers clears B.pwSel). The panel says "Tap a power to choose it" with a
+  bobbing arrow (powers.js, .pw-pick).
+- Potion, Heal and Heart change are round medallions in a row under the triangle (.pw-umedal: the same ring, core, cost
+  badge and name as the powers, a little smaller, no breathing), with their own pictures (flask, heart with a plus,
+  heart with up/down arrows) and a tag when they cannot be used: FULL HP, USED, NONE LEFT.
+- The cut-off border: iPhone Safari's vh is the screen with its bars hidden, so the triangle (sized in vh) was about 15%
+  bigger on the phone than in the test browser. Sizes now use svh (the visible screen), with a floor so the triangle
+  stays readable. The sheet scrolls instead of clipping, its title and Cancel stay pinned, and choosing a power scrolls
+  its Cast button into view on short screens.
+- Test browser now loads the real web fonts through the sandbox proxy (dev/powersfit.mjs passes --proxy-server when
+  HTTPS_PROXY is set; Playwright's own proxy option sends localhost through the proxy too, so use the Chromium flags).
+  Usage: node dev/powersfit.mjs <cls> <w> <h> [outdir]. At 393x667 (Dave's iPhone with Safari bars) and 430x739 nothing
+  scrolls; when a straight chooser or a two-line hint makes the sheet shorter, or on a 375x600 phone, it scrolls 25-70 px
+  and stays whole. Shots: docs/ingame/powersfit_wizard_393x667_*.png, powersfit_wizard_375x600_C.png.
+- Not checked on a real iPhone yet (Dave).

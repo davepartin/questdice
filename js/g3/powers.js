@@ -35,6 +35,9 @@ const G = {
   discord: '<path class="s" d="M8 17.6 V5 L17.6 3 V15.6" style="stroke-width:2"/><circle class="f" cx="5.8" cy="17.6" r="2.6"/><circle class="f" cx="15.4" cy="15.6" r="2.6"/><path class="s" d="M3 3 L21 21" style="stroke-width:2.2"/>',
   rising: '<path class="s" d="M6 18 V7 L14 5.4 V15.4" style="stroke-width:2"/><circle class="f" cx="4" cy="18" r="2.2"/><circle class="f" cx="12" cy="15.4" r="2.2"/><path class="p" d="M18.6 2 L22.4 7.4 H20 V14 H17.2 V7.4 H14.8 Z"/>',
   goldnote: '<circle class="p" cx="15" cy="15" r="6.4"/><path class="h" d="M11.6 12.6 A4 4 0 0 1 14.6 10.6"/><path class="s" d="M5 15 V3.4 L11 2.4" style="stroke-width:2"/><circle class="f" cx="3.6" cy="15.4" r="2.2"/>',
+  potion: '<path class="f" d="M9.4 2.6 H14.6 V4.4 H13.8 V8.6 C17.2 9.6 19.6 12.6 19.6 16 C19.6 19.6 16.2 22 12 22 C7.8 22 4.4 19.6 4.4 16 C4.4 12.6 6.8 9.6 10.2 8.6 V4.4 H9.4 Z"/><path class="p" d="M6.2 15.4 C8 14.4 10 16.4 12 15.4 C14 14.4 16 16.4 17.8 15.4 C17.8 18.6 15.4 20.4 12 20.4 C8.6 20.4 6.2 18.6 6.2 15.4 Z" opacity=".85"/><path class="h" d="M7.8 13 C8.4 11.8 9.4 11 10.6 10.6"/>',
+  healheart: '<path class="f" d="M12 21.2 C5 15.6 2.4 12.2 2.4 8.6 C2.4 5.6 4.7 3.6 7.4 3.6 C9.4 3.6 11.2 4.7 12 6.3 C12.8 4.7 14.6 3.6 16.6 3.6 C19.3 3.6 21.6 5.6 21.6 8.6 C21.6 12.2 19 15.6 12 21.2 Z"/><path class="p" d="M10.7 7.6 H13.3 V10.4 H16.1 V13 H13.3 V15.8 H10.7 V13 H7.9 V10.4 H10.7 Z" style="fill:#fff"/>',
+  heartturn: '<path class="f" d="M12 18.6 C7 14.8 5 12.4 5 9.8 C5 7.7 6.6 6.3 8.5 6.3 C10 6.3 11.3 7.1 12 8.3 C12.7 7.1 14 6.3 15.5 6.3 C17.4 6.3 19 7.7 19 9.8 C19 12.4 17 14.8 12 18.6 Z"/><path class="p" d="M12 .6 L15.4 4.4 H8.6 Z M12 23.4 L8.6 19.8 H15.4 Z"/><path class="h" d="M7.6 9.6 C7.6 8.7 8.2 8.1 9 8.1"/>',
   burst: '<path class="f" d="M12 1 L14.4 8 L21.8 6.6 L16.6 12 L21.8 17.4 L14.4 16 L12 23 L9.6 16 L2.2 17.4 L7.4 12 L2.2 6.6 L9.6 8 Z"/><circle class="p" cx="12" cy="12" r="3" style="fill:#fff"/>',
 };
 // Which picture each power wears (the rest fall back to the icon of what they give).
@@ -44,6 +47,7 @@ const POWER_GLYPH = {
   arcbolt: 'bolt', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
   grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
+  'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
 };
 const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk' };
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -84,8 +88,8 @@ export function effectLine(k, { x, round, level = 0, stored = 0 } = {}) {
 export function sigil(ctx) {
   const { b, powers, utils, reset } = ctx;
   const bySlot = Object.fromEntries(powers.map((p) => [p.k.slot, p]));
-  const sel = ctx.selected && (powers.find((p) => p.k.id === ctx.selected) || utils.find((u) => u.id === ctx.selected)) ? ctx.selected
-    : (powers.find((p) => isReady(p, reset)) || powers[0] || {}).k?.id;
+  // nothing is chosen when the sheet opens (Dave): the panel under it asks you to tap one
+  const sel = ctx.selected && (powers.find((p) => p.k.id === ctx.selected) || utils.find((u) => u.id === ctx.selected)) ? ctx.selected : null;
   const medal = (slot) => {
     const p = bySlot[slot]; if (!p) return h('div', { class: `pw-medal at-${slot} empty` });
     const { k, st, stored } = p; const on = sel === k.id; const ready = isReady(p, reset);
@@ -105,10 +109,12 @@ export function sigil(ctx) {
     <path class="pw-inner" d="M150 74 L225 205 H75 Z"/><circle class="pw-rune" cx="150" cy="160" r="52"/><circle class="pw-rune r2" cx="150" cy="160" r="60"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   const core = h('div', { class: 'pw-center' }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic'));
-  // the helpers, right under the triangle: solid buttons when ready, each with its cost badge like the powers' (Dave)
-  const costBadge = (u) => (u.cost ? h('span', { class: 'pu-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pu-cost free' }, h('b', {}, u.badge || 'FREE')));
-  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-util t-${u.tone} ${sel === u.id ? 'on' : ''} ${u.why ? 'off' : 'ready'}`, onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
-    h('span', { class: 'pu-ic' }, HK.icon(u.icon)), h('b', { class: 'pu-name' }, u.name), costBadge(u))));
+  // the helpers, right under the triangle: round medallions like the powers (Dave), each with its cost badge and,
+  // when it cannot be used, a tag that says why (FULL HP, USED, NONE LEFT)
+  const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
+  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-medal pw-umedal t-${u.tone} st-${u.why ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
+    h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g')), costBadge(u)),
+    h('span', { class: 'pw-name' }, u.name), u.tag ? h('span', { class: 'pw-tag used' }, u.tag) : null)));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
     h('div', { class: 'pw-stage' }, tri, h('i', { class: 'pw-motes', 'aria-hidden': 'true' }, ...Array.from({ length: 7 }, (_, i) => h('i', { style: { '--i': i } }))), core, medal('A'), medal('B'), medal('C')),
@@ -142,9 +148,15 @@ function detailPanel(ctx, sel) {
       h('div', { class: 'pd-gives' }, gives), h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
       why ? h('p', { class: 'pd-why' }, why) : null, h('div', { class: 'pd-row' }, step, release, main));
   }
-  const u = ctx.utils.find((x) => x.id === sel); if (!u) return h('div', { class: 'pw-detail empty' });
+  const u = ctx.utils.find((x) => x.id === sel);
+  if (!u) { // nothing chosen yet: say what to do
+    return h('div', { class: 'pw-detail pw-pick' }, h('span', { class: 'pp-arrow', 'aria-hidden': 'true' }, '▲'),
+      h('b', {}, 'Tap a power to choose it'),
+      h('p', {}, reset ? 'Roll your dice first; powers are cast while you shape your roll. Tap one now to read what it does.'
+        : 'The three on the triangle are your powers. The three under them are always ready. Tap one to see what it does and cast it.'));
+  }
   return h('div', { class: `pw-detail t-${u.tone}` },
-    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, HK.icon(u.icon)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
+    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
       u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
     h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}`, disabled: !!u.why || a.disabled, onclick: a.fn }, a.label))));

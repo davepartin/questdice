@@ -883,3 +883,29 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet:has(.pw-sigil) { top: calc(.5rem + var(--safe-t)); }
 .pw-stage { margin: 1.45rem auto 1.9rem; } .pw-utils { margin-top: .15rem; }
 @media (max-height: 720px) { .pw-stage { margin: 1.35rem auto 1.85rem; } .pw-util { min-height: 2.9rem; padding: .3rem .3rem .35rem; } .pw-util .pu-ic { width: 1.4rem; height: 1.4rem; } .pd-gives { margin: .25rem 0 .1rem; } .pw-detail .pd-row { margin-top: .4rem; } }
+/* ---- magic powers, round 3 (Dave): nothing chosen at first, helpers as medallions, the border always wraps the cast button */
+/* iPhone Safari's vh is the screen with its bars hidden, so there the triangle came out bigger and pushed the cast button
+   under the sheet's edge: size by the visible screen (svh), and let the sheet scroll rather than ever cut anything off */
+.b3-sheet:has(.pw-sigil) { overflow-y: auto; overscroll-behavior: contain; }
+.b3-sheet .b3-cards:has(.pw-sigil) { flex: 1 0 auto; } .pw-sigil { flex: 1 0 auto; }
+.pw-stage { width: clamp(8rem, calc(16.5vh * 300 / 260), min(70%, 10.6rem)); width: clamp(8rem, calc(16.5svh * 300 / 260), min(70%, 10.6rem)); margin: 1.35rem auto 1.75rem; }
+.pw-medal, .pw-ring { width: clamp(3rem, 7.4svh, 3.5rem); } .pw-ring { height: clamp(3rem, 7.4svh, 3.5rem); }
+.pw-core { width: calc(clamp(3rem, 7.4svh, 3.5rem) * .81); height: calc(clamp(3rem, 7.4svh, 3.5rem) * .81); }
+/* the helpers: the same round medallions as the powers, a little smaller, in a row under the triangle */
+.pw-utils { display: flex; justify-content: space-around; align-items: flex-start; gap: .3rem; margin-top: .1rem; padding-top: .4rem; }
+.pw-medal.pw-umedal { position: relative; left: auto; top: auto; transform: none; width: 6rem; }
+.pw-umedal .pw-ring { width: 2.9rem; height: 2.9rem; } .pw-umedal .pw-core { width: 2.35rem; height: 2.35rem; } .pw-umedal .pw-core .ic { width: 1.45rem; height: 1.45rem; }
+.pw-umedal .pw-name { max-width: none; white-space: nowrap; margin-top: .25rem; }
+.pw-umedal.st-ready .pw-ring { animation: none; } /* only the powers breathe */
+.pw-umedal.st-low .pw-cost { background: #4a4258; }
+.pw-cost.free { padding: .08rem .38rem; font-size: .56rem; letter-spacing: .05em; background: linear-gradient(180deg, #3ad07a, #1a7a44); }
+.pw-umedal .pw-tag { top: -.6rem; }
+/* nothing chosen yet: a short note that points up at the medallions */
+.pw-detail.pw-pick { text-align: center; padding: .6rem .8rem .7rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1.5px rgba(200, 150, 255, .35); }
+.pw-pick .pp-arrow { display: block; font-size: .8rem; line-height: 1; color: #d9b4ff; animation: ppBob 1.4s ease-in-out infinite; }
+.pw-pick b { display: block; margin-top: .2rem; font: 800 1rem var(--disp, sans-serif); letter-spacing: .04em; color: #fff; }
+.pw-pick p { margin: .3rem 0 0; font-size: .76rem; line-height: 1.3; color: #d8cfe6; }
+@keyframes ppBob { 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .pw-pick .pp-arrow { animation: none; } }
+/* when a short screen scrolls the sheet, its title and Cancel stay pinned at the top */
+.b3-sheet:has(.pw-sigil) > .sh-head { position: sticky; top: -.55rem; z-index: 5; margin: -.55rem -.6rem 0; padding: .55rem .6rem .3rem; background: linear-gradient(180deg, rgb(24, 11, 44) 75%, rgba(24, 11, 44, 0)); }

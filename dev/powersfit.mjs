@@ -1,7 +1,9 @@
 // The powers sheet must fit with no scrolling: open it, pick each medallion and helper, and measure.  node dev/powersfit.mjs [cls] [w] [h]
 import { chromium } from 'playwright-core';
-const [cls = 'wizard', W = 390, H = 664] = process.argv.slice(2);
-const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
+const [cls = 'wizard', W = 390, H = 664, OUT = 'docs/ingame'] = process.argv.slice(2);
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage',
+  // real fonts (they are wider than the fallbacks): through the sandbox proxy when there is one
+  ...(process.env.HTTPS_PROXY ? [`--proxy-server=${process.env.HTTPS_PROXY}`, '--proxy-bypass-list=localhost;127.0.0.1'] : [])] });
 const p = await b.newPage({ viewport: { width: +W, height: +H }, hasTouch: true, deviceScaleFactor: 2 });
 p.on('pageerror', (e) => console.log('ERR', e.message));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
@@ -13,12 +15,12 @@ await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
 for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
-await p.evaluate(() => { window.QD.S.battle.magic = 6; window.QD.S.battle.hp -= 8; document.querySelector('.b3-powers')?.click(); }); await pump(0.5);
+await p.evaluate(() => { window.QD.S.battle.magic = 6; window.QD.S.battle.hp -= 8; document.querySelector('.b3-powers')?.click(); }); await pump(0.5); await p.evaluate(() => document.fonts.ready);
 const measure = (tag) => p.evaluate((tag) => { const s = document.querySelector('.b3-sheet'); const r = s.getBoundingClientRect(); const all = [...s.querySelectorAll('button')].map((x) => x.getBoundingClientRect());
   const cut = all.filter((q) => q.bottom > r.bottom + 1 || q.top < r.top - 1).length; const top = document.querySelector('.b3-top')?.getBoundingClientRect().bottom;
   return `${tag}: sheet ${Math.round(r.top)}-${Math.round(r.bottom)} (top bar ends ${Math.round(top)}), overflow ${s.scrollHeight - s.clientHeight}px, content cut ${Math.max(0, Math.round(s.querySelector('.pw-sigil').getBoundingClientRect().bottom - r.bottom))}px, buttons outside ${cut}`; }, tag);
-for (const [sel, tag] of [['.pw-medal.at-A', 'A'], ['.pw-medal.at-B', 'B'], ['.pw-medal.at-C', 'C'], ['.pw-util:nth-child(2)', 'heal'], ['.pw-util:nth-child(3)', 'heart']]) {
+for (const [sel, tag] of [['#none', 'open'], ['.pw-medal.at-A', 'A'], ['.pw-medal.at-B', 'B'], ['.pw-medal.at-C', 'C'], ['.pw-umedal:nth-child(1)', 'potion'], ['.pw-umedal:nth-child(2)', 'heal'], ['.pw-umedal:nth-child(3)', 'heart']]) {
   await p.evaluate((s) => document.querySelector(s)?.click(), sel); await pump(0.3); await p.waitForTimeout(400);
-  console.log(await measure(tag)); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/powersfit_${cls}_${W}x${H}_${tag}.png` });
+  console.log(await measure(tag)); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${OUT}/powersfit_${cls}_${W}x${H}_${tag}.png` });
 }
 await b.close();
