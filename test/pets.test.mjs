@@ -71,3 +71,16 @@ test('grow the pet: d6 for 80 gold, then d8 for 180; power rises with it', () =>
   h.gold = 1000; for (let f = 0; f < 7 && h.pet.faces.flat().filter((x) => x === 'magic').length < 8; f++) while (addPetSymbol(h, f, 'magic')) { /* fill */ }
   assert.equal(h.pet.faces.flat().filter((x) => x === 'magic').length, petKindMax(8));
 });
+
+test('Bristle the hedgehog starts with pierce, which talents lack, and trains it; old fox and magpie saves still work', () => {
+  const h = hero(); h.pet = newPet('bristle');
+  assert.deepEqual(h.pet.faces, [['pierce'], ['pierce'], []]);
+  assert.ok(addPetSymbol(h, 2, 'pierce')); assert.equal(addPetSymbol(h, 2, 'pierce'), true);
+  assert.equal(evaluate(h, board({ P: 4 })).pierce - evaluate(h, board({ P: 1 })).pierce, 4);
+  const g = hero(); g.pet = newPet('turtle'); assert.equal(addPetSymbol(g, 2, 'pierce'), false, 'only the hedgehog trains pierce');
+  assert.equal(PETS.pup, PETS.ember); assert.equal(PETS.magpie, PETS.penny); assert.ok(!Object.keys(PETS).includes('pup'));
+  const old = hero(); old.pet = { type: 'pup', size: 4, faces: [['atk'], ['atk'], []] };
+  assert.equal(evaluate(old, board({ P: 2 })).atk - evaluate(old, board({ P: 1 })).atk, 2);
+  assert.equal(Object.keys(PETS).length, 6);
+});
+

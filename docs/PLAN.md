@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011b**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **112 passing**. Keep them green.
+  the last one used is **20261011c**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -43,7 +43,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
   monsters' attacks; the targeted hero scores as the company's shield; team actions; spoils draft by battle points; a second
   or third hero of a class wears another colour set.
 - Learn to play: 13 lessons and a guided practice fight. Saved games behind Continue.
-- Pets (11 Oct): the traveler sells one pet a camp (90 gold). Its die rolls on a small stand left of the board; train it like
+- Pets (11 Oct): the traveler sells one of six pets a camp (90 gold; Dave's pictures). Its die rolls on a small stand left of the board; train it like
   a talent die and grow it d4 → d6 → d8. See "Pets" at the end.
 
 **What we did most recently (7-10 Oct 2026), newest last.** Online rooms; 2x talent face label; saved games list and a
@@ -550,9 +550,14 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
 
 Dave: "a traveler can have one and you can pay for it... a single die... train it like a talent die... one side is always
 blank... cute and coloured by their starting symbol... placed in the black area to the left of the dice board."
-- Five pets (data.js PETS): Ember Pup (fox, attack, red), Shellback (turtle, block, blue), Sprig (bunny, heal, green),
-  Starling (owl, magic, purple), Pip (magpie, gold, yellow). Drawn as inline SVG in js/g3/pets.js (petSvg); preview with
-  dev/petsheet.mjs (docs/ingame/pets_sheet.png).
+- Six pets (data.js PETS), one per symbol and in its colour, from Dave's own pictures (11 Oct): Ember (black dragon, attack,
+  red), Bristle (hedgehog with a spear, pierce, orange), Shellback (armoured turtle, block, blue), Sprig (bunny in a leaf
+  cloak, heal, green), Starling (owl in a wizard's hat, magic, purple), Penny (gold dragon on coins, gold). Sources in
+  assets/pets/src/*.jpg; dev/petcut.mjs cuts them (flood-fills the black from the edges, threshold 6, so the black dragon
+  keeps its body) into assets/pets/*.webp (about 30-45 KB); dev/petcutsheet.mjs checks them for halos
+  (docs/ingame/pets_cut.png). The first pets' ids 'pup' and 'magpie' are hidden aliases of Ember and Penny for old saves.
+  Bristle's pierce is a symbol talents lack: a pet may always train its own symbol (addPetSymbol), and the picker adds it.
+  In battle each pet has a soft glow in its colour behind it, so the black dragon still shows on the dark.
 - Rules (engine.js, tested in test/pets.test.mjs): hero.pet = { type, size, faces }. The traveler offers one pet a camp,
   picked by the campaign seed (petOffer); PET_PRICE 90. A pet is a d4: face 1 always blank (it shows a paw), faces 2-3
   start with its own symbol, face 4 empty. Train it like a talent die (addPetSymbol, 25 gold a symbol, two a face): its own

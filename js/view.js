@@ -82,7 +82,7 @@ export function describeDie(hero, slot, v) {
   if (role === 'pet') {
     const p = D.PETS[hero.pet?.type]; const syms = E.petFace(hero, v); const pw = E.petPowerOf(hero);
     if (!p) return 'The pet stand. Adopt a pet from the traveler at camp.';
-    return syms ? `${p.name} (d${hero.pet.size}) shows ${syms.map((k) => D.TALENT_SYMS[k].name).join(' and ')}: +${pw} each.` : v === 1 ? `${p.name} (d${hero.pet.size}): the paw. One face of every pet die is always blank.` : `${p.name} (d${hero.pet.size}): an empty face. Train it at camp to put a symbol here.`;
+    return syms ? `${p.name} (d${hero.pet.size}) shows ${syms.map((k) => D.SYM_NAMES[k]).join(' and ')}: +${pw} each.` : v === 1 ? `${p.name} (d${hero.pet.size}): the paw. One face of every pet die is always blank.` : `${p.name} (d${hero.pet.size}): an empty face. Train it at camp to put a symbol here.`;
   }
   if (role === 'heart') {
     const t = ['Every 1 on your head, hands and feet heals +2 more.', 'Every 2 on your head, hands and feet pierces +2 more.', 'Every 3 on your head, hands and feet gives +2 ✦ more.', 'Every 4 on your head, hands and feet gives +2 🪙 more.', 'Each BLUE weapon lane gets +4 block.', 'Each RED weapon lane gets +4 attack.'][v - 1];

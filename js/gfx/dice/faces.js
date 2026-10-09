@@ -158,7 +158,7 @@ const T = {
   weapon: { name: 'weapon', rough: 0.08, trim: ['#ffe9a8', '#d9a83e', '#6e4a14'], trimRough: 0.2, num: 'metal' },
 };
 // Pet dice ('pet-atk', 'pet-block', ...): a deep shade of the pet's own colour, so its bright symbols stand out on it.
-export const PET_TINT = { atk: '#ff5a4a', block: '#3aa4ff', heal: '#38e87a', magic: '#b46cff', gold: '#ffc21a' };
+export const PET_TINT = { atk: '#ff3b3b', pierce: '#ff8a1a', block: '#3aa4ff', heal: '#38e87a', magic: '#b46cff', gold: '#ffc21a' };
 const shade = (hex, k) => { const c = new THREE.Color(hex).multiplyScalar(k); return `#${c.getHexString()}`; };
 const tint = (hex, k) => { const c = new THREE.Color(hex).lerp(new THREE.Color('#ffffff'), k); return `#${c.getHexString()}`; };
 for (const [k, col] of Object.entries(PET_TINT)) {

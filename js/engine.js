@@ -217,7 +217,7 @@ export function petOffer(hero) {
   const c = hero.campaign; if (!c) return null;
   const types = Object.keys(PETS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'pet'));
   const type = types[Math.floor(r() * types.length)];
-  return { type, price: PET_PRICE, owned: hero.pet?.type === type };
+  return { type, price: PET_PRICE, owned: !!hero.pet && PETS[hero.pet.type] === PETS[type] };
 }
 export function buyPet(hero) {
   const o = petOffer(hero); if (!o || o.owned || hero.gold < o.price) return false;
@@ -228,7 +228,7 @@ export function petTrainInfo(hero) {
   return { faces: p.size - 1, slots: (p.size - 1) * TALENT_PER_FACE, used: p.faces.flat().length, cost: TALENT_SLOT_COST };
 }
 export function addPetSymbol(hero, face, sym) {
-  const p = hero.pet; if (!p || !TALENT_SYMS[sym]) return false;
+  const p = hero.pet; if (!p || !(TALENT_SYMS[sym] || sym === PETS[p.type].kind)) return false; // a pet's own symbol may be one talents lack (pierce)
   const t = petTrainInfo(hero); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
   while (p.faces.length < t.faces) p.faces.push([]);
   const have = p.faces.flat().filter((x) => x === sym).length; const cap = sym === PETS[p.type].kind ? petKindMax(p.size) : TALENT_MAX_SAME;

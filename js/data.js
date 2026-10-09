@@ -9,14 +9,20 @@ export const ROLE = {
 };
 // PETS (Dave, Oct 2026): the traveler sells one pet a camp. A pet is one die beside the board: one face always blank, the
 // rest hold symbols like a talent die (train them at camp). It starts with two of its own symbol. Each symbol pays the pet's
-// power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Colours follow their symbol.
+// power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Each pet wears its symbol's colour (Dave's pictures,
+// assets/pets/<img>.webp, cut from assets/pets/src by dev/petcut.mjs).
 export const PETS = {
-  pup: { name: 'Ember Pup', kind: 'atk', color: '#ff5a4a', text: 'A brave little fox pup. Starts with two attack symbols.' },
-  turtle: { name: 'Shellback', kind: 'block', color: '#3aa4ff', text: 'A sturdy turtle. Starts with two block symbols.' },
-  bunny: { name: 'Sprig', kind: 'heal', color: '#38e87a', text: 'A gentle bunny with a leafy ear. Starts with two heal symbols.' },
-  owl: { name: 'Starling', kind: 'magic', color: '#b46cff', text: 'A wise little owl. Starts with two magic symbols.' },
-  magpie: { name: 'Pip', kind: 'gold', color: '#ffc21a', text: 'A magpie who loves shiny things. Starts with two gold symbols.' },
+  ember: { name: 'Ember', kind: 'atk', color: '#ff3b3b', img: 'ember', text: 'A little black dragon with a flame on its tail. Starts with two attack symbols.' },
+  bristle: { name: 'Bristle', kind: 'pierce', color: '#ff8a1a', img: 'bristle', text: 'A brave hedgehog with a spear. Starts with two pierce symbols.' },
+  turtle: { name: 'Shellback', kind: 'block', color: '#3aa4ff', img: 'turtle', text: 'A turtle in blue armour with a shield. Starts with two block symbols.' },
+  bunny: { name: 'Sprig', kind: 'heal', color: '#38e87a', img: 'bunny', text: 'A gentle bunny in a leafy cloak. Starts with two heal symbols.' },
+  owl: { name: 'Starling', kind: 'magic', color: '#b46cff', img: 'owl', text: 'A little owl in a wizard’s hat. Starts with two magic symbols.' },
+  penny: { name: 'Penny', kind: 'gold', color: '#ffc21a', img: 'penny', text: 'A golden baby dragon on a pile of coins. Starts with two gold symbols.' },
 };
+// The first pets (a fox and a magpie) became Ember and Penny: old saves still find them (hidden from the traveler's list).
+Object.defineProperty(PETS, 'pup', { value: PETS.ember, enumerable: false });
+Object.defineProperty(PETS, 'magpie', { value: PETS.penny, enumerable: false });
+export const SYM_NAMES = { atk: 'Attack', block: 'Block', pierce: 'Pierce', magic: 'Magic', heal: 'Heal', gold: 'Gold' };
 export const PET_PRICE = 90;          // gold, from the traveler
 export const PET_POWER = { 4: 2, 6: 3, 8: 4 }; // what each symbol pays, by die size
 export const PET_GROW = { 4: 80, 6: 180 };     // gold to grow the pet die to the next size (d4 -> d6 -> d8)

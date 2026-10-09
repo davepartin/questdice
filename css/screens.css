@@ -503,9 +503,9 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 
 /* ---- pets (Dave, Oct 2026): the traveler's pet offer, the pet card in the Forge tab, and the hint when you have none */
 .pet-pic { display: inline-grid; place-items: center; flex: none; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--pc, #fff) 45%, transparent)); }
-.pet-pic svg { display: block; animation: petBob 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
+.pet-pic img { display: block; width: auto; animation: petBob 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
 @keyframes petBob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-3px) scale(1.02, .98); } }
-@media (prefers-reduced-motion: reduce) { .pet-pic svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .pet-pic img { animation: none; } }
 .pet-offer { margin-top: .8rem; display: grid; grid-template-columns: auto 1fr; gap: .4rem .8rem; align-items: center; padding: .7rem .8rem; border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--pc) 55%, transparent); background: radial-gradient(90% 120% at 0% 50%, color-mix(in srgb, var(--pc) 22%, transparent), rgba(0, 0, 0, .35) 70%); }
 .pet-offer > .sx-btn, .pet-offer > .sold-tag { grid-column: 1 / -1; }

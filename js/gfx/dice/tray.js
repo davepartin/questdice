@@ -19,7 +19,7 @@ import { diceStyle, drawIcon } from './faces.js';
 import { weaponIcon } from './art.js';
 import { planRoll, samplePlan, ROLL, ROLL_PLAYBACK } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
-import { petSvg } from '../../g3/pets.js';
+import { petImg } from '../../g3/pets.js';
 import { createFX, PULSE_COLORS } from './fx.js';
 
 // ------------------------------------------------------------------------------- layout
@@ -335,21 +335,25 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   };
   // ---- the pet: a picture of it standing behind its die (a camera-facing sprite), shown only when the hero has one
   const petSpr = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false }));
-  petSpr.center.set(0.5, 0.06); petSpr.scale.set(1.25, 1.25, 1); petSpr.position.set(PET_HOME.x, 0.02, PET_HOME.z - 0.95); petSpr.visible = false; petSpr.renderOrder = 6; petSpr.name = 'pet';
+  const PET_H = 1.38; let petW = PET_H; // the picture's height on the table; its width follows the picture
+  petSpr.center.set(0.5, 0.04); petSpr.scale.set(PET_H, PET_H, 1); petSpr.position.set(PET_HOME.x, 0.02, PET_HOME.z - 0.95); petSpr.visible = false; petSpr.renderOrder = 6; petSpr.name = 'pet';
   object.add(petSpr);
+  // a soft glow in the pet's colour behind it, so a dark pet (Ember, the black dragon) still stands out from the dark
+  const petGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending, opacity: 0.55 }));
+  petGlow.scale.set(2.1, 2.1, 1); petGlow.renderOrder = 5; petGlow.visible = false; object.add(petGlow);
   let petType = null; let petHop = 0; let petHopV = 0;
   tray.setPet = function setPet(type) {
-    petStand.visible = !!type; S.P.vacant = !type; if (!type) petSpr.visible = false;
-    if (type === petType) { if (type && petSpr.material.map) petSpr.visible = true; return tray; }
+    petStand.visible = !!type; S.P.vacant = !type; if (!type) { petSpr.visible = false; petGlow.visible = false; } else petGlow.material.color.set(D.PETS[type]?.color || '#ffffff');
+    if (type === petType) { if (type && petSpr.material.map) { petSpr.visible = true; petGlow.visible = true; } return tray; }
     petType = type; if (!type || typeof Image === 'undefined') return tray;
     const img = new Image();
     img.onload = () => {
       if (petType !== type) return;
-      const c = document.createElement('canvas'); c.width = c.height = 256; c.getContext('2d').drawImage(img, 0, 0, 256, 256);
-      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-      petSpr.material.map?.dispose?.(); petSpr.material.map = t; petSpr.material.needsUpdate = true; petSpr.visible = !!petType;
+      const t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true;
+      petW = PET_H * (img.naturalWidth / img.naturalHeight || 1);
+      petSpr.material.map?.dispose?.(); petSpr.material.map = t; petSpr.material.needsUpdate = true; petSpr.visible = !!petType; petGlow.visible = !!petType;
     };
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(petSvg(type, 256))}`;
+    img.src = petImg(type);
     return tray;
   };
   tray.petHop = () => { petHopV = Math.max(petHopV, 3.2); };
@@ -611,8 +615,9 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     // ---- the pet: a soft idle bob, and a happy hop when its die lands
     if (petSpr.visible) {
       petHopV += (-petHop * 200 - petHopV * 10) * dt; petHop += petHopV * dt; if (petHop < 0) { petHop = 0; petHopV = Math.max(0, petHopV) * 0.3; }
-      const bob = Math.sin(time * 2.4) * 0.025; petSpr.position.y = 0.02 + petHop * 0.35 + bob; petSpr.scale.set(1.25 * (1 - bob * 0.6), 1.25 * (1 + bob * 0.8 + petHop * 0.1), 1);
+      const bob = Math.sin(time * 2.4) * 0.025; petSpr.position.y = 0.02 + petHop * 0.35 + bob; petSpr.scale.set(petW * (1 - bob * 0.6), PET_H * (1 + bob * 0.8 + petHop * 0.1), 1);
       petSpr.material.opacity = S.P.bound ? 0.55 : S.P.dimmed ? 0.7 : 1;
+      petGlow.position.set(petSpr.position.x, petSpr.position.y + PET_H * 0.45, petSpr.position.z - 0.05); petGlow.material.opacity = (0.42 + 0.1 * Math.sin(time * 1.6)) * petSpr.material.opacity;
     }
     // ---- socket glow uniforms
     for (const slot of ALL) {

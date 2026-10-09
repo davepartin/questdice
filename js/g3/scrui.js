@@ -13,7 +13,7 @@ import { sfx } from '../audio.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
-import { petSvg } from './pets.js';
+import { petImg } from './pets.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -584,7 +584,8 @@ function talentCard(hero, slot) {
 }
 // ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };
-const petPic = (type, size = 84) => h('span', { class: 'pet-pic', 'aria-hidden': 'true', html: petSvg(type, size) });
+const petPic = (type, size = 84) => h('span', { class: 'pet-pic', 'aria-hidden': 'true', style: { '--pc': D.PETS[type]?.color } }, h('img', { src: petImg(type), alt: '', style: { height: `${size}px` } }));
+const petSyms = (hero) => [...new Set([...Object.keys(D.TALENT_SYMS), D.PETS[hero.pet.type].kind])]; // the pet's own symbol may be one talents lack (Bristle's pierce)
 const petLeft = (hero, k) => (k === D.PETS[hero.pet.type].kind ? D.petKindMax(hero.pet.size) : D.TALENT_MAX_SAME) - hero.pet.faces.flat().filter((x) => x === k).length;
 function petOfferCard(hero) {
   const o = E.petOffer(hero); if (!o) return null; const p = D.PETS[o.type];
@@ -611,16 +612,16 @@ function petCard(hero) {
     const cur = pet.faces[f] || [];
     const slotsEl = Array.from({ length: D.TALENT_PER_FACE }, (_, i) => {
       const k = cur[i]; const open = PET.face === f && i === cur.length;
-      if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.TALENT_SYMS[k].name}. Tap to remove.`, onclick: tap(() => { E.removePetSymbol(hero, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
+      if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.SYM_NAMES[k]}. Tap to remove.`, onclick: tap(() => { E.removePetSymbol(hero, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
       return h('button', { class: `tal-slot ${open ? 'open' : ''}`, type: 'button', disabled: i > cur.length, 'aria-label': 'Add a symbol', onclick: tap(() => { PET.face = f; X.renderCamp(); }) }, '+');
     });
     return h('div', { class: 'tal-face' }, h('small', {}, `Face ${f + 2}`), h('div', { class: 'tal-slots' }, slotsEl));
   });
-  const picker = PET.face != null && PET.face < t.faces ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
+  const picker = PET.face != null && PET.face < t.faces ? h('div', { class: 'tal-pick' }, petSyms(hero).map((k) => {
     const left = petLeft(hero, k); const full = (pet.faces[PET.face] || []).length >= D.TALENT_PER_FACE;
     const can = left > 0 && !full && hero.gold >= t.cost;
-    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: pays ${pw}. ${left} left on this die.`, onclick: tap(() => { if (E.addPetSymbol(hero, PET.face, k)) { PET.face = (pet.faces[PET.face] || []).length >= D.TALENT_PER_FACE ? null : PET.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `+${pw} · ${left} left`));
-  }), h('small', { class: 'tal-cost' }, `Each symbol costs ${t.cost} gold. ${D.TALENT_SYMS[p.kind].name} can go on up to ${D.petKindMax(pet.size)} times; any other symbol twice. Tap a placed symbol to take it off.`)) : null;
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.SYM_NAMES[k]}: pays ${pw}. ${left} left on this die.`, onclick: tap(() => { if (E.addPetSymbol(hero, PET.face, k)) { PET.face = (pet.faces[PET.face] || []).length >= D.TALENT_PER_FACE ? null : PET.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.SYM_NAMES[k]), h('small', {}, `+${pw} · ${left} left`));
+  }), h('small', { class: 'tal-cost' }, `Each symbol costs ${t.cost} gold. ${D.SYM_NAMES[p.kind]} can go on up to ${D.petKindMax(pet.size)} times; any other symbol twice. Tap a placed symbol to take it off.`)) : null;
   return h('div', { class: 'sx-urow tal-die pet-die', style: { '--pc': p.color } },
     h('div', { class: 'pet-head' }, petPic(pet.type, 72), h('div', { class: 'tal-head' }, h('b', {}, `${p.name} · d${pet.size}`), h('small', {}, `${t.used} of ${t.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Each symbol pays ${pw}${g.next ? ` (${D.PET_POWER[g.next]} once it grows to a d${g.next})` : ''}. Rolls beside your board, and you can reroll it like any die.`))),
     h('div', { class: 'tal-strip syms pet-strip' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), faces),
