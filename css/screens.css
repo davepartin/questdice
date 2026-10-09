@@ -518,3 +518,7 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .pet-head { display: flex; align-items: center; gap: .7rem; } .pet-head .tal-head { flex: 1; min-width: 0; } .pet-head .tal-head b { color: #fff; }
 .pet-strip { grid-template-columns: repeat(auto-fit, minmax(5.4rem, 1fr)) !important; }
 .pet-hint { align-items: center; gap: .7rem; border-color: color-mix(in srgb, var(--pc) 40%, transparent) !important; }
+/* One button on screen (Dave): the old corner icons are gone, so titles get the right side back; when the corner menu
+   button shows (screens without their own Menu), the top-left content steps aside for it */
+.sx-top, .sx-top { right: var(--pad); }
+body:has(#gmenu:not([hidden])) .sx-top, body:has(#gmenu:not([hidden])) .sx-back { margin-left: 3.3rem; }

@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011r**). Phones otherwise keep old files.
+  the last one used is **20261011s**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **115 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -736,3 +736,19 @@ Test: "Arc Bolt: 2 magic a die" in test/engine.test.mjs. Balance tools not re-ru
 - Tangled dice: bright silver chains with a soft self-light (tray.js chainMat; were dark grey with a purple glow and read
   as black), a silver hexagon under the die instead of the dark purple one, and the tangled die is dimmed 25% instead of
   60%. docs/ingame/tangled_silver_compare.png (left before, right after).
+
+## Victory faces the hero; one menu button (Dave, 11 Oct)
+
+- Victory camera: the shot 's-victory' was fixed at the landscape hero mark, so on phones (hero in the foreground at
+  -1.6,0,2.6) it looked at the hero's back from far off. screens.js aimAtHero builds the shot from where the hero really
+  stands and how tall they are (head anchor + 0.6 m for raised hands and hats), the hero turns round to face the camera
+  over about a second while playing 'victory' (arms up), the battle's framing pan is cleared and the empty dice-table pass
+  is switched off (it left a dark band under the picture). docs/ingame/victory_face_phone.png (wizard, knight at 393x667),
+  victory_face_wide.png.
+- One button on screen: the corner Home / Rules / Sound icons are gone (CSS hides them; the elements stay for old code).
+  Battle menu and quest-board menu gained "Sound: On/Off" (they already had Rules and Go home). Screens without their own
+  Menu (title, hero choice, camp, victory, defeat) show a single menu button top-left (#gmenu, ui.js globalMenu: Rules,
+  Hints, Sound, Save & go home). syncHome hides it when the screen has its own Menu (.b3-menu, .sx-menubtn,
+  .screen-menu). The top bar no longer reserves the right side for the icons; camp's title and hero choice's Back step
+  right when the corner button shows. docs/ingame/one_menu_button.png (title, create, board, camp, battle, victory).
+  Not checked: online room screens (flat UI), defeat screen, Learn to play (its layer sits above the corner anyway).

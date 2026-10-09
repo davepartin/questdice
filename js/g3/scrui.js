@@ -327,7 +327,7 @@ export function board() {
   const tipEl = tipBox('board', 'Each quest offers two roads. Standard is lighter. Perilous hits harder but pays 1.5× gold and XP.');
   const place = quests[0].place;
   mountAs('board', h('div', { class: 'sx-board' },
-    topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' }))),
+    topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' },
         eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`),
@@ -354,7 +354,7 @@ function storyCard(kicker, titleText, body, { icon = 'road' } = {}, ...rest) {
 export function story(b, onDone) {
   const hero = X.members()[0]; let done = false;
   mountAs('road', h('div', { class: 'sx-split sx-road sx-storybeat' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
-    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       storyCard(b.kicker, b.title, b.text, { icon: b.icon }),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); onDone(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   const place = E.questsFor(hero)[0].place;
@@ -367,7 +367,7 @@ export function road() {
     onclick: () => { const res = R.chooseRoad(hero, members, ch.id); if (!res) { sfx.error(); toast(ch.ok ? 'The road will not take that.' : 'You cannot afford that.'); return; } sfx.card(); X.persist(); roadResult(res); },
   }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
-    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       storyCard(ev.kicker, ev.title, ev.tell), eyebrow('What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
@@ -375,7 +375,7 @@ export function road() {
 export function roadResult(res) {
   const hero = X.members()[0];
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
-    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu' })),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       storyCard('The road answers', res.title, res.text), h('div', { class: 'sx-cta' }, btn('Onward', X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('road');
 }
@@ -773,4 +773,4 @@ function mountAs(cls, ...nodes) {
   side.addEventListener('scroll', () => SCR.scrolled?.(side.scrollTop), { passive: true });
   side.scrollTop = y; SCR.scrolled?.(y);
 }
-export function chrome(mute) { const m = $('#mute'); if (m) m.replaceChildren(ico(mute ? 'mute' : 'sound', '', 18)); const hlp = $('#help'); if (hlp && !hlp.querySelector('svg')) hlp.replaceChildren(ico('help', '', 20)); const hm = $('#home'); if (hm && !hm.querySelector('svg')) hm.replaceChildren(ico('home', '', 20)); }
+export function chrome(mute) { const m = $('#mute'); if (m) m.replaceChildren(ico(mute ? 'mute' : 'sound', '', 18)); const hlp = $('#help'); if (hlp && !hlp.querySelector('svg')) hlp.replaceChildren(ico('help', '', 20)); const hm = $('#home'); if (hm && !hm.querySelector('svg')) hm.replaceChildren(ico('home', '', 20)); const gm = $('#gmenu'); if (gm && !gm.querySelector('svg')) gm.replaceChildren(ico('menu', '', 20)); }

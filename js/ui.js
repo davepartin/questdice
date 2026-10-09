@@ -113,11 +113,28 @@ export function bindChrome() {
   sync(); mute.onclick = () => { setMuted(!isMuted()); sync(); sfx.click(); };
   $('#help').onclick = () => showHowTo();
   $('#home').onclick = () => { sfx.click(); askHome(); };
+  $('#gmenu').onclick = () => { sfx.click(); globalMenu(); };
   setInterval(syncHome, 400); syncHome();
+}
+// One button on screen (Dave): Home, Rules and Sound live in the menus. Screens with their own Menu (battle, quest board,
+// road) add them there; everywhere else a single menu button sits in the top-left corner.
+const soundItem = (close) => ghost(`Sound: ${isMuted() ? 'Off' : 'On'}`, () => { setMuted(!isMuted()); SCRUI.chrome?.(isMuted()); close(); toast(isMuted() ? 'Sound off.' : 'Sound on.'); });
+function globalMenu() {
+  const open = (S.hero || S.company || S.practice) && !S.net;
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Menu'),
+    h('div', { class: 'col' },
+      ghost('Rules', () => { close(); showHowTo(); }),
+      ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
+      soundItem(() => close()),
+      open ? ghost('Save & go home', () => { close(); askHome(); }) : null,
+      ghost('Close', () => close()))));
 }
 // The Home button (top corner, beside help and sound): shown whenever a game is open on this phone. Online tables keep
 // their own "Leave this phone" (it hands the seat back), so it stays hidden there.
-function syncHome() { const b = $('#home'); if (b) b.hidden = !(S.hero || S.company || S.practice) || !!S.net; }
+function syncHome() {
+  const own = [...document.querySelectorAll('.b3-menu, .sx-menubtn, .screen-menu')].some((el) => el.offsetParent); // this screen has its own Menu
+  const g = $('#gmenu'); if (g) g.hidden = own;
+}
 // "Are you sure?" before going home. The hero is saved; a fight left halfway starts over from the quest board next time.
 function askHome() {
   if (!(S.hero || S.company || S.practice) || S.net) return;
@@ -296,7 +313,7 @@ function showBoard() {
     return h('div', { class: `node ${st} ${n === D.QUESTS_PER_ACT ? 'boss' : D.ELITE_STEPS.includes(n) ? 'elite' : ''}` }, n === D.QUESTS_PER_ACT ? '👑' : D.ELITE_STEPS.includes(n) ? '☠' : n < c.step ? '✓' : String(n));
   }));
   mount(
-    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
+    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small screen-menu' })),
     S.company?.kind === 'company'
       ? h('div', { class: 'levels' }, S.company.members.map((m) => h('span', {}, `${D.CLASSES[m.cls].glyph} ${m.name} · Lv ${m.level} · 🪙 ${m.gold}`)))
       : xpBar(hero),
@@ -327,6 +344,7 @@ function menu() {
       ghost('The story so far', () => { close(); showStorySoFar(); }),
       ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
+      soundItem(() => close()),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       ghost('Save & go home', () => { close(); askHome(); }),
       ghost('Close', () => close()))));
@@ -360,7 +378,7 @@ function showRoad() {
   const ev = R.ensureRoad(hero, members);
   persist();
   mount(
-    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
+    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small screen-menu' })),
     h('article', { class: 'road' },
       h('div', { class: 'road-kicker' }, ev.kicker),
       h('h2', {}, ev.title),
@@ -379,7 +397,7 @@ function showRoad() {
 function showRoadResult(res) {
   if (SCRUI.on()) return SCRUI.roadResult(res);
   mount(
-    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small' })),
+    h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small screen-menu' })),
     h('article', { class: 'road' },
       h('div', { class: 'road-kicker' }, 'The road answers'),
       h('h2', {}, res.title),
@@ -531,6 +549,7 @@ function battleMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
+      soundItem(() => close()),
       S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }),
       S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }

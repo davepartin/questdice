@@ -369,13 +369,30 @@ export function victory() {
   bw.arena.setMood?.('victory'); if (bw.tray?.object) bw.tray.object.visible = false;
   bw.hero.play('victory', { restart: true });
   setLook({ bloom: 0.85, exposure: 1.06, sat: 1.12 });
+  const yaw = aimAtHero('s-victory', bw.hero); world.director.pan = 0; // (the battle's own framing nudge would push the hero up out of the picture)
+  if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
   world.director.set('s-victory', { lambda: 1.4 });
   music.setMood?.('victory');
   // a rain of gold sparks over the hero
   const st = stage(); const ps = new Particles({ max: 220, sprite: 'dot', blending: 'add' }); st.addParticles(ps); const r = rng(5); let acc = 0; const hp = bw.hero.root.position;
   const off = st.onFrame((dt) => { acc += dt * (reduced() ? 8 : 26); while (acc >= 1) { acc -= 1; ps.emit({ pos: [hp.x + (r() - 0.5) * 3.2, 3.2 + r(), hp.z + (r() - 0.5) * 2.4], vel: [(r() - 0.5) * 0.3, -0.5 - r() * 0.5, (r() - 0.5) * 0.3], life: 3.2, size: 0.05 + r() * 0.05, sizeEnd: 0.02, color: r() > 0.3 ? 0xffd870 : 0xfff2c0, colorEnd: 0xff9a30, alpha: 1, alphaEnd: 0, turbulence: 1.2, drag: 0.2 }); } });
-  bw.stage.scene.userData.victoryOff = () => { off(); ps.object.removeFromParent(); };
+  // the hero turns round to face the camera over about a second
+  const hr = bw.hero.root; const turn = st.onFrame((dt) => { let d = yaw - hr.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); hr.rotation.y += d * (1 - Math.exp(-(reduced() ? 60 : 3.2) * dt)); });
+  bw.stage.scene.userData.victoryOff = () => { off(); turn(); ps.object.removeFromParent(); };
   return bw;
+}
+// The victory camera comes to the hero, wherever the battle placed them (phones stand the hero in the foreground, wide
+// screens further back), and the hero turns round to face it, so the raised arms and the face are seen (Dave).
+// Returns the yaw the hero should turn to.
+function aimAtHero(name, actor) {
+  const p = actor.root.position;
+  let dx = 0.42; let dz = 1; const l = Math.hypot(dx, dz); dx /= l; dz /= l; // from the hero toward the viewer's side, a little to the right
+  const tall = Math.max(1.6, (actor.worldAnchor?.('head')?.y ?? 2) - p.y + 0.6); // head to raised hands (and hats)
+  const mid = tall * 0.55;
+  const at = (d, up, lift = 0) => ({ pos: [p.x + dx * d, p.y + mid + up + lift, p.z + dz * d], look: [p.x, p.y + mid + lift, p.z] });
+  // phones: the picture is the band above the results panel, so stand further back
+  SHOTS[name] = { land: { ...at(tall * 2.2, 0.3), fov: 36 }, port: { ...at(tall * 3.2, 0.45, tall * 0.16), fov: 50 } }; // (lift: the hero sits lower in the band, clear of the top)
+  return Math.atan2(dx, dz) - 0.25; // face the camera, turned a touch toward the battlefield
 }
 export function defeat() {
   const bw = world.battle; if (!bw) return null;
