@@ -926,3 +926,6 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 /* sparkles drift up through the big triangle */
 .pw-motes { display: block; inset: -12% -30% 0; z-index: 0; }
 @media (prefers-reduced-motion: reduce) { .pa-fill, .pa-edge, .pa-spark, .pa-node { animation: none !important; } .pa-spark { display: none; } }
+/* the magic you hold: out of the triangle's middle, a badge in the open space to its right (Dave) */
+.pw-center { left: 138%; top: 18%; z-index: 1; padding: .4rem .7rem .35rem; border-radius: .85rem; gap: .05rem;
+  background: radial-gradient(circle at 50% 30%, rgba(150, 80, 255, .55), rgba(40, 12, 90, .92)); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .7), 0 0 18px rgba(150, 80, 255, .55); }
