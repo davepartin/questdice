@@ -121,9 +121,12 @@ function logo() {
     h('i', { class: 'br-shine', 'aria-hidden': 'true' }), ...spots, h('i', { class: 'br-twinkle', 'aria-hidden': 'true' }));
   // the game's own dice around him: both weapon d4s, a d6 strength die, a d4 talent die and the gold heart die
   const stage = h('div', { class: 'br-stage' },
-    h('div', { class: 'br-float back' }, floatDie('strength', { x: 66, y: -6, size: 3.7, t: 3.2, bob: 5, tilt: -8 }), floatDie('heart', { x: -10, y: 52, size: 3.4, t: 3.8, bob: 6, delay: -2, tilt: 10 })),
-    hero,
-    h('div', { class: 'br-float front' }, floatDie('red', { x: 2, y: 82, size: 3.1, t: 2.2, bob: 4, delay: -1, tilt: 6 }), floatDie('blue', { x: 82, y: 78, size: 3.2, t: 2.6, bob: 4.6, delay: -3, tilt: -10 }), floatDie('talent', { x: 26, y: -10, size: 2.9, t: 2, bob: 3.8, delay: -1.5, tilt: 4 })));
+    // all behind him and smaller, peeking out around his shoulders, sword and legs, like dice tumbling in the distance
+    h('div', { class: 'br-float back' },
+      floatDie('strength', { x: 64, y: -2, size: 2.2, t: 3.4, bob: 5, tilt: -8 }), floatDie('talent', { x: 22, y: 8, size: 1.9, t: 2.4, bob: 4, delay: -1.5, tilt: 4 }),
+      floatDie('heart', { x: 2, y: 64, size: 2.1, t: 4, bob: 6, delay: -2, tilt: 10 }), floatDie('red', { x: 44, y: 72, size: 1.9, t: 2.6, bob: 4.4, delay: -1, tilt: 6 }),
+      floatDie('blue', { x: 92, y: 20, size: 2, t: 3, bob: 4.8, delay: -3, tilt: -10 })),
+    hero);
   return h('div', { class: 'sx-brand' }, stage,
     h('div', { class: 'br-words' },
       h('h1', { class: 'br-title' }, h('img', { class: 'br-quest', src: 'assets/brand/quest.webp', alt: 'Quest', draggable: 'false' }), h('img', { class: 'br-dice', src: 'assets/brand/dice.webp', alt: 'Dice', draggable: 'false' })),
