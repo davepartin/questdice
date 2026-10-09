@@ -194,7 +194,14 @@
 .fc.bump { animation: fcBump .5s var(--ease-slam); } @keyframes fcBump { 35% { transform: translateY(-3px) scale(1.07); } }
 .b3-fc.idle .fc { opacity: .34; } .b3-fc.idle .fc .fc-n { color: var(--h-dim); text-shadow: none; font-size: 0; } .b3-fc.idle .fc .fc-n::after { content: '–'; font-size: 1.2rem; }
 /* synergy notes ride the top edge of the strip like banners */
-.fs-notes { position: absolute; left: 0; right: 0; bottom: calc(100% - .2rem); display: flex; justify-content: center; flex-wrap: wrap; gap: .35rem; pointer-events: none; z-index: 3; }
+.fs-notes { position: absolute; left: 0; right: 0; bottom: calc(100% - .2rem); display: flex; justify-content: center; flex-wrap: nowrap; gap: .35rem; pointer-events: none; z-index: 3; }
+/* one row, always: each note takes at most its share of the width (two triples sit side by side, half each) */
+.fs-notes .fnote { flex: 0 1 auto; min-width: 0; max-width: calc((100% - (var(--n, 1) - 1) * .35rem) / var(--n, 1)); }
+.fs-notes .fnote-tx { min-width: 0; } .fs-notes .fnote-tx b, .fs-notes .fnote-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* every triple at once: one banner right across */
+.fs-notes .fnote.mega { flex: 1 1 auto; max-width: none; justify-content: center; padding-top: .3rem; padding-bottom: .3rem; }
+.fs-notes .fnote.mega .fnote-tx { align-items: center; } .fs-notes .fnote.mega .fnote-tx b { font-size: 1rem; letter-spacing: .14em; } .fs-notes .fnote.mega .fnote-ic { font-size: 1.3rem; }
+.fs-notes.mega .fnote:not(.mega) { flex: 0 1 auto; max-width: 34%; }
 .fnote { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: .22rem .75rem .22rem .5rem; border-radius: .3rem; font-family: var(--disp); background: linear-gradient(180deg, rgba(40,38,60,.95), rgba(14,14,26,.96)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 4px 12px rgba(0,0,0,.5); clip-path: polygon(0 0, 100% 0, calc(100% - .5rem) 50%, 100% 100%, 0 100%, .5rem 50%); padding-left: 1rem; padding-right: 1.1rem; }
 .fnote-ic { font-size: 1.1rem; display: grid; } .fnote-tx { display: flex; flex-direction: column; line-height: 1.02; } .fnote-tx b { font-weight: 800; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; } .fnote-tx small { font-size: .58rem; color: var(--h-dim); letter-spacing: .04em; font-weight: 600; }
 .fnote.good { background: linear-gradient(180deg, #fff0b4, #f0b43c 55%, #b9801e); color: #2a1804; box-shadow: 0 0 20px rgba(255,200,60,.55); } .fnote.good .fnote-tx small { color: #5a3a08; } .fnote.good .ic { color: #7a1c0c; filter: none; } .fnote.good .ic .f { fill-opacity: .55; }

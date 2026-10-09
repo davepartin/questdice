@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011h**). Phones otherwise keep old files.
+  the last one used is **20261011i**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -635,4 +635,9 @@ with icons where the dice go. Consider the visuals and a new player. Make it AAA
   with their numbers, the total counts up, the counters it adds show as chips (+13 Attack), and an "Add 13 to my roll"
   button closes it; the counter it filled pulses. The rules are unchanged (the roll already happened in the engine).
   Non-dice powers still use the banner. Script: dev/arcbolt.mjs (docs/ingame/arcbolt_landed.png, banner_fit.png).
+- 11 Oct: the triple notes above the battle buttons always sit in one row now (a second row covered the buttons). Two
+  triples sit side by side, half the width each, with short names (WEAPONS! / STRENGTH! and "Triple · +10 attack"
+  under them); all three at once become one banner right across: TRIPLE TRIPLE TRIPLE! with the total (+20 attack ·
+  +10 block). hudkit.js synergyList / setNotes (--n), hud.css .fs-notes. Script dev/triples.mjs
+  (docs/ingame/triples_one/two/three.png).
 

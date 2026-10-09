@@ -199,9 +199,10 @@ export function setForecast(el, vals) {
 // Synergy notes: proud banners. `notes` = [{ key, kind, icon, text, sub }]
 export function setNotes(el, notes) {
   const seen = el._seen; const keys = new Set(notes.map((n) => n.key));
+  el._notes.style.setProperty('--n', String(Math.max(1, notes.length))); el._notes.classList.toggle('mega', notes.some((n) => n.mega)); // always one row (Dave: a second row covered the buttons)
   el._notes.replaceChildren(...notes.map((n) => {
     const fresh = !seen.has(n.key);
-    return h('div', { class: `fnote ${n.kind || ''} ${fresh ? 'fresh' : ''}` }, h('span', { class: 'fnote-ic' }, icon(n.icon || 'star')),
+    return h('div', { class: `fnote ${n.kind || ''} ${n.mega ? 'mega' : ''} ${fresh ? 'fresh' : ''}` }, h('span', { class: 'fnote-ic' }, icon(n.icon || 'star')),
       h('span', { class: 'fnote-tx' }, h('b', {}, n.text), n.sub ? h('small', {}, n.sub) : null),
       n.kind === 'good' ? h('span', { class: 'sparkles', 'aria-hidden': 'true' }, h('i', {}), h('i', {}), h('i', {}), h('i', {})) : null);
   }));
@@ -210,7 +211,12 @@ export function setNotes(el, notes) {
 }
 export function synergyList(ev, mods) {
   const out = [];
-  for (const t of ev.triples || []) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: `${t.name.toUpperCase()}!`, sub: `+10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
+  const tri = ev.triples || [];
+  if (tri.length >= 3) { // every triple at once: one banner right across (Dave)
+    const atk = tri.filter((t) => t.kind === 'atk').length * 10; const blk = tri.filter((t) => t.kind !== 'atk').length * 10;
+    out.push({ key: 't-all', kind: 'good', mega: true, icon: 'crown', text: 'TRIPLE TRIPLE TRIPLE!', sub: [atk ? `+${atk} attack` : '', blk ? `+${blk} block` : ''].filter(Boolean).join(' · ') });
+  } else { const two = tri.length === 2; // two side by side: short names so neither gets cut off
+    for (const t of tri) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: two ? `${t.name.replace(/\s*Triple$/i, '').toUpperCase()}!` : `${t.name.toUpperCase()}!`, sub: `${two ? 'Triple · ' : ''}+10 ${t.kind === 'atk' ? 'attack' : 'block'}` }); }
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;
