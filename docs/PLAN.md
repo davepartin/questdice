@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011d**). Phones otherwise keep old files.
+  the last one used is **20261011e**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -603,4 +603,14 @@ with icons where the dice go. Consider the visuals and a new player. Make it AAA
   counters, Triples and straights (three real boards with glowing lines), How a round goes, Grow at camp (pets, potions,
   powers: Sprig's stand and all six pets), Ready. The practice battle and its guide are unchanged and still pass end to end.
 - Screenshots: docs/tutorial/390x844-L01..L13.png, 390x664-L02-tap.png (dev/learn.mjs, dev/learntap.mjs).
+
+## Hero choice screen: brighter, and the hero turns to face you (Dave, 11 Oct)
+
+- Dave: the top of the screen was dark, and the hero slowly spun until you saw his back. screens.js create(): vignette
+  0.7 -> 0.28 and exposure 1.14 (on a phone only the top of the picture shows above the panel, where the vignette was
+  darkest); a rimKit fill from the camera side lights the hero's front; the camera ('s-create') sits a little higher and
+  further back.
+- Each hero now arrives turned to the left (yaw -1.3) and turns to face you over about two seconds (FRONT 0.22), then
+  sways gently around facing you. The old endless slow spin is gone. Dragging still turns him; let go and he drifts back.
+- Screenshots: docs/ingame/after_*.png (dev/createpick.mjs).
 

@@ -26,7 +26,7 @@ const rng = (seed) => { let s = seed >>> 0 || 1; return () => { s = (s * 1664525
 // land = wide screens, port = tall phones. Hero stands near the world origin in every scene.
 Object.assign(SHOTS, {
   's-title': { land: { pos: [2.4, 0.85, 6.7], look: [-0.6, 1.3, 0.4], fov: 34 }, port: { pos: [1.6, 1.2, 9.4], look: [-1.0, 1.4, 0.4], fov: 46 } },
-  's-create': { land: { pos: [0.8, 1.6, 7.4], look: [0, 1.2, 0], fov: 36 }, port: { pos: [0.5, 1.6, 8.8], look: [0, 1.2, 0], fov: 50 } },
+  's-create': { land: { pos: [0.8, 1.9, 7.4], look: [0, 1.25, 0], fov: 36 }, port: { pos: [0.5, 2.3, 10.2], look: [0, 1.38, 0], fov: 50 } }, // a touch higher and further back (Dave): the hero sits lower in the bright part of the screen, the pedestal ring shows
   's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
   's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-2.1, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.7, 1.25, -0.5], fov: 52 } },
   's-camp': { land: { pos: [2.8, 1.5, 6.0], look: [-0.9, 0.95, 0.2], fov: 38 }, port: { pos: [2.4, 1.7, 7.4], look: [-0.9, 0.95, 0.2], fov: 52 } },
@@ -249,11 +249,13 @@ const MODES = {
   },
   async create({ cls = 'knight' } = {}, token) {
     await arenaFor('Burnt Orchard', { seed: 11, mood: 'calm' }); check(token);
-    setLook({ vignette: 0.7, bloom: 0.75, exposure: 1.05 });
+    setLook({ vignette: 0.28, bloom: 0.7, exposure: 1.14 }); // light vignette: on a phone only the top of the picture shows above the panel, and a heavy one made it dark (Dave)
+    rimKit({ target: [0, 1.2, 0], rim: 3.2, fill: 2.4 }); // a fill from the camera side so the hero's face and armour read, not a black shape
     const ped = pedestal({ pos: [0, 0, 0], color: CLASS_COLOR[cls] });
     brazier([-2.6, 0, -0.6], { seed: 3 }); brazier([2.7, 0, -0.9], { seed: 4 }); brazier([-3.2, 0, 2.8], { seed: 5, scale: 0.9 });
     const pivot = new THREE.Group(); pivot.position.set(0, 0.34, 0); add(pivot);
-    const cache = new Map(); let cur = null; let yaw = 0.3; let vel = 0; let dragging = false; let idle = 0; let mounting = 0;
+    // each hero arrives turned a little to the left, then turns to face you and sways gently (Dave: it slowly spun until you saw its back)
+    const FRONT = 0.22; const ARRIVE = -1.3; const cache = new Map(); let cur = null; let yaw = ARRIVE; let vel = 0; let dragging = false; let idle = 0; let mounting = 0; let turnT = 0; let turnFrom = ARRIVE; let swayT = 0;
     const burst = particles(120, { sprite: 'dot', blending: 'add' });
     const sh = { cls: null };
     async function pick(c, { quiet = false } = {}) {
@@ -263,6 +265,7 @@ const MODES = {
       if (my !== mounting || token !== own.token) return null;
       if (cur) pivot.remove(cur.root);
       cur = a; pivot.add(a.root); a.play('ready', { restart: true, fade: 0.15 });
+      yaw = ARRIVE; turnFrom = ARRIVE; turnT = 0.0001; vel = 0; swayT = 0; // arrive turned to the left, then turn toward the player
       ped.userData.setColor(CLASS_COLOR[c]);
       if (!quiet) {
         const r = rng(Date.now() & 0xffff);
@@ -273,8 +276,17 @@ const MODES = {
     }
     frame((dt, t) => {
       if (cur) cur.update?.(0, t);
-      if (!dragging) { idle += dt; vel *= Math.exp(-3 * dt); if (idle > 1.2 && !reduced()) yaw += dt * 0.12; }
-      yaw += vel * dt; pivot.rotation.y = yaw;
+      if (turnT > 0) { // the turn toward you: ease out over about two seconds
+        turnT = Math.min(1, turnT + dt / 1.8); const e = 1 - (1 - turnT) ** 3; yaw = turnFrom + (FRONT - turnFrom) * e;
+        if (turnT >= 1) { turnT = 0; swayT = 0; }
+      } else if (!dragging) {
+        idle += dt; vel *= Math.exp(-3 * dt); yaw += vel * dt;
+        if (idle > 2.5 && Math.abs(vel) < 0.05) { // let go a while ago: drift back toward facing you, with a slow gentle sway
+          swayT += dt; const want = FRONT + (reduced() ? 0 : Math.sin(swayT * 0.45) * 0.28);
+          const d = Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw)); yaw += d * (1 - Math.exp(-1.2 * dt));
+        }
+      } else yaw += vel * dt;
+      pivot.rotation.y = yaw;
     });
     emberField({ box: [-5, 0, -3, 5, 3.5, 5], rate: 10 });
     await pick(cls, { quiet: true }); check(token);
@@ -283,7 +295,7 @@ const MODES = {
     const handle = {
       pick, ped,
       push(inn) { world.director.set(inn ? 's-create-in' : 's-create', { lambda: 2.2 }); },
-      drag(dx, end) { dragging = !end; idle = 0; if (end) return; yaw += dx * 0.011; vel = dx * 0.011 * 60; },
+      drag(dx, end) { dragging = !end; idle = 0; turnT = 0; if (end) return; yaw += dx * 0.011; vel = dx * 0.011 * 60; },
       get hero() { return cur; },
     };
     return handle;
