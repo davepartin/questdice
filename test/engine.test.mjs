@@ -341,8 +341,10 @@ test('heart nudge moves the center die by one for its Magic cost', () => {
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
   startRoll(b); b.board.C.v = 3; b.magic = NUDGE_COST + 1;
   assert.ok(nudge(b, 1)); assert.equal(b.board.C.v, 4); assert.equal(b.magic, 1);
-  b.magic = NUDGE_COST - 1; assert.equal(nudge(b, 1), false); b.magic = NUDGE_COST + 1; b.board.C.v = 3; nudge(b, 1);
-  b.board.C.v = 6; assert.equal(nudge(b, 1), false);
+  b.magic = 99; assert.equal(nudge(b, -1), false, 'once a round'); assert.equal(b.board.C.v, 4);
+  b.board.nudged = false; b.magic = NUDGE_COST - 1; assert.equal(nudge(b, 1), false);
+  b.magic = NUDGE_COST + 1; b.board.C.v = 6; assert.equal(nudge(b, 1), false);
+  startRoll(b); b.magic = 99; assert.ok(nudge(b, b.board.C.v < 6 ? 1 : -1), 'a new round, a new nudge');
 });
 
 test('leveling and gear', () => {

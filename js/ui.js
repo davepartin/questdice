@@ -547,7 +547,7 @@ async function doReroll() {
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
   E.reroll(b, slots); if (isParty()) E.commitFighter(b); S.sel.clear(); sfx.roll(); renderBattle(); await flicker(slots);
 }
-function doNudge(dir) { const b = S.battle; if (S.busy) return; if (!E.nudge(b, dir)) { sfx.error(); toast(b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; } if (isParty()) E.commitFighter(b); sfx.magic(); renderBattle(); }
+function doNudge(dir) { const b = S.battle; if (S.busy) return; if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; } if (isParty()) E.commitFighter(b); sfx.magic(); renderBattle(); }
 function doCard(id) { const b = S.battle; if (S.busy) return; if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; } if (isParty()) E.commitFighter(b); sfx.card(); renderBattle(); buzz(20); }
 
 // Re-render only the bits that depend on selection/forecast so dice do not rebuild mid-animation.
@@ -852,7 +852,7 @@ function campHero() {
       h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`)),
     section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level.')),
     section('Class cards', h('div', { class: 'cardlist' }, c.cards.map((k) => h('div', { class: `mini-card ${(k.unlock ?? 1) > hero.level ? 'spent' : ''}` }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`), (k.unlock ?? 1) > hero.level ? h('em', {}, `Unlocks at level ${k.unlock}`) : null)))),
-    section('Always available', h('div', { class: 'cardlist' }, h('div', { class: 'mini-card' }, h('b', {}, 'Heal'), h('small', {}, `${E.healCostOf(hero)}✦ · restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'mini-card' }, h('b', {}, 'Heart nudge'), h('small', {}, `${D.NUDGE_COST}✦ · move your heart die up or down by 1`)))),
+    section('Always available', h('div', { class: 'cardlist' }, h('div', { class: 'mini-card' }, h('b', {}, 'Heal'), h('small', {}, `${E.healCostOf(hero)}✦ · restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'mini-card' }, h('b', {}, 'Heart nudge'), h('small', {}, `${D.NUDGE_COST}✦ · once a round, move your heart die up or down by 1`)))),
     chronicleBlock());
 }
 function chronicleBlock() {

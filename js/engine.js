@@ -514,11 +514,13 @@ export function reroll(b, slots) {
   for (const s of slots) b.board[s] = { ...scripted(b.hero, s, plan?.[s], b.rng), bound: false };
   return true;
 }
+// Turning the heart: once a round (Dave, Oct 2026), marked on this round's board so each hero in a company has their own.
+export const nudgedThisRound = (b) => !!b.board?.nudged;
 export function nudge(b, dir) {
-  if (b.magic < NUDGE_COST) return false;
+  if (!b.board || b.board.nudged || b.magic < NUDGE_COST) return false;
   const v = b.board.C.v + dir;
   if (v < 1 || v > 6) return false;
-  b.magic -= NUDGE_COST; b.board.C.v = v; return true;
+  b.magic -= NUDGE_COST; b.board.C.v = v; b.board.nudged = true; return true;
 }
 export function healSpend(b) {
   const cost = healCostOf(b.hero);

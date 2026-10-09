@@ -297,7 +297,8 @@
 .b3-banner.bad { --bc: #ff4d3a; --bc1: #ffe0d8; --bc2: #ff4a2a; } .b3-banner.good { --bc: #45e08b; --bc1: #eaffe0; --bc2: #35d27c; }
 .bn-rule { flex: 1; height: 2px; max-width: 28vw; background: linear-gradient(90deg, transparent, var(--bc)); box-shadow: 0 0 10px var(--bc); transform-origin: right; animation: bnRule .6s ease-out both; } .bn-rule.r { transform: scaleX(-1); }
 .bn-core { display: flex; align-items: center; gap: .6rem; }
-.bn-core b { font-family: var(--font-logo); font-weight: 400; font-size: clamp(1.9rem, 9vw, 3.4rem); line-height: 1; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; background: linear-gradient(180deg, var(--bc1) 15%, var(--bc2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.85)) drop-shadow(0 0 16px color-mix(in srgb, var(--bc) 70%, transparent)); }
+.bn-core { max-width: calc(100vw - 1rem); }
+.bn-core b { font-family: var(--font-logo); font-weight: 400; font-size: min(clamp(1.9rem, 9vw, 3.4rem), calc((100vw - 6.5rem) / (var(--n, 12) * .7))); line-height: 1; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; background: linear-gradient(180deg, var(--bc1) 15%, var(--bc2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.85)) drop-shadow(0 0 16px color-mix(in srgb, var(--bc) 70%, transparent)); }
 .bn-core em { font-family: var(--disp); font-style: normal; font-weight: 800; font-size: clamp(1.2rem, 5vw, 1.8rem); color: #fff; padding: .05rem .5rem; border-radius: .3rem; background: color-mix(in srgb, var(--bc) 80%, #000); text-shadow: 0 2px 0 rgba(0,0,0,.5); }
 .bn-ic { font-size: clamp(1.6rem, 7vw, 2.4rem); color: var(--bc); } .bn-ic.r { transform: scaleX(-1); }
 .b3-banner .sparkles i { width: .7rem; height: .7rem; animation: bnSpark 1.2s ease-out both; left: 50%; top: 50%; }
@@ -654,3 +655,50 @@ body.in-battle .chrome { z-index: 40; }
 .bc-sec::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,.18), transparent); }
 .b3-sheet .bcard.has-slot { padding-top: 1.05rem; margin-top: .55rem; }
 .b3-sheet .bcard.has-slot .bc-slot { top: -.55rem; }
+
+/* ---------------------------------------------------------------- dice powers: the roll in a little window (Dave, Oct 2026) */
+.dr-layer { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 1rem; background: radial-gradient(70% 50% at 50% 45%, rgba(20, 10, 30, .55), rgba(0, 0, 0, .72)); animation: drIn .25s ease-out both; }
+.dr-layer.out { animation: drOut .22s ease-in forwards; }
+@keyframes drIn { from { opacity: 0; } } @keyframes drOut { to { opacity: 0; } }
+.dr-card { --c: #ff4b4b; width: min(92vw, 22rem); display: flex; flex-direction: column; align-items: center; gap: .55rem; padding: 1rem 1rem 1.05rem; border-radius: 18px; text-align: center; color: #f3efe6;
+  background: radial-gradient(90% 70% at 50% 38%, color-mix(in srgb, var(--c) 22%, transparent), transparent 70%), linear-gradient(180deg, rgba(34, 26, 46, .98), rgba(12, 10, 20, .98));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent), 0 0 40px color-mix(in srgb, var(--c) 25%, transparent), 0 20px 50px rgba(0, 0, 0, .6); animation: drPop .4s cubic-bezier(.2, 1.3, .4, 1) both; }
+@keyframes drPop { from { transform: scale(.85) translateY(14px); opacity: 0; } }
+.dr-card.t-atk, .dr-die.t-atk { --c: #ff4b4b; } .dr-card.t-heal, .dr-die.t-heal { --c: #38e87a; } .dr-card.t-block, .dr-die.t-block { --c: #3aa4ff; } .dr-card.t-pierce, .dr-die.t-pierce { --c: #ff8a1a; } .dr-card.t-magic, .dr-die.t-magic { --c: #b46cff; } .dr-card.t-gold, .dr-die.t-gold { --c: #ffc21a; }
+.dr-kicker { font: 700 .62rem var(--disp, sans-serif); letter-spacing: .18em; text-transform: uppercase; color: #e2b24c; }
+.dr-card h3 { margin: 0; font: 800 1.45rem var(--disp, sans-serif); color: #fff; letter-spacing: .02em; }
+.dr-what { margin: 0; font-size: .85rem; line-height: 1.35; color: #cfc8d8; }
+.dr-dice { display: flex; flex-wrap: wrap; justify-content: center; gap: .55rem; min-height: 4.4rem; padding: .4rem 0 .2rem; }
+.dr-die { position: relative; width: 3.7rem; height: 3.7rem; display: grid; place-items: center; animation: drThrow .7s cubic-bezier(.25, 1.25, .45, 1) calc(var(--i) * .08s) both; }
+.dr-dice.n5 .dr-die, .dr-dice.n6 .dr-die { width: 3.1rem; height: 3.1rem; }
+.dr-shape { position: absolute; inset: 0; background: linear-gradient(160deg, color-mix(in srgb, var(--c) 70%, #fff) 0%, var(--c) 45%, color-mix(in srgb, var(--c) 55%, #000) 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35); filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .55)); }
+.dr-die.d6 .dr-shape { border-radius: 14%; } .dr-die.d8 .dr-shape { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); } .dr-die.d4 .dr-shape { clip-path: polygon(50% 4%, 98% 92%, 2% 92%); }
+.dr-die.d10 .dr-shape, .dr-die.d12 .dr-shape { clip-path: polygon(50% 0, 95% 30%, 85% 85%, 15% 85%, 5% 30%); }
+.dr-die b { position: relative; font: 900 1.55rem var(--disp, sans-serif); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 6px rgba(0, 0, 0, .45); }
+.dr-die.d4 b { margin-top: .55rem; font-size: 1.25rem; } .dr-die.d8 b { font-size: 1.35rem; }
+.dr-die.rolling { animation: drThrow .7s cubic-bezier(.25, 1.25, .45, 1) calc(var(--i) * .08s) both, drWobble .32s ease-in-out .7s infinite; }
+.dr-die.rolling b { opacity: .7; }
+.dr-die.landed { animation: drLand .38s cubic-bezier(.2, 1.6, .4, 1) both; }
+.dr-die.landed .dr-shape { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .55)) drop-shadow(0 0 10px color-mix(in srgb, var(--c) 80%, transparent)); }
+@keyframes drThrow { 0% { transform: translate(-40px, -60px) rotate(-260deg) scale(.5); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; } }
+@keyframes drWobble { 0%, 100% { transform: rotate(-9deg) translateY(0); } 50% { transform: rotate(9deg) translateY(-6px); } }
+@keyframes drLand { 0% { transform: scale(1.25) rotate(8deg); } 100% { transform: none; } }
+.dr-sum { display: flex; align-items: center; gap: .5rem; }
+.dr-eq { font: 800 1.4rem var(--disp, sans-serif); color: #b3aec2; }
+.dr-total { min-width: 2.2ch; font: 900 2.3rem var(--disp, sans-serif); color: #fff; text-shadow: 0 0 14px color-mix(in srgb, var(--c, #fff) 60%, transparent); }
+.dr-total.pop { animation: drLand .32s cubic-bezier(.2, 1.6, .4, 1); }
+.dr-kind { display: inline-flex; align-items: center; gap: .3rem; font: 800 .8rem var(--disp, sans-serif); letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+.dr-kind .ic { width: 1.1rem; height: 1.1rem; }
+.dr-gains { display: flex; flex-wrap: wrap; justify-content: center; gap: .35rem; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
+.dr-card.done .dr-gains { opacity: 1; transform: none; }
+.dr-gain { --c: #fff; display: inline-flex; align-items: center; gap: .25rem; padding: .25rem .6rem; border-radius: 999px; font-size: .8rem; color: #eae4f2; background: color-mix(in srgb, var(--c) 18%, rgba(0, 0, 0, .4)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent); }
+.dr-gain b { color: var(--c); font: 900 .95rem var(--disp, sans-serif); } .dr-gain .ic { width: .95rem; height: .95rem; color: var(--c); }
+.dr-gain.t-atk { --c: #ff4b4b; } .dr-gain.t-heal { --c: #38e87a; } .dr-gain.t-block { --c: #3aa4ff; } .dr-gain.t-pierce { --c: #ff8a1a; } .dr-gain.t-magic { --c: #b46cff; } .dr-gain.t-gold { --c: #ffc21a; } .dr-gain.t-weaken { --c: #c8d0e0; }
+.dr-ok { margin-top: .2rem; width: 100%; min-height: 48px; border: 0; border-radius: 12px; cursor: pointer; font: 800 .9rem var(--disp, sans-serif); letter-spacing: .1em; text-transform: uppercase; color: #2a1804;
+  background: linear-gradient(180deg, #ffe9a8, #e2b24c 60%, #b8862c); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 6px 18px rgba(226, 178, 76, .35); transition: opacity .25s, transform .15s; }
+.dr-ok:disabled { opacity: .35; cursor: default; } .dr-ok:active:not(:disabled) { transform: scale(.97); }
+/* the counter a power filled gives a pulse */
+.fc.bump { animation: fcBump .9s ease-out; }
+@keyframes fcBump { 0% { transform: scale(1); } 25% { transform: scale(1.18); filter: brightness(1.6); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .dr-die, .dr-die.rolling, .dr-die.landed, .dr-card, .fc.bump { animation: none !important; } }

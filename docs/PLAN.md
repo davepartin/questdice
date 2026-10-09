@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011g**). Phones otherwise keep old files.
+  the last one used is **20261011h**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -622,4 +622,17 @@ with icons where the dice go. Consider the visuals and a new player. Make it AAA
   bend the knees and the boot soles sit below the ankle joints. hero.js lifts the figure (a.model.position.y = FOOT_LIFT,
   0.115 m); the shadow blob stays on a.root at ground level. Measured with dev/feetcheck.mjs (every class now within
   about 1 cm of the pedestal top). Screenshots: docs/ingame/feet_closeup.png, feet_battle_hero.png.
+
+## Battle polish: banner fits, heart once a round, dice powers roll in a window (Dave, 11 Oct)
+
+- Banners ("YOU STRIKE FIRST ⚡3", "THE COMPANY STRIKES FIRST") were wider than a phone. hudkit.js banner() sets --n (the
+  label's length) and hud.css sizes the text to fit: min(old size, (100vw - 6.5rem) / (n * .7)). Measured 35..355 px on a
+  390 px screen, and inside the screen at 375 px too.
+- Heart change (turn the heart die up/down) is once a round: engine nudge() marks b.board.nudged (each hero's own board in
+  a company game, so each has their own); E.nudgedThisRound(b). The power card says ONCE A ROUND, then USED. Test updated.
+- Dice powers (Arc Bolt, the 2d6 powers, Lucky Verse's d6) now open a small window (battle3d.js diceRollPopup): the dice
+  (d4 triangle / d6 square / d8 diamond, in the colour of what they add) tumble in with a dice-roll sound, land one by one
+  with their numbers, the total counts up, the counters it adds show as chips (+13 Attack), and an "Add 13 to my roll"
+  button closes it; the counter it filled pulses. The rules are unchanged (the roll already happened in the engine).
+  Non-dice powers still use the banner. Script: dev/arcbolt.mjs (docs/ingame/arcbolt_landed.png, banner_fit.png).
 
