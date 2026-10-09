@@ -266,10 +266,11 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   }
   tray.setWaiting = function setWaiting(on = true) { for (const slot of ALL) S[slot].waiting = !!on; return tray; }; // dice not thrown yet: icons show, dice stay off the table
   const hexTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); const hexP = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
-    hexP(118); g.fillStyle = 'rgba(14,4,26,0.78)'; g.fill(); g.lineWidth = 7; g.strokeStyle = '#a05cff'; g.shadowColor = '#b070ff'; g.shadowBlur = 16; hexP(112); g.stroke(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(190,140,255,0.6)'; hexP(86); g.stroke(); hexP(60); g.stroke();
+    hexP(118); g.fillStyle = 'rgba(190,200,225,0.16)'; g.fill(); g.lineWidth = 7; g.strokeStyle = '#e8eef9'; g.shadowColor = '#b8c8ff'; g.shadowBlur = 16; hexP(112); g.stroke(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(220,228,245,0.6)'; hexP(86); g.stroke(); hexP(60); g.stroke();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
   const chainGeo = new THREE.TorusGeometry(0.055, 0.017, 5, 9); chainGeo.scale(1.35, 1, 1);
-  const chainMat = new THREE.MeshStandardMaterial({ color: 0x4a4a58, metalness: 1, roughness: 0.38, emissive: 0x2a0c58, emissiveIntensity: 0.6 });
+  // bright silver chains (Dave: the dark ones were lost on the board); a little self-light so they read under any light
+  const chainMat = new THREE.MeshStandardMaterial({ color: 0xe6ebf5, metalness: 0.55, roughness: 0.26, emissive: 0x9aa4bc, emissiveIntensity: 0.55 });
 
   // =========================================================================== hero / dice
   const camLocal = new THREE.Vector3();
@@ -562,7 +563,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       s.liftV += ((target - s.lift) * 340 - s.liftV * 21) * dt; s.lift += s.liftV * dt;
       s.hopV += (-s.hop * 260 - s.hopV * 14) * dt; s.hop += s.hopV * dt; if (s.hop < 0) { s.hop = 0; s.hopV = Math.max(0, s.hopV); }
       s.flash = Math.max(0, s.flash - dt * 2.6); s.glowBoost = Math.max(0, s.glowBoost - dt * 1.3);
-      const dimT = s.bound ? 0.6 : s.dimmed ? 0.5 : tray.locked ? 0.08 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
+      const dimT = s.bound ? 0.25 : s.dimmed ? 0.5 : tray.locked ? 0.08 : 0; s.dim += (dimT - s.dim) * (1 - Math.exp(-8 * dt));
       // ---- pose
       let lifted = true;
       if (s.anim?.kind === 'roll') {

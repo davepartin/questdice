@@ -12,10 +12,12 @@ import { mulberry32, hashStr } from '../noise.js';
 const SVG = {
   talent: 'M77.1 46.5 L85.5 47.7 L85.5 60.3 L77.1 61.5 L73.3 70.7 L78.4 77.5 L69.5 86.4 L62.7 81.3 L53.5 85.1 L52.3 93.5 L39.7 93.5 L38.5 85.1 L29.3 81.3 L22.5 86.4 L13.6 77.5 L18.7 70.7 L14.9 61.5 L6.5 60.3 L6.5 47.7 L14.9 46.5 L18.7 37.3 L13.6 30.5 L22.5 21.6 L29.3 26.7 L38.5 22.9 L39.7 14.5 L52.3 14.5 L53.5 22.9 L62.7 26.7 L69.5 21.6 L78.4 30.5 L73.3 37.3 Z M65 54 A19 19 0 1 0 65 54.01 Z M46.0 40.0 L48.8 51.2 L60.0 54.0 L48.8 56.8 L46.0 68.0 L43.2 56.8 L32.0 54.0 L43.2 51.2 Z M86.0 2.0 L88.2 10.8 L97.0 13.0 L88.2 15.2 L86.0 24.0 L83.8 15.2 L75.0 13.0 L83.8 10.8 Z M92.0 28.5 L93.1 32.9 L97.5 34.0 L93.1 35.1 L92.0 39.5 L90.9 35.1 L86.5 34.0 L90.9 32.9 Z',
   mend: 'M37 8 H63 V37 H92 V63 H63 V92 H37 V63 H8 V37 H37 Z',
+  mendBold: 'M34.4 8 H65.6 V34.4 H92 V65.6 H65.6 V92 H34.4 V65.6 H8 V34.4 H34.4 Z', // the heart die's cross: arms 20% thicker (Dave)
   spark: 'M50 2 C54 34 66 46 98 50 C66 54 54 66 50 98 C46 66 34 54 2 50 C34 46 46 34 50 2 Z',
   surge: 'M62 2 L18 56 H44 L34 98 L84 38 H56 Z',
   pierce: 'M50 2 L90 50 L50 98 L10 50 Z',
   arrow: 'M50 3 L90 46 H64 V97 H36 V46 H10 Z',
+  arrowBold: 'M50 3 L94 46 H66.8 V97 H33.2 V46 H6 Z', // the heart die's arrow: shaft 20% thicker, head a little wider (Dave)
   tri: 'M50 6 L96 90 H4 Z',
   disc: 'M50 4 A46 46 0 1 1 49.9 4 Z',
   coin: 'M50 4 A46 46 0 1 1 49.9 4 Z M50 20 A30 30 0 1 0 50.1 20 Z',
@@ -66,9 +68,10 @@ export function drawPip(ctx, kind, x, y, size) {
 }
 export const PIP_COLOR = { boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
+const FAT_ICON = { heal: 'mendBold', pierce: 'arrowBold' }; // the big symbols (heart die)
 const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend', boot: 'boots' };
 export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
-  const ic = SYM_ICON[kind] || 'spark';
+  const ic = (fat && FAT_ICON[kind]) || SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {
     ctx.save(); ctx.translate(x, y); const k = size / 100; ctx.scale(k, k); ctx.translate(-50, -50);
     const p = starPath(8, 50, fat ? 36 : 26); if (stroke) { ctx.lineWidth = stroke / k; ctx.lineJoin = 'round'; ctx.stroke(p); } ctx.fill(p); ctx.restore();

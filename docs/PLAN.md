@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011q**). Phones otherwise keep old files.
+  the last one used is **20261011r**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **115 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -723,3 +723,16 @@ so an upgraded Arc Bolt reaches 5d8 for less magic (level 1: 8 magic). Aimed Sho
 Test: "Arc Bolt: 2 magic a die" in test/engine.test.mjs. Balance tools not re-run for this change.
 - 11 Oct (Dave): the magic you hold moved out of the triangle's middle into a glowing badge in the open space to its right,
   under Cancel (CSS .pw-center override at the end of hud.css; left 138% / top 18% of the stage).
+
+## Small looks and words (Dave, 11 Oct)
+
+- Piercing Pips now reads "Each white body die that rolls pierce pierces +1 more." (was "Each 2 you roll on a cardinal
+  die"; the rule always counted every head/hand/feet face that pays pierce: 2, 6 and 9). Still worth fixing if Dave
+  agrees: Frugal Mender says "the Heal card" (it is a button now); Keen Edge / Ironward say "lane".
+- Heart die: the green heal cross and the orange pierce arrow are 20% thicker (faces.js mendBold / arrowBold, used only for
+  the big symbols via drawSym's `fat`; the small corner symbols on the white dice are unchanged). docs/ingame/heart_bold_compare.png
+  (top before, bottom after). The home screen's filmed heart die (assets/brand/die-*.webp) and the tutorial board stills
+  were not re-filmed.
+- Tangled dice: bright silver chains with a soft self-light (tray.js chainMat; were dark grey with a purple glow and read
+  as black), a silver hexagon under the die instead of the dark purple one, and the tangled die is dimmed 25% instead of
+  60%. docs/ingame/tangled_silver_compare.png (left before, right after).
