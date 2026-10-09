@@ -80,8 +80,9 @@ export function burntOrchard(c) {
 
   // ------------------------------------------------------------------ the farm at the end of the lane
   farmhouse(B, rng, { p: [-3.5, c.hAt(-3.5, -50) , -50], r: 0.15 }, { w: 10, d: 6.5, h: 3.6 });
-  for (const [dx, dz, h, w] of [[-3.6, -3, 8, 3], [0.8, -2.8, 7, 2.6], [3.2, -1, 9.5, 3.4], [-1, 1.6, 5.5, 2.2], [2, 2.0, 6, 2.4]]) c.fire({ p: [-3.5 + dx, c.hAt(-3.5, -50) + 2.8, -50 + dz], w, h, power: 1.1, embers: 22, smoke: dx === 0.8 ? 0.4 : 0.25, tongues: 3, glow: 0.7 });
-  c.glows.push({ p: [-3.5, 4, -52], s: 40, c: 0xff5a1a, k: 0.18, flick: 0.3, seed: 4 });
+  // the farmhouse blaze sits right behind the hero on the menu screens; a quiet backdrop keeps the burnt house but not the fire
+  if (!c.quiet) for (const [dx, dz, h, w] of [[-3.6, -3, 8, 3], [0.8, -2.8, 7, 2.6], [3.2, -1, 9.5, 3.4], [-1, 1.6, 5.5, 2.2], [2, 2.0, 6, 2.4]]) c.fire({ p: [-3.5 + dx, c.hAt(-3.5, -50) + 2.8, -50 + dz], w, h, power: 1.1, embers: 22, smoke: dx === 0.8 ? 0.4 : 0.25, tongues: 3, glow: 0.7 });
+  if (!c.quiet) c.glows.push({ p: [-3.5, 4, -52], s: 40, c: 0xff5a1a, k: 0.18, flick: 0.3, seed: 4 });
   // barn / outbuildings, burning too
   farmhouse(B, rng, { p: [-24, c.hAt(-24, -58), -58], r: 0.7 }, { w: 7, d: 5, h: 3 });
   c.fire({ p: [-24, c.hAt(-24, -58) + 2.5, -58], w: 4, h: 7, power: 1.1, embers: 10, smoke: 0.3, glow: 1.2 });

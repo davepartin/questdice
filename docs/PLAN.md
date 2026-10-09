@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011e**). Phones otherwise keep old files.
+  the last one used is **20261011f**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -613,4 +613,9 @@ with icons where the dice go. Consider the visuals and a new player. Make it AAA
 - Each hero now arrives turned to the left (yaw -1.3) and turns to face you over about two seconds (FRONT 0.22), then
   sways gently around facing you. The old endless slow spin is gone. Dragging still turns him; let go and he drifts back.
 - Screenshots: docs/ingame/after_*.png (dev/createpick.mjs).
+- 11 Oct: the big farmhouse blaze behind the hero is gone on the menu screens (Dave: it washed the hero out). buildArena
+  takes `quiet: true` (screens.js arenaFor passes it); Burnt Orchard then keeps the burnt farmhouse but skips its five
+  tall fires and their big glow. Battles in the Burnt Orchard still burn. (Note: in headless Chromium the home screen's
+  3D backdrop often stays black even on older commits; that is the test browser, not the game.) Screenshots:
+  docs/ingame/quiet_*.png.
 

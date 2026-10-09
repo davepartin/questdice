@@ -14,11 +14,13 @@ const PLACES = {
 export const PLACE_NAMES = ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'Smoke Hollow', 'The Toll Bridge', 'Ashfall Camp', 'Gallows Hill'];
 const norm = (s) => String(s || '').replace(/[’‘`]/g, "'").trim().toLowerCase();
 
-export function buildArena(stage, { place = 'Burnt Orchard', kind = 'standard', seed = 1, quality = stage.quality, enemyCount = 2 } = {}) {
+// quiet: a menu backdrop (the hero choice and home screens): no big blaze behind the subject (Dave: it washed the hero out)
+export function buildArena(stage, { place = 'Burnt Orchard', kind = 'standard', seed = 1, quality = stage.quality, enemyCount = 2, quiet = false } = {}) {
   const key = norm(place);
   const fn = PLACES[key] || PLACES['burnt orchard'];
   const name = PLACES[key] ? PLACE_NAMES.find((n) => norm(n) === key) || place : 'Burnt Orchard';
   const c = createCtx(stage, { place: name, kind, seed, quality, enemyCount });
+  c.quiet = quiet;
   fn(c);
   finalize(c, { ...c.ambient, ...c.smokeOpts });
   return makeArenaObject(c);
