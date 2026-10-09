@@ -132,6 +132,7 @@ function buildHud() {
   hud.hero = buildHero();
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
+  hud.goldchip = h('div', { class: 'b3-magchip b3-goldchip', title: 'Gold' }, HK.icon('gold'), h('b', {}, '0')); // your gold, above the magic (Dave)
   // on phones the line between the battlefield and the dice table is the hero's health bar
   hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
   hud.forecast = HK.forecastStrip();
@@ -147,7 +148,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -297,6 +298,7 @@ function updateHero() {
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
+  const gc = B.hud.goldchip; if (gc) gc.querySelector('b').textContent = String(B.party ? E.companyGold(b.fighters.map((f) => f.hero)) : (B.hero?.gold ?? 0));
 }
 
 function addPlate(e) {
