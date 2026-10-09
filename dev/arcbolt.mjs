@@ -20,9 +20,9 @@ await p.waitForTimeout(1500);
 for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
 await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.magic = 10; B.powerX = { arcbolt: 4 }; window.QD.B3.renderShape(); });
 await p.evaluate(() => document.querySelector('.b3-powers, #b3-powers, [class*="powers"]')?.click()); await pump(0.6);
-const opened = await p.evaluate(() => { const c = [...document.querySelectorAll('.b3-cards > *')].find((e) => /Arc Bolt/i.test(e.textContent)); c?.click(); return !!c; });
+const opened = await p.evaluate(() => { const c = document.querySelector('.pw-medal.at-A'); c?.click(); return !!c; });
 await pump(0.4);
-const used = await p.evaluate(() => { const bt = document.querySelector('.b3-info .pd-btn.go'); const t = bt?.textContent; bt?.click(); return t; });
+const used = await p.evaluate(() => { const bt = document.querySelector('.pw-detail .pw-btn.go'); const t = bt?.textContent; bt?.click(); return t; });
 console.log('opened arc bolt card', opened, 'pressed', used);
 await p.waitForTimeout(500); await shot('arcbolt_rolling');
 await p.waitForTimeout(1900); await shot('arcbolt_landed');

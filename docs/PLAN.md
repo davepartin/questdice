@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011i**). Phones otherwise keep old files.
+  the last one used is **20261011j**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -640,4 +640,27 @@ with icons where the dice go. Consider the visuals and a new player. Make it AAA
   under them); all three at once become one banner right across: TRIPLE TRIPLE TRIPLE! with the total (+20 attack ·
   +10 block). hudkit.js synergyList / setNotes (--n), hud.css .fs-notes. Script dev/triples.mjs
   (docs/ingame/triples_one/two/three.png).
+
+## Magic powers: the triangle sigil and a reveal for every power (Dave, 11 Oct)
+
+Dave: "the magical powers are half of the enjoyment of playing the game... a purple triangle with a circle at each point;
+each one should feel special once you click the button."
+- New module js/g3/powers.js. sigil(ctx) builds the powers sheet: a glowing purple triangle (SVG, edges that flow toward
+  the chosen point, slow rune circles, rising motes) with the three slots as medallions at its points (A top, B lower
+  left, C lower right), the magic you hold in the middle, a detail panel for the chosen power (slot, when it works, what
+  it gives as chips, a plain line, the - / + magic stepper for scale powers, Release for charges, Cast / Store / Recharge)
+  and an "Always ready" row (Potion, Heal, Heart) that opens in the same panel. Medallion states: ready (pulsing),
+  low magic, used, locked (ROUND 3+), recharge; charge powers show their stored pips under the ring.
+- Every power has its own picture (glyph(k), POWER_GLYPH: lightning for Arc Bolt, comet for Meteor, crosshair for Aimed
+  Shot, mountain for Avalanche/Stonehide, music notes for the Bard...).
+- castReveal() runs after every cast (battle3d.js doCard): dice tumble and land (dice powers); Lucky Verse's d6 lights its
+  row of the 1-2 / 3-4 / 5-6 table; a flat power stamps its bonus; Grudge/Meteor light one pip per round and count up;
+  storing a charge fills a pip ("release now for..."); releasing bursts the pips one by one while the totals count; a super
+  flashes, shakes and shows the hit on every monster. Tap the card to hurry it; OK (or the backdrop when done) closes.
+  The counters it filled pulse. Rules unchanged.
+- battle3d.js: cardTiles() returns the sigil (works in the company sheet's Powers tab); renderSheet(); the old card grid
+  and dice popup are gone. hud.css: "MAGIC POWERS: the triangle sigil" and "the reveal" blocks. The sheet stays under the
+  top buttons; on short phones the cast button sticks to the bottom of the sheet.
+- Scripts: dev/powers.mjs <cls> (sheet + every slot's reveal + release + super), dev/powersreset.mjs (before the roll).
+  Screenshots: docs/ingame/powers_<cls>_*.png, powers_reset_*.png, powers_company.png.
 
