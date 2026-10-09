@@ -586,7 +586,22 @@ export const healBig = (b) => drinkPotion(b);
 // ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
 const scaleNum = (v, lvl) => Math.round(v * (1 + 0.25 * lvl));
-export function powerCost(card, x) { return card.kind === 'scale' ? Math.max(card.cost, Math.min(card.max, x ?? card.cost)) : card.cost; }
+// Scale powers: `cost` buys the first dice, every `step` more magic (default 1) adds a die, up to `max` magic and, if set,
+// `maxDice` dice in all (power levels add dice, so an upgraded power reaches the cap for less magic).
+export const scaleStep = (card) => card.step || 1;
+export function scaleMax(card, lvl = 0) {
+  if (card.maxDice == null) return card.max;
+  return Math.min(card.max, card.cost + Math.max(0, card.maxDice - card.dice.n - lvl) * scaleStep(card));
+}
+export function powerCost(card, x, lvl = 0) {
+  if (card.kind !== 'scale') return card.cost;
+  const v = Math.max(card.cost, Math.min(scaleMax(card, lvl), x ?? card.cost)); const st = scaleStep(card);
+  return card.cost + Math.floor((v - card.cost) / st) * st;
+}
+export function powerDice(card, x, lvl = 0) {
+  const n = card.dice.n + lvl + (card.kind === 'scale' ? (powerCost(card, x, lvl) - card.cost) / scaleStep(card) : 0);
+  return card.maxDice == null ? n : Math.min(card.maxDice, n);
+}
 export function powerState(b, card) {
   const spent = card.atwill ? !!(b.usedRound && b.usedRound[card.id]) : !!b.used[card.id];
   const early = !!(card.minRound && b.round < card.minRound);
@@ -609,13 +624,13 @@ export function castPower(b, id, { x, release } = {}) {
     b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; return b.lastCast;
   }
   const st = powerState(b, card); if (st.spent || st.early) return null;
-  const cost = powerCost(card, x); if (b.magic < cost) return null;
+  const cost = powerCost(card, x, powerLevel(b.hero, id)); if (b.magic < cost) return null;
   b.magic -= cost;
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
   const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
   const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v); else b.mods[k] = (b.mods[k] || 0) + v; };
   if (card.dice) { // roll them
-    const n = card.dice.n + lvl + (card.kind === 'scale' ? cost - card.cost : 0);
+    const n = powerDice(card, cost, lvl);
     for (let i = 0; i < n; i++) out.rolls.push(1 + Math.floor(b.rng() * card.dice.s));
     out.total = out.rolls.reduce((a, v) => a + v, 0); out.die = card.dice.s;
     add(card.dice.to, out.total);

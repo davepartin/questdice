@@ -625,7 +625,7 @@ function cardTiles(reset) {
   const b = B.b; const hero = B.hero; B.powerX = B.powerX || {};
   const powers = E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
-    const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
+    const x = E.powerCost(k, B.powerX[k.id] ?? k.cost, E.powerLevel(hero, k.id)); B.powerX[k.id] = x;
     const superReady = k.kind === 'super' && !st.early && !st.spent && b.magic >= x && !reset;
     if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; if (!B.superToast) { B.superToast = true; setTimeout(() => toast(`${k.name} is ready!`), 200); } }
     return { k, st, stored, x, level: E.powerLevel(hero, k.id), afford: b.magic >= x };
@@ -645,7 +645,7 @@ function cardTiles(reset) {
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
     select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
-    step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = Math.max(k.cost, Math.min(k.max, x)); sfx.click?.(); renderSheet(); },
+    step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = E.powerCost(k, x, E.powerLevel(hero, id)); sfx.click?.(); renderSheet(); },
     use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
 function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
@@ -654,7 +654,7 @@ const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean)
 function showPowerDetail(id) {
   const b = B.b; const hero = B.hero; const k = E.cardsOf(hero).find((c) => c.id === id); if (!k) return;
   const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0; B.powerX = B.powerX || {};
-  const x = k.kind === 'scale' ? Math.max(k.cost, Math.min(k.max, B.powerX[k.id] ?? k.cost)) : k.cost; B.powerX[k.id] = x;
+  const x = E.powerCost(k, B.powerX[k.id] ?? k.cost, E.powerLevel(hero, k.id)); B.powerX[k.id] = x;
   const shape = b.phase === 'shape'; const canRecharge = !k.atwill && k.kind !== 'super';
   const word = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal' };
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
@@ -669,8 +669,8 @@ function showPowerDetail(id) {
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const again = () => showPowerDetail(id);
   const stepRow = k.kind === 'scale' && !st.spent && shape ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
-    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = Math.max(k.cost, x - 1); again(); } }, '–'), h('b', {}, String(x)),
-    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = Math.min(k.max, x + 1, Math.max(k.cost, b.magic)); again(); } }, '+')) : null;
+    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
+    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
   const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && b.usedRound[`${k.id}:release`])
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;

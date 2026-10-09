@@ -490,3 +490,14 @@ test('two free healing potions a battle, 10 health each, never above max', async
   assert.equal(drinkPotion(b), true); assert.equal(b.hp, b.maxHp);
   b.hp = 1; assert.equal(drinkPotion(b), false, 'only two'); assert.equal(potionsLeft(b), 0);
 });
+
+test('Arc Bolt: 2 magic a die, at most 5d8 (Dave)', () => {
+  const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true });
+  const cast = (x, lvl = 0) => { w.powerLevel = { arcbolt: lvl }; const b = newBattle(w, questsFor(w)[0], makeRng(5), 1); startRoll(b); b.magic = 15; const r = castPower(b, 'arcbolt', { x }); return [r.rolls.length, 15 - b.magic]; };
+  assert.deepEqual(cast(2), [1, 2]);
+  assert.deepEqual(cast(3), [1, 2]); // an odd magic buys nothing extra
+  assert.deepEqual(cast(6), [3, 6]);
+  assert.deepEqual(cast(10), [5, 10]);
+  assert.deepEqual(cast(15), [5, 10]); // never more than 5 dice
+  assert.deepEqual(cast(15, 1), [5, 8]); // a level adds a die, so the cap comes cheaper
+});

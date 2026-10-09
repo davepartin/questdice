@@ -8,6 +8,7 @@
 import { h } from '../dom.js';
 import * as HK from './hudkit.js';
 import * as D from '../data.js';
+import * as E from '../engine.js';
 import { sfx } from '../audio.js';
 
 // ------------------------------------------------------------------------------------------------ glyphs
@@ -74,7 +75,7 @@ const chip = (f, v, extra = '') => h('span', { class: `pw-chip t-${TONE[f] || 'm
 export function effectLine(k, { x, round, level = 0, stored = 0 } = {}) {
   const lvl = level ? ` (level ${level})` : '';
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
-  if (k.kind === 'scale') { const n = k.dice.n + level + ((x ?? k.cost) - k.cost); return `${x ?? k.cost} magic rolls ${n}d${k.dice.s} for ${NAME[k.dice.to]}. More magic, more dice.`; }
+  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : 'More magic, more dice.'}`; }
   if (k.kind === 'round') return `${k.per} × the round number${round ? ` (round ${round}: about +${k.per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`;
   if (k.kind === 'charge') return `Store a charge each round (${stored} of ${k.max} now). Release them for ${fxWords(perOf(k))} each.`;
   if (k.kind === 'super') return `${fxWords(k.fx)}, and ${k.aoe} to EVERY monster${lvl}.`;
@@ -139,14 +140,14 @@ function detailPanel(ctx, sel) {
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : `Once a battle${canRecharge(k) ? ` · recharge ${ctx.rechargeCost} magic` : ''}`;
     const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '') : 'Roll your dice first. Powers are used while you shape your roll.')
       : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
-    const gives = k.kind === 'charge' ? Object.entries(perOf(k)).map(([f, v]) => chip(f, v, 'each')) : k.dice ? [h('span', { class: `pw-chip t-${toneOf(k)}` }, HK.icon('dice'), h('b', {}, `${k.dice.n + (p.level || 0) + (k.kind === 'scale' ? x - k.cost : 0)}d${k.dice.s}`), ' ', NAME[k.dice.to])]
+    const gives = k.kind === 'charge' ? Object.entries(perOf(k)).map(([f, v]) => chip(f, v, 'each')) : k.dice ? [h('span', { class: `pw-chip t-${toneOf(k)}` }, HK.icon('dice'), h('b', {}, `${E.powerDice(k, x, p.level || 0)}d${k.dice.s}`), ' ', NAME[k.dice.to])]
       : k.kind === 'round' ? [h('span', { class: 'pw-chip t-atk' }, HK.icon('atk'), h('b', {}, `${k.per} × ${b.round}`), ' attack')]
       : k.kind === 'luck' ? [h('span', { class: 'pw-chip t-gold' }, HK.icon('dice'), h('b', {}, 'd6'), ' luck')]
       : Object.entries(k.fx).map(([f, v]) => chip(f, v));
     if (k.kind === 'super') gives.push(h('span', { class: 'pw-chip t-atk' }, HK.icon('atk'), h('b', {}, `${k.aoe}`), ' to every monster'));
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
-      h('button', { type: 'button', 'aria-label': 'One less magic', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - 1) }, '–'), h('b', {}, String(x)),
-      h('button', { type: 'button', 'aria-label': 'One more magic', disabled: x >= Math.min(k.max, Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + 1) }, '+')) : null;
+      h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
+      h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
     const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && b.usedRound[`${k.id}:release`]);
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)

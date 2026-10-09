@@ -292,7 +292,7 @@ export const CLASSES = {
     blurb: 'A frail body and a deep well of magic. No shield, but a spell for every problem and healing to spare.',
     weapons: ['staff'],
     cards: [
-      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, max: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 magic = 1d8, each extra magic adds a die (up to 5d8).' },
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others.', unlock: 5 },
       { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce.' },
       { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },

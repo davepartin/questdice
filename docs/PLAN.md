@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011o**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **114 passing**. Keep them green.
+  the last one used is **20261011p**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **115 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -712,3 +712,12 @@ helpers should look like the triangle's powers; the sheet's purple border cut th
   light running round them, a breathing glow inside, a soft pulsing light at each point, sparkles drifting up. One
   upright triangle only (two crossed triangles would make a six-pointed star). Background only, no taps; still with
   reduced motion.
+
+## Arc Bolt toned down (Dave, 11 Oct)
+
+Dave: "too strong, it almost killed the dog on the first shot." It was 2 magic for 1d8 and +1 die per extra magic (6 magic
+= 5d8 on round 1). Now every die after the first costs 2 magic: 2 = 1d8, 4 = 2d8, 6 = 3d8, 8 = 4d8, 10 = 5d8, never more
+than 5 dice. Data: `step: 2, max: 10, maxDice: 5` on the card. Engine: scaleStep / scaleMax / powerCost(card, x, lvl) /
+powerDice (shared by the sheet's stepper, its text and the cast); power levels still add a die, but the 5-dice cap holds,
+so an upgraded Arc Bolt reaches 5d8 for less magic (level 1: 8 magic). Aimed Shot (ranger) is unchanged (1 magic a die).
+Test: "Arc Bolt: 2 magic a die" in test/engine.test.mjs. Balance tools not re-run for this change.
