@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tray shot</title><base href="../">
+<script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
+<style>html,body{margin:0;background:#222}canvas{display:block}</style></head>
+<body><script type="module">
+// Render the game's real dice tray as a still (transparent background) for the Learn to play lessons.
+// window.shot(spec) -> { url, socks: { slot: { x, y, top } } in % of the picture }. Driven by dev/trayshot.mjs.
+import * as THREE from 'three';
+import * as E from './js/engine.js';
+import * as D from './js/data.js';
+import { createTray, slotPos } from './js/gfx/dice/tray.js';
+import { setDiceStyle } from './js/gfx/dice/faces.js';
+import { makeEnvironment } from './js/gfx/env.js';
+setDiceStyle('clean');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true; renderer.setClearColor(0x000000, 0); document.body.append(renderer.domElement);
+window.shot = async (spec) => {
+  const [W, H] = spec.size || [800, 760];
+  renderer.setSize(W, H);
+  const scene = new THREE.Scene(); scene.environment = makeEnvironment(renderer);
+  scene.add(new THREE.HemisphereLight(0xffeedd, 0x302018, 1.0));
+  const key = new THREE.DirectionalLight(0xfff0dc, 0.9); key.position.set(-2, 6, 5); scene.add(key); // a little more light than the battle band: these pictures sit on a bright card
+  const cam = new THREE.PerspectiveCamera(spec.fov || 26, W / H, 0.1, 100);
+  const stage = { canvas: renderer.domElement, quality: 'high', camera: cam, scene, width: W, height: H, onFrame: () => () => {} };
+  const tray = createTray({ stage, quality: 'high', auto: false }); scene.add(tray.object);
+  const hero = E.newHero({ name: 'Shot', cls: spec.cls || 'knight', seed: 7 });
+  if (spec.full) hero.dice = null;
+  if (spec.pet) { hero.pet = E.newPet(spec.pet); if (spec.petFaces) hero.pet.faces = spec.petFaces; }
+  Object.assign(hero, spec.hero || {});
+  // camera: from the front and above, like the game; it looks at `look` and is backed off until `fit` (x range) fills the width
+  const pitch = THREE.MathUtils.degToRad(spec.pitch ?? 58); const look = new THREE.Vector3(...(spec.look || [0, 0, 0.05]));
+  const [fx0, fx1] = spec.fit || [-2.42, 2.42]; const v = new THREE.Vector3();
+  const place = (d) => { cam.position.set(look.x, look.y + d * Math.sin(pitch), look.z + d * Math.cos(pitch)); cam.lookAt(look); cam.updateMatrixWorld(); cam.updateProjectionMatrix(); };
+  let lo = 2, hi = 60; for (let i = 0; i < 40; i++) { const d = (lo + hi) / 2; place(d); const a = v.set(fx0, 0, 2.45).project(cam).x; const b = v.set(fx1, 0, 2.45).project(cam).x; if (b - a > 2 * (spec.fill || 0.96)) lo = d; else hi = d; }
+  place((lo + hi) / 2);
+  tray.setHero(hero);
+  const board = {}; for (const s of [...D.SLOTS, 'P']) board[s] = { v: (spec.board || {})[s] || 1, bound: false };
+  tray.show(board);
+  for (const s of [...D.SLOTS, 'P']) { tray.setVacant(s, !E.isActive(hero, s)); }
+  tray.setWaiting(!!spec.waiting);
+  for (let i = 0; i < 90; i++) tray.update(1 / 30, i / 30);
+  await new Promise((r) => setTimeout(r, 400)); // the pet picture loads
+  for (let i = 0; i < 4; i++) tray.update(1 / 30, 3 + i / 30);
+  // the socket glow is additive light: on a transparent picture it must not write alpha (it would leave dark outlines)
+  const sg = tray.object.getObjectByName('socketGlow'); if (sg) Object.assign(sg.material, { blending: THREE.CustomBlending, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor });
+  if (!spec.pet) { const bb = new THREE.Box3(); tray.object.updateMatrixWorld(true); tray.object.traverse((o) => { if ((o.isMesh || o.isSprite) && o.visible) { bb.setFromObject(o); if (bb.max.x < -2.6) o.visible = false; } }); } // the hidden pet stand's marks
+  if (spec.only) { // one die alone (a layer the lessons drop into its socket)
+    tray.object.traverse((o) => { if (o.isMesh || o.isSprite || o.isLight === false) o.visible = false; });
+    const m = tray._S[spec.only].die.mesh; m.visible = true; m.traverse((o) => { o.visible = true; });
+  }
+  renderer.render(scene, cam);
+  const socks = {};
+  for (const s of [...D.SLOTS, 'P']) {
+    const p = slotPos(s); v.set(p.x, 0, p.z).project(cam); const t = new THREE.Vector3(p.x, 0.75, p.z).project(cam);
+    const e = new THREE.Vector3(p.x + 0.62, 0, p.z).project(cam);
+    socks[s] = { x: +((v.x * 0.5 + 0.5) * 100).toFixed(2), y: +((-v.y * 0.5 + 0.5) * 100).toFixed(2), top: +((-t.y * 0.5 + 0.5) * 100).toFixed(2), r: +(((e.x - v.x) * 0.5) * 100).toFixed(2) };
+  }
+  // the first row with anything in it (so the stills can be trimmed to the board)
+  const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const g2 = c2.getContext('2d'); g2.drawImage(renderer.domElement, 0, 0);
+  const px = g2.getImageData(0, 0, W, H).data; let top = 0; find: for (let y = 0; y < H; y++) for (let x = 0; x < W; x += 2) if (px[(y * W + x) * 4 + 3] > 8) { top = y; break find; }
+  return { url: c2.toDataURL('image/png'), socks, w: W, h: H, top };
+};
+// trim `cut` pixels off the top of a still
+window.crop = async (url, cut) => { const im = new Image(); im.src = url; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height - cut; c.getContext('2d').drawImage(im, 0, -cut); return c.toDataURL('image/webp', 0.88); };
+window.READY = true;
+</script></body></html>

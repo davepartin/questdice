@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011c**). Phones otherwise keep old files.
+  the last one used is **20261011d**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -583,4 +583,24 @@ blank... cute and coloured by their starting symbol... placed in the black area 
   win / 30% close calls. Pets make ordinary fights noticeably safer. Dearer growth (150/300, try it with
   TUNE_PETGROW=150,300) made no difference: the d4 pet itself does it. Left as Dave asked for it; if fights feel too soft,
   the dials are ORDINARY (data.js) or PET_POWER. Ask Dave.
+
+## Learn to play 2.0 (Dave, 11 Oct)
+
+Dave: "use the empty dice board to show the head feet hand for the tutorial... we have a logo character, pets, a dice board
+with icons where the dice go. Consider the visuals and a new player. Make it AAA."
+- The lesson pictures are now stills of the game's real dice tray (dev/trayshot.html + dev/trayshot.mjs, needs the dev
+  server): board-icons (every socket's medallion: sword, helmet, gauntlets, heart, talent, boots, EMPTY), board-start (a
+  new Knight's first roll), board-final (the Strength Triple), board-tripW / tripH (the other triples), board-petIcons /
+  petDice (Sprig on her stand), and d-<slot> layers (one die alone, same camera) so dice can drop into their sockets one by
+  one. The script trims the empty top, writes assets/tutorial/board-*.webp and js/g3/tutboard.js (each socket's place in
+  % of the picture). Re-run it after a change to the tray or dice look.
+- tutorial.js boardPic(): base still + dice layers (drop animation) + glowing socket rings (the rest dims) + name tags +
+  a triple's line + tappable sockets. Lesson 2 is a board explorer (tap a socket: what goes there).
+- The Quest Dice knight is the guide: a portrait and speech bubble on every lesson (L.say), the full knight with the real
+  floating dice on Welcome, Ready and the practice-complete screen.
+- Lessons: Welcome, Your board (tap a socket), Head hands and feet (white dice drop into the four sockets; what 1-4 pay),
+  Hands are your Strength, Weapon dice, Talent dice, The heart, Feet are your speed (feet vs the goblin's die), Six
+  counters, Triples and straights (three real boards with glowing lines), How a round goes, Grow at camp (pets, potions,
+  powers: Sprig's stand and all six pets), Ready. The practice battle and its guide are unchanged and still pass end to end.
+- Screenshots: docs/tutorial/390x844-L01..L13.png, 390x664-L02-tap.png (dev/learn.mjs, dev/learntap.mjs).
 

@@ -130,3 +130,99 @@
 @keyframes tgBlink { 50% { opacity: .45; } }
 .tu-done .tu-scroll { display: flex; flex-direction: column; justify-content: center; }
 @media (max-height: 700px) { .tu-board { width: min(12.5rem, 60vw); } .tu-board.named { width: min(13.5rem, 64vw); row-gap: 1.05rem; } .tu-lane .tu-board { width: min(10rem, 50vw); } }
+
+/* ---------------------------------------------------------------- Learn to play 2.0 (Dave, 11 Oct): the real board, the knight as guide */
+/* the art sits on a lit stage, like a table under a lamp */
+.tu-art { position: relative; margin: 0 -.4rem .2rem; padding: .7rem .4rem .9rem; border-radius: 14px; isolation: isolate;
+  background: radial-gradient(70% 60% at 50% 42%, rgba(255, 186, 96, .16), transparent 70%), radial-gradient(120% 100% at 50% 100%, rgba(120, 40, 20, .2), transparent 60%); }
+.tu-art::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: .2rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 214, 140, .35), transparent); }
+
+/* a still of the real dice tray */
+.tb { position: relative; width: min(100%, 21rem); margin: 0 auto; animation: tbIn .55s cubic-bezier(.2, .9, .3, 1.1) both; }
+.tb.small { width: 100%; }
+@keyframes tbIn { from { opacity: 0; transform: translateY(10px) scale(.96) rotateX(8deg); } }
+.tb-base, .tb-die { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.tb-base { position: relative; height: auto; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, .55)); transition: filter .4s; }
+.tb.dim .tb-base { filter: brightness(.38) saturate(.75) drop-shadow(0 14px 18px rgba(0, 0, 0, .55)); }
+.tb-die { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .45)); }
+.tb-die.drop { transform-origin: var(--ox) var(--oy); animation: tbDrop .62s cubic-bezier(.3, 1.4, .5, 1) calc(.35s + var(--i) * .34s) both; }
+@keyframes tbDrop { 0% { opacity: 0; transform: translateY(-16%) scale(1.18); } 55% { opacity: 1; } 100% { transform: none; } }
+.tb-ring { position: absolute; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 2px rgba(255, 222, 150, .95), 0 0 18px 4px rgba(255, 196, 90, .65), inset 0 0 14px rgba(255, 210, 120, .5);
+  animation: tbRing 2s ease-in-out infinite; }
+@keyframes tbRing { 50% { box-shadow: 0 0 0 3px #ffeab8, 0 0 26px 8px rgba(255, 206, 100, .8), inset 0 0 18px rgba(255, 220, 140, .6); } }
+.tb-tag { position: absolute; z-index: 3; transform: translate(-50%, 0); padding: .1rem .42rem; border-radius: 999px; white-space: nowrap; pointer-events: none;
+  font: 800 .58rem var(--disp); letter-spacing: .1em; text-transform: uppercase; color: #ffeab8; background: rgba(12, 8, 6, .82); box-shadow: inset 0 0 0 1px rgba(255, 214, 140, .45), 0 2px 6px rgba(0, 0, 0, .5); }
+.tb-tag.drop { animation: tbTag .4s ease-out calc(.7s + var(--i) * .34s) both; }
+@keyframes tbTag { from { opacity: 0; transform: translate(-50%, 6px); } }
+.tb-hit { position: absolute; z-index: 4; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: box-shadow .25s; }
+.tb-hit.on { box-shadow: 0 0 0 2px #ffeab8, 0 0 22px 6px rgba(255, 200, 90, .7), inset 0 0 18px rgba(255, 214, 140, .45); }
+.tb-hit:focus-visible { outline: 2px solid #ffeab8; outline-offset: 2px; }
+.tb-line { position: absolute; z-index: 3; height: 5px; border-radius: 3px; pointer-events: none; transform-origin: center;
+  background: linear-gradient(90deg, transparent, #ffe2a0 10%, #fff6d8 50%, #ffe2a0 90%, transparent); box-shadow: 0 0 12px 3px rgba(255, 190, 80, .8); animation: tbLine .7s ease-out .4s both; }
+.tb-line.col { background: linear-gradient(90deg, transparent, #9ad4ff 10%, #e6f5ff 50%, #9ad4ff 90%, transparent); box-shadow: 0 0 12px 3px rgba(58, 164, 255, .8); }
+@keyframes tbLine { from { opacity: 0; clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+
+/* the board explorer: tap a socket */
+.tu-explore { display: flex; flex-direction: column; align-items: center; gap: .5rem; width: 100%; }
+.tu-info { width: min(100%, 21rem); min-height: 3.6rem; display: flex; flex-direction: column; gap: .12rem; padding: .5rem .7rem; border-radius: 10px;
+  background: rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px rgba(255, 214, 140, .25); font-size: .84rem; line-height: 1.35; color: #d8d2c6; }
+.tu-info b { font: 800 .8rem var(--disp); letter-spacing: .1em; text-transform: uppercase; color: #ffeab8; }
+.tu-info.pop { animation: tuPop .3s ease-out; }
+@keyframes tuPop { from { transform: scale(.97); opacity: .4; } }
+
+/* the knight, your guide */
+.tu-say { display: grid; grid-template-columns: 3.1rem 1fr; gap: .6rem; align-items: start; margin: .1rem 0 .7rem; animation: tuSay .45s ease-out .15s both; }
+@keyframes tuSay { from { opacity: 0; transform: translateY(6px); } }
+.tu-knight { width: 3.1rem; height: 3.1rem; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3a2c1c, #120c08) ; position: relative; overflow: hidden;
+  box-shadow: 0 0 0 2px #e2b24c, 0 0 0 4px rgba(226, 178, 76, .25), 0 6px 14px rgba(0, 0, 0, .5); }
+.tu-knight::before { content: ''; position: absolute; inset: 0; background: url(../assets/brand/knight-sword.webp) no-repeat; background-size: 430% auto; background-position: 66.5% 3%; }
+.tu-say p { position: relative; margin: 0; padding: .6rem .75rem; border-radius: 4px 14px 14px 14px; font-size: .93rem; line-height: 1.45; color: #fff4dc; font-style: italic;
+  background: linear-gradient(180deg, rgba(74, 52, 24, .75), rgba(40, 28, 14, .8)); box-shadow: inset 0 0 0 1px rgba(255, 214, 140, .35), 0 6px 16px rgba(0, 0, 0, .35); }
+.tu-say p::before { content: ''; position: absolute; left: -7px; top: .7rem; width: 12px; height: 12px; transform: rotate(45deg); background: rgba(70, 49, 23, .95); box-shadow: -1px 1px 0 rgba(255, 214, 140, .35); }
+
+/* the knight himself, with the game's real dice floating around him */
+.tu-hero { position: relative; width: min(17rem, 68vw); aspect-ratio: 1034 / 885; margin: .2rem auto 0; }
+.tu-hero.small { width: min(8.5rem, 34vw); }
+.tu-hero-img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 12px 20px rgba(0, 0, 0, .6)) drop-shadow(0 0 22px rgba(255, 180, 80, .18)); animation: tuBreathe 3.6s ease-in-out infinite; transform-origin: 50% 95%; }
+@keyframes tuBreathe { 50% { transform: translateY(-2px) scale(1.012); } }
+.tu-hero .br-float .fd { opacity: .9; }
+@media (prefers-reduced-motion: reduce) { .tu-hero-img, .tb-ring, .tb-die.drop, .tb-tag.drop, .tb-line { animation: none !important; } .tu-hero .fd, .tu-hero .fd-strip { animation: none !important; } }
+
+/* head, hands and feet: what each number pays */
+.tu-pay { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; }
+.tu-paycard { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .4rem .2rem .45rem; border-radius: 10px; background: rgba(255, 255, 255, .035);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, #fff) 45%, transparent); }
+.tu-paycard .tu-face { width: 100%; height: auto; aspect-ratio: 1; max-width: 4.2rem; }
+.tu-paycard b { font: 800 .7rem var(--disp); letter-spacing: .04em; color: var(--c, #fff); white-space: nowrap; }
+.t-heal { --c: var(--h-heal); } .t-pierce { --c: var(--h-pierce); } .t-magic { --c: var(--h-magic); } .t-gold { --c: var(--h-gold); } .t-atk { --c: var(--h-atk); } .t-block { --c: var(--h-block); }
+
+/* feet: a race to strike first */
+.tu-race { display: grid; grid-template-columns: auto auto auto; align-items: center; justify-content: center; gap: .3rem .7rem; }
+.tu-race > b { font: 800 1rem var(--disp); color: var(--h-dim); }
+.tu-racer { display: flex; flex-direction: column; align-items: center; gap: .15rem; } .tu-racer small { font: 700 .6rem var(--disp); letter-spacing: .1em; text-transform: uppercase; color: var(--h-dim); }
+.tu-foedie { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 9px; font: 900 1.5rem var(--disp); color: #fff; background: linear-gradient(180deg, #6a2a22, #3a120e); box-shadow: inset 0 0 0 2px #c4503c, 0 6px 10px rgba(0, 0, 0, .5); }
+.tu-first { grid-column: 1 / -1; justify-self: center; display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .7rem; border-radius: 999px; font: 800 .72rem var(--disp); letter-spacing: .1em; text-transform: uppercase;
+  color: #2a0a06; background: linear-gradient(180deg, #ffd0c4, #ff6a50); box-shadow: 0 0 14px rgba(255, 90, 60, .5); animation: tuPop .5s ease-out .9s both; }
+.tu-first .ic { width: .9rem; height: .9rem; }
+
+/* stacked art */
+.tu-stack { display: flex; flex-direction: column; align-items: center; gap: .55rem; width: 100%; }
+.tu-stack .tb.small, .tu-lane .tb.small { width: min(100%, 15rem); }
+.tu-lane .tb { width: min(100%, 17rem); }
+
+/* camp: the pet stand and every pet */
+.tu-camp { display: flex; flex-direction: column; align-items: center; gap: .5rem; width: 100%; }
+.tu-camp .tb { width: min(100%, 22rem); }
+.tu-petrow { display: flex; justify-content: center; gap: .35rem; flex-wrap: wrap; }
+.tu-petchip { display: grid; place-items: center; width: 2.9rem; height: 2.9rem; border-radius: 50%; background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--pc) 32%, transparent), rgba(0, 0, 0, .35) 70%);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc) 70%, transparent), 0 0 12px color-mix(in srgb, var(--pc) 30%, transparent); }
+.tu-petchip .tu-pet { width: 82%; height: 82%; object-fit: contain; }
+.tu-pet { width: 2.4rem; height: 2.4rem; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5)); }
+
+/* ready: the knight beside the board */
+.tu-ready { display: grid; grid-template-columns: 1fr 1.25fr; align-items: center; gap: .3rem; width: 100%; }
+.tu-ready .tu-hero.small { width: 100%; }
+.tu-triples .tb { width: 100%; }
+.tu-hero { --dk: 1.45; } .tu-hero.small { --dk: .8; }
+.tu-row-art .tu-pet { width: 2.5rem; height: 2.5rem; }
+@media (max-height: 720px) { .tb { width: min(100%, 16.5rem); } .tu-camp .tb { width: min(100%, 18rem); } .tu-hero { width: min(13rem, 58vw); } .tu-art { padding: .4rem .4rem .6rem; } .tu-say p { font-size: .88rem; } }

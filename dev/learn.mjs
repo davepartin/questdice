@@ -14,7 +14,7 @@ await pump(3); await shot('00-home');
 console.log('home:', await p.evaluate(() => [...document.querySelectorAll('.sx-plaque b')].map((e) => e.textContent).join(' | ')));
 await p.evaluate(() => [...document.querySelectorAll('.sx-plaque')].find((e) => /Learn to play/.test(e.textContent))?.click()); await p.waitForTimeout(500);
 for (let i = 1; i <= 13; i++) {
-  await p.waitForTimeout(450);
+  await p.waitForTimeout(2200); // let the dice land
   const info = await p.evaluate(() => { const s = document.querySelector('.tu-scroll'); return { title: document.querySelector('.tu-title')?.textContent, over: s.scrollHeight - s.clientHeight, imgs: [...document.querySelectorAll('.tu-face')].filter((x) => !x.complete || !x.naturalWidth).length }; });
   console.log(`lesson ${i}: ${info.title}${info.over > 4 ? ` (scrolls ${info.over}px)` : ''}${info.imgs ? ` MISSING IMAGES ${info.imgs}` : ''}`);
   await p.screenshot({ path: `docs/tutorial/${tag}-L${String(i).padStart(2, '0')}.png` });
