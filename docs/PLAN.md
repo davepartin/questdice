@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011k**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
+  the last one used is **20261011m**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **114 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -670,3 +670,18 @@ each one should feel special once you click the button."
   by the title, and the top-right button is "✕ Cancel". dev/powersfit.mjs <cls> <w> <h> picks every medallion and helper
   and reports any overflow (0 px at 390x664, 430x739, 390x844 for wizard, knight, bard).
 
+
+## Powers audit, and a company-game fix (11 Oct)
+
+- Audit: every one of the 30 class powers (5 classes x 6) was equipped, cast at round 3 and resolved against three
+  monsters in the engine: each spends the right magic and adds what its card says (dice, scale, round, luck, flat,
+  charge store/release, supers' hit on every monster, splash).
+- Bug fixed (engine.js): in company games (one phone and online) "every round" powers only worked once a battle and charge
+  powers could store only one charge, because `usedRound` and `charge` lived on the shared battle and were never cleared;
+  two heroes of the same class also shared them. They are now each fighter's own (MIRROR, newPartyBattle) and
+  beginPartyRound clears usedRound. Test: "company: every-round powers come back each round" in test/party.test.mjs.
+- Found, not changed (ask Dave): Quick Draw's free 2-dice reroll is used before the normal 3-dice rerolls, so with 3 dice
+  already picked the Reroll button refuses with "Not enough Magic"; Potion and Heal grey out at full health without saying
+  why until tapped; Meteor (wizard A, level 5) is a 'round' power, so unlike the other level-5 supers it can be recharged
+  and does not hit every monster; Lucky Verse's 1-2 (magic only) still says "Add it to my roll"; docs/POWERS.md is out of
+  date (it lists the old four-power table and "stagger").

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, newBattle, startRoll, resolve, maxHpOf, shopStock,
   newCompany, splitInt, shareWeights, rankFighters, heatRank, newPartyBattle, resolveParty, partyRewards,
-  spendBlessings, weaponValue,
+  spendBlessings, weaponValue, startFighter, commitFighter, castPower, questsFor,
 } from '../js/engine.js';
 import { ensureRoad, roadIsOpen, chooseRoad } from '../js/roads.js';
 import { WEAPONS, CLASSES } from '../js/data.js';
@@ -411,5 +411,22 @@ test('company looks: a second and third hero of the same class wear other colour
     assert.ok(looks.length >= 3, cls);
     assert.equal(new Set(looks.map((l) => l.hue)).size, looks.length, `${cls} looks have different chip colours`);
     for (const l of looks.slice(1)) assert.ok(typeof l.cloth === 'number' && typeof l.accent === 'number', `${cls} ${l.name} recolours cloth and accent`);
+  }
+});
+
+test('company: every-round powers come back each round, and each hero keeps their own charges', () => {
+  const a = newHero({ name: 'A', cls: 'knight', seed: 1, full: true });
+  const c = newHero({ name: 'C', cls: 'knight', seed: 2, full: true });
+  const b = newPartyBattle([a, c], { ...questsFor(a)[0], enemies: ['ogre'] }, makeRng(3));
+  for (const e of b.enemies) e.hp = 999;
+  for (let round = 1; round <= 3; round++) {
+    for (const i of [0, 1]) {
+      startFighter(b, i); b.magic = 10;
+      assert.ok(castPower(b, 'shieldwall'), `hero ${i} raises Shield Up in round ${round}`);
+      assert.equal(castPower(b, 'rally').charged, round, `hero ${i} stores their own charge ${round}`);
+      assert.equal(castPower(b, 'shieldwall'), null); // still once a round
+      commitFighter(b);
+    }
+    resolveParty(b);
   }
 });

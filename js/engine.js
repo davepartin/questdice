@@ -1108,12 +1108,13 @@ function makeFighter(hero) {
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
-    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
+    board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
   };
 }
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+// usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
@@ -1144,7 +1145,7 @@ export function newPartyBattle(heroes, quest, rng) {
 function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
 export function beginPartyRound(b) {
   b.round += 1; b.phase = 'reset';
-  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.straight = 'atk'; }
+  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.straight = 'atk'; }
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 export function startFighter(b, i) {
