@@ -522,7 +522,7 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   so an old text of the link may stay plain. The earlier preview options A-H live in docs/ingame/preview_option_*.png.
 - Tagline (Dave, 10 Oct): **"Roll against the dark."** (was "Roll your body. Break the dark."). Home screen, classic title,
   index.html description and og:description, and the link-preview picture assets/brand/og.jpg.
-- 10 Oct: Dave's second knight (sword raised, cross shield) replaced the first: assets/brand/knight.webp, cut by
+- 10 Oct: Dave's second knight (sword raised, cross shield) replaced the first: assets/brand/knight-sword.webp (renamed so phones never show a cached old knight), cut by
   dev/knightcut.mjs. The home screen brings him to life (scrui.js logo(), CSS .br-*): smaller, he breathes, his heart
   beats, his dice symbols glint one by one (KNIGHT_SPOTS = % positions on the picture), light sweeps his armour, his sword
   tip twinkles, and five of the game's own dice (white, gold heart, red, blue, purple talent) float and spin around him as

@@ -129,12 +129,12 @@ function floatDie(kind, { x, y, size, spin = 'a', t = 9, bob = 4.5, delay = 0 })
 function logo() {
   const spots = KNIGHT_SPOTS.map(([k, x, y, c], i) => h('i', { class: `br-spot sp-${c} ${k === 'heart' ? 'is-heart' : ''}`, style: { left: `${x}%`, top: `${y}%`, '--i': i } }));
   const hero = h('div', { class: 'br-hero' },
-    h('img', { class: 'br-knight', src: 'assets/brand/knight.webp', alt: 'The Quest Dice knight, made of dice, with sword and shield', draggable: 'false', decoding: 'async' }),
+    h('img', { class: 'br-knight', src: 'assets/brand/knight-sword.webp', alt: 'The Quest Dice knight, made of dice, with sword and shield', draggable: 'false', decoding: 'async' }),
     h('i', { class: 'br-shine', 'aria-hidden': 'true' }), ...spots, h('i', { class: 'br-twinkle', 'aria-hidden': 'true' }));
   const stage = h('div', { class: 'br-stage' },
     h('div', { class: 'br-float back' }, floatDie('white', { x: 70, y: -2, size: 2.6, spin: 'a', t: 11, bob: 5 }), floatDie('heart', { x: -6, y: 60, size: 2.4, spin: 'b', t: 13, bob: 6, delay: -2 })),
     hero,
-    h('div', { class: 'br-float front' }, floatDie('red', { x: 6, y: 86, size: 1.9, spin: 'c', t: 8, bob: 4, delay: -1 }), floatDie('blue', { x: 92, y: 74, size: 2.1, spin: 'b', t: 10, bob: 4.6, delay: -3 }), floatDie('purple', { x: 30, y: -6, size: 1.7, spin: 'a', t: 7, bob: 3.8, delay: -1.5 })));
+    h('div', { class: 'br-float front' }, floatDie('red', { x: 6, y: 86, size: 1.9, spin: 'c', t: 8, bob: 4, delay: -1 }), floatDie('blue', { x: 84, y: 80, size: 2.1, spin: 'b', t: 10, bob: 4.6, delay: -3 }), floatDie('purple', { x: 30, y: -6, size: 1.7, spin: 'a', t: 7, bob: 3.8, delay: -1.5 })));
   return h('div', { class: 'sx-brand' }, stage,
     h('div', { class: 'br-words' },
       h('h1', { class: 'br-title' }, h('img', { class: 'br-quest', src: 'assets/brand/quest.webp', alt: 'Quest', draggable: 'false' }), h('img', { class: 'br-dice', src: 'assets/brand/dice.webp', alt: 'Dice', draggable: 'false' })),

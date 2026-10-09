@@ -86,7 +86,7 @@
 .br-hero { position: absolute; inset: 0; transform-origin: 50% 96%; animation: brBreathe 4.6s ease-in-out infinite; }
 .br-knight { display: block; width: 100%; height: 100%; filter: drop-shadow(0 16px 26px rgba(0, 0, 0, .7)) drop-shadow(0 0 34px rgba(255, 160, 60, .2)); }
 /* light sweeping across the bronze, clipped to the knight's own shape */
-.br-shine { position: absolute; inset: 0; pointer-events: none; -webkit-mask: url('../assets/brand/knight.webp') center / 100% 100% no-repeat; mask: url('../assets/brand/knight.webp') center / 100% 100% no-repeat;
+.br-shine { position: absolute; inset: 0; pointer-events: none; -webkit-mask: url('../assets/brand/knight-sword.webp') center / 100% 100% no-repeat; mask: url('../assets/brand/knight-sword.webp') center / 100% 100% no-repeat;
   background: linear-gradient(110deg, transparent 38%, rgba(255, 236, 190, .55) 48%, rgba(255, 255, 255, .8) 50%, rgba(255, 236, 190, .55) 52%, transparent 62%); background-size: 320% 100%; background-position: 120% 0; mix-blend-mode: screen; animation: brShine 7s ease-in-out 1.6s infinite; }
 /* the glowing symbols and the beating heart */
 .br-spot { position: absolute; width: 11%; aspect-ratio: 1; transform: translate(-50%, -50%) scale(.8); border-radius: 50%; pointer-events: none; mix-blend-mode: screen; opacity: 0;
@@ -446,8 +446,9 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
   .sx-screen.title .sx-title-menu { max-height: calc(100dvh - min(50vw, 14.5rem) * .86 - 6.2rem - var(--safe-t) - var(--safe-b)); }
 }
 /* "More below": shown only while the menu has more to scroll */
-.sx-title-menu .sx-more { position: sticky; bottom: 0; align-self: center; display: none; margin-top: -.4rem; padding: .35rem .9rem; border-radius: 999px;
-  background: rgba(12,14,26,.92); border: 1px solid rgba(225,179,74,.5); color: #f1d38a; font: 700 .72rem/1 var(--font-ui, system-ui); letter-spacing: .14em; text-transform: uppercase; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+.sx-title-menu .sx-more { position: sticky; bottom: 0; align-self: stretch; display: none; margin-top: -2.6rem; padding: 2.2rem 0 .45rem; text-align: center;
+  /* a fade across the bottom of the menu: what lies below dims away under the words instead of showing through a tag */
+  background: linear-gradient(180deg, rgba(8, 9, 18, 0), rgba(8, 9, 18, .9) 55%, rgba(8, 9, 18, .97)); color: #f1d38a; font: 700 .7rem/1 var(--font-ui, system-ui); letter-spacing: .16em; text-transform: uppercase; pointer-events: none; }
 .sx-title-menu.more .sx-more { display: block; }
 
 /* ---------------------------------------------------------------- camp: supplies (healing potions are bought here) */
