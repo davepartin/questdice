@@ -62,7 +62,9 @@ export function layout(spec) {
 export function scrolled(px = 0) {
   const d = world.director; if (!d) return;
   const port = d.portrait > 0.5; d.scrollPx = port ? px : 0; d.applySafe();
-  for (const v of document.querySelectorAll('.sx-viewport, .sx-board > .sx-top')) v.style.transform = port && px ? `translateY(${-px}px)` : '';
+  // the hero chip (name, level, gold) stays pinned at the top: the choices further down need it in sight (Dave)
+  const pinned = (el) => el.matches('.sx-top') && !!el.querySelector('.sx-chip');
+  for (const v of document.querySelectorAll('.sx-viewport > *, .sx-board > .sx-top')) v.style.transform = port && px && !pinned(v) ? `translateY(${-px}px)` : '';
 }
 
 // Arena: rebuilt only when the place changes (or after a battle left the stage in another mode).

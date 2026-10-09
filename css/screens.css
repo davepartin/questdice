@@ -522,3 +522,7 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
    button shows (screens without their own Menu), the top-left content steps aside for it */
 .sx-top, .sx-top { right: var(--pad); }
 body:has(#gmenu:not([hidden])) .sx-top, body:has(#gmenu:not([hidden])) .sx-back { margin-left: 3.3rem; }
+/* camp: the hero chip (gold) sticks to the top of the screen while the sheet scrolls (Dave: needed for the choices) */
+.sx-sidetop:has(.sx-chip) { position: sticky; top: 0; z-index: 4; margin: 0 -1rem; padding: calc(.4rem + var(--safe-t)) 1rem .6rem;
+  background: linear-gradient(180deg, rgba(5, 6, 12, .94) 72%, rgba(5, 6, 12, 0)); }
+body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem; }

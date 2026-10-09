@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011s**). Phones otherwise keep old files.
+  the last one used is **20261011t**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **115 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -752,3 +752,7 @@ Test: "Arc Bolt: 2 magic a die" in test/engine.test.mjs. Balance tools not re-ru
   .screen-menu). The top bar no longer reserves the right side for the icons; camp's title and hero choice's Back step
   right when the corner button shows. docs/ingame/one_menu_button.png (title, create, board, camp, battle, victory).
   Not checked: online room screens (flat UI), defeat screen, Learn to play (its layer sits above the corner anyway).
+- 11 Oct (Dave): the hero chip (name, level, gold) stays in sight while a phone screen scrolls, since the choices need
+  the gold. Road, story and board: screens.js scrolled() still slides the picture's overlay up with the page but leaves
+  the top bar that holds the chip where it is. Camp (chip inside the scrolling sheet): .sx-sidetop:has(.sx-chip) is
+  sticky at the top with a dark band behind it, and steps right of the corner menu button. docs/ingame/chip_pinned.png.
