@@ -15,6 +15,7 @@ import {
 import { Cloth, solveArm, Sway } from './herocloth.js';
 import { buildClips } from './heroclips.js';
 
+const FOOT_LIFT = 0.115; // metres (measured: the lowest sole was 0.12-0.13 under the hero's root in every class)
 const JOINTS_ORDER = ['hips', 'spine', 'chest', 'neck', 'head', 'armL', 'foreL', 'handL', 'armR', 'foreR', 'handR', 'thighL', 'shinL', 'footL', 'thighR', 'shinR', 'footR'];
 const OFFENSIVE = new Set(['sword', 'longsword', 'dagger', 'spear', 'bow', 'staff', 'fists', 'mace', 'warhammer']);
 
@@ -719,6 +720,9 @@ export function create({ cls = 'knight', loadout, level = 1, seed = 1, quality =
   a.setLoadout(loadout || defLoad());
   a.animator.play('idle', { fade: 0, restart: true });
   a.model.scale.setScalar(spec.scale);
+  // the standing poses bend the knees, and the boot soles sit below the ankle joints: lift the figure so the soles rest on
+  // the ground (Dave: on the hero pedestal the feet looked sunk into the stone). The shadow blob stays on a.root, at y = 0.
+  a.model.position.y = FOOT_LIFT;
   a.root.updateMatrixWorld(true);
   const s = spec.scale;
   // ---- per frame
