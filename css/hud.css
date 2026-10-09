@@ -840,3 +840,46 @@ body.in-battle .chrome { z-index: 40; }
 @media (prefers-reduced-motion: reduce) { .cr-tri, .cr-medal, .cr-stamp.in, .cr-card.boom, .cr-card.boom .cf-foe, .cr-charges i { animation: none !important; opacity: 1; transform: none; } }
 /* the cast / recharge buttons stay in reach on short screens: they stick to the bottom of the sheet while it scrolls */
 .pw-detail .pd-row { position: sticky; bottom: -.6rem; z-index: 3; margin: .55rem -.75rem -.75rem; padding: .5rem .75rem .75rem; border-radius: 0 0 .9rem .9rem; background: linear-gradient(180deg, rgba(22, 14, 38, 0), rgba(22, 14, 38, .96) 30%); }
+
+/* ---- magic powers, round 2 (Dave): everything on screen at once, no scrolling */
+.b3-sheet:has(.pw-sigil) { top: calc(4.3rem + var(--safe-t)); max-height: none; overflow: hidden; gap: .35rem; padding: .55rem .6rem .6rem; justify-content: flex-start; }
+.b3-sheet .b3-cards:has(.pw-sigil) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pw-sigil { flex: 1; min-height: 0; gap: .45rem; justify-content: space-between; }
+/* the triangle, 30% tighter */
+.pw-stage { width: min(72%, 10.6rem, calc(21vh * 300 / 260)); margin: 1.6rem auto 1.45rem; }
+.pw-medal, .pw-ring { width: 3.5rem; } .pw-ring { height: 3.5rem; } .pw-core { width: 2.85rem; height: 2.85rem; } .pw-core .ic { width: 1.65rem; height: 1.65rem; }
+.pw-slot { width: 1.25rem; height: 1.25rem; font-size: .7rem; } .pw-cost { font-size: .7rem; right: -.45rem; }
+.pw-name { font-size: .6rem; max-width: 5.8rem; margin-top: .25rem; } .pw-medal:has(.pw-pips) .pw-name { margin-top: .7rem; }
+.pw-medal.at-B { left: 2%; } .pw-medal.at-C { left: 98%; }
+.pw-center b { font-size: 1.45rem; } .pw-center small { font-size: .5rem; } .pw-center .ic { width: .9rem; height: .9rem; }
+.pw-motes { display: none; }
+/* the helpers: solid buttons when you can use them, each with its cost */
+.pw-sec { display: none; }
+.pw-utils { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+.pw-util { position: relative; flex-direction: column; justify-content: center; gap: .15rem; min-height: 3.4rem; padding: .35rem .3rem .45rem; border-radius: .8rem; text-align: center; }
+.pw-util .pu-ic { width: 1.6rem; height: 1.6rem; } .pw-util .pu-ic .ic { width: 1rem; height: 1rem; }
+.pu-name { font: 800 .7rem var(--disp, sans-serif); letter-spacing: .05em; text-transform: uppercase; line-height: 1.1; }
+.pw-util.ready { color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 92%, #fff), color-mix(in srgb, var(--c) 78%, #000)); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 1.5px color-mix(in srgb, var(--c) 50%, #000), 0 4px 12px color-mix(in srgb, var(--c) 35%, transparent); }
+.pw-util.ready .pu-ic { background: rgba(255, 255, 255, .25); } .pw-util.ready .pu-ic .ic { color: #fff; }
+.pw-util.ready.t-gold { color: #2a1804; } .pw-util.ready.t-gold .pu-ic .ic { color: #5a3a08; }
+.pw-util.ready.t-heal { text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.pw-util.off { opacity: 1; color: #8c829c; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); } .pw-util.off .pu-ic .ic { color: #6c627a; }
+.pw-util.on { outline: 2.5px solid #fff; outline-offset: 2px; }
+.pu-cost { position: absolute; right: -.3rem; top: -.45rem; display: inline-flex; align-items: center; gap: .1rem; padding: .06rem .36rem .06rem .26rem; border-radius: 999px; font: 900 .68rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838; }
+.pu-cost .ic { width: .64rem; height: .64rem; color: #fff !important; } .pu-cost.free { background: linear-gradient(180deg, #3ad07a, #1a7a44); font-size: .56rem; letter-spacing: .06em; }
+/* the panel: compact, with the cost badge by the title */
+.pw-detail { padding: .55rem .65rem .6rem; } .pw-detail::before { display: none; }
+.pd-top { position: relative; } .pd-badge { width: 2.3rem; height: 2.3rem; } .pd-badge .ic { width: 1.35rem; height: 1.35rem; }
+.pd-id b { font-size: 1.05rem; } .pd-id em { font-size: .68rem; }
+.pd-cost { margin-left: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: .12rem; padding: .12rem .5rem .12rem .36rem; border-radius: 999px; font: 900 .9rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838, 0 0 10px rgba(160, 80, 255, .5); }
+.pd-cost .ic { width: .8rem; height: .8rem; color: #fff; }
+.pd-gives { margin: .35rem 0 .15rem; } .pd-line { font-size: .76rem; line-height: 1.3; }
+.pw-detail .pd-row { position: static; margin: .5rem 0 0; padding: 0; background: none; border-radius: 0; }
+.pw-btn { min-height: 44px; }
+.sh-cancel { display: inline-flex; align-items: center; gap: .3rem; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+@media (max-height: 720px) { .pw-stage { width: min(70%, 9.4rem); margin: 1.5rem auto 1.35rem; } .pw-medal, .pw-ring { width: 3.2rem; } .pw-ring { height: 3.2rem; } .pw-core { width: 2.6rem; height: 2.6rem; } .pw-util { min-height: 3.1rem; } .pd-line { font-size: .72rem; } }
+/* while the powers sheet is open it takes the whole top of the screen: the round title and the top buttons step aside */
+body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b3-top, .b3:has(.b3-sheet.open .pw-sigil) .b3-magchip { visibility: hidden; }
+.b3-sheet:has(.pw-sigil) { top: calc(.5rem + var(--safe-t)); }
+.pw-stage { margin: 1.45rem auto 1.9rem; } .pw-utils { margin-top: .15rem; }
+@media (max-height: 720px) { .pw-stage { margin: 1.35rem auto 1.85rem; } .pw-util { min-height: 2.9rem; padding: .3rem .3rem .35rem; } .pw-util .pu-ic { width: 1.4rem; height: 1.4rem; } .pd-gives { margin: .25rem 0 .1rem; } .pw-detail .pd-row { margin-top: .4rem; } }

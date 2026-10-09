@@ -142,7 +142,7 @@ function buildHud() {
     h('button', { type: 'button', class: 'on', 'data-tab': 'powers', onclick: () => setSheetTab('powers') }, 'Magical powers'),
     h('button', { type: 'button', 'data-tab': 'team', onclick: () => setSheetTab('team') }, 'Team actions')) : h('b', {}, 'Magical powers');
   hud.sheet = h('div', { class: 'b3-sheet', role: 'dialog', 'aria-label': 'Magical powers' },
-    h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x', 'aria-label': 'Close powers', onclick: () => togglePowers(false) }, 'Close')), hud.cards);
+    h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x sh-cancel', 'aria-label': 'Cancel: close the magic powers', onclick: () => togglePowers(false) }, '✕ Cancel')), hud.cards);
   hud.roster = B.party ? h('div', { class: 'b3-roster', role: 'list', 'aria-label': 'The company' }) : null;
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
@@ -633,12 +633,12 @@ function cardTiles(reset) {
   const util = (id) => { const u = UTIL.find((x) => x.id === id); return { u, ...utilState(u, !reset) }; };
   const pot = util('u:bigheal'); const heal = util('u:heal'); const heart = util('u:heart');
   const utils = [
-    { id: 'u:bigheal', name: 'Potion', icon: 'heal', tone: 'heal', why: pot.why, flag: `${E.potionsLeft(b)} left`, text: pot.u.text,
-      body: `Drink one and heal ${E.potionHpOf(hero)} right away. Free, but once it is gone it is gone; buy more at camp.`, actions: [{ label: 'Drink a potion', fn: () => doBigHeal() }] },
-    { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, flag: `${heal.cost} magic`, text: heal.u.text,
-      body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now. As often as you can pay.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
-    { id: 'u:heart', name: 'Heart', icon: 'heart', tone: 'gold', why: heart.why, flag: E.nudgedThisRound(b) ? 'used' : `${heart.cost} magic`, text: heart.u.text,
-      body: `Once a round, turn your heart die one step for ${heart.cost} magic. Match your head, hands or feet for 2 more of their symbol; a 5 or 6 pumps your blue or red weapons.`,
+    { id: 'u:bigheal', name: 'Potion', icon: 'heal', tone: 'heal', why: pot.why, cost: 0, badge: `${E.potionsLeft(b)} LEFT`, flag: `${E.potionsLeft(b)} left · free to drink`, text: pot.u.text,
+      body: `Heal ${E.potionHpOf(hero)} right away. Once it is gone it is gone; buy more at camp.`, actions: [{ label: 'Drink a potion', fn: () => doBigHeal() }] },
+    { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
+      body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
+    { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
+      body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 or 6 pumps your blue or red weapons.',
       actions: [{ label: 'Turn down', alt: true, disabled: (b.board?.C.v ?? 1) <= 1, fn: () => doNudge(-1) }, { label: 'Turn up', disabled: (b.board?.C.v ?? 6) >= 6, fn: () => doNudge(1) }] },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,

@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011j**). Phones otherwise keep old files.
+  the last one used is **20261011k**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **113 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -663,4 +663,10 @@ each one should feel special once you click the button."
   top buttons; on short phones the cast button sticks to the bottom of the sheet.
 - Scripts: dev/powers.mjs <cls> (sheet + every slot's reveal + release + super), dev/powersreset.mjs (before the roll).
   Screenshots: docs/ingame/powers_<cls>_*.png, powers_reset_*.png, powers_company.png.
+- 11 Oct, round 2 (Dave): everything on screen at once, no scrolling. The sheet now runs from the top of the screen to
+  the counters (the round title and the home/help/sound buttons hide while it is open, CSS :has), the triangle is 30%
+  smaller, the helpers sit in a row right under the triangle as solid coloured buttons when usable (Potion with "2 LEFT",
+  Heal and Heart change with the same purple cost badge as the powers), the chosen power's panel shows its cost badge
+  by the title, and the top-right button is "✕ Cancel". dev/powersfit.mjs <cls> <w> <h> picks every medallion and helper
+  and reports any overflow (0 px at 390x664, 430x739, 390x844 for wizard, knight, bard).
 

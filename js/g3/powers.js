@@ -105,12 +105,14 @@ export function sigil(ctx) {
     <path class="pw-inner" d="M150 74 L225 205 H75 Z"/><circle class="pw-rune" cx="150" cy="160" r="52"/><circle class="pw-rune r2" cx="150" cy="160" r="60"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   const core = h('div', { class: 'pw-center' }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic'));
-  const utilRow = h('div', { class: 'pw-utils' }, utils.map((u) => h('button', { type: 'button', class: `pw-util t-${u.tone} ${sel === u.id ? 'on' : ''} ${u.why ? 'off' : ''}`, onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
-    h('span', { class: 'pu-ic' }, HK.icon(u.icon)), h('span', { class: 'pu-tx' }, h('b', {}, u.name), h('small', {}, u.flag)))));
+  // the helpers, right under the triangle: solid buttons when ready, each with its cost badge like the powers' (Dave)
+  const costBadge = (u) => (u.cost ? h('span', { class: 'pu-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pu-cost free' }, h('b', {}, u.badge || 'FREE')));
+  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-util t-${u.tone} ${sel === u.id ? 'on' : ''} ${u.why ? 'off' : 'ready'}`, onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
+    h('span', { class: 'pu-ic' }, HK.icon(u.icon)), h('b', { class: 'pu-name' }, u.name), costBadge(u))));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
     h('div', { class: 'pw-stage' }, tri, h('i', { class: 'pw-motes', 'aria-hidden': 'true' }, ...Array.from({ length: 7 }, (_, i) => h('i', { style: { '--i': i } }))), core, medal('A'), medal('B'), medal('C')),
-    detail, h('div', { class: 'pw-sec' }, 'Always ready'), utilRow);
+    utilRow, detail);
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
 function isReady(p, reset) { const { k, st } = p; return reset ? false : !st.spent && !st.early && p.afford; }
@@ -135,13 +137,15 @@ function detailPanel(ctx, sel) {
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
       : h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`);
     return h('div', { class: `pw-detail t-${toneOf(k)}` },
-      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when))),
+      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
+        h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
       h('div', { class: 'pd-gives' }, gives), h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
       why ? h('p', { class: 'pd-why' }, why) : null, h('div', { class: 'pd-row' }, step, release, main));
   }
   const u = ctx.utils.find((x) => x.id === sel); if (!u) return h('div', { class: 'pw-detail empty' });
   return h('div', { class: `pw-detail t-${u.tone}` },
-    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, HK.icon(u.icon)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag))),
+    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, HK.icon(u.icon)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
+      u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
     h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}`, disabled: !!u.why || a.disabled, onclick: a.fn }, a.label))));
 }
