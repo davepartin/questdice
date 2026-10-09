@@ -108,33 +108,22 @@ const KNIGHT_SPOTS = [
   ['ring', 82.2, 80.6, 'gold'], ['gem', 27.8, 41.6, 'blue'], ['starL', 45.2, 30.7, 'red'], ['starR', 83, 35.1, 'red'],
   ['shieldL', 40.1, 72.9, 'blue'], ['shieldS', 76.4, 35.3, 'blue'],
 ];
-// A die face as an SVG data URL, in the game's die styles: white (number + symbols), gold heart, red / blue weapon (+N), purple talent.
-const SYM = { pierce: '<path d="M0-7 5.5 0H2v7h-4V0h-3.5z" fill="#ff8a1a"/>', heal: '<path d="M-2.2-6.5h4.4v4.3h4.3v4.4H2.2v4.3h-4.4V2.2h-4.3v-4.4h4.3z" fill="#2fd86a"/>', magic: '<path d="M0-6.5 6.5 6h-13z" fill="#9a38ff"/>', gold: '<circle r="5.6" fill="#ffc21a" stroke="#a86a00" stroke-width="1.4"/>' };
-function faceUrl(kind, n) {
-  const body = { white: ['#fbf8f1', '#ddd6c8', '#111'], heart: ['#16120c', '#0b0906', '#5a3a00'], red: ['#ff5a4a', '#9a1810', '#fff'], blue: ['#3aa0ff', '#0e3e8e', '#fff'], purple: ['#a35cff', '#4a1a9a', '#fff'] }[kind];
-  let mid = '';
-  if (kind === 'heart') mid = `<circle cx="50" cy="50" r="31" fill="#ffd21a"/><text x="50" y="66" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-weight="900" font-size="46" fill="${body[2]}">${n}</text>`;
-  else if (kind === 'white') { const sym = ['heal', 'pierce', 'magic', 'gold'][(n - 1) % 4]; const k = Math.min(3, Math.ceil(n / 2)); mid = `<text x="50" y="60" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-weight="900" font-size="50" fill="#111">${n}</text>${Array.from({ length: k }, (_, i) => `<g transform="translate(${50 + (i - (k - 1) / 2) * 17} 80)">${SYM[sym]}</g>`).join('')}`; }
-  else mid = `<text x="50" y="64" text-anchor="middle" font-family="Archivo Black,Arial Black,sans-serif" font-weight="900" font-size="${String(n).length > 2 ? 34 : 42}" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width="2" paint-order="stroke">${n}</text>`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${body[0]}"/><stop offset="1" stop-color="${body[1]}"/></linearGradient></defs><rect x="2" y="2" width="96" height="96" rx="18" fill="url(#g)" stroke="${kind === 'heart' ? '#c8902e' : 'rgba(0,0,0,.35)'}" stroke-width="3"/><rect x="8" y="7" width="84" height="26" rx="12" fill="#fff" opacity=".12"/>${mid}</svg>`;
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-}
-const DIE_FACES = { white: [1, 2, 3, 4, 5, 6], heart: [1, 2, 3, 4, 5, 6], red: ['+1', '+2', '+3', '+4', '+2', '+3'], blue: ['+1', '+2', '+3', '+4', '+2', '+3'], purple: ['2×', '2×', '+1', '2×', '+2', '2×'] };
-// one floating, spinning 3D die: a cube of six faces
-function floatDie(kind, { x, y, size, spin = 'a', t = 9, bob = 4.5, delay = 0 }) {
-  const faces = DIE_FACES[kind].map((n, i) => h('i', { class: `fd-f f${i + 1}`, style: { backgroundImage: faceUrl(kind, n) } }));
-  return h('div', { class: `fd fd-${kind}`, style: { left: `${x}%`, top: `${y}%`, '--s': `${size}rem`, '--t': `${t}s`, '--b': `${bob}s`, '--d': `${delay}s` }, 'aria-hidden': 'true' },
-    h('div', { class: `fd-cube spin-${spin}` }, faces), h('i', { class: 'fd-shadow' }));
+// One floating die: the game's real 3D die, filmed tumbling through a full turn (dev/dicefilm.mjs -> assets/brand/die-*.webp,
+// a strip of 32 frames) and played back as a sprite while it bobs and drifts.
+function floatDie(kind, { x, y, size, t = 2.4, bob = 4.5, delay = 0, tilt = 0 }) {
+  return h('div', { class: `fd fd-${kind}`, style: { left: `${x}%`, top: `${y}%`, '--s': `${size}rem`, '--t': `${t}s`, '--b': `${bob}s`, '--d': `${delay}s`, '--tilt': `${tilt}deg` }, 'aria-hidden': 'true' },
+    h('div', { class: 'fd-box' }, h('img', { class: 'fd-strip', src: `assets/brand/die-${kind}.webp`, alt: '', draggable: 'false', decoding: 'async' })), h('i', { class: 'fd-shadow' }));
 }
 function logo() {
   const spots = KNIGHT_SPOTS.map(([k, x, y, c], i) => h('i', { class: `br-spot sp-${c} ${k === 'heart' ? 'is-heart' : ''}`, style: { left: `${x}%`, top: `${y}%`, '--i': i } }));
   const hero = h('div', { class: 'br-hero' },
     h('img', { class: 'br-knight', src: 'assets/brand/knight-sword.webp', alt: 'The Quest Dice knight, made of dice, with sword and shield', draggable: 'false', decoding: 'async' }),
     h('i', { class: 'br-shine', 'aria-hidden': 'true' }), ...spots, h('i', { class: 'br-twinkle', 'aria-hidden': 'true' }));
+  // the game's own dice around him: both weapon d4s, a d6 strength die, a d4 talent die and the gold heart die
   const stage = h('div', { class: 'br-stage' },
-    h('div', { class: 'br-float back' }, floatDie('white', { x: 70, y: -2, size: 2.6, spin: 'a', t: 11, bob: 5 }), floatDie('heart', { x: -6, y: 60, size: 2.4, spin: 'b', t: 13, bob: 6, delay: -2 })),
+    h('div', { class: 'br-float back' }, floatDie('strength', { x: 66, y: -6, size: 3.7, t: 3.2, bob: 5, tilt: -8 }), floatDie('heart', { x: -10, y: 52, size: 3.4, t: 3.8, bob: 6, delay: -2, tilt: 10 })),
     hero,
-    h('div', { class: 'br-float front' }, floatDie('red', { x: 6, y: 86, size: 1.9, spin: 'c', t: 8, bob: 4, delay: -1 }), floatDie('blue', { x: 84, y: 80, size: 2.1, spin: 'b', t: 10, bob: 4.6, delay: -3 }), floatDie('purple', { x: 30, y: -6, size: 1.7, spin: 'a', t: 7, bob: 3.8, delay: -1.5 })));
+    h('div', { class: 'br-float front' }, floatDie('red', { x: 2, y: 82, size: 3.1, t: 2.2, bob: 4, delay: -1, tilt: 6 }), floatDie('blue', { x: 82, y: 78, size: 3.2, t: 2.6, bob: 4.6, delay: -3, tilt: -10 }), floatDie('talent', { x: 26, y: -10, size: 2.9, t: 2, bob: 3.8, delay: -1.5, tilt: 4 })));
   return h('div', { class: 'sx-brand' }, stage,
     h('div', { class: 'br-words' },
       h('h1', { class: 'br-title' }, h('img', { class: 'br-quest', src: 'assets/brand/quest.webp', alt: 'Quest', draggable: 'false' }), h('img', { class: 'br-dice', src: 'assets/brand/dice.webp', alt: 'Dice', draggable: 'false' })),

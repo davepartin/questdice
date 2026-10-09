@@ -536,3 +536,8 @@ GitHub Pages stopped rebuilding after run 93 (Oct 6, 22:00 UTC; live site stuck 
   buyRerollDie; hero.rerollDie). Cap 4 (REROLL_DICE_MAX).
 - Quick Hands perk retired (no longer offered); heroes who took it keep +1 die, capped at 4. Sim bot buys the die at 230+ gold.
 - Balance (progress-all, 3 acts, 4 a class): 20/20 cleared, every class 4/4; bosses 90% / 82% / 88%.
+- 10 Oct: the home screen's floating dice are now the game's real dice (Dave): the sword's red d4 and the shield's blue
+  d4 weapon dice, a d6 Strength die, a purple d4 talent die and the gold heart die. dev/dicefilm.html + dicefilm.mjs film
+  each real 3D die (engine dieSpecs + dice.js createDie) through a full turn into a 32-frame strip
+  (assets/brand/die-*.webp, about 80 KB each); scrui.js floatDie plays the strip as a sprite while it bobs and drifts.
+  Re-film after a change to the dice look. Sizes scale with the knight (CSS --dk).

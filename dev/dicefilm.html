@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Dice film</title>
+<script type="importmap">{ "imports": { "three": "../vendor/three/build/three.module.js", "three/addons/": "../vendor/three/examples/jsm/" } }</script>
+<style>html,body{margin:0;background:#222}canvas{display:block}</style></head>
+<body><script type="module">
+// Film the game's real dice tumbling, one full turn, into a sprite sheet (cols x rows of square frames) for the home screen.
+//   ?slot=NW|NE|W|SW&frames=32&size=144&cols=8&axis=1,0.6,0.3
+import * as THREE from 'three';
+import * as E from '../js/engine.js';
+import { dieSpecs, createDie } from '../js/gfx/dice/dice.js';
+import { makeEnvironment } from '../js/gfx/env.js';
+const q = new URLSearchParams(location.search);
+const slot = q.get('slot') || 'NW'; const N = Number(q.get('frames') || 32); const S = Number(q.get('size') || 144); const COLS = Number(q.get('cols') || 8);
+const axis = new THREE.Vector3(...(q.get('axis') || '1,0.6,0.3').split(',').map(Number)).normalize();
+const hero = E.newHero({ name: 'Film', cls: 'knight', seed: 7 });
+hero.loadout = { NW: { uid: 'a', id: 'sword', rarity: 0 }, NE: { uid: 'b', id: 'shield', rarity: 0 } };
+hero.strength = { W: 6, E: 4 }; hero.special = { SW: 4, SE: 4 }; hero.talent = { SW: [['atk', 'block']], SE: [['heal']] }; hero.dice = null;
+const spec = dieSpecs(hero)[slot];
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setSize(S, S); renderer.setPixelRatio(1); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setClearColor(0x000000, 0); document.body.append(renderer.domElement);
+const scene = new THREE.Scene(); scene.environment = makeEnvironment(renderer);
+scene.add(new THREE.HemisphereLight(0xfff4e0, 0x403028, 0.9));
+const key = new THREE.DirectionalLight(0xffe6c0, 2.6); key.position.set(-2, 4, 3); scene.add(key);
+const rim = new THREE.DirectionalLight(0x8ab4ff, 1.4); rim.position.set(3, 1, -2); scene.add(rim);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+const die = createDie({ spec, quality: 'high' }); scene.add(die.mesh);
+const box = new THREE.Box3().setFromObject(die.mesh); const r = box.getBoundingSphere(new THREE.Sphere()).radius;
+cam.position.set(0, r * 0.8, r * 3.75); cam.lookAt(0, 0, 0);
+die.setRest(0); die.setView(cam.position.clone().normalize());
+const rows = Math.ceil(N / COLS); const sheet = document.createElement('canvas'); sheet.width = S * COLS; sheet.height = S * rows; const g = sheet.getContext('2d');
+const base = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.5, 0.4, 0.1));
+for (let i = 0; i < N; i++) {
+  const turn = new THREE.Quaternion().setFromAxisAngle(axis, (i / N) * Math.PI * 2);
+  die.mesh.quaternion.copy(turn).multiply(base); die.uniforms.uTime.value = i * 0.08; die.updateCamera(cam);
+  renderer.render(scene, cam);
+  g.drawImage(renderer.domElement, (i % COLS) * S, Math.floor(i / COLS) * S);
+}
+window.SHEET = { url: sheet.toDataURL('image/webp', 0.9), cols: COLS, rows, frames: N, size: S, sides: spec.sides, theme: spec.theme };
+</script></body></html>
