@@ -9,17 +9,20 @@ let source = null;
 let cloud = null;
 const Cloud = () => (cloud ||= import('./cloud.js'));
 
+// The seat is kept on the phone (a closed tab, or a phone that put the page to sleep, still finds its way back).
+const stores = () => [() => localStorage, () => sessionStorage];
 export function savedSeat() {
-  try { return JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch { return null; }
+  for (const get of stores()) { try { const v = JSON.parse(get().getItem(KEY) || 'null'); if (v) return v; } catch { /* next store */ } }
+  return null;
 }
 function remember(code, token, kind) {
   auth = { code, token, kind };
-  sessionStorage.setItem(KEY, JSON.stringify(auth));
+  for (const get of stores()) { try { get().setItem(KEY, JSON.stringify(auth)); } catch { /* next store */ } }
 }
 export function clearSeat() {
   disconnect();
   auth = null;
-  sessionStorage.removeItem(KEY);
+  for (const get of stores()) { try { get().removeItem(KEY); } catch { /* next store */ } }
 }
 function seat() {
   if (auth) return auth;

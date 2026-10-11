@@ -100,3 +100,16 @@ test('a company plays the same through the cloud as in memory', () => {
   assert.ok(phases.has('victory') || phases.has('defeat'));
   assert.ok(text.length < 900000, `table is ${text.length} characters`);
 });
+
+test('every view carries the whole table, without seat tokens, and a phone can rebuild it (session.js)', async () => {
+  const { savePublic } = await import('../js/table.js');
+  const table = seat([['Ada', 'knight'], ['Bea', 'bard']]);
+  command(table, table.players[1].id, { type: 'ready' }); command(table, table.hostId, { type: 'start' });
+  const state = savePublic(table);
+  assert.equal(state.includes('uid0'), false, 'no seat tokens in the text a phone receives');
+  const copy = loadTable(state);
+  assert.equal(copy.phase, 'road'); assert.deepEqual(copy.players.map((p) => p.name), ['Ada', 'Bea']);
+  assert.equal(copy.players[0].hero, copy.company.members[0], 'a hero in the seat is the hero in the company');
+  assert.equal(copy.players[0].token, '');
+  assert.equal(table.players[0].token, 'uid0', 'the real table keeps its tokens');
+});

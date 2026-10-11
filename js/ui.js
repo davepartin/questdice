@@ -10,7 +10,8 @@ import * as R from './roads.js';
 import * as ST from './story.js';
 import { hintsOn, setHints } from './coach.js';
 import * as Net from './net.js';
-import { attachRoom, showTogether, renderNet, bootNet, resume } from './roomui.js';
+import * as Online from './g3/online.js';
+import * as Sess from './session.js';
 import * as B3 from './g3/battle3d.js';
 import { world } from './g3/world.js';
 import * as SCR from './g3/screens.js';
@@ -37,7 +38,8 @@ const mount = (...nodes) => mountAs('', ...nodes);
 const isParty = () => (S.battle?.fighters?.length || 0) > 1;
 const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
 function persist() {
-  if (S.net || S.practice) return; // the practice battle is never saved
+  if (S.net) return Online.persistLocal(); // (the table keeps the hero; this phone only remembers which hints it has shown)
+  if (S.practice) return; // the practice battle is never saved
   if (S.company?.kind === 'company') {
     if (!SV.saveCompany(S.company)) toast('Could not save. Is browser storage blocked?', 'bad');
     return;
@@ -127,6 +129,8 @@ function globalMenu() {
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
       open ? ghost('Save & go home', () => { close(); askHome(); }) : null,
+      S.net ? ghost('Step away (keep my seat)', () => { close(); Online.stepAway(); }) : null,
+      S.net ? ghost('Leave this table for good', () => { close(); Online.menu(); }) : null,
       ghost('Close', () => close()))));
 }
 // The Home button (top corner, beside help and sound): shown whenever a game is open on this phone. Online tables keep
@@ -153,14 +157,14 @@ export function showTitle() {
   S.net = null; S.holdScroll = false; S.practice = null; TUT.closeLessons();
   S.hero = null; S.company = null; S.battle = null; S.busy = false;
   if (SCRUI.on()) return SCRUI.title();
-  const saves = SV.listSaves();
+  const saves = SV.listSaves().filter((x) => x.kind !== 'company'); // one-phone companies are gone
   const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s} ${['N', 'W', 'E', 'S', 'C'].includes(s) ? 'limb' : ''}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
   const tick = () => { $$('.td span', grid).forEach((n, i) => { if (Math.random() < 0.35) { n.textContent = String(1 + Math.floor(Math.random() * (i === 4 ? 6 : 4))); n.parentElement.classList.remove('pop'); void n.parentElement.offsetWidth; n.parentElement.classList.add('pop'); } }); };
   const items = [
     h('header', { class: 'title-art' }, grid, h('h1', { class: 'logo' }, 'QUEST', h('span', {}, 'DICE')), h('p', { class: 'tagline' }, 'Roll against the dark.')),
   ];
   const seat = Net.savedSeat();
-  if (seat) items.push(cmd('Table', `Rejoin ${seat.code}`, 'This phone still has a seat.', () => resume(), { glyph: '⚔', tone: 'versus' }));
+  if (seat) items.push(cmd('Table', `Rejoin ${seat.code}`, 'This phone still has a seat.', () => Online.resume(), { glyph: '⚔', tone: 'versus' }));
   if (saves.length) {
     items.push(h('div', { class: 't-eyebrow mb' }, 'On this device'));
     items.push(h('nav', { class: 'dock' }, saves.map((x) => {
@@ -173,7 +177,7 @@ export function showTitle() {
   items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
   items.push(h('nav', { class: 'dock' },
     cmd('01 · Hero', 'Forge a new hero', 'One body of dice. A whole road.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
-    cmd('02 · Together', 'Play on your own phone', 'One to six heroes. Each decides at the same time, and the fight runs when every choice is in.', showTogether, { glyph: '⚔', tone: 'versus' }),
+    cmd('02 · Together', 'Play together', 'Up to six friends, each on their own phone. Each decides at the same time, and the fight runs when every choice is in.', Online.together, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
   items.push(h('div', { class: 'row center' }, ghost('Rules', showHowTo)));
   mount(...items);
@@ -265,43 +269,6 @@ function showCreate() {
     section('Class', grid, detail), msg, primary('Begin the campaign', go, { cls: 'wide' }));
 }
 
-function showCreateCompany() {
-  let seats = [{ name: '', cls: 'knight' }];
-  const cname = h('input', { class: 'input', maxlength: 24, placeholder: 'Company name', 'aria-label': 'Company name', autocomplete: 'off' });
-  const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
-  const msg = h('p', { class: 'form-msg' });
-  const seatsEl = h('div', { class: 'col' });
-  const paint = () => {
-    seatsEl.replaceChildren(...seats.map((seat, i) => h('div', { class: 'panel seat' },
-      h('div', { class: 'row between' }, h('b', {}, `Hero ${i + 1}`), seats.length > 1 ? ghost('Remove', () => { seats.splice(i, 1); sfx.select(); paint(); }, { cls: 'small' }) : null),
-      h('input', { class: 'input', maxlength: 16, placeholder: 'Name', value: seat.name, 'aria-label': `Hero ${i + 1} name`, oninput: (e) => { seat.name = e.target.value; } }),
-      h('div', { class: 'class-grid' }, Object.entries(D.CLASSES).map(([id, c]) => h('button', {
-        type: 'button', class: `class-pick ${seat.cls === id ? 'on' : ''}`,
-        onclick: () => { seat.cls = id; sfx.select(); paint(); },
-      }, h('span', {}, c.glyph), h('b', {}, c.name.split(' ')[0])))))));
-  };
-  paint();
-  const go = async () => {
-    const companyName = cname.value.trim().replace(/\s+/g, ' ');
-    if (companyName.length < 2) { msg.textContent = 'Name the company (2–24 characters).'; sfx.error(); return; }
-    if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); return; }
-    const roster = seats.map((s) => ({ name: s.name.trim().replace(/\s+/g, ' '), cls: s.cls }));
-    if (roster.some((r) => r.name.length < 2)) { msg.textContent = 'Every hero needs a name.'; sfx.error(); return; }
-    if (new Set(roster.map((r) => r.name.toLowerCase())).size !== roster.length) { msg.textContent = 'Each hero needs a different name.'; sfx.error(); return; }
-    if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser.'; sfx.error(); return; }
-    try {
-      const company = E.newCompany({ name: companyName, roster });
-      await SV.createCompany(company, pw.value);
-      adopt(company, 'company'); sfx.level(); showRoadOrBoard();
-    } catch (e) { msg.textContent = e.message; sfx.error(); }
-  };
-  mount(
-    h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a company')),
-    section('The company', cname, pw, h('p', { class: 'fine' }, 'One password opens the whole company on this device. Each hero keeps their own gold, dice and level. The road is shared.')),
-    section('The heroes', seatsEl, h('div', { class: 'row' }, seats.length < 6 ? ghost('Add a hero', () => { seats.push({ name: '', cls: 'wizard' }); sfx.select(); paint(); }, { cls: 'small' }) : h('span', { class: 'fine' }, 'Six is a full table.'))),
-    msg, primary('Take the road', go, { cls: 'wide' }));
-}
-
 // ------------------------------------------------------------------ quest board
 function showBoard() {
   if (SCRUI.on()) return SCRUI.board();
@@ -339,6 +306,7 @@ function questCard(q) {
     h('span', { class: 'cmd-go' }, '›'));
 }
 function menu() {
+  if (S.net) return Online.menu();
   const close = modal(h('div', { class: 'form' }, h('h2', {}, S.company?.name || S.hero?.name || 'Menu'),
     h('div', { class: 'col' },
       ghost('The story so far', () => { close(); showStorySoFar(); }),
@@ -407,6 +375,7 @@ function showRoadResult(res) {
 
 // ------------------------------------------------------------------ battle: reset
 function startQuest(q) {
+  if (S.net) return Online.startQuest(q);
   const members = membersOf();
   const quest = E.withAmbush(q, members[0].campaign);
   S.quest = quest;
@@ -419,6 +388,7 @@ function startQuest(q) {
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
+  if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, portrait: (id) => SCR.portraitQ.monster(id, ['wolf', 'spider'].includes(id) ? { yaw: 0.45, fit: 'bust' } : { yaw: 0, fit: 'bust' }), showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
   if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
   return { S, menu: battleMenu, persist, banner, portrait: (id) => SCR.portraitQ.monster(id, ['wolf', 'spider'].includes(id) ? { yaw: 0.45, fit: 'bust' } : { yaw: 0, fit: 'bust' }), showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
@@ -494,7 +464,7 @@ function renderPartyReset() {
     primary(first ? `🎲 Roll ${first.hero.name}` : 'The company has fallen', first ? rollDice : () => defeat(false), { cls: 'wide big' }));
 }
 function renderReset() {
-  if (S.net) { renderNet(); return; }
+  if (S.net) return; // (the shared table has its own screens: g3/online.js)
   if (isParty()) return renderPartyReset();
   const b = S.battle; const hero = S.hero; const alive = b.enemies.filter((e) => e.hp > 0);
   const rep = S.lastReport;
@@ -546,6 +516,7 @@ async function flicker(slots) {
 
 // ------------------------------------------------------------------ battle: shape & lock
 function battleMenu() {
+  if (S.net) return Online.menu();
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
     h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
@@ -584,7 +555,7 @@ function rerollLabel(info) {
   return n ? `Reroll ${n} ${n === 1 ? 'die' : 'dice'} · ${cost ? `${cost}✦` : 'free'}` : `Reroll up to ${info.dice} · ${info.perDie ? `${info.perDie}✦ each` : 'free'}`;
 }
 function renderBattle() {
-  if (S.net) { renderNet(); return; }
+  if (S.net) return; // (the shared table has its own screens: g3/online.js)
   const b = S.battle;
   if (b.phase !== 'shape') return renderReset();
   if (isParty()) { E.focusFighter(b, b.active); S.hero = b.hero; }
@@ -796,6 +767,7 @@ function defeat(retreat) {
 
 // ------------------------------------------------------------------ camp
 function showCamp({ fromBoard = false } = {}) {
+  if (S.net) return Online.goCamp(fromBoard);
   S.battle = null;
   if (S.company?.members?.length) {
     if (!S.company.members[S.seat]) S.seat = 0;
@@ -882,14 +854,16 @@ function chronicleBlock() {
 
 TUT.bind({ showTitle, showCreate, practice });
 SCRUI.bind({
-  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showCreateCompany, showTogether, showImport, showHowTo, resume, renderPartyVictory,
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume, renderPartyVictory,
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showLessons: () => TUT.showLessons(),
+  // at a shared table: who is there, and the road's choice goes to the table
+  get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
+  get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-// Test/debug hook: only exposed when the page is opened with ?debug.
-attachRoom({ S, mount, primary, ghost, section, cmd, bodyWrap, banner, showTitle, showHowTo, flicker });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, battleCtx });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
-  await bootNet(showTitle);
+  await Online.boot(showTitle);
 }
-export const debugApi = { S, E, D, TUT, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory };
+export const debugApi = { S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory };

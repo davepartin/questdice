@@ -9,7 +9,7 @@ import { randomBytes } from 'node:crypto';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createTable, joinTable, command, playerByToken, playerView } from './js/table.js';
+import { createTable, joinTable, command, playerByToken, playerView, savePublic } from './js/table.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const TYPES = {
@@ -42,8 +42,9 @@ function lanUrls() {
   }
   return urls;
 }
-function decorate(view) {
+function decorate(view, table) {
   if (view && view.phase === 'lobby') view.links = lanUrls();
+  if (view && table) view.state = savePublic(table); // the whole table as text, without seat tokens: the phone rebuilds it (js/session.js)
   return view;
 }
 function sweep() {
@@ -58,7 +59,7 @@ function publish(room) {
   const stale = [];
   for (const sub of room.subs) {
     try {
-      const view = decorate(playerView(room.table, sub.playerId));
+      const view = decorate(playerView(room.table, sub.playerId), room.table);
       sub.res.write(`data: ${JSON.stringify(view)}\n\n`);
     } catch { stale.push(sub); }
   }
@@ -92,7 +93,7 @@ function createRoom(body) {
   if (!joined.ok) return { status: 400, body: { error: joined.error } };
   const room = { table, subs: new Set(), touched: Date.now() };
   rooms.set(code, room);
-  return { status: 200, body: { code, token, playerId: joined.player.id, view: decorate(playerView(table, joined.player.id)) } };
+  return { status: 200, body: { code, token, playerId: joined.player.id, view: decorate(playerView(table, joined.player.id), table) } };
 }
 function joinRoom(body) {
   const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -103,7 +104,7 @@ function joinRoom(body) {
   if (!joined.ok) return { status: 400, body: { error: joined.error } };
   room.touched = Date.now();
   publish(room);
-  return { status: 200, body: { code, token, playerId: joined.player.id, view: decorate(playerView(room.table, joined.player.id)) } };
+  return { status: 200, body: { code, token, playerId: joined.player.id, view: decorate(playerView(room.table, joined.player.id), room.table) } };
 }
 function actRoom(body) {
   const code = String(body.code || '').toUpperCase();
@@ -115,7 +116,7 @@ function actRoom(body) {
   if (!res.ok) return { status: 400, body: { error: res.error } };
   room.touched = Date.now();
   publish(room);
-  return { status: 200, body: { ok: true, view: decorate(playerView(room.table, player.id)) } };
+  return { status: 200, body: { ok: true, view: decorate(playerView(room.table, player.id), room.table) } };
 }
 
 function fileFor(urlPath) {
@@ -146,6 +147,12 @@ async function onRequest(req, res) {
       send(res, out.status, out.body);
       return;
     }
+    if (process.env.QD_CHEAT && req.method === 'POST' && url.pathname === '/api/cheat') { // tests only: make the monsters one hit from falling
+      const body = await readBody(req); const room = roomOf(String(body.code || '').toUpperCase());
+      if (body.what === 'gold') { for (const p of room?.table.players || []) if (p.hero) p.hero.gold += 600; room.table.seq += 1; publish(room); send(res, 200, { ok: true }); return; }
+      if (room?.table.battle) for (const e of room.table.battle.enemies) e.hp = Math.min(e.hp, 1);
+      send(res, 200, { ok: !!room?.table.battle }); return;
+    }
     if (url.pathname === '/api/ping') { send(res, 200, { questdice: true }); return; }
     const snap = url.pathname.match(/^\/api\/room\/([A-Za-z0-9]{4})$/);
     const events = url.pathname.match(/^\/api\/room\/([A-Za-z0-9]{4})\/events$/);
@@ -155,13 +162,13 @@ async function onRequest(req, res) {
       const player = room && playerByToken(room.table, url.searchParams.get('token'));
       if (!room) { send(res, 404, { error: 'That table is gone.' }); return; }
       if (!player) { send(res, 401, { error: 'This phone is not seated at that table.' }); return; }
-      if (snap) { send(res, 200, decorate(playerView(room.table, player.id))); return; }
+      if (snap) { send(res, 200, decorate(playerView(room.table, player.id), room.table)); return; }
       res.writeHead(200, {
         'content-type': 'text/event-stream',
         'cache-control': 'no-cache',
         connection: 'keep-alive',
       });
-      res.write(`data: ${JSON.stringify(decorate(playerView(room.table, player.id)))}\n\n`);
+      res.write(`data: ${JSON.stringify(decorate(playerView(room.table, player.id), room.table))}\n\n`);
       const sub = { res, playerId: player.id };
       room.subs.add(sub);
       const beat = setInterval(() => { try { res.write(':\n\n'); } catch { /* closed */ } }, 25000);

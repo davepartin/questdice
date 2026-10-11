@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTable, joinTable, command, playerView } from '../js/table.js';
+import * as E from '../js/engine.js';
+import * as R from '../js/roads.js';
 
 function make(names = [['Ada', 'knight'], ['Bea', 'bard']]) {
   const table = createTable({ code: 'TEST', seed: 12345, name: 'Ash Company' });
@@ -30,13 +32,11 @@ function begin(table, players) {
 
 test('the table seats one to six, and only the host opens the road', () => {
   const { table, players } = make([['Ada', 'knight']]);
-  assert.equal(command(table, players[0].id, { type: 'start' }).ok, false);
-  assert.equal(command(table, players[0].id, { type: 'ready' }).ok, true);
-  assert.equal(command(table, players[0].id, { type: 'start' }).ok, true);
+  assert.equal(command(table, players[0].id, { type: 'start' }).ok, true, 'a lone host starting is their own ready');
   assert.equal(table.phase, 'road');
 
   const { table: t2, players: ps } = make();
-  command(t2, ps[0].id, { type: 'ready' });
+  assert.equal(command(t2, ps[0].id, { type: 'start' }).ok, false, 'a friend who is not ready holds the road');
   command(t2, ps[1].id, { type: 'ready' });
   assert.equal(command(t2, ps[1].id, { type: 'start' }).ok, false);
   assert.equal(command(t2, ps[0].id, { type: 'start' }).ok, true);
@@ -145,4 +145,39 @@ test('the host can skip a phone that left, and that hero does not get a look at 
   assert.equal(table.lastReport.strikes.length, 1);
   assert.equal(table.lastReport.strikes[0].name, 'Ada');
   assert.equal(JSON.stringify(playerView(table, bea.id)).includes(JSON.stringify(secret)), false);
+});
+
+test('in a table fight: powers with their magic, potions from your own belt', () => {
+  const { table, players } = make([['Wyn', 'wizard'], ['Bo', 'knight']]);
+  command(table, players[1].id, { type: 'ready' }); command(table, table.hostId, { type: 'start' });
+  for (let i = 0; i < 4 && table.phase === 'road'; i++) {
+    const ev = R.ensureRoad(table.company.members[0], table.company.members); const ch = ev.choices.find((x) => x.ok);
+    if (!table.company.campaign.road.done) command(table, table.hostId, { type: 'choose', id: ch.id });
+    for (const p of table.players) command(table, p.id, { type: 'onward' });
+  }
+  assert.equal(table.phase, 'board');
+  const q = E.questsFor(table.company.members[0])[0]; assert.ok(command(table, table.hostId, { type: 'quest', id: q.id }).ok);
+  const wiz = players[0]; assert.ok(command(table, wiz.id, { type: 'roll' }).ok);
+  const f = table.battle.fighters[0]; f.magic = 9;
+  const r = command(table, wiz.id, { type: 'card', id: 'arcbolt', x: 6 }); assert.ok(r.ok, r.error);
+  assert.equal(f.lastCast.rolls.length, 3, 'Arc Bolt: 6 magic is 3 dice, and the table remembers what was rolled');
+  assert.equal(f.magic, 3);
+  assert.equal(command(table, wiz.id, { type: 'card', id: 'coil' }).ok, true); assert.equal(f.charge.coil, 1);
+  assert.equal(command(table, wiz.id, { type: 'card', id: 'coil', release: true }).ok, true);
+  f.hp = f.maxHp - 5; const potions = f.hero.potions ?? 2; assert.ok(command(table, wiz.id, { type: 'drink' }).ok); assert.equal(f.hero.potions, potions - 1);
+  assert.equal(command(table, wiz.id, { type: 'drink' }).ok, false, 'full health: no potion wasted');
+});
+
+test('the host can move a table on without a hero who went quiet', () => {
+  const { table, players } = make([['Ada', 'knight'], ['Bea', 'bard'], ['Cy', 'ranger']]);
+  for (const p of players.slice(1)) command(table, p.id, { type: 'ready' });
+  command(table, table.hostId, { type: 'start' });
+  const ev = R.ensureRoad(table.company.members[0], table.company.members);
+  command(table, players[1].id, { type: 'choose', id: ev.choices.find((x) => x.ok).id });
+  command(table, players[0].id, { type: 'onward' }); command(table, players[1].id, { type: 'onward' }); // Cy is asleep
+  assert.equal(table.phase, 'road');
+  assert.equal(command(table, players[1].id, { type: 'push' }).ok, false, 'only the host');
+  assert.ok(command(table, players[0].id, { type: 'push' }).ok);
+  assert.equal(table.phase, 'board');
+  assert.equal(command(table, players[0].id, { type: 'push' }).ok, false, 'nothing to wait for on the board');
 });

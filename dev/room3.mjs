@@ -1,0 +1,27 @@
+// A fight at a table: two phones, one round.  node dev/room3.mjs [outdir]
+import { startServer, phones, seat, toBoard, sleep } from './_rooms.mjs';
+const out = process.argv[2] || 'docs/ingame';
+const stop = await startServer();
+const { browser, phones: ps } = await phones(['Dave', 'Jess']);
+const [a, b] = ps;
+await seat(ps); await toBoard(ps);
+await a.click('.sx-qcard'); await sleep(800);
+const ready = async (p) => { for (let i = 0; i < 80; i++) { if (await p.page.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw && !window.QD.B3.battleState.busy)) return true; await p.pump(0.5); } return false; };
+console.log('battle ready', await ready(a), await ready(b));
+await a.pump(3); await b.pump(3);
+await a.shot(`${out}/room_battle_a_start.png`);
+await a.click('#b3-roll'); await sleep(900); await a.pump(5);
+await b.click('#b3-roll'); await sleep(900); await b.pump(5);
+const info = (p) => p.page.evaluate(() => { const B = window.QD.B3.battleState; return JSON.stringify({ round: B.b.round, phase: B.b.phase, busy: B.busy, active: B.active, board: !!B.b.board, text: document.querySelector('.b3-caption')?.textContent }); });
+console.log('A', await info(a)); console.log('B', await info(b));
+await a.shot(`${out}/room_battle_a_shape.png`);
+await a.click('#b3-lock'); await sleep(900); await a.pump(2);
+console.log('A locked', await info(a));
+await a.shot(`${out}/room_battle_a_locked.png`);
+await b.click('#b3-lock'); await sleep(1200);
+await a.pump(8); await b.pump(8);
+console.log('after A', await info(a)); console.log('after B', await info(b));
+await a.pump(10); await b.pump(10);
+console.log('later A', await info(a)); console.log('later B', await info(b));
+await a.shot(`${out}/room_battle_a_round2.png`); await b.shot(`${out}/room_battle_b_round2.png`);
+await browser.close(); stop();

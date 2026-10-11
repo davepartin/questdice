@@ -15,6 +15,7 @@ import { world } from './world.js';
 import { intentClips } from '../gfx/actors/common.js';
 import * as THREE from 'three';
 import { petImg } from './pets.js';
+import * as Sess from '../session.js';
 
 const stopWindups = () => { for (const h of B.windups.splice(0)) { try { h.stop(); } catch { /* ignore */ } } };
 let C = null;                // context from ui.js
@@ -39,7 +40,9 @@ const EPITHET = {
 export async function start(ctx) {
   C = ctx;
   const { S } = C;
-  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0; B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
+  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0;
+  if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
@@ -48,6 +51,7 @@ export async function start(ctx) {
   const b = B.b;
   const bw = await world.buildBattle({ quest: B.quest, hero: B.hero, enemies: b.enemies, heroes: B.party ? b.fighters.map((f) => f.hero) : null });
   B.bw = bw; B.trayBase = bw.tray.object.scale.x;
+  if (B.net) bw.setActiveHero(B.active, B.hero); // this phone's hero stands in front, and the dice table is theirs
   bw.tray.onPick = onPick;
   bw.tray.onSound = (kind, o) => { if (kind === 'hit') (sfx.dieHit || sfx.settle)?.(o?.speed); else (sfx.dieSettle || sfx.settle)?.(); };
   bw.stage.canvas.addEventListener('pointerup', pickEnemy);
@@ -91,6 +95,8 @@ export async function start(ctx) {
   B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
   music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
+  B.starting = false;
+  if (B.net) return netSettle(); // a table already mid-round (coming back to it) shows its own state
   renderReset();
 }
 
@@ -205,7 +211,7 @@ function fitTray() {
 // ------------------------------------------------------------------------------------------ company (one phone, turns)
 // Each living hero rolls and locks in turn; the monsters answer once everyone is locked. b mirrors the hero whose turn it
 // is (E.focusFighter); every change is written back with E.commitFighter.
-const commit = () => { if (B.party) E.commitFighter(B.b); };
+const commit = () => { if (B.party && !B.net) E.commitFighter(B.b); };
 const nextToRoll = () => (B.party ? B.b.fighters.findIndex((f) => f.hp > 0 && !f.board) : -1);
 function setActive(i) {
   const b = B.b; if (!B.party || i < 0) return;
@@ -219,7 +225,7 @@ function renderRoster() {
   const el = B.hud?.roster; if (!el) return; const b = B.b;
   const heroes = b.fighters.map((f) => f.hero);
   el.replaceChildren(...b.fighters.map((f, i) => {
-    const turn = i === B.active && f.hp > 0; const locked = !!f.board && i !== B.active; const down = f.hp <= 0;
+    const turn = i === B.active && f.hp > 0; const locked = B.net ? !!f.locked : !!f.board && i !== B.active; const down = f.hp <= 0;
     const look = D.lookOf(heroes, i); // each chip wears its hero's colours, so two Knights read apart
     return h('div', { class: `rs-chip ${turn ? 'turn' : ''} ${locked ? 'locked' : ''} ${down ? 'down' : ''}`, role: 'listitem', style: look ? { '--hue': look.hue } : null, 'aria-label': `${f.hero.name}${look && D.lookIndex(heroes, i) ? ` (${look.name})` : ''}, ${Math.max(0, Math.ceil(f.hp))} of ${f.maxHp} health, ${E.pointsOf(f)} points` },
       h('span', { class: 'rs-ic' }, down ? HK.icon('skull') : locked ? HK.icon('lock') : HK.icon(D.CLASSES[f.hero.cls] ? 'heart' : 'heart')),
@@ -264,11 +270,13 @@ function showTeamDetail(kind) {
     h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel')));
   B.hud.info.classList.add('open'); sfx.select();
 }
-function doTeam(kind, to) {
-  const b = B.b; if (B.busy) return; commit();
+async function doTeam(kind, to) {
+  let b = B.b; if (B.busy) return; commit();
   const before = { hp: b.fighters[to].hp, magic: b.fighters[to].magic };
-  const r = E.teamAction(b, B.active, kind, to);
-  if (!r.ok) { sfx.error(); toast(r.why); return; }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'team', kind, to: b.fighters[to].hero.name }); B.busy = false; if (!ok) return; b = B.b; } else {
+    const r = E.teamAction(b, B.active, kind, to);
+    if (!r.ok) { sfx.error(); toast(r.why); return; }
+  }
   const fa = B.bw.heroes[to]; const friend = b.fighters[to];
   if (kind === 'potion') { sfx.heal(); vfx('heal', fa.worldAnchor('chest'), { color: 0x45e08b }); number(fa.worldAnchor('head'), `+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
   if (kind === 'magic') { sfx.magic(); vfx('aura', fa, { kind: 'buff', color: 0xa64dff, dur: 1.0 }); number(fa.worldAnchor('head'), `+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
@@ -730,8 +738,9 @@ function showUtilDetail(id) {
         : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, cost ? `Use · ${cost} magic` : 'Drink')])));
   B.hud.info.classList.add('open'); sfx.select();
 }
-function doBigHeal() {
-  const b = B.b; if (B.busy) return; const before = b.hp;
+async function doBigHeal() {
+  let b = B.b; if (B.busy) return; const before = b.hp;
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'drink' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healBig(b)) { sfx.error(); return; }
   commit(); renderRoster();
   sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
@@ -762,7 +771,8 @@ export function renderReset() {
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
-  if (B.party) { const nx = nextToRoll(); if (nx >= 0 && nx !== B.active) setActive(nx); else E.focusFighter(b, B.active); renderRoster(); }
+  if (B.net) renderRoster();
+  else if (B.party) { const nx = nextToRoll(); if (nx >= 0 && nx !== B.active) setActive(nx); else E.focusFighter(b, B.active); renderRoster(); }
   setHud({ phase: 'reset' });
   targetEnemy();
   B.sel.clear();
@@ -781,7 +791,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? `Roll · ${B.hero.name}` : 'Roll dice', sub: B.party ? `${b.fighters.filter((f) => f.hp > 0 && f.board).length} of ${b.fighters.filter((f) => f.hp > 0).length} ready` : 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: B.party && !B.net ? `Roll · ${B.hero.name}` : 'Roll dice', sub: B.net ? 'tap to throw' : B.party ? `${b.fighters.filter((f) => f.hp > 0 && f.board).length} of ${b.fighters.filter((f) => f.hp > 0).length} ready` : 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
@@ -799,8 +809,8 @@ function e0Warn() {
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
   if (B.busy || !guideSays('roll')) return; B.busy = true;
-  const b = B.b; const bw = B.bw;
-  if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
+  let b = B.b; const bw = B.bw;
+  if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
   for (const s of BOARD) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
@@ -824,6 +834,7 @@ function rerollText(info) {
 export function renderShape() {
   if (B.ended) return;
   const b = B.b; const hero = B.hero; const bw = B.bw;
+  if (B.net && !B.resolving) { const st = myStage(); if (st === 'locked') return renderLocked(); if (st === 'skipped' || st === 'down') return renderLocked(st); }
   if (b.phase !== 'shape') return renderReset();
   setHud({ phase: 'shape' });
   const ev = E.evaluate(hero, b.board, { straight: B.straight });
@@ -879,19 +890,23 @@ function onPick(slot) {
 async function doReroll() {
   if (B.busy || !guideSays('reroll')) return; const b = B.b; const slots = [...B.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
-  B.busy = true; E.reroll(b, slots); commit(); B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
+  B.busy = true;
+  if (B.net) { if (!(await netDo({ type: 'reroll', slots }))) { B.busy = false; renderShape(); return; } } else { E.reroll(b, slots); commit(); }
+  B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
   renderShape();
-  await B.bw.tray.roll(b.board, { slots });
+  await B.bw.tray.roll(B.b.board, { slots });
   B.busy = false; renderShape();
   C.tut?.on('rerolled');
 }
-function doNudge(dir) {
-  const b = B.b; if (B.busy) return;
+async function doNudge(dir) {
+  let b = B.b; if (B.busy) return;
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; commit(); sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape(); return; }
   if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
   commit(); sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
 }
-function doHeal() {
-  const b = B.b; if (B.busy) return; const before = b.hp;
+async function doHeal() {
+  let b = B.b; if (B.busy) return; const before = b.hp;
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'heal' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
   commit(); renderRoster(); sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
   vfx('heal', hp, { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 });
@@ -899,10 +914,12 @@ function doHeal() {
   B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 async function doCard(id, opts = {}) {
-  const b = B.b; if (B.busy) return;
+  let b = B.b; if (B.busy) return;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
   const modsBefore = { ...b.mods }; const magicBefore = b.magic; const goldBefore = b.goldEarned || 0; const freeBefore = (b.freeActions || []).length;
-  const r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
+  let r;
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
+  b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   commit(); sfx.card(); buzz(20); B.fresh = id;
   const tone = PW.toneOf(k); const color = { heal: 0x45e08b, block: 0x4db4ff, pierce: 0xff8a1a, atk: 0xff5a4a, gold: 0xffd23d }[tone] ?? 0xa64dff;
@@ -927,11 +944,101 @@ function bumpCounters(gains) {
   const chips = B.hud.forecast?._chips; if (!chips) return;
   for (const key of Object.keys(gains)) { const c = chips[key === 'splash' ? 'atk' : key]; if (!c) continue; c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); setTimeout(() => c.classList.remove('bump'), 1200); }
 }
-function doRecharge(id) {
+async function doRecharge(id) {
   const b = B.b; if (B.busy) return;
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'recharge', id }); B.busy = false; if (ok) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); refresh(); } return; }
   if (E.recharge(b, id)) { commit(); sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
 }
 function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(); }
+
+
+// ------------------------------------------------------------------------------------------ at a shared table (net mode)
+// Every phone is one hero. The table (session.js) is the truth: a command goes out, the next table comes back, and
+// refocus() points this controller at it. Other heroes' moves arrive as new tables (netChanged). When everyone has
+// locked in, the table plays the round once and every phone plays the same report (netResolve).
+export const running = () => !!B.bw && !B.ended;
+function refocus() {
+  const t = Sess.current(); const i = Sess.index(); if (!t?.battle || i < 0) return false;
+  const b = t.battle; E.focusFighter(b, i); const f = b.fighters[i];
+  b.phase = f.board && f.hp > 0 ? 'shape' : 'reset';
+  B.b = b; B.active = i; B.hero = b.hero; if (C?.S) { C.S.battle = b; C.S.hero = b.hero; }
+  return true;
+}
+// Send one command; true when the table took it.
+async function netDo(cmd) {
+  try { await Sess.send(cmd); } catch (e) { sfx.error(); toast(e?.message || 'The table did not answer.', 'bad'); return false; }
+  return refocus();
+}
+const myFighter = () => B.b?.fighters?.[B.active];
+function myStage() {
+  const f = myFighter(); if (!f) return 'reset';
+  if (f.hp <= 0) return 'down'; if (f.skipped) return 'skipped'; if (f.locked) return 'locked'; return f.board ? 'shape' : 'reset';
+}
+const waitingFor = () => (B.b?.fighters || []).filter((f, i) => f.hp > 0 && !f.locked && i !== B.active).map((f) => f.hero.name);
+const waitingText = () => { const w = waitingFor(); return w.length ? `Locked in. Waiting for ${w.join(', ')}…` : 'Locked in. The monsters answer…'; };
+// What to show for this phone's hero right now (after joining, coming back, or any change that is not a played round).
+function netSettle() {
+  if (B.ended || !refocus()) return;
+  renderRoster();
+  const st = myStage(); const b = B.b;
+  const sig = `${b.round}:${st}`;
+  if (st === 'shape') {
+    const bw = B.bw; bw.tray.show?.(b.board);
+    for (const s of BOARD) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); bw.tray.setBound?.(s, !!b.board[s]?.bound); }
+    bw.tray.setWaiting?.(false); B.sel.clear(); B.lastSig = sig; return renderShape();
+  }
+  if (st === 'locked') { B.lastSig = sig; B.busy = false; return renderLocked(); }
+  if (st === 'skipped' || st === 'down') { B.lastSig = sig; B.busy = false; return renderLocked(st); }
+  B.lastSig = sig; renderReset();
+}
+// The table changed (someone else moved, or my own command came back).
+export function netChanged(prev, next) {
+  if (!B.bw || B.starting || B.ended || B.resolving) return;
+  const round = (t) => (t?.battle ? t.battle.round : 0);
+  if (next.phase !== 'battle' || round(next) > round(prev)) { netResolve(prev, next); return; }
+  if (!refocus()) return;
+  renderRoster();
+  const st = myStage(); const sig = `${B.b.round}:${st}`; const changed = sig !== B.lastSig; B.lastSig = sig;
+  if (st === 'locked' || st === 'skipped' || st === 'down') { B.busy = false; renderLocked(st === 'locked' ? '' : st); return; } // (also refreshes who is still choosing)
+  if (changed && !B.busy) (st === 'shape' ? renderShape : renderReset)(); // e.g. the host skipped me and then let me back, or I took my lock back
+}
+// The round has been played by the table: play it here too, then the next round, or the end.
+async function netResolve(prev, next) {
+  B.resolving = true; Sess.hold();
+  try {
+    const rep = next.lastReport; const outcome = next.phase === 'victory' ? 'victory' : next.phase === 'defeat' ? 'defeat' : null;
+    if (next.phase === 'defeat' && next.retreat) { await lose(); return; }
+    // the battle as it stands after the round (a lost battle is gone from the table: use the one we had)
+    const src = next.battle || prev?.battle; if (!src || !rep) { await finishNet(next); return; }
+    if (next.battle) { E.focusFighter(src, Sess.index()); B.b = src; B.active = Sess.index(); B.hero = src.hero; C.S.battle = src; C.S.hero = src.hero; src.phase = 'reset'; }
+    B.busy = true; B.sel.clear();
+    await playParty(rep, outcome);
+    B.lastSig = `${B.b.round}:${outcome ? 'end' : 'reset'}`;
+  } catch (e) { console.error('netResolve failed', e.stack); B.busy = false; }
+  finally { B.resolving = false; B.busy = false; Sess.release(); }
+}
+function finishNet(next) { B.busy = false; if (next.phase === 'victory') return win(); if (next.phase === 'defeat') return lose(); }
+// Locked in (or away, or down): the dice stay as they are and the screen says who is still choosing.
+function renderLocked(kind = '') {
+  if (B.ended) return;
+  const b = B.b; const bw = B.bw; const hero = B.hero; const f = myFighter();
+  setHud({ phase: 'shape' }); bw.tray.setSelected?.(new Set());
+  if (b.board) {
+    const ev = E.evaluate(hero, b.board, { straight: f?.straight || 'atk' });
+    HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods)); HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s')));
+    B.hud.forecast.classList.remove('idle');
+  }
+  B.hud.cards.replaceChildren(...cardTiles(!b.board));
+  const msg = kind === 'down' ? 'You are down. Your friends will finish this fight.' : kind === 'skipped' ? 'The host marked you away this round.' : waitingText();
+  const skips = Sess.isHost() ? (b.fighters || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== B.active && g.hp > 0 && !g.locked).map(({ g }) => h('button', { type: 'button', class: 'b3-skip', onclick: () => netDo({ type: 'skip', playerId: Sess.mates().find((p) => p.hero === g.hero)?.id }).then(() => netSettle()) }, `Skip ${g.hero.name} this round`)) : [];
+  B.hud.caption.replaceChildren(caption(msg), ...skips);
+  B.hud.bar.replaceChildren(h('div', { class: 'b3-acts b3-acts3 reset' },
+    HK.button({ kind: 'cta', icon: 'lock', label: kind ? 'Waiting' : 'Locked in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Locked in' }), powersBtn(),
+    kind ? HK.button({ kind: 'reroll', icon: 'reroll', label: 'Waiting', sub: 'for the round', id: 'b3-wait', disabled: true, cls: 'blue' })
+      : HK.button({ kind: 'reroll', icon: 'reroll', label: 'Unlock', sub: 'take it back', id: 'b3-unlock', onclick: doUnlock, cls: 'blue' })));
+  B.busy = false;
+}
+async function doUnlock() { if (B.busy) return; B.busy = true; const ok = await netDo({ type: 'unlock' }); B.busy = false; if (ok) { sfx.select?.(); netSettle(); } }
 
 // ------------------------------------------------------------------------------------------ lock in: perform the round
 async function lockIn() {
@@ -940,8 +1047,16 @@ async function lockIn() {
   try { await lockInInner(); } catch (e) { console.error('lockIn failed', e.stack); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
 }
 // Company: who rolls after this hero (or the monsters, when everyone has locked)
-function lockSub() { const b = B.b; const nx = b.fighters.findIndex((f, i) => i !== B.active && f.hp > 0 && !f.board); return nx >= 0 ? `then ${b.fighters[nx].hero.name}` : 'monsters answer'; }
+function lockSub() { if (B.net) { const w = waitingFor(); return w.length ? `${w.length} still choosing` : undefined; } const b = B.b; const nx = b.fighters.findIndex((f, i) => i !== B.active && f.hp > 0 && !f.board); return nx >= 0 ? `then ${b.fighters[nx].hero.name}` : 'monsters answer'; }
+async function lockNet() {
+  B.busy = true; sfx.lock(); buzz(30);
+  B.sel.clear(); B.bw.tray.setSelected?.(new Set());
+  // the answer comes back as the next table; if I was the last to lock, it is the round already played (netApply)
+  const ok = await netDo({ type: 'lock', target: B.target, straight: B.straight });
+  if (!ok) { B.busy = false; renderShape(); }
+}
 async function lockParty() {
+  if (B.net) return lockNet();
   const b = B.b; B.busy = true; sfx.lock(); buzz(30);
   commit(); const f = b.fighters[B.active]; f.target = B.target; f.straight = B.straight;
   B.sel.clear(); B.bw.tray.setSelected?.(new Set());
@@ -1098,9 +1213,14 @@ async function lockInInner() {
 
 // Company round: everyone has locked; the monsters answer. Plays in initiative order (rep.order).
 async function performParty() {
+  const rep = E.resolveParty(B.b);
+  return playParty(rep);
+}
+// Play a round's report: the same on a shared phone and on every phone at a table.
+async function playParty(rep, outcome = B.b.outcome) {
   const b = B.b; const bw = B.bw; const stage = world.stage;
   bw.tray.lock?.(); setHud({ phase: 'resolve' }); clearDock(); stopWindups();
-  const rep = E.resolveParty(b); B.lastRep = rep;
+  B.lastRep = rep;
   const idxOf = (n) => b.fighters.findIndex((f) => f.hero.name === n);
   const actorOfHero = (n) => bw.heroes[idxOf(n)];
   // team triples and Heartbeat
@@ -1148,9 +1268,10 @@ async function performParty() {
   await wait(0.6);
   B.busy = false;
   bw.director.set('battle', { lambda: 2.2 });
-  if (b.outcome === 'victory') return win();
-  if (b.outcome === 'defeat') return lose();
-  B.active = -1; renderReset();
+  if (outcome === 'victory') return win();
+  if (outcome === 'defeat') return lose();
+  if (!B.net) B.active = -1;
+  renderReset();
 }
 async function playStrike(s, rep, actorOfHero) {
   const b = B.b; const bw = B.bw; const stage = world.stage;

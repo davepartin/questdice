@@ -17,8 +17,8 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011v**). Phones otherwise keep old files.
-- Tests: `npm test` (or `node --test test/*.test.mjs`), **116 passing**. Keep them green.
+  the last one used is **20261011w**). Phones otherwise keep old files.
+- Tests: `npm test` (or `node --test test/*.test.mjs`), **119 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
   Write results into `docs/BALANCE.md`.
@@ -776,3 +776,29 @@ that shows up small by the gold and magic." This replaces the pet stand describe
   the pet rolls a little die of luck every round, up by your gold and magic. The lesson stills (assets/tutorial/board-pet*)
   are unused now.
 - Screenshots: docs/ingame/pet_badge_phone.png, pet_badge_wide.png. Online rooms never had pets.
+
+## Playing together, rebuilt (Dave, 11 Oct): each hero on their own phone, in the 3D game
+
+Dave tried the online rooms with a friend and found the old flat screens. Decision: **no one-phone group game any more**;
+only rooms where everyone has their own phone. A single hero on one phone is still the solo game. Full design and file map:
+**docs/MULTIPLAYER.md**. Summary:
+- Removed: "A company on one phone" (title chooser, `showCreateCompany`, saved one-phone companies are hidden from the lists).
+  "Play together" goes straight to Open a table / Join a table.
+- New: `js/session.js` (this phone's copy of the table), `js/g3/online.js` (the room director). Every view now carries
+  `view.state`, the whole table as text without seat tokens (`savePublic`); `server.mjs` and `cloud.js` both send it.
+  The 3D screens read the copy like a solo hero (S.hero, S.company, S.battle point into it).
+- Lobby in the 3D camp style (code in big letters, Invite, heroes with ticks; the host starting is their own ready); the
+  hero choice screen is reused (`create({ table })`). Road, story and board are the solo screens plus a company bar.
+- Battle (`battle3d.js`, `B.net`): every action is a command, other heroes' moves arrive as new tables, "Locked in, waiting
+  for X" with Unlock, the host can skip a hero; when the last hero locks, every phone plays the same round report
+  (`playParty`, split out of `performParty`). New commands in table.js: `drink` (own potion), `card` with `x` and `release`
+  (Arc Bolt dice, charges), `op` (camp changes by rule name, whitelisted), `push` (host moves a table on without a hero who
+  went quiet). `lastCast` is now mirrored per fighter so power reveals work online.
+- Victory: points/places, each hero picks a perk at once, spoils draft; camp: the full solo camp per hero with optimistic
+  local changes (`X.netOp`), Ready, the host's "Go on without them".
+- The seat is kept in `localStorage` (a closed tab finds its way back); player ids no longer contain part of a token.
+- Tests: 119. Multi-phone browser scripts: `dev/room1.mjs` .. `room5.mjs` (two phones against `node server.mjs`, test cheats
+  only with `QD_CHEAT=1`). The sandbox cannot reach Firebase, so the live Firestore path is untested here: Dave to try with a friend.
+- Not done yet / next: delete the old flat `js/roomui.js` and the hot-seat code in ui.js and battle3d.js; three or more
+  phones; team actions and defeat online (written, not yet driven by a script); landscape layout of the room screens;
+  rejoin mid-round (written, not yet driven); real-phone latency (see the Firestore write-rate note in MULTIPLAYER.md).

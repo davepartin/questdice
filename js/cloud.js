@@ -3,7 +3,7 @@
 // on this phone inside a transaction and writes the new table back; every other phone hears the change.
 // Each phone signs in as an anonymous guest; that guest id is its seat at the table.
 import { firebaseConfig } from './firebase-config.js';
-import { createTable, joinTable, command, playerByToken, playerView, saveTable, loadTable } from './table.js';
+import { createTable, joinTable, command, playerByToken, playerView, saveTable, savePublic, loadTable } from './table.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -47,6 +47,7 @@ function viewFor(table, uid) {
   const player = playerByToken(table, uid);
   if (!player) return null;
   const view = playerView(table, player.id);
+  view.state = savePublic(table); // the whole table as text (no seat tokens): this phone rebuilds it and the 3D screens read it (js/session.js)
   if (view.phase === 'lobby') view.links = [joinLink(table.code)];
   return view;
 }

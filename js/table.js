@@ -27,7 +27,8 @@ export function joinTable(table, { name, cls, token }) {
   if (!CLASSES[cls]) return fail('Pick a class.');
   if (!token) return fail('Missing seat.');
   if (table.players.some((p) => p.name.toLowerCase() === heroName.toLowerCase())) return fail('Another hero already has that name.');
-  const player = { id: `p${table.players.length + 1}${token.slice(0, 4)}`, token, name: heroName, cls, ready: false, hero: null };
+  // (the id shows no part of the token)
+  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls, ready: false, hero: null };
   table.players.push(player);
   if (!table.hostId) table.hostId = player.id;
   table.seq += 1;
@@ -67,6 +68,8 @@ function dispatch(table, player, cmd) {
     case 'quest': return startQuest(table, cmd);
     case 'camp': return goCamp(table);
     case 'upgrade': return upgrade(table, player, cmd);
+    case 'op': return heroOp(table, player, cmd);
+    case 'push': return push(table, player);
     case 'buy': return buy(table, player, cmd);
     case 'potion': return potion(table, player);
     case 'equip': return equip(table, player, cmd);
@@ -78,6 +81,7 @@ function dispatch(table, player, cmd) {
     case 'reroll': return reroll(table, player, cmd);
     case 'nudge': return nudge(table, player, cmd);
     case 'card': return card(table, player, cmd);
+    case 'drink': return drink(table, player);
     case 'lock': return lock(table, player, cmd);
     case 'unlock': return unlock(table, player);
     case 'skip': return skip(table, player, cmd);
@@ -120,7 +124,7 @@ function startCampaign(table, player) {
   if (table.phase !== 'lobby') return fail('The campaign has already started.');
   if (player.id !== table.hostId) return fail('The host starts the campaign.');
   if (table.players.length < 1 || table.players.length > 6) return fail('The table seats one to six heroes.');
-  if (table.players.some((p) => !p.ready)) return fail('Every hero has to be ready.');
+  if (table.players.some((p) => p.id !== table.hostId && !p.ready)) return fail('Every hero has to be ready.'); // the host starting is their own ready
   const company = E.newCompany({
     name: table.name,
     roster: table.players.map((p) => ({ name: p.name, cls: p.cls })),
@@ -204,6 +208,47 @@ function upgrade(table, player, cmd) {
   if (table.phase !== 'camp') return fail('The forge is at camp.');
   if (cmd.kind !== 'strength' && cmd.kind !== 'special') return fail('Unknown die.');
   if (!E.upgradeDie(player.hero, cmd.kind, cmd.slot)) return fail('That die will not grow yet.');
+  player.ready = false;
+  return ok();
+}
+// The host moves the table on without a hero who has gone quiet (a phone that went to sleep): their perk is the first on offer,
+// their pick of the spoils is passed, and they count as ready.
+function push(table, player) {
+  if (player.id !== table.hostId) return fail('Only the host can move the table on.');
+  if (table.phase === 'road') {
+    if (!table.company.campaign.road?.done) return fail('Choose a road first.');
+    table.players.forEach((p) => { p.ready = true; }); table.phase = 'board'; table.players.forEach((p) => { p.ready = false; });
+    return ok();
+  }
+  if (table.phase === 'victory' || table.phase === 'camp') {
+    for (const p of table.players) {
+      let guard = 0;
+      while (p.hero.pendingPerks > 0 && guard++ < 6) { const offer = ensureOffer(table, p.hero); if (!offer?.length) break; delete table.perkOffers[offerKey(p.hero)]; E.takePerk(p.hero, offer[0]); }
+    }
+    if (table.phase === 'victory') {
+      const r = table.rewards; let guard = 0;
+      while (!r.draft.done && guard++ < 30) { const who = E.draftWho(r.draft); if (!who) break; E.draftSkip(r.draft, who); }
+      settleVictory(table);
+      return ok();
+    }
+    table.players.forEach((p) => { p.ready = true; });
+    const hero = members(table)[0]; table.players.forEach((p) => { p.ready = false; });
+    if (R.roadIsOpen(hero)) return enterRoad(table);
+    table.phase = 'board';
+    return ok();
+  }
+  return fail('There is nothing to wait for.');
+}
+// Camp, the whole of it: a change to your own hero, by the name of the rule that makes it (the camp screens call these
+// same rules on their own copy first, so the phone answers at once; the table keeps the real one).
+const HERO_OPS = new Set(['upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent',
+  'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower']);
+function heroOp(table, player, cmd) {
+  if (table.phase !== 'camp') return fail('That is done at camp.');
+  if (!HERO_OPS.has(cmd.op)) return fail('Unknown camp choice.');
+  const args = Array.isArray(cmd.args) ? cmd.args : [];
+  if (args.length > 4 || args.some((a) => !['string', 'number', 'boolean'].includes(typeof a))) return fail('That choice was not understood.');
+  if (E[cmd.op](player.hero, ...args) === false) return fail('That will not work right now.');
   player.ready = false;
   return ok();
 }
@@ -342,9 +387,18 @@ function card(table, player, cmd) {
   if (table.phase !== 'battle') return fail('Not in a fight.');
   const done = withFighter(table, player, (b, f) => {
     if (f.hp <= 0 || f.locked || !f.board) return false;
-    return E.playCard(b, cmd.id);
+    return !!E.castPower(b, cmd.id, { x: cmd.x == null ? undefined : cmd.x | 0, release: !!cmd.release });
   });
-  return done ? ok() : fail('Not enough ✦ Magic, or that card is spent.');
+  return done ? ok() : fail('Not enough ✦ Magic, or that power is spent.');
+}
+// A potion from your own belt, any time before you lock in.
+function drink(table, player) {
+  if (table.phase !== 'battle') return fail('You can drink a potion in a fight.');
+  const done = withFighter(table, player, (b, f) => {
+    if (f.hp <= 0 || f.locked) return false;
+    return E.drinkPotion(b);
+  });
+  return done ? ok() : fail('No potion to drink, or you are at full health.');
 }
 function living(battle) { return battle.fighters.filter((f) => f.hp > 0); }
 function maybeResolve(table) {
@@ -587,6 +641,12 @@ export { host };
 
 // Save a table as text (for an online room) and load it back.
 export function saveTable(table) { return pack(table); }
+// The table as a phone sees it: everything, but not the seat tokens (they prove who is who).
+export function savePublic(table) {
+  const tokens = table.players.map((p) => p.token);
+  table.players.forEach((p) => { p.token = ''; });
+  try { return pack(table); } finally { table.players.forEach((p, i) => { p.token = tokens[i]; }); }
+}
 export function loadTable(text) {
   const table = unpack(text);
   if (table.battle) table.battle.rng = E.makeRng(E.hashSeed(table.seed, 'move', table.seq));

@@ -1129,7 +1129,7 @@ function makeFighter(hero) {
   };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
