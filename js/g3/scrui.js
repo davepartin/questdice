@@ -445,43 +445,6 @@ export function victory(first) {
     setTimeout(() => { xpFill.style.transition = 'none'; xpFill.style.width = '0%'; void xpFill.offsetWidth; lvl.classList.add('pop'); bar.classList.add('flash'); sfx.level?.(); fillTo(endPct, 800); }, 1400);
   } else setTimeout(() => fillTo(endPct, 1000), 600);
 }
-// Company victory: everyone's points, places (1st; 2nd only with 3+ heroes), gold and XP, perks, then the spoils draft.
-export function partyVictory() {
-  const S = X.S; const R = S.rewards; const members = S.company.members; const n = members.length;
-  const pending = members.find((m) => m.pendingPerks > 0);
-  if (pending && (!R.offer || R.offering !== pending.name)) { R.offering = pending.name; R.offer = E.offerPerks(pending, X.fresh()); }
-  if (!pending) { R.offer = null; R.offering = null; }
-  const again = () => { X.persist(); X.renderPartyVictory(); };
-  const placeWord = (p) => (p === 1 && n >= 2 ? '1st place' : p === 2 && n >= 3 ? '2nd place' : '');
-  const lead = R.order[0];
-  const sub = n >= 3 ? `${lead} did the most this battle, with ${R.order[1]} close behind.` : `${lead} did the most this battle.`;
-  const rows = panel('sx-places', eyebrow(`+${R.xp} XP each`, 'gold'),
-    h('div', { class: 'pl-list' }, R.order.map((name) => {
-      const m = members.find((x) => x.name === name); const p = R.place[name]; const pw = placeWord(p);
-      return h('div', { class: `pl-row ${p === 1 && n >= 2 ? 'first' : p === 2 && n >= 3 ? 'second' : ''}` },
-        h('span', { class: 'pl-medal' }, pw ? (p === 1 ? '1' : '2') : ''), emblem(m.cls),
-        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, pw || 'Victory', m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
-        h('div', { class: 'pl-nums' }, h('b', {}, `${R.points[name] || 0}`), h('small', {}, 'points'), h('span', { class: 'pl-gold' }, ico('coin'), `${R.gold[name] >= 0 ? '+' : ''}${R.gold[name]}`)));
-    })));
-  const perks = pending && R.offer ? panel('sx-perks glow', eyebrow(`${pending.name} · level up. Choose a perk`, 'gold'),
-    h('div', { class: 'perk-row' }, R.offer.map((id, i) => perkCard(id, pending, () => { E.takePerk(pending, id); R.offer = null; sfx.level(); again(); }, i)))) : null;
-  const who = E.draftWho(R.draft); const picker = who && members.find((m) => m.name === who);
-  const loot = !R.draft.done
-    ? panel('sx-loot', eyebrow(`${who} chooses · ${R.points[who] || 0} points · pack ${picker.bag.length}/${D.BAG_MAX}`, 'gold'),
-      h('p', { class: 'fine' }, 'Highest points choose first. Take a weapon or skip; the choice comes back around.'),
-      h('div', { class: 'loot-row' }, R.drops.map((inst, i) => R.draft.picked[i] != null ? null : weaponCard(inst, { cls: 'pick', actions: [
-        btn(E.bagFull(picker) ? 'Pack full' : `Take · ${who}`, () => { if (!E.takeDrop(picker, inst)) return; E.draftPick(R.draft, who, i); sfx.coin(); again(); }, { kind: 'primary', icon: 'bag', disabled: E.bagFull(picker) }),
-      ] }))),
-      h('div', { class: 'sx-cta' }, btn(`Skip · ${who}`, () => { E.draftSkip(R.draft, who); sfx.select(); again(); }, { kind: 'ghost', cls: 'wide' })))
-    : panel('sx-loot done', h('div', { class: 'cardlist' }, Object.entries(R.draft.picked).length ? Object.entries(R.draft.picked).map(([i, name]) => h('p', { class: 'muted' }, `${name} took the ${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}.`)) : h('p', { class: 'muted' }, 'The spoils stay on the road.')));
-  const ready = !pending && R.draft.done;
-  mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
-    h('div', { class: 'sx-side' },
-      h('header', { class: 'vc-head' }, eyebrow(R.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, sub), flourish()),
-      rows, perks, loot,
-      h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Perks and spoils first', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
-  lay('victory'); SCR.victory();
-}
 export function defeat(retreat, loss) {
   const S = X.S; const hero = S.hero;
   const lines = [['Level', `${hero.level}`, 'hero'], ['Gear', `${Object.values(hero.loadout).filter((w, i, a) => !w.twin && a.findIndex((x) => x.uid === w.uid) === i).length + hero.bag.length} weapons`, 'bag'], ['Perks', `${hero.perks.length}`, 'star']];

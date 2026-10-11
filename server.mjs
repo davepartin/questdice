@@ -149,6 +149,8 @@ async function onRequest(req, res) {
     }
     if (process.env.QD_CHEAT && req.method === 'POST' && url.pathname === '/api/cheat') { // tests only: make the monsters one hit from falling
       const body = await readBody(req); const room = roomOf(String(body.code || '').toUpperCase());
+      if (body.what === 'hurt') { for (const f of room?.table.battle?.fighters || []) { f.hp = Math.min(f.hp, 3); } if (room?.table.battle) { for (const e of room.table.battle.enemies) { e.flat = (e.flat || 0) + 40; } room.table.seq += 1; publish(room); } send(res, 200, { ok: true }); return; }
+      if (body.what === 'hpmates') { const f = room?.table.battle?.fighters; if (f) { f[0].hp = Math.max(1, f[0].maxHp - 12); room.table.seq += 1; publish(room); } send(res, 200, { ok: true }); return; }
       if (body.what === 'gold') { for (const p of room?.table.players || []) if (p.hero) p.hero.gold += 600; room.table.seq += 1; publish(room); send(res, 200, { ok: true }); return; }
       if (room?.table.battle) for (const e of room.table.battle.enemies) e.hp = Math.min(e.hp, 1);
       send(res, 200, { ok: !!room?.table.battle }); return;

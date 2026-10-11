@@ -35,15 +35,10 @@ function mountAs(cls, ...nodes) {
   if (!cls && !S.holdScroll) { r.classList.remove('rise'); void r.offsetWidth; r.classList.add('rise'); }
 }
 const mount = (...nodes) => mountAs('', ...nodes);
-const isParty = () => (S.battle?.fighters?.length || 0) > 1;
 const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
 function persist() {
   if (S.net) return Online.persistLocal(); // (the table keeps the hero; this phone only remembers which hints it has shown)
   if (S.practice) return; // the practice battle is never saved
-  if (S.company?.kind === 'company') {
-    if (!SV.saveCompany(S.company)) toast('Could not save. Is browser storage blocked?', 'bad');
-    return;
-  }
   const hero = S.company?.members?.[0] || S.hero;
   if (!hero) return;
   if (!SV.saveHero(hero)) toast('Could not save. Is browser storage blocked?', 'bad');
@@ -67,12 +62,6 @@ function cmd(kicker, title, sub, onclick, { tone = '', disabled = false, glyph =
     h('span', { class: 'cmd-go' }, '›'));
 }
 function heroChip() {
-  if (S.company?.kind === 'company') {
-    const n = S.company.members.length;
-    return h('div', { class: 'herochip' }, h('span', { class: 'hc-glyph' }, '⚔'),
-      h('div', {}, h('b', {}, S.company.name), h('small', {}, `${n} ${n === 1 ? 'hero' : 'heroes'}`)),
-      h('div', { class: 'hc-res' }, h('span', { class: 'c-gold' }, `🪙 ${E.companyGold(S.company.members)}`)));
-  }
   const hero = S.hero; const c = D.CLASSES[hero.cls];
   return h('div', { class: 'herochip' }, h('span', { class: 'hc-glyph' }, c.glyph),
     h('div', {}, h('b', {}, hero.name), h('small', {}, `Lv ${hero.level} ${c.name}`)),
@@ -143,7 +132,7 @@ function syncHome() {
 function askHome() {
   if (!(S.hero || S.company || S.practice) || S.net) return;
   const midFight = !S.practice && S.battle && !S.battle.outcome && S.battle.phase !== 'done' && document.body.classList.contains('in-battle');
-  const who = S.company?.kind === 'company' ? 'Your company is' : 'Your hero is';
+  const who = 'Your hero is';
   const [title, text] = S.practice ? ['Leave practice?', 'You can come back to Learn to play any time.']
     : midFight ? ['Leave this fight?', `${who} saved. This fight will not count: when you come back, it starts over from the quest board. Potions you drank stay used.`]
       : ['Go home?', `${who} saved. Tap Continue on the home screen to pick up right where you left off.`];
@@ -168,10 +157,8 @@ export function showTitle() {
   if (saves.length) {
     items.push(h('div', { class: 't-eyebrow mb' }, 'On this device'));
     items.push(h('nav', { class: 'dock' }, saves.map((x) => {
-      const sub = x.kind === 'company'
-        ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}`
-        : `Level ${x.level} ${D.CLASSES[x.cls].name}`;
-      return cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, sub, () => unlock(x.name, x.kind), { glyph: x.kind === 'company' ? '⚔' : D.CLASSES[x.cls].glyph, tone: x.kind === 'company' ? 'versus' : 'solo' });
+      const sub = `Level ${x.level} ${D.CLASSES[x.cls].name}`;
+      return cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, sub, () => unlock(x.name, x.kind), { glyph: D.CLASSES[x.cls].glyph, tone: 'solo' });
     })));
   }
   items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
@@ -183,14 +170,9 @@ export function showTitle() {
   mount(...items);
   S.timers.push(setInterval(tick, 1400));
 }
-function adopt(saved, kind) {
-  if (kind === 'company') {
-    S.company = saved;
-    S.hero = saved.members[0];
-  } else {
-    S.company = { kind: 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
-    S.hero = saved;
-  }
+function adopt(saved) {
+  S.company = { kind: 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
+  S.hero = saved;
   S.seat = 0;
 }
 function unlock(name, kind = 'hero') {
@@ -198,19 +180,18 @@ function unlock(name, kind = 'hero') {
   const msg = h('p', { class: 'form-msg' });
   const go = async () => {
     try {
-      const saved = kind === 'company' ? await SV.openCompany(name, pw.value) : await SV.openHero(name, pw.value);
-      adopt(saved, kind);
+      const saved = await SV.openHero(name, pw.value);
+      adopt(saved);
       closeModal(); sfx.coin(); showRoadOrBoard();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, kind === 'company' ? 'Enter the company password. This save still shares one device. A new table gives every hero their own phone.' : 'Enter your password to open this hero.'), pw, msg,
-    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = kind === 'company' ? SV.exportCompanyCode(name) : SV.exportCode(name); if (c) copyCode(c); }), ghost('Cancel', () => close()), primary('Open', go)),
-    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { if (kind === 'company') SV.deleteCompany(name); else SV.deleteHero(name); close(); showTitle(); } } }, kind === 'company' ? 'Delete this company' : 'Delete this hero'))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, 'Enter your password to open this hero.'), pw, msg,
+    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(name); if (c) copyCode(c); }), ghost('Cancel', () => close()), primary('Open', go)),
+    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { SV.deleteHero(name); close(); showTitle(); } } }, 'Delete this hero'))));
   setTimeout(() => pw.focus(), 50);
 }
 function currentCode() {
-  if (S.company?.kind === 'company') return SV.exportCompanyCode(S.company.name);
   if (S.hero) return SV.exportCode(S.hero.name);
   return null;
 }
@@ -281,9 +262,7 @@ function showBoard() {
   }));
   mount(
     h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small screen-menu' })),
-    S.company?.kind === 'company'
-      ? h('div', { class: 'levels' }, S.company.members.map((m) => h('span', {}, `${D.CLASSES[m.cls].glyph} ${m.name} · Lv ${m.level} · 🪙 ${m.gold}`)))
-      : xpBar(hero),
+    xpBar(hero),
     h('header', { class: 'act' }, h('div', { class: 't-eyebrow' }, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), h('h2', {}, actName(hero)), h('p', { class: 'muted' }, actOf(hero).tag)),
     path,
     blessings.length ? h('p', { class: 'boon' }, blessings.map((b) => b.text).join(' · ')) : null,
@@ -405,10 +384,8 @@ function practice({ hero, quest, guide }) {
 }
 function refresh() { if (S.battle.phase === 'shape') renderBattle(); else renderReset(); }
 function spendHeal() {
-  if (isParty()) E.focusFighter(S.battle, S.battle.active);
   const b = S.battle; const hp = b.hp;
   const ok = E.healSpend(b);
-  if (isParty()) E.commitFighter(S.battle);
   if (!ok) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
   sfx.heal(); refresh(); floater($('.hero-hp'), `+${b.hp - hp}`, 'heal');
 }
@@ -419,53 +396,8 @@ function enemyTelegraph(e) {
     h('div', { class: 'tele-copy' }, h('b', {}, e.name), h('small', { class: 'muted' }, `${Math.ceil(e.hp)}/${e.maxHp} HP`),
       h('div', { class: `intent big ${info.tone}` }, h('span', { class: 'iicon' }, info.icon), h('div', { class: 'itext' }, h('b', {}, info.title), h('small', {}, info.text)))));
 }
-function touchFighter(i, fn) {
-  E.focusFighter(S.battle, i);
-  const ok = fn();
-  E.commitFighter(S.battle);
-  return ok;
-}
-function renderPartyReset() {
-  const b = S.battle;
-  const alive = b.enemies.filter((e) => e.hp > 0);
-  const rep = S.lastReport;
-  const lines = rep?.party
-    ? V.partyReportLines(rep, b)
-    : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'bar' : 'bars'} the way. The slowest Feet draws the attacks.` }];
-  const wind = alive.filter((e) => e.intent?.slam);
-  const first = b.fighters.find((f) => f.hp > 0);
-  const blessings = (S.company?.campaign?.blessings || []).map((bl) => bl.text).filter(Boolean);
-  mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'Reset'), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
-    section(rep ? `Round ${rep.round}` : 'The fight begins', h('ul', { class: 'log' }, lines.map((l) => h('li', { class: l.kind }, l.text)))),
-    blessings.length ? h('p', { class: 'boon' }, blessings.join(' · ')) : null,
-    tip('party-reset', 'This saved company still shares one device. Whoever rolls the lowest Feet takes the largest share of the monsters’ hits (a tie goes to whoever has more health). Each hero’s block only covers their own share.'),
-    h('div', { class: 't-eyebrow mb' }, 'The monsters have shown their hand'),
-    h('div', { class: 'teles' }, alive.map(enemyTelegraph)),
-    wind.length ? h('p', { class: 'warn' }, `⚠ A Slam is coming: ${wind.map((e) => e.name).join(', ')}.`) : null,
-    first ? bodyWrap(h('div', { class: 'board board-empty', 'aria-hidden': 'true' }), first.hero) : null,
-    h('div', { class: 't-eyebrow mb' }, 'The company'),
-    ...b.fighters.map((f, i) => {
-      const hero = f.hero;
-      const spent = E.cardsOf(hero).filter((k) => f.used[k.id]);
-      return h('div', { class: 'panel mate-spend' },
-        h('div', { class: 'row between' }, h('b', {}, `${D.CLASSES[hero.cls].glyph} ${hero.name}`), h('span', { class: 'magic-badge' }, `✦ ${f.magic}`)),
-        V.hpBar(f.hp, f.maxHp, { cls: 'hero-bar' }),
-        f.hp <= 0 ? h('p', { class: 'muted' }, 'Down for this fight.') : h('div', { class: 'row' },
-          ghost(`✚ Heal +${E.healAmountOf(hero)} · ${E.healCostOf(hero)}✦`, () => {
-            if (!touchFighter(i, () => E.healSpend(S.battle))) { sfx.error(); toast('Not enough ✦ Magic, or already full.'); return; }
-            sfx.heal(); renderPartyReset();
-          }, { cls: 'small', disabled: f.magic < E.healCostOf(hero) || f.hp >= f.maxHp }),
-          ...spent.map((k) => ghost(`Recharge ${k.name}`, () => {
-            if (!touchFighter(i, () => E.recharge(S.battle, k.id))) { sfx.error(); toast('Not enough ✦ Magic.'); return; }
-            sfx.magic(); renderPartyReset();
-          }, { cls: 'small', disabled: f.magic < D.RECHARGE_COST }))));
-    }),
-    primary(first ? `🎲 Roll ${first.hero.name}` : 'The company has fallen', first ? rollDice : () => defeat(false), { cls: 'wide big' }));
-}
 function renderReset() {
   if (S.net) return; // (the shared table has its own screens: g3/online.js)
-  if (isParty()) return renderPartyReset();
   const b = S.battle; const hero = S.hero; const alive = b.enemies.filter((e) => e.hp > 0);
   const rep = S.lastReport;
   const lines = rep ? V.reportLines(rep, b) : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'block' : 'blocks'} the way.` }];
@@ -490,13 +422,7 @@ function renderReset() {
 }
 async function rollDice() {
   if (S.busy) return; const b = S.battle;
-  if (isParty()) {
-    const i = b.fighters.findIndex((f) => f.hp > 0);
-    if (i < 0) return defeat(false);
-    E.startFighter(b, i);
-    S.hero = b.hero; S.sel.clear(); S.focus = null; S.straight = 'atk'; S.target = b.fighters[i].target || 0;
-  } else E.startRoll(b);
-  if (!isParty()) { S.sel.clear(); S.focus = null; S.straight = 'atk'; }
+  E.startRoll(b); S.sel.clear(); S.focus = null; S.straight = 'atk';
   sfx.roll(); renderBattle(); await flicker(D.SLOTS);
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
 }
@@ -535,10 +461,10 @@ function toggle(slot) {
 async function doReroll() {
   if (S.busy) return; const b = S.battle; const slots = [...S.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
-  E.reroll(b, slots); if (isParty()) E.commitFighter(b); S.sel.clear(); sfx.roll(); renderBattle(); await flicker(slots);
+  E.reroll(b, slots); S.sel.clear(); sfx.roll(); renderBattle(); await flicker(slots);
 }
 function doNudge(dir) { const b = S.battle; if (S.busy) return; if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; } if (isParty()) E.commitFighter(b); sfx.magic(); renderBattle(); }
-function doCard(id) { const b = S.battle; if (S.busy) return; if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; } if (isParty()) E.commitFighter(b); sfx.card(); renderBattle(); buzz(20); }
+function doCard(id) { const b = S.battle; if (S.busy) return; if (!E.playCard(b, id)) { sfx.error(); toast('Not enough ✦ Magic, or already spent.'); return; } sfx.card(); renderBattle(); buzz(20); }
 
 // Re-render only the bits that depend on selection/forecast so dice do not rebuild mid-animation.
 function updateLive() {
@@ -558,7 +484,6 @@ function renderBattle() {
   if (S.net) return; // (the shared table has its own screens: g3/online.js)
   const b = S.battle;
   if (b.phase !== 'shape') return renderReset();
-  if (isParty()) { E.focusFighter(b, b.active); S.hero = b.hero; }
   const hero = S.hero;
   if (!b.enemies[S.target] || b.enemies[S.target].hp <= 0) S.target = Math.max(0, b.enemies.findIndex((e) => e.hp > 0));
   const ev = E.evaluate(hero, b.board, { straight: S.straight });
@@ -570,11 +495,9 @@ function renderBattle() {
   const notes = V.synergyNotes(ev, b.mods);
   const cards = E.cardsOf(hero);
   const pips = h('div', { class: 'pips', 'aria-label': 'Reroll actions left' }, Array.from({ length: D.REROLL_ACTIONS }, (_, i) => h('i', { class: i < b.actionsLeft ? 'on' : '' })), b.freeActions.length ? h('b', { class: 'free' }, `+${b.freeActions.length} free`) : null);
-  const nextMate = isParty() ? b.fighters.find((g, i) => i > b.active && g.hp > 0) : null;
-  const lockLabel = !isParty() ? '🔒 Lock in' : nextMate ? `🔒 Lock in · then ${nextMate.hero.name}` : '🔒 Lock in · monsters answer';
+  const lockLabel = '🔒 Lock in';
   mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, isParty() ? `${D.CLASSES[hero.cls].name} · round ${b.round}` : S.quest.name), h('h2', {}, isParty() ? hero.name : `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
-    isParty() ? V.rosterEl(b.fighters, b.active) : null,
+    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, S.quest.name), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
     h('div', { class: 'ecards', 'data-n': b.enemies.filter((e) => e.hp > 0).length }, b.enemies.map((e, i) => V.enemyCard(e, { targeted: i === S.target && e.hp > 0, onclick: () => { if (S.busy) return; S.target = i; if (isParty()) b.fighters[b.active].target = i; sfx.select(); renderBattle(); } }))),
     h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(b.hp, b.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${b.magic}`)),
     b.boundNow ? h('p', { class: 'warn' }, `⛓ ${b.boundNow} of your dice ${b.boundNow > 1 ? 'are' : 'is'} hexed and cannot be rerolled.`) : null,
@@ -598,49 +521,8 @@ function renderBattle() {
 }
 
 // ------------------------------------------------------------------ resolve
-async function lockParty() {
-  const b = S.battle;
-  E.focusFighter(b, b.active);
-  E.commitFighter(b);
-  b.fighters[b.active].straight = S.straight;
-  b.fighters[b.active].target = S.target;
-  S.busy = true; sfx.lock(); buzz(20);
-  const next = b.fighters.findIndex((g, i) => i > b.active && g.hp > 0);
-  if (next >= 0) {
-    banner(`Pass to ${b.fighters[next].hero.name}`, 'gold');
-    E.startFighter(b, next);
-    S.hero = b.hero; S.sel.clear(); S.focus = null; S.straight = 'atk'; S.target = b.fighters[next].target || 0;
-    S.busy = false;
-    renderBattle();
-    await flicker(D.SLOTS);
-    if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
-    return;
-  }
-  const rep = E.resolveParty(b);
-  S.lastReport = rep;
-  await sleep(280);
-  for (const s of rep.strikes) {
-    const tEl = $(`.ecard[data-uid="${s.targetUid}"]`);
-    if (s.dealt > 0) { floater(tEl, `−${s.dealt}`, 'dmg'); tEl?.classList.add('hit'); }
-  }
-  if (rep.strikes.some((s) => s.dealt > 0)) { sfx.hit(); burstAt($(`.ecard[data-uid="${rep.strikes[0].targetUid}"]`), '#ff8a7a', 18); shake(0.7); }
-  for (const e of b.enemies) {
-    const bar = $(`.ecard[data-uid="${e.uid}"] .bar-fill`);
-    if (bar) bar.style.width = `${Math.max(0, (e.hp / e.maxHp) * 100)}%`;
-    if (e.hp <= 0) $(`.ecard[data-uid="${e.uid}"]`)?.classList.add('dead');
-  }
-  await sleep(520);
-  if (rep.fighters.some((f) => f.taken > 0)) { sfx.hurt(); shake(0.8); }
-  if (rep.raged.length) { banner('ENRAGED!', 'bad'); sfx.rage(); }
-  await sleep(rep.raged.length ? 900 : 640);
-  S.busy = false; S.sel.clear(); S.focus = null;
-  if (b.outcome === 'victory') showVictory();
-  else if (b.outcome === 'defeat') defeat(false);
-  else renderReset();
-}
 async function lockIn() {
   if (S.busy) return;
-  if (isParty()) return lockParty();
   const b = S.battle; S.busy = true; sfx.lock(); buzz(30);
   $('.board')?.classList.add('locked'); $$('.die').forEach((d) => d.classList.remove('sel'));
   const ev = E.evaluate(S.hero, b.board, { straight: S.straight });
@@ -668,7 +550,6 @@ async function lockIn() {
 
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
-  if (isParty()) return showPartyVictory();
   const b = S.battle; const hero = S.hero; const r = E.battleRewards(b);
   const lvBefore = hero.level;
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
@@ -683,7 +564,7 @@ function showVictory() {
 }
 function nextPerkOffer() { const hero = S.hero; if (hero.pendingPerks > 0 && !S.rewards.offer) S.rewards.offer = E.offerPerks(hero, fresh()); }
 function renderVictory() {
-  if (SCRUI.on() && !isParty() && world.battle) return SCRUI.victory();
+  if (SCRUI.on() && world.battle) return SCRUI.victory();
   const R = S.rewards; const hero = S.hero; nextPerkOffer();
   const perks = R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `Level up! Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`),
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(hero, id); R.offer = null; sfx.level(); persist(); renderVictory(); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text), h('i', {}, `You have ${hero.perks.filter((p) => p === id).length}/${D.PERKS[id].max}`))))) : null;
@@ -706,56 +587,12 @@ function renderVictory() {
     perks, loot,
     primary(ready ? '⛺ To camp' : 'Choose a perk and spoils to continue', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
 }
-function showPartyVictory() {
-  const b = S.battle;
-  const r = E.partyRewards(b);
-  const levels = {};
-  for (const f of b.fighters) {
-    const g = r.gold[f.hero.name] || 0;
-    levels[f.hero.name] = f.hero.level;
-    f.hero.gold = Math.max(0, f.hero.gold + g);
-    f.hero.stats.goldEarned += Math.max(0, g);
-    f.hero.stats.battles++;
-    E.gainXp(f.hero, r.xp);
-    E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
-  }
-  concludeRoadEffects();
-  E.advanceCampaign(b.fighters[0].hero);
-  persist();
-  S.rewards = { party: true, ...r, levels, draft: E.newDraft(r.order, r.drops.length), offer: null, offering: null, quest: S.quest };
-  sfx.win();
-  if (b.fighters.some((f) => f.hero.level > levels[f.hero.name])) setTimeout(sfx.level, 700);
-  renderPartyVictory();
-}
-function renderPartyVictory() {
-  if (SCRUI.on() && world.battle) return SCRUI.partyVictory();
-  const R = S.rewards;
-  const pending = S.company.members.find((m) => m.pendingPerks > 0);
-  if (pending && (!R.offer || R.offering !== pending.name)) { R.offering = pending.name; R.offer = E.offerPerks(pending, fresh()); }
-  if (!pending) { R.offer = null; R.offering = null; }
-  const perks = pending && R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${pending.name} · choose a perk`),
-    h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(pending, id); R.offer = null; sfx.level(); persist(); renderPartyVictory(); } },
-      h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
-  const picker = E.draftWho(R.draft); R.pickedBy = R.draft.picked;
-  const lootDone = R.draft.done;
-  const loot = !lootDone ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `${picker} chooses · ${R.points[picker] || 0} points`), primary('Skip', () => { E.draftSkip(R.draft, picker); persist(); renderPartyVictory(); }, { cls: 'small' }),
-    h('div', { class: 'loot' }, R.drops.map((inst, i) => R.pickedBy[i] ? null : V.weaponCard(inst, { actions: [primary('Take', () => { const who = S.company.members.find((m) => m.name === picker); if (!E.takeDrop(who, inst)) { toast('That pack is full.'); return; } E.draftPick(R.draft, picker, i); sfx.coin(); persist(); renderPartyVictory(); }, { cls: 'small' })] }))))
-    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, 'The packs are full. One weapon stays on the road.'),
-      h('div', { class: 'cardlist' }, Object.entries(R.pickedBy).map(([i, name]) => h('div', { class: 'mini-card' }, h('b', {}, name), h('small', {}, `${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}`)))));
-  const ready = !pending && lootDone;
-  mount(
-    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The company is still standing.')),
-    h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `+${R.xp} XP each`),
-      h('div', { class: 'cardlist' }, S.company.members.map((m) => h('div', { class: 'mini-card' }, h('b', {}, m.name), h('small', {}, `${R.gold[m.name] >= 0 ? '+' : ''}${R.gold[m.name]} 🪙 · contrib ${R.contrib[m.name] || 0}${m.level > R.levels[m.name] ? ` · level ${m.level}` : ''}`))))),
-    perks, loot,
-    primary(ready ? '⛺ To camp' : 'Perks and spoils first', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
-}
 function defeat(retreat) {
   concludeRoadEffects();
-  const heroes = isParty() ? S.battle.fighters.map((f) => f.hero) : [S.hero];
+  const heroes = [S.hero];
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
-  if (S.battle) for (const hero of heroes) { const f = isParty() ? S.battle.fighters.find((x) => x.hero === hero) : S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
+  if (S.battle) for (const hero of heroes) { const f = S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
   persist();
   sfx.lose();
   if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss);
@@ -775,13 +612,6 @@ function showCamp({ fromBoard = false } = {}) {
   }
   persist(); renderCamp(fromBoard);
 }
-function seatBar(fromBoard) {
-  if ((S.company?.members.length || 0) < 2) return null;
-  return h('div', { class: 'seats' }, S.company.members.map((m, i) => h('button', {
-    type: 'button', class: S.seat === i ? 'on' : '',
-    onclick: () => { S.seat = i; S.hero = m; sfx.select(); renderCamp(fromBoard); },
-  }, h('b', {}, `${D.CLASSES[m.cls].glyph} ${m.name}`), h('small', {}, `Lv ${m.level} · 🪙 ${m.gold}`))));
-}
 function renderCamp(fromBoard) {
   if (SCRUI.on()) return SCRUI.camp(fromBoard);
   const hero = S.hero; const tabs = [['forge', '🔨 Forge'], ['gear', '🎒 Gear'], ['hero', '📜 Hero']];
@@ -793,8 +623,7 @@ function renderCamp(fromBoard) {
     h('div', { class: 'perks' }, S.perkOffer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); persist(); renderCamp(fromBoard); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
   mount(
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm'), h('h2', {}, 'Camp')), heroChip()),
-    h('p', { class: 'muted' }, S.company?.kind === 'company' ? 'Each hero spends their own gold. The peddler is shared. The road ahead is shared too.' : 'You are healed and your cards are ready. Gold is spent here; Magic only matters in a fight.'),
-    seatBar(fromBoard),
+    h('p', { class: 'muted' }, 'You are healed and your cards are ready. Gold is spent here; Magic only matters in a fight.'),
     perkPanel,
     tip('camp', 'Bigger hand dice are how a hero grows, and each size waits on a level. Weapons can be equipped or sold. The company saves on its own.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
@@ -854,7 +683,7 @@ function chronicleBlock() {
 
 TUT.bind({ showTitle, showCreate, practice });
 SCRUI.bind({
-  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume, renderPartyVictory,
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showLessons: () => TUT.showLessons(),
   // at a shared table: who is there, and the road's choice goes to the table
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },

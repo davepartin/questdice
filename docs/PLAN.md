@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011w**). Phones otherwise keep old files.
+  the last one used is **20261011x**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **119 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -799,6 +799,11 @@ only rooms where everyone has their own phone. A single hero on one phone is sti
 - The seat is kept in `localStorage` (a closed tab finds its way back); player ids no longer contain part of a token.
 - Tests: 119. Multi-phone browser scripts: `dev/room1.mjs` .. `room5.mjs` (two phones against `node server.mjs`, test cheats
   only with `QD_CHEAT=1`). The sandbox cannot reach Firebase, so the live Firestore path is untested here: Dave to try with a friend.
-- Not done yet / next: delete the old flat `js/roomui.js` and the hot-seat code in ui.js and battle3d.js; three or more
-  phones; team actions and defeat online (written, not yet driven by a script); landscape layout of the room screens;
-  rejoin mid-round (written, not yet driven); real-phone latency (see the Firestore write-rate note in MULTIPLAYER.md).
+- Cleaned out (same day): `js/roomui.js` (the old flat room), the one-phone turn code in ui.js and battle3d.js
+  (`setActive`, `lockParty`, `performParty`, `commit`), company saves in `save.js` (QD2 codes too), `scrui.partyVictory`,
+  `dev/party3d.mjs`. The engine's party battle stays: the table uses it.
+- Driven by scripts (two or three phones): lobby, story/road/board, a round, victory + spoils, camp purchases + ready, the next
+  road (`dev/room1..5`); a reload mid-round returns to the dice (`room7`); a team potion and the host's retreat -> defeat ->
+  camp (`room8`); three phones reach the battle (`room6`). `dev/solo1.mjs` checks a solo hero is still made.
+- Still to do: landscape layout of the room screens; real death (all heroes down) is not driven by a script; real-phone
+  latency (see the Firestore write-rate note in MULTIPLAYER.md); Dave's play test with a friend on the live site.

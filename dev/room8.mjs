@@ -1,0 +1,33 @@
+// A team potion at a table, and the host's retreat.  node dev/room8.mjs [outdir]
+import { startServer, phones, seat, toBoard, sleep, cheat, battleReady } from './_rooms.mjs';
+const out = process.argv[2] || 'docs/ingame';
+const stop = await startServer();
+const { browser, phones: ps } = await phones(['Dave', 'Jess']);
+const [a, b] = ps;
+a.page.on('console', (m) => { if (m.type() === 'error') console.log('[A]', m.text().slice(0, 200)); });
+b.page.on('console', (m) => { if (m.type() === 'error') console.log('[B]', m.text().slice(0, 200)); });
+const code = await seat(ps); await toBoard(ps);
+await a.click('.sx-qcard'); await sleep(900);
+await battleReady(a); await battleReady(b);
+await a.click('#b3-roll'); await sleep(900); await a.pump(5);
+await b.click('#b3-roll'); await sleep(900); await b.pump(5);
+const hp = (p) => p.page.evaluate(() => window.QD.session.current().battle.fighters.map((f) => `${f.hero.name}:${f.hp}/${f.maxHp}`).join(' '));
+await cheat(code, 'hpmates'); await sleep(600); for (const p of ps) await p.pump(2);
+console.log('hp before', await hp(b));
+await b.click('.b3-powers'); await b.pump(1);
+await b.page.evaluate(() => document.querySelector('.sh-tabs [data-tab="team"]').click()); await b.pump(1);
+await b.shot(`${out}/room_team_b.png`);
+await b.page.evaluate(() => { const t = [...document.querySelectorAll('.b3-sheet .abil, .b3-sheet button')].find((e) => /Potion/i.test(e.textContent)); t?.click(); }); await b.pump(1);
+await b.shot(`${out}/room_team_b2.png`);
+await b.page.evaluate(() => { const f = [...document.querySelectorAll('.tm-friend')].find((e) => !e.disabled); f?.click(); }); await sleep(1200); await b.pump(3); await a.pump(3);
+console.log('hp after B', await hp(b), '| A sees', await hp(a));
+// the host retreats from the menu
+await a.click('.b3-menu'); await a.pump(1);
+console.log((await a.page.evaluate(() => document.querySelector('.form')?.innerText || '')).replace(/\n+/g, ' | '));
+await a.clickText('Retreat'); await a.pump(1); await a.clickText('Retreat'); await sleep(1500); await a.pump(8); await b.pump(8);
+console.log('after retreat', await a.page.evaluate(() => window.QD.session.current().phase), await b.page.evaluate(() => window.QD.session.current().phase));
+await a.shot(`${out}/room_defeat_a.png`); await b.shot(`${out}/room_defeat_b.png`);
+console.log((await b.text()).slice(0, 300).replace(/\n+/g, ' | '));
+await a.clickText('Return to camp'); await sleep(900); await a.pump(3); await b.pump(3);
+console.log('after rest', await a.page.evaluate(() => window.QD.session.current().phase), await b.page.evaluate(() => window.QD.session.current().phase));
+await browser.close(); stop();

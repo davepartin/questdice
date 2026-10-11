@@ -185,8 +185,6 @@ function fitTray() {
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
   const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
   let PITCH = (60 * Math.PI) / 180; const LOOK = new THREE.Vector3(0, 0.1, 0.1); const HALF = 1.78; const EDGE = 2.1;
-  const pet = false; const PET_X = -3.66; // (the pet left the table for the HUD: the board alone is centred) const FRAME_X = 2.4; // with a pet, its stand (left of the frame) must stay on screen too
-  if (pet) LOOK.x = (PET_X + FRAME_X) / 2; // and the pet and the board together sit in the middle of the screen
   cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
   const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
   const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]; };
@@ -195,7 +193,7 @@ function fitTray() {
   PITCH = (70 * Math.PI) / 180; B.trayDeg = 70;
   for (let frac = 0.9; frac >= 0.5; frac -= 0.01) { // as wide as the screen if the band allows; otherwise as wide as fits
     let lo = 4; let hi = 60; for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const nl = pt(-HALF, 0.4, EDGE); const nr = pt(HALF, 0.4, EDGE);
-      const tooWide = pet ? (pt(PET_X, 0.3, 0.9)[0] < 4 || pt(FRAME_X, 0.3, EDGE)[0] > W - 4 || nr[0] - nl[0] > W * frac) : nr[0] - nl[0] > W * frac; // too close: back the camera off
+      const tooWide = nr[0] - nl[0] > W * frac; // too close: back the camera off
       if (tooWide) lo = d; else hi = d; }
     place(d); const farY = pt(LOOK.x, 0.9, -EDGE - 0.15)[1]; const nearY = pt(LOOK.x, 0.0, EDGE + 0.6)[1];
     shift = nearY - want; lineY = farY - shift + 10; B.trayFrac = frac;
@@ -208,19 +206,8 @@ function fitTray() {
   dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
   B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
 }
-// ------------------------------------------------------------------------------------------ company (one phone, turns)
-// Each living hero rolls and locks in turn; the monsters answer once everyone is locked. b mirrors the hero whose turn it
-// is (E.focusFighter); every change is written back with E.commitFighter.
-const commit = () => { if (B.party && !B.net) E.commitFighter(B.b); };
-const nextToRoll = () => (B.party ? B.b.fighters.findIndex((f) => f.hp > 0 && !f.board) : -1);
-function setActive(i) {
-  const b = B.b; if (!B.party || i < 0) return;
-  E.focusFighter(b, i); B.active = i; B.hero = b.hero;
-  B.bw.setActiveHero(i, B.hero);
-  const fresh = buildHero(); B.hud.hero.replaceWith(fresh); B.hud.hero = fresh; B.ro?.observe?.(fresh);
-  B.hud.score.querySelector('b').dataset.v = String(E.pointsOf(b)); B.hud.score.querySelector('b').textContent = String(E.pointsOf(b));
-  renderRoster();
-}
+// ------------------------------------------------------------------------------------------ the company: roster and team actions
+// At a table (net mode) b mirrors this phone's hero (E.focusFighter); the others are in b.fighters.
 function renderRoster() {
   const el = B.hud?.roster; if (!el) return; const b = B.b;
   const heroes = b.fighters.map((f) => f.hero);
@@ -246,7 +233,7 @@ function setSheetTab(tab) {
   B.hud.cards.replaceChildren(...(tab === 'team' ? teamTiles() : cardTiles(B.b.phase !== 'shape')));
 }
 function teamTiles() {
-  const b = B.b; commit(); const me = b.fighters[B.active]; const usedRound = me.teamRound === b.round;
+  const b = B.b; const me = b.fighters[B.active]; const usedRound = me.teamRound === b.round;
   const tiles = TEAM.map((t) => {
     const any = b.fighters.some((f, j) => j !== B.active && E.teamActionInfo(b, B.active, t.id, j).ok);
     const flag = t.id === 'potion' ? `${E.potionsLeft(me)} LEFT` : t.id === 'revive' ? (me.reviveUsed ? 'USED' : 'ONCE') : 'ONCE A ROUND';
@@ -257,7 +244,7 @@ function teamTiles() {
   return [...tiles, note];
 }
 function showTeamDetail(kind) {
-  const b = B.b; commit(); const t = TEAM.find((x) => x.id === kind); const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
+  const b = B.b; const t = TEAM.find((x) => x.id === kind); const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const friends = b.fighters.map((f, j) => ({ f, j })).filter(({ j }) => j !== B.active);
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, t.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
@@ -271,7 +258,7 @@ function showTeamDetail(kind) {
   B.hud.info.classList.add('open'); sfx.select();
 }
 async function doTeam(kind, to) {
-  let b = B.b; if (B.busy) return; commit();
+  let b = B.b; if (B.busy) return; 
   const before = { hp: b.fighters[to].hp, magic: b.fighters[to].magic };
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'team', kind, to: b.fighters[to].hero.name }); B.busy = false; if (!ok) return; b = B.b; } else {
     const r = E.teamAction(b, B.active, kind, to);
@@ -742,7 +729,7 @@ async function doBigHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'drink' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healBig(b)) { sfx.error(); return; }
-  commit(); renderRoster();
+  renderRoster();
   sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
   updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
@@ -772,7 +759,6 @@ export function renderReset() {
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
   if (B.net) renderRoster();
-  else if (B.party) { const nx = nextToRoll(); if (nx >= 0 && nx !== B.active) setActive(nx); else E.focusFighter(b, B.active); renderRoster(); }
   setHud({ phase: 'reset' });
   targetEnemy();
   B.sel.clear();
@@ -791,7 +777,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: B.party && !B.net ? `Roll · ${B.hero.name}` : 'Roll dice', sub: B.net ? 'tap to throw' : B.party ? `${b.fighters.filter((f) => f.hp > 0 && f.board).length} of ${b.fighters.filter((f) => f.hp > 0).length} ready` : 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
@@ -810,7 +796,7 @@ function e0Warn() {
 async function doRoll() {
   if (B.busy || !guideSays('roll')) return; B.busy = true;
   let b = B.b; const bw = B.bw;
-  if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else if (B.party) E.startFighter(b, B.active); else E.startRoll(b);
+  if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
   for (const s of BOARD) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
@@ -866,7 +852,7 @@ export function renderShape() {
   B.hud.bar.replaceChildren(...[
     straight,
     h('div', { class: 'b3-acts b3-acts3' },
-      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', sub: B.party ? lockSub() : undefined, id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
+      HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', sub: B.net ? lockSub() : undefined, id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
       powersBtn(),
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || E.rerollInfo(b).kind === 'none', cls: 'blue', aria: `${rr.label}` }))].filter(Boolean));
   if (!B.busy) C.tut?.on('shape');
@@ -891,7 +877,7 @@ async function doReroll() {
   if (B.busy || !guideSays('reroll')) return; const b = B.b; const slots = [...B.sel];
   if (!E.canReroll(b, slots)) { sfx.error(); toast(slots.length ? 'Not enough ✦ Magic for that.' : 'Tap the dice you want to reroll.'); return; }
   B.busy = true;
-  if (B.net) { if (!(await netDo({ type: 'reroll', slots }))) { B.busy = false; renderShape(); return; } } else { E.reroll(b, slots); commit(); }
+  if (B.net) { if (!(await netDo({ type: 'reroll', slots }))) { B.busy = false; renderShape(); return; } } else { E.reroll(b, slots); }
   B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
   renderShape();
   await B.bw.tray.roll(B.b.board, { slots });
@@ -900,15 +886,15 @@ async function doReroll() {
 }
 async function doNudge(dir) {
   let b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; commit(); sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape(); return; }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape(); return; }
   if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  commit(); sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
+  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
 }
 async function doHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'heal' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
-  commit(); renderRoster(); sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
+  renderRoster(); sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
   vfx('heal', hp, { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 });
   B.bw.hero.once?.('drink');
   B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
@@ -921,7 +907,7 @@ async function doCard(id, opts = {}) {
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
-  commit(); sfx.card(); buzz(20); B.fresh = id;
+  sfx.card(); buzz(20); B.fresh = id;
   const tone = PW.toneOf(k); const color = { heal: 0x45e08b, block: 0x4db4ff, pierce: 0xff8a1a, atk: 0xff5a4a, gold: 0xffd23d }[tone] ?? 0xa64dff;
   B.bw.hero.once('cast', { back: 'ready' });
   vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
@@ -947,7 +933,7 @@ function bumpCounters(gains) {
 async function doRecharge(id) {
   const b = B.b; if (B.busy) return;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'recharge', id }); B.busy = false; if (ok) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); refresh(); } return; }
-  if (E.recharge(b, id)) { commit(); sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
+  if (E.recharge(b, id)) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
 }
 function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(); }
 
@@ -1047,7 +1033,7 @@ async function lockIn() {
   try { await lockInInner(); } catch (e) { console.error('lockIn failed', e.stack); B.busy = false; B.at = `ERR ${e.message}`; try { C.toast?.('Something went wrong in the fight.'); } catch { /* */ } if (B.b.outcome === 'victory') win(); else if (B.b.outcome === 'defeat') lose(); else renderReset(); }
 }
 // Company: who rolls after this hero (or the monsters, when everyone has locked)
-function lockSub() { if (B.net) { const w = waitingFor(); return w.length ? `${w.length} still choosing` : undefined; } const b = B.b; const nx = b.fighters.findIndex((f, i) => i !== B.active && f.hp > 0 && !f.board); return nx >= 0 ? `then ${b.fighters[nx].hero.name}` : 'monsters answer'; }
+function lockSub() { const w = waitingFor(); return w.length ? `${w.length} to go` : undefined; }
 async function lockNet() {
   B.busy = true; sfx.lock(); buzz(30);
   B.sel.clear(); B.bw.tray.setSelected?.(new Set());
@@ -1055,17 +1041,8 @@ async function lockNet() {
   const ok = await netDo({ type: 'lock', target: B.target, straight: B.straight });
   if (!ok) { B.busy = false; renderShape(); }
 }
-async function lockParty() {
-  if (B.net) return lockNet();
-  const b = B.b; B.busy = true; sfx.lock(); buzz(30);
-  commit(); const f = b.fighters[B.active]; f.target = B.target; f.straight = B.straight;
-  B.sel.clear(); B.bw.tray.setSelected?.(new Set());
-  const nx = nextToRoll();
-  if (nx >= 0) { b.phase = 'reset'; banner(`${f.hero.name.toUpperCase()} IS READY`, 'gold'); await wait(0.5); B.busy = false; return renderReset(); }
-  return performParty();
-}
 async function lockInInner() {
-  if (B.party) return lockParty();
+  if (B.net) return lockNet();
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const hero = B.hero; const stage = world.stage;
   sfx.lock(); buzz(30);
@@ -1212,10 +1189,6 @@ async function lockInInner() {
 }
 
 // Company round: everyone has locked; the monsters answer. Plays in initiative order (rep.order).
-async function performParty() {
-  const rep = E.resolveParty(B.b);
-  return playParty(rep);
-}
 // Play a round's report: the same on a shared phone and on every phone at a table.
 async function playParty(rep, outcome = B.b.outcome) {
   const b = B.b; const bw = B.bw; const stage = world.stage;
