@@ -807,3 +807,5 @@ only rooms where everyone has their own phone. A single hero on one phone is sti
   camp (`room8`); three phones reach the battle (`room6`). `dev/solo1.mjs` checks a solo hero is still made.
 - Still to do: landscape layout of the room screens; real death (all heroes down) is not driven by a script; real-phone
   latency (see the Firestore write-rate note in MULTIPLAYER.md); Dave's play test with a friend on the live site.
+- Joining from a shared link (`?join=CODE`) fills the code box; the lobby's Invite adds `join=CODE` to a laptop table's address
+  (online tables already carry it). `dev/room9.mjs` drives the link join and a real defeat (every hero falls) across two phones.

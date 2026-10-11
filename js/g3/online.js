@@ -134,7 +134,8 @@ function lobby(t) {
   const { btn, panel, eyebrow, mountAs, lay, emblem, ico, flourish, clsName } = K();
   const you = Sess.me(); const host = Sess.isHost(); const view = Sess.view();
   const everyone = t.players.every((p) => p.ready || p.id === t.hostId); // the host starting is their own ready
-  const link = view?.links?.[0] ? `${view.links[0]}${view.links[0].includes('?') ? '&' : '?'}join=${t.code}` : '';
+  const base = view?.links?.[0]; // (online tables already carry ?join=CODE; a laptop table gives its address)
+  const link = base ? (/[?&]join=/.test(base) ? base : `${base}${base.includes('?') ? '&' : '?'}join=${t.code}`) : '';
   const share = async () => {
     const text = link || t.code;
     try { if (navigator.share) { await navigator.share({ title: 'QuestDice', text: `Join my QuestDice table: ${t.code}`, url: link || undefined }); return; } } catch { /* fall through to copy */ }

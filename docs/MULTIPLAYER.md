@@ -49,7 +49,7 @@ every phone plays that same report on screen.
 
 ## Testing
 
-`node dev/room1.mjs` .. `room5.mjs` drive two phones (separate browser contexts) against `node server.mjs` (test cheats are
+`node dev/room1.mjs` .. `room9.mjs` (room9: join by link, real defeat) drive two phones (separate browser contexts) against `node server.mjs` (test cheats are
 switched on only by `QD_CHEAT=1`): lobby, story/road/board, a battle round, victory and spoils, camp and back to the road.
 The sandbox cannot reach Firebase, so the cloud transport is tested with a fake SDK (`test/cloud.test.mjs`) and by Dave on
 the live site. Known risk to watch: Firestore documents take about one write per second sustainably; six heroes tapping
