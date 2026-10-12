@@ -8,14 +8,23 @@
 .fb.act-2 { --felt-a: #34454c; --felt-b: #1e2b31; --felt-c: #0b1115; --lamp: rgba(190, 226, 255, .12); }
 .fb.act-3 { --felt-a: #4c2c30; --felt-b: #2c181b; --felt-c: #120708; --lamp: rgba(255, 190, 160, .12); }
 .fb.boss { --lamp: rgba(255, 150, 120, .14); }
-.fb-table { position: absolute; inset: 0;
+.fb-table { position: absolute; inset: 0; overflow: hidden;
   background:
-    radial-gradient(70% 60% at 62% 74%, var(--lamp), transparent 70%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 2px, transparent 2px 7px),
-    radial-gradient(130% 100% at 50% 20%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%); }
-.fb-table::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, .35), transparent 30%, transparent 78%, rgba(0, 0, 0, .45)); }
-.fb-rim { position: absolute; left: 0; right: 0; height: 2px; z-index: 1; background: linear-gradient(90deg, transparent, rgba(226, 178, 76, .75) 20%, rgba(255, 234, 184, .9) 50%, rgba(226, 178, 76, .75) 80%, transparent); }
-.fb-rim.top { display: none; } .fb-rim.bot { bottom: 0; }
+    radial-gradient(60% 55% at 58% 78%, var(--lamp), transparent 72%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.5'/></svg>"),
+    radial-gradient(130% 100% at 50% 18%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%);
+  background-blend-mode: normal, soft-light, normal; }
+.fb-table::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 3px rgba(18, 11, 7, .9), inset 0 0 0 4px rgba(226, 178, 76, .5), inset 0 0 46px 6px rgba(0, 0, 0, .75);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .4), transparent 28%, transparent 74%, rgba(0, 0, 0, .5)); }
+/* the lamp over the table breathes a little */
+.fb-lamp { position: absolute; left: 12%; right: 12%; top: -30%; height: 90%; border-radius: 50%; background: radial-gradient(closest-side, var(--lamp), transparent); opacity: .9; animation: fbLamp 7s ease-in-out infinite; pointer-events: none; }
+@keyframes fbLamp { 50% { opacity: .62; transform: scale(1.04); } }
+.fb-mote { position: absolute; left: var(--x); top: var(--y); width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 236, 200, .55); filter: blur(.4px); transform: scale(var(--s)); opacity: 0; animation: fbMote var(--t) ease-in-out var(--d) infinite; pointer-events: none; }
+@keyframes fbMote { 0% { opacity: 0; transform: translate(0, 0) scale(var(--s)); } 25% { opacity: .7; } 100% { opacity: 0; transform: translate(14px, -46px) scale(var(--s)); } }
+/* the table's front edge: a wooden rail with a gold line, shading onto the dice */
+.fb-rim { position: absolute; left: 0; right: 0; z-index: 2; }
+.fb-rim.top { display: none; }
+.fb-rim.bot { bottom: 0; height: 7px; background: linear-gradient(180deg, #7a5632, #4a301a 45%, #20140b); box-shadow: 0 -1px 0 rgba(255, 226, 160, .85), 0 -2px 6px rgba(226, 178, 76, .25), 0 7px 14px rgba(0, 0, 0, .7); }
 
 .fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; }
 .fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
@@ -26,9 +35,18 @@
 
 .fb-slot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1 1 0; min-width: 0; max-width: 11rem; transition: opacity .4s; }
 .fb-slot.foe.tier-elite, .fb-slot.foe.tier-boss { flex-grow: 1.35; max-width: 14rem; }
-.fb.party .fb-slot.hero { margin-left: -.9rem; } .fb.party .fb-slot.hero:first-child { margin-left: 0; }
+.fb.party .fb-slot.hero { margin-left: -.5rem; } .fb.party .fb-slot.hero:first-child { margin-left: 0; }
 .fb-slot.hero.back { flex-grow: .78; z-index: 0; } .fb-slot.hero.active { z-index: 1; }
 .fb-slot.hero.back .fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
+
+/* ================================================================== a piece */
+.fb-pc { position: relative; pointer-events: auto; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 14px rgba(255, 214, 160, .1)); }
+.fb-pc.hero { cursor: default; }
+.fb-pc::before { content: ''; position: absolute; left: 4%; right: 4%; bottom: -3px; height: 22%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, .6), transparent 72%); z-index: 0; }
+/* a base circle printed on the mat under every piece, and a pool of light */
+.fb-mark { position: absolute; left: -2%; right: -2%; bottom: -5px; height: 26%; border-radius: 50%; z-index: 0; pointer-events: none; border: 1.5px solid rgba(226, 178, 76, .3); background: radial-gradient(ellipse, rgba(255, 226, 170, .16), transparent 68%); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+.fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
 
 /* ================================================================== a piece */
 .fb-pc { position: relative; pointer-events: auto; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
@@ -43,36 +61,44 @@
 .fb-slot.dead .fb-card { opacity: 0; pointer-events: none; }
 .fb-slot.dead { pointer-events: none; }
 
-/* who you are aiming at: a gold ring on the table under its feet */
-.fb-ring { position: absolute; left: 4%; right: 4%; bottom: 0; height: 17%; border-radius: 50%; z-index: 0; border: 2px solid transparent; pointer-events: none; transition: border-color .2s, box-shadow .2s; }
-.fb-pc.targeted .fb-ring { border-color: #ffd23d; box-shadow: 0 0 12px rgba(255, 210, 61, .65), inset 0 0 10px rgba(255, 210, 61, .35); animation: fbRing 1.5s ease-in-out infinite; }
-@keyframes fbRing { 50% { box-shadow: 0 0 20px rgba(255, 210, 61, .85), inset 0 0 14px rgba(255, 210, 61, .5); } }
-.fb-slot.foe:not(.targeted) .fb-img { opacity: .94; }
+/* who you are aiming at: a gold ring on the table under its feet, and a small marker bobbing over its head */
+.fb-ring { position: absolute; left: -4%; right: -4%; bottom: -6px; height: 28%; border-radius: 50%; z-index: 0; border: 2px solid transparent; pointer-events: none; transition: border-color .2s, box-shadow .2s; }
+.fb-pc.targeted .fb-ring { border-color: #ffd96a; box-shadow: 0 0 14px rgba(255, 210, 61, .7), inset 0 0 12px rgba(255, 210, 61, .4); animation: fbRing 1.5s ease-in-out infinite; }
+@keyframes fbRing { 50% { box-shadow: 0 0 22px rgba(255, 210, 61, .9), inset 0 0 16px rgba(255, 210, 61, .55); } }
+.fb-chev { position: absolute; z-index: 3; left: 50%; top: -.55rem; width: 0; height: 0; margin-left: -.42rem; opacity: 0; pointer-events: none; border-left: .42rem solid transparent; border-right: .42rem solid transparent; border-top: .6rem solid #ffd96a; filter: drop-shadow(0 1px 2px #000) drop-shadow(0 0 6px rgba(255, 210, 61, .8)); }
+.fb-pc.targeted .fb-chev { opacity: 1; animation: fbChev 1.1s ease-in-out infinite; }
+@keyframes fbChev { 50% { transform: translateY(-4px); } }
+.fb-slot.foe:not(.targeted) .fb-img { opacity: .93; }
 .fb-pc.raged .fb-img { filter: sepia(.4) saturate(1.5) hue-rotate(-18deg); }
 
-/* a hazard shown over the piece ("SLAM NEXT ROUND") */
-.fb-call { position: absolute; z-index: 3; top: -.1rem; left: 50%; transform: translateX(-50%); padding: .12rem .4rem; border-radius: .35rem; font: 800 .5rem/1.1 var(--disp); letter-spacing: .06em; white-space: nowrap; color: #fff; background: rgba(160, 30, 24, .92); box-shadow: 0 0 0 1px rgba(255, 160, 120, .6); pointer-events: none; }
+/* a hazard flagged on the piece's shoulder ("POUNCE NEXT ROUND") */
+.fb-call { position: absolute; z-index: 3; top: 0; right: -4%; max-width: 5.2rem; padding: .16rem .38rem; border-radius: .4rem; font: 800 .46rem/1.1 var(--disp); letter-spacing: .07em; text-align: center; color: #fff; background: linear-gradient(180deg, #c0382a, #8a1c14); box-shadow: 0 0 0 1px rgba(255, 190, 150, .7), 0 3px 8px rgba(0, 0, 0, .6); pointer-events: none; animation: fbCall 1.4s ease-in-out infinite; }
 .fb-call[hidden] { display: none; }
+@keyframes fbCall { 50% { box-shadow: 0 0 0 1px rgba(255, 190, 150, .9), 0 0 12px rgba(255, 80, 50, .8); } }
 
-/* ================================================================== the card under a piece */
-.fb-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .2rem; width: 100%; max-width: 8.6rem; margin-top: .3rem; pointer-events: auto; transition: opacity .3s; }
-.fb-card.hero { pointer-events: none; }
-.fb-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .6rem/1.05 var(--disp); letter-spacing: .09em; text-transform: uppercase; color: #f4e7cb; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+/* ================================================================== the card under a piece: a small token plaque */
+.fb-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: stretch; gap: .2rem; width: calc(100% - .16rem); max-width: 8.6rem; margin-top: .42rem; padding: .22rem .28rem .26rem; border-radius: .6rem; pointer-events: auto; transition: opacity .3s, transform .2s;
+  background: linear-gradient(180deg, rgba(48, 35, 27, .94), rgba(18, 12, 9, .96)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .38), inset 0 1px 0 rgba(255, 236, 190, .22), 0 5px 10px rgba(0, 0, 0, .55); }
+.fb-slot.targeted .fb-card { box-shadow: inset 0 0 0 1.5px #ffd96a, inset 0 1px 0 rgba(255, 236, 190, .3), 0 0 14px rgba(255, 210, 61, .35), 0 5px 10px rgba(0, 0, 0, .55); transform: translateY(-1px); }
+.fb-card.hero { pointer-events: none; padding: .16rem .3rem; align-items: center; }
+.fb-name { text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .62rem/1.05 var(--disp); letter-spacing: .09em; text-transform: uppercase; color: #f4e7cb; text-shadow: 0 1px 2px #000; }
 .fb-slot.targeted .fb-name { color: #ffe08a; }
-.fb-hp { position: relative; display: block; width: 100%; height: .72rem; border-radius: .4rem; overflow: hidden; background: #140a08; box-shadow: inset 0 0 0 1px rgba(255, 236, 190, .3); }
-.fb-card.hero .fb-hp { height: .36rem; width: 70%; }
+.fb-hp { position: relative; display: block; width: 100%; height: .74rem; border-radius: .4rem; overflow: hidden; background: #120907; box-shadow: inset 0 0 0 1px rgba(255, 236, 190, .28), inset 0 2px 3px rgba(0, 0, 0, .7); }
+.fb-card.hero .fb-hp { height: .36rem; width: 100%; }
 .fb-hp-ghost, .fb-hp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: inherit; }
 .fb-hp-ghost { background: rgba(255, 255, 255, .6); transition: width .6s ease-out; }
-.fb-hp-fill { background: linear-gradient(180deg, #ff8a6a, #e8262a 55%, #b0121a); transition: width .35s ease-out; }
+.fb-hp-fill { background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); transition: width .35s ease-out; }
+.fb-hp-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 11px, rgba(0, 0, 0, .28) 11px 12px), linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 45%); }
 .fb-hp.low .fb-hp-fill, .fb-slot.low .fb-hp-fill { animation: fbLow 1s ease-in-out infinite; }
 @keyframes fbLow { 50% { filter: brightness(1.5); } }
-.fb-hpn { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .56rem/1 var(--disp); font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+.fb-hpn { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; font: 800 .58rem/1 var(--disp); font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
 
 /* what the monster plans, in a chip: its sign and how hard */
-.fb-intent { display: none; align-items: center; gap: .22rem; padding: .14rem .45rem .14rem .32rem; border-radius: .55rem; font: 800 .74rem/1 var(--disp); color: var(--tone, #ffd0c0); background: rgba(14, 8, 8, .86); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #ff6a5a) 70%, transparent); white-space: nowrap; }
-.fb-intent[class*="tone-"] { display: inline-flex; }
+.fb-intent { display: none; align-items: center; justify-content: center; gap: .24rem; padding: .17rem .3rem; border-radius: .45rem; font: 800 .76rem/1 var(--disp); color: var(--tone, #ffd0c0); background: linear-gradient(180deg, color-mix(in srgb, var(--tone, #ff6a5a) 22%, #120a08), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #ff6a5a) 65%, transparent); white-space: nowrap; }
+.fb-intent[class*="tone-"] { display: flex; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent small { display: none; }
-.fb-intent svg { width: .95rem; height: .95rem; flex: none; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name { letter-spacing: .03em; font-size: .56rem; }
+.fb-intent svg { width: .98rem; height: .98rem; flex: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent)); }
 .fb-intent small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
 .fb-intent.tone-strike, .fb-intent.tone-slam, .fb-intent.tone-windup { --tone: #ff7a6a; }
 .fb-intent.tone-pierce { --tone: #ffa23a; }
@@ -86,12 +112,15 @@
 
 /* ================================================================== effects */
 .fb-fx { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
-.fb-num { position: absolute; transform: translate(-50%, 0); white-space: nowrap; font: 900 1.3rem/1 var(--disp); color: #ffe2a0; text-shadow: 0 2px 0 #000, 0 0 7px #000, 0 0 3px #000; }
+.fb-num { position: absolute; transform: translate(-50%, 0); white-space: nowrap; font: 900 1.45rem/1 var(--disp); color: #ffe2a0; -webkit-text-stroke: .045em #1a0c06; paint-order: stroke fill; text-shadow: 0 2px 0 #000, 0 0 10px rgba(0, 0, 0, .9), 0 0 14px color-mix(in srgb, currentColor 45%, transparent); }
+.fb-num.big { font-size: 2rem; }
 .fb-num svg { width: 1em; height: 1em; vertical-align: -.14em; }
 .fb-num.hurt { color: #ff8a7a; } .fb-num.block { color: #8cc8ff; font-size: 1.1rem; } .fb-num.heal { color: #7affb0; } .fb-num.pierce { color: #ffb060; font-size: 1.05rem; }
 .fb-num.long { font-size: .95rem; }
 .fb-num.meh { color: #cfc8d8; font-size: 1rem; }
 .fb-spark { position: absolute; width: 0; height: 0; --k: 0; }
+.fb-shock { position: absolute; display: block; width: calc(50px * var(--p) * var(--k)); height: calc(50px * var(--p) * var(--k)); margin: calc(25px * var(--p) * var(--k) * -1) 0 0 calc(25px * var(--p) * var(--k) * -1); border-radius: 50%; border: 2px solid var(--c); opacity: calc(1 - var(--k)); box-shadow: 0 0 8px var(--c); }
+.fb-spark.heal .fb-shock { display: none; }
 .fb-spark-core { position: absolute; display: block; width: calc(34px * var(--p) * (.35 + var(--k))); height: calc(34px * var(--p) * (.35 + var(--k))); margin: calc(17px * var(--p) * (.35 + var(--k)) * -1) 0 0 calc(17px * var(--p) * (.35 + var(--k)) * -1); border-radius: 50%; background: radial-gradient(circle, #fff 0 22%, var(--c) 46%, transparent 72%); }
 .fb-spark i { position: absolute; left: -1.5px; top: 0; width: 3px; height: calc(var(--d) * 17px * var(--p)); border-radius: 2px; background: linear-gradient(var(--c), transparent); transform-origin: 50% 0; transform: rotate(var(--a)) translateY(calc(var(--k) * 30px * var(--p) + 3px)); }
 .fb-spark.block .fb-spark-core { background: none; border: 3px solid var(--c); box-shadow: 0 0 10px var(--c); }
@@ -115,32 +144,37 @@
 /* it sits over the dice table (empty between rounds), so the pieces and what each plans next stay in view above it */
 .b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--dock-top, 12rem) - .4rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
   border-radius: .9rem; overflow-x: hidden; overflow-y: auto; pointer-events: auto; cursor: pointer; animation: rcIn .26s ease-out;
-  background: linear-gradient(180deg, rgba(38, 29, 24, .97), rgba(14, 10, 10, .98)); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .3), 0 12px 30px rgba(0, 0, 0, .65); scrollbar-width: none; }
+  background: linear-gradient(180deg, rgba(44, 33, 26, .98), rgba(16, 11, 9, .99)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .55), inset 0 0 0 4px rgba(14, 9, 6, .9), inset 0 0 0 5px rgba(226, 178, 76, .22), 0 14px 34px rgba(0, 0, 0, .7); scrollbar-width: none; padding: .55rem .7rem .5rem; }
 .b3 .rc::-webkit-scrollbar { display: none; }
 @keyframes rcIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
 .rc-head { display: flex; align-items: center; gap: .5rem; flex: none; }
-.rc-head b { font: 800 .68rem/1 var(--disp); letter-spacing: .2em; text-transform: uppercase; color: var(--gild, #e2b24c); }
+.rc-head b { font: 800 .72rem/1 var(--disp); letter-spacing: .24em; text-transform: uppercase; color: #ffe39a; text-shadow: 0 0 10px rgba(255, 200, 80, .35); }
+.rc-head { padding-bottom: .3rem; border-bottom: 1px solid rgba(226, 178, 76, .3); }
 .rc-head span { flex: 1; font: 600 .6rem/1 var(--disp); color: #d8a88a; }
 .rc-head em { font: 600 .5rem/1 var(--disp); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 236, 190, .45); }
 .rc-x { flex: none; width: 1.7rem; height: 1.7rem; border: 0; border-radius: 50%; cursor: pointer; font: 700 .8rem/1 var(--disp); color: #f0e0c0; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .3); margin: -.3rem -.25rem -.3rem 0; }
 .rc-body { display: flex; flex-direction: column; gap: .4rem; min-height: 0; }
-.rc-sec { padding-left: .5rem; border-left: 3px solid var(--sec, #ff7a6a); display: flex; flex-direction: column; }
+.rc-sec { position: relative; padding: .1rem 0 .1rem .6rem; display: flex; flex-direction: column; }
+.rc-sec::before { content: ''; position: absolute; left: 0; top: .1rem; bottom: .1rem; width: 3px; border-radius: 2px; background: linear-gradient(180deg, var(--sec), color-mix(in srgb, var(--sec) 40%, transparent)); box-shadow: 0 0 8px color-mix(in srgb, var(--sec) 60%, transparent); }
 .rc-sec.you { --sec: #ffb04a; } .rc-sec.foes { --sec: #6ab4ff; }
 .rc-rows { display: flex; flex-direction: column; gap: .32rem; }
-.rc-line { display: flex; flex-direction: column; gap: .16rem; }
+.rc-line { display: flex; flex-direction: column; gap: .18rem; animation: rcLine .4s cubic-bezier(.2, .9, .3, 1) both; }
+.rc-rows > :nth-child(2) { animation-delay: .09s; } .rc-rows > :nth-child(3) { animation-delay: .18s; } .rc-rows > :nth-child(4) { animation-delay: .27s; } .rc-rows > :nth-child(5) { animation-delay: .36s; }
+@keyframes rcLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .rc-who { display: flex; align-items: baseline; gap: .25rem; font: 600 .66rem/1.15 var(--disp); color: #cdbfa4; }
 .rc-who b { color: #fff0cf; font-weight: 800; letter-spacing: .03em; }
 .rc-who span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rc-hp { flex: none; margin-left: auto; font: 700 .64rem/1 var(--disp); font-style: normal; color: #cdbfa4; } .rc-hp b { color: #fff; } .rc-hp.dead { color: #ffb4a0; }
 .rc-line.early .rc-who span { color: #ffb4a0; }
 .rc-sum { display: flex; align-items: center; flex-wrap: wrap; gap: .22rem; }
-.rc-tk { --tkc: #ffd8c8; display: inline-flex; align-items: center; gap: .18rem; padding: .14rem .38rem; border-radius: .45rem; color: var(--tkc); background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tkc) 50%, transparent); }
+.rc-tk { --tkc: #ffd8c8; display: inline-flex; align-items: center; gap: .2rem; padding: .16rem .42rem; border-radius: .5rem; color: var(--tkc); background: linear-gradient(180deg, color-mix(in srgb, var(--tkc) 20%, #140c09), #140c09); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tkc) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .14); }
+.rc-tk svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tkc) 60%, transparent)); }
 .rc-tk svg { width: .85rem; height: .85rem; flex: none; }
-.rc-tk b { font: 900 1.02rem/1 var(--disp); }
+.rc-tk b { font: 900 1.1rem/1 var(--disp); text-shadow: 0 0 8px color-mix(in srgb, var(--tkc) 40%, transparent); }
 .rc-tk small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
 .rc-tk.atk { --tkc: #ff8a7a; } .rc-tk.block { --tkc: #8cc8ff; } .rc-tk.guard { --tkc: #ffc860; } .rc-tk.pierce { --tkc: #ffae5a; }
-.rc-tk.out { --tkc: #fff; background: linear-gradient(180deg, #a02a22, #6a1612); box-shadow: inset 0 0 0 1px rgba(255, 190, 170, .6); padding-right: .5rem; }
-.rc-tk.out b { font-size: 1.15rem; } .rc-tk.out.zero { background: linear-gradient(180deg, #1f5a3a, #123824); box-shadow: inset 0 0 0 1px rgba(150, 255, 190, .5); }
+.rc-tk.out { --tkc: #fff; background: linear-gradient(180deg, #c03a2c, #6a1612); box-shadow: inset 0 0 0 1px rgba(255, 200, 180, .7), inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 14px rgba(255, 60, 40, .35); padding-right: .55rem; }
+.rc-tk.out b { font-size: 1.25rem; } .rc-tk.out.zero { background: linear-gradient(180deg, #2a7a4c, #123824); box-shadow: inset 0 0 0 1px rgba(150, 255, 190, .6), 0 0 12px rgba(80, 255, 150, .25); }
 .rc-op { font: 800 1rem/1 var(--disp); color: #cbb78f; }
 .rc-note { margin: 0; font: 600 .62rem/1.25 var(--disp); color: #cdbfa4; } .rc-note.bad { color: #ffb4a0; } .rc-note.good { color: #bff0d0; } .rc-note.you { color: #ffe0a0; } .rc-note svg { width: .8em; height: .8em; vertical-align: -.1em; }
 .rc-share { font: 600 .6rem/1.2 var(--disp); color: #cdbfa4; margin-right: .5rem; } .rc-share b { color: #fff; }
@@ -178,3 +212,11 @@
 .fb-gold { position: absolute; left: var(--x); bottom: 14%; width: .5rem; height: .5rem; border-radius: 50%; background: radial-gradient(circle, #fff6c8, #ffd23d 60%, transparent 72%); box-shadow: 0 0 8px rgba(255, 210, 61, .8); transform: scale(var(--s)); opacity: 0; animation: fbGold 3s ease-out var(--d) infinite; }
 @keyframes fbGold { 0% { opacity: 0; transform: translateY(0) scale(var(--s)); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14rem) scale(calc(var(--s) * .6)); } }
 @media (prefers-reduced-motion: reduce) { .fb-end.victory .fb-stand, .fb-gold { animation: none; } .fb-gold { display: none; } }
+
+/* the hero's health: an engraved gold rail along the front edge of the table */
+.b3 .b3-divider { height: 22px; top: calc(var(--line-y, 46%) - 11px); }
+.b3 .b3-divider .dv-bar { height: 10px; border-radius: 6px; background: #170a0c; box-shadow: inset 0 0 0 1px rgba(255, 226, 160, .55), inset 0 2px 3px rgba(0, 0, 0, .8), 0 2px 8px rgba(0, 0, 0, .6); }
+.b3 .b3-divider .dv-fill { border-radius: 6px; background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); }
+.b3 .b3-divider .dv-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 0, 0, .28) 13px 14px), linear-gradient(180deg, rgba(255, 255, 255, .38), transparent 45%); }
+.b3 .b3-divider .dv-n { font-size: .74rem; }
+@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-call, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote { display: none; } }

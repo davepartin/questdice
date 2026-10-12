@@ -22,7 +22,7 @@ function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, h
   if (atk > 0 || pierce === 0) parts.push(tk('atk', atk, 'attack', 'atk'));
   if (phased && atk > 0) parts.push(op('→'), h('span', { class: 'rc-tk guard' }, HK.icon('phase'), h('small', {}, 'passes through')));
   else if (guarded > 0) parts.push(op('−'), tk('guard', guarded, 'guard', 'block'));
-  if (pierce > 0) parts.push(op('+'), tk('pierce', pierce, 'pierce', 'pierce'));
+  if (pierce > 0) parts.push(...(parts.length ? [op('+')] : []), tk('pierce', pierce, 'pierce', 'pierce'));
   parts.push(op('='), out(dealt));
   const hp = hpFrom != null ? h('em', { class: `rc-hp${killed ? ' dead' : ''}` }, killed ? 'falls! ' : '', h('b', {}, String(Math.max(0, Math.ceil(hpFrom)))), ' → ', h('b', {}, String(Math.max(0, Math.ceil(hpTo))))) : null;
   return h('div', { class: 'rc-line' },

@@ -25,9 +25,11 @@ class Piece {
   constructor(fb, { kind, key, img, name, rel = 1, hue = null }) {
     this.fb = fb; this.kind = kind; this.key = key; this.name = name; this.p = {}; this.dead = false; this.rel = rel;
     this.img = h('img', { class: 'fb-img', src: img, alt: name, draggable: 'false', decoding: 'async' });
+    this.mark = h('i', { class: 'fb-mark', 'aria-hidden': 'true' });
     this.ring = h('i', { class: 'fb-ring', 'aria-hidden': 'true' });
+    this.chev = h('i', { class: 'fb-chev', 'aria-hidden': 'true' });
     this.call = h('b', { class: 'fb-call', hidden: true });
-    this.el = h('button', { type: 'button', class: 'fb-pc', 'aria-label': name, style: hue ? { '--hue': hue } : null }, this.ring, this.img, this.call);
+    this.el = h('button', { type: 'button', class: 'fb-pc', 'aria-label': name, style: hue ? { '--hue': hue } : null }, this.mark, this.ring, this.img, this.chev, this.call);
     this.el.style.setProperty('--rel', String(rel));
   }
   // the piece's centre and head, in board pixels
@@ -105,7 +107,8 @@ class Piece {
 export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo }) {
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
-  const table = h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim top' }), h('i', { class: 'fb-rim bot' }));
+  const motes = Array.from({ length: 9 }, (_, i) => h('i', { class: 'fb-mote', style: { '--x': `${(i * 37 + 11) % 96}%`, '--y': `${20 + ((i * 53) % 60)}%`, '--d': `${(i * 1.7) % 9}s`, '--t': `${9 + (i * 3) % 7}s`, '--s': String(0.5 + ((i * 17) % 6) / 8) } }));
+  const table = h('div', { class: 'fb-table' }, h('i', { class: 'fb-lamp' }), ...motes, h('i', { class: 'fb-rim top' }), h('i', { class: 'fb-rim bot' }));
   const heroSide = h('div', { class: 'fb-side heroes' });
   const foeSide = h('div', { class: 'fb-side foes' });
   const field = h('div', { class: 'fb-field' }, heroSide, foeSide);
@@ -129,7 +132,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
 
   // ---- monsters
   const cardOf = (e) => {
-    const name = h('b', { class: 'fb-name' }, e.name);
+    const name = h('b', { class: 'fb-name', title: e.name }, e.name.length > 11 ? e.name.split(' ').pop() : e.name); // long names read as their last word (Skulker)
     const hpNum = h('i', { class: 'fb-hpn' });
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum);
     const intent = h('div', { class: 'fb-intent' });
@@ -197,13 +200,14 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   fb.spark = (pc, kind = 'hit', power = 0.5, fy = 0.42) => {
     const { x, y } = at(pc, fy); const col = SPARK[kind] || SPARK.hit; const n = kind === 'heal' ? 5 : 8;
     const el = h('div', { class: `fb-spark ${kind}`, style: { left: `${x}px`, top: `${y}px`, '--c': col, '--p': String(0.7 + power * 0.7) } },
-      h('b', { class: 'fb-spark-core' }), ...Array.from({ length: n }, (_, i) => h('i', { style: { '--a': `${(360 / n) * i + (kind === 'heal' ? 0 : 12)}deg`, '--d': `${0.8 + ((i * 37) % 5) / 10}` } })));
+      h('u', { class: 'fb-shock' }), h('b', { class: 'fb-spark-core' }), ...Array.from({ length: n }, (_, i) => h('i', { style: { '--a': `${(360 / n) * i + (kind === 'heal' ? 0 : 12)}deg`, '--d': `${0.8 + ((i * 37) % 5) / 10}` } })));
     fx.append(el);
     tween(kind === 'heal' ? 0.7 : 0.42, (k) => { el.style.setProperty('--k', k.toFixed(3)); el.style.opacity = String(1 - k * k); }).then(() => el.remove());
   };
   fb.num = (pc, text, kind = 'dmg', { dx = 0, dy = 0 } = {}) => {
     const { x, r } = at(pc); const W = fb.el.clientWidth || 360; const long = String(text).length > 8;
-    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
+    const mag = Number(String(text).replace(/[^0-9]/g, '')) || 0;
+    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
     fx.append(el);
     const half = (el.offsetWidth || 40) / 2 + 4; el.style.left = `${clamp(x + dx, half, W - half)}px`; // never off the edge of the table
     tween(1.05, (k) => { el.style.transform = `translate(-50%, ${(-30 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.12 ? 0.6 + k * 3.3 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.65 ? 1 : 1 - (k - 0.65) / 0.35); }).then(() => el.remove());
