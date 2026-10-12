@@ -1125,8 +1125,11 @@ function makeFighter(hero) {
     magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
-    stats: { dealt: 0, taken: 0, healed: 0 }, contrib: 0,
+    stats: blankPartyStats(), contrib: 0,
   };
+}
+function blankPartyStats() {
+  return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
 const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
@@ -1229,9 +1232,9 @@ export function teamAction(b, from, kind, to) {
   if (b.fighters[b.active]) commitFighter(b);
   const r = teamActionInfo(b, from, kind, to); if (!r.ok) { if (b.fighters[b.active]) focusFighter(b, b.active); return r; }
   const F = b.fighters[from]; const T = b.fighters[to];
-  if (kind === 'potion') drinkPotion(F, T);
-  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(magicCapOf(T.hero), T.magic + SHARE_MAGIC) - T.magic; T.magic += got; award(F, SHARE_MAGIC * POINTS.magicGift); }
-  else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); T.board = null; award(F, POINTS.revive); }
+  if (kind === 'potion') { if (drinkPotion(F, T)) F.stats.potionsThrown = (F.stats.potionsThrown || 0) + 1; }
+  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(magicCapOf(T.hero), T.magic + SHARE_MAGIC) - T.magic; T.magic += got; F.stats.magicShared = (F.stats.magicShared || 0) + got; award(F, SHARE_MAGIC * POINTS.magicGift); }
+  else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); T.board = null; F.stats.revives = (F.stats.revives || 0) + 1; award(F, POINTS.revive); }
   F.teamRound = b.round; F.contrib = F.points;
   if (b.fighters[b.active]) focusFighter(b, b.active);
   return { ok: true };
@@ -1304,7 +1307,9 @@ export function resolveParty(b) {
     if (burn) { const k = snap.indexOf(f); if (k >= 0) taken[k] += burn; }
     const killed = tgt.hp <= 0;
     if (killed) {
-      rep.killed.push(tgt.uid); f._kills++; moral = { from: f.hero.name, n: MORAL_BOOST };
+      rep.killed.push(tgt.uid); f._kills++; f.stats.kills = (f.stats.kills || 0) + 1;
+      if (tgt.tier === 'boss') f.stats.bossKill = true;
+      moral = { from: f.hero.name, n: MORAL_BOOST };
       let pot = tgt.carried;
       const victims = [...b.fighters].filter((v) => v.purseLost > 0).sort((a, c) => c.purseLost - a.purseLost);
       for (const v of victims) {
@@ -1385,10 +1390,12 @@ export function resolveParty(b) {
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     f.stats.healed += healed; f.stats.taken += taken[i];
+    f.stats.blocked = (f.stats.blocked || 0) + absorbed[i];
     // The hero the monsters went after is the company's shield: blocks count double, and standing at the end holds the line.
     const shield = i === 0 && snap.length > 1;
     const held = shield && absorbed[i] + taken[i] > 0 && f.hp > 0;
-    if (shield) rep.shield = { name: f.hero.name, blocked: absorbed[i], held };
+    if (shield) { f.stats.shieldRounds = (f.stats.shieldRounds || 0) + 1; rep.shield = { name: f.hero.name, blocked: absorbed[i], held }; }
+    if (held) f.stats.heldLine = (f.stats.heldLine || 0) + 1;
     const pts = Math.round(roundPoints({ dealt: f._dealt, absorbed: absorbed[i], healed, kills: f._kills, triples: (f.ev.triples || []).length, teamTriples: f._team, straight: !!f.ev.straight, down: hpBefore > 0 && f.hp <= 0, shield, heldLine: held }));
     award(f, pts); f.contrib = f.points;
     let magic = f.magic + T.magic;

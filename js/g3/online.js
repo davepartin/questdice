@@ -20,6 +20,7 @@ import * as ST from '../story.js';
 import * as R from '../roads.js';
 import { world } from './world.js';
 import * as B3 from './battle3d.js';
+import { bragBoard, closeBrag, bragOpen } from './brag.js';
 
 let X = null; // what ui.js hands over (S, showTitle, ...)
 let stop = null; // the live feed
@@ -110,6 +111,7 @@ function changed(prev, next, info) {
 }
 export function show() {
   const t = Sess.current(); if (!t) return;
+  if (t.phase !== 'victory') closeBrag();
   sync(t); shown = t.phase;
   switch (t.phase) {
     case 'lobby': return lobby(t);
@@ -169,9 +171,10 @@ function fail(e) { toast(e?.message || 'The table did not answer.', 'bad'); sfx.
 // Who is at the table, with a tick for each hero who has pressed ready (used on the road and at camp).
 export function partyBar() {
   const t = Sess.current(); if (!t) return null; const { emblem, ico } = K(); const you = Sess.me();
-  const showReady = t.phase === 'road' || t.phase === 'camp' || t.phase === 'victory';
-  return h('div', { class: 'sx-party', role: 'list', 'aria-label': 'The company' }, t.players.map((p) => h('span', { role: 'listitem', class: `pt ${p.id === you?.id ? 'you' : ''} ${showReady && p.ready ? 'ready' : ''}`, style: { '--hue': K().CLS_HUE[p.cls] } },
-    emblem(p.cls), h('b', {}, p.name), showReady && p.ready ? h('i', { class: 'pt-ok' }, ico('check')) : null)));
+  const showReady = t.phase === 'road' || t.phase === 'camp';
+  const tick = (p) => (t.phase === 'victory' ? p.seenBrag : showReady && p.ready);
+  return h('div', { class: 'sx-party', role: 'list', 'aria-label': 'The company' }, t.players.map((p) => h('span', { role: 'listitem', class: `pt ${p.id === you?.id ? 'you' : ''} ${tick(p) ? 'ready' : ''}`, style: { '--hue': K().CLS_HUE[p.cls] } },
+    emblem(p.cls), h('b', {}, p.name), tick(p) ? h('i', { class: 'pt-ok' }, ico('check')) : null)));
 }
 
 // ------------------------------------------------------------------------------------------------ road and quest board
@@ -240,8 +243,25 @@ export function campCta(btn) {
 }
 
 // ------------------------------------------------------------------------------------------------ victory, defeat
-// Everyone's points, places, gold and XP; then each hero picks their own perk at once, and the spoils are drafted in
-// order of points. The table moves to camp by itself when the perks and the draft are done.
+// Brag board first (per phone), then everyone's points, places, gold and XP; then each hero picks their own perk
+// at once, and the spoils are drafted in order of points. The table moves to camp when the perks, the draft and
+// every phone's brag board are done (the host can still push past a quiet phone).
+let bragDismissed = '';
+function bragKey(t) {
+  const c = t.company?.campaign;
+  return `${t.code}:${c?.act || 0}:${c?.step || 0}:${t.rewards?.questName || ''}`;
+}
+function openBrag(t, sendSeen) {
+  const you = Sess.me();
+  bragBoard({
+    table: t, youName: you?.hero?.name || you?.name,
+    onOnward: () => {
+      bragDismissed = bragKey(t);
+      closeBrag();
+      if (sendSeen) Sess.send({ type: 'brag-seen' }).catch(fail);
+    },
+  });
+}
 function victory(t) {
   const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard } = K();
   const R = t.rewards; const members = t.company.members; const n = members.length; const you = Sess.me(); const hero = you.hero;
@@ -270,11 +290,13 @@ function victory(t) {
       mine || Sess.isHost() ? h('div', { class: 'sx-cta' }, btn(mine ? 'Skip' : `Skip ${who}'s pick`, () => { sfx.select(); Sess.send({ type: 'pass-loot' }).catch(fail); }, { kind: 'ghost', cls: 'wide' })) : null)
     : panel('sx-loot done', h('div', { class: 'cardlist' }, Object.entries(draft.picked).length ? Object.entries(draft.picked).map(([i, name]) => h('p', { class: 'muted' }, `${name} took the ${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}.`)) : h('p', { class: 'muted' }, 'The spoils stay on the road.')));
   void picker;
+  const reopen = btn('View brag board', () => openBrag(t, !you.seenBrag), { kind: 'link', cls: 'wide brag-reopen' });
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, sub), flourish()),
-      partyBar(), rows, perks, loot)));
+      partyBar(), reopen, rows, perks, loot)));
   lay('victory'); if (!SCR.victory()) SCR.enter('camp', { hero }, `victory:${hero.name}`);
+  if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
 function defeat(t) {
   const hero = Sess.hero(); X.S.hero = hero;

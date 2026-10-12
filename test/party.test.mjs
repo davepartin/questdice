@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   makeRng, newHero, evaluate, newBattle, startRoll, resolve, maxHpOf, shopStock,
   newCompany, splitInt, shareWeights, rankFighters, heatRank, newPartyBattle, resolveParty, partyRewards,
-  spendBlessings, weaponValue, startFighter, commitFighter, castPower, questsFor,
+  spendBlessings, weaponValue, startFighter, commitFighter, castPower, questsFor, teamAction,
 } from '../js/engine.js';
 import { ensureRoad, roadIsOpen, chooseRoad } from '../js/roads.js';
 import { WEAPONS, CLASSES } from '../js/data.js';
@@ -412,6 +412,66 @@ test('company looks: a second and third hero of the same class wear other colour
     assert.equal(new Set(looks.map((l) => l.hue)).size, looks.length, `${cls} looks have different chip colours`);
     for (const l of looks.slice(1)) assert.ok(typeof l.cloth === 'number' && typeof l.accent === 'number', `${cls} ${l.name} recolours cloth and accent`);
   }
+});
+
+test('party stats accumulate kills, blocked, shield, team actions and a boss killing blow', () => {
+  const c = company();
+  const b = partyFight(c.members, strike);
+  b.fighters[0].mods.block = 4;
+  resolveParty(b);
+  const ada = b.fighters[0]; const bea = b.fighters[1];
+  assert.equal(ada.stats.blocked, 4);
+  assert.equal(bea.stats.blocked, 0);
+  assert.equal(ada.stats.shieldRounds, 1);
+  assert.equal(ada.stats.heldLine, 1);
+  assert.equal(bea.stats.shieldRounds, 0);
+  assert.ok(ada.stats.taken > 0);
+  assert.equal(ada.stats.kills, 0);
+
+  for (const f of b.fighters) {
+    f.board = quiet(f.hero.name === 'Ada' ? 1 : 4);
+    f.mods = { atk: 0, pierce: 0, block: f.hero.name === 'Ada' ? 4 : 0, heal: 0, weaken: 0 };
+    f.target = 0; f.straight = 'atk';
+  }
+  b.enemies[0].intent = strike; b.enemies[0].hp = 999;
+  resolveParty(b);
+  assert.equal(ada.stats.blocked, 8, 'blocked adds across rounds');
+  assert.equal(ada.stats.shieldRounds, 2);
+  assert.equal(ada.stats.heldLine, 2);
+
+  bea.hp = bea.maxHp - 12; ada.magic = 12; b.magic = 12;
+  assert.equal(teamAction(b, 0, 'potion', 1).ok, true);
+  assert.equal(ada.stats.potionsThrown, 1);
+  b.round++;
+  assert.equal(teamAction(b, 0, 'magic', 1).ok, true);
+  assert.equal(ada.stats.magicShared, 2);
+  b.round++; bea.hp = 0; ada.magic = 12; b.magic = 12;
+  assert.equal(teamAction(b, 0, 'revive', 1).ok, true);
+  assert.equal(ada.stats.revives, 1);
+
+  const hunt = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 }, 1);
+  hunt.enemies.push({ ...hunt.enemies[0], uid: 'second', hp: 1, maxHp: 1, carried: 0 });
+  hunt.fighters[0].mods.atk = -40; hunt.fighters[1].mods.atk = 80; hunt.fighters[1].target = 0;
+  resolveParty(hunt);
+  assert.equal(hunt.fighters[1].stats.kills, 1);
+  assert.equal(hunt.outcome, null);
+  for (const f of hunt.fighters) {
+    f.board = quiet(f.hero.name === 'Ada' ? 1 : 4);
+    f.mods = { atk: f.hero.name === 'Bea' ? 80 : -40, pierce: 0, block: 0, heal: 0, weaken: 0 };
+    f.target = 0; f.straight = 'atk';
+  }
+  hunt.enemies.find((e) => e.hp > 0).intent = { n: 'Duck', v: 'guard', f: 0, m: 0 };
+  resolveParty(hunt);
+  assert.equal(hunt.fighters[1].stats.kills, 2, 'kills add across rounds');
+  assert.equal(hunt.fighters[0].stats.kills, 0);
+
+  const boss = partyFight(c.members, { n: 'Duck', v: 'guard', f: 0, m: 0 }, 1, 'goblinking');
+  assert.equal(boss.enemies[0].tier, 'boss');
+  boss.fighters[1].mods.atk = 200;
+  resolveParty(boss);
+  assert.equal(boss.fighters[1].stats.kills, 1);
+  assert.equal(boss.fighters[1].stats.bossKill, true);
+  assert.equal(boss.fighters[0].stats.bossKill, false);
 });
 
 test('company: every-round powers come back each round, and each hero keeps their own charges', () => {
