@@ -1,0 +1,125 @@
+/* The magic powers sheet (Dave, Oct 2026): a glowing purple triangle with your three powers at its points, the magic you hold,
+   three always-ready helpers under it, and one panel for whatever you tapped. Built in js/g3/powers.js.
+   Sized from the sheet's own height (flex + container-query units), never from vh, so on an iPhone, where vh counts the hidden
+   browser bars, it still fits: the triangle is whatever is left once the helpers and the panel have their room. */
+
+/* ================================================================== the sheet */
+.b3-sheet:has(.pw-sigil) { top: calc(.5rem + var(--safe-t)); bottom: var(--counters-top, calc(var(--dock-top, 12rem) + .4rem)); max-height: none; overflow: hidden; flex-direction: column; gap: .4rem; padding: .5rem .6rem .6rem; justify-content: flex-start;
+  background: radial-gradient(120% 70% at 50% 14%, rgba(110, 40, 200, .38), rgba(12, 8, 24, .98) 62%), rgba(10, 7, 20, .98);
+  box-shadow: 0 0 0 1.5px rgba(182, 108, 255, .85), 0 0 40px rgba(140, 60, 255, .35), 0 18px 44px rgba(0, 0, 0, .7); }
+.b3-sheet:has(.pw-sigil) > .sh-head { flex: none; position: static; margin: 0; padding: 0; background: none; }
+.b3-sheet .b3-cards:has(.pw-sigil) { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: visible; padding: 0; margin: 0; }
+.sh-cancel { display: inline-flex; align-items: center; gap: .3rem; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+/* while it is open it takes the whole top of the screen: the round title and the chips step aside */
+body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b3-top, .b3:has(.b3-sheet.open .pw-sigil) .b3-magchip { visibility: hidden; }
+
+.pw-sigil { --c: #b46cff; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .5rem; }
+.pw-sigil .t-atk, .pw-chip.t-atk { --c: #ff4b4b; } .pw-sigil .t-block, .pw-chip.t-block { --c: #3aa4ff; } .pw-sigil .t-pierce, .pw-chip.t-pierce { --c: #ff8a1a; }
+.pw-sigil .t-heal, .pw-chip.t-heal { --c: #38e87a; } .pw-sigil .t-magic, .pw-chip.t-magic { --c: #b46cff; } .pw-sigil .t-gold, .pw-chip.t-gold { --c: #ffc21a; } .pw-sigil .t-weaken, .pw-chip.t-weaken { --c: #c8d0e0; }
+
+/* ================================================================== the triangle */
+/* the wrap takes whatever height is left; the stage is the biggest 300:260 triangle that fits in it */
+.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: 1.5rem 0 2.7rem; container-type: size; }
+.pw-stage { position: relative; flex: none; width: min(100%, 11rem); aspect-ratio: 300 / 260; container-type: inline-size; }
+@supports (width: 1cqh) { .pw-stage { width: min(100cqw, 17rem, calc(100cqh * 300 / 260)); } }
+.pw-tri { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pw-edge { fill: none; stroke: url(#pwG); stroke-width: 3.2; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(180, 100, 255, .9)); opacity: .75; transition: opacity .3s, stroke-width .3s; }
+.pw-sigil.sel-A .e-AB, .pw-sigil.sel-A .e-CA, .pw-sigil.sel-B .e-AB, .pw-sigil.sel-B .e-BC, .pw-sigil.sel-C .e-BC, .pw-sigil.sel-C .e-CA { opacity: 1; stroke-width: 4.6; stroke-dasharray: 14 9; animation: pwFlow 1.1s linear infinite; }
+@keyframes pwFlow { to { stroke-dashoffset: -46; } }
+.pw-inner { fill: none; stroke: rgba(210, 160, 255, .3); stroke-width: 1.2; }
+.pw-rune { fill: none; stroke: rgba(210, 160, 255, .4); stroke-width: 1.2; stroke-dasharray: 2 6; transform-origin: 150px 160px; animation: pwSpin 40s linear infinite; }
+.pw-rune.r2 { stroke-dasharray: 10 5 2 5; stroke: rgba(255, 210, 120, .22); animation-direction: reverse; animation-duration: 60s; }
+@keyframes pwSpin { to { transform: rotate(360deg); } }
+.pw-fill { animation: pwBreathe 4.2s ease-in-out infinite; } @keyframes pwBreathe { 50% { opacity: .6; } }
+/* a larger, quiet triangle of light behind it */
+.pw-aura { position: absolute; left: -60%; top: -34%; width: 220%; height: 168%; overflow: visible; pointer-events: none; z-index: 0; }
+.pa-fill { animation: pwBreathe 5.6s ease-in-out infinite; }
+.pa-inner { fill: none; stroke: rgba(214, 170, 255, .2); stroke-width: 1; stroke-dasharray: 3 7; }
+.pa-edge { fill: none; stroke: url(#pwAG); stroke-width: 2; stroke-linejoin: round; opacity: .42; filter: drop-shadow(0 0 7px rgba(170, 90, 255, .8)); }
+.pa-node { fill: #ecd6ff; filter: drop-shadow(0 0 6px #b46cff); }
+
+/* the magic you hold: a small badge in the top-right of the triangle's space */
+.pw-center { position: absolute; right: 0; top: .2rem; z-index: 1; display: flex; align-items: center; gap: .3rem; padding: .22rem .6rem .22rem .45rem; border-radius: 999px; line-height: 1;
+  background: radial-gradient(circle at 50% 30%, rgba(150, 80, 255, .55), rgba(40, 12, 90, .92)); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .7), 0 0 16px rgba(150, 80, 255, .5); }
+.pw-center .ic { width: 1rem; height: 1rem; color: #e6c8ff; }
+.pw-center b { font: 900 1.35rem var(--disp, sans-serif); color: #fff; text-shadow: 0 0 12px rgba(180, 100, 255, .95); }
+.pw-center small { font: 700 .5rem var(--disp, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: #d9b4ff; }
+
+/* ================================================================== a medallion (a power at a point of the triangle) */
+.pw-medal { --r: clamp(2.2rem, 22cqw, 3.8rem); position: absolute; width: var(--r); display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; transform: translate(-50%, -50%); -webkit-tap-highlight-color: transparent; z-index: 2; }
+.pw-medal.at-A { left: 50%; top: 9%; } .pw-medal.at-B { left: 13%; top: 88%; } .pw-medal.at-C { left: 87%; top: 88%; }
+.pw-ring { position: relative; width: var(--r); height: var(--r); border-radius: 50%; display: grid; place-items: center; transition: transform .25s cubic-bezier(.2, 1.4, .4, 1);
+  background: conic-gradient(from 210deg, #f6e2ff, #9b4dff, #4a1aa0, #b46cff, #f6e2ff); box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 16px color-mix(in srgb, var(--c) 55%, transparent), 0 8px 16px rgba(0, 0, 0, .6); }
+.pw-core { width: calc(var(--r) * .81); height: calc(var(--r) * .81); border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 55%, #2a1048), #12061f 75%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 70%, transparent), inset 0 -6px 14px rgba(0, 0, 0, .6); }
+.pw-core .ic { width: calc(var(--r) * .48); height: calc(var(--r) * .48); color: var(--c); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 80%, transparent)); }
+.pw-slot { position: absolute; left: -.2rem; top: -.2rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; display: grid; place-items: center; font: 900 .72rem var(--disp, sans-serif); color: #2a0e5e; background: linear-gradient(180deg, #fff, #d9b4ff); box-shadow: 0 0 0 2px #2a0e5e, 0 0 10px rgba(200, 140, 255, .9); }
+.pw-cost { position: absolute; right: -.45rem; bottom: -.1rem; display: inline-flex; align-items: center; gap: .1rem; padding: .08rem .36rem .08rem .24rem; border-radius: 999px; font: 900 .72rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838; }
+.pw-cost .ic { width: .66rem; height: .66rem; color: #fff; }
+.pw-pips { position: absolute; left: 50%; bottom: -.62rem; transform: translateX(-50%); display: flex; gap: .16rem; }
+.pw-pips i { width: .46rem; height: .46rem; border-radius: 50%; background: #1c0d33; box-shadow: inset 0 0 0 1.2px color-mix(in srgb, var(--c) 70%, transparent); }
+.pw-pips i.on { background: var(--c); box-shadow: 0 0 6px var(--c); }
+.pw-name { margin-top: .25rem; max-width: 6rem; font: 800 .6rem var(--disp, sans-serif); letter-spacing: .06em; text-transform: uppercase; text-align: center; line-height: 1.1; color: #f2e6ff; text-shadow: 0 1px 3px #000; }
+.pw-medal.at-A .pw-name { position: absolute; top: calc(100% + .05rem); white-space: nowrap; }
+.pw-medal:has(.pw-pips) .pw-name { margin-top: .7rem; }
+.pw-tag { position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: .15rem; padding: .05rem .4rem; border-radius: 999px; white-space: nowrap; font: 900 .48rem var(--disp, sans-serif); letter-spacing: .1em; color: #1a0838; background: #e6d4ff; z-index: 2; }
+.pw-tag .ic { width: .58rem; height: .58rem; } .pw-tag.used, .pw-tag.locked { background: #4a4258; color: #d6cfe2; } .pw-tag.recharge { background: #ffd21a; color: #2a1804; }
+.pw-medal.st-ready .pw-ring { animation: pwReady 2.4s ease-in-out infinite; }
+@keyframes pwReady { 50% { box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 28px color-mix(in srgb, var(--c) 85%, transparent), 0 8px 16px rgba(0, 0, 0, .6); } }
+.pw-medal.st-used .pw-ring, .pw-medal.st-locked .pw-ring, .pw-medal.st-low .pw-ring { filter: grayscale(.75) brightness(.7); }
+.pw-medal.st-low .pw-cost { background: linear-gradient(180deg, #8a3a4a, #4a1424); }
+.pw-medal.on .pw-ring { transform: scale(1.12); box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px rgba(180, 100, 255, .55), 0 0 30px color-mix(in srgb, var(--c) 95%, transparent); }
+.pw-medal:active .pw-ring { transform: scale(1.04); }
+
+/* ================================================================== the helpers: potion, heal, heart change */
+.pw-utils { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; padding-top: .35rem; }
+.pw-util { --c: #b46cff; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem; min-height: 3.5rem; padding: .35rem .3rem .4rem; border: 0; border-radius: .8rem; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent;
+  color: #8c829c; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+.pu-ic { flex: none; width: 1.7rem; height: 1.7rem; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .08); } .pu-ic .ic { width: 1.05rem; height: 1.05rem; color: #6c627a; }
+.pu-name { font: 800 .68rem var(--disp, sans-serif); letter-spacing: .05em; text-transform: uppercase; line-height: 1.05; }
+.pu-sub { min-height: .5rem; font: 700 .5rem var(--disp, sans-serif); letter-spacing: .1em; text-transform: uppercase; line-height: 1; opacity: .85; }
+.pw-util.ready { color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 92%, #fff), color-mix(in srgb, var(--c) 78%, #000)); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 1.5px color-mix(in srgb, var(--c) 50%, #000), 0 4px 12px color-mix(in srgb, var(--c) 35%, transparent); }
+.pw-util.ready .pu-ic { background: rgba(255, 255, 255, .25); } .pw-util.ready .pu-ic .ic { color: #fff; }
+.pw-util.ready.t-gold { color: #2a1804; } .pw-util.ready.t-gold .pu-ic .ic { color: #5a3a08; }
+.pw-util.ready.t-heal { text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.pw-util.on { outline: 2.5px solid #fff; outline-offset: 2px; }
+.pu-cost { position: absolute; right: -.3rem; top: -.45rem; display: inline-flex; align-items: center; gap: .1rem; padding: .06rem .36rem .06rem .26rem; border-radius: 999px; font: 900 .68rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838; }
+.pu-cost .ic { width: .64rem; height: .64rem; color: #fff !important; } .pu-cost.free { background: linear-gradient(180deg, #3ad07a, #1a7a44); font-size: .56rem; letter-spacing: .06em; }
+.pw-util.off .pu-cost { background: #4a4258; }
+
+/* ================================================================== the panel for what you tapped */
+.pw-detail { --c: #b46cff; flex: none; position: relative; padding: .5rem .65rem .6rem; border-radius: .9rem; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, rgba(30, 18, 52, .95)), rgba(14, 9, 26, .96));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent), 0 6px 18px rgba(0, 0, 0, .4); animation: pwIn .24s ease-out; }
+@keyframes pwIn { from { opacity: 0; transform: translateY(6px); } }
+.pw-detail.empty { display: none; }
+.pd-top { display: flex; align-items: center; gap: .6rem; }
+.pd-badge { flex: none; width: 2.3rem; height: 2.3rem; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 50%, #2a1048), #12061f 80%); box-shadow: inset 0 0 0 1.5px var(--c); }
+.pd-badge .ic { width: 1.35rem; height: 1.35rem; color: var(--c); }
+.pd-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; } .pd-id small { font: 800 .55rem var(--disp, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: #cfa8ff; }
+.pd-id b { font: 800 1.05rem var(--disp, sans-serif); color: #fff; } .pd-id em { font-style: normal; font-size: .66rem; color: #d8cfe6; }
+.pd-cost { margin-left: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: .12rem; padding: .12rem .5rem .12rem .36rem; border-radius: 999px; font: 900 .9rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838, 0 0 10px rgba(160, 80, 255, .5); }
+.pd-cost .ic { width: .8rem; height: .8rem; color: #fff; }
+.pd-line { margin: .4rem 0 0; font-size: .78rem; line-height: 1.3; color: #ddd4ea; }
+.pw-detail .pd-why { margin: .35rem 0 0; font-size: .72rem; color: #ffb38a; }
+.pd-row { display: flex; gap: .45rem; margin-top: .5rem; align-items: center; } .pd-row:empty { display: none; }
+.pw-step { flex: none; display: flex; align-items: center; gap: .25rem; padding: 0 .2rem; border-radius: 999px; background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(200, 150, 255, .35); }
+.pw-step b { min-width: 1.3rem; text-align: center; font: 900 1.2rem var(--disp, sans-serif); color: #fff; }
+.pw-step button { width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 0; cursor: pointer; font: 900 1.2rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #8a46f0, #4c1aa0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+.pw-step button:disabled { opacity: .35; cursor: default; }
+.pw-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 44px; padding: .5rem .8rem; border: 0; border-radius: 12px; cursor: pointer; font: 800 .82rem var(--disp, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: #fff;
+  background: linear-gradient(180deg, #c27cff, #7a2fe0 55%, #5418b0); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 1.5px #2a0e5e, 0 6px 16px rgba(120, 60, 220, .45); }
+.pw-btn .ic { width: 1rem; height: 1rem; color: #fff; } .pw-btn.alt { background: linear-gradient(180deg, #ffe9a8, #e2b24c 60%, #b8862c); color: #2a1804; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .5), 0 0 0 1.5px #5a3a08; } .pw-btn.alt .ic { color: #2a1804; }
+.pw-btn:disabled { opacity: .38; cursor: default; filter: grayscale(.5); } .pw-btn:active:not(:disabled) { transform: scale(.97); }
+/* nothing chosen yet */
+.pw-detail.pw-pick { text-align: center; padding: .5rem .8rem .55rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1.5px rgba(200, 150, 255, .35); }
+.pw-pick .pp-arrow { display: block; font-size: .7rem; line-height: 1; color: #d9b4ff; animation: ppBob 1.4s ease-in-out infinite; }
+.pw-pick b { display: block; margin-top: .15rem; font: 800 .95rem var(--disp, sans-serif); letter-spacing: .04em; color: #fff; }
+.pw-pick p { margin: .25rem 0 0; font-size: .74rem; line-height: 1.3; color: #d8cfe6; }
+@keyframes ppBob { 50% { transform: translateY(-3px); } }
+
+/* a chip: what a power gives (used by the cast reveal) */
+.pw-chip { --c: #b46cff; display: inline-flex; align-items: center; gap: .25rem; padding: .22rem .6rem; border-radius: 999px; font-size: .78rem; color: #eae4f2; background: color-mix(in srgb, var(--c) 18%, rgba(0, 0, 0, .4)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent); }
+.pw-chip b { color: var(--c); font: 900 .95rem var(--disp, sans-serif); } .pw-chip .ic { width: .95rem; height: .95rem; color: var(--c); } .pw-chip.each::after { content: ' each'; font-size: .7rem; color: #b8aec8; }
+
+/* wide screens: the sheet is the left column; give the triangle a sensible cap */
+@media (min-aspect-ratio: 5/4) { .pw-stage { max-width: 15rem; } }
+@media (prefers-reduced-motion: reduce) { .pw-rune, .pw-fill, .pa-fill, .pw-medal.st-ready .pw-ring, .pw-edge, .pw-pick .pp-arrow, .pw-detail { animation: none !important; } }

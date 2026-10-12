@@ -115,19 +115,17 @@ export function sigil(ctx) {
   aura.innerHTML = `<defs><linearGradient id="pwAG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd6ff"/><stop offset=".5" stop-color="#a45cff"/><stop offset="1" stop-color="#6a2ae0"/></linearGradient>
     <radialGradient id="pwAF" cx=".5" cy=".66" r=".62"><stop offset="0" stop-color="#8a48ff" stop-opacity=".42"/><stop offset=".7" stop-color="#3a127a" stop-opacity=".18"/><stop offset="1" stop-color="#12061f" stop-opacity="0"/></radialGradient></defs>
     <path class="pa-fill" d="${big}" fill="url(#pwAF)"/><path class="pa-inner" d="M150 34 L266 190 H34 Z"/>
-    <path class="pa-edge" d="${big}"/><path class="pa-spark" d="${big}" pathLength="100"/><path class="pa-spark s2" d="${big}" pathLength="100"/>
-    <circle class="pa-node" cx="150" cy="8" r="5"/><circle class="pa-node n2" cx="288" cy="200" r="5"/><circle class="pa-node n3" cx="12" cy="200" r="5"/>`;
+    <path class="pa-edge" d="${big}"/>    <circle class="pa-node" cx="150" cy="8" r="5"/><circle class="pa-node n2" cx="288" cy="200" r="5"/><circle class="pa-node n3" cx="12" cy="200" r="5"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   const core = h('div', { class: 'pw-center' }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic'));
-  // the helpers, right under the triangle: round medallions like the powers (Dave), each with its cost badge and,
-  // when it cannot be used, a tag that says why (FULL HP, USED, NONE LEFT)
-  const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
-  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-medal pw-umedal t-${u.tone} st-${u.why ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
-    h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g')), costBadge(u)),
-    h('span', { class: 'pw-name' }, u.name), u.tag ? h('span', { class: 'pw-tag used' }, u.tag) : null)));
+  // the helpers (potion, heal, heart change): three solid pills under the triangle, each with its cost in the corner;
+  // grey when you cannot use them, with the reason in small print (FULL HP, NONE LEFT)
+  const utilCost = (u) => (u.cost ? h('span', { class: 'pu-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pu-cost free' }, h('b', {}, u.badge || 'FREE')));
+  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-util t-${u.tone} ${u.why ? 'off' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
+    h('span', { class: 'pu-ic' }, glyph(u)), h('b', { class: 'pu-name' }, u.name), h('small', { class: 'pu-sub' }, u.tag || (u.cost ? '' : 'free')), utilCost(u))));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    h('div', { class: 'pw-stage' }, aura, tri, h('i', { class: 'pw-motes', 'aria-hidden': 'true' }, ...Array.from({ length: 7 }, (_, i) => h('i', { style: { '--i': i } }))), core, medal('A'), medal('B'), medal('C')),
+    h('div', { class: 'pw-wrap' }, core, h('div', { class: 'pw-stage' }, aura, tri, medal('A'), medal('B'), medal('C'))),
     utilRow, detail);
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
@@ -140,11 +138,6 @@ function detailPanel(ctx, sel) {
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : `Once a battle${canRecharge(k) ? ` · recharge ${ctx.rechargeCost} magic` : ''}`;
     const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '') : 'Roll your dice first. Powers are used while you shape your roll.')
       : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
-    const gives = k.kind === 'charge' ? Object.entries(perOf(k)).map(([f, v]) => chip(f, v, 'each')) : k.dice ? [h('span', { class: `pw-chip t-${toneOf(k)}` }, HK.icon('dice'), h('b', {}, `${E.powerDice(k, x, p.level || 0)}d${k.dice.s}`), ' ', NAME[k.dice.to])]
-      : k.kind === 'round' ? [h('span', { class: 'pw-chip t-atk' }, HK.icon('atk'), h('b', {}, `${k.per} × ${b.round}`), ' attack')]
-      : k.kind === 'luck' ? [h('span', { class: 'pw-chip t-gold' }, HK.icon('dice'), h('b', {}, 'd6'), ' luck')]
-      : Object.entries(k.fx).map(([f, v]) => chip(f, v));
-    if (k.kind === 'super') gives.push(h('span', { class: 'pw-chip t-atk' }, HK.icon('atk'), h('b', {}, `${k.aoe}`), ' to every monster'));
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
       h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
@@ -155,15 +148,14 @@ function detailPanel(ctx, sel) {
     return h('div', { class: `pw-detail t-${toneOf(k)}` },
       h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
         h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
-      h('div', { class: 'pd-gives' }, gives), h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
+      h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
       why ? h('p', { class: 'pd-why' }, why) : null, h('div', { class: 'pd-row' }, step, release, main));
   }
   const u = ctx.utils.find((x) => x.id === sel);
   if (!u) { // nothing chosen yet: say what to do
     return h('div', { class: 'pw-detail pw-pick' }, h('span', { class: 'pp-arrow', 'aria-hidden': 'true' }, '▲'),
-      h('b', {}, 'Tap a power to choose it'),
-      h('p', {}, reset ? 'Roll your dice first; powers are cast while you shape your roll. Tap one now to read what it does.'
-        : 'The three on the triangle are your powers. The three under them are always ready. Tap one to see what it does and cast it.'));
+      h('b', {}, 'Tap a power'),
+      h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'The triangle holds your three powers; the buttons below it are always ready.'));
   }
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
