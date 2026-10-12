@@ -30,12 +30,9 @@
 .fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
 .fb-side.heroes { flex: 0 0 clamp(22%, calc(36% - var(--foes, 2) * 4%), 31%); justify-content: center; }
 .fb-side.foes { flex: 1 1 0; justify-content: space-evenly; gap: 1%; }
-.fb.party .fb-side.heroes { flex-basis: 38%; }
-.fb[data-heroes="4"] .fb-side.heroes, .fb[data-heroes="5"] .fb-side.heroes, .fb[data-heroes="6"] .fb-side.heroes { flex-basis: 46%; }
 
 .fb-slot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1 1 0; min-width: 0; max-width: 11rem; transition: opacity .4s; }
 .fb-slot.foe.tier-elite, .fb-slot.foe.tier-boss { flex-grow: 1.35; max-width: 14rem; }
-.fb.party .fb-slot.hero { margin-left: -.5rem; } .fb.party .fb-slot.hero:first-child { margin-left: 0; }
 .fb-slot.hero.back { flex-grow: .78; z-index: 0; } .fb-slot.hero.active { z-index: 1; }
 .fb-slot.hero.back .fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
 
@@ -220,3 +217,23 @@
 .b3 .b3-divider .dv-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 0, 0, .28) 13px 14px), linear-gradient(180deg, rgba(255, 255, 255, .38), transparent 45%); }
 .b3 .b3-divider .dv-n { font-size: .74rem; }
 @media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-call, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote { display: none; } }
+
+/* a company: the team stands small on the far left, the whole top of the table is the monsters' */
+.fb.party .fb-field { gap: 1%; }
+.fb.party .fb-side.heroes { flex: 0 0 21%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: end; align-items: end; gap: .3rem .1rem; padding-bottom: .1rem; }
+.fb.party[data-heroes="2"] .fb-side.heroes { flex-basis: 12%; grid-template-columns: minmax(0, 1fr); }
+.fb.party .fb-side.foes { flex: 1 1 0; }
+.fb.party .fb-slot.hero, .fb.party .fb-slot.hero.back { flex: none; max-width: none; margin: 0; }
+.fb.party .fb-slot.hero .fb-img, .fb.party .fb-slot.hero.back .fb-img { height: calc(var(--ph) * .34); }
+.fb.party .fb-slot.hero.back .fb-pc { filter: saturate(.85) brightness(.9) drop-shadow(0 4px 3px rgba(0, 0, 0, .6)); }
+.fb.party .fb-slot.hero .fb-pc::before { height: 18%; }
+.fb.party .fb-slot.hero .fb-mark { bottom: -3px; }
+.fb.party .fb-card.hero { margin-top: .12rem; padding: 0; background: none; box-shadow: none; gap: .08rem; width: 100%; }
+.fb.party .fb-card.hero .fb-name { font-size: .44rem; letter-spacing: .03em; }
+.fb.party .fb-card.hero .fb-hp { height: .26rem; width: 90%; }
+.fb.party .fb-slot.hero.active .fb-card.hero .fb-name { color: #ffe08a; }
+.fb.party .fb-slot.hero.active .fb-pc.hero::after { display: none; }
+.fb.party .fb-slot.hero.active .fb-mark { border-color: #ffd96a; box-shadow: 0 0 10px rgba(255, 210, 61, .6); }
+.fb.party .fb-slot.hero.down .fb-card { opacity: .5; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-name { font-size: .5rem; letter-spacing: .01em; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { font-size: .68rem; padding: .15rem .2rem; }
