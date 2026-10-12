@@ -224,8 +224,8 @@ function projectPt(cam, x, y, z, rect) {
   _q.set(x, y, z).project(cam);
   return { x: (_q.x * 0.5 + 0.5) * rect.width + rect.left, y: (-_q.y * 0.5 + 0.5) * rect.height + rect.top };
 }
-// Stand the painted mini on the pedestal: the disc's visual middle lands on the top centre, scaled to ~90% of the top's projected width.
-const BASE_FIT = 0.9; const BASE_LIFT = 0.07;
+// Stand the painted mini on the pedestal: the disc's visual middle lands on the top, scaled to ~92% of the top's projected width.
+const BASE_FIT = 0.92; const BASE_LIFT = 0.065;
 function pinHeroArt(ped) {
   const host = document.querySelector('.sx-hero-art'); const img = host?.querySelector('img');
   if (!host || !img?.naturalWidth || !ped) return;
@@ -239,10 +239,12 @@ function pinHeroArt(ped) {
   const F = projectPt(cam, _p.x, y, _p.z + r, rect); const B = projectPt(cam, _p.x, y, _p.z - r, rect);
   const d = Math.hypot(R.x - L.x, R.y - L.y); const dh = Math.hypot(F.x - B.x, F.y - B.y);
   if (d < 8) return;
+  // a little toward the front of the top disc (down on screen) so the painted base meets the visible ring, not the geometric centre
+  const sx = c.x; const sy = c.y + dh * 0.16;
   const W = (d * BASE_FIT) / base.w; const H = W * (img.naturalHeight / img.naturalWidth);
   const box = host.getBoundingClientRect();
-  img.style.left = `${c.x - box.left - base.x * W}px`;
-  img.style.top = `${c.y - box.top - (base.y - BASE_LIFT) * H}px`;
+  img.style.left = `${sx - box.left - base.x * W}px`;
+  img.style.top = `${sy - box.top - (base.y - BASE_LIFT) * H}px`;
   img.style.width = `${W}px`;
   host.style.setProperty('--ped-x', `${c.x - box.left}px`);
   host.style.setProperty('--ped-y', `${c.y - box.top}px`);
