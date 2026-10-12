@@ -52,11 +52,11 @@ export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
 
-// Universal number language on head, hands and feet (see FACE_PAY): 1 heal, 2 pierce, 3 magic, 4 gold at 2 each; 5-8 repeat the pattern at 3; 9 = 2 heal + 2 pierce; 10 = 2 magic + 2 gold.
+// Universal number language on head, hands and feet (see FACE_PAY): 1 heal at 3; 2 pierce, 3 magic, 4 gold at 2 each; 5-8 repeat the pattern at 3; 9 = 2 heal + 2 pierce; 10 = 2 magic + 2 gold.
 export const RES_BY_SIZE = { 4: [2, 2, 2, 2], 6: [2, 2, 2, 2], 8: [2, 2, 2, 2], 10: [2, 2, 2, 2] }; // faces 1-4 (kept for older callers)
 // What each face of a head / hand / feet die pays. Same pattern all the way up: heal, pierce, magic, gold.
 export const FACE_PAY = [null,
-  { heal: 2 }, { pierce: 2 }, { magic: 2 }, { gold: 2 },        // 1-4: the same on every die
+  { heal: 3 }, { pierce: 2 }, { magic: 2 }, { gold: 2 },        // 1-4: the same on every die
   { heal: 3 }, { pierce: 3 }, { magic: 3 }, { gold: 3 },        // 5-8: three of the symbol
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
 // Heart amplifier: +2 per matching head / hand / feet die. Faces 1-4 (heal, pierce, magic, gold).
