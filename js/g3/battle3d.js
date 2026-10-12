@@ -16,6 +16,7 @@ import { intentClips } from '../gfx/actors/common.js';
 import * as THREE from 'three';
 import { petImg } from './pets.js';
 import * as Sess from '../session.js';
+import * as RO from '../readout.js';
 
 const stopWindups = () => { for (const h of B.windups.splice(0)) { try { h.stop(); } catch { /* ignore */ } } };
 let C = null;                // context from ui.js
@@ -43,6 +44,7 @@ export async function start(ctx) {
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
   B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0;
   if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  RO.reset();
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
   $('#app').classList.add('hidden');
@@ -102,6 +104,7 @@ export async function start(ctx) {
 
 export function stop() {
   C?.tut?.detach?.();
+  RO.reset();
   B.ended = true; if (B.marker) { B.marker.parent?.remove(B.marker); B.marker = null; } if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
   try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
   B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
@@ -158,7 +161,9 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  hud.readout = RO.panelEl();
+  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.readout, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  RO.paint(hud.readout);
   const fit = () => {
     const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
     world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
@@ -803,6 +808,7 @@ async function doRoll() {
   renderShape();
   await bw.tray.roll(b.board);
   for (const s of BOARD) bw.tray.setBound?.(s, !!b.board[s]?.bound);
+  RO.noteBounds(b.board); RO.refresh();
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
   renderShape();
@@ -1054,6 +1060,7 @@ async function lockInInner() {
   const target = targetEnemy();
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
+  RO.record(rep, b);
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
@@ -1194,6 +1201,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   const b = B.b; const bw = B.bw; const stage = world.stage;
   bw.tray.lock?.(); setHud({ phase: 'resolve' }); clearDock(); stopWindups();
   B.lastRep = rep;
+  RO.record(rep, b);
   const idxOf = (n) => b.fighters.findIndex((f) => f.hero.name === n);
   const actorOfHero = (n) => bw.heroes[idxOf(n)];
   // team triples and Heartbeat

@@ -17,6 +17,7 @@ import { world } from './g3/world.js';
 import * as SCR from './g3/screens.js';
 import * as SCRUI from './g3/scrui.js';
 import * as TUT from './g3/tutorial.js';
+import * as RO from './readout.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -361,6 +362,7 @@ function startQuest(q) {
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  RO.reset();
   if (world.available && !S.net) { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
   renderReset();
 }
@@ -379,6 +381,7 @@ function practice({ hero, quest, guide }) {
   S.battle.script = { rolls: [{ NW: 3, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 }], rerolls: [{ E: 4 }] };
   S.battle.enemies[0].intent = { n: 'Slash', v: 'strike', f: 2, m: 1 }; // a plain hit to read in round 1
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  RO.reset();
   if (world.available) { SCR.release(); B3.start(battleCtx()); return; }
   S.practice.guide = null; renderReset(); // no 3D: the plain board, without the spotlight guide
 }
@@ -403,9 +406,10 @@ function renderReset() {
   const lines = rep ? V.reportLines(rep, b) : [{ kind: 'meh', text: `${S.quest.name}. ${alive.map((e) => e.name).join(' and ')} ${alive.length > 1 ? 'block' : 'blocks'} the way.` }];
   const wind = alive.filter((e) => e.intent.slam);
   const cards = E.cardsOf(hero);
+  const readout = RO.view();
   mount(
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'Reset'), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
-    section(rep ? `Round ${rep.round} result` : 'The fight begins', h('ul', { class: 'log' }, lines.map((l) => h('li', { class: l.kind }, l.text)))),
+    readout || section(rep ? `Round ${rep.round} result` : 'The fight begins', h('ul', { class: 'log' }, lines.map((l) => h('li', { class: l.kind }, l.text)))),
     tip('reset', 'This is the Reset screen. Monsters roll first and show you what they will do this round, so you can plan. Spend Magic (✦) here to heal or recharge cards, then roll your dice.'),
     h('div', { class: 't-eyebrow mb' }, 'The monsters have shown their hand'),
     h('div', { class: 'teles' }, alive.map(enemyTelegraph)),
@@ -423,6 +427,7 @@ function renderReset() {
 async function rollDice() {
   if (S.busy) return; const b = S.battle;
   E.startRoll(b); S.sel.clear(); S.focus = null; S.straight = 'atk';
+  RO.noteBounds(b.board);
   sfx.roll(); renderBattle(); await flicker(D.SLOTS);
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
 }
@@ -503,6 +508,7 @@ function renderBattle() {
     b.boundNow ? h('p', { class: 'warn' }, `⛓ ${b.boundNow} of your dice ${b.boundNow > 1 ? 'are' : 'is'} hexed and cannot be rerolled.`) : null,
     h('div', { id: 'live' },
       bodyWrap(board, hero),
+      RO.view(),
       V.forecastEl(ev, b.mods),
       h('div', { class: 'notes' }, notes.map((n) => h('span', { class: `note ${n.kind}` }, n.text))),
       h('p', { id: 'focus', class: 'focus' }, S.focus ? V.describeDie(hero, S.focus, b.board[S.focus].v) : 'Tap dice to select them for a reroll. Tap a monster to choose your target.')),
@@ -528,6 +534,7 @@ async function lockIn() {
   const ev = E.evaluate(S.hero, b.board, { straight: S.straight });
   if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
   const target = S.target; const rep = E.resolve(b, { target, straight: S.straight }); S.lastReport = rep;
+  RO.record(rep, b);
   await sleep(450);
   const tEl = $(`.ecard[data-uid="${rep.targetUid}"]`);
   if (rep.dealt > 0) { sfx.hit(); floater(tEl, `−${rep.dealt}`, 'dmg'); burstAt(tEl, '#ff8a7a', 22); shake(0.6); tEl?.classList.add('hit'); }
