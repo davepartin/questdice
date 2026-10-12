@@ -13,7 +13,8 @@ const fname = (b, uid) => foe(b, uid)?.name || 'Monster';
 // one number in the sum: [icon] 10 LABEL
 const tk = (kind, n, label, icon) => h('span', { class: `rc-tk ${kind}` }, icon ? HK.icon(icon) : null, h('b', {}, String(n)), label ? h('small', {}, label) : null);
 const op = (s) => h('span', { class: 'rc-op', 'aria-hidden': 'true' }, s);
-const out = (n, word = 'damage') => h('span', { class: `rc-tk out${n > 0 ? '' : ' zero'}` }, h('b', {}, String(n)), h('small', {}, n === 1 && word === 'damage' ? 'damage' : word));
+// the result of a blow: green DEALT for what you do to a monster, red YOU TAKE for what a monster does to you (so the two sides never look alike)
+const out = (n, side = 'take') => h('span', { class: `rc-tk out ${side}${n > 0 ? '' : ' zero'}` }, h('b', {}, String(n)), h('small', {}, side === 'deal' ? (n > 0 ? 'dealt' : 'no damage') : (n > 0 ? 'you take' : 'blocked')));
 const note = (kind, text) => h('p', { class: `rc-note ${kind}` }, HK.rich(text));
 
 // ---- what you did to the monster (one hero)
@@ -23,7 +24,7 @@ function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, h
   if (phased && atk > 0) parts.push(op('→'), h('span', { class: 'rc-tk guard' }, HK.icon('phase'), h('small', {}, 'passes through')));
   else if (guarded > 0) parts.push(op('−'), tk('guard', guarded, 'guard', 'block'));
   if (pierce > 0) parts.push(...(parts.length ? [op('+')] : []), tk('pierce', pierce, 'pierce', 'pierce'));
-  parts.push(op('='), out(dealt));
+  parts.push(op('='), out(dealt, 'deal'));
   const hp = hpFrom != null ? h('em', { class: `rc-hp${killed ? ' dead' : ''}` }, killed ? 'falls! ' : '', h('b', {}, String(Math.max(0, Math.ceil(hpFrom)))), ' → ', h('b', {}, String(Math.max(0, Math.ceil(hpTo))))) : null;
   return h('div', { class: 'rc-line' },
     h('div', { class: 'rc-who' }, h('b', {}, who), h('span', {}, ` ${who === 'You' ? 'strike' : 'strikes'} ${target}`), hp),
@@ -50,7 +51,7 @@ function foeRow(a, b, rep, blockTotal) {
   const parts = [];
   if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
   else parts.push(tk('atk', a.d, a.name || 'attack', 'atk'), op('−'), tk('block', a.ab || 0, 'block', 'block'));
-  parts.push(op('='), out(a.net));
+  parts.push(op('='), out(a.net, 'take'));
   const extra = [];
   if (a.v === 'drain' && rep.magicStolen) extra.push(note('bad', `${name} stole ${rep.magicStolen} of your magic.`));
   if (a.v === 'pilfer' && rep.goldStolen) extra.push(note('bad', `${name} grabbed ${rep.goldStolen} gold. Kill it to take it back.`));
@@ -104,7 +105,7 @@ function partyCard(rep, b) {
     const parts = [];
     if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
     else parts.push(tk('atk', a.d, a.name || 'attack', 'atk'), op('−'), tk('block', a.ab || 0, 'block', 'block'));
-    parts.push(op('='), out(a.net));
+    parts.push(op('='), out(a.net, 'take'));
     // each hero's share: their part, what their own block took, what got through
     const shares = Array.isArray(a.parts) ? a.parts.map((p, i) => ({ who: heads[i]?.name, p, net: a.nets?.[i] ?? p })).filter((s) => s.who && s.p > 0) : [];
     theirs.push(h('div', { class: 'rc-line' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ' hits the company')), h('div', { class: 'rc-sum' }, parts),
@@ -122,10 +123,10 @@ export function roundCard(rep, b, { onClose } = {}) {
   const c = rep.party ? partyCard(rep, b) : soloCard(rep, b);
   const near = (rep.acts || []).some((a) => a.early) && !rep.party;
   const el = h('section', { class: 'rc', role: 'dialog', 'aria-label': `Round ${rep.round} result`, onclick: (e) => { if (!e.target.closest('.rc-body a')) onClose?.(); } },
-    h('header', { class: 'rc-head' }, h('b', {}, `Round ${rep.round}`), h('span', {}, near ? 'a monster was quick' : ''), h('em', {}, 'tap to close')),
+    h('header', { class: 'rc-head' }, h('b', {}, `Round ${rep.round}`), h('span', {}, near ? 'a monster was quick' : ''), h('button', { type: 'button', class: 'sh-x sh-cancel rc-close', 'aria-label': 'Close the round summary', onclick: (e) => { e.stopPropagation(); onClose?.(); } }, '✕ Close')),
     h('div', { class: 'rc-body' },
-      h('div', { class: 'rc-sec you' }, h('div', { class: 'rc-rows' }, c.mine.length ? c.mine : [note('meh', 'No strike this round.')])),
-      h('div', { class: 'rc-sec foes' }, h('div', { class: 'rc-rows' }, c.theirs.length ? c.theirs : [note('good', 'Nothing hit back.')], h('div', { class: 'rc-foot' }, c.tail, c.youBox)))),
+      h('div', { class: 'rc-sec you' }, h('div', { class: 'rc-bar' }, HK.icon('atk'), rep.party ? 'Your company strikes' : 'Your strike'), h('div', { class: 'rc-rows' }, c.mine.length ? c.mine : [note('meh', 'No strike this round.')])),
+      h('div', { class: 'rc-sec foes' }, h('div', { class: 'rc-bar' }, HK.icon('slam'), 'The monsters strike back'), h('div', { class: 'rc-rows' }, c.theirs.length ? c.theirs : [note('good', 'Nothing hit back.')], h('div', { class: 'rc-foot' }, c.tail, c.youBox)))),
   );
   return el;
 }

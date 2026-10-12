@@ -216,7 +216,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
     fx.append(el);
     const half = (el.offsetWidth || 40) / 2 + 4; el.style.left = `${clamp(x + dx, half, W - half)}px`; // never off the edge of the table
-    tween(1.05, (k) => { el.style.transform = `translate(-50%, ${(-30 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.12 ? 0.6 + k * 3.3 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.65 ? 1 : 1 - (k - 0.65) / 0.35); }).then(() => el.remove());
+    // stays up about three seconds so it can be read: it pops in, drifts up slowly, and fades only at the end
+    tween(3.2, (k) => { el.style.transform = `translate(-50%, ${(-46 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.04 ? 0.6 + k * 10 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2); }).then(() => el.remove());
   };
   // a red edge flash when a hero is hurt, a warm one for a triple
   fb.flash = (color = '#ff3a2a', amt = 0.4) => {
