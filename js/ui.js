@@ -227,7 +227,8 @@ function showCreate() {
   const detail = h('div', { class: 'panel class-detail' });
   const grid = h('div', { class: 'class-grid' });
   const paint = () => {
-    grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } }, h('span', {}, c.glyph), h('b', {}, c.name))));
+    grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } },
+      c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name))));
     const c = D.CLASSES[cls];
     detail.replaceChildren(h('p', {}, c.blurb),
       h('div', { class: 'stats' }, h('span', {}, `❤ ${c.hp} HP`), h('span', {}, `⚡ d${c.feet || 4} initiative`)),
