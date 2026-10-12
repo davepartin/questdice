@@ -155,12 +155,13 @@
 .sx-sidetop { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 .sx-back { position: absolute; left: var(--pad); top: calc(.8rem + var(--safe-t)); pointer-events: auto; z-index: 3; }
 .sx-hint { position: absolute; left: 0; right: 0; bottom: calc(1.4rem + var(--safe-b)); text-align: center; pointer-events: none; font-family: var(--font-display); font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-hi); opacity: .75; } .sx-hint span { padding: .35rem .8rem; border: 1px solid var(--hair-2); border-radius: 999px; background: rgba(5, 6, 12, .5); }
-/* the painted miniature stands on the scene: a cut-out piece, bottom-anchored inside the visible area, lit by a pool of its class colour */
-.sx-hero-art { position: absolute; inset: 3.9rem 6% 1.2rem; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; min-height: 0; }
-.sx-hero-art::before { content: ''; position: absolute; left: 50%; bottom: 0; width: min(100%, 26rem); height: 34%; transform: translateX(-50%); background: radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--hue, #ffd23d) 55%, transparent), transparent 68%); filter: blur(6px); }
-.sx-hero-art img { position: relative; display: block; min-height: 0; max-width: 100%; max-height: min(100%, 30rem); width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .55)); animation: sx-piece-in .35s ease-out both; }
+/* the painted miniature stands on the 3D pedestal: JS projects the top disc and pins the image's base to it */
+.sx-hero-art { position: absolute; inset: 0; pointer-events: none; min-height: 0; overflow: visible; }
+.sx-hero-art::before { content: ''; position: absolute; left: var(--ped-x, 50%); top: var(--ped-y, 80%); width: var(--ped-d, 16rem); height: var(--ped-h, 4rem); transform: translate(-50%, -40%); background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--hue, #ffd23d) 55%, transparent), transparent 68%); filter: blur(6px); }
+.sx-hero-art img { position: absolute; display: block; width: auto; height: auto; max-width: none; max-height: none; visibility: hidden; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .55)); }
+.sx-hero-art.is-seated img { visibility: visible; animation: sx-piece-in .35s ease-out both; }
 @keyframes sx-piece-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .sx-hero-art img { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sx-hero-art.is-seated img { animation: none; } }
 .sx-cta { position: sticky; bottom: 0; margin-top: auto; padding-top: .6rem; background: linear-gradient(0deg, rgba(5, 6, 12, .92) 62%, transparent); z-index: 2; }
 
 /* ---------------------------------------------------------------- create */
@@ -340,7 +341,7 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-side::before { content: ''; order: -2; position: static; display: block; flex: none; width: auto; min-width: 0; height: var(--gap); background: none; -webkit-mask-image: none; mask-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; }
   .sx-side::after { content: ''; order: -1; display: block; width: 2.6rem; height: 4px; border-radius: 4px; background: rgba(255, 214, 140, .35); margin: .5rem auto .1rem; flex: none; }
   .sx-viewport { right: 0; bottom: calc(var(--sheet) * 100dvh); will-change: transform; z-index: 3; } .sx-viewport .sx-hint { display: none; }
-  .sx-hero-art { inset: 3.2rem 8% .5rem; }
+  .sx-hero-art { inset: 0; }
   .sx-sidehead .sx-eye { display: none; } .sx-h1 { font-size: 1.5rem; }
   .sx-hint { bottom: calc(var(--sheet) * 100dvh + .6rem); }
   .ci-meters { gap: .5rem; } .ci-head h2 { font-size: 1.4rem; } .ci-head p { font-size: .84rem; }
