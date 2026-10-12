@@ -213,9 +213,45 @@ function pedestal({ pos = [0, 0, 0], color = 0xffc060 } = {}) {
   }
   const halo = new THREE.Mesh(new THREE.CircleGeometry(2.4, 40), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, map: null })); halo.rotation.x = -Math.PI / 2; halo.position.y = 0.03; g.add(halo);
   const L = new THREE.PointLight(color, 5, 7, 1.7); L.position.set(0, 0.8, 0.4); g.add(L);
-  g.userData = { ringM, ring, ring2, halo, L, setColor(c) { ringM.color.set(c).multiplyScalar(2.2); ring2.material.color.set(c).multiplyScalar(1.1); halo.material.color.set(c); L.color.set(c); g.traverse((o) => { if (o.material?.isMeshBasicMaterial && o !== halo && o !== ring && o !== ring2) o.material.color.set(c).multiplyScalar(1.8); }); } };
+  g.userData = { ringM, ring, ring2, halo, L, topY: 0.34, topR: 1.02, setColor(c) { ringM.color.set(c).multiplyScalar(2.2); ring2.material.color.set(c).multiplyScalar(1.1); halo.material.color.set(c); L.color.set(c); g.traverse((o) => { if (o.material?.isMeshBasicMaterial && o !== halo && o !== ring && o !== ring2) o.material.color.set(c).multiplyScalar(1.8); }); } };
   frame((dt, t) => { halo.material.opacity = 0.16 + Math.sin(t * 1.6) * 0.04; ring.rotation.z = t * 0.1; ring2.rotation.z = -t * 0.06; });
   return g;
+}
+
+// Project a world point through the live scene camera into CSS pixels (canvas client space).
+const _q = new THREE.Vector3(); const _p = new THREE.Vector3();
+function projectPt(cam, x, y, z, rect) {
+  _q.set(x, y, z).project(cam);
+  return { x: (_q.x * 0.5 + 0.5) * rect.width + rect.left, y: (-_q.y * 0.5 + 0.5) * rect.height + rect.top };
+}
+// Stand the painted mini on the pedestal: the disc's visual middle lands on the top.
+// FIG_SCALE shrinks the whole figure ~15% so hats and staves clear the Back button; the base stays planted.
+const BASE_FIT = 0.92; const FIG_SCALE = 0.85; const BASE_LIFT = 0.065;
+function pinHeroArt(ped) {
+  const host = document.querySelector('.sx-hero-art'); const img = host?.querySelector('img');
+  if (!host || !img?.naturalWidth || !ped) return;
+  const base = D.CLASSES[host.dataset.cls]?.imgBase; if (!base) return;
+  const st = stage(); const cam = st.camera; cam.updateMatrixWorld();
+  const rect = st.canvas.getBoundingClientRect();
+  ped.updateWorldMatrix(true, false); ped.getWorldPosition(_p);
+  const y = _p.y + (ped.userData.topY || 0.34); const r = ped.userData.topR || 1.02;
+  const c = projectPt(cam, _p.x, y, _p.z, rect);
+  const L = projectPt(cam, _p.x - r, y, _p.z, rect); const R = projectPt(cam, _p.x + r, y, _p.z, rect);
+  const F = projectPt(cam, _p.x, y, _p.z + r, rect); const B = projectPt(cam, _p.x, y, _p.z - r, rect);
+  const d = Math.hypot(R.x - L.x, R.y - L.y); const dh = Math.hypot(F.x - B.x, F.y - B.y);
+  if (d < 8) return;
+  // a little toward the front of the top disc (down on screen) so the painted base meets the visible ring, not the geometric centre
+  const sx = c.x; const sy = c.y + dh * 0.16;
+  const W = (d * BASE_FIT * FIG_SCALE) / base.w; const H = W * (img.naturalHeight / img.naturalWidth);
+  const box = host.getBoundingClientRect();
+  img.style.left = `${sx - box.left - base.x * W}px`;
+  img.style.top = `${sy - box.top - (base.y - BASE_LIFT) * H}px`;
+  img.style.width = `${W}px`;
+  host.style.setProperty('--ped-x', `${c.x - box.left}px`);
+  host.style.setProperty('--ped-y', `${c.y - box.top}px`);
+  host.style.setProperty('--ped-d', `${d}px`);
+  host.style.setProperty('--ped-h', `${Math.max(8, dh)}px`);
+  host.classList.add('is-seated');
 }
 
 // Warm rim from behind-left plus a cool fill from the camera side so a hero reads against a bright sky.
@@ -295,13 +331,14 @@ const MODES = {
         }
       } else yaw += vel * dt;
       pivot.rotation.y = yaw;
+      pinHeroArt(ped);
     });
     emberField({ box: [-5, 0, -3, 5, 3.5, 5], rate: 10 });
     await pick(cls, { quiet: true }); check(token);
     world.director.set('s-create', { snap: true, lambda: 1.4 }); drift(0.12, 0.1);
     music.setMood?.('title');
     const handle = {
-      pick, ped,
+      pick, ped, pin: () => pinHeroArt(ped),
       push(inn) { world.director.set(inn ? 's-create-in' : 's-create', { lambda: 2.2 }); },
       drag(dx, end) { dragging = !end; idle = 0; turnT = 0; if (end) return; yaw += dx * 0.011; vel = dx * 0.011 * 60; },
       get hero() { return cur; },

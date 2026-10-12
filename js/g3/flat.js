@@ -32,6 +32,12 @@ class Piece {
     this.el = h('button', { type: 'button', class: 'fb-pc', 'aria-label': name, style: hue ? { '--hue': hue } : null }, this.mark, this.ring, this.img, this.chev, this.call);
     this.el.style.setProperty('--rel', String(rel));
   }
+  // rotate and lunge around the painted disc, not the image centre
+  seat(base) {
+    if (!base) return this;
+    this.img.style.transformOrigin = `${(base.x * 100).toFixed(2)}% ${((base.y - 0.07) * 100).toFixed(2)}%`;
+    return this;
+  }
   // the piece's centre and head, in board pixels
   rect() { const b = this.fb.el.getBoundingClientRect(); const r = this.img.getBoundingClientRect(); return { x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height, cx: r.left - b.left + r.width / 2, cy: r.top - b.top + r.height / 2, top: r.top - b.top, bottom: r.bottom - b.top }; }
   set(name, v) { if (v) this.p[name] = v; else delete this.p[name]; this.render(); }
@@ -121,7 +127,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   heroes.forEach((hero, i) => {
     const look = D.lookOf(heroes, i);
     const k = D.CLASSES[hero.cls];
-    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null });
+    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null }).seat(k.imgBase);
     pc.el.classList.add('hero');
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
     const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
@@ -140,7 +146,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
-    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id) });
+    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id) }).seat(def.imgBase);
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
     const slot = h('div', { class: `fb-slot foe tier-${e.tier}`, 'data-uid': e.uid }, pc.el, c.el);

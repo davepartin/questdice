@@ -249,6 +249,9 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // A card is { id, name, cost, text, fx }. fx keys: atk, pierce, block, heal, magic,
 // weaken (enemy damage -N this round), free (a free reroll action of N dice).
 // -------------------------------------------------------------------------------------------
+// Painted mini base disc, as fractions of the image: centre x, bottom-row y, disc width.
+// Callers aim a little above y (the visual middle of the disc) at whatever the piece stands on.
+const IB = (W, H, cx, by, bw) => ({ x: cx / W, y: by / H, w: bw / W });
 export const CLASSES = {
   // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
   // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), healAmount (health per
@@ -256,7 +259,7 @@ export const CLASSES = {
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
     trait: 'Balanced: a strong left hand and a shield.',
-    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight.webp', hp: 34,
+    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
     weapons: ['sword', 'shield'],
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
@@ -273,7 +276,7 @@ export const CLASSES = {
   ranger: {
     feet: 6, maxFeet: 8, startMagic: 4,
     trait: 'The fastest: the only class that can train speed to a d8.',
-    name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger.webp', hp: 28,
+    name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger.webp', imgBase: IB(325, 470, 153.5, 465, 284), hp: 28,
     blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
     weapons: ['bow'],
     cards: [
@@ -288,7 +291,7 @@ export const CLASSES = {
   wizard: {
     feet: 4, startMagic: 6, magicCap: 15, healAmount: 6, powerLevels: 3,
     trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic, powers grow to level 3.',
-    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', hp: 24,
+    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), hp: 24,
     blurb: 'A frail body and a deep well of magic. No shield, but a spell for every problem and healing to spare.',
     weapons: ['staff'],
     cards: [
@@ -303,7 +306,7 @@ export const CLASSES = {
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
     trait: 'The wall: the most health, a crushing mace and a tower shield.',
-    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf.webp', hp: 40,
+    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf.webp', imgBase: IB(443, 448, 250, 443, 329), hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
     weapons: ['mace', 'tower'],
     cards: [
@@ -318,7 +321,7 @@ export const CLASSES = {
   bard: {
     feet: 6, startMagic: 5,
     trait: 'The steady helper: quick, steady weapons, more magic to share.',
-    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard.webp', hp: 30,
+    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard.webp', imgBase: IB(318, 476, 153, 471, 283), hp: 30,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
     weapons: ['dagger', 'bracer'],
     cards: [
@@ -363,31 +366,31 @@ const S = (n, f, m, extra = {}) => ({ n, v: 'strike', f, m, ...extra });
 //   phase  Phase: normal attack passes straight through it this round; only pierce (and splash) can hurt it.
 export const MONSTERS = {
   goblin: {
-    name: 'Goblin Skulker', glyph: '👺', img: 'assets/miniatures/goblin.webp', short: 'GOBL', init: 6, hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
+    name: 'Goblin Skulker', glyph: '👺', img: 'assets/miniatures/goblin.webp', imgBase: IB(404, 415, 230.5, 409, 306), short: 'GOBL', init: 6, hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion',
     faces: [S('Stab', 1, 1), S('Stab', 1, 1), { n: 'Pilfer', v: 'pilfer', f: 0, m: 1 },
       { n: 'Duck', v: 'guard', f: 1, m: 1 }, S('Slash', 2, 1), { n: 'Fire Bomb', v: 'pierce', f: 1, m: 1 }],
   },
   wolf: {
-    name: 'Dire Wolf', glyph: '🐺', img: 'assets/miniatures/wolf.webp', short: 'WOLF', init: 8, hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
+    name: 'Dire Wolf', glyph: '🐺', img: 'assets/miniatures/wolf.webp', imgBase: IB(467, 415, 235, 410, 383), short: 'WOLF', init: 8, hp: 40, power: 8, xp: 10, gold: 8, tier: 'minion',
     pounce: { f: 1, m: 2 }, // after a Stalk it was not hit out of
     faces: [S('Bite', 1, 1), S('Bite', 1, 1), { n: 'Howl', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lunge', 0, 2), { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, S('Rend', 2, 1)],
   },
   cultist: {
-    name: 'Ember Mage', glyph: '🔥', img: 'assets/miniatures/cultist.webp', short: 'MAGE', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
+    name: 'Ember Mage', glyph: '🔥', img: 'assets/miniatures/cultist.webp', imgBase: IB(322, 475, 160, 470, 297), short: 'MAGE', init: 6, hp: 34, power: 8, xp: 12, gold: 10, tier: 'minion',
     faces: [{ n: 'Tangle', v: 'bind', f: 0, m: 0, k: 1 }, { n: 'Ember', v: 'pierce', f: 0, m: 1 },
       { n: 'Fire Ward', v: 'ward', f: 0, m: 1, k: 4 }, { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 },
       S('Bolt', 1, 1), { n: 'Tangle', v: 'bind', f: 0, m: 0, k: 2 }],
   },
   ogre: {
-    name: 'Hill Ogre', glyph: '👹', img: 'assets/miniatures/ogre.webp', short: 'OGRE', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',
+    name: 'Hill Ogre', glyph: '👹', img: 'assets/miniatures/ogre.webp', imgBase: IB(431, 462, 248, 457, 341), short: 'OGRE', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite',
     slam: { f: 2, m: 2 },
     faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   goblinking: {
-    name: 'The Goblin King', glyph: '👑', img: 'assets/miniatures/goblinking.webp', short: 'KING', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss',
+    name: 'The Goblin King', glyph: '👑', img: 'assets/miniatures/goblinking.webp', imgBase: IB(371, 462, 184, 457, 315), short: 'KING', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss',
     slam: { f: 3, m: 2 }, adds: 'goblin',
     faces: [S('Scepter', 1, 1), S('Scepter', 1, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
@@ -401,29 +404,29 @@ export const MONSTERS = {
   },
   // ---- Act II (draft numbers, untuned) ----
   skeleton: {
-    name: 'Bone Soldier', glyph: '💀', img: 'assets/miniatures/skeleton.webp', short: 'SKEL', init: 4, hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion',
+    name: 'Bone Soldier', glyph: '💀', img: 'assets/miniatures/skeleton.webp', imgBase: IB(418, 483, 249.5, 478, 304), short: 'SKEL', init: 4, hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion',
     faces: [S('Slash', 1, 1), S('Slash', 1, 1), { n: 'Shield Up', v: 'guard', f: 2, m: 1 },
       S('Stab', 2, 1), { n: 'Bone Throw', v: 'pierce', f: 1, m: 1 }, S('Slash', 1, 1)],
   },
   wraith: {
-    name: 'Wraith', glyph: '👻', img: 'assets/miniatures/wraith.webp', short: 'WRTH', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
+    name: 'Wraith', glyph: '👻', img: 'assets/miniatures/wraith.webp', imgBase: IB(339, 461, 168.5, 456, 252), short: 'WRTH', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion',
     faces: [{ n: 'Chill', v: 'pierce', f: 0, m: 1 }, { n: 'Chill', v: 'pierce', f: 0, m: 1 },
       { n: 'Drain', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Wail', v: 'bind', f: 0, m: 0, k: 2 },
       { n: 'Phase', v: 'phase', f: 0, m: 0 }, S('Touch', 1, 1)],
   },
   spider: {
-    name: 'Crypt Spider', glyph: '🕷️', img: 'assets/miniatures/spider.webp', short: 'SPDR', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
+    name: 'Crypt Spider', glyph: '🕷️', img: 'assets/miniatures/spider.webp', imgBase: IB(512, 439, 260.5, 433, 358), short: 'SPDR', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion',
     faces: [S('Bite', 1, 1), { n: 'Web', v: 'bind', f: 0, m: 0, k: 2 }, { n: 'Venom', v: 'pierce', f: 1, m: 1 },
       { n: 'Skitter', v: 'guard', f: 1, m: 1 }, S('Pounce', 0, 2), S('Bite', 1, 1)],
   },
   bonewarden: {
-    name: 'Bone Warden', glyph: '🦴', img: 'assets/miniatures/bonewarden.webp', short: 'WARD', init: 4, hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite',
+    name: 'Bone Warden', glyph: '🦴', img: 'assets/miniatures/bonewarden.webp', imgBase: IB(417, 468, 174, 463, 319), short: 'WARD', init: 4, hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite',
     slam: { f: 3, m: 2 }, adds: 'skeleton',
     faces: [S('Cleave', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Wall', v: 'guard', f: 2, m: 1 },
       { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 }, S('Smash', 0, 2), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   lich: {
-    name: 'The Hollow Lich', glyph: '☠️', img: 'assets/miniatures/lich.webp', short: 'LICH', init: 6, hp: 185, power: 12, xp: 140, gold: 120, tier: 'boss',
+    name: 'The Hollow Lich', glyph: '☠️', img: 'assets/miniatures/lich.webp', imgBase: IB(368, 489, 191.5, 484, 320), short: 'LICH', init: 6, hp: 185, power: 12, xp: 140, gold: 120, tier: 'boss',
     slam: { f: 4, m: 2 }, adds: 'skeleton',
     faces: [{ n: 'Soul Bolt', v: 'pierce', f: 2, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Drain Life', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 2 },

@@ -249,11 +249,13 @@ export function create(opts = {}) {
   const paint = () => {
     const c = D.CLASSES[cls];
     const pic = classPreview(cls);
+    preview.classList.remove('is-seated'); preview.dataset.cls = cls;
     preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', CLS_HUE[cls] || '#ffd23d'); hint.hidden = !!pic;
+    if (pic) { const go = () => H?.pin?.(); if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true }); }
     $('#gl')?.classList.toggle('grab', !pic);
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
-      onclick: () => { if (id === cls) return; cls = id; sfx.select(); paint(); H?.pick(cls).then(() => H?.push(true)); },
+      onclick: () => { if (id === cls) return; cls = id; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
     }, classPic(id), h('span', {}, k.name.split(' ')[0]))));
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
@@ -304,7 +306,7 @@ export function create(opts = {}) {
     cv.addEventListener('pointerdown', pd); cv.addEventListener('pointermove', pm); cv.addEventListener('pointerup', pu); cv.addEventListener('pointercancel', pu);
     if (spinning()) cv.classList.add('grab');
     (S.cleanups ||= []).push(() => { cv.removeEventListener('pointerdown', pd); cv.removeEventListener('pointermove', pm); cv.removeEventListener('pointerup', pu); cv.removeEventListener('pointercancel', pu); cv.classList.remove('grab'); });
-    H.pick(cls, { quiet: true }).then(() => H.push(true));
+    H.pick(cls, { quiet: true }).then(() => { H.push(true); H.pin?.(); });
   });
 }
 
