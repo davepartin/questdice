@@ -32,32 +32,3 @@
 .qd-ro-round li.good { border-color: var(--heal, #45e08b); color: #c8f7de; }
 .qd-ro-round li.bad { border-color: var(--hp, #ff7a1a); color: #ffd7b8; }
 .qd-ro-round li.meh { color: var(--hull-300, #8593b8); }
-
-/* 3D battle HUD: float near the dice tray, scrollable, does not steal the rest of the screen. */
-.b3 .qd-readout {
-  position: absolute; z-index: 5; pointer-events: auto;
-  left: calc(.5rem + env(safe-area-inset-left, 0px));
-  bottom: calc(var(--dock-top, 12rem) + 4.4rem);
-  width: min(16rem, 54vw); max-height: 7.4rem;
-  padding: .38rem .5rem .42rem;
-  background: linear-gradient(180deg, rgba(30, 26, 42, .88), rgba(10, 10, 20, .9));
-  box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .22), 0 8px 22px rgba(0, 0, 0, .45);
-  backdrop-filter: blur(8px);
-}
-.b3 .qd-ro-h { color: var(--gild, #e2b24c); }
-.b3 .qd-ro-log { max-height: 6.1rem; gap: .38rem; }
-.b3 .qd-ro-round li { font-size: .7rem; text-shadow: 0 1px 3px #000; }
-@media (min-aspect-ratio: 5/4) {
-  .b3 .qd-readout {
-    left: calc(1rem + env(safe-area-inset-left, 0px));
-    top: calc(4.4rem + env(safe-area-inset-top, 0px));
-    bottom: auto;
-    width: min(var(--col, 18rem), 22rem);
-    max-height: 9.2rem;
-  }
-  .b3 .qd-ro-log { max-height: 7.8rem; }
-}
-@media (max-height: 480px) and (min-aspect-ratio: 5/4) {
-  .b3 .qd-readout { max-height: 6.4rem; }
-  .b3 .qd-ro-log { max-height: 5.2rem; }
-}

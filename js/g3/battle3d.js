@@ -12,25 +12,20 @@ import * as HK from './hudkit.js';
 import * as Coach from '../coach.js';
 import { sfx, music } from '../audio.js';
 import { world } from './world.js';
-import { intentClips } from '../gfx/actors/common.js';
 import * as THREE from 'three';
 import { petImg } from './pets.js';
 import * as Sess from '../session.js';
-import * as RO from '../readout.js';
+import { createFlat } from './flat.js';
+import { roundCard } from './roundcard.js';
 
-const stopWindups = () => { for (const h of B.windups.splice(0)) { try { h.stop(); } catch { /* ignore */ } } };
 let C = null;                // context from ui.js
 const B = {
   bw: null, b: null, hero: null, quest: null, root: null, plates: new Map(), sel: new Set(), target: 0, focus: null,
-  straight: 'atk', windups: [], busy: false, ringMesh: null, swing: 0, log: null, lastRep: null, ended: false, ro: null, off: null,
+  straight: 'atk', busy: false, lastRep: null, ended: false, ro: null, off: null, fb: null, card: null,
 };
 export const battleState = B;
 
 const wait = (s) => world.stage.wait(s);
-const race = (p, s = 2.2) => Promise.race([p, wait(s)]);
-const vfx = (name, ...a) => { try { const p = B.bw.vfx[name]?.(...a); return p && p.then ? Promise.race([p, world.stage.wait(2.2)]) : Promise.resolve(); } catch (e) { console.warn('vfx', name, e); return Promise.resolve(); } };
-const raw = (name, ...a) => { try { return B.bw.vfx[name]?.(...a); } catch (e) { console.warn('vfx', name, e); } };
-const v3 = (a) => (a.isVector3 ? a : new THREE.Vector3(...a));
 
 const EPITHET = {
   goblinking: ['THE GOBLIN KING', 'Lord of Stolen Things'], ogre: ['HILL OGRE', 'Breaker of Gates'], lich: ['THE HOLLOW LICH', 'The Dead Organize'],
@@ -44,25 +39,18 @@ export async function start(ctx) {
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
   B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0;
   if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
-  RO.reset();
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
-  layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Gathering the dark…')));
+  layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Setting up the table…')));
   $('#app').classList.add('hidden');
   document.body.classList.add('in-battle');
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); // let the loader paint before heavy procedural work
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); // let the loader paint before the dice table is built
   const b = B.b;
-  const bw = await world.buildBattle({ quest: B.quest, hero: B.hero, enemies: b.enemies, heroes: B.party ? b.fighters.map((f) => f.hero) : null });
+  const bw = await world.buildTable({ hero: B.hero });
   B.bw = bw; B.trayBase = bw.tray.object.scale.x;
   if (B.net) bw.setActiveHero(B.active, B.hero); // this phone's hero stands in front, and the dice table is theirs
   bw.tray.onPick = onPick;
   bw.tray.onSound = (kind, o) => { if (kind === 'hit') (sfx.dieHit || sfx.settle)?.(o?.speed); else (sfx.dieSettle || sfx.settle)?.(); };
-  bw.stage.canvas.addEventListener('pointerup', pickEnemy);
-  B.ringMesh = makeRing();
-  bw.stage.scene.add(B.ringMesh);
-  bw.stage.onFrame((dt, t) => { if (!B.ended) { positionPlates(); ringUpdate(t); framePan(dt); } });
   buildHud();
-  // draw each monster's front portrait in the quiet moments, so its sheet opens with the picture ready
-  setTimeout(() => { if (!B.ended) for (const id of new Set(b.enemies.map((e) => e.id))) C.portrait?.(id); }, 2500);
   if (C.tut) C.tut.attach({
     root: B.root, toast: (t) => toast(t),
     diePoint: (slot) => { const q = B.bw.tray.projectSlot?.(slot, { dy: 0.3 }); if (!q) return null; const r = B.bw.stage.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; },
@@ -74,28 +62,18 @@ export async function start(ctx) {
   // Show the board once so the tray is not empty, dimmed, until the first roll.
   idleTray();
   world.stage.post.uniforms.uFade.value = 1;
-  await Promise.all(b.enemies.map((e, i) => (bw.actors.get(e.uid).play('spawn', { fade: 0 }), Promise.resolve())));
-  world.stage.fadeTo(0, 0.9);
+  world.stage.fadeTo(0, 0.6);
+  // the pieces are set down one after another
+  for (const pc of B.fb.foes.values()) pc.set('appear', { a: 0 });
+  await wait(0.2);
+  for (const pc of B.fb.foes.values()) { pc.appear(); await wait(0.12); }
   // Boss / elite title card
   const big = b.enemies.find((e) => e.tier !== 'minion');
   if (big && EPITHET[big.id]) { titleCard(...EPITHET[big.id], big.tier); sfx.rage?.(); await wait(0.9); }
-  world.director.set('intro', { snap: true }); await wait(0.5);
-  world.director.set('battle', { lambda: 1.8 });
-  await wait(1.1);
+  await wait(0.5);
   B.busy = false;
-  // the dice are the game: keep the grade clean over every arena (light bloom and vignette, no tilt blur, neutral tints, a bright exposure)
-  const c0 = bw.arena.c || bw.arena; if (c0.lookBase) { c0.lookBase.bloom = 0.12; c0.lookBase.exposure = Math.max(1.12, c0.lookBase.exposure ?? 1); }
-  world.stage.post.look({ bloom: 0.12, vignette: 0.26, grain: 0.015, aberration: 0, tilt: 0, sat: 1.12, contrast: 1.12, shadowTint: 0xffffff, highTint: 0xffffff, exposure: Math.max(1.12, c0.lookBase?.exposure ?? 1.12) });
-  if (!landscape()) { // phones: light the monsters so they read from above
-    const L = new THREE.Group(); L.name = 'foeLight';
-    const key = new THREE.PointLight(0xfff4e6, 70, 0, 2); key.position.set(0.5, 5.0, -2.5); L.add(key);
-    const fill = new THREE.PointLight(0xdfe8ff, 28, 0, 2); fill.position.set(-4, 3.5, -2.5); L.add(fill);
-    const fill2 = new THREE.PointLight(0xfff0d8, 28, 0, 2); fill2.position.set(4.5, 3.5, -2.5); L.add(fill2);
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x8a6a5a, 0.7); L.add(hemi);
-    world.stage.scene.add(L); B.foeLight = L;
-  }
-  B.bw.arena.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
-  try { if (!bw.vfx.stub) B.ambient = bw.vfx.ambientFor?.(B.quest.place || B.quest.name || '', { intensity: 0.8 }); } catch (e) { console.warn('ambientFor', e); }
+  // the dice are the game: keep the grade clean (light bloom and vignette, no tilt blur, neutral tints, a bright exposure)
+  world.stage.post.look({ bloom: 0.12, vignette: 0.26, grain: 0.015, aberration: 0, tilt: 0, sat: 1.12, contrast: 1.12, shadowTint: 0xffffff, highTint: 0xffffff, exposure: 1.12 });
   music.setMood?.(big && big.tier === 'boss' ? 'boss' : 'battle');
   B.starting = false;
   if (B.net) return netSettle(); // a table already mid-round (coming back to it) shows its own state
@@ -104,12 +82,10 @@ export async function start(ctx) {
 
 export function stop() {
   C?.tut?.detach?.();
-  RO.reset();
-  B.ended = true; if (B.marker) { B.marker.parent?.remove(B.marker); B.marker = null; } if (B.foeLight) { B.foeLight.parent?.remove(B.foeLight); B.foeLight = null; }
-  try { B.ambient?.stop?.(); } catch { /* ignore */ } B.ambient = null;
-  B.bw?.stage.canvas.removeEventListener('pointerup', pickEnemy);
+  B.ended = true;
+  B.fb?.dispose(); B.fb = null; B.card = null;
   const layer = $('#b3'); layer.className = 'b3-layer'; layer.replaceChildren();
-  B.plates.clear(); B.ro?.disconnect(); if (B.fit) window.removeEventListener('resize', B.fit);
+  B.ro?.disconnect(); if (B.fit) window.removeEventListener('resize', B.fit);
   document.body.classList.remove('in-battle');
   $('#app').classList.remove('hidden');
 }
@@ -135,9 +111,9 @@ function buildHud() {
   const hud = B.hud = {};
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
   hud.place = h('small', {}); hud.round = h('b', {}); hud.score = h('span', { class: 'b3-score', 'aria-label': 'Battle points' }, h('i', {}, 'PTS'), h('b', {}, '0'));
-  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score)));
-  hud.plates = h('div', { class: 'b3-plates' }); hud.more = h('div', { class: 'b3-more', 'aria-hidden': 'true' }, '▾'); hud.coach = h('div', { class: 'b3-coach' });
-  hud.leaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hud.leaders.setAttribute('class', 'b3-leaders'); hud.leaders.setAttribute('aria-hidden', 'true');
+  hud.again = h('button', { type: 'button', class: 'rc-again', hidden: true, 'aria-label': 'Show the last round again', onclick: () => showCard(B.lastCard) }, HK.icon('dice'), h('span', {}, 'Last round'));
+  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again)));
+  hud.coach = h('div', { class: 'b3-coach' });
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
@@ -161,30 +137,30 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  hud.readout = RO.panelEl();
-  B.root.append(...[hud.leaders, hud.plates, hud.more, hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.readout, hud.sheet, hud.info, hud.coach].filter(Boolean));
-  RO.paint(hud.readout);
+  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  // the table: flat painted pieces behind everything (flat.js)
+  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget });
   const fit = () => {
-    const r = hud.dock.getBoundingClientRect(); const portrait = !landscape();
-    world.director.setSafe(portrait ? Math.max(0, window.innerHeight - r.top) : 0, portrait ? Math.round(hud.top.getBoundingClientRect().bottom + 2) : Math.round(hud.plates.getBoundingClientRect().bottom + 4));
-    B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`); B.root.style.setProperty('--plates-b', `${Math.round(hud.plates.getBoundingClientRect().bottom + 6)}px`);
-    sizePlates();
+    const r = hud.dock.getBoundingClientRect();
+    B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
+    B.root.style.setProperty('--strip-bottom', `${Math.round(hud.top.getBoundingClientRect().bottom + 2)}px`);
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
     fitTray();
+    B.fb?.layout();
   };
-  const moreCheck = () => { const p = hud.plates; const more = !landscape() && p.scrollHeight - p.scrollTop - p.clientHeight > 6; hud.more.classList.toggle('on', more); };
-  hud.plates.addEventListener('scroll', moreCheck, { passive: true }); B.moreCheck = moreCheck; setInterval(() => { if (B.root?.isConnected) moreCheck(); }, 400);
-  B.fitOff?.(); B.fitOff = world.stage.onFrame(() => { if (landscape() || !B.root?.isConnected) return; const sig = `${world.stage.width}|${world.stage.height}|${Math.round(hud.dock.getBoundingClientRect().top)}|${Math.round(hud.top.getBoundingClientRect().bottom)}|${world.stage.post.trayPass.enabled}|${!!B.hero?.pet}`; if (sig !== B.fitSig) { B.fitSig = sig; fit(); } });
+  B.fitOff?.(); B.fitOff = world.stage.onFrame(() => { if (!B.root?.isConnected) return; const sig = `${world.stage.width}|${world.stage.height}|${Math.round(hud.dock.getBoundingClientRect().top)}|${Math.round(hud.top.getBoundingClientRect().bottom)}|${world.stage.post.trayPass.enabled}|${!!B.hero?.pet}`; if (sig !== B.fitSig) { B.fitSig = sig; fit(); } });
   B.fit = fit; B.ro?.disconnect?.(); B.ro = new ResizeObserver(fit); B.ro.observe(hud.dock); B.ro.observe(hud.hero); window.addEventListener('resize', fit);
   layer.append(B.root);
-  for (const [i, e] of B.b.enemies.entries()) addPlate(e, i);
+  updatePlates();
+  B.fb.setActive(B.active || 0);
   fit();
 }
 
 // Phones: make the dice board as wide as the screen. Lower the camera (foreshorten) until the full-width board also fits
 // between the monster strip and the dock; the monsters stand behind it in whatever space is left.
 function fitTray() {
-  const bw = B.bw; if (!bw || landscape() || !B.hud) return;
+  const bw = B.bw; if (!bw || !B.hud) return;
+  if (landscape()) return fitTrayWide();
   const dir = world.director; const stage = world.stage; const W = stage.width; const H = stage.height;
   if (!stage.post.trayPass.enabled) return;
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
@@ -210,6 +186,26 @@ function fitTray() {
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${Math.round(lineY)}px`);
   dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
   B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
+}
+// Wide screens: the table across the top, the dice table in the middle below it, between your hero panel (left) and the controls (right).
+function fitTrayWide() {
+  const stage = world.stage; const W = stage.width; const H = stage.height; if (!stage.post.trayPass.enabled) return;
+  const hud = B.hud; const cam = stage.trayCamera; const v = new THREE.Vector3();
+  const lineY = Math.round(Math.max(hud.top.getBoundingClientRect().bottom + 110, H * 0.36));
+  const x0 = Math.min(W * 0.3, hud.hero.getBoundingClientRect().right + 12); const x1 = Math.max(W * 0.7, hud.dock.getBoundingClientRect().left - 12);
+  const y0 = lineY + 8; const y1 = H - 8;
+  const PITCH = (64 * Math.PI) / 180; const LOOK = new THREE.Vector3(0, 0.1, 0.1); const HALF = 1.9; const EDGE = 2.2;
+  cam.fov = 34; cam.aspect = W / H; cam.clearViewOffset();
+  const place = (d) => { cam.position.set(LOOK.x, LOOK.y + d * Math.sin(PITCH), LOOK.z + d * Math.cos(PITCH)); cam.lookAt(LOOK); cam.updateProjectionMatrix(); cam.updateMatrixWorld(); };
+  const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]; };
+  const box = () => { const a = pt(-HALF, 0.4, EDGE); const b = pt(HALF, 0.4, EDGE); const c = pt(-HALF, 0.4, -EDGE); const d2 = pt(HALF, 0.4, -EDGE); const xs = [a[0], b[0], c[0], d2[0]]; const ys = [a[1], b[1], c[1], d2[1]]; return { l: Math.min(...xs), r: Math.max(...xs), t: Math.min(...ys), b: Math.max(...ys) }; };
+  let lo = 4; let hi = 80; let d = 20;
+  for (let i = 0; i < 40; i++) { d = (lo + hi) / 2; place(d); const q = box(); if (q.r - q.l > x1 - x0 || q.b - q.t > y1 - y0) lo = d; else hi = d; }
+  place(d); const q = box();
+  cam.setViewOffset(W, H, (q.l + q.r) / 2 - (x0 + x1) / 2, (q.t + q.b) / 2 - (y0 + y1) / 2, W, H);
+  stage.post.trayPass.band = { y: lineY, h: H - lineY };
+  B.lineY = lineY; B.root.style.setProperty('--line-y', `${lineY}px`);
+  world.director.tilt = 0; B.trayDist = d;
 }
 // ------------------------------------------------------------------------------------------ the company: roster and team actions
 // At a table (net mode) b mirrors this phone's hero (E.focusFighter); the others are in b.fighters.
@@ -269,10 +265,10 @@ async function doTeam(kind, to) {
     const r = E.teamAction(b, B.active, kind, to);
     if (!r.ok) { sfx.error(); toast(r.why); return; }
   }
-  const fa = B.bw.heroes[to]; const friend = b.fighters[to];
-  if (kind === 'potion') { sfx.heal(); vfx('heal', fa.worldAnchor('chest'), { color: 0x45e08b }); number(fa.worldAnchor('head'), `+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
-  if (kind === 'magic') { sfx.magic(); vfx('aura', fa, { kind: 'buff', color: 0xa64dff, dur: 1.0 }); number(fa.worldAnchor('head'), `+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
-  if (kind === 'revive') { sfx.level?.(); vfx('aura', fa, { kind: 'summon', color: 0xfff0a0, dur: 1.4 }); fa.play('idle', { fade: 0.3 }); number(fa.worldAnchor('head'), `REVIVED +${friend.hp}`, 'heal'); banner(`${friend.hero.name.toUpperCase()} IS BACK!`, 'good'); }
+  const fa = B.fb.hero(to); const friend = b.fighters[to];
+  if (kind === 'potion') { sfx.heal(); fa.heal(); fa.num(`+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
+  if (kind === 'magic') { sfx.magic(); fa.glow('magic'); fa.num(`+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
+  if (kind === 'revive') { sfx.level?.(); fa.stand(); fa.glow('buff'); fa.num(`REVIVED +${friend.hp}`, 'heal'); banner(`${friend.hero.name.toUpperCase()} IS BACK!`, 'good'); }
   B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderRoster(); updateScore(); refresh();
 }
 function buildHero() {
@@ -328,213 +324,25 @@ function petInfo() {
   toast(b.board?.P ? `${V.describeDie(hero, 'P', b.board.P.v)} Pets roll once a round; no rerolls.` : `${name} rolls a die of luck with your dice each round. It cannot be rerolled.`);
 }
 
-function addPlate(e) {
-  const r = {
-    name: h('span', { class: 'pl-name' }, e.name), hp: HK.bar({ cls: 'pl-bar', seg: Math.max(4, Math.min(12, Math.round(e.maxHp / 10))) }),
-    chips: h('div', { class: 'pl-chips' }), intent: h('div', { class: 'pl-intent' }), call: h('div', { class: 'pl-call' }),
-  };
-  const tierIc = e.tier === 'boss' ? 'crown' : e.tier === 'elite' ? 'rank' : null;
-  const el = h('button', { class: `b3-plate tier-${e.tier}`, type: 'button', 'data-uid': e.uid, onclick: () => selectTarget(e.uid), 'aria-label': e.name },
-    h('i', { class: 'pl-frame' }),
-    h('span', { class: 'pl-reticle', 'aria-hidden': 'true' }, h('i', {}), h('b', {}, 'TARGET')),
-    h('div', { class: 'pl-head' }, tierIc ? h('span', { class: 'pl-tier' }, HK.icon(tierIc)) : null, r.name, r.chips),
-    r.hp, r.intent, r.call);
-  el._r = r;
-  const NS = 'http://www.w3.org/2000/svg';
-  const ln = document.createElementNS(NS, 'g'); ln.setAttribute('class', 'b3ld');
-  ln.innerHTML = '<line class="b3ld-l" x1="0" y1="0" x2="0" y2="0"/><circle class="b3ld-d" r="3"/>';
-  B.hud.leaders.append(ln); el._lead = ln;
-  B.hud.plates.append(el); B.plates.set(e.uid, el);
-  updatePlate(e); sizePlates();
-  return el;
-}
-function sizePlates() {
-  const n = Math.max(1, B.b.enemies.filter((e) => e.hp > 0).length); const w = window.innerWidth;
-  const px = landscape() ? Math.min(188, Math.max(148, w * 0.15)) : Math.max(104, Math.min(172, Math.floor((w - 16 - 8 * (n - 1)) / n)));
-  B.hud.plates.style.setProperty('--plw', `${Math.round(px)}px`);
-  B.hud.plates.classList.toggle('compact', px < 150 && !landscape());
-}
-function intentNode(v) {
-  return [HK.medallion(v.shape, v.icon),
-    h('div', { class: 'in-main' }, h('b', { class: 'in-name' }, v.title),
-      h('div', { class: 'in-fig' }, h('b', {}, v.fig), h('small', {}, v.unit, v.subIcon ? HK.icon(v.subIcon) : null)),
-      h('small', { class: 'in-hint' }, v.hint))];
-}
-function updatePlate(e) {
-  const el = B.plates.get(e.uid); if (!el) return;
-  const r = el._r; const dead = e.hp <= 0;
-  el.classList.toggle('dead', dead);
-  el.classList.toggle('raged', !!e.raged);
-  r.name.textContent = landscape() ? e.name : (D.MONSTERS[e.id]?.short || e.name.slice(0, 4).toUpperCase());
-  HK.setBar(r.hp, e.hp, e.maxHp);
-  const v = !dead && B.showIntents !== false ? HK.intentView(e) : null;
-  const sig = v ? [v.tone, v.title, v.fig, v.unit, v.hint, v.call?.sub].join('|') : '';
-  if (el._sig !== sig) {
-    el._sig = sig;
-    el.classList.toggle('has-intent', !!v);
-    r.intent.className = `pl-intent${v ? ` tone-${v.tone}${v.hazard ? ' hazard' : ''}` : ''}`;
-    r.intent.replaceChildren(...(v ? intentNode(v) : []));
-    r.call.className = `pl-call${v?.call ? ` on tone-${v.tone}` : ''}`;
-    r.call.replaceChildren(...(v?.call ? [HK.icon(v.call.ico || 'windup'), h('span', {}, h('b', {}, v.call.head), h('small', {}, v.call.sub))] : []));
-    if (v) HK.replay(r.intent, 'swap');
-    el.setAttribute('aria-label', v ? `${e.name}, ${e.hp} of ${e.maxHp} health. Intends ${v.title}: ${v.fig} ${v.unit}. ${v.call ? `${v.call.head}, ${v.call.sub}.` : v.hint}` : `${e.name}${dead ? ', defeated' : ''}`);
-  }
-  const chips = [];
-  if (e.carried) chips.push(h('span', { class: 'plchip gold', title: 'Carrying stolen gold. Kill it to take it back.' }, HK.icon('gold'), h('b', {}, String(e.carried))));
-  if (e.raged) chips.push(h('span', { class: 'plchip rage', title: e.rageName }, HK.icon('slam'), e.rageName || 'Enraged'));
-  r.chips.replaceChildren(...chips);
-  el.classList.toggle('targeted', B.b.enemies[B.target]?.uid === e.uid && !dead);
-  el.setAttribute('aria-pressed', el.classList.contains('targeted') ? 'true' : 'false');
-}
+// The monsters' cards (name, health, what each plans) live under their pieces on the table (flat.js).
+function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.b.enemies[B.target]?.uid === e.uid }); }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 export const refreshPlates = () => updatePlates(); // (dev scripts)
-
-// Phone: the monsters' stat plates are a fixed strip under the hero panel (scrolls sideways with many foes) so the dice own the screen.
-// Tap a plate or a monster to choose a target.
-function stripPlates() {
-  const hud = B.hud; const hb = landscape() ? 64 : hud.top.getBoundingClientRect().bottom;
-  if (landscape()) hud.plates.style.top = `${Math.round(hb + 6)}px`; else hud.plates.style.top = '';
-  let tgt = null;
-  for (const e of B.b.enemies) {
-    const el = B.plates.get(e.uid); const a = B.bw.actors.get(e.uid); if (!el || !a) continue;
-    const vis = a.root.visible && (e.hp > 0 || a.dissolving);
-    el.style.display = vis ? '' : 'none'; el._lead.style.display = 'none'; el.style.transform = '';
-    el.classList.remove('tiny');
-    if (vis && el.classList.contains('targeted')) tgt = el;
-  }
-  if (tgt && B._scrolledTo !== tgt) { B._scrolledTo = tgt; const c = hud.plates; c.scrollTo({ left: Math.max(0, tgt.offsetLeft - 8), behavior: 'smooth' }); }
-  const r = hud.plates.getBoundingClientRect(); const safeTop = Math.round(r.bottom + 2); B.root.style.setProperty('--strip-bottom', `${safeTop}px`);
-  if (B._safeTop !== safeTop) { B._safeTop = safeTop; B.fit?.(); }
-}
-const _p = new THREE.Vector3();
-function project(world3, out = {}) {
-  const cam = world.stage.camera; _p.copy(world3).project(cam);
-  const w = world.stage.width; const hh = world.stage.height;
-  out.x = (_p.x * 0.5 + 0.5) * w; out.y = (-_p.y * 0.5 + 0.5) * hh; out.z = _p.z; return out;
-}
-function positionPlates() {
-  return stripPlates();
-  const bw = B.bw; const w = world.stage.width;
-  const hud = B.hud; const GAP = 8;
-  // top limit: below the hero strip (phone) / top bar (landscape), and the ribbon
-  let topSafe = 8;
-  const rb = (n) => (n && n.offsetHeight ? n.getBoundingClientRect().bottom : 0);
-  topSafe = Math.max(topSafe, rb(hud.top) + 4, landscape() ? 0 : rb(hud.hero) + 4, rb(hud.ribbon) + 2);
-  const items = [];
-  for (const e of B.b.enemies) {
-    const el = B.plates.get(e.uid); const a = bw.actors.get(e.uid); if (!el || !a) continue;
-    const vis = a.root.visible && (e.hp > 0 || a.dissolving);
-    el.style.display = vis ? '' : 'none'; el._lead.style.display = vis && e.hp > 0 ? '' : 'none';
-    if (!vis) continue;
-    const head = a.worldAnchor('head').clone(); head.y += (a.height || 1.5) * 0.15; const p = project(head);
-    const it = { e, el, hx: p.x, hy: p.y, ax: p.x, w: el.offsetWidth || 150, h: el.offsetHeight || 90, x: p.x, y: p.y - 22 };
-    if (e.tier !== 'minion') {
-      // big monsters: the plate stands beside the body so it never sits on the face
-      const hh = a.height || 3; const top = project(head); const low = head.clone(); low.y -= hh * 0.5; const mid = project(low);
-      const halfW = Math.abs(mid.y - top.y) * 0.5 * 0.62;
-      const side = top.x < w / 2 ? 1 : -1;
-      it.ax = top.x + side * (halfW + it.w / 2 + 4); it.y = mid.y + it.h * 0.55; it.big = true;
-    }
-    items.push(it);
-  }
-  items.sort((a, b2) => a.ax - b2.ax);
-  const total = items.reduce((s, it) => s + it.w, 0) + GAP * Math.max(0, items.length - 1);
-  const rows = total > w - 12 ? 2 : 1;
-  const place = (list) => {
-    for (const it of list) it.x = Math.max(it.w / 2 + 6, Math.min(w - it.w / 2 - 6, it.ax));
-    for (let i = 1; i < list.length; i++) { const q = list[i - 1]; const min = q.x + (q.w + list[i].w) / 2 + GAP; if (list[i].x < min) list[i].x = min; }
-    for (let i = list.length - 1; i >= 0; i--) { const mx = w - list[i].w / 2 - 6; if (list[i].x > mx) list[i].x = mx; if (i < list.length - 1) { const nx = list[i + 1]; const m2 = nx.x - (nx.w + list[i].w) / 2 - GAP; if (list[i].x > m2) list[i].x = m2; } }
-  };
-  if (rows === 1) place(items); else { const a = items.filter((_, i) => i % 2 === 0); const b2 = items.filter((_, i) => i % 2 === 1); place(a); place(b2); for (const it of b2) { it.y -= it.h + GAP; it.row = 1; } }
-  // phone: plates sit in their own row under the hero strip (never on the monsters); a leader line points down to each head
-  if (!landscape()) for (const it of items) it.y = topSafe + it.h + 2 + (it.row || 0) * (it.h + GAP);
-  const NS = items.length;
-  const obs = [hud.cards, hud.dock, landscape() ? hud.hero : null].filter((n) => n && n.offsetHeight).map((n) => n.getBoundingClientRect()).filter((r) => r.height > 4);
-  for (const it of items) {
-    // no room above the head: shrink to icon + figure instead of sitting on the monster's face
-    if (!it.el.classList.contains('tiny')) it.el._fullH = it.h;
-    const tiny = it.y - (it.el._fullH || 90) < topSafe; it.el.classList.toggle('tiny', tiny);
-    let y = Math.max(it.h + topSafe, it.y);
-    for (const r of obs) if (it.x + it.w / 2 > r.left && it.x - it.w / 2 < r.right && y > r.top - 8 && y - it.h < r.bottom) y = Math.max(it.h + topSafe, r.top - 8);
-    it.el.style.transform = `translate3d(${it.x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
-    const l = it.el._lead; const ln = l.firstChild; const dot = l.lastChild;
-    ln.setAttribute('x1', it.x.toFixed(1)); ln.setAttribute('y1', (y - 1).toFixed(1)); ln.setAttribute('x2', it.hx.toFixed(1)); ln.setAttribute('y2', (it.hy - 2).toFixed(1));
-    dot.setAttribute('cx', it.hx.toFixed(1)); dot.setAttribute('cy', (it.hy - 2).toFixed(1));
-    l.classList.toggle('on', it.el.classList.contains('targeted')); l.classList.toggle('far', NS > 0 && (y - it.hy) < -4);
-  }
-}
-function makeRing() {
-  const g = new THREE.RingGeometry(0.78, 0.92, 64);
-  const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff5a3a).multiplyScalar(2.2), transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
-  const r = new THREE.Mesh(g, m); r.rotation.x = -Math.PI / 2; r.position.y = 0.04; r.renderOrder = 3; return r;
-}
-// A gold arrow bobs over the chosen monster's head, with a soft light on it, so the target stands out without moving the camera.
-function markerUpdate(a, show, t) {
-  if (!B.marker) {
-    const g = new THREE.Group(); g.name = 'targetMarker';
-    g.add(new THREE.Object3D()); // (no arrow: the red ring already shows who you are fighting; only the soft light stays)
-    const lamp = new THREE.PointLight(0xfff0cc, 40, 0, 2); lamp.position.set(0, -1.2, 1.4); g.add(lamp);
-    g.visible = false; B.bw.stage.scene.add(g); B.marker = g;
-  }
-  B.marker.visible = !!show; if (!show) return;
-  const top = a.worldAnchor?.('head'); const base = top ? top.clone() : a.root.position.clone().setY((a.height || 2) * 0.9 * (a.root.scale?.y || 1));
-  const bob = Math.sin(t * 4) * 0.12; B.marker.position.set(base.x, base.y + 0.55 + bob, base.z);
-}
-// Phones: slide the picture so the tallest creature stands near the top of the battlefield (no wasted sky),
-// while the nearest feet stay above the golden line. Small monsters pan the view down, a towering one keeps it high.
-const _fb = new THREE.Box3(); const _fv = new THREE.Vector3();
-function framePan(dt) {
-  const dir = B.bw?.director; if (!dir || landscape() || !B.hud || !B.lineY || dir.shot !== 'battle') return;
-  const cam = B.bw.stage.camera; const topBar = B.hud.top.getBoundingClientRect().bottom; const W = B.bw.stage.width; const H = B.bw.stage.height;
-  const roots = [B.bw.hero?.root, ...[...B.bw.actors.entries()].filter(([uid]) => (B.b.enemies.find((e) => e.uid === uid)?.hp ?? 0) > 0).map(([, a]) => a.root)].filter((r) => r && r.visible);
-  if (!roots.length) return;
-  let top = 1e9; let foot = -1e9;
-  for (const r of roots) {
-    _fb.setFromObject(r); if (_fb.isEmpty()) continue;
-    const cx = (_fb.min.x + _fb.max.x) / 2; const cz = (_fb.min.z + _fb.max.z) / 2;
-    _fv.set(cx, _fb.max.y, cz).project(cam); top = Math.min(top, (-_fv.y * 0.5 + 0.5) * H);
-    _fv.set(cx, _fb.min.y, cz).project(cam); foot = Math.max(foot, (-_fv.y * 0.5 + 0.5) * H);
-  }
-  void W; if (top > 1e8) return;
-  const want = topBar + 0.16 * (B.lineY - topBar); // where the tallest head should sit
-  let delta = want - top; // + moves the picture down, - up
-  delta = Math.min(delta, B.lineY - 8 - foot); // keep the nearest feet above the line
-  delta = Math.max(delta, topBar + 4 - top); // but never lose a head under the header
-  const target = Math.max(-40, Math.min(140, dir.pan - delta));
-  dir.pan += (target - dir.pan) * (1 - Math.exp(-2.4 * dt)); dir.applySafe();
-}
-function ringUpdate(t) {
-  const e = B.b.enemies[B.target]; const a = e && B.bw.actors.get(e.uid);
-  const show = !!(a && e.hp > 0 && a.root.visible);
-  markerUpdate(a, show && B.b.enemies.filter((x) => x.hp > 0).length > 1, t);
-  // Prefer the VFX library's animated dashed target ring when it exists.
-  if (B.bw.vfx.targetRing && !B.bw.vfx.stub) {
-    if (!B.tring && a) { try { B.tring = B.bw.vfx.targetRing(a, { color: 0xff5a3a }); } catch (err) { console.warn('targetRing', err); B.tring = null; B.noTring = true; } }
-    if (B.tring) { B.ringMesh.visible = false; if (show) { B.tring.move?.(a); } B.tring.setVisible?.(show); return; }
-  }
-  B.ringMesh.visible = show;
-  if (!show) return;
-  B.ringMesh.position.x += (a.root.position.x - B.ringMesh.position.x) * 0.35;
-  B.ringMesh.position.z += (a.root.position.z - B.ringMesh.position.z) * 0.35;
-  const r = Math.max(0.9, (a.radius || 0.6) * 1.5);
-  B.ringMesh.scale.setScalar(r * (1 + Math.sin(t * 4) * 0.03));
-  B.ringMesh.rotation.z = t * 0.6;
-}
+function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
 function titleCard(name, sub, tier) {
   const el = HK.titleCard(name, sub, tier);
   B.root.append(el); setTimeout(() => el.remove(), 3800);
 }
 
 // ------------------------------------------------------------------------------------------ small helpers
-function floatAt(x, y, text, kind = '') {
-  const f = h('div', { class: `floater ${kind}`, style: { left: `${x}px`, top: `${y}px` } }, HK.rich(text));
-  document.body.append(f); setTimeout(() => f.remove(), 1300);
+const foePc = (uid) => B.fb?.foe(uid);
+// the hero pieces: in a company, health under each; the piece whose turn it is stands forward
+const myPc = () => B.fb.hero(Math.max(0, B.active ?? 0));
+function paintHeroes() {
+  const fb = B.fb; if (!fb) return;
+  if (B.party) B.b.fighters.forEach((f, i) => fb.paintHero(i, f.hp, f.maxHp));
+  fb.setActive(Math.max(0, B.active ?? 0));
 }
-function number(worldPos, text, kind = 'dmg') {
-  if (B.bw.vfx && !B.bw.vfx.stub && B.bw.vfx.damageNumber) { B.bw.vfx.damageNumber(v3(worldPos), text, { kind }); return; }
-  const p = project(v3(worldPos).clone()); floatAt(p.x, p.y, text, kind);
-}
-const actorOf = (e) => B.bw.actors.get(e.uid);
 const alive = () => B.b.enemies.filter((e) => e.hp > 0);
 function targetEnemy() {
   const e = B.b.enemies[B.target];
@@ -569,9 +377,8 @@ function showFoeInfo(e) {
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const seen = new Set([e.intent?.n]);
   const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
-  // a picture of the monster from the front (rendered once, then cached), beside its name and numbers
-  const img = h('img', { alt: e.name, draggable: 'false' }); const pic = h('div', { class: 'fi-pic shimmer' }, img);
-  Promise.resolve(C.portrait?.(e.id)).then((url) => { if (!url) { pic.classList.add('none'); return; } img.onload = () => pic.classList.remove('shimmer'); img.src = url; }).catch(() => pic.classList.add('none'));
+  // the painted miniature, beside its name and numbers
+  const img = h('img', { alt: e.name, draggable: 'false', src: def.img }); const pic = h('div', { class: 'fi-pic' }, img);
   fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
     h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
@@ -581,21 +388,6 @@ function showFoeInfo(e) {
     others.length ? h('div', { class: 'fi-moves' }, others.map((f) => { const [ic, txt] = MOVE[f.v] || ['atk', f.v]; return h('span', { class: 'fi-mv' }, HK.icon(ic), h('b', {}, f.n), h('small', {}, txt)); })) : null);
   B.hud.info.classList.add('open'); sfx.select();
 }
-// Raycast monsters for tap-to-target.
-const ray = new THREE.Raycaster(); const v2 = new THREE.Vector2(); let downAt = null;
-function pickEnemy(e) {
-  if (B.ended || B.busy) return;
-  const r = world.stage.canvas.getBoundingClientRect();
-  v2.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  ray.setFromCamera(v2, world.stage.camera);
-  const roots = [...B.bw.actors.values()].filter((a) => a.root.visible).map((a) => a.root);
-  const hit = ray.intersectObjects(roots, true)[0];
-  if (!hit) return;
-  let o = hit.object; while (o && !o.userData?.uid && o.parent) o = o.parent;
-  const uid = o?.userData?.uid ?? [...B.bw.actors.entries()].find(([, a]) => a.root === (o || {}))?.[0];
-  if (uid) selectTarget(uid);
-}
-
 const BOARD = [...D.SLOTS, 'P']; // the nine sockets and the pet's stand (hidden when the hero has no pet)
 function idleTray() {
   const b = B.b; const tray = B.bw.tray;
@@ -735,7 +527,7 @@ async function doBigHeal() {
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'drink' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healBig(b)) { sfx.error(); return; }
   renderRoster();
-  sfx.heal(); vfx('heal', B.bw.hero.worldAnchor('chest'), { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 }); B.bw.hero.once?.('drink');
+  sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
   updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 // The powers sheet reaches right down to the top of the counter boxes (Dave: "there is room, so let's use it").
@@ -767,15 +559,8 @@ export function renderReset() {
   setHud({ phase: 'reset' });
   targetEnemy();
   B.sel.clear();
-  stopWindups();
-  // monsters telegraph
-  for (const e of b.enemies) {
-    const a = actorOf(e); if (!a || e.hp <= 0) continue;
-    if (a.alive) { const c = intentClips(e.intent); a.play(c.tele, { fade: 0.25 }); }
-    if (e.intent?.slam || e.intent?.v === 'charge') { const h = raw('aura', a, { kind: 'windup', color: 0xff3a2a, urgency: e.intent.slam ? 1 : 0.5 }); if (h?.stop) B.windups.push(h); }
-  }
-  updatePlates(); sizePlates();
-  bw.hero.play('idle', { fade: 0.3 });
+  updatePlates(); paintHeroes();
+  B.fb.setTarget(b.enemies[B.target]?.uid);
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
@@ -799,7 +584,7 @@ function e0Warn() {
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
-  if (B.busy || !guideSays('roll')) return; B.busy = true;
+  if (B.busy || !guideSays('roll')) return; B.busy = true; hideCard();
   let b = B.b; const bw = B.bw;
   if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
@@ -808,7 +593,6 @@ async function doRoll() {
   renderShape();
   await bw.tray.roll(b.board);
   for (const s of BOARD) bw.tray.setBound?.(s, !!b.board[s]?.bound);
-  RO.noteBounds(b.board); RO.refresh();
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
   renderShape();
@@ -900,9 +684,7 @@ async function doHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'heal' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
-  renderRoster(); sfx.heal(); const hp = B.bw.hero.worldAnchor('chest');
-  vfx('heal', hp, { color: 0x45e08b }); number(B.bw.hero.worldAnchor('head'), `+${b.hp - before}`, 'heal'); B.bw.hero.play('drink', { fade: 0.1 });
-  B.bw.hero.once?.('drink');
+  renderRoster(); sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
   B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
 }
 async function doCard(id, opts = {}) {
@@ -914,9 +696,8 @@ async function doCard(id, opts = {}) {
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
-  const tone = PW.toneOf(k); const color = { heal: 0x45e08b, block: 0x4db4ff, pierce: 0xff8a1a, atk: 0xff5a4a, gold: 0xffd23d }[tone] ?? 0xa64dff;
-  B.bw.hero.once('cast', { back: 'ready' });
-  vfx('aura', B.bw.hero, { kind: 'buff', color, dur: 1.1 });
+  const tone = PW.toneOf(k);
+  myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
   B.sheetOpen = false; B.hud.sheet.classList.remove('open');
   // what the power actually added this round (the counters before and after)
   const gains = {};
@@ -928,7 +709,7 @@ async function doCard(id, opts = {}) {
   // every power shows what it did, in a small window, then OK (Dave: each one should feel special)
   B.busy = true; renderShape();
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id) }); } finally { B.busy = false; }
-  if (gains.heal) { vfx('heal', B.bw.hero.worldAnchor('chest')); number(B.bw.hero.worldAnchor('head'), `+${gains.heal}`, 'heal'); }
+  if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   renderShape(); bumpCounters(gains);
 }
 // The counters that a power just filled give a little pulse, so you can see where it went.
@@ -938,8 +719,8 @@ function bumpCounters(gains) {
 }
 async function doRecharge(id) {
   const b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'recharge', id }); B.busy = false; if (ok) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); refresh(); } return; }
-  if (E.recharge(b, id)) { sfx.magic(); vfx('aura', B.bw.hero, { kind: 'buff', color: 0xffd23d, dur: 0.8 }); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'recharge', id }); B.busy = false; if (ok) { sfx.magic(); myPc().glow('gold'); refresh(); } return; }
+  if (E.recharge(b, id)) { sfx.magic(); myPc().glow('gold'); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
 }
 function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(); }
 
@@ -1047,6 +828,59 @@ async function lockNet() {
   const ok = await netDo({ type: 'lock', target: B.target, straight: B.straight });
   if (!ok) { B.busy = false; renderShape(); }
 }
+// ---- the pieces perform one blow at a time (flat.js). Hardly any animation: a lunge, then a shake and a slight tilt with a spark.
+const heroPiece = (name) => (B.party ? B.fb.heroByName(name) : B.fb.hero(0));
+const HIT_KIND = (pierceOnly, caster) => (caster ? 'magic' : pierceOnly ? 'pierce' : 'hit');
+// a hero strikes a monster. s: { atk, pierce, guarded, dealt, phased, killed, burned, targetUid }
+async function strikeAnim(hp, s, { caster = false } = {}) {
+  const ta = foePc(s.targetUid); if (!hp || !ta) return;
+  const jobs = [];
+  await hp.lunge(ta, () => {
+    if (s.phased) { jobs.push(ta.glow('magic')); ta.num('Passes through', 'meh'); }
+    else if (s.guarded > 0) { jobs.push(ta.guard()); ta.num(`Guarded ${s.guarded}`, 'block'); sfx.block(); }
+    if (s.dealt > 0) { sfx.hit(); jobs.push(ta.hit(Math.min(1, s.dealt / 25), HIT_KIND(s.atk === 0 && s.pierce > 0, caster))); ta.num(`−${s.dealt}`, 'dmg'); if (s.pierce) ta.num(`◆ ${s.pierce}`, 'pierce', { dx: 22, dy: 14 }); }
+    else if (!s.guarded && !s.phased) { ta.num('0', 'meh'); sfx.block(); }
+    if (s.burned) { sfx.hurt(); buzz(60); jobs.push(hp.hit(0.6, 'fire')); hp.num(`🔥 −${s.burned}`, 'hurt'); B.fb.flash('#ff6a2a', 0.35); }
+  });
+  await Promise.all(jobs);
+}
+// a monster acts. `heroes`: [{ pc, part, net }] who it hit and how it came out (a company shares the blow).
+async function foeAnim(act, heroes) {
+  const a = foePc(act.uid); if (!a) return;
+  const first = heroes[0]?.pc;
+  const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
+  if (!dmgVerb) {
+    if (act.v === 'charge' && !act.cancelled) { sfx.windup(); await a.glow('fire'); }
+    else if (act.v === 'howl') { sfx.howl?.(); await a.glow('buff'); }
+    else if (act.v === 'bind') { sfx.hex?.(); a.glow('magic'); if (first) { first.num('Dice locked', 'hurt'); await first.glow('magic'); } }
+    else if (act.v === 'summon') { sfx.summon?.(); await a.glow('buff'); }
+    else if (act.v === 'guard') { await a.guard(); }
+    else if (act.v === 'ward') { await a.glow('fire'); }
+    else if (act.v === 'phase') { await a.glow('magic'); }
+    else if (act.v === 'stalk') { await a.glow('buff'); }
+    else if (act.v === 'mend') { sfx.heal(); await a.heal(); if (act.healed) a.num(`+${act.healed}`, 'heal'); }
+    await wait(0.15);
+    return;
+  }
+  const jobs = [];
+  await a.lunge(first, () => {
+    for (const { pc, part, net } of heroes) {
+      const ab = part - net;
+      if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); pc.num(`−${net}`, 'hurt'); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
+      if (ab > 0) { jobs.push(pc.guard()); pc.num(`🛡 ${ab}`, 'block', { dx: net > 0 ? 24 : 0, dy: net > 0 ? 14 : 0 }); sfx.block(); }
+      if (net <= 0 && ab <= 0 && part >= 0) pc.num('Blocked!', 'block');
+    }
+  });
+  await Promise.all(jobs);
+  await wait(0.12);
+}
+// What a round's report said, as the card over the board (roundcard.js). Closed by a tap, or when the next roll starts.
+function showCard(el = B.card) {
+  if (!el || B.ended) return;
+  B.card?.remove(); B.card = el; B.root.append(el); B.hud.again.hidden = true;
+}
+function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
+function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
 async function lockInInner() {
   if (B.net) return lockNet();
   if (B.busy) return; B.busy = true;
@@ -1055,143 +889,75 @@ async function lockInInner() {
   B.sel.clear(); bw.tray.setSelected?.(new Set());
   const ev = E.evaluate(hero, b.board, { straight: B.straight });
   bw.tray.lock?.();
-  setHud({ phase: 'resolve' }); clearDock();
-  stopWindups();
-  const target = targetEnemy();
+  setHud({ phase: 'resolve' }); clearDock(); hideCard();
+  targetEnemy();
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
-  RO.record(rep, b);
+  const card = makeCard(rep);
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
     if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
     await wait(0.55);
   } else await wait(0.25);
+  const me = B.fb.hero(0);
 
   // ---------- initiative: who goes first this round
   {
     const ini = rep.init; const nm = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Monster';
     if (ini.forced) { banner('YOU STRIKE FIRST', 'gold'); }
     else {
-      for (const f of ini.foes) { const a = bw.actors.get(f.uid); if (a) number(a.worldAnchor('head'), `⚡ ${f.init}`, f.init > ini.hero ? 'hurt' : 'block'); }
-      number(bw.hero.worldAnchor('head'), `⚡ ${ini.hero}`, 'pierce');
+      for (const f of ini.foes) foePc(f.uid)?.num(`⚡ ${f.init}`, f.init > ini.hero ? 'hurt' : 'block');
+      me.num(`⚡ ${ini.hero}`, 'pierce');
       const quick = ini.foes.filter((f) => rep.early.includes(f.uid)).map((f) => nm(f.uid));
       banner(quick.length ? `${quick.length > 1 ? 'MONSTERS' : quick[0].toUpperCase()} STRIKE${quick.length > 1 ? '' : 'S'} FIRST` : `YOU STRIKE FIRST  ⚡${ini.hero}`, quick.length ? 'bad' : 'gold');
     }
     sfx.synergy?.();
     await wait(ini.forced ? 0.6 : 1.1);
   }
-  const playAct = async (act) => {
-    const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) return;
-    const intent = { v: act.v, n: act.name, slam: act.name === 'Slam' || act.name === 'Pounce', pounce: act.name === 'Pounce' };
-    const clips = intentClips(intent);
-    const heroChest = bw.hero.worldAnchor('chest');
-    const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
-    const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
-    if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
-    if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
-    if (act.v === 'bind') { sfx.hex?.(); vfx('aura', bw.hero, { kind: 'buff', color: 0x7ab4ff, dur: 1.1 }); }
-    if (act.v === 'summon') { sfx.summon?.(); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); }
-    if (act.v === 'guard') { vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 }); }
-    if (act.v === 'ward') { vfx('shield', a.worldAnchor('chest'), { color: 0xff5a2a, radius: a.height * 0.55, dur: 1.0 }); }
-    if (act.v === 'phase') { vfx('aura', a, { kind: 'buff', color: 0x9ad8ff, dur: 1.0 }); }
-    if (act.v === 'stalk') { vfx('aura', a, { kind: 'windup', color: 0xffcc3a }); }
-    if (act.v === 'mend') { vfx('heal', a.worldAnchor('chest')); }
-    if (dmgVerb && (act.v === 'pierce' || a.has('throw') && /Bomb|Ember|Bone/.test(act.name))) {
-      await race(ev2, 1.2);
-      await vfx('projectile', a.worldAnchor('handR'), heroChest, { kind: /Bomb/.test(act.name) ? 'bomb' : /Ember|Bolt/.test(act.name) ? 'fireball' : act.v === 'pierce' ? 'pierce' : 'bone', color: act.v === 'pierce' ? 0xff8a1a : 0xff8a2a });
-    } else await race(ev2, 1.4);
-    if (dmgVerb) {
-      if (act.net > 0) {
-        sfx.hurt(); buzz(60); stage.shake(act.net >= 8 ? 1.0 : 0.7); stage.hurt(Math.min(1, 0.4 + act.net / 14)); bw.director.punch(0.7);
-        vfx('impact', heroChest, { kind: 'flesh', power: Math.min(1, act.net / 14) });
-        bw.hero.hurt(); number(bw.hero.worldAnchor('head'), `−${act.net}`, 'hurt');
-      }
-      if (act.ab > 0) { vfx('shield', heroChest, { color: 0x4db4ff, radius: 1.0, dur: 0.8 }); sfx.block(); bw.hero.once?.('block', { back: 'idle' }); number(bw.hero.worldAnchor('head').clone().add(new THREE.Vector3(0.6, -0.3, 0)), `🛡 ${act.ab}`, 'block'); }
-      if (act.net <= 0 && !act.ab) number(bw.hero.worldAnchor('head'), 'Blocked!', 'block');
-    }
-    await wait(0.3);
-  };
+  const playAct = (act) => foeAnim(act, [{ pc: me, part: act.d ?? 0, net: act.net ?? 0 }]);
   // monsters that rolled higher than your feet strike before you
-  if (rep.acts.some((a) => a.early)) { bw.director.set('defend', { lambda: 3.5 }); for (const act of rep.acts.filter((a) => a.early)) await playAct(act); }
-  if (rep.heroDown) { for (const e of b.enemies) updatePlate(e); B.busy = false; bw.tray.unlock?.(); return lose(); }
+  for (const act of rep.acts.filter((a) => a.early)) await playAct(act);
+  if (rep.heroDown) { updatePlates(); me.fall(-1); sfx.lose?.(); await wait(0.8); B.busy = false; bw.tray.unlock?.(); return lose(); }
 
   // ---------- 1. your strike
-  const tAct = bw.actors.get(rep.targetUid); const tEnemy = b.enemies.find((e) => e.uid === rep.targetUid);
-  bw.director.set('attack', { lambda: 5 });
   const weaponId = hero.loadout.NW.id;
-  const ranged = weaponId === 'bow'; const caster = weaponId === 'staff';
-  const swing = (B.swing++ % 2) ? 'attack2' : 'attack';
-  const heroClip = (rep.T.atk + rep.T.pierce) > 0 ? swing : 'cast';
-  const hitP = new Promise((res) => bw.hero.play(heroClip, { fade: 0.08, onEvent: (en) => { if (en === 'hit' || en === 'release') res(); } }).then(res));
-  await race(hitP, 1.6);
-  const chest = tAct.worldAnchor('chest'); const headP = tAct.worldAnchor('head');
-  const hcol = rep.T.pierce > 0 && rep.T.atk === 0 ? 0xff8a1a : 0xff5a4a;
-  if (rep.dealt > 0 || rep.guarded > 0) {
-    if (ranged) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'arrow', color: 0xffe0a0 });
-    else if (caster) await vfx('projectile', bw.hero.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
-    else vfx('slash', chest, { color: hcol, kind: 'blade' });
-  }
-  if (rep.phased) { vfx('aura', tAct, { kind: 'buff', color: 0x9ad8ff, dur: 0.8 }); number(headP.clone().add(new THREE.Vector3(0, 0.4, 0)), 'Passes through!', 'meh'); }
-  else if (rep.guarded > 0 && E.GUARD_VERBS.has(tEnemy?.intent?.v)) { vfx('shield', chest, { color: tEnemy.intent.v === 'ward' ? 0xff5a2a : 0xffd23d, dur: 0.8 }); number(headP, `Guarded ${rep.guarded}`, 'block'); sfx.block(); }
-  if (rep.dealt > 0) {
-    sfx.hit(); stage.shake(0.5 + Math.min(0.5, rep.dealt / 40)); bw.director.punch(Math.min(1, 0.5 + rep.dealt / 30));
-    vfx('impact', chest, { kind: 'flesh', power: Math.min(1, rep.dealt / 25) });
-    tAct.hurt(); number(headP, `−${rep.dealt}`, 'dmg');
-    if (rep.T.pierce) { vfx('beam', bw.hero.worldAnchor('chest'), chest, { color: 0xff8a1a, dur: 0.25 }); number(headP.clone().add(new THREE.Vector3(0.5, 0.35, 0)), `◆ ${rep.T.pierce}`, 'pierce'); }
-  } else if (!rep.guarded) { number(headP, '0', 'meh'); sfx.block(); }
+  await strikeAnim(me, { atk: rep.T.atk, pierce: rep.T.pierce, guarded: rep.guarded, dealt: rep.dealt, phased: rep.phased, burned: rep.burned, targetUid: rep.targetUid }, { caster: weaponId === 'staff' });
   for (const sp of rep.splashed || []) { // splash / area damage on the other monsters
     if (sp.uid === rep.targetUid || sp.dealt <= 0) continue;
-    const a = bw.actors.get(sp.uid); if (!a) continue;
-    a.hurt(); vfx('impact', a.worldAnchor('chest'), { kind: 'flesh', power: Math.min(1, sp.dealt / 20) }); number(a.worldAnchor('head'), `−${sp.dealt}`, 'dmg');
+    const a = foePc(sp.uid); if (!a) continue;
+    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'dmg');
   }
-  if (rep.burned) { // Fire Ward: the hero who hit it burns
-    await wait(0.2); sfx.hurt(); buzz(60); vfx('impact', bw.hero.worldAnchor('chest'), { kind: 'fire', power: 0.7 }); stage.hurt(0.6);
-    bw.hero.hurt(); number(bw.hero.worldAnchor('head'), `🔥 −${rep.burned}`, 'hurt');
-  }
-  if (tEnemy) updatePlate(tEnemy);
   for (const e of b.enemies) updatePlate(e);
-  stage.hitStop?.(0.06);
-  await wait(0.28);
-  for (const uid of rep.killed) {
-    const a = bw.actors.get(uid); if (!a) continue;
-    sfx.deathEmber?.(); vfx('death', a, { size: a.height });
-    a.die({ dur: 1.2 }); updatePlate(b.enemies.find((e) => e.uid === uid));
-  }
-  await wait(rep.killed.length ? 0.55 : 0.2);
+  await wait(0.2);
+  for (const uid of rep.killed) { sfx.deathEmber?.(); foePc(uid)?.fall(1); }
+  await wait(rep.killed.length ? 0.6 : 0.15);
 
   // ---------- 2. the survivors act
-  bw.director.set('defend', { lambda: 3.5 });
   for (const act of rep.acts.filter((x) => !x.early)) await playAct(act);
   for (const st of rep.stalks || []) { // a Stalk ends: broken, or the wolf will pounce
-    const a = bw.actors.get(st.uid); if (!a) continue;
-    number(a.worldAnchor('head'), st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt');
-    if (!st.broken) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xffcc3a }); }
+    const a = foePc(st.uid); if (!a) continue;
+    a.num(st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt');
+    if (!st.broken) { sfx.windup(); a.glow('fire'); }
   }
   // reinforcements, rage
   for (const uid of rep.summoned) {
-    const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;
-    const a = await bw.addEnemy(b.enemies[i], i, b.enemies);
-    addPlate(b.enemies[i]); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); a.play('spawn', { fade: 0 });
+    const e = b.enemies.find((x) => x.uid === uid); if (!e) continue;
+    addFoe(e).appear();
   }
-  for (const uid of rep.raged) {
-    const a = bw.actors.get(uid); banner('ENRAGED!', 'bad'); sfx.rage(); stage.shake(1.2); stage.flash(0xff2a1a, 0.35);
-    a?.setRage?.(true); await race(a?.play('rage', { fade: 0.1 }) ?? Promise.resolve(), 1.8); vfx('aura', a, { kind: 'rage', color: 0xff3a1a });
-  }
-  if (rep.healed) { sfx.heal(); vfx('heal', bw.hero.worldAnchor('chest')); number(bw.hero.worldAnchor('head'), `+${rep.healed}`, 'heal'); }
-  if (rep.T.magic) { vfx('magicGain', bw.tray.worldPos?.('E') ?? bw.hero.worldAnchor('chest')); }
-  if (rep.T.gold) { vfx('goldGain', bw.tray.worldPos?.('W') ?? bw.hero.worldAnchor('chest')); }
+  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); await a?.rage(); }
+  if (rep.healed) { sfx.heal(); me.heal(); me.num(`+${rep.healed}`, 'heal'); }
   if (rep.T.pierce) bw.tray.pulse?.('S', 'pierce');
   bw.tray.unlock?.();
   setHud({ phase: 'resolve' });
   for (const e of b.enemies) updatePlate(e);
-  await wait(0.45);
+  await wait(0.35);
 
   // ---------- 3. next
   B.busy = false;
-  bw.director.set('battle', { lambda: 2.2 });
   if (b.outcome === 'victory') return win();
   if (b.outcome === 'defeat') return lose();
+  showCard(card);
   renderReset();
 }
 
@@ -1199,128 +965,101 @@ async function lockInInner() {
 // Play a round's report: the same on a shared phone and on every phone at a table.
 async function playParty(rep, outcome = B.b.outcome) {
   const b = B.b; const bw = B.bw; const stage = world.stage;
-  bw.tray.lock?.(); setHud({ phase: 'resolve' }); clearDock(); stopWindups();
+  bw.tray.lock?.(); setHud({ phase: 'resolve' }); clearDock(); hideCard();
   B.lastRep = rep;
-  RO.record(rep, b);
-  const idxOf = (n) => b.fighters.findIndex((f) => f.hero.name === n);
-  const actorOfHero = (n) => bw.heroes[idxOf(n)];
+  const card = makeCard(rep);
+  const pcOf = (n) => heroPiece(n);
   // team triples and Heartbeat
   for (const t of rep.team || []) {
     sfx.synergy(); banner(`${t.label.toUpperCase()}  +${t.bonus}`, 'gold'); stage.flash(0xffd23d, 0.18);
-    for (const n of t.names) { const a = actorOfHero(n); if (a) vfx('aura', a, { kind: 'buff', color: t.row === 'headtoe' ? 0x4db4ff : 0xff5a4a, dur: 1.0 }); }
+    for (const n of t.names) pcOf(n)?.glow('buff');
     await wait(1.0);
   }
-  if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const a of bw.heroes) vfx('aura', a, { kind: 'buff', color: 0xff6a9a, dur: 1.0 }); await wait(1.0); }
+  if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const pc of B.fb.heroes) pc.glow('heal'); await wait(1.0); }
   // initiative
   if (rep.init.forced) { banner('THE COMPANY STRIKES FIRST', 'gold'); await wait(0.8); }
   else {
-    for (const x of rep.init.heroes) { const a = actorOfHero(x.name); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'pierce'); }
-    for (const x of rep.init.foes) { const a = bw.actors.get(x.uid); if (a) number(a.worldAnchor('head'), `⚡ ${x.init}`, 'hurt'); }
+    for (const x of rep.init.heroes) pcOf(x.name)?.num(`⚡ ${x.init}`, 'pierce');
+    for (const x of rep.init.foes) foePc(x.uid)?.num(`⚡ ${x.init}`, 'hurt');
   }
   // the slowest Feet draws the monsters (a tie: whoever has more health)
   if (rep.leader && rep.fighters.filter((x) => !x.down).length > 1) banner(`MONSTERS TARGET ${rep.leader.toUpperCase()} · SLOWEST FEET`, 'bad');
   await wait(1.1);
   const snapNames = rep.fighters.filter((x) => !x.down).map((x) => x.name);
   const strikes = rep.strikes.map((s) => ({ ...s })); const acts = rep.acts.map((a) => ({ ...a }));
-  bw.director.set('attack', { lambda: 4 });
   for (const step of rep.order) {
-    if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep, actorOfHero); } }
-    else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames, actorOfHero); } }
+    if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep); } }
+    else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames); } }
   }
-  for (const st of rep.stalks || []) { const a = bw.actors.get(st.uid); if (a) number(a.worldAnchor('head'), st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt'); }
+  for (const st of rep.stalks || []) { const a = foePc(st.uid); if (a) a.num(st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt'); }
   for (const uid of rep.summoned) {
-    const i = b.enemies.findIndex((e) => e.uid === uid); if (i < 0) continue;
-    const a = await bw.addEnemy(b.enemies[i], i, b.enemies); addPlate(b.enemies[i]); vfx('aura', a, { kind: 'summon', color: 0x6aff6a }); a.play('spawn', { fade: 0 });
+    const e = b.enemies.find((x) => x.uid === uid); if (!e) continue;
+    addFoe(e).appear();
   }
-  for (const uid of rep.raged) { const a = bw.actors.get(uid); banner('ENRAGED!', 'bad'); sfx.rage(); stage.shake(1.2); a?.setRage?.(true); await race(a?.play('rage', { fade: 0.1 }) ?? Promise.resolve(), 1.8); }
+  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); await a?.rage(); }
   for (const x of rep.fighters) {
-    const a = actorOfHero(x.name); if (!a) continue;
-    if (x.healed > 0) { vfx('heal', a.worldAnchor('chest')); number(a.worldAnchor('head'), `+${x.healed}`, 'heal'); }
-    if (x.hpAfter <= 0 && !x.down) { a.play('die', { fade: 0.1 }); banner(`${x.name.toUpperCase()} IS DOWN`, 'bad'); }
+    const pc = pcOf(x.name); if (!pc) continue;
+    if (x.healed > 0) { pc.heal(); pc.num(`+${x.healed}`, 'heal'); }
+    if (x.hpAfter <= 0 && !x.down) { pc.fall(-1); banner(`${x.name.toUpperCase()} IS DOWN`, 'bad'); }
   }
   // the company's shield: the hero the monsters went after is still standing
   if (rep.shield?.held) {
-    const a = actorOfHero(rep.shield.name);
-    if (a) { vfx('aura', a, { kind: 'buff', color: 0x4db4ff, dur: 1.0 }); number(a.worldAnchor('head'), `HELD THE LINE +${D.POINTS.heldLine}`, 'block'); }
+    const pc = pcOf(rep.shield.name);
+    if (pc) { pc.glow('block'); pc.num(`HELD THE LINE +${D.POINTS.heldLine}`, 'block'); }
     banner(`${rep.shield.name.toUpperCase()} HELD THE LINE`, 'good'); sfx.block?.(); await wait(0.9);
   }
   bw.tray.unlock?.();
   for (const e of b.enemies) updatePlate(e);
-  await wait(0.6);
+  paintHeroes();
+  await wait(0.5);
   B.busy = false;
-  bw.director.set('battle', { lambda: 2.2 });
   if (outcome === 'victory') return win();
   if (outcome === 'defeat') return lose();
   if (!B.net) B.active = -1;
+  showCard(card);
   renderReset();
 }
-async function playStrike(s, rep, actorOfHero) {
-  const b = B.b; const bw = B.bw; const stage = world.stage;
-  const ha = actorOfHero(s.name); const ta = bw.actors.get(s.targetUid); if (!ha || !ta) return;
+async function playStrike(s, rep) {
+  const b = B.b;
+  const ha = heroPiece(s.name); const ta = foePc(s.targetUid); if (!ha || !ta) return;
   const m = (rep.moral || []).find((x) => x.to === s.name);
-  if (m) { banner(`MORAL BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); vfx('aura', ha, { kind: 'buff', color: 0xffd23d, dur: 0.9 }); await wait(0.5); }
+  if (m) { banner(`MORAL BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); ha.glow('buff'); await wait(0.5); }
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
-  const hitP = new Promise((res) => ha.play((s.atk + s.pierce) > 0 ? ((B.swing++ % 2) ? 'attack2' : 'attack') : 'cast', { fade: 0.08, onEvent: (en) => { if (en === 'hit' || en === 'release') res(); } }).then(res));
-  await race(hitP, 1.4);
-  const chest = ta.worldAnchor('chest'); const head = ta.worldAnchor('head');
-  if (s.dealt > 0 || s.guarded > 0) {
-    if (wid === 'bow') await vfx('projectile', ha.worldAnchor('weapon'), chest, { kind: 'arrow', color: 0xffe0a0 });
-    else if (wid === 'staff') await vfx('projectile', ha.worldAnchor('weapon'), chest, { kind: 'magic', color: 0xa64dff });
-    else vfx('slash', chest, { color: 0xff5a4a, kind: 'blade' });
-  }
-  if (s.phased) number(head, 'Passes through!', 'meh');
-  else if (s.guarded > 0) { vfx('shield', chest, { color: 0xffd23d, dur: 0.7 }); number(head, `Guarded ${s.guarded}`, 'block'); sfx.block(); }
-  if (s.burned) { vfx('impact', ha.worldAnchor('chest'), { kind: 'fire', power: 0.7 }); ha.hurt(); number(ha.worldAnchor('head'), `🔥 −${s.burned}`, 'hurt'); sfx.hurt(); }
-  if (s.dealt > 0) { sfx.hit(); stage.shake(0.4 + Math.min(0.5, s.dealt / 40)); vfx('impact', chest, { kind: 'flesh', power: Math.min(1, s.dealt / 25) }); ta.hurt(); number(head, `−${s.dealt}`, 'dmg'); }
-  else if (!s.guarded) number(head, '0', 'meh');
+  await strikeAnim(ha, s, { caster: wid === 'staff' });
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
-  if (s.killed) { sfx.deathEmber?.(); vfx('death', ta, { size: ta.height }); ta.die({ dur: 1.2 }); await wait(0.5); }
-  await wait(0.25);
+  if (s.killed) { sfx.deathEmber?.(); ta.fall(1); await wait(0.5); }
+  await wait(0.15);
 }
-async function playFoe(act, names, actorOfHero) {
-  const b = B.b; const bw = B.bw; const stage = world.stage;
-  const e = b.enemies.find((x) => x.uid === act.uid); const a = e && bw.actors.get(e.uid); if (!a) return;
-  const clips = intentClips({ v: act.v, n: act.name, slam: act.name === 'Slam' });
-  const lead = actorOfHero(names[0]) || bw.hero;
-  const ev2 = new Promise((res) => a.play(clips.act, { fade: 0.08, onEvent: (en) => { if (en === 'hit') res(); } }).then(res));
-  if (act.v === 'charge' && !act.cancelled) { sfx.windup(); vfx('aura', a, { kind: 'windup', color: 0xff3a2a }); }
-  if (act.v === 'howl') { sfx.howl?.(); vfx('aura', a, { kind: 'howl', color: 0xffffff }); }
-  if (act.v === 'guard') vfx('shield', a.worldAnchor('chest'), { color: 0xffd23d, radius: a.height * 0.5, dur: 1.0 });
-  if (act.v === 'mend') vfx('heal', a.worldAnchor('chest'));
-  if (act.v === 'bind') vfx('aura', lead, { kind: 'buff', color: 0x7ab4ff, dur: 1.0 });
-  await race(ev2, 1.3);
-  if (Array.isArray(act.parts)) {
-    act.parts.forEach((part, i) => {
-      const ha = actorOfHero(names[i]); if (!ha || part <= 0) return;
-      const net = act.nets?.[i] ?? part; const ab = part - net;
-      if (net > 0) { ha.hurt(); vfx('impact', ha.worldAnchor('chest'), { kind: 'flesh', power: Math.min(1, net / 14) }); number(ha.worldAnchor('head'), `−${net}`, 'hurt'); }
-      if (ab > 0) { vfx('shield', ha.worldAnchor('chest'), { color: 0x4db4ff, radius: 0.9, dur: 0.7 }); number(ha.worldAnchor('head').clone().add(new THREE.Vector3(0.5, -0.3, 0)), `🛡 ${ab}`, 'block'); }
-    });
-    if (act.net > 0) { sfx.hurt(); stage.shake(act.net >= 10 ? 0.9 : 0.6); } else if (act.ab > 0) sfx.block();
-  }
-  await wait(0.3);
+async function playFoe(act, names) {
+  const heroes = [];
+  if (Array.isArray(act.parts)) act.parts.forEach((part, i) => { const pc = names[i] && heroPiece(names[i]); if (pc && part > 0) heroes.push({ pc, part, net: act.nets?.[i] ?? part }); });
+  else if (names[0]) heroes.push({ pc: heroPiece(names[0]), part: act.d ?? 0, net: act.net ?? 0 });
+  await foeAnim(act, heroes.length ? heroes : [{ pc: heroPiece(names[0]), part: 0, net: 0 }]);
 }
 async function win() {
   if (B.ended) return; // the player went home mid-round
-  const bw = B.bw; B.busy = true;
-  bw.arena.setMood?.('victory'); music.setMood?.('victory');
-  bw.director.set('victory', { lambda: 2.2 });
-  for (const [i, a] of (bw.heroes || [bw.hero]).entries()) if (!B.party || B.b.fighters[i].hp > 0) a.play('victory', { fade: 0.2 }); sfx.win();
-  bw.stage.flash(0xffe9a0, 0.25);
-  clearDock();
+  B.busy = true;
+  music.setMood?.('victory'); sfx.win();
+  B.bw.stage.flash(0xffe9a0, 0.25);
+  clearDock(); hideCard();
   B.hud.ribbon.classList.add('hide');
-  await wait(1.2);
+  for (const [i, pc] of B.fb.heroes.entries()) if (!B.party || B.b.fighters[i].hp > 0) { pc.hop(); await wait(0.15); }
+  await wait(1.0);
   B.hud.ribbon.classList.remove('hide');
   if (!B.ended) C.showVictory();
 }
 async function lose() {
   if (B.ended) return;
-  const bw = B.bw; B.busy = true;
-  sfx.lose(); bw.hero.play('die', { fade: 0.1 }); bw.stage.fadeTo(0.7, 1.4);
+  B.busy = true;
+  sfx.lose(); hideCard();
+  for (const pc of B.fb.heroes) if (!pc.dead) pc.fall(-1);
+  B.bw.stage.fadeTo(0.7, 1.4);
   await wait(1.5);
   if (!B.ended) C.defeat(false);
 }
 export function leave() { stop(); }
 
-// Test hook: step the stage until the controller is idle (manual-time screenshots).
+// Test hooks (dev scripts): play a company round's report here, and step the stage until the controller is idle.
+export const devParty = (rep) => { B.busy = true; return playParty(rep, B.b.outcome); };
+
 export function idle() { return !B.busy; }

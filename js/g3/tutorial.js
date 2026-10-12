@@ -337,7 +337,7 @@ function guide() {
       const r = A.dieRadius(); const xs = pts.map((q) => q.x); const ys = pts.map((q) => q.y);
       return { left: Math.min(...xs) - r, top: Math.min(...ys) - r, right: Math.max(...xs) + r, bottom: Math.max(...ys) + r };
     }
-    const sel = { plate: '.b3-plate', divider: '.b3-divider', roll: '#b3-roll', counters: '.b3-fc .fs', reroll: '#b3-reroll', lock: '#b3-lock', powers: '.b3-powers' }[t];
+    const sel = { plate: '.fb-card.foe', divider: '.b3-divider', roll: '#b3-roll', counters: '.b3-fc .fs', reroll: '#b3-reroll', lock: '#b3-lock', powers: '.b3-powers' }[t];
     const el = sel && A.root.querySelector(sel); if (!el) return null;
     const b = el.getBoundingClientRect(); if (!b.width) return null;
     return { left: b.left, top: b.top, right: b.right, bottom: b.bottom };

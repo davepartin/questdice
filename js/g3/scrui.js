@@ -450,7 +450,7 @@ export function victory(first) {
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, 'The way is open.'), flourish()),
       rewards, perks, lootHint, loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
-  lay('victory'); SCR.victory();
+  lay('victory'); SCR.victory(hero);
   // fill / count animations
   const fillTo = (pct, ms) => { xpFill.style.transition = reduced() ? 'none' : `width ${ms}ms cubic-bezier(.2,.8,.2,1)`; xpFill.style.width = `${pct}%`; };
   const endPct = maxed ? 100 : Math.min(100, (hero.xp / need) * 100);
@@ -473,7 +473,7 @@ export function defeat(retreat, loss) {
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
       h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. Standard roads are lighter than Perilous ones.'),
       h('div', { class: 'sx-cta' }, btn('Return to camp', () => X.showCamp({ fromBoard: false }), { big: true, icon: 'tent', cls: 'wide' })))));
-  lay('defeat'); SCR.defeat();
+  lay('defeat'); SCR.defeat(hero);
 }
 
 // ------------------------------------------------------------------------------------------------ camp

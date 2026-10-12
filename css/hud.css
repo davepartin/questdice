@@ -92,35 +92,8 @@
 .hbar.empty .hbar-num { opacity: .6; }
 
 /* ================================================================== enemy plates */
-.b3-plates { position: absolute; inset: 0; --plw: 9.6rem; pointer-events: none; }
-.b3-leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.b3ld-l { stroke: rgba(255,226,170,.32); stroke-width: 1.2; stroke-dasharray: 3 4; } .b3ld-d { fill: rgba(255,226,170,.7); }
-.b3ld.on .b3ld-l { stroke: var(--h-ember); stroke-width: 1.6; stroke-dasharray: none; filter: drop-shadow(0 0 4px var(--h-ember)); } .b3ld.on .b3ld-d { fill: var(--h-ember); }
-.b3-plate { position: absolute; left: 0; top: 0; width: var(--plw); display: flex; flex-direction: column; gap: .3rem; padding: .42rem .48rem .48rem; border: 0; border-radius: .7rem; text-align: left; color: #fff; background: var(--glass); backdrop-filter: blur(8px) saturate(1.2); box-shadow: 0 10px 26px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07); will-change: transform; transition: opacity .3s, filter .2s, box-shadow .2s; opacity: .9; }
-.b3-plate.targeted { opacity: 1; box-shadow: 0 0 0 1px rgba(255,122,58,.9), 0 0 24px rgba(255,100,40,.38), 0 10px 26px rgba(0,0,0,.55); }
-.b3-plate.targeted .pl-frame { background: linear-gradient(155deg, #ffb06a, rgba(255,122,58,.4) 45%, #ff7a3a); }
-.b3-plate:not(.targeted) { filter: saturate(.85) brightness(.92); }
-.b3-plate:hover:not(.dead) { filter: none; }
-.b3-plate.dead { opacity: 0; pointer-events: none; }
-.pl-reticle { position: absolute; left: 50%; top: 0; transform: translate(-50%, -62%); display: none; align-items: center; gap: .3rem; padding: .08rem .5rem .08rem .2rem; border-radius: 1rem; background: linear-gradient(180deg, #ff9a52, #e2531c); box-shadow: 0 2px 8px rgba(0,0,0,.5), 0 0 12px rgba(255,100,40,.5); }
-.pl-reticle i { width: .85rem; height: .85rem; border-radius: 50%; border: 2px dashed #fff; border-top-color: transparent; animation: b3spin 3s linear infinite; position: relative; } .pl-reticle i::after { content: ''; position: absolute; inset: 2.5px; background: #fff; border-radius: 50%; }
-.pl-reticle b { font-family: var(--disp); font-weight: 800; font-size: .52rem; letter-spacing: .16em; color: #2a0f04; }
-.b3-plate.targeted .pl-reticle { display: inline-flex; animation: plIn .4s var(--ease-slam); }
 @keyframes plIn { from { opacity: 0; transform: translate(-50%, -20%) scale(.7); } }
-.pl-head { display: flex; align-items: center; gap: .3rem; min-height: 1.1rem; }
-.pl-name { flex: 1; min-width: 0; font-family: var(--serif); font-weight: 700; font-size: .76rem; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px #000; }
-.pl-tier { font-size: .95rem; display: grid; }
-.pl-chips { display: flex; gap: .25rem; } .pl-chips:empty { display: none; }
-.pl-chips .plchip { display: inline-flex; align-items: center; gap: .18rem; padding: .05rem .38rem .05rem .22rem; border-radius: 1rem; font-family: var(--disp); font-weight: 800; font-size: .62rem; background: rgba(0,0,0,.5); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
-.pl-chips .plchip .ic { font-size: .8rem; } .pl-chips .plchip.gold { color: var(--h-gold); box-shadow: inset 0 0 0 1px rgba(240,180,60,.6); } .pl-chips .plchip.rage { color: #ffb0a0; background: rgba(120,16,16,.6); box-shadow: inset 0 0 0 1px rgba(255,80,60,.7); animation: lowPulse 1.2s infinite; }
-.b3-plate.raged .pl-name { color: #ff9a82; }
-.b3 .pl-bar.hbar { height: .74rem; }
 /* gilded elites and bosses */
-.b3-plate.tier-elite, .b3-plate.tier-boss { width: calc(var(--plw) * 1.2); padding: .55rem .6rem .6rem; background: linear-gradient(180deg, rgba(44,32,24,.86), rgba(12,9,12,.92)); box-shadow: 0 0 0 1px rgba(226,178,76,.5), 0 0 22px rgba(226,178,76,.18), 0 12px 30px rgba(0,0,0,.6); }
-.tier-elite .pl-frame, .tier-boss .pl-frame { padding: 1.5px; background: linear-gradient(135deg, #fff1c4, #b9801e 38%, #ffe8a8 62%, #8a5a14); }
-.tier-elite .pl-name, .tier-boss .pl-name { font-size: .92rem; color: var(--gild-hi); letter-spacing: .08em; }
-.tier-elite .pl-tier { color: var(--gild-hi); } .tier-boss .pl-tier { font-size: 1.15rem; }
-.b3 .tier-elite .pl-bar.hbar, .b3 .tier-boss .pl-bar.hbar { height: .9rem; --f1: #ff9a8a; }
 .tier-boss { box-shadow: 0 0 0 1px rgba(226,178,76,.7), 0 0 34px rgba(255,90,40,.28), 0 12px 30px rgba(0,0,0,.6); }
 .tier-boss::before, .tier-boss::after, .tier-elite::before, .tier-elite::after { content: ''; position: absolute; top: 50%; width: .5rem; height: .5rem; background: linear-gradient(135deg, #fff1c4, #b9801e); transform: translateY(-50%) rotate(45deg); box-shadow: 0 0 8px rgba(226,178,76,.8); }
 .tier-boss::before, .tier-elite::before { left: -.28rem; } .tier-boss::after, .tier-elite::after { right: -.28rem; }
@@ -129,9 +102,6 @@
 .tone-mend { --tc: #45e08b; --tcl: #d3ffe6; } .tone-windup { --tc: #ffb13a; --tcl: #fff2cf; } .tone-howl { --tc: #ff8a3a; --tcl: #ffe2c8; } .tone-bind { --tc: #8a5cff; --tcl: #e1d4ff; }
 .tone-ward { --tc: #ff5a2a; --tcl: #ffe0c8; } .tone-stalk { --tc: #ffcc3a; --tcl: #fff4cf; } .tone-phase { --tc: #9ad8ff; --tcl: #eef8ff; }
 .tone-drain { --tc: #a24dff; --tcl: #ecd6ff; } .tone-pilfer { --tc: #f0b43c; --tcl: #fff0c4; } .tone-summon { --tc: #4fe0a0; --tcl: #d6fff0; }
-.pl-intent { display: none; align-items: center; gap: .45rem; padding: .28rem .45rem .28rem .3rem; border-radius: .6rem; background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 30%, #0c0b14), color-mix(in srgb, var(--tc) 8%, #0c0b14)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc) 60%, transparent); min-width: 0; }
-.has-intent .pl-intent { display: flex; }
-.pl-intent.swap { animation: intentSwap .5s var(--ease-slam); }
 @keyframes intentSwap { 0% { opacity: 0; transform: translateY(6px) scale(.92); } }
 .med { width: 2.65rem; height: 2.65rem; flex: none; overflow: visible; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tc) 60%, transparent)); }
 .med-bg { fill: #0a0a14; } .med-in { fill: var(--tc); fill-opacity: .24; } .med-rim { fill: none; stroke: var(--tc); stroke-width: 2.6; stroke-linejoin: round; }
@@ -145,29 +115,12 @@
 .hazard .in-hint { display: none; }
 .pl-intent.hazard { padding: .22rem .4rem .22rem .26rem; border: 2px solid transparent; box-shadow: none; animation: dangerPulse 1.1s ease-in-out infinite;
   background: linear-gradient(90deg, rgba(60,10,6,.96), rgba(28,10,8,.96)) padding-box, repeating-linear-gradient(-45deg, #ffcf3a 0 7px, #1a0f08 7px 14px) border-box; background-size: auto, 19.8px 19.8px; }
-.pl-intent.hazard.tone-slam { background: linear-gradient(90deg, rgba(90,10,8,.96), rgba(40,8,8,.96)) padding-box, repeating-linear-gradient(-45deg, #ff4a2a 0 7px, #1a0806 7px 14px) border-box; background-size: auto, 19.8px 19.8px; }
 @keyframes dangerPulse { 0%, 100% { box-shadow: 0 0 0 rgba(255,60,40,0); background-position: 0 0, 0 0; } 50% { box-shadow: 0 0 20px rgba(255,70,40,.8); } 100% { background-position: 0 0, 19.8px 0; } }
-.pl-call { display: none; align-items: center; gap: .4rem; padding: .22rem .45rem; border-radius: .45rem; font-family: var(--disp); color: #1a0f04; background: repeating-linear-gradient(-45deg, #ffcf3a 0 8px, #f0b41a 8px 16px); box-shadow: 0 0 14px rgba(255,190,50,.45); }
-.pl-call.on { display: flex; animation: callIn .5s var(--ease-slam), callPulse 1.2s ease-in-out .5s infinite; }
-.pl-call .ic { font-size: 1.05rem; color: #7a0c0c; filter: none; } .pl-call .ic .f { fill-opacity: .5; }
-.pl-call span { white-space: nowrap; display: flex; flex-direction: column; line-height: 1.05; min-width: 0; } .pl-call b { font-weight: 800; font-size: .66rem; letter-spacing: .09em; } .pl-call small { font-weight: 700; font-size: .6rem; letter-spacing: .02em; }
-.pl-call.tone-slam { background: repeating-linear-gradient(-45deg, #ff6a4a 0 8px, #ee4a2a 8px 16px); color: #1a0402; }
 @keyframes callIn { from { opacity: 0; transform: scaleY(.3); } } @keyframes callPulse { 50% { filter: brightness(1.25); } }
 
 /* three foes on a phone: squeeze the plate, keep the figure big */
-.b3-plates.compact .b3-plate { padding: .34rem .36rem .38rem; gap: .22rem; } .b3-plates.compact .pl-name { font-size: .62rem; letter-spacing: .03em; } .b3-plates.compact .pl-intent { gap: .3rem; padding: .2rem .28rem .2rem .2rem; }
-.b3-plates.compact .med { width: 1.9rem; height: 1.9rem; } .b3-plates.compact .in-fig b { font-size: 1.2rem; } .b3-plates.compact .in-fig small, .b3-plates.compact .in-hint { display: none; } .b3-plates.compact .in-name { font-size: .55rem; letter-spacing: .06em; }
-.b3-plates.compact .pl-call b { font-size: .52rem; letter-spacing: .03em; } .b3-plates.compact .pl-call small { font-size: .5rem; } .b3-plates.compact .pl-chips .plchip { font-size: .5rem; } .b3-plates.compact .pl-bar.hbar .hbar-num { font-size: .44rem; }
 /* demoted plates: the targeted foe shows full detail, the rest show icon + figure */
-.b3-plate:not(.targeted):not(.dead) { width: calc(var(--plw) * .78); padding: .3rem .34rem .34rem; gap: .2rem; }
-.b3-plate:not(.targeted) .in-name, .b3-plate:not(.targeted) .in-fig small, .b3-plate:not(.targeted) .in-hint, .b3-plate:not(.targeted) .hbar-num { display: none; }
-.b3-plate:not(.targeted) .pl-name { font-size: .62rem; } .b3-plate:not(.targeted) .med { width: 2rem; height: 2rem; } .b3-plate:not(.targeted) .in-fig b { font-size: 1.3rem; }
-.b3-plate:not(.targeted) .pl-bar.hbar { height: .5rem; } .b3-plate:not(.targeted) .pl-intent { gap: .3rem; padding: .16rem .3rem .16rem .2rem; }
-.b3-plate:not(.targeted) .pl-call small { display: none; } .b3-plate:not(.targeted) .pl-call b { font-size: .5rem; }
 /* tiny: no head-room, or a crowded phone. Icon + figure only. */
-.b3-plate.tiny:not(.dead) { width: calc(var(--plw) * .62); padding: .22rem .28rem .26rem; } .b3-plate.tiny .pl-name, .b3-plate.tiny .in-name, .b3-plate.tiny .bar-num, .b3-plate.tiny .hbar-num, .b3-plate.tiny .pl-call, .b3-plate.tiny .pl-reticle { display: none; }
-.b3-plate.tiny .med { width: 1.6rem; height: 1.6rem; } .b3-plate.tiny .in-fig b { font-size: 1.05rem; } .b3-plate.tiny .pl-head { min-height: 0; } .b3-plate.tiny .pl-tier { font-size: .8rem; } .b3-plate.tiny .pl-bar.hbar { height: .4rem; }
-.b3-plates.compact .b3-plate:not(.targeted):not(.dead) { width: calc(var(--plw) * .74); } .b3-plates.compact .b3-plate:not(.targeted) .pl-name { font-size: .55rem; }
 /* ================================================================== ribbon */
 .b3-ribbon { position: absolute; left: .7rem; right: .7rem; top: calc(7.4rem + var(--safe-t)); display: flex; justify-content: center; pointer-events: none; transition: opacity .3s; }
 .b3-ribbon p { max-width: 36rem; padding: .22rem .9rem; border-radius: 2rem; background: linear-gradient(90deg, transparent, rgba(8,8,16,.72) 14%, rgba(8,8,16,.72) 86%, transparent); font-size: .72rem; line-height: 1.3; color: var(--h-dim); text-align: center; text-shadow: 0 1px 3px #000; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -357,8 +310,6 @@ body.in-battle .chrome { z-index: 40; }
   .b3-caption { position: absolute; right: 0; bottom: 100%; width: 100%; margin-bottom: 1.9rem; min-height: 0; } .b3-caption p { text-align: left; }
   .b3-caption p.captip::before { left: auto; right: 1.2rem; top: auto; bottom: -.28rem; transform: rotate(225deg); }
   .b3-ribbon { top: calc(.8rem + var(--safe-t)); left: 14rem; right: 14rem; }
-  .b3-plates { --plw: clamp(8.6rem, 12vw, 11rem); }
-  .b3-plate:not(.tier-minion) .in-hint, .in-hint { display: block; }
   .b3-banner { top: 32%; }
 }
 /* narrow right column (about 1000px wide windows): nothing may overflow */
@@ -418,18 +369,9 @@ body.in-battle .chrome { z-index: 40; }
 
 /* PHONE: monster stats are one strip under the hero panel; the 3D scene below it is small; the dice take the rest */
 @media (max-aspect-ratio: 5/4) {
-  .b3-plates { inset: auto; left: 0; right: 0; top: calc(3.9rem + var(--safe-t)); display: flex; gap: .4rem; overflow-x: auto; overflow-y: hidden; padding: .15rem calc(.6rem + var(--safe-l)) .25rem calc(.6rem + var(--safe-r)); pointer-events: auto; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
-  .b3-plates::-webkit-scrollbar { display: none; }
-  .b3-leaders { display: none; }
   .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
     position: relative; flex: 1 0 9.6rem; width: auto; min-width: 9.6rem; max-width: 15rem; transform: none !important; scroll-snap-align: start; pointer-events: auto; padding: .34rem .42rem .4rem; gap: .22rem; opacity: 1; filter: none;
   }
-  .b3-plates .b3-plate.dead { display: none; }
-  .b3-plates .b3-plate:not(.targeted) { opacity: .78; filter: saturate(.8); }
-  .b3-plates .b3-plate:not(.targeted) .in-name, .b3-plates .b3-plate .in-hint { display: none; }
-  .b3-plates .b3-plate .pl-name { font-size: .66rem; } .b3-plates .b3-plate .med { width: 1.9rem; height: 1.9rem; } .b3-plates .b3-plate .in-fig b { font-size: 1.25rem; }
-  .b3-plates .b3-plate .pl-reticle { display: none; } .b3-plates .b3-plate.targeted .pl-reticle { display: none; }
-  .b3-plates .b3-plate .pl-call small { display: none; }
 }
 .hb-reroll .hb-tx small { font-size: .58rem; letter-spacing: 0; }
 .hb-reroll { padding-left: .6rem; padding-right: .6rem; }
@@ -445,13 +387,6 @@ body.in-battle .chrome { z-index: 40; }
 
 /* LANDSCAPE: the same fixed strip, centred along the top, so no stat box ever sits on a monster */
 @media (min-aspect-ratio: 5/4) {
-  .b3-plates { inset: auto; left: 50%; transform: translateX(-50%); width: min(46rem, 58vw); top: 4rem; display: flex; justify-content: center; gap: .5rem; overflow-x: auto; pointer-events: auto; scrollbar-width: none; }
-  .b3-plates::-webkit-scrollbar { display: none; }
-  .b3-leaders { display: none; }
-  .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss { position: relative; flex: 0 1 11.5rem; width: auto; min-width: 9.4rem; transform: none !important; pointer-events: auto; opacity: 1; filter: none; padding: .38rem .5rem .44rem; }
-  .b3-plates .b3-plate.dead { display: none; }
-  .b3-plates .b3-plate:not(.targeted) { opacity: .8; }
-  .b3-plates .b3-plate .pl-reticle { display: none; } .b3-plates .b3-plate:not(.targeted) .in-name, .b3-plates .b3-plate .in-hint { display: none; }
 }
 
 @media (min-aspect-ratio: 5/4) { .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss { flex-basis: 14rem; min-width: 12.5rem; } }
@@ -482,10 +417,6 @@ body.in-battle .chrome { z-index: 40; }
 .b3-tools { justify-content: space-between; }
 
 /* compact monster plates: name, life bar with its fraction, one small chip for what it plans */
-.b3-plates .b3-plate .pl-call, .b3-plates .b3-plate .in-name, .b3-plates .b3-plate .in-hint, .b3-plates .b3-plate .in-fig small, .b3-plates .b3-plate .pl-reticle { display: none !important; }
-.b3-plates .b3-plate .pl-intent { padding: .12rem .3rem; gap: .3rem; } .b3-plates .b3-plate .med { width: 1.5rem; height: 1.5rem; } .b3-plates .b3-plate .in-fig b { font-size: 1rem; }
-.b3-plates .b3-plate .hbar-num, .b3-plates .b3-plate .bar-num { display: block !important; font-size: .6rem; }
-.b3-plates .b3-plate { padding: .3rem .4rem .34rem; gap: .18rem; }
 .b3-info { bottom: auto; top: 12rem; } .b3-info:not(.open) { display: none; }
 .b3-info .fi-hp, .b3-info .fi-now { margin: 0; font-size: .8rem; color: #f1ead8; } .b3-info .fi-t { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: #d9b4ff; }
 /* monster sheet: a picture from the front and a stat line, a big "next" card in the move's colour, then chips for the other moves */
@@ -519,11 +450,6 @@ body.in-battle .chrome { z-index: 40; }
   .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: .45rem; row-gap: .15rem; align-items: center; padding: .28rem .4rem .3rem; flex: 1 0 9.2rem; min-width: 9.2rem;
   }
-  .b3-plates .b3-plate .pl-head { grid-column: 1; grid-row: 1; min-height: 0; }
-  .b3-plates .b3-plate .pl-bar { grid-column: 1; grid-row: 2; }
-  .b3-plates .b3-plate .pl-intent { grid-column: 2; grid-row: 1 / span 2; padding: .12rem .3rem .12rem .15rem; }
-  .b3-plates .b3-plate .pl-call { display: none !important; }
-  .b3-plates .b3-plate .med { width: 1.5rem; height: 1.5rem; } .b3-plates .b3-plate .in-fig b { font-size: 1.05rem; }
 }
 
 /* bottom bar: three equal buttons (reroll, powers, lock in) */
@@ -566,22 +492,12 @@ body.in-battle .chrome { z-index: 40; }
 /* ===== phones v4: monsters are small square tiles stacked down the right edge (4 letters, hp, a tiny bar, the next move) ===== */
 @media (max-aspect-ratio: 5/4) {
   .b3-magchip { top: calc(3.9rem + var(--safe-t)) !important; right: .35rem !important; }
-  .b3-plates { position: absolute; inset: auto !important; right: .35rem !important; left: auto !important; top: calc(6.5rem + var(--safe-t)) !important; width: 4.1rem; display: flex !important; flex-direction: column; gap: .3rem; overflow: visible !important; padding: 0 !important; transform: none !important; pointer-events: none; }
   .b3-plates .b3-plate, .b3-plates .b3-plate:not(.targeted):not(.dead), .b3-plates .b3-plate.tier-elite, .b3-plates .b3-plate.tier-boss {
     position: relative !important; display: flex !important; flex-direction: column; align-items: stretch; flex: none !important; width: 4.1rem !important; min-width: 0 !important; max-width: none !important;
     padding: .22rem .26rem .26rem !important; gap: .12rem; border-radius: .5rem; pointer-events: auto; opacity: .95; filter: none; transform: none !important; scroll-snap-align: none;
   }
-  .b3-plates .b3-plate.targeted { box-shadow: 0 0 0 2px #ff8a3a, 0 0 14px rgba(255,120,50,.5); }
-  .b3-plates .pl-head { min-height: 0; justify-content: center; } .b3-plates .pl-head .pl-chips, .b3-plates .pl-reticle, .b3-plates .pl-call, .b3-plates .in-name, .b3-plates .in-hint, .b3-plates .in-fig small { display: none !important; }
-  .b3-plates .pl-name { font-size: .7rem; letter-spacing: .06em; text-align: center; width: 100%; overflow: visible; text-overflow: clip; white-space: nowrap; }
-  .b3-plates .pl-tier { display: none; }
-  .b3-plates .pl-bar.hbar { height: .32rem; } .b3-plates .pl-bar .hbar-num { position: static; display: block; text-align: center; font-size: .64rem; line-height: 1; letter-spacing: 0; order: -1; margin-bottom: .1rem; text-shadow: none; } .b3-plates .pl-bar.hbar { display: flex; flex-direction: column; height: auto; background: none; box-shadow: none; }
-  .b3-plates .pl-bar .hbar-ghost, .b3-plates .pl-bar .hbar-fill, .b3-plates .pl-bar .hbar-ticks { position: relative; display: block; height: .3rem; width: 100%; } .b3-plates .pl-bar .hbar-ghost { margin-bottom: -.3rem; }
-  .b3-plates .pl-intent { display: flex; justify-content: center; align-items: center; gap: .2rem; padding: .08rem .1rem !important; border-radius: .4rem; } .b3-plates .med { width: 1.15rem; height: 1.15rem; } .b3-plates .in-fig b { font-size: .8rem; } .b3-plates .in-main { display: flex; }
 }
 @media (max-aspect-ratio: 5/4) {
-  .b3-plates .pl-intent { flex-direction: row; flex-wrap: nowrap; padding: .06rem .12rem !important; gap: .15rem; } .b3-plates .in-main { display: flex !important; } .b3-plates .in-fig { display: flex; } .b3-plates .in-fig b { font-size: .66rem !important; letter-spacing: -.02em; white-space: nowrap; }
-  .b3-plates .med { width: .95rem !important; height: .95rem !important; flex: none; }
 }
 
 /* ===== split screen on phones: the battlefield above, a golden line, then the control area (the dice table) below ===== */
@@ -609,14 +525,8 @@ body.in-battle .chrome { z-index: 40; }
 /* many monsters: the tile stack runs down the right edge, even past the line and alongside the dice */
 @media (max-aspect-ratio: 5/4) {
   .b3-divider { z-index: 3; } .b3-plates { z-index: 6; }
-  .b3-plates { bottom: calc(var(--dock-top, 12rem) + .4rem) !important; flex-wrap: wrap-reverse; align-content: flex-start; flex-direction: column !important; max-height: none; }
-  .b3-plates:not(.many) { flex-wrap: nowrap; }
 }
 @media (max-aspect-ratio: 5/4) {
-  .b3-plates { flex-wrap: nowrap !important; overflow-y: auto !important; overflow-x: hidden !important; scrollbar-width: none; pointer-events: auto; -webkit-overflow-scrolling: touch; }
-  .b3-plates::-webkit-scrollbar { display: none; }
-  .b3-more { display: none; position: absolute; z-index: 7; right: .35rem; width: 4.1rem; bottom: calc(var(--dock-top, 12rem) + .1rem); height: 1.5rem; text-align: center; font-size: 1.25rem; line-height: 1.5rem; color: #ffd98a; text-shadow: 0 1px 3px #000; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.75)); border-radius: 0 0 .5rem .5rem; animation: moreBob 1.1s ease-in-out infinite; }
-  .b3-more.on { display: block; }
 }
 @keyframes moreBob { 50% { transform: translateY(3px); } }
 .bcard .bc-cost.free b { font-size: .62rem; letter-spacing: .06em; }

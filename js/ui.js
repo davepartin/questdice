@@ -370,9 +370,9 @@ function startQuest(q) {
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
-  if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, portrait: (id) => SCR.portraitQ.monster(id, ['wolf', 'spider'].includes(id) ? { yaw: 0.45, fit: 'bust' } : { yaw: 0, fit: 'bust' }), showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
+  if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
   if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
-  return { S, menu: battleMenu, persist, banner, portrait: (id) => SCR.portraitQ.monster(id, ['wolf', 'spider'].includes(id) ? { yaw: 0.45, fit: 'bust' } : { yaw: 0, fit: 'bust' }), showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+  return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 // Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).
 function practice({ hero, quest, guide }) {

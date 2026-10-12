@@ -1,0 +1,180 @@
+/* The tabletop (Dave, Oct 2026): the top of the battle is a board game. Painted miniatures stand on a calm table; what
+   happened is told by the round card, not by animation. Pieces and effects are built in js/g3/flat.js, the card in js/g3/roundcard.js.
+   Everything is scoped under .b3 (the battle layer). */
+
+/* ================================================================== the table */
+.fb { --felt-a: #4a392c; --felt-b: #2a1f18; --felt-c: #130d0a; --lamp: rgba(255, 224, 168, .13); }
+.b3 .fb { position: absolute; left: 0; right: 0; top: 0; bottom: calc(100% - var(--line-y, 42%)); overflow: hidden; pointer-events: none; --ph: 120px; z-index: 0; }
+.fb.act-2 { --felt-a: #34454c; --felt-b: #1e2b31; --felt-c: #0b1115; --lamp: rgba(190, 226, 255, .12); }
+.fb.act-3 { --felt-a: #4c2c30; --felt-b: #2c181b; --felt-c: #120708; --lamp: rgba(255, 190, 160, .12); }
+.fb.boss { --lamp: rgba(255, 150, 120, .14); }
+.fb-table { position: absolute; inset: 0;
+  background:
+    radial-gradient(70% 60% at 62% 74%, var(--lamp), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 2px, transparent 2px 7px),
+    radial-gradient(130% 100% at 50% 20%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%); }
+.fb-table::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, .35), transparent 30%, transparent 78%, rgba(0, 0, 0, .45)); }
+.fb-rim { position: absolute; left: 0; right: 0; height: 2px; z-index: 1; background: linear-gradient(90deg, transparent, rgba(226, 178, 76, .75) 20%, rgba(255, 234, 184, .9) 50%, rgba(226, 178, 76, .75) 80%, transparent); }
+.fb-rim.top { display: none; } .fb-rim.bot { bottom: 0; }
+
+.fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; }
+.fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
+.fb-side.heroes { flex: 0 0 clamp(22%, calc(36% - var(--foes, 2) * 4%), 31%); justify-content: center; }
+.fb-side.foes { flex: 1 1 0; justify-content: space-evenly; gap: 1%; }
+.fb.party .fb-side.heroes { flex-basis: 38%; }
+.fb[data-heroes="4"] .fb-side.heroes, .fb[data-heroes="5"] .fb-side.heroes, .fb[data-heroes="6"] .fb-side.heroes { flex-basis: 46%; }
+
+.fb-slot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1 1 0; min-width: 0; max-width: 11rem; transition: opacity .4s; }
+.fb-slot.foe.tier-elite, .fb-slot.foe.tier-boss { flex-grow: 1.35; max-width: 14rem; }
+.fb.party .fb-slot.hero { margin-left: -.9rem; } .fb.party .fb-slot.hero:first-child { margin-left: 0; }
+.fb-slot.hero.back { flex-grow: .78; z-index: 0; } .fb-slot.hero.active { z-index: 1; }
+.fb-slot.hero.back .fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
+
+/* ================================================================== a piece */
+.fb-pc { position: relative; pointer-events: auto; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .6)); }
+.fb-pc.hero { cursor: default; }
+.fb-pc::before { content: ''; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 15%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, .55), transparent 72%); z-index: 0; }
+.fb-img { position: relative; z-index: 1; display: block; height: calc(var(--ph) * var(--rel, 1)); width: auto; max-width: 100%; object-fit: contain; object-position: 50% 100%; transform-origin: 50% 92%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.fb.party .fb-pc.hero::after { content: ''; position: absolute; left: 14%; right: 14%; bottom: 0; height: 12%; border-radius: 50%; z-index: 0; box-shadow: 0 0 0 2px color-mix(in srgb, var(--hue, #ffd23d) 60%, transparent); opacity: .7; }
+.fb.party .fb-slot.hero.active .fb-pc.hero::after { opacity: 1; box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 12px color-mix(in srgb, var(--hue, #ffd23d) 70%, transparent); }
+.fb.party .fb-slot.hero.active .fb-name { color: #ffe08a; }
+.fb-pc.down { pointer-events: none; }
+.fb-slot.dead .fb-card { opacity: 0; pointer-events: none; }
+.fb-slot.dead { pointer-events: none; }
+
+/* who you are aiming at: a gold ring on the table under its feet */
+.fb-ring { position: absolute; left: 4%; right: 4%; bottom: 0; height: 17%; border-radius: 50%; z-index: 0; border: 2px solid transparent; pointer-events: none; transition: border-color .2s, box-shadow .2s; }
+.fb-pc.targeted .fb-ring { border-color: #ffd23d; box-shadow: 0 0 12px rgba(255, 210, 61, .65), inset 0 0 10px rgba(255, 210, 61, .35); animation: fbRing 1.5s ease-in-out infinite; }
+@keyframes fbRing { 50% { box-shadow: 0 0 20px rgba(255, 210, 61, .85), inset 0 0 14px rgba(255, 210, 61, .5); } }
+.fb-slot.foe:not(.targeted) .fb-img { opacity: .94; }
+.fb-pc.raged .fb-img { filter: sepia(.4) saturate(1.5) hue-rotate(-18deg); }
+
+/* a hazard shown over the piece ("SLAM NEXT ROUND") */
+.fb-call { position: absolute; z-index: 3; top: -.1rem; left: 50%; transform: translateX(-50%); padding: .12rem .4rem; border-radius: .35rem; font: 800 .5rem/1.1 var(--disp); letter-spacing: .06em; white-space: nowrap; color: #fff; background: rgba(160, 30, 24, .92); box-shadow: 0 0 0 1px rgba(255, 160, 120, .6); pointer-events: none; }
+.fb-call[hidden] { display: none; }
+
+/* ================================================================== the card under a piece */
+.fb-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .2rem; width: 100%; max-width: 8.6rem; margin-top: .3rem; pointer-events: auto; transition: opacity .3s; }
+.fb-card.hero { pointer-events: none; }
+.fb-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .6rem/1.05 var(--disp); letter-spacing: .09em; text-transform: uppercase; color: #f4e7cb; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+.fb-slot.targeted .fb-name { color: #ffe08a; }
+.fb-hp { position: relative; display: block; width: 100%; height: .72rem; border-radius: .4rem; overflow: hidden; background: #140a08; box-shadow: inset 0 0 0 1px rgba(255, 236, 190, .3); }
+.fb-card.hero .fb-hp { height: .36rem; width: 70%; }
+.fb-hp-ghost, .fb-hp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: inherit; }
+.fb-hp-ghost { background: rgba(255, 255, 255, .6); transition: width .6s ease-out; }
+.fb-hp-fill { background: linear-gradient(180deg, #ff8a6a, #e8262a 55%, #b0121a); transition: width .35s ease-out; }
+.fb-hp.low .fb-hp-fill, .fb-slot.low .fb-hp-fill { animation: fbLow 1s ease-in-out infinite; }
+@keyframes fbLow { 50% { filter: brightness(1.5); } }
+.fb-hpn { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .56rem/1 var(--disp); font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+
+/* what the monster plans, in a chip: its sign and how hard */
+.fb-intent { display: none; align-items: center; gap: .22rem; padding: .14rem .45rem .14rem .32rem; border-radius: .55rem; font: 800 .74rem/1 var(--disp); color: var(--tone, #ffd0c0); background: rgba(14, 8, 8, .86); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #ff6a5a) 70%, transparent); white-space: nowrap; }
+.fb-intent[class*="tone-"] { display: inline-flex; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent small { display: none; }
+.fb-intent svg { width: .95rem; height: .95rem; flex: none; }
+.fb-intent small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.fb-intent.tone-strike, .fb-intent.tone-slam, .fb-intent.tone-windup { --tone: #ff7a6a; }
+.fb-intent.tone-pierce { --tone: #ffa23a; }
+.fb-intent.tone-ward, .fb-intent.tone-stalk { --tone: #ffb85a; }
+.fb-intent.tone-guard { --tone: #7ab8ff; }
+.fb-intent.tone-mend { --tone: #7affb0; }
+.fb-intent.tone-phase, .fb-intent.tone-bind, .fb-intent.tone-howl, .fb-intent.tone-summon, .fb-intent.tone-drain { --tone: #cfa0ff; }
+.fb-intent.tone-pilfer { --tone: #ffd23d; }
+.fb-intent.hazard { animation: fbHaz 1.2s ease-in-out infinite; }
+@keyframes fbHaz { 50% { box-shadow: inset 0 0 0 1px var(--tone), 0 0 12px color-mix(in srgb, var(--tone) 70%, transparent); } }
+
+/* ================================================================== effects */
+.fb-fx { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.fb-num { position: absolute; transform: translate(-50%, 0); white-space: nowrap; font: 900 1.3rem/1 var(--disp); color: #ffe2a0; text-shadow: 0 2px 0 #000, 0 0 7px #000, 0 0 3px #000; }
+.fb-num svg { width: 1em; height: 1em; vertical-align: -.14em; }
+.fb-num.hurt { color: #ff8a7a; } .fb-num.block { color: #8cc8ff; font-size: 1.1rem; } .fb-num.heal { color: #7affb0; } .fb-num.pierce { color: #ffb060; font-size: 1.05rem; }
+.fb-num.long { font-size: .95rem; }
+.fb-num.meh { color: #cfc8d8; font-size: 1rem; }
+.fb-spark { position: absolute; width: 0; height: 0; --k: 0; }
+.fb-spark-core { position: absolute; display: block; width: calc(34px * var(--p) * (.35 + var(--k))); height: calc(34px * var(--p) * (.35 + var(--k))); margin: calc(17px * var(--p) * (.35 + var(--k)) * -1) 0 0 calc(17px * var(--p) * (.35 + var(--k)) * -1); border-radius: 50%; background: radial-gradient(circle, #fff 0 22%, var(--c) 46%, transparent 72%); }
+.fb-spark i { position: absolute; left: -1.5px; top: 0; width: 3px; height: calc(var(--d) * 17px * var(--p)); border-radius: 2px; background: linear-gradient(var(--c), transparent); transform-origin: 50% 0; transform: rotate(var(--a)) translateY(calc(var(--k) * 30px * var(--p) + 3px)); }
+.fb-spark.block .fb-spark-core { background: none; border: 3px solid var(--c); box-shadow: 0 0 10px var(--c); }
+.fb-spark.block i { display: none; }
+.fb-spark.heal .fb-spark-core { display: none; }
+.fb-spark.heal i { left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); transform: translate(calc((var(--d) - 1) * 26px + (var(--a) / 360deg * 0px)), calc(var(--k) * -38px + 6px)); }
+.fb-spark.heal i:nth-child(odd) { transform: translate(calc((var(--d) - 1) * -26px), calc(var(--k) * -30px + 10px)); }
+.fb-flash { position: absolute; inset: 0; z-index: 5; opacity: 0; pointer-events: none; background: radial-gradient(120% 100% at 50% 50%, transparent 40%, var(--fc, #ff3a2a) 150%); }
+
+@media (prefers-reduced-motion: reduce) { .fb-pc.targeted .fb-ring, .fb-intent.hazard, .fb-hp.low .fb-hp-fill { animation: none; } }
+
+/* the older plate strip, hero strip text, ribbon and log are not used any more */
+.b3 .b3-ribbon, .b3 .b3-plates, .b3 .b3-more, .b3 .b3-leaders { display: none !important; }
+
+/* ================================================================== the round card */
+.rc-again { display: inline-flex; align-items: center; gap: .25rem; align-self: center; margin-left: .15rem; padding: .18rem .55rem .18rem .4rem; border-radius: 999px; border: 0; cursor: pointer; pointer-events: auto;
+  font: 800 .58rem/1 var(--disp); letter-spacing: .1em; text-transform: uppercase; color: #ffe8b8; background: rgba(40, 28, 20, .85); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .45); }
+.rc-again[hidden] { display: none; }
+.rc-again svg { width: .85rem; height: .85rem; }
+
+/* it sits over the dice table (empty between rounds), so the pieces and what each plans next stay in view above it */
+.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--dock-top, 12rem) - .4rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
+  border-radius: .9rem; overflow-x: hidden; overflow-y: auto; pointer-events: auto; cursor: pointer; animation: rcIn .26s ease-out;
+  background: linear-gradient(180deg, rgba(38, 29, 24, .97), rgba(14, 10, 10, .98)); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .3), 0 12px 30px rgba(0, 0, 0, .65); scrollbar-width: none; }
+.b3 .rc::-webkit-scrollbar { display: none; }
+@keyframes rcIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.rc-head { display: flex; align-items: center; gap: .5rem; flex: none; }
+.rc-head b { font: 800 .68rem/1 var(--disp); letter-spacing: .2em; text-transform: uppercase; color: var(--gild, #e2b24c); }
+.rc-head span { flex: 1; font: 600 .6rem/1 var(--disp); color: #d8a88a; }
+.rc-head em { font: 600 .5rem/1 var(--disp); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 236, 190, .45); }
+.rc-x { flex: none; width: 1.7rem; height: 1.7rem; border: 0; border-radius: 50%; cursor: pointer; font: 700 .8rem/1 var(--disp); color: #f0e0c0; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .3); margin: -.3rem -.25rem -.3rem 0; }
+.rc-body { display: flex; flex-direction: column; gap: .4rem; min-height: 0; }
+.rc-sec { padding-left: .5rem; border-left: 3px solid var(--sec, #ff7a6a); display: flex; flex-direction: column; }
+.rc-sec.you { --sec: #ffb04a; } .rc-sec.foes { --sec: #6ab4ff; }
+.rc-rows { display: flex; flex-direction: column; gap: .32rem; }
+.rc-line { display: flex; flex-direction: column; gap: .16rem; }
+.rc-who { display: flex; align-items: baseline; gap: .25rem; font: 600 .66rem/1.15 var(--disp); color: #cdbfa4; }
+.rc-who b { color: #fff0cf; font-weight: 800; letter-spacing: .03em; }
+.rc-who span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-hp { flex: none; margin-left: auto; font: 700 .64rem/1 var(--disp); font-style: normal; color: #cdbfa4; } .rc-hp b { color: #fff; } .rc-hp.dead { color: #ffb4a0; }
+.rc-line.early .rc-who span { color: #ffb4a0; }
+.rc-sum { display: flex; align-items: center; flex-wrap: wrap; gap: .22rem; }
+.rc-tk { --tkc: #ffd8c8; display: inline-flex; align-items: center; gap: .18rem; padding: .14rem .38rem; border-radius: .45rem; color: var(--tkc); background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tkc) 50%, transparent); }
+.rc-tk svg { width: .85rem; height: .85rem; flex: none; }
+.rc-tk b { font: 900 1.02rem/1 var(--disp); }
+.rc-tk small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.rc-tk.atk { --tkc: #ff8a7a; } .rc-tk.block { --tkc: #8cc8ff; } .rc-tk.guard { --tkc: #ffc860; } .rc-tk.pierce { --tkc: #ffae5a; }
+.rc-tk.out { --tkc: #fff; background: linear-gradient(180deg, #a02a22, #6a1612); box-shadow: inset 0 0 0 1px rgba(255, 190, 170, .6); padding-right: .5rem; }
+.rc-tk.out b { font-size: 1.15rem; } .rc-tk.out.zero { background: linear-gradient(180deg, #1f5a3a, #123824); box-shadow: inset 0 0 0 1px rgba(150, 255, 190, .5); }
+.rc-op { font: 800 1rem/1 var(--disp); color: #cbb78f; }
+.rc-note { margin: 0; font: 600 .62rem/1.25 var(--disp); color: #cdbfa4; } .rc-note.bad { color: #ffb4a0; } .rc-note.good { color: #bff0d0; } .rc-note.you { color: #ffe0a0; } .rc-note svg { width: .8em; height: .8em; vertical-align: -.1em; }
+.rc-share { font: 600 .6rem/1.2 var(--disp); color: #cdbfa4; margin-right: .5rem; } .rc-share b { color: #fff; }
+.rc-line.plain .rc-who { color: #bcae94; }
+.rc-foot { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .4rem; padding-top: .3rem; margin-top: .1rem; border-top: 1px solid rgba(255, 226, 170, .16); }
+.rc-chip { display: inline-flex; align-items: center; gap: .2rem; padding: .12rem .45rem; border-radius: 999px; font: 700 .6rem/1 var(--disp); color: #cfe6ff; background: rgba(106, 180, 255, .12); box-shadow: inset 0 0 0 1px rgba(106, 180, 255, .4); }
+.rc-chip svg { width: .8rem; height: .8rem; } .rc-chip small { opacity: .7; font: 600 .52rem/1 var(--disp); }
+.rc-chip.heal { color: #c8ffe0; background: rgba(122, 255, 176, .1); box-shadow: inset 0 0 0 1px rgba(122, 255, 176, .4); }
+.rc-chip.lead { color: #ffe0b0; background: rgba(255, 190, 90, .1); box-shadow: inset 0 0 0 1px rgba(255, 190, 90, .4); }
+.rc-you { display: inline-flex; align-items: center; gap: .35rem; margin-left: auto; font: 700 .66rem/1 var(--disp); color: #f4e7cb; }
+.rc-you .rc-yl { letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.rc-hpbox b { font: 900 .95rem/1 var(--disp); color: #fff; } .rc-hpbox b.down { color: #ff9a8a; } .rc-hpbox b.up { color: #8affb8; }
+.rc-took { opacity: .75; font-weight: 600; }
+.rc-you.party { display: flex; flex-wrap: wrap; gap: .2rem .6rem; margin-left: 0; width: 100%; }
+.rc-pf { display: inline-flex; gap: .3rem; align-items: baseline; font: 600 .6rem/1.2 var(--disp); } .rc-pf b { color: #fff0cf; } .rc-pf i { font-style: normal; color: #cdbfa4; } .rc-pf.out { opacity: .6; }
+.rc-tap { flex: none; text-align: center; font: 600 .5rem/1 var(--disp); letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 236, 190, .4); }
+
+.b3 .b3-magchip, .b3 .b3-goldchip, .b3 .b3-petchip { z-index: 6; }
+
+/* wide screens: the card sits in the middle, between your hero panel and the controls */
+@media (min-aspect-ratio: 5/4) {
+  .b3 .rc { left: calc(var(--col) + 2.2rem); right: calc(var(--col) + 2.2rem); bottom: auto; max-height: calc(100% - var(--line-y, 42%) - 14px - .6rem); }
+  .b3 .fb-field { top: 3.6rem; }
+}
+
+/* victory and defeat: the hero's miniature on the felt (screens.js endTable) */
+.fb.fb-end { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.fb-end .fb-stand { position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%); height: min(64%, 24rem); display: flex; align-items: flex-end; justify-content: center; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .6)); }
+.fb-end .fb-stand .fb-img { height: 100%; width: auto; max-width: 70vw; }
+.fb-end.victory .fb-stand { animation: fbEndHop 1.4s ease-in-out 3; }
+@keyframes fbEndHop { 50% { transform: translateX(-50%) translateY(-10px); } }
+.fb-end.victory .fb-table { background: radial-gradient(70% 60% at 50% 70%, rgba(255, 224, 140, .3), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 2px, transparent 2px 7px), radial-gradient(130% 100% at 50% 20%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%); }
+.fb-end.defeat .fb-table { filter: saturate(.6) brightness(.8); }
+.fb-end.defeat .fb-stand { transform: translateX(-50%) rotate(80deg); transform-origin: 50% 50%; opacity: .62; bottom: 20%; height: min(46%, 17rem); }
+.fb-gold { position: absolute; left: var(--x); bottom: 14%; width: .5rem; height: .5rem; border-radius: 50%; background: radial-gradient(circle, #fff6c8, #ffd23d 60%, transparent 72%); box-shadow: 0 0 8px rgba(255, 210, 61, .8); transform: scale(var(--s)); opacity: 0; animation: fbGold 3s ease-out var(--d) infinite; }
+@keyframes fbGold { 0% { opacity: 0; transform: translateY(0) scale(var(--s)); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14rem) scale(calc(var(--s) * .6)); } }
+@media (prefers-reduced-motion: reduce) { .fb-end.victory .fb-stand, .fb-gold { animation: none; } .fb-gold { display: none; } }

@@ -16,6 +16,7 @@ import { Particles } from '../gfx/particles.js';
 import { mat, solid, glow } from '../gfx/mats.js';
 import { createWeapon } from '../gfx/weapons.js';
 import * as D from '../data.js';
+import { h } from '../dom.js';
 import { music } from '../audio.js';
 
 const stage = () => world.stage;
@@ -30,8 +31,6 @@ Object.assign(SHOTS, {
   's-create-in': { land: { pos: [0.6, 1.5, 6.4], look: [0, 1.25, 0], fov: 34 }, port: { pos: [0.4, 1.5, 7.8], look: [0, 1.25, 0], fov: 48 } },
   's-road': { land: { pos: [0.5, 1.45, 6.4], look: [-2.1, 1.3, -0.5], fov: 38 }, port: { pos: [0.3, 1.5, 7.8], look: [-1.7, 1.25, -0.5], fov: 52 } },
   's-camp': { land: { pos: [2.8, 1.5, 6.0], look: [-0.9, 0.95, 0.2], fov: 38 }, port: { pos: [2.4, 1.7, 7.4], look: [-0.9, 0.95, 0.2], fov: 52 } },
-  's-victory': { land: { pos: [-0.5, 1.3, 5.4], look: [-3.2, 1.2, 0.7], fov: 36 }, port: { pos: [-1.8, 1.7, 10.2], look: [-3.1, 1.0, 0.7], fov: 50 } },
-  's-defeat': { land: { pos: [-0.8, 0.95, 4.6], look: [-3.2, 0.8, 0.7], fov: 34 }, port: { pos: [-1.8, 1.1, 6.0], look: [-3.1, 0.8, 0.7], fov: 48 } },
 });
 
 // ---------------------------------------------------------------------------------------------- bookkeeping
@@ -372,46 +371,21 @@ export const current = () => own.handle;
 export function release() { cancelPortraits(); own.token++; own.objs = []; own.offs = []; own.arena = null; own.arenaOff = null; own.place = null; own.handle = null; own.mode = null; own.key = null; layout(null); }
 
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
-export function victory() {
+// Victory and defeat are on the table too (Dave, Oct 2026): the hero's painted miniature, flat, on the felt. The screen's own
+// viewport (`.sx-viewport`) holds it; the rewards panel sits beside or below.
+function endTable(kind, hero) {
   const bw = world.battle; if (!bw) return null;
-  if (bw._victory) return bw; bw._victory = true;
-  bw.arena.setMood?.('victory'); if (bw.tray?.object) bw.tray.object.visible = false;
-  bw.hero.play('victory', { restart: true });
-  setLook({ bloom: 0.85, exposure: 1.06, sat: 1.12 });
-  const yaw = aimAtHero('s-victory', bw.hero); world.director.pan = 0; // (the battle's own framing nudge would push the hero up out of the picture)
+  if (bw.tray?.object) bw.tray.object.visible = false;
   if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
-  world.director.set('s-victory', { lambda: 1.4 });
-  music.setMood?.('victory');
-  // a rain of gold sparks over the hero
-  const st = stage(); const ps = new Particles({ max: 220, sprite: 'dot', blending: 'add' }); st.addParticles(ps); const r = rng(5); let acc = 0; const hp = bw.hero.root.position;
-  const off = st.onFrame((dt) => { acc += dt * (reduced() ? 8 : 26); while (acc >= 1) { acc -= 1; ps.emit({ pos: [hp.x + (r() - 0.5) * 3.2, 3.2 + r(), hp.z + (r() - 0.5) * 2.4], vel: [(r() - 0.5) * 0.3, -0.5 - r() * 0.5, (r() - 0.5) * 0.3], life: 3.2, size: 0.05 + r() * 0.05, sizeEnd: 0.02, color: r() > 0.3 ? 0xffd870 : 0xfff2c0, colorEnd: 0xff9a30, alpha: 1, alphaEnd: 0, turbulence: 1.2, drag: 0.2 }); } });
-  // the hero turns round to face the camera over about a second
-  const hr = bw.hero.root; const turn = st.onFrame((dt) => { let d = yaw - hr.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); hr.rotation.y += d * (1 - Math.exp(-(reduced() ? 60 : 3.2) * dt)); });
-  bw.stage.scene.userData.victoryOff = () => { off(); turn(); ps.object.removeFromParent(); };
+  const host = document.querySelector('.sx-viewport'); const img = D.CLASSES[hero?.cls]?.img; if (!host || !img) return bw;
+  const act = hero?.campaign?.act || 1;
+  const gold = kind === 'victory' ? Array.from({ length: 16 }, (_, i) => h('i', { class: 'fb-gold', style: { '--x': `${6 + ((i * 53) % 88)}%`, '--d': `${(i * 0.37) % 3}s`, '--s': `${0.5 + ((i * 29) % 7) / 10}` } })) : [];
+  host.replaceChildren(h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
+    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold));
   return bw;
 }
-// The victory camera comes to the hero, wherever the battle placed them (phones stand the hero in the foreground, wide
-// screens further back), and the hero turns round to face it, so the raised arms and the face are seen (Dave).
-// Returns the yaw the hero should turn to.
-function aimAtHero(name, actor) {
-  const p = actor.root.position;
-  let dx = 0.42; let dz = 1; const l = Math.hypot(dx, dz); dx /= l; dz /= l; // from the hero toward the viewer's side, a little to the right
-  const tall = Math.max(1.6, (actor.worldAnchor?.('head')?.y ?? 2) - p.y + 0.6); // head to raised hands (and hats)
-  const mid = tall * 0.55;
-  const at = (d, up, lift = 0) => ({ pos: [p.x + dx * d, p.y + mid + up + lift, p.z + dz * d], look: [p.x, p.y + mid + lift, p.z] });
-  // phones: the picture is the band above the results panel, so stand further back
-  SHOTS[name] = { land: { ...at(tall * 2.2, 0.3), fov: 36 }, port: { ...at(tall * 3.2, 0.45, tall * 0.16), fov: 50 } }; // (lift: the hero sits lower in the band, clear of the top)
-  return Math.atan2(dx, dz) - 0.25; // face the camera, turned a touch toward the battlefield
-}
-export function defeat() {
-  const bw = world.battle; if (!bw) return null;
-  bw.arena.setMood?.('calm'); if (bw.tray?.object) bw.tray.object.visible = false;
-  bw.hero.play('lastStand', { restart: true });
-  setLook({ bloom: 0.5, sat: 0.55, exposure: 0.82, vignette: 0.9, contrast: 1.12 });
-  world.director.set('s-defeat', { lambda: 0.9 });
-  music.setMood?.('road');
-  return bw;
-}
+export function victory(hero) { music.setMood?.('victory'); return endTable('victory', hero); }
+export function defeat(hero) { music.setMood?.('road'); return endTable('defeat', hero); }
 export function leaveBattleStage() { try { stage().scene.userData.victoryOff?.(); } catch { /* ignore */ } }
 
 // ---------------------------------------------------------------------------------------------- portraits (cached, queued)
