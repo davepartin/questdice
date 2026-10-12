@@ -181,3 +181,69 @@ test('the host can move a table on without a hero who went quiet', () => {
   assert.equal(table.phase, 'board');
   assert.equal(command(table, players[0].id, { type: 'push' }).ok, false, 'nothing to wait for on the board');
 });
+
+function toVictory(table, players) {
+  begin(table, players);
+  let guard = 0;
+  while (table.phase === 'battle' && guard++ < 16) {
+    for (const e of table.battle.enemies) if (e.hp > 0) e.hp = 1;
+    for (const p of players) {
+      if (table.phase !== 'battle') break;
+      const f = table.battle.fighters.find((x) => x.hero === p.hero);
+      if (!f || f.hp <= 0 || f.locked) continue;
+      if (!f.board) assert.equal(command(table, p.id, { type: 'roll' }).ok, true);
+      f.mods = { ...(f.mods || {}), atk: 80, pierce: 0, block: 0, heal: 0, weaken: 0 };
+      assert.equal(command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }).ok, true);
+    }
+  }
+  assert.equal(table.phase, 'victory', `stuck in ${table.phase}`);
+}
+function finishSpoils(table) {
+  let guard = 0;
+  while (table.phase === 'victory' && guard++ < 40) {
+    const p = table.players.find((x) => x.hero.pendingPerks > 0);
+    if (p) {
+      const offer = playerView(table, p.id).perkOffer;
+      assert.ok(command(table, p.id, { type: 'perk', id: offer[0] }).ok);
+      continue;
+    }
+    const who = E.draftWho(table.rewards.draft);
+    if (!who) break;
+    const picker = table.players.find((x) => x.hero.name === who) || table.players[0];
+    assert.ok(command(table, picker.id, { type: 'pass-loot' }).ok);
+  }
+}
+
+test('victory copies battle stats, and camp waits until every phone has seen the brag board', () => {
+  const { table, players } = make();
+  toVictory(table, players);
+  assert.equal(table.players.every((p) => p.seenBrag === false), true);
+  const stats = table.rewards.stats;
+  assert.ok(stats.Ada && stats.Bea);
+  for (const name of ['Ada', 'Bea']) {
+    const s = stats[name];
+    for (const key of ['dealt', 'taken', 'healed', 'kills', 'blocked', 'shieldRounds', 'heldLine', 'potionsThrown', 'magicShared', 'revives']) {
+      assert.equal(typeof s[key], 'number', `${name}.${key}`);
+    }
+    assert.equal(typeof s.bossKill, 'boolean');
+  }
+  assert.ok((stats.Ada.kills + stats.Bea.kills) >= 1);
+  finishSpoils(table);
+  assert.equal(table.phase, 'victory', 'camp waits for the brag board');
+  assert.equal(command(table, players[0].id, { type: 'brag-seen' }).ok, true);
+  assert.equal(table.phase, 'victory');
+  assert.equal(command(table, players[1].id, { type: 'brag-seen' }).ok, true);
+  assert.equal(table.phase, 'camp');
+  const view = playerView(table, players[0].id);
+  assert.equal(view.you.seenBrag, true);
+});
+
+test('the host push overrides a brag board that has not been seen', () => {
+  const { table, players } = make();
+  toVictory(table, players);
+  assert.equal(table.phase, 'victory');
+  assert.equal(command(table, players[1].id, { type: 'push' }).ok, false, 'only the host');
+  assert.ok(command(table, players[0].id, { type: 'push' }).ok);
+  assert.equal(table.phase, 'camp');
+  assert.equal(table.players.every((p) => p.seenBrag), true);
+});

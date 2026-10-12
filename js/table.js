@@ -28,7 +28,7 @@ export function joinTable(table, { name, cls, token }) {
   if (!token) return fail('Missing seat.');
   if (table.players.some((p) => p.name.toLowerCase() === heroName.toLowerCase())) return fail('Another hero already has that name.');
   // (the id shows no part of the token)
-  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls, ready: false, hero: null };
+  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls, ready: false, seenBrag: false, hero: null };
   table.players.push(player);
   if (!table.hostId) table.hostId = player.id;
   table.seq += 1;
@@ -90,6 +90,7 @@ function dispatch(table, player, cmd) {
     case 'pass-loot': return passLoot(table, player);
     case 'team': return team(table, player, cmd);
     case 'rest': return rest(table);
+    case 'brag-seen': return bragSeen(table, player);
     default: return fail('Unknown choice.');
   }
 }
@@ -228,6 +229,7 @@ function push(table, player) {
     if (table.phase === 'victory') {
       const r = table.rewards; let guard = 0;
       while (!r.draft.done && guard++ < 30) { const who = E.draftWho(r.draft); if (!who) break; E.draftSkip(r.draft, who); }
+      table.players.forEach((p) => { p.seenBrag = true; });
       settleVictory(table);
       return ok();
     }
@@ -482,9 +484,10 @@ function enterVictory(table) {
   table.rewards = {
     xp: r.xp, gold: r.gold, drops: r.drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
     levels, draft: E.newDraft(r.order, r.drops.length), questName: table.quest?.name || '',
+    stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])),
   };
   table.phase = 'victory';
-  table.players.forEach((p) => { p.ready = false; });
+  table.players.forEach((p) => { p.ready = false; p.seenBrag = false; });
   settleVictory(table);
   return ok();
 }
@@ -492,7 +495,14 @@ function settleVictory(table) {
   if (table.phase !== 'victory') return;
   const r = table.rewards;
   const perks = members(table).some((m) => m.pendingPerks > 0);
-  if (!perks && r.draft.done) enterCamp(table);
+  const seen = table.players.every((p) => p.seenBrag);
+  if (!perks && r.draft.done && seen) enterCamp(table);
+}
+function bragSeen(table, player) {
+  if (table.phase !== 'victory') return fail('Not now.');
+  player.seenBrag = true;
+  settleVictory(table);
+  return ok();
 }
 function loot(table, player, cmd) {
   if (table.phase !== 'victory') return fail('No spoils yet.');
@@ -559,8 +569,8 @@ export function playerView(table, playerId) {
   const player = table.players.find((p) => p.id === playerId);
   const base = {
     seq: table.seq, code: table.code, name: table.name, phase: table.phase,
-    you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready } : null,
-    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, host: p.id === table.hostId })),
+    you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag } : null,
+    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId })),
   };
   if (!table.company) return base;
   const me = player?.hero;
@@ -621,7 +631,8 @@ export function playerView(table, playerId) {
     const r = table.rewards;
     base.victory = {
       questName: r.questName, xp: r.xp, gold: r.gold, contrib: r.contrib, levels: r.levels,
-      order: r.order, picker: r.draft.done ? r.order.length : r.draft.turn % r.order.length, picked: r.draft.picked, drops: r.drops,
+      order: r.order, points: r.points, place: r.place, stats: r.stats,
+      picker: r.draft.done ? r.order.length : r.draft.turn % r.order.length, picked: r.draft.picked, drops: r.drops,
       waiting: E.draftWho(r.draft),
     };
     base.hero = me ? clone(me) : null;

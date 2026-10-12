@@ -43,8 +43,13 @@ function nextMove(table) {
       const p = ps.find((x) => x.hero.pendingPerks > 0);
       if (p) return [p, { type: 'perk', id: v(p).perkOffer[0] }];
       const who = E.draftWho(table.rewards.draft);
-      const picker = ps.find((x) => x.hero.name === who);
-      return [picker || host, { type: 'pass-loot' }];
+      if (who) {
+        const picker = ps.find((x) => x.hero.name === who);
+        return [picker || host, { type: 'pass-loot' }];
+      }
+      const unseen = ps.find((x) => !x.seenBrag);
+      if (unseen) return [unseen, { type: 'brag-seen' }];
+      throw new Error('Victory is stuck.');
     }
     case 'camp': {
       const p = ps.find((x) => x.hero.pendingPerks > 0);
