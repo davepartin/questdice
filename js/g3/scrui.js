@@ -249,7 +249,7 @@ export function create(opts = {}) {
   const paint = () => {
     const c = D.CLASSES[cls];
     const pic = classPreview(cls);
-    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; hint.hidden = !!pic;
+    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', CLS_HUE[cls] || '#ffd23d'); hint.hidden = !!pic;
     $('#gl')?.classList.toggle('grab', !pic);
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
