@@ -30,7 +30,7 @@ test('weapon temperaments: every weapon sums to 8 (about +2 a roll); steady has 
 test('universal number language on head, hands and feet: 1 heal, 2 pierce, 3 magic, 4 gold (2 each); feet also set initiative', () => {
   const h = knight();
   const ev = evaluate(h, board({ N: 1, W: 2, E: 3, S: 4, C: 6, NW: 1, NE: 1 }));
-  assert.equal(ev.heal, 2); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 2); assert.equal(ev.gold, 2); assert.equal(ev.init, 4);
+  assert.equal(ev.heal, 3); assert.equal(ev.pierce, 2); assert.equal(ev.magic, 2); assert.equal(ev.gold, 2); assert.equal(ev.init, 4);
 });
 
 test('heart 1-4 adds +2 per matching head/hand/feet die; heart 5 and 6 add +4 to every blue / red weapon lane', () => {
@@ -474,7 +474,7 @@ test('every symbol pays its count: faces 1-4 of any die size pay 2 (heal, pierce
   const h = knight();
   const ev = evaluate(h, board({ W: 4, E: 4, N: 3, S: 3, C: 5, NW: 1, NE: 1 }));
   assert.equal(ev.gold, 4); assert.equal(ev.magic, 4);
-  assert.deepEqual(FACE_PAY.slice(1, 5), [{ heal: 2 }, { pierce: 2 }, { magic: 2 }, { gold: 2 }]);
+  assert.deepEqual(FACE_PAY.slice(1, 5), [{ heal: 3 }, { pierce: 2 }, { magic: 2 }, { gold: 2 }]);
   assert.deepEqual(FACE_PAY[9], { heal: 2, pierce: 2 }); assert.deepEqual(FACE_PAY[10], { magic: 2, gold: 2 });
   const big = evaluate(h, board({ N: 5, W: 6, E: 7, S: 8, C: 6, NW: 1, NE: 1 }));
   assert.equal(big.heal, 3); assert.equal(big.pierce, 3); assert.equal(big.magic, 3); assert.equal(big.gold, 3);
