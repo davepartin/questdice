@@ -30,7 +30,7 @@ let fights = 0; let victoryCounted = false; let stuck = 0; let lastScreen = ''; 
 for (let guard = 0; guard < 400 && fights < FIGHTS; guard++) {
   const sc = await screenOf();
   if (sc !== lastScreen) { log(`[${((Date.now() - t0) / 1000).toFixed(0)}s] screen: ${sc}${sc === 'battle' ? ` (fight ${fights + 1})` : ''}`); lastScreen = sc; stuck = 0; } else stuck++;
-  if (stuck > 25) { problems.push(`stuck on ${sc}`); await shot(`stuck-${sc}`); break; }
+  if (stuck > 25) { problems.push(`stuck on ${sc}`); log('STATE', await p.evaluate(() => { const B = window.QD.B3.battleState; return JSON.stringify({ outcome: window.QD.S.battle?.outcome, phase: window.QD.S.battle?.phase, busy: B.busy, starting: B.starting, ended: B.ended, running: window.QD.B3.running?.(), layer: document.querySelector('#b3')?.className, app: document.querySelector('#app')?.className, hp: window.QD.S.battle?.hp, round: window.QD.S.battle?.round }); })); await shot(`stuck-${sc}`); break; }
   if (!seenShots.has(sc)) { seenShots.add(sc); await pump(1.5); await shot(sc); }
   if (sc === 'board') { await p.evaluate(() => document.querySelector('.sx-qcard')?.click()); await pump(2); }
   else if (sc === 'battle') {

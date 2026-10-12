@@ -237,3 +237,7 @@
 .fb.party .fb-slot.hero.down .fb-card { opacity: .5; }
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-name { font-size: .5rem; letter-spacing: .01em; }
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { font-size: .68rem; padding: .15rem .2rem; }
+
+.b3 .b3-rline { flex-wrap: nowrap; white-space: nowrap; } .b3 .b3-rline .rc-again { flex: none; }
+.fb-slot.tier-boss .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 18px rgba(255, 110, 60, .38)); }
+.fb-slot.tier-elite .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 14px rgba(255, 200, 100, .28)); }

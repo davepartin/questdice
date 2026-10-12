@@ -34,6 +34,10 @@ const EPITHET = {
 
 // ------------------------------------------------------------------------------------------ start / stop
 export async function start(ctx) {
+  if (B.starting && !B.ended) return; // a second tap on the quest card while the table is still being set up
+  try { await startTable(ctx); } catch (e) { B.starting = false; throw e; }
+}
+async function startTable(ctx) {
   C = ctx;
   const { S } = C;
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
@@ -111,7 +115,7 @@ function buildHud() {
   const hud = B.hud = {};
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
   hud.place = h('small', {}); hud.round = h('b', {}); hud.score = h('span', { class: 'b3-score', 'aria-label': 'Battle points' }, h('i', {}, 'PTS'), h('b', {}, '0'));
-  hud.again = h('button', { type: 'button', class: 'rc-again', hidden: true, 'aria-label': 'Show the last round again', onclick: () => showCard(B.lastCard) }, HK.icon('dice'), h('span', {}, 'Last round'));
+  hud.again = h('button', { type: 'button', class: 'rc-again', hidden: true, 'aria-label': 'Show the last round again', onclick: () => showCard(B.lastCard) }, HK.icon('dice'), h('span', {}, 'Recap'));
   hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again)));
   hud.coach = h('div', { class: 'b3-coach' });
   hud.ribbon = h('div', { class: 'b3-ribbon' });

@@ -94,9 +94,6 @@
 /* ================================================================== enemy plates */
 @keyframes plIn { from { opacity: 0; transform: translate(-50%, -20%) scale(.7); } }
 /* gilded elites and bosses */
-.tier-boss { box-shadow: 0 0 0 1px rgba(226,178,76,.7), 0 0 34px rgba(255,90,40,.28), 0 12px 30px rgba(0,0,0,.6); }
-.tier-boss::before, .tier-boss::after, .tier-elite::before, .tier-elite::after { content: ''; position: absolute; top: 50%; width: .5rem; height: .5rem; background: linear-gradient(135deg, #fff1c4, #b9801e); transform: translateY(-50%) rotate(45deg); box-shadow: 0 0 8px rgba(226,178,76,.8); }
-.tier-boss::before, .tier-elite::before { left: -.28rem; } .tier-boss::after, .tier-elite::after { right: -.28rem; }
 /* intent badge: colour and shape language per verb */
 .tone-strike { --tc: #ff4d4d; --tcl: #ffd3cb; } .tone-slam { --tc: #ff3324; --tcl: #fff; } .tone-pierce { --tc: #ff8a1a; --tcl: #ffe6cc; } .tone-guard { --tc: #4db4ff; --tcl: #d8f0ff; }
 .tone-mend { --tc: #45e08b; --tcl: #d3ffe6; } .tone-windup { --tc: #ffb13a; --tcl: #fff2cf; } .tone-howl { --tc: #ff8a3a; --tcl: #ffe2c8; } .tone-bind { --tc: #8a5cff; --tcl: #e1d4ff; }
