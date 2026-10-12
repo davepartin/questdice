@@ -62,6 +62,17 @@ function countUp(el, from, to, ms = 900, fmt = (v) => String(v), delay = 0) {
 }
 const clsName = (c) => D.CLASSES[c].name;
 function emblem(cls, size = '') { return h('span', { class: `sx-emblem ${size}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } }, ico(CLASS_ICON[cls] || 'sword')); }
+function classPic(cls, size = '') {
+  const k = D.CLASSES[cls];
+  if (!k?.img) return emblem(cls, size);
+  return h('span', { class: `sx-emblem ${size}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
+    h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' }));
+}
+function classPreview(cls) {
+  const k = D.CLASSES[cls];
+  if (!k?.img) return null;
+  return h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' });
+}
 function nextOf(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // the layout contract between panels and the camera (fractions of the viewport covered by DOM)
@@ -233,12 +244,17 @@ export function create(opts = {}) {
   const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
   const info = h('div', { class: 'sx-classinfo' });
+  const preview = h('div', { class: 'sx-hero-art' });
+  const hint = h('p', { class: 'sx-hint' }, h('span', {}, 'Drag to turn'));
   const paint = () => {
     const c = D.CLASSES[cls];
+    const pic = classPreview(cls);
+    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; hint.hidden = !!pic;
+    $('#gl')?.classList.toggle('grab', !pic);
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
       onclick: () => { if (id === cls) return; cls = id; sfx.select(); paint(); H?.pick(cls).then(() => H?.push(true)); },
-    }, emblem(id), h('span', {}, k.name.split(' ')[0]))));
+    }, classPic(id), h('span', {}, k.name.split(' ')[0]))));
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
       h('div', { class: 'ci-head' }, h('h2', {}, c.name), h('p', {}, c.blurb)),
@@ -269,7 +285,7 @@ export function create(opts = {}) {
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
   mountAs('create',
     h('div', { class: 'sx-split' },
-      h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), h('p', { class: 'sx-hint' }, h('span', {}, 'Drag to turn'))),
+      h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview, hint),
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, 'Choose your hero')),
         rail, info, flourish(),
@@ -281,11 +297,12 @@ export function create(opts = {}) {
   SCR.enter('create', { cls }, 'create').then((hd) => {
     H = hd; if (!hd) return;
     const cv = $('#gl'); let down = null;
-    const pd = (e) => { down = e.clientX; cv.setPointerCapture?.(e.pointerId); };
+    const spinning = () => !D.CLASSES[cls]?.img;
+    const pd = (e) => { if (!spinning()) return; down = e.clientX; cv.setPointerCapture?.(e.pointerId); };
     const pm = (e) => { if (down == null) return; H.drag(e.clientX - down); down = e.clientX; };
     const pu = () => { if (down != null) { down = null; H.drag(0, true); } };
     cv.addEventListener('pointerdown', pd); cv.addEventListener('pointermove', pm); cv.addEventListener('pointerup', pu); cv.addEventListener('pointercancel', pu);
-    cv.classList.add('grab');
+    if (spinning()) cv.classList.add('grab');
     (S.cleanups ||= []).push(() => { cv.removeEventListener('pointerdown', pd); cv.removeEventListener('pointermove', pm); cv.removeEventListener('pointerup', pu); cv.removeEventListener('pointercancel', pu); cv.classList.remove('grab'); });
     H.pick(cls, { quiet: true }).then(() => H.push(true));
   });
