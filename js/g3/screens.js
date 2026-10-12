@@ -262,18 +262,25 @@ const MODES = {
     const sh = { cls: null };
     async function pick(c, { quiet = false } = {}) {
       const my = ++mounting; sh.cls = c;
+      ped.userData.setColor(CLASS_COLOR[c]);
+      const burstIn = () => {
+        if (quiet) return;
+        const r = rng(Date.now() & 0xffff);
+        for (let i = 0; i < 46; i++) { const ang = r() * 6.28; burst.emit({ pos: [Math.cos(ang) * 0.85, 0.4, Math.sin(ang) * 0.85], vel: [Math.cos(ang) * 0.5, 1 + r() * 1.6, Math.sin(ang) * 0.5], life: 1 + r(), size: 0.05 + r() * 0.04, sizeEnd: 0.005, color: CLASS_COLOR[c], colorEnd: 0xff6a20, alpha: 1, alphaEnd: 0, drag: 0.8, gravity: 0.2 }); }
+        stage().flash(CLASS_COLOR[c], 0.12);
+      };
+      if (D.CLASSES[c]?.img) { // painted miniature: the DOM preview is the portrait, so no 3D stand-in
+        if (cur) { pivot.remove(cur.root); cur = null; }
+        burstIn();
+        return null;
+      }
       let a = cache.get(c);
       if (!a) { a = await createActor('hero', { cls: c, loadout: loadoutFor(c), level: 1, seed: 3, quality: stage().quality }); cache.set(c, a); }
       if (my !== mounting || token !== own.token) return null;
       if (cur) pivot.remove(cur.root);
       cur = a; pivot.add(a.root); a.play('ready', { restart: true, fade: 0.15 });
       yaw = ARRIVE; turnFrom = ARRIVE; turnT = 0.0001; vel = 0; swayT = 0; // arrive turned to the left, then turn toward the player
-      ped.userData.setColor(CLASS_COLOR[c]);
-      if (!quiet) {
-        const r = rng(Date.now() & 0xffff);
-        for (let i = 0; i < 46; i++) { const ang = r() * 6.28; burst.emit({ pos: [Math.cos(ang) * 0.85, 0.4, Math.sin(ang) * 0.85], vel: [Math.cos(ang) * 0.5, 1 + r() * 1.6, Math.sin(ang) * 0.5], life: 1 + r(), size: 0.05 + r() * 0.04, sizeEnd: 0.005, color: CLASS_COLOR[c], colorEnd: 0xff6a20, alpha: 1, alphaEnd: 0, drag: 0.8, gravity: 0.2 }); }
-        stage().flash(CLASS_COLOR[c], 0.12);
-      }
+      burstIn();
       return a;
     }
     frame((dt, t) => {
@@ -438,6 +445,7 @@ export const portraitQ = {
     });
   },
   hero(cls, { size = [360, 440], fit = 'full', loadout } = {}) {
+    if (D.CLASSES[cls]?.img) return Promise.resolve(D.CLASSES[cls].img);
     const key = `h:${cls}:${fit}`;
     return queue(key, async () => {
       const a = await createActor('hero', { cls, loadout: loadout || loadoutFor(cls), level: 1, seed: 3, quality: 'med' });
