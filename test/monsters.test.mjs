@@ -104,14 +104,14 @@ test('chain locks dice to last round’s face; hush blanks the heart', () => {
   b.enemies[0].hp = 999;
   setIntent(b.enemies[0], { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 });
   b.board = { ...weak };
-  b.lastBoard = Object.fromEntries(Object.keys(weak).map((s) => [s, 3]));
   resolve(b, { target: 0 });
   assert.equal(b.nextChained, 2);
+  const last = b.lastBoard;
   startRoll(b);
   assert.equal(b.chainedNow, 2);
-  const chained = Object.values(b.board).filter((d) => d.chained);
+  const chained = Object.entries(b.board).filter(([, d]) => d.chained);
   assert.equal(chained.length, 2);
-  assert.ok(chained.every((d) => d.bound && d.v === 3));
+  assert.ok(chained.every(([s, d]) => d.bound && d.v === last[s]));
 });
 
 test('baby dragons flee when hurt and last standing; Vharaxis flees only as an elite', () => {
