@@ -103,11 +103,11 @@ export function sigil(ctx) {
       h('span', { class: 'pw-name' }, k.name), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
   };
   const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 300 260'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
-  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="23" x2="0" y2="229"><stop offset="0" stop-color="#d9a8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
+  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="34" x2="0" y2="221"><stop offset="0" stop-color="#d9a8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
     <radialGradient id="pwF" cx=".5" cy=".62" r=".6"><stop offset="0" stop-color="#7a3cf0" stop-opacity=".55"/><stop offset="1" stop-color="#1a0838" stop-opacity="0"/></radialGradient></defs>
-    <path class="pw-fill" d="M150 23 L261 229 H39 Z" fill="url(#pwF)"/>
-    <path class="pw-edge e-AB" d="M150 23 L39 229"/><path class="pw-edge e-BC" d="M39 229 H261"/><path class="pw-edge e-CA" d="M261 229 L150 23"/>
-    <path class="pw-inner" d="M150 74 L225 205 H75 Z"/><circle class="pw-rune" cx="150" cy="160" r="52"/><circle class="pw-rune r2" cx="150" cy="160" r="60"/>`;
+    <path class="pw-fill" d="M150 34 L261 221 H39 Z" fill="url(#pwF)"/>
+    <path class="pw-edge e-AB" d="M150 34 L39 221"/><path class="pw-edge e-BC" d="M39 221 H261"/><path class="pw-edge e-CA" d="M261 221 L150 34"/>
+    <circle class="pw-rune" cx="150" cy="159" r="48"/><circle class="pw-rune r2" cx="150" cy="159" r="57"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // your magic and your health, one under the other, the same width, top right
   const tally = h('div', { class: 'pw-tally' },

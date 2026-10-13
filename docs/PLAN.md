@@ -935,3 +935,7 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 
 ### 13 Oct 2026 — difficulty shown on the quest board
 - The quest board's header carries a small chip with the hero's skill level (Easy green, Normal gold, Hard orange, Legendary red) beside "Act I · Quest 4 of 10". The battle card's own Danger row ("Fair for you · ~5 rounds") already reads that setting. On narrow phones the eyebrow stays on one line and the danger words wrap inside the card instead of running off it.
+
+### 13 Oct 2026 — magic sheet: A, B and C on a true equilateral triangle
+- The three power medallions now sit exactly on the corners of one equilateral triangle (side 222 in the 300 × 260 drawing: A (150, 34), B (39, 221), C (261, 221)) and the purple triangle's lines run through their centres. Before, the name under B and C pushed those circles up (the whole button was centred on its corner), and the sides were unequal (233 vs 222). Every name is now absolutely placed the same distance under its circle, so the circles are exactly on the corners and the three names line up; names wrap to two lines instead of colliding on a small phone.
+- The faint inner triangle is gone (one dotted ring remains); the stage may grow to 24rem on big phones; short phones (≤720px tall) get smaller helper circles and a shorter panel. Checked at 375×667, 390×740, 393×852 and 430×932.

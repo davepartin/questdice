@@ -19,15 +19,15 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* ================================================================== the triangle */
 /* the wrap takes whatever height is left; the stage is the biggest 300:260 triangle that fits in it */
-.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: .5rem 0 2.4rem; container-type: size; }
+.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: .3rem 0 2.3rem; container-type: size; }
 .pw-stage { position: relative; flex: none; width: min(100%, 11rem); aspect-ratio: 300 / 260; container-type: inline-size; }
-@supports (width: 1cqh) { .pw-stage { width: min(92cqw, 17rem, calc(100cqh * 300 / 260)); } }
+@supports (width: 1cqh) { .pw-stage { width: min(94cqw, 24rem, calc(100cqh * 300 / 260)); } }
 .pw-tri { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .pw-edge { fill: none; stroke: url(#pwG); stroke-width: 3.6; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(180, 100, 255, .9)); opacity: .95; transition: opacity .3s, stroke-width .3s; }
 .pw-sigil.sel-A .e-AB, .pw-sigil.sel-A .e-CA, .pw-sigil.sel-B .e-AB, .pw-sigil.sel-B .e-BC, .pw-sigil.sel-C .e-BC, .pw-sigil.sel-C .e-CA { opacity: 1; stroke-width: 4.6; stroke-dasharray: 14 9; animation: pwFlow 1.1s linear infinite; }
 @keyframes pwFlow { to { stroke-dashoffset: -46; } }
 .pw-inner { fill: none; stroke: rgba(210, 160, 255, .3); stroke-width: 1.2; }
-.pw-rune { fill: none; stroke: rgba(210, 160, 255, .4); stroke-width: 1.2; stroke-dasharray: 2 6; transform-origin: 150px 160px; animation: pwSpin 40s linear infinite; }
+.pw-rune { fill: none; stroke: rgba(210, 160, 255, .4); stroke-width: 1.2; stroke-dasharray: 2 6; transform-origin: 150px 159px; animation: pwSpin 40s linear infinite; }
 .pw-rune.r2 { stroke-dasharray: 10 5 2 5; stroke: rgba(255, 210, 120, .22); animation-direction: reverse; animation-duration: 60s; }
 @keyframes pwSpin { to { transform: rotate(360deg); } }
 .pw-fill { animation: pwBreathe 4.2s ease-in-out infinite; } @keyframes pwBreathe { 50% { opacity: .6; } }
@@ -44,8 +44,9 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-center small { color: #d9b4ff; } .pw-life small { color: #aaf0c8; }
 
 /* ================================================================== a medallion (a power at a point of the triangle) */
-.pw-medal { --r: clamp(2.7rem, 27cqw, 4.7rem); position: absolute; width: var(--r); display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; transform: translate(-50%, -50%); -webkit-tap-highlight-color: transparent; z-index: 2; }
-.pw-medal.at-A { left: 50%; top: 9%; } .pw-medal.at-B { left: 13%; top: 88%; } .pw-medal.at-C { left: 87%; top: 88%; }
+.pw-medal { --r: clamp(2.6rem, 25cqw, 4.8rem); position: absolute; width: var(--r); display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; transform: translate(-50%, -50%); -webkit-tap-highlight-color: transparent; z-index: 2; }
+/* the three circles sit exactly on the corners of one equilateral triangle (side 222 in the 300 x 260 box), each centred on its corner */
+.pw-medal.at-A { left: 50%; top: 13.1%; } .pw-medal.at-B { left: 13%; top: 85%; } .pw-medal.at-C { left: 87%; top: 85%; }
 .pw-ring { position: relative; width: var(--r); height: var(--r); border-radius: 50%; display: grid; place-items: center; transition: transform .25s cubic-bezier(.2, 1.4, .4, 1);
   background: conic-gradient(from 210deg, #f6e2ff, #9b4dff, #4a1aa0, #b46cff, #f6e2ff); box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 16px color-mix(in srgb, var(--c) 55%, transparent), 0 8px 16px rgba(0, 0, 0, .6); }
 .pw-core { width: calc(var(--r) * .81); height: calc(var(--r) * .81); border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 55%, #2a1048), #12061f 75%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 70%, transparent), inset 0 -6px 14px rgba(0, 0, 0, .6); }
@@ -56,9 +57,8 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-pips { position: absolute; left: 50%; bottom: -.62rem; transform: translateX(-50%); display: flex; gap: .16rem; }
 .pw-pips i { width: .46rem; height: .46rem; border-radius: 50%; background: #1c0d33; box-shadow: inset 0 0 0 1.2px color-mix(in srgb, var(--c) 70%, transparent); }
 .pw-pips i.on { background: var(--c); box-shadow: 0 0 6px var(--c); }
-.pw-name { margin-top: .25rem; max-width: 6.5rem; font: 800 .68rem var(--disp, sans-serif); letter-spacing: .06em; text-transform: uppercase; text-align: center; line-height: 1.1; color: #f2e6ff; text-shadow: 0 1px 3px #000; }
-.pw-medal.at-A .pw-name { position: absolute; top: calc(100% + .05rem); white-space: nowrap; }
-.pw-medal:has(.pw-pips) .pw-name { margin-top: .7rem; }
+.pw-name { max-width: 6.5rem; font: 800 .68rem var(--disp, sans-serif); letter-spacing: .06em; text-transform: uppercase; text-align: center; line-height: 1.1; color: #f2e6ff; text-shadow: 0 1px 3px #000; }
+.pw-medal.at-A .pw-name, .pw-medal.at-B .pw-name, .pw-medal.at-C .pw-name { position: absolute; left: 50%; top: calc(100% + .7rem); transform: translateX(-50%); width: max-content; max-width: 36cqw; white-space: normal; }
 .pw-tag { position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: .15rem; padding: .05rem .4rem; border-radius: 999px; white-space: nowrap; font: 900 .48rem var(--disp, sans-serif); letter-spacing: .1em; color: #1a0838; background: #e6d4ff; z-index: 2; }
 .pw-tag .ic { width: .58rem; height: .58rem; } .pw-tag.used, .pw-tag.locked { background: #4a4258; color: #d6cfe2; } .pw-tag.recharge { background: #ffd21a; color: #2a1804; }
 .pw-medal.st-ready .pw-ring { animation: pwReady 2.4s ease-in-out infinite; background: conic-gradient(from 210deg, #fff3c4, #f0b838, #8a5a10, #ffd96a, #fff3c4); }
@@ -117,3 +117,6 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 /* wide screens: the sheet is the left column; give the triangle a sensible cap */
 @media (min-aspect-ratio: 5/4) { .pw-stage { max-width: 15rem; } }
 @media (prefers-reduced-motion: reduce) { .pw-rune, .pw-fill, .pw-medal.st-ready .pw-ring, .pw-edge, .pw-pick .pp-arrow, .pw-detail { animation: none !important; } }
+
+/* short phones: smaller helper medallions and a shorter panel so the triangle keeps its room */
+@media (max-height: 720px) { .pw-umedal { --r: 2.4rem; } .pw-utils { padding-top: .2rem; gap: 1.1rem; } .pw-detail { min-height: 6.8rem; } .pw-name { font-size: .6rem; } }
