@@ -846,12 +846,14 @@ Each fight's place (already chosen in `questsFor`) paints the table: `createFlat
 
 ## 2026-10-13 — Dave's rules pass and the painted scenes (plan and status)
 Dave's list, in the order we are doing it. Each item names where it lives.
-1. **Rules audit (done; clarified by Dave 13 Oct).** A talent die always has two blank faces and one 2x face. Its other faces ("symbol faces")
-   can each carry up to **half the die's sides** in symbols: d4 two, d6 three, d8 four, d10 five (`talentPerFace(size)` in data.js). The
-   number of symbol faces is what is left: d4 1, d6 3, d8 5, d10 7 (`TALENT_FACES`). A die can carry as many of one symbol as a face
-   holds (the old "never more than two of one symbol" now scales the same way; `talentInfo(...).same`). The die grows d4 -> d6 -> d8 -> d10
-   (`SPECIAL_STEPS`). Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them). Watch the balance of
-   big talent dice (a d10 face can pay five symbols at the hand's strength); a bot run with talent dice trained is still to do.
+1. **Rules audit (done; talent dice redone three times, v3 is current).** **Talent dice v3 (Dave, 13 Oct):** faces 1 and 2 are blank, face 3 is 2x, and
+   each face from 4 up to the die's size shows its own number and pays that many of the symbol you buy for it (face 6 + magic = 6 magic;
+   the hand's strength no longer matters). A face starts empty and does nothing; you pay once per face, more the bigger the number
+   (`talentFaceCost(num)` = 10 gold x num). Symbols: attack, block, magic, heal, gold (never pierce), at most two of a symbol per die.
+   A bigger die (d4 -> d6 -> d8 -> d10, `SPECIAL_STEPS`) adds new empty faces; the old ones keep their symbols. A class starts with one free symbol on face 4.
+   Code: `specialFace`, `talentInfo`, `addTalent`, `removeTalent` in engine.js; the camp card is `talentCard` in scrui.js; the 3D face shows the number plus its
+   symbol (`labels` in gfx/dice/dice.js). Old saves that kept several symbols on a face now use only the first. Prices and bot results: docs/BALANCE.md.
+   Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them).
 2. **Dice grow with the act (done).** `ACT_MAX_DIE` / `dieCapForAct`: Act I d4 -> d6 only, Act II d6 -> d8, Act III d8 -> d10, for strength
    and talent dice (`actGate` in engine.js; the camp row shows "Act II" on the lock). The level and gold gates still apply.
 3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green
@@ -874,7 +876,4 @@ Dave's list, in the order we are doing it. Each item names where it lives.
    others), then add the names to `PAINTED` in `scenery.js` (it does not probe the network). Until then the camp uses a calm place
    painting (Wolfwood Edge / Candle Vault / Smoke Hollow). The title and hero-choice screens still use the old 3D scene. Dev: `dev/campshot.mjs tag w h n [camp|board]`.
 
-- (13 Oct, later) **Talent symbols no longer use the hand's strength** (Dave): each symbol showing on a talent die adds 1 to its counter
-  (`SYMBOL_VALUE` in data.js; `evaluate` in engine.js). The 2x face still doubles the hand above it in its weapon lane. Camp text, the
-  coach tip and the tutorial lesson were reworded. This makes talent dice weaker than before (a d4 face with one symbol was worth the hand's 2-4);
-  the bot numbers in docs/BALANCE.md were measured before this change, so re-run `sh tools/progress-all.sh 3 3 smart` and look at Mid again.
+- (13 Oct, later) The "each symbol adds 1" rule lasted a few hours; it was replaced by talent dice v3 above.
