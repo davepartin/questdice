@@ -331,3 +331,25 @@
 @keyframes fbInfo { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.22); box-shadow: 0 0 0 1.5px #4a300a, 0 0 12px rgba(255, 220, 120, .9); } }
 .fb-slot.dead .fb-info { display: none; }
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
+
+/* enemy ability pop-up: a short gold-framed card on the felt, never over the dice or buttons */
+.fb-pops { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+.fb-pop { position: absolute; transform: translate(-50%, -100%); min-width: 7.2rem; max-width: min(12.4rem, 72%); padding: .28rem .5rem .32rem .38rem; border-radius: .55rem; display: flex; align-items: flex-start; gap: .38rem; pointer-events: none;
+  background: linear-gradient(180deg, rgba(52, 38, 28, .97), rgba(14, 9, 7, .98));
+  box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .75), inset 0 0 0 3px rgba(16, 10, 6, .92), inset 0 0 0 4px rgba(226, 178, 76, .28), 0 8px 18px rgba(0, 0, 0, .6);
+  color: #f4e7cb; --pc: #e2b24c; }
+.fb-pop .ap-ico { flex: none; width: 1.35rem; height: 1.35rem; margin-top: .04rem; display: grid; place-items: center; border-radius: .35rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 28%, #1a1008), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
+.fb-pop .ap-ico svg { width: .95rem; height: .95rem; color: var(--pc); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 55%, transparent)); }
+.fb-pop .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .08rem; }
+.fb-pop b { font: 800 .72rem/1.1 var(--disp, sans-serif); letter-spacing: .04em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
+.fb-pop small { font: 600 .62rem/1.2 var(--disp, sans-serif); color: #d8cbb0; }
+.fb-pop.v-guard, .fb-pop.v-armor { --pc: #7ab8ff; }
+.fb-pop.v-ward, .fb-pop.v-breath, .fb-pop.v-rage { --pc: #ff8a3a; }
+.fb-pop.v-phase, .fb-pop.v-bind, .fb-pop.v-chain, .fb-pop.v-drain { --pc: #c08cff; }
+.fb-pop.v-hush, .fb-pop.v-howl { --pc: #e6b4ff; }
+.fb-pop.v-pilfer, .fb-pop.v-flee, .fb-pop.v-summon { --pc: #ffd23d; }
+.fb-pop.v-charge, .fb-pop.v-slam, .fb-pop.v-stalk { --pc: #ff7a6a; }
+.fb-pop.v-mend { --pc: #7affb0; }
+.fb-pop.still { opacity: 1; transform: translate(-50%, -100%); }
+@media (prefers-reduced-motion: reduce) { .fb-pop { transition: none; } }

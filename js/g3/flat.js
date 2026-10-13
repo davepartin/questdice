@@ -155,7 +155,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   const field = h('div', { class: 'fb-field' }, heroSide, foeSide);
   const fx = h('div', { class: 'fb-fx', 'aria-hidden': 'true' });
   const flashEl = h('i', { class: 'fb-flash', 'aria-hidden': 'true' });
-  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${heroes.length > 1 ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl);
+  const pops = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
+  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${heroes.length > 1 ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl, pops);
+  fb.pops = pops;
   applyPlace(fb.el, quest?.place);
   host.prepend(fb.el);
 
