@@ -1101,7 +1101,7 @@ export function roadsFor(hero, opts = {}) {
   const poolPick = () => pick(rng, act.pool);
   if (ELITE_STEPS.includes(s)) {
     let el = pick(rng, act.elite);
-    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = hero.difficulty === 'easy' ? sorted[0] : hero.difficulty === 'hard' ? sorted[sorted.length - 1] : el; } // Noob: the big one alone; Expert: with its company
+    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = hero.difficulty === 'easy' ? sorted[0] : el; } // Noob: the big one alone
     return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
   }
   let a = poolPick(); let bq = poolPick();

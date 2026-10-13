@@ -855,7 +855,7 @@ Dave's list, in the order we are doing it. Each item names where it lives.
 3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green
    health pill update in place. The detail panel has a fixed minimum height so the triangle never jumps when you pick the first
    power; bigger medallions with a gold rim when ready; the three helpers are small raised pills. `dev/sheetshot.mjs` measures the triangle before/after a pick.
-4. **Skill level and random encounters (built, being tuned).** The hero picks Noob / Mid / Expert (keys `easy|normal|hard` kept for old saves;
+4. **Skill level and random encounters (done; numbers in docs/BALANCE.md: Noob 15/15 clears, Mid 14/15, Expert 3/15 for the bot).** The hero picks Noob / Mid / Expert (keys `easy|normal|hard` kept for old saves;
    `DIFFICULTY`, now with a `budget`). `questsFor` returns ONE fight chosen by the game: `encounterFor(hero)` fills a trouble
    budget (`ENCOUNTER` in data.js, each monster has a `threat`; budget grows through the act, times the skill's `budget`, times a seeded
    0.75-1.35 jitter) from the act's own monsters, sometimes one big monster, sometimes a crowd (cap 4). Elite steps give a Noob the elite alone and an Expert the elite with company. The first fight is still the lone goblin.

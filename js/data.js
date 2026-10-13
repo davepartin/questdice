@@ -206,16 +206,16 @@ export const CLASS_TALENT = {
 export const DIFFICULTY = {
   easy: { name: 'Noob', text: 'New to the dice. Fewer, gentler monsters.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
   normal: { name: 'Mid', text: 'The intended game.', hp: 1, flat: 0, gold: 1, budget: 1 },
-  hard: { name: 'Expert', text: 'Bigger crowds, tougher monsters. Pays 15% more gold.', hp: 1.3, flat: 3, gold: 1.15, budget: 1.3 },
+  hard: { name: 'Expert', text: 'Bigger crowds, tougher monsters. Pays 15% more gold.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
 };
 // Random encounters. The game picks the one fight at each step from the act's monsters by a trouble budget (each monster has a
 // `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster). The budget grows through the act and is
 // scaled by the hero's skill, so some steps are one big monster, some a few small ones. { base, slope } per act (Act III reuses
 // Act I's monsters at the larger Act III numbers).
 export const ENCOUNTER = {
-  acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.28 }, { base: 1.8, slope: 0.3 }],
+  acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 1.5, slope: 0.22 }],
   groupPlus: 0.15,
-  jitter: [0.75, 1.35], // each fight's budget is the step's budget times a seeded draw from this range, so no two steps are alike
+  jitter: [0.75, 1.25], // each fight's budget is the step's budget times a seeded draw from this range, so no two steps are alike
   bigFrom: 4, bigMax: 4, // elite-tier monsters join ordinary fights from this step, if their threat is at most bigMax
 };
 // Display helpers for the old flat UI and captions.
