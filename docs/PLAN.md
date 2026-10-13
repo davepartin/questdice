@@ -908,3 +908,8 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Grok's transparent 1024² PNGs (branch `act3-miniatures`) were trimmed to their figure and saved as ~50–75 KB webps in assets/miniatures/ (cinderling, frostwhelp, ashwyrm, vharaxis, fallenchampion, ironwarden, shieldbearer, gloomstalker, chainbinder, dirgesinger); each monster points at its own image with an `imgBase`, and the stand-in recolouring (`tint`) is gone. The 1 MB originals stay on the branch only, to keep the repo light.
 - Sizes retuned (Ashmaw 1.5); long single-word names (Shieldbearer, Frostwhelp, Cinderling) shrink so the i badge never clips them.
 - Checked on the real battle screen at 393×852 and 375×667 with one, two and three foes, and on the quest card. The Hollow Lich is the only boss that still shares art (the Ember Queen is no longer a recoloured Lich).
+
+### 13 Oct 2026 — hotfix: the dice were hidden behind the painted road scene
+- Dave's iPhone showed a rolled battle with no dice. Cause: when the old 3D screens were removed (d876776) `screens.release()` stopped hiding the painted road/camp scene, so that full-screen layer stayed on top of the dice-tray canvas during every fight (the canvas drew fine underneath). Fix: `release()` hides the scene again.
+- dev/dicecheck.mjs rolls once and fails if the scene layer (`body.has-scene`) is on in battle; dev/newplayer.mjs now checks the layer is off in a fight and back on at camp.
+- Lesson: my battle screenshots stopped before the first roll, so this slipped through for a few commits. The test scripts now screenshot after a roll.

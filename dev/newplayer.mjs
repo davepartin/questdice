@@ -28,6 +28,7 @@ console.log('fight:', await tapText(/^\s*(Battle|Elite|Boss)/));
 await p.evaluate(() => document.querySelector('.sx-qcard')?.click());
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2); await shot('4battle');
+console.log('scene layer over the battle?', await p.evaluate(() => document.body.classList.contains('has-scene')), '(want false)');
 for (let r = 1; r <= 14; r++) {
   if (await p.evaluate(() => window.QD.S.battle?.outcome || !document.querySelector('#b3-roll'))) break;
   for (let k = 0; k < 40 && !(await p.evaluate(() => !!document.querySelector('#b3-roll') && !window.QD.B3.battleState.busy)); k++) await pump(0.5);
@@ -42,6 +43,6 @@ for (let r = 1; r <= 14; r++) {
 await p.evaluate(() => document.querySelector('.rc')?.click()); await pump(4); await shot('5after');
 console.log('after fight screen text:', await p.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300)));
 for (let i = 0; i < 6; i++) { const t = await tapText(/continue|claim|collect|to camp|onward|go on|next|done|take/); console.log('tap', t); if (!t) break; await pump(2); }
-await shot('6next'); console.log('now:', await p.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 200)));
+await shot('6next'); console.log('scene back on camp/board?', await p.evaluate(() => document.body.classList.contains('has-scene')), '(want true)'); console.log('now:', await p.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 200)));
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no problems');
 await b.close();
