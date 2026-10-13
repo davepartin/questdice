@@ -717,6 +717,8 @@ Online.bind({ S, ghost, primary, showTitle, showHowTo, battleCtx });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
+  const retired = SV.startBeta(); // heroes from the test builds step aside once, so the beta starts clean
   await Online.boot(showTitle);
+  if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
 export const debugApi = { S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory, showStory };

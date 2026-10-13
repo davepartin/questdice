@@ -16,6 +16,18 @@ async function sha(text) {
 const randSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 function store() { try { return window.localStorage; } catch { return null; } }
+// The beta (Dave, Oct 2026): heroes and table seats saved by the test builds are retired once, the first time a device opens
+// the beta, so every tester starts on today's rules. Returns how many heroes were retired.
+const EPOCH_KEY = 'questdice.epoch'; const EPOCH = 'beta-1'; export const SAVE_V = 2;
+export function startBeta() {
+  const s = store(); if (!s) return 0;
+  try {
+    if (s.getItem(EPOCH_KEY) === EPOCH) return 0;
+    const old = []; for (let i = 0; i < s.length; i++) { const k = s.key(i); if (k.startsWith(PREFIX) || k === 'questdice.seat') old.push(k); }
+    old.forEach((k) => s.removeItem(k)); s.setItem(EPOCH_KEY, EPOCH);
+    return old.filter((k) => k.startsWith(PREFIX)).length;
+  } catch { return 0; }
+}
 export const canSave = () => { const s = store(); if (!s) return false; try { s.setItem('questdice.t', '1'); s.removeItem('questdice.t'); return true; } catch { return false; } };
 
 export function listHeroes() {
@@ -36,7 +48,7 @@ export const heroExists = (name) => !!store()?.getItem(key(name));
 export async function createSave(hero, password) {
   if (heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
   const salt = randSalt();
-  const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: 1 };
+  const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: SAVE_V };
   store().setItem(key(hero.name), JSON.stringify(rec));
   return rec;
 }
@@ -69,6 +81,7 @@ export function importCode(code, { overwrite = false } = {}) {
   if (!t.startsWith('QD1.')) throw new Error('That does not look like a Soul Code.');
   let rec; try { rec = JSON.parse(unb64(t.slice(4))); } catch { throw new Error('The Soul Code is damaged.'); }
   if (!rec?.hero?.name || !rec.hash || !rec.salt) throw new Error('The Soul Code is incomplete.');
+  if (!(rec.v >= SAVE_V)) throw new Error('That Soul Code is from the test builds, before the beta. Forge a fresh hero.');
   if (heroExists(rec.hero.name) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.hero.name; throw e; }
   store().setItem(key(rec.hero.name), JSON.stringify(rec));
   return rec.hero.name;
