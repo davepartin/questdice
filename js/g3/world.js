@@ -1,9 +1,8 @@
-// The 3D world: owns the stage, director and the lifecycle of whatever scene is on screen.
+// The 3D world: owns the stage and the lifecycle of whatever scene is on screen.
 // Real modules (the dice tray) are loaded dynamically; if one is missing or throws, a stand-in from stubs.js takes
 // its place so the game still plays. The battle's top half is not 3D any more: see flat.js.
 import * as THREE from 'three';
 import { createStage } from '../gfx/core.js';
-import { Director } from './director.js';
 import { stubTray } from './stubs.js';
 
 async function tryLoad(path) {
@@ -11,7 +10,7 @@ async function tryLoad(path) {
 }
 
 export const world = {
-  stage: null, director: null, vfx: null, available: false, mode: null, battle: null,
+  stage: null, available: false, mode: null, battle: null,
 
   async boot(canvas) {
     if (this.stage) return true;
@@ -19,7 +18,6 @@ export const world = {
       const probe = document.createElement('canvas');
       if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return false;
       this.stage = createStage(canvas);
-      this.director = new Director(this.stage);
       try { (await import('../gfx/dice/faces.js')).setDiceStyle('clean'); } catch (e) { console.warn('[world] dice style', e); }
       this.stage.start();
       try { (await import('./portrait.js')).shareRenderer(this.stage.renderer, () => this.stage.env); } catch { /* portraits fall back to their own renderer */ }
@@ -33,8 +31,6 @@ export const world = {
     const s = this.stage;
     this.battle?.dispose?.(); this.battle = null;
     s.clearScene();
-    this.director.layout = null;
-    this.director.attach();
     s.scene.fog = null; s.scene.environment = s.env; s.scene.background = new THREE.Color(0x05060c);
     s.post.look({ bloom: 0.16, bloomThreshold: 1.0, vignette: 0.3, grain: 0.02, aberration: 0, sat: 1.14, contrast: 1.14, tilt: 0, exposure: 1 });
   },
@@ -56,7 +52,7 @@ export const world = {
     tray.setHero(hero);
     stage.onFrame((dt, t) => tray.update?.(dt, t));
     const bw = {
-      stage, tray, director: this.director,
+      stage, tray,
       // company: the dice table shows the dice of whoever's turn it is
       setActiveHero(i, heroData) { if (heroData) tray.setHero(heroData); },
       dispose() { tray.dispose?.(); },

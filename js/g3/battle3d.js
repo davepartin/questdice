@@ -41,7 +41,7 @@ async function startTable(ctx) {
   C = ctx;
   const { S } = C;
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
-  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0;
+  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0;
   if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Setting up the table…')));
@@ -166,7 +166,7 @@ function buildHud() {
 function fitTray() {
   const bw = B.bw; if (!bw || !B.hud) return;
   if (landscape()) return fitTrayWide();
-  const dir = world.director; const stage = world.stage; const W = stage.width; const H = stage.height;
+  const stage = world.stage; const W = stage.width; const H = stage.height;
   if (!stage.post.trayPass.enabled) return;
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
   const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
@@ -189,7 +189,6 @@ function fitTray() {
   cam.setViewOffset(W, H, 0, shift, W, H);
   stage.post.trayPass.band = { y: lineY, h: H - lineY };
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${Math.round(lineY)}px`);
-  dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
   B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
 }
 // Wide screens: the table across the top, the dice table in the middle below it, between your hero panel (left) and the controls (right).
@@ -210,7 +209,7 @@ function fitTrayWide() {
   cam.setViewOffset(W, H, (q.l + q.r) / 2 - (x0 + x1) / 2, (q.t + q.b) / 2 - (y0 + y1) / 2, W, H);
   stage.post.trayPass.band = { y: lineY, h: H - lineY };
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${lineY}px`);
-  world.director.tilt = 0; B.trayDist = d;
+  B.trayDist = d;
 }
 // ------------------------------------------------------------------------------------------ the company: roster and team actions
 // At a table (net mode) b mirrors this phone's hero (E.focusFighter); the others are in b.fighters.

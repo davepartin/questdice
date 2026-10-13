@@ -11,7 +11,7 @@ import { WEAPONS } from '../data.js';
 import { mulberry32 } from './noise.js';
 import {
   loft, ringPts, merge, tint, shade, X, cylBetween, sph, crystal, gemCut, helix, torus, plate, rivets, canvasTex, mirrorGeo, prep, TAU, D, lerp, clamp, sstep,
-} from './actors/herokit.js';
+} from './geo.js';
 import { lathe, tube, worldUV, mergeGeometries } from './util.js';
 
 const QUAL = { high: 1, med: 0.75, low: 0.55 };

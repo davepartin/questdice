@@ -4,23 +4,7 @@ import * as THREE from 'three';
 import * as D from '../data.js';
 import * as E from '../engine.js';
 
-// ------------------------------------------------------------------------------ arena
-export function stubArena(stage) {
-  const g = new THREE.Group();
-  stage.scene.fog = new THREE.FogExp2(0x1a1018, 0.035);
-  stage.scene.background = new THREE.Color(0x1a1018);
-  const key = new THREE.DirectionalLight(0xffb070, 3); key.position.set(-5, 8, 6); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, far: 30 });
-  const rim = new THREE.DirectionalLight(0x6a8cff, 1.5); rim.position.set(4, 5, -8);
-  g.add(key, rim, new THREE.HemisphereLight(0x8090c0, 0x201010, 0.5));
-  const f = new THREE.Mesh(new THREE.CircleGeometry(40, 48), new THREE.MeshStandardMaterial({ color: 0x2a2220, roughness: 1 }));
-  f.rotation.x = -Math.PI / 2; f.receiveShadow = true; g.add(f);
-  stage.scene.add(g);
-  return { group: g, update() {}, setMood() {}, dispose() { stage.scene.remove(g); }, marks: {} };
-}
-
-// ------------------------------------------------------------------------------ tray
-const SLOT_POS = { NW: [-1.45, -1.45], N: [0, -1.45], NE: [1.45, -1.45], W: [-1.45, 0], C: [0, 0], E: [1.45, 0], SW: [-1.45, 1.45], S: [0, 1.45], SE: [1.45, 1.45] };
+// ------------------------------------------------------------------------------ dice table
 export function stubTray(stage) {
   const root = new THREE.Group();
   const top = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.2, 4.8), new THREE.MeshStandardMaterial({ color: 0x3a2a1c, roughness: 0.8 }));
@@ -71,8 +55,3 @@ export function stubTray(stage) {
 }
 
 // ------------------------------------------------------------------------------ vfx (no-ops)
-export function stubVfx(stage) {
-  const done = (ms = 120) => stage.wait(ms / 1000);
-  const noop = () => done();
-  return new Proxy({ stub: true }, { get: (t, k) => (k in t ? t[k] : noop) });
-}
