@@ -42,6 +42,8 @@ const ICONS = {
   dwarf: '<path class="s" d="M12 2.6 V21.4"/><path class="f" d="M12 5 C7 3.6 3.6 6.4 3.8 10.4 C6.4 11.8 9.6 11.6 12 10 Z"/><path class="f" d="M12 5 C17 3.6 20.4 6.4 20.2 10.4 C17.6 11.8 14.4 11.6 12 10 Z"/>',
   bard: '<path class="f" d="M9.6 11.6 C5.4 11.6 3.6 16 6 18.8 C8.4 21.6 13.8 20.8 15.2 16.4 C15.8 14.4 14.6 12.4 12.6 11.8 Z"/><path class="s" d="M13 12.6 L20.2 4.2 M18.6 2.8 L21.4 5.6"/><circle class="p" cx="9.6" cy="16" r="1.5"/>',
   note: '<path class="s" d="M9 18 V5 L19 3 V16"/><circle class="f" cx="6.8" cy="18" r="2.6"/><circle class="f" cx="16.8" cy="16" r="2.6"/>',
+  breath: '<path class="f" d="M12.2 2.5 C13.1 6.8 18.2 8.8 18.2 14.2 C18.2 18.4 15.4 21.4 12 21.4 C8.6 21.4 5.8 18.4 5.8 14.2 C5.8 11.6 7.1 9.8 8.8 8.4 C9 10.8 9.9 12.1 11.1 12.7 C10.4 8.6 10.8 5.2 12.2 2.5 Z"/><path class="h" d="M11.2 8.4 C12.1 11 13.4 12.6 13.4 14.6"/>',
+  flee: '<path class="f" d="M3.4 12.2 C8.8 7.8 13.6 7 19.4 9.2 C16.2 11.4 12.2 12.4 7.6 12.5 Z"/><path class="f" d="M3.4 12.8 C8.6 16.8 13.6 17.4 19.6 15.2 C16.2 13.4 12 12.8 7.4 13 Z"/><path class="s" d="M4.4 12.5 L2.6 8.6 M4.4 12.5 L2.4 16.8"/>',
 };
 try { // display serif for names and titles, loaded without blocking the HUD stylesheet
   if (!document.getElementById('hud-font')) document.head.append(Object.assign(document.createElement('link'), { id: 'hud-font', rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap' }));

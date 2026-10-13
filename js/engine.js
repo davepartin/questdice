@@ -765,7 +765,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, early, init: e.init ?? null };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null };
     switch (i.v) {
       case 'strike': { const r = strikeHit(e, false); Object.assign(act, r); break; }
       case 'pierce': { const r = strikeHit(e, true); Object.assign(act, r); break; }
@@ -1504,7 +1504,7 @@ export function resolveParty(b) {
   };
   const actFor = (e) => {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0 };
     switch (i.v) {
       case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
       case 'pierce': { Object.assign(act, strikeHit(e, true)); break; }

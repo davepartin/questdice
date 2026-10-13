@@ -288,6 +288,37 @@
 .fb.party .fb-slot.hero.active .fb-pc.hero::after { display: none; }
 .fb.party .fb-slot.hero.active .fb-mark { border-color: #ffd96a; box-shadow: 0 0 10px rgba(255, 210, 61, .6); }
 .fb.party .fb-slot.hero.down .fb-card { opacity: .5; }
+
+/* party wait zone (left): unlocked minis sit at half size. Locked minis scale up beside their target. */
+.fb.party .fb-side.heroes.wait { position: relative; }
+.fb.party .fb-side.heroes.wait::before { content: ''; position: absolute; left: 4%; right: 4%; top: 8%; bottom: 2%; border-radius: .7rem; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 80%, rgba(255, 226, 170, .08), transparent 72%); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .18); }
+.fb.party .fb-slot.hero.wait .fb-pc { transform: scale(0.5); transform-origin: 50% 100%; transition: transform .36s cubic-bezier(.2, .9, .3, 1); }
+.fb.party .fb-slot.hero.locked .fb-pc { transform: scale(1); transform-origin: 50% 100%; transition: transform .36s cubic-bezier(.2, .9, .3, 1); }
+.fb.party .fb-slot.hero.wait .fb-img, .fb.party .fb-slot.hero.locked .fb-img, .fb.party .fb-slot.hero.back.locked .fb-img { height: calc(var(--ph) * .62); }
+.fb.party .fb-slot.hero.locked.back .fb-pc { filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .6)); }
+.fb.party .fb-pc.hero.committed::after,
+.fb.party .fb-slot.hero.active .fb-pc.hero.committed::after { display: block; opacity: 1; height: 14%;
+  box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 16px color-mix(in srgb, var(--hue, #ffd23d) 80%, transparent);
+  animation: fbCommit 1.6s ease-in-out infinite; }
+@keyframes fbCommit { 50% { opacity: .65; box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 22px color-mix(in srgb, var(--hue, #ffd23d) 90%, transparent); } }
+/* locked minis stand at the monster's feet, just to the left, above the plaque */
+.fb-pair { position: absolute; left: auto; right: 78%; bottom: 4.3rem; display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: .12rem; z-index: 4; pointer-events: none; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-pair { right: 55%; }
+.fb-pair .fb-slot.hero { flex: none; width: 2.9rem; max-width: 2.9rem; margin: 0; pointer-events: none; }
+.fb-pair .fb-pc { pointer-events: none; }
+.fb-pair .fb-slot.hero.locked .fb-img,
+.fb-pair .fb-slot.hero.back.locked .fb-img { height: calc(var(--ph) * .5); max-width: 2.9rem; }
+.fb-pair .fb-card.hero { position: absolute; left: 50%; bottom: 58%; transform: translateX(-50%); margin: 0; width: auto; z-index: 4; }
+.fb-pair .fb-hp { display: none; }
+.fb-slot.foe { overflow: visible; }
+.fb-links { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+.fb.party .fb-letter { display: none !important; } /* pairing is visual; no A/B/C tags */
+@media (prefers-reduced-motion: reduce) {
+  .fb.party .fb-slot.hero.wait .fb-pc, .fb.party .fb-slot.hero.locked .fb-pc { transition: none; }
+  .fb.party .fb-pc.hero.committed::after { animation: none; }
+  .fb-links { display: none; }
+}
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-name { font-size: .5rem; letter-spacing: .01em; }
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { font-size: .68rem; padding: .15rem .2rem; }
 
@@ -331,3 +362,25 @@
 @keyframes fbInfo { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.22); box-shadow: 0 0 0 1.5px #4a300a, 0 0 12px rgba(255, 220, 120, .9); } }
 .fb-slot.dead .fb-info { display: none; }
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
+
+/* enemy ability pop-up: a short gold-framed card on the felt, never over the dice or buttons */
+.fb-pops { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+.fb-pop { position: absolute; transform: translate(-50%, -100%); min-width: 7.2rem; max-width: min(12.4rem, 72%); padding: .28rem .5rem .32rem .38rem; border-radius: .55rem; display: flex; align-items: flex-start; gap: .38rem; pointer-events: none;
+  background: linear-gradient(180deg, rgba(52, 38, 28, .97), rgba(14, 9, 7, .98));
+  box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .75), inset 0 0 0 3px rgba(16, 10, 6, .92), inset 0 0 0 4px rgba(226, 178, 76, .28), 0 8px 18px rgba(0, 0, 0, .6);
+  color: #f4e7cb; --pc: #e2b24c; }
+.fb-pop .ap-ico { flex: none; width: 1.35rem; height: 1.35rem; margin-top: .04rem; display: grid; place-items: center; border-radius: .35rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 28%, #1a1008), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
+.fb-pop .ap-ico svg { width: .95rem; height: .95rem; color: var(--pc); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 55%, transparent)); }
+.fb-pop .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .08rem; }
+.fb-pop b { font: 800 .72rem/1.1 var(--disp, sans-serif); letter-spacing: .04em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
+.fb-pop small { font: 600 .62rem/1.2 var(--disp, sans-serif); color: #d8cbb0; }
+.fb-pop.v-guard, .fb-pop.v-armor { --pc: #7ab8ff; }
+.fb-pop.v-ward, .fb-pop.v-breath, .fb-pop.v-rage { --pc: #ff8a3a; }
+.fb-pop.v-phase, .fb-pop.v-bind, .fb-pop.v-chain, .fb-pop.v-drain { --pc: #c08cff; }
+.fb-pop.v-hush, .fb-pop.v-howl { --pc: #e6b4ff; }
+.fb-pop.v-pilfer, .fb-pop.v-flee, .fb-pop.v-summon { --pc: #ffd23d; }
+.fb-pop.v-charge, .fb-pop.v-slam, .fb-pop.v-stalk { --pc: #ff7a6a; }
+.fb-pop.v-mend { --pc: #7affb0; }
+.fb-pop.still { opacity: 1; transform: translate(-50%, -100%); }
+@media (prefers-reduced-motion: reduce) { .fb-pop { transition: none; } }
