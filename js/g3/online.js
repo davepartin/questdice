@@ -291,7 +291,7 @@ function victory(t) {
   const offer = Sess.view()?.perkOffer; const draft = R.draft; const who = E.draftWho(draft);
   const placeWord = (p) => (p === 1 && n >= 2 ? '1st place' : p === 2 && n >= 3 ? '2nd place' : '');
   const lead = R.order[0];
-  const sub = n >= 3 ? `${lead} did the most this battle, with ${R.order[1]} close behind.` : n === 2 ? `${lead} did the most this battle.` : 'The way is open.';
+  const sub = n >= 3 ? `${lead} did the most this battle, with ${R.order[1]} close behind.` : n === 2 ? `${lead} did the most this battle.` : 'The way is open. Go on, then.';
   const youRepeat = !!(R.repeat && R.repeat[hero?.name]);
   const rows = panel('sx-places', eyebrow(youRepeat ? 'Already cleared' : `+${R.xp} XP each`, 'gold'),
     h('div', { class: 'pl-list' }, R.order.map((name) => {
@@ -299,7 +299,7 @@ function victory(t) {
       const again = !!(R.repeat && R.repeat[name]);
       return h('div', { class: `pl-row ${p === 1 && n >= 2 ? 'first' : p === 2 && n >= 3 ? 'second' : ''} ${m === hero ? 'you' : ''}` },
         h('span', { class: 'pl-medal' }, pw ? (p === 1 ? '1' : '2') : ''), emblem(m.cls),
-        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, again ? 'Already cleared · no XP or gold' : (pw || 'Victory'), !again && m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
+        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, again ? 'Already cleared · no XP or gold. The road does not pay twice.' : (pw || 'Victory'), !again && m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
         h('div', { class: 'pl-nums' }, h('b', {}, `${R.points[name] || 0}`), h('small', {}, 'points'), h('span', { class: 'pl-gold' }, ico('coin'), `${R.gold[name] >= 0 ? '+' : ''}${R.gold[name]}`)));
     })));
   const owing = members.filter((m) => m.pendingPerks > 0 && m !== hero).map((m) => m.name);
@@ -336,14 +336,14 @@ export function menu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, t?.name || 'Table'),
     h('div', { class: 'col' },
       X.ghost('Rules', () => { close(); X.showHowTo(); }),
-      t?.phase === 'battle' && Sess.isHost() ? X.ghost('Retreat (every hero loses 15% gold)', () => { close(); askRetreat(); }) : null,
+      t?.phase === 'battle' && Sess.isHost() ? X.ghost('Retreat (every hero loses 15% gold). Live to try again.', () => { close(); askRetreat(); }) : null,
       X.ghost('Step away (keep my seat)', () => { close(); stepAway(); }),
       X.ghost('Leave this table for good', () => { close(); askLeave(); }),
       X.ghost('Close', () => close()))));
 }
 function askRetreat() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Retreat?'),
-    h('p', { class: 'muted' }, 'The whole company withdraws. Every hero drops 15% of their gold. Level, gear and perks stay.'),
+    h('p', { class: 'muted' }, 'The whole company withdraws. Every hero drops 15% of their gold. Level, gear and perks stay. Tomorrow is still yours.'),
     h('div', { class: 'row end' }, X.ghost('Stay', () => close()), X.primary('Retreat', () => { close(); Sess.send({ type: 'retreat' }).catch(fail); }))));
 }
 // Home, but the seat stays: the title shows "Rejoin" and the table carries on without a word.

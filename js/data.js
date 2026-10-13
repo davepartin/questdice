@@ -12,12 +12,12 @@ export const ROLE = {
 // power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Each pet wears its symbol's colour (Dave's pictures,
 // assets/pets/<img>.webp, cut from assets/pets/src by dev/petcut.mjs).
 export const PETS = {
-  ember: { name: 'Ember', kind: 'atk', color: '#ff3b3b', img: 'ember', text: 'A little black dragon with a flame on its tail. Starts with two attack symbols.' },
-  bristle: { name: 'Bristle', kind: 'pierce', color: '#ff8a1a', img: 'bristle', text: 'A brave hedgehog with a spear. Starts with two pierce symbols.' },
-  turtle: { name: 'Shellback', kind: 'block', color: '#3aa4ff', img: 'turtle', text: 'A turtle in blue armour with a shield. Starts with two block symbols.' },
-  bunny: { name: 'Sprig', kind: 'heal', color: '#38e87a', img: 'bunny', text: 'A gentle bunny in a leafy cloak. Starts with two heal symbols.' },
-  owl: { name: 'Starling', kind: 'magic', color: '#b46cff', img: 'owl', text: 'A little owl in a wizard’s hat. Starts with two magic symbols.' },
-  penny: { name: 'Penny', kind: 'gold', color: '#ffc21a', img: 'penny', text: 'A golden baby dragon on a pile of coins. Starts with two gold symbols.' },
+  ember: { name: 'Ember', kind: 'atk', color: '#ff3b3b', img: 'ember', text: 'A little black dragon with a flame on its tail, and opinions about everything. Starts with two attack symbols.' },
+  bristle: { name: 'Bristle', kind: 'pierce', color: '#ff8a1a', img: 'bristle', text: 'A brave hedgehog with a spear, convinced it is nine feet tall. Starts with two pierce symbols.' },
+  turtle: { name: 'Shellback', kind: 'block', color: '#3aa4ff', img: 'turtle', text: 'A turtle in blue armour with a shield. Unhurried. Unmoved. Starts with two block symbols.' },
+  bunny: { name: 'Sprig', kind: 'heal', color: '#38e87a', img: 'bunny', text: 'A gentle bunny in a leafy cloak. Soft paws, stubborn kindness. Starts with two heal symbols.' },
+  owl: { name: 'Starling', kind: 'magic', color: '#b46cff', img: 'owl', text: 'A little owl in a wizard’s hat, which it takes very seriously. Starts with two magic symbols.' },
+  penny: { name: 'Penny', kind: 'gold', color: '#ffc21a', img: 'penny', text: 'A golden baby dragon on a pile of coins. The pile is the point. Starts with two gold symbols.' },
 };
 // The first pets (a fox and a magpie) became Ember and Penny: old saves still find them (hidden from the traveler's list).
 Object.defineProperty(PETS, 'pup', { value: PETS.ember, enumerable: false });
@@ -91,72 +91,72 @@ const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
 //   risky    two blanks, big top faces (0, 0, 4, 4 or sharper)
 // `temper` names it for the cards. Metals raise numbers (see engine weaponFaces) and add the `bonus` corner abilities in order.
 export const WEAPONS = {
-  fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles.',
+  fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
   dagger: { name: 'Dagger', hands: 1, lean: 'off', temper: 'steady', glyph: '🗡️', price: 18,
-    tag: 'Steady: never blank. A 3 mends 1.',
+    tag: 'Steady: never blank. A 3 mends 1. Small, honest, and always in the fight.',
     faces: [F(1, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })],
     bonus: [{ face: 1, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   bracer: { name: 'Bracer', hands: 1, lean: 'def', temper: 'steady', glyph: '🛡️', price: 18,
-    tag: 'Steady guard: never blank. A 3 sparks 1 magic.',
+    tag: 'Steady guard: never blank. A 3 sparks 1 magic. The polite way to say no.',
     faces: [F(1, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })],
     bonus: [{ face: 1, fx: { heal: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 3, fx: { heal: 1 } }] },
   sword: { name: 'Sword', hands: 1, lean: 'off', temper: 'balanced', glyph: '⚔️', price: 24,
-    tag: 'Balanced. A 3 pierces for 1.',
+    tag: 'Balanced. A 3 pierces for 1. The old promise: cut, and keep cutting.',
     faces: [F(0, 'r'), F(2, 'b'), F(3, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   shield: { name: 'Shield', hands: 1, lean: 'def', temper: 'balanced', glyph: '🛡️', price: 24,
-    tag: 'Balanced wall. The red 2 is a bash that hits back.',
+    tag: 'Balanced wall. The red 2 is a bash that hits back. Shields have feelings too.',
     faces: [F(0, 'b'), F(2, 'r'), F(3, 'b'), F(3, 'b')],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', temper: 'risky', glyph: '🔱', price: 27,
-    tag: 'Risky reach: two blanks, two 4s that pierce.',
+    tag: 'Risky reach: two blanks, two 4s that pierce. Miss, miss, then through.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   mace: { name: 'Mace', hands: 1, lean: 'off', temper: 'risky', glyph: '🔨', price: 26,
-    tag: 'Risky crusher: two blanks, a 3 and a big 5.',
+    tag: 'Risky crusher: two blanks, a 3 and a big 5. Patience, then a door coming off its hinges.',
     faces: [F(0, 'r'), F(0, 'r'), F(3, 'r'), F(5, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   tower: { name: 'Tower Shield', hands: 1, lean: 'def', temper: 'risky', glyph: '🛡️', price: 30,
-    tag: 'Risky wall: two blanks, two big blue 4s.',
+    tag: 'Risky wall: two blanks, two big blue 4s. Either nothing, or a house in the way.',
     faces: [F(0, 'b'), F(0, 'b'), F(4, 'b'), F(4, 'b', { heal: 1 })],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }] },
   bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', temper: 'steady', glyph: '🏹', price: 42,
-    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Good odds at triples. A red 3 pierces.',
+    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Good odds at triples. A red 3 pierces. Breathe. Loose.',
     faces: [F(1, 'b'), F(2, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   staff: { name: 'Staff', hands: 2, lean: 'off', temper: 'balanced', glyph: '🪄', price: 45,
-    tag: 'Two-handed channel. A 3 gives 2 magic.',
+    tag: 'Two-handed channel. A 3 gives 2 magic. The stick does most of the talking.',
     faces: [F(0, 'b'), F(2, 'b'), F(3, 'r'), F(3, 'r', { magic: 2 })],
     bonus: [{ face: 2, fx: { magic: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', temper: 'risky', glyph: '⚔️', price: 45,
-    tag: 'Two-handed and risky: two blanks, two big red 4s.',
+    tag: 'Two-handed and risky: two blanks, two big red 4s. All or a lot. Never a little.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   warhammer: { name: 'War Hammer', hands: 2, lean: 'off', temper: 'risky', glyph: '🔨', price: 48,
-    tag: 'Two-handed, all or nothing: two blanks, a 2 and a crushing 6.',
+    tag: 'Two-handed, all or nothing: two blanks, a 2 and a crushing 6. When it lands, the hill notices.',
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
   // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and
   // then from the traveler. Their faces are fixed (no forging; training a size still works), about +10 at d4, and they use
   // the `model` weapon's 3D shape. Only one legendary may be in your hands at a time.
   dawnbreaker: { name: 'Dawnbreaker', model: 'sword', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '⚔️', price: 160,
-    tag: 'Legendary sword of the first light. Its 4 also hits every other monster for 2.',
+    tag: 'Legendary sword of the first light. Its 4 also hits every other monster for 2. Dawn, with an edge.',
     faces: [F(1, 'r'), F(2, 'b'), F(3, 'r'), F(4, 'r', { splash: 2 })] },
   oakheart: { name: 'Oakheart', model: 'shield', legendary: true, hands: 1, lean: 'def', temper: 'legendary', glyph: '🛡️', price: 160,
-    tag: 'Legendary shield of living oak. A blue 3 or 4 also heals 2.',
+    tag: 'Legendary shield of living oak. A blue 3 or 4 also heals 2. The tree still looks after you.',
     faces: [F(1, 'b'), F(2, 'r'), F(3, 'b', { heal: 2 }), F(4, 'b', { heal: 2 })] },
   thunderspear: { name: 'Thunder Spear', model: 'spear', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '🔱', price: 160,
-    tag: 'Legendary spear that rings like a storm. Every red face pierces 1.',
+    tag: 'Legendary spear that rings like a storm. Every red face pierces 1. Thunder, aimed.',
     faces: [F(1, 'r', { pierce: 1 }), F(1, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })] },
   fortune: { name: 'Fortune’s Dagger', model: 'dagger', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '🗡️', price: 160,
-    tag: 'Legendary dagger with a lucky edge. Never blank, and a 3 also pays 3 gold.',
+    tag: 'Legendary dagger with a lucky edge. Never blank, and a 3 also pays 3 gold. Fortune likes company.',
     faces: [F(2, 'r'), F(2, 'b'), F(3, 'r', { loot: 3 }), F(3, 'r', { loot: 3 })] },
   starfire: { name: 'Starfire Staff', model: 'staff', legendary: true, hands: 2, lean: 'off', temper: 'legendary', glyph: '🪄', price: 220,
-    tag: 'Legendary two-handed staff. Every face gives magic, the 4 gives 2.',
+    tag: 'Legendary two-handed staff. Every face gives magic, the 4 gives 2. Night sky, in the wood.',
     faces: [F(1, 'b', { magic: 1 }), F(2, 'b', { magic: 1 }), F(3, 'r', { magic: 1 }), F(4, 'r', { magic: 2 })] },
   twinfang: { name: 'Twinfang Bow', twinName: 'Twinfang Arrows', model: 'bow', legendary: true, hands: 2, lean: 'off', temper: 'legendary', glyph: '🏹', price: 220,
-    twinShot: 3, tag: 'Legendary two-handed bow. Twin shot: when the bow and the arrows roll the same number, +3 attack.',
+    twinShot: 3, tag: 'Legendary two-handed bow. Twin shot: when the bow and the arrows roll the same number, +3 attack. Two fangs. One thought.',
     faces: [F(1, 'b'), F(2, 'r'), F(3, 'r', { pierce: 1 }), F(3, 'r', { pierce: 1 })] },
 };
 export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legendary);
@@ -173,11 +173,11 @@ export const LOOT_WEIGHTS = {
 // then symbol faces: one on a d4, three on a d6. Each symbol face holds up to two symbols; any one symbol may appear at most twice on a die.
 // A talent symbol pays the number on its face (see TALENT_FACES). The 2x face doubles the hand above it in its weapon lane.
 export const TALENT_SYMS = {
-  atk: { name: 'Attack', text: 'Attack equal to the number on its face.' },
-  block: { name: 'Block', text: 'Block equal to the number on its face.' },
-  magic: { name: 'Magic', text: 'Magic equal to the number on its face.' },
-  heal: { name: 'Heal', text: 'Heal equal to the number on its face.' },
-  gold: { name: 'Gold', text: 'Gold equal to the number on its face.' },
+  atk: { name: 'Attack', text: 'Attack equal to the number on its face. Hit what you meant.' },
+  block: { name: 'Block', text: 'Block equal to the number on its face. Hold what you must.' },
+  magic: { name: 'Magic', text: 'Magic equal to the number on its face. Keep it for later.' },
+  heal: { name: 'Heal', text: 'Heal equal to the number on its face. Patch the hole.' },
+  gold: { name: 'Gold', text: 'Gold equal to the number on its face. Peddlers will smile.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
@@ -210,11 +210,11 @@ export const CLASS_TALENT = {
 // Keys easy/normal/hard are the old Noob/Mid/Expert monster-side knobs; older saves stored those keys (or the names
 // noob/mid/expert). Legendary is a new rung and still needs tuning.
 export const DIFFICULTY = {
-  easy: { name: 'Easy', text: 'Fewer, gentler monsters.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
-  normal: { name: 'Normal', text: 'The intended game.', hp: 1, flat: 0, gold: 1, budget: 1 },
-  hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
+  easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road, for learning your feet.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
+  normal: { name: 'Normal', text: 'The road as it was meant to be walked.', hp: 1, flat: 0, gold: 1, budget: 1 },
+  hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold. You will earn it.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
   // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).
-  legendary: { name: 'Legendary', text: 'The cruelest road. Crowds hit harder. Needs tuning.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
+  legendary: { name: 'Legendary', text: 'The cruellest road. Crowds hit harder. Still being sharpened.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
 };
 const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
 export function normalizeDifficulty(id) {
@@ -288,62 +288,62 @@ export const CLASSES = {
   // Heal with magic, default HEAL_AMOUNT), powerLevels (how far powers upgrade, default 2) and maxFeet (default 6).
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
-    trait: 'Balanced: a strong left hand and a shield.',
+    trait: 'Balanced: a strong left hand and a shield. Stands in front, on purpose.',
     name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), hp: 34,
-    blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy.',
+    blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy. The sort of hero who holds the door, and the line.',
     weapons: ['sword', 'shield'],
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
     // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Roll 2d6 attack. Half of it splashes on every other monster.' },
-      { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster.', unlock: 5 },
-      { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
-      { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack.' },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'A wide swing. Roll 2d6 attack. Half of it splashes on every other monster.' },
+      { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
+      { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
+      { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
       { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +3 attack and +3 block each.' },
-      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 5 each.' },
+      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 5 each. Up you get.' },
     ],
   },
   ranger: {
     feet: 6, maxFeet: 8, startMagic: 4,
-    trait: 'The fastest: the only class that can train speed to a d8.',
+    trait: 'The fastest on the road. The only class that can train speed to a d8.',
     name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger.webp', imgBase: IB(325, 470, 153.5, 465, 284), hp: 28,
-    blurb: 'Quick hands, quick eyes. A bow for the best odds at triples; rerolls 4 dice at a time.',
+    blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 5d6).' },
-      { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster.', unlock: 5 },
-      { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice.' },
-      { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer.' },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Breathe. Loose. Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 5d6).' },
+      { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
+      { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
+      { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
       { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 4 pierce each.' },
-      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +5 block each.' },
+      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +5 block each. Now you see me.' },
     ],
   },
   wizard: {
     feet: 4, startMagic: 6, magicCap: 15, healAmount: 6, powerLevels: 3,
     trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic, powers grow to level 3.',
     name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), hp: 24,
-    blurb: 'A frail body and a deep well of magic. No shield, but a spell for every problem and healing to spare.',
+    blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and healing to spare.',
     weapons: ['staff'],
     cards: [
-      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
-      { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others.', unlock: 5 },
-      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce.' },
-      { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
+      { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
+      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce. Small, rude, and on time.' },
+      { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
       { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 5 attack each, half splashing.' },
-      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 6 each.' },
+      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 6 each. Warm as a window.' },
     ],
   },
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
     trait: 'The wall: the most health, a crushing mace and a tower shield.',
     name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf.webp', imgBase: IB(443, 448, 250, 443, 329), hp: 40,
-    blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall.',
+    blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
-      { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late.' },
-      { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster.', unlock: 5 },
-      { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack.' },
-      { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block.' },
+      { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late. Dwarves keep receipts.' },
+      { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
+      { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
+      { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
       { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +6 block each.' },
       { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +4 attack and +2 block each.' },
     ],
@@ -352,15 +352,15 @@ export const CLASSES = {
     feet: 6, startMagic: 5,
     trait: 'The steady helper: quick, steady weapons, more magic to share.',
     name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard.webp', imgBase: IB(318, 476, 153, 471, 283), hp: 30,
-    blurb: 'The heart of the party. Songs that heal, hymns that harden, a knack for chaos.',
+    blurb: 'The heart of the party. Songs that heal, hymns that harden, and a knack for chaos that somehow helps.',
     weapons: ['dagger', 'bracer'],
     cards: [
-      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'Roll 2d6 and heal that much.' },
-      { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster.', unlock: 5 },
-      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +5 attack, 5-6 +9 attack and +2 magic.' },
-      { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer.' },
+      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'A tune you can feel in the ribs. Roll 2d6 and heal that much.' },
+      { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +5 attack, 5-6 +9 attack and +2 magic. Fingers crossed. Professionally.' },
+      { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
       { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for +3 attack and heal 3 each.' },
-      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 4 gold each.' },
+      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 4 gold each. Music to a peddler\'s ears.' },
     ],
   },
 };
@@ -369,15 +369,15 @@ export const CLASSES = {
 // Perks: one pick every level, three offered. Stat tweaks that compose without special cases.
 // -------------------------------------------------------------------------------------------
 export const PERKS = {
-  vitality: { name: 'Vitality', text: '+6 max HP.', max: 5, mod: { maxHp: 6 } },
-  reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic.', max: 3, mod: { startMagic: 1 } },
+  vitality: { name: 'Vitality', text: '+6 max HP. Room for one more bruise.', max: 5, mod: { maxHp: 6 } },
+  reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic. A spark in the pocket.', max: 3, mod: { startMagic: 1 } },
   quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it
-  keen: { name: 'Keen Edge', text: '+1 attack from every weapon that is attacking (red face).', max: 3, mod: { redBonus: 1 } },
-  ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face).', max: 3, mod: { blueBonus: 1 } },
-  piercer: { name: 'Piercing Pips', text: 'Each white body die that rolls pierce pierces +1 more.', max: 3, mod: { pierceBonus: 1 } },
-  greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen.', max: 3, mod: { goldPct: 0.25 } },
-  grit: { name: 'Stout Heart', text: '+4 max HP.', max: 2, mod: { maxHp: 4 } },
-  frugal: { name: 'Frugal Mender', text: 'The Heal card costs 1 less Magic (minimum 1).', max: 1, mod: { healCost: -1 } },
+  keen: { name: 'Keen Edge', text: '+1 attack from every weapon that is attacking (red face). Sharper mornings.', max: 3, mod: { redBonus: 1 } },
+  ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face). Hold a little harder.', max: 3, mod: { blueBonus: 1 } },
+  piercer: { name: 'Piercing Pips', text: 'Each white body die that rolls pierce pierces +1 more. Through, not around.', max: 3, mod: { pierceBonus: 1 } },
+  greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen. Coins like you already.', max: 3, mod: { goldPct: 0.25 } },
+  grit: { name: 'Stout Heart', text: '+4 max HP. A little more of you to go round.', max: 2, mod: { maxHp: 4 } },
+  frugal: { name: 'Frugal Mender', text: 'The Heal card costs 1 less Magic (minimum 1). Kindness, on sale.', max: 1, mod: { healCost: -1 } },
 };
 
 // -------------------------------------------------------------------------------------------
@@ -552,7 +552,7 @@ export const MONSTERS = {
 // -------------------------------------------------------------------------------------------
 export const ACTS = [
   {
-    id: 1, name: 'The Ashen Marches', tag: 'Goblins, wolves, and a fire that will not die.',
+    id: 1, name: 'The Ashen Marches', tag: 'Goblins, wolves, and a fire that will not die. Bring a stubborn heart.',
     places: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'Smoke Hollow', 'The Toll Bridge', 'Ashfall Camp', 'Gallows Hill'],
     pool: [['goblin', 'goblin'], ['wolf'], ['wolf', 'goblin'], ['cultist', 'goblin'], ['wolf', 'wolf'], ['cultist'], ['cultist', 'wolf'], ['cinderling', 'goblin'], ['shieldbearer', 'goblin']],
     elite: [['ogre'], ['ogre', 'goblin']],
@@ -562,7 +562,7 @@ export const ACTS = [
     route: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'The Toll Bridge', 'Smoke Hollow', 'Ashfall Camp', 'Smoke Hollow', 'Ashfall Camp', 'Gallows Hill'],
   },
   {
-    id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organize.',
+    id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organise. Mind the stairs.',
     places: ['The Weeping Stair', 'Ossuary Gate', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
     pool: [['skeleton', 'skeleton'], ['wraith'], ['spider', 'skeleton'], ['wraith', 'skeleton'], ['spider', 'spider'], ['spider'], ['frostwhelp', 'spider'], ['gloomstalker', 'skeleton'], ['dirgesinger', 'wraith']],
     elite: [['bonewarden']],
@@ -571,7 +571,7 @@ export const ACTS = [
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
   },
   {
-    id: 3, name: 'The Ember Peaks', tag: 'Dragon fire, broken oaths, and a queen who wants it all.',
+    id: 3, name: 'The Ember Peaks', tag: 'Dragon fire, broken oaths, and a queen who wants it all. Take water.',
     places: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Ember Throne slopes', 'The Ember Throne'],
     pool: [['cinderling', 'cinderling'], ['gloomstalker', 'shieldbearer'], ['chainbinder', 'cinderling'], ['dirgesinger', 'gloomstalker'],
       ['frostwhelp', 'frostwhelp'], ['shieldbearer', 'chainbinder'], ['cinderling', 'frostwhelp'], ['ironwarden'], ['ashwyrm']],

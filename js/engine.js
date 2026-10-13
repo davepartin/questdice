@@ -922,7 +922,7 @@ export function recordFled(campaign, b) {
       campaign.nemeses.push(rec);
     } else if (e.nemesis && e.hp <= 0) {
       campaign.nemeses = campaign.nemeses.filter((n) => n.id !== e.id);
-      campaign.chronicle = [{ act: campaign.act, step: campaign.step, title: e.name, text: `${e.name} falls at last. In its hoard: everything it ever stole from you, and more.` }, ...(campaign.chronicle || [])].slice(0, 18);
+      campaign.chronicle = [{ act: campaign.act, step: campaign.step, title: e.name, text: `${e.name} falls at last. In its hoard: everything it ever stole from you, and more. Dragons keep receipts. So, it turns out, do you.` }, ...(campaign.chronicle || [])].slice(0, 18);
     }
   }
 }
