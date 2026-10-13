@@ -932,3 +932,6 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 
 ### 13 Oct 2026 — camp shows where you are on the road
 - Camp now opens with a "where you are" card above the potions: the act and its name (with the Ascent), "You are at quest N of 10", the same step track as the quest board (done ticks, you, Elite and Boss markers; Act III shows both its bosses), and the place of the next fight ("Next fight: Ravens’ Rest", or "The Fallen Champion waits at Oathbreak Keep"). Built from `trail()` + `E.questsFor`, so it can never disagree with the board. dev/campmap.mjs screenshots it.
+
+### 13 Oct 2026 — difficulty shown on the quest board
+- The quest board's header carries a small chip with the hero's skill level (Easy green, Normal gold, Hard orange, Legendary red) beside "Act I · Quest 4 of 10". The battle card's own Danger row ("Fair for you · ~5 rounds") already reads that setting. On narrow phones the eyebrow stays on one line and the danger words wrap inside the card instead of running off it.

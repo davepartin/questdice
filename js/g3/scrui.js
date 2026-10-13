@@ -426,6 +426,11 @@ export function stepPick() {
 
 // ------------------------------------------------------------------------------------------------ board
 const groupNames = (ids) => { const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; }); return Object.entries(n).map(([id, c]) => `${D.MONSTERS[id].name}${c > 1 ? ` ×${c}` : ''}`).join(' + '); };
+// The skill level this hero plays at (Easy / Normal / Hard / Legendary), shown on the quest board so it is never a mystery why fights feel the way they do.
+function diffChip(hero) {
+  const id = D.normalizeDifficulty(hero.difficulty); const d = D.DIFFICULTY[id];
+  return h('span', { class: `sx-diffchip dc-${id}`, title: d.text, 'aria-label': `Difficulty: ${d.name}. ${d.text}` }, ico('skull'), d.name);
+}
 function trail(c) {
   const N = D.QUESTS_PER_ACT;
   return h('ol', { class: 'sx-trail', 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
@@ -475,7 +480,7 @@ export function board() {
     topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' },
-        eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`),
+        h('div', { class: 'sx-eyerow' }, eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), diffChip(hero)),
         h('h1', { class: 'sx-act' }, X.actName(hero)), h('p', { class: 'sx-acttag' }, X.actOf(hero).tag),
         trail(c)),
       X.partyBar?.(),
