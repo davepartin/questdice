@@ -5,7 +5,6 @@
 /* ---------------------------------------------------------------- shell: #app hands the viewport to the 3D scene */
 .app-frame.has-gl #app.scr { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; padding: 0; display: block; overflow: hidden; max-width: none; pointer-events: none; }
 .app-frame.has-gl #app.scr > * { width: auto; max-width: none; margin: 0; }
-#gl.grab { cursor: grab; } #gl.grab:active { cursor: grabbing; }
 .sx-screen {
   --gold: #f0c060; --gold-hi: #ffe9b0; --gold-lo: #9a6a1c; --ember: #ff8a3a; --hair: rgba(255, 214, 140, .26); --hair-2: rgba(255, 214, 140, .11);
   --glass-a: rgba(24, 26, 44, .84); --glass-b: rgba(8, 9, 18, .9); --text: #ece6d6; --dim: #a1a5bb; --faint: #6f748d; --ink: #1d1304; --side: .4;

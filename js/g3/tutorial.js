@@ -135,7 +135,7 @@ const LESSONS = [
     title: 'Weapon dice',
     eyebrow: 'Red attacks, blue blocks',
     art: () => h('div', { class: 'tu-faces four' }, ['weapon-red3', 'weapon-blue3', 'weapon-zero', 'weapon-red4'].map((n) => img(n))),
-    say: 'Watch the colour of your weapon’s face. Red sends that lane into attack, blue into block.',
+    say: 'Watch the colour of your weapon’s face. Red means that weapon attacks, blue means it blocks.',
     body: () => [
       row(img('weapon-red3', 'xs'), 'Red starburst = Attack', 'The weapon’s number plus your hand goes to attack.'),
       row(img('weapon-blue3', 'xs'), 'Blue shield = Block', 'The same sum goes to block instead.'),

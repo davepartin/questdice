@@ -245,14 +245,12 @@ export function create(opts = {}) {
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
   const info = h('div', { class: 'sx-classinfo' });
   const preview = h('div', { class: 'sx-hero-art' });
-  const hint = h('p', { class: 'sx-hint' }, h('span', {}, 'Drag to turn'));
   const paint = () => {
     const c = D.CLASSES[cls];
     const pic = classPreview(cls);
     preview.classList.remove('is-seated'); preview.dataset.cls = cls;
-    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', CLS_HUE[cls] || '#ffd23d'); hint.hidden = !!pic;
+    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', CLS_HUE[cls] || '#ffd23d');
     if (pic) { const go = () => H?.pin?.(); if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true }); }
-    $('#gl')?.classList.toggle('grab', !pic);
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
       onclick: () => { if (id === cls) return; cls = id; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
@@ -287,7 +285,7 @@ export function create(opts = {}) {
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
   mountAs('create',
     h('div', { class: 'sx-split' },
-      h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview, hint),
+      h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview),
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, 'Choose your hero')),
         rail, info, flourish(),
@@ -298,14 +296,6 @@ export function create(opts = {}) {
   lay('create');
   SCR.enter('create', { cls }, 'create').then((hd) => {
     H = hd; if (!hd) return;
-    const cv = $('#gl'); let down = null;
-    const spinning = () => !D.CLASSES[cls]?.img;
-    const pd = (e) => { if (!spinning()) return; down = e.clientX; cv.setPointerCapture?.(e.pointerId); };
-    const pm = (e) => { if (down == null) return; H.drag(e.clientX - down); down = e.clientX; };
-    const pu = () => { if (down != null) { down = null; H.drag(0, true); } };
-    cv.addEventListener('pointerdown', pd); cv.addEventListener('pointermove', pm); cv.addEventListener('pointerup', pu); cv.addEventListener('pointercancel', pu);
-    if (spinning()) cv.classList.add('grab');
-    (S.cleanups ||= []).push(() => { cv.removeEventListener('pointerdown', pd); cv.removeEventListener('pointermove', pm); cv.removeEventListener('pointerup', pu); cv.removeEventListener('pointercancel', pu); cv.classList.remove('grab'); });
     H.pick(cls, { quiet: true }).then(() => { H.push(true); H.pin?.(); });
   });
 }
@@ -490,17 +480,18 @@ function upgradeRow(kind, slot, label, hint) {
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
-    h('div', { class: 'ur-copy' }, h('b', {}, label), h('small', {}, hint),
-      u.next ? h('small', { class: 'ur-next' }, `d${size} → d${u.next}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, 'Fully grown')),
+    h('div', { class: 'ur-copy' }, h('b', {}, label),
+      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
     u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
 function weaponRow(inst, label = '') {
   const hero = X.S.hero; const w = D.WEAPONS[inst.id]; const size = E.weaponSize(inst);
   const f = E.forgeInfo(hero, inst.uid); const t = E.trainInfo(hero, inst.uid);
-  const note = !t.next ? 'Biggest die' : t.why === 'hands' ? `d${t.next} needs a d${t.next} hand first` : `d${size} → d${t.next}`;
+  const note = !t.next ? `Its die is the biggest there is (d${size}).` : t.why === 'hands' ? `Train to d${t.next}: needs a d${t.next} hand die first.` : `Train to d${t.next}: a bigger die, bigger numbers.`;
   return h('div', { class: 'sx-urow wrow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.tierName(inst)} · d${size}`), h('small', { class: 'ur-next' }, note)),
+    h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.tierName(inst)} · d${size}`),
+      f.next ? h('small', { class: 'ur-next' }, `Forge to ${D.RARITY[f.next]}: more bonus symbols on its corners.`) : null, h('small', { class: 'ur-next' }, note)),
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (HE.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, f.why === 'legendary' ? 'LEGENDARY' : 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (HE.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
@@ -518,16 +509,16 @@ function suppliesPanel(hero) {
 function potionRow(hero) {
   const u = E.potionUpgrade(hero); const cur = E.potionMaxOf(hero); const locked = u.why?.startsWith('Level');
   return h('div', { class: 'sx-urow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'), h('small', {}, `Holds ${cur} healing potions. Buy them at the top of camp.`),
-      u.next ? h('small', { class: 'ur-next' }, `${cur} → ${u.next} potions`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, 'Belt is full')),
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'),
+      u.next ? h('small', { class: 'ur-next' }, `Carry ${u.next} potions instead of ${cur}. Each heals ${E.potionHpOf(hero)} in battle.`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, `You can carry ${cur} potions, the most there is.`)),
     u.next ? btn(String(u.cost), () => { if (HE.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // The 4th reroll die: every reroll may take one more die, for good.
 function rerollDieRow(hero) {
   const u = E.rerollDieInfo(hero);
   return h('div', { class: 'sx-urow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Reroll hand'), h('small', {}, `Each reroll can take up to ${u.cur} dice.`),
-      h('small', { class: 'ur-next' }, u.next ? `${u.cur} → ${u.next} dice a reroll, for good` : 'Your hand is as quick as it gets')),
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Dice you can reroll'),
+      h('small', { class: 'ur-next' }, u.next ? `Reroll up to ${u.next} dice each time in battle, instead of ${u.cur}.` : `You reroll up to ${u.cur} dice each time, the most there is.`)),
     u.next ? btn(String(u.cost), () => { if (HE.buyRerollDie(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Reroll a 4th die for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
@@ -542,7 +533,7 @@ function unlockSection(hero) {
     h('p', { class: 'tab-intro' }, 'Your board starts with six dice. Add the rest here, one at a time, as you grow.'),
     rows.map((slot) => { const u = E.unlockInfo(hero, slot); const talent = slot !== 'NE';
       return h('div', { class: 'sx-urow wrow' },
-        h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
+        h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'Adds a talent die to your board. You choose a symbol for each of its faces.' : 'Adds your second weapon die to your board.')),
         btn(`Add die · ${u.cost}`, () => { if (HE.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
 }
 function talentCard(hero, slot) {
@@ -569,6 +560,7 @@ function talentCard(hero, slot) {
       h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
     h('div', { class: 'tal-strip syms numbers' }, symFaces),
     picker,
+    up.next ? h('small', { class: 'ur-next' }, `Grow from d${size} to d${up.next}: one more number face to fill with a symbol.`) : null,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
     up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
 }
@@ -616,6 +608,7 @@ function petCard(hero) {
     h('div', { class: 'pet-head' }, petPic(pet.type, 72), h('div', { class: 'tal-head' }, h('b', {}, `${p.name} · d${pet.size}`), h('small', {}, `${t.used} of ${t.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Each symbol pays ${pw}${g.next ? ` (${D.PET_POWER[g.next]} once it grows to a d${g.next})` : ''}. Rolls beside your board, and you can reroll it like any die.`))),
     h('div', { class: 'tal-strip syms pet-strip' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), faces),
     picker,
+    g.next ? h('small', { class: 'ur-next' }, `Grow from d${pet.size} to d${g.next}: every symbol pays ${D.PET_POWER[g.next]} instead of ${pw}, and the die gets another slot.`) : null,
     g.next ? btn(`Grow to d${g.next} · ${g.cost}`, () => { if (HE.growPet(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !g.ok, cls: `ur-buy ${!g.ok ? 'poor' : ''}`, aria: `Grow ${p.name} to a d${g.next} for ${g.cost} gold` }) : h('span', { class: 'ur-max' }, 'FULL GROWN'));
 }
 function petSection(hero) {
@@ -649,7 +642,8 @@ function powersSection(hero) {
 function powerRow(hero, k) {
   const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
   return h('div', { class: 'sx-urow wrow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, k.text), h('small', { class: 'ur-next' }, `${KIND_NAME[k.kind] || ''} · ${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`)),
+    h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, k.text), h('small', { class: 'ur-next' }, `${KIND_NAME[k.kind] || ''} · ${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
+      u.next ? h('small', { class: 'ur-next' }, `Upgrade to level ${u.next}: a stronger effect when you cast it.`) : null),
     u.next ? btn(`Level ${u.next} · ${u.cost}`, () => { if (HE.upgradePower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${k.name} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
@@ -672,8 +666,8 @@ function forgeTab() {
     petSection(hero),
     eyebrow('Strength dice'),
     h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level.'),
-    upgradeRow('strength', 'W', 'Left hand', 'Pays out on 1–4. Locked behind level.'), upgradeRow('strength', 'E', 'Right hand', 'Pays out on 1–4. Locked behind level.'),
-    upgradeRow('speed', 'S', 'Feet · speed', 'Your initiative die. A monster must roll higher than you to strike first.'),
+    upgradeRow('strength', 'W', 'Left hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your left weapon.`), upgradeRow('strength', 'E', 'Right hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your right weapon.`),
+    upgradeRow('speed', 'S', 'Feet die (speed)', (a, b) => `Grow from d${a} to d${b}: monsters have a harder time striking before you.`),
     rerollDieRow(hero),
     potionRow(hero),
     eyebrow('Magical powers'),

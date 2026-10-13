@@ -73,7 +73,7 @@ export function describeDie(hero, slot, v) {
   const role = D.ROLE[slot]; const name = SLOT_NAME[slot];
   if (role === 'weapon') {
     const inst = hero.loadout[slot]; const f = E.weaponFaces(inst)[v - 1]; const w = D.WEAPONS[inst.id];
-    return `${name} · ${D.tierName(inst)} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this lane attacks' : 'BLUE, so this lane defends'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
+    return `${name} · ${D.tierName(inst)} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this weapon attacks' : 'BLUE, so this weapon blocks'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
@@ -88,7 +88,7 @@ export function describeDie(hero, slot, v) {
     const t = ['Every 1 on your head, hands and feet heals +2 more.', 'Every 2 on your head, hands and feet pierces +2 more.', 'Every 3 on your head, hands and feet gives +2 ✦ more.', 'Every 4 on your head, hands and feet gives +2 🪙 more.', 'Each BLUE weapon lane gets +4 block.', 'Each RED weapon lane gets +4 attack.'][v - 1];
     return `Heart (d6) shows ${v}. ${t}`;
   }
-  const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to its lane. ` : `${name} (d4) shows ${v}. `;
+  const base = role === 'hand' ? `${name} · Strength ${v}: adds ${v} to the weapon beside it. ` : `${name} (d4) shows ${v}. `;
   const eff = payWords(v) ? `${v} → ${payWords(v)}.` : 'High numbers are pure power.';
   const ini = role === 'feet' ? ` It is also your initiative (${v}): each round every monster rolls its own die, a higher roll strikes first, ties go to you. Round 1 is always yours.` : '';
   return base + eff + ini;

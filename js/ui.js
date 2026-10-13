@@ -192,7 +192,7 @@ function unlock(name, kind = 'hero') {
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
   const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, 'Enter your password to open this hero.'), pw, msg,
-    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(name); if (c) copyCode(c); }), ghost('Cancel', () => close()), primary('Open', go)),
+    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(name); if (c) copyCode(c); }), ghost('Close', () => close()), primary('Open', go)),
     h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { SV.deleteHero(name); close(); showTitle(); } } }, 'Delete this hero'))));
   setTimeout(() => pw.focus(), 50);
 }
@@ -218,7 +218,7 @@ function showImport() {
       if (e.code === 'EXISTS') { msg.textContent = `${e.name} already lives on this device.`; msg.append(' ', h('a', { href: '#', onclick: (ev) => { ev.preventDefault(); go(true); } }, 'Replace them')); } else { msg.textContent = e.message; sfx.error(); }
     }
   };
-  modal(h('div', { class: 'form' }, h('h2', {}, 'Bring a hero here'), h('p', { class: 'muted' }, 'Paste a Soul Code exported from another device.'), ta, msg, h('div', { class: 'row end' }, ghost('Cancel', () => closeModal()), primary('Import', () => go(false)))));
+  modal(h('div', { class: 'form' }, h('h2', {}, 'Bring a hero here'), h('p', { class: 'muted' }, 'Paste a Soul Code exported from another device.'), ta, msg, h('div', { class: 'row end' }, ghost('Close', () => closeModal()), primary('Import', () => go(false)))));
 }
 
 // ------------------------------------------------------------------ create

@@ -30,6 +30,8 @@ const wait = (s) => world.stage.wait(s);
 const EPITHET = {
   goblinking: ['THE GOBLIN KING', 'Lord of Stolen Things'], ogre: ['HILL OGRE', 'Breaker of Gates'], lich: ['THE HOLLOW LICH', 'The Dead Organize'],
   bonewarden: ['BONE WARDEN', 'Keeper of the Stair'],
+  vharaxis: ['VHARAXIS', 'The Ember Queen'], fallenchampion: ['THE FALLEN CHAMPION', 'Oaths Unkept'],
+  ashwyrm: ['ASHMAW', 'The Wyrm of the Peaks'],
 };
 
 // ------------------------------------------------------------------------------------------ start / stop
@@ -41,7 +43,7 @@ async function startTable(ctx) {
   C = ctx;
   const { S } = C;
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
-  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; if (world.director) world.director.pan = 0;
+  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0;
   if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Setting up the table…')));
@@ -136,7 +138,7 @@ function buildHud() {
     h('button', { type: 'button', class: 'on', 'data-tab': 'powers', onclick: () => setSheetTab('powers') }, 'Magical powers'),
     h('button', { type: 'button', 'data-tab': 'team', onclick: () => setSheetTab('team') }, 'Team actions')) : h('b', {}, 'Magical powers');
   hud.sheet = h('div', { class: 'b3-sheet', role: 'dialog', 'aria-label': 'Magical powers' },
-    h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x sh-cancel', 'aria-label': 'Cancel: close the magic powers', onclick: () => togglePowers(false) }, '✕ Cancel')), hud.cards);
+    h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x sh-cancel', 'aria-label': 'Close the magic powers', onclick: () => togglePowers(false) }, '✕ Close')), hud.cards);
   hud.roster = B.party ? h('div', { class: 'b3-roster', role: 'list', 'aria-label': 'The company' }) : null;
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
@@ -166,7 +168,7 @@ function buildHud() {
 function fitTray() {
   const bw = B.bw; if (!bw || !B.hud) return;
   if (landscape()) return fitTrayWide();
-  const dir = world.director; const stage = world.stage; const W = stage.width; const H = stage.height;
+  const stage = world.stage; const W = stage.width; const H = stage.height;
   if (!stage.post.trayPass.enabled) return;
   const dockTop = B.hud.dock.getBoundingClientRect().top; const topBar = B.hud.top.getBoundingClientRect().bottom;
   const cam = stage.trayCamera; const obj = bw.tray.object; const v = new THREE.Vector3();
@@ -189,7 +191,6 @@ function fitTray() {
   cam.setViewOffset(W, H, 0, shift, W, H);
   stage.post.trayPass.band = { y: lineY, h: H - lineY };
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${Math.round(lineY)}px`);
-  dir.tilt = 0; dir.setSafe(Math.max(0, H - lineY), Math.round(topBar + 2));
   B.trayK = 1; B.trayDz = 0; B.trayDist = d; B.dbg = { d, deg: B.trayDeg, shift, lineY, w: pt(HALF, 0.4, EDGE)[0] - pt(-HALF, 0.4, EDGE)[0] };
 }
 // Wide screens: the table across the top, the dice table in the middle below it, between your hero panel (left) and the controls (right).
@@ -210,7 +211,7 @@ function fitTrayWide() {
   cam.setViewOffset(W, H, (q.l + q.r) / 2 - (x0 + x1) / 2, (q.t + q.b) / 2 - (y0 + y1) / 2, W, H);
   stage.post.trayPass.band = { y: lineY, h: H - lineY };
   B.lineY = lineY; B.root.style.setProperty('--line-y', `${lineY}px`);
-  world.director.tilt = 0; B.trayDist = d;
+  B.trayDist = d;
 }
 // ------------------------------------------------------------------------------------------ the company: roster and team actions
 // At a table (net mode) b mirrors this phone's hero (E.focusFighter); the others are in b.fighters.
@@ -253,14 +254,14 @@ function showTeamDetail(kind) {
   const b = B.b; const t = TEAM.find((x) => x.id === kind); const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const friends = b.fighters.map((f, j) => ({ f, j })).filter(({ j }) => j !== B.active);
   fillInfo(
-    h('div', { class: 'sh-head' }, h('b', {}, t.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('div', { class: 'sh-head' }, h('b', {}, t.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, t.text),
     h('div', { class: 'tm-friends' }, friends.map(({ f, j }) => {
       const r = E.teamActionInfo(b, B.active, kind, j);
       return h('button', { type: 'button', class: `tm-friend ${r.ok ? '' : 'no'}`, disabled: !r.ok, onclick: () => { close(); doTeam(kind, j); } },
         h('b', {}, f.hero.name), h('small', {}, `${Math.max(0, Math.ceil(f.hp))} / ${f.maxHp} health · ${f.magic} magic`), r.ok ? h('span', { class: 'tm-go' }, kind === 'revive' ? 'Revive' : kind === 'magic' ? 'Give' : 'Throw') : h('em', {}, r.why));
     })),
-    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel')));
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close')));
   B.hud.info.classList.add('open'); sfx.select();
 }
 async function doTeam(kind, to) {
@@ -388,7 +389,7 @@ function showFoeInfo(e) {
   const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
   // the painted miniature, beside its name and numbers
   const img = h('img', { alt: e.name, draggable: 'false', src: def.img }); const pic = h('div', { class: 'fi-pic' }, img);
-  fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+  fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
       h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), h('p', {}, readyText(e))),
@@ -437,7 +438,7 @@ function clearDock() {
   B.hud.caption.replaceChildren();
 }
 const UTIL = [
-  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 or 6 pumps your best block or attack.' },
+  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 pumps every blocking weapon, a 6 every attacking weapon.' },
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal health right now. As often as you can pay.` },
   { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: 'Drink a potion and heal right away. Potions are bought at camp; what you drink is gone until you buy more.' },
 ];
@@ -470,7 +471,7 @@ function cardTiles(reset) {
     { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, tag: heal.tag, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
     { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
-      body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 or 6 pumps your blue or red weapons.',
+      body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
       actions: [{ label: 'Turn down', alt: true, disabled: (b.board?.C.v ?? 1) <= 1, fn: () => doNudge(-1) }, { label: 'Turn up', disabled: (b.board?.C.v ?? 6) >= 6, fn: () => doNudge(1) }] },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
@@ -479,7 +480,7 @@ function cardTiles(reset) {
     use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
 function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
-// Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Cancel.
+// Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Close.
 const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean));
 function showPowerDetail(id) {
   const b = B.b; const hero = B.hero; const k = E.cardsOf(hero).find((c) => c.id === id); if (!k) return;
@@ -506,13 +507,13 @@ function showPowerDetail(id) {
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   const useBtn = rechargeBtn || h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`);
   fillInfo(
-    h('div', { class: 'sh-head' }, h('b', {}, k.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('div', { class: 'sh-head' }, h('b', {}, k.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, k.text),
     h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, how), h('dt', {}, 'Cost'), h('dd', {}, k.kind === 'scale' ? `${k.cost}–${k.max} magic (you choose)` : k.kind === 'charge' ? `${k.cost} magic per charge` : `${k.cost} magic`)),
     stored ? h('p', { class: 'pd-state' }, `${stored} charge${stored > 1 ? 's' : ''} stored.`) : null,
     stepRow, releaseRow,
     !rechargeBtn && reasons ? h('p', { class: 'pd-why' }, reasons) : null,
-    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'), useBtn));
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close'), useBtn));
   B.hud.info.classList.add('open'); sfx.select();
 }
 function showUtilDetail(id) {
@@ -522,11 +523,11 @@ function showUtilDetail(id) {
   const body = id === 'u:heart' ? `Turn the heart die one step up or down, once a round. It costs ${cost} magic. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${E.healAmountOf(B.hero)} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.potionHpOf(B.hero)} health right away and costs no magic. Drink it before you roll or while you shape your dice. It is gone once you drink it; buy more at camp.`;
   const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
   fillInfo(
-    h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x', onclick: close }, 'Close')),
+    h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, u.text),
     h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, body), h('dt', {}, 'Cost'), h('dd', {}, cost ? `${cost} magic` : 'Free')),
     why ? h('p', { class: 'pd-why' }, why) : null,
-    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Cancel'),
+    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close'),
       ...(id === 'u:heart' ? [nudgeBtn(-1, 'Turn down'), nudgeBtn(1, 'Turn up')]
         : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, cost ? `Use · ${cost} magic` : 'Drink')])));
   B.hud.info.classList.add('open'); sfx.select();

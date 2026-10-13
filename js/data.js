@@ -363,8 +363,8 @@ export const PERKS = {
   vitality: { name: 'Vitality', text: '+6 max HP.', max: 5, mod: { maxHp: 6 } },
   reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic.', max: 3, mod: { startMagic: 1 } },
   quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it
-  keen: { name: 'Keen Edge', text: '+1 to every red lane.', max: 3, mod: { redBonus: 1 } },
-  ward: { name: 'Ironward', text: '+1 to every blue lane.', max: 3, mod: { blueBonus: 1 } },
+  keen: { name: 'Keen Edge', text: '+1 attack from every weapon that is attacking (red face).', max: 3, mod: { redBonus: 1 } },
+  ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face).', max: 3, mod: { blueBonus: 1 } },
   piercer: { name: 'Piercing Pips', text: 'Each white body die that rolls pierce pierces +1 more.', max: 3, mod: { pierceBonus: 1 } },
   greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen.', max: 3, mod: { goldPct: 0.25 } },
   grit: { name: 'Stout Heart', text: '+4 max HP.', max: 2, mod: { maxHp: 4 } },

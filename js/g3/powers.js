@@ -103,30 +103,29 @@ export function sigil(ctx) {
       h('span', { class: 'pw-name' }, k.name), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
   };
   const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 300 260'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
-  tri.innerHTML = `<defs><linearGradient id="pwG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
+  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="23" x2="0" y2="229"><stop offset="0" stop-color="#d9a8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
     <radialGradient id="pwF" cx=".5" cy=".62" r=".6"><stop offset="0" stop-color="#7a3cf0" stop-opacity=".55"/><stop offset="1" stop-color="#1a0838" stop-opacity="0"/></radialGradient></defs>
-    <path class="pw-fill" d="M150 22 L270 232 H30 Z" fill="url(#pwF)"/>
-    <path class="pw-edge e-AB" d="M150 22 L30 232"/><path class="pw-edge e-BC" d="M30 232 H270"/><path class="pw-edge e-CA" d="M270 232 L150 22"/>
+    <path class="pw-fill" d="M150 23 L261 229 H39 Z" fill="url(#pwF)"/>
+    <path class="pw-edge e-AB" d="M150 23 L39 229"/><path class="pw-edge e-BC" d="M39 229 H261"/><path class="pw-edge e-CA" d="M261 229 L150 23"/>
     <path class="pw-inner" d="M150 74 L225 205 H75 Z"/><circle class="pw-rune" cx="150" cy="160" r="52"/><circle class="pw-rune r2" cx="150" cy="160" r="60"/>`;
-  // a larger triangle behind it all (Dave: "these 3 are your special magic powers"): glowing edges with sparks of light
-  // running round them, a breathing glow inside, a soft light at each point. Background only: it never takes a tap.
-  const aura = document.createElementNS(SVGNS, 'svg'); aura.setAttribute('viewBox', '0 0 300 210'); aura.setAttribute('class', 'pw-aura'); aura.setAttribute('aria-hidden', 'true');
-  const big = 'M150 8 L288 200 H12 Z';
-  aura.innerHTML = `<defs><linearGradient id="pwAG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd6ff"/><stop offset=".5" stop-color="#a45cff"/><stop offset="1" stop-color="#6a2ae0"/></linearGradient>
-    <radialGradient id="pwAF" cx=".5" cy=".66" r=".62"><stop offset="0" stop-color="#8a48ff" stop-opacity=".42"/><stop offset=".7" stop-color="#3a127a" stop-opacity=".18"/><stop offset="1" stop-color="#12061f" stop-opacity="0"/></radialGradient></defs>
-    <path class="pa-fill" d="${big}" fill="url(#pwAF)"/><path class="pa-inner" d="M150 34 L266 190 H34 Z"/>
-    <path class="pa-edge" d="${big}"/>    <circle class="pa-node" cx="150" cy="8" r="5"/><circle class="pa-node n2" cx="288" cy="200" r="5"/><circle class="pa-node n3" cx="12" cy="200" r="5"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
-  const core = h('div', { class: 'pw-center' }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic'));
-  const life = h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`));
-  // the helpers (potion, heal, heart change): three solid pills under the triangle, each with its cost in the corner;
-  // grey when you cannot use them, with the reason in small print (FULL HP, NONE LEFT)
-  const utilCost = (u) => (u.cost ? h('span', { class: 'pu-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pu-cost free' }, h('b', {}, u.badge || 'FREE')));
-  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button', class: `pw-util t-${u.tone} ${u.why ? 'off' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), onclick: () => ctx.select(u.id), 'aria-label': `${u.name}. ${u.text}` },
-    h('span', { class: 'pu-ic' }, glyph(u)), h('b', { class: 'pu-name' }, u.name), h('small', { class: 'pu-sub' }, u.tag || (u.cost ? '' : 'free')), utilCost(u))));
+  // your magic and your health, one under the other, the same width, top right
+  const tally = h('div', { class: 'pw-tally' },
+    h('div', { class: 'pw-center', 'aria-label': `${b.magic} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic')),
+    h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`)));
+  // the helpers (potion, heal, heart change): round medallions like the powers, in a row under the triangle, each with its cost.
+  // Tapping one when it cannot help (full health, no potions) says so in a short pop-up instead of opening its panel.
+  const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
+  const soft = (u) => /full health|no potions/i.test(u.why || '');
+  const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
+  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button',
+    class: `pw-medal pw-umedal t-${u.tone} st-${u.why && !soft(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}`,
+    onclick: () => { if (soft(u)) { sfx.error?.(); pop((u.why || '').replace(/ Buy more at camp\./, '')); } else ctx.select(u.id); } },
+    h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g')), costBadge(u)),
+    h('span', { class: 'pw-name' }, u.name))));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    h('div', { class: 'pw-wrap' }, core, life, h('div', { class: 'pw-stage' }, aura, tri, medal('A'), medal('B'), medal('C'))),
+    h('div', { class: 'pw-wrap' }, tally, h('div', { class: 'pw-stage' }, tri, medal('A'), medal('B'), medal('C'))),
     utilRow, detail);
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
