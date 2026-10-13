@@ -929,3 +929,6 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Dave: "You can upgrade up to d6 in act 1 but not to d8 until act 2; there is no level 3 limit for a d6, there is just a max per act." Removed the hero-level requirement from strength dice (was level 3 / 7 / 12), talent dice (3 / 7 / 12) and the feet die (2 / 6). A die now grows when you can pay for it and the act allows it (`ACT_MAX_DIE`: Act I d6, Act II d8, Act III d10); the camp row says "Act II" when that is what is in the way. Power learning/upgrades and potion belt keep their own rules.
 - Balance: smart-bot sim, 3 acts, all classes: 10/10 cleared; the early fights are a touch easier (Act I elite 88%, boss 93%), the Hollow Lich is still the wall (~60%).
 - test/dicecap.test.mjs pins the rule.
+
+### 13 Oct 2026 — camp shows where you are on the road
+- Camp now opens with a "where you are" card above the potions: the act and its name (with the Ascent), "You are at quest N of 10", the same step track as the quest board (done ticks, you, Elite and Boss markers; Act III shows both its bosses), and the place of the next fight ("Next fight: Ravens’ Rest", or "The Fallen Champion waits at Oathbreak Keep"). Built from `trail()` + `E.questsFor`, so it can never disagree with the board. dev/campmap.mjs screenshots it.

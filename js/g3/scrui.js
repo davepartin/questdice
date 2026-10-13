@@ -623,6 +623,15 @@ function weaponRow(inst, label = '') {
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (HE.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
 // Supplies: healing potions are bought here and carried from battle to battle. Shown above the camp tabs.
+// Camp: where you stand on the act's road. The same step track as the quest board, plus the place the next fight is at.
+function whereYouAre(hero) {
+  const c = hero.campaign; const act = D.ACTS[(c.act - 1) % D.ACTS.length]; const cyc = Math.floor((c.act - 1) / D.ACTS.length);
+  const next = E.questsFor(hero)[0]; const kind = next?.kind;
+  const stop = kind === 'boss' ? `${next.name} waits at ${next.place}` : next?.place ? `Next fight: ${next.place}` : '';
+  return h('section', { class: 'sx-where', 'aria-label': 'Where you are on the road' },
+    h('div', { class: 'sw-head' }, h('b', {}, `Act ${romans[c.act - 1] || c.act} · ${act.name}${cyc ? ` · Ascent ${cyc + 1}` : ''}`), h('small', {}, `You are at quest ${c.step} of ${D.QUESTS_PER_ACT}`)),
+    trail(c), stop ? h('p', { class: 'sw-next' }, ico('pin'), stop) : null);
+}
 function suppliesPanel(hero) {
   const r = E.potionBuyInfo(hero); const heal = E.potionHpOf(hero);
   const vials = h('div', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
@@ -867,7 +876,7 @@ export function camp(fromBoard) {
   mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm'), h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      X.partyBar?.(), seats, perkPanel, suppliesPanel(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
+      X.partyBar?.(), seats, perkPanel, whereYouAre(hero), suppliesPanel(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
       tabs, h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
