@@ -646,7 +646,7 @@ function battleMenu() {
     h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
-      S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold)', () => { close(); B3.stop(); defeat(true); }),
+      S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold). Live to try again.', () => { close(); B3.stop(); defeat(true); }),
       S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {
@@ -786,10 +786,10 @@ function renderVictory() {
       primary(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; R.picked = i; R.sold = false; after(); }, { cls: 'small', disabled: full }),
       primary(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); R.picked = i; R.sold = true; after(); }, { cls: 'small' }),
     ] }))))
-    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold.` : `You took the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
+    : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold. Coins, at least, never argue.` : `You took the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack, humming a little.`));
   const ready = !R.offer && hero.pendingPerks === 0 && R.picked != null;
   mount(
-    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, R.repeat ? SV.REPEAT_NOTE : 'The way is open.')),
+    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, R.repeat ? SV.REPEAT_NOTE : 'The way is open. Go on, then.')),
     R.repeat ? h('p', { class: 'muted' }, SV.REPEAT_NOTE) : null,
     h('section', { class: 'panel rewards' },
       h('div', { class: 'reward' }, h('b', {}, `+${R.xp}`), h('small', {}, 'XP')),
@@ -809,8 +809,8 @@ function defeat(retreat) {
   sfx.lose();
   if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss);
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
-    h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow.' : 'The dark wins this round. It does not get to keep you.')),
-  section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust.` : 'You lost nothing but pride.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),
+    h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow. Tomorrow is still yours.' : 'The dark wins this round. It does not get to keep you. Up you get.')),
+  section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust. Coins can be found again.` : 'You lost nothing but pride, and pride grows back.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),
   primary('⛺ Return to camp', () => showCamp({ fromBoard: false }), { cls: 'wide big' }));
 }
 
@@ -834,10 +834,10 @@ function renderCamp(fromBoard) {
   const perkPanel = perkHero && S.perkOffer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${perkHero.name} still owes a perk`),
     h('div', { class: 'perks' }, S.perkOffer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); persist(); renderCamp(fromBoard); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
   mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm'), h('h2', {}, 'Camp')), heroChip()),
-    h('p', { class: 'muted' }, 'You are healed and your cards are ready. Gold is spent here; Magic only matters in a fight.'),
+    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm, and so is the stew, mostly'), h('h2', {}, 'Camp')), heroChip()),
+    h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
-    tip('camp', 'Bigger hand dice are how a hero grows, and each size waits on a level. Weapons can be equipped or sold. The company saves on its own.'),
+    tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
     body,
     h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }, { cls: 'small' })),
@@ -853,9 +853,9 @@ function upgradeRow(kind, slot, label) {
 function campForge() {
   const hero = S.hero;
   return h('div', { class: 'col' },
-    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. A die can only grow as far as the act allows.'),
+    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. A die can only grow as far as the act allows. Patience, then punch.'),
       upgradeRow('strength', 'W', 'Left hand'), upgradeRow('strength', 'E', 'Right hand')),
-    section('Special dice', h('p', { class: 'fine' }, 'Always two blank faces, so a bigger die misses less often.'),
+    section('Special dice', h('p', { class: 'fine' }, 'Always two blank faces, so a bigger die misses less often. Luck, with homework.'),
       upgradeRow('special', 'SW', 'Left special · ✚ Mend, ⚡ Surge'), upgradeRow('special', 'SE', 'Right special · ✦ Spark, ⚡ Surge')),
     h('p', { class: 'fine center' }, `You carry ${hero.gold} 🪙.`));
 }
@@ -872,7 +872,7 @@ function campGear() {
   const stock = E.shopStock(hero);
   return h('div', { class: 'col' },
     section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple and Strength Triple: +10 attack. Head to Toe Triple: +10 block.')),
-    section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons.')),
+    section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     section('The peddler', h('div', { class: 'loot' }, stock.map((it, i) => V.weaponCard(it.inst, { actions: [it.sold ? h('em', { class: 'muted' }, 'Sold') : primary(`Buy 🪙 ${it.price}`, () => { if (E.buyItem(hero, i)) { sfx.coin(); persist(); renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { disabled: hero.gold < it.price, cls: 'small' })] })))));
 }
 function campHero() {
@@ -881,7 +881,7 @@ function campHero() {
     section(`${hero.name} · Level ${hero.level} ${c.name}`, xpBar(hero),
       h('div', { class: 'stats' }, h('span', {}, `❤ ${E.maxHpOf(hero)} HP`), h('span', {}, `⚡ d${E.feetSize(hero)} initiative`)),
       h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`)),
-    section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level.')),
+    section('Perks', Object.keys(perkCount).length ? h('div', { class: 'cardlist' }, Object.entries(perkCount).map(([id, n]) => h('div', { class: 'mini-card' }, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text)))) : h('p', { class: 'muted' }, 'You earn a perk every level. Growing up, with extra steps.')),
     section('Class cards', h('div', { class: 'cardlist' }, c.cards.map((k) => h('div', { class: `mini-card ${(k.unlock ?? 1) > hero.level ? 'spent' : ''}` }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`), (k.unlock ?? 1) > hero.level ? h('em', {}, `Unlocks at level ${k.unlock}`) : null)))),
     section('Always available', h('div', { class: 'cardlist' }, h('div', { class: 'mini-card' }, h('b', {}, 'Heal'), h('small', {}, `${E.healCostOf(hero)}✦ · restore ${D.HEAL_AMOUNT} HP`)), h('div', { class: 'mini-card' }, h('b', {}, 'Heart nudge'), h('small', {}, `${D.NUDGE_COST}✦ · once a round, move your heart die up or down by 1`)))),
     chronicleBlock());

@@ -264,5 +264,5 @@ export function markCleared(hero, act, step) {
   if (!hero.cleared.includes(key)) hero.cleared.push(key);
   return key;
 }
-export const REPEAT_NOTE = 'You have already cleared this quest. No XP, gold or spoils this time.';
-export const REPEAT_PARTY = 'You have already cleared this quest, so you earn no XP, gold or spoils. Friends on a first clear still do.';
+export const REPEAT_NOTE = 'Been here. Done this. No XP, gold or spoils the second time round. The road does not pay twice for the same bravery.';
+export const REPEAT_PARTY = 'You have already cleared this quest, so you earn no XP, gold or spoils. Friends on a first clear still do. Let them have the glory. You have the story.';
