@@ -364,7 +364,8 @@ function selectTarget(uid) {
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
   charge: ['windup', 'winds up a slam'], howl: ['howl', 'makes all hit harder'], bind: ['bind', 'locks your dice'], drain: ['drain', 'hits, steals magic'],
-  pilfer: ['pilfer', 'hits, steals gold'], summon: ['summon', 'calls for help'], ward: ['ward', 'burns you if hit'], stalk: ['stalk', 'pounces if not hit'], phase: ['phase', 'only pierce hurts'] };
+  pilfer: ['pilfer', 'hits, steals gold'], summon: ['summon', 'calls for help'], ward: ['ward', 'burns you if hit'], stalk: ['stalk', 'pounces if not hit'], phase: ['phase', 'only pierce hurts'],
+  breath: ['windup', 'fire that splashes everyone'], chain: ['bind', 'dice keep last face'], hush: ['note', 'blankets your heart'] };
 function readyText(e) {
   const i = e.intent; if (!i) return '';
   if (i.slam) return 'A big hit this round. Stack block, or finish it first.';
@@ -375,6 +376,9 @@ function readyText(e) {
     charge: 'Slams next round. Save block, or finish it first.', howl: `Every monster hits ${i.k} harder next round.`,
     bind: `${i.k} of your dice get locked next round.`, drain: `Steals ${i.k} magic. Block takes off the hit.`,
     pilfer: 'Steals gold if it hits. Kill it to get it back.', summon: `Calls ${i.k} more next round.`, mend: 'Heals itself.',
+    breath: 'Fire splashes every hero. Block soaks half in a solo fight.',
+    chain: `${i.k} of your dice keep last round’s face and cannot be rerolled.`,
+    hush: 'Your heart is blanketed next round: no amp, no colour bonus, no triple.',
   }[i.v] || '';
 }
 function showFoeInfo(e) {

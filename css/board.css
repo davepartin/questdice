@@ -72,6 +72,10 @@
 @keyframes fbFlicker { 0%, 100% { opacity: .4; } 16% { opacity: .72; } 22% { opacity: .42; } 40% { opacity: .82; } 58% { opacity: .5; } 70% { opacity: .76; } }
 .fb.wx-ash .fb-mote { background: #ff9a4a; box-shadow: 0 0 5px rgba(255, 110, 30, .7); }
 .fb.wx-crypt .fb-mote { background: rgba(255, 230, 190, .4); width: 2px; height: 2px; }
+.fb.wx-ember .fb-mote { background: #ff6a22; box-shadow: 0 0 7px rgba(255, 80, 10, .85); }
+.fb.wx-ember .fb-fog.ember { background: linear-gradient(90deg, transparent, rgba(255, 90, 20, .16) 42%, rgba(255, 160, 40, .12) 62%, transparent); }
+.fb.wx-ember .fb-flicker.ember { background: radial-gradient(55% 70% at 50% 42%, rgba(255, 110, 30, .28), transparent 72%); }
+.fb-ember.fb-spark { width: 4px; height: 4px; background: #ffb24a; box-shadow: 0 0 8px #ff5a10, 0 0 14px rgba(255, 90, 20, .6); }
 .fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; z-index: 2; }
 .fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
 .fb-side.heroes { flex: 0 0 clamp(22%, calc(36% - var(--foes, 2) * 4%), 31%); justify-content: center; }

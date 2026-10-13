@@ -12,7 +12,7 @@ import { petImg } from './pets.js';
 
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 // A calm place for each act's camp, until the camp paintings arrive.
-const CAMP_PLACE = { 1: 'wolfwood-edge', 2: 'candle-vault', 3: 'smoke-hollow' };
+const CAMP_PLACE = { 1: 'wolfwood-edge', 2: 'candle-vault', 3: 'kettle-tarn' };
 // Paintings made for these scenes. When Grokabot's files are in assets/bg, add their names here (no guessing at the network):
 //   'camp-act1', 'camp-act2', 'camp-act3', 'camp' (any act), 'road-act1', 'road-act2', 'road-act3'
 export const PAINTED = [];

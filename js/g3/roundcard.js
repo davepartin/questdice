@@ -43,10 +43,13 @@ const SPECIAL = {
   ward: () => 'is wreathed in fire: hit it and you burn.',
   stalk: () => 'is stalking you.',
   phase: () => 'is slipping out of reach: only pierce hurts it.',
+  chain: (a, r) => `chains ${r.chained || a.k || 1} of your dice: they keep last round’s face.`,
+  hush: () => 'hushes your heart next round: no amp, no colour bonus, no triple.',
+  breath: null,
 };
 function foeRow(a, b, rep, blockTotal) {
   const name = fname(b, a.uid);
-  const dmg = ['strike', 'pierce', 'drain', 'pilfer'].includes(a.v);
+  const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
   if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`))) : null; }
   const parts = [];
   if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
@@ -75,6 +78,7 @@ function soloCard(rep, b) {
     for (const sp of rep.splashed || []) { if (sp.uid === rep.targetUid || !sp.dealt) continue; mine.push(note('you', `Splash: ${fname(b, sp.uid)} takes ${sp.dealt}${(rep.killed || []).includes(sp.uid) ? ' and falls' : ''}.`)); }
   }
   const theirs = (rep.acts || []).map((a) => foeRow(a, b, rep)).filter(Boolean);
+  for (const u of rep.fled || []) theirs.push(note('meh', `${fname(b, u)} flees, wounded. It will be back.`));
   const tail = [];
   if (rep.T.block > 0) tail.push(h('span', { class: 'rc-chip block' }, HK.icon('block'), `Your block ${rep.T.block}`, h('small', {}, `soaked ${rep.absorbed || 0}`)));
   if (rep.healed) tail.push(h('span', { class: 'rc-chip heal' }, HK.icon('heal'), `Healed +${rep.healed}`));
@@ -99,7 +103,7 @@ function partyCard(rep, b) {
   const theirs = [];
   for (const a of rep.acts || []) {
     const name = fname(b, a.uid);
-    const dmg = ['strike', 'pierce', 'drain', 'pilfer'].includes(a.v);
+    const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
     if (!dmg) { const f = SPECIAL[a.v]; if (f) theirs.push(h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)))); continue; }
     const heads = (rep.fighters || []).filter((x) => !x.down);
     const parts = [];

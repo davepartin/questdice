@@ -17,6 +17,12 @@ const LOADERS = {
   bonewarden: () => import('./bonewarden.js'),
   lich: () => import('./lich.js'),
 };
+// New foes reuse the closest painted 3D figure until they have their own module.
+const ALIAS = {
+  shieldbearer: 'goblinking', gloomstalker: 'goblin', chainbinder: 'cultist', dirgesinger: 'cultist',
+  ironwarden: 'bonewarden', fallenchampion: 'goblinking',
+  cinderling: 'cultist', frostwhelp: 'wraith', ashwyrm: 'ogre', vharaxis: 'lich',
+};
 const SIZE = { minion: 1.4, elite: 2.8, boss: 3.0 };
 const TINT = { minion: 0x7a8a5a, elite: 0x8a6a4a, boss: 0xb8902a };
 
@@ -41,7 +47,7 @@ function placeholder(id, { tier = 'minion', seed = 1 } = {}) {
 }
 
 export async function createActor(id, opts = {}) {
-  const key = LOADERS[id] ? id : null;
+  const key = LOADERS[id] ? id : (LOADERS[ALIAS[id]] ? ALIAS[id] : null);
   if (key) {
     try { const m = await LOADERS[key](); return await m.create({ ...opts, id }); } catch (e) {
       if (!/Failed to fetch|Cannot find|404|Unexpected token|Failed to resolve/i.test(String(e?.message))) console.warn(`actor ${id} failed:`, e);
@@ -49,4 +55,4 @@ export async function createActor(id, opts = {}) {
   }
   return placeholder(id, opts);
 }
-export const hasActorModule = (id) => !!LOADERS[id];
+export const hasActorModule = (id) => !!LOADERS[id] || !!LOADERS[ALIAS[id]];

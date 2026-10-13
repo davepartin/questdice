@@ -172,6 +172,10 @@ export function showTitle() {
   S.timers.push(setInterval(tick, 1400));
 }
 function adopt(saved) {
+  saved.campaign = saved.campaign || {};
+  saved.campaign.nemeses = saved.campaign.nemeses || [];
+  saved.campaign.blessings = saved.campaign.blessings || [];
+  saved.campaign.chronicle = saved.campaign.chronicle || [];
   S.company = { kind: 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
   S.hero = saved;
   S.seat = 0;
@@ -260,7 +264,8 @@ function showBoard() {
   const ambush = c.ambush?.length;
   const path = h('div', { class: 'path' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
     const n = i + 1; const st = n < c.step ? 'done' : n === c.step ? 'now' : '';
-    return h('div', { class: `node ${st} ${n === D.QUESTS_PER_ACT ? 'boss' : D.ELITE_STEPS.includes(n) ? 'elite' : ''}` }, n === D.QUESTS_PER_ACT ? '👑' : D.ELITE_STEPS.includes(n) ? '☠' : n < c.step ? '✓' : String(n));
+    const kind = D.stepKind(actOf(hero), n);
+    return h('div', { class: `node ${st} ${kind === 'boss' ? 'boss' : kind === 'elite' ? 'elite' : ''}` }, kind === 'boss' ? '👑' : kind === 'elite' ? '☠' : n < c.step ? '✓' : String(n));
   }));
   mount(
     h('div', { class: 'topline' }, heroChip(), ghost('Menu', menu, { cls: 'small screen-menu' })),
@@ -304,11 +309,16 @@ function showRoadOrBoard() {
   const beat = hero && !S.net && !S.practice ? ST.pending(hero.campaign)[0] : null; // a story beat comes first
   if (beat) return showStory(beat);
   if (hero && R.roadIsOpen(hero)) showRoad();
-  else showBoard();
+  else {
+    const place = hero && !S.net && !S.practice ? E.questsFor(hero)[0]?.place : null;
+    const arrive = place ? ST.pending(hero.campaign, place)[0] : null;
+    if (arrive) return showStory(arrive);
+    showBoard();
+  }
 }
-function showStory({ id, act }) {
+function showStory({ id, act }, next = showRoadOrBoard) {
   const hero = membersOf()[0]; const b = ST.beat(id, act);
-  const done = () => { ST.markSeen(hero.campaign, id, act); persist(); showRoadOrBoard(); };
+  const done = () => { ST.markSeen(hero.campaign, id, act); persist(); next(); };
   if (SCRUI.on()) return SCRUI.story(b, done);
   const close = modal(h('div', { class: 'form' }, h('small', { class: 't-eyebrow' }, b.kicker), h('h2', {}, b.title), ...b.text.map((t) => h('p', {}, t)),
     h('div', { class: 'row end' }, primary('Continue', () => { close(); done(); }))), { dismiss: false });
@@ -506,7 +516,8 @@ function renderBattle() {
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, S.quest.name), h('h2', {}, `Round ${b.round}`)), ghost('Menu', battleMenu, { cls: 'small' })),
     h('div', { class: 'ecards', 'data-n': b.enemies.filter((e) => e.hp > 0).length }, b.enemies.map((e, i) => V.enemyCard(e, { targeted: i === S.target && e.hp > 0, onclick: () => { if (S.busy) return; S.target = i; if (isParty()) b.fighters[b.active].target = i; sfx.select(); renderBattle(); } }))),
     h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(b.hp, b.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${b.magic}`)),
-    b.boundNow ? h('p', { class: 'warn' }, `⛓ ${b.boundNow} of your dice ${b.boundNow > 1 ? 'are' : 'is'} hexed and cannot be rerolled.`) : null,
+    b.boundNow || b.chainedNow ? h('p', { class: 'warn' }, b.chainedNow ? `⛓ ${b.chainedNow} ${b.chainedNow > 1 ? 'dice keep' : 'die keeps'} last round's face.` : `⛓ ${b.boundNow} of your dice ${b.boundNow > 1 ? 'are' : 'is'} tangled and cannot be rerolled.`) : null,
+    b.hushedNow ? h('p', { class: 'warn' }, '♪ Your heart is hushed: no amp, no colour bonus, and it cannot finish a triple.') : null,
     h('div', { id: 'live' },
       bodyWrap(board, hero),
       RO.view(),
@@ -559,6 +570,10 @@ async function lockIn() {
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
   const b = S.battle; const hero = S.hero; const r = E.battleRewards(b);
+  const place = S.quest?.place;
+  E.recordFled(hero.campaign, b);
+  ST.applyPlaceVictory(hero.campaign, place);
+  const winBeat = ST.pendingVictory(hero.campaign, place);
   const lvBefore = hero.level;
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
@@ -568,6 +583,7 @@ function showVictory() {
   E.advanceCampaign(hero); persist();
   S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: null, quest, offer: null };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
+  if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
   renderVictory();
 }
 function nextPerkOffer() { const hero = S.hero; if (hero.pendingPerks > 0 && !S.rewards.offer) S.rewards.offer = E.offerPerks(hero, fresh()); }

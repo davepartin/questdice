@@ -116,6 +116,7 @@ export function applyPlace(el, place) {
   else { delete el.dataset.place; el.style.removeProperty('--place-img'); }
   el.classList.toggle('wx-ash', look.weather === 'ash');
   el.classList.toggle('wx-crypt', look.weather === 'crypt');
+  el.classList.toggle('wx-ember', look.weather === 'ember');
   return look;
 }
 export function atmoLayers(weather) {
@@ -126,6 +127,10 @@ export function atmoLayers(weather) {
   if (weather === 'crypt') {
     const dust = Array.from({ length: 7 }, (_, i) => h('i', { class: 'fb-dust', style: { '--x': `${(i * 41 + 7) % 94}%`, '--y': `${12 + ((i * 29) % 70)}%`, '--d': `${(i * 1.3) % 8}s`, '--t': `${11 + (i * 2) % 9}s`, '--s': String(0.4 + ((i * 13) % 5) / 10) } }));
     return [h('i', { class: 'fb-flicker' }), ...dust];
+  }
+  if (weather === 'ember') {
+    const sparks = Array.from({ length: 12 }, (_, i) => h('i', { class: 'fb-ember fb-spark', style: { '--x': `${(i * 23 + 5) % 96}%`, '--y': `${18 + ((i * 37) % 70)}%`, '--d': `${(i * 0.9) % 6}s`, '--t': `${5 + (i * 1.3) % 7}s`, '--s': String(0.55 + ((i * 9) % 7) / 10) } }));
+    return [h('i', { class: 'fb-fog a ember' }), h('i', { class: 'fb-fog b ember' }), h('i', { class: 'fb-flicker ember' }), ...sparks];
   }
   return [];
 }

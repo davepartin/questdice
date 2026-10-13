@@ -1,9 +1,15 @@
 // The story thread (Dave, Oct 2026): a short beat at the moments that matter, so every fight is part of one journey.
-// The Dawn Lantern kept the Marches safe. The Goblin King stole its flame out of greed; the Hollow Lich drained it from
-// below out of cold emptiness. The heroes carry the light home. Light against the dark; nothing occult.
+// The Dawn Lantern kept the Marches safe. The Goblin King stole its flame out of greed; the Hollow Lich hid it from
+// the Ember Queen out of fear. The heroes carry the light home. Light against the dark; nothing occult.
+// Villains are greedy, cold or afraid. Defeated foes fall, crumble, flee or yield.
 // Pure data and rules: no DOM. A beat is { kicker, title, icon, text: [paragraphs] }.
 // When they show (before the road and the quest board): an act opening at quest 1 (after the last act's closing), a short
-// beat before the elite at quest 5 and before the boss at quest 10. Seen beats are kept in campaign.storySeen.
+// beat before the elite at quest 5 and before the boss at quest 10. Place arrivals show before a fight; victory beats
+// after. Seen beats are kept in campaign.storySeen.
+
+import { ACTS, placeSlug, PLACE_ALIAS } from './data.js';
+
+const slugOf = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
 
 const BEATS = {
   'open:1': { kicker: 'Prologue', title: 'The Night the Light Went Out', icon: 'flame', text: [
@@ -17,10 +23,11 @@ const BEATS = {
   ] },
   'boss:1': { kicker: 'Gallows Hill', title: 'The Goblin King', icon: 'crown', text: [
     'From the top of the hill you can see it at last: the Lantern’s flame, pale and thrashing in its iron cage beside the Goblin King’s throne.',
-    'He calls it his treasure. He has never once looked at it with joy. He only cannot bear for anyone else to have it. Take it back.',
+    'He calls it his treasure. He has never once looked at it with joy. He only cannot bear for anyone else to have it. He keeps glancing at the sky, as if someone is late. Take it back.',
   ] },
   'close:1': { kicker: 'The cage breaks', title: 'Only a Spark', icon: 'shine', text: [
     'The king falls among his piles of stolen gold, and the iron cage splits open. But the flame inside is only a spark now, barely warm in your hands.',
+    'On the bars, burnt deep, is a dragon’s claw-seal. Far off, a voice like a forge-roar: “Keep it warm for me, little thieves.”',
     'Something has been drinking the light from below. The last sparks drift away from you, down the old crypt stair, as if they know the way home better than you do.',
   ] },
   'open:2': { kicker: 'Act II', title: 'The Hollow Crypt', icon: 'skull', text: [
@@ -32,15 +39,35 @@ const BEATS = {
     'It does not hate you. It does not want anything. It simply will not move. Make it.',
   ] },
   'boss:2': { kicker: 'The bottom of the dark', title: 'The Hollow Lich', icon: 'crown', text: [
-    'At the very bottom sits the one who started it all: the Hollow Lich, a king of bones with an empty chest.',
-    'He drank the light because he cannot feel warm anymore, and he would rather the whole world went cold with him than ask for help. He will not give it back. You will have to take it.',
+    'At the very bottom sits the Hollow Lich, a king of bones with an empty chest. He does not stand when you come in. He just looks very, very tired.',
+    '“Do you know what is waiting for that light, up in the mountains? I hid it from her. I am the only thing that ever did.” He would rather the whole world went cold than ask for help. He will not give it back. You will have to take it.',
   ] },
   'close:2': { kicker: 'Dawn', title: 'The Light Comes Home', icon: 'shine', text: [
     'The Lich crumbles, and every stolen sliver of light rushes up out of the crypt at once: up the stair, across the ashen fields, back into the Lantern on its hill.',
-    'For the first time in a long time the sun rises on the Marches, and nobody is afraid of it. You did not do it alone. Every friend who stood beside you, every hand that held the line, is part of that light now.',
-    'The light shines in the darkness, and the darkness has not overcome it.',
+    'For the first time in a long time the sun rises on the Marches. But as dawn breaks, the far mountains glow red, and something enormous unfolds its wings on the highest peak.',
+    'The light shines in the darkness. The darkness has not overcome it. Something else is still watching.',
   ] },
-  // The Ascents (act 3 on): the same lands, harder, with a short new chapter each time.
+  'open:3': { kicker: 'Act III', title: 'The Ember Peaks', icon: 'flame', text: [
+    'The Lantern burns again, and every light can be seen from far away. Somebody has been watching this one for a thousand years.',
+    'The road climbs into the Ember Peaks: dragon fire, broken oaths, and a queen who believes that everything that glitters is hers. Above all, the one gift she ever gave away.',
+    'Climb to the hoard. Remind her what she used to be.',
+  ] },
+  'elite:3': { kicker: 'The Brazen Bridge', title: 'The Queen on the Bridge', icon: 'crown', text: [
+    'A bridge of hammered bronze spans a canyon of lava, wide enough for an army, and it is empty. Then the canyon goes dark, because something has blotted out the sun.',
+    'Vharaxis, the Ember Queen, lands on the bridge, and the bronze glows red under her claws. “Kneel, little thieves. Every coin in this land was mine before your grandmothers were born. And that Lantern was the first.”',
+    'She will not stay to finish this. When she is hurt enough she will laugh, and fly to her throne, and wait for you there.',
+  ] },
+  'boss:3': { kicker: 'The Ember Throne', title: 'The Ember Throne', icon: 'crown', text: [
+    'The throne room is the inside of the volcano: a hoard so vast the walls are made of it, with crowns stacked like plates and rivers of rubies.',
+    'Vharaxis uncoils from the top of it, still scarred from the bridge, eyes like twin furnaces. The first thing she ever gave away is the one thing she cannot stop wanting back.',
+    'Peeking out from behind a golden goblet is a very small red dragon, holding a single coin. Your coin, the first one it ever stole.',
+  ] },
+  'close:3': { kicker: 'A keeper for the light', title: 'A Keeper for the Light', icon: 'shine', text: [
+    'The little dragon waddles out and drops every coin it ever took at your feet. Vharaxis stares at it, and the greed in her eyes gutters out like a candle.',
+    'She shrinks, smaller and smaller, until all that is left is a little warm ember, the same one that once lit a shepherd’s lantern. Cinderling picks it up gently.',
+    'The Lantern burns on its hill again, brighter than anyone remembers, and curled around it, snoring sparks, is its new keeper. The light shines in the darkness, and the darkness has not overcome it.',
+  ] },
+  // The Ascents (act 4 on): the same lands, harder, with a short new chapter each time.
   'open:ascent:1': { kicker: 'Ascent', title: 'The Light Is Tested', icon: 'flame', text: [
     'The Lantern burns again and the Marches are healing. But a light on a hill can be seen from far away.',
     'Bolder warbands come down out of the hills, with wolves that remember the dark. They want the flame back. Stand watch on the road.',
@@ -48,6 +75,10 @@ const BEATS = {
   'open:ascent:2': { kicker: 'Ascent', title: 'Deeper Still', icon: 'skull', text: [
     'The old halls have filled again with bones that would rather stay in the dark, and they are reaching up for the light.',
     'Go down once more, and keep the light where it belongs.',
+  ] },
+  'open:ascent:3': { kicker: 'Ascent', title: 'The Peaks Remember', icon: 'flame', text: [
+    'The Ember Peaks still smoke. Greed is a coal under ash: stamp it out, and it waits.',
+    'Climb again. The Queen’s children are older, and angrier, and the hoard has grown.',
   ] },
   'boss:ascent:1': { kicker: 'Gallows Hill', title: 'The King Returns', icon: 'crown', text: [
     'He ran from the last fight with a crown of ash and a grudge. Now the Goblin King is back, greedier than ever.',
@@ -57,25 +88,195 @@ const BEATS = {
     'Bones remember. The Hollow Lich has pulled himself back together, colder than before.',
     'Send him back to his rest, and bring the light up with you.',
   ] },
+  'boss:ascent:3': { kicker: 'The Ember Throne', title: 'The Queen Stirs', icon: 'crown', text: [
+    'The ember on the hill is still a gift. Someone in the peaks still wants it back.',
+    'Meet her at the throne once more, and remind her that giving is how a fire stays warm.',
+  ] },
   'close:ascent': { kicker: 'The light holds', title: 'The Road Goes On', icon: 'shine', text: [
     'The light holds, and the land breathes easier. But the road is long, and there is always another hill.',
   ] },
 };
 
-const ACTS_IN_STORY = 2; // Act I and Act II; then the Ascents repeat them
+// Arrival and victory lines for every painted place. Help-revisit copy is used at the Call for Help (step 8).
+const PLACES = {
+  'cinder-ford': {
+    title: 'Cinder Ford', icon: 'flame',
+    arrive: ['The river runs grey with ash, and the stepping stones hiss when you cross. On the far bank the Lantern hill stands dark for the first time in living memory.', 'A lone goblin is trying to carry off the ferryman’s cooking pot, and it is much too heavy for him.'],
+    win: ['The pot clangs back onto the bank, the goblin runs, and the ferryman points a shaking finger up toward the smoke: “They went that way. With the light.”'],
+    helpArrive: ['Smoke rises from the ferryman’s hut: a goblin counter-raid, with a little red dragon riding the leader’s shoulders like a hat and puffing sparks at the thatch.'],
+    helpWin: ['You saved the ferry. The other place will have to wait. A chronicle line remembers it, and the ferryman presses a warm crust into your hand.'],
+  },
+  'burnt-orchard': {
+    title: 'Burnt Orchard', icon: 'flame',
+    arrive: ['Rows of apple trees stand black and smoking, but the air smells wonderful: every apple roasted on the branch.', 'Something small and red is curled up in a pile of stolen goblin coins, crunching baked apples and hiccupping sparks. The goblins want their gold back. So, it turns out, does the something.'],
+    win: ['The little dragon sneezes a spark at you, grabs one last coin, and scampers off into the smoke, looking very proud of itself.'],
+    helpArrive: ['The last unburnt tree, the one the village kids climb, is surrounded by Ember Mages who want to light it as a beacon.'],
+    helpWin: ['The tree still stands. The village kids will climb it again. The other call will have to wait.'],
+  },
+  'ravens-rest': {
+    title: 'Ravens’ Rest', icon: 'skull',
+    arrive: ['An old waystation with a slumped roof, where a hundred ravens line every beam and watch you in total silence.', 'A caravan’s lanterns lie smashed in the yard, and the trail of wax drips leads inside. Someone in a red hood is chanting over a bonfire made of wagon wheels.'],
+    win: ['The ravens take off all at once, a black roar of wings, and drop a single bright feather at your feet: a gift.'],
+  },
+  'wolfwood-edge': {
+    title: 'Wolfwood Edge', icon: 'skull',
+    arrive: ['The forest stops in a hard line, as if the trees are afraid to step into the burnt fields. Between the trunks, yellow eyes blink in pairs, then threes, then too many to count.', 'A howl starts low and climbs until the leaves shiver.'],
+    win: ['The pack melts back into the trees. One old wolf stops at the edge, looks at you for a long moment, and decides you are not worth it after all.'],
+  },
+  'the-toll-bridge': {
+    title: 'The Toll Bridge', icon: 'skull',
+    arrive: ['A narrow stone bridge over a gorge full of steam, with a toll gate made of goblin-painted shields.', 'The toll-keeper is enormous. He sits on the bridge eating a whole loaf in one bite, and a sign at his feet reads “TOLL: EVRYTHING”. The planks groan every time he breathes.'],
+    win: ['The ogre sits down hard, the bridge holds, just barely, and Gallows Hill rises out of the smoke on the far side.'],
+  },
+  'smoke-hollow': {
+    title: 'Smoke Hollow', icon: 'flame',
+    arrive: ['A bowl-shaped valley where the smoke pools like a lake, thick enough to taste. Strange tracks are pressed into the scorched earth: claw prints as wide as a cart, with the grass burnt in the shape of wings.', 'The Ember Mages are here, kneeling in the middle of a scorch mark the size of a house.'],
+    win: ['A shadow sweeps across the hollow, huge and fast, and is gone before you can look up. The mages shout “SHE comes!” and flee.'],
+  },
+  'ashfall-camp': {
+    title: 'Ashfall Camp', icon: 'flame',
+    arrive: ['The Goblin King’s war-camp sprawls across the foot of the hill: tents patched from stolen quilts, cookpots, and piles of loot higher than the tents. Ash falls like grey snow and settles on everything.', 'A goblin herald is hammering out a new sign: “KING’S TREASURY: KEEP OUT (THIS MEANS DRAGONS).”'],
+    win: ['In the herald’s pocket: a scrap of a contract, scorched at the edges, signed with a claw. You can only read three words: “…keep it WARM…”'],
+  },
+  'gallows-hill': {
+    title: 'Gallows Hill', icon: 'crown',
+    arrive: ['The goblin road zig-zags up the hill past old wooden posts that once held lanterns for travellers. At the top, a pale light thrashes in an iron cage.', 'The Goblin King’s throne is a mountain of stolen gold: spoons, door-knockers, a church bell, somebody’s grandmother’s teapot. He grins with a mouth full of gold teeth and claps twice.'],
+    win: ['The cage splits open and only a spark is left. On the bars, burnt deep, is a dragon’s claw-seal.'],
+  },
+  'the-weeping-stair': {
+    title: 'The Weeping Stair', icon: 'skull',
+    arrive: ['A spiral stair cut into the rock, slick with water that drips from the ceiling like slow tears. The last sparks of the Lantern drift down ahead of you, lighting one step at a time.', 'Below, something goes click, click, click in perfect marching rhythm.'],
+    win: ['Two slivers of light slip out of the fallen bones and swirl into your lantern. It is a little warmer already.'],
+  },
+  'candle-vault': {
+    title: 'Candle Vault', icon: 'spark',
+    arrive: ['Thousands of candles crowd every shelf, ledge and nook, and none of them are lit. They are cold, waiting.', 'In the middle of the vault a Wraith is pinching out the very last flame, one by one, with a sound like a sigh.'],
+    win: ['You touch your spark to one candle, it leaps to the next, and the whole vault blazes gold. The dark at the edges backs away.'],
+    helpArrive: ['The candles you lit are going out one row at a time: the wraiths have come back for their pantry.'],
+    helpWin: ['The place you saved glows behind you like a lighthouse all the way down.'],
+  },
+  'the-pale-nave': {
+    title: 'The Pale Nave', icon: 'skull',
+    arrive: ['A long, tall hall with rows of stone benches, all facing nothing. A choir of dusty figures stands where the singers used to stand.', 'As you enter they all turn their heads at once, and the song they sing has no warmth in it at all.'],
+    win: ['The cold song breaks off mid-note. Your own whistling fills the hall instead, and it echoes back warmer.'],
+    helpArrive: ['The choir has re-formed, and their song is pulling the warmth out of the whole level.'],
+    helpWin: ['The hall is quiet, and a little warmer. The other call will have to wait.'],
+  },
+  'grave-silk-hall': {
+    title: 'Grave-Silk Hall', icon: 'skull',
+    arrive: ['Webs hang from the ceiling like pale curtains, so thick that the hall glows faintly where your light touches them.', 'Wrapped bundles sway gently in the silk: some are crates of stolen treasure, and one of them is wriggling. Eight glossy eyes appear above you, then sixteen.'],
+    win: ['The wriggling bundle turns out to be a very cross, very alive goblin, who swears he will never steal again, probably.'],
+  },
+  'ossuary-gate': {
+    title: 'Ossuary Gate', icon: 'shield',
+    arrive: ['A doorway made entirely of stacked bones, two storeys high, with a giant built from the same bones standing in front of it.', 'It does not speak. It does not move. It has stood here for a hundred years, and it will stand here a hundred more unless somebody makes it step aside.'],
+    win: ['The Warden lowers its great arm, almost gently, and the gate grinds open onto cold black water.'],
+  },
+  'mourners-row': {
+    title: 'Mourner’s Row', icon: 'skull',
+    arrive: ['A narrow street of tiny stone houses carved into the crypt wall, each with a door the size of a cupboard. Grey shapes sit on every doorstep, and the cold coming off them frosts your eyelashes.', 'At the end of the row, a pair of glittering eyes reflect your light. They are too big for a spider and too warm for a ghost.'],
+    win: ['The mourners fade one by one, and for the first time they look peaceful.'],
+  },
+  'the-drowned-crypt': {
+    title: 'The Drowned Crypt', icon: 'spark',
+    arrive: ['Half the crypt has sunk under black, ice-cold water, and the tombs stick up like islands. Under the surface something glows a pale blue: a nest of eggs, each as big as a shield, frozen solid.', 'One egg has a crack in it, and a tiny white head is poking out, puffing snowflakes.'],
+    win: ['A puff of frost, a sneeze of snow. Adorable. Lethal. The beaten whelp curls up on an egg to keep it company. These are dragon eggs. Whose?'],
+  },
+  'ash-cloister': {
+    title: 'Ash Cloister', icon: 'crown',
+    arrive: ['A square garden at the bottom of the world, where the trees are made of stone and the “grass” is fine grey ash. In the middle stands a cloister with a cold blue light leaking out of every window.', 'The Hollow Lich sits on a plain stone chair with the stolen light swirling in the hollow of his chest like a trapped sunrise.'],
+    win: ['The Lich crumbles, and the light rushes home up the stair. As dawn breaks over the Marches, the far mountains glow red.'],
+  },
+  'kindling-steps': {
+    title: 'Kindling Steps', icon: 'flame',
+    arrive: ['A staircase of black volcanic rock climbs into the clouds, every step warm enough to toast your boots. Gold coins are wedged in the cracks, dropped by dragons flying home to the hoard.', 'Halfway up, a long, scaled shape is draped across the path with a notched wing and a fresh scar glowing like a forge seam.'],
+    win: ['A shadow crosses the sun. Ashmaw is back, and it has not forgotten your face. Beaten again, he flees uphill, roaring for his mother.'],
+  },
+  'the-glass-fields': {
+    title: 'The Glass Fields', icon: 'spark',
+    arrive: ['A whole valley melted to glass by dragon fire long ago, smooth as a frozen lake and reflecting a hundred copies of you. Every step rings like a bell.', 'Shapes dart under the surface. No, wait: they are reflections of something on the ridges, drawing bows.'],
+    win: ['You slide the last shieldbearer across the glass like a curling stone, and the whole valley rings with a note that sounds a lot like cheering.'],
+  },
+  'wyrmwatch': {
+    title: 'Wyrmwatch', icon: 'flame',
+    arrive: ['A crooked tower on a needle of rock, built by people who once kept watch for dragons. Now dragons keep watch from it. Bells hang from every window, each rung to warn the Queen.', 'A jailer in chains of gold stands on the top floor, binding the bell-ropes so they ring whenever you move.'],
+    win: ['You ring every bell in the tower at once, and across the peaks a hundred hidden villagers ring theirs back: “We’re here. We’re with you.”'],
+    helpArrive: ['The villagers who rang their bells back are being hunted, and Gloom Stalkers are circling the tower.'],
+    helpWin: ['The tower stands, and the bells still answer. The other call will have to wait.'],
+  },
+  'hoardfall-mine': {
+    title: 'Hoardfall Mine', icon: 'coin',
+    arrive: ['A mineshaft spills an avalanche of coins down the mountainside, a frozen waterfall of gold. Miners in chains dig it out by lantern light, and every time they lift a coin, a little red dragon snatches it.', 'Deeper in, the tunnels glow orange: this is the edge of the Queen’s hoard.'],
+    win: ['You break the chains and the miners go home with full pockets, a fair wage for once.'],
+    helpArrive: ['The freed miners came back to rescue their friends, and they are trapped under a cave-in with Cinderlings chewing on the support beams.'],
+    helpWin: ['The miners walk out into the light. The other call will have to wait.'],
+  },
+  'the-brazen-bridge': {
+    title: 'The Brazen Bridge', icon: 'crown',
+    arrive: ['A bridge of hammered bronze spans a canyon of lava, wide enough for an army, and it is empty. Then the canyon goes dark, because something has blotted out the sun.', 'Vharaxis, the Ember Queen, lands on the bridge. “Kneel, little thieves. Every coin in this land was mine before your grandmothers were born. And that Lantern was the first.”'],
+    win: ['At last she laughs, a sound like a collapsing forge, and launches into the sky. “Come up to my throne, then. Bring my Lantern.”'],
+  },
+  'kettle-tarn': {
+    title: 'Kettle Tarn', icon: 'spark',
+    arrive: ['A mountain lake that boils and freezes at the same time. The dragon-heat from below meets the snowmelt from above, so the steam rises in towers and crashes back as hail.', 'Frostwhelps slide across the ice patches and squabble with the boiling bubbles. They came up from the crypt following you, because you smell like the light.'],
+    win: ['The whelps huddle together in the steam, small and shivering, and the tiny red Cinderling who has been following you all game shares its warmth with them.'],
+  },
+  'oathbreak-keep': {
+    title: 'Oathbreak Keep', icon: 'shield',
+    arrive: ['A great castle hall where every banner shows the Dawn Lantern, all of them scorched. At the far end a knight in blackened armour kneels before a heap of dragon gold with his sword planted point-down.', 'He stands, and five different weapons hang from his belt: a knight’s blade, a ranger’s bow, a wizard’s chain, a warden’s shield, a bard’s horn. Sir Aldren Hale. The Lantern’s first Keeper.'],
+    win: ['His black armour cracks and falls away like old bark. Underneath he is just an old man with kind, tired eyes. “Her heart is the ember she gave away,” he whispers. “Remind her.”'],
+  },
+  'ember-throne-slopes': {
+    title: 'Ember Throne slopes', icon: 'flame',
+    arrive: ['The peak’s last slope is a river of slowly sliding gold coins, and climbing it is like wading uphill through a treasure chest. Lava falls glow on both sides.', 'Above, the Queen’s roar shakes the whole mountain, and loose gold rains down around you.'],
+    win: ['The last hired guards drop their weapons, shrug, and start walking home. “She never paid anyone anyway.”'],
+  },
+  'the-ember-throne': {
+    title: 'The Ember Throne', icon: 'crown',
+    arrive: ['The throne room is the inside of the volcano: a hoard so vast the walls are made of it. Vharaxis uncoils from the top of it, still scarred from the bridge, eyes like twin furnaces.', 'Peeking out from behind a golden goblet is a very small red dragon, holding a single coin. Your coin.'],
+    win: ['Cinderling waddles out and drops every coin it ever took at your feet. The greed in the Queen’s eyes gutters out like a candle. She shrinks until all that is left is a little warm ember. Cinderling picks it up gently.'],
+  },
+};
+
+export const HELP_FIGHTS = {
+  'Cinder Ford': ['cinderling', 'goblin'],
+  'Burnt Orchard': ['cultist', 'goblin'],
+  'Candle Vault': ['wraith', 'skeleton'],
+  'The Pale Nave': ['dirgesinger', 'skeleton'],
+  'Wyrmwatch': ['gloomstalker', 'dirgesinger'],
+  'Hoardfall Mine': ['cinderling', 'cinderling'],
+};
+
+const ACTS_IN_STORY = 3; // Act I, II, III; then the Ascents repeat them
 const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const ascentOf = (act) => Math.floor((act - 1) / ACTS_IN_STORY) + 1; // 1 = the first time through
-const landOf = (act) => ((act - 1) % ACTS_IN_STORY) + 1;             // 1 = the Marches, 2 = the Crypt
+const landOf = (act) => ((act - 1) % ACTS_IN_STORY) + 1;             // 1 = the Marches, 2 = the Crypt, 3 = the Peaks
 
 // The beat id for a moment in a given act ('open' | 'elite' | 'boss' | 'close'), or null when that act has none.
 export function beatId(kind, act) {
   if (ascentOf(act) === 1) return BEATS[`${kind}:${act}`] ? `${kind}:${act}` : null;
   if (kind === 'close') return 'close:ascent';
   if (kind === 'elite') return null;
-  return `${kind}:ascent:${landOf(act)}`;
+  return BEATS[`${kind}:ascent:${landOf(act)}`] ? `${kind}:ascent:${landOf(act)}` : null;
+}
+export function placeOf(name) { return PLACES[slugOf(name)] || null; }
+export function placeBeat(kind, name, { help = false } = {}) {
+  const p = placeOf(name); if (!p) return null;
+  const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : (kind === 'arrive' ? p.arrive : p.win);
+  if (!text?.length) return null;
+  const id = `${help ? `help-${kind}` : kind}:${slugOf(name)}`;
+  return { id, kicker: kind === 'arrive' ? 'You arrive' : 'The fight is over', title: p.title, icon: p.icon || 'road', text };
 }
 // A beat ready to show: the text, with the kicker naming the act and Ascent.
 export function beat(id, act) {
+  if (id?.startsWith('arrive:') || id?.startsWith('win:') || id?.startsWith('help-')) {
+    const [kind, ...rest] = id.split(':');
+    const p = PLACES[rest.join(':')]; if (!p) return null;
+    const helpArrive = kind === 'help-arrive';
+    const helpWin = kind === 'help-win';
+    const text = helpArrive ? (p.helpArrive || p.arrive) : helpWin ? (p.helpWin || p.win) : kind === 'arrive' ? p.arrive : p.win;
+    return { id, act, kicker: kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', title: p.title, icon: p.icon || 'road', text };
+  }
   const b = BEATS[id]; if (!b) return null;
   const asc = ascentOf(act);
   const kicker = asc > 1 && b.kicker === 'Ascent' ? `Ascent ${asc} · Act ${romans[landOf(act) - 1]}` : b.kicker;
@@ -83,16 +284,39 @@ export function beat(id, act) {
 }
 const seen = (c, id, act) => (c.storySeen || []).includes(`${id}@${act}`);
 // What to show now, in order (usually zero or one beat; at an act's first quest, the last act's closing then this act's opening).
-export function pending(c) {
+export function pending(c, place) {
   if (!c) return [];
   const out = [];
   const add = (kind, act) => { const id = beatId(kind, act); if (id && !seen(c, id, act)) out.push({ id, act }); };
   if (c.step === 1) { if (c.act > 1) add('close', c.act - 1); add('open', c.act); }
   if (c.step === 5) add('elite', c.act);
   if (c.step === 10) add('boss', c.act);
+  // Elite and boss cards already tell the set-piece; skip the matching place arrival so it isn't told twice.
+  const skipPlace = c.step === 5 || c.step === 10
+    || out.some((x) => /^(open|close|elite|boss):/.test(x.id));
+  if (place && !skipPlace) {
+    const help = c.step === 8 && !!c.nextPlace;
+    const b = placeBeat('arrive', place, { help });
+    if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place });
+  }
   return out;
 }
+export function pendingVictory(c, place) {
+  if (!c || !place) return null;
+  const help = c.step === 8 && !!c.nextPlace;
+  const b = placeBeat('win', place, { help });
+  if (!b || seen(c, b.id, c.act)) return null;
+  return { id: b.id, act: c.act, place };
+}
 export function markSeen(c, id, act) { c.storySeen = [...new Set([...(c.storySeen || []), `${id}@${act}`])]; }
+export function applyPlaceVictory(campaign, place) {
+  if (!campaign || !place) return;
+  if (slugOf(place) === 'oathbreak-keep') {
+    campaign.blessings = [...(campaign.blessings || []), {
+      id: 'keepers-oath', name: 'Keeper’s Oath', text: '+3 block against breath.', fights: 2, breathBlock: 3, block: 0,
+    }];
+  }
+}
 // The story so far: every beat up to where the campaign stands, in order (for the menu's "The story so far").
 export function storySoFar(c) {
   if (!c) return [];

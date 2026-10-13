@@ -315,7 +315,9 @@ const groupNames = (ids) => { const n = {}; ids.forEach((id) => { n[id] = (n[id]
 function trail(c) {
   const N = D.QUESTS_PER_ACT;
   return h('ol', { class: 'sx-trail', 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
-    const n = i + 1; const done = n < c.step; const now = n === c.step; const boss = n === N; const elite = D.ELITE_STEPS.includes(n);
+    const n = i + 1; const done = n < c.step; const now = n === c.step;
+    const kind = D.stepKind(D.ACTS[(c.act - 1) % D.ACTS.length], n);
+    const boss = kind === 'boss'; const elite = kind === 'elite';
     return h('li', { class: `tr-node ${done ? 'done' : ''} ${now ? 'now' : ''} ${boss ? 'boss' : elite ? 'elite' : ''}`, 'aria-current': now ? 'step' : null },
       h('span', { class: 'tr-gem' }, done ? ico('check') : boss ? ico('crown') : elite ? ico('skull') : h('b', {}, String(n))),
       boss || elite ? h('small', {}, boss ? 'Boss' : 'Elite') : null);
