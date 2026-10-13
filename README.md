@@ -35,7 +35,7 @@ To publish the solo game, enable **GitHub Pages** for this repository (Settings 
 - **Leveling to 20**, a perk every level, bigger dice at Camp, and loot after every fight.
 - **One to six heroes, each on their own phone.** Each hero keeps their own gold, dice and level. Feet decide who draws the monsters' heat. Healing and blocking count toward who picks the loot. The fight waits until every hero has locked in.
 - **Road events.** Between quests the computer narrates a seeded scene and offers a real choice. The same company meets the same crossroads if you reload before you choose.
-- **Saved heroes and saved companies** behind a name and password, plus a **Soul Code** (`QD1` for a hero, `QD2` for a company) to move a save between devices.
+- **Saved heroes** behind a name and password, in the browser and in the cloud, plus a **Soul Code** (`QD1`) to move a save by hand.
 - Synthesized sound, haptics on phones, reduced-motion support, and a first-run tutorial.
 
 ## The documents
@@ -63,7 +63,8 @@ js/data.js          ALL the numbers: dice, weapons, classes, perks, monsters, ac
 js/engine.js        the rules, pure and deterministic, no DOM
 js/table.js         company rules for many phones: locks, then one resolve
 js/roads.js         the computer's road: seeded scenes and their consequences
-js/save.js          heroes, companies, passwords, Soul Codes (localStorage)
+js/save.js          heroes, passwords, Soul Codes, cloud ids, campaign start picks
+js/cloud.js         Firebase rooms and solo hero cloud saves
 js/view.js          draws dice, enemies, weapons, reports
 js/ui.js            solo screens and input
 js/roomui.js        the phone screens for a shared table
@@ -78,4 +79,4 @@ The engine takes its randomness as an argument, so any battle can be replayed ex
 
 ## Saving, honestly
 
-Heroes live in the browser's local storage. The password is hashed and checked before a hero opens, but this is a friendly gate, not encryption, and clearing browser data deletes the hero. Use **Soul Code** (in Camp or the hero menu) to make a backup. Cloud saves are on the roadmap.
+Heroes live in the browser's local storage and, when the cloud is reachable, in Firestore under a name and a salted password hash. The password is a friendly gate, not encryption; new saves need at least 3 characters. Clearing browser data no longer loses a hero that was also saved in the cloud: pick them from the public name list (or type the name) and enter the password. Soul Code remains a hand backup. Act I is for a new hero; Acts II and III welcome a built-up one. Replaying a quest you have already cleared awards no XP, gold or spoils. The Firestore rules in this repo must be published before cloud saves will accept writes (see `docs/FIREBASE.md`).

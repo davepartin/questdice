@@ -5,10 +5,16 @@ rules_version = '2';
 //  (Never deploy this into `space-tribes`: a project has ONE set of rules,
 //  and this would replace Fleet Dice's.)
 //
-//  One collection: qdRooms/{CODE}. A room is the whole party table
-//  (heroes, battle, rewards) as JSON in `state`, plus who is seated.
-//  Every phone signs in anonymously. Moves run the game's own rules on the
-//  phone inside a transaction and write the new table back.
+//  Collections:
+//    qdRooms/{CODE}              a party table (heroes, battle, rewards)
+//    qdHeroNames/{nameId}        a taken hero name (no password material)
+//    qdHeroPublic/{nameId}       browsable card: name, class, level, act/step
+//    qdHeroes/{heroId}           a solo hero save
+//
+//  Every phone signs in anonymously. Hero document ids are SHA-256 of
+//  (name + password), so a write or a read of the save requires knowing
+//  the password. Names are first-come, first-served. The public index is
+//  listable and holds no hash, salt or hero blob. See docs/FIREBASE.md.
 // =====================================================================
 
 service cloud.firestore {
@@ -50,6 +56,76 @@ service cloud.firestore {
 
       // Only the host may close the room.
       allow delete: if signedIn() && resource.data.hostUid == me();
+    }
+
+    // A name marker. Knowing a hero's name lets you see that it is taken; it does
+    // not let you read or overwrite the save. Names are sticky (no update, no delete)
+    // so a collision cannot be stolen by renaming.
+    match /qdHeroNames/{nameId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.taken == true
+        && request.resource.data.nameKey is string
+        && request.resource.data.nameKey.size() >= 2
+        && request.resource.data.nameKey.size() <= 16;
+      allow update, delete: if false;
+    }
+
+    // Browsable public card. Any signed-in phone may list these so a player can pick
+    // a name they have forgotten. The card holds only name, class, level and act/step.
+    // It never holds the password hash, salt or the hero blob, so listing it cannot
+    // open or overwrite a save. Name and nameKey are sticky. (Spark has no functions
+    // to bind this write to the password; a nuisance edit of class/level is possible,
+    // but the save itself stays behind the derived id.)
+    match /qdHeroPublic/{nameId} {
+      allow get, list: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'nameKey', 'cls', 'level', 'act', 'step', 'updated'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 16
+        && request.resource.data.nameKey is string
+        && request.resource.data.cls is string
+        && request.resource.data.level is int
+        && request.resource.data.act is int
+        && request.resource.data.step is int;
+      allow update: if signedIn()
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.nameKey == resource.data.nameKey
+        && request.resource.data.keys().hasOnly(['name', 'nameKey', 'cls', 'level', 'act', 'step', 'updated'])
+        && request.resource.data.cls is string
+        && request.resource.data.level is int
+        && request.resource.data.act is int
+        && request.resource.data.step is int;
+      allow delete: if false;
+    }
+
+    // The save itself. The document id is derived from name + password on the phone,
+    // so listing is off and a guess at the id is a 64-character hash. A write that
+    // already has a document must carry the same salt and hash as the one stored
+    // (the phone that opened the hero already has them).
+    match /qdHeroes/{heroId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['nameKey', 'salt', 'hash', 'hero', 'v', 'saved'])
+        && request.resource.data.nameKey is string
+        && request.resource.data.salt is string
+        && request.resource.data.hash is string
+        && request.resource.data.hash.size() >= 8
+        && request.resource.data.hero is string
+        && request.resource.data.hero.size() < 200000
+        && request.resource.data.v is int;
+      allow update: if signedIn()
+        && request.resource.data.hash == resource.data.hash
+        && request.resource.data.salt == resource.data.salt
+        && request.resource.data.nameKey == resource.data.nameKey
+        && request.resource.data.hero is string
+        && request.resource.data.hero.size() < 200000
+        && request.resource.data.v is int;
+      // Knowing the document id implies knowing the password (the id is derived from it).
+      allow delete: if signedIn();
     }
   }
 }

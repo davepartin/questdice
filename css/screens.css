@@ -182,6 +182,13 @@
 .sx-input { width: 100%; min-height: 48px; padding: .7rem .9rem; border-radius: 8px; border: 1px solid var(--hair); background: rgba(4, 5, 12, .66); color: #fff; font: 500 1.02rem var(--font-body); letter-spacing: 0; text-transform: none; outline: none; transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none; }
 .sx-input::placeholder { color: var(--faint); } .sx-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(240, 192, 96, .18), 0 0 24px rgba(240, 160, 50, .12); }
 .sx-screen .form-msg { color: #ff9b8a; font-size: .85rem; min-height: 1.1em; }
+.cloud-browse { display: grid; gap: .45rem; }
+.sx-cloudlist, .cloud-browse .sx-cloudlist { display: flex; flex-direction: column; gap: .35rem; max-height: 11rem; overflow: auto; padding-right: .15rem; }
+.sx-cloudpick, button.cloud-pick { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; width: 100%; text-align: left; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--hair); background: rgba(4, 5, 12, .55); color: #fff; font: inherit; cursor: pointer; }
+.sx-cloudpick b, button.cloud-pick b { font-family: var(--font-display); font-size: .95rem; }
+.sx-cloudpick small, button.cloud-pick small { color: var(--dim); font-size: .78rem; }
+.sx-cloudpick.on, button.cloud-pick.on { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(240, 192, 96, .2); }
+.sx-repeat { margin: 0 0 .4rem; padding: .65rem .8rem; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); background: rgba(40, 28, 12, .55); color: #f0d9a0; font-size: .9rem; line-height: 1.4; }
 
 /* ---------------------------------------------------------------- weapon cards */
 .sx-wc { --rc: #cd7f32; position: relative; display: flex; flex-direction: column; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--rc) 60%, #000); background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 9%, #1a1c2e), #0b0c16); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--rc) 40%, transparent), 0 10px 28px rgba(0, 0, 0, .45), 0 0 0 0 transparent; overflow: hidden; transition: transform .25s var(--ease-snap), box-shadow .3s, border-color .2s; min-width: 0; pointer-events: auto; }
@@ -586,3 +593,12 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .tal-face.num.bought .tp { color: #dfe6f2; }
 .tal-face.num.c-atk { color: #ff4b4b; } .tal-face.num.c-block { color: #3aa4ff; } .tal-face.num.c-magic { color: #b66cff; } .tal-face.num.c-heal { color: #38e87a; } .tal-face.num.c-gold { color: #ffd21a; }
 .tal-pick .tal-cost { grid-column: 1 / -1; flex-basis: 100%; }
+
+/* step picker: the same trail gems, tappable, with locked steps dimmed */
+.sx-stepact { pointer-events: auto; margin: .4rem 0 1.1rem; }
+.sx-stepact .sx-acttag { margin: .15rem 0 .35rem; }
+.sx-steprow { pointer-events: auto; }
+.tr-pick { appearance: none; -webkit-appearance: none; border: 0; padding: 0; margin: 0; background: none; color: inherit; font: inherit; cursor: pointer; display: grid; place-items: center; pointer-events: auto; }
+.tr-pick:disabled { cursor: not-allowed; }
+.tr-node.locked { opacity: .38; filter: grayscale(.4); }
+.tr-pick:focus-visible .tr-gem { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
