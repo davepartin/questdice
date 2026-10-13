@@ -12,6 +12,7 @@ import { h, $, toast, modal } from '../dom.js';
 import { sfx } from '../audio.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
+import * as SV from '../save.js';
 import * as Net from '../net.js';
 import * as Sess from '../session.js';
 import * as SCRUI from './scrui.js';
@@ -61,17 +62,27 @@ export function together() {
   mountAs('title', h('div', { class: 'sx-title-shell' }, h('div', { class: 'sx-title-brand' }), h('div', { class: 'sx-title-menu' }, menu)));
   lay('title'); SCR.enter('title', { cls: 'knight' }, 'title:together');
 }
-function host() {
-  SCRUI.create({ table: { mode: 'host', back: together, onDone: async (name, cls, x) => {
-    const data = await Net.createSeat({ name, cls, table: x.table || `${name}'s company` });
+function sitAt({ mode, code, hero, back }) {
+  SCRUI.create({ table: { mode, code, hero, back: back || together, onDone: async (name, cls, x) => {
+    const data = mode === 'host'
+      ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero, difficulty: x.difficulty || x.hero?.difficulty })
+      : await Net.joinSeat({ code: x.code, name, cls, hero: x.hero });
     sfx.level(); openTable(data.view);
   } } });
 }
+function host() { sitAt({ mode: 'host' }); }
+export function hostLoaded() {
+  const hero = X.S.hero;
+  if (!hero) return together();
+  if ((hero.campaign?.act | 0) === 1 && !SV.isNewHero(hero)) {
+    toast(SV.ACT1_TABLE, 'bad');
+    sfx.error();
+    return;
+  }
+  sitAt({ mode: 'host', hero, back: () => X.showHeroHub() });
+}
 export function join(prefill = '') {
-  SCRUI.create({ table: { mode: 'join', code: prefill, back: together, onDone: async (name, cls, x) => {
-    const data = await Net.joinSeat({ code: x.code, name, cls });
-    sfx.level(); openTable(data.view);
-  } } });
+  sitAt({ mode: 'join', code: prefill });
 }
 
 // Sit down: start the session, listen for the table, put its screen up.
@@ -85,6 +96,7 @@ function openTable(view) {
   show();
 }
 export function leave() {
+  writeBack();
   stop?.(); stop = null;
   Net.clearSeat(); Sess.close();
   const S = X.S; S.net = null; S.hero = null; S.company = null; S.battle = null;
@@ -105,6 +117,7 @@ function sync(t) {
 let shown = '';
 function changed(prev, next, info) {
   if (!inRoom()) return;
+  if (prev && next && prev.phase !== next.phase && (next.phase === 'camp' || next.phase === 'victory' || next.phase === 'defeat' || next.phase === 'board')) writeBack();
   if (B3.running()) { sync(next); B3.netChanged(prev, next); return; } // a battle is on screen: it decides when to show what
   if (!prev || prev.phase !== next.phase || shown !== next.phase) return show();
   update(prev, next, info);
@@ -144,7 +157,7 @@ function lobby(t) {
     try { await navigator.clipboard.writeText(text); toast('Invite copied. Send it to your friends.'); } catch { toast(`The code is ${t.code}.`); }
   };
   const rows = t.players.map((p, i) => h('li', { class: `lb-row ${p.ready || p.id === t.hostId ? 'ready' : ''} ${p.id === you.id ? 'you' : ''}`, style: { '--i': i, '--hue': K().CLS_HUE[p.cls] } },
-    emblem(p.cls), h('div', { class: 'lb-who' }, h('b', {}, p.name, p.id === t.hostId ? h('i', { class: 'lb-host', title: 'Host' }, ico('crown')) : null), h('small', {}, clsName(p.cls))),
+    emblem(p.cls), h('div', { class: 'lb-who' }, h('b', {}, p.name, p.id === t.hostId ? h('i', { class: 'lb-host', title: 'Host' }, ico('crown')) : null), h('small', {}, `${clsName(p.cls)}${(p.brought?.level || p.hero?.level || 1) > 1 ? ` · Lv ${p.brought?.level || p.hero.level}` : ''}`)),
     h('span', { class: 'lb-state' }, p.ready || p.id === t.hostId ? [ico('check'), p.id === t.hostId ? 'Host' : 'Ready'] : 'Getting ready')));
   const seats = Array.from({ length: Math.max(0, Math.min(6, Math.max(t.players.length + 1, 2)) - t.players.length) }, () => h('li', { class: 'lb-row empty' }, h('span', { class: 'lb-open' }, ico('people')), h('div', { class: 'lb-who' }, h('small', {}, 'An open seat'))));
   const go = host
@@ -155,6 +168,7 @@ function lobby(t) {
       h('div', { class: 'sx-sidetop' }),
       panel('lb-code', h('div', { class: 'lb-top' }, h('div', {}, eyebrow('Table code'), h('div', { class: 'lb-letters', 'aria-label': `Table code ${t.code.split('').join(' ')}` }, t.code.split('').map((c) => h('b', {}, c)))),
         btn('Invite', share, { kind: 'ghost', icon: 'link', cls: 'lb-invite' })),
+        (() => { const d = D.DIFFICULTY[D.normalizeDifficulty(t.difficulty)]; return h('p', { class: 'fine' }, `${d.name} difficulty. ${d.text}`); })(),
         host ? h('p', { class: 'fine' }, 'Friends tap Play together, then Join a table, and type the code.') : null),
       panel('lb-roster', eyebrow(`Heroes · ${t.players.length} of 6`), h('ul', { class: 'lb-list' }, ...rows, ...seats)),
       flourish(),
@@ -166,6 +180,12 @@ function lobby(t) {
   void world;
 }
 function fail(e) { toast(e?.message || 'The table did not answer.', 'bad'); sfx.error(); }
+function writeBack() {
+  const hero = Sess.hero() || X.S.hero;
+  if (!hero) return;
+  X.persist?.();
+  X.flushCloud?.(hero);
+}
 
 // ------------------------------------------------------------------------------------------------ the company bar
 // Who is at the table, with a tick for each hero who has pressed ready (used on the road and at camp).
@@ -272,12 +292,14 @@ function victory(t) {
   const placeWord = (p) => (p === 1 && n >= 2 ? '1st place' : p === 2 && n >= 3 ? '2nd place' : '');
   const lead = R.order[0];
   const sub = n >= 3 ? `${lead} did the most this battle, with ${R.order[1]} close behind.` : n === 2 ? `${lead} did the most this battle.` : 'The way is open.';
-  const rows = panel('sx-places', eyebrow(`+${R.xp} XP each`, 'gold'),
+  const youRepeat = !!(R.repeat && R.repeat[hero?.name]);
+  const rows = panel('sx-places', eyebrow(youRepeat ? 'Already cleared' : `+${R.xp} XP each`, 'gold'),
     h('div', { class: 'pl-list' }, R.order.map((name) => {
       const m = members.find((x) => x.name === name); const p = R.place[name]; const pw = placeWord(p);
+      const again = !!(R.repeat && R.repeat[name]);
       return h('div', { class: `pl-row ${p === 1 && n >= 2 ? 'first' : p === 2 && n >= 3 ? 'second' : ''} ${m === hero ? 'you' : ''}` },
         h('span', { class: 'pl-medal' }, pw ? (p === 1 ? '1' : '2') : ''), emblem(m.cls),
-        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, pw || 'Victory', m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
+        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, again ? 'Already cleared · no XP or gold' : (pw || 'Victory'), !again && m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
         h('div', { class: 'pl-nums' }, h('b', {}, `${R.points[name] || 0}`), h('small', {}, 'points'), h('span', { class: 'pl-gold' }, ico('coin'), `${R.gold[name] >= 0 ? '+' : ''}${R.gold[name]}`)));
     })));
   const owing = members.filter((m) => m.pendingPerks > 0 && m !== hero).map((m) => m.name);
@@ -294,10 +316,11 @@ function victory(t) {
     : panel('sx-loot done', h('div', { class: 'cardlist' }, Object.entries(draft.picked).length ? Object.entries(draft.picked).map(([i, name]) => h('p', { class: 'muted' }, `${name} took the ${D.tierName(R.drops[i])} ${D.WEAPONS[R.drops[i].id].name}.`)) : h('p', { class: 'muted' }, 'The spoils stay on the road.')));
   void picker;
   const reopen = btn('View brag board', () => openBrag(t, !you.seenBrag), { kind: 'link', cls: 'wide brag-reopen' });
+  const note = youRepeat ? h('p', { class: 'sx-repeat' }, n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : null;
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
-      h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, sub), flourish()),
-      partyBar(), reopen, rows, perks, loot)));
+      h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
+      partyBar(), note, reopen, rows, perks, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
@@ -325,6 +348,7 @@ function askRetreat() {
 }
 // Home, but the seat stays: the title shows "Rejoin" and the table carries on without a word.
 export function stepAway() {
+  writeBack();
   stop?.(); stop = null; Net.disconnect(); Sess.close();
   const S = X.S; S.net = null; S.hero = null; S.company = null; S.battle = null;
   X.showTitle();

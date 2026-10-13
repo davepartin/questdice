@@ -1,35 +1,52 @@
 // One table, many phones. The server holds the company. Each phone sends only its own
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
-import { CLASSES, SLOTS } from './data.js';
+import { CLASSES, SLOTS, normalizeDifficulty } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
+import * as SV from './save.js';
 import { applyPlaceVictory } from './story.js';
 import { pack, unpack } from './pack.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const clean = (s, max) => String(s || '').trim().replace(/\s+/g, ' ').slice(0, max);
 
-export function createTable({ code, seed, name }) {
+export function createTable({ code, seed, name, difficulty }) {
   const title = clean(name, 24);
   return {
     code, seed: (seed ?? 1) >>> 0, name: title.length >= 2 ? title : 'Company',
+    difficulty: normalizeDifficulty(difficulty),
     hostId: null, seq: 1, phase: 'lobby', players: [],
     company: null, battle: null, quest: null, lastReport: null, rewards: null,
     roadResult: null, perkOffers: {}, loss: 0, retreat: false,
   };
 }
 
-export function joinTable(table, { name, cls, token }) {
+function takeBrought(raw, name, cls) {
+  if (!raw || typeof raw !== 'object') return null;
+  const brought = clone(raw);
+  brought.name = name;
+  if (CLASSES[brought.cls]) cls = brought.cls;
+  else brought.cls = cls;
+  if (!CLASSES[brought.cls]) return null;
+  return brought;
+}
+
+export function joinTable(table, { name, cls, token, hero }) {
   if (table.phase !== 'lobby') return fail('This table has already taken the road.');
   if (table.players.length >= 6) return fail('Six heroes is a full company.');
   const heroName = clean(name, 16);
   if (heroName.length < 2) return fail('Give your hero a name (2–16 characters).');
-  if (!CLASSES[cls]) return fail('Pick a class.');
+  if (!CLASSES[cls] && !CLASSES[hero?.cls]) return fail('Pick a class.');
   if (!token) return fail('Missing seat.');
   if (table.players.some((p) => p.name.toLowerCase() === heroName.toLowerCase())) return fail('Another hero already has that name.');
+  const brought = takeBrought(hero, heroName, cls || hero?.cls);
+  const seatCls = brought?.cls || cls;
+  if (!CLASSES[seatCls]) return fail('Pick a class.');
+  const gated = actOneGate(table, brought, { asHost: !table.hostId });
+  if (gated) return gated;
   // (the id shows no part of the token)
-  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls, ready: false, seenBrag: false, hero: null };
+  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls: seatCls, ready: false, seenBrag: false, hero: null, brought };
   table.players.push(player);
   if (!table.hostId) table.hostId = player.id;
   table.seq += 1;
@@ -96,14 +113,37 @@ function dispatch(table, player, cmd) {
   }
 }
 
+function hostAct(table, broughtHost) {
+  const h = broughtHost || table.players.find((p) => p.id === table.hostId)?.brought;
+  return Math.max(1, h?.campaign?.act | 0) || 1;
+}
+function actOneGate(table, brought, { asHost = false } = {}) {
+  if (!brought) return null;
+  const act = asHost ? Math.max(1, brought.campaign?.act | 0) : hostAct(table);
+  if (act === 1 && !SV.isNewHero(brought)) return fail(SV.ACT1_TABLE);
+  return null;
+}
+
 function sit(table, player, cmd) {
   if (table.phase !== 'lobby') return fail('The campaign has already started.');
   const heroName = clean(cmd.name, 16);
   if (heroName.length < 2) return fail('Give your hero a name (2–16 characters).');
-  if (!CLASSES[cmd.cls]) return fail('Pick a class.');
   if (table.players.some((p) => p !== player && p.name.toLowerCase() === heroName.toLowerCase())) return fail('Another hero already has that name.');
+  if (cmd.hero) {
+    const brought = takeBrought(cmd.hero, heroName, cmd.cls || cmd.hero.cls);
+    if (!brought) return fail('Pick a class.');
+    const gated = actOneGate(table, brought, { asHost: player.id === table.hostId });
+    if (gated) return gated;
+    player.brought = brought;
+    player.name = brought.name;
+    player.cls = brought.cls;
+    player.ready = false;
+    return ok();
+  }
+  if (!CLASSES[cmd.cls]) return fail('Pick a class.');
   player.name = heroName;
   player.cls = cmd.cls;
+  if (!(player.brought && player.brought.name === heroName && player.brought.cls === cmd.cls)) player.brought = null;
   player.ready = false;
   return ok();
 }
@@ -122,17 +162,58 @@ function ready(table, player, cmd) {
   return fail('Not now.');
 }
 
+function takeHostCampaign(from) {
+  if (!from) return null;
+  const out = {
+    act: Math.max(1, from.act | 0),
+    step: Math.max(1, from.step | 0),
+    wins: from.wins || 0,
+    chronicle: clone(from.chronicle || []),
+    nemeses: clone(from.nemeses || []),
+    seenRoads: clone(from.seenRoads || []),
+    storySeen: clone(from.storySeen || []),
+    campFlags: clone(from.campFlags || {}),
+    shop: null, blessings: [], ambush: null, road: null, nextPlace: null, nextEnemies: null,
+  };
+  if (from.seed != null) out.seed = from.seed;
+  if (from.reached) out.reached = { act: from.reached.act | 0, step: from.reached.step | 0 };
+  if (from.travellerAt != null) out.travellerAt = from.travellerAt;
+  return out;
+}
+
 function startCampaign(table, player) {
   if (table.phase !== 'lobby') return fail('The campaign has already started.');
   if (player.id !== table.hostId) return fail('The host starts the campaign.');
   if (table.players.length < 1 || table.players.length > 6) return fail('The table seats one to six heroes.');
   if (table.players.some((p) => p.id !== table.hostId && !p.ready)) return fail('Every hero has to be ready.'); // the host starting is their own ready
+  const host = table.players.find((p) => p.id === table.hostId);
   const company = E.newCompany({
     name: table.name,
     roster: table.players.map((p) => ({ name: p.name, cls: p.cls })),
     seed: table.seed,
   });
-  table.players.forEach((p, i) => { p.hero = company.members[i]; p.ready = false; });
+  const overlay = takeHostCampaign(host?.brought?.campaign);
+  if (overlay) Object.assign(company.campaign, overlay);
+  const tableAct = Math.max(1, company.campaign.act | 0);
+  if (tableAct === 1) {
+    const veteran = table.players.find((p) => p.brought && !SV.isNewHero(p.brought));
+    if (veteran) return fail(SV.ACT1_TABLE);
+  }
+  table.difficulty = normalizeDifficulty(table.difficulty || host?.brought?.difficulty);
+  table.players.forEach((p, i) => {
+    let hero = company.members[i];
+    if (p.brought) {
+      hero = clone(p.brought);
+      hero.name = p.name;
+      hero.cls = p.cls;
+      hero.campaign = company.campaign;
+      company.members[i] = hero;
+    }
+    hero.difficulty = table.difficulty;
+    p.hero = hero;
+    p.ready = false;
+    p.brought = null;
+  });
   table.company = company;
   return enterRoad(table);
 }
@@ -471,23 +552,32 @@ function enterVictory(table) {
   const levels = {};
   for (const f of b.fighters) levels[f.hero.name] = f.hero.level;
   const r = E.partyRewards(b);
+  const c = table.company.campaign;
+  const repeat = {};
+  const gold = {};
   for (const f of b.fighters) {
-    const g = r.gold[f.hero.name] || 0;
+    const first = !SV.hasCleared(f.hero, c.act, c.step);
+    repeat[f.hero.name] = !first;
+    if (first) SV.markCleared(f.hero, c.act, c.step);
+    const g = first ? (r.gold[f.hero.name] || 0) : 0;
+    gold[f.hero.name] = g;
     f.hero.gold = Math.max(0, f.hero.gold + g);
     f.hero.stats.goldEarned += Math.max(0, g);
     f.hero.stats.battles++;
-    E.gainXp(f.hero, r.xp);
+    E.gainXp(f.hero, first ? r.xp : 0);
     E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
   }
+  const firstOrder = r.order.filter((name) => !repeat[name]);
+  const drops = firstOrder.length ? r.drops : [];
   E.recordFled(table.company.campaign, b);
   applyPlaceVictory(table.company.campaign, table.quest?.place);
   E.spendBlessings(table.company.campaign);
   E.clearAmbush(table.company.campaign);
   E.advanceCampaign(b.fighters[0].hero);
   table.rewards = {
-    xp: r.xp, gold: r.gold, drops: r.drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
-    levels, draft: E.newDraft(r.order, r.drops.length), questName: table.quest?.name || '',
-    stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])),
+    xp: r.xp, gold, drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
+    levels, draft: E.newDraft(firstOrder, drops.length), questName: table.quest?.name || '',
+    repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])),
   };
   table.phase = 'victory';
   table.players.forEach((p) => { p.ready = false; p.seenBrag = false; });
@@ -572,8 +662,9 @@ export function playerView(table, playerId) {
   const player = table.players.find((p) => p.id === playerId);
   const base = {
     seq: table.seq, code: table.code, name: table.name, phase: table.phase,
-    you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag } : null,
-    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId })),
+    difficulty: normalizeDifficulty(table.difficulty),
+    you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag, level: player.hero?.level || player.brought?.level || 1 } : null,
+    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId, level: p.hero?.level || p.brought?.level || 1 })),
   };
   if (!table.company) return base;
   const me = player?.hero;
@@ -634,7 +725,7 @@ export function playerView(table, playerId) {
     const r = table.rewards;
     base.victory = {
       questName: r.questName, xp: r.xp, gold: r.gold, contrib: r.contrib, levels: r.levels,
-      order: r.order, points: r.points, place: r.place, stats: r.stats,
+      order: r.order, points: r.points, place: r.place, stats: r.stats, repeat: r.repeat || {},
       picker: r.draft.done ? r.order.length : r.draft.turn % r.order.length, picked: r.draft.picked, drops: r.drops,
       waiting: E.draftWho(r.draft),
     };
@@ -663,6 +754,22 @@ export function savePublic(table) {
 }
 export function loadTable(text) {
   const table = unpack(text);
+  migrateTable(table);
   if (table.battle) table.battle.rng = E.makeRng(E.hashSeed(table.seed, 'move', table.seq));
+  return table;
+}
+export function migrateTable(table) {
+  if (!table || typeof table !== 'object') return table;
+  const host = table.players?.find((p) => p.id === table.hostId) || table.players?.[0];
+  const from = table.difficulty
+    || host?.hero?.difficulty
+    || host?.brought?.difficulty
+    || table.company?.members?.[0]?.difficulty;
+  table.difficulty = normalizeDifficulty(from);
+  for (const m of table.company?.members || []) m.difficulty = table.difficulty;
+  for (const p of table.players || []) {
+    if (p.hero) p.hero.difficulty = table.difficulty;
+    if (p.brought) SV.migrateHero(p.brought);
+  }
   return table;
 }

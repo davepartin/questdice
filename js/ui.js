@@ -37,12 +37,54 @@ function mountAs(cls, ...nodes) {
 }
 const mount = (...nodes) => mountAs('', ...nodes);
 const membersOf = () => S.company?.members || (S.hero ? [S.hero] : []);
+const CREDS = 'questdice.cloud.pw';
+function rememberPw(name, password) {
+  S.cloud = { name, password };
+  try { sessionStorage.setItem(CREDS, JSON.stringify({ name, password })); } catch { /* private mode */ }
+}
+function recallPw(name) {
+  if (S.cloud?.password && (!name || nameKeyMatch(S.cloud.name, name))) return S.cloud.password;
+  try {
+    const v = JSON.parse(sessionStorage.getItem(CREDS) || 'null');
+    if (v?.password && (!name || nameKeyMatch(v.name, name))) { S.cloud = v; return v.password; }
+  } catch { /* ignore */ }
+  return S.cloud?.password || null;
+}
+const nameKeyMatch = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+let cloudWait = 0;
+function queueCloud(hero) {
+  const pw = recallPw(hero?.name);
+  if (!hero || !pw) return;
+  clearTimeout(cloudWait);
+  cloudWait = setTimeout(() => { flushCloud(hero); }, 700);
+}
+export async function flushCloud(hero) {
+  const who = hero || S.hero;
+  const pw = recallPw(who?.name);
+  if (!who || !pw) return false;
+  clearTimeout(cloudWait);
+  try {
+    await (await import('./cloud.js')).putHero(who, pw);
+    if (S.cloud) S.cloud.ok = true;
+    return true;
+  } catch (e) {
+    console.warn('QuestDice cloud save:', e);
+    return false;
+  }
+}
 function persist() {
-  if (S.net) return Online.persistLocal(); // (the table keeps the hero; this phone only remembers which hints it has shown)
+  if (S.net) {
+    Online.persistLocal(); // (the table keeps the hero; this phone only remembers which hints it has shown)
+    const mine = Sess.hero() || S.hero;
+    if (mine) { SV.saveHero(mine); queueCloud(mine); }
+    return;
+  }
   if (S.practice) return; // the practice battle is never saved
   const hero = S.company?.members?.[0] || S.hero;
   if (!hero) return;
+  SV.markReached(hero);
   if (!SV.saveHero(hero)) toast('Could not save. Is browser storage blocked?', 'bad');
+  queueCloud(hero);
 }
 function concludeRoadEffects() {
   const c = S.company?.campaign || S.hero?.campaign;
@@ -166,7 +208,8 @@ export function showTitle() {
   items.push(h('nav', { class: 'dock' },
     cmd('01 · Hero', 'Forge a new hero', 'One body of dice. A whole road.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
     cmd('02 · Together', 'Play together', 'Up to six friends, each on their own phone. Each decides at the same time, and the fight runs when every choice is in.', Online.together, { glyph: '⚔', tone: 'versus' }),
-    cmd('03 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
+    cmd('03 · Cloud', 'Open a cloud save', 'Name and password, on any device.', showCloudLoad, { glyph: '☁' }),
+    cmd('04 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
   items.push(h('div', { class: 'row center' }, ghost('Rules', showHowTo)));
   mount(...items);
   S.timers.push(setInterval(tick, 1400));
@@ -180,14 +223,32 @@ function adopt(saved) {
   S.hero = saved;
   S.seat = 0;
 }
+export async function openNamedHero(name, password) {
+  let cloudErr = null;
+  try {
+    const hero = await (await import('./cloud.js')).getHero(name, password);
+    rememberPw(name, password);
+    try { await SV.keepHero(hero, password); } catch { /* local storage blocked, or a different password on this device */ }
+    return hero;
+  } catch (e) { cloudErr = e; }
+  try {
+    const hero = await SV.openHero(name, password);
+    rememberPw(name, password);
+    import('./cloud.js').then((C) => C.putHero(hero, password)).catch(() => {});
+    return hero;
+  } catch (localErr) {
+    if (cloudErr && !/No hero by that name/.test(cloudErr.message || '')) throw cloudErr;
+    throw localErr;
+  }
+}
 function unlock(name, kind = 'hero') {
   const pw = h('input', { type: 'password', class: 'input', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password' });
   const msg = h('p', { class: 'form-msg' });
   const go = async () => {
     try {
-      const saved = await SV.openHero(name, pw.value);
+      const saved = await openNamedHero(name, pw.value);
       adopt(saved);
-      closeModal(); sfx.coin(); showRoadOrBoard();
+      closeModal(); sfx.coin(); showHeroHub();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
@@ -221,15 +282,132 @@ function showImport() {
   modal(h('div', { class: 'form' }, h('h2', {}, 'Bring a hero here'), h('p', { class: 'muted' }, 'Paste a Soul Code exported from another device.'), ta, msg, h('div', { class: 'row end' }, ghost('Close', () => closeModal()), primary('Import', () => go(false)))));
 }
 
+export async function stashNewHero(hero, password) {
+  if (SV.heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
+  try {
+    await (await import('./cloud.js')).putHero(hero, password, { create: true });
+    rememberPw(hero.name, password);
+    if (S.cloud) S.cloud.ok = true;
+  } catch (e) {
+    if (e?.collision) throw e;
+    rememberPw(hero.name, password);
+    toast('Saved on this device. The cloud could not be reached just now.', 'bad');
+  }
+  await SV.createSave(hero, password);
+}
+
+function cloudBrowse(nameInput, pwInput, box) {
+  box.replaceChildren(h('p', { class: 'fine' }, 'Looking up saved heroes…'));
+  const timed = Promise.race([
+    import('./cloud.js').then((C) => C.listCloudHeroes()),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
+  ]);
+  timed.then((list) => {
+    if (!list.length) {
+      box.replaceChildren(h('p', { class: 'fine' }, 'No cloud heroes listed yet. Type a name if you know it.'));
+      return;
+    }
+    const pick = (x) => {
+      nameInput.value = x.name;
+      pwInput.focus();
+      box.querySelectorAll('.cloud-pick, .sx-cloudpick').forEach((el) => el.classList.toggle('on', el.dataset.name === x.name));
+    };
+    const sel = h('select', { class: 'input sx-input', 'aria-label': 'Saved cloud heroes', onchange: () => { const x = list[sel.selectedIndex - 1]; if (x) pick(x); } });
+    sel.append(h('option', { value: '' }, 'Choose a saved hero…'));
+    for (const x of list) {
+      const cls = D.CLASSES[x.cls]?.name || x.cls;
+      sel.append(h('option', { value: x.name }, `${x.name} · Lv ${x.level} ${cls} · Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`));
+    }
+    const buttons = list.map((x) => {
+      const cls = D.CLASSES[x.cls]?.name || x.cls;
+      return h('button', {
+        type: 'button', class: 'cloud-pick sx-cloudpick', 'data-name': x.name,
+        onclick: () => { sfx.click(); sel.value = x.name; pick(x); },
+      }, h('b', {}, x.name), h('small', {}, `Lv ${x.level} ${cls} · Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`));
+    });
+    box.replaceChildren(
+      h('p', { class: 'fine' }, 'Pick a hero, then enter its password. The list shows only public names.'),
+      h('label', {}, 'Saved heroes', sel),
+      h('div', { class: 'sx-cloudlist' }, ...buttons));
+  }).catch(() => {
+    box.replaceChildren(h('p', { class: 'fine' }, 'Could not list cloud heroes. Type a name if you know it.'));
+  });
+}
+
+function showCloudLoad() {
+  if (SCRUI.on()) return SCRUI.cloudLoad();
+  const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'username' });
+  const pw = h('input', { type: 'password', class: 'input', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password' });
+  const msg = h('p', { class: 'form-msg' });
+  const browse = h('div', { class: 'cloud-browse' });
+  const go = async () => {
+    try {
+      const saved = await openNamedHero(name.value, pw.value);
+      adopt(saved); closeModal(); sfx.coin(); showHeroHub();
+    } catch (e) { msg.textContent = e.message; sfx.error(); }
+  };
+  pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+  modal(h('div', { class: 'form' }, h('h2', {}, 'Open a cloud save'), h('p', { class: 'muted' }, 'The same name and password work on any device.'), browse, name, pw, msg,
+    h('div', { class: 'row end' }, ghost('Close', () => closeModal()), primary('Open', go))));
+  cloudBrowse(name, pw, browse);
+  setTimeout(() => name.focus(), 50);
+}
+
+export function showHeroHub() {
+  const hero = S.hero; if (!hero) return showTitle();
+  if (SCRUI.on()) return SCRUI.heroHub();
+  const choices = SV.startChoices(hero);
+  const c = hero.campaign;
+  const act1Note = !SV.isNewHero(hero) ? h('p', { class: 'muted' }, 'Act I is for a new hero. Forge a fresh character to walk it again, or to play Act I at a table.') : null;
+  mount(h('div', { class: 'topline' }, ghost('‹ Home', showTitle, { cls: 'small' }), h('h2', {}, hero.name)),
+    section('', h('p', {}, `Level ${hero.level} ${D.CLASSES[hero.cls].name}`), h('p', { class: 'muted' }, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step}`), act1Note),
+    h('nav', { class: 'dock' },
+      cmd('Road', 'Continue', `Pick up at quest ${c.step}.`, () => showRoadOrBoard(), { glyph: '🗺', tone: 'solo' }),
+      choices.length > 1 ? cmd('Road', 'Begin at a step', 'Replay a quest you have already reached. Act I needs a new hero.', showStepPick, { glyph: '1' }) : null,
+      cmd('Together', 'Open a table', 'Invite friends. They bring their own heroes.', () => Online.hostLoaded(), { glyph: '⚔', tone: 'versus' })));
+}
+
+export function showStepPick() {
+  const hero = S.hero; if (!hero) return showTitle();
+  if (SCRUI.on()) return SCRUI.stepPick();
+  const choices = SV.startChoices(hero);
+  const byAct = new Map();
+  for (const ch of choices) {
+    if (!byAct.has(ch.act)) byAct.set(ch.act, []);
+    byAct.get(ch.act).push(ch);
+  }
+  const pick = (act, step) => {
+    if (!SV.beginAt(hero, act, step)) {
+      sfx.error();
+      toast(act === 1 && !SV.isNewHero(hero) ? SV.ACT1_NEW : 'That step is still ahead of you.');
+      return;
+    }
+    persist(); sfx.select(); showRoadOrBoard();
+  };
+  mount(h('div', { class: 'topline' }, ghost('‹ Back', showHeroHub, { cls: 'small' }), h('h2', {}, 'Begin at a step')),
+    h('p', { class: 'muted' }, 'You may replay any quest you have already reached, except Act I: that road is for a new hero. You cannot skip past your progress.'),
+    !SV.isNewHero(hero) ? h('p', { class: 'muted' }, SV.ACT1_NEW) : null,
+    ...[...byAct.entries()].map(([act, steps]) => section(`Act ${romans[act - 1] || act}`,
+      h('div', { class: 'path' }, steps.map((ch) => h('button', {
+        type: 'button', class: `node ${ch.act === hero.campaign.act && ch.step === hero.campaign.step ? 'now' : 'done'}`,
+        onclick: () => pick(ch.act, ch.step),
+      }, String(ch.step)))))));
+}
+
 // ------------------------------------------------------------------ create
 function showCreate() {
   if (SCRUI.on()) return SCRUI.create();
-  let cls = 'knight';
+  let cls = 'knight'; let diff = 'normal';
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
   const msg = h('p', { class: 'form-msg' });
   const detail = h('div', { class: 'panel class-detail' });
   const grid = h('div', { class: 'class-grid' });
+  const diffGrid = h('div', { class: 'class-grid', role: 'radiogroup', 'aria-label': 'Difficulty', style: { gridTemplateColumns: 'repeat(2, 1fr)' } });
+  const paintDiff = () => diffGrid.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', {
+    type: 'button', class: `class-pick ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff),
+    onclick: () => { diff = id; sfx.select(); paintDiff(); },
+  }, h('b', {}, d.name), h('small', {}, d.text))));
   const paint = () => {
     grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } },
       c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name))));
@@ -239,7 +417,7 @@ function showCreate() {
       h('p', { class: 'fine' }, 'Wields: ', c.weapons.map((w) => D.WEAPONS[w].name).join(' + ')),
       h('div', { class: 'cardlist' }, c.cards.filter((k) => (k.unlock ?? 1) <= 1).map((k) => h('div', { class: 'mini-card' }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`)))));
   };
-  paint();
+  paint(); paintDiff();
   const go = async () => {
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); return; }
@@ -247,13 +425,16 @@ function showCreate() {
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     try {
       const hero = E.newHero({ name: n, cls });
-      await SV.createSave(hero, pw.value);
-      adopt(hero, 'hero'); sfx.level(); showRoadOrBoard();
+      hero.difficulty = D.normalizeDifficulty(diff);
+      SV.markReached(hero);
+      await stashNewHero(hero, pw.value);
+      adopt(hero, 'hero'); sfx.level(); showHeroHub();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   mount(h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a hero')),
-    section('Name & password', name, pw, h('p', { class: 'fine' }, 'The password only guards this hero on this device. Choose something you will remember.')),
-    section('Class', grid, detail), msg, primary('Begin the campaign', go, { cls: 'wide' }));
+    section('Name & password', name, pw, h('p', { class: 'fine' }, 'The password guards this hero on this device and in the cloud. Choose something you will remember.')),
+    section('Class', grid, detail),
+    section('Difficulty', diffGrid), msg, primary('Begin the campaign', go, { cls: 'wide' }));
 }
 
 // ------------------------------------------------------------------ quest board
@@ -300,6 +481,8 @@ function menu() {
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
+      S.hero && recallPw(S.hero.name) ? ghost('Save to the cloud now', async () => { close(); const ok = await flushCloud(S.hero); toast(ok ? 'Saved to the cloud.' : 'Could not reach the cloud.', ok ? 'good' : 'bad'); }) : null,
+      !S.net ? ghost('Open a table with this hero', () => { close(); Online.hostLoaded(); }) : null,
       ghost('Save & go home', () => { close(); askHome(); }),
       ghost('Close', () => close()))));
 }
@@ -575,13 +758,16 @@ function showVictory() {
   ST.applyPlaceVictory(hero.campaign, place);
   const winBeat = ST.pendingVictory(hero.campaign, place);
   const lvBefore = hero.level;
+  const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
+  if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
+  else { r.gold = 0; r.xp = 0; r.drops = []; }
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
   const points = E.pointsOf(b); E.recordBattle(hero, { points, heroes: 1, won: true });
   const quest = S.quest;
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: null, quest, offer: null };
+  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: (!first || !r.drops.length) ? 'none' : null, quest, offer: null, repeat: !first };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
   renderVictory();
@@ -593,7 +779,8 @@ function renderVictory() {
   const perks = R.offer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `Level up! Choose a perk${hero.pendingPerks > 1 ? ` (${hero.pendingPerks} to pick)` : ''}`),
     h('div', { class: 'perks' }, R.offer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(hero, id); R.offer = null; sfx.level(); persist(); renderVictory(); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text), h('i', {}, `You have ${hero.perks.filter((p) => p === id).length}/${D.PERKS[id].max}`))))) : null;
   const full = E.bagFull(hero); const after = () => { sfx.coin(); persist(); renderVictory(); };
-  const loot = R.picked == null ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`),
+  const loot = R.repeat || R.picked === 'none' ? null
+    : R.picked == null ? h('section', { class: 'panel' }, h('div', { class: 't-eyebrow mb' }, `Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`),
     full ? h('div', { class: 'cardlist' }, hero.bag.map((it) => h('div', { class: 'mini-card' }, h('b', {}, `${D.tierName(it)} ${D.WEAPONS[it.id].name}`), primary(`Sell ${E.sellValue(it)}`, () => { E.sellItem(hero, it.uid); after(); }, { cls: 'small' })))) : null,
     h('div', { class: 'loot' }, R.drops.map((inst, i) => V.weaponCard(inst, { actions: [
       primary(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; R.picked = i; R.sold = false; after(); }, { cls: 'small', disabled: full }),
@@ -602,13 +789,14 @@ function renderVictory() {
     : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold.` : `You took the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack.`));
   const ready = !R.offer && hero.pendingPerks === 0 && R.picked != null;
   mount(
-    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, 'The way is open.')),
+    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, R.repeat ? SV.REPEAT_NOTE : 'The way is open.')),
+    R.repeat ? h('p', { class: 'muted' }, SV.REPEAT_NOTE) : null,
     h('section', { class: 'panel rewards' },
       h('div', { class: 'reward' }, h('b', {}, `+${R.xp}`), h('small', {}, 'XP')),
       h('div', { class: 'reward gold' }, h('b', {}, `${R.gold >= 0 ? '+' : ''}${R.gold}`), h('small', {}, 'Gold')),
       R.levels ? h('div', { class: 'reward lvl' }, h('b', {}, `Lv ${hero.level}`), h('small', {}, 'Level up!')) : null,
       xpBar(hero)),
-    perks, loot,
+    perks, R.repeat ? null : loot,
     primary(ready ? '⛺ To camp' : 'Choose a perk and spoils to continue', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
 }
 function defeat(retreat) {
@@ -708,12 +896,13 @@ function chronicleBlock() {
 TUT.bind({ showTitle, showCreate, practice });
 SCRUI.bind({
   S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
+  showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(),
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showLessons: () => TUT.showLessons(),
   // at a shared table: who is there, and the road's choice goes to the table
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-Online.bind({ S, ghost, primary, showTitle, showHowTo, battleCtx });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, battleCtx, flushCloud, persist });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }
@@ -721,4 +910,4 @@ export async function boot() {
   await Online.boot(showTitle);
   if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
-export const debugApi = { S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, renderVictory, showStory };
+export const debugApi = { S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };

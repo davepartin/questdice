@@ -74,6 +74,14 @@ function classPreview(cls) {
   return h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' });
 }
 function nextOf(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function difficultyPicker(selected, onPick, { locked = false } = {}) {
+  const id = D.normalizeDifficulty(selected);
+  return h('div', { class: 'sx-diff four', role: 'radiogroup', 'aria-label': 'Difficulty' },
+    Object.entries(D.DIFFICULTY).map(([k, d]) => h('button', {
+      type: 'button', class: `df-opt ${k === id ? 'on' : ''}`, role: 'radio', 'aria-checked': String(k === id),
+      disabled: locked, onclick: locked ? null : () => onPick(k),
+    }, h('b', {}, d.name), h('small', {}, d.text))));
+}
 
 // the layout contract between panels and the camera (fractions of the viewport covered by DOM)
 const LAYOUT = {
@@ -183,7 +191,8 @@ export function title() {
   if (!saves.length) menu.append(plaque({ eyebrow: 'New here? Start here', title: 'Learn to play', sub: 'Three minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
-    plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }));
+    plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
+    plaque({ eyebrow: 'Cloud', title: 'Open a cloud save', sub: 'Name and password, on any device.', icon: 'lock', onclick: X.showCloudLoad }));
   if (!saves.length) menu.append(plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
   mountAs('title',
     h('div', { class: 'sx-title-shell' },
@@ -237,9 +246,9 @@ export function create(opts = {}) {
   const tname = T?.mode === 'host' ? h('input', { class: 'sx-input', id: 'table-name', maxlength: 24, placeholder: 'The Ember Company', autocomplete: 'off', 'aria-label': 'Table name' }) : null;
   const tcode = T?.mode === 'join' ? h('input', { class: 'sx-input room-code-input', id: 'table-code', maxlength: 4, value: T.code || '', placeholder: 'ABCD', autocomplete: 'off', autocapitalize: 'characters', 'aria-label': 'Table code', oninput: (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); } }) : null;
   const msg = h('p', { class: 'form-msg', role: 'alert' });
-  let diff = 'normal'; let skipHints = !Coach.hintsOn();
-  const diffRow = h('div', { class: 'sx-diff', role: 'radiogroup', 'aria-label': 'Your skill level' });
-  const paintDiff = () => diffRow.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff), onclick: () => { diff = id; sfx.select(); paintDiff(); } }, h('b', {}, d.name), h('small', {}, d.text))));
+  let diff = D.normalizeDifficulty(T?.difficulty || T?.hero?.difficulty || 'normal'); let skipHints = !Coach.hintsOn();
+  const diffRow = h('div');
+  const paintDiff = () => diffRow.replaceChildren(difficultyPicker(diff, (id) => { diff = id; sfx.select(); paintDiff(); }));
   paintDiff();
   const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
@@ -267,37 +276,152 @@ export function create(opts = {}) {
       h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
       h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
   };
+  const loaded = T?.hero || null;
+  const bring = T?.bring === 'cloud';
+  if (loaded) { cls = loaded.cls; name.value = loaded.name; }
+  if (bring) { pw.placeholder = 'Password'; pw.setAttribute('autocomplete', 'current-password'); }
+  const browse = bring && !loaded ? h('div', { class: 'cloud-browse' }) : null;
   paint();
+  const seat = async (hero, extra = {}) => {
+    if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
+    if (busy) return; busy = true; msg.textContent = '';
+    try { await T.onDone(hero.name, hero.cls, { table: tname?.value.trim(), code: tcode?.value, hero, difficulty: diff, ...extra }); }
+    catch (e) { msg.textContent = e.message || 'The table did not answer.'; sfx.error(); busy = false; }
+  };
   const go = async () => {
+    if (T && loaded) { loaded.difficulty = diff; return seat(loaded); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
-    if (T) {
-      if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
+    if (T && bring) {
+      if (!pw.value) { msg.textContent = 'Enter your password.'; sfx.error(); pw.focus(); return; }
       if (busy) return; busy = true; msg.textContent = '';
-      try { await T.onDone(n, cls, { table: tname?.value.trim(), code: tcode?.value }); } catch (e) { msg.textContent = e.message || 'The table did not answer.'; sfx.error(); busy = false; }
+      try {
+        const hero = await X.openNamedHero(n, pw.value);
+        if (T?.mode === 'host') hero.difficulty = diff;
+        X.adopt(hero); sfx.coin();
+        await seat(hero);
+      } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
       return;
     }
     if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); pw.focus(); return; }
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     if (busy) return; busy = true;
-    try { const hero = E.newHero({ name: n, cls }); hero.difficulty = diff; Coach.setHints(!skipHints); await SV.createSave(hero, pw.value); X.adopt(hero, 'hero'); sfx.level(); X.showRoadOrBoard(); } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
+    try {
+      const hero = E.newHero({ name: n, cls }); hero.difficulty = diff; SV.markReached(hero); Coach.setHints(!skipHints);
+      await X.stashNewHero(hero, pw.value);
+      if (T) { X.adopt(hero); sfx.level(); await seat(hero); return; }
+      X.adopt(hero, 'hero'); sfx.level(); X.showHeroHub();
+    } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
   };
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
+  const source = T && !loaded ? h('div', { class: 'sx-diff', role: 'tablist', 'aria-label': 'How you sit' },
+    h('button', { type: 'button', class: `df-opt ${!bring ? 'on' : ''}`, onclick: () => { if (!bring) return; sfx.select(); create({ table: { ...T, bring: 'new', difficulty: diff } }); } }, h('b', {}, 'New hero'), h('small', {}, 'Forge one for this table.')),
+    h('button', { type: 'button', class: `df-opt ${bring ? 'on' : ''}`, onclick: () => { if (bring) return; sfx.select(); create({ table: { ...T, bring: 'cloud', difficulty: diff } }); } }, h('b', {}, 'Cloud save'), h('small', {}, 'Name and password.'))) : null;
+  const hideClass = !!(loaded || (T && bring));
+  const showDiff = !T || T.mode === 'host';
+  const heading = loaded ? `Bring ${loaded.name}` : bring ? 'Open a saved hero' : 'Choose your hero';
+  const cta = T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : 'Begin the campaign';
   mountAs('create',
     h('div', { class: 'sx-split' },
       h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview),
       h('div', { class: 'sx-side' },
-        h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, 'Choose your hero')),
-        rail, info, flourish(),
-        T ? null : eyebrow('Your skill level'), T ? null : diffRow, T ? null : hintsBox,
+        h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, heading)),
+        source, hideClass ? null : rail, hideClass ? null : info, flourish(),
+        showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T ? null : hintsBox,
+        loaded ? h('p', { class: 'fine' }, `${loaded.name} · Level ${loaded.level} ${D.CLASSES[loaded.cls].name}. Friends join with their own hero.`) : null,
+        bring && !loaded ? h('p', { class: 'fine' }, 'Act I tables are for a new hero. A built-up hero can join Act II or III.') : null,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,
-          h('label', { for: 'hero-name' }, 'Name', name), T ? null : h('label', { for: 'hero-pw' }, 'Password', pw), T ? h('p', { class: 'fine' }, 'Your friends see this name. Your hero lives at the table until the campaign ends.') : h('p', { class: 'fine' }, 'The password only guards this hero on this device.'), msg),
-        h('div', { class: 'sx-cta' }, btn(T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : 'Begin the campaign', go, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
+          browse,
+          loaded ? null : h('label', { for: 'hero-name' }, 'Name', name), loaded ? null : h('label', { for: 'hero-pw' }, 'Password', pw),
+          loaded ? null : h('p', { class: 'fine' }, bring ? 'Pick a listed hero or type a name. The password opens that save; the list never shows it.' : (T ? 'Your friends see this name. The password keeps this hero in the cloud, so you keep what you earn at the table.' : 'The password guards this hero on this device and in the cloud.')), msg),
+        h('div', { class: 'sx-cta' }, btn(cta, go, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('create');
+  if (browse) X.cloudBrowse?.(name, pw, browse);
   SCR.enter('create', { cls }, 'create').then((hd) => {
     H = hd; if (!hd) return;
     H.pick(cls, { quiet: true }).then(() => { H.push(true); H.pin?.(); });
   });
+}
+
+export function cloudLoad() {
+  const name = h('input', { class: 'sx-input', id: 'cloud-name', maxlength: 16, placeholder: 'Thessaly Vane', autocomplete: 'username', 'aria-label': 'Hero name' });
+  const pw = h('input', { class: 'sx-input', id: 'cloud-pw', type: 'password', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password' });
+  const msg = h('p', { class: 'form-msg', role: 'alert' });
+  const browse = h('div', { class: 'cloud-browse' });
+  let busy = false;
+  const go = async () => {
+    if (busy) return; busy = true; msg.textContent = '';
+    try {
+      const hero = await X.openNamedHero(name.value, pw.value);
+      X.adopt(hero); sfx.coin(); X.showHeroHub();
+    } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
+  };
+  [name, pw].forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
+  mountAs('create', h('div', { class: 'sx-split' },
+    h('div', { class: 'sx-viewport' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' })),
+    h('div', { class: 'sx-side' },
+      h('div', { class: 'sx-sidehead' }, btn('Back', X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow('Cloud'), h('h1', { class: 'sx-h1' }, 'Open a cloud save')),
+      h('p', { class: 'muted' }, 'Pick a listed hero or type a name. The password opens that save. The list shows only name, class, level and where they stand — never the password or the hero itself.'),
+      h('div', { class: 'sx-form' }, browse, h('label', { for: 'cloud-name' }, 'Name', name), h('label', { for: 'cloud-pw' }, 'Password', pw), msg),
+      h('div', { class: 'sx-cta' }, btn('Open', go, { big: true, icon: 'key', cls: 'wide' })))));
+  lay('create'); SCR.enter('title', { cls: 'knight' }, 'title:cloud');
+  X.cloudBrowse?.(name, pw, browse);
+  setTimeout(() => name.focus(), 50);
+}
+
+export function heroHub() {
+  const hero = X.S.hero; if (!hero) return X.showTitle();
+  const c = hero.campaign;
+  const choices = SV.startChoices(hero);
+  const cls = D.CLASSES[hero.cls];
+  const menu = h('nav', { class: 'sx-menu', 'aria-label': 'This hero' },
+    h('div', { class: 'sx-eye menu-label' }, `${hero.name} · Level ${hero.level} ${cls.name}`),
+    !SV.isNewHero(hero) ? h('p', { class: 'fine' }, 'Act I is for a new hero. Forge a fresh character to walk it again, or to play Act I at a table.') : null,
+    plaque({ eyebrow: 'Continue', title: 'Take the road', sub: `Act ${romans[c.act - 1] || c.act}, Quest ${c.step}`, icon: 'map', primary: true, onclick: () => X.showRoadOrBoard() }),
+    choices.length > 1 ? plaque({ eyebrow: 'Replay', title: 'Begin at a step', sub: 'Any quest you have already reached, except Act I. You cannot skip ahead.', icon: 'road', onclick: () => X.showStepPick() }) : null,
+    plaque({ eyebrow: 'Together', title: 'Open a table', sub: 'Invite friends. They bring their own heroes.', icon: 'people', tone: 'is-together', onclick: () => X.showHostLoaded() }));
+  mountAs('title', h('div', { class: 'sx-title-shell' }, h('div', { class: 'sx-title-brand' }, logo()), h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, btn('Home', X.showTitle, { kind: 'link', icon: 'home' })))));
+  lay('title'); SCR.enter('title', { cls: hero.cls }, `title:${hero.cls}`);
+}
+
+export function stepPick() {
+  const hero = X.S.hero; if (!hero) return X.showTitle();
+  const r = SV.reachedOf(hero);
+  const pick = (act, step) => {
+    if (!SV.beginAt(hero, act, step)) {
+      sfx.error();
+      toast(act === 1 && !SV.isNewHero(hero) ? SV.ACT1_NEW : 'That step is still ahead of you.');
+      return;
+    }
+    X.persist(); sfx.select(); X.showRoadOrBoard();
+  };
+  const acts = [];
+  for (let act = 1; act <= r.act; act++) {
+    if (act === 1 && !SV.isNewHero(hero)) continue;
+    acts.push({ act, last: act < r.act ? D.QUESTS_PER_ACT : r.step });
+  }
+  const rows = acts.map(({ act, last }) => {
+    const a = D.ACTS[(act - 1) % D.ACTS.length];
+    const cyc = Math.floor((act - 1) / D.ACTS.length);
+    return h('div', { class: 'sx-stepact' },
+      eyebrow(`Act ${romans[act - 1] || act}`), h('p', { class: 'sx-acttag' }, a.name + (cyc ? ` · Ascent ${cyc + 1}` : '')),
+      h('ol', { class: 'sx-trail sx-steprow', 'aria-label': `Act ${act} quests` }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
+        const n = i + 1; const ok = n <= last; const now = act === hero.campaign.act && n === hero.campaign.step;
+        const kind = D.stepKind(a, n);
+        return h('li', { class: `tr-node ${ok ? 'done' : 'locked'} ${now ? 'now' : ''} ${kind === 'boss' ? 'boss' : kind === 'elite' ? 'elite' : ''}` }, h('button', {
+          type: 'button', class: 'tr-pick', disabled: !ok, 'aria-label': ok ? `Act ${act}, quest ${n}` : `Quest ${n} is still ahead`,
+          onclick: ok ? () => pick(act, n) : null,
+        }, h('span', { class: 'tr-gem' }, h('b', {}, String(n)))));
+      })));
+  });
+  mountAs('board', h('div', { class: 'sx-board' },
+    topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Back', X.showHeroHub, { kind: 'ghost', icon: 'back' }))),
+    h('div', { class: 'sx-board-main' },
+      h('div', { class: 'sx-board-head' }, eyebrow('The road you have walked'), h('h1', { class: 'sx-act' }, 'Begin at a step'),
+        h('p', { class: 'sx-acttag' }, 'Tap any quest you have already reached. Gold, gear and levels stay. You cannot skip past your progress.'),
+        !SV.isNewHero(hero) ? h('p', { class: 'sx-acttag' }, SV.ACT1_NEW) : null),
+      ...rows)));
+  lay('board'); SCR.enter('road', { hero, heroes: X.members() }, `step:${hero.name}`);
 }
 
 // ------------------------------------------------------------------------------------------------ board
@@ -433,18 +557,20 @@ export function victory(first) {
     h('p', { class: 'pk-head' }, ico('bag'), h('b', {}, `Your pack is full (${hero.bag.length}/${D.BAG_MAX})`), h('small', {}, 'Sell one to make room, or sell the spoils.')),
     h('div', { class: 'pk-list' }, hero.bag.map((it) => h('div', { class: 'pk-item' }, h('span', {}, `${D.tierName(it)} ${D.WEAPONS[it.id].name} · d${E.weaponSize(it)}`),
       btn(`Sell ${E.sellValue(it)}`, () => { HE.sellItem(hero, it.uid); done(); }, { kind: 'ghost', icon: 'coin', aria: `Sell ${D.WEAPONS[it.id].name} for ${E.sellValue(it)} gold` }))))) : null;
-  const loot = Rw.picked == null
+  const loot = Rw.repeat || Rw.picked === 'none' ? null
+    : Rw.picked == null
     ? panel('sx-loot', eyebrow(`Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`, 'gold'), packStrip, h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [
       btn(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; Rw.picked = i; Rw.sold = false; done(); }, { kind: 'primary', icon: 'bag', disabled: full }),
       btn(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); Rw.picked = i; Rw.sold = true; done(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell it now for ${E.sellValue(inst)} gold` }),
     ] }))))
     : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold.` : `You took the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack.`));
-  const lootHint = Rw.picked == null ? (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot')) : null;
+  const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
+  const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.REPEAT_NOTE) : null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
-      h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, 'The way is open.'), flourish()),
-      rewards, perks, lootHint, loot,
+      h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.REPEAT_NOTE : 'The way is open.'), flourish()),
+      note, rewards, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -719,7 +845,9 @@ function heroTab() {
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     heroStats(E.maxHpOf(hero), E.feetSize(hero)),
     hallOfFame(hero),
-    eyebrow('Your skill level'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
+    eyebrow('Difficulty'),
+    difficultyPicker(hero.difficulty, (id) => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }, { locked: !!X.net }),
+    X.net ? h('p', { class: 'fine' }, 'The host set this for the table.') : null,
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),

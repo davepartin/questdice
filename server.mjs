@@ -88,8 +88,8 @@ function createRoom(body) {
   for (let i = 0; i < 12 && (!code || rooms.has(code)); i++) code = makeCode();
   if (rooms.has(code)) return { status: 503, body: { error: 'Every code is taken. Try again.' } };
   const token = randomBytes(18).toString('hex');
-  const table = createTable({ code, seed: randomBytes(4).readUInt32BE(0), name: body.table || 'Company' });
-  const joined = joinTable(table, { name: body.name, cls: body.cls, token });
+  const table = createTable({ code, seed: randomBytes(4).readUInt32BE(0), name: body.table || 'Company', difficulty: body.difficulty || body.hero?.difficulty });
+  const joined = joinTable(table, { name: body.name, cls: body.cls, token, hero: body.hero });
   if (!joined.ok) return { status: 400, body: { error: joined.error } };
   const room = { table, subs: new Set(), touched: Date.now() };
   rooms.set(code, room);
@@ -100,7 +100,7 @@ function joinRoom(body) {
   const room = roomOf(code);
   if (!room) return { status: 404, body: { error: 'No table with that code.' } };
   const token = randomBytes(18).toString('hex');
-  const joined = joinTable(room.table, { name: body.name, cls: body.cls, token });
+  const joined = joinTable(room.table, { name: body.name, cls: body.cls, token, hero: body.hero });
   if (!joined.ok) return { status: 400, body: { error: joined.error } };
   room.touched = Date.now();
   publish(room);

@@ -4,8 +4,9 @@ import { cardsOf, equipPower, learnPower, learnInfo, rerollDieInfo, buyRerollDie
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, removeTalent, isActive, activeSlots, unlockInfo, unlockDie,
+  difficultyOf, withDifficulty, newPartyBattle,
 } from '../js/engine.js';
-import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, talentFaceCost, RES_BY_SIZE, FACE_PAY } from '../js/data.js';
+import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, talentFaceCost, RES_BY_SIZE, FACE_PAY, DIFFICULTY, normalizeDifficulty } from '../js/data.js';
 
 const board = (o) => {
   const b = {};
@@ -560,7 +561,60 @@ test('a talent die always has two blanks and one 2x; the rest of its faces can c
   }
 });
 
-test('random encounters: one fight a step, seeded, within the cap, and bigger for higher skill', async () => {
+test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert names mapping onto it', () => {
+  assert.deepEqual(Object.keys(DIFFICULTY), ['easy', 'normal', 'hard', 'legendary']);
+  assert.equal(DIFFICULTY.easy.name, 'Easy');
+  assert.equal(DIFFICULTY.normal.name, 'Normal');
+  assert.equal(DIFFICULTY.hard.name, 'Hard');
+  assert.equal(DIFFICULTY.legendary.name, 'Legendary');
+  assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
+  assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
+  assert.equal(DIFFICULTY.hard.hp, 1.2); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
+  assert.equal(DIFFICULTY.legendary.hp, 1.5); assert.equal(DIFFICULTY.legendary.flat, 3); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(normalizeDifficulty('noob'), 'easy');
+  assert.equal(normalizeDifficulty('mid'), 'normal');
+  assert.equal(normalizeDifficulty('expert'), 'hard');
+  assert.equal(normalizeDifficulty('easy'), 'easy');
+  assert.equal(normalizeDifficulty('legendary'), 'legendary');
+  assert.equal(normalizeDifficulty('mystery'), 'normal');
+  assert.equal(difficultyOf({ difficulty: 'expert' }).name, 'Hard');
+  const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1 };
+  const easyQ = withDifficulty({ difficulty: 'noob' }, quest);
+  assert.equal(easyQ.hpMult, 0.8);
+  assert.equal(easyQ.flat, -1);
+});
+
+test('difficulty scales monsters, never the hero, including in a party battle', () => {
+  const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
+  const hp0 = maxHpOf(knight());
+  const spawn = (diff) => {
+    const h = newHero({ name: 'K', cls: 'knight', seed: 1 });
+    h.difficulty = diff;
+    return newBattle(h, quest, makeRng(1), 1);
+  };
+  const easy = spawn('easy'); const mid = spawn('normal'); const hard = spawn('hard'); const legend = spawn('legendary');
+  assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
+  assert.equal(mid.enemies[0].maxHp, 30);
+  assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.2));
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.5));
+  assert.equal(easy.enemies[0].flat, -1);
+  assert.equal(hard.enemies[0].flat, 2);
+  assert.equal(legend.enemies[0].flat, 3);
+  assert.equal(easy.enemies[0].gold, 6);
+  assert.equal(hard.enemies[0].gold, Math.round(6 * 1.15));
+  assert.equal(legend.enemies[0].gold, Math.round(6 * 1.25));
+  assert.equal(easy.maxHp, hp0);
+  assert.equal(hard.maxHp, hp0);
+  assert.equal(legend.maxHp, hp0);
+  const host = newHero({ name: 'Ada', cls: 'knight', seed: 2 }); host.difficulty = 'hard';
+  const guest = newHero({ name: 'Bea', cls: 'bard', seed: 3 }); guest.difficulty = 'easy';
+  const party = newPartyBattle([host, guest], quest, makeRng(4));
+  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.2 * 1.8));
+  assert.equal(party.enemies[0].flat, 2);
+  assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
+});
+
+test('random encounters: one fight a step, seeded, within the cap, and bigger for higher difficulty', async () => {
   const { encounterFor, encounterBudget, crowdThreat } = await import('../js/engine.js');
   const { ENEMY_CAP } = await import('../js/data.js');
   const mean = (diff, act, step) => {
@@ -577,13 +631,16 @@ test('random encounters: one fight a step, seeded, within the cap, and bigger fo
   };
   for (const act of [1, 2, 3]) for (const step of [2, 6, 9]) {
     const [n, m, x] = ['easy', 'normal', 'hard'].map((d) => mean(d, act, step));
-    assert.ok(n < m && m < x, `act ${act} step ${step}: noob ${n.toFixed(1)} < mid ${m.toFixed(1)} < expert ${x.toFixed(1)}`);
+    assert.ok(n < m && m < x, `act ${act} step ${step}: easy ${n.toFixed(1)} < normal ${m.toFixed(1)} < hard ${x.toFixed(1)}`);
+    const L = mean('legendary', act, step);
+    assert.ok(x < L, `act ${act} step ${step}: hard ${x.toFixed(1)} < legendary ${L.toFixed(1)}`);
   }
   // it ramps through the act, and the first fight stays the lone-goblin lesson
   assert.ok(mean('normal', 1, 9) > mean('normal', 1, 2) + 0.8);
   const h = newHero({ name: 'x', cls: 'knight', seed: 3 }); assert.deepEqual(questsFor(h)[0].enemies, ['goblin']);
   h.campaign.wins = 1; h.campaign.step = 9; h.difficulty = 'hard';
   assert.ok(encounterBudget(h) > encounterBudget({ ...h, difficulty: 'easy' }));
+  assert.ok(encounterBudget({ ...h, difficulty: 'legendary' }) > encounterBudget(h));
   // some steps are a crowd, some a lone big monster
   const shapes = new Set(); for (let seed = 1; seed <= 60; seed++) { h.campaign.seed = seed * 31; h.difficulty = 'normal'; h.campaign.step = 8; shapes.add(encounterFor(h).length); }
   assert.ok(shapes.has(1) && shapes.has(2), `lone and pairs both appear: ${[...shapes]}`);

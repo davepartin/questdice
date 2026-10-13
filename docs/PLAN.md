@@ -17,7 +17,7 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
 - Every change is pushed to **both** `main` (the live site) and the working branch `claude/wizardly-newton-c0xpcq`:
   `git push origin HEAD:main && git push origin HEAD:claude/wizardly-newton-c0xpcq`. Pull before starting.
 - After any change to files the browser loads, bump the cache stamp: `node tools/stamp.mjs 20261010m` (use a newer value;
-  the last one used is **20261011x**). Phones otherwise keep old files.
+  the last one used is **20261013t**). Phones otherwise keep old files.
 - Tests: `npm test` (or `node --test test/*.test.mjs`), **119 passing**. Keep them green.
 - Balance: `sh tools/progress-all.sh 3 4 smart` (full 3-act campaigns, all classes, ~40 min; prints clears by class),
   `node tools/tension.mjs 30` (how dangerous ordinary fights feel, ~6 min), `node tools/strategy.mjs` (block vs attack study).
@@ -43,6 +43,11 @@ cultic or occult, and no pentagrams (skeletons, ghosts, witches, wolves, dragons
   monsters' attacks; the targeted hero scores as the company's shield; team actions; spoils draft by battle points; a second
   or third hero of a class wears another colour set.
 - Learn to play: 13 lessons and a guided practice fight. Saved games behind Continue.
+- Cloud saves (13 Oct): solo heroes save to Firestore under name + password (salted hash, derived doc id). Load on any
+  device from a public name list (name, class, level, act/step only), pick a step already reached (Act I is new-hero-only;
+  Acts II/III welcome a built-up hero), open a table with that hero; friends bring their own save. First-clear rewards
+  only (repeat clears withhold XP, gold, perks and drops per hero). Rules in `firestore.rules` need publishing before
+  writes succeed.
 - Pets (11 Oct): the traveler sells one of six pets a camp (90 gold; Dave's pictures). Its die rolls on a small stand left of the board; train it like
   a talent die and grow it d4 → d6 → d8. See "Pets" at the end.
 
@@ -913,3 +918,9 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Dave's iPhone showed a rolled battle with no dice. Cause: when the old 3D screens were removed (d876776) `screens.release()` stopped hiding the painted road/camp scene, so that full-screen layer stayed on top of the dice-tray canvas during every fight (the canvas drew fine underneath). Fix: `release()` hides the scene again.
 - dev/dicecheck.mjs rolls once and fails if the scene layer (`body.has-scene`) is on in battle; dev/newplayer.mjs now checks the layer is off in a fight and back on at camp.
 - Lesson: my battle screenshots stopped before the first roll, so this slipped through for a few commits. The test scripts now screenshot after a roll.
+### 13 Oct 2026 — cloud saves for solo heroes
+- Solo heroes save to Firestore (`qdHeroes` + `qdHeroNames` + `qdHeroPublic`) under name + password. The password is never stored; the doc id is SHA-256(name+password) and the document holds a salted hash. Names are first-come. The public index is listable (name, class, level, act/step) so a player can pick a hero without remembering the spelling; it never holds the hash or the save. New saves need a password of at least 3 characters. Rules are in `firestore.rules` and **must be published** before cloud writes work.
+- After opening a hero (local or cloud) a hub offers Continue, Begin at a step (only steps already reached; `campaign.reached` is the high-water mark; **Act I is for a new hero**), and Open a table with this hero. Acts II and III welcome a built-up hero, solo or at a table. Join and start refuse a veteran on an Act I table.
+- First-clear only: `hero.cleared` tracks which act/steps this hero has beaten. A repeat clear withholds XP (so no levels/perks), gold, and weapon drops for that hero. Party play applies per hero; first-clear friends still earn and still draft. The victory screen notes when this hero earns nothing.
+- Friends join a table with a cloud hero or a new one. The table walks the host's road. Each phone writes its own hero back after victory/camp/leave.
+- Tests: `test/save.test.mjs` (Act I new-hero-only, first-clear, public card, password length, hashes, local keep) and brought-hero / Act I join / mixed-party reward cases in `test/table.test.mjs`.
