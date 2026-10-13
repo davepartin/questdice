@@ -4,7 +4,7 @@
 // (roundcard.js), not by animation.
 //
 // Time comes from the caller (`tween`, the stage's clock) so screenshots and tests can step it; nothing here uses rAF.
-import { h } from '../dom.js';
+import { h, reduced } from '../dom.js';
 import * as D from '../data.js';
 import * as HK from './hudkit.js';
 
@@ -23,6 +23,35 @@ export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const easeOut = (k) => 1 - (1 - k) ** 3;
 const easeIO = (k) => (k < 0.5 ? 2 * k * k : 1 - ((-2 * k + 2) ** 2) / 2);
+
+// Party board: waiting minis sit at half size; a locked mini steps up to its target. Replay of a
+// round is paced to about 15–20 seconds so each hero's strike, then each monster's answer, is readable.
+export const WAIT_SCALE = 0.5;
+const ANIM_BEAT = 0.85; // typical lunge + hit; remaining time is a pause so initiative order is clear
+export function replayPace(n, { reduced: still = false, target = 17 } = {}) {
+  const actors = Math.max(1, n | 0);
+  if (still) return { intro: 0.35, gap: 0.15, close: 0.25, beat: 0.5 };
+  const intro = 1.8; const close = 0.7; const lo = 15; const hi = 19;
+  let gap = (target - intro - close) / actors - ANIM_BEAT;
+  gap = clamp(gap, 0.5, 2.8);
+  let total = intro + close + actors * (ANIM_BEAT + gap);
+  if (total < lo) gap += (lo - total) / actors + 0.02;
+  total = intro + close + actors * (ANIM_BEAT + gap);
+  if (total > hi) gap = Math.max(0.45, (hi - intro - close) / actors - ANIM_BEAT);
+  return { intro, gap, close, beat: ANIM_BEAT + gap };
+}
+// Who stands in the wait zone vs who has stepped up to a monster. `strikes` (a round report) wins
+// during replay, because the table has already cleared each fighter's `locked` flag.
+export function stanceOf(fighters, enemies, { strikes } = {}) {
+  const byName = {};
+  if (strikes) for (const s of strikes) { if (s?.name && s.targetUid) byName[s.name] = s.targetUid; }
+  return (fighters || []).map((f, i) => {
+    const e = enemies?.[f.target];
+    const uid = byName[f.hero?.name] || (f.locked && !f.skipped && e?.uid) || null;
+    const locked = strikes ? !!byName[f.hero?.name] : !!(f.locked && !f.skipped && uid);
+    return { i, name: f.hero?.name, locked, uid: locked ? uid : null, down: (f.hp || 0) <= 0 };
+  });
+}
 
 // Spark colours by what happened.
 const SPARK = { hit: '#ffd27a', pierce: '#ff8a1a', block: '#7ab4ff', heal: '#6aff9a', magic: '#c08cff', fire: '#ff6a2a', gold: '#ffd23d', buff: '#ffe9a0' };
@@ -150,15 +179,20 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   const motes = Array.from({ length: 9 }, (_, i) => h('i', { class: 'fb-mote', style: { '--x': `${(i * 37 + 11) % 96}%`, '--y': `${20 + ((i * 53) % 60)}%`, '--d': `${(i * 1.7) % 9}s`, '--t': `${9 + (i * 3) % 7}s`, '--s': String(0.5 + ((i * 17) % 6) / 8) } }));
   const table = h('div', { class: 'fb-table' }, h('i', { class: 'fb-lamp' }), ...motes, h('i', { class: 'fb-rim top' }), h('i', { class: 'fb-rim bot' }));
   const atmo = h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather));
-  const heroSide = h('div', { class: 'fb-side heroes' });
+  const party = heroes.length > 1;
+  const heroSide = h('div', { class: `fb-side heroes${party ? ' wait' : ''}`, 'aria-label': party ? 'Waiting to lock in' : null });
   const foeSide = h('div', { class: 'fb-side foes' });
   const field = h('div', { class: 'fb-field' }, heroSide, foeSide);
   const fx = h('div', { class: 'fb-fx', 'aria-hidden': 'true' });
   const flashEl = h('i', { class: 'fb-flash', 'aria-hidden': 'true' });
   const pops = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
-  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${heroes.length > 1 ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl, pops);
+  const links = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  links.setAttribute('class', 'fb-links');
+  links.setAttribute('aria-hidden', 'true');
+  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${party ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl, pops);
   fb.pops = pops;
   applyPlace(fb.el, quest?.place);
+  if (party) fb.el.append(links);
   host.prepend(fb.el);
 
   // ---- heroes
@@ -169,8 +203,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     pc.el.classList.add('hero');
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
     const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
-    const slot = h('div', { class: 'fb-slot hero', 'data-i': String(i) }, pc.el, card);
-    pc.slot = slot; pc.card = card; pc.hpEl = hp; pc.idx = i;
+    const slot = h('div', { class: `fb-slot hero${party ? ' wait' : ''}`, 'data-i': String(i) }, pc.el, card);
+    pc.slot = slot; pc.card = card; pc.hpEl = hp; pc.idx = i; pc.home = heroSide;
     heroSide.append(slot); fb.heroes.push(pc);
   });
 
@@ -188,8 +222,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id) }).seat(def.imgBase);
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
-    const slot = h('div', { class: `fb-slot foe tier-${e.tier}`, 'data-uid': e.uid }, pc.el, c.el);
-    pc.slot = slot; pc.uid = e.uid;
+    const pair = h('div', { class: 'fb-pair', 'aria-hidden': 'true' });
+    const slot = h('div', { class: `fb-slot foe tier-${e.tier}`, 'data-uid': e.uid }, pc.el, pair, c.el);
+    pc.slot = slot; pc.uid = e.uid; pc.pair = pair;
     const tap = () => onPick?.(e.uid);
     pc.el.addEventListener('click', tap); c.el.addEventListener('click', tap);
     // a small gold "i" on the plaque: tap it to read about this monster (tapping the chosen one again does the same)
@@ -211,7 +246,68 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     fb.el.style.setProperty('--ph', `${Math.round(pieceH)}px`);
     fb.el.style.setProperty('--foes', String(Math.max(1, foeSide.children.length)));
   };
-  fb.ro = new ResizeObserver(() => fb.layout()); fb.ro.observe(field);
+  fb.ro = new ResizeObserver(() => { fb.layout(); fb.paintLinks?.(); }); fb.ro.observe(field);
+
+  // ---- party: wait on the left at half size; lock in and step up beside the chosen monster
+  const pairOf = (uid) => fb.foes.get(uid)?.pair;
+  fb.paintLinks = () => {
+    while (links.firstChild) links.removeChild(links.firstChild);
+    if (!party || reduced()) return;
+    const W = fb.el.clientWidth || 1; const H = fb.el.clientHeight || 1;
+    links.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    for (const pc of fb.heroes) {
+      if (!pc.slot.classList.contains('locked') || pc.dead) continue;
+      const foe = fb.foes.get(pc._uid); if (!foe || foe.dead) continue;
+      const a = pc.rect(); const t = foe.rect();
+      const hue = getComputedStyle(pc.el).getPropertyValue('--hue').trim() || '#ffd23d';
+      const mk = (w, op) => {
+        const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        ln.setAttribute('x1', (a.cx + a.w * 0.18).toFixed(1)); ln.setAttribute('y1', (a.top + a.h * 0.55).toFixed(1));
+        ln.setAttribute('x2', (t.cx - t.w * 0.12).toFixed(1)); ln.setAttribute('y2', (t.top + t.h * 0.55).toFixed(1));
+        ln.setAttribute('stroke', hue); ln.setAttribute('stroke-width', String(w)); ln.setAttribute('stroke-opacity', String(op));
+        ln.setAttribute('stroke-linecap', 'round');
+        links.append(ln);
+      };
+      mk(7, 0.22); mk(2, 0.9);
+    }
+  };
+  const park = (pc, dest, row) => {
+    dest.append(pc.slot);
+    pc._uid = row.uid || null;
+    pc.slot.classList.toggle('wait', !row.locked);
+    pc.slot.classList.toggle('locked', !!row.locked);
+    pc.slot.classList.toggle('committed', !!row.locked);
+    pc.el.classList.toggle('committed', !!row.locked);
+    const foe = row.uid && fb.foes.get(row.uid);
+    pc.el.setAttribute('aria-label', row.locked && foe ? `${pc.name}, locked in on ${foe.name}` : `${pc.name}${row.down ? ', down' : ', waiting'}`);
+  };
+  // FLIP: measure, reparent, tween the leftover offset away with the same ease as a lunge.
+  const stepTo = async (pc, dest, row) => {
+    if (pc.slot.parentNode === dest && !!row.locked === pc.slot.classList.contains('locked')) return;
+    if (reduced()) { park(pc, dest, row); return; }
+    const from = pc.rect();
+    park(pc, dest, row);
+    const to = pc.rect();
+    const dx = from.cx - to.cx; const dy = from.cy - to.cy;
+    if (Math.hypot(dx, dy) < 3) return;
+    pc.set('lunge', { x: dx, y: dy });
+    await fb.tween(0.36, (k) => {
+      const p = 1 - easeOut(k);
+      pc.set('lunge', { x: dx * p, y: dy * p });
+      if (k === 0 || k > 0.2) fb.paintLinks();
+    });
+    pc.set('lunge', null);
+  };
+  fb.setPartyStance = (rows) => {
+    if (!party) return;
+    const jobs = [];
+    for (const row of rows || []) {
+      const pc = fb.heroes[row.i]; if (!pc) continue;
+      const dest = row.locked && pairOf(row.uid) ? pairOf(row.uid) : pc.home;
+      jobs.push(stepTo(pc, dest, row));
+    }
+    Promise.all(jobs).then(() => fb.paintLinks());
+  };
 
   // ---- target ring and cards
   fb.setTarget = (uid, show = true) => { for (const [id, pc] of fb.foes) { const on = show && id === uid && !pc.dead; pc.el.classList.toggle('targeted', on); pc.slot.classList.toggle('targeted', on); } };
