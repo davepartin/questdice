@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTable, joinTable, command, playerView } from '../js/table.js';
+import { createTable, joinTable, command, playerView, saveTable, loadTable, migrateTable } from '../js/table.js';
 import * as E from '../js/engine.js';
 import * as R from '../js/roads.js';
 import * as SV from '../js/save.js';
@@ -380,4 +380,33 @@ test('when every hero is replaying, the table withholds XP, gold and spoils', ()
   assert.equal(table.company.members[0].gold, 40);
   assert.equal(table.company.members[1].gold, 40);
   assert.equal(table.company.members[0].pendingPerks, 0);
+});
+
+test('the host difficulty applies to every hero and to the table fight', () => {
+  const { table, players } = make();
+  table.difficulty = 'legendary';
+  const guest = E.newHero({ name: 'Bea', cls: 'bard', seed: 2 });
+  guest.difficulty = 'easy';
+  players[1].brought = guest;
+  begin(table, players);
+  assert.equal(table.difficulty, 'legendary');
+  assert.equal(table.company.members[0].difficulty, 'legendary');
+  assert.equal(table.company.members[1].difficulty, 'legendary');
+  assert.equal(playerView(table, players[0].id).difficulty, 'legendary');
+  const { table: base, players: basePs } = make();
+  begin(base, basePs);
+  assert.ok(table.battle.enemies[0].maxHp > base.battle.enemies[0].maxHp);
+  assert.equal(table.battle.enemies[0].flat, base.battle.enemies[0].flat + 3);
+});
+
+test('loading an old table remaps noob/mid/expert and fills table.difficulty from the host', () => {
+  const table = createTable({ code: 'OLD1', seed: 1, name: 'Old' });
+  const hero = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
+  hero.difficulty = 'noob';
+  assert.equal(joinTable(table, { name: 'Ada', cls: 'knight', token: 'tok0aaaa', hero }).ok, true);
+  delete table.difficulty;
+  table.players[0].brought.difficulty = 'noob';
+  const back = loadTable(saveTable(table));
+  assert.equal(back.difficulty, 'easy');
+  assert.equal(migrateTable({ players: [{ id: 'p1', brought: { difficulty: 'expert' } }], hostId: 'p1' }).difficulty, 'hard');
 });

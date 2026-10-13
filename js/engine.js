@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
@@ -465,9 +465,13 @@ function dressNemesis(enemies, n) {
   e.xp = Math.round(e.xp * bounty); e.gold = Math.round(e.gold * bounty); e.bountyPay = bounty;
 }
 
-// Apply the hero's difficulty to a quest (monster health, flat damage, gold). Done once per battle.
-export const difficultyOf = (hero) => DIFFICULTY[hero?.difficulty] || DIFFICULTY.normal;
-function withDifficulty(hero, quest) {
+// Apply game difficulty to a quest (monster health, flat damage, gold). Done once per battle.
+// `who` is a hero, a table, or a difficulty id; heroes are never buffed or penalised.
+export const difficultyOf = (who) => {
+  const id = typeof who === 'string' ? who : (who?.difficulty ?? who?.hero?.difficulty);
+  return DIFFICULTY[normalizeDifficulty(id)] || DIFFICULTY.normal;
+};
+export function withDifficulty(hero, quest) {
   const d = difficultyOf(hero);
   return { ...quest, hpMult: (quest.hpMult ?? 1) * d.hp, flat: (quest.flat ?? 0) + d.flat, rewardMult: (quest.rewardMult ?? 1) * d.gold };
 }
@@ -1130,7 +1134,7 @@ export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.f
 export function questsFor(hero) { return roadsFor(hero, { random: true }).slice(0, 1); }
 
 // ---- random encounters (Dave): the game picks the one fight at each step by a trouble budget. The budget grows through the act and
-// follows the hero's skill (Noob / Mid / Expert); each monster has a `threat`, and a crowd costs a little more than its sum.
+// follows game difficulty (Easy / Normal / Hard / Legendary); each monster has a `threat`, and a crowd costs a little more than its sum.
 // Some steps are one big monster, some a few small ones. Deterministic for a campaign (seed, act, step).
 export const crowdThreat = (ids) => ids.reduce((t, id) => t + (MONSTERS[id]?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
 export function encounterBudget(hero) {
@@ -1201,7 +1205,7 @@ export function roadsFor(hero, opts = {}) {
   const poolPick = () => pick(rng, act.pool);
   if (ELITE_STEPS.includes(s)) {
     let el = pick(rng, act.elite);
-    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = hero.difficulty === 'easy' ? sorted[0] : el; } // Noob: the big one alone
+    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = normalizeDifficulty(hero.difficulty) === 'easy' ? sorted[0] : el; } // Easy: the big one alone
     return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
   }
   let a = poolPick(); let bq = poolPick();
@@ -1315,8 +1319,9 @@ export function commitFighter(b) {
   for (const k of MIRROR) f[k] = b[k];
 }
 
-export function newPartyBattle(heroes, quest, rng) {
+export function newPartyBattle(heroes, quest0, rng) {
   const players = heroes.length;
+  const quest = withDifficulty(heroes[0], quest0);
   const sc = partyScale(players);
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1;
   const enemies = [];

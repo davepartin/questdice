@@ -205,17 +205,26 @@ export const CLASS_TALENT = {
   knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'block', SE: 'atk' }, wizard: { SW: 'magic', SE: 'heal' },
   dwarf: { SW: 'block', SE: 'heal' }, bard: { SW: 'gold', SE: 'magic' },
 };
-// The hero's skill (Dave: "noob, mid or expert") scales the monsters only, never the rules: how much trouble the game sends
-// (`budget`, see ENCOUNTER below), their health, and the flat damage added to every hit. The keys easy/normal/hard are kept so
-// older saves still load.
+// Game difficulty. Scales the monsters only, never the heroes: how much trouble the game sends (`budget`, see ENCOUNTER
+// below), their health, the flat damage added to every hit, and gold. Every player gets the same hero treatment.
+// Keys easy/normal/hard are the old Noob/Mid/Expert monster-side knobs; older saves stored those keys (or the names
+// noob/mid/expert). Legendary is a new rung and still needs tuning.
 export const DIFFICULTY = {
-  easy: { name: 'Noob', text: 'New to the dice. Fewer, gentler monsters.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
-  normal: { name: 'Mid', text: 'The intended game.', hp: 1, flat: 0, gold: 1, budget: 1 },
-  hard: { name: 'Expert', text: 'Bigger crowds, tougher monsters. Pays 15% more gold.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
+  easy: { name: 'Easy', text: 'Fewer, gentler monsters.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
+  normal: { name: 'Normal', text: 'The intended game.', hp: 1, flat: 0, gold: 1, budget: 1 },
+  hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
+  // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).
+  legendary: { name: 'Legendary', text: 'The cruelest road. Crowds hit harder. Needs tuning.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
 };
+const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
+export function normalizeDifficulty(id) {
+  const k = String(id || 'normal').toLowerCase();
+  const mapped = DIFFICULTY_ALIAS[k] || k;
+  return DIFFICULTY[mapped] ? mapped : 'normal';
+}
 // Random encounters. The game picks the one fight at each step from the act's monsters by a trouble budget (each monster has a
 // `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster). The budget grows through the act and is
-// scaled by the hero's skill, so some steps are one big monster, some a few small ones. { base, slope } per act.
+// scaled by game difficulty, so some steps are one big monster, some a few small ones. { base, slope } per act.
 export const ENCOUNTER = {
   acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 3.0, slope: 0.3 }],
   groupPlus: 0.15,

@@ -1,7 +1,7 @@
 // One table, many phones. The server holds the company. Each phone sends only its own
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
-import { CLASSES, SLOTS } from './data.js';
+import { CLASSES, SLOTS, normalizeDifficulty } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
 import * as SV from './save.js';
@@ -11,10 +11,11 @@ import { pack, unpack } from './pack.js';
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const clean = (s, max) => String(s || '').trim().replace(/\s+/g, ' ').slice(0, max);
 
-export function createTable({ code, seed, name }) {
+export function createTable({ code, seed, name, difficulty }) {
   const title = clean(name, 24);
   return {
     code, seed: (seed ?? 1) >>> 0, name: title.length >= 2 ? title : 'Company',
+    difficulty: normalizeDifficulty(difficulty),
     hostId: null, seq: 1, phase: 'lobby', players: [],
     company: null, battle: null, quest: null, lastReport: null, rewards: null,
     roadResult: null, perkOffers: {}, loss: 0, retreat: false,
@@ -198,6 +199,7 @@ function startCampaign(table, player) {
     const veteran = table.players.find((p) => p.brought && !SV.isNewHero(p.brought));
     if (veteran) return fail(SV.ACT1_TABLE);
   }
+  table.difficulty = normalizeDifficulty(table.difficulty || host?.brought?.difficulty);
   table.players.forEach((p, i) => {
     let hero = company.members[i];
     if (p.brought) {
@@ -207,6 +209,7 @@ function startCampaign(table, player) {
       hero.campaign = company.campaign;
       company.members[i] = hero;
     }
+    hero.difficulty = table.difficulty;
     p.hero = hero;
     p.ready = false;
     p.brought = null;
@@ -659,6 +662,7 @@ export function playerView(table, playerId) {
   const player = table.players.find((p) => p.id === playerId);
   const base = {
     seq: table.seq, code: table.code, name: table.name, phase: table.phase,
+    difficulty: normalizeDifficulty(table.difficulty),
     you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag, level: player.hero?.level || player.brought?.level || 1 } : null,
     players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId, level: p.hero?.level || p.brought?.level || 1 })),
   };
@@ -750,6 +754,22 @@ export function savePublic(table) {
 }
 export function loadTable(text) {
   const table = unpack(text);
+  migrateTable(table);
   if (table.battle) table.battle.rng = E.makeRng(E.hashSeed(table.seed, 'move', table.seq));
+  return table;
+}
+export function migrateTable(table) {
+  if (!table || typeof table !== 'object') return table;
+  const host = table.players?.find((p) => p.id === table.hostId) || table.players?.[0];
+  const from = table.difficulty
+    || host?.hero?.difficulty
+    || host?.brought?.difficulty
+    || table.company?.members?.[0]?.difficulty;
+  table.difficulty = normalizeDifficulty(from);
+  for (const m of table.company?.members || []) m.difficulty = table.difficulty;
+  for (const p of table.players || []) {
+    if (p.hero) p.hero.difficulty = table.difficulty;
+    if (p.brought) SV.migrateHero(p.brought);
+  }
   return table;
 }

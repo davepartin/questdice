@@ -66,12 +66,12 @@ function oops(e, fallback) {
 }
 const told = (message) => Object.assign(new Error(message), { qd: true });
 
-export async function createSeat({ name, cls, table: tableName, hero }) {
+export async function createSeat({ name, cls, table: tableName, hero, difficulty }) {
   await ready();
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
   for (let tries = 0; tries < 6; tries++) {
     const code = makeCode();
-    const table = createTable({ code, seed, name: tableName || 'Company' });
+    const table = createTable({ code, seed, name: tableName || 'Company', difficulty: difficulty || hero?.difficulty });
     const joined = joinTable(table, { name, cls, token: fb.uid, hero });
     if (!joined.ok) throw told(joined.error);
     try {
@@ -159,6 +159,7 @@ function parseHero(data) {
   let hero; try { hero = JSON.parse(data.hero); } catch { throw told('That cloud save is damaged.'); }
   if (!hero?.name || !hero.cls || !hero.campaign) throw told('That cloud save is incomplete.');
   if (!(data.v >= SV.SAVE_V)) throw told('That cloud save is from the test builds, before the beta. Forge a fresh hero.');
+  SV.migrateHero(hero);
   return hero;
 }
 

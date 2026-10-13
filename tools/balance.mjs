@@ -27,7 +27,7 @@ const stats = mkStats();
 for (const diff of Object.keys(DIFFICULTY)) {
   let cl = 0; let def = 0; let rd = 0; let ft = 0; let hp = 0; let tot = 0;
   for (const cls of classes) for (let s = 0; s < N; s++) { const r = play(cls, 900 + s, diff, diff === 'normal' ? stats : null); tot++; if (r.cleared) cl++; def += r.defeats; rd += r.rounds / r.fights; hp += r.hp / Math.max(1, r.fights - (r.cleared ? 0 : 1)); }
-  console.log(`${DIFFICULTY[diff].name.padEnd(7)} clears Act I ${(100 * cl / tot).toFixed(0)}%   defeats per run ${(def / tot).toFixed(2)}   rounds per fight ${(rd / tot).toFixed(1)}   hp left after a win ${(100 * hp / tot).toFixed(0)}%`);
+  console.log(`${DIFFICULTY[diff].name.padEnd(10)} clears Act I ${(100 * cl / tot).toFixed(0)}%   defeats per run ${(def / tot).toFixed(2)}   rounds per fight ${(rd / tot).toFixed(1)}   hp left after a win ${(100 * hp / tot).toFixed(0)}%`);
 }
 console.log('\nAverage per ROUND (normal difficulty, bot players):');
 console.log('stage    atk   block pierce heal  magic gold | damage taken');

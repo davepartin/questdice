@@ -56,9 +56,9 @@ async function post(body) {
   return data;
 }
 
-export async function createSeat({ name, cls, table, hero }) {
+export async function createSeat({ name, cls, table, hero, difficulty }) {
   const kind = await tableKind();
-  const data = kind === 'cloud' ? await (await Cloud()).createSeat({ name, cls, table, hero }) : await post({ op: 'create', name, cls, table, hero });
+  const data = kind === 'cloud' ? await (await Cloud()).createSeat({ name, cls, table, hero, difficulty }) : await post({ op: 'create', name, cls, table, hero, difficulty });
   remember(data.code, data.token, kind);
   return data;
 }
