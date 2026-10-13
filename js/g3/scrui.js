@@ -547,26 +547,25 @@ function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
   const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
   const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
+  // Each number face (4 up to the die's size) pays its number in the symbol you buy for it; pay once, more for a bigger number.
   const symFaces = Array.from({ length: info.faces }, (_, f) => {
-    const cur = faces[f] || [];
-    const slotsEl = Array.from({ length: info.per }, (_, i) => {
-      const k = cur[i]; const open = TAL.slot === slot && TAL.face === f && i === cur.length;
-      if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.TALENT_SYMS[k].name}. Tap to remove.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
-      return h('button', { class: `tal-slot ${open ? 'open' : ''}`, type: 'button', disabled: i > cur.length, 'aria-label': 'Add a symbol', onclick: tap(() => { TAL.slot = slot; TAL.face = f; X.renderCamp(); }) }, '+');
-    });
-    return h('div', { class: 'tal-face' }, h('small', {}, `Face ${f + 4}`), h('div', { class: 'tal-slots' }, slotsEl));
+    const num = info.nums[f]; const cost = info.costs[f]; const entry = faces[f]; const k = Array.isArray(entry) ? entry[0] : entry; const open = TAL.slot === slot && TAL.face === f;
+    if (k) return h('button', { class: `tal-face num bought ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `Face ${num}: ${num} ${D.TALENT_SYMS[k].name}. Tap to clear it.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, 0); refresh(); }) },
+      h('small', {}, `Face ${num}`), h('b', { class: 'tn' }, String(num)), h('span', { class: 'ts' }, ico(SYM_ICO[k][0])), h('small', { class: 'tp' }, `${num} ${D.TALENT_SYMS[k].name.toLowerCase()}`));
+    return h('button', { class: `tal-face num empty ${open ? 'open' : ''}`, type: 'button', 'aria-label': `Face ${num}: empty, does nothing. Pick a symbol for ${cost} gold.`, onclick: tap(() => { TAL.slot = slot; TAL.face = open ? null : f; X.renderCamp(); }) },
+      h('small', {}, `Face ${num}`), h('b', { class: 'tn' }, String(num)), h('span', { class: 'ts plus' }, '+'), h('small', { class: `tp ${hero.gold >= cost ? '' : 'poor'}` }, `${cost} gold`));
   });
-  const picking = TAL.slot === slot && TAL.face != null;
-  const picker = picking ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
-    const left = info.same - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= info.per;
-    const can = left > 0 && !full && hero.gold >= info.cost;
-    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= info.per ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `+1 · ${left} left`));
-  }), h('small', { class: 'tal-cost' }, `Each symbol costs ${info.cost} gold. Tap a placed symbol to take it off.`)) : null;
+  const picking = TAL.slot === slot && TAL.face != null && TAL.face < info.faces && !(faces[TAL.face] || []).length;
+  const picker = picking ? h('div', { class: 'tal-pick' }, h('small', { class: 'tal-cost' }, `Face ${info.nums[TAL.face]} will pay ${info.nums[TAL.face]} of whatever you choose. ${info.costs[TAL.face]} gold, once.`),
+    ...Object.keys(D.TALENT_SYMS).map((k) => {
+      const left = info.same - E.talentCount(hero, slot, k); const can = left > 0 && hero.gold >= info.costs[TAL.face]; const num = info.nums[TAL.face];
+      return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${num} ${D.TALENT_SYMS[k].name}. ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = null; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, left > 0 ? `${num} · ${left} left` : 'used twice'));
+    })) : null;
   return h('div', { class: 'sx-urow tal-die' },
-    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Each symbol that shows adds 1. The 2× face doubles your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']}.`)),
+    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.faces} number faces set`), h('small', { class: 'tal-hand' }, `A face pays its own number in its symbol. The 2× face doubles your ${slot === 'SW' ? 'left' : 'right'} hand.`)),
     h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
       h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
-    h('div', { class: `tal-strip syms ${info.per > 2 ? 'wide' : ''}` }, symFaces),
+    h('div', { class: 'tal-strip syms numbers' }, symFaces),
     picker,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
     up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
@@ -666,7 +665,7 @@ function forgeTab() {
     unlockSection(hero),
     hasTalent ? coachBox('c_talent') : null,
     hasTalent ? eyebrow('Talent dice') : null,
-    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol that shows adds 1 to your total. A face holds up to half the sides of the die in symbols (a d6 three, a d8 four), and a die can carry that many of one symbol.') : null,
+    hasTalent ? h('p', { class: 'tab-intro' }, 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. A bigger die brings new empty faces.') : null,
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     petSection(hero),
     eyebrow('Strength dice'),
