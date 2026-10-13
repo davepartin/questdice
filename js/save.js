@@ -2,7 +2,7 @@
 // reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
-import { QUESTS_PER_ACT } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty } from './data.js';
 
 const PREFIX = 'questdice.hero.';
 export const nameKey = (name) => String(name || '').trim().toLowerCase();
@@ -50,9 +50,15 @@ export function listHeroes() {
 export const heroExists = (name) => !!store()?.getItem(key(name));
 
 export const MIN_PASSWORD = 3;
+export function migrateHero(hero) {
+  if (!hero || typeof hero !== 'object') return hero;
+  hero.difficulty = normalizeDifficulty(hero.difficulty);
+  return hero;
+}
 export async function createSave(hero, password) {
   if (String(password || '').length < MIN_PASSWORD) throw new Error('Choose a password of at least 3 characters.');
   if (heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
+  migrateHero(hero);
   const salt = randSalt();
   const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: SAVE_V };
   store().setItem(key(hero.name), JSON.stringify(rec));
@@ -63,11 +69,17 @@ export async function openHero(name, password) {
   if (!raw) throw new Error('No hero by that name.');
   const rec = JSON.parse(raw);
   if ((await sha(rec.salt + password)) !== rec.hash) throw new Error('Wrong password.');
+  const before = rec.hero?.difficulty;
+  migrateHero(rec.hero);
+  if (rec.hero && rec.hero.difficulty !== before) {
+    try { store()?.setItem(key(name), JSON.stringify(rec)); } catch { /* keep the in-memory hero even if rewrite fails */ }
+  }
   return rec.hero;
 }
 export function saveHero(hero) {
   const s = store(); const raw = s?.getItem(key(hero.name));
   if (!raw) return false;
+  migrateHero(hero);
   const rec = JSON.parse(raw); rec.hero = hero; rec.saved = Date.now();
   s.setItem(key(hero.name), JSON.stringify(rec)); return true;
 }
@@ -97,6 +109,7 @@ export function importCode(code, { overwrite = false } = {}) {
   let rec; try { rec = JSON.parse(unb64(t.slice(4))); } catch { throw new Error('The Soul Code is damaged.'); }
   if (!rec?.hero?.name || !rec.hash || !rec.salt) throw new Error('The Soul Code is incomplete.');
   if (!(rec.v >= SAVE_V)) throw new Error('That Soul Code is from the test builds, before the beta. Forge a fresh hero.');
+  migrateHero(rec.hero);
   if (heroExists(rec.hero.name) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.hero.name; throw e; }
   store().setItem(key(rec.hero.name), JSON.stringify(rec));
   return rec.hero.name;
@@ -112,6 +125,7 @@ export async function cloudHeroId(name, password) {
   return sha(`questdice.cloud.v1\n${nameKey(name)}\n${String(password || '')}`);
 }
 export async function cloudRecord(hero, password, existing) {
+  migrateHero(hero);
   const salt = existing?.salt || randSalt();
   const hash = existing?.hash || await sha(salt + password);
   return {

@@ -397,12 +397,17 @@ export function showStepPick() {
 // ------------------------------------------------------------------ create
 function showCreate() {
   if (SCRUI.on()) return SCRUI.create();
-  let cls = 'knight';
+  let cls = 'knight'; let diff = 'normal';
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
   const msg = h('p', { class: 'form-msg' });
   const detail = h('div', { class: 'panel class-detail' });
   const grid = h('div', { class: 'class-grid' });
+  const diffGrid = h('div', { class: 'class-grid', role: 'radiogroup', 'aria-label': 'Difficulty', style: { gridTemplateColumns: 'repeat(2, 1fr)' } });
+  const paintDiff = () => diffGrid.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', {
+    type: 'button', class: `class-pick ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff),
+    onclick: () => { diff = id; sfx.select(); paintDiff(); },
+  }, h('b', {}, d.name), h('small', {}, d.text))));
   const paint = () => {
     grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } },
       c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name))));
@@ -412,7 +417,7 @@ function showCreate() {
       h('p', { class: 'fine' }, 'Wields: ', c.weapons.map((w) => D.WEAPONS[w].name).join(' + ')),
       h('div', { class: 'cardlist' }, c.cards.filter((k) => (k.unlock ?? 1) <= 1).map((k) => h('div', { class: 'mini-card' }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`)))));
   };
-  paint();
+  paint(); paintDiff();
   const go = async () => {
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); return; }
@@ -420,6 +425,7 @@ function showCreate() {
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     try {
       const hero = E.newHero({ name: n, cls });
+      hero.difficulty = D.normalizeDifficulty(diff);
       SV.markReached(hero);
       await stashNewHero(hero, pw.value);
       adopt(hero, 'hero'); sfx.level(); showHeroHub();
@@ -427,7 +433,8 @@ function showCreate() {
   };
   mount(h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a hero')),
     section('Name & password', name, pw, h('p', { class: 'fine' }, 'The password guards this hero on this device and in the cloud. Choose something you will remember.')),
-    section('Class', grid, detail), msg, primary('Begin the campaign', go, { cls: 'wide' }));
+    section('Class', grid, detail),
+    section('Difficulty', diffGrid), msg, primary('Begin the campaign', go, { cls: 'wide' }));
 }
 
 // ------------------------------------------------------------------ quest board

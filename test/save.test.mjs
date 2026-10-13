@@ -132,6 +132,23 @@ test('the public cloud card is name, class, level and act/step, never the hash o
   assert.equal(SV.readPublicHero({ cls: 'knight' }), null);
 });
 
+test('opening a save remaps old noob/mid/expert skill names to easy/normal/hard', async () => {
+  const h = E.newHero({ name: 'Nia', cls: 'wizard', seed: 9 });
+  h.difficulty = 'noob';
+  await SV.createSave(h, 'nia');
+  assert.equal(h.difficulty, 'easy', 'createSave remaps before writing');
+  const store = globalThis.window.localStorage;
+  const planted = JSON.parse(store.getItem('questdice.hero.nia'));
+  planted.hero.difficulty = 'expert';
+  store.setItem('questdice.hero.nia', JSON.stringify(planted));
+  const opened = await SV.openHero('Nia', 'nia');
+  assert.equal(opened.difficulty, 'hard');
+  assert.equal(JSON.parse(store.getItem('questdice.hero.nia')).hero.difficulty, 'hard');
+  const rec = await SV.cloudRecord({ ...E.newHero({ name: 'Pia', cls: 'bard', seed: 2 }), difficulty: 'mid' }, 'pw0');
+  assert.equal(JSON.parse(rec.hero).difficulty, 'normal');
+  assert.equal(SV.migrateHero({ name: 'Zed', difficulty: 'noob' }).difficulty, 'easy');
+});
+
 test('a new save needs a password of at least 3 characters', async () => {
   const h = E.newHero({ name: 'Cy', cls: 'ranger', seed: 3 });
   await assert.rejects(() => SV.createSave(h, 'ab'), /at least 3/);

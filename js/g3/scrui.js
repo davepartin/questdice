@@ -74,6 +74,14 @@ function classPreview(cls) {
   return h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' });
 }
 function nextOf(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function difficultyPicker(selected, onPick, { locked = false } = {}) {
+  const id = D.normalizeDifficulty(selected);
+  return h('div', { class: 'sx-diff four', role: 'radiogroup', 'aria-label': 'Difficulty' },
+    Object.entries(D.DIFFICULTY).map(([k, d]) => h('button', {
+      type: 'button', class: `df-opt ${k === id ? 'on' : ''}`, role: 'radio', 'aria-checked': String(k === id),
+      disabled: locked, onclick: locked ? null : () => onPick(k),
+    }, h('b', {}, d.name), h('small', {}, d.text))));
+}
 
 // the layout contract between panels and the camera (fractions of the viewport covered by DOM)
 const LAYOUT = {
@@ -238,9 +246,9 @@ export function create(opts = {}) {
   const tname = T?.mode === 'host' ? h('input', { class: 'sx-input', id: 'table-name', maxlength: 24, placeholder: 'The Ember Company', autocomplete: 'off', 'aria-label': 'Table name' }) : null;
   const tcode = T?.mode === 'join' ? h('input', { class: 'sx-input room-code-input', id: 'table-code', maxlength: 4, value: T.code || '', placeholder: 'ABCD', autocomplete: 'off', autocapitalize: 'characters', 'aria-label': 'Table code', oninput: (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); } }) : null;
   const msg = h('p', { class: 'form-msg', role: 'alert' });
-  let diff = 'normal'; let skipHints = !Coach.hintsOn();
-  const diffRow = h('div', { class: 'sx-diff', role: 'radiogroup', 'aria-label': 'Your skill level' });
-  const paintDiff = () => diffRow.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff), onclick: () => { diff = id; sfx.select(); paintDiff(); } }, h('b', {}, d.name), h('small', {}, d.text))));
+  let diff = D.normalizeDifficulty(T?.difficulty || T?.hero?.difficulty || 'normal'); let skipHints = !Coach.hintsOn();
+  const diffRow = h('div');
+  const paintDiff = () => diffRow.replaceChildren(difficultyPicker(diff, (id) => { diff = id; sfx.select(); paintDiff(); }));
   paintDiff();
   const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
@@ -277,11 +285,11 @@ export function create(opts = {}) {
   const seat = async (hero, extra = {}) => {
     if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
     if (busy) return; busy = true; msg.textContent = '';
-    try { await T.onDone(hero.name, hero.cls, { table: tname?.value.trim(), code: tcode?.value, hero, ...extra }); }
+    try { await T.onDone(hero.name, hero.cls, { table: tname?.value.trim(), code: tcode?.value, hero, difficulty: diff, ...extra }); }
     catch (e) { msg.textContent = e.message || 'The table did not answer.'; sfx.error(); busy = false; }
   };
   const go = async () => {
-    if (T && loaded) return seat(loaded);
+    if (T && loaded) { loaded.difficulty = diff; return seat(loaded); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
     if (T && bring) {
@@ -289,6 +297,7 @@ export function create(opts = {}) {
       if (busy) return; busy = true; msg.textContent = '';
       try {
         const hero = await X.openNamedHero(n, pw.value);
+        if (T?.mode === 'host') hero.difficulty = diff;
         X.adopt(hero); sfx.coin();
         await seat(hero);
       } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
@@ -306,9 +315,10 @@ export function create(opts = {}) {
   };
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
   const source = T && !loaded ? h('div', { class: 'sx-diff', role: 'tablist', 'aria-label': 'How you sit' },
-    h('button', { type: 'button', class: `df-opt ${!bring ? 'on' : ''}`, onclick: () => { if (!bring) return; sfx.select(); create({ table: { ...T, bring: 'new' } }); } }, h('b', {}, 'New hero'), h('small', {}, 'Forge one for this table.')),
-    h('button', { type: 'button', class: `df-opt ${bring ? 'on' : ''}`, onclick: () => { if (bring) return; sfx.select(); create({ table: { ...T, bring: 'cloud' } }); } }, h('b', {}, 'Cloud save'), h('small', {}, 'Name and password.'))) : null;
+    h('button', { type: 'button', class: `df-opt ${!bring ? 'on' : ''}`, onclick: () => { if (!bring) return; sfx.select(); create({ table: { ...T, bring: 'new', difficulty: diff } }); } }, h('b', {}, 'New hero'), h('small', {}, 'Forge one for this table.')),
+    h('button', { type: 'button', class: `df-opt ${bring ? 'on' : ''}`, onclick: () => { if (bring) return; sfx.select(); create({ table: { ...T, bring: 'cloud', difficulty: diff } }); } }, h('b', {}, 'Cloud save'), h('small', {}, 'Name and password.'))) : null;
   const hideClass = !!(loaded || (T && bring));
+  const showDiff = !T || T.mode === 'host';
   const heading = loaded ? `Bring ${loaded.name}` : bring ? 'Open a saved hero' : 'Choose your hero';
   const cta = T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : 'Begin the campaign';
   mountAs('create',
@@ -317,7 +327,7 @@ export function create(opts = {}) {
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, heading)),
         source, hideClass ? null : rail, hideClass ? null : info, flourish(),
-        T || hideClass ? null : eyebrow('Your skill level'), T || hideClass ? null : diffRow, T || hideClass ? null : hintsBox,
+        showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T ? null : hintsBox,
         loaded ? h('p', { class: 'fine' }, `${loaded.name} · Level ${loaded.level} ${D.CLASSES[loaded.cls].name}. Friends join with their own hero.`) : null,
         bring && !loaded ? h('p', { class: 'fine' }, 'Act I tables are for a new hero. A built-up hero can join Act II or III.') : null,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,
@@ -835,7 +845,9 @@ function heroTab() {
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     heroStats(E.maxHpOf(hero), E.feetSize(hero)),
     hallOfFame(hero),
-    eyebrow('Your skill level'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
+    eyebrow('Difficulty'),
+    difficultyPicker(hero.difficulty, (id) => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }, { locked: !!X.net }),
+    X.net ? h('p', { class: 'fine' }, 'The host set this for the table.') : null,
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),

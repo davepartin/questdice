@@ -65,7 +65,7 @@ export function together() {
 function sitAt({ mode, code, hero, back }) {
   SCRUI.create({ table: { mode, code, hero, back: back || together, onDone: async (name, cls, x) => {
     const data = mode === 'host'
-      ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero })
+      ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero, difficulty: x.difficulty || x.hero?.difficulty })
       : await Net.joinSeat({ code: x.code, name, cls, hero: x.hero });
     sfx.level(); openTable(data.view);
   } } });
@@ -168,6 +168,7 @@ function lobby(t) {
       h('div', { class: 'sx-sidetop' }),
       panel('lb-code', h('div', { class: 'lb-top' }, h('div', {}, eyebrow('Table code'), h('div', { class: 'lb-letters', 'aria-label': `Table code ${t.code.split('').join(' ')}` }, t.code.split('').map((c) => h('b', {}, c)))),
         btn('Invite', share, { kind: 'ghost', icon: 'link', cls: 'lb-invite' })),
+        (() => { const d = D.DIFFICULTY[D.normalizeDifficulty(t.difficulty)]; return h('p', { class: 'fine' }, `${d.name} difficulty. ${d.text}`); })(),
         host ? h('p', { class: 'fine' }, 'Friends tap Play together, then Join a table, and type the code.') : null),
       panel('lb-roster', eyebrow(`Heroes · ${t.players.length} of 6`), h('ul', { class: 'lb-list' }, ...rows, ...seats)),
       flourish(),

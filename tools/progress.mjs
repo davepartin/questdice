@@ -23,7 +23,7 @@ function trial(hero, quest, seed, n = Number(process.env.TRIALS || 8)) {
 const agg = {}; let clears = 0; let total = 0; const pairs = [];
 for (const cls of classes) for (let s = 0; s < N; s++) {
   total++; const seed = 7000 + s; const rng = makeRng(seed); const hero = newHero({ name: 'P', cls, seed });
-  if (process.env.SKILL) hero.difficulty = process.env.SKILL; // easy | normal | hard = Noob | Mid | Expert
+  if (process.env.SKILL) hero.difficulty = process.env.SKILL; // easy | normal | hard | legendary
   let alive = true;
   for (let n = 0; n < QUESTS_PER_ACT * ACTS && alive; n++) {
     const opts = process.env.OLD ? roadsFor(hero) : questsFor(hero); /* the real game offers one fight (OLD=1: the two old roads) */ const key = `${hero.campaign.act}.${String(hero.campaign.step).padStart(2, '0')}`;
