@@ -30,7 +30,7 @@ const SOCK_INFO = {
   W: ['Left hand', 'Your Strength. It powers the weapon above it, and it pays a symbol too.'],
   C: ['Heart', 'The gold die in the middle. It boosts the dice around it.'],
   E: ['Right hand', 'Your other Strength die. It powers your second weapon once you have one.'],
-  SW: ['Talent', 'A bonus die for the hand above it: 2× Strength, or symbols you choose at camp.'],
+  SW: ['Talent', 'A bonus die: 2× Strength, or a number that pays that much of a symbol you choose at camp.'],
   S: ['Feet', 'A white die that pays a symbol. Its number is also your speed: who strikes first.'],
   SE: ['Second talent', 'Empty for now. Buy it at camp as you grow.'],
 };
@@ -151,7 +151,7 @@ const LESSONS = [
     body: () => [
       row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Every talent die has two blank faces.'),
       row(img('talent-x2', 'xs'), '2× Strength', 'Counts the hand above it twice in its weapon.'),
-      row(img('talent-heal', 'xs'), 'Symbol faces', 'Each symbol showing adds 1 to its counter: two attack symbols are +2 attack. You choose the symbols at camp.'),
+      row(img('talent-heal', 'xs'), 'Number faces', 'A number face pays its number in the symbol you bought for it: a 4 with heal is 4 heal. You choose the symbols at camp.'),
     ],
   },
   {

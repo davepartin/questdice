@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, SYMBOL_VALUE, TALENT_MAX_SAME, talentPerFace, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
@@ -197,13 +197,14 @@ export function sidesOf(hero, slot) {
     default: throw new Error(`bad slot ${slot}`);
   }
 }
-// Talent die faces: 1-2 blank, 3 = 2x, 4+ = symbol faces. Returns null (blank), 'X2', or an array of symbols (a face with none is blank).
+// Talent die faces: 1-2 blank, 3 = 2x, 4+ = number faces that pay their number in the symbol bought for them. Returns null (blank or not
+// bought yet), 'X2', or [symbol] (older saves kept several per face: only the first counts now).
 export function specialFace(hero, slot, v) {
   const n = hero.special[slot];
   if (v <= 2 || v > n) return null;
   if (v === 3) return 'X2';
-  const syms = (hero.talent?.[slot]?.[v - 4]) || [];
-  return syms.length ? syms : null;
+  const entry = hero.talent?.[slot]?.[v - 4]; const sym = Array.isArray(entry) ? entry[0] : entry;
+  return sym ? [sym] : null;
 }
 // ---- the pet die: face 1 is always blank; faces 2..n hold symbols (hero.pet.faces[v - 2])
 export function petFace(hero, v) {
@@ -244,20 +245,23 @@ export function petGrowInfo(hero) {
 export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
-  const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || []; const per = talentPerFace(size);
-  return { faces, per, same: per, slots: faces * per, used: cur.flat().length, cost: TALENT_SLOT_COST };
+  const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || [];
+  const nums = Array.from({ length: faces }, (_, i) => talentFaceNum(i));
+  return { faces, nums, costs: nums.map(talentFaceCost), same: TALENT_MAX_SAME, used: cur.filter((e) => (Array.isArray(e) ? e.length : e)).length };
 }
-// Put a symbol on a symbol face (0-based). Every slot costs the same. At most two of one symbol per die, at most two symbols per face.
+// Buy a symbol for a number face (0-based; face 0 is the 4). Pay once for the face, more the bigger its number. Pierce is never offered,
+// a face that already has a symbol must be cleared first, and a die carries at most two of one symbol.
 export function addTalent(hero, slot, face, sym) {
   if (!TALENT_SYMS[sym]) return false;
-  const t = talentInfo(hero, slot); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
+  const t = talentInfo(hero, slot); if (face < 0 || face >= t.faces) return false;
+  const cost = t.costs[face]; if (hero.gold < cost) return false;
   hero.talent = hero.talent || {}; const faces = (hero.talent[slot] = hero.talent[slot] || []);
   while (faces.length < t.faces) faces.push([]);
-  if (faces[face].length >= t.per || talentCount(hero, slot, sym) >= t.same) return false;
-  hero.gold -= t.cost; faces[face].push(sym); return true;
+  if ((Array.isArray(faces[face]) ? faces[face].length : faces[face]) || talentCount(hero, slot, sym) >= t.same) return false;
+  hero.gold -= cost; faces[face] = [sym]; return true;
 }
-export function removeTalent(hero, slot, face, idx) {
-  const f = hero.talent?.[slot]?.[face]; if (!f || idx < 0 || idx >= f.length) return false; f.splice(idx, 1); return true;
+export function removeTalent(hero, slot, face, idx = 0) {
+  const f = hero.talent?.[slot]?.[face]; if (!f || !f.length || idx < 0 || idx >= f.length) return false; f.splice(idx, 1); return true;
 }
 export function rollSlot(hero, slot, rng) { return { v: die(rng, sidesOf(hero, slot)), bound: false }; }
 export function rollBoard(hero, rng) {
@@ -293,7 +297,7 @@ export function evaluate(hero, board, opts = {}) {
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
   }
 
-  // Lanes: weapon (color + number) + hand strength (doubled by 2x); talent symbols add +1 each to their counter.
+  // Lanes: weapon (color + number) + hand strength (doubled by 2x); a talent number face pays its number in its symbol.
   for (const [key, lane] of Object.entries(LANES)) {
     if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
@@ -308,7 +312,7 @@ export function evaluate(hero, board, opts = {}) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
       out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
     }
-    for (const t of tsyms) out[t] = (out[t] || 0) + SYMBOL_VALUE; // each symbol showing adds 1 to its counter (the hand's strength no longer matters here)
+    for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
     out.lanes[key] = L;
   }
   // The pet die: each symbol on the face it shows pays the pet's power.

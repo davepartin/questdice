@@ -573,3 +573,16 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .qa.n2 .qa-m, .qa.n3 .qa-m { flex: 1 1 0; height: auto; aspect-ratio: auto; align-self: flex-end; margin: 0 -4%; max-height: 82%; }
 .qa.n2 .qa-m.tier-elite, .qa.n2 .qa-m.tier-boss { flex-grow: 1.5; max-height: 100%; }
 .qa.n2 .qa-pc, .qa.n3 .qa-pc { height: 100%; width: 100%; }
+
+/* talent number faces (v3): the number, its symbol, and what it pays or costs */
+.tal-strip.numbers { grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr)); }
+.tal-face.num { cursor: pointer; font: inherit; color: inherit; align-items: center; gap: .15rem; padding: .45rem .3rem .5rem; }
+.tal-face.num .tn { font: 900 1.7rem var(--font-display); line-height: 1; color: #fff; }
+.tal-face.num .ts { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; border: 1.5px solid currentColor; background: rgba(255, 255, 255, .06); }
+.tal-face.num .ts .ico svg { width: 1.4rem; height: 1.4rem; }
+.tal-face.num.empty .tn { color: var(--dim); } .tal-face.num.empty .ts { border-style: dashed; color: var(--dim); font: 800 1.2rem var(--font-display); }
+.tal-face.num.empty.open { border-color: var(--gold-hi); box-shadow: 0 0 14px rgba(255, 214, 140, .4); }
+.tal-face.num .tp { font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-hi); } .tal-face.num .tp.poor { color: #ff9b8a; }
+.tal-face.num.bought .tp { color: #dfe6f2; }
+.tal-face.num.c-atk { color: #ff4b4b; } .tal-face.num.c-block { color: #3aa4ff; } .tal-face.num.c-magic { color: #b66cff; } .tal-face.num.c-heal { color: #38e87a; } .tal-face.num.c-gold { color: #ffd21a; }
+.tal-pick .tal-cost { grid-column: 1 / -1; flex-basis: 100%; }

@@ -846,12 +846,14 @@ Each fight's place (already chosen in `questsFor`) paints the table: `createFlat
 
 ## 2026-10-13 — Dave's rules pass and the painted scenes (plan and status)
 Dave's list, in the order we are doing it. Each item names where it lives.
-1. **Rules audit (done; clarified by Dave 13 Oct).** A talent die always has two blank faces and one 2x face. Its other faces ("symbol faces")
-   can each carry up to **half the die's sides** in symbols: d4 two, d6 three, d8 four, d10 five (`talentPerFace(size)` in data.js). The
-   number of symbol faces is what is left: d4 1, d6 3, d8 5, d10 7 (`TALENT_FACES`). A die can carry as many of one symbol as a face
-   holds (the old "never more than two of one symbol" now scales the same way; `talentInfo(...).same`). The die grows d4 -> d6 -> d8 -> d10
-   (`SPECIAL_STEPS`). Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them). Watch the balance of
-   big talent dice (a d10 face can pay five symbols at the hand's strength); a bot run with talent dice trained is still to do.
+1. **Rules audit (done; talent dice redone three times, v3 is current).** **Talent dice v3 (Dave, 13 Oct):** faces 1 and 2 are blank, face 3 is 2x, and
+   each face from 4 up to the die's size shows its own number and pays that many of the symbol you buy for it (face 6 + magic = 6 magic;
+   the hand's strength no longer matters). A face starts empty and does nothing; you pay once per face, more the bigger the number
+   (`talentFaceCost(num)` = 10 gold x num). Symbols: attack, block, magic, heal, gold (never pierce), at most two of a symbol per die.
+   A bigger die (d4 -> d6 -> d8 -> d10, `SPECIAL_STEPS`) adds new empty faces; the old ones keep their symbols. A class starts with one free symbol on face 4.
+   Code: `specialFace`, `talentInfo`, `addTalent`, `removeTalent` in engine.js; the camp card is `talentCard` in scrui.js; the 3D face shows the number plus its
+   symbol (`labels` in gfx/dice/dice.js). Old saves that kept several symbols on a face now use only the first. Prices and bot results: docs/BALANCE.md.
+   Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them).
 2. **Dice grow with the act (done).** `ACT_MAX_DIE` / `dieCapForAct`: Act I d4 -> d6 only, Act II d6 -> d8, Act III d8 -> d10, for strength
    and talent dice (`actGate` in engine.js; the camp row shows "Act II" on the lock). The level and gold gates still apply.
 3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green
@@ -881,3 +883,4 @@ Dave's list, in the order we are doing it. Each item names where it lives.
 
 ## 2026-10-13 — the old 3D scenery is gone
 Dave: "remove all of the old code that was so much animation, to make this game less big". Deleted: every 3D actor (`js/gfx/actors/`, ~400 KB: hero, goblin, wolf, ogre, cultist, goblin king, skinning and clips), every arena (`js/gfx/arena*`), the particle/effects library (`js/gfx/vfx*`), the camera director (`js/g3/director.js`), the gfx demos, the arena/vfx stand-ins in `stubs.js`, `docs/GFX.md`, and a dozen dev scripts that only drove them. The title and hero-choice screens are now painted scenes like camp and road (`screens.js` is 123 lines, was 463); the hero-choice miniature is seated by `pinHeroArt` (DOM/CSS, from each picture's `imgBase`) instead of being projected from a 3D pedestal; the old drag-to-turn code is gone. `js/` went from 2.1 MB to 1.2 MB and the module list from 82 files to 55. **What 3D is left, on purpose:** the dice tray and dice (`gfx/dice/`), the stage and post-processing (`core/post/env/tex/mats/noise/util/particles`), and the weapon pictures on weapon cards (`gfx/weapons.js` + `geo.js`, the helper half of the old hero kit, + `g3/portrait.js`), drawn once to a still image. Replacing those with painted pictures would let the whole Three.js library (`vendor/`, 2.4 MB) go: a bigger job and a design decision. Checked: unit tests (132), a bot playthrough, the Learn to play tutorial end to end, an online table round, title/create/board/camp screenshots; no console errors. **Repo size (not game size):** `docs/` is 478 MB of old screenshots (`docs/ingame` 388 MB, `docs/dice-lab` 35 MB, `docs/tutorial` 38 MB) and `.git` is 727 MB; the game loads none of it, but pruning it is Dave's call.
+- (13 Oct, later) The "each symbol adds 1" rule lasted a few hours; it was replaced by talent dice v3 above.

@@ -171,15 +171,13 @@ export const LOOT_WEIGHTS = {
 
 // TALENT dice (the bottom corners; the old "special" dice). Faces: two blanks, a 2x (doubles that hand's strength in its lane),
 // then symbol faces: one on a d4, three on a d6. Each symbol face holds up to two symbols; any one symbol may appear at most twice on a die.
-// A symbol is worth 1: the number of symbols showing on a talent die is what it adds to your total (Dave, 13 Oct; it used to be
-// the hand's strength). The 2x face still doubles the hand above it in its weapon lane.
-export const SYMBOL_VALUE = 1;
+// A talent symbol pays the number on its face (see TALENT_FACES). The 2x face doubles the hand above it in its weapon lane.
 export const TALENT_SYMS = {
-  atk: { name: 'Attack', text: '+1 attack for each one that shows.' },
-  block: { name: 'Block', text: '+1 block for each one that shows.' },
-  magic: { name: 'Magic', text: '+1 magic for each one that shows.' },
-  heal: { name: 'Heal', text: '+1 heal for each one that shows.' },
-  gold: { name: 'Gold', text: '+1 gold for each one that shows.' },
+  atk: { name: 'Attack', text: 'Attack equal to the number on its face.' },
+  block: { name: 'Block', text: 'Block equal to the number on its face.' },
+  magic: { name: 'Magic', text: 'Magic equal to the number on its face.' },
+  heal: { name: 'Heal', text: 'Heal equal to the number on its face.' },
+  gold: { name: 'Gold', text: 'Gold equal to the number on its face.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
@@ -192,13 +190,16 @@ export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2. Each l
 export const POWER_LEARN = 50;
 export const POWER_SLOTS = ['A', 'B', 'C'];
 export const SLOT_NAME = { A: 'Big move', B: 'Every round', C: 'Charge' };
-export const TALENT_MAX_SAME = 2;
-export const TALENT_PER_FACE = 2;
-export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
-// A talent die always has two blank faces and one 2x face; every other face can carry symbols (so a d4 has 1, a d6 3, a d8 5, a d10 7).
-export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 };
-// ...and each of those faces holds up to half the die's sides in symbols (d4 two, d6 three, d8 four, d10 five); a die can carry that many of one symbol.
-export const talentPerFace = (size) => Math.max(2, Math.floor(size / 2));
+export const TALENT_MAX_SAME = 2; // a die can carry two of one symbol at most: choose which faces get which
+// TALENT DICE (Dave, 13 Oct): faces 1 and 2 are blank, face 3 is 2x, and face k (4 up to the die's size) shows the number k and
+// pays k of the symbol you buy for it: face 6 with magic = 6 magic. A face starts empty (it does nothing) and you pay once to
+// give it a symbol; the bigger the number, the more it costs. A new, bigger die brings new empty faces; the old ones keep theirs.
+export const TALENT_PER_FACE = 2; // (the pet's die still holds two symbols a face)
+export const TALENT_SLOT_COST = 25; // (a pet's symbol slot costs this; talent faces are priced by their number)
+export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 }; // number faces on a d4 / d6 / d8 / d10 (faces 4..size)
+export const TALENT_FACE_COST = 10; // gold per point on the face: 4 costs 40, 5 costs 50 ... 10 costs 100
+export const talentFaceCost = (num) => TALENT_FACE_COST * num;
+export const talentFaceNum = (faceIndex) => faceIndex + 4; // index in hero.talent[slot] -> the number on the die
 // (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {
   knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'block', SE: 'atk' }, wizard: { SW: 'magic', SE: 'heal' },

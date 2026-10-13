@@ -272,3 +272,9 @@ One fight per step, picked by the game from a trouble budget (`ENCOUNTER`, `enco
 - **Mid** (the intended game): cleared 14/15; ordinary fights 90-100%, dips to ~80-90% late in an act; bosses 60-85%.
 - **Expert** (hp x1.2, +2 a hit, budget x1.15): cleared 3/15; ordinary fights 40-100% (the late steps of each act are the wall), bosses 35-70%. A smart bot is a weak player, so a person should do better.
 First pass (Expert hp x1.3, +3 a hit, budget x1.3, elite always with company) cleared 1/15 and 0/15 with a milder setting; the crowds in Act III were the problem (Act I's monsters carry Act III's +5 a hit), so Act III's budget starts lower (1.5, +0.22 a step) and the draw jitter is 0.75-1.25. Knobs: `ENCOUNTER` (budget and jitter) and `DIFFICULTY` in data.js, monster `threat` in `MONSTERS`.
+
+## 13 Oct 2026 — talent dice v3 (numbered faces)
+Faces 1-2 blank, face 3 = 2x, face k (4..size) shows the number k and pays k of the symbol you buy for it (no pierce, at most two of a symbol on a die).
+Price per face = `TALENT_FACE_COST` (10) x the number: 4 costs 40, 5 costs 50 ... 10 costs 100; a full d10 is 490 gold for seven faces (plus the growth steps 60 / 130 / 240). The class's free starting symbol sits on face 4.
+Why 10 gold a point: a number face on a die of n sides shows up 1 time in n and pays k, so face k on a d(n) is worth k/n a roll (a 6 on a d6 or a 10 on a d10 = 1.0; a 4 on a d10 = 0.4). That is roughly 40-100 gold for each point of average roll, in line with a hand upgrade (d4 to d6 costs 100 for about +2 across two lanes).
+Bot (`botTalent` in tools/sim.mjs buys the biggest empty face once it has the price plus 60 spare; `SKILL=... sh tools/progress-all.sh 3 3 smart`): Mid cleared 15/15 (was 14/15 without talent buying), Expert 8/15 (was 3/15), damage a round up from about 26 to about 30 in Acts II-III, and the bot still ends Act III with 140-200 gold, so the prices do not choke it. The lever for later tuning is `TALENT_FACE_COST`.
