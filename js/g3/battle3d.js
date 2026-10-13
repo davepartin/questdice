@@ -850,14 +850,14 @@ const HIT_KIND = (pierceOnly, caster) => (caster ? 'magic' : pierceOnly ? 'pierc
 function popStrike(s, rep) {
   if (!B.fb || !s) return;
   const act = (rep?.acts || []).find((a) => a.uid === s.targetUid);
-  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid));
+  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid)?.name);
 }
 function popAct(act, rep) {
   if (!B.fb || !act) return;
-  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid));
+  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid)?.name);
 }
-function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { piece: foePc(uid) }); }
-function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { piece: foePc(uid) }); }
+function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { who: foePc(uid)?.name }); }
+function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { who: foePc(uid)?.name }); }
 
 async function strikeAnim(hp, s, { caster = false } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
@@ -881,23 +881,25 @@ async function foeAnim(act, heroes) {
   if (!dmgVerb) {
     if (act.v === 'charge' && !act.cancelled) { sfx.windup(); await a.glow('fire'); }
     else if (act.v === 'howl') { sfx.howl?.(); await a.glow('buff'); }
-    else if (act.v === 'bind') { sfx.hex?.(); a.glow('magic'); if (first) { first.num('Dice locked', 'hurt'); await first.glow('magic'); } }
+    else if (act.v === 'bind') { sfx.hex?.(); a.glow('magic'); if (first) await first.glow('magic'); }
     else if (act.v === 'summon') { sfx.summon?.(); await a.glow('buff'); }
     else if (act.v === 'guard') { await a.guard(); }
     else if (act.v === 'ward') { await a.glow('fire'); }
     else if (act.v === 'phase') { await a.glow('magic'); }
     else if (act.v === 'stalk') { await a.glow('buff'); }
-    else if (act.v === 'mend') { sfx.heal(); await a.heal(); if (act.healed) a.num(`+${act.healed}`, 'heal'); }
+    else if (act.v === 'mend') { sfx.heal(); await a.heal(); }
     await wait(0.15);
     return;
   }
   const jobs = [];
   await a.lunge(first, () => {
+    // what the blow did is told by the big card in the middle of the screen (abilitypop.js), not by little numbers over the heads
+    const hit = AP.cueFromHit(act, heroes.map(({ pc, part, net }) => ({ name: pc.name, part, net })));
+    if (hit) AP.show(B.fb, hit, { who: a.name });
     for (const { pc, part, net } of heroes) {
       const ab = part - net;
-      if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); pc.num(`−${net}`, 'hurt'); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
-      if (ab > 0) { jobs.push(pc.guard()); pc.num(`🛡 ${ab}`, 'block', { dx: net > 0 ? 24 : 0, dy: net > 0 ? 14 : 0 }); sfx.block(); }
-      if (net <= 0 && ab <= 0 && part >= 0) pc.num('Blocked!', 'block');
+      if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
+      if (ab > 0) { jobs.push(pc.guard()); sfx.block(); }
     }
   });
   await Promise.all(jobs);

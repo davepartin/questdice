@@ -363,24 +363,26 @@
 .fb-slot.dead .fb-info { display: none; }
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
 
-/* enemy ability pop-up: a short gold-framed card on the felt, never over the dice or buttons */
-.fb-pops { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
-.fb-pop { position: absolute; transform: translate(-50%, -100%); min-width: 7.2rem; max-width: min(12.4rem, 72%); padding: .28rem .5rem .32rem .38rem; border-radius: .55rem; display: flex; align-items: flex-start; gap: .38rem; pointer-events: none;
-  background: linear-gradient(180deg, rgba(52, 38, 28, .97), rgba(14, 9, 7, .98));
-  box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .75), inset 0 0 0 3px rgba(16, 10, 6, .92), inset 0 0 0 4px rgba(226, 178, 76, .28), 0 8px 18px rgba(0, 0, 0, .6);
+/* enemy ability pop-ups (Dave): big cards stacked in the middle of the screen, one under the other, clear of the miniatures and under the round recap */
+.fb-pops { position: absolute; left: 0; right: 0; top: 52%; transform: translateY(-50%); z-index: 4; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: 0 .6rem; }
+.fb-pop { width: min(21rem, 94%); box-sizing: border-box; padding: .6rem .85rem .65rem .6rem; border-radius: .85rem; display: flex; align-items: center; gap: .7rem; pointer-events: none;
+  background: linear-gradient(180deg, rgba(52, 38, 28, .98), rgba(14, 9, 7, .99));
+  box-shadow: inset 0 0 0 1.5px rgba(226, 178, 76, .85), inset 0 0 0 4px rgba(16, 10, 6, .92), inset 0 0 0 5px rgba(226, 178, 76, .3), 0 12px 28px rgba(0, 0, 0, .7), 0 0 30px color-mix(in srgb, var(--pc) 22%, transparent);
   color: #f4e7cb; --pc: #e2b24c; }
-.fb-pop .ap-ico { flex: none; width: 1.35rem; height: 1.35rem; margin-top: .04rem; display: grid; place-items: center; border-radius: .35rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 28%, #1a1008), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
-.fb-pop .ap-ico svg { width: .95rem; height: .95rem; color: var(--pc); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 55%, transparent)); }
-.fb-pop .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .08rem; }
-.fb-pop b { font: 800 .72rem/1.1 var(--disp, sans-serif); letter-spacing: .04em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
-.fb-pop small { font: 600 .62rem/1.2 var(--disp, sans-serif); color: #d8cbb0; }
+.fb-pop .ap-ico { flex: none; width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: .6rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 30%, #1a1008), #120a08); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc) 75%, transparent); }
+.fb-pop .ap-ico svg { width: 1.7rem; height: 1.7rem; color: var(--pc); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pc) 60%, transparent)); }
+.fb-pop .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+.fb-pop .ap-who { font: 700 .62rem/1 var(--disp, sans-serif); font-style: normal; letter-spacing: .18em; text-transform: uppercase; color: color-mix(in srgb, var(--pc) 70%, #fff); }
+.fb-pop b { font: 900 1.15rem/1.1 var(--disp, sans-serif); letter-spacing: .03em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
+.fb-pop small { font: 700 .95rem/1.25 var(--disp, sans-serif); color: #eadfc6; }
+@media (max-width: 380px) { .fb-pop { padding: .45rem .65rem .5rem .5rem; gap: .55rem; } .fb-pop .ap-ico { width: 2.2rem; height: 2.2rem; } .fb-pop .ap-ico svg { width: 1.4rem; height: 1.4rem; } .fb-pop b { font-size: 1rem; } .fb-pop small { font-size: .85rem; } }
 .fb-pop.v-guard, .fb-pop.v-armor { --pc: #7ab8ff; }
 .fb-pop.v-ward, .fb-pop.v-breath, .fb-pop.v-rage { --pc: #ff8a3a; }
 .fb-pop.v-phase, .fb-pop.v-bind, .fb-pop.v-chain, .fb-pop.v-drain { --pc: #c08cff; }
 .fb-pop.v-hush, .fb-pop.v-howl { --pc: #e6b4ff; }
 .fb-pop.v-pilfer, .fb-pop.v-flee, .fb-pop.v-summon { --pc: #ffd23d; }
 .fb-pop.v-charge, .fb-pop.v-slam, .fb-pop.v-stalk { --pc: #ff7a6a; }
-.fb-pop.v-mend { --pc: #7affb0; }
-.fb-pop.still { opacity: 1; transform: translate(-50%, -100%); }
+.fb-pop.v-mend { --pc: #7affb0; } .fb-pop.v-hit { --pc: #ff6a5a; } .fb-pop.v-blocked { --pc: #7ab8ff; }
+.fb-pop.still { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .fb-pop { transition: none; } }

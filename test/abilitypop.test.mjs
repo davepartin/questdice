@@ -162,3 +162,14 @@ test('unknown verb still gets a cue if it is not a plain hit (new monsters)', ()
   assert.equal(fresh.name, 'Moonveil');
   assert.equal(fresh.line, 'used Moonveil');
 });
+
+test('a plain blow gets a card that says what it hit for and what block took off', async () => {
+  const { cueFromHit } = await import('../js/g3/abilitypop.js');
+  const c = cueFromHit({ uid: 'g1', v: 'strike', name: 'Slash' }, [{ name: 'Dave', part: 9, net: 5 }]);
+  assert.equal(c.v, 'hit'); assert.equal(c.name, 'Slash'); assert.match(c.line, /Hit Dave for 5\. Block stopped 4\./);
+  const all = cueFromHit({ uid: 'g1', v: 'strike' }, [{ name: 'Dave', part: 6, net: 0 }]);
+  assert.equal(all.v, 'blocked'); assert.match(all.line, /Dave blocked all 6/); assert.equal(all.name, 'Strike');
+  const party = cueFromHit({ uid: 'w', v: 'pierce' }, [{ name: 'Ann', part: 4, net: 4 }, { name: 'Bo', part: 4, net: 1 }]);
+  assert.equal(party.lines.length, 2); assert.equal(party.icon, 'pierce');
+  assert.equal(cueFromHit(null, []), null);
+});
