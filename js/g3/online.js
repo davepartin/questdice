@@ -295,13 +295,13 @@ function victory(t) {
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, sub), flourish()),
       partyBar(), reopen, rows, perks, loot)));
-  lay('victory'); if (!SCR.victory()) SCR.enter('camp', { hero }, `victory:${hero.name}`);
+  lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
 function defeat(t) {
   const hero = Sess.hero(); X.S.hero = hero;
   SCRUI.defeat(!!t.retreat, t.loss || 0);
-  if (!SCR.defeat()) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
+  if (!SCR.defeat(hero, t.quest?.place)) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
 }
 
 // ------------------------------------------------------------------------------------------------ the menu

@@ -18,6 +18,7 @@ import { createWeapon } from '../gfx/weapons.js';
 import * as D from '../data.js';
 import { h } from '../dom.js';
 import { music } from '../audio.js';
+import { applyPlace, atmoLayers } from './flat.js';
 
 const stage = () => world.stage;
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -410,19 +411,23 @@ export function release() { cancelPortraits(); own.token++; own.objs = []; own.o
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
 // Victory and defeat are on the table too (Dave, Oct 2026): the hero's painted miniature, flat, on the felt. The screen's own
 // viewport (`.sx-viewport`) holds it; the rewards panel sits beside or below.
-function endTable(kind, hero) {
+function endTable(kind, hero, place) {
   const bw = world.battle; if (!bw) return null;
   if (bw.tray?.object) bw.tray.object.visible = false;
   if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
   const host = document.querySelector('.sx-viewport'); const img = D.CLASSES[hero?.cls]?.img; if (!host || !img) return bw;
   const act = hero?.campaign?.act || 1;
+  const look = D.placeLook(place);
   const gold = kind === 'victory' ? Array.from({ length: 16 }, (_, i) => h('i', { class: 'fb-gold', style: { '--x': `${6 + ((i * 53) % 88)}%`, '--d': `${(i * 0.37) % 3}s`, '--s': `${0.5 + ((i * 29) % 7) / 10}` } })) : [];
-  host.replaceChildren(h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
-    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold));
+  const el = h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
+    h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather)),
+    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
+  applyPlace(el, place);
+  host.replaceChildren(el);
   return bw;
 }
-export function victory(hero) { music.setMood?.('victory'); return endTable('victory', hero); }
-export function defeat(hero) { music.setMood?.('road'); return endTable('defeat', hero); }
+export function victory(hero, place) { music.setMood?.('victory'); return endTable('victory', hero, place); }
+export function defeat(hero, place) { music.setMood?.('road'); return endTable('defeat', hero, place); }
 export function leaveBattleStage() { try { stage().scene.userData.victoryOff?.(); } catch { /* ignore */ } }
 
 // ---------------------------------------------------------------------------------------------- portraits (cached, queued)
