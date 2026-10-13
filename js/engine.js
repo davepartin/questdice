@@ -181,7 +181,6 @@ export function feetSize(hero) { hero.speed = hero.speed || { S: CLASSES[hero.cl
 export function speedUpgrade(hero) {
   const size = feetSize(hero); const step = size < maxFeetOf(hero) ? SPEED_STEPS[size] : null;
   if (!step) return { ok: false, why: 'Max size' };
-  if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
 }
@@ -972,7 +971,6 @@ export function strengthUpgrade(hero, slot) {
   const size = hero.strength[slot]; const step = STRENGTH_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
   { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
-  if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
 }
@@ -980,7 +978,6 @@ export function specialUpgrade(hero, slot) {
   const size = hero.special[slot]; const step = SPECIAL_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
   { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
-  if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
 }

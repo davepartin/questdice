@@ -837,24 +837,23 @@ function renderCamp(fromBoard) {
     h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm, and so is the stew, mostly'), h('h2', {}, 'Camp')), heroChip()),
     h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
-    tip('camp', 'Bigger hand dice are how a hero grows, and each size waits on a level. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
+    tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
     body,
     h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }, { cls: 'small' })),
     primary('🗺 To the road', showRoadOrBoard, { cls: 'wide big' }));
 }
 function upgradeRow(kind, slot, label) {
-  const hero = S.hero; const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : D.SPECIAL_STEPS;
+  const hero = S.hero; const size = hero[kind][slot];
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : E.specialUpgrade(hero, slot);
-  const gate = steps[size]?.[1];
-  const sub = u.next ? `→ d${u.next}${u.act ? ` · waits for Act ${D.ROMAN[u.act]}` : hero.level < gate ? ` · unlocks at level ${gate}` : ''}` : 'Fully grown';
+  const sub = u.next ? `→ d${u.next}${u.act ? ` · waits for Act ${D.ROMAN[u.act]}` : ''}` : 'Fully grown';
   return h('div', { class: 'urow' }, h('div', { class: 'udie' }, `d${size}`), h('div', { class: 'ucopy' }, h('b', {}, label), h('small', { class: 'muted' }, sub)),
     u.next ? primary(`🪙 ${u.cost}`, () => { if (E.upgradeDie(hero, kind, slot)) { sfx.level(); persist(); renderCamp(); } }, { disabled: !u.ok, cls: 'small' }) : h('span', { class: 'maxed' }, 'MAX'));
 }
 function campForge() {
   const hero = S.hero;
   return h('div', { class: 'col' },
-    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. Each size waits on your level. Patience, then punch.'),
+    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. A die can only grow as far as the act allows. Patience, then punch.'),
       upgradeRow('strength', 'W', 'Left hand'), upgradeRow('strength', 'E', 'Right hand')),
     section('Special dice', h('p', { class: 'fine' }, 'Always two blank faces, so a bigger die misses less often. Luck, with homework.'),
       upgradeRow('special', 'SW', 'Left special · ✚ Mend, ⚡ Surge'), upgradeRow('special', 'SE', 'Right special · ✦ Spark, ⚡ Surge')),

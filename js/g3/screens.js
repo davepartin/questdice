@@ -77,7 +77,7 @@ export async function enter(mode, opts = {}, key = null) {
 }
 export const current = () => own.handle;
 // Called when a battle (or anything else) takes the stage: forget everything.
-export function release() { cancelPortraits(); own.token++; own.handle = null; own.mode = null; own.key = null; }
+export function release() { cancelPortraits(); own.token++; own.handle = null; own.mode = null; own.key = null; Scenery.hide(); }
 
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
 // Victory and defeat are on the table too (Dave, Oct 2026): the hero's painted miniature, flat, on the felt. The screen's own

@@ -5,7 +5,7 @@
 import { h, reduced } from '../dom.js';
 import * as HK from './hudkit.js';
 
-export const LIFE = 2.5; // seconds, including fade in and out
+export const LIFE = 5; // seconds, including fade in and out (Dave: twice as long, and big enough to read)
 
 // Verbs that are just a hit: no pop-up unless the blow is a Slam / Pounce (flagged slam).
 const HIT_VERBS = new Set(['strike', 'pierce']);
@@ -79,7 +79,7 @@ function cue(uid, v, name, extra = {}) {
   const title = name || v;
   const line = extra.line || lineOf(title, v, extra);
   if (!line) return null;
-  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, party: !!extra.party };
+  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, lines: extra.lines || null, party: !!extra.party };
 }
 
 export function ctxFromRep(rep = {}) {
@@ -134,6 +134,20 @@ export function cueFromAct(act, ctx = {}) {
   return cue(act.uid, v, name, extra);
 }
 
+// A monster's plain blow on one or more heroes: what it hit for, and what the hero's block took off it.
+// hits: [{ name, part, net }] (part = its share of the blow, net = what got through).
+export function cueFromHit(act, hits = []) {
+  if (!act || !hits.length) return null;
+  const lines = hits.map(({ name, part, net }) => {
+    const ab = Math.max(0, n(part) - n(net));
+    if (n(net) > 0) return ab > 0 ? `Hit ${name} for ${n(net)}. Block stopped ${ab}.` : `Hit ${name} for ${n(net)}.`;
+    return ab > 0 ? `${name} blocked all ${n(part)}.` : `${name} was not hurt.`;
+  });
+  const any = hits.some((x) => n(x.net) > 0);
+  const title = act.name || (act.v === 'pierce' ? 'Pierce' : 'Strike');
+  return { uid: act.uid, v: any ? 'hit' : 'blocked', name: title, icon: act.v === 'pierce' ? 'pierce' : any ? 'atk' : 'block', line: lines[0], lines, party: hits.length > 1 };
+}
+
 export function cueFromRage(uid, b) {
   const e = b?.enemies?.find((x) => x.uid === uid);
   return cue(uid, 'rage', e?.rageName || 'Enraged');
@@ -164,60 +178,32 @@ export function cuesFromReport(rep, b) {
   return out;
 }
 
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
+// The pop-ups stack in a column in the middle of the screen (Dave: big, readable, never on top of the miniatures, one under the
+// other as the monsters take their turns). The column lives on the battle layer, not on the little board at the top.
 function hostOf(fb) {
   if (!fb?.el) return null;
-  let layer = fb.el.querySelector('.fb-pops');
+  const root = fb.el.closest('.b3') || fb.el.parentElement || fb.el;
+  let layer = root.querySelector(':scope > .fb-pops');
   if (!layer) {
     layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
-    fb.el.append(layer);
+    root.append(layer);
   }
   return layer;
 }
 
-function stacks(fb) {
-  if (!fb._popStacks) fb._popStacks = new Map();
-  return fb._popStacks;
-}
-
-function place(el, fb, piece, uid) {
-  const W = fb.el.clientWidth || 360;
-  const H = fb.el.clientHeight || 240;
-  const st = stacks(fb);
-  const i = st.get(uid) || 0;
-  st.set(uid, i + 1);
-  el._popUid = uid;
-  const hw = Math.min((el.offsetWidth || 168) / 2 + 6, W / 2 - 8);
-  let x = W / 2;
-  let y = 14 + i * 52;
-  if (piece?.rect) {
-    const r = piece.rect();
-    // Open sky toward the middle of the table, above the mini — not on the damage numbers.
-    const towardCenter = r.cx > W * 0.5 ? -1 : 1;
-    x = r.cx + towardCenter * 88;
-    y = Math.max(16, r.top - 12 - i * 48);
-    if (y < 10) y = Math.min(H - 58, Math.max(10, r.top + 22 + i * 8));
-  }
-  x = clamp(x, hw + 8, W - hw - 8);
-  y = clamp(y, 8, Math.max(8, H - 52));
-  el.style.left = `${x.toFixed(1)}px`;
-  el.style.top = `${y.toFixed(1)}px`;
-}
-
 function paint(el, k) {
-  const fadeIn = 0.1;
-  const fadeOut = 0.18;
+  const fadeIn = 0.06;
+  const fadeOut = 0.14;
   let o = 1;
   let y = 0;
-  if (k < fadeIn) { o = k / fadeIn; y = 8 * (1 - k / fadeIn); }
+  if (k < fadeIn) { o = k / fadeIn; y = 10 * (1 - k / fadeIn); }
   else if (k > 1 - fadeOut) { o = (1 - k) / fadeOut; y = -6 * ((k - (1 - fadeOut)) / fadeOut); }
   el.style.opacity = String(o);
-  el.style.transform = `translate(-50%, calc(-100% + ${y.toFixed(1)}px))`;
+  el.style.transform = `translateY(${y.toFixed(1)}px)`;
 }
 
 // Non-blocking: do not await this from the replay. Lifetime follows the stage clock so screenshots can step it.
-export function show(fb, cue, { piece = null } = {}) {
+export function show(fb, cue, { who = '' } = {}) {
   if (!fb?.el || !cue) return null;
   const layer = hostOf(fb);
   const el = h('div', {
@@ -227,29 +213,22 @@ export function show(fb, cue, { piece = null } = {}) {
     'data-v': cue.v,
   },
   h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
-  h('span', { class: 'ap-tx' }, h('b', {}, cue.name), h('small', {}, cue.line)));
+  h('span', { class: 'ap-tx' }, who ? h('em', { class: 'ap-who' }, who) : null, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
   el.style.opacity = '0';
   layer.append(el);
-  place(el, fb, piece, cue.uid || '_');
   const quiet = reduced();
-  if (quiet) { el.classList.add('still'); el.style.opacity = '1'; el.style.transform = 'translate(-50%, -100%)'; }
-  const done = () => {
-    el.remove();
-    const st = stacks(fb);
-    const uid = el._popUid;
-    const left = Math.max(0, (st.get(uid) || 1) - 1);
-    if (left) st.set(uid, left); else st.delete(uid);
-  };
+  if (quiet) { el.classList.add('still'); el.style.opacity = '1'; }
+  const done = () => el.remove();
   const tw = fb.tween?.(LIFE, (k) => { if (!quiet) paint(el, k); else if (k >= 0.92) el.style.opacity = '0'; });
   if (tw?.then) tw.then(done); else setTimeout(done, LIFE * 1000);
   return el;
 }
 
-export function showForStrike(fb, s, act, ctx, piece) {
-  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { piece });
+export function showForStrike(fb, s, act, ctx, who) {
+  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { who });
 }
 
-export function showForAct(fb, act, ctx, piece) {
+export function showForAct(fb, act, ctx, who) {
   const c = cueFromAct(act, ctx);
-  if (c) show(fb, c, { piece });
+  if (c) show(fb, c, { who });
 }

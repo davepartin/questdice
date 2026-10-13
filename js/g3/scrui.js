@@ -426,6 +426,11 @@ export function stepPick() {
 
 // ------------------------------------------------------------------------------------------------ board
 const groupNames = (ids) => { const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; }); return Object.entries(n).map(([id, c]) => `${D.MONSTERS[id].name}${c > 1 ? ` ×${c}` : ''}`).join(' + '); };
+// The skill level this hero plays at (Easy / Normal / Hard / Legendary), shown on the quest board so it is never a mystery why fights feel the way they do.
+function diffChip(hero) {
+  const id = D.normalizeDifficulty(hero.difficulty); const d = D.DIFFICULTY[id];
+  return h('span', { class: `sx-diffchip dc-${id}`, title: d.text, 'aria-label': `Difficulty: ${d.name}. ${d.text}` }, ico('skull'), d.name);
+}
 function trail(c) {
   const N = D.QUESTS_PER_ACT;
   return h('ol', { class: 'sx-trail', 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
@@ -475,7 +480,7 @@ export function board() {
     topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' },
-        eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`),
+        h('div', { class: 'sx-eyerow' }, eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), diffChip(hero)),
         h('h1', { class: 'sx-act' }, X.actName(hero)), h('p', { class: 'sx-acttag' }, X.actOf(hero).tag),
         trail(c)),
       X.partyBar?.(),
@@ -602,15 +607,14 @@ export function defeat(retreat, loss) {
 const TABS = [['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 function upgradeRow(kind, slot, label, hint) {
-  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : kind === 'speed' ? D.SPEED_STEPS : D.SPECIAL_STEPS;
+  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot];
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
-  const gate = steps[size]?.[1]; const locked = u.next && !u.act && hero.level < gate;
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
     h('div', { class: 'ur-copy' }, h('b', {}, label),
-      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
-    u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
+    u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
 function weaponRow(inst, label = '') {
@@ -624,6 +628,15 @@ function weaponRow(inst, label = '') {
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (HE.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
 // Supplies: healing potions are bought here and carried from battle to battle. Shown above the camp tabs.
+// Camp: where you stand on the act's road. The same step track as the quest board, plus the place the next fight is at.
+function whereYouAre(hero) {
+  const c = hero.campaign; const act = D.ACTS[(c.act - 1) % D.ACTS.length]; const cyc = Math.floor((c.act - 1) / D.ACTS.length);
+  const next = E.questsFor(hero)[0]; const kind = next?.kind;
+  const stop = kind === 'boss' ? `${next.name} waits at ${next.place}` : next?.place ? `Next fight: ${next.place}` : '';
+  return h('section', { class: 'sx-where', 'aria-label': 'Where you are on the road' },
+    h('div', { class: 'sw-head' }, h('b', {}, `Act ${romans[c.act - 1] || c.act} · ${act.name}${cyc ? ` · Ascent ${cyc + 1}` : ''}`), h('small', {}, `You are at quest ${c.step} of ${D.QUESTS_PER_ACT}`)),
+    trail(c), stop ? h('p', { class: 'sw-next' }, ico('pin'), stop) : null);
+}
 function suppliesPanel(hero) {
   const r = E.potionBuyInfo(hero); const heal = E.potionHpOf(hero);
   const vials = h('div', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
@@ -639,7 +652,7 @@ function potionRow(hero) {
   return h('div', { class: 'sx-urow' },
     h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'),
       u.next ? h('small', { class: 'ur-next' }, `Carry ${u.next} potions instead of ${cur}. Each heals ${E.potionHpOf(hero)} in battle.`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, `You can carry ${cur} potions, the most there is.`)),
-    u.next ? btn(String(u.cost), () => { if (HE.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+    u.next ? btn(String(u.cost), () => { if (HE.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // The 4th reroll die: every reroll may take one more die, for good.
 function rerollDieRow(hero) {
@@ -666,7 +679,7 @@ function unlockSection(hero) {
 }
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
-  const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
+  const up = E.specialUpgrade(hero, slot);
   const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
   // Each number face (4 up to the die's size) pays its number in the symbol you buy for it; pay once, more for a bigger number.
   const symFaces = Array.from({ length: info.faces }, (_, f) => {
@@ -690,7 +703,7 @@ function talentCard(hero, slot) {
     picker,
     up.next ? h('small', { class: 'ur-next' }, `Grow from d${size} to d${up.next}: one more number face to fill with a symbol.`) : null,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
-    up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
+    up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : null);
 }
 // ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };
@@ -793,7 +806,7 @@ function forgeTab() {
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     petSection(hero),
     eyebrow('Strength dice'),
-    h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. Each size waits on your level. Patience, then punch.'),
+    h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. A die can only grow as far as the act allows. Patience, then punch.'),
     upgradeRow('strength', 'W', 'Left hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your left weapon.`), upgradeRow('strength', 'E', 'Right hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your right weapon.`),
     upgradeRow('speed', 'S', 'Feet die (speed)', (a, b) => `Grow from d${a} to d${b}: monsters have a harder time striking before you.`),
     rerollDieRow(hero),
@@ -868,7 +881,7 @@ export function camp(fromBoard) {
   mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      X.partyBar?.(), seats, perkPanel, suppliesPanel(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
+      X.partyBar?.(), seats, perkPanel, whereYouAre(hero), suppliesPanel(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
       tabs, h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;

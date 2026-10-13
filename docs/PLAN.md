@@ -914,9 +914,33 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Sizes retuned (Ashmaw 1.5); long single-word names (Shieldbearer, Frostwhelp, Cinderling) shrink so the i badge never clips them.
 - Checked on the real battle screen at 393×852 and 375×667 with one, two and three foes, and on the quest card. The Hollow Lich is the only boss that still shares art (the Ember Queen is no longer a recoloured Lich).
 
+### 13 Oct 2026 — hotfix: the dice were hidden behind the painted road scene
+- Dave's iPhone showed a rolled battle with no dice. Cause: when the old 3D screens were removed (d876776) `screens.release()` stopped hiding the painted road/camp scene, so that full-screen layer stayed on top of the dice-tray canvas during every fight (the canvas drew fine underneath). Fix: `release()` hides the scene again.
+- dev/dicecheck.mjs rolls once and fails if the scene layer (`body.has-scene`) is on in battle; dev/newplayer.mjs now checks the layer is off in a fight and back on at camp.
+- Lesson: my battle screenshots stopped before the first roll, so this slipped through for a few commits. The test scripts now screenshot after a roll.
 ### 13 Oct 2026 — cloud saves for solo heroes
 - Solo heroes save to Firestore (`qdHeroes` + `qdHeroNames` + `qdHeroPublic`) under name + password. The password is never stored; the doc id is SHA-256(name+password) and the document holds a salted hash. Names are first-come. The public index is listable (name, class, level, act/step) so a player can pick a hero without remembering the spelling; it never holds the hash or the save. New saves need a password of at least 3 characters. Rules are in `firestore.rules` and **must be published** before cloud writes work.
 - After opening a hero (local or cloud) a hub offers Continue, Begin at a step (only steps already reached; `campaign.reached` is the high-water mark; **Act I is for a new hero**), and Open a table with this hero. Acts II and III welcome a built-up hero, solo or at a table. Join and start refuse a veteran on an Act I table.
 - First-clear only: `hero.cleared` tracks which act/steps this hero has beaten. A repeat clear withholds XP (so no levels/perks), gold, and weapon drops for that hero. Party play applies per hero; first-clear friends still earn and still draft. The victory screen notes when this hero earns nothing.
 - Friends join a table with a cloud hero or a new one. The table walks the host's road. Each phone writes its own hero back after victory/camp/leave.
 - Tests: `test/save.test.mjs` (Act I new-hero-only, first-clear, public card, password length, hashes, local keep) and brought-hero / Act I join / mixed-party reward cases in `test/table.test.mjs`.
+
+### 13 Oct 2026 — no level gates on die size; the act is the only cap
+- Dave: "You can upgrade up to d6 in act 1 but not to d8 until act 2; there is no level 3 limit for a d6, there is just a max per act." Removed the hero-level requirement from strength dice (was level 3 / 7 / 12), talent dice (3 / 7 / 12) and the feet die (2 / 6). A die now grows when you can pay for it and the act allows it (`ACT_MAX_DIE`: Act I d6, Act II d8, Act III d10); the camp row says "Act II" when that is what is in the way. Power learning/upgrades and potion belt keep their own rules.
+- Balance: smart-bot sim, 3 acts, all classes: 10/10 cleared; the early fights are a touch easier (Act I elite 88%, boss 93%), the Hollow Lich is still the wall (~60%).
+- test/dicecap.test.mjs pins the rule.
+
+### 13 Oct 2026 — camp shows where you are on the road
+- Camp now opens with a "where you are" card above the potions: the act and its name (with the Ascent), "You are at quest N of 10", the same step track as the quest board (done ticks, you, Elite and Boss markers; Act III shows both its bosses), and the place of the next fight ("Next fight: Ravens’ Rest", or "The Fallen Champion waits at Oathbreak Keep"). Built from `trail()` + `E.questsFor`, so it can never disagree with the board. dev/campmap.mjs screenshots it.
+
+### 13 Oct 2026 — difficulty shown on the quest board
+- The quest board's header carries a small chip with the hero's skill level (Easy green, Normal gold, Hard orange, Legendary red) beside "Act I · Quest 4 of 10". The battle card's own Danger row ("Fair for you · ~5 rounds") already reads that setting. On narrow phones the eyebrow stays on one line and the danger words wrap inside the card instead of running off it.
+
+### 13 Oct 2026 — magic sheet: A, B and C on a true equilateral triangle
+- The three power medallions now sit exactly on the corners of one equilateral triangle (side 222 in the 300 × 260 drawing: A (150, 34), B (39, 221), C (261, 221)) and the purple triangle's lines run through their centres. Before, the name under B and C pushed those circles up (the whole button was centred on its corner), and the sides were unequal (233 vs 222). Every name is now absolutely placed the same distance under its circle, so the circles are exactly on the corners and the three names line up; names wrap to two lines instead of colliding on a small phone.
+- The faint inner triangle is gone (one dotted ring remains); the stage may grow to 24rem on big phones; short phones (≤720px tall) get smaller helper circles and a shorter panel. Checked at 375×667, 390×740, 393×852 and 430×932.
+
+### 13 Oct 2026 — monster actions told by big cards in the middle of the screen
+- The enemy ability pop-ups (abilitypop.js) were small, short (2.5 s) and drawn over the little board at the top, stacking on the miniatures and on each other. They are now big cards (icon, the monster's name, the move's name, one plain line) stacked in a column in the middle of the screen, one under the other, 5 s each (twice as long), under the round recap card.
+- Plain monster blows get a card too (`cueFromHit`): "Hit Dave for 5. Block stopped 4." / "Dave blocked all 6." (red when it hurts, blue when fully blocked; one line per hero in a company). The little floating −N / 🛡N / Blocked! / Dice locked / +heal numbers over the heroes' heads for monster turns are gone; the hit animation, red flash and health bar remain.
+- Checked at 393×852 with three monsters acting; the cards never touch the miniatures. Test added for cueFromHit.
