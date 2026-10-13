@@ -2,3 +2,8 @@ node_modules
 node_modules/
 .DS_Store
 *.log
+
+# scratch screenshots from the dev scripts (kept out of the repo; the few worth keeping live in docs/screens)
+docs/ingame/
+docs/tutorial/
+shots/
