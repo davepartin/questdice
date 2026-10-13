@@ -459,6 +459,15 @@ export const ACTS = [
     boss: ['lich'],
   },
 ];
+// Painted battle backdrops live at assets/bg/<slug>.webp. A place name becomes a slug by lowering
+// case, dropping apostrophes, and turning spaces into hyphens (Ravens’ Rest → ravens-rest).
+export const placeSlug = (name) => String(name || '').toLowerCase().replace(/['’]/g, '').replace(/\s+/g, '-');
+export function placeLook(name) {
+  const slug = placeSlug(name);
+  const act = ACTS.find((a) => a.places.some((p) => placeSlug(p) === slug));
+  if (!slug || !act) return { slug: '', url: '', weather: '' };
+  return { slug, url: `assets/bg/${slug}.webp`, weather: act.id === 1 ? 'ash' : act.id === 2 ? 'crypt' : '' };
+}
 export const QUESTS_PER_ACT = 10;
 // BATTLE POINTS, like an arcade score. Every battle starts at 0; your hero keeps a lifetime total, and in party games the
 // battle's top scorer gets the 1st place trophy (2nd place too with 3+ heroes), first pick of the spoils, and more gold.

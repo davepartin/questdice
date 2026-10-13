@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Place backgrounds</title>
+  <base href="/">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/board.css">
+  <style>
+    html, body { margin: 0; height: 100%; background: #08060a; overflow: hidden; }
+    .b3 { position: fixed; inset: 0; --line-y: 46%; --safe-t: 0px; --disp: 'Oxanium', system-ui, sans-serif; --dock-top: 12rem; }
+    .shot-head { position: absolute; left: 0; right: 0; top: 0; z-index: 3; display: flex; align-items: baseline; gap: .5rem; padding: .45rem .7rem; font: 800 .62rem/1 'Oxanium', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #ffe39a; text-shadow: 0 1px 3px #000; pointer-events: none; }
+    .shot-head small { font-weight: 600; letter-spacing: .08em; color: #d8a88a; }
+    .shot-below { position: absolute; left: 0; right: 0; top: var(--line-y); bottom: 0; background: linear-gradient(180deg, #1a120c, #0a0706); box-shadow: inset 0 8px 18px rgba(0,0,0,.55); }
+    .ready { position: absolute; left: -99px; }
+  </style>
+</head>
+<body>
+  <div class="b3" id="host">
+    <div class="shot-head" id="head"></div>
+    <div class="shot-below"></div>
+  </div>
+  <script type="module">
+    import { createFlat, applyPlace, atmoLayers } from '/js/g3/flat.js';
+    import * as D from '/js/data.js';
+    import { h } from '/js/dom.js';
+    const q = new URLSearchParams(location.search);
+    const place = q.get('place') || 'Burnt Orchard';
+    const look = D.placeLook(place);
+    const act = D.ACTS.find((a) => a.places.some((p) => D.placeSlug(p) === look.slug))?.id || 1;
+    const kind = q.get('kind') || (look.slug?.endsWith('gallows-hill') || look.slug === 'ash-cloister' ? 'boss' : 'battle');
+    const foes = (q.get('enemies') || (act === 2 ? 'skeleton,wraith' : kind === 'boss' ? 'goblinking' : 'goblin,wolf')).split(',').filter(Boolean);
+    const cls = q.get('cls') || (act === 2 ? 'wizard' : 'knight');
+    document.getElementById('head').innerHTML = `${place} <small>Round 1</small>`;
+    const tween = (dur, fn) => { fn(1); return Promise.resolve(); };
+    const wait = () => Promise.resolve();
+    const enemies = foes.map((id, i) => {
+      const m = D.MONSTERS[id] || D.MONSTERS.goblin;
+      return { uid: `${id}:${i}`, id, name: m.name, tier: m.tier || 'minion', hp: m.hp, maxHp: m.hp };
+    });
+    const heroes = [{ name: 'Dave', cls }];
+    const quest = { act, place, kind, name: kind === 'boss' ? place : `Trouble at ${place}` };
+    const host = document.getElementById('host');
+    if (q.get('end')) {
+      const img = D.CLASSES[cls].img;
+      const el = h('div', { class: `fb fb-end ${q.get('end')} act-${act}` },
+        h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
+        h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather)),
+        h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: 'Dave', draggable: 'false' })));
+      applyPlace(el, place);
+      host.replaceChildren(el);
+    } else {
+      const fb = createFlat({ host, tween, wait, enemies, heroes, quest });
+      for (const e of enemies) fb.paintFoe(e, { intents: false });
+    }
+    if (look.url) await new Promise((r) => { const im = new Image(); im.onload = im.onerror = r; im.src = look.url; });
+    const imgs = [...document.images];
+    await Promise.all(imgs.map((im) => im.complete ? null : new Promise((r) => { im.onload = im.onerror = r; })));
+    const ready = document.createElement('i'); ready.className = 'ready'; ready.dataset.place = look.slug; document.body.append(ready);
+    window.__placeReady = { place, slug: look.slug, weather: look.weather };
+  </script>
+</body>
+</html>

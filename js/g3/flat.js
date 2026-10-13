@@ -109,18 +109,42 @@ class Piece {
   setCall(text) { this.call.textContent = text || ''; this.call.hidden = !text; }
 }
 
+// A place name on the board: data-place plus the painted backdrop (felt stays the fallback).
+export function applyPlace(el, place) {
+  const look = D.placeLook(place);
+  if (look.slug) el.dataset.place = look.slug;
+  else { delete el.dataset.place; el.style.removeProperty('--place-img'); }
+  el.classList.toggle('wx-ash', look.weather === 'ash');
+  el.classList.toggle('wx-crypt', look.weather === 'crypt');
+  return look;
+}
+export function atmoLayers(weather) {
+  if (weather === 'ash') {
+    const embers = Array.from({ length: 8 }, (_, i) => h('i', { class: 'fb-ember', style: { '--x': `${(i * 29 + 8) % 94}%`, '--y': `${30 + ((i * 47) % 55)}%`, '--d': `${(i * 1.4) % 8}s`, '--t': `${8 + (i * 2) % 6}s`, '--s': String(0.45 + ((i * 11) % 6) / 10) } }));
+    return [h('i', { class: 'fb-fog a' }), h('i', { class: 'fb-fog b' }), ...embers];
+  }
+  if (weather === 'crypt') {
+    const dust = Array.from({ length: 7 }, (_, i) => h('i', { class: 'fb-dust', style: { '--x': `${(i * 41 + 7) % 94}%`, '--y': `${12 + ((i * 29) % 70)}%`, '--d': `${(i * 1.3) % 8}s`, '--t': `${11 + (i * 2) % 9}s`, '--s': String(0.4 + ((i * 13) % 5) / 10) } }));
+    return [h('i', { class: 'fb-flicker' }), ...dust];
+  }
+  return [];
+}
+
 // ------------------------------------------------------------------------------------------ the board
 export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo }) {
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
+  const look = D.placeLook(quest?.place);
   const motes = Array.from({ length: 9 }, (_, i) => h('i', { class: 'fb-mote', style: { '--x': `${(i * 37 + 11) % 96}%`, '--y': `${20 + ((i * 53) % 60)}%`, '--d': `${(i * 1.7) % 9}s`, '--t': `${9 + (i * 3) % 7}s`, '--s': String(0.5 + ((i * 17) % 6) / 8) } }));
   const table = h('div', { class: 'fb-table' }, h('i', { class: 'fb-lamp' }), ...motes, h('i', { class: 'fb-rim top' }), h('i', { class: 'fb-rim bot' }));
+  const atmo = h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather));
   const heroSide = h('div', { class: 'fb-side heroes' });
   const foeSide = h('div', { class: 'fb-side foes' });
   const field = h('div', { class: 'fb-field' }, heroSide, foeSide);
   const fx = h('div', { class: 'fb-fx', 'aria-hidden': 'true' });
   const flashEl = h('i', { class: 'fb-flash', 'aria-hidden': 'true' });
-  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${heroes.length > 1 ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, field, fx, flashEl);
+  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${heroes.length > 1 ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl);
+  applyPlace(fb.el, quest?.place);
   host.prepend(fb.el);
 
   // ---- heroes
