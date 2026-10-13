@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentPerFace, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, SYMBOL_VALUE, TALENT_MAX_SAME, talentPerFace, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
@@ -293,7 +293,7 @@ export function evaluate(hero, board, opts = {}) {
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
   }
 
-  // Lanes: weapon (color + number) + hand strength + special symbol.
+  // Lanes: weapon (color + number) + hand strength (doubled by 2x); talent symbols add +1 each to their counter.
   for (const [key, lane] of Object.entries(LANES)) {
     if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
@@ -308,10 +308,7 @@ export function evaluate(hero, board, opts = {}) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
       out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
     }
-    for (const t of tsyms) {
-      if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += str;
-      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += str;
-    }
+    for (const t of tsyms) out[t] = (out[t] || 0) + SYMBOL_VALUE; // each symbol showing adds 1 to its counter (the hand's strength no longer matters here)
     out.lanes[key] = L;
   }
   // The pet die: each symbol on the face it shows pays the pet's power.

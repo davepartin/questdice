@@ -543,8 +543,6 @@ function unlockSection(hero) {
         h('div', { class: 'ur-copy' }, h('b', {}, DIE_NAME[slot]), h('small', {}, talent ? 'A bonus die: choose symbols for its faces.' : 'Your second weapon rolls here too.')),
         btn(`Add die · ${u.cost}`, () => { if (HE.unlockDie(hero, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add the ${DIE_NAME[slot]} for ${u.cost} gold` })); }));
 }
-const SYM_MULT = { atk: 1, block: 1, magic: 1, heal: 1, gold: 1 };
-const symAvg = (hero, slot, k) => { const hand = hero.strength[slot === 'SW' ? 'W' : 'E']; return ((hand + 1) / 2 * (SYM_MULT[k] || 1)).toFixed(1).replace('.0', ''); };
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
   const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
@@ -562,10 +560,10 @@ function talentCard(hero, slot) {
   const picker = picking ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
     const left = info.same - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= info.per;
     const can = left > 0 && !full && hero.gold >= info.cost;
-    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= info.per ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `about +${symAvg(hero, slot, k)} · ${left} left`));
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= info.per ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `+1 · ${left} left`));
   }), h('small', { class: 'tal-cost' }, `Each symbol costs ${info.cost} gold. Tap a placed symbol to take it off.`)) : null;
   return h('div', { class: 'sx-urow tal-die' },
-    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Powered by your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']} (about ${((hero.strength[slot === 'SW' ? 'W' : 'E'] + 1) / 2).toFixed(1)} a roll)`)),
+    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Each symbol that shows adds 1. The 2× face doubles your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']}.`)),
     h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
       h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
     h('div', { class: `tal-strip syms ${info.per > 2 ? 'wide' : ''}` }, symFaces),
@@ -668,7 +666,7 @@ function forgeTab() {
     unlockSection(hero),
     hasTalent ? coachBox('c_talent') : null,
     hasTalent ? eyebrow('Talent dice') : null,
-    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face holds up to half the sides of the die in symbols (a d6 three, a d8 four), and a die can carry that many of one symbol.') : null,
+    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol that shows adds 1 to your total. A face holds up to half the sides of the die in symbols (a d6 three, a d8 four), and a die can carry that many of one symbol.') : null,
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     petSection(hero),
     eyebrow('Strength dice'),

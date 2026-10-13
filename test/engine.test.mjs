@@ -53,7 +53,7 @@ test('lane = weapon + strength; weapon color decides attack vs block', () => {
   assert.equal(ev.atk, 7); assert.equal(ev.block, 7);
 });
 
-test('talent die: 2x doubles that hand, symbols are worth the hand strength, a face may hold two', () => {
+test('talent die: 2x doubles that hand, each symbol adds 1, a face may hold two', () => {
   const h = knight(); h.special.SW = 6; h.talent.SW = [['heal', 'atk'], [], ['gold']];
   assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 2), null);
   assert.equal(specialFace(h, 'SW', 3), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal', 'atk']);
@@ -62,9 +62,10 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal and attack on one face
   const ev2b = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
-  assert.equal(ev2.heal - ev2b.heal, 3); assert.ok(ev2.atk >= 3); // heal is worth the hand's number, 1 for 1
+  assert.equal(ev2.heal - ev2b.heal, 1); assert.ok(ev2.atk - ev2b.atk === 1); // each symbol adds 1, whatever the hand rolled
   const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
-  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 4); // gold is one for one: a hand of 4 pays 4
+  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 1); // gold is one for one: a gold symbol pays 1, not the hand's 4
+  assert.equal(evaluate(h, board({ SW: 6, W: 1, NW: 1, C: 3 })).gold - evaluate(h, board({ SW: 5, W: 1, NW: 1, C: 3 })).gold, 1);
 });
 
 test('talent slots cost the same; a face holds half the die\'s sides in symbols, and a die carries that many of one symbol', () => {

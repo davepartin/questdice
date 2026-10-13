@@ -151,7 +151,7 @@ const LESSONS = [
     body: () => [
       row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Every talent die has two blank faces.'),
       row(img('talent-x2', 'xs'), '2× Strength', 'Counts the hand above it twice in its weapon.'),
-      row(img('talent-heal', 'xs'), 'Symbol faces', 'Pay that symbol: one for every point on your hand. A hand of 4 pays 4. You choose the symbols at camp.'),
+      row(img('talent-heal', 'xs'), 'Symbol faces', 'Each symbol showing adds 1 to its counter: two attack symbols are +2 attack. You choose the symbols at camp.'),
     ],
   },
   {

@@ -872,3 +872,8 @@ Dave's list, in the order we are doing it. Each item names where it lives.
    `camp-act1.webp`, `camp-act2.webp`, `camp-act3.webp` (or just `camp.webp`) and road art as `road-act1..3.webp` (1280x720 like the
    others), then add the names to `PAINTED` in `scenery.js` (it does not probe the network). Until then the camp uses a calm place
    painting (Wolfwood Edge / Candle Vault / Smoke Hollow). The title and hero-choice screens still use the old 3D scene. Dev: `dev/campshot.mjs tag w h n [camp|board]`.
+
+- (13 Oct, later) **Talent symbols no longer use the hand's strength** (Dave): each symbol showing on a talent die adds 1 to its counter
+  (`SYMBOL_VALUE` in data.js; `evaluate` in engine.js). The 2x face still doubles the hand above it in its weapon lane. Camp text, the
+  coach tip and the tutorial lesson were reworded. This makes talent dice weaker than before (a d4 face with one symbol was worth the hand's 2-4);
+  the bot numbers in docs/BALANCE.md were measured before this change, so re-run `sh tools/progress-all.sh 3 3 smart` and look at Mid again.

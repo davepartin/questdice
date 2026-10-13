@@ -171,13 +171,15 @@ export const LOOT_WEIGHTS = {
 
 // TALENT dice (the bottom corners; the old "special" dice). Faces: two blanks, a 2x (doubles that hand's strength in its lane),
 // then symbol faces: one on a d4, three on a d6. Each symbol face holds up to two symbols; any one symbol may appear at most twice on a die.
-// A symbol is worth the strength rolled on the hand above the die: one for one, every symbol (Dave).
+// A symbol is worth 1: the number of symbols showing on a talent die is what it adds to your total (Dave, 13 Oct; it used to be
+// the hand's strength). The 2x face still doubles the hand above it in its weapon lane.
+export const SYMBOL_VALUE = 1;
 export const TALENT_SYMS = {
-  atk: { name: 'Attack', text: 'Attack equal to your hand strength.' },
-  block: { name: 'Block', text: 'Block equal to your hand strength.' },
-  magic: { name: 'Magic', text: 'Magic equal to your hand strength.' },
-  heal: { name: 'Heal', text: 'Heal equal to your hand strength.' },
-  gold: { name: 'Gold', text: 'Gold equal to your hand strength.' },
+  atk: { name: 'Attack', text: '+1 attack for each one that shows.' },
+  block: { name: 'Block', text: '+1 block for each one that shows.' },
+  magic: { name: 'Magic', text: '+1 magic for each one that shows.' },
+  heal: { name: 'Heal', text: '+1 heal for each one that shows.' },
+  gold: { name: 'Gold', text: '+1 gold for each one that shows.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
