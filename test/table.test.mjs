@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createTable, joinTable, command, playerView } from '../js/table.js';
 import * as E from '../js/engine.js';
 import * as R from '../js/roads.js';
+import * as SV from '../js/save.js';
 
 function make(names = [['Ada', 'knight'], ['Bea', 'bard']]) {
   const table = createTable({ code: 'TEST', seed: 12345, name: 'Ash Company' });
@@ -246,4 +247,137 @@ test('the host push overrides a brag board that has not been seen', () => {
   assert.ok(command(table, players[0].id, { type: 'push' }).ok);
   assert.equal(table.phase, 'camp');
   assert.equal(table.players.every((p) => p.seenBrag), true);
+});
+
+test('a brought hero keeps their gear, and the table walks the host\'s road', () => {
+  const table = createTable({ code: 'HERO', seed: 9, name: 'Road' });
+  const ada = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
+  ada.level = 5; ada.gold = 80; ada.perks = ['iron'];
+  ada.campaign.act = 2; ada.campaign.step = 3; ada.campaign.reached = { act: 2, step: 3 };
+  const bea = E.newHero({ name: 'Bea', cls: 'bard', seed: 2 });
+  bea.level = 2; bea.gold = 12;
+  assert.equal(joinTable(table, { name: 'Ada', cls: 'knight', token: 'tok0aaaa', hero: ada }).ok, true);
+  assert.equal(joinTable(table, { name: 'Bea', cls: 'bard', token: 'tok1bbbb', hero: bea }).ok, true);
+  assert.equal(table.players[0].brought.level, 5);
+  assert.equal(command(table, table.players[1].id, { type: 'ready' }).ok, true);
+  assert.equal(command(table, table.hostId, { type: 'start' }).ok, true);
+  assert.equal(table.phase, 'road');
+  assert.equal(table.company.campaign.act, 2);
+  assert.equal(table.company.campaign.step, 3);
+  assert.equal(table.players[0].hero.level, 5);
+  assert.equal(table.players[0].hero.gold, 80);
+  assert.equal(table.players[0].hero.perks.includes('iron'), true);
+  assert.equal(table.players[1].hero.level, 2);
+  assert.equal(table.players[1].hero.gold, 12);
+  assert.equal(table.players[0].hero.campaign, table.company.campaign);
+  assert.equal(table.players[1].hero.campaign, table.company.campaign);
+  assert.equal(table.players[0].brought, null);
+  const seated = createTable({ code: 'SEE2', seed: 1, name: 'See' });
+  joinTable(seated, { name: 'Cy', cls: 'ranger', token: 'tok2cccc', hero: ada });
+  assert.equal(playerView(seated, seated.players[0].id).players[0].level, 5);
+});
+
+test('Act I tables refuse a hero who has already beaten a step', () => {
+  const table = createTable({ code: 'ACT1', seed: 2, name: 'Gate' });
+  assert.equal(joinTable(table, { name: 'Host', cls: 'knight', token: 'tok0aaaa' }).ok, true);
+  const vet = E.newHero({ name: 'Vet', cls: 'bard', seed: 8 });
+  vet.campaign.act = 1; vet.campaign.step = 4; vet.campaign.wins = 3; vet.campaign.reached = { act: 1, step: 4 };
+  const join = joinTable(table, { name: 'Vet', cls: 'bard', token: 'tok1bbbb', hero: vet });
+  assert.equal(join.ok, false);
+  assert.match(join.error, /Act I is for a new hero/);
+  const fresh = E.newHero({ name: 'Nia', cls: 'wizard', seed: 9 });
+  assert.equal(joinTable(table, { name: 'Nia', cls: 'wizard', token: 'tok2cccc', hero: fresh }).ok, true);
+  const hostVet = createTable({ code: 'HVET', seed: 3, name: 'No' });
+  const mid = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
+  mid.campaign.act = 1; mid.campaign.step = 5; mid.campaign.wins = 4; mid.campaign.reached = { act: 1, step: 5 };
+  const hostJoin = joinTable(hostVet, { name: 'Ada', cls: 'knight', token: 'tok3dddd', hero: mid });
+  assert.equal(hostJoin.ok, false);
+  assert.match(hostJoin.error, /Act I is for a new hero/);
+});
+
+test('a built-up hero may bring their save into an Act II table', () => {
+  const table = createTable({ code: 'ACT2', seed: 4, name: 'Crypt' });
+  const host = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
+  host.level = 6; host.campaign.act = 2; host.campaign.step = 1; host.campaign.reached = { act: 2, step: 4 }; host.campaign.wins = 13;
+  const friend = E.newHero({ name: 'Bea', cls: 'bard', seed: 2 });
+  friend.level = 5; friend.campaign.act = 2; friend.campaign.step = 2; friend.campaign.reached = { act: 2, step: 2 }; friend.campaign.wins = 11;
+  assert.equal(joinTable(table, { name: 'Ada', cls: 'knight', token: 'tok0aaaa', hero: host }).ok, true);
+  assert.equal(joinTable(table, { name: 'Bea', cls: 'bard', token: 'tok1bbbb', hero: friend }).ok, true);
+  assert.equal(command(table, table.players[1].id, { type: 'ready' }).ok, true);
+  assert.equal(command(table, table.hostId, { type: 'start' }).ok, true);
+  assert.equal(table.company.campaign.act, 2);
+});
+
+test('a repeat clear pays that hero nothing; a first-clear friend still earns', () => {
+  const { table, players } = make();
+  begin(table, players);
+  const c = table.company.campaign;
+  const ada = table.company.members.find((m) => m.name === 'Ada');
+  const bea = table.company.members.find((m) => m.name === 'Bea');
+  ada.cleared = [SV.stepKey(c.act, c.step)];
+  ada.gold = 50; bea.gold = 50;
+  const adaXp = ada.xp; const adaLv = ada.level; const adaPerks = ada.pendingPerks;
+  const beaXp = bea.xp;
+  let guard = 0;
+  while (table.phase === 'battle' && guard++ < 16) {
+    for (const e of table.battle.enemies) if (e.hp > 0) e.hp = 1;
+    for (const p of players) {
+      if (table.phase !== 'battle') break;
+      const f = table.battle.fighters.find((x) => x.hero === p.hero);
+      if (!f || f.hp <= 0 || f.locked) continue;
+      if (!f.board) assert.equal(command(table, p.id, { type: 'roll' }).ok, true);
+      f.mods = { ...(f.mods || {}), atk: 80, pierce: 0, block: 0, heal: 0, weaken: 0 };
+      assert.equal(command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }).ok, true);
+    }
+  }
+  assert.equal(table.phase, 'victory');
+  assert.equal(table.rewards.repeat.Ada, true);
+  assert.equal(table.rewards.repeat.Bea, false);
+  assert.equal(table.rewards.gold.Ada, 0);
+  assert.ok(table.rewards.gold.Bea > 0);
+  assert.equal(ada.gold, 50);
+  assert.equal(ada.xp, adaXp);
+  assert.equal(ada.level, adaLv);
+  assert.equal(ada.pendingPerks, adaPerks);
+  assert.ok(bea.gold > 50);
+  assert.ok(bea.xp > beaXp || bea.pendingPerks > 0 || bea.level > 1);
+  assert.ok(table.rewards.drops.length > 0);
+  assert.deepEqual(table.rewards.draft.order, ['Bea']);
+  const view = playerView(table, players[0].id);
+  assert.equal(view.victory.repeat.Ada, true);
+});
+
+test('when every hero is replaying, the table withholds XP, gold and spoils', () => {
+  const { table, players } = make();
+  begin(table, players);
+  const c = table.company.campaign;
+  const key = SV.stepKey(c.act, c.step);
+  for (const m of table.company.members) {
+    m.cleared = [key];
+    m.gold = 40;
+    m.xp = 0;
+    m.pendingPerks = 0;
+  }
+  let guard = 0;
+  while (table.phase === 'battle' && guard++ < 16) {
+    for (const e of table.battle.enemies) if (e.hp > 0) e.hp = 1;
+    for (const p of players) {
+      if (table.phase !== 'battle') break;
+      const f = table.battle.fighters.find((x) => x.hero === p.hero);
+      if (!f || f.hp <= 0 || f.locked) continue;
+      if (!f.board) assert.equal(command(table, p.id, { type: 'roll' }).ok, true);
+      f.mods = { ...(f.mods || {}), atk: 80, pierce: 0, block: 0, heal: 0, weaken: 0 };
+      assert.equal(command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }).ok, true);
+    }
+  }
+  assert.equal(table.phase, 'victory');
+  assert.equal(table.rewards.repeat.Ada, true);
+  assert.equal(table.rewards.repeat.Bea, true);
+  assert.equal(table.rewards.gold.Ada, 0);
+  assert.equal(table.rewards.gold.Bea, 0);
+  assert.equal(table.rewards.drops.length, 0);
+  assert.equal(table.rewards.draft.done, true);
+  assert.equal(table.company.members[0].gold, 40);
+  assert.equal(table.company.members[1].gold, 40);
+  assert.equal(table.company.members[0].pendingPerks, 0);
 });

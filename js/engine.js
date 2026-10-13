@@ -1230,6 +1230,8 @@ export function advanceCampaign(hero) {
   c.wins++; c.shop = null;
   c.nextPlace = null; c.nextEnemies = null;
   if (c.step >= QUESTS_PER_ACT) { c.act++; c.step = 1; } else c.step++;
+  const r = c.reached || { act: 1, step: 1 };
+  if (c.act > r.act || (c.act === r.act && c.step > r.step)) c.reached = { act: c.act, step: c.step };
 }
 
 // ------------------------------------------------------------------------------- company battles

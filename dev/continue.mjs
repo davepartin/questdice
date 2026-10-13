@@ -23,7 +23,11 @@ await shot(`saved_${W}x${H}`); console.log('saved list:', await plaques());
 await p.evaluate(() => [...document.querySelectorAll('.sx-plaque')].find((e) => /Back/.test(e.textContent))?.click()); await pump(1);
 await p.evaluate(() => [...document.querySelectorAll('.sx-plaque')].find((e) => /Continue/i.test(e.textContent))?.click()); await pump(0.5);
 await p.fill('#modal input[type=password]', 'pw'); await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((x) => /open/i.test(x.textContent))?.click());
-for (let i = 0; i < 40 && !(await p.evaluate(() => /Take this road/i.test(document.body.innerText))); i++) await pump(0.5);
+for (let i = 0; i < 40 && !(await p.evaluate(() => /Take the road|Take this road/i.test(document.body.innerText))); i++) await pump(0.5);
+if (await p.evaluate(() => /Take the road/i.test(document.body.innerText))) {
+  await p.evaluate(() => [...document.querySelectorAll('.sx-plaque')].find((e) => /Take the road/i.test(e.textContent))?.click());
+  for (let i = 0; i < 40 && !(await p.evaluate(() => /Take this road/i.test(document.body.innerText))); i++) await pump(0.5);
+}
 await pump(2);
 console.log('modal still open?', await p.evaluate(() => document.querySelector('#modal').className || '(no)'));
 const target = await p.evaluate(() => { const el = [...document.querySelectorAll('button, [role=button], .sx-quest, a')].find((e) => /take this road/i.test(e.textContent) && e.getBoundingClientRect().height > 0); if (!el) return null; el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
