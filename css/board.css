@@ -185,7 +185,7 @@
 .rc-again svg { width: .85rem; height: .85rem; }
 
 /* it sits over the dice table (empty between rounds), so the pieces and what each plans next stay in view above it */
-.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--dock-top, 12rem) - .4rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
+.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--bar-top, var(--dock-top, 12rem)) - .5rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
   border-radius: .9rem; overflow-x: hidden; overflow-y: auto; pointer-events: auto; cursor: pointer; animation: rcIn .26s ease-out;
   background: linear-gradient(180deg, rgba(44, 33, 26, .98), rgba(16, 11, 9, .99)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .55), inset 0 0 0 4px rgba(14, 9, 6, .9), inset 0 0 0 5px rgba(226, 178, 76, .22), 0 14px 34px rgba(0, 0, 0, .7); scrollbar-width: none; padding: .55rem .7rem .5rem; }
 .b3 .rc::-webkit-scrollbar { display: none; }
@@ -287,3 +287,40 @@
 .b3 .b3-rline { flex-wrap: nowrap; white-space: nowrap; } .b3 .b3-rline .rc-again { flex: none; }
 .fb-slot.tier-boss .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 18px rgba(255, 110, 60, .38)); }
 .fb-slot.tier-elite .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 14px rgba(255, 200, 100, .28)); }
+
+/* the two halves of the round card must never look alike: what you did (gold, green results) and what was done to you (red) */
+.rc-sec { padding: .4rem .55rem .45rem .7rem; border-radius: .75rem; }
+.rc-sec::before { top: .35rem; bottom: .35rem; left: .22rem; }
+.rc-sec.you { --sec: #ffc860; background: linear-gradient(180deg, rgba(226, 178, 76, .17), rgba(226, 178, 76, .05)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .45); }
+.rc-sec.foes { --sec: #ff6a5a; background: linear-gradient(180deg, rgba(255, 70, 50, .2), rgba(255, 70, 50, .06)); box-shadow: inset 0 0 0 1px rgba(255, 100, 80, .5); }
+.rc-bar { display: flex; align-items: center; gap: .35rem; margin-bottom: .3rem; font: 900 .68rem var(--disp, sans-serif); letter-spacing: .16em; text-transform: uppercase; color: var(--sec); text-shadow: 0 0 10px color-mix(in srgb, var(--sec) 45%, transparent); }
+.rc-bar svg { width: 1rem; height: 1rem; color: var(--sec); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--sec) 70%, transparent)); }
+.rc-tk.out.deal { background: linear-gradient(180deg, #38b86a, #145a32); box-shadow: inset 0 0 0 1px rgba(170, 255, 200, .7), inset 0 1px 0 rgba(255, 255, 255, .35), 0 0 14px rgba(70, 255, 150, .35); }
+.rc-tk.out.deal.zero { background: linear-gradient(180deg, #4a4658, #26222e); box-shadow: inset 0 0 0 1px rgba(220, 210, 240, .3); }
+.rc-tk.out.take { background: linear-gradient(180deg, #d83a2a, #6a1008); box-shadow: inset 0 0 0 1px rgba(255, 190, 170, .8), inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 16px rgba(255, 50, 30, .45); }
+.rc-tk.out.take.zero { background: linear-gradient(180deg, #2a6aa8, #123058); box-shadow: inset 0 0 0 1px rgba(170, 215, 255, .6); }
+.rc-tk.out b { font-size: 1.5rem; } .rc-tk.out small { font-size: .56rem; letter-spacing: .12em; }
+.rc-sec.foes .rc-who b { color: #ffd6cc; } .rc-sec.you .rc-who b { color: #ffeab8; }
+/* the close button: the same pill as Cancel on the magic sheet, top right */
+.rc-close { flex: none; min-height: 2.2rem; padding: .35rem .85rem; font-size: .74rem; }
+.rc-head { padding-bottom: .4rem; }
+
+/* denser rows so even a long fight's recap fits without scrolling: token rows never wrap, spacing is tighter */
+.rc-sum { flex-wrap: nowrap; gap: .18rem; }
+.rc-tk { padding: .12rem .34rem; gap: .16rem; flex: none; }
+.rc-tk b { font-size: 1rem; } .rc-tk.out b { font-size: 1.4rem; } .rc-tk small { font-size: .5rem; letter-spacing: .06em; } .rc-tk.out small { font-size: .52rem; letter-spacing: .08em; }
+.rc-op { font-size: .9rem; }
+.b3 .rc { gap: .25rem; padding: .45rem .6rem .4rem; }
+.rc-head { padding-bottom: .3rem; } .rc-close { min-height: 2rem; padding: .25rem .75rem; }
+.rc-body { gap: .3rem; } .rc-sec { padding: .3rem .5rem .35rem .65rem; } .rc-bar { margin-bottom: .2rem; }
+.rc-rows { gap: .24rem; } .rc-line { gap: .12rem; } .rc-foot { padding-top: .2rem; margin-top: 0; }
+@media (max-width: 380px) { .rc-tk b { font-size: .92rem; } .rc-tk.out b { font-size: 1.25rem; } .rc-tk small { font-size: .46rem; } .rc-tk.out small { font-size: .48rem; } .rc-tk svg { width: .75rem; height: .75rem; } .rc-tk { padding: .1rem .28rem; } }
+
+/* the little "i" on a monster's plaque: there is more to read about it */
+.fb-info { position: absolute; z-index: 3; top: -.5rem; right: -.35rem; width: 1.4rem; height: 1.4rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; -webkit-tap-highlight-color: transparent;
+  font: italic 900 .95rem/1 Georgia, 'Times New Roman', serif; color: #2a1804; background: linear-gradient(180deg, #fff1c0, #e2b24c 70%, #b8862c); box-shadow: 0 0 0 1.5px #4a300a, 0 2px 6px rgba(0, 0, 0, .65); }
+.fb-info::after { content: ''; position: absolute; inset: -.5rem; border-radius: 50%; }
+.fb-slot.targeted .fb-info { animation: fbInfo 2.4s ease-in-out infinite; }
+@keyframes fbInfo { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.22); box-shadow: 0 0 0 1.5px #4a300a, 0 0 12px rgba(255, 220, 120, .9); } }
+.fb-slot.dead .fb-info { display: none; }
+@media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }

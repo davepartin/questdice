@@ -1,7 +1,7 @@
 // Progression report: a bot hero plays the solo campaign through N acts and, at every step, we measure how the two roads
 // would go for THAT hero (win chance, rounds, hp left), then it takes one road and moves on.
 //   node tools/progress.mjs [acts = 2] [campaigns per class = 4] [policy = steady|bold|smart] [class]
-import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle, sidesOf, weaponSize, heroPower, questDanger } from '../js/engine.js';
+import { makeRng, newHero, questsFor, roadsFor, battleRewards, gainXp, advanceCampaign, newBattle, sidesOf, weaponSize, heroPower, questDanger } from '../js/engine.js';
 import { botRound, botCamp, botLoot } from './sim.mjs';
 import { buyPotion } from '../js/engine.js';
 import { QUESTS_PER_ACT } from '../js/data.js';
@@ -25,7 +25,7 @@ for (const cls of classes) for (let s = 0; s < N; s++) {
   total++; const seed = 7000 + s; const rng = makeRng(seed); const hero = newHero({ name: 'P', cls, seed });
   let alive = true;
   for (let n = 0; n < QUESTS_PER_ACT * ACTS && alive; n++) {
-    const opts = questsFor(hero); const key = `${hero.campaign.act}.${String(hero.campaign.step).padStart(2, '0')}`;
+    const opts = roadsFor(hero); const key = `${hero.campaign.act}.${String(hero.campaign.step).padStart(2, '0')}`;
     const A = (agg[key] ||= { n: 0, sw: 0, pw: 0, sr: 0, pr: 0, shp: 0, php: 0, lvl: 0, gold: 0, str: 0, wpn: 0, pow: 0, took: 0, kind: opts[0].kind, sd: 0, pd: 0 });
     const tS = trial(hero, opts[0], seed + n); const tP = opts[1] ? trial(hero, opts[1], seed + n + 99) : null;
     A.n++; A.sw += tS.win; A.sr += tS.rounds; A.shp += tS.hp; A.lvl += hero.level; A.gold += hero.gold;

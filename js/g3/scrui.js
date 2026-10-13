@@ -335,7 +335,7 @@ function questCard(q, idx) {
   // danger is read from YOUR dice against these monsters: how much of your health the fight should cost
   const dz = E.questDanger(X.S.hero || X.members()[0], q); const danger = { Easy: dz.score < 0.18 ? 1 : 2, Fair: 3, Hard: 4, Deadly: 5 }[dz.label];
   const reward = Math.min(5, Math.max(1, Math.round((xp + gold) / 16)));
-  const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : q.perilous ? 'Perilous' : 'Steady';
+  const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : 'Battle';
   const place = q.place || q.name;
   return h('button', { class: `sx-qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', style: { '--i': idx }, 'aria-label': `${tag}: ${q.name}. ${groupNames(q.enemies)}`, onclick: tap(() => X.startQuest(q)) },
     h('span', { class: 'qc-tag' }, q.perilous ? ico('flame') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : ico('shield'), tag, q.perilous ? h('em', {}, `×${D.PERIL.reward} rewards`) : null),
@@ -346,12 +346,12 @@ function questCard(q, idx) {
       h('div', { class: 'qc-read' },
         h('div', { class: `qr danger dz-${dz.label.toLowerCase()}` }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `${dz.label} for you · ~${dz.rounds} round${dz.rounds > 1 ? 's' : ''}`)),
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
-    h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? 'Face the king' : 'Take this road'), ico('chevron')));
+    h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? 'Face the king' : 'Fight'), ico('chevron')));
 }
 export function board() {
   const S = X.S; const hero = S.hero || X.members()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); X.persist();
   const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0); const ambush = c.ambush?.length;
-  const tipEl = tipBox('board', 'Each quest offers two roads. Standard is lighter. Perilous hits harder but pays 1.5× gold and XP.');
+  const tipEl = tipBox('board', 'One fight waits on this stretch of road. Win it to walk on; the boss is at the end of the act.');
   const place = quests[0].place;
   mountAs('board', h('div', { class: 'sx-board' },
     topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' }))),
@@ -364,7 +364,7 @@ export function board() {
       h('div', { class: 'sx-notes' },
         blessings.length ? h('p', { class: 'note boon' }, ico('shine'), blessings.map((b) => b.text).join(' · ')) : null,
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
-      eyebrow(quests.length > 1 ? 'Choose your road' : 'The road ends here', 'center'),
+      eyebrow(quests[0]?.kind === 'boss' ? 'The road ends here' : 'The road ahead', 'center'),
       h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)))));
   lay('board'); SCR.enter('road', { hero, place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
@@ -473,7 +473,7 @@ export function defeat(retreat, loss) {
       panel('sx-grace', h('p', { class: 'df-loss' }, loss ? h('span', {}, `You dropped `, coin(loss, 'inline'), ' in the dust.') : 'You lost nothing but pride.'),
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
-      h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. Standard roads are lighter than Perilous ones.'),
+      h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again.'),
       h('div', { class: 'sx-cta' }, btn('Return to camp', () => X.showCamp({ fromBoard: false }), { big: true, icon: 'tent', cls: 'wide' })))));
   lay('defeat'); SCR.defeat(hero, S.quest?.place);
 }

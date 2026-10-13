@@ -1,7 +1,7 @@
 import { chromium } from 'playwright-core';
 const out = process.argv[2];
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
-const p = await b.newPage({ viewport: { width: 462, height: 783 }, hasTouch: true });
+const p = await b.newPage({ viewport: { width: 393, height: 666 }, hasTouch: true });
 const problems = []; p.on('pageerror', (e) => problems.push(e.message));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); } catch {} });
 await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
