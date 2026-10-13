@@ -842,3 +842,32 @@ Dave: "There needs to be only one option to fight, since you can already choose 
 
 ## 2026-10-13 — Painted per-location battle backgrounds
 Each fight's place (already chosen in `questsFor`) paints the table: `createFlat` sets `data-place` on `.fb` and `--place-img` to `assets/bg/<slug>.webp`. Slug is lowercase, apostrophes stripped, spaces to hyphens; all 16 `ACTS[].places` resolve. The felt stays the fallback. The painting sits under the lamp, `cover` sized, with a darker top/bottom wash so the header and plaques still read. Landscape crops around 58% vertical; portrait around 80%; crypt floors sit lower so those places drop the crop. End-of-battle (`screens.js` endTable) uses the same place. Slow fog + ember specks on Act I outdoor places, dust and a candle flicker on Act II; `prefers-reduced-motion` turns them off. Engine rules unchanged. Dev: `dev/placebg.mjs`.
+
+## 2026-10-13 — Dave's rules pass and the painted scenes (plan and status)
+Dave's list, in the order we are doing it. Each item names where it lives.
+1. **Rules audit (done).** Talent dice: always two blank faces and one 2x; every other face can carry symbols (`TALENT_FACES` in data.js:
+   d4 1 face, d6 3, d8 5, d10 7; a face holds two symbols, a die at most two of one symbol). The die grows d4 -> d6 -> d8 -> d10
+   (`SPECIAL_STEPS`). Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them).
+   **Open question for Dave:** he said d6 = three things, d8 = four, d10 = five; with two blanks and a 2x that leaves d8 with one
+   face too many, so the code fills every face (5 and 7). If he meant 4 and 5, change `TALENT_FACES` (one line) and the extra faces become blank.
+2. **Dice grow with the act (done).** `ACT_MAX_DIE` / `dieCapForAct`: Act I d4 -> d6 only, Act II d6 -> d8, Act III d8 -> d10, for strength
+   and talent dice (`actGate` in engine.js; the camp row shows "Act II" on the lock). The level and gold gates still apply.
+3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green
+   health pill update in place. The detail panel has a fixed minimum height so the triangle never jumps when you pick the first
+   power; bigger medallions with a gold rim when ready; the three helpers are small raised pills. `dev/sheetshot.mjs` measures the triangle before/after a pick.
+4. **Skill level and random encounters (built, being tuned).** The hero picks Noob / Mid / Expert (keys `easy|normal|hard` kept for old saves;
+   `DIFFICULTY`, now with a `budget`). `questsFor` returns ONE fight chosen by the game: `encounterFor(hero)` fills a trouble
+   budget (`ENCOUNTER` in data.js, each monster has a `threat`; budget grows through the act, times the skill's `budget`, times a seeded
+   0.75-1.35 jitter) from the act's own monsters, sometimes one big monster, sometimes a crowd (cap 4). Elite steps give a Noob the elite alone and an Expert the elite with company. The first fight is still the lone goblin.
+   `roadsFor(hero)` (no `random`) is the old pair of roads, kept for the balance tools. `SKILL=easy|normal|hard sh tools/progress-all.sh 3 3 smart` measures the new game (one fight per step).
+5. **Monster roster (audit notes).** Ten monsters, all on theme (goblins, wolves, an ember mage, an ogre, a goblin king; bone soldiers, wraith,
+   spiders, bone warden, lich). Every monster has attacks and most a way to block (Duck, Fire Ward, Roar, Gold Shield, Shield Up, Skitter, Bone
+   Wall, Bone Armor); the wolf has none and the wraith slips through (Phase). **Act III has no monsters of its own** (it replays Act I's with
+   bigger numbers): the next art request for Grokabot is a third bestiary plus Act III places and miniatures.
+6. **Painted camp and road scenes (built).** `js/g3/scenery.js` + `css/scenery.css`: camp, the quest board, the road/story screens and the
+   room lobby are now flat painted scenes (no WebGL): a full-screen painting behind the panels and the company's **miniatures standing round
+   a campfire, each hero's pet at their feet** (up to six, front and back rows; a camp in a room shows everyone at the table). The road
+   and board show the painting of the place where the next fight is. **Handoff for Grokabot:** drop camp art in `assets/bg/` as
+   `camp-act1.webp`, `camp-act2.webp`, `camp-act3.webp` (or just `camp.webp`) and road art as `road-act1..3.webp` (1280x720 like the
+   others), then add the names to `PAINTED` in `scenery.js` (it does not probe the network). Until then the camp uses a calm place
+   painting (Wolfwood Edge / Candle Vault / Smoke Hollow). The title and hero-choice screens still use the old 3D scene. Dev: `dev/campshot.mjs tag w h n [camp|board]`.
