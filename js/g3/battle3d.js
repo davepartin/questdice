@@ -533,7 +533,7 @@ async function doBigHeal() {
   if (!E.healBig(b)) { sfx.error(); return; }
   renderRoster();
   sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
-  updateScore(); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
+  updateScore(); refresh(); renderSheet(); // the sheet stays open (Dave): keep tapping, watch the health go up
 }
 // The powers sheet reaches right down to the top of the counter boxes (Dave: "there is room, so let's use it").
 function sheetToCounters() {
@@ -690,7 +690,7 @@ async function doHeal() {
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'heal' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
   renderRoster(); sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); refresh();
+  refresh(); renderSheet(); // stays open: every tap pays for another heal
 }
 async function doCard(id, opts = {}) {
   let b = B.b; if (B.busy) return;

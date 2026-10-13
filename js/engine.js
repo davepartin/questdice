@@ -5,7 +5,7 @@ import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
-  SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
+  SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
 } from './data.js';
@@ -875,9 +875,16 @@ export function takePerk(hero, id) {
 }
 
 // Camp economy.
+// A die can only grow as far as the act allows (Act I d6, Act II d8, Act III d10): the hero must reach the next act first.
+function actGate(hero, size) {
+  const act = hero.campaign?.act || 1; const next = NEXT_SIZE[size];
+  if (next > dieCapForAct(act)) { const need = Math.ceil((next - 4) / 2); return { ok: false, why: `Act ${ROMAN[need]}`, act: need, next }; }
+  return null;
+}
 export function strengthUpgrade(hero, slot) {
   const size = hero.strength[slot]; const step = STRENGTH_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
+  { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
   if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
@@ -885,6 +892,7 @@ export function strengthUpgrade(hero, slot) {
 export function specialUpgrade(hero, slot) {
   const size = hero.special[slot]; const step = SPECIAL_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
+  { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
   if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };

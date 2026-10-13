@@ -118,6 +118,7 @@ export function sigil(ctx) {
     <path class="pa-edge" d="${big}"/>    <circle class="pa-node" cx="150" cy="8" r="5"/><circle class="pa-node n2" cx="288" cy="200" r="5"/><circle class="pa-node n3" cx="12" cy="200" r="5"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   const core = h('div', { class: 'pw-center' }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic'));
+  const life = h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`));
   // the helpers (potion, heal, heart change): three solid pills under the triangle, each with its cost in the corner;
   // grey when you cannot use them, with the reason in small print (FULL HP, NONE LEFT)
   const utilCost = (u) => (u.cost ? h('span', { class: 'pu-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pu-cost free' }, h('b', {}, u.badge || 'FREE')));
@@ -125,7 +126,7 @@ export function sigil(ctx) {
     h('span', { class: 'pu-ic' }, glyph(u)), h('b', { class: 'pu-name' }, u.name), h('small', { class: 'pu-sub' }, u.tag || (u.cost ? '' : 'free')), utilCost(u))));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    h('div', { class: 'pw-wrap' }, core, h('div', { class: 'pw-stage' }, aura, tri, medal('A'), medal('B'), medal('C'))),
+    h('div', { class: 'pw-wrap' }, core, life, h('div', { class: 'pw-stage' }, aura, tri, medal('A'), medal('B'), medal('C'))),
     utilRow, detail);
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';

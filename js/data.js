@@ -193,7 +193,8 @@ export const SLOT_NAME = { A: 'Big move', B: 'Every round', C: 'Charge' };
 export const TALENT_MAX_SAME = 2;
 export const TALENT_PER_FACE = 2;
 export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
-export const TALENT_FACES = { 4: 1, 6: 3 };
+// A talent die always has two blank faces and one 2x face; every other face can carry symbols (so a d4 has 1, a d6 3, a d8 5, a d10 7).
+export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 };
 // (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {
   knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'block', SE: 'atk' }, wizard: { SW: 'magic', SE: 'heal' },
@@ -213,7 +214,11 @@ export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s streng
 
 // Strength / special upgrade ladder: [from size, gold, minimum hero level].
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
-export const SPECIAL_STEPS = { 4: [60, 3] }; // the talent die grows d4 -> d6 only
+export const SPECIAL_STEPS = { 4: [60, 3], 6: [130, 7], 8: [240, 12] }; // the talent die grows d4 -> d6 -> d8 -> d10
+// The act decides how big a die can grow (Dave): Act I d4 -> d6, Act II d6 -> d8, Act III d8 -> d10. Applies to strength and talent dice.
+export const ACT_MAX_DIE = { 1: 6, 2: 8, 3: 10 };
+export const dieCapForAct = (act) => ACT_MAX_DIE[Math.min(3, Math.max(1, act | 0 || 1))];
+export const ROMAN = { 1: 'I', 2: 'II', 3: 'III' };
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
 // Company looks (Dave): a second or third hero of the same class wears another colour set, so every hero on the field is
 // easy to tell apart. Look 0 is the class's own colours; the others replace cloth, trim, accent, glow (and sometimes hair).

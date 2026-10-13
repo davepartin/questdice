@@ -501,3 +501,30 @@ test('Arc Bolt: 2 magic a die, at most 5d8 (Dave)', () => {
   assert.deepEqual(cast(15), [5, 10]); // never more than 5 dice
   assert.deepEqual(cast(15, 1), [5, 8]); // a level adds a die, so the cap comes cheaper
 });
+
+test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and talent dice)', async () => {
+  const { strengthUpgrade, specialUpgrade, upgradeDie } = await import('../js/engine.js');
+  const h = knight(); h.gold = 9999; h.level = 20; h.strength.E = 4; h.special.SW = 4;
+  assert.equal(strengthUpgrade(h, 'E').ok, true); assert.equal(strengthUpgrade(h, 'E').next, 6);
+  assert.ok(upgradeDie(h, 'strength', 'E'));
+  const g = strengthUpgrade(h, 'E'); assert.equal(g.ok, false); assert.equal(g.why, 'Act II'); assert.equal(g.act, 2);
+  assert.equal(upgradeDie(h, 'strength', 'E'), false);
+  h.campaign.act = 2; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 8);
+  assert.equal(strengthUpgrade(h, 'E').why, 'Act III');
+  h.campaign.act = 3; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 10);
+  assert.equal(strengthUpgrade(h, 'E').why, 'Max size');
+  // the talent die follows the same ladder
+  h.campaign.act = 1; assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(specialUpgrade(h, 'SW').why, 'Act II');
+  h.campaign.act = 3; assert.ok(upgradeDie(h, 'special', 'SW')); assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 10);
+});
+
+test('a talent die always has two blanks and one 2x; the rest of its faces can carry symbols', () => {
+  const h = knight();
+  for (const [n, symFaces] of [[4, 1], [6, 3], [8, 5], [10, 7]]) {
+    h.special.SW = n; h.talent.SW = Array.from({ length: symFaces }, () => ['atk']);
+    const faces = Array.from({ length: n }, (_, i) => specialFace(h, 'SW', i + 1));
+    assert.equal(faces.filter((f) => f === null).length, 2, `d${n} blanks`);
+    assert.equal(faces.filter((f) => f === 'X2').length, 1, `d${n} 2x`);
+    assert.equal(faces.filter((f) => Array.isArray(f)).length, symFaces, `d${n} symbol faces`);
+  }
+});

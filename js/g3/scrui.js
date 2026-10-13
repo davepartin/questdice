@@ -484,12 +484,12 @@ function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} $
 function upgradeRow(kind, slot, label, hint) {
   const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : kind === 'speed' ? D.SPEED_STEPS : D.SPECIAL_STEPS;
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
-  const gate = steps[size]?.[1]; const locked = u.next && hero.level < gate;
+  const gate = steps[size]?.[1]; const locked = u.next && !u.act && hero.level < gate;
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
     h('div', { class: 'ur-copy' }, h('b', {}, label), h('small', {}, hint),
-      u.next ? h('small', { class: 'ur-next' }, `d${size} → d${u.next}`, locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, 'Fully grown')),
+      u.next ? h('small', { class: 'ur-next' }, `d${size} → d${u.next}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, 'Fully grown')),
     u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
@@ -571,7 +571,7 @@ function talentCard(hero, slot) {
     h('div', { class: 'tal-strip syms' }, symFaces),
     picker,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
-    up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
+    up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
 }
 // ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };
