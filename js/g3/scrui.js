@@ -602,15 +602,14 @@ export function defeat(retreat, loss) {
 const TABS = [['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 function upgradeRow(kind, slot, label, hint) {
-  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : kind === 'speed' ? D.SPEED_STEPS : D.SPECIAL_STEPS;
+  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot];
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
-  const gate = steps[size]?.[1]; const locked = u.next && !u.act && hero.level < gate;
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
     h('div', { class: 'ur-copy' }, h('b', {}, label),
-      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : locked ? h('em', { class: 'gate' }, ico('lock'), `Level ${gate}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
-    u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
+    u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
 function weaponRow(inst, label = '') {
@@ -639,7 +638,7 @@ function potionRow(hero) {
   return h('div', { class: 'sx-urow' },
     h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt'),
       u.next ? h('small', { class: 'ur-next' }, `Carry ${u.next} potions instead of ${cur}. Each heals ${E.potionHpOf(hero)} in battle.`, locked ? h('em', { class: 'gate' }, ico('lock'), u.why) : null) : h('small', { class: 'ur-next' }, `You can carry ${cur} potions, the most there is.`)),
-    u.next ? btn(String(u.cost), () => { if (HE.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!locked && !u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+    u.next ? btn(String(u.cost), () => { if (HE.upgradePotions(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Add a third potion for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 // The 4th reroll die: every reroll may take one more die, for good.
 function rerollDieRow(hero) {
@@ -666,7 +665,7 @@ function unlockSection(hero) {
 }
 function talentCard(hero, slot) {
   const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
-  const up = E.specialUpgrade(hero, slot); const gate = D.SPECIAL_STEPS[size]?.[1];
+  const up = E.specialUpgrade(hero, slot);
   const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
   // Each number face (4 up to the die's size) pays its number in the symbol you buy for it; pay once, more for a bigger number.
   const symFaces = Array.from({ length: info.faces }, (_, f) => {
@@ -690,7 +689,7 @@ function talentCard(hero, slot) {
     picker,
     up.next ? h('small', { class: 'ur-next' }, `Grow from d${size} to d${up.next}: one more number face to fill with a symbol.`) : null,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
-    up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
+    up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : null);
 }
 // ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };

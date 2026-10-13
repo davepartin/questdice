@@ -237,9 +237,9 @@ export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ?
 export const talentName = (sym) => (sym === 'X2' ? '2× Strength' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
 export const talentText = (sym) => (sym === 'X2' ? 'Doubles the strength this hand adds to its weapon.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
 
-// Strength / special upgrade ladder: [from size, gold, minimum hero level].
-export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
-export const SPECIAL_STEPS = { 4: [60, 3], 6: [130, 7], 8: [240, 12] }; // the talent die grows d4 -> d6 -> d8 -> d10
+// Strength / special upgrade ladder: [gold to grow from this size]. No level gate (Dave): the only limit besides gold is the act's die cap below.
+export const STRENGTH_STEPS = { 4: [40], 6: [100], 8: [220] };
+export const SPECIAL_STEPS = { 4: [60], 6: [130], 8: [240] }; // the talent die grows d4 -> d6 -> d8 -> d10
 // The act decides how big a die can grow (Dave): Act I d4 -> d6, Act II d6 -> d8, Act III d8 -> d10. Applies to strength and talent dice.
 export const ACT_MAX_DIE = { 1: 6, 2: 8, 3: 10 };
 export const dieCapForAct = (act) => ACT_MAX_DIE[Math.min(3, Math.max(1, act | 0 || 1))];
@@ -269,7 +269,7 @@ export const HERO_LOOKS = {
 export const lookIndex = (heroes, i) => (heroes || []).slice(0, i).filter((x) => x?.cls === heroes[i]?.cls).length % (HERO_LOOKS[heroes?.[i]?.cls]?.length || 1);
 export const lookOf = (heroes, i) => HERO_LOOKS[heroes?.[i]?.cls]?.[lookIndex(heroes, i)] || null;
 
-export const SPEED_STEPS = { 4: [60, 2], 6: [140, 6] }; // feet stop at d6 (the Ranger alone can train them to d8)
+export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);

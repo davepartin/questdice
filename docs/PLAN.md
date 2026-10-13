@@ -924,3 +924,8 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - First-clear only: `hero.cleared` tracks which act/steps this hero has beaten. A repeat clear withholds XP (so no levels/perks), gold, and weapon drops for that hero. Party play applies per hero; first-clear friends still earn and still draft. The victory screen notes when this hero earns nothing.
 - Friends join a table with a cloud hero or a new one. The table walks the host's road. Each phone writes its own hero back after victory/camp/leave.
 - Tests: `test/save.test.mjs` (Act I new-hero-only, first-clear, public card, password length, hashes, local keep) and brought-hero / Act I join / mixed-party reward cases in `test/table.test.mjs`.
+
+### 13 Oct 2026 — no level gates on die size; the act is the only cap
+- Dave: "You can upgrade up to d6 in act 1 but not to d8 until act 2; there is no level 3 limit for a d6, there is just a max per act." Removed the hero-level requirement from strength dice (was level 3 / 7 / 12), talent dice (3 / 7 / 12) and the feet die (2 / 6). A die now grows when you can pay for it and the act allows it (`ACT_MAX_DIE`: Act I d6, Act II d8, Act III d10); the camp row says "Act II" when that is what is in the way. Power learning/upgrades and potion belt keep their own rules.
+- Balance: smart-bot sim, 3 acts, all classes: 10/10 cleared; the early fights are a touch easier (Act I elite 88%, boss 93%), the Hollow Lich is still the wall (~60%).
+- test/dicecap.test.mjs pins the rule.
