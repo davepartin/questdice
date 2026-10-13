@@ -3,19 +3,51 @@
    Everything is scoped under .b3 (the battle layer). */
 
 /* ================================================================== the table */
-.fb { --felt-a: #4a392c; --felt-b: #2a1f18; --felt-c: #130d0a; --lamp: rgba(255, 224, 168, .13); }
+.fb { --felt-a: #4a392c; --felt-b: #2a1f18; --felt-c: #130d0a; --lamp: rgba(255, 224, 168, .13); --place-img: none; --place-x: 50%; --place-y: 80%; }
+.fb[data-place="cinder-ford"] { --place-img: url("../assets/bg/cinder-ford.webp"); }
+.fb[data-place="burnt-orchard"] { --place-img: url("../assets/bg/burnt-orchard.webp"); }
+.fb[data-place="ravens-rest"] { --place-img: url("../assets/bg/ravens-rest.webp"); }
+.fb[data-place="wolfwood-edge"] { --place-img: url("../assets/bg/wolfwood-edge.webp"); }
+.fb[data-place="smoke-hollow"] { --place-img: url("../assets/bg/smoke-hollow.webp"); }
+.fb[data-place="the-toll-bridge"] { --place-img: url("../assets/bg/the-toll-bridge.webp"); }
+.fb[data-place="ashfall-camp"] { --place-img: url("../assets/bg/ashfall-camp.webp"); }
+.fb[data-place="gallows-hill"] { --place-img: url("../assets/bg/gallows-hill.webp"); }
+.fb[data-place="the-weeping-stair"] { --place-img: url("../assets/bg/the-weeping-stair.webp"); }
+.fb[data-place="ossuary-gate"] { --place-img: url("../assets/bg/ossuary-gate.webp"); }
+.fb[data-place="candle-vault"] { --place-img: url("../assets/bg/candle-vault.webp"); }
+.fb[data-place="the-pale-nave"] { --place-img: url("../assets/bg/the-pale-nave.webp"); }
+.fb[data-place="grave-silk-hall"] { --place-img: url("../assets/bg/grave-silk-hall.webp"); }
+.fb[data-place="mourners-row"] { --place-img: url("../assets/bg/mourners-row.webp"); }
+.fb[data-place="the-drowned-crypt"] { --place-img: url("../assets/bg/the-drowned-crypt.webp"); }
+.fb[data-place="ash-cloister"] { --place-img: url("../assets/bg/ash-cloister.webp"); }
 .b3 .fb { position: absolute; left: 0; right: 0; top: 0; bottom: calc(100% - var(--line-y, 42%)); overflow: hidden; pointer-events: none; --ph: 120px; z-index: 0; }
 .fb.act-2 { --felt-a: #34454c; --felt-b: #1e2b31; --felt-c: #0b1115; --lamp: rgba(190, 226, 255, .12); }
 .fb.act-3 { --felt-a: #4c2c30; --felt-b: #2c181b; --felt-c: #120708; --lamp: rgba(255, 190, 160, .12); }
 .fb.boss { --lamp: rgba(255, 150, 120, .14); }
+/* landscape: a short crop of the painting; 58% keeps the ground under the minis' feet */
+@media (min-aspect-ratio: 5/4) { .fb { --place-y: 58%; } }
+/* crypt floors sit lower in the painting, so the crop drops toward the tiles */
+.fb[data-place="the-drowned-crypt"] { --place-y: 88%; }
+.fb[data-place="candle-vault"], .fb[data-place="the-weeping-stair"], .fb[data-place="the-pale-nave"], .fb[data-place="ash-cloister"] { --place-y: 82%; }
+.fb[data-place="ossuary-gate"], .fb[data-place="grave-silk-hall"], .fb[data-place="mourners-row"] { --place-y: 80%; }
+@media (min-aspect-ratio: 5/4) {
+  .fb[data-place="the-drowned-crypt"] { --place-y: 72%; }
+  .fb[data-place="candle-vault"], .fb[data-place="the-weeping-stair"], .fb[data-place="the-pale-nave"], .fb[data-place="ash-cloister"] { --place-y: 68%; }
+  .fb[data-place="ossuary-gate"], .fb[data-place="grave-silk-hall"], .fb[data-place="mourners-row"] { --place-y: 66%; }
+}
 .fb-table { position: absolute; inset: 0; overflow: hidden;
   background:
     radial-gradient(60% 55% at 58% 78%, var(--lamp), transparent 72%),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.5'/></svg>"),
+    var(--place-img),
     radial-gradient(130% 100% at 50% 18%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%);
-  background-blend-mode: normal, soft-light, normal; }
+  background-size: auto, auto, cover, auto;
+  background-position: center, center, var(--place-x) var(--place-y), center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal, soft-light, normal, normal; }
 .fb-table::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 3px rgba(18, 11, 7, .9), inset 0 0 0 4px rgba(226, 178, 76, .5), inset 0 0 46px 6px rgba(0, 0, 0, .75);
   background: linear-gradient(180deg, rgba(0, 0, 0, .4), transparent 28%, transparent 74%, rgba(0, 0, 0, .5)); }
+.fb[data-place] .fb-table::after { background: linear-gradient(180deg, rgba(0, 0, 0, .52), transparent 26%, transparent 72%, rgba(0, 0, 0, .56)); }
 /* the lamp over the table breathes a little */
 .fb-lamp { position: absolute; left: 12%; right: 12%; top: -30%; height: 90%; border-radius: 50%; background: radial-gradient(closest-side, var(--lamp), transparent); opacity: .9; animation: fbLamp 7s ease-in-out infinite; pointer-events: none; }
 @keyframes fbLamp { 50% { opacity: .62; transform: scale(1.04); } }
@@ -26,7 +58,21 @@
 .fb-rim.top { display: none; }
 .fb-rim.bot { bottom: 0; height: 7px; background: linear-gradient(180deg, #7a5632, #4a301a 45%, #20140b); box-shadow: 0 -1px 0 rgba(255, 226, 160, .85), 0 -2px 6px rgba(226, 178, 76, .25), 0 7px 14px rgba(0, 0, 0, .7); }
 
-.fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; }
+.fb-atmo { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.fb-fog { position: absolute; left: -22%; right: -22%; top: 6%; height: 72%; filter: blur(20px);
+  background: linear-gradient(90deg, transparent, rgba(255, 220, 180, .11) 42%, rgba(200, 176, 150, .08) 62%, transparent); opacity: .8; animation: fbFog 32s linear infinite; }
+.fb-fog.b { top: 28%; height: 54%; opacity: .5; animation-duration: 48s; animation-direction: reverse;
+  background: linear-gradient(90deg, transparent, rgba(255, 150, 70, .08), transparent); }
+@keyframes fbFog { from { transform: translateX(-8%); } to { transform: translateX(8%); } }
+.fb-ember { position: absolute; left: var(--x); top: var(--y); width: 3px; height: 3px; border-radius: 50%; background: #ff8a3a; box-shadow: 0 0 5px #ff6a18; transform: scale(var(--s)); opacity: 0; animation: fbMote var(--t) ease-in-out var(--d) infinite; pointer-events: none; }
+.fb-dust { position: absolute; left: var(--x); top: var(--y); width: 2px; height: 2px; border-radius: 50%; background: rgba(230, 214, 176, .45); transform: scale(var(--s)); opacity: 0; animation: fbDust var(--t) linear var(--d) infinite; pointer-events: none; }
+@keyframes fbDust { 0% { opacity: 0; transform: translate(0, 0) scale(var(--s)); } 22% { opacity: .45; } 100% { opacity: 0; transform: translate(-16px, 34px) scale(var(--s)); } }
+.fb-flicker { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(55% 70% at 50% 42%, rgba(255, 196, 120, .16), transparent 72%); animation: fbFlicker 3.2s ease-in-out infinite; }
+@keyframes fbFlicker { 0%, 100% { opacity: .4; } 16% { opacity: .72; } 22% { opacity: .42; } 40% { opacity: .82; } 58% { opacity: .5; } 70% { opacity: .76; } }
+.fb.wx-ash .fb-mote { background: #ff9a4a; box-shadow: 0 0 5px rgba(255, 110, 30, .7); }
+.fb.wx-crypt .fb-mote { background: rgba(255, 230, 190, .4); width: 2px; height: 2px; }
+.fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; z-index: 2; }
 .fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
 .fb-side.heroes { flex: 0 0 clamp(22%, calc(36% - var(--foes, 2) * 4%), 31%); justify-content: center; }
 .fb-side.foes { flex: 1 1 0; justify-content: space-evenly; gap: 1%; }
@@ -199,11 +245,11 @@
 
 /* victory and defeat: the hero's miniature on the felt (screens.js endTable) */
 .fb.fb-end { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.fb-end .fb-stand { position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%); height: min(64%, 24rem); display: flex; align-items: flex-end; justify-content: center; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .6)); }
+.fb-end .fb-stand { position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%); height: min(64%, 24rem); display: flex; align-items: flex-end; justify-content: center; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .6)); z-index: 2; }
 .fb-end .fb-stand .fb-img { height: 100%; width: auto; max-width: 70vw; }
 .fb-end.victory .fb-stand { animation: fbEndHop 1.4s ease-in-out 3; }
 @keyframes fbEndHop { 50% { transform: translateX(-50%) translateY(-10px); } }
-.fb-end.victory .fb-table { background: radial-gradient(70% 60% at 50% 70%, rgba(255, 224, 140, .3), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 2px, transparent 2px 7px), radial-gradient(130% 100% at 50% 20%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%); }
+.fb-end.victory .fb-table::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(70% 60% at 50% 70%, rgba(255, 224, 140, .28), transparent 70%); }
 .fb-end.defeat .fb-table { filter: saturate(.6) brightness(.8); }
 .fb-end.defeat .fb-stand { transform: translateX(-50%) rotate(80deg); transform-origin: 50% 50%; opacity: .62; bottom: 20%; height: min(46%, 17rem); }
 .fb-gold { position: absolute; left: var(--x); bottom: 14%; width: .5rem; height: .5rem; border-radius: 50%; background: radial-gradient(circle, #fff6c8, #ffd23d 60%, transparent 72%); box-shadow: 0 0 8px rgba(255, 210, 61, .8); transform: scale(var(--s)); opacity: 0; animation: fbGold 3s ease-out var(--d) infinite; }
@@ -216,7 +262,7 @@
 .b3 .b3-divider .dv-fill { border-radius: 6px; background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); }
 .b3 .b3-divider .dv-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 0, 0, .28) 13px 14px), linear-gradient(180deg, rgba(255, 255, 255, .38), transparent 45%); }
 .b3 .b3-divider .dv-n { font-size: .74rem; }
-@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-call, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote { display: none; } }
+@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-ember, .fb-dust, .fb-fog, .fb-flicker, .fb-call, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote, .fb-ember, .fb-dust, .fb-fog { display: none; } .fb-flicker { opacity: .22; } }
 
 /* a company: the team stands small on the far left, the whole top of the table is the monsters' */
 .fb.party .fb-field { gap: 1%; }

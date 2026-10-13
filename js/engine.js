@@ -4,8 +4,8 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
-  SPECIAL_STEPS, NEXT_SIZE, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, SYMBOL_VALUE, TALENT_MAX_SAME, talentPerFace, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
 } from './data.js';
@@ -244,8 +244,8 @@ export function petGrowInfo(hero) {
 export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
-  const faces = TALENT_FACES[hero.special[slot]] || 1; const cur = hero.talent?.[slot] || [];
-  return { faces, slots: faces * TALENT_PER_FACE, used: cur.flat().length, cost: TALENT_SLOT_COST };
+  const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || []; const per = talentPerFace(size);
+  return { faces, per, same: per, slots: faces * per, used: cur.flat().length, cost: TALENT_SLOT_COST };
 }
 // Put a symbol on a symbol face (0-based). Every slot costs the same. At most two of one symbol per die, at most two symbols per face.
 export function addTalent(hero, slot, face, sym) {
@@ -253,7 +253,7 @@ export function addTalent(hero, slot, face, sym) {
   const t = talentInfo(hero, slot); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
   hero.talent = hero.talent || {}; const faces = (hero.talent[slot] = hero.talent[slot] || []);
   while (faces.length < t.faces) faces.push([]);
-  if (faces[face].length >= TALENT_PER_FACE || talentCount(hero, slot, sym) >= TALENT_MAX_SAME) return false;
+  if (faces[face].length >= t.per || talentCount(hero, slot, sym) >= t.same) return false;
   hero.gold -= t.cost; faces[face].push(sym); return true;
 }
 export function removeTalent(hero, slot, face, idx) {
@@ -293,7 +293,7 @@ export function evaluate(hero, board, opts = {}) {
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
   }
 
-  // Lanes: weapon (color + number) + hand strength + special symbol.
+  // Lanes: weapon (color + number) + hand strength (doubled by 2x); talent symbols add +1 each to their counter.
   for (const [key, lane] of Object.entries(LANES)) {
     if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
@@ -308,10 +308,7 @@ export function evaluate(hero, board, opts = {}) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
       out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
     }
-    for (const t of tsyms) {
-      if (t === 'atk') out.atk += str; else if (t === 'block') out.block += str; else if (t === 'pierce') out.pierce += str;
-      else if (t === 'magic') out.magic += str; else if (t === 'heal') out.heal += str; else if (t === 'gold') out.gold += str;
-    }
+    for (const t of tsyms) out[t] = (out[t] || 0) + SYMBOL_VALUE; // each symbol showing adds 1 to its counter (the hand's strength no longer matters here)
     out.lanes[key] = L;
   }
   // The pet die: each symbol on the face it shows pays the pet's power.
@@ -875,9 +872,16 @@ export function takePerk(hero, id) {
 }
 
 // Camp economy.
+// A die can only grow as far as the act allows (Act I d6, Act II d8, Act III d10): the hero must reach the next act first.
+function actGate(hero, size) {
+  const act = hero.campaign?.act || 1; const next = NEXT_SIZE[size];
+  if (next > dieCapForAct(act)) { const need = Math.ceil((next - 4) / 2); return { ok: false, why: `Act ${ROMAN[need]}`, act: need, next }; }
+  return null;
+}
 export function strengthUpgrade(hero, slot) {
   const size = hero.strength[slot]; const step = STRENGTH_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
+  { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
   if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
@@ -885,6 +889,7 @@ export function strengthUpgrade(hero, slot) {
 export function specialUpgrade(hero, slot) {
   const size = hero.special[slot]; const step = SPECIAL_STEPS[size];
   if (!step) return { ok: false, why: 'Max size' };
+  { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
   if (hero.level < step[1]) return { ok: false, why: `Level ${step[1]}`, cost: step[0], next: NEXT_SIZE[size] };
   if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
@@ -1029,8 +1034,46 @@ export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.f
 // The road ahead: ONE fight per step (Dave, Oct 2026: "only one option to fight, since you can already choose level in the game").
 // The old second road, the perilous one, is still generated (so the same seed gives the same monsters as before and the
 // balance tools can measure it) but it is no longer offered: at an elite step the elite is the fight, otherwise the standard road.
-export function questsFor(hero) { return roadsFor(hero).slice(0, 1); }
-export function roadsFor(hero) {
+export function questsFor(hero) { return roadsFor(hero, { random: true }).slice(0, 1); }
+
+// ---- random encounters (Dave): the game picks the one fight at each step by a trouble budget. The budget grows through the act and
+// follows the hero's skill (Noob / Mid / Expert); each monster has a `threat`, and a crowd costs a little more than its sum.
+// Some steps are one big monster, some a few small ones. Deterministic for a campaign (seed, act, step).
+export const crowdThreat = (ids) => ids.reduce((t, id) => t + (MONSTERS[id]?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
+export function encounterBudget(hero) {
+  const c = hero.campaign; const a = ENCOUNTER.acts[Math.min(ENCOUNTER.acts.length, c.act) - 1];
+  return (a.base + a.slope * (c.step - 1)) * difficultyOf(hero).budget;
+}
+export function encounterFor(hero) {
+  const c = hero.campaign; const act = ACTS[(c.act - 1) % ACTS.length];
+  const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'encounter'));
+  const budget = encounterBudget(hero) * (ENCOUNTER.jitter[0] + (ENCOUNTER.jitter[1] - ENCOUNTER.jitter[0]) * rng());
+  // the act's own monsters; the smaller elite-tier ones (an ogre) join the ordinary fights from the middle of the act
+  const kinds = [...new Set(act.pool.flat())];
+  const bigs = rng() >= 0.4 ? [] : [...new Set(act.elite.flat())].filter((id) => MONSTERS[id].tier === 'elite' && c.step >= ENCOUNTER.bigFrom && MONSTERS[id].threat <= ENCOUNTER.bigMax);
+  const roster = [...kinds, ...bigs].sort((x, y) => (MONSTERS[x].threat - MONSTERS[y].threat) || x.localeCompare(y));
+  const cheapest = MONSTERS[roster[0]].threat;
+  const tries = [];
+  for (let i = 0; i < 14; i++) {
+    const ids = []; const shape = rng(); // under a third: aim for one big monster; otherwise fill the budget with whatever fits
+    const lone = shape < 0.3;
+    for (let n = 0; n < ENEMY_CAP; n++) {
+      const fit = roster.filter((id) => crowdThreat([...ids, id]) <= budget * 1.08 && !(ids.length >= 2 && ids.every((x) => x === id)));
+      if (!fit.length) break;
+      const pool = lone && !ids.length ? fit.slice(-2) : fit; // a lone fight takes the biggest monsters that fit
+      ids.push(pick(rng, pool));
+      if (lone) break;
+      if (rng() < 0.18 * ids.length) break; // sometimes stop early, so crowds are not always the maximum
+    }
+    if (!ids.length) ids.push(roster[0]);
+    tries.push({ ids, gap: Math.abs(budget - crowdThreat(ids)) + (new Set(ids).size === 1 && ids.length > 2 ? 0.4 : 0) });
+  }
+  tries.sort((x, y) => x.gap - y.gap);
+  const best = tries.slice(0, 4); // among the closest fits, pick at random so fights vary
+  void cheapest;
+  return pick(rng, best).ids;
+}
+export function roadsFor(hero, opts = {}) {
   const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
   const cycle = Math.floor((c.act - 1) / ACTS.length);
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'quests'));
@@ -1053,13 +1096,18 @@ export function roadsFor(hero) {
   };
   if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
   const poolPick = () => pick(rng, act.pool);
-  if (ELITE_STEPS.includes(s)) return [mk('elite', pick(rng, act.elite)), mk('battle', poolPick(), { perilous: true })];
+  if (ELITE_STEPS.includes(s)) {
+    let el = pick(rng, act.elite);
+    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = hero.difficulty === 'easy' ? sorted[0] : el; } // Noob: the big one alone
+    return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
+  }
   let a = poolPick(); let bq = poolPick();
   for (let tries = 0; tries < 6 && bq.join() === a.join(); tries++) bq = poolPick();
   const weight = (f) => f.reduce((t, id) => t + MONSTERS[id].hp, 0);
   if (weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
   if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
+  else if (opts.random) a = encounterFor(hero); // the game's own pick (the balance tools still ask for the old pair of roads)
   return [mk('battle', a), mk('battle', bq, { perilous: true })];
 }
 export function advanceCampaign(hero) {

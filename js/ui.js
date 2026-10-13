@@ -643,7 +643,7 @@ function upgradeRow(kind, slot, label) {
   const hero = S.hero; const size = hero[kind][slot]; const steps = kind === 'strength' ? D.STRENGTH_STEPS : D.SPECIAL_STEPS;
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : E.specialUpgrade(hero, slot);
   const gate = steps[size]?.[1];
-  const sub = u.next ? `→ d${u.next}${hero.level < gate ? ` · unlocks at level ${gate}` : ''}` : 'Fully grown';
+  const sub = u.next ? `→ d${u.next}${u.act ? ` · waits for Act ${D.ROMAN[u.act]}` : hero.level < gate ? ` · unlocks at level ${gate}` : ''}` : 'Fully grown';
   return h('div', { class: 'urow' }, h('div', { class: 'udie' }, `d${size}`), h('div', { class: 'ucopy' }, h('b', {}, label), h('small', { class: 'muted' }, sub)),
     u.next ? primary(`🪙 ${u.cost}`, () => { if (E.upgradeDie(hero, kind, slot)) { sfx.level(); persist(); renderCamp(); } }, { disabled: !u.ok, cls: 'small' }) : h('span', { class: 'maxed' }, 'MAX'));
 }

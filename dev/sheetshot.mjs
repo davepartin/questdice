@@ -13,9 +13,13 @@ await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
 for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
-await p.evaluate(() => { window.QD.S.battle.magic = 12; });
+await p.evaluate((pick) => { window.QD.S.battle.magic = 12; if (/heal/i.test(pick)) window.QD.S.battle.hp = 6; }, pick);
 await p.evaluate(() => document.querySelector('.b3-powers')?.click()); await pump(0.5); await p.waitForTimeout(500);
+const rect = () => p.evaluate(() => { const r = document.querySelector('.pw-stage')?.getBoundingClientRect(); return r && [Math.round(r.top), Math.round(r.height)]; });
+const r0 = await rect(); console.log('triangle before pick (top,height):', r0);
 if (pick) { await p.evaluate((s) => (/^[ABC]$/.test(s) ? document.querySelector(`.pw-medal.at-${s}`) : [...document.querySelectorAll('.pw-utils button')].find((e) => new RegExp(s, 'i').test(e.textContent)))?.click(), pick); await pump(0.3); await p.waitForTimeout(400); }
+console.log('triangle after pick:', await rect());
+if (/heal/i.test(pick)) { for (let i = 0; i < 2; i++) { await p.evaluate(() => document.querySelector('.pw-detail .pw-btn.go')?.click()); await pump(1); } console.log('after two heals:', await p.evaluate(() => JSON.stringify({ open: !!document.querySelector('.b3-sheet.open'), hp: window.QD.S.battle.hp, magic: window.QD.S.battle.magic, pill: document.querySelector('.pw-life b')?.textContent, mpill: document.querySelector('.pw-center b')?.textContent }))); }
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/${tag}.png` });
 console.log(await p.evaluate(() => { const s = document.querySelector('.b3-sheet.open'); return JSON.stringify({ scroll: s && s.scrollHeight - s.clientHeight, h: s?.getBoundingClientRect().height, top: s?.getBoundingClientRect().top }); }));
 await b.close();

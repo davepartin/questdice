@@ -53,7 +53,7 @@ test('lane = weapon + strength; weapon color decides attack vs block', () => {
   assert.equal(ev.atk, 7); assert.equal(ev.block, 7);
 });
 
-test('talent die: 2x doubles that hand, symbols are worth the hand strength, a face may hold two', () => {
+test('talent die: 2x doubles that hand, each symbol adds 1, a face may hold two', () => {
   const h = knight(); h.special.SW = 6; h.talent.SW = [['heal', 'atk'], [], ['gold']];
   assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 2), null);
   assert.equal(specialFace(h, 'SW', 3), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal', 'atk']);
@@ -62,17 +62,18 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const ev2 = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); // heal and attack on one face
   const ev2b = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
-  assert.equal(ev2.heal - ev2b.heal, 3); assert.ok(ev2.atk >= 3); // heal is worth the hand's number, 1 for 1
+  assert.equal(ev2.heal - ev2b.heal, 1); assert.ok(ev2.atk - ev2b.atk === 1); // each symbol adds 1, whatever the hand rolled
   const base = evaluate(h, board({ SW: 5, W: 4, NW: 1, C: 3 })).gold;
-  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 4); // gold is one for one: a hand of 4 pays 4
+  assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 1); // gold is one for one: a gold symbol pays 1, not the hand's 4
+  assert.equal(evaluate(h, board({ SW: 6, W: 1, NW: 1, C: 3 })).gold - evaluate(h, board({ SW: 5, W: 1, NW: 1, C: 3 })).gold, 1);
 });
 
-test('talent slots cost the same, hold two of a symbol per face, but never more than two of one symbol per die', () => {
+test('talent slots cost the same; a face holds half the die\'s sides in symbols, and a die carries that many of one symbol', () => {
   const h = knight(); h.gold = 500; h.special.SW = 6; h.talent.SW = [[], [], []];
-  assert.ok(addTalent(h, 'SW', 0, 'atk')); assert.ok(addTalent(h, 'SW', 0, 'atk')); // two of the same on one face
-  assert.equal(addTalent(h, 'SW', 1, 'atk'), false); // a third attack on the die
+  for (let i = 0; i < 3; i++) assert.ok(addTalent(h, 'SW', 0, 'atk')); // a d6 face holds three, and three of one symbol is allowed
+  assert.equal(addTalent(h, 'SW', 1, 'atk'), false); // a fourth attack on the d6
   assert.equal(addTalent(h, 'SW', 0, 'heal'), false); // face full
-  assert.ok(addTalent(h, 'SW', 1, 'heal')); assert.equal(h.gold, 500 - 3 * TALENT_SLOT_COST);
+  assert.ok(addTalent(h, 'SW', 1, 'heal')); assert.equal(h.gold, 500 - 4 * TALENT_SLOT_COST);
   const poor = knight(); poor.gold = 0; assert.equal(addTalent(poor, 'SE', 0, 'gold'), false);
   const d4 = knight(); d4.gold = 500; assert.equal(addTalent(d4, 'SW', 1, 'gold'), false); // a d4 has one symbol face
 });
@@ -500,4 +501,71 @@ test('Arc Bolt: 2 magic a die, at most 5d8 (Dave)', () => {
   assert.deepEqual(cast(10), [5, 10]);
   assert.deepEqual(cast(15), [5, 10]); // never more than 5 dice
   assert.deepEqual(cast(15, 1), [5, 8]); // a level adds a die, so the cap comes cheaper
+});
+
+test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and talent dice)', async () => {
+  const { strengthUpgrade, specialUpgrade, upgradeDie } = await import('../js/engine.js');
+  const h = knight(); h.gold = 9999; h.level = 20; h.strength.E = 4; h.special.SW = 4;
+  assert.equal(strengthUpgrade(h, 'E').ok, true); assert.equal(strengthUpgrade(h, 'E').next, 6);
+  assert.ok(upgradeDie(h, 'strength', 'E'));
+  const g = strengthUpgrade(h, 'E'); assert.equal(g.ok, false); assert.equal(g.why, 'Act II'); assert.equal(g.act, 2);
+  assert.equal(upgradeDie(h, 'strength', 'E'), false);
+  h.campaign.act = 2; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 8);
+  assert.equal(strengthUpgrade(h, 'E').why, 'Act III');
+  h.campaign.act = 3; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 10);
+  assert.equal(strengthUpgrade(h, 'E').why, 'Max size');
+  // the talent die follows the same ladder
+  h.campaign.act = 1; assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(specialUpgrade(h, 'SW').why, 'Act II');
+  h.campaign.act = 3; assert.ok(upgradeDie(h, 'special', 'SW')); assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 10);
+});
+
+test('a talent die always has two blanks and one 2x; the rest of its faces can carry symbols', () => {
+  const h = knight();
+  for (const [n, symFaces] of [[4, 1], [6, 3], [8, 5], [10, 7]]) {
+    h.special.SW = n; h.talent.SW = Array.from({ length: symFaces }, () => ['atk']);
+    const faces = Array.from({ length: n }, (_, i) => specialFace(h, 'SW', i + 1));
+    assert.equal(faces.filter((f) => f === null).length, 2, `d${n} blanks`);
+    assert.equal(faces.filter((f) => f === 'X2').length, 1, `d${n} 2x`);
+    assert.equal(faces.filter((f) => Array.isArray(f)).length, symFaces, `d${n} symbol faces`);
+  }
+});
+
+test('random encounters: one fight a step, seeded, within the cap, and bigger for higher skill', async () => {
+  const { encounterFor, encounterBudget, crowdThreat } = await import('../js/engine.js');
+  const { ENEMY_CAP } = await import('../js/data.js');
+  const mean = (diff, act, step) => {
+    let t = 0; const n = 40;
+    for (let seed = 1; seed <= n; seed++) {
+      const h = newHero({ name: 'x', cls: 'knight', seed }); h.difficulty = diff; h.campaign.act = act; h.campaign.step = step; h.campaign.seed = seed * 7919; h.campaign.wins = 1;
+      const a = encounterFor(h); const b = encounterFor(h);
+      assert.deepEqual(a, b, 'same campaign, same fight');
+      assert.ok(a.length >= 1 && a.length <= ENEMY_CAP);
+      for (const id of a) assert.ok(MONSTERS[id], id);
+      t += crowdThreat(a);
+    }
+    return t / n;
+  };
+  for (const act of [1, 2, 3]) for (const step of [2, 6, 9]) {
+    const [n, m, x] = ['easy', 'normal', 'hard'].map((d) => mean(d, act, step));
+    assert.ok(n < m && m < x, `act ${act} step ${step}: noob ${n.toFixed(1)} < mid ${m.toFixed(1)} < expert ${x.toFixed(1)}`);
+  }
+  // it ramps through the act, and the first fight stays the lone-goblin lesson
+  assert.ok(mean('normal', 1, 9) > mean('normal', 1, 2) + 0.8);
+  const h = newHero({ name: 'x', cls: 'knight', seed: 3 }); assert.deepEqual(questsFor(h)[0].enemies, ['goblin']);
+  h.campaign.wins = 1; h.campaign.step = 9; h.difficulty = 'hard';
+  assert.ok(encounterBudget(h) > encounterBudget({ ...h, difficulty: 'easy' }));
+  // some steps are a crowd, some a lone big monster
+  const shapes = new Set(); for (let seed = 1; seed <= 60; seed++) { h.campaign.seed = seed * 31; h.difficulty = 'normal'; h.campaign.step = 8; shapes.add(encounterFor(h).length); }
+  assert.ok(shapes.has(1) && shapes.has(2), `lone and pairs both appear: ${[...shapes]}`);
+});
+
+test('talent die faces hold up to half the die\'s sides in symbols', async () => {
+  const { talentInfo, addTalent } = await import('../js/engine.js');
+  for (const [n, per] of [[4, 2], [6, 3], [8, 4], [10, 5]]) {
+    const h = knight(); h.gold = 9999; h.special.SW = n; h.talent.SW = [[]];
+    const info = talentInfo(h, 'SW'); assert.equal(info.per, per, `d${n}`); assert.equal(info.slots, info.faces * per);
+    const syms = ['atk', 'block', 'magic', 'heal', 'gold'];
+    for (let i = 0; i < per; i++) assert.ok(addTalent(h, 'SW', 0, syms[i % 5]), `d${n} slot ${i}`);
+    assert.equal(addTalent(h, 'SW', 0, 'atk'), false, `d${n} face is full at ${per}`);
+  }
 });

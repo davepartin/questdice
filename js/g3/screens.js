@@ -18,6 +18,8 @@ import { createWeapon } from '../gfx/weapons.js';
 import * as D from '../data.js';
 import { h } from '../dom.js';
 import { music } from '../audio.js';
+import { applyPlace, atmoLayers } from './flat.js';
+import * as Scenery from './scenery.js';
 
 const stage = () => world.stage;
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -345,51 +347,25 @@ const MODES = {
     };
     return handle;
   },
-  // The road: the hero from three-quarters behind, looking down a ruined track at dusk.
-  async road({ hero: saved, place = 'Cinder Ford', seed = 5 } = {}, token) {
-    await arenaFor(place, { seed, mood: 'calm' }); check(token);
-    setLook({ vignette: 0.65, exposure: 1.0 });
-    const hero = await makeHero(saved.cls, { loadout: saved.loadout, level: saved.level, seed: saved.campaign?.seed }); check(token);
-    hero.root.position.set(-1.3, 0, 2.2); hero.root.rotation.y = Math.PI - 0.55; add(hero.root);
-    hero.play('ready', { restart: true });
-    emberField({ box: [-6, 0, -6, 6, 3, 6], rate: 12 });
-    world.director.set('s-road', { snap: true, lambda: 1.2 }); drift(0.35, 0.09);
+  // The road and camp are painted scenes with the miniatures standing in them (scenery.js): no 3D here.
+  async road({ hero, heroes, place = 'Cinder Ford' } = {}, token) {
+    await Scenery.enter('road', { heroes: heroes?.length ? heroes : [hero], act: hero?.campaign?.act || 1, place }); check(token);
     music.setMood?.('road');
-    return { hero, arena: own.arena };
+    return { hero: null, sync() {} };
   },
-  async camp({ hero: saved } = {}, token) {
-    await arenaFor('Ravens’ Rest', { seed: 9, mood: 'camp' }); check(token);
-    setLook({ vignette: 0.7, bloom: 0.9, exposure: 1.02, sat: 1.12 });
-    const f = fire({ pos: [0, 0, 0], scale: 1.1, seed: 4, light: 1.4 });
-    logSeat([-1.9, 0, 0.5], 0.5, 1.5); logSeat([0.9, 0, -1.9], 0.2, 1.4);
-    tent({ pos: [-3.3, 0, -2.4], yaw: 0.6, tint: 0x6a5a44 }); tent({ pos: [3.4, 0, -3.2], yaw: -0.5, w: 2.8, d: 3.4, h: 1.9, tint: 0x4e5a48 });
-    // supply crates and a bedroll for story
-    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.55, 0.55), mat('wood')); crate.position.set(2.2, 0.28, -1.0); crate.rotation.y = 0.4; crate.castShadow = true; add(crate);
-    const crate2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.5), mat('woodDark')); crate2.position.set(2.7, 0.2, -0.5); crate2.rotation.y = -0.3; crate2.castShadow = true; add(crate2);
-    let hero = await makeHero(saved.cls, { loadout: saved.loadout, level: saved.level, seed: saved.campaign?.seed }); check(token);
-    const place = (a) => { a.root.position.set(-1.35, 0, 1.0); a.root.rotation.y = Math.atan2(1.35, -1.0); add(a.root); a.play('idle', { restart: true }); };
-    place(hero);
-    let sig = ''; const sigOf = (sv) => JSON.stringify([sv.name, sv.cls, sv.level, sv.loadout]); sig = sigOf(saved); let swapping = 0;
-    const sync = async (sv) => {
-      if (!sv || sigOf(sv) === sig) return; const old = sig; sig = sigOf(sv);
-      const prev = JSON.parse(old);
-      if (prev[0] === sv.name && prev[1] === sv.cls) { hero.setLoadout(sv.loadout); hero.setLevel?.(sv.level); hero.play('idle', { restart: true }); stage().flash(0xffc070, 0.1); return; }
-      const my = ++swapping; const a = await createActor('hero', { cls: sv.cls, loadout: sv.loadout, level: sv.level, seed: sv.campaign?.seed, quality: stage().quality });
-      if (my !== swapping || token !== own.token) return;
-      hero.root.removeFromParent(); hero = a; frame((dt, t) => a.update(dt, t)); place(a);
-    };
-    emberField({ box: [-5, 0, -4, 5, 3, 5], rate: 9, rise: 0.35 });
-    groundFog({ alpha: 0.05 });
-    world.director.set('s-camp', { snap: true, lambda: 1.2 }); drift(0.22, 0.1);
+  async camp({ hero, heroes } = {}, token) {
+    await Scenery.enter('camp', { heroes: heroes?.length ? heroes : [hero], act: hero?.campaign?.act || 1 }); check(token);
     music.setMood?.('camp');
-    return { get hero() { return hero; }, fire: f, arena: own.arena, sync };
+    return { hero: null, sync() {} };
   },
 };
 
 export async function enter(mode, opts = {}, key = null) {
   if (!available()) return null;
-  if (key && own.mode === mode && own.key === key && own.handle && world.mode === 'screens') { unfade(0.4); return own.handle; }
+  if (key && mode !== 'camp' && mode !== 'road' && own.mode === mode && own.key === key && own.handle && world.mode === 'screens') { unfade(0.4); return own.handle; }
   const token = ++own.token;
+  const flat = mode === 'camp' || mode === 'road';
+  if (!flat) Scenery.hide();
   try {
     const h = await MODES[mode](opts, token);
     if (token !== own.token) return null;
@@ -405,24 +381,28 @@ export async function enter(mode, opts = {}, key = null) {
 }
 export const current = () => own.handle;
 // Called when a battle (or anything else) takes the stage: forget everything.
-export function release() { cancelPortraits(); own.token++; own.objs = []; own.offs = []; own.arena = null; own.arenaOff = null; own.place = null; own.handle = null; own.mode = null; own.key = null; layout(null); }
+export function release() { cancelPortraits(); own.token++; own.objs = []; own.offs = []; own.arena = null; own.arenaOff = null; own.place = null; own.handle = null; own.mode = null; own.key = null; layout(null); Scenery.hide(); }
 
 // ---------------------------------------------------------------------------------------------- victory / defeat on the battle stage
 // Victory and defeat are on the table too (Dave, Oct 2026): the hero's painted miniature, flat, on the felt. The screen's own
 // viewport (`.sx-viewport`) holds it; the rewards panel sits beside or below.
-function endTable(kind, hero) {
+function endTable(kind, hero, place) {
   const bw = world.battle; if (!bw) return null;
   if (bw.tray?.object) bw.tray.object.visible = false;
   if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
   const host = document.querySelector('.sx-viewport'); const img = D.CLASSES[hero?.cls]?.img; if (!host || !img) return bw;
   const act = hero?.campaign?.act || 1;
+  const look = D.placeLook(place);
   const gold = kind === 'victory' ? Array.from({ length: 16 }, (_, i) => h('i', { class: 'fb-gold', style: { '--x': `${6 + ((i * 53) % 88)}%`, '--d': `${(i * 0.37) % 3}s`, '--s': `${0.5 + ((i * 29) % 7) / 10}` } })) : [];
-  host.replaceChildren(h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
-    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold));
+  const el = h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
+    h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather)),
+    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
+  applyPlace(el, place);
+  host.replaceChildren(el);
   return bw;
 }
-export function victory(hero) { music.setMood?.('victory'); return endTable('victory', hero); }
-export function defeat(hero) { music.setMood?.('road'); return endTable('defeat', hero); }
+export function victory(hero, place) { music.setMood?.('victory'); return endTable('victory', hero, place); }
+export function defeat(hero, place) { music.setMood?.('road'); return endTable('defeat', hero, place); }
 export function leaveBattleStage() { try { stage().scene.userData.victoryOff?.(); } catch { /* ignore */ } }
 
 // ---------------------------------------------------------------------------------------------- portraits (cached, queued)

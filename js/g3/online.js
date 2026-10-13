@@ -162,7 +162,7 @@ function lobby(t) {
         host ? null : h('p', { class: 'fine center' }, `${t.players.find((p) => p.id === t.hostId)?.name || 'The host'} starts the campaign when everyone is ready.`)))));
   lay('camp');
   const preview = E.newHero({ name: you.name, cls: you.cls });
-  SCR.enter('camp', { hero: preview }, `lobby:${you.cls}`).then((hd) => { hd?.sync?.(preview); });
+  SCR.enter('camp', { hero: preview, heroes: t.players.map((p) => ({ name: p.name, cls: p.cls })) }, `lobby:${t.players.map((p) => p.cls).join('')}`).then((hd) => { hd?.sync?.(preview); });
   void world;
 }
 function fail(e) { toast(e?.message || 'The table did not answer.', 'bad'); sfx.error(); }
@@ -295,13 +295,13 @@ function victory(t) {
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, sub), flourish()),
       partyBar(), reopen, rows, perks, loot)));
-  lay('victory'); if (!SCR.victory()) SCR.enter('camp', { hero }, `victory:${hero.name}`);
+  lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
 function defeat(t) {
   const hero = Sess.hero(); X.S.hero = hero;
   SCRUI.defeat(!!t.retreat, t.loss || 0);
-  if (!SCR.defeat()) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
+  if (!SCR.defeat(hero, t.quest?.place)) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
 }
 
 // ------------------------------------------------------------------------------------------------ the menu

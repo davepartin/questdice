@@ -380,7 +380,9 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
 .tal-strip { display: grid; gap: .4rem; } .tal-strip.fixed { grid-template-columns: repeat(3, 1fr); } .tal-strip.syms { grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr)); }
 .tal-face { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .4rem .3rem .5rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(255, 255, 255, .04); min-width: 0; }
 .tal-face small { font-size: .56rem; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; white-space: nowrap; } .tal-face.blank b, .tal-face.x2 b { font-family: var(--font-display); font-size: .95rem; color: #dfe6f2; line-height: 1.6rem; } .tal-face.blank b { color: var(--faint, #6c7388); font-weight: 600; font-size: .75rem; } .tal-face.x2 b { font-size: 1.4rem; }
-.tal-slots { display: flex; gap: .35rem; }
+.tal-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: .35rem; }
+/* a die with three or more symbols a face: one face a row, label on the left */
+.tal-strip.syms.wide { grid-template-columns: 1fr; } .tal-strip.syms.wide .tal-face { flex-direction: row; justify-content: space-between; padding: .45rem .7rem; } .tal-strip.syms.wide .tal-slot { width: 2.3rem; height: 2.3rem; }
 .tal-slot { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed var(--hair); background: rgba(0, 0, 0, .25); color: var(--dim); font: 800 1.2rem var(--font-display); cursor: pointer; padding: 0; }
 .tal-slot:disabled { opacity: .3; cursor: default; } .tal-slot.open { border-color: var(--gold-hi); color: var(--gold-hi); box-shadow: 0 0 14px rgba(255, 214, 140, .4); }
 .tal-slot.full { border-style: solid; border-color: currentColor; background: rgba(255, 255, 255, .06); } .tal-slot .ico svg { width: 1.5rem; height: 1.5rem; }
