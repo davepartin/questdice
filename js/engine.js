@@ -1026,7 +1026,11 @@ export function questDanger(hero, quest0) {
 const PREFIX =['Ambush at', 'Trouble at', 'The Siege of', 'Showdown at', 'Night Raid on', 'Skirmish near'];
 // The standard road's extra bite (data.js ORDINARY).
 export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.flat.length, act) - 1] || 0) + (enemies.length === 1 ? ORDINARY.lone : 0);
-export function questsFor(hero) {
+// The road ahead: ONE fight per step (Dave, Oct 2026: "only one option to fight, since you can already choose level in the game").
+// The old second road, the perilous one, is still generated (so the same seed gives the same monsters as before and the
+// balance tools can measure it) but it is no longer offered: at an elite step the elite is the fight, otherwise the standard road.
+export function questsFor(hero) { return roadsFor(hero).slice(0, 1); }
+export function roadsFor(hero) {
   const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
   const cycle = Math.floor((c.act - 1) / ACTS.length);
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'quests'));

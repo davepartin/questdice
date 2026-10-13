@@ -3,7 +3,7 @@
 // max health, before potions and heals), potions drunk, and "close calls": fights won after dropping to 30% health or less
 // at some point (the ones a player remembers).
 //   node tools/tension.mjs [fights per cell = 60] [classes = all]
-import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle } from '../js/engine.js';
+import { makeRng, newHero, questsFor, roadsFor, battleRewards, gainXp, advanceCampaign, newBattle } from '../js/engine.js';
 import { botRound, botCamp, botLoot } from './sim.mjs';
 import { CLASSES, ORDINARY, PET_GROW } from '../js/data.js';
 if (process.env.TUNE_PETGROW) { const [a, b] = process.env.TUNE_PETGROW.split(',').map(Number); PET_GROW[4] = a; PET_GROW[6] = b; } // try pet growth prices
@@ -22,7 +22,7 @@ for (const cls of CLS) {
   for (let n = 0; n < 40; n++) {
     const key = `${hero.campaign.act}.${String(hero.campaign.step).padStart(2, '0')}`;
     if (key > CHECKS[CHECKS.length - 1]) break;
-    const qs = questsFor(hero);
+    const qs = roadsFor(hero);
     if (CHECKS.includes(key)) {
       for (const [road, q] of [['steady', qs[0]], ['perilous', qs[1]]]) {
         if (!q || q.kind !== 'battle') continue;

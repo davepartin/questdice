@@ -269,8 +269,8 @@ function showBoard() {
     path,
     blessings.length ? h('p', { class: 'boon' }, blessings.map((b) => b.text).join(' · ')) : null,
     ambush ? h('p', { class: 'warn' }, 'An ambush is waiting on whichever road you take.') : null,
-    tip('board', 'Each quest offers two roads. Standard is lighter. Perilous hits harder but pays 1.5× gold and XP. The computer has already spoken for this stretch of road.'),
-    h('div', { class: 't-eyebrow mb' }, quests.length > 1 ? 'Choose your road' : 'The road ends here'),
+    tip('board', 'One fight waits on this stretch of road. Win it to walk on; the boss is at the end of the act.'),
+    h('div', { class: 't-eyebrow mb' }, quests[0]?.kind === 'boss' ? 'The road ends here' : 'The road ahead'),
     h('div', { class: 'quests' }, quests.map(questCard)),
     h('div', { class: 'row' }, ghost('⛺ Visit camp', () => showCamp({ fromBoard: true })), ghost('My hero', () => { S.tab = 'hero'; showCamp({ fromBoard: true }); })));
 }
@@ -280,7 +280,7 @@ function groupNames(ids) {
 }
 function questCard(q) {
   const total = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].hp * q.hpMult), 0);
-  const tag = q.kind === 'boss' ? 'BOSS' : q.kind === 'elite' ? 'ELITE' : q.perilous ? 'PERILOUS · rewards ×1.5' : 'STANDARD';
+  const tag = q.kind === 'boss' ? 'BOSS' : q.kind === 'elite' ? 'ELITE' : 'BATTLE';
   return h('button', { class: `qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', onclick: () => { sfx.click(); startQuest(q); } },
     h('div', { class: 'qglyphs' }, q.enemies.map((id) => h('span', {}, D.MONSTERS[id].glyph))),
     h('div', { class: 'qbody' }, h('span', { class: 't-eyebrow' }, tag), h('b', {}, q.name), h('small', {}, groupNames(q.enemies)), h('small', { class: 'muted' }, `~${total} total HP · ${q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0)} XP`)),
