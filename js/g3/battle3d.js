@@ -388,7 +388,7 @@ function showFoeInfo(e) {
   const seen = new Set([e.intent?.n]);
   const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
   // the painted miniature, beside its name and numbers
-  const img = h('img', { alt: e.name, draggable: 'false', src: def.img, style: def.tint ? { filter: def.tint } : null }); const pic = h('div', { class: 'fi-pic' }, img);
+  const img = h('img', { alt: e.name, draggable: 'false', src: def.img }); const pic = h('div', { class: 'fi-pic' }, img);
   fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),

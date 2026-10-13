@@ -12,10 +12,10 @@ import * as HK from './hudkit.js';
 const SIZE = {
   goblin: 0.72, wolf: 0.9, cultist: 1, ogre: 1.6, goblinking: 1.55,
   skeleton: 1, wraith: 1.15, spider: 0.75, bonewarden: 1.7, lich: 1.6,
-  // New foes reuse existing painted minis; size them like the art they stand on.
+  // The Act III foes, each with a painted miniature of its own.
   shieldbearer: 1, gloomstalker: 1, chainbinder: 1, dirgesinger: 1,
   ironwarden: 1.55, fallenchampion: 1.55,
-  cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.6, vharaxis: 1.65,
+  cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.5, vharaxis: 1.65,
 };
 const REL_MAX = 0.62 + 0.38 * 1.7;
 export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero' is 1.0
@@ -29,8 +29,8 @@ const SPARK = { hit: '#ffd27a', pierce: '#ff8a1a', block: '#7ab4ff', heal: '#6af
 
 // ------------------------------------------------------------------------------------------ one piece
 class Piece {
-  constructor(fb, { kind, key, img, name, rel = 1, hue = null, tint = '' }) {
-    this.fb = fb; this.kind = kind; this.key = key; this.name = name; this.p = {}; this.dead = false; this.rel = rel; this.tint = tint;
+  constructor(fb, { kind, key, img, name, rel = 1, hue = null }) {
+    this.fb = fb; this.kind = kind; this.key = key; this.name = name; this.p = {}; this.dead = false; this.rel = rel;
     this.img = h('img', { class: 'fb-img', src: img, alt: name, draggable: 'false', decoding: 'async' });
     this.mark = h('i', { class: 'fb-mark', 'aria-hidden': 'true' });
     this.ring = h('i', { class: 'fb-ring', 'aria-hidden': 'true' });
@@ -53,7 +53,7 @@ class Piece {
     for (const v of Object.values(this.p)) { x += v.x || 0; y += v.y || 0; r += v.r || 0; s *= v.s ?? 1; a *= v.a ?? 1; br *= v.b ?? 1; }
     this.img.style.transform = x || y || r || s !== 1 ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(3)})` : '';
     this.img.style.opacity = a < 1 ? a.toFixed(2) : '';
-    this.img.style.filter = [this.tint, br !== 1 ? `brightness(${br.toFixed(2)})` : ''].filter(Boolean).join(' ');
+    this.img.style.filter = br !== 1 ? `brightness(${br.toFixed(2)})` : '';
   }
   // a short push toward a target and back, with a little lean. `onImpact` fires at the far point.
   async lunge(target, onImpact) {
@@ -175,7 +175,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   // ---- monsters
   const cardOf = (e) => {
     const shown = e.name.length > 11 ? e.name.split(' ').pop() : e.name;
-    const name = h('b', { class: `fb-name${shown.length > 8 ? ' long' : ''}`, title: e.name }, shown); // long names read as their last word (Skulker)
+    const name = h('b', { class: `fb-name${shown.length > 10 ? ' long xl' : shown.length > 8 ? ' long' : ''}`, title: e.name }, shown); // long names read as their last word (Skulker)
     const hpNum = h('i', { class: 'fb-hpn' });
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum);
     const intent = h('div', { class: 'fb-intent' });
@@ -183,7 +183,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
-    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id), tint: def.tint || '' }).seat(def.imgBase);
+    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id) }).seat(def.imgBase);
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
     const slot = h('div', { class: `fb-slot foe tier-${e.tier}`, 'data-uid': e.uid }, pc.el, c.el);

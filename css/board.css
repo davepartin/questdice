@@ -145,6 +145,8 @@
 .fb-intent[class*="tone-"] { display: flex; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent small { display: none; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name { letter-spacing: .03em; font-size: .56rem; }
+.fb-side.foes .fb-name.xl { font-size: .5rem; padding-right: 1.15rem; letter-spacing: 0; text-overflow: clip; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.xl { font-size: .4rem; padding-right: 0; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.long { letter-spacing: 0; font-size: .5rem; padding-right: .55rem; box-sizing: border-box; }
 .fb-intent svg { width: .98rem; height: .98rem; flex: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent)); }
 .fb-intent small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }

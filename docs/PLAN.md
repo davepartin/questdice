@@ -903,3 +903,8 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - **Art request (for Grokabot):** painted miniatures for cinderling, frostwhelp, ashwyrm (Ashmaw), vharaxis (Ember Queen), fallenchampion (Sir Aldren), ironwarden, shieldbearer, gloomstalker, chainbinder (Gold-Chain Jailer), dirgesinger. Drop them in assets/miniatures/<id>.webp with an imgBase and remove the `tint`.
 - dev/newplayer.mjs: title → new hero → prologue → road event → first fight → victory beat → camp, logging errors (clean).
 - **Beta save reset** (js/save.js `startBeta`): the first time a device opens the beta, heroes and table seats saved by the test builds are cleared once (epoch `questdice.epoch = beta-1`) and a toast says so; saves are now `v: 2`, and Soul Codes from before the beta are politely refused. Sound, hint and tutorial settings are kept.
+
+### 13 Oct 2026 — the ten Act III miniatures are in
+- Grok's transparent 1024² PNGs (branch `act3-miniatures`) were trimmed to their figure and saved as ~50–75 KB webps in assets/miniatures/ (cinderling, frostwhelp, ashwyrm, vharaxis, fallenchampion, ironwarden, shieldbearer, gloomstalker, chainbinder, dirgesinger); each monster points at its own image with an `imgBase`, and the stand-in recolouring (`tint`) is gone. The 1 MB originals stay on the branch only, to keep the repo light.
+- Sizes retuned (Ashmaw 1.5); long single-word names (Shieldbearer, Frostwhelp, Cinderling) shrink so the i badge never clips them.
+- Checked on the real battle screen at 393×852 and 375×667 with one, two and three foes, and on the quest card. The Hollow Lich is the only boss that still shares art (the Ember Queen is no longer a recoloured Lich).

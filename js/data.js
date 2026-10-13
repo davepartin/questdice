@@ -463,40 +463,40 @@ export const MONSTERS = {
         { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
-  // ---- Hired blades and dark mirrors (reuse existing painted minis; `tint` recolours the borrowed mini so it never looks like a hero) ----
+  // ---- Hired blades and dark mirrors (each with its own painted miniature) ----
   shieldbearer: {
-    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/knight.webp', tint: 'sepia(.95) saturate(1.7) hue-rotate(-18deg) brightness(.68) contrast(1.1)', imgBase: IB(378, 480, 218, 475, 279), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
+    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/shieldbearer.webp', imgBase: IB(336, 480, 167.5, 473, 329), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
     armor: { n: 1, s: 6 },
     faces: [S('Spear', 1, 1), S('Spear', 1, 1), S('Spear', 2, 1),
       { n: 'Lock Shields', v: 'guard', f: 2, m: 1 }, S('Shove', 0, 1), S('Spear', 1, 1)],
   },
   gloomstalker: {
-    name: 'Gloom Stalker', glyph: '🏹', img: 'assets/miniatures/ranger.webp', tint: 'hue-rotate(215deg) saturate(.8) brightness(.62) contrast(1.15)', imgBase: IB(325, 470, 153.5, 465, 284), short: 'GLOM', init: 8, hp: 50, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
+    name: 'Gloom Stalker', glyph: '🏹', img: 'assets/miniatures/gloomstalker.webp', imgBase: IB(376, 480, 194, 473, 336), short: 'GLOM', init: 8, hp: 50, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
     pounce: { f: 2, m: 2 },
     faces: [{ n: 'Black Arrow', v: 'pierce', f: 0, m: 1 }, { n: 'Black Arrow', v: 'pierce', f: 0, m: 1 },
       { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, { n: 'Snare', v: 'bind', f: 0, m: 0, k: 1 },
       S('Knife', 1, 1), { n: 'Fade', v: 'phase', f: 0, m: 0 }],
   },
   chainbinder: {
-    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/wizard.webp', tint: 'sepia(.85) saturate(2.2) hue-rotate(-8deg) brightness(.92)', imgBase: IB(363, 474, 183, 469, 305), short: 'CHNB', init: 6, hp: 52, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
+    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/chainbinder.webp', imgBase: IB(413, 480, 225.5, 473, 367), short: 'CHNB', init: 6, hp: 52, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
     faces: [{ n: 'Chain', v: 'chain', f: 0, m: 0, k: 1 }, { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 },
       { n: 'Chain Bolt', v: 'pierce', f: 0, m: 1 }, S('Rod', 1, 1),
       { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 }, { n: 'Chain Ward', v: 'ward', f: 0, m: 1, k: 3 }],
   },
   dirgesinger: {
-    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/bard.webp', tint: 'grayscale(.85) brightness(.82) contrast(1.15)', imgBase: IB(318, 476, 153, 471, 283), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
+    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/dirgesinger.webp', imgBase: IB(381, 480, 190, 473, 374), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
     faces: [{ n: 'Hush', v: 'hush', f: 0, m: 0 }, { n: 'Dirge', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lute Smash', 1, 1), { n: 'Sour Note', v: 'pierce', f: 0, m: 1 },
       { n: 'Hush', v: 'hush', f: 0, m: 0 }, S('Lute Smash', 1, 1)],
   },
   ironwarden: {
-    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/dwarf.webp', tint: 'grayscale(.75) brightness(.86) contrast(1.25)', imgBase: IB(443, 448, 250, 443, 329), short: 'IRON', init: 4, hp: 110, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
+    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/ironwarden.webp', imgBase: IB(412, 480, 218, 473, 380), short: 'IRON', init: 4, hp: 110, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
     slam: { f: 3, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Axe', 1, 1), S('Axe', 1, 1), { n: 'Stone Wall', v: 'guard', f: 2, m: 1 },
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
   },
   fallenchampion: {
-    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/knight.webp', tint: 'grayscale(.6) brightness(.5) contrast(1.35)', imgBase: IB(378, 480, 218, 475, 279), short: 'CHMP', init: 6, hp: 240, power: 13, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', imgBase: IB(331, 480, 165, 473, 324), short: 'CHMP', init: 6, hp: 240, power: 13, xp: 160, gold: 140, tier: 'boss', threat: 10,
     slam: { f: 4, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Oathbreaker', 2, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
       { n: 'Oath Smite', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 2, 1)],
@@ -508,25 +508,25 @@ export const MONSTERS = {
   },
   // ---- Dragons ----
   cinderling: {
-    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cultist.webp', tint: 'hue-rotate(-25deg) saturate(1.8) brightness(1.05)', imgBase: IB(322, 475, 160, 470, 297), short: 'CNDR', init: 6, hp: 48, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
+    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cinderling.webp', imgBase: IB(393, 480, 193.5, 473, 381), short: 'CNDR', init: 6, hp: 48, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Nip', 1, 1), S('Nip', 1, 1), { n: 'Puff', v: 'breath', f: 0, m: 1 },
       { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],
   },
   frostwhelp: {
-    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/wraith.webp', tint: 'sepia(.5) hue-rotate(165deg) saturate(2.6) brightness(1.02)', imgBase: IB(339, 461, 168.5, 456, 252), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
+    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/frostwhelp.webp', imgBase: IB(474, 480, 225.5, 473, 443), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Bite', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }, { n: 'Icy Wings', v: 'bind', f: 0, m: 0, k: 1 },
       { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
   },
   ashwyrm: {
-    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ogre.webp', tint: 'sepia(.7) hue-rotate(-35deg) saturate(2) brightness(.72)', imgBase: IB(431, 462, 248, 457, 341), short: 'ASHM', init: 6, hp: 150, power: 11, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
+    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ashwyrm.webp', imgBase: IB(431, 480, 215, 473, 424), short: 'ASHM', init: 6, hp: 150, power: 11, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
     slam: { f: 3, m: 2, v: 'breath' }, armor: { n: 1, s: 4 }, flee: { at: 0.25, chance: 1 },
     faces: [S('Claw', 2, 1), S('Claw', 2, 1), { n: 'Fire Breath', v: 'breath', f: 2, m: 1 },
       { n: 'Inhale', v: 'charge', f: 0, m: 0 }, { n: 'Wing Buffet', v: 'guard', f: 2, m: 1 }, S('Tail Sweep', 1, 1)],
   },
   vharaxis: {
-    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/lich.webp', tint: 'sepia(1) hue-rotate(-28deg) saturate(3.2) brightness(.88)', imgBase: IB(368, 489, 191.5, 484, 320), short: 'VHRX', init: 4, hp: 280, power: 14, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/vharaxis.webp', imgBase: IB(480, 399, 222, 393, 394), short: 'VHRX', init: 4, hp: 280, power: 14, xp: 180, gold: 200, tier: 'boss', threat: 12,
     slam: { f: 5, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
     faces: [S('Talons', 2, 1), { n: 'Inferno', v: 'breath', f: 3, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
       { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 3, 1), { n: 'Wing Wall', v: 'guard', f: 3, m: 1 }],
