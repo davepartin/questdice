@@ -1,11 +1,14 @@
-// Character saves. A hero lives in localStorage behind a name + password. The password is hashed
-// (SHA-256 + salt) and gates opening a hero in this UI; it is NOT encryption. A "Soul Code" lets a
-// hero travel between devices until cloud saves exist (see docs/DESIGN.md, Saving).
+// Character saves. A hero lives in localStorage behind a name + password, and (when the cloud is
+// reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
+// it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
+
+import { QUESTS_PER_ACT } from './data.js';
 
 const PREFIX = 'questdice.hero.';
-const key = (name) => PREFIX + name.trim().toLowerCase();
+export const nameKey = (name) => String(name || '').trim().toLowerCase();
+const key = (name) => PREFIX + nameKey(name);
 
-async function sha(text) {
+export async function hashText(text) {
   if (globalThis.crypto?.subtle) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
     return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -13,6 +16,7 @@ async function sha(text) {
   let h = 5381; for (const ch of text) h = ((h << 5) + h + ch.charCodeAt(0)) | 0; // fallback for insecure contexts
   return 'f' + (h >>> 0).toString(16);
 }
+const sha = hashText;
 const randSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 function store() { try { return window.localStorage; } catch { return null; } }
@@ -45,7 +49,9 @@ export function listHeroes() {
 }
 export const heroExists = (name) => !!store()?.getItem(key(name));
 
+export const MIN_PASSWORD = 3;
 export async function createSave(hero, password) {
+  if (String(password || '').length < MIN_PASSWORD) throw new Error('Choose a password of at least 3 characters.');
   if (heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
   const salt = randSalt();
   const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: SAVE_V };
@@ -67,6 +73,15 @@ export function saveHero(hero) {
 }
 export function deleteHero(name) { store()?.removeItem(key(name)); }
 
+// Keep a copy on this device after a cloud load (or after forging at a table). Same name + password
+// overwrites the local file; a different password on this device is a collision.
+export async function keepHero(hero, password) {
+  if (!heroExists(hero.name)) return createSave(hero, password);
+  await openHero(hero.name, password);
+  saveHero(hero);
+  return true;
+}
+
 export function listSaves() {
   return listHeroes().map((h) => ({ ...h, kind: 'hero', size: 1, classes: [h.cls] })).sort((a, b) => b.saved - a.saved);
 }
@@ -86,3 +101,154 @@ export function importCode(code, { overwrite = false } = {}) {
   store().setItem(key(rec.hero.name), JSON.stringify(rec));
   return rec.hero.name;
 }
+
+// Cloud document ids. The hero id is derived from name + password, so a phone that does not know the
+// password cannot even find the document. The name id only marks that a name is taken (it does not
+// hold the password hash). A static prefix keeps these ids from colliding with anything else we store.
+export async function cloudNameId(name) {
+  return sha(`questdice.cloud.name.v1\n${nameKey(name)}`);
+}
+export async function cloudHeroId(name, password) {
+  return sha(`questdice.cloud.v1\n${nameKey(name)}\n${String(password || '')}`);
+}
+export async function cloudRecord(hero, password, existing) {
+  const salt = existing?.salt || randSalt();
+  const hash = existing?.hash || await sha(salt + password);
+  return {
+    nameKey: nameKey(hero.name),
+    salt,
+    hash,
+    hero: JSON.stringify(hero),
+    v: SAVE_V,
+    saved: Date.now(),
+  };
+}
+
+// Public card for the browsable cloud list: name, class, level, act/step only. Never the hash, salt, or hero blob.
+export function cloudPublic(hero) {
+  return {
+    name: String(hero?.name || '').trim().slice(0, 16),
+    nameKey: nameKey(hero?.name),
+    cls: String(hero?.cls || ''),
+    level: Math.max(1, hero?.level | 0),
+    act: Math.max(1, hero?.campaign?.act | 0),
+    step: Math.max(1, hero?.campaign?.step | 0),
+  };
+}
+export function readPublicHero(data) {
+  if (!data || typeof data !== 'object') return null;
+  const name = String(data.name || '').trim().slice(0, 16);
+  if (name.length < 2) return null;
+  return {
+    name,
+    cls: String(data.cls || ''),
+    level: Math.max(1, data.level | 0),
+    act: Math.max(1, data.act | 0),
+    step: Math.max(1, data.step | 0),
+  };
+}
+
+// ------------------------------------------------------------------------------ campaign start picks
+// A loaded hero may replay any step they have already reached, but they may not skip ahead.
+// `campaign.reached` is the high-water mark (act, step). Older saves without it use where they stand.
+export function further(a, b) {
+  if (!a) return false;
+  if (!b) return true;
+  return a.act > b.act || (a.act === b.act && a.step > b.step);
+}
+export function reachedOf(hero) {
+  const c = hero?.campaign || {};
+  const cur = { act: Math.max(1, c.act | 0), step: Math.max(1, c.step | 0) };
+  const r = c.reached;
+  if (!r) return cur;
+  const mark = { act: Math.max(1, r.act | 0), step: Math.max(1, r.step | 0) };
+  return further(mark, cur) ? mark : cur;
+}
+export function markReached(hero) {
+  const c = hero?.campaign; if (!c) return null;
+  const cur = { act: Math.max(1, c.act | 0), step: Math.max(1, c.step | 0) };
+  if (!c.reached || further(cur, c.reached)) c.reached = cur;
+  return c.reached;
+}
+export function canStartAt(hero, act, step) {
+  const a = act | 0; const s = step | 0;
+  if (a < 1 || s < 1 || s > QUESTS_PER_ACT) return false;
+  if (a === 1 && !isNewHero(hero)) return false;
+  const r = reachedOf(hero);
+  if (a < r.act) return true;
+  return a === r.act && s <= r.step;
+}
+export function startChoices(hero) {
+  const r = reachedOf(hero);
+  const out = [];
+  for (let act = 1; act <= r.act; act++) {
+    const last = act < r.act ? QUESTS_PER_ACT : r.step;
+    for (let step = 1; step <= last; step++) {
+      if (canStartAt(hero, act, step)) out.push({ act, step });
+    }
+  }
+  return out;
+}
+// Rewind the road to a step they have earned. Gear, gold, level and the high-water mark stay.
+// Blessings, the open shop and an unfinished road scene belong to the old stretch, so they clear.
+export function beginAt(hero, act, step) {
+  if (!canStartAt(hero, act, step)) return false;
+  const c = hero.campaign;
+  const r = reachedOf(hero);
+  c.reached = { act: r.act, step: r.step };
+  c.act = act | 0;
+  c.step = step | 0;
+  c.road = null;
+  c.shop = null;
+  c.ambush = null;
+  c.blessings = [];
+  c.nextPlace = null;
+  c.nextEnemies = null;
+  return true;
+}
+
+// ------------------------------------------------------------------------------ Act I is new-hero-only
+// A hero who has beaten any step cannot start a new Act I game (solo picker or a table). Continue
+// mid-Act-I is still allowed: that is picking up where they stand, not starting Act I again.
+export const ACT1_NEW = 'Act I is for a new hero. Forge a fresh character to walk it again.';
+export const ACT1_TABLE = 'Act I is for a new hero. Forge a fresh character, or join a table on Act II or III.';
+export function isNewHero(hero) {
+  if (!hero) return true;
+  if (clearedOf(hero).length) return false;
+  if ((hero.campaign?.wins | 0) > 0) return false;
+  const r = reachedOf(hero);
+  if (r.act > 1 || r.step > 1) return false;
+  const c = hero.campaign || {};
+  if ((c.act | 0) > 1 || (c.step | 0) > 1) return false;
+  return true;
+}
+export function canJoinAct(hero, act) {
+  if ((act | 0) === 1) return isNewHero(hero);
+  return true;
+}
+
+// ------------------------------------------------------------------------------ first-clear tracking
+// Per hero, not on the shared company campaign: in party play a first-clear hero still earns
+// while a friend replaying the same step does not. Repeat clears withhold XP, gold, perks and
+// weapon drops for that hero (drops still appear for first-clear friends).
+export function stepKey(act, step) { return `${act | 0}.${step | 0}`; }
+export function clearedOf(hero) {
+  return Array.isArray(hero?.cleared) ? hero.cleared : [];
+}
+export function hasCleared(hero, act, step) {
+  const a = act | 0; const s = step | 0;
+  if (clearedOf(hero).includes(stepKey(a, s))) return true;
+  const r = reachedOf(hero);
+  const here = { act: a, step: s };
+  if (further(r, here)) return true;
+  return false;
+}
+export function markCleared(hero, act, step) {
+  if (!hero) return null;
+  const key = stepKey(act ?? hero.campaign?.act, step ?? hero.campaign?.step);
+  hero.cleared = [...clearedOf(hero)];
+  if (!hero.cleared.includes(key)) hero.cleared.push(key);
+  return key;
+}
+export const REPEAT_NOTE = 'You have already cleared this quest. No XP, gold or spoils this time.';
+export const REPEAT_PARTY = 'You have already cleared this quest, so you earn no XP, gold or spoils. Friends on a first clear still do.';

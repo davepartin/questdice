@@ -13,6 +13,15 @@ document in Firestore: `qdRooms/ABCD`, holding the whole party table. When someo
 the game's own rules (`js/table.js`) inside a transaction and writes the new table back. Everyone else's phone sees
 the change within a moment.
 
+Solo heroes also live in Firestore: `qdHeroes/{id}` is the save (gold, gear, campaign and all),
+`qdHeroNames/{id}` marks that a display name is taken, and `qdHeroPublic/{id}` is a browsable card
+(name, class, level, act/step only). The hero document id is a SHA-256 of the name plus the
+password, so a phone that does not know the password cannot find or overwrite the save. The public
+card is listable so a player can pick a name they have forgotten; it never holds the hash, salt or
+hero blob. **These rules are in `firestore.rules` in the repo; they are not published until someone
+pastes them into the Firebase console (or runs the deploy command below).** Until then, cloud saves
+will fail with a permission error and the name list will be empty.
+
 The free (Spark) plan is enough: no Cloud Functions are used. Firestore's free allowance is 50,000 reads and 20,000
 writes a day, far more than a few game nights need.
 
@@ -33,7 +42,7 @@ Done on 7 October 2026 (with Claude in Chrome). Kept here in case it ever has to
 ## If joining suddenly breaks for everyone
 
 Check, in order: Anonymous sign-in is still on; `davepartin.github.io` is still an authorised domain; the Rules tab
-shows the `qdRooms` block from `firestore.rules`; Firestore → Usage is not at the daily limit.
+shows the `qdRooms`, `qdHeroNames`, `qdHeroPublic` and `qdHeroes` blocks from `firestore.rules`; Firestore → Usage is not at the daily limit.
 
 ## Updating the rules later
 
@@ -50,4 +59,18 @@ on a Wi-Fi with no internet. Everywhere else (GitHub Pages) the game uses Fireba
 join with the code or with the invite link (`…/?join=CODE`) the host shares from the lobby.
 
 Rooms are never deleted on their own. Each is small (tens of kilobytes); the free plan holds 1 GB. If they ever pile
-up, delete old documents in Firestore → `qdRooms` (each has an `updated` time).
+up, delete old documents in Firestore → `qdRooms` (each has an `updated` time). Hero saves are similarly sticky: a
+name marker cannot be deleted by the rules, so a retired name stays taken.
+
+## Solo hero saves, honestly
+
+This is not an account system. There is no email, no password reset, and no rate limiting (Spark has no Cloud
+Functions). The phone hashes the password (SHA-256 with a salt) and never sends the password to Firestore. The
+document id is another SHA-256 of name + password, which is a capability: anyone who can guess that id can read
+the save. New saves need a password of at least 3 characters; short passwords are still weak against a
+guessed-name brute force. HTTPS hides the id in transit. Listing `qdHeroes` is forbidden, so an attacker cannot
+browse other people's saves. `qdHeroPublic` *is* listable, on purpose, and is allowed to hold only name, class,
+level and act/step. Spark cannot bind that public write to the password, so a signed-in nuisance could change
+the listed class or level of a name; they still cannot read or overwrite the save. A write to an existing save
+must also carry the same stored salt and hash. Two people cannot take the same hero name; the first to create
+the name marker keeps it.

@@ -56,15 +56,15 @@ async function post(body) {
   return data;
 }
 
-export async function createSeat({ name, cls, table }) {
+export async function createSeat({ name, cls, table, hero }) {
   const kind = await tableKind();
-  const data = kind === 'cloud' ? await (await Cloud()).createSeat({ name, cls, table }) : await post({ op: 'create', name, cls, table });
+  const data = kind === 'cloud' ? await (await Cloud()).createSeat({ name, cls, table, hero }) : await post({ op: 'create', name, cls, table, hero });
   remember(data.code, data.token, kind);
   return data;
 }
-export async function joinSeat({ code, name, cls }) {
+export async function joinSeat({ code, name, cls, hero }) {
   const kind = await tableKind();
-  const data = kind === 'cloud' ? await (await Cloud()).joinSeat({ code, name, cls }) : await post({ op: 'join', code, name, cls });
+  const data = kind === 'cloud' ? await (await Cloud()).joinSeat({ code, name, cls, hero }) : await post({ op: 'join', code, name, cls, hero });
   remember(data.code, data.token, kind);
   return data;
 }

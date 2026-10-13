@@ -425,15 +425,16 @@ The first step of a new campaign is always the Nine-Stone Gate, and it is a gift
 
 ## 13. Saving a hero
 
-A hero is saved by **name and password**. Heroes live in the browser's local storage on the device. The password is hashed (SHA-256 with a salt) and is checked before the hero opens. Camp, a victory and the quest board all save automatically.
+A hero is saved by **name and password**. Heroes live in the browser's local storage on the device, and also in Firestore when the cloud is reachable. The password is hashed (SHA-256 with a salt) and is checked before the hero opens. Camp, a victory and the quest board all save automatically, including a write-back to the cloud save.
 
-**What this is, and what it is not.** It is a friendly gate that keeps a sibling from opening your hero. It is *not* encryption, and it does not travel between devices by itself. A hero is lost if browser data is cleared.
+**What this is, and what it is not.** It is a friendly gate that keeps a sibling from opening your hero. It is *not* encryption. Clearing browser data no longer loses a hero that was also saved in the cloud: open them on any device with the same name and password.
 
-Two things soften that:
+A few things around that:
 
 - **Soul Code.** Any hero can be exported as a short code and imported on another device or restored after clearing data. A solo code starts with `QD1`. A company code starts with `QD2`. The code carries the save and the password hash, so it should be treated like a password.
 - **A company is a different save.** It has its own name and password. The heroes inside it share one campaign. An older solo hero stays a solo hero. Opening one does not convert it. A hero and a company may share a display name, because they live under different keys.
-- **Cloud saves (planned).** The right long-term answer is a small server that stores a save against a name and password hash with rate limiting. It is also what four-digit party codes will need. See the roadmap.
+- **Cloud saves.** The hero document id is derived from name + password, so a write requires knowing the password. Names are first-come, first-served. A public index lists name, class, level and act/step so you can pick a hero without remembering the exact spelling; the list never holds the hash or the save. New saves need a password of at least 3 characters. There is no rate limiting and no password reset; see `docs/FIREBASE.md`. After loading a hero you may replay any step you have already reached **except Act I**: Act I is for a brand-new character (solo or at a table). Acts II and III welcome a built-up hero. Friends sit with their own cloud hero or a new one. The table walks the **host's** road; each phone writes its own hero back to the cloud after victories and camp.
+- **First-clear rewards.** Each hero remembers which act/steps they have cleared (`hero.cleared`). Replaying a step they have already beaten awards no XP (so no levels or perks), no gold, and no weapon drops for that hero. In a party, friends on a first clear still earn; only first-clear heroes enter the spoils draft. If everyone is replaying, nothing drops. The victory screen says so when this hero earns nothing. (Weapon drops are withheld along with XP and gold: they are first-clear spoils, and farming a replay would otherwise print gear.)
 
 ---
 
@@ -509,5 +510,5 @@ Each of these changed or settled something from the original brainstorm. They ar
 | **2. Solo polish** | Hand-drawn art and monster portraits, music, dice animation, a first-run tutorial battle, more weapons and cards, Act III | Next |
 | **3. Party rules** | Feet initiative, contribution loot, road events the computer narrates | Done |
 | **3b. Each phone** | Room code, simultaneous decisions, resolve when every lock is in, rejoin while the server is up | Done |
-| **4. Cloud saves** | Name and password stored server-side with proper rate limiting | Planned |
+| **4. Cloud saves** | Name and password, Firestore hero docs, public name list, Act I new-hero-only, first-clear rewards, step pick, table write-back. No rate limiting (Spark). Rules must be deployed. | Done |
 | **5. Live content** | New Acts, seasons, weekly challenge seeds | Later |
