@@ -153,6 +153,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     pc.slot = slot; pc.uid = e.uid;
     const tap = () => onPick?.(e.uid);
     pc.el.addEventListener('click', tap); c.el.addEventListener('click', tap);
+    // a small gold "i" on the plaque: tap it to read about this monster (tapping the chosen one again does the same)
+    const info = h('button', { type: 'button', class: 'fb-info', 'aria-label': `About ${e.name}`, onclick: (ev) => { ev.stopPropagation(); onInfo?.(e.uid); } }, 'i');
+    c.el.append(info);
     foeSide.append(slot); fb.pieces.set(e.uid, pc); fb.foes.set(e.uid, pc);
     fb.layout();
     return pc;
