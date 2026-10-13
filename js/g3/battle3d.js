@@ -3,7 +3,7 @@
 //
 // ui.js calls start(ctx) when a solo quest begins. This module owns Reset -> Roll -> Shape -> Lock ->
 // Resolve until the fight ends, then hands back to ui.js (ctx.showVictory / ctx.defeat).
-import { h, $, $$, toast, buzz } from '../dom.js';
+import { h, $, $$, toast, buzz, reduced } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
@@ -15,7 +15,7 @@ import { world } from './world.js';
 import * as THREE from 'three';
 import { petImg } from './pets.js';
 import * as Sess from '../session.js';
-import { createFlat } from './flat.js';
+import { createFlat, replayPace, stanceOf } from './flat.js';
 import { roundCard } from './roundcard.js';
 import * as AP from './abilitypop.js';
 
@@ -349,6 +349,7 @@ function paintHeroes() {
   const fb = B.fb; if (!fb) return;
   if (B.party) B.b.fighters.forEach((f, i) => fb.paintHero(i, f.hp, f.maxHp));
   fb.setActive(Math.max(0, B.active ?? 0));
+  if (B.party) fb.setPartyStance?.(stanceOf(B.b.fighters, B.b.enemies, B.replaying ? { strikes: B.lastRep?.strikes } : {}));
 }
 const alive = () => B.b.enemies.filter((e) => e.hp > 0);
 function targetEnemy() {
@@ -623,6 +624,7 @@ export function renderShape() {
   const b = B.b; const hero = B.hero; const bw = B.bw;
   if (B.net && !B.resolving) { const st = myStage(); if (st === 'locked') return renderLocked(); if (st === 'skipped' || st === 'down') return renderLocked(st); }
   if (b.phase !== 'shape') return renderReset();
+  paintHeroes();
   setHud({ phase: 'shape' });
   const ev = E.evaluate(hero, b.board, { straight: B.straight });
   const info = E.rerollInfo(b);
@@ -782,6 +784,7 @@ export function netChanged(prev, next) {
   if (next.phase !== 'battle' || round(next) > round(prev)) { netResolve(prev, next); return; }
   if (!refocus()) return;
   renderRoster();
+  paintHeroes(); // live: a mate locking in steps their mini up beside the target
   const st = myStage(); const sig = `${B.b.round}:${st}`; const changed = sig !== B.lastSig; B.lastSig = sig;
   if (st === 'locked' || st === 'skipped' || st === 'down') { B.busy = false; renderLocked(st === 'locked' ? '' : st); return; } // (also refreshes who is still choosing)
   if (changed && !B.busy) (st === 'shape' ? renderShape : renderReset)(); // e.g. the host skipped me and then let me back, or I took my lock back
@@ -813,6 +816,7 @@ function renderLocked(kind = '') {
     B.hud.forecast.classList.remove('idle');
   }
   B.hud.cards.replaceChildren(...cardTiles(!b.board));
+  paintHeroes();
   const msg = kind === 'down' ? 'You are down. Your friends will finish this fight.' : kind === 'skipped' ? 'The host marked you away this round.' : waitingText();
   const skips = Sess.isHost() ? (b.fighters || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== B.active && g.hp > 0 && !g.locked).map(({ g }) => h('button', { type: 'button', class: 'b3-skip', onclick: () => netDo({ type: 'skip', playerId: Sess.mates().find((p) => p.hero === g.hero)?.id }).then(() => netSettle()) }, `Skip ${g.hero.name} this round`)) : [];
   B.hud.caption.replaceChildren(caption(msg), ...skips);
@@ -997,6 +1001,9 @@ async function playParty(rep, outcome = B.b.outcome) {
   B.lastRep = rep;
   const card = makeCard(rep);
   const pcOf = (n) => heroPiece(n);
+  B.replaying = true;
+  B.fb?.setPartyStance?.(stanceOf(b.fighters, b.enemies, { strikes: rep.strikes }));
+  const pace = replayPace((rep.order || []).length, { reduced: reduced() });
   // team triples and Heartbeat
   for (const t of rep.team || []) {
     sfx.synergy(); banner(`${t.label.toUpperCase()}  +${t.bonus}`, 'gold'); stage.flash(0xffd23d, 0.18);
@@ -1005,19 +1012,22 @@ async function playParty(rep, outcome = B.b.outcome) {
   }
   if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const pc of B.fb.heroes) pc.glow('heal'); await wait(1.0); }
   // initiative
-  if (rep.init.forced) { banner('THE COMPANY STRIKES FIRST', 'gold'); await wait(0.8); }
+  if (rep.init.forced) { banner('THE COMPANY STRIKES FIRST', 'gold'); }
   else {
     for (const x of rep.init.heroes) pcOf(x.name)?.num(`⚡ ${x.init}`, 'pierce');
     for (const x of rep.init.foes) foePc(x.uid)?.num(`⚡ ${x.init}`, 'hurt');
   }
   // the slowest Feet draws the monsters (a tie: whoever has more health)
   if (rep.leader && rep.fighters.filter((x) => !x.down).length > 1) banner(`MONSTERS TARGET ${rep.leader.toUpperCase()} · SLOWEST FEET`, 'bad');
-  await wait(1.1);
+  await wait(pace.intro);
   const snapNames = rep.fighters.filter((x) => !x.down).map((x) => x.name);
   const strikes = rep.strikes.map((s) => ({ ...s })); const acts = rep.acts.map((a) => ({ ...a }));
+  const t0 = () => world.stage.time;
   for (const step of rep.order) {
+    const started = t0();
     if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep); } }
     else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames); } }
+    const rest = pace.beat - (t0() - started); if (rest > 0.05) await wait(rest);
   }
   for (const st of rep.stalks || []) { const a = foePc(st.uid); if (a) a.num(st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt'); }
   for (const uid of rep.summoned) {
@@ -1039,8 +1049,9 @@ async function playParty(rep, outcome = B.b.outcome) {
   }
   bw.tray.unlock?.();
   for (const e of b.enemies) updatePlate(e);
+  B.replaying = false;
   paintHeroes();
-  await wait(0.5);
+  await wait(pace.close);
   B.busy = false;
   if (outcome === 'victory') return win();
   if (outcome === 'defeat') return lose();
