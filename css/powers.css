@@ -19,11 +19,11 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* ================================================================== the triangle */
 /* the wrap takes whatever height is left; the stage is the biggest 300:260 triangle that fits in it */
-.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: 1.5rem 0 2.7rem; container-type: size; }
+.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: .5rem 0 2.4rem; container-type: size; }
 .pw-stage { position: relative; flex: none; width: min(100%, 11rem); aspect-ratio: 300 / 260; container-type: inline-size; }
 @supports (width: 1cqh) { .pw-stage { width: min(92cqw, 17rem, calc(100cqh * 300 / 260)); } }
 .pw-tri { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.pw-edge { fill: none; stroke: url(#pwG); stroke-width: 3.2; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(180, 100, 255, .9)); opacity: .75; transition: opacity .3s, stroke-width .3s; }
+.pw-edge { fill: none; stroke: url(#pwG); stroke-width: 3.6; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(180, 100, 255, .9)); opacity: .95; transition: opacity .3s, stroke-width .3s; }
 .pw-sigil.sel-A .e-AB, .pw-sigil.sel-A .e-CA, .pw-sigil.sel-B .e-AB, .pw-sigil.sel-B .e-BC, .pw-sigil.sel-C .e-BC, .pw-sigil.sel-C .e-CA { opacity: 1; stroke-width: 4.6; stroke-dasharray: 14 9; animation: pwFlow 1.1s linear infinite; }
 @keyframes pwFlow { to { stroke-dashoffset: -46; } }
 .pw-inner { fill: none; stroke: rgba(210, 160, 255, .3); stroke-width: 1.2; }
@@ -31,26 +31,17 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-rune.r2 { stroke-dasharray: 10 5 2 5; stroke: rgba(255, 210, 120, .22); animation-direction: reverse; animation-duration: 60s; }
 @keyframes pwSpin { to { transform: rotate(360deg); } }
 .pw-fill { animation: pwBreathe 4.2s ease-in-out infinite; } @keyframes pwBreathe { 50% { opacity: .6; } }
-/* a larger, quiet triangle of light behind it */
-.pw-aura { position: absolute; left: -60%; top: -34%; width: 220%; height: 168%; overflow: visible; pointer-events: none; z-index: 0; }
-.pa-fill { animation: pwBreathe 5.6s ease-in-out infinite; }
-.pa-inner { fill: none; stroke: rgba(214, 170, 255, .2); stroke-width: 1; stroke-dasharray: 3 7; }
-.pa-edge { fill: none; stroke: url(#pwAG); stroke-width: 2; stroke-linejoin: round; opacity: .42; filter: drop-shadow(0 0 7px rgba(170, 90, 255, .8)); }
-.pa-node { fill: #ecd6ff; filter: drop-shadow(0 0 6px #b46cff); }
-
-/* the magic you hold: a small badge in the top-right of the triangle's space */
-.pw-center { position: absolute; right: 0; top: .2rem; z-index: 1; display: flex; align-items: center; gap: .3rem; padding: .22rem .6rem .22rem .45rem; border-radius: 999px; line-height: 1;
-  background: radial-gradient(circle at 50% 30%, rgba(150, 80, 255, .55), rgba(40, 12, 90, .92)); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .7), 0 0 16px rgba(150, 80, 255, .5); }
-.pw-center .ic { width: 1rem; height: 1rem; color: #e6c8ff; }
-.pw-center b { font: 900 1.35rem var(--disp, sans-serif); color: #fff; text-shadow: 0 0 12px rgba(180, 100, 255, .95); }
-.pw-center small { font: 700 .5rem var(--disp, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: #d9b4ff; }
-
-/* your health, under the magic: so you can watch it climb while you keep tapping Heal */
-.pw-life { position: absolute; right: 0; top: 2.35rem; z-index: 1; display: flex; align-items: center; gap: .28rem; padding: .18rem .55rem .18rem .4rem; border-radius: 999px; line-height: 1;
-  background: radial-gradient(circle at 50% 30%, rgba(60, 200, 120, .45), rgba(8, 40, 24, .92)); box-shadow: 0 0 0 1.5px rgba(110, 240, 160, .65), 0 0 14px rgba(60, 220, 120, .35); }
-.pw-life .ic { width: .9rem; height: .9rem; color: #7dffb0; }
-.pw-life b { font: 900 1.1rem var(--disp, sans-serif); color: #fff; text-shadow: 0 0 10px rgba(90, 255, 150, .8); }
-.pw-life small { font: 700 .6rem var(--disp, sans-serif); color: #aaf0c8; }
+/* the magic and health you hold: two matching pills stacked in the top-right corner, same width, icons and numbers lined up */
+.pw-tally { position: absolute; right: 0; top: .1rem; z-index: 3; display: flex; flex-direction: column; gap: .3rem; align-items: stretch; width: 6.4rem; }
+.pw-center, .pw-life { display: grid; grid-template-columns: 1.2rem 1fr auto; align-items: center; column-gap: .3rem; padding: .2rem .55rem .2rem .45rem; border-radius: 999px; line-height: 1; }
+.pw-center { background: radial-gradient(circle at 50% 30%, rgba(150, 80, 255, .55), rgba(40, 12, 90, .92)); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .7), 0 0 14px rgba(150, 80, 255, .45); }
+.pw-life { background: radial-gradient(circle at 50% 30%, rgba(60, 200, 120, .45), rgba(8, 40, 24, .92)); box-shadow: 0 0 0 1.5px rgba(110, 240, 160, .65), 0 0 12px rgba(60, 220, 120, .35); }
+.pw-center .ic, .pw-life .ic { width: 1.05rem; height: 1.05rem; }
+.pw-center .ic { color: #e6c8ff; } .pw-life .ic { color: #7dffb0; }
+.pw-center b, .pw-life b { font: 900 1.2rem var(--disp, sans-serif); color: #fff; text-align: right; }
+.pw-center b { text-shadow: 0 0 12px rgba(180, 100, 255, .95); } .pw-life b { text-shadow: 0 0 10px rgba(90, 255, 150, .8); }
+.pw-center small, .pw-life small { font: 700 .5rem var(--disp, sans-serif); letter-spacing: .04em; text-transform: uppercase; }
+.pw-center small { color: #d9b4ff; } .pw-life small { color: #aaf0c8; }
 
 /* ================================================================== a medallion (a power at a point of the triangle) */
 .pw-medal { --r: clamp(2.7rem, 27cqw, 4.7rem); position: absolute; width: var(--r); display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; transform: translate(-50%, -50%); -webkit-tap-highlight-color: transparent; z-index: 2; }
@@ -79,25 +70,18 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-medal:active .pw-ring { transform: scale(1.04); }
 
 /* ================================================================== the helpers: potion, heal, heart change */
-/* three small raised buttons side by side: icon, name, cost in the corner */
-.pw-utils { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; padding-top: .45rem; }
-/* a button must look like a button: a raised pill with a lit top edge and a dark underside, flat grey when it cannot be used */
-.pw-util { --c: #b46cff; position: relative; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: .3rem; min-height: 2.35rem; padding: .25rem .4rem; border: 0; border-radius: 999px; cursor: pointer; text-align: center;
-  color: #8c829c; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
-.pu-ic { flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .08); } .pu-ic .ic { width: .88rem; height: .88rem; color: #6c627a; }
-.pu-name { font: 800 .62rem var(--disp, sans-serif); letter-spacing: .05em; text-transform: uppercase; line-height: 1.05; }
-.pu-sub { display: none; }
-.pw-util.ready { color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 92%, #fff), color-mix(in srgb, var(--c) 78%, #000)); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 1.5px color-mix(in srgb, var(--c) 50%, #000), 0 4px 12px color-mix(in srgb, var(--c) 35%, transparent); }
-.pw-util.ready .pu-ic { background: rgba(255, 255, 255, .25); } .pw-util.ready .pu-ic .ic { color: #fff; }
-.pw-util.ready.t-gold { color: #2a1804; } .pw-util.ready.t-gold .pu-ic .ic { color: #5a3a08; }
-.pw-util.ready.t-heal { text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
-.pw-util.on { outline: 2.5px solid #fff; outline-offset: 2px; }
-.pu-cost { position: absolute; right: -.3rem; top: -.45rem; display: inline-flex; align-items: center; gap: .1rem; padding: .06rem .36rem .06rem .26rem; border-radius: 999px; font: 900 .68rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838; }
-.pu-cost .ic { width: .64rem; height: .64rem; color: #fff !important; } .pu-cost.free { background: linear-gradient(180deg, #3ad07a, #1a7a44); font-size: .56rem; letter-spacing: .06em; }
-.pw-util.off .pu-cost { background: #4a4258; }
+/* the same round medallions as the triangle: always lit when usable, a quiet pop-up (not a dead button) when there is nothing to do */
+.pw-utils { flex: none; display: flex; justify-content: center; gap: clamp(1rem, 7cqw, 2rem); padding-top: .55rem; }
+.pw-umedal { position: relative; z-index: 2; transform: none; --r: clamp(2.6rem, 14vw, 3.4rem); }
+.pw-umedal .pw-name { margin-top: .2rem; }
+.pw-umedal.st-ready .pw-ring { animation: none; }
+.pw-umedal .pw-cost { right: -.7rem; }
+.pw-cost.free { background: linear-gradient(180deg, #3ad07a, #1a7a44); font-size: .56rem; letter-spacing: .06em; padding: .1rem .36rem; }
+.pw-pop { position: absolute; left: 50%; bottom: 9.8rem; transform: translateX(-50%); z-index: 9; max-width: 88%; padding: .5rem .9rem; border-radius: 999px; text-align: center; font: 800 .8rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #3a2a66, #1c1038); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .8), 0 8px 22px rgba(0, 0, 0, .6); pointer-events: none; animation: pwPop 2s ease-out forwards; }
+@keyframes pwPop { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 70% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -6px); } }
 
 /* ================================================================== the panel for what you tapped */
-.pw-detail { --c: #b46cff; flex: none; position: relative; min-height: 9.6rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: .5rem .65rem .6rem; border-radius: .9rem; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, rgba(30, 18, 52, .95)), rgba(14, 9, 26, .96));
+.pw-detail { --c: #b46cff; flex: none; position: relative; min-height: 8.2rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: .5rem .65rem .6rem; border-radius: .9rem; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, rgba(30, 18, 52, .95)), rgba(14, 9, 26, .96));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent), 0 6px 18px rgba(0, 0, 0, .4); animation: pwIn .24s ease-out; }
 @keyframes pwIn { from { opacity: 0; transform: translateY(6px); } }
 .pw-detail.empty { display: none; }
@@ -132,4 +116,4 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* wide screens: the sheet is the left column; give the triangle a sensible cap */
 @media (min-aspect-ratio: 5/4) { .pw-stage { max-width: 15rem; } }
-@media (prefers-reduced-motion: reduce) { .pw-rune, .pw-fill, .pa-fill, .pw-medal.st-ready .pw-ring, .pw-edge, .pw-pick .pp-arrow, .pw-detail { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .pw-rune, .pw-fill, .pw-medal.st-ready .pw-ring, .pw-edge, .pw-pick .pp-arrow, .pw-detail { animation: none !important; } }
