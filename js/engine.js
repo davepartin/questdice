@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
@@ -1037,8 +1037,46 @@ export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.f
 // The road ahead: ONE fight per step (Dave, Oct 2026: "only one option to fight, since you can already choose level in the game").
 // The old second road, the perilous one, is still generated (so the same seed gives the same monsters as before and the
 // balance tools can measure it) but it is no longer offered: at an elite step the elite is the fight, otherwise the standard road.
-export function questsFor(hero) { return roadsFor(hero).slice(0, 1); }
-export function roadsFor(hero) {
+export function questsFor(hero) { return roadsFor(hero, { random: true }).slice(0, 1); }
+
+// ---- random encounters (Dave): the game picks the one fight at each step by a trouble budget. The budget grows through the act and
+// follows the hero's skill (Noob / Mid / Expert); each monster has a `threat`, and a crowd costs a little more than its sum.
+// Some steps are one big monster, some a few small ones. Deterministic for a campaign (seed, act, step).
+export const crowdThreat = (ids) => ids.reduce((t, id) => t + (MONSTERS[id]?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
+export function encounterBudget(hero) {
+  const c = hero.campaign; const a = ENCOUNTER.acts[Math.min(ENCOUNTER.acts.length, c.act) - 1];
+  return (a.base + a.slope * (c.step - 1)) * difficultyOf(hero).budget;
+}
+export function encounterFor(hero) {
+  const c = hero.campaign; const act = ACTS[(c.act - 1) % ACTS.length];
+  const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'encounter'));
+  const budget = encounterBudget(hero) * (ENCOUNTER.jitter[0] + (ENCOUNTER.jitter[1] - ENCOUNTER.jitter[0]) * rng());
+  // the act's own monsters; the smaller elite-tier ones (an ogre) join the ordinary fights from the middle of the act
+  const kinds = [...new Set(act.pool.flat())];
+  const bigs = rng() >= 0.4 ? [] : [...new Set(act.elite.flat())].filter((id) => MONSTERS[id].tier === 'elite' && c.step >= ENCOUNTER.bigFrom && MONSTERS[id].threat <= ENCOUNTER.bigMax);
+  const roster = [...kinds, ...bigs].sort((x, y) => (MONSTERS[x].threat - MONSTERS[y].threat) || x.localeCompare(y));
+  const cheapest = MONSTERS[roster[0]].threat;
+  const tries = [];
+  for (let i = 0; i < 14; i++) {
+    const ids = []; const shape = rng(); // under a third: aim for one big monster; otherwise fill the budget with whatever fits
+    const lone = shape < 0.3;
+    for (let n = 0; n < ENEMY_CAP; n++) {
+      const fit = roster.filter((id) => crowdThreat([...ids, id]) <= budget * 1.08 && !(ids.length >= 2 && ids.every((x) => x === id)));
+      if (!fit.length) break;
+      const pool = lone && !ids.length ? fit.slice(-2) : fit; // a lone fight takes the biggest monsters that fit
+      ids.push(pick(rng, pool));
+      if (lone) break;
+      if (rng() < 0.18 * ids.length) break; // sometimes stop early, so crowds are not always the maximum
+    }
+    if (!ids.length) ids.push(roster[0]);
+    tries.push({ ids, gap: Math.abs(budget - crowdThreat(ids)) + (new Set(ids).size === 1 && ids.length > 2 ? 0.4 : 0) });
+  }
+  tries.sort((x, y) => x.gap - y.gap);
+  const best = tries.slice(0, 4); // among the closest fits, pick at random so fights vary
+  void cheapest;
+  return pick(rng, best).ids;
+}
+export function roadsFor(hero, opts = {}) {
   const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
   const cycle = Math.floor((c.act - 1) / ACTS.length);
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'quests'));
@@ -1061,13 +1099,18 @@ export function roadsFor(hero) {
   };
   if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
   const poolPick = () => pick(rng, act.pool);
-  if (ELITE_STEPS.includes(s)) return [mk('elite', pick(rng, act.elite)), mk('battle', poolPick(), { perilous: true })];
+  if (ELITE_STEPS.includes(s)) {
+    let el = pick(rng, act.elite);
+    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = hero.difficulty === 'easy' ? sorted[0] : hero.difficulty === 'hard' ? sorted[sorted.length - 1] : el; } // Noob: the big one alone; Expert: with its company
+    return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
+  }
   let a = poolPick(); let bq = poolPick();
   for (let tries = 0; tries < 6 && bq.join() === a.join(); tries++) bq = poolPick();
   const weight = (f) => f.reduce((t, id) => t + MONSTERS[id].hp, 0);
   if (weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
   if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
+  else if (opts.random) a = encounterFor(hero); // the game's own pick (the balance tools still ask for the old pair of roads)
   return [mk('battle', a), mk('battle', bq, { perilous: true })];
 }
 export function advanceCampaign(hero) {

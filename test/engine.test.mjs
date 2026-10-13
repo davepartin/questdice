@@ -528,3 +528,32 @@ test('a talent die always has two blanks and one 2x; the rest of its faces can c
     assert.equal(faces.filter((f) => Array.isArray(f)).length, symFaces, `d${n} symbol faces`);
   }
 });
+
+test('random encounters: one fight a step, seeded, within the cap, and bigger for higher skill', async () => {
+  const { encounterFor, encounterBudget, crowdThreat } = await import('../js/engine.js');
+  const { ENEMY_CAP } = await import('../js/data.js');
+  const mean = (diff, act, step) => {
+    let t = 0; const n = 40;
+    for (let seed = 1; seed <= n; seed++) {
+      const h = newHero({ name: 'x', cls: 'knight', seed }); h.difficulty = diff; h.campaign.act = act; h.campaign.step = step; h.campaign.seed = seed * 7919; h.campaign.wins = 1;
+      const a = encounterFor(h); const b = encounterFor(h);
+      assert.deepEqual(a, b, 'same campaign, same fight');
+      assert.ok(a.length >= 1 && a.length <= ENEMY_CAP);
+      for (const id of a) assert.ok(MONSTERS[id], id);
+      t += crowdThreat(a);
+    }
+    return t / n;
+  };
+  for (const act of [1, 2, 3]) for (const step of [2, 6, 9]) {
+    const [n, m, x] = ['easy', 'normal', 'hard'].map((d) => mean(d, act, step));
+    assert.ok(n < m && m < x, `act ${act} step ${step}: noob ${n.toFixed(1)} < mid ${m.toFixed(1)} < expert ${x.toFixed(1)}`);
+  }
+  // it ramps through the act, and the first fight stays the lone-goblin lesson
+  assert.ok(mean('normal', 1, 9) > mean('normal', 1, 2) + 0.8);
+  const h = newHero({ name: 'x', cls: 'knight', seed: 3 }); assert.deepEqual(questsFor(h)[0].enemies, ['goblin']);
+  h.campaign.wins = 1; h.campaign.step = 9; h.difficulty = 'hard';
+  assert.ok(encounterBudget(h) > encounterBudget({ ...h, difficulty: 'easy' }));
+  // some steps are a crowd, some a lone big monster
+  const shapes = new Set(); for (let seed = 1; seed <= 60; seed++) { h.campaign.seed = seed * 31; h.difficulty = 'normal'; h.campaign.step = 8; shapes.add(encounterFor(h).length); }
+  assert.ok(shapes.has(1) && shapes.has(2), `lone and pairs both appear: ${[...shapes]}`);
+});

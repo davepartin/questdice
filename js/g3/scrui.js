@@ -238,7 +238,7 @@ export function create(opts = {}) {
   const tcode = T?.mode === 'join' ? h('input', { class: 'sx-input room-code-input', id: 'table-code', maxlength: 4, value: T.code || '', placeholder: 'ABCD', autocomplete: 'off', autocapitalize: 'characters', 'aria-label': 'Table code', oninput: (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); } }) : null;
   const msg = h('p', { class: 'form-msg', role: 'alert' });
   let diff = 'normal'; let skipHints = !Coach.hintsOn();
-  const diffRow = h('div', { class: 'sx-diff', role: 'radiogroup', 'aria-label': 'Difficulty' });
+  const diffRow = h('div', { class: 'sx-diff', role: 'radiogroup', 'aria-label': 'Your skill level' });
   const paintDiff = () => diffRow.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff), onclick: () => { diff = id; sfx.select(); paintDiff(); } }, h('b', {}, d.name), h('small', {}, d.text))));
   paintDiff();
   const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
@@ -291,7 +291,7 @@ export function create(opts = {}) {
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, 'Choose your hero')),
         rail, info, flourish(),
-        T ? null : eyebrow('Difficulty'), T ? null : diffRow, T ? null : hintsBox,
+        T ? null : eyebrow('Your skill level'), T ? null : diffRow, T ? null : hintsBox,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,
           h('label', { for: 'hero-name' }, 'Name', name), T ? null : h('label', { for: 'hero-pw' }, 'Password', pw), T ? h('p', { class: 'fine' }, 'Your friends see this name. Your hero lives at the table until the campaign ends.') : h('p', { class: 'fine' }, 'The password only guards this hero on this device.'), msg),
         h('div', { class: 'sx-cta' }, btn(T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : 'Begin the campaign', go, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
@@ -366,7 +366,7 @@ export function board() {
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
       eyebrow(quests[0]?.kind === 'boss' ? 'The road ends here' : 'The road ahead', 'center'),
       h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)))));
-  lay('board'); SCR.enter('road', { hero, place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+  lay('board'); SCR.enter('road', { hero, heroes: X.members(), place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 
 // ------------------------------------------------------------------------------------------------ road events and story
@@ -386,7 +386,7 @@ export function story(b, onDone) {
       storyCard(b.kicker, b.title, b.text, { icon: b.icon }),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); onDone(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   const place = E.questsFor(hero)[0].place;
-  lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+  lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 export function road() {
   const members = X.members(); const hero = X.S.hero || members[0]; const ev = R.ensureRoad(hero, members); X.persist();
@@ -398,7 +398,7 @@ export function road() {
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
-  lay('road'); SCR.enter('road', { hero, place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+  lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 export function roadResult(res, o = {}) {
   const hero = X.S.hero || X.members()[0];
@@ -724,7 +724,7 @@ function heroTab() {
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     heroStats(E.maxHpOf(hero), E.feetSize(hero)),
     hallOfFame(hero),
-    eyebrow('Difficulty'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
+    eyebrow('Your skill level'), h('div', { class: 'sx-diff' }, Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', { type: 'button', class: `df-opt ${(hero.difficulty || 'normal') === id ? 'on' : ''}`, onclick: tap(() => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }) }, h('b', {}, d.name), h('small', {}, d.text)))),
     h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level.'),
@@ -750,7 +750,7 @@ export function camp(fromBoard) {
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
   lay('camp');
-  SCR.enter('camp', { hero }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
+  SCR.enter('camp', { hero, heroes: X.members() }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
   SCR.current()?.sync?.(hero);
 }
 

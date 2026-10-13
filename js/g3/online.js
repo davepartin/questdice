@@ -162,7 +162,7 @@ function lobby(t) {
         host ? null : h('p', { class: 'fine center' }, `${t.players.find((p) => p.id === t.hostId)?.name || 'The host'} starts the campaign when everyone is ready.`)))));
   lay('camp');
   const preview = E.newHero({ name: you.name, cls: you.cls });
-  SCR.enter('camp', { hero: preview }, `lobby:${you.cls}`).then((hd) => { hd?.sync?.(preview); });
+  SCR.enter('camp', { hero: preview, heroes: t.players.map((p) => ({ name: p.name, cls: p.cls })) }, `lobby:${t.players.map((p) => p.cls).join('')}`).then((hd) => { hd?.sync?.(preview); });
   void world;
 }
 function fail(e) { toast(e?.message || 'The table did not answer.', 'bad'); sfx.error(); }
