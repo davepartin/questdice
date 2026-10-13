@@ -17,7 +17,7 @@ await p.evaluate((pick) => { window.QD.S.battle.magic = 12; if (/heal/i.test(pic
 await p.evaluate(() => document.querySelector('.b3-powers')?.click()); await pump(0.5); await p.waitForTimeout(500);
 const rect = () => p.evaluate(() => { const r = document.querySelector('.pw-stage')?.getBoundingClientRect(); return r && [Math.round(r.top), Math.round(r.height)]; });
 const r0 = await rect(); console.log('triangle before pick (top,height):', r0);
-if (pick) { await p.evaluate((s) => (/^[ABC]$/.test(s) ? document.querySelector(`.pw-medal.at-${s}`) : [...document.querySelectorAll('.pw-utils button')].find((e) => new RegExp(s, 'i').test(e.textContent)))?.click(), pick); await pump(0.3); await p.waitForTimeout(400); }
+if (pick) { await p.evaluate((s) => (/^[ABC]$/.test(s) ? document.querySelector(`.pw-medal.at-${s}`) : [...document.querySelectorAll('.pw-umedal')].find((e) => new RegExp(s, 'i').test(e.textContent)))?.click(), pick); await pump(0.3); await p.waitForTimeout(400); }
 console.log('triangle after pick:', await rect());
 if (/heal/i.test(pick)) { for (let i = 0; i < 2; i++) { await p.evaluate(() => document.querySelector('.pw-detail .pw-btn.go')?.click()); await pump(1); } console.log('after two heals:', await p.evaluate(() => JSON.stringify({ open: !!document.querySelector('.b3-sheet.open'), hp: window.QD.S.battle.hp, magic: window.QD.S.battle.magic, pill: document.querySelector('.pw-life b')?.textContent, mpill: document.querySelector('.pw-center b')?.textContent }))); }
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/${tag}.png` });

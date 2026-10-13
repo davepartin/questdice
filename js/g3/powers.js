@@ -99,15 +99,19 @@ export function sigil(ctx) {
     const tag = st.early ? `ROUND ${k.minRound}+` : st.spent ? (reset && canRecharge(k) ? 'RECHARGE' : k.atwill ? 'USED' : 'SPENT') : k.kind === 'super' ? 'SUPER' : null;
     return h('button', { type: 'button', class: `pw-medal at-${slot} t-${toneOf(k)} st-${state} ${on ? 'on' : ''}`, 'aria-pressed': String(on), 'aria-label': `${slot}: ${k.name}. ${k.text}`, onclick: () => ctx.select(k.id) },
       h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(k, 'pw-g')), h('b', { class: 'pw-slot' }, slot),
-        h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(p.x ?? k.cost))), pips),
-      h('span', { class: 'pw-name' }, k.name), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
+        h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(p.x ?? k.cost)))),
+      h('span', { class: 'pw-name' }, k.name, pips), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
   };
-  const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 300 260'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
-  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="34" x2="0" y2="221"><stop offset="0" stop-color="#d9a8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
-    <radialGradient id="pwF" cx=".5" cy=".62" r=".6"><stop offset="0" stop-color="#7a3cf0" stop-opacity=".55"/><stop offset="1" stop-color="#1a0838" stop-opacity="0"/></radialGradient></defs>
-    <path class="pw-fill" d="M150 34 L261 221 H39 Z" fill="url(#pwF)"/>
-    <path class="pw-edge e-AB" d="M150 34 L39 221"/><path class="pw-edge e-BC" d="M39 221 H261"/><path class="pw-edge e-CA" d="M261 221 L150 34"/>
-    <circle class="pw-rune" cx="150" cy="159" r="48"/><circle class="pw-rune r2" cx="150" cy="159" r="57"/>`;
+  const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 300 290'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
+  // One pyramid of six: A on top, B and C under it, then Potion, Heal and Heart change along the base. The purple triangle runs through
+  // A, B and Potion down the left side, A, C and Heart change down the right, and Potion, Heal, Heart change along the bottom;
+  // every circle is the same distance from its neighbours (a triangular lattice in the 300 x 290 drawing).
+  tri.setAttribute('viewBox', '0 0 300 290');
+  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="40" x2="0" y2="231"><stop offset="0" stop-color="#e2b8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
+    <radialGradient id="pwF" cx=".5" cy=".6" r=".62"><stop offset="0" stop-color="#7a3cf0" stop-opacity=".5"/><stop offset="1" stop-color="#1a0838" stop-opacity="0"/></radialGradient></defs>
+    <path class="pw-fill" d="M150 40 L260 230.5 H40 Z" fill="url(#pwF)"/>
+    <path class="pw-lat" d="M95 135.25 H205 L150 230.5 Z"/>
+    <path class="pw-edge e-L" d="M150 40 L40 230.5"/><path class="pw-edge e-B" d="M40 230.5 H260"/><path class="pw-edge e-R" d="M260 230.5 L150 40"/>`;
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // your magic and your health, one under the other, the same width, top right
   const tally = h('div', { class: 'pw-tally' },
@@ -118,15 +122,15 @@ export function sigil(ctx) {
   const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
   const soft = (u) => /full health|no potions/i.test(u.why || '');
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
-  const utilRow = h('div', { class: 'pw-utils', role: 'group', 'aria-label': 'Always ready' }, utils.map((u) => h('button', { type: 'button',
-    class: `pw-medal pw-umedal t-${u.tone} st-${u.why && !soft(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}`,
+  const utilRow = utils.map((u, i) => h('button', { type: 'button',
+    class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${u.why && !soft(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}`,
     onclick: () => { if (soft(u)) { sfx.error?.(); pop((u.why || '').replace(/ Buy more at camp\./, '')); } else ctx.select(u.id); } },
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g')), costBadge(u)),
-    h('span', { class: 'pw-name' }, u.name))));
+    h('span', { class: 'pw-name' }, u.name)));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    h('div', { class: 'pw-wrap' }, tally, h('div', { class: 'pw-stage' }, tri, medal('A'), medal('B'), medal('C'))),
-    utilRow, detail);
+    h('div', { class: 'pw-wrap' }, tally, h('div', { class: 'pw-stage', role: 'group', 'aria-label': 'Your powers and the always-ready helpers' }, tri, medal('A'), medal('B'), medal('C'), ...utilRow)),
+    detail);
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
 function isReady(p, reset) { const { k, st } = p; return reset ? false : !st.spent && !st.early && p.afford; }
@@ -155,7 +159,7 @@ function detailPanel(ctx, sel) {
   if (!u) { // nothing chosen yet: say what to do
     return h('div', { class: 'pw-detail pw-pick' }, h('span', { class: 'pp-arrow', 'aria-hidden': 'true' }, '▲'),
       h('b', {}, 'Tap a power'),
-      h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'The triangle holds your three powers; the buttons below it are always ready.'));
+      h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'Your three powers sit at the top (A, B, C). Potion, Heal and Heart change along the base are always ready.'));
   }
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
