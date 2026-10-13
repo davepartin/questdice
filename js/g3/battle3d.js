@@ -912,7 +912,9 @@ function showCard(el = B.card) {
   // a long fight's recap shrinks a little (rather than scrolling) until all of it shows
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
-function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
+function hideCard() { AP.clear(B.fb); if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
+// After the monsters' turn: what they did first (held until the player closes it), then the round recap (closed the same way).
+function showCardAfterMonsters(card) { if (!AP.finish(B.fb, () => showCard(card))) showCard(card); }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
 async function lockInInner() {
   if (B.net) return lockNet();
@@ -991,7 +993,7 @@ async function lockInInner() {
   B.busy = false;
   if (b.outcome === 'victory') return win();
   if (b.outcome === 'defeat') return lose();
-  showCard(card);
+  showCardAfterMonsters(card);
   renderReset();
 }
 
@@ -1058,7 +1060,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   if (outcome === 'victory') return win();
   if (outcome === 'defeat') return lose();
   if (!B.net) B.active = -1;
-  showCard(card);
+  showCardAfterMonsters(card);
   renderReset();
 }
 async function playStrike(s, rep) {

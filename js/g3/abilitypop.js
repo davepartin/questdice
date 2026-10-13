@@ -5,7 +5,6 @@
 import { h, reduced } from '../dom.js';
 import * as HK from './hudkit.js';
 
-export const LIFE = 5; // seconds, including fade in and out (Dave: twice as long, and big enough to read)
 
 // Verbs that are just a hit: no pop-up unless the blow is a Slam / Pounce (flagged slam).
 const HIT_VERBS = new Set(['strike', 'pierce']);
@@ -191,18 +190,8 @@ function hostOf(fb) {
   return layer;
 }
 
-function paint(el, k) {
-  const fadeIn = 0.06;
-  const fadeOut = 0.14;
-  let o = 1;
-  let y = 0;
-  if (k < fadeIn) { o = k / fadeIn; y = 10 * (1 - k / fadeIn); }
-  else if (k > 1 - fadeOut) { o = (1 - k) / fadeOut; y = -6 * ((k - (1 - fadeOut)) / fadeOut); }
-  el.style.opacity = String(o);
-  el.style.transform = `translateY(${y.toFixed(1)}px)`;
-}
-
-// Non-blocking: do not await this from the replay. Lifetime follows the stage clock so screenshots can step it.
+// The cards stay up until the player closes them (Dave): first what the monsters did, then, once that is closed, the round recap.
+// `show` adds a card while the replay runs; `finish` (called when the replay is over) puts a Close on the stack and waits.
 export function show(fb, cue, { who = '' } = {}) {
   if (!fb?.el || !cue) return null;
   const layer = hostOf(fb);
@@ -214,15 +203,25 @@ export function show(fb, cue, { who = '' } = {}) {
   },
   h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
   h('span', { class: 'ap-tx' }, who ? h('em', { class: 'ap-who' }, who) : null, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
-  el.style.opacity = '0';
   layer.append(el);
-  const quiet = reduced();
-  if (quiet) { el.classList.add('still'); el.style.opacity = '1'; }
-  const done = () => el.remove();
-  const tw = fb.tween?.(LIFE, (k) => { if (!quiet) paint(el, k); else if (k >= 0.92) el.style.opacity = '0'; });
-  if (tw?.then) tw.then(done); else setTimeout(done, LIFE * 1000);
   return el;
 }
+
+// Replay over: if any cards were shown, hold them behind a Close and call `onClose` when the player closes them. Returns false
+// when there was nothing to show (the caller then goes straight on to the recap).
+export function finish(fb, onClose) {
+  const layer = fb?.el && hostOf(fb);
+  if (!layer || !layer.querySelector('.fb-pop')) { layer?.remove(); return false; }
+  if (layer.querySelector('.fb-pops-head')) return true;
+  const close = () => { layer.remove(); onClose?.(); };
+  layer.prepend(h('header', { class: 'fb-pops-head' }, h('b', {}, 'Monster moves'),
+    h('button', { type: 'button', class: 'sh-x sh-cancel rc-close', 'aria-label': 'Close the monster moves', onclick: (e) => { e.stopPropagation(); close(); } }, '✕ Close')));
+  layer.classList.add('ready');
+  layer.addEventListener('click', close);
+  return true;
+}
+
+export function clear(fb) { fb?.el?.closest('.b3')?.querySelector(':scope > .fb-pops')?.remove(); }
 
 export function showForStrike(fb, s, act, ctx, who) {
   for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { who });
