@@ -181,7 +181,10 @@ export function partyBar() {
 const beatsSeen = new Set();
 function nextBeat(t) {
   const c = t.company?.campaign; if (!c) return null;
-  const b = ST.pending(c).find((x) => !beatsSeen.has(`${t.code}:${x.id}@${x.act}`));
+  // Place arrivals wait until the road is finished (Call for Help picks the place first).
+  const placeReady = t.phase === 'board' || (t.phase === 'road' && c.road?.done);
+  const place = placeReady ? (t.quest?.place || E.questsFor(t.company.members[0])?.[0]?.place) : null;
+  const b = ST.pending(c, place).find((x) => !beatsSeen.has(`${t.code}:${x.id}@${x.act}`));
   return b ? ST.beat(b.id, b.act) : null;
 }
 function story(b, t) {

@@ -9,7 +9,14 @@ import * as D from '../data.js';
 import * as HK from './hudkit.js';
 
 // How big each monster stands next to a hero. Flattened (0.62 + 0.38 * size) so the biggest still fits the board.
-const SIZE = { goblin: 0.72, wolf: 0.9, cultist: 1, ogre: 1.6, goblinking: 1.55, skeleton: 1, wraith: 1.15, spider: 0.75, bonewarden: 1.7, lich: 1.6 };
+const SIZE = {
+  goblin: 0.72, wolf: 0.9, cultist: 1, ogre: 1.6, goblinking: 1.55,
+  skeleton: 1, wraith: 1.15, spider: 0.75, bonewarden: 1.7, lich: 1.6,
+  // New foes reuse existing painted minis; size them like the art they stand on.
+  shieldbearer: 1, gloomstalker: 1, chainbinder: 1, dirgesinger: 1,
+  ironwarden: 1.55, fallenchampion: 1.55,
+  cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.6, vharaxis: 1.65,
+};
 const REL_MAX = 0.62 + 0.38 * 1.7;
 export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero' is 1.0
 
@@ -116,6 +123,7 @@ export function applyPlace(el, place) {
   else { delete el.dataset.place; el.style.removeProperty('--place-img'); }
   el.classList.toggle('wx-ash', look.weather === 'ash');
   el.classList.toggle('wx-crypt', look.weather === 'crypt');
+  el.classList.toggle('wx-ember', look.weather === 'ember');
   return look;
 }
 export function atmoLayers(weather) {
@@ -126,6 +134,10 @@ export function atmoLayers(weather) {
   if (weather === 'crypt') {
     const dust = Array.from({ length: 7 }, (_, i) => h('i', { class: 'fb-dust', style: { '--x': `${(i * 41 + 7) % 94}%`, '--y': `${12 + ((i * 29) % 70)}%`, '--d': `${(i * 1.3) % 8}s`, '--t': `${11 + (i * 2) % 9}s`, '--s': String(0.4 + ((i * 13) % 5) / 10) } }));
     return [h('i', { class: 'fb-flicker' }), ...dust];
+  }
+  if (weather === 'ember') {
+    const sparks = Array.from({ length: 12 }, (_, i) => h('i', { class: 'fb-ember fb-spark', style: { '--x': `${(i * 23 + 5) % 96}%`, '--y': `${18 + ((i * 37) % 70)}%`, '--d': `${(i * 0.9) % 6}s`, '--t': `${5 + (i * 1.3) % 7}s`, '--s': String(0.55 + ((i * 9) % 7) / 10) } }));
+    return [h('i', { class: 'fb-fog a ember' }), h('i', { class: 'fb-fog b ember' }), h('i', { class: 'fb-flicker ember' }), ...sparks];
   }
   return [];
 }

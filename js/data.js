@@ -215,8 +215,7 @@ export const DIFFICULTY = {
 };
 // Random encounters. The game picks the one fight at each step from the act's monsters by a trouble budget (each monster has a
 // `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster). The budget grows through the act and is
-// scaled by the hero's skill, so some steps are one big monster, some a few small ones. { base, slope } per act (Act III reuses
-// Act I's monsters at the larger Act III numbers).
+// scaled by the hero's skill, so some steps are one big monster, some a few small ones. { base, slope } per act.
 export const ENCOUNTER = {
   acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 1.5, slope: 0.22 }],
   groupPlus: 0.15,
@@ -380,6 +379,10 @@ export const PERKS = {
 //   howl    every monster's next strike +k bind  lock k of your dice next round
 //   drain   strike, and steal k Magic  pilfer  strike, steal gold if it connects; returned on its death
 //   summon  call k reinforcements (the monster's `adds` id)
+//   breath  fire that splashes: party every hero takes ceil(0.6×mag); solo half blockable, half pierce
+//   chain   next roll, k dice (not heart or pet) keep last round's face and cannot be rerolled
+//   hush    next round the heart die pays no amp, no colour bonus, and cannot finish a triple
+//   armor   always-on guard { n, s } dice, rolled every round (pierce still goes through)
 // -------------------------------------------------------------------------------------------
 const S = (n, f, m, extra = {}) => ({ n, v: 'strike', f, m, ...extra });
 // Moves that change the right answer for a round (Dave: break the "read the box" habit):
@@ -460,6 +463,79 @@ export const MONSTERS = {
         { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
+  // ---- Hired blades and dark mirrors (reuse existing painted minis) ----
+  shieldbearer: {
+    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), short: 'SHLD', init: 4, hp: 36, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
+    armor: { n: 1, s: 6 },
+    faces: [S('Spear', 1, 1), S('Spear', 1, 1), S('Spear', 2, 1),
+      { n: 'Lock Shields', v: 'guard', f: 2, m: 1 }, S('Shove', 0, 1), S('Spear', 1, 1)],
+  },
+  gloomstalker: {
+    name: 'Gloom Stalker', glyph: '🏹', img: 'assets/miniatures/ranger.webp', imgBase: IB(325, 470, 153.5, 465, 284), short: 'GLOM', init: 8, hp: 42, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
+    pounce: { f: 2, m: 2 },
+    faces: [{ n: 'Black Arrow', v: 'pierce', f: 0, m: 1 }, { n: 'Black Arrow', v: 'pierce', f: 0, m: 1 },
+      { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, { n: 'Snare', v: 'bind', f: 0, m: 0, k: 1 },
+      S('Knife', 1, 1), { n: 'Fade', v: 'phase', f: 0, m: 0 }],
+  },
+  chainbinder: {
+    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), short: 'CHNB', init: 6, hp: 44, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
+    faces: [{ n: 'Chain', v: 'chain', f: 0, m: 0, k: 1 }, { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 },
+      { n: 'Chain Bolt', v: 'pierce', f: 0, m: 1 }, S('Rod', 1, 1),
+      { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 }, { n: 'Chain Ward', v: 'ward', f: 0, m: 1, k: 3 }],
+  },
+  dirgesinger: {
+    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/bard.webp', imgBase: IB(318, 476, 153, 471, 283), short: 'DIRG', init: 6, hp: 38, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
+    faces: [{ n: 'Hush', v: 'hush', f: 0, m: 0 }, { n: 'Dirge', v: 'howl', f: 0, m: 0, k: 2 },
+      S('Lute Smash', 1, 1), { n: 'Sour Note', v: 'pierce', f: 0, m: 1 },
+      { n: 'Hush', v: 'hush', f: 0, m: 0 }, S('Lute Smash', 1, 1)],
+  },
+  ironwarden: {
+    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/dwarf.webp', imgBase: IB(443, 448, 250, 443, 329), short: 'IRON', init: 4, hp: 88, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
+    slam: { f: 3, m: 2 }, armor: { n: 2, s: 4 },
+    faces: [S('Axe', 1, 1), S('Axe', 1, 1), { n: 'Stone Wall', v: 'guard', f: 2, m: 1 },
+      S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
+  },
+  fallenchampion: {
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), short: 'CHMP', init: 6, hp: 170, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    slam: { f: 4, m: 2 }, armor: { n: 2, s: 4 },
+    faces: [S('Oathbreaker', 2, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
+      { n: 'Oath Smite', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 2, 1)],
+    rage: {
+      name: 'Oath Undone', power: 14, armor: null,
+      faces: [S('Oathbreaker', 3, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 3 }, { n: 'Hush', v: 'hush', f: 0, m: 0, k: 3 },
+        { n: 'Oath Smite', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+    },
+  },
+  // ---- Dragons ----
+  cinderling: {
+    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cultist.webp', imgBase: IB(322, 475, 160, 470, 297), short: 'CNDR', init: 6, hp: 40, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
+    flee: { at: 0.35, chance: 1 },
+    faces: [S('Nip', 1, 1), S('Nip', 1, 1), { n: 'Puff', v: 'breath', f: 0, m: 1 },
+      { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],
+  },
+  frostwhelp: {
+    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/wraith.webp', imgBase: IB(339, 461, 168.5, 456, 252), short: 'FRST', init: 8, hp: 46, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
+    flee: { at: 0.35, chance: 1 },
+    faces: [S('Bite', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }, { n: 'Icy Wings', v: 'bind', f: 0, m: 0, k: 1 },
+      { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
+  },
+  ashwyrm: {
+    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ogre.webp', imgBase: IB(431, 462, 248, 457, 341), short: 'ASHM', init: 6, hp: 120, power: 10, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
+    slam: { f: 3, m: 2, v: 'breath' }, armor: { n: 1, s: 4 }, flee: { at: 0.25, chance: 1 },
+    faces: [S('Claw', 2, 1), S('Claw', 2, 1), { n: 'Fire Breath', v: 'breath', f: 2, m: 1 },
+      { n: 'Inhale', v: 'charge', f: 0, m: 0 }, { n: 'Wing Buffet', v: 'guard', f: 2, m: 1 }, S('Tail Sweep', 1, 1)],
+  },
+  vharaxis: {
+    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/lich.webp', imgBase: IB(368, 489, 191.5, 484, 320), short: 'VHRX', init: 4, hp: 200, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    slam: { f: 5, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
+    faces: [S('Talons', 2, 1), { n: 'Inferno', v: 'breath', f: 3, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+      { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 3, 1), { n: 'Wing Wall', v: 'guard', f: 3, m: 1 }],
+    rage: {
+      name: 'Molten Fury', power: 14,
+      faces: [{ n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+        S('Talons', 3, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
+    },
+  },
 };
 
 // -------------------------------------------------------------------------------------------
@@ -469,27 +545,51 @@ export const ACTS = [
   {
     id: 1, name: 'The Ashen Marches', tag: 'Goblins, wolves, and a fire that will not die.',
     places: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'Smoke Hollow', 'The Toll Bridge', 'Ashfall Camp', 'Gallows Hill'],
-    pool: [['goblin', 'goblin'], ['wolf'], ['wolf', 'goblin'], ['cultist', 'goblin'], ['wolf', 'wolf'], ['cultist'], ['cultist', 'wolf']],
+    pool: [['goblin', 'goblin'], ['wolf'], ['wolf', 'goblin'], ['cultist', 'goblin'], ['wolf', 'wolf'], ['cultist'], ['cultist', 'wolf'], ['cinderling', 'goblin'], ['shieldbearer', 'goblin']],
     elite: [['ogre'], ['ogre', 'goblin']],
     boss: ['goblinking'],
+    help: ['Cinder Ford', 'Burnt Orchard'],
   },
   {
     id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organize.',
     places: ['The Weeping Stair', 'Ossuary Gate', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
-    pool: [['skeleton', 'skeleton'], ['wraith'], ['spider', 'skeleton'], ['wraith', 'skeleton'], ['spider', 'spider'], ['spider']],
+    pool: [['skeleton', 'skeleton'], ['wraith'], ['spider', 'skeleton'], ['wraith', 'skeleton'], ['spider', 'spider'], ['spider'], ['frostwhelp', 'spider'], ['gloomstalker', 'skeleton'], ['dirgesinger', 'wraith']],
     elite: [['bonewarden']],
     boss: ['lich'],
+    help: ['Candle Vault', 'The Pale Nave'],
+  },
+  {
+    id: 3, name: 'The Ember Peaks', tag: 'Dragon fire, broken oaths, and a queen who wants it all.',
+    places: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Ember Throne slopes', 'The Ember Throne'],
+    pool: [['cinderling', 'cinderling'], ['gloomstalker', 'shieldbearer'], ['chainbinder', 'cinderling'], ['dirgesinger', 'gloomstalker'],
+      ['frostwhelp', 'frostwhelp'], ['shieldbearer', 'chainbinder'], ['cinderling', 'frostwhelp'], ['ironwarden'], ['ashwyrm']],
+    elite: [['vharaxis'], ['ashwyrm']],
+    boss: ['vharaxis'],
+    help: ['Wyrmwatch', 'Hoardfall Mine'],
+    // Pin the set-piece fights so Oathbreak Keep is a proper boss and the Queen is the finale.
+    gates: {
+      5: { kind: 'elite', place: 'The Brazen Bridge', enemies: ['vharaxis'] },
+      7: { kind: 'boss', place: 'Oathbreak Keep', enemies: ['fallenchampion'] },
+      9: { kind: 'battle', place: 'Ember Throne slopes' },
+      10: { kind: 'boss', place: 'The Ember Throne', enemies: ['vharaxis'] },
+    },
   },
 ];
 // Painted battle backdrops live at assets/bg/<slug>.webp. A place name becomes a slug by lowering
 // case, dropping apostrophes, and turning spaces into hyphens (Ravens’ Rest → ravens-rest).
 export const placeSlug = (name) => String(name || '').toLowerCase().replace(/['’]/g, '').replace(/\s+/g, '-');
+// The slopes painting is named ember-throne-slopes.webp; older copy said "the-ember-throne-slopes".
+export const PLACE_ALIAS = { 'the-ember-throne-slopes': 'ember-throne-slopes' };
+const canonSlug = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
 export function placeLook(name) {
-  const slug = placeSlug(name);
-  const act = ACTS.find((a) => a.places.some((p) => placeSlug(p) === slug));
+  const slug = canonSlug(name);
+  const act = ACTS.find((a) => a.places.some((p) => canonSlug(p) === slug));
   if (!slug || !act) return { slug: '', url: '', weather: '' };
-  return { slug, url: `assets/bg/${slug}.webp`, weather: act.id === 1 ? 'ash' : act.id === 2 ? 'crypt' : '' };
+  const weather = act.id === 1 ? 'ash' : act.id === 2 ? 'crypt' : act.id === 3 ? 'ember' : '';
+  return { slug, url: `assets/bg/${slug}.webp`, weather };
 }
+export const BREATH_SHARE = 0.6; // party: every living hero takes ceil(mag × this)
+export const FLEE_REWARD = 0.4;  // a fled dragon pays this share of xp/gold and no extra drop bump
 export const QUESTS_PER_ACT = 10;
 // BATTLE POINTS, like an arcade score. Every battle starts at 0; your hero keeps a lifetime total, and in party games the
 // battle's top scorer gets the 1st place trophy (2nd place too with 3+ heroes), first pick of the spoils, and more gold.
@@ -535,6 +635,14 @@ export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
 export const ORDINARY = { flat: [3, 4, 1], lone: 2 };
 export const ELITE_STEPS = [5];
+// What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
+export function stepKind(act, step) {
+  const gate = act?.gates?.[step];
+  if (gate?.kind) return gate.kind;
+  if (step >= QUESTS_PER_ACT) return 'boss';
+  if (ELITE_STEPS.includes(step)) return 'elite';
+  return 'battle';
+}
 
 // Party scaling (index = players - 1). Only 1 player is tuned today.
 export const PARTY = {

@@ -56,7 +56,7 @@ export function dieEl(hero, slot, die, { selected = false, onclick, twohand = fa
   const role = D.ROLE[slot];
   const sides = role === 'weapon' ? 4 : E.sidesOf(hero, slot);
   const el = h('button', {
-    class: `die die--${role} ${LIMBS.has(slot) ? 'limb' : 'corner'} ${selected ? 'sel' : ''} ${die.bound ? 'bound' : ''} ${twohand ? 'twohand' : ''} ${dim ? 'dim' : ''}`,
+    class: `die die--${role} ${LIMBS.has(slot) ? 'limb' : 'corner'} ${selected ? 'sel' : ''} ${die.bound ? 'bound' : ''} ${die.chained ? 'chained' : ''} ${twohand ? 'twohand' : ''} ${dim ? 'dim' : ''}`,
     'data-slot': slot, 'data-sides': String(sides), type: 'button', onclick, tabindex,
     'aria-label': `${SLOT_NAME[slot]}`, 'aria-pressed': selected ? 'true' : 'false',
   },
@@ -136,6 +136,12 @@ export function intentInfo(e) {
     case 'drain': return { icon: '☾', tone: 'drain', title: i.n, text: `${rng} damage and steals ${i.k} ✦` };
     case 'pilfer': return { icon: '🪙', tone: 'gold', title: i.n, text: `${rng} damage; steals gold if it hits` };
     case 'summon': return { icon: '✦', tone: 'summon', title: i.n, text: `calls ${i.k} reinforcement${i.k > 1 ? 's' : ''}` };
+    case 'ward': return { icon: '🔥', tone: 'ward', title: i.n, text: `guards ${rng}; burns you if hit` };
+    case 'stalk': return { icon: '👁', tone: 'stalk', title: i.n, text: 'hit it now or it pounces next round' };
+    case 'phase': return { icon: '◇', tone: 'phase', title: i.n, text: 'only pierce hurts it this round' };
+    case 'breath': return { icon: '🔥', tone: 'pierce', title: i.n, text: `${rng} fire · splashes everyone` };
+    case 'chain': return { icon: '⛓', tone: 'bind', title: i.n, text: `${i.k} dice keep last round’s face` };
+    case 'hush': return { icon: '♪', tone: 'buff', title: i.n, text: 'next round your heart is blanketed' };
     default: return { icon: '?', tone: '', title: i.n, text: '' };
   }
 }
@@ -184,7 +190,11 @@ export function reportLines(rep, b) {
     else if (a.v === 'howl') L.push({ kind: 'bad', text: `${n} howls. The pack grows bolder.` });
     else if (a.v === 'bind') L.push({ kind: 'bad', text: `${n} casts ${a.name}. ${rep.bound} die locked next round.` });
     else if (a.v === 'summon') L.push({ kind: 'bad', text: `${n} calls for help.` });
+    else if (a.v === 'breath') L.push({ kind: a.net > 0 ? 'bad' : 'meh', text: `${n} breathes fire: ${a.d}${a.ab ? `, you block ${a.ab}` : ''} → ${a.net} damage.` });
+    else if (a.v === 'chain') L.push({ kind: 'bad', text: `${n} chains ${rep.chained || a.mag || 1} of your dice.` });
+    else if (a.v === 'hush') L.push({ kind: 'bad', text: `${n} hushes your heart next round.` });
   }
+  for (const u of rep.fled || []) L.push({ kind: 'meh', text: `${name(u)} flees, wounded. It will be back.` });
   if (rep.goldStolen) L.push({ kind: 'bad', text: `A thief takes ${rep.goldStolen} 🪙. Kill it to get it back.` });
   if (rep.magicStolen) L.push({ kind: 'bad', text: `${rep.magicStolen} ✦ drained from you.` });
   for (const u of rep.raged) L.push({ kind: 'bad', text: `${name(u)} flies into a rage!` });
@@ -225,6 +235,9 @@ export function partyReportLines(rep, b) {
     if (a.v === 'howl') return { kind: 'bad', text: `${n} howls. The pack grows bolder.` };
     if (a.v === 'bind') return { kind: 'bad', text: `${n} tangles ${rep.leader || 'the leader'}. ${rep.bound} ${rep.bound === 1 ? 'die' : 'dice'} locked next round.` };
     if (a.v === 'summon') return { kind: 'bad', text: `${n} calls for help.` };
+    if (a.v === 'breath') return { kind: a.net > 0 ? 'bad' : 'meh', text: `${n} breathes fire across the company: ${a.d} → ${a.net} damage.` };
+    if (a.v === 'chain') return { kind: 'bad', text: `${n} chains ${rep.chained || 1} of ${rep.leader || 'the leader'}’s dice.` };
+    if (a.v === 'hush') return { kind: 'bad', text: `${n} hushes ${rep.leader || 'the leader'}’s heart next round.` };
     return null;
   };
   if (rep.order?.length) {

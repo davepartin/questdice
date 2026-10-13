@@ -4,6 +4,7 @@
 import { CLASSES, SLOTS } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
+import { applyPlaceVictory } from './story.js';
 import { pack, unpack } from './pack.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -478,6 +479,8 @@ function enterVictory(table) {
     E.gainXp(f.hero, r.xp);
     E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
   }
+  E.recordFled(table.company.campaign, b);
+  applyPlaceVictory(table.company.campaign, table.quest?.place);
   E.spendBlessings(table.company.campaign);
   E.clearAmbush(table.company.campaign);
   E.advanceCampaign(b.fighters[0].hero);

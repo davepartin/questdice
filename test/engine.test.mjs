@@ -384,8 +384,28 @@ test('quests are deterministic per hero seed and step; boss on step 10', () => {
   assert.equal(questsFor(h)[0].kind, 'elite');
 });
 
+test('Act 3 gates: Brazen Bridge elite, Oathbreak Keep mid-boss, Ember Throne finale', () => {
+  const h = knight(); h.campaign.act = 3; h.campaign.step = 5;
+  const elite = questsFor(h)[0];
+  assert.equal(elite.kind, 'elite');
+  assert.equal(elite.place, 'The Brazen Bridge');
+  assert.deepEqual(elite.enemies, ['vharaxis']);
+  h.campaign.step = 7;
+  const keep = questsFor(h)[0];
+  assert.equal(keep.kind, 'boss');
+  assert.equal(keep.place, 'Oathbreak Keep');
+  assert.deepEqual(keep.enemies, ['fallenchampion']);
+  h.campaign.step = 9;
+  assert.equal(questsFor(h)[0].place, 'Ember Throne slopes');
+  h.campaign.step = 10;
+  const throne = questsFor(h)[0];
+  assert.equal(throne.kind, 'boss');
+  assert.equal(throne.place, 'The Ember Throne');
+  assert.deepEqual(throne.enemies, ['vharaxis']);
+});
+
 test('monsters: every face table has six faces and a valid verb', () => {
-  const verbs = new Set(['strike', 'pierce', 'guard', 'mend', 'charge', 'howl', 'bind', 'drain', 'pilfer', 'summon', 'ward', 'stalk', 'phase']);
+  const verbs = new Set(['strike', 'pierce', 'guard', 'mend', 'charge', 'howl', 'bind', 'drain', 'pilfer', 'summon', 'ward', 'stalk', 'phase', 'breath', 'chain', 'hush']);
   for (const [id, m] of Object.entries(MONSTERS)) {
     assert.equal(m.faces.length, 6, id);
     for (const f of [...m.faces, ...(m.rage ? m.rage.faces : [])]) assert.ok(verbs.has(f.v), `${id} ${f.n}`);

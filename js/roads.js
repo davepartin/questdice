@@ -1,6 +1,7 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
-import { CLASSES, WEAPONS, RARITY } from './data.js';
+import { CLASSES, WEAPONS, RARITY, ACTS } from './data.js';
+import { HELP_FIGHTS, placeOf } from './story.js';
 import { gambleOffer, line, revealLine, GAMBLE_ODDS } from './auction.js';
 import {
   hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach,
@@ -17,6 +18,22 @@ const named = (members, cls) => members.find((m) => m.cls === cls)?.name;
 const be = (members, one, many) => (members.length > 1 ? many : one);
 const classLine = (members) => members.map((m) => CLASSES[m.cls].name).join(', ');
 
+function helpPair(c, act) {
+  const list = act?.help || [];
+  if (list.length >= 2) return [list[0], list[1]];
+  const places = (act?.places || []).slice(0, 2);
+  return [places[0] || 'Cinder Ford', places[1] || 'Burnt Orchard'];
+}
+function pickHelp(ctx, i) {
+  const act = ACTS[(ctx.campaign.act - 1) % ACTS.length];
+  const pair = helpPair(ctx.campaign, act);
+  const saved = pair[i]; const lost = pair[1 - i];
+  ctx.campaign.nextPlace = saved;
+  ctx.campaign.nextEnemies = HELP_FIGHTS[saved] || null;
+  ctx.campaign.saved = saved; ctx.campaign.forsaken = lost;
+  note(ctx, 'A Call for Help', `They ran for ${saved}. ${lost} had to wait.`);
+  return `You turn toward ${saved}. ${lost} will have to stand on its own. A chronicle line will remember the choice.`;
+}
 function note(ctx, title, text) {
   const c = ctx.campaign;
   c.chronicle = [{ act: c.act, step: c.step, title, text }, ...(c.chronicle || [])].slice(0, 18);
@@ -507,8 +524,31 @@ export const ROADS = [
     ],
   },
   {
+    id: 'help', when: 'help', kicker: 'A call for help', title: 'A Call for Help',
+    tell: ({ members, campaign: c }) => {
+      const act = ACTS[(c.act - 1) % ACTS.length];
+      const [a, b] = helpPair(c, act);
+      const pa = placeOf(a)?.title || a; const pb = placeOf(b)?.title || b;
+      return `A runner finds ${joinNames(members)} on the road, out of breath and pointing both ways at once. ${pa} is under attack. So is ${pb}. You can only reach one in time. The other will have to stand on its own.`;
+    },
+    choices: [
+      {
+        id: 'save-a',
+        label: ({ campaign: c }) => `Save ${helpPair(c, ACTS[(c.act - 1) % ACTS.length])[0]}`,
+        hint: () => 'The fight waits there. The other place will remember.',
+        apply: (ctx) => pickHelp(ctx, 0),
+      },
+      {
+        id: 'save-b',
+        label: ({ campaign: c }) => `Save ${helpPair(c, ACTS[(c.act - 1) % ACTS.length])[1]}`,
+        hint: () => 'The fight waits there. The other place will remember.',
+        apply: (ctx) => pickHelp(ctx, 1),
+      },
+    ],
+  },
+  {
     id: 'omen', when: 'boss', title: 'The Night Before',
-    tell: ({ members, act }) => `The night before the end of the act, the dark practices your names. ${joinNames(members)} ${be(members, 'sits', 'sit')} at a fire that will not quite catch. ${act >= 2 ? 'The Hollow Lich already knows the shape of your dice.' : 'The Goblin King is somewhere ahead, counting his bombs and his grudges.'} Nobody sleeps well. Somebody should say what the company is for.`,
+    tell: ({ members, act }) => `The night before the end of the act, the dark practices your names. ${joinNames(members)} ${be(members, 'sits', 'sit')} at a fire that will not quite catch. ${act >= 3 ? 'The Ember Queen already knows the shape of your dice.' : act >= 2 ? 'The Hollow Lich already knows the shape of your dice.' : 'The Goblin King is somewhere ahead, counting his bombs and his grudges.'} Nobody sleeps well. Somebody should say what the company is for.`,
     choices: [
       {
         id: 'steel',
@@ -544,7 +584,7 @@ export const ROADS = [
   },
   {
     id: 'crown', when: 'boss', title: 'A Crown in the Ashes',
-    tell: ({ members, act }) => `${act >= 2 ? 'A circlet of finger-bones sits on a lectern, politely, as if the Lich expects you to try it on.' : 'A tin crown, child-sized and sharp, has been nailed to a post at the edge of the king’s ground.'} ${joinNames(members)} can take it, mock it, or walk past as if it were litter.`,
+    tell: ({ members, act }) => `${act >= 3 ? 'A circlet of cooling bronze sits on a cairn at the edge of the Queen’s ground, as if she expects you to try it on.' : act >= 2 ? 'A circlet of finger-bones sits on a lectern, politely, as if the Lich expects you to try it on.' : 'A tin crown, child-sized and sharp, has been nailed to a post at the edge of the king’s ground.'} ${joinNames(members)} can take it, mock it, or walk past as if it were litter.`,
     choices: [
       {
         id: 'take',
@@ -606,12 +646,13 @@ ROADS.push({
 });
 
 // A road event comes every second fight (before fights 3, 5, 7, 9) and always before the boss.
-export const roadSlot = (c) => c.step >= 3 && (c.step % 2 === 1 || c.step >= 10);
+export const roadSlot = (c) => c.step === 8 || (c.step >= 3 && (c.step % 2 === 1 || c.step >= 10));
 const travellerDue = (c) => (c.wins || 0) - (c.travellerAt || 0) >= 2 + (hashSeed(c.seed, c.act, c.step, 'trav') & 1);
 
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
   if (opening) return ROADS.filter((e) => e.when === 'opening');
+  if (campaign.step === 8) return ROADS.filter((e) => e.when === 'help');
   if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss' || e.when === 'road');
   return ROADS.filter((e) => e.when === 'road');
 }
@@ -627,7 +668,7 @@ export function ensureRoad(hero, members) {
     if (fresh.length) pool = fresh;
     const weights = pool.map((e) => (c.step >= 10 && e.when === 'boss' ? 5 : 1));
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
-    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && travellerDue(c)) {
+    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && c.step !== 8 && travellerDue(c)) {
       c.road.id = 'traveller'; c.travellerAt = c.wins || 0;
       c.traveller = gambleOffer(c.seed, { act: c.act, step: c.step });
     }

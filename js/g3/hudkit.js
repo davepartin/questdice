@@ -105,6 +105,9 @@ export function intentView(e) {
     case 'drain': return { tone: 'drain', shape: 'circle', icon: 'drain', title: i.n, fig: r, unit: 'dmg', hint: `steals ${i.k} magic`, subIcon: 'magic' };
     case 'pilfer': return { tone: 'pilfer', shape: 'hex', icon: 'pilfer', title: i.n, fig: r, unit: 'dmg', hint: 'steals gold if it hits', subIcon: 'gold' };
     case 'summon': return { tone: 'summon', shape: 'circle', icon: 'summon', title: i.n, fig: `+${i.k}`, unit: i.k > 1 ? 'foes' : 'foe', hint: 'reinforcements next round' };
+    case 'breath': return { tone: 'pierce', shape: 'octagon', icon: 'windup', title: i.n, fig: r, unit: 'breath', hint: 'splashes the whole party', call: { head: 'FIRE BREATH', sub: 'every hero is hit', ico: 'windup' }, hazard: true };
+    case 'chain': return { tone: 'bind', shape: 'circle', icon: 'bind', title: i.n, fig: `${i.k}`, unit: i.k > 1 ? 'dice chained' : 'die chained', hint: 'keep last round’s face, no reroll' };
+    case 'hush': return { tone: 'howl', shape: 'circle', icon: 'note', title: i.n, fig: 'HUSH', unit: 'heart blanketed', hint: 'no amp, no colour bonus, no triple', call: { head: 'HEART HUSHED', sub: 'no amp or triple next round', ico: 'note' } };
     default: return { tone: 'strike', shape: 'hex', icon: 'atk', title: i.n || '?', fig: r, unit: '', hint: '' };
   }
 }

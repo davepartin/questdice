@@ -7,7 +7,7 @@ import {
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
 // ------------------------------------------------------------------------------- randomness
@@ -95,7 +95,7 @@ export function newHero({ name, cls, seed, full = false }) {
     v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
-    campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0 },
+    campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
   };
@@ -290,7 +290,9 @@ export function evaluate(hero, board, opts = {}) {
   // Heart 1-4: +2 more of the same for every matching 1 / 2 / 3 / 4 on head, hands and feet. Heart 5/6 are handled with the lanes.
   const hv = val('C');
   out.heart = hv;
-  if (hv <= 4) {
+  const hushed = !!(opts.hushed || board.C?.hushed);
+  if (hushed) { out.heart = 0; out.notes.push('Heart hushed'); }
+  if (hv <= 4 && !hushed) {
     const matches = PAYERS.filter((s) => val(s) === hv).length;
     const amp = HEART_AMP[hv - 1] * matches;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
@@ -322,7 +324,7 @@ export function evaluate(hero, board, opts = {}) {
     out.pet = { syms, power: pw };
   }
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
-  if (hv >= 5) {
+  if (hv >= 5 && !hushed) {
     const want = hv === 5 ? 'b' : 'r'; let n = 0;
     for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += HEART_COLOR_BONUS; l.amp = HEART_COLOR_BONUS; n++; }
     if (n) out.notes.push(`Heart ${hv}: +${HEART_COLOR_BONUS} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
@@ -340,8 +342,8 @@ export function evaluate(hero, board, opts = {}) {
     const tw = WEAPONS[hero.loadout.NW.id].twinShot;
     if (tw && hero.loadout.NE?.id === hero.loadout.NW.id && a === b && a > 0) { out.atk += tw; out.twinShot = tw; out.notes.push(`Twin shot +${tw}`); }
   }
-  if (isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
-  if (val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
+  if (!hushed && isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
+  if (!hushed && val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
   // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
@@ -376,14 +378,15 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1 } = {}, rn
     uid: newUid(rng), id, name: d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
     faces: d.faces, flat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
-    carried: 0, hpMult, rewardMult,
+    carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0,
   };
 }
 export function rollIntent(e, rng) {
   if (e.windup) {
     const s = MONSTERS[e.id].slam;
     e.windup = false;
-    e.intent = { n: 'Slam', v: 'strike', f: s.f, m: s.m, slam: true };
+    const v = s.v || 'strike';
+    e.intent = { n: v === 'breath' ? 'Breath Slam' : 'Slam', v, f: s.f, m: s.m, slam: true };
   } else if (e.pounce) { // a Stalk nobody broke
     const s = MONSTERS[e.id].pounce;
     e.pounce = false;
@@ -393,7 +396,9 @@ export function rollIntent(e, rng) {
   }
   return e.intent;
 }
-const DAMAGE_VERBS = new Set(['strike', 'pierce', 'drain', 'pilfer']);
+const DAMAGE_VERBS = new Set(['strike', 'pierce', 'drain', 'pilfer', 'breath']);
+const sumDice = (rng, n, s) => { let t = 0; for (let i = 0; i < n; i++) t += die(rng, s); return t; };
+export const armorOf = (e, rng) => (e?.armor ? sumDice(rng, e.armor.n, e.armor.s) : 0);
 export const isDamageIntent = (i) => DAMAGE_VERBS.has(i.v);
 export const GUARD_VERBS = new Set(['guard', 'ward']);
 export const burnOf = (e) => (e?.intent?.v === 'ward' ? (e.intent.k || 0) + Math.floor((e.flat || 0) / 2) : 0); // Fire Ward's burn
@@ -424,12 +429,12 @@ export function intentRange(e) {
 // Road-event boons. Combat blessings apply for the whole battle they were snapshotted into.
 // The campaign list is decremented only when that battle actually ends (spendBlessings).
 export function pullBlessings(hero) {
-  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, openingAtk: 0, weaken: 0 };
+  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, openingAtk: 0, weaken: 0, breathBlock: 0 };
   for (const bl of hero.campaign?.blessings || []) {
     if (bl.who && bl.who !== hero.name) continue;
     o.startHp += bl.startHp || 0; o.wound += bl.wound || 0; o.startMagic += bl.startMagic || 0;
     o.atk += bl.atk || 0; o.block += bl.block || 0; o.openingAtk += bl.openingAtk || 0;
-    o.weaken += bl.weaken || 0;
+    o.weaken += bl.weaken || 0; o.breathBlock += bl.breathBlock || 0;
   }
   return o;
 }
@@ -446,6 +451,18 @@ export function withAmbush(quest, campaign) {
   const enemies = [...quest.enemies];
   for (const a of extra) for (let n = 0; n < a.count; n++) enemies.push(a.id);
   return { ...quest, enemies: enemies.slice(0, ENEMY_CAP), ambushed: true };
+}
+export const SCARS = { blade: 'Notched Wing', pierce: 'Broken Horn', magic: 'Cracked Scale', tank: 'Blind Eye' };
+function dressNemesis(enemies, n) {
+  if (!n) return;
+  const e = enemies.find((x) => x.id === n.id && !x.nemesis);
+  if (!e) return;
+  e.nemesis = true; e.scar = n.scar; e.grudge = Math.min(3, n.grudge || 0);
+  e.flat += e.grudge;
+  const frac = Math.max(0.6, (n.wound || 0) + 0.35);
+  e.hp = Math.max(1, Math.round(e.maxHp * frac));
+  const bounty = n.bounty || 1;
+  e.xp = Math.round(e.xp * bounty); e.gold = Math.round(e.gold * bounty); e.bountyPay = bounty;
 }
 
 // Apply the hero's difficulty to a quest (monster health, flat damage, gold). Done once per battle.
@@ -467,8 +484,9 @@ export function newBattle(hero, quest0, rng, players = 1) {
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
     magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
-    mods: blankMods(), nextBound: 0, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
+    mods: blankMods(), nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
+  dressNemesis(b.enemies, quest.nemesis);
   beginReset(b);
   return b;
 }
@@ -487,11 +505,22 @@ export function startRoll(b) {
   b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, s === 'P' && !b.hero.pet ? { v: 1, bound: false } : scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
   b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
   const slots = Object.keys(ROLE).filter((s) => s !== 'C' && s !== 'P'); // the pet's die is not on the board, so it is never tangled
-  for (let i = 0; i < b.nextBound && slots.length; i++) {
+  const cap = 4;
+  const binds = Math.min(b.nextBound || 0, cap);
+  for (let i = 0; i < binds && slots.length; i++) {
     const s = slots.splice(Math.floor(b.rng() * slots.length), 1)[0];
     b.board[s].bound = true;
   }
-  b.boundNow = b.nextBound; b.nextBound = 0;
+  b.boundNow = binds; b.nextBound = 0;
+  const chains = Math.min(b.nextChained || 0, cap - binds);
+  for (let i = 0; i < chains && slots.length; i++) {
+    const s = slots.splice(Math.floor(b.rng() * slots.length), 1)[0];
+    const keep = b.lastBoard?.[s] ?? b.board[s].v;
+    b.board[s] = { v: keep, bound: true, chained: true };
+  }
+  b.chainedNow = chains; b.nextChained = 0;
+  b.hushedNow = !!b.nextHushed; b.nextHushed = false;
+  if (b.hushedNow && b.board.C) b.board.C.hushed = true;
 }
 export function rerollInfo(b) {
   if (b.freeActions.length) return { kind: 'card', dice: b.freeActions[0], perDie: 0, left: b.freeActions.length };
@@ -518,7 +547,7 @@ export function reroll(b, slots) {
 // Turning the heart: once a round (Dave, Oct 2026), marked on this round's board so each hero in a company has their own.
 export const nudgedThisRound = (b) => !!b.board?.nudged;
 export function nudge(b, dir) {
-  if (!b.board || b.board.nudged || b.magic < NUDGE_COST) return false;
+  if (!b.board || b.board.nudged || b.magic < NUDGE_COST || b.hushedNow || b.board.C?.hushed) return false;
   const v = b.board.C.v + dir;
   if (v < 1 || v > 6) return false;
   b.magic -= NUDGE_COST; b.board.C.v = v; b.board.nudged = true; return true;
@@ -686,7 +715,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
-  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; }
+  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
@@ -696,7 +725,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     if (!tgt || tgt.hp <= 0) tgt = alive[0];
     rep.targetUid = tgt.uid;
     const phase = tgt.intent.v === 'phase'; // normal attack passes through; pierce still lands
-    const guard = phase ? T.atk : GUARD_VERBS.has(tgt.intent.v) ? tgt.mag : 0;
+    const guard = phase ? T.atk : (GUARD_VERBS.has(tgt.intent.v) ? tgt.mag : 0) + (tgt.arm || 0);
+    tgt.lastHurt = T.pierce > T.atk ? 'pierce' : (ev.splash || m.aoe) ? 'magic' : T.block > T.atk ? 'tank' : 'blade';
     const dmg = Math.max(0, T.atk - guard) + T.pierce;
     rep.guarded = Math.min(guard, T.atk); if (phase) rep.phased = true;
     rep.dealt = Math.min(tgt.hp, dmg);
@@ -749,6 +779,15 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
       case 'charge': if (!e.cancelled) { e.windup = true; } else act.cancelled = true; break;
       case 'howl': for (const o of living()) o.buff += i.k; break;
       case 'bind': b.nextBound += i.k; rep.bound += i.k; break;
+      case 'chain': b.nextChained += i.k; rep.chained = (rep.chained || 0) + i.k; break;
+      case 'hush': b.nextHushed = true; rep.hushed = true; if (i.k) { b.nextChained += i.k; rep.chained = (rep.chained || 0) + i.k; } break;
+      case 'breath': {
+        const half = Math.ceil(e.mag / 2);
+        const a = strikeHit({ mag: Math.max(0, half - (boon.breathBlock || 0)) }, false);
+        const p = strikeHit({ mag: e.mag - half }, true);
+        Object.assign(act, { d: e.mag, net: a.net + p.net, ab: a.ab });
+        break;
+      }
       case 'summon': {
         const room = ENEMY_CAP - living().length; const add = MONSTERS[e.id].adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
@@ -781,8 +820,13 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   // 3. Rage: bosses change their ways at half health.
   for (const e of living()) {
     const rg = MONSTERS[e.id].rage;
-    if (rg && !e.raged && e.hp <= e.maxHp / 2) { e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid); }
+    if (rg && !e.raged && e.hp <= e.maxHp / 2) {
+      e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
+      if ('armor' in rg) e.armor = rg.armor;
+    }
   }
+  tryFlee(b, rep);
+  if (b.board) b.lastBoard = Object.fromEntries(Object.entries(b.board).map(([s, d]) => [s, d.v]));
 
   // 4. You.
   const hpBeforeHit = b.hp;
@@ -828,17 +872,55 @@ export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = 
 export function battleRewards(b) {
   const { quest, hero } = b;
   const dead = b.enemies; // includes adds: they carry rewardMult 0
-  const xp = dead.reduce((a, e) => a + e.xp, 0);
+  const pay = (e) => (e.fled ? FLEE_REWARD : 1);
+  const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
   const gm = 1 + heroMods(hero).goldPct;
-  const kills = Math.round(dead.reduce((a, e) => a + e.gold, 0) * gm);
+  const kills = Math.round(dead.reduce((a, e) => a + e.gold * pay(e), 0) * gm);
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
-  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
+  const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
+  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : nemesisKill ? 2 : 0;
   const c = hero.campaign; const sizes = dropSizeWeights(c.act, c.step, quest.perilous ? 1 : 0);
   const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
   if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   return { xp, gold, drops };
+}
+function tryFlee(b, rep) {
+  rep.fled = rep.fled || [];
+  const living = b.enemies.filter((e) => e.hp > 0);
+  for (const e of living) {
+    const fl = MONSTERS[e.id]?.flee;
+    if (!fl || e.fled) continue;
+    if (fl.onlyAs && b.quest?.kind !== fl.onlyAs) continue;
+    if (living.length > 1) continue; // last foe standing, so the fight ends cleanly
+    if (e.hp > e.maxHp * fl.at) continue;
+    if (fl.chance != null && b.rng() >= fl.chance) continue;
+    e.fled = true; e.hpLeft = e.hp; e.hp = 0; e.scar = e.scar || SCARS[e.lastHurt] || SCARS.blade;
+    rep.fled.push(e.uid);
+  }
+}
+export function recordFled(campaign, b) {
+  if (!campaign || !b) return;
+  campaign.nemeses = campaign.nemeses || [];
+  campaign.chronicle = campaign.chronicle || [];
+  for (const e of b.enemies) {
+    if (e.fled) {
+      const prev = campaign.nemeses.find((n) => n.id === e.id);
+      const rec = {
+        id: e.id, name: e.name, scar: e.scar || SCARS.blade,
+        wound: (e.hpLeft || 0) / Math.max(1, e.maxHp),
+        act: campaign.act, step: campaign.step,
+        grudge: prev ? Math.min(3, (prev.grudge || 0) + 1) : 0,
+        bounty: prev ? Math.round(((prev.bounty || 1) * 1.5) * 100) / 100 : 1.5,
+      };
+      campaign.nemeses = campaign.nemeses.filter((n) => n.id !== e.id);
+      campaign.nemeses.push(rec);
+    } else if (e.nemesis && e.hp <= 0) {
+      campaign.nemeses = campaign.nemeses.filter((n) => n.id !== e.id);
+      campaign.chronicle = [{ act: campaign.act, step: campaign.step, title: e.name, text: `${e.name} falls at last. In its hoard: everything it ever stole from you, and more.` }, ...(campaign.chronicle || [])].slice(0, 18);
+    }
+  }
 }
 // Now and then an elite or boss leaves a legendary in place of the last ordinary drop: one nobody in the fight already carries.
 const carried = (hero) => [...Object.values(hero.loadout || {}), ...(hero.bag || [])].filter(Boolean).map((w) => w.id);
@@ -1015,14 +1097,21 @@ export function heroPower(hero, samples = 240) {
 // score ~ the share of your health the fight is likely to cost (1 = all of it). Rerolls and powers are folded in as a flat lift.
 export function questDanger(hero, quest0) {
   const quest = withDifficulty(hero, quest0); const P = heroPower(hero);
-  let hp = 0; let hit = 0; let blockable = 0;
+  let hp = 0; let hit = 0; let blockable = 0; let armorTax = 0;
   for (const id of quest.enemies) {
     const M = MONSTERS[id]; hp += Math.round(M.hp * (quest.hpMult ?? 1)); const ep = (M.power + 1) / 2;
     let dmg = 0; let blk = 0;
-    for (const f of M.faces) { if (!DAMAGE_VERBS.has(f.v)) continue; const m = Math.max(0, f.f + f.m * ep + (quest.flat || 0)); dmg += m; if (f.v !== 'pierce') blk += m; }
+    for (const f of M.faces) {
+      if (!DAMAGE_VERBS.has(f.v)) continue;
+      const amt = Math.max(0, f.f + f.m * ep + (quest.flat || 0));
+      const pierceLike = f.v === 'pierce' || f.v === 'breath';
+      dmg += pierceLike ? amt * 1.2 : amt;
+      if (!pierceLike) blk += amt;
+    }
     hit += dmg / 6; blockable += blk / 6;
+    if (M.armor) armorTax += 0.6 * M.armor.n * (M.armor.s + 1) / 2;
   }
-  const deal = Math.max(1, P.dmg * 1.7); // rerolls and powers: a played round deals ~1.7x an average throw (measured on bot runs)
+  const deal = Math.max(1, P.dmg * 1.7 - armorTax); // rerolls and powers: a played round deals ~1.7x an average throw (measured on bot runs)
   const rounds = hp / deal;
   const perRound = Math.max(0, hit - Math.min(blockable, P.block * 1.2)) - P.heal * 0.5;
   const taken = Math.max(0, perRound) * rounds * 0.3; // monsters fall as the fight goes on, and rerolls, block powers and mending soak most of the rest
@@ -1086,10 +1175,12 @@ export function roadsFor(hero, opts = {}) {
   const base = (1 + STEP_HP * (s - 1)) * ACT_HP[ai] * (1 + 0.6 * Math.max(0, cycle - (c.act > ACT_HP.length ? 1 : 0)));
   const flat = 3 + Math.floor((s - 1) / 3) + ACT_FLAT[ai]; // (3, not 2: every hero now carries two free potions)
   const lesson = c.act === 1 && s === 1 && !(c.wins > 0); // the first fight teaches; it stays gentle
+  const reserved = new Set(Object.values(act.gates || {}).map((g) => g.place).filter(Boolean));
+  const roamPlaces = act.places.filter((p) => !reserved.has(p));
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
-    const place = kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, act.places);
-    return {
+    const place = extra.place || (kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, roamPlaces.length ? roamPlaces : act.places));
+    const q = {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
     // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
@@ -1097,7 +1188,13 @@ export function roadsFor(hero, opts = {}) {
     flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
+    return attachNemesis(q, c);
   };
+  const gate = act.gates?.[s];
+  if (gate) {
+    const foes = gate.enemies || (gate.kind === 'boss' ? act.boss : gate.kind === 'elite' ? pick(rng, act.elite) : (opts.random ? encounterFor(hero) : pick(rng, act.pool)));
+    return [mk(gate.kind, foes, { place: gate.place, boss: gate.kind === 'boss' })];
+  }
   if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
   const poolPick = () => pick(rng, act.pool);
   if (ELITE_STEPS.includes(s)) {
@@ -1112,11 +1209,24 @@ export function roadsFor(hero, opts = {}) {
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
   if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
   else if (opts.random) a = encounterFor(hero); // the game's own pick (the balance tools still ask for the old pair of roads)
+  if (s === 8 && c.nextPlace) {
+    a = c.nextEnemies && c.nextEnemies.length ? c.nextEnemies : a;
+    return [mk('battle', a, { place: c.nextPlace })];
+  }
   return [mk('battle', a), mk('battle', bq, { perilous: true })];
+}
+function attachNemesis(quest, campaign) {
+  if (!campaign || quest.kind === 'boss' || quest.perilous) return quest;
+  const ready = (campaign.nemeses || []).filter((n) => campaign.act > n.act || campaign.step >= n.step + 3);
+  if (!ready.length) return quest;
+  const n = ready[0];
+  if (quest.enemies.includes(n.id)) return { ...quest, nemesis: n };
+  return { ...quest, enemies: [n.id, ...quest.enemies].slice(0, ENEMY_CAP), nemesis: n, ambushed: true };
 }
 export function advanceCampaign(hero) {
   const c = hero.campaign;
   c.wins++; c.shop = null;
+  c.nextPlace = null; c.nextEnemies = null;
   if (c.step >= QUESTS_PER_ACT) { c.act++; c.step = 1; } else c.step++;
 }
 
@@ -1130,7 +1240,7 @@ export function advanceCampaign(hero) {
 export function newCompany({ name, roster, seed }) {
   const campaign = {
     act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0,
-    blessings: [], seenRoads: [], campFlags: {}, ambush: null, chronicle: [],
+    blessings: [], seenRoads: [], campFlags: {}, ambush: null, chronicle: [], nemeses: [],
   };
   const members = roster.map((r, i) => {
     const hero = newHero({ name: r.name, cls: r.cls, seed: (campaign.seed + i * 997) >>> 0 });
@@ -1180,7 +1290,7 @@ function makeFighter(hero) {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
     magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
-    nextBound: 0, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
+    nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: blankPartyStats(), contrib: 0,
   };
 }
@@ -1188,7 +1298,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
@@ -1208,6 +1318,7 @@ export function newPartyBattle(heroes, quest, rng) {
   const enemies = [];
   for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, rewardMult }, rng));
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, rewardMult }, rng));
+  dressNemesis(enemies, quest.nemesis);
   const b = {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),
     active: 0, round: 0, phase: 'reset', outcome: null, report: null, stolen: 0,
@@ -1315,7 +1426,7 @@ export function resolveParty(b) {
   for (const e of alive) {
     e.p = die(b.rng, e.powerDie);
     e.mag = magnitude(e, e.intent, e.p, weaken);
-    e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp;
+    e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng);
   }
   const order = rankFighters(acting, b.rng); // who acts first
   const heat = heatRank(acting, b.rng);      // who the monsters go after
@@ -1325,7 +1436,10 @@ export function resolveParty(b) {
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };
   const guardLeft = new Map();
-  for (const e of alive) if (GUARD_VERBS.has(e.intent?.v)) guardLeft.set(e.uid, e.mag);
+  for (const e of alive) {
+    const g = (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0);
+    if (g) guardLeft.set(e.uid, g);
+  }
   // Monsters answer the living. The slowest hero takes the double share; each hero's block soaks only their share.
   const snap = heat.map((r) => r.f);
   const weights = shareWeights(heat);
@@ -1353,6 +1467,7 @@ export function resolveParty(b) {
     if (moral && moral.from !== f.hero.name) { T.atk += moral.n; rep.moral.push({ from: moral.from, to: f.hero.name, n: moral.n }); moral = null; }
     const phase = tgt.intent?.v === 'phase';
     const pool = phase ? T.atk : guardLeft.get(tgt.uid) || 0;
+    tgt.lastHurt = T.pierce > T.atk ? 'pierce' : (f.ev.splash || f.mods?.aoe) ? 'magic' : T.block > T.atk ? 'tank' : 'blade';
     const guarded = Math.min(pool, T.atk);
     if (guardLeft.has(tgt.uid)) guardLeft.set(tgt.uid, pool - guarded);
     const dmg = Math.max(0, T.atk - guarded) + T.pierce;
@@ -1400,6 +1515,20 @@ export function resolveParty(b) {
       case 'charge': if (!e.cancelled) e.windup = true; else act.cancelled = true; break;
       case 'howl': for (const o of livingNow()) o.buff += i.k; break;
       case 'bind': if (leader) { leader.nextBound += i.k; rep.bound += i.k; } break;
+      case 'chain': if (leader) { leader.nextChained += i.k; rep.chained = (rep.chained || 0) + i.k; } break;
+      case 'hush': if (leader) { leader.nextHushed = true; rep.hushed = true; if (i.k) { leader.nextChained += i.k; rep.chained = (rep.chained || 0) + i.k; } } break;
+      case 'breath': {
+        const part = Math.ceil(e.mag * BREATH_SHARE);
+        const nets = []; const parts = [];
+        snap.forEach((f, i) => {
+          const soak = (f.boon?.breathBlock || 0);
+          const hit = Math.max(0, part - soak);
+          parts.push(hit);
+          const ab = Math.min(blocks[i], hit); blocks[i] -= ab; absorbed[i] += ab; taken[i] += hit - ab; nets.push(hit - ab);
+        });
+        Object.assign(act, { d: e.mag, net: nets.reduce((a, n) => a + n, 0), ab: parts.reduce((a, p, i) => a + (p - (nets[i] || 0)), 0), parts, nets });
+        break;
+      }
       case 'summon': {
         const room = ENEMY_CAP - livingNow().length; const add = MONSTERS[e.id].adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
@@ -1432,8 +1561,13 @@ export function resolveParty(b) {
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {
     const rg = MONSTERS[e.id].rage;
-    if (rg && !e.raged && e.hp <= e.maxHp / 2) { e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid); }
+    if (rg && !e.raged && e.hp <= e.maxHp / 2) {
+      e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
+      if ('armor' in rg) e.armor = rg.armor;
+    }
   }
+  tryFlee(b, rep);
+  if (leader?.board) leader.lastBoard = Object.fromEntries(Object.entries(leader.board).map(([s, d]) => [s, d.v]));
   // Drain comes out of the leader. Heal lands before damage. There is no Last Stand: at 0 HP a hero falls.
   if (leader && rep.magicStolen) {
     const have = leader.magic + (leader.T?.magic || 0);
@@ -1478,8 +1612,9 @@ export function resolveParty(b) {
 export function partyRewards(b) {
   const { quest } = b;
   const dead = b.enemies;
-  const xp = dead.reduce((a, e) => a + e.xp, 0);
-  const baseKills = dead.reduce((a, e) => a + e.gold, 0);
+  const pay = (e) => (e.fled ? FLEE_REWARD : 1);
+  const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
+  const baseKills = dead.reduce((a, e) => a + e.gold * pay(e), 0);
   // Ranked by battle points. The gold from the fallen is shared evenly; the top scorer gets PLACE_GOLD[0] of a share more,
   // and (with three or more heroes) the runner-up PLACE_GOLD[1]. Everyone else gets the same even share.
   const ranked = [...b.fighters].sort((a, c) => (c.points || 0) - (a.points || 0) || a.hero.name.localeCompare(c.hero.name));
@@ -1495,7 +1630,8 @@ export function partyRewards(b) {
   });
   const sample = ranked[0]?.hero;
   const rng = makeRng(hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'drops'));
-  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : 0;
+  const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
+  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : nemesisKill ? 2 : 0;
   const drops = rollDrops(rng, n + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + sample.campaign.act - 1, sizes: dropSizeWeights(sample.campaign.act, sample.campaign.step, quest.perilous ? 1 : 0) });
   addLegendary(drops, quest, b.fighters.map((f) => f.hero), hashSeed(sample.campaign.seed, sample.campaign.act, sample.campaign.step, 'legend'));
   const points = Object.fromEntries(b.fighters.map((f) => [f.hero.name, pointsOf(f)]));
