@@ -39,7 +39,7 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= sides; v++) {
         const sym = E.specialFace(hero, slot, v);
         if (sym === 'X2') labels.push({ sym: 'SURGE', text: 'X2' });
-        else if (Array.isArray(sym)) labels.push({ sym: 'TALENT', syms: sym, text: 'T', corners: sym });
+        else if (Array.isArray(sym)) labels.push({ text: String(v), corners: sym.map((k) => (k === 'block' ? 'def' : k)) }); // the number it pays, with its symbol
         else labels.push({ blank: true });
       }
     } else if (role === 'heart') {

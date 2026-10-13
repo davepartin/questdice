@@ -25,7 +25,7 @@ function camp(hero, rng, build) {
     for (const slot of ['SW', 'SE']) {
       const t = talentInfo(hero, slot);
       for (const sym of prefs) {
-        for (let f = 0; f < t.faces; f++) { if (hero.gold >= t.cost && addTalent(hero, slot, f, sym)) { more = true; break; } }
+        for (let f = 0; f < t.faces; f++) { if (hero.gold >= t.costs[f] && addTalent(hero, slot, f, sym)) { more = true; break; } }
         if (more) break;
       }
       if (more) break;

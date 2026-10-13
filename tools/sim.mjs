@@ -4,9 +4,9 @@ import {
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
-  buyPet, addPetSymbol, growPet, petGrowInfo,
+  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent,
 } from '../js/engine.js';
-import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE } from '../js/data.js';
+import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT } from '../js/data.js';
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
 export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };
 
@@ -100,6 +100,7 @@ export function botCamp(hero, rng) {
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   if (hero.gold >= 230) buyRerollDie(hero); // the 4th reroll die once there is a little to spare
   if (SIM.pets) botPet(hero);
+  botTalent(hero);
   let acted = true;
   while (acted) {
     acted = false;
@@ -117,6 +118,20 @@ export function botCamp(hero, rng) {
     const r = bestSlotFor(hero, it.inst); if (r.gain < 1) return;
     if (buyItem(hero, i)) { equip(hero, it.inst.uid, r.side); while (hero.bag.length) sellItem(hero, hero.bag[0].uid); }
   });
+}
+
+// Talent dice (v3): buy a symbol for the biggest empty number face while there is gold to spare, the class's own symbols first.
+function botTalent(hero) {
+  for (const slot of ['SW', 'SE']) {
+    if (!(hero.dice || []).includes(slot)) continue;
+    const t = talentInfo(hero, slot); const mine = hero.cls;
+    const order = [CLASS_TALENT[mine]?.[slot], 'atk', 'block', 'heal', 'magic', 'gold'].filter(Boolean);
+    for (let f = t.faces - 1; f >= 0; f--) {
+      const have = hero.talent?.[slot]?.[f]; if (Array.isArray(have) ? have.length : have) continue;
+      if (hero.gold < t.costs[f] + 60) continue;
+      for (const sym of order) if (addTalent(hero, slot, f, sym)) break;
+    }
+  }
 }
 
 // Pets: adopt the traveler's pet once there is gold to spare, fill its faces with its own symbol (then gold), grow it later.
