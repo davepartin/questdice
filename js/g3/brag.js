@@ -82,7 +82,7 @@ export function bragBoard({ table, youName, onOnward } = {}) {
       h('header', { class: 'brag-head' },
         eyebrow(R.questName || 'The road'),
         h('h1', { class: 'brag-title' }, 'Victory'),
-        h('p', { class: 'brag-lead' }, n >= 2 && lead ? `${lead} did the most this battle.` : 'The way is open.'),
+        h('p', { class: 'brag-lead' }, n >= 2 && lead ? `${lead} did the most this battle.` : 'The way is open. Go on, then.'),
         flourish()),
       h('div', { class: 'brag-list' }, cards),
       h('div', { class: 'brag-cta' },

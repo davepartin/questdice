@@ -69,44 +69,44 @@ export function gambleOffer(seed, { act = 1, step = 1 } = {}) {
 // ---- the traveller's patter (the game is meant to be funny)
 const LINES = {
   greet: [
-    'Fine goods, honest prices, and only slightly haunted.',
-    'I found these in a ditch. A very well-stocked ditch.',
-    'Step right up. Not too right. A little left. There.',
-    'Everything must go. Mostly because it keeps trying to leave on its own.',
+    'Fine goods, honest prices, and only slightly sticky. Do not ask from what.',
+    'I found these in a ditch. A very well-stocked ditch. Some ditches have standards.',
+    'Step right up. Not too right. A little left. There. You have a gift for standing.',
+    'Everything must go. Mostly because it keeps trying to leave on its own. I respect the ambition.',
   ],
   rebid: [
-    'A tie! How awkward for everyone. Again, and this time with feeling, and more gold.',
-    'Two of you want it exactly as much? Charming. Bid higher or I shall start charging for the drama.',
-    'Same bid. Same face. Same look of betrayal. Go again, higher.',
+    'A tie! How awkward for everyone. Again, and this time with feeling, and more gold. I am not paid in feeling.',
+    'Two of you want it exactly as much? Charming. Bid higher or I shall start charging for the drama. I will, you know.',
+    'Same bid. Same face. Same look of betrayal. Go again, higher. The tree is getting impatient.',
   ],
   taken: [
-    'You lot are far too difficult to work with. I am keeping it.',
-    'Tied twice. Very impressive. Nobody gets it. Go and think about what you have done.',
-    'I have seen siblings share a coffin more gracefully. The weapon goes back in the bag.',
+    'You lot are far too difficult to work with. I am keeping it. It likes me better anyway.',
+    'Tied twice. Very impressive. Nobody gets it. Go and think about what you have done. Take your time. I have a tree.',
+    'I have seen siblings share a last biscuit more gracefully. The weapon goes back in the bag. It had a lucky escape.',
   ],
   unsold: [
-    'Nothing? Not even a pity bid? The sword and I are both quite hurt.',
-    'No takers. That is fine. It will wait. It is very good at waiting.',
-    'Silence. Lovely. I shall tell the sword you were all too shy.',
+    'Nothing? Not even a pity bid? The sword and I are both quite hurt. The sword more so. It has a thinner skin.',
+    'No takers. That is fine. It will wait. It is very good at waiting. I taught it myself.',
+    'Silence. Lovely. I shall tell the sword you were all too shy. It will pretend not to mind.',
   ],
   won: [
-    'Sold! To the one with the most gold and the least dignity.',
-    'Sold, and may your enemies be allergic to it.',
-    'Congratulations. You are now poorer and better armed. The natural order of things.',
+    'Sold! To the one with the most gold and the least dignity. A winning combination, historically.',
+    'Sold, and may your enemies be allergic to it. I cannot promise they will be. I can hope.',
+    'Congratulations. You are now poorer and better armed. The natural order of things. Try not to spend the rest on apples.',
   ],
   lost: [
-    'Better luck next time. Or at least a better bluff.',
-    'You could have bid more. We both know it. We all know it.',
+    'Better luck next time. Or at least a better bluff. I have seen statues with more poker in them.',
+    'You could have bid more. We both know it. We all know it. The tree knows it. Do not look at the tree.',
   ],
   reveal: [
-    ['Bronze', 'Ah. Bronze. Well. It is a weapon. It is technically a weapon.', 'Bronze. I did say it was a gamble. I did not say it was a good one.'],
-    ['Silver', 'Silver! Not bad. Not bad at all. I am a little jealous and a little relieved.', 'Silver, and still warm from the ditch.'],
-    ['Gold', 'Gold! I may have underpriced it. I will not be telling my wife.', 'Gold! Please do not tell the other travellers. They will want one.'],
-    ['Diamond', 'DIAMOND. I am going to sit down. Do not look at me.', 'A Diamond. I want to be clear that I had no idea. I had every idea.'],
+    ['Bronze', 'Ah. Bronze. Well. It is a weapon. It is technically a weapon. The rest is optimism.', 'Bronze. I did say it was a gamble. I did not say it was a good one. The small print was very small.'],
+    ['Silver', 'Silver! Not bad. Not bad at all. I am a little jealous and a little relieved. Mostly jealous.', 'Silver, and still warm from the ditch. The ditch sends its regards.'],
+    ['Gold', 'Gold! I may have underpriced it. I will not be telling my wife. If I had a wife. Which I do not. Stop looking at me.', 'Gold! Please do not tell the other travellers. They will want one, and I only have the one tree.'],
+    ['Diamond', 'DIAMOND. I am going to sit down. Do not look at me. Do not look at the tree either.', 'A Diamond. I want to be clear that I had no idea. I had every idea. Both of those can be true.'],
   ],
   solo: [
-    'Just the one customer? I shall not mention the pressure.',
-    'Take it or leave it. I will not be offended. I will be slightly offended.',
+    'Just the one customer? I shall not mention the pressure. I am mentioning it now, of course.',
+    'Take it or leave it. I will not be offended. I will be slightly offended. I am very honest about that.',
   ],
 };
 export const LINE_KINDS = Object.keys(LINES).filter((k) => k !== 'reveal');
