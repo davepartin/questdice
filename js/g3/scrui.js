@@ -317,10 +317,12 @@ function questArt(q) {
   const wrap = h('div', { class: `qa n${q.enemies.length} ${q.kind}` });
   q.enemies.forEach((id, i) => {
     const m = D.MONSTERS[id];
-    wrap.append(h('div', { class: `qa-m tier-${m.tier}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // the painted miniature, as on the table
+    wrap.append(h('div', { class: `qa-m tier-${m.tier}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async', style: m.tint ? { filter: m.tint } : null }))); // the painted miniature, as on the table
   });
   return wrap;
 }
+// The boss button names who you face: 'the Goblin King', 'the Hollow Lich', 'the Ember Queen' (the part after a comma).
+const bossCall = (q) => { const n = D.MONSTERS[q.enemies?.[0]]?.name || 'the boss'; const call = n.split(', ').pop().replace(/^The /, 'the '); return call.length > 16 ? `the ${call.split(' ').pop()}` : call; };
 function questCard(q, idx) {
   const xp = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0);
   const gold = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].gold * q.rewardMult), 0);
@@ -338,7 +340,7 @@ function questCard(q, idx) {
       h('div', { class: 'qc-read' },
         h('div', { class: `qr danger dz-${dz.label.toLowerCase()}` }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `${dz.label} for you · ~${dz.rounds} round${dz.rounds > 1 ? 's' : ''}`)),
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
-    h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? 'Face the king' : 'Fight'), ico('chevron')));
+    h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? `Face ${bossCall(q)}` : 'Fight'), ico('chevron')));
 }
 export function board() {
   const S = X.S; const hero = S.hero || X.members()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); X.persist();
@@ -356,7 +358,7 @@ export function board() {
       h('div', { class: 'sx-notes' },
         blessings.length ? h('p', { class: 'note boon' }, ico('shine'), blessings.map((b) => b.text).join(' · ')) : null,
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
-      eyebrow(quests[0]?.kind === 'boss' ? 'The road ends here' : 'The road ahead', 'center'),
+      eyebrow(quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead', 'center'),
       h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)))));
   lay('board'); SCR.enter('road', { hero, heroes: X.members(), place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }

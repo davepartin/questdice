@@ -1179,7 +1179,9 @@ export function roadsFor(hero, opts = {}) {
   const roamPlaces = act.places.filter((p) => !reserved.has(p));
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
-    const place = extra.place || (kind === 'boss' ? act.places[act.places.length - 1] : pick(rng, roamPlaces.length ? roamPlaces : act.places));
+    // the story walks the act in order (act.route, one place per step); the draw is kept so the rest of the seeded picks stay the same
+    const roam = kind === 'boss' ? null : pick(rng, roamPlaces.length ? roamPlaces : act.places);
+    const place = extra.place || (kind === 'boss' ? act.places[act.places.length - 1] : act.route?.[s - 1] || roam);
     const q = {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,

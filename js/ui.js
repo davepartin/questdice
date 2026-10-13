@@ -275,7 +275,7 @@ function showBoard() {
     blessings.length ? h('p', { class: 'boon' }, blessings.map((b) => b.text).join(' · ')) : null,
     ambush ? h('p', { class: 'warn' }, 'An ambush is waiting on whichever road you take.') : null,
     tip('board', 'One fight waits on this stretch of road. Win it to walk on; the boss is at the end of the act.'),
-    h('div', { class: 't-eyebrow mb' }, quests[0]?.kind === 'boss' ? 'The road ends here' : 'The road ahead'),
+    h('div', { class: 't-eyebrow mb' }, quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead'),
     h('div', { class: 'quests' }, quests.map(questCard)),
     h('div', { class: 'row' }, ghost('⛺ Visit camp', () => showCamp({ fromBoard: true })), ghost('My hero', () => { S.tab = 'hero'; showCamp({ fromBoard: true }); })));
 }

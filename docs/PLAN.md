@@ -891,3 +891,14 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Every sheet/modal dismiss button reads "✕ Close" (top right, same pill); no more "Cancel".
 - Magic sheet: big background triangle removed; the small triangle's bottom edge now connects B–C (gradient made userSpaceOnUse so a flat line draws); magic and health pills stacked and aligned top right; Potion / Heal / Heart change are round medallions like the triangle; at full health (or no potions) they stay lit and tapping shows a 2-second fading "You are at full health." pop-up.
 - Perks and tutorial no longer say red/blue lane: "+1 attack from every weapon that is attacking (red face)" / "+1 block from every weapon that is blocking (blue face)".
+
+### 13 Oct 2026 — beta review after Act III landed
+- Act III was the easiest act in the simulator (100% wins, ~2 rounds a fight, 80% health left). Raised its encounter budget (base 1.5 → 3.0, slope .22 → .30), Act III monster health ~+20%, the Fallen Champion 240 hp, Vharaxis 280 hp with a power-16 Molten Fury. Smart-bot sim (3 acts, all classes): Act III steps 96–100% at 54–74% health, 5–9 rounds; the finale ~93%. The Hollow Lich (≈68%) stays the hardest wall.
+- Fights now walk each act in story order (`ACTS[i].route`, one place per step): the arrival and victory beats were written as a sequence, but places were drawn at random, so a new hero's first fight could be at Ashfall Camp reading the claw contract. Act III's gates still pin the set pieces.
+- The ten Act III foes that borrow a painted miniature get a `tint` (CSS filter) so a Shieldbearer never looks like your Knight, the Ember Queen isn't a grey Lich, and so on. They still need their own miniatures (art request below).
+- Boss button names the boss ("Face the Hollow Lich", "Face the Champion"), not "Face the king" in every act; "The road ends here" only at the act's last step (the Fallen Champion is a mid-act boss).
+- Monster call-outs ("FIRE BREATH") sit on the left of the piece so a big boss's call no longer hides under the magic chip; long single-word names (Frostwhelp) shrink to fit beside the i badge.
+- Wording: the last "lane" texts (heart 5/6, 2× Strength) now say "blocking (blue) weapon" / "attacking (red) weapon" / "adds to its weapon".
+- Story: a pass of dry, clean British humour through the beats and place lines (the John 1:5 lines and the Lich/Queen turns stay sincere). The Gallows Hill, Ash Cloister and Ember Throne victory lines now lead into the act-closing beat instead of retelling it.
+- **Art request (for Grokabot):** painted miniatures for cinderling, frostwhelp, ashwyrm (Ashmaw), vharaxis (Ember Queen), fallenchampion (Sir Aldren), ironwarden, shieldbearer, gloomstalker, chainbinder (Gold-Chain Jailer), dirgesinger. Drop them in assets/miniatures/<id>.webp with an imgBase and remove the `tint`.
+- dev/newplayer.mjs: title → new hero → prologue → road event → first fight → victory beat → camp, logging errors (clean).

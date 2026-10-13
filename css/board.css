@@ -119,7 +119,7 @@
 .fb-pc.raged .fb-img { filter: sepia(.4) saturate(1.5) hue-rotate(-18deg); }
 
 /* a hazard flagged on the piece's shoulder ("POUNCE NEXT ROUND") */
-.fb-call { position: absolute; z-index: 3; top: 0; right: -4%; max-width: 5.2rem; padding: .16rem .38rem; border-radius: .4rem; font: 800 .46rem/1.1 var(--disp); letter-spacing: .07em; text-align: center; color: #fff; background: linear-gradient(180deg, #c0382a, #8a1c14); box-shadow: 0 0 0 1px rgba(255, 190, 150, .7), 0 3px 8px rgba(0, 0, 0, .6); pointer-events: none; animation: fbCall 1.4s ease-in-out infinite; }
+.fb-call { position: absolute; z-index: 3; top: 0; left: -4%; max-width: 5.2rem; padding: .16rem .38rem; border-radius: .4rem; font: 800 .46rem/1.1 var(--disp); letter-spacing: .07em; text-align: center; color: #fff; background: linear-gradient(180deg, #c0382a, #8a1c14); box-shadow: 0 0 0 1px rgba(255, 190, 150, .7), 0 3px 8px rgba(0, 0, 0, .6); pointer-events: none; animation: fbCall 1.4s ease-in-out infinite; }
 .fb-call[hidden] { display: none; }
 @keyframes fbCall { 50% { box-shadow: 0 0 0 1px rgba(255, 190, 150, .9), 0 0 12px rgba(255, 80, 50, .8); } }
 
@@ -145,6 +145,7 @@
 .fb-intent[class*="tone-"] { display: flex; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent small { display: none; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name { letter-spacing: .03em; font-size: .56rem; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.long { letter-spacing: 0; font-size: .5rem; padding-right: .55rem; box-sizing: border-box; }
 .fb-intent svg { width: .98rem; height: .98rem; flex: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent)); }
 .fb-intent small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
 .fb-intent.tone-strike, .fb-intent.tone-slam, .fb-intent.tone-windup { --tone: #ff7a6a; }

@@ -217,7 +217,7 @@ export const DIFFICULTY = {
 // `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster). The budget grows through the act and is
 // scaled by the hero's skill, so some steps are one big monster, some a few small ones. { base, slope } per act.
 export const ENCOUNTER = {
-  acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 1.5, slope: 0.22 }],
+  acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 3.0, slope: 0.3 }],
   groupPlus: 0.15,
   jitter: [0.75, 1.25], // each fight's budget is the step's budget times a seeded draw from this range, so no two steps are alike
   bigFrom: 4, bigMax: 4, // elite-tier monsters join ordinary fights from this step, if their threat is at most bigMax
@@ -226,7 +226,7 @@ export const ENCOUNTER = {
 export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙' };
 export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ? sym.map((x) => TALENT_GLYPH[x]).join('') : '');
 export const talentName = (sym) => (sym === 'X2' ? '2× Strength' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
-export const talentText = (sym) => (sym === 'X2' ? 'Doubles this hand’s strength in its lane.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
+export const talentText = (sym) => (sym === 'X2' ? 'Doubles the strength this hand adds to its weapon.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
 
 // Strength / special upgrade ladder: [from size, gold, minimum hero level].
 export const STRENGTH_STEPS = { 4: [40, 3], 6: [100, 7], 8: [220, 12] };
@@ -463,40 +463,40 @@ export const MONSTERS = {
         { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
-  // ---- Hired blades and dark mirrors (reuse existing painted minis) ----
+  // ---- Hired blades and dark mirrors (reuse existing painted minis; `tint` recolours the borrowed mini so it never looks like a hero) ----
   shieldbearer: {
-    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), short: 'SHLD', init: 4, hp: 36, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
+    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/knight.webp', tint: 'sepia(.95) saturate(1.7) hue-rotate(-18deg) brightness(.68) contrast(1.1)', imgBase: IB(378, 480, 218, 475, 279), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
     armor: { n: 1, s: 6 },
     faces: [S('Spear', 1, 1), S('Spear', 1, 1), S('Spear', 2, 1),
       { n: 'Lock Shields', v: 'guard', f: 2, m: 1 }, S('Shove', 0, 1), S('Spear', 1, 1)],
   },
   gloomstalker: {
-    name: 'Gloom Stalker', glyph: '🏹', img: 'assets/miniatures/ranger.webp', imgBase: IB(325, 470, 153.5, 465, 284), short: 'GLOM', init: 8, hp: 42, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
+    name: 'Gloom Stalker', glyph: '🏹', img: 'assets/miniatures/ranger.webp', tint: 'hue-rotate(215deg) saturate(.8) brightness(.62) contrast(1.15)', imgBase: IB(325, 470, 153.5, 465, 284), short: 'GLOM', init: 8, hp: 50, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
     pounce: { f: 2, m: 2 },
     faces: [{ n: 'Black Arrow', v: 'pierce', f: 0, m: 1 }, { n: 'Black Arrow', v: 'pierce', f: 0, m: 1 },
       { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, { n: 'Snare', v: 'bind', f: 0, m: 0, k: 1 },
       S('Knife', 1, 1), { n: 'Fade', v: 'phase', f: 0, m: 0 }],
   },
   chainbinder: {
-    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), short: 'CHNB', init: 6, hp: 44, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
+    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/wizard.webp', tint: 'sepia(.85) saturate(2.2) hue-rotate(-8deg) brightness(.92)', imgBase: IB(363, 474, 183, 469, 305), short: 'CHNB', init: 6, hp: 52, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
     faces: [{ n: 'Chain', v: 'chain', f: 0, m: 0, k: 1 }, { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 },
       { n: 'Chain Bolt', v: 'pierce', f: 0, m: 1 }, S('Rod', 1, 1),
       { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 }, { n: 'Chain Ward', v: 'ward', f: 0, m: 1, k: 3 }],
   },
   dirgesinger: {
-    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/bard.webp', imgBase: IB(318, 476, 153, 471, 283), short: 'DIRG', init: 6, hp: 38, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
+    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/bard.webp', tint: 'grayscale(.85) brightness(.82) contrast(1.15)', imgBase: IB(318, 476, 153, 471, 283), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
     faces: [{ n: 'Hush', v: 'hush', f: 0, m: 0 }, { n: 'Dirge', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lute Smash', 1, 1), { n: 'Sour Note', v: 'pierce', f: 0, m: 1 },
       { n: 'Hush', v: 'hush', f: 0, m: 0 }, S('Lute Smash', 1, 1)],
   },
   ironwarden: {
-    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/dwarf.webp', imgBase: IB(443, 448, 250, 443, 329), short: 'IRON', init: 4, hp: 88, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
+    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/dwarf.webp', tint: 'grayscale(.75) brightness(.86) contrast(1.25)', imgBase: IB(443, 448, 250, 443, 329), short: 'IRON', init: 4, hp: 110, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
     slam: { f: 3, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Axe', 1, 1), S('Axe', 1, 1), { n: 'Stone Wall', v: 'guard', f: 2, m: 1 },
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
   },
   fallenchampion: {
-    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/knight.webp', imgBase: IB(378, 480, 218, 475, 279), short: 'CHMP', init: 6, hp: 170, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/knight.webp', tint: 'grayscale(.6) brightness(.5) contrast(1.35)', imgBase: IB(378, 480, 218, 475, 279), short: 'CHMP', init: 6, hp: 240, power: 13, xp: 160, gold: 140, tier: 'boss', threat: 10,
     slam: { f: 4, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Oathbreaker', 2, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
       { n: 'Oath Smite', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 2, 1)],
@@ -508,30 +508,30 @@ export const MONSTERS = {
   },
   // ---- Dragons ----
   cinderling: {
-    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cultist.webp', imgBase: IB(322, 475, 160, 470, 297), short: 'CNDR', init: 6, hp: 40, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
+    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cultist.webp', tint: 'hue-rotate(-25deg) saturate(1.8) brightness(1.05)', imgBase: IB(322, 475, 160, 470, 297), short: 'CNDR', init: 6, hp: 48, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Nip', 1, 1), S('Nip', 1, 1), { n: 'Puff', v: 'breath', f: 0, m: 1 },
       { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],
   },
   frostwhelp: {
-    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/wraith.webp', imgBase: IB(339, 461, 168.5, 456, 252), short: 'FRST', init: 8, hp: 46, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
+    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/wraith.webp', tint: 'sepia(.5) hue-rotate(165deg) saturate(2.6) brightness(1.02)', imgBase: IB(339, 461, 168.5, 456, 252), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Bite', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }, { n: 'Icy Wings', v: 'bind', f: 0, m: 0, k: 1 },
       { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
   },
   ashwyrm: {
-    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ogre.webp', imgBase: IB(431, 462, 248, 457, 341), short: 'ASHM', init: 6, hp: 120, power: 10, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
+    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ogre.webp', tint: 'sepia(.7) hue-rotate(-35deg) saturate(2) brightness(.72)', imgBase: IB(431, 462, 248, 457, 341), short: 'ASHM', init: 6, hp: 150, power: 11, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
     slam: { f: 3, m: 2, v: 'breath' }, armor: { n: 1, s: 4 }, flee: { at: 0.25, chance: 1 },
     faces: [S('Claw', 2, 1), S('Claw', 2, 1), { n: 'Fire Breath', v: 'breath', f: 2, m: 1 },
       { n: 'Inhale', v: 'charge', f: 0, m: 0 }, { n: 'Wing Buffet', v: 'guard', f: 2, m: 1 }, S('Tail Sweep', 1, 1)],
   },
   vharaxis: {
-    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/lich.webp', imgBase: IB(368, 489, 191.5, 484, 320), short: 'VHRX', init: 4, hp: 200, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/lich.webp', tint: 'sepia(1) hue-rotate(-28deg) saturate(3.2) brightness(.88)', imgBase: IB(368, 489, 191.5, 484, 320), short: 'VHRX', init: 4, hp: 280, power: 14, xp: 180, gold: 200, tier: 'boss', threat: 12,
     slam: { f: 5, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
     faces: [S('Talons', 2, 1), { n: 'Inferno', v: 'breath', f: 3, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
       { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 3, 1), { n: 'Wing Wall', v: 'guard', f: 3, m: 1 }],
     rage: {
-      name: 'Molten Fury', power: 14,
+      name: 'Molten Fury', power: 16,
       faces: [{ n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
         S('Talons', 3, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
     },
@@ -549,6 +549,8 @@ export const ACTS = [
     elite: [['ogre'], ['ogre', 'goblin']],
     boss: ['goblinking'],
     help: ['Cinder Ford', 'Burnt Orchard'],
+    // where each step's fight happens, in story order (the arrival beats are written for this order; step 8 may become a Call for Help)
+    route: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'The Toll Bridge', 'Smoke Hollow', 'Ashfall Camp', 'Smoke Hollow', 'Ashfall Camp', 'Gallows Hill'],
   },
   {
     id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organize.',
@@ -557,6 +559,7 @@ export const ACTS = [
     elite: [['bonewarden']],
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
+    route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
   },
   {
     id: 3, name: 'The Ember Peaks', tag: 'Dragon fire, broken oaths, and a queen who wants it all.',
@@ -566,6 +569,7 @@ export const ACTS = [
     elite: [['vharaxis'], ['ashwyrm']],
     boss: ['vharaxis'],
     help: ['Wyrmwatch', 'Hoardfall Mine'],
+    route: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Kettle Tarn', 'Ember Throne slopes', 'The Ember Throne'],
     // Pin the set-piece fights so Oathbreak Keep is a proper boss and the Queen is the finale.
     gates: {
       5: { kind: 'elite', place: 'The Brazen Bridge', enemies: ['vharaxis'] },
