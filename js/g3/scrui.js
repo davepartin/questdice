@@ -551,7 +551,7 @@ function talentCard(hero, slot) {
   const refresh = () => { sfx.card(); X.persist(); X.renderCamp(); };
   const symFaces = Array.from({ length: info.faces }, (_, f) => {
     const cur = faces[f] || [];
-    const slotsEl = Array.from({ length: D.TALENT_PER_FACE }, (_, i) => {
+    const slotsEl = Array.from({ length: info.per }, (_, i) => {
       const k = cur[i]; const open = TAL.slot === slot && TAL.face === f && i === cur.length;
       if (k) return h('button', { class: `tal-slot full ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `${D.TALENT_SYMS[k].name}. Tap to remove.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, i); refresh(); }) }, ico(SYM_ICO[k][0]));
       return h('button', { class: `tal-slot ${open ? 'open' : ''}`, type: 'button', disabled: i > cur.length, 'aria-label': 'Add a symbol', onclick: tap(() => { TAL.slot = slot; TAL.face = f; X.renderCamp(); }) }, '+');
@@ -560,15 +560,15 @@ function talentCard(hero, slot) {
   });
   const picking = TAL.slot === slot && TAL.face != null;
   const picker = picking ? h('div', { class: 'tal-pick' }, Object.keys(D.TALENT_SYMS).map((k) => {
-    const left = D.TALENT_MAX_SAME - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= D.TALENT_PER_FACE;
+    const left = info.same - E.talentCount(hero, slot, k); const full = (faces[TAL.face] || []).length >= info.per;
     const can = left > 0 && !full && hero.gold >= info.cost;
-    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= D.TALENT_PER_FACE ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `about +${symAvg(hero, slot, k)} · ${left} left`));
+    return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${D.TALENT_SYMS[k].name}: ${D.TALENT_SYMS[k].text} ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = (faces[TAL.face] || []).length + 1 >= info.per ? null : TAL.face; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, `about +${symAvg(hero, slot, k)} · ${left} left`));
   }), h('small', { class: 'tal-cost' }, `Each symbol costs ${info.cost} gold. Tap a placed symbol to take it off.`)) : null;
   return h('div', { class: 'sx-urow tal-die' },
     h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.slots} symbol slots`), h('small', { class: 'tal-hand' }, `Powered by your ${slot === 'SW' ? 'left' : 'right'} hand, a d${hero.strength[slot === 'SW' ? 'W' : 'E']} (about ${((hero.strength[slot === 'SW' ? 'W' : 'E'] + 1) / 2).toFixed(1)} a roll)`)),
     h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
       h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
-    h('div', { class: 'tal-strip syms' }, symFaces),
+    h('div', { class: `tal-strip syms ${info.per > 2 ? 'wide' : ''}` }, symFaces),
     picker,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
     up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : up.next && hero.level < gate ? h('small', { class: 'ur-next' }, ico('lock'), ` needs level ${gate}`) : null);
@@ -668,7 +668,7 @@ function forgeTab() {
     unlockSection(hero),
     hasTalent ? coachBox('c_talent') : null,
     hasTalent ? eyebrow('Talent dice') : null,
-    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face can hold two symbols, and no die can hold more than two of the same.') : null,
+    hasTalent ? h('p', { class: 'tab-intro' }, 'Each symbol is worth the strength of the hand above it. A face holds up to half the sides of the die in symbols (a d6 three, a d8 four), and a die can carry that many of one symbol.') : null,
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     petSection(hero),
     eyebrow('Strength dice'),

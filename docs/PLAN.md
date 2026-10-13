@@ -845,11 +845,12 @@ Each fight's place (already chosen in `questsFor`) paints the table: `createFlat
 
 ## 2026-10-13 — Dave's rules pass and the painted scenes (plan and status)
 Dave's list, in the order we are doing it. Each item names where it lives.
-1. **Rules audit (done).** Talent dice: always two blank faces and one 2x; every other face can carry symbols (`TALENT_FACES` in data.js:
-   d4 1 face, d6 3, d8 5, d10 7; a face holds two symbols, a die at most two of one symbol). The die grows d4 -> d6 -> d8 -> d10
-   (`SPECIAL_STEPS`). Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them).
-   **Open question for Dave:** he said d6 = three things, d8 = four, d10 = five; with two blanks and a 2x that leaves d8 with one
-   face too many, so the code fills every face (5 and 7). If he meant 4 and 5, change `TALENT_FACES` (one line) and the extra faces become blank.
+1. **Rules audit (done; clarified by Dave 13 Oct).** A talent die always has two blank faces and one 2x face. Its other faces ("symbol faces")
+   can each carry up to **half the die's sides** in symbols: d4 two, d6 three, d8 four, d10 five (`talentPerFace(size)` in data.js). The
+   number of symbol faces is what is left: d4 1, d6 3, d8 5, d10 7 (`TALENT_FACES`). A die can carry as many of one symbol as a face
+   holds (the old "never more than two of one symbol" now scales the same way; `talentInfo(...).same`). The die grows d4 -> d6 -> d8 -> d10
+   (`SPECIAL_STEPS`). Strength dice and weapon dice are d4/d6/d8/d10 (weapons are capped by the hand that holds them). Watch the balance of
+   big talent dice (a d10 face can pay five symbols at the hand's strength); a bot run with talent dice trained is still to do.
 2. **Dice grow with the act (done).** `ACT_MAX_DIE` / `dieCapForAct`: Act I d4 -> d6 only, Act II d6 -> d8, Act III d8 -> d10, for strength
    and talent dice (`actGate` in engine.js; the camp row shows "Act II" on the lock). The level and gold gates still apply.
 3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green

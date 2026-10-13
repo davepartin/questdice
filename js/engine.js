@@ -4,7 +4,7 @@
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
-  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
+  STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentPerFace, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax,
@@ -244,8 +244,8 @@ export function petGrowInfo(hero) {
 export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
-  const faces = TALENT_FACES[hero.special[slot]] || 1; const cur = hero.talent?.[slot] || [];
-  return { faces, slots: faces * TALENT_PER_FACE, used: cur.flat().length, cost: TALENT_SLOT_COST };
+  const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || []; const per = talentPerFace(size);
+  return { faces, per, same: per, slots: faces * per, used: cur.flat().length, cost: TALENT_SLOT_COST };
 }
 // Put a symbol on a symbol face (0-based). Every slot costs the same. At most two of one symbol per die, at most two symbols per face.
 export function addTalent(hero, slot, face, sym) {
@@ -253,7 +253,7 @@ export function addTalent(hero, slot, face, sym) {
   const t = talentInfo(hero, slot); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
   hero.talent = hero.talent || {}; const faces = (hero.talent[slot] = hero.talent[slot] || []);
   while (faces.length < t.faces) faces.push([]);
-  if (faces[face].length >= TALENT_PER_FACE || talentCount(hero, slot, sym) >= TALENT_MAX_SAME) return false;
+  if (faces[face].length >= t.per || talentCount(hero, slot, sym) >= t.same) return false;
   hero.gold -= t.cost; faces[face].push(sym); return true;
 }
 export function removeTalent(hero, slot, face, idx) {

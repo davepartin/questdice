@@ -67,12 +67,12 @@ test('talent die: 2x doubles that hand, symbols are worth the hand strength, a f
   assert.equal(evaluate(h, board({ SW: 6, W: 4, NW: 1, C: 3 })).gold - base, 4); // gold is one for one: a hand of 4 pays 4
 });
 
-test('talent slots cost the same, hold two of a symbol per face, but never more than two of one symbol per die', () => {
+test('talent slots cost the same; a face holds half the die\'s sides in symbols, and a die carries that many of one symbol', () => {
   const h = knight(); h.gold = 500; h.special.SW = 6; h.talent.SW = [[], [], []];
-  assert.ok(addTalent(h, 'SW', 0, 'atk')); assert.ok(addTalent(h, 'SW', 0, 'atk')); // two of the same on one face
-  assert.equal(addTalent(h, 'SW', 1, 'atk'), false); // a third attack on the die
+  for (let i = 0; i < 3; i++) assert.ok(addTalent(h, 'SW', 0, 'atk')); // a d6 face holds three, and three of one symbol is allowed
+  assert.equal(addTalent(h, 'SW', 1, 'atk'), false); // a fourth attack on the d6
   assert.equal(addTalent(h, 'SW', 0, 'heal'), false); // face full
-  assert.ok(addTalent(h, 'SW', 1, 'heal')); assert.equal(h.gold, 500 - 3 * TALENT_SLOT_COST);
+  assert.ok(addTalent(h, 'SW', 1, 'heal')); assert.equal(h.gold, 500 - 4 * TALENT_SLOT_COST);
   const poor = knight(); poor.gold = 0; assert.equal(addTalent(poor, 'SE', 0, 'gold'), false);
   const d4 = knight(); d4.gold = 500; assert.equal(addTalent(d4, 'SW', 1, 'gold'), false); // a d4 has one symbol face
 });
@@ -556,4 +556,15 @@ test('random encounters: one fight a step, seeded, within the cap, and bigger fo
   // some steps are a crowd, some a lone big monster
   const shapes = new Set(); for (let seed = 1; seed <= 60; seed++) { h.campaign.seed = seed * 31; h.difficulty = 'normal'; h.campaign.step = 8; shapes.add(encounterFor(h).length); }
   assert.ok(shapes.has(1) && shapes.has(2), `lone and pairs both appear: ${[...shapes]}`);
+});
+
+test('talent die faces hold up to half the die\'s sides in symbols', async () => {
+  const { talentInfo, addTalent } = await import('../js/engine.js');
+  for (const [n, per] of [[4, 2], [6, 3], [8, 4], [10, 5]]) {
+    const h = knight(); h.gold = 9999; h.special.SW = n; h.talent.SW = [[]];
+    const info = talentInfo(h, 'SW'); assert.equal(info.per, per, `d${n}`); assert.equal(info.slots, info.faces * per);
+    const syms = ['atk', 'block', 'magic', 'heal', 'gold'];
+    for (let i = 0; i < per; i++) assert.ok(addTalent(h, 'SW', 0, syms[i % 5]), `d${n} slot ${i}`);
+    assert.equal(addTalent(h, 'SW', 0, 'atk'), false, `d${n} face is full at ${per}`);
+  }
 });

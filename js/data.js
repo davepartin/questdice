@@ -195,6 +195,8 @@ export const TALENT_PER_FACE = 2;
 export const TALENT_SLOT_COST = 25; // gold per symbol slot, the same for every slot
 // A talent die always has two blank faces and one 2x face; every other face can carry symbols (so a d4 has 1, a d6 3, a d8 5, a d10 7).
 export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 };
+// ...and each of those faces holds up to half the die's sides in symbols (d4 two, d6 three, d8 four, d10 five); a die can carry that many of one symbol.
+export const talentPerFace = (size) => Math.max(2, Math.floor(size / 2));
 // (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {
   knight: { SW: 'heal', SE: 'atk' }, ranger: { SW: 'block', SE: 'atk' }, wizard: { SW: 'magic', SE: 'heal' },
