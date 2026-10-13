@@ -149,6 +149,7 @@ function buildHud() {
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     B.root.style.setProperty('--strip-bottom', `${Math.round(hud.top.getBoundingClientRect().bottom + 2)}px`);
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
+    B.root.style.setProperty('--bar-top', `${Math.round(window.innerHeight - hud.bar.getBoundingClientRect().top)}px`); // the recap may cover the counters and the hint, but never the buttons
     fitTray();
     B.fb?.layout();
   };
@@ -882,6 +883,8 @@ async function foeAnim(act, heroes) {
 function showCard(el = B.card) {
   if (!el || B.ended) return;
   B.card?.remove(); B.card = el; B.root.append(el); B.hud.again.hidden = true;
+  // a long fight's recap shrinks a little (rather than scrolling) until all of it shows
+  const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
 function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }

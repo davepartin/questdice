@@ -26,6 +26,7 @@ for (let r = 1; r <= +rounds; r++) {
   let n = 0; for (; n < 60 && await p.evaluate(() => window.QD.B3.battleState.busy); n++) await pump(1);
   if (n >= 60) problems.push(`round ${r}: still busy after 60s`);
   await pump(1); await p.waitForTimeout(500); await shot(`r${r}_card`);
+  const sc = await p.evaluate(() => { const c = document.querySelector('.rc'); return c ? c.scrollHeight - c.clientHeight : -1; }); if (sc > 2) problems.push(`round ${r}: the recap card scrolls by ${sc}px`);
   const ov = await overflow(); if (ov.length) problems.push(`round ${r} overflow: ${ov.join('; ')}`);
   console.log(`round ${r}:`, await p.evaluate(() => { const b = window.QD.S.battle; return JSON.stringify({ hp: b.hp, foes: b.enemies.filter((e) => e.hp > 0).map((e) => `${e.id}:${e.hp}`), outcome: b.outcome }); }));
 }

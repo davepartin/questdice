@@ -139,7 +139,7 @@
 .rc-again svg { width: .85rem; height: .85rem; }
 
 /* it sits over the dice table (empty between rounds), so the pieces and what each plans next stay in view above it */
-.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--dock-top, 12rem) - .4rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
+.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--bar-top, var(--dock-top, 12rem)) - .5rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
   border-radius: .9rem; overflow-x: hidden; overflow-y: auto; pointer-events: auto; cursor: pointer; animation: rcIn .26s ease-out;
   background: linear-gradient(180deg, rgba(44, 33, 26, .98), rgba(16, 11, 9, .99)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .55), inset 0 0 0 4px rgba(14, 9, 6, .9), inset 0 0 0 5px rgba(226, 178, 76, .22), 0 14px 34px rgba(0, 0, 0, .7); scrollbar-width: none; padding: .55rem .7rem .5rem; }
 .b3 .rc::-webkit-scrollbar { display: none; }
@@ -258,3 +258,14 @@
 /* the close button: the same pill as Cancel on the magic sheet, top right */
 .rc-close { flex: none; min-height: 2.2rem; padding: .35rem .85rem; font-size: .74rem; }
 .rc-head { padding-bottom: .4rem; }
+
+/* denser rows so even a long fight's recap fits without scrolling: token rows never wrap, spacing is tighter */
+.rc-sum { flex-wrap: nowrap; gap: .18rem; }
+.rc-tk { padding: .12rem .34rem; gap: .16rem; flex: none; }
+.rc-tk b { font-size: 1rem; } .rc-tk.out b { font-size: 1.4rem; } .rc-tk small { font-size: .5rem; letter-spacing: .06em; } .rc-tk.out small { font-size: .52rem; letter-spacing: .08em; }
+.rc-op { font-size: .9rem; }
+.b3 .rc { gap: .25rem; padding: .45rem .6rem .4rem; }
+.rc-head { padding-bottom: .3rem; } .rc-close { min-height: 2rem; padding: .25rem .75rem; }
+.rc-body { gap: .3rem; } .rc-sec { padding: .3rem .5rem .35rem .65rem; } .rc-bar { margin-bottom: .2rem; }
+.rc-rows { gap: .24rem; } .rc-line { gap: .12rem; } .rc-foot { padding-top: .2rem; margin-top: 0; }
+@media (max-width: 380px) { .rc-tk b { font-size: .92rem; } .rc-tk.out b { font-size: 1.25rem; } .rc-tk small { font-size: .46rem; } .rc-tk.out small { font-size: .48rem; } .rc-tk svg { width: .75rem; height: .75rem; } .rc-tk { padding: .1rem .28rem; } }
