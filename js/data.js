@@ -289,8 +289,9 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // Painted mini base disc, as fractions of the image: centre x, bottom-row y, disc width.
 // Callers aim a little above y (the visual middle of the disc) at whatever the piece stands on.
 // Which way a painted miniature looks (`look`: 'left' | 'right' | 'front'). Not `faces` — on a monster that key is the attack list.
-// Heroes stand on the left looking right; monsters on the right looking left. A front-facing piece is not mirrored.
+// Battle table: heroes (left) look/walk right; monsters (right) are a slight three-quarter looking left. A front-facing piece is not mirrored.
 // needsFlip(def, 'right') for a hero on the battle table, (def, 'left') for a monster. Camp uses the same helper toward the fire.
+// Most paintings already look the right way — only flip a piece that would otherwise face away.
 export const LOOK = new Set(['left', 'right', 'front']);
 export const paintedLook = (def) => (LOOK.has(def?.look) ? def.look : 'left');
 export const needsFlip = (def, want) => {
@@ -306,7 +307,7 @@ export const CLASSES = {
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
     trait: 'Balanced: a strong left hand and a shield. Stands in front, on purpose.',
-    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight.webp', look: 'front', imgBase: IB(378, 480, 218, 475, 279), hp: 34,
+    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight.webp', look: 'left', imgBase: IB(378, 480, 218, 475, 279), hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy. The sort of hero who holds the door, and the line.',
     weapons: ['sword', 'shield'],
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
@@ -353,7 +354,7 @@ export const CLASSES = {
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
     trait: 'The wall: the most health, a crushing mace and a tower shield.',
-    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf.webp', look: 'front', imgBase: IB(443, 448, 250, 443, 329), hp: 40,
+    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf.webp', look: 'left', imgBase: IB(443, 448, 250, 443, 329), hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
@@ -434,14 +435,14 @@ export const MONSTERS = {
       S('Bolt', 1, 1), { n: 'Tangle', v: 'bind', f: 0, m: 0, k: 2 }],
   },
   ogre: {
-    name: 'Hill Ogre', glyph: '👹', img: 'assets/miniatures/ogre.webp', look: 'front', imgBase: IB(431, 462, 248, 457, 341), short: 'OGRE', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite', threat: 2.8,
+    name: 'Hill Ogre', glyph: '👹', img: 'assets/miniatures/ogre.webp', look: 'left', imgBase: IB(431, 462, 248, 457, 341), short: 'OGRE', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite', threat: 2.8,
     slam: { f: 2, m: 2 },
     faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
   goblinking: {
-    name: 'The Goblin King', glyph: '👑', img: 'assets/miniatures/goblinking.webp', look: 'front', imgBase: IB(371, 462, 184, 457, 315), short: 'KING', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss', threat: 9,
+    name: 'The Goblin King', glyph: '👑', img: 'assets/miniatures/goblinking.webp', look: 'left', imgBase: IB(371, 462, 184, 457, 315), short: 'KING', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss', threat: 9,
     slam: { f: 3, m: 2 }, adds: 'goblin',
     faces: [S('Scepter', 1, 1), S('Scepter', 1, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
       { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
@@ -455,7 +456,7 @@ export const MONSTERS = {
   },
   // ---- Act II (draft numbers, untuned) ----
   skeleton: {
-    name: 'Bone Soldier', glyph: '💀', img: 'assets/miniatures/skeleton.webp', look: 'front', imgBase: IB(418, 483, 249.5, 478, 304), short: 'SKEL', init: 4, hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion', threat: 1.6,
+    name: 'Bone Soldier', glyph: '💀', img: 'assets/miniatures/skeleton.webp', look: 'left', imgBase: IB(418, 483, 249.5, 478, 304), short: 'SKEL', init: 4, hp: 46, power: 8, xp: 14, gold: 10, tier: 'minion', threat: 1.6,
     faces: [S('Slash', 1, 1), S('Slash', 1, 1), { n: 'Shield Up', v: 'guard', f: 2, m: 1 },
       S('Stab', 2, 1), { n: 'Bone Throw', v: 'pierce', f: 1, m: 1 }, S('Slash', 1, 1)],
   },
@@ -491,7 +492,7 @@ export const MONSTERS = {
   },
   // ---- Hired blades and dark mirrors (each with its own painted miniature) ----
   shieldbearer: {
-    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/shieldbearer.webp', look: 'front', imgBase: IB(336, 480, 167.5, 473, 248), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
+    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/shieldbearer.webp', look: 'left', imgBase: IB(336, 480, 167.5, 473, 248), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
     armor: { n: 1, s: 6 },
     faces: [S('Spear', 1, 1), S('Spear', 1, 1), S('Spear', 2, 1),
       { n: 'Lock Shields', v: 'guard', f: 2, m: 1 }, S('Shove', 0, 1), S('Spear', 1, 1)],
@@ -504,19 +505,19 @@ export const MONSTERS = {
       S('Knife', 1, 1), { n: 'Fade', v: 'phase', f: 0, m: 0 }],
   },
   chainbinder: {
-    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/chainbinder.webp', look: 'front', imgBase: IB(413, 480, 225.5, 473, 367), short: 'CHNB', init: 6, hp: 52, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
+    name: 'Gold-Chain Jailer', glyph: '⛓️', img: 'assets/miniatures/chainbinder.webp', look: 'left', imgBase: IB(413, 480, 225.5, 473, 367), short: 'CHNB', init: 6, hp: 52, power: 10, xp: 16, gold: 13, tier: 'minion', threat: 1.5,
     faces: [{ n: 'Chain', v: 'chain', f: 0, m: 0, k: 1 }, { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 },
       { n: 'Chain Bolt', v: 'pierce', f: 0, m: 1 }, S('Rod', 1, 1),
       { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 }, { n: 'Chain Ward', v: 'ward', f: 0, m: 1, k: 3 }],
   },
   dirgesinger: {
-    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/dirgesinger.webp', look: 'front', imgBase: IB(381, 480, 190, 473, 280), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
+    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/dirgesinger.webp', look: 'left', imgBase: IB(381, 480, 190, 473, 280), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
     faces: [{ n: 'Hush', v: 'hush', f: 0, m: 0 }, { n: 'Dirge', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lute Smash', 1, 1), { n: 'Sour Note', v: 'pierce', f: 0, m: 1 },
       { n: 'Hush', v: 'hush', f: 0, m: 0 }, S('Lute Smash', 1, 1)],
   },
   ironwarden: {
-    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/ironwarden.webp', look: 'front', imgBase: IB(412, 480, 218, 473, 380), short: 'IRON', init: 4, hp: 110, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
+    name: 'Ironclad Warden', glyph: '🛡️', img: 'assets/miniatures/ironwarden.webp', look: 'left', imgBase: IB(412, 480, 218, 473, 380), short: 'IRON', init: 4, hp: 110, power: 10, xp: 40, gold: 34, tier: 'elite', threat: 3.0,
     slam: { f: 3, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Axe', 1, 1), S('Axe', 1, 1), { n: 'Stone Wall', v: 'guard', f: 2, m: 1 },
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
@@ -534,7 +535,7 @@ export const MONSTERS = {
   },
   // ---- Dragons ----
   cinderling: {
-    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cinderling.webp', look: 'front', imgBase: IB(393, 480, 193.5, 473, 381), short: 'CNDR', init: 6, hp: 48, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
+    name: 'Cinderling', glyph: '🐉', img: 'assets/miniatures/cinderling.webp', look: 'left', imgBase: IB(393, 480, 193.5, 473, 381), short: 'CNDR', init: 6, hp: 48, power: 8, xp: 14, gold: 16, tier: 'minion', threat: 1.2,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Nip', 1, 1), S('Nip', 1, 1), { n: 'Puff', v: 'breath', f: 0, m: 1 },
       { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],

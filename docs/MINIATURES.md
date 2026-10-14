@@ -6,7 +6,7 @@ Heroes stand on the left of the battle table and should look right; monsters on 
 
 ## The five most important fixes
 
-1. **Every monster was mirrored in battle.** Fixed: painted facing is now `look` on every hero and monster; `needsFlip` ignores the attack list. Front-facing pieces (the Hill Ogre among them) stay. See the 14 Oct facing note in PLAN.md.
+1. **`needsFlip` used a monster's attack `faces` array, so every foe was mirrored.** Dave's Toll Bridge shot (ogre looking left at the archer) is the target, not a bug: the ogre already faces the heroes. Painted facing is now `look`; only a piece that would face away is flipped (knight / ranger / dwarf). Front-facing pieces stay. See the 14 Oct facing note in PLAN.md.
 
 2. **Starling (the owl pet) reads occult.** Horns, bat wings, and a glowing triangle on the chest. The rule is no demonic / satanic / cultic / occult marks or pentagrams. Repaint as a small owl in a wizard hat, no horns, no bat wings, no triangle.
 
@@ -39,10 +39,10 @@ Act I/II originals are in `assets/miniatures/src/`. Act III pieces (hired blades
 
 | Name | File | Painted facing | faces value | Cutout | Size | Readability | Theme | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Knight | knight.webp | toward viewer (slight left) | left (default) | Clean. Sword and shield complete. | Hero. | Good. | Lion on shield and surcoat. Fine. | **OK** (mirroring swaps sword/shield hands; front-on so keep) |
+| Knight | knight.webp | left (¾) | — (`look`) | Clean. Sword and shield complete. | Hero. | Good. | Lion on shield and surcoat. Fine. | **OK** (flipped on the hero side so he looks right; sword/shield swap) |
 | Ranger | ranger.webp | left | left | Clean. Bow and quiver complete, no clip. | Hero. | Good. | Fine. | **small fix** (repaint looking right, or live with a left-handed bow after the flip) |
 | Wizard | wizard.webp | right (¾) | right | Clean. Staff and sleeve complete. | Hero. | Good. | Stars on the robe are sparkles, not pentagrams. | **OK** |
-| Dwarf Warden | dwarf.webp | toward viewer | left (default) | Clean. Hammer and shield complete. | Hero; stocky, reads well. | Good. | Geometric runes, not occult. | **OK** (same hand-swap as the Knight if flipped) |
+| Dwarf Warden | dwarf.webp | left (¾) | — (`look`) | Clean. Hammer and shield complete. | Hero; stocky, reads well. | Good. | Geometric runes, not occult. | **OK** (flipped on the hero side so he looks right) |
 | Bard | bard.webp | right | right | Clean. Lute, hat, sword complete. | Hero. | Good. | Fine. | **OK** |
 
 ## Monsters — Act I
@@ -52,14 +52,14 @@ Act I/II originals are in `assets/miniatures/src/`. Act III pieces (hired blades
 | Goblin Skulker | goblin.webp | left (¾) | n/a (attack list) | Clean. | 0.72; smaller than the ogre. Right. | Good. | One skull pin. Fine. | **OK** |
 | Dire Wolf | wolf.webp | left | n/a | Clean. Tail complete. | 0.9. Right. | Good. | Wolf. Fine. | **OK** |
 | Ember Mage | cultist.webp | left | n/a | Clean. Flame complete. | 1.0. | Good. | Hooded robe and skulls. File is still `cultist`. Borderline cultic; skulls themselves are allowed. Lava disc in Act I is a little early. | **small fix** (less skull jewelry, or rename the file; not a full restyle) |
-| Hill Ogre | ogre.webp | toward viewer | n/a | Clean. Club complete. | 1.6; clearly bigger than a goblin. | Good. | Fine. | **OK** |
-| The Goblin King | goblinking.webp | toward viewer | n/a | Clean. Crown, bomb, staff complete. | 1.55; boss, just under the ogre. | Good. | Skulls on the belt and staff. Nasty goblin, not occult. | **OK** |
+| Hill Ogre | ogre.webp | left (¾, Dave's target) | n/a | Clean. Club complete. | 1.6; clearly bigger than a goblin. | Good. | Fine. | **OK** (do not flip — already looks at the heroes) |
+| The Goblin King | goblinking.webp | left (¾) | n/a | Clean. Crown, bomb, staff complete. | 1.55; boss, just under the ogre. | Good. | Skulls on the belt and staff. Nasty goblin, not occult. | **OK** |
 
 ## Monsters — Act II
 
 | Name | File | Painted facing | faces value | Cutout | Size | Readability | Theme | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Bone Soldier | skeleton.webp | toward viewer (slight left) | n/a | Clean. Sword reaches the left edge but is not clipped. | 1.0. | Good. | Skeleton. Fine. | **OK** |
+| Bone Soldier | skeleton.webp | left (¾) | n/a | Clean. Sword reaches the left edge but is not clipped. | 1.0. | Good. | Skeleton. Fine. | **OK** |
 | Wraith | wraith.webp | toward viewer | n/a | Clean. The ragged white edge is the ghost, not leftover cream. Clear flying stem. | 1.15; a little taller, reads as floating. | Good. Pale on dark, still clear on light. | Ghost. Fine. | **OK** |
 | Crypt Spider | spider.webp | toward viewer | n/a | Clean. Legs complete; the pale body is paint, not a halo. | 0.75; a bit small for that abdomen, but still bigger than a goblin’s *presence*. | Good (white on dark). | Spider. Fine. | **OK** |
 | Bone Warden | bonewarden.webp | left (¾, shield forward) | n/a | Clean. Axe and shield complete. | 1.7; tallest humanoid. | Good. | Horned helm and skulls: undead captain, not a pentagram. | **OK** (disc now under the feet) |
@@ -69,13 +69,13 @@ Act I/II originals are in `assets/miniatures/src/`. Act III pieces (hired blades
 
 | Name | File | Painted facing | faces value | Cutout | Size | Readability | Theme | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Shieldbearer | shieldbearer.webp | toward viewer | n/a | Clean. Spear complete. | 1.0. | Good. | Claw-mark on the shield. Fine. Lava base matches Act III. | **OK** |
+| Shieldbearer | shieldbearer.webp | left (¾) | n/a | Clean. Spear complete. | 1.0. | Good. | Claw-mark on the shield. Fine. Lava base matches Act III. | **OK** |
 | Gloom Stalker | gloomstalker.webp | left | n/a | Clean. Bow complete. | 1.0. | Weak: charcoal on a dark table. | Hooded archer. Fine. | **small fix** (rim light) |
-| Gold-Chain Jailer | chainbinder.webp | toward viewer | n/a | Clean. | 1.0. | Good. | Jailer with chains. Fine. | **OK** |
-| Dirge Singer | dirgesinger.webp | toward viewer | n/a | Clean. White cloth is the ghost, not a halo. | 1.0. | Good. | Ghost with a lute. Fine. | **OK** |
-| Ironclad Warden | ironwarden.webp | toward viewer | n/a | Clean. | 1.55; elite. | Good. | Slashed cross on the shield: a beaten knight, not occult. | **OK** |
+| Gold-Chain Jailer | chainbinder.webp | left (¾) | n/a | Clean. | 1.0. | Good. | Jailer with chains. Fine. | **OK** |
+| Dirge Singer | dirgesinger.webp | left (¾) | n/a | Clean. White cloth is the ghost, not a halo. | 1.0. | Good. | Ghost with a lute. Fine. | **OK** |
+| Ironclad Warden | ironwarden.webp | left (¾) | n/a | Clean. | 1.55; elite. | Good. | Slashed cross on the shield: a beaten knight, not occult. | **OK** |
 | The Fallen Champion | fallenchampion.webp | toward viewer | n/a | Clean. Sword complete. Coins on the lava. | 1.55; human boss, smaller than the dragon queen. | Good. | Tabard has a gold cross with a slot; fallen paladin. Borderline, keep. | **OK** |
-| Cinderling | cinderling.webp | toward viewer (breath to the left) | n/a | Clean except the **pixelated fire puff**. Wings complete. | 0.78; baby dragon, a hair bigger than a goblin. | Good. Cute reads at phone size. | Dragon. Fine. Lava base. | **small fix** (repaint the puff) |
+| Cinderling | cinderling.webp | left (breath to the left) | n/a | Clean except the **pixelated fire puff**. Wings complete. | 0.78; baby dragon, a hair bigger than a goblin. | Good. Cute reads at phone size. | Dragon. Fine. Lava base. | **small fix** (repaint the puff) |
 | Frostwhelp | frostwhelp.webp | left (head and snout) | n/a (had a dead `faces: 'right'`) | Clean except the **pixelated frost puff**. Wings complete. Pale body is paint. | 0.82. | Good. | Dragon. Fine. Ice beast on a lava disc is a little odd, but the rest of Act III is lava. | **small fix** (repaint the puff; optional icy ground) |
 | Ashmaw the Wyrm | ashwyrm.webp | left | n/a | Clean. Tail and wings complete. | 1.6 (was 1.5). | Good. | Dragon. Fine. Lava + coins. | **OK** |
 | Vharaxis, the Ember Queen | vharaxis.webp | toward viewer | n/a | Clean. Wings complete, not clipped. | 1.7 (was 1.65); widest piece. Height-based layout still shrinks her a little next to a tall Bone Warden. | Good at 160px; wings need width. | Dragon. Fine. Lava + hoard. | **OK** |
@@ -104,4 +104,4 @@ Illustration style (Dave’s pictures), not painted-miniature. That mismatch is 
 - `needsFlip` in `js/data.js` (fix 1).
 - Recutting anyone. The Act I/II cutouts are clean on dark and light; Act III has no `src` to recut from.
 - Pet style vs painted-mini style.
-- Knight / Dwarf default `faces` (front-on; flipping them would swap hands for little gain).
+- Knight / Dwarf hand-swap after the flip that turns them toward the monsters.

@@ -35,10 +35,18 @@ test('every hero and monster records which way it was painted, and the flip face
     if (m.look === 'front') assert.equal(needsFlip(m, 'left'), false, `${id} front is not mirrored`);
     else assert.equal(needsFlip(m, 'left'), m.look !== 'left', `${id} flip`);
   }
-  // Dave: the Hill Ogre on the Toll Bridge looked away from the archer — it is painted facing us, so it must not flip.
-  assert.equal(MONSTERS.ogre.look, 'front');
+  // Dave's Toll Bridge target: ogre already looks left at the archer — do not flip it.
+  // Heroes that were painted looking left (knight, ranger, dwarf) flip so they look/walk right.
+  assert.equal(MONSTERS.ogre.look, 'left');
   assert.equal(needsFlip(MONSTERS.ogre, 'left'), false);
-  assert.equal(needsFlip(CLASSES.ranger, 'right'), true); // painted looking left, so mirrored on the hero side
+  assert.equal(needsFlip(CLASSES.knight, 'right'), true);
+  assert.equal(needsFlip(CLASSES.ranger, 'right'), true);
+  assert.equal(needsFlip(CLASSES.dwarf, 'right'), true);
   assert.equal(needsFlip(CLASSES.wizard, 'right'), false);
+  assert.equal(needsFlip(CLASSES.bard, 'right'), false);
   assert.equal(needsFlip(MONSTERS.wolf, 'left'), false);
+  assert.equal(needsFlip(MONSTERS.ashwyrm, 'left'), false);
+  for (const [id, m] of Object.entries(MONSTERS)) {
+    assert.notEqual(m.look, 'right', `${id} is not painted looking right; flipping would turn it away from the heroes`);
+  }
 });
