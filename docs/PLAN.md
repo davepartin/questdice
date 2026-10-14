@@ -1020,3 +1020,5 @@ Dave: say it like a board game. A monster has a BASE attack (the number it alway
 No numbers changed; only how they are said. `noDefence()` is exported from roundcard.js. Shots: docs/ingame/base_*.png, info_wolf.png, info_goblin.png.
 
 - (14 Oct, night) A small blue shield with a red line through it sits on the corner of the plaque of every monster that has **no defence at all** (no guard, ward or phase move, and no armour), because it can decide who you hit (`fb-nodef` in flat.js, from the monster's faces). The target reminder over the buttons is now just **CHOOSE TARGET** in big letters, and the Roll button's small line says "choose target" (battle3d.js `e0Warn`, `.captarget` in hud.css).
+
+- (14 Oct, night) The count badge on the Magic Powers button is gone, and the gold "i" on each monster plaque no longer pulses and is a quarter smaller (its tap area is unchanged).

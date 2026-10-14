@@ -587,7 +587,7 @@ const powersBtn = () => {
   const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && b.magic >= k.cost; }).length;
   const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && b.magic >= k.cost);
   return h('button', { type: 'button', class: `b3-powers ${superReady ? 'super' : ''}`, 'aria-label': `Magical powers. ${ready} ready.`, onclick: () => togglePowers() },
-    h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers'), ready ? h('i', { class: 'bp-n' }, String(ready)) : null);
+    h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers'));
 };
 
 export function renderReset() {
