@@ -222,9 +222,9 @@ export function normalizeDifficulty(id) {
   const mapped = DIFFICULTY_ALIAS[k] || k;
   return DIFFICULTY[mapped] ? mapped : 'normal';
 }
-// Random encounters. The game picks the one fight at each step from the act's monsters by a trouble budget (each monster has a
-// `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster). The budget grows through the act and is
-// scaled by game difficulty, so some steps are one big monster, some a few small ones. { base, slope } per act.
+// Random encounters (Ascents / act 4+, and the balance tools). Acts I–III lock their first-pass cast in `ACTS.fights`.
+// Each monster has a `threat`; a crowd costs a little more than the sum, GROUP_PLUS per extra monster. The budget grows
+// through the act and is scaled by game difficulty, so some steps are one big monster, some a few small ones. { base, slope } per act.
 export const ENCOUNTER = {
   acts: [{ base: 1.2, slope: 0.22 }, { base: 2.2, slope: 0.26 }, { base: 3.0, slope: 0.3 }],
   groupPlus: 0.15,
@@ -560,6 +560,19 @@ export const ACTS = [
     help: ['Cinder Ford', 'Burnt Orchard'],
     // where each step's fight happens, in story order (the arrival beats are written for this order; step 8 may become a Call for Help)
     route: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'The Toll Bridge', 'Smoke Hollow', 'Ashfall Camp', 'Smoke Hollow', 'Ashfall Camp', 'Gallows Hill'],
+    // First pass only (acts 1–3). Difficulty scales HP / damage / summoned adds, never this cast.
+    fights: [
+      ['goblin'],                          // 1 Cinder Ford — the lesson
+      ['cinderling', 'goblin'],            // 2 Burnt Orchard — a bickering pair
+      ['cultist', 'wolf'],                 // 3 Ravens’ Rest
+      ['wolf', 'wolf'],                    // 4 Wolfwood Edge — a pair, not a nation
+      ['ogre'],                            // 5 The Toll Bridge — elite
+      ['cultist', 'cinderling'],           // 6 Smoke Hollow
+      ['goblin', 'goblin', 'goblin'],      // 7 Ashfall Camp — Pip, Pog and Nib
+      ['cultist', 'cinderling'],           // 8 Smoke Hollow fallback (step 8 is usually Help)
+      ['goblin', 'goblin', 'goblin'],      // 9 Ashfall Camp
+      ['goblinking'],                      // 10 Gallows Hill — boss
+    ],
   },
   {
     id: 2, name: 'The Hollow Crypt', tag: 'The dead do not rest. They organise. Mind the stairs.',
@@ -569,6 +582,18 @@ export const ACTS = [
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
+    fights: [
+      ['skeleton', 'skeleton'],                  // 1 The Weeping Stair
+      ['wraith', 'skeleton'],                    // 2 Candle Vault
+      ['dirgesinger', 'skeleton', 'skeleton'],   // 3 The Pale Nave
+      ['spider', 'spider'],                      // 4 Grave-Silk Hall
+      ['bonewarden'],                            // 5 Ossuary Gate — elite
+      ['wraith', 'gloomstalker'],                // 6 Mourner’s Row
+      ['frostwhelp', 'frostwhelp'],              // 7 The Drowned Crypt
+      ['wraith', 'gloomstalker'],                // 8 Mourner’s Row fallback
+      ['frostwhelp', 'frostwhelp'],              // 9 The Drowned Crypt
+      ['lich'],                                  // 10 Ash Cloister — boss
+    ],
   },
   {
     id: 3, name: 'The Ember Peaks', tag: 'Dragon fire, broken oaths, and a queen who wants it all. Take water.',
@@ -579,6 +604,18 @@ export const ACTS = [
     boss: ['vharaxis'],
     help: ['Wyrmwatch', 'Hoardfall Mine'],
     route: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Kettle Tarn', 'Ember Throne slopes', 'The Ember Throne'],
+    fights: [
+      ['cinderling', 'cinderling'],              // 1 Kindling Steps
+      ['gloomstalker', 'shieldbearer'],          // 2 The Glass Fields
+      ['chainbinder', 'cinderling'],             // 3 Wyrmwatch
+      ['ironwarden', 'cinderling'],              // 4 Hoardfall Mine
+      ['vharaxis'],                              // 5 The Brazen Bridge — elite (pinned)
+      ['frostwhelp', 'frostwhelp'],              // 6 Kettle Tarn
+      ['fallenchampion'],                        // 7 Oathbreak Keep — mid-boss (pinned)
+      ['frostwhelp', 'frostwhelp'],              // 8 Kettle Tarn fallback
+      ['ashwyrm', 'shieldbearer'],               // 9 Ember Throne slopes
+      ['vharaxis'],                              // 10 The Ember Throne — boss (pinned)
+    ],
     // Pin the set-piece fights so Oathbreak Keep is a proper boss and the Queen is the finale.
     gates: {
       5: { kind: 'elite', place: 'The Brazen Bridge', enemies: ['vharaxis'] },

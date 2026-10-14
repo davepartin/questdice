@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pending, pendingVictory, markSeen, beat, beatId, storySoFar, placeBeat, applyPlaceVictory, HELP_FIGHTS } from '../js/story.js';
-import { ACTS } from '../js/data.js';
+import { pending, pendingVictory, markSeen, beat, beatId, storySoFar, placeBeat, applyPlaceVictory, placeOf, HELP_FIGHTS } from '../js/story.js';
+import { ACTS, MONSTERS } from '../js/data.js';
 
 const camp = (act, step, seenList = []) => ({ act, step, storySeen: seenList });
 
@@ -62,4 +62,66 @@ test('every painted place has an arrival and a victory beat', () => {
   applyPlaceVictory(c, 'Oathbreak Keep');
   assert.equal(c.blessings[0].id, 'keepers-oath');
   assert.equal(c.blessings[0].breathBlock, 3);
+});
+
+// Words the arrive/win copy may use instead of the monster's full sheet name.
+const FOE_WORDS = {
+  goblin: ['goblin'],
+  wolf: ['wolf', 'wolves'],
+  cultist: ['ember mage', 'mages'],
+  ogre: ['ogre', 'toll-keeper'],
+  goblinking: ['goblin king'],
+  skeleton: ['bone soldier', 'bones'],
+  wraith: ['wraith'],
+  spider: ['spider'],
+  bonewarden: ['bone warden', 'warden'],
+  lich: ['hollow lich', 'lich'],
+  shieldbearer: ['shieldbearer'],
+  gloomstalker: ['gloom stalker'],
+  chainbinder: ['jailer', 'gold-chain'],
+  dirgesinger: ['dirge singer', 'dirge'],
+  ironwarden: ['ironclad'],
+  fallenchampion: ['fallen champion', 'sir aldren'],
+  cinderling: ['cinderling', 'little dragon'],
+  frostwhelp: ['frostwhelp', 'whelp'],
+  ashwyrm: ['ashmaw', 'wyrm'],
+  vharaxis: ['vharaxis', 'ember queen'],
+};
+const sameFoes = (a, b) => {
+  const left = [...(a || [])].sort();
+  const right = [...(b || [])].sort();
+  return left.length === right.length && left.every((id, i) => id === right[i]);
+};
+const namesFoe = (text, id) => {
+  const blob = String(text || '').toLowerCase();
+  const m = MONSTERS[id];
+  const words = [m?.name?.toLowerCase(), ...(FOE_WORDS[id] || [])].filter(Boolean);
+  return words.some((w) => blob.includes(w));
+};
+
+test('each place tags the foes the locked fight actually sends, and the copy names them', () => {
+  for (const act of ACTS) {
+    assert.equal(act.fights?.length, 10, `${act.name} locks ten steps`);
+    for (let s = 1; s <= 10; s++) {
+      const place = act.route[s - 1];
+      const p = placeOf(place);
+      const locked = act.fights[s - 1];
+      assert.ok(p, `${place} has a place entry`);
+      assert.ok(p.foes?.length, `${place} has a foes tag`);
+      assert.ok(sameFoes(p.foes, locked), `${act.name} step ${s} ${place}: foes [${p.foes}] != fight [${locked}]`);
+      const text = [...(p.arrive || []), ...(p.win || [])].join('\n');
+      for (const id of new Set(locked)) {
+        assert.ok(MONSTERS[id], `${place}: unknown foe ${id}`);
+        assert.ok(namesFoe(text, id), `${place} arrive/win does not name ${id}`);
+      }
+    }
+  }
+  for (const [place, foes] of Object.entries(HELP_FIGHTS)) {
+    const p = placeOf(place);
+    assert.ok(sameFoes(p.helpFoes, foes), `${place} helpFoes [${p.helpFoes}] != HELP_FIGHTS [${foes}]`);
+    const text = [...(p.helpArrive || []), ...(p.helpWin || [])].join('\n');
+    for (const id of new Set(foes)) {
+      assert.ok(namesFoe(text, id), `${place} help copy does not name ${id}`);
+    }
+  }
 });
