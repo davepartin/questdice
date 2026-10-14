@@ -588,9 +588,9 @@ function e0Warn() {
   const wind = alive().filter((e) => e.intent?.slam);
   const charge = alive().filter((e) => e.intent?.v === 'charge');
   const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);
-  if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block, or burst it down.');
-  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' A big Slam is coming next round. Plan your block.');
-  return 'The monsters have shown their hand. Roll when you are ready.';
+  if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block.');
+  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' Plan your block.');
+  return alive().length > 1 ? 'Pick a target, then roll.' : 'Roll the dice.';
 }
 
 
@@ -646,7 +646,7 @@ export function renderShape() {
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight light magenta underneath
-  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to aim at it; tap its i for details.'));
+  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`)),

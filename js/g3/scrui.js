@@ -2,6 +2,7 @@
 // road events, victory / defeat and camp. Glassy panels over the live scene from screens.js.
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
 // the context handed to bind(); this file only decides what things look like.
+import { shortLine } from './powers.js';
 import { h, $, $$, modal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
@@ -756,7 +757,6 @@ function petSection(hero) {
     btn('See the traveler', () => { X.S.tab = 'gear'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }));
 }
 // Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
-const KIND_NAME = { flat: 'Fixed', dice: 'Rolls dice', scale: 'More magic, more dice', round: 'Grows each round', luck: 'Roll for luck', super: 'Super: once, round 3+', charge: 'Store charges, release later' };
 // Magical powers at camp: three slots (A big move, B every round, C charge). The equipped power can be upgraded; the other
 // powers of the class library are learned here for gold, then swapped into their slot like a weapon into a hand.
 function powersSection(hero) {
@@ -779,8 +779,8 @@ function powersSection(hero) {
 function powerRow(hero, k) {
   const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
   return h('div', { class: 'sx-urow wrow' },
-    h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, k.text), h('small', { class: 'ur-next' }, `${KIND_NAME[k.kind] || ''} · ${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
-      u.next ? h('small', { class: 'ur-next' }, `Upgrade to level ${u.next}: a stronger effect when you cast it.`) : null),
+    h('div', { class: 'ur-copy' }, h('b', {}, `${k.name} ${'★'.repeat(lvl)}`), h('small', {}, `Now: ${shortLine(k, lvl)}`), h('small', { class: 'ur-next' }, `${k.atwill ? 'every round' : 'once a battle'} · costs ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
+      u.next ? h('small', { class: 'ur-next' }, `Level ${u.next}: ${shortLine(k, u.next)}`) : null),
     u.next ? btn(`Level ${u.next} · ${u.cost}`, () => { if (HE.upgradePower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${k.name} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);

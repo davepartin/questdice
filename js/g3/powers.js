@@ -71,16 +71,29 @@ const fxWords = (fx) => Object.entries(fx).map(([f, v]) => (f === 'heal' ? `heal
 const perOf = (k) => (typeof k.per === 'number' ? { atk: k.per } : k.per || {});
 const chip = (f, v, extra = '') => h('span', { class: `pw-chip t-${TONE[f] || 'magic'} ${extra}` }, HK.icon(FX_ICON[f] || 'magic'), h('b', {}, f === 'free' ? `${v}` : `+${v}`), ' ', NAME[f] || f);
 
-// A short plain line: what this power gives, right now (with the magic you chose for a scale power).
-export function effectLine(k, { x, round, level = 0, stored = 0 } = {}) {
+// the numbers of a power at a level: every number steps up by the same rule as the engine (scaleNum); a free reroll gains one die a level
+const lvlFx = (fx, level) => Object.fromEntries(Object.entries(fx || {}).map(([f, v]) => [f, f === 'free' ? v + level : E.scaleNum(v, level)]));
+
+// A short plain line: what this power gives, at its level (with the magic you chose for a scale power).
+export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   const lvl = level ? ` (level ${level})` : '';
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
-  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : 'More magic, more dice.'}`; }
-  if (k.kind === 'round') return `${k.per} × the round number${round ? ` (round ${round}: about +${k.per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`;
-  if (k.kind === 'charge') return `Store a charge each round (${stored} of ${k.max} now). Release them for ${fxWords(perOf(k))} each.`;
-  if (k.kind === 'super') return `${fxWords(k.fx)}, and ${k.aoe} to EVERY monster${lvl}.`;
-  if (k.kind === 'luck') return 'Roll a d6: 1–2 gives magic, 3–4 attack, 5–6 a big hit and magic.';
-  return `${fxWords(k.fx)}${lvl}, this round.`;
+  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : `Each extra magic adds a die${top || ` (up to ${k.max}d${k.dice.s})`}.`}${lvl}`; }
+  if (k.kind === 'round') { const per = E.scaleNum(k.per, level); return `${per} × the round number${round ? ` (round ${round}: about +${per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`; }
+  if (k.kind === 'charge') return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}. Release them for ${fxWords(lvlFx(perOf(k), level))} each${lvl}.`;
+  if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
+  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(5, level)} attack, 5–6 +${E.scaleNum(9, level)} attack and 2 magic.`;
+  return `${fxWords(lvlFx(k.fx, level))}${lvl}, this round.`;
+}
+// Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+6 pierce per charge", "3d6 pierce".
+export function shortLine(k, level = 0) {
+  if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
+  if (k.kind === 'scale') return `${k.cost} magic = ${E.powerDice(k, k.cost, level)}d${k.dice.s} ${NAME[k.dice.to]}`;
+  if (k.kind === 'round') return `${E.scaleNum(k.per, level)} × the round, attack`;
+  if (k.kind === 'charge') return `${fxWords(lvlFx(perOf(k), level))} per charge`;
+  if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
+  if (k.kind === 'luck') return `+${E.scaleNum(5, level)} or +${E.scaleNum(9, level)} attack, +${1 + level} magic`;
+  return fxWords(lvlFx(k.fx, level));
 }
 
 // ------------------------------------------------------------------------------------------------ the sigil (powers sheet)
