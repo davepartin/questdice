@@ -271,6 +271,10 @@ export const lookOf = (heroes, i) => HERO_LOOKS[heroes?.[i]?.cls]?.[lookIndex(he
 
 export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
+export const PREV_SIZE = { 6: 4, 8: 6, 10: 8 };
+// Shrinking a die (Dave): sometimes a smaller die is the better die. It costs gold (by the size it leaves), nothing is refunded, and on a talent
+// die or the pet's die the symbols on the faces that go away are lost. Works on hands, feet, talent dice, weapons and the pet's die.
+export const DOWNGRADE_COST = { 6: 20, 8: 30, 10: 40 };
 
 export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 

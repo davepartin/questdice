@@ -713,3 +713,23 @@ test('a x2 move rolls two separate dice and adds them to its base', () => {
   }
   assert.ok(seen >= 1);
 });
+
+test('shrinking a die costs gold, refunds nothing, and drops the symbols on the faces that go', async () => {
+  const { downgradeInfo, downgradeDie, upgradeDie: upgradeDieLate } = await import('../js/engine.js');
+  const { DOWNGRADE_COST, TALENT_FACES } = await import('../js/data.js');
+  const h = knight(); h.gold = 500;
+  // a talent die: d10 -> d8 loses faces 9 and 10 (the last two number faces)
+  h.special.SW = 10; h.talent.SW = [['atk'], ['heal'], ['block'], ['magic'], ['gold'], ['atk'], ['heal']];
+  const info = downgradeInfo(h, 'special', 'SW'); assert.equal(info.next, 8); assert.equal(info.cost, DOWNGRADE_COST[10]); assert.equal(info.lose, 2);
+  assert.ok(downgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 8); assert.equal(h.gold, 500 - DOWNGRADE_COST[10]);
+  assert.equal(h.talent.SW.length, TALENT_FACES[8]); assert.deepEqual(h.talent.SW[4], ['gold']);
+  // growing back brings empty faces
+  h.level = 20; h.campaign.act = 3; assert.ok(upgradeDieLate(h, 'special', 'SW')); assert.deepEqual((h.talent.SW[5] || []), []);
+  // a hand die, the feet and a weapon
+  h.strength.W = 8; assert.ok(downgradeDie(h, 'strength', 'W')); assert.equal(h.strength.W, 6);
+  assert.ok(downgradeDie(h, 'strength', 'W')); assert.equal(h.strength.W, 4); assert.equal(downgradeDie(h, 'strength', 'W'), false, 'd4 is the smallest');
+  const hero2 = ranger(); hero2.gold = 100; hero2.speed = { S: 8 }; assert.ok(downgradeDie(hero2, 'speed')); assert.equal(hero2.speed.S, 6);
+  const w = hero2.loadout.NW; w.size = 8; assert.ok(downgradeDie(hero2, 'weapon', w.uid)); assert.equal(w.size, 6);
+  // too poor
+  const poor = knight(); poor.gold = 5; poor.strength.W = 8; assert.equal(downgradeDie(poor, 'strength', 'W'), false); assert.equal(poor.strength.W, 8);
+});

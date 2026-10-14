@@ -5,7 +5,7 @@ import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
-  SPECIAL_STEPS, NEXT_SIZE, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
+  SPECIAL_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
@@ -1692,3 +1692,29 @@ export function grantCompany(members, amount) {
   order.forEach((m, i) => { m.gold += shares[i]; });
 }
 export function grantXpEach(members, xp) { for (const m of members) gainXp(m, xp); }
+
+// ------------------------------------------------------------------------------- shrinking dice (Dave)
+// What would be lost: the symbols on the faces that go away (talent dice and the pet's die).
+function shrinkLoss(hero, kind, slot, next) {
+  if (kind === 'special') { const keep = TALENT_FACES[next] || 1; return (hero.talent?.[slot] || []).slice(keep).flat().length; }
+  return 0;
+}
+export function downgradeInfo(hero, kind, slot) {
+  let size;
+  if (kind === 'speed') size = feetSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
+  else if (kind === 'weapon') { ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
+  else if (kind === 'pet') size = hero.pet?.size;
+  const next = PREV_SIZE[size]; if (!size || !next) return { ok: false, why: 'smallest', size };
+  const cost = DOWNGRADE_COST[size]; const lose = kind === 'pet' ? (hero.pet.faces || []).slice(next - 1).flat().length : shrinkLoss(hero, kind, slot, next);
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, size, next, lose };
+}
+export function downgradeDie(hero, kind, slot) {
+  const r = downgradeInfo(hero, kind, slot); if (!r.ok) return false;
+  hero.gold -= r.cost;
+  if (kind === 'speed') { feetSize(hero); hero.speed.S = r.next; }
+  else if (kind === 'strength') hero.strength[slot] = r.next;
+  else if (kind === 'special') { hero.special[slot] = r.next; if (hero.talent?.[slot]) hero.talent[slot] = hero.talent[slot].slice(0, TALENT_FACES[r.next] || 1); }
+  else if (kind === 'weapon') for (const w of copiesOf(hero, slot)) w.size = r.next;
+  else if (kind === 'pet') { hero.pet.size = r.next; hero.pet.faces = hero.pet.faces.slice(0, r.next - 1); }
+  return true;
+}

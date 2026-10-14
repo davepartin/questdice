@@ -144,6 +144,13 @@ function buildHud() {
   hud.roster = B.party ? h('div', { class: 'b3-roster', role: 'list', 'aria-label': 'The company' }) : null;
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
+  // Any button on the bottom bar (Lock in, Magic powers, Roll, Reroll) first clears whatever window is up: the round recap, a monster's info sheet,
+  // the magic powers sheet (Dave). Magic powers itself still opens and closes its own sheet.
+  hud.bar.addEventListener('click', (ev) => {
+    const btn = ev.target.closest?.('button'); if (!btn || btn.disabled) return;
+    hideCard(); hud.info.classList.remove('open'); hud.info.replaceChildren();
+    if (!btn.closest('.b3-powers') && B.sheetOpen) togglePowers(false);
+  }, true);
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
   B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)

@@ -627,3 +627,7 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .qr small { min-width: 0; overflow-wrap: anywhere; }
 .qc-body, .qc-read { min-width: 0; }
 @media (max-width: 400px) { .qr { grid-template-columns: 3.3rem auto 1fr; gap: .4rem; } .qr span { letter-spacing: .12em; } }
+
+/* shrinking a die: a small ghost button, two taps (the second confirms) */
+.sx-shrink { align-self: flex-start; margin-top: .25rem; padding: .22rem .6rem; border-radius: 999px; border: 1px solid var(--hair-2); background: rgba(255, 255, 255, .05); color: var(--dim); font: 700 .66rem var(--font-display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.sx-shrink:disabled { opacity: .4; cursor: default; } .sx-shrink.armed { color: #ffb38a; border-color: #ff8a5a; background: rgba(255, 120, 70, .14); }

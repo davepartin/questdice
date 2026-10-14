@@ -112,7 +112,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
+const HERO_OPS = ['upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -610,8 +610,21 @@ function upgradeRow(kind, slot, label, hint) {
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
     h('div', { class: 'ur-copy' }, h('b', {}, label),
-      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`)),
+      u.next ? h('small', { class: 'ur-next' }, `${hint(size, u.next)}`, u.act ? h('em', { class: 'gate' }, ico('lock'), `Act ${D.ROMAN[u.act]}`) : null) : h('small', { class: 'ur-next' }, `${label} die is fully grown (d${size}).`), shrinkBtn(kind, slot, label)),
     u.next ? btn(String(u.cost), () => { if (HE.upgradeDie(hero, kind, slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', disabled: !u.ok, cls: `ur-buy ${!u.ok ? 'poor' : ''}`, aria: `Upgrade ${label} to d${u.next} for ${u.cost} gold` }) : h('span', { class: 'ur-max' }, 'MAX'));
+}
+// Shrink a die for gold (Dave): a small ghost button under the upgrade. It asks twice, because a talent die or the pet's die loses the symbols on the faces that go.
+function shrinkBtn(kind, slot, label) {
+  const hero = X.S.hero; const d = E.downgradeInfo(hero, kind, slot); if (!d.next) return null;
+  let armed = false; let timer = null;
+  const text = (on) => (on ? `Tap again${d.lose ? `: lose ${d.lose} symbol${d.lose > 1 ? 's' : ''}` : ''} · ${d.cost}` : `Shrink to d${d.next} · ${d.cost}`);
+  const b = h('button', { type: 'button', class: 'sx-shrink', disabled: !d.ok, 'aria-label': `Shrink ${label} to d${d.next} for ${d.cost} gold${d.lose ? `, losing ${d.lose} symbols` : ''}`,
+    onclick: () => {
+      if (!armed) { armed = true; b.classList.add('armed'); b.textContent = text(true); timer = setTimeout(() => { armed = false; b.classList.remove('armed'); b.textContent = text(false); }, 4000); return; }
+      clearTimeout(timer);
+      if (HE.downgradeDie(hero, kind, slot)) { sfx.card(); X.persist(); X.renderCamp(); } else sfx.error();
+    } }, text(false));
+  return b;
 }
 // A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
 function weaponRow(inst, label = '') {
@@ -620,7 +633,7 @@ function weaponRow(inst, label = '') {
   const note = !t.next ? `Its die is the biggest there is (d${size}).` : t.why === 'hands' ? `Train to d${t.next}: needs a d${t.next} hand die first.` : `Train to d${t.next}: a bigger die, bigger numbers.`;
   return h('div', { class: 'sx-urow wrow' },
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.tierName(inst)} · d${size}`),
-      f.next ? h('small', { class: 'ur-next' }, `Forge to ${D.RARITY[f.next]}: more bonus symbols on its corners.`) : null, h('small', { class: 'ur-next' }, note)),
+      f.next ? h('small', { class: 'ur-next' }, `Forge to ${D.RARITY[f.next]}: more bonus symbols on its corners.`) : null, h('small', { class: 'ur-next' }, note), shrinkBtn('weapon', inst.uid, w.name)),
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (HE.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, f.why === 'legendary' ? 'LEGENDARY' : 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (HE.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }
@@ -700,6 +713,7 @@ function talentCard(hero, slot) {
     picker,
     up.next ? h('small', { class: 'ur-next' }, `Grow from d${size} to d${up.next}: one more number face to fill with a symbol.`) : null,
     up.next ? btn(`Grow to d${up.next} · ${up.cost}`, () => { if (HE.upgradeDie(hero, 'special', slot)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !up.ok, cls: `ur-buy ${!up.ok ? 'poor' : ''}`, aria: `Grow the talent die to d${up.next}` }) : h('span', { class: 'ur-max' }, 'FULL SIZE'),
+    shrinkBtn('special', slot, `the ${DIE_NAME[slot]}`),
     up.act ? h('small', { class: 'ur-next' }, ico('lock'), ` waits for Act ${D.ROMAN[up.act]}`) : null);
 }
 // ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
@@ -747,6 +761,7 @@ function petCard(hero) {
     h('div', { class: 'tal-strip syms pet-strip' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), faces),
     picker,
     g.next ? h('small', { class: 'ur-next' }, `Grow from d${pet.size} to d${g.next}: every symbol pays ${D.PET_POWER[g.next]} instead of ${pw}, and the die gets another slot.`) : null,
+    shrinkBtn('pet', null, p.name),
     g.next ? btn(`Grow to d${g.next} · ${g.cost}`, () => { if (HE.growPet(hero)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !g.ok, cls: `ur-buy ${!g.ok ? 'poor' : ''}`, aria: `Grow ${p.name} to a d${g.next} for ${g.cost} gold` }) : h('span', { class: 'ur-max' }, 'FULL GROWN'));
 }
 function petSection(hero) {
