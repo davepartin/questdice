@@ -2,11 +2,11 @@
 
 A look at every painted piece Dave can use to decide what to repaint, recut, or keep. Nothing here redesigns the roster. Contact sheet: `docs/ingame/miniatures_overview.png` (dark ground, then light; ~160px tall, phone battle size). `docs/ingame/` is gitignored scratch; a copy also lives in `docs/screens/miniatures_overview.png`. Rebuild with `node dev/minisheet.mjs`.
 
-Heroes stand on the left of the battle table and should look right; monsters on the right looking left. `faces: 'right'` on a class means it was painted looking right (default is left). Pets sit at camp and on the pet chip; they have no `faces` / `imgBase`.
+Heroes stand on the left of the battle table and should look right; monsters on the right looking left. Painted facing lives in `look: 'left'|'right'|'front'` on every class and monster (`needsFlip` in data.js). Front-facing pieces are not mirrored. Do not use `faces` for this — on a monster that key is the attack list. Pets sit at camp and on the pet chip; they have no `look` / `imgBase`.
 
 ## The five most important fixes
 
-1. **Every monster is mirrored in battle.** `needsFlip` reads `def.faces` and treats anything that is not the string `'left'` as “painted looking right”. On a monster, `faces` is the *attack list* (an array), so the check is always true and every foe is flipped. They look away from the heroes. The Wizard and Bard are fine (their `faces: 'right'` is a real string). Frostwhelp had a `faces: 'right'` in the same object as its attack list; the list wins, so that flag never did anything — and the whelp is painted looking left anyway. **Fix:** make `needsFlip` only trust a string (or a new `looks: 'left'|'right'` field). Do not store painted facing on monsters in `faces`.
+1. **Every monster was mirrored in battle.** Fixed: painted facing is now `look` on every hero and monster; `needsFlip` ignores the attack list. Front-facing pieces (the Hill Ogre among them) stay. See the 14 Oct facing note in PLAN.md.
 
 2. **Starling (the owl pet) reads occult.** Horns, bat wings, and a glowing triangle on the chest. The rule is no demonic / satanic / cultic / occult marks or pentagrams. Repaint as a small owl in a wizard hat, no horns, no bat wings, no triangle.
 

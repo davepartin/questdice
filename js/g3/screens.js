@@ -86,13 +86,13 @@ function endTable(kind, hero, place) {
   const bw = world.battle; if (!bw) return null;
   if (bw.tray?.object) bw.tray.object.visible = false;
   if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
-  const host = document.querySelector('.sx-viewport'); const img = D.CLASSES[hero?.cls]?.img; if (!host || !img) return bw;
+  const host = document.querySelector('.sx-viewport'); const k = D.CLASSES[hero?.cls]; const img = k?.img; if (!host || !img) return bw;
   const act = hero?.campaign?.act || 1;
   const look = D.placeLook(place);
   const gold = kind === 'victory' ? Array.from({ length: 16 }, (_, i) => h('i', { class: 'fb-gold', style: { '--x': `${6 + ((i * 53) % 88)}%`, '--d': `${(i * 0.37) % 3}s`, '--s': `${0.5 + ((i * 29) % 7) / 10}` } })) : [];
   const el = h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
     h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather)),
-    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
+    h('div', { class: `fb-stand${D.needsFlip(k, 'right') ? ' flip' : ''}` }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
   applyPlace(el, place);
   host.replaceChildren(el);
   return bw;

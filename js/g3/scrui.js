@@ -444,7 +444,7 @@ function questArt(q) {
   const wrap = h('div', { class: `qa n${q.enemies.length} ${q.kind}` });
   q.enemies.forEach((id, i) => {
     const m = D.MONSTERS[id];
-    wrap.append(h('div', { class: `qa-m tier-${m.tier}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // the painted miniature, as on the table
+    wrap.append(h('div', { class: `qa-m tier-${m.tier}${D.needsFlip(m, 'left') ? ' flip' : ''}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // as on the table: looking left, toward the heroes
   });
   return wrap;
 }

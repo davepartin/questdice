@@ -102,7 +102,7 @@ class Piece {
   render() {
     let x = 0; let y = 0; let r = 0; let s = 1; let a = 1; let br = 1;
     for (const v of Object.values(this.p)) { x += v.x || 0; y += v.y || 0; r += v.r || 0; s *= v.s ?? 1; a *= v.a ?? 1; br *= v.b ?? 1; }
-    // heroes are painted facing left; on the table they stand on the left looking toward the monsters, so their picture is mirrored
+    // mirrored when the painting looks the other way (look on the class/monster; front-facing pieces stay)
     this.img.style.transform = x || y || r || s !== 1 || this.flip ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${(this.flip ? -s : s).toFixed(3)}, ${s.toFixed(3)})` : '';
     this.img.style.opacity = a < 1 ? a.toFixed(2) : '';
     this.img.style.filter = br !== 1 ? `brightness(${br.toFixed(2)})` : '';
