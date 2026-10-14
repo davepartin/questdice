@@ -371,7 +371,7 @@ function selectTarget(uid) {
   if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
   const first = B.picked === false;
   B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
-  if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn())); }
+  if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : '')); }
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
@@ -608,16 +608,16 @@ export function renderReset() {
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
-  B.hud.caption.replaceChildren(caption(e0Warn()));
+  B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : ''));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: B.picked === false ? 'pick a target first' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: B.picked === false ? 'choose target' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
 function e0Warn() {
-  if (B.picked === false) return h('span', { class: 'cap-warn' }, HK.icon('atk'), h('b', {}, 'Pick a target.'), ' Tap the monster you will hit.');
+  if (B.picked === false) return h('span', { class: 'cap-warn' }, HK.icon('atk'), h('b', {}, 'Choose target'));
   const wind = alive().filter((e) => e.intent?.slam);
   const charge = alive().filter((e) => e.intent?.v === 'charge');
   const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);

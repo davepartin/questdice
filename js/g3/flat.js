@@ -235,7 +235,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const hpNum = h('i', { class: 'fb-hpn' });
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum);
     const intent = h('div', { class: 'fb-intent' });
-    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent };
+    // a small blue shield with a line through it: this monster has no defence at all (no guard, no ward, no armour), which can decide who you hit
+    const nodef = h('i', { class: 'fb-nodef', title: 'No defence: nothing soaks your attack', hidden: true }, HK.icon('block'));
+    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent, nodef), name, hp, hpNum, intent, nodef };
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
@@ -344,6 +346,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     c.hp.querySelector('.fb-hp-fill').style.width = `${k * 100}%`;
     const ghost = c.hp.querySelector('.fb-hp-ghost'); if (k * 100 >= parseFloat(ghost.style.width || '100')) ghost.style.width = `${k * 100}%`; else { clearTimeout(c.gt); c.gt = setTimeout(() => { ghost.style.width = `${k * 100}%`; }, 420); }
     c.hpNum.textContent = String(Math.max(0, Math.ceil(e.hp)));
+    { const def = D.MONSTERS[e.id] || {}; const defends = (e.faces || def.faces || []).some((f) => ['guard', 'ward', 'phase'].includes(f.v)) || !!(e.armor || def.armor); c.nodef.hidden = defends || dead; }
     c.hp.classList.toggle('low', k > 0 && k <= 0.3);
     pc.slot.classList.toggle('dead', dead); pc.slot.classList.toggle('raged', !!e.raged);
     pc.el.classList.toggle('targeted', targeted && !dead); pc.slot.classList.toggle('targeted', targeted && !dead);
