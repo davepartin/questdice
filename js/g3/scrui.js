@@ -67,7 +67,8 @@ function emblem(cls, size = '') { return h('span', { class: `sx-emblem ${size}`,
 function classPic(cls, size = '') {
   const k = D.CLASSES[cls];
   if (!k?.img) return emblem(cls, size);
-  return h('span', { class: `sx-emblem ${size}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
+  const flip = D.needsFlip(k, 'right');
+  return h('span', { class: `sx-emblem ${size}${flip ? ' flip' : ''}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
     h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' }));
 }
 function classPreview(cls) {

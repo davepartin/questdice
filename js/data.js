@@ -289,9 +289,9 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // Painted mini base disc, as fractions of the image: centre x, bottom-row y, disc width.
 // Callers aim a little above y (the visual middle of the disc) at whatever the piece stands on.
 // Which way a painted miniature looks (`look`: 'left' | 'right' | 'front'). Not `faces` — on a monster that key is the attack list.
-// Battle table: heroes (left) look/walk right; monsters (right) are a slight three-quarter looking left. A front-facing piece is not mirrored.
-// needsFlip(def, 'right') for a hero on the battle table, (def, 'left') for a monster. Camp uses the same helper toward the fire.
-// Most paintings already look the right way — only flip a piece that would otherwise face away.
+// Standard (every hero and monster): monsters a slight three-quarter looking left; heroes look/walk right.
+// needsFlip(def, 'right') for a hero, (def, 'left') for a monster. Camp uses the same helper toward the fire.
+// Flip only a piece that would otherwise face away. `front` is kept for a painting that faces the camera (never mirrored).
 export const LOOK = new Set(['left', 'right', 'front']);
 export const paintedLook = (def) => (LOOK.has(def?.look) ? def.look : 'left');
 export const needsFlip = (def, want) => {
@@ -461,13 +461,13 @@ export const MONSTERS = {
       S('Stab', 2, 1), { n: 'Bone Throw', v: 'pierce', f: 1, m: 1 }, S('Slash', 1, 1)],
   },
   wraith: {
-    name: 'Wraith', glyph: '👻', img: 'assets/miniatures/wraith.webp', look: 'front', imgBase: IB(339, 461, 168.5, 456, 252), short: 'WRTH', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion', threat: 1.5,
+    name: 'Wraith', glyph: '👻', img: 'assets/miniatures/wraith.webp', look: 'left', imgBase: IB(339, 461, 168.5, 456, 252), short: 'WRTH', init: 8, hp: 40, power: 10, xp: 18, gold: 14, tier: 'minion', threat: 1.5,
     faces: [{ n: 'Chill', v: 'pierce', f: 0, m: 1 }, { n: 'Chill', v: 'pierce', f: 0, m: 1 },
       { n: 'Drain', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Wail', v: 'bind', f: 0, m: 0, k: 2 },
       { n: 'Phase', v: 'phase', f: 0, m: 0 }, S('Touch', 1, 1)],
   },
   spider: {
-    name: 'Crypt Spider', glyph: '🕷️', img: 'assets/miniatures/spider.webp', look: 'front', imgBase: IB(512, 439, 260.5, 433, 358), short: 'SPDR', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion', threat: 1.8,
+    name: 'Crypt Spider', glyph: '🕷️', img: 'assets/miniatures/spider.webp', look: 'left', imgBase: IB(512, 439, 260.5, 433, 358), short: 'SPDR', init: 8, hp: 48, power: 10, xp: 16, gold: 12, tier: 'minion', threat: 1.8,
     faces: [S('Bite', 1, 1), { n: 'Web', v: 'bind', f: 0, m: 0, k: 2 }, { n: 'Venom', v: 'pierce', f: 1, m: 1 },
       { n: 'Skitter', v: 'guard', f: 1, m: 1 }, S('Pounce', 0, 2), S('Bite', 1, 1)],
   },
@@ -523,7 +523,7 @@ export const MONSTERS = {
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
   },
   fallenchampion: {
-    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', look: 'front', imgBase: IB(331, 480, 165, 473, 255), short: 'CHMP', init: 6, hp: 240, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', look: 'left', imgBase: IB(331, 480, 165, 473, 255), short: 'CHMP', init: 6, hp: 240, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
     slam: { f: 5, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Oathbreaker', 3, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
       { n: 'Oath Smite', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 3, 1)],
@@ -553,7 +553,7 @@ export const MONSTERS = {
       { n: 'Inhale', v: 'charge', f: 0, m: 0 }, { n: 'Wing Buffet', v: 'guard', f: 2, m: 1 }, S('Tail Sweep', 1, 1)],
   },
   vharaxis: {
-    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/vharaxis.webp', look: 'front', imgBase: IB(480, 399, 222, 393, 394), short: 'VHRX', init: 4, hp: 280, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/vharaxis.webp', look: 'left', imgBase: IB(480, 399, 222, 393, 394), short: 'VHRX', init: 4, hp: 280, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
     slam: { f: 7, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
     faces: [S('Talons', 3, 1), { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
       { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 4, 1), { n: 'Wing Wall', v: 'guard', f: 4, m: 1 }],

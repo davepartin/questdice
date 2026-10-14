@@ -2,7 +2,7 @@
 
 A look at every painted piece Dave can use to decide what to repaint, recut, or keep. Nothing here redesigns the roster. Contact sheet: `docs/ingame/miniatures_overview.png` (dark ground, then light; ~160px tall, phone battle size). `docs/ingame/` is gitignored scratch; a copy also lives in `docs/screens/miniatures_overview.png`. Rebuild with `node dev/minisheet.mjs`.
 
-Heroes stand on the left of the battle table and should look right; monsters on the right looking left. Painted facing lives in `look: 'left'|'right'|'front'` on every class and monster (`needsFlip` in data.js). Front-facing pieces are not mirrored. Do not use `faces` for this — on a monster that key is the attack list. Pets sit at camp and on the pet chip; they have no `look` / `imgBase`.
+Heroes stand on the left of the battle table and look/walk right; monsters on the right are a slight three-quarter looking left. Painted facing lives in `look: 'left'|'right'|'front'` on every class and monster (`needsFlip` in data.js). Every current monster is `look: 'left'` (not mirrored). Do not use `faces` for this — on a monster that key is the attack list. Pets sit at camp and on the pet chip; they have no `look` / `imgBase`.
 
 ## The five most important fixes
 
@@ -60,8 +60,8 @@ Act I/II originals are in `assets/miniatures/src/`. Act III pieces (hired blades
 | Name | File | Painted facing | faces value | Cutout | Size | Readability | Theme | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Bone Soldier | skeleton.webp | left (¾) | n/a | Clean. Sword reaches the left edge but is not clipped. | 1.0. | Good. | Skeleton. Fine. | **OK** |
-| Wraith | wraith.webp | toward viewer | n/a | Clean. The ragged white edge is the ghost, not leftover cream. Clear flying stem. | 1.15; a little taller, reads as floating. | Good. Pale on dark, still clear on light. | Ghost. Fine. | **OK** |
-| Crypt Spider | spider.webp | toward viewer | n/a | Clean. Legs complete; the pale body is paint, not a halo. | 0.75; a bit small for that abdomen, but still bigger than a goblin’s *presence*. | Good (white on dark). | Spider. Fine. | **OK** |
+| Wraith | wraith.webp | left (¾, camera-close) | n/a | Clean. The ragged white edge is the ghost, not leftover cream. Clear flying stem. | 1.15; a little taller, reads as floating. | Good. Pale on dark, still clear on light. | Ghost. Fine. | **OK** |
+| Crypt Spider | spider.webp | left (¾, camera-close) | n/a | Clean. Legs complete; the pale body is paint, not a halo. | 0.75; a bit small for that abdomen, but still bigger than a goblin’s *presence*. | Good (white on dark). | Spider. Fine. | **OK** |
 | Bone Warden | bonewarden.webp | left (¾, shield forward) | n/a | Clean. Axe and shield complete. | 1.7; tallest humanoid. | Good. | Horned helm and skulls: undead captain, not a pentagram. | **OK** (disc now under the feet) |
 | The Hollow Lich | lich.webp | left | n/a | Clean. Staff complete. | 1.6. | Good. | Lich with a green gem. Fine. | **OK** |
 
@@ -74,11 +74,11 @@ Act I/II originals are in `assets/miniatures/src/`. Act III pieces (hired blades
 | Gold-Chain Jailer | chainbinder.webp | left (¾) | n/a | Clean. | 1.0. | Good. | Jailer with chains. Fine. | **OK** |
 | Dirge Singer | dirgesinger.webp | left (¾) | n/a | Clean. White cloth is the ghost, not a halo. | 1.0. | Good. | Ghost with a lute. Fine. | **OK** |
 | Ironclad Warden | ironwarden.webp | left (¾) | n/a | Clean. | 1.55; elite. | Good. | Slashed cross on the shield: a beaten knight, not occult. | **OK** |
-| The Fallen Champion | fallenchampion.webp | toward viewer | n/a | Clean. Sword complete. Coins on the lava. | 1.55; human boss, smaller than the dragon queen. | Good. | Tabard has a gold cross with a slot; fallen paladin. Borderline, keep. | **OK** |
+| The Fallen Champion | fallenchampion.webp | left (¾, camera-close) | n/a | Clean. Sword complete. Coins on the lava. | 1.55; human boss, smaller than the dragon queen. | Good. | Tabard has a gold cross with a slot; fallen paladin. Borderline, keep. | **OK** |
 | Cinderling | cinderling.webp | left (breath to the left) | n/a | Clean except the **pixelated fire puff**. Wings complete. | 0.78; baby dragon, a hair bigger than a goblin. | Good. Cute reads at phone size. | Dragon. Fine. Lava base. | **small fix** (repaint the puff) |
 | Frostwhelp | frostwhelp.webp | left (head and snout) | n/a (had a dead `faces: 'right'`) | Clean except the **pixelated frost puff**. Wings complete. Pale body is paint. | 0.82. | Good. | Dragon. Fine. Ice beast on a lava disc is a little odd, but the rest of Act III is lava. | **small fix** (repaint the puff; optional icy ground) |
 | Ashmaw the Wyrm | ashwyrm.webp | left | n/a | Clean. Tail and wings complete. | 1.6 (was 1.5). | Good. | Dragon. Fine. Lava + coins. | **OK** |
-| Vharaxis, the Ember Queen | vharaxis.webp | toward viewer | n/a | Clean. Wings complete, not clipped. | 1.7 (was 1.65); widest piece. Height-based layout still shrinks her a little next to a tall Bone Warden. | Good at 160px; wings need width. | Dragon. Fine. Lava + hoard. | **OK** |
+| Vharaxis, the Ember Queen | vharaxis.webp | left (¾, camera-close) | n/a | Clean. Wings complete, not clipped. | 1.7 (was 1.65); widest piece. Height-based layout still shrinks her a little next to a tall Bone Warden. | Good at 160px; wings need width. | Dragon. Fine. Lava + hoard. | **OK** |
 
 ## Pets
 

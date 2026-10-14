@@ -65,7 +65,7 @@
 .p-danger i.on { background: #ff5a4a; border-color: #ffb0a0; box-shadow: 0 0 8px rgba(255, 70, 50, .65); }
 .sx-emblem { display: inline-grid; place-items: center; width: 2.4rem; height: 2.4rem; flex: none; border-radius: 50%; overflow: hidden; color: var(--hue, var(--gold)); background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 55%), #12152a; border: 1px solid color-mix(in srgb, var(--hue, #f0c060) 60%, #000); box-shadow: 0 0 14px color-mix(in srgb, var(--hue, #f0c060) 28%, transparent), inset 0 0 8px rgba(0, 0, 0, .6); }
 .sx-emblem .ico svg { width: 1.25rem; height: 1.25rem; } .sx-emblem.lg { width: 3.6rem; height: 3.6rem; } .sx-emblem.lg .ico svg { width: 1.9rem; height: 1.9rem; }
-.sx-emblem img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sx-emblem img { width: 100%; height: 100%; object-fit: cover; display: block; } .sx-emblem.flip img { transform: scaleX(-1); }
 .sx-tip { pointer-events: auto; display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 8px; border: 1px solid rgba(120, 190, 255, .35); background: rgba(40, 80, 130, .18); font-size: .82rem; color: #cfe4ff; } .sx-tip p { flex: 1; } .sx-tip .ico { color: #8fcaff; } .sx-tip .sx-btn { min-height: 36px; padding: .3rem .6rem; }
 
 /* ---------------------------------------------------------------- top bar & chip */
@@ -159,8 +159,10 @@
 .sx-hero-art::before { content: ''; position: absolute; left: var(--ped-x, 50%); top: var(--ped-y, 80%); width: var(--ped-d, 16rem); height: var(--ped-h, 4rem); transform: translate(-50%, -40%); background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--hue, #ffd23d) 55%, transparent), transparent 68%); filter: blur(6px); }
 .sx-hero-art img { position: absolute; display: block; width: auto; height: auto; max-width: none; max-height: none; visibility: hidden; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .55)); }
 .sx-hero-art.is-seated img { visibility: visible; animation: sx-piece-in .35s ease-out both; }
+.sx-hero-art.flip.is-seated img { animation-name: sx-piece-in-flip; }
 @keyframes sx-piece-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .sx-hero-art.is-seated img { animation: none; } }
+@keyframes sx-piece-in-flip { from { opacity: 0; transform: translateY(8px) scaleX(-1); } to { opacity: 1; transform: scaleX(-1); } }
+@media (prefers-reduced-motion: reduce) { .sx-hero-art.is-seated img { animation: none; } .sx-hero-art.flip.is-seated img { transform: scaleX(-1); } }
 .sx-cta { position: sticky; bottom: 0; margin-top: auto; padding-top: .6rem; background: linear-gradient(0deg, rgba(5, 6, 12, .92) 62%, transparent); z-index: 2; }
 
 /* ---------------------------------------------------------------- create */
