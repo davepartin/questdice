@@ -394,6 +394,23 @@ function readyText(e) {
     hush: 'Your heart is blanketed next round: no amp, no colour bonus, no triple.',
   }[i.v] || '';
 }
+// "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
+// A blow is  a flat part + the die (times a multiplier for the big moves), plus the game's difficulty bonus.
+const dieName = (n) => `d${n}`;
+const formula = (i, s) => `${[i.f ? i.f : null, i.m > 1 ? `${i.m}×${dieName(s)}` : (i.m ? dieName(s) : null)].filter(Boolean).join(' + ')}`;
+function diceRows(e, def) {
+  const s = e.powerDie; const i = e.intent; const rows = [];
+  const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));
+  if (i && (i.m || i.f)) {
+    const guard = GUARD_INTENT.has(i.v);
+    rows.push(die(guard ? 'blue' : 'red', s, guard ? 'Guard' : 'Attack', `${formula(i, s)}${i.v === 'guard' || i.v === 'ward' ? ' blocked' : ''}`));
+  }
+  const ar = e.armor || def.armor;
+  if (ar) rows.push(die('blue', ar.s, 'Armor', `${ar.n}${dieName(ar.s)} blocked, every round`));
+  if (!rows.length) return null;
+  return h('div', { class: 'fi-dicebox' }, h('small', { class: 'fi-t' }, 'Its dice'), h('div', { class: 'fi-dice' }, ...rows));
+}
+const GUARD_INTENT = new Set(['guard', 'ward']);
 function showFoeInfo(e) {
   const def = D.MONSTERS[e.id]; const v = HK.intentView(e);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
@@ -406,6 +423,7 @@ function showFoeInfo(e) {
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
       h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), h('p', {}, readyText(e))),
       v.fig ? h('strong', { class: 'fi-fig' }, v.fig, v.unit && /^\d/.test(v.fig) ? h('small', {}, v.unit === 'dmg' ? 'damage' : v.unit) : null) : null) : null,
+    diceRows(e, def),
     others.length ? h('small', { class: 'fi-t' }, 'It might also') : null,
     others.length ? h('div', { class: 'fi-moves' }, others.map((f) => { const [ic, txt] = MOVE[f.v] || ['atk', f.v]; return h('span', { class: 'fi-mv' }, HK.icon(ic), h('b', {}, f.n), h('small', {}, txt)); })) : null);
   B.hud.info.classList.add('open'); sfx.select();

@@ -15,6 +15,13 @@ const tk = (kind, n, label, icon) => h('span', { class: `rc-tk ${kind}` }, icon 
 const op = (s) => h('span', { class: 'rc-op', 'aria-hidden': 'true' }, s);
 // the result of a blow: green DEALT for what you do to a monster, red YOU TAKE for what a monster does to you (so the two sides never look alike)
 const out = (n, side = 'take') => h('span', { class: `rc-tk out ${side}${n > 0 ? '' : ' zero'}` }, h('b', {}, String(n)), h('small', {}, side === 'deal' ? (n > 0 ? 'dealt' : 'no damage') : (n > 0 ? 'you take' : 'blocked')));
+// the die a monster rolled for its blow, red for an attack (blue for a guard), as a little die with the pips it landed on
+const dieIcon = (size) => `d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`;
+const rolled = (b, a) => {
+  const e = foe(b, a.uid); const size = e?.powerDie; if (!size || a.p == null) return null;
+  const blue = a.v === 'guard' || a.v === 'ward';
+  return h('span', { class: `rc-roll ${blue ? 'blue' : 'red'}`, title: `It rolled a d${size}` }, HK.icon(dieIcon(size)), h('b', {}, String(a.p)), h('small', {}, `d${size}`));
+};
 const note = (kind, text) => h('p', { class: `rc-note ${kind}` }, HK.rich(text));
 
 // ---- what you did to the monster (one hero)
@@ -50,7 +57,7 @@ const SPECIAL = {
 function foeRow(a, b, rep, blockTotal) {
   const name = fname(b, a.uid);
   const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
-  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`))) : null; }
+  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`), a.v === 'guard' || a.v === 'ward' ? rolled(b, a) : null)) : null; }
   const parts = [];
   if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
   else parts.push(tk('atk', a.d, a.name || 'attack', 'atk'), op('−'), tk('block', a.ab || 0, 'block', 'block'));
@@ -60,7 +67,7 @@ function foeRow(a, b, rep, blockTotal) {
   if (a.v === 'pilfer' && rep.goldStolen) extra.push(note('bad', `${name} grabbed ${rep.goldStolen} gold. Kill it to take it back.`));
   void blockTotal;
   return h('div', { class: `rc-line${a.early ? ' early' : ''}` },
-    h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, a.early ? ' struck first' : ' hits you')), h('div', { class: 'rc-sum' }, parts), extra);
+    h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, a.early ? ' struck first' : ' hits you'), rolled(b, a)), h('div', { class: 'rc-sum' }, parts), extra);
 }
 
 // ------------------------------------------------------------------------------------------ solo
@@ -112,7 +119,7 @@ function partyCard(rep, b) {
     parts.push(op('='), out(a.net, 'take'));
     // each hero's share: their part, what their own block took, what got through
     const shares = Array.isArray(a.parts) ? a.parts.map((p, i) => ({ who: heads[i]?.name, p, net: a.nets?.[i] ?? p })).filter((s) => s.who && s.p > 0) : [];
-    theirs.push(h('div', { class: 'rc-line' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ' hits the company')), h('div', { class: 'rc-sum' }, parts),
+    theirs.push(h('div', { class: 'rc-line' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ' hits the company'), rolled(b, a)), h('div', { class: 'rc-sum' }, parts),
       shares.length > 1 ? h('div', { class: 'rc-sub' }, shares.map((s) => h('span', { class: 'rc-share' }, h('b', {}, s.who), s.net <= 0 ? ` blocked all ${s.p}` : s.net === s.p ? ` took ${s.net}` : ` took ${s.net} (blocked ${s.p - s.net})`))) : null));
   }
   const tail = [];

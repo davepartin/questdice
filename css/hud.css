@@ -691,3 +691,11 @@ body.in-battle .chrome { z-index: 40; }
 .b3-diffchip { position: absolute; z-index: 4; top: calc(.45rem + var(--safe-t)); right: calc(.35rem + var(--safe-r)); pointer-events: none; font-weight: 800; }
 .b3-diffchip b { font: inherit; }
 .b3:has(.b3-sheet.open .pw-sigil) .b3-diffchip { visibility: hidden; }
+
+/* the monster's dice on its info sheet: red for what it hits with, blue for what it blocks with */
+.fi-dicebox { display: flex; flex-direction: column; gap: .3rem; margin-top: .55rem; }
+.fi-dice { display: flex; flex-wrap: wrap; gap: .4rem; }
+.fi-die { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .6rem .3rem .45rem; border-radius: .65rem; }
+.fi-die svg { width: 1.5rem; height: 1.5rem; } .fi-die b { font: 900 .95rem/1 var(--disp); } .fi-die small { font: 700 .8rem/1.1 var(--disp); opacity: .92; }
+.fi-die.red { color: #ffb4a4; background: rgba(255, 70, 50, .14); box-shadow: inset 0 0 0 1.5px rgba(255, 110, 90, .6); }
+.fi-die.blue { color: #a8d4ff; background: rgba(70, 150, 255, .14); box-shadow: inset 0 0 0 1.5px rgba(110, 170, 255, .6); }

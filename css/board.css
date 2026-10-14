@@ -213,6 +213,11 @@
 @keyframes rcLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .rc-who { display: flex; align-items: baseline; gap: .25rem; font: 600 .66rem/1.15 var(--disp); color: #cdbfa4; }
 .rc-who b { color: #fff0cf; font-weight: 800; letter-spacing: .03em; }
+.rc-who .rc-roll { flex: none; overflow: visible; white-space: nowrap; margin-left: auto; }
+.rc-roll { flex: none; display: inline-flex; align-items: center; gap: .18rem; padding: .08rem .38rem .08rem .26rem; border-radius: .45rem; font: 900 .95rem/1 var(--disp); }
+.rc-roll svg { width: 1.3rem; height: 1.3rem; } .rc-roll small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; opacity: .85; }
+.rc-roll.red { color: #ffd0c6; background: rgba(255, 60, 40, .4); box-shadow: inset 0 0 0 1px rgba(255, 110, 90, .6); }
+.rc-roll.blue { color: #d0e8ff; background: rgba(60, 140, 255, .4); box-shadow: inset 0 0 0 1px rgba(110, 170, 255, .6); }
 .rc-who span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rc-hp { flex: none; margin-left: auto; font: 700 .64rem/1 var(--disp); font-style: normal; color: #cdbfa4; } .rc-hp b { color: #fff; } .rc-hp.dead { color: #ffb4a0; }
 .rc-line.early .rc-who span { color: #ffb4a0; }
@@ -344,7 +349,7 @@
 .rc-head { padding-bottom: .4rem; }
 
 /* denser rows so even a long fight's recap fits without scrolling: token rows never wrap, spacing is tighter */
-.rc-sum { flex-wrap: nowrap; gap: .18rem; }
+.rc-sum { flex-wrap: wrap; gap: .18rem; row-gap: .25rem; }
 .rc-tk { padding: .12rem .34rem; gap: .16rem; flex: none; }
 .rc-tk b { font-size: 1rem; } .rc-tk.out b { font-size: 1.4rem; } .rc-tk small { font-size: .5rem; letter-spacing: .06em; } .rc-tk.out small { font-size: .52rem; letter-spacing: .08em; }
 .rc-op { font-size: .9rem; }
