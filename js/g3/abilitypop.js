@@ -28,6 +28,20 @@ const NAME_ICON = {
   'Fire Ward': 'ward',
 };
 
+// The short words and the colour a move wears on the board (Dave): red = attack, blue = defence, purple = magic, green = healing,
+// gold = anything sneaky. No numbers: the round recap has those.
+const TAG = {
+  guard: 'blocks your attack', armor: 'armoured', ward: 'burns whoever hits', phase: 'slips out of reach', breath: 'fire on everyone',
+  summon: 'calls for help', rage: 'enraged', flee: 'flies away', drain: 'steals magic', pilfer: 'steals gold', bind: 'locks your dice',
+  hush: 'hushes your heart', chain: 'chains your dice', howl: 'pack hits harder', charge: 'winding up', stalk: 'on the hunt',
+  mend: 'heals itself', slam: 'a big blow', hit: 'hits you', blocked: 'blocked',
+};
+const TONE = {
+  hit: 'atk', slam: 'atk', breath: 'atk', rage: 'atk', charge: 'atk', stalk: 'atk',
+  guard: 'def', armor: 'def', ward: 'def', phase: 'def', blocked: 'def',
+  bind: 'mag', chain: 'mag', hush: 'mag', drain: 'mag', howl: 'mag',
+  mend: 'heal', pilfer: 'sly', summon: 'sly', flee: 'sly',
+};
 const n = (v) => Math.max(0, Math.round(Number(v) || 0));
 const diceWord = (k) => (k === 1 ? 'die' : 'dice');
 
@@ -78,7 +92,7 @@ function cue(uid, v, name, extra = {}) {
   const title = name || v;
   const line = extra.line || lineOf(title, v, extra);
   if (!line) return null;
-  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, lines: extra.lines || null, party: !!extra.party };
+  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, lines: extra.lines || null, party: !!extra.party, tag: TAG[v] || '', tone: TONE[v] || 'sly' };
 }
 
 export function ctxFromRep(rep = {}) {
@@ -144,7 +158,8 @@ export function cueFromHit(act, hits = []) {
   });
   const any = hits.some((x) => n(x.net) > 0);
   const title = act.name || (act.v === 'pierce' ? 'Pierce' : 'Strike');
-  return { uid: act.uid, v: any ? 'hit' : 'blocked', name: title, icon: act.v === 'pierce' ? 'pierce' : any ? 'atk' : 'block', line: lines[0], lines, party: hits.length > 1 };
+  const v = any ? 'hit' : 'blocked';
+  return { uid: act.uid, v, name: title, icon: act.v === 'pierce' ? 'pierce' : any ? 'atk' : 'block', line: lines[0], lines, party: hits.length > 1, tag: TAG[v], tone: TONE[v] };
 }
 
 export function cueFromRage(uid, b) {
@@ -177,64 +192,54 @@ export function cuesFromReport(rep, b) {
   return out;
 }
 
-// What each monster did, summarised in one small box that sits over its own miniature (Dave). A monster that did several things
-// (a guard when you hit it, then a blow of its own) gets rows in the same box. The boxes stay up while the round recap is open and
-// are cleared when it is closed (battle3d's hideCard calls `clear`).
+// What each monster did this turn, as a few words across the top of the board, above its miniature (Dave): the move's name, coloured
+// by what kind of move it is (red attack, blue defence, purple magic, green healing, gold sneaky), and two or three words about it.
+// No icons and no numbers. They sit in front of the heading and stay while the round recap is open; closing the recap clears them
+// (battle3d's hideCard calls `clear`), so the little hits and tumbles on the board play out clean.
 function hostOf(fb) {
-  if (!fb?.el) return null;
-  let layer = fb.el.querySelector(':scope > .fb-pops');
-  if (!layer) { layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' }); fb.el.append(layer); }
+  const root = fb?.el?.closest('.b3'); if (!root) return null;
+  let layer = root.querySelector(':scope > .fb-pops');
+  if (!layer) { layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' }); root.append(layer); }
   return layer;
 }
 
-// Each box centres on its monster's miniature, a little way down from its head. Neighbouring boxes are nudged apart sideways (and
-// kept on the board) so none sits on another.
 function layout(fb) {
-  const layer = fb.el.querySelector(':scope > .fb-pops'); if (!layer) return;
-  const W = fb.el.clientWidth || 360; const H = fb.el.clientHeight || 240; const gap = 4;
+  const layer = hostOf(fb); if (!layer) return;
+  const rootEl = layer.parentElement; const root = rootEl.getBoundingClientRect(); const board = fb.el.getBoundingClientRect();
+  const W = root.width; const gap = 4;
   const foes = fb.el.querySelectorAll('.fb-slot.foe').length || 1;
-  // stay on the monsters' side of the table: never over the heroes
-  const side = fb.el.querySelector('.fb-side.foes'); const base = fb.el.getBoundingClientRect();
-  const left = Math.max(3, side ? side.getBoundingClientRect().left - base.left : 3); const right = W - 3;
-  layer.classList.toggle('tight', foes >= 3);
-  const boxes = [...layer.children].filter((e) => e._piece?.rect);
-  const maxW = Math.min(184, Math.max(88, (right - left) / foes - gap));
-  const items = boxes.map((box) => {
+  const side = fb.el.querySelector('.fb-side.foes');
+  // in front of the heading, across the top, above the monsters (never over the heroes' side)
+  const left = Math.max(3, (side ? side.getBoundingClientRect().left : board.left) - root.left); const right = W - 3;
+  const maxW = Math.min(170, Math.max(70, (right - left) / foes - gap));
+  const top = Math.max(0, board.top - root.top) + 8;
+  const items = [...layer.children].filter((e) => e._piece?.rect).map((box) => {
     box.style.maxWidth = `${Math.round(maxW)}px`;
-    const r = box._piece.rect(); const w = box.offsetWidth || 110; const bh = box.offsetHeight || 60;
-    return { box, w, cx: r.cx, y: Math.max(3, Math.min(H - bh - 3, r.top + r.h * 0.2)), x: r.cx };
+    const r = box._piece.rect();
+    return { box, w: box.offsetWidth || 90, cx: board.left - root.left + r.cx };
   }).sort((p, q) => p.cx - q.cx);
-  let edge = left;
-  for (const it of items) { it.x = Math.max(it.cx, edge + it.w / 2); edge = it.x + it.w / 2 + gap; }
+  let x0 = left;
+  for (const it of items) { it.x = Math.max(it.cx, x0 + it.w / 2); x0 = it.x + it.w / 2 + gap; }
   let limit = right;
   for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; it.x = Math.min(it.x, limit - it.w / 2); limit = it.x - it.w / 2 - gap; }
-  for (const it of items) { it.box.style.left = `${Math.max(left + it.w / 2, it.x).toFixed(1)}px`; it.box.style.top = `${it.y.toFixed(1)}px`; }
+  for (const it of items) { it.box.style.left = `${Math.max(left + it.w / 2, it.x).toFixed(1)}px`; it.box.style.top = `${top.toFixed(1)}px`; }
 }
 
 export function show(fb, cue, { piece = null } = {}) {
-  if (!fb?.el || !cue) return null;
-  const layer = hostOf(fb); const uid = String(cue.uid || '_');
+  const layer = fb?.el && hostOf(fb); if (!layer || !cue) return null;
+  const uid = String(cue.uid || '_');
   let box = [...layer.children].find((e) => e.dataset.uid === uid);
   if (!box) { box = h('div', { class: 'fb-mbox', role: 'status', 'data-uid': uid }); layer.append(box); }
   if (piece) box._piece = piece;
-  // the same move told twice (a Pounce, then what the Pounce hit for) is one row, with both lines
-  const last = box.lastElementChild;
-  if (last && last.dataset.name === cue.name) {
-    const tx = last.querySelector('.ap-tx');
-    for (const t of (cue.lines || [cue.line])) if (![...tx.querySelectorAll('small')].some((x) => x.textContent === t)) tx.append(h('small', {}, t));
-    last.className = `mrow v-${cue.v}`;
-    layout(fb);
-    return last;
-  }
-  const row = h('div', { class: `mrow v-${cue.v}`, 'data-name': cue.name },
-    h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
-    h('span', { class: 'ap-tx' }, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
+  // the same move told twice (a Pounce, then what the Pounce hit for) is one row
+  if ([...box.children].some((r) => r.dataset.name === cue.name)) { layout(fb); return null; }
+  const row = h('div', { class: `mrow tone-${cue.tone || 'sly'}`, 'data-name': cue.name }, h('b', {}, cue.name), cue.tag ? h('small', {}, cue.tag) : null);
   box.append(row);
   layout(fb);
   return row;
 }
 
-export function clear(fb) { fb?.el?.querySelector(':scope > .fb-pops')?.remove(); }
+export function clear(fb) { fb?.el?.closest('.b3')?.querySelector(':scope > .fb-pops')?.remove(); }
 
 export function showForStrike(fb, s, act, ctx, piece) {
   for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { piece });

@@ -364,25 +364,15 @@
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
 
 /* enemy ability pop-ups (Dave): big cards stacked in the middle of the screen, one under the other, clear of the miniatures and under the round recap */
-.fb-pops { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
-/* one small box per monster, over its own miniature: what it did this turn. They stay until the round recap is closed. */
-.fb-mbox { position: absolute; box-sizing: border-box; min-width: 6.4rem; transform: translateX(-50%); display: flex; flex-direction: column; gap: .3rem; padding: .32rem .45rem .36rem; border-radius: .6rem; animation: fbPopIn .3s ease-out both;
-  background: linear-gradient(180deg, rgba(40, 29, 22, .95), rgba(12, 8, 6, .96)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .8), 0 6px 16px rgba(0, 0, 0, .65); color: #f4e7cb; }
-@keyframes fbPopIn { from { opacity: 0; translate: 0 6px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
-.mrow { --pc: #e2b24c; display: flex; align-items: flex-start; gap: .35rem; }
-.fb-pops.tight .mrow .ap-ico { display: none; }
-.fb-pops.tight .fb-mbox { min-width: 5.4rem; }
-.mrow + .mrow { padding-top: .3rem; border-top: 1px dashed rgba(226, 178, 76, .3); }
-.mrow .ap-ico { flex: none; width: 1.6rem; height: 1.6rem; display: grid; place-items: center; border-radius: .4rem; background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 30%, #1a1008), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 75%, transparent); }
-.mrow .ap-ico svg { width: 1rem; height: 1rem; color: var(--pc); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 60%, transparent)); }
-.mrow .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .06rem; }
-.mrow b { font: 900 .8rem/1.1 var(--disp, sans-serif); letter-spacing: .03em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
-.mrow small { font: 700 .7rem/1.2 var(--disp, sans-serif); color: #eadfc6; overflow-wrap: anywhere; }
-.mrow.v-guard, .mrow.v-armor { --pc: #7ab8ff; }
-.mrow.v-ward, .mrow.v-breath, .mrow.v-rage { --pc: #ff8a3a; }
-.mrow.v-phase, .mrow.v-bind, .mrow.v-chain, .mrow.v-drain { --pc: #c08cff; }
-.mrow.v-hush, .mrow.v-howl { --pc: #e6b4ff; }
-.mrow.v-pilfer, .mrow.v-flee, .mrow.v-summon { --pc: #ffd23d; }
-.mrow.v-charge, .mrow.v-slam, .mrow.v-stalk { --pc: #ff7a6a; }
-.mrow.v-mend { --pc: #7affb0; } .mrow.v-hit { --pc: #ff6a5a; } .mrow.v-blocked { --pc: #7ab8ff; }
+.b3 > .fb-pops { position: absolute; inset: 0; z-index: 25; pointer-events: none; }
+/* a few words per monster across the top of the board, in front of the heading: the move in its colour, then what it did */
+.fb-mbox { position: absolute; box-sizing: border-box; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .12rem; padding: .22rem .5rem .26rem; border-radius: .55rem; text-align: center; animation: fbPopIn .3s ease-out both;
+  background: rgba(10, 6, 4, .82); box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 4px 12px rgba(0, 0, 0, .6); }
+@keyframes fbPopIn { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
+.mrow { --pc: #e2b24c; display: flex; flex-direction: column; align-items: center; gap: .02rem; }
+.mrow + .mrow { padding-top: .16rem; border-top: 1px solid rgba(255, 255, 255, .12); }
+.mrow b { font: 900 .84rem/1.05 var(--disp, sans-serif); letter-spacing: .04em; text-transform: uppercase; color: var(--pc); text-shadow: 0 1px 2px #000, 0 0 8px color-mix(in srgb, var(--pc) 45%, transparent); }
+.mrow small { font: 700 .64rem/1.15 var(--disp, sans-serif); color: #f1e6d2; }
+@media (max-width: 400px) { .fb-mbox { padding: .2rem .38rem .24rem; } .mrow b { font-size: .76rem; letter-spacing: .02em; } .mrow small { font-size: .6rem; } }
+.mrow.tone-atk { --pc: #ff6b5a; } .mrow.tone-def { --pc: #6db8ff; } .mrow.tone-mag { --pc: #c690ff; } .mrow.tone-heal { --pc: #6dffa6; } .mrow.tone-sly { --pc: #ffd23d; }
 @media (prefers-reduced-motion: reduce) { .fb-mbox { animation: none; } }

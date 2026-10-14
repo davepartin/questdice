@@ -26,9 +26,9 @@ for (let r = 1; r <= +rounds; r++) {
   const a = await state(); console.log(`round ${r} with the recap up:`, JSON.stringify(a));
   if (a.outcome) break;
   if (!a.recap) problems.push(`round ${r}: the recap is not up`);
-  if (!a.boxes) problems.push(`round ${r}: no monster box over a miniature`);
-  const tooBig = await p.evaluate(() => [...document.querySelectorAll('.fb-mbox')].filter((e) => { const r = e.getBoundingClientRect(); const f = document.querySelector('.fb').getBoundingClientRect(); return r.left < f.left - 1 || r.right > f.right + 1 || r.top < f.top - 1 || r.bottom > f.bottom + 1; }).length);
-  if (tooBig) problems.push(`round ${r}: ${tooBig} box(es) spill off the board`);
+  if (!a.boxes) problems.push(`round ${r}: no monster label over a miniature`);
+  console.log(await p.evaluate(() => JSON.stringify([...document.querySelectorAll('.fb-mbox')].map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), Math.round(r.top), innerWidth]; })))); const tooBig = await p.evaluate(() => [...document.querySelectorAll('.fb-mbox')].filter((e) => { const r = e.getBoundingClientRect(); return r.left < -1 || r.right > innerWidth + 1 || r.top < 0; }).length);
+  if (tooBig) problems.push(`round ${r}: ${tooBig} label(s) spill off the screen`);
   await shot(`r${r}_recap`);
   await p.evaluate(() => document.querySelector('.b3 .rc .rc-close')?.click()); await pump(0.6);
   const d = await state(); if (d.recap || d.boxes) problems.push(`round ${r}: still showing after the recap was closed ${JSON.stringify(d)}`);
