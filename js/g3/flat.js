@@ -16,7 +16,7 @@ const SIZE = {
   // The Act III foes, each with a painted miniature of its own.
   shieldbearer: 1, gloomstalker: 1, chainbinder: 1, dirgesinger: 1,
   ironwarden: 1.55, fallenchampion: 1.55,
-  cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.5, vharaxis: 1.65,
+  cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.6, vharaxis: 1.7,
 };
 const REL_MAX = 0.62 + 0.38 * 1.7;
 export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero' is 1.0

@@ -461,7 +461,7 @@ export const MONSTERS = {
       { n: 'Skitter', v: 'guard', f: 1, m: 1 }, S('Pounce', 0, 2), S('Bite', 1, 1)],
   },
   bonewarden: {
-    name: 'Bone Warden', glyph: '🦴', img: 'assets/miniatures/bonewarden.webp', imgBase: IB(417, 468, 174, 463, 319), short: 'WARD', init: 4, hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite', threat: 7,
+    name: 'Bone Warden', glyph: '🦴', img: 'assets/miniatures/bonewarden.webp', imgBase: IB(417, 468, 218, 463, 319), short: 'WARD', init: 4, hp: 150, power: 12, xp: 55, gold: 46, tier: 'elite', threat: 7,
     slam: { f: 3, m: 2 }, adds: 'skeleton',
     faces: [S('Cleave', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Wall', v: 'guard', f: 2, m: 1 },
       { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 1 }, S('Smash', 0, 2), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
@@ -481,7 +481,7 @@ export const MONSTERS = {
   },
   // ---- Hired blades and dark mirrors (each with its own painted miniature) ----
   shieldbearer: {
-    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/shieldbearer.webp', imgBase: IB(336, 480, 167.5, 473, 329), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
+    name: 'Shieldbearer', glyph: '🛡️', img: 'assets/miniatures/shieldbearer.webp', imgBase: IB(336, 480, 167.5, 473, 248), short: 'SHLD', init: 4, hp: 44, power: 6, xp: 10, gold: 8, tier: 'minion', threat: 1.3,
     armor: { n: 1, s: 6 },
     faces: [S('Spear', 1, 1), S('Spear', 1, 1), S('Spear', 2, 1),
       { n: 'Lock Shields', v: 'guard', f: 2, m: 1 }, S('Shove', 0, 1), S('Spear', 1, 1)],
@@ -500,7 +500,7 @@ export const MONSTERS = {
       { n: 'Siphon', v: 'drain', f: 0, m: 1, k: 2 }, { n: 'Chain Ward', v: 'ward', f: 0, m: 1, k: 3 }],
   },
   dirgesinger: {
-    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/dirgesinger.webp', imgBase: IB(381, 480, 190, 473, 374), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
+    name: 'Dirge Singer', glyph: '🎻', img: 'assets/miniatures/dirgesinger.webp', imgBase: IB(381, 480, 190, 473, 280), short: 'DIRG', init: 6, hp: 46, power: 8, xp: 15, gold: 12, tier: 'minion', threat: 1.4,
     faces: [{ n: 'Hush', v: 'hush', f: 0, m: 0 }, { n: 'Dirge', v: 'howl', f: 0, m: 0, k: 2 },
       S('Lute Smash', 1, 1), { n: 'Sour Note', v: 'pierce', f: 0, m: 1 },
       { n: 'Hush', v: 'hush', f: 0, m: 0 }, S('Lute Smash', 1, 1)],
@@ -512,7 +512,7 @@ export const MONSTERS = {
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
   },
   fallenchampion: {
-    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', imgBase: IB(331, 480, 165, 473, 324), short: 'CHMP', init: 6, hp: 240, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', imgBase: IB(331, 480, 165, 473, 255), short: 'CHMP', init: 6, hp: 240, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
     slam: { f: 5, m: 2 }, armor: { n: 2, s: 4 },
     faces: [S('Oathbreaker', 3, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
       { n: 'Oath Smite', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 3, 1)],
@@ -530,7 +530,7 @@ export const MONSTERS = {
       { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],
   },
   frostwhelp: {
-    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/frostwhelp.webp', faces: 'right', imgBase: IB(474, 480, 225.5, 473, 443), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
+    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/frostwhelp.webp', imgBase: IB(474, 480, 225.5, 473, 443), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Bite', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }, { n: 'Icy Wings', v: 'bind', f: 0, m: 0, k: 1 },
       { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
