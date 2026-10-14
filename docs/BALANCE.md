@@ -266,7 +266,7 @@ Three monster moves change the right answer for a round, so "read the box" is no
 Campaign check (progress-all, 3 acts, 4 campaigns a class): 20/20 cleared; Act I standard fights end with 63–77% health
 (was 72–87%), bosses 88–90% / 81% / 85%.
 
-## 13 Oct 2026 — random encounters by skill (Noob / Mid / Expert)
+## 13 Oct 2026 — random encounters by difficulty (then called Noob / Mid / Expert; now Easy / Normal / Hard: a setting for the computer, not a player skill)
 One fight per step, picked by the game from a trouble budget (`ENCOUNTER`, `encounterFor` in engine.js). Bot (`SKILL=easy|normal|hard sh tools/progress-all.sh 3 3 smart`, 3 acts, 15 campaigns, 5 trials a fight):
 - **Noob** (hp x0.8, -1 a hit, budget x0.7): cleared 15/15; almost every fight 99-100%, bosses ~90%.
 - **Mid** (the intended game): cleared 14/15; ordinary fights 90-100%, dips to ~80-90% late in an act; bosses 60-85%.

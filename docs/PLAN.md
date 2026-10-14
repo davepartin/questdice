@@ -864,7 +864,7 @@ Dave's list, in the order we are doing it. Each item names where it lives.
 3. **Magic powers sheet (done).** Heal (and Potion) keep the sheet open: every tap pays for another heal, the magic and a new green
    health pill update in place. The detail panel has a fixed minimum height so the triangle never jumps when you pick the first
    power; bigger medallions with a gold rim when ready; the three helpers are small raised pills. `dev/sheetshot.mjs` measures the triangle before/after a pick.
-4. **Skill level and random encounters (done; numbers in docs/BALANCE.md: Noob 15/15 clears, Mid 14/15, Expert 3/15 for the bot).** The hero picks Noob / Mid / Expert (keys `easy|normal|hard` kept for old saves;
+4. **Difficulty (for the computer, not a skill level for the player) and random encounters (done; numbers in docs/BALANCE.md: Noob 15/15 clears, Mid 14/15, Expert 3/15 for the bot).** The game's difficulty (picked with the hero, but it only sets how hard the monsters are) is Noob / Mid / Expert (keys `easy|normal|hard` kept for old saves;
    `DIFFICULTY`, now with a `budget`). `questsFor` returns ONE fight chosen by the game: `encounterFor(hero)` fills a trouble
    budget (`ENCOUNTER` in data.js, each monster has a `threat`; budget grows through the act, times the skill's `budget`, times a seeded
    0.75-1.35 jitter) from the act's own monsters, sometimes one big monster, sometimes a crowd (cap 4). Elite steps give a Noob the elite alone and an Expert the elite with company. The first fight is still the lone goblin.
@@ -1009,3 +1009,5 @@ Dave: too many things on the board while the minis fight. Removed: the gold/colo
 - **While the blows land**: damage in red over each side (`−14` on the monster, `−10` on the hero), and when something soaked a blow its own word in blue (`Duck −6`, `Fire Ward −4`, `Armor −3`, `Block −5` on a hero). All numbers now stay on screen **five seconds** (`fb.num`).
 - **The recap names the move**: a gold chip with the monster's move name (STAB, BITE, DUCK) beside its name, on top of the die breakdown added earlier.
 Shots: docs/ingame/plan_*.png, plan3_*.png, plan4.png (`dev/battleshot.mjs`).
+
+- (14 Oct) Dave: there is no player skill level, only a difficulty for the computer. The game's wording is Difficulty / Easy / Normal / Hard (Legendary); the Noob/Mid/Expert names above are history. The recap's monster breakdown is now `[die] + [bonus]` (bonus = the move's own number + the fight's extra hit), plus a howl or softening when there is one; "move" and "fight bonus" were confusing.

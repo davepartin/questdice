@@ -26,10 +26,11 @@ const rolled = (b, a) => {
 };
 const calcLine = (b, a, word) => {
   const c = a.calc; const size = c?.size || foe(b, a.uid)?.powerDie; if (!c || !size || a.p == null || !(c.m || c.f)) return null;
+  // the die it rolled, then ONE bonus (its move's own number plus the fight's extra hit, which grows as the road goes on and is gentler on Easy);
+  // a howl and any softening from your powers are named on their own
   const bits = [];
-  if (c.f) bits.push([c.f, 'move']);
   if (c.m) bits.push([c.m === 1 ? c.p : `${c.m}×${c.p}`, 'die']);
-  if (c.flat) bits.push([c.flat, 'fight bonus']);
+  if (c.f + c.flat) bits.push([c.f + c.flat, 'bonus']);
   if (c.buff) bits.push([c.buff, 'howl']);
   const soft = c.weaken ? h('span', { class: 'rc-b soft' }, h('i', {}, '−'), h('b', {}, String(c.weaken)), h('small', {}, 'softened')) : null;
   void word;

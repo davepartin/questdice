@@ -423,7 +423,7 @@ export function stepPick() {
 
 // ------------------------------------------------------------------------------------------------ board
 const groupNames = (ids) => { const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; }); return Object.entries(n).map(([id, c]) => `${D.MONSTERS[id].name}${c > 1 ? ` ×${c}` : ''}`).join(' + '); };
-// The skill level this hero plays at (Easy / Normal / Hard / Legendary), shown on the quest board so it is never a mystery why fights feel the way they do.
+// The difficulty the computer plays at (Easy / Normal / Hard / Legendary), shown on the quest board so it is never a mystery why fights feel the way they do. It is about the monsters, not the player.
 function diffChip(hero) {
   const id = D.normalizeDifficulty(hero.difficulty); const d = D.DIFFICULTY[id];
   return h('span', { class: `sx-diffchip dc-${id}`, title: d.text, 'aria-label': `Difficulty: ${d.name}. ${d.text}` }, ico('skull'), d.name);
