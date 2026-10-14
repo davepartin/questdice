@@ -237,7 +237,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const intent = h('div', { class: 'fb-intent' });
     // a small blue shield with a line through it: this monster has no defence at all (no guard, no ward, no armour), which can decide who you hit
     const nodef = h('i', { class: 'fb-nodef', title: 'No defence: nothing soaks your attack', hidden: true }, HK.icon('block'));
-    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent, nodef), name, hp, hpNum, intent, nodef };
+    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent, nodef };
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
@@ -353,11 +353,11 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     // the plaque's third line is the whole plan: the move's name in one word, and the dice it will roll (red = it hits, blue = it guards)
     const v = !dead && intents ? HK.intentView(e) : null;
     const plan = v ? planOf(e, v) : null;
-    const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon].join('|') : '';
+    const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon, c.nodef.hidden ? 'd' : 'n'].join('|') : '';
     if (c.sig !== sig) {
       c.sig = sig;
       c.intent.className = `fb-intent${plan ? ` tone-${plan.tone}` : ''}`;
-      c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null].filter(Boolean) : []));
+      c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null, c.nodef].filter(Boolean) : []));
       requestAnimationFrame(() => fitPlan(c.intent));
       pc.el.setAttribute('aria-label', plan ? `${e.name}, ${Math.max(0, e.hp)} of ${e.maxHp} health. Plans ${plan.word}${plan.dice ? `, rolling ${plan.dice}` : ''}.` : `${e.name}${dead ? ', defeated' : ''}`);
     }

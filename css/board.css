@@ -404,9 +404,9 @@
 .rc-nodef small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; }
 .fi-die.none { gap: .4rem; }
 
-/* no defence at all: a small blue shield with a red line through it, on the plaque's corner */
-.fb-card.foe { position: relative; }
-.fb-nodef { position: absolute; left: -.38rem; top: -.5rem; z-index: 3; width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #2d5da8, #11285a); box-shadow: 0 0 0 1.5px #8fc2ff, 0 2px 6px rgba(0, 0, 0, .6); color: #bfe0ff; }
+/* no defence at all: a small blue shield with a red line through it, at the end of the plaque's plan row */
+.fb-nodef { position: relative; flex: none; width: .95rem; height: .95rem; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #2d5da8, #11285a); box-shadow: 0 0 0 1px #8fc2ff; color: #bfe0ff; }
 .fb-nodef[hidden] { display: none; }
-.fb-nodef svg { width: .85rem; height: .85rem; }
-.fb-nodef::after { content: ''; position: absolute; left: 12%; top: 50%; width: 76%; height: 2px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); }
+.fb-nodef svg { width: .6rem; height: .6rem; }
+.fb-nodef::after { content: ''; position: absolute; left: 10%; top: 50%; width: 80%; height: 1.5px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-nodef { width: .8rem; height: .8rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-nodef svg { width: .5rem; height: .5rem; }
