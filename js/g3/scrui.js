@@ -187,8 +187,8 @@ export function title() {
     menu.append(plaque({ eyebrow: 'Saved games', title: saves.length > 1 ? `All saved games (${saves.length})` : 'Saved games', sub: 'Every hero saved on this phone.', icon: 'book', onclick: () => savedChoice(menu, saves, saveSub, where) }));
     menu.append(group('Begin anew'));
   }
-  // New players meet Learn to play first; returning players find it under the menu.
-  if (!saves.length) menu.append(plaque({ eyebrow: 'New here? Start here', title: 'Learn to play', sub: 'Three minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
+  // Learn to play sits first until there is a saved hero, then it moves under the menu.
+  if (!saves.length) menu.append(plaque({ eyebrow: 'Start here', title: 'Learn to play', sub: 'Three minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
@@ -250,7 +250,7 @@ export function create(opts = {}) {
   const diffRow = h('div');
   const paintDiff = () => diffRow.replaceChildren(difficultyPicker(diff, (id) => { diff = id; sfx.select(); paintDiff(); }));
   paintDiff();
-  const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'I have played before: skip the beginner hints'));
+  const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'Turn the hints off'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
   const info = h('div', { class: 'sx-classinfo' });
   const preview = h('div', { class: 'sx-hero-art' });
@@ -329,7 +329,6 @@ export function create(opts = {}) {
         source, hideClass ? null : rail, hideClass ? null : info, flourish(),
         showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T ? null : hintsBox,
         loaded ? h('p', { class: 'fine' }, `${loaded.name} · Level ${loaded.level} ${D.CLASSES[loaded.cls].name}. Friends join with their own hero.`) : null,
-        bring && !loaded ? h('p', { class: 'fine' }, 'Act I tables are for a new hero. A built-up hero can join Act II or III.') : null,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,
           browse,
           loaded ? null : h('label', { for: 'hero-name' }, 'Name', name), loaded ? null : h('label', { for: 'hero-pw' }, 'Password', pw),
@@ -376,9 +375,8 @@ export function heroHub() {
   const cls = D.CLASSES[hero.cls];
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'This hero' },
     h('div', { class: 'sx-eye menu-label' }, `${hero.name} · Level ${hero.level} ${cls.name}`),
-    !SV.isNewHero(hero) ? h('p', { class: 'fine' }, 'Act I is for a new hero. Forge a fresh character to walk it again, or to play Act I at a table.') : null,
     plaque({ eyebrow: 'Continue', title: 'Take the road', sub: `Act ${romans[c.act - 1] || c.act}, Quest ${c.step}`, icon: 'map', primary: true, onclick: () => X.showRoadOrBoard() }),
-    choices.length > 1 ? plaque({ eyebrow: 'Replay', title: 'Begin at a step', sub: 'Any quest you have already reached, except Act I. You cannot skip ahead.', icon: 'road', onclick: () => X.showStepPick() }) : null,
+    choices.length > 1 ? plaque({ eyebrow: 'Replay', title: 'Begin at a step', sub: 'Any quest you have already reached. You cannot skip ahead.', icon: 'road', onclick: () => X.showStepPick() }) : null,
     plaque({ eyebrow: 'Together', title: 'Open a table', sub: 'Invite friends. They bring their own heroes.', icon: 'people', tone: 'is-together', onclick: () => X.showHostLoaded() }));
   mountAs('title', h('div', { class: 'sx-title-shell' }, h('div', { class: 'sx-title-brand' }, logo()), h('div', { class: 'sx-title-menu' }, menu, h('div', { class: 'sx-links' }, btn('Home', X.showTitle, { kind: 'link', icon: 'home' })))));
   lay('title'); SCR.enter('title', { cls: hero.cls }, `title:${hero.cls}`);
@@ -390,14 +388,13 @@ export function stepPick() {
   const pick = (act, step) => {
     if (!SV.beginAt(hero, act, step)) {
       sfx.error();
-      toast(act === 1 && !SV.isNewHero(hero) ? SV.ACT1_NEW : 'That step is still ahead of you.');
+      toast('That step is still ahead of you.');
       return;
     }
     X.persist(); sfx.select(); X.showRoadOrBoard();
   };
   const acts = [];
   for (let act = 1; act <= r.act; act++) {
-    if (act === 1 && !SV.isNewHero(hero)) continue;
     acts.push({ act, last: act < r.act ? D.QUESTS_PER_ACT : r.step });
   }
   const rows = acts.map(({ act, last }) => {
@@ -418,8 +415,7 @@ export function stepPick() {
     topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Back', X.showHeroHub, { kind: 'ghost', icon: 'back' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' }, eyebrow('The road you have walked'), h('h1', { class: 'sx-act' }, 'Begin at a step'),
-        h('p', { class: 'sx-acttag' }, 'Tap any quest you have already reached. Gold, gear and levels stay. You cannot skip past your progress.'),
-        !SV.isNewHero(hero) ? h('p', { class: 'sx-acttag' }, SV.ACT1_NEW) : null),
+        h('p', { class: 'sx-acttag' }, 'Tap any quest you have already reached. Gold, gear and levels stay. You cannot skip past your progress.')),
       ...rows)));
   lay('board'); SCR.enter('road', { hero, heroes: X.members() }, `step:${hero.name}`);
 }
@@ -861,7 +857,7 @@ function heroTab() {
     eyebrow('Difficulty'),
     difficultyPicker(hero.difficulty, (id) => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }, { locked: !!X.net }),
     X.net ? h('p', { class: 'fine' }, 'The host set this for the table.') : null,
-    h('div', { class: 'sx-check' }, h('span', {}, `Beginner hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
+    h('div', { class: 'sx-check' }, h('span', {}, `Hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level. Growing up, with extra steps.'),
     eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, E.cardsOf(hero).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),

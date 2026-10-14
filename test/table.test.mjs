@@ -277,22 +277,18 @@ test('a brought hero keeps their gear, and the table walks the host\'s road', ()
   assert.equal(playerView(seated, seated.players[0].id).players[0].level, 5);
 });
 
-test('Act I tables refuse a hero who has already beaten a step', () => {
+test('any hero may sit at an Act I table, however far they have walked', () => {
   const table = createTable({ code: 'ACT1', seed: 2, name: 'Gate' });
   assert.equal(joinTable(table, { name: 'Host', cls: 'knight', token: 'tok0aaaa' }).ok, true);
   const vet = E.newHero({ name: 'Vet', cls: 'bard', seed: 8 });
   vet.campaign.act = 1; vet.campaign.step = 4; vet.campaign.wins = 3; vet.campaign.reached = { act: 1, step: 4 };
-  const join = joinTable(table, { name: 'Vet', cls: 'bard', token: 'tok1bbbb', hero: vet });
-  assert.equal(join.ok, false);
-  assert.match(join.error, /Act I is for a new hero/);
+  assert.equal(joinTable(table, { name: 'Vet', cls: 'bard', token: 'tok1bbbb', hero: vet }).ok, true);
   const fresh = E.newHero({ name: 'Nia', cls: 'wizard', seed: 9 });
   assert.equal(joinTable(table, { name: 'Nia', cls: 'wizard', token: 'tok2cccc', hero: fresh }).ok, true);
   const hostVet = createTable({ code: 'HVET', seed: 3, name: 'No' });
   const mid = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
   mid.campaign.act = 1; mid.campaign.step = 5; mid.campaign.wins = 4; mid.campaign.reached = { act: 1, step: 5 };
-  const hostJoin = joinTable(hostVet, { name: 'Ada', cls: 'knight', token: 'tok3dddd', hero: mid });
-  assert.equal(hostJoin.ok, false);
-  assert.match(hostJoin.error, /Act I is for a new hero/);
+  assert.equal(joinTable(hostVet, { name: 'Ada', cls: 'knight', token: 'tok3dddd', hero: mid }).ok, true);
 });
 
 test('a built-up hero may bring their save into an Act II table', () => {

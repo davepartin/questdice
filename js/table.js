@@ -43,8 +43,6 @@ export function joinTable(table, { name, cls, token, hero }) {
   const brought = takeBrought(hero, heroName, cls || hero?.cls);
   const seatCls = brought?.cls || cls;
   if (!CLASSES[seatCls]) return fail('Pick a class.');
-  const gated = actOneGate(table, brought, { asHost: !table.hostId });
-  if (gated) return gated;
   // (the id shows no part of the token)
   const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls: seatCls, ready: false, seenBrag: false, hero: null, brought };
   table.players.push(player);
@@ -117,13 +115,6 @@ function hostAct(table, broughtHost) {
   const h = broughtHost || table.players.find((p) => p.id === table.hostId)?.brought;
   return Math.max(1, h?.campaign?.act | 0) || 1;
 }
-function actOneGate(table, brought, { asHost = false } = {}) {
-  if (!brought) return null;
-  const act = asHost ? Math.max(1, brought.campaign?.act | 0) : hostAct(table);
-  if (act === 1 && !SV.isNewHero(brought)) return fail(SV.ACT1_TABLE);
-  return null;
-}
-
 function sit(table, player, cmd) {
   if (table.phase !== 'lobby') return fail('The campaign has already started.');
   const heroName = clean(cmd.name, 16);
@@ -132,8 +123,6 @@ function sit(table, player, cmd) {
   if (cmd.hero) {
     const brought = takeBrought(cmd.hero, heroName, cmd.cls || cmd.hero.cls);
     if (!brought) return fail('Pick a class.');
-    const gated = actOneGate(table, brought, { asHost: player.id === table.hostId });
-    if (gated) return gated;
     player.brought = brought;
     player.name = brought.name;
     player.cls = brought.cls;
@@ -194,11 +183,6 @@ function startCampaign(table, player) {
   });
   const overlay = takeHostCampaign(host?.brought?.campaign);
   if (overlay) Object.assign(company.campaign, overlay);
-  const tableAct = Math.max(1, company.campaign.act | 0);
-  if (tableAct === 1) {
-    const veteran = table.players.find((p) => p.brought && !SV.isNewHero(p.brought));
-    if (veteran) return fail(SV.ACT1_TABLE);
-  }
   table.difficulty = normalizeDifficulty(table.difficulty || host?.brought?.difficulty);
   table.players.forEach((p, i) => {
     let hero = company.members[i];

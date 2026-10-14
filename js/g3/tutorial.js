@@ -106,7 +106,7 @@ const LESSONS = [
       row(ic('atk'), 'Top row', 'Your weapons, with your head between them.'),
       row(ic('heart'), 'Middle row', 'Your two hands, with your heart in the center.'),
       row(ic('magic'), 'Bottom row', 'Two talent dice, with your feet between them.'),
-      p('A new hero starts with seven dice. The two sockets marked EMPTY are filled at camp as you grow.'),
+      p('Your hero starts with seven dice. The two sockets marked EMPTY are filled at camp as you grow.'),
     ],
   },
   {

@@ -210,7 +210,7 @@ export const CLASS_TALENT = {
 // Keys easy/normal/hard are the old Noob/Mid/Expert monster-side knobs; older saves stored those keys (or the names
 // noob/mid/expert). Legendary is a new rung and still needs tuning.
 export const DIFFICULTY = {
-  easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road, for learning your feet.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
+  easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
   normal: { name: 'Normal', text: 'The road as it was meant to be walked.', hp: 1, flat: 0, gold: 1, budget: 1 },
   hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold. You will earn it.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
   // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).

@@ -187,7 +187,6 @@ export function markReached(hero) {
 export function canStartAt(hero, act, step) {
   const a = act | 0; const s = step | 0;
   if (a < 1 || s < 1 || s > QUESTS_PER_ACT) return false;
-  if (a === 1 && !isNewHero(hero)) return false;
   const r = reachedOf(hero);
   if (a < r.act) return true;
   return a === r.act && s <= r.step;
@@ -218,26 +217,6 @@ export function beginAt(hero, act, step) {
   c.blessings = [];
   c.nextPlace = null;
   c.nextEnemies = null;
-  return true;
-}
-
-// ------------------------------------------------------------------------------ Act I is new-hero-only
-// A hero who has beaten any step cannot start a new Act I game (solo picker or a table). Continue
-// mid-Act-I is still allowed: that is picking up where they stand, not starting Act I again.
-export const ACT1_NEW = 'Act I is for a new hero. Forge a fresh character to walk it again.';
-export const ACT1_TABLE = 'Act I is for a new hero. Forge a fresh character, or join a table on Act II or III.';
-export function isNewHero(hero) {
-  if (!hero) return true;
-  if (clearedOf(hero).length) return false;
-  if ((hero.campaign?.wins | 0) > 0) return false;
-  const r = reachedOf(hero);
-  if (r.act > 1 || r.step > 1) return false;
-  const c = hero.campaign || {};
-  if ((c.act | 0) > 1 || (c.step | 0) > 1) return false;
-  return true;
-}
-export function canJoinAct(hero, act) {
-  if ((act | 0) === 1) return isNewHero(hero);
   return true;
 }
 
