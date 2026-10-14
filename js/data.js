@@ -269,6 +269,9 @@ export const HERO_LOOKS = {
 export const lookIndex = (heroes, i) => (heroes || []).slice(0, i).filter((x) => x?.cls === heroes[i]?.cls).length % (HERO_LOOKS[heroes?.[i]?.cls]?.length || 1);
 export const lookOf = (heroes, i) => HERO_LOOKS[heroes?.[i]?.cls]?.[lookIndex(heroes, i)] || null;
 
+// The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, as far as the act allows. It is rolled in every battle (its faces
+// pay heal / pierce / magic / gold like the hands) and in the road's Tests of Wisdom (trials.js).
+export const MIND_STEPS = { 4: [50], 6: [110], 8: [230] };
 export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 export const PREV_SIZE = { 6: 4, 8: 6, 10: 8 };

@@ -15,6 +15,7 @@ import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
 import { petImg } from './pets.js';
+import { showTrial, statBadge } from './trialui.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -512,13 +513,19 @@ export function road() {
   const members = X.members(); const hero = X.S.hero || members[0]; const ev = R.ensureRoad(hero, members); X.persist();
   const choices = h('div', { class: 'sx-choices' }, ev.choices.map((ch, i) => h('button', {
     class: `sx-choice ${ch.ok ? '' : 'off'}`, type: 'button', disabled: !ch.ok, style: { '--i': i }, 'aria-label': `${ch.label}. ${ch.hint}`,
-    onclick: () => { if (X.chooseRoad) { sfx.card(); X.chooseRoad(ch.id); return; } const res = R.chooseRoad(hero, members, ch.id); if (!res) { sfx.error(); toast(ch.ok ? 'The road will not take that.' : 'You cannot afford that.'); return; } sfx.card(); X.persist(); roadResult(res); },
-  }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
+    onclick: () => { if (X.chooseRoad) { sfx.card(); X.chooseRoad(ch.id); return; } const res = R.chooseRoad(hero, members, ch.id); if (!res) { sfx.error(); toast(ch.ok ? 'The road will not take that.' : 'You cannot afford that.'); return; } sfx.card(); X.persist(); trialThen(res); },
+  }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, ch.test ? statBadge(ev.stat) : null, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+}
+// A test on the road: the dice roll first (trialui.js), then the result card, with a rematch offer after a loss (solo; a table does it in online.js).
+export async function trialThen(res) {
+  if (res.trial) await showTrial(res.trial, { title: res.title });
+  const hero = X.S.hero || X.members()[0]; const re = res.trial ? R.rematchInfo(hero, X.members()) : null;
+  roadResult(res, re ? { extra: btn(`Ask for a rematch · ${re.cost} gold`, () => { const r2 = R.rematchTrial(hero, X.members()); if (!r2) { sfx.error(); toast('Not enough gold for a rematch.'); return; } sfx.card(); X.persist(); trialThen(r2); }, { kind: 'ghost', icon: 'reroll', cls: 'wide', disabled: !re.ok }) } : {});
 }
 export function roadResult(res, o = {}) {
   const hero = X.S.hero || X.members()[0];
@@ -604,8 +611,8 @@ export function defeat(retreat, loss) {
 const TABS = [['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 function upgradeRow(kind, slot, label, hint) {
-  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); const size = hero[kind][slot];
-  const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
+  const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); if (kind === 'mind') E.mindSize(hero); const size = hero[kind][slot];
+  const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : kind === 'mind' ? E.mindUpgrade(hero) : E.specialUpgrade(hero, slot);
   const ladder = [4, 6, 8, 10];
   return h('div', { class: `sx-urow ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` },
     h('div', { class: 'ur-ladder', 'aria-hidden': 'true' }, ladder.map((n, i) => h('span', { class: `step ${n < size ? 'past' : n === size ? 'now' : 'next'}` }, dieBadge(n), i < 3 ? h('i', { class: 'link' }) : null))),
@@ -816,9 +823,10 @@ function forgeTab() {
     hasTalent ? h('p', { class: 'tab-intro' }, 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. A bigger die brings new empty faces. Homework, with sparkles.') : null,
     ...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)),
     petSection(hero),
-    eyebrow('Strength dice'),
-    h('p', { class: 'tab-intro' }, 'Bigger hand dice hit harder and power your talent symbols. A die can only grow as far as the act allows. Patience, then punch.'),
+    eyebrow('Body dice: strength, wisdom, speed'),
+    h('p', { class: 'tab-intro' }, 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.'),
     upgradeRow('strength', 'W', 'Left hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your left weapon.`), upgradeRow('strength', 'E', 'Right hand die', (a, b) => `Grow from d${a} to d${b}: bigger numbers added to your right weapon.`),
+    upgradeRow('mind', 'N', 'Head die (wisdom)', (a, b) => `Grow from d${a} to d${b}: wiser on the road's tests, and bigger numbers in battle.`),
     upgradeRow('speed', 'S', 'Feet die (speed)', (a, b) => `Grow from d${a} to d${b}: monsters have a harder time striking before you.`),
     rerollDieRow(hero),
     potionRow(hero),

@@ -15,6 +15,7 @@ export async function phones(names, { w = 393, h = 667, dpr = 2 } = {}) {
   for (const name of names) {
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true, deviceScaleFactor: dpr });
     await ctx.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch { /* */ } });
+    await ctx.route(/gstatic\.com|googleapis\.com|firebase/, (r) => r.abort()); // the sandbox has no cloud: fail fast so a hero saves on the device
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log(`[${name}] ERR`, e.message));
     page.on('console', (m) => { if (m.type() === 'error') console.log(`[${name}] console.error`, m.text().slice(0, 200)); });
@@ -32,16 +33,20 @@ export async function phones(names, { w = 393, h = 667, dpr = 2 } = {}) {
 }
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// tables keep each hero in the cloud behind a password now: fill it when the form asks
+const pw = (p) => p.page.evaluate(() => { const el = document.querySelector('#hero-pw, input[type=password]'); if (el) { el.value = 'abc123'; el.dispatchEvent(new Event('input', { bubbles: true })); } });
 // Two or more phones: the first opens a table, the rest join, everyone gets to the quest board (past the story and the road).
 export async function seat(ps, { cls = [] } = {}) {
   const [a, ...rest] = ps;
   for (const p of ps) await p.open();
   await a.pump(1); await a.clickText('Play together'); await a.pump(1); await a.clickText('Open a table'); await a.pump(2);
-  await a.fill('#hero-name', 'Dave1'); await a.clickText('Open the table'); await a.pump(3);
+  await a.fill('#hero-name', 'Dave1'); await pw(a); await a.clickText('Open the table'); await a.pump(3); await sleep(800);
+  // the hero is stashed in the cloud first; in the sandbox that call has to time out before the table opens
+  await a.page.waitForFunction(() => window.QD.S.net?.code, null, { timeout: 120000 });
   const code = await a.page.evaluate(() => window.QD.S.net?.code);
   for (const [i, p] of rest.entries()) {
     await p.pump(1); await p.clickText('Play together'); await p.pump(1); await p.clickText('Join a table'); await p.pump(2);
-    await p.fill('#table-code', code); await p.fill('#hero-name', p.name.replace(/\s/g, '') + (i + 2)); await p.clickText('Take a seat'); await p.pump(3);
+    await p.fill('#table-code', code); await p.fill('#hero-name', p.name.replace(/\s/g, '') + (i + 2)); await pw(p); await p.clickText('Take a seat'); await p.page.waitForFunction(() => window.QD.S.net?.code, null, { timeout: 120000 }); await p.pump(2); await p.pump(3);
     await p.clickText('I am ready'); await sleep(300);
   }
   for (const p of ps) await p.pump(1);

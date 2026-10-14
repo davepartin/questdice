@@ -406,3 +406,26 @@ test('loading an old table remaps noob/mid/expert and fills table.difficulty fro
   assert.equal(back.difficulty, 'easy');
   assert.equal(migrateTable({ players: [{ id: 'p1', brought: { difficulty: 'expert' } }], hostId: 'p1' }).difficulty, 'hard');
 });
+
+test('a test on the road works at a table: the champion rolls, every phone sees the dice, a lost test can be rematched once', () => {
+  const { table, players } = make([['Ada', 'knight'], ['Rae', 'ranger']]);
+  for (const p of players) command(table, p.id, { type: 'ready', name: p.name, cls: p.cls });
+  command(table, players[0].id, { type: 'start' });
+  // jump to a test step on the road
+  const c = table.company.campaign; Object.assign(c, { step: 4, wins: 3, road: null });
+  for (const m of table.company.members) m.gold = 200;
+  table.phase = 'road'; table.roadResult = null; R.ensureRoad(table.company.members[0], table.company.members);
+  const road = playerView(table, players[0].id).road;
+  assert.ok(road.stat && road.choices.some((ch) => ch.test), `a test is waiting (${road.id})`);
+  const ch = road.choices.find((x) => x.test && x.ok);
+  assert.equal(command(table, players[0].id, { type: 'choose', id: ch.id }).ok, true);
+  const seen = playerView(table, players[1].id).road;
+  assert.ok(seen.done && seen.trial && seen.trial.heroDice.length >= 1, 'the other phone gets the roll to watch');
+  if (!seen.trial.win) {
+    assert.equal(command(table, players[1].id, { type: 'rematch' }).ok, true);
+    assert.equal(playerView(table, players[0].id).road.trial.attempt, 1);
+    assert.equal(command(table, players[1].id, { type: 'rematch' }).ok, false, 'only one rematch');
+  } else assert.equal(command(table, players[1].id, { type: 'rematch' }).ok, false, 'nothing to rematch after a win');
+  // a round trip through save/load keeps it
+  const back = loadTable(saveTable(table)); assert.ok(back.roadResult.trial);
+});

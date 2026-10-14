@@ -4,8 +4,9 @@ import { CLASSES, WEAPONS, RARITY, ACTS } from './data.js';
 import { HELP_FIGHTS, placeOf } from './story.js';
 import { gambleOffer, line, revealLine, GAMBLE_ODDS } from './auction.js';
 import {
-  hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach,
+  hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf,
 } from './engine.js';
+import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost } from './trials.js';
 
 export function joinNames(members) {
   const n = members.map((m) => m.name);
@@ -646,13 +647,15 @@ ROADS.push({
 });
 
 // A road event comes every second fight (before fights 3, 5, 7, 9) and always before the boss.
-export const roadSlot = (c) => c.step === 8 || (c.step >= 3 && (c.step % 2 === 1 || c.step >= 10));
+// Tests on the road (trials.js) take steps 2, 4, 6 and 9, so something waits on the road before almost every fight.
+export const roadSlot = (c) => c.step === 8 || isTrialStep(c) || (c.step >= 3 && (c.step % 2 === 1 || c.step >= 10));
 const travellerDue = (c) => (c.wins || 0) - (c.travellerAt || 0) >= 2 + (hashSeed(c.seed, c.act, c.step, 'trav') & 1);
 
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
   if (opening) return ROADS.filter((e) => e.when === 'opening');
   if (campaign.step === 8) return ROADS.filter((e) => e.when === 'help');
+  if (isTrialStep(campaign)) return ROADS.filter((e) => e.when === 'trial');
   if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss' || e.when === 'road');
   return ROADS.filter((e) => e.when === 'road');
 }
@@ -668,7 +671,7 @@ export function ensureRoad(hero, members) {
     if (fresh.length) pool = fresh;
     const weights = pool.map((e) => (c.step >= 10 && e.when === 'boss' ? 5 : 1));
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
-    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && c.step !== 8 && travellerDue(c)) {
+    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && c.step !== 8 && !isTrialStep(c) && travellerDue(c)) {
       c.road.id = 'traveller'; c.travellerAt = c.wins || 0;
       c.traveller = gambleOffer(c.seed, { act: c.act, step: c.step });
     }
@@ -687,9 +690,9 @@ function present(id, hero, members) {
   const ev = ROADS.find((e) => e.id === id) || ROADS[0];
   const ctx = { campaign: hero.campaign, members, act: hero.campaign.act };
   return {
-    id: ev.id, title: ev.title, kicker: ev.kicker || 'The road has a word', tell: ev.tell(ctx),
+    id: ev.id, title: ev.title, kicker: ev.kicker || 'The road has a word', tell: ev.tell(ctx), stat: ev.stat || null, hard: !!ev.hard, foe: ev.foe || null,
     choices: ev.choices.map((ch) => ({
-      id: ch.id,
+      id: ch.id, test: !!ch.test,
       label: ch.label(ctx),
       hint: ch.hint(ctx),
       ok: ch.can ? ch.can(ctx) : true,
@@ -704,8 +707,156 @@ export function chooseRoad(hero, members, choiceId) {
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'road-choice', choiceId));
   const ctx = { campaign: c, members, rng, act: c.act, hero };
   if (choice.can && !choice.can(ctx)) return null;
-  const text = choice.apply(ctx);
+  let text; let trial = null;
+  if (choice.test) { // a test: pay any stake, roll the champion's dice against the other side's, then win or lose
+    const stake = choice.stake ? choice.stake(ctx) : 0;
+    if (stake && !payCompany(members, stake)) return null;
+    trial = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choiceId}` });
+    text = trial.win ? choice.win(ctx, trial) : choice.lose(ctx, trial);
+    c.road.trial = { ...trial, choiceId, stake, rematched: false };
+  } else text = choice.apply(ctx);
   c.road.done = true;
   c.seenRoads = [...(c.seenRoads || []), ev.id].slice(-10);
-  return { title: ev.title, text };
+  return { title: ev.title, text, trial: trial ? { ...trial, foe: ev.foe, stake: c.road.trial.stake, canRematch: !trial.win, rematchCost: rematchCost(c.act) } : null };
 }
+// After a lost test, one rematch for a little gold. A win pays out as usual; the first loss still stands.
+export function rematchInfo(hero, members) {
+  const c = hero.campaign; const t = c.road?.trial;
+  if (!t || t.win || t.rematched) return null;
+  const cost = rematchCost(c.act); return { cost, ok: companyGold(members) >= cost };
+}
+export function rematchTrial(hero, members) {
+  const c = hero.campaign; const info = rematchInfo(hero, members); if (!info?.ok) return null;
+  const ev = ROADS.find((e) => e.id === c.road.id); const choice = ev?.choices.find((ch) => ch.id === c.road.trial.choiceId); if (!choice) return null;
+  payCompany(members, info.cost);
+  const ctx = { campaign: c, members, rng: makeRng(hashSeed(c.seed, c.act, c.step, 'rematch')), act: c.act, hero };
+  const r = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choice.id}`, attempt: 1 });
+  const stake = c.road.trial.stake || 0;
+  let text;
+  if (r.win) text = choice.win(ctx, r); else text = `A rematch, ${roll2(r)}. No luck this time either. Some days the dice have other plans.`;
+  c.road.trial = { ...r, choiceId: choice.id, stake, rematched: true };
+  return { title: ev.title, text, trial: { ...r, foe: ev.foe, stake, canRematch: false, rematchCost: info.cost } };
+}
+
+// ------------------------------------------------------------------------------------------------ tests on the road (trials.js)
+// Four times an act the road asks for wisdom (the head die), strength (both hands) or speed (the feet). A test choice rolls the champion's
+// dice against the other side's; `win` / `lose` say what happened. Plain choices (walk on, pay the toll) work like any road event.
+const gp = (act, n) => n * Math.min(3, Math.max(1, act)); // gold grows with the act
+const findHero = (ctx, name) => ctx.members.find((m) => m.name === name) || ctx.members[0];
+function givePotion(ctx, name) {
+  const m = findHero(ctx, name); const have = potionStock(m); const max = potionMaxOf(m);
+  if (have < max) { m.potions = have + 1; return `${m.name} tucks a healing potion into the belt.`; }
+  const g = gp(ctx.act, 10); grantCompany([m], g); return `${m.name}’s belt is already full, so the gift becomes ${g} gold instead.`;
+}
+const roll2 = (r) => `${r.heroTotal} against ${r.oppTotal}`;
+
+export const TRIALS = [
+  // ---- WISDOM: the head die
+  {
+    id: 't-chess', foe: 'The traveller', stat: 'wisdom', kicker: 'A test of wisdom', title: 'The Traveller’s Chessboard',
+    tell: ({ members }) => `The traveller has set a chessboard on a tree stump, as if he knew ${joinNames(members)} would come this way. Perhaps he did. "One game," he says, polishing a knight on his sleeve. "Your head against mine. I do love a clever opponent. I have not met one in some time."`,
+    choices: [
+      { id: 'play', test: true, label: () => 'Play him for fun', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
+        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'The Chessboard', `${r.who} beat the traveller at chess.`); return `Check, and then mate. ${r.who} wins, ${roll2(r)}. The traveller laughs, tips his king over, and pays ${g} gold "for the lesson".`; },
+        lose: (ctx, r) => { note(ctx, 'The Chessboard', `${r.who} lost a game of chess, gracefully.`); return `The traveller’s queen sweeps the board, ${roll2(r)}. "Again some day," he says, and means it kindly. Nothing lost but pride, which grows back.`; } },
+      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Play for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'wisdom', c.act)}`,
+        can: (c) => companyGold(c.members) >= gp(c.act, 10),
+        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'The Chessboard', `${r.who} won a wager at chess.`); return `A quiet bishop, a loud checkmate. ${r.who} wins, ${roll2(r)}, and the traveller counts out ${g} gold without complaint. "Worth every coin."`; },
+        lose: (ctx, r) => { note(ctx, 'The Chessboard', `${r.who} lost a wager at chess.`); return `The traveller wins, ${roll2(r)}, and pockets the stake with a little bow. "Chess is honest," he says. "It is the players who are not."`; } },
+      { id: 'leave', label: () => 'Politely decline', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Chessboard', 'Declined a game of chess.'); return 'The traveller nods and starts a game against himself. He seems to be losing.'; } },
+    ],
+  },
+  {
+    id: 't-riddle', foe: 'The riddle keeper', stat: 'wisdom', kicker: 'A test of wisdom', title: 'The Riddle Keeper',
+    tell: ({ members }) => `An old bridge-keeper sits in a booth no bigger than a wardrobe. "Toll is coin," she says, "unless your head is worth more. Answer my riddle and cross free, with a blessing for your trouble." ${joinNames(members)} can try, or pay and keep their thoughts to themselves.`,
+    choices: [
+      { id: 'answer', test: true, label: () => 'Answer the riddle', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
+        win: (ctx, r) => { bless(ctx, { id: 'clearhead', name: 'A clear head', text: 'Start the next fight with +2 magic.', fights: 1, startMagic: 2 }); note(ctx, 'The Riddle Keeper', `${r.who} answered the riddle.`); return `"A shadow," says ${r.who}, ${roll2(r)}. The keeper claps once. "Cross free, and think clearly." Next fight starts with +2 magic.`; },
+        lose: (ctx, r) => { const g = Math.min(companyGold(ctx.members), gp(ctx.act, 6)); payCompany(ctx.members, g); note(ctx, 'The Riddle Keeper', `${r.who} missed the riddle and paid the toll.`); return `Not a candle, not a river, ${roll2(r)}. "A shadow," she says, a little sadly. The toll is ${g} gold.`; } },
+      { id: 'pay', label: (c) => `Pay the toll · ${gp(c.act, 6)} gold`, hint: () => 'Cross without the riddle.', can: (c) => companyGold(c.members) >= gp(c.act, 6),
+        apply: (ctx) => { payCompany(ctx.members, gp(ctx.act, 6)); note(ctx, 'The Riddle Keeper', 'Paid the toll.'); return 'You pay, and she waves you over. "Shame," she says. "It was a good one."'; } },
+    ],
+  },
+  {
+    id: 't-map', foe: 'The old map', stat: 'wisdom', hard: true, kicker: 'A test of wisdom', title: 'The Faded Map',
+    tell: ({ members }) => `Pinned under a stone at a crossroads: a map, faded by rain, with a little drawn chest and an X. ${joinNames(members)} could try to read it. Maps like this lead to treasure or to an hour of walking in circles, and they never say which.`,
+    choices: [
+      { id: 'read', test: true, label: () => 'Follow the map', hint: (c) => `A harder test. ${oddsLine(c.members, 'wisdom', c.act, true)}`,
+        win: (ctx, r) => { const g = gp(ctx.act, 20); grantCompany(ctx.members, g); const pot = givePotion(ctx, r.who); note(ctx, 'The Faded Map', `${r.who} read the map and found the cache.`); return `${r.who} turns the map the right way up, which helps, ${roll2(r)}. Under a hollow stump: ${g} gold and a stoppered bottle. ${pot}`; },
+        lose: (ctx, r) => { bless(ctx, { id: 'lostmap', name: 'Footsore', text: 'Start the next fight 4 HP down.', fights: 1, wound: 4 }); note(ctx, 'The Faded Map', 'The map led them in a circle.'); return `An hour later you are back at the same stone, ${roll2(r)}. The map was upside down. Sore feet: the next fight starts 4 HP down.`; } },
+      { id: 'leave', label: () => 'Leave the map for the rain', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Faded Map', 'Left the map under its stone.'); return 'You put the stone back. Somebody else can walk in circles today.'; } },
+    ],
+  },
+  // ---- STRENGTH: both hands
+  {
+    id: 't-arm', foe: 'The traveller', stat: 'strength', kicker: 'A test of strength', title: 'Arm-Wrestling the Traveller',
+    tell: ({ members }) => `The traveller rolls up a sleeve and plants his elbow on a barrel. His arm is thin as a broom handle, which is exactly what makes ${joinNames(members)} nervous. "Two hands each, fair is fair," he says. "Shall we?"`,
+    choices: [
+      { id: 'wrestle', test: true, label: () => 'Take his hand', hint: (c) => oddsLine(c.members, 'strength', c.act),
+        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'Arm-Wrestling', `${r.who} pinned the traveller.`); return `Thump. ${r.who} pins him, ${roll2(r)}. He shakes out his arm and pays ${g} gold. "Strong hands. Keep them."`; },
+        lose: (ctx, r) => { note(ctx, 'Arm-Wrestling', `${r.who} lost to a broom handle.`); return `His thin arm does not move, then moves very fast, ${roll2(r)}. "Practice," he says. Nobody is hurt but a little pride.`; } },
+      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Wrestle for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'strength', c.act)}`,
+        can: (c) => companyGold(c.members) >= gp(c.act, 10),
+        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'Arm-Wrestling', `${r.who} won a wager arm-wrestling.`); return `The barrel creaks, the traveller does not, and then he does, ${roll2(r)}. ${g} gold changes hands.`; },
+        lose: (ctx, r) => { note(ctx, 'Arm-Wrestling', `${r.who} lost a wager arm-wrestling.`); return `${roll2(r)}. The traveller pockets the stake. "Broom handles," he says, "are stronger than they look."`; } },
+      { id: 'leave', label: () => 'Keep your elbows to yourself', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'Arm-Wrestling', 'Declined to arm-wrestle.'); return 'He shrugs and arm-wrestles the barrel. The barrel loses.'; } },
+    ],
+  },
+  {
+    id: 't-tree', foe: 'The fallen tree', stat: 'strength', hard: true, kicker: 'A test of strength', title: 'The Tree on the Wagon',
+    tell: ({ members }) => `A storm has dropped a tree across a family’s wagon. Two children sit on the roadside, very quiet; their father pulls at a branch that will not move. ${joinNames(members)} could put both hands to the trunk, or go and find a lever and lose half a day.`,
+    choices: [
+      { id: 'lift', test: true, label: () => 'Lift the trunk', hint: (c) => `A harder test. ${oddsLine(c.members, 'strength', c.act, true)}`,
+        win: (ctx, r) => { const pot = givePotion(ctx, r.who); grantXpEach(ctx.members, 4 * ctx.act); note(ctx, 'The Tree on the Wagon', `${r.who} lifted the tree off a family's wagon.`); return `${r.who} gets both hands under it, ${roll2(r)}, and the trunk rolls away like it was waiting to be asked. The father presses a gift on you. ${pot} Everyone learns something: +${4 * ctx.act} XP each.`; },
+        lose: (ctx, r) => { bless(ctx, { id: 'sorearms', name: 'Sore back', text: 'Start the next fight 3 HP down.', fights: 1, wound: 3, who: r.who }); note(ctx, 'The Tree on the Wagon', `${r.who} strained a back on the tree; a lever did the rest.`); return `The trunk does not move, ${roll2(r)}, but your back does, in the wrong direction. A lever does it in the end. ${r.who} starts the next fight 3 HP down.`; } },
+      { id: 'lever', label: () => 'Find a lever and do it slowly', hint: () => 'No test. Safe, but the family thanks you with only a few coins.', apply: (ctx) => { grantCompany(ctx.members, gp(ctx.act, 4)); note(ctx, 'The Tree on the Wagon', 'Freed a wagon with a lever.'); return `Slow and steady. The wagon is free by noon, and the family insists on ${gp(ctx.act, 4)} gold you did not ask for.`; } },
+    ],
+  },
+  {
+    id: 't-tug', foe: 'The goblins', stat: 'strength', kicker: 'A test of strength', title: 'The Goblins’ Tug-of-War',
+    tell: ({ members }) => `A rope is stretched across a muddy ditch. On the far side, a band of goblins jeer and wave it. "Pull us over and we run off," shouts their leader. "Lose, and we follow you to your next fight." ${joinNames(members)} ${be(members, 'looks', 'look')} at the mud. The mud looks back.`,
+    choices: [
+      { id: 'pull', test: true, label: () => 'Grab the rope and pull', hint: (c) => oddsLine(c.members, 'strength', c.act),
+        win: (ctx, r) => { bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: 'Round 1 of the next fight: +3 attack.', fights: 1, openingAtk: 3 }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave. ${r.who} drags the whole band face-first into the mud, ${roll2(r)}. They flee squeaking, and you start the next fight with your blood up: +3 attack in round 1.`; },
+        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins, ${roll2(r)}, and ${r.who} slides into the ditch. A goblin, delighted, follows you to the next fight and joins it.`; } },
+      { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return 'Snip. Three goblins sit down very suddenly on the far bank. They do not follow; they are arguing about whose fault it was.'; } },
+    ],
+  },
+  // ---- SPEED: the feet die
+  {
+    id: 't-race', foe: 'The traveller', stat: 'speed', kicker: 'A test of speed', title: 'Race to the Old Oak',
+    tell: ({ members }) => `"See that oak on the hill?" The traveller is already stretching. "First to touch it wins. I warn you, I have very fast boots. I bought them from a man who was running away from something." ${joinNames(members)} could race him, or let him run up the hill alone.`,
+    choices: [
+      { id: 'race', test: true, label: () => 'Race him', hint: (c) => oddsLine(c.members, 'speed', c.act),
+        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'Race to the Oak', `${r.who} beat the traveller to the oak.`); return `${r.who} slaps the bark first, ${roll2(r)}. The traveller arrives wheezing, still proud of his boots, and pays ${g} gold.`; },
+        lose: (ctx, r) => { note(ctx, 'Race to the Oak', `${r.who} lost a race to a man in fast boots.`); return `The boots really are fast, ${roll2(r)}. He is sitting under the oak eating an apple when ${r.who} arrives.`; } },
+      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Race for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'speed', c.act)}`,
+        can: (c) => companyGold(c.members) >= gp(c.act, 10),
+        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'Race to the Oak', `${r.who} won a wager on a footrace.`); return `Neck and neck, then not: ${r.who} wins, ${roll2(r)}. ${g} gold, and a promise from the traveller to buy better boots.`; },
+        lose: (ctx, r) => { note(ctx, 'Race to the Oak', `${r.who} lost a wager on a footrace.`); return `${roll2(r)}. The traveller wins by a boot. He takes the stake and offers you half his apple, which is something.`; } },
+      { id: 'leave', label: () => 'Wave him off', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'Race to the Oak', 'Watched the traveller race himself.'); return 'He races the oak alone, and declares himself the winner. Nobody argues.'; } },
+    ],
+  },
+  {
+    id: 't-goat', foe: 'Biscuit the goat', stat: 'speed', kicker: 'A test of speed', title: 'The Runaway Goat',
+    tell: ({ members }) => `A girl comes running down the road. "My goat! Please! She is called Biscuit and she is FAST!" A white goat bounds past ${joinNames(members)} with a ribbon on her horn and no plans to stop.`,
+    choices: [
+      { id: 'chase', test: true, label: () => 'Chase Biscuit', hint: (c) => oddsLine(c.members, 'speed', c.act),
+        win: (ctx, r) => { const pot = givePotion(ctx, r.who); note(ctx, 'The Runaway Goat', `${r.who} caught Biscuit the goat.`); return `${r.who} catches Biscuit by the ribbon, ${roll2(r)}. The girl’s mother runs a little herb garden and will not hear no. ${pot}`; },
+        lose: (ctx, r) => { note(ctx, 'The Runaway Goat', 'Biscuit the goat escaped.'); return `Biscuit is faster, ${roll2(r)}. She is last seen on a roof, chewing a hat. The girl says thank you for trying, which somehow makes it worse.`; } },
+      { id: 'leave', label: () => 'Wish the girl luck', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Runaway Goat', 'Let the goat go.'); return 'You wish her luck. Biscuit, distantly, bleats something rude.'; } },
+    ],
+  },
+  {
+    id: 't-slide', foe: 'The rockslide', stat: 'speed', hard: true, kicker: 'A test of speed', title: 'Rockslide!',
+    tell: ({ members }) => `A rumble from the slope above. Stones start to bounce down the path, then bigger ones. ${joinNames(members)} can sprint for the far side, or press against the cliff and let it roar past.`,
+    choices: [
+      { id: 'run', test: true, label: () => 'Run for it!', hint: (c) => `A harder test. ${oddsLine(c.members, 'speed', c.act, true)}`,
+        win: (ctx, r) => { bless(ctx, { id: 'outran', name: 'Heart pounding', text: 'Round 1 of the next fight: +2 attack and +2 block.', fights: 1, openingAtk: 2, block: 2 }); note(ctx, 'Rockslide', `${r.who} led everyone clear of a rockslide.`); return `${r.who} leads the dash and everyone is through before the big ones land, ${roll2(r)}. Hearts still pounding: the next fight starts +2 attack and +2 block.`; },
+        lose: (ctx, r) => { bless(ctx, { id: 'bruised', name: 'Bruised', text: 'Start the next fight 5 HP down.', fights: 1, wound: 5 }); note(ctx, 'Rockslide', 'Caught the edge of a rockslide.'); return `Not quite fast enough, ${roll2(r)}. A shower of stones catches the back of the company. Bruised: the next fight starts 5 HP down.`; } },
+      { id: 'brace', label: () => 'Press against the cliff', hint: () => 'No test. A few stones still find you: start the next fight 2 HP down.',
+        apply: (ctx) => { bless(ctx, { id: 'pebbled', name: 'Pebbled', text: 'Start the next fight 2 HP down.', fights: 1, wound: 2 }); note(ctx, 'Rockslide', 'Waited out a rockslide against the cliff.'); return 'The slide roars past. A few stones bounce off shoulders and helmets. Next fight starts 2 HP down, and everyone is very dusty.'; } },
+    ],
+  },
+];
+for (const t of TRIALS) ROADS.push({ ...t, when: 'trial' });

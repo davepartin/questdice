@@ -1,0 +1,18 @@
+// A test on the road: the choice screen, the roll screen before and after the throw, the result.  node dev/trialshot.mjs [cls] [act] [step] [seed]
+import { chromium } from 'playwright-core';
+const [cls = 'ranger', act = 1, step = 2, seed = 7] = process.argv.slice(2);
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, hasTouch: true });
+p.on('pageerror', (e) => console.log('ERR', e.message)); p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load/.test(m.text())) console.log('console.error', m.text().slice(0, 200)); });
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const shot = async (n) => { await p.waitForTimeout(400); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/trial_${n}.png` }); };
+await p.evaluate(({ cls, act, step, seed }) => { const { S, E } = window.QD; const h = E.newHero({ name: 'Dave', cls, seed: +seed }); h.gold = 120; Object.assign(h.campaign, { act: +act, step: +step, wins: +step - 1, seenStory: undefined }); h.campaign.storySeen = { all: true }; S.hero = h; S.company = { kind: 'solo', members: [h], campaign: h.campaign }; window.QD.showRoad(); }, { cls, act, step, seed });
+await p.waitForTimeout(1200); await p.evaluate(() => document.querySelector('.sx-choices')?.scrollIntoView({ block: 'center' })); await shot('1choice');
+console.log(await p.evaluate(() => [...document.querySelectorAll('.sx-choice')].map((e) => e.innerText.replace(/\n+/g, ' | ')).join('\n')));
+await p.evaluate(() => document.querySelector('.sx-choice:not(.off)')?.click()); await p.waitForTimeout(800); await shot('2roll');
+await p.evaluate(() => document.querySelector('.tr-go')?.click()); await p.waitForTimeout(3500); await shot('3rolled');
+console.log(await p.evaluate(() => document.querySelector('.tr-verdict')?.innerText));
+await p.evaluate(() => document.querySelector('.tr-go')?.click()); await p.waitForTimeout(900); await shot('4result');
+console.log(await p.evaluate(() => document.querySelector('.sx-tale')?.innerText.slice(0, 300) + ' || ' + [...document.querySelectorAll('.sx-cta button, .sx-side button')].map((b) => b.innerText).join(' / ')));
+await b.close();

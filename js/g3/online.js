@@ -216,12 +216,17 @@ function pushButton(t) {
   if (!Sess.isHost() || t.players.every((p) => p.ready || p.id === Sess.me()?.id)) return null;
   return h('div', { class: 'sx-push' }, btn('Go on without them', () => Sess.send({ type: 'push' }).catch(fail), { kind: 'ghost', icon: 'chevron', iconAfter: true, cls: 'wide', aria: 'Move the table on without the heroes who have not answered' }));
 }
+const trialsSeen = new Set(); // which test rolls this phone has already watched (the dice play once on every phone)
 function roadDone(t) {
   const res = t.roadResult || { title: 'The road', text: 'The company has chosen.', by: '' }; const you = Sess.me();
+  const c = t.company.campaign; const tk = res.trial ? `${t.code}:${c.act}.${c.step}:${res.trial.attempt}` : '';
+  if (res.trial && !trialsSeen.has(tk)) { trialsSeen.add(tk); import('./trialui.js').then((T) => T.showTrial(res.trial, { title: res.title })).then(() => show()); }
   const waiting = t.players.filter((p) => !p.ready).map((p) => p.name);
+  const { btn } = K();
+  const rematch = res.trial && res.trial.canRematch && !you.ready ? btn(`Ask for a rematch · ${res.trial.rematchCost} gold`, () => Sess.send({ type: 'rematch' }).catch(fail), { kind: 'ghost', icon: 'reroll', cls: 'wide' }) : null;
   SCRUI.roadResult({ title: res.title, text: res.text }, {
     kicker: res.by ? `${res.by} chose for the company` : 'The road answers', label: you.ready ? 'Waiting for the others' : 'Onward', disabled: you.ready,
-    onward: () => Sess.send({ type: 'onward' }).catch(fail), note: you.ready && waiting.length ? `Waiting for ${waiting.join(', ')}.` : '', extra: you.ready ? pushButton(t) : null,
+    onward: () => Sess.send({ type: 'onward' }).catch(fail), note: you.ready && waiting.length ? `Waiting for ${waiting.join(', ')}.` : '', extra: you.ready ? pushButton(t) : rematch,
   });
 }
 export function chooseRoad(id) { Sess.send({ type: 'choose', id }).catch(fail); }

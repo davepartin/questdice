@@ -5,7 +5,7 @@ import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
-  SPECIAL_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
+  SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
@@ -178,6 +178,15 @@ export function unlockDie(hero, slot) {
 }
 // The feet die is the initiative die. Each class starts at its own size (hero.speed.S) and can grow it at camp.
 export function feetSize(hero) { hero.speed = hero.speed || { S: CLASSES[hero.cls]?.feet || 4 }; return hero.speed.S; }
+// The head die (wisdom): every hero starts with a d4 and grows it at camp.
+export function mindSize(hero) { hero.mind = hero.mind || { N: 4 }; return hero.mind.N; }
+export function mindUpgrade(hero) {
+  const size = mindSize(hero); const step = MIND_STEPS[size];
+  if (!step) return { ok: false, why: 'Max size' };
+  { const g = actGate(hero, size); if (g) return { ...g, cost: step[0] }; }
+  if (hero.gold < step[0]) return { ok: false, why: 'Need gold', cost: step[0], next: NEXT_SIZE[size] };
+  return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
+}
 export function speedUpgrade(hero) {
   const size = feetSize(hero); const step = size < maxFeetOf(hero) ? SPEED_STEPS[size] : null;
   if (!step) return { ok: false, why: 'Max size' };
@@ -186,7 +195,7 @@ export function speedUpgrade(hero) {
 }
 export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
-    case 'head': return 4;
+    case 'head': return mindSize(hero);
     case 'feet': return feetSize(hero);
     case 'weapon': return Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling
     case 'heart': return 6;
@@ -993,9 +1002,9 @@ export function specialUpgrade(hero, slot) {
   return { ok: true, cost: step[0], next: NEXT_SIZE[size] };
 }
 export function upgradeDie(hero, kind, slot) {
-  const r = kind === 'strength' ? strengthUpgrade(hero, slot) : kind === 'speed' ? speedUpgrade(hero) : specialUpgrade(hero, slot);
+  const r = kind === 'strength' ? strengthUpgrade(hero, slot) : kind === 'speed' ? speedUpgrade(hero) : kind === 'mind' ? mindUpgrade(hero) : specialUpgrade(hero, slot);
   if (!r.ok) return false;
-  hero.gold -= r.cost; feetSize(hero); hero[kind][slot] = r.next; return true;
+  hero.gold -= r.cost; feetSize(hero); mindSize(hero); hero[kind][kind === 'mind' ? 'N' : slot] = r.next; return true;
 }
 // ---- forging (Tier) and training (Size) a weapon. Both cost gold; instances are found by uid (a two-hander sits in both hands).
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
@@ -1096,7 +1105,7 @@ export function takeDrop(hero, inst) { if (bagFull(hero)) return false; hero.bag
 // What a hero's dice give on an average throw (no rerolls): many random boards through the real rules. Same hero, same answer.
 const _powerCache = new Map();
 export function heroPower(hero, samples = 240) {
-  const key = JSON.stringify([hero.cls, hero.level, hero.strength, hero.special, hero.speed, hero.talent, hero.dice, hero.perks, hero.loadout.NW, hero.loadout.NE]);
+  const key = JSON.stringify([hero.cls, hero.level, hero.strength, hero.special, hero.speed, hero.mind, hero.talent, hero.dice, hero.perks, hero.loadout.NW, hero.loadout.NE]);
   if (_powerCache.has(key)) return _powerCache.get(key);
   const rng = makeRng(hashSeed(key)); const t = { atk: 0, pierce: 0, block: 0, heal: 0, magic: 0, gold: 0 };
   for (let i = 0; i < samples; i++) { const ev = evaluate(hero, rollBoard(hero, rng)); for (const k in t) t[k] += ev[k] || 0; }
@@ -1701,7 +1710,7 @@ function shrinkLoss(hero, kind, slot, next) {
 }
 export function downgradeInfo(hero, kind, slot) {
   let size;
-  if (kind === 'speed') size = feetSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
+  if (kind === 'speed') size = feetSize(hero); else if (kind === 'mind') size = mindSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
   else if (kind === 'weapon') { ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
   else if (kind === 'pet') size = hero.pet?.size;
   const next = PREV_SIZE[size]; if (!size || !next) return { ok: false, why: 'smallest', size };
@@ -1712,6 +1721,7 @@ export function downgradeDie(hero, kind, slot) {
   const r = downgradeInfo(hero, kind, slot); if (!r.ok) return false;
   hero.gold -= r.cost;
   if (kind === 'speed') { feetSize(hero); hero.speed.S = r.next; }
+  else if (kind === 'mind') { mindSize(hero); hero.mind.N = r.next; }
   else if (kind === 'strength') hero.strength[slot] = r.next;
   else if (kind === 'special') { hero.special[slot] = r.next; if (hero.talent?.[slot]) hero.talent[slot] = hero.talent[slot].slice(0, TALENT_FACES[r.next] || 1); }
   else if (kind === 'weapon') for (const w of copiesOf(hero, slot)) w.size = r.next;

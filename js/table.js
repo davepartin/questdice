@@ -80,6 +80,7 @@ function dispatch(table, player, cmd) {
     case 'ready': return ready(table, player, cmd);
     case 'start': return startCampaign(table, player);
     case 'choose': return chooseRoad(table, player, cmd);
+    case 'rematch': return rematch(table, player);
     case 'onward': return onward(table, player);
     case 'quest': return startQuest(table, cmd);
     case 'camp': return goCamp(table);
@@ -215,11 +216,20 @@ function chooseRoad(table, player, cmd) {
   if (table.company.campaign.road?.done) return fail('The company already chose.');
   const res = R.chooseRoad(player.hero, members(table), cmd.id);
   if (!res) return fail('The road will not take that.');
-  table.roadResult = { title: res.title, text: res.text, by: player.name };
+  table.roadResult = { title: res.title, text: res.text, by: player.name, trial: res.trial || null };
   table.players.forEach((p) => { p.ready = false; });
   return ok();
 }
 
+// After a lost test on the road, anyone may ask for the one rematch (the company pays).
+function rematch(table, player) {
+  if (table.phase !== 'road' || !table.roadResult?.trial) return fail('There is nothing to rematch.');
+  const res = R.rematchTrial(player.hero, members(table));
+  if (!res) return fail('No rematch: it is used, or the company cannot pay.');
+  table.roadResult = { title: res.title, text: res.text, by: player.name, trial: res.trial };
+  table.players.forEach((p) => { p.ready = false; });
+  return ok();
+}
 function onward(table, player) {
   if (table.phase !== 'road') return fail('Not on the road.');
   if (!table.company.campaign.road?.done) return fail('Choose first.');
