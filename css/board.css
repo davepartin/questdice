@@ -381,3 +381,15 @@
 @media (max-width: 400px) { .fb-mbox { padding: .2rem .38rem .24rem; } .mrow b { font-size: .76rem; letter-spacing: .02em; } .mrow small { font-size: .6rem; } }
 .mrow.tone-atk { --pc: #ff6b5a; } .mrow.tone-def { --pc: #6db8ff; } .mrow.tone-mag { --pc: #c690ff; } .mrow.tone-heal { --pc: #6dffa6; } .mrow.tone-sly { --pc: #ffd23d; }
 @media (prefers-reduced-motion: reduce) { .fb-mbox { animation: none; } }
+
+/* the die a monster rolled, and what it made: [die 8] rolled: 1 move + 8 die + 3 fight bonus = 12 attack */
+.rc-calc { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .3rem; margin-top: .05rem; }
+.rc-calc .rc-roll { margin-left: 0; }
+.rc-colon { font: 700 .6rem var(--disp); letter-spacing: .08em; text-transform: uppercase; color: #cdbfa6; }
+.rc-b { display: inline-flex; align-items: baseline; gap: .15rem; padding: .05rem .34rem; border-radius: .35rem; background: rgba(255, 255, 255, .08); color: #fff; }
+.rc-b b { font: 900 .85rem/1 var(--disp); } .rc-b small { font: 700 .48rem/1 var(--disp); letter-spacing: .07em; text-transform: uppercase; color: #cdbfa6; }
+.rc-b.soft { background: rgba(120, 200, 255, .18); } .rc-b i { font-style: normal; color: #9fd4ff; font-weight: 900; }
+.rc-calc.red .rc-b.total { background: rgba(255, 70, 50, .35); box-shadow: inset 0 0 0 1px rgba(255, 120, 100, .55); }
+.rc-calc.blue .rc-b.total { background: rgba(70, 140, 255, .35); box-shadow: inset 0 0 0 1px rgba(120, 175, 255, .55); }
+.rc-plus { font-style: normal; font-weight: 900; color: #cdbfa6; font-size: .8rem; }
+.rc-sum .rc-roll { margin-left: .1rem; }

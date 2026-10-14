@@ -416,6 +416,9 @@ function magnitude(e, intent, p, weaken) {
   if (isDamageIntent(intent)) m = Math.max(0, m + e.flat + e.buff - weaken);
   return m;
 }
+// What made a monster's number this round, for the recap: its move's fixed part, the multiplier on its power die, the die it rolled,
+// and the fight's flat bonus, a howl, and any softening from your powers. (f + m x die + flat + howl - softened = the attack or guard.)
+const magnitudeParts = (e, intent, p, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p, size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
 export function intentRange(e) {
   const i = e.intent;
   if (!i || !(i.m || i.f)) return null;
@@ -719,7 +722,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
-  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
+  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.calc = magnitudeParts(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
@@ -765,7 +768,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null };
     switch (i.v) {
       case 'strike': { const r = strikeHit(e, false); Object.assign(act, r); break; }
       case 'pierce': { const r = strikeHit(e, true); Object.assign(act, r); break; }
@@ -1437,7 +1440,7 @@ export function resolveParty(b) {
   const alive = b.enemies.filter((e) => e.hp > 0);
   for (const e of alive) {
     e.p = die(b.rng, e.powerDie);
-    e.mag = magnitude(e, e.intent, e.p, weaken);
+    e.mag = magnitude(e, e.intent, e.p, weaken); e.calc = magnitudeParts(e, e.intent, e.p, weaken);
     e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng);
   }
   const order = rankFighters(acting, b.rng); // who acts first
@@ -1507,7 +1510,7 @@ export function resolveParty(b) {
   };
   const actFor = (e) => {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0 };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0 };
     switch (i.v) {
       case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
       case 'pierce': { Object.assign(act, strikeHit(e, true)); break; }

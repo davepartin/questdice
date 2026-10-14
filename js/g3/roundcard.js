@@ -17,19 +17,37 @@ const op = (s) => h('span', { class: 'rc-op', 'aria-hidden': 'true' }, s);
 const out = (n, side = 'take') => h('span', { class: `rc-tk out ${side}${n > 0 ? '' : ' zero'}` }, h('b', {}, String(n)), h('small', {}, side === 'deal' ? (n > 0 ? 'dealt' : 'no damage') : (n > 0 ? 'you take' : 'blocked')));
 // the die a monster rolled for its blow, red for an attack (blue for a guard), as a little die with the pips it landed on
 const dieIcon = (size) => `d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`;
+// The die a monster rolled, and what that roll made: "d8 rolled 8:  1 move + 8 die + 3 fight bonus = 12 attack". A monster rolls one die a
+// round (its power die); the move on its plate was picked earlier by a d6, and the die scales the move.
 const rolled = (b, a) => {
-  const e = foe(b, a.uid); const size = e?.powerDie; if (!size || a.p == null) return null;
+  const e = foe(b, a.uid); const c = a.calc; const size = c?.size || e?.powerDie; if (!size || a.p == null) return null;
   const blue = a.v === 'guard' || a.v === 'ward';
   return h('span', { class: `rc-roll ${blue ? 'blue' : 'red'}`, title: `It rolled a d${size}` }, HK.icon(dieIcon(size)), h('b', {}, String(a.p)), h('small', {}, `d${size}`));
 };
+const calcLine = (b, a, word) => {
+  const c = a.calc; const size = c?.size || foe(b, a.uid)?.powerDie; if (!c || !size || a.p == null || !(c.m || c.f)) return null;
+  const bits = [];
+  if (c.f) bits.push([c.f, 'move']);
+  if (c.m) bits.push([c.m === 1 ? c.p : `${c.m}×${c.p}`, 'die']);
+  if (c.flat) bits.push([c.flat, 'fight bonus']);
+  if (c.buff) bits.push([c.buff, 'howl']);
+  const soft = c.weaken ? h('span', { class: 'rc-b soft' }, h('i', {}, '−'), h('b', {}, String(c.weaken)), h('small', {}, 'softened')) : null;
+  void word;
+  return h('div', { class: `rc-calc ${word === 'guard' ? 'blue' : 'red'}` },
+    rolled(b, a),
+    ...bits.flatMap(([n, l], i) => [i ? h('i', { class: 'rc-plus' }, '+') : null, h('span', { class: 'rc-b' }, h('b', {}, String(n)), h('small', {}, l))].filter(Boolean)),
+    soft);
+};
+// the guard your blow ran into: the die the monster rolled for it
+const guardRoll = (t) => (t && t.p != null && t.powerDie ? h('span', { class: 'rc-roll blue', title: `Its guard came from a d${t.powerDie}` }, HK.icon(dieIcon(t.powerDie)), h('b', {}, String(t.p)), h('small', {}, `d${t.powerDie}`)) : null);
 const note = (kind, text) => h('p', { class: `rc-note ${kind}` }, HK.rich(text));
 
 // ---- what you did to the monster (one hero)
-function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, hpFrom, hpTo, burned, you }) {
+function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, hpFrom, hpTo, burned, you, guardOf }) {
   const parts = [];
   if (atk > 0 || pierce === 0) parts.push(tk('atk', atk, 'attack', 'atk'));
   if (phased && atk > 0) parts.push(op('→'), h('span', { class: 'rc-tk guard' }, HK.icon('phase'), h('small', {}, 'passes through')));
-  else if (guarded > 0) parts.push(op('−'), tk('guard', guarded, 'guard', 'block'));
+  else if (guarded > 0) parts.push(op('−'), tk('guard', guarded, 'guard', 'block'), ...(guardOf ? [guardOf] : []));
   if (pierce > 0) parts.push(...(parts.length ? [op('+')] : []), tk('pierce', pierce, 'pierce', 'pierce'));
   parts.push(op('='), out(dealt, 'deal'));
   const hp = hpFrom != null ? h('em', { class: `rc-hp${killed ? ' dead' : ''}` }, killed ? 'falls! ' : '', h('b', {}, String(Math.max(0, Math.ceil(hpFrom)))), ' → ', h('b', {}, String(Math.max(0, Math.ceil(hpTo))))) : null;
@@ -57,7 +75,7 @@ const SPECIAL = {
 function foeRow(a, b, rep, blockTotal) {
   const name = fname(b, a.uid);
   const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
-  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`), a.v === 'guard' || a.v === 'ward' ? rolled(b, a) : null)) : null; }
+  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null) : null; }
   const parts = [];
   if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
   else parts.push(tk('atk', a.d, a.name || 'attack', 'atk'), op('−'), tk('block', a.ab || 0, 'block', 'block'));
@@ -67,7 +85,7 @@ function foeRow(a, b, rep, blockTotal) {
   if (a.v === 'pilfer' && rep.goldStolen) extra.push(note('bad', `${name} grabbed ${rep.goldStolen} gold. Kill it to take it back.`));
   void blockTotal;
   return h('div', { class: `rc-line${a.early ? ' early' : ''}` },
-    h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, a.early ? ' struck first' : ' hits you'), rolled(b, a)), h('div', { class: 'rc-sum' }, parts), extra);
+    h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, a.early ? ' struck first' : ' hits you')), calcLine(b, a, a.v === 'pierce' ? 'pierce' : 'attack'), h('div', { class: 'rc-sum' }, parts), extra);
 }
 
 // ------------------------------------------------------------------------------------------ solo
@@ -80,7 +98,7 @@ function soloCard(rep, b) {
     const dealtOnT = rep.dealt;
     mine.push(strikeRow({
       who: you, target: t?.name || 'Monster', atk: rep.T.atk, pierce: rep.T.pierce, guarded: rep.guarded, dealt: dealtOnT, phased: !!rep.phased, killed: (rep.killed || []).includes(rep.targetUid),
-      hpFrom: t?.hp0 ?? (t ? t.hp + dealtOnT : null), hpTo: t?.hp ?? 0, burned: rep.burned, you: 'you',
+      hpFrom: t?.hp0 ?? (t ? t.hp + dealtOnT : null), hpTo: t?.hp ?? 0, burned: rep.burned, you: 'you', guardOf: guardRoll(t),
     }));
     for (const sp of rep.splashed || []) { if (sp.uid === rep.targetUid || !sp.dealt) continue; mine.push(note('you', `Splash: ${fname(b, sp.uid)} takes ${sp.dealt}${(rep.killed || []).includes(sp.uid) ? ' and falls' : ''}.`)); }
   }
@@ -103,7 +121,7 @@ function partyCard(rep, b) {
     const t = foe(b, s.targetUid);
     return strikeRow({
       who: s.name, target: t?.name || 'Monster', atk: s.atk, pierce: s.pierce, guarded: s.guarded, dealt: s.dealt, phased: !!s.phased, killed: !!s.killed,
-      hpFrom: t ? (t.hp0 ?? t.hp + s.dealt) : null, hpTo: t?.hp ?? 0, burned: s.burned, you: s.name,
+      hpFrom: t ? (t.hp0 ?? t.hp + s.dealt) : null, hpTo: t?.hp ?? 0, burned: s.burned, you: s.name, guardOf: guardRoll(t),
     });
   });
   for (const n of rep.fallen || []) mine.push(note('bad', `${n} fell before striking.`));
@@ -111,7 +129,7 @@ function partyCard(rep, b) {
   for (const a of rep.acts || []) {
     const name = fname(b, a.uid);
     const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
-    if (!dmg) { const f = SPECIAL[a.v]; if (f) theirs.push(h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)))); continue; }
+    if (!dmg) { const f = SPECIAL[a.v]; if (f) theirs.push(h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null)); continue; }
     const heads = (rep.fighters || []).filter((x) => !x.down);
     const parts = [];
     if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
@@ -119,7 +137,7 @@ function partyCard(rep, b) {
     parts.push(op('='), out(a.net, 'take'));
     // each hero's share: their part, what their own block took, what got through
     const shares = Array.isArray(a.parts) ? a.parts.map((p, i) => ({ who: heads[i]?.name, p, net: a.nets?.[i] ?? p })).filter((s) => s.who && s.p > 0) : [];
-    theirs.push(h('div', { class: 'rc-line' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ' hits the company'), rolled(b, a)), h('div', { class: 'rc-sum' }, parts),
+    theirs.push(h('div', { class: 'rc-line' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ' hits the company')), calcLine(b, a, a.v === 'pierce' ? 'pierce' : 'attack'), h('div', { class: 'rc-sum' }, parts),
       shares.length > 1 ? h('div', { class: 'rc-sub' }, shares.map((s) => h('span', { class: 'rc-share' }, h('b', {}, s.who), s.net <= 0 ? ` blocked all ${s.p}` : s.net === s.p ? ` took ${s.net}` : ` took ${s.net} (blocked ${s.p - s.net})`))) : null));
   }
   const tail = [];

@@ -686,3 +686,18 @@ test('each power level is a clear, steady step up (3, 4, 5, 6), and pierce stays
     assert.ok(fxOf(c).pierce < best, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
   }
 });
+
+test('a monster round report says which die it rolled and what the roll made (attack and guard)', () => {
+  const h = knight(); const b = newBattle(h, { ...questsFor(h)[0], enemies: ['goblin'] }, makeRng(7), 1); startRoll(b);
+  const e = b.enemies[0];
+  for (const [verb, f, m] of [['strike', 1, 1], ['guard', 2, 1]]) {
+    e.intent = { n: verb === 'guard' ? 'Duck' : 'Stab', v: verb, f, m };
+    const rep = resolve(b, { target: 0 }); const a = rep.acts.find((x) => x.uid === e.uid);
+    if (!a) { b.round = 0; startRoll(b); continue; }
+    assert.ok(a.calc && a.calc.size === e.powerDie && a.calc.p === a.p, 'the report carries the die and its roll');
+    const total = a.calc.f + a.calc.m * a.calc.p + a.calc.flat + a.calc.buff - a.calc.weaken;
+    assert.equal(Math.max(0, total), a.mag, `${verb}: move + die + bonuses = the number`);
+    if (b.outcome) break;
+    startRoll(b);
+  }
+});
