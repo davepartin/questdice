@@ -34,13 +34,16 @@ export function scrolled(px = 0) {
 function pinHeroArt() {
   const host = document.querySelector('.sx-hero-art'); const img = host?.querySelector('img');
   if (!host || !img?.naturalWidth) return;
-  const base = D.CLASSES[host.dataset.cls]?.imgBase; if (!base) return;
+  const k = D.CLASSES[host.dataset.cls]; const base = k?.imgBase; if (!base) return;
+  const flip = D.needsFlip(k, 'right'); // class pick: same as the battle table, looking right
+  const bx = flip ? 1 - base.x : base.x;
   const box = host.getBoundingClientRect(); if (box.height < 60) return;
   const H = Math.min((box.height - 62) * 0.97, box.width * 1.35); const W = H * (img.naturalWidth / img.naturalHeight);
   const cx = box.width * (box.width > box.height * 1.3 ? 0.5 : 0.5); const cy = box.height - Math.max(14, box.height * 0.06);
-  img.style.width = `${W}px`; img.style.left = `${cx - base.x * W}px`; img.style.top = `${cy - base.y * H}px`;
+  img.style.width = `${W}px`; img.style.left = `${cx - bx * W}px`; img.style.top = `${cy - base.y * H}px`;
   const d = Math.max(60, base.w * W * 1.25);
   host.style.setProperty('--ped-x', `${cx}px`); host.style.setProperty('--ped-y', `${cy}px`); host.style.setProperty('--ped-d', `${d}px`); host.style.setProperty('--ped-h', `${d * 0.3}px`);
+  host.classList.toggle('flip', flip);
   host.classList.add('is-seated');
 }
 
@@ -86,13 +89,13 @@ function endTable(kind, hero, place) {
   const bw = world.battle; if (!bw) return null;
   if (bw.tray?.object) bw.tray.object.visible = false;
   if (bw.stage.post?.trayPass) bw.stage.post.trayPass.enabled = false; // the empty dice table's band went dark under the picture
-  const host = document.querySelector('.sx-viewport'); const img = D.CLASSES[hero?.cls]?.img; if (!host || !img) return bw;
+  const host = document.querySelector('.sx-viewport'); const k = D.CLASSES[hero?.cls]; const img = k?.img; if (!host || !img) return bw;
   const act = hero?.campaign?.act || 1;
   const look = D.placeLook(place);
   const gold = kind === 'victory' ? Array.from({ length: 16 }, (_, i) => h('i', { class: 'fb-gold', style: { '--x': `${6 + ((i * 53) % 88)}%`, '--d': `${(i * 0.37) % 3}s`, '--s': `${0.5 + ((i * 29) % 7) / 10}` } })) : [];
   const el = h('div', { class: `fb fb-end ${kind} act-${act}` }, h('div', { class: 'fb-table' }, h('i', { class: 'fb-rim bot' })),
     h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather)),
-    h('div', { class: 'fb-stand' }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
+    h('div', { class: `fb-stand${D.needsFlip(k, 'right') ? ' flip' : ''}` }, h('img', { class: 'fb-img', src: img, alt: hero.name, draggable: 'false' })), ...gold);
   applyPlace(el, place);
   host.replaceChildren(el);
   return bw;

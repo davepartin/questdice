@@ -255,7 +255,7 @@
 /* victory and defeat: the hero's miniature on the felt (screens.js endTable) */
 .fb.fb-end { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .fb-end .fb-stand { position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%); height: min(64%, 24rem); display: flex; align-items: flex-end; justify-content: center; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .6)); z-index: 2; }
-.fb-end .fb-stand .fb-img { height: 100%; width: auto; max-width: 70vw; }
+.fb-end .fb-stand .fb-img { height: 100%; width: auto; max-width: 70vw; } .fb-end .fb-stand.flip .fb-img { transform: scaleX(-1); }
 .fb-end.victory .fb-stand { animation: fbEndHop 1.4s ease-in-out 3; }
 @keyframes fbEndHop { 50% { transform: translateX(-50%) translateY(-10px); } }
 .fb-end.victory .fb-table::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(70% 60% at 50% 70%, rgba(255, 224, 140, .28), transparent 70%); }

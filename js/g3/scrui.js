@@ -67,7 +67,8 @@ function emblem(cls, size = '') { return h('span', { class: `sx-emblem ${size}`,
 function classPic(cls, size = '') {
   const k = D.CLASSES[cls];
   if (!k?.img) return emblem(cls, size);
-  return h('span', { class: `sx-emblem ${size}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
+  const flip = D.needsFlip(k, 'right');
+  return h('span', { class: `sx-emblem ${size}${flip ? ' flip' : ''}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
     h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' }));
 }
 function classPreview(cls) {
@@ -444,7 +445,7 @@ function questArt(q) {
   const wrap = h('div', { class: `qa n${q.enemies.length} ${q.kind}` });
   q.enemies.forEach((id, i) => {
     const m = D.MONSTERS[id];
-    wrap.append(h('div', { class: `qa-m tier-${m.tier}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // the painted miniature, as on the table
+    wrap.append(h('div', { class: `qa-m tier-${m.tier}${D.needsFlip(m, 'left') ? ' flip' : ''}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // as on the table: looking left, toward the heroes
   });
   return wrap;
 }
