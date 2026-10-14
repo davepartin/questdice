@@ -233,11 +233,11 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const shown = e.name.length > 11 ? e.name.split(' ').pop() : e.name;
     const name = h('b', { class: `fb-name${shown.length > 10 ? ' long xl' : shown.length > 8 ? ' long' : ''}`, title: e.name }, shown); // long names read as their last word (Skulker)
     const hpNum = h('i', { class: 'fb-hpn' });
-    const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum);
+    // the far right of the health bar says how it defends: [shield d8], or a crossed-out shield when it has nothing to block with
+    const def = h('i', { class: 'fb-def' });
+    const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum, def);
     const intent = h('div', { class: 'fb-intent' });
-    // a small blue shield with a line through it: this monster has no defence at all (no guard, no ward, no armour), which can decide who you hit
-    const nodef = h('i', { class: 'fb-nodef', title: 'No defence: nothing soaks your attack', hidden: true }, HK.icon('block'));
-    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent, nodef };
+    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent, def };
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
@@ -346,18 +346,26 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     c.hp.querySelector('.fb-hp-fill').style.width = `${k * 100}%`;
     const ghost = c.hp.querySelector('.fb-hp-ghost'); if (k * 100 >= parseFloat(ghost.style.width || '100')) ghost.style.width = `${k * 100}%`; else { clearTimeout(c.gt); c.gt = setTimeout(() => { ghost.style.width = `${k * 100}%`; }, 420); }
     c.hpNum.textContent = String(Math.max(0, Math.ceil(e.hp)));
-    { const def = D.MONSTERS[e.id] || {}; const defends = (e.faces || def.faces || []).some((f) => ['guard', 'ward', 'phase'].includes(f.v)) || !!(e.armor || def.armor); c.nodef.hidden = defends || dead; }
+    if (c.defSig !== (e.armor ? 'a' : '') + (e.faces?.length || 0)) { // its defence (guard die, armour, or none) does not change with the round
+      c.defSig = (e.armor ? 'a' : '') + (e.faces?.length || 0);
+      const d = D.MONSTERS[e.id] || {}; const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
+      const guard = faces.some((f) => ['guard', 'ward'].includes(f.v)); const phase = faces.some((f) => f.v === 'phase');
+      const txt = guard ? `d${size}` : armor ? `${armor.n}d${armor.s}` : '';
+      c.def.className = `fb-def${txt || phase ? '' : ' none'}`;
+      c.def.title = txt ? `Defends with ${txt}` : phase ? 'Slips out of reach: only pierce hurts it' : 'No defence: nothing soaks your attack';
+      c.def.replaceChildren(HK.icon(phase && !txt ? 'phase' : 'block'), ...(txt ? [h('b', {}, txt)] : []));
+    }
     c.hp.classList.toggle('low', k > 0 && k <= 0.3);
     pc.slot.classList.toggle('dead', dead); pc.slot.classList.toggle('raged', !!e.raged);
     pc.el.classList.toggle('targeted', targeted && !dead); pc.slot.classList.toggle('targeted', targeted && !dead);
     // the plaque's third line is the whole plan: the move's name in one word, and the dice it will roll (red = it hits, blue = it guards)
     const v = !dead && intents ? HK.intentView(e) : null;
     const plan = v ? planOf(e, v) : null;
-    const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon, c.nodef.hidden ? 'd' : 'n'].join('|') : '';
+    const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon].join('|') : '';
     if (c.sig !== sig) {
       c.sig = sig;
       c.intent.className = `fb-intent${plan ? ` tone-${plan.tone}` : ''}`;
-      c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null, c.nodef].filter(Boolean) : []));
+      c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null].filter(Boolean) : []));
       requestAnimationFrame(() => fitPlan(c.intent));
       pc.el.setAttribute('aria-label', plan ? `${e.name}, ${Math.max(0, e.hp)} of ${e.maxHp} health. Plans ${plan.word}${plan.dice ? `, rolling ${plan.dice}` : ''}.` : `${e.name}${dead ? ', defeated' : ''}`);
     }

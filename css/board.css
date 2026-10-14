@@ -404,9 +404,10 @@
 .rc-nodef small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; }
 .fi-die.none { gap: .4rem; }
 
-/* no defence at all: a small blue shield with a red line through it, at the end of the plaque's plan row */
-.fb-nodef { position: relative; flex: none; width: .95rem; height: .95rem; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #2d5da8, #11285a); box-shadow: 0 0 0 1px #8fc2ff; color: #bfe0ff; }
-.fb-nodef[hidden] { display: none; }
-.fb-nodef svg { width: .6rem; height: .6rem; }
-.fb-nodef::after { content: ''; position: absolute; left: 10%; top: 50%; width: 80%; height: 1.5px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
-.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-nodef { width: .8rem; height: .8rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-nodef svg { width: .5rem; height: .5rem; }
+/* how a monster defends, at the far right of its health bar: [shield d8], [shield 2d4] for armour, or a crossed-out shield for none */
+.fb-def { position: absolute; right: 0; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; gap: .08rem; padding: 0 .28rem 0 .5rem; color: #cfe6ff; font: 800 .5rem/1 var(--disp); font-style: normal; background: linear-gradient(90deg, transparent, rgba(9, 24, 58, .88) 42%); }
+.fb-def svg { width: .56rem; height: .56rem; flex: none; filter: drop-shadow(0 0 2px rgba(120, 180, 255, .8)); } .fb-def b { font: inherit; text-shadow: 0 1px 2px #000; }
+.fb-def.none { position: absolute; } .fb-def.none svg { opacity: .9; }
+.fb-def.none::after { content: ''; position: absolute; right: .26rem; top: 50%; width: .62rem; height: 1.5px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def { font-size: .44rem; padding-left: .35rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def svg { width: .48rem; height: .48rem; }
+.fb-slot.dead .fb-def { display: none; }

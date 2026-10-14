@@ -1023,3 +1023,4 @@ No numbers changed; only how they are said. `noDefence()` is exported from round
 
 - (14 Oct, night) The count badge on the Magic Powers button is gone, and the gold "i" on each monster plaque no longer pulses and is a quarter smaller (its tap area is unchanged).
 - (14 Oct, night) The no-defence shield is now a small icon at the end of the plaque's bottom (plan) row instead of on its corner.
+- (14 Oct, night) The monster's defence now lives at the far right of its health bar (`fb-def` in flat.js): a blue shield with its die (`d8`, or `2d4` for armour, a phase sign for a monster that slips out of reach), or a crossed-out shield when it has nothing to block with. It replaces the icon in the bottom row.
