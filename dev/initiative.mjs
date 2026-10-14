@@ -13,7 +13,7 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 for (let r = 1; r <= 3; r++) {
-  await pump(1); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4); for (let k = 0; k < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); k++) await pump(1);
+  await pump(1); await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(4); for (let k = 0; k < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); k++) await pump(1);
   await p.evaluate(() => { const b = window.QD.S.battle; b.board.S.v = 1; window.QD.B3.renderShape(); }); await pump(0.5);
   await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(0.6);
   await shot(`r${r}-a`); await pump(1.0); await shot(`r${r}-b`);

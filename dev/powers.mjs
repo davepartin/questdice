@@ -14,7 +14,7 @@ await pump(1);
 await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[0], enemies: ['goblin', 'wolf', 'goblin'] }; window.QD.startQuest(q); });
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
-for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
+for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); }
 const open = async () => { await p.evaluate(() => { if (!document.querySelector('.b3-sheet.open')) document.querySelector('.b3-powers')?.click(); }); await pump(0.5); };
 await p.evaluate(() => { window.QD.S.battle.magic = 12; });
 await open(); await p.waitForTimeout(400); await shot('sheet');

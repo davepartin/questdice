@@ -10,7 +10,7 @@ await p.evaluate(() => { const { S, E, showBoard } = window.QD; const h = E.newH
 await pump(1);
 await p.evaluate((process_place) => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin', 'wolf']; if (process_place) q.place = process_place; window.QD.startQuest(q); }, process.env.PLACE || null);
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
-await pump(3); for (let i = 0; i < 6 && !(await p.evaluate(() => !!document.querySelector('#b3-lock'))); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4); }
+await pump(3); for (let i = 0; i < 6 && !(await p.evaluate(() => !!document.querySelector('#b3-lock'))); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(4); }
 await p.evaluate(() => { const bs = window.QD.B3.battleState; const t = bs.bw?.tray; for (const s of ['N','W','E','S']) t?.setValue?.(s, 4, { animate: false }); }); await pump(1);
 const variants = JSON.parse(process.argv[3]);
 for (const [name, look] of Object.entries(variants)) {

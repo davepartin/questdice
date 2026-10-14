@@ -983,3 +983,9 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 
 ### 14 Oct 2026 — difficulty badge in every battle
 - The same pill as on the quest board (skull, name; green Easy, gold Normal, orange Hard, red Legendary) now sits at the very top right of the battle screen, above the gold and magic chips; the round title stops short of it. Reads the hero's difficulty (a table's heroes all carry the table's). Hidden while the magic sheet is open, like the other chips. Checked at 360×640, 393×852 and a wide screen.
+
+### 14 Oct 2026 — every round starts by choosing a target
+- Dave's round: choose your target, roll, make your decisions, lock in, see the results, repeat. The hint line "Pick a target, then roll." had been promising a rule the game did not enforce; now it does.
+- With more than one monster alive, each round opens with no monster ringed, Roll greyed ("pick a target first") and the line "Pick a target. Tap the monster you will hit." The first tap on a monster chooses it, rings it and wakes Roll; before rolling you can still change your mind (tap another; tap the chosen one again for its sheet). Once you have rolled, a solo hero's target is fixed for the round: tapping another monster just opens its sheet with "Your target is fixed once you roll." A single monster is auto-aimed and needs no choosing. The next round resets the choice.
+- In company battles the pick is needed before the first roll, but the target is not frozen after rolling (shared-phone fighters take turns and each locks their own).
+- dev/pickfirst.mjs plays it through (waits for the pick, take, fixed after the roll, asked again next round, lone monster); the other dev scripts that press Roll now tap a monster first when Roll is waiting.

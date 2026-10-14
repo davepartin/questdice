@@ -11,7 +11,7 @@ await p.evaluate(() => { const { S, E, showBoard } = window.QD; const h = E.newH
 await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['wolf', 'ogre']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
-await pump(1); await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4);
+await pump(1); await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(4);
 await shot('ranger-d8-feet');
 for (let k = 0; k < 2; k++) { await p.evaluate(() => document.querySelector('.b3-plate')?.click()); await pump(0.5); }
 await shot('foe-info');

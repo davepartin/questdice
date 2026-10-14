@@ -17,7 +17,7 @@ await p.evaluate(async () => { const HK = await import('./js/g3/hudkit.js'); con
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: 'docs/ingame/banner_fit.png' });
 console.log('banner text spans', await p.evaluate(() => { const r = document.querySelector('#keep .bn-core').getBoundingClientRect(); return `${Math.round(r.left)}..${Math.round(r.right)} of ${innerWidth}`; }));
 await p.waitForTimeout(1500);
-for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
+for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); }
 await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.magic = 10; B.powerX = { arcbolt: 4 }; window.QD.B3.renderShape(); });
 await p.evaluate(() => document.querySelector('.b3-powers, #b3-powers, [class*="powers"]')?.click()); await pump(0.6);
 const opened = await p.evaluate(() => { const c = document.querySelector('.pw-medal.at-A'); c?.click(); return !!c; });

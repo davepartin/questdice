@@ -335,7 +335,7 @@ function petInfo() {
 }
 
 // The monsters' cards (name, health, what each plans) live under their pieces on the table (flat.js).
-function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.b.enemies[B.target]?.uid === e.uid }); }
+function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.picked !== false && B.b.enemies[B.target]?.uid === e.uid }); }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 export const refreshPlates = () => updatePlates(); // (dev scripts)
 function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
@@ -360,12 +360,19 @@ function targetEnemy() {
   if (!e || e.hp <= 0) B.target = Math.max(0, B.b.enemies.findIndex((x) => x.hp > 0));
   return B.b.enemies[B.target];
 }
+// The round starts by choosing who to hit (Dave): pick a monster, then roll, make your decisions, lock in, see the results, and repeat.
+// With more than one monster Roll waits for the pick; once you have rolled, a solo hero's target is fixed for the round (a
+// tap on a monster then just opens its sheet). One monster alone needs no choosing.
 function selectTarget(uid) {
   if (B.busy) return;
   const i = B.b.enemies.findIndex((e) => e.uid === uid);
   if (i < 0 || B.b.enemies[i].hp <= 0) return;
-  if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
-  B.target = i; sfx.select(); updatePlates();
+  const rolled = B.b.phase === 'shape';
+  if (B.picked !== false && B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
+  if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
+  const first = B.picked === false;
+  B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
+  if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn())); }
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
@@ -573,33 +580,37 @@ export function renderReset() {
   if (B.net) renderRoster();
   setHud({ phase: 'reset' });
   targetEnemy();
+  if (B.pickRound !== b.round || B.pickRound == null) { B.pickRound = b.round; B.picked = alive().length <= 1; } // a new round: with several monsters, choose who to hit before you roll
   B.sel.clear();
   updatePlates(); paintHeroes();
-  B.fb.setTarget(b.enemies[B.target]?.uid);
+  B.fb.setTarget(B.picked ? b.enemies[B.target]?.uid : null);
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: B.picked === false ? 'pick a target first' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
 function e0Warn() {
+  if (B.picked === false) return h('span', { class: 'cap-warn' }, HK.icon('atk'), h('b', {}, 'Pick a target.'), ' Tap the monster you will hit.');
   const wind = alive().filter((e) => e.intent?.slam);
   const charge = alive().filter((e) => e.intent?.v === 'charge');
   const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);
   if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block.');
   if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' Plan your block.');
-  return alive().length > 1 ? 'Pick a target, then roll.' : 'Roll the dice.';
+  return 'Roll the dice.';
 }
 
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
-  if (B.busy || !guideSays('roll')) return; B.busy = true; hideCard();
+  if (B.busy || !guideSays('roll')) return;
+  if (B.picked === false) { sfx.error?.(); toast('Pick a monster to hit first.'); return; }
+  B.busy = true; hideCard();
   let b = B.b; const bw = B.bw;
   if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';

@@ -18,7 +18,7 @@ const state = () => p.evaluate(() => ({ boxes: document.querySelectorAll('.fb-po
 for (let r = 1; r <= +rounds; r++) {
   const s0 = await state(); if (s0.outcome) break;
   for (let k = 0; k < 40 && !(await p.evaluate(() => !!document.querySelector('#b3-roll') && !window.QD.B3.battleState.busy)); k++) await pump(0.5);
-  await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(5);
+  await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(5);
   for (let k = 0; k < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); k++) await pump(1);
   await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(2);
   for (let n = 0; n < 60 && await p.evaluate(() => window.QD.B3.battleState.busy); n++) await pump(1);

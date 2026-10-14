@@ -13,7 +13,7 @@ await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
 await p.screenshot({ path: `docs/ingame/${name}_wait.png` });
-for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
+for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); }
 const info = await p.evaluate(() => { const B = window.QD.B3.battleState; return { frac: B.trayFrac, dbg: B.dbg, P: B.b.board.P, fc: window.QD.E.evaluate(B.hero, B.b.board).pet }; });
 console.log(JSON.stringify(info));
 await pump(1.5); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/${name}.png` });

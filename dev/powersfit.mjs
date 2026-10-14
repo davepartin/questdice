@@ -14,7 +14,7 @@ await pump(1);
 await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[0], enemies: ['goblin', 'wolf'] }; window.QD.startQuest(q); });
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
-for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
+for (let i = 0; i < 8 && !(await p.evaluate(() => window.QD.S.battle.phase === 'shape')); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); }
 await p.evaluate(() => { window.QD.S.battle.magic = 6; window.QD.S.battle.hp -= 8; document.querySelector('.b3-powers')?.click(); }); await pump(0.5); await p.evaluate(() => document.fonts.ready);
 const measure = (tag) => p.evaluate((tag) => { const s = document.querySelector('.b3-sheet'); const r = s.getBoundingClientRect(); const all = [...s.querySelectorAll('button')].map((x) => x.getBoundingClientRect());
   const cut = all.filter((q) => q.bottom > r.bottom + 1 || q.top < r.top - 1).length; const top = document.querySelector('.b3-top')?.getBoundingClientRect().bottom;
