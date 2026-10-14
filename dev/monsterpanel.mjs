@@ -1,4 +1,4 @@
-// The order after a round: the monsters' cards (held until closed), then the round recap (closed the same way).
+// After a round: each monster's summary box sits over its miniature while the round recap is open, and closing the recap clears them.
 //   node dev/monsterpanel.mjs [tag] [w] [h] [cls] [foes] [rounds]
 import { chromium } from 'playwright-core';
 const [tag = 'mp', W = 393, H = 852, cls = 'knight', en = 'goblin,wolf,ogre', rounds = 3] = process.argv.slice(2);
@@ -14,7 +14,7 @@ await pump(1);
 await p.evaluate((en) => { const E = window.QD.E; window.QD.startQuest({ ...E.questsFor(window.QD.S.hero)[0], enemies: en.split(','), kind: 'battle' }); }, en);
 for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(3);
-const state = () => p.evaluate(() => ({ panel: !!document.querySelector('.fb-pops.ready'), cards: document.querySelectorAll('.fb-pops .fb-pop').length, recap: !!document.querySelector('.b3 .rc'), outcome: window.QD.S.battle?.outcome || null }));
+const state = () => p.evaluate(() => ({ boxes: document.querySelectorAll('.fb-pops .fb-mbox').length, recap: !!document.querySelector('.b3 .rc'), outcome: window.QD.S.battle?.outcome || null }));
 for (let r = 1; r <= +rounds; r++) {
   const s0 = await state(); if (s0.outcome) break;
   for (let k = 0; k < 40 && !(await p.evaluate(() => !!document.querySelector('#b3-roll') && !window.QD.B3.battleState.busy)); k++) await pump(0.5);
@@ -23,12 +23,14 @@ for (let r = 1; r <= +rounds; r++) {
   await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(2);
   for (let n = 0; n < 60 && await p.evaluate(() => window.QD.B3.battleState.busy); n++) await pump(1);
   await pump(1.5);
-  const a = await state(); console.log(`round ${r} after the monsters:`, JSON.stringify(a));
+  const a = await state(); console.log(`round ${r} with the recap up:`, JSON.stringify(a));
   if (a.outcome) break;
-  if (a.cards) { if (!a.panel || a.recap) problems.push(`round ${r}: cards ${a.cards}, panel held ${a.panel}, recap already up ${a.recap} (want panel held, no recap)`); await shot(`r${r}_monsters`); await p.evaluate(() => document.querySelector('.fb-pops .rc-close')?.click()); await pump(0.6); }
-  const c = await state(); console.log(`  after closing the monsters:`, JSON.stringify(c));
-  if (!c.recap) problems.push(`round ${r}: no recap after closing the monsters`); if (c.panel) problems.push(`round ${r}: the monsters' panel is still up`);
-  await shot(`r${r}_recap`); await p.evaluate(() => document.querySelector('.b3 .rc .rc-close')?.click()); await pump(0.6);
-  const d = await state(); if (d.recap || d.panel) problems.push(`round ${r}: something is still covering the board after closing the recap`);
+  if (!a.recap) problems.push(`round ${r}: the recap is not up`);
+  if (!a.boxes) problems.push(`round ${r}: no monster box over a miniature`);
+  const tooBig = await p.evaluate(() => [...document.querySelectorAll('.fb-mbox')].filter((e) => { const r = e.getBoundingClientRect(); const f = document.querySelector('.fb').getBoundingClientRect(); return r.left < f.left - 1 || r.right > f.right + 1 || r.top < f.top - 1 || r.bottom > f.bottom + 1; }).length);
+  if (tooBig) problems.push(`round ${r}: ${tooBig} box(es) spill off the board`);
+  await shot(`r${r}_recap`);
+  await p.evaluate(() => document.querySelector('.b3 .rc .rc-close')?.click()); await pump(0.6);
+  const d = await state(); if (d.recap || d.boxes) problems.push(`round ${r}: still showing after the recap was closed ${JSON.stringify(d)}`);
 }
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no problems'); await b.close();

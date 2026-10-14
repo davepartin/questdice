@@ -177,57 +177,70 @@ export function cuesFromReport(rep, b) {
   return out;
 }
 
-// The pop-ups stack in a column in the middle of the screen (Dave: big, readable, never on top of the miniatures, one under the
-// other as the monsters take their turns). The column lives on the battle layer, not on the little board at the top.
+// What each monster did, summarised in one small box that sits over its own miniature (Dave). A monster that did several things
+// (a guard when you hit it, then a blow of its own) gets rows in the same box. The boxes stay up while the round recap is open and
+// are cleared when it is closed (battle3d's hideCard calls `clear`).
 function hostOf(fb) {
   if (!fb?.el) return null;
-  const root = fb.el.closest('.b3') || fb.el.parentElement || fb.el;
-  let layer = root.querySelector(':scope > .fb-pops');
-  if (!layer) {
-    layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
-    root.append(layer);
-  }
+  let layer = fb.el.querySelector(':scope > .fb-pops');
+  if (!layer) { layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' }); fb.el.append(layer); }
   return layer;
 }
 
-// The cards stay up until the player closes them (Dave): first what the monsters did, then, once that is closed, the round recap.
-// `show` adds a card while the replay runs; `finish` (called when the replay is over) puts a Close on the stack and waits.
-export function show(fb, cue, { who = '' } = {}) {
+// Each box centres on its monster's miniature, a little way down from its head. Neighbouring boxes are nudged apart sideways (and
+// kept on the board) so none sits on another.
+function layout(fb) {
+  const layer = fb.el.querySelector(':scope > .fb-pops'); if (!layer) return;
+  const W = fb.el.clientWidth || 360; const H = fb.el.clientHeight || 240; const gap = 4;
+  const foes = fb.el.querySelectorAll('.fb-slot.foe').length || 1;
+  // stay on the monsters' side of the table: never over the heroes
+  const side = fb.el.querySelector('.fb-side.foes'); const base = fb.el.getBoundingClientRect();
+  const left = Math.max(3, side ? side.getBoundingClientRect().left - base.left : 3); const right = W - 3;
+  layer.classList.toggle('tight', foes >= 3);
+  const boxes = [...layer.children].filter((e) => e._piece?.rect);
+  const maxW = Math.min(184, Math.max(88, (right - left) / foes - gap));
+  const items = boxes.map((box) => {
+    box.style.maxWidth = `${Math.round(maxW)}px`;
+    const r = box._piece.rect(); const w = box.offsetWidth || 110; const bh = box.offsetHeight || 60;
+    return { box, w, cx: r.cx, y: Math.max(3, Math.min(H - bh - 3, r.top + r.h * 0.2)), x: r.cx };
+  }).sort((p, q) => p.cx - q.cx);
+  let edge = left;
+  for (const it of items) { it.x = Math.max(it.cx, edge + it.w / 2); edge = it.x + it.w / 2 + gap; }
+  let limit = right;
+  for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; it.x = Math.min(it.x, limit - it.w / 2); limit = it.x - it.w / 2 - gap; }
+  for (const it of items) { it.box.style.left = `${Math.max(left + it.w / 2, it.x).toFixed(1)}px`; it.box.style.top = `${it.y.toFixed(1)}px`; }
+}
+
+export function show(fb, cue, { piece = null } = {}) {
   if (!fb?.el || !cue) return null;
-  const layer = hostOf(fb);
-  const el = h('div', {
-    class: `fb-pop v-${cue.v}`,
-    role: 'status',
-    'data-uid': cue.uid || '',
-    'data-v': cue.v,
-  },
-  h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
-  h('span', { class: 'ap-tx' }, who ? h('em', { class: 'ap-who' }, who) : null, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
-  layer.append(el);
-  return el;
+  const layer = hostOf(fb); const uid = String(cue.uid || '_');
+  let box = [...layer.children].find((e) => e.dataset.uid === uid);
+  if (!box) { box = h('div', { class: 'fb-mbox', role: 'status', 'data-uid': uid }); layer.append(box); }
+  if (piece) box._piece = piece;
+  // the same move told twice (a Pounce, then what the Pounce hit for) is one row, with both lines
+  const last = box.lastElementChild;
+  if (last && last.dataset.name === cue.name) {
+    const tx = last.querySelector('.ap-tx');
+    for (const t of (cue.lines || [cue.line])) if (![...tx.querySelectorAll('small')].some((x) => x.textContent === t)) tx.append(h('small', {}, t));
+    last.className = `mrow v-${cue.v}`;
+    layout(fb);
+    return last;
+  }
+  const row = h('div', { class: `mrow v-${cue.v}`, 'data-name': cue.name },
+    h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
+    h('span', { class: 'ap-tx' }, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
+  box.append(row);
+  layout(fb);
+  return row;
 }
 
-// Replay over: if any cards were shown, hold them behind a Close and call `onClose` when the player closes them. Returns false
-// when there was nothing to show (the caller then goes straight on to the recap).
-export function finish(fb, onClose) {
-  const layer = fb?.el && hostOf(fb);
-  if (!layer || !layer.querySelector('.fb-pop')) { layer?.remove(); return false; }
-  if (layer.querySelector('.fb-pops-head')) return true;
-  const close = () => { layer.remove(); onClose?.(); };
-  layer.prepend(h('header', { class: 'fb-pops-head' }, h('b', {}, 'Monster moves'),
-    h('button', { type: 'button', class: 'sh-x sh-cancel rc-close', 'aria-label': 'Close the monster moves', onclick: (e) => { e.stopPropagation(); close(); } }, '✕ Close')));
-  layer.classList.add('ready');
-  layer.addEventListener('click', close);
-  return true;
+export function clear(fb) { fb?.el?.querySelector(':scope > .fb-pops')?.remove(); }
+
+export function showForStrike(fb, s, act, ctx, piece) {
+  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { piece });
 }
 
-export function clear(fb) { fb?.el?.closest('.b3')?.querySelector(':scope > .fb-pops')?.remove(); }
-
-export function showForStrike(fb, s, act, ctx, who) {
-  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { who });
-}
-
-export function showForAct(fb, act, ctx, who) {
+export function showForAct(fb, act, ctx, piece) {
   const c = cueFromAct(act, ctx);
-  if (c) show(fb, c, { who });
+  if (c) show(fb, c, { piece });
 }

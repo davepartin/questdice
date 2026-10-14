@@ -962,3 +962,8 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 
 ### 14 Oct 2026 — heroes face the monsters
 - Dave: the heroes, always on the left, looked like they were walking away from the fight, while every monster looks left. The hero pictures are now mirrored on the battle table (`flip` on the hero Piece in flat.js: the image's `scaleX(-1)`, with the lunge/lean pivot mirrored to match), so all five classes face right, toward the monsters, in solo and company battles. Only the battle table is mirrored; the camp, road and hero-choice pictures are unchanged.
+
+### 14 Oct 2026 — monster actions: a small box over each monster (replaces the middle-of-screen cards)
+- Dave: summarise what each monster did this turn in a little box over that monster's miniature, keep it up while the round recap is open, and clear it when the recap is closed. Replaced the stacked cards and the "Monster moves" step: after the monsters' turn the recap comes straight up and the boxes stay on the board above it.
+- One box per monster (`abilitypop.js` `show` / `layout` / `clear`): a monster that did several things gets rows in the one box (a guard when you hit it, then its own blow); the same move told twice (a Pounce, then what it hit for) is one row with both lines. Boxes centre on their miniature a little below its head, are nudged sideways so none sits on another, never cross onto the heroes' side, and shrink to fit a crowd (three monsters drop the little icons for room). Closing the recap, rolling again, winning or losing clears them (`hideCard`).
+- dev/monsterpanel.mjs now checks: recap up with a box per acting monster, no box spilling off the board, everything cleared once the recap is closed.

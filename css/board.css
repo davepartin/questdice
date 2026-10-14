@@ -364,32 +364,25 @@
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
 
 /* enemy ability pop-ups (Dave): big cards stacked in the middle of the screen, one under the other, clear of the miniatures and under the round recap */
-.b3 .fb-pops { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--bar-top, var(--dock-top, 12rem)) - .5rem); display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: .1rem .1rem .3rem; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; pointer-events: none; }
-.b3 .fb-pops::-webkit-scrollbar { display: none; }
-.fb-pops.ready { pointer-events: auto; cursor: pointer; }
-.fb-pop { animation: fbPopIn .3s ease-out both; }
-@keyframes fbPopIn { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
-.fb-pops-head { flex: none; width: min(21rem, 94%); box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .4rem .55rem .4rem .8rem; border-radius: .8rem; background: linear-gradient(180deg, rgba(44, 33, 26, .98), rgba(16, 11, 9, .99)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .6), 0 8px 20px rgba(0, 0, 0, .6); }
-.fb-pops-head b { font: 800 .72rem/1 var(--disp); letter-spacing: .2em; text-transform: uppercase; color: #ffe39a; text-shadow: 0 0 10px rgba(255, 200, 80, .35); }
-.fb-pop { width: min(21rem, 94%); box-sizing: border-box; padding: .6rem .85rem .65rem .6rem; border-radius: .85rem; display: flex; align-items: center; gap: .7rem; pointer-events: none;
-  background: linear-gradient(180deg, rgba(52, 38, 28, .98), rgba(14, 9, 7, .99));
-  box-shadow: inset 0 0 0 1.5px rgba(226, 178, 76, .85), inset 0 0 0 4px rgba(16, 10, 6, .92), inset 0 0 0 5px rgba(226, 178, 76, .3), 0 12px 28px rgba(0, 0, 0, .7), 0 0 30px color-mix(in srgb, var(--pc) 22%, transparent);
-  color: #f4e7cb; --pc: #e2b24c; }
-.fb-pop .ap-ico { flex: none; width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: .6rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 30%, #1a1008), #120a08); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc) 75%, transparent); }
-.fb-pop .ap-ico svg { width: 1.7rem; height: 1.7rem; color: var(--pc); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pc) 60%, transparent)); }
-.fb-pop .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
-.fb-pop .ap-who { font: 700 .62rem/1 var(--disp, sans-serif); font-style: normal; letter-spacing: .18em; text-transform: uppercase; color: color-mix(in srgb, var(--pc) 70%, #fff); }
-.fb-pop b { font: 900 1.15rem/1.1 var(--disp, sans-serif); letter-spacing: .03em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
-.fb-pop small { font: 700 .95rem/1.25 var(--disp, sans-serif); color: #eadfc6; }
-@media (max-width: 380px) { .fb-pop { padding: .45rem .65rem .5rem .5rem; gap: .55rem; } .fb-pop .ap-ico { width: 2.2rem; height: 2.2rem; } .fb-pop .ap-ico svg { width: 1.4rem; height: 1.4rem; } .fb-pop b { font-size: 1rem; } .fb-pop small { font-size: .85rem; } }
-.fb-pop.v-guard, .fb-pop.v-armor { --pc: #7ab8ff; }
-.fb-pop.v-ward, .fb-pop.v-breath, .fb-pop.v-rage { --pc: #ff8a3a; }
-.fb-pop.v-phase, .fb-pop.v-bind, .fb-pop.v-chain, .fb-pop.v-drain { --pc: #c08cff; }
-.fb-pop.v-hush, .fb-pop.v-howl { --pc: #e6b4ff; }
-.fb-pop.v-pilfer, .fb-pop.v-flee, .fb-pop.v-summon { --pc: #ffd23d; }
-.fb-pop.v-charge, .fb-pop.v-slam, .fb-pop.v-stalk { --pc: #ff7a6a; }
-.fb-pop.v-mend { --pc: #7affb0; } .fb-pop.v-hit { --pc: #ff6a5a; } .fb-pop.v-blocked { --pc: #7ab8ff; }
-.fb-pop.still { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .fb-pop { transition: none; } }
-.fb-pops.ready .fb-pop { pointer-events: auto; }
+.fb-pops { position: absolute; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+/* one small box per monster, over its own miniature: what it did this turn. They stay until the round recap is closed. */
+.fb-mbox { position: absolute; box-sizing: border-box; min-width: 6.4rem; transform: translateX(-50%); display: flex; flex-direction: column; gap: .3rem; padding: .32rem .45rem .36rem; border-radius: .6rem; animation: fbPopIn .3s ease-out both;
+  background: linear-gradient(180deg, rgba(40, 29, 22, .95), rgba(12, 8, 6, .96)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .8), 0 6px 16px rgba(0, 0, 0, .65); color: #f4e7cb; }
+@keyframes fbPopIn { from { opacity: 0; translate: 0 6px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
+.mrow { --pc: #e2b24c; display: flex; align-items: flex-start; gap: .35rem; }
+.fb-pops.tight .mrow .ap-ico { display: none; }
+.fb-pops.tight .fb-mbox { min-width: 5.4rem; }
+.mrow + .mrow { padding-top: .3rem; border-top: 1px dashed rgba(226, 178, 76, .3); }
+.mrow .ap-ico { flex: none; width: 1.6rem; height: 1.6rem; display: grid; place-items: center; border-radius: .4rem; background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 30%, #1a1008), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 75%, transparent); }
+.mrow .ap-ico svg { width: 1rem; height: 1rem; color: var(--pc); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc) 60%, transparent)); }
+.mrow .ap-tx { min-width: 0; display: flex; flex-direction: column; gap: .06rem; }
+.mrow b { font: 900 .8rem/1.1 var(--disp, sans-serif); letter-spacing: .03em; color: #ffe9b0; text-shadow: 0 1px 2px #000; }
+.mrow small { font: 700 .7rem/1.2 var(--disp, sans-serif); color: #eadfc6; overflow-wrap: anywhere; }
+.mrow.v-guard, .mrow.v-armor { --pc: #7ab8ff; }
+.mrow.v-ward, .mrow.v-breath, .mrow.v-rage { --pc: #ff8a3a; }
+.mrow.v-phase, .mrow.v-bind, .mrow.v-chain, .mrow.v-drain { --pc: #c08cff; }
+.mrow.v-hush, .mrow.v-howl { --pc: #e6b4ff; }
+.mrow.v-pilfer, .mrow.v-flee, .mrow.v-summon { --pc: #ffd23d; }
+.mrow.v-charge, .mrow.v-slam, .mrow.v-stalk { --pc: #ff7a6a; }
+.mrow.v-mend { --pc: #7affb0; } .mrow.v-hit { --pc: #ff6a5a; } .mrow.v-blocked { --pc: #7ab8ff; }
+@media (prefers-reduced-motion: reduce) { .fb-mbox { animation: none; } }

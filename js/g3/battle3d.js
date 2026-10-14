@@ -850,14 +850,14 @@ const HIT_KIND = (pierceOnly, caster) => (caster ? 'magic' : pierceOnly ? 'pierc
 function popStrike(s, rep) {
   if (!B.fb || !s) return;
   const act = (rep?.acts || []).find((a) => a.uid === s.targetUid);
-  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid)?.name);
+  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid));
 }
 function popAct(act, rep) {
   if (!B.fb || !act) return;
-  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid)?.name);
+  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid));
 }
-function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { who: foePc(uid)?.name }); }
-function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { who: foePc(uid)?.name }); }
+function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { piece: foePc(uid) }); }
+function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { piece: foePc(uid) }); }
 
 async function strikeAnim(hp, s, { caster = false } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
@@ -895,7 +895,7 @@ async function foeAnim(act, heroes) {
   await a.lunge(first, () => {
     // what the blow did is told by the big card in the middle of the screen (abilitypop.js), not by little numbers over the heads
     const hit = AP.cueFromHit(act, heroes.map(({ pc, part, net }) => ({ name: pc.name, part, net })));
-    if (hit) AP.show(B.fb, hit, { who: a.name });
+    if (hit) AP.show(B.fb, hit, { piece: a });
     for (const { pc, part, net } of heroes) {
       const ab = part - net;
       if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
@@ -913,8 +913,6 @@ function showCard(el = B.card) {
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
 function hideCard() { AP.clear(B.fb); if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
-// After the monsters' turn: what they did first (held until the player closes it), then the round recap (closed the same way).
-function showCardAfterMonsters(card) { if (!AP.finish(B.fb, () => showCard(card))) showCard(card); }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
 async function lockInInner() {
   if (B.net) return lockNet();
@@ -993,7 +991,7 @@ async function lockInInner() {
   B.busy = false;
   if (b.outcome === 'victory') return win();
   if (b.outcome === 'defeat') return lose();
-  showCardAfterMonsters(card);
+  showCard(card);
   renderReset();
 }
 
@@ -1060,7 +1058,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   if (outcome === 'victory') return win();
   if (outcome === 'defeat') return lose();
   if (!B.net) B.active = -1;
-  showCardAfterMonsters(card);
+  showCard(card);
   renderReset();
 }
 async function playStrike(s, rep) {
