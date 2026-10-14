@@ -396,7 +396,7 @@ function readyText(e) {
 // "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
 // A blow is its BASE (the number it always has) plus the die it rolls (times a multiplier for the big moves): "base 6 + d8".
 const dieName = (n) => `d${n}`;
-const baseDie = (base, i, s) => [base > 0 ? `base ${base}` : null, i.m > 1 ? `${i.m}×${dieName(s)}` : (i.m ? dieName(s) : null)].filter(Boolean).join(' + ');
+const baseDie = (base, i, s) => [base > 0 ? `base ${base}` : null, ...Array.from({ length: i.m || 0 }, () => dieName(s))].filter(Boolean).join(' + '); // a x2 move rolls two separate dice
 function diceRows(e, def) {
   const s = e.powerDie; const i = e.intent; const rows = [];
   const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));

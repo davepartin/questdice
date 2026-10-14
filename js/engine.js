@@ -411,16 +411,20 @@ function settleStalks(b, rep) {
     rep.stalks.push({ uid: e.uid, broken });
   }
 }
-function magnitude(e, intent, p, weaken) {
-  let m = intent.f + intent.m * p;
+// A monster rolls its power die once for each point of the move's multiplier (Dave): a Lunge (x2) rolls TWO separate dice, a Bite (x1) one.
+// (A move with no multiplier still draws one die so the random stream is the same as before; it just does not count.)
+export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, intent?.m || 0) }, () => die(rng, e.powerDie));
+const diceSum = (intent, dice) => (dice || []).slice(0, intent.m || 0).reduce((a, v) => a + v, 0);
+function magnitude(e, intent, dice, weaken) {
+  let m = intent.f + diceSum(intent, dice);
   if (isDamageIntent(intent)) m = Math.max(0, m + e.flat + e.buff - weaken);
   return m;
 }
-// What made a monster's number this round, for the recap: its move's fixed part, the multiplier on its power die, the die it rolled,
-// and the fight's flat bonus, a howl, and any softening from your powers. (f + m x die + flat + howl - softened = the attack or guard.)
-const magnitudeParts = (e, intent, p, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p, size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
-// A monster's BASE attack (or guard): the number it always has before its die. The move's own number, plus the fight's extra hit and any
-// howl for a blow; a guard has just the move's own number. The attack is then base + the die it rolls (times the move's multiplier).
+// What made a monster's number this round, for the recap: its move's fixed part, the dice it rolled, the fight's flat bonus, a howl, and any
+// softening from your powers. (f + the dice + flat + howl - softened = the attack or guard.)
+const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p: dice[0], dice: dice.slice(0, Math.max(1, intent.m || 0)), size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
+// A monster's BASE attack (or guard): the number it always has before its dice. The move's own number, plus the fight's extra hit and any
+// howl for a blow; a guard has just the move's own number. The attack is then base + the dice it rolls.
 export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? (e.flat || 0) + (e.buff || 0) : 0) : 0);
 export function intentRange(e) {
   const i = e.intent;
@@ -725,7 +729,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
-  for (const e of alive) { e.p = die(b.rng, e.powerDie); e.mag = magnitude(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.calc = magnitudeParts(e, e.intent, e.p, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
+  for (const e of alive) { e.pdice = rollPower(e, e.intent, b.rng); e.p = e.pdice[0]; e.mag = magnitude(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.calc = magnitudeParts(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
@@ -1442,8 +1446,8 @@ export function resolveParty(b) {
   const team = teamBonuses(b, acting);
   const alive = b.enemies.filter((e) => e.hp > 0);
   for (const e of alive) {
-    e.p = die(b.rng, e.powerDie);
-    e.mag = magnitude(e, e.intent, e.p, weaken); e.calc = magnitudeParts(e, e.intent, e.p, weaken);
+    e.pdice = rollPower(e, e.intent, b.rng); e.p = e.pdice[0];
+    e.mag = magnitude(e, e.intent, e.pdice, weaken); e.calc = magnitudeParts(e, e.intent, e.pdice, weaken);
     e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng);
   }
   const order = rankFighters(acting, b.rng); // who acts first

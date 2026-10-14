@@ -411,3 +411,8 @@
 .fb-def.none::after { content: ''; position: absolute; right: .26rem; top: 50%; width: .62rem; height: 1.5px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def { font-size: .44rem; padding-left: .35rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def svg { width: .48rem; height: .48rem; }
 .fb-slot.dead .fb-def { display: none; }
+
+.rc-dice { display: inline-flex; align-items: center; gap: .2rem; }
+/* the plan's dice: a lighter, tighter face (Dave), so "5+d8+d8" reads at a glance without looking heavy */
+.fb-intent .fb-dice { font: 500 .66rem/1 'Inter', 'Helvetica Neue', Arial, sans-serif; letter-spacing: -.03em; font-stretch: condensed; font-variant-numeric: tabular-nums; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-dice { font-size: .6rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-dice { font-size: .54rem; }

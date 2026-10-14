@@ -22,16 +22,17 @@ const dieIcon = (size) => `d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 
 const rolled = (b, a) => {
   const e = foe(b, a.uid); const c = a.calc; const size = c?.size || e?.powerDie; if (!size || a.p == null) return null;
   const blue = a.v === 'guard' || a.v === 'ward';
-  return h('span', { class: `rc-roll ${blue ? 'blue' : 'red'}`, title: `It rolled a d${size}` }, HK.icon(dieIcon(size)), h('b', {}, String(a.p)), h('small', {}, `d${size}`));
+  const dice = c?.dice?.length ? c.dice : [a.p];
+  const chips = dice.map((v) => h('span', { class: `rc-roll ${blue ? 'blue' : 'red'}`, title: `It rolled a d${size}` }, HK.icon(dieIcon(size)), h('b', {}, String(v)), h('small', {}, `d${size}`)));
+  return chips.length === 1 ? chips[0] : h('span', { class: 'rc-dice' }, ...chips.flatMap((x, i) => (i ? [h('i', { class: 'rc-plus' }, '+'), x] : [x])));
 };
 const calcLine = (b, a, word) => {
   const c = a.calc; const size = c?.size || foe(b, a.uid)?.powerDie; if (!c || !size || a.p == null || !(c.m || c.f)) return null;
-  // "BASE 6  +  [d8: 5]": the number it always has, and the die it rolled. A multiplier on the die (Lunge x2) and any softening from your powers are named after.
+  // "BASE 6  +  [d8: 5] + [d8: 3]": the number it always has, then each die it rolled (a x2 move rolls two), and any softening from your powers after.
   const base = c.f + c.flat + c.buff;
   const parts = [];
   if (base > 0) parts.push(h('span', { class: 'rc-b base' }, h('small', {}, 'base'), h('b', {}, String(base))), h('i', { class: 'rc-plus' }, '+'));
   parts.push(rolled(b, a));
-  if (c.m > 1) parts.push(h('span', { class: 'rc-b' }, h('b', {}, `×${c.m}`)));
   if (c.weaken) parts.push(h('i', { class: 'rc-plus' }, '−'), h('span', { class: 'rc-b soft' }, h('b', {}, String(c.weaken)), h('small', {}, 'softened')));
   void word;
   return h('div', { class: `rc-calc ${word === 'guard' ? 'blue' : 'red'}` }, ...parts);
@@ -39,7 +40,7 @@ const calcLine = (b, a, word) => {
 // a blue shield with a line through it: this monster has no defence to roll
 export const noDefence = (label = 'no defence') => h('span', { class: 'rc-nodef', title: 'This monster does not roll for defence' }, HK.icon('block'), h('small', {}, label));
 // the guard your blow ran into: the die the monster rolled for it
-const guardRoll = (t) => (t && t.p != null && t.powerDie ? h('span', { class: 'rc-roll blue', title: `Its guard came from a d${t.powerDie}` }, HK.icon(dieIcon(t.powerDie)), h('b', {}, String(t.p)), h('small', {}, `d${t.powerDie}`)) : null);
+const guardRoll = (t) => (t && t.p != null && t.powerDie ? h('span', { class: 'rc-roll blue', title: `Its guard came from a d${t.powerDie}` }, HK.icon(dieIcon(t.powerDie)), h('b', {}, String((t.pdice || [t.p]).slice(0, Math.max(1, t.intent?.m || 1)).reduce((x, v) => x + v, 0))), h('small', {}, `d${t.powerDie}`)) : null);
 const note = (kind, text) => h('p', { class: `rc-note ${kind}` }, HK.rich(text));
 
 // ---- what you did to the monster (one hero)

@@ -695,9 +695,21 @@ test('a monster round report says which die it rolled and what the roll made (at
     const rep = resolve(b, { target: 0 }); const a = rep.acts.find((x) => x.uid === e.uid);
     if (!a) { b.round = 0; startRoll(b); continue; }
     assert.ok(a.calc && a.calc.size === e.powerDie && a.calc.p === a.p, 'the report carries the die and its roll');
-    const total = a.calc.f + a.calc.m * a.calc.p + a.calc.flat + a.calc.buff - a.calc.weaken;
+    const total = a.calc.f + a.calc.dice.slice(0, a.calc.m).reduce((x, v) => x + v, 0) + a.calc.flat + a.calc.buff - a.calc.weaken;
     assert.equal(Math.max(0, total), a.mag, `${verb}: move + die + bonuses = the number`);
     if (b.outcome) break;
     startRoll(b);
   }
+});
+
+test('a x2 move rolls two separate dice and adds them to its base', () => {
+  const h = knight(); const b = newBattle(h, { ...questsFor(h)[0], enemies: ['wolf'] }, makeRng(11), 1); startRoll(b);
+  const e = b.enemies[0]; let seen = 0;
+  for (let r = 0; r < 12 && !b.outcome && seen < 2; r++) {
+    e.intent = { n: 'Lunge', v: 'strike', f: 0, m: 2 }; b.board = b.board || {};
+    const rep = resolve(b, { target: 0 }); const a = rep.acts.find((x) => x.uid === e.uid);
+    if (a) { const c = a.calc; assert.equal(c.dice.length, 2, 'two dice'); assert.equal(a.mag, Math.max(0, c.f + c.dice[0] + c.dice[1] + c.flat + c.buff - c.weaken)); seen++; }
+    if (b.outcome) break; startRoll(b);
+  }
+  assert.ok(seen >= 1);
 });
