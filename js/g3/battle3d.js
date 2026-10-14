@@ -128,6 +128,8 @@ function buildHud() {
   hud.goldchip = h('div', { class: 'b3-magchip b3-goldchip', title: 'Gold' }, HK.icon('gold'), h('b', {}, '0')); // your gold, above the magic (Dave)
   // the pet (Dave): off the board, a small badge by the gold and magic. Its die rolls once a round with the others and
   // cannot be rerolled: a bit of luck. Tap it to read what it rolled.
+  // the game's difficulty, top right: the same chip as on the quest board (Dave)
+  hud.diff = h('span', { class: 'sx-diffchip b3-diffchip' }, HK.icon('skull'), h('b', {}, ''));
   hud.petchip = h('button', { type: 'button', class: 'b3-petchip', hidden: true, 'aria-label': 'Your pet', onclick: () => petInfo() }, h('img', { class: 'pc-pic', alt: '', draggable: 'false' }), h('span', { class: 'pc-die' }));
   // on phones the line between the battlefield and the dice table is the hero's health bar
   hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
@@ -144,7 +146,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
   B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
@@ -304,6 +306,7 @@ function updateHero() {
   HK.setGems(r.gems, b.magic);
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
+  { const dh = B.hud.diff; const d = D.DIFFICULTY[D.normalizeDifficulty(B.hero?.difficulty)]; const id = D.normalizeDifficulty(B.hero?.difficulty); if (dh) { dh.className = `sx-diffchip b3-diffchip dc-${id}`; dh.querySelector('b').textContent = d.name; dh.title = `${d.name}: ${d.text}`; dh.setAttribute('aria-label', `Difficulty: ${d.name}`); } }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
   const gc = B.hud.goldchip; if (gc) gc.querySelector('b').textContent = String(B.party ? E.companyGold(b.fighters.map((f) => f.hero)) : (B.hero?.gold ?? 0));
   renderPet();

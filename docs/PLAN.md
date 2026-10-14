@@ -980,3 +980,6 @@ Dave: "remove all of the old code that was so much animation, to make this game 
 - Camp: each power row says what it gives now and what the next level gives, in the fewest words ("Now: +3 pierce / Level 2: +4 pierce", "+7 attack per charge → +8"). The battle panel's effect line also shows the level's real numbers (it showed the base ones before).
 - Bottom hint: "Pick a target, then roll." (one monster: "Roll the dice."), "Tap dice to reroll, then Lock in.", slam warnings cut to "X will SLAM. Brace with block."
 - Balance re-run (smart bot, 3 acts, all classes): 10/10 cleared, Act I boss 95%, Hollow Lich ~58%, Act III finale ~98%: unchanged in shape.
+
+### 14 Oct 2026 — difficulty badge in every battle
+- The same pill as on the quest board (skull, name; green Easy, gold Normal, orange Hard, red Legendary) now sits at the very top right of the battle screen, above the gold and magic chips; the round title stops short of it. Reads the hero's difficulty (a table's heroes all carry the table's). Hidden while the magic sheet is open, like the other chips. Checked at 360×640, 393×852 and a wide screen.
