@@ -34,7 +34,8 @@ const calcLine = (b, a, word) => {
   if (base > 0) parts.push(h('span', { class: 'rc-b base' }, h('small', {}, 'base'), h('b', {}, String(base))), h('i', { class: 'rc-plus' }, '+'));
   parts.push(rolled(b, a));
   if (c.weaken) parts.push(h('i', { class: 'rc-plus' }, '−'), h('span', { class: 'rc-b soft' }, h('b', {}, String(c.weaken)), h('small', {}, 'softened')));
-  void word;
+  // a guard has no 'you take' line after it, so say what it came to
+  if (word === 'guard') parts.push(h('i', { class: 'rc-plus' }, '='), h('span', { class: 'rc-b total' }, h('b', {}, String(a.mag ?? 0)), h('small', {}, 'guard')));
   return h('div', { class: `rc-calc ${word === 'guard' ? 'blue' : 'red'}` }, ...parts);
 };
 // a blue shield with a line through it: this monster has no defence to roll
