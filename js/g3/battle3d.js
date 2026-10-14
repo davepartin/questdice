@@ -17,7 +17,6 @@ import { petImg } from './pets.js';
 import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf } from './flat.js';
 import { roundCard } from './roundcard.js';
-import * as AP from './abilitypop.js';
 
 let C = null;                // context from ui.js
 const B = {
@@ -878,35 +877,28 @@ async function lockNet() {
 // ---- the pieces perform one blow at a time (flat.js). Hardly any animation: a lunge, then a shake and a slight tilt with a spark.
 const heroPiece = (name) => (B.party ? B.fb.heroByName(name) : B.fb.hero(0));
 const HIT_KIND = (pierceOnly, caster) => (caster ? 'magic' : pierceOnly ? 'pierce' : 'hit');
-// a hero strikes a monster. s: { atk, pierce, guarded, dealt, phased, killed, burned, targetUid }
-function popStrike(s, rep) {
-  if (!B.fb || !s) return;
+// The word for what soaked a blow, told on the monster: its own move (Duck, Fire Ward, Shield Up...), Phase if it slipped out of reach, Armor if it wears some.
+const blockWord = (s, rep) => {
   const act = (rep?.acts || []).find((a) => a.uid === s.targetUid);
-  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid));
-}
-function popAct(act, rep) {
-  if (!B.fb || !act) return;
-  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid));
-}
-function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { piece: foePc(uid) }); }
-function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { piece: foePc(uid) }); }
-
+  if (s.phased) return act?.name || 'Phase';
+  return act && (act.v === 'guard' || act.v === 'ward') ? act.name : 'Armor';
+};
 async function strikeAnim(hp, s, { caster = false } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
   const jobs = [];
   await hp.lunge(ta, () => {
-    popStrike(s, B.lastRep);
-    if (s.phased) { jobs.push(ta.glow('magic')); ta.num('Passes through', 'meh'); }
-    else if (s.guarded > 0) { jobs.push(ta.guard()); ta.num(`Guarded ${s.guarded}`, 'block'); sfx.block(); }
-    if (s.dealt > 0) { sfx.hit(); jobs.push(ta.hit(Math.min(1, s.dealt / 25), HIT_KIND(s.atk === 0 && s.pierce > 0, caster))); ta.num(`−${s.dealt}`, 'dmg'); if (s.pierce) ta.num(`◆ ${s.pierce}`, 'pierce', { dx: 22, dy: 14 }); }
-    else if (!s.guarded && !s.phased) { ta.num('0', 'meh'); sfx.block(); }
+    // numbers stay up five seconds: the damage in red, and the word of whatever soaked some of it (Duck, Fire Ward, Armor...) in blue
+    const word = blockWord(s, B.lastRep);
+    if (s.phased) { jobs.push(ta.glow('magic')); ta.num(`${word}: passes through`, 'block', { dy: -12 }); }
+    else if (s.guarded > 0) { jobs.push(ta.guard()); ta.num(`${word} −${s.guarded}`, 'block', { dy: -12 }); sfx.block(); }
+    if (s.dealt > 0) { sfx.hit(); jobs.push(ta.hit(Math.min(1, s.dealt / 25), HIT_KIND(s.atk === 0 && s.pierce > 0, caster))); ta.num(`−${s.dealt}`, 'dmg', { dy: 14 }); if (s.pierce) ta.num(`◆ ${s.pierce}`, 'pierce', { dx: 34, dy: 34 }); }
+    else if (!s.guarded && !s.phased) { ta.num('0', 'meh', { dy: 14 }); sfx.block(); }
     if (s.burned) { sfx.hurt(); buzz(60); jobs.push(hp.hit(0.6, 'fire')); hp.num(`🔥 −${s.burned}`, 'hurt'); B.fb.flash('#ff6a2a', 0.35); }
   });
   await Promise.all(jobs);
 }
 // a monster acts. `heroes`: [{ pc, part, net }] who it hit and how it came out (a company shares the blow).
 async function foeAnim(act, heroes) {
-  popAct(act, B.lastRep);
   const a = foePc(act.uid); if (!a) return;
   const first = heroes[0]?.pc;
   const dmgVerb = ['strike', 'pierce', 'drain', 'pilfer'].includes(act.v);
@@ -925,13 +917,12 @@ async function foeAnim(act, heroes) {
   }
   const jobs = [];
   await a.lunge(first, () => {
-    // what the blow did is told by the big card in the middle of the screen (abilitypop.js), not by little numbers over the heads
-    const hit = AP.cueFromHit(act, heroes.map(({ pc, part, net }) => ({ name: pc.name, part, net })));
-    if (hit) AP.show(B.fb, hit, { piece: a });
+    // each hero shows what got through in red, and the block that soaked the rest (the recap names the move)
     for (const { pc, part, net } of heroes) {
       const ab = part - net;
-      if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
-      if (ab > 0) { jobs.push(pc.guard()); sfx.block(); }
+      if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); pc.num(`−${net}`, 'hurt', { dy: 14 }); }
+      if (ab > 0) { jobs.push(pc.guard()); pc.num(`Block −${ab}`, 'block', { dy: -12 }); sfx.block(); }
+      if (net <= 0 && ab <= 0 && !['drain', 'pilfer'].includes(act.v)) pc.num('0', 'meh', { dy: 14 });
     }
   });
   await Promise.all(jobs);
@@ -944,7 +935,7 @@ function showCard(el = B.card) {
   // a long fight's recap shrinks a little (rather than scrolling) until all of it shows
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
-function hideCard() { AP.clear(B.fb); if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
+function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
 async function lockInInner() {
   if (B.net) return lockNet();
@@ -1010,8 +1001,8 @@ async function lockInInner() {
     const e = b.enemies.find((x) => x.uid === uid); if (!e) continue;
     addFoe(e).appear();
   }
-  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); popRage(uid); await a?.rage(); }
-  for (const uid of rep.fled || []) popFlee(uid);
+  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); await a?.rage(); }
+  for (const uid of rep.fled || []) foePc(uid)?.num('Flees', 'meh');
   if (rep.healed) { sfx.heal(); me.heal(); me.num(`+${rep.healed}`, 'heal'); }
   if (rep.T.pierce) bw.tray.pulse?.('S', 'pierce');
   bw.tray.unlock?.();
@@ -1068,8 +1059,8 @@ async function playParty(rep, outcome = B.b.outcome) {
     const e = b.enemies.find((x) => x.uid === uid); if (!e) continue;
     addFoe(e).appear();
   }
-  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); popRage(uid); await a?.rage(); }
-  for (const uid of rep.fled || []) popFlee(uid);
+  for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); await a?.rage(); }
+  for (const uid of rep.fled || []) foePc(uid)?.num('Flees', 'meh');
   for (const x of rep.fighters) {
     const pc = pcOf(x.name); if (!pc) continue;
     if (x.healed > 0) { pc.heal(); pc.num(`+${x.healed}`, 'heal'); }

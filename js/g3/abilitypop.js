@@ -1,9 +1,7 @@
-// Enemy ability pop-ups for new players (Dave, Oct 2026): when a monster's special move
-// actually fires in the battle replay, a short gold-framed card names it and says what it did.
+// What each monster special did, as data (Dave, Oct 2026). The boxes that used to sit across the top of the board are gone (Dave, 14 Oct):
+// the board now shows only a number and a word over a piece, and the round recap tells the rest. These builders are kept for the tests and the recap.
 // Driven from the engine round report and intent verbs, so a new monster with an existing verb
 // gets a pop-up with no extra wiring. Hero abilities never appear here. Nothing here changes a rule.
-import { h, reduced } from '../dom.js';
-import * as HK from './hudkit.js';
 
 
 // Verbs that are just a hit: no pop-up unless the blow is a Slam / Pounce (flagged slam).
@@ -190,62 +188,4 @@ export function cuesFromReport(rep, b) {
   for (const uid of rep.raged || []) { const c = cueFromRage(uid, b); if (c) out.push(c); }
   for (const uid of rep.fled || []) { const c = cueFromFlee(uid); if (c) out.push(c); }
   return out;
-}
-
-// What each monster did this turn, as a few words across the top of the board, above its miniature (Dave): the move's name, coloured
-// by what kind of move it is (red attack, blue defence, purple magic, green healing, gold sneaky), and two or three words about it.
-// No icons and no numbers. They sit in front of the heading and stay while the round recap is open; closing the recap clears them
-// (battle3d's hideCard calls `clear`), so the little hits and tumbles on the board play out clean.
-function hostOf(fb) {
-  const root = fb?.el?.closest('.b3'); if (!root) return null;
-  let layer = root.querySelector(':scope > .fb-pops');
-  if (!layer) { layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' }); root.append(layer); }
-  return layer;
-}
-
-function layout(fb) {
-  const layer = hostOf(fb); if (!layer) return;
-  const rootEl = layer.parentElement; const root = rootEl.getBoundingClientRect(); const board = fb.el.getBoundingClientRect();
-  const W = root.width; const gap = 4;
-  const foes = fb.el.querySelectorAll('.fb-slot.foe').length || 1;
-  const side = fb.el.querySelector('.fb-side.foes');
-  // in front of the heading, across the top, above the monsters (never over the heroes' side)
-  const left = Math.max(3, (side ? side.getBoundingClientRect().left : board.left) - root.left); const right = W - 3;
-  const maxW = Math.min(170, Math.max(70, (right - left) / foes - gap));
-  const top = Math.max(0, board.top - root.top) + 8;
-  const items = [...layer.children].filter((e) => e._piece?.rect).map((box) => {
-    box.style.maxWidth = `${Math.round(maxW)}px`;
-    const r = box._piece.rect();
-    return { box, w: box.offsetWidth || 90, cx: board.left - root.left + r.cx };
-  }).sort((p, q) => p.cx - q.cx);
-  let x0 = left;
-  for (const it of items) { it.x = Math.max(it.cx, x0 + it.w / 2); x0 = it.x + it.w / 2 + gap; }
-  let limit = right;
-  for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; it.x = Math.min(it.x, limit - it.w / 2); limit = it.x - it.w / 2 - gap; }
-  for (const it of items) { it.box.style.left = `${Math.max(left + it.w / 2, it.x).toFixed(1)}px`; it.box.style.top = `${top.toFixed(1)}px`; }
-}
-
-export function show(fb, cue, { piece = null } = {}) {
-  const layer = fb?.el && hostOf(fb); if (!layer || !cue) return null;
-  const uid = String(cue.uid || '_');
-  let box = [...layer.children].find((e) => e.dataset.uid === uid);
-  if (!box) { box = h('div', { class: 'fb-mbox', role: 'status', 'data-uid': uid }); layer.append(box); }
-  if (piece) box._piece = piece;
-  // the same move told twice (a Pounce, then what the Pounce hit for) is one row
-  if ([...box.children].some((r) => r.dataset.name === cue.name)) { layout(fb); return null; }
-  const row = h('div', { class: `mrow tone-${cue.tone || 'sly'}`, 'data-name': cue.name }, h('b', {}, cue.name), cue.tag ? h('small', {}, cue.tag) : null);
-  box.append(row);
-  layout(fb);
-  return row;
-}
-
-export function clear(fb) { fb?.el?.closest('.b3')?.querySelector(':scope > .fb-pops')?.remove(); }
-
-export function showForStrike(fb, s, act, ctx, piece) {
-  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { piece });
-}
-
-export function showForAct(fb, act, ctx, piece) {
-  const c = cueFromAct(act, ctx);
-  if (c) show(fb, c, { piece });
 }

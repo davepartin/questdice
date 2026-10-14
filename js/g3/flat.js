@@ -56,6 +56,26 @@ export function stanceOf(fighters, enemies, { strikes } = {}) {
 // Spark colours by what happened.
 const SPARK = { hit: '#ffd27a', pierce: '#ff8a1a', block: '#7ab4ff', heal: '#6aff9a', magic: '#c08cff', fire: '#ff6a2a', gold: '#ffd23d', buff: '#ffe9a0' };
 
+// The plan on a monster's plaque: one word (the move's name) and the dice it rolls for it, like "2×d8" (a multiplier on its power die).
+// Hits show the red attack sign, guards the blue shield; moves with no dice (a howl, a wind-up) show just the word.
+const DICE_VERBS = new Set(['strike', 'pierce', 'drain', 'pilfer', 'breath', 'guard', 'ward', 'mend']);
+export function planOf(e, v) {
+  const i = e.intent; if (!i) return null;
+  const raw = String(i.n || v.title || '').trim();
+  const words = raw.split(/\s+/);
+  // a long two-word move reads as its most telling word (Raise Dead -> RAISE, Fire Ward -> WARD, Gold Shield -> SHIELD): the longest, the last on a tie
+  const word = words.length > 1 && raw.length > 8 ? words.reduce((best, w) => (w.length >= best.length ? w : best), '') : raw;
+  const dice = DICE_VERBS.has(i.v) && i.m && e.powerDie ? `${i.m > 1 ? `${i.m}×` : ''}d${e.powerDie}` : '';
+  return { word: word.toUpperCase(), dice, icon: v.icon, tone: v.tone };
+}
+
+// Shrink the plan's word until it fits beside its dice (a long word like FIRE WARD next to 2×d8 on a narrow plaque).
+function fitPlan(chip) {
+  const w = chip?.querySelector('.fb-word'); if (!w || !chip.clientWidth) return;
+  w.style.fontSize = ''; let fs = parseFloat(getComputedStyle(w).fontSize) || 11; let n = 0;
+  while (w.scrollWidth > w.clientWidth + 0.5 && fs > 6 && n++ < 30) { fs -= 0.4; w.style.fontSize = `${fs.toFixed(1)}px`; }
+}
+
 // ------------------------------------------------------------------------------------------ one piece
 class Piece {
   constructor(fb, { kind, key, img, name, rel = 1, hue = null, flip = false }) {
@@ -64,8 +84,7 @@ class Piece {
     this.mark = h('i', { class: 'fb-mark', 'aria-hidden': 'true' });
     this.ring = h('i', { class: 'fb-ring', 'aria-hidden': 'true' });
     this.chev = h('i', { class: 'fb-chev', 'aria-hidden': 'true' });
-    this.call = h('b', { class: 'fb-call', hidden: true });
-    this.el = h('button', { type: 'button', class: 'fb-pc', 'aria-label': name, style: hue ? { '--hue': hue } : null }, this.mark, this.ring, this.img, this.chev, this.call);
+    this.el = h('button', { type: 'button', class: 'fb-pc', 'aria-label': name, style: hue ? { '--hue': hue } : null }, this.mark, this.ring, this.img, this.chev);
     this.el.style.setProperty('--rel', String(rel));
   }
   // rotate and lunge around the painted disc, not the image centre
@@ -143,7 +162,6 @@ class Piece {
   stand() { this.dead = false; this.p = {}; this.el.classList.remove('down', 'raged'); this.render(); }
   spark(kind = 'hit', power = 0.5) { this.fb.spark(this, kind, power); }
   num(text, kind = 'dmg', opts) { this.fb.num(this, text, kind, opts); }
-  setCall(text) { this.call.textContent = text || ''; this.call.hidden = !text; }
 }
 
 // A place name on the board: data-place plus the painted backdrop (felt stays the fallback).
@@ -186,12 +204,10 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   const field = h('div', { class: 'fb-field' }, heroSide, foeSide);
   const fx = h('div', { class: 'fb-fx', 'aria-hidden': 'true' });
   const flashEl = h('i', { class: 'fb-flash', 'aria-hidden': 'true' });
-  const pops = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
   const links = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   links.setAttribute('class', 'fb-links');
   links.setAttribute('aria-hidden', 'true');
-  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${party ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl, pops);
-  fb.pops = pops;
+  fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${party ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl);
   applyPlace(fb.el, quest?.place);
   if (party) fb.el.append(links);
   host.prepend(fb.el);
@@ -247,7 +263,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     fb.el.style.setProperty('--ph', `${Math.round(pieceH)}px`);
     fb.el.style.setProperty('--foes', String(Math.max(1, foeSide.children.length)));
   };
-  fb.ro = new ResizeObserver(() => { fb.layout(); fb.paintLinks?.(); }); fb.ro.observe(field);
+  fb.ro = new ResizeObserver(() => { fb.layout(); fb.paintLinks?.(); for (const pc of fb.foes.values()) fitPlan(pc.c?.intent); }); fb.ro.observe(field);
 
   // ---- party: wait on the left at half size; lock in and step up beside the chosen monster
   const pairOf = (uid) => fb.foes.get(uid)?.pair;
@@ -328,14 +344,16 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     c.hp.classList.toggle('low', k > 0 && k <= 0.3);
     pc.slot.classList.toggle('dead', dead); pc.slot.classList.toggle('raged', !!e.raged);
     pc.el.classList.toggle('targeted', targeted && !dead); pc.slot.classList.toggle('targeted', targeted && !dead);
+    // the plaque's third line is the whole plan: the move's name in one word, and the dice it will roll (red = it hits, blue = it guards)
     const v = !dead && intents ? HK.intentView(e) : null;
-    const sig = v ? [v.tone, v.title, v.fig, v.unit].join('|') : '';
+    const plan = v ? planOf(e, v) : null;
+    const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon].join('|') : '';
     if (c.sig !== sig) {
       c.sig = sig;
-      c.intent.className = `fb-intent${v ? ` tone-${v.tone}${v.hazard ? ' hazard' : ''}` : ''}`;
-      c.intent.replaceChildren(...(v ? [HK.icon(v.icon), h('b', {}, v.fig), v.unit && /^[a-z]/i.test(v.unit) && v.unit.length < 7 ? h('small', {}, v.unit) : null].filter(Boolean) : []));
-      pc.setCall(v?.call?.head || '');
-      pc.el.setAttribute('aria-label', v ? `${e.name}, ${Math.max(0, e.hp)} of ${e.maxHp} health. Intends ${v.title}: ${v.fig} ${v.unit}.` : `${e.name}${dead ? ', defeated' : ''}`);
+      c.intent.className = `fb-intent${plan ? ` tone-${plan.tone}` : ''}`;
+      c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null].filter(Boolean) : []));
+      requestAnimationFrame(() => fitPlan(c.intent));
+      pc.el.setAttribute('aria-label', plan ? `${e.name}, ${Math.max(0, e.hp)} of ${e.maxHp} health. Plans ${plan.word}${plan.dice ? `, rolling ${plan.dice}` : ''}.` : `${e.name}${dead ? ', defeated' : ''}`);
     }
     return pc;
   };
@@ -355,8 +373,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
     fx.append(el);
     const half = (el.offsetWidth || 40) / 2 + 4; el.style.left = `${clamp(x + dx, half, W - half)}px`; // never off the edge of the table
-    // stays up about three seconds so it can be read: it pops in, drifts up slowly, and fades only at the end
-    tween(3.2, (k) => { el.style.transform = `translate(-50%, ${(-46 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.04 ? 0.6 + k * 10 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2); }).then(() => el.remove());
+    // stays up five seconds (Dave) so it can be read: it pops in, drifts up slowly, and fades only at the end
+    tween(5, (k) => { el.style.transform = `translate(-50%, ${(-46 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.04 ? 0.6 + k * 10 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2); }).then(() => el.remove());
   };
   // a red edge flash when a hero is hurt, a warm one for a triple
   fb.flash = (color = '#ff3a2a', amt = 0.4) => {

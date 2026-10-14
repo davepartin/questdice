@@ -119,8 +119,6 @@
 .fb-pc.raged .fb-img { filter: sepia(.4) saturate(1.5) hue-rotate(-18deg); }
 
 /* a hazard flagged on the piece's shoulder ("POUNCE NEXT ROUND") */
-.fb-call { position: absolute; z-index: 3; top: 0; left: -4%; max-width: 5.2rem; padding: .16rem .38rem; border-radius: .4rem; font: 800 .46rem/1.1 var(--disp); letter-spacing: .07em; text-align: center; color: #fff; background: linear-gradient(180deg, #c0382a, #8a1c14); box-shadow: 0 0 0 1px rgba(255, 190, 150, .7), 0 3px 8px rgba(0, 0, 0, .6); pointer-events: none; animation: fbCall 1.4s ease-in-out infinite; }
-.fb-call[hidden] { display: none; }
 @keyframes fbCall { 50% { box-shadow: 0 0 0 1px rgba(255, 190, 150, .9), 0 0 12px rgba(255, 80, 50, .8); } }
 
 /* ================================================================== the card under a piece: a small token plaque */
@@ -143,7 +141,6 @@
 /* what the monster plans, in a chip: its sign and how hard */
 .fb-intent { display: none; align-items: center; justify-content: center; gap: .24rem; padding: .17rem .3rem; border-radius: .45rem; font: 800 .76rem/1 var(--disp); color: var(--tone, #ffd0c0); background: linear-gradient(180deg, color-mix(in srgb, var(--tone, #ff6a5a) 22%, #120a08), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #ff6a5a) 65%, transparent); white-space: nowrap; }
 .fb-intent[class*="tone-"] { display: flex; }
-.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent small { display: none; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name { letter-spacing: .03em; font-size: .56rem; }
 .fb-side.foes .fb-name.xl { font-size: .5rem; padding-right: 1.15rem; letter-spacing: 0; text-overflow: clip; }
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.xl { font-size: .4rem; padding-right: 0; }
@@ -274,7 +271,7 @@
 .b3 .b3-divider .dv-fill { border-radius: 6px; background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); }
 .b3 .b3-divider .dv-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 0, 0, .28) 13px 14px), linear-gradient(180deg, rgba(255, 255, 255, .38), transparent 45%); }
 .b3 .b3-divider .dv-n { font-size: .74rem; }
-@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-ember, .fb-dust, .fb-fog, .fb-flicker, .fb-call, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote, .fb-ember, .fb-dust, .fb-fog { display: none; } .fb-flicker { opacity: .22; } }
+@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-ember, .fb-dust, .fb-fog, .fb-flicker, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote, .fb-ember, .fb-dust, .fb-fog { display: none; } .fb-flicker { opacity: .22; } }
 
 /* a company: the team stands small on the far left, the whole top of the table is the monsters' */
 .fb.party .fb-field { gap: 1%; }
@@ -369,18 +366,7 @@
 @media (prefers-reduced-motion: reduce) { .fb-slot.targeted .fb-info { animation: none; } }
 
 /* enemy ability pop-ups (Dave): big cards stacked in the middle of the screen, one under the other, clear of the miniatures and under the round recap */
-.b3 > .fb-pops { position: absolute; inset: 0; z-index: 25; pointer-events: none; }
-/* a few words per monster across the top of the board, in front of the heading: the move in its colour, then what it did */
-.fb-mbox { position: absolute; box-sizing: border-box; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .12rem; padding: .22rem .5rem .26rem; border-radius: .55rem; text-align: center; animation: fbPopIn .3s ease-out both;
-  background: rgba(10, 6, 4, .82); box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 4px 12px rgba(0, 0, 0, .6); }
-@keyframes fbPopIn { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
-.mrow { --pc: #e2b24c; display: flex; flex-direction: column; align-items: center; gap: .02rem; }
-.mrow + .mrow { padding-top: .16rem; border-top: 1px solid rgba(255, 255, 255, .12); }
-.mrow b { font: 900 .84rem/1.05 var(--disp, sans-serif); letter-spacing: .04em; text-transform: uppercase; color: var(--pc); text-shadow: 0 1px 2px #000, 0 0 8px color-mix(in srgb, var(--pc) 45%, transparent); }
-.mrow small { font: 700 .64rem/1.15 var(--disp, sans-serif); color: #f1e6d2; }
-@media (max-width: 400px) { .fb-mbox { padding: .2rem .38rem .24rem; } .mrow b { font-size: .76rem; letter-spacing: .02em; } .mrow small { font-size: .6rem; } }
-.mrow.tone-atk { --pc: #ff6b5a; } .mrow.tone-def { --pc: #6db8ff; } .mrow.tone-mag { --pc: #c690ff; } .mrow.tone-heal { --pc: #6dffa6; } .mrow.tone-sly { --pc: #ffd23d; }
-@media (prefers-reduced-motion: reduce) { .fb-mbox { animation: none; } }
+
 
 /* the die a monster rolled, and what it made: [die 8] rolled: 1 move + 8 die + 3 fight bonus = 12 attack */
 .rc-calc { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .3rem; margin-top: .05rem; }
@@ -393,3 +379,22 @@
 .rc-calc.blue .rc-b.total { background: rgba(70, 140, 255, .35); box-shadow: inset 0 0 0 1px rgba(120, 175, 255, .55); }
 .rc-plus { font-style: normal; font-weight: 900; color: #cdbfa6; font-size: .8rem; }
 .rc-sum .rc-roll { margin-left: .1rem; }
+
+/* the plaque's plan (Dave, 14 Oct): [sign] ONE WORD  [dice], e.g. a red attack sign, POUNCE, 2xd8 */
+.fb-intent { gap: .2rem; padding: .17rem .26rem; }
+.fb-intent .fb-word { font: 900 .72rem/1 var(--disp); letter-spacing: .03em; white-space: nowrap; min-width: 0; overflow: hidden; }
+.fb-intent .fb-word.sm { font-size: .62rem; letter-spacing: .01em; } .fb-intent .fb-word.xs { font-size: .52rem; letter-spacing: 0; }
+.fb-intent .fb-dice { flex: none; padding: .1rem .26rem; border-radius: .3rem; background: rgba(0, 0, 0, .42); color: #fff; font: 800 .66rem/1 var(--disp); letter-spacing: 0; text-transform: none; opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #fff) 55%, transparent); }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent svg { width: .8rem; height: .8rem; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word { font-size: .58rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-dice { font-size: .58rem; padding: .08rem .18rem; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word.sm { font-size: .5rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word.xs { font-size: .44rem; }
+
+.rc-move { font-style: normal; font: 900 .62rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; color: #ffd27a; background: rgba(255, 210, 120, .14); padding: .1rem .3rem; border-radius: .3rem; margin: 0 .2rem; }
+.fb-num.dmg { color: #ff5a48; }
+.fb-intent .fb-word { flex: 1 1 auto; text-align: center; text-overflow: clip; } .fb-intent { min-width: 0; }
+
+/* four monsters: no sign (the colour says it), the word and its dice side by side */
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent svg { display: none; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { gap: .12rem; padding: .15rem .14rem; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word.sm, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word.xs { font-size: .56rem; letter-spacing: 0; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-dice { font-size: .52rem; padding: .08rem .14rem; }

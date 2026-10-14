@@ -75,7 +75,7 @@ const SPECIAL = {
 function foeRow(a, b, rep, blockTotal) {
   const name = fname(b, a.uid);
   const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
-  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null) : null; }
+  if (!dmg) { const f = SPECIAL[a.v]; return f ? h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), a.name ? h('em', { class: 'rc-move' }, a.name) : null, h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null) : null; }
   const parts = [];
   if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
   else parts.push(tk('atk', a.d, a.name || 'attack', 'atk'), op('−'), tk('block', a.ab || 0, 'block', 'block'));
@@ -129,7 +129,7 @@ function partyCard(rep, b) {
   for (const a of rep.acts || []) {
     const name = fname(b, a.uid);
     const dmg = ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(a.v);
-    if (!dmg) { const f = SPECIAL[a.v]; if (f) theirs.push(h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null)); continue; }
+    if (!dmg) { const f = SPECIAL[a.v]; if (f) theirs.push(h('div', { class: 'rc-line plain' }, h('div', { class: 'rc-who' }, h('b', {}, name), a.name ? h('em', { class: 'rc-move' }, a.name) : null, h('span', {}, ` ${f(a, rep)}`)), a.v === 'guard' || a.v === 'ward' ? calcLine(b, a, 'guard') : null)); continue; }
     const heads = (rep.fighters || []).filter((x) => !x.down);
     const parts = [];
     if (a.v === 'pierce') parts.push(tk('pierce', a.d, 'pierce', 'pierce'), h('span', { class: 'rc-tk guard' }, HK.icon('block'), h('small', {}, 'ignores block')));
