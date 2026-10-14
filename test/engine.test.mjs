@@ -645,3 +645,27 @@ test('random encounters: one fight a step, seeded, within the cap, and bigger fo
   const shapes = new Set(); for (let seed = 1; seed <= 60; seed++) { h.campaign.seed = seed * 31; h.difficulty = 'normal'; h.campaign.step = 8; shapes.add(encounterFor(h).length); }
   assert.ok(shapes.has(1) && shapes.has(2), `lone and pairs both appear: ${[...shapes]}`);
 });
+
+test('Acts I–III lock story foes; difficulty never swaps the cast', async () => {
+  const { ACTS } = await import('../js/data.js');
+  const { encounterFor } = await import('../js/engine.js');
+  for (const act of ACTS) {
+    for (let step = 1; step <= 10; step++) {
+      const locked = act.fights[step - 1];
+      for (const diff of ['easy', 'normal', 'hard', 'legendary']) {
+        const h = newHero({ name: 'x', cls: 'knight', seed: 9 });
+        h.difficulty = diff; h.campaign.act = act.id; h.campaign.step = step; h.campaign.wins = step === 1 ? 0 : 1;
+        assert.deepEqual(questsFor(h)[0].enemies, locked, `${act.name} step ${step} ${diff}`);
+      }
+    }
+  }
+  const help = newHero({ name: 'x', cls: 'knight', seed: 9 });
+  help.campaign.act = 1; help.campaign.step = 8; help.campaign.wins = 7;
+  help.campaign.nextPlace = 'Cinder Ford'; help.campaign.nextEnemies = ['cinderling', 'goblin'];
+  assert.deepEqual(questsFor(help)[0].enemies, ['cinderling', 'goblin']);
+  assert.equal(questsFor(help)[0].place, 'Cinder Ford');
+  // Ascents still roll encounterFor; the locked Act I cast must not follow them up the hill.
+  const ascent = newHero({ name: 'x', cls: 'knight', seed: 9 });
+  ascent.campaign.act = 4; ascent.campaign.step = 2; ascent.campaign.wins = 12; ascent.campaign.seed = 4242;
+  assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
+});

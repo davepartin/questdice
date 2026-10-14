@@ -1130,9 +1130,10 @@ export const standardFlat = (act, enemies) => (ORDINARY.flat[Math.min(ORDINARY.f
 // balance tools can measure it) but it is no longer offered: at an elite step the elite is the fight, otherwise the standard road.
 export function questsFor(hero) { return roadsFor(hero, { random: true }).slice(0, 1); }
 
-// ---- random encounters (Dave): the game picks the one fight at each step by a trouble budget. The budget grows through the act and
-// follows game difficulty (Easy / Normal / Hard / Legendary); each monster has a `threat`, and a crowd costs a little more than its sum.
-// Some steps are one big monster, some a few small ones. Deterministic for a campaign (seed, act, step).
+// ---- random encounters: used on Ascents (act 4+) and by the balance tools. Acts I–III lock their first-pass cast in
+// `act.fights` so the story and the fight name the same foes. Difficulty still scales HP, damage and summoned adds, never
+// that locked roster. The budget grows through the act and follows Easy / Normal / Hard / Legendary; each monster has a
+// `threat`, and a crowd costs a little more than its sum. Deterministic for a campaign (seed, act, step).
 export const crowdThreat = (ids) => ids.reduce((t, id) => t + (MONSTERS[id]?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
 export function encounterBudget(hero) {
   const c = hero.campaign; const a = ENCOUNTER.acts[Math.min(ENCOUNTER.acts.length, c.act) - 1];
@@ -1178,6 +1179,8 @@ export function roadsFor(hero, opts = {}) {
   const lesson = c.act === 1 && s === 1 && !(c.wins > 0); // the first fight teaches; it stays gentle
   const reserved = new Set(Object.values(act.gates || {}).map((g) => g.place).filter(Boolean));
   const roamPlaces = act.places.filter((p) => !reserved.has(p));
+  // First time through Acts I–III: the story names these foes. Ascents (cycle >= 1) still roll encounterFor.
+  const locked = cycle === 0 && act.fights?.[s - 1]?.length ? act.fights[s - 1] : null;
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     // the story walks the act in order (act.route, one place per step); the draw is kept so the rest of the seeded picks stay the same
@@ -1193,29 +1196,31 @@ export function roadsFor(hero, opts = {}) {
     };
     return attachNemesis(q, c);
   };
+  const poolPick = () => pick(rng, act.pool);
+  // Call for Help (step 8) wins over the route lock and over any gate.
+  if (s === 8 && c.nextPlace) {
+    const help = c.nextEnemies?.length ? c.nextEnemies : (locked || (opts.random ? encounterFor(hero) : poolPick()));
+    return [mk('battle', help, { place: c.nextPlace })];
+  }
   const gate = act.gates?.[s];
   if (gate) {
-    const foes = gate.enemies || (gate.kind === 'boss' ? act.boss : gate.kind === 'elite' ? pick(rng, act.elite) : (opts.random ? encounterFor(hero) : pick(rng, act.pool)));
+    const foes = locked || gate.enemies || (gate.kind === 'boss' ? act.boss : gate.kind === 'elite' ? pick(rng, act.elite) : (opts.random ? encounterFor(hero) : poolPick()));
     return [mk(gate.kind, foes, { place: gate.place, boss: gate.kind === 'boss' })];
   }
-  if (s >= QUESTS_PER_ACT) return [mk('boss', act.boss, { boss: true })];
-  const poolPick = () => pick(rng, act.pool);
+  if (s >= QUESTS_PER_ACT) return [mk('boss', locked || act.boss, { boss: true })];
   if (ELITE_STEPS.includes(s)) {
-    let el = pick(rng, act.elite);
-    if (opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = normalizeDifficulty(hero.difficulty) === 'easy' ? sorted[0] : el; } // Easy: the big one alone
+    let el = locked || pick(rng, act.elite);
+    // Easy used to drop the extra add from a two-monster elite. Story acts keep the locked cast; Ascents may still slim it.
+    if (!locked && opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = normalizeDifficulty(hero.difficulty) === 'easy' ? sorted[0] : el; }
     return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
   }
-  let a = poolPick(); let bq = poolPick();
+  let a = locked || poolPick(); let bq = poolPick();
   for (let tries = 0; tries < 6 && bq.join() === a.join(); tries++) bq = poolPick();
   const weight = (f) => f.reduce((t, id) => t + MONSTERS[id].hp, 0);
-  if (weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road
+  if (!locked && weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road (tools / Ascents)
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
   if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
-  else if (opts.random) a = encounterFor(hero); // the game's own pick (the balance tools still ask for the old pair of roads)
-  if (s === 8 && c.nextPlace) {
-    a = c.nextEnemies && c.nextEnemies.length ? c.nextEnemies : a;
-    return [mk('battle', a, { place: c.nextPlace })];
-  }
+  else if (!locked && opts.random) a = encounterFor(hero); // Ascents and the balance tools
   return [mk('battle', a), mk('battle', bq, { perilous: true })];
 }
 function attachNemesis(quest, campaign) {
