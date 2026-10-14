@@ -430,10 +430,10 @@ export const MONSTERS = {
       { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
       { n: 'Fire Bombs', v: 'pierce', f: 2, m: 1 }],
     rage: {
-      name: 'Greed-Mad', power: 14,
-      faces: [S('Frenzy', 2, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
+      name: 'Greed-Mad', power: 12,
+      faces: [S('Frenzy', 3, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
         { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
-        { n: 'Fire Bombs', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+        { n: 'Fire Bombs', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
   // ---- Act II (draft numbers, untuned) ----
@@ -466,9 +466,9 @@ export const MONSTERS = {
       { n: 'Drain Life', v: 'drain', f: 0, m: 1, k: 3 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 2 },
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Bone Armor', v: 'guard', f: 2, m: 1 }],
     rage: {
-      name: 'Unbound', power: 14,
-      faces: [{ n: 'Soul Storm', v: 'pierce', f: 3, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 2 },
-        { n: 'Drain Life', v: 'drain', f: 1, m: 1, k: 4 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 3 },
+      name: 'Unbound', power: 12,
+      faces: [{ n: 'Soul Storm', v: 'pierce', f: 4, m: 1 }, { n: 'Raise Dead', v: 'summon', f: 0, m: 0, k: 2 },
+        { n: 'Drain Life', v: 'drain', f: 2, m: 1, k: 4 }, { n: 'Dread', v: 'bind', f: 0, m: 0, k: 3 },
         { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
@@ -505,14 +505,14 @@ export const MONSTERS = {
       S('Shield Bash', 2, 1), { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Axe', 0, 1)],
   },
   fallenchampion: {
-    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', imgBase: IB(331, 480, 165, 473, 324), short: 'CHMP', init: 6, hp: 240, power: 13, xp: 160, gold: 140, tier: 'boss', threat: 10,
-    slam: { f: 4, m: 2 }, armor: { n: 2, s: 4 },
-    faces: [S('Oathbreaker', 2, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
-      { n: 'Oath Smite', v: 'pierce', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 2, 1)],
+    name: 'The Fallen Champion', glyph: '⚜️', img: 'assets/miniatures/fallenchampion.webp', imgBase: IB(331, 480, 165, 473, 324), short: 'CHMP', init: 6, hp: 240, power: 12, xp: 160, gold: 140, tier: 'boss', threat: 10,
+    slam: { f: 5, m: 2 }, armor: { n: 2, s: 4 },
+    faces: [S('Oathbreaker', 3, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 2 }, { n: 'Hush', v: 'hush', f: 0, m: 0 },
+      { n: 'Oath Smite', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, S('Oathbreaker', 3, 1)],
     rage: {
-      name: 'Oath Undone', power: 14, armor: null,
-      faces: [S('Oathbreaker', 3, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 3 }, { n: 'Hush', v: 'hush', f: 0, m: 0, k: 3 },
-        { n: 'Oath Smite', v: 'pierce', f: 3, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+      name: 'Oath Undone', power: 12, armor: null,
+      faces: [S('Oathbreaker', 4, 1), { n: 'Chain', v: 'chain', f: 0, m: 0, k: 3 }, { n: 'Hush', v: 'hush', f: 0, m: 0, k: 3 },
+        { n: 'Oath Smite', v: 'pierce', f: 4, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
     },
   },
   // ---- Dragons ----
@@ -529,20 +529,20 @@ export const MONSTERS = {
       { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
   },
   ashwyrm: {
-    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ashwyrm.webp', imgBase: IB(431, 480, 215, 473, 424), short: 'ASHM', init: 6, hp: 150, power: 11, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
-    slam: { f: 3, m: 2, v: 'breath' }, armor: { n: 1, s: 4 }, flee: { at: 0.25, chance: 1 },
+    name: 'Ashmaw the Wyrm', glyph: '🐉', img: 'assets/miniatures/ashwyrm.webp', imgBase: IB(431, 480, 215, 473, 424), short: 'ASHM', init: 6, hp: 150, power: 12, xp: 60, gold: 70, tier: 'elite', threat: 3.5,
+    slam: { f: 2, m: 2, v: 'breath' }, armor: { n: 1, s: 4 }, flee: { at: 0.25, chance: 1 },
     faces: [S('Claw', 2, 1), S('Claw', 2, 1), { n: 'Fire Breath', v: 'breath', f: 2, m: 1 },
       { n: 'Inhale', v: 'charge', f: 0, m: 0 }, { n: 'Wing Buffet', v: 'guard', f: 2, m: 1 }, S('Tail Sweep', 1, 1)],
   },
   vharaxis: {
-    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/vharaxis.webp', imgBase: IB(480, 399, 222, 393, 394), short: 'VHRX', init: 4, hp: 280, power: 14, xp: 180, gold: 200, tier: 'boss', threat: 12,
-    slam: { f: 5, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
-    faces: [S('Talons', 2, 1), { n: 'Inferno', v: 'breath', f: 3, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
-      { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 3, 1), { n: 'Wing Wall', v: 'guard', f: 3, m: 1 }],
+    name: 'Vharaxis, the Ember Queen', glyph: '🐲', img: 'assets/miniatures/vharaxis.webp', imgBase: IB(480, 399, 222, 393, 394), short: 'VHRX', init: 4, hp: 280, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    slam: { f: 7, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
+    faces: [S('Talons', 3, 1), { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+      { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 4, 1), { n: 'Wing Wall', v: 'guard', f: 4, m: 1 }],
     rage: {
-      name: 'Molten Fury', power: 16,
-      faces: [{ n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
-        S('Talons', 3, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
+      name: 'Molten Fury', power: 12,
+      faces: [{ n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+        S('Talons', 5, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
     },
   },
 };
@@ -561,6 +561,8 @@ export const ACTS = [
     // where each step's fight happens, in story order (the arrival beats are written for this order; step 8 may become a Call for Help)
     route: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'The Toll Bridge', 'Smoke Hollow', 'Ashfall Camp', 'Smoke Hollow', 'Ashfall Camp', 'Gallows Hill'],
     // First pass only (acts 1–3). Difficulty scales HP / damage / summoned adds, never this cast.
+    // fightHp: a step's monsters are sturdier (>1) or frailer (<1) than the act's growth gives them, to keep a crowd fair for the level it is met at.
+    fightHp: { 7: 0.55, 9: 0.6 },
     fights: [
       ['goblin'],                          // 1 Cinder Ford — the lesson
       ['cinderling', 'goblin'],            // 2 Burnt Orchard — a bickering pair
@@ -582,6 +584,7 @@ export const ACTS = [
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
+    fightHp: { 3: 0.6 },
     fights: [
       ['skeleton', 'skeleton'],                  // 1 The Weeping Stair
       ['wraith', 'skeleton'],                    // 2 Candle Vault

@@ -163,3 +163,14 @@ test('new bosses: Fallen Champion is a boss; Gold-Chain Jailer is not occult; dr
   assert.ok(MONSTERS.gloomstalker);
   assert.ok(MONSTERS.dirgesinger.faces.some((f) => f.v === 'hush'));
 });
+
+test('every monster rolls a real die: its power die, its enraged form and its armour are d4, d6, d8, d10, d12 or d20', async () => {
+  const { MONSTERS } = await import('../js/data.js');
+  const real = new Set([4, 6, 8, 10, 12, 20]);
+  for (const [id, m] of Object.entries(MONSTERS)) {
+    assert.ok(real.has(m.power), `${id} power d${m.power}`);
+    if (m.rage?.power) assert.ok(real.has(m.rage.power), `${id} rage d${m.rage.power}`);
+    if (m.armor) assert.ok(real.has(m.armor.s), `${id} armor d${m.armor.s}`);
+    if (m.init) assert.ok(real.has(m.init), `${id} speed d${m.init}`);
+  }
+});
