@@ -26,29 +26,29 @@ const rolled = (b, a) => {
 };
 const calcLine = (b, a, word) => {
   const c = a.calc; const size = c?.size || foe(b, a.uid)?.powerDie; if (!c || !size || a.p == null || !(c.m || c.f)) return null;
-  // the die it rolled, then ONE bonus (its move's own number plus the fight's extra hit, which grows as the road goes on and is gentler on Easy);
-  // a howl and any softening from your powers are named on their own
-  const bits = [];
-  if (c.m) bits.push([c.m === 1 ? c.p : `${c.m}×${c.p}`, 'die']);
-  if (c.f + c.flat) bits.push([c.f + c.flat, 'bonus']);
-  if (c.buff) bits.push([c.buff, 'howl']);
-  const soft = c.weaken ? h('span', { class: 'rc-b soft' }, h('i', {}, '−'), h('b', {}, String(c.weaken)), h('small', {}, 'softened')) : null;
+  // "BASE 6  +  [d8: 5]": the number it always has, and the die it rolled. A multiplier on the die (Lunge x2) and any softening from your powers are named after.
+  const base = c.f + c.flat + c.buff;
+  const parts = [];
+  if (base > 0) parts.push(h('span', { class: 'rc-b base' }, h('small', {}, 'base'), h('b', {}, String(base))), h('i', { class: 'rc-plus' }, '+'));
+  parts.push(rolled(b, a));
+  if (c.m > 1) parts.push(h('span', { class: 'rc-b' }, h('b', {}, `×${c.m}`)));
+  if (c.weaken) parts.push(h('i', { class: 'rc-plus' }, '−'), h('span', { class: 'rc-b soft' }, h('b', {}, String(c.weaken)), h('small', {}, 'softened')));
   void word;
-  return h('div', { class: `rc-calc ${word === 'guard' ? 'blue' : 'red'}` },
-    rolled(b, a),
-    ...bits.flatMap(([n, l], i) => [i ? h('i', { class: 'rc-plus' }, '+') : null, h('span', { class: 'rc-b' }, h('b', {}, String(n)), h('small', {}, l))].filter(Boolean)),
-    soft);
+  return h('div', { class: `rc-calc ${word === 'guard' ? 'blue' : 'red'}` }, ...parts);
 };
+// a blue shield with a line through it: this monster has no defence to roll
+export const noDefence = (label = 'no defence') => h('span', { class: 'rc-nodef', title: 'This monster does not roll for defence' }, HK.icon('block'), h('small', {}, label));
 // the guard your blow ran into: the die the monster rolled for it
 const guardRoll = (t) => (t && t.p != null && t.powerDie ? h('span', { class: 'rc-roll blue', title: `Its guard came from a d${t.powerDie}` }, HK.icon(dieIcon(t.powerDie)), h('b', {}, String(t.p)), h('small', {}, `d${t.powerDie}`)) : null);
 const note = (kind, text) => h('p', { class: `rc-note ${kind}` }, HK.rich(text));
 
 // ---- what you did to the monster (one hero)
-function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, hpFrom, hpTo, burned, you, guardOf }) {
+function strikeRow({ who, target, atk, pierce, guarded, dealt, phased, killed, hpFrom, hpTo, burned, you, guardOf, noGuard }) {
   const parts = [];
   if (atk > 0 || pierce === 0) parts.push(tk('atk', atk, 'attack', 'atk'));
   if (phased && atk > 0) parts.push(op('→'), h('span', { class: 'rc-tk guard' }, HK.icon('phase'), h('small', {}, 'passes through')));
   else if (guarded > 0) parts.push(op('−'), tk('guard', guarded, 'guard', 'block'), ...(guardOf ? [guardOf] : []));
+  else if (noGuard) parts.push(op('−'), noDefence('no guard'));
   if (pierce > 0) parts.push(...(parts.length ? [op('+')] : []), tk('pierce', pierce, 'pierce', 'pierce'));
   parts.push(op('='), out(dealt, 'deal'));
   const hp = hpFrom != null ? h('em', { class: `rc-hp${killed ? ' dead' : ''}` }, killed ? 'falls! ' : '', h('b', {}, String(Math.max(0, Math.ceil(hpFrom)))), ' → ', h('b', {}, String(Math.max(0, Math.ceil(hpTo))))) : null;
@@ -99,7 +99,7 @@ function soloCard(rep, b) {
     const dealtOnT = rep.dealt;
     mine.push(strikeRow({
       who: you, target: t?.name || 'Monster', atk: rep.T.atk, pierce: rep.T.pierce, guarded: rep.guarded, dealt: dealtOnT, phased: !!rep.phased, killed: (rep.killed || []).includes(rep.targetUid),
-      hpFrom: t?.hp0 ?? (t ? t.hp + dealtOnT : null), hpTo: t?.hp ?? 0, burned: rep.burned, you: 'you', guardOf: guardRoll(t),
+      hpFrom: t?.hp0 ?? (t ? t.hp + dealtOnT : null), hpTo: t?.hp ?? 0, burned: rep.burned, you: 'you', guardOf: guardRoll(t), noGuard: !!t && !rep.guarded && !rep.phased,
     }));
     for (const sp of rep.splashed || []) { if (sp.uid === rep.targetUid || !sp.dealt) continue; mine.push(note('you', `Splash: ${fname(b, sp.uid)} takes ${sp.dealt}${(rep.killed || []).includes(sp.uid) ? ' and falls' : ''}.`)); }
   }
@@ -122,7 +122,7 @@ function partyCard(rep, b) {
     const t = foe(b, s.targetUid);
     return strikeRow({
       who: s.name, target: t?.name || 'Monster', atk: s.atk, pierce: s.pierce, guarded: s.guarded, dealt: s.dealt, phased: !!s.phased, killed: !!s.killed,
-      hpFrom: t ? (t.hp0 ?? t.hp + s.dealt) : null, hpTo: t?.hp ?? 0, burned: s.burned, you: s.name, guardOf: guardRoll(t),
+      hpFrom: t ? (t.hp0 ?? t.hp + s.dealt) : null, hpTo: t?.hp ?? 0, burned: s.burned, you: s.name, guardOf: guardRoll(t), noGuard: !!t && !s.guarded && !s.phased,
     });
   });
   for (const n of rep.fallen || []) mine.push(note('bad', `${n} fell before striking.`));

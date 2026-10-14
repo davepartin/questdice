@@ -7,6 +7,7 @@
 import { h, reduced } from '../dom.js';
 import * as D from '../data.js';
 import * as HK from './hudkit.js';
+import * as E from '../engine.js';
 
 // How big each monster stands next to a hero. Flattened (0.62 + 0.38 * size) so the biggest still fits the board.
 const SIZE = {
@@ -65,7 +66,9 @@ export function planOf(e, v) {
   const words = raw.split(/\s+/);
   // a long two-word move reads as its most telling word (Raise Dead -> RAISE, Fire Ward -> WARD, Gold Shield -> SHIELD): the longest, the last on a tie
   const word = words.length > 1 && raw.length > 8 ? words.reduce((best, w) => (w.length >= best.length ? w : best), '') : raw;
-  const dice = DICE_VERBS.has(i.v) && i.m && e.powerDie ? `${i.m > 1 ? `${i.m}×` : ''}d${e.powerDie}` : '';
+  // "6+d8": its base, then the die it rolls (2×d8 when the move rolls it twice over). No base shows just the die.
+  const base = E.intentBase(e, i); const die = i.m && e.powerDie ? `${i.m > 1 ? `${i.m}×` : ''}d${e.powerDie}` : '';
+  const dice = DICE_VERBS.has(i.v) && (die || base) ? `${base > 0 && die ? `${base}+` : base > 0 ? base : ''}${die}` : '';
   return { word: word.toUpperCase(), dice, icon: v.icon, tone: v.tone };
 }
 

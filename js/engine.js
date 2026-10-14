@@ -419,6 +419,9 @@ function magnitude(e, intent, p, weaken) {
 // What made a monster's number this round, for the recap: its move's fixed part, the multiplier on its power die, the die it rolled,
 // and the fight's flat bonus, a howl, and any softening from your powers. (f + m x die + flat + howl - softened = the attack or guard.)
 const magnitudeParts = (e, intent, p, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p, size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
+// A monster's BASE attack (or guard): the number it always has before its die. The move's own number, plus the fight's extra hit and any
+// howl for a blow; a guard has just the move's own number. The attack is then base + the die it rolls (times the move's multiplier).
+export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? (e.flat || 0) + (e.buff || 0) : 0) : 0);
 export function intentRange(e) {
   const i = e.intent;
   if (!i || !(i.m || i.f)) return null;

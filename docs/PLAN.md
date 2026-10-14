@@ -1011,3 +1011,10 @@ Dave: too many things on the board while the minis fight. Removed: the gold/colo
 Shots: docs/ingame/plan_*.png, plan3_*.png, plan4.png (`dev/battleshot.mjs`).
 
 - (14 Oct) Dave: there is no player skill level, only a difficulty for the computer. The game's wording is Difficulty / Easy / Normal / Hard (Legendary); the Noob/Mid/Expert names above are history. The recap's monster breakdown is now `[die] + [bonus]` (bonus = the move's own number + the fight's extra hit), plus a howl or softening when there is one; "move" and "fight bonus" were confusing.
+
+## 2026-10-14 (night) — "base attack + a die": one language for every monster
+Dave: say it like a board game. A monster has a BASE attack (the number it always has) plus the die it rolls; no separate "move" and "fight" additions. `E.intentBase(e)` = the move's own number + the fight's extra hit + any howl (a guard's base is just the move's number). Shown everywhere the same way:
+- **Plaque**: `REND 5+d8`, `LUNGE 3+2×d8`, `DUCK 2+d8` (no base: just `d8`).
+- **Recap**: `BASE 5  +  [d8: 4]  = 9 REND - 0 BLOCK = 9 you take` (a multiplier shows as `×2` after the die, softening from your powers as `− N softened`). In "Your strike", a monster with no guard that round shows a blue shield with a line through it, `NO GUARD`.
+- **Info sheet "Its dice"**: `Attack base 3 + 2×d8` in red; `Defence base 2 + d8` in blue, or the crossed-out blue shield `NO DEFENCE - does not roll for defence` for a monster with no guard move (the wolf, the wraith).
+No numbers changed; only how they are said. `noDefence()` is exported from roundcard.js. Shots: docs/ingame/base_*.png, info_wolf.png, info_goblin.png.

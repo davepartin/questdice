@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { petImg } from './pets.js';
 import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf } from './flat.js';
-import { roundCard } from './roundcard.js';
+import { roundCard, noDefence } from './roundcard.js';
 
 let C = null;                // context from ui.js
 const B = {
@@ -394,17 +394,21 @@ function readyText(e) {
   }[i.v] || '';
 }
 // "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
-// A blow is  a flat part + the die (times a multiplier for the big moves), plus the game's difficulty bonus.
+// A blow is its BASE (the number it always has) plus the die it rolls (times a multiplier for the big moves): "base 6 + d8".
 const dieName = (n) => `d${n}`;
-const formula = (i, s) => `${[i.f ? i.f : null, i.m > 1 ? `${i.m}×${dieName(s)}` : (i.m ? dieName(s) : null)].filter(Boolean).join(' + ')}`;
+const baseDie = (base, i, s) => [base > 0 ? `base ${base}` : null, i.m > 1 ? `${i.m}×${dieName(s)}` : (i.m ? dieName(s) : null)].filter(Boolean).join(' + ');
 function diceRows(e, def) {
   const s = e.powerDie; const i = e.intent; const rows = [];
   const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));
-  if (i && (i.m || i.f)) {
-    const guard = GUARD_INTENT.has(i.v);
-    rows.push(die(guard ? 'blue' : 'red', s, guard ? 'Guard' : 'Attack', `${formula(i, s)}${i.v === 'guard' || i.v === 'ward' ? ' blocked' : ''}`));
-  }
+  const faces = e.faces || def.faces || [];
+  const hit = faces.find((f) => ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(f.v));
+  // what it hits with (this round's move if it is a blow, else its usual blow)
+  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s)));
+  // what it defends with: its guard move's base and die, or a crossed-out blue shield when it has none to roll
+  const gd = GUARD_INTENT.has(i?.v) ? i : faces.find((f) => GUARD_INTENT.has(f.v));
   const ar = e.armor || def.armor;
+  if (gd && (gd.m || gd.f)) rows.push(die('blue', s, 'Defence', baseDie(gd.f, gd, s)));
+  else if (!ar) rows.push(h('span', { class: 'fi-die blue none' }, noDefence('No defence'), h('small', {}, 'does not roll for defence')));
   if (ar) rows.push(die('blue', ar.s, 'Armor', `${ar.n}${dieName(ar.s)} blocked, every round`));
   if (!rows.length) return null;
   return h('div', { class: 'fi-dicebox' }, h('small', { class: 'fi-t' }, 'Its dice'), h('div', { class: 'fi-dice' }, ...rows));
