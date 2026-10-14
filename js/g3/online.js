@@ -220,7 +220,7 @@ const trialsSeen = new Set(); // which test rolls this phone has already watched
 function roadDone(t) {
   const res = t.roadResult || { title: 'The road', text: 'The company has chosen.', by: '' }; const you = Sess.me();
   const c = t.company.campaign; const tk = res.trial ? `${t.code}:${c.act}.${c.step}:${res.trial.attempt}` : '';
-  if (res.trial && !trialsSeen.has(tk)) { trialsSeen.add(tk); import('./trialui.js').then((T) => T.showTrial(res.trial, { title: res.title })).then(() => show()); }
+  if (res.trial && !trialsSeen.has(tk)) { trialsSeen.add(tk); import('./trialui.js').then((T) => T.showTrial(res.trial, { title: res.title, members: t.company.members })).then(() => show()); }
   const waiting = t.players.filter((p) => !p.ready).map((p) => p.name);
   const { btn } = K();
   const rematch = res.trial && res.trial.canRematch && !you.ready ? btn(`Ask for a rematch · ${res.trial.rematchCost} gold`, () => Sess.send({ type: 'rematch' }).catch(fail), { kind: 'ghost', icon: 'reroll', cls: 'wide' }) : null;

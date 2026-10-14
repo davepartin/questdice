@@ -524,7 +524,7 @@ export function road() {
 }
 // A test on the road: the dice roll first (trialui.js), then the result card, with a rematch offer after a loss (solo; a table does it in online.js).
 export async function trialThen(res) {
-  if (res.trial) await showTrial(res.trial, { title: res.title });
+  if (res.trial) await showTrial(res.trial, { title: res.title, members: X.members() });
   const hero = X.S.hero || X.members()[0]; const re = res.trial ? R.rematchInfo(hero, X.members()) : null;
   roadResult(res, re ? { extra: btn(`Ask for a rematch · ${re.cost} gold`, () => { const r2 = R.rematchTrial(hero, X.members()); if (!r2) { sfx.error(); toast('Not enough gold for a rematch.'); return; } sfx.card(); X.persist(); trialThen(r2); }, { kind: 'ghost', icon: 'reroll', cls: 'wide', disabled: !re.ok }) } : {});
 }

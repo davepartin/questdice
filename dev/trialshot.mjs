@@ -11,8 +11,10 @@ await p.evaluate(({ cls, act, step, seed }) => { const { S, E } = window.QD; con
 await p.waitForTimeout(1200); await p.evaluate(() => document.querySelector('.sx-choices')?.scrollIntoView({ block: 'center' })); await shot('1choice');
 console.log(await p.evaluate(() => [...document.querySelectorAll('.sx-choice')].map((e) => e.innerText.replace(/\n+/g, ' | ')).join('\n')));
 await p.evaluate(() => document.querySelector('.sx-choice:not(.off)')?.click()); await p.waitForTimeout(800); await shot('2roll');
-await p.evaluate(() => document.querySelector('.tr-go')?.click()); await p.waitForTimeout(3500); await shot('3rolled');
-console.log(await p.evaluate(() => document.querySelector('.tr-verdict')?.innerText));
+const run = async (frames) => { for (let i = 0; i < frames; i++) { await p.evaluate(() => window.QD.world.stage.step(1)); } };
+await p.evaluate(() => document.querySelector('.tr-go')?.click()); await run(26); await p.screenshot({ path: 'docs/ingame/trial_2bmid.png' });
+await run(110); await shot('3rolled');
+console.log(await p.evaluate(() => (document.querySelector('.t3-verdict') || document.querySelector('.tr-verdict'))?.innerText));
 await p.evaluate(() => document.querySelector('.tr-go')?.click()); await p.waitForTimeout(900); await shot('4result');
 console.log(await p.evaluate(() => document.querySelector('.sx-tale')?.innerText.slice(0, 300) + ' || ' + [...document.querySelectorAll('.sx-cta button, .sx-side button')].map((b) => b.innerText).join(' / ')));
 await b.close();

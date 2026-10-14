@@ -1,4 +1,4 @@
-// The roll for a test on the road (trials.js): your dice board with every socket dark except the dice being tested (the head for wisdom,
+// The roll for a test on the road (trials.js). Flat fallback: your dice board with every socket dark except the dice being tested (the head for wisdom,
 // both hands for strength, the feet for speed), the other side's dice across from it, one tap to throw. The result is already decided by
 // the seeded roll; this only shows it. Resolves when the player taps Continue.
 import { h, reduced } from '../dom.js';
@@ -10,7 +10,14 @@ import { sfx } from '../audio.js';
 const BOARD = [['NW', 'Weapon'], ['N', 'Head'], ['NE', 'Weapon'], ['W', 'Hand'], ['C', 'Heart'], ['E', 'Hand'], ['SW', 'Talent'], ['S', 'Feet'], ['SE', 'Talent']];
 const dieEl = (size, tone, i) => { const n = h('b', {}, '?'); return { n, el: h('div', { class: `dr-die d${size} ${tone} tr-die`, style: { '--i': i } }, h('span', { class: 'dr-shape' }), n, h('small', { class: 'tr-size' }, `d${size}`)) }; };
 
-export function showTrial(trial, { title = '', host = document.body } = {}) {
+// On the real dice table when the 3D world is up (trial3d.js); the flat card below is the fallback.
+export async function showTrial(trial, { title = '', host = document.body, members = [] } = {}) {
+  if (members.length) {
+    try { const T3 = await import('./trial3d.js'); return await T3.showTrial3D(trial, { title, members }); } catch (e) { if (!/no table/.test(String(e?.message))) console.warn('[trial] 3D table failed', e); }
+  }
+  return showTrialFlat(trial, { title, host });
+}
+function showTrialFlat(trial, { title = '', host = document.body } = {}) {
   return new Promise((resolve) => {
     const st = STATS[trial.stat] || STATS.wisdom; const slow = !reduced();
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, slow ? ms : 0));

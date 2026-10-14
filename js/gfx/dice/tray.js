@@ -264,7 +264,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
     s.ico.material.map?.dispose?.(); s.ico.material.map = t; s.ico.material.needsUpdate = true;
   }
-  tray.setWaiting = function setWaiting(on = true) { for (const slot of ALL) S[slot].waiting = !!on; return tray; }; // dice not thrown yet: icons show, dice stay off the table
+  tray.setWaiting = function setWaiting(on = true, slots = ALL) { for (const slot of slots) if (S[slot]) S[slot].waiting = !!on; return tray; }; // dice not thrown yet: icons show, dice stay off the table
   const hexTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); g.translate(128, 128); const hexP = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
     hexP(118); g.fillStyle = 'rgba(190,200,225,0.16)'; g.fill(); g.lineWidth = 7; g.strokeStyle = '#e8eef9'; g.shadowColor = '#b8c8ff'; g.shadowBlur = 16; hexP(112); g.stroke(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(220,228,245,0.6)'; hexP(86); g.stroke(); hexP(60); g.stroke();
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
