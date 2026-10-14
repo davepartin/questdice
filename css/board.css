@@ -423,3 +423,5 @@
 /* with three or four monsters the health number centres in the space left of the defence */
 .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn { right: 2.1rem; }
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: 1.75rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def { font-size: .56rem; padding-left: .3rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def svg { width: .6rem; height: .6rem; }
+/* the health number sits at the far left of the bar, the defence at the far right (Dave) */
+.fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: auto; left: 0; justify-items: start; padding-left: .4rem; }
