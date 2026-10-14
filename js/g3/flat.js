@@ -219,7 +219,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   heroes.forEach((hero, i) => {
     const look = D.lookOf(heroes, i);
     const k = D.CLASSES[hero.cls];
-    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: true }).seat(k.imgBase);
+    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: D.needsFlip(k, 'right') }).seat(k.imgBase); // every hero looks toward the monsters
     pc.el.classList.add('hero');
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
     const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
@@ -241,7 +241,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   };
   fb.addFoe = (e) => {
     const def = D.MONSTERS[e.id] || {};
-    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id) }).seat(def.imgBase);
+    const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id), flip: D.needsFlip(def, 'left') }).seat(def.imgBase); // every monster looks toward the heroes
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
     const pair = h('div', { class: 'fb-pair', 'aria-hidden': 'true' });

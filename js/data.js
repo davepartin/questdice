@@ -281,6 +281,9 @@ export const xpToNext = (lvl) => 28 + 12 * (lvl - 1);
 // -------------------------------------------------------------------------------------------
 // Painted mini base disc, as fractions of the image: centre x, bottom-row y, disc width.
 // Callers aim a little above y (the visual middle of the disc) at whatever the piece stands on.
+// Which way a painted miniature looks (default 'left'; 'right' when it looks right). The board stands heroes on the left looking right and
+// monsters on the right looking left, so a piece is mirrored when it looks the other way: needsFlip(def, 'right') for a hero, (def, 'left') for a monster.
+export const needsFlip = (def, want) => (def?.faces || 'left') !== want;
 const IB = (W, H, cx, by, bw) => ({ x: cx / W, y: by / H, w: bw / W });
 export const CLASSES = {
   // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
@@ -321,7 +324,7 @@ export const CLASSES = {
   wizard: {
     feet: 4, startMagic: 6, magicCap: 15, healAmount: 6,
     trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic.',
-    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), hp: 24,
+    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', faces: 'right', imgBase: IB(363, 474, 183, 469, 305), hp: 24,
     blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and healing to spare.',
     weapons: ['staff'],
     cards: [
@@ -351,7 +354,7 @@ export const CLASSES = {
   bard: {
     feet: 6, startMagic: 5,
     trait: 'The steady helper: quick, steady weapons, more magic to share.',
-    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard.webp', imgBase: IB(318, 476, 153, 471, 283), hp: 30,
+    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard.webp', faces: 'right', imgBase: IB(318, 476, 153, 471, 283), hp: 30,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, and a knack for chaos that somehow helps.',
     weapons: ['dagger', 'bracer'],
     cards: [
@@ -523,7 +526,7 @@ export const MONSTERS = {
       { n: 'Hoard', v: 'guard', f: 1, m: 1 }, { n: 'Snatch', v: 'pilfer', f: 0, m: 1 }, S('Tail Flick', 2, 1)],
   },
   frostwhelp: {
-    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/frostwhelp.webp', imgBase: IB(474, 480, 225.5, 473, 443), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
+    name: 'Frostwhelp', glyph: '🐲', img: 'assets/miniatures/frostwhelp.webp', faces: 'right', imgBase: IB(474, 480, 225.5, 473, 443), short: 'FRST', init: 8, hp: 56, power: 8, xp: 16, gold: 14, tier: 'minion', threat: 1.4,
     flee: { at: 0.35, chance: 1 },
     faces: [S('Bite', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }, { n: 'Icy Wings', v: 'bind', f: 0, m: 0, k: 1 },
       { n: 'Curl Up', v: 'guard', f: 2, m: 1 }, S('Claw', 1, 1), { n: 'Frost Puff', v: 'breath', f: 0, m: 1 }],
