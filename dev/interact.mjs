@@ -23,7 +23,7 @@ await pump(1);
 // ---- battle controls
 await ev(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; window.QD.startQuest(q); });
 for (let i = 0; i < 80; i++) { if (await ev(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
-await ev(() => document.querySelector('#b3-roll')?.click()); await pump(3);
+await ev(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(3);
 log('rolled; phase', await ev(() => window.QD.S.battle.phase));
 // reroll two dice
 await ev(() => { const B = window.QD.B3.battleState; B.sel.add('NW'); B.sel.add('N'); window.QD.B3.renderShape?.(); });
@@ -44,7 +44,7 @@ await ev(() => document.querySelector('.k-heal')?.click()); await pump(2);
 log('magic before/after nudge+heal', m0, await ev(() => window.QD.S.battle.magic), 'hp', await ev(() => window.QD.S.battle.hp));
 await shot('battle-shape');
 await ev(() => document.querySelector('#b3-lock')?.click()); await pump(6);
-for (let i = 0; i < 40; i++) { const o = await ev(() => window.QD.S.battle.outcome); if (o) break; await pump(1); if (await ev(() => !!document.querySelector('#b3-roll'))) { await ev(() => document.querySelector('#b3-roll')?.click()); await pump(2.5); } if (await ev(() => !!document.querySelector('#b3-lock') && !window.QD.B3.battleState.busy)) { await ev(() => document.querySelector('#b3-lock')?.click()); await pump(5); } }
+for (let i = 0; i < 40; i++) { const o = await ev(() => window.QD.S.battle.outcome); if (o) break; await pump(1); if (await ev(() => !!document.querySelector('#b3-roll'))) { await ev(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(2.5); } if (await ev(() => !!document.querySelector('#b3-lock') && !window.QD.B3.battleState.busy)) { await ev(() => document.querySelector('#b3-lock')?.click()); await pump(5); } }
 log('battle outcome', await ev(() => window.QD.S.battle.outcome));
 // ---- camp: forge / train / gear
 await ev(() => { window.QD.S.hero.gold = 900; window.QD.showCamp({ fromBoard: true }); }); await pump(2);

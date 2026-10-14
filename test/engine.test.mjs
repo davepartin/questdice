@@ -298,7 +298,8 @@ test('powers spend Magic and work once per battle; at-will powers return every r
 test('scale powers: more magic, more dice; round powers grow; supers wait for round 3, hit everyone and cannot be recharged', () => {
   const r = ranger(); r.level = 8;
   const b = newBattle(r, questsFor(r)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
-  const a = castPower(b, 'aimed', { x: 5 }); assert.equal(a.rolls.length, 5); assert.equal(b.magic, 7); assert.equal(b.mods.pierce, a.total);
+  const a = castPower(b, 'aimed', { x: 5 }); assert.equal(a.rolls.length, 4); assert.equal(b.magic, 8); // up to 4d6 now: pierce is a little weaker than attack, since nothing blocks it
+   assert.equal(b.mods.pierce, a.total);
   assert.equal(castPower(b, 'rain'), null); // not in a slot
   r.learned = ['rain']; r.powers = { A: 'rain' }; const br = newBattle(r, questsFor(r)[0], makeRng(4), 1); startRoll(br); br.magic = 12;
   assert.equal(castPower(br, 'rain'), null); // round 1: too early
@@ -318,7 +319,7 @@ test('scale powers: more magic, more dice; round powers grow; supers wait for ro
 test('power upgrades cost gold and make numbers and dice bigger', () => {
   const h = knight(); h.gold = 500;
   assert.equal(powerUpgradeInfo(h, 'cleave').cost, 60); assert.ok(upgradePower(h, 'cleave')); assert.equal(h.gold, 440);
-  assert.ok(upgradePower(h, 'cleave')); assert.equal(upgradePower(h, 'cleave'), false); assert.equal(powerLevel(h, 'cleave'), 2);
+  assert.ok(upgradePower(h, 'cleave')); assert.ok(upgradePower(h, 'cleave'), 'a third level for every class'); assert.equal(upgradePower(h, 'cleave'), false); assert.equal(powerLevel(h, 'cleave'), 3);
   assert.equal(upgradePower(h, 'nonsense'), false);
 });
 
@@ -668,4 +669,20 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
   const ascent = newHero({ name: 'x', cls: 'knight', seed: 9 });
   ascent.campaign.act = 4; ascent.campaign.step = 2; ascent.campaign.wins = 12; ascent.campaign.seed = 4242;
   assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
+});
+
+test('each power level is a clear, steady step up (3, 4, 5, 6), and pierce stays a little under attack', async () => {
+  const { scaleNum } = await import('../js/engine.js');
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 6]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 7, 8]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 15, 18, 21]);
+  const { CLASSES } = await import('../js/data.js');
+  const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
+  const all = Object.values(CLASSES).flatMap((c) => c.cards);
+  // for each pierce power, the strongest attack power of the same kind is a little stronger
+  for (const c of all.filter((x) => fxOf(x).pierce)) {
+    if (c.kind === 'dice' || c.kind === 'scale') continue;
+    const best = Math.max(...all.filter((x) => x.kind === c.kind && fxOf(x).atk && !x.dice).map((x) => fxOf(x).atk));
+    assert.ok(fxOf(c).pierce < best, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
+  }
 });

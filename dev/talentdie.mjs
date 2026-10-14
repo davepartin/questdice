@@ -12,7 +12,7 @@ await pump(1);
 await p.evaluate(() => { const q = { ...window.QD.E.questsFor(window.QD.S.hero)[0], enemies: ['goblin'] }; window.QD.startQuest(q); });
 for (let i = 0; i < 200; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2);
-await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(8);
+await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(8);
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/${tag}.png` });
 console.log(await p.evaluate(() => JSON.stringify(window.QD.S.battle.board.SW)));
 await b.close();

@@ -185,7 +185,7 @@ export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less t
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
 // kinds: flat (fixed numbers) | dice (roll NdS) | scale (more Magic = more dice) | round (grows with the round number) | luck (roll for a table) | super (round gate, hits everyone).
-export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2. Each level: +25% numbers, +1 die on dice powers.
+export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2, 3. Each level: a steady step up in the numbers (see scaleNum), +1 die on dice powers.
 // Learning another power from your class library at camp (it then swaps freely into its slot). Supers also need level 5.
 export const POWER_LEARN = 50;
 export const POWER_SLOTS = ['A', 'B', 'C'];
@@ -210,7 +210,7 @@ export const CLASS_TALENT = {
 // Keys easy/normal/hard are the old Noob/Mid/Expert monster-side knobs; older saves stored those keys (or the names
 // noob/mid/expert). Legendary is a new rung and still needs tuning.
 export const DIFFICULTY = {
-  easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road, for learning your feet.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
+  easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
   normal: { name: 'Normal', text: 'The road as it was meant to be walked.', hp: 1, flat: 0, gold: 1, budget: 1 },
   hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold. You will earn it.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
   // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).
@@ -285,7 +285,7 @@ const IB = (W, H, cx, by, bw) => ({ x: cx / W, y: by / H, w: bw / W });
 export const CLASSES = {
   // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
   // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), healAmount (health per
-  // Heal with magic, default HEAL_AMOUNT), powerLevels (how far powers upgrade, default 2) and maxFeet (default 6).
+  // Heal with magic, default HEAL_AMOUNT), powerLevels (how far powers upgrade, default 3) and maxFeet (default 6).
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
     trait: 'Balanced: a strong left hand and a shield. Stands in front, on purpose.',
@@ -310,7 +310,7 @@ export const CLASSES = {
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 5, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Breathe. Loose. Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 5d6).' },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 4, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Breathe. Loose. Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 4d6).' },
       { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
       { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
       { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
@@ -319,15 +319,15 @@ export const CLASSES = {
     ],
   },
   wizard: {
-    feet: 4, startMagic: 6, magicCap: 15, healAmount: 6, powerLevels: 3,
-    trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic, powers grow to level 3.',
+    feet: 4, startMagic: 6, magicCap: 15, healAmount: 6,
+    trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic.',
     name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard.webp', imgBase: IB(363, 474, 183, 469, 305), hp: 24,
     blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and healing to spare.',
     weapons: ['staff'],
     cards: [
       { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
-      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 3 }, text: 'Every round: +3 pierce. Small, rude, and on time.' },
+      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
       { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
       { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them for 5 attack each, half splashing.' },
       { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them to heal 6 each. Warm as a window.' },

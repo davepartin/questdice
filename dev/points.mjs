@@ -11,7 +11,7 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(2);
-for (let r = 0; r < 2; r++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(10); }
+for (let r = 0; r < 2; r++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(10); }
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: 'docs/ingame/points_battle.png', clip: { x: 0, y: 0, width: 430, height: 220 } });
 console.log('battle points', await p.evaluate(() => window.QD.E.pointsOf(window.QD.B3.battleState.b)), await p.evaluate(() => document.querySelector('.b3-score')?.innerText));
 await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });

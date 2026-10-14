@@ -28,6 +28,20 @@ const NAME_ICON = {
   'Fire Ward': 'ward',
 };
 
+// The short words and the colour a move wears on the board (Dave): red = attack, blue = defence, purple = magic, green = healing,
+// gold = anything sneaky. No numbers: the round recap has those.
+const TAG = {
+  guard: 'blocks your attack', armor: 'armoured', ward: 'burns whoever hits', phase: 'slips out of reach', breath: 'fire on everyone',
+  summon: 'calls for help', rage: 'enraged', flee: 'flies away', drain: 'steals magic', pilfer: 'steals gold', bind: 'locks your dice',
+  hush: 'hushes your heart', chain: 'chains your dice', howl: 'pack hits harder', charge: 'winding up', stalk: 'on the hunt',
+  mend: 'heals itself', slam: 'a big blow', hit: 'hits you', blocked: 'blocked',
+};
+const TONE = {
+  hit: 'atk', slam: 'atk', breath: 'atk', rage: 'atk', charge: 'atk', stalk: 'atk',
+  guard: 'def', armor: 'def', ward: 'def', phase: 'def', blocked: 'def',
+  bind: 'mag', chain: 'mag', hush: 'mag', drain: 'mag', howl: 'mag',
+  mend: 'heal', pilfer: 'sly', summon: 'sly', flee: 'sly',
+};
 const n = (v) => Math.max(0, Math.round(Number(v) || 0));
 const diceWord = (k) => (k === 1 ? 'die' : 'dice');
 
@@ -78,7 +92,7 @@ function cue(uid, v, name, extra = {}) {
   const title = name || v;
   const line = extra.line || lineOf(title, v, extra);
   if (!line) return null;
-  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, lines: extra.lines || null, party: !!extra.party };
+  return { uid, v, name: title, icon: extra.icon || iconOf(title, v), line, lines: extra.lines || null, party: !!extra.party, tag: TAG[v] || '', tone: TONE[v] || 'sly' };
 }
 
 export function ctxFromRep(rep = {}) {
@@ -144,7 +158,8 @@ export function cueFromHit(act, hits = []) {
   });
   const any = hits.some((x) => n(x.net) > 0);
   const title = act.name || (act.v === 'pierce' ? 'Pierce' : 'Strike');
-  return { uid: act.uid, v: any ? 'hit' : 'blocked', name: title, icon: act.v === 'pierce' ? 'pierce' : any ? 'atk' : 'block', line: lines[0], lines, party: hits.length > 1 };
+  const v = any ? 'hit' : 'blocked';
+  return { uid: act.uid, v, name: title, icon: act.v === 'pierce' ? 'pierce' : any ? 'atk' : 'block', line: lines[0], lines, party: hits.length > 1, tag: TAG[v], tone: TONE[v] };
 }
 
 export function cueFromRage(uid, b) {
@@ -177,57 +192,60 @@ export function cuesFromReport(rep, b) {
   return out;
 }
 
-// The pop-ups stack in a column in the middle of the screen (Dave: big, readable, never on top of the miniatures, one under the
-// other as the monsters take their turns). The column lives on the battle layer, not on the little board at the top.
+// What each monster did this turn, as a few words across the top of the board, above its miniature (Dave): the move's name, coloured
+// by what kind of move it is (red attack, blue defence, purple magic, green healing, gold sneaky), and two or three words about it.
+// No icons and no numbers. They sit in front of the heading and stay while the round recap is open; closing the recap clears them
+// (battle3d's hideCard calls `clear`), so the little hits and tumbles on the board play out clean.
 function hostOf(fb) {
-  if (!fb?.el) return null;
-  const root = fb.el.closest('.b3') || fb.el.parentElement || fb.el;
+  const root = fb?.el?.closest('.b3'); if (!root) return null;
   let layer = root.querySelector(':scope > .fb-pops');
-  if (!layer) {
-    layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' });
-    root.append(layer);
-  }
+  if (!layer) { layer = h('div', { class: 'fb-pops', 'aria-live': 'polite' }); root.append(layer); }
   return layer;
 }
 
-// The cards stay up until the player closes them (Dave): first what the monsters did, then, once that is closed, the round recap.
-// `show` adds a card while the replay runs; `finish` (called when the replay is over) puts a Close on the stack and waits.
-export function show(fb, cue, { who = '' } = {}) {
-  if (!fb?.el || !cue) return null;
-  const layer = hostOf(fb);
-  const el = h('div', {
-    class: `fb-pop v-${cue.v}`,
-    role: 'status',
-    'data-uid': cue.uid || '',
-    'data-v': cue.v,
-  },
-  h('span', { class: 'ap-ico', 'aria-hidden': 'true' }, HK.icon(cue.icon)),
-  h('span', { class: 'ap-tx' }, who ? h('em', { class: 'ap-who' }, who) : null, h('b', {}, cue.name), ...(cue.lines || [cue.line]).map((t) => h('small', {}, t))));
-  layer.append(el);
-  return el;
+function layout(fb) {
+  const layer = hostOf(fb); if (!layer) return;
+  const rootEl = layer.parentElement; const root = rootEl.getBoundingClientRect(); const board = fb.el.getBoundingClientRect();
+  const W = root.width; const gap = 4;
+  const foes = fb.el.querySelectorAll('.fb-slot.foe').length || 1;
+  const side = fb.el.querySelector('.fb-side.foes');
+  // in front of the heading, across the top, above the monsters (never over the heroes' side)
+  const left = Math.max(3, (side ? side.getBoundingClientRect().left : board.left) - root.left); const right = W - 3;
+  const maxW = Math.min(170, Math.max(70, (right - left) / foes - gap));
+  const top = Math.max(0, board.top - root.top) + 8;
+  const items = [...layer.children].filter((e) => e._piece?.rect).map((box) => {
+    box.style.maxWidth = `${Math.round(maxW)}px`;
+    const r = box._piece.rect();
+    return { box, w: box.offsetWidth || 90, cx: board.left - root.left + r.cx };
+  }).sort((p, q) => p.cx - q.cx);
+  let x0 = left;
+  for (const it of items) { it.x = Math.max(it.cx, x0 + it.w / 2); x0 = it.x + it.w / 2 + gap; }
+  let limit = right;
+  for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; it.x = Math.min(it.x, limit - it.w / 2); limit = it.x - it.w / 2 - gap; }
+  for (const it of items) { it.box.style.left = `${Math.max(left + it.w / 2, it.x).toFixed(1)}px`; it.box.style.top = `${top.toFixed(1)}px`; }
 }
 
-// Replay over: if any cards were shown, hold them behind a Close and call `onClose` when the player closes them. Returns false
-// when there was nothing to show (the caller then goes straight on to the recap).
-export function finish(fb, onClose) {
-  const layer = fb?.el && hostOf(fb);
-  if (!layer || !layer.querySelector('.fb-pop')) { layer?.remove(); return false; }
-  if (layer.querySelector('.fb-pops-head')) return true;
-  const close = () => { layer.remove(); onClose?.(); };
-  layer.prepend(h('header', { class: 'fb-pops-head' }, h('b', {}, 'Monster moves'),
-    h('button', { type: 'button', class: 'sh-x sh-cancel rc-close', 'aria-label': 'Close the monster moves', onclick: (e) => { e.stopPropagation(); close(); } }, '✕ Close')));
-  layer.classList.add('ready');
-  layer.addEventListener('click', close);
-  return true;
+export function show(fb, cue, { piece = null } = {}) {
+  const layer = fb?.el && hostOf(fb); if (!layer || !cue) return null;
+  const uid = String(cue.uid || '_');
+  let box = [...layer.children].find((e) => e.dataset.uid === uid);
+  if (!box) { box = h('div', { class: 'fb-mbox', role: 'status', 'data-uid': uid }); layer.append(box); }
+  if (piece) box._piece = piece;
+  // the same move told twice (a Pounce, then what the Pounce hit for) is one row
+  if ([...box.children].some((r) => r.dataset.name === cue.name)) { layout(fb); return null; }
+  const row = h('div', { class: `mrow tone-${cue.tone || 'sly'}`, 'data-name': cue.name }, h('b', {}, cue.name), cue.tag ? h('small', {}, cue.tag) : null);
+  box.append(row);
+  layout(fb);
+  return row;
 }
 
 export function clear(fb) { fb?.el?.closest('.b3')?.querySelector(':scope > .fb-pops')?.remove(); }
 
-export function showForStrike(fb, s, act, ctx, who) {
-  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { who });
+export function showForStrike(fb, s, act, ctx, piece) {
+  for (const c of cuesFromStrike(s, act, ctx)) show(fb, c, { piece });
 }
 
-export function showForAct(fb, act, ctx, who) {
+export function showForAct(fb, act, ctx, piece) {
   const c = cueFromAct(act, ctx);
-  if (c) show(fb, c, { who });
+  if (c) show(fb, c, { piece });
 }

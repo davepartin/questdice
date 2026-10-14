@@ -128,6 +128,8 @@ function buildHud() {
   hud.goldchip = h('div', { class: 'b3-magchip b3-goldchip', title: 'Gold' }, HK.icon('gold'), h('b', {}, '0')); // your gold, above the magic (Dave)
   // the pet (Dave): off the board, a small badge by the gold and magic. Its die rolls once a round with the others and
   // cannot be rerolled: a bit of luck. Tap it to read what it rolled.
+  // the game's difficulty, top right: the same chip as on the quest board (Dave)
+  hud.diff = h('span', { class: 'sx-diffchip b3-diffchip' }, HK.icon('skull'), h('b', {}, ''));
   hud.petchip = h('button', { type: 'button', class: 'b3-petchip', hidden: true, 'aria-label': 'Your pet', onclick: () => petInfo() }, h('img', { class: 'pc-pic', alt: '', draggable: 'false' }), h('span', { class: 'pc-die' }));
   // on phones the line between the battlefield and the dice table is the hero's health bar
   hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
@@ -144,7 +146,7 @@ function buildHud() {
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
   B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
@@ -304,6 +306,7 @@ function updateHero() {
   HK.setGems(r.gems, b.magic);
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
+  { const dh = B.hud.diff; const d = D.DIFFICULTY[D.normalizeDifficulty(B.hero?.difficulty)]; const id = D.normalizeDifficulty(B.hero?.difficulty); if (dh) { dh.className = `sx-diffchip b3-diffchip dc-${id}`; dh.querySelector('b').textContent = d.name; dh.title = `${d.name}: ${d.text}`; dh.setAttribute('aria-label', `Difficulty: ${d.name}`); } }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
   const gc = B.hud.goldchip; if (gc) gc.querySelector('b').textContent = String(B.party ? E.companyGold(b.fighters.map((f) => f.hero)) : (B.hero?.gold ?? 0));
   renderPet();
@@ -332,7 +335,7 @@ function petInfo() {
 }
 
 // The monsters' cards (name, health, what each plans) live under their pieces on the table (flat.js).
-function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.b.enemies[B.target]?.uid === e.uid }); }
+function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.picked !== false && B.b.enemies[B.target]?.uid === e.uid }); }
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 export const refreshPlates = () => updatePlates(); // (dev scripts)
 function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
@@ -357,12 +360,19 @@ function targetEnemy() {
   if (!e || e.hp <= 0) B.target = Math.max(0, B.b.enemies.findIndex((x) => x.hp > 0));
   return B.b.enemies[B.target];
 }
+// The round starts by choosing who to hit (Dave): pick a monster, then roll, make your decisions, lock in, see the results, and repeat.
+// With more than one monster Roll waits for the pick; once you have rolled, a solo hero's target is fixed for the round (a
+// tap on a monster then just opens its sheet). One monster alone needs no choosing.
 function selectTarget(uid) {
   if (B.busy) return;
   const i = B.b.enemies.findIndex((e) => e.uid === uid);
   if (i < 0 || B.b.enemies[i].hp <= 0) return;
-  if (B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
-  B.target = i; sfx.select(); updatePlates();
+  const rolled = B.b.phase === 'shape';
+  if (B.picked !== false && B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
+  if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
+  const first = B.picked === false;
+  B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
+  if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn())); }
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
@@ -570,33 +580,37 @@ export function renderReset() {
   if (B.net) renderRoster();
   setHud({ phase: 'reset' });
   targetEnemy();
+  if (B.pickRound !== b.round || B.pickRound == null) { B.pickRound = b.round; B.picked = alive().length <= 1; } // a new round: with several monsters, choose who to hit before you roll
   B.sel.clear();
   updatePlates(); paintHeroes();
-  B.fb.setTarget(b.enemies[B.target]?.uid);
+  B.fb.setTarget(B.picked ? b.enemies[B.target]?.uid : null);
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
   B.hud.caption.replaceChildren(caption(e0Warn()));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: 'tap to throw', id: 'b3-roll', onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: B.picked === false ? 'pick a target first' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
 function e0Warn() {
+  if (B.picked === false) return h('span', { class: 'cap-warn' }, HK.icon('atk'), h('b', {}, 'Pick a target.'), ' Tap the monster you will hit.');
   const wind = alive().filter((e) => e.intent?.slam);
   const charge = alive().filter((e) => e.intent?.v === 'charge');
   const call = (ic, a, ...rest) => h('span', { class: 'cap-warn' }, HK.icon(ic), h('b', {}, a), ...rest);
-  if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block, or burst it down.');
-  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' A big Slam is coming next round. Plan your block.');
-  return 'The monsters have shown their hand. Roll when you are ready.';
+  if (wind.length) return call('slam', `${wind.map((e) => e.name).join(', ')} will SLAM.`, ' Brace with block.');
+  if (charge.length) return call('windup', `${charge.map((e) => e.name).join(', ')} is winding up.`, ' Plan your block.');
+  return 'Roll the dice.';
 }
 
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
-  if (B.busy || !guideSays('roll')) return; B.busy = true; hideCard();
+  if (B.busy || !guideSays('roll')) return;
+  if (B.picked === false) { sfx.error?.(); toast('Pick a monster to hit first.'); return; }
+  B.busy = true; hideCard();
   let b = B.b; const bw = B.bw;
   if (B.net) { if (!(await netDo({ type: 'roll' }))) { B.busy = false; return; } b = B.b; } else E.startRoll(b);
   B.sel.clear(); B.focus = null; B.straight = 'atk';
@@ -646,7 +660,7 @@ export function renderShape() {
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight light magenta underneath
-  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to pick them for a reroll. Tap a monster to aim at it; tap its i for details.'));
+  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`)),
@@ -850,14 +864,14 @@ const HIT_KIND = (pierceOnly, caster) => (caster ? 'magic' : pierceOnly ? 'pierc
 function popStrike(s, rep) {
   if (!B.fb || !s) return;
   const act = (rep?.acts || []).find((a) => a.uid === s.targetUid);
-  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid)?.name);
+  AP.showForStrike(B.fb, s, act, AP.ctxFromRep(rep), foePc(s.targetUid));
 }
 function popAct(act, rep) {
   if (!B.fb || !act) return;
-  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid)?.name);
+  AP.showForAct(B.fb, act, AP.ctxFromRep(rep), foePc(act.uid));
 }
-function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { who: foePc(uid)?.name }); }
-function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { who: foePc(uid)?.name }); }
+function popRage(uid) { if (B.fb) AP.show(B.fb, AP.cueFromRage(uid, B.b), { piece: foePc(uid) }); }
+function popFlee(uid) { if (B.fb) AP.show(B.fb, AP.cueFromFlee(uid), { piece: foePc(uid) }); }
 
 async function strikeAnim(hp, s, { caster = false } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
@@ -895,7 +909,7 @@ async function foeAnim(act, heroes) {
   await a.lunge(first, () => {
     // what the blow did is told by the big card in the middle of the screen (abilitypop.js), not by little numbers over the heads
     const hit = AP.cueFromHit(act, heroes.map(({ pc, part, net }) => ({ name: pc.name, part, net })));
-    if (hit) AP.show(B.fb, hit, { who: a.name });
+    if (hit) AP.show(B.fb, hit, { piece: a });
     for (const { pc, part, net } of heroes) {
       const ab = part - net;
       if (net > 0) { sfx.hurt(); buzz(60); jobs.push(pc.hit(Math.min(1, net / 14), act.v === 'pierce' ? 'pierce' : 'hit')); B.fb.flash('#ff3a2a', Math.min(0.45, 0.2 + net / 40)); }
@@ -913,8 +927,6 @@ function showCard(el = B.card) {
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
 function hideCard() { AP.clear(B.fb); if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
-// After the monsters' turn: what they did first (held until the player closes it), then the round recap (closed the same way).
-function showCardAfterMonsters(card) { if (!AP.finish(B.fb, () => showCard(card))) showCard(card); }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
 async function lockInInner() {
   if (B.net) return lockNet();
@@ -993,7 +1005,7 @@ async function lockInInner() {
   B.busy = false;
   if (b.outcome === 'victory') return win();
   if (b.outcome === 'defeat') return lose();
-  showCardAfterMonsters(card);
+  showCard(card);
   renderReset();
 }
 
@@ -1060,7 +1072,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   if (outcome === 'victory') return win();
   if (outcome === 'defeat') return lose();
   if (!B.net) B.active = -1;
-  showCardAfterMonsters(card);
+  showCard(card);
   renderReset();
 }
 async function playStrike(s, rep) {

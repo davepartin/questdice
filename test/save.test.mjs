@@ -23,28 +23,26 @@ function heroAt(act, step) {
   return h;
 }
 
-test('a brand-new hero may start Act I, and only Act I until they walk on', () => {
+test('a hero may start at Act I step 1 and only as far as they have walked', () => {
   const h = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
   SV.markReached(h);
-  assert.equal(SV.isNewHero(h), true);
   assert.equal(SV.canStartAt(h, 1, 1), true);
   assert.equal(SV.canStartAt(h, 1, 2), false);
   assert.deepEqual(SV.startChoices(h), [{ act: 1, step: 1 }]);
 });
 
-test('a loaded hero may replay reached Act II/III steps, but never Act I', () => {
+test('a loaded hero may replay any reached step, Act I included', () => {
   const h = heroAt(2, 3);
   h.campaign.reached = { act: 2, step: 3 };
   h.campaign.wins = 12;
   const choices = SV.startChoices(h);
-  assert.equal(SV.isNewHero(h), false);
-  assert.equal(choices[0].act, 2);
+  assert.equal(choices[0].act, 1);
   assert.equal(choices[0].step, 1);
   assert.equal(choices.at(-1).act, 2);
   assert.equal(choices.at(-1).step, 3);
-  assert.equal(choices.length, 3);
-  assert.equal(SV.canStartAt(h, 1, 10), false);
-  assert.equal(SV.canStartAt(h, 1, 1), false);
+  assert.equal(choices.length, 13);
+  assert.equal(SV.canStartAt(h, 1, 10), true);
+  assert.equal(SV.canStartAt(h, 1, 1), true);
   assert.equal(SV.canStartAt(h, 2, 3), true);
   assert.equal(SV.canStartAt(h, 2, 4), false);
   assert.equal(SV.canStartAt(h, 3, 1), false);
@@ -55,8 +53,8 @@ test('beginAt rewinds the road and keeps gear, gold and the high-water mark', ()
   h.campaign.blessings = [{ id: 'gate', fights: 1 }];
   h.campaign.road = { key: '2.3', done: true };
   h.campaign.shop = { stock: [] };
-  assert.equal(SV.beginAt(h, 1, 5), false, 'Act I is closed to a built-up hero');
-  assert.equal(h.campaign.act, 2);
+  assert.equal(SV.beginAt(h, 1, 5), true, 'Act I may be replayed by any hero');
+  assert.equal(h.campaign.act, 1);
   assert.equal(SV.beginAt(h, 2, 1), true);
   assert.equal(h.campaign.act, 2);
   assert.equal(h.campaign.step, 1);
@@ -70,11 +68,10 @@ test('beginAt rewinds the road and keeps gear, gold and the high-water mark', ()
   assert.equal(h.campaign.step, 1);
 });
 
-test('older saves without reached use where they stand, and Act I stays new-hero-only', () => {
+test('older saves without reached use where they stand', () => {
   const h = heroAt(1, 8);
   assert.deepEqual(SV.reachedOf(h), { act: 1, step: 8 });
-  assert.equal(SV.isNewHero(h), false);
-  assert.equal(SV.canStartAt(h, 1, 8), false);
+  assert.equal(SV.canStartAt(h, 1, 8), true);
   assert.equal(SV.canStartAt(h, 1, 9), false);
 });
 
@@ -206,12 +203,3 @@ test('a repeat clear withholds XP, gold and perks; a first clear still pays', ()
   assert.ok(levels >= 1 || fresh.xp === xp);
 });
 
-test('Acts 2 and 3 welcome a built-up hero; Act I does not', () => {
-  const h = heroAt(2, 1);
-  h.campaign.reached = { act: 3, step: 2 };
-  h.campaign.wins = 22;
-  assert.equal(SV.canJoinAct(h, 1), false);
-  assert.equal(SV.canJoinAct(h, 2), true);
-  assert.equal(SV.canJoinAct(h, 3), true);
-  assert.equal(SV.canJoinAct(E.newHero({ name: 'Nia', cls: 'wizard', seed: 4 }), 1), true);
-});

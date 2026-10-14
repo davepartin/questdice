@@ -58,8 +58,8 @@ const SPARK = { hit: '#ffd27a', pierce: '#ff8a1a', block: '#7ab4ff', heal: '#6af
 
 // ------------------------------------------------------------------------------------------ one piece
 class Piece {
-  constructor(fb, { kind, key, img, name, rel = 1, hue = null }) {
-    this.fb = fb; this.kind = kind; this.key = key; this.name = name; this.p = {}; this.dead = false; this.rel = rel;
+  constructor(fb, { kind, key, img, name, rel = 1, hue = null, flip = false }) {
+    this.fb = fb; this.kind = kind; this.key = key; this.name = name; this.p = {}; this.dead = false; this.rel = rel; this.flip = flip;
     this.img = h('img', { class: 'fb-img', src: img, alt: name, draggable: 'false', decoding: 'async' });
     this.mark = h('i', { class: 'fb-mark', 'aria-hidden': 'true' });
     this.ring = h('i', { class: 'fb-ring', 'aria-hidden': 'true' });
@@ -71,7 +71,7 @@ class Piece {
   // rotate and lunge around the painted disc, not the image centre
   seat(base) {
     if (!base) return this;
-    this.img.style.transformOrigin = `${(base.x * 100).toFixed(2)}% ${((base.y - 0.07) * 100).toFixed(2)}%`;
+    this.img.style.transformOrigin = `${((this.flip ? 1 - base.x : base.x) * 100).toFixed(2)}% ${((base.y - 0.07) * 100).toFixed(2)}%`;
     return this;
   }
   // the piece's centre and head, in board pixels
@@ -80,7 +80,8 @@ class Piece {
   render() {
     let x = 0; let y = 0; let r = 0; let s = 1; let a = 1; let br = 1;
     for (const v of Object.values(this.p)) { x += v.x || 0; y += v.y || 0; r += v.r || 0; s *= v.s ?? 1; a *= v.a ?? 1; br *= v.b ?? 1; }
-    this.img.style.transform = x || y || r || s !== 1 ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(3)})` : '';
+    // heroes are painted facing left; on the table they stand on the left looking toward the monsters, so their picture is mirrored
+    this.img.style.transform = x || y || r || s !== 1 || this.flip ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${(this.flip ? -s : s).toFixed(3)}, ${s.toFixed(3)})` : '';
     this.img.style.opacity = a < 1 ? a.toFixed(2) : '';
     this.img.style.filter = br !== 1 ? `brightness(${br.toFixed(2)})` : '';
   }
@@ -199,7 +200,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   heroes.forEach((hero, i) => {
     const look = D.lookOf(heroes, i);
     const k = D.CLASSES[hero.cls];
-    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null }).seat(k.imgBase);
+    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: true }).seat(k.imgBase);
     pc.el.classList.add('hero');
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
     const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);

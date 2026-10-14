@@ -17,7 +17,7 @@ await p.evaluate(() => { const b = window.QD.S.battle; const set = (i, it) => { 
 await pump(2); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: 'docs/ingame/moves_boxes.png', clip });
 // tap the mage for its sheet
 // a round: aim at the warded mage, roll, lock in, and catch the burn
-await p.evaluate(() => { window.QD.B3.battleState.target = 0; document.querySelector('#b3-roll')?.click(); }); await pump(5);
+await p.evaluate(() => { window.QD.B3.battleState.target = 0; (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click()); }); await pump(5);
 for (let i = 0; i < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); i++) await pump(1);
 await p.evaluate(() => document.querySelector('#b3-lock')?.click());
 for (let k = 0; k < 16; k++) { await pump(0.3); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `/tmp/claude-0/-home-user-questdice/02d09c4d-6938-50b8-8304-9384ffd8dd9c/scratchpad/mv_${k}.png`, clip }); }

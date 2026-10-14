@@ -74,11 +74,6 @@ function host() { sitAt({ mode: 'host' }); }
 export function hostLoaded() {
   const hero = X.S.hero;
   if (!hero) return together();
-  if ((hero.campaign?.act | 0) === 1 && !SV.isNewHero(hero)) {
-    toast(SV.ACT1_TABLE, 'bad');
-    sfx.error();
-    return;
-  }
   sitAt({ mode: 'host', hero, back: () => X.showHeroHub() });
 }
 export function join(prefill = '') {

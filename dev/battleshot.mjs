@@ -15,7 +15,7 @@ for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !!document.querySelec
 await pump(2); await shot('0start');
 if (process.env.HP1) await p.evaluate((n) => { for (const e of window.QD.S.battle.enemies.slice(0, +n)) e.hp = 1; window.QD.B3.refreshPlates(); }, process.env.HP1);
 if (process.env.CLS) {}
-await p.evaluate(() => { document.querySelector('#b3-roll')?.click(); }); await pump(5);
+await p.evaluate(() => { (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click()); }); await pump(5);
 for (let i = 0; i < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); i++) await pump(1);
 await shot('1rolled');
 if (process.env.WIN) await p.evaluate(() => { const b = window.QD.S.battle; b.mods.atk = 99; b.mods.aoe = 99; });

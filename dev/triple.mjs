@@ -9,7 +9,7 @@ await pump(1);
 await p.evaluate(() => { const q = window.QD.E.questsFor(window.QD.S.hero)[0]; q.enemies = ['goblin','wolf']; window.QD.startQuest(q); });
 for (let i = 0; i < 120; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll'))) break; await pump(0.5); }
 await pump(3);
-for (let i = 0; i < 8 && !(await p.evaluate(() => !!window.QD.B3.battleState?.b?.board)); i++) { await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(6); }
+for (let i = 0; i < 8 && !(await p.evaluate(() => !!window.QD.B3.battleState?.b?.board)); i++) { await p.evaluate(() => (document.querySelector('#b3-roll')?.disabled && document.querySelector('.fb-slot.foe:not(.dead) .fb-pc')?.click(), document.querySelector('#b3-roll')?.click())); await pump(6); }
 await p.evaluate(() => { const B = window.QD.B3.battleState; const bd = B.b.board; bd.W.v = 1; bd.C.v = 1; bd.E.v = 1; bd.N.v = 2; window.QD.B3.renderShape(); });
 await pump(1);
 console.log(await p.evaluate(() => !!document.querySelector('.b3-straight') || 'ok'));

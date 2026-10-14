@@ -358,12 +358,11 @@ export function showHeroHub() {
   if (SCRUI.on()) return SCRUI.heroHub();
   const choices = SV.startChoices(hero);
   const c = hero.campaign;
-  const act1Note = !SV.isNewHero(hero) ? h('p', { class: 'muted' }, 'Act I is for a new hero. Forge a fresh character to walk it again, or to play Act I at a table.') : null;
   mount(h('div', { class: 'topline' }, ghost('‹ Home', showTitle, { cls: 'small' }), h('h2', {}, hero.name)),
-    section('', h('p', {}, `Level ${hero.level} ${D.CLASSES[hero.cls].name}`), h('p', { class: 'muted' }, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step}`), act1Note),
+    section('', h('p', {}, `Level ${hero.level} ${D.CLASSES[hero.cls].name}`), h('p', { class: 'muted' }, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step}`)),
     h('nav', { class: 'dock' },
       cmd('Road', 'Continue', `Pick up at quest ${c.step}.`, () => showRoadOrBoard(), { glyph: '🗺', tone: 'solo' }),
-      choices.length > 1 ? cmd('Road', 'Begin at a step', 'Replay a quest you have already reached. Act I needs a new hero.', showStepPick, { glyph: '1' }) : null,
+      choices.length > 1 ? cmd('Road', 'Begin at a step', 'Replay any quest you have already reached.', showStepPick, { glyph: '1' }) : null,
       cmd('Together', 'Open a table', 'Invite friends. They bring their own heroes.', () => Online.hostLoaded(), { glyph: '⚔', tone: 'versus' })));
 }
 
@@ -379,14 +378,13 @@ export function showStepPick() {
   const pick = (act, step) => {
     if (!SV.beginAt(hero, act, step)) {
       sfx.error();
-      toast(act === 1 && !SV.isNewHero(hero) ? SV.ACT1_NEW : 'That step is still ahead of you.');
+      toast('That step is still ahead of you.');
       return;
     }
     persist(); sfx.select(); showRoadOrBoard();
   };
   mount(h('div', { class: 'topline' }, ghost('‹ Back', showHeroHub, { cls: 'small' }), h('h2', {}, 'Begin at a step')),
-    h('p', { class: 'muted' }, 'You may replay any quest you have already reached, except Act I: that road is for a new hero. You cannot skip past your progress.'),
-    !SV.isNewHero(hero) ? h('p', { class: 'muted' }, SV.ACT1_NEW) : null,
+    h('p', { class: 'muted' }, 'You may replay any quest you have already reached. You cannot skip past your progress.'),
     ...[...byAct.entries()].map(([act, steps]) => section(`Act ${romans[act - 1] || act}`,
       h('div', { class: 'path' }, steps.map((ch) => h('button', {
         type: 'button', class: `node ${ch.act === hero.campaign.act && ch.step === hero.campaign.step ? 'now' : 'done'}`,

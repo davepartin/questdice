@@ -110,7 +110,7 @@ export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + h
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
 export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
 export const healAmountOf = (hero) => CLASSES[hero?.cls]?.healAmount ?? HEAL_AMOUNT;
-export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 2);
+export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
 export const rerollTotal = () => RULES.free + RULES.paid;
 export const rerollDiceOf = (hero) => Math.min(REROLL_DICE_MAX, REROLL_DICE + (hero.rerollDie ? 1 : 0) + heroMods(hero).rerollDice);
@@ -618,7 +618,8 @@ export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for calle
 export const healBig = (b) => drinkPotion(b);
 // ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
-const scaleNum = (v, lvl) => Math.round(v * (1 + 0.25 * lvl));
+// Each power level adds a clear, steady step: +1 for a number of 3 to 7 (3, 4, 5, 6 ...), +2 from 8, +3 from 12 (a quarter of the base, at least 1).
+export const scaleNum = (v, lvl) => v + lvl * Math.max(1, Math.floor(v * 0.25));
 // Scale powers: `cost` buys the first dice, every `step` more magic (default 1) adds a die, up to `max` magic and, if set,
 // `maxDice` dice in all (power levels add dice, so an upgraded power reaches the cap for less magic).
 export const scaleStep = (card) => card.step || 1;
@@ -678,7 +679,7 @@ export function castPower(b, id, { x, release } = {}) {
     if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(5, lvl)); else { add('atk', scaleNum(9, lvl)); add('magic', 2); }
     out.total = r;
   } else {
-    for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v : scaleNum(v, lvl));
+    for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
   }
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; return out;
