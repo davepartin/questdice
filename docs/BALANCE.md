@@ -313,4 +313,5 @@ Win rate on the first try, Acts I / II / III (10 campaigns, 10 fights per player
 | Legendary | 31–38% · 2–10% | 74–84% · 48–60% | 87–96% · 56–83% | 10/10, 31 retreats (about 3 a campaign) |
 
 Legendary bosses for the wise player: Goblin King 56%, Lich 60%, Oathbreak Keep 80%, the Ember Queen 83%. So: on Normal the first roll already loses most boss fights; on Legendary careless play is hopeless, sensible play loses about half the big fights, and wise play wins every campaign with a few retreats.
+Whole Legendary campaigns, each player on its own (6 tries a fight before it gives up): **wise 10/10** (31 retreats), **sensible 4/10** (107 retreats, stopped at bosses in all three acts and at the Ashwyrm), **first roll 0/10** (all stopped at the second fight).
 Bot fixes found on the way (tools only): the wise player first spread its damage and never finished the Shieldbearer that guards the Ashwyrm (it won 32% of that fight, the sensible player 60%); valuing damage on a nearly beaten monster more fixed it (wise 83–97%).
