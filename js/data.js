@@ -214,7 +214,7 @@ export const DIFFICULTY = {
   normal: { name: 'Normal', text: 'The road as it was meant to be walked.', hp: 1, flat: 0, gold: 1, budget: 1 },
   hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold. You will earn it.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
   // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).
-  legendary: { name: 'Legendary', text: 'The cruellest road. Crowds hit harder. Still being sharpened.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
+  legendary: { name: 'Legendary', text: 'The cruellest road. Crowds hit harder. For heroes who have beaten Hard.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
 };
 const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
 export function normalizeDifficulty(id) {
@@ -705,6 +705,8 @@ export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
 export const ORDINARY = { flat: [3, 4, 1], lone: 2 };
+// Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
+export const SET_PIECE = { elite: { hp: [1, 1, 1], flat: [0, 0, 0] }, boss: { hp: [1, 1, 1], flat: [0, 0, 0] } };
 export const ELITE_STEPS = [5];
 // What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
 export function stepKind(act, step) {

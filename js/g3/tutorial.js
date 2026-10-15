@@ -1,5 +1,7 @@
-// Learn to play: a short illustrated lesson deck (the board, every die and symbol, the counters, triples, a round),
-// then a guided practice battle against one goblin with set dice and a spotlight on what to tap next.
+// Learn to play: a short illustrated lesson deck, then a guided practice battle against one goblin with set dice and a
+// spotlight on what to tap next. The first deck is only what the practice battle needs (seven pages); the rest (talents,
+// the heart, speed, the counters, triples, tests on the road, camp) is "More to learn", offered after the practice battle and
+// from the title screen. Small in-game hints (coach.js) cover each of those again the first time it shows up in play.
 // Nothing here is saved. ui.js binds the context (startPractice needs startQuest and friends).
 import { h, $ } from '../dom.js';
 import * as HK from './hudkit.js';
@@ -25,13 +27,13 @@ const ic = (name) => h('span', { class: `tu-ic t-${name}` }, HK.icon(name));
 const SOCK_NAME = { NW: 'Weapon', N: 'Head', NE: 'Weapon 2', W: 'Hand', C: 'Heart', E: 'Hand', SW: 'Talent', S: 'Feet', SE: 'Talent 2', P: 'Pet' };
 const SOCK_INFO = {
   NW: ['Left weapon', 'Your weapon’s die. Red faces attack, blue faces block. It adds to the hand below it.'],
-  N: ['Head', 'A white d4. Its number pays a symbol: heal, pierce, magic or gold.'],
+  N: ['Head', 'A white die (a d4 to start). Its number pays a symbol: heal, pierce, magic or gold. It is also your wisdom.'],
   NE: ['Second weapon', 'Empty for now. Buy it at camp, or carry a two-handed weapon that fills both.'],
   W: ['Left hand', 'Your Strength. It powers the weapon above it, and it pays a symbol too.'],
   C: ['Heart', 'The gold die in the middle. It boosts the dice around it.'],
   E: ['Right hand', 'Your other Strength die. It powers your second weapon once you have one.'],
   SW: ['Talent', 'A bonus die: 2× Strength, or a number that pays that much of a symbol you choose at camp.'],
-  S: ['Feet', 'A white die that pays a symbol. Its number is also your speed: who strikes first.'],
+  S: ['Feet', 'A white die that pays a symbol. Its number is also your speed: who strikes first, and who wins a race.'],
   SE: ['Second talent', 'Empty for now. Buy it at camp as you grow.'],
 };
 const pic = (n) => `assets/tutorial/board-${n}.webp`;
@@ -91,7 +93,7 @@ const LESSONS = [
     title: 'Welcome, hero',
     eyebrow: 'Your guide',
     art: () => knightArt(),
-    say: 'I am made of dice, and so are you. Let me show you how it works. It takes about three minutes.',
+    say: 'I am made of dice, and so are you. Let me show you how it works. It takes about two minutes.',
     body: () => [
       p('In QuestDice your hero is a set of dice laid out like a body: a head, two hands, a heart and feet, with weapons and talents beside them.'),
       p('Each round you roll them all, make the roll better, and then fight. After a few lessons you will play a practice battle with me beside you.'),
@@ -145,6 +147,7 @@ const LESSONS = [
   },
   {
     title: 'Talent dice',
+    more: true,
     eyebrow: 'The bottom corners',
     art: () => boardPic({ base: 'start', dice: ['SW', 'W', 'NW'], hi: ['SW', 'W', 'NW'] }),
     say: 'My talent die rolled 2×, so my hand’s 4 counts twice in my sword: 3 + 4 + 4 = 11 attack.',
@@ -156,6 +159,7 @@ const LESSONS = [
   },
   {
     title: 'The heart',
+    more: true,
     eyebrow: 'The center die',
     art: () => h('div', { class: 'tu-stack' }, boardPic({ base: 'start', dice: ['C', 'W'], hi: ['C', 'W'], small: true }), h('div', { class: 'tu-faces six' }, [1, 2, 3, 4, 5, 6].map((n) => img(`heart-${n}`)))),
     say: 'The heart boosts the dice around it. My heart shows 4, and so does my left hand: 2 more gold.',
@@ -167,6 +171,7 @@ const LESSONS = [
   },
   {
     title: 'Feet are your speed',
+    more: true,
     eyebrow: 'Who strikes first',
     art: () => h('div', { class: 'tu-lane' }, boardPic({ base: 'start', dice: ['S'], hi: ['S'], tags: { S: 'Speed 3' }, small: true }),
       h('div', { class: 'tu-race' }, h('div', { class: 'tu-racer you' }, img('white-3', 'sm'), h('small', {}, 'Your feet')), h('b', {}, 'vs'),
@@ -179,6 +184,7 @@ const LESSONS = [
   },
   {
     title: 'Your six counters',
+    more: true,
     eyebrow: 'What your roll adds up to',
     art: () => h('div', { class: 'tu-counters fs' }, counter('atk', 'Attack', 21), counter('pierce', 'Pierce', 2), counter('block', 'Block', 4), counter('magic', 'Magic', 2), counter('heal', 'Heal', 2), counter('gold', 'Gold', 8)),
     say: 'Everything your dice pay lands in these six counters. You will see them under your board in battle.',
@@ -193,6 +199,7 @@ const LESSONS = [
   },
   {
     title: 'Triples and straights',
+    more: true,
     eyebrow: 'The big bonuses',
     art: () => h('div', { class: 'tu-triples' },
       h('figure', {}, boardPic({ base: 'tripW', line: ['NW', 'NE'], small: true }), h('figcaption', {}, 'Weapons')),
@@ -216,14 +223,28 @@ const LESSONS = [
       h('div', {}, h('span', { class: 'tu-num' }, '4'), HK.icon('atk'), h('b', {}, 'Fight'))),
     say: 'Read what the monsters plan, roll, fix the dice that let you down, then lock in.',
     body: () => [
-      row(h('span', { class: 'tu-plate' }, h('b', {}, 'GOBLIN'), h('i', {}, HK.icon('atk'), '3-6')), 'Read the monsters', 'Each monster’s box shows what it plans this round and how hard it may hit.'),
+      row(h('span', { class: 'tu-plate' }, h('b', {}, 'SKULKER'), h('i', {}, HK.icon('atk'), 'SLASH 2+d8')), 'Read the monsters', 'Each monster’s plaque shows its move this round. SLASH 2+d8 means it hits for 2 plus whatever its d8 rolls. Your block comes off that.'),
       row(ic('dice'), 'Roll', 'Tap Roll dice to throw your whole body.'),
       row(ic('reroll'), 'Reroll', `Tap up to ${D.REROLL_DICE} dice, then Reroll. Three rerolls a round are free. After that, each die costs 1 magic.`),
       row(ic('lock'), 'Lock in', 'Tap a monster to choose your target, then Lock In. You and the monsters act, fastest first.'),
     ],
   },
   {
+    title: 'Tests on the road',
+    more: true,
+    eyebrow: 'Wisdom, strength and speed',
+    art: () => boardPic({ base: 'icons', hi: ['N', 'W', 'E', 'S'], tags: { N: 'Wisdom', W: 'Strength', E: 'Strength', S: 'Speed' } }),
+    say: 'Now and then the road tests you: a game of chess, a tug-of-war, a race. You roll part of your body against the other side’s dice.',
+    body: () => [
+      row(ic('magic'), 'Wisdom: your head die', 'A chessboard, a riddle at a bridge, an old map.'),
+      row(ic('atk'), 'Strength: both hands, added', 'Arm-wrestling, a tree on a wagon, a goblin tug-of-war.'),
+      row(ic('windup'), 'Speed: your feet die', 'A footrace, a runaway goat, a rockslide.'),
+      p('You see both sides’ dice and your odds before you choose. Highest total wins, and a tie goes to you. Grow your head, hands and feet at camp to win more of them.'),
+    ],
+  },
+  {
     title: 'Grow at camp',
+    more: true,
     eyebrow: 'Pets, potions and powers',
     art: () => h('div', { class: 'tu-camp' },
       h('div', { class: 'tu-petrow' }, ['ember', 'bristle', 'turtle', 'bunny', 'owl', 'penny'].map((t) => h('span', { class: 'tu-petchip', style: { '--pc': D.PETS[t].color } }, petPic(t))))),
@@ -232,7 +253,7 @@ const LESSONS = [
       row(petPic('bunny'), 'Pets', `The traveler brings one each camp (${D.PET_PRICE} gold). Train its die like a talent die and grow it to a d8.`),
       row(ic('heal'), 'Healing potions', `Carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}.`),
       row(ic('magic'), 'Magic powers', 'The purple button in battle. Paid for with magic; learn more at camp.'),
-      row(ic('gold'), 'Grow', 'Spend your gold on new dice, bigger hands and talent symbols.'),
+      row(ic('gold'), 'Grow', 'Spend your gold on new dice, a bigger head, hands and feet, and talent symbols.'),
     ],
   },
   {
@@ -245,21 +266,41 @@ const LESSONS = [
       p('Roll, reroll for a Strength Triple, and bring the goblin down. Then forge your own hero and start the road.'),
     ],
   },
+  {
+    title: 'That’s the whole game',
+    eyebrow: 'More to learn',
+    more: true,
+    finalMore: true,
+    art: () => knightArt(),
+    say: 'You know everything I know. The first time you meet something new on the road, a small hint will remind you.',
+    body: () => [
+      p('Every round is the same: read the monsters, roll your body, reroll what let you down, lock in. The rest is growing your dice and choosing your road.'),
+    ],
+  },
 ];
+// Which pages a deck shows: 'basics' (the first time: what the practice battle needs), 'more' (the rest), 'all'.
+const deckOf = (deck) => (deck === 'more' ? LESSONS.filter((L) => L.more) : deck === 'all' ? [...LESSONS.filter((L) => !L.final && !L.finalMore), LESSONS.find((L) => L.final)] : LESSONS.filter((L) => !L.more));
 
 // ------------------------------------------------------------------------------------------------ lesson deck
 // fetch every board picture up front, so lessons never wait on them
 const preload = () => { for (const n of [...Object.keys(BOARDS), 'd-NW', 'd-N', 'd-W', 'd-C', 'd-E', 'd-SW', 'd-S', 'd-E4']) { const im = new Image(); im.src = pic(n); } };
-export function showLessons({ at = 0 } = {}) {
+export function showLessons({ at = 0, deck = learned() ? 'all' : 'basics' } = {}) {
   closeLessons(); preload();
-  let i = Math.max(0, Math.min(LESSONS.length - 1, at));
+  const LS = deckOf(deck);
+  let i = Math.max(0, Math.min(LS.length - 1, at));
   const host = h('div', { id: 'tut', class: 'tu-layer', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Learn to play' });
   document.body.append(host);
-  const go = (n) => { if (n < 0 || n >= LESSONS.length) return; i = n; paint(); sfx.select?.(); };
+  const go = (n) => { if (n < 0 || n >= LS.length) return; i = n; paint(); sfx.select?.(); };
   const paint = () => {
-    const L = LESSONS[i];
-    const bar = h('div', { class: 'tu-progress', 'aria-hidden': 'true' }, LESSONS.map((_, k) => h('i', { class: k < i ? 'done' : k === i ? 'on' : '' })));
-    const next = L.final
+    const L = LS[i];
+    const bar = h('div', { class: 'tu-progress', 'aria-hidden': 'true' }, LS.map((_, k) => h('i', { class: k < i ? 'done' : k === i ? 'on' : '' })));
+    const next = L.finalMore
+      ? h('div', { class: 'tu-final' },
+        h('button', { type: 'button', class: 'tu-btn tu-go', onclick: () => { closeLessons(); X?.showTitle(); if (!X?.hasHero?.()) X?.showCreate?.(); } }, HK.icon('crown'), X?.hasHero?.() ? 'Back to the game' : 'Forge my hero'),
+        h('div', { class: 'tu-final-row' },
+          h('button', { type: 'button', class: 'tu-btn tu-ghost', onclick: () => go(0) }, 'Read again'),
+          h('button', { type: 'button', class: 'tu-btn tu-ghost', onclick: () => { closeLessons(); X?.showTitle(); } }, 'Home')))
+      : L.final
       ? h('div', { class: 'tu-final' },
         h('button', { type: 'button', class: 'tu-btn tu-go', onclick: () => { markLearned(); closeLessons(); startPractice(); } }, HK.icon('dice'), 'Start practice battle'),
         h('div', { class: 'tu-final-row' },
@@ -269,7 +310,7 @@ export function showLessons({ at = 0 } = {}) {
         h('button', { type: 'button', class: 'tu-btn tu-ghost', disabled: i === 0, onclick: () => go(i - 1) }, 'Back'),
         h('button', { type: 'button', class: 'tu-btn tu-go', onclick: () => go(i + 1) }, i === 0 ? 'Start' : 'Next', fwd()));
     host.replaceChildren(h('div', { class: 'tu-card' },
-      h('header', { class: 'tu-top' }, h('span', { class: 'tu-kicker' }, 'Learn to play'), h('span', { class: 'tu-count' }, `${i + 1} of ${LESSONS.length}`),
+      h('header', { class: 'tu-top' }, h('span', { class: 'tu-kicker' }, deck === 'more' ? 'More to learn' : 'Learn to play'), h('span', { class: 'tu-count' }, `${i + 1} of ${LS.length}`),
         h('button', { type: 'button', class: 'tu-skip', onclick: () => { closeLessons(); X?.showTitle(); }, 'aria-label': 'Close the guide' }, 'Skip')),
       bar,
       h('div', { class: 'tu-scroll' },
@@ -310,7 +351,7 @@ export function startPractice() {
 function guide() {
   const G = { step: 0, api: null, el: null, off: false, round: 1 };
   const STEPS = [
-    { on: 'reset', target: 'plate', title: 'This is a goblin', text: 'Its box shows what it will do this round. The number is how hard it may hit you.', next: true },
+    { on: 'reset', target: 'plate', title: 'This is a goblin', text: 'Its plaque shows its health and its move this round: SLASH 2+d8 means it hits for 2 plus whatever its d8 rolls.', next: true },
     { on: 'reset', target: 'divider', title: 'Your health', text: 'The bar across the middle is your health. Keep it above zero.', next: true },
     { on: 'reset', target: 'roll', title: 'Roll your body', text: 'Tap Roll dice to throw all your dice at once.', wait: 'rolled' },
     { on: 'shape', target: 'counters', title: 'Your roll adds up here', text: 'Attack 11, plus a little pierce, magic, heal and gold. Let’s make it bigger.', next: true },
@@ -406,11 +447,11 @@ export function showDone(won) {
       say(won ? 'Well fought! That goblin never stood a chance. Now let’s make a hero of your own.' : 'Every hero falls sometimes. Get back up: roll, fix the dice that let you down, and lock in.'),
       h('div', { class: 'tu-body' },
         p(won ? 'You rolled, picked a die, rerolled for a Strength Triple, and brought the goblin down. That’s the whole game, one round at a time.' : 'Every battle works the same way: roll, reroll the dice that help most, then lock in. Block keeps you standing.'),
-        p('Forge your own hero and start the road. Small hints will show up the first time you meet something new, and the ? button explains any die at any time.'))),
+        p('Forge your own hero and start the road. Small hints will show up the first time you meet something new. Want the rest now? “More to learn” is seven short pages: talents, the heart, speed, triples, tests on the road and camp.'))),
     h('div', { class: 'tu-final' },
       h('button', { type: 'button', class: 'tu-btn tu-go', onclick: () => { closeLessons(); X?.showTitle(); X?.showCreate(); } }, HK.icon('crown'), 'Forge my hero'),
       h('div', { class: 'tu-final-row' },
-        h('button', { type: 'button', class: 'tu-btn tu-ghost', onclick: () => { X?.showTitle(); showLessons(); } }, 'Read the guide'),
+        h('button', { type: 'button', class: 'tu-btn tu-ghost', onclick: () => { X?.showTitle(); showLessons({ deck: 'more' }); } }, 'More to learn'),
         h('button', { type: 'button', class: 'tu-btn tu-ghost', onclick: () => { closeLessons(); X?.showTitle(); } }, 'Home')))));
   document.body.append(host);
   sfx[won ? 'level' : 'select']?.();

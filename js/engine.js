@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -1210,8 +1210,8 @@ export function roadsFor(hero, opts = {}) {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
     // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
-    hpMult: (kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1),
-    flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0),
+    hpMult: ((kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1)) * (SET_PIECE[kind]?.hp[ai] ?? 1),
+    flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0) + (SET_PIECE[kind]?.flat[ai] ?? 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
     return attachNemesis(q, c);

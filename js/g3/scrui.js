@@ -191,7 +191,7 @@ export function title() {
     menu.append(group('Begin anew'));
   }
   // Learn to play sits first until there is a saved hero, then it moves under the menu.
-  if (!saves.length) menu.append(plaque({ eyebrow: 'Start here', title: 'Learn to play', sub: 'Three minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
+  if (!saves.length) menu.append(plaque({ eyebrow: 'Start here', title: 'Learn to play', sub: 'Two minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
@@ -518,7 +518,7 @@ export function road() {
   }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, ch.test ? statBadge(ev.stat) : null, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : 'r_road'))));
+      X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : ev.stat ? 'r_trial' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }

@@ -890,7 +890,7 @@ function chronicleBlock() {
   return section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 8).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text)))));
 }
 
-TUT.bind({ showTitle, showCreate, practice });
+TUT.bind({ showTitle, showCreate, practice, hasHero: () => !!S.hero });
 SCRUI.bind({
   S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
   showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(),

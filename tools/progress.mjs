@@ -5,6 +5,12 @@ import { makeRng, newHero, questsFor, roadsFor, battleRewards, gainXp, advanceCa
 import { botRound, botCamp, botLoot } from './sim.mjs';
 import { buyPotion } from '../js/engine.js';
 import { QUESTS_PER_ACT } from '../js/data.js';
+import * as DATA from '../js/data.js';
+// Try settings without editing data.js: TUNE='{"ORDINARY":{"flat":[3,5,4]},"ACT_HP":[1,1.2,1.5],"SET_PIECE":{"boss":{"hp":[1.2,1.1,1.3]}}}'
+if (process.env.TUNE) {
+  const put = (dst, src) => { for (const [k, v] of Object.entries(src)) { if (v && typeof v === 'object' && !Array.isArray(v)) put(dst[k], v); else if (Array.isArray(v)) v.forEach((x, i) => { dst[k][i] = x; }); else dst[k] = v; } };
+  for (const [name, v] of Object.entries(JSON.parse(process.env.TUNE))) { if (Array.isArray(v)) v.forEach((x, i) => { DATA[name][i] = x; }); else put(DATA[name], v); }
+}
 
 const ACTS = Number(process.argv[2] || 2); const N = Number(process.argv[3] || 4); const POLICY = process.argv[4] || 'smart';
 const classes = process.argv[5] ? [process.argv[5]] : ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
