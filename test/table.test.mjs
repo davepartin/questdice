@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTable, joinTable, command, playerView, saveTable, loadTable, migrateTable } from '../js/table.js';
+import * as D from '../js/data.js';
 import * as E from '../js/engine.js';
 import * as R from '../js/roads.js';
 import * as SV from '../js/save.js';
@@ -392,7 +393,7 @@ test('the host difficulty applies to every hero and to the table fight', () => {
   const { table: base, players: basePs } = make();
   begin(base, basePs);
   assert.ok(table.battle.enemies[0].maxHp > base.battle.enemies[0].maxHp);
-  assert.equal(table.battle.enemies[0].flat, base.battle.enemies[0].flat + 3);
+  assert.equal(table.battle.enemies[0].flat, base.battle.enemies[0].flat + D.DIFFICULTY.legendary.flat);
 });
 
 test('loading an old table remaps noob/mid/expert and fills table.difficulty from the host', () => {

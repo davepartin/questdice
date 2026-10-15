@@ -291,3 +291,26 @@ Hard after: fights 52–100%, bosses 52% / 50% / 70% / 65%, 9/15 cleared (was 7/
 What changed (all in js/data.js): `ORDINARY.flat` [3, 4, 1] -> [3, 5, 6] (the standard road's extra on every hit: Act II +1, Act III +5); `ACT_HP` [1, 1.15, 1.35] -> [1, 1.2, 1.5]; new `SET_PIECE` (elites hp x1.3 / 1.2 / 1.2 and +3 / +2 / +5 a hit; bosses hp x1.2 / 1 / 1.3 and +1 / +2 / +5); Act II `fightHp` adds 1.2 / 1.15 / 1.2 / 1.15 at steps 6–9 (the back half of the crypt); Act III `fightHp` 1.2 at steps 2, 3, 6, 8 and 1.25 at Oathbreak Keep (step 7; `fightHp` now also lifts elites and bosses). Act III gets more bite rather than more health, because its boss already runs 12–14 rounds.
 Tuning without editing data.js: `TUNE='{"ORDINARY":{"flat":[3,5,6]},"SET_PIECE":{"boss":{"hp":[1.2,1,1.3]}}}' sh tools/progress-all.sh 3 3 smart` (tools/progress.mjs). One full run takes about 8 minutes; win rates move about ±5–10 points between runs at this sample size.
 Still soft: the elites of Acts I and III (the ogre and Vharaxis, 99%, even at x1.5 health and +7 a hit: a lone big monster is burst down) and a few quiet early Act III steps (~100%). A lone elite may need a new move rather than bigger numbers.
+
+## 15 Oct 2026 — good play matters, and Legendary is beatable with it
+Dave: "you can't just use the first roll and beat the enemy every time. There's some strategy, but as you get more into Legendary you need to use your magic just right and pay attention to what the enemy is going to do. Make sure that with wise decisions it's actually beatable."
+
+**Three computer players** (`PLAY=first|smart|wise` in tools/sim.mjs):
+- **First roll**: keeps its first roll, never rerolls, never casts a power, hits the first monster, drinks a potion when low.
+- **Sensible** (`smart`, the bot every table above used): rerolls for the best average throw, powers by simple rules.
+- **Wise**: rerolls by reading the monsters (block is worth a lot up to the hit that is coming and little past it; only half of a breath can be blocked), then thinks before it locks in: it plays out its choices (target, each power, store or release charges, heal, potion) a few times each and keeps the ones that leave it best off: alive, monsters hurt, focus fire on the one nearly down, magic and potions kept for later. The simple plan is one of its candidates, so thinking never does worse.
+
+**The tool**: `SKILL=<difficulty> sh tools/skill-all.sh 3 2` (tools/skill.mjs). A hero plays the campaign (driven by the wise player; DRIVER= to change), and at every step the SAME hero fights that battle with each player, so the difference is play, not build.
+
+**Legendary changed**: from "monsters have 1.5x health and +3 a hit" (which punishes everyone alike) to health x1.35 and +2 a hit, plus an **edge**: the moves a monster announces hit harder, a Slam or Pounce +6, Fire Ward's burn +4. Reading the plaque (block the Slam, hit the stalker, leave the ward alone) avoids most of it. **Hard** gets half of that (health x1.15, +2, Slam +3, burn +2). Normal and Easy are unchanged. Knob: `edge` on `DIFFICULTY` in data.js.
+
+Win rate on the first try, Acts I / II / III (10 campaigns, 10 fights per player per step):
+
+| | First roll: fights · bosses | Sensible: fights · bosses | Wise: fights · bosses | Wise player clears the campaign |
+|---|---|---|---|---|
+| Normal | 52–68% · 16–29% | 92–93% · 79–82% | 96–98% · 85–97% | 10/10, 11 retreats |
+| Hard | 41–46% · 6–22% | 78–88% · 54–67% | 89–96% · 71–88% | 10/10, 24 retreats |
+| Legendary | 31–38% · 2–10% | 74–84% · 48–60% | 87–96% · 56–83% | 10/10, 31 retreats (about 3 a campaign) |
+
+Legendary bosses for the wise player: Goblin King 56%, Lich 60%, Oathbreak Keep 80%, the Ember Queen 83%. So: on Normal the first roll already loses most boss fights; on Legendary careless play is hopeless, sensible play loses about half the big fights, and wise play wins every campaign with a few retreats.
+Bot fixes found on the way (tools only): the wise player first spread its damage and never finished the Shieldbearer that guards the Ashwyrm (it won 32% of that fight, the sensible player 60%); valuing damage on a nearly beaten monster more fixed it (wise 83–97%).

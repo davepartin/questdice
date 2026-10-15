@@ -4,7 +4,7 @@ import { cardsOf, equipPower, learnPower, learnInfo, rerollDieInfo, buyRerollDie
   makeRng, newHero, evaluate, weaponFaces, makeWeapon, newBattle, startRoll, resolve, reroll, rerollInfo,
   playCard, nudge, gainXp, equip, isTwoHanded, questsFor, specialFace, maxHpOf,
   sidesOf, castPower, beginReset, recharge, powerUpgradeInfo, upgradePower, powerLevel, trainInfo, trainWeapon, forgeInfo, forgeWeapon, addTalent, removeTalent, isActive, activeSlots, unlockInfo, unlockDie,
-  difficultyOf, withDifficulty, newPartyBattle,
+  difficultyOf, withDifficulty, newPartyBattle, rollIntent, burnOf,
 } from '../js/engine.js';
 import { CLASSES, WEAPONS, MONSTERS, FORGE_COST, WEAPON_SIZE_STEPS, NUDGE_COST, TALENT_SLOT_COST, talentFaceCost, RES_BY_SIZE, FACE_PAY, DIFFICULTY, normalizeDifficulty } from '../js/data.js';
 
@@ -570,8 +570,8 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(DIFFICULTY.legendary.name, 'Legendary');
   assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
   assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
-  assert.equal(DIFFICULTY.hard.hp, 1.2); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
-  assert.equal(DIFFICULTY.legendary.hp, 1.5); assert.equal(DIFFICULTY.legendary.flat, 3); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(DIFFICULTY.hard.hp, 1.15); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
+  assert.equal(DIFFICULTY.legendary.hp, 1.35); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
   assert.equal(normalizeDifficulty('noob'), 'easy');
   assert.equal(normalizeDifficulty('mid'), 'normal');
   assert.equal(normalizeDifficulty('expert'), 'hard');
@@ -585,6 +585,17 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(easyQ.flat, -1);
 });
 
+test('Hard and Legendary: the moves a monster announces (Slam, Pounce, Fire Ward) hit harder; Normal leaves them alone', () => {
+  const quest = { enemies: ['ogre', 'cultist'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
+  const at = (diff) => { const h = newHero({ name: 'K', cls: 'knight', seed: 1 }); h.difficulty = diff; return newBattle(h, quest, makeRng(1), 1); };
+  for (const [diff, slam, burn] of [['normal', 0, 0], ['hard', 3, 2], ['legendary', 6, 4]]) {
+    const b = at(diff); const ogre = b.enemies[0]; const mage = b.enemies[1];
+    ogre.windup = true; rollIntent(ogre, makeRng(2));
+    assert.equal(ogre.intent.f, MONSTERS.ogre.slam.f + slam, `${diff} slam`);
+    mage.intent = { n: 'Fire Ward', v: 'ward', f: 0, m: 1, k: 4 };
+    assert.equal(burnOf(mage), 4 + Math.floor(mage.flat / 2) + burn, `${diff} burn`);
+  }
+});
 test('difficulty scales monsters, never the hero, including in a party battle', () => {
   const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
   const hp0 = maxHpOf(knight());
@@ -596,11 +607,11 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const easy = spawn('easy'); const mid = spawn('normal'); const hard = spawn('hard'); const legend = spawn('legendary');
   assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
   assert.equal(mid.enemies[0].maxHp, 30);
-  assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.2));
-  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.5));
+  assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.15));
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.35));
   assert.equal(easy.enemies[0].flat, -1);
   assert.equal(hard.enemies[0].flat, 2);
-  assert.equal(legend.enemies[0].flat, 3);
+  assert.equal(legend.enemies[0].flat, 2);
   assert.equal(easy.enemies[0].gold, 6);
   assert.equal(hard.enemies[0].gold, Math.round(6 * 1.15));
   assert.equal(legend.enemies[0].gold, Math.round(6 * 1.25));
@@ -610,7 +621,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const host = newHero({ name: 'Ada', cls: 'knight', seed: 2 }); host.difficulty = 'hard';
   const guest = newHero({ name: 'Bea', cls: 'bard', seed: 3 }); guest.difficulty = 'easy';
   const party = newPartyBattle([host, guest], quest, makeRng(4));
-  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.2 * 1.8));
+  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * 1.8));
   assert.equal(party.enemies[0].flat, 2);
   assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
 });
