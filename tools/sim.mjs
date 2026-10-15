@@ -4,7 +4,7 @@ import {
   cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
-  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent,
+  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT } from '../js/data.js';
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
@@ -14,6 +14,24 @@ const baseScore = (ev) => ev.atk + 0.8 * ev.block + 1.1 * ev.pierce + 0.55 * ev.
 // How the bot values a roll. tools/strategy.mjs swaps in other play styles (score(ev, battle)).
 let score = (ev) => baseScore(ev);
 export function setScore(fn) { score = fn || ((ev) => baseScore(ev)); }
+// How well the bot plays (PLAY=first|smart|wise; Dave, Oct 2026: careless play should lose more the harder the setting, wise play should
+// still win on Legendary):
+//   first: keeps its first roll, never rerolls, never casts a power, swings at the first monster, drinks a potion when low.
+//   smart: rerolls for the best average throw, uses powers by simple rules (the bot every balance table used until now).
+//   wise:  reads each monster's move: block is worth a lot up to the hit that is coming and almost nothing past it; attack past what
+//          kills everything is worth nothing; hits the monster that is winding up or stalking; drinks a potion before a big hit lands.
+export const PLAY = { style: (typeof process !== 'undefined' && process.env.PLAY) || 'smart' };
+// The damage the monsters can throw this round that block can soak (pierce goes through), at the top of their range for big moves.
+export function threatOf(b) {
+  return b.enemies.filter((e) => e.hp > 0 && e.intent && isDamageIntent(e.intent) && e.intent.v !== 'pierce').reduce((a, e) => {
+    const r = intentRange(e); if (!r) return a; return a + (e.intent.slam ? r[1] : (r[0] + 2 * r[1]) / 3);
+  }, 0);
+}
+const wiseScore = (ev, b) => {
+  const t = threatOf(b); const left = b.enemies.filter((e) => e.hp > 0).reduce((a, e) => a + e.hp, 0);
+  const atk = Math.min(ev.atk + ev.pierce, left + 4);
+  return atk + 0.1 * ev.pierce + 1.25 * Math.min(ev.block, t) + 0.1 * Math.max(0, ev.block - t) + 0.55 * ev.magic + 0.2 * ev.gold + 0.6 * Math.min(ev.heal, b.maxHp - b.hp);
+};
 
 function subsets(slots, k) {
   const out = [];
@@ -38,6 +56,14 @@ function expectedAfter(b, slots, rng, n = SAMPLES) {
 }
 
 export function botRound(b, rng) {
+  if (PLAY.style === 'first') {
+    startRoll(b);
+    while (b.hp < b.maxHp * 0.35 && drink(b)) { /* gulp */ }
+    const first = b.enemies.findIndex((e) => e.hp > 0);
+    return resolve(b, { target: first, straight: 'atk' });
+  }
+  const wise = PLAY.style === 'wise';
+  if (wise) setScore(wiseScore);
   startRoll(b);
   const slotsAll = activeSlots(b.hero);
   for (let guard = 0; guard < 8; guard++) {
@@ -54,8 +80,9 @@ export function botRound(b, rng) {
     if (!best || best.gain < 0.6) break;
     reroll(b, best.sub);
   }
-  // potions first (free), then magic heals, when hurt
-  while (b.hp <= b.maxHp - POTION_HP && b.hp < b.maxHp * 0.5 && drinkPotion(b)) { /* gulp */ }
+  // potions first (free), then magic heals, when hurt (the wise bot also drinks when the coming hit would leave it low)
+  const soon = wise ? Math.max(0, threatOf(b) - evaluate(b.hero, b.board).block) : 0;
+  while (b.hp <= b.maxHp - POTION_HP && (b.hp < b.maxHp * 0.5 || (wise && b.hp - soon < b.maxHp * 0.3)) && drinkPotion(b)) { /* gulp */ }
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;
@@ -78,7 +105,7 @@ export function botRound(b, rng) {
   }
   // target: weakest, but hit a Stalker or a foe winding up first, and leave a Fire Ward or a Phasing foe alone when there is another
   const alive = b.enemies.map((e, i) => ({ e, i })).filter((x) => x.e.hp > 0);
-  const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0);
+  const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) || (wise && e.windup) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0);
   alive.sort((a, c) => want(c.e) - want(a.e) || a.e.hp - c.e.hp);
   const ev = evaluate(b.hero, b.board);
   const straight = b.hero.gold < 200 ? 'gold' : 'atk';
