@@ -70,7 +70,8 @@ function futureValue(c) {
   v += c.magic * 2.2 + (c.potions || 0) * 9;
   for (const [id, n] of Object.entries(c.charge || {})) { const card = cardsOf(c.hero).find((k) => k.id === id); const per = card?.per || {}; v += n * 0.7 * Object.values(typeof per === 'number' ? { atk: per } : per).reduce((a, x) => a + x, 0); }
   if (c.outcome === 'victory') return v + 400;
-  for (const e of foes) v -= e.hp * 1.0 + 10 + (e.windup || e.pounce ? 12 : 0);
+  // focus fire: a point of damage is worth more on a monster that is nearly down (a living monster keeps hitting you every round)
+  for (const e of foes) v -= e.hp * 0.5 + 8 * Math.sqrt(e.hp) + 10 + (e.windup || e.pounce ? 12 : 0);
   return v;
 }
 function wiseChoices(b) {
