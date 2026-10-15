@@ -106,6 +106,9 @@ function wiseLock(b, rng) {
     for (const a of pool) { if (plan.some((p) => p.k === a.k && a.k !== 'heal' && a.k !== 'potion')) continue; const v = score([...plan, a], target); if (v > best + 0.5 && (!pick || v > pick.v)) pick = { a, v }; }
     if (!pick) break; plan.push(pick.a); best = pick.v;
   }
+  // the simple rules' plan is one more candidate, so thinking never does worse than not thinking
+  let smartV = 0; for (const sd of seeds) { const c = cloneB(b, sd); const o = smartActs(c); resolve(c, o); smartV += futureValue(c); } smartV /= seeds.length;
+  if (smartV > best) return resolve(b, smartActs(b));
   for (const a of plan) a.go(b);
   return resolve(b, { target, straight });
 }
@@ -136,6 +139,12 @@ export function botRound(b, rng) {
     reroll(b, best.sub);
   }
   if (wise) return wiseLock(b, rng);
+  return resolve(b, smartActs(b));
+}
+
+// The smart bot's choices before it locks in (potions, magic heals, powers, target), applied to b. Returns the resolve options.
+export function smartActs(b) {
+  const wise = false;
   // potions first (free), then magic heals, when hurt
   while (b.hp <= b.maxHp - POTION_HP && b.hp < b.maxHp * 0.5 && drinkPotion(b)) { /* gulp */ }
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
@@ -164,7 +173,7 @@ export function botRound(b, rng) {
   alive.sort((a, c) => want(c.e) - want(a.e) || a.e.hp - c.e.hp);
   const ev = evaluate(b.hero, b.board);
   const straight = b.hero.gold < 200 ? 'gold' : 'atk';
-  return resolve(b, { target: alive[0].i, straight: ev.straight && straight === 'gold' && b.hp > b.maxHp * 0.6 ? 'gold' : 'atk' });
+  return { target: alive[0].i, straight: ev.straight && straight === 'gold' && b.hp > b.maxHp * 0.6 ? 'gold' : 'atk' };
 }
 
 export function fight(hero, quest, rng) {

@@ -213,7 +213,8 @@ export const DIFFICULTY = {
   easy: { name: 'Easy', text: 'Fewer, gentler monsters. A kind road.', hp: 0.8, flat: -1, gold: 1, budget: 0.7 },
   normal: { name: 'Normal', text: 'The road as it was meant to be walked.', hp: 1, flat: 0, gold: 1, budget: 1 },
   hard: { name: 'Hard', text: 'Bigger crowds, tougher monsters. Pays 15% more gold. You will earn it.', hp: 1.2, flat: 2, gold: 1.15, budget: 1.15 },
-  // Legendary: first-pass numbers, needs tuning (clear rates, gold, crowd size).
+  // edge (optional, Hard and Legendary): the moves a monster announces hit harder. slam: added to a wind-up Slam and a Pounce; burn: added to Fire
+// Ward's burn. A player who reads the plaque (blocks the Slam, hits the stalker, leaves the ward alone) pays little for it; one who doesn't pays a lot.
   legendary: { name: 'Legendary', text: 'The cruellest road. Crowds hit harder. For heroes who have beaten Hard.', hp: 1.5, flat: 3, gold: 1.25, budget: 1.25 },
 };
 const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
