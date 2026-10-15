@@ -18,8 +18,9 @@ export function setScore(fn) { score = fn || ((ev) => baseScore(ev)); }
 // still win on Legendary):
 //   first: keeps its first roll, never rerolls, never casts a power, swings at the first monster, drinks a potion when low.
 //   smart: rerolls for the best average throw, uses powers by simple rules (the bot every balance table used until now).
-//   wise:  reads each monster's move: block is worth a lot up to the hit that is coming and almost nothing past it; attack past what
-//          kills everything is worth nothing; hits the monster that is winding up or stalking; drinks a potion before a big hit lands.
+//   wise:  rerolls by reading each monster's move (block is worth a lot up to the hit that is coming, attack past what kills everything
+//          is worth nothing), then thinks before it locks in: it plays out its choices (target, powers, charges, heals, potions) a few
+//          times each and keeps the ones that leave it best off (see wiseLock).
 export const PLAY = { style: (typeof process !== 'undefined' && process.env.PLAY) || 'smart' };
 // The damage the monsters can throw this round that block can soak (pierce goes through), at the top of their range for big moves.
 export function threatOf(b) {
@@ -55,6 +56,60 @@ function expectedAfter(b, slots, rng, n = SAMPLES) {
   return sum / n;
 }
 
+// ---- the wise player's turn: try the choices in its head before locking in (one round of look-ahead, a few dice futures each).
+// Choices: which monster to hit, and any of: cast a power (a scaling one at its least, half its magic, or its most), store or release
+// charges, heal with magic, drink a potion. It adds the single choice that helps most, then the next, until nothing helps.
+// How good a future is: alive and healthy, monsters hurt or dead, and magic, potions and stored charges kept for later.
+const LOOK = Number((typeof process !== 'undefined' && process.env.LOOK) || 6);
+function cloneB(b, seed) { const r = b.rng; b.rng = null; const c = JSON.parse(JSON.stringify(b)); b.rng = r; c.rng = makeRng(seed); return c; }
+function futureValue(c) {
+  const foes = c.enemies.filter((e) => e.hp > 0);
+  if (c.outcome === 'defeat' || c.hp <= 0) return -2000;
+  const hpFrac = c.hp / c.maxHp;
+  let v = c.hp * 1.0 - (hpFrac < 0.35 ? (0.35 - hpFrac) * c.maxHp * 2 : 0); // low health is worth less than it looks: the next hit may end it
+  v += c.magic * 2.2 + (c.potions || 0) * 9;
+  for (const [id, n] of Object.entries(c.charge || {})) { const card = cardsOf(c.hero).find((k) => k.id === id); const per = card?.per || {}; v += n * 0.7 * Object.values(typeof per === 'number' ? { atk: per } : per).reduce((a, x) => a + x, 0); }
+  if (c.outcome === 'victory') return v + 400;
+  for (const e of foes) v -= e.hp * 1.0 + 10 + (e.windup || e.pounce ? 12 : 0);
+  return v;
+}
+function wiseChoices(b) {
+  const out = [];
+  for (const c of cardsOf(b.hero)) {
+    if (c.kind === 'charge') {
+      out.push({ k: `${c.id}+`, go: (x) => castPower(x, c.id) });
+      out.push({ k: `${c.id}!`, go: (x) => castPower(x, c.id, { release: true }) });
+      continue;
+    }
+    if (c.fx?.free) continue;
+    if (c.kind === 'scale') { for (const n of new Set([c.cost, Math.max(c.cost, Math.floor(b.magic / 2)), Math.min(c.max, b.magic)])) out.push({ k: `${c.id}:${n}`, go: (x) => castPower(x, c.id, { x: n }) }); continue; }
+    out.push({ k: c.id, go: (x) => castPower(x, c.id) });
+  }
+  out.push({ k: 'heal', go: (x) => healSpend(x) });
+  out.push({ k: 'potion', go: (x) => drinkPotion(x) });
+  return out;
+}
+function wiseLock(b, rng) {
+  const seeds = Array.from({ length: LOOK }, () => Math.floor(rng() * 2 ** 31));
+  const ev0 = evaluate(b.hero, b.board); const straight = ev0.straight && b.hero.gold < 200 && b.hp > b.maxHp * 0.6 ? 'gold' : 'atk';
+  const score = (plan, target) => {
+    let t = 0;
+    for (const sd of seeds) { const c = cloneB(b, sd); for (const a of plan) if (!a.go(c)) return -1e9; resolve(c, { target, straight }); t += futureValue(c); }
+    return t / seeds.length;
+  };
+  const alive = b.enemies.map((e, i) => ({ e, i })).filter((x) => x.e.hp > 0);
+  let target = alive[0].i; let best = -1e9;
+  for (const { i } of alive) { const v = score([], i); if (v > best) { best = v; target = i; } }
+  const plan = []; const pool = wiseChoices(b);
+  for (let step = 0; step < 4; step++) {
+    let pick = null;
+    for (const a of pool) { if (plan.some((p) => p.k === a.k && a.k !== 'heal' && a.k !== 'potion')) continue; const v = score([...plan, a], target); if (v > best + 0.5 && (!pick || v > pick.v)) pick = { a, v }; }
+    if (!pick) break; plan.push(pick.a); best = pick.v;
+  }
+  for (const a of plan) a.go(b);
+  return resolve(b, { target, straight });
+}
+
 export function botRound(b, rng) {
   if (PLAY.style === 'first') {
     startRoll(b);
@@ -80,9 +135,9 @@ export function botRound(b, rng) {
     if (!best || best.gain < 0.6) break;
     reroll(b, best.sub);
   }
-  // potions first (free), then magic heals, when hurt (the wise bot also drinks when the coming hit would leave it low)
-  const soon = wise ? Math.max(0, threatOf(b) - evaluate(b.hero, b.board).block) : 0;
-  while (b.hp <= b.maxHp - POTION_HP && (b.hp < b.maxHp * 0.5 || (wise && b.hp - soon < b.maxHp * 0.3)) && drinkPotion(b)) { /* gulp */ }
+  if (wise) return wiseLock(b, rng);
+  // potions first (free), then magic heals, when hurt
+  while (b.hp <= b.maxHp - POTION_HP && b.hp < b.maxHp * 0.5 && drinkPotion(b)) { /* gulp */ }
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;
