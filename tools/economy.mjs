@@ -22,11 +22,11 @@ const P = (h, n = 4000) => { const r = makeRng(424242); const t = { atk: 0, pier
   for (const k in t) t[k] /= n; return { ...t, dmg: t.atk + t.pierce, hp: maxHpOf(h) }; };
 
 // Everything the camp sells that changes the dice, with its price and what it adds to an average throw.
-export function priceList(hero) {
-  const base = P(hero); const out = [];
+export function priceList(hero, n = 4000) {
+  const P2 = (h) => P(h, n); const base = P2(hero); const out = [];
   const tryIt = (label, fn) => {
     const h = clone(hero); h.gold = 1e6; if (!fn(h)) return; const cost = 1e6 - h.gold; if (cost <= 0) return;
-    const p = P(h); out.push({ label, cost, dAtk: p.dmg - base.dmg, dBlk: p.block - base.block, dHeal: p.heal - base.heal, dMagic: p.magic - base.magic, dWorth: worth(p) - worth(base), act: (x) => fn(x) });
+    const p = P2(h); out.push({ label, cost, dAtk: p.dmg - base.dmg, dBlk: p.block - base.block, dHeal: p.heal - base.heal, dMagic: p.magic - base.magic, dWorth: worth(p) - worth(base), act: (x) => fn(x) });
   };
   tryIt('Left hand bigger', (h) => upgradeDie(h, 'strength', 'W'));
   tryIt('Right hand bigger', (h) => upgradeDie(h, 'strength', 'E'));
@@ -41,7 +41,7 @@ export function priceList(hero) {
     for (let f = 0; f < t.faces; f++) {
       const have = hero.talent?.[s]?.[f]; if (Array.isArray(have) ? have.length : have) continue;
       let best = null;
-      for (const sym of ['atk', 'block', 'heal', 'magic', 'gold']) { const h = clone(hero); h.gold = 1e6; if (!addTalent(h, s, f, sym)) continue; const d = worth(P(h)) - worth(base); if (!best || d > best.d) best = { sym, d }; }
+      for (const sym of ['atk', 'block', 'heal', 'magic', 'gold']) { const h = clone(hero); h.gold = 1e6; if (!addTalent(h, s, f, sym)) continue; const d = worth(P2(h)) - worth(base); if (!best || d > best.d) best = { sym, d }; }
       if (best) tryIt(`Talent ${s} face ${t.nums[f]}: ${best.sym}`, (h) => addTalent(h, s, f, best.sym));
     }
   }
@@ -49,13 +49,15 @@ export function priceList(hero) {
 }
 
 // Camp, by spending style. Potions are refilled first by every style (they are what keeps a run alive).
+let potionSpent = 0; let stepPotions = 0;
 function camp(hero, rng) {
+  const g = hero.gold; while (buyPotion(hero)) { /* the belt first, every style (Dave: on Legendary most of the purse goes here) */ } stepPotions = g - hero.gold; potionSpent += stepPotions;
   if (SPEND === 'greedy') { botCamp(hero, rng); return; }
   while (hero.pendingPerks > 0) botCamp({ ...hero, gold: 0 }, rng) && 0; // (perks are taken by botCamp below)
   const gold0 = hero.gold; hero.gold = 0; botCamp(hero, rng); hero.gold += gold0; // perks only (no gold to spend)
   while (buyPotion(hero)) { /* refill */ }
   for (let guard = 0; guard < 30; guard++) {
-    const list = priceList(hero).filter((o) => o.dWorth > 0.05);
+    const list = priceList(hero, 1200).filter((o) => o.dWorth > 0.05);
     if (!list.length) break;
     let pick;
     if (SPEND === 'value') pick = list.find((o) => o.cost <= hero.gold);
@@ -96,11 +98,11 @@ for (let n = 0; n < QUESTS_PER_ACT * ACTS; n++) {
   const r = battleRewards(b); hero.gold += r.gold; earned += r.gold; gainXp(hero, r.xp);
   const g1 = hero.gold; botLoot(hero, r.drops); sold += hero.gold - g1;
   advanceCampaign(hero); const g2 = hero.gold; camp(hero, rng); spent += g2 - hero.gold;
-  rows.push({ key, kind: quest.kind, lvl: hero.level, gold: r.gold, sold: hero.gold - g1 + (g2 - hero.gold) * 0, atk: p.dmg, blk: p.block, heal: p.heal, magic: p.magic, worth: worth(p), hp: maxHpOf(hero), foeHp: foe.hp, foeHit: foe.hit, bank: hero.gold, wins, tries, dealtPerRound, takenPerRound, rounds: b.round });
+  rows.push({ key, kind: quest.kind, lvl: hero.level, gold: r.gold, sold: hero.gold - g1 + (g2 - hero.gold) * 0, atk: p.dmg, blk: p.block, heal: p.heal, magic: p.magic, worth: worth(p), hp: maxHpOf(hero), foeHp: foe.hp, foeHit: foe.hit, bank: hero.gold, wins, tries, dealtPerRound, takenPerRound, rounds: b.round, potions: stepPotions });
 }
-console.log(`\n${CLS}, ${hero.difficulty}, spending: ${SPEND}. Earned in fights ${earned}, from selling ${sold}, spent at camp ${spent}, left ${hero.gold}`);
-console.log('step   kind    lvl  fight gold  bank | average throw: attack  block  heal  magic  power  health | monster health  hit/round | in the fight: dealt/round  taken/round  rounds' + (T ? ' | wise wins' : ''));
+console.log(`\n${CLS}, ${hero.difficulty}, spending: ${SPEND}. Earned in fights ${earned}, from selling ${sold}; spent at camp ${spent} (potions ${potionSpent}, the rest ${spent - potionSpent}); left ${hero.gold}`);
+console.log('step   kind    lvl  fight gold  bank | average throw: attack  block  heal  magic  power  health | monster health  hit/round | in the fight: dealt/round  taken/round  rounds | potions bought' + (T ? ' | wise wins' : ''));
 for (const r of rows) {
-  console.log(`${r.key}  ${r.kind.padEnd(6)} ${String(r.lvl).padStart(3)}  ${String(r.gold).padStart(9)}  ${String(r.bank).padStart(4)} | ${r.atk.toFixed(1).padStart(20)}  ${r.blk.toFixed(1).padStart(5)}  ${r.heal.toFixed(1).padStart(4)}  ${r.magic.toFixed(1).padStart(5)}  ${r.worth.toFixed(1).padStart(5)}  ${String(r.hp).padStart(6)} | ${String(r.foeHp).padStart(14)}  ${r.foeHit.toFixed(1).padStart(9)} | ${r.dealtPerRound.toFixed(1).padStart(24)}  ${r.takenPerRound.toFixed(1).padStart(11)}  ${String(r.rounds).padStart(6)}` + (T ? ` | ${(100 * r.wins).toFixed(0).padStart(8)}%` : ''));
+  console.log(`${r.key}  ${r.kind.padEnd(6)} ${String(r.lvl).padStart(3)}  ${String(r.gold).padStart(9)}  ${String(r.bank).padStart(4)} | ${r.atk.toFixed(1).padStart(20)}  ${r.blk.toFixed(1).padStart(5)}  ${r.heal.toFixed(1).padStart(4)}  ${r.magic.toFixed(1).padStart(5)}  ${r.worth.toFixed(1).padStart(5)}  ${String(r.hp).padStart(6)} | ${String(r.foeHp).padStart(14)}  ${r.foeHit.toFixed(1).padStart(9)} | ${r.dealtPerRound.toFixed(1).padStart(24)}  ${r.takenPerRound.toFixed(1).padStart(11)}  ${String(r.rounds).padStart(6)} | ${String(r.potions).padStart(13)}` + (T ? ` | ${(100 * r.wins).toFixed(0).padStart(8)}%` : ''));
 }
 if (process.env.OUT) (await import('node:fs')).writeFileSync(process.env.OUT, JSON.stringify({ rows, earned, sold, spent, left: hero.gold }));
