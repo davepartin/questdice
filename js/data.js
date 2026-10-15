@@ -602,7 +602,7 @@ export const ACTS = [
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
-    fightHp: { 3: 0.6 },
+    fightHp: { 3: 0.6, 6: 1.2, 7: 1.15, 8: 1.2, 9: 1.15 }, // the back half of the crypt pushes harder (Oct 2026 tuning)
     fights: [
       ['skeleton', 'skeleton'],                  // 1 The Weeping Stair
       ['wraith', 'skeleton'],                    // 2 Candle Vault
@@ -625,6 +625,7 @@ export const ACTS = [
     boss: ['vharaxis'],
     help: ['Wyrmwatch', 'Hoardfall Mine'],
     route: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Kettle Tarn', 'Ember Throne slopes', 'The Ember Throne'],
+    fightHp: { 2: 1.2, 3: 1.2, 6: 1.2, 7: 1.25, 8: 1.2 }, // heroes are strong by Act III: the quieter steps and Oathbreak Keep stand up to them
     fights: [
       ['cinderling', 'cinderling'],              // 1 Kindling Steps
       ['gloomstalker', 'shieldbearer'],          // 2 The Glass Fields
@@ -697,16 +698,16 @@ export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1, 1.15, 1.35];
+export const ACT_HP = [1, 1.2, 1.5];
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
-export const ORDINARY = { flat: [3, 4, 1], lone: 2 };
+export const ORDINARY = { flat: [3, 5, 6], lone: 2 };
 // Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
-export const SET_PIECE = { elite: { hp: [1, 1, 1], flat: [0, 0, 0] }, boss: { hp: [1, 1, 1], flat: [0, 0, 0] } };
+export const SET_PIECE = { elite: { hp: [1.3, 1.2, 1.2], flat: [3, 2, 5] }, boss: { hp: [1.2, 1, 1.3], flat: [1, 2, 5] } };
 export const ELITE_STEPS = [5];
 // What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
 export function stepKind(act, step) {

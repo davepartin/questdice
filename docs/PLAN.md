@@ -1070,3 +1070,6 @@ Dave asked for a fresh-eyes pass. Walked it as a brand-new player on a phone (`n
 - **The first road test was a surprise** (it comes at quest 2, before any explanation). New hint `r_trial` on the first test's choice screen: what each stat rolls, highest total wins, a tie goes to you, the odds are on the choice.
 - Legendary's description no longer says "Still being sharpened" on the hero-creation screen.
 - Not changed, noted: the creation screen is long (class, weapons, powers, difficulty, hints, name); the battle's first hint covers the middle of the board until tapped; both read fine.
+
+## 2026-10-15 — Normal is tense now
+The bot used to win almost everything on Normal (bosses 97% / 87% / 100%, Act III 100% throughout, even on Hard). Now the bosses land about 76–83%, ordinary fights dip to about 80% near the end of each act, and every campaign still gets cleared. Hard bites in all three acts instead of only Act I. Numbers and the knobs in docs/BALANCE.md (15 Oct). Open: the lone elites (ogre, Vharaxis) are still about 99%.

@@ -278,3 +278,16 @@ Faces 1-2 blank, face 3 = 2x, face k (4..size) shows the number k and pays k of 
 Price per face = `TALENT_FACE_COST` (10) x the number: 4 costs 40, 5 costs 50 ... 10 costs 100; a full d10 is 490 gold for seven faces (plus the growth steps 60 / 130 / 240). The class's free starting symbol sits on face 4.
 Why 10 gold a point: a number face on a die of n sides shows up 1 time in n and pays k, so face k on a d(n) is worth k/n a roll (a 6 on a d6 or a 10 on a d10 = 1.0; a 4 on a d10 = 0.4). That is roughly 40-100 gold for each point of average roll, in line with a hand upgrade (d4 to d6 costs 100 for about +2 across two lanes).
 Bot (`botTalent` in tools/sim.mjs buys the biggest empty face once it has the price plus 60 spare; `SKILL=... sh tools/progress-all.sh 3 3 smart`): Mid cleared 15/15 (was 14/15 without talent buying), Expert 8/15 (was 3/15), damage a round up from about 26 to about 30 in Acts II-III, and the bot still ends Act III with 140-200 gold, so the prices do not choke it. The lever for later tuning is `TALENT_FACE_COST`.
+
+## 15 Oct 2026 — Normal made tense, and the curve turned the right way round
+Dave: the game was too easy. Bot (`SKILL=<d> sh tools/progress-all.sh 3 3 smart`, 15 campaigns, the real story fights) before and after. Before, the curve ran backwards: Act I was the hard part and Act III a walkover on every setting (Act III 100% even on Hard).
+
+| Normal | Act I fights | Act I elite / boss | Act II fights | Act II elite / boss | Act III fights | Act III elite / mid-boss / boss | Campaigns cleared |
+|---|---|---|---|---|---|---|---|
+| Before | 80–100% | 100% / 97% | 87–100% | 99% / 87% | 99–100% | 100% / 100% / 100% | 15/15 |
+| After | 79–100% | 99% / 76% | 78–98% | 89% / 78% | 83–100% | 99% / 83% / 82% | 15/15 |
+
+Hard after: fights 52–100%, bosses 52% / 50% / 70% / 65%, 9/15 cleared (was 7/15, all of it lost in Acts I–II). Easy after: fights 84–100%, bosses 94–97%, 15/15. Remember the bot is a weak player: a person should beat these numbers.
+What changed (all in js/data.js): `ORDINARY.flat` [3, 4, 1] -> [3, 5, 6] (the standard road's extra on every hit: Act II +1, Act III +5); `ACT_HP` [1, 1.15, 1.35] -> [1, 1.2, 1.5]; new `SET_PIECE` (elites hp x1.3 / 1.2 / 1.2 and +3 / +2 / +5 a hit; bosses hp x1.2 / 1 / 1.3 and +1 / +2 / +5); Act II `fightHp` adds 1.2 / 1.15 / 1.2 / 1.15 at steps 6–9 (the back half of the crypt); Act III `fightHp` 1.2 at steps 2, 3, 6, 8 and 1.25 at Oathbreak Keep (step 7; `fightHp` now also lifts elites and bosses). Act III gets more bite rather than more health, because its boss already runs 12–14 rounds.
+Tuning without editing data.js: `TUNE='{"ORDINARY":{"flat":[3,5,6]},"SET_PIECE":{"boss":{"hp":[1.2,1,1.3]}}}' sh tools/progress-all.sh 3 3 smart` (tools/progress.mjs). One full run takes about 8 minutes; win rates move about ±5–10 points between runs at this sample size.
+Still soft: the elites of Acts I and III (the ogre and Vharaxis, 99%, even at x1.5 health and +7 a hit: a lone big monster is burst down) and a few quiet early Act III steps (~100%). A lone elite may need a new move rather than bigger numbers.

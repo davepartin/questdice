@@ -1210,7 +1210,7 @@ export function roadsFor(hero, opts = {}) {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
     name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
     // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
-    hpMult: ((kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1)) * (SET_PIECE[kind]?.hp[ai] ?? 1),
+    hpMult: ((kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1)) * (SET_PIECE[kind]?.hp[ai] ?? 1) * ((kind === 'boss' || kind === 'elite') && locked ? (act.fightHp?.[s] ?? 1) : 1),
     flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0) + (SET_PIECE[kind]?.flat[ai] ?? 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
