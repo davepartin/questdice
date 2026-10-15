@@ -25,7 +25,7 @@ export const PLAY = { style: (typeof process !== 'undefined' && process.env.PLAY
 // The damage the monsters can throw this round that block can soak (pierce goes through), at the top of their range for big moves.
 export function threatOf(b) {
   return b.enemies.filter((e) => e.hp > 0 && e.intent && isDamageIntent(e.intent) && e.intent.v !== 'pierce').reduce((a, e) => {
-    const r = intentRange(e); if (!r) return a; return a + (e.intent.slam ? r[1] : (r[0] + 2 * r[1]) / 3);
+    const r = intentRange(e); if (!r) return a; const hit = e.intent.slam ? r[1] : (r[0] + 2 * r[1]) / 3; return a + (e.intent.v === 'breath' ? hit / 2 : hit); // breath: half of it goes through block
   }, 0);
 }
 const wiseScore = (ev, b) => {
