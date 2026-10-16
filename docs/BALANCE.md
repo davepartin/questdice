@@ -356,3 +356,7 @@ Measured with `tools/diamond.mjs` (Legendary, sensible bot, two campaigns a clas
 Found on the way (tools only): forcing a Diamond into a fight measured bad picks (a Diamond Shield filling a longsword's two hands has no attack, and the fight drags past 30 rounds); the bots now bring only what helps and count block past a monster's hit for less.
 The monster pass above is without Diamonds, so the game is fair without lucky finds; a Diamond is a bonus.
 Hard after the monster pass (no Diamonds), fights / elite / boss by act: first roll 42/65/11%, 28/14/3%, 11/23/4%; sensible 80/93/63%, 83/76/64%, 77/91/71%; wise 95/98/79%, 92/95/73%, 87/98/81%; 10/10 campaigns (39 retreats).
+
+## 16 Oct 2026 — Legendary: a pro's road
+Dave: Legendary should be clearly harder than Hard (they felt close for steady play: the same +15% health, Legendary only adding harder announced moves), so that beating a whole campaign on it feels like being a pro. One number: Legendary monster health x1.15 → x1.35 (`DIFFICULTY.legendary.hp`); the card says so.
+Legendary after (no Diamonds), fights / elite / boss by act: first roll 36/33/4%, 23/5/1%, 12/31/1%; sensible 76/84/31%, 75/63/59%, 74/90/62%; wise 88/95/64%, 90/80/65%, 88/100/84%; the wise bot clears 9/10 campaigns with 71 retreats (about 7 a campaign). Against Hard: sensible bosses 63–71% there, 31–62% here.
