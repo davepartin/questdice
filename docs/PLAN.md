@@ -1139,3 +1139,4 @@ The third of Dave's three: a reason to come back each day. A "Daily challenge" p
 - How hard: over two weeks of days the sensible computer player clears 42% of runs, the wise one 72% (`node tools/daily.mjs`).
 - The leaderboard needs the new `qdDaily` block in `firestore.rules` published (docs/FIREBASE.md). Until then the page says it is not open yet.
 Shots: docs/ingame/daily_*.png (`node dev/daily.mjs`).
+- (later, 16 Oct) Dave: gold was not collected in the daily. It has no camp to spend at, so gold now counts as points: every coin your dice roll and every fallen monster's gold adds 1 to the fight's score.

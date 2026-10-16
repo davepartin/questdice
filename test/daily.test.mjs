@@ -32,6 +32,7 @@ test('daily score: battle points, +100 a win, +250 for clearing all five; share 
   assert.equal(DAY.finalScore(won), 150 * DAY.FIGHTS + DAY.CLEAR_BONUS);
   assert.equal(DAY.finalScore([{ won: true, score: 120 }, { won: false, score: 30 }]), 150);
   assert.equal(DAY.fightScore({ points: 42 }, true), 42 + DAY.WIN_BONUS);
+  assert.equal(DAY.fightScore({ points: 42, goldEarned: 7, enemies: [{ hp: 0, gold: 6 }, { hp: 5, gold: 9 }] }, true), 42 + DAY.WIN_BONUS + 7 + 6, 'gold counts: dice gold and fallen monsters only');
   const run = DAY.dailyRun('2026-10-16'); const t = DAY.shareText(run, 1234, [{ won: true }, { won: false }]);
   assert.ok(t.includes('2026-10-16') && t.includes('1,234') && t.includes(CHARMS[run.charm].name));
   assert.equal(DAY.dayKey(new Date(2026, 0, 5)), '2026-01-05');

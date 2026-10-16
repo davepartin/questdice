@@ -46,8 +46,10 @@ export function dailyHero(run) {
   E.takeCharm(h, run.charm);
   return h;
 }
-// What a fight is worth: its battle points, plus the win.
-export const fightScore = (b, won) => E.pointsOf(b) + (won ? WIN_BONUS : 0);
+// What a fight is worth: its battle points, plus the win, plus every gold coin earned in it (Dave: the daily has no camp to spend it at,
+// so gold counts as points): the gold your dice rolled, and the gold of each monster you felled.
+export const goldOf = (b) => Math.max(0, Math.round((b?.goldEarned || 0) + (b?.stolen || 0) + (b?.enemies || []).filter((e) => e.hp <= 0 && !e.fled).reduce((a, e) => a + (e.gold || 0), 0)));
+export const fightScore = (b, won) => E.pointsOf(b) + (won ? WIN_BONUS : 0) + goldOf(b);
 export const finalScore = (fights) => fights.reduce((a, f) => a + f.score, 0) + (fights.length === FIGHTS && fights.every((f) => f.won) ? CLEAR_BONUS : 0);
 
 // This phone's record of the days it played: { [key]: { best, tries, cleared, fights } }
