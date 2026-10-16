@@ -37,7 +37,8 @@ export const slotPos = (slot) => (slot === 'P' ? PET_HOME.clone() : new THREE.Ve
 
 const DEFAULT_HERO = { cls: 'knight', loadout: { NW: { id: 'sword', rarity: 0 }, NE: { id: 'shield', rarity: 0 } }, strength: { W: 4, E: 4 }, special: { SW: 4, SE: 4 } };
 const ROLE_GLOW = { head: 0xffe6b0, feet: 0xffe6b0, hand: 0xa8c8e8, heart: 0xffb82e, special: 0xd8e0f0 };
-const STRAIGHT_GLOW = 0xff3ec8; // the dice in a straight: a magenta no other mark on the board uses
+const STRAIGHT_GLOW = 0x7fe6ff; // the dice in a straight: a soft light cyan ring (Dave, Oct 2026: the magenta was too loud)
+const STRAIGHT_FLOOR = 0x1a7f95; // ...over a deeper cyan floor glow (the floor glow adds light, so a pale colour would haze the board)
 const SLOT_ORDER = D.SLOTS;
 const ALL = [...SLOT_ORDER, 'P']; // the nine board sockets, then the pet's stand
 
@@ -312,7 +313,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       let col = ROLE_GLOW[S[slot].role] ?? 0xffffff;
       if (S[slot].role === 'weapon') col = D.WEAPONS[hero.loadout[slot].id]?.lean === 'def' ? 0x4db4ff : 0xff4d4d;
       if (slot === 'P') col = new THREE.Color(D.PETS[hero.pet?.type]?.color || '#ffffff').getHex(); // the pet's stand glows in the pet's colour
-      S[slot].baseGlow = col; glowU.uCol.value[S[slot].i].setHex(S[slot].inStraight ? STRAIGHT_GLOW : col);
+      S[slot].baseGlow = col; glowU.uCol.value[S[slot].i].setHex(S[slot].inStraight ? STRAIGHT_FLOOR : col);
     });
   }
   // Light the sockets under the dice that make a straight (null or [] clears it).
@@ -320,8 +321,8 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const on = new Set(slots || []);
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; const was = !!s.inStraight; s.inStraight = on.has(slot);
-      glowU.uCol.value[s.i].setHex(s.inStraight ? STRAIGHT_GLOW : s.baseGlow ?? 0xffffff);
-      if (s.inStraight && !was) s.glowBoost = Math.max(s.glowBoost, 1); // a little flare as it lights
+      glowU.uCol.value[s.i].setHex(s.inStraight ? STRAIGHT_FLOOR : s.baseGlow ?? 0xffffff);
+      if (s.inStraight && !was) s.glowBoost = Math.max(s.glowBoost, 0.35); // a small flare as it lights
     }
   };
   tray.setHero = function setHero(hero) {
@@ -599,11 +600,11 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       U.uDim.value = s.dim;
       // ---- rings, halo, chain, hex
       s.ring.visible = rimK > 0.01 || s.inStraight || s.ring.material.opacity > 0.01;
-      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.inStraight ? 1 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
+      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.inStraight ? 0.42 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
       s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.07 * Math.sin(time * 6 + s.i)); s.ring.position.y = 0.012;
       s.ring.material.color.setHex(s.selected ? 0xffe9a8 : s.inStraight ? STRAIGHT_GLOW : 0xcfe8ff);
-      if (s.inStraight && !s.selected) s.ring.scale.setScalar(1.12 + 0.06 * Math.sin(time * 4 + s.i * 0.7)); // a wider magenta ring that breathes
-      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * (s.inStraight ? 0.3 : 0.2) * (0.8 + 0.2 * Math.sin(time * 3 + s.i));
+      if (s.inStraight && !s.selected) s.ring.scale.setScalar(0.98 + 0.01 * Math.sin(time * 1.4 + s.i * 0.7)); // a calm cyan ring on the socket rim, barely breathing (bigger spills a pale wash over the frame)
+      s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * (s.inStraight ? 0 : 0.2) * (s.inStraight ? 0.95 + 0.05 * Math.sin(time * 1.4 + s.i) : 0.8 + 0.2 * Math.sin(time * 3 + s.i));
       if (s.halo.material.color) s.halo.material.color.setHex(s.inStraight && !s.selected ? STRAIGHT_GLOW : 0xffd98a);
       if (s.chains) {
         const tk = s.bound ? 1 : 0; s.chains.k += (tk - s.chains.k) * (1 - Math.exp(-7 * dt));
@@ -627,7 +628,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       let g = 0.34 + 0.12 * Math.sin(time * 1.2 + s.i * 0.9);
       g *= s.bound ? 0.25 : s.vacant || s.waiting ? 0.18 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
-      if (s.inStraight) g = Math.max(g, 2.0 + 0.5 * Math.sin(time * 4 + s.i * 0.7)); // a strong magenta pulse
+      if (s.inStraight) g = Math.max(g, 0.55 + 0.04 * Math.sin(time * 1.4 + s.i * 0.7)); // a soft, steady cyan glow (no haze across the board)
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
       glowU.uG.value[s.i] = g;
     }

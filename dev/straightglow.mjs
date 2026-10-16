@@ -1,4 +1,4 @@
-// The magenta straight glow under the dice, and the simpler monster sheet.  node dev/straightglow.mjs
+// The soft cyan straight glow under the dice, and the simpler monster sheet.  node dev/straightglow.mjs
 import { chromium } from 'playwright-core';
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
 const p = await b.newPage({ viewport: { width: 430, height: 932 }, hasTouch: true, deviceScaleFactor: 2 });
