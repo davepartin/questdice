@@ -633,3 +633,47 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 /* shrinking a die: a small ghost button, two taps (the second confirms) */
 .sx-shrink { align-self: flex-start; margin-top: .25rem; padding: .22rem .6rem; border-radius: 999px; border: 1px solid var(--hair-2); background: rgba(255, 255, 255, .05); color: var(--dim); font: 700 .66rem var(--font-display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
 .sx-shrink:disabled { opacity: .4; cursor: default; } .sx-shrink.armed { color: #ffb38a; border-color: #ff8a5a; background: rgba(255, 120, 70, .14); }
+
+/* compact weapon cards (Dave, Oct 2026: "the pictures are way too big, make them and the cards much smaller so you see more weapons at a
+   time"). The portrait is a small thumbnail beside the name, the metal and badge ride on it as thin strips, and the face chips run the
+   card's full width below. The body's children join the card's own grid (display: contents) so the faces can span both columns. */
+.sx-wc { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); grid-auto-rows: auto; column-gap: .5rem; row-gap: .2rem; align-content: start; padding: .45rem .45rem .5rem; border-radius: 9px; }
+.sx-wc .wc-stage, .sx-wc.compact .wc-stage { grid-column: 1; grid-row: 1 / span 2; width: 3.4rem; height: 3.4rem; aspect-ratio: 1; min-height: 0; border-radius: 7px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
+.sx-wc .wc-stage .wc-art img { inset: 2%; width: 96%; height: 96%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .55)); }
+.sx-wc .wc-banner { top: auto; bottom: 0; left: 0; right: 0; padding: .06rem 0; font-size: .44rem; letter-spacing: .12em; text-align: center; clip-path: none; box-shadow: none; }
+.sx-wc .wc-badge { top: 0; left: 0; right: 0; padding: .05rem 0; border: 0; border-radius: 0; font-size: .44rem; letter-spacing: .1em; text-align: center; background: rgba(5, 6, 12, .78); }
+.sx-wc .wc-body, .sx-wc.compact .wc-body { display: contents; }
+.sx-wc .wc-name, .sx-wc.compact .wc-name { grid-column: 2; grid-row: 1; align-self: end; font-size: .88rem; line-height: 1.05; overflow-wrap: anywhere; }
+.sx-wc.worn .wc-note { display: none; } /* the badge on the thumbnail already says which hand */
+.sx-wc .wc-sub { grid-column: 2; grid-row: 2; align-self: start; margin: 0; font-size: .54rem; letter-spacing: .08em; line-height: 1.25; }
+.sx-wc .wc-faces, .sx-wc .wc-need, .sx-wc .wc-tag, .sx-wc .wc-note, .sx-wc .wc-actions { grid-column: 1 / -1; }
+.sx-wc .wc-faces { margin-top: .15rem; gap: 2px; } .sx-wc .wf { min-height: 1.6rem; padding: .08rem 0; border-radius: 4px; } .sx-wc .wf b { font-size: .82rem; }
+.sx-wc .wf-fx { font-size: .5rem; } .sx-wc .fx .ico svg { width: .5rem; height: .5rem; }
+.sx-wc .wc-need { margin: 0; font-size: .62rem; } .sx-wc .wc-need .ic { width: .7rem; height: .7rem; }
+.sx-wc .wc-tag { font-size: .68rem; line-height: 1.3; margin: 0; } .sx-wc .wc-note { font-size: .56rem; }
+.sx-wc .wc-actions { padding: .15rem 0 0; gap: .25rem; flex-wrap: wrap; } .sx-wc .wc-actions .sell { flex-basis: 100%; } /* Left · Right, then Sell on its own row */ .sx-wc .wc-actions .sx-btn { flex: 1 1 0; min-width: 0; min-height: 32px; padding: .2rem .25rem; font-size: .62rem; letter-spacing: .06em; }
+.sx-wc .wc-actions .sx-btn .ic { width: .75rem; height: .75rem; }
+.sx-wc .wc-actions .sx-btn.sell { flex: 1 1 100%; white-space: nowrap; }
+.wc-grid { gap: .45rem; } .wc-grid.worn.n1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 700px) { .wc-grid { grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); } }
+/* the class picker keeps its own row layout, now with the small thumbnail */
+.ci-weapons .sx-wc, .ci-weapons.n2 .sx-wc { display: grid; flex-direction: initial; }
+.ci-weapons .wc-stage, .ci-weapons.n2 .wc-stage { width: 3.4rem; min-height: 0; aspect-ratio: 1; }
+@media (max-aspect-ratio: 1085/1000) { .ci-weapons .sx-wc { display: grid; } .ci-weapons .wc-stage { width: 3.4rem; min-height: 0; aspect-ratio: 1; } }
+.ci-weapons .sx-wc.compact .wc-stage, .ci-weapons.n2 .sx-wc.compact .wc-stage { width: 3.4rem; height: 3.4rem; min-height: 0; aspect-ratio: 1; }
+@media (max-aspect-ratio: 1085/1000) { .ci-weapons .sx-wc.compact .wc-stage { width: 3.4rem; height: 3.4rem; min-height: 0; aspect-ratio: 1; } }
+
+/* the quest card's monsters on a phone (Dave, Oct 2026: "the enemy looks odd crammed at the bottom"). The picture panel is a tall
+   narrow column, so the monsters march down it: one stands big in the middle; two or three stack top to bottom, zig-zagging left and
+   right with a little overlap, the nearest in front. */
+@media (max-aspect-ratio: 1085/1000) {
+  .qa { flex-direction: column; align-items: center; justify-content: center; padding: 2.2rem .35rem .6rem; }
+  .qa::after { display: none; }
+  .qa .qa-m, .qa.n2 .qa-m, .qa.n3 .qa-m { flex: none; width: 96%; height: auto; aspect-ratio: 1; max-height: none; margin: 0; align-self: center; }
+  .qa.n2 .qa-m { width: 80%; } .qa.n3 .qa-m { width: 68%; }
+  .qa.n2 .qa-m + .qa-m, .qa.n3 .qa-m + .qa-m { margin-top: -20%; }
+  .qa.n2 .qa-m:nth-child(odd), .qa.n3 .qa-m:nth-child(odd) { align-self: flex-start; }
+  .qa.n2 .qa-m:nth-child(even), .qa.n3 .qa-m:nth-child(even) { align-self: flex-end; }
+  .qa .qa-m:nth-child(2) { z-index: 2; } .qa .qa-m:nth-child(3) { z-index: 3; }
+  .qa .qa-pc { object-position: 50% 50%; }
+}

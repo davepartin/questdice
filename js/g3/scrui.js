@@ -847,7 +847,7 @@ function gearTab() {
     const w = D.WEAPONS[inst.id];
     const acts = w.hands === 2 ? [btn('Equip', () => wear(inst, 'NW'), { kind: 'ghost' })]
       : [btn('Left', () => wear(inst, 'NW'), { kind: 'ghost', aria: `Equip ${w.name} in left hand` }), btn('Right', () => wear(inst, 'NE'), { kind: 'ghost', aria: `Equip ${w.name} in right hand` })];
-    acts.push(btn(String(E.sellValue(inst)), () => { HE.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell ${w.name} for ${E.sellValue(inst)} gold` }));
+    acts.push(btn(`Sell ${E.sellValue(inst)}`, () => { HE.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell ${w.name} for ${E.sellValue(inst)} gold` }));
     return weaponCard(inst, { actions: acts, compact: true });
   });
   const stock = E.shopStock(hero);

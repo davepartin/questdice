@@ -123,7 +123,7 @@ function queue(key, fn) {
 }
 export const portraitQ = {
   has: (key) => hasPortrait(key),
-  weapon(id, rarity = 0, { size = [380, 380] } = {}) {
+  weapon(id, rarity = 0, { size = [200, 200] } = {}) { // cards show it as a small thumbnail (about 54px; 200 stays sharp on a 3x phone)
     const key = `w:${id}:${rarity}`;
     return queue(key, async () => {
       const w = createWeapon(id, rarity, { quality: 'med' }); const holder = new THREE.Group(); holder.add(w);
