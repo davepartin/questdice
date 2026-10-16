@@ -12,7 +12,7 @@ if (process.env.TUNE) { // same as tools/progress.mjs
 }
 const ACTS = Number(process.argv[2] || 3); const N = Number(process.argv[3] || 2);
 const classes = process.argv[4] ? [process.argv[4]] : ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
-const STYLES = (process.env.CMP || 'first,smart,wise').split(','); const DIAMONDS = process.env.DIAMONDS !== '0'; // DIAMONDS=0: never pick them up const DRIVER = process.env.DRIVER || 'wise'; const T = Number(process.env.TRIALS || 8);
+const STYLES = (process.env.CMP || 'first,smart,wise').split(','); const DIAMONDS = process.env.DIAMONDS !== '0'; const DRIVER = process.env.DRIVER || 'wise'; const T = Number(process.env.TRIALS || 8); // DIAMONDS=0: never pick them up
 const clone = (h) => JSON.parse(JSON.stringify(h));
 const play = (style) => { PLAY.style = style; setScore(null); };
 function trial(hero, quest, seed, style) {
