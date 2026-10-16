@@ -325,7 +325,7 @@ if (process.argv[1].endsWith('sim.mjs')) {
 // case is full (so the next find is not wasted), each in the hand where it adds the most (a Diamond Shield replaces the shield, not
 // the sword; with a two-handed weapon, one Diamond alone may not be worth losing it). A careless player forgets they have them.
 const throwWorth = (h, n = 500) => { const r = ENGINE.makeRng(99); let w = 0;
-  for (let i = 0; i < n; i++) { const ev = ENGINE.evaluate(h, ENGINE.rollBoard(h, r)); w += (ev.atk || 0) + (ev.pierce || 0) + 0.8 * (ev.block || 0) + 0.5 * (ev.heal || 0) + 0.55 * (ev.magic || 0); }
+  for (let i = 0; i < n; i++) { const ev = ENGINE.evaluate(h, ENGINE.rollBoard(h, r)); w += (ev.atk || 0) + (ev.pierce || 0) + 0.4 * (ev.block || 0) + 0.5 * (ev.heal || 0) + 0.55 * (ev.magic || 0); } // block past a monster's hit is wasted, so it counts less here
   return w / n; };
 // The best way to bring up to `max` of these Diamonds (exactly `max` if exact): [{ uid, slot }], best first, and its worth.
 export function bestDiamondArm(hero, max = 2, { exact = false } = {}) {
