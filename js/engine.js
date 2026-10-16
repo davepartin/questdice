@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -43,24 +43,13 @@ export const newUid = (rng) => `u${(++uidCounter).toString(36)}${Math.floor((rng
 // A weapon's faces. SIZE (inst.size, default d4) sets how many faces and so the number range; TIER (inst.rarity) adds corner
 // bonus symbols. Both raise the numbers of the weapon's own colour (see weaponFaces). Extra faces beyond the first four carry the next numbers.
 export const weaponSize = (inst) => inst.size || 4;
-// A weapon's faces (Dave, Oct 2026: "size is the range, metal is the quality").
-//   SIZE: a d4, d6, d8 or d10 always has ONE 0 face, then a run of consecutive numbers that climbs with the size (a balanced
-//         d4 rolls 0, 2, 3, 4; a balanced d10 rolls 0, 5 ... 13). More faces = more numbers for straights, a bigger top, and the 0
-//         comes up less often. A weapon in a smaller hand rolls, and is built, as the hand's size.
-//   METAL: Bronze is a cheap weapon: some low faces of the run are blank (+0). Each metal fills in blanks (the highest first) and
-//         adds icons (+1 pierce, magic, heal...) from the top face down; Diamond has every face numbered (the 0 stays), an icon
-//         on every number, and a double icon on its top face.
-//   TEMPER keeps each weapon's character: steady (dagger, bracer, bow) smaller numbers and few blanks; balanced (sword, shield,
-//         staff) a little higher; risky (spear, mace, tower shield, long sword, war hammer) the most blanks on Bronze and all of its
-//         own colour. Every third face of a steady or balanced run (never the top) is the other colour (a sword's blue parry, a
-//         shield's red bash). A guard weapon (shield, bracer, tower) is the same dice in blue.
-// A blank or the 0 still sends the hand's Strength that way, so a cheap weapon is weaker, not useless. Legendaries keep their own faces.
-export const WEAPON_TOP = { 4: 4, 6: 7, 8: 10, 10: 13 };                           // the steady top number by size
-export const TEMPER_TOP = { steady: 0, balanced: 1, risky: 1 };
-export const BRONZE_BLANKS = { steady: { 4: 0, 6: 0, 8: 1, 10: 2 }, balanced: { 4: 0, 6: 1, 8: 2, 10: 3 }, risky: { 4: 1, 6: 2, 8: 3, 10: 4 } };
-// every metal step changes the die: it fills at least one blank while any are left, and adds at least one icon
-const blanksAt = (temper, size, tier) => { const b = (BRONZE_BLANKS[temper] || BRONZE_BLANKS.balanced)[size] || 0; return b - Math.ceil((b * Math.min(3, tier)) / 3); };
-const iconsAt = (n, tier) => Math.min(n, tier >= 3 ? n : tier === 2 ? Math.max(3, Math.ceil((2 * n) / 3)) : tier === 1 ? Math.max(2, Math.ceil(n / 3)) : 1); // Bronze: its one signature icon
+// A weapon's faces: honest dice (Dave, Oct 2026). A dN never shows more than N; each temperament has its own custom faces for every
+// size (data.js WEAPON_DICE), so size is the range: a bigger die has bigger numbers, more numbers for straights, and its blanks
+// come up less often. Metal is the quality: a Bronze weapon from a d6 up is a little dull (its lowest number of its own colour
+// is chipped blank, unless it is brutal; any better metal mends it), and every metal adds icons from the top face down. Three
+// metals: Bronze 1 (on its top face), Silver about half its numbers with 2 on the top face, Gold every number with 3 on the top
+// face (the crit: a 10 with three pierce arrows hits like a 13). A brutal weapon's top faces each carry an icon from Silver. A weapon in a
+// smaller hand rolls, and is built, as the hand's size. A blank still sends the hand's Strength that way. Legendaries keep their faces.
 function legendaryFaces(def, size) {
   const faces = def.faces.map((f) => (f.fx ? { ...f, fx: { ...f.fx } } : { ...f }));
   const first = def.lean === 'def' ? 'b' : 'r'; const other = first === 'r' ? 'b' : 'r';
@@ -73,21 +62,25 @@ export function weaponFaces(inst, rollSize) {
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
-  const temper = def.temper || 'balanced'; const tier = Math.min(3, inst.rarity | 0);
-  const top = (WEAPON_TOP[size] || 4) + (TEMPER_TOP[temper] || 0);
-  const n = size - 1; // numbered faces after the 0
-  const otherAt = temper === 'risky' ? [] : [1, 4, 7].filter((k) => k < n - 1); // the other colour never takes the top face
-  const run = Array.from({ length: n }, (_, k) => ({ v: top - (n - 1) + k, c: otherAt.includes(k) ? other : own }));
-  // Bronze blanks sit on alternate faces of its own colour from the bottom of the run (so the top number is always there); metal fills the highest first
-  const slots = []; for (let k = 0; k < n; k += 2) if (!otherAt.includes(k)) slots.push(k);
-  const blank = slots.slice(0, blanksAt(temper, size, tier));
-  for (const k of blank) run[k] = { v: 0, c: run[k].c };
-  // icons: the weapon's own kinds (its signature first), on the numbered faces from the top down
+  const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
+  const faces = (WEAPON_DICE[temper][size] || WEAPON_DICE[temper][4]).map((f) => (typeof f === 'object' ? { v: f.v, c: other } : { v: f, c: own }));
+  if (tier === 0 && size >= 6 && temper !== 'brutal') { // a cheap Bronze weapon is a little dull: its lowest number of its own colour is chipped blank (a brutal one, already mostly blank, is dull by bare tops instead)
+    let lo = -1; faces.forEach((f, k) => { if (f.c === own && f.v > 0 && (lo < 0 || f.v < faces[lo].v)) lo = k; });
+    if (lo >= 0) faces[lo] = { v: 0, c: own };
+  }
   const kinds = [...new Set([...def.faces.flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
   if (!kinds.length) kinds.push(own === 'r' ? 'pierce' : 'heal');
-  const live = run.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0).sort((a, b) => b.f.v - a.f.v);
-  live.slice(0, iconsAt(live.length, tier)).forEach((x, i) => { const key = kinds[i % kinds.length]; x.f.fx = { [key]: tier >= 3 && i === 0 ? 2 : 1 }; }); // Diamond: the top face's icon is double
-  return [{ v: 0, c: own }, ...run];
+  // icons from the top face down: its own colour first (highest number, then the later face), the other colour only on Gold
+  const live = faces.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0 && (x.f.c === own || tier >= 2))
+    .sort((a, b) => (a.f.c === own ? 0 : 1) - (b.f.c === own ? 0 : 1) || b.f.v - a.f.v || b.k - a.k);
+  const n = live.length; const count = Math.min(n, tier >= 2 ? n : tier === 1 ? Math.max(2, Math.ceil(n / 2)) : 1);
+  const top = live[0]?.f.v || 0; const crit = [1, 2, 3][tier];
+  live.forEach((x, i) => {
+    const brutalTop = temper === 'brutal' && tier >= 1 && x.f.v === top && x.f.c === own;
+    if (i >= count && !brutalTop) return;
+    x.f.fx = { [kinds[i % kinds.length]]: i === 0 ? crit : 1 };
+  });
+  return faces;
 }
 export function makeWeapon(id, rarity = 0, rng, size = 4) { const w = { uid: newUid(rng), id, rarity }; if (size > 4) w.size = size; return w; }
 // The hand that holds a weapon caps its die: a d6 weapon in a d4 hand rolls as a d4. `wieldInfo` says what a weapon needs.
@@ -1040,7 +1033,7 @@ export function forgeInfo(hero, uid) {
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const next = (inst.rarity | 0) + 1;
   if (isLegendary(inst)) return { ok: false, why: 'legendary' }; // a legendary's faces are fixed
-  if (inst.id === 'fists' || next > 3 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
+  if (inst.id === 'fists' || next > 2 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
   const cost = Math.round(FORGE_COST[next] * handsMul(inst));
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
 }

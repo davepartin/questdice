@@ -66,7 +66,7 @@ test('the solo traveller is a gamble: flat price, hidden prize, odds that add up
   assert.ok(Math.abs(GAMBLE_ODDS.reduce((a, b) => a + b, 0) - 1) < 1e-9);
   const g = gambleOffer(9, { act: 1, step: 3 }); assert.equal(g.price, gamblePrice(1)); assert.equal(gambleOffer(9, { act: 1, step: 3 }).inst.rarity, g.inst.rarity);
   assert.ok(gamblePrice(2) > gamblePrice(1));
-  const tally = [0, 0, 0, 0]; for (let s = 0; s < 800; s++) tally[gambleOffer(s, { act: 1, step: 3 }).inst.rarity]++;
-  assert.ok(tally[0] > tally[1] && tally[1] > tally[2] && tally[2] > tally[3] && tally[3] > 0, `odds ${tally}`);
-  for (let t = 0; t < 4; t++) assert.ok(revealLine(t).length > 10);
+  const tally = [0, 0, 0]; for (let s = 0; s < 800; s++) tally[gambleOffer(s, { act: 1, step: 3 }).inst.rarity]++;
+  assert.ok(tally[0] > tally[1] && tally[1] > tally[2] && tally[2] > 0, `odds ${tally}`);
+  for (let t = 0; t < 3; t++) assert.ok(revealLine(t).length > 10);
 });

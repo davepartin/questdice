@@ -5,13 +5,13 @@
 import { WEAPONS, RARITY } from './data.js';
 import { rollDrops, makeRng, hashSeed } from './engine.js';
 
-const TIER_MULT = [1, 2.3, 5, 11];
+const TIER_MULT = [1, 2.3, 5];
 export const basePrice = (inst) => Math.max(1, Math.round(WEAPONS[inst.id].price * TIER_MULT[inst.rarity | 0]));
 
-// Three weapons: a plain one, a good one, and now and then an amazing one.
+// Three weapons: a plain one, a good one, and a Gold one.
 export function makeOffers(seed, { act = 1, step = 1, count = 3 } = {}) {
   const rng = makeRng(hashSeed(seed, act, step, 'auction'));
-  const tiers = [0, 1, rng() < 0.3 + 0.05 * (act - 1) ? 3 : 2].slice(0, count);
+  const tiers = [0, 1, 2].slice(0, count);
   return tiers.map((t) => {
     const [inst] = rollDrops(rng, 1, { minRarity: t });
     inst.rarity = t;
@@ -55,8 +55,8 @@ export function soloOffer(seed, { act = 1, step = 1 } = {}) {
 }
 
 // The solo traveller is a gamble: a wrapped weapon at a flat price. You do not learn what is inside until you have paid.
-// Most are plain, a few are very good, now and then a Diamond. The prize is fixed by the campaign seed, so reloading cannot reroll it.
-export const GAMBLE_ODDS = [0.5, 0.3, 0.15, 0.05];
+// Most are plain, some are good, now and then a Gold. The prize is fixed by the campaign seed, so reloading cannot reroll it.
+export const GAMBLE_ODDS = [0.5, 0.32, 0.18];
 export const gamblePrice = (act = 1) => 70 + 25 * (act - 1);
 export function gambleOffer(seed, { act = 1, step = 1 } = {}) {
   const rng = makeRng(hashSeed(seed, act, step, 'gamble-traveller'));
@@ -102,7 +102,6 @@ const LINES = {
     ['Bronze', 'Ah. Bronze. Well. It is a weapon. It is technically a weapon. The rest is optimism.', 'Bronze. I did say it was a gamble. I did not say it was a good one. The small print was very small.'],
     ['Silver', 'Silver! Not bad. Not bad at all. I am a little jealous and a little relieved. Mostly jealous.', 'Silver, and still warm from the ditch. The ditch sends its regards.'],
     ['Gold', 'Gold! I may have underpriced it. I will not be telling my wife. If I had a wife. Which I do not. Stop looking at me.', 'Gold! Please do not tell the other travellers. They will want one, and I only have the one tree.'],
-    ['Diamond', 'DIAMOND. I am going to sit down. Do not look at me. Do not look at the tree either.', 'A Diamond. I want to be clear that I had no idea. I had every idea. Both of those can be true.'],
   ],
   solo: [
     'Just the one customer? I shall not mention the pressure. I am mentioning it now, of course.',

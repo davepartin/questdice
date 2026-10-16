@@ -199,7 +199,7 @@ export const ROADS = [
           const victim = ctx.members[Math.floor(ctx.rng() * ctx.members.length)];
           bless(ctx, { id: 'reliquary', name: 'Reliquary snap', text: `${victim.name} starts 6 HP down.`, fights: 1, wound: 6, who: victim.name });
           note(ctx, 'The Locked Reliquary', `${gift.who} took the prize. ${victim.name} took the snap, and has opinions about it.`);
-          return `The lid jumps like a trap and catches ${victim.name} across the knuckles. Inside is a ${['Bronze', 'Silver', 'Gold', 'Diamond'][gift.inst.rarity]} piece for ${gift.who}’s pack. ${victim.name} starts the next fight 6 HP down, and will mention this later.`;
+          return `The lid jumps like a trap and catches ${victim.name} across the knuckles. Inside is a ${RARITY[gift.inst.rarity | 0]} piece for ${gift.who}’s pack. ${victim.name} starts the next fight 6 HP down, and will mention this later.`;
         },
       },
       {
@@ -216,7 +216,7 @@ export const ROADS = [
           }
           const gift = giveGear(ctx, clever ? 'longsword' : 'sword', clever ? 1 : 0);
           note(ctx, 'The Locked Reliquary', `${gift.who} opened it clean, and did not even gloat. Much.`);
-          return `The lock gives up like it was tired of its job. ${gift.who} stows a ${['Bronze', 'Silver', 'Gold', 'Diamond'][gift.inst.rarity]} weapon. Nobody bleeds. A small miracle, and you will take it.`;
+          return `The lock gives up like it was tired of its job. ${gift.who} stows a ${RARITY[gift.inst.rarity | 0]} weapon. Nobody bleeds. A small miracle, and you will take it.`;
         },
       },
       {
@@ -627,7 +627,7 @@ ROADS.push({
     {
       id: 'buy',
       label: ({ campaign: c }) => `Buy the bundle · ${c.traveller.price} gold`,
-      hint: () => `A weapon. ${Math.round(GAMBLE_ODDS[0] * 100)}% Bronze, ${Math.round(GAMBLE_ODDS[1] * 100)}% Silver, ${Math.round(GAMBLE_ODDS[2] * 100)}% Gold, ${Math.round(GAMBLE_ODDS[3] * 100)}% Diamond.`,
+      hint: () => `A weapon. ${Math.round(GAMBLE_ODDS[0] * 100)}% Bronze, ${Math.round(GAMBLE_ODDS[1] * 100)}% Silver, ${Math.round(GAMBLE_ODDS[2] * 100)}% Gold.`,
       can: ({ campaign: c, members }) => companyGold(members) >= c.traveller.price,
       apply: (ctx) => {
         const t = ctx.campaign.traveller; const name = WEAPONS[t.inst.id].name; const tier = RARITY[t.inst.rarity | 0];

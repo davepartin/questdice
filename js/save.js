@@ -53,6 +53,8 @@ export const MIN_PASSWORD = 3;
 export function migrateHero(hero) {
   if (!hero || typeof hero !== 'object') return hero;
   hero.difficulty = normalizeDifficulty(hero.difficulty);
+  // three metals now (Oct 2026): an old Diamond weapon comes back as Gold, which has the same full die
+  for (const w of [...Object.values(hero.loadout || {}), ...(hero.bag || [])]) if (w && (w.rarity | 0) > 2) w.rarity = 2;
   return hero;
 }
 export async function createSave(hero, password) {

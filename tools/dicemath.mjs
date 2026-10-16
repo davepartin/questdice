@@ -18,6 +18,6 @@ for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) {
   const h = newHero({ name: 'M', cls, seed: 1 }); show(`${cls} L1 start`, h);
   const m = newHero({ name: 'M', cls, seed: 1, full: true }); m.level = 5; m.strength = { W: 6, E: 6 }; m.loadout.NW.size = 6; if (m.loadout.NE.id !== 'fists') m.loadout.NE.size = 6; show(`${cls} end of Act I (all dice, d6 hands+weapons)`, m);
   const e = newHero({ name: 'M', cls, seed: 1, full: true }); e.level = 10; e.strength = { W: 8, E: 8 }; e.special = { SW: 6, SE: 6 }; e.loadout.NW.size = 8; e.loadout.NW.rarity = 2; if (e.loadout.NE.id !== 'fists') { e.loadout.NE.size = 8; e.loadout.NE.rarity = 2; } show(`${cls} end of Act II (d8, gold tier)`, e);
-  const f = newHero({ name: 'M', cls, seed: 1, full: true }); f.level = 15; f.strength = { W: 10, E: 10 }; f.special = { SW: 6, SE: 6 }; f.loadout.NW.size = 10; f.loadout.NW.rarity = 3; if (f.loadout.NE.id !== 'fists') { f.loadout.NE.size = 10; f.loadout.NE.rarity = 3; } show(`${cls} end of Act III (d10, diamond)`, f);
+  const f = newHero({ name: 'M', cls, seed: 1, full: true }); f.level = 15; f.strength = { W: 10, E: 10 }; f.special = { SW: 6, SE: 6 }; f.loadout.NW.size = 10; f.loadout.NW.rarity = 2; if (f.loadout.NE.id !== 'fists') { f.loadout.NE.size = 10; f.loadout.NE.rarity = 2; } show(`${cls} end of Act III (d10, diamond)`, f);
 }
 void makeWeapon; void equip;

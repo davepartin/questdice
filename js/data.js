@@ -66,11 +66,11 @@ export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, fac
 // Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
 export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };
 
-export const RARITY = ['Bronze', 'Silver', 'Gold', 'Diamond'];
-export const RARITY_WEIGHTS = [70, 22, 7, 1];
-export const RARITY_SELL = [6, 14, 34, 90]; // (old flat sell table; selling now pays SELL_SHARE of a weapon's worth)
+export const RARITY = ['Bronze', 'Silver', 'Gold']; // three metals (Dave, Oct 2026): Gold is the finished weapon
+export const RARITY_WEIGHTS = [70, 23, 7];
+export const RARITY_SELL = [6, 14, 34]; // (old flat sell table; selling now pays SELL_SHARE of a weapon's worth)
 // A weapon's worth = its base price x tier x size. The shop charges the full worth; selling returns half.
-export const RARITY_MULT = [1, 2, 4, 8];
+export const RARITY_MULT = [1, 2, 4];
 export const SIZE_VALUE = { 4: 1, 6: 1.5, 8: 2.2, 10: 3 };
 export const SELL_SHARE = 0.5;
 // You carry what you wield plus a small pack. A full pack means choosing: sell, swap, or leave the spoils.
@@ -78,61 +78,72 @@ export const BAG_MAX = 4;
 // The size of a found weapon. A bigger die needs a hand (Strength) at least that big, or it rolls as the hand's size.
 // Weights for [d4, d6, d8, d10] by act; the boss always drops one a size up, the perilous road leans bigger.
 export const DROP_SIZES = { 1: [100, 0, 0, 0], 1.5: [70, 30, 0, 0], 2: [45, 45, 10, 0], 3: [15, 50, 30, 5] };
-// TIER (Bronze..Diamond) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
-export const FORGE_COST = [0, 40, 120, 300];            // gold to reach Silver, Gold, Diamond (two-handed x1.4)
+// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
+export const FORGE_COST = [0, 40, 120];                 // gold to reach Silver, Gold (two-handed x1.4)
 // SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
 export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a weapon from this size to the next
 
 // Faces are [value, color]; color r = offense (red), b = defense (blue). `fx` is the weapon's icon.
 const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
-// Three temperaments (Dave): steady, balanced and risky. The faces themselves are built by engine weaponFaces from the temper,
-// the size and the metal (size is the range, metal is the quality); `faces` and `bonus` here only name the weapon's icons
-// (its signature first). `temper` names it for the cards.
+// Honest weapon dice (Dave, Oct 2026): a weapon is a custom die, but a dN never shows a number bigger than N. Four temperaments,
+// for attack (red) and guard (blue) weapons alike; the faces for each size are below (O(n) = the other colour: a sword's blue
+// parry, a shield's red bash). Metal adds the icons (see engine weaponFaces); `faces` and `bonus` on a weapon only name its icons.
+//   steady     never blank, middle numbers, a low ceiling          dagger, bow, bracer
+//   balanced   one blank, a spread of numbers, a parry face or two   sword, staff, shield
+//   risky      two or three blanks, its top number twice             spear, long sword, tower shield
+//   brutal     three or four blanks, its top number three or four times   mace, war hammer
+const O = (v) => ({ v, o: 1 });
+export const WEAPON_DICE = {
+  steady: { 4: [1, 2, O(2), 3], 6: [2, O(2), 3, 3, 4, 5], 8: [2, 3, O(3), 4, 4, 5, 5, 6], 10: [2, 3, O(3), 4, 4, 5, 5, 6, 7, 8] },
+  balanced: { 4: [0, O(2), 3, 4], 6: [0, 2, O(3), 4, 5, 6], 8: [0, 2, O(3), 4, 5, O(6), 7, 8], 10: [0, 2, O(3), 4, 5, 6, O(7), 8, 9, 10] },
+  risky: { 4: [0, 0, 4, 4], 6: [0, 0, 4, 5, 6, 6], 8: [0, 0, 0, 5, 6, 7, 8, 8], 10: [0, 0, 0, 6, 7, 8, 9, 9, 10, 10] },
+  brutal: { 4: [0, 0, 4, 4], 6: [0, 0, 0, 6, 6, 6], 8: [0, 0, 0, 0, 7, 8, 8, 8], 10: [0, 0, 0, 0, 8, 9, 10, 10, 10, 10] },
+};
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
   dagger: { name: 'Dagger', hands: 1, lean: 'off', temper: 'steady', glyph: '🗡️', price: 18,
-    tag: 'Steady: small, sure numbers and only its one blank, with a little mending. Small, honest, and always in the fight.',
+    tag: 'Steady: hardly ever blank, small sure numbers, a little mending. Small, honest, and always in the fight.',
     faces: [F(1, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })],
     bonus: [{ face: 1, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   bracer: { name: 'Bracer', hands: 1, lean: 'def', temper: 'steady', glyph: '🛡️', price: 18,
-    tag: 'Steady guard: small, sure blues and only its one blank, with sparks of magic. The polite way to say no.',
+    tag: 'Steady guard: hardly ever blank, small sure blues, sparks of magic. The polite way to say no.',
     faces: [F(1, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })],
     bonus: [{ face: 1, fx: { heal: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 3, fx: { heal: 1 } }] },
   sword: { name: 'Sword', hands: 1, lean: 'off', temper: 'balanced', glyph: '⚔️', price: 24,
-    tag: 'Balanced: mostly red, a blue parry every few faces, and a pierce on top. The old promise: cut, and keep cutting.',
+    tag: 'Balanced: one blank, a spread of red, a blue parry or two, and a pierce on top. The old promise: cut, and keep cutting.',
     faces: [F(0, 'r'), F(2, 'b'), F(3, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   shield: { name: 'Shield', hands: 1, lean: 'def', temper: 'balanced', glyph: '🛡️', price: 24,
-    tag: 'Balanced wall: mostly blue, with a red bash every few faces. Shields have feelings too.',
+    tag: 'Balanced wall: one blank, a spread of blue, a red bash or two. Shields have feelings too.',
     faces: [F(0, 'b'), F(2, 'r'), F(3, 'b'), F(3, 'b')],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', temper: 'risky', glyph: '🔱', price: 27,
-    tag: 'Risky reach: all red, big numbers that pierce, and a cheap one is full of misses. Miss, miss, then through.',
+    tag: 'Risky reach: two or three blanks, but its top number comes up twice, and it pierces. Miss, miss, then through.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
-  mace: { name: 'Mace', hands: 1, lean: 'off', temper: 'risky', glyph: '🔨', price: 26,
-    tag: 'Risky crusher: all red, big numbers, gappy until forged. Patience, then a door coming off its hinges.',
+  mace: { name: 'Mace', hands: 1, lean: 'off', temper: 'brutal', glyph: '🔨', price: 26,
+    tag: 'Brutal: mostly blanks, but its top number is on three or four faces. Patience, then a door coming off its hinges.',
     faces: [F(0, 'r'), F(0, 'r'), F(3, 'r'), F(5, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   tower: { name: 'Tower Shield', hands: 1, lean: 'def', temper: 'risky', glyph: '🛡️', price: 30,
-    tag: 'Risky wall: all blue, big numbers, gappy until forged. Either nothing, or a house in the way.',
+    tag: 'Risky wall: two or three blanks, its biggest blue twice. Either nothing, or a house in the way.',
     faces: [F(0, 'b'), F(0, 'b'), F(4, 'b'), F(4, 'b', { heal: 1 })],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }] },
   bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', temper: 'steady', glyph: '🏹', price: 42,
-    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Small, sure numbers that pierce, and good odds at triples. Breathe. Loose.',
+    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Hardly ever blank, sure numbers that pierce, and good odds at triples. Breathe. Loose.',
     faces: [F(1, 'b'), F(2, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   staff: { name: 'Staff', hands: 2, lean: 'off', temper: 'balanced', glyph: '🪄', price: 45,
-    tag: 'Two-handed channel: balanced numbers that spark magic. The stick does most of the talking.',
+    tag: 'Two-handed and balanced: a spread of numbers that spark magic. The stick does most of the talking.',
     faces: [F(0, 'b'), F(2, 'b'), F(3, 'r'), F(3, 'r', { magic: 2 })],
     bonus: [{ face: 2, fx: { magic: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', temper: 'risky', glyph: '⚔️', price: 45,
-    tag: 'Two-handed and risky: all red, big numbers, gappy until forged. All or a lot. Never a little.',
+    tag: 'Two-handed and risky: two or three blanks, its top number twice. All or a lot. Never a little.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
-  warhammer: { name: 'War Hammer', hands: 2, lean: 'off', temper: 'risky', glyph: '🔨', price: 48,
-    tag: 'Two-handed, all or nothing: all red, the biggest swings, full of misses when cheap. When it lands, the hill notices.',
+  warhammer: { name: 'War Hammer', hands: 2, lean: 'off', temper: 'brutal', glyph: '🔨', price: 48,
+    tag: 'Two-handed and brutal: mostly blanks, its top number on three or four faces. When it lands, the hill notices.',
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
   // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and

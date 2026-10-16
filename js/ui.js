@@ -570,7 +570,7 @@ function practice({ hero, quest, guide }) {
   S.practice = { guide }; S.company = null; S.hero = hero; S.net = null;
   S.quest = quest;
   S.battle = E.newBattle(hero, quest, fresh(), 1);
-  S.battle.script = { rolls: [{ NW: 2, N: 2, W: 4, C: 4, E: 1, SW: 2, S: 3 }], rerolls: [{ E: 4 }] }; // the sword's 2nd face is its red +3
+  S.battle.script = { rolls: [{ NW: 3, N: 2, W: 4, C: 4, E: 1, SW: 2, S: 3 }], rerolls: [{ E: 4 }] }; // the sword's 3rd face is its red +3
   S.battle.enemies[0].intent = { n: 'Slash', v: 'strike', f: 2, m: 1 }; // a plain hit to read in round 1
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
   RO.reset();

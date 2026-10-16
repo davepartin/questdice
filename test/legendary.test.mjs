@@ -21,7 +21,7 @@ test('six legendaries, each borrowing an ordinary weapon\'s shape, about +10 at 
     assert.ok(w.faces.reduce((a, f) => a + f.v, 0) >= 9, id);
     assert.equal(WEAPONS[w.model].hands, w.hands, `${id} has its model's hands`);
   }
-  assert.equal(tierName({ id: 'dawnbreaker', rarity: 3 }), 'Legendary'); assert.equal(tierName({ id: 'sword', rarity: 3 }), 'Diamond');
+  assert.equal(tierName({ id: 'dawnbreaker', rarity: 3 }), 'Legendary'); assert.equal(tierName({ id: 'sword', rarity: 2 }), 'Gold');
 });
 
 test('a legendary\'s faces are fixed: no metal raise, no forging, but it can be trained a size up', () => {
