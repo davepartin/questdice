@@ -105,4 +105,7 @@ console.log('step   kind    lvl  fight gold  bank | average throw: attack  block
 for (const r of rows) {
   console.log(`${r.key}  ${r.kind.padEnd(6)} ${String(r.lvl).padStart(3)}  ${String(r.gold).padStart(9)}  ${String(r.bank).padStart(4)} | ${r.atk.toFixed(1).padStart(20)}  ${r.blk.toFixed(1).padStart(5)}  ${r.heal.toFixed(1).padStart(4)}  ${r.magic.toFixed(1).padStart(5)}  ${r.worth.toFixed(1).padStart(5)}  ${String(r.hp).padStart(6)} | ${String(r.foeHp).padStart(14)}  ${r.foeHit.toFixed(1).padStart(9)} | ${r.dealtPerRound.toFixed(1).padStart(24)}  ${r.takenPerRound.toFixed(1).padStart(11)}  ${String(r.rounds).padStart(6)} | ${String(r.potions).padStart(13)}` + (T ? ` | ${(100 * r.wins).toFixed(0).padStart(8)}%` : ''));
 }
+// per act: the average throw at the act's end, and the damage really dealt per round across its fights (rerolls, powers and all)
+for (const act of ['1', '2', '3']) { const rs = rows.filter((r) => r.key.startsWith(act + '.')); if (!rs.length) continue; const last = rs[rs.length - 1];
+  console.log(`act ${act}: average throw at its end ${last.atk.toFixed(1)} attack ${last.blk.toFixed(1)} block · dealt per round across the act ${(rs.reduce((a, r) => a + r.dealtPerRound, 0) / rs.length).toFixed(1)} · taken per round ${(rs.reduce((a, r) => a + r.takenPerRound, 0) / rs.length).toFixed(1)}`); }
 if (process.env.OUT) (await import('node:fs')).writeFileSync(process.env.OUT, JSON.stringify({ rows, earned, sold, spent, left: hero.gold }));

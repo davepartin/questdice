@@ -19,7 +19,7 @@ const fxText = (fx) => Object.entries(fx).map(([k, v]) => `${ICON[k === 'loot' ?
 export function dieSpec(hero, slot, v) {
   const role = D.ROLE[slot];
   if (role === 'weapon') {
-    const f = E.weaponFaces(hero.loadout[slot])[v - 1];
+    const f = E.weaponFaces(hero.loadout[slot], E.sidesOf(hero, slot))[v - 1];
     return { main: String(f.v), tone: f.c === 'r' ? 'red' : 'blue', chip: f.fx ? fxText(f.fx) : (f.v === 0 ? 'blank' : ''), chipKind: f.fx ? 'c-magic' : 'c-dim', blank: f.v === 0, glyph: f.c === 'r' ? '⚔' : '🛡' };
   }
   if (role === 'special') {
@@ -72,7 +72,7 @@ export function dieEl(hero, slot, die, { selected = false, onclick, twohand = fa
 export function describeDie(hero, slot, v) {
   const role = D.ROLE[slot]; const name = SLOT_NAME[slot];
   if (role === 'weapon') {
-    const inst = hero.loadout[slot]; const f = E.weaponFaces(inst)[v - 1]; const w = D.WEAPONS[inst.id];
+    const inst = hero.loadout[slot]; const f = E.weaponFaces(inst, E.sidesOf(hero, slot))[v - 1]; const w = D.WEAPONS[inst.id];
     return `${name} · ${D.tierName(inst)} ${w.name}: shows ${f.v} ${f.c === 'r' ? 'RED, so this weapon attacks' : 'BLUE, so this weapon blocks'}${f.fx ? ` (icon ${fxText(f.fx)})` : ''}. It adds to your ${slot === 'NW' ? 'left' : 'right'} hand’s strength.`;
   }
   if (role === 'special') {

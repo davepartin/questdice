@@ -553,7 +553,8 @@ function enterVictory(table) {
     const first = !SV.hasCleared(f.hero, c.act, c.step);
     repeat[f.hero.name] = !first;
     if (first) SV.markCleared(f.hero, c.act, c.step);
-    const g = first ? (r.gold[f.hero.name] || 0) : 0;
+    let share = 1; if (!first) { share = SV.repeatShare(f.hero, c.act, c.step); SV.markRepeat(f.hero, c.act, c.step); }
+    const g = first ? (r.gold[f.hero.name] || 0) : SV.repeatGold(r.gold[f.hero.name] || 0, share);
     gold[f.hero.name] = g;
     f.hero.gold = Math.max(0, f.hero.gold + g);
     f.hero.stats.goldEarned += Math.max(0, g);

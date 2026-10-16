@@ -177,6 +177,17 @@ test('first clear is tracked per hero, and a later step implies earlier ones wer
   assert.ok(h.cleared.includes('2.3'));
 });
 
+test('a repeat win pays half the gold, then a quarter, then an eighth; a thief\'s loss is not shrunk', () => {
+  const h = E.newHero({ name: 'Cy', cls: 'ranger', seed: 3 });
+  assert.equal(SV.repeatShare(h, 1, 4), 0.5);
+  SV.markRepeat(h, 1, 4); assert.equal(SV.repeatShare(h, 1, 4), 0.25);
+  SV.markRepeat(h, 1, 4); assert.equal(SV.repeatShare(h, 1, 4), 0.125);
+  assert.equal(SV.repeatShare(h, 1, 5), 0.5, 'each step counts its own repeats');
+  assert.equal(SV.repeatGold(40, 0.25), 10);
+  assert.equal(SV.repeatGold(-6, 0.25), -6);
+  assert.match(SV.repeatNote(0.25), /quarter/);
+});
+
 test('a repeat clear withholds XP, gold and perks; a first clear still pays', () => {
   const first = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
   first.gold = 10;

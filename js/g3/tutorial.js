@@ -142,7 +142,7 @@ const LESSONS = [
       row(img('weapon-red3', 'xs'), 'Red starburst = Attack', 'The weapon’s number plus your hand goes to attack.'),
       row(img('weapon-blue3', 'xs'), 'Blue shield = Block', 'The same sum goes to block instead.'),
       row(img('weapon-zero', 'xs'), '+0', 'Adds nothing, but your hand’s Strength still counts that way.'),
-      row(img('weapon-red4', 'xs'), 'Corner symbols', 'Small symbols in the corners are bonuses, like an extra pierce arrow. Forging a weapon at camp adds more.'),
+      row(img('weapon-red4', 'xs'), 'Corner symbols', 'Small symbols in the corners are bonuses, like an extra pierce arrow. Training a weapon makes its die bigger, with higher numbers; forging fills in its blank faces and adds more symbols.'),
     ],
   },
   {

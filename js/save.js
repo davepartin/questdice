@@ -243,5 +243,12 @@ export function markCleared(hero, act, step) {
   if (!hero.cleared.includes(key)) hero.cleared.push(key);
   return key;
 }
-export const REPEAT_NOTE = 'Been here. Done this. No XP, gold or spoils the second time round. The road does not pay twice for the same bravery.';
-export const REPEAT_PARTY = 'You have already cleared this quest, so you earn no XP, gold or spoils. Friends on a first clear still do. Let them have the glory. You have the story.';
+// Winning a fight again (Dave, Oct 2026): a hero stuck at a hard fight can go back and earn a little more gold to grow their dice, but
+// not forever. The second win at a step pays half its gold, the third a quarter, and so on. Still no XP or spoils on a repeat.
+export function repeatShare(hero, act, step) { const n = (hero?.repeats || {})[stepKey(act, step)] || 0; return 1 / 2 ** (n + 1); }
+export function markRepeat(hero, act, step) { if (!hero) return; const k = stepKey(act, step); hero.repeats = { ...(hero.repeats || {}), [k]: ((hero.repeats || {})[k] || 0) + 1 }; }
+export const repeatGold = (gold, share) => (gold > 0 ? Math.floor(gold * share) : gold); // a thief's loss is never shrunk
+const shareWord = (share) => (share >= 0.5 ? 'half' : share >= 0.25 ? 'a quarter of' : share >= 0.125 ? 'an eighth of' : 'a sliver of');
+export const repeatNote = (share = 0.5) => `Been here. Won this. A repeat win pays ${shareWord(share)} the gold, and less each time after. No XP or spoils the second time round.`;
+export const REPEAT_NOTE = repeatNote(0.5);
+export const REPEAT_PARTY = 'You have already cleared this quest, so you earn less gold (half, then less each time) and no XP or spoils. Friends on a first clear still earn it all.';

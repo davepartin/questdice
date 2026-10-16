@@ -29,7 +29,7 @@ export function dieSpecs(hero) {
       const inst = hero.loadout[slot]; const wid = D.modelOf(inst.id); // a legendary shows its model's mark
       const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'stagger' }; // Dawnbreaker's splash shows as a burst
       // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
-      labels = E.weaponFaces(inst).slice(0, sides).map((f) => ({
+      labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => ({
         text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
         corners: Object.keys(f.fx || {}).map((k) => FXK[k]).filter(Boolean),
         wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : wid,

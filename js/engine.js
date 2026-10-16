@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -41,32 +41,53 @@ export const newUid = (rng) => `u${(++uidCounter).toString(36)}${Math.floor((rng
 
 // ------------------------------------------------------------------------------- weapons
 // A weapon's faces. SIZE (inst.size, default d4) sets how many faces and so the number range; TIER (inst.rarity) adds corner
-// bonus symbols and raises one number (see below). Extra faces beyond the first four carry the next numbers.
+// bonus symbols. Both raise the numbers of the weapon's own colour (see weaponFaces). Extra faces beyond the first four carry the next numbers.
 export const weaponSize = (inst) => inst.size || 4;
-export function weaponFaces(inst) {
-  const def = WEAPONS[inst.id];
+// A weapon's faces (Dave, Oct 2026: "size is the range, metal is the quality").
+//   SIZE: a d4, d6, d8 or d10 always has ONE 0 face, then a run of consecutive numbers that climbs with the size (a balanced
+//         d4 rolls 0, 2, 3, 4; a balanced d10 rolls 0, 5 ... 13). More faces = more numbers for straights, a bigger top, and the 0
+//         comes up less often. A weapon in a smaller hand rolls, and is built, as the hand's size.
+//   METAL: Bronze is a cheap weapon: some low faces of the run are blank (+0). Each metal fills in blanks (the highest first) and
+//         adds icons (+1 pierce, magic, heal...) from the top face down; Diamond has every face numbered (the 0 stays), an icon
+//         on every number, and a double icon on its top face.
+//   TEMPER keeps each weapon's character: steady (dagger, bracer, bow) smaller numbers and few blanks; balanced (sword, shield,
+//         staff) a little higher; risky (spear, mace, tower shield, long sword, war hammer) the most blanks on Bronze and all of its
+//         own colour. Every third face of a steady or balanced run (never the top) is the other colour (a sword's blue parry, a
+//         shield's red bash). A guard weapon (shield, bracer, tower) is the same dice in blue.
+// A blank or the 0 still sends the hand's Strength that way, so a cheap weapon is weaker, not useless. Legendaries keep their own faces.
+export const WEAPON_TOP = { 4: 4, 6: 7, 8: 10, 10: 13 };                           // the steady top number by size
+export const TEMPER_TOP = { steady: 0, balanced: 1, risky: 1 };
+export const BRONZE_BLANKS = { steady: { 4: 0, 6: 0, 8: 1, 10: 2 }, balanced: { 4: 0, 6: 1, 8: 2, 10: 3 }, risky: { 4: 1, 6: 2, 8: 3, 10: 4 } };
+// every metal step changes the die: it fills at least one blank while any are left, and adds at least one icon
+const blanksAt = (temper, size, tier) => { const b = (BRONZE_BLANKS[temper] || BRONZE_BLANKS.balanced)[size] || 0; return b - Math.ceil((b * Math.min(3, tier)) / 3); };
+const iconsAt = (n, tier) => Math.min(n, tier >= 3 ? n : tier === 2 ? Math.max(3, Math.ceil((2 * n) / 3)) : tier === 1 ? Math.max(2, Math.ceil(n / 3)) : 1); // Bronze: its one signature icon
+function legendaryFaces(def, size) {
   const faces = def.faces.map((f) => (f.fx ? { ...f, fx: { ...f.fx } } : { ...f }));
-  const first = def.lean === 'def' ? 'b' : 'r';
-  // bigger faces lean to the weapon's own colour (two of its colour, then one of the other), so a bigger attack weapon hits harder
-  // and a bigger guard weapon blocks more, instead of every size splitting half and half
-  const other = first === 'r' ? 'b' : 'r';
-  // Metals raise numbers (Dave): Silver +1 on the lowest face, Gold +1 on the second-highest, Diamond +1 on the top face,
-  // so a Diamond rolls a number no Bronze can. A risky weapon keeps one blank. Only the four printed faces change.
-  const tier = Math.min(3, inst.rarity | 0);
-  if (tier && def.faces.length === 4 && inst.id !== 'fists' && !def.legendary) { // a legendary's faces are fixed
-    // three different faces, chosen from the Bronze layout: the lowest, the second-highest, the highest
-    const order = faces.slice(0, 4).map((f, i) => ({ v: f.v, i })).sort((a, b) => a.v - b.v || a.i - b.i);
-    const raise = [order[0].i, order[2].i, order[3].i];
-    for (let k = 0; k < tier; k++) faces[raise[k]].v += 1;
-  }
-  for (let i = 4; i < weaponSize(inst); i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
-  const bonus = def.bonus || [];
-  for (let k = 0; k < (inst.rarity | 0) && k < bonus.length; k++) {
-    const f = faces[bonus[k].face]; if (!f || f.v === 0) continue;
-    f.fx = f.fx || {};
-    for (const [key, n] of Object.entries(bonus[k].fx)) f.fx[key] = (f.fx[key] || 0) + n;
-  }
+  const first = def.lean === 'def' ? 'b' : 'r'; const other = first === 'r' ? 'b' : 'r';
+  for (let i = 4; i < size; i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
   return faces;
+}
+export function weaponFaces(inst, rollSize) {
+  const def = WEAPONS[inst.id];
+  const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
+  if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
+  if (def.legendary) return legendaryFaces(def, size);
+  const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
+  const temper = def.temper || 'balanced'; const tier = Math.min(3, inst.rarity | 0);
+  const top = (WEAPON_TOP[size] || 4) + (TEMPER_TOP[temper] || 0);
+  const n = size - 1; // numbered faces after the 0
+  const otherAt = temper === 'risky' ? [] : [1, 4, 7].filter((k) => k < n - 1); // the other colour never takes the top face
+  const run = Array.from({ length: n }, (_, k) => ({ v: top - (n - 1) + k, c: otherAt.includes(k) ? other : own }));
+  // Bronze blanks sit on alternate faces of its own colour from the bottom of the run (so the top number is always there); metal fills the highest first
+  const slots = []; for (let k = 0; k < n; k += 2) if (!otherAt.includes(k)) slots.push(k);
+  const blank = slots.slice(0, blanksAt(temper, size, tier));
+  for (const k of blank) run[k] = { v: 0, c: run[k].c };
+  // icons: the weapon's own kinds (its signature first), on the numbered faces from the top down
+  const kinds = [...new Set([...def.faces.flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
+  if (!kinds.length) kinds.push(own === 'r' ? 'pierce' : 'heal');
+  const live = run.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0).sort((a, b) => b.f.v - a.f.v);
+  live.slice(0, iconsAt(live.length, tier)).forEach((x, i) => { const key = kinds[i % kinds.length]; x.f.fx = { [key]: tier >= 3 && i === 0 ? 2 : 1 }; }); // Diamond: the top face's icon is double
+  return [{ v: 0, c: own }, ...run];
 }
 export function makeWeapon(id, rarity = 0, rng, size = 4) { const w = { uid: newUid(rng), id, rarity }; if (size > 4) w.size = size; return w; }
 // The hand that holds a weapon caps its die: a d6 weapon in a d4 hand rolls as a d4. `wieldInfo` says what a weapon needs.
@@ -311,7 +332,7 @@ export function evaluate(hero, board, opts = {}) {
   for (const [key, lane] of Object.entries(LANES)) {
     if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
-    const wf = weaponFaces(inst)[val(lane.weapon) - 1];
+    const wf = weaponFaces(inst, sidesOf(hero, lane.weapon))[val(lane.weapon) - 1];
     const str = val(lane.hand);
     const sym = isActive(hero, lane.special) ? specialFace(hero, lane.special, val(lane.special)) : null;
     const x2 = sym === 'X2'; const tsyms = Array.isArray(sym) ? sym : [];
@@ -343,8 +364,8 @@ export function evaluate(hero, board, opts = {}) {
   // Down (head, heart, feet) = +10 block. Every die in the line must be in play; a +0 weapon never matches.
   out.triples = [];
   if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
-    const a = weaponFaces(hero.loadout.NW)[val('NW') - 1].v;
-    const b = weaponFaces(hero.loadout.NE)[val('NE') - 1].v;
+    const a = weaponFaces(hero.loadout.NW, sidesOf(hero, 'NW'))[val('NW') - 1].v;
+    const b = weaponFaces(hero.loadout.NE, sidesOf(hero, 'NE'))[val('NE') - 1].v;
     if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', row: 'weapons', name: 'Weapons Triple' }); out.atk += SYNERGY_BONUS; }
     // Twinfang's twin shot: the bow and its arrows on the same number add a little more attack
     const tw = WEAPONS[hero.loadout.NW.id].twinShot;
@@ -359,7 +380,7 @@ export function evaluate(hero, board, opts = {}) {
   const numSlot = new Map();
   for (const k of ['NW', 'N', 'NE', 'W', 'C', 'E', 'S']) {
     if ((k === 'NW' || k === 'NE') && !isActive(hero, k)) continue;
-    const v = k === 'NW' || k === 'NE' ? weaponFaces(hero.loadout[k])[val(k) - 1].v : val(k);
+    const v = k === 'NW' || k === 'NE' ? weaponFaces(hero.loadout[k], sidesOf(hero, k))[val(k) - 1].v : val(k);
     if (v > 0 && !numSlot.has(v)) numSlot.set(v, k); // a blank is a miss, not a number
   }
   const sorted = [...numSlot.keys()].sort((x, y) => x - y);
@@ -635,10 +656,10 @@ export function recordBattle(hero, { points = 0, place = 0, heroes = 1, won = tr
 }
 export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers; the real amount is potionHpOf)
 export const healBig = (b) => drinkPotion(b);
-// ---- powers. Level (0-2) makes a power stronger: +25% numbers per level and +1 die on dice powers.
+// ---- powers. Each level makes a power stronger: +50% of its numbers per level (Dave, Oct 2026: magic should grow with you) and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
-// Each power level adds a clear, steady step: +1 for a number of 3 to 7 (3, 4, 5, 6 ...), +2 from 8, +3 from 12 (a quarter of the base, at least 1).
-export const scaleNum = (v, lvl) => v + lvl * Math.max(1, Math.floor(v * 0.25));
+// Each power level adds half the base number (at least 1): a 4 becomes 6, 8, 10; a 12 becomes 18, 24, 30.
+export const scaleNum = (v, lvl) => v + lvl * Math.max(1, Math.round(v * 0.5));
 // Scale powers: `cost` buys the first dice, every `step` more magic (default 1) adds a die, up to `max` magic and, if set,
 // `maxDice` dice in all (power levels add dice, so an upgraded power reaches the cap for less magic).
 export const scaleStep = (card) => card.step || 1;
@@ -898,7 +919,8 @@ export function battleRewards(b) {
   const pay = (e) => (e.fled ? FLEE_REWARD : 1);
   const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
   const gm = 1 + heroMods(hero).goldPct;
-  const kills = Math.round(dead.reduce((a, e) => a + e.gold * pay(e), 0) * gm);
+  const actGold = ACT_GOLD[Math.min(ACT_GOLD.length, hero.campaign?.act || 1) - 1] || 1;
+  const kills = Math.round(dead.reduce((a, e) => a + e.gold * pay(e), 0) * gm * actGold);
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
@@ -1645,7 +1667,7 @@ export function partyRewards(b) {
   const dead = b.enemies;
   const pay = (e) => (e.fled ? FLEE_REWARD : 1);
   const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
-  const baseKills = dead.reduce((a, e) => a + e.gold * pay(e), 0);
+  const act0 = b.fighters[0]?.hero?.campaign?.act || 1; const baseKills = Math.round(dead.reduce((a, e) => a + e.gold * pay(e), 0) * (ACT_GOLD[Math.min(ACT_GOLD.length, act0) - 1] || 1));
   // Ranked by battle points. The gold from the fallen is shared evenly; the top scorer gets PLACE_GOLD[0] of a share more,
   // and (with three or more heroes) the runner-up PLACE_GOLD[1]. Everyone else gets the same even share.
   const ranked = [...b.fighters].sort((a, c) => (c.points || 0) - (a.points || 0) || a.hero.name.localeCompare(c.hero.name));

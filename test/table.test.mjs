@@ -305,13 +305,14 @@ test('a built-up hero may bring their save into an Act II table', () => {
   assert.equal(table.company.campaign.act, 2);
 });
 
-test('a repeat clear pays that hero nothing; a first-clear friend still earns', () => {
+test('a repeat clear pays that hero half the gold and no XP or spoils; a first-clear friend still earns it all', () => {
   const { table, players } = make();
   begin(table, players);
   const c = table.company.campaign;
   const ada = table.company.members.find((m) => m.name === 'Ada');
   const bea = table.company.members.find((m) => m.name === 'Bea');
-  ada.cleared = [SV.stepKey(c.act, c.step)];
+  const here = SV.stepKey(c.act, c.step);
+  ada.cleared = [here];
   ada.gold = 50; bea.gold = 50;
   const adaXp = ada.xp; const adaLv = ada.level; const adaPerks = ada.pendingPerks;
   const beaXp = bea.xp;
@@ -330,9 +331,10 @@ test('a repeat clear pays that hero nothing; a first-clear friend still earns', 
   assert.equal(table.phase, 'victory');
   assert.equal(table.rewards.repeat.Ada, true);
   assert.equal(table.rewards.repeat.Bea, false);
-  assert.equal(table.rewards.gold.Ada, 0);
+  assert.ok(table.rewards.gold.Ada >= 0 && table.rewards.gold.Ada <= Math.ceil(table.rewards.gold.Bea / 2) + 2, 'about half of a first clear');
   assert.ok(table.rewards.gold.Bea > 0);
-  assert.equal(ada.gold, 50);
+  assert.equal(ada.gold, 50 + table.rewards.gold.Ada);
+  assert.equal(ada.repeats[here], 1);
   assert.equal(ada.xp, adaXp);
   assert.equal(ada.level, adaLv);
   assert.equal(ada.pendingPerks, adaPerks);
@@ -344,7 +346,7 @@ test('a repeat clear pays that hero nothing; a first-clear friend still earns', 
   assert.equal(view.victory.repeat.Ada, true);
 });
 
-test('when every hero is replaying, the table withholds XP, gold and spoils', () => {
+test('when every hero is replaying, the table pays half gold and withholds XP and spoils', () => {
   const { table, players } = make();
   begin(table, players);
   const c = table.company.campaign;
@@ -370,12 +372,11 @@ test('when every hero is replaying, the table withholds XP, gold and spoils', ()
   assert.equal(table.phase, 'victory');
   assert.equal(table.rewards.repeat.Ada, true);
   assert.equal(table.rewards.repeat.Bea, true);
-  assert.equal(table.rewards.gold.Ada, 0);
-  assert.equal(table.rewards.gold.Bea, 0);
   assert.equal(table.rewards.drops.length, 0);
   assert.equal(table.rewards.draft.done, true);
-  assert.equal(table.company.members[0].gold, 40);
-  assert.equal(table.company.members[1].gold, 40);
+  assert.equal(table.company.members[0].gold, 40 + table.rewards.gold[table.company.members[0].name]);
+  assert.equal(table.company.members[1].gold, 40 + table.rewards.gold[table.company.members[1].name]);
+  for (const m of table.company.members) assert.equal(m.repeats[key], 1);
   assert.equal(table.company.members[0].pendingPerks, 0);
 });
 

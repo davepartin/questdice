@@ -570,7 +570,7 @@ function practice({ hero, quest, guide }) {
   S.practice = { guide }; S.company = null; S.hero = hero; S.net = null;
   S.quest = quest;
   S.battle = E.newBattle(hero, quest, fresh(), 1);
-  S.battle.script = { rolls: [{ NW: 3, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 }], rerolls: [{ E: 4 }] };
+  S.battle.script = { rolls: [{ NW: 2, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 }], rerolls: [{ E: 4 }] }; // the sword's 2nd face is its red +3
   S.battle.enemies[0].intent = { n: 'Slash', v: 'strike', f: 2, m: 1 }; // a plain hit to read in round 1
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
   RO.reset();
@@ -758,7 +758,7 @@ function showVictory() {
   const lvBefore = hero.level;
   const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
   if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
-  else { r.gold = 0; r.xp = 0; r.drops = []; }
+  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; }
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
   const points = E.pointsOf(b); E.recordBattle(hero, { points, heroes: 1, won: true });
@@ -787,8 +787,8 @@ function renderVictory() {
     : h('section', { class: 'panel' }, h('p', { class: 'muted' }, R.sold ? `You sold the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name} for ${E.sellValue(R.drops[R.picked])} gold. Coins, at least, never argue.` : `You took the ${D.tierName(R.drops[R.picked])} ${D.WEAPONS[R.drops[R.picked].id].name}. It waits in your pack, humming a little.`));
   const ready = !R.offer && hero.pendingPerks === 0 && R.picked != null;
   mount(
-    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, R.repeat ? SV.REPEAT_NOTE : 'The way is open. Go on, then.')),
-    R.repeat ? h('p', { class: 'muted' }, SV.REPEAT_NOTE) : null,
+    h('header', { class: 'victory' }, h('div', { class: 't-eyebrow' }, R.quest.name), h('h1', {}, 'Victory'), h('p', { class: 'muted' }, R.repeat ? SV.repeatNote(R.share) : 'The way is open. Go on, then.')),
+    R.repeat ? h('p', { class: 'muted' }, SV.repeatNote(R.share)) : null,
     h('section', { class: 'panel rewards' },
       h('div', { class: 'reward' }, h('b', {}, `+${R.xp}`), h('small', {}, 'XP')),
       h('div', { class: 'reward gold' }, h('b', {}, `${R.gold >= 0 ? '+' : ''}${R.gold}`), h('small', {}, 'Gold')),

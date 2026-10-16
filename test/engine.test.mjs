@@ -14,17 +14,17 @@ const board = (o) => {
   for (const [k, v] of Object.entries(o)) b[k] = { v, bound: false };
   return b;
 };
-// Weapon die faces (index = v-1) for reference: sword 0r,1b,3r,4r; bow 0b,1r,2r,3r.
+// Weapon die faces (index = v-1) for reference, Bronze d4: sword 0r 3r 4b 5r; shield 0b 3b 4r 5b; bow 0r 2r 3b 4r.
 const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1, full: true });
 const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1, full: true });
 
-test('weapon temperaments: every weapon sums to 8 (about +2 a roll); steady has no blank, risky has two', () => {
+test('weapon temperaments: a Bronze d4 steady or balanced weapon has only its one 0; a risky one has a second blank and is all its own colour', () => {
   for (const [id, w] of Object.entries(WEAPONS)) {
     if (w.hidden || w.legendary) continue;
-    const sum = w.faces.reduce((acc, f) => acc + f.v, 0); const blanks = w.faces.filter((f) => f.v === 0).length;
-    assert.equal(sum, 8, id);
     assert.ok(['steady', 'balanced', 'risky'].includes(w.temper), `${id} has a temperament`);
-    assert.equal(blanks, { steady: 0, balanced: 1, risky: 2 }[w.temper], `${id} blanks`);
+    const f = weaponFaces({ id, rarity: 0 }); const blanks = f.filter((x) => x.v === 0).length;
+    assert.equal(blanks, w.temper === 'risky' ? 2 : 1, `${id} blanks`);
+    if (w.temper === 'risky') assert.ok(f.every((x) => x.c === f[0].c), `${id} is all one colour`);
   }
 });
 
@@ -39,19 +39,19 @@ test('heart 1-4 adds +2 per matching head/hand/feet die; heart 5 and 6 add +4 to
   const ev = evaluate(h, board({ N: 2, W: 2, E: 3, S: 2, C: 2 }));
   assert.equal(ev.pierce, 3 * 2 + 3 * 2); // three 2s: 2 each, +2 amp each
   assert.equal(ev.magic, 2);
-  const blue = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 5 })); // NW red 3, NE blue 3
-  assert.equal(blue.lanes.R.value, 3 + 4 + 4); assert.equal(blue.lanes.L.value, 3 + 4);
-  const red = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 6 }));
-  assert.equal(red.lanes.L.value, 3 + 4 + 4); assert.equal(red.lanes.R.value, 3 + 4);
+  const blue = evaluate(h, board({ NW: 4, W: 4, NE: 4, E: 4, C: 5 })); // NW red 5, NE blue 5
+  assert.equal(blue.lanes.R.value, 5 + 4 + 4); assert.equal(blue.lanes.L.value, 5 + 4);
+  const red = evaluate(h, board({ NW: 4, W: 4, NE: 4, E: 4, C: 6 }));
+  assert.equal(red.lanes.L.value, 5 + 4 + 4); assert.equal(red.lanes.R.value, 5 + 4);
 });
 
 test('lane = weapon + strength; weapon color decides attack vs block', () => {
   const h = knight();
-  // NW sword idx2 -> 3 red; NE shield idx2 -> 3 blue. hands 4 and 1.
-  const ev = evaluate(h, board({ NW: 3, W: 4, NE: 3, E: 4, C: 3 }));
-  assert.equal(ev.lanes.L.value, 3 + 4); assert.equal(ev.lanes.L.color, 'r');
+  // NW sword face 4 -> red 5; NE shield face 4 -> blue 5. hands 4 and 4.
+  const ev = evaluate(h, board({ NW: 4, W: 4, NE: 4, E: 4, C: 3 }));
+  assert.equal(ev.lanes.L.value, 5 + 4); assert.equal(ev.lanes.L.color, 'r');
   assert.equal(ev.lanes.R.color, 'b');
-  assert.equal(ev.atk, 7); assert.equal(ev.block, 7);
+  assert.equal(ev.atk, 9); assert.equal(ev.block, 9);
 });
 
 test('talent die: 2x doubles that hand, a number face pays its number in its symbol', () => {
@@ -60,7 +60,7 @@ test('talent die: 2x doubles that hand, a number face pays its number in its sym
   assert.equal(specialFace(h, 'SW', 3), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal']);
   assert.equal(specialFace(h, 'SW', 5), null); // not bought yet: it does nothing
   assert.deepEqual(specialFace(h, 'SW', 6), ['gold']);
-  const ev = evaluate(h, board({ NW: 3, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 }));
+  const ev = evaluate(h, board({ NW: 2, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 })); // the sword's red 3
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const four = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); const five = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
   assert.equal(four.heal - five.heal, 4); // face 4 pays 4 heal, whatever the hand rolled
@@ -120,8 +120,8 @@ test('heart 5 / 6 pump the best lane of the matching color', () => {
 
 test('triples: top row and middle row give +10 attack each; head-heart-feet gives +10 block', () => {
   const r = ranger();
-  // bow faces: b1, r2, r2, r3. Head 2 matches both weapon 2s.
-  const hit = evaluate(r, board({ NW: 3, N: 2, NE: 2, C: 6 }));
+  // bow faces: 0, r2, b3, r4. Head 2 matches both weapon 2s.
+  const hit = evaluate(r, board({ NW: 2, N: 2, NE: 2, C: 6 }));
   assert.equal(hit.offense3, true);
   assert.deepEqual(hit.triples.map((t) => t.name), ['Weapons Triple']);
   const miss = evaluate(r, board({ NW: 3, N: 2, NE: 4, C: 6 }));
@@ -143,7 +143,7 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   const atk = evaluate(r, b, { straight: 'atk' });
   const gold = evaluate(r, b, { straight: 'gold' });
   assert.equal(atk.straight, 5); assert.equal(atk.straightBonus, 10);
-  assert.deepEqual(atk.straightSlots, ['NW', 'S', 'C', 'W', 'E'], 'one die per number, low to high (for the magenta glow); the bow’s 1 comes first on the board');
+  assert.deepEqual(atk.straightSlots, ['N', 'S', 'C', 'W', 'E'], 'one die per number, low to high (for the magenta glow); the bow’s blanks never count');
   assert.equal(atk.atk - gold.atk, 10);
   assert.equal(gold.gold - atk.gold, 10);
   // a 1-2-3-4 is only four long: no payout
@@ -151,19 +151,24 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straightSlots, undefined);
 });
 
-test('metals raise numbers: Silver the lowest face, Gold the second-highest, Diamond the top; corners gain abilities', () => {
-  const nums = (id, r) => weaponFaces({ id, rarity: r }).map((f) => f.v);
-  assert.deepEqual(nums('sword', 0), [0, 2, 3, 3]);
-  assert.deepEqual(nums('sword', 1), [1, 2, 3, 3]);
-  assert.deepEqual(nums('sword', 2), [1, 2, 4, 3]);
-  assert.deepEqual(nums('sword', 3), [1, 2, 4, 4]);
-  assert.deepEqual(nums('spear', 3), [1, 0, 5, 5], 'a risky weapon keeps one blank');
-  assert.deepEqual(nums('warhammer', 3), [1, 0, 3, 7], 'a Diamond rolls a number no Bronze can');
-  const fx = (r) => weaponFaces({ id: 'sword', rarity: r }).map((f) => f.fx || null);
-  assert.deepEqual(fx(0), [null, null, null, { pierce: 1 }]);
-  assert.deepEqual(fx(1)[2], { pierce: 1 });
-  assert.deepEqual(fx(2)[1], { magic: 1 });
-  assert.deepEqual(fx(3)[3], { pierce: 2 });
+test('size is the range, metal is the quality: one 0 always; Bronze has blanks, each metal fills some and adds icons; Diamond is all filled', () => {
+  const faces = (id, size, r) => weaponFaces({ id, rarity: r, size });
+  const zeros = (f) => f.filter((x) => x.v === 0).length; const icons = (f) => f.filter((x) => x.fx).length;
+  const iconSum = (f) => f.reduce((a, x) => a + Object.values(x.fx || {}).reduce((p, q) => p + q, 0), 0);
+  for (const id of ['sword', 'spear', 'dagger', 'shield']) for (const size of [4, 6, 8, 10]) {
+    const all = [0, 1, 2, 3].map((r) => faces(id, size, r));
+    all.forEach((f) => { assert.equal(f.length, size); assert.equal(f[0].v, 0, `${id} d${size}: the 0 is always there`); });
+    assert.equal(zeros(all[3]), 1, `${id} d${size} Diamond: only the 0`);
+    assert.equal(icons(all[3]), size - 1, `${id} d${size} Diamond: an icon on every number`);
+    for (let r = 1; r < 4; r++) assert.ok(zeros(all[r]) < zeros(all[r - 1]) || iconSum(all[r]) > iconSum(all[r - 1]), `${id} d${size}: metal ${r} changes the die`);
+  }
+  // the top number climbs with the size, and the top face is always the weapon's own colour
+  const tops = [4, 6, 8, 10].map((z) => Math.max(...faces('sword', z, 0).map((x) => x.v)));
+  assert.deepEqual(tops, [5, 8, 11, 14]);
+  for (const z of [4, 6, 8, 10]) { const f = faces('sword', z, 3); assert.equal(f[f.length - 1].c, 'r'); assert.equal(faces('shield', z, 3)[z - 1].c, 'b'); }
+  // a risky weapon has more Bronze blanks than a steady one, and is all its own colour
+  assert.ok(zeros(faces('spear', 10, 0)) > zeros(faces('dagger', 10, 0)));
+  assert.ok(faces('spear', 10, 3).every((x) => x.c === 'r'));
 });
 
 test('a weapon die is as big as its size, capped by the hand that holds it', () => {
@@ -171,13 +176,11 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
   assert.equal(sidesOf(h, 'NW'), 4);
   h.loadout.NW.size = 6; // bigger weapon, small hand: still a d4
   assert.equal(sidesOf(h, 'NW'), 4);
+  assert.deepEqual(weaponFaces(h.loadout.NW, sidesOf(h, 'NW')), weaponFaces({ ...h.loadout.NW, size: 4 }), 'in a d4 hand it rolls, and is built, as a d4');
   h.strength.W = 6;
   assert.equal(sidesOf(h, 'NW'), 6);
   assert.equal(sidesOf(h, 'NE'), 4); // the other lane is untouched
-  const f = weaponFaces(h.loadout.NW);
-  assert.deepEqual(f.map((x) => x.v), [0, 2, 3, 3, 5, 6]);
-  assert.equal(f[4].c, 'r'); assert.equal(f[5].c, 'r'); // extra faces lean to the weapon's colour: two of it, then one of the other
-  h.strength.W = 8; h.loadout.NW.size = 8; assert.deepEqual(weaponFaces(h.loadout.NW).slice(4).map((x) => x.c), ['r', 'r', 'b', 'r']);
+  assert.equal(weaponFaces(h.loadout.NW, sidesOf(h, 'NW')).length, 6);
 });
 
 test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {
@@ -219,7 +222,7 @@ function duel(hero, enemyId, intent, boardSpec, opts = {}) {
 test('pierce ignores a monster guard; plain attack does not', () => {
   const h = knight();
   const guard = { n: 'Duck', v: 'guard', f: 5, m: 0 };
-  const b = duel(h, 'goblin', guard, { NW: 3, W: 4, C: 6, NE: 1, E: 1, N: 4, S: 4 });
+  const b = duel(h, 'goblin', guard, { NW: 4, W: 4, C: 6, NE: 1, E: 1, N: 4, S: 4 });
   const e = b.enemies[0]; const hp = e.hp;
   const rep = resolve(b, { target: 0 });
   assert.equal(rep.guarded, 5);
@@ -571,7 +574,7 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
   assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
   assert.equal(DIFFICULTY.hard.hp, 1.15); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
-  assert.equal(DIFFICULTY.legendary.hp, 1.35); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(DIFFICULTY.legendary.hp, 1.25); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
   assert.equal(normalizeDifficulty('noob'), 'easy');
   assert.equal(normalizeDifficulty('mid'), 'normal');
   assert.equal(normalizeDifficulty('expert'), 'hard');
@@ -608,7 +611,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
   assert.equal(mid.enemies[0].maxHp, 30);
   assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.15));
-  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.35));
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.25));
   assert.equal(easy.enemies[0].flat, -1);
   assert.equal(hard.enemies[0].flat, 2);
   assert.equal(legend.enemies[0].flat, 2);
@@ -682,11 +685,11 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
   assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
 });
 
-test('each power level is a clear, steady step up (3, 4, 5, 6), and pierce stays a little under attack', async () => {
+test('each power level adds half the base number (3, 5, 7, 9), and pierce stays a little under attack', async () => {
   const { scaleNum } = await import('../js/engine.js');
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 6]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 7, 8]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 15, 18, 21]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 5, 7, 9]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 8, 11, 14]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 18, 24, 30]);
   const { CLASSES } = await import('../js/data.js');
   const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
   const all = Object.values(CLASSES).flatMap((c) => c.cards);

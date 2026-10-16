@@ -15,7 +15,7 @@ export function stubTray(stage) {
   const tex = (txt, col) => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = col; g.fillRect(0, 0, 128, 128); g.fillStyle = '#fff'; g.font = 'bold 84px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 64, 70); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
   const colOf = (slot, v) => {
     const r = D.ROLE[slot];
-    if (r === 'weapon' && hero) { const f = E.weaponFaces(hero.loadout[slot])[v - 1]; return { c: f?.c === 'r' ? '#a01c24' : '#1c5ca0', t: String(f?.v ?? v) }; }
+    if (r === 'weapon' && hero) { const f = E.weaponFaces(hero.loadout[slot], E.sidesOf(hero, slot))[v - 1]; return { c: f?.c === 'r' ? '#a01c24' : '#1c5ca0', t: String(f?.v ?? v) }; }
     if (r === 'special' && hero) { const s = E.specialFace(hero, slot, v); return { c: s ? '#5a2a9a' : '#2a2a30', t: s ? D.talentLabel(s) : '–' }; }
     if (r === 'heart') return { c: '#a07a14', t: String(v) };
     return { c: '#4a4438', t: String(v) };

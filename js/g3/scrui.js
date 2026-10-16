@@ -576,10 +576,10 @@ export function victory(first) {
     : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold. Coins, at least, never argue.` : `You took the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack, humming a little.`));
   const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
-  const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.REPEAT_NOTE) : null;
+  const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.repeatNote(Rw.share)) : null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
-      h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.REPEAT_NOTE : 'The way is open. Go on, then.'), flourish()),
+      h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
       note, rewards, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
@@ -634,14 +634,14 @@ function shrinkBtn(kind, slot, label) {
     } }, text(false));
   return b;
 }
-// A carried weapon: forge its Tier (more corner symbols, costs gold) and train its Size (bigger die, needs a big enough hand).
+// A carried weapon: forge its Tier (fills its blank faces, adds icons) and train its Size (a bigger die with higher numbers, needs a big enough hand).
 function weaponRow(inst, label = '') {
   const hero = X.S.hero; const w = D.WEAPONS[inst.id]; const size = E.weaponSize(inst);
   const f = E.forgeInfo(hero, inst.uid); const t = E.trainInfo(hero, inst.uid);
-  const note = !t.next ? `Its die is the biggest there is (d${size}).` : t.why === 'hands' ? `Train to d${t.next}: needs a d${t.next} hand die first.` : `Train to d${t.next}: a bigger die, bigger numbers.`;
+  const note = !t.next ? `Its die is the biggest there is (d${size}).` : t.why === 'hands' ? `Train to d${t.next}: needs a d${t.next} hand die first.` : `Train to d${t.next}: a bigger die with higher numbers, and its 0 comes up less often.`;
   return h('div', { class: 'sx-urow wrow' },
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name), h('small', {}, `${D.tierName(inst)} · d${size}`),
-      f.next ? h('small', { class: 'ur-next' }, `Forge to ${D.RARITY[f.next]}: more bonus symbols on its corners.`) : null, h('small', { class: 'ur-next' }, note), shrinkBtn('weapon', inst.uid, w.name)),
+      f.next ? h('small', { class: 'ur-next' }, `Forge to ${D.RARITY[f.next]}: fills in blank faces and adds bonus icons.`) : null, h('small', { class: 'ur-next' }, note), shrinkBtn('weapon', inst.uid, w.name)),
     f.next ? btn(`Forge ${D.RARITY[f.next]} · ${f.cost}`, () => { if (HE.forgeWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !f.ok, cls: `ur-buy ${!f.ok ? 'poor' : ''}`, aria: `Forge ${w.name} to ${D.RARITY[f.next]} for ${f.cost} gold` }) : h('span', { class: 'ur-max' }, f.why === 'legendary' ? 'LEGENDARY' : 'BEST TIER'),
     t.next ? btn(`Train d${t.next}${t.cost ? ` · ${t.cost}` : ''}`, () => { if (HE.trainWeapon(hero, inst.uid)) { sfx.level(); X.persist(); X.renderCamp(); } }, { icon: 'coin', iconAfter: true, disabled: !t.ok, cls: `ur-buy ${!t.ok ? 'poor' : ''}`, aria: `Train ${w.name} to d${t.next}` }) : h('span', { class: 'ur-max' }, 'MAX SIZE'));
 }

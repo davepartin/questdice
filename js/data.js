@@ -85,56 +85,54 @@ export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a wea
 
 // Faces are [value, color]; color r = offense (red), b = defense (blue). `fx` is the weapon's icon.
 const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
-// Three temperaments (Dave): every weapon averages about +2 a roll at d4 Bronze; they differ in how much they swing.
-//   steady   1, 2, 2, 3   never blank, low ceiling
-//   balanced 0, 2, 3, 3
-//   risky    two blanks, big top faces (0, 0, 4, 4 or sharper)
-// `temper` names it for the cards. Metals raise numbers (see engine weaponFaces) and add the `bonus` corner abilities in order.
+// Three temperaments (Dave): steady, balanced and risky. The faces themselves are built by engine weaponFaces from the temper,
+// the size and the metal (size is the range, metal is the quality); `faces` and `bonus` here only name the weapon's icons
+// (its signature first). `temper` names it for the cards.
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
   dagger: { name: 'Dagger', hands: 1, lean: 'off', temper: 'steady', glyph: '🗡️', price: 18,
-    tag: 'Steady: never blank. A 3 mends 1. Small, honest, and always in the fight.',
+    tag: 'Steady: small, sure numbers and only its one blank, with a little mending. Small, honest, and always in the fight.',
     faces: [F(1, 'r'), F(2, 'r'), F(2, 'b'), F(3, 'r', { heal: 1 })],
     bonus: [{ face: 1, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   bracer: { name: 'Bracer', hands: 1, lean: 'def', temper: 'steady', glyph: '🛡️', price: 18,
-    tag: 'Steady guard: never blank. A 3 sparks 1 magic. The polite way to say no.',
+    tag: 'Steady guard: small, sure blues and only its one blank, with sparks of magic. The polite way to say no.',
     faces: [F(1, 'b'), F(2, 'b'), F(2, 'r'), F(3, 'b', { magic: 1 })],
     bonus: [{ face: 1, fx: { heal: 1 } }, { face: 2, fx: { magic: 1 } }, { face: 3, fx: { heal: 1 } }] },
   sword: { name: 'Sword', hands: 1, lean: 'off', temper: 'balanced', glyph: '⚔️', price: 24,
-    tag: 'Balanced. A 3 pierces for 1. The old promise: cut, and keep cutting.',
+    tag: 'Balanced: mostly red, a blue parry every few faces, and a pierce on top. The old promise: cut, and keep cutting.',
     faces: [F(0, 'r'), F(2, 'b'), F(3, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   shield: { name: 'Shield', hands: 1, lean: 'def', temper: 'balanced', glyph: '🛡️', price: 24,
-    tag: 'Balanced wall. The red 2 is a bash that hits back. Shields have feelings too.',
+    tag: 'Balanced wall: mostly blue, with a red bash every few faces. Shields have feelings too.',
     faces: [F(0, 'b'), F(2, 'r'), F(3, 'b'), F(3, 'b')],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', temper: 'risky', glyph: '🔱', price: 27,
-    tag: 'Risky reach: two blanks, two 4s that pierce. Miss, miss, then through.',
+    tag: 'Risky reach: all red, big numbers that pierce, and a cheap one is full of misses. Miss, miss, then through.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   mace: { name: 'Mace', hands: 1, lean: 'off', temper: 'risky', glyph: '🔨', price: 26,
-    tag: 'Risky crusher: two blanks, a 3 and a big 5. Patience, then a door coming off its hinges.',
+    tag: 'Risky crusher: all red, big numbers, gappy until forged. Patience, then a door coming off its hinges.',
     faces: [F(0, 'r'), F(0, 'r'), F(3, 'r'), F(5, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   tower: { name: 'Tower Shield', hands: 1, lean: 'def', temper: 'risky', glyph: '🛡️', price: 30,
-    tag: 'Risky wall: two blanks, two big blue 4s. Either nothing, or a house in the way.',
+    tag: 'Risky wall: all blue, big numbers, gappy until forged. Either nothing, or a house in the way.',
     faces: [F(0, 'b'), F(0, 'b'), F(4, 'b'), F(4, 'b', { heal: 1 })],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }] },
   bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', temper: 'steady', glyph: '🏹', price: 42,
-    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Good odds at triples. A red 3 pierces. Breathe. Loose.',
+    tag: 'Two-handed and steady: a bow in one hand and arrows in the other. Small, sure numbers that pierce, and good odds at triples. Breathe. Loose.',
     faces: [F(1, 'b'), F(2, 'r'), F(2, 'r'), F(3, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 1, fx: { magic: 1 } }] },
   staff: { name: 'Staff', hands: 2, lean: 'off', temper: 'balanced', glyph: '🪄', price: 45,
-    tag: 'Two-handed channel. A 3 gives 2 magic. The stick does most of the talking.',
+    tag: 'Two-handed channel: balanced numbers that spark magic. The stick does most of the talking.',
     faces: [F(0, 'b'), F(2, 'b'), F(3, 'r'), F(3, 'r', { magic: 2 })],
     bonus: [{ face: 2, fx: { magic: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', temper: 'risky', glyph: '⚔️', price: 45,
-    tag: 'Two-handed and risky: two blanks, two big red 4s. All or a lot. Never a little.',
+    tag: 'Two-handed and risky: all red, big numbers, gappy until forged. All or a lot. Never a little.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   warhammer: { name: 'War Hammer', hands: 2, lean: 'off', temper: 'risky', glyph: '🔨', price: 48,
-    tag: 'Two-handed, all or nothing: two blanks, a 2 and a crushing 6. When it lands, the hill notices.',
+    tag: 'Two-handed, all or nothing: all red, the biggest swings, full of misses when cheap. When it lands, the hill notices.',
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
   // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and
@@ -215,7 +213,7 @@ export const DIFFICULTY = {
   hard: { name: 'Hard', text: 'Tougher monsters, and the moves they announce hit harder. Pays 15% more gold. You will earn it.', hp: 1.15, flat: 2, gold: 1.15, budget: 1.15, edge: { slam: 3, burn: 2 } },
   // edge (optional, Hard and Legendary): the moves a monster announces hit harder. slam: added to a wind-up Slam and a Pounce; burn: added to Fire
 // Ward's burn. A player who reads the plaque (blocks the Slam, hits the stalker, leaves the ward alone) pays little for it; one who doesn't pays a lot.
-  legendary: { name: 'Legendary', text: 'The cruellest road. Slams and wards hit far harder: read every monster and spend your magic well. For heroes who have beaten Hard.', hp: 1.35, flat: 2, gold: 1.25, budget: 1.25, edge: { slam: 6, burn: 4 } },
+  legendary: { name: 'Legendary', text: 'The cruellest road. Slams and wards hit far harder: read every monster and spend your magic well. For heroes who have beaten Hard.', hp: 1.25, flat: 2, gold: 1.25, budget: 1.25, edge: { slam: 6, burn: 4 } },
 };
 const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
 export function normalizeDifficulty(id) {
@@ -699,16 +697,18 @@ export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1, 1.2, 1.5];
+export const ACT_HP = [1.1, 1.45, 2.1]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too)
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
+// The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
+export const ACT_GOLD = [1, 1.3, 1.8];
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
 export const ORDINARY = { flat: [3, 5, 6], lone: 2 };
 // Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
-export const SET_PIECE = { elite: { hp: [1.3, 1.2, 1.2], flat: [3, 2, 5] }, boss: { hp: [1.2, 1, 1.3], flat: [1, 2, 5] } };
+export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.4, 1.25, 1.75], flat: [1, 2, 5] } };
 export const ELITE_STEPS = [5];
 // What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
 export function stepKind(act, step) {
