@@ -10,6 +10,7 @@ rules_version = '2';
 //    qdHeroNames/{nameId}        a taken hero name (no password material)
 //    qdHeroPublic/{nameId}       browsable card: name, class, level, act/step
 //    qdHeroes/{heroId}           a solo hero save
+//    qdDaily/{day}/scores/{uid}  a daily challenge score (one per phone per day)
 //
 //  Every phone signs in anonymously. Hero document ids are SHA-256 of
 //  (name + password), so a write or a read of the save requires knowing
@@ -78,6 +79,18 @@ service cloud.firestore {
     // open or overwrite a save. Name and nameKey are sticky. (Spark has no functions
     // to bind this write to the password; a nuisance edit of class/level is possible,
     // but the save itself stays behind the derived id.)
+    // The daily challenge's leaderboard: anyone may read a day's scores; each phone writes only its own entry.
+    match /qdDaily/{day}/scores/{uid} {
+      allow get, list: if signedIn();
+      allow create, update: if signedIn() && uid == me()
+        && request.resource.data.keys().hasOnly(['name', 'cls', 'score', 'fights', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 24
+        && request.resource.data.cls in ['knight', 'ranger', 'wizard', 'dwarf', 'bard']
+        && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 99999
+        && request.resource.data.fights is int && request.resource.data.fights >= 0 && request.resource.data.fights <= 5;
+      allow delete: if false;
+    }
+
     match /qdHeroPublic/{nameId} {
       allow get, list: if signedIn();
       allow create: if signedIn()

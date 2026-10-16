@@ -239,3 +239,24 @@ export async function getHero(name, password) {
     throw oops(e, 'Could not open that cloud save.');
   }
 }
+
+// ---- the daily challenge's leaderboard: qdDaily/{YYYY-MM-DD}/scores/{guest uid}, one entry per phone per day, kept at its best.
+// Needs the qdDaily block of firestore.rules published; until then these fail quietly and the day is still played on the phone.
+const dailyRef = (day, uid) => fb.fs.doc(fb.db, 'qdDaily', day, 'scores', uid);
+export async function submitDaily(day, { name, cls, score, fights }) {
+  try {
+    await ready();
+    const ref = dailyRef(day, fb.uid); const had = await fb.fs.getDoc(ref).catch(() => null);
+    if (had?.exists?.() && (had.data().score || 0) >= score) return { ok: true, kept: had.data().score };
+    await fb.fs.setDoc(ref, { name: String(name || 'Hero').slice(0, 24), cls, score: Math.max(0, Math.min(99999, Math.round(score))), fights: Math.max(0, Math.min(5, fights | 0)), at: Date.now() });
+    return { ok: true };
+  } catch (e) { return { ok: false, why: String(e?.message || e) }; }
+}
+export async function topDaily(day, n = 10) {
+  try {
+    await ready();
+    const col = fb.fs.collection(fb.db, 'qdDaily', day, 'scores');
+    const snap = await fb.fs.getDocs(fb.fs.query(col, fb.fs.orderBy('score', 'desc'), fb.fs.limit(n)));
+    return { ok: true, me: fb.uid, rows: snap.docs.map((d) => ({ uid: d.id, ...d.data() })) };
+  } catch (e) { return { ok: false, rows: [], why: String(e?.message || e) }; }
+}

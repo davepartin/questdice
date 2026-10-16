@@ -789,3 +789,26 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-charm .ch-copy, .sx-charm .ch-copy b, .sx-charm .ch-copy small { text-align: left; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .sx-charm { overflow: hidden; width: 100%; box-sizing: border-box; }
 .sx-charms-loot .ch-list { width: 100%; }
+/* the daily challenge (Oct 2026) */
+.sx-plaque.is-daily { border-color: rgba(255, 196, 90, .7); background: linear-gradient(100deg, rgba(120, 70, 10, .55), rgba(30, 18, 8, .85)); box-shadow: 0 0 22px rgba(255, 180, 60, .18); }
+.dl-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 999px; border: 1px solid rgba(255, 214, 140, .5); background: rgba(10, 8, 4, .7); color: var(--gold-hi); font-family: var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
+.dl-kit { display: grid; gap: .5rem; pointer-events: auto; }
+.dl-hero { display: flex; align-items: center; gap: .7rem; padding: .55rem .7rem; border-radius: 12px; border: 1px solid var(--hair); background: rgba(10, 10, 20, .75); }
+.dl-hero b { display: block; font-family: var(--font-display); font-size: 1.05rem; color: #fff; } .dl-hero small { color: var(--dim); font-size: .78rem; }
+.dl-fights { list-style: none; margin: .4rem 0; padding: 0; display: grid; gap: .35rem; pointer-events: auto; }
+.dl-fight { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; align-items: center; gap: .6rem; padding: .45rem .6rem; border-radius: 10px; border: 1px solid var(--hair-2); background: rgba(10, 10, 20, .72); }
+.dl-fight .dl-n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--hair); font: 800 .85rem var(--font-display); color: var(--dim); }
+.dl-fight.elite .dl-n { color: #ff9a8a; } .dl-fight.boss .dl-n { color: var(--gold-hi); }
+.dl-fight.won { border-color: rgba(61, 220, 132, .45); } .dl-fight.won .dl-n { color: #3ddc84; border-color: #3ddc84; }
+.dl-fight.lost { border-color: rgba(255, 90, 70, .5); } .dl-fight.lost .dl-n { color: #ff6a4a; border-color: #ff6a4a; }
+.dl-fight.now { border-color: var(--gold-hi); box-shadow: 0 0 14px rgba(255, 214, 140, .3); }
+.dl-name { min-width: 0; } .dl-name b { display: block; font-size: .9rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .dl-name small { color: var(--dim); font-size: .72rem; }
+.dl-pts { font-style: normal; font-family: var(--font-display); color: #3ddc84; font-size: .85rem; }
+.dl-acts { display: grid; grid-template-columns: auto 1fr; gap: .5rem; width: 100%; }
+.dl-board { pointer-events: auto; }
+.dl-top { list-style: none; margin: 0; padding: 0; display: grid; gap: .25rem; }
+.dl-top li { display: grid; grid-template-columns: 1.6rem 1.8rem minmax(0, 1fr) auto auto; align-items: center; gap: .5rem; padding: .35rem .55rem; border-radius: 8px; background: rgba(10, 10, 20, .72); border: 1px solid var(--hair-2); }
+.dl-top li.me { border-color: var(--gold-hi); background: rgba(60, 44, 14, .7); }
+.dl-rank { font: 800 .85rem var(--font-display); color: var(--gold-hi); text-align: center; } .dl-top b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; font-size: .88rem; } .dl-top small { color: var(--dim); font-size: .72rem; } .dl-top em { font-style: normal; font-family: var(--font-display); color: var(--gold-hi); }
+.dl-top .sx-emblem, .dl-top .emblem { width: 1.8rem; height: 1.8rem; }
+.dl-sub { margin: .3rem 0 0; color: #e8dcc0; font-size: .86rem; line-height: 1.4; pointer-events: auto; }

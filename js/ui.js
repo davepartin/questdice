@@ -18,6 +18,7 @@ import * as SCR from './g3/screens.js';
 import * as SCRUI from './g3/scrui.js';
 import * as TUT from './g3/tutorial.js';
 import * as RO from './readout.js';
+import * as DAY from './daily.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -79,7 +80,7 @@ function persist() {
     if (mine) { SV.saveHero(mine); queueCloud(mine); }
     return;
   }
-  if (S.practice) return; // the practice battle is never saved
+  if (S.practice || S.daily) return; // the practice battle and the daily challenge are never saved to a hero
   const hero = S.company?.members?.[0] || S.hero;
   if (!hero) return;
   SV.markReached(hero);
@@ -186,7 +187,7 @@ function askHome() {
 // ------------------------------------------------------------------ title
 export function showTitle() {
   Net.disconnect();
-  S.net = null; S.holdScroll = false; S.practice = null; TUT.closeLessons();
+  S.net = null; S.holdScroll = false; S.practice = null; S.daily = null; TUT.closeLessons();
   S.hero = null; S.company = null; S.battle = null; S.busy = false;
   if (SCRUI.on()) return SCRUI.title();
   const saves = SV.listSaves().filter((x) => x.kind !== 'company'); // one-phone companies are gone
@@ -563,7 +564,41 @@ function startQuest(q) {
 function battleCtx() {
   if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
   if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
+  if (S.daily) return { S, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
   return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+}
+// ------------------------------------------------------------------ the daily challenge (daily.js): the same day for everyone
+// The briefing; then five fights in a row with the hero of the day (never saved); between fights a breath; at the end the score,
+// this phone's best, the day's leaderboard, and a line to share.
+function showDaily() {
+  const run = DAY.dailyRun(); S.daily = null; S.hero = null; S.company = null;
+  SCRUI.daily({ mode: 'intro', run, rec: DAY.dayRecord(run.key), streak: DAY.streak(run.key), board: import('./cloud.js').then((C) => C.topDaily(run.key, 10)), onStart: startDaily, onHome: showTitle });
+}
+function startDaily() {
+  const run = DAY.dailyRun(); const hero = DAY.dailyHero(run);
+  S.daily = { run, idx: 0, fights: [] }; S.hero = hero; S.company = { members: [hero] }; S.practice = null;
+  dailyFight();
+}
+function dailyFight() {
+  const d = S.daily; const quest = d.run.quests[d.idx];
+  S.quest = quest; S.battle = E.newBattle(S.hero, quest, E.makeRng(E.hashSeed(d.run.seed, d.idx, d.fights.length ? 1 : 0, Date.now() % 100000)), 1);
+  S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  RO.reset(); sfx.select();
+  if (world.available) { SCR.release(); quest.seed = E.hashSeed(d.run.seed, quest.id || d.idx); B3.start(battleCtx()); return; }
+  renderReset();
+}
+function dailyAfter(won) {
+  const d = S.daily; if (!d) return showTitle();
+  d.fights.push({ won, score: DAY.fightScore(S.battle, won), name: S.quest?.name || '' }); d.idx++;
+  if (won) sfx.win?.(); else sfx.lose?.();
+  const score = DAY.finalScore(d.fights);
+  if (won && d.idx < DAY.FIGHTS) return SCRUI.daily({ mode: 'between', run: d.run, fights: d.fights, score, onNext: dailyFight, onHome: showTitle });
+  const rec = DAY.recordRun(d.run.key, score, d.fights);
+  const hero = S.hero; const name = (SV.listSaves().find((x) => x.kind === 'hero')?.name) || hero.name;
+  const board = import('./cloud.js').then(async (C) => { await C.submitDaily(d.run.key, { name, cls: d.run.cls, score: rec.best, fights: rec.fights }); return C.topDaily(d.run.key, 10); });
+  const text = DAY.shareText(d.run, score, d.fights);
+  SCRUI.daily({ mode: 'result', run: d.run, fights: d.fights, score, rec, streak: DAY.streak(d.run.key), board, onStart: startDaily, onHome: showTitle,
+    onShare: () => { if (navigator.share) navigator.share({ text }).catch(() => {}); else if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied. Paste it to a friend.')); else toast(text); } });
 }
 // Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).
 function practice({ hero, quest, guide }) {
@@ -897,7 +932,7 @@ TUT.bind({ showTitle, showCreate, practice, hasHero: () => !!S.hero });
 SCRUI.bind({
   S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
   showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(),
-  showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showLessons: () => TUT.showLessons(),
+  showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showDaily, showLessons: () => TUT.showLessons(),
   // at a shared table: who is there, and the road's choice goes to the table
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
@@ -910,4 +945,4 @@ export async function boot() {
   await Online.boot(showTitle);
   if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
-export const debugApi = { S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };
+export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };

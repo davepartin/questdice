@@ -16,6 +16,7 @@ import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
 import { petImg } from './pets.js';
 import { showTrial, statBadge } from './trialui.js';
+import * as DAY from '../daily.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -197,6 +198,9 @@ export function title() {
   }
   // Learn to play sits first until there is a saved hero, then it moves under the menu.
   if (!saves.length) menu.append(plaque({ eyebrow: 'Start here', title: 'Learn to play', sub: 'Two minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
+  { const run = DAY.dailyRun(); const rec = DAY.dayRecord(run.key); const st = DAY.streak(run.key);
+    menu.append(plaque({ eyebrow: `Daily challenge${st > 1 ? ` · ${st} days in a row` : ''}`, title: `${D.CLASSES[run.cls].name} · ${D.CHARMS[run.charm].name}`,
+      sub: rec.tries ? `Your best today: ${rec.best.toLocaleString()} points · ${rec.fights} of ${DAY.FIGHTS} fights` : `Five fights, the same for everyone. One score.`, icon: 'crown', tone: 'is-daily', onclick: X.showDaily })); }
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
@@ -260,6 +264,36 @@ function weaponCard(inst, { actions = [], note = '', compact = false, badge = ''
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
     h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.legendary ? 'Legendary · ' : ''}${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact && !w.legendary ? null : h('p', { class: `wc-tag ${w.legendary ? 'legend' : ''}` }, inst.diamond ? 'Diamond: no blanks, an icon on every face, and its top number a crit with three. Made for the one fight that matters.' : w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
+}
+// ---- the daily challenge's page: the briefing (intro), a breath between fights (between), and the score (result).
+export function daily(v) {
+  const { run } = v; const hero = DAY.dailyHero(run); const S = X.S;
+  const fightRow = (q, i) => { const f = v.fights?.[i]; const now = v.mode === 'between' && i === v.fights.length;
+    return h('li', { class: `dl-fight ${f ? (f.won ? 'won' : 'lost') : ''} ${now ? 'now' : ''} ${q.kind}` }, h('span', { class: 'dl-n' }, f ? ico(f.won ? 'check' : 'skull') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : String(i + 1)),
+      h('span', { class: 'dl-name' }, h('b', {}, q.kind === 'boss' ? q.name : q.place || q.name), h('small', {}, groupNames(q.enemies))), f ? h('em', { class: 'dl-pts' }, `+${f.score}`) : null); };
+  const boardEl = h('div', { class: 'dl-board' }, h('p', { class: 'fine' }, 'Loading today’s leaderboard…'));
+  v.board?.then((r) => { if (!r?.ok) { boardEl.replaceChildren(h('p', { class: 'fine' }, 'The leaderboard is not open yet. Your score is kept on this phone.')); return; }
+    if (!r.rows.length) { boardEl.replaceChildren(h('p', { class: 'fine' }, 'Nobody has a score today yet. Be the first.')); return; }
+    boardEl.replaceChildren(h('ol', { class: 'dl-top' }, r.rows.map((x, i) => h('li', { class: x.uid === r.me ? 'me' : '' }, h('span', { class: 'dl-rank' }, String(i + 1)), emblem(x.cls), h('b', {}, x.name), h('small', {}, `${x.fights}/${DAY.FIGHTS}`), h('em', {}, x.score.toLocaleString()))))); }).catch(() => {});
+  const head = v.mode === 'result'
+    ? [eyebrow(DAY.dayLabel(run.key)), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, `${v.fights.filter((f) => f.won).length} of ${DAY.FIGHTS} fights won${v.rec?.isBest ? ' · a new best today!' : ` · your best today: ${v.rec.best.toLocaleString()}`}${v.streak > 1 ? ` · ${v.streak} days in a row` : ''}`)]
+    : v.mode === 'between'
+      ? [eyebrow(`Fight ${v.fights.length} of ${DAY.FIGHTS} won`), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, 'Catch your breath. Your health is full again for the next fight; the potions you drank stay drunk.')]
+      : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
+  const kit = h('section', { class: 'dl-kit' }, h('div', { class: 'dl-hero' }, emblem(run.cls, 'lg'), h('div', {}, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} · hands d${hero.strength.W} · ${D.tierName(hero.loadout.NW)} d${E.weaponSize(hero.loadout.NW)} ${D.WEAPONS[hero.loadout.NW.id].name}`))), charmCard(run.charm, { badge: 'Today' }));
+  const cta = v.mode === 'between' ? btn(`Fight ${v.fights.length + 1}: ${run.quests[v.fights.length].kind === 'boss' ? run.quests[v.fights.length].name : 'onward'}`, v.onNext, { big: true, icon: 'sword', cls: 'wide' })
+    : v.mode === 'result' ? h('div', { class: 'dl-acts' }, btn('Share', v.onShare, { kind: 'ghost', icon: 'people' }), btn('Try again', v.onStart, { big: true, icon: 'reroll' }))
+      : btn('Begin', v.onStart, { big: true, icon: 'sword', cls: 'wide' });
+  mountAs('board daily', h('div', { class: 'sx-board' },
+    topBar(h('div', { class: 'sx-chip dl-chip' }, ico('crown'), h('b', {}, 'Daily')), h('div', { class: 'sx-top-actions' }, btn(v.mode === 'between' ? 'Give up' : 'Home', v.onHome, { kind: 'ghost', icon: 'home' }))),
+    h('div', { class: 'sx-board-main' },
+      h('div', { class: 'sx-board-head' }, ...head),
+      v.mode === 'intro' ? kit : null,
+      h('ol', { class: 'dl-fights' }, run.quests.map(fightRow)),
+      h('div', { class: 'sx-cta' }, cta),
+      v.mode === 'between' ? null : [eyebrow('Today’s best', 'center'), boardEl])));
+  lay('board'); SCR.enter('road', { hero, heroes: [hero], place: run.quests[Math.min(run.quests.length - 1, v.fights?.length || 0)].place, seed: run.seed }, `daily:${run.key}:${v.mode}:${v.fights?.length || 0}`);
+  S.daily = v.mode === 'intro' ? null : S.daily;
 }
 // opts.table = { mode: 'host' | 'join', code, onDone(name, cls, extra) }: the same hero choice, for sitting down at a table.
 export function create(opts = {}) {

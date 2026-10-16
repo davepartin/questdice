@@ -74,3 +74,10 @@ level and act/step. Spark cannot bind that public write to the password, so a si
 the listed class or level of a name; they still cannot read or overwrite the save. A write to an existing save
 must also carry the same stored salt and hash. Two people cannot take the same hero name; the first to create
 the name marker keeps it.
+
+## The daily challenge's leaderboard (Oct 2026)
+The daily challenge writes each phone's best score of the day to `qdDaily/{YYYY-MM-DD}/scores/{guest id}` and reads the day's top ten.
+It needs the `qdDaily` block in `firestore.rules`: publish the rules again (paste `firestore.rules` into Firestore → Rules → Publish,
+or `npx -y firebase-tools@latest deploy --only firestore:rules --project questdice-eef50`). Until then the day still plays and is
+scored on the phone; the page says the leaderboard is not open yet. Firestore makes the single-field index for `orderBy('score')`
+by itself. Scores are counted on the phone, so a determined cheat could post a fake one; fine for family and friends.

@@ -1129,3 +1129,13 @@ The second of Dave's three: items that change a rule rather than add a number (l
 - Worth (an Act II hero's average throw, about 28-31): the dice charms add 1.5 to 3 (5-10%); class matters (the Ember Locket does nothing for a ranger, whose bow is hardly ever blank); the Lantern, Phoenix and Pact change how a fight goes rather than a throw. The monsters were tuned without charms, so they are a bonus.
 - Not yet: charms in the spoils of a table game (heroes bring theirs, and they work, but table victories do not offer new ones yet).
 Shots: docs/ingame/charms_*.png (`node dev/charms.mjs`).
+
+## 2026-10-16 — the daily challenge
+The third of Dave's three: a reason to come back each day. A "Daily challenge" plaque on the title screen (with this phone's best today and a streak of days played).
+- The same day for everyone: the hero of the day (a class, built for the day's act, carrying one charm of the day), five fights (the act turns with the days, I, II, III; three of its fights drawn by the day, then its elite and its boss) and the same dice seed. 28 of 31 days in a month have different fights, and every day a different class and charm.
+- Score: battle points, +100 for every fight won, +250 for clearing all five. Play as often as you like; your best counts. Between fights you catch your breath (full health; drunk potions stay drunk). The page shows each fight's points, your best today, and the day's top ten.
+- Share: a line to send a friend (the day, the class and charm, a row of ⚔️ 💀 👑, the score).
+- Never touches a saved hero (the daily hero is never saved); the record of days lives on the phone.
+- How hard: over two weeks of days the sensible computer player clears 42% of runs, the wise one 72% (`node tools/daily.mjs`).
+- The leaderboard needs the new `qdDaily` block in `firestore.rules` published (docs/FIREBASE.md). Until then the page says it is not open yet.
+Shots: docs/ingame/daily_*.png (`node dev/daily.mjs`).
