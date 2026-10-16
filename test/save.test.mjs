@@ -214,3 +214,17 @@ test('a repeat clear withholds XP, gold and perks; a first clear still pays', ()
   assert.ok(levels >= 1 || fresh.xp === xp);
 });
 
+test('hero colour is kept on the local save and in the cloud blob', async () => {
+  const h = E.newHero({ name: 'Cora', cls: 'ranger', seed: 3, color: 'rust' });
+  assert.equal(h.color, 'rust');
+  await SV.createSave(h, 'secret');
+  const loaded = await SV.openHero('Cora', 'secret');
+  assert.equal(loaded.color, 'rust');
+  const rec = await SV.cloudRecord(loaded, 'secret');
+  assert.equal(JSON.parse(rec.hero).color, 'rust');
+  const old = E.newHero({ name: 'Ned', cls: 'dwarf', seed: 4 });
+  delete old.color;
+  SV.migrateHero(old);
+  assert.equal(old.color, 'default');
+});
+

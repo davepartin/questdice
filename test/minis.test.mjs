@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLASSES, MONSTERS, LOOK, needsFlip } from '../js/data.js';
+import fs from 'node:fs';
+import { CLASSES, MONSTERS, LOOK, needsFlip, HERO_LOOKS } from '../js/data.js';
 
 test('every painted class and monster has a base disc in the image', () => {
   const check = (id, d) => {
@@ -37,4 +38,24 @@ test('every hero and monster records which way it was painted, and the flip face
   assert.equal(needsFlip(MONSTERS.wraith, 'left'), false);
   assert.equal(needsFlip(MONSTERS.spider, 'left'), false);
   assert.equal(needsFlip(MONSTERS.vharaxis, 'left'), false);
+});
+
+test('each class has four painted coats, variants face right, and the files are there', () => {
+  for (const [cls, looks] of Object.entries(HERO_LOOKS)) {
+    assert.equal(looks.length, 4, cls);
+    assert.equal(looks[0].img, CLASSES[cls].img);
+    assert.equal(looks[0].look, CLASSES[cls].look);
+    for (const l of looks) {
+      assert.ok(fs.existsSync(l.img), l.img);
+      assert.ok(LOOK.has(l.look), `${cls} ${l.id} look`);
+      const b = l.imgBase;
+      assert.ok(b.x > 0.34 && b.x < 0.7, `${cls} ${l.id} base x ${b.x}`);
+      assert.ok(b.y > 0.97 && b.y <= 1, `${cls} ${l.id} base y ${b.y}`);
+      assert.ok(b.w > 0.55 && b.w < 1, `${cls} ${l.id} base w ${b.w}`);
+    }
+    for (const l of looks.slice(1)) {
+      assert.equal(l.look, 'right', `${cls} ${l.id}`);
+      assert.equal(needsFlip(l, 'right'), false, `${cls} ${l.id} needs no battle flip`);
+    }
+  }
 });

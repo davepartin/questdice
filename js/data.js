@@ -285,31 +285,7 @@ export const ACT_MAX_DIE = { 1: 6, 2: 8, 3: 10 };
 export const dieCapForAct = (act) => ACT_MAX_DIE[Math.min(3, Math.max(1, act | 0 || 1))];
 export const ROMAN = { 1: 'I', 2: 'II', 3: 'III' };
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
-// Company looks (Dave): a second or third hero of the same class wears another colour set, so every hero on the field is
-// easy to tell apart. Look 0 is the class's own colours; the others replace cloth, trim, accent, glow (and sometimes hair).
-// `hue` colours the hero's chip in the battle roster.
-export const HERO_LOOKS = {
-  knight: [{ name: 'Crimson', hue: '#ff6a4a' },
-    { name: 'Steel blue', hue: '#6aa8ff', cloth: 0x2a4a8a, cloth2: 0x1a2e5a, accent: 0x3a7ad8, glow: 0x6aa8ff, trim: 0xd8dce8 },
-    { name: 'Black and gold', hue: '#ffd060', cloth: 0x2a2a30, cloth2: 0x18181c, accent: 0xe0b858, glow: 0xffd060, trim: 0xe0b858, hair: 0x9a6a3a }],
-  ranger: [{ name: 'Forest', hue: '#7aff9a' },
-    { name: 'Autumn', hue: '#ffa040', cloth: 0x8a5a2a, cloth2: 0x5a3a1a, accent: 0xffa040, glow: 0xffc070, hair: 0x8a3a18 },
-    { name: 'Stone grey', hue: '#a8dcff', cloth: 0x4a5a6a, cloth2: 0x2e3a46, accent: 0x8ad0ff, glow: 0xb0e0ff, hair: 0xd8c08a }],
-  wizard: [{ name: 'Sky blue', hue: '#6ab8ff' },
-    { name: 'Violet', hue: '#c88aff', cloth: 0x6a2a8a, cloth2: 0x401a58, accent: 0xc070ff, glow: 0xd8a0ff, hair: 0x3a2a1c },
-    { name: 'White and gold', hue: '#ffe080', cloth: 0xd8d4c8, cloth2: 0x9a948a, accent: 0xffd060, glow: 0xfff0a0, hair: 0x6a4428 }],
-  dwarf: [{ name: 'Ember', hue: '#ffa040' },
-    { name: 'Moss', hue: '#8aff8a', cloth: 0x2e4a2a, cloth2: 0x1e3020, accent: 0x6ae070, glow: 0x8aff8a, hair: 0x2a1e14 },
-    { name: 'Deep blue', hue: '#7ac0ff', cloth: 0x2a3a5a, cloth2: 0x1a2640, accent: 0x5aa8ff, glow: 0x7ac0ff, hair: 0xd8c8a0 }],
-  bard: [{ name: 'Teal', hue: '#4ae8d8' },
-    { name: 'Plum', hue: '#ff8ac8', cloth: 0x8a2a5a, cloth2: 0x5a1a3c, accent: 0xff6ab0, glow: 0xff9ad0, hair: 0x2c1e14 },
-    { name: 'Sunflower', hue: '#ffd040', cloth: 0xb08a2a, cloth2: 0x6a5218, accent: 0xffd040, glow: 0xffe080, hair: 0x5a2a12 }],
-};
-// Which look a hero wears in a company: how many heroes of the same class stand before them (wrapping past the last look).
-export const lookIndex = (heroes, i) => (heroes || []).slice(0, i).filter((x) => x?.cls === heroes[i]?.cls).length % (HERO_LOOKS[heroes?.[i]?.cls]?.length || 1);
-export const lookOf = (heroes, i) => HERO_LOOKS[heroes?.[i]?.cls]?.[lookIndex(heroes, i)] || null;
-
-// The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, as far as the act allows. It is rolled in every battle (its faces
+// Company looks live after CLASSES (painted colour variants). The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, as far as the act allows. It is rolled in every battle (its faces
 // pay heal / pierce / magic / gold like the hands) and in the road's Tests of Wisdom (trials.js).
 export const MIND_STEPS = { 4: [50], 6: [110], 8: [230] };
 export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
@@ -422,6 +398,83 @@ export const CLASSES = {
     ],
   },
 };
+
+// Company looks (Dave): each class has its original painting plus three colour variants, so two Knights
+// at a table never wear the same coat. Look 0 (`id: 'default'`) is the class's own miniature; the others
+// are painted facing right. `hue` colours the hero's chip in the battle roster. `hero.color` is the id.
+export const HERO_LOOKS = {
+  knight: [
+    { id: 'default', name: 'Classic', hue: '#ff6a4a', img: 'assets/miniatures/knight.webp', look: 'left', imgBase: IB(378, 480, 218, 475, 279) },
+    { id: 'blue', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/knight-blue.webp', look: 'right', imgBase: IB(362, 512, 169.5, 507, 329) },
+    { id: 'crimson', name: 'Crimson', hue: '#e4454a', img: 'assets/miniatures/knight-crimson.webp', look: 'right', imgBase: IB(510, 512, 182.5, 507, 355) },
+    { id: 'green', name: 'Green', hue: '#5ad060', img: 'assets/miniatures/knight-green.webp', look: 'right', imgBase: IB(510, 512, 309.5, 507, 391) },
+  ],
+  ranger: [
+    { id: 'default', name: 'Forest', hue: '#7aff9a', img: 'assets/miniatures/ranger.webp', look: 'left', imgBase: IB(325, 470, 153.5, 465, 284) },
+    { id: 'green', name: 'Green', hue: '#4ad070', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(473, 512, 218, 507, 348) },
+    { id: 'rust', name: 'Rust', hue: '#ffa040', img: 'assets/miniatures/ranger-rust.webp', look: 'right', imgBase: IB(512, 498, 282.5, 493, 363) },
+    { id: 'grey', name: 'Grey', hue: '#a8dcff', img: 'assets/miniatures/ranger-grey.webp', look: 'right', imgBase: IB(432, 512, 223, 507, 340) },
+  ],
+  wizard: [
+    { id: 'default', name: 'Sky blue', hue: '#6ab8ff', img: 'assets/miniatures/wizard.webp', look: 'right', imgBase: IB(363, 474, 183, 469, 305) },
+    { id: 'blue', name: 'Blue', hue: '#3a90ff', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(512, 476, 213, 471, 324) },
+    { id: 'crimson', name: 'Crimson', hue: '#ff6a80', img: 'assets/miniatures/wizard-crimson.webp', look: 'right', imgBase: IB(443, 512, 217, 507, 342) },
+    { id: 'white', name: 'White and gold', hue: '#ffe080', img: 'assets/miniatures/wizard-white.webp', look: 'right', imgBase: IB(322, 512, 167, 507, 290) },
+  ],
+  dwarf: [
+    { id: 'default', name: 'Ember', hue: '#ffa040', img: 'assets/miniatures/dwarf.webp', look: 'left', imgBase: IB(443, 448, 250, 443, 329) },
+    { id: 'blue', name: 'Deep blue', hue: '#7ac0ff', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(409, 512, 195, 507, 362) },
+    { id: 'crimson', name: 'Crimson', hue: '#ff6a4a', img: 'assets/miniatures/dwarf-crimson.webp', look: 'right', imgBase: IB(509, 512, 284.5, 507, 429) },
+    { id: 'green', name: 'Moss', hue: '#8aff8a', img: 'assets/miniatures/dwarf-green.webp', look: 'right', imgBase: IB(512, 493, 281.5, 488, 401) },
+  ],
+  bard: [
+    { id: 'default', name: 'Classic', hue: '#4ae8d8', img: 'assets/miniatures/bard.webp', look: 'right', imgBase: IB(318, 476, 153, 471, 283) },
+    { id: 'teal', name: 'Teal', hue: '#2ad0c0', img: 'assets/miniatures/bard-teal.webp', look: 'right', imgBase: IB(414, 512, 221, 507, 346) },
+    { id: 'crimson', name: 'Crimson', hue: '#ff8ac8', img: 'assets/miniatures/bard-crimson.webp', look: 'right', imgBase: IB(512, 504, 242, 499, 358) },
+    { id: 'blue', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/bard-blue.webp', look: 'right', imgBase: IB(415, 512, 214.5, 507, 317) },
+  ],
+};
+export const colorsOf = (cls) => HERO_LOOKS[cls] || [];
+export const lookById = (cls, id) => colorsOf(cls).find((l) => l.id === id) || colorsOf(cls)[0] || null;
+export const colorIdOf = (hero) => {
+  const looks = colorsOf(hero?.cls);
+  if (hero?.color && looks.some((l) => l.id === hero.color)) return hero.color;
+  return looks[0]?.id || 'default';
+};
+export const lookDef = (hero) => lookById(hero?.cls, colorIdOf(hero));
+// First free colour of this class; if every coat is taken, keep the preferred one (a fifth Knight shares).
+export const claimColor = (hero, takenIds) => {
+  const looks = colorsOf(hero?.cls);
+  if (!looks.length) return 'default';
+  const taken = new Set(takenIds || []);
+  const want = colorIdOf(hero);
+  if (!taken.has(want)) return want;
+  return looks.find((l) => !taken.has(l.id))?.id || want;
+};
+export const uniqueColors = (heroes) => {
+  const used = {};
+  for (const h of heroes || []) {
+    if (!h?.cls) continue;
+    const id = claimColor(h, used[h.cls] || []);
+    h.color = id;
+    (used[h.cls] ||= []).push(id);
+  }
+  return heroes;
+};
+export const assignedColor = (heroes, i) => {
+  const hero = heroes?.[i];
+  const looks = colorsOf(hero?.cls);
+  if (!looks.length) return 'default';
+  const taken = [];
+  for (let j = 0; j < i; j++) if (heroes[j]?.cls === hero.cls) taken.push(assignedColor(heroes, j));
+  return claimColor(hero, taken);
+};
+export const lookIndex = (heroes, i) => {
+  const looks = colorsOf(heroes?.[i]?.cls);
+  const n = looks.findIndex((l) => l.id === assignedColor(heroes, i));
+  return n < 0 ? 0 : n;
+};
+export const lookOf = (heroes, i) => colorsOf(heroes?.[i]?.cls)[lookIndex(heroes, i)] || null;
 
 // -------------------------------------------------------------------------------------------
 // Perks: one pick every level, three offered. Stat tweaks that compose without special cases.

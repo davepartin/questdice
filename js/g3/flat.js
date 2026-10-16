@@ -219,7 +219,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   heroes.forEach((hero, i) => {
     const look = D.lookOf(heroes, i);
     const k = D.CLASSES[hero.cls];
-    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: D.needsFlip(k, 'right') }).seat(k.imgBase); // every hero looks toward the monsters
+    const def = look || k;
+    const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: def.img || k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: D.needsFlip(def, 'right') }).seat(def.imgBase || k.imgBase); // every hero looks toward the monsters
     pc.el.classList.add('hero');
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
     const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
