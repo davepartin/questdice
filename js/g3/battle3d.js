@@ -389,11 +389,11 @@ function readyText(e) {
   const i = e.intent; if (!i) return '';
   if (i.slam) return 'A big hit this round. Stack block, or finish it first.';
   return {
-    strike: 'Your block takes it off.', pierce: 'Goes through block. Heal up, or finish it first.',
+    strike: '', pierce: 'Goes through block. Heal up, or finish it first.',
     guard: 'Blocks your attack. Hit another monster, or use pierce.', ward: `Hit it and you burn for ${E.burnOf(e)}. Hit another, or block.`,
     stalk: 'Hit it now, or it pounces next round.', phase: 'Attacks pass through. Only pierce hurts it now.',
     charge: 'Slams next round. Save block, or finish it first.', howl: `Every monster hits ${i.k} harder next round.`,
-    bind: `${i.k} of your dice get locked next round.`, drain: `Steals ${i.k} magic. Block takes off the hit.`,
+    bind: `${i.k} of your dice get locked next round.`, drain: `Steals ${i.k} magic.`,
     pilfer: 'Steals gold if it hits. Kill it to get it back.', summon: `Calls ${i.k} more next round.`, mend: 'Heals itself.',
     breath: 'Fire splashes every hero. Block soaks half in a solo fight.',
     chain: `${i.k} of your dice keep last round’s face and cannot be rerolled.`,
@@ -431,7 +431,7 @@ function showFoeInfo(e) {
   fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
-      h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), h('p', {}, readyText(e))),
+      h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), readyText(e) ? h('p', {}, readyText(e)) : null), // a plain hit says nothing: block is what stops an attack
       v.fig ? h('strong', { class: 'fi-fig' }, v.fig, v.unit && /^\d/.test(v.fig) ? h('small', {}, v.unit === 'dmg' ? 'damage' : v.unit) : null) : null) : null,
     diceRows(e, def),
     others.length ? h('small', { class: 'fi-t' }, 'It might also') : null,
