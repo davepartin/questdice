@@ -1082,3 +1082,6 @@ Dave asked why dice need more sides if we print our own numbers, and set the rul
 
 ## 2026-10-16 — talent dice count in straights
 Dave's idea: talent dice carry numbers too. Faces 1 and 3 are blank, the 2x moved to face 2 (and counts as a 2), and the 4-and-up faces always show their number (with or without a symbol) and count toward straights. Late-game straights went from about 1 roll in 30 to about 1 in 8. Camp, the 3D dice, the lessons and hints say so; the practice battle's scripted 2x is now face 2. Act II/III monsters a little sturdier to match; Legendary health eased to x1.15. Shot: docs/ingame/talent_die_camp.png (`node dev/talentdice.mjs`). Numbers in docs/BALANCE.md (16 Oct).
+
+## 2026-10-16 — Talent Triple across the bottom row
+Dave: a fourth triple. Talent, feet and talent on the same number = +10 attack (a talent blank, faces 1 and 3, never matches; the 2x counts as a 2). Lands on about 3% of rolls at the start and about 1% late, like the other triples, so no re-tuning. It glows across the bottom row with a "Talent! Triple +10 attack" banner, joins the team triples at a table ("Team Talent Attack"), and the Triples lesson and gear note list it. Shot: docs/ingame/talent3_1rolled.png (`FULL=1 SCRIPT='{"SW":4,"S":4,"SE":4}' node dev/bigdice.mjs talent3`).

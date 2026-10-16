@@ -857,7 +857,7 @@ function gearTab() {
   return h('div', { class: 'sx-tab gear' },
     coachBox('g_gear'),
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons Triple or Strength Triple (three alike across): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
+      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons, Strength or Talent Triple (three alike across a row): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))), petOfferCard(hero)));
 }

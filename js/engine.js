@@ -362,7 +362,7 @@ export function evaluate(hero, board, opts = {}) {
   }
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 
-  // Triples. Across (top row: weapon, head, weapon by the weapons' +N; middle row: hand, heart, hand) = +10 attack each.
+  // Triples. Across (top row: weapon, head, weapon by the weapons' +N; middle row: hand, heart, hand; bottom row: talent, feet, talent) = +10 attack each.
   // Down (head, heart, feet) = +10 block. Every die in the line must be in play; a +0 weapon never matches.
   out.triples = [];
   if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
@@ -374,6 +374,8 @@ export function evaluate(hero, board, opts = {}) {
     if (tw && hero.loadout.NE?.id === hero.loadout.NW.id && a === b && a > 0) { out.atk += tw; out.twinShot = tw; out.notes.push(`Twin shot +${tw}`); }
   }
   if (!hushed && isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
+  // Talent Triple (Dave, Oct 2026): the bottom row, talent, feet, talent, on the same number = +10 attack (a talent blank never matches; the 2x is a 2)
+  if (!hushed && isActive(hero, 'SW') && isActive(hero, 'SE')) { const a = talentNumber(val('SW')); if (a > 0 && a === talentNumber(val('SE')) && a === val('S')) { out.triples.push({ slots: ['SW', 'S', 'SE'], kind: 'atk', row: 'talents', name: 'Talent Triple' }); out.atk += SYNERGY_BONUS; } }
   if (!hushed && val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
@@ -1413,14 +1415,14 @@ function totalsFor(f) {
 }
 
 // Team triples: two or more heroes landing the same kind of triple in one round each get TEAM_TRIPLE_BONUS more.
-// Attack rows (Weapons, Strength) only count when they hit the same monster. Heartbeat: if every hero's heart die shows
+// Attack rows (Weapons, Strength, Talent) only count when they hit the same monster. Heartbeat: if every hero's heart die shows
 // the same face, each gains magic equal to the number of heroes.
-const TEAM_LABEL = { weapons: 'Team Weapons Attack', strength: 'Team Strength Attack', headtoe: 'Team Head to Toe Block' };
+const TEAM_LABEL = { weapons: 'Team Weapons Attack', strength: 'Team Strength Attack', talents: 'Team Talent Attack', headtoe: 'Team Head to Toe Block' };
 function teamBonuses(b, acting) {
   const out = { team: [], heartbeat: null };
   if (acting.length < 2) return out;
   const tgtOf = (f) => { const t = b.enemies[f.target]; return t && t.hp > 0 ? t.uid : b.enemies.find((e) => e.hp > 0)?.uid; };
-  for (const row of ['weapons', 'strength', 'headtoe']) {
+  for (const row of ['weapons', 'strength', 'talents', 'headtoe']) {
     const who = acting.filter((f) => (f.ev.triples || []).some((t) => t.row === row));
     if (who.length < 2) continue;
     const groups = new Map();

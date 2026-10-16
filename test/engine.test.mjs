@@ -136,6 +136,17 @@ test('triples: top row and middle row give +10 attack each; head-heart-feet give
   assert.ok(v.block >= 10);
 });
 
+test('Talent Triple: talent, feet, talent on the same number across the bottom row is +10 attack; a talent blank never matches', () => {
+  const h = knight(); h.special = { SW: 6, SE: 6 }; h.speed = { S: 6 }; h.talent = { SW: [], SE: [] };
+  const base = evaluate(h, board({ SW: 5, S: 4, SE: 5, NW: 1, NE: 1, C: 6 }));
+  const hit = evaluate(h, board({ SW: 5, S: 5, SE: 5, NW: 1, NE: 1, C: 6 }));
+  assert.deepEqual(hit.triples.map((t) => t.name), ['Talent Triple']);
+  assert.deepEqual(hit.triples[0].slots, ['SW', 'S', 'SE']);
+  assert.ok(hit.atk >= base.atk + 10);
+  assert.deepEqual(evaluate(h, board({ SW: 2, S: 2, SE: 2, NW: 1, NE: 1, C: 6 })).triples.map((t) => t.name), ['Talent Triple'], 'the 2x faces count as 2s');
+  assert.equal(evaluate(h, board({ SW: 3, S: 3, SE: 3, NW: 1, NE: 1, C: 6 })).triples.length, 0, 'a talent blank (face 3) is not a 3');
+});
+
 test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5; both bow dice are blanks (v=0)
