@@ -751,6 +751,7 @@ async function lockIn() {
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
   const b = S.battle; const hero = S.hero; const r = E.battleRewards(b);
+  const shattered = E.shatterDiamonds(hero); // the fight is over: any Diamond you brought shatters, your own weapons come back
   const place = S.quest?.place;
   E.recordFled(hero.campaign, b);
   ST.applyPlaceVictory(hero.campaign, place);
@@ -758,14 +759,15 @@ function showVictory() {
   const lvBefore = hero.level;
   const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
   if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
-  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; }
+  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; r.diamond = null; }
+  const diamondTaken = r.diamond ? E.takeDiamond(hero, r.diamond) : false; // into the case if there is room (two at most)
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);
   const points = E.pointsOf(b); E.recordBattle(hero, { points, heroes: 1, won: true });
   const quest = S.quest;
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, picked: (!first || !r.drops.length) ? 'none' : null, quest, offer: null, repeat: !first };
+  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (!first || !r.drops.length) ? 'none' : null, quest, offer: null, repeat: !first };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
   renderVictory();
@@ -798,6 +800,7 @@ function renderVictory() {
     primary(ready ? '⛺ To camp' : 'Choose a perk and spoils to continue', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
 }
 function defeat(retreat) {
+  S.shattered = S.hero ? E.shatterDiamonds(S.hero) : []; // win, lose or withdraw, a Diamond brought to the fight shatters
   concludeRoadEffects();
   const heroes = [S.hero];
   let loss = 0;

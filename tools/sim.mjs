@@ -7,6 +7,7 @@ import {
   buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT } from '../js/data.js';
+import * as ENGINE from '../js/engine.js';
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
 export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };
 
@@ -319,4 +320,13 @@ if (process.argv[1].endsWith('sim.mjs')) {
       console.log(`  step ${String(step).padStart(2)}  rounds ${(a.rounds / a.n).toFixed(1)}  hp left ${(100 * a.hp / a.n).toFixed(0)}%  tries ${(a.tries / a.n).toFixed(2)}  lvl ${(a.lvl / a.n).toFixed(1)}`);
     }
   }
+}
+// Diamonds (one fight each, two at most): a careful player brings every Diamond to a boss, and one to an elite when the case is
+// full (so the next find is not wasted). A careless one forgets they have them.
+export function botArm(hero, quest) {
+  if (PLAY.style === 'first') return;
+  const E = ENGINE; const ds = E.diamondsOf(hero); if (!ds.length) return;
+  const hands = E.diamondHands(hero);
+  const n = quest.kind === 'boss' ? hands.length : quest.kind === 'elite' && E.diamondCaseFull(hero) ? 1 : 0;
+  ds.slice(0, n).forEach((d, i) => E.armDiamond(hero, d.uid, hands[i]));
 }

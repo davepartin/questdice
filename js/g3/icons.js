@@ -5,6 +5,7 @@ const P = {
   shield: '<path d="M12 3l7.5 3v5.2c0 4.8-3.1 8-7.5 9.8-4.4-1.8-7.5-5-7.5-9.8V6z" fill="currentColor" fill-opacity=".14"/><path d="M12 7v10M8 11h8"/>',
   bow: '<path d="M6 3.5c10 2.2 10 14.8 0 17"/><path d="M6 3.5v17M6 12h14.5M17.5 9l3 3-3 3"/>',
   star: '<path d="M12 2.8l2.3 6.9 6.9 2.3-6.9 2.3L12 21.2l-2.3-6.9L2.8 12l6.9-2.3z" fill="currentColor" fill-opacity=".16"/>',
+  gem: '<path d="M7 3.5h10l4.5 5.5L12 20.5 2.5 9z" fill="currentColor" fill-opacity=".18"/><path d="M2.5 9h19M9.5 3.5 8 9l4 11.5L16 9l-1.5-5.5"/>',
   axe: '<path d="M12 3.5V21"/><path d="M12 5.5c4.2-1.6 7.8.4 8.2 4-3.6 1.6-7.4.6-8.2-1.8z" fill="currentColor" fill-opacity=".16"/><path d="M12 5.5C9 5 6.5 6.5 6 9"/>',
   lute: '<circle cx="8.8" cy="15.2" r="5" fill="currentColor" fill-opacity=".14"/><circle cx="8.8" cy="15.2" r="1.3"/><path d="M12.4 11.6L19.5 4.5M17.5 3.5l3 3"/>',
   heart: '<path d="M12 20.5s-7.5-4.6-7.5-10.4A4.3 4.3 0 0112 7.8a4.3 4.3 0 017.5 2.3c0 5.8-7.5 10.4-7.5 10.4z" fill="currentColor" fill-opacity=".16"/>',

@@ -778,3 +778,56 @@ test('three metals: an old Diamond weapon loads as Gold, and nothing new comes o
   migrateHero(h); assert.equal(h.loadout.NW.rarity, 2); assert.equal(h.bag[0].rarity, 2);
   const E = await import('../js/engine.js'); const rng = E.makeRng(3); for (let i = 0; i < 400; i++) assert.ok(E.rollDrops(rng, 1, { rarityBoost: 6 })[0].rarity <= 2);
 });
+
+test('Diamond weapons: honest dice with no blanks, every face an icon, crits of three, full size in any hand', async () => {
+  const E = await import('../js/engine.js'); const { DIAMOND } = await import('../js/data.js');
+  for (const act of [1, 2, 3]) for (let s = 0; s < 30; s++) {
+    const d = E.makeDiamond(E.makeRng(act * 100 + s), act); const size = DIAMOND.sizeByAct[act - 1];
+    assert.equal(d.size, size); assert.ok(d.diamond && DIAMOND.pool.includes(d.id) && WEAPONS[d.id].hands !== 2);
+    const f = E.weaponFaces(d, 4); const own = WEAPONS[d.id].lean === 'def' ? 'b' : 'r';
+    assert.equal(f.length, size, 'a Diamond rolls at its full size even in a d4 hand');
+    assert.ok(f.every((x) => x.v > 0 && x.v <= size && x.c === own && x.fx), `${d.id} d${size}: no blanks, honest, one colour, icons everywhere`);
+    const top = Math.max(...f.map((x) => x.v)); assert.ok(f.filter((x) => x.v === top).every((x) => Object.values(x.fx)[0] === 3));
+  }
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.loadout.NW = E.makeDiamond(E.makeRng(3), 3); assert.equal(sidesOf(h, 'NW'), 10);
+  const { tierName } = await import('../js/data.js'); assert.equal(tierName(h.loadout.NW), 'Diamond');
+});
+
+test('Diamond weapons: a case of two; bring one in each hand; they shatter after the fight and your weapons come back', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.dice = [...(h.dice || ['NW', 'NE'])]; if (!h.dice.includes('NE')) h.dice.push('NE');
+  const [a, b, c] = [1, 2, 3].map((i) => E.makeDiamond(E.makeRng(i), 2));
+  assert.ok(E.takeDiamond(h, a) && E.takeDiamond(h, b)); assert.equal(E.takeDiamond(h, c), false, 'two at most'); assert.ok(E.diamondCaseFull(h));
+  const sword = h.loadout.NW.uid; const shield = h.loadout.NE.uid;
+  E.armDiamond(h, a.uid, 'NW'); E.armDiamond(h, b.uid, 'NE'); assert.equal(E.armedSlot(h, b.uid), 'NE');
+  E.armDiamond(h, a.uid, 'NE'); assert.equal(E.armedSlot(h, a.uid), 'NE'); assert.equal(E.armedSlot(h, b.uid), null, 'one Diamond per hand: the one already there goes back to its case');
+  E.armDiamond(h, a.uid, 'NW'); E.armDiamond(h, b.uid, 'NE');
+  const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
+  E.newBattle(h, quest, makeRng(1), 1);
+  assert.equal(h.loadout.NW.uid, a.uid); assert.equal(h.loadout.NE.uid, b.uid); assert.equal(E.diamondsOf(h).length, 0, 'they left the case'); assert.equal(h.armed, undefined);
+  const gone = E.shatterDiamonds(h); assert.equal(gone.length, 2);
+  assert.equal(h.loadout.NW.uid, sword); assert.equal(h.loadout.NE.uid, shield); assert.equal(h.lent, undefined);
+  E.newBattle(h, quest, makeRng(1), 1); assert.equal(h.loadout.NW.uid, sword, 'nothing armed: your own weapons');
+  // a two-handed bow is set aside whole: the Diamond takes the left hand, fists the right; the bow comes back after
+  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); const bow = r.loadout.NW.uid; E.takeDiamond(r, c); E.armDiamond(r, c.uid, 'NW');
+  E.newBattle(r, quest, makeRng(1), 1); assert.equal(r.loadout.NW.uid, c.uid); assert.equal(r.loadout.NE.id, 'fists'); assert.ok(isActive(r, 'NE'));
+  E.shatterDiamonds(r); assert.equal(r.loadout.NW.uid, bow); assert.equal(WEAPONS[r.loadout.NE.id].hands, 2);
+});
+
+test('Diamond weapons: about one and a half an act from fights and the traveller; a save closed mid-fight gives the hands back', async () => {
+  const E = await import('../js/engine.js'); const { migrateHero } = await import('../js/save.js');
+  let found = 0; const N = 60;
+  for (let s = 1; s <= N; s++) {
+    const h = newHero({ name: 'T', cls: 'knight', seed: s });
+    for (let act = 1; act <= 3; act++) for (let step = 1; step <= 10; step++) {
+      h.campaign.act = act; h.campaign.step = step; const quest = E.questsFor(h)[0];
+      if (E.battleRewards({ quest, hero: h, enemies: [], players: 1, goldEarned: 0, stolen: 0 }).diamond) found++;
+      h.campaign.shop = null; if (E.shopStock(h).some((it) => it.inst.diamond)) found++;
+    }
+  }
+  const perAct = found / N / 3; assert.ok(perAct > 1.1 && perAct < 2, `Diamonds an act: ${perAct.toFixed(2)}`);
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); const sword = h.loadout.NW.uid; const d = E.makeDiamond(E.makeRng(9), 1);
+  E.takeDiamond(h, d); E.armDiamond(h, d.uid, 'NW'); E.wieldDiamonds(h); assert.equal(h.loadout.NW.uid, d.uid);
+  const saved = JSON.parse(JSON.stringify(h)); migrateHero(saved); assert.equal(saved.loadout.NW.uid, sword); assert.equal(saved.lent, undefined);
+  const leg = newHero({ name: 'L', cls: 'knight', seed: 1 }); leg.bag = [E.makeWeapon('dawnbreaker', 3, E.makeRng(1))]; migrateHero(leg); assert.equal(leg.bag[0].rarity, 3, 'legendaries keep their tier');
+});

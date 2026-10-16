@@ -232,12 +232,12 @@ function faceChips(inst) {
 function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
   // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
-  const size = E.weaponSize(inst); const hero = X.S?.hero; const wi = hero && inst.id !== 'fists' && !String(inst.uid).startsWith('c-') ? E.wieldInfo(hero, inst) : null;
-  const need = size > 4 ? h('p', { class: `wc-need ${wi && !wi.ok ? 'short' : 'ok'}` }, ico(wi && !wi.ok ? 'lock' : 'check'),
+  const size = E.weaponSize(inst); const hero = X.S?.hero; const wi = hero && inst.id !== 'fists' && !inst.diamond && !String(inst.uid).startsWith('c-') ? E.wieldInfo(hero, inst) : null;
+  const need = inst.diamond ? h('p', { class: 'wc-need diamond' }, ico('gem'), 'Any hand · one fight, then it shatters') : size > 4 ? h('p', { class: `wc-need ${wi && !wi.ok ? 'short' : 'ok'}` }, ico(wi && !wi.ok ? 'lock' : 'check'),
     wi && !wi.ok ? `Needs d${size} Strength${wi.two ? ' in both hands' : ''}. Rolls as a d${wi.rollsAs} until you train it.` : `Needs d${size} Strength${wi?.two ? ' in both hands' : ''}`) : null;
   return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.legendary ? 'Legendary · ' : ''}${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact && !w.legendary ? null : h('p', { class: `wc-tag ${w.legendary ? 'legend' : ''}` }, w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
+    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.legendary ? 'Legendary · ' : ''}${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact && !w.legendary ? null : h('p', { class: `wc-tag ${w.legendary ? 'legend' : ''}` }, inst.diamond ? 'Diamond: no blanks, an icon on every face, and its top number a crit with three. Made for the one fight that matters.' : w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
 }
 // opts.table = { mode: 'host' | 'join', code, onDone(name, cls, extra) }: the same hero choice, for sitting down at a table.
@@ -470,6 +470,26 @@ function questCard(q, idx) {
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
     h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? `Face ${bossCall(q)}` : 'Fight'), ico('chevron')));
 }
+// Bring a Diamond (Dave, Oct 2026): under the quest card, each Diamond in your case with a Left and a Right button. Tap a hand to bring
+// it into this fight in that hand (tap again to keep it in its case). Two can go, one in each hand. It shatters when the fight ends.
+function diamondBring(hero) {
+  if (!E.diamondsOf(hero).length) return null;
+  const box = h('section', { class: 'sx-dbring' });
+  const paint = () => {
+    const ds = E.diamondsOf(hero); const hands = E.diamondHands(hero); const armed = ds.filter((d) => E.armedSlot(hero, d.uid));
+    const two = E.isTwoHanded(hero) ? D.WEAPONS[hero.loadout.NW.id].name : null;
+    box.replaceChildren(...[
+      h('p', { class: 'db-head' }, ico('gem'), h('b', {}, armed.length ? `Bringing ${armed.length === 2 ? 'two Diamonds' : 'a Diamond'}` : 'Bring a Diamond?'), h('small', {}, 'One fight, then it shatters. Win or lose.')),
+      h('div', { class: 'db-list' }, ds.map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
+        return h('div', { class: `db-item ${at ? 'on' : ''}` },
+          h('div', { class: 'db-top' }, h('b', { class: 'db-name' }, `Diamond ${w.name}`), h('small', {}, `d${d.size}`),
+            h('span', { class: 'db-hands' }, hands.map((s) => btn(s === 'NW' ? 'Left' : 'Right', () => { E.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); paint(); },
+              { kind: at === s ? 'primary' : 'ghost', cls: 'db-hand', aria: `${at === s ? 'Keep' : 'Bring'} the Diamond ${w.name}${at === s ? ' in its case' : ` in your ${s === 'NW' ? 'left' : 'right'} hand`}` })))),
+          faceChips(d)); })),
+      two && armed.length ? h('small', { class: 'db-note' }, `Your ${two} is two-handed: it sits this fight out, and a hand with no Diamond fights with fists.`) : null].filter(Boolean));
+  };
+  paint(); return box;
+}
 export function board() {
   const S = X.S; const hero = S.hero || X.members()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); X.persist();
   const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0); const ambush = c.ambush?.length;
@@ -487,7 +507,7 @@ export function board() {
         blessings.length ? h('p', { class: 'note boon' }, ico('shine'), blessings.map((b) => b.text).join(' · ')) : null,
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
       eyebrow(quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead', 'center'),
-      h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)))));
+      h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)), X.net ? null : diamondBring(hero))));
   lay('board'); SCR.enter('road', { hero, heroes: X.members(), place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 
@@ -575,12 +595,16 @@ export function victory(first) {
     ] }))))
     : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold. Coins, at least, never argue.` : `You took the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack, humming a little.`));
   const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
+  const gemLine = (txt) => h('p', { class: 'dm-line' }, ico('gem'), txt);
+  const diamondPanel = Rw.diamond ? panel('sx-diamond', eyebrow('A Diamond weapon', 'gold'), h('div', { class: 'loot-row one' }, weaponCard(Rw.diamond, { cls: 'pick' })),
+    gemLine(Rw.diamondTaken ? `It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from the quest card when a fight matters.` : `Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}), so this one stays behind. Use a Diamond in a fight to make room.`)) : null;
+  const shattered = Rw.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${Rw.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light.`) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.repeatNote(Rw.share)) : null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, rewards, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, rewards, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -601,6 +625,7 @@ export function defeat(retreat, loss) {
     h('div', { class: 'sx-side' },
       h('header', { class: 'df-head' }, eyebrow(S.quest?.name || ''), h('h1', { class: 'df-title' }, retreat ? 'You withdraw' : 'You have fallen'), h('p', {}, retreat ? 'A wise person lives to fight tomorrow. Tomorrow is still yours.' : 'The dark wins this round. It does not get to keep you. Up you get.'), flourish()),
       panel('sx-grace', h('p', { class: 'df-loss' }, loss ? h('span', {}, `You dropped `, coin(loss, 'inline'), ' in the dust. Coins can be found again.') : 'You lost nothing but pride, and pride grows back.'),
+        S.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${S.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light. Diamonds are for one fight, whatever its ending.`) : null,
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
       h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'),
@@ -859,7 +884,9 @@ function gearTab() {
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
       h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons, Strength or Talent Triple (three alike across a row): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
-    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', h('div', { class: 'wc-grid' }, stock.map((it, i) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.bagFull(hero) ? 'Pack full' : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.bagFull(hero) ? 'Your pack is full. Sell something first.' : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || E.bagFull(hero), cls: 'buy', aria: `Buy for ${it.price} gold` })] }))), petOfferCard(hero)));
+    E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'Rare weapons for one fight each. Bring one, or two (one in each hand), from the quest card when a fight matters. When that fight ends, it shatters.',
+      h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => weaponCard(d, { compact: true, badge: E.armedSlot(hero, d.uid) ? (E.armedSlot(hero, d.uid) === 'NW' ? 'Left' : 'Right') : '' })))) : null,
+    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', h('div', { class: 'wc-grid' }, stock.map((it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero); return weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` })] }); })), petOfferCard(hero)));
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {

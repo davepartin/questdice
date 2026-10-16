@@ -2,7 +2,7 @@
 // reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
-import { QUESTS_PER_ACT, normalizeDifficulty } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS } from './data.js';
 
 const PREFIX = 'questdice.hero.';
 export const nameKey = (name) => String(name || '').trim().toLowerCase();
@@ -53,8 +53,15 @@ export const MIN_PASSWORD = 3;
 export function migrateHero(hero) {
   if (!hero || typeof hero !== 'object') return hero;
   hero.difficulty = normalizeDifficulty(hero.difficulty);
-  // three metals now (Oct 2026): an old Diamond weapon comes back as Gold, which has the same full die
-  for (const w of [...Object.values(hero.loadout || {}), ...(hero.bag || [])]) if (w && (w.rarity | 0) > 2) w.rarity = 2;
+  // closed mid-fight with a Diamond in hand: the fight is over, so it has shattered; the hands get their own weapons back
+  if (hero.lent && hero.loadout) {
+    const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
+    if (L.dice) hero.dice = L.dice; else delete hero.dice;
+    delete hero.lent; delete hero.wielding;
+  }
+  // three metals now (Oct 2026): an old Diamond-tier weapon comes back as Gold, which has the same full die (legendaries and the new
+  // one-fight Diamond weapons keep theirs)
+  for (const w of [...Object.values(hero.loadout || {}), ...(hero.bag || [])]) if (w && (w.rarity | 0) > 2 && !w.diamond && !WEAPONS[w.id]?.legendary) w.rarity = 2;
   return hero;
 }
 export async function createSave(hero, password) {

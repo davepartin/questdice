@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -50,6 +50,16 @@ export const weaponSize = (inst) => inst.size || 4;
 // metals: Bronze 1 (on its top face), Silver about half its numbers with 2 on the top face, Gold every number with 3 on the top
 // face (the crit: a 10 with three pierce arrows hits like a 13). A brutal weapon's top faces each carry an icon from Silver. A weapon in a
 // smaller hand rolls, and is built, as the hand's size. A blank still sends the hand's Strength that way. Legendaries keep their faces.
+// A Diamond's faces: no blanks, all its own colour, an icon on every face, and its top number a crit with three (pierce for a weapon
+// that has it, heal for a guard that has it, else the weapon's first icon).
+function diamondFaces(def, size) {
+  const own = def.lean === 'def' ? 'b' : 'r';
+  const vals = DIAMOND.dice[size] || DIAMOND.dice[Object.keys(DIAMOND.dice).map(Number).filter((n) => n <= size).pop() || 6];
+  const kinds = [...new Set([...def.faces.flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
+  const want = own === 'r' ? 'pierce' : 'heal'; const crit = kinds.includes(want) ? want : kinds[0] || want;
+  const rest = kinds.filter((k) => k !== crit); const top = Math.max(...vals);
+  return vals.map((v, i) => ({ v, c: own, fx: v === top ? { [crit]: 3 } : { [rest.length ? rest[i % rest.length] : crit]: 1 } }));
+}
 function legendaryFaces(def, size) {
   const faces = def.faces.map((f) => (f.fx ? { ...f, fx: { ...f.fx } } : { ...f }));
   const first = def.lean === 'def' ? 'b' : 'r'; const other = first === 'r' ? 'b' : 'r';
@@ -58,6 +68,7 @@ function legendaryFaces(def, size) {
 }
 export function weaponFaces(inst, rollSize) {
   const def = WEAPONS[inst.id];
+  if (inst.diamond) return diamondFaces(def, weaponSize(inst)); // a Diamond rolls at its full size in any hand
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
@@ -96,6 +107,47 @@ export function ensureTwin(hero) { // older saves share one uid between the two 
   if (NW && NE && WEAPONS[NW.id].hands === 2 && NE.id === NW.id && !NE.twin) hero.loadout.NE = { ...NE, uid: `${NW.uid}~R`, twin: true };
 }
 const fists = (side) => ({ uid: `fists-${side}`, id: 'fists', rarity: 0 });
+
+// ---- Diamond weapons (Dave, Oct 2026): one fight each, at most two carried (DIAMOND in data.js).
+export function makeDiamond(rng, act = 1) {
+  const id = pick(rng, DIAMOND.pool); const size = DIAMOND.sizeByAct[Math.min(3, Math.max(1, act)) - 1];
+  return { uid: newUid(rng), id, rarity: 3, size, diamond: true };
+}
+export const diamondsOf = (hero) => (hero.diamonds ||= []);
+export const diamondCaseFull = (hero) => diamondsOf(hero).length >= DIAMOND.max;
+export function takeDiamond(hero, inst) { if (!inst?.diamond || diamondCaseFull(hero)) return false; diamondsOf(hero).push(inst); return true; }
+// Which hands can hold a Diamond: the left always; the right when you have a right-hand weapon die, or a two-handed weapon fills both.
+export const diamondHands = (hero) => ['NW', 'NE'].filter((s) => s === 'NW' || isActive(hero, s));
+// Bring a Diamond into the next fight in a hand (or null to leave it in its case). Two Diamonds can go, one in each hand.
+export function armDiamond(hero, uid, slot) {
+  const a = (hero.armed ||= {});
+  for (const k of ['NW', 'NE']) if (a[k] === uid) delete a[k];
+  if (slot && diamondHands(hero).includes(slot) && diamondsOf(hero).some((d) => d.uid === uid)) a[slot] = uid;
+  if (!a.NW && !a.NE) delete hero.armed;
+  return true;
+}
+export const armedSlot = (hero, uid) => ['NW', 'NE'].find((k) => hero.armed?.[k] === uid) || null;
+// The fight begins: each armed Diamond leaves its case and takes its hand; the weapons it replaces wait in hero.lent. A two-handed
+// weapon is set aside whole, and a hand with no Diamond fights with fists.
+export function wieldDiamonds(hero) {
+  const a = hero.armed; delete hero.armed; if (!a || hero.lent) return [];
+  const take = (uid) => { const i = diamondsOf(hero).findIndex((d) => d.uid === uid); return i < 0 ? null : diamondsOf(hero).splice(i, 1)[0]; };
+  const pick2 = { NW: a.NW && take(a.NW), NE: a.NE && take(a.NE) };
+  if (!pick2.NW && !pick2.NE) return [];
+  const two = isTwoHanded(hero);
+  hero.lent = { NW: hero.loadout.NW, NE: hero.loadout.NE ?? null, dice: hero.dice ? [...hero.dice] : null };
+  if (two) { hero.loadout.NW = pick2.NW || fists('L'); hero.loadout.NE = pick2.NE || fists('R'); if (hero.dice && !hero.dice.includes('NE')) hero.dice = [...hero.dice, 'NE']; }
+  else for (const k of ['NW', 'NE']) if (pick2[k]) hero.loadout[k] = pick2[k];
+  hero.wielding = [pick2.NW, pick2.NE].filter(Boolean);
+  return hero.wielding;
+}
+// The fight is over (won, lost or left): the Diamonds shatter and the hands get their own weapons back. Returns what shattered.
+export function shatterDiamonds(hero) {
+  if (!hero?.lent) return [];
+  const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
+  if (L.dice) hero.dice = L.dice; else delete hero.dice;
+  const gone = hero.wielding || []; delete hero.lent; delete hero.wielding; return gone;
+}
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
 // ------------------------------------------------------------------------------- heroes
@@ -211,7 +263,7 @@ export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
     case 'head': return mindSize(hero);
     case 'feet': return feetSize(hero);
-    case 'weapon': return Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling
+    case 'weapon': return hero.loadout[slot]?.diamond ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling (a Diamond ignores it)
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
@@ -513,6 +565,7 @@ export function withDifficulty(hero, quest) {
 }
 export function newBattle(hero, quest0, rng, players = 1) {
   const quest = withDifficulty(hero, quest0);
+  wieldDiamonds(hero); // the Diamonds you chose to bring take their hands for this fight
   const sc = partyScale(players);
   const enemies = [];
   for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge }, rng));
@@ -926,7 +979,9 @@ export function battleRewards(b) {
   const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
   if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
-  return { xp, gold, drops };
+  const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
+  const diamond = drng() < dch ? makeDiamond(drng, c.act) : null; // now and then the fight leaves a Diamond behind
+  return { xp, gold, drops, diamond };
 }
 function tryFlee(b, rep) {
   rep.fled = rep.fled || [];
@@ -1078,13 +1133,17 @@ export function shopStock(hero) {
     const pool = LEGENDARY.filter((id) => !carried(hero).includes(id));
     if (pool.length) { const inst = makeWeapon(pick(lrng, pool), 3, lrng, items[items.length - 1].inst.size || 4); items[items.length - 1] = { inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false }; }
   }
+  const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop-diamond'));
+  if (drng() < DIAMOND.chance.shop) { const inst = makeDiamond(drng, c.act); items[0] = { inst, price: Math.round((WEAPONS[inst.id].price || 20) * DIAMOND.price * (SIZES.indexOf(inst.size) + 1) * priceMod), sold: false }; } // rarely, a Diamond, and dear
   if (flags.discount || flags.hike) c.campFlags = {};
   c.shop = { step: `${c.act}.${c.step}`, items };
   return items;
 }
 export function buyItem(hero, i) {
   const it = shopStock(hero)[i];
-  if (!it || it.sold || hero.gold < it.price || bagFull(hero)) return false;
+  if (!it || it.sold || hero.gold < it.price) return false;
+  if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; diamondsOf(hero).push(it.inst); return true; } // into the Diamond case
+  if (bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }
 // Only one legendary in your hands at a time (Dave). A two-handed legendary fills both hands, so it never meets another.

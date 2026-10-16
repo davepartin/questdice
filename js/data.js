@@ -99,6 +99,18 @@ export const WEAPON_DICE = {
   risky: { 4: [0, 0, 4, 4], 6: [0, 0, 4, 5, 6, 6], 8: [0, 0, 0, 5, 6, 7, 8, 8], 10: [0, 0, 0, 6, 7, 8, 9, 9, 10, 10] },
   brutal: { 4: [0, 0, 4, 4], 6: [0, 0, 0, 6, 6, 6], 8: [0, 0, 0, 0, 7, 8, 8, 8], 10: [0, 0, 0, 0, 8, 9, 10, 10, 10, 10] },
 };
+// Diamond weapons (Dave, Oct 2026): rare, awesome, and good for ONE fight. You find about one and a half an act (spoils, now and then
+// the traveller), carry at most two in your Diamond case (they never take pack room), and bring one into a fight in place of a hand's
+// weapon, or two, one in each hand. When the fight ends, win, lose or withdraw, it shatters. Honest dice with no blanks: every face
+// carries an icon and the top faces are crits with three. A Diamond rolls at its full size in any hand.
+export const DIAMOND = {
+  max: 2,
+  chance: { battle: 0.06, elite: 0.4, boss: 0.35, shop: 0.03 },
+  pool: ['dagger', 'sword', 'spear', 'mace', 'bracer', 'shield', 'tower'], // one-handed, so you can hold one in each hand
+  sizeByAct: [6, 8, 10],
+  dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
+  price: 3.2, // the traveller's price, times the weapon's base price per size step
+};
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
@@ -171,7 +183,7 @@ export const WEAPONS = {
 export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legendary);
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
 export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows
-export const tierName = (inst) => (isLegendary(inst) ? 'Legendary' : RARITY[(inst?.rarity | 0)] || 'Bronze');
+export const tierName = (inst) => (isLegendary(inst) ? 'Legendary' : inst?.diamond ? 'Diamond' : RARITY[(inst?.rarity | 0)] || 'Bronze');
 // The chance a fight's spoils hold a legendary you do not already carry, and the traveler's chance (Act II on) to bring one.
 export const LEGENDARY_CHANCE = { elite: 0.06, boss: 0.15, perilous: 0.03, shop: 0.05 };
 export const LOOT_WEIGHTS = {
