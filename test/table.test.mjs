@@ -433,17 +433,17 @@ test('a test on the road works at a table: the champion rolls, every phone sees 
 });
 
 test('two knights at a table do not share a colour', () => {
-  const ada = E.newHero({ name: 'Ada', cls: 'knight', seed: 1, color: 'blue' });
-  const bea = E.newHero({ name: 'Bea', cls: 'knight', seed: 2, color: 'blue' });
+  const ada = E.newHero({ name: 'Ada', cls: 'knight', seed: 1, color: 'crimson' });
+  const bea = E.newHero({ name: 'Bea', cls: 'knight', seed: 2, color: 'crimson' });
   const table = createTable({ code: 'COLR', seed: 1, name: 'Coats' });
   assert.equal(joinTable(table, { name: 'Ada', cls: 'knight', token: 'tok0aaaa', hero: ada }).ok, true);
   assert.equal(joinTable(table, { name: 'Bea', cls: 'knight', token: 'tok1bbbb', hero: bea }).ok, true);
-  assert.equal(table.players[0].color, 'blue');
-  assert.notEqual(table.players[1].color, 'blue');
+  assert.equal(table.players[0].color, 'crimson');
+  assert.notEqual(table.players[1].color, 'crimson');
   assert.equal(table.players[1].brought.color, table.players[1].color);
   assert.equal(playerView(table, table.players[0].id).players[1].color, table.players[1].color);
   command(table, table.players[1].id, { type: 'ready' });
   assert.equal(command(table, table.players[0].id, { type: 'start' }).ok, true);
-  assert.equal(table.company.members[0].color, 'blue');
-  assert.notEqual(table.company.members[1].color, 'blue');
+  assert.equal(table.company.members[0].color, 'crimson');
+  assert.notEqual(table.company.members[1].color, 'crimson');
 });

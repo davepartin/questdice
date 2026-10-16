@@ -29,20 +29,16 @@ test('every hero and monster records which way it was painted, and the flip face
     assert.equal(m.look, 'left', `${id} monster is posed looking left`);
     assert.equal(needsFlip(m, 'left'), false, `${id} already looks left — do not flip`);
   }
-  assert.equal(needsFlip(CLASSES.knight, 'right'), true);
-  assert.equal(needsFlip(CLASSES.ranger, 'right'), true);
-  assert.equal(needsFlip(CLASSES.dwarf, 'right'), true);
-  assert.equal(needsFlip(CLASSES.wizard, 'right'), false);
-  assert.equal(needsFlip(CLASSES.bard, 'right'), false);
+  for (const id of ['knight', 'ranger', 'dwarf', 'wizard', 'bard']) assert.equal(needsFlip(CLASSES[id], 'right'), false, `${id} is painted facing right (Oct 2026 paintings): never mirrored`);
   assert.equal(needsFlip(MONSTERS.ogre, 'left'), false);
   assert.equal(needsFlip(MONSTERS.wraith, 'left'), false);
   assert.equal(needsFlip(MONSTERS.spider, 'left'), false);
   assert.equal(needsFlip(MONSTERS.vharaxis, 'left'), false);
 });
 
-test('each class has four painted coats, variants face right, and the files are there', () => {
+test('each class has three painted coats, all facing right, and the files are there', () => {
   for (const [cls, looks] of Object.entries(HERO_LOOKS)) {
-    assert.equal(looks.length, 4, cls);
+    assert.equal(looks.length, 3, cls);
     assert.equal(looks[0].img, CLASSES[cls].img);
     assert.equal(looks[0].look, CLASSES[cls].look);
     for (const l of looks) {

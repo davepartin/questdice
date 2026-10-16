@@ -405,16 +405,16 @@ test('the hero the monsters target is the shield: blocks count double, and stand
 test('company looks: a second and third hero of the same class wear other colours', async () => {
   const { lookIndex, lookOf, HERO_LOOKS, uniqueColors } = await import('../js/data.js');
   const heroes = [{ cls: 'knight' }, { cls: 'wizard' }, { cls: 'knight' }, { cls: 'knight' }, { cls: 'wizard' }, { cls: 'knight' }];
-  assert.deepEqual(heroes.map((_, i) => lookIndex(heroes, i)), [0, 0, 1, 2, 1, 3]); // four Knights take four coats; they do not wrap
-  assert.equal(lookOf(heroes, 2).id, 'blue');
+  assert.deepEqual(heroes.map((_, i) => lookIndex(heroes, i)), [0, 0, 1, 2, 1, 0]); // three Knights take three coats; a fourth shares
+  assert.equal(lookOf(heroes, 2).id, 'crimson');
   uniqueColors(heroes);
-  assert.deepEqual(heroes.map((h) => h.color), ['default', 'default', 'blue', 'crimson', 'blue', 'green']);
+  assert.deepEqual(heroes.map((h) => h.color), ['default', 'default', 'crimson', 'green', 'crimson', 'default']);
   const clash = [{ cls: 'knight', color: 'green' }, { cls: 'knight', color: 'green' }];
   uniqueColors(clash);
   assert.equal(clash[0].color, 'green');
   assert.equal(clash[1].color, 'default', 'the second Knight is given a free coat');
   for (const [cls, looks] of Object.entries(HERO_LOOKS)) {
-    assert.ok(looks.length >= 4, cls);
+    assert.ok(looks.length >= 3, cls);
     assert.equal(looks[0].id, 'default', `${cls} default painting is first`);
     assert.equal(new Set(looks.map((l) => l.hue)).size, looks.length, `${cls} looks have different chip colours`);
     assert.equal(new Set(looks.map((l) => l.id)).size, looks.length, `${cls} look ids are unique`);
