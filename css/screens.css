@@ -695,3 +695,4 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .dm-line { display: flex; align-items: flex-start; gap: .4rem; margin: .45rem 0 0; color: #bff4ff; font-size: .82rem; line-height: 1.4; } .dm-line.shattered { color: #d6f7ff; font-style: italic; }
 .sx-zone.zn-diamonds { border: 1px solid rgba(143, 232, 255, .5); background: radial-gradient(120% 90% at 50% 0%, rgba(50, 130, 170, .4), rgba(6, 14, 26, .9) 70%); box-shadow: 0 0 30px rgba(100, 220, 255, .1); }
 .zn-diamonds .zn-tag { color: #e8fbff; background: linear-gradient(180deg, #3aa6c8, #1b5a74); border: 1px solid #8fe8ff; }
+.sx-dbring .db-swap { display: block; margin-top: .3rem; color: var(--dim); font-size: .68rem; }

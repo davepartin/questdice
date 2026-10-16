@@ -321,12 +321,29 @@ if (process.argv[1].endsWith('sim.mjs')) {
     }
   }
 }
-// Diamonds (one fight each, two at most): a careful player brings every Diamond to a boss, and one to an elite when the case is
-// full (so the next find is not wasted). A careless one forgets they have them.
+// Diamonds (one fight each, two at most): a careful player brings every Diamond that helps to a boss, and one to an elite when the
+// case is full (so the next find is not wasted), each in the hand where it adds the most (a Diamond Shield replaces the shield, not
+// the sword; with a two-handed weapon, one Diamond alone may not be worth losing it). A careless player forgets they have them.
+const throwWorth = (h, n = 500) => { const r = ENGINE.makeRng(99); let w = 0;
+  for (let i = 0; i < n; i++) { const ev = ENGINE.evaluate(h, ENGINE.rollBoard(h, r)); w += (ev.atk || 0) + (ev.pierce || 0) + 0.8 * (ev.block || 0) + 0.5 * (ev.heal || 0) + 0.55 * (ev.magic || 0); }
+  return w / n; };
+// The best way to bring up to `max` of these Diamonds (exactly `max` if exact): [{ uid, slot }], best first, and its worth.
+export function bestDiamondArm(hero, max = 2, { exact = false } = {}) {
+  const ds = ENGINE.diamondsOf(hero); const hands = ENGINE.diamondHands(hero); const plans = exact && max > 0 ? [] : [[]];
+  for (const d of ds) for (const s of hands) plans.push([{ uid: d.uid, slot: s }]);
+  if (max >= 2 && hands.length >= 2) for (const a of ds) for (const b of ds) if (a !== b) plans.push([{ uid: a.uid, slot: 'NW' }, { uid: b.uid, slot: 'NE' }]);
+  const want = plans.filter((p) => (exact ? p.length === Math.min(max, p.length === 2 || hands.length < 2 || ds.length < 2 ? max : 1) && p.length <= max : p.length <= max));
+  let best = null;
+  for (const plan of want.length ? want : plans) {
+    const h = JSON.parse(JSON.stringify(hero)); delete h.armed; delete h.lent;
+    for (const x of plan) ENGINE.armDiamond(h, x.uid, x.slot); ENGINE.wieldDiamonds(h);
+    const w = throwWorth(h); if (!best || w > best.w) best = { plan, w };
+  }
+  return best || { plan: [], w: 0 };
+}
 export function botArm(hero, quest) {
   if (PLAY.style === 'first') return;
-  const E = ENGINE; const ds = E.diamondsOf(hero); if (!ds.length) return;
-  const hands = E.diamondHands(hero);
-  const n = quest.kind === 'boss' ? hands.length : quest.kind === 'elite' && E.diamondCaseFull(hero) ? 1 : 0;
-  ds.slice(0, n).forEach((d, i) => E.armDiamond(hero, d.uid, hands[i]));
+  const E = ENGINE; if (!E.diamondsOf(hero).length) return;
+  const max = quest.kind === 'boss' ? 2 : quest.kind === 'elite' && E.diamondCaseFull(hero) ? 1 : 0; if (!max) return;
+  for (const x of bestDiamondArm(hero, max).plan) E.armDiamond(hero, x.uid, x.slot);
 }

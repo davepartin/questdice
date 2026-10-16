@@ -3,7 +3,7 @@
 // (one in each hand) Diamonds of the act's size, with each play style. The aim: a Diamond turns a hard boss into a likely win, not
 // a sure one.   SKILL=normal TRIALS=12 node tools/diamond.mjs [acts=3] [campaigns per class=2] [class]
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle, buyPotion, makeDiamond, takeDiamond, armDiamond, diamondHands } from '../js/engine.js';
-import { botRound, botCamp, botLoot, PLAY, setScore } from './sim.mjs';
+import { botRound, botCamp, botLoot, bestDiamondArm, PLAY, setScore } from './sim.mjs';
 import { QUESTS_PER_ACT } from '../js/data.js';
 const ACTS = Number(process.argv[2] || 3); const N = Number(process.argv[3] || 2);
 const classes = process.argv[4] ? [process.argv[4]] : ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
@@ -14,7 +14,8 @@ function trial(hero, quest, seed, style, n) {
   play(style); let wins = 0;
   for (let i = 0; i < T; i++) {
     const h = clone(hero); const r = makeRng(seed * 31 + i); const hands = diamondHands(h);
-    for (let k = 0; k < Math.min(n, hands.length); k++) { const d = makeDiamond(makeRng(seed * 7 + i * 3 + k), h.campaign.act); takeDiamond(h, d); armDiamond(h, d.uid, hands[k]); }
+    for (let k = 0; k < Math.min(n, hands.length); k++) takeDiamond(h, makeDiamond(makeRng(seed * 7 + i * 3 + k), h.campaign.act));
+    if (n) for (const x of bestDiamondArm(h, Math.min(n, hands.length), { exact: true }).plan) armDiamond(h, x.uid, x.slot); // each in its best hand
     const b = newBattle(h, quest, r, 1); let g = 0; while (!b.outcome && g++ < 80) botRound(b, r);
     if (b.outcome === 'victory') wins++;
   }

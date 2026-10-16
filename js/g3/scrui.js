@@ -485,7 +485,7 @@ function diamondBring(hero) {
           h('div', { class: 'db-top' }, h('b', { class: 'db-name' }, `Diamond ${w.name}`), h('small', {}, `d${d.size}`),
             h('span', { class: 'db-hands' }, hands.map((s) => btn(s === 'NW' ? 'Left' : 'Right', () => { E.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); paint(); },
               { kind: at === s ? 'primary' : 'ghost', cls: 'db-hand', aria: `${at === s ? 'Keep' : 'Bring'} the Diamond ${w.name}${at === s ? ' in its case' : ` in your ${s === 'NW' ? 'left' : 'right'} hand`}` })))),
-          faceChips(d)); })),
+          faceChips(d), two ? null : h('small', { class: 'db-swap' }, hands.map((s) => `${s === 'NW' ? 'Left' : 'Right'} sets aside your ${D.WEAPONS[hero.loadout[s]?.id]?.name || 'fists'}`).join(' · '))); })),
       two && armed.length ? h('small', { class: 'db-note' }, `Your ${two} is two-handed: it sits this fight out, and a hand with no Diamond fights with fists.`) : null].filter(Boolean));
   };
   paint(); return box;
