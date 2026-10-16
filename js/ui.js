@@ -759,7 +759,7 @@ function showVictory() {
   const lvBefore = hero.level;
   const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
   if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
-  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; r.diamond = null; }
+  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; r.diamond = null; r.charms = []; }
   const diamondTaken = r.diamond ? E.takeDiamond(hero, r.diamond) : false; // into the case if there is room (two at most)
   hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
   E.gainXp(hero, r.xp);

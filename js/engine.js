@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -182,6 +182,14 @@ export function heroMods(hero) {
   for (const id of hero.perks) for (const [k, v] of Object.entries(PERKS[id].mod)) m[k] += v;
   return m;
 }
+// ---- charms (data.js CHARMS): rule-benders, three at most
+export const charmsOf = (hero) => (hero?.charms || []).filter((id) => CHARMS[id]);
+export const hasCharm = (hero, id) => !!hero?.charms?.includes(id);
+export const charmFull = (hero) => charmsOf(hero).length >= CHARM_MAX;
+export function takeCharm(hero, id) { if (!CHARMS[id] || hasCharm(hero, id) || charmFull(hero)) return false; (hero.charms ||= []).push(id); return true; }
+export function dropCharm(hero, id) { const i = (hero.charms || []).indexOf(id); if (i < 0) return false; hero.charms.splice(i, 1); return true; }
+// charms you could be offered: ones you do not hold, picked by a seeded rng
+export function charmChoices(hero, rng, n = 1) { const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
 export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
@@ -353,6 +361,7 @@ export function rollSlot(hero, slot, rng) { return { v: die(rng, sidesOf(hero, s
 export function rollBoard(hero, rng) {
   const board = {};
   for (const s of Object.keys(ROLE)) board[s] = s === 'P' && !hero.pet ? { v: 1, bound: false } : rollSlot(hero, s, rng); // no pet: no roll (keeps the dice stream the same)
+  if (hasCharm(hero, 'heartstone')) { const again = rollSlot(hero, 'C', rng); if (again.v > board.C.v) board.C = again; } // Heartstone: the better of two
   return board;
 }
 
@@ -362,7 +371,10 @@ const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the fee
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
-  const val = (s) => board[s].v;
+  const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
+  const bone = boneOn && [...BONE].some((s) => board[s]?.v === 1);
+  const val = (s) => (boneOn && BONE.has(s) && board[s].v === 1 ? 6 : board[s].v);
+  const TRIPLE = hasCharm(hero, 'fang') ? 20 : SYNERGY_BONUS; // Wolf Fang
   const out = {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, splash: 0,
     lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],
@@ -397,9 +409,11 @@ export function evaluate(hero, board, opts = {}) {
     if (wf.c === 'r') value += mods.redBonus; else value += mods.blueBonus;
     const L = { key, slot: lane.weapon, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
-      out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
-      out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
+      const x = (n) => (hasCharm(hero, 'thorns') ? n * 2 : n); // Thorn Crown: weapon icons count double
+      out.pierce += x(wf.fx.pierce || 0); out.magic += x(wf.fx.magic || 0); out.heal += x(wf.fx.heal || 0);
+      out.gold += x(wf.fx.loot || 0); out.splash += x(wf.fx.splash || 0);
     }
+    if (wf.v === 0 && hasCharm(hero, 'ember')) { out.atk += 6; out.magic += 2; out.notes.push('Ember Locket +6 attack, +2 magic'); }
     for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
     out.lanes[key] = L;
   }
@@ -423,15 +437,15 @@ export function evaluate(hero, board, opts = {}) {
   if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
     const a = weaponFaces(hero.loadout.NW, sidesOf(hero, 'NW'))[val('NW') - 1].v;
     const b = weaponFaces(hero.loadout.NE, sidesOf(hero, 'NE'))[val('NE') - 1].v;
-    if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', row: 'weapons', name: 'Weapons Triple' }); out.atk += SYNERGY_BONUS; }
+    if (a === b && b === val('N') && a > 0) { out.triples.push({ slots: ['NW', 'N', 'NE'], kind: 'atk', row: 'weapons', name: 'Weapons Triple' }); out.atk += TRIPLE; }
     // Twinfang's twin shot: the bow and its arrows on the same number add a little more attack
     const tw = WEAPONS[hero.loadout.NW.id].twinShot;
     if (tw && hero.loadout.NE?.id === hero.loadout.NW.id && a === b && a > 0) { out.atk += tw; out.twinShot = tw; out.notes.push(`Twin shot +${tw}`); }
   }
-  if (!hushed && isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += SYNERGY_BONUS; }
+  if (!hushed && isActive(hero, 'W') && isActive(hero, 'E') && val('W') === val('C') && val('C') === val('E')) { out.triples.push({ slots: ['W', 'C', 'E'], kind: 'atk', row: 'strength', name: 'Strength Triple' }); out.atk += TRIPLE; }
   // Talent Triple (Dave, Oct 2026): the bottom row, talent, feet, talent, on the same number = +10 attack (a talent blank never matches; the 2x is a 2)
-  if (!hushed && isActive(hero, 'SW') && isActive(hero, 'SE')) { const a = talentNumber(val('SW')); if (a > 0 && a === talentNumber(val('SE')) && a === val('S')) { out.triples.push({ slots: ['SW', 'S', 'SE'], kind: 'atk', row: 'talents', name: 'Talent Triple' }); out.atk += SYNERGY_BONUS; } }
-  if (!hushed && val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
+  if (!hushed && isActive(hero, 'SW') && isActive(hero, 'SE')) { const a = talentNumber(val('SW')); if (a > 0 && a === talentNumber(val('SE')) && a === val('S')) { out.triples.push({ slots: ['SW', 'S', 'SE'], kind: 'atk', row: 'talents', name: 'Talent Triple' }); out.atk += TRIPLE; } }
+  if (!hushed && val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += TRIPLE; }
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
   // Straights across the numeric dice: head, hands, feet, heart, weapons, and the two talent dice (their 2, and 4 and up).
@@ -449,7 +463,10 @@ export function evaluate(hero, board, opts = {}) {
     out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];
     if ((opts.straight || 'atk') === 'gold') out.gold += out.straightBonus; else out.atk += out.straightBonus;
+    if (hasCharm(hero, 'mirror')) { out.heal += 12; out.notes.push('Mirror Shard heals 12'); }
   }
+  if (hasCharm(hero, 'twins') && out.lanes.L && out.lanes.R && out.lanes.L.weapon > 0 && out.lanes.L.weapon === out.lanes.R.weapon) { out.atk += 10; out.twinCoin = true; out.notes.push('Twin Coin +10'); }
+  if (bone) out.notes.push('Gambler’s Bone: a 1 is a 6');
   out.gold = Math.round(out.gold * (1 + mods.goldPct));
   return out;
 }
@@ -581,11 +598,12 @@ export function newBattle(hero, quest0, rng, players = 1) {
   for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge }, rng));
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge }, rng));
   const boon = pullBlessings(hero);
-  const maxHp = maxHpOf(hero) + Math.max(0, boon.startHp || 0);
+  const pact = hasCharm(hero, 'pact'); // Blood Pact: full magic, 8 less health
+  const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   const b = {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
-    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
+    magic: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
     mods: blankMods(), nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
@@ -606,7 +624,7 @@ const scripted = (hero, slot, v, rng) => (v != null ? { v: Math.min(Math.max(1, 
 export function startRoll(b) {
   const plan = b.script?.rolls?.shift();
   b.board = plan ? Object.fromEntries(Object.keys(ROLE).map((s) => [s, s === 'P' && !b.hero.pet ? { v: 1, bound: false } : scripted(b.hero, s, plan[s], b.rng)])) : rollBoard(b.hero, b.rng);
-  b.actionsLeft = rerollTotal(); b.freeActions = []; b.phase = 'shape';
+  b.actionsLeft = rerollTotal() + (hasCharm(b.hero, 'lantern') ? 1 : 0); b.freeActions = []; b.phase = 'shape'; // the Lantern: one more free reroll
   const slots = Object.keys(ROLE).filter((s) => s !== 'C' && s !== 'P'); // the pet's die is not on the board, so it is never tangled
   const cap = 4;
   const binds = Math.min(b.nextBound || 0, cap);
@@ -938,6 +956,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   rep.healed = Math.max(0, Math.min(b.maxHp, hpBeforeHit + T.heal) - hpBeforeHit);
   b.stats.healed += rep.healed; b.stats.taken += rep.taken;
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
+  if (b.hp <= 0 && hasCharm(hero, 'phoenix') && !b.phoenixUsed) { b.phoenixUsed = true; b.hp = Math.min(b.maxHp, 10); rep.phoenix = true; } // Phoenix Feather
   const stolen = Math.min(b.magic + T.magic, rep.magicStolen); rep.magicStolen = stolen;
   b.magic = Math.max(0, Math.min(magicCapOf(b.hero), b.magic + T.magic - stolen));
   rep.hpAfter = b.hp; rep.magicAfter = b.magic;
@@ -991,7 +1010,9 @@ export function battleRewards(b) {
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
   const diamond = drng() < dch ? makeDiamond(drng, c.act) : null; // now and then the fight leaves a Diamond behind
-  return { xp, gold, drops, diamond };
+  const crng = makeRng(hashSeed(c.seed, c.act, c.step, 'charm')); const cch = CHARM_CHANCE[quest.kind] ?? CHARM_CHANCE.battle;
+  const charms = !charmFull(hero) || quest.kind === 'boss' ? (crng() < cch ? charmChoices(hero, crng, quest.kind === 'boss' ? 2 : 1) : []) : []; // a boss offers a choice of two
+  return { xp, gold, drops, diamond, charms };
 }
 function tryFlee(b, rep) {
   rep.fled = rep.fled || [];
@@ -1150,9 +1171,16 @@ export function shopStock(hero) {
   }
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop-diamond'));
   if (drng() < DIAMOND.chance.shop) { const inst = makeDiamond(drng, c.act); items[0] = { inst, price: Math.round((WEAPONS[inst.id].price || 20) * DIAMOND.price * (SIZES.indexOf(inst.size) + 1) * priceMod), sold: false }; } // rarely, a Diamond, and dear
+  const chrng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop-charm'));
+  const charm = chrng() < CHARM_CHANCE.shop ? charmChoices(hero, chrng, 1)[0] || null : null;
   if (flags.discount || flags.hike) c.campFlags = {};
-  c.shop = { step: `${c.act}.${c.step}`, items };
+  c.shop = { step: `${c.act}.${c.step}`, items, charm: charm ? { id: charm, price: Math.round(CHARM_PRICE[Math.min(3, c.act) - 1] * priceMod), sold: false } : null };
   return items;
+}
+export function shopCharm(hero) { shopStock(hero); return hero.campaign.shop?.charm || null; }
+export function buyCharm(hero) {
+  const c = shopCharm(hero); if (!c || c.sold || hero.gold < c.price || hasCharm(hero, c.id) || charmFull(hero)) return false;
+  hero.gold -= c.price; c.sold = true; return takeCharm(hero, c.id);
 }
 export function buyItem(hero, i) {
   const it = shopStock(hero)[i];
@@ -1407,11 +1435,11 @@ export function shareWeights(ranked) {
 }
 
 function makeFighter(hero) {
-  const boon = pullBlessings(hero);
-  const maxHp = maxHpOf(hero) + Math.max(0, boon.startHp || 0);
+  const boon = pullBlessings(hero); const pact = hasCharm(hero, 'pact');
+  const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
-    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
+    magic: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: blankPartyStats(), contrib: 0,
@@ -1703,6 +1731,7 @@ export function resolveParty(b) {
     const healed = Math.max(0, Math.min(f.maxHp, hpBefore + T.heal) - hpBefore);
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
+    if (f.hp <= 0 && hasCharm(f.hero, 'phoenix') && !f.phoenixUsed) { f.phoenixUsed = true; f.hp = Math.min(f.maxHp, 10); (rep.phoenix ||= []).push(f.hero.name); }
     f.stats.healed += healed; f.stats.taken += taken[i];
     f.stats.blocked = (f.stats.blocked || 0) + absorbed[i];
     // The hero the monsters went after is the company's shield: blocks count double, and standing at the end holds the line.

@@ -922,6 +922,12 @@ async function killMoment(uids) {
   for (const uid of uids) { sfx.kill(); sfx.deathEmber?.(); foePc(uid)?.fall(1); }
   buzz(45); B.fb.shake(0.5);
 }
+// the Phoenix Feather: a blow that would fell you leaves you at 10, once a battle
+async function phoenixMoment(pc) {
+  if (!pc) return;
+  sfx.level?.(); sfx.heal(); buzz([30, 40, 60]); banner('PHOENIX FEATHER!  BACK TO 10', 'gold'); B.fb.flash('#ffb43d', 0.45); B.bw.stage.flash(0xffd9a0, 0.3);
+  pc.heal(); pc.num('+10 · rises', 'heal'); updatePlates(); await wait(0.9);
+}
 // the music leans in when it is close: you are low, or a boss is nearly down
 function moodOfFight() {
   const b = B.b; const hp = B.party ? Math.min(...b.fighters.filter((f) => f.hp > 0).map((f) => f.hp / f.maxHp), 1) : b.hp / b.maxHp;
@@ -1023,7 +1029,8 @@ async function lockInInner() {
   const playAct = (act) => foeAnim(act, [{ pc: me, part: act.d ?? 0, net: act.net ?? 0 }]);
   // monsters that rolled higher than your feet strike before you
   for (const act of rep.acts.filter((a) => a.early)) await playAct(act);
-  if (rep.heroDown) { updatePlates(); me.fall(-1); sfx.lose?.(); await wait(0.8); B.busy = false; bw.tray.unlock?.(); return lose(); }
+  if (rep.heroDown && !rep.phoenix) { updatePlates(); me.fall(-1); sfx.lose?.(); await wait(0.8); B.busy = false; bw.tray.unlock?.(); return lose(); }
+  if (rep.heroDown && rep.phoenix) { await phoenixMoment(me); }
 
   // ---------- 1. your strike
   const weaponId = hero.loadout.NW.id;
@@ -1052,6 +1059,7 @@ async function lockInInner() {
   }
   for (const uid of rep.raged) { const a = foePc(uid); banner('ENRAGED!', 'bad'); sfx.rage(); B.fb.flash('#ff2a1a', 0.35); await a?.rage(); }
   for (const uid of rep.fled || []) foePc(uid)?.num('Flees', 'meh');
+  if (rep.phoenix && !rep.heroDown) await phoenixMoment(me);
   if (rep.healed) { sfx.heal(); me.heal(); me.num(`+${rep.healed}`, 'heal'); }
   if (rep.T.pierce) bw.tray.pulse?.('S', 'pierce');
   bw.tray.unlock?.();

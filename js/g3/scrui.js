@@ -119,7 +119,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
+const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -232,6 +232,22 @@ function heroStats(hp, feet, c = {}) {
 }
 function faceChips(inst) {
   return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx ? h('span', { class: 'wf-fx' }, fxItems(f.fx)) : null)));
+}
+// Drop a charm: asks twice (a second tap within four seconds), since it is gone for good.
+function dropBtn(hero, id) {
+  let armed = false; let timer = null;
+  const b = h('button', { type: 'button', class: 'sx-shrink', 'aria-label': `Drop the ${D.CHARMS[id].name}`, onclick: () => {
+    if (!armed) { armed = true; b.classList.add('armed'); b.textContent = 'Tap again to drop it'; timer = setTimeout(() => { armed = false; b.classList.remove('armed'); b.textContent = 'Drop'; }, 4000); return; }
+    clearTimeout(timer); if (HE.dropCharm(hero, id)) { sfx.card(); X.persist(); X.renderCamp(); }
+  } }, 'Drop');
+  return b;
+}
+// A charm (Dave, Oct 2026): a small trinket that bends one rule. Icon, name, what it does, optional actions.
+function charmCard(id, { actions = [], cls = '', badge = '' } = {}) {
+  const c = D.CHARMS[id]; if (!c) return null;
+  return h('article', { class: `sx-charm ${cls}` }, h('span', { class: 'ch-ico', 'aria-hidden': 'true' }, ico(c.icon)),
+    h('div', { class: 'ch-copy' }, h('b', {}, c.name, badge ? h('em', { class: 'ch-badge' }, badge) : null), h('small', {}, c.text)),
+    actions.length ? h('div', { class: 'ch-acts' }, actions) : null);
 }
 // A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
 function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
@@ -620,13 +636,20 @@ export function victory(first) {
       : Rw.diamondSold ? gemLine(`Sold for ${E.diamondSellValue(Rw.diamond)} gold. A sensible choice. The Diamond disagrees, quietly.`)
         : [gemLine(`Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}). Sell this one, or leave it behind and use a Diamond in a fight to make room.`),
           h('div', { class: 'row end' }, btn(`Sell it ${E.diamondSellValue(Rw.diamond)}`, () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost', icon: 'coin', iconAfter: true }))]) : null;
+  // charms in the spoils: take one (a boss offers two to choose from); with three already, swap one out
+  const charmPanel = Rw.charms?.length && !Rw.repeat ? panel('sx-charms-loot', eyebrow(Rw.charms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'),
+    Rw.charmTaken ? h('p', { class: 'muted' }, `You took the ${D.CHARMS[Rw.charmTaken].name}. It works from your next fight.`)
+      : h('div', { class: 'ch-list' }, Rw.charms.map((id) => charmCard(id, { actions: E.charmFull(hero)
+        ? E.charmsOf(hero).map((old) => btn(`Swap for ${D.CHARMS[old].name}`, () => { HE.dropCharm(hero, old); if (HE.takeCharm(hero, id)) { Rw.charmTaken = id; sfx.level(); X.persist(); X.renderVictory(); } }, { kind: 'ghost', cls: 'ch-swap' }))
+        : [btn('Take', () => { if (HE.takeCharm(hero, id)) { Rw.charmTaken = id; sfx.level(); X.persist(); X.renderVictory(); } }, { icon: 'star' })] }))),
+    !Rw.charmTaken && E.charmFull(hero) ? h('p', { class: 'fine' }, `You carry ${D.CHARM_MAX} charms, the most there is. Swap one out, or leave this behind.`) : null) : null;
   const shattered = Rw.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${Rw.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light.`) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.repeatNote(Rw.share)) : null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, shattered, rewards, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -942,8 +965,11 @@ function gearTab() {
   // three places a weapon can be, each its own panel with its heading centered on the top edge
   const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
     h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
+  const sc = X.net ? null : E.shopCharm(hero);
+  const charmOffer = sc ? charmCard(sc.id, { cls: sc.sold ? 'sold' : '', badge: 'Charm', actions: [sc.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.charmFull(hero) ? 'Charms full' : String(sc.price), () => { if (HE.buyCharm(hero)) { sfx.level(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.charmFull(hero) ? `You carry ${D.CHARM_MAX} charms. Drop one first.` : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < sc.price || E.charmFull(hero), cls: 'buy', aria: `Buy the ${D.CHARMS[sc.id].name} for ${sc.price} gold` })] }) : null;
   const canBuy = stock.filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length;
   const chips = jumpChips([{ id: 'zn-body', label: 'On your body', icon: 'hero' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
+    E.charmsOf(hero).length ? { id: 'zn-charms', label: 'Charms', icon: 'star', n: E.charmsOf(hero).length } : null,
     E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null,
     { id: 'zn-trader', label: 'Traveler', icon: 'map', n: canBuy, note: 'you can afford' }]);
   return h('div', { class: 'sx-tab gear' },
@@ -951,10 +977,12 @@ function gearTab() {
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
       h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons, Strength or Talent Triple (three alike across a row): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
+    E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then at the traveler.',
+      h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'Rare weapons for one fight each. Bring one, or two (one in each hand), from the quest card when a fight matters. When that fight ends, it shatters.',
       h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => weaponCard(d, { compact: true, badge: E.armedSlot(hero, d.uid) ? (E.armedSlot(hero, d.uid) === 'NW' ? 'Left' : 'Right') : '',
         actions: [btn(`Sell ${E.diamondSellValue(d)}`, () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell the Diamond ${D.WEAPONS[d.id].name} for ${E.diamondSellValue(d)} gold` })] })))) : null,
-    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', h('div', { class: 'wc-grid' }, stock.map((it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero); return weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` })] }); })), petOfferCard(hero)));
+    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', charmOffer, h('div', { class: 'wc-grid' }, stock.map((it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero); return weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` })] }); })), petOfferCard(hero)));
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {

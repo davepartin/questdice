@@ -112,6 +112,23 @@ export const DIAMOND = {
   dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
   price: 3.2, // the traveller's price, times the weapon's base price per size step
 };
+// Charms (Dave, Oct 2026: "items that bend the rules", like relics in other roguelikes). Small trinkets, three at most, each changing one
+// rule of the dice rather than adding a number. Found in the spoils of big fights and now and then at the traveler; kept for good.
+export const CHARM_MAX = 3;
+export const CHARMS = {
+  ember: { name: 'Ember Locket', icon: 'flame', text: 'A blank weapon face burns anyway: 6 attack and 2 magic.' },
+  mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight also heals you 12.' },
+  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice on the same number: +10 attack, like a triple.' },
+  thorns: { name: 'Thorn Crown', icon: 'crown', text: 'Every icon on your weapon dice counts double: a crit of three arrows pays six.' },
+  bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'A 1 on your head, hands or feet counts as a 6, for everything.' },
+  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple pays +20 instead of +10.' },
+  lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One more free reroll every round.' },
+  phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a blow that would fell you leaves you at 10 health.' },
+  pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with full magic, but 8 less health.' },
+  heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die rolls twice and keeps the higher.' },
+};
+export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one
+export const CHARM_PRICE = [110, 150, 200]; // the traveler's price, by act
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
