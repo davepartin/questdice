@@ -1113,3 +1113,11 @@ Forge 6.0 → 3.3 phone screens, Gear 3.1 → 2.9, Hero 2.7 → 2.4 (each includ
 - A level-up now and then (one in four, when the case has room) offers "A Diamond weapon" as one of its three choices; it goes into the case and is not a perk you keep.
 - Diamonds can be sold, in the Diamond case at camp or straight from the spoils when the case is full, for what the plain weapon of its kind and size sells for, nothing more (Dave: it is made to be used). Fight drop chances eased (an ordinary fight 4%, an elite 35%, a boss 30%) so the perk keeps the total near one and a half an act.
 Shots: docs/ingame/trail_*.png (`node dev/trailpick.mjs`).
+
+## 2026-10-16 — the feel pass: crits, big hits, kills and a boss's fall
+Dave picked three things to make QuestDice feel finished: the moment of impact, rule-bending charms, and a daily challenge. First, the feel:
+- A crit (a weapon face with two or three icons: Silver and Gold top faces, every Diamond's top) now has its own moment: a bright metallic ring, "CRIT! +3 PIERCE" (or "DOUBLE CRIT!"), the die glows, the table jolts, a light flash, a buzz. The dice show every crit icon (a Gold top face shows three arrows; it showed one).
+- Your swing makes a sound before it lands; pierce has its own; a hit of 15 or more jolts the table with a beat of hit-stop, and 25 or more shows a huge number.
+- A monster that falls lands with a thump, a buzz and a jolt. A boss falls slowly to a boom, a roar and a brass swell, with "THE GOBLIN KING FALLS!", a gold flash and a big shake.
+- Triples and straights jolt the table too; a win buzzes a little fanfare; the music's drums lean in when you are low or a boss is nearly down.
+- All of it respects the reduced-motion setting (no shaking) and phones that cannot buzz. Check: `node dev/feelcrit.mjs` (logs the banners in order: "CRIT! +3 PIERCE | YOU STRIKE FIRST"), `SCRIPT='{"NW":10}' HP1=1 node dev/bigdice.mjs feel 390 844 goblinking` (the King falls).

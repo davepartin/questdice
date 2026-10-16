@@ -894,18 +894,55 @@ const blockWord = (s, rep) => {
   if (s.phased) return act?.name || 'Phase';
   return act && (act.v === 'guard' || act.v === 'ward') ? act.name : 'Armor';
 };
+// ---- feel (Dave, Oct 2026: "the moment of impact"): a crit gets its own ring and banner, a big hit jolts the table, a kill lands with
+// a thump, and a boss falls slowly to a boom and a brass swell. Haptics where the phone allows; no shaking when motion is reduced.
+const FX_WORD = { pierce: 'pierce', heal: 'heal', magic: 'magic', loot: 'gold', splash: 'splash' };
+function critsOf(ev) { // a weapon face with two or three icons of one kind is a crit (Silver and Gold top faces, every Diamond's top)
+  return Object.values(ev.lanes || {}).filter((l) => l.fx && Math.max(...Object.values(l.fx)) >= 2)
+    .map((l) => { const [kind, n] = Object.entries(l.fx).sort((a, b) => b[1] - a[1])[0]; return { slot: l.slot, kind, n }; });
+}
+async function critMoment(crits) {
+  if (!crits.length) return;
+  sfx.crit(); buzz([18, 40, 18]);
+  const c = crits[0]; banner(crits.length > 1 ? 'DOUBLE CRIT!' : `CRIT!  +${c.n} ${FX_WORD[c.kind] || c.kind}`, 'gold');
+  B.bw.tray.highlight?.(crits.map((x) => x.slot).filter(Boolean), 'gold'); B.fb.shake(0.45); B.bw.stage.flash(0xfff2c0, 0.22);
+  await wait(0.55);
+}
+const isBoss = (uid) => { const e = B.b.enemies.find((x) => x.uid === uid); return !!e && D.MONSTERS[e.id]?.tier === 'boss'; };
+async function killMoment(uids) {
+  if (!uids.length) return;
+  const bossUid = uids.find(isBoss);
+  if (bossUid) { // the boss falls slowly: a boom, a brass swell, the whole table shakes
+    const e = B.b.enemies.find((x) => x.uid === bossUid);
+    music.setIntensity?.(0.4); sfx.bossFall(); buzz([40, 60, 90]); B.fb.shake(1); B.bw.stage.flash(0xffe9a0, 0.5); B.fb.flash('#ffd23d', 0.45);
+    banner(`${(e?.name || 'The boss').toUpperCase()} FALLS!`, 'gold');
+    for (const uid of uids) foePc(uid)?.fall(1, uid === bossUid ? 1.6 : 0.7);
+    await wait(1.6); return;
+  }
+  for (const uid of uids) { sfx.kill(); sfx.deathEmber?.(); foePc(uid)?.fall(1); }
+  buzz(45); B.fb.shake(0.5);
+}
+// the music leans in when it is close: you are low, or a boss is nearly down
+function moodOfFight() {
+  const b = B.b; const hp = B.party ? Math.min(...b.fighters.filter((f) => f.hp > 0).map((f) => f.hp / f.maxHp), 1) : b.hp / b.maxHp;
+  const boss = b.enemies.find((e) => e.hp > 0 && D.MONSTERS[e.id]?.tier === 'boss');
+  music.setIntensity?.(hp < 0.3 || (boss && boss.hp / boss.maxHp < 0.3) ? 1.4 : 1);
+}
 async function strikeAnim(hp, s, { caster = false } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
-  const jobs = [];
+  const jobs = []; const big = s.dealt >= 15;
+  if (caster) sfx.magic?.(); else sfx.slash?.(); // the swing, before the blow lands
   await hp.lunge(ta, () => {
     // numbers stay up five seconds: the damage in red, and the word of whatever soaked some of it (Duck, Fire Ward, Armor...) in blue
     const word = blockWord(s, B.lastRep);
     if (s.phased) { jobs.push(ta.glow('magic')); ta.num(`${word}: passes through`, 'block', { dy: -12 }); }
     else if (s.guarded > 0) { jobs.push(ta.guard()); ta.num(`${word} −${s.guarded}`, 'block', { dy: -12 }); sfx.block(); }
-    if (s.dealt > 0) { sfx.hit(); jobs.push(ta.hit(Math.min(1, s.dealt / 25), HIT_KIND(s.atk === 0 && s.pierce > 0, caster))); ta.num(`−${s.dealt}`, 'dmg', { dy: 14 }); if (s.pierce) ta.num(`◆ ${s.pierce}`, 'pierce', { dx: 34, dy: 34 }); }
+    if (s.dealt > 0) { sfx.hit(); jobs.push(ta.hit(Math.min(1, s.dealt / 25), HIT_KIND(s.atk === 0 && s.pierce > 0, caster))); ta.num(`−${s.dealt}`, 'dmg', { dy: 14 }); if (s.pierce) { sfx.pierce?.(); ta.num(`◆ ${s.pierce}`, 'pierce', { dx: 34, dy: 34 }); }
+      if (big) { B.fb.shake(Math.min(1, s.dealt / 35)); buzz(35); B.bw.stage.flash(0xffffff, 0.12); } }
     else if (!s.guarded && !s.phased) { ta.num('0', 'meh', { dy: 14 }); sfx.block(); }
     if (s.burned) { sfx.hurt(); buzz(60); jobs.push(hp.hit(0.6, 'fire')); hp.num(`🔥 −${s.burned}`, 'hurt'); B.fb.flash('#ff6a2a', 0.35); }
   });
+  if (big) await wait(0.12); // a beat of hit-stop: let the big one land
   await Promise.all(jobs);
 }
 // a monster acts. `heroes`: [{ pc, part, net }] who it hit and how it came out (a company shares the blow).
@@ -964,9 +1001,10 @@ async function lockInInner() {
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
-    if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18);
+    if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18); B.fb.shake(0.3); buzz(25);
     await wait(0.55);
   } else await wait(0.25);
+  await critMoment(critsOf(ev));
   const me = B.fb.hero(0);
 
   // ---------- initiative: who goes first this round
@@ -997,7 +1035,7 @@ async function lockInInner() {
   }
   for (const e of b.enemies) updatePlate(e);
   await wait(0.2);
-  for (const uid of rep.killed) { sfx.deathEmber?.(); foePc(uid)?.fall(1); }
+  await killMoment(rep.killed);
   await wait(rep.killed.length ? 0.6 : 0.15);
 
   // ---------- 2. the survivors act
@@ -1025,6 +1063,7 @@ async function lockInInner() {
   B.busy = false;
   if (b.outcome === 'victory') return win();
   if (b.outcome === 'defeat') return lose();
+  moodOfFight();
   showCard(card);
   renderReset();
 }
@@ -1103,7 +1142,7 @@ async function playStrike(s, rep) {
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
   await strikeAnim(ha, s, { caster: wid === 'staff' });
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
-  if (s.killed) { sfx.deathEmber?.(); ta.fall(1); await wait(0.5); }
+  if (s.killed) { await killMoment([s.targetUid]); await wait(0.5); }
   await wait(0.15);
 }
 async function playFoe(act, names) {
@@ -1115,7 +1154,7 @@ async function playFoe(act, names) {
 async function win() {
   if (B.ended) return; // the player went home mid-round
   B.busy = true;
-  music.setMood?.('victory'); sfx.win();
+  music.setIntensity?.(1); music.setMood?.('victory'); sfx.win(); buzz([30, 60, 30, 60, 120]);
   B.bw.stage.flash(0xffe9a0, 0.25);
   clearDock(); hideCard();
   B.hud.ribbon.classList.add('hide');

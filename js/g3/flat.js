@@ -157,9 +157,9 @@ class Piece {
     this.set('appear', null);
   }
   // knocked over like a board-game piece, then it lies there, dim
-  async fall(dir = 1) {
+  async fall(dir = 1, dur = 0.7) {
     this.dead = true; this.el.classList.add('down'); this.spark('hit', 0.9);
-    await this.fb.tween(0.7, (k) => { const e = easeOut(k); this.set('fall', { r: dir * 82 * e, y: 14 * e, x: dir * 8 * e, a: 1 - 0.62 * e, b: 1 - 0.3 * e }); });
+    await this.fb.tween(dur, (k) => { const e = easeOut(k); this.set('fall', { r: dir * 82 * e, y: 14 * e, x: dir * 8 * e, a: 1 - 0.62 * e, b: 1 - 0.3 * e }); });
   }
   async hop() { await this.fb.tween(0.5, (k) => this.set('hop', { y: -Math.abs(Math.sin(k * Math.PI * 2)) * 9 })); this.set('hop', null); }
   stand() { this.dead = false; this.p = {}; this.el.classList.remove('down', 'raged'); this.render(); }
@@ -384,11 +384,17 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   fb.num = (pc, text, kind = 'dmg', { dx = 0, dy = 0 } = {}) => {
     const { x, r } = at(pc); const W = fb.el.clientWidth || 360; const long = String(text).length > 8;
     const mag = Number(String(text).replace(/[^0-9]/g, '')) || 0;
-    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
+    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 25 && !long ? ' big huge' : mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
     fx.append(el);
     const half = (el.offsetWidth || 40) / 2 + 4; el.style.left = `${clamp(x + dx, half, W - half)}px`; // never off the edge of the table
     // stays up five seconds (Dave) so it can be read: it pops in, drifts up slowly, and fades only at the end
     tween(5, (k) => { el.style.transform = `translate(-50%, ${(-46 * easeOut(k)).toFixed(1)}px) scale(${(k < 0.04 ? 0.6 + k * 10 : 1).toFixed(2)})`; el.style.opacity = String(k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2); }).then(() => el.remove());
+  };
+  // the whole table jolts (a big hit, a kill, a crit); quiet when the player asks for less motion
+  fb.shake = (amt = 0.5) => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const A = 5 + amt * 9;
+    tween(0.3 + amt * 0.18, (k) => { const d = (1 - k) ** 2; fb.el.style.translate = `${(Math.sin(k * 47) * A * d).toFixed(1)}px ${(Math.cos(k * 39) * A * 0.55 * d).toFixed(1)}px`; }).then(() => { fb.el.style.translate = ''; });
   };
   // a red edge flash when a hero is hurt, a warm one for a triple
   fb.flash = (color = '#ff3a2a', amt = 0.4) => {

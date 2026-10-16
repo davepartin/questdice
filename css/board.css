@@ -425,3 +425,5 @@
 .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: 1.75rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def { font-size: .56rem; padding-left: .3rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def svg { width: .6rem; height: .6rem; }
 /* the health number sits at the far left of the bar, the defence at the far right (Dave) */
 .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: auto; left: 0; justify-items: start; padding-left: .4rem; }
+/* feel pass (Oct 2026): a hit of 25 or more is huge */
+.fb-num.huge { font-size: 2.6rem; color: #fff1c4; text-shadow: 0 2px 0 #000, 0 0 14px rgba(0, 0, 0, .9), 0 0 22px rgba(255, 190, 70, .8); }

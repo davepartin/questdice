@@ -212,6 +212,23 @@ export const sfx = {
     for (let i = 0; i < 4; i++) osc(a, t + i * 0.04, { f: 2200 * Math.pow(1.26, i), dur: 0.2, peak: 0.025, att: 0.002, send: 0.6 });
   }),
   heal: run((a, t) => { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => chimeNote(a, t + i * 0.07, f, 0.07, 0.7)); noise(a, t, { dur: 0.5, peak: 0.02, type: 'highpass', f: 6000, att: 0.2, send: 0.4 }); }),
+  // feel pass (Oct 2026): a crit rings bright and metallic, a kill lands with a thump, a boss falls with a boom and a brass swell
+  crit: run((a, t) => {
+    noise(a, t, { dur: 0.04, peak: 0.28, type: 'highpass', f: 3200, q: 0.7, send: 0.2 });
+    osc(a, t, { type: 'sine', f: 95, to: 48, dur: 0.2, peak: 0.34, att: 0.001 });
+    [1567.98, 2093, 2637.02].forEach((f, i) => chimeNote(a, t + 0.02 + i * 0.035, f, 0.07, 0.9));
+    osc(a, t, { type: 'square', f: 1100, to: 2300, dur: 0.12, peak: 0.025, att: 0.002 });
+  }),
+  kill: run((a, t) => {
+    osc(a, t, { type: 'sine', f: 78, to: 34, dur: 0.38, peak: 0.42, att: 0.001 });
+    noise(a, t, { dur: 0.28, peak: 0.16, type: 'lowpass', f: 520, q: 0.6, send: 0.15 });
+    noise(a, t, { dur: 0.05, peak: 0.2, type: 'bandpass', f: 1800, q: 2 });
+  }),
+  bossFall: run((a, t) => {
+    sfx.slam(); sfx.roar();
+    [130.81, 196, 261.63].forEach((f, i) => brass(a, t + 0.45 + i * 0.04, { f, dur: 1.6, peak: 0.06 }));
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => chimeNote(a, t + 0.9 + i * 0.09, f, 0.06, 1.1));
+  }),
   synergy: run((a, t) => { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => { chimeNote(a, t + i * 0.06, f, 0.07, 0.6); osc(a, t + i * 0.06, { type: 'triangle', f: f / 2, dur: 0.3, peak: 0.04 }); }); }),
   coin: run((a, t) => { const p = rnd(0.94, 1.1); metal(a, t, { f: 1318 * p, dur: 0.35, peak: 0.05, partials: 2, decay: 1.4 }); osc(a, t + 0.05, { type: 'sine', f: 1976 * p, dur: 0.3, peak: 0.05, send: 0.4 }); }),
   coins: run((a, t) => { for (let i = 0; i < 9; i++) { const tt = t + i * rnd(0.04, 0.09) + (i > 5 ? 0.1 : 0); const p = rnd(0.85, 1.25); metal(a, tt, { f: 1500 * p, dur: 0.3, peak: 0.045, partials: 2, decay: 1.5, send: 0.3 }); osc(a, tt + 0.02, { f: 2200 * p, dur: 0.18, peak: 0.025, send: 0.4 }); } }),

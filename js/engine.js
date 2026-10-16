@@ -395,7 +395,7 @@ export function evaluate(hero, board, opts = {}) {
     const x2 = sym === 'X2'; const tsyms = Array.isArray(sym) ? sym : [];
     let value = wf.v + str + (x2 ? str : 0);
     if (wf.c === 'r') value += mods.redBonus; else value += mods.blueBonus;
-    const L = { key, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
+    const L = { key, slot: lane.weapon, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
       out.pierce += wf.fx.pierce || 0; out.magic += wf.fx.magic || 0; out.heal += wf.fx.heal || 0;
       out.gold += wf.fx.loot || 0; out.splash += wf.fx.splash || 0;
