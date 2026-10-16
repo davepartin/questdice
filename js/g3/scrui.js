@@ -119,7 +119,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
+const HERO_OPS = ['sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -435,13 +435,27 @@ function diffChip(hero) {
   const id = D.normalizeDifficulty(hero.difficulty); const d = D.DIFFICULTY[id];
   return h('span', { class: `sx-diffchip dc-${id}`, title: d.text, 'aria-label': `Difficulty: ${d.name}. ${d.text}` }, ico('skull'), d.name);
 }
-function trail(c) {
+// Tap a step on the act trail (Dave, Oct 2026): go back and play a quest you have won again, or return to the furthest one you reached.
+// You can never go past where you have been. A repeat win pays less gold and no XP or spoils (save.js repeatShare).
+function stepAsk(hero, act, step, after) {
+  const c = hero.campaign; if (c.act === act && c.step === step) { toast(`You are here: quest ${step}.`); return; }
+  const ok = SV.canStartAt(hero, act, step); const far = SV.reachedOf(hero);
+  if (!ok) { sfx.error?.(); toast(`Quest ${step} is still ahead. Win quest ${far.act === act ? far.step : 1} first.`); return; }
+  const kind = D.stepKind(D.ACTS[(act - 1) % D.ACTS.length], step); const what = kind === 'boss' ? 'the boss fight' : kind === 'elite' ? 'the elite fight' : 'that fight';
+  const won = SV.hasCleared(hero, act, step); const back = act < c.act || (act === c.act && step < c.step);
+  const close = modal(h('div', { class: 'form confirm-home step-ask' }, h('h2', {}, `${back ? 'Go back to' : 'Return to'} quest ${step}?`),
+    h('p', { class: 'muted' }, won ? `You will play ${what} again. ${SV.repeatNote(SV.repeatShare(hero, act, step))}` : `Your furthest quest. Win it for the full reward.`),
+    h('p', { class: 'muted' }, `You keep everything you have. Quest ${far.step}${far.act !== act ? ` of Act ${romans[far.act - 1] || far.act}` : ''} stays open: tap it on the trail to come back.`),
+    h('div', { class: 'row end' }, btn('Stay here', () => close(), { kind: 'ghost' }), btn(`Go to quest ${step}`, () => { close(); if (SV.beginAt(hero, act, step)) { X.persist(); sfx.select(); after(); } else sfx.error?.(); }))));
+}
+function trail(c, hero = null, after = null) {
   const N = D.QUESTS_PER_ACT;
-  return h('ol', { class: 'sx-trail', 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
+  return h('ol', { class: `sx-trail ${hero ? 'pickable' : ''}`, 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
     const n = i + 1; const done = n < c.step; const now = n === c.step;
     const kind = D.stepKind(D.ACTS[(c.act - 1) % D.ACTS.length], n);
-    const boss = kind === 'boss'; const elite = kind === 'elite';
-    return h('li', { class: `tr-node ${done ? 'done' : ''} ${now ? 'now' : ''} ${boss ? 'boss' : elite ? 'elite' : ''}`, 'aria-current': now ? 'step' : null },
+    const boss = kind === 'boss'; const elite = kind === 'elite'; const reach = hero && !done && !now && SV.canStartAt(hero, c.act, n);
+    return h('li', { class: `tr-node ${done ? 'done' : ''} ${now ? 'now' : ''} ${reach ? 'reach' : ''} ${boss ? 'boss' : elite ? 'elite' : ''}`, 'aria-current': now ? 'step' : null,
+      ...(hero ? { role: 'button', tabindex: '0', 'aria-label': `Quest ${n}${now ? ', you are here' : done || reach ? '' : ', still ahead'}`, onclick: tap(() => stepAsk(hero, c.act, n, after)) } : {}) },
       h('span', { class: 'tr-gem' }, done ? ico('check') : boss ? ico('crown') : elite ? ico('skull') : h('b', {}, String(n))),
       boss || elite ? h('small', {}, boss ? 'Boss' : 'Elite') : null);
   }));
@@ -506,7 +520,7 @@ export function board() {
       h('div', { class: 'sx-board-head' },
         h('div', { class: 'sx-eyerow' }, eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), diffChip(hero)),
         h('h1', { class: 'sx-act' }, X.actName(hero)), h('p', { class: 'sx-acttag' }, X.actOf(hero).tag),
-        trail(c)),
+        trail(c, X.net ? null : hero, () => X.showBoard())),
       X.partyBar?.(),
       h('div', { class: 'sx-notes' },
         blessings.length ? h('p', { class: 'note boon' }, ico('shine'), blessings.map((b) => b.text).join(' · ')) : null,
@@ -562,11 +576,11 @@ export function roadResult(res, o = {}) {
 }
 
 // ------------------------------------------------------------------------------------------------ victory / defeat
-const PERK_ICON = { vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull' };
+const PERK_ICON = { diamond: 'gem', vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull' };
 function perkCard(id, hero, onpick, i) {
   const p = D.PERKS[id]; const have = hero.perks.filter((x) => x === id).length;
   return h('button', { class: `sx-perk perk-${id}`, type: 'button', style: { '--i': i }, onclick: tap(onpick), 'aria-label': `${p.name}. ${p.text}` },
-    h('span', { class: 'pk-ico' }, ico(PERK_ICON[id] || 'star', '', 34)), h('b', {}, p.name), h('small', {}, p.text), h('span', { class: 'pk-rank' }, pips(have, p.max), h('em', {}, have + 1 > p.max ? 'Max' : `Rank ${have + 1}`)));
+    h('span', { class: 'pk-ico' }, ico(PERK_ICON[id] || 'star', '', 34)), h('b', {}, p.name), h('small', {}, p.text), p.diamond ? h('span', { class: 'pk-rank' }, h('em', {}, `Case ${E.diamondsOf(hero).length + 1} of ${D.DIAMOND.max}`)) : h('span', { class: 'pk-rank' }, pips(have, p.max), h('em', {}, have + 1 > p.max ? 'Max' : `Rank ${have + 1}`)));
 }
 export function victory(first) {
   const S = X.S; const Rw = S.rewards; const hero = S.hero;
@@ -602,7 +616,10 @@ export function victory(first) {
   const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
   const gemLine = (txt) => h('p', { class: 'dm-line' }, ico('gem'), txt);
   const diamondPanel = Rw.diamond ? panel('sx-diamond', eyebrow('A Diamond weapon', 'gold'), h('div', { class: 'loot-row one' }, weaponCard(Rw.diamond, { cls: 'pick' })),
-    gemLine(Rw.diamondTaken ? `It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from the quest card when a fight matters.` : `Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}), so this one stays behind. Use a Diamond in a fight to make room.`)) : null;
+    Rw.diamondTaken ? gemLine(`It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from the quest card when a fight matters.`)
+      : Rw.diamondSold ? gemLine(`Sold for ${E.diamondSellValue(Rw.diamond)} gold. A sensible choice. The Diamond disagrees, quietly.`)
+        : [gemLine(`Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}). Sell this one, or leave it behind and use a Diamond in a fight to make room.`),
+          h('div', { class: 'row end' }, btn(`Sell it ${E.diamondSellValue(Rw.diamond)}`, () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost', icon: 'coin', iconAfter: true }))]) : null;
   const shattered = Rw.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${Rw.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light.`) : null;
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.repeatNote(Rw.share)) : null;
@@ -694,7 +711,11 @@ function weaponRow(inst, label = '') {
 function campStatus(hero) {
   const c = hero.campaign; const act = D.ACTS[(c.act - 1) % D.ACTS.length]; const next = E.questsFor(hero)[0];
   const r = E.potionBuyInfo(hero);
-  const pips = h('span', { class: 'cs-pips', 'aria-hidden': 'true' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => h('i', { class: i + 1 < c.step ? 'done' : i + 1 === c.step ? 'now' : i + 1 === D.QUESTS_PER_ACT ? 'boss' : '' })));
+  const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
+    const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);
+    return h('button', { type: 'button', class: `cs-step ${done ? 'done' : ''} ${now ? 'now' : ''} ${reach ? 'reach' : ''} ${kind === 'battle' ? '' : kind}`, disabled: !!X.net, 'aria-label': `Quest ${n}${now ? ', you are here' : ''}`,
+      onclick: X.net ? null : tap(() => stepAsk(hero, c.act, n, () => X.renderCamp())) }, kind === 'boss' ? ico('crown') : kind === 'elite' ? ico('skull') : String(n));
+  }));
   const vials = h('span', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
   const buy = r.have >= r.max ? h('span', { class: 'sp-full' }, 'Full')
     : btn(`${r.price}`, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
@@ -931,7 +952,8 @@ function gearTab() {
       h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons, Strength or Talent Triple (three alike across a row): +10 attack. Head to Toe Triple (down the middle): +10 block.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'Rare weapons for one fight each. Bring one, or two (one in each hand), from the quest card when a fight matters. When that fight ends, it shatters.',
-      h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => weaponCard(d, { compact: true, badge: E.armedSlot(hero, d.uid) ? (E.armedSlot(hero, d.uid) === 'NW' ? 'Left' : 'Right') : '' })))) : null,
+      h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => weaponCard(d, { compact: true, badge: E.armedSlot(hero, d.uid) ? (E.armedSlot(hero, d.uid) === 'NW' ? 'Left' : 'Right') : '',
+        actions: [btn(`Sell ${E.diamondSellValue(d)}`, () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell the Diamond ${D.WEAPONS[d.id].name} for ${E.diamondSellValue(d)} gold` })] })))) : null,
     zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', h('div', { class: 'wc-grid' }, stock.map((it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero); return weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` })] }); })), petOfferCard(hero)));
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.

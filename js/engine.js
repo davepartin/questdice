@@ -113,9 +113,15 @@ export function makeDiamond(rng, act = 1) {
   const id = pick(rng, DIAMOND.pool); const size = DIAMOND.sizeByAct[Math.min(3, Math.max(1, act)) - 1];
   return { uid: newUid(rng), id, rarity: 3, size, diamond: true };
 }
-export const diamondsOf = (hero) => (hero.diamonds ||= []);
-export const diamondCaseFull = (hero) => diamondsOf(hero).length >= DIAMOND.max;
-export function takeDiamond(hero, inst) { if (!inst?.diamond || diamondCaseFull(hero)) return false; diamondsOf(hero).push(inst); return true; }
+export const diamondsOf = (hero) => hero.diamonds || []; // (reading never adds an empty case; takeDiamond makes it)
+export const diamondCaseFull = (hero) => (hero.diamonds || []).length >= DIAMOND.max; // a look, so it never adds an empty case to a hero
+// Selling a Diamond (Dave): it is made to be used, so it sells for what the plain weapon of its kind and size would, nothing more.
+export const diamondSellValue = (inst) => sellValue({ id: inst.id, rarity: 0, size: inst.size });
+export function sellDiamond(hero, uid) {
+  const i = diamondsOf(hero).findIndex((d) => d.uid === uid); if (i < 0) return false;
+  const [d] = diamondsOf(hero).splice(i, 1); armDiamond(hero, uid, null); hero.gold += diamondSellValue(d); return true;
+}
+export function takeDiamond(hero, inst) { if (!inst?.diamond || diamondCaseFull(hero)) return false; (hero.diamonds ||= []).push(inst); return true; }
 // Which hands can hold a Diamond: the left always; the right when you have a right-hand weapon die, or a two-handed weapon fills both.
 export const diamondHands = (hero) => ['NW', 'NE'].filter((s) => s === 'NW' || isActive(hero, s));
 // Bring a Diamond into the next fight in a hand (or null to leave it in its case). Two Diamonds can go, one in each hand.
@@ -1051,10 +1057,15 @@ export function offerPerks(hero, rng) {
   const avail = Object.keys(PERKS).filter((id) => !PERKS[id].retired && have(id) < PERKS[id].max);
   const out = [];
   while (out.length < 3 && avail.length) out.push(avail.splice(Math.floor(rng() * avail.length), 1)[0]);
+  if (out.length === 3 && !diamondCaseFull(hero) && rng() < DIAMOND.chance.perk) out[2] = 'diamond'; // now and then, a Diamond instead
   return out;
 }
 export function takePerk(hero, id) {
   if (hero.pendingPerks <= 0) return false;
+  if (id === 'diamond') { // a Diamond for the case, not a perk to keep
+    const c = hero.campaign || {}; const d = makeDiamond(makeRng(hashSeed(c.seed || 1, c.act || 1, c.step || 1, 'perk-diamond', hero.level)), c.act || 1);
+    if (!takeDiamond(hero, d)) return false; hero.pendingPerks--; return true;
+  }
   hero.perks.push(id); hero.pendingPerks--; return true;
 }
 
@@ -1146,7 +1157,7 @@ export function shopStock(hero) {
 export function buyItem(hero, i) {
   const it = shopStock(hero)[i];
   if (!it || it.sold || hero.gold < it.price) return false;
-  if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; diamondsOf(hero).push(it.inst); return true; } // into the Diamond case
+  if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; (hero.diamonds ||= []).push(it.inst); return true; } // into the Diamond case
   if (bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }

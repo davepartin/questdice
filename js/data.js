@@ -106,9 +106,9 @@ export const WEAPON_DICE = {
 // carries an icon and the top faces are crits with three. A Diamond rolls at its full size in any hand.
 export const DIAMOND = {
   max: 2,
-  chance: { battle: 0.06, elite: 0.4, boss: 0.35, shop: 0.03 },
+  chance: { battle: 0.04, elite: 0.35, boss: 0.3, shop: 0.03, perk: 0.25 }, // perk: the chance a level-up offers one as one of its three perks
   pool: ['dagger', 'sword', 'spear', 'mace', 'bracer', 'shield', 'tower'], // one-handed, so you can hold one in each hand
-  sizeByAct: [8, 10, 10], // a size above what the act's weapons reach, so a Diamond feels like treasure (d10 is the biggest weapon die)
+  sizeByAct: [6, 8, 10], // Dave: they get better each act (Act I d6, Act II d8, Act III d10); no blanks and crits keep even a d6 a treasure
   dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
   price: 3.2, // the traveller's price, times the weapon's base price per size step
 };
@@ -410,6 +410,8 @@ export const CLASSES = {
 // Perks: one pick every level, three offered. Stat tweaks that compose without special cases.
 // -------------------------------------------------------------------------------------------
 export const PERKS = {
+  // a level-up now and then offers a Diamond weapon for the case instead of a third perk (never kept in hero.perks; see takePerk)
+  diamond: { name: 'A Diamond weapon', text: 'One goes into your Diamond case: no blanks, an icon on every face, a crit of three. Good for one fight.', max: 1, retired: true, diamond: true },
   vitality: { name: 'Vitality', text: '+6 max HP. Room for one more bruise.', max: 5, mod: { maxHp: 6 } },
   reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic. A spark in the pocket.', max: 3, mod: { startMagic: 1 } },
   quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it

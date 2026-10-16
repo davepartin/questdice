@@ -832,3 +832,19 @@ test('Diamond weapons: about one and a half an act from fights and the traveller
   const saved = JSON.parse(JSON.stringify(h)); migrateHero(saved); assert.equal(saved.loadout.NW.uid, sword); assert.equal(saved.lent, undefined);
   const leg = newHero({ name: 'L', cls: 'knight', seed: 1 }); leg.bag = [E.makeWeapon('dawnbreaker', 3, E.makeRng(1))]; migrateHero(leg); assert.equal(leg.bag[0].rarity, 3, 'legendaries keep their tier');
 });
+
+test('Diamonds: a level-up now and then offers one instead of a third perk (never with a full case), and one sells for a plain weapon\'s price', async () => {
+  const E = await import('../js/engine.js'); const { DIAMOND, PERKS } = await import('../js/data.js');
+  assert.deepEqual(DIAMOND.sizeByAct, [6, 8, 10], 'they get better each act');
+  let seen = 0; const N = 400;
+  for (let s = 0; s < N; s++) { const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); const o = E.offerPerks(h, E.makeRng(s)); assert.equal(o.length, 3); if (o.includes('diamond')) seen++; }
+  assert.ok(seen > N * 0.15 && seen < N * 0.35, `offered ${seen} of ${N}`);
+  const full = newHero({ name: 'F', cls: 'knight', seed: 1 }); E.takeDiamond(full, E.makeDiamond(E.makeRng(1), 1)); E.takeDiamond(full, E.makeDiamond(E.makeRng(2), 1));
+  for (let s = 0; s < 200; s++) assert.ok(!E.offerPerks(full, E.makeRng(s)).includes('diamond'), 'a full case is never offered one');
+  const h = newHero({ name: 'P', cls: 'knight', seed: 1 }); h.pendingPerks = 1; h.campaign.act = 2;
+  assert.ok(E.takePerk(h, 'diamond')); assert.equal(h.pendingPerks, 0); assert.equal(E.diamondsOf(h).length, 1); assert.equal(E.diamondsOf(h)[0].size, 8); assert.ok(!h.perks.includes('diamond'));
+  assert.ok(PERKS.diamond.retired, 'never offered as an ordinary perk');
+  const d = E.diamondsOf(h)[0]; const price = E.diamondSellValue(d);
+  assert.equal(price, E.sellValue({ id: d.id, rarity: 0, size: d.size }), 'a normal sell price, nothing more');
+  const g = h.gold; assert.ok(E.sellDiamond(h, d.uid)); assert.equal(h.gold, g + price); assert.equal(E.diamondsOf(h).length, 0);
+});

@@ -761,3 +761,14 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-urow.cmp .ur-max.gate, .tal-top .ur-max.gate, .ur-btns .ur-max.gate { border: 1px dashed rgba(255, 255, 255, .2); border-radius: 999px; padding: .4rem .7rem; color: var(--dim); background: rgba(5, 6, 12, .35); letter-spacing: .04em; }
 .fx-anchor { display: block; height: 0; }
 .sx-wc.worn .wc-tag { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* tap a step to replay it (Dave, Oct 2026): the camp bar's steps and the board's trail */
+.cs-steps { display: flex; gap: 3px; margin-top: .3rem; flex-wrap: nowrap; }
+.cs-step { flex: 1 1 0; min-width: 0; height: 1.55rem; padding: 0; border-radius: 5px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .05); color: var(--faint); font: 800 .66rem var(--font-display); display: grid; place-items: center; cursor: pointer; }
+.cs-step .ico svg { width: .8rem; height: .8rem; }
+.cs-step.done { color: #f6dfa5; border-color: rgba(255, 214, 140, .45); background: rgba(154, 122, 58, .35); }
+.cs-step.reach { color: #f6dfa5; border-color: rgba(255, 214, 140, .7); border-style: dashed; }
+.cs-step.now { color: #1c1206; background: var(--gold-hi); border-color: var(--gold-hi); box-shadow: 0 0 8px rgba(255, 214, 140, .7); }
+.cs-step.boss { color: #ff9a8a; } .cs-step.boss.now { color: #5a0e06; } .cs-step.elite:not(.now) { color: #ffb0a0; }
+.cs-step:disabled { cursor: default; }
+.sx-trail.pickable .tr-node { cursor: pointer; } .sx-trail .tr-node.reach .tr-gem { border-style: dashed; opacity: .95; }
+.step-ask p { margin: .3rem 0; }
