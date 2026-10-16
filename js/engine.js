@@ -226,12 +226,14 @@ export function sidesOf(hero, slot) {
     default: throw new Error(`bad slot ${slot}`);
   }
 }
-// Talent die faces: 1-2 blank, 3 = 2x, 4+ = number faces that pay their number in the symbol bought for them. Returns null (blank or not
-// bought yet), 'X2', or [symbol] (older saves kept several per face: only the first counts now).
+// Talent die faces (Dave, Oct 2026): 1 and 3 blank, 2 = 2x, 4+ = number faces that pay their number in the symbol bought for them. Returns
+// null (blank or not bought yet), 'X2', or [symbol] (older saves kept several per face: only the first counts now). Every number on a talent
+// die, the 2x as a 2 and an unbought 4+ included, also counts toward straights (talentNumber).
+export const talentNumber = (v) => (v === 1 || v === 3 ? 0 : v); // what a talent face counts as in a straight (its blanks count as nothing)
 export function specialFace(hero, slot, v) {
   const n = hero.special[slot];
-  if (v <= 2 || v > n) return null;
-  if (v === 3) return 'X2';
+  if (v < 1 || v > n || v === 1 || v === 3) return null;
+  if (v === 2) return 'X2';
   const entry = hero.talent?.[slot]?.[v - 4]; const sym = Array.isArray(entry) ? entry[0] : entry;
   return sym ? [sym] : null;
 }
@@ -375,12 +377,12 @@ export function evaluate(hero, board, opts = {}) {
   if (!hushed && val('N') === val('C') && val('C') === val('S')) { out.triples.push({ slots: ['N', 'C', 'S'], kind: 'block', row: 'headtoe', name: 'Head to Toe Triple' }); out.block += SYNERGY_BONUS; }
   out.offense3 = out.triples.some((t) => t.kind === 'atk'); out.defense3 = out.triples.some((t) => t.kind === 'block');
 
-  // Straights across the seven numeric dice (the two specials carry symbols, not numbers).
+  // Straights across the numeric dice: head, hands, feet, heart, weapons, and the two talent dice (their 2, and 4 and up).
   // which die shows each number (the first one in board order), so the tray can light the dice that make the straight
   const numSlot = new Map();
-  for (const k of ['NW', 'N', 'NE', 'W', 'C', 'E', 'S']) {
-    if ((k === 'NW' || k === 'NE') && !isActive(hero, k)) continue;
-    const v = k === 'NW' || k === 'NE' ? weaponFaces(hero.loadout[k], sidesOf(hero, k))[val(k) - 1].v : val(k);
+  for (const k of ['NW', 'N', 'NE', 'W', 'C', 'E', 'S', 'SW', 'SE']) {
+    if ((k === 'NW' || k === 'NE' || k === 'SW' || k === 'SE') && !isActive(hero, k)) continue;
+    const v = k === 'NW' || k === 'NE' ? weaponFaces(hero.loadout[k], sidesOf(hero, k))[val(k) - 1].v : k === 'SW' || k === 'SE' ? talentNumber(val(k)) : val(k);
     if (v > 0 && !numSlot.has(v)) numSlot.set(v, k); // a blank is a miss, not a number
   }
   const sorted = [...numSlot.keys()].sort((x, y) => x - y);

@@ -714,9 +714,9 @@ function talentCard(hero, slot) {
       return h('button', { class: `tal-opt ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, 'aria-label': `${num} ${D.TALENT_SYMS[k].name}. ${left} left on this die.`, onclick: tap(() => { if (HE.addTalent(hero, slot, TAL.face, k)) { TAL.face = null; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), h('small', {}, left > 0 ? `${num} · ${left} left` : 'used twice'));
     })) : null;
   return h('div', { class: 'sx-urow tal-die' },
-    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.faces} number faces set`), h('small', { class: 'tal-hand' }, `A face pays its own number in its symbol. The 2× face doubles your ${slot === 'SW' ? 'left' : 'right'} hand.`)),
-    h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 2'), h('b', {}, 'blank')),
-      h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 3'), h('b', {}, '2×'), h('small', {}, 'Strength'))),
+    h('div', { class: 'tal-head' }, h('b', {}, `${DIE_NAME[slot]} · d${size}`), h('small', {}, `${info.used} of ${info.faces} number faces set`), h('small', { class: 'tal-hand' }, `A face pays its own number in its symbol. The 2× face doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Its numbers (the 2× counts as a 2) also count toward straights.`)),
+    h('div', { class: 'tal-strip fixed' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), h('div', { class: 'tal-face x2' }, h('small', {}, 'Face 2'), h('b', {}, '2×'), h('small', {}, 'Strength')),
+      h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 3'), h('b', {}, 'blank'))),
     h('div', { class: 'tal-strip syms numbers' }, symFaces),
     picker,
     up.next ? h('small', { class: 'ur-next' }, `Grow from d${size} to d${up.next}: one more number face to fill with a symbol.`) : null,

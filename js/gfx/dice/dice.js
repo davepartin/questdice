@@ -40,6 +40,7 @@ export function dieSpecs(hero) {
         const sym = E.specialFace(hero, slot, v);
         if (sym === 'X2') labels.push({ sym: 'SURGE', text: 'X2' });
         else if (Array.isArray(sym)) labels.push({ text: String(v), corners: sym.map((k) => (k === 'block' ? 'def' : k)) }); // the number it pays, with its symbol
+        else if (v >= 4) labels.push({ text: String(v) }); // no symbol yet: it still shows its number (it counts in a straight)
         else labels.push({ blank: true });
       }
     } else if (role === 'heart') {

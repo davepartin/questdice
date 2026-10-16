@@ -56,11 +56,11 @@ test('lane = weapon + strength; weapon color decides attack vs block', () => {
 
 test('talent die: 2x doubles that hand, a number face pays its number in its symbol', () => {
   const h = knight(); h.special.SW = 6; h.talent.SW = [['heal'], [], ['gold']]; // face 4 = heal, face 5 empty, face 6 = gold
-  assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 2), null);
-  assert.equal(specialFace(h, 'SW', 3), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal']);
+  assert.equal(specialFace(h, 'SW', 1), null); assert.equal(specialFace(h, 'SW', 3), null);
+  assert.equal(specialFace(h, 'SW', 2), 'X2'); assert.deepEqual(specialFace(h, 'SW', 4), ['heal']);
   assert.equal(specialFace(h, 'SW', 5), null); // not bought yet: it does nothing
   assert.deepEqual(specialFace(h, 'SW', 6), ['gold']);
-  const ev = evaluate(h, board({ NW: 2, W: 3, SW: 3, SE: 3, E: 2, NE: 1, C: 3 })); // the sword's red 3
+  const ev = evaluate(h, board({ NW: 2, W: 3, SW: 2, SE: 2, E: 2, NE: 1, C: 3 })); // the sword's red 3; the 2x face
   assert.equal(ev.lanes.L.value, 3 + 3 + 3); // 2x adds the strength a second time
   const four = evaluate(h, board({ SW: 4, W: 3, NW: 1, C: 3 })); const five = evaluate(h, board({ SW: 5, W: 3, NW: 1, C: 3 }));
   assert.equal(four.heal - five.heal, 4); // face 4 pays 4 heal, whatever the hand rolled
@@ -554,6 +554,16 @@ test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and tal
   h.campaign.act = 3; assert.ok(upgradeDie(h, 'special', 'SW')); assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 10);
 });
 
+test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', () => {
+  const h = knight(); h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
+  // head 1, talent 2x (a 2), heart 3, left hand 4, right talent 5 (no symbol yet): 1-2-3-4-5
+  const run = evaluate(h, board({ N: 1, SW: 2, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 }));
+  assert.equal(run.straight, 5);
+  assert.ok(run.straightSlots.includes('SW') && run.straightSlots.includes('SE'));
+  const gap = evaluate(h, board({ N: 1, SW: 3, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 })); // a blank 3 on the talent die is no 2
+  assert.equal(gap.straight, 0);
+});
+
 test('a talent die always has two blanks and one 2x; the rest of its faces can carry symbols', () => {
   const h = knight();
   for (const [n, symFaces] of [[4, 1], [6, 3], [8, 5], [10, 7]]) {
@@ -574,7 +584,7 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
   assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
   assert.equal(DIFFICULTY.hard.hp, 1.15); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
-  assert.equal(DIFFICULTY.legendary.hp, 1.25); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(DIFFICULTY.legendary.hp, 1.15); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
   assert.equal(normalizeDifficulty('noob'), 'easy');
   assert.equal(normalizeDifficulty('mid'), 'normal');
   assert.equal(normalizeDifficulty('expert'), 'hard');
@@ -611,7 +621,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
   assert.equal(mid.enemies[0].maxHp, 30);
   assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.15));
-  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.25));
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.15));
   assert.equal(easy.enemies[0].flat, -1);
   assert.equal(hard.enemies[0].flat, 2);
   assert.equal(legend.enemies[0].flat, 2);

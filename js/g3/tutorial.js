@@ -152,9 +152,9 @@ const LESSONS = [
     art: () => boardPic({ base: 'start', dice: ['SW', 'W', 'NW'], hi: ['SW', 'W', 'NW'] }),
     say: 'My talent die rolled 2×, so my hand’s 4 counts twice in my sword: 3 + 4 + 4 = 11 attack.',
     body: () => [
-      row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Every talent die has two blank faces.'),
-      row(img('talent-x2', 'xs'), '2× Strength', 'Counts the hand above it twice in its weapon.'),
-      row(img('talent-heal', 'xs'), 'Number faces', 'A number face pays its number in the symbol you bought for it: a 4 with heal is 4 heal. You choose the symbols at camp.'),
+      row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Faces 1 and 3 of every talent die are blank.'),
+      row(img('talent-x2', 'xs'), '2× Strength', 'Face 2. Counts the hand above it twice in its weapon, and counts as a 2 in a straight.'),
+      row(img('talent-heal', 'xs'), 'Number faces', 'A number face pays its number in the symbol you bought for it: a 4 with heal is 4 heal. You choose the symbols at camp. Every number on a talent die also counts toward straights.'),
     ],
   },
   {

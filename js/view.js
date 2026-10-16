@@ -24,7 +24,7 @@ export function dieSpec(hero, slot, v) {
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
-    return { main: sym ? (sym === 'X2' ? '2×' : `${v}${D.talentLabel(sym)}`) : '—', tone: sym ? 'sym' : '', chip: sym ? D.talentName(sym) : 'blank', chipKind: sym ? 'c-pierce' : 'c-dim', blank: !sym };
+    return { main: sym ? (sym === 'X2' ? '2×' : `${v}${D.talentLabel(sym)}`) : v >= 4 ? String(v) : '—', tone: sym ? 'sym' : '', chip: sym ? D.talentName(sym) : v >= 4 ? 'no symbol yet' : 'blank', chipKind: sym ? 'c-pierce' : 'c-dim', blank: !sym };
   }
   let chip = ''; let chipKind = '';
   if (role === 'heart') {
@@ -77,7 +77,7 @@ export function describeDie(hero, slot, v) {
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);
-    return sym ? `${name}: ${sym === 'X2' ? '' : `${v} `}${D.talentName(sym)}. ${sym === 'X2' ? D.talentText(sym) : `Pays ${v}.`}` : `${name}: a blank. Two faces of every talent die are always empty.`;
+    return sym ? `${name}: ${sym === 'X2' ? '' : `${v} `}${D.talentName(sym)}. ${sym === 'X2' ? D.talentText(sym) : `Pays ${v}.`}` : (v >= 4 ? `${name}: ${v}, no symbol on it yet. It still counts in a straight.` : `${name}: a blank. Faces 1 and 3 of every talent die are empty.`);
   }
   if (role === 'pet') {
     const p = D.PETS[hero.pet?.type]; const syms = E.petFace(hero, v); const pw = E.petPowerOf(hero);

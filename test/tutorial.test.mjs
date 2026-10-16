@@ -8,7 +8,7 @@ const quest = { id: 'practice', act: 1, step: 1, kind: 'battle', enemies: ['gobl
 test('the practice roll teaches 11 attack, then a Strength Triple for 21', () => {
   const hero = E.newHero({ name: 'You', cls: 'knight' });
   const b = E.newBattle(hero, quest, E.makeRng(9), 1);
-  b.script = { rolls: [{ NW: 2, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 }], rerolls: [{ E: 4 }] };
+  b.script = { rolls: [{ NW: 2, N: 2, W: 4, C: 4, E: 1, SW: 2, S: 3 }], rerolls: [{ E: 4 }] };
   E.startRoll(b);
   let ev = E.evaluate(hero, b.board);
   assert.equal(ev.atk, 11, 'sword +3, hand 4, 2x talent counts the 4 again');
