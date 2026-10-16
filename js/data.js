@@ -107,7 +107,7 @@ export const DIAMOND = {
   max: 2,
   chance: { battle: 0.06, elite: 0.4, boss: 0.35, shop: 0.03 },
   pool: ['dagger', 'sword', 'spear', 'mace', 'bracer', 'shield', 'tower'], // one-handed, so you can hold one in each hand
-  sizeByAct: [6, 8, 10],
+  sizeByAct: [8, 10, 10], // a size above what the act's weapons reach, so a Diamond feels like treasure (d10 is the biggest weapon die)
   dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
   price: 3.2, // the traveller's price, times the weapon's base price per size step
 };
