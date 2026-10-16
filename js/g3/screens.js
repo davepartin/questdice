@@ -34,8 +34,10 @@ export function scrolled(px = 0) {
 function pinHeroArt() {
   const host = document.querySelector('.sx-hero-art'); const img = host?.querySelector('img');
   if (!host || !img?.naturalWidth) return;
-  const k = D.CLASSES[host.dataset.cls]; const base = k?.imgBase; if (!base) return;
-  const flip = D.needsFlip(k, 'right'); // class pick: same as the battle table, looking right
+  const k = D.CLASSES[host.dataset.cls];
+  const look = D.lookById(host.dataset.cls, host.dataset.color) || k;
+  const base = look?.imgBase || k?.imgBase; if (!base) return;
+  const flip = D.needsFlip(look, 'right'); // class pick: same as the battle table, looking right
   const bx = flip ? 1 - base.x : base.x;
   const box = host.getBoundingClientRect(); if (box.height < 60) return;
   const H = Math.min((box.height - 62) * 0.97, box.width * 1.35); const W = H * (img.naturalWidth / img.naturalHeight);

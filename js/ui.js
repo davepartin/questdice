@@ -396,7 +396,7 @@ export function showStepPick() {
 // ------------------------------------------------------------------ create
 function showCreate() {
   if (SCRUI.on()) return SCRUI.create();
-  let cls = 'knight'; let diff = 'normal';
+  let cls = 'knight'; let color = 'default'; let diff = 'normal';
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
   const msg = h('p', { class: 'form-msg' });
@@ -407,9 +407,12 @@ function showCreate() {
     type: 'button', class: `class-pick ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff),
     onclick: () => { diff = id; sfx.select(); paintDiff(); },
   }, h('b', {}, d.name), h('small', {}, d.text))));
+  const colorGrid = h('div', { class: 'class-grid', role: 'radiogroup', 'aria-label': 'Colour', style: { gridTemplateColumns: 'repeat(4, 1fr)' } });
   const paint = () => {
-    grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; sfx.select(); paint(); } },
+    grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; if (!D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); } },
       c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name))));
+    colorGrid.replaceChildren(...D.colorsOf(cls).map((l) => h('button', { type: 'button', class: `class-pick ${l.id === color ? 'on' : ''}`, role: 'radio', 'aria-checked': String(l.id === color), onclick: () => { color = l.id; sfx.select(); paint(); } },
+      h('img', { src: l.img, alt: l.name, draggable: 'false', decoding: 'async' }), h('b', {}, l.name))));
     const c = D.CLASSES[cls];
     detail.replaceChildren(h('p', {}, c.blurb),
       h('div', { class: 'stats' }, h('span', {}, `❤ ${c.hp} HP`), h('span', {}, `⚡ d${c.feet || 4} initiative`)),
@@ -423,7 +426,7 @@ function showCreate() {
     if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); return; }
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     try {
-      const hero = E.newHero({ name: n, cls });
+      const hero = E.newHero({ name: n, cls, color });
       hero.difficulty = D.normalizeDifficulty(diff);
       SV.markReached(hero);
       await stashNewHero(hero, pw.value);
@@ -433,6 +436,7 @@ function showCreate() {
   mount(h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a hero')),
     section('Name & password', name, pw, h('p', { class: 'fine' }, 'The password guards this hero on this device and in the cloud. Choose something you will remember.')),
     section('Class', grid, detail),
+    section('Colour', colorGrid),
     section('Difficulty', diffGrid), msg, primary('Begin the campaign', go, { cls: 'wide' }));
 }
 

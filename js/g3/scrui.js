@@ -64,18 +64,18 @@ function countUp(el, from, to, ms = 900, fmt = (v) => String(v), delay = 0) {
   requestAnimationFrame(step);
 }
 const clsName = (c) => D.CLASSES[c].name;
-function emblem(cls, size = '') { return h('span', { class: `sx-emblem ${size}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } }, ico(CLASS_ICON[cls] || 'sword')); }
-function classPic(cls, size = '') {
-  const k = D.CLASSES[cls];
-  if (!k?.img) return emblem(cls, size);
+function emblem(cls, size = '', hue) { return h('span', { class: `sx-emblem ${size}`, style: { '--hue': hue || CLS_HUE[cls] || '#ffd23d' } }, ico(CLASS_ICON[cls] || 'sword')); }
+function classPic(cls, size = '', look) {
+  const k = look || D.CLASSES[cls];
+  if (!k?.img) return emblem(cls, size, look?.hue);
   const flip = D.needsFlip(k, 'right');
-  return h('span', { class: `sx-emblem ${size}${flip ? ' flip' : ''}`, style: { '--hue': CLS_HUE[cls] || '#ffd23d' } },
-    h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' }));
+  return h('span', { class: `sx-emblem ${size}${flip ? ' flip' : ''}`, style: { '--hue': look?.hue || CLS_HUE[cls] || '#ffd23d' } },
+    h('img', { src: k.img, alt: k.name || look?.name, draggable: 'false', decoding: 'async' }));
 }
-function classPreview(cls) {
-  const k = D.CLASSES[cls];
-  if (!k?.img) return null;
-  return h('img', { src: k.img, alt: k.name, draggable: 'false', decoding: 'async' });
+function classPreview(cls, color) {
+  const look = D.lookById(cls, color) || D.CLASSES[cls];
+  if (!look?.img) return null;
+  return h('img', { src: look.img, alt: look.name, draggable: 'false', decoding: 'async' });
 }
 function nextOf(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function difficultyPicker(selected, onPick, { locked = false, compact = false } = {}) {
@@ -112,7 +112,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
     return h('div', { class: 'sx-chip' }, h('span', { class: 'sx-emblem' }, ico('people')), h('div', { class: 'ch-copy' }, h('b', {}, S.company.name), h('small', {}, `${n} ${n === 1 ? 'hero' : 'heroes'}`)), coin(E.companyGold(S.company.members)));
   }
   const need = D.xpToNext(hero.level); const maxed = hero.level >= D.MAX_LEVEL;
-  return h('div', { class: 'sx-chip' }, emblem(hero.cls),
+  return h('div', { class: 'sx-chip' }, emblem(hero.cls, '', D.lookDef(hero)?.hue),
     h('div', { class: 'ch-copy' }, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} ${clsName(hero.cls)}`),
       xp ? h('span', { class: 'ch-xp', title: maxed ? 'Max level' : `${hero.xp}/${need} XP` }, h('i', { style: { width: `${maxed ? 100 : Math.min(100, (hero.xp / need) * 100)}%` } })) : null),
     coin(hero.gold));
@@ -297,7 +297,7 @@ export function daily(v) {
 }
 // opts.table = { mode: 'host' | 'join', code, onDone(name, cls, extra) }: the same hero choice, for sitting down at a table.
 export function create(opts = {}) {
-  const S = X.S; let cls = Object.keys(D.CLASSES)[Math.floor(Math.random() * 5)]; let H = null; let busy = false;
+  const S = X.S; let cls = Object.keys(D.CLASSES)[Math.floor(Math.random() * 5)]; let color = 'default'; let H = null; let busy = false;
   const T = opts.table || null;
   const name = h('input', { class: 'sx-input', id: 'hero-name', maxlength: 16, placeholder: 'Thessaly Vane', autocomplete: 'off', 'aria-label': 'Hero name' });
   const pw = h('input', { class: 'sx-input', id: 'hero-pw', type: 'password', placeholder: '3 or more characters', autocomplete: 'new-password', 'aria-label': 'Password' });
@@ -310,18 +310,26 @@ export function create(opts = {}) {
   paintDiff();
   const hintsBox = h('label', { class: 'sx-check' }, h('input', { type: 'checkbox', checked: skipHints, onchange: (e) => { skipHints = e.target.checked; } }), h('span', {}, 'Turn the hints off'));
   const rail = h('div', { class: 'sx-rail', role: 'radiogroup', 'aria-label': 'Class' });
+  const colors = h('div', { class: 'sx-colors', role: 'radiogroup', 'aria-label': 'Colour' });
   const info = h('div', { class: 'sx-classinfo' });
   const preview = h('div', { class: 'sx-hero-art' });
   const paint = () => {
     const c = D.CLASSES[cls];
-    const pic = classPreview(cls);
-    preview.classList.remove('is-seated'); preview.dataset.cls = cls;
-    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', CLS_HUE[cls] || '#ffd23d');
+    const look = D.lookById(cls, color);
+    color = look?.id || 'default';
+    const pic = classPreview(cls, color);
+    preview.classList.remove('is-seated'); preview.dataset.cls = cls; preview.dataset.color = color;
+    preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', look?.hue || CLS_HUE[cls] || '#ffd23d');
     if (pic) { const go = () => H?.pin?.(); if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true }); }
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
-      onclick: () => { if (id === cls) return; cls = id; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
+      onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
     }, classPic(id), h('span', {}, k.name.split(' ')[0]))));
+    colors.replaceChildren(...D.colorsOf(cls).map((l) => h('button', {
+      type: 'button', class: `color-btn ${l.id === color ? 'on' : ''}${D.needsFlip(l, 'right') ? ' flip' : ''}`, role: 'radio', 'aria-checked': String(l.id === color),
+      style: { '--hue': l.hue }, 'aria-label': l.name,
+      onclick: () => { if (l.id === color) return; color = l.id; sfx.select(); paint(); H?.pin?.(); },
+    }, h('img', { src: l.img, alt: '', draggable: 'false', decoding: 'async' }), h('span', {}, l.name))));
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
       h('div', { class: 'ci-head' }, h('h2', {}, c.name), h('p', {}, c.blurb)),
@@ -336,7 +344,7 @@ export function create(opts = {}) {
   };
   const loaded = T?.hero || null;
   const bring = T?.bring === 'cloud';
-  if (loaded) { cls = loaded.cls; name.value = loaded.name; }
+  if (loaded) { cls = loaded.cls; color = D.colorIdOf(loaded); name.value = loaded.name; }
   if (bring) { pw.placeholder = 'Password'; pw.setAttribute('autocomplete', 'current-password'); }
   const browse = bring && !loaded ? h('div', { class: 'cloud-browse' }) : null;
   paint();
@@ -365,7 +373,7 @@ export function create(opts = {}) {
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     if (busy) return; busy = true;
     try {
-      const hero = E.newHero({ name: n, cls }); hero.difficulty = diff; SV.markReached(hero); Coach.setHints(!skipHints);
+      const hero = E.newHero({ name: n, cls, color }); hero.difficulty = diff; SV.markReached(hero); Coach.setHints(!skipHints);
       await X.stashNewHero(hero, pw.value);
       if (T) { X.adopt(hero); sfx.level(); await seat(hero); return; }
       X.adopt(hero, 'hero'); sfx.level(); X.showHeroHub();
@@ -384,7 +392,7 @@ export function create(opts = {}) {
       h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview),
       h('div', { class: 'sx-side' },
         h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, heading)),
-        source, hideClass ? null : rail, hideClass ? null : info, flourish(),
+        source, hideClass ? null : rail, hideClass ? null : eyebrow('Colour'), hideClass ? null : colors, hideClass ? null : info, flourish(),
         showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T ? null : hintsBox,
         loaded ? h('p', { class: 'fine' }, `${loaded.name} · Level ${loaded.level} ${D.CLASSES[loaded.cls].name}. Friends join with their own hero.`) : null,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,

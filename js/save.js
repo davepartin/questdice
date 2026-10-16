@@ -2,7 +2,7 @@
 // reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
-import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf } from './data.js';
 
 const PREFIX = 'questdice.hero.';
 export const nameKey = (name) => String(name || '').trim().toLowerCase();
@@ -53,6 +53,7 @@ export const MIN_PASSWORD = 3;
 export function migrateHero(hero) {
   if (!hero || typeof hero !== 'object') return hero;
   hero.difficulty = normalizeDifficulty(hero.difficulty);
+  hero.color = colorIdOf(hero);
   // closed mid-fight with a Diamond in hand: the fight is over, so it has shattered; the hands get their own weapons back
   if (hero.lent && hero.loadout) {
     const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;

@@ -43,10 +43,11 @@ const fireEl = () => h('div', { class: 'sc-fire' },
   ...Array.from({ length: 9 }, (_, i) => h('i', { class: 'sc-spark', style: { '--x': `${(i * 37) % 60 - 30}%`, '--d': `${(i * 0.53) % 3.2}s`, '--t': `${2.4 + (i % 4) * 0.55}s`, '--dx': `${((i * 53) % 40) - 20}px` } })));
 
 function figure(hero, slot, { petSide }) {
-  const [x, y, flip, s] = slot; const c = D.CLASSES[hero.cls]; const base = c?.imgBase || { x: 0.5, y: 0.98, w: 0.7 };
+  const [x, y, flip, s] = slot; const c = D.CLASSES[hero.cls]; const look = D.lookDef(hero) || c;
+  const base = look?.imgBase || c?.imgBase || { x: 0.5, y: 0.98, w: 0.7 };
   const pet = hero.pet ? h('img', { class: 'sc-pet', src: petImg(hero.pet.type), alt: D.PETS[hero.pet.type]?.name || 'pet', draggable: 'false', decoding: 'async' }) : null;
-  const img = h('img', { class: 'sc-img', src: c?.img || '', alt: hero.name, draggable: 'false', decoding: 'async' });
-  const mirror = D.needsFlip(c, flip ? 'left' : 'right'); // the figure looks toward the fire (or the road ahead) whichever way it was painted
+  const img = h('img', { class: 'sc-img', src: look?.img || c?.img || '', alt: hero.name, draggable: 'false', decoding: 'async' });
+  const mirror = D.needsFlip(look || c, flip ? 'left' : 'right'); // the figure looks toward the fire (or the road ahead) whichever way it was painted
   const el = h('div', { class: `sc-fig ${mirror ? 'flip' : ''} ${flip ? 'right' : ''}`, style: { '--x': `${x}%`, '--y': `${y}%`, '--s': String(s), '--bx': String(mirror ? 1 - base.x : base.x), '--by': String(base.y), '--delay': `${(x * 7) % 5}s`, zIndex: y > 88 ? 3 : 1 } },
     h('i', { class: 'sc-shadow' }), img, pet, h('b', { class: 'sc-name' }, hero.name));
   void petSide;

@@ -7,6 +7,7 @@ import {
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  colorIdOf, uniqueColors,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
 
@@ -161,14 +162,14 @@ export function shatterDiamonds(hero) {
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
 // ------------------------------------------------------------------------------- heroes
-export function newHero({ name, cls, seed, full = false }) {
+export function newHero({ name, cls, seed, full = false, color } = {}) {
   const c = CLASSES[cls];
   const rng = makeRng(hashSeed(name, cls, seed ?? Date.now()));
   const loadout = {};
   if (c.weapons.length === 1) { const w = makeWeapon(c.weapons[0], 0, rng); loadout.NW = w; loadout.NE = twinOf(w); }
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   return {
-    v: 1, name, cls, level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
+    v: 1, name, cls, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
@@ -1394,10 +1395,11 @@ export function newCompany({ name, roster, seed }) {
     blessings: [], seenRoads: [], campFlags: {}, ambush: null, chronicle: [], nemeses: [],
   };
   const members = roster.map((r, i) => {
-    const hero = newHero({ name: r.name, cls: r.cls, seed: (campaign.seed + i * 997) >>> 0 });
+    const hero = newHero({ name: r.name, cls: r.cls, color: r.color, seed: (campaign.seed + i * 997) >>> 0 });
     hero.campaign = campaign;
     return hero;
   });
+  uniqueColors(members);
   return { kind: 'company', v: 2, name, campaign, members };
 }
 

@@ -1,7 +1,7 @@
 // One table, many phones. The server holds the company. Each phone sends only its own
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
-import { CLASSES, SLOTS, normalizeDifficulty } from './data.js';
+import { CLASSES, SLOTS, normalizeDifficulty, uniqueColors, claimColor, colorIdOf } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
 import * as SV from './save.js';
@@ -44,7 +44,8 @@ export function joinTable(table, { name, cls, token, hero }) {
   const seatCls = brought?.cls || cls;
   if (!CLASSES[seatCls]) return fail('Pick a class.');
   // (the id shows no part of the token)
-  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls: seatCls, ready: false, seenBrag: false, hero: null, brought };
+  const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls: seatCls, ready: false, seenBrag: false, hero: null, brought, color: brought?.color };
+  seatColor(table, player);
   table.players.push(player);
   if (!table.hostId) table.hostId = player.id;
   table.seq += 1;
@@ -112,6 +113,15 @@ function dispatch(table, player, cmd) {
   }
 }
 
+function takenColors(table, cls, except) {
+  return table.players.filter((p) => p !== except && p.cls === cls).map((p) => p.color || colorIdOf(p.brought || { cls: p.cls }));
+}
+function seatColor(table, player) {
+  const id = claimColor({ cls: player.cls, color: player.brought?.color || player.color }, takenColors(table, player.cls, player));
+  player.color = id;
+  if (player.brought) player.brought.color = id;
+  return id;
+}
 function hostAct(table, broughtHost) {
   const h = broughtHost || table.players.find((p) => p.id === table.hostId)?.brought;
   return Math.max(1, h?.campaign?.act | 0) || 1;
@@ -128,13 +138,16 @@ function sit(table, player, cmd) {
     player.name = brought.name;
     player.cls = brought.cls;
     player.ready = false;
+    seatColor(table, player);
     return ok();
   }
   if (!CLASSES[cmd.cls]) return fail('Pick a class.');
   player.name = heroName;
   player.cls = cmd.cls;
   if (!(player.brought && player.brought.name === heroName && player.brought.cls === cmd.cls)) player.brought = null;
+  if (cmd.color) player.color = cmd.color;
   player.ready = false;
+  seatColor(table, player);
   return ok();
 }
 
@@ -179,7 +192,7 @@ function startCampaign(table, player) {
   const host = table.players.find((p) => p.id === table.hostId);
   const company = E.newCompany({
     name: table.name,
-    roster: table.players.map((p) => ({ name: p.name, cls: p.cls })),
+    roster: table.players.map((p) => ({ name: p.name, cls: p.cls, color: p.color || p.brought?.color })),
     seed: table.seed,
   });
   const overlay = takeHostCampaign(host?.brought?.campaign);
@@ -199,6 +212,8 @@ function startCampaign(table, player) {
     p.ready = false;
     p.brought = null;
   });
+  uniqueColors(company.members);
+  table.players.forEach((p, i) => { p.color = company.members[i].color; p.hero = company.members[i]; });
   table.company = company;
   return enterRoad(table);
 }
@@ -658,8 +673,8 @@ export function playerView(table, playerId) {
   const base = {
     seq: table.seq, code: table.code, name: table.name, phase: table.phase,
     difficulty: normalizeDifficulty(table.difficulty),
-    you: player ? { id: player.id, name: player.name, cls: player.cls, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag, level: player.hero?.level || player.brought?.level || 1 } : null,
-    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId, level: p.hero?.level || p.brought?.level || 1 })),
+    you: player ? { id: player.id, name: player.name, cls: player.cls, color: player.color || player.hero?.color || player.brought?.color, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag, level: player.hero?.level || player.brought?.level || 1 } : null,
+    players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, color: p.color || p.hero?.color || p.brought?.color, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId, level: p.hero?.level || p.brought?.level || 1 })),
   };
   if (!table.company) return base;
   const me = player?.hero;
