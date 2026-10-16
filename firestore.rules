@@ -73,12 +73,6 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Browsable public card. Any signed-in phone may list these so a player can pick
-    // a name they have forgotten. The card holds only name, class, level and act/step.
-    // It never holds the password hash, salt or the hero blob, so listing it cannot
-    // open or overwrite a save. Name and nameKey are sticky. (Spark has no functions
-    // to bind this write to the password; a nuisance edit of class/level is possible,
-    // but the save itself stays behind the derived id.)
     // The daily challenge's leaderboard: anyone may read a day's scores; each phone writes only its own entry.
     match /qdDaily/{day}/scores/{uid} {
       allow get, list: if signedIn();
@@ -91,6 +85,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Browsable public card. Any signed-in phone may list these so a player can pick
+    // a name they have forgotten. The card holds only name, class, level and act/step.
+    // It never holds the password hash, salt or the hero blob, so listing it cannot
+    // open or overwrite a save. Name and nameKey are sticky. (Spark has no functions
+    // to bind this write to the password; a nuisance edit of class/level is possible,
+    // but the save itself stays behind the derived id.)
     match /qdHeroPublic/{nameId} {
       allow get, list: if signedIn();
       allow create: if signedIn()
