@@ -808,9 +808,10 @@ test('Diamond weapons: a case of two; bring one in each hand; they shatter after
   const gone = E.shatterDiamonds(h); assert.equal(gone.length, 2);
   assert.equal(h.loadout.NW.uid, sword); assert.equal(h.loadout.NE.uid, shield); assert.equal(h.lent, undefined);
   E.newBattle(h, quest, makeRng(1), 1); assert.equal(h.loadout.NW.uid, sword, 'nothing armed: your own weapons');
-  // a two-handed bow is set aside whole: the Diamond takes the left hand, fists the right; the bow comes back after
+  // a two-handed bow is set aside whole: one Diamond fills both hands, as the bow did; the bow comes back after
   const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); const bow = r.loadout.NW.uid; E.takeDiamond(r, c); E.armDiamond(r, c.uid, 'NW');
-  E.newBattle(r, quest, makeRng(1), 1); assert.equal(r.loadout.NW.uid, c.uid); assert.equal(r.loadout.NE.id, 'fists'); assert.ok(isActive(r, 'NE'));
+  E.newBattle(r, quest, makeRng(1), 1); assert.equal(r.loadout.NW.uid, c.uid); assert.equal(r.loadout.NE.id, c.id); assert.ok(r.loadout.NE.twin && r.loadout.NE.diamond); assert.ok(isActive(r, 'NE'));
+  assert.equal(E.diamondsOf(r).length, 0, 'one Diamond, both hands'); assert.equal(r.wielding.length, 1);
   E.shatterDiamonds(r); assert.equal(r.loadout.NW.uid, bow); assert.equal(WEAPONS[r.loadout.NE.id].hands, 2);
 });
 

@@ -128,7 +128,7 @@ export function armDiamond(hero, uid, slot) {
 }
 export const armedSlot = (hero, uid) => ['NW', 'NE'].find((k) => hero.armed?.[k] === uid) || null;
 // The fight begins: each armed Diamond leaves its case and takes its hand; the weapons it replaces wait in hero.lent. A two-handed
-// weapon is set aside whole, and a hand with no Diamond fights with fists.
+// weapon is set aside whole, and a single Diamond then fills both hands (as the two-hander did).
 export function wieldDiamonds(hero) {
   const a = hero.armed; delete hero.armed; if (!a || hero.lent) return [];
   const take = (uid) => { const i = diamondsOf(hero).findIndex((d) => d.uid === uid); return i < 0 ? null : diamondsOf(hero).splice(i, 1)[0]; };
@@ -136,7 +136,11 @@ export function wieldDiamonds(hero) {
   if (!pick2.NW && !pick2.NE) return [];
   const two = isTwoHanded(hero);
   hero.lent = { NW: hero.loadout.NW, NE: hero.loadout.NE ?? null, dice: hero.dice ? [...hero.dice] : null };
-  if (two) { hero.loadout.NW = pick2.NW || fists('L'); hero.loadout.NE = pick2.NE || fists('R'); if (hero.dice && !hero.dice.includes('NE')) hero.dice = [...hero.dice, 'NE']; }
+  if (two) { // a two-handed weapon is set aside whole; one Diamond then fills both hands, as the two-hander did
+    const one = pick2.NW || pick2.NE;
+    hero.loadout.NW = pick2.NW || pick2.NE; hero.loadout.NE = pick2.NW && pick2.NE ? pick2.NE : { ...one, uid: `${one.uid}~R`, twin: true };
+    if (hero.dice && !hero.dice.includes('NE')) hero.dice = [...hero.dice, 'NE'];
+  }
   else for (const k of ['NW', 'NE']) if (pick2[k]) hero.loadout[k] = pick2[k];
   hero.wielding = [pick2.NW, pick2.NE].filter(Boolean);
   return hero.wielding;

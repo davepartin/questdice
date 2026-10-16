@@ -101,7 +101,8 @@ export const WEAPON_DICE = {
 };
 // Diamond weapons (Dave, Oct 2026): rare, awesome, and good for ONE fight. You find about one and a half an act (spoils, now and then
 // the traveller), carry at most two in your Diamond case (they never take pack room), and bring one into a fight in place of a hand's
-// weapon, or two, one in each hand. When the fight ends, win, lose or withdraw, it shatters. Honest dice with no blanks: every face
+// weapon, or two, one in each hand (with a two-handed weapon, one Diamond fills both hands). When the fight ends, win, lose or
+// withdraw, it shatters. Honest dice with no blanks: every face
 // carries an icon and the top faces are crits with three. A Diamond rolls at its full size in any hand.
 export const DIAMOND = {
   max: 2,
