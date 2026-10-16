@@ -61,8 +61,10 @@ for (let guard = 0; guard < 400 && fights < FIGHTS; guard++) {
     await p.evaluate(() => { const bt = document.querySelector('.sx-camp .sx-cta .sx-btn'); bt?.click(); });
     await pump(1.5);
   } else if (sc === 'road') {
-    const did = await p.evaluate(() => { const c = [...document.querySelectorAll('.sx-choice')].find((x) => !x.disabled && !x.classList.contains('off')); if (c) { c.click(); return 'choice'; } const o = document.querySelector('.sx-road .sx-cta .sx-btn'); if (o) { o.click(); return 'onward'; } return null; });
-    log(`   road: ${did}`); await pump(1.5);
+    const did = await p.evaluate(() => { const t = [...document.querySelectorAll('button')].find((x) => x.offsetParent && !x.disabled && /roll your|^\s*continue|onward/i.test(x.innerText)); if (t) { t.click(); return `trial: ${t.innerText.trim().toLowerCase()}`; } // a road test (Trials of Wisdom, Strength, Speed): roll, then go on
+      const c = [...document.querySelectorAll('.sx-choice')].find((x) => !x.disabled && !x.classList.contains('off')); if (c) { c.click(); return 'choice'; } const o = document.querySelector('.sx-road .sx-cta .sx-btn'); if (o) { o.click(); return 'onward'; } return null; });
+    log(`   road: ${did}`); if (String(did).startsWith('trial')) await p.waitForTimeout(2500); // the trial's 3D dice settle in real time
+    await pump(1.5);
   } else if (sc === 'defeat') {
     log('   DEFEAT'); await p.evaluate(() => document.querySelector('.sx-defeat .sx-cta .sx-btn')?.click()); await pump(1.5);
   } else await pump(1);
