@@ -16,6 +16,7 @@ import * as D from '../../data.js';
 import { dieSpecs, createDie, restQuat } from './dice.js';
 import { leanQuat, d4Lift } from './poly.js';
 import { diceStyle, drawIcon } from './faces.js';
+import { onBodyWatermarksReady } from './bodywm.js';
 import { weaponIcon } from './art.js';
 import { planRoll, samplePlan, ROLL, ROLL_PLAYBACK } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
@@ -335,6 +336,12 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     tray.setPet(null); // the pet lives in the battle HUD now (a small badge by the gold and magic), not on a stand by the board (Dave)
     return tray;
   };
+  // PNGs load after the first paint: rebuild body dice so the knight (and later classes) get their watermarks
+  onBodyWatermarksReady(() => {
+    const hero = tray.hero; if (!hero) return;
+    const specs = dieSpecs(hero);
+    for (const slot of ALL) if (specs[slot]?.labels?.some((l) => l.bodyWm)) buildDie(S[slot], specs[slot]);
+  });
   // ---- the pet: a picture of it standing behind its die (a camera-facing sprite), shown only when the hero has one
   const petSpr = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false }));
   const PET_H = 1.38; let petW = PET_H; // the picture's height on the table; its width follows the picture
