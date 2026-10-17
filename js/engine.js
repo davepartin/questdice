@@ -1003,14 +1003,21 @@ export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = 
   }
   return drops;
 }
+// The gold these monsters pay (a fled one pays FLEE_REWARD of it), with the hero's gold bonus and the act's multiplier.
+function killGold(b, list) {
+  const gm = 1 + heroMods(b.hero).goldPct;
+  const actGold = ACT_GOLD[Math.min(ACT_GOLD.length, b.hero.campaign?.act || 1) - 1] || 1;
+  return Math.round(list.reduce((a, e) => a + e.gold * (e.fled ? FLEE_REWARD : 1), 0) * gm * actGold);
+}
+// Gold won so far in a solo fight (dice, kills, purses taken back, less anything a thief has run off with): what the
+// battle's gold chip adds to the hero's purse each round, so it climbs like magic does. battleRewards pays it at the end.
+export function battleGoldSoFar(b) { return killGold(b, b.enemies.filter((e) => e.hp <= 0 && !e.fled)) + (b.goldEarned || 0) + (b.stolen || 0); }
 export function battleRewards(b) {
   const { quest, hero } = b;
   const dead = b.enemies; // includes adds: they carry rewardMult 0
   const pay = (e) => (e.fled ? FLEE_REWARD : 1);
   const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
-  const gm = 1 + heroMods(hero).goldPct;
-  const actGold = ACT_GOLD[Math.min(ACT_GOLD.length, hero.campaign?.act || 1) - 1] || 1;
-  const kills = Math.round(dead.reduce((a, e) => a + e.gold * pay(e), 0) * gm * actGold);
+  const kills = killGold(b, dead);
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
