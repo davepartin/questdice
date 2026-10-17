@@ -329,7 +329,7 @@ export const CLASSES = {
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
     trait: 'Balanced: a strong left hand and a shield. Stands in front, on purpose.',
-    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight-blue.webp', look: 'right', imgBase: IB(362, 512, 169.5, 507, 329), hp: 34,
+    name: 'Knight', glyph: '⚔️', img: 'assets/miniatures/knight-blue.webp', look: 'right', imgBase: IB(512, 495, 189.5, 488, 367), hp: 34,
     blurb: 'Steel and stubbornness. Sword and shield, simple and sturdy. The sort of hero who holds the door, and the line.',
     weapons: ['sword', 'shield'],
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
@@ -346,7 +346,7 @@ export const CLASSES = {
   ranger: {
     feet: 6, maxFeet: 8, startMagic: 4,
     trait: 'The fastest on the road. The only class that can train speed to a d8.',
-    name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(473, 512, 218, 507, 348), hp: 28,
+    name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(344, 512, 162.5, 505, 313), hp: 28,
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
@@ -361,7 +361,7 @@ export const CLASSES = {
   wizard: {
     feet: 4, startMagic: 6, magicCap: 15, healAmount: 6,
     trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic.',
-    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(512, 476, 213, 471, 324), hp: 24,
+    name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(456, 512, 262.5, 505, 355), hp: 24,
     blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and healing to spare.',
     weapons: ['staff'],
     cards: [
@@ -376,7 +376,7 @@ export const CLASSES = {
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
     trait: 'The wall: the most health, a crushing mace and a tower shield.',
-    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(409, 512, 195, 507, 362), hp: 40,
+    name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(489, 512, 271, 505, 374), hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
@@ -391,7 +391,7 @@ export const CLASSES = {
   bard: {
     feet: 6, startMagic: 5,
     trait: 'The steady helper: quick, steady weapons, more magic to share.',
-    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard-teal.webp', look: 'right', imgBase: IB(414, 512, 221, 507, 346), hp: 30,
+    name: 'Bard', glyph: '🪕', img: 'assets/miniatures/bard-teal.webp', look: 'right', imgBase: IB(396, 512, 208.5, 505, 341), hp: 30,
     blurb: 'The heart of the party. Songs that heal, hymns that harden, and a knack for chaos that somehow helps.',
     weapons: ['dagger', 'bracer'],
     cards: [
@@ -411,29 +411,29 @@ export const CLASSES = {
 // are painted facing right. `hue` colours the hero's chip in the battle roster. `hero.color` is the id.
 export const HERO_LOOKS = {
   knight: [
-    { id: 'default', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/knight-blue.webp', look: 'right', imgBase: IB(362, 512, 169.5, 507, 329) }, // its own colours, in the new right-facing painting
-    { id: 'crimson', name: 'Crimson', hue: '#e4454a', img: 'assets/miniatures/knight-crimson.webp', look: 'right', imgBase: IB(510, 512, 182.5, 507, 355) },
-    { id: 'green', name: 'Green', hue: '#5ad060', img: 'assets/miniatures/knight-green.webp', look: 'right', imgBase: IB(510, 512, 309.5, 507, 391) },
+    { id: 'default', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/knight-blue.webp', look: 'right', imgBase: IB(512, 495, 189.5, 488, 367) }, // its own colours, in the new right-facing painting
+    { id: 'crimson', name: 'Crimson', hue: '#e4454a', img: 'assets/miniatures/knight-crimson.webp', look: 'right', imgBase: IB(512, 481, 187, 474, 350) },
+    { id: 'green', name: 'Green', hue: '#5ad060', img: 'assets/miniatures/knight-green.webp', look: 'right', imgBase: IB(490, 512, 173.5, 505, 335) },
   ],
   ranger: [
-    { id: 'default', name: 'Green', hue: '#4ad070', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(473, 512, 218, 507, 348) }, // its own colours, in the new right-facing painting
-    { id: 'rust', name: 'Rust', hue: '#ffa040', img: 'assets/miniatures/ranger-rust.webp', look: 'right', imgBase: IB(512, 498, 282.5, 493, 363) },
-    { id: 'grey', name: 'Grey', hue: '#a8dcff', img: 'assets/miniatures/ranger-grey.webp', look: 'right', imgBase: IB(432, 512, 223, 507, 340) },
+    { id: 'default', name: 'Green', hue: '#4ad070', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(344, 512, 162.5, 505, 313) }, // its own colours, in the new right-facing painting
+    { id: 'rust', name: 'Rust', hue: '#ffa040', img: 'assets/miniatures/ranger-rust.webp', look: 'right', imgBase: IB(367, 512, 171.5, 505, 321) },
+    { id: 'grey', name: 'Grey', hue: '#a8dcff', img: 'assets/miniatures/ranger-grey.webp', look: 'right', imgBase: IB(390, 512, 191, 505, 340) },
   ],
   wizard: [
-    { id: 'default', name: 'Blue', hue: '#3a90ff', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(512, 476, 213, 471, 324) }, // its own colours, in the new right-facing painting
-    { id: 'crimson', name: 'Crimson', hue: '#ff6a80', img: 'assets/miniatures/wizard-crimson.webp', look: 'right', imgBase: IB(443, 512, 217, 507, 342) },
-    { id: 'white', name: 'White and gold', hue: '#ffe080', img: 'assets/miniatures/wizard-white.webp', look: 'right', imgBase: IB(322, 512, 167, 507, 290) },
+    { id: 'default', name: 'Blue', hue: '#3a90ff', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(456, 512, 262.5, 505, 355) }, // its own colours, in the new right-facing painting
+    { id: 'crimson', name: 'Crimson', hue: '#ff6a80', img: 'assets/miniatures/wizard-crimson.webp', look: 'right', imgBase: IB(325, 512, 162, 505, 312) },
+    { id: 'white', name: 'White and gold', hue: '#ffe080', img: 'assets/miniatures/wizard-white.webp', look: 'right', imgBase: IB(370, 512, 205, 505, 316) },
   ],
   dwarf: [
-    { id: 'default', name: 'Deep blue', hue: '#7ac0ff', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(409, 512, 195, 507, 362) }, // its own colours, in the new right-facing painting
-    { id: 'crimson', name: 'Crimson', hue: '#ff6a4a', img: 'assets/miniatures/dwarf-crimson.webp', look: 'right', imgBase: IB(509, 512, 284.5, 507, 429) },
-    { id: 'green', name: 'Moss', hue: '#8aff8a', img: 'assets/miniatures/dwarf-green.webp', look: 'right', imgBase: IB(512, 493, 281.5, 488, 401) },
+    { id: 'default', name: 'Deep blue', hue: '#7ac0ff', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(489, 512, 271, 505, 374) }, // its own colours, in the new right-facing painting
+    { id: 'crimson', name: 'Crimson', hue: '#ff6a4a', img: 'assets/miniatures/dwarf-crimson.webp', look: 'right', imgBase: IB(474, 512, 272, 505, 380) },
+    { id: 'green', name: 'Moss', hue: '#8aff8a', img: 'assets/miniatures/dwarf-green.webp', look: 'right', imgBase: IB(464, 512, 255, 505, 404) },
   ],
   bard: [
-    { id: 'default', name: 'Teal', hue: '#2ad0c0', img: 'assets/miniatures/bard-teal.webp', look: 'right', imgBase: IB(414, 512, 221, 507, 346) }, // its own colours, in the new right-facing painting
-    { id: 'crimson', name: 'Crimson', hue: '#ff8ac8', img: 'assets/miniatures/bard-crimson.webp', look: 'right', imgBase: IB(512, 504, 242, 499, 358) },
-    { id: 'blue', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/bard-blue.webp', look: 'right', imgBase: IB(415, 512, 214.5, 507, 317) },
+    { id: 'default', name: 'Teal', hue: '#2ad0c0', img: 'assets/miniatures/bard-teal.webp', look: 'right', imgBase: IB(396, 512, 208.5, 505, 341) }, // its own colours, in the new right-facing painting
+    { id: 'crimson', name: 'Crimson', hue: '#ff8ac8', img: 'assets/miniatures/bard-crimson.webp', look: 'right', imgBase: IB(512, 483, 221, 476, 340) },
+    { id: 'blue', name: 'Blue', hue: '#6aa8ff', img: 'assets/miniatures/bard-blue.webp', look: 'right', imgBase: IB(388, 512, 186.5, 505, 357) },
   ],
 };
 export const colorsOf = (cls) => HERO_LOOKS[cls] || [];
