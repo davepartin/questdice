@@ -51,7 +51,7 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
-      // class line-art sits behind the number (knight first; other classes have no set yet)
+      // class head + shared gauntlets/boots sit behind the number
       const bodyWm = bodyWatermarkSrc(hero.cls, slot);
       // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
       for (let v = 1; v <= sides; v++) {

@@ -1149,3 +1149,6 @@ After pull request 18 (15 new right-facing paintings and a colour picker) each c
 
 ## 2026-10-17 — knight dice watermarks
 The knight's head, left hand, right hand and feet dice now carry Dave's brown line-art as a faint watermark behind the number and symbols (~42% paint opacity so it reads as about 30% on a 3D die, centred, ~88% of the face). The grid reads like a person. Other classes and the weapon / heart / talent dice are unchanged; `CLASS_BODY_WATERMARKS` in `js/gfx/dice/bodywm.js` is a class → {head, leftHand, rightHand, feet} map so the others can get a set later. Stamp `20261017c`. Shot: docs/screens/knight_dice_watermarks.png.
+
+## 2026-10-17 — body watermarks for every class; wizard hat on Choose your hero
+Dave: all five classes get body-die watermarks. Hands and feet share the knight's gauntlets and boots; only the HEAD changes (`assets/dice/heads/<class>.png`). Pointed dice (d4 / d8 / d10) paint the mark a little larger and stronger so the helmet and gloves read on a phone; the d6 boots stay as they were. Choose your hero was clipping the blue wizard's hat: the showcase now scales each miniature so the whole figure (hat, staff and all) stays inside the picture, without shrinking the ones that already fitted. Stamp `20261017d`.

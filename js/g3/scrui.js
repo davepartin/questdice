@@ -320,7 +320,10 @@ export function create(opts = {}) {
     const pic = classPreview(cls, color);
     preview.classList.remove('is-seated'); preview.dataset.cls = cls; preview.dataset.color = color;
     preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', look?.hue || CLS_HUE[cls] || '#ffd23d');
-    if (pic) { const go = () => H?.pin?.(); if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true }); }
+    if (pic) {
+      const go = () => { const pin = () => H?.pin?.(); pin(); requestAnimationFrame(() => requestAnimationFrame(pin)); };
+      if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true });
+    }
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
       onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
@@ -405,6 +408,7 @@ export function create(opts = {}) {
   SCR.enter('create', { cls }, 'create').then((hd) => {
     H = hd; if (!hd) return;
     H.pick(cls, { quiet: true }).then(() => { H.push(true); H.pin?.(); });
+    requestAnimationFrame(() => requestAnimationFrame(() => H?.pin?.()));
   });
 }
 

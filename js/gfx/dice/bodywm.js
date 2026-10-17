@@ -1,15 +1,24 @@
-// Body-die watermarks: faint class line-art behind head / left hand / right hand / feet, so the
-// dice grid reads like a person. Knight is first; drop another class's set in CLASS_BODY_WATERMARKS
-// (same four keys) when its icons are ready. Other dice (weapon, heart, talent) stay unmarked.
+// Body-die watermarks: faint line-art behind head / left hand / right hand / feet, so the
+// dice grid reads like a person. Hands and feet are shared (the knight's gauntlets and boots);
+// only the HEAD changes by class. Other dice (weapon, heart, talent) stay unmarked.
 
-export const CLASS_BODY_WATERMARKS = {
-  knight: {
-    head: 'assets/dice/knight/head.png',
-    leftHand: 'assets/dice/knight/left-hand.png',
-    rightHand: 'assets/dice/knight/right-hand.png',
-    feet: 'assets/dice/knight/feet.png',
-  },
+export const BODY_HANDS_FEET = {
+  leftHand: 'assets/dice/knight/left-hand.png',
+  rightHand: 'assets/dice/knight/right-hand.png',
+  feet: 'assets/dice/knight/feet.png',
 };
+
+export const CLASS_HEADS = {
+  knight: 'assets/dice/heads/knight.png',
+  ranger: 'assets/dice/heads/ranger.png',
+  wizard: 'assets/dice/heads/wizard.png',
+  dwarf: 'assets/dice/heads/dwarf.png',
+  bard: 'assets/dice/heads/bard.png',
+};
+
+export const CLASS_BODY_WATERMARKS = Object.fromEntries(
+  Object.entries(CLASS_HEADS).map(([cls, head]) => [cls, { head, ...BODY_HANDS_FEET }]),
+);
 
 export const BODY_WATERMARK_SLOT = { N: 'head', W: 'leftHand', E: 'rightHand', S: 'feet' };
 
@@ -19,11 +28,7 @@ export function bodyWatermarkSrc(cls, slot) {
 }
 
 export function allBodyWatermarkSrcs() {
-  const out = [];
-  for (const set of Object.values(CLASS_BODY_WATERMARKS)) {
-    for (const src of Object.values(set)) if (src) out.push(src);
-  }
-  return out;
+  return [...new Set([...Object.values(CLASS_HEADS), ...Object.values(BODY_HANDS_FEET)])];
 }
 
 const imgs = new Map();

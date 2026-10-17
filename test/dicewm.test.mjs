@@ -1,13 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLASS_BODY_WATERMARKS, BODY_WATERMARK_SLOT, bodyWatermarkSrc, allBodyWatermarkSrcs } from '../js/gfx/dice/bodywm.js';
+import { CLASS_BODY_WATERMARKS, CLASS_HEADS, BODY_HANDS_FEET, BODY_WATERMARK_SLOT, bodyWatermarkSrc, allBodyWatermarkSrcs } from '../js/gfx/dice/bodywm.js';
 
-test('knight has a watermark set for head, both hands and feet', () => {
-  const set = CLASS_BODY_WATERMARKS.knight;
-  assert.equal(set.head, 'assets/dice/knight/head.png');
-  assert.equal(set.leftHand, 'assets/dice/knight/left-hand.png');
-  assert.equal(set.rightHand, 'assets/dice/knight/right-hand.png');
-  assert.equal(set.feet, 'assets/dice/knight/feet.png');
+const CLASSES = ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
+
+test('every class has a head of its own and shares the knight gauntlets and boots', () => {
+  for (const cls of CLASSES) {
+    const set = CLASS_BODY_WATERMARKS[cls];
+    assert.equal(set.head, `assets/dice/heads/${cls}.png`);
+    assert.equal(set.leftHand, BODY_HANDS_FEET.leftHand);
+    assert.equal(set.rightHand, BODY_HANDS_FEET.rightHand);
+    assert.equal(set.feet, BODY_HANDS_FEET.feet);
+  }
+  assert.equal(BODY_HANDS_FEET.leftHand, 'assets/dice/knight/left-hand.png');
+  assert.equal(BODY_HANDS_FEET.rightHand, 'assets/dice/knight/right-hand.png');
+  assert.equal(BODY_HANDS_FEET.feet, 'assets/dice/knight/feet.png');
 });
 
 test('body watermark slots map onto the person-shaped grid', () => {
@@ -19,22 +26,21 @@ test('body watermark slots map onto the person-shaped grid', () => {
   assert.equal(BODY_WATERMARK_SLOT.C, undefined);
 });
 
-test('knight body dice resolve to their icons; other classes and other dice do not', () => {
-  assert.equal(bodyWatermarkSrc('knight', 'N'), CLASS_BODY_WATERMARKS.knight.head);
-  assert.equal(bodyWatermarkSrc('knight', 'W'), CLASS_BODY_WATERMARKS.knight.leftHand);
-  assert.equal(bodyWatermarkSrc('knight', 'E'), CLASS_BODY_WATERMARKS.knight.rightHand);
-  assert.equal(bodyWatermarkSrc('knight', 'S'), CLASS_BODY_WATERMARKS.knight.feet);
-  assert.equal(bodyWatermarkSrc('knight', 'NW'), null);
-  assert.equal(bodyWatermarkSrc('knight', 'C'), null);
-  assert.equal(bodyWatermarkSrc('knight', 'SW'), null);
-  assert.equal(bodyWatermarkSrc('ranger', 'N'), null);
-  assert.equal(bodyWatermarkSrc('wizard', 'W'), null);
-  assert.equal(bodyWatermarkSrc('dwarf', 'E'), null);
-  assert.equal(bodyWatermarkSrc('bard', 'S'), null);
+test('every class resolves body dice; weapons, heart and talent do not', () => {
+  for (const cls of CLASSES) {
+    assert.equal(bodyWatermarkSrc(cls, 'N'), CLASS_HEADS[cls]);
+    assert.equal(bodyWatermarkSrc(cls, 'W'), BODY_HANDS_FEET.leftHand);
+    assert.equal(bodyWatermarkSrc(cls, 'E'), BODY_HANDS_FEET.rightHand);
+    assert.equal(bodyWatermarkSrc(cls, 'S'), BODY_HANDS_FEET.feet);
+    assert.equal(bodyWatermarkSrc(cls, 'NW'), null);
+    assert.equal(bodyWatermarkSrc(cls, 'C'), null);
+    assert.equal(bodyWatermarkSrc(cls, 'SW'), null);
+  }
 });
 
-test('the class map is ready for later sets without changing the slot keys', () => {
+test('shared hands and feet are not listed five times in the preload set', () => {
   const srcs = allBodyWatermarkSrcs();
-  assert.ok(srcs.every((s) => s.startsWith('assets/dice/')));
-  assert.deepEqual(Object.keys(CLASS_BODY_WATERMARKS.knight).sort(), ['feet', 'head', 'leftHand', 'rightHand']);
+  assert.equal(srcs.filter((s) => s === BODY_HANDS_FEET.leftHand).length, 1);
+  assert.equal(srcs.filter((s) => s.startsWith('assets/dice/heads/')).length, 5);
+  assert.ok(!srcs.includes('assets/dice/knight/head.png'));
 });

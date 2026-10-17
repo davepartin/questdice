@@ -452,15 +452,18 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
     }
 
-    // ---- body watermark (class line-art on head / hands / feet), behind the number, ~30% of the face
+    // ---- body watermark (class line-art on head / hands / feet), behind the number
+    // Cubes (d6) keep the quieter size Dave liked on the boots. Pointed faces (d4 / d8 / d10)
+    // get a larger, slightly stronger mark so the helmet and gauntlets still read on a phone.
     if (spec.bodyWm && !blank) {
       const im = bodyWatermarkImage(spec.bodyWm);
       if (im) {
-        const sz = inR * 1.76; // ~88% of the inscribed diameter
+        const sz = inR * (poly.sides === 4 ? 2.32 : poly.sides === 6 ? 1.76 : 2.08);
+        const a = poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50;
         layer(ctxs, { A: '#000', H: 'rgb(112,112,112)' }, (c, k) => {
           c.save();
           c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.closePath(); c.clip();
-          c.globalAlpha = k === 'H' ? 0.22 : 0.42;
+          c.globalAlpha = k === 'H' ? a * 0.5 : a;
           drawBodyWatermark(c, im, 0, inR * 0.02, sz);
           c.restore();
         });
