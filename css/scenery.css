@@ -53,4 +53,7 @@
 
 /* screens without a viewport of their own (the quest board) get one the same size */
 .sx-screen > .sc-host { inset: auto; left: 0; top: 0; bottom: 0; right: calc(var(--side, .4) * 100%); pointer-events: none; z-index: 0; }
-@media (max-aspect-ratio: 1085/1000) { .sx-screen > .sc-host { right: 0; bottom: calc(var(--sheet, .56) * 100dvh); } }
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen > .sc-host { right: 0; bottom: calc(var(--sheet, .56) * 100dvh); }
+  .sx-screen.create > .sc-host { bottom: calc(var(--sheet, .56) * var(--vis-h, 100svh)); }
+}
