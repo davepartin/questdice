@@ -235,7 +235,7 @@ function heroStats(hp, feet, c = {}) {
     meter('Magic', magic, 6, 'spark', 'm-mag', `Magic at the start of every fight${c.magicCap ? `; holds up to ${c.magicCap}` : ''}.`, String(magic)));
 }
 function faceChips(inst) {
-  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx ? h('span', { class: 'wf-fx' }, fxItems(f.fx)) : null)));
+  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others
 }
 // Drop a charm: asks twice (a second tap within four seconds), since it is gone for good.
 function dropBtn(hero, id) {
@@ -939,7 +939,7 @@ const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // first. Each section's longer explanation sits behind a small "?".
 const FORGE_INTRO = {
   body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
-  weapons: 'Forging raises a weapon’s metal: Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. Training grows its die to bigger numbers, but never past the hand that holds it. Hands first. Then the steel.',
+  weapons: 'Forging raises a weapon’s metal: Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Training grows its die to bigger numbers, but never past the hand that holds it. Hands first. Then the steel.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',
   pet: 'Your pet rolls its own die beside the board. One face is always blank; put symbols on the rest. Grow the die and every symbol pays more. They will pretend they earned it.',

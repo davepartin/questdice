@@ -721,8 +721,15 @@ function onPick(slot) {
   if (B.sel.has(slot)) B.sel.delete(slot);
   else if (info.kind === 'none') { sfx.error(); toast('No reroll actions left.'); }
   else if (B.sel.size >= info.dice) { sfx.error(); toast(`You can reroll up to ${info.dice} dice at a time.`); }
-  else { B.sel.add(slot); sfx.select(); C.tut?.on('picked', slot); }
+  else { B.sel.add(slot); sfx.select(); C.tut?.on('picked', slot); warnBreaks(slot); }
   renderShape();
+}
+// Picking a die that holds a straight or a triple together: say what a reroll could cost (Dave: breaking it should be a choice)
+function warnBreaks(slot) {
+  const ev = E.evaluate(B.hero, B.b.board, { straight: B.straight }); const lost = [];
+  if ((ev.straightSlots || []).includes(slot)) lost.push(`your ${ev.straight}-straight (+${ev.straightBonus} ${B.straight === 'gold' ? 'gold' : 'attack'})`);
+  for (const t of ev.triples || []) if (t.slots.includes(slot)) lost.push(`your ${t.name} (+${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'})`);
+  if (lost.length) toast(`Careful: rerolling this die could break ${lost.join(' and ')}.`, 'warn');
 }
 async function doReroll() {
   if (B.busy || !guideSays('reroll')) return; const b = B.b; const slots = [...B.sel];

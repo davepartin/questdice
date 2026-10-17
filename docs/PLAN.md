@@ -1152,3 +1152,6 @@ The knight's head, left hand, right hand and feet dice now carry Dave's brown li
 
 ## 2026-10-17 — body watermarks for every class; wizard hat on Choose your hero
 Dave: all five classes get body-die watermarks. Hands and feet share the knight's gauntlets and boots; only the HEAD changes (`assets/dice/heads/<class>.png`). Pointed dice (d4 / d8 / d10) paint the mark a little larger and stronger so the helmet and gloves read on a phone; the d6 boots stay as they were. Choose your hero was clipping the blue wizard's hat: the showcase now scales each miniature so the whole figure (hat, staff and all) stays inside the picture, without shrinking the ones that already fitted. Stamp `20261017d`.
+
+## 2026-10-17 — merge main into the body-watermark branch
+Main had moved (SVG body-marks mockup off in the game, +1 weapon faces, a reroll-break warning). Kept both: the live PNG watermarks stay on the white dice; `setBodyMarks` still turns on the SVG try-out and then skips the PNG so they do not stack. Stamp `20261017e`.

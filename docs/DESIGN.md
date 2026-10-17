@@ -144,6 +144,8 @@ Dagger and Bracer, and Sword and Shield, are color mirrors of each other. The Sp
 
 **Bow versus Long Sword** is the headline balance story. The Bow has one blank and a lower average, but the best odds of lining up a triple. The Long Sword has two blanks per die and hits harder on average, but is far worse at triples. In the original simulation the Long Sword averaged about 3.5 per hand against the Bow's 3.0, while the Bow landed the triple around 41% of the time against the Long Sword's 25%. No hand-tuning was needed. The trade balances itself.
 
+**+1 faces (Oct 2026).** The all-or-nothing weapons (risky: Long Sword, Spear, Tower; brutal: Warhammer, Mace) never show their top number twice. A doubled top drops one step and carries a small +1 icon (a red burst, or a blue shield on the Tower), so it hits exactly as hard but counts as its lower number for triples and straights: a d4 Long Sword is blank, blank, 3+1, 4 (was blank, blank, 4, 4); a d6 Mace is blank ×3, 4+2, 5+1, 6 (was 6, 6, 6). Same force, spread numbers: a d4 two-hander's Weapons Triple falls from about 7% to 5% of throws (4% to 2% with d6 head and hands) and its straights rise (14% to 18% with d6s), which keeps the Bow the triple weapon and the Long Sword the heavy one (`P()` in data.js `WEAPON_DICE`; `plus` on a face). Thorn Crown doubles these icons like any other.
+
 ### 4.4 Special dice (the lower corners)
 
 A special die always has **exactly two blank faces**, however large it grows. The rest are symbols, repeating as the die grows. So the miss chance shrinks on its own: 50% blank at d4, 20% at d10.

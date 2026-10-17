@@ -21,6 +21,12 @@ export { makePoly, restQuat, readLabel };
 const PIP_BY_NUM = [null, 'heal', 'pierce', 'magic', 'gold'];
 const FX_PIP = { heal: 'heal', magic: 'magic', pierce: 'pierce', stagger: 'stagger' };
 
+// Body marks on the white dice (a helmet on the head, a glove on each hand, boots on the feet), behind the numbers.
+// A look being tried out (Dave, Oct 2026): off (0) in the game for now; setBodyMarks(k) turns it on at strength k.
+const BODY_MARK = { N: { wm: 'helmet' }, W: { wm: 'gauntlet' }, E: { wm: 'gauntlet', wmFlip: true }, S: { wm: 'bootpair' } }; // thumbs point in, toward the heart
+let bodyMarks = 0;
+export function setBodyMarks(k) { bodyMarks = k || 0; }
+
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
 export function dieSpecs(hero) {
   const out = {};
@@ -34,7 +40,7 @@ export function dieSpecs(hero) {
       // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
       labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => ({
         text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
-        corners: Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k])).filter(Boolean), // a crit shows all its icons (two or three)
+        corners: [...Array(f.plus || 0).fill(f.c === 'b' ? 'def' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k]))].filter(Boolean), // +1 attack/block icons first, then a crit's icons (two or three)
         wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : wid,
       }));
     } else if (role === 'special') {
@@ -51,12 +57,17 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
-      // class head + shared gauntlets/boots sit behind the number
-      const bodyWm = bodyWatermarkSrc(hero.cls, slot);
+      // Live look: class head + shared gauntlets/boots behind the number.
+      // SVG mockup (`setBodyMarks`) is a separate try-out; when it is on, skip the PNG so they do not stack.
+      const bodyWm = bodyMarks ? null : bodyWatermarkSrc(hero.cls, slot);
       // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
       for (let v = 1; v <= sides; v++) {
         const pay = D.FACE_PAY[v]; const corners = []; for (const k of ['heal', 'pierce', 'magic', 'gold']) for (let i = 0; i < (pay?.[k] || 0); i++) corners.push(k);
-        labels.push({ text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined, ...(bodyWm ? { bodyWm } : {}) });
+        labels.push({
+          text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined,
+          ...(bodyWm ? { bodyWm } : {}),
+          ...(bodyMarks && BODY_MARK[slot] ? { ...BODY_MARK[slot], wmK: bodyMarks, wmS: sides === 4 || sides === 8 ? 2.3 : sides === 10 ? 2 : 1.8 } : {}),
+        });
       }
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };

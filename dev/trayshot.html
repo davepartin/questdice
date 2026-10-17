@@ -11,12 +11,14 @@ import * as D from './js/data.js';
 import { createTray, slotPos } from './js/gfx/dice/tray.js';
 import { setDiceStyle } from './js/gfx/dice/faces.js';
 import { makeEnvironment } from './js/gfx/env.js';
+import { setBodyMarks } from './js/gfx/dice/dice.js';
 setDiceStyle('clean');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true; renderer.setClearColor(0x000000, 0); document.body.append(renderer.domElement);
 window.shot = async (spec) => {
   const [W, H] = spec.size || [800, 760];
+  setBodyMarks(spec.marks || 0); // body marks on the white dice (dev/bodymarks.mjs)
   renderer.setSize(W, H);
   const scene = new THREE.Scene(); scene.environment = makeEnvironment(renderer);
   scene.add(new THREE.HemisphereLight(0xffeedd, 0x302018, 1.0));

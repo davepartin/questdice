@@ -20,7 +20,7 @@ export function dieSpec(hero, slot, v) {
   const role = D.ROLE[slot];
   if (role === 'weapon') {
     const f = E.weaponFaces(hero.loadout[slot], E.sidesOf(hero, slot))[v - 1];
-    return { main: String(f.v), tone: f.c === 'r' ? 'red' : 'blue', chip: f.fx ? fxText(f.fx) : (f.v === 0 ? 'blank' : ''), chipKind: f.fx ? 'c-magic' : 'c-dim', blank: f.v === 0, glyph: f.c === 'r' ? '⚔' : '🛡' };
+    return { main: String(f.v), tone: f.c === 'r' ? 'red' : 'blue', chip: f.fx ? fxText(f.fx) : f.plus ? `+${f.plus} ${f.c === 'r' ? '⚔' : '🛡'}` : (f.v === 0 ? 'blank' : ''), chipKind: f.fx ? 'c-magic' : 'c-dim', blank: f.v === 0, glyph: f.c === 'r' ? '⚔' : '🛡' };
   }
   if (role === 'special') {
     const sym = E.specialFace(hero, slot, v);

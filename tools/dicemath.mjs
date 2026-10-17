@@ -8,7 +8,7 @@ console.log('Strength die (a hand) average: ' + [4, 6, 8, 10].map((n) => `d${n} 
 console.log('\nHead/hand/feet faces pay (per face):', FACE_PAY.slice(1).map((p, i) => `${i + 1}:${Object.entries(p).map(([k, v]) => `${v}${k[0]}`).join('+')}`).join('  '));
 console.log('\nWeapon die, average added to its lane by size (red = attack, blue = block):');
 for (const id of ['dagger', 'sword', 'shield', 'spear', 'bow', 'longsword', 'staff']) {
-  const row = [4, 6, 8, 10].map((s) => { const f = weaponFaces({ id, rarity: 0, size: s }); const r = f.filter((x) => x.c === 'r').reduce((a, x) => a + x.v, 0) / f.length; const b = f.filter((x) => x.c === 'b').reduce((a, x) => a + x.v, 0) / f.length; return `d${s} ${r.toFixed(1)}r/${b.toFixed(1)}b`; });
+  const row = [4, 6, 8, 10].map((s) => { const f = weaponFaces({ id, rarity: 0, size: s }); const r = f.filter((x) => x.c === 'r').reduce((a, x) => a + x.v + (x.plus || 0), 0) / f.length; const b = f.filter((x) => x.c === 'b').reduce((a, x) => a + x.v + (x.plus || 0), 0) / f.length; return `d${s} ${r.toFixed(1)}r/${b.toFixed(1)}b`; });
   console.log(`  ${WEAPONS[id].name.padEnd(11)} ${row.join('  ')}`);
 }
 // a lane = weapon face + hand roll, sent to attack (red) or block (blue)
