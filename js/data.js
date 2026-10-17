@@ -790,7 +790,7 @@ export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1.05, 1.55, 2.25]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too)
+export const ACT_HP = [1.05, 1.55, 2.35]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
 // The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
