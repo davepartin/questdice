@@ -18,6 +18,9 @@
 .sx-screen .ico { display: inline-grid; place-items: center; flex: none; line-height: 0; } .sx-screen .ico svg { display: block; }
 .sx-screen.title { --side: .36; } .sx-screen.create { --side: .4; } .sx-screen.board { --side: .62; } .sx-screen.road { --side: .46; } .sx-screen.camp { --side: .42; } .sx-screen.victory { --side: .44; } .sx-screen.defeat { --side: .42; }
 .sx-screen.title { --sheet: .46; } .sx-screen.create { --sheet: .56; } .sx-screen.board { --sheet: .6; } .sx-screen.road { --sheet: .56; } .sx-screen.camp { --sheet: .58; } .sx-screen.victory { --sheet: .58; } .sx-screen.defeat { --sheet: .5; }
+/* iPhone Safari: 100dvh is the tall viewport (chrome hidden). Size Choose-your-hero against the small
+   viewport so the showcase stays fully on screen while the address bar and toolbar are showing. */
+.sx-screen.create { --vis-h: 100vh; --vis-h: 100dvh; --vis-h: 100svh; }
 
 /* entrance choreography */
 @keyframes sxrise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -154,15 +157,22 @@
 .sx-sidetop { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
 .sx-back { position: absolute; left: var(--pad); top: calc(.8rem + var(--safe-t)); pointer-events: auto; z-index: 3; }
 .sx-hint { position: absolute; left: 0; right: 0; bottom: calc(1.4rem + var(--safe-b)); text-align: center; pointer-events: none; font-family: var(--font-display); font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-hi); opacity: .75; } .sx-hint span { padding: .35rem .8rem; border: 1px solid var(--hair-2); border-radius: 999px; background: rgba(5, 6, 12, .5); }
-/* the painted miniature stands on the 3D pedestal: JS projects the top disc and pins the image's base to it */
-.sx-hero-art { position: absolute; inset: 0; pointer-events: none; min-height: 0; overflow: visible; }
-.sx-hero-art::before { content: ''; position: absolute; left: var(--ped-x, 50%); top: var(--ped-y, 80%); width: var(--ped-d, 16rem); height: var(--ped-h, 4rem); transform: translate(-50%, -40%); background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--hue, #ffd23d) 55%, transparent), transparent 68%); filter: blur(6px); }
-.sx-hero-art img { position: absolute; display: block; width: auto; height: auto; max-width: none; max-height: none; visibility: hidden; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .55)); }
-.sx-hero-art.is-seated img { visibility: visible; animation: sx-piece-in .35s ease-out both; }
+/* Choose-your-hero / Forge-new-hero showcase: the whole picture always fits, with air above the hat.
+   CSS contain — not JS measurement — so a late-loading image and a short iPhone Safari viewport still work. */
+.sx-hero-art {
+  position: absolute; inset: 0; pointer-events: none; min-height: 0; overflow: hidden;
+  display: grid; place-items: stretch;
+  padding: calc(3.6rem + var(--safe-t)) 1.15rem 1.15rem;
+  box-sizing: border-box;
+}
+.sx-hero-art::before { content: ''; position: absolute; left: 50%; bottom: 7%; width: min(58%, 14rem); height: 14%; transform: translate(-50%, 0); background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--hue, #ffd23d) 55%, transparent), transparent 68%); filter: blur(6px); pointer-events: none; }
+.sx-hero-art img { position: relative; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .55)); }
+.sx-hero-art.is-seated img { animation: sx-piece-in .35s ease-out both; }
+.sx-hero-art.flip img { transform: scaleX(-1); }
 .sx-hero-art.flip.is-seated img { animation-name: sx-piece-in-flip; }
 @keyframes sx-piece-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes sx-piece-in-flip { from { opacity: 0; transform: translateY(8px) scaleX(-1); } to { opacity: 1; transform: scaleX(-1); } }
-@media (prefers-reduced-motion: reduce) { .sx-hero-art.is-seated img { animation: none; } .sx-hero-art.flip.is-seated img { transform: scaleX(-1); } }
+@media (prefers-reduced-motion: reduce) { .sx-hero-art.is-seated img { animation: none; } .sx-hero-art.flip img { transform: scaleX(-1); } }
 .sx-cta { position: sticky; bottom: 0; margin-top: auto; padding-top: .6rem; background: linear-gradient(0deg, rgba(5, 6, 12, .92) 62%, transparent); z-index: 2; }
 
 /* ---------------------------------------------------------------- create */
@@ -350,14 +360,17 @@ body.sx #toast .toast { border-radius: 10px; border-color: rgba(255, 214, 140, .
   .sx-plaque { min-height: 3.5rem; padding: .45rem .7rem .45rem .55rem; } .pl-ico { width: 2.3rem; height: 2.3rem; } .sx-plaque.is-primary { min-height: 4.2rem; } .sx-plaque.is-primary .pl-copy b { font-size: 1.15rem; } .pl-copy b { font-size: 1rem; } .sx-plaque:hover:not(:disabled) { transform: none; }
   /* one tall scroll: the first screenful is the 3D picture (a transparent spacer), then the sheet, all moving together */
   .sx-screen { --gap: calc((1 - var(--sheet)) * 100dvh); }
+  .sx-screen.create { --gap: calc((1 - var(--sheet)) * var(--vis-h)); }
   .sx-side { left: 0; right: 0; top: 0; bottom: 0; width: auto; max-width: none; min-width: 0; height: auto; padding: 0 1rem calc(1rem + var(--safe-b)); border-radius: 0; border: 0; box-shadow: none; gap: .7rem; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
     background: linear-gradient(180deg, transparent 0, transparent var(--gap), rgba(14, 14, 26, .9) calc(var(--gap) + 1.6rem), rgba(5, 6, 12, .96) calc(var(--gap) + 20rem)); background-attachment: local; }
   .sx-side::before { content: ''; order: -2; position: static; display: block; flex: none; width: auto; min-width: 0; height: var(--gap); background: none; -webkit-mask-image: none; mask-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; }
   .sx-side::after { content: ''; order: -1; display: block; width: 2.6rem; height: 4px; border-radius: 4px; background: rgba(255, 214, 140, .35); margin: .5rem auto .1rem; flex: none; }
   .sx-viewport { right: 0; bottom: calc(var(--sheet) * 100dvh); will-change: transform; z-index: 3; } .sx-viewport .sx-hint { display: none; }
-  .sx-hero-art { inset: 0; }
+  .sx-screen.create .sx-viewport { bottom: calc(var(--sheet) * var(--vis-h)); }
+  .sx-hero-art { inset: 0; padding: calc(3.2rem + var(--safe-t)) 0.9rem 0.9rem; }
   .sx-sidehead .sx-eye { display: none; } .sx-h1 { font-size: 1.5rem; }
   .sx-hint { bottom: calc(var(--sheet) * 100dvh + .6rem); }
+  .sx-screen.create .sx-hint { bottom: calc(var(--sheet) * var(--vis-h) + .6rem); }
   .ci-meters { gap: .5rem; } .ci-head h2 { font-size: 1.4rem; } .ci-head p { font-size: .84rem; }
   .sx-board-main { left: 0; right: 0; top: 0; bottom: 0; width: auto; max-width: none; height: auto; padding: 0 .8rem calc(.8rem + var(--safe-b)); border-radius: 0; border: 0; box-shadow: none; gap: .55rem; overscroll-behavior-y: contain;
     background: linear-gradient(180deg, transparent 0, transparent var(--gap), rgba(14, 14, 26, .9) calc(var(--gap) + 1.6rem), rgba(5, 6, 12, .96) calc(var(--gap) + 20rem)); background-attachment: local; }

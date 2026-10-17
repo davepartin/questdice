@@ -318,20 +318,18 @@ export function create(opts = {}) {
     const look = D.lookById(cls, color);
     color = look?.id || 'default';
     const pic = classPreview(cls, color);
-    preview.classList.remove('is-seated'); preview.dataset.cls = cls; preview.dataset.color = color;
+    preview.dataset.cls = cls; preview.dataset.color = color;
+    preview.classList.toggle('flip', D.needsFlip(look, 'right'));
+    preview.classList.add('is-seated');
     preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', look?.hue || CLS_HUE[cls] || '#ffd23d');
-    if (pic) {
-      const go = () => { const pin = () => H?.pin?.(); pin(); requestAnimationFrame(() => requestAnimationFrame(pin)); };
-      if (pic.complete && pic.naturalWidth) go(); else pic.addEventListener('load', go, { once: true });
-    }
     rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
       type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
-      onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); H?.pin?.(); }); },
+      onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); }); },
     }, classPic(id), h('span', {}, k.name.split(' ')[0]))));
     colors.replaceChildren(...D.colorsOf(cls).map((l) => h('button', {
       type: 'button', class: `color-btn ${l.id === color ? 'on' : ''}${D.needsFlip(l, 'right') ? ' flip' : ''}`, role: 'radio', 'aria-checked': String(l.id === color),
       style: { '--hue': l.hue }, 'aria-label': l.name,
-      onclick: () => { if (l.id === color) return; color = l.id; sfx.select(); paint(); H?.pin?.(); },
+      onclick: () => { if (l.id === color) return; color = l.id; sfx.select(); paint(); },
     }, h('img', { src: l.img, alt: '', draggable: 'false', decoding: 'async' }), h('span', {}, l.name))));
     const wset = [...new Set(c.weapons)];
     info.replaceChildren(
@@ -407,8 +405,7 @@ export function create(opts = {}) {
   if (browse) X.cloudBrowse?.(name, pw, browse);
   SCR.enter('create', { cls }, 'create').then((hd) => {
     H = hd; if (!hd) return;
-    H.pick(cls, { quiet: true }).then(() => { H.push(true); H.pin?.(); });
-    requestAnimationFrame(() => requestAnimationFrame(() => H?.pin?.()));
+    H.pick(cls, { quiet: true }).then(() => { H.push(true); });
   });
 }
 
