@@ -35,6 +35,7 @@ const SVG = {
   bracer: 'M22 6 H78 L86 32 H14 Z M12 38 H88 L80 66 H20 Z M20 72 H80 L84 94 H16 Z',
   helmet: 'M50 5 C27 5 13 22 13 46 V82 C13 89 18 94 25 94 H75 C82 94 87 89 87 82 V46 C87 22 73 5 50 5 Z M22 42 H78 V51 H22 Z M48 11 H52 V37 H48 Z M30 64 A3.2 3.2 0 1 0 30.1 64 Z M30 76 A3.2 3.2 0 1 0 30.1 76 Z M40 70 A3.2 3.2 0 1 0 40.1 70 Z M70 64 A3.2 3.2 0 1 0 70.1 64 Z M70 76 A3.2 3.2 0 1 0 70.1 76 Z M60 70 A3.2 3.2 0 1 0 60.1 70 Z',
   boots: 'M 20.8 1.2 L 27.7 10.8 L 21.2 21.2 L 16.3 10.8 Z M 10.0 8.8 L 15.0 8.8 L 23.1 26.0 L 24.6 63.2 L 20.4 67.6 C 16.2 52.0 12.3 30.0 10.0 8.8 Z M 33.5 8.0 L 43.7 6.0 C 43.8 26.0 42.3 48.4 38.8 65.2 L 28.1 64.4 L 26.7 63.2 L 25.4 26.4 Z M 14.6 78.4 L 25.0 71.6 L 35.8 70.4 L 39.2 79.6 L 38.8 89.6 L 32.7 90.4 L 31.5 85.2 Z M 1.5 94.0 C 6.7 89.0 11.5 85.0 15.4 82.4 L 30.4 87.2 L 31.9 97.6 C 31.9 98.8 31.2 99.4 30.0 99.4 L 3.8 99.4 C 1.9 99.4 0.8 97.0 1.5 94.0 Z M 76.9 1.2 L 70.0 10.8 L 76.5 21.2 L 81.3 10.8 Z M 87.7 8.8 L 82.7 8.8 L 74.6 26.0 L 73.1 63.2 L 77.3 67.6 C 81.5 52.0 85.4 30.0 87.7 8.8 Z M 64.2 8.0 L 54.0 6.0 C 53.8 26.0 55.4 48.4 58.8 65.2 L 69.6 64.4 L 71.0 63.2 L 72.3 26.4 Z M 83.1 78.4 L 72.7 71.6 L 61.9 70.4 L 58.5 79.6 L 58.8 89.6 L 65.0 90.4 L 66.2 85.2 Z M 96.2 94.0 C 91.0 89.0 86.2 85.0 82.3 82.4 L 67.3 87.2 L 65.8 97.6 C 65.8 98.8 66.5 99.4 67.7 99.4 L 93.8 99.4 C 95.8 99.4 96.9 97.0 96.2 94.0 Z',
+  bootpair: 'M18 3 H62 V15 H59 V52 C66 57 80 59 88 63 C96 67 98 78 96 86 H21 V15 H18 Z M16 84 H98 V96 H16 Z', // one big boot, side on, toe forward: the feet die's watermark
   heart: 'M50 94 C8 62 0 36 18 18 C32 4 48 12 50 28 C52 12 68 4 82 18 C100 36 92 62 50 94 Z',
   gauntlet: 'M22 74 H76 L82 97 H16 Z M25 70 V36 C25 29 35 29 35 36 V22 C35 14 46 14 46 22 V17 C46 9 57 9 57 17 V22 C57 15 68 15 68 23 V44 L74 37 C79 31 89 37 84 45 L71 64 C69 68 66 70 62 70 Z M34.6 38 H36.4 V56 H34.6 Z M45.6 26 H47.4 V56 H45.6 Z M56.6 26 H58.4 V56 H56.6 Z',
   skull: 'M50 4 C24 4 12 22 12 42 C12 54 18 60 24 64 V82 H38 V74 H44 V82 H56 V74 H62 V82 H76 V64 C82 60 88 54 88 42 C88 22 76 4 50 4 Z',
@@ -48,8 +49,8 @@ export function iconPath(name) {
 export const hasIcon = (n) => !!SVG[n];
 const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
-export function drawIcon(ctx, name, x, y, size, { stroke = 0 } = {}) {
-  ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(s, s); ctx.translate(-50, -50);
+export function drawIcon(ctx, name, x, y, size, { stroke = 0, flip = false } = {}) {
+  ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(flip ? -s : s, s); ctx.translate(-50, -50);
   const p = iconPath(name);
   if (stroke) { ctx.lineWidth = stroke / s; ctx.lineJoin = 'round'; ctx.stroke(p); }
   ctx.fill(p, evenodd.has(name) ? 'evenodd' : 'nonzero');
@@ -447,7 +448,10 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     }
 
     // ---- watermark (weapon identity), shallow
-    if (spec.wm && !blank && !wface) {
+    if (spec.wm && !blank && !wface && theme === 'bone') { // body marks (helmet, gloves, boots): tone on tone, pressed into the ivory, behind the number
+      const k = spec.wmK ?? 0.16;
+      layer(ctxs, { A: `rgba(118,84,40,${k})`, H: `rgb(${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)})` }, (c) => drawIcon(c, spec.wm, 0, inR * (spec.wmY ?? 0.04), inR * (spec.wmS ?? 1.78), { flip: !!spec.wmFlip }));
+    } else if (spec.wm && !blank && !wface) {
       layer(ctxs, { A: spec.tone === 'b' ? 'rgba(160,210,255,0.16)' : 'rgba(255,170,130,0.16)', H: 'rgb(112,112,112)' }, (c) => drawIcon(c, spec.wm, 0, inR * 0.02, inR * 1.7));
     }
 
