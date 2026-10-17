@@ -61,7 +61,7 @@
 .tu-line.row1 { left: 8%; right: 8%; top: calc(.55rem + (100% - 1.8rem) / 6); height: 4px; }
 .tu-line.row2 { left: 8%; right: 8%; top: 50%; height: 4px; margin-top: -2px; }
 .tu-line.col { top: 8%; bottom: 8%; left: 50%; width: 4px; margin-left: -2px; background: linear-gradient(180deg, transparent, #7cc4ff 12%, #7cc4ff 88%, transparent); box-shadow: 0 0 10px #3aa4ff; }
-.tu-triples { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; width: 100%; }
+.tu-triples { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; width: 100%; }
 .tu-triples figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: .3rem; }
 .tu-triples .tu-board { width: 100%; padding: .3rem; gap: .2rem; border-radius: 9px; }
 .tu-triples figcaption { font-family: var(--disp); font-weight: 700; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gild-hi); text-align: center; }

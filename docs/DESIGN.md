@@ -229,6 +229,8 @@ Matching numbers is the heart of the Fleet Dice feel, and it pays flat, memorabl
 
 **Head–Heart–Feet triple (+10 block).** The vertical line, three of a kind, earns +10 block for anyone.
 
+**Left and Right Guard Triples (+10 block each, Oct 2026).** The two side columns: that side's weapon +number, that hand and that talent die on the same number. With the Strength and Talent rows this makes one rule for the whole board: **every row attacks, every column guards** (no diagonals). A +0 weapon face or a talent blank never matches, and the 2× counts as a 2. Big all-or-nothing weapons (mace, tower, long sword: blanks or high numbers) seldom make one; bows, daggers and swords, with their spread of small numbers, make them often, the same trade as the Weapons Triple. About 1–3% of throws at the start of an act.
+
 **Straights (+10 to +30).** A run of consecutive numbers across the **seven numeric dice** (head, feet, heart, both hands, both weapons) pays out, scaling with length: 5 in a row is +10, 6 is +18, 7 is +30. You choose whether to take it as **attack** or cash it in for the same amount of **gold**. The two special dice carry symbols, not numbers, so they do not take part. Blanks do not count. Solo, a straight is yours alone; in a party it rewards only the roller.
 
 The original note said a straight could be built "anywhere across all nine dice" with no length limit. Built that way, a simple three-in-a-row appeared on **70% of first rolls**, which made the bonus free. The rule above makes a straight a once-in-twenty first roll and a once-in-five *chased* one (Decision 5).

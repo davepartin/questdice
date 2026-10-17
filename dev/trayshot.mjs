@@ -8,20 +8,24 @@ const SHOTS = {
   final: { board: { ...START, E: 4 } },
   tripW: { full: true, board: { NW: 3, N: 3, NE: 3, W: 5, C: 2, E: 1, SW: 1, S: 4, SE: 1 } },
   tripH: { full: true, board: { NW: 2, N: 3, NE: 2, W: 2, C: 3, E: 5, SW: 2, S: 3, SE: 1 } },
+  tripL: { full: true, board: { NW: 4, N: 2, NE: 1, W: 4, C: 3, E: 2, SW: 4, S: 1, SE: 2 } }, // sword +4, hand 4, talent 4: a Left Guard Triple
   petDice: { board: { ...START, P: 2 }, pet: 'bunny', fit: [-3.75, 2.42], look: [-0.66, 0, 0.05], size: [880, 700] },
 };
 // one die alone per starting socket (same camera as the boards), for dice that drop in during a lesson
 for (const sl of ['NW', 'N', 'W', 'C', 'E', 'SW', 'S']) SHOTS[`d-${sl}`] = { board: START, only: sl, layer: true };
 SHOTS['d-E4'] = { board: { ...START, E: 4 }, only: 'E', layer: true };
+// ONLY=tripL node dev/trayshot.mjs: just those stills (the other pictures and their sockets are kept)
+if (process.env.ONLY) { const keep = new Set(process.env.ONLY.split(',')); for (const k of Object.keys(SHOTS)) if (!keep.has(k)) delete SHOTS[k]; }
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
 const p = await b.newPage(); p.on('pageerror', (e) => console.log('ERR', e.message)); p.on('console', (m) => { if (m.type() === 'error') console.log('console', m.text().slice(0, 200)); });
 await p.goto('http://localhost:8135/dev/trayshot.html'); await p.waitForFunction(() => window.READY, null, { timeout: 60000 });
-const out = {}; const raw = {};
+const out = process.env.ONLY ? { ...(await import('../js/g3/tutboard.js')).BOARDS } : {}; const raw = {};
 for (const [name, spec] of Object.entries(SHOTS)) raw[name] = await p.evaluate((s) => window.shot(s), spec);
 // trim the empty top off every still of the same size by the same amount (layers must stay aligned with their board)
 const cutFor = {}; for (const r of Object.values(raw)) { const k = `${r.w}x${r.h}`; cutFor[k] = Math.min(cutFor[k] ?? 1e9, r.top); }
 for (const [name, r] of Object.entries(raw)) {
-  const cut = Math.max(0, cutFor[`${r.w}x${r.h}`] - 6); const H = r.h - cut;
+  const kept = process.env.ONLY && Object.values(out).find((o) => o.w === r.w); // a single new still: trim it like the ones already there
+  const cut = kept ? r.h - kept.h : Math.max(0, cutFor[`${r.w}x${r.h}`] - 6); const H = r.h - cut;
   const url = await p.evaluate(([u, c]) => window.crop(u, c), [r.url, cut]);
   fs.writeFileSync(`assets/tutorial/board-${name}.webp`, Buffer.from(url.split(',')[1], 'base64'));
   const socks = Object.fromEntries(Object.entries(r.socks).map(([k, q]) => [k, { ...q, y: +(((q.y * r.h) / 100 - cut) / H * 100).toFixed(2), top: +(((q.top * r.h) / 100 - cut) / H * 100).toFixed(2) }]));

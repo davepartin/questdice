@@ -1005,7 +1005,7 @@ async function lockInInner() {
   B.lastRep = rep;
   const card = makeCard(rep);
   if (ev.offense3 || ev.defense3 || ev.straight) {
-    sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold');
+    sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +${ev.triples[0].bonus ?? 10}` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
     if (l.length) bw.tray.highlight?.(l, 'gold'); stage.flash(0xffd23d, 0.18); B.fb.shake(0.3); buzz(25);
     await wait(0.55);

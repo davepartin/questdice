@@ -764,7 +764,7 @@ async function lockIn() {
   const b = S.battle; S.busy = true; sfx.lock(); buzz(30);
   $('.board')?.classList.add('locked'); $$('.die').forEach((d) => d.classList.remove('sel'));
   const ev = E.evaluate(S.hero, b.board, { straight: S.straight });
-  if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +10` : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
+  if (ev.offense3 || ev.defense3 || ev.straight) setTimeout(() => { sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +${ev.triples[0].bonus ?? 10}` : `${ev.straight}-STRAIGHT!`, 'gold'); }, 120);
   const target = S.target; const rep = E.resolve(b, { target, straight: S.straight }); S.lastReport = rep;
   RO.record(rep, b);
   await sleep(450);
@@ -911,7 +911,7 @@ function campGear() {
   });
   const stock = E.shopStock(hero);
   return h('div', { class: 'col' },
-    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Weapons, Strength and Talent Triple: +10 attack. Head to Toe Triple: +10 block.')),
+    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Rows (Weapons, Strength, Talent Triple): +10 attack. Columns (Head to Toe, Left and Right Guard Triple): +10 block.')),
     section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     section('The peddler', h('div', { class: 'loot' }, stock.map((it, i) => V.weaponCard(it.inst, { actions: [it.sold ? h('em', { class: 'muted' }, 'Sold') : primary(`Buy 🪙 ${it.price}`, () => { if (E.buyItem(hero, i)) { sfx.coin(); persist(); renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { disabled: hero.gold < it.price, cls: 'small' })] })))));
 }

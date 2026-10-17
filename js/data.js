@@ -775,7 +775,7 @@ export const POINTS = {
 // and, with three or more heroes, the runner-up PLACE_GOLD[1].
 export const PLACE_GOLD = [0.5, 0.25];
 // Team play
-export const TEAM_TRIPLE_BONUS = 10; // Team Weapons Attack / Team Strength Attack (same monster) / Team Head to Toe Block
+export const TEAM_TRIPLE_BONUS = 10; // Team Weapons Attack / Team Strength Attack (same monster) / Team Head to Toe, Left and Right Guard Block
 export const MORAL_BOOST = 3;        // the killing blow gives the next hero to act +3 attack
 export const SHARE_MAGIC = 2;        // a team action: pay 2 magic, a friend gains 2
 export const REVIVE_COST = 10;       // a team action, once a battle: 10 magic brings a fallen friend back

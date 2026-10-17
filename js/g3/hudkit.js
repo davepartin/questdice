@@ -218,10 +218,10 @@ export function synergyList(ev, mods) {
   const out = [];
   const tri = ev.triples || [];
   if (tri.length >= 3) { // every triple at once: one banner right across (Dave)
-    const atk = tri.filter((t) => t.kind === 'atk').length * 10; const blk = tri.filter((t) => t.kind !== 'atk').length * 10;
+    const sum = (k) => tri.filter((t) => (t.kind === 'atk') === k).reduce((a, t) => a + (t.bonus ?? 10), 0); const atk = sum(true); const blk = sum(false);
     out.push({ key: 't-all', kind: 'good', mega: true, icon: 'crown', text: 'TRIPLE TRIPLE TRIPLE!', sub: [atk ? `+${atk} attack` : '', blk ? `+${blk} block` : ''].filter(Boolean).join(' · ') });
   } else { const two = tri.length === 2; // two side by side: short names so neither gets cut off
-    for (const t of tri) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: two ? `${t.name.replace(/\s*Triple$/i, '').toUpperCase()}!` : `${t.name.toUpperCase()}!`, sub: `${two ? 'Triple · ' : ''}+10 ${t.kind === 'atk' ? 'attack' : 'block'}` }); }
+    for (const t of tri) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: two ? `${t.name.replace(/\s*Triple$/i, '').toUpperCase()}!` : `${t.name.toUpperCase()}!`, sub: `${two ? 'Triple · ' : ''}+${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'}` }); }
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;

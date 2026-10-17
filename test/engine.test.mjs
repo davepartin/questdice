@@ -150,6 +150,26 @@ test('Talent Triple: talent, feet, talent on the same number across the bottom r
   assert.equal(evaluate(h, board({ SW: 3, S: 3, SE: 3, NW: 1, NE: 1, C: 6 })).triples.length, 0, 'a talent blank (face 3) is not a 3');
 });
 
+test('Guard Triples: a side column (weapon +N, hand, talent) on the same number is +10 block; blanks never match', async () => {
+  const h = knight(); h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] }; // sword d4: 0, 2, 3, 4; shield d4: 0, 2, 3, 4
+  const names = (b) => evaluate(h, board(b)).triples.map((t) => t.name);
+  const rest = { N: 1, C: 6, S: 2 }; // no row or middle-column triple
+  const base = evaluate(h, board({ ...rest, NW: 4, W: 4, SW: 5, NE: 1, E: 1, SE: 5 }));
+  const left = evaluate(h, board({ ...rest, NW: 4, W: 4, SW: 4, NE: 1, E: 1, SE: 5 }));
+  assert.deepEqual(left.triples.map((t) => t.name), ['Left Guard Triple']);
+  assert.deepEqual(left.triples[0].slots, ['NW', 'W', 'SW']);
+  assert.equal(left.defense3, true); assert.equal(left.offense3, false);
+  assert.equal(left.block - base.block, 10, 'the left column adds 10 block');
+  assert.deepEqual(names({ ...rest, NW: 1, W: 1, SW: 5, NE: 4, E: 4, SE: 4 }), ['Right Guard Triple']);
+  assert.deepEqual(names({ ...rest, NW: 4, W: 4, SW: 4, NE: 4, E: 4, SE: 4, C: 5 }), ['Left Guard Triple', 'Right Guard Triple'], 'both sides at once');
+  assert.deepEqual(names({ ...rest, NW: 2, W: 2, SW: 2, NE: 1, E: 1, SE: 5 }), ['Left Guard Triple'], 'the 2x counts as a 2');
+  assert.deepEqual(names({ ...rest, NW: 3, W: 3, SW: 3, NE: 1, E: 1, SE: 5 }), [], 'a talent blank (face 3) is not a 3');
+  assert.deepEqual(names({ ...rest, NW: 1, W: 1, SW: 1, NE: 1, E: 1, SE: 1 }), [], 'a +0 weapon never matches');
+  const E = await import('../js/engine.js'); const fang = knight(); Object.assign(fang, { special: h.special, talent: h.talent }); assert.ok(E.takeCharm(fang, 'fang'));
+  const lf = evaluate(fang, board({ ...rest, NW: 4, W: 4, SW: 4, NE: 1, E: 1, SE: 5 }));
+  assert.equal(lf.block - base.block, 20, 'Wolf Fang: +20'); assert.equal(lf.triples[0].bonus, 20);
+});
+
 test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)
