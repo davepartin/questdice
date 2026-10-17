@@ -150,6 +150,19 @@ test('Talent Triple: talent, feet, talent on the same number across the bottom r
   assert.equal(evaluate(h, board({ SW: 3, S: 3, SE: 3, NW: 1, NE: 1, C: 6 })).triples.length, 0, 'a talent blank (face 3) is not a 3');
 });
 
+test('the battle gold chip climbs round by round and ends on what victory pays', async () => {
+  const E = await import('../js/engine.js');
+  for (const seed of [3, 4, 5, 6]) {
+    const h = newHero({ name: 'G', cls: 'bard', seed, full: true }); h.strength = { W: 8, E: 8 };
+    const b = newBattle(h, questsFor(h)[0], makeRng(seed), 1);
+    let rounds = 0; const seen = [E.battleGoldSoFar(b)];
+    while (!b.outcome && rounds++ < 40) { startRoll(b); resolve(b, { target: b.enemies.findIndex((e) => e.hp > 0) }); seen.push(E.battleGoldSoFar(b)); }
+    if (b.outcome !== 'victory' || b.enemies.some((e) => e.fled)) continue;
+    assert.equal(seen.at(-1), E.battleRewards(b).gold, 'the chip ends where the reward lands');
+    assert.ok(seen.at(-1) > seen[0], 'gold came in during the fight');
+  }
+});
+
 test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)

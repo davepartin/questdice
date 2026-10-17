@@ -314,7 +314,13 @@ function updateHero() {
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   { const dh = B.hud.diff; const d = D.DIFFICULTY[D.normalizeDifficulty(B.hero?.difficulty)]; const id = D.normalizeDifficulty(B.hero?.difficulty); if (dh) { dh.className = `sx-diffchip b3-diffchip dc-${id}`; dh.querySelector('b').textContent = d.name; dh.title = `${d.name}: ${d.text}`; dh.setAttribute('aria-label', `Difficulty: ${d.name}`); } }
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
-  const gc = B.hud.goldchip; if (gc) gc.querySelector('b').textContent = String(B.party ? E.companyGold(b.fighters.map((f) => f.hero)) : (B.hero?.gold ?? 0));
+  const gc = B.hud.goldchip;
+  if (gc) { // your purse plus what this fight has won so far (paid for real at victory), climbing round by round like magic (Dave)
+    const g = Math.max(0, B.party ? E.companyGold(b.fighters.map((f) => f.hero)) + b.fighters.reduce((a, f) => a + (f.goldEarned || 0), 0) : (B.hero?.gold ?? 0) + E.battleGoldSoFar(b));
+    const gb = gc.querySelector('b'); const was = Number(gb.textContent) || 0;
+    if (g !== was && gc.dataset.ready) { HK.countTo(gb, g, { from: was, dur: 420 }); HK.replay(gc, 'pop'); } else gb.textContent = String(g);
+    gc.dataset.ready = '1';
+  }
   renderPet();
 }
 // The pet's badge: its picture and a little die face with what it rolled this round (? before the roll).
