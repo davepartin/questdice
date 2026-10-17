@@ -37,7 +37,7 @@ export function dieSpecs(hero) {
       // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
       labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => ({
         text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
-        corners: Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k])).filter(Boolean), // a crit shows all its icons (two or three)
+        corners: [...Array(f.plus || 0).fill(f.c === 'b' ? 'def' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k]))].filter(Boolean), // +1 attack/block icons first, then a crit's icons (two or three)
         wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : wid,
       }));
     } else if (role === 'special') {

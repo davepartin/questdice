@@ -94,11 +94,16 @@ const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
 //   risky      two or three blanks, its top number twice             spear, long sword, tower shield
 //   brutal     three or four blanks, its top number three or four times   mace, war hammer
 const O = (v) => ({ v, o: 1 });
+// A face that shows one number but hits harder (Dave, Oct 2026): P(3) is a 3 with an attack icon (a block icon on a blocking weapon),
+// so it hits for 4, yet counts as a 3 for triples and straights. The all-or-nothing weapons never show their top number twice:
+// a doubled top drops a step and takes the icon, which keeps their force and spreads their numbers (fewer free Weapons Triples
+// on a two-hander, more straights).
+const P = (v, plus = 1) => ({ v, plus });
 export const WEAPON_DICE = {
   steady: { 4: [1, 2, O(2), 3], 6: [2, O(2), 3, 3, 4, 5], 8: [2, 3, O(3), 4, 4, 5, 5, 6], 10: [2, 3, O(3), 4, 4, 5, 5, 6, 7, 8] },
   balanced: { 4: [0, O(2), 3, 4], 6: [0, 2, O(3), 4, 5, 6], 8: [0, 2, O(3), 4, 5, O(6), 7, 8], 10: [0, 2, O(3), 4, 5, 6, O(7), 8, 9, 10] },
-  risky: { 4: [0, 0, 4, 4], 6: [0, 0, 4, 5, 6, 6], 8: [0, 0, 0, 5, 6, 7, 8, 8], 10: [0, 0, 0, 6, 7, 8, 9, 9, 10, 10] },
-  brutal: { 4: [0, 0, 4, 4], 6: [0, 0, 0, 6, 6, 6], 8: [0, 0, 0, 0, 7, 8, 8, 8], 10: [0, 0, 0, 0, 8, 9, 10, 10, 10, 10] },
+  risky: { 4: [0, 0, P(3), 4], 6: [0, 0, 4, 5, P(5), 6], 8: [0, 0, 0, 5, 6, 7, P(7), 8], 10: [0, 0, 0, 6, 7, 8, P(8), 9, P(9), 10] },
+  brutal: { 4: [0, 0, P(3), 4], 6: [0, 0, 0, P(4, 2), P(5), 6], 8: [0, 0, 0, 0, 7, P(6, 2), P(7), 8], 10: [0, 0, 0, 0, 8, 9, P(7, 3), P(8, 2), P(9), 10] },
 };
 // Diamond weapons (Dave, Oct 2026): rare, awesome, and good for ONE fight. You find about one and a half an act (spoils, now and then
 // the traveller), carry at most two in your Diamond case (they never take pack room), and bring one into a fight in place of a hand's
@@ -150,15 +155,15 @@ export const WEAPONS = {
     faces: [F(0, 'b'), F(2, 'r'), F(3, 'b'), F(3, 'b')],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { pierce: 1 } }] },
   spear: { name: 'Spear', hands: 1, lean: 'off', temper: 'risky', glyph: '🔱', price: 27,
-    tag: 'Risky reach: two or three blanks, but its top number comes up twice, and it pierces. Miss, miss, then through.',
+    tag: 'Risky reach: two or three blanks, but when it lands it hits near the top (its second-best face carries a +1), and it pierces. Miss, miss, then through.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r', { pierce: 1 }), F(4, 'r', { pierce: 1 })],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   mace: { name: 'Mace', hands: 1, lean: 'off', temper: 'brutal', glyph: '🔨', price: 26,
-    tag: 'Brutal: mostly blanks, but its top number is on three or four faces. Patience, then a door coming off its hinges.',
+    tag: 'Brutal: mostly blanks, but every face that lands hits for its top (the lower numbers carry +1 or +2 icons to get there). Patience, then a door coming off its hinges.',
     faces: [F(0, 'r'), F(0, 'r'), F(3, 'r'), F(5, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { heal: 1 } }, { face: 3, fx: { pierce: 1 } }] },
   tower: { name: 'Tower Shield', hands: 1, lean: 'def', temper: 'risky', glyph: '🛡️', price: 30,
-    tag: 'Risky wall: two or three blanks, its biggest blue twice. Either nothing, or a house in the way.',
+    tag: 'Risky wall: two or three blanks, and its second-best blue carries a +1 shield. Either nothing, or a house in the way.',
     faces: [F(0, 'b'), F(0, 'b'), F(4, 'b'), F(4, 'b', { heal: 1 })],
     bonus: [{ face: 2, fx: { heal: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 2, fx: { magic: 1 } }] },
   bow: { name: 'Bow', twinName: 'Arrows', hands: 2, lean: 'off', temper: 'steady', glyph: '🏹', price: 42,
@@ -170,11 +175,11 @@ export const WEAPONS = {
     faces: [F(0, 'b'), F(2, 'b'), F(3, 'r'), F(3, 'r', { magic: 2 })],
     bonus: [{ face: 2, fx: { magic: 1 } }, { face: 3, fx: { magic: 1 } }, { face: 1, fx: { heal: 1 } }] },
   longsword: { name: 'Long Sword', hands: 2, lean: 'off', temper: 'risky', glyph: '⚔️', price: 45,
-    tag: 'Two-handed and risky: two or three blanks, its top number twice. All or a lot. Never a little.',
+    tag: 'Two-handed and risky: two or three blanks, and its second-best face carries a +1. All or a lot. Never a little.',
     faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')],
     bonus: [{ face: 2, fx: { pierce: 1 } }, { face: 3, fx: { pierce: 1 } }, { face: 2, fx: { magic: 1 } }] },
   warhammer: { name: 'War Hammer', hands: 2, lean: 'off', temper: 'brutal', glyph: '🔨', price: 48,
-    tag: 'Two-handed and brutal: mostly blanks, its top number on three or four faces. When it lands, the hill notices.',
+    tag: 'Two-handed and brutal: mostly blanks, but every face that lands hits for its top (the lower numbers carry icons to get there). When it lands, the hill notices.',
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
   // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and

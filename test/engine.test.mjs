@@ -18,7 +18,7 @@ const board = (o) => {
 const knight = () => newHero({ name: 'K', cls: 'knight', seed: 1, full: true });
 const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 1, full: true });
 
-test('weapon temperaments: steady never blank, balanced one blank, risky and brutal two at d4 and all one colour; brutal has its top number most often', () => {
+test('weapon temperaments: steady never blank, balanced one blank, risky and brutal two at d4 and all one colour; brutal hits for its top most often', () => {
   const want = { steady: 0, balanced: 1, risky: 2, brutal: 2 };
   for (const [id, w] of Object.entries(WEAPONS)) {
     if (w.hidden || w.legendary) continue;
@@ -27,8 +27,28 @@ test('weapon temperaments: steady never blank, balanced one blank, risky and bru
     assert.equal(blanks, want[w.temper], `${id} blanks`);
     if (w.temper === 'risky' || w.temper === 'brutal') assert.ok(f.every((x) => x.c === f[0].c), `${id} is all one colour`);
   }
-  const topCount = (id) => { const f = weaponFaces({ id, rarity: 1, size: 8 }); const m = Math.max(...f.map((x) => x.v)); return f.filter((x) => x.v === m).length; };
+  const hit = (x) => x.v + (x.plus || 0);
+  const topCount = (id) => { const f = weaponFaces({ id, rarity: 1, size: 8 }); const m = Math.max(...f.map(hit)); return f.filter((x) => hit(x) === m).length; };
   assert.ok(topCount('mace') > topCount('spear') && topCount('spear') > topCount('sword'));
+});
+
+test('all-or-nothing weapons never show their top number twice: a doubled top drops a step with a +1 icon, same force', () => {
+  const OLD = { risky: { 4: [0, 0, 4, 4], 6: [0, 0, 4, 5, 6, 6], 8: [0, 0, 0, 5, 6, 7, 8, 8], 10: [0, 0, 0, 6, 7, 8, 9, 9, 10, 10] },
+    brutal: { 4: [0, 0, 4, 4], 6: [0, 0, 0, 6, 6, 6], 8: [0, 0, 0, 0, 7, 8, 8, 8], 10: [0, 0, 0, 0, 8, 9, 10, 10, 10, 10] } };
+  for (const id of ['longsword', 'warhammer', 'spear', 'mace', 'tower']) {
+    for (const size of [4, 6, 8, 10]) {
+      const f = weaponFaces({ id, rarity: 2, size }); const top = Math.max(...f.map((x) => x.v));
+      assert.equal(f.filter((x) => x.v === top).length, 1, `${id} d${size} shows its top once`);
+      assert.equal(f.reduce((a, x) => a + x.v + (x.plus || 0), 0), OLD[WEAPONS[id].temper][size].reduce((a, v) => a + v, 0), `${id} d${size} hits as hard as before`);
+    }
+  }
+  assert.deepEqual(weaponFaces({ id: 'longsword', rarity: 0 }).map((x) => [x.v, x.plus || 0]), [[0, 0], [0, 0], [3, 1], [4, 0]]);
+  // the 3 with an icon hits for 4 but is a 3 for the Weapons Triple
+  const h = knight(); const ls = { uid: 'ls', id: 'longsword', rarity: 0 }; h.bag.push(ls); assert.ok(equip(h, 'ls'));
+  const plain = evaluate(h, board({ NW: 4, NE: 1, N: 1, C: 2 })); const iconed = evaluate(h, board({ NW: 3, NE: 1, N: 1, C: 2 }));
+  assert.equal(iconed.atk, plain.atk, 'the 3 with an icon hits like the 4');
+  assert.deepEqual(evaluate(h, board({ NW: 3, NE: 3, N: 3, C: 2 })).triples.map((t) => t.name), ['Weapons Triple'], 'three 3s: the icon face still counts as a 3');
+  assert.equal(evaluate(h, board({ NW: 3, NE: 4, N: 4, C: 2 })).triples.length, 0, 'and not as a 4');
 });
 
 test('universal number language on head, hands and feet: 1 heal, 2 pierce, 3 magic, 4 gold (2 each); feet also set initiative', () => {

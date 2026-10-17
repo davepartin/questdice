@@ -75,7 +75,8 @@ export function weaponFaces(inst, rollSize) {
   if (def.legendary) return legendaryFaces(def, size);
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
   const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
-  const faces = (WEAPON_DICE[temper][size] || WEAPON_DICE[temper][4]).map((f) => (typeof f === 'object' ? { v: f.v, c: other } : { v: f, c: own }));
+  const faces = (WEAPON_DICE[temper][size] || WEAPON_DICE[temper][4]).map((f) => (typeof f !== 'object' ? { v: f, c: own } : f.plus ? { v: f.v, c: own, plus: f.plus } : { v: f.v, c: other }));
+  const hit = (f) => f.v + (f.plus || 0); // what a face hits for (its number, plus any attack/block icons)
   if (tier === 0 && size >= 6 && temper !== 'brutal') { // a cheap Bronze weapon is a little dull: its lowest number of its own colour is chipped blank (a brutal one, already mostly blank, is dull by bare tops instead)
     let lo = -1; faces.forEach((f, k) => { if (f.c === own && f.v > 0 && (lo < 0 || f.v < faces[lo].v)) lo = k; });
     if (lo >= 0) faces[lo] = { v: 0, c: own };
@@ -84,11 +85,11 @@ export function weaponFaces(inst, rollSize) {
   if (!kinds.length) kinds.push(own === 'r' ? 'pierce' : 'heal');
   // icons from the top face down: its own colour first (highest number, then the later face), the other colour only on Gold
   const live = faces.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0 && (x.f.c === own || tier >= 2))
-    .sort((a, b) => (a.f.c === own ? 0 : 1) - (b.f.c === own ? 0 : 1) || b.f.v - a.f.v || b.k - a.k);
+    .sort((a, b) => (a.f.c === own ? 0 : 1) - (b.f.c === own ? 0 : 1) || hit(b.f) - hit(a.f) || b.f.v - a.f.v || b.k - a.k);
   const n = live.length; const count = Math.min(n, tier >= 2 ? n : tier === 1 ? Math.max(2, Math.ceil(n / 2)) : 1);
-  const top = live[0]?.f.v || 0; const crit = [1, 2, 3][tier];
+  const top = live[0] ? hit(live[0].f) : 0; const crit = [1, 2, 3][tier];
   live.forEach((x, i) => {
-    const brutalTop = temper === 'brutal' && tier >= 1 && x.f.v === top && x.f.c === own;
+    const brutalTop = temper === 'brutal' && tier >= 1 && hit(x.f) === top && x.f.c === own; // every face that hits for the top
     if (i >= count && !brutalTop) return;
     x.f.fx = { [kinds[i % kinds.length]]: i === 0 ? crit : 1 };
   });
@@ -408,9 +409,10 @@ export function evaluate(hero, board, opts = {}) {
     const str = val(lane.hand);
     const sym = isActive(hero, lane.special) ? specialFace(hero, lane.special, val(lane.special)) : null;
     const x2 = sym === 'X2'; const tsyms = Array.isArray(sym) ? sym : [];
-    let value = wf.v + str + (x2 ? str : 0);
+    const plus = (wf.plus || 0) * (hasCharm(hero, 'thorns') ? 2 : 1); // Thorn Crown doubles every weapon icon, these too
+    let value = wf.v + plus + str + (x2 ? str : 0); // a face's attack/block icons add to what it hits for (its number alone counts for triples and straights)
     if (wf.c === 'r') value += mods.redBonus; else value += mods.blueBonus;
-    const L = { key, slot: lane.weapon, color: wf.c, weapon: wf.v, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
+    const L = { key, slot: lane.weapon, color: wf.c, weapon: wf.v, plus, str, sym: x2 ? 'SURGE' : tsyms.length ? tsyms : null, value, amp: 0, fx: wf.fx || null };
     if (wf.fx) {
       const x = (n) => (hasCharm(hero, 'thorns') ? n * 2 : n); // Thorn Crown: weapon icons count double
       out.pierce += x(wf.fx.pierce || 0); out.magic += x(wf.fx.magic || 0); out.heal += x(wf.fx.heal || 0);
