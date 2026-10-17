@@ -225,6 +225,8 @@ Magic starts each battle at a class-specific amount (2 to 4), caps at 12, and is
 
 Matching numbers is the heart of the Fleet Dice feel, and it pays flat, memorable bonuses.
 
+**Triples grow with the act (Oct 2026).** Every triple, attack or block, pays **+10 in Act I, +15 in Act II and +20 in Act III** (`TRIPLE_BY_ACT` in data.js, `tripleBonus` in engine.js), so they keep up with bigger dice and bigger monsters. Team triples and the Twin Coin charm grow the same way; the Wolf Fang charm doubles whatever a triple pays. The +10 figures below are Act I.
+
 **Top-row triple (+10 attack).** The top row is **weapon · head · weapon.** When both weapon dice and the head all show the same number, you earn +10 attack. This needs a **two-handed** weapon, because only then are both weapon dice the same family. A blank (0) never counts, and the head has no blank, so it can never match one. This is what the original Bow versus Long Sword simulation actually measured. See Decision 1.
 
 **Head–Heart–Feet triple (+10 block).** The vertical line, three of a kind, earns +10 block for anyone.

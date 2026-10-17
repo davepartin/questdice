@@ -206,7 +206,7 @@ const LESSONS = [
       h('figure', {}, boardPic({ base: 'final', line: ['W', 'E'], small: true }), h('figcaption', {}, 'Strength')),
       h('figure', {}, boardPic({ base: 'tripH', line: ['N', 'S'], small: true }), h('figcaption', {}, 'Head to Toe')),
       h('figure', {}, boardPic({ base: 'tripL', line: ['NW', 'SW'], small: true }), h('figcaption', {}, 'Left · Right'))),
-    say: 'Three matching numbers in a line earn +10: rows attack, columns guard. Five in a row anywhere on your dice is a straight.',
+    say: 'Three matching numbers in a line earn +10 (15 in Act II, 20 in Act III): rows attack, columns guard. Five in a row anywhere on your dice is a straight.',
     body: () => [
       row(ic('atk'), 'Weapons Triple: +10 attack', 'Top row. Both weapons’ +numbers match your head.'),
       row(ic('atk'), 'Strength Triple: +10 attack', 'Middle row. Hand, heart and hand match.'),

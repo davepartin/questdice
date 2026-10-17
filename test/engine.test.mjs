@@ -170,6 +170,22 @@ test('Guard Triples: a side column (weapon +N, hand, talent) on the same number 
   assert.equal(lf.block - base.block, 20, 'Wolf Fang: +20'); assert.equal(lf.triples[0].bonus, 20);
 });
 
+test('triples pay 10 / 15 / 20 in Act I / II / III, attack and block alike; Wolf Fang doubles that', async () => {
+  const E = await import('../js/engine.js');
+  const at = (act, fang = false) => { const h = knight(); h.campaign.act = act; if (fang) assert.ok(E.takeCharm(h, 'fang')); return h; };
+  const gain = (h, b, base, k) => evaluate(h, board(b))[k] - evaluate(h, board(base))[k];
+  const strength = [{ W: 1, C: 1, E: 1 }, { W: 1, C: 2, E: 1 }]; // the middle row: attack
+  const headtoe = [{ N: 3, C: 3, S: 3, NW: 1, NE: 1 }, { N: 3, C: 2, S: 3, NW: 1, NE: 1 }]; // down the middle: block
+  for (const [act, want] of [[1, 10], [2, 15], [3, 20]]) {
+    assert.equal(gain(at(act), ...strength, 'atk'), want, `Act ${act} attack triple`);
+    assert.equal(gain(at(act), ...headtoe, 'block'), want, `Act ${act} block triple`);
+    assert.equal(evaluate(at(act), board(strength[0])).triples[0].bonus, want);
+    assert.equal(E.tripleBonus(at(act)), want);
+  }
+  assert.equal(gain(at(2, true), ...strength, 'atk'), 30, 'Wolf Fang in Act II');
+  assert.equal(gain(at(3, true), ...headtoe, 'block'), 40, 'Wolf Fang in Act III');
+});
+
 test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)

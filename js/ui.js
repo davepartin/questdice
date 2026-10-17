@@ -911,7 +911,7 @@ function campGear() {
   });
   const stock = E.shopStock(hero);
   return h('div', { class: 'col' },
-    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Rows (Weapons, Strength, Talent Triple): +10 attack. Columns (Head to Toe, Left and Right Guard Triple): +10 block.')),
+    section('Equipped', h('div', { class: 'loot' }, worn), h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Rows (Weapons, Strength, Talent Triple): +10 attack. Columns (Head to Toe, Left and Right Guard Triple): +10 block. Triples pay 15 in Act II and 20 in Act III.')),
     section(`Pack (${bag.length})`, bag.length ? h('div', { class: 'loot' }, bag) : h('p', { class: 'muted' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     section('The peddler', h('div', { class: 'loot' }, stock.map((it, i) => V.weaponCard(it.inst, { actions: [it.sold ? h('em', { class: 'muted' }, 'Sold') : primary(`Buy 🪙 ${it.price}`, () => { if (E.buyItem(hero, i)) { sfx.coin(); persist(); renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { disabled: hero.gold < it.price, cls: 'small' })] })))));
 }

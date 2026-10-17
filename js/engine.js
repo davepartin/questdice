@@ -2,7 +2,7 @@
 // battles are reproducible and the balance simulator (tools/sim.mjs) can run the same code.
 
 import {
-  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, HEAL_COST,
+  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
@@ -370,12 +370,14 @@ export function rollBoard(hero, rng) {
 const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the feet number is ALSO the initiative
 // ------------------------------------------------------------------------------- evaluation
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
+// What one triple pays this act: 10 / 15 / 20 (attack or block). A team triple adds the same again.
+export function tripleBonus(hero) { const a = Math.min(3, Math.max(1, hero?.campaign?.act || 1)); return TRIPLE_BY_ACT[a - 1] ?? SYNERGY_BONUS; }
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
   const bone = boneOn && [...BONE].some((s) => board[s]?.v === 1);
   const val = (s) => (boneOn && BONE.has(s) && board[s].v === 1 ? 6 : board[s].v);
-  const TRIPLE = hasCharm(hero, 'fang') ? 20 : SYNERGY_BONUS; // Wolf Fang
+  const TRIPLE = tripleBonus(hero) * (hasCharm(hero, 'fang') ? 2 : 1); // Wolf Fang doubles it
   const out = {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, splash: 0,
     lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],
@@ -432,7 +434,7 @@ export function evaluate(hero, board, opts = {}) {
   }
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 
-  // Triples. Across (top row: weapon, head, weapon by the weapons' +N; middle row: hand, heart, hand; bottom row: talent, feet, talent) = +10 attack each.
+  // Triples. Across (top row: weapon, head, weapon by the weapons' +N; middle row: hand, heart, hand; bottom row: talent, feet, talent) = +10 attack each (15 in Act II, 20 in Act III: tripleBonus).
   // Down (head, heart, feet, and the two side columns below) = +10 block. Every die in the line must be in play; a +0 weapon never matches.
   out.triples = [];
   if (isActive(hero, 'NW') && isActive(hero, 'NE')) {
@@ -474,7 +476,7 @@ export function evaluate(hero, board, opts = {}) {
     if ((opts.straight || 'atk') === 'gold') out.gold += out.straightBonus; else out.atk += out.straightBonus;
     if (hasCharm(hero, 'mirror')) { out.heal += 12; out.notes.push('Mirror Shard heals 12'); }
   }
-  if (hasCharm(hero, 'twins') && out.lanes.L && out.lanes.R && out.lanes.L.weapon > 0 && out.lanes.L.weapon === out.lanes.R.weapon) { out.atk += 10; out.twinCoin = true; out.notes.push('Twin Coin +10'); }
+  if (hasCharm(hero, 'twins') && out.lanes.L && out.lanes.R && out.lanes.L.weapon > 0 && out.lanes.L.weapon === out.lanes.R.weapon) { const tw = tripleBonus(hero); out.atk += tw; out.twinCoin = true; out.notes.push(`Twin Coin +${tw}`); }
   if (bone) out.notes.push('Gambler’s Bone: a 1 is a 6');
   out.gold = Math.round(out.gold * (1 + mods.goldPct));
   return out;
@@ -1519,7 +1521,7 @@ function totalsFor(f) {
   return { ev, T };
 }
 
-// Team triples: two or more heroes landing the same kind of triple in one round each get TEAM_TRIPLE_BONUS more.
+// Team triples: two or more heroes landing the same kind of triple in one round each get TEAM_TRIPLE_BONUS more (scaled by act).
 // Attack rows (Weapons, Strength, Talent) only count when they hit the same monster. Heartbeat: if every hero's heart die shows
 // the same face, each gains magic equal to the number of heroes.
 const TEAM_LABEL = { weapons: 'Team Weapons Attack', strength: 'Team Strength Attack', talents: 'Team Talent Attack', headtoe: 'Team Head to Toe Block', left: 'Team Left Guard', right: 'Team Right Guard' };
@@ -1535,8 +1537,9 @@ function teamBonuses(b, acting) {
     for (const f of who) { const k = GUARD_ROWS.has(row) ? 'all' : tgtOf(f); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(f); }
     for (const g of groups.values()) {
       if (g.length < 2) continue;
-      for (const f of g) { if (GUARD_ROWS.has(row)) f.T.block += TEAM_TRIPLE_BONUS; else f.T.atk += TEAM_TRIPLE_BONUS; f._team++; }
-      out.team.push({ row, label: TEAM_LABEL[row], names: g.map((f) => f.hero.name), bonus: TEAM_TRIPLE_BONUS });
+      const bonus = TEAM_TRIPLE_BONUS * tripleBonus(g[0].hero) / SYNERGY_BONUS; // grows with the act like a triple
+      for (const f of g) { if (GUARD_ROWS.has(row)) f.T.block += bonus; else f.T.atk += bonus; f._team++; }
+      out.team.push({ row, label: TEAM_LABEL[row], names: g.map((f) => f.hero.name), bonus });
     }
   }
   const face = acting[0].board.C.v;

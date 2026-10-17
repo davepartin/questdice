@@ -1017,7 +1017,7 @@ function gearTab() {
   return h('div', { class: 'sx-tab gear' },
     chips, coachBox('g_gear'),
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across a row (Weapons, Strength, Talent Triple): +10 attack. Three alike down a column (Head to Toe, Left or Right Guard Triple): +10 block.')),
+      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across a row (Weapons, Strength, Talent Triple): +10 attack. Three alike down a column (Head to Toe, Left or Right Guard Triple): +10 block. Triples pay 15 in Act II and 20 in Act III.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then at the traveler.',
       h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,

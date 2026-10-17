@@ -254,8 +254,8 @@ export function heroMedal(cls, level) {
 const BANNER_ICON = [[/TRIPLE/i, 'dice'], [/STRAIGHT/i, 'star'], [/STAGGER/i, 'stagger'], [/ENRAGE/i, 'slam'], [/LAST STAND/i, 'heart'], [/VICTORY/i, 'crown']];
 export function banner(host, text, kind = '', ico) {
   const name = ico || BANNER_ICON.find(([re]) => re.test(text))?.[1] || (kind === 'bad' ? 'slam' : 'magic');
-  const sub = /TRIPLE/i.test(text) && /\+10/.test(text) ? '+10' : '';
-  const label = text.replace(/\s*\+10\s*$/, '');
+  const sub = /TRIPLE/i.test(text) ? (text.match(/\+\d+\s*$/)?.[0].trim() || '') : '';
+  const label = /TRIPLE/i.test(text) ? text.replace(/\s*\+\d+\s*$/, '') : text;
   const el = h('div', { class: `b3-banner ${kind}`, role: 'status', style: { '--n': String(Math.max(8, label.length + (sub ? 3 : 0))) } }, // --n: long banners shrink to fit the screen
     h('i', { class: 'bn-rule l' }), h('div', { class: 'bn-core' }, icon(name, 'bn-ic'), h('b', {}, label), sub ? h('em', {}, sub) : null, icon(name, 'bn-ic r')), h('i', { class: 'bn-rule r' }),
     h('span', { class: 'sparkles big', 'aria-hidden': 'true' }, ...Array.from({ length: 8 }, () => h('i', {}))));

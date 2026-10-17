@@ -114,7 +114,7 @@ export function forecastEl(ev, mods) {
 }
 export function synergyNotes(ev, mods) {
   const out = [];
-  for (const t of ev.triples || []) out.push({ kind: 'good', text: `${t.kind === 'atk' ? '⚔' : '🛡'} ${t.name}! +10 ${t.kind === 'atk' ? 'attack' : 'block'}` });
+  for (const t of ev.triples || []) out.push({ kind: 'good', text: `${t.kind === 'atk' ? '⚔' : '🛡'} ${t.name}! +${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'}` });
   if (ev.straight) out.push({ kind: 'good', text: `★ ${ev.straight}-straight! +${ev.straightBonus}` });
   if (mods.weaken) out.push({ kind: '', text: `Foes hit ${mods.weaken} softer` });
   return out;
@@ -177,7 +177,7 @@ export function reportLines(rep, b) {
   const L = [];
   const t = name(rep.targetUid);
   L.push({ kind: 'you', text: `You strike ${t}: ${rep.T.atk} attack${rep.guarded ? ` (${rep.guarded} guarded)` : ''}${rep.T.pierce ? ` + ${rep.T.pierce} ◆ pierce` : ''} → ${rep.dealt} damage.` });
-  for (const t of rep.ev.triples || []) L.push({ kind: 'good', text: `${t.name}! +10 ${t.kind === 'atk' ? 'attack' : 'block'}.` });
+  for (const t of rep.ev.triples || []) L.push({ kind: 'good', text: `${t.name}! +${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'}.` });
   if (rep.ev.straight) L.push({ kind: 'good', text: `${rep.ev.straight}-straight!` });
   for (const u of rep.killed) L.push({ kind: 'good', text: `${name(u)} falls.` });
   for (const a of rep.acts) {
@@ -284,7 +284,7 @@ export function howToPlay() {
     h('h3', {}, 'Each round'),
     p(h('b', {}, '1. Reset.'), ' Monsters roll their ', h('b', {}, 'Intention'), ' first and show it to you. You see what is coming. Spend ✦ to heal or recharge a card, then roll.'),
     p(h('b', {}, '2. Shape.'), ' The first reroll is free (tap up to 3 dice). Two more cost 1 ✦ per die. Cards, healing and heart nudges cost ✦ too.'),
-    p(h('b', {}, '3. Lock in.'), ' Tap a monster to choose your target. Triples (+10) and 5-straights pay extra.'),
+    p(h('b', {}, '3. Lock in.'), ' Tap a monster to choose your target. Triples (+10, more in later acts) and 5-straights pay extra.'),
     h('h3', {}, 'Monsters'),
     p('They never reroll. A ⚡ ', h('b', {}, 'Wind-Up'), ' means a huge Slam next round. You cannot stop it, so brace with ', h('b', {}, 'block'), ' or kill the monster first. Bosses change their ways at half health.'),
     h('h3', {}, 'The company'),

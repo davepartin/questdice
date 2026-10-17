@@ -47,6 +47,7 @@ export const REROLL_DIE_COST = 200; // gold, once: every reroll may take a 4th d
 export const REROLL_DICE_MAX = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
+export const TRIPLE_BY_ACT = [10, 15, 20]; // what each triple pays in Act I / II / III, attack or block (Dave, Oct 2026: triples keep up with the act)
 export const HEAL_COST = 2; // magic
 export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
@@ -118,10 +119,10 @@ export const CHARM_MAX = 3;
 export const CHARMS = {
   ember: { name: 'Ember Locket', icon: 'flame', text: 'A blank weapon face burns anyway: 6 attack and 2 magic.' },
   mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight also heals you 12.' },
-  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice on the same number: +10 attack, like a triple.' },
+  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice on the same number: attack like a triple (+10, more in later acts).' },
   thorns: { name: 'Thorn Crown', icon: 'crown', text: 'Every icon on your weapon dice counts double: a crit of three arrows pays six.' },
   bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'A 1 on your head, hands or feet counts as a 6, for everything.' },
-  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple pays +20 instead of +10.' },
+  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple pays double.' },
   lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One more free reroll every round.' },
   phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a blow that would fell you leaves you at 10 health.' },
   pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with full magic, but 8 less health.' },
@@ -775,7 +776,7 @@ export const POINTS = {
 // and, with three or more heroes, the runner-up PLACE_GOLD[1].
 export const PLACE_GOLD = [0.5, 0.25];
 // Team play
-export const TEAM_TRIPLE_BONUS = 10; // Team Weapons Attack / Team Strength Attack (same monster) / Team Head to Toe, Left and Right Guard Block
+export const TEAM_TRIPLE_BONUS = 10; // (Act I; it grows with the act like a triple: TRIPLE_BY_ACT) Team Weapons Attack / Team Strength Attack (same monster) / Team Head to Toe, Left and Right Guard Block
 export const MORAL_BOOST = 3;        // the killing blow gives the next hero to act +3 attack
 export const SHARE_MAGIC = 2;        // a team action: pay 2 magic, a friend gains 2
 export const REVIVE_COST = 10;       // a team action, once a battle: 10 magic brings a fallen friend back
