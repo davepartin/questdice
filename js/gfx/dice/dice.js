@@ -11,6 +11,9 @@ import * as D from '../../data.js';
 import * as E from '../../engine.js';
 import { makePoly, roundedGeometry, restQuat, readLabel } from './poly.js';
 import { buildAtlas, diceStyle } from './faces.js';
+import { bodyWatermarkSrc, CLASS_BODY_WATERMARKS } from './bodywm.js';
+
+export { CLASS_BODY_WATERMARKS, bodyWatermarkSrc };
 
 export { makePoly, restQuat, readLabel };
 
@@ -54,10 +57,17 @@ export function dieSpecs(hero) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
+      // Live look: class head + shared gauntlets/boots behind the number.
+      // SVG mockup (`setBodyMarks`) is a separate try-out; when it is on, skip the PNG so they do not stack.
+      const bodyWm = bodyMarks ? null : bodyWatermarkSrc(hero.cls, slot);
       // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
       for (let v = 1; v <= sides; v++) {
         const pay = D.FACE_PAY[v]; const corners = []; for (const k of ['heal', 'pierce', 'magic', 'gold']) for (let i = 0; i < (pay?.[k] || 0); i++) corners.push(k);
-        labels.push({ text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined, ...(bodyMarks && BODY_MARK[slot] ? { ...BODY_MARK[slot], wmK: bodyMarks, wmS: sides === 4 || sides === 8 ? 2.3 : sides === 10 ? 2 : 1.8 } : {}) });
+        labels.push({
+          text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined,
+          ...(bodyWm ? { bodyWm } : {}),
+          ...(bodyMarks && BODY_MARK[slot] ? { ...BODY_MARK[slot], wmK: bodyMarks, wmS: sides === 4 || sides === 8 ? 2.3 : sides === 10 ? 2 : 1.8 } : {}),
+        });
       }
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };

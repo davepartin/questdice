@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
+import { bodyWatermarkImage, loadBodyWatermark, drawBodyWatermark } from './bodywm.js';
 
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
@@ -338,11 +339,16 @@ const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
 /**
  * Paint the atlas for a die.
  * @param poly   makePoly(sides)
- * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block', wm: icon name }
+ * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block', wm: icon name, bodyWm: png url }
  * @param theme  'bone'|'smoke'|'heart'|'amethyst'|'weapon'
  */
 export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
-  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
+  const wmReady = faces.map((f) => {
+    if (!f?.bodyWm) return '-';
+    loadBodyWatermark(f.bodyWm);
+    return bodyWatermarkImage(f.bodyWm) ? '1' : '0';
+  }).join('');
+  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|bwm${wmReady}|${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
   const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
   const WP = ST.wpn || WPN; const sw = ST.swirl;
@@ -447,8 +453,26 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
     }
 
+    // ---- body watermark (class line-art on head / hands / feet), behind the number
+    // Cubes (d6) keep the quieter size Dave liked on the boots. Pointed faces (d4 / d8 / d10)
+    // get a larger, slightly stronger mark so the helmet and gauntlets still read on a phone.
+    if (spec.bodyWm && !blank) {
+      const im = bodyWatermarkImage(spec.bodyWm);
+      if (im) {
+        const sz = inR * (poly.sides === 4 ? 2.32 : poly.sides === 6 ? 1.76 : 2.08);
+        const a = poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50;
+        layer(ctxs, { A: '#000', H: 'rgb(112,112,112)' }, (c, k) => {
+          c.save();
+          c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.closePath(); c.clip();
+          c.globalAlpha = k === 'H' ? a * 0.5 : a;
+          drawBodyWatermark(c, im, 0, inR * 0.02, sz);
+          c.restore();
+        });
+      }
+    }
+
     // ---- watermark (weapon identity), shallow
-    if (spec.wm && !blank && !wface && theme === 'bone') { // body marks (helmet, gloves, boots): tone on tone, pressed into the ivory, behind the number
+    if (spec.wm && !blank && !wface && theme === 'bone' && !spec.bodyWm) { // SVG mockup (helmet, gloves, boots): tone on tone, pressed into the ivory; skip when the live PNG is on the face
       const k = spec.wmK ?? 0.16;
       layer(ctxs, { A: `rgba(118,84,40,${k})`, H: `rgb(${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)})` }, (c) => drawIcon(c, spec.wm, 0, inR * (spec.wmY ?? 0.04), inR * (spec.wmS ?? 1.78), { flip: !!spec.wmFlip }));
     } else if (spec.wm && !blank && !wface) {

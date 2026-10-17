@@ -1146,3 +1146,12 @@ Dave painted 15 colour variants (three per class, all facing right) on a painted
 
 ## 2026-10-16 — hero colours: three clear coats per class
 After pull request 18 (15 new right-facing paintings and a colour picker) each class offered four coats, but its "Classic" (the old painting) wore the same colours as one of the new ones (the classic Bard and the Teal Bard are both teal and yellow), so two Bards at a table could look alike. Each class's own look now uses its new painting in its own colours, and the twin is gone: Knight blue / crimson / green, Ranger green / rust / grey, Wizard blue / crimson / white, Dwarf blue / crimson / moss, Bard teal / crimson / blue. Every hero is painted facing right, so none is mirrored any more; old saves keep their colour (an old "blue" Knight is the blue painting). Check: `node dev/colors.mjs` (the picker, and two Bards at one battle: teal and crimson).
+
+## 2026-10-17 — knight dice watermarks
+The knight's head, left hand, right hand and feet dice now carry Dave's brown line-art as a faint watermark behind the number and symbols (~42% paint opacity so it reads as about 30% on a 3D die, centred, ~88% of the face). The grid reads like a person. Other classes and the weapon / heart / talent dice are unchanged; `CLASS_BODY_WATERMARKS` in `js/gfx/dice/bodywm.js` is a class → {head, leftHand, rightHand, feet} map so the others can get a set later. Stamp `20261017c`. Shot: docs/screens/knight_dice_watermarks.png.
+
+## 2026-10-17 — body watermarks for every class; wizard hat on Choose your hero
+Dave: all five classes get body-die watermarks. Hands and feet share the knight's gauntlets and boots; only the HEAD changes (`assets/dice/heads/<class>.png`). Pointed dice (d4 / d8 / d10) paint the mark a little larger and stronger so the helmet and gloves read on a phone; the d6 boots stay as they were. Choose your hero was clipping the blue wizard's hat: the showcase now scales each miniature so the whole figure (hat, staff and all) stays inside the picture, without shrinking the ones that already fitted. Stamp `20261017d`.
+
+## 2026-10-17 — merge main into the body-watermark branch
+Main had moved (SVG body-marks mockup off in the game, +1 weapon faces, a reroll-break warning). Kept both: the live PNG watermarks stay on the white dice; `setBodyMarks` still turns on the SVG try-out and then skips the PNG so they do not stack. Stamp `20261017e`.
