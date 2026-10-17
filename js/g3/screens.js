@@ -29,42 +29,14 @@ export function scrolled(px = 0) {
   for (const v of document.querySelectorAll('.sx-viewport > *, .sx-board > .sx-top')) v.style.transform = port && px && !pinned(v) ? `translateY(${-px}px)` : '';
 }
 
-// The hero-choice miniature stands on the ground near the bottom of the picture above the panel: sized to the space, its painted
-// base centred on a pool of the class's colour (`imgBase` says where the base sits in each picture). The whole figure — hat,
-// staff spark and all — has to stay inside the showcase, so a tall wizard is scaled to fit rather than clipped at the top.
-let pinRo = null;
+// The hero-choice miniature is seated by CSS (`object-fit: contain` in a padded box). `pin` stays on the
+// create handle so callers can refresh the flip class after a colour change; it does not measure the image.
 function pinHeroArt() {
-  const host = document.querySelector('.sx-hero-art'); const img = host?.querySelector('img');
-  if (!host || !img?.naturalWidth) return;
+  const host = document.querySelector('.sx-hero-art');
+  if (!host) return;
   const k = D.CLASSES[host.dataset.cls];
   const look = D.lookById(host.dataset.cls, host.dataset.color) || k;
-  const base = look?.imgBase || k?.imgBase; if (!base) return;
-  const flip = D.needsFlip(look, 'right'); // class pick: same as the battle table, looking right
-  const bx = flip ? 1 - base.x : base.x;
-  const box = host.getBoundingClientRect(); if (box.height < 60) return;
-  if (pinRo && pinRo._host !== host) { pinRo.disconnect(); pinRo = null; }
-  if (!pinRo) {
-    pinRo = new ResizeObserver(() => pinHeroArt());
-    pinRo._host = host;
-    pinRo.observe(host);
-  }
-  const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
-  const padT = Math.max(18, box.height * 0.05);
-  const padB = Math.max(14, box.height * 0.06);
-  const cy = box.height - padB;
-  const by = Math.max(0.55, base.y);
-  // Prefer the old fill, then shrink if the hat or staff would leave the box.
-  let H = Math.min((box.height - 62) * 0.97, box.width * 1.35, (cy - padT) / by);
-  let W = H * aspect;
-  const maxW = box.width * 1.08;
-  if (W > maxW) { W = maxW; H = W / aspect; }
-  if (cy - by * H < padT) { H = (cy - padT) / by; W = H * aspect; }
-  const cx = box.width * 0.5;
-  img.style.width = `${W}px`; img.style.height = `${H}px`;
-  img.style.left = `${cx - bx * W}px`; img.style.top = `${Math.max(padT, cy - by * H)}px`;
-  const d = Math.max(60, base.w * W * 1.25);
-  host.style.setProperty('--ped-x', `${cx}px`); host.style.setProperty('--ped-y', `${cy}px`); host.style.setProperty('--ped-d', `${d}px`); host.style.setProperty('--ped-h', `${d * 0.3}px`);
-  host.classList.toggle('flip', flip);
+  host.classList.toggle('flip', D.needsFlip(look, 'right'));
   host.classList.add('is-seated');
 }
 

@@ -1155,3 +1155,6 @@ Dave: all five classes get body-die watermarks. Hands and feet share the knight'
 
 ## 2026-10-17 — merge main into the body-watermark branch
 Main had moved (SVG body-marks mockup off in the game, +1 weapon faces, a reroll-break warning). Kept both: the live PNG watermarks stay on the white dice; `setBodyMarks` still turns on the SVG try-out and then skips the PNG so they do not stack. Stamp `20261017e`.
+
+## 2026-10-17 — Choose your hero: the whole miniature stays in the picture
+Dave's iPhone still cut the blue wizard's hair at the top of Choose your hero (Safari chrome, a short visual viewport, 100dvh vs svh). The showcase now sizes against `100svh` and sits the picture with `object-fit: contain` in a box that already has top padding for the Back button, so the whole image is always on screen — no JS measuring, and it still works if the PNG loads late. `wizard-blue.webp` itself has no headroom (the hair touches y=3); a later pass will recut all 15 hero paintings. Stamp `20261017f`.
