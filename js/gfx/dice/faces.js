@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
 import { bodyWatermarkImage, loadBodyWatermark, drawBodyWatermark } from './bodywm.js';
+const BODY_WM_DARK = 1.2; // Dave, Oct 2026: the body watermarks read 20% darker, so you can see them on a phone
 
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
@@ -460,7 +461,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const im = bodyWatermarkImage(spec.bodyWm);
       if (im) {
         const sz = inR * (poly.sides === 4 ? 2.32 : poly.sides === 6 ? 1.76 : 2.08);
-        const a = poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50;
+        const a = (poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50) * BODY_WM_DARK;
         layer(ctxs, { A: '#000', H: 'rgb(112,112,112)' }, (c, k) => {
           c.save();
           c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.closePath(); c.clip();
