@@ -10,6 +10,11 @@ import {
   colorIdOf, uniqueColors,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
+import { monsterOf as packMonster, actsOf as packActs, packIdOf } from './campaigns.js';
+
+const mdef = (id, camp) => packMonster(id, camp) || MONSTERS[id];
+const campOfBattle = (b) => b?.hero?.campaign || b?.fighters?.[0]?.hero?.campaign;
+const mof = (id, b) => mdef(id, campOfBattle(b));
 
 // ------------------------------------------------------------------------------- randomness
 export function makeRng(seed) {
@@ -163,17 +168,18 @@ export function shatterDiamonds(hero) {
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
 // ------------------------------------------------------------------------------- heroes
-export function newHero({ name, cls, seed, full = false, color } = {}) {
+export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
   const c = CLASSES[cls];
   const rng = makeRng(hashSeed(name, cls, seed ?? Date.now()));
   const loadout = {};
   if (c.weapons.length === 1) { const w = makeWeapon(c.weapons[0], 0, rng); loadout.NW = w; loadout.NE = twinOf(w); }
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
+  const packId = packIdOf(pack);
   return {
     v: 1, name, cls, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
-    campaign: { act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
+    campaign: { pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
   };
@@ -489,26 +495,28 @@ export function partyScale(players) {
   const i = Math.max(0, Math.min(5, players - 1));
   return { hp: PARTY.hp[i], adds: PARTY.adds[i] };
 }
-export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null } = {}, rng) {
-  const d = MONSTERS[id];
+export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null } = {}, rng) {
+  const d = mdef(id, campaign);
   const hp = Math.max(1, Math.round(d.hp * hpMult));
   return {
-    uid: newUid(rng), id, name: d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
+    uid: newUid(rng), id, name: name || d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
     faces: d.faces, flat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0, edge,
+    // pounce is a round flag (true after an unbroken Stalk), not the sheet's pounce stats
+    slam: d.slam, adds: d.adds, flee: d.flee, rage: d.rage, initDie: d.init,
   };
 }
 export function rollIntent(e, rng) {
   if (e.windup) {
-    const s = MONSTERS[e.id].slam;
+    const s = e.slam || mdef(e.id).slam || { f: 0, m: 0 };
     e.windup = false;
     const v = s.v || 'strike';
-    e.intent = { n: v === 'breath' ? 'Breath Slam' : 'Slam', v, f: s.f + (e.edge?.slam || 0), m: s.m, slam: true };
-  } else if (e.pounce) { // a Stalk nobody broke
-    const s = MONSTERS[e.id].pounce;
+    e.intent = { n: v === 'breath' ? 'Breath Slam' : 'Slam', v, f: (s.f || 0) + (e.edge?.slam || 0), m: s.m || 0, slam: true };
+  } else if (e.pounce) { // a Stalk nobody broke — the boolean flag, stats from the sheet
+    const s = mdef(e.id).pounce || { f: 0, m: 0 };
     e.pounce = false;
-    e.intent = { n: 'Pounce', v: 'strike', f: s.f + (e.edge?.slam || 0), m: s.m, slam: true, pounce: true };
+    e.intent = { n: 'Pounce', v: 'strike', f: (s.f || 0) + (e.edge?.slam || 0), m: s.m || 0, slam: true, pounce: true };
   } else {
     e.intent = { ...e.faces[die(rng, 6) - 1] };
   }
@@ -608,8 +616,11 @@ export function newBattle(hero, quest0, rng, players = 1) {
   wieldDiamonds(hero); // the Diamonds you chose to bring take their hands for this fight
   const sc = partyScale(players);
   const enemies = [];
-  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge }, rng));
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge }, rng));
+  for (let i = 0; i < quest.enemies.length; i++) {
+    const id = quest.enemies[i];
+    enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign, name: quest.foeNames?.[i] }, rng));
+  }
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign }, rng));
   const boon = pullBlessings(hero);
   const pact = hasCharm(hero, 'pact'); // Blood Pact: full magic, 8 less health
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
@@ -924,9 +935,9 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
         break;
       }
       case 'summon': {
-        const room = ENEMY_CAP - living().length; const add = MONSTERS[e.id].adds;
+        const room = ENEMY_CAP - living().length; const add = e.adds || mof(e.id, b).adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
-          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge }, b.rng);
+          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
           s.fresh = true; b.enemies.push(s); rep.summoned.push(s.uid);
         }
         break;
@@ -940,7 +951,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   // Initiative: the first round always goes to you. After that each monster rolls a d4 against your feet die; ties go to you.
   const initV = ev.init; const early = [];
   rep.init = { hero: initV, heroDie: feetSize(hero), foes: [], first: 'hero', forced: b.round === 1 };
-  for (const e of alive) { e.init = b.round === 1 ? null : die(b.rng, MONSTERS[e.id]?.init || 4); rep.init.foes.push({ uid: e.uid, init: e.init, die: MONSTERS[e.id]?.init || 4 }); if (e.init != null && e.init > initV) early.push(e); }
+  for (const e of alive) { const initDie = e.initDie || mof(e.id, b)?.init || 4; e.init = b.round === 1 ? null : die(b.rng, initDie); rep.init.foes.push({ uid: e.uid, init: e.init, die: initDie }); if (e.init != null && e.init > initV) early.push(e); }
   if (early.length) rep.init.first = 'foes';
   rep.early = early.map((e) => e.uid);
   actFor(early, true);
@@ -954,7 +965,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
 
   // 3. Rage: bosses change their ways at half health.
   for (const e of living()) {
-    const rg = MONSTERS[e.id].rage;
+    const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
       e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;
@@ -1044,7 +1055,7 @@ function tryFlee(b, rep) {
   rep.fled = rep.fled || [];
   const living = b.enemies.filter((e) => e.hp > 0);
   for (const e of living) {
-    const fl = MONSTERS[e.id]?.flee;
+    const fl = e.flee || mof(e.id, b)?.flee;
     if (!fl || e.fled) continue;
     if (fl.onlyAs && b.quest?.kind !== fl.onlyAs) continue;
     if (living.length > 1) continue; // last foe standing, so the fight ends cleanly
@@ -1267,7 +1278,7 @@ export function questDanger(hero, quest0) {
   const quest = withDifficulty(hero, quest0); const P = heroPower(hero);
   let hp = 0; let hit = 0; let blockable = 0; let armorTax = 0;
   for (const id of quest.enemies) {
-    const M = MONSTERS[id]; hp += Math.round(M.hp * (quest.hpMult ?? 1)); const ep = (M.power + 1) / 2;
+    const M = mdef(id, hero?.campaign); hp += Math.round(M.hp * (quest.hpMult ?? 1)); const ep = (M.power + 1) / 2;
     let dmg = 0; let blk = 0;
     for (const f of M.faces) {
       if (!DAMAGE_VERBS.has(f.v)) continue;
@@ -1301,26 +1312,26 @@ export function questsFor(hero) { return roadsFor(hero, { random: true }).slice(
 // `act.fights` so the story and the fight name the same foes. Difficulty still scales HP, damage and summoned adds, never
 // that locked roster. The budget grows through the act and follows Easy / Normal / Hard / Legendary; each monster has a
 // `threat`, and a crowd costs a little more than its sum. Deterministic for a campaign (seed, act, step).
-export const crowdThreat = (ids) => ids.reduce((t, id) => t + (MONSTERS[id]?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
+export const crowdThreat = (ids, camp) => ids.reduce((t, id) => t + (mdef(id, camp)?.threat || 1), 0) * (1 + ENCOUNTER.groupPlus * Math.max(0, ids.length - 1));
 export function encounterBudget(hero) {
   const c = hero.campaign; const a = ENCOUNTER.acts[Math.min(ENCOUNTER.acts.length, c.act) - 1];
   return (a.base + a.slope * (c.step - 1)) * difficultyOf(hero).budget;
 }
 export function encounterFor(hero) {
-  const c = hero.campaign; const act = ACTS[(c.act - 1) % ACTS.length];
+  const c = hero.campaign; const acts = packActs(c); const act = acts[(c.act - 1) % acts.length];
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'encounter'));
   const budget = encounterBudget(hero) * (ENCOUNTER.jitter[0] + (ENCOUNTER.jitter[1] - ENCOUNTER.jitter[0]) * rng());
   // the act's own monsters; the smaller elite-tier ones (an ogre) join the ordinary fights from the middle of the act
   const kinds = [...new Set(act.pool.flat())];
-  const bigs = rng() >= 0.4 ? [] : [...new Set(act.elite.flat())].filter((id) => MONSTERS[id].tier === 'elite' && c.step >= ENCOUNTER.bigFrom && MONSTERS[id].threat <= ENCOUNTER.bigMax);
-  const roster = [...kinds, ...bigs].sort((x, y) => (MONSTERS[x].threat - MONSTERS[y].threat) || x.localeCompare(y));
-  const cheapest = MONSTERS[roster[0]].threat;
+  const bigs = rng() >= 0.4 ? [] : [...new Set(act.elite.flat())].filter((id) => mdef(id, c).tier === 'elite' && c.step >= ENCOUNTER.bigFrom && mdef(id, c).threat <= ENCOUNTER.bigMax);
+  const roster = [...kinds, ...bigs].sort((x, y) => (mdef(x, c).threat - mdef(y, c).threat) || x.localeCompare(y));
+  const cheapest = mdef(roster[0], c).threat;
   const tries = [];
   for (let i = 0; i < 14; i++) {
     const ids = []; const shape = rng(); // under a third: aim for one big monster; otherwise fill the budget with whatever fits
     const lone = shape < 0.3;
     for (let n = 0; n < ENEMY_CAP; n++) {
-      const fit = roster.filter((id) => crowdThreat([...ids, id]) <= budget * 1.08 && !(ids.length >= 2 && ids.every((x) => x === id)));
+      const fit = roster.filter((id) => crowdThreat([...ids, id], c) <= budget * 1.08 && !(ids.length >= 2 && ids.every((x) => x === id)));
       if (!fit.length) break;
       const pool = lone && !ids.length ? fit.slice(-2) : fit; // a lone fight takes the biggest monsters that fit
       ids.push(pick(rng, pool));
@@ -1328,7 +1339,7 @@ export function encounterFor(hero) {
       if (rng() < 0.18 * ids.length) break; // sometimes stop early, so crowds are not always the maximum
     }
     if (!ids.length) ids.push(roster[0]);
-    tries.push({ ids, gap: Math.abs(budget - crowdThreat(ids)) + (new Set(ids).size === 1 && ids.length > 2 ? 0.4 : 0) });
+    tries.push({ ids, gap: Math.abs(budget - crowdThreat(ids, c)) + (new Set(ids).size === 1 && ids.length > 2 ? 0.4 : 0) });
   }
   tries.sort((x, y) => x.gap - y.gap);
   const best = tries.slice(0, 4); // among the closest fits, pick at random so fights vary
@@ -1336,8 +1347,8 @@ export function encounterFor(hero) {
   return pick(rng, best).ids;
 }
 export function roadsFor(hero, opts = {}) {
-  const c = hero.campaign; const actIdx = (c.act - 1) % ACTS.length; const act = ACTS[actIdx];
-  const cycle = Math.floor((c.act - 1) / ACTS.length);
+  const c = hero.campaign; const acts = packActs(c); const actIdx = (c.act - 1) % acts.length; const act = acts[actIdx];
+  const cycle = Math.floor((c.act - 1) / acts.length);
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'quests'));
   const s = c.step;
   const ai = Math.min(ACT_HP.length - 1, c.act - 1); // act 3+ reuses the act data with the act-3 growth until it has its own monsters
@@ -1348,47 +1359,52 @@ export function roadsFor(hero, opts = {}) {
   const roamPlaces = act.places.filter((p) => !reserved.has(p));
   // First time through Acts I–III: the story names these foes. Ascents (cycle >= 1) still roll encounterFor.
   const locked = cycle === 0 && act.fights?.[s - 1]?.length ? act.fights[s - 1] : null;
+  const labels = cycle === 0 && act.names?.[s - 1]?.length ? act.names[s - 1] : null;
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     // the story walks the act in order (act.route, one place per step); the draw is kept so the rest of the seeded picks stay the same
     const roam = kind === 'boss' ? null : pick(rng, roamPlaces.length ? roamPlaces : act.places);
     const place = extra.place || (kind === 'boss' ? act.places[act.places.length - 1] : act.route?.[s - 1] || roam);
+    const foeNames = extra.foeNames || (locked && labels && enemies === locked ? labels : null)
+      || (labels && extra.useNames ? labels : null);
+    const titled = (kind === 'boss' || kind === 'elite') && foeNames?.[0];
     const q = {
     id: `${c.act}.${s}.${extra.perilous ? 'p' : kind}`, act: c.act, step: s, kind, enemies, place,
-    name: kind === 'boss' ? `${MONSTERS[enemies[0]].name}` : `${prefix} ${place}`,
+    name: titled ? foeNames[0] : (kind === 'boss' ? `${mdef(enemies[0], c).name}` : `${prefix} ${place}`),
+    foeNames: foeNames || undefined,
     // elites and bosses are built for their own act already; the act growth only lifts them when an act reuses older monsters
-    hpMult: ((kind === 'boss' || kind === 'elite') && c.act <= ACTS.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1)) * (SET_PIECE[kind]?.hp[ai] ?? 1) * ((kind === 'boss' || kind === 'elite') && locked ? (act.fightHp?.[s] ?? 1) : 1),
+    hpMult: ((kind === 'boss' || kind === 'elite') && c.act <= acts.length ? (1 + STEP_HP * (s - 1)) : base * (extra.perilous ? PERIL.hp : 1) * (locked && kind === 'battle' ? (act.fightHp?.[s] ?? 1) : 1)) * (SET_PIECE[kind]?.hp[ai] ?? 1) * ((kind === 'boss' || kind === 'elite') && locked ? (act.fightHp?.[s] ?? 1) : 1),
     flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0) + (SET_PIECE[kind]?.flat[ai] ?? 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
     return attachNemesis(q, c);
   };
   const poolPick = () => pick(rng, act.pool);
-  // Call for Help (step 8) wins over the route lock and over any gate.
-  if (s === 8 && c.nextPlace) {
+  // Call for Help (step 8) wins over the route lock and over any gate — unless this pack turned it off.
+  if (s === 8 && c.nextPlace && (act.help?.length || c.nextEnemies?.length)) {
     const help = c.nextEnemies?.length ? c.nextEnemies : (locked || (opts.random ? encounterFor(hero) : poolPick()));
     return [mk('battle', help, { place: c.nextPlace })];
   }
   const gate = act.gates?.[s];
   if (gate) {
     const foes = locked || gate.enemies || (gate.kind === 'boss' ? act.boss : gate.kind === 'elite' ? pick(rng, act.elite) : (opts.random ? encounterFor(hero) : poolPick()));
-    return [mk(gate.kind, foes, { place: gate.place, boss: gate.kind === 'boss' })];
+    return [mk(gate.kind, foes, { place: gate.place, boss: gate.kind === 'boss', useNames: !!locked })];
   }
-  if (s >= QUESTS_PER_ACT) return [mk('boss', locked || act.boss, { boss: true })];
+  if (s >= QUESTS_PER_ACT) return [mk('boss', locked || act.boss, { boss: true, useNames: !!locked })];
   if (ELITE_STEPS.includes(s)) {
     let el = locked || pick(rng, act.elite);
     // Easy used to drop the extra add from a two-monster elite. Story acts keep the locked cast; Ascents may still slim it.
     if (!locked && opts.random) { const sorted = [...act.elite].sort((x, y) => x.length - y.length); el = normalizeDifficulty(hero.difficulty) === 'easy' ? sorted[0] : el; }
-    return [mk('elite', el), mk('battle', poolPick(), { perilous: true })];
+    return [mk('elite', el, { useNames: !!locked }), mk('battle', poolPick(), { perilous: true })];
   }
   let a = locked || poolPick(); let bq = poolPick();
   for (let tries = 0; tries < 6 && bq.join() === a.join(); tries++) bq = poolPick();
-  const weight = (f) => f.reduce((t, id) => t + MONSTERS[id].hp, 0);
+  const weight = (f) => f.reduce((t, id) => t + mdef(id, c).hp, 0);
   if (!locked && weight(a) > weight(bq)) [a, bq] = [bq, a]; // Standard is always the lighter road (tools / Ascents)
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
-  if (c.act === 1 && s === 1 && !(c.wins > 0)) a = ['goblin'];
+  if (c.act === 1 && s === 1 && !(c.wins > 0) && !locked) a = ['goblin'];
   else if (!locked && opts.random) a = encounterFor(hero); // Ascents and the balance tools
-  return [mk('battle', a), mk('battle', bq, { perilous: true })];
+  return [mk('battle', a, { useNames: !!locked }), mk('battle', bq, { perilous: true })];
 }
 function attachNemesis(quest, campaign) {
   if (!campaign || quest.kind === 'boss' || quest.perilous) return quest;
@@ -1414,13 +1430,14 @@ export function advanceCampaign(hero) {
 // Phones gather the locks.
 // The math does not care which device rolled them.
 
-export function newCompany({ name, roster, seed }) {
+export function newCompany({ name, roster, seed, pack }) {
+  const packId = packIdOf(pack);
   const campaign = {
-    act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0,
+    pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0,
     blessings: [], seenRoads: [], campFlags: {}, ambush: null, chronicle: [], nemeses: [],
   };
   const members = roster.map((r, i) => {
-    const hero = newHero({ name: r.name, cls: r.cls, color: r.color, seed: (campaign.seed + i * 997) >>> 0 });
+    const hero = newHero({ name: r.name, cls: r.cls, color: r.color, seed: (campaign.seed + i * 997) >>> 0, pack: packId });
     hero.campaign = campaign;
     return hero;
   });
@@ -1495,8 +1512,11 @@ export function newPartyBattle(heroes, quest0, rng) {
   const sc = partyScale(players);
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1; const edge = quest.edge || null;
   const enemies = [];
-  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, rewardMult, edge }, rng));
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, rewardMult, edge }, rng));
+  for (let i = 0; i < quest.enemies.length; i++) {
+    const id = quest.enemies[i];
+    enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, rewardMult, edge, campaign: heroes[0].campaign, name: quest.foeNames?.[i] }, rng));
+  }
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, rewardMult, edge, campaign: heroes[0].campaign }, rng));
   dressNemesis(enemies, quest.nemesis);
   const b = {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),
@@ -1711,9 +1731,9 @@ export function resolveParty(b) {
         break;
       }
       case 'summon': {
-        const room = ENEMY_CAP - livingNow().length; const add = MONSTERS[e.id].adds;
+        const room = ENEMY_CAP - livingNow().length; const add = e.adds || mof(e.id, b).adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
-          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge }, b.rng);
+          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
           s.fresh = true; b.enemies.push(s); rep.summoned.push(s.uid);
         }
         break;
@@ -1726,12 +1746,12 @@ export function resolveParty(b) {
   // Higher goes first; ties go to the heroes; round 1 is always the heroes' (then the monsters).
   const forced = b.round === 1;
   const heroInit = new Map(order.map((r) => [r.f, r.feet]));
-  for (const e of alive) e.init = forced ? null : die(b.rng, MONSTERS[e.id]?.init || 4);
+  for (const e of alive) { const initDie = e.initDie || mof(e.id, b)?.init || 4; e.init = forced ? null : die(b.rng, initDie); e._initDie = initDie; }
   const line = [];
   order.forEach((r, k) => line.push({ kind: 'hero', f: r.f, v: forced ? 99 : r.feet, tie: 0, k }));
   alive.forEach((e, k) => line.push({ kind: 'foe', e, v: forced ? -1 : e.init, tie: 1, k }));
   line.sort((x, y) => y.v - x.v || x.tie - y.tie || x.k - y.k);
-  rep.init = { forced, heroes: order.map((r) => ({ name: r.f.hero.name, init: r.feet, die: feetSize(r.f.hero) })), foes: alive.map((e) => ({ uid: e.uid, init: e.init, die: MONSTERS[e.id]?.init || 4 })) };
+  rep.init = { forced, heroes: order.map((r) => ({ name: r.f.hero.name, init: r.feet, die: feetSize(r.f.hero) })), foes: alive.map((e) => ({ uid: e.uid, init: e.init, die: e._initDie || e.initDie || 4 })) };
   rep.order = line.map((x) => (x.kind === 'hero' ? { kind: 'hero', name: x.f.hero.name, v: heroInit.get(x.f) } : { kind: 'foe', uid: x.e.uid, name: x.e.name, v: x.e.init }));
   const runningHp = (f) => { const i = snap.indexOf(f); return Math.min(f.maxHp, f.hp + f.T.heal) - taken[i]; };
   for (const x of line) {
@@ -1741,7 +1761,7 @@ export function resolveParty(b) {
   settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {
-    const rg = MONSTERS[e.id].rage;
+    const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
       e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;

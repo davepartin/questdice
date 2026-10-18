@@ -66,12 +66,12 @@ function oops(e, fallback) {
 }
 const told = (message) => Object.assign(new Error(message), { qd: true });
 
-export async function createSeat({ name, cls, table: tableName, hero, difficulty }) {
+export async function createSeat({ name, cls, table: tableName, hero, difficulty, pack }) {
   await ready();
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
   for (let tries = 0; tries < 6; tries++) {
     const code = makeCode();
-    const table = createTable({ code, seed, name: tableName || 'Company', difficulty: difficulty || hero?.difficulty });
+    const table = createTable({ code, seed, name: tableName || 'Company', difficulty: difficulty || hero?.difficulty, pack: pack || hero?.campaign?.pack });
     const joined = joinTable(table, { name, cls, token: fb.uid, hero });
     if (!joined.ok) throw told(joined.error);
     try {

@@ -8,6 +8,7 @@ import { h, reduced } from '../dom.js';
 import * as D from '../data.js';
 import * as HK from './hudkit.js';
 import * as E from '../engine.js';
+import { monsterOf } from '../campaigns.js';
 
 // How big each monster stands next to a hero. Flattened (0.62 + 0.38 * size) so the biggest still fits the board.
 const SIZE = {
@@ -196,6 +197,7 @@ export function atmoLayers(weather) {
 // ------------------------------------------------------------------------------------------ the board
 export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo }) {
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
+  const camp = heroes[0]?.campaign;
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
   const look = D.placeLook(quest?.place);
   const motes = Array.from({ length: 9 }, (_, i) => h('i', { class: 'fb-mote', style: { '--x': `${(i * 37 + 11) % 96}%`, '--y': `${20 + ((i * 53) % 60)}%`, '--d': `${(i * 1.7) % 9}s`, '--t': `${9 + (i * 3) % 7}s`, '--s': String(0.5 + ((i * 17) % 6) / 8) } }));
@@ -241,7 +243,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent, def };
   };
   fb.addFoe = (e) => {
-    const def = D.MONSTERS[e.id] || {};
+    const def = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {};
     const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id), flip: D.needsFlip(def, 'left') }).seat(def.imgBase); // every monster looks toward the heroes
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
@@ -349,7 +351,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     c.hpNum.textContent = String(Math.max(0, Math.ceil(e.hp)));
     if (c.defSig !== (e.armor ? 'a' : '') + (e.faces?.length || 0)) { // its defence (guard die, armour, or none) does not change with the round
       c.defSig = (e.armor ? 'a' : '') + (e.faces?.length || 0);
-      const d = D.MONSTERS[e.id] || {}; const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
+      const d = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {}; const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
       const guard = faces.some((f) => ['guard', 'ward'].includes(f.v)); const phase = faces.some((f) => f.v === 'phase');
       const txt = guard ? `d${size}` : armor ? `${armor.n}d${armor.s}` : '';
       c.def.className = `fb-def${txt || phase ? '' : ' none'}`;

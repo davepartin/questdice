@@ -22,6 +22,7 @@ import * as R from '../roads.js';
 import { world } from './world.js';
 import * as B3 from './battle3d.js';
 import { bragBoard, closeBrag, bragOpen } from './brag.js';
+import { packOf, packIdOf, partySize, forcedLine } from '../campaigns.js';
 
 let X = null; // what ui.js hands over (S, showTitle, ...)
 let stop = null; // the live feed
@@ -55,7 +56,7 @@ export function together() {
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'Play together' },
     h('div', { class: 'sx-eye menu-label' }, 'Play together'),
     Net.savedSeat() ? plaque({ eyebrow: 'Your table', ...Net.seatLabel(), icon: 'people', tone: 'is-together', primary: true, onclick: () => resume() }) : null, // a table this phone sits at: back to it
-    plaque({ eyebrow: 'Host', title: 'Open a table', sub: 'You get a code. Share it with your friends.', icon: 'people', tone: 'is-together', primary: !Net.savedSeat(), onclick: () => host() }),
+    plaque({ eyebrow: 'Host', title: 'Open a table', sub: 'Pick a story, then share a code with your friends.', icon: 'people', tone: 'is-together', primary: !Net.savedSeat(), onclick: () => host() }),
     plaque({ eyebrow: 'Join', title: 'Join a table', sub: 'Enter the four-letter code a friend gave you.', icon: 'key', tone: 'is-together', onclick: () => join('') }),
     plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: () => X.showTitle() }));
   void eyebrow; void flourish;
@@ -63,19 +64,20 @@ export function together() {
   mountAs('title', h('div', { class: 'sx-title-shell' }, h('div', { class: 'sx-title-brand' }), h('div', { class: 'sx-title-menu' }, menu)));
   lay('title'); SCR.enter('title', { cls: 'knight' }, 'title:together');
 }
-function sitAt({ mode, code, hero, back }) {
-  SCRUI.create({ table: { mode, code, hero, back: back || together, onDone: async (name, cls, x) => {
+function sitAt({ mode, code, hero, back, pack }) {
+  SCRUI.create({ pack, table: { mode, code, hero, pack, back: back || together, onDone: async (name, cls, x) => {
     const data = mode === 'host'
-      ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero, difficulty: x.difficulty || x.hero?.difficulty })
+      ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero, difficulty: x.difficulty || x.hero?.difficulty, pack: x.pack || pack || x.hero?.campaign?.pack })
       : await Net.joinSeat({ code: x.code, name, cls, hero: x.hero });
     sfx.level(); openTable(data.view);
   } } });
 }
-function host() { sitAt({ mode: 'host' }); }
+function host() { X.showStories({ together: true }); }
+export function hostPack(pack) { sitAt({ mode: 'host', pack: packIdOf(pack), back: together }); }
 export function hostLoaded() {
   const hero = X.S.hero;
   if (!hero) return together();
-  sitAt({ mode: 'host', hero, back: () => X.showHeroHub() });
+  sitAt({ mode: 'host', hero, pack: hero.campaign?.pack, back: () => X.showHeroHub() });
 }
 export function join(prefill = '') {
   sitAt({ mode: 'join', code: prefill });
@@ -166,7 +168,9 @@ function lobby(t) {
   const rows = t.players.map((p, i) => h('li', { class: `lb-row ${p.ready || p.id === t.hostId ? 'ready' : ''} ${p.id === you.id ? 'you' : ''}`, style: { '--i': i, '--hue': K().CLS_HUE[p.cls] } },
     emblem(p.cls), h('div', { class: 'lb-who' }, h('b', {}, p.name, p.id === t.hostId ? h('i', { class: 'lb-host', title: 'Host' }, ico('crown')) : null), h('small', {}, `${clsName(p.cls)}${(p.brought?.level || p.hero?.level || 1) > 1 ? ` · Lv ${p.brought?.level || p.hero.level}` : ''}`)),
     h('span', { class: 'lb-state' }, p.ready || p.id === t.hostId ? [ico('check'), p.id === t.hostId ? 'Host' : 'Ready'] : 'Getting ready')));
-  const seats = Array.from({ length: Math.max(0, Math.min(6, Math.max(t.players.length + 1, 2)) - t.players.length) }, () => h('li', { class: 'lb-row empty' }, h('span', { class: 'lb-open' }, ico('people')), h('div', { class: 'lb-who' }, h('small', {}, 'An open seat'))));
+  const story = packOf(t.pack);
+  const cap = story.maxHeroes || 6;
+  const seats = Array.from({ length: Math.max(0, Math.min(cap, Math.max(t.players.length + 1, story.requiredHeroes || 2)) - t.players.length) }, () => h('li', { class: 'lb-row empty' }, h('span', { class: 'lb-open' }, ico('people')), h('div', { class: 'lb-who' }, h('small', {}, 'An open seat'))));
   const go = host
     ? btn(everyone ? (t.players.length > 1 ? 'Take the road together' : 'Take the road') : 'Waiting for your friends to be ready', () => Sess.send({ type: 'start' }).catch(fail), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide', disabled: !everyone })
     : btn(you.ready ? 'Not ready yet' : 'I am ready', () => Sess.send({ type: 'ready', on: !you.ready }).catch(fail), { kind: you.ready ? 'ghost' : 'primary', big: true, icon: you.ready ? 'back' : 'check', cls: 'wide' });
@@ -175,9 +179,9 @@ function lobby(t) {
       h('div', { class: 'sx-sidetop' }),
       panel('lb-code', h('div', { class: 'lb-top' }, h('div', {}, eyebrow('Table code'), h('div', { class: 'lb-letters', 'aria-label': `Table code ${t.code.split('').join(' ')}` }, t.code.split('').map((c) => h('b', {}, c)))),
         btn('Invite', share, { kind: 'ghost', icon: 'link', cls: 'lb-invite' })),
-        (() => { const d = D.DIFFICULTY[D.normalizeDifficulty(t.difficulty)]; return h('p', { class: 'fine' }, `${d.name} difficulty. ${d.text}`); })(),
+        (() => { const d = D.DIFFICULTY[D.normalizeDifficulty(t.difficulty)]; return h('p', { class: 'fine' }, `${story.title}. ${d.name} difficulty. ${d.text}${forcedLine(story) ? ` This tale needs the ${forcedLine(story)}.` : ''}`); })(),
         host ? h('p', { class: 'fine' }, 'Friends tap Play together, then Join a table, and type the code.') : null),
-      panel('lb-roster', eyebrow(`Heroes · ${t.players.length} of 6`), h('ul', { class: 'lb-list' }, ...rows, ...seats)),
+      panel('lb-roster', eyebrow(`Heroes · ${t.players.length} of ${cap}${partySize(story) ? ` · ${partySize(story)}` : ''}`), h('ul', { class: 'lb-list' }, ...rows, ...seats)),
       flourish(),
       h('div', { class: 'sx-cta lb-cta' }, go,
         host ? null : h('p', { class: 'fine center' }, `${t.players.find((p) => p.id === t.hostId)?.name || 'The host'} starts the campaign when everyone is ready.`)))));
@@ -212,7 +216,7 @@ function nextBeat(t) {
   const placeReady = t.phase === 'board' || (t.phase === 'road' && c.road?.done);
   const place = placeReady ? (t.quest?.place || E.questsFor(t.company.members[0])?.[0]?.place) : null;
   const b = ST.pending(c, place).find((x) => !beatsSeen.has(`${t.code}:${x.id}@${x.act}`));
-  return b ? ST.beat(b.id, b.act) : null;
+  return b ? ST.beat(b.id, b.act, t.company?.members || [], c) : null;
 }
 function story(b, t) {
   SCRUI.story(b, () => { beatsSeen.add(`${t.code}:${b.id}@${b.act}`); show(); });

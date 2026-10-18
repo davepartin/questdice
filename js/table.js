@@ -7,15 +7,17 @@ import * as R from './roads.js';
 import * as SV from './save.js';
 import { applyPlaceVictory } from './story.js';
 import { pack, unpack } from './pack.js';
+import { packOf, packIdOf, classLabel } from './campaigns.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const clean = (s, max) => String(s || '').trim().replace(/\s+/g, ' ').slice(0, max);
 
-export function createTable({ code, seed, name, difficulty }) {
+export function createTable({ code, seed, name, difficulty, pack }) {
   const title = clean(name, 24);
   return {
     code, seed: (seed ?? 1) >>> 0, name: title.length >= 2 ? title : 'Company',
     difficulty: normalizeDifficulty(difficulty),
+    pack: packIdOf(pack),
     hostId: null, seq: 1, phase: 'lobby', players: [],
     company: null, battle: null, quest: null, lastReport: null, rewards: null,
     roadResult: null, perkOffers: {}, loss: 0, retreat: false,
@@ -32,9 +34,19 @@ function takeBrought(raw, name, cls) {
   return brought;
 }
 
+function packSeatError(table, cls) {
+  const p = packOf(table.pack);
+  const max = p.maxHeroes || 6;
+  if (table.players.length >= max) return fail(max <= 2 ? 'This story seats two heroes.' : 'Six heroes is a full company.');
+  if (p.forcedClasses?.length) {
+    if (!p.forcedClasses.includes(cls)) return fail(`This story needs the ${p.forcedClasses.map(classLabel).join(' and ')}.`);
+    if (table.players.some((x) => x.cls === cls)) return fail(`The ${classLabel(cls)} seat is taken.`);
+  }
+  return null;
+}
+
 export function joinTable(table, { name, cls, token, hero }) {
   if (table.phase !== 'lobby') return fail('This table has already taken the road.');
-  if (table.players.length >= 6) return fail('Six heroes is a full company.');
   const heroName = clean(name, 16);
   if (heroName.length < 2) return fail('Give your hero a name (2–16 characters).');
   if (!CLASSES[cls] && !CLASSES[hero?.cls]) return fail('Pick a class.');
@@ -43,6 +55,8 @@ export function joinTable(table, { name, cls, token, hero }) {
   const brought = takeBrought(hero, heroName, cls || hero?.cls);
   const seatCls = brought?.cls || cls;
   if (!CLASSES[seatCls]) return fail('Pick a class.');
+  const packed = packSeatError(table, seatCls);
+  if (packed) return packed;
   // (the id shows no part of the token)
   const player = { id: `p${table.players.length + 1}${E.hashSeed(token).toString(36).slice(0, 4)}`, token, name: heroName, cls: seatCls, ready: false, seenBrag: false, hero: null, brought, color: brought?.color };
   seatColor(table, player);
@@ -143,6 +157,12 @@ function sit(table, player, cmd) {
     return ok();
   }
   if (!CLASSES[cmd.cls]) return fail('Pick a class.');
+  if (player.cls !== cmd.cls) {
+    const other = table.players.find((p) => p !== player && p.cls === cmd.cls);
+    const p = packOf(table.pack);
+    if (p.forcedClasses?.length && !p.forcedClasses.includes(cmd.cls)) return fail(`This story needs the ${p.forcedClasses.map(classLabel).join(' and ')}.`);
+    if (p.forcedClasses?.length && other) return fail(`The ${classLabel(cmd.cls)} seat is taken.`);
+  }
   player.name = heroName;
   player.cls = cmd.cls;
   if (!(player.brought && player.brought.name === heroName && player.brought.cls === cmd.cls)) player.brought = null;
@@ -182,26 +202,39 @@ function takeHostCampaign(from) {
   if (from.seed != null) out.seed = from.seed;
   if (from.reached) out.reached = { act: from.reached.act | 0, step: from.reached.step | 0 };
   if (from.travellerAt != null) out.travellerAt = from.travellerAt;
+  if (from.pack) out.pack = packIdOf(from.pack);
   return out;
 }
 
 function startCampaign(table, player) {
   if (table.phase !== 'lobby') return fail('The campaign has already started.');
   if (player.id !== table.hostId) return fail('The host starts the campaign.');
-  if (table.players.length < 1 || table.players.length > 6) return fail('The table seats one to six heroes.');
+  const story = packOf(table.pack);
+  const min = story.requiredHeroes || 1;
+  const max = story.maxHeroes || 6;
+  if (table.players.length < min || table.players.length > max) {
+    return fail(min === max ? `This story seats ${min} ${min === 1 ? 'hero' : 'heroes'}.` : 'The table seats one to six heroes.');
+  }
+  if (story.forcedClasses?.length) {
+    const have = table.players.map((p) => p.cls).slice().sort().join();
+    const want = story.forcedClasses.slice().sort().join();
+    if (have !== want) return fail(`This story needs the ${story.forcedClasses.map(classLabel).join(' and ')}.`);
+  }
   if (table.players.some((p) => p.id !== table.hostId && !p.ready)) return fail('Every hero has to be ready.'); // the host starting is their own ready
   const host = table.players.find((p) => p.id === table.hostId);
   const company = E.newCompany({
     name: table.name,
     roster: table.players.map((p) => ({ name: p.name, cls: p.cls, color: p.color || p.brought?.color })),
     seed: table.seed,
+    pack: story.id,
   });
-  const overlay = takeHostCampaign(host?.brought?.campaign);
+  const overlay = story.startMode === 'fresh' ? null : takeHostCampaign(host?.brought?.campaign);
   if (overlay) Object.assign(company.campaign, overlay);
+  company.campaign.pack = story.id;
   table.difficulty = normalizeDifficulty(table.difficulty || host?.brought?.difficulty);
   table.players.forEach((p, i) => {
     let hero = company.members[i];
-    if (p.brought) {
+    if (p.brought && story.startMode !== 'fresh') {
       hero = clone(p.brought);
       hero.name = p.name;
       hero.cls = p.cls;
@@ -209,6 +242,7 @@ function startCampaign(table, player) {
       company.members[i] = hero;
     }
     hero.difficulty = table.difficulty;
+    hero.campaign = company.campaign;
     p.hero = hero;
     p.ready = false;
     p.brought = null;
@@ -688,6 +722,7 @@ export function playerView(table, playerId) {
   const base = {
     seq: table.seq, code: table.code, name: table.name, phase: table.phase,
     difficulty: normalizeDifficulty(table.difficulty),
+    pack: packIdOf(table.pack),
     you: player ? { id: player.id, name: player.name, cls: player.cls, color: player.color || player.hero?.color || player.brought?.color, host: player.id === table.hostId, ready: !!player.ready, seenBrag: !!player.seenBrag, level: player.hero?.level || player.brought?.level || 1 } : null,
     players: table.players.map((p) => ({ id: p.id, name: p.name, cls: p.cls, color: p.color || p.hero?.color || p.brought?.color, ready: !!p.ready, seenBrag: !!p.seenBrag, host: p.id === table.hostId, level: p.hero?.level || p.brought?.level || 1 })),
   };
@@ -785,6 +820,7 @@ export function loadTable(text) {
 }
 export function migrateTable(table) {
   if (!table || typeof table !== 'object') return table;
+  table.pack = packIdOf(table.pack);
   const host = table.players?.find((p) => p.id === table.hostId) || table.players?.[0];
   const from = table.difficulty
     || host?.hero?.difficulty

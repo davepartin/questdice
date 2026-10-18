@@ -1,7 +1,8 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
-import { CLASSES, WEAPONS, RARITY, ACTS } from './data.js';
+import { CLASSES, WEAPONS, RARITY } from './data.js';
 import { HELP_FIGHTS, placeOf } from './story.js';
+import { actsOf, helpFightsOf, helpOff } from './campaigns.js';
 import { gambleOffer, line, revealLine, GAMBLE_ODDS } from './auction.js';
 import {
   hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf,
@@ -26,11 +27,12 @@ function helpPair(c, act) {
   return [places[0] || 'Cinder Ford', places[1] || 'Burnt Orchard'];
 }
 function pickHelp(ctx, i) {
-  const act = ACTS[(ctx.campaign.act - 1) % ACTS.length];
+  const acts = actsOf(ctx.campaign);
+  const act = acts[(ctx.campaign.act - 1) % acts.length];
   const pair = helpPair(ctx.campaign, act);
   const saved = pair[i]; const lost = pair[1 - i];
   ctx.campaign.nextPlace = saved;
-  ctx.campaign.nextEnemies = HELP_FIGHTS[saved] || null;
+  ctx.campaign.nextEnemies = (helpFightsOf(ctx.campaign) || HELP_FIGHTS)[saved] || null;
   ctx.campaign.saved = saved; ctx.campaign.forsaken = lost;
   note(ctx, 'A Call for Help', `They ran for ${saved}. ${lost} had to wait, and the road wrote it down.`);
   return `You turn toward ${saved}. ${lost} will have to stand on its own. A chronicle line will remember the choice. Roads always do.`;
@@ -527,21 +529,22 @@ export const ROADS = [
   {
     id: 'help', when: 'help', kicker: 'A call for help', title: 'A Call for Help',
     tell: ({ members, campaign: c }) => {
-      const act = ACTS[(c.act - 1) % ACTS.length];
+      const acts = actsOf(c);
+      const act = acts[(c.act - 1) % acts.length];
       const [a, b] = helpPair(c, act);
-      const pa = placeOf(a)?.title || a; const pb = placeOf(b)?.title || b;
+      const pa = placeOf(a, c)?.title || a; const pb = placeOf(b, c)?.title || b;
       return `A runner finds ${joinNames(members)} on the road, out of breath and pointing both ways at once, which is not as helpful as they think. ${pa} is under attack. So is ${pb}. You can only reach one in time. The other will have to stand on its own. That is the sort of sentence that stays with you.`;
     },
     choices: [
       {
         id: 'save-a',
-        label: ({ campaign: c }) => `Save ${helpPair(c, ACTS[(c.act - 1) % ACTS.length])[0]}`,
+        label: ({ campaign: c }) => { const acts = actsOf(c); return `Save ${helpPair(c, acts[(c.act - 1) % acts.length])[0]}`; },
         hint: () => 'The fight waits there. The other place will remember.',
         apply: (ctx) => pickHelp(ctx, 0),
       },
       {
         id: 'save-b',
-        label: ({ campaign: c }) => `Save ${helpPair(c, ACTS[(c.act - 1) % ACTS.length])[1]}`,
+        label: ({ campaign: c }) => { const acts = actsOf(c); return `Save ${helpPair(c, acts[(c.act - 1) % acts.length])[1]}`; },
         hint: () => 'The fight waits there. The other place will remember.',
         apply: (ctx) => pickHelp(ctx, 1),
       },
@@ -654,7 +657,11 @@ const travellerDue = (c) => (c.wins || 0) - (c.travellerAt || 0) >= 2 + (hashSee
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
   if (opening) return ROADS.filter((e) => e.when === 'opening');
-  if (campaign.step === 8) return ROADS.filter((e) => e.when === 'help');
+  if (campaign.step === 8) {
+    // Duo packs lock a fight on step 8; Call for Help would replace that cast.
+    if (helpOff(campaign)) return ROADS.filter((e) => e.when === 'road');
+    return ROADS.filter((e) => e.when === 'help');
+  }
   if (isTrialStep(campaign)) return ROADS.filter((e) => e.when === 'trial');
   if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss' || e.when === 'road');
   return ROADS.filter((e) => e.when === 'road');
