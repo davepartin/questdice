@@ -14,7 +14,8 @@ they are all in the dice. Classes land within about 15% of each other at the sam
 ## At a table (the road's own fights)
 `teamFactor(heroes)` = the company's total strength divided by its strongest hero's: 2 for an equal pair, ~1.4 for a level-4
 hero with a level-1 friend, 3 for three equals. The strongest hero sets the fight as if alone; every extra "strongest hero" adds
-`PARTY.hpPer` (1.2) to the monsters' health and `PARTY.flatPer` (10) to every hit. An equal pair: x2.2 health and +10 a hit.
+`PARTY.hpPer` (1.2) to the monsters' health and `PARTY.flatBy[difficulty]` to every hit (Easy/Normal 10, Hard 13,
+Legendary 16). An equal pair: x2.2 health and +10 a hit on Normal, +16 on Legendary.
 The extra hit power goes on the hit's base number, so the monster's card shows the true numbers (a team splits each hit and each
 block soaks its share, so health alone made a pair untouchable). `newPartyBattle` stores `b.team = { m, hp, flat }`.
 
@@ -24,11 +25,17 @@ Write each fight for **one hero of a level** (its monsters, and the level you ex
 every hit's base). Two typical heroes of that level get m 2, x2.2, +10; heroes who grew stronger than the story expects meet
 stronger monsters, weaker ones gentler. Easy / Normal / Hard / Legendary still apply on top (withDifficulty).
 
-Rival Duo and That’s Not How It Went are **not wired through `storyScale` yet**. Their locked casts keep the writer's
-`fightHp` knobs (Big Wheel Act II elite 1.8, and the other step tweaks in `js/packs/`). Table play still uses `teamFactor`
-as above. Do not retune `PARTY` numbers from a campaign pack.
+Rival Duo and That’s Not How It Went set their fights by the road (act and step), not by level, and are played at a
+table, so `newPartyBattle`'s `teamFactor` already fits them to the pair; they do not need `storyScale`. Their `fightHp`
+knobs (Big Wheel Act II elite 1.8, and the other step tweaks in `js/packs/`) tune single steps on top. Do not retune `PARTY`
+numbers from a campaign pack.
 
 ## Measuring
 `node tools/party.mjs [acts] [runs] [heroes]` plays companies against the same steps alone and together and prints win rates,
 rounds and health left. `PLAY=first` is the lazy player (first roll, first monster), `MIX=1` puts a fresh level-1 hero beside a
-grown one from Act II, `SKILL=hard|legendary` sets the difficulty, `PARTY_HP=` / `PARTY_FLAT=` try other head-count values.
+grown one from Act II, `SKILL=hard|legendary` sets the difficulty, `PARTY_HP=` / `PARTY_FLAT=` try other head-count values,
+`FLAT_PER=` another hit power per extra hero.
+
+Smart pairs, 10 companies (Oct 2026): Normal bosses 90% (solo 80–85%); Hard +13 bosses 50/70% (solo 60/55%); Legendary +16
+bosses 20/70% (solo 35/50%; +22 made the Act I boss 0%). Lazy first-roll pairs lose most Normal fights and every Hard and
+Legendary fight.
