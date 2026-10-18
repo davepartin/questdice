@@ -717,8 +717,9 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const host = newHero({ name: 'Ada', cls: 'knight', seed: 2 }); host.difficulty = 'hard';
   const guest = newHero({ name: 'Bea', cls: 'bard', seed: 3 }); guest.difficulty = 'easy';
   const party = newPartyBattle([host, guest], quest, makeRng(4));
-  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * 1.8));
-  assert.equal(party.enemies[0].flat, 2);
+  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * 2.2)); // a pair: x2.2 (Oct 2026)
+  assert.equal(party.enemies[0].teamFlat, 10, 'and every hit +10 at a table of two');
+  assert.equal(party.enemies[0].flat, 2 + 10, 'Hard adds 2 to a hit, the table of two 10 more');
   assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
 });
 
