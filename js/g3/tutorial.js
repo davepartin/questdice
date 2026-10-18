@@ -212,8 +212,8 @@ const LESSONS = [
       row(ic('atk'), 'Strength Triple: +10 attack', 'Middle row. Hand, heart and hand match.'),
       row(ic('atk'), 'Talent Triple: +10 attack', 'Bottom row. Talent, feet and talent match (a talent blank never does; the 2× counts as a 2).'),
       row(ic('block'), 'Head to Toe Triple: +10 block', 'Head, heart and feet match.'),
-      row(ic('block'), 'Left and Right Guard Triples: +10 block each', 'A side column: that weapon’s +number, that hand and that talent die match.'),
-      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Five numbers in a row anywhere on your dice (like 1-2-3-4-5): +10 attack or +10 gold, your choice. Six in a row pays 18, seven pays 30.'),
+      row(ic('block'), 'Left and Right Guard Triples: +10 block each', 'A side column: that weapon’s +number, that hand and that talent die match. Blanks never count, and there are no diagonals.'),
+      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Five numbers in a row anywhere on your dice (like 1-2-3-4-5). Before you lock in, choose: +10 attack, or cash it in for +10 gold. Six in a row pays 18, seven pays 30.'),
     ],
   },
   {
@@ -345,7 +345,7 @@ export function closeLessons() { $('#tut')?.remove(); }
 // lesson lands: 11 attack, then a Strength Triple for 21. After that the dice are free and the guide steps back.
 export function startPractice() {
   const hero = E.newHero({ name: 'You', cls: 'knight' });
-  hero.tips = Object.fromEntries(['b_roll', 'b_shape', 'b_target', 'b_lock', 'b_triple', 'b_intent', 'm_goblin', 'b_paid'].map((k) => [k, 1])); // the guide replaces these hints
+  hero.tips = Object.fromEntries(['b_roll', 'b_shape', 'b_target', 'b_lock', 'b_triple', 'b_straight', 'b_intent', 'm_goblin', 'b_paid'].map((k) => [k, 1])); // the guide replaces these hints
   const quest = { id: 'practice', act: 1, step: 1, kind: 'battle', enemies: ['goblin'], place: 'Wolfwood Edge', name: 'Practice in the Wolfwood', hpMult: 1, flat: 0, rewardMult: 0, practice: true };
   X.practice({ hero, quest, guide: guide() });
 }

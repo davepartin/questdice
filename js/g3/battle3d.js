@@ -690,7 +690,7 @@ export function renderShape() {
   hint('b_shape');
   if (!Coach.wantHint(B.hero, 'b_shape')) {
     if (B.b.enemies.filter((e) => e.hp > 0).length > 1) hint('b_target');
-    if (ev.offense3 || ev.defense3) hint('b_triple');
+    if (ev.offense3 || ev.defense3) hint('b_triple'); else if (ev.straight) hint('b_straight');
     if (E.rerollInfo(b).kind === 'paid') hint('b_paid'); else if (b.actionsLeft < E.rerollTotal()) hint('b_lock');
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
