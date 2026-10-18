@@ -5,7 +5,8 @@
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newPartyBattle, startFighter, commitFighter, resolveParty, withDifficulty } from '../js/engine.js';
 import { fight, botCamp, botShape, smartActs } from './sim.mjs';
 import { QUESTS_PER_ACT, PARTY } from '../js/data.js';
-if (process.env.PARTY_HP) process.env.PARTY_HP.split(',').forEach((v, i) => { if (v) PARTY.hp[i + 1] = Number(v); }); // try other team health: PARTY_HP=2.4 (two heroes), PARTY_HP=2.4,3.2 (two, three)
+if (process.env.PARTY_HP) process.env.PARTY_HP.split(',').forEach((v, i) => { if (v) PARTY.hp[i + 1] = Number(v); });
+if (process.env.PARTY_FLAT) process.env.PARTY_FLAT.split(',').forEach((v, i) => { if (v) PARTY.flat[i + 1] = Number(v); }); // PARTY_FLAT=4: every hit +4 for two heroes // try other team health: PARTY_HP=2.4 (two heroes), PARTY_HP=2.4,3.2 (two, three)
 
 const ACTS = Number(process.argv[2] || 2); const RUNS = Number(process.argv[3] || 2); const N = Number(process.argv[4] || 2);
 const SKILL = process.env.SKILL || 'normal';
@@ -53,7 +54,7 @@ for (let run = 0; run < RUNS; run++) {
 }
 void withDifficulty;
 const pct = (x) => `${Math.round(100 * x)}%`.padStart(5);
-console.log(`team health x${PARTY.hp[N - 1]} · ${SKILL}, ${N} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
+console.log(`team health x${PARTY.hp[N - 1]}, hits +${PARTY.flat[N - 1]} · ${SKILL}, ${N} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
 console.log('act kind      solo: win  rnds  hp      team: win  rnds  hp');
 for (const r of Object.values(acts).sort((x, y) => x.a - y.a || x.kind.localeCompare(y.kind))) {
   const s = r.solo; const t = r.team;

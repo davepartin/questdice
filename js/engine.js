@@ -487,7 +487,7 @@ export function evaluate(hero, board, opts = {}) {
 // ------------------------------------------------------------------------------- enemies
 export function partyScale(players) {
   const i = Math.max(0, Math.min(5, players - 1));
-  return { hp: PARTY.hp[i], adds: PARTY.adds[i] };
+  return { hp: PARTY.hp[i], adds: PARTY.adds[i], flat: PARTY.flat?.[i] || 0 };
 }
 export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null } = {}, rng) {
   const d = MONSTERS[id];
@@ -1495,8 +1495,8 @@ export function newPartyBattle(heroes, quest0, rng) {
   const sc = partyScale(players);
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1; const edge = quest.edge || null;
   const enemies = [];
-  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, rewardMult, edge }, rng));
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, rewardMult, edge }, rng));
+  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat: flat + sc.flat, rewardMult, edge }, rng));
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat: flat + sc.flat, rewardMult, edge }, rng));
   dressNemesis(enemies, quest.nemesis);
   const b = {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),

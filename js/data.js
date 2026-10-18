@@ -821,6 +821,9 @@ export function stepKind(act, step) {
 export const PARTY = {
   hp: [1, 1.8, 2.5, 3.1, 3.6, 4.0],
   adds: [0, 0, 0, 1, 1, 2],
+  // more to every monster hit at a table (Dave, Oct 2026: a pair split each hit two ways and each block soaked its share, so a team
+  // barely got hurt); added to the hit's base number, so the monster's card shows it
+  flat: [0, 0, 0, 0, 0, 0],
 };
 
 export const ENEMY_CAP = 4;
