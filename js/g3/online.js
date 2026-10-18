@@ -286,7 +286,7 @@ function openBrag(t, sendSeen) {
   });
 }
 function victory(t) {
-  const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard } = K();
+  const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard, charmCard } = K();
   const R = t.rewards; const members = t.company.members; const n = members.length; const you = Sess.me(); const hero = you.hero;
   const offer = Sess.view()?.perkOffer; const draft = R.draft; const who = E.draftWho(draft);
   const placeWord = (p) => (p === 1 && n >= 2 ? '1st place' : p === 2 && n >= 3 ? '2nd place' : '');
@@ -306,6 +306,14 @@ function victory(t) {
   const perks = hero.pendingPerks > 0 && offer ? panel('sx-perks glow', eyebrow(`Level up. Choose a perk`, 'gold'),
     h('div', { class: 'perk-row' }, offer.map((id, i) => perkCard(id, hero, () => { sfx.level(); Sess.send({ type: 'perk', id }).catch(fail); }, i))))
     : owing.length ? panel('sx-perks', h('p', { class: 'muted' }, `Waiting for ${owing.join(', ')} to choose a perk.`), Sess.isHost() ? h('div', { class: 'sx-push' }, btn('Go on without them', () => Sess.send({ type: 'push' }).catch(fail), { kind: 'ghost', cls: 'wide' })) : null) : null;
+  // your own charm offer (each hero rolls their own, as solo): take one, or swap one out when you carry three
+  const myCharms = (R.charms && R.charms[hero.name]) || []; const took = R.charmTaken && R.charmTaken[hero.name];
+  const charms = myCharms.length ? panel('sx-charms-loot', eyebrow(myCharms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'),
+    took ? h('p', { class: 'muted' }, `You took the ${D.CHARMS[took].name}. It works from your next fight.`)
+      : h('div', { class: 'ch-list' }, myCharms.map((id) => charmCard(id, { actions: E.charmFull(hero)
+        ? E.charmsOf(hero).map((old) => btn(`Swap for ${D.CHARMS[old].name}`, () => { sfx.level(); Sess.send({ type: 'charm', id, swap: old }).catch(fail); }, { kind: 'ghost', cls: 'ch-swap' }))
+        : [btn('Take', () => { sfx.level(); Sess.send({ type: 'charm', id }).catch(fail); }, { icon: 'star' })] }))),
+    !took && E.charmFull(hero) ? h('p', { class: 'fine' }, `You carry ${D.CHARM_MAX} charms, the most there is. Swap one out, or leave this behind.`) : null) : null;
   const mine = who === hero.name; const picker = who && members.find((m) => m.name === who);
   const loot = !draft.done
     ? panel('sx-loot', eyebrow(mine ? 'Your pick of the spoils' : `${who} is choosing · ${R.points[who] || 0} points`, 'gold'),
@@ -320,7 +328,7 @@ function victory(t) {
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, reopen, rows, perks, loot)));
+      partyBar(), note, reopen, rows, perks, charms, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }

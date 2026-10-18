@@ -1014,6 +1014,13 @@ function killGold(b, list) {
 // Gold won so far in a solo fight (dice, kills, purses taken back, less anything a thief has run off with): what the
 // battle's gold chip adds to the hero's purse each round, so it climbs like magic does. battleRewards pays it at the end.
 export function battleGoldSoFar(b) { return killGold(b, b.enemies.filter((e) => e.hp <= 0 && !e.fled)) + (b.goldEarned || 0) + (b.stolen || 0); }
+// The charms a won fight offers this hero (CHARM_CHANCE by kind; a boss offers a choice of two, even to a hero with three, who may swap).
+// `salt` keeps heroes at one table from all being offered the same ones.
+export function charmOffer(hero, quest, salt = '') {
+  const c = hero.campaign; const crng = makeRng(salt ? hashSeed(c.seed, c.act, c.step, 'charm', salt) : hashSeed(c.seed, c.act, c.step, 'charm')); // solo: the same roll as ever
+  const cch = CHARM_CHANCE[quest.kind] ?? CHARM_CHANCE.battle;
+  return !charmFull(hero) || quest.kind === 'boss' ? (crng() < cch ? charmChoices(hero, crng, quest.kind === 'boss' ? 2 : 1) : []) : [];
+}
 export function battleRewards(b) {
   const { quest, hero } = b;
   const dead = b.enemies; // includes adds: they carry rewardMult 0
@@ -1030,8 +1037,7 @@ export function battleRewards(b) {
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
   const diamond = drng() < dch ? makeDiamond(drng, c.act) : null; // now and then the fight leaves a Diamond behind
-  const crng = makeRng(hashSeed(c.seed, c.act, c.step, 'charm')); const cch = CHARM_CHANCE[quest.kind] ?? CHARM_CHANCE.battle;
-  const charms = !charmFull(hero) || quest.kind === 'boss' ? (crng() < cch ? charmChoices(hero, crng, quest.kind === 'boss' ? 2 : 1) : []) : []; // a boss offers a choice of two
+  const charms = charmOffer(hero, quest);
   return { xp, gold, drops, diamond, charms };
 }
 function tryFlee(b, rep) {

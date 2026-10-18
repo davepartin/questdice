@@ -36,7 +36,7 @@ for (let guard = 0; guard < 400 && fights < FIGHTS; guard++) {
   else if (sc === 'battle') {
     victoryCounted = false;
     const r = await p.evaluate(() => { const B = window.QD.S.battle; return { outcome: B?.outcome, phase: B?.phase, busy: window.QD.B3.battleState.busy, roll: !!document.querySelector('#b3-roll'), lock: !!document.querySelector('#b3-lock') }; });
-    if (r.outcome) { await pump(3); continue; }
+    if (r.outcome) { await p.evaluate(() => document.querySelector('.rc-go')?.click()); await pump(3); continue; } // the last round's recap waits for a tap
     if (r.busy) { await pump(1); continue; }
     if (r.roll) { await click('#b3-roll'); await pump(2.5); continue; }
     if (r.lock) {

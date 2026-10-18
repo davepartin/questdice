@@ -1,7 +1,7 @@
 // One table, many phones. The server holds the company. Each phone sends only its own
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
-import { CLASSES, SLOTS, normalizeDifficulty, uniqueColors, claimColor, colorIdOf } from './data.js';
+import { CLASSES, SLOTS, CHARM_MAX, normalizeDifficulty, uniqueColors, claimColor, colorIdOf } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
 import * as SV from './save.js';
@@ -106,6 +106,7 @@ function dispatch(table, player, cmd) {
     case 'retreat': return retreat(table);
     case 'loot': return loot(table, player, cmd);
     case 'pass-loot': return passLoot(table, player);
+    case 'charm': return takeCharm(table, player, cmd);
     case 'team': return team(table, player, cmd);
     case 'rest': return rest(table);
     case 'brag-seen': return bragSeen(table, player);
@@ -577,6 +578,8 @@ function enterVictory(table) {
     E.gainXp(f.hero, first ? r.xp : 0);
     E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
   }
+  const charms = {}; // each hero's own charm offer, as solo (a repeat clear offers none)
+  for (const f of b.fighters) if (!repeat[f.hero.name]) { const o = E.charmOffer(f.hero, b.quest, f.hero.name); if (o.length) charms[f.hero.name] = o; }
   const firstOrder = r.order.filter((name) => !repeat[name]);
   const drops = firstOrder.length ? r.drops : [];
   E.recordFled(table.company.campaign, b);
@@ -588,6 +591,7 @@ function enterVictory(table) {
     xp: r.xp, gold, drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
     levels, draft: E.newDraft(firstOrder, drops.length), questName: table.quest?.name || '',
     repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])),
+    charms, charmTaken: {},
   };
   table.phase = 'victory';
   table.players.forEach((p) => { p.ready = false; p.seenBrag = false; });
@@ -619,6 +623,17 @@ function loot(table, player, cmd) {
   player.hero.bag.push(inst);
   E.draftPick(r.draft, who, i);
   settleVictory(table);
+  return ok();
+}
+// A charm from the spoils: your own offer, one at most; with three already, name one to swap out.
+function takeCharm(table, player, cmd) {
+  if (table.phase !== 'victory') return fail('No spoils yet.');
+  const r = table.rewards; const hero = player.hero; const name = hero.name;
+  if (!(r.charms?.[name] || []).includes(cmd.id)) return fail('That charm is not on offer to you.');
+  if (r.charmTaken?.[name]) return fail('You already took a charm.');
+  if (cmd.swap) { if (!E.hasCharm(hero, cmd.swap)) return fail('You do not carry that charm.'); E.dropCharm(hero, cmd.swap); }
+  if (!E.takeCharm(hero, cmd.id)) { if (cmd.swap) E.takeCharm(hero, cmd.swap); return fail(`You carry ${CHARM_MAX} charms. Swap one out.`); }
+  (r.charmTaken ||= {})[name] = cmd.id;
   return ok();
 }
 function passLoot(table, player) {

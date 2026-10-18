@@ -160,6 +160,7 @@ function buildHud() {
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
     B.root.style.setProperty('--strip-bottom', `${Math.round(hud.top.getBoundingClientRect().bottom + 2)}px`);
     B.root.style.setProperty('--cards-bottom', `${Math.round(window.innerHeight - r.top + 8)}px`); B.root.style.setProperty('--dock-top', `${Math.round(window.innerHeight - r.top)}px`);
+    document.body.style.setProperty('--b3-dock-top', `${Math.round(window.innerHeight - r.top)}px`); // battle notes (toasts) sit above the dice totals, never over the buttons
     B.root.style.setProperty('--bar-top', `${Math.round(window.innerHeight - hud.bar.getBoundingClientRect().top)}px`); // the recap may cover the counters and the hint, but never the buttons
     fitTray();
     B.fb?.layout();
@@ -1042,7 +1043,7 @@ async function lockInInner() {
   const playAct = (act) => foeAnim(act, [{ pc: me, part: act.d ?? 0, net: act.net ?? 0 }]);
   // monsters that rolled higher than your feet strike before you
   for (const act of rep.acts.filter((a) => a.early)) await playAct(act);
-  if (rep.heroDown && !rep.phoenix) { updatePlates(); me.fall(-1); sfx.lose?.(); await wait(0.8); B.busy = false; bw.tray.unlock?.(); return lose(); }
+  if (rep.heroDown && !rep.phoenix) { updatePlates(); me.fall(-1); sfx.lose?.(); await wait(0.8); B.busy = false; bw.tray.unlock?.(); return lose(rep); }
   if (rep.heroDown && rep.phoenix) { await phoenixMoment(me); }
 
   // ---------- 1. your strike
@@ -1082,8 +1083,8 @@ async function lockInInner() {
 
   // ---------- 3. next
   B.busy = false;
-  if (b.outcome === 'victory') return win();
-  if (b.outcome === 'defeat') return lose();
+  if (b.outcome === 'victory') return win(rep);
+  if (b.outcome === 'defeat') return lose(rep);
   moodOfFight();
   showCard(card);
   renderReset();
@@ -1149,8 +1150,8 @@ async function playParty(rep, outcome = B.b.outcome) {
   paintHeroes();
   await wait(pace.close);
   B.busy = false;
-  if (outcome === 'victory') return win();
-  if (outcome === 'defeat') return lose();
+  if (outcome === 'victory') return win(B.net ? null : rep); // at a shared table every phone moves on together (no waiting on a tap)
+  if (outcome === 'defeat') return lose(B.net ? null : rep);
   if (!B.net) B.active = -1;
   showCard(card);
   renderReset();
@@ -1172,9 +1173,20 @@ async function playFoe(act, names) {
   else if (names[0]) heroes.push({ pc: heroPiece(names[0]), part: act.d ?? 0, net: act.net ?? 0 });
   await foeAnim(act, heroes.length ? heroes : [{ pc: heroPiece(names[0]), part: 0, net: 0 }]);
 }
-async function win() {
+// The round that ended the fight gets its recap too (Dave: see the final blow land), then a tap moves on.
+function finalRecap(rep, kind) {
+  if (!rep || B.ended) return null;
+  clearDock();
+  return new Promise((done) => {
+    const el = roundCard(rep, B.b, { closeLabel: kind === 'victory' ? 'Victory ›' : 'Continue ›', title: kind === 'victory' ? 'the final blow' : 'the last round',
+      onClose: () => { B.card?.remove(); B.card = null; B.lastCard = null; done(); } });
+    showCard(el);
+  });
+}
+async function win(rep) {
   if (B.ended) return; // the player went home mid-round
   B.busy = true;
+  await finalRecap(rep, 'victory'); if (B.ended) return;
   music.setIntensity?.(1); music.setMood?.('victory'); sfx.win(); buzz([30, 60, 30, 60, 120]);
   B.bw.stage.flash(0xffe9a0, 0.25);
   clearDock(); hideCard();
@@ -1184,9 +1196,10 @@ async function win() {
   B.hud.ribbon.classList.remove('hide');
   if (!B.ended) C.showVictory();
 }
-async function lose() {
+async function lose(rep) {
   if (B.ended) return;
   B.busy = true;
+  await finalRecap(rep, 'defeat'); if (B.ended) return;
   sfx.lose(); hideCard();
   for (const pc of B.fb.heroes) if (!pc.dead) pc.fall(-1);
   B.bw.stage.fadeTo(0.7, 1.4);

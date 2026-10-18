@@ -603,7 +603,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
     // ---- corner symbols: the face's meaning (attack / defense), its resource, and any tier bonuses
     for (const P of placements) {
       const { kind, bx, by, sz, ow } = P;
-      layer(ctxs, { H: 'rgb(44,44,44)', A: theme === 'weapon' && (kind === 'atk' || kind === 'def') ? '#fff6e0' : 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
+      if (theme === 'weapon' && (kind === 'atk' || kind === 'def')) { // a +1 attack / block icon on a red or blue weapon face: bright cream on a dark outline (its own colour would vanish into the face)
+        layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(14,4,8,0.96)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2.4));
+        layer(ctxs, { H: 'rgb(92,92,92)', A: '#fff3d6', O: 'rgb(0,60,0)', E: 'rgb(90,80,60)' }, (c) => drawSym(c, kind, bx, by, sz));
+        continue;
+      }
+      layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
       layer(ctxs, { H: 'rgb(84,84,84)', A: PIP_COLOR[kind], O: 'rgb(0,60,0)', E: kind === 'gold' ? 'rgb(120,92,6)' : PIP_COLOR[kind] }, (c) => drawSym(c, kind, bx, by, sz));
     }
     // ---- colour badge (heart 5 / 6)

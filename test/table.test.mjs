@@ -447,3 +447,36 @@ test('two knights at a table do not share a colour', () => {
   assert.equal(table.company.members[0].color, 'crimson');
   assert.notEqual(table.company.members[1].color, 'crimson');
 });
+
+test('table games offer charms like solo: each hero their own (a boss: two to choose from), taken on their own phone', () => {
+  const { table, players } = make();
+  begin(table, players);
+  table.battle.quest.kind = 'boss'; // a boss always offers two
+  let guard = 0;
+  while (table.phase === 'battle' && guard++ < 16) {
+    for (const e of table.battle.enemies) if (e.hp > 0) e.hp = 1;
+    for (const p of players) {
+      if (table.phase !== 'battle') break;
+      const f = table.battle.fighters.find((x) => x.hero === p.hero);
+      if (!f || f.hp <= 0 || f.locked) continue;
+      if (!f.board) assert.equal(command(table, p.id, { type: 'roll' }).ok, true);
+      f.mods = { ...(f.mods || {}), atk: 80, pierce: 0, block: 0, heal: 0, weaken: 0 };
+      assert.equal(command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }).ok, true);
+    }
+  }
+  assert.equal(table.phase, 'victory');
+  const offers = table.rewards.charms;
+  for (const p of players) assert.equal(offers[p.hero.name].length, 2, `${p.hero.name} is offered two`);
+  const [ada, bea] = players;
+  assert.equal(command(table, ada.id, { type: 'charm', id: offers.Bea.find((id) => !offers.Ada.includes(id)) || 'nope' }).ok, false, 'only your own offer');
+  const pick = offers.Ada[0];
+  assert.equal(command(table, ada.id, { type: 'charm', id: pick }).ok, true);
+  assert.ok(E.hasCharm(ada.hero, pick));
+  assert.equal(command(table, ada.id, { type: 'charm', id: offers.Ada[1] }).ok, false, 'one charm a fight');
+  // with three already, a swap names the one to give up
+  const full = Object.keys(D.CHARMS).filter((id) => !offers.Bea.includes(id)).slice(0, 3); bea.hero.charms = [...full];
+  assert.equal(command(table, bea.id, { type: 'charm', id: offers.Bea[0] }).ok, false, 'three is the most');
+  assert.equal(command(table, bea.id, { type: 'charm', id: offers.Bea[0], swap: full[0] }).ok, true);
+  assert.deepEqual([...bea.hero.charms].sort(), [full[1], full[2], offers.Bea[0]].sort());
+  assert.equal(playerView(table, bea.id).victory?.charmTaken?.Bea ?? table.rewards.charmTaken.Bea, offers.Bea[0]);
+});

@@ -1100,4 +1100,4 @@ function mountAs(cls, ...nodes) {
 export function chrome(mute) { const m = $('#mute'); if (m) m.replaceChildren(ico(mute ? 'mute' : 'sound', '', 18)); const hlp = $('#help'); if (hlp && !hlp.querySelector('svg')) hlp.replaceChildren(ico('help', '', 20)); const hm = $('#home'); if (hm && !hm.querySelector('svg')) hm.replaceChildren(ico('home', '', 20)); const gm = $('#gmenu'); if (gm && !gm.querySelector('svg')) gm.replaceChildren(ico('menu', '', 20)); }
 
 // The building blocks, for the screens of the shared table (g3/online.js).
-export const kit = { coin, btn, panel, eyebrow, flourish, plaque, ico, emblem, heroChip, topBar, mountAs, lay, tap, coachBox, tipBox, storyCard, perkCard, weaponCard, questCard, trail, CLS_HUE, romans, clsName };
+export const kit = { coin, btn, panel, eyebrow, flourish, plaque, ico, emblem, heroChip, topBar, mountAs, lay, tap, coachBox, tipBox, storyCard, perkCard, weaponCard, charmCard, questCard, trail, CLS_HUE, romans, clsName };

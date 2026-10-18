@@ -151,11 +151,11 @@ function partyCard(rep, b) {
 }
 
 // ------------------------------------------------------------------------------------------ the card
-export function roundCard(rep, b, { onClose } = {}) {
+export function roundCard(rep, b, { onClose, closeLabel = '✕ Close', title = '' } = {}) {
   const c = rep.party ? partyCard(rep, b) : soloCard(rep, b);
   const near = (rep.acts || []).some((a) => a.early) && !rep.party;
   const el = h('section', { class: 'rc', role: 'dialog', 'aria-label': `Round ${rep.round} result`, onclick: (e) => { if (!e.target.closest('.rc-body a')) onClose?.(); } },
-    h('header', { class: 'rc-head' }, h('b', {}, `Round ${rep.round}`), h('span', {}, near ? 'a monster was quick' : ''), h('button', { type: 'button', class: 'sh-x sh-cancel rc-close', 'aria-label': 'Close the round summary', onclick: (e) => { e.stopPropagation(); onClose?.(); } }, '✕ Close')),
+    h('header', { class: 'rc-head' }, h('b', {}, `Round ${rep.round}`), h('span', {}, title || (near ? 'a monster was quick' : '')), h('button', { type: 'button', class: `sh-x sh-cancel rc-close ${title ? 'rc-go' : ''}`, 'aria-label': title ? closeLabel : 'Close the round summary', onclick: (e) => { e.stopPropagation(); onClose?.(); } }, closeLabel)),
     h('div', { class: 'rc-body' },
       h('div', { class: 'rc-sec you' }, h('div', { class: 'rc-bar' }, HK.icon('atk'), rep.party ? 'Your company strikes' : 'Your strike'), h('div', { class: 'rc-rows' }, c.mine.length ? c.mine : [note('meh', 'No strike this round.')])),
       h('div', { class: 'rc-sec foes' }, h('div', { class: 'rc-bar' }, HK.icon('slam'), 'The monsters strike back'), h('div', { class: 'rc-rows' }, c.theirs.length ? c.theirs : [note('good', 'Nothing hit back.')], h('div', { class: 'rc-foot' }, c.tail, c.youBox)))),
