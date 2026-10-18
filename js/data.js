@@ -844,7 +844,7 @@ export const LEVEL_STRENGTH = [19, 27, 31, 35, 41, 47, 52, 57, 62, 67, 73, 79, 8
 export const PARTY = {
   hpPer: 1.2,
   flatPer: 10,
-  flatBy: { easy: 10, normal: 10, hard: 10, legendary: 10 }, // the hit power per extra hero, by difficulty (big hits split too)
+  flatBy: { easy: 10, normal: 10, hard: 13, legendary: 16 }, // the hit power per extra hero, by difficulty (big hits split too)
   hp: [1, 2.2, 2.5, 3.1, 3.6, 4.0], // by head count, for a battle made without the heroes at hand
   adds: [0, 0, 0, 1, 1, 2], // goblins that join big tables, by head count
   flat: [0, 10, 0, 0, 0, 0],

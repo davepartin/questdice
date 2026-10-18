@@ -394,7 +394,9 @@ test('the host difficulty applies to every hero and to the table fight', () => {
   const { table: base, players: basePs } = make();
   begin(base, basePs);
   assert.ok(table.battle.enemies[0].maxHp > base.battle.enemies[0].maxHp);
-  assert.equal(table.battle.enemies[0].flat, base.battle.enemies[0].flat + D.DIFFICULTY.legendary.flat);
+  // Legendary also puts more hit power on each extra hero (PARTY.flatBy): the rest is the difficulty's own flat.
+  assert.ok(table.battle.team.flat > base.battle.team.flat);
+  assert.equal(table.battle.enemies[0].flat, base.battle.enemies[0].flat + D.DIFFICULTY.legendary.flat + table.battle.team.flat - base.battle.team.flat);
 });
 
 test('loading an old table remaps noob/mid/expert and fills table.difficulty from the host', () => {
