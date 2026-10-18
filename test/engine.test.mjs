@@ -717,9 +717,10 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const host = newHero({ name: 'Ada', cls: 'knight', seed: 2 }); host.difficulty = 'hard';
   const guest = newHero({ name: 'Bea', cls: 'bard', seed: 3 }); guest.difficulty = 'easy';
   const party = newPartyBattle([host, guest], quest, makeRng(4));
-  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * 2.2)); // a pair: x2.2 (Oct 2026)
-  assert.equal(party.enemies[0].teamFlat, 10, 'and every hit +10 at a table of two');
-  assert.equal(party.enemies[0].flat, 2 + 10, 'Hard adds 2 to a hit, the table of two 10 more');
+  const m = party.team.m; // the company's strength in "strongest heroes" (Oct 2026)
+  assert.ok(m > 1 && m <= 2);
+  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * party.team.hp), 'Hard health, times the company');
+  assert.equal(party.enemies[0].flat, 2 + party.team.flat, 'Hard adds 2 to a hit, the company the rest');
   assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
 });
 
@@ -986,4 +987,32 @@ test('Heal with Magic is the same for every hero: 2 magic for 4 health; an old F
   assert.deepEqual(old.perks, ['vitality']); assert.equal(old.pendingPerks, 1, 'the pick comes back');
   const offers = new Set(); for (let s = 1; s <= 200; s++) E.offerPerks(old, E.makeRng(s)).forEach((id) => offers.add(id));
   assert.ok(!offers.has('frugal'), 'Frugal Mender is no longer offered');
+});
+
+test('team monsters fit the company: an equal pair x2.2 and +10 a hit, a beginner beside a veteran adds only their share', async () => {
+  const E = await import('../js/engine.js');
+  const q = { id: 't', kind: 'battle', enemies: ['goblin'], act: 1, step: 1, hpMult: 1, flat: 0 };
+  const mk = (name, cls, level, size) => { const h = newHero({ name, cls, seed: 4 }); h.level = level; if (size) { h.strength = { W: size, E: size }; h.loadout.NW.size = size; } return h; };
+  const twinA = mk('A', 'knight', 1); const twinB = mk('B', 'knight', 1);
+  const eq = E.newPartyBattle([twinA, twinB], q, makeRng(1));
+  assert.equal(eq.team.m, 2); assert.equal(eq.team.hp, 2.2); assert.equal(eq.team.flat, 10);
+  const vet = mk('Vet', 'wizard', 6, 8); const kid = mk('Kid', 'bard', 1);
+  assert.ok(E.heroStrength(vet) > 1.8 * E.heroStrength(kid), 'a level-6 hero with d8 dice is far stronger than a fresh one');
+  const mixed = E.newPartyBattle([vet, kid], q, makeRng(1));
+  assert.ok(mixed.team.m > 1.1 && mixed.team.m < 1.6, `a beginner adds a share, not a whole hero (${mixed.team.m})`);
+  assert.ok(mixed.team.hp < eq.team.hp && mixed.team.flat < eq.team.flat);
+  const trio = E.newPartyBattle([mk('X', 'ranger', 1), mk('Y', 'ranger', 1), mk('Z', 'ranger', 1)], q, makeRng(1));
+  assert.equal(trio.team.m, 3); assert.equal(trio.team.hp, 3.4); assert.equal(trio.team.flat, 20);
+  const before = JSON.stringify(kid); E.heroStrength(kid); assert.equal(JSON.stringify(kid), before, 'measuring does not change the hero');
+});
+
+test('story campaigns: storyScale fits monsters written for one hero of a level to the heroes who came', async () => {
+  const E = await import('../js/engine.js');
+  assert.equal(E.levelStrength(1), 19); assert.ok(E.levelStrength(20) > E.levelStrength(13));
+  const solo = E.storyScale([newHero({ name: 'S', cls: 'knight', seed: 1 })], 1);
+  assert.ok(solo.m > 0.6 && solo.m < 1.4, `one fresh hero is about one level-1 hero (${solo.m})`);
+  const duo = E.storyScale([newHero({ name: 'A', cls: 'knight', seed: 1 }), newHero({ name: 'B', cls: 'bard', seed: 2 })], 1);
+  assert.ok(duo.m > 1.4 && duo.m < 2.4, `a fresh duo is about two (${duo.m})`); assert.ok(duo.hp > solo.hp && duo.flat > solo.flat);
+  const grown = newHero({ name: 'G', cls: 'knight', seed: 1 }); grown.level = 6; grown.strength = { W: 8, E: 8 }; grown.loadout.NW.size = 8;
+  assert.ok(E.storyScale([grown, newHero({ name: 'B', cls: 'bard', seed: 2 })], 1).m > duo.m, 'heroes stronger than the story expects meet stronger monsters');
 });

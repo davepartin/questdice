@@ -833,12 +833,20 @@ export function stepKind(act, step) {
 }
 
 // Party scaling (index = players - 1). Only 1 player is tuned today.
+// Monsters at a table fit the company's real strength (Dave, Oct 2026). The strongest hero sets the fight (the road's own scaling,
+// at the chosen difficulty); every other hero adds their strength as a share of the strongest's (engine.js teamFactor: 2 for an
+// equal pair, 1.4 for a strong hero with a beginner). For each extra "strongest hero" the monsters get hpPer more health and
+// flatPer more on every hit (added to the hit's base number, so the monster's card shows it: a team splits each hit and each block
+// soaks its share, so health alone made a team untouchable). An equal pair: x2.2 health, +10 a hit (tools/party.mjs).
+// What a typical hero of each level is worth (engine.js heroStrength), from heroes of every class playing the campaign
+// (tools/levelstrength.mjs): levels 1..13, about 19 + 5.4 a level. For story campaigns that set their fights by level.
+export const LEVEL_STRENGTH = [19, 27, 31, 35, 41, 47, 52, 57, 62, 67, 73, 79, 84];
 export const PARTY = {
-  hp: [1, 2.2, 2.5, 3.1, 3.6, 4.0], // a pair x2.2 (from 1.8): with +10 a hit it plays as tense as solo (tools/party.mjs)
-  adds: [0, 0, 0, 1, 1, 2],
-  // more to every monster hit at a table (Dave, Oct 2026: a pair split each hit two ways and each block soaked its share, so a team
-  // barely got hurt); added to the hit's base number, so the monster's card shows it
-  flat: [0, 10, 0, 0, 0, 0], // a pair: +10 a hit (bigger tables are measured next)
+  hpPer: 1.2,
+  flatPer: 10,
+  hp: [1, 2.2, 2.5, 3.1, 3.6, 4.0], // by head count, for a battle made without the heroes at hand
+  adds: [0, 0, 0, 1, 1, 2], // goblins that join big tables, by head count
+  flat: [0, 10, 0, 0, 0, 0],
 };
 
 export const ENEMY_CAP = 4;

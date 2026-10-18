@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   colorIdOf, uniqueColors,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
 } from './data.js';
@@ -491,10 +491,32 @@ export function evaluate(hero, board, opts = {}) {
 }
 
 // ------------------------------------------------------------------------------- enemies
-export function partyScale(players) {
+export function partyScale(players, heroes = null) {
   const i = Math.max(0, Math.min(5, players - 1));
-  return { hp: PARTY.hp[i], adds: PARTY.adds[i], flat: PARTY.flat?.[i] || 0 };
+  if (heroes && heroes.length > 1) { // the company's real strength (see PARTY in data.js)
+    const m = teamFactor(heroes);
+    return { hp: 1 + (m - 1) * PARTY.hpPer, adds: PARTY.adds[i], flat: Math.round((m - 1) * PARTY.flatPer), m };
+  }
+  return { hp: PARTY.hp[i], adds: PARTY.adds[i], flat: PARTY.flat?.[i] || 0, m: players };
 }
+// A hero's strength (Dave, Oct 2026: "the computer should know this is a good battle for this team"): an average throw's damage,
+// magic (it feeds the powers), half its block and healing, and the health behind it (heroPower: level, dice, gear, talents, perks).
+// Classes come out within ~15% of each other at the same point of the road; it grows ~4x from level 1 to level 10.
+// (It measures a copy: rolling fills in a hero's default dice, and measuring must not change the hero.)
+export function heroStrength(hero) { const P = heroPower(structuredClone(hero)); return Math.max(1, (P.dmg + 1.5 * P.magic + 0.5 * (P.block + P.heal)) * Math.sqrt(P.hp / 30)); }
+// How many of its strongest hero a company is worth: 1 alone, 2 for an equal pair, ~1.4 for a level-4 hero with a level-1 friend.
+// What a typical hero of this level is worth (LEVEL_STRENGTH, straight on past its end).
+export function levelStrength(level) { const L = Math.max(1, level | 0); const T = LEVEL_STRENGTH; return L <= T.length ? T[L - 1] : T[T.length - 1] + (L - T.length) * 5.4; }
+// For a story campaign whose fights are written for one hero of `level` (Grok's duo campaigns): how much tougher its monsters
+// should be for these heroes, by their real strength against that level's typical hero. Same rules as a table (PARTY):
+// { m, hp: monster health multiplier, flat: added to every hit }. Two typical heroes of that level: m 2, x2.2, +10;
+// heroes who grew stronger than the story expects meet stronger monsters; a lone hero of that level gets x1, +0.
+// Rival Duo / That’s Not How It Went are not wired through this yet — they keep the writer's fightHp knobs (docs/TEAMS.md).
+export function storyScale(heroes, level) {
+  const m = Math.max(0.6, heroes.reduce((a, h) => a + heroStrength(h), 0) / levelStrength(level));
+  return { m: +m.toFixed(2), hp: +(1 + (m - 1) * PARTY.hpPer).toFixed(2), flat: Math.max(0, Math.round((m - 1) * PARTY.flatPer)) };
+}
+export function teamFactor(heroes) { const s = heroes.map(heroStrength); const top = Math.max(...s); return s.reduce((a, x) => a + x, 0) / top; }
 export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null, teamFlat = 0 } = {}, rng) {
   const d = mdef(id, campaign);
   const hp = Math.max(1, Math.round(d.hp * hpMult));
@@ -1263,7 +1285,8 @@ export function takeDrop(hero, inst) { if (bagFull(hero)) return false; hero.bag
 // What a hero's dice give on an average throw (no rerolls): many random boards through the real rules. Same hero, same answer.
 const _powerCache = new Map();
 export function heroPower(hero, samples = 240) {
-  const key = JSON.stringify([hero.cls, hero.level, hero.strength, hero.special, hero.speed, hero.mind, hero.talent, hero.dice, hero.perks, hero.loadout.NW, hero.loadout.NE]);
+  const wkey = (w) => (w ? [w.id, w.rarity | 0, w.size || 4, !!w.diamond, !!w.twin] : null); // what the weapon is, not which copy (two alike heroes measure alike)
+  const key = JSON.stringify([hero.cls, hero.level, hero.strength, hero.special, hero.speed, hero.mind, hero.talent, hero.dice, hero.perks, wkey(hero.loadout.NW), wkey(hero.loadout.NE)]);
   if (_powerCache.has(key)) return _powerCache.get(key);
   const rng = makeRng(hashSeed(key)); const t = { atk: 0, pierce: 0, block: 0, heal: 0, magic: 0, gold: 0 };
   for (let i = 0; i < samples; i++) { const ev = evaluate(hero, rollBoard(hero, rng)); for (const k in t) t[k] += ev[k] || 0; }
@@ -1509,7 +1532,7 @@ export function commitFighter(b) {
 export function newPartyBattle(heroes, quest0, rng) {
   const players = heroes.length;
   const quest = withDifficulty(heroes[0], quest0);
-  const sc = partyScale(players);
+  const sc = partyScale(players, heroes);
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1; const edge = quest.edge || null;
   const enemies = [];
   for (let i = 0; i < quest.enemies.length; i++) {
@@ -1519,7 +1542,7 @@ export function newPartyBattle(heroes, quest0, rng) {
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, teamFlat: sc.flat, rewardMult, edge, campaign: heroes[0].campaign }, rng));
   dressNemesis(enemies, quest.nemesis);
   const b = {
-    kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),
+    kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter), team: { m: +sc.m.toFixed(2), hp: +sc.hp.toFixed(2), flat: sc.flat }, // how hard the company made it
     active: 0, round: 0, phase: 'reset', outcome: null, report: null, stolen: 0,
   };
   beginPartyRound(b);

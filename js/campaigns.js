@@ -1,5 +1,6 @@
 // Campaign packs (Dave, Oct 2026): every story is one pack. The Dawn Lantern is the original
 // campaign; Rival Duo and That’s Not How It Went are two-hero packs with their own locked fights.
+// Duo packs are not wired through storyScale/heroStrength (see docs/TEAMS.md); they keep writer fightHp.
 // Pure data and helpers: no DOM.
 
 import { ACTS, MONSTERS, CLASSES } from './data.js';
