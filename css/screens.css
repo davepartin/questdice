@@ -200,6 +200,7 @@
 .sx-input { width: 100%; min-height: 48px; padding: .7rem .9rem; border-radius: 8px; border: 1px solid var(--hair); background: rgba(4, 5, 12, .66); color: #fff; font: 500 1.02rem var(--font-body); letter-spacing: 0; text-transform: none; outline: none; transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none; }
 .sx-input::placeholder { color: var(--faint); } .sx-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(240, 192, 96, .18), 0 0 24px rgba(240, 160, 50, .12); }
 .sx-screen .form-msg { color: #ff9b8a; font-size: .85rem; min-height: 1.1em; }
+.sx-screen .form-msg.pending { color: #f1d38a; } /* "Opening the table…" while it works: news, not an error */
 .cloud-browse { display: grid; gap: .45rem; }
 .sx-cloudlist, .cloud-browse .sx-cloudlist { display: flex; flex-direction: column; gap: .35rem; max-height: 11rem; overflow: auto; padding-right: .15rem; }
 .sx-cloudpick, button.cloud-pick { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; width: 100%; text-align: left; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--hair); background: rgba(4, 5, 12, .55); color: #fff; font: inherit; cursor: pointer; }

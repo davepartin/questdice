@@ -349,36 +349,46 @@ export function create(opts = {}) {
   if (bring) { pw.placeholder = 'Password'; pw.setAttribute('autocomplete', 'current-password'); }
   const browse = bring && !loaded ? h('div', { class: 'cloud-browse' }) : null;
   paint();
+  // Sit at the table with a hero this form already has in hand. go() may have set `busy` on its way here (creating or opening
+  // the hero), so this must not bail on it (that was the "nothing happens" on Open the table). It says what it is doing,
+  // and gives up after 20 seconds with a message rather than hanging.
+  let made = null; // a hero this form already created: a second tap reuses it instead of failing "already exists on this device"
+  const pending = (text) => { msg.textContent = text; msg.classList.toggle('pending', !!text); };
   const seat = async (hero, extra = {}) => {
-    if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
-    if (busy) return; busy = true; msg.textContent = '';
-    try { await T.onDone(hero.name, hero.cls, { table: tname?.value.trim(), code: tcode?.value, hero, difficulty: diff, ...extra }); }
-    catch (e) { msg.textContent = e.message || 'The table did not answer.'; sfx.error(); busy = false; }
+    busy = true; pending(T.mode === 'host' ? 'Opening the table…' : 'Finding your seat…');
+    try {
+      await Promise.race([T.onDone(hero.name, hero.cls, { table: tname?.value.trim(), code: tcode?.value, hero, difficulty: diff, ...extra }),
+        new Promise((_, no) => setTimeout(() => no(new Error('The table did not answer. Check your connection and try again.')), 20000))]);
+    } catch (e) { pending(''); msg.textContent = e.message || 'The table did not answer.'; sfx.error(); busy = false; }
   };
   const go = async () => {
+    if (busy) return;
+    pending(''); msg.textContent = '';
+    if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
     if (T && loaded) { loaded.difficulty = diff; return seat(loaded); }
+    if (T && made) { made.difficulty = diff; return seat(made); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
     if (T && bring) {
       if (!pw.value) { msg.textContent = 'Enter your password.'; sfx.error(); pw.focus(); return; }
-      if (busy) return; busy = true; msg.textContent = '';
+      busy = true; pending('Opening your save…');
       try {
         const hero = await X.openNamedHero(n, pw.value);
         if (T?.mode === 'host') hero.difficulty = diff;
-        X.adopt(hero); sfx.coin();
+        X.adopt(hero); sfx.coin(); made = hero;
         await seat(hero);
-      } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
+      } catch (e) { pending(''); msg.textContent = e.message; sfx.error(); busy = false; }
       return;
     }
     if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); pw.focus(); return; }
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
-    if (busy) return; busy = true;
+    busy = true; if (T) pending('Saving your hero…');
     try {
       const hero = E.newHero({ name: n, cls, color }); hero.difficulty = diff; SV.markReached(hero); Coach.setHints(!skipHints);
       await X.stashNewHero(hero, pw.value);
-      if (T) { X.adopt(hero); sfx.level(); await seat(hero); return; }
+      if (T) { made = hero; X.adopt(hero); sfx.level(); await seat(hero); return; }
       X.adopt(hero, 'hero'); sfx.level(); X.showHeroHub();
-    } catch (e) { msg.textContent = e.message; sfx.error(); busy = false; }
+    } catch (e) { pending(''); msg.textContent = e.message; sfx.error(); busy = false; }
   };
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
   const source = T && !loaded ? h('div', { class: 'sx-diff', role: 'tablist', 'aria-label': 'How you sit' },
