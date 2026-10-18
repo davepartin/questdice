@@ -39,8 +39,12 @@ test('every hero and monster records which way it was painted, and the flip face
   assert.equal(MONSTERS.mungo.look, 'left');
   assert.equal(needsFlip(MONSTERS.bigwheel, 'left'), false, 'bigwheel already looks left — do not flip');
   assert.equal(needsFlip(MONSTERS.mungo, 'left'), false, 'mungo already looks left — do not flip');
+  assert.equal(needsFlip(MONSTERS.goldbelly, 'left'), false, 'goldbelly already looks left — do not flip');
+  assert.equal(needsFlip(MONSTERS.blazemorrow, 'left'), false, 'blazemorrow already looks left — do not flip');
   assert.equal(needsFlip(MONSTERS.bigwheel, 'right'), true);
   assert.equal(needsFlip(MONSTERS.mungo, 'right'), true);
+  assert.equal(needsFlip(MONSTERS.goldbelly, 'right'), true);
+  assert.equal(needsFlip(MONSTERS.blazemorrow, 'right'), true);
 });
 
 test('each class has three painted coats, all facing right, and the files are there', () => {

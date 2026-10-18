@@ -33,7 +33,8 @@ const foeDef = (e) => (e && (monsterOf(e.id, campOf()) || D.MONSTERS[e.id])) || 
 const EPITHET = {
   goblinking: ['THE GOBLIN KING', 'Lord of Stolen Things'], ogre: ['HILL OGRE', 'Breaker of Gates'], lich: ['THE HOLLOW LICH', 'The Dead Organize'],
   bonewarden: ['BONE WARDEN', 'Keeper of the Stair'],
-  vharaxis: ['VHARAXIS', 'The Ember Queen'], fallenchampion: ['THE FALLEN CHAMPION', 'Oaths Unkept'],
+  vharaxis: ['VHARAXIS', 'The Ember Queen'], goldbelly: ['DUCHESS GOLDBELLY', 'The Golden Hoard'],
+  blazemorrow: ['THE DOWAGER BLAZEMORROW', 'End of the Song'], fallenchampion: ['THE FALLEN CHAMPION', 'Oaths Unkept'],
   ashwyrm: ['ASHMAW', 'The Wyrm of the Peaks'],
 };
 

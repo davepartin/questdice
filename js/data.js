@@ -675,6 +675,29 @@ export const MONSTERS = {
         S('Talons', 5, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
     },
   },
+  // Painted looking left (same as every other monster). Do not flip: needsFlip(..., 'left') stays false.
+  goldbelly: {
+    name: 'Duchess Goldbelly', glyph: '🐲', img: 'assets/miniatures/goldbelly.webp', look: 'left', imgBase: IB(512, 425, 240.5, 418, 426), short: 'GOLD', init: 4, hp: 280, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    slam: { f: 7, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
+    faces: [S('Talons', 3, 1), { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+      { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 4, 1), { n: 'Wing Wall', v: 'guard', f: 4, m: 1 }],
+    rage: {
+      name: 'Molten Fury', power: 12,
+      faces: [{ n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+        S('Talons', 5, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
+    },
+  },
+  blazemorrow: {
+    name: 'The Dowager Blazemorrow', glyph: '🐲', img: 'assets/miniatures/blazemorrow.webp', look: 'left', imgBase: IB(512, 458, 217.5, 451, 402), short: 'BLAZ', init: 4, hp: 280, power: 12, xp: 180, gold: 200, tier: 'boss', threat: 12,
+    slam: { f: 7, m: 2, v: 'breath' }, armor: { n: 2, s: 4 }, flee: { at: 0.3, chance: 1, onlyAs: 'elite' },
+    faces: [S('Talons', 3, 1), { n: 'Inferno', v: 'breath', f: 4, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+      { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 2 }, S('Bite', 4, 1), { n: 'Wing Wall', v: 'guard', f: 4, m: 1 }],
+    rage: {
+      name: 'Molten Fury', power: 12,
+      faces: [{ n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inferno', v: 'breath', f: 6, m: 1 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 },
+        S('Talons', 5, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
+    },
+  },
 };
 
 // -------------------------------------------------------------------------------------------
