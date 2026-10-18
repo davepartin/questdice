@@ -647,7 +647,7 @@ export function roadResult(res, o = {}) {
 }
 
 // ------------------------------------------------------------------------------------------------ victory / defeat
-const PERK_ICON = { diamond: 'gem', vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull' };
+const PERK_ICON = { diamond: 'gem', vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull', linebreaker: 'dice' };
 function perkCard(id, hero, onpick, i) {
   const p = D.PERKS[id]; const have = hero.perks.filter((x) => x === id).length;
   return h('button', { class: `sx-perk perk-${id}`, type: 'button', style: { '--i': i }, onclick: tap(onpick), 'aria-label': `${p.name}. ${p.text}` },

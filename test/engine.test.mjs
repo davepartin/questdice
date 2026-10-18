@@ -958,3 +958,18 @@ test('charms bend one rule each, three at most, and a boss offers a choice of tw
     const r = E.battleRewards({ quest: q, hero: x, enemies: [], players: 1, goldEarned: 0, stolen: 0 }); if (q.kind === 'boss') { assert.equal(r.charms.length, 2); offered++; } }
   assert.ok(offered > 0);
 });
+
+test('Line Breaker: every triple pays +2 more a rank, attack or block; Stout Heart is no longer offered but still counts for those who took it', async () => {
+  const E = await import('../js/engine.js'); const D = await import('../js/data.js');
+  const strength = [{ W: 1, C: 1, E: 1 }, { W: 1, C: 2, E: 1 }]; const headtoe = [{ N: 3, C: 3, S: 3, NW: 1, NE: 1 }, { N: 3, C: 2, S: 3, NW: 1, NE: 1 }];
+  const gain = (h, [hit, miss], k) => evaluate(h, board(hit))[k] - evaluate(h, board(miss))[k];
+  const k = knight(); assert.equal(gain(k, strength, 'atk'), 10);
+  k.perks.push('linebreaker'); assert.equal(gain(k, strength, 'atk'), 12); assert.equal(gain(k, headtoe, 'block'), 12);
+  k.perks.push('linebreaker', 'linebreaker'); assert.equal(gain(k, strength, 'atk'), 16, 'three ranks: +6');
+  assert.ok(E.takeCharm(k, 'fang')); assert.equal(gain(k, strength, 'atk'), 32, 'Wolf Fang doubles the lot');
+  assert.equal(D.PERKS.linebreaker.max, 5);
+  const old = knight(); const hp0 = E.maxHpOf(old); old.perks.push('grit'); assert.equal(E.maxHpOf(old), hp0 + 4, 'an old Stout Heart keeps its health');
+  const offers = new Set(); const h = knight(); h.level = 4; h.pendingPerks = 1;
+  for (let s = 1; s <= 200; s++) E.offerPerks(h, E.makeRng(s)).forEach((id) => offers.add(id));
+  assert.ok(!offers.has('grit'), 'Stout Heart is retired'); assert.ok(offers.has('linebreaker'), 'Line Breaker is offered');
+});
