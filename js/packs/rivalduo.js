@@ -503,7 +503,7 @@ export const steps = [
     {
       place: "The Ember Throne",
       icon: "crown",
-      foes: ["vharaxis"],
+      foes: ["goldbelly"],
       names: ["Duchess Goldbelly"],
       arrive: [
         "The Duchess Goldbelly lies on her hill of round golden things, squinting, with Gerald propped beside her like a prize plate. She will breathe fire that splashes on you both, frighten your dice still, and inhale before her biggest blasts. Her eyesight is poor and her nose is excellent, and she still has not noticed that her coin is cheese.",
@@ -675,7 +675,7 @@ export const actSpecs = [
       ["shieldbearer", "chainbinder"],
       ["gloomstalker", "frostwhelp"],
       ["ashwyrm", "shieldbearer"],
-      ["vharaxis"],
+      ["goldbelly"],
     ],
     names: [
       ["Flicker", "Cousin Gareth"],
@@ -707,7 +707,7 @@ export const actSpecs = [
       "10": {
         kind: "boss",
         place: "The Ember Throne",
-        enemies: ["vharaxis"],
+        enemies: ["goldbelly"],
       },
     },
     help: [],

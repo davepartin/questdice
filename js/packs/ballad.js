@@ -439,7 +439,7 @@ export const steps = [
     {
       place: "The Brazen Bridge",
       icon: "crown",
-      foes: ["vharaxis"],
+      foes: ["blazemorrow"],
       names: ["The Dowager Blazemorrow"],
       arrive: [
         "The Dowager Blazemorrow lands on the bronze bridge, and the metal glows red under her claws. She has seen the crown and she has seen the lute, and she knows how songs about knights and dragons end. Watch for the Inhale: the breath after it splashes on you both. When she has had enough she will fly off to her throne. Dragons in songs always do.",
@@ -503,7 +503,7 @@ export const steps = [
     {
       place: "The Ember Throne",
       icon: "crown",
-      foes: ["vharaxis"],
+      foes: ["blazemorrow"],
       names: ["The Dowager Blazemorrow"],
       arrive: [
         "The Dowager Blazemorrow uncoils from her hoard of crowns, eyes like furnaces. She will breathe fire that splashes across you both, frighten your dice still, and inhale before the worst of it. She is old and tired and very afraid of how this song ends, and she means to end it first.",
@@ -668,12 +668,12 @@ export const actSpecs = [
       ["gloomstalker", "cinderling"],
       ["chainbinder", "frostwhelp"],
       ["cultist", "cinderling"],
-      ["vharaxis"],
+      ["blazemorrow"],
       ["gloomstalker", "frostwhelp"],
       ["chainbinder", "cultist"],
       ["cinderling", "frostwhelp"],
       ["ashwyrm", "cinderling"],
-      ["vharaxis"],
+      ["blazemorrow"],
     ],
     names: [
       ["Spit", "Spatter"],
@@ -699,12 +699,12 @@ export const actSpecs = [
       "5": {
         kind: "elite",
         place: "The Brazen Bridge",
-        enemies: ["vharaxis"],
+        enemies: ["blazemorrow"],
       },
       "10": {
         kind: "boss",
         place: "The Ember Throne",
-        enemies: ["vharaxis"],
+        enemies: ["blazemorrow"],
       },
     },
     help: [],

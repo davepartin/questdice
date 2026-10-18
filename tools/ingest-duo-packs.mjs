@@ -57,12 +57,29 @@ function ingest(mdPath, { id } = {}) {
 
 const rival = ingest(RIVAL_MD, { id: 'rivalduo' });
 const ballad = ingest(BALLAD_MD, { id: 'ballad' });
-// Writer md still lists the Toll Bridge elite as `ogre` named Mungo; the painted mini is `mungo`.
+// Writer md still lists some minis by their Dawn ids; painted sheets have their own ids.
+function remapFoe(data, { name, from = 'vharaxis', to }) {
+  for (const act of data.steps) {
+    for (const row of act) {
+      if (row.names?.[0] === name && row.foes?.[0] === from) row.foes = [to];
+    }
+  }
+  for (const act of data.acts) {
+    for (let i = 0; i < (act.fights || []).length; i++) {
+      if (act.names?.[i]?.[0] === name && act.fights[i]?.[0] === from) act.fights[i] = [to];
+    }
+    for (const g of Object.values(act.gates || {})) {
+      if (g.enemies?.[0] === from && (act.names || []).some((n) => n?.[0] === name)) g.enemies = [to];
+    }
+  }
+}
 const mungo = ballad.steps[0][4];
 if (mungo?.names?.[0] === 'Mungo') {
   mungo.foes = ['mungo'];
   ballad.acts[0].fights[4] = ['mungo'];
 }
+remapFoe(rival, { name: 'Duchess Goldbelly', to: 'goldbelly' });
+remapFoe(ballad, { name: 'The Dowager Blazemorrow', to: 'blazemorrow' });
 
 mkdirSync('/workspace/js/packs', { recursive: true });
 function writePack(name, data) {

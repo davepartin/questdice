@@ -161,6 +161,40 @@ test('Big Wheel and Mungo copy the ogre sheet, look left, and keep their own art
   assert.equal(MONSTERS.mungo.name, 'Mungo');
 });
 
+test('Goldbelly and Blazemorrow copy the Ember Queen, look left, and flee only as elite', () => {
+  for (const id of ['goldbelly', 'blazemorrow']) {
+    const m = MONSTERS[id];
+    const v = MONSTERS.vharaxis;
+    assert.equal(m.hp, v.hp);
+    assert.equal(m.power, v.power);
+    assert.equal(m.init, v.init);
+    assert.equal(m.tier, 'boss');
+    assert.equal(m.threat, v.threat);
+    assert.deepEqual(m.slam, v.slam);
+    assert.deepEqual(m.armor, v.armor);
+    assert.equal(m.flee.onlyAs, 'elite');
+    assert.equal(m.look, 'left');
+    assert.notEqual(m.img, v.img);
+    assert.ok(m.faces.some((f) => f.v === 'breath'), `${id} breathes`);
+  }
+  assert.equal(MONSTERS.goldbelly.name, 'Duchess Goldbelly');
+  assert.equal(MONSTERS.blazemorrow.name, 'The Dowager Blazemorrow');
+  const elite = fight(['blazemorrow']);
+  elite.quest.kind = 'elite';
+  elite.enemies[0].hp = Math.floor(elite.enemies[0].maxHp * 0.2);
+  setIntent(elite.enemies[0], { n: 'Wing Wall', v: 'guard', f: 0, m: 0 });
+  elite.board = { ...weak };
+  const er = resolve(elite, { target: 0 });
+  assert.ok(er.fled.includes(elite.enemies[0].uid), 'Blazemorrow flees as the Act III elite');
+  const boss = fight(['goldbelly']);
+  boss.quest.kind = 'boss';
+  boss.enemies[0].hp = Math.floor(boss.enemies[0].maxHp * 0.2);
+  setIntent(boss.enemies[0], { n: 'Wing Wall', v: 'guard', f: 0, m: 0 });
+  boss.board = { ...weak };
+  const br = resolve(boss, { target: 0 });
+  assert.deepEqual(br.fled, [], 'Goldbelly as the Act III boss fights to the end');
+});
+
 test('new bosses: Fallen Champion is a boss; Gold-Chain Jailer is not occult; dragons have breath', () => {
   assert.equal(MONSTERS.fallenchampion.tier, 'boss');
   assert.equal(MONSTERS.fallenchampion.name, 'The Fallen Champion');

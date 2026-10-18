@@ -66,8 +66,11 @@ test('Dawn fights stay the same list; duo packs use the writer’s locked casts'
   assert.equal(rival[1].names[4][0], 'Big Wheel');
   assert.deepEqual(ballad[0].fights[4], ['mungo']);
   assert.deepEqual(ballad[0].names[4], ['Mungo']);
-  assert.deepEqual(ballad[2].fights[4], ['vharaxis']);
+  assert.deepEqual(ballad[2].fights[4], ['blazemorrow']);
+  assert.deepEqual(ballad[2].fights[9], ['blazemorrow']);
   assert.equal(ballad[2].names[9][0], 'The Dowager Blazemorrow');
+  assert.deepEqual(rival[2].fights[9], ['goldbelly']);
+  assert.equal(rival[2].names[9][0], 'Duchess Goldbelly');
   assert.deepEqual(rival[0].help, []);
   assert.deepEqual(ballad[1].help, []);
   assert.ok(helpOff({ pack: 'rivalduo', act: 1 }));
@@ -107,6 +110,23 @@ test('fight display names ride with the locked list and title the set-pieces', (
   assert.equal(monsterOf('mungo').look, 'left');
   assert.equal(monsterOf('bigwheel').img, 'assets/miniatures/bigwheel.webp');
   assert.equal(monsterOf('bigwheel').look, 'left');
+  wiz.campaign.act = 3; wiz.campaign.step = 10;
+  const gold = E.questsFor(wiz)[0];
+  assert.equal(gold.kind, 'boss');
+  assert.deepEqual(gold.enemies, ['goldbelly']);
+  assert.equal(gold.name, 'Duchess Goldbelly');
+  assert.equal(monsterOf('goldbelly').look, 'left');
+  bard.campaign.act = 3; bard.campaign.step = 5;
+  const blazeElite = E.questsFor(bard)[0];
+  assert.equal(blazeElite.kind, 'elite');
+  assert.deepEqual(blazeElite.enemies, ['blazemorrow']);
+  bard.campaign.step = 10;
+  const blazeBoss = E.questsFor(bard)[0];
+  assert.equal(blazeBoss.kind, 'boss');
+  assert.deepEqual(blazeBoss.enemies, ['blazemorrow']);
+  assert.equal(blazeBoss.name, 'The Dowager Blazemorrow');
+  assert.equal(monsterOf('blazemorrow').look, 'left');
+  assert.equal(monsterOf('blazemorrow').flee.onlyAs, 'elite');
 });
 
 test('story names fill {wizard}/{dwarf}/{knight}/{bard} in titles too, and Dawn copy is untouched', () => {
