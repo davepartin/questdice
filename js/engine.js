@@ -488,8 +488,8 @@ export function evaluate(hero, board, opts = {}) {
 export function partyScale(players, heroes = null) {
   const i = Math.max(0, Math.min(5, players - 1));
   if (heroes && heroes.length > 1) { // the company's real strength (see PARTY in data.js)
-    const m = teamFactor(heroes);
-    return { hp: 1 + (m - 1) * PARTY.hpPer, adds: PARTY.adds[i], flat: Math.round((m - 1) * PARTY.flatPer), m };
+    const m = teamFactor(heroes); const per = PARTY.flatBy?.[normalizeDifficulty(heroes[0]?.difficulty)] ?? PARTY.flatPer;
+    return { hp: 1 + (m - 1) * PARTY.hpPer, adds: PARTY.adds[i], flat: Math.round((m - 1) * per), m };
   }
   return { hp: PARTY.hp[i], adds: PARTY.adds[i], flat: PARTY.flat?.[i] || 0, m: players };
 }

@@ -8,6 +8,7 @@ import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, ne
 import { fight, botCamp, botShape, smartActs } from './sim.mjs';
 import { QUESTS_PER_ACT, PARTY } from '../js/data.js';
 if (process.env.PARTY_HP) process.env.PARTY_HP.split(',').forEach((v, i) => { if (v) PARTY.hp[i + 1] = Number(v); });
+if (process.env.FLAT_PER) for (const k of Object.keys(PARTY.flatBy)) PARTY.flatBy[k] = Number(process.env.FLAT_PER); // FLAT_PER=16: hit power per extra hero
 if (process.env.PARTY_FLAT) process.env.PARTY_FLAT.split(',').forEach((v, i) => { if (v) PARTY.flat[i + 1] = Number(v); }); // PARTY_FLAT=4: every hit +4 for two heroes // try other team health: PARTY_HP=2.4 (two heroes), PARTY_HP=2.4,3.2 (two, three)
 
 const ACTS = Number(process.argv[2] || 2); const RUNS = Number(process.argv[3] || 2); const N = Number(process.argv[4] || 2);
