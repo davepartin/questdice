@@ -511,7 +511,8 @@ export function levelStrength(level) { const L = Math.max(1, level | 0); const T
 // should be for these heroes, by their real strength against that level's typical hero. Same rules as a table (PARTY):
 // { m, hp: monster health multiplier, flat: added to every hit }. Two typical heroes of that level: m 2, x2.2, +10;
 // heroes who grew stronger than the story expects meet stronger monsters; a lone hero of that level gets x1, +0.
-// Rival Duo / That’s Not How It Went are not wired through this yet — they keep the writer's fightHp knobs (docs/TEAMS.md).
+// (Rival Duo and That’s Not How It Went follow the road at a table, so newPartyBattle's teamFactor fits them already;
+// storyScale is for a story that sets its fights by level instead of by the road. docs/TEAMS.md)
 export function storyScale(heroes, level) {
   const m = Math.max(0.6, heroes.reduce((a, h) => a + heroStrength(h), 0) / levelStrength(level));
   return { m: +m.toFixed(2), hp: +(1 + (m - 1) * PARTY.hpPer).toFixed(2), flat: Math.max(0, Math.round((m - 1) * PARTY.flatPer)) };
