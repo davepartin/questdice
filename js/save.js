@@ -63,6 +63,9 @@ export function migrateHero(hero) {
   // three metals now (Oct 2026): an old Diamond-tier weapon comes back as Gold, which has the same full die (legendaries and the new
   // one-fight Diamond weapons keep theirs)
   for (const w of [...Object.values(hero.loadout || {}), ...(hero.bag || [])]) if (w && (w.rarity | 0) > 2 && !w.diamond && !WEAPONS[w.id]?.legendary) w.rarity = 2;
+  // Frugal Mender is retired (Heal with Magic is the same for everyone): a hero who took it gets the pick back to spend again
+  const frugal = (hero.perks || []).filter((p) => p === 'frugal').length;
+  if (frugal) { hero.perks = hero.perks.filter((p) => p !== 'frugal'); hero.pendingPerks = (hero.pendingPerks || 0) + frugal; }
   return hero;
 }
 export async function createSave(hero, password) {

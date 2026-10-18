@@ -973,3 +973,16 @@ test('Line Breaker: every triple pays +2 more a rank, attack or block; Stout Hea
   for (let s = 1; s <= 200; s++) E.offerPerks(h, E.makeRng(s)).forEach((id) => offers.add(id));
   assert.ok(!offers.has('grit'), 'Stout Heart is retired'); assert.ok(offers.has('linebreaker'), 'Line Breaker is offered');
 });
+
+test('Heal with Magic is the same for every hero: 2 magic for 4 health; an old Frugal Mender is refunded as a perk pick', async () => {
+  const E = await import('../js/engine.js'); const SV = await import('../js/save.js');
+  for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) {
+    const h = newHero({ name: 'H', cls, seed: 1 }); h.perks.push('frugal');
+    assert.equal(E.healCostOf(h), 2, `${cls} pays 2`); assert.equal(E.healAmountOf(h), 4, `${cls} heals 4`);
+  }
+  const old = newHero({ name: 'Old', cls: 'wizard', seed: 1 }); old.perks = ['vitality', 'frugal']; old.pendingPerks = 0;
+  SV.migrateHero(old);
+  assert.deepEqual(old.perks, ['vitality']); assert.equal(old.pendingPerks, 1, 'the pick comes back');
+  const offers = new Set(); for (let s = 1; s <= 200; s++) E.offerPerks(old, E.makeRng(s)).forEach((id) => offers.add(id));
+  assert.ok(!offers.has('frugal'), 'Frugal Mender is no longer offered');
+});

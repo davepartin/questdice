@@ -324,8 +324,7 @@ export const needsFlip = (def, want) => {
 const IB = (W, H, cx, by, bw) => ({ x: cx / W, y: by / H, w: bw / W });
 export const CLASSES = {
   // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
-  // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), healAmount (health per
-  // Heal with magic, default HEAL_AMOUNT), powerLevels (how far powers upgrade, default 3) and maxFeet (default 6).
+  // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), powerLevels (how far powers upgrade, default 3) and maxFeet (default 6).
   knight: {
     feet: 4, hands: 6, startMagic: 4, // slow but strong: one d6 hand (left) from the start
     trait: 'Balanced: a strong left hand and a shield. Stands in front, on purpose.',
@@ -359,10 +358,10 @@ export const CLASSES = {
     ],
   },
   wizard: {
-    feet: 4, startMagic: 6, magicCap: 15, healAmount: 6,
-    trait: 'Weak and slow, the strongest magic: starts with 6, holds 15, heals 6 for 2 magic.',
+    feet: 4, startMagic: 6, magicCap: 15,
+    trait: 'Weak and slow, the strongest magic: starts with 6 and holds 15.',
     name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(456, 512, 262.5, 505, 355), hp: 24,
-    blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and healing to spare.',
+    blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and the magic to keep mending.',
     weapons: ['staff'],
     cards: [
       { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
@@ -493,7 +492,7 @@ export const PERKS = {
   greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen. Coins like you already.', max: 3, mod: { goldPct: 0.25 } },
   grit: { name: 'Stout Heart', text: '+4 max HP. A little more of you to go round.', max: 2, mod: { maxHp: 4 }, retired: true }, // no longer offered (Dave: too close to Vitality); heroes who took it keep it
   linebreaker: { name: 'Line Breaker', text: 'Every triple pays +2 more, attack or block. Three in a line, then a little extra.', max: 5, mod: { tripleBonus: 2 } },
-  frugal: { name: 'Frugal Mender', text: 'The Heal power costs 1 less Magic (minimum 1). Kindness, on sale.', max: 1, mod: { healCost: -1 } },
+  frugal: { name: 'Frugal Mender', text: 'Retired: Heal with Magic is the same for everyone.', max: 1, mod: {}, retired: true }, // Dave, Oct 2026: 2 magic for 4 health is standard, no perk changes it (old saves get the pick back: save.js migrateHero)
 };
 
 // -------------------------------------------------------------------------------------------
