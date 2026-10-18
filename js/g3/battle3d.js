@@ -141,7 +141,7 @@ function buildHud() {
     h('button', { type: 'button', 'data-tab': 'team', onclick: () => setSheetTab('team') }, 'Team actions')) : h('b', {}, 'Magical powers');
   hud.sheet = h('div', { class: 'b3-sheet', role: 'dialog', 'aria-label': 'Magical powers' },
     h('div', { class: 'sh-head' }, hud.tabs, h('button', { type: 'button', class: 'sh-x sh-cancel', 'aria-label': 'Close the magic powers', onclick: () => togglePowers(false) }, '✕ Close')), hud.cards);
-  hud.roster = B.party ? h('div', { class: 'b3-roster', role: 'list', 'aria-label': 'The company' }) : null;
+  hud.roster = null; // the company's name/points cards covered faces (Dave); names and health sit under each mini, and a locked-in hero steps up to its target
   hud.info = h('div', { class: 'b3-sheet b3-info', role: 'dialog', 'aria-label': 'Monster details' });
   hud.bar = h('div', { class: 'b3-bar' });
   // Any button on the bottom bar (Lock in, Magic powers, Roll, Reroll) first clears whatever window is up: the round recap, a monster's info sheet,
@@ -317,7 +317,8 @@ function updateHero() {
   const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
   const gc = B.hud.goldchip;
   if (gc) { // your purse plus what this fight has won so far (paid for real at victory), climbing round by round like magic (Dave)
-    const g = Math.max(0, B.party ? E.companyGold(b.fighters.map((f) => f.hero)) + b.fighters.reduce((a, f) => a + (f.goldEarned || 0), 0) : (B.hero?.gold ?? 0) + E.battleGoldSoFar(b));
+    const mine = B.party ? b.fighters[B.active] || b.fighters.find((f) => f.hero === B.hero) : null; // a team game: this phone's own hero, never the company's sum (Dave)
+    const g = Math.max(0, mine ? (mine.hero.gold || 0) + (mine.goldEarned || 0) : (B.hero?.gold ?? 0) + E.battleGoldSoFar(b));
     const gb = gc.querySelector('b'); const was = Number(gb.textContent) || 0;
     if (g !== was && gc.dataset.ready) { HK.countTo(gb, g, { from: was, dur: 420 }); HK.replay(gc, 'pop'); } else gb.textContent = String(g);
     gc.dataset.ready = '1';

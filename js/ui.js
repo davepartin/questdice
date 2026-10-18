@@ -197,7 +197,7 @@ export function showTitle() {
     h('header', { class: 'title-art' }, grid, h('h1', { class: 'logo' }, 'QUEST', h('span', {}, 'DICE')), h('p', { class: 'tagline' }, 'Roll against the dark.')),
   ];
   const seat = Net.savedSeat();
-  if (seat) items.push(cmd('Table', `Rejoin ${seat.code}`, 'This phone still has a seat.', () => Online.resume(), { glyph: '⚔', tone: 'versus' }));
+  if (seat) { const L = Net.seatLabel(seat); items.push(cmd('Table', L.title, L.sub, () => Online.resume(), { glyph: '⚔', tone: 'versus' })); }
   if (saves.length) {
     items.push(h('div', { class: 't-eyebrow mb' }, 'On this device'));
     items.push(h('nav', { class: 'dock' }, saves.map((x) => {

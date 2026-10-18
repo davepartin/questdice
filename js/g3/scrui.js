@@ -184,7 +184,7 @@ export function title() {
   const cls = lead?.cls || nextOf(Object.keys(D.CLASSES));
   S.cleanups = S.cleanups || [];
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'Main menu' });
-  if (seat) menu.append(plaque({ eyebrow: 'Table', title: `Rejoin ${seat.code}`, sub: 'This phone still has a seat.', icon: 'people', tone: 'is-together', onclick: () => X.resume() }));
+  if (seat) { const L = Net.seatLabel(seat); menu.append(plaque({ eyebrow: 'Your table', title: L.title, sub: L.sub, icon: 'people', tone: 'is-together', onclick: () => X.resume() })); }
   // One "Continue" for the most recent game, and one "Saved games" door to all of them, so the home screen
   // never hides buttons below the fold.
   const saveSub = (x) => (x.kind === 'company' ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}` : `Level ${x.level} ${D.CLASSES[x.cls].name}`);

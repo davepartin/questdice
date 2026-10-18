@@ -31,4 +31,9 @@ for (let i = 0; i < 40; i++) { if (await q.evaluate(() => !!window.QD.S.net?.cod
 console.log('second phone seated at:', await q.evaluate(() => window.QD.S.net?.code || null), '| message:', await q.evaluate(() => document.querySelector('.form-msg')?.textContent || ''));
 await p.waitForTimeout(2500);
 console.log('host sees heroes:', await p.evaluate(() => [...document.querySelectorAll('.sx-screen b, .lb-name, .seat b')].map((e) => e.textContent).filter((t) => /Dp1|Mel/.test(t)).join(', ')));
+// step away and come back: the menus say which table this phone still sits at
+await p.evaluate(() => window.QD.online.stepAway()); await p.waitForTimeout(600);
+console.log('title offers:', await p.evaluate(() => [...document.querySelectorAll('.sx-plaque b, .sx-plaque .pl-title, .sx-plaque')].map((e) => e.textContent.trim().replace(/\s+/g, ' ')).filter((x) => /Rejoin/.test(x)).slice(0, 1).join('')));
+await p.evaluate(() => window.QD.online.together()); await p.waitForTimeout(500);
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: 'docs/ingame/rejoin_menu.png' });
 await b.close(); server.close();

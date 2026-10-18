@@ -15,9 +15,16 @@ export function savedSeat() {
   for (const get of stores()) { try { const v = JSON.parse(get().getItem(KEY) || 'null'); if (v) return v; } catch { /* next store */ } }
   return null;
 }
-function remember(code, token, kind) {
-  auth = { code, token, kind };
+function remember(code, token, kind, about = {}) { // about: { table, hero } names, for the Rejoin button
+  auth = { code, token, kind, ...about };
   for (const get of stores()) { try { get().setItem(KEY, JSON.stringify(auth)); } catch { /* next store */ } }
+}
+// Keep the table's and hero's names with the seat (seats saved before names were kept get them the next time the table opens).
+export function tagSeat(about = {}) { const s = seat(); if (!s) return; remember(s.code, s.token, s.kind, { table: about.table || s.table || '', hero: about.hero || s.hero || '' }); }
+// The Rejoin button's words: the table's name (its code if an older phone never kept it) and whose seat it is.
+export function seatLabel(seat = savedSeat()) {
+  if (!seat) return null;
+  return { title: `Rejoin ${seat.table || seat.code}`, sub: `Table ${seat.code}${seat.hero ? ` · ${seat.hero}'s seat` : ' · your seat is kept'}` };
 }
 export function clearSeat() {
   disconnect();
@@ -59,13 +66,13 @@ async function post(body) {
 export async function createSeat({ name, cls, table, hero, difficulty }) {
   const kind = await tableKind();
   const data = kind === 'cloud' ? await (await Cloud()).createSeat({ name, cls, table, hero, difficulty }) : await post({ op: 'create', name, cls, table, hero, difficulty });
-  remember(data.code, data.token, kind);
+  remember(data.code, data.token, kind, { table: data.view?.name || table || '', hero: name });
   return data;
 }
 export async function joinSeat({ code, name, cls, hero }) {
   const kind = await tableKind();
   const data = kind === 'cloud' ? await (await Cloud()).joinSeat({ code, name, cls, hero }) : await post({ op: 'join', code, name, cls, hero });
-  remember(data.code, data.token, kind);
+  remember(data.code, data.token, kind, { table: data.view?.name || '', hero: name });
   return data;
 }
 export async function send(cmd) {

@@ -54,7 +54,8 @@ export function together() {
   const { plaque, mountAs, lay, eyebrow, flourish } = K();
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'Play together' },
     h('div', { class: 'sx-eye menu-label' }, 'Play together'),
-    plaque({ eyebrow: 'Host', title: 'Open a table', sub: 'You get a code. Share it with your friends.', icon: 'people', tone: 'is-together', primary: true, onclick: () => host() }),
+    Net.savedSeat() ? plaque({ eyebrow: 'Your table', ...Net.seatLabel(), icon: 'people', tone: 'is-together', primary: true, onclick: () => resume() }) : null, // a table this phone sits at: back to it
+    plaque({ eyebrow: 'Host', title: 'Open a table', sub: 'You get a code. Share it with your friends.', icon: 'people', tone: 'is-together', primary: !Net.savedSeat(), onclick: () => host() }),
     plaque({ eyebrow: 'Join', title: 'Join a table', sub: 'Enter the four-letter code a friend gave you.', icon: 'key', tone: 'is-together', onclick: () => join('') }),
     plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: () => X.showTitle() }));
   void eyebrow; void flourish;
@@ -83,12 +84,23 @@ export function join(prefill = '') {
 // Sit down: start the session, listen for the table, put its screen up.
 function openTable(view) {
   const S = X.S;
-  S.net = { code: view.code };
+  S.net = { code: view.code }; Net.tagSeat({ table: view.name, hero: view.you?.name });
   S.practice = null; S.battle = null; S.company = null; S.hero = null;
   Sess.close(); Sess.open(view);
   Sess.onChange((prev, next, info) => changed(prev, next, info));
-  stop?.(); Net.connect((v) => Sess.adopt(v, 'feed')); stop = () => Net.disconnect();
+  stop?.(); Net.connect((v) => Sess.adopt(v, 'feed')); const poll = waitPoll(); stop = () => { Net.disconnect(); clearInterval(poll); };
   show();
+}
+// Safety net (Dave's first team game: after both locked in, one phone played the round and the other sat waiting a long time).
+// The live feed can stall on a phone (Safari, mobile data), so while this hero is locked in, away or down in a fight, the phone
+// also asks the table itself every few seconds. Older tables are refused by Sess.adopt, so a late answer does no harm.
+function waitPoll() {
+  return setInterval(async () => {
+    if (document.hidden || !inRoom()) return;
+    const t = Sess.current(); const i = Sess.index(); const f = t?.phase === 'battle' ? t.battle?.fighters?.[i] : null;
+    if (!f || !(f.locked || f.skipped || f.hp <= 0)) return;
+    try { const v = await Net.snapshot(); if (v && !v.missing) Sess.adopt(v, 'poll'); } catch { /* the feed may still bring it */ }
+  }, 3000);
 }
 export function leave() {
   writeBack();

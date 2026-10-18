@@ -125,6 +125,12 @@ export function botRound(b, rng) {
   const wise = PLAY.style === 'wise';
   if (wise) setScore(wiseScore);
   startRoll(b);
+  botShape(b, rng);
+  if (wise) return wiseLock(b, rng);
+  return resolve(b, smartActs(b));
+}
+// The rerolls a bot makes on a rolled board (shared by botRound and the party simulator, tools/party.mjs).
+export function botShape(b, rng) {
   const slotsAll = activeSlots(b.hero);
   for (let guard = 0; guard < 8; guard++) {
     const info = rerollInfo(b);
@@ -140,8 +146,6 @@ export function botRound(b, rng) {
     if (!best || best.gain < 0.6) break;
     reroll(b, best.sub);
   }
-  if (wise) return wiseLock(b, rng);
-  return resolve(b, smartActs(b));
 }
 
 // The smart bot's choices before it locks in (potions, magic heals, powers, target), applied to b. Returns the resolve options.
