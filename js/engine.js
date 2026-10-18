@@ -489,12 +489,12 @@ export function partyScale(players) {
   const i = Math.max(0, Math.min(5, players - 1));
   return { hp: PARTY.hp[i], adds: PARTY.adds[i], flat: PARTY.flat?.[i] || 0 };
 }
-export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null } = {}, rng) {
+export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, teamFlat = 0 } = {}, rng) {
   const d = MONSTERS[id];
   const hp = Math.max(1, Math.round(d.hp * hpMult));
   return {
     uid: newUid(rng), id, name: d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
-    faces: d.faces, flat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
+    faces: d.faces, flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0, edge,
   };
@@ -519,7 +519,7 @@ const sumDice = (rng, n, s) => { let t = 0; for (let i = 0; i < n; i++) t += die
 export const armorOf = (e, rng) => (e?.armor ? sumDice(rng, e.armor.n, e.armor.s) : 0);
 export const isDamageIntent = (i) => DAMAGE_VERBS.has(i.v);
 export const GUARD_VERBS = new Set(['guard', 'ward']);
-export const burnOf = (e) => (e?.intent?.v === 'ward' ? (e.intent.k || 0) + Math.floor((e.flat || 0) / 2) + (e.edge?.burn || 0) : 0); // Fire Ward's burn
+export const burnOf = (e) => (e?.intent?.v === 'ward' ? (e.intent.k || 0) + Math.floor(((e.flat || 0) - (e.teamFlat || 0)) / 2) + (e.edge?.burn || 0) : 0); // Fire Ward's burn (a table's extra hit power is for split hits, not this)
 // After the round: a Stalker that took no harm will Pounce next round.
 function settleStalks(b, rep) {
   rep.stalks = [];
@@ -926,7 +926,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
       case 'summon': {
         const room = ENEMY_CAP - living().length; const add = MONSTERS[e.id].adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
-          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge }, b.rng);
+          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge }, b.rng);
           s.fresh = true; b.enemies.push(s); rep.summoned.push(s.uid);
         }
         break;
@@ -1495,8 +1495,8 @@ export function newPartyBattle(heroes, quest0, rng) {
   const sc = partyScale(players);
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1; const edge = quest.edge || null;
   const enemies = [];
-  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat: flat + sc.flat, rewardMult, edge }, rng));
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat: flat + sc.flat, rewardMult, edge }, rng));
+  for (const id of quest.enemies) enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, teamFlat: sc.flat, rewardMult, edge }, rng));
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, teamFlat: sc.flat, rewardMult, edge }, rng));
   dressNemesis(enemies, quest.nemesis);
   const b = {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter),
@@ -1713,7 +1713,7 @@ export function resolveParty(b) {
       case 'summon': {
         const room = ENEMY_CAP - livingNow().length; const add = MONSTERS[e.id].adds;
         for (let n = 0; n < Math.min(i.k, room); n++) {
-          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat, rewardMult: 0, edge: e.edge }, b.rng);
+          const s = spawnEnemy(add, { hpMult: e.hpMult * 0.75, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge }, b.rng);
           s.fresh = true; b.enemies.push(s); rep.summoned.push(s.uid);
         }
         break;

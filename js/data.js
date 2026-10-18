@@ -819,11 +819,11 @@ export function stepKind(act, step) {
 
 // Party scaling (index = players - 1). Only 1 player is tuned today.
 export const PARTY = {
-  hp: [1, 1.8, 2.5, 3.1, 3.6, 4.0],
+  hp: [1, 2.2, 2.5, 3.1, 3.6, 4.0], // a pair x2.2 (from 1.8): with +10 a hit it plays as tense as solo (tools/party.mjs)
   adds: [0, 0, 0, 1, 1, 2],
   // more to every monster hit at a table (Dave, Oct 2026: a pair split each hit two ways and each block soaked its share, so a team
   // barely got hurt); added to the hit's base number, so the monster's card shows it
-  flat: [0, 0, 0, 0, 0, 0],
+  flat: [0, 10, 0, 0, 0, 0], // a pair: +10 a hit (bigger tables are measured next)
 };
 
 export const ENEMY_CAP = 4;
