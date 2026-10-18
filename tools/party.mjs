@@ -2,6 +2,8 @@
 // at every step each fights that step's quest alone, and then the pair fights it together at a table (newPartyBattle, PARTY
 // scaling), with the smart bot playing every hero's dice. Prints solo vs team win rate, rounds and health left, by act.
 //   node tools/party.mjs [acts=2] [runs=2] [heroes=2]        SKILL=hard for another difficulty
+//   PLAY=first   every hero takes its first roll and locks in on the first monster (the lazy player), solo and team alike
+//   MIX=1        the last hero is a fresh level-1 hero who joins at the start of Act II (a veteran with a beginner)
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newPartyBattle, startFighter, commitFighter, resolveParty, withDifficulty } from '../js/engine.js';
 import { fight, botCamp, botShape, smartActs } from './sim.mjs';
 import { QUESTS_PER_ACT, PARTY } from '../js/data.js';
@@ -19,7 +21,9 @@ function teamFight(heroes, quest, rng) {
   for (let guard = 0; guard < 60 && !b.outcome; guard++) {
     for (let i = 0; i < b.fighters.length; i++) {
       if (!startFighter(b, i)) continue;
-      botShape(b, rng); const o = smartActs(b); commitFighter(b);
+      const lazy = process.env.PLAY === 'first';
+      if (!lazy) botShape(b, rng);
+      const o = lazy ? { target: b.enemies.findIndex((e) => e.hp > 0), straight: 'atk' } : smartActs(b); commitFighter(b);
       const f = b.fighters[i]; f.target = o.target; f.straight = o.straight; f.locked = true;
     }
     resolveParty(b);
@@ -28,6 +32,7 @@ function teamFight(heroes, quest, rng) {
   return b;
 }
 const acts = {}; const key = (a, k) => `${a}|${k}`;
+const mAt = []; // the company's strength factor, by act
 const add = (a, kind, mode, won, rounds, hpk) => { const r = (acts[key(a, kind)] ||= { a, kind, solo: { n: 0, w: 0, r: 0, h: 0 }, team: { n: 0, w: 0, r: 0, h: 0 } })[mode]; r.n++; r.w += won ? 1 : 0; r.r += rounds; r.h += hpk; };
 for (let run = 0; run < RUNS; run++) {
   for (const [p, pair0] of PAIRS.entries()) {
@@ -35,9 +40,10 @@ for (let run = 0; run < RUNS; run++) {
     const rng = makeRng(1000 * run + 17 * p + 3);
     const heroes = pair.map((cls, i) => { const h = newHero({ name: `${cls}${i}`, cls, seed: 97 * run + 13 * p + i }); h.difficulty = SKILL; return h; });
     for (let n = 0; n < QUESTS_PER_ACT * ACTS; n++) {
+      if (process.env.MIX && n === QUESTS_PER_ACT) { const last = heroes.length - 1; const old = heroes[last]; const kid = newHero({ name: `${old.cls}new`, cls: old.cls, seed: 991 + p }); kid.difficulty = SKILL; kid.campaign = structuredClone(heroes[0].campaign); heroes[last] = kid; }
       const quest = questsFor(heroes[0])[0]; const act = heroes[0].campaign.act;
       // the team, against this step's quest
-      const tb = teamFight(heroes, quest, rng);
+      const tb = teamFight(heroes, quest, rng); (mAt[act] ||= []).push(tb.team?.m || 0);
       const alive = tb.fighters.reduce((a, f) => a + Math.max(0, f.hp) / f.maxHp, 0) / tb.fighters.length;
       add(act, quest.kind, 'team', tb.outcome === 'victory', tb.round, tb.outcome === 'victory' ? alive : 0);
       // each hero alone (the way the solo campaign grows them)
@@ -54,7 +60,7 @@ for (let run = 0; run < RUNS; run++) {
 }
 void withDifficulty;
 const pct = (x) => `${Math.round(100 * x)}%`.padStart(5);
-console.log(`team health x${PARTY.hp[N - 1]}, hits +${PARTY.flat[N - 1]} · ${SKILL}, ${N} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
+console.log(`${process.env.PLAY || 'smart'} play${process.env.MIX ? ', a beginner joins in Act II' : ''} · company strength by act ${mAt.map((a, i) => (a ? `${i}: x${(a.reduce((s, x) => s + x, 0) / a.length).toFixed(2)}` : '')).filter(Boolean).join(' ')} · ${SKILL}, ${N} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
 console.log('act kind      solo: win  rnds  hp      team: win  rnds  hp');
 for (const r of Object.values(acts).sort((x, y) => x.a - y.a || x.kind.localeCompare(y.kind))) {
   const s = r.solo; const t = r.team;
