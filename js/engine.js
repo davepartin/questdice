@@ -1094,6 +1094,7 @@ export function recordFled(campaign, b) {
   campaign.chronicle = campaign.chronicle || [];
   for (const e of b.enemies) {
     if (e.fled) {
+      if (mof(e.id, b)?.nemesis === false) continue; // pinned returns only (Sir Reginald); skip the random ambush loop
       const prev = campaign.nemeses.find((n) => n.id === e.id);
       const rec = {
         id: e.id, name: e.name, scar: e.scar || SCARS.blade,

@@ -698,6 +698,32 @@ export const MONSTERS = {
         S('Talons', 5, 1), { n: 'Terrify', v: 'bind', f: 0, m: 0, k: 3 }, { n: 'Inhale', v: 'charge', f: 0, m: 0 }],
     },
   },
+  // Clover Heist essential minis. Painted looking left. Do not flip.
+  magpieking: {
+    name: 'The Magpie King', glyph: '🐦', img: 'assets/miniatures/magpieking.webp', look: 'left', imgBase: IB(493, 512, 212.5, 505, 370), short: 'MAGK', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss', threat: 9,
+    slam: { f: 3, m: 2 }, adds: 'magpies',
+    faces: [S('Scepter', 1, 1), S('Scepter', 1, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
+      { n: 'Gold Shield', v: 'guard', f: 2, m: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
+      { n: 'Snatch the Luck', v: 'hush', f: 0, m: 0 }],
+    rage: {
+      name: 'Greed-Mad', power: 12,
+      faces: [S('Frenzy', 3, 1), { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 },
+        { n: 'Rally!', v: 'summon', f: 0, m: 0, k: 1 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 },
+        { n: 'Snatch the Luck', v: 'hush', f: 0, m: 0 }, { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+    },
+  },
+  magpies: {
+    name: 'Magpie Gang', glyph: '🐦', img: 'assets/miniatures/magpies.webp', look: 'left', imgBase: IB(512, 388, 218, 381, 351), short: 'MAGS', init: 6, hp: 30, power: 8, xp: 8, gold: 6, tier: 'minion', threat: 1.0,
+    faces: [S('Stab', 1, 1), { n: 'Shiny!', v: 'pilfer', f: 0, m: 1 }, { n: 'Shiny!', v: 'pilfer', f: 0, m: 1 },
+      { n: 'Duck', v: 'guard', f: 1, m: 1 }, S('Slash', 2, 1), { n: 'Scatter', v: 'phase', f: 0, m: 0 }],
+  },
+  foxrogue: {
+    name: 'Sir Reginald Brush', glyph: '🦊', img: 'assets/miniatures/foxrogue.webp', look: 'left', imgBase: IB(364, 512, 178, 505, 345), short: 'FOX', init: 8, hp: 50, power: 8, xp: 14, gold: 11, tier: 'minion', threat: 1.3,
+    pounce: { f: 2, m: 2 }, flee: { at: 0.5, chance: 1 }, nemesis: false, // pinned returns only; do not ambush random fights
+    faces: [{ n: 'Pilfer', v: 'pilfer', f: 0, m: 1 }, { n: 'Pilfer', v: 'pilfer', f: 0, m: 1 },
+      { n: 'Stalk', v: 'stalk', f: 0, m: 0 }, { n: 'Snare', v: 'bind', f: 0, m: 0, k: 1 },
+      S('Knife', 1, 1), { n: 'Fade', v: 'phase', f: 0, m: 0 }],
+  },
 };
 
 // -------------------------------------------------------------------------------------------

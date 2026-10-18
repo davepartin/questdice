@@ -845,6 +845,7 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sc-minis { display: flex; align-items: center; }
 .sc-minis .sx-emblem { width: 2.6rem; height: 2.6rem; border-radius: 50%; }
 .sc-minis .sx-emblem + .sx-emblem { margin-left: -.55rem; }
+.sc-minis > img { width: 2.6rem; height: 2.6rem; object-fit: cover; border-radius: 50%; flex: none; }
 .sx-storycard .sc-copy { display: flex; flex-direction: column; gap: .12rem; min-width: 0; flex: 1; }
 .sx-storycard .sc-copy small { color: var(--gold-hi); font-family: var(--font-display); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; }
 .sx-storycard .sc-copy b { font-family: var(--font-display); font-size: 1.12rem; color: #fff; line-height: 1.15; }

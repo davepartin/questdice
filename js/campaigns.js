@@ -1,5 +1,6 @@
 // Campaign packs (Dave, Oct 2026): every story is one pack. The Dawn Lantern is the original
-// campaign; Rival Duo and That’s Not How It Went are two-hero packs with their own locked fights.
+// campaign; The Clover Heist is a 1–6 any-hero Cloverland tale; Rival Duo and That’s Not How It Went
+// are two-hero packs with their own locked fights.
 // Duo packs are played at a table, so their fights already fit the pair: the road sets where the heroes should be and
 // newPartyBattle scales by the two heroes' real strength (teamFactor; docs/TEAMS.md). fightHp still tunes single steps.
 // Pure data and helpers: no DOM.
@@ -7,6 +8,7 @@
 import { ACTS, MONSTERS, CLASSES } from './data.js';
 import * as rivalDuo from './packs/rivalduo.js';
 import * as balladPack from './packs/ballad.js';
+import * as cloverHeist from './packs/cloverheist.js';
 
 export const DEFAULT_PACK = 'dawn';
 
@@ -48,13 +50,8 @@ export function monsterOf(id, camp) {
   if (!base) return MONSTERS[id] || null;
   if (!over) return base;
   const out = { ...base };
-  if (over.name != null) out.name = over.name;
-  if (over.glyph != null) out.glyph = over.glyph;
-  if (over.short != null) out.short = over.short;
-  if (over.img != null) out.img = over.img;
-  if (over.look != null) out.look = over.look;
-  if (over.imgBase != null) out.imgBase = over.imgBase;
-  if (over.group != null) out.group = over.group;
+  const { statsFrom: _from, ...rest } = over;
+  Object.assign(out, rest);
   return out;
 }
 
@@ -66,9 +63,15 @@ export function fightNamesOf(camp, act, step) {
   return a?.names?.[step - 1] || null;
 }
 
-// Story text may drop in {name}, {names}, {wizard}, {dwarf}, {knight}, {bard}, {ranger}.
+// Story text may drop in {name}, {names}, {wizard}, {dwarf}, {knight}, {bard}, {ranger}, {someone}.
 // Dawn copy has none of these, so existing lines play unchanged. Apply to titles too.
-export function fillNames(text, heroes = []) {
+// {someone} is a random party member (stable per line via campaign seed); with no names it is "somebody".
+function nameHash(...parts) {
+  let h = 2166136261;
+  for (const ch of parts.join('|')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+export function fillNames(text, heroes = [], ctx = {}) {
   if (text == null) return text;
   const list = (heroes || []).filter((h) => h && h.name);
   const byCls = {};
@@ -77,12 +80,25 @@ export function fillNames(text, heroes = []) {
   const joined = names.length <= 1 ? (names[0] || 'you')
     : names.length === 2 ? `${names[0]} and ${names[1]}`
     : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-  const sub = (s) => String(s).replace(/\{(names|name|wizard|dwarf|knight|bard|ranger)\}/g, (_, k) => {
-    if (k === 'names') return joined;
-    if (k === 'name') return names[0] || 'you';
-    return byCls[k] || NAME_FALLBACK[k] || names[0] || 'you';
-  });
-  return Array.isArray(text) ? text.map(sub) : sub(text);
+  const someoneFor = (lineKey) => {
+    if (!names.length) return 'somebody';
+    if (names.length === 1 || ctx.seed == null) return names[0];
+    return names[nameHash(String(ctx.seed), lineKey) % names.length];
+  };
+  const sub = (s, i = 0) => {
+    const key = `${ctx.lineId || ''}:${i}`;
+    let someone;
+    return String(s).replace(/\{(names|name|wizard|dwarf|knight|bard|ranger|someone)\}/g, (_, k) => {
+      if (k === 'someone') {
+        if (someone == null) someone = someoneFor(key);
+        return someone;
+      }
+      if (k === 'names') return joined;
+      if (k === 'name') return names[0] || 'you';
+      return byCls[k] || NAME_FALLBACK[k] || names[0] || 'you';
+    });
+  };
+  return Array.isArray(text) ? text.map((s, i) => sub(s, i)) : sub(text, 0);
 }
 
 export function classLabel(id) { return CLASSES[id]?.name || id; }
@@ -196,8 +212,32 @@ const BALLAD = {
   steps: balladPack.steps,
 };
 
+const CLOVERHEIST = {
+  id: 'cloverheist',
+  title: 'The Clover Heist',
+  pitch: 'Every four-leaf clover in Cloverland has been stolen, and there is a magpie feather on every doorstep. Follow the feathers. Mind the fox.',
+  cover: { img: 'assets/miniatures/magpieking.webp' },
+  requiredHeroes: 1,
+  maxHeroes: 6,
+  forcedClasses: null,
+  startMode: 'scaled',
+  ban: [],
+  // NICE-TO-HAVE fallbacks: delete each line once that painted mini lands.
+  monsters: {
+    goblindrummer: { statsFrom: 'goblin', name: 'Goblin Drummer' }, // Rumpus: goblin mini until goblindrummer is painted
+    badgerbaron: { statsFrom: 'ogre', name: 'Baron Grumbletusk' }, // Grumbletusk: ogre mini until badgerbaron is painted
+    silkwood: { statsFrom: 'lich', name: 'Madam Silkwood', img: MONSTERS.spider.img, imgBase: MONSTERS.spider.imgBase, adds: 'spider' }, // spider shown big with lich stats until silkwood is painted
+    roc: { statsFrom: 'ashwyrm', name: 'Bertha' }, // Bertha: Ashmaw mini until roc is painted
+    // marmalade / parrotcaptain cameos dropped (fightHp II.6 = 1.6, III.3 = 1.5) until those minis are painted
+  },
+  acts: finishActs(cloverHeist.actSpecs, []),
+  beats: cloverHeist.beats,
+  steps: cloverHeist.steps,
+};
+
 export const CAMPAIGNS = {
   dawn: DAWN,
+  cloverheist: CLOVERHEIST,
   rivalduo: RIVALDUO,
   ballad: BALLAD,
 };

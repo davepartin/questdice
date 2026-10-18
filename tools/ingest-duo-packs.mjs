@@ -1,8 +1,19 @@
-// One-shot: pull writer copy out of the uploaded markdown and write js/packs/*.js
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+// Pull writer copy out of campaign markdown and write js/packs/*.js
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
 
-const RIVAL_MD = '/home/ubuntu/.cursor/projects/workspace/uploads/RIVAL_DUO_5b26.md';
-const BALLAD_MD = '/home/ubuntu/.cursor/projects/workspace/uploads/THATS_NOT_HOW_IT_WENT_2fb9.md';
+const here = path.resolve(import.meta.dirname, '..');
+const UPLOADS = '/home/ubuntu/.cursor/projects/workspace/uploads';
+
+function findMd(...names) {
+  for (const n of names) {
+    for (const root of [UPLOADS, path.join(here, 'docs')]) {
+      const p = path.join(root, n);
+      if (existsSync(p)) return p;
+    }
+  }
+  return null;
+}
 
 function jsBlocks(md) {
   const out = [];
@@ -55,8 +66,6 @@ function ingest(mdPath, { id } = {}) {
   return { id, beats, steps, acts };
 }
 
-const rival = ingest(RIVAL_MD, { id: 'rivalduo' });
-const ballad = ingest(BALLAD_MD, { id: 'ballad' });
 // Writer md still lists some minis by their Dawn ids; painted sheets have their own ids.
 function remapFoe(data, { name, from = 'vharaxis', to }) {
   for (const act of data.steps) {
@@ -73,22 +82,102 @@ function remapFoe(data, { name, from = 'vharaxis', to }) {
     }
   }
 }
-const mungo = ballad.steps[0][4];
-if (mungo?.names?.[0] === 'Mungo') {
-  mungo.foes = ['mungo'];
-  ballad.acts[0].fights[4] = ['mungo'];
-}
-remapFoe(rival, { name: 'Duchess Goldbelly', to: 'goldbelly' });
-remapFoe(ballad, { name: 'The Dowager Blazemorrow', to: 'blazemorrow' });
 
-mkdirSync('/workspace/js/packs', { recursive: true });
+function applyDuoRemaps(rival, ballad) {
+  const mungo = ballad.steps[0][4];
+  if (mungo?.names?.[0] === 'Mungo') {
+    mungo.foes = ['mungo'];
+    ballad.acts[0].fights[4] = ['mungo'];
+  }
+  remapFoe(rival, { name: 'Duchess Goldbelly', to: 'goldbelly' });
+  remapFoe(ballad, { name: 'The Dowager Blazemorrow', to: 'blazemorrow' });
+}
+
+// Nice-to-have minis not painted yet: drop Marmalade / Captain Squawk cameos (with fightHp bumps)
+// and swap Grumbletusk / Bertha copy to match the ogre / Ashmaw stand-ins.
+function applyCloverFallbacks(data) {
+  const a2s6 = data.steps[1][5];
+  a2s6.foes = ['wraith'];
+  a2s6.names = ['Mournful Mabel'];
+  a2s6.arrive = a2s6.arrive.slice(0, 1);
+  a2s6.win = a2s6.win.slice(0, 1);
+  data.acts[1].fights[5] = ['wraith'];
+  data.acts[1].names[5] = ['Mournful Mabel'];
+  data.acts[1].fightHp = { ...data.acts[1].fightHp, 6: 1.6 };
+
+  const a3s3 = data.steps[2][2];
+  a3s3.foes = ['magpies'];
+  a3s3.names = ['the Mine Gang'];
+  a3s3.arrive = a3s3.arrive.slice(0, 1);
+  a3s3.win = a3s3.win.slice(0, 1);
+  data.acts[2].fights[2] = ['magpies'];
+  data.acts[2].names[2] = ['the Mine Gang'];
+  data.acts[2].fightHp = { ...data.acts[2].fightHp, 3: 1.5 };
+
+  const swap = (s) => String(s)
+    .replace(/an enormous badger/g, 'an enormous hill ogre')
+    .replace(/Big claws/g, 'Big fists')
+    .replace(/his claws/g, 'his fists')
+    .replace(/in the fur behind his ear/g, 'behind his ear')
+    .replace(/backs into his hole/g, 'backs down the bank')
+    .replace(/a great eagle/g, 'a great wyrm')
+    .replace(/Eagles/g, 'Wyrms');
+  const walk = (v) => {
+    if (typeof v === 'string') return swap(v);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      for (const k of Object.keys(v)) v[k] = walk(v[k]);
+    }
+    return v;
+  };
+  walk(data.beats);
+  walk(data.steps);
+}
+
+mkdirSync(path.join(here, 'js/packs'), { recursive: true });
 function writePack(name, data) {
   const body = `// Writer copy for the ${data.id} pack. Generated from the campaign markdown; edit the source file, not this one.\n`
     + `export const beats = ${dump(data.beats)};\n\n`
     + `export const steps = ${dump(data.steps)};\n\n`
     + `export const actSpecs = ${dump(data.acts)};\n`;
-  writeFileSync(`/workspace/js/packs/${name}.js`, body);
+  writeFileSync(path.join(here, `js/packs/${name}.js`), body);
   console.log(name, 'beats', Object.keys(data.beats).length, 'steps', data.steps.map((a) => a.length).join(','), 'acts', data.acts.length);
 }
-writePack('rivalduo', rival);
-writePack('ballad', ballad);
+
+const PACKS = [
+  {
+    name: 'rivalduo',
+    id: 'rivalduo',
+    md: () => findMd('RIVAL_DUO_5b26.md', 'RIVAL_DUO.md'),
+  },
+  {
+    name: 'ballad',
+    id: 'ballad',
+    md: () => findMd('THATS_NOT_HOW_IT_WENT_2fb9.md', 'THATS_NOT_HOW_IT_WENT.md'),
+  },
+  {
+    name: 'cloverheist',
+    id: 'cloverheist',
+    md: () => findMd('CLOVER_HEIST_1e76.md', 'CLOVER_HEIST.md'),
+    after: applyCloverFallbacks,
+  },
+];
+
+const loaded = {};
+for (const spec of PACKS) {
+  const mdPath = spec.md();
+  if (!mdPath) {
+    if (existsSync(path.join(here, `js/packs/${spec.name}.js`))) {
+      console.log('skip', spec.name, '(no markdown; keeping existing pack)');
+      continue;
+    }
+    throw new Error(`no markdown for ${spec.name}`);
+  }
+  const data = ingest(mdPath, { id: spec.id });
+  loaded[spec.name] = data;
+  spec.after?.(data);
+}
+if (loaded.rivalduo && loaded.ballad) applyDuoRemaps(loaded.rivalduo, loaded.ballad);
+for (const spec of PACKS) {
+  if (loaded[spec.name]) writePack(spec.name, loaded[spec.name]);
+}

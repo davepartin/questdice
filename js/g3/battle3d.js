@@ -35,7 +35,8 @@ const EPITHET = {
   bonewarden: ['BONE WARDEN', 'Keeper of the Stair'],
   vharaxis: ['VHARAXIS', 'The Ember Queen'], goldbelly: ['DUCHESS GOLDBELLY', 'The Golden Hoard'],
   blazemorrow: ['THE DOWAGER BLAZEMORROW', 'End of the Song'], fallenchampion: ['THE FALLEN CHAMPION', 'Oaths Unkept'],
-  ashwyrm: ['ASHMAW', 'The Wyrm of the Peaks'],
+  ashwyrm: ['ASHMAW', 'The Wyrm of the Peaks'], magpieking: ['THE MAGPIE KING', 'One for Sorrow'],
+  silkwood: ['MADAM SILKWOOD', 'The Great Weaver'],
 };
 
 // ------------------------------------------------------------------------------------------ start / stop

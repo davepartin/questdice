@@ -307,12 +307,13 @@ export function placeBeat(kind, name, { help = false, camp = null, heroes = [] }
   const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : (kind === 'arrive' ? p.arrive : p.win);
   if (!text?.length) return null;
   const id = `${help ? `help-${kind}` : kind}:${slugOf(name)}`;
+  const names = { seed: camp?.seed, lineId: id };
   return {
     id,
-    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes),
-    title: fillNames(p.title, heroes),
+    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes, names),
+    title: fillNames(p.title, heroes, names),
     icon: p.icon || 'road',
-    text: fillNames(text, heroes),
+    text: fillNames(text, heroes, names),
   };
 }
 export function stepBeat(kind, camp, { heroes = [], act = camp?.act, step = camp?.step } = {}) {
@@ -321,23 +322,25 @@ export function stepBeat(kind, camp, { heroes = [], act = camp?.act, step = camp
   const text = kind === 'arrive' ? row.arrive : row.win;
   if (!text?.length) return null;
   const id = `${kind}:${landOf(act)}.${step}`;
+  const names = { seed: camp?.seed, lineId: id };
   return {
     id,
-    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes),
-    title: fillNames(row.names?.[0] || row.place, heroes),
+    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes, names),
+    title: fillNames(row.names?.[0] || row.place, heroes, names),
     icon: row.icon || 'road',
-    text: fillNames(text, heroes),
+    text: fillNames(text, heroes, names),
   };
 }
-function dressBeat(b, { id, act, heroes }) {
+function dressBeat(b, { id, act, heroes, camp }) {
   const asc = ascentOf(act);
   const kicker = asc > 1 && (b.kicker === 'Ascent' || b.kicker?.endsWith(' Ascent'))
     ? `Ascent ${asc} · Act ${romans[landOf(act) - 1]}` : b.kicker;
+  const names = { seed: camp?.seed, lineId: id };
   return {
     id, act, icon: b.icon,
-    kicker: fillNames(kicker, heroes),
-    title: fillNames(b.title, heroes),
-    text: fillNames(b.text, heroes),
+    kicker: fillNames(kicker, heroes, names),
+    title: fillNames(b.title, heroes, names),
+    text: fillNames(b.text, heroes, names),
   };
 }
 // A beat ready to show: the text, with the kicker naming the act and Ascent. `heroes` fills {name}/{wizard}/…
@@ -352,15 +355,16 @@ export function beat(id, act, heroes = [], camp = null) {
     const helpArrive = kind === 'help-arrive';
     const helpWin = kind === 'help-win';
     const text = helpArrive ? (p.helpArrive || p.arrive) : helpWin ? (p.helpWin || p.win) : kind === 'arrive' ? p.arrive : p.win;
+    const names = { seed: camp?.seed, lineId: id };
     return {
       id, act, icon: p.icon || 'road',
-      kicker: fillNames(kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', heroes),
-      title: fillNames(p.title, heroes),
-      text: fillNames(text, heroes),
+      kicker: fillNames(kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', heroes, names),
+      title: fillNames(p.title, heroes, names),
+      text: fillNames(text, heroes, names),
     };
   }
   const b = beatsFor(camp)[id]; if (!b) return null;
-  return dressBeat(b, { id, act, heroes });
+  return dressBeat(b, { id, act, heroes, camp });
 }
 const seen = (c, id, act) => (c.storySeen || []).includes(seenKey(c, id, act));
 // What to show now, in order (usually zero or one beat; at an act's first quest, the last act's closing then this act's opening).
