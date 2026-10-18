@@ -84,10 +84,13 @@ export function fillNames(text, heroes = []) {
 }
 
 export function classLabel(id) { return CLASSES[id]?.name || id; }
+// Story-card labels use the class id (Wizard + Dwarf), not the full sheet name (Dwarf Warden).
+const SHORT_CLASS = { wizard: 'Wizard', dwarf: 'Dwarf', knight: 'Knight', bard: 'Bard', ranger: 'Ranger' };
+export function shortClass(id) { return SHORT_CLASS[id] || classLabel(id).split(' ')[0]; }
 export function forcedLine(pack) {
   const p = packOf(pack);
   if (!p.forcedClasses?.length) return '';
-  return p.forcedClasses.map(classLabel).join(' + ');
+  return p.forcedClasses.map(shortClass).join(' + ');
 }
 export function partySize(pack) {
   const p = packOf(pack);

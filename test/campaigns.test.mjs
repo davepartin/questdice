@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CAMPAIGNS, DEFAULT_PACK, packOf, packIdOf, packList, actsOf, beatsOf, stepsOf,
-  fillNames, forcedLine, partySize, coverClasses, cloneDawnActs, helpOff, bansOf,
+  fillNames, forcedLine, partySize, coverClasses, cloneDawnActs, helpOff, bansOf, monsterOf,
 } from '../js/campaigns.js';
 import { ACTS, CLASSES, PARTY } from '../js/data.js';
 import { pending, beat, storySoFar, markSeen, pendingVictory } from '../js/story.js';
@@ -43,7 +43,7 @@ test('Rival Duo and That’s Not How It Went are two-hero fresh packs with force
   assert.deepEqual(b.forcedClasses, ['knight', 'bard']);
   assert.equal(partySize(r), '2 heroes');
   assert.equal(partySize({ id: 'rivalduo', requiredHeroes: 2, maxHeroes: 2 }), '2 heroes');
-  assert.equal(forcedLine(r), 'Wizard + Dwarf Warden');
+  assert.equal(forcedLine(r), 'Wizard + Dwarf');
   assert.equal(forcedLine(b), 'Knight + Bard');
   assert.ok(/bangle|gerald/i.test(r.pitch));
   assert.ok(/crown/i.test(b.pitch) && /knight/i.test(b.pitch));
@@ -62,9 +62,9 @@ test('Dawn fights stay the same list; duo packs use the writer’s locked casts'
   assert.equal(ballad[2].name, 'The Big Finish');
   assert.deepEqual(rival[0].fights[0], ['goblin']);
   assert.deepEqual(rival[0].names[0], ['Crumb']);
-  assert.deepEqual(rival[1].fights[4], ['ogre']);
-  assert.equal(rival[1].names[4][0], 'Rind, the Cellar Ogre');
-  assert.deepEqual(ballad[0].fights[4], ['ogre']);
+  assert.deepEqual(rival[1].fights[4], ['bigwheel']);
+  assert.equal(rival[1].names[4][0], 'Big Wheel');
+  assert.deepEqual(ballad[0].fights[4], ['mungo']);
   assert.deepEqual(ballad[0].names[4], ['Mungo']);
   assert.deepEqual(ballad[2].fights[4], ['vharaxis']);
   assert.equal(ballad[2].names[9][0], 'The Dowager Blazemorrow');
@@ -98,6 +98,15 @@ test('fight display names ride with the locked list and title the set-pieces', (
   const mort = E.questsFor(bard)[0];
   assert.equal(mort.name, 'King Mortimer');
   assert.deepEqual(mort.enemies, ['lich']);
+  bard.campaign.act = 1; bard.campaign.step = 5;
+  const mungo = E.questsFor(bard)[0];
+  assert.equal(mungo.kind, 'elite');
+  assert.deepEqual(mungo.enemies, ['mungo']);
+  assert.deepEqual(mungo.foeNames, ['Mungo']);
+  assert.equal(monsterOf('mungo').img, 'assets/miniatures/mungo.webp');
+  assert.equal(monsterOf('mungo').look, 'left');
+  assert.equal(monsterOf('bigwheel').img, 'assets/miniatures/bigwheel.webp');
+  assert.equal(monsterOf('bigwheel').look, 'left');
 });
 
 test('story names fill {wizard}/{dwarf}/{knight}/{bard} in titles too, and Dawn copy is untouched', () => {
@@ -212,17 +221,20 @@ test('duo locked fights stay near Dawn threat, with the writer’s fightHp knobs
   assert.equal(actsOf('rivalduo')[1].fightHp[5], 1.8);
   assert.equal(actsOf('rivalduo')[1].fightHp[10], 1.25);
   assert.equal(actsOf('ballad')[2].fightHp[4], 1.4);
-  const rind = E.newHero({ name: 'Ada', cls: 'wizard', seed: 3, pack: 'rivalduo' });
-  rind.campaign.act = 2; rind.campaign.step = 5;
-  const q = E.questsFor(rind)[0];
+  const wheel = E.newHero({ name: 'Ada', cls: 'wizard', seed: 3, pack: 'rivalduo' });
+  wheel.campaign.act = 2; wheel.campaign.step = 5;
+  const q = E.questsFor(wheel)[0];
   assert.equal(q.kind, 'elite');
-  assert.ok(q.hpMult > 2, `Rind/ogre Act II elite should keep fightHp 1.8, got ${q.hpMult}`);
-  assert.equal(PARTY.hp[1], 1.8);
+  assert.deepEqual(q.enemies, ['bigwheel']);
+  assert.equal(q.name, 'Big Wheel');
+  assert.ok(q.hpMult > 2, `Big Wheel Act II elite should keep fightHp 1.8, got ${q.hpMult}`);
+  // Duo packs do not retune PARTY; Dave's team numbers live in data.js (see TEAMPLAY.md).
+  assert.equal(PARTY.hp[1], 2.2);
   const mate = E.newHero({ name: 'Bea', cls: 'dwarf', seed: 3, pack: 'rivalduo' });
-  mate.campaign = rind.campaign;
-  const solo = E.newBattle(rind, q, E.makeRng(1), 1);
-  const pair = E.newPartyBattle([rind, mate], q, E.makeRng(1));
-  assert.equal(Math.round(pair.enemies[0].maxHp / solo.enemies[0].maxHp * 10) / 10, 1.8);
+  mate.campaign = wheel.campaign;
+  const solo = E.newBattle(wheel, q, E.makeRng(1), 1);
+  const pair = E.newPartyBattle([wheel, mate], q, E.makeRng(1));
+  assert.equal(Math.round(pair.enemies[0].maxHp / solo.enemies[0].maxHp * 10) / 10, PARTY.hp[1]);
 });
 
 test('per-campaign saves keep Dawn keys and namespace the duo packs', () => {

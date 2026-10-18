@@ -179,7 +179,7 @@ export const steps = [
     {
       place: "The Toll Bridge",
       icon: "skull",
-      foes: ["ogre"],
+      foes: ["mungo"],
       names: ["Mungo"],
       arrive: [
         "Mungo the hill ogre sits on the Toll Bridge beside a sign that reads TOLL: ONE SONG. He takes requests, and he has exactly one: the duck song. If anybody stops it halfway to argue about the details, he winds up his club and delivers a review nobody forgets.",
@@ -548,7 +548,7 @@ export const actSpecs = [
       ["goblin", "cinderling"],
       ["cultist", "wolf"],
       ["wolf", "wolf"],
-      ["ogre"],
+      ["mungo"],
       ["goblin", "cultist"],
       ["goblin", "goblin", "goblin"],
       ["goblin", "wolf"],

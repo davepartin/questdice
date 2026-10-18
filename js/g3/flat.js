@@ -12,7 +12,7 @@ import { monsterOf } from '../campaigns.js';
 
 // How big each monster stands next to a hero. Flattened (0.62 + 0.38 * size) so the biggest still fits the board.
 const SIZE = {
-  goblin: 0.72, wolf: 0.9, cultist: 1, ogre: 1.6, goblinking: 1.55,
+  goblin: 0.72, wolf: 0.9, cultist: 1, ogre: 1.6, bigwheel: 1.6, mungo: 1.6, goblinking: 1.55,
   skeleton: 1, wraith: 1.15, spider: 0.75, bonewarden: 1.7, lich: 1.6,
   // The Act III foes, each with a painted miniature of its own.
   shieldbearer: 1, gloomstalker: 1, chainbinder: 1, dirgesinger: 1,

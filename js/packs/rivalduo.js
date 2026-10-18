@@ -52,10 +52,11 @@ export const beats = {
   },
   "elite:2": {
     kicker: "The lower door",
-    title: "Rind, the Cellar Ogre",
+    title: "Big Wheel",
     icon: "shield",
     text: [
-      "Somebody has been living in the cellar a very long time. Rind, the Cellar Ogre, came down for a snack a hundred years ago and never left, and now he smells so strongly of old cheese that the cheese has started to complain. He heard Gerald roll past, and has decided Gerald is his. Rind is not wrong about many things, because Rind is not sure about many things.",
+      "Every cellar forgets something. This one forgot a great deal. A hundred years of cheeses left on the back shelves have quietly matured, and then matured some more, and then, sometime last spring, matured into a person.",
+      "Big Wheel stands at the Ossuary Gate: eight feet of stacked rounds and rinds, a cheese-wire in one fist, and a smell you could lean a ladder against. It heard Gerald roll past and has decided he is family. It is not entirely wrong.",
       "{wizard} insists this is not magic, it is neglect. {dwarf}, who grew up under a mountain where cheese is taken very seriously indeed, has gone pale and keeps whispering “the waste.” Watch it wind up. It hits like a falling larder.",
     ],
   },
@@ -308,13 +309,13 @@ export const steps = [
     {
       place: "Ossuary Gate",
       icon: "shield",
-      foes: ["ogre"],
-      names: ["Rind, the Cellar Ogre"],
+      foes: ["bigwheel"],
+      names: ["Big Wheel"],
       arrive: [
-        "Rind, the Cellar Ogre, blocks the Ossuary Gate. He came down for a snack a hundred years ago and never left, and now he smells so strongly of old cheese that the cheese has started to complain. He heard Gerald roll past and has decided Gerald is his. He winds up his whole body for a blow like a falling larder.",
+        "Big Wheel blocks the Ossuary Gate: eight feet of forgotten cheeses that matured until they stood up, with a cheese-wire in one hand and a smell you could lean on. It heard Gerald roll past and has decided he is family. It roars, which smells worse than it sounds, and winds up its whole body for a blow like a falling larder.",
       ],
       win: [
-        "Rind topples like a felled larder and lies there, blinking. {dwarf} says it is a crime what the cellar has done to him. {wizard} pats his shoulder. It is the first time either has touched the other on purpose. Nobody mentions it.",
+        "Big Wheel topples and rolls away into the dark in eleven separate pieces, each of them grumbling. {dwarf} watches them go and says it is a crime to waste cheese like that. {wizard} pats him on the shoulder. It is the first time either has touched the other on purpose. Nobody mentions it.",
       ],
     },
     {
@@ -606,7 +607,7 @@ export const actSpecs = [
       ["wraith", "skeleton"],
       ["dirgesinger", "skeleton", "skeleton"],
       ["spider", "spider"],
-      ["ogre"],
+      ["bigwheel"],
       ["wraith", "gloomstalker"],
       ["frostwhelp", "frostwhelp"],
       ["skeleton", "spider"],
@@ -618,7 +619,7 @@ export const actSpecs = [
       ["Mildred", "Spare Rib"],
       ["Madam Shush", "Stamp", "Overdue"],
       ["Mrs Tuffet", "Mrs Tuffet-Next-Door"],
-      ["Rind, the Cellar Ogre"],
+      ["Big Wheel"],
       ["Mrs Peering", "Constable Lurk"],
       ["Sorbet", "Slush"],
       ["Sweeps", "Cobweb Kate"],

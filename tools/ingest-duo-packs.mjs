@@ -44,7 +44,7 @@ function dump(value, indent = 0) {
   return `{\n${lines.join(',\n')},\n${pad}}`;
 }
 
-function ingest(mdPath, { id, fallbackRind = false }) {
+function ingest(mdPath, { id } = {}) {
   const md = readFileSync(mdPath, 'utf8');
   const blocks = jsBlocks(md);
   if (blocks.length < 7) throw new Error(`${mdPath}: expected 7 js blocks, got ${blocks.length}`);
@@ -52,30 +52,17 @@ function ingest(mdPath, { id, fallbackRind = false }) {
   const steps = [asNumbered(blocks[1]), asNumbered(blocks[3]), asNumbered(blocks[5])];
   const actsSrc = blocks[6].replace(/^acts:\s*/, '');
   const acts = asArray(actsSrc);
-
-  if (fallbackRind) {
-    beats['elite:2'] = {
-      ...beats['elite:2'],
-      title: 'Rind, the Cellar Ogre',
-      text: [
-        'Somebody has been living in the cellar a very long time. Rind, the Cellar Ogre, came down for a snack a hundred years ago and never left, and now he smells so strongly of old cheese that the cheese has started to complain. He heard Gerald roll past, and has decided Gerald is his. Rind is not wrong about many things, because Rind is not sure about many things.',
-        '{wizard} insists this is not magic, it is neglect. {dwarf}, who grew up under a mountain where cheese is taken very seriously indeed, has gone pale and keeps whispering “the waste.” Watch it wind up. It hits like a falling larder.',
-      ],
-    };
-    const s5 = steps[1][4];
-    s5.foes = ['ogre'];
-    s5.names = ['Rind, the Cellar Ogre'];
-    s5.arrive = ['Rind, the Cellar Ogre, blocks the Ossuary Gate. He came down for a snack a hundred years ago and never left, and now he smells so strongly of old cheese that the cheese has started to complain. He heard Gerald roll past and has decided Gerald is his. He winds up his whole body for a blow like a falling larder.'];
-    s5.win = ['Rind topples like a felled larder and lies there, blinking. {dwarf} says it is a crime what the cellar has done to him. {wizard} pats his shoulder. It is the first time either has touched the other on purpose. Nobody mentions it.'];
-    acts[1].fights[4] = ['ogre'];
-    acts[1].names[4] = ['Rind, the Cellar Ogre'];
-  }
-
   return { id, beats, steps, acts };
 }
 
-const rival = ingest(RIVAL_MD, { id: 'rivalduo', fallbackRind: true });
+const rival = ingest(RIVAL_MD, { id: 'rivalduo' });
 const ballad = ingest(BALLAD_MD, { id: 'ballad' });
+// Writer md still lists the Toll Bridge elite as `ogre` named Mungo; the painted mini is `mungo`.
+const mungo = ballad.steps[0][4];
+if (mungo?.names?.[0] === 'Mungo') {
+  mungo.foes = ['mungo'];
+  ballad.acts[0].fights[4] = ['mungo'];
+}
 
 mkdirSync('/workspace/js/packs', { recursive: true });
 function writePack(name, data) {
