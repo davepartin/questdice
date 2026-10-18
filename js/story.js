@@ -8,8 +8,17 @@
 // after. Seen beats are kept in campaign.storySeen.
 
 import { ACTS, placeSlug, PLACE_ALIAS } from './data.js';
+import { beatsOf, placesOf, stepsOf, fillNames, packIdOf, DEFAULT_PACK } from './campaigns.js';
 
 const slugOf = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
+const beatsFor = (c) => beatsOf(c) || BEATS;
+const placesFor = (c) => placesOf(c) || PLACES;
+const landIndex = (act) => ((act - 1) % ACTS_IN_STORY);
+const stepRow = (c, act = c?.act, step = c?.step) => stepsOf(c)?.[landIndex(act)]?.[step - 1] || null;
+const seenKey = (c, id, act) => {
+  const pack = packIdOf(c);
+  return pack === DEFAULT_PACK ? `${id}@${act}` : `${pack}/${id}@${act}`;
+};
 
 const BEATS = {
   'open:1': { kicker: 'Prologue', title: 'The Night the Light Went Out', icon: 'flame', text: [
@@ -285,41 +294,80 @@ const ascentOf = (act) => Math.floor((act - 1) / ACTS_IN_STORY) + 1; // 1 = the 
 const landOf = (act) => ((act - 1) % ACTS_IN_STORY) + 1;             // 1 = the Marches, 2 = the Crypt, 3 = the Peaks
 
 // The beat id for a moment in a given act ('open' | 'elite' | 'boss' | 'close'), or null when that act has none.
-export function beatId(kind, act) {
-  if (ascentOf(act) === 1) return BEATS[`${kind}:${act}`] ? `${kind}:${act}` : null;
-  if (kind === 'close') return 'close:ascent';
+export function beatId(kind, act, camp) {
+  const table = beatsFor(camp);
+  if (ascentOf(act) === 1) return table[`${kind}:${act}`] ? `${kind}:${act}` : null;
+  if (kind === 'close') return table['close:ascent'] ? 'close:ascent' : null;
   if (kind === 'elite') return null;
-  return BEATS[`${kind}:ascent:${landOf(act)}`] ? `${kind}:ascent:${landOf(act)}` : null;
+  return table[`${kind}:ascent:${landOf(act)}`] ? `${kind}:ascent:${landOf(act)}` : null;
 }
-export function placeOf(name) { return PLACES[slugOf(name)] || null; }
-export function placeBeat(kind, name, { help = false } = {}) {
-  const p = placeOf(name); if (!p) return null;
+export function placeOf(name, camp) { return placesFor(camp)[slugOf(name)] || PLACES[slugOf(name)] || null; }
+export function placeBeat(kind, name, { help = false, camp = null, heroes = [] } = {}) {
+  const p = placeOf(name, camp); if (!p) return null;
   const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : (kind === 'arrive' ? p.arrive : p.win);
   if (!text?.length) return null;
   const id = `${help ? `help-${kind}` : kind}:${slugOf(name)}`;
-  return { id, kicker: kind === 'arrive' ? 'You arrive' : 'The fight is over', title: p.title, icon: p.icon || 'road', text };
+  return {
+    id,
+    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes),
+    title: fillNames(p.title, heroes),
+    icon: p.icon || 'road',
+    text: fillNames(text, heroes),
+  };
 }
-// A beat ready to show: the text, with the kicker naming the act and Ascent.
-export function beat(id, act) {
+export function stepBeat(kind, camp, { heroes = [], act = camp?.act, step = camp?.step } = {}) {
+  const row = stepRow(camp, act, step);
+  if (!row) return null;
+  const text = kind === 'arrive' ? row.arrive : row.win;
+  if (!text?.length) return null;
+  const id = `${kind}:${landOf(act)}.${step}`;
+  return {
+    id,
+    kicker: fillNames(kind === 'arrive' ? 'You arrive' : 'The fight is over', heroes),
+    title: fillNames(row.names?.[0] || row.place, heroes),
+    icon: row.icon || 'road',
+    text: fillNames(text, heroes),
+  };
+}
+function dressBeat(b, { id, act, heroes }) {
+  const asc = ascentOf(act);
+  const kicker = asc > 1 && (b.kicker === 'Ascent' || b.kicker?.endsWith(' Ascent'))
+    ? `Ascent ${asc} · Act ${romans[landOf(act) - 1]}` : b.kicker;
+  return {
+    id, act, icon: b.icon,
+    kicker: fillNames(kicker, heroes),
+    title: fillNames(b.title, heroes),
+    text: fillNames(b.text, heroes),
+  };
+}
+// A beat ready to show: the text, with the kicker naming the act and Ascent. `heroes` fills {name}/{wizard}/…
+export function beat(id, act, heroes = [], camp = null) {
+  const stepMatch = /^(arrive|win):(\d+)\.(\d+)$/.exec(id || '');
+  if (stepMatch) {
+    return stepBeat(stepMatch[1], camp, { heroes, act: Number(stepMatch[2]), step: Number(stepMatch[3]) });
+  }
   if (id?.startsWith('arrive:') || id?.startsWith('win:') || id?.startsWith('help-')) {
     const [kind, ...rest] = id.split(':');
-    const p = PLACES[rest.join(':')]; if (!p) return null;
+    const p = placesFor(camp)[rest.join(':')] || PLACES[rest.join(':')]; if (!p) return null;
     const helpArrive = kind === 'help-arrive';
     const helpWin = kind === 'help-win';
     const text = helpArrive ? (p.helpArrive || p.arrive) : helpWin ? (p.helpWin || p.win) : kind === 'arrive' ? p.arrive : p.win;
-    return { id, act, kicker: kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', title: p.title, icon: p.icon || 'road', text };
+    return {
+      id, act, icon: p.icon || 'road',
+      kicker: fillNames(kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', heroes),
+      title: fillNames(p.title, heroes),
+      text: fillNames(text, heroes),
+    };
   }
-  const b = BEATS[id]; if (!b) return null;
-  const asc = ascentOf(act);
-  const kicker = asc > 1 && b.kicker === 'Ascent' ? `Ascent ${asc} · Act ${romans[landOf(act) - 1]}` : b.kicker;
-  return { id, act, kicker, title: b.title, icon: b.icon, text: b.text };
+  const b = beatsFor(camp)[id]; if (!b) return null;
+  return dressBeat(b, { id, act, heroes });
 }
-const seen = (c, id, act) => (c.storySeen || []).includes(`${id}@${act}`);
+const seen = (c, id, act) => (c.storySeen || []).includes(seenKey(c, id, act));
 // What to show now, in order (usually zero or one beat; at an act's first quest, the last act's closing then this act's opening).
 export function pending(c, place) {
   if (!c) return [];
   const out = [];
-  const add = (kind, act) => { const id = beatId(kind, act); if (id && !seen(c, id, act)) out.push({ id, act }); };
+  const add = (kind, act) => { const id = beatId(kind, act, c); if (id && !seen(c, id, act)) out.push({ id, act }); };
   if (c.step === 1) { if (c.act > 1) add('close', c.act - 1); add('open', c.act); }
   if (c.step === 5) add('elite', c.act);
   if (c.step === 10) add('boss', c.act);
@@ -327,20 +375,32 @@ export function pending(c, place) {
   const skipPlace = c.step === 5 || c.step === 10
     || out.some((x) => /^(open|close|elite|boss):/.test(x.id));
   if (place && !skipPlace) {
-    const help = c.step === 8 && !!c.nextPlace;
-    const b = placeBeat('arrive', place, { help });
-    if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place });
+    const row = stepRow(c);
+    if (row) {
+      const b = stepBeat('arrive', c);
+      if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place: row.place });
+    } else {
+      const help = c.step === 8 && !!c.nextPlace;
+      const b = placeBeat('arrive', place, { help, camp: c });
+      if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place });
+    }
   }
   return out;
 }
 export function pendingVictory(c, place) {
   if (!c || !place) return null;
+  const row = stepRow(c);
+  if (row) {
+    const b = stepBeat('win', c);
+    if (!b || seen(c, b.id, c.act)) return null;
+    return { id: b.id, act: c.act, place: row.place };
+  }
   const help = c.step === 8 && !!c.nextPlace;
-  const b = placeBeat('win', place, { help });
+  const b = placeBeat('win', place, { help, camp: c });
   if (!b || seen(c, b.id, c.act)) return null;
   return { id: b.id, act: c.act, place };
 }
-export function markSeen(c, id, act) { c.storySeen = [...new Set([...(c.storySeen || []), `${id}@${act}`])]; }
+export function markSeen(c, id, act) { c.storySeen = [...new Set([...(c.storySeen || []), seenKey(c, id, act)])]; }
 export function applyPlaceVictory(campaign, place) {
   if (!campaign || !place) return;
   if (slugOf(place) === 'oathbreak-keep') {
@@ -350,12 +410,12 @@ export function applyPlaceVictory(campaign, place) {
   }
 }
 // The story so far: every beat up to where the campaign stands, in order (for the menu's "The story so far").
-export function storySoFar(c) {
+export function storySoFar(c, heroes = []) {
   if (!c) return [];
   const out = [];
   for (let a = 1; a <= c.act; a++) {
     const here = a === c.act;
-    const push = (kind) => { const id = beatId(kind, a); if (id) out.push(beat(id, a)); };
+    const push = (kind) => { const id = beatId(kind, a, c); if (id) out.push(beat(id, a, heroes, c)); };
     push('open');
     if (!here || c.step >= 5) push('elite');
     if (!here || c.step >= 10) push('boss');

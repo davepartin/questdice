@@ -8,6 +8,7 @@ import * as SV from './save.js';
 import * as V from './view.js';
 import * as R from './roads.js';
 import * as ST from './story.js';
+import { CAMPAIGNS, packList, packOf, packIdOf, actsOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from './campaigns.js';
 import { hintsOn, setHints } from './coach.js';
 import * as Net from './net.js';
 import * as Online from './g3/online.js';
@@ -81,11 +82,15 @@ function persist() {
     return;
   }
   if (S.practice || S.daily) return; // the practice battle and the daily challenge are never saved to a hero
-  const hero = S.company?.members?.[0] || S.hero;
-  if (!hero) return;
-  SV.markReached(hero);
-  if (!SV.saveHero(hero)) toast('Could not save. Is browser storage blocked?', 'bad');
-  queueCloud(hero);
+  const members = membersOf();
+  if (!members.length) return;
+  const campaign = members[0].campaign;
+  for (const hero of members) {
+    if (campaign) hero.campaign = campaign;
+    SV.markReached(hero);
+    if (!SV.saveHero(hero)) toast('Could not save. Is browser storage blocked?', 'bad');
+    queueCloud(hero);
+  }
 }
 function concludeRoadEffects() {
   const c = S.company?.campaign || S.hero?.campaign;
@@ -93,8 +98,9 @@ function concludeRoadEffects() {
   E.spendBlessings(c);
   E.clearAmbush(c);
 }
-const actOf = (hero) => D.ACTS[(hero.campaign.act - 1) % D.ACTS.length];
-const actName = (hero) => { const c = hero.campaign; const cyc = Math.floor((c.act - 1) / D.ACTS.length); return actOf(hero).name + (cyc ? ` · Ascent ${cyc + 1}` : ''); };
+const actOf = (hero) => { const acts = actsOf(hero?.campaign); return acts[(Math.max(1, hero?.campaign?.act | 0) - 1) % acts.length]; };
+const actName = (hero) => { const c = hero.campaign; const acts = actsOf(c); const cyc = Math.floor((c.act - 1) / acts.length); return actOf(hero).name + (cyc ? ` · Ascent ${cyc + 1}` : ''); };
+const foeOf = (id, camp) => monsterOf(id, camp) || D.MONSTERS[id];
 const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
 // ------------------------------------------------------------------ shared pieces
@@ -190,7 +196,7 @@ export function showTitle() {
   S.net = null; S.holdScroll = false; S.practice = null; S.daily = null; TUT.closeLessons();
   S.hero = null; S.company = null; S.battle = null; S.busy = false;
   if (SCRUI.on()) return SCRUI.title();
-  const saves = SV.listSaves().filter((x) => x.kind !== 'company'); // one-phone companies are gone
+  const saves = SV.listSaves();
   const grid = h('div', { class: 'title-grid', 'aria-hidden': 'true' }, D.SLOTS.map((s) => h('div', { class: `td td-${s} ${['N', 'W', 'E', 'S', 'C'].includes(s) ? 'limb' : ''}` }, h('span', {}, String(1 + Math.floor(Math.random() * 4))))));
   const tick = () => { $$('.td span', grid).forEach((n, i) => { if (Math.random() < 0.35) { n.textContent = String(1 + Math.floor(Math.random() * (i === 4 ? 6 : 4))); n.parentElement.classList.remove('pop'); void n.parentElement.offsetWidth; n.parentElement.classList.add('pop'); } }); };
   const items = [
@@ -201,13 +207,16 @@ export function showTitle() {
   if (saves.length) {
     items.push(h('div', { class: 't-eyebrow mb' }, 'On this device'));
     items.push(h('nav', { class: 'dock' }, saves.map((x) => {
-      const sub = `Level ${x.level} ${D.CLASSES[x.cls].name}`;
-      return cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, sub, () => unlock(x.name, x.kind), { glyph: D.CLASSES[x.cls].glyph, tone: 'solo' });
+      const story = packOf(x.pack);
+      const sub = x.kind === 'company'
+        ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(' + ')} · ${story.title}`
+        : `Level ${x.level} ${D.CLASSES[x.cls].name}${story.id !== DEFAULT_PACK ? ` · ${story.title}` : ''}`;
+      return cmd(`Act ${romans[x.act - 1] || x.act} · Quest ${x.step}`, x.name, sub, () => unlock(x), { glyph: D.CLASSES[x.cls].glyph, tone: x.kind === 'company' ? 'versus' : 'solo' });
     })));
   }
   items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
   items.push(h('nav', { class: 'dock' },
-    cmd('01 · Hero', 'Forge a new hero', 'One body of dice. A whole road.', showCreate, { glyph: '🎲', tone: 'tutorial' }),
+    cmd('01 · Story', 'Choose your story', 'The Dawn Lantern, or a tale for two.', showStories, { glyph: '🎲', tone: 'tutorial' }),
     cmd('02 · Together', 'Play together', 'Up to six friends, each on their own phone. Each decides at the same time, and the fight runs when every choice is in.', Online.together, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Cloud', 'Open a cloud save', 'Name and password, on any device.', showCloudLoad, { glyph: '☁' }),
     cmd('04 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
@@ -216,15 +225,29 @@ export function showTitle() {
   S.timers.push(setInterval(tick, 1400));
 }
 function adopt(saved) {
+  if (saved?.kind === 'company' && saved.members?.length) {
+    const campaign = saved.campaign || saved.members[0].campaign || {};
+    campaign.nemeses = campaign.nemeses || [];
+    campaign.blessings = campaign.blessings || [];
+    campaign.chronicle = campaign.chronicle || [];
+    campaign.pack = packIdOf(campaign.pack);
+    for (const m of saved.members) m.campaign = campaign;
+    S.company = { kind: 'company', name: saved.name, campaign, members: saved.members, pack: campaign.pack };
+    S.hero = saved.members[0];
+    S.seat = 0;
+    return;
+  }
   saved.campaign = saved.campaign || {};
   saved.campaign.nemeses = saved.campaign.nemeses || [];
   saved.campaign.blessings = saved.campaign.blessings || [];
   saved.campaign.chronicle = saved.campaign.chronicle || [];
-  S.company = { kind: 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
+  saved.campaign.pack = packIdOf(saved.campaign.pack);
+  const party = packOf(saved.campaign).requiredHeroes > 1;
+  S.company = { kind: party ? 'company' : 'solo', name: saved.name, campaign: saved.campaign, members: [saved] };
   S.hero = saved;
   S.seat = 0;
 }
-export async function openNamedHero(name, password) {
+export async function openNamedHero(name, password, pack) {
   let cloudErr = null;
   try {
     const hero = await (await import('./cloud.js')).getHero(name, password);
@@ -233,7 +256,7 @@ export async function openNamedHero(name, password) {
     return hero;
   } catch (e) { cloudErr = e; }
   try {
-    const hero = await SV.openHero(name, password);
+    const hero = await SV.openHero(name, password, pack);
     rememberPw(name, password);
     import('./cloud.js').then((C) => C.putHero(hero, password)).catch(() => {});
     return hero;
@@ -242,24 +265,42 @@ export async function openNamedHero(name, password) {
     throw localErr;
   }
 }
-function unlock(name, kind = 'hero') {
+async function openSave(rec, password) {
+  if (rec?.kind === 'company' && rec.names?.length) {
+    const members = [];
+    for (const n of rec.names) members.push(await openNamedHero(n, password, rec.pack));
+    const campaign = members[0].campaign;
+    campaign.pack = packIdOf(campaign.pack || rec.pack);
+    for (const m of members) m.campaign = campaign;
+    return { kind: 'company', name: rec.name, members, campaign, pack: campaign.pack };
+  }
+  return openNamedHero(rec.name, password, rec.pack);
+}
+function unlock(save, kind = 'hero') {
+  const rec = typeof save === 'string' ? { name: save, kind, pack: DEFAULT_PACK } : save;
   const pw = h('input', { type: 'password', class: 'input', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password' });
   const msg = h('p', { class: 'form-msg' });
+  const party = rec.kind === 'company';
   const go = async () => {
     try {
-      const saved = await openNamedHero(name, pw.value);
+      const saved = await openSave(rec, pw.value);
       adopt(saved);
       closeModal(); sfx.coin(); showHeroHub();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${name}`), h('p', { class: 'muted' }, 'Enter your password to open this hero.'), pw, msg,
-    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(name); if (c) copyCode(c); }), ghost('Close', () => close()), primary('Open', go)),
-    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${name} forever from this device?`)) { SV.deleteHero(name); close(); showTitle(); } } }, 'Delete this hero'))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${rec.name}`),
+    h('p', { class: 'muted' }, party ? 'Enter the password that opens these heroes on this device.' : 'Enter your password to open this hero.'), pw, msg,
+    h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(rec.names?.[0] || rec.name, rec.pack); if (c) copyCode(c); }), ghost('Close', () => close()), primary('Open', go)),
+    h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${rec.name} forever from this device?`)) {
+      if (party) rec.names.forEach((n) => SV.deleteHero(n, rec.pack));
+      else SV.deleteHero(rec.name, rec.pack);
+      close(); showTitle();
+    } } }, party ? 'Delete this tale' : 'Delete this hero'))));
   setTimeout(() => pw.focus(), 50);
 }
 function currentCode() {
-  if (S.hero) return SV.exportCode(S.hero.name);
+  if (S.hero) return SV.exportCode(S.hero.name, S.hero.campaign?.pack);
   return null;
 }
 function copyCode(code) {
@@ -284,7 +325,7 @@ function showImport() {
 }
 
 export async function stashNewHero(hero, password) {
-  if (SV.heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
+  if (SV.heroExists(hero.name, hero.campaign?.pack)) throw new Error('A hero with that name already exists on this device.');
   try {
     await (await import('./cloud.js')).putHero(hero, password, { create: true });
     rememberPw(hero.name, password);
@@ -393,10 +434,38 @@ export function showStepPick() {
       }, String(ch.step)))))));
 }
 
+// ------------------------------------------------------------------ stories
+function miniRow(ids) {
+  return h('span', { class: 'story-minis' }, ...(ids || []).map((id) => {
+    const c = D.CLASSES[id];
+    return c?.img
+      ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' })
+      : h('span', {}, c?.glyph || '');
+  }));
+}
+export function showStories(opts = {}) {
+  if (SCRUI.on()) return SCRUI.stories(opts);
+  const pick = (p) => {
+    sfx.select();
+    if (opts.together) return Online.hostPack(p.id);
+    showCreate(p.id);
+  };
+  mount(h('div', { class: 'topline' }, ghost('‹ Back', opts.together ? Online.together : showTitle, { cls: 'small' }), h('h2', {}, 'Choose your story')),
+    h('p', { class: 'muted' }, 'The Dawn Lantern is the original road. The two-hero tales start fresh, at level 1.'),
+    h('nav', { class: 'dock story-dock' }, packList().map((p) => cmd(
+      `${partySize(p)}${forcedLine(p) ? ` · ${forcedLine(p)}` : ''}`,
+      p.title, p.pitch, () => pick(p),
+      { glyph: miniRow(coverClasses(p)), tone: p.id === DEFAULT_PACK ? 'solo' : 'versus' },
+    ))));
+}
+
 // ------------------------------------------------------------------ create
-function showCreate() {
-  if (SCRUI.on()) return SCRUI.create();
-  let cls = 'knight'; let color = 'default'; let diff = 'normal';
+function showCreate(packId = DEFAULT_PACK, opts = {}) {
+  if (SCRUI.on()) return SCRUI.create({ pack: packId, ...opts });
+  const pack = packOf(packId);
+  const mate = opts.mate || null;
+  const allowed = (pack.forcedClasses || Object.keys(D.CLASSES)).filter((id) => !mate || id !== mate.cls);
+  let cls = allowed[0] || 'knight'; let color = 'default'; let diff = mate ? D.normalizeDifficulty(mate.difficulty) : 'normal';
   const name = h('input', { class: 'input', maxlength: 16, placeholder: 'Hero name', 'aria-label': 'Hero name', autocomplete: 'off' });
   const pw = h('input', { class: 'input', type: 'password', placeholder: 'Password (3+ characters)', 'aria-label': 'Password', autocomplete: 'new-password' });
   const msg = h('p', { class: 'form-msg' });
@@ -405,12 +474,15 @@ function showCreate() {
   const diffGrid = h('div', { class: 'class-grid', role: 'radiogroup', 'aria-label': 'Difficulty', style: { gridTemplateColumns: 'repeat(2, 1fr)' } });
   const paintDiff = () => diffGrid.replaceChildren(...Object.entries(D.DIFFICULTY).map(([id, d]) => h('button', {
     type: 'button', class: `class-pick ${id === diff ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === diff),
-    onclick: () => { diff = id; sfx.select(); paintDiff(); },
+    disabled: !!mate, onclick: mate ? null : () => { diff = id; sfx.select(); paintDiff(); },
   }, h('b', {}, d.name), h('small', {}, d.text))));
   const colorGrid = h('div', { class: 'class-grid', role: 'radiogroup', 'aria-label': 'Colour', style: { gridTemplateColumns: 'repeat(4, 1fr)' } });
   const paint = () => {
-    grid.replaceChildren(...Object.entries(D.CLASSES).map(([id, c]) => h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; if (!D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); } },
-      c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name))));
+    grid.replaceChildren(...allowed.map((id) => {
+      const c = D.CLASSES[id];
+      return h('button', { type: 'button', class: `class-pick ${id === cls ? 'on' : ''}`, onclick: () => { cls = id; if (!D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); } },
+        c.img ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' }) : h('span', {}, c.glyph), h('b', {}, c.name));
+    }));
     colorGrid.replaceChildren(...D.colorsOf(cls).map((l) => h('button', { type: 'button', class: `class-pick ${l.id === color ? 'on' : ''}`, role: 'radio', 'aria-checked': String(l.id === color), onclick: () => { color = l.id; sfx.select(); paint(); } },
       h('img', { src: l.img, alt: l.name, draggable: 'false', decoding: 'async' }), h('b', {}, l.name))));
     const c = D.CLASSES[cls];
@@ -420,24 +492,39 @@ function showCreate() {
       h('div', { class: 'cardlist' }, c.cards.filter((k) => (k.unlock ?? 1) <= 1).map((k) => h('div', { class: 'mini-card' }, h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`)))));
   };
   paint(); paintDiff();
+  const duo = (pack.requiredHeroes || 1) > 1;
   const go = async () => {
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); return; }
     if (pw.value.length < 3) { msg.textContent = 'Choose a password of at least 3 characters.'; sfx.error(); return; }
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     try {
-      const hero = E.newHero({ name: n, cls, color });
-      hero.difficulty = D.normalizeDifficulty(diff);
+      const seed = mate?.campaign?.seed;
+      const hero = E.newHero({ name: n, cls, color, seed, pack: pack.id });
+      hero.difficulty = D.normalizeDifficulty(mate?.difficulty || diff);
+      if (mate) hero.campaign = mate.campaign;
       SV.markReached(hero);
       await stashNewHero(hero, pw.value);
-      adopt(hero, 'hero'); sfx.level(); showHeroHub();
+      if (duo && !mate) { sfx.level(); showCreate(pack.id, { mate: hero }); return; }
+      if (mate) {
+        mate.campaign = hero.campaign;
+        SV.saveHero(mate);
+        adopt({ kind: 'company', name: `${mate.name} & ${hero.name}`, members: [mate, hero], campaign: hero.campaign });
+      } else adopt(hero, 'hero');
+      sfx.level();
+      if (pack.id === DEFAULT_PACK && !mate) showHeroHub();
+      else showRoadOrBoard();
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
-  mount(h('div', { class: 'topline' }, ghost('‹ Back', showTitle, { cls: 'small' }), h('h2', {}, 'Forge a hero')),
-    section('Name & password', name, pw, h('p', { class: 'fine' }, 'The password guards this hero on this device and in the cloud. Choose something you will remember.')),
+  const step = duo ? (mate ? 'Hero 2 of 2' : 'Hero 1 of 2') : 'Forge a hero';
+  const back = mate ? () => showCreate(pack.id) : () => showStories();
+  mount(h('div', { class: 'topline' }, ghost('‹ Back', back, { cls: 'small' }), h('h2', {}, pack.title)),
+    h('p', { class: 'muted' }, pack.pitch),
+    section(step, name, pw, h('p', { class: 'fine' }, mate ? 'Use the same password to open both heroes on this phone.' : 'The password guards this hero on this device and in the cloud. Choose something you will remember.')),
     section('Class', grid, detail),
     section('Colour', colorGrid),
-    section('Difficulty', diffGrid), msg, primary('Begin the campaign', go, { cls: 'wide' }));
+    mate ? null : section('Difficulty', diffGrid), msg,
+    primary(duo && !mate ? 'Forge the first hero' : 'Begin the campaign', go, { cls: 'wide' }));
 }
 
 // ------------------------------------------------------------------ quest board
@@ -463,16 +550,19 @@ function showBoard() {
     h('div', { class: 'quests' }, quests.map(questCard)),
     h('div', { class: 'row' }, ghost('⛺ Visit camp', () => showCamp({ fromBoard: true })), ghost('My hero', () => { S.tab = 'hero'; showCamp({ fromBoard: true }); })));
 }
-function groupNames(ids) {
+function groupNames(q, camp) {
+  if (q?.foeNames?.length) return q.foeNames.join(' + ');
+  const ids = q?.enemies || q || [];
   const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; });
-  return Object.entries(n).map(([id, c]) => `${D.MONSTERS[id].name}${c > 1 ? ` ×${c}` : ''}`).join(' + ');
+  return Object.entries(n).map(([id, c]) => `${foeOf(id, camp).name}${c > 1 ? ` ×${c}` : ''}`).join(' + ');
 }
 function questCard(q) {
-  const total = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].hp * q.hpMult), 0);
+  const camp = membersOf()[0]?.campaign;
+  const total = q.enemies.reduce((a, id) => a + Math.round(foeOf(id, camp).hp * q.hpMult), 0);
   const tag = q.kind === 'boss' ? 'BOSS' : q.kind === 'elite' ? 'ELITE' : 'BATTLE';
   return h('button', { class: `qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', onclick: () => { sfx.click(); startQuest(q); } },
-    h('div', { class: 'qglyphs' }, q.enemies.map((id) => h('span', {}, D.MONSTERS[id].glyph))),
-    h('div', { class: 'qbody' }, h('span', { class: 't-eyebrow' }, tag), h('b', {}, q.name), h('small', {}, groupNames(q.enemies)), h('small', { class: 'muted' }, `~${total} total HP · ${q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0)} XP`)),
+    h('div', { class: 'qglyphs' }, q.enemies.map((id) => h('span', {}, foeOf(id, camp).glyph))),
+    h('div', { class: 'qbody' }, h('span', { class: 't-eyebrow' }, tag), h('b', {}, q.name), h('small', {}, groupNames(q, camp)), h('small', { class: 'muted' }, `~${total} total HP · ${q.enemies.reduce((a, id) => a + Math.round(foeOf(id, camp).xp * q.rewardMult), 0)} XP`)),
     h('span', { class: 'cmd-go' }, '›'));
 }
 function menu() {
@@ -503,7 +593,7 @@ function showRoadOrBoard() {
   }
 }
 function showStory({ id, act }, next = showRoadOrBoard) {
-  const hero = membersOf()[0]; const b = ST.beat(id, act);
+  const members = membersOf(); const hero = members[0]; const b = ST.beat(id, act, members, hero?.campaign);
   const done = () => { ST.markSeen(hero.campaign, id, act); persist(); next(); };
   if (SCRUI.on()) return SCRUI.story(b, done);
   const close = modal(h('div', { class: 'form' }, h('small', { class: 't-eyebrow' }, b.kicker), h('h2', {}, b.title), ...b.text.map((t) => h('p', {}, t)),
@@ -511,7 +601,7 @@ function showStory({ id, act }, next = showRoadOrBoard) {
 }
 // The story so far (board menu): every beat up to where the campaign stands.
 function showStorySoFar() {
-  const hero = membersOf()[0]; const list = ST.storySoFar(hero?.campaign);
+  const members = membersOf(); const hero = members[0]; const list = ST.storySoFar(hero?.campaign, members);
   modal(h('div', { class: 'form story-so-far' }, h('h2', {}, 'The story so far'),
     ...list.map((b) => h('section', { class: 'ssf-beat' }, h('small', {}, b.kicker), h('h3', {}, b.title), ...b.text.map((t) => h('p', {}, t)))),
     h('div', { class: 'row end' }, primary('Close', () => closeModal()))));
@@ -789,24 +879,48 @@ async function lockIn() {
 
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
-  const b = S.battle; const hero = S.hero; const r = E.battleRewards(b);
-  const shattered = E.shatterDiamonds(hero); // the fight is over: any Diamond you brought shatters, your own weapons come back
+  const b = S.battle; const members = membersOf(); const hero = S.hero || members[0];
+  const party = b?.fighters?.length > 1;
+  const r = party ? E.partyRewards(b) : E.battleRewards(b);
+  const shattered = members.map((m) => E.shatterDiamonds(m)).flat();
   const place = S.quest?.place;
   E.recordFled(hero.campaign, b);
   ST.applyPlaceVictory(hero.campaign, place);
   const winBeat = ST.pendingVictory(hero.campaign, place);
   const lvBefore = hero.level;
-  const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
-  if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
-  else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; r.diamond = null; r.charms = []; }
-  const diamondTaken = r.diamond ? E.takeDiamond(hero, r.diamond) : false; // into the case if there is room (two at most)
-  hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
-  E.gainXp(hero, r.xp);
-  const points = E.pointsOf(b); E.recordBattle(hero, { points, heroes: 1, won: true });
+  let diamondTaken = false;
+  if (party) {
+    let anyFirst = false;
+    for (const f of b.fighters) {
+      const first = !SV.hasCleared(f.hero, f.hero.campaign.act, f.hero.campaign.step);
+      if (first) { SV.markCleared(f.hero, f.hero.campaign.act, f.hero.campaign.step); anyFirst = true; }
+      else SV.markRepeat(f.hero, f.hero.campaign.act, f.hero.campaign.step);
+      const share = first ? 1 : SV.repeatShare(f.hero, f.hero.campaign.act, f.hero.campaign.step);
+      const g = first ? (r.gold[f.hero.name] || 0) : SV.repeatGold(r.gold[f.hero.name] || 0, share);
+      f.hero.gold = Math.max(0, f.hero.gold + g);
+      f.hero.stats.goldEarned += Math.max(0, g);
+      f.hero.stats.battles++;
+      E.gainXp(f.hero, first ? r.xp : 0);
+      E.recordBattle(f.hero, { points: r.points[f.hero.name], place: r.place[f.hero.name], heroes: b.fighters.length, won: true });
+    }
+    r.gold = r.gold[hero.name] || 0;
+    if (!anyFirst) { r.drops = []; r.xp = 0; }
+    r.repeat = !anyFirst;
+    r.points = r.points[hero.name] || 0;
+  } else {
+    const first = !SV.hasCleared(hero, hero.campaign.act, hero.campaign.step);
+    if (first) SV.markCleared(hero, hero.campaign.act, hero.campaign.step);
+    else { r.share = SV.repeatShare(hero, hero.campaign.act, hero.campaign.step); SV.markRepeat(hero, hero.campaign.act, hero.campaign.step); r.gold = SV.repeatGold(r.gold, r.share); r.xp = 0; r.drops = []; r.diamond = null; r.charms = []; }
+    diamondTaken = r.diamond ? E.takeDiamond(hero, r.diamond) : false;
+    hero.gold = Math.max(0, hero.gold + r.gold); hero.stats.goldEarned += Math.max(0, r.gold); hero.stats.battles++;
+    E.gainXp(hero, r.xp);
+    r.points = E.pointsOf(b); E.recordBattle(hero, { points: r.points, heroes: 1, won: true });
+    r.repeat = !first;
+  }
   const quest = S.quest;
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, points, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (!first || !r.drops.length) ? 'none' : null, quest, offer: null, repeat: !first };
+  S.rewards = { ...r, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
   renderVictory();
@@ -839,12 +953,12 @@ function renderVictory() {
     primary(ready ? '⛺ To camp' : 'Choose a perk and spoils to continue', () => showCamp({ fromBoard: false }), { disabled: !ready, cls: 'wide big' }));
 }
 function defeat(retreat) {
-  S.shattered = S.hero ? E.shatterDiamonds(S.hero) : []; // win, lose or withdraw, a Diamond brought to the fight shatters
+  const heroes = membersOf();
+  S.shattered = heroes.flatMap((m) => E.shatterDiamonds(m)); // win, lose or withdraw, a Diamond brought to the fight shatters
   concludeRoadEffects();
-  const heroes = [S.hero];
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
-  if (S.battle) for (const hero of heroes) { const f = S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
+  if (S.battle) for (const hero of heroes) { const f = S.battle.fighters?.find((x) => x.hero === hero) || S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
   persist();
   sfx.lose();
   if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss);
@@ -934,8 +1048,8 @@ function chronicleBlock() {
 
 TUT.bind({ showTitle, showCreate, practice, hasHero: () => !!S.hero });
 SCRUI.bind({
-  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
-  showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(),
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showStories, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
+  showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(), hostPack: (id) => Online.hostPack(id),
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showDaily, showLessons: () => TUT.showLessons(),
   // at a shared table: who is there, and the road's choice goes to the table
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
@@ -949,4 +1063,4 @@ export async function boot() {
   await Online.boot(showTitle);
   if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
-export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };
+export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showStories, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };

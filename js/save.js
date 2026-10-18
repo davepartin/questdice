@@ -3,10 +3,24 @@
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
 import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf } from './data.js';
+import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
 
 const PREFIX = 'questdice.hero.';
 export const nameKey = (name) => String(name || '').trim().toLowerCase();
-const key = (name) => PREFIX + nameKey(name);
+const namedPacks = () => Object.keys(CAMPAIGNS).filter((id) => id !== DEFAULT_PACK);
+export function key(name, pack) {
+  const id = packIdOf(pack);
+  const n = nameKey(name);
+  return id === DEFAULT_PACK ? PREFIX + n : `${PREFIX}${id}.${n}`;
+}
+export function parseHeroKey(k) {
+  if (!k || !k.startsWith(PREFIX)) return null;
+  const rest = k.slice(PREFIX.length);
+  for (const id of namedPacks()) {
+    if (rest.startsWith(`${id}.`)) return { pack: id, name: rest.slice(id.length + 1) };
+  }
+  return { pack: DEFAULT_PACK, name: rest };
+}
 
 export async function hashText(text) {
   if (globalThis.crypto?.subtle) {
@@ -42,12 +56,18 @@ export function listHeroes() {
     if (!k.startsWith(PREFIX)) continue;
     try {
       const r = JSON.parse(s.getItem(k));
-      out.push({ name: r.hero.name, cls: r.hero.cls, level: r.hero.level, act: r.hero.campaign.act, step: r.hero.campaign.step, saved: r.saved });
+      const parsed = parseHeroKey(k);
+      const pack = packIdOf(r.hero?.campaign?.pack || parsed?.pack);
+      out.push({
+        name: r.hero.name, cls: r.hero.cls, level: r.hero.level,
+        act: r.hero.campaign.act, step: r.hero.campaign.step, saved: r.saved,
+        pack, seed: r.hero.campaign?.seed, color: r.hero.color,
+      });
     } catch { /* skip corrupt entry */ }
   }
   return out.sort((a, b) => b.saved - a.saved);
 }
-export const heroExists = (name) => !!store()?.getItem(key(name));
+export const heroExists = (name, pack) => !!store()?.getItem(key(name, pack));
 
 export const MIN_PASSWORD = 3;
 export function migrateHero(hero) {
@@ -66,54 +86,97 @@ export function migrateHero(hero) {
   // Frugal Mender is retired (Heal with Magic is the same for everyone): a hero who took it gets the pick back to spend again
   const frugal = (hero.perks || []).filter((p) => p === 'frugal').length;
   if (frugal) { hero.perks = hero.perks.filter((p) => p !== 'frugal'); hero.pendingPerks = (hero.pendingPerks || 0) + frugal; }
+  if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   return hero;
 }
 export async function createSave(hero, password) {
   if (String(password || '').length < MIN_PASSWORD) throw new Error('Choose a password of at least 3 characters.');
-  if (heroExists(hero.name)) throw new Error('A hero with that name already exists on this device.');
   migrateHero(hero);
+  const pack = packIdOf(hero.campaign?.pack);
+  if (heroExists(hero.name, pack)) throw new Error('A hero with that name already exists on this device.');
   const salt = randSalt();
   const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: SAVE_V };
-  store().setItem(key(hero.name), JSON.stringify(rec));
+  store().setItem(key(hero.name, pack), JSON.stringify(rec));
   return rec;
 }
-export async function openHero(name, password) {
-  const raw = store()?.getItem(key(name));
+export async function openHero(name, password, pack) {
+  const ids = pack != null ? [packIdOf(pack)] : [DEFAULT_PACK, ...namedPacks()];
+  let raw = null;
+  for (const id of ids) {
+    raw = store()?.getItem(key(name, id));
+    if (raw) break;
+  }
   if (!raw) throw new Error('No hero by that name.');
   const rec = JSON.parse(raw);
   if ((await sha(rec.salt + password)) !== rec.hash) throw new Error('Wrong password.');
   const before = rec.hero?.difficulty;
   migrateHero(rec.hero);
   if (rec.hero && rec.hero.difficulty !== before) {
-    try { store()?.setItem(key(name), JSON.stringify(rec)); } catch { /* keep the in-memory hero even if rewrite fails */ }
+    try { store()?.setItem(key(name, packIdOf(rec.hero.campaign?.pack || pack)), JSON.stringify(rec)); } catch { /* keep the in-memory hero even if rewrite fails */ }
   }
   return rec.hero;
 }
 export function saveHero(hero) {
-  const s = store(); const raw = s?.getItem(key(hero.name));
+  const s = store(); const pack = packIdOf(hero?.campaign?.pack);
+  const raw = s?.getItem(key(hero.name, pack));
   if (!raw) return false;
   migrateHero(hero);
   const rec = JSON.parse(raw); rec.hero = hero; rec.saved = Date.now();
-  s.setItem(key(hero.name), JSON.stringify(rec)); return true;
+  s.setItem(key(hero.name, pack), JSON.stringify(rec)); return true;
 }
-export function deleteHero(name) { store()?.removeItem(key(name)); }
+export function deleteHero(name, pack) { store()?.removeItem(key(name, pack)); }
 
 // Keep a copy on this device after a cloud load (or after forging at a table). Same name + password
 // overwrites the local file; a different password on this device is a collision.
 export async function keepHero(hero, password) {
-  if (!heroExists(hero.name)) return createSave(hero, password);
-  await openHero(hero.name, password);
+  const pack = packIdOf(hero?.campaign?.pack);
+  if (!heroExists(hero.name, pack)) return createSave(hero, password);
+  await openHero(hero.name, password, pack);
   saveHero(hero);
   return true;
 }
 
 export function listSaves() {
-  return listHeroes().map((h) => ({ ...h, kind: 'hero', size: 1, classes: [h.cls] })).sort((a, b) => b.saved - a.saved);
+  const heroes = listHeroes();
+  const out = [];
+  const groups = new Map();
+  for (const h of heroes) {
+    const p = packOf(h.pack);
+    if ((p.requiredHeroes || 1) > 1 && h.seed != null) {
+      const gk = `${h.pack}:${h.seed}`;
+      if (!groups.has(gk)) groups.set(gk, []);
+      groups.get(gk).push(h);
+    } else {
+      out.push({ ...h, kind: 'hero', size: 1, classes: [h.cls], pack: h.pack || DEFAULT_PACK });
+    }
+  }
+  for (const mates of groups.values()) {
+    mates.sort((a, b) => String(a.cls).localeCompare(String(b.cls)) || String(a.name).localeCompare(String(b.name)));
+    if (mates.length === 1) {
+      out.push({ ...mates[0], kind: 'hero', size: 1, classes: [mates[0].cls], pack: mates[0].pack });
+      continue;
+    }
+    out.push({
+      kind: 'company',
+      name: mates.map((m) => m.name).join(' & '),
+      names: mates.map((m) => m.name),
+      pack: mates[0].pack,
+      seed: mates[0].seed,
+      act: mates[0].act,
+      step: mates[0].step,
+      size: mates.length,
+      classes: mates.map((m) => m.cls),
+      saved: Math.max(...mates.map((m) => m.saved)),
+      level: Math.max(...mates.map((m) => m.level)),
+      cls: mates[0].cls,
+    });
+  }
+  return out.sort((a, b) => b.saved - a.saved);
 }
 const b64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)));
-export function exportCode(name) {
-  const raw = store()?.getItem(key(name)); if (!raw) return null;
+export function exportCode(name, pack) {
+  const raw = store()?.getItem(key(name, pack)); if (!raw) return null;
   return 'QD1.' + b64(raw);
 }
 export function importCode(code, { overwrite = false } = {}) {
@@ -123,8 +186,9 @@ export function importCode(code, { overwrite = false } = {}) {
   if (!rec?.hero?.name || !rec.hash || !rec.salt) throw new Error('The Soul Code is incomplete.');
   if (!(rec.v >= SAVE_V)) throw new Error('That Soul Code is from the test builds, before the beta. Forge a fresh hero.');
   migrateHero(rec.hero);
-  if (heroExists(rec.hero.name) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.hero.name; throw e; }
-  store().setItem(key(rec.hero.name), JSON.stringify(rec));
+  const pack = packIdOf(rec.hero.campaign?.pack);
+  if (heroExists(rec.hero.name, pack) && !overwrite) { const e = new Error('exists'); e.code = 'EXISTS'; e.name = rec.hero.name; throw e; }
+  store().setItem(key(rec.hero.name, pack), JSON.stringify(rec));
   return rec.hero.name;
 }
 
