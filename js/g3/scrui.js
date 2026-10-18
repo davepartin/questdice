@@ -17,6 +17,7 @@ import { ico, CLASS_ICON } from './icons.js';
 import { petImg } from './pets.js';
 import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
+import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -172,28 +173,32 @@ function logo() {
 function savedChoice(menu, saves, saveSub, where) {
   menu.replaceChildren(
     h('div', { class: 'sx-eye menu-label' }, `Saved games · ${saves.length}`),
-    ...saves.map((x) => plaque({ eyebrow: where(x), title: x.name, sub: saveSub(x), iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), onclick: () => X.unlock(x.name, x.kind) })),
+    ...saves.map((x) => plaque({ eyebrow: where(x), title: x.name, sub: saveSub(x), iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), onclick: () => X.unlock(x) })),
     plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }),
     plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: () => X.showTitle() }));
   menu.closest('.sx-title-menu')?.scrollTo?.({ top: 0 });
 }
 // ------------------------------------------------------------------------------------------------ title
 export function title() {
-  const S = X.S; const saves = SV.listSaves().filter((x) => x.kind !== 'company'); const seat = Net.savedSeat(); // (one-phone companies are gone: everyone plays on their own phone)
-  const lead = saves.find((s) => s.kind === 'hero');
+  const S = X.S; const saves = SV.listSaves(); const seat = Net.savedSeat();
+  const lead = saves.find((s) => s.kind === 'hero') || saves[0];
   const cls = lead?.cls || nextOf(Object.keys(D.CLASSES));
   S.cleanups = S.cleanups || [];
   const menu = h('nav', { class: 'sx-menu', 'aria-label': 'Main menu' });
   if (seat) { const L = Net.seatLabel(seat); menu.append(plaque({ eyebrow: 'Your table', title: L.title, sub: L.sub, icon: 'people', tone: 'is-together', onclick: () => X.resume() })); }
   // One "Continue" for the most recent game, and one "Saved games" door to all of them, so the home screen
   // never hides buttons below the fold.
-  const saveSub = (x) => (x.kind === 'company' ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(', ')}` : `Level ${x.level} ${D.CLASSES[x.cls].name}`);
+  const saveSub = (x) => {
+    const story = packOf(x.pack);
+    const tale = story.id !== DEFAULT_PACK ? ` · ${story.title}` : '';
+    return x.kind === 'company' ? `${x.size} heroes · ${x.classes.map((id) => D.CLASSES[id].name).join(' + ')}${tale}` : `Level ${x.level} ${D.CLASSES[x.cls].name}${tale}`;
+  };
   const where = (x) => `Act ${romans[x.act - 1] || x.act}, Quest ${x.step}`;
   const group = (label) => h('div', { class: 'sx-eye menu-label' }, label);
   if (saves.length) {
     const x = saves[0];
-    menu.append(plaque({ eyebrow: 'Continue', title: x.name, sub: `${saveSub(x)} · ${where(x)}`, iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), primary: true, onclick: () => X.unlock(x.name, x.kind) }));
-    menu.append(plaque({ eyebrow: 'Saved games', title: saves.length > 1 ? `All saved games (${saves.length})` : 'Saved games', sub: 'Every hero saved on this phone.', icon: 'book', onclick: () => savedChoice(menu, saves, saveSub, where) }));
+    menu.append(plaque({ eyebrow: 'Continue', title: x.name, sub: `${saveSub(x)} · ${where(x)}`, iconEl: x.kind === 'company' ? ico('people') : emblem(x.cls), primary: true, onclick: () => X.unlock(x) }));
+    menu.append(plaque({ eyebrow: 'Saved games', title: saves.length > 1 ? `All saved games (${saves.length})` : 'Saved games', sub: 'Every hero and tale saved on this phone.', icon: 'book', onclick: () => savedChoice(menu, saves, saveSub, where) }));
     menu.append(group('Begin anew'));
   }
   // Learn to play sits first until there is a saved hero, then it moves under the menu.
@@ -202,7 +207,7 @@ export function title() {
     menu.append(plaque({ eyebrow: `Daily challenge${st > 1 ? ` · ${st} days in a row` : ''}`, title: `${D.CLASSES[run.cls].name} · ${D.CHARMS[run.charm].name}`,
       sub: rec.tries ? `Your best today: ${rec.best.toLocaleString()} points · ${rec.fights} of ${DAY.FIGHTS} fights` : `Five fights, the same for everyone. One score.`, icon: 'crown', tone: 'is-daily', onclick: X.showDaily })); }
   menu.append(
-    plaque({ eyebrow: 'New game', title: 'Forge a new hero', sub: 'One body of dice. A whole road.', icon: 'hammer', primary: false, onclick: X.showCreate }),
+    plaque({ eyebrow: 'New game', title: 'Choose your story', sub: 'The Dawn Lantern, or a tale for two.', icon: 'book', primary: false, onclick: X.showStories }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
     plaque({ eyebrow: 'Cloud', title: 'Open a cloud save', sub: 'Name and password, on any device.', icon: 'lock', onclick: X.showCloudLoad }));
   if (!saves.length) menu.append(plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
@@ -295,10 +300,42 @@ export function daily(v) {
   lay('board'); SCR.enter('road', { hero, heroes: [hero], place: run.quests[Math.min(run.quests.length - 1, v.fights?.length || 0)].place, seed: run.seed }, `daily:${run.key}:${v.mode}:${v.fights?.length || 0}`);
   S.daily = v.mode === 'intro' ? null : S.daily;
 }
+function coverMinis(pack) {
+  return h('span', { class: 'sc-minis' }, ...coverClasses(pack).map((id) => classPic(id, 'sm')));
+}
+function storyCardBtn(p, onclick) {
+  const line = [partySize(p), forcedLine(p)].filter(Boolean).join(' · ');
+  return h('button', { class: `sx-storycard ${p.id === DEFAULT_PACK ? 'is-dawn' : 'is-duo'}`, type: 'button', onclick: tap(() => onclick(p)) },
+    h('span', { class: 'sc-art' }, coverMinis(p)),
+    h('span', { class: 'sc-copy' }, h('small', {}, line), h('b', {}, p.title), h('em', {}, p.pitch)),
+    h('span', { class: 'pl-go' }, ico('chevron')));
+}
+export function stories(opts = {}) {
+  const S = X.S;
+  const back = opts.together ? X.showTogether : X.showTitle;
+  const pick = (p) => {
+    if (opts.together) return X.hostPack ? X.hostPack(p.id) : X.showTogether();
+    X.showCreate(p.id);
+  };
+  const menu = h('nav', { class: 'sx-menu sx-stories', 'aria-label': 'Choose your story' },
+    h('div', { class: 'sx-eye menu-label' }, opts.together ? 'Host a table · pick the tale' : 'Choose your story'),
+    ...packList().map((p) => storyCardBtn(p, pick)),
+    plaque({ eyebrow: '', title: 'Back', icon: 'chevron', onclick: back }));
+  const box = h('div', { class: 'sx-title-menu' }, menu);
+  mountAs('title', h('div', { class: 'sx-title-shell is-stories' }, h('div', { class: 'sx-title-brand' }, logo()), box));
+  lay('title'); SCR.enter('title', { cls: 'knight' }, 'title:stories');
+  void S;
+}
+
 // opts.table = { mode: 'host' | 'join', code, onDone(name, cls, extra) }: the same hero choice, for sitting down at a table.
 export function create(opts = {}) {
-  const S = X.S; let cls = Object.keys(D.CLASSES)[Math.floor(Math.random() * 5)]; let color = 'default'; let H = null; let busy = false;
+  const S = X.S; let color = 'default'; let H = null; let busy = false;
   const T = opts.table || null;
+  const pack = packOf(opts.pack || T?.pack || opts.mate?.campaign?.pack);
+  const mate = opts.mate || null;
+  const allowed = (pack.forcedClasses || Object.keys(D.CLASSES)).filter((id) => !mate || id !== mate.cls);
+  let cls = allowed.includes(Object.keys(D.CLASSES)[Math.floor(Math.random() * 5)]) ? Object.keys(D.CLASSES)[Math.floor(Math.random() * 5)] : (allowed[0] || 'knight');
+  if (!allowed.includes(cls)) cls = allowed[0] || 'knight';
   const name = h('input', { class: 'sx-input', id: 'hero-name', maxlength: 16, placeholder: 'Thessaly Vane', autocomplete: 'off', 'aria-label': 'Hero name' });
   const pw = h('input', { class: 'sx-input', id: 'hero-pw', type: 'password', placeholder: '3 or more characters', autocomplete: 'new-password', 'aria-label': 'Password' });
   const tname = T?.mode === 'host' ? h('input', { class: 'sx-input', id: 'table-name', maxlength: 24, placeholder: 'The Ember Company', autocomplete: 'off', 'aria-label': 'Table name' }) : null;
@@ -322,10 +359,13 @@ export function create(opts = {}) {
     preview.classList.toggle('flip', D.needsFlip(look, 'right'));
     preview.classList.add('is-seated');
     preview.replaceChildren(...(pic ? [pic] : [])); preview.hidden = !pic; preview.style.setProperty('--hue', look?.hue || CLS_HUE[cls] || '#ffd23d');
-    rail.replaceChildren(...Object.entries(D.CLASSES).map(([id, k]) => h('button', {
-      type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
-      onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); }); },
-    }, classPic(id), h('span', {}, k.name.split(' ')[0]))));
+    rail.replaceChildren(...allowed.map((id) => {
+      const k = D.CLASSES[id];
+      return h('button', {
+        type: 'button', class: `rail-btn ${id === cls ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cls), style: { '--hue': CLS_HUE[id] }, 'aria-label': k.name,
+        onclick: () => { if (id === cls) return; cls = id; if (!D.lookById(cls, color) || !D.colorsOf(cls).some((l) => l.id === color)) color = 'default'; sfx.select(); paint(); H?.pick(cls).then(() => { H?.push(true); }); },
+      }, classPic(id), h('span', {}, k.name.split(' ')[0]));
+    }));
     colors.replaceChildren(...D.colorsOf(cls).map((l) => h('button', {
       type: 'button', class: `color-btn ${l.id === color ? 'on' : ''}${D.needsFlip(l, 'right') ? ' flip' : ''}`, role: 'radio', 'aria-checked': String(l.id === color),
       style: { '--hue': l.hue }, 'aria-label': l.name,
@@ -365,18 +405,18 @@ export function create(opts = {}) {
     if (busy) return;
     pending(''); msg.textContent = '';
     if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
-    if (T && loaded) { loaded.difficulty = diff; return seat(loaded); }
-    if (T && made) { made.difficulty = diff; return seat(made); }
+    if (T && loaded) { loaded.difficulty = diff; return seat(loaded, { pack: pack.id }); }
+    if (T && made) { made.difficulty = diff; return seat(made, { pack: pack.id }); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
     if (T && bring) {
       if (!pw.value) { msg.textContent = 'Enter your password.'; sfx.error(); pw.focus(); return; }
       busy = true; pending('Opening your save…');
       try {
-        const hero = await X.openNamedHero(n, pw.value);
+        const hero = await X.openNamedHero(n, pw.value, pack.id);
         if (T?.mode === 'host') hero.difficulty = diff;
         X.adopt(hero); sfx.coin(); made = hero;
-        await seat(hero);
+        await seat(hero, { pack: pack.id });
       } catch (e) { pending(''); msg.textContent = e.message; sfx.error(); busy = false; }
       return;
     }
@@ -384,10 +424,24 @@ export function create(opts = {}) {
     if (!SV.canSave()) { msg.textContent = 'Saving is blocked in this browser, so a hero could not be kept.'; sfx.error(); return; }
     busy = true; if (T) pending('Saving your hero…');
     try {
-      const hero = E.newHero({ name: n, cls, color }); hero.difficulty = diff; SV.markReached(hero); Coach.setHints(!skipHints);
+      const seed = mate?.campaign?.seed;
+      const hero = E.newHero({ name: n, cls, color, seed, pack: pack.id });
+      hero.difficulty = mate ? D.normalizeDifficulty(mate.difficulty) : diff;
+      if (mate) hero.campaign = mate.campaign;
+      SV.markReached(hero); Coach.setHints(!skipHints);
       await X.stashNewHero(hero, pw.value);
-      if (T) { made = hero; X.adopt(hero); sfx.level(); await seat(hero); return; }
-      X.adopt(hero, 'hero'); sfx.level(); X.showHeroHub();
+      if (T) { made = hero; X.adopt(hero); sfx.level(); await seat(hero, { pack: pack.id }); return; }
+      const duo = (pack.requiredHeroes || 1) > 1;
+      if (duo && !mate) { sfx.level(); create({ pack: pack.id, mate: hero }); return; }
+      if (mate) {
+        mate.campaign = hero.campaign;
+        SV.saveHero(mate);
+        X.adopt({ kind: 'company', name: `${mate.name} & ${hero.name}`, members: [mate, hero], campaign: hero.campaign });
+        sfx.level(); X.showRoadOrBoard(); return;
+      }
+      X.adopt(hero, 'hero'); sfx.level();
+      if (pack.id === DEFAULT_PACK) X.showHeroHub();
+      else X.showRoadOrBoard();
     } catch (e) { pending(''); msg.textContent = e.message; sfx.error(); busy = false; }
   };
   [name, pw, tname, tcode].filter(Boolean).forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
@@ -395,16 +449,21 @@ export function create(opts = {}) {
     h('button', { type: 'button', class: `df-opt ${!bring ? 'on' : ''}`, onclick: () => { if (!bring) return; sfx.select(); create({ table: { ...T, bring: 'new', difficulty: diff } }); } }, h('b', {}, 'New hero'), h('small', {}, 'Forge one for this table.')),
     h('button', { type: 'button', class: `df-opt ${bring ? 'on' : ''}`, onclick: () => { if (bring) return; sfx.select(); create({ table: { ...T, bring: 'cloud', difficulty: diff } }); } }, h('b', {}, 'Cloud save'), h('small', {}, 'Name and password.'))) : null;
   const hideClass = !!(loaded || (T && bring));
-  const showDiff = !T || T.mode === 'host';
-  const heading = loaded ? `Bring ${loaded.name}` : bring ? 'Open a saved hero' : 'Choose your hero';
-  const cta = T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : 'Begin the campaign';
+  const showDiff = (!T || T.mode === 'host') && !mate;
+  const duo = (pack.requiredHeroes || 1) > 1;
+  const heading = loaded ? `Bring ${loaded.name}` : bring ? 'Open a saved hero' : (duo ? (mate ? `${pack.title} · second hero` : `${pack.title} · first hero`) : 'Choose your hero');
+  const cta = T ? (T.mode === 'host' ? 'Open the table' : 'Take a seat') : (duo && !mate ? 'Forge the first hero' : 'Begin the campaign');
+  const backFn = T?.back || (mate ? () => create({ pack: pack.id }) : () => X.showStories(T ? { together: true } : {}));
+  const stepEye = T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : (duo ? (mate ? `${pack.title} · Hero 2 of 2` : `${pack.title} · Hero 1 of 2`) : pack.title);
   mountAs('create',
     h('div', { class: 'sx-split' },
-      h('div', { class: 'sx-viewport' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview),
+      h('div', { class: 'sx-viewport' }, btn('Back', backFn, { kind: 'ghost', icon: 'back', cls: 'sx-back' }), preview),
       h('div', { class: 'sx-side' },
-        h('div', { class: 'sx-sidehead' }, btn('Back', T?.back || X.showTitle, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(T ? (T.mode === 'host' ? 'Open a table' : 'Join a table') : 'Step 1 of 1'), h('h1', { class: 'sx-h1' }, heading)),
+        h('div', { class: 'sx-sidehead' }, btn('Back', backFn, { kind: 'ghost', icon: 'back', cls: 'sx-back-in' }), eyebrow(stepEye), h('h1', { class: 'sx-h1' }, heading)),
+        pack.id !== DEFAULT_PACK && !T ? h('p', { class: 'muted sc-pitch' }, pack.pitch) : null,
+        duo && !T && !mate ? h('p', { class: 'fine' }, 'Forge both heroes on this phone, or tap Play together from home to sit on two phones.') : null,
         source, hideClass ? null : rail, hideClass ? null : eyebrow('Colour'), hideClass ? null : colors, hideClass ? null : info, flourish(),
-        showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T ? null : hintsBox,
+        showDiff ? eyebrow('Difficulty') : null, showDiff ? diffRow : null, T || mate ? null : hintsBox,
         loaded ? h('p', { class: 'fine' }, `${loaded.name} · Level ${loaded.level} ${D.CLASSES[loaded.cls].name}. Friends join with their own hero.`) : null,
         h('div', { class: 'sx-form' }, tcode ? h('label', { for: 'table-code' }, 'Table code', tcode) : null, tname ? h('label', { for: 'table-name' }, 'Table name', tname) : null,
           browse,
@@ -475,7 +534,7 @@ export function stepPick() {
     acts.push({ act, last: act < r.act ? D.QUESTS_PER_ACT : r.step });
   }
   const rows = acts.map(({ act, last }) => {
-    const a = D.ACTS[(act - 1) % D.ACTS.length];
+    const a = X.actOf({ campaign: { pack: hero.campaign?.pack, act } });
     const cyc = Math.floor((act - 1) / D.ACTS.length);
     return h('div', { class: 'sx-stepact' },
       eyebrow(`Act ${romans[act - 1] || act}`), h('p', { class: 'sx-acttag' }, a.name + (cyc ? ` · Ascent ${cyc + 1}` : '')),
@@ -498,7 +557,15 @@ export function stepPick() {
 }
 
 // ------------------------------------------------------------------------------------------------ board
-const groupNames = (ids) => { const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; }); return Object.entries(n).map(([id, c]) => `${D.MONSTERS[id].name}${c > 1 ? ` ×${c}` : ''}`).join(' + '); };
+const campOf = () => X.S.hero?.campaign || X.members()?.[0]?.campaign;
+const foeOf = (id, camp = campOf()) => monsterOf(id, camp) || D.MONSTERS[id];
+const groupNames = (qOrIds) => {
+  if (qOrIds?.foeNames?.length) return qOrIds.foeNames.join(' + ');
+  const ids = qOrIds?.enemies || qOrIds || [];
+  const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; });
+  const camp = campOf();
+  return Object.entries(n).map(([id, c]) => `${foeOf(id, camp).name}${c > 1 ? ` ×${c}` : ''}`).join(' + ');
+};
 // The difficulty the computer plays at (Easy / Normal / Hard / Legendary), shown on the quest board so it is never a mystery why fights feel the way they do. It is about the monsters, not the player.
 function diffChip(hero) {
   const id = D.normalizeDifficulty(hero.difficulty); const d = D.DIFFICULTY[id];
@@ -510,7 +577,7 @@ function stepAsk(hero, act, step, after) {
   const c = hero.campaign; if (c.act === act && c.step === step) { toast(`You are here: quest ${step}.`); return; }
   const ok = SV.canStartAt(hero, act, step); const far = SV.reachedOf(hero);
   if (!ok) { sfx.error?.(); toast(`Quest ${step} is still ahead. Win quest ${far.act === act ? far.step : 1} first.`); return; }
-  const kind = D.stepKind(D.ACTS[(act - 1) % D.ACTS.length], step); const what = kind === 'boss' ? 'the boss fight' : kind === 'elite' ? 'the elite fight' : 'that fight';
+  const kind = D.stepKind(X.actOf({ campaign: { pack: hero.campaign?.pack, act } }), step); const what = kind === 'boss' ? 'the boss fight' : kind === 'elite' ? 'the elite fight' : 'that fight';
   const won = SV.hasCleared(hero, act, step); const back = act < c.act || (act === c.act && step < c.step);
   const close = modal(h('div', { class: 'form confirm-home step-ask' }, h('h2', {}, `${back ? 'Go back to' : 'Return to'} quest ${step}?`),
     h('p', { class: 'muted' }, won ? `You will play ${what} again. ${SV.repeatNote(SV.repeatShare(hero, act, step))}` : `Your furthest quest. Win it for the full reward.`),
@@ -521,7 +588,7 @@ function trail(c, hero = null, after = null) {
   const N = D.QUESTS_PER_ACT;
   return h('ol', { class: `sx-trail ${hero ? 'pickable' : ''}`, 'aria-label': `Quest ${c.step} of ${N}` }, Array.from({ length: N }, (_, i) => {
     const n = i + 1; const done = n < c.step; const now = n === c.step;
-    const kind = D.stepKind(D.ACTS[(c.act - 1) % D.ACTS.length], n);
+    const kind = D.stepKind(X.actOf({ campaign: { pack: c.pack, act: c.act } }), n);
     const boss = kind === 'boss'; const elite = kind === 'elite'; const reach = hero && !done && !now && SV.canStartAt(hero, c.act, n);
     return h('li', { class: `tr-node ${done ? 'done' : ''} ${now ? 'now' : ''} ${reach ? 'reach' : ''} ${boss ? 'boss' : elite ? 'elite' : ''}`, 'aria-current': now ? 'step' : null,
       ...(hero ? { role: 'button', tabindex: '0', 'aria-label': `Quest ${n}${now ? ', you are here' : done || reach ? '' : ', still ahead'}`, onclick: tap(() => stepAsk(hero, c.act, n, after)) } : {}) },
@@ -531,28 +598,30 @@ function trail(c, hero = null, after = null) {
 }
 function questArt(q) {
   const wrap = h('div', { class: `qa n${q.enemies.length} ${q.kind}` });
+  const camp = campOf();
   q.enemies.forEach((id, i) => {
-    const m = D.MONSTERS[id];
-    wrap.append(h('div', { class: `qa-m tier-${m.tier}${D.needsFlip(m, 'left') ? ' flip' : ''}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: m.name, draggable: 'false', decoding: 'async' }))); // as on the table: looking left, toward the heroes
+    const m = foeOf(id, camp);
+    wrap.append(h('div', { class: `qa-m tier-${m.tier}${D.needsFlip(m, 'left') ? ' flip' : ''}`, style: { '--i': i } }, h('img', { class: 'qa-pc', src: m.img, alt: q.foeNames?.[i] || m.name, draggable: 'false', decoding: 'async' }))); // as on the table: looking left, toward the heroes
   });
   return wrap;
 }
 // The boss button names who you face: 'the Goblin King', 'the Hollow Lich', 'the Ember Queen' (the part after a comma).
-const bossCall = (q) => { const n = D.MONSTERS[q.enemies?.[0]]?.name || 'the boss'; const call = n.split(', ').pop().replace(/^The /, 'the '); return call.length > 16 ? `the ${call.split(' ').pop()}` : call; };
+const bossCall = (q) => { const n = q.foeNames?.[0] || foeOf(q.enemies?.[0])?.name || 'the boss'; const call = n.split(', ').pop().replace(/^The /, 'the '); return call.length > 16 ? `the ${call.split(' ').pop()}` : call; };
 function questCard(q, idx) {
-  const xp = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].xp * q.rewardMult), 0);
-  const gold = q.enemies.reduce((a, id) => a + Math.round(D.MONSTERS[id].gold * q.rewardMult), 0);
+  const camp = campOf();
+  const xp = q.enemies.reduce((a, id) => a + Math.round(foeOf(id, camp).xp * q.rewardMult), 0);
+  const gold = q.enemies.reduce((a, id) => a + Math.round(foeOf(id, camp).gold * q.rewardMult), 0);
   // danger is read from YOUR dice against these monsters: how much of your health the fight should cost
   const dz = E.questDanger(X.S.hero || X.members()[0], q); const danger = { Easy: dz.score < 0.18 ? 1 : 2, Fair: 3, Hard: 4, Deadly: 5 }[dz.label];
   const reward = Math.min(5, Math.max(1, Math.round((xp + gold) / 16)));
   const tag = q.kind === 'boss' ? 'Boss' : q.kind === 'elite' ? 'Elite' : 'Battle';
   const place = q.place || q.name;
-  return h('button', { class: `sx-qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', style: { '--i': idx }, 'aria-label': `${tag}: ${q.name}. ${groupNames(q.enemies)}`, onclick: tap(() => X.startQuest(q)) },
+  return h('button', { class: `sx-qcard ${q.kind} ${q.perilous ? 'perilous' : ''}`, type: 'button', style: { '--i': idx }, 'aria-label': `${tag}: ${q.name}. ${groupNames(q)}`, onclick: tap(() => X.startQuest(q)) },
     h('span', { class: 'qc-tag' }, q.perilous ? ico('flame') : q.kind === 'boss' ? ico('crown') : q.kind === 'elite' ? ico('skull') : ico('shield'), tag, q.perilous ? h('em', {}, `×${D.PERIL.reward} rewards`) : null),
     questArt(q),
     h('div', { class: 'qc-body' },
       h('b', { class: 'qc-name' }, q.kind === 'boss' ? q.name : (q.name.replace(place, '').replace(/\s+(on|at|near|in|of|by)\s*$/i, '').trim() || q.name)), h('small', { class: 'qc-place' }, ico('pin'), place),
-      h('small', { class: 'qc-foes' }, groupNames(q.enemies)),
+      h('small', { class: 'qc-foes' }, groupNames(q)),
       h('div', { class: 'qc-read' },
         h('div', { class: `qr danger dz-${dz.label.toLowerCase()}` }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `${dz.label} for you · ~${dz.rounds} round${dz.rounds > 1 ? 's' : ''}`)),
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
@@ -797,7 +866,7 @@ function weaponRow(inst, label = '') {
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
 function campStatus(hero) {
-  const c = hero.campaign; const act = D.ACTS[(c.act - 1) % D.ACTS.length]; const next = E.questsFor(hero)[0];
+  const c = hero.campaign; const act = X.actOf(hero); const next = E.questsFor(hero)[0];
   const r = E.potionBuyInfo(hero);
   const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
     const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);

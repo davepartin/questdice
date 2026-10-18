@@ -144,6 +144,23 @@ test('baby dragons flee when hurt and last standing; Vharaxis flees only as an e
   assert.ok(er.fled.includes(elite.enemies[0].uid));
 });
 
+test('Big Wheel and Mungo copy the ogre sheet, look left, and keep their own art', () => {
+  for (const id of ['bigwheel', 'mungo']) {
+    const m = MONSTERS[id];
+    const o = MONSTERS.ogre;
+    assert.equal(m.hp, o.hp);
+    assert.equal(m.power, o.power);
+    assert.equal(m.init, o.init);
+    assert.equal(m.tier, 'elite');
+    assert.equal(m.threat, o.threat);
+    assert.deepEqual(m.slam, o.slam);
+    assert.equal(m.look, 'left');
+    assert.notEqual(m.img, o.img);
+  }
+  assert.equal(MONSTERS.bigwheel.name, 'Big Wheel');
+  assert.equal(MONSTERS.mungo.name, 'Mungo');
+});
+
 test('new bosses: Fallen Champion is a boss; Gold-Chain Jailer is not occult; dragons have breath', () => {
   assert.equal(MONSTERS.fallenchampion.tier, 'boss');
   assert.equal(MONSTERS.fallenchampion.name, 'The Fallen Champion');

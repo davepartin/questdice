@@ -24,6 +24,10 @@ Write each fight for **one hero of a level** (its monsters, and the level you ex
 every hit's base). Two typical heroes of that level get m 2, x2.2, +10; heroes who grew stronger than the story expects meet
 stronger monsters, weaker ones gentler. Easy / Normal / Hard / Legendary still apply on top (withDifficulty).
 
+Rival Duo and That’s Not How It Went are **not wired through `storyScale` yet**. Their locked casts keep the writer's
+`fightHp` knobs (Big Wheel Act II elite 1.8, and the other step tweaks in `js/packs/`). Table play still uses `teamFactor`
+as above. Do not retune `PARTY` numbers from a campaign pack.
+
 ## Measuring
 `node tools/party.mjs [acts] [runs] [heroes]` plays companies against the same steps alone and together and prints win rates,
 rounds and health left. `PLAY=first` is the lazy player (first roll, first monster), `MIX=1` puts a fresh level-1 hero beside a

@@ -6,6 +6,7 @@ import { CLASSES, MONSTERS, LOOK, needsFlip, HERO_LOOKS } from '../js/data.js';
 test('every painted class and monster has a base disc in the image', () => {
   const check = (id, d) => {
     assert.ok(d.img, `${id} img`);
+    assert.ok(fs.existsSync(d.img), `${id} file ${d.img}`);
     const b = d.imgBase;
     assert.ok(b, `${id} imgBase`);
     assert.ok(b.x > 0.35 && b.x < 0.7, `${id} base x ${b.x}`);
@@ -34,6 +35,12 @@ test('every hero and monster records which way it was painted, and the flip face
   assert.equal(needsFlip(MONSTERS.wraith, 'left'), false);
   assert.equal(needsFlip(MONSTERS.spider, 'left'), false);
   assert.equal(needsFlip(MONSTERS.vharaxis, 'left'), false);
+  assert.equal(MONSTERS.bigwheel.look, 'left');
+  assert.equal(MONSTERS.mungo.look, 'left');
+  assert.equal(needsFlip(MONSTERS.bigwheel, 'left'), false, 'bigwheel already looks left — do not flip');
+  assert.equal(needsFlip(MONSTERS.mungo, 'left'), false, 'mungo already looks left — do not flip');
+  assert.equal(needsFlip(MONSTERS.bigwheel, 'right'), true);
+  assert.equal(needsFlip(MONSTERS.mungo, 'right'), true);
 });
 
 test('each class has three painted coats, all facing right, and the files are there', () => {

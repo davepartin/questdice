@@ -538,6 +538,21 @@ export const MONSTERS = {
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
       { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
   },
+  // Painted looking left (same as every other monster). Do not flip: needsFlip(..., 'left') stays false.
+  bigwheel: {
+    name: 'Big Wheel', glyph: '🧀', img: 'assets/miniatures/bigwheel.webp', look: 'left', imgBase: IB(418, 512, 210.5, 505, 342), short: 'WHEL', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite', threat: 2.8,
+    slam: { f: 2, m: 2 },
+    faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+  },
+  mungo: {
+    name: 'Mungo', glyph: '👹', img: 'assets/miniatures/mungo.webp', look: 'left', imgBase: IB(448, 512, 201.5, 505, 392), short: 'MUNG', init: 4, hp: 84, power: 10, xp: 30, gold: 28, tier: 'elite', threat: 2.8,
+    slam: { f: 2, m: 2 },
+    faces: [S('Club', 0, 1), S('Club', 1, 1), S('Stomp', 0, 1),
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }, { n: 'Roar', v: 'guard', f: 2, m: 1 },
+      { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }],
+  },
   goblinking: {
     name: 'The Goblin King', glyph: '👑', img: 'assets/miniatures/goblinking.webp', look: 'left', imgBase: IB(371, 462, 184, 457, 315), short: 'KING', init: 6, hp: 100, power: 12, xp: 80, gold: 70, tier: 'boss', threat: 9,
     slam: { f: 3, m: 2 }, adds: 'goblin',

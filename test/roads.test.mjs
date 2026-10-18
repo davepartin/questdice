@@ -24,6 +24,13 @@ test('step 8 is always the Call for Help, and the choice sets the next fight', (
   assert.ok(h.campaign.nextEnemies?.includes('cinderling'));
 });
 
+test('duo packs skip Call for Help so the locked step-8 fight stays', () => {
+  const h = newHero({ name: 'Ada', cls: 'wizard', seed: 2, pack: 'rivalduo' });
+  at(h, 1, 8, 7);
+  const ev = ensureRoad(h, [h]);
+  assert.notEqual(ev.id, 'help');
+});
+
 test('the very first fight still opens with the Nine-Stone Gate', () => {
   const h = newHero({ name: 'T', cls: 'knight', seed: 2 });
   assert.equal(roadIsOpen(h), true); assert.equal(ensureRoad(h, [h]).id, 'gate');

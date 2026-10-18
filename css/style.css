@@ -312,6 +312,10 @@ a { color: var(--shield); }
 .room-links a { color: var(--magic-glow); word-break: break-all; }
 .mate.locked { border-color: rgba(69,224,139,.75); }
 .wait { color: var(--hull-100); font-size: .95rem; }
+.story-minis { display: inline-flex; align-items: center; gap: 0; }
+.story-minis img { width: 1.6rem; height: 1.6rem; object-fit: contain; margin-left: -.35rem; }
+.story-minis img:first-child { margin-left: 0; }
+.cmd-icon .story-minis { pointer-events: none; }
 /* One button on screen (Dave): the corner holds only the menu button, top-left; Home, Rules and Sound are inside the menus */
 .chrome { right: auto; left: calc(.7rem + env(safe-area-inset-left, 0px)); }
 .chrome #home, .chrome #help, .chrome #mute { display: none !important; }
