@@ -587,7 +587,19 @@ export function board() {
       eyebrow(quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead', 'center'),
       h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)), X.net ? null : diamondBring(hero))));
   lay('board'); SCR.enter('road', { hero, heroes: X.members(), place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+  fitBoard(); requestAnimationFrame(fitBoard); setTimeout(fitBoard, 400); // again once the fonts and the card art have settled
 }
+// Phones: the whole quest card fits without a pull (Dave). When the sheet runs past the bottom, the hero picture above it gives up
+// exactly that much room (never below about a quarter of the screen). Safari's toolbar changes the height, so it re-fits on resize.
+function fitBoard() {
+  const app = $('#app'); const s = app?.querySelector('.sx-board-main'); if (!s || !app.classList.contains('board')) return;
+  app.style.removeProperty('--sheet');
+  if (!matchMedia('(max-aspect-ratio: 1085/1000)').matches) return; // landscape keeps its side panel
+  const over = s.scrollHeight - s.clientHeight; if (over <= 0) return;
+  const base = parseFloat(getComputedStyle(app).getPropertyValue('--sheet')) || 0.6;
+  app.style.setProperty('--sheet', String(Math.min(0.76, base + (over + 8) / window.innerHeight)));
+}
+if (typeof window !== 'undefined') window.addEventListener('resize', () => fitBoard());
 
 // ------------------------------------------------------------------------------------------------ road events and story
 // A story card (Dave did not love the old parchment scroll): a dark, gold-framed page in the game's own colours, a crest
