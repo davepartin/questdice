@@ -180,7 +180,7 @@ export function newHero({ name, cls, seed, full = false, color } = {}) {
 }
 
 export function heroMods(hero) {
-  const m = { maxHp: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0 };
+  const m = { maxHp: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0, tripleBonus: 0 };
   for (const id of hero.perks) for (const [k, v] of Object.entries(PERKS[id].mod)) m[k] += v;
   return m;
 }
@@ -378,7 +378,7 @@ export function evaluate(hero, board, opts = {}) {
   const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
   const bone = boneOn && [...BONE].some((s) => board[s]?.v === 1);
   const val = (s) => (boneOn && BONE.has(s) && board[s].v === 1 ? 6 : board[s].v);
-  const TRIPLE = tripleBonus(hero) * (hasCharm(hero, 'fang') ? 2 : 1); // Wolf Fang doubles it
+  const TRIPLE = (tripleBonus(hero) + mods.tripleBonus) * (hasCharm(hero, 'fang') ? 2 : 1); // Line Breaker adds 2 a rank; Wolf Fang doubles the lot
   const out = {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, splash: 0,
     lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],

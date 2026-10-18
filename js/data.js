@@ -491,8 +491,9 @@ export const PERKS = {
   ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face). Hold a little harder.', max: 3, mod: { blueBonus: 1 } },
   piercer: { name: 'Piercing Pips', text: 'Each white body die that rolls pierce pierces +1 more. Through, not around.', max: 3, mod: { pierceBonus: 1 } },
   greed: { name: 'Gold Sense', text: '+25% gold from your dice and the fallen. Coins like you already.', max: 3, mod: { goldPct: 0.25 } },
-  grit: { name: 'Stout Heart', text: '+4 max HP. A little more of you to go round.', max: 2, mod: { maxHp: 4 } },
-  frugal: { name: 'Frugal Mender', text: 'The Heal card costs 1 less Magic (minimum 1). Kindness, on sale.', max: 1, mod: { healCost: -1 } },
+  grit: { name: 'Stout Heart', text: '+4 max HP. A little more of you to go round.', max: 2, mod: { maxHp: 4 }, retired: true }, // no longer offered (Dave: too close to Vitality); heroes who took it keep it
+  linebreaker: { name: 'Line Breaker', text: 'Every triple pays +2 more, attack or block. Three in a line, then a little extra.', max: 5, mod: { tripleBonus: 2 } },
+  frugal: { name: 'Frugal Mender', text: 'The Heal power costs 1 less Magic (minimum 1). Kindness, on sale.', max: 1, mod: { healCost: -1 } },
 };
 
 // -------------------------------------------------------------------------------------------
