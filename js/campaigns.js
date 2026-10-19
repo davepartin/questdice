@@ -226,7 +226,7 @@ const CLOVERHEIST = {
   monsters: {
     goblindrummer: { statsFrom: 'goblin', name: 'Goblin Drummer' }, // Rumpus: goblin mini until goblindrummer is painted
     badgerbaron: { statsFrom: 'ogre', name: 'Baron Grumbletusk' }, // Grumbletusk: ogre mini until badgerbaron is painted
-    silkwood: { statsFrom: 'lich', name: 'Madam Silkwood', img: MONSTERS.spider.img, imgBase: MONSTERS.spider.imgBase, adds: 'spider' }, // spider shown big with lich stats until silkwood is painted
+    silkwood: { name: 'Madam Silkwood' }, // painted silkwood mini; Heist keeps the comic name
     roc: { statsFrom: 'ashwyrm', name: 'Bertha' }, // Bertha: Ashmaw mini until roc is painted
     // marmalade / parrotcaptain cameos dropped (fightHp II.6 = 1.6, III.3 = 1.5) until those minis are painted
   },

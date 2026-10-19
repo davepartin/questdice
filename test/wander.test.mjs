@@ -28,7 +28,7 @@ function wanderersAcross({ pack, act, steps, seeds }) {
 test('every monster names a land the packs use', () => {
   const known = new Set(Object.keys(LANDS).map(Number));
   const ids = Object.keys(MONSTERS);
-  assert.equal(ids.length, 27);
+  assert.equal(ids.length, 50);
   for (const id of ids) {
     const lands = landsOf(MONSTERS[id]);
     assert.ok(lands.length, `${id} needs a land tag`);
@@ -115,7 +115,11 @@ test('a wanderer is not reused on the next fight when another choice exists', ()
 
 test('story-only minions set wander: false and never join as wanderers', () => {
   assert.equal(MONSTERS.foxrogue.wander, false);
+  assert.equal(MONSTERS.puffball.wander, false);
+  assert.equal(MONSTERS.moonjelly.wander, false);
   assert.equal(mayWander('foxrogue'), false);
+  assert.equal(mayWander('puffball'), false);
+  assert.equal(mayWander('moonjelly'), false);
   assert.equal(mayWander('goblin'), true);
   const seen = wanderersAcross({
     pack: 'dawn', act: 1, steps: [2, 3, 4, 6, 8, 9],

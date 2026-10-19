@@ -19,6 +19,10 @@ const SIZE = {
   ironwarden: 1.55, fallenchampion: 1.55,
   cinderling: 0.78, frostwhelp: 0.82, ashwyrm: 1.6, vharaxis: 1.7, goldbelly: 1.7, blazemorrow: 1.7,
   magpieking: 1.55, magpies: 0.9, foxrogue: 1,
+  treant: 1.6, puffball: 0.85, raincloud: 0.88, bonfire: 0.86, wisp: 0.78, lampsnuffer: 1.55,
+  moonjelly: 0.85, visitor: 0.9, hedgeboar: 0.95, silkwood: 1.65, gargoyle: 0.95, yeti: 1.6,
+  direbear: 1.6, tuskraider: 1.0, tuskwarlord: 1.6, barrowrider: 1.7, stormtyrant: 1.55,
+  hivedrone: 0.78, hivequeen: 1.7, nightblade: 1.0, basilisk: 0.95, slagcolossus: 1.7, frostgiant: 1.7,
 };
 const REL_MAX = 0.62 + 0.38 * 1.7;
 export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero' is 1.0

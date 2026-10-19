@@ -396,10 +396,11 @@ test('The Clover Heist is a 1–6 any-hero scaled pack with writer casts and fal
   assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).img, monsterOf('ogre').img);
   assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).name, 'Baron Grumbletusk');
   const silk = monsterOf('silkwood', { pack: 'cloverheist' });
-  assert.equal(silk.img, monsterOf('spider').img);
+  assert.equal(silk.img, 'assets/miniatures/silkwood.webp');
   assert.equal(silk.name, 'Madam Silkwood');
   assert.equal(silk.adds, 'spider');
   assert.equal(silk.hp, monsterOf('lich').hp);
+  assert.equal(monsterOf('silkwood').name, 'The Grave-Silk Matriarch');
   assert.equal(monsterOf('roc', { pack: 'cloverheist' }).img, monsterOf('ashwyrm').img);
   assert.equal(monsterOf('magpieking').look, 'left');
   assert.equal(monsterOf('foxrogue').nemesis, false);

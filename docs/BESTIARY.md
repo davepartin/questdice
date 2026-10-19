@@ -280,6 +280,8 @@ Base HP 230 · Power die d12 · XP 140 · gold 120 · Slam 4+2×power · calls B
 
 ## 10. Building a new monster
 
+Campaign writers (and QuestStoryBot) **cast from the miniature catalog by `id`**. The catalog is `minis/catalog.json`; the readable page is [MINIS.md](MINIS.md). Rename freely. If no miniature fits, request a new painted piece rather than inventing art. Do not point a fight at a picture that is not in the catalog.
+
 Monsters are data, not code. A new one is a single entry in `MONSTERS` in `js/data.js`:
 
 ```js
