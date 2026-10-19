@@ -1252,7 +1252,13 @@ async function playStrike(s, rep) {
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
   await strikeAnim(ha, s, { caster: wid === 'staff' });
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
-  if (s.killed) { await killMoment([s.targetUid]); await wait(0.5); }
+  for (const sp of s.splashed || []) { // splash / area damage on the other monsters
+    const a = foePc(sp.uid); if (!a || sp.dealt <= 0) continue;
+    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'dmg');
+    const x = b.enemies.find((y) => y.uid === sp.uid); if (x) updatePlate(x);
+  }
+  const down = [...(s.killed ? [s.targetUid] : []), ...(s.splashed || []).filter((sp) => sp.killed && sp.uid !== s.targetUid).map((sp) => sp.uid)];
+  if (down.length) { await killMoment(down); await wait(0.5); }
   await wait(0.15);
 }
 async function playFoe(act, names) {

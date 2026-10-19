@@ -1832,21 +1832,34 @@ export function resolveParty(b) {
     f.stats.dealt += dealt; f._dealt += dealt;
     const burn = dealt > 0 ? burnOf(tgt) : 0; // Fire Ward burns the hero who hit it
     if (burn) { const k = snap.indexOf(f); if (k >= 0) taken[k] += burn; }
-    const killed = tgt.hp <= 0;
-    if (killed) {
-      rep.killed.push(tgt.uid); f._kills++; f.stats.kills = (f.stats.kills || 0) + 1; (f._killed ||= []).push(tgt.uid);
-      if (tgt.tier === 'boss') f.stats.bossKill = true;
+    const kill = (e) => { // the killing blow: credit, Moral Boost, and the stolen gold goes back to whoever lost it
+      rep.killed.push(e.uid); f._kills++; f.stats.kills = (f.stats.kills || 0) + 1; (f._killed ||= []).push(e.uid);
+      if (e.tier === 'boss') f.stats.bossKill = true;
       moral = { from: f.hero.name, n: MORAL_BOOST };
-      let pot = tgt.carried;
+      let pot = e.carried;
       const victims = [...b.fighters].filter((v) => v.purseLost > 0).sort((a, c) => c.purseLost - a.purseLost);
       for (const v of victims) {
         const back = Math.min(pot, v.purseLost); v.goldEarned += back; v.purseLost -= back; pot -= back;
       }
-      tgt.carried = 0;
+      e.carried = 0;
+    };
+    const killed = tgt.hp <= 0;
+    if (killed) kill(tgt);
+    // splash (to the others) and area damage (to everyone), from powers, as in a solo fight
+    const splashed = [];
+    const splash = (f.mods?.splash || 0) + (f.ev.splash || 0); const aoe = f.mods?.aoe || 0;
+    if (splash > 0 || aoe > 0) {
+      for (const e of b.enemies) {
+        if (e.hp <= 0) continue;
+        const hit = Math.floor(((e === tgt ? 0 : splash) + aoe) * (f.pactBribe ? 0.5 : 1)); if (hit <= 0) continue;
+        const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
+        splashed.push({ uid: e.uid, dealt: d, killed: e.hp <= 0 }); f.stats.dealt += d; f._dealt += d;
+        if (e.hp <= 0) kill(e);
+      }
     }
     rep.strikes.push({
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
-      killed, ev: f.ev, T, burned: burn || 0, phased: phase,
+      killed, ev: f.ev, T, burned: burn || 0, phased: phase, splashed,
     });
   };
   const actFor = (e) => {
