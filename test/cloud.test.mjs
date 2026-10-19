@@ -30,6 +30,7 @@ function nextMove(table) {
       return [ps.find((x) => !x.ready), { type: 'onward' }];
     }
     case 'board': return [host, { type: 'quest', id: v(host).board.quests[0].id }];
+    case 'envelope': return [ps.find((p) => !v(p).envelope?.card?.answered) || host, { type: 'envelope', accept: false }];
     case 'battle': {
       for (const p of ps) {
         const me = v(p).battle.me;

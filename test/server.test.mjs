@@ -45,6 +45,7 @@ test('two phones can sit, and a lock stays private on the wire', async () => {
     assert.equal(board.data.view.phase, 'board');
     const quest = board.data.view.board.quests[0].id;
     await post(port, { op: 'act', code: host.data.code, token: friend.data.token, cmd: { type: 'quest', id: quest } });
+    for (const t of [host.data.token, friend.data.token]) await post(port, { op: 'act', code: host.data.code, token: t, cmd: { type: 'envelope' } }); // secret objectives first
     const rolled = await post(port, { op: 'act', code: host.data.code, token: host.data.token, cmd: { type: 'roll' } });
     assert.equal(rolled.data.view.battle.me.stage, 'shape');
     assert.ok(rolled.data.view.battle.me.board);

@@ -8,6 +8,7 @@ import * as SV from '../js/save.js';
 
 function make(names = [['Ada', 'knight'], ['Bea', 'bard']]) {
   const table = createTable({ code: 'TEST', seed: 12345, name: 'Ash Company' });
+  table.envelopes = 'off'; // these tests are about the fight; secret objectives have their own test below
   const players = names.map(([name, cls], i) => {
     const res = joinTable(table, { name, cls, token: `tok${i}aaaa` });
     assert.equal(res.ok, true, res.error);
@@ -497,4 +498,42 @@ test('a hero takes their seat back on a new phone once the game has started (and
   assert.equal(playerByToken(table, players[1].token === 'newphone1' ? 'x' : 'tok1aaaa'), null, 'the old phone no longer holds the seat');
   assert.equal(table.company.campaign.step, step); assert.equal(back.player.hero.gold, gold, 'same step, same gold');
   assert.equal(reclaimSeat(table, { name: 'Nobody', token: 't' }).ok, false);
+});
+
+test('secret objectives at a table: everyone opens an envelope, the fight waits for all, then every card is revealed and paid', () => {
+  const { table, players } = make([['WizKid', 'wizard'], ['Smalls', 'dwarf'], ['Ada', 'knight']]);
+  begin(table, players);
+  table.envelopes = 'every';
+  table.phase = 'board';
+  const q = E.questsFor(table.company.members[0])[0];
+  assert.equal(command(table, players[0].id, { type: 'quest', id: q.id }).ok, true);
+  assert.equal(table.phase, 'envelope');
+  const v0 = playerView(table, players[0].id).envelope; const v1 = playerView(table, players[1].id).envelope;
+  assert.ok(v0.card && v1.card); assert.equal(v0.card.cover, v1.card.cover); assert.equal(v0.card.scene, v1.card.scene);
+  assert.equal(v0.waiting.length, 3);
+  assert.equal(command(table, players[0].id, { type: 'roll' }).ok, false, 'no rolling before every envelope is open');
+  assert.equal(command(table, players[0].id, { type: 'envelope' }).ok, true);
+  assert.equal(command(table, players[1].id, { type: 'envelope', accept: true }).ok, true);
+  assert.equal(table.phase, 'envelope');
+  assert.equal(command(table, players[2].id, { type: 'envelope' }).ok, true);
+  assert.equal(table.phase, 'battle');
+  // play it out
+  for (let i = 0; i < 60 && table.phase === 'battle'; i++) {
+    for (const p of players) { const f = table.battle?.fighters.find((x) => x.hero === p.hero); if (!f || f.hp <= 0 || f.locked) continue; command(table, p.id, { type: 'roll' }); command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }); }
+  }
+  assert.ok(['victory', 'defeat'].includes(table.phase));
+  const rv = playerView(table, players[0].id).reveal;
+  assert.equal(rv.lines.length, 3); for (const l of rv.lines) assert.doesNotMatch(l.line, /undefined|NaN/);
+});
+
+test('the host can move an envelope on for a phone that went quiet (an offered bribe counts as declined)', () => {
+  const { table, players } = make([['WizKid', 'wizard'], ['Smalls', 'dwarf']]);
+  begin(table, players);
+  table.envelopes = 'every';
+  table.phase = 'board';
+  const q = E.questsFor(table.company.members[0])[0];
+  command(table, players[0].id, { type: 'quest', id: q.id });
+  command(table, players[0].id, { type: 'envelope' });
+  assert.equal(command(table, players[0].id, { type: 'push' }).ok, true);
+  assert.equal(table.phase, 'battle');
 });
