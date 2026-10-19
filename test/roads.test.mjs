@@ -5,15 +5,16 @@ import { roadIsOpen, ensureRoad, chooseRoad, roadSlot, ROADS } from '../js/roads
 
 const at = (hero, act, step, wins) => { Object.assign(hero.campaign, { act, step, wins, road: null }); return hero; };
 
-test('encounters come every other camp: a choice before fight 3, a test before the elite, the Call for Help, the night before the boss', () => {
+test('something happens on the road before every fight: bigger encounters on fixed steps, road moments between', () => {
   const h = newHero({ name: 'T', cls: 'knight', seed: 2 });
   const open = [];
   for (let step = 2; step <= 10; step++) { at(h, 1, step, step - 1); if (roadIsOpen(h)) open.push(step); }
-  assert.deepEqual(open, [3, 5, 8, 10]);
+  assert.deepEqual(open, [2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  for (const step of [2, 4, 6, 7, 9]) { at(h, 1, step, step - 1); assert.equal(ROADS.find((e) => e.id === ensureRoad(h, [h]).id).when, 'moment', `step ${step}`); }
   at(h, 1, 3, 2); assert.equal(ROADS.find((e) => e.id === ensureRoad(h, [h]).id).when, 'road');
   at(h, 1, 5, 4); assert.ok(ensureRoad(h, [h]).stat, 'a dice test before the elite');
   at(h, 1, 10, 9); assert.equal(ROADS.find((e) => e.id === ensureRoad(h, [h]).id).when, 'boss');
-  assert.ok(roadSlot({ act: 1, step: 3 }) && !roadSlot({ act: 1, step: 4 }) && roadSlot({ act: 1, step: 8 }));
+  assert.ok(roadSlot({ act: 1, step: 3 }) && roadSlot({ act: 1, step: 4 }) && roadSlot({ act: 1, step: 8 }));
 });
 
 test('step 8 is always the Call for Help, and the choice sets the next fight', () => {
@@ -55,5 +56,20 @@ test('every encounter tells a short scene, names a hero or the company, and ever
     assert.ok(tell.split(/\s+/).length <= 60, `${e.id} is short (${tell.split(/\s+/).length} words)`);
     assert.doesNotMatch(tell, /traveller|traveler|Lantern|ash road/i, `${e.id} fits any story`);
     for (const ch of e.choices) assert.ok(ch.hint(ctx).length > 3, `${e.id}/${ch.id} has a hint`);
+  }
+});
+
+test('a road moment in company: everybody rolls, the best wins a small bonus, ties share it, and there is no rematch', () => {
+  const a = newHero({ name: 'WizKid', cls: 'wizard', seed: 3 }); const b = newHero({ name: 'Smalls', cls: 'dwarf', seed: 4 }); b.campaign = a.campaign;
+  for (let step = 2; step <= 9; step++) {
+    if ([3, 5, 8].includes(step)) continue;
+    at(a, 1, step, step - 1); a.campaign.blessings = [];
+    const gold = a.gold + b.gold; ensureRoad(a, [a, b]);
+    const r = chooseRoad(a, [a, b], 'go');
+    assert.equal(r.contest.length, 2); assert.equal(r.trial, null);
+    const best = Math.max(...r.contest.map((x) => x.total)); const winners = r.contest.filter((x) => x.total === best).map((x) => x.name);
+    const got = new Set([...a.campaign.blessings.map((x) => x.who), ...(a.gold + b.gold > gold ? winners : [])]);
+    assert.deepEqual([...got].sort(), [...winners].sort(), `step ${step}: the bonus goes to the best roll`);
+    assert.doesNotMatch(r.text, /undefined|\{/);
   }
 });

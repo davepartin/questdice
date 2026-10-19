@@ -3,9 +3,9 @@
 import { HELP_FIGHTS, placeOf } from './story.js';
 import { actsOf, helpFightsOf, helpOff } from './campaigns.js';
 import {
-  hashSeed, makeRng, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf,
+  hashSeed, makeRng, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf, questsFor,
 } from './engine.js';
-import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost } from './trials.js';
+import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost, statDice } from './trials.js';
 
 export function joinNames(members) {
   const n = members.map((m) => m.name);
@@ -199,10 +199,84 @@ const ENCOUNTERS = [
 ];
 for (const e of ENCOUNTERS) ROADS.push(e);
 
-// Encounters come every other camp (Dave, Oct 2026: the road used to stop you before nearly every fight): a choice before fight 3,
-// a dice test before the elite (fight 5), a Call for Help before fight 8 (a dice test where the story locks that fight), and the
-// night before the boss. The other camps go straight on to the fight. The first step of the campaign has its own opening.
-export const roadSlot = (c) => c.step === 3 || c.step === 8 || c.step >= 10 || isTrialStep(c);
+// ------------------------------------------------------------------------------------------------ road moments (Dave, Oct 2026)
+// "Just a fun thing as you walk the road, getting ready for the next battle." Every step that has no bigger encounter gets one:
+// two sentences pointing at where you are headed, one roll of wisdom (head), strength (hands) or speed (feet), and a small bonus
+// for the next fight. Alone, you roll against the road; in a company everybody has a go and the best roll wins (ties share).
+// A writer's pack may write its own moment for any step (act.moments[step - 1]) so it follows the story.
+const SMALL = { magic: [2, 2, 3], gold: [10, 20, 30], hp: [5, 8, 10], atk: [5, 8, 10], block: [5, 8, 10] };
+const prizeWords = (ctx, kind) => { const n = by(ctx, SMALL[kind]); return { magic: `start the next fight with ${n} more magic`, gold: `${n} gold`, hp: `+${n} health next fight`, atk: `+${n} attack in round 1 of the next fight`, block: `+${n} block in round 1 of the next fight` }[kind]; };
+function givePrize(ctx, names, kind) {
+  const n = by(ctx, SMALL[kind]);
+  for (const name of names) {
+    if (kind === 'gold') { grantCompany([findHero(ctx, name)], n); continue; }
+    const key = { magic: 'startMagic', hp: 'startHp', atk: 'openingAtk', block: 'openingBlock' }[kind];
+    bless(ctx, { id: `moment-${kind}`, name: 'A good omen', text: prizeWords(ctx, kind).replace(/^start the next fight with/, 'Start with').replace(/ next fight$| of the next fight$/, ''), fights: 1, who: name, [key]: n });
+  }
+  return prizeWords(ctx, kind);
+}
+// where the road leads: the next fight's place, so a moment points at what is coming
+const toward = (ctx) => { try { const q = questsFor(ctx.members[0])[0]; return q?.place ? `the road to ${q.place}` : 'the road'; } catch { return 'the road'; } };
+const DIE_WORD = { wisdom: 'head die', strength: 'hands', speed: 'feet' };
+function moment({ id, stat, title, tell, go, won, lost, prize }) {
+  return {
+    id, when: 'moment', stat, kicker: 'On the road', title, tell, momentPrize: prize,
+    choices: [{
+      id: 'go', test: true, contest: true, label: () => go,
+      hint: (ctx) => (ctx.members.length > 1 ? `Everyone rolls their ${DIE_WORD[stat]}. Best roll: ${prizeWords(ctx, prize)}.` : `${oddsLine(ctx.members, stat, ctx.act)} · win: ${prizeWords(ctx, prize)}`),
+      win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return `${won(ctx, r.who)} (${roll2(r)}) ${r.who}: ${p}.`; },
+      lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return `${lost(ctx, r.who)} (${roll2(r)}) No bonus this time, but a good story.`; },
+      contest: (ctx, rows, winners) => { const p = givePrize(ctx, winners, prize); note(ctx, title, `${winners.join(' and ')} won it.`);
+        const line = winners.length > 1 ? `A tie between ${joinNames(winners.map((name) => ({ name })))}, so both win.` : won(ctx, winners[0]);
+        return `${rows.map((x) => `${x.name} ${x.total}`).join(' · ')}. ${line} ${joinNames(winners.map((name) => ({ name })))}: ${p}.`; },
+    }],
+  };
+}
+const MOMENTS = [
+  moment({ id: 'm-rope', stat: 'speed', title: 'The Rope Swing', prize: 'magic', go: 'Take a swing',
+    tell: (ctx) => `A rope swing hangs over a stream on ${toward(ctx)}. The landing on the far side looks optional.`,
+    won: (ctx, who) => `${who} sails across and lands like a cat, if cats bowed.`, lost: (ctx, who) => `${who} lets go a little early. The stream is cold and very surprised.` }),
+  moment({ id: 'm-stones', stat: 'wisdom', title: 'Skipping Stones', prize: 'gold', go: 'Skip a stone',
+    tell: (ctx) => `A flat, still pond beside ${toward(ctx)}. A sign says: SKIP SEVEN, WIN A PRIZE. Under the sign, a jar of coins.`,
+    won: (ctx, who) => `${who} reads the water, flicks the wrist: seven skips and a showy eighth.`, lost: (ctx, who) => `${who}'s stone skips once, then sinks with dignity.` }),
+  moment({ id: 'm-arm', stat: 'strength', title: 'Arm-Wrestling at the Inn', prize: 'hp', go: 'Roll up a sleeve',
+    tell: (ctx) => `A roadside inn on ${toward(ctx)}, and a sticky table built for arm-wrestling. The winner gets the big bowl of stew.`,
+    won: (ctx, who) => `${who} slams it down. The stew arrives with a ladle the size of a shovel.`, lost: (ctx, who) => `${who} meets the innkeeper's daughter, who has done this before.` }),
+  moment({ id: 'm-milestone', stat: 'speed', title: 'Race to the Milestone', prize: 'atk', go: 'Race',
+    tell: (ctx) => `A milestone on ${toward(ctx)} says ONE MILE. Somebody says "race you". Nobody remembers who.`,
+    won: (ctx, who) => `${who} touches the stone first and is still bouncing an hour later.`, lost: (ctx, who) => `${who} arrives last, claiming to have been admiring the view.` }),
+  moment({ id: 'm-signpost', stat: 'wisdom', title: 'The Riddling Signpost', prize: 'magic', go: 'Answer the sign',
+    tell: (ctx) => `A signpost on ${toward(ctx)} points four ways and asks a riddle. It glows faintly, as if pleased with itself.`,
+    won: (ctx, who) => `${who} answers. The sign glows warmer and tingles all the way up the arm.`, lost: (ctx, who) => `${who} guesses "a sandwich". The sign is disappointed in everyone.` }),
+  moment({ id: 'm-log', stat: 'strength', title: 'The Log in the Way', prize: 'gold', go: 'Heave the log',
+    tell: (ctx) => `A fallen log blocks ${toward(ctx)}. Something underneath it glints, which is either treasure or a very shiny beetle.`,
+    won: (ctx, who) => `${who} rolls the log aside. Treasure! (And a beetle, who leaves.)`, lost: (ctx, who) => `${who} pushes. The log does not care. You climb over it instead.` }),
+  moment({ id: 'm-apples', stat: 'strength', title: 'The Apple Tree', prize: 'hp', go: 'Shake the tree',
+    tell: (ctx) => `An apple tree leans over ${toward(ctx)}, heavy with fruit just out of reach.`,
+    won: (ctx, who) => `${who} shakes it. Apples rain down. One lands on a head, which is the price of apples.`, lost: (ctx, who) => `${who} shakes it. One apple falls. It is mostly worm.` }),
+  moment({ id: 'm-stars', stat: 'wisdom', title: 'Reading the Stars', prize: 'block', go: 'Read the sky',
+    tell: (ctx) => `Night falls on ${toward(ctx)}. The stars are out, and they seem to be pointing.`,
+    won: (ctx, who) => `${who} finds the Shield constellation and feels very well protected.`, lost: (ctx, who) => `${who} confidently identifies a constellation that is actually a moth.` }),
+  moment({ id: 'm-puddle', stat: 'speed', title: 'The Great Puddle', prize: 'block', go: 'Jump it',
+    tell: (ctx) => `A puddle the size of a small lake sits in the middle of ${toward(ctx)}. There is no way round. There is only over.`,
+    won: (ctx, who) => `${who} clears it with room to spare, dry as a biscuit.`, lost: (ctx, who) => `${who} lands in the exact middle. It was deeper than it looked. It always is.` }),
+  moment({ id: 'm-bell', stat: 'wisdom', title: 'The Old Bell', prize: 'atk', go: 'Ring it just right',
+    tell: (ctx) => `An old bell hangs at a crossroads on ${toward(ctx)}. Ring the right note and, people say, courage rings back.`,
+    won: (ctx, who) => `${who} strikes it once, perfectly. The note hums in your bones.`, lost: (ctx, who) => `${who} rings it. A dog three villages away starts howling.` }),
+];
+// A writer's own moment for this step: act.moments[step - 1] = { title, stat, tell, go, won, lost, prize } ({place} and {who} are filled in)
+const packMoment = (c) => { const acts = actsOf(c); return acts[(c.act - 1) % acts.length]?.moments?.[c.step - 1] || null; };
+const fillIn = (text, ctx, who = '') => String(text || '').replaceAll('{place}', toward(ctx).replace(/^the road to /, '')).replaceAll('{who}', who).replaceAll('{company}', joinNames(ctx.members));
+const PACK_MOMENT = moment({ id: 'm-pack', stat: 'speed', title: 'On the road', prize: 'magic', go: 'Give it a go',
+  tell: (ctx) => fillIn(packMoment(ctx.campaign)?.tell, ctx), won: (ctx, who) => fillIn(packMoment(ctx.campaign)?.won, ctx, who), lost: (ctx, who) => fillIn(packMoment(ctx.campaign)?.lost, ctx, who) });
+for (const m of MOMENTS) ROADS.push(m);
+ROADS.push(PACK_MOMENT);
+
+// Something happens on the road before every fight (Dave, Oct 2026: "these phases become a fun rhythm"): the bigger encounters
+// take fixed steps (a choice before fight 3, a dice test before the elite, the Call for Help before fight 8, the night before the
+// boss), and every other step has a short road moment. The first step of the campaign has its own opening.
+export const roadSlot = (c) => !!c;
+const bigStep = (c) => c.step === 3 || c.step === 8 || c.step >= 10 || isTrialStep(c);
 
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
@@ -214,6 +288,7 @@ function poolFor(campaign) {
   }
   if (isTrialStep(campaign)) return ROADS.filter((e) => e.when === 'trial');
   if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss');
+  if (!bigStep(campaign)) return packMoment(campaign) ? [PACK_MOMENT] : ROADS.filter((e) => e.when === 'moment' && e.id !== 'm-pack');
   return ROADS.filter((e) => e.when === 'road');
 }
 
@@ -239,8 +314,17 @@ export function roadIsOpen(hero) {
   if (!opening && !roadSlot(c)) return false; // most fights follow straight on from camp
   return !(c.road && c.road.key === key && c.road.done);
 }
-function present(id, hero, members) {
+// The road event by id (a writer's own moment takes its title, test and prize from the pack)
+function roadEvent(id, c) {
   const ev = ROADS.find((e) => e.id === id) || ROADS[0];
+  if (ev.id !== 'm-pack') return ev;
+  const pm = packMoment(c) || {};
+  const own = moment({ id: 'm-pack', stat: STATS[pm.stat] ? pm.stat : 'speed', title: pm.title || 'On the road', prize: SMALL[pm.prize] ? pm.prize : 'magic', go: pm.go || 'Give it a go',
+    tell: ev.tell, won: (ctx, who) => fillIn(pm.won, ctx, who), lost: (ctx, who) => fillIn(pm.lost, ctx, who) });
+  return own;
+}
+function present(id, hero, members) {
+  const ev = roadEvent(id, hero.campaign);
   const ctx = { campaign: hero.campaign, members, act: hero.campaign.act };
   return {
     id: ev.id, title: ev.title, kicker: ev.kicker || 'The road has a word', tell: ev.tell(ctx), stat: ev.stat || null, hard: !!ev.hard, foe: ev.foe || null,
@@ -254,14 +338,18 @@ function present(id, hero, members) {
 }
 export function chooseRoad(hero, members, choiceId) {
   const c = hero.campaign;
-  const ev = ROADS.find((e) => e.id === c.road?.id);
+  const ev = c.road?.id ? roadEvent(c.road.id, c) : null;
   const choice = ev?.choices.find((ch) => ch.id === choiceId);
   if (!ev || !choice) return null;
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'road-choice', choiceId));
   const ctx = { campaign: c, members, rng, act: c.act, hero };
   if (choice.can && !choice.can(ctx)) return null;
-  let text; let trial = null;
-  if (choice.test) { // a test: pay any stake, roll the champion's dice against the other side's, then win or lose
+  let text; let trial = null; let contest = null;
+  if (choice.contest && typeof choice.contest === 'function' && members.length > 1) { // a road moment in company: everybody has a go
+    contest = members.map((m) => { const sizes = statDice(m, ev.stat); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'moment', m.name)); const dice = sizes.map((z) => 1 + Math.floor(r() * z)); return { name: m.name, cls: m.cls, sizes, dice, total: dice.reduce((a, v) => a + v, 0) }; });
+    const best = Math.max(...contest.map((x) => x.total)); const winners = contest.filter((x) => x.total === best).map((x) => x.name);
+    text = choice.contest(ctx, contest, winners); c.road.contest = { rows: contest, winners };
+  } else if (choice.test) { // a test: pay any stake, roll the champion's dice against the other side's, then win or lose
     const stake = choice.stake ? choice.stake(ctx) : 0;
     if (stake && !payCompany(members, stake)) return null;
     trial = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choiceId}` });
@@ -270,17 +358,17 @@ export function chooseRoad(hero, members, choiceId) {
   } else text = choice.apply(ctx);
   c.road.done = true;
   c.seenRoads = [...(c.seenRoads || []), ev.id].slice(-10);
-  return { title: ev.title, text, trial: trial ? { ...trial, foe: ev.foe, stake: c.road.trial.stake, canRematch: !trial.win, rematchCost: rematchCost(c.act) } : null };
+  return { title: ev.title, text, contest, trial: trial ? { ...trial, foe: ev.foe || ev.title, stake: c.road.trial.stake, canRematch: !trial.win && ev.when !== 'moment', rematchCost: rematchCost(c.act) } : null };
 }
 // After a lost test, one rematch for a little gold. A win pays out as usual; the first loss still stands.
 export function rematchInfo(hero, members) {
   const c = hero.campaign; const t = c.road?.trial;
-  if (!t || t.win || t.rematched) return null;
+  if (!t || t.win || t.rematched || roadEvent(c.road.id, c).when === 'moment') return null; // a road moment is just for fun: no rematch
   const cost = rematchCost(c.act); return { cost, ok: companyGold(members) >= cost };
 }
 export function rematchTrial(hero, members) {
   const c = hero.campaign; const info = rematchInfo(hero, members); if (!info?.ok) return null;
-  const ev = ROADS.find((e) => e.id === c.road.id); const choice = ev?.choices.find((ch) => ch.id === c.road.trial.choiceId); if (!choice) return null;
+  const ev = roadEvent(c.road.id, c); const choice = ev?.choices.find((ch) => ch.id === c.road.trial.choiceId); if (!choice) return null;
   payCompany(members, info.cost);
   const ctx = { campaign: c, members, rng: makeRng(hashSeed(c.seed, c.act, c.step, 'rematch')), act: c.act, hero };
   const r = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choice.id}`, attempt: 1 });
