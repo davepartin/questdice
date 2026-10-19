@@ -228,3 +228,11 @@ test('hero colour is kept on the local save and in the cloud blob', async () => 
   assert.equal(old.color, 'default');
 });
 
+
+test('creating a hero where the browser will not store it gives a clear error, not a crash', async () => {
+  const real = globalThis.window.localStorage;
+  globalThis.window.localStorage = { ...real, getItem: () => null, setItem: () => { throw new Error('QuotaExceededError'); } };
+  try {
+    await assert.rejects(SV.createSave(E.newHero({ name: 'Full', cls: 'bard', seed: 3 }), 'abc123'), /would not save the hero/);
+  } finally { globalThis.window.localStorage = real; }
+});

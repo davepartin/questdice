@@ -194,7 +194,7 @@ export function judge(env, battle, { won }) {
   const crooks = !won && offered > 0 && accepted === offered;
   if (crooks) for (const r of results) r.gold -= Math.round(G / 2);
   for (const r of results) r.line = revealLine(env, r, rivalWin, crooks, won);
-  return { results, crooks, rivals: rivalWin };
+  return { results, crooks, rivals: rivalWin, won };
 }
 
 // The Reveal: one line for each hero (names, never "he" or "she").
@@ -225,8 +225,9 @@ export function payOut(judged, heroesByName) {
     const h = heroesByName[r.name]; if (!h) continue;
     h.gold = Math.max(0, (h.gold || 0) + r.gold);
     const rec = ((h.record ||= {}).secrets ||= { done: 0, rivalries: 0, bribesTaken: 0, bribesDeclined: 0, forced: 0, honor: 0 });
-    if (r.kind === 'rival' && r.met) rec.rivalries++;
-    else if ((r.kind === 'cover' || r.kind === 'challenge') && r.met) rec.done++;
+    // rivalries and challenges count in the Hall of Fame only when they paid: the team has to win (docs/SECRET_OBJECTIVES.md)
+    if (r.kind === 'rival' && r.met && judged.won) rec.rivalries++;
+    else if ((r.kind === 'cover' || r.kind === 'challenge') && r.met && judged.won) rec.done++;
     if (r.kind === 'bribe') { if (r.mode === 'forced') rec.forced++; else if (r.accepted) rec.bribesTaken++; else { rec.bribesDeclined++; rec.honor++; } }
   }
 }
