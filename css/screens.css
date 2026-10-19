@@ -916,3 +916,5 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-saved b { color: #6af0a8; }
 .sx-saved span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sx-saved em { font-style: normal; color: #ffe38a; font-weight: 700; white-space: nowrap; }
+/* the Diamond case in the Gear tab: Left / Right to carry one into the next fight */
+.zn-diamonds .db-hands { display: flex; gap: .45rem; width: 100%; } .zn-diamonds .db-hand { flex: 1; justify-content: center; }

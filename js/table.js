@@ -419,7 +419,7 @@ function push(table, player) {
 // Camp, the whole of it: a change to your own hero, by the name of the rule that makes it (the camp screens call these
 // same rules on their own copy first, so the phone answers at once; the table keeps the real one).
 const HERO_OPS = new Set(['dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie',
-  'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower']);
+  'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond']);
 function heroOp(table, player, cmd) {
   if (table.phase !== 'camp') return fail('That is done at camp.');
   if (!HERO_OPS.has(cmd.op)) return fail('Unknown camp choice.');
@@ -644,6 +644,7 @@ function enterVictory(table) {
   const b = table.battle;
   revealEnvelopes(table, true);
   LG.noteBattle(table.company.campaign, b, { won: true, quest: table.quest || b.quest, reveal: table.reveal }); // for the act's Legend
+  const shattered = Object.fromEntries(members(table).map((m) => [m.name, E.shatterDiamonds(m).map((d) => d.id)]).filter(([, l]) => l.length)); // win or lose, a Diamond brought to the fight shatters
   const levels = {};
   for (const f of b.fighters) levels[f.hero.name] = f.hero.level;
   const r = E.partyRewards(b);
@@ -675,7 +676,7 @@ function enterVictory(table) {
   table.rewards = {
     xp: r.xp, gold, drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
     levels, draft: E.newDraft(firstOrder, drops.length), questName: table.quest?.name || '',
-    repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])),
+    repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])), shattered,
     charms, charmTaken: {},
   };
   table.phase = 'victory';
@@ -734,6 +735,7 @@ function passLoot(table, player) {
 function enterDefeat(table, retreatFlag) {
   revealEnvelopes(table, false);
   if (table.battle) LG.noteBattle(table.company.campaign, table.battle, { won: false, quest: table.quest || table.battle.quest, reveal: table.reveal });
+  for (const m of members(table)) E.shatterDiamonds(m);
   let loss = 0;
   for (const m of members(table)) {
     const cut = Math.floor(m.gold * 0.15);

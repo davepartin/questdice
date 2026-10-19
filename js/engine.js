@@ -1623,6 +1623,7 @@ export function shareWeights(ranked) {
 }
 
 function makeFighter(hero) {
+  wieldDiamonds(hero); // a Diamond brought from camp takes its hand for this fight (after the company's strength was measured, so it helps)
   const boon = pullBlessings(hero); const pact = hasCharm(hero, 'pact');
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   return {

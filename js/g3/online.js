@@ -375,10 +375,12 @@ function victory(t) {
   void picker;
   const reopen = btn('View brag board', () => openBrag(t, !you.seenBrag), { kind: 'link', cls: 'wide brag-reopen' });
   const note = youRepeat ? h('p', { class: 'sx-repeat' }, n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : null;
+  const gone = R.shattered?.[hero.name] || []; // the Diamond this hero brought has shattered
+  const shattered = gone.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `Your Diamond ${gone.map((id) => D.WEAPONS[id]?.name || 'weapon').join(' and ')} shattered into light. One fight, as promised.`) : null;
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, reopen, rows, perks, charms, loot)));
+      partyBar(), note, shattered, reopen, rows, perks, charms, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }

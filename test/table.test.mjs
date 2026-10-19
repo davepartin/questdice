@@ -537,3 +537,25 @@ test('the host can move an envelope on for a phone that went quiet (an offered b
   assert.equal(command(table, players[0].id, { type: 'push' }).ok, true);
   assert.equal(table.phase, 'battle');
 });
+
+test('a Diamond goes to a team fight: Left or Right at camp, it takes that hand in the fight, then shatters', () => {
+  const { table, players } = make([['WizKid', 'wizard'], ['Smalls', 'dwarf']]);
+  begin(table, players);
+  const hero = players[0].hero; const d = E.makeDiamond(E.makeRng(5), 1);
+  assert.ok(E.takeDiamond(hero, d));
+  const sword = hero.loadout.NW;
+  table.phase = 'camp';
+  assert.equal(command(table, players[0].id, { type: 'op', op: 'armDiamond', args: [d.uid, 'NW'] }).ok, true, 'Left, from the Gear tab at camp');
+  assert.equal(E.armedSlot(hero, d.uid), 'NW');
+  table.phase = 'board';
+  const q = E.questsFor(table.company.members[0])[0];
+  assert.equal(command(table, players[0].id, { type: 'quest', id: q.id }).ok, true);
+  assert.equal(table.phase, 'battle');
+  const f = table.battle.fighters.find((x) => x.hero === hero);
+  assert.equal(f.hero.loadout.NW.uid, d.uid, 'the Diamond is in the left hand for the fight');
+  for (let i = 0; i < 60 && table.phase === 'battle'; i++) for (const p of players) { const g = table.battle?.fighters.find((x) => x.hero === p.hero); if (!g || g.hp <= 0 || g.locked) continue; command(table, p.id, { type: 'roll' }); command(table, p.id, { type: 'lock', target: 0, straight: 'atk' }); }
+  assert.ok(['victory', 'defeat'].includes(table.phase));
+  assert.equal(hero.loadout.NW.uid, sword.uid, 'its own weapon is back');
+  assert.equal(E.diamondsOf(hero).length, 0, 'the Diamond shattered');
+  if (table.phase === 'victory') assert.deepEqual(table.rewards.shattered.WizKid, [d.id]);
+});
