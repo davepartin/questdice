@@ -315,7 +315,7 @@
 .env-pay { display: flex; align-items: flex-start; justify-content: center; gap: .35rem; margin: 0; font-size: .88rem; line-height: 1.35; color: #5a3a10; text-align: left; } .env-pay .ico { flex: none; margin-top: .05rem; }
 .env-cover { display: flex; flex-direction: column; gap: .2rem; margin: .8rem 0 .2rem; padding: .7rem .9rem; border-radius: 10px; text-align: center; border: 1px solid var(--hair); background: rgba(12, 12, 24, .8); }
 .env-cover small { color: var(--dim); font-size: .8rem; } .env-cover b { font-family: var(--font-story); font-size: 1.2rem; font-style: italic; color: var(--gold-hi); }
-.env-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin-top: .6rem; }
+.env-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin-top: .6rem; } .env-btns .env-one { grid-column: 1 / -1; }
 .env-sealed { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: .7rem 0 .2rem; color: var(--gold-hi); font-weight: 700; }
 .sx-reveal .rv-list { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .45rem; }
 .rv-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(12, 12, 24, .55); }

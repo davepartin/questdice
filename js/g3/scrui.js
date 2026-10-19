@@ -742,7 +742,7 @@ export function roadResult(res, o = {}) {
 
 // ------------------------------------------------------------------------------------------------ secret objectives (secrets.js)
 // The Envelope: the voice's scene (the same on every phone), your own card, the cover line to say out loud, and two buttons in the
-// same places on every phone (Got it / Hmm…, or Accept / Decline for an offered bribe), so nobody can tell who had a choice.
+// one Continue (Dave, Oct 2026: as long as there is a button), or Accept / Decline for an offered bribe.
 // card: secrets.cardView(); o: { onAnswer(accept), waiting: [names], extra: node (the host's push), questName, solo (no cover line) }.
 export function envelope(card, o = {}) {
   const hero = X.S.hero || X.members()[0]; let sent = card.answered;
@@ -751,13 +751,13 @@ export function envelope(card, o = {}) {
   const choice = card.answered
     ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? 'You took the bribe. Keep a straight face.' : 'You said no. Honor, quietly.') : 'Sealed. Keep it to yourself.')
     : h('div', { class: 'env-btns' },
-      btn(offer ? 'Accept' : 'Got it', () => answer(true), { big: true, cls: 'wide' }),
-      btn(offer ? 'Decline' : 'Hmm…', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' }));
+      ...(offer ? [btn('Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
+        : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
   const waiting = card.answered && o.waiting?.length ? h('p', { class: 'fine center' }, `Waiting for ${o.waiting.join(', ')} to read their envelope.`) : null;
   mountAs('road', h('div', { class: 'sx-split sx-road sx-envelope' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
       X.partyBar?.(),
-      storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', card.voice, card.scene, { icon: 'scroll' }),
+      storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', String(card.voice || '').replace(/^./, (ch) => ch.toUpperCase()), card.scene, { icon: 'scroll' }),
       h('article', { class: 'env-card' }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
         h('div', { class: 'env-eye' }, 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
         h('p', { class: 'env-flavor' }, card.flavor),

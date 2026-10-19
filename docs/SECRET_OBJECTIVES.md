@@ -33,10 +33,10 @@ Every phone shows, at the same moment:
    - *"Mine says keep everyone standing and win."*
    - *"Mine just wants us to win, and quickly."*
    - *"Mine's a team one. Win the battle."*
-4. **Two buttons in the same places on every phone**, so nobody can tell from fingers or timing who had a choice:
-   - most cards: **Got it** and **Hmm…** (both continue);
+4. **The buttons**:
+   - most cards: one **Continue** (Dave chose simple over hiding who had a choice);
    - an **offered** bribe: **Accept** and **Decline**;
-   - a **forced** bribe: **Got it** and **Hmm…** (it looks exactly like an ordinary card).
+   - a **forced** bribe: **Continue** (it looks exactly like an ordinary card).
 
 The whole screen takes about 15 seconds for everyone to read, so nobody finishes suspiciously fast. A Continue arrives only when
 every phone has tapped.

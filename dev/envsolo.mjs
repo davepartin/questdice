@@ -11,7 +11,7 @@ const side = () => a.page.evaluate(() => (document.querySelector('.sx-side')?.te
 console.log('ENVELOPE ->', await side());
 await a.page.evaluate(() => { const s = document.querySelector('.sx-side'); const e = document.querySelector('.env-card'); if (s && e) s.scrollTop = e.offsetTop - 90; });
 await a.pump(1); await a.shot(`${out}/solo_env.png`);
-await a.clickText('Got it'); await sleep(1500); await a.pump(2);
+await a.clickText('Continue'); await sleep(1500); await a.pump(2);
 console.log('battle running', await a.page.evaluate(() => window.QD.B3.running?.()), 'envelope', await a.page.evaluate(() => window.QD.S.envelope?.cards && Object.values(window.QD.S.envelope.cards)[0].id));
 // win at once and look at the Reveal
 await a.page.evaluate(() => { const Q = window.QD; for (const e of Q.S.battle.enemies) e.hp = 0; Q.B3.stop(); Q.showVictory(); }); await sleep(800); await a.pump(2); await a.clickText('Continue').catch(() => {}); await sleep(600); await a.pump(2);

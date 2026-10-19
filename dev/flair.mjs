@@ -14,7 +14,7 @@ const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; 
 const shot = async (n) => { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `/tmp/claude-0/-home-user-questdice/8c0c8fef-1ceb-56a5-957d-404bdc291d52/scratchpad/flair/${tag}_${n}.png` }); };
 await p.evaluate((cls) => { const { S, E, showBoard } = window.QD; const h = E.newHero({ name: 'Dave', cls, seed: 11 }); S.hero = h; S.company = { members: [h] }; showBoard(); }, process.env.CLS || 'knight');
 await pump(1);
-await p.evaluate((en) => { const E = window.QD.E; const q = { ...E.questsFor(window.QD.S.hero)[0], enemies: en.split(','), kind: 'battle' }; window.QD.startQuest(q); }, en); await pump(1); await p.evaluate(() => [...document.querySelectorAll('button')].find((e) => /Got it/.test(e.textContent))?.click());
+await p.evaluate((en) => { const E = window.QD.E; const q = { ...E.questsFor(window.QD.S.hero)[0], enemies: en.split(','), kind: 'battle' }; window.QD.startQuest(q); }, en); await pump(1); await p.evaluate(() => [...document.querySelectorAll('button')].find((e) => /Continue/.test(e.textContent))?.click());
 for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await pump(0.5); }
 await pump(2); await shot('0start');
 if (process.env.HP1) await p.evaluate((n) => { for (const e of window.QD.S.battle.enemies.slice(0, +n)) e.hp = 1; window.QD.B3.refreshPlates(); }, process.env.HP1);
