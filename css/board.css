@@ -166,6 +166,10 @@
 .fb-num.long { font-size: .95rem; }
 .fb-num.meh { color: #cfc8d8; font-size: 1rem; }
 .fb-spark { position: absolute; width: 0; height: 0; --k: 0; }
+.fb-sparkle { position: absolute; width: 0; height: 0; --k: 0; pointer-events: none; }
+.fb-sparkle i { position: absolute; left: 0; top: 0; font-style: normal; font-size: calc(21px * var(--z)); line-height: 1; color: #fff; text-shadow: 0 0 6px var(--c), 0 0 12px var(--c), 0 0 20px var(--c);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(var(--k) * var(--r) * -1)) rotate(calc(var(--a) * -1)) translateY(calc(var(--k) * var(--k) * -26px)) scale(calc(1 - var(--k) * .4)); }
+.fb-sparkle i:nth-child(3n) { color: var(--c); }
 .fb-shock { position: absolute; display: block; width: calc(50px * var(--p) * var(--k)); height: calc(50px * var(--p) * var(--k)); margin: calc(25px * var(--p) * var(--k) * -1) 0 0 calc(25px * var(--p) * var(--k) * -1); border-radius: 50%; border: 2px solid var(--c); opacity: calc(1 - var(--k)); box-shadow: 0 0 8px var(--c); }
 .fb-spark.heal .fb-shock { display: none; }
 .fb-spark-core { position: absolute; display: block; width: calc(34px * var(--p) * (.35 + var(--k))); height: calc(34px * var(--p) * (.35 + var(--k))); margin: calc(17px * var(--p) * (.35 + var(--k)) * -1) 0 0 calc(17px * var(--p) * (.35 + var(--k)) * -1); border-radius: 50%; background: radial-gradient(circle, #fff 0 22%, var(--c) 46%, transparent 72%); }

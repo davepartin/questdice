@@ -49,6 +49,12 @@ test('a rivalry pays the best of its holders; Gold Rush doubles the winner’s g
   assert.match(wiz.line, /WizKid was secretly chasing gold/); assert.match(wiz.line, /Smalls \(7\)/);
   const lost = judge(env, b, { won: false });
   assert.equal(lost.results.every((r) => r.gold === 0), true);
+  // the Hall of Fame counts a rivalry only when it paid (the team won)
+  const hero = (name) => ({ name, gold: 0 });
+  const lostHeroes = { WizKid: hero('WizKid'), Smalls: hero('Smalls') }; payOut(lost, lostHeroes);
+  assert.equal(lostHeroes.WizKid.record.secrets.rivalries, 0);
+  const wonHeroes = { WizKid: hero('WizKid'), Smalls: hero('Smalls') }; payOut(won, wonHeroes);
+  assert.equal(wonHeroes.WizKid.record.secrets.rivalries, 1);
 });
 
 test('bribes: accepted and met pays double; accepted and lost costs a cut; declined earns Honor; forced pays if met; all crooks lose more', () => {

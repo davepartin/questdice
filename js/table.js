@@ -2,6 +2,7 @@
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
 import * as SO from './secrets.js';
+import * as LG from './legend.js';
 import { CLASSES, SLOTS, CHARM_MAX, normalizeDifficulty, uniqueColors, claimColor, colorIdOf } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
@@ -346,7 +347,7 @@ function revealEnvelopes(table, won) {
   const env = table.envelope; const b = table.battle; if (!env || !b) return;
   const j = SO.judge(env, b, { won });
   SO.payOut(j, Object.fromEntries(members(table).map((m) => [m.name, m])));
-  table.reveal = { won, voice: env.voice, crooks: j.crooks, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, line: r.line })) };
+  table.reveal = { won, voice: env.voice, crooks: j.crooks, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
   table.envelope = null;
 }
 
@@ -642,6 +643,7 @@ function team(table, player, cmd) {
 function enterVictory(table) {
   const b = table.battle;
   revealEnvelopes(table, true);
+  LG.noteBattle(table.company.campaign, b, { won: true, quest: table.quest || b.quest, reveal: table.reveal }); // for the act's Legend
   const levels = {};
   for (const f of b.fighters) levels[f.hero.name] = f.hero.level;
   const r = E.partyRewards(b);
@@ -731,6 +733,7 @@ function passLoot(table, player) {
 }
 function enterDefeat(table, retreatFlag) {
   revealEnvelopes(table, false);
+  if (table.battle) LG.noteBattle(table.company.campaign, table.battle, { won: false, quest: table.quest || table.battle.quest, reveal: table.reveal });
   let loss = 0;
   for (const m of members(table)) {
     const cut = Math.floor(m.gold * 0.15);

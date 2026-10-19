@@ -340,7 +340,7 @@ function victory(t) {
       const again = !!(R.repeat && R.repeat[name]);
       return h('div', { class: `pl-row ${p === 1 && n >= 2 ? 'first' : p === 2 && n >= 3 ? 'second' : ''} ${m === hero ? 'you' : ''}` },
         h('span', { class: 'pl-medal' }, pw ? (p === 1 ? '1' : '2') : ''), emblem(m.cls),
-        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, again ? 'Already cleared · no XP or gold. The road does not pay twice.' : (pw || 'Victory'), !again && m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
+        h('div', { class: 'pl-copy' }, h('b', {}, name), h('small', {}, again ? 'Already cleared · less gold, no XP or spoils.' : (pw || 'Victory'), !again && m.level > (R.levels[name] || 0) ? ` · Level ${m.level}!` : '')),
         h('div', { class: 'pl-nums' }, h('b', {}, `${R.points[name] || 0}`), h('small', {}, 'points'), h('span', { class: 'pl-gold' }, ico('coin'), `${R.gold[name] >= 0 ? '+' : ''}${R.gold[name]}`)));
     })));
   const owing = members.filter((m) => m.pendingPerks > 0 && m !== hero).map((m) => m.name);
@@ -385,6 +385,7 @@ export function menu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, t?.name || 'Table'),
     h('div', { class: 'col' },
       X.ghost('Rules', () => { close(); X.showHowTo(); }),
+      X.soundItem(() => close()),
       t?.phase === 'battle' && Sess.isHost() ? X.ghost('Retreat (every hero loses 15% gold). Live to try again.', () => { close(); askRetreat(); }) : null,
       X.ghost('Your game is saved: how to come back', () => { close(); howToReturn(t); }),
       X.ghost('Step away (keep my seat)', () => { close(); stepAway(); }),

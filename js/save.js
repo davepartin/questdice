@@ -94,9 +94,10 @@ export async function createSave(hero, password) {
   migrateHero(hero);
   const pack = packIdOf(hero.campaign?.pack);
   if (heroExists(hero.name, pack)) throw new Error('A hero with that name already exists on this device.');
+  const s = store(); if (!s) throw new Error('Saving is blocked in this browser, so a hero could not be kept.');
   const salt = randSalt();
   const rec = { salt, hash: await sha(salt + password), hero, saved: Date.now(), v: SAVE_V };
-  store().setItem(key(hero.name, pack), JSON.stringify(rec));
+  try { s.setItem(key(hero.name, pack), JSON.stringify(rec)); } catch { throw new Error('This browser would not save the hero (storage full or blocked).'); }
   return rec;
 }
 export async function openHero(name, password, pack) {

@@ -492,3 +492,20 @@ test('company: every-round powers come back each round, and each hero keeps thei
     resolveParty(b);
   }
 });
+
+test('splash and area damage from powers hit the other monsters in a team fight too, with kill credit', () => {
+  const { members } = company(4);
+  const b = newPartyBattle(members, { ...quest, enemies: ['goblin', 'goblin', 'goblin'] }, makeRng(7));
+  for (const e of b.enemies) { e.hp = 100; e.maxHp = 100; e.intent = { n: 'Wait', v: 'guard', f: 0, m: 0 }; e.flat = 0; e.buff = 0; e.arm = 0; }
+  b.enemies[2].hp = 6; // low enough for the area damage to finish it
+  b.fighters.forEach((f, i) => { f.board = quiet(i === 0 ? 1 : 4); f.mods = { atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, splash: 0, aoe: 0 }; f.target = 0; f.straight = 'atk'; });
+  b.fighters[0].mods.aoe = 7;    // Ada: area damage to every monster
+  b.fighters[1].mods.splash = 4; // Bea: splash to the ones she did not target
+  const rep = resolveParty(b);
+  const ada = rep.strikes.find((s) => s.name === 'Ada'); const bea = rep.strikes.find((s) => s.name === 'Bea');
+  assert.ok(ada.splashed.some((x) => x.uid === b.enemies[1].uid && x.dealt === 7), 'area damage hits a monster nobody targeted');
+  assert.ok(ada.splashed.some((x) => x.uid === b.enemies[2].uid && x.killed), 'and can finish one off');
+  assert.ok(rep.killed.includes(b.enemies[2].uid));
+  assert.ok(bea.splashed.every((x) => x.uid !== b.enemies[0].uid), 'splash skips the monster that was struck');
+  assert.equal(b.enemies[1].hp, 100 - 7 - 4);
+});

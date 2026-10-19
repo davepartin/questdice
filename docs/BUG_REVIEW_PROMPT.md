@@ -57,6 +57,10 @@ rules on its own copy.
 6. **Smaller things** worth a line each: a misleading text, a number that disagrees with the rules, a cache-busting gap (a file
    loaded without its `?v=` version), dead code that hides a bug.
 
+Already known, so do not report again: there is no game server, so a seated phone can write the whole table document and a
+modified client could cheat or take a seat by name (`firestore.rules`, `reclaimSeat`). That is accepted for a game among friends.
+Report it only if an ordinary player, with the normal app, could cause it by accident.
+
 Ignore pure style, naming, formatting and "could be refactored" notes unless they hide a real bug. Do not report balance opinions
 (too easy, too hard) unless a number is plainly wrong against its own comment or doc.
 

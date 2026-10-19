@@ -21,6 +21,7 @@ import * as TUT from './g3/tutorial.js';
 import * as RO from './readout.js';
 import * as DAY from './daily.js';
 import * as SO from './secrets.js';
+import * as LG from './legend.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -607,7 +608,7 @@ function showStory({ id, act }, next = showRoadOrBoard) {
 function showStorySoFar() {
   const members = membersOf(); const hero = members[0]; const list = ST.storySoFar(hero?.campaign, members);
   modal(h('div', { class: 'form story-so-far' }, h('h2', {}, 'The story so far'),
-    ...list.map((b) => h('section', { class: 'ssf-beat' }, h('small', {}, b.kicker), h('h3', {}, b.title), ...b.text.map((t) => h('p', {}, t)))),
+    ...list.map((b) => h('section', { class: 'ssf-beat' }, h('small', {}, b.kicker), h('h3', {}, b.title), ...b.text.map((t) => h('p', {}, t)), ...(b.facts || []).map((t) => h('p', { class: 'muted' }, `✦ ${t}`)), b.teaser ? h('p', {}, h('i', {}, b.teaser)) : null)),
     h('div', { class: 'row end' }, primary('Close', () => closeModal()))));
 }
 function showRoad() {
@@ -669,7 +670,7 @@ function revealSolo(won) {
   const env = S.envelope; S.envelope = null; const hero = S.hero;
   if (!env || !S.battle || S.battle.fighters || !hero) return null;
   const j = SO.judge(env, S.battle, { won }); SO.payOut(j, { [hero.name]: hero });
-  return { won, voice: env.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, line: r.line })) };
+  return { won, voice: env.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
 }
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
@@ -937,6 +938,7 @@ function showVictory() {
   }
   const quest = S.quest;
   const reveal = party ? null : revealSolo(true);
+  LG.noteBattle(hero.campaign, b, { won: true, quest: S.quest, reveal }); // for the act's Legend
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
   S.rewards = { ...r, reveal, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
@@ -978,7 +980,8 @@ function defeat(retreat) {
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
   if (S.battle) for (const hero of heroes) { const f = S.battle.fighters?.find((x) => x.hero === hero) || S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
-  const reveal = revealSolo(false);
+  const battle = S.battle; const reveal = revealSolo(false);
+  if (battle && heroes[0]) LG.noteBattle(heroes[0].campaign, battle, { won: false, quest: S.quest, reveal });
   persist();
   sfx.lose();
   if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss, reveal);
@@ -1075,7 +1078,7 @@ SCRUI.bind({
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist, soundItem });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }

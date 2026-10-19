@@ -707,7 +707,9 @@ export function story(b, onDone) {
   const hero = X.S.hero || X.members()[0]; let done = false;
   mountAs('road', h('div', { class: 'sx-split sx-road sx-storybeat' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      storyCard(b.kicker, b.title, b.text, { icon: b.icon }),
+      storyCard(b.kicker, b.title, b.text, { icon: b.icon },
+        b.facts?.length ? h('ul', { class: 'tl-facts' }, b.facts.map((f) => h('li', {}, f))) : null, // the act's Legend: highlights and titles
+        b.teaser ? h('p', { class: 'tl-teaser' }, b.teaser) : null),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); onDone(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);

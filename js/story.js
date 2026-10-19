@@ -9,6 +9,7 @@
 
 import { ACTS, placeSlug, PLACE_ALIAS } from './data.js';
 import { beatsOf, placesOf, stepsOf, fillNames, packIdOf, DEFAULT_PACK } from './campaigns.js';
+import { hasLegend, legendBeat } from './legend.js';
 
 const slugOf = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
 const beatsFor = (c) => beatsOf(c) || BEATS;
@@ -345,6 +346,8 @@ function dressBeat(b, { id, act, heroes, camp }) {
 }
 // A beat ready to show: the text, with the kicker naming the act and Ascent. `heroes` fills {name}/{wizard}/…
 export function beat(id, act, heroes = [], camp = null) {
+  const lg = /^legend:(\d+)$/.exec(id || '');
+  if (lg) { const b = legendBeat(camp, Number(lg[1]), heroes); return b ? { id, act, ...b } : null; }
   const stepMatch = /^(arrive|win):(\d+)\.(\d+)$/.exec(id || '');
   if (stepMatch) {
     return stepBeat(stepMatch[1], camp, { heroes, act: Number(stepMatch[2]), step: Number(stepMatch[3]) });
@@ -372,7 +375,11 @@ export function pending(c, place) {
   if (!c) return [];
   const out = [];
   const add = (kind, act) => { const id = beatId(kind, act, c); if (id && !seen(c, id, act)) out.push({ id, act }); };
-  if (c.step === 1) { if (c.act > 1) add('close', c.act - 1); add('open', c.act); }
+  if (c.step === 1) {
+    // the act just finished: its Legend first (what happened, a title for each hero, a teaser), then its closing page
+    if (c.act > 1 && hasLegend(c, c.act - 1) && !seen(c, `legend:${c.act - 1}`, c.act - 1)) out.push({ id: `legend:${c.act - 1}`, act: c.act - 1 });
+    if (c.act > 1) add('close', c.act - 1); add('open', c.act);
+  }
   if (c.step === 5) add('elite', c.act);
   if (c.step === 10) add('boss', c.act);
   // Elite and boss cards already tell the set-piece; skip the matching place arrival so it isn't told twice.
@@ -423,6 +430,7 @@ export function storySoFar(c, heroes = []) {
     push('open');
     if (!here || c.step >= 5) push('elite');
     if (!here || c.step >= 10) push('boss');
+    if (!here && hasLegend(c, a)) { const lb = beat(`legend:${a}`, a, heroes, c); if (lb) out.push(lb); }
     if (!here) push('close');
   }
   return out;
