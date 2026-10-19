@@ -1201,7 +1201,7 @@ async function playStrike(s, rep) {
   const b = B.b;
   const ha = heroPiece(s.name); const ta = foePc(s.targetUid); if (!ha || !ta) return;
   const m = (rep.moral || []).find((x) => x.to === s.name);
-  if (m) { banner(`MORAL BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); ha.glow('buff'); await wait(0.5); }
+  if (m) { banner(`MORALE BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); ha.glow('buff'); await wait(0.5); }
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
   await strikeAnim(ha, s, { caster: wid === 'staff' });
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
