@@ -18,6 +18,7 @@ import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf } from './flat.js';
 import { monsterOf } from '../campaigns.js';
 import { roundCard, noDefence } from './roundcard.js';
+import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
 
 let C = null;                // context from ui.js
 const B = {
@@ -525,7 +526,7 @@ function cardTiles(reset) {
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
     { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
       body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
-      actions: [{ label: 'Turn down', alt: true, disabled: (b.board?.C.v ?? 1) <= 1, fn: () => doNudge(-1) }, { label: 'Turn up', disabled: (b.board?.C.v ?? 6) >= 6, fn: () => doNudge(1) }] },
+      extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)] },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
     select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
@@ -569,18 +570,31 @@ function showPowerDetail(id) {
     h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close'), useBtn));
   B.hud.info.classList.add('open'); sfx.select();
 }
+// Heart change (Dave): show the heart face you are on and the face each button turns it to, as the dice pictures themselves.
+function heartFace(v, cls) {
+  if (!(v >= 1 && v <= 6)) return null;
+  let spec = null; try { spec = dieSpecs(B.hero).C; } catch { return null; } // no die art: the words still say it
+  const src = spec && faceImage(spec, v); return src ? h('img', { class: `hc-face ${cls}`, src, alt: `heart ${v}` }) : null;
+}
+function heartNow(b) { const cur = b.board?.C?.v || 0; return cur ? h('div', { class: 'hc-now' }, h('span', {}, 'Your heart now'), heartFace(cur, 'now')) : null; }
+function heartAction(b, d, label = d < 0 ? 'Turn down' : 'Turn up') {
+  const cur = b.board?.C?.v || 0; const to = cur + d; const off = !cur || to < 1 || to > 6;
+  return { alt: d < 0, disabled: off, aria: off ? label : `${label} to ${to}`, fn: () => doNudge(d),
+    content: [d < 0 ? h('span', { class: 'hc-arrow' }, '▼') : null, off ? null : heartFace(to, 'to'), h('span', { class: 'hc-word' }, off ? label : `${d < 0 ? 'Down' : 'Up'} to ${to}`), d > 0 ? h('span', { class: 'hc-arrow' }, '▲') : null] };
+}
 function showUtilDetail(id) {
   const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const uses = id === 'u:bigheal' ? `You carry ${E.potionsLeft(b)}. Buy more at camp (${E.potionPriceOf(B.hero)} gold each).` : id === 'u:heart' ? 'Once a round, while you shape your roll.' : 'Any time you are shaping a roll, as often as you can pay.';
   const body = id === 'u:heart' ? `Turn the heart die one step up or down, once a round. It costs ${cost} magic. It cannot go below 1 or above 6.` : id === 'u:heal' ? `Heals ${E.healAmountOf(B.hero)} health for ${cost} magic. Do it as often as you can pay for it.` : `Heals ${E.potionHpOf(B.hero)} health right away and costs no magic. Drink it before you roll or while you shape your dice. It is gone once you drink it; buy more at camp.`;
-  const nudgeBtn = (d, label) => h('button', { type: 'button', class: 'pd-btn go', disabled: !!why || (d < 0 ? b.board?.C.v <= 1 : b.board?.C.v >= 6), onclick: () => { close(); doNudge(d); } }, label);
+  const nudgeBtn = (d, label) => { const a = heartAction(b, d, label); return h('button', { type: 'button', class: 'pd-btn go hc-btn', disabled: !!why || a.disabled, 'aria-label': a.aria, onclick: () => { close(); doNudge(d); } }, ...a.content); };
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, u.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, u.text),
     h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, body), h('dt', {}, 'Cost'), h('dd', {}, cost ? `${cost} magic` : 'Free')),
     why ? h('p', { class: 'pd-why' }, why) : null,
-    h('div', { class: 'pd-act' }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close'),
+    id === 'u:heart' ? heartNow(b) : null,
+    h('div', { class: `pd-act${id === 'u:heart' ? ' hc-act' : ''}` }, h('button', { type: 'button', class: 'pd-btn', onclick: close }, 'Close'),
       ...(id === 'u:heart' ? [nudgeBtn(-1, 'Turn down'), nudgeBtn(1, 'Turn up')]
         : [h('button', { type: 'button', class: 'pd-btn go', disabled: !!why, onclick: () => { close(); if (id === 'u:heal') doHeal(); else doBigHeal(); } }, cost ? `Use · ${cost} magic` : 'Drink')])));
   B.hud.info.classList.add('open'); sfx.select();

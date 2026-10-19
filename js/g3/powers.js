@@ -177,8 +177,8 @@ function detailPanel(ctx, sel) {
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
       u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
-    h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null,
-    h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}`, disabled: !!u.why || a.disabled, onclick: a.fn }, a.label))));
+    h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
+    h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}${a.content ? ' hc-btn' : ''}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || null, onclick: a.fn }, ...(a.content || [a.label])))));
 }
 
 // ------------------------------------------------------------------------------------------------ the reveal

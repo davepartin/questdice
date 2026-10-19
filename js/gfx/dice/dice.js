@@ -158,6 +158,26 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.
   return m;
 }
 
+// One face of a die as a flat picture (the heart change buttons show the face you are on and the faces either side).
+// It is cut from the same painted texture the 3D die wears, so it matches what is on the board.
+const faceShots = new Map();
+export function faceImage(spec, label, px = 112) {
+  const key = `${spec.key || JSON.stringify(spec.labels)}|${label}|${px}`;
+  if (faceShots.has(key)) return faceShots.get(key);
+  const poly = makePoly(spec.sides);
+  const faces = new Array(poly.faces.length).fill(null);
+  spec.labels.forEach((l, i) => { const fi = poly.labelFace[i]; if (fi != null && fi >= 0) faces[fi] = l; });
+  const atlas = buildAtlas({ poly, faces, theme: spec.theme, quality: 'high' });
+  const fi = poly.labelFace[label - 1]; if (fi == null || fi < 0) return null;
+  const [W, Hh] = atlas.size; const [u, v] = atlas.uvOf(fi, 0, 0); const cx = u * W; const cy = (1 - v) * Hh;
+  const S = (atlas.uvOf(fi, atlas.Hm, 0)[0] - u) * W * 2 * 0.86; // the face, a little inside its cell edge
+  const cv = document.createElement('canvas'); cv.width = px; cv.height = px; const c = cv.getContext('2d');
+  c.drawImage(atlas.canvases.A, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px);
+  if (atlas.canvases.E) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.6; c.drawImage(atlas.canvases.E, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px); }
+  const url = cv.toDataURL('image/png'); faceShots.set(key, url);
+  return url;
+}
+
 const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
 
 /** Build a die mesh for a spec (spec.theme, spec.sides, spec.labels[label-1]). */

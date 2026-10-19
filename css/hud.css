@@ -772,3 +772,13 @@ body.t3-on #scene { -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--
 .t3.won .t3-verdict b { color: #7affb0; text-shadow: 0 0 16px rgba(90, 255, 150, .6), 0 2px 8px #000; } .t3.lost .t3-verdict b { color: #ffb38a; }
 .t3-go { pointer-events: auto; margin-top: 0; }
 @media (prefers-reduced-motion: reduce) { .t3, .t3-side.pop .t3-num, .t3-verdict b { animation: none !important; } }
+/* Heart change: the face you are on, and the face each button turns it to (the dice pictures themselves) */
+.hc-now { display: flex; align-items: center; justify-content: center; gap: .6rem; margin: .1rem 0 .5rem; color: #d9cfb8; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; }
+.hc-now b { display: none; }
+.hc-face { display: block; border-radius: 9px; box-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+.hc-face.now { width: 3.6rem; height: 3.6rem; outline: 2px solid #ffd23d; outline-offset: 2px; }
+.hc-face.to { width: 2.5rem; height: 2.5rem; }
+.hc-act .pd-btn:first-child { flex: .6; }
+.hc-btn { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 3.6rem; padding: .3rem .4rem; }
+.hc-arrow { font-size: 1.1rem; line-height: 1; }
+.hc-word { white-space: nowrap; }
