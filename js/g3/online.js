@@ -212,17 +212,20 @@ export function partyBar() {
 const beatsSeen = new Set();
 function nextBeat(t) {
   const c = t.company?.campaign; if (!c) return null;
-  // Place arrivals wait until the road is finished (Call for Help picks the place first).
-  const placeReady = t.phase === 'board' || (t.phase === 'road' && c.road?.done);
-  const place = placeReady ? (t.quest?.place || E.questsFor(t.company.members[0])?.[0]?.place) : null;
-  const b = ST.pending(c, place).find((x) => !beatsSeen.has(`${t.code}:${x.id}@${x.act}`));
-  return b ? ST.beat(b.id, b.act, t.company?.members || [], c) : null;
+  // Place arrivals wait for the quest board: the road's test roll and its result come first (Dave's Rival Duo game: the
+  // arrival jumped in before the Strength roll). Call for Help has picked the place by then.
+  const place = t.phase === 'board' ? (t.quest?.place || E.questsFor(t.company.members[0])?.[0]?.place) : null;
+  const x = ST.pending(c, place).find((p) => !beatsSeen.has(`${t.code}:${p.id}@${p.act}`));
+  const b = x ? ST.beat(x.id, x.act, t.company?.members || [], c) : null;
+  // seen by the pending entry's own key: a pack's step beat carries no act, so a key from the beat never matched and
+  // Continue brought the same page straight back
+  return b ? { ...b, seenKey: `${t.code}:${x.id}@${x.act}` } : null;
 }
-function story(b, t) {
-  SCRUI.story(b, () => { beatsSeen.add(`${t.code}:${b.id}@${b.act}`); show(); });
+function story(b) {
+  SCRUI.story(b, () => { beatsSeen.add(b.seenKey); show(); });
 }
 function road(t) {
-  const beat = nextBeat(t); if (beat) return story(beat, t);
+  const beat = nextBeat(t); if (beat) return story(beat);
   if (t.company.campaign.road?.done) return roadDone(t);
   SCRUI.road();
 }
@@ -247,7 +250,7 @@ function roadDone(t) {
 }
 export function chooseRoad(id) { Sess.send({ type: 'choose', id }).catch(fail); }
 function board(t) {
-  const beat = nextBeat(t); if (beat) return story(beat, t);
+  const beat = nextBeat(t); if (beat) return story(beat);
   SCRUI.board(); void t;
 }
 export function startQuest(q) { Sess.send({ type: 'quest', id: q.id }).catch(fail); }
