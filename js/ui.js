@@ -1058,7 +1058,7 @@ SCRUI.bind({
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-Online.bind({ S, ghost, primary, showTitle, showHowTo, battleCtx, flushCloud, persist });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }

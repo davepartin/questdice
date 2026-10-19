@@ -10,6 +10,9 @@ await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'
 await p.goto(`http://localhost:${port}/?debug&manual&q=low`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
 await p.evaluate(() => window.QD.online.together()); await p.waitForTimeout(300);
 await p.evaluate(() => [...document.querySelectorAll('.sx-plaque')].find((e) => /Open a table/.test(e.textContent))?.click()); await p.waitForTimeout(500);
+// Open a table goes to the story picker first (it broke once when the picker moved: the tap did nothing)
+console.log('stories offered:', await p.evaluate(() => [...document.querySelectorAll('.sx-stories > *')].length - 2));
+await p.evaluate(() => [...document.querySelectorAll('.sx-stories button, .sx-stories [role=button], .sx-stories .sx-plaque')].find((e) => /Clover Heist/.test(e.textContent))?.click()); await p.waitForTimeout(500);
 // first a tap with no name (Dave's leftover message), then the real thing
 await p.evaluate(() => document.querySelector('.sx-cta .sx-btn')?.click()); await p.waitForTimeout(200);
 console.log('empty name says:', await p.evaluate(() => document.querySelector('.form-msg')?.textContent));
