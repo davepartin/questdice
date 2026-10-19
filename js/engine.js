@@ -1488,15 +1488,19 @@ export function roadsFor(hero, opts = {}) {
 // Wanderers (Dave, Oct 2026: "it's always a dog, a goblin and a little red dragon"): on some ordinary fights a monster from
 // outside this act's usual crowd wanders in, so a campaign meets more of the bestiary. The story's own foes keep their names;
 // the wanderer is extra, so the cast shares its health out (WANDER.share) to keep the fight about as hard as it was.
-export const WANDER = { chance: 0.45, from: 2, share: 0.72, never: ['foxrogue'] };
+export const WANDER = { chance: 0.45, from: 2, share: 0.72, maxCast: 2, never: ['foxrogue'] }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
 function withWanderer(q, c, act, s) {
-  if (WANDER.chance <= 0 || s < WANDER.from || s >= QUESTS_PER_ACT || q.kind !== 'battle' || q.enemies.length >= ENEMY_CAP) return q;
+  if (WANDER.chance <= 0 || s < WANDER.from || s >= QUESTS_PER_ACT || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast) return q;
   const rng = makeRng(hashSeed(c.seed, c.act, s, 'wander'));
   if (rng() >= WANDER.chance) return q;
-  const home = new Set([...act.pool.flat(), ...q.enemies]);
-  const roster = Object.keys(MONSTERS).filter((id) => MONSTERS[id].tier === 'minion' && !home.has(id) && !WANDER.never.includes(id));
+  const home = new Set(act.pool.flat());
+  const roster = Object.keys(MONSTERS).filter((id) => MONSTERS[id].tier === 'minion' && !home.has(id) && !WANDER.never.includes(id)).sort();
   if (!roster.length) return q;
-  const id = pick(rng, roster); const n = q.enemies.length;
+  // each act walks its own shuffled order of wanderers, so one act meets several different ones rather than the same one twice
+  const order = [...roster]; const orng = makeRng(hashSeed(c.seed, c.act, 'wander-order'));
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(orng() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  let id = order[s % order.length]; if (q.enemies.includes(id)) id = order[(s + 1) % order.length];
+  const n = q.enemies.length;
   return { ...q, enemies: [...q.enemies, id], wanderer: id, hpMult: q.hpMult * (n / (n + WANDER.share)) }; // (the story's names stay as written)
 }
 function attachNemesis(quest, campaign) {
