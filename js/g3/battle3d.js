@@ -1128,6 +1128,7 @@ async function lockInInner() {
   for (const uid of rep.fled || []) foePc(uid)?.num('Flees', 'meh');
   if (rep.phoenix && !rep.heroDown) await phoenixMoment(me);
   if (rep.healed) { sfx.heal(); me.heal(); me.num(`+${rep.healed}`, 'heal'); }
+  if (rep.sick) { me.num(`SICK −${rep.sick}`, 'bad'); toast(`Feeling sick: −${rep.sick} health this round.`, 'bad'); await wait(0.4); } // a bane from the road
   if (rep.T.pierce) bw.tray.pulse?.('S', 'pierce');
   bw.tray.unlock?.();
   setHud({ phase: 'resolve' });
@@ -1189,6 +1190,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   for (const x of rep.fighters) {
     const pc = pcOf(x.name); if (!pc) continue;
     if (x.healed > 0) { pc.heal(); pc.num(`+${x.healed}`, 'heal'); }
+    const sick = (rep.sick || []).find((y) => y.name === x.name); if (sick) pc.num(`SICK −${sick.n}`, 'bad'); // a bane from the road
     if (x.hpAfter <= 0 && !x.down) { pc.fall(-1); banner(`${x.name.toUpperCase()} IS DOWN`, 'bad'); }
   }
   // the company's shield: the hero the monsters went after is still standing

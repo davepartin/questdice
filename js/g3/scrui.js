@@ -121,7 +121,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'equip', 'equipPower', 'learnPower'];
+const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -652,6 +652,13 @@ function diamondBring(hero) {
   };
   paint(); return box;
 }
+// What the road (or the store) left you for the next fight: the good in gold, the bad in red, each with whose it is.
+function boonNotes(list) {
+  const say = (b) => `${b.who ? `${b.who}: ` : ''}${b.name ? `${b.name}, ` : ''}${b.text.charAt(0).toLowerCase()}${b.text.slice(1)}`;
+  const good = list.filter((b) => !b.bane); const bad = list.filter((b) => b.bane);
+  return [good.length ? h('p', { class: 'note boon' }, ico('shine'), h('span', {}, h('b', {}, 'Next fight: '), good.map(say).join(' · '))) : null,
+    bad.length ? h('p', { class: 'note warn' }, ico('skull'), h('span', {}, h('b', {}, 'Next fight: '), bad.map(say).join(' · '))) : null];
+}
 export function board() {
   const S = X.S; const hero = S.hero || X.members()[0]; S.hero = hero; const c = hero.campaign; const quests = E.questsFor(hero); X.persist();
   const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0); const ambush = c.ambush?.length;
@@ -666,7 +673,7 @@ export function board() {
         trail(c, X.net ? null : hero, () => X.showBoard())),
       X.partyBar?.(),
       h('div', { class: 'sx-notes' },
-        blessings.length ? h('p', { class: 'note boon' }, ico('shine'), blessings.map((b) => b.text).join(' · ')) : null,
+        ...boonNotes(blessings),
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
       eyebrow(quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead', 'center'),
       h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)), X.net ? null : diamondBring(hero))));
@@ -712,7 +719,7 @@ export function road() {
   }, h('span', { class: 'cx-seal' }, h('b', {}, String.fromCharCode(65 + i))), h('span', { class: 'cx-copy' }, ch.test ? statBadge(ev.stat) : null, h('b', {}, ch.label), h('small', {}, ch.hint)), ico('chevron'))));
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.id === 'traveller' ? 'r_traveller' : ev.stat ? 'r_trial' : 'r_road'))));
+      X.partyBar?.(), storyCard(ev.kicker, ev.title, ev.tell), eyebrow(X.partyBar ? 'What does the company do?' : 'What do you do?'), choices, coachBox(ev.stat ? 'r_trial' : 'r_road'))));
   const place = E.questsFor(hero)[0].place;
   lay('road'); SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
@@ -818,7 +825,7 @@ export function defeat(retreat, loss) {
 }
 
 // ------------------------------------------------------------------------------------------------ camp
-const TABS = [['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
+const TABS = [['store', 'Store', 'coin'], ['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 // ---- the Forge as a shop (Dave, Oct 2026: "you don't even realize how many things you can upgrade"). One compact row per upgrade: an
 // icon or die, a name with what it becomes, one short line, and the price: bright when you can afford it, dim with what you still need
@@ -943,7 +950,7 @@ function talentCard(hero, slot) {
       h('div', { class: 'tal-face blank', title: 'Face 3: blank' }, h('b', {}, '·')), symFaces),
     picker, shrinkBtn('special', slot, `the ${DIE_NAME[slot]}`));
 }
-// ---- pets (Dave, Oct 2026): the traveler sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
+// ---- pets (Dave, Oct 2026): the Camp Store sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };
 const petPic = (type, size = 84) => h('span', { class: 'pet-pic', 'aria-hidden': 'true', style: { '--pc': D.PETS[type]?.color } }, h('img', { src: petImg(type), alt: '', style: { height: `${size}px` } }));
 const petSyms = (hero) => [...new Set([...Object.keys(D.TALENT_SYMS), D.PETS[hero.pet.type].kind])]; // the pet's own symbol may be one talents lack (Bristle's pierce)
@@ -997,7 +1004,7 @@ function petSection(hero) {
   const o = E.petOffer(hero); if (!o) return [];
   if (hero.gold >= o.price) tallyUp();
   return [h('div', { class: 'sx-urow cmp pet-hint', style: { '--pc': D.PETS[o.type].color } }, petPic(o.type, 44),
-    h('div', { class: 'ur-copy' }, h('b', {}, `${D.PETS[o.type].name}, a pet`, h('em', { class: 'ur-to' }, ` ${o.price} gold`)), h('small', {}, 'The traveler has one today. A pet rolls one more die beside your board.')),
+    h('div', { class: 'ur-copy' }, h('b', {}, `${D.PETS[o.type].name}, a pet`, h('em', { class: 'ur-to' }, ` ${o.price} gold`)), h('small', {}, 'The Camp Store has one today. A pet rolls one more die beside your board.')),
     btn('See it', () => { X.S.tab = 'gear'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }))];
 }
 // Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
@@ -1088,6 +1095,43 @@ function forgeTab() {
   const hasTalent = ['SW', 'SE'].some((k) => E.isActive(hero, k));
   return h('div', { class: 'sx-tab forge' }, forgeNav(hero, ids), hasTalent ? coachBox('c_talent') : null, ...secs);
 }
+const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
+  h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
+// ---- the Camp Store (Dave, Oct 2026): always at camp, never on the road. Today's specials (one fight's help, for you), a mystery
+// bundle, the weapons on the shelf (new every camp), supplies, a pet and now and then a charm, and the dearest thing on the shelf
+// up top with how close your purse is, so there is something to save up for.
+const TONIC_ICO = { pierce: 'pierce', boot: 'boot', block: 'shield', atk: 'burst', magic: 'spark', heal: 'heart' };
+function storeCanBuy(hero) {
+  const stock = E.shopStock(hero);
+  return stock.filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length
+    + E.storeTonics(hero).filter((t) => !t.bought && hero.gold >= t.price).length;
+}
+function storeTab() {
+  const hero = X.S.hero; const stock = E.shopStock(hero); const ok = () => { sfx.coin(); X.persist(); X.renderCamp(); };
+  const buyWeapon = (it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero);
+    return it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) ok(); else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` }); };
+  // worth saving for: the dearest thing still on the shelf
+  const best = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.sold).sort((a, b) => b.it.price - a.it.price)[0];
+  const save = best ? zone('zn-save', 'crown', 'Worth saving for', best.it.price > hero.gold ? `You have ${hero.gold} of ${best.it.price} gold. Win a few fights and it could be yours, if nobody else buys it first.` : 'You can afford it right now.',
+    h('div', { class: 'st-save' }, weaponCard(best.it.inst, { compact: true, badge: best.it.inst.diamond ? 'Diamond' : 'Special', actions: [buyWeapon(best.it, best.i)] }),
+      h('div', { class: 'st-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(best.it.price), 'aria-valuenow': String(Math.min(hero.gold, best.it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / best.it.price) * 100)}%` } })))) : null;
+  const tonics = E.storeTonics(hero).map((t) => h('div', { class: `sx-urow cmp st-tonic ${t.bought ? 'have' : ''}` }, rowIco(TONIC_ICO[t.icon] || 'star'),
+    h('div', { class: 'ur-copy' }, h('b', {}, t.name), h('small', {}, t.text)),
+    t.bought ? maxTag('Yours') : priceBtn('', t.price, hero.gold >= t.price, () => { if (HE.buyTonic(hero, t.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${t.name}: ready for your next fight.`); } }, `Buy ${t.name} for ${t.price} gold`)));
+  const bo = E.bundleOffer(hero);
+  const bundle = bo ? h('div', { class: `sx-urow cmp st-bundle ${bo.bought ? 'have' : ''}` }, rowIco('bag'),
+    h('div', { class: 'ur-copy' }, h('b', {}, 'Mystery bundle'), h('small', {}, `A weapon wrapped in a tablecloth. ${Math.round(bo.odds[0] * 100)}% Bronze, ${Math.round(bo.odds[1] * 100)}% Silver, ${Math.round(bo.odds[2] * 100)}% Gold. The shopkeeper does not know either.`)),
+    bo.bought ? maxTag('Opened') : E.bagFull(hero) ? gateTag('Pack full') : priceBtn('', bo.price, hero.gold >= bo.price, () => { const inst = HE.buyBundle(hero); if (inst) { sfx.level(); X.persist(); X.renderCamp(); toast(`Inside: a ${D.RARITY[inst.rarity | 0]} ${D.WEAPONS[inst.id].name}. It is in your pack.`); } }, `Buy the mystery bundle for ${bo.price} gold`)) : null;
+  const sc = X.net ? null : E.shopCharm(hero);
+  const charmOffer = sc ? charmCard(sc.id, { cls: sc.sold ? 'sold' : '', badge: 'Charm', actions: [sc.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.charmFull(hero) ? 'Charms full' : String(sc.price), () => { if (HE.buyCharm(hero)) { sfx.level(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.charmFull(hero) ? `You carry ${D.CHARM_MAX} charms. Drop one first.` : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < sc.price || E.charmFull(hero), cls: 'buy', aria: `Buy the ${D.CHARMS[sc.id].name} for ${sc.price} gold` })] }) : null;
+  const shelf = stock.map((it, i) => ({ it, i })).filter(({ i }) => i !== best?.i);
+  return h('div', { class: 'sx-tab store' },
+    h('p', { class: 'st-hello' }, coin(hero.gold, 'inline'), h('span', {}, 'in your purse. New stock every camp; today’s specials last one fight and are yours alone.')),
+    save,
+    zone('zn-specials', 'star', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'st-rows' }, tonics, bundle)),
+    zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [buyWeapon(it, i)] })))),
+    charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, petOfferCard(hero)) : null);
+}
 function gearTab() {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
   const sync = () => { sfx.card(); X.persist(); X.renderCamp(); };
@@ -1100,28 +1144,20 @@ function gearTab() {
     acts.push(btn(`Sell ${E.sellValue(inst)}`, () => { HE.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell ${w.name} for ${E.sellValue(inst)} gold` }));
     return weaponCard(inst, { actions: acts, compact: true });
   });
-  const stock = E.shopStock(hero);
-  // three places a weapon can be, each its own panel with its heading centered on the top edge
-  const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
-    h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
-  const sc = X.net ? null : E.shopCharm(hero);
-  const charmOffer = sc ? charmCard(sc.id, { cls: sc.sold ? 'sold' : '', badge: 'Charm', actions: [sc.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.charmFull(hero) ? 'Charms full' : String(sc.price), () => { if (HE.buyCharm(hero)) { sfx.level(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.charmFull(hero) ? `You carry ${D.CHARM_MAX} charms. Drop one first.` : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < sc.price || E.charmFull(hero), cls: 'buy', aria: `Buy the ${D.CHARMS[sc.id].name} for ${sc.price} gold` })] }) : null;
-  const canBuy = stock.filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length;
+  // the places a weapon can be, each its own panel with its heading centered on the top edge
   const chips = jumpChips([{ id: 'zn-body', label: 'On your body', icon: 'hero' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
     E.charmsOf(hero).length ? { id: 'zn-charms', label: 'Charms', icon: 'star', n: E.charmsOf(hero).length } : null,
-    E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null,
-    { id: 'zn-trader', label: 'Traveler', icon: 'map', n: canBuy, note: 'you can afford' }]);
+    E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null]);
   return h('div', { class: 'sx-tab gear' },
     chips, coachBox('g_gear'),
     zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
       h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across a row (Weapons, Strength, Talent Triple): +10 attack. Three alike down a column (Head to Toe, Left or Right Guard Triple): +10 block. Triples pay 15 in Act II and 20 in Act III.')),
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
-    E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then at the traveler.',
+    E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then in the Camp Store.',
       h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'Rare weapons for one fight each. Bring one, or two (one in each hand), from the quest card when a fight matters. When that fight ends, it shatters.',
       h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => weaponCard(d, { compact: true, badge: E.armedSlot(hero, d.uid) ? (E.armedSlot(hero, d.uid) === 'NW' ? 'Left' : 'Right') : '',
-        actions: [btn(`Sell ${E.diamondSellValue(d)}`, () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell the Diamond ${D.WEAPONS[d.id].name} for ${E.diamondSellValue(d)} gold` })] })))) : null,
-    zone('zn-trader', 'map', 'The traveler', 'A peddler on the road. What you buy goes in your pack. He will not mention the pressure. He will mention it a little.', charmOffer, h('div', { class: 'wc-grid' }, stock.map((it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero); return weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` })] }); })), petOfferCard(hero)));
+        actions: [btn(`Sell ${E.diamondSellValue(d)}`, () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell the Diamond ${D.WEAPONS[d.id].name} for ${E.diamondSellValue(d)} gold` })] })))) : null);
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {
@@ -1155,22 +1191,25 @@ function heroTab() {
 }
 export function camp(fromBoard) {
   const S = X.S; const hero = S.hero;
-  const body = S.tab === 'gear' ? gearTab() : S.tab === 'hero' ? heroTab() : forgeTab();
+  const body = S.tab === 'gear' ? gearTab() : S.tab === 'hero' ? heroTab() : S.tab === 'store' ? storeTab() : forgeTab();
   const perkHero = X.net ? (hero.pendingPerks > 0 ? hero : null) : (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
   if (X.net) { S.perkOffer = perkHero ? X.netPerkOffer() : null; }
   else { if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, X.fresh()); S.perkFor = perkHero.name; } if (!perkHero) { S.perkOffer = null; S.perkFor = null; } }
   const perkPanel = perkHero && S.perkOffer ? panel('sx-perks glow', eyebrow(`${perkHero.name} still owes a perk`, 'gold'), h('div', { class: 'perk-row' }, S.perkOffer.map((id, i) => perkCard(id, perkHero, () => { if (X.net) { sfx.level(); X.netPerk(id); return; } E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); X.persist(); X.renderCamp(fromBoard); }, i)))) : null;
   const seats = !X.net && (S.company?.members.length || 0) > 1 ? h('div', { class: 'sx-seats' }, S.company.members.map((m, i) => h('button', { type: 'button', class: S.seat === i ? 'on' : '', onclick: tap(() => { S.seat = i; S.hero = m; sfx.select(); X.renderCamp(fromBoard); }) }, emblem(m.cls), h('span', {}, h('b', {}, m.name), h('small', {}, `Lv ${m.level} · ${m.gold}g`))))) : null;
-  // badges: Forge counts what your gold can buy, Gear what the traveler has that you can afford, Hero a perk you still owe
+  // badges: Store and Forge count what your gold can buy, Hero a perk you still owe
   if (S.tab !== 'forge') { const keepSec = FORGE.sec; forgeTab(); FORGE.sec = keepSec; }
   const forgeN = Object.values(FORGE.tally || {}).reduce((a, n) => a + n, 0);
-  const gearN = X.net ? 0 : E.shopStock(hero).filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length;
-  const badge = { forge: forgeN ? String(forgeN) : '', gear: gearN ? String(gearN) : '', hero: hero.pendingPerks > 0 ? '!' : '' };
+  const storeN = storeCanBuy(hero);
+  const badge = { store: storeN ? String(storeN) : '', forge: forgeN ? String(forgeN) : '', gear: '', hero: hero.pendingPerks > 0 ? '!' : '' };
   const tabs = h('div', { class: 'sx-tabs', role: 'tablist' }, TABS.map(([id, label, ic]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', 'aria-selected': String(S.tab === id), 'aria-label': `${label}${badge[id] ? ` (${badge[id] === '!' ? 'a perk to choose' : `${badge[id]} to buy`})` : ''}`,
     onclick: tap((e) => { if (S.tab === id) { const side = e.currentTarget.closest('.sx-side'); const t = side?.querySelector('.sx-camp-scroll'); if (side && t) side.scrollTo({ top: side.scrollTop + t.getBoundingClientRect().top - side.getBoundingClientRect().top - ((side.querySelector('.sx-sidetop')?.offsetHeight || 0) + (side.querySelector('.sx-tabs')?.offsetHeight || 0) + 10), behavior: reduced() ? 'auto' : 'smooth' }); return; } S.tab = id; X.renderCamp(fromBoard); }) },
     ico(ic), h('span', {}, label), badge[id] ? h('b', { class: `tab-badge ${badge[id] === '!' ? 'alert' : ''}` }, badge[id]) : null)));
   const keep = $('.sx-camp-scroll'); const y = keep && S.holdScroll !== false ? keep.scrollTop : 0;
-  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp')))),
+  // the Camp Store sits by the fire (Dave): one tap opens its tab, with a count of what you can afford
+  const storeBtn = h('button', { type: 'button', class: 'sx-storebtn', 'aria-label': `Camp Store${storeN ? `: ${storeN} you can afford` : ''}`, onclick: tap(() => { S.tab = 'store'; X.renderCamp(fromBoard); const side = $('.sx-side'); const t = side?.querySelector('.sx-tabs'); if (side && t) side.scrollTo({ top: Math.max(0, t.offsetTop - 8), behavior: reduced() ? 'auto' : 'smooth' }); }) },
+    ico('coin'), h('span', {}, 'Camp Store'), storeN ? h('b', {}, String(storeN)) : null);
+  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp'))), storeBtn),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
       tabs, X.partyBar?.(), seats, perkPanel, campStatus(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),

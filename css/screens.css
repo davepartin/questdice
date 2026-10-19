@@ -528,8 +528,8 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-zone.zn-pack { border: 1px solid rgba(176, 124, 78, .55); background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .018) 0 6px, transparent 6px 12px), linear-gradient(180deg, rgba(74, 46, 26, .78), rgba(32, 20, 11, .9)); }
 .zn-pack .zn-tag { color: #f6e2c8; background: linear-gradient(180deg, #8a5a34, #5a3519); border: 1px solid #c08a58; }
 /* the traveler: the open road, cool teal */
-.sx-zone.zn-trader { border: 1px solid rgba(90, 200, 200, .5); background: radial-gradient(120% 90% at 50% 0%, rgba(26, 92, 98, .45), rgba(8, 24, 30, .88) 70%); }
-.zn-trader .zn-tag { color: #dffcfb; background: linear-gradient(180deg, #2f8f93, #17575c); border: 1px solid #7ddcdc; }
+.sx-zone.zn-trader, .sx-zone.zn-specials, .sx-zone.zn-shelf, .sx-zone.zn-odd { border: 1px solid rgba(90, 200, 200, .5); background: radial-gradient(120% 90% at 50% 0%, rgba(26, 92, 98, .45), rgba(8, 24, 30, .88) 70%); }
+.zn-trader .zn-tag, .zn-specials .zn-tag, .zn-shelf .zn-tag, .zn-odd .zn-tag { color: #dffcfb; background: linear-gradient(180deg, #2f8f93, #17575c); border: 1px solid #7ddcdc; }
 
 /* ---------------------------------------------------------------- camp: power slots A / B / C */
 .sx-pslot { display: flex; flex-direction: column; gap: .5rem; padding: .65rem; border-radius: 12px; border: 1px solid rgba(166, 77, 255, .32); background: linear-gradient(180deg, rgba(40, 22, 66, .55), rgba(12, 8, 22, .7)); }
@@ -807,7 +807,7 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .ch-acts .sx-btn { min-height: 34px; padding: .25rem .7rem; font-size: .7rem; }
 .sx-zone.zn-charms { border: 1px solid rgba(255, 196, 120, .45); background: radial-gradient(120% 90% at 50% 0%, rgba(90, 50, 120, .42), rgba(14, 9, 24, .9) 70%); }
 .zn-charms .zn-tag { color: #fff1d6; background: linear-gradient(180deg, #8a5ab4, #4e2a70); border: 1px solid #ffd98a; }
-.zn-trader .sx-charm { margin-bottom: .55rem; }
+.zn-trader .sx-charm, .zn-odd .sx-charm { margin-bottom: .55rem; }
 .sx-charms-loot .ch-swap { font-size: .62rem; }
 .sx-charm .ch-copy, .sx-charm .ch-copy b, .sx-charm .ch-copy small { text-align: left; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .sx-charm { overflow: hidden; width: 100%; box-sizing: border-box; }
@@ -858,3 +858,25 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
   .sx-storycard .sc-copy b { font-size: 1rem; }
   .sx-storycard .sc-copy em { font-size: .72rem; -webkit-line-clamp: 2; }
 }
+
+/* The Camp Store (Oct 2026): the dearest thing on the shelf up top, with how close your purse is */
+.st-hello { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; margin: .2rem .2rem .7rem; color: #d8ccb2; font-size: .85rem; }
+.sx-zone.zn-save { border: 1px solid rgba(255, 210, 90, .6); background: radial-gradient(120% 90% at 50% 0%, rgba(120, 84, 20, .5), rgba(30, 20, 8, .9) 70%); }
+.zn-save .zn-tag { color: #2a1804; background: linear-gradient(180deg, #ffd96a, #d9a21c); border: 1px solid #ffeab0; }
+.st-save { display: grid; gap: .55rem; }
+.st-bar { height: .7rem; border-radius: 99px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 220, 140, .35); overflow: hidden; }
+.st-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f6c445, #ffe58a); border-radius: inherit; }
+.st-rows { display: grid; gap: .45rem; }
+.st-tonic.have, .st-bundle.have { opacity: .72; }
+/* the Camp Store button over the fire */
+.sx-storebtn { position: absolute; right: 1rem; bottom: 1.1rem; z-index: 3; display: flex; align-items: center; gap: .5rem; padding: .7rem 1.1rem .7rem .8rem; border-radius: 14px;
+  border: 1px solid #ffe3a0; background: linear-gradient(180deg, #ffd65a, #e19b12); color: #2a1804; font: 900 1rem/1 var(--font-ui, system-ui); letter-spacing: .04em; text-transform: uppercase;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45), 0 0 0 3px rgba(255, 210, 90, .18); cursor: pointer; }
+.sx-storebtn svg { width: 1.4rem; height: 1.4rem; }
+.sx-storebtn b { display: grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .3rem; border-radius: 99px; background: #2a1804; color: #ffe38a; font-size: .78rem; }
+/* a coin is gold wherever it sits (on a gold button it was a black dot): gold with a dark rim */
+.ico-coin svg circle { fill: #ffd34a; stroke: #5a3a06; stroke-width: 2.2; }
+/* four camp tabs (Store, Forge, Gear, Hero) on one line, even on a narrow phone */
+.sx-tabs { grid-template-columns: repeat(4, 1fr); }
+.sx-tabs button { gap: .3rem; letter-spacing: .06em; font-size: .74rem; padding: 0 .2rem; }
+@media (max-width: 380px) { .sx-tabs button .ico { display: none; } }

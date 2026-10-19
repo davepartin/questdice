@@ -1,11 +1,9 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
-import { CLASSES, WEAPONS, RARITY } from './data.js';
 import { HELP_FIGHTS, placeOf } from './story.js';
 import { actsOf, helpFightsOf, helpOff } from './campaigns.js';
-import { gambleOffer, line, revealLine, GAMBLE_ODDS } from './auction.js';
 import {
-  hashSeed, makeRng, makeWeapon, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf,
+  hashSeed, makeRng, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf,
 } from './engine.js';
 import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost } from './trials.js';
 
@@ -15,10 +13,7 @@ export function joinNames(members) {
   if (n.length === 2) return `${n[0]} and ${n[1]}`;
   return `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
 }
-const has = (members, cls) => members.some((m) => m.cls === cls);
-const named = (members, cls) => members.find((m) => m.cls === cls)?.name;
 const be = (members, one, many) => (members.length > 1 ? many : one);
-const classLine = (members) => members.map((m) => CLASSES[m.cls].name).join(', ');
 
 function helpPair(c, act) {
   const list = act?.help || [];
@@ -44,13 +39,6 @@ function note(ctx, title, text) {
 function bless(ctx, bl) {
   ctx.campaign.blessings = [...(ctx.campaign.blessings || []), bl];
 }
-function giveGear(ctx, id, rarity) {
-  const inst = makeWeapon(id, rarity, ctx.rng);
-  const m = [...ctx.members].sort((a, b) => a.bag.length - b.bag.length || a.name.localeCompare(b.name))[0];
-  m.bag.push(inst);
-  return { inst, who: m.name };
-}
-
 function weighted(rng, weights) {
   const total = weights.reduce((a, b) => a + b, 0);
   let r = rng() * total;
@@ -61,468 +49,17 @@ function weighted(rng, weights) {
 export const ROADS = [
   {
     id: 'gate', when: 'opening', kicker: 'The campaign begins', title: 'The Nine-Stone Gate',
-    tell: ({ members }) => `${joinNames(members)} ${be(members, 'comes', 'come')} to a gate of nine standing stones, laid out like a person having a lie-down. Head stone. Heart stone. One for each hand and each foot. Four darker stones wait at the corners for weapons and gifts, as if the hill itself wants a go. The dice warm in the niches. Far down the ash road, something turns its head. It has been waiting.`,
+    tell: ({ members }) => `${joinNames(members)} ${be(members, 'comes', 'come')} to a gate of nine standing stones, laid out like a person having a lie-down. Head stone. Heart stone. One for each hand and each foot. Four darker stones wait at the corners for weapons and gifts, as if the hill itself wants a go. The dice warm in the niches. Far down the road, something turns its head. It has been waiting.`,
     choices: [
       {
         id: 'march',
         label: () => 'Set the dice in the stones and march',
-        hint: () => 'The first round of your first fight hits harder.',
+        hint: () => 'Round 1 of your first fight: +10 attack.',
         apply: (ctx) => {
-          bless(ctx, { id: 'gate', name: 'Nine-stone push', text: 'Round 1: +3 attack.', fights: 1, openingAtk: 3 });
+          bless(ctx, { id: 'gate', name: 'Nine-stone push', text: 'Round 1: +10 attack.', fights: 1, openingAtk: 10 });
           note(ctx, 'The Nine-Stone Gate', 'They set the dice in. The hill knocked back, once, like a friend at the door.');
-          return 'The heart stone knocks back. One deep thump, like a fist on a tavern door at dawn. Right then. Off we go. For the first round of the fight ahead, every hero swings at +3 attack.';
+          return 'The heart stone knocks back. One deep thump, like a fist on a tavern door at dawn. Right then. Off we go. For the first round of the fight ahead, every hero swings at +10 attack.';
         },
-      },
-    ],
-  },
-  {
-    id: 'shrine', when: 'road', title: 'Shrine of the Cross',
-    tell: ({ members }) => `A roadside shrine repeats the same shape: nine cups, one for each die of a person. Rain has filled the heart cup to the brim, which is either a blessing or poor drainage. ${joinNames(members)} can drink, or tip the rain out and take the coin someone left underneath.`,
-    choices: [
-      {
-        id: 'drink',
-        label: () => 'Drink from the heart cup',
-        hint: () => 'Next fight: +2 attack and +2 block.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'shrine', name: 'Heart-cup', text: '+2 attack, +2 block.', fights: 1, atk: 2, block: 2 });
-          note(ctx, 'Shrine of the Cross', 'They drank. Iron and honey. Worse things have been called breakfast.');
-          return 'Warmth runs from the cup into the wrists and the ankles, like a good coat you did not know you needed. Next fight, every hero has +2 attack and +2 block.';
-        },
-      },
-      {
-        id: 'coin',
-        label: () => 'Take the coin under the cup',
-        hint: () => 'Gain gold. Next fight starts a little wounded.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 14);
-          bless(ctx, { id: 'shrine-cut', name: 'Nicked by the shrine', text: 'Start the next fight 4 HP down.', fights: 1, wound: 4 });
-          note(ctx, 'Shrine of the Cross', 'They took the coin. The shrine took a little blood, and called it even.');
-          return 'Fourteen gold, still warm from a stranger’s palm. The cup’s rim nicks the thumb that lifted it, as shrines will, when you get greedy. Next fight begins 4 HP down.';
-        },
-      },
-      {
-        id: 'pass',
-        label: () => 'Leave the shrine as you found it',
-        hint: () => 'Nothing gained, nothing owed.',
-        apply: (ctx) => { note(ctx, 'Shrine of the Cross', 'They let the rain keep the cup.'); return 'The rain goes on filling the heart cup. The road does not mind. It never does.'; },
-      },
-    ],
-  },
-  {
-    id: 'toll', when: 'road', title: 'The Red Toll',
-    tell: ({ members, act }) => `Goblins have roped a ${act >= 2 ? 'bone' : 'charred'} gate across the road. The shortest one shakes a tin cup at ${joinNames(members)}, with the air of a man who has practised this. “Cross costs coin. Or blood. Or you can try the ditch, if you like snakes.” He says it like a joke. He is not joking.`,
-    choices: [
-      {
-        id: 'pay',
-        label: () => 'Pay 10 gold and pass',
-        hint: () => 'The quiet choice.',
-        can: (ctx) => companyGold(ctx.members) >= 10,
-        apply: (ctx) => {
-          payCompany(ctx.members, 10);
-          note(ctx, 'The Red Toll', 'They paid. The rope came down. Nobody sang about it, which was the point.');
-          return 'The goblin bites the coin, nods as if he has done you a favour, and drops the rope. No fight. No story. Sometimes that is the treasure.';
-        },
-      },
-      {
-        id: 'charge',
-        label: () => 'Kick the gate in',
-        hint: () => 'An extra goblin joins the next battle. You strike first.',
-        apply: (ctx) => {
-          ctx.campaign.ambush = [{ id: 'goblin', count: 1 }];
-          bless(ctx, { id: 'charge', name: 'Kicked the gate', text: 'Round 1: +4 attack.', fights: 1, openingAtk: 4 });
-          note(ctx, 'The Red Toll', 'They kicked the gate. A goblin ran ahead, shouting, which rather spoilt the surprise.');
-          return 'The rope snaps. One goblin scarpers toward the next fight and will be waiting there, still complaining. You hit so fast that the first round gains +4 attack.';
-        },
-      },
-      {
-        id: 'ditch',
-        label: () => 'Slip through the ditch',
-        hint: () => 'A coin flip between a clean escape and a nasty bite.',
-        apply: (ctx) => {
-          const snake = ctx.rng() < 0.5;
-          if (snake) {
-            bless(ctx, { id: 'snake', name: 'Ditch bite', text: 'Start 5 HP down.', fights: 1, wound: 5 });
-            note(ctx, 'The Red Toll', 'The ditch had a snake. Of course it did.');
-            return 'It was not a metaphor. Something in the mud takes a professional interest in your ankle. Next fight starts 5 HP down, but the toll never sees you.';
-          }
-          grantCompany(ctx.members, 6);
-          note(ctx, 'The Red Toll', 'The ditch was only mud, and somebody’s dropped purse. A rare kindness from ditches.');
-          return 'Mud, roots, and a dropped purse worth 6 gold. The goblins keep shaking their cup at an empty road, which is, in fairness, their whole career.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'scout', when: 'road', title: 'The Wounded Scout',
-    tell: ({ members }) => `A scout from a burned village is propped against a milestone, one boot off, the ankle pointing somewhere it has no business pointing. She looks at ${joinNames(members)} — ${classLine(members)} — and decides you are the best chance she has had all day. The bar is on the floor, but still.`,
-    choices: [
-      {
-        id: 'bind',
-        label: () => 'Bind the ankle (8 gold in bandages and brandy)',
-        hint: () => 'She talks. Next fight starts with +1 Magic, and you earn a little XP.',
-        can: (ctx) => companyGold(ctx.members) >= 8,
-        apply: (ctx) => {
-          payCompany(ctx.members, 8);
-          grantXpEach(ctx.members, 6);
-          bless(ctx, { id: 'scout', name: 'Scout’s warning', text: 'Start with +1 Magic.', fights: 1, startMagic: 1 });
-          note(ctx, 'The Wounded Scout', 'They bound the ankle. She told them where the big one stands, then asked if anyone had more brandy.');
-          return 'She hisses, drinks, and talks, in that order. The next camp of enemies keeps its champion in the back. Everyone gains 6 XP, and the next fight starts with +1 Magic.';
-        },
-      },
-      {
-        id: 'carry',
-        label: () => 'Carry her as far as the next rise',
-        hint: () => 'No gold. Next fight: +3 block. You are tired in the arms.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'carry', name: 'A person on your shoulder', text: '+3 block, start 2 HP down.', fights: 1, block: 3, wound: 2 });
-          grantXpEach(ctx.members, 4);
-          note(ctx, 'The Wounded Scout', 'They carried her. The rise had a friendly fire, a cousin, and no more road for her.');
-          return 'She is light, and then she is not. Over the rise there is a hay cart and a cousin who looks at you the way people look at furniture that has started walking. Next fight you brace harder (+3 block) and start 2 HP down from the weight. Each hero gains 4 XP.';
-        },
-      },
-      {
-        id: 'leave',
-        label: () => 'Leave her the waterskin and walk on',
-        hint: () => 'A small kindness. Nothing else.',
-        apply: (ctx) => { note(ctx, 'The Wounded Scout', 'They left the waterskin.'); return 'She lifts two fingers off the milestone. It is not a blessing and not a curse. It is thanks, which will do. The road continues.'; },
-      },
-    ],
-  },
-  {
-    id: 'chest', when: 'road', title: 'The Locked Reliquary',
-    tell: ({ members }) => `In a ditch of cinders sits a reliquary the size of a lunch pail, banded in iron, lid stamped with a hand and a foot. ${has(members, 'ranger') ? `${named(members, 'ranger')} has already found the hinge, and is trying not to look pleased.` : `${joinNames(members)} ${be(members, 'gathers', 'gather')} around it.`} It is either a gift or a jaw. History suggests both.`,
-    choices: [
-      {
-        id: 'force',
-        label: () => 'Pry it open',
-        hint: () => 'A weapon, and a wound for whoever is nearest.',
-        apply: (ctx) => {
-          const gift = giveGear(ctx, ['sword', 'spear', 'dagger', 'bracer'][Math.floor(ctx.rng() * 4)], ctx.rng() < 0.25 ? 2 : 1);
-          const victim = ctx.members[Math.floor(ctx.rng() * ctx.members.length)];
-          bless(ctx, { id: 'reliquary', name: 'Reliquary snap', text: `${victim.name} starts 6 HP down.`, fights: 1, wound: 6, who: victim.name });
-          note(ctx, 'The Locked Reliquary', `${gift.who} took the prize. ${victim.name} took the snap, and has opinions about it.`);
-          return `The lid jumps like a trap and catches ${victim.name} across the knuckles. Inside is a ${RARITY[gift.inst.rarity | 0]} piece for ${gift.who}’s pack. ${victim.name} starts the next fight 6 HP down, and will mention this later.`;
-        },
-      },
-      {
-        id: 'finesse',
-        label: (ctx) => has(ctx.members, 'wizard') || has(ctx.members, 'ranger') ? 'Open it the clever way' : 'Work the lock with a splinter',
-        hint: (ctx) => (has(ctx.members, 'wizard') || has(ctx.members, 'ranger')) ? 'Your clever hands have the better of it.' : 'Half the time it opens. Half the time it bites.',
-        apply: (ctx) => {
-          const clever = has(ctx.members, 'wizard') || has(ctx.members, 'ranger');
-          const opens = clever || ctx.rng() < 0.5;
-          if (!opens) {
-            bless(ctx, { id: 'lockbite', name: 'Lock-bite', text: 'Start 3 HP down.', fights: 1, wound: 3 });
-            note(ctx, 'The Locked Reliquary', 'The lock won. Locks love that.');
-            return 'The splinter snaps. The needle in the lock finds a finger, as if it has been practising. Nothing inside is yours. Next fight starts 3 HP down.';
-          }
-          const gift = giveGear(ctx, clever ? 'longsword' : 'sword', clever ? 1 : 0);
-          note(ctx, 'The Locked Reliquary', `${gift.who} opened it clean, and did not even gloat. Much.`);
-          return `The lock gives up like it was tired of its job. ${gift.who} stows a ${RARITY[gift.inst.rarity | 0]} weapon. Nobody bleeds. A small miracle, and you will take it.`;
-        },
-      },
-      {
-        id: 'leave',
-        label: () => 'Leave it for a worse adventurer',
-        hint: () => 'Walk on.',
-        apply: (ctx) => { note(ctx, 'The Locked Reliquary', 'They left the box in the ditch.'); return 'You set it back in the cinders. Some gifts can wait until you are the sort of person who wants them. That person is not, today, you.'; },
-      },
-    ],
-  },
-  {
-    id: 'coals', when: 'road', title: 'Coals of a Dead Camp',
-    tell: ({ members, act }) => `Someone camped here last night and left in a hurry. The fire is a red eye in grey ash, still trying to be useful. ${act >= 2 ? 'The bedrolls are empty in a way that suggests their owners stood up and forgot to bring their bodies.' : 'A bowstring, snapped, lies across a tin plate.'} ${joinNames(members)} ${be(members, 'crouches', 'crouch')} out of the wind.`,
-    choices: [
-      {
-        id: 'read',
-        label: (ctx) => has(ctx.members, 'wizard') ? `${named(ctx.members, 'wizard')} reads the coals` : 'Stir the coals and look for a sign',
-        hint: () => 'Next fight: +2 attack. A wizard in the company also starts with +1 Magic.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'coals', name: 'Read the coals', text: '+2 attack.', fights: 1, atk: 2, startMagic: has(ctx.members, 'wizard') ? 1 : 0 });
-          note(ctx, 'Coals of a Dead Camp', 'The coals showed a wind-up, and how to break it. Ash is a terrible teacher, but cheap.');
-          const extra = has(ctx.members, 'wizard') ? ' The wizard pulls 1 Magic out of the heat as well, because of course they do.' : '';
-          return `In the ash, a bootprint faces the wrong way, and a charred diagram of a raised club. Someone was taking notes. You take better ones. Next fight, you hit +2 harder.${extra}`;
-        },
-      },
-      {
-        id: 'share',
-        label: () => 'Warm your hands and share what is in the pot',
-        hint: () => 'Next fight: +4 HP at the start. The pot was not empty.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'pot', name: 'A shared pot', text: 'Start with +4 HP.', fights: 1, startHp: 4 });
-          note(ctx, 'Coals of a Dead Camp', 'They ate. It helped. Nobody asked what the beans had been.');
-          return 'Beans, smoke, and a little courage. The pot was not empty. Next fight, everyone starts with 4 extra HP, above and beyond the usual full rest.';
-        },
-      },
-      {
-        id: 'rob',
-        label: () => 'Pocket what the sleepers left',
-        hint: () => 'Gold now. The next shop charges more.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 16);
-          ctx.campaign.campFlags = { ...(ctx.campaign.campFlags || {}), hike: (ctx.campaign.campFlags?.hike || 0) + 0.2 };
-          note(ctx, 'Coals of a Dead Camp', 'They robbed a cold camp. Word got to the peddler, who has a long memory and a longer price list.');
-          return 'Sixteen gold in a sock. By the time you reach a peddler, the prices have heard about you and climb by a fifth. Reputation, it turns out, travels faster than you do.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'ridge', when: 'road', title: 'Something on the Ridge',
-    tell: ({ members }) => `A howl walks the ridge above the road, too big for a wolf and far too pleased with itself. ${has(members, 'ranger') ? `${named(members, 'ranger')} is already counting the echoes, which is either useful or showing off.` : `${joinNames(members)} ${be(members, 'stops', 'stop')} without being asked to.`}`,
-    choices: [
-      {
-        id: 'snare',
-        label: () => 'Set a snare and move on',
-        hint: () => 'Next fight, foes hit 2 softer.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'snare', name: 'Ridge snare', text: 'Foes hit 2 softer.', fights: 1 });
-          // weaken is a card mod, not a standing boon. Encode it as block-equivalent softness by lowering incoming pressure:
-          // the engine boon has no weaken field. Add it.
-          ctx.campaign.blessings[ctx.campaign.blessings.length - 1].weaken = 2;
-          note(ctx, 'Something on the Ridge', 'The snare sang once, far behind them. A short song. A good one.');
-          return 'Wire, a bent sapling, and a piece of dried meat that has seen better decades. Whatever was on the ridge stays there. Next fight, every monster hits 2 softer.';
-        },
-      },
-      {
-        id: 'hunt',
-        label: () => 'Go up and make it come down',
-        hint: () => 'A wolf joins the next battle. You gain extra XP if you meant it.',
-        apply: (ctx) => {
-          ctx.campaign.ambush = [...(ctx.campaign.ambush || []), { id: 'wolf', count: 1 }];
-          grantXpEach(ctx.members, 8);
-          note(ctx, 'Something on the Ridge', 'They invited the howl down onto the road. Some invitations you regret.');
-          return 'You do not catch it. It catches the idea of you, which is worse, and it will be in the next fight. Everyone gains 8 XP for the nerve.';
-        },
-      },
-      {
-        id: 'quiet',
-        label: () => 'Walk quietly until the ridge is behind you',
-        hint: () => 'No fight, no prize.',
-        apply: (ctx) => { note(ctx, 'Something on the Ridge', 'They let the howl keep the high ground.'); return 'The howl loses interest. Pride is intact on both sides, which is rarer than gold.'; },
-      },
-    ],
-  },
-  {
-    id: 'banner', when: 'road', title: 'A Broken Banner',
-    tell: ({ members }) => `A knight’s banner is stuck in a cairn, the sigil a white cross on red, slashed end to end. ${has(members, 'knight') ? `${named(members, 'knight')} knows the oath stitched along the hem, and goes a little quiet.` : 'The oath along the hem is still readable.'} “Stand in front. The others get to live.” Short. Honest. Not much of a tune.`,
-    choices: [
-      {
-        id: 'swear',
-        label: (ctx) => has(ctx.members, 'knight') ? `${named(ctx.members, 'knight')} swears it` : 'Swear it together',
-        hint: () => 'Next fight: +3 block, and the one who swears draws a harder share of attention only by their own Feet, as always.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'oath', name: 'The cairn oath', text: '+3 block.', fights: 1, block: 3 });
-          const who = named(ctx.members, 'knight') || ctx.members[0].name;
-          grantXpEach(ctx.members.filter((m) => m.name === who), 6);
-          note(ctx, 'A Broken Banner', `${who} swore to stand in front.`);
-          return `${who} ties a strip of the banner around a wrist. It looks well. It feels heavier than cloth. Next fight the company blocks at +3. ${who} gains 6 XP. Feet still decide who the monsters actually reach.`;
-        },
-      },
-      {
-        id: 'salvage',
-        label: () => 'Cut the silk free and sell the thread',
-        hint: () => 'Gold. The next fight you are a little easier to frighten: −1 Magic at the start.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 12);
-          bless(ctx, { id: 'silk', name: 'A lighter oath', text: 'Start with 1 less Magic.', fights: 1, startMagic: -1 });
-          note(ctx, 'A Broken Banner', 'They sold the thread. The oath stayed in the cairn, which is where oaths go when they are not wanted.');
-          return 'Twelve gold of good silk. The cairn looks smaller without its flag, and a little embarrassed. Next fight starts with 1 less Magic.';
-        },
-      },
-      {
-        id: 'bury',
-        label: () => 'Lay the banner flat and weigh it with a stone',
-        hint: () => 'A quiet respect. +2 HP at the start of the next fight.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'bury', name: 'Stone on silk', text: 'Start with +2 HP.', fights: 1, startHp: 2 });
-          note(ctx, 'A Broken Banner', 'They buried the banner under one more stone. No speech. The hill approved.');
-          return 'No speech. The stone sits. Next fight starts with +2 HP, the sort of health that comes from having done one decent thing.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'cart', when: 'road', title: 'The Cart in the Ditch',
-    tell: ({ members }) => `A cart of flour and nails has slid off the road. The family is trying to lift it with a rope that has already given up, and you cannot blame the rope. A child is sitting on the flour so it will not be stolen, which is optimistic. They look at ${joinNames(members)} the way people look at armed strangers: hopeful, and ready to run.`,
-    choices: [
-      {
-        id: 'lift',
-        label: () => 'Put your shoulders under it',
-        hint: () => 'Costs nothing but effort. Next fight: +2 attack. A little XP.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'lift', name: 'Under the axle', text: '+2 attack.', fights: 1, atk: 2 });
-          grantXpEach(ctx.members, 5);
-          note(ctx, 'The Cart in the Ditch', 'They lifted it. The child got down off the flour, which was the real victory.');
-          return 'The axle screams, then the wheel finds the road, looking surprised. Nobody pays you. Next fight, +2 attack, and 5 XP each for a good use of a back.';
-        },
-      },
-      {
-        id: 'buy',
-        label: () => 'Buy the flour at a fair price (12 gold)',
-        hint: () => 'They eat. You carry supplies: start the next fight at +6 HP.',
-        can: (ctx) => companyGold(ctx.members) >= 12,
-        apply: (ctx) => {
-          payCompany(ctx.members, 12);
-          bless(ctx, { id: 'flour', name: 'A sack of flour', text: 'Start with +6 HP.', fights: 1, startHp: 6 });
-          note(ctx, 'The Cart in the Ditch', 'They bought the flour. The family bought the evening. Everyone went to bed less hungry.');
-          return 'Twelve gold changes pockets. You eat better than heroes usually do, which is not a high bar, but still. Next fight starts with +6 HP.';
-        },
-      },
-      {
-        id: 'tax',
-        label: () => 'Call it a road tax and take a sack',
-        hint: () => 'Gold and a mean reputation. The peddler hikes prices.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 10);
-          ctx.campaign.campFlags = { ...(ctx.campaign.campFlags || {}), hike: (ctx.campaign.campFlags?.hike || 0) + 0.25 };
-          note(ctx, 'The Cart in the Ditch', 'They took a sack. The child will remember the faces. Children do.');
-          return 'Ten gold of flour you will sell later. Stories of you arrive at the next peddler first, and the prices go up by a quarter. Earned, after a fashion.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'riddle', when: 'road', title: 'The Peddler’s Riddle',
-    tell: ({ members }) => `A peddler too cheerful for this road blocks the way with a tray of bad apples and good questions. “Free sample of wisdom,” she tells ${joinNames(members)}. Nothing is free, but you listen anyway. “I have a head, two hands and two feet, and I am strongest when I agree with myself. What am I?”`,
-    choices: [
-      {
-        id: 'hero',
-        label: () => 'A hero. Nine dice, and a cross of a person.',
-        hint: () => 'That is the right answer.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 8);
-          bless(ctx, { id: 'riddle', name: 'The peddler’s sweet', text: 'Start with +2 Magic.', fights: 1, startMagic: 2 });
-          note(ctx, 'The Peddler’s Riddle', 'They answered with themselves. She liked that. Peddlers rarely do.');
-          return 'She claps once, which is a lot for her. Eight gold, and a glass marble that is really a spark: next fight starts with +2 Magic. You feel clever. Try not to get used to it.';
-        },
-      },
-      {
-        id: 'sword',
-        label: () => 'A sword with opinions.',
-        hint: () => 'Poetic. Wrong.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 2);
-          note(ctx, 'The Peddler’s Riddle', 'A sword was not the answer. She paid them for the attempt, which was sporting.');
-          return '“Swords don’t have feet,” she says, not unkindly, and flicks you 2 gold for the entertainment. The apples were fine. The answer was not.';
-        },
-      },
-      {
-        id: 'king',
-        label: () => 'The Goblin King, unfortunately.',
-        hint: () => 'Funny. Still wrong.',
-        apply: (ctx) => {
-          note(ctx, 'The Peddler’s Riddle', 'They blamed the Goblin King. The peddler did not disagree, and did not pay.');
-          return 'She considers it. “He wishes,” she says, and lets you pass. No prize. The joke was its own reward, which is what people say when there is no reward. You laugh anyway.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'graves', when: 'road', title: 'Graves that Breathe',
-    tell: ({ members, act }) => `${act >= 2 ? 'This far into the crypt, the graves do not bother pretending. You almost prefer the honesty.' : 'The cemetery is only three graves and a low wall, but one of the mounds is rising and falling, as if it has just remembered breathing.'} ${has(members, 'dwarf') ? `${named(members, 'dwarf')} plants both boots and does not like it.` : `${joinNames(members)} ${be(members, 'stops', 'stop')} at the wall.`}`,
-    choices: [
-      {
-        id: 'seal',
-        label: () => 'Seal the mound with a stone and a prayer',
-        hint: () => 'Next fight: +3 block. Hard things hold.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'seal', name: 'A sealed mound', text: '+3 block.', fights: 1, block: 3 });
-          note(ctx, 'Graves that Breathe', 'They sealed it. The breathing stopped. Everyone pretended not to notice the last sigh.');
-          return 'The mound sighs, then forgets how. Next fight, you start with +3 block. Wind-ups are for bracing against.';
-        },
-      },
-      {
-        id: 'loot',
-        label: () => 'Dig. Graves keep jewelry.',
-        hint: () => 'Gold, a chill, and a wound.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 18);
-          bless(ctx, { id: 'dig', name: 'Grave-chill', text: 'Start 5 HP down.', fights: 1, wound: 5 });
-          note(ctx, 'Graves that Breathe', 'They dug. The mound was occupied. Occupants have opinions.');
-          return 'A ring, a tooth, and 18 gold. A hand gives the shovel back, politely. Next fight starts 5 HP down, and nobody wants to talk about the hand.';
-        },
-      },
-      {
-        id: 'kneel',
-        label: () => 'Kneel, and do not take anything',
-        hint: () => 'Next fight starts with +3 HP.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'kneel', name: 'Three names', text: 'Start with +3 HP.', fights: 1, startHp: 3 });
-          note(ctx, 'Graves that Breathe', 'They knelt. The mound settled, like a person turning over in sleep.');
-          return 'You read the three names aloud. The mound settles like a person turning over in sleep. Next fight starts with +3 HP.';
-        },
-      },
-    ],
-  },
-  {
-    id: 'ore', when: 'road', title: 'Starfall in the Mud',
-    tell: ({ members }) => `Last night a star fell, or something that would like to be called a star. It is a fist of pale metal in a crater of glassed mud, ticking as it cools, like a kettle with ideas. ${joinNames(members)} ${be(members, 'feels it in the teeth', 'feel it in their teeth')}.`,
-    choices: [
-      {
-        id: 'mine',
-        label: () => 'Chip a shard free',
-        hint: () => 'A fine weapon. The work leaves you 4 HP down.',
-        apply: (ctx) => {
-          const gift = giveGear(ctx, ['spear', 'sword', 'staff', 'bow'][Math.floor(ctx.rng() * 4)], 2);
-          bless(ctx, { id: 'star', name: 'Star-burn', text: 'Start 4 HP down.', fights: 1, wound: 4 });
-          note(ctx, 'Starfall in the Mud', `${gift.who} carries a piece of it, and will not stop showing people.`);
-          return `The shard sings and then behaves, which is all you can ask of fallen stars. ${gift.who} packs a Gold weapon. Everyone starts the next fight 4 HP down from the heat.`;
-        },
-      },
-      {
-        id: 'mark',
-        label: () => 'Mark the crater and tell the peddler',
-        hint: () => 'The next shop owes you a discount.',
-        apply: (ctx) => {
-          ctx.campaign.campFlags = { ...(ctx.campaign.campFlags || {}), discount: Math.min(0.4, (ctx.campaign.campFlags?.discount || 0) + 0.25) };
-          grantXpEach(ctx.members, 3);
-          note(ctx, 'Starfall in the Mud', 'They sold the location, not the star. Wise. Stars are heavy.');
-          return 'The peddler will hear of it and knock a quarter off the next stock, glad you did not try to haggle with a meteor. Meteors never budge.';
-        },
-      },
-      {
-        id: 'leave',
-        label: () => 'Let it cool without you',
-        hint: () => 'Walk on.',
-        apply: (ctx) => { note(ctx, 'Starfall in the Mud', 'They left the star in its crater.'); return 'By morning it will be a story. You do not need to be in every story. Some of them burn.'; },
-      },
-    ],
-  },
-  {
-    id: 'bridge', when: 'road', title: 'The Bridge of Names',
-    tell: ({ members }) => `The bridge is one plank wide and covered, every board carved with a company that crossed. Some carvings are careful. Some are just a cross of five lines, a person reduced to head, hands, heart and feet. There is room for ${joinNames(members)}, if you write small. The toll is a knife and a little gold, paid to nobody, which is the honest kind of toll.`,
-    choices: [
-      {
-        id: 'carve',
-        label: () => 'Carve the company in (8 gold)',
-        hint: (ctx) => ctx.campaign.carved ? 'Your names are already in the wood.' : 'Each hero permanently gains +2 max HP.',
-        can: (ctx) => !ctx.campaign.carved && companyGold(ctx.members) >= 8,
-        apply: (ctx) => {
-          if (ctx.campaign.carved) return 'The names are already there. The wood does not take a second fee. Once is enough, for a bridge.';
-          payCompany(ctx.members, 8);
-          for (const m of ctx.members) m.bonusHp = Math.min(10, (m.bonusHp || 0) + 2);
-          ctx.campaign.carved = true;
-          note(ctx, 'The Bridge of Names', 'They carved themselves into the plank. The wood accepted it, as wood will, if you ask nicely and pay.');
-          return 'Eight gold in the crack of the plank, and a name each. Everyone’s max HP rises by 2, for good. The bridge is slightly more itself, and so are you.';
-        },
-      },
-      {
-        id: 'read',
-        label: () => 'Read the older names instead',
-        hint: () => 'XP, and +1 Magic next fight. You learn who did not come back.',
-        apply: (ctx) => {
-          grantXpEach(ctx.members, 7);
-          bless(ctx, { id: 'names', name: 'Older names', text: 'Start with +1 Magic.', fights: 1, startMagic: 1 });
-          note(ctx, 'The Bridge of Names', 'They read the plank and did not add to it. Some names are company enough.');
-          return 'You say a dozen names under your breath. The river takes them and does not give them back. Each hero gains 7 XP. Next fight starts with +1 Magic, borrowed from people who do not need it anymore.';
-        },
-      },
-      {
-        id: 'hurry',
-        label: () => 'Cross without touching the knife',
-        hint: () => 'The bridge groans. Nothing else.',
-        apply: (ctx) => { note(ctx, 'The Bridge of Names', 'They crossed without signing.'); return 'The plank dips, holds, and forgets you. That is allowed. Not every crossing needs a monument.'; },
       },
     ],
   },
@@ -550,120 +87,133 @@ export const ROADS = [
       },
     ],
   },
+];
+
+// ------------------------------------------------------------------------------------------------ encounters (Dave, Oct 2026)
+// Every other camp, something happens on the road. It should matter in the next fight (a potion, +10 in round 1, an enchanted weapon,
+// borrowed boots, or a stomach bug that costs health every round), use the heroes' names, be funny, and be short. Nothing here belongs
+// to one story, so it reads right in any campaign. The numbers grow with the act.
+const AI = (ctx) => Math.min(3, Math.max(1, ctx.act || ctx.campaign?.act || 1)) - 1;
+const OPEN = [10, 15, 20]; const PIERCE = [3, 4, 5]; const SICK = [3, 4, 5]; const HP = [10, 15, 20]; const MAGIC = [3, 4, 5]; const BOOTS = [8, 10, 12]; const WOUND = [8, 12, 16];
+const by = (ctx, list) => list[AI(ctx)];
+// one hero of the company, the same one every time this scene is told
+const someone = (ctx, salt) => { const m = ctx.members || []; return m.length ? m[hashSeed(ctx.campaign?.seed || 0, ctx.campaign?.act, ctx.campaign?.step, salt) % m.length].name : 'you'; };
+const each = (members, one, many) => (members.length > 1 ? many : one);
+function potionsAll(ctx) { return ctx.members.map((m) => givePotion(ctx, m.name)).join(' '); }
+const ENCOUNTERS = [
   {
-    id: 'omen', when: 'boss', title: 'The Night Before',
-    tell: ({ members, act }) => `The night before the end of the act, the dark practises your names, and gets most of them wrong. ${joinNames(members)} ${be(members, 'sits', 'sit')} at a fire that will not quite catch. ${act >= 3 ? 'The Ember Queen already knows the shape of your dice.' : act >= 2 ? 'The Hollow Lich already knows the shape of your dice.' : 'The Goblin King is somewhere ahead, counting his bombs and his grudges.'} Nobody sleeps well. Somebody should say what the company is for.`,
+    id: 'enchanter', when: 'road', kicker: 'On the road', title: 'The Hedge Enchanter',
+    tell: (ctx) => `A hedge enchanter has a folding table by the road and a sign: WEAPONS ENCHANTED WHILE YOU WAIT. Underneath, smaller: MOSTLY. ${someone(ctx, 'ench')} is already holding out a sword.`,
     choices: [
-      {
-        id: 'steel',
-        label: () => 'Sharpen everything and speak plainly',
-        hint: () => 'The boss fight: +2 attack, +2 block.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'steel', name: 'The night before', text: '+2 attack, +2 block.', fights: 1, atk: 2, block: 2 });
-          note(ctx, 'The Night Before', 'They sharpened the steel and said the plan out loud. Plans prefer that.');
-          return 'The fire catches after all, as fires will, once you stop staring. The boss fight begins with +2 attack and +2 block. You have agreed who is standing in front.';
-        },
-      },
-      {
-        id: 'song',
-        label: (ctx) => has(ctx.members, 'bard') ? `${named(ctx.members, 'bard')} sings the old one` : 'Tell the story of why you came',
-        hint: () => 'The boss fight starts with +5 HP and +1 Magic.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'song', name: 'A reason', text: 'Start with +5 HP and +1 Magic.', fights: 1, startHp: 5, startMagic: 1 });
-          note(ctx, 'The Night Before', 'They remembered why the dice were rolled in the first place.');
-          return 'It is not a long song. It does not need to be. The boss fight starts with +5 HP and +1 Magic, which is what courage looks like when it has to be a number.';
-        },
-      },
-      {
-        id: 'watch',
-        label: () => 'Set a watch and say nothing',
-        hint: () => 'The boss fight: +4 block.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'watch', name: 'A quiet watch', text: '+4 block.', fights: 1, block: 4 });
-          note(ctx, 'The Night Before', 'They kept watch. The dark did not get a free look, and sulked about it.');
-          return 'Four watches, four silences. The boss fight gains +4 block. You will see the first move coming, and you will be ready to meet it.';
-        },
-      },
+      { id: 'pay', label: (ctx) => `Pay for the proper spell · ${gp(ctx.act, 15)} gold`, hint: (ctx) => `Next fight: +${by(ctx, PIERCE)} pierce every round, for ${each(ctx.members, 'you', 'everyone')}.`,
+        can: (ctx) => companyGold(ctx.members) >= gp(ctx.act, 15),
+        apply: (ctx) => { const n = by(ctx, PIERCE); payCompany(ctx.members, gp(ctx.act, 15)); bless(ctx, { id: 'enchant', name: 'Enchanted weapons', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Hedge Enchanter', 'Paid for the proper spell. The weapons hum.');
+          return `The enchanter mutters, one weapon hums, then all of them hum, in harmony, which nobody asked for. Next fight: +${n} pierce every round.`; } },
+      { id: 'free', label: () => 'Let the apprentice try, for free', hint: (ctx) => `Half the time: +${by(ctx, PIERCE)} pierce every round. Half the time: lavender.`,
+        apply: (ctx) => { const n = by(ctx, PIERCE); if (ctx.rng() < 0.5) { bless(ctx, { id: 'enchant', name: 'Enchanted weapons', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Hedge Enchanter', 'The apprentice got it right. Everyone was surprised.'); return `It works! The apprentice is more surprised than anyone. Next fight: +${n} pierce every round.`; }
+          note(ctx, 'The Hedge Enchanter', 'The apprentice tried. The swords smell of lavender.'); return 'There is a flash, a pop, and a smell of lavender. That is the whole effect. The weapons are exactly as sharp as before, but they smell lovely.'; } },
+      { id: 'walk', label: () => 'Walk on', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Hedge Enchanter', 'Walked past the enchanter.'); return '"Your loss!" calls the enchanter, and then, quieter, "Probably."'; } },
     ],
   },
   {
-    id: 'crown', when: 'boss', title: 'A Crown in the Ashes',
-    tell: ({ members, act }) => `${act >= 3 ? 'A circlet of cooling bronze sits on a cairn at the edge of the Queen’s ground, as if she expects you to try it on.' : act >= 2 ? 'A circlet of finger-bones sits on a lectern, politely, as if the Lich expects you to try it on.' : 'A tin crown, child-sized and sharp, has been nailed to a post at the edge of the king’s ground.'} It is bait. It knows it is bait. ${joinNames(members)} can take it, mock it, or walk past as if it were litter.`,
+    id: 'cobbler', when: 'road', kicker: 'On the road', title: 'The Cobbler’s Loaners',
+    tell: (ctx) => `A cobbler sits under a sign: LOANER BOOTS, ONE FIGHT ONLY. "Bring them back with the monster still in them, if you can." He is looking at ${someone(ctx, 'cob')}’s feet with professional pity.`,
     choices: [
-      {
-        id: 'take',
-        label: () => 'Take the crown',
-        hint: () => 'Gold and spite. The boss hits harder: start 4 HP down.',
-        apply: (ctx) => {
-          grantCompany(ctx.members, 20);
-          bless(ctx, { id: 'crown', name: 'A stolen crown', text: 'Start 4 HP down.', fights: 1, wound: 4 });
-          note(ctx, 'A Crown in the Ashes', 'They took the crown. The boss will have felt it, and will not be a good sport.');
-          return 'Twenty gold of insult. It sits badly in the pack. The boss fight starts 4 HP down, because some objects are heavy in a way that has nothing to do with weight.';
-        },
-      },
-      {
-        id: 'break',
-        label: () => 'Break it and leave the pieces',
-        hint: () => 'The boss fight: +3 attack.',
-        apply: (ctx) => {
-          bless(ctx, { id: 'break', name: 'A broken crown', text: '+3 attack.', fights: 1, atk: 3 });
-          note(ctx, 'A Crown in the Ashes', 'They broke it. Symbols hate that.');
-          return 'It breaks easier than a symbol should. The pieces look smaller on the ground. The boss fight gains +3 attack. You already started winning before the dice were rolled.';
-        },
-      },
-      {
-        id: 'ignore',
-        label: () => 'Leave it exactly where it is',
-        hint: () => 'No omen either way.',
-        apply: (ctx) => { note(ctx, 'A Crown in the Ashes', 'They did not touch it.'); return 'The crown can wait. You did not come here for jewelry. Hats, even less.'; },
-      },
+      { id: 'borrow', label: (ctx) => `Borrow ${each(ctx.members, 'a pair', 'a pair each')}`, hint: (ctx) => `Next fight: your feet roll a d${by(ctx, BOOTS)} (if that is bigger). He takes them back after.`,
+        apply: (ctx) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'boots', name: 'Loaner boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'The Cobbler’s Loaners', 'Borrowed fast boots for a fight.');
+          return `They fit like a promise. Next fight, your feet roll a d${n}. After it, the cobbler wants them back, and he will know if you ran in a puddle.`; } },
+      { id: 'polish', label: () => 'Polish boots for him instead', hint: (ctx) => `Earn ${gp(ctx.act, 8)} gold ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
+        apply: (ctx) => { grantCompany(ctx.members, gp(ctx.act, 8) * ctx.members.length); note(ctx, 'The Cobbler’s Loaners', 'Polished boots for coin.'); return `An hour of polishing. ${gp(ctx.act, 8)} gold ${each(ctx.members, 'for you', 'each')}, and the cleanest boots in the land, none of them yours.`; } },
+    ],
+  },
+  {
+    id: 'stew', when: 'road', kicker: 'On the road', title: 'Questionable Stew',
+    tell: (ctx) => `A cook with one eyebrow is stirring a cauldron. "Stew," he says. "Hearty." Something in the pot agrees. ${joinNames(ctx.members)} ${be(ctx.members, 'is', 'are')} very hungry.`,
+    choices: [
+      { id: 'bowl', label: () => 'Have a bowl', hint: (ctx) => `Next fight: +${by(ctx, HP)} health ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
+        apply: (ctx) => { const n = by(ctx, HP); bless(ctx, { id: 'stew', name: 'Hearty stew', text: `+${n} health.`, fights: 1, startHp: n }); note(ctx, 'Questionable Stew', 'Had a bowl. It was hearty.'); return `It is, against all the evidence, delicious. Next fight: +${n} health.`; } },
+      { id: 'seconds', label: () => 'Have seconds, and whatever that lump is', hint: (ctx) => `Next fight: +${by(ctx, HP) * 2} health, but the lump might disagree with you.`,
+        apply: (ctx) => { const n = by(ctx, HP) * 2; const s = by(ctx, SICK); const sick = ctx.rng() < 0.5;
+          bless(ctx, { id: 'stew2', name: 'Seconds', text: `+${n} health.`, fights: 1, startHp: n });
+          if (sick) { bless(ctx, { id: 'lump', name: 'The lump', text: `Lose ${s} health every round.`, fights: 1, sick: s, bane: true }); note(ctx, 'Questionable Stew', 'Had seconds. The lump disagreed.'); return `The lump disagrees. Loudly. Next fight: +${n} health, but you lose ${s} every round to a very unhappy stomach.`; }
+          note(ctx, 'Questionable Stew', 'Had seconds. The lump was a dumpling.'); return `The lump was a dumpling. Bliss. Next fight: +${n} health.`; } },
+      { id: 'pass', label: () => 'Politely decline', hint: () => 'Nothing gained, nothing risked.', apply: (ctx) => { note(ctx, 'Questionable Stew', 'Declined the stew.'); return 'The cook shrugs and eats it himself. The stew looks relieved.'; } },
+    ],
+  },
+  {
+    id: 'sergeant', when: 'road', kicker: 'On the road', title: 'The Drill Sergeant',
+    tell: (ctx) => `A retired drill sergeant bursts out of a hedge. "YOU CALL THAT A STANCE?" he bellows at ${someone(ctx, 'sgt')}. He offers one free lesson. He offers it very loudly.`,
+    choices: [
+      { id: 'shield', label: () => 'Shield drill', hint: (ctx) => `Round 1 of the next fight: +${by(ctx, OPEN)} block ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
+        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-b', name: 'Shield drill', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Drill Sergeant', 'Shield drill, until the arms shook.'); return `"SHIELDS UP! NO, UP-ER!" An hour later, nobody can lower their arms. Round 1 of the next fight: +${n} block.`; } },
+      { id: 'charge', label: () => 'Charge drill', hint: (ctx) => `Round 1 of the next fight: +${by(ctx, OPEN)} attack ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
+        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-a', name: 'Charge drill', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'The Drill Sergeant', 'Charge drill. A hedge was harmed.'); return `"CHARGE! AGAIN! WITH FEELING!" The hedge does not survive. Round 1 of the next fight: +${n} attack.`; } },
+    ],
+  },
+  {
+    id: 'herbalist', when: 'road', kicker: 'On the road', title: 'The Herbalist’s Cart',
+    tell: () => 'A herb cart has lost a wheel. The herbalist, a tiny woman with enormous gloves, glares at the wheel as if it did it on purpose. "Help me," she says, "and I will make it worth your while."',
+    choices: [
+      { id: 'fix', label: () => 'Fix the wheel', hint: (ctx) => `A healing potion ${each(ctx.members, 'for you', 'for each of you')}.`,
+        apply: (ctx) => { const t = potionsAll(ctx); note(ctx, 'The Herbalist’s Cart', 'Fixed a wheel; paid in potions.'); return `The wheel goes back on with a satisfying clunk. She pays in potions. ${t}`; } },
+      { id: 'nettles', label: (ctx) => `Pick her stinging nettles · ${gp(ctx.act, 20)} gold`, hint: (ctx) => `Gain the gold, but the rash costs ${by(ctx, SICK)} health a round next fight.`,
+        apply: (ctx) => { const s = by(ctx, SICK); grantCompany(ctx.members, gp(ctx.act, 20)); bless(ctx, { id: 'rash', name: 'Nettle rash', text: `Lose ${s} health every round.`, fights: 1, sick: s, bane: true }); note(ctx, 'The Herbalist’s Cart', 'Picked nettles. Itched.');
+          return `${gp(ctx.act, 20)} gold and a rash with ambitions. Next fight, it costs ${s} health every round. Try not to scratch. You will scratch.`; } },
+    ],
+  },
+  {
+    id: 'well', when: 'road', kicker: 'On the road', title: 'The Wishing Well',
+    tell: () => 'A wishing well, half full of coins and half full of frogs. A sign says WISHES 5 GOLD. One frog says nothing, judgmentally.',
+    choices: [
+      { id: 'wish', label: (ctx) => `Toss in ${gp(ctx.act, 8)} gold and wish`, hint: (ctx) => `Next fight: start with ${by(ctx, MAGIC)} more magic ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
+        can: (ctx) => companyGold(ctx.members) >= gp(ctx.act, 8),
+        apply: (ctx) => { const n = by(ctx, MAGIC); payCompany(ctx.members, gp(ctx.act, 8)); bless(ctx, { id: 'wish', name: 'A granted wish', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'The Wishing Well', 'Made a wish. The frog approved.');
+          return `Plink. The water glows purple, briefly. The frog nods. Next fight: start with ${n} more magic.`; } },
+      { id: 'fish', label: (ctx) => `Fish out ${gp(ctx.act, 15)} gold`, hint: (ctx) => `The frogs bite: next fight starts ${by(ctx, WOUND)} health down.`,
+        apply: (ctx) => { const w = by(ctx, WOUND); grantCompany(ctx.members, gp(ctx.act, 15)); bless(ctx, { id: 'frogs', name: 'Frog bites', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'The Wishing Well', 'Robbed a wishing well. The frogs remember.');
+          return `${gp(ctx.act, 15)} gold, damp. The frogs bite, and they hold grudges. Next fight starts ${w} health down.`; } },
+      { id: 'leave', label: () => 'Leave the frogs in peace', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Wishing Well', 'Left the well alone.'); return 'You leave. The frog watches you go, still judging.'; } },
+    ],
+  },
+  // ---- the night before the boss
+  {
+    id: 'eve-fire', when: 'boss', kicker: 'The night before', title: 'The Last Campfire',
+    tell: (ctx) => `The last camp before the boss. ${joinNames(ctx.members)} sit by the fire. Nobody says it. ${someone(ctx, 'eve')} pokes the fire, which is how heroes say "I am fine."`,
+    choices: [
+      { id: 'sharpen', label: () => 'Sharpen everything, twice', hint: (ctx) => `The boss fight: +${by(ctx, PIERCE) + 1} pierce every round.`,
+        apply: (ctx) => { const n = by(ctx, PIERCE) + 1; bless(ctx, { id: 'sharp', name: 'Sharpened twice', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Last Campfire', 'Sharpened everything, twice.'); return `Scrape, scrape, all night. By dawn the blades could cut a rumour. The boss fight: +${n} pierce every round.`; } },
+      { id: 'sleep', label: () => 'Get a proper night’s sleep', hint: (ctx) => `The boss fight: +${by(ctx, HP)} health and ${by(ctx, MAGIC)} more magic at the start.`,
+        apply: (ctx) => { const n = by(ctx, HP); const m = by(ctx, MAGIC); bless(ctx, { id: 'rest', name: 'A good night’s sleep', text: `+${n} health, +${m} magic.`, fights: 1, startHp: n, startMagic: m }); note(ctx, 'The Last Campfire', 'Slept well, for once.'); return `Nobody snores, for once. You wake up feeling like a person. The boss fight: +${n} health and ${m} more magic.`; } },
+    ],
+  },
+  {
+    id: 'eve-speech', when: 'boss', kicker: 'The night before', title: 'A Speech Before the Boss',
+    tell: (ctx) => `${someone(ctx, 'speech')} climbs onto a rock to give a speech. It starts badly. It gets worse. Then, somehow, right at the end, it gets good.`,
+    choices: [
+      { id: 'rousing', label: () => 'Cheer the rousing bit', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN) + 5} attack.`,
+        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-a', name: 'A rousing speech', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the rousing bit.'); return `"...AND THAT IS WHY WE FIGHT!" Everyone cheers, including a passing owl. Round 1 of the boss fight: +${n} attack.`; } },
+      { id: 'sensible', label: () => 'Cheer the sensible bit about shields', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN) + 5} block.`,
+        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-b', name: 'A sensible speech', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the bit about shields.'); return `"...and keep your shields UP." It is not stirring, but it is correct. Round 1 of the boss fight: +${n} block.`; } },
     ],
   },
 ];
+for (const e of ENCOUNTERS) ROADS.push(e);
 
-// The roadside traveller: not on every road, but every second or third fight. He names a price; the player takes it or leaves it.
-// (With a company he is an auction instead: see auction.js.)
-ROADS.push({
-  id: 'traveller', when: 'special', kicker: 'A stranger on the road', title: 'The Traveller',
-  tell: ({ campaign: c }) => `A stranger steps out from behind a tree that was definitely not there a moment ago. Trees, in his company, have a habit of arriving late. ${line('greet', () => 0.5)} He is holding a small bundle wrapped in what might be a tablecloth. "${c.traveller.price} gold for what is inside. I will not tell you what it is. I do not know myself. That is the beauty of it."`,
-  choices: [
-    {
-      id: 'buy',
-      label: ({ campaign: c }) => `Buy the bundle · ${c.traveller.price} gold`,
-      hint: () => `A weapon. ${Math.round(GAMBLE_ODDS[0] * 100)}% Bronze, ${Math.round(GAMBLE_ODDS[1] * 100)}% Silver, ${Math.round(GAMBLE_ODDS[2] * 100)}% Gold.`,
-      can: ({ campaign: c, members }) => companyGold(members) >= c.traveller.price,
-      apply: (ctx) => {
-        const t = ctx.campaign.traveller; const name = WEAPONS[t.inst.id].name; const tier = RARITY[t.inst.rarity | 0];
-        payCompany(ctx.members, t.price);
-        const m = [...ctx.members].sort((a, b) => a.bag.length - b.bag.length)[0]; m.bag.push({ ...t.inst });
-        note(ctx, 'The Traveller', `Paid ${t.price} gold for a bundle: a ${tier} ${name}.`);
-        return `You unwrap it. A ${tier} ${name}. ${revealLine(t.inst.rarity, ctx.rng)} It goes into ${m.name}'s pack, still warm from the mystery.`;
-      },
-    },
-    {
-      id: 'leave',
-      label: () => 'Walk on',
-        hint: () => 'Keep your gold. Wonder about the bundle.',
-        apply: (ctx) => { note(ctx, 'The Traveller', 'Declined a stranger\'s bundle, and immediately regretted the curiosity.'); return `${line('unsold', ctx.rng)} You will think about that bundle for the rest of the day. That is the tax.`; },
-    },
-  ],
-});
-
-// A road event comes every second fight (before fights 3, 5, 7, 9) and always before the boss.
-// Tests on the road (trials.js) take steps 2, 4, 6 and 9, so something waits on the road before almost every fight.
-export const roadSlot = (c) => c.step === 8 || isTrialStep(c) || (c.step >= 3 && (c.step % 2 === 1 || c.step >= 10));
-const travellerDue = (c) => (c.wins || 0) - (c.travellerAt || 0) >= 2 + (hashSeed(c.seed, c.act, c.step, 'trav') & 1);
+// Encounters come every other camp (Dave, Oct 2026: the road used to stop you before nearly every fight): a choice before fight 3,
+// a dice test before the elite (fight 5), a Call for Help before fight 8 (a dice test where the story locks that fight), and the
+// night before the boss. The other camps go straight on to the fight. The first step of the campaign has its own opening.
+export const roadSlot = (c) => c.step === 3 || c.step === 8 || c.step >= 10 || isTrialStep(c);
 
 function poolFor(campaign) {
   const opening = campaign.act === 1 && campaign.step === 1 && !(campaign.wins > 0);
   if (opening) return ROADS.filter((e) => e.when === 'opening');
   if (campaign.step === 8) {
-    // Duo packs lock a fight on step 8; Call for Help would replace that cast.
-    if (helpOff(campaign)) return ROADS.filter((e) => e.when === 'road');
+    // Duo packs lock a fight on step 8; Call for Help would replace that cast, so a dice test waits there instead.
+    if (helpOff(campaign)) return ROADS.filter((e) => e.when === 'trial');
     return ROADS.filter((e) => e.when === 'help');
   }
   if (isTrialStep(campaign)) return ROADS.filter((e) => e.when === 'trial');
-  if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss' || e.when === 'road');
+  if (campaign.step >= 10) return ROADS.filter((e) => e.when === 'boss');
   return ROADS.filter((e) => e.when === 'road');
 }
 
@@ -676,12 +226,8 @@ export function ensureRoad(hero, members) {
     const seen = new Set(c.seenRoads || []);
     const fresh = pool.filter((e) => !seen.has(e.id));
     if (fresh.length) pool = fresh;
-    const weights = pool.map((e) => (c.step >= 10 && e.when === 'boss' ? 5 : 1));
+    const weights = pool.map(() => 1);
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
-    if (!(c.act === 1 && c.step === 1 && !(c.wins > 0)) && c.step !== 8 && !isTrialStep(c) && travellerDue(c)) {
-      c.road.id = 'traveller'; c.travellerAt = c.wins || 0;
-      c.traveller = gambleOffer(c.seed, { act: c.act, step: c.step });
-    }
   }
   return present(c.road.id, hero, members);
 }
@@ -746,8 +292,9 @@ export function rematchTrial(hero, members) {
 }
 
 // ------------------------------------------------------------------------------------------------ tests on the road (trials.js)
-// Four times an act the road asks for wisdom (the head die), strength (both hands) or speed (the feet). A test choice rolls the champion's
-// dice against the other side's; `win` / `lose` say what happened. Plain choices (walk on, pay the toll) work like any road event.
+// Before the elite (and on step 8 where the story locks that fight) the road asks for wisdom (the head die), strength (both hands) or
+// speed (the feet). A test choice rolls the champion's dice against the other side's; `win` / `lose` say what happened, and both
+// should be felt in the next fight. Plain choices (walk on) work like any road event.
 const gp = (act, n) => n * Math.min(3, Math.max(1, act)); // gold grows with the act
 const findHero = (ctx, name) => ctx.members.find((m) => m.name === name) || ctx.members[0];
 function givePotion(ctx, name) {
@@ -757,112 +304,70 @@ function givePotion(ctx, name) {
 }
 const roll2 = (r) => `${r.heroTotal} against ${r.oppTotal}`;
 
+const statWord = { wisdom: 'head', strength: 'hands', speed: 'feet' };
+void statWord;
 export const TRIALS = [
   // ---- WISDOM: the head die
   {
-    id: 't-chess', foe: 'The traveller', stat: 'wisdom', kicker: 'A test of wisdom', title: 'The Traveller’s Chessboard',
-    tell: ({ members }) => `The traveller has set a chessboard on a tree stump, as if he knew ${joinNames(members)} would come this way. Perhaps he did. "One game," he says, polishing a knight on his sleeve. "Your head against mine. I do love a clever opponent. I have not met one in some time."`,
-    choices: [
-      { id: 'play', test: true, label: () => 'Play him for fun', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'The Chessboard', `${r.who} beat the traveller at chess.`); return `Check, and then mate. ${r.who} wins, ${roll2(r)}. The traveller laughs, tips his king over, and pays ${g} gold "for the lesson".`; },
-        lose: (ctx, r) => { note(ctx, 'The Chessboard', `${r.who} lost a game of chess, gracefully.`); return `The traveller’s queen sweeps the board, ${roll2(r)}. "Again some day," he says, and means it kindly. Nothing lost but pride, which grows back.`; } },
-      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Play for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'wisdom', c.act)}`,
-        can: (c) => companyGold(c.members) >= gp(c.act, 10),
-        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'The Chessboard', `${r.who} won a wager at chess.`); return `A quiet bishop, a loud checkmate. ${r.who} wins, ${roll2(r)}, and the traveller counts out ${g} gold without complaint. "Worth every coin."`; },
-        lose: (ctx, r) => { note(ctx, 'The Chessboard', `${r.who} lost a wager at chess.`); return `The traveller wins, ${roll2(r)}, and pockets the stake with a little bow. "Chess is honest," he says. "It is the players who are not."`; } },
-      { id: 'leave', label: () => 'Politely decline', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Chessboard', 'Declined a game of chess.'); return 'The traveller nods and starts a game against himself. He seems to be losing.'; } },
-    ],
-  },
-  {
-    id: 't-riddle', foe: 'The riddle keeper', stat: 'wisdom', kicker: 'A test of wisdom', title: 'The Riddle Keeper',
-    tell: ({ members }) => `An old bridge-keeper sits in a booth no bigger than a wardrobe. "Toll is coin," she says, "unless your head is worth more. Answer my riddle and cross free, with a blessing for your trouble." ${joinNames(members)} can try, or pay and keep their thoughts to themselves.`,
+    id: 't-troll', foe: 'The bridge troll', stat: 'wisdom', kicker: 'A test of wisdom', title: 'The Riddling Troll',
+    tell: (ctx) => `A troll sits on a bridge with a riddle and a club. "Answer right, I tell you where monsters are soft. Answer wrong, I use the club. Gently. Mostly." ${someone(ctx, 'troll')} cracks their knuckles, which does not help with riddles.`,
     choices: [
       { id: 'answer', test: true, label: () => 'Answer the riddle', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { bless(ctx, { id: 'clearhead', name: 'A clear head', text: 'Start the next fight with +2 magic.', fights: 1, startMagic: 2 }); note(ctx, 'The Riddle Keeper', `${r.who} answered the riddle.`); return `"A shadow," says ${r.who}, ${roll2(r)}. The keeper claps once. "Cross free, and think clearly." Next fight starts with +2 magic.`; },
-        lose: (ctx, r) => { const g = Math.min(companyGold(ctx.members), gp(ctx.act, 6)); payCompany(ctx.members, g); note(ctx, 'The Riddle Keeper', `${r.who} missed the riddle and paid the toll.`); return `Not a candle, not a river, ${roll2(r)}. "A shadow," she says, a little sadly. The toll is ${g} gold.`; } },
-      { id: 'pay', label: (c) => `Pay the toll · ${gp(c.act, 6)} gold`, hint: () => 'Cross without the riddle.', can: (c) => companyGold(c.members) >= gp(c.act, 6),
-        apply: (ctx) => { payCompany(ctx.members, gp(ctx.act, 6)); note(ctx, 'The Riddle Keeper', 'Paid the toll.'); return 'You pay, and she waves you over. "Shame," she says. "It was a good one."'; } },
+        win: (ctx, r) => { const n = by(ctx, PIERCE); bless(ctx, { id: 'troll', name: 'The troll’s secret', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Riddling Troll', `${r.who} out-riddled a troll.`); return `"An echo!" says ${r.who}, ${roll2(r)}. The troll sulks, then whispers where monsters are soft. Next fight: +${n} pierce every round.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'club', name: 'Clubbed, gently', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Riddling Troll', `${r.who} lost a riddle and met the club.`); return `Wrong, ${roll2(r)}. The club is gentle-ish. Next fight, ${r.who} starts ${w} health down.`; } },
+      { id: 'around', label: () => 'Wade the river instead', hint: () => 'No test. Wet socks.', apply: (ctx) => { note(ctx, 'The Riddling Troll', 'Waded the river.'); return 'The river is cold and full of opinions. The troll shouts the answer after you anyway. It was "an echo".'; } },
     ],
   },
   {
-    id: 't-map', foe: 'The old map', stat: 'wisdom', hard: true, kicker: 'A test of wisdom', title: 'The Faded Map',
-    tell: ({ members }) => `Pinned under a stone at a crossroads: a map, faded by rain, with a little drawn chest and an X. ${joinNames(members)} could try to read it. Maps like this lead to treasure or to an hour of walking in circles, and they never say which.`,
+    id: 't-mushroom', foe: 'The mushrooms', stat: 'wisdom', kicker: 'A test of wisdom', title: 'Which Mushroom?',
+    tell: (ctx) => `A ring of mushrooms. Some heal. Some make you hear colours. ${someone(ctx, 'shroom')} is sure they know which is which. ${someone(ctx, 'shroom')} is usually sure.`,
     choices: [
-      { id: 'read', test: true, label: () => 'Follow the map', hint: (c) => `A harder test. ${oddsLine(c.members, 'wisdom', c.act, true)}`,
-        win: (ctx, r) => { const g = gp(ctx.act, 20); grantCompany(ctx.members, g); const pot = givePotion(ctx, r.who); note(ctx, 'The Faded Map', `${r.who} read the map and found the cache.`); return `${r.who} turns the map the right way up, which helps, ${roll2(r)}. Under a hollow stump: ${g} gold and a stoppered bottle. ${pot}`; },
-        lose: (ctx, r) => { bless(ctx, { id: 'lostmap', name: 'Footsore', text: 'Start the next fight 4 HP down.', fights: 1, wound: 4 }); note(ctx, 'The Faded Map', 'The map led them in a circle.'); return `An hour later you are back at the same stone, ${roll2(r)}. The map was upside down. Sore feet: the next fight starts 4 HP down.`; } },
-      { id: 'leave', label: () => 'Leave the map for the rain', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Faded Map', 'Left the map under its stone.'); return 'You put the stone back. Somebody else can walk in circles today.'; } },
+      { id: 'forage', test: true, label: () => 'Pick the good ones', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
+        win: (ctx, r) => { const t = potionsAll(ctx); note(ctx, 'Which Mushroom?', `${r.who} picked the good mushrooms.`); return `${r.who} picks well, ${roll2(r)}, and brews them up. ${t}`; },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'shroom', name: 'The wrong mushroom', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Which Mushroom?', `${r.who} ate the wrong one.`); return `${r.who} eats the wrong one, ${roll2(r)}, and hears purple. Next fight, ${r.who} loses ${s} health every round, and hiccups.`; } },
+      { id: 'leave', label: () => 'Leave the mushrooms alone', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Which Mushroom?', 'Left the mushrooms.'); return 'Wise. Probably. The mushrooms look disappointed, which is its own warning.'; } },
     ],
   },
   // ---- STRENGTH: both hands
   {
-    id: 't-arm', foe: 'The traveller', stat: 'strength', kicker: 'A test of strength', title: 'Arm-Wrestling the Traveller',
-    tell: ({ members }) => `The traveller rolls up a sleeve and plants his elbow on a barrel. His arm is thin as a broom handle, which is exactly what makes ${joinNames(members)} nervous. "Two hands each, fair is fair," he says. "Shall we?"`,
-    choices: [
-      { id: 'wrestle', test: true, label: () => 'Take his hand', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'Arm-Wrestling', `${r.who} pinned the traveller.`); return `Thump. ${r.who} pins him, ${roll2(r)}. He shakes out his arm and pays ${g} gold. "Strong hands. Keep them."`; },
-        lose: (ctx, r) => { note(ctx, 'Arm-Wrestling', `${r.who} lost to a broom handle.`); return `His thin arm does not move, then moves very fast, ${roll2(r)}. "Practice," he says. Nobody is hurt but a little pride.`; } },
-      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Wrestle for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'strength', c.act)}`,
-        can: (c) => companyGold(c.members) >= gp(c.act, 10),
-        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'Arm-Wrestling', `${r.who} won a wager arm-wrestling.`); return `The barrel creaks, the traveller does not, and then he does, ${roll2(r)}. ${g} gold changes hands.`; },
-        lose: (ctx, r) => { note(ctx, 'Arm-Wrestling', `${r.who} lost a wager arm-wrestling.`); return `${roll2(r)}. The traveller pockets the stake. "Broom handles," he says, "are stronger than they look."`; } },
-      { id: 'leave', label: () => 'Keep your elbows to yourself', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'Arm-Wrestling', 'Declined to arm-wrestle.'); return 'He shrugs and arm-wrestles the barrel. The barrel loses.'; } },
-    ],
-  },
-  {
-    id: 't-tree', foe: 'The fallen tree', stat: 'strength', hard: true, kicker: 'A test of strength', title: 'The Tree on the Wagon',
-    tell: ({ members }) => `A storm has dropped a tree across a family’s wagon. Two children sit on the roadside, very quiet; their father pulls at a branch that will not move. ${joinNames(members)} could put both hands to the trunk, or go and find a lever and lose half a day.`,
-    choices: [
-      { id: 'lift', test: true, label: () => 'Lift the trunk', hint: (c) => `A harder test. ${oddsLine(c.members, 'strength', c.act, true)}`,
-        win: (ctx, r) => { const pot = givePotion(ctx, r.who); grantXpEach(ctx.members, 4 * ctx.act); note(ctx, 'The Tree on the Wagon', `${r.who} lifted the tree off a family's wagon.`); return `${r.who} gets both hands under it, ${roll2(r)}, and the trunk rolls away like it was waiting to be asked. The father presses a gift on you. ${pot} Everyone learns something: +${4 * ctx.act} XP each.`; },
-        lose: (ctx, r) => { bless(ctx, { id: 'sorearms', name: 'Sore back', text: 'Start the next fight 3 HP down.', fights: 1, wound: 3, who: r.who }); note(ctx, 'The Tree on the Wagon', `${r.who} strained a back on the tree; a lever did the rest.`); return `The trunk does not move, ${roll2(r)}, but your back does, in the wrong direction. A lever does it in the end. ${r.who} starts the next fight 3 HP down.`; } },
-      { id: 'lever', label: () => 'Find a lever and do it slowly', hint: () => 'No test. Safe, but the family thanks you with only a few coins.', apply: (ctx) => { grantCompany(ctx.members, gp(ctx.act, 4)); note(ctx, 'The Tree on the Wagon', 'Freed a wagon with a lever.'); return `Slow and steady. The wagon is free by noon, and the family insists on ${gp(ctx.act, 4)} gold you did not ask for.`; } },
-    ],
-  },
-  {
     id: 't-tug', foe: 'The goblins', stat: 'strength', kicker: 'A test of strength', title: 'The Goblins’ Tug-of-War',
-    tell: ({ members }) => `A rope is stretched across a muddy ditch. On the far side, a band of goblins jeer and wave it. "Pull us over and we run off," shouts their leader. "Lose, and we follow you to your next fight." ${joinNames(members)} ${be(members, 'looks', 'look')} at the mud. The mud looks back.`,
+    tell: (ctx) => `A rope across a muddy ditch. On the far side, goblins jeer. "Pull us over and we run off. Lose, and we follow you to your next fight." ${someone(ctx, 'tug')} looks at the mud. The mud looks back.`,
     choices: [
       { id: 'pull', test: true, label: () => 'Grab the rope and pull', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: 'Round 1 of the next fight: +3 attack.', fights: 1, openingAtk: 3 }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave. ${r.who} drags the whole band face-first into the mud, ${roll2(r)}. They flee squeaking, and you start the next fight with your blood up: +3 attack in round 1.`; },
-        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins, ${roll2(r)}, and ${r.who} slides into the ditch. A goblin, delighted, follows you to the next fight and joins it.`; } },
-      { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return 'Snip. Three goblins sit down very suddenly on the far bank. They do not follow; they are arguing about whose fault it was.'; } },
-    ],
-  },
-  // ---- SPEED: the feet die
-  {
-    id: 't-race', foe: 'The traveller', stat: 'speed', kicker: 'A test of speed', title: 'Race to the Old Oak',
-    tell: ({ members }) => `"See that oak on the hill?" The traveller is already stretching. "First to touch it wins. I warn you, I have very fast boots. I bought them from a man who was running away from something." ${joinNames(members)} could race him, or let him run up the hill alone.`,
-    choices: [
-      { id: 'race', test: true, label: () => 'Race him', hint: (c) => oddsLine(c.members, 'speed', c.act),
-        win: (ctx, r) => { const g = gp(ctx.act, 12); grantCompany(ctx.members, g); note(ctx, 'Race to the Oak', `${r.who} beat the traveller to the oak.`); return `${r.who} slaps the bark first, ${roll2(r)}. The traveller arrives wheezing, still proud of his boots, and pays ${g} gold.`; },
-        lose: (ctx, r) => { note(ctx, 'Race to the Oak', `${r.who} lost a race to a man in fast boots.`); return `The boots really are fast, ${roll2(r)}. He is sitting under the oak eating an apple when ${r.who} arrives.`; } },
-      { id: 'wager', test: true, stake: (c) => gp(c.act, 10), label: (c) => `Race for a wager · ${gp(c.act, 10)} gold`, hint: (c) => `Win and he pays three times the stake. ${oddsLine(c.members, 'speed', c.act)}`,
-        can: (c) => companyGold(c.members) >= gp(c.act, 10),
-        win: (ctx, r) => { const g = gp(ctx.act, 30); grantCompany(ctx.members, g); note(ctx, 'Race to the Oak', `${r.who} won a wager on a footrace.`); return `Neck and neck, then not: ${r.who} wins, ${roll2(r)}. ${g} gold, and a promise from the traveller to buy better boots.`; },
-        lose: (ctx, r) => { note(ctx, 'Race to the Oak', `${r.who} lost a wager on a footrace.`); return `${roll2(r)}. The traveller wins by a boot. He takes the stake and offers you half his apple, which is something.`; } },
-      { id: 'leave', label: () => 'Wave him off', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'Race to the Oak', 'Watched the traveller race himself.'); return 'He races the oak alone, and declares himself the winner. Nobody argues.'; } },
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave! ${r.who} drags the whole band face-first into the mud, ${roll2(r)}. Your blood is up: round 1 of the next fight, +${n} attack.`; },
+        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins, ${roll2(r)}, and ${r.who} slides into the ditch. A delighted goblin follows you to the next fight and joins in.`; } },
+      { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return 'Snip. Three goblins sit down very suddenly. They do not follow; they are arguing about whose fault it was.'; } },
     ],
   },
   {
-    id: 't-goat', foe: 'Biscuit the goat', stat: 'speed', kicker: 'A test of speed', title: 'The Runaway Goat',
-    tell: ({ members }) => `A girl comes running down the road. "My goat! Please! She is called Biscuit and she is FAST!" A white goat bounds past ${joinNames(members)} with a ribbon on her horn and no plans to stop.`,
+    id: 't-cart', foe: 'The stuck cart', stat: 'strength', kicker: 'A test of strength', title: 'The Stuck Cart',
+    tell: () => 'A farmer’s cart is stuck to the axles. "Push it out and you can borrow my late husband’s shield," she says. "He won’t need it. He is in the cart, also stuck, eating a pie."',
     choices: [
-      { id: 'chase', test: true, label: () => 'Chase Biscuit', hint: (c) => oddsLine(c.members, 'speed', c.act),
-        win: (ctx, r) => { const pot = givePotion(ctx, r.who); note(ctx, 'The Runaway Goat', `${r.who} caught Biscuit the goat.`); return `${r.who} catches Biscuit by the ribbon, ${roll2(r)}. The girl’s mother runs a little herb garden and will not hear no. ${pot}`; },
-        lose: (ctx, r) => { note(ctx, 'The Runaway Goat', 'Biscuit the goat escaped.'); return `Biscuit is faster, ${roll2(r)}. She is last seen on a roof, chewing a hat. The girl says thank you for trying, which somehow makes it worse.`; } },
-      { id: 'leave', label: () => 'Wish the girl luck', hint: () => 'Walk on.', apply: (ctx) => { note(ctx, 'The Runaway Goat', 'Let the goat go.'); return 'You wish her luck. Biscuit, distantly, bleats something rude.'; } },
+      { id: 'push', test: true, label: () => 'Put your shoulders into it', hint: (c) => oddsLine(c.members, 'strength', c.act),
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'cart', name: 'A borrowed shield', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Stuck Cart', `${r.who} pushed a cart out of the mud.`); return `Squelch, pop! Out it comes, ${roll2(r)}. The husband waves his pie. Round 1 of the next fight: +${n} block from his shield.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'strain', name: 'Pulled something', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Stuck Cart', `${r.who} pulled something.`); return `The cart wins, ${roll2(r)}. ${r.who} pulls something important. Next fight, ${r.who} starts ${w} health down.`; } },
+      { id: 'leave', label: () => 'Wish them luck and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'The Stuck Cart', 'Walked past a stuck cart.'); return '"Lovely," says the husband, through pie. You do not look back. You hear him eat the whole thing.'; } },
+    ],
+  },
+  // ---- SPEED: the feet
+  {
+    id: 't-chicken', foe: 'Duchess the chicken', stat: 'speed', kicker: 'A test of speed', title: 'Catch That Chicken!',
+    tell: (ctx) => `A prize chicken has escaped. "Catch Duchess and you can borrow my racing boots!" cries the owner. Duchess looks at ${someone(ctx, 'hen')} and smirks, which chickens should not be able to do.`,
+    choices: [
+      { id: 'chase', test: true, label: () => 'Chase the chicken', hint: (c) => oddsLine(c.members, 'speed', c.act),
+        win: (ctx, r) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'racing', name: 'Racing boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'Catch That Chicken!', `${r.who} caught Duchess.`); return `${r.who} dives, ${roll2(r)}, and comes up holding an outraged chicken. The racing boots are yours for a fight: your feet roll a d${n}.`; },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'feathers', name: 'Feathers up the nose', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Catch That Chicken!', `${r.who} lost to a chicken.`); return `Duchess wins, ${roll2(r)}. ${r.who} gets a nose full of feathers and cannot stop sneezing. Next fight, ${r.who} loses ${s} health every round.`; } },
+      { id: 'leave', label: () => 'Let Duchess live free', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Catch That Chicken!', 'Let the chicken go.'); return 'Duchess struts off into the sunset. Somewhere, a fox reconsiders its life choices.'; } },
     ],
   },
   {
     id: 't-slide', foe: 'The rockslide', stat: 'speed', hard: true, kicker: 'A test of speed', title: 'Rockslide!',
-    tell: ({ members }) => `A rumble from the slope above. Stones start to bounce down the path, then bigger ones. ${joinNames(members)} can sprint for the far side, or press against the cliff and let it roar past.`,
+    tell: (ctx) => `A rumble, then the hillside starts to move. ${joinNames(ctx.members)} can run for the cave ahead, which glows faintly, or go back the long way round.`,
     choices: [
-      { id: 'run', test: true, label: () => 'Run for it!', hint: (c) => `A harder test. ${oddsLine(c.members, 'speed', c.act, true)}`,
-        win: (ctx, r) => { bless(ctx, { id: 'outran', name: 'Heart pounding', text: 'Round 1 of the next fight: +2 attack and +2 block.', fights: 1, openingAtk: 2, block: 2 }); note(ctx, 'Rockslide', `${r.who} led everyone clear of a rockslide.`); return `${r.who} leads the dash and everyone is through before the big ones land, ${roll2(r)}. Hearts still pounding: the next fight starts +2 attack and +2 block.`; },
-        lose: (ctx, r) => { bless(ctx, { id: 'bruised', name: 'Bruised', text: 'Start the next fight 5 HP down.', fights: 1, wound: 5 }); note(ctx, 'Rockslide', 'Caught the edge of a rockslide.'); return `Not quite fast enough, ${roll2(r)}. A shower of stones catches the back of the company. Bruised: the next fight starts 5 HP down.`; } },
-      { id: 'brace', label: () => 'Press against the cliff', hint: () => 'No test. A few stones still find you: start the next fight 2 HP down.',
-        apply: (ctx) => { bless(ctx, { id: 'pebbled', name: 'Pebbled', text: 'Start the next fight 2 HP down.', fights: 1, wound: 2 }); note(ctx, 'Rockslide', 'Waited out a rockslide against the cliff.'); return 'The slide roars past. A few stones bounce off shoulders and helmets. Next fight starts 2 HP down, and everyone is very dusty.'; } },
+      { id: 'run', test: true, label: () => 'Run for the glowing cave', hint: (c) => oddsLine(c.members, 'speed', c.act, true),
+        win: (ctx, r) => { const n = by(ctx, MAGIC); bless(ctx, { id: 'moss', name: 'Glowing moss', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'Rockslide!', `${r.who} outran a rockslide.`); return `${r.who} makes it, ${roll2(r)}, into a cave full of glowing moss that tingles. Next fight: start with ${n} more magic.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'pebbles', name: 'Bruised by rocks', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'Rockslide!', 'Caught by a rockslide.'); return `Too slow, ${roll2(r)}. Nobody is squashed, but everybody is bruised. Next fight starts ${w} health down.`; } },
+      { id: 'back', label: () => 'Go back the long way', hint: () => 'No test. It takes all afternoon.', apply: (ctx) => { note(ctx, 'Rockslide!', 'Took the long way round.'); return 'It takes all afternoon, and the cave was probably lovely. You will never know.'; } },
     ],
   },
 ];

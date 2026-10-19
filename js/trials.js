@@ -13,7 +13,7 @@ export const STATS = {
   speed: { name: 'Speed', die: 'feet', slots: ['S'], icon: 'feet', word: 'Test of Speed' },
 };
 // Steps of an act that hold a test instead of (or before) a plain fight: four an act, about every other battle.
-export const TRIAL_STEPS = [2, 4, 6, 9];
+export const TRIAL_STEPS = [5]; // a dice test before the elite (Dave, Oct 2026: encounters every other camp; step 8 also tests when the story locks that fight)
 export const isTrialStep = (c) => TRIAL_STEPS.includes(c.step) && !(c.act === 1 && c.step === 1);
 // The other side's die by act (a "hard" test is one size bigger): Act I d4, Act II d6, Act III d8. Grow your dice to keep winning.
 export const OPP_DIE = { 1: 4, 2: 6, 3: 8 };

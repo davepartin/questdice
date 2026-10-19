@@ -81,7 +81,7 @@ export function describeDie(hero, slot, v) {
   }
   if (role === 'pet') {
     const p = D.PETS[hero.pet?.type]; const syms = E.petFace(hero, v); const pw = E.petPowerOf(hero);
-    if (!p) return 'The pet stand, empty and a little lonely. Adopt a pet from the traveler at camp.';
+    if (!p) return 'The pet stand, empty and a little lonely. Adopt a pet from the Camp Store.';
     return syms ? `${p.name} (d${hero.pet.size}) shows ${syms.map((k) => D.SYM_NAMES[k]).join(' and ')}: +${pw} each.` : v === 1 ? `${p.name} (d${hero.pet.size}): the paw. One face of every pet die is always blank.` : `${p.name} (d${hero.pet.size}): an empty face. Train it at camp to put a symbol here.`;
   }
   if (role === 'heart') {

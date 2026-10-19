@@ -7,7 +7,7 @@ export const ROLE = {
   W: 'hand', E: 'hand', C: 'heart', SW: 'special', SE: 'special',
   P: 'pet', // the pet die, on its own stand left of the board (only when the hero has a pet)
 };
-// PETS (Dave, Oct 2026): the traveler sells one pet a camp. A pet is one die beside the board: one face always blank, the
+// PETS (Dave, Oct 2026): the Camp Store sells one pet a camp. A pet is one die beside the board: one face always blank, the
 // rest hold symbols like a talent die (train them at camp). It starts with two of its own symbol. Each symbol pays the pet's
 // power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Each pet wears its symbol's colour (Dave's pictures,
 // assets/pets/<img>.webp, cut from assets/pets/src by dev/petcut.mjs).
@@ -19,11 +19,11 @@ export const PETS = {
   owl: { name: 'Starling', kind: 'magic', color: '#b46cff', img: 'owl', text: 'A little owl in a wizard’s hat, which it takes very seriously. Starts with two magic symbols.' },
   penny: { name: 'Penny', kind: 'gold', color: '#ffc21a', img: 'penny', text: 'A golden baby dragon on a pile of coins. The pile is the point. Starts with two gold symbols.' },
 };
-// The first pets (a fox and a magpie) became Ember and Penny: old saves still find them (hidden from the traveler's list).
+// The first pets (a fox and a magpie) became Ember and Penny: old saves still find them (hidden from the store's list).
 Object.defineProperty(PETS, 'pup', { value: PETS.ember, enumerable: false });
 Object.defineProperty(PETS, 'magpie', { value: PETS.penny, enumerable: false });
 export const SYM_NAMES = { atk: 'Attack', block: 'Block', pierce: 'Pierce', magic: 'Magic', heal: 'Heal', gold: 'Gold' };
-export const PET_PRICE = 90;          // gold, from the traveler
+export const PET_PRICE = 90;          // gold, at the Camp Store
 export const PET_POWER = { 4: 2, 6: 3, 8: 4 }; // what each symbol pays, by die size
 export const PET_GROW = { 4: 80, 6: 180 };     // gold to grow the pet die to the next size (d4 -> d6 -> d8)
 export const PET_KIND_MAX = { 4: 4, 6: 6, 8: 8 }; // the pet's own symbol: up to one per side of the die (others twice, like talents), so a bigger pet hits harder
@@ -106,7 +106,7 @@ export const WEAPON_DICE = {
   brutal: { 4: [0, 0, P(3), 4], 6: [0, 0, 0, P(4, 2), P(5), 6], 8: [0, 0, 0, 0, 7, P(6, 2), P(7), 8], 10: [0, 0, 0, 0, 8, 9, P(7, 3), P(8, 2), P(9), 10] },
 };
 // Diamond weapons (Dave, Oct 2026): rare, awesome, and good for ONE fight. You find about one and a half an act (spoils, now and then
-// the traveller), carry at most two in your Diamond case (they never take pack room), and bring one into a fight in place of a hand's
+// the Camp Store), carry at most two in your Diamond case (they never take pack room), and bring one into a fight in place of a hand's
 // weapon, or two, one in each hand (with a two-handed weapon, one Diamond fills both hands). When the fight ends, win, lose or
 // withdraw, it shatters. Honest dice with no blanks: every face
 // carries an icon and the top faces are crits with three. A Diamond rolls at its full size in any hand.
@@ -116,10 +116,10 @@ export const DIAMOND = {
   pool: ['dagger', 'sword', 'spear', 'mace', 'bracer', 'shield', 'tower'], // one-handed, so you can hold one in each hand
   sizeByAct: [6, 8, 10], // Dave: they get better each act (Act I d6, Act II d8, Act III d10); no blanks and crits keep even a d6 a treasure
   dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
-  price: 3.2, // the traveller's price, times the weapon's base price per size step
+  price: 3.2, // the Camp Store's price, times the weapon's base price per size step
 };
 // Charms (Dave, Oct 2026: "items that bend the rules", like relics in other roguelikes). Small trinkets, three at most, each changing one
-// rule of the dice rather than adding a number. Found in the spoils of big fights and now and then at the traveler; kept for good.
+// rule of the dice rather than adding a number. Found in the spoils of big fights and now and then in the Camp Store; kept for good.
 export const CHARM_MAX = 3;
 export const CHARMS = {
   ember: { name: 'Ember Locket', icon: 'flame', text: 'A blank weapon face burns anyway: 6 attack and 2 magic.' },
@@ -134,7 +134,22 @@ export const CHARMS = {
   heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die rolls twice and keeps the higher.' },
 };
 export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one
-export const CHARM_PRICE = [110, 150, 200]; // the traveler's price, by act
+export const CHARM_PRICE = [110, 150, 200]; // the Camp Store's price, by act
+// The Camp Store (Dave, Oct 2026: the traveller who interrupted the road is gone; the store is always at camp). Besides weapons,
+// two of these specials sit on the counter each camp: one fight's worth of help, bought for yourself. `by` scales the effect
+// by act (I, II, III); prices are by act too.
+export const STORE_TONICS = {
+  oil: { name: 'Sharpening Oil', icon: 'pierce', text: (n) => `Your weapons bite: +${n} pierce every round of your next fight.`, by: [3, 4, 5], key: 'pierce', price: [30, 55, 80] },
+  boots: { name: 'Borrowed Boots', icon: 'boot', text: (n) => `Fast boots for one fight: your feet roll a d${n}. They go back after.`, by: [8, 10, 12], key: 'feet', price: [25, 45, 70] },
+  shield: { name: 'Rented Tower Shield', icon: 'block', text: (n) => `+${n} block in round 1 of your next fight.`, by: [10, 15, 20], key: 'openingBlock', price: [25, 45, 70] },
+  paint: { name: 'War Paint', icon: 'atk', text: (n) => `+${n} attack in round 1 of your next fight.`, by: [10, 15, 20], key: 'openingAtk', price: [25, 45, 70] },
+  tea: { name: 'Strong Tea', icon: 'magic', text: (n) => `Start your next fight with ${n} more magic.`, by: [3, 4, 5], key: 'startMagic', price: [30, 55, 80] },
+  stew: { name: 'Hearty Stew', icon: 'heal', text: (n) => `+${n} health for your next fight.`, by: [10, 15, 20], key: 'startHp', price: [25, 45, 70] },
+};
+export const STORE_TONICS_SHOWN = 2;
+// The mystery bundle (it was the traveller's gamble): a wrapped weapon at a flat price. Odds Bronze / Silver / Gold.
+export const BUNDLE_ODDS = [0.5, 0.32, 0.18];
+export const bundlePrice = (act = 1) => 70 + 25 * (Math.min(3, Math.max(1, act)) - 1);
 export const WEAPONS = {
   fists: { name: 'Fists', hands: 1, lean: 'off', hidden: true, tag: 'Bare knuckles. A last resort, and a first language.',
     faces: [F(0, 'r'), F(0, 'b'), F(1, 'r'), F(1, 'b')] },
@@ -183,7 +198,7 @@ export const WEAPONS = {
     faces: [F(0, 'r'), F(0, 'r'), F(2, 'r'), F(6, 'r')],
     bonus: [{ face: 3, fx: { pierce: 1 } }, { face: 2, fx: { pierce: 1 } }, { face: 3, fx: { heal: 1 } }] },
   // LEGENDARY weapons (Dave): rare and named, each with one rule of its own. Found only in elite and boss spoils, or now and
-  // then from the traveler. Their faces are fixed (no forging; training a size still works), about +10 at d4, and they use
+  // then from the Camp Store. Their faces are fixed (no forging; training a size still works), about +10 at d4, and they use
   // the `model` weapon's 3D shape. Only one legendary may be in your hands at a time.
   dawnbreaker: { name: 'Dawnbreaker', model: 'sword', legendary: true, hands: 1, lean: 'off', temper: 'legendary', glyph: '⚔️', price: 160,
     tag: 'Legendary sword of the first light. Its 4 also hits every other monster for 2. Dawn, with an edge.',
@@ -208,7 +223,7 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
 export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows
 export const tierName = (inst) => (isLegendary(inst) ? 'Legendary' : inst?.diamond ? 'Diamond' : RARITY[(inst?.rarity | 0)] || 'Bronze');
-// The chance a fight's spoils hold a legendary you do not already carry, and the traveler's chance (Act II on) to bring one.
+// The chance a fight's spoils hold a legendary you do not already carry, and the Camp Store's chance (Act II on) to stock one.
 export const LEGENDARY_CHANCE = { elite: 0.06, boss: 0.15, perilous: 0.03, shop: 0.05 };
 export const LOOT_WEIGHTS = {
   dagger: 10, bracer: 8, sword: 10, shield: 10, spear: 8, mace: 7, tower: 7, bow: 7, longsword: 7, staff: 7, warhammer: 5,

@@ -416,7 +416,7 @@ test('a test on the road works at a table: the champion rolls, every phone sees 
   for (const p of players) command(table, p.id, { type: 'ready', name: p.name, cls: p.cls });
   command(table, players[0].id, { type: 'start' });
   // jump to a test step on the road
-  const c = table.company.campaign; Object.assign(c, { step: 4, wins: 3, road: null });
+  const c = table.company.campaign; Object.assign(c, { step: 5, wins: 4, road: null }); // the dice test before the elite
   for (const m of table.company.members) m.gold = 200;
   table.phase = 'road'; table.roadResult = null; R.ensureRoad(table.company.members[0], table.company.members);
   const road = playerView(table, players[0].id).road;

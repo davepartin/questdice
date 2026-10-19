@@ -9,6 +9,7 @@ import {
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
   colorIdOf, uniqueColors,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf } from './campaigns.js';
 
@@ -288,7 +289,7 @@ export function speedUpgrade(hero) {
 export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
     case 'head': return mindSize(hero);
-    case 'feet': return feetSize(hero);
+    case 'feet': return Math.max(feetSize(hero), borrowedFeet(hero)); // borrowed boots from an encounter, for one fight
     case 'weapon': return hero.loadout[slot]?.diamond ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling (a Diamond ignores it)
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
@@ -315,7 +316,7 @@ export function petFace(hero, v) {
 }
 export const petPowerOf = (hero) => PET_POWER[hero.pet?.size || 4] || 2;
 export function newPet(type) { const k = PETS[type].kind; return { type, size: 4, faces: [[k], [k], []] }; }
-// The traveler's pet this camp (one a visit, by the campaign seed), unless the hero already has that one.
+// The Camp Store's pet this camp (one a visit, by the campaign seed), unless the hero already has that one.
 export function petOffer(hero) {
   const c = hero.campaign; if (!c) return null;
   const types = Object.keys(PETS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'pet'));
@@ -588,14 +589,22 @@ export function intentRange(e) {
 // Road-event boons. Combat blessings apply for the whole battle they were snapshotted into.
 // The campaign list is decremented only when that battle actually ends (spendBlessings).
 export function pullBlessings(hero) {
-  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, openingAtk: 0, weaken: 0, breathBlock: 0 };
+  // (Dave, Oct 2026: encounters should matter) openingBlock: round 1 block; pierce: every round (an enchanted weapon); sick: health
+  // lost at the end of every round (a stomach bug; never the last point); feet: the borrowed boots' die size (sidesOf reads it)
+  const o = { startHp: 0, wound: 0, startMagic: 0, atk: 0, block: 0, openingAtk: 0, openingBlock: 0, pierce: 0, sick: 0, weaken: 0, breathBlock: 0 };
   for (const bl of hero.campaign?.blessings || []) {
     if (bl.who && bl.who !== hero.name) continue;
     o.startHp += bl.startHp || 0; o.wound += bl.wound || 0; o.startMagic += bl.startMagic || 0;
     o.atk += bl.atk || 0; o.block += bl.block || 0; o.openingAtk += bl.openingAtk || 0;
     o.weaken += bl.weaken || 0; o.breathBlock += bl.breathBlock || 0;
+    o.openingBlock += bl.openingBlock || 0; o.pierce += bl.pierce || 0; o.sick += bl.sick || 0;
   }
   return o;
+}
+// Borrowed boots (an encounter's loan): the feet die rolls this size until the fight they were lent for is over.
+export function borrowedFeet(hero) {
+  let n = 0; for (const bl of hero?.campaign?.blessings || []) if ((!bl.who || bl.who === hero.name) && bl.feet) n = Math.max(n, bl.feet);
+  return n;
 }
 export function spendBlessings(campaign) {
   if (!campaign?.blessings) return;
@@ -872,7 +881,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const boon = b.boon || {};
   const T = {
     atk: ev.atk + m.atk + (boon.atk || 0) + (b.round === 1 ? (boon.openingAtk || 0) : 0),
-    pierce: ev.pierce + m.pierce, block: ev.block + m.block + (boon.block || 0), heal: ev.heal + m.heal,
+    pierce: ev.pierce + m.pierce + (boon.pierce || 0), block: ev.block + m.block + (boon.block || 0) + (b.round === 1 ? (boon.openingBlock || 0) : 0), heal: ev.heal + m.heal,
     magic: ev.magic, gold: ev.gold,
   };
   const rep = {
@@ -1004,6 +1013,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.stats.healed += rep.healed; b.stats.taken += rep.taken;
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
   if (b.hp <= 0 && hasCharm(hero, 'phoenix') && !b.phoenixUsed) { b.phoenixUsed = true; b.hp = Math.min(b.maxHp, 10); rep.phoenix = true; } // Phoenix Feather
+  if (boon.sick && b.hp > 1) { rep.sick = Math.min(boon.sick, b.hp - 1); b.hp -= rep.sick; } // a bug from the road: it hurts, it never finishes you
   const stolen = Math.min(b.magic + T.magic, rep.magicStolen); rep.magicStolen = stolen;
   b.magic = Math.max(0, Math.min(magicCapOf(b.hero), b.magic + T.magic - stolen));
   rep.hpAfter = b.hp; rep.magicAfter = b.magic;
@@ -1224,7 +1234,7 @@ export function shopStock(hero) {
   const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4), sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({
     inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false,
   }));
-  // from Act II the traveler sometimes carries one legendary you do not already own
+  // from Act II the Camp Store sometimes stocks one legendary you do not already own
   const lrng = makeRng(hashSeed(c.seed, c.act, c.step, 'shop-legend'));
   if (c.act >= 2 && lrng() < LEGENDARY_CHANCE.shop) {
     const pool = LEGENDARY.filter((id) => !carried(hero).includes(id));
@@ -1249,6 +1259,42 @@ export function buyItem(hero, i) {
   if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; (hero.diamonds ||= []).push(it.inst); return true; } // into the Diamond case
   if (bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
+}
+// ---- the Camp Store's counter: two specials a camp (one fight each, for the hero who buys it) and a mystery bundle.
+// At a table the counter is shared but every hero buys their own; `who` lists the heroes who already have one.
+const actIx = (c) => Math.min(3, Math.max(1, c?.act || 1)) - 1;
+export function storeTonics(hero) {
+  const c = hero.campaign; if (!c) return [];
+  shopStock(hero);
+  if (!c.shop.tonics) {
+    const ids = Object.keys(STORE_TONICS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'tonics'));
+    const pickN = []; while (pickN.length < Math.min(STORE_TONICS_SHOWN, ids.length)) { const id = ids[Math.floor(r() * ids.length)]; if (!pickN.includes(id)) pickN.push(id); }
+    c.shop.tonics = pickN.map((id) => ({ id, who: [] }));
+  }
+  const ai = actIx(c);
+  return c.shop.tonics.map((t) => { const d = STORE_TONICS[t.id]; const n = d.by[ai];
+    return { id: t.id, name: d.name, icon: d.icon, n, text: d.text(n), price: d.price[ai], bought: t.who.includes(hero.name) }; });
+}
+export function buyTonic(hero, id) {
+  const t = storeTonics(hero).find((x) => x.id === id); if (!t || t.bought || hero.gold < t.price) return false;
+  const d = STORE_TONICS[id]; hero.gold -= t.price;
+  hero.campaign.shop.tonics.find((x) => x.id === id).who.push(hero.name);
+  hero.campaign.blessings = [...(hero.campaign.blessings || []), { id: `store-${id}`, name: d.name, text: t.text, fights: 1, who: hero.name, [d.key]: t.n }];
+  return true;
+}
+export function bundleOffer(hero) {
+  const c = hero.campaign; if (!c) return null;
+  shopStock(hero);
+  const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'bundle', hero.name));
+  let r = rng(); let tier = 0;
+  for (let i = 0; i < BUNDLE_ODDS.length; i++) { r -= BUNDLE_ODDS[i]; if (r < 0) { tier = i; break; } }
+  const [inst] = rollDrops(rng, 1, { minRarity: tier, sizes: dropSizeWeights(c.act, c.step) }); inst.rarity = tier;
+  return { inst, price: bundlePrice(c.act), odds: BUNDLE_ODDS, bought: (c.shop.bundles || []).includes(hero.name) };
+}
+export function buyBundle(hero) {
+  const o = bundleOffer(hero); if (!o || o.bought || hero.gold < o.price || bagFull(hero)) return false;
+  hero.gold -= o.price; hero.bag.push(o.inst); hero.campaign.shop.bundles = [...(hero.campaign.shop.bundles || []), hero.name];
+  return o.inst;
 }
 // Only one legendary in your hands at a time (Dave). A two-handed legendary fills both hands, so it never meets another.
 export function canEquip(hero, uid, side = 'NW') {
@@ -1573,8 +1619,8 @@ function totalsFor(f) {
   const round = f._round || 1;
   const T = {
     atk: ev.atk + (m.atk || 0) + (boon.atk || 0) + (round === 1 ? (boon.openingAtk || 0) : 0),
-    pierce: ev.pierce + (m.pierce || 0),
-    block: ev.block + (m.block || 0) + (boon.block || 0),
+    pierce: ev.pierce + (m.pierce || 0) + (boon.pierce || 0),
+    block: ev.block + (m.block || 0) + (boon.block || 0) + (round === 1 ? (boon.openingBlock || 0) : 0),
     heal: ev.heal + (m.heal || 0),
     magic: ev.magic, gold: ev.gold,
   };
@@ -1806,6 +1852,7 @@ export function resolveParty(b) {
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     if (f.hp <= 0 && hasCharm(f.hero, 'phoenix') && !f.phoenixUsed) { f.phoenixUsed = true; f.hp = Math.min(f.maxHp, 10); (rep.phoenix ||= []).push(f.hero.name); }
+    if (f.boon?.sick && f.hp > 1) { const n = Math.min(f.boon.sick, f.hp - 1); f.hp -= n; (rep.sick ||= []).push({ name: f.hero.name, n }); } // the road's bug: never the last point
     f.stats.healed += healed; f.stats.taken += taken[i];
     f.stats.blocked = (f.stats.blocked || 0) + absorbed[i];
     // The hero the monsters went after is the company's shield: blocks count double, and standing at the end holds the line.

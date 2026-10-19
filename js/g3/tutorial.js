@@ -253,7 +253,7 @@ const LESSONS = [
       h('div', { class: 'tu-petrow' }, ['ember', 'bristle', 'turtle', 'bunny', 'owl', 'penny'].map((t) => h('span', { class: 'tu-petchip', style: { '--pc': D.PETS[t].color } }, petPic(t))))),
     say: 'Between fights you rest at camp. Grow your dice, and adopt a pet: it rolls a little die of luck every round, up by your gold and magic.',
     body: () => [
-      row(petPic('bunny'), 'Pets', `The traveler brings one each camp (${D.PET_PRICE} gold). Train its die like a talent die and grow it to a d8.`),
+      row(petPic('bunny'), 'Pets', `The Camp Store has one each camp (${D.PET_PRICE} gold). Train its die like a talent die and grow it to a d8.`),
       row(ic('heal'), 'Healing potions', `Carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}.`),
       row(ic('magic'), 'Magic powers', 'The purple button in battle. Paid for with magic; learn more at camp.'),
       row(ic('gold'), 'Grow', 'Spend your gold on new dice, a bigger head, hands and feet, and talent symbols.'),

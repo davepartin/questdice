@@ -50,7 +50,7 @@ test('in a company the hero with the best dice for the test steps up', () => {
 test('a test choice rolls, pays out or costs, and a lost test offers one rematch for gold', () => {
   let lost = 0; let won = 0;
   for (let seed = 1; seed <= 40; seed++) {
-    const h = newHero({ name: 'T', cls: 'knight', seed }); h.gold = 300; at(h, 2, 6);
+    const h = newHero({ name: 'T', cls: 'knight', seed }); h.gold = 300; at(h, 2, 5); // the dice test sits before the elite
     const ev = ensureRoad(h, [h]); const ch = ev.choices.find((c) => c.test && c.ok);
     const before = h.gold;
     const res = chooseRoad(h, [h], ch.id);
@@ -72,5 +72,5 @@ test('every test is family-friendly content with a stat, a foe and at least one 
     assert.ok(['wisdom', 'strength', 'speed'].includes(t.stat), t.id); assert.ok(t.foe, t.id);
     assert.ok(t.choices.some((c) => c.test && c.win && c.lose), t.id);
   }
-  for (const stat of ['wisdom', 'strength', 'speed']) assert.ok(TRIALS.filter((t) => t.stat === stat).length >= 3, stat);
+  for (const stat of ['wisdom', 'strength', 'speed']) assert.ok(TRIALS.filter((t) => t.stat === stat).length >= 2, stat);
 });

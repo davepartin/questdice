@@ -331,30 +331,21 @@ test('the road is seeded, a choice sticks, and a toll you cannot pay does not', 
   assert.equal(scene.id, ensureRoad(again.members[0], again.members).id);
   assert.equal(ensureRoad(c.members[0], c.members).id, scene.id);
 
-  c.campaign.road = { key: '1.3', id: 'toll', done: false };
-  assert.equal(chooseRoad(c.members[0], c.members, 'pay'), null);
+  c.campaign.road = { key: '1.3', id: 'enchanter', done: false };
+  c.members.forEach((m) => { m.gold = 0; });
+  assert.equal(chooseRoad(c.members[0], c.members, 'pay'), null); // the proper spell costs gold the company does not have
   assert.equal(c.campaign.road.done, false);
-  c.members[0].gold = 12;
+  c.members[0].gold = 20;
   const paid = chooseRoad(c.members[0], c.members, 'pay');
   assert.ok(paid.text);
-  assert.equal(c.members[0].gold, 2);
+  assert.equal(c.members[0].gold, 5);
+  assert.equal(c.campaign.blessings.at(-1).pierce, 3);
   assert.equal(roadIsOpen(c.members[0]), false);
 
-  c.campaign.road = { key: '1.3', id: 'shrine', done: false };
-  chooseRoad(c.members[0], c.members, 'drink');
-  assert.equal(c.campaign.blessings.at(-1).atk, 2);
-  assert.equal(c.campaign.blessings.at(-1).block, 2);
+  c.campaign.road = { key: '1.3', id: 'sergeant', done: false };
+  chooseRoad(c.members[0], c.members, 'shield');
+  assert.equal(c.campaign.blessings.at(-1).openingBlock, 10);
   assert.ok(c.campaign.chronicle[0].title);
-
-  c.members[0].gold = 8;
-  c.campaign.road = { key: '1.3', id: 'bridge', done: false };
-  assert.equal(chooseRoad(c.members[0], c.members, 'carve').text.includes('Eight gold'), true);
-  assert.equal(c.members[0].bonusHp, 2);
-  assert.equal(c.members[1].bonusHp, 2);
-  assert.equal(c.campaign.carved, true);
-  assert.equal(maxHpOf(c.members[0]), CLASSES.knight.hp + 2);
-  c.campaign.road.done = false;
-  assert.equal(chooseRoad(c.members[0], c.members, 'carve'), null);
 });
 
 test('party initiative: the round plays high to low, ties go to the heroes, round 1 is the heroes first', () => {
