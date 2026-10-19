@@ -24,6 +24,8 @@ export const artFor = (list) => list[0]; // the best one that exists (the list h
 // Where the figures stand: [x %, feet y %, faces left (1) or right (0), size]. Pairs sit either side of the fire, then back rows.
 const AROUND_FIRE = [[26, 94, 0, 1], [74, 94, 1, 1], [17, 85, 0, 0.88], [83, 85, 1, 0.88], [37, 77, 0, 0.78], [63, 77, 1, 0.78]];
 const ON_ROAD = [[26, 94, 0, 1], [48, 92, 0, 0.94], [16, 86, 0, 0.84], [68, 88, 0, 0.88], [36, 80, 0, 0.74], [84, 84, 0, 0.8]];
+// three or four on the road walk side by side (the third used to stand right behind the first and vanish: the bots' playtest)
+const ROAD_N = { 3: [[18, 92, 0, 0.94], [44, 94, 0, 1], [70, 90, 0, 0.92]], 4: [[12, 90, 0, 0.88], [33, 94, 0, 1], [55, 92, 0, 0.96], [77, 88, 0, 0.88]] };
 
 let layer = null;
 function ensureLayer() {
@@ -72,8 +74,8 @@ export function mountStage(kind, heroes, hot = true) {
     host = root.querySelector(':scope > .sc-host'); if (!host) { host = h('div', { class: 'sc-host' }); root.prepend(host); }
   }
   host.querySelector(':scope > .sc-stage')?.remove();
-  const slots = kind === 'camp' ? AROUND_FIRE : ON_ROAD;
   const members = heroes.slice(0, 6).filter((m) => m && D.CLASSES[m.cls]);
+  const slots = kind === 'camp' ? AROUND_FIRE : ROAD_N[members.length] || ON_ROAD;
   const figs = members.map((m, i) => figure(m, slots[i], {})).sort((a, b) => parseFloat(a.style.getPropertyValue('--y')) - parseFloat(b.style.getPropertyValue('--y')));
   const stage = h('div', { class: `sc-stage k-${kind} n${members.length} ${reduced() ? 'still' : ''}` }, h('i', { class: 'sc-warm' }), kind === 'camp' && hot ? fireEl() : null, ...figs);
   host.prepend(stage);

@@ -660,7 +660,7 @@ function startQuest(q) {
     if (members.length > 1) return go();
     // a secret challenge before the fight (secrets.js; solo gets challenge cards only)
     const hero = members[0];
-    S.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: [hero], enemies: S.battle.enemies, salt: `${quest.id}:${hero.stats.battles}` });
+    S.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: [hero], enemies: S.battle.enemies, salt: `${quest.id}:${hero.stats.battles}`, big: ['elite', 'boss'].includes(quest.kind) || !!quest.perilous });
     return SCRUI.envelope(SO.cardView(S.envelope, hero.name), { questName: quest.name, solo: true, onAnswer: () => { SO.answer(S.envelope, hero.name); go(); } });
   }
   renderReset();
@@ -943,8 +943,10 @@ function showVictory() {
   E.advanceCampaign(hero); persist();
   S.rewards = { ...r, reveal, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
-  if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
-  renderVictory();
+  // the Reveal has its own beat, before the spoils (after the place's win page, if it has one)
+  const next = () => (reveal && SCRUI.on() && world.battle ? SCRUI.reveal(reveal, { hero, place: quest?.place, won: true, onDone: renderVictory }) : renderVictory());
+  if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, next);
+  next();
 }
 function nextPerkOffer() { const hero = S.hero; if (hero.pendingPerks > 0 && !S.rewards.offer) S.rewards.offer = E.offerPerks(hero, fresh()); }
 function renderVictory() {
@@ -984,7 +986,7 @@ function defeat(retreat) {
   if (battle && heroes[0]) LG.noteBattle(heroes[0].campaign, battle, { won: false, quest: S.quest, reveal });
   persist();
   sfx.lose();
-  if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss, reveal);
+  if (SCRUI.on() && world.battle) return reveal ? SCRUI.reveal(reveal, { hero: S.hero, place: S.quest?.place, won: false, onDone: () => SCRUI.defeat(retreat, loss) }) : SCRUI.defeat(retreat, loss);
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
     h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow. Tomorrow is still yours.' : 'The dark wins this round. It does not get to keep you. Up you get.')),
   section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust. Coins can be found again.` : 'You lost nothing but pride, and pride grows back.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),

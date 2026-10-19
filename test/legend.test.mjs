@@ -21,7 +21,7 @@ test('every fight adds to the act’s Legend, and the page tells it with a title
   assert.match(b.text[0], /^From Cinder Ford to Gallows Hill: 3 fights, 2 won, 1 lost along the way \(The Toll Bridge\)\. Gorvash is beaten\./);
   assert.ok(b.facts.some((f) => /biggest single round: WizKid, 61 damage at Gallows Hill/.test(f)));
   assert.ok(b.facts.some((f) => /Smalls blocked 65 damage/.test(f)));
-  assert.ok(b.facts.some((f) => /1 of 1 bribe taken \(1 paid off\)/.test(f)));
+  assert.ok(b.facts.some((f) => /The bribes: Smalls took one and cashed it\./.test(f)), b.facts.join(' | '));
   assert.ok(b.facts.some((f) => /^WizKid, /.test(f)) && b.facts.some((f) => /^Smalls, /.test(f)), 'a title for each hero');
   assert.match(b.teaser, /^Next time, Act II: Nothing Down Here Glows\./);
   for (const t of [...b.text, ...b.facts, b.teaser]) assert.doesNotMatch(t, /undefined|NaN|\{/);
@@ -51,4 +51,13 @@ test('a table keeps the Legend as it plays', () => {
   const L = table.company.campaign.legend?.[1];
   assert.equal(L?.fights, 1);
   assert.ok(L.heroes.Ada && L.heroes.Bea);
+});
+
+test('the Legend names Honor: who said no to a bribe, and who took one', () => {
+  const c = { pack: 'dawn', act: 1, step: 10, seed: 4 };
+  const lines = [{ name: 'Maya', kind: 'bribe', mode: 'offer', accepted: false, gold: 10 }, { name: 'Theo', kind: 'bribe', mode: 'offer', accepted: true, gold: 0 }];
+  for (let i = 0; i < 2; i++) noteBattle(c, fight([row(1, 'Maya', { dealt: 9 }), row(1, 'Theo', { dealt: 9 })], [['Maya', 9], ['Theo', 9]], { place: 'Cinder Ford', kind: 'battle' }), { won: true, reveal: { lines } });
+  const b = legendBeat(c, 1, [{ name: 'Maya' }, { name: 'Theo' }]);
+  assert.ok(b.facts.includes('The bribes: Maya said no twice. Theo took two and cashed none.'), b.facts.join(' | '));
+  for (const f of b.facts) assert.doesNotMatch(f, /Goblins’ Worst/);
 });

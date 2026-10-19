@@ -326,7 +326,16 @@ function openBrag(t, sendSeen) {
     },
   });
 }
+// The Reveal comes first, once on each phone (then the brag board and the spoils): the bots' playtest, Oct 2026.
+const revealsSeen = new Set();
+function revealFirst(t, won) {
+  const rv = Sess.view()?.reveal; const key = `${bragKey(t)}:${won ? 'w' : 'l'}`;
+  if (!rv?.lines?.length || revealsSeen.has(key)) return false;
+  SCRUI.reveal(rv, { hero: Sess.hero(), place: t.quest?.place, won, onDone: () => { revealsSeen.add(key); show(); } });
+  return true;
+}
 function victory(t) {
+  if (revealFirst(t, true)) return;
   const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard, charmCard } = K();
   const R = t.rewards; const members = t.company.members; const n = members.length; const you = Sess.me(); const hero = you.hero;
   const offer = Sess.view()?.perkOffer; const draft = R.draft; const who = E.draftWho(draft);
@@ -369,13 +378,14 @@ function victory(t) {
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, reopen, rows, SCRUI.revealPanel(Sess.view()?.reveal, hero.name), perks, charms, loot)));
+      partyBar(), note, reopen, rows, perks, charms, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
 function defeat(t) {
   const hero = Sess.hero(); X.S.hero = hero;
-  SCRUI.defeat(!!t.retreat, t.loss || 0, Sess.view()?.reveal);
+  if (revealFirst(t, false)) return;
+  SCRUI.defeat(!!t.retreat, t.loss || 0);
   if (!SCR.defeat(hero, t.quest?.place)) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
 }
 

@@ -322,7 +322,7 @@ function startQuest(table, cmd) {
   table.reveal = null;
   // Secret objectives (docs/SECRET_OBJECTIVES.md): every hero opens an envelope first; the fight starts when all have answered
   if (table.envelopes !== 'off') {
-    table.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: members(table), enemies: table.battle.enemies, salt: `t${table.seq}` });
+    table.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: members(table), enemies: table.battle.enemies, salt: `t${table.seq}`, big: ['elite', 'boss'].includes(table.quest?.kind) || !!table.quest?.perilous });
     table.phase = 'envelope';
     return ok();
   }

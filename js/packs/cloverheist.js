@@ -562,7 +562,7 @@ const moments = [
       won: '{who} finds a different ring, smaller, still warm from being missed. Mabel, somewhere, hums louder.', lost: '{who} finds a crack. In the crack, a beetle. The beetle is not lucky. It is judgemental.' },
     { title: 'Coffin-Lid Sledge', stat: 'speed', prize: 'block', go: 'Ride the lid',
       tell: 'Sir Reginald has left his coffin-lid sledge on the ice on the road to {place}. Nippy froze the path. It would be a very fast way across. It would also be a lid.',
-      won: '{who} rides it straight as a die and steps off with ice in their hair and a door for a shield.', lost: '{who} rides it in a circle, twice. Sir Reginald, from a safe distance, applauds the form.' },
+      won: '{who} rides it straight as a die and steps off with ice in every hair and a door for a shield.', lost: '{who} rides it in a circle, twice. Sir Reginald, from a safe distance, applauds the form.' },
     null,
     { title: 'Needles in the Dark', stat: 'wisdom', prize: 'magic', go: 'Follow the clicking',
       tell: 'The clicking of knitting needles on the road to {place} is very fast now. If you walk toward it in time, the silk will not catch your feet.',

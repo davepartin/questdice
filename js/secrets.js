@@ -73,7 +73,10 @@ export const CARDS = {
   laststand: { kind: 'bribe', mode: 'offer', name: 'Last One Standing', flavor: 'When the dust settles, the voice wants you to be the healthiest one there.', rule: 'End the battle with more health than every teammate.', check: (x) => x.others.every((n) => (x.fighters[n]?.hp ?? 0) < x.F.hp) },
   // ---- bribes: forced ("you have been chosen"), milder; they look exactly like an ordinary card
   goldfumble: { kind: 'bribe', mode: 'forced', name: 'Golden Fumble', flavor: 'You have been chosen. Gold, gold, gold. You cannot help yourself.', rule: 'Take the Gold side of every straight you roll (and roll at least one).', check: (x) => x.me.some((r) => r.straight) && x.me.every((r) => !r.straight || r.straight === 'gold') },
-  spare: { kind: 'bribe', mode: 'forced', name: 'Spare That One', flavor: 'You have been chosen. That one there is the voice’s cousin. Be nice.', rule: 'Leave {spare} alive until round 4.', check: (x) => { const k = Object.values(x.rows).flat().find((r) => r.kills.includes(x.card.spare)); return !k || k.r >= 4; } },
+  spare: { kind: 'bribe', mode: 'forced', name: 'Spare That One', flavor: 'You have been chosen. That one there is the voice’s cousin. Be nice.', rule: 'Let {spare} be the last monster to fall.', check: (x) => { // any length of fight (a short one could never reach "round 4"); the same round counts
+    const rows = Object.values(x.rows).flat(); const k = rows.find((r) => r.kills.includes(x.card.spare)); if (!k) return true;
+    return rows.every((r) => r.kills.every((uid) => uid === x.card.spare || r.r <= k.r));
+  } },
   hoarder: { kind: 'bribe', mode: 'forced', name: 'The Hoarder', flavor: 'You have been chosen. Keep your magic close. Do not spend it all.', rule: 'End the battle with 6 or more magic unspent.', check: (x) => (x.F.magic ?? 0) >= 6 },
   lonewolf: { kind: 'bribe', mode: 'forced', name: 'Lone Wolf', flavor: 'You have been chosen. Work alone. Never hit the same monster as a teammate.', rule: 'Never attack the monster a teammate attacks that round.', check: (x) => x.me.every((r) => r.target == null || !x.others.some((n) => x.rows[n].some((o) => o.r === r.r && o.target === r.target))) },
 };
@@ -85,7 +88,10 @@ const RIVAL_CHANCE = { 2: 0.35, 3: 0.7, 4: 0.75, 5: 0.85, 6: 0.9 };
 
 // Deal the envelopes for one battle. heroes: the company (hero objects); enemies: the battle's monsters; c: the campaign.
 // The scene and the cover line are the same for everyone; the cards are private.
-export function dealEnvelopes({ c, heroes, enemies = [], salt = '' }) {
+// Fewer, bigger secrets (the bots' playtest, Oct 2026): ordinary fights deal cover cards, rivalries and challenges, and only now
+// and then a bribe; an elite, a boss or a perilous road (big: true) is where the bribes and the harsh cards come out.
+const HARSH = new Set(['cliffhanger']); // challenges that only make sense in a fight worth sweating
+export function dealEnvelopes({ c, heroes, enemies = [], salt = '', big = false }) {
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'envelopes', salt));
   const pick = (list) => list[Math.floor(rng() * list.length)];
   const n = heroes.length; const team = n > 1;
@@ -96,7 +102,7 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '' }) {
   const give = (hero, id, extra = {}) => { env.cards[hero.name] = { id, ...extra }; open.splice(open.indexOf(hero), 1); };
   if (team) {
     // a bribe, now and then (never to the same hero two battles running)
-    if (rng() < (BRIBE_CHANCE[Math.min(6, n)] || 0)) {
+    if (rng() < Math.min(0.9, (BRIBE_CHANCE[Math.min(6, n)] || 0) * (big ? 2 : 0.3))) {
       const who = open.find((h) => h.name !== c.lastBribed);
       const spareable = enemies.filter((e) => e.tier !== 'boss' && e.hp > 0);
       const bribes = [...ids('bribe', true)].filter((id) => id !== 'spare' || spareable.length >= 2);
@@ -120,7 +126,7 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '' }) {
   // everyone else: a cover card or a challenge
   for (const h of [...open]) {
     const cover = team && rng() < 0.4;
-    const list = ids(cover ? 'cover' : 'challenge', team).filter((id) => fits(id, h));
+    const list = ids(cover ? 'cover' : 'challenge', team).filter((id) => fits(id, h) && (big || !HARSH.has(id)));
     give(h, pick(list));
   }
   return env;
@@ -202,7 +208,8 @@ function revealLine(env, r, rivalWin, crooks, won) {
   const d = CARDS[r.id]; const v = env.voice || VOICE.name; const g = r.gold;
   const coin = g > 0 ? ` ${r.name} receives ${g} gold.` : g < 0 ? ` ${r.name} loses ${-g} gold.` : '';
   const rule = d.rule.replace('{spare}', env.cards[r.name]?.spareName || 'that monster').replace(/\.$/, '');
-  const card = `${d.name}: ${rule.charAt(0).toLowerCase()}${rule.slice(1)}.`;
+  // a rule that speaks to its holder ("you") is quoted as the card says it, so the Reveal never reads "Theo: you cannot..."
+  const card = /\byour?\b/i.test(rule) ? `${d.name}: “${rule}.”` : `${d.name}: ${rule.charAt(0).toLowerCase()}${rule.slice(1)}.`;
   if (d.kind === 'cover') return `${r.name} had an honest card, ${card} ${r.met ? 'Done.' : 'Not this time.'}${coin}`;
   if (d.kind === 'challenge') return `${r.name} had a secret challenge, ${card} ${r.met ? (won ? 'Done!' : 'Done, but the battle was lost.') : 'Not this time.'}${coin}`;
   if (d.kind === 'rival') {

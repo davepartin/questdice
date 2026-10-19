@@ -73,3 +73,33 @@ test('a road moment in company: everybody rolls, the best wins a small bonus, ti
     assert.doesNotMatch(r.text, /undefined|\{/);
   }
 });
+
+test('a three-way tie on the road says all win (both is for two), and moment lines name the hero instead of "their"', async () => {
+  const hs = [['WizKid', 'wizard'], ['Smalls', 'dwarf'], ['Ada', 'knight']].map(([name, cls], i) => newHero({ name, cls, seed: 3 + i }));
+  for (const h of hs) h.campaign = hs[0].campaign;
+  const ev = ROADS.find((e) => e.when === 'moment' && e.id !== 'm-pack');
+  const ctx = { campaign: hs[0].campaign, members: hs, act: 1 };
+  const rows = hs.map((h) => ({ name: h.name, total: 5 }));
+  assert.match(ev.choices[0].contest(ctx, rows, hs.map((h) => h.name)), /so all win/);
+  assert.match(ev.choices[0].contest(ctx, rows, ['WizKid', 'Smalls']), /so both win/);
+  const { packList } = await import('../js/campaigns.js');
+  for (const p of packList()) for (const act of p.acts || []) for (const m of act.moments || []) if (m) {
+    for (const t of [m.won, m.lost]) assert.doesNotMatch(t, /\btheir\b/, `${p.id}: ${m.title}`);
+  }
+});
+
+test('a whole campaign never repeats a road event while another of its kind is still unused', () => {
+  const h = newHero({ name: 'Maya', cls: 'wizard', seed: 23 });
+  const byKind = {};
+  for (let act = 1; act <= 3; act++) for (let step = 1; step <= 10; step++) {
+    at(h, act, step, (act - 1) * 10 + step - 1);
+    const ev = ensureRoad(h, [h]); const kind = ROADS.find((e) => e.id === ev.id)?.when || 'other';
+    (byKind[kind] ||= []).push(ev.id);
+    chooseRoad(h, [h], ev.choices.find((c) => c.ok !== false)?.id || ev.choices[0].id);
+  }
+  for (const [kind, ids] of Object.entries(byKind)) {
+    const total = ROADS.filter((e) => e.when === kind).length;
+    if (ids.length <= total) assert.equal(new Set(ids).size, ids.length, `${kind}: ${ids.join(', ')}`);
+  }
+  assert.equal(new Set(byKind.boss).size, 3, 'three different boss nights');
+});

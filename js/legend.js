@@ -8,7 +8,7 @@ import { actsOf } from './campaigns.js';
 const hashSeed = (...parts) => { let h = 2166136261; for (const ch of parts.join('|')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 
 const fresh = () => ({ fights: 0, wins: 0, falls: [], from: null, boss: null, bossPlace: null, big: null, heroes: {}, secrets: { done: 0, offered: 0, taken: 0, worked: 0, forced: 0, rivalries: 0 } });
-const zero = () => ({ dealt: 0, blocked: 0, kills: 0, triples: 0, straights: 0, gold: 0, magic: 0, close: 0, downs: 0, heal: 0, bribes: 0 });
+const zero = () => ({ dealt: 0, blocked: 0, kills: 0, triples: 0, straights: 0, gold: 0, magic: 0, close: 0, downs: 0, heal: 0, bribes: 0, cashed: 0, honor: 0 });
 
 // After every fight, won or lost. c: the campaign (before it moves on); battle: solo or team; reveal: the envelopes' lines.
 export function noteBattle(c, battle, { won, quest = battle?.quest, reveal = null } = {}) {
@@ -38,7 +38,7 @@ export function noteBattle(c, battle, { won, quest = battle?.quest, reveal = nul
     const S = L.secrets;
     if (l.kind === 'bribe') {
       if (l.mode === 'forced') S.forced++;
-      else { S.offered++; if (l.accepted) { S.taken++; hero(l.name).bribes++; if (l.gold > 0) S.worked++; } }
+      else { S.offered++; if (l.accepted) { S.taken++; hero(l.name).bribes++; if (l.gold > 0) { S.worked++; hero(l.name).cashed++; } } else hero(l.name).honor++; }
     } else if (l.kind === 'rival') { if (l.gold > 0) S.rivalries++; } else if (l.gold > 0) S.done++;
   }
   return L;
@@ -46,7 +46,7 @@ export function noteBattle(c, battle, { won, quest = battle?.quest, reveal = nul
 
 // One title per hero: whatever they did most of, compared with the rest of the company (or, alone, with a usual fight).
 const TITLES = {
-  dealt: ['the Hammer', 'the Goblins’ Worst Nightmare', 'the Big Swing'],
+  dealt: ['the Hammer', 'the Monsters’ Worst Nightmare', 'the Big Swing'], // never a title naming a monster the act may not have had
   blocked: ['the Wall', 'the Unbudgeable', 'the Shield With Legs'],
   kills: ['the Finisher', 'Last Hit', 'the Closer'],
   triples: ['Lucky Hands', 'the Dice Whisperer', 'Three of a Kind'],
@@ -113,9 +113,14 @@ export function legendBeat(c, act, heroes = []) {
     const bits = [];
     if (S.done) bits.push(`${S.done} secret challenge${S.done === 1 ? '' : 's'} done`);
     if (S.rivalries) bits.push(`${S.rivalries} secret rivalr${S.rivalries === 1 ? 'y' : 'ies'} won`);
-    if (S.offered) bits.push(`${S.taken} of ${S.offered} bribe${S.offered === 1 ? '' : 's'} taken${S.taken ? ` (${S.worked} paid off)` : ''}`);
     if (S.forced) bits.push(`${S.forced} chosen by the voice`);
-    shown.push(`Behind the envelopes: ${andList(bits)}.`);
+    if (bits.length) shown.push(`Behind the envelopes: ${andList(bits)}.`);
+    // Honor and bribes by name (the bots' playtest): "Maya said no twice. Theo took three and cashed one."
+    const word = (n) => ['no', 'once', 'twice', 'three times', 'four times', 'five times'][n] || `${n} times`;
+    const num = (n) => ['none', 'one', 'two', 'three', 'four', 'five', 'six'][n] || String(n);
+    const said = names.filter((n) => L.heroes[n]?.honor).map((n) => `${n} said no ${word(L.heroes[n].honor)}.`);
+    const took = names.filter((n) => L.heroes[n]?.bribes).map((n) => { const H = L.heroes[n]; return `${n} took ${H.bribes === 1 ? 'one' : num(H.bribes)} and cashed ${H.cashed === H.bribes && H.bribes > 1 ? 'them all' : H.cashed === 1 && H.bribes === 1 ? 'it' : num(H.cashed)}.`; });
+    if (said.length || took.length) shown.push(`The bribes: ${[...said, ...took].join(' ')}`);
   }
   const titles = titlesFor(L, names, c.seed, act);
   const next = act < acts.length ? acts[act] : null;

@@ -110,3 +110,12 @@ test('a solo battle keeps the log too, and a solo challenge pays only on a win',
   assert.equal(j.results.length, 1); assert.doesNotMatch(j.results[0].line, /undefined|NaN/);
   if (b.outcome !== 'victory') assert.equal(j.results[0].gold, 0);
 });
+
+test('Spare That One works in a fight of any length: the spared monster has to be the last to fall', () => {
+  const env = (spare) => ({ act: 1, voice: 'Old Whisper', cards: { WizKid: { id: 'spare', mode: 'forced', spare, spareName: 'Grub' } }, answered: {} });
+  const short = fakeBattle([row(1, 'WizKid', { kills: ['a'] }), row(2, 'WizKid', { kills: ['grub'] })], [{ name: 'WizKid', hp: 10 }]);
+  const early = fakeBattle([row(1, 'WizKid', { kills: ['grub'] }), row(2, 'WizKid', { kills: ['a'] })], [{ name: 'WizKid', hp: 10 }]);
+  assert.equal(judge(env('grub'), short, { won: true }).results[0].met, true, 'a two-round fight can still be won with it');
+  assert.equal(judge(env('grub'), early, { won: true }).results[0].met, false);
+  assert.match(CARDS.spare.rule, /last monster to fall/);
+});

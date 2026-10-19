@@ -46,12 +46,14 @@ every phone has tapped.
 | Heroes | Cover cards | Rivalries | Challenges | Bribes (offered or forced) |
 |---|---|---|---|---|
 | 1 (solo) | — | — | always | — |
-| 2 | often (sometimes both heroes get Lead the Charge) | one pair now and then (both heroes, same goal, one winner) | often | about 1 battle in 6 |
+| 2 | often (sometimes both heroes get Lead the Charge) | one pair now and then (both heroes, same goal, one winner) | often | rare in ordinary fights; about 1 elite or boss in 3 |
 | 3–4 | about a third | one pair most battles | about a third | about 1 battle in 3 |
 | 5–6 | about a third | one or two pairs, or a three-way race | about a third | about 1 battle in 2 (at most one offered and one forced) |
 
 - A rivalry is always dealt to **two or more heroes**, and the card never hints that anyone else has it.
 - No hero gets a bribe two battles running.
+- Fewer, bigger secrets (playtest, Oct 2026): ordinary fights deal bribes about a third as often; an elite, a boss or a perilous
+  road deals them twice as often, and Cliffhanger only comes out there.
 - A boss battle deals **Final Envelopes**: the same cards with bigger rewards.
 
 ## Paying out
@@ -78,7 +80,7 @@ every phone has tapped.
 Every phone shows every card, in turn, with a line each:
 
 - "**Jared took the bribe from the Lunch King to earn the most gold, and did it.** Jared receives 100 gold."
-- "**Smalls was forced to spare the goblin chief until round 4.** Smalls managed it, grumbling. 40 gold."
+- "**Smalls was forced to let the goblin chief be the last to fall.** Smalls managed it, grumbling. 40 gold."
 - "**WizKid declined the bribe.** The team lost anyway; WizKid keeps the Honor (35 gold)."
 - "**WizKid and Smalls were BOTH chasing gold!** Smalls wins, 41 to 38."
 - "**Ada had the honest card: Lead the Charge.** Ada really did just want to win."
@@ -154,7 +156,7 @@ The writer's pack may re-voice any card to fit its story; the rule stays the sam
 | Card | Flavor | The rule | Pays |
 |---|---|---|---|
 | **Golden Fumble** | "You have been chosen. Gold, gold, gold. You cannot help yourself." | Take the Gold side of every straight you roll | G |
-| **Spare That One** | "You have been chosen. That one there is the voice's cousin. Be nice." | Leave one named monster alive until round 4 | G |
+| **Spare That One** | "You have been chosen. That one there is the voice's cousin. Be nice." | Let one named monster be the last to fall | G |
 | **The Hoarder** | "You have been chosen. Keep your magic close. Do not spend it all." | End with 6+ magic unspent | G |
 | **Lone Wolf** | "You have been chosen. Work alone. Never hit the same monster as a teammate." | Never attack the monster a teammate attacks that round | G |
 

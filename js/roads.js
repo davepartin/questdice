@@ -196,6 +196,16 @@ const ENCOUNTERS = [
         apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-b', name: 'A sensible speech', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the bit about shields.'); return `"...and keep your shields UP." It is not stirring, but it is correct. Round 1 of the boss fight: +${n} block.`; } },
     ],
   },
+  { // a third night, so an act's boss eve does not repeat within a campaign (the bots' playtest, Oct 2026)
+    id: 'eve-map', when: 'boss', kicker: 'The night before', title: 'The Map by Candlelight',
+    tell: (ctx) => `Someone has drawn the boss's lair on the back of a menu. ${someone(ctx, 'map')} holds the candle. Everyone else argues about which way is north.`,
+    choices: [
+      { id: 'flank', label: () => 'Plan a surprise from the side', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN)} attack and +${by(ctx, PIERCE)} pierce every round.`,
+        apply: (ctx) => { const n = by(ctx, OPEN); const p = by(ctx, PIERCE); bless(ctx, { id: 'map-flank', name: 'The side door', text: `Round 1: +${n} attack. +${p} pierce every round.`, fights: 1, openingAtk: n, pierce: p }); note(ctx, 'The Map by Candlelight', 'Planned a surprise from the side.'); return `There is a side door. Of course there is a side door. Round 1 of the boss fight: +${n} attack, and +${p} pierce every round.`; } },
+      { id: 'retreat', label: () => 'Plan a way out, just in case', hint: (ctx) => `The boss fight: +${by(ctx, HP)} health and +${by(ctx, OPEN)} block in round 1.`,
+        apply: (ctx) => { const n = by(ctx, HP); const b = by(ctx, OPEN); bless(ctx, { id: 'map-out', name: 'A way out', text: `+${n} health. Round 1: +${b} block.`, fights: 1, startHp: n, openingBlock: b }); note(ctx, 'The Map by Candlelight', 'Planned a way out.'); return `Knowing where the door is makes everyone braver. Odd, but true. The boss fight: +${n} health and +${b} block in round 1.`; } },
+    ],
+  },
 ];
 for (const e of ENCOUNTERS) ROADS.push(e);
 
@@ -227,7 +237,7 @@ function moment({ id, stat, title, tell, go, won, lost, prize }) {
       win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return `${won(ctx, r.who)} (${roll2(r)}) ${r.who}: ${p}.`; },
       lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return `${lost(ctx, r.who)} (${roll2(r)}) No bonus this time, but a good story.`; },
       contest: (ctx, rows, winners) => { const p = givePrize(ctx, winners, prize); note(ctx, title, `${winners.join(' and ')} won it.`);
-        const line = winners.length > 1 ? `A tie between ${joinNames(winners.map((name) => ({ name })))}, so both win.` : won(ctx, winners[0]);
+        const line = winners.length > 1 ? `A tie between ${joinNames(winners.map((name) => ({ name })))}, so ${winners.length === 2 ? 'both' : 'all'} win.` : won(ctx, winners[0]);
         return `${rows.map((x) => `${x.name} ${x.total}`).join(' · ')}. ${line} ${joinNames(winners.map((name) => ({ name })))}: ${p}.`; },
     }],
   };
@@ -302,9 +312,11 @@ export function ensureRoad(hero, members) {
   if (!c.road || c.road.key !== key) {
     const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'road'));
     let pool = poolFor(c);
-    const seen = new Set(c.seenRoads || []);
-    const fresh = pool.filter((e) => !seen.has(e.id));
+    // never the same event twice while another is unused; once all have been seen, the one seen longest ago
+    const seenAt = new Map((c.seenRoads || []).map((id, i) => [id, i]));
+    const fresh = pool.filter((e) => !seenAt.has(e.id));
     if (fresh.length) pool = fresh;
+    else { const oldest = Math.min(...pool.map((e) => seenAt.get(e.id))); pool = pool.filter((e) => seenAt.get(e.id) === oldest); }
     const weights = pool.map(() => 1);
     c.road = { key, id: pool[weighted(rng, weights)].id, done: false };
   }
@@ -361,7 +373,7 @@ export function chooseRoad(hero, members, choiceId) {
     c.road.trial = { ...trial, choiceId, stake, rematched: false };
   } else text = choice.apply(ctx);
   c.road.done = true;
-  c.seenRoads = [...(c.seenRoads || []), ev.id].slice(-10);
+  c.seenRoads = [...(c.seenRoads || []).filter((id) => id !== ev.id), ev.id].slice(-60); // the whole campaign, last seen at the end
   return { title: ev.title, text, contest, trial: trial ? { ...trial, foe: ev.foe || ev.title, stake: c.road.trial.stake, canRematch: !trial.win && ev.when !== 'moment', rematchCost: rematchCost(c.act) } : null };
 }
 // After a lost test, one rematch for a little gold. A win pays out as usual; the first loss still stands.

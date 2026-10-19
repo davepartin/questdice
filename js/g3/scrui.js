@@ -767,11 +767,23 @@ export function envelope(card, o = {}) {
   const place = E.questsFor(hero)[0]?.place;
   lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
-// The Reveal (on the rewards screen): every card, and what each hero did with it. reveal: { voice, crooks, lines: [{ name, gold, line }] }.
-export function revealPanel(reveal, youName) {
+// The Reveal gets its own beat (the bots' playtest, Oct 2026): straight after the fight, before the brag board, the spoils and the
+// perks, one screen with every card turned over, and a Continue. o: { hero, place, won, onDone }.
+export function reveal(rv, o = {}) {
+  const hero = o.hero || X.S.hero; let done = false;
+  const title = o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened';
+  mountAs('victory', h('div', { class: 'sx-split sx-victory sx-revealbeat' }, h('div', { class: 'sx-viewport' }),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
+      h('header', { class: 'vc-head rv-head' }, eyebrow('The Reveal', 'gold'), h('p', {}, `${title}. ${rv.voice || 'The voice'} reads every card aloud.`), flourish()),
+      revealPanel(rv, hero?.name, { bare: true }),
+      h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); o.onDone?.(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
+  lay('victory'); if (hero) SCR[o.won === false ? 'defeat' : 'victory'](hero, o.place);
+}
+// The Reveal (every card, and what each hero did with it). reveal: { voice, crooks, lines: [{ name, gold, line }] }.
+export function revealPanel(reveal, youName, { bare = false } = {}) {
   if (!reveal?.lines?.length) return null;
-  return panel('sx-reveal', eyebrow('The Reveal', 'gold'),
-    h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
+  return panel('sx-reveal', bare ? null : eyebrow('The Reveal', 'gold'),
+    bare ? null : h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
     h('ul', { class: 'rv-list' }, reveal.lines.map((l) => h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
       h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
 }
@@ -834,7 +846,7 @@ export function victory(first) {
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, shattered, rewards, revealPanel(Rw.reveal, hero.name), charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -848,7 +860,7 @@ export function victory(first) {
     setTimeout(() => { xpFill.style.transition = 'none'; xpFill.style.width = '0%'; void xpFill.offsetWidth; lvl.classList.add('pop'); bar.classList.add('flash'); sfx.level?.(); fillTo(endPct, 800); }, 1400);
   } else setTimeout(() => fillTo(endPct, 1000), 600);
 }
-export function defeat(retreat, loss, reveal = null) {
+export function defeat(retreat, loss) {
   const S = X.S; const hero = S.hero;
   const lines = [['Level', `${hero.level}`, 'hero'], ['Gear', `${Object.values(hero.loadout).filter((w, i, a) => !w.twin && a.findIndex((x) => x.uid === w.uid) === i).length + hero.bag.length} weapons`, 'bag'], ['Perks', `${hero.perks.length}`, 'star']];
   mountAs('defeat', h('div', { class: 'sx-split sx-defeat' }, h('div', { class: 'sx-viewport' }),
@@ -858,7 +870,6 @@ export function defeat(retreat, loss, reveal = null) {
         S.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${S.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light. Diamonds are for one fight, whatever its ending.`) : null,
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
-      revealPanel(reveal, hero.name),
       h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'),
       h('div', { class: 'sx-cta' }, btn('Return to camp', () => X.showCamp({ fromBoard: false }), { big: true, icon: 'tent', cls: 'wide' })))));
   lay('defeat'); SCR.defeat(hero, S.quest?.place);
