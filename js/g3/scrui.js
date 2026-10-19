@@ -1207,13 +1207,13 @@ export function camp(fromBoard) {
     onclick: tap((e) => { if (S.tab === id) { const side = e.currentTarget.closest('.sx-side'); const t = side?.querySelector('.sx-camp-scroll'); if (side && t) side.scrollTo({ top: side.scrollTop + t.getBoundingClientRect().top - side.getBoundingClientRect().top - ((side.querySelector('.sx-sidetop')?.offsetHeight || 0) + (side.querySelector('.sx-tabs')?.offsetHeight || 0) + 10), behavior: reduced() ? 'auto' : 'smooth' }); return; } S.tab = id; X.renderCamp(fromBoard); }) },
     ico(ic), h('span', {}, label), badge[id] ? h('b', { class: `tab-badge ${badge[id] === '!' ? 'alert' : ''}` }, badge[id]) : null)));
   const keep = $('.sx-camp-scroll'); const y = keep && S.holdScroll !== false ? keep.scrollTop : 0;
-  // the Camp Store sits by the fire (Dave): one tap opens its tab, with a count of what you can afford
+  // the Camp Store button sits beside your purse (Dave: not over the fire): one tap opens its tab, with a count of what you can afford
   const storeBtn = h('button', { type: 'button', class: 'sx-storebtn', 'aria-label': `Camp Store${storeN ? `: ${storeN} you can afford` : ''}`, onclick: tap(() => { S.tab = 'store'; X.renderCamp(fromBoard); const side = $('.sx-side'); const t = side?.querySelector('.sx-tabs'); if (side && t) side.scrollTo({ top: Math.max(0, t.offsetTop - 8), behavior: reduced() ? 'auto' : 'smooth' }); }) },
-    ico('coin'), h('span', {}, 'Camp Store'), storeN ? h('b', {}, String(storeN)) : null);
-  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp'))), storeBtn),
+    ico('coin'), h('span', {}, 'Camp Store'), storeN ? h('b', {}, `${storeN} to buy`) : null, ico('chevron'));
+  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero), X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      tabs, X.partyBar?.(), seats, perkPanel, campStatus(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
+      S.tab === 'store' ? null : storeBtn, tabs, X.partyBar?.(), seats, perkPanel, campStatus(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;

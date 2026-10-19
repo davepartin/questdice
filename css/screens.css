@@ -868,12 +868,13 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .st-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f6c445, #ffe58a); border-radius: inherit; }
 .st-rows { display: grid; gap: .45rem; }
 .st-tonic.have, .st-bundle.have { opacity: .72; }
-/* the Camp Store button over the fire */
-.sx-storebtn { position: absolute; right: 1rem; bottom: 1.1rem; z-index: 3; display: flex; align-items: center; gap: .5rem; padding: .7rem 1.1rem .7rem .8rem; border-radius: 14px;
-  border: 1px solid #ffe3a0; background: linear-gradient(180deg, #ffd65a, #e19b12); color: #2a1804; font: 900 1rem/1 var(--font-ui, system-ui); letter-spacing: .04em; text-transform: uppercase;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .45), 0 0 0 3px rgba(255, 210, 90, .18); cursor: pointer; }
-.sx-storebtn svg { width: 1.4rem; height: 1.4rem; }
-.sx-storebtn b { display: grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .3rem; border-radius: 99px; background: #2a1804; color: #ffe38a; font-size: .78rem; }
+/* the Camp Store button, beside the hero's purse at the top of the camp panel (the fire scene stays clear) */
+.sx-storebtn { display: flex; align-items: center; gap: .45rem; width: 100%; margin: 0 0 .5rem; padding: .6rem .8rem; border-radius: 12px;
+  border: 1px solid #ffe3a0; background: linear-gradient(180deg, #ffd65a, #e19b12); color: #2a1804; font: 900 .85rem/1 var(--font-ui, system-ui); letter-spacing: .05em; text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .4); cursor: pointer; }
+.sx-storebtn svg { width: 1.15rem; height: 1.15rem; }
+.sx-storebtn span { flex: 1; text-align: left; }
+.sx-storebtn b { display: grid; place-items: center; height: 1.35rem; padding: 0 .5rem; border-radius: 99px; background: #2a1804; color: #ffe38a; font-size: .68rem; letter-spacing: .02em; }
 /* a coin is gold wherever it sits (on a gold button it was a black dot): gold with a dark rim */
 .ico-coin svg circle { fill: #ffd34a; stroke: #5a3a06; stroke-width: 2.2; }
 /* four camp tabs (Store, Forge, Gear, Hero) on one line, even on a narrow phone */
