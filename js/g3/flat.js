@@ -234,7 +234,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
 
   // ---- monsters
   const cardOf = (e) => {
-    const shown = e.name.length > 11 ? e.name.split(' ').pop() : e.name;
+    const core = e.name.replace(/^The /, '').split(/,? the /)[0]; // The Magpie King → Magpie King; Vharaxis, the Ember Queen → Vharaxis
+    const shown = core.length > 11 ? core.split(' ').pop() : core;
     const name = h('b', { class: `fb-name${shown.length > 10 ? ' long xl' : shown.length > 8 ? ' long' : ''}`, title: e.name }, shown); // long names read as their last word (Skulker)
     const hpNum = h('i', { class: 'fb-hpn' });
     // the far right of the health bar says how it defends: [shield d8], or a crossed-out shield when it has nothing to block with
