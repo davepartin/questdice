@@ -464,6 +464,12 @@ Run it yourself: `npm run sim`.
 
 ---
 
+## 14a. Miniatures catalog
+
+Every painted hero look and every monster lives in `minis/catalog.json` (readable as [MINIS.md](MINIS.md)). Story packs and QuestStoryBot must **cast fights from that catalog by `id`**. Writers may rename a mini for a campaign. They may not invent art. If nothing fits, request a new miniature.
+
+---
+
 ## 15. Decisions
 
 Each of these changed or settled something from the original brainstorm. They are listed so you can overturn any of them.

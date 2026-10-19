@@ -38,6 +38,11 @@ const EPITHET = {
   blazemorrow: ['THE DOWAGER BLAZEMORROW', 'End of the Song'], fallenchampion: ['THE FALLEN CHAMPION', 'Oaths Unkept'],
   ashwyrm: ['ASHMAW', 'The Wyrm of the Peaks'], magpieking: ['THE MAGPIE KING', 'One for Sorrow'],
   silkwood: ['MADAM SILKWOOD', 'The Great Weaver'],
+  treant: ['THE WRATH-OAK', 'A Thousand Years of Fury'], lampsnuffer: ['THE LAMP-SNUFFER', 'The Dark That Ate the Vault'],
+  yeti: ['BIG MURIEL', 'The Yeti'], direbear: ['GRAVELHIDE', 'The Dire Bear'],
+  tuskwarlord: ['GORVASH', 'Warlord of the Ash-Tusks'], barrowrider: ['THE BARROW RIDER', 'From the Ossuary Gate'],
+  stormtyrant: ['VEXMOR', 'The Storm-Tyrant'], hivequeen: ['THE GLASS-HIVE QUEEN', 'Where One Lands, the Hive Follows'],
+  slagcolossus: ['THE SLAG COLOSSUS', 'Outlived Its Maker'], frostgiant: ['HRIMVALD', 'The Rime-Giant'],
 };
 
 // ------------------------------------------------------------------------------------------ start / stop

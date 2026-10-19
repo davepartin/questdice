@@ -1,6 +1,6 @@
 # Painted miniatures — audit (14 Oct 2026)
 
-A look at every painted piece Dave can use to decide what to repaint, recut, or keep. Nothing here redesigns the roster. Contact sheet: `docs/ingame/miniatures_overview.png` (dark ground, then light; ~160px tall, phone battle size). `docs/ingame/` is gitignored scratch; a copy also lives in `docs/screens/miniatures_overview.png`. Rebuild with `node dev/minisheet.mjs`.
+A look at every painted piece Dave can use to decide what to repaint, recut, or keep. Nothing here redesigns the roster. **Cast fights from the catalog:** `minis/catalog.json` and [MINIS.md](MINIS.md). Contact sheet: `docs/ingame/miniatures_overview.png` (dark ground, then light; ~160px tall, phone battle size). `docs/ingame/` is gitignored scratch; a copy also lives in `docs/screens/miniatures_overview.png`. Rebuild with `node dev/minisheet.mjs`.
 
 Heroes stand on the left of the battle table and look/walk right; monsters on the right are a slight three-quarter looking left. Painted facing lives in `look: 'left'|'right'|'front'` on every class and monster (`needsFlip` in data.js). Every current monster is `look: 'left'` (not mirrored). Do not use `faces` for this — on a monster that key is the attack list. Pets sit at camp and on the pet chip; they have no `look` / `imgBase`.
 
