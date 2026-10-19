@@ -264,7 +264,26 @@ function teamTiles() {
       { spent: false, reset: false, afford: any && !usedRound, onclick: () => showTeamDetail(t.id), disabled: false, fresh: false, flag, cost: t.id === 'potion' ? 0 : t.id === 'magic' ? D.SHARE_MAGIC : D.REVIVE_COST, stepper: null, level: 0 });
   });
   const note = h('p', { class: 'sh-note' }, usedRound ? 'You have used your team action this round.' : 'One team action a round. Pick it, then choose a friend.');
-  return [...tiles, note];
+  return [...tiles, note, teamRules()];
+}
+// How teams work (Dave, Oct 2026: "hold the line" and team triples were a mystery; explain them under the Team button, the only
+// place a team needs them). Each rule in a line or two, with this act's numbers.
+function teamRules() {
+  const b = B.b; const act = Math.min(3, Math.max(1, b.quest?.act || B.hero?.campaign?.act || 1)); const tri = D.TRIPLE_BY_ACT[act - 1] * D.TEAM_TRIPLE_BONUS / D.TRIPLE_BY_ACT[0];
+  const n = b.fighters?.length || 2;
+  const rule = (icon, title, text) => h('li', {}, h('span', { class: 'tr-ic' }, HK.icon(icon)), h('div', {}, h('b', {}, title), h('small', {}, text)));
+  const open = !B.teamRulesSeen; B.teamRulesSeen = true; // open the first time; a tap folds it away after that
+  return h('details', { class: 'tm-rules', open }, h('summary', {}, HK.icon('star'), 'How teams work'),
+    h('ul', {},
+      rule('windup', 'Who the monsters go after', 'The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share.'),
+      rule('block', 'Hold the line', `If the monsters came at you and you are still standing at the end of the round: +${D.POINTS.heldLine} points. While you are the target, your blocks score double.`),
+      rule('atk', 'Team triples', `When two heroes roll the same triple in the same round, each gets +${tri} more. Attack rows (Weapons, Strength, Talent) count when you hit the same monster; guard columns (Head to Toe, Left, Right) count any time.`),
+      rule('magic', 'Heartbeat', `If every hero's heart die shows the same number, each of you gains ${n} magic (one for each hero).`),
+      rule('atk', 'Morale Boost', `A killing blow fires up the next teammate to strike: +${D.MORAL_BOOST} attack.`),
+      rule('windup', 'Turn order', 'Everyone acts by their feet roll, highest first. Ties go to the heroes, and round 1 is always the heroes’.'),
+      rule('heal', 'Helping a friend', `One team action a round: throw a potion from your belt, share ${D.SHARE_MAGIC} magic, or (once a battle, ${D.REVIVE_COST} magic) stand a fallen friend back up with ${D.REVIVE_HP} health.`),
+      rule('gold', 'Points and places', `Damage, blocks, kills, triples and helping all score points. Gold from the fallen is shared evenly; the top scorer gets half a share more${n >= 3 ? ', and second place a quarter more' : ''}. First place counts in your Hall of Fame.`),
+      rule('stagger', 'Tougher monsters', 'Monsters grow with your team’s real strength, so a team fight is as tense as a solo one. Smart play still wins it.')));
 }
 function showTeamDetail(kind) {
   const b = B.b; const t = TEAM.find((x) => x.id === kind); const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
