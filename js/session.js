@@ -64,17 +64,19 @@ export const holding = () => S.held > 0;
 export function send(cmd) {
   const run = async () => {
     const data = await Net.send(cmd);
-    if (data?.view) adoptNow(data.view);
+    if (data?.view) adoptAnswer(data.view);
     return data;
   };
   const p = S.chain.then(run, run);
   S.chain = p.catch(() => {});
   return p;
 }
-// A command's own answer is applied at once, even while the screen is holding other tables back.
-function adoptNow(v) {
+// A command's own answer is applied at once, even while the screen is holding other tables back. Like adopt, it never
+// replaces a newer table that is already waiting (a reply can arrive after the live feed brought a later one).
+export function adoptAnswer(v) {
   if (!v?.state) return;
   if (S.table && v.code === S.table.code && v.seq <= S.table.seq) return;
+  if (S.waiting && v.seq <= S.waiting.seq) return;
   if (S.held > 0) { S.waiting = v; return; }
   commit(v, 'sent');
 }
