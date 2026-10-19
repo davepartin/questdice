@@ -815,6 +815,13 @@ export function powerState(b, card) {
   const early = !!(card.minRound && b.round < card.minRound);
   return { spent, early, canPay: b.magic >= card.cost };
 }
+// Charges grow (Dave, Oct 2026: "the first round does three, the next four, the next five, the next six; that motivates you to keep
+// investing"): each stored charge is worth 1 more of each of its effects than the one before, so 4 charges of +5 give 5+6+7+8 = 26.
+export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => v + i);
+export function chargeGain(card, n, lvl = 0) {
+  const per = typeof card.per === 'number' ? { atk: card.per } : card.per || {};
+  return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, scaleNum(v * n + (n * (n - 1)) / 2, lvl)]));
+}
 export function castPower(b, id, { x, release } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
@@ -823,9 +830,9 @@ export function castPower(b, id, { x, release } = {}) {
     if (!n || (b.usedRound && b.usedRound[key])) return null;
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
     const lvl = powerLevel(b.hero, id); let total = 0;
-    const per = typeof card.per === 'number' ? { atk: card.per } : card.per;
-    for (const [k, v] of Object.entries(per)) {
-      const amt = scaleNum(v * n, lvl); total += amt;
+    const per = typeof card.per === 'number' ? { atk: card.per } : card.per; const gain = chargeGain(card, n, lvl);
+    for (const k of Object.keys(per)) {
+      const amt = gain[k]; total += amt;
       if (k === 'gold') b.goldEarned = (b.goldEarned || 0) + amt; else b.mods[k] = (b.mods[k] || 0) + amt;
       if (k === 'atk' && card.splash === 'half') b.mods.splash += Math.floor(amt / 2);
     }

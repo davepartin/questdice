@@ -80,7 +80,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : `Each extra magic adds a die${top || ` (up to ${k.max}d${k.dice.s})`}.`}${lvl}`; }
   if (k.kind === 'round') { const per = E.scaleNum(k.per, level); return `${per} × the round number${round ? ` (round ${round}: about +${per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`; }
-  if (k.kind === 'charge') return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}. Release them for ${fxWords(lvlFx(perOf(k), level))} each${lvl}.`;
+  if (k.kind === 'charge') { const first = Object.values(lvlFx(perOf(k), level))[0]; return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}. Each charge is worth more than the last: ${fxWords(lvlFx(perOf(k), level))} for the first, then ${E.chargeSteps(first, k.max).slice(1).join(', ')}${lvl}.`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
   if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(5, level)} attack, 5–6 +${E.scaleNum(9, level)} attack and 2 magic.`;
   return `${fxWords(lvlFx(k.fx, level))}${lvl}, this round.`;
@@ -225,8 +225,9 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
     } else if (r.charged) { // ---- a charge stored: the ring fills one more pip
       const per = perOf(k); const n = r.charged;
       const pips = h('div', { class: 'cr-charges' }, Array.from({ length: k.max }, (_, i) => h('i', { class: `${i < n - 1 ? 'on' : ''} ${i === n - 1 ? 'new' : ''}` }, i === n - 1 ? HK.icon('windup') : null)));
-      const now = Object.entries(per).map(([f, v]) => chip(f, v * n));
-      art.append(h('p', { class: 'dr-what' }, `Charge ${n} of ${k.max} stored. They wait for you, round after round.`), pips,
+      const now = Object.entries(E.chargeGain(k, n, level)).map(([f, v]) => chip(f, v)); void per;
+      const next = n < k.max ? Object.entries(E.chargeGain(k, n + 1, level)).map(([f, v]) => `${v} ${NAME[f] || f}`).join(', ') : '';
+      art.append(h('p', { class: 'dr-what' }, `Charge ${n} of ${k.max} stored. Each one is worth more than the last.${next ? ` One more and they release for ${next}.` : ''}`), pips,
         h('div', { class: 'cr-note' }, h('small', {}, 'Release them now for'), h('div', { class: 'cr-now' }, now)));
       later(450, () => { pips.querySelector('.new')?.classList.add('fill'); sfx.magic?.(); });
       finish(1050); skip = () => { pips.querySelector('.new')?.classList.add('fill'); finish(0); };
@@ -235,8 +236,9 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       const pips = h('div', { class: 'cr-charges burst' }, Array.from({ length: k.max }, (_, i) => h('i', { class: i < n ? 'on' : '' }, i < n ? HK.icon('windup') : null)));
       const nums = Object.fromEntries(Object.keys(gains).map((f) => [f, h('b', {}, '0')]));
       const rows = h('div', { class: 'cr-tally' }, Object.entries(nums).map(([f, el]) => h('span', { class: `pw-chip t-${TONE[f] || 'magic'}` }, HK.icon(FX_ICON[f] || 'magic'), el, ' ', NAME[f] || f)));
-      art.append(h('p', { class: 'dr-what' }, `${n} stored charge${n > 1 ? 's' : ''} let go: ${fxWords(per)} each.`), pips, rows); Object.keys(gains).forEach((f) => shown.add(f));
-      const step = (i) => { const pip = pips.children[i]; pip?.classList.add('pop'); sfx.dieSettle?.(); for (const [f, el] of Object.entries(nums)) count(el, Math.round((gains[f] * (i + 1)) / n), 260); };
+      const base = Object.values(per)[0] || 1; const steps = E.chargeSteps(base, n); const sumTo = (i) => steps.slice(0, i + 1).reduce((a, v) => a + v, 0); // each pip adds a little more than the last
+      art.append(h('p', { class: 'dr-what' }, `${n} stored charge${n > 1 ? 's' : ''} let go, each worth more than the last: ${steps.join(' + ')}.`), pips, rows); Object.keys(gains).forEach((f) => shown.add(f));
+      const step = (i) => { const pip = pips.children[i]; pip?.classList.add('pop'); sfx.dieSettle?.(); for (const [f, el] of Object.entries(nums)) count(el, Math.round((gains[f] * sumTo(i)) / sumTo(n - 1)), 260); };
       for (let i = 0; i < n; i++) later(500 + i * 330, () => { step(i); if (i === n - 1) finish(); });
       skip = () => { for (let i = 0; i < n; i++) pips.children[i]?.classList.add('pop'); for (const [f, el] of Object.entries(nums)) el.textContent = String(gains[f]); finish(0); };
     } else if (k.kind === 'round') { // ---- grows with the round: one pip per round lights up, the number climbs

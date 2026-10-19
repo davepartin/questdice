@@ -425,7 +425,7 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   castPower(b, 'rally'); b.usedRound = {}; castPower(b, 'rally');
   const before = { atk: b.mods.atk, block: b.mods.block };
   const rel = castPower(b, 'rally', { release: true });
-  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6);
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 7); assert.equal(b.mods.block - before.block, 7); // each charge 1 more than the last: 3 + 4
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {
@@ -542,7 +542,7 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   assert.equal(castPower(b, 'coil').charged, 1); assert.equal(castPower(b, 'coil'), null); // one charge a round
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 2);
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7);
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 5 + 6 + 7: each charge worth 1 more
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
