@@ -880,3 +880,11 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-tabs { grid-template-columns: repeat(4, 1fr); }
 .sx-tabs button { gap: .3rem; letter-spacing: .06em; font-size: .74rem; padding: 0 .2rem; }
 @media (max-width: 380px) { .sx-tabs button .ico { display: none; } }
+/* team games: the saved strip under the company bar (tap: how to come back) */
+.sx-partywrap { display: grid; gap: .35rem; }
+.sx-saved { display: flex; align-items: center; gap: .4rem; width: 100%; padding: .4rem .7rem; border-radius: 10px; border: 1px solid rgba(106, 240, 168, .35); background: rgba(16, 60, 40, .55);
+  color: #cfeedd; font-size: .78rem; text-align: left; cursor: pointer; }
+.sx-saved .ico svg { width: 1rem; height: 1rem; color: #6af0a8; }
+.sx-saved b { color: #6af0a8; }
+.sx-saved span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-saved em { font-style: normal; color: #ffe38a; font-weight: 700; white-space: nowrap; }

@@ -37,7 +37,9 @@ service cloud.firestore {
         && request.resource.data.state.size() < 900000;
 
       // Seated players may play (write the new table).
-      // A new player may take ONE seat while the room is still in the lobby, up to six.
+      // A phone that is not seated may add ONE seat for itself: to join while the room is still in the lobby (table.js keeps it
+      // to six heroes), or later to take back a hero's seat on a new phone (the phone first opens that hero's cloud save with its
+      // password; Oct 2026). Old phones' ids stay in the list, so it may grow past six; twelve is plenty.
       allow update: if signedIn()
         && request.resource.data.hostUid == resource.data.hostUid
         && request.resource.data.state is string
@@ -45,14 +47,13 @@ service cloud.firestore {
         && (
           (me() in resource.data.seatUids
             && request.resource.data.seatUids.hasAll(resource.data.seatUids)
-            && request.resource.data.seatUids.size() <= 6)
+            && request.resource.data.seatUids.size() <= 12)
           ||
-          (resource.data.phase == 'lobby'
-            && !(me() in resource.data.seatUids)
+          (!(me() in resource.data.seatUids)
             && request.resource.data.seatUids.hasAll(resource.data.seatUids)
             && request.resource.data.seatUids.size() == resource.data.seatUids.size() + 1
             && me() in request.resource.data.seatUids
-            && request.resource.data.seatUids.size() <= 6)
+            && request.resource.data.seatUids.size() <= 12)
         );
 
       // Only the host may close the room.

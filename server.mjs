@@ -9,7 +9,7 @@ import { randomBytes } from 'node:crypto';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createTable, joinTable, command, playerByToken, playerView, savePublic } from './js/table.js';
+import { createTable, joinTable, command, playerByToken, playerView, savePublic, reclaimSeat, seatByName, joinRefusal } from './js/table.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const TYPES = {
@@ -100,8 +100,9 @@ function joinRoom(body) {
   const room = roomOf(code);
   if (!room) return { status: 404, body: { error: 'No table with that code.' } };
   const token = randomBytes(18).toString('hex');
-  const joined = joinTable(room.table, { name: body.name, cls: body.cls, token, hero: body.hero });
-  if (!joined.ok) return { status: 400, body: { error: joined.error } };
+  // a hero opened from its cloud save takes back the seat it already has (the phone checked the password)
+  const joined = body.reclaim && seatByName(room.table, body.name) ? reclaimSeat(room.table, { name: body.name, token }) : joinTable(room.table, { name: body.name, cls: body.cls, token, hero: body.hero });
+  if (!joined.ok) return { status: 400, body: { error: joinRefusal(room.table, body.name, joined.error) } };
   room.touched = Date.now();
   publish(room);
   return { status: 200, body: { code, token, playerId: joined.player.id, view: decorate(playerView(room.table, joined.player.id), room.table) } };

@@ -6,7 +6,7 @@
 // phone can pick a hero without remembering the exact spelling; it never holds the hash or the save.
 // Each phone signs in as an anonymous guest; that guest id is its seat at the table.
 import { firebaseConfig } from './firebase-config.js';
-import { createTable, joinTable, command, playerByToken, playerView, saveTable, savePublic, loadTable } from './table.js';
+import { createTable, joinTable, command, playerByToken, playerView, saveTable, savePublic, loadTable, reclaimSeat, seatByName, joinRefusal } from './table.js';
 import * as SV from './save.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
@@ -87,7 +87,8 @@ export async function createSeat({ name, cls, table: tableName, hero, difficulty
   throw told('Every code is taken. Try again.');
 }
 
-export async function joinSeat({ code: raw, name, cls, hero }) {
+// reclaim: the hero was opened from its cloud save with the password, so it may take back the seat it already has at this table
+export async function joinSeat({ code: raw, name, cls, hero, reclaim = false }) {
   await ready();
   const code = cleanCode(raw);
   if (code.length !== 4) throw told('A table code is four letters.');
@@ -99,12 +100,21 @@ export async function joinSeat({ code: raw, name, cls, hero }) {
       const table = loadTable(data.state);
       const mine = playerByToken(table, fb.uid);
       if (mine) return { code, token: fb.uid, playerId: mine.id, view: viewFor(table, fb.uid) }; // already seated: come back in
+      const seats = data.seatUids.includes(fb.uid) ? data.seatUids : [...data.seatUids, fb.uid];
+      if (reclaim && seatByName(table, name)) { // this hero's seat, on a new phone
+        const back = reclaimSeat(table, { name, token: fb.uid }); if (!back.ok) throw told(back.error);
+        tx.update(roomRef(code), doc(table, { seatUids: seats }));
+        return { code, token: fb.uid, playerId: back.player.id, view: viewFor(table, fb.uid), reclaimed: true };
+      }
       const joined = joinTable(table, { name, cls, token: fb.uid, hero });
-      if (!joined.ok) throw told(joined.error);
-      tx.update(roomRef(code), doc(table, { seatUids: [...data.seatUids, fb.uid] }));
+      if (!joined.ok) throw told(joinRefusal(table, name, joined.error));
+      tx.update(roomRef(code), doc(table, { seatUids: seats }));
       return { code, token: fb.uid, playerId: joined.player.id, view: viewFor(table, fb.uid) };
     });
-  } catch (e) { throw oops(e, 'Could not join that table. Try again.'); }
+  } catch (e) {
+    if (reclaim && e?.code === 'permission-denied') throw told('The cloud does not hand seats to a new phone yet: its rules need one update (docs/FIREBASE.md). Your game is safe; rejoin from the phone you played on.');
+    throw oops(e, 'Could not join that table. Try again.');
+  }
 }
 
 export async function send(code, cmd) {

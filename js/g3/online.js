@@ -68,7 +68,7 @@ function sitAt({ mode, code, hero, back, pack }) {
   SCRUI.create({ pack, table: { mode, code, hero, pack, back: back || together, onDone: async (name, cls, x) => {
     const data = mode === 'host'
       ? await Net.createSeat({ name, cls, table: x.table || `${name}'s company`, hero: x.hero, difficulty: x.difficulty || x.hero?.difficulty, pack: x.pack || pack || x.hero?.campaign?.pack })
-      : await Net.joinSeat({ code: x.code, name, cls, hero: x.hero });
+      : await Net.joinSeat({ code: x.code, name, cls, hero: x.hero, reclaim: !!x.proven });
     sfx.level(); openTable(data.view);
   } } });
 }
@@ -132,10 +132,13 @@ function changed(prev, next, info) {
   if (!prev || prev.phase !== next.phase || shown !== next.phase) return show();
   update(prev, next, info);
 }
+// How far the table has come, in words (the Rejoin button and the saved strip say it)
+const whereOf = (t) => { const c = t?.company?.campaign; return c ? `Act ${['I', 'II', 'III'][c.act - 1] || c.act} · step ${c.step}` : ''; };
 export function show() {
   const t = Sess.current(); if (!t) return;
   if (t.phase !== 'victory') closeBrag();
   sync(t); shown = t.phase;
+  if (t.phase !== 'lobby') Net.tagSeat({ table: t.name, hero: Sess.me()?.name, where: whereOf(t) });
   switch (t.phase) {
     case 'lobby': return lobby(t);
     case 'road': return road(t);
@@ -205,8 +208,12 @@ export function partyBar() {
   const t = Sess.current(); if (!t) return null; const { emblem, ico } = K(); const you = Sess.me();
   const showReady = t.phase === 'road' || t.phase === 'camp';
   const tick = (p) => (t.phase === 'victory' ? p.seenBrag : showReady && p.ready);
-  return h('div', { class: 'sx-party', role: 'list', 'aria-label': 'The company' }, t.players.map((p) => h('span', { role: 'listitem', class: `pt ${p.id === you?.id ? 'you' : ''} ${tick(p) ? 'ready' : ''}`, style: { '--hue': K().CLS_HUE[p.cls] } },
+  const bar = h('div', { class: 'sx-party', role: 'list', 'aria-label': 'The company' }, t.players.map((p) => h('span', { role: 'listitem', class: `pt ${p.id === you?.id ? 'you' : ''} ${tick(p) ? 'ready' : ''}`, style: { '--hue': K().CLS_HUE[p.cls] } },
     emblem(p.cls), h('b', {}, p.name), tick(p) ? h('i', { class: 'pt-ok' }, ico('check')) : null)));
+  // Dave: "a very clear way to know your progress is saved, and how to get back in"
+  const saved = t.phase === 'lobby' ? null : h('button', { type: 'button', class: 'sx-saved', onclick: () => howToReturn(t) },
+    ico('check'), h('span', {}, h('b', {}, 'Saved'), ` · ${whereOf(t)} · Table ${t.code}`), h('em', {}, 'How to come back'));
+  return saved ? h('div', { class: 'sx-partywrap' }, bar, saved) : bar;
 }
 
 // ------------------------------------------------------------------------------------------------ road and quest board
@@ -368,6 +375,7 @@ export function menu() {
     h('div', { class: 'col' },
       X.ghost('Rules', () => { close(); X.showHowTo(); }),
       t?.phase === 'battle' && Sess.isHost() ? X.ghost('Retreat (every hero loses 15% gold). Live to try again.', () => { close(); askRetreat(); }) : null,
+      X.ghost('Your game is saved: how to come back', () => { close(); howToReturn(t); }),
       X.ghost('Step away (keep my seat)', () => { close(); stepAway(); }),
       X.ghost('Leave this table for good', () => { close(); askLeave(); }),
       X.ghost('Close', () => close()))));
@@ -376,6 +384,16 @@ function askRetreat() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Retreat?'),
     h('p', { class: 'muted' }, 'The whole company withdraws. Every hero drops 15% of their gold. Level, gear and perks stay. Tomorrow is still yours.'),
     h('div', { class: 'row end' }, X.ghost('Stay', () => close()), X.primary('Retreat', () => { close(); Sess.send({ type: 'retreat' }).catch(fail); }))));
+}
+// The saved strip's card: what is kept and the two ways back to this table.
+export function howToReturn(t = Sess.current()) {
+  const me = Sess.me()?.name || 'your hero';
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your game is saved'),
+    h('p', {}, `The table saves itself after every move: ${whereOf(t)}, with every hero's gold, gear, potions, perks and level. Close the browser whenever you like.`),
+    h('p', {}, h('b', {}, 'To come back: '), 'open the game on this phone and tap ', h('b', {}, `Rejoin ${t?.name || 'your table'}`), ' (on the title screen, or under Play together).'),
+    h('p', {}, h('b', {}, 'On another phone: '), 'Play together, Join a table, type ', h('b', {}, t?.code || 'the code'), `, choose Cloud save, and enter ${me}'s name and password. You get your seat back.`),
+    h('p', { class: 'muted' }, 'Only "Leave this table for good" gives a seat away.'),
+    h('div', { class: 'row end' }, X.primary('Got it', () => close()))));
 }
 // Home, but the seat stays: the title shows "Rejoin" and the table carries on without a word.
 export function stepAway() {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTable, joinTable, command, playerView, saveTable, loadTable, migrateTable } from '../js/table.js';
+import { createTable, joinTable, command, playerView, saveTable, loadTable, migrateTable, reclaimSeat, joinRefusal, playerByToken } from '../js/table.js';
 import * as D from '../js/data.js';
 import * as E from '../js/engine.js';
 import * as R from '../js/roads.js';
@@ -481,4 +481,20 @@ test('table games offer charms like solo: each hero their own (a boss: two to ch
   assert.equal(command(table, bea.id, { type: 'charm', id: offers.Bea[0], swap: full[0] }).ok, true);
   assert.deepEqual([...bea.hero.charms].sort(), [full[1], full[2], offers.Bea[0]].sort());
   assert.equal(playerView(table, bea.id).victory?.charmTaken?.Bea ?? table.rewards.charmTaken.Bea, offers.Bea[0]);
+});
+
+test('a hero takes their seat back on a new phone once the game has started (and a stranger is told how)', () => {
+  const { table, players } = make([['WizKid', 'wizard'], ['Smalls', 'dwarf']]);
+  begin(table, players);
+  const refused = joinTable(table, { name: 'Smalls', cls: 'dwarf', token: 'newphone1' });
+  assert.equal(refused.ok, false);
+  assert.match(joinRefusal(table, 'Smalls', refused.error), /Cloud save/);
+  assert.equal(joinRefusal(table, 'Nobody', refused.error), refused.error);
+  const step = table.company.campaign.step; const gold = players[1].hero.gold;
+  const back = reclaimSeat(table, { name: 'smalls', token: 'newphone1' });
+  assert.equal(back.ok, true); assert.equal(back.player.id, players[1].id);
+  assert.equal(playerByToken(table, 'newphone1').hero.name, 'Smalls');
+  assert.equal(playerByToken(table, players[1].token === 'newphone1' ? 'x' : 'tok1aaaa'), null, 'the old phone no longer holds the seat');
+  assert.equal(table.company.campaign.step, step); assert.equal(back.player.hero.gold, gold, 'same step, same gold');
+  assert.equal(reclaimSeat(table, { name: 'Nobody', token: 't' }).ok, false);
 });

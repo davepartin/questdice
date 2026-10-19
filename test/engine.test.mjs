@@ -765,7 +765,9 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
       for (const diff of ['easy', 'normal', 'hard', 'legendary']) {
         const h = newHero({ name: 'x', cls: 'knight', seed: 9 });
         h.difficulty = diff; h.campaign.act = act.id; h.campaign.step = step; h.campaign.wins = step === 1 ? 0 : 1;
-        assert.deepEqual(questsFor(h)[0].enemies, locked, `${act.name} step ${step} ${diff}`);
+        const q = questsFor(h)[0]; // the story's foes come first and stay; a wanderer may join after them
+        assert.deepEqual(q.enemies.slice(0, locked.length), locked, `${act.name} step ${step} ${diff}`);
+        assert.equal(q.enemies.length, locked.length + (q.wanderer ? 1 : 0));
       }
     }
   }

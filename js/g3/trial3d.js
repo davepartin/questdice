@@ -48,13 +48,15 @@ function buildMat(n) {
 }
 
 // The trial on screen now (a table can move on while a phone still watches it: online.js closes it then).
-let active = null;
-export function dismissTrial3D() { active?.(); }
+let active = null; let gen = 0; // gen: a dismiss while the table is still being built cancels that trial too
+export function dismissTrial3D() { gen++; active?.(); }
 export async function showTrial3D(trial, { title = '', members = [], own = true } = {}) {
   const champ = members.find((m) => m.name === trial.who && m.cls === trial.cls) || members.find((m) => m.name === trial.who) || members[0];
   if (!champ || !world.available || !world.stage) throw new Error('no table');
   const st = STATS[trial.stat] || STATS.wisdom; const slots = st.slots;
+  const myGen = gen;
   const bw = await world.buildTable({ hero: champ });
+  if (myGen !== gen) { if (world.battle === bw) { world.clear(); world.mode = null; } return; } // the table moved on while this was loading
   const stage = bw.stage; const tray = bw.tray; const cam = stage.trayCamera;
   tray.onSound = (kind, o) => { if (kind === 'hit') (sfx.dieHit || sfx.settle)?.(o?.speed); else (sfx.dieSettle || sfx.settle)?.(); };
   // your board: the tested dice show their biggest face; every other socket shows only its carved mark

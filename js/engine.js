@@ -1482,7 +1482,22 @@ export function roadsFor(hero, opts = {}) {
   // The very first fight is a lesson: a lone goblin on the standard road, so a new player can learn the dice without a crowd.
   if (c.act === 1 && s === 1 && !(c.wins > 0) && !locked) a = ['goblin'];
   else if (!locked && opts.random) a = encounterFor(hero); // Ascents and the balance tools
-  return [mk('battle', a, { useNames: !!locked }), mk('battle', bq, { perilous: true })];
+  const std = mk('battle', a, { useNames: !!locked });
+  return [withWanderer(std, c, act, s), mk('battle', bq, { perilous: true })];
+}
+// Wanderers (Dave, Oct 2026: "it's always a dog, a goblin and a little red dragon"): on some ordinary fights a monster from
+// outside this act's usual crowd wanders in, so a campaign meets more of the bestiary. The story's own foes keep their names;
+// the wanderer is extra, so the cast shares its health out (WANDER.share) to keep the fight about as hard as it was.
+export const WANDER = { chance: 0.45, from: 2, share: 0.72, never: ['foxrogue'] };
+function withWanderer(q, c, act, s) {
+  if (WANDER.chance <= 0 || s < WANDER.from || s >= QUESTS_PER_ACT || q.kind !== 'battle' || q.enemies.length >= ENEMY_CAP) return q;
+  const rng = makeRng(hashSeed(c.seed, c.act, s, 'wander'));
+  if (rng() >= WANDER.chance) return q;
+  const home = new Set([...act.pool.flat(), ...q.enemies]);
+  const roster = Object.keys(MONSTERS).filter((id) => MONSTERS[id].tier === 'minion' && !home.has(id) && !WANDER.never.includes(id));
+  if (!roster.length) return q;
+  const id = pick(rng, roster); const n = q.enemies.length;
+  return { ...q, enemies: [...q.enemies, id], wanderer: id, hpMult: q.hpMult * (n / (n + WANDER.share)) }; // (the story's names stay as written)
 }
 function attachNemesis(quest, campaign) {
   if (!campaign || quest.kind === 'boss' || quest.perilous) return quest;

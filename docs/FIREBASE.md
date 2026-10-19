@@ -46,6 +46,11 @@ shows the `qdRooms`, `qdHeroNames`, `qdHeroPublic` and `qdHeroes` blocks from `f
 
 ## Updating the rules later
 
+**Pending (19 Oct 2026): taking a seat back on a new phone.** `firestore.rules` now lets a phone that is not seated add one
+seat to a room after the lobby too (so a hero can take back their seat after opening their cloud save with the password),
+and allows up to 12 seat ids (old phones' ids stay in the list). Until these rules are published, everything else works,
+but "Join a table → Cloud save" on a game that has already started is refused with "That table will not let this phone in."
+
 Either paste `firestore.rules` into the console's Rules tab and Publish, or from the game folder:
 
 ```bash

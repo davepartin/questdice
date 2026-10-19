@@ -1,5 +1,5 @@
-// A table game's road, the way Dave's Rival Duo game met it: after the first fight the company picks a road choice with a
-// test roll. The roll and the result must come before the next place's story page, and that page's Continue must go on.
+// A table game's road, the way Dave's Rival Duo game met it: the company picks a road choice with a test roll (now before
+// the elite, step 5). The roll and the result must come before the next place's story page, and that page's Continue must go on.
 //   node dev/serve.mjs 8135 ; node dev/roadbeat.mjs
 import { chromium } from 'playwright-core';
 import { createTable, joinTable, command, playerView, saveTable } from '../js/table.js';
@@ -9,9 +9,9 @@ const table = createTable({ code: 'RDTE', seed: 777, name: 'Gerald Recovery', pa
 const ps = [['Ada', 'wizard'], ['Smalls', 'dwarf']].map(([name, cls], i) => joinTable(table, { name, cls, token: `tok${i}aaaa` }).player);
 for (const p of ps) command(table, p.id, { type: 'ready', name: p.name, cls: p.cls });
 console.log('start', command(table, ps[0].id, { type: 'start' }).ok, 'phase', table.phase);
-// walk to the road after the first fight
-table.company.campaign.step = 2; table.phase = 'road'; table.company.campaign.road = null;
-for (const m of table.company.members) { m.campaign.step = 2; m.campaign.road = null; }
+// walk to the road before the elite (the dice test)
+table.company.campaign.step = 5; table.company.campaign.wins = 4; table.phase = 'road'; table.company.campaign.road = null;
+for (const m of table.company.members) { m.campaign.road = null; }
 const ev = R.ensureRoad(table.company.members[0], table.company.members); table.company.campaign.road = table.company.members[0].campaign.road;
 const pick = ev.choices.find((c) => c.test && c.ok) || ev.choices.find((c) => c.ok);
 console.log('road', ev.title, '| choosing', pick.label, pick.test ? '(test roll)' : '');
@@ -27,7 +27,11 @@ const screen = () => p.evaluate(() => (document.querySelector('.sx-storybeat') ?
 await p.waitForTimeout(2500);
 await p.evaluate((v) => window.QD.online.openTable(v), view);
 console.log('session phase', await p.evaluate(() => window.QD.session.current()?.phase));
-await p.waitForTimeout(1500); console.log('1 on the road  ->', await screen());
+await p.waitForTimeout(1500);
+await p.evaluate(() => [...document.querySelectorAll('.sx-storybeat .sx-cta button')].find((e) => /Continue/.test(e.textContent))?.click()); await p.waitForTimeout(1500); // the elite's story page first
+console.log('1 on the road  ->', await screen());
+await p.screenshot({ path: '/tmp/claude-0/-home-user-questdice/8c0c8fef-1ceb-56a5-957d-404bdc291d52/scratchpad/rb_road.png' });
+if (process.env.HOWTO) { await p.evaluate(() => document.querySelector('.sx-saved')?.click()); await p.waitForTimeout(500); await p.screenshot({ path: '/tmp/claude-0/-home-user-questdice/8c0c8fef-1ceb-56a5-957d-404bdc291d52/scratchpad/rb_howto.png' }); await p.evaluate(() => [...document.querySelectorAll('button')].find((e) => /Got it/.test(e.textContent))?.click()); }
 console.log('  roll overlay:', await p.evaluate(() => { const l = document.querySelector('.t3, .tr-layer'); return l ? `${l.querySelector('.t3-head p, .tr-who')?.textContent} [${l.querySelector('.t3-go, .tr-go')?.textContent}]` : 'none'; }), '| this phone is', view.you?.name, '| roller', table.roadResult?.trial?.who);
 // nobody taps the roll here: the other phone moves the table on (Onward), and this phone's roll must close by itself
 await p.waitForTimeout(6000); console.log('2 after roll   ->', await screen());

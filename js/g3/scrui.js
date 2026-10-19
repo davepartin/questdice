@@ -397,7 +397,7 @@ export function create(opts = {}) {
   // Sit at the table with a hero this form already has in hand. go() may have set `busy` on its way here (creating or opening
   // the hero), so this must not bail on it (that was the "nothing happens" on Open the table). It says what it is doing,
   // and gives up after 20 seconds with a message rather than hanging.
-  let made = null; // a hero this form already created: a second tap reuses it instead of failing "already exists on this device"
+  let made = null; let madeProven = false; // a hero this form already has: a second tap reuses it instead of failing "already exists on this device" (and keeps knowing it was opened with its password)
   const pending = (text) => { msg.textContent = text; msg.classList.toggle('pending', !!text); };
   const seat = async (hero, extra = {}) => {
     busy = true; pending(T.mode === 'host' ? 'Opening the table…' : 'Finding your seat…');
@@ -411,7 +411,7 @@ export function create(opts = {}) {
     pending(''); msg.textContent = '';
     if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
     if (T && loaded) { loaded.difficulty = diff; return seat(loaded, { pack: pack.id }); }
-    if (T && made) { made.difficulty = diff; return seat(made, { pack: pack.id }); }
+    if (T && made) { made.difficulty = diff; return seat(made, { pack: pack.id, proven: madeProven }); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
     if (T && bring) {
@@ -420,8 +420,8 @@ export function create(opts = {}) {
       try {
         const hero = await X.openNamedHero(n, pw.value, pack.id);
         if (T?.mode === 'host') hero.difficulty = diff;
-        X.adopt(hero); sfx.coin(); made = hero;
-        await seat(hero, { pack: pack.id });
+        X.adopt(hero); sfx.coin(); made = hero; madeProven = true;
+        await seat(hero, { pack: pack.id, proven: true }); // opened with its password: it may take back its own seat at a table
       } catch (e) { pending(''); msg.textContent = e.message; sfx.error(); busy = false; }
       return;
     }
@@ -565,7 +565,8 @@ export function stepPick() {
 const campOf = () => X.S.hero?.campaign || X.members()?.[0]?.campaign;
 const foeOf = (id, camp = campOf()) => monsterOf(id, camp) || D.MONSTERS[id];
 const groupNames = (qOrIds) => {
-  if (qOrIds?.foeNames?.length) return qOrIds.foeNames.join(' + ');
+  // a wanderer (an extra monster from elsewhere in the bestiary) is named after the story's own foes
+  if (qOrIds?.foeNames?.length) return [...qOrIds.foeNames, ...(qOrIds.wanderer ? [`a wandering ${foeOf(qOrIds.wanderer, campOf()).name}`] : [])].join(' + ');
   const ids = qOrIds?.enemies || qOrIds || [];
   const n = {}; ids.forEach((id) => { n[id] = (n[id] || 0) + 1; });
   const camp = campOf();

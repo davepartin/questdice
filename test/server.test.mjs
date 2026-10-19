@@ -58,3 +58,21 @@ test('two phones can sit, and a lock stays private on the wire', async () => {
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('a hero takes their seat back from a new phone after the game has started', async () => {
+  const server = await start(0);
+  const port = server.address().port;
+  try {
+    const host = await post(port, { op: 'create', name: 'WizKid', cls: 'wizard', table: 'Cheese' });
+    const friend = await post(port, { op: 'join', code: host.data.code, name: 'Smalls', cls: 'dwarf' });
+    for (const t of [host.data.token, friend.data.token]) await post(port, { op: 'act', code: host.data.code, token: t, cmd: { type: 'ready' } });
+    await post(port, { op: 'act', code: host.data.code, token: host.data.token, cmd: { type: 'start' } });
+    const stranger = await post(port, { op: 'join', code: host.data.code, name: 'Smalls', cls: 'dwarf' });
+    assert.equal(stranger.status, 400); assert.match(stranger.data.error, /Cloud save/);
+    const back = await post(port, { op: 'join', code: host.data.code, name: 'Smalls', cls: 'dwarf', reclaim: true });
+    assert.equal(back.status, 200); assert.equal(back.data.playerId, friend.data.playerId);
+    const look = async (token) => (await fetch(`http://127.0.0.1:${port}/api/room/${host.data.code}?token=${encodeURIComponent(token)}`)).json();
+    assert.equal((await look(back.data.token)).you?.name, 'Smalls', 'the new phone holds the seat');
+    assert.notEqual((await look(friend.data.token)).you?.name, 'Smalls', 'the old phone no longer does');
+  } finally { server.close(); }
+});

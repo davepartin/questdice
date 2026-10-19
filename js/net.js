@@ -20,11 +20,12 @@ function remember(code, token, kind, about = {}) { // about: { table, hero } nam
   for (const get of stores()) { try { get().setItem(KEY, JSON.stringify(auth)); } catch { /* next store */ } }
 }
 // Keep the table's and hero's names with the seat (seats saved before names were kept get them the next time the table opens).
-export function tagSeat(about = {}) { const s = seat(); if (!s) return; remember(s.code, s.token, s.kind, { table: about.table || s.table || '', hero: about.hero || s.hero || '' }); }
-// The Rejoin button's words: the table's name (its code if an older phone never kept it) and whose seat it is.
+// `where` is how far the table has come (Act I · step 4), so the Rejoin button can say the game is waiting right there.
+export function tagSeat(about = {}) { const s = seat(); if (!s) return; if (about.where === s.where && (!about.table || about.table === s.table) && (!about.hero || about.hero === s.hero)) return; remember(s.code, s.token, s.kind, { table: about.table || s.table || '', hero: about.hero || s.hero || '', where: about.where || s.where || '' }); }
+// The Rejoin button's words: the table's name (its code if an older phone never kept it), whose seat it is, and where it waits.
 export function seatLabel(seat = savedSeat()) {
   if (!seat) return null;
-  return { title: `Rejoin ${seat.table || seat.code}`, sub: `Table ${seat.code}${seat.hero ? ` · ${seat.hero}'s seat` : ' · your seat is kept'}` };
+  return { title: `Rejoin ${seat.table || seat.code}`, sub: `Table ${seat.code}${seat.hero ? ` · ${seat.hero}'s seat` : ' · your seat is kept'}${seat.where ? ` · saved at ${seat.where}` : ''}` };
 }
 export function clearSeat() {
   disconnect();
@@ -69,9 +70,9 @@ export async function createSeat({ name, cls, table, hero, difficulty, pack }) {
   remember(data.code, data.token, kind, { table: data.view?.name || table || '', hero: name });
   return data;
 }
-export async function joinSeat({ code, name, cls, hero }) {
+export async function joinSeat({ code, name, cls, hero, reclaim = false }) {
   const kind = await tableKind();
-  const data = kind === 'cloud' ? await (await Cloud()).joinSeat({ code, name, cls, hero }) : await post({ op: 'join', code, name, cls, hero });
+  const data = kind === 'cloud' ? await (await Cloud()).joinSeat({ code, name, cls, hero, reclaim }) : await post({ op: 'join', code, name, cls, hero, reclaim });
   remember(data.code, data.token, kind, { table: data.view?.name || '', hero: name });
   return data;
 }

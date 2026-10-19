@@ -2,7 +2,8 @@
 // still be beatable.) A hero plays the campaign (driven by DRIVER, default the wise bot); at every step the SAME hero fights that
 // step's battle many times with each play style (tools/sim.mjs PLAY: first, smart, wise), so the gap is play, not build.
 //   SKILL=legendary node tools/skill.mjs [acts=3] [campaigns per class=2] [class]      (sh tools/skill-all.sh runs every class)
-import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle, buyPotion, takeDiamond, shatterDiamonds } from '../js/engine.js';
+import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newBattle, buyPotion, takeDiamond, shatterDiamonds, WANDER } from '../js/engine.js';
+if (process.env.WANDER) Object.assign(WANDER, JSON.parse(process.env.WANDER)); // e.g. WANDER='{"chance":0}' to measure without wanderers
 import { botRound, botCamp, botLoot, botArm, PLAY, setScore } from './sim.mjs';
 import { QUESTS_PER_ACT } from '../js/data.js';
 import * as DATA from '../js/data.js';

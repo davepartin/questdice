@@ -66,6 +66,20 @@ export function joinTable(table, { name, cls, token, hero }) {
   return { ok: true, player };
 }
 
+// Take a seat back on a new phone (Dave, Oct 2026: a phone that forgot its seat must not strand a game). The caller has proved
+// it is that hero (its cloud save opened with the password); the old phone's seat token is replaced, and the game goes on.
+export function seatByName(table, name) { const n = clean(name, 16).toLowerCase(); return table.players.find((p) => p.name.toLowerCase() === n) || null; }
+export function reclaimSeat(table, { name, token }) {
+  const p = seatByName(table, name);
+  if (!p) return fail('That hero is not at this table.');
+  if (!token) return fail('Missing seat.');
+  p.token = token; table.seq += 1;
+  return { ok: true, player: p };
+}
+// What to say when a started table turns a hero away: if the name is already seated, how to take the seat back.
+export function joinRefusal(table, name, error) {
+  return table.phase !== 'lobby' && seatByName(table, name) ? `${seatByName(table, name).name} already sits at this table. To take that seat back on this phone, choose Cloud save and enter ${seatByName(table, name).name}'s password.` : error;
+}
 export function playerByToken(table, token) {
   return table.players.find((p) => p.token === token) || null;
 }
