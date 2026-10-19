@@ -1487,8 +1487,9 @@ export function roadsFor(hero, opts = {}) {
 }
 // Wanderers (Dave, Oct 2026: "it's always a dog, a goblin and a little red dragon"): on some ordinary fights a monster from
 // outside this act's usual crowd wanders in, so a campaign meets more of the bestiary. The story's own foes keep their names;
-// the wanderer is extra, so the cast shares its health out (WANDER.share) to keep the fight about as hard as it was.
-export const WANDER = { chance: 0.45, from: 2, share: 0.72, maxCast: 2, never: ['foxrogue'] }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
+// the wanderer is extra, so the cast shares its health out (WANDER.share) and every hit is a little softer (flatCut), to keep
+// the fight about as hard as it was (tools/skill-all.sh with WANDER='{"chance":0}' measures the difference).
+export const WANDER = { chance: 0.45, from: 2, share: 1.3, flatCut: 3, maxCast: 2, never: ['foxrogue'] }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
 function withWanderer(q, c, act, s) {
   if (WANDER.chance <= 0 || s < WANDER.from || s >= QUESTS_PER_ACT || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast) return q;
   const rng = makeRng(hashSeed(c.seed, c.act, s, 'wander'));
@@ -1501,7 +1502,7 @@ function withWanderer(q, c, act, s) {
   for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(orng() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   let id = order[s % order.length]; if (q.enemies.includes(id)) id = order[(s + 1) % order.length];
   const n = q.enemies.length;
-  return { ...q, enemies: [...q.enemies, id], wanderer: id, hpMult: q.hpMult * (n / (n + WANDER.share)) }; // (the story's names stay as written)
+  return { ...q, enemies: [...q.enemies, id], wanderer: id, hpMult: q.hpMult * (n / (n + WANDER.share)), flat: Math.max(0, q.flat - WANDER.flatCut) }; // (the story's names stay as written; one more mouth to feed, so each hits a little softer)
 }
 function attachNemesis(quest, campaign) {
   if (!campaign || quest.kind === 'boss' || quest.perilous) return quest;
