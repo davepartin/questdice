@@ -47,7 +47,10 @@ function buildMat(n) {
   return g;
 }
 
-export async function showTrial3D(trial, { title = '', members = [] } = {}) {
+// The trial on screen now (a table can move on while a phone still watches it: online.js closes it then).
+let active = null;
+export function dismissTrial3D() { active?.(); }
+export async function showTrial3D(trial, { title = '', members = [], own = true } = {}) {
   const champ = members.find((m) => m.name === trial.who && m.cls === trial.cls) || members.find((m) => m.name === trial.who) || members[0];
   if (!champ || !world.available || !world.stage) throw new Error('no table');
   const st = STATS[trial.stat] || STATS.wisdom; const slots = st.slots;
@@ -104,9 +107,12 @@ export async function showTrial3D(trial, { title = '', members = [] } = {}) {
     h('div', { class: 't3-side me' }, mine, h('small', {}, who)));
   const myPlate = h('div', { class: 't3-plate me' }, h('b', {}, who), h('small', {}, `${st.name} · ${sizes(trial.heroSizes)}`));
   const verdict = h('div', { class: 't3-verdict', 'aria-live': 'polite' });
-  const go = h('button', { type: 'button', class: 'dr-ok tr-go t3-go' }, `Roll ${trial.heroSizes.length > 1 ? 'your dice' : 'your die'}`);
+  // At a table only one hero rolls the test; every other phone watches that roll (Dave: "time for WizKid to roll, time for
+  // Smalls to roll" did not match what was happening). The road already decided it; this shows it.
+  const dice = trial.heroSizes.length > 1 ? 'dice' : 'die';
+  const go = h('button', { type: 'button', class: 'dr-ok tr-go t3-go' }, own ? `Roll your ${dice}` : `Watch ${who} roll`);
   const head = h('header', { class: 't3-head' }, h('small', { class: 'dr-kicker' }, st.word), h('h3', {}, title),
-    h('p', {}, `${who} rolls ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`}. Highest total wins; a tie goes to you.`));
+    h('p', {}, `${own ? 'You roll' : `${who} rolls`} ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`}${own ? '' : ' for the company'}. Highest total wins; a tie goes to you.`));
   const layer = h('div', { class: `t3 st-${trial.stat}`, role: 'dialog', 'aria-label': `${st.word}: ${title}` }, head, foePlate, score, myPlate, h('footer', { class: 't3-foot' }, verdict, go));
   document.body.append(layer); document.body.classList.add('t3-on'); sfx.uiOpen?.();
 
@@ -141,13 +147,15 @@ export async function showTrial3D(trial, { title = '', members = [] } = {}) {
   // ---------------------------------------------------------------------------------------------- the throw
   const count = (el, to) => { el.textContent = String(to); el.parentElement.classList.remove('pop'); void el.offsetWidth; el.parentElement.classList.add('pop'); };
   return new Promise((resolve) => {
-    let state = 0;
+    let state = 0; let closed = false;
     const close = () => {
+      if (closed) return; closed = true; active = null;
       window.removeEventListener('resize', onResize);
       layer.classList.add('out'); document.body.classList.remove('t3-on');
-      world.clear(); world.mode = null;
+      if (world.battle === bw) { world.clear(); world.mode = null; } // a battle that started meanwhile keeps its table
       setTimeout(() => { layer.remove(); resolve(); }, 200);
     };
+    active = close;
     go.onclick = async () => {
       if (state === 2) { close(); return; }
       if (state) return; state = 1; go.disabled = true; sfx.click?.();

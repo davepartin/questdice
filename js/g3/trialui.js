@@ -11,13 +11,17 @@ const BOARD = [['NW', 'Weapon'], ['N', 'Head'], ['NE', 'Weapon'], ['W', 'Hand'],
 const dieEl = (size, tone, i) => { const n = h('b', {}, '?'); return { n, el: h('div', { class: `dr-die d${size} ${tone} tr-die`, style: { '--i': i } }, h('span', { class: 'dr-shape' }), n, h('small', { class: 'tr-size' }, `d${size}`)) }; };
 
 // On the real dice table when the 3D world is up (trial3d.js); the flat card below is the fallback.
-export async function showTrial(trial, { title = '', host = document.body, members = [] } = {}) {
+// own: this phone's hero rolls it (solo always; at a table only the hero the road picked; the others watch).
+export async function showTrial(trial, { title = '', host = document.body, members = [], own = true } = {}) {
   if (members.length) {
-    try { const T3 = await import('./trial3d.js'); return await T3.showTrial3D(trial, { title, members }); } catch (e) { if (!/no table/.test(String(e?.message))) console.warn('[trial] 3D table failed', e); }
+    try { const T3 = await import('./trial3d.js'); return await T3.showTrial3D(trial, { title, members, own }); } catch (e) { if (!/no table/.test(String(e?.message))) console.warn('[trial] 3D table failed', e); }
   }
-  return showTrialFlat(trial, { title, host });
+  return showTrialFlat(trial, { title, host, own });
 }
-function showTrialFlat(trial, { title = '', host = document.body } = {}) {
+// The table moved on (Onward, Go on without them, a battle began): take the trial off this phone.
+let flatClose = null;
+export async function dismissTrial() { flatClose?.(); try { (await import('./trial3d.js')).dismissTrial3D(); } catch { /* never opened */ } }
+function showTrialFlat(trial, { title = '', host = document.body, own = true } = {}) {
   return new Promise((resolve) => {
     const st = STATS[trial.stat] || STATS.wisdom; const slow = !reduced();
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, slow ? ms : 0));
@@ -31,7 +35,7 @@ function showTrialFlat(trial, { title = '', host = document.body } = {}) {
     const theirs = trial.oppSizes.map((s, i) => dieEl(s, 'tr-foe', i + 2));
     const sumMine = h('b', { class: 'tr-sum' }, '–'); const sumTheirs = h('b', { class: 'tr-sum' }, '–');
     const verdict = h('div', { class: 'tr-verdict' });
-    const go = h('button', { type: 'button', class: 'dr-ok tr-go' }, `Roll ${trial.heroSizes.length > 1 ? 'your dice' : 'your die'}`);
+    const go = h('button', { type: 'button', class: 'dr-ok tr-go' }, own ? `Roll ${trial.heroSizes.length > 1 ? 'your dice' : 'your die'}` : `Watch ${trial.who} roll`);
     const card = h('div', { class: `dr-card tr-card st-${trial.stat}`, role: 'dialog', 'aria-label': `${st.word}: ${title}` },
       h('small', { class: 'dr-kicker' }, st.word), h('h3', {}, title),
       h('p', { class: 'tr-who' }, `${trial.who} rolls ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`} for ${st.name.toLowerCase()}. Highest wins; a tie goes to you.`),
@@ -42,7 +46,9 @@ function showTrialFlat(trial, { title = '', host = document.body } = {}) {
       verdict, go);
     const layer = h('div', { class: 'dr-layer tr-layer' }, card);
     host.append(layer); sfx.uiOpen?.();
-    const close = () => { timers.forEach(clearTimeout); layer.classList.add('out'); setTimeout(() => { layer.remove(); resolve(); }, 220); };
+    let closed = false;
+    const close = () => { if (closed) return; closed = true; flatClose = null; timers.forEach(clearTimeout); layer.classList.add('out'); setTimeout(() => { layer.remove(); resolve(); }, 220); };
+    flatClose = close;
     let rolled = false;
     go.onclick = () => {
       if (rolled) { close(); return; }

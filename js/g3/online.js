@@ -84,7 +84,7 @@ export function join(prefill = '') {
 }
 
 // Sit down: start the session, listen for the table, put its screen up.
-function openTable(view) {
+export function openTable(view) { // exported for dev/roadbeat.mjs (sits a phone at a table it was handed)
   const S = X.S;
   S.net = { code: view.code }; Net.tagSeat({ table: view.name, hero: view.you?.name });
   S.practice = null; S.battle = null; S.company = null; S.hero = null;
@@ -127,6 +127,7 @@ let shown = '';
 function changed(prev, next, info) {
   if (!inRoom()) return;
   if (prev && next && prev.phase !== next.phase && (next.phase === 'camp' || next.phase === 'victory' || next.phase === 'defeat' || next.phase === 'board')) writeBack();
+  if (prev?.phase === 'road' && next?.phase !== 'road') import('./trialui.js').then((T) => T.dismissTrial()); // the table moved on: no roll left over the next screen
   if (B3.running()) { sync(next); B3.netChanged(prev, next); return; } // a battle is on screen: it decides when to show what
   if (!prev || prev.phase !== next.phase || shown !== next.phase) return show();
   update(prev, next, info);
@@ -239,7 +240,10 @@ const trialsSeen = new Set(); // which test rolls this phone has already watched
 function roadDone(t) {
   const res = t.roadResult || { title: 'The road', text: 'The company has chosen.', by: '' }; const you = Sess.me();
   const c = t.company.campaign; const tk = res.trial ? `${t.code}:${c.act}.${c.step}:${res.trial.attempt}` : '';
-  if (res.trial && !trialsSeen.has(tk)) { trialsSeen.add(tk); import('./trialui.js').then((T) => T.showTrial(res.trial, { title: res.title, members: t.company.members })).then(() => show()); }
+  if (res.trial && !trialsSeen.has(tk)) {
+    trialsSeen.add(tk); const own = Sess.hero()?.name === res.trial.who; // only that hero's phone rolls; the others watch
+    import('./trialui.js').then((T) => T.showTrial(res.trial, { title: res.title, members: t.company.members, own })).then(() => { if (Sess.current()?.phase === 'road') show(); });
+  }
   const waiting = t.players.filter((p) => !p.ready).map((p) => p.name);
   const { btn } = K();
   const rematch = res.trial && res.trial.canRematch && !you.ready ? btn(`Ask for a rematch · ${res.trial.rematchCost} gold`, () => Sess.send({ type: 'rematch' }).catch(fail), { kind: 'ghost', icon: 'reroll', cls: 'wide' }) : null;

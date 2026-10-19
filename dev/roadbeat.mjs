@@ -16,22 +16,25 @@ const ev = R.ensureRoad(table.company.members[0], table.company.members); table.
 const pick = ev.choices.find((c) => c.test && c.ok) || ev.choices.find((c) => c.ok);
 console.log('road', ev.title, '| choosing', pick.label, pick.test ? '(test roll)' : '');
 const r = command(table, ps[0].id, { type: 'choose', id: pick.id }); console.log('choose ok', r.ok, r.error || '', '| trial?', !!table.roadResult?.trial, '| phase', table.phase);
-const view = viewFor(table, ps[1].id);
+const me = Number(process.env.PHONE ?? 1); // PHONE=0 watches from the other hero's phone
+const view = viewFor(table, ps[me].id);
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
 p.on('pageerror', (e) => console.log('ERR', e.message));
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
 await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
-const screen = () => p.evaluate(() => (document.querySelector('.sx-storybeat') ? 'STORY: ' : document.querySelector('.trial, .tr-stage, [class*=trial]') ? 'TRIAL: ' : 'OTHER: ') + (document.querySelector('.sx-side, #app')?.textContent || '').replace(/\s+/g, ' ').slice(0, 110));
+const screen = () => p.evaluate(() => (document.querySelector('.sx-storybeat') ? 'STORY: ' : 'SCREEN: ') + (document.querySelector('.sx-side, #app')?.textContent || '').replace(/\s+/g, ' ').slice(0, 110));
 await p.waitForTimeout(2500);
-await p.evaluate((v) => { const { session: Sess, online } = window.QD; window.QD.S.net = { code: v.code }; Sess.open(v); online.show(); }, view);
+await p.evaluate((v) => window.QD.online.openTable(v), view);
 console.log('session phase', await p.evaluate(() => window.QD.session.current()?.phase));
 await p.waitForTimeout(1500); console.log('1 on the road  ->', await screen());
-// the dice settle, then Onward (sent to the table here by hand: no server in this check)
+console.log('  roll overlay:', await p.evaluate(() => { const l = document.querySelector('.t3, .tr-layer'); return l ? `${l.querySelector('.t3-head p, .tr-who')?.textContent} [${l.querySelector('.t3-go, .tr-go')?.textContent}]` : 'none'; }), '| this phone is', view.you?.name, '| roller', table.roadResult?.trial?.who);
+// nobody taps the roll here: the other phone moves the table on (Onward), and this phone's roll must close by itself
 await p.waitForTimeout(6000); console.log('2 after roll   ->', await screen());
 command(table, ps[0].id, { type: 'onward' }); const o = command(table, ps[1].id, { type: 'onward' }); console.log('onward', o.ok, o.error || '', 'phase', table.phase);
-await p.evaluate((v) => { window.QD.session.adopt(v, 'test'); window.QD.online.show(); }, viewFor(table, ps[1].id));
+await p.evaluate((v) => { window.QD.session.adopt(v, 'test'); window.QD.online.show(); }, viewFor(table, ps[me].id));
 await p.waitForTimeout(1200); console.log('3 board        ->', await screen());
+console.log('  roll overlay left over:', await p.evaluate(() => !!document.querySelector('.t3, .tr-layer')));
 await p.evaluate(() => [...document.querySelectorAll('.sx-cta .sx-btn')].find((e) => /Continue/.test(e.textContent))?.click());
 await p.waitForTimeout(1200); console.log('4 after Continue ->', await screen());
 await b.close();
