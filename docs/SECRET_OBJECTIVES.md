@@ -160,6 +160,11 @@ The writer's pack may re-voice any card to fit its story; the rule stays the sam
 
 ## Building it, step by step
 
+Built (Oct 2026): steps 1 and 2, in js/secrets.js (cards, deal, judge, payouts), js/table.js (the `envelope` phase, the Reveal at
+victory and defeat; the host can push past a quiet phone, whose offered bribe counts as declined), js/g3/scrui.js (`envelope()`,
+`revealPanel()`) and solo in js/ui.js. Still to come: Final Envelopes for bosses, writer-pack voices, the host's Every / Sometimes
+/ Off setting (`table.envelopes`, on unless set to 'off'), and the Hall of Fame view of `hero.record.secrets`.
+
 1. **Envelopes and the Reveal** for cover cards, rivalries and challenges; payouts on the rewards screen; the two new counts
    (magic damage, biggest round).
 2. **Bribes**: offered (Accept/Decline) and forced, the bribe payout table, Honor, the "crooks" line.

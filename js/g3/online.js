@@ -5,6 +5,7 @@
 // What this file does: open or join a table, then, whenever the table changes phase, put the right screen up:
 //   lobby   gather round the fire, share the code, ready up, the host starts
 //   road    a road event the company decides together        board   the quest board (the host or anyone picks)
+//   envelope  every hero's secret objective (secrets.js), read in private before the fight
 //   battle  the 3D battle, one hero per phone (battle3d.js, net mode)
 //   victory / defeat   spoils, perks, back to camp               camp   every hero's own camp, then ready up
 // Rules live in table.js (commands) and engine.js; this file only decides what is on screen and what to send.
@@ -143,6 +144,7 @@ export function show() {
     case 'lobby': return lobby(t);
     case 'road': return road(t);
     case 'board': return board(t);
+    case 'envelope': return envelope(t);
     case 'battle': return battle(t);
     case 'victory': return victory(t);
     case 'defeat': return defeat(t);
@@ -265,6 +267,15 @@ function board(t) {
   SCRUI.board(); void t;
 }
 export function startQuest(q) { Sess.send({ type: 'quest', id: q.id }).catch(fail); }
+// ------------------------------------------------------------------------------------------------ secret objectives
+// Every hero reads their own envelope (secrets.js); the battle starts when all have answered (the host can push past a quiet phone).
+function envelope(t) {
+  const v = Sess.view()?.envelope; if (!v?.card) return placeholder(t);
+  const you = Sess.hero()?.name; const waiting = v.waiting.filter((n) => n !== you);
+  const { btn } = K();
+  const push = Sess.isHost() && waiting.length ? h('div', { class: 'sx-push' }, btn('Go on without them', () => Sess.send({ type: 'push' }).catch(fail), { kind: 'ghost', icon: 'chevron', iconAfter: true, cls: 'wide', aria: 'Start the battle without the heroes who have not read their envelope' })) : null;
+  SCRUI.envelope(v.card, { questName: v.questName, waiting, extra: push, onAnswer: (accept) => Sess.send({ type: 'envelope', accept }).catch(fail) });
+}
 // ------------------------------------------------------------------------------------------------ battle
 function battle(t) {
   if (B3.running()) return;
@@ -358,13 +369,13 @@ function victory(t) {
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, reopen, rows, perks, charms, loot)));
+      partyBar(), note, reopen, rows, SCRUI.revealPanel(Sess.view()?.reveal, hero.name), perks, charms, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
 function defeat(t) {
   const hero = Sess.hero(); X.S.hero = hero;
-  SCRUI.defeat(!!t.retreat, t.loss || 0);
+  SCRUI.defeat(!!t.retreat, t.loss || 0, Sess.view()?.reveal);
   if (!SCR.defeat(hero, t.quest?.place)) SCR.enter('camp', { hero }, `defeat:${hero.name}`);
 }
 

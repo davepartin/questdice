@@ -20,6 +20,7 @@ import * as SCRUI from './g3/scrui.js';
 import * as TUT from './g3/tutorial.js';
 import * as RO from './readout.js';
 import * as DAY from './daily.js';
+import * as SO from './secrets.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -652,9 +653,23 @@ function startQuest(q) {
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
-  RO.reset();
-  if (world.available && !S.net) { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); return; }
+  RO.reset(); S.envelope = null;
+  if (world.available && !S.net) {
+    const go = () => { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); };
+    if (members.length > 1) return go();
+    // a secret challenge before the fight (secrets.js; solo gets challenge cards only)
+    const hero = members[0];
+    S.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: [hero], enemies: S.battle.enemies, salt: `${quest.id}:${hero.stats.battles}` });
+    return SCRUI.envelope(SO.cardView(S.envelope, hero.name), { questName: quest.name, solo: true, onAnswer: () => { SO.answer(S.envelope, hero.name); go(); } });
+  }
   renderReset();
+}
+// After a solo battle: open the envelope, pay it, and keep the Reveal line for the rewards screen.
+function revealSolo(won) {
+  const env = S.envelope; S.envelope = null; const hero = S.hero;
+  if (!env || !S.battle || S.battle.fighters || !hero) return null;
+  const j = SO.judge(env, S.battle, { won }); SO.payOut(j, { [hero.name]: hero });
+  return { won, voice: env.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, line: r.line })) };
 }
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
@@ -921,9 +936,10 @@ function showVictory() {
     r.repeat = !first;
   }
   const quest = S.quest;
+  const reveal = party ? null : revealSolo(true);
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
+  S.rewards = { ...r, reveal, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   if (winBeat) return showStory({ id: winBeat.id, act: winBeat.act }, renderVictory);
   renderVictory();
@@ -962,9 +978,10 @@ function defeat(retreat) {
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }
   if (S.battle) for (const hero of heroes) { const f = S.battle.fighters?.find((x) => x.hero === hero) || S.battle; E.recordBattle(hero, { points: E.pointsOf(f), heroes: heroes.length, won: false }); }
+  const reveal = revealSolo(false);
   persist();
   sfx.lose();
-  if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss);
+  if (SCRUI.on() && world.battle) return SCRUI.defeat(retreat, loss, reveal);
   mount(h('header', { class: 'victory defeat' }, h('div', { class: 't-eyebrow' }, S.quest?.name || ''), h('h1', {}, retreat ? 'You withdraw' : 'You have fallen'),
     h('p', { class: 'muted' }, retreat ? 'A wise person lives to fight tomorrow. Tomorrow is still yours.' : 'The dark wins this round. It does not get to keep you. Up you get.')),
   section('', h('p', {}, loss ? `You dropped ${loss} 🪙 in the dust. Coins can be found again.` : 'You lost nothing but pride, and pride grows back.'), h('p', { class: 'muted' }, 'Your level, gear and perks are safe. Rest at camp, then try again.')),

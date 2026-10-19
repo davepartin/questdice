@@ -295,6 +295,29 @@
 .cx-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.25; } .cx-copy b { font-family: var(--font-display); font-weight: 800; font-size: 1.02rem; color: #fff; } .cx-copy small { color: var(--dim); font-size: .8rem; margin-top: .1rem; } .sx-choice > .ico { color: var(--gold); opacity: .6; }
 .sx-choice.off { opacity: .45; } .sx-choice.off .cx-seal { filter: grayscale(.8); }
 
+/* ---------------------------------------------------------------- secret objectives: the Envelope and the Reveal */
+/* your card: a sealed letter in warm parchment ink, a red wax seal on top, the rule and the prize in plain words */
+.sx-envelope .sx-tale { margin-bottom: .2rem; }
+.env-card { position: relative; margin-top: 1.5rem; padding: 1.9rem 1.3rem 1.1rem; border-radius: 12px; color: #2a1c08; pointer-events: auto; text-align: center;
+  background: radial-gradient(120% 80% at 50% 0%, #fff6dc, #ecd7a6 70%, #d9bd82); border: 1px solid #b8862e; box-shadow: inset 0 0 0 4px rgba(255, 246, 220, .5), inset 0 0 0 5px rgba(150, 100, 30, .35), 0 18px 44px rgba(0, 0, 0, .55);
+  animation: sxrise .8s .15s var(--ease-snap) both; }
+.env-seal { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 50%; color: #f4d9d4;
+  background: radial-gradient(circle at 35% 28%, #d0463a, #7a1018 70%); border: 2px solid #5a0c14; box-shadow: inset 0 0 0 2px rgba(255, 190, 170, .25), 0 4px 10px rgba(0, 0, 0, .5); }
+.env-seal .ico svg { width: 1.4rem; height: 1.4rem; }
+.env-eye { font-family: var(--font-display); font-weight: 800; font-size: .66rem; letter-spacing: .3em; text-transform: uppercase; color: #8a2a1a; }
+.sx-side .env-card .env-name { margin: .25rem 0 .5rem; -webkit-text-fill-color: currentColor; background: none; text-shadow: none; letter-spacing: 0; text-transform: none; font-family: var(--font-story); font-weight: 700; font-size: clamp(1.6rem, 3vw, 2rem); line-height: 1.1; color: #2a1404; }
+.env-flavor { margin: 0 0 .7rem; font-family: var(--font-story); font-style: italic; font-size: 1.12rem; line-height: 1.5; color: #4a3414; text-wrap: pretty; }
+.env-rule { margin: 0 0 .5rem; padding: .55rem .7rem; border-radius: 8px; background: rgba(120, 70, 10, .12); border: 1px dashed rgba(120, 70, 10, .45); font-weight: 800; font-size: 1rem; line-height: 1.35; color: #2a1404; }
+.env-pay { display: flex; align-items: flex-start; justify-content: center; gap: .35rem; margin: 0; font-size: .88rem; line-height: 1.35; color: #5a3a10; text-align: left; } .env-pay .ico { flex: none; margin-top: .05rem; }
+.env-cover { display: flex; flex-direction: column; gap: .2rem; margin: .8rem 0 .2rem; padding: .7rem .9rem; border-radius: 10px; text-align: center; border: 1px solid var(--hair); background: rgba(12, 12, 24, .8); }
+.env-cover small { color: var(--dim); font-size: .8rem; } .env-cover b { font-family: var(--font-story); font-size: 1.2rem; font-style: italic; color: var(--gold-hi); }
+.env-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin-top: .6rem; }
+.env-sealed { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: .7rem 0 .2rem; color: var(--gold-hi); font-weight: 700; }
+.sx-reveal .rv-list { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .45rem; }
+.rv-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(12, 12, 24, .55); }
+.rv-row p { margin: 0; flex: 1; text-align: left; font-size: .92rem; line-height: 1.4; color: var(--text); } .rv-row.you { border-color: var(--hair); background: rgba(40, 28, 12, .55); }
+.rv-gold { flex: none; display: inline-flex; align-items: center; gap: .2rem; font-weight: 800; color: #ffd34a; } .rv-row.down .rv-gold { color: #ff8a7a; }
+
 /* ---------------------------------------------------------------- victory / defeat */
 .vc-head, .df-head { display: flex; flex-direction: column; gap: .2rem; align-items: center; text-align: center; }
 .vc-head p, .df-head p { margin: 0; color: var(--dim); font-family: var(--font-story); font-size: 1.15rem; font-style: italic; } .vc-head .sx-eye, .df-head .sx-eye { margin-top: 0; }

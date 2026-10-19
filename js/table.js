@@ -1,6 +1,7 @@
 // One table, many phones. The server holds the company. Each phone sends only its own
 // choices. Monster intentions are rolled when the round opens, before any hero locks.
 // The round resolves once, when every living hero has locked or been skipped.
+import * as SO from './secrets.js';
 import { CLASSES, SLOTS, CHARM_MAX, normalizeDifficulty, uniqueColors, claimColor, colorIdOf } from './data.js';
 import * as E from './engine.js';
 import * as R from './roads.js';
@@ -116,6 +117,7 @@ function dispatch(table, player, cmd) {
     case 'upgrade': return upgrade(table, player, cmd);
     case 'op': return heroOp(table, player, cmd);
     case 'push': return push(table, player);
+    case 'envelope': return openEnvelope(table, player, cmd);
     case 'buy': return buy(table, player, cmd);
     case 'potion': return potion(table, player);
     case 'equip': return equip(table, player, cmd);
@@ -316,8 +318,36 @@ function startQuest(table, cmd) {
   table.battle = E.newPartyBattle(members(table), quest, rng);
   for (const f of table.battle.fighters) { f.locked = false; f.skipped = false; }
   table.lastReport = null;
+  table.reveal = null;
+  // Secret objectives (docs/SECRET_OBJECTIVES.md): every hero opens an envelope first; the fight starts when all have answered
+  if (table.envelopes !== 'off') {
+    table.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: members(table), enemies: table.battle.enemies, salt: `t${table.seq}` });
+    table.phase = 'envelope';
+    return ok();
+  }
+  table.envelope = null;
   table.phase = 'battle';
   return ok();
+}
+// Your envelope: Got it (or Accept / Decline for an offered bribe). When every hero has answered, the battle begins.
+function openEnvelope(table, player, cmd) {
+  if (table.phase !== 'envelope' || !table.envelope) return fail('There is no envelope now.');
+  if (!SO.answer(table.envelope, player.hero.name, { accept: !!cmd.accept })) return fail('There is no envelope for you.');
+  return beginAfterEnvelopes(table);
+}
+function beginAfterEnvelopes(table) {
+  if (!SO.everyoneAnswered(table.envelope, members(table).map((m) => m.name))) return ok();
+  for (const f of table.battle.fighters) { const c = table.envelope.cards[f.hero.name]; if (c?.id === 'pact' && c.accepted) f.pactBribe = true; }
+  table.phase = 'battle';
+  return ok();
+}
+// After the battle: every card is revealed and paid (won or lost).
+function revealEnvelopes(table, won) {
+  const env = table.envelope; const b = table.battle; if (!env || !b) return;
+  const j = SO.judge(env, b, { won });
+  SO.payOut(j, Object.fromEntries(members(table).map((m) => [m.name, m])));
+  table.reveal = { won, voice: env.voice, crooks: j.crooks, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, line: r.line })) };
+  table.envelope = null;
 }
 
 function goCamp(table) {
@@ -356,6 +386,10 @@ function upgrade(table, player, cmd) {
 // their pick of the spoils is passed, and they count as ready.
 function push(table, player) {
   if (player.id !== table.hostId) return fail('Only the host can move the table on.');
+  if (table.phase === 'envelope' && table.envelope) { // a phone went quiet on its envelope: its card stands, an offered bribe declined
+    for (const m of members(table)) if (!table.envelope.answered[m.name]) SO.answer(table.envelope, m.name, { accept: false });
+    return beginAfterEnvelopes(table);
+  }
   if (table.phase === 'road') {
     if (!table.company.campaign.road?.done) return fail('Choose a road first.');
     table.players.forEach((p) => { p.ready = true; }); table.phase = 'board'; table.players.forEach((p) => { p.ready = false; });
@@ -607,6 +641,7 @@ function team(table, player, cmd) {
 }
 function enterVictory(table) {
   const b = table.battle;
+  revealEnvelopes(table, true);
   const levels = {};
   for (const f of b.fighters) levels[f.hero.name] = f.hero.level;
   const r = E.partyRewards(b);
@@ -695,6 +730,7 @@ function passLoot(table, player) {
   return ok();
 }
 function enterDefeat(table, retreatFlag) {
+  revealEnvelopes(table, false);
   let loss = 0;
   for (const m of members(table)) {
     const cut = Math.floor(m.gold * 0.15);
@@ -772,6 +808,11 @@ export function playerView(table, playerId) {
     }));
     return base;
   }
+  if (table.phase === 'envelope' && table.envelope) {
+    base.envelope = { card: me ? SO.cardView(table.envelope, me.name) : null, waiting: members(table).filter((m) => !table.envelope.answered[m.name]).map((m) => m.name), questName: table.quest?.name || '' };
+    base.hero = me ? clone(me) : null;
+    return base;
+  }
   if (table.phase === 'battle' && table.battle) {
     const f = me && fighterOf(table, player);
     const stage = f ? stageOf(f) : 'down';
@@ -795,6 +836,7 @@ export function playerView(table, playerId) {
     base.hero = f ? base.battle.me.hero : (me ? clone(me) : null);
     return base;
   }
+  if ((table.phase === 'victory' || table.phase === 'defeat') && table.reveal) base.reveal = table.reveal; // every secret card, after the battle
   if (table.phase === 'victory' && table.rewards) {
     const r = table.rewards;
     base.victory = {

@@ -663,6 +663,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
     mods: blankMods(), nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
+  b.magic0 = b.magic; b.potions0 = b.potions; // for secret objectives
   dressNemesis(b.enemies, quest.nemesis);
   beginReset(b);
   return b;
@@ -1029,6 +1030,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   award(b, rep.points);
 
   b.report = rep;
+  logRound(b, { hero, board: b.board, mods: m, _dealt: b.stats.dealt - (rep.dealtBefore ?? b.stats.dealt), _killed: rep.killed, T, ev, straight, actionsLeft: b.actionsLeft, hp: b.hp, magic: b.magic }, { blocked: rep.absorbed || 0 });
   if (living().length === 0) { b.outcome = 'victory'; b.phase = 'done'; }
   else if (b.hp <= 0) { b.outcome = 'defeat'; b.phase = 'done'; }
   else beginReset(b);
@@ -1628,10 +1630,11 @@ function makeFighter(hero) {
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: blankPartyStats(), contrib: 0,
+    magic0: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), potions0: potionStock(hero), // for secret objectives
   };
 }
 function blankPartyStats() {
-  return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false };
+  return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
 const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
@@ -1741,12 +1744,23 @@ export function teamAction(b, from, kind, to) {
   if (b.fighters[b.active]) commitFighter(b);
   const r = teamActionInfo(b, from, kind, to); if (!r.ok) { if (b.fighters[b.active]) focusFighter(b, b.active); return r; }
   const F = b.fighters[from]; const T = b.fighters[to];
-  if (kind === 'potion') { if (drinkPotion(F, T)) F.stats.potionsThrown = (F.stats.potionsThrown || 0) + 1; }
-  else if (kind === 'magic') { F.magic -= SHARE_MAGIC; const got = Math.min(magicCapOf(T.hero), T.magic + SHARE_MAGIC) - T.magic; T.magic += got; F.stats.magicShared = (F.stats.magicShared || 0) + got; award(F, SHARE_MAGIC * POINTS.magicGift); }
-  else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); T.board = null; F.stats.revives = (F.stats.revives || 0) + 1; award(F, POINTS.revive); }
+  if (kind === 'potion') { const before = T.hp; if (drinkPotion(F, T)) { F.stats.potionsThrown = (F.stats.potionsThrown || 0) + 1; F.stats.healGiven = (F.stats.healGiven || 0) + (T.hp - before); } }
+  else if (kind === 'magic') { F.stats.shares = (F.stats.shares || 0) + 1; F.magic -= SHARE_MAGIC; const got = Math.min(magicCapOf(T.hero), T.magic + SHARE_MAGIC) - T.magic; T.magic += got; F.stats.magicShared = (F.stats.magicShared || 0) + got; award(F, SHARE_MAGIC * POINTS.magicGift); }
+  else if (kind === 'revive') { F.magic -= REVIVE_COST; F.reviveUsed = true; T.hp = Math.min(T.maxHp, REVIVE_HP); F.stats.healGiven = (F.stats.healGiven || 0) + T.hp; T.board = null; F.stats.revives = (F.stats.revives || 0) + 1; award(F, POINTS.revive); }
   F.teamRound = b.round; F.contrib = F.points;
   if (b.fighters[b.active]) focusFighter(b, b.active);
   return { ok: true };
+}
+// The round log for secret objectives (secrets.js judges the cards from it): what each hero did this round.
+function logRound(b, f, { blocked = 0, leader = false, target = null } = {}) {
+  const bd = f.board || {}; const v = (s) => bd[s]?.v || 0; const m = f.mods || {};
+  const used = rerollTotal() - (f.actionsLeft ?? rerollTotal());
+  (b.secretLog ||= []).push({
+    r: b.round, name: f.hero.name, dealt: f._dealt || 0, magic: Math.min(f._dealt || 0, (m.atk || 0) + (m.pierce || 0) + (m.splash || 0) + (m.aoe || 0)),
+    kills: [...(f._killed || [])], blocked, blk: f.T?.block || 0, gold: f.T?.gold || 0, triples: (f.ev?.triples || []).length, straight: f.ev?.straight ? (f.straight || 'atk') : null,
+    N: v('N'), W: v('W'), E: v('E'), S: v('S'), C: v('C'), talents: ['SW', 'SE'].filter((sl) => bd[sl] && isActive(f.hero, sl) && specialFace(f.hero, sl, bd[sl].v)).length,
+    leader, target, hp: f.hp, mp: f.magic, paid: Math.max(0, used - RULES.free),
+  });
 }
 export function resolveParty(b) {
   // Cards stack: two heroes can both soften a blow. A road blessing is one fact about the fight, so it applies once.
@@ -1757,7 +1771,7 @@ export function resolveParty(b) {
   const acting = b.fighters.filter((f) => f.hp > 0 && f.board);
   for (const f of acting) {
     const { ev, T } = totalsFor(f);
-    f.ev = ev; f.T = T; f._dealt = 0; f._kills = 0; f._team = 0;
+    f.ev = ev; f.T = T; f._dealt = 0; f._kills = 0; f._team = 0; f._killed = [];
     if (ev.offense3 || ev.defense3) f.hero.stats.triples++;
     if (ev.straight) f.hero.stats.straights++;
     f.goldEarned += T.gold;
@@ -1812,7 +1826,7 @@ export function resolveParty(b) {
     tgt.lastHurt = T.pierce > T.atk ? 'pierce' : (f.ev.splash || f.mods?.aoe) ? 'magic' : T.block > T.atk ? 'tank' : 'blade';
     const guarded = Math.min(pool, T.atk);
     if (guardLeft.has(tgt.uid)) guardLeft.set(tgt.uid, pool - guarded);
-    const dmg = Math.max(0, T.atk - guarded) + T.pierce;
+    const dmg = Math.floor((Math.max(0, T.atk - guarded) + T.pierce) * (f.pactBribe ? 0.5 : 1)); // The Pact (a secret bribe): half damage
     const dealt = Math.min(tgt.hp, dmg);
     tgt.hp = Math.max(0, tgt.hp - dmg);
     f.stats.dealt += dealt; f._dealt += dealt;
@@ -1820,7 +1834,7 @@ export function resolveParty(b) {
     if (burn) { const k = snap.indexOf(f); if (k >= 0) taken[k] += burn; }
     const killed = tgt.hp <= 0;
     if (killed) {
-      rep.killed.push(tgt.uid); f._kills++; f.stats.kills = (f.stats.kills || 0) + 1;
+      rep.killed.push(tgt.uid); f._kills++; f.stats.kills = (f.stats.kills || 0) + 1; (f._killed ||= []).push(tgt.uid);
       if (tgt.tier === 'boss') f.stats.bossKill = true;
       moral = { from: f.hero.name, n: MORAL_BOOST };
       let pot = tgt.carried;
@@ -1922,6 +1936,7 @@ export function resolveParty(b) {
     let hp = Math.min(f.maxHp, hpBefore + T.heal) - taken[i];
     f.hp = Math.max(0, Math.min(f.maxHp, hp));
     if (f.hp <= 0 && hasCharm(f.hero, 'phoenix') && !f.phoenixUsed) { f.phoenixUsed = true; f.hp = Math.min(f.maxHp, 10); (rep.phoenix ||= []).push(f.hero.name); }
+    if (f.pactBribe && f.hp < 1) f.hp = 1; // ...and the monster keeps its promise: never knocked out
     if (f.boon?.sick && f.hp > 1) { const n = Math.min(f.boon.sick, f.hp - 1); f.hp -= n; (rep.sick ||= []).push({ name: f.hero.name, n }); } // the road's bug: never the last point
     f.stats.healed += healed; f.stats.taken += taken[i];
     f.stats.blocked = (f.stats.blocked || 0) + absorbed[i];
@@ -1939,6 +1954,7 @@ export function resolveParty(b) {
       name: f.hero.name, taken: taken[i], absorbed: absorbed[i], healed,
       hpAfter: f.hp, magicAfter: f.magic, gold: T.gold, feet: f.board.S.v, leader: i === 0, contrib: f.contrib, points: pts, total: pointsOf(f),
     });
+    logRound(b, f, { blocked: absorbed[i], leader: i === 0 && snap.length > 1, target: b.enemies[f.target]?.uid ?? null });
   });
   // Heroes who never rolled (already down) still appear, unchanged.
   for (const f of b.fighters) if (!snap.includes(f)) {

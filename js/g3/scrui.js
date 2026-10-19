@@ -738,6 +738,42 @@ export function roadResult(res, o = {}) {
   lay('road');
 }
 
+// ------------------------------------------------------------------------------------------------ secret objectives (secrets.js)
+// The Envelope: the voice's scene (the same on every phone), your own card, the cover line to say out loud, and two buttons in the
+// same places on every phone (Got it / Hmm…, or Accept / Decline for an offered bribe), so nobody can tell who had a choice.
+// card: secrets.cardView(); o: { onAnswer(accept), waiting: [names], extra: node (the host's push), questName, solo (no cover line) }.
+export function envelope(card, o = {}) {
+  const hero = X.S.hero || X.members()[0]; let sent = card.answered;
+  const offer = card.mode === 'offer';
+  const answer = (accept) => { if (sent) return; sent = true; sfx.card(); o.onAnswer?.(accept); };
+  const choice = card.answered
+    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? 'You took the bribe. Keep a straight face.' : 'You said no. Honor, quietly.') : 'Sealed. Keep it to yourself.')
+    : h('div', { class: 'env-btns' },
+      btn(offer ? 'Accept' : 'Got it', () => answer(true), { big: true, cls: 'wide' }),
+      btn(offer ? 'Decline' : 'Hmm…', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' }));
+  const waiting = card.answered && o.waiting?.length ? h('p', { class: 'fine center' }, `Waiting for ${o.waiting.join(', ')} to read their envelope.`) : null;
+  mountAs('road', h('div', { class: 'sx-split sx-road sx-envelope' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
+    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
+      X.partyBar?.(),
+      storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', card.voice, card.scene, { icon: 'scroll' }),
+      h('article', { class: 'env-card' }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
+        h('div', { class: 'env-eye' }, 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
+        h('p', { class: 'env-flavor' }, card.flavor),
+        h('p', { class: 'env-rule' }, card.rule), h('p', { class: 'env-pay' }, ico('coin'), h('span', {}, card.reward))),
+      o.solo ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
+      choice, waiting, card.answered ? o.extra || null : null)));
+  const place = E.questsFor(hero)[0]?.place;
+  lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+}
+// The Reveal (on the rewards screen): every card, and what each hero did with it. reveal: { voice, crooks, lines: [{ name, gold, line }] }.
+export function revealPanel(reveal, youName) {
+  if (!reveal?.lines?.length) return null;
+  return panel('sx-reveal', eyebrow('The Reveal', 'gold'),
+    h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
+    h('ul', { class: 'rv-list' }, reveal.lines.map((l) => h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
+      h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
+}
+
 // ------------------------------------------------------------------------------------------------ victory / defeat
 const PERK_ICON = { diamond: 'gem', vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull', linebreaker: 'dice' };
 function perkCard(id, hero, onpick, i) {
@@ -796,7 +832,7 @@ export function victory(first) {
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, shattered, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, rewards, revealPanel(Rw.reveal, hero.name), charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -810,7 +846,7 @@ export function victory(first) {
     setTimeout(() => { xpFill.style.transition = 'none'; xpFill.style.width = '0%'; void xpFill.offsetWidth; lvl.classList.add('pop'); bar.classList.add('flash'); sfx.level?.(); fillTo(endPct, 800); }, 1400);
   } else setTimeout(() => fillTo(endPct, 1000), 600);
 }
-export function defeat(retreat, loss) {
+export function defeat(retreat, loss, reveal = null) {
   const S = X.S; const hero = S.hero;
   const lines = [['Level', `${hero.level}`, 'hero'], ['Gear', `${Object.values(hero.loadout).filter((w, i, a) => !w.twin && a.findIndex((x) => x.uid === w.uid) === i).length + hero.bag.length} weapons`, 'bag'], ['Perks', `${hero.perks.length}`, 'star']];
   mountAs('defeat', h('div', { class: 'sx-split sx-defeat' }, h('div', { class: 'sx-viewport' }),
@@ -820,6 +856,7 @@ export function defeat(retreat, loss) {
         S.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${S.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light. Diamonds are for one fight, whatever its ending.`) : null,
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
+      revealPanel(reveal, hero.name),
       h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'),
       h('div', { class: 'sx-cta' }, btn('Return to camp', () => X.showCamp({ fromBoard: false }), { big: true, icon: 'tent', cls: 'wide' })))));
   lay('defeat'); SCR.defeat(hero, S.quest?.place);
