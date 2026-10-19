@@ -818,6 +818,7 @@ async function doCard(id, opts = {}) {
   sfx.card(); buzz(20); B.fresh = id;
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
+  myPc().sparkle(sparkleOf(B.hero?.cls));
   B.sheetOpen = false; B.hud.sheet.classList.remove('open');
   // what the power actually added this round (the counters before and after)
   const gains = {};
@@ -999,11 +1000,16 @@ function moodOfFight() {
   const boss = b.enemies.find((e) => e.hp > 0 && (e.tier === 'boss' || foeDef(e).tier === 'boss'));
   music.setIntensity?.(hp < 0.3 || (boss && boss.hp / boss.maxHp < 0.3) ? 1.4 : 1);
 }
-async function strikeAnim(hp, s, { caster = false } = {}) {
+// Each class sparkles in its own colour when a power goes into a blow (Dave: "little splashes here, little splashes there").
+const CLASS_SPARKLE = { knight: '#ffd34a', ranger: '#7dff8a', wizard: '#8fb8ff', dwarf: '#ff9a3a', bard: '#ff8ad8' };
+const sparkleOf = (cls) => CLASS_SPARKLE[cls] || '#c08cff';
+async function strikeAnim(hp, s, { caster = false, cls = null } = {}) {
   const ta = foePc(s.targetUid); if (!hp || !ta) return;
   const jobs = []; const big = s.dealt >= 15;
-  if (caster) sfx.magic?.(); else sfx.slash?.(); // the swing, before the blow lands
+  if (caster || s.magic) sfx.magic?.(); else sfx.slash?.(); // the swing, before the blow lands
+  if (s.magic) hp.sparkle(sparkleOf(cls));
   await hp.lunge(ta, () => {
+    if (s.magic && s.dealt > 0) ta.sparkle(sparkleOf(cls));
     // numbers stay up five seconds: the damage in red, and the word of whatever soaked some of it (Duck, Fire Ward, Armor...) in blue
     const word = blockWord(s, B.lastRep);
     if (s.phased) { jobs.push(ta.glow('magic')); ta.num(`${word}: passes through`, 'block', { dy: -12 }); }
@@ -1035,7 +1041,10 @@ async function foeAnim(act, heroes) {
     return;
   }
   const jobs = [];
+  // a big blow (a slam, or a lot of damage at once) winds back further, lands harder and booms (Dave: a bigger bash, a bigger sound)
+  const total = heroes.reduce((t, x) => t + (x.part || 0), 0); const big = !!act.slam || total >= 15;
   await a.lunge(first, () => {
+    if (big) { sfx.slam?.(); B.fb.shake(Math.min(1, 0.55 + total / 40)); buzz(120); }
     // each hero shows what got through in red, and the block that soaked the rest (the recap names the move)
     for (const { pc, part, net } of heroes) {
       const ab = part - net;
@@ -1043,7 +1052,7 @@ async function foeAnim(act, heroes) {
       if (ab > 0) { jobs.push(pc.guard()); pc.num(`Block −${ab}`, 'block', { dy: -12 }); sfx.block(); }
       if (net <= 0 && ab <= 0 && !['drain', 'pilfer'].includes(act.v)) pc.num('0', 'meh', { dy: 14 });
     }
-  });
+  }, { big });
   await Promise.all(jobs);
   await wait(0.12);
 }
@@ -1125,7 +1134,7 @@ async function lockInInner() {
 
   // ---------- 1. your strike
   const weaponId = hero.loadout.NW.id;
-  await strikeAnim(me, { atk: rep.T.atk, pierce: rep.T.pierce, guarded: rep.guarded, dealt: rep.dealt, phased: rep.phased, burned: rep.burned, targetUid: rep.targetUid }, { caster: weaponId === 'staff' });
+  await strikeAnim(me, { atk: rep.T.atk, pierce: rep.T.pierce, guarded: rep.guarded, dealt: rep.dealt, phased: rep.phased, burned: rep.burned, targetUid: rep.targetUid, magic: rep.magicHit }, { caster: weaponId === 'staff', cls: hero.cls });
   for (const sp of rep.splashed || []) { // splash / area damage on the other monsters
     if (sp.uid === rep.targetUid || sp.dealt <= 0) continue;
     const a = foePc(sp.uid); if (!a) continue;
@@ -1250,7 +1259,7 @@ async function playStrike(s, rep) {
   const m = (rep.moral || []).find((x) => x.to === s.name);
   if (m) { banner(`MORALE BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); ha.glow('buff'); await wait(0.5); }
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
-  await strikeAnim(ha, s, { caster: wid === 'staff' });
+  await strikeAnim(ha, s, { caster: wid === 'staff', cls: hero?.cls });
   const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
   for (const sp of s.splashed || []) { // splash / area damage on the other monsters
     const a = foePc(sp.uid); if (!a || sp.dealt <= 0) continue;

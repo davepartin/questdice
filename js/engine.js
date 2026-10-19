@@ -924,6 +924,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
     const splash = m.splash + (ev.splash || 0); // powers, and Dawnbreaker's top face
+    rep.magicHit = (m.atk || 0) + (m.pierce || 0) + splash + (m.aoe || 0) > 0; // a power put something into this blow (the board sparkles)
     if (splash > 0 || m.aoe > 0) {
       for (const e of b.enemies) {
         if (e.hp <= 0 && e !== tgt) continue;
@@ -1857,9 +1858,10 @@ export function resolveParty(b) {
         if (e.hp <= 0) kill(e);
       }
     }
+    const fm = f.mods || {}; const magic = (fm.atk || 0) + (fm.pierce || 0) + splash + aoe > 0; // a power put something into this blow
     rep.strikes.push({
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
-      killed, ev: f.ev, T, burned: burn || 0, phased: phase, splashed,
+      killed, ev: f.ev, T, burned: burn || 0, phased: phase, splashed, magic,
     });
   };
   const actFor = (e) => {

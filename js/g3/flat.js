@@ -114,13 +114,14 @@ class Piece {
     this.img.style.filter = br !== 1 ? `brightness(${br.toFixed(2)})` : '';
   }
   // a short push toward a target and back, with a little lean. `onImpact` fires at the far point.
-  async lunge(target, onImpact) {
+  async lunge(target, onImpact, { big = false } = {}) {
     const a = this.rect(); const t = target ? target.rect() : { cx: a.cx + (this.kind === 'hero' ? 80 : -80) };
-    const dx = clamp((t.cx - a.cx) * 0.24, -34, 34); const dir = Math.sign(dx) || 1; let fired = false;
-    await this.fb.tween(0.36, (k) => {
+    const g = big ? 1.7 : 1; // a big blow: a longer wind back, a deeper lunge
+    const dx = clamp((t.cx - a.cx) * 0.24 * g, -34 * g, 34 * g); const dir = Math.sign(dx) || 1; let fired = false;
+    await this.fb.tween(big ? 0.55 : 0.36, (k) => {
       const p = k < 0.38 ? easeOut(k / 0.38) : 1 - easeIO((k - 0.38) / 0.62);
       if (k >= 0.38 && !fired) { fired = true; onImpact?.(); }
-      this.set('lunge', { x: dx * p, y: -7 * p, r: dir * 6 * p, s: 1 + 0.05 * p });
+      this.set('lunge', { x: dx * p, y: -7 * g * p, r: dir * 6 * g * p, s: 1 + 0.05 * g * p });
     });
     if (!fired) onImpact?.();
     this.set('lunge', null);
@@ -170,6 +171,7 @@ class Piece {
   async hop() { await this.fb.tween(0.5, (k) => this.set('hop', { y: -Math.abs(Math.sin(k * Math.PI * 2)) * 9 })); this.set('hop', null); }
   stand() { this.dead = false; this.p = {}; this.el.classList.remove('down', 'raged'); this.render(); }
   spark(kind = 'hit', power = 0.5) { this.fb.spark(this, kind, power); }
+  sparkle(color) { this.fb.sparkle(this, color); }
   num(text, kind = 'dmg', opts) { this.fb.num(this, text, kind, opts); }
 }
 
@@ -389,6 +391,14 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
       h('u', { class: 'fb-shock' }), h('b', { class: 'fb-spark-core' }), ...Array.from({ length: n }, (_, i) => h('i', { style: { '--a': `${(360 / n) * i + (kind === 'heal' ? 0 : 12)}deg`, '--d': `${0.8 + ((i * 37) % 5) / 10}` } })));
     fx.append(el);
     tween(kind === 'heal' ? 0.7 : 0.42, (k) => { el.style.setProperty('--k', k.toFixed(3)); el.style.opacity = String(1 - k * k); }).then(() => el.remove());
+  };
+  // magic: a little burst of twinkling stars in the hero's own colour, drifting up as they fade
+  fb.sparkle = (pc, color = SPARK.magic) => {
+    const { x, y } = at(pc, 0.4); const n = 14;
+    const el = h('div', { class: 'fb-sparkle', style: { left: `${x}px`, top: `${y}px`, '--c': color } },
+      ...Array.from({ length: n }, (_, i) => h('i', { style: { '--a': `${(360 / n) * i + ((i * 53) % 30)}deg`, '--r': `${34 + ((i * 41) % 36)}px`, '--z': String(0.6 + ((i * 7) % 5) / 6) } }, '✦')));
+    fx.append(el);
+    tween(0.9, (k) => { el.style.setProperty('--k', k.toFixed(3)); el.style.opacity = String(k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4); }).then(() => el.remove());
   };
   fb.num = (pc, text, kind = 'dmg', { dx = 0, dy = 0 } = {}) => {
     const { x, r } = at(pc); const W = fb.el.clientWidth || 360; const long = String(text).length > 8;
