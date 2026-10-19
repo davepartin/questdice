@@ -217,7 +217,7 @@ export function showTitle() {
   }
   items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
   items.push(h('nav', { class: 'dock' },
-    cmd('01 · Story', 'Choose your story', 'The Dawn Lantern, The Clover Heist, or a tale for two.', showStories, { glyph: '🎲', tone: 'tutorial' }),
+    cmd('01 · Story', 'Choose your story', 'The Dawn Lantern, The Clover Heist, Pip Needs a Lift, or a tale for two.', showStories, { glyph: '🎲', tone: 'tutorial' }),
     cmd('02 · Together', 'Play together', 'Up to six friends, each on their own phone. Each decides at the same time, and the fight runs when every choice is in.', Online.together, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Cloud', 'Open a cloud save', 'Name and password, on any device.', showCloudLoad, { glyph: '☁' }),
     cmd('04 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));

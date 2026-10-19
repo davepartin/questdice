@@ -13,7 +13,7 @@ import { ensureRoad } from '../js/roads.js';
 
 test('every pack has the fields a writer and the picker need', () => {
   const ids = packList().map((p) => p.id);
-  assert.deepEqual(ids, ['dawn', 'cloverheist', 'rivalduo', 'ballad']);
+  assert.deepEqual(ids, ['dawn', 'cloverheist', 'starfall', 'rivalduo', 'ballad']);
   for (const p of packList()) {
     assert.ok(p.title && p.pitch && p.acts?.length === 3, p.id);
     assert.ok(p.startMode === 'scaled' || p.startMode === 'fresh', p.id);

@@ -27,7 +27,7 @@ function trial(hero, quest, seed, style) {
 }
 const steps = {}; let clears = 0; let total = 0; let retries = 0;
 for (const cls of classes) for (let s = 0; s < N; s++) {
-  total++; const seed = 9100 + s; const rng = makeRng(seed); const hero = newHero({ name: 'W', cls, seed });
+  total++; const seed = 9100 + s; const rng = makeRng(seed); const hero = newHero({ name: 'W', cls, seed, pack: process.env.PACK || undefined }); // PACK=starfall plays a writer's campaign
   hero.difficulty = process.env.SKILL || 'normal'; let alive = true;
   for (let n = 0; n < QUESTS_PER_ACT * ACTS && alive; n++) {
     const quest = questsFor(hero)[0]; const key = `${hero.campaign.act}.${String(hero.campaign.step).padStart(2, '0')}`;

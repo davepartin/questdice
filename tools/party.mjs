@@ -1,7 +1,7 @@
 // Team games (Dave, Oct 2026: "our first two-player game was very easy"). Pairs of heroes grow along a campaign side by side;
 // at every step each fights that step's quest alone, and then the pair fights it together at a table (newPartyBattle, PARTY
 // scaling), with the smart bot playing every hero's dice. Prints solo vs team win rate, rounds and health left, by act.
-//   node tools/party.mjs [acts=2] [runs=2] [heroes=2]        SKILL=hard for another difficulty
+//   node tools/party.mjs [acts=2] [runs=2] [heroes=2]        SKILL=hard for another difficulty, PACK=starfall for a writer's campaign
 //   PLAY=first   every hero takes its first roll and locks in on the first monster (the lazy player), solo and team alike
 //   MIX=1        the last hero is a fresh level-1 hero who joins at the start of Act II (a veteran with a beginner)
 import { makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newPartyBattle, startFighter, commitFighter, resolveParty, withDifficulty } from '../js/engine.js';
@@ -39,7 +39,7 @@ for (let run = 0; run < RUNS; run++) {
   for (const [p, pair0] of PAIRS.entries()) {
     const pair = N === 2 ? pair0 : Array.from({ length: N }, (_, i) => ALL[(p + i) % ALL.length]);
     const rng = makeRng(1000 * run + 17 * p + 3);
-    const heroes = pair.map((cls, i) => { const h = newHero({ name: `${cls}${i}`, cls, seed: 97 * run + 13 * p + i }); h.difficulty = SKILL; return h; });
+    const heroes = pair.map((cls, i) => { const h = newHero({ name: `${cls}${i}`, cls, seed: 97 * run + 13 * p + i, pack: process.env.PACK || undefined }); h.difficulty = SKILL; return h; });
     for (let n = 0; n < QUESTS_PER_ACT * ACTS; n++) {
       if (process.env.MIX && n === QUESTS_PER_ACT) { const last = heroes.length - 1; const old = heroes[last]; const kid = newHero({ name: `${old.cls}new`, cls: old.cls, seed: 991 + p }); kid.difficulty = SKILL; kid.campaign = structuredClone(heroes[0].campaign); heroes[last] = kid; }
       const quest = questsFor(heroes[0])[0]; const act = heroes[0].campaign.act;

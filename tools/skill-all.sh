@@ -1,6 +1,6 @@
 #!/bin/sh
 # tools/skill.mjs for every class in parallel, one merged table: win rate by play style at every step, and an act summary.
-#   SKILL=legendary sh tools/skill-all.sh [acts=3] [campaigns per class=2]
+#   SKILL=legendary sh tools/skill-all.sh [acts=3] [campaigns per class=2]      (PACK=starfall: a writer's campaign instead of the Dawn Lantern)
 ACTS=${1:-3}; N=${2:-2}; D=$(mktemp -d)
 for c in knight ranger wizard dwarf bard; do SIM_SAMPLES=${SIM_SAMPLES:-5} OUT=$D/$c.json node tools/skill.mjs $ACTS $N $c & done; wait
 node --input-type=module -e "

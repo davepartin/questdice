@@ -1,5 +1,6 @@
 // Campaign packs (Dave, Oct 2026): every story is one pack. The Dawn Lantern is the original
-// campaign; The Clover Heist is a 1–6 any-hero Cloverland tale; Rival Duo and That’s Not How It Went
+// campaign; The Clover Heist is a 1–6 any-hero Cloverland tale; Pip Needs a Lift is a 1–6 escort story with its own road moments
+// and secret-objective voice; Rival Duo and That’s Not How It Went
 // are two-hero packs with their own locked fights.
 // Duo packs are played at a table, so their fights already fit the pair: the road sets where the heroes should be and
 // newPartyBattle scales by the two heroes' real strength (teamFactor; docs/TEAMS.md). fightHp still tunes single steps.
@@ -9,6 +10,7 @@ import { ACTS, MONSTERS, CLASSES } from './data.js';
 import * as rivalDuo from './packs/rivalduo.js';
 import * as balladPack from './packs/ballad.js';
 import * as cloverHeist from './packs/cloverheist.js';
+import * as starfall from './packs/starfall.js';
 
 export const DEFAULT_PACK = 'dawn';
 
@@ -32,6 +34,7 @@ export function placesOf(c) { return packOf(c).places || null; }
 export function stepsOf(c) { return packOf(c).steps || null; }
 export function helpFightsOf(c) { return packOf(c).helpFights || null; }
 export function bansOf(c) { return packOf(c).ban || []; }
+export function voiceOf(c) { return packOf(c).voice || null; }
 export function helpOff(c) {
   const acts = actsOf(c);
   const act = acts[((c?.act || 1) - 1) % acts.length];
@@ -235,9 +238,26 @@ const CLOVERHEIST = {
   steps: cloverHeist.steps,
 };
 
+const STARFALL = {
+  id: 'starfall',
+  title: 'Pip Needs a Lift',
+  pitch: 'A star crashed into the Marches with a small green passenger inside. Pip has three eyes, one word at a time, and until the Long Night to get home. Everyone else wants the star.',
+  cover: { img: 'assets/miniatures/visitor.webp' },
+  requiredHeroes: 1,
+  maxHeroes: 6,
+  forcedClasses: null,
+  startMode: 'scaled',
+  ban: [],
+  voice: starfall.voice, // Mother Hob hands out the secret objectives (secrets.js)
+  acts: finishActs(starfall.actSpecs, []),
+  beats: starfall.beats,
+  steps: starfall.steps,
+};
+
 export const CAMPAIGNS = {
   dawn: DAWN,
   cloverheist: CLOVERHEIST,
+  starfall: STARFALL,
   rivalduo: RIVALDUO,
   ballad: BALLAD,
 };

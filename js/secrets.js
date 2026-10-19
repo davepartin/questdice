@@ -4,6 +4,7 @@
 // been chosen"). Nobody votes; after the battle every card is revealed, and the cards pay out. Pure rules, no DOM: the battle keeps
 // a round log (engine logRound), and judge() reads it.
 import { hashSeed, makeRng, mindSize, isActive } from './engine.js';
+import { voiceOf } from './campaigns.js';
 
 export const G_BY_ACT = [40, 70, 100];
 export const gOf = (act) => G_BY_ACT[Math.min(3, Math.max(1, act | 0)) - 1];
@@ -17,7 +18,7 @@ export const COVER_LINES = [
   'Mine just wants us to win, and quickly.',
   'Mine’s a team one. Win the battle.',
 ];
-// The voice that leans in. A writer's pack may give its own (act.voice = { name, scenes: [...] }).
+// The voice that leans in. A writer's pack may give its own (pack.voice = { name, scenes: [...] }; campaigns.js voiceOf).
 export const VOICE = {
   name: 'Old Whisper',
   scenes: [
@@ -88,7 +89,7 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '' }) {
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'envelopes', salt));
   const pick = (list) => list[Math.floor(rng() * list.length)];
   const n = heroes.length; const team = n > 1;
-  const voice = c.voice || VOICE;
+  const voice = c.voice || voiceOf(c) || VOICE;
   const env = { act: c.act, voice: voice.name, scene: pick(voice.scenes || VOICE.scenes), cover: pick(COVER_LINES), cards: {}, answered: {} };
   const fits = (id, hero) => !CARDS[id].needs || CARDS[id].needs(hero);
   const open = [...heroes].sort(() => rng() - 0.5);
