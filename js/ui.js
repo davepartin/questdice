@@ -216,7 +216,7 @@ export function showTitle() {
   }
   items.push(h('div', { class: 't-eyebrow mb' }, saves.length ? 'More' : 'Begin'));
   items.push(h('nav', { class: 'dock' },
-    cmd('01 · Story', 'Choose your story', 'The Dawn Lantern, or a tale for two.', showStories, { glyph: '🎲', tone: 'tutorial' }),
+    cmd('01 · Story', 'Choose your story', 'The Dawn Lantern, The Clover Heist, or a tale for two.', showStories, { glyph: '🎲', tone: 'tutorial' }),
     cmd('02 · Together', 'Play together', 'Up to six friends, each on their own phone. Each decides at the same time, and the fight runs when every choice is in.', Online.together, { glyph: '⚔', tone: 'versus' }),
     cmd('03 · Cloud', 'Open a cloud save', 'Name and password, on any device.', showCloudLoad, { glyph: '☁' }),
     cmd('04 · Soul Code', 'Bring a hero here', 'Paste a code from another device.', showImport, { glyph: '🔑' })));
@@ -435,8 +435,11 @@ export function showStepPick() {
 }
 
 // ------------------------------------------------------------------ stories
-function miniRow(ids) {
-  return h('span', { class: 'story-minis' }, ...(ids || []).map((id) => {
+function miniRow(pack) {
+  if (pack?.cover?.img) {
+    return h('span', { class: 'story-minis' }, h('img', { src: pack.cover.img, alt: pack.title, draggable: 'false', decoding: 'async' }));
+  }
+  return h('span', { class: 'story-minis' }, ...coverClasses(pack).map((id) => {
     const c = D.CLASSES[id];
     return c?.img
       ? h('img', { src: c.img, alt: c.name, draggable: 'false', decoding: 'async' })
@@ -451,11 +454,11 @@ export function showStories(opts = {}) {
     showCreate(p.id);
   };
   mount(h('div', { class: 'topline' }, ghost('‹ Back', opts.together ? Online.together : showTitle, { cls: 'small' }), h('h2', {}, 'Choose your story')),
-    h('p', { class: 'muted' }, 'The Dawn Lantern is the original road. The two-hero tales start fresh, at level 1.'),
+    h('p', { class: 'muted' }, 'The Dawn Lantern is the original road. The Clover Heist is a Cloverland tale for any heroes. The two-hero tales start fresh, at level 1.'),
     h('nav', { class: 'dock story-dock' }, packList().map((p) => cmd(
       `${partySize(p)}${forcedLine(p) ? ` · ${forcedLine(p)}` : ''}`,
       p.title, p.pitch, () => pick(p),
-      { glyph: miniRow(coverClasses(p)), tone: p.id === DEFAULT_PACK ? 'solo' : 'versus' },
+      { glyph: miniRow(p), tone: p.id === DEFAULT_PACK || p.startMode === 'scaled' ? 'solo' : 'versus' },
     ))));
 }
 

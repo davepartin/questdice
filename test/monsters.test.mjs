@@ -215,6 +215,42 @@ test('new bosses: Fallen Champion is a boss; Gold-Chain Jailer is not occult; dr
   assert.ok(MONSTERS.dirgesinger.faces.some((f) => f.v === 'hush'));
 });
 
+test('Clover Heist minis copy their templates, look left, and the fox does not rejoin as a nemesis', () => {
+  const king = MONSTERS.magpieking;
+  const gk = MONSTERS.goblinking;
+  assert.equal(king.hp, gk.hp);
+  assert.equal(king.power, gk.power);
+  assert.equal(king.init, gk.init);
+  assert.equal(king.tier, 'boss');
+  assert.equal(king.threat, gk.threat);
+  assert.equal(king.adds, 'magpies');
+  assert.equal(king.look, 'left');
+  assert.ok(king.faces.some((f) => f.v === 'hush'));
+  const gang = MONSTERS.magpies;
+  assert.equal(gang.hp, MONSTERS.goblin.hp);
+  assert.equal(gang.power, MONSTERS.goblin.power);
+  assert.equal(gang.look, 'left');
+  assert.equal(gang.faces.filter((f) => f.v === 'pilfer').length, 2);
+  assert.ok(gang.faces.some((f) => f.v === 'phase'));
+  const fox = MONSTERS.foxrogue;
+  const gl = MONSTERS.gloomstalker;
+  assert.equal(fox.hp, gl.hp);
+  assert.equal(fox.power, gl.power);
+  assert.equal(fox.init, gl.init);
+  assert.equal(fox.look, 'left');
+  assert.equal(fox.name, 'Sir Reginald Brush');
+  assert.equal(fox.flee.at, 0.5);
+  assert.equal(fox.nemesis, false);
+  const b = fight(['foxrogue']);
+  b.enemies[0].hp = Math.floor(b.enemies[0].maxHp * 0.4);
+  setIntent(b.enemies[0], { n: 'Fade', v: 'phase', f: 0, m: 0 });
+  b.board = { ...weak };
+  const rep = resolve(b, { target: 0 });
+  assert.ok(rep.fled.includes(b.enemies[0].uid), 'Sir Reginald flees at half health');
+  recordFled(b.hero.campaign, b);
+  assert.deepEqual(b.hero.campaign.nemeses, [], 'foxrogue nemesis:false keeps him off the random ambush loop');
+});
+
 test('every monster rolls a real die: its power die, its enraged form and its armour are d4, d6, d8, d10, d12 or d20', async () => {
   const { MONSTERS } = await import('../js/data.js');
   const real = new Set([4, 6, 8, 10, 12, 20]);

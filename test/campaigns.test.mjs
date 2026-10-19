@@ -13,7 +13,7 @@ import { ensureRoad } from '../js/roads.js';
 
 test('every pack has the fields a writer and the picker need', () => {
   const ids = packList().map((p) => p.id);
-  assert.deepEqual(ids, ['dawn', 'rivalduo', 'ballad']);
+  assert.deepEqual(ids, ['dawn', 'cloverheist', 'rivalduo', 'ballad']);
   for (const p of packList()) {
     assert.ok(p.title && p.pitch && p.acts?.length === 3, p.id);
     assert.ok(p.startMode === 'scaled' || p.startMode === 'fresh', p.id);
@@ -353,4 +353,129 @@ test('a scaled Dawn table still overlays the host campaign', () => {
   assert.equal(table.company.campaign.act, 2);
   assert.equal(table.company.campaign.step, 4);
   assert.equal(table.company.members[0].level, 8);
+});
+
+test('The Clover Heist is a 1–6 any-hero scaled pack with writer casts and fallbacks', () => {
+  const p = CAMPAIGNS.cloverheist;
+  assert.equal(p.title, 'The Clover Heist');
+  assert.equal(p.requiredHeroes, 1);
+  assert.equal(p.maxHeroes, 6);
+  assert.equal(p.startMode, 'scaled');
+  assert.equal(p.forcedClasses, null);
+  assert.equal(partySize(p), '1–6 heroes');
+  assert.equal(forcedLine(p), '');
+  assert.equal(p.cover.img, 'assets/miniatures/magpieking.webp');
+  const acts = actsOf('cloverheist');
+  assert.equal(acts[0].name, 'Feathers on the Doorstep');
+  assert.equal(acts[1].name, 'The Lost-and-Found Below');
+  assert.equal(acts[2].name, 'The Eyrie');
+  assert.deepEqual(acts[0].fights[0], ['magpies']);
+  assert.deepEqual(acts[0].names[0], ['Nick, Pinch and Swipe']);
+  assert.deepEqual(acts[0].fights[3], ['foxrogue', 'wolf']);
+  assert.deepEqual(acts[1].fights[6], ['foxrogue', 'frostwhelp']);
+  assert.deepEqual(acts[2].fights[7], ['foxrogue', 'cinderling']);
+  assert.deepEqual(acts[2].fights[9], ['magpieking']);
+  assert.equal(acts[2].names[9][0], 'The Magpie King');
+  assert.deepEqual(acts[2].gates[5].enemies, ['roc']);
+  assert.deepEqual(acts[2].gates[10].enemies, ['magpieking']);
+  assert.equal(acts[2].route[9], 'Wyrmwatch');
+  assert.deepEqual(acts[0].help, []);
+  assert.ok(helpOff({ pack: 'cloverheist', act: 1 }));
+  // Cameos dropped until painted; lone remaining foes get the writer’s fightHp bump.
+  const blob = JSON.stringify(acts);
+  assert.ok(!blob.includes('marmalade'));
+  assert.ok(!blob.includes('parrotcaptain'));
+  assert.deepEqual(acts[1].fights[5], ['wraith']);
+  assert.deepEqual(acts[1].names[5], ['Mournful Mabel']);
+  assert.equal(acts[1].fightHp[6], 1.6);
+  assert.deepEqual(acts[2].fights[2], ['magpies']);
+  assert.deepEqual(acts[2].names[2], ['the Mine Gang']);
+  assert.equal(acts[2].fightHp[3], 1.5);
+  // Nice-to-have minis stand in on existing sheets until they are painted.
+  assert.equal(monsterOf('goblindrummer', { pack: 'cloverheist' }).img, monsterOf('goblin').img);
+  assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).img, monsterOf('ogre').img);
+  assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).name, 'Baron Grumbletusk');
+  const silk = monsterOf('silkwood', { pack: 'cloverheist' });
+  assert.equal(silk.img, monsterOf('spider').img);
+  assert.equal(silk.name, 'Madam Silkwood');
+  assert.equal(silk.adds, 'spider');
+  assert.equal(silk.hp, monsterOf('lich').hp);
+  assert.equal(monsterOf('roc', { pack: 'cloverheist' }).img, monsterOf('ashwyrm').img);
+  assert.equal(monsterOf('magpieking').look, 'left');
+  assert.equal(monsterOf('foxrogue').nemesis, false);
+  const h = E.newHero({ name: 'Ada', cls: 'knight', seed: 4, pack: 'cloverheist' });
+  assert.equal(h.campaign.pack, 'cloverheist');
+  const q1 = E.questsFor(h)[0];
+  assert.deepEqual(q1.enemies, ['magpies']);
+  assert.deepEqual(q1.foeNames, ['Nick, Pinch and Swipe']);
+  h.campaign.act = 3; h.campaign.step = 10;
+  const king = E.questsFor(h)[0];
+  assert.equal(king.kind, 'boss');
+  assert.deepEqual(king.enemies, ['magpieking']);
+  assert.equal(king.name, 'The Magpie King');
+  h.campaign.act = 3; h.campaign.step = 5;
+  const bertha = E.questsFor(h)[0];
+  assert.equal(bertha.kind, 'elite');
+  assert.deepEqual(bertha.enemies, ['roc']);
+  // PARTY numbers stay Dave’s (this pack is not wired through storyScale).
+  assert.equal(PARTY.hpPer, 1.2);
+  assert.equal(PARTY.flatPer, 10);
+  assert.equal(PARTY.flatBy.hard, 13);
+  assert.equal(PARTY.hp[1], 2.2);
+});
+
+test('Clover Heist copy uses {someone} and never assumes two named heroes', () => {
+  assert.equal(fillNames("{someone}’s glove", []), 'somebody’s glove');
+  assert.equal(fillNames('{someone} sits', [{ name: 'Ada', cls: 'knight' }]), 'Ada sits');
+  const pair = [{ name: 'Ada', cls: 'knight' }, { name: 'Bea', cls: 'ranger' }];
+  const a = fillNames("{someone}’s head", pair, { seed: 18, lineId: 'elite:3' });
+  const b = fillNames("{someone}’s head", pair, { seed: 18, lineId: 'elite:3' });
+  assert.equal(a, b);
+  assert.ok(a === 'Ada’s head' || a === 'Bea’s head', a);
+  const open = beat('open:1', 1, pair, { pack: 'cloverheist', seed: 18 });
+  assert.equal(open.title, 'Feathers on the Doorstep');
+  assert.ok(open.text.some((t) => /Cloverland|feather/i.test(t)));
+  assert.ok(!open.text.some((t) => /\{wizard\}|\{dwarf\}|\{knight\}|\{bard\}|\{names\}/.test(t)));
+  const elite = beat('elite:3', 3, pair, { pack: 'cloverheist', seed: 18 });
+  assert.ok(elite.text.some((t) => t.includes('Ada’s head') || t.includes('Bea’s head')));
+  assert.ok(!elite.text.some((t) => /\{someone\}/.test(t)));
+  const steps = stepsOf('cloverheist');
+  const acts = actsOf('cloverheist');
+  for (let a = 0; a < 3; a++) {
+    assert.equal(steps[a].length, 10, `cloverheist act ${a + 1}`);
+    for (let s = 0; s < 10; s++) {
+      assert.deepEqual(steps[a][s].foes, acts[a].fights[s], `cloverheist ${a + 1}.${s + 1} foes`);
+      assert.deepEqual(steps[a][s].names, acts[a].names[s]);
+    }
+  }
+  const c = { pack: 'cloverheist', act: 1, step: 1, storySeen: [] };
+  assert.deepEqual(pending(c), [{ id: 'open:1', act: 1 }]);
+  assert.ok(beatsOf('cloverheist')['close:3']);
+});
+
+test('a Clover Heist table seats any classes, one to six, and scales like Dawn', () => {
+  const table = createTable({ code: 'CLV1', seed: 7, name: 'Heist', pack: 'cloverheist' });
+  assert.equal(table.pack, 'cloverheist');
+  const a = joinTable(table, { name: 'Ada', cls: 'wizard', token: 'tokaaaaaa' });
+  assert.equal(a.ok, true, a.error);
+  const b = joinTable(table, { name: 'Ned', cls: 'knight', token: 'tokbbbbbb' });
+  assert.equal(b.ok, true, b.error);
+  const c = joinTable(table, { name: 'Pip', cls: 'bard', token: 'tokcccccc' });
+  assert.equal(c.ok, true, c.error);
+  command(table, b.player.id, { type: 'ready' });
+  command(table, c.player.id, { type: 'ready' });
+  const started = command(table, a.player.id, { type: 'start' });
+  assert.equal(started.ok, true, started.error);
+  assert.equal(table.company.campaign.pack, 'cloverheist');
+  assert.equal(table.company.members.length, 3);
+  const scaled = createTable({ code: 'CLV2', seed: 3, name: 'Luck', pack: 'cloverheist' });
+  const high = E.newHero({ name: 'Ada', cls: 'knight', seed: 1 });
+  high.level = 8; high.campaign.act = 2; high.campaign.step = 4; high.campaign.reached = { act: 2, step: 4 };
+  const h = joinTable(scaled, { name: 'Ada', cls: 'knight', token: 'tokdddddd', hero: high });
+  assert.equal(h.ok, true, h.error);
+  assert.equal(command(scaled, h.player.id, { type: 'start' }).ok, true);
+  assert.equal(scaled.company.campaign.act, 2);
+  assert.equal(scaled.company.campaign.step, 4);
+  assert.equal(scaled.company.members[0].level, 8);
+  assert.equal(scaled.company.campaign.pack, 'cloverheist');
 });

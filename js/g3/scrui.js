@@ -207,7 +207,7 @@ export function title() {
     menu.append(plaque({ eyebrow: `Daily challenge${st > 1 ? ` · ${st} days in a row` : ''}`, title: `${D.CLASSES[run.cls].name} · ${D.CHARMS[run.charm].name}`,
       sub: rec.tries ? `Your best today: ${rec.best.toLocaleString()} points · ${rec.fights} of ${DAY.FIGHTS} fights` : `Five fights, the same for everyone. One score.`, icon: 'crown', tone: 'is-daily', onclick: X.showDaily })); }
   menu.append(
-    plaque({ eyebrow: 'New game', title: 'Choose your story', sub: 'The Dawn Lantern, or a tale for two.', icon: 'book', primary: false, onclick: X.showStories }),
+    plaque({ eyebrow: 'New game', title: 'Choose your story', sub: 'The Dawn Lantern, The Clover Heist, or a tale for two.', icon: 'book', primary: false, onclick: X.showStories }),
     plaque({ eyebrow: 'Together', title: 'Play together', sub: 'Up to six friends, each on their own phone.', icon: 'people', tone: 'is-together', onclick: X.showTogether }),
     plaque({ eyebrow: 'Cloud', title: 'Open a cloud save', sub: 'Name and password, on any device.', icon: 'lock', onclick: X.showCloudLoad }));
   if (!saves.length) menu.append(plaque({ eyebrow: 'Soul Code', title: 'Bring a hero here', sub: 'Paste a code from another device.', icon: 'key', onclick: X.showImport }));
@@ -301,11 +301,16 @@ export function daily(v) {
   S.daily = v.mode === 'intro' ? null : S.daily;
 }
 function coverMinis(pack) {
+  if (pack?.cover?.img) {
+    return h('span', { class: 'sc-minis' }, h('span', { class: 'sx-emblem sm' },
+      h('img', { src: pack.cover.img, alt: pack.title, draggable: 'false', decoding: 'async' })));
+  }
   return h('span', { class: 'sc-minis' }, ...coverClasses(pack).map((id) => classPic(id, 'sm')));
 }
 function storyCardBtn(p, onclick) {
   const line = [partySize(p), forcedLine(p)].filter(Boolean).join(' · ');
-  return h('button', { class: `sx-storycard ${p.id === DEFAULT_PACK ? 'is-dawn' : 'is-duo'}`, type: 'button', onclick: tap(() => onclick(p)) },
+  const kind = (p.requiredHeroes || 1) > 1 ? 'is-duo' : 'is-dawn';
+  return h('button', { class: `sx-storycard ${kind}`, type: 'button', onclick: tap(() => onclick(p)) },
     h('span', { class: 'sc-art' }, coverMinis(p)),
     h('span', { class: 'sc-copy' }, h('small', {}, line), h('b', {}, p.title), h('em', {}, p.pitch)),
     h('span', { class: 'pl-go' }, ico('chevron')));
