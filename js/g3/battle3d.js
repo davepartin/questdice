@@ -275,7 +275,7 @@ function teamRules() {
   const open = !B.teamRulesSeen; B.teamRulesSeen = true; // open the first time; a tap folds it away after that
   return h('details', { class: 'tm-rules', open }, h('summary', {}, HK.icon('star'), 'How teams work'),
     h('ul', {},
-      rule('windup', 'Who the monsters go after', 'The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share.'),
+      rule('windup', 'Who the monsters go after', 'The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share. A tie goes against the hero with more health; if that ties too, a coin flip.'),
       rule('block', 'Hold the line', `If the monsters came at you and you are still standing at the end of the round: +${D.POINTS.heldLine} points. While you are the target, your blocks score double.`),
       rule('atk', 'Team triples', `When two heroes roll the same triple in the same round, each gets +${tri} more. Attack rows (Weapons, Strength, Talent) count when you hit the same monster; guard columns (Head to Toe, Left, Right) count any time.`),
       rule('magic', 'Heartbeat', `If every hero's heart die shows the same number, each of you gains ${n} magic (one for each hero).`),
