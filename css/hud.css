@@ -782,3 +782,12 @@ body.t3-on #scene { -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--
 .hc-btn { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 3.6rem; padding: .3rem .4rem; }
 .hc-arrow { font-size: 1.1rem; line-height: 1; }
 .hc-word { white-space: nowrap; }
+/* Team games: Lock in · Team · Magic powers · Roll (Dave). Team and Magic stand as narrow tiles, icon over word. */
+.b3-acts3 .b3-team { flex: 0 0 3.9rem; flex-direction: column; gap: .15rem; background: linear-gradient(180deg, #1f8f62, #11603f); border-color: #6fe0a8; }
+.b3-acts3 .b3-team .bp-tri { background: rgba(255, 255, 255, .14); }
+.b3-acts3 .b3-team b { font-size: .7rem; letter-spacing: .06em; }
+.b3-acts3:has(.b3-team) .b3-powers:not(.b3-team) { flex: 0 0 4.4rem; flex-direction: column; gap: .15rem; text-align: center; }
+.b3-acts3:has(.b3-team) .b3-powers:not(.b3-team) b { font-size: .68rem; line-height: 1.05; }
+.b3-acts3:has(.b3-team) .hb-cta.sq, .b3-acts3:has(.b3-team) .hb-cta#b3-lock { flex-basis: 4rem; min-width: 4rem; }
+.b3-acts3:has(.b3-team) .b3-team { flex-basis: 3.6rem; }
+.b3-acts3:has(.b3-team) .b3-powers:not(.b3-team) { flex-basis: 4.1rem; }

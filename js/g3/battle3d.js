@@ -612,10 +612,15 @@ function sheetToCounters() {
   const fc = B.hud.forecast?.querySelector('.fc'); if (!fc) return;
   B.root.style.setProperty('--counters-top', `${Math.round(window.innerHeight - fc.getBoundingClientRect().top + 3)}px`);
 }
-function togglePowers(on) {
-  B.sheetOpen = on ?? !B.sheetOpen; B.hud.sheet.classList.toggle('open', B.sheetOpen);
-  if (B.sheetOpen) { B.pwSel = null; sheetToCounters(); sfx.select?.(); renderSheet(); } // opens with nothing chosen (Dave)
+function togglePowers(on, tab = 'powers') {
+  const same = (B.sheetTab || 'powers') === tab;
+  B.sheetOpen = on ?? (B.sheetOpen && same ? false : true); B.hud.sheet.classList.toggle('open', B.sheetOpen);
+  if (B.sheetOpen) { B.pwSel = null; if (B.party) B.sheetTab = tab; sheetToCounters(); sfx.select?.(); renderSheet(); } // opens with nothing chosen (Dave)
 }
+// Team games (Dave): Lock in · Team · Magic powers · Roll. Team opens the same sheet on its team actions.
+const teamBtn = () => h('button', { type: 'button', class: 'b3-powers b3-team', 'aria-label': 'Team actions: potion, share magic, revive', onclick: () => togglePowers(undefined, 'team') },
+  h('span', { class: 'bp-tri' }, HK.icon('team')), h('b', {}, 'Team'));
+const sideBtns = () => (B.party ? [teamBtn(), powersBtn()] : [powersBtn()]);
 const powersBtn = () => {
   const b = B.b; const list = E.cardsOf(B.hero);
   const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && b.magic >= k.cost; }).length;
@@ -645,7 +650,7 @@ export function renderReset() {
   B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : ''));
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
-    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), powersBtn(), HK.button({ kind: 'cta', icon: 'dice', label: 'Roll dice', sub: B.picked === false ? 'choose target' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
+    h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
   if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
   C.tut?.on('reset', b.round);
 }
@@ -683,10 +688,12 @@ function rerollText(info) {
   const b = B.b;
   if (info.kind === 'none') return { label: 'No rerolls', sub: 'all used' };
   const n = B.sel.size; const cost = info.perDie * n;
-  const ord = info.kind === 'free' ? `${D.RULES.free + D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.free}` : info.kind === 'paid' ? `${D.RULES.paid - b.actionsLeft + 1} of ${D.RULES.paid}` : 'free card';
-  const base = info.kind === 'paid' ? 'Magic reroll' : 'Reroll';
-  if (n) return { label: `${base} ${n}`, sub: info.kind === 'paid' ? [`${ord} · `, HK.costGem(cost)] : ord };
-  return { label: base, sub: info.kind === 'paid' ? [`tap dice · ${ord} · `, HK.costGem(1), ' each'] : `tap dice · ${ord}` };
+  // Dave: say plainly which rerolls are free and that magic ones come after ("3 free, then they cost magic")
+  const k = info.kind === 'free' ? D.RULES.free + D.RULES.paid - b.actionsLeft + 1 : D.RULES.paid - b.actionsLeft + 1;
+  if (info.kind === 'card') return { label: n ? `Free reroll ${n}` : 'Free reroll', sub: 'from your card' };
+  if (info.kind === 'free') return { label: n ? `Free reroll ${n}` : 'Free reroll', sub: k >= D.RULES.free ? 'last free one' : `${k} of ${D.RULES.free} free` };
+  if (n) return { label: `Magic reroll ${n}`, sub: [HK.costGem(cost), ` · ${k} of ${D.RULES.paid}`] };
+  return { label: 'Magic reroll', sub: [HK.costGem(1), ` a die · ${k} of ${D.RULES.paid}`] };
 }
 export function renderShape() {
   if (B.ended) return;
@@ -725,7 +732,7 @@ export function renderShape() {
     straight,
     h('div', { class: 'b3-acts b3-acts3' },
       HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', sub: B.net ? lockSub() : undefined, id: 'b3-lock', onclick: lockIn, disabled: B.busy, cls: 'sq', aria: 'Lock in your dice and fight' }),
-      powersBtn(),
+      ...sideBtns(),
       HK.button({ kind: 'reroll', icon: 'reroll', label: rr.label, sub: rr.sub, id: 'b3-reroll', onclick: doReroll, disabled: B.busy || E.rerollInfo(b).kind === 'none', cls: 'blue', aria: `${rr.label}` }))].filter(Boolean));
   if (!B.busy) C.tut?.on('shape');
 }
@@ -897,7 +904,7 @@ function renderLocked(kind = '') {
   const skips = Sess.isHost() ? (b.fighters || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== B.active && g.hp > 0 && !g.locked).map(({ g }) => h('button', { type: 'button', class: 'b3-skip', onclick: () => netDo({ type: 'skip', playerId: Sess.mates().find((p) => p.hero === g.hero)?.id }).then(() => netSettle()) }, `Skip ${g.hero.name} this round`)) : [];
   B.hud.caption.replaceChildren(caption(msg), ...skips);
   B.hud.bar.replaceChildren(h('div', { class: 'b3-acts b3-acts3 reset' },
-    HK.button({ kind: 'cta', icon: 'lock', label: kind ? 'Waiting' : 'Locked in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Locked in' }), powersBtn(),
+    HK.button({ kind: 'cta', icon: 'lock', label: kind ? 'Waiting' : 'Locked in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Locked in' }), ...sideBtns(),
     kind ? HK.button({ kind: 'reroll', icon: 'reroll', label: 'Waiting', sub: 'for the round', id: 'b3-wait', disabled: true, cls: 'blue' })
       : HK.button({ kind: 'reroll', icon: 'reroll', label: 'Unlock', sub: 'take it back', id: 'b3-unlock', onclick: doUnlock, cls: 'blue' })));
   B.busy = false;

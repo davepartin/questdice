@@ -12,6 +12,7 @@ const ICONS = {
   block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/><path class="h" d="M12 5 V19.6 M7.2 8.5 V12.5"/>',
   pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/><path class="h" d="M12 5.2 V15"/>',
   magic: '<path class="p" d="M12 2.4 L22.2 20.6 H1.8 Z"/><path class="h" d="M12 6.8 L16.2 14.6"/>',
+  team: '<circle class="p" cx="8" cy="8.2" r="3.2"/><circle class="p" cx="16.6" cy="9.2" r="2.7"/><path class="p" d="M2 20.5 C2 16.4 4.7 14 8 14 C11.3 14 14 16.4 14 20.5 Z M13.4 20.5 C13.6 17.6 14.8 15.3 16.6 15.3 C19.6 15.3 22 17.4 22 20.5 Z"/>',
   heal: '<path class="f" d="M9.4 3 H14.6 V9.4 H21 V14.6 H14.6 V21 H9.4 V14.6 H3 V9.4 H9.4 Z"/><path class="h" d="M10.6 5 V10.6 H5"/>',
   gold: '<circle class="p" cx="12" cy="12" r="9.6"/><path class="h" d="M7 8.6 A6 6 0 0 1 11 6"/>',
   stagger: '<path class="f" d="M12 1.2 L14 8 L21 5 L16.5 11 L23 14 L15.6 15.2 L16 22.6 L12 17.4 L8 22.6 L8.4 15.2 L1 14 L7.5 11 L3 5 L10 8 Z"/>',
