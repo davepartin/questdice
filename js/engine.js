@@ -7,11 +7,11 @@ import {
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
-  colorIdOf, uniqueColors,
+  colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
-import { monsterOf as packMonster, actsOf as packActs, packIdOf } from './campaigns.js';
+import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
 
 const mdef = (id, camp) => packMonster(id, camp) || MONSTERS[id];
 const campOfBattle = (b) => b?.hero?.campaign || b?.fighters?.[0]?.hero?.campaign;
@@ -1489,18 +1489,61 @@ export function roadsFor(hero, opts = {}) {
 // outside this act's usual crowd wanders in, so a campaign meets more of the bestiary. The story's own foes keep their names;
 // the wanderer is extra, so the cast shares its health out (WANDER.share) and every hit is a little softer (flatCut), to keep
 // the fight about as hard as it was (tools/skill-all.sh with WANDER='{"chance":0}' measures the difference).
-export const WANDER = { chance: 0.45, from: 2, share: 1.3, flatCut: 3, maxCast: 2, never: ['foxrogue'] }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
-function withWanderer(q, c, act, s) {
-  if (WANDER.chance <= 0 || s < WANDER.from || s >= QUESTS_PER_ACT || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast) return q;
+export const WANDER = { chance: 0.45, from: 2, share: 1.3, flatCut: 3, maxCast: 2 }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
+// Story-only characters set wander: false on the sheet (Sir Reginald today; Marmalade, Captain Squawk, Inspector Croak, Monsieur Gratin later).
+export function mayWander(id, camp) {
+  const m = mdef(id, camp) || MONSTERS[id];
+  return !!(m && m.tier === 'minion' && m.wander !== false);
+}
+export function wanderRoster(c, act) {
+  const home = new Set((act?.pool || []).flat());
+  const ban = new Set(bansOf(c));
+  return Object.keys(MONSTERS).filter((id) => mayWander(id, c) && !home.has(id) && !ban.has(id)).sort();
+}
+function preferLand(ids, land) {
+  if (!land) return ids;
+  const hit = ids.filter((id) => landsOf(MONSTERS[id]).includes(land));
+  return hit.length ? hit : ids;
+}
+function shuffleWander(ids, c) {
+  const order = [...ids];
+  const rng = makeRng(hashSeed(c.seed, c.act, 'wander-order'));
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  return order;
+}
+function pickWanderId(order, s, skip) {
+  if (!order.length) return null;
+  const blocked = new Set((skip || []).filter(Boolean));
+  const start = ((s % order.length) + order.length) % order.length;
+  for (let k = 0; k < order.length; k++) {
+    const id = order[(start + k) % order.length];
+    if (!blocked.has(id)) return id;
+  }
+  return order[start]; // no other choice: keep the seeded pick
+}
+function stepOpenForWander(act, s, c) {
+  if (s < WANDER.from || s >= QUESTS_PER_ACT) return false;
+  if (stepKind(act, s) !== 'battle') return false;
+  if (act.gates?.[s]) return false;
+  if (s === 8 && c?.nextPlace && (act.help?.length || c.nextEnemies?.length)) return false;
+  return true;
+}
+function foesAtStep(act, s) { return act.fights?.[s - 1] || []; }
+function wandererAtStep(c, act, s, enemies) {
+  if (!stepOpenForWander(act, s, c)) return null;
+  const foes = enemies || foesAtStep(act, s);
+  if (foes.length > WANDER.maxCast) return null;
   const rng = makeRng(hashSeed(c.seed, c.act, s, 'wander'));
-  if (rng() >= WANDER.chance) return q;
-  const home = new Set(act.pool.flat());
-  const roster = Object.keys(MONSTERS).filter((id) => MONSTERS[id].tier === 'minion' && !home.has(id) && !WANDER.never.includes(id)).sort();
-  if (!roster.length) return q;
-  // each act walks its own shuffled order of wanderers, so one act meets several different ones rather than the same one twice
-  const order = [...roster]; const orng = makeRng(hashSeed(c.seed, c.act, 'wander-order'));
-  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(orng() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-  let id = order[s % order.length]; if (q.enemies.includes(id)) id = order[(s + 1) % order.length];
+  if (rng() >= WANDER.chance) return null;
+  const roster = preferLand(wanderRoster(c, act), act.land);
+  if (!roster.length) return null;
+  const prev = s > WANDER.from ? wandererAtStep(c, act, s - 1) : null;
+  return pickWanderId(shuffleWander(roster, c), s, [...foes, prev]);
+}
+function withWanderer(q, c, act, s) {
+  if (WANDER.chance <= 0 || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast) return q;
+  const id = wandererAtStep(c, act, s, q.enemies);
+  if (!id) return q;
   const n = q.enemies.length;
   return { ...q, enemies: [...q.enemies, id], wanderer: id, hpMult: q.hpMult * (n / (n + WANDER.share)), flat: Math.max(0, q.flat - WANDER.flatCut) }; // (the story's names stay as written; one more mouth to feed, so each hits a little softer)
 }
