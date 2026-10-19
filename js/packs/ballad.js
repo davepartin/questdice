@@ -1,4 +1,16 @@
 // Writer copy for the ballad pack. Generated from the campaign markdown; edit the source file, not this one.
+// Casts are catalog ids from docs/MINIS.md. The King, who sent them, hands out the envelopes as royal notes.
+
+export const voice = {
+  name: 'the King',
+  scenes: [
+    'A royal courier who is mostly hat and legs skids to a halt, salutes the Sunday Crown, and presses a sealed note into each hand. “His Majesty,” he pants, “says read it, don’t show the other one, and do try not to put the duck back in until the end.”',
+    'The King’s second-best seal is already on four envelopes that were not in the pack a moment ago. A postscript, in the royal hand: ONE EACH. NO PEEKING. IGNORE THE CHORUS. P.S. THE GLASS STONE IS STILL NOT TO BE MENTIONED.',
+    'A fanfare that has lost its way plays itself out of a hedge, and the King — or a very good portrait of him on a stick — leans in. “Little jobs,” says the portrait. “Little jobs, little verses. Don’t let the bard write them down until afterwards.”',
+    'Four envelopes land on the cushion beside the Sunday Crown, still warm from a pocket. The note on top: FOR THE ROAD. DO NOT SING THEM. ESPECIALLY YOU. There is a small royal drawing of a duck, crossed out, then drawn again, smaller.',
+  ],
+};
+
 export const beats = {
   "open:1": {
     kicker: "Prologue",
@@ -230,10 +242,10 @@ export const steps = [
     {
       place: "Ashfall Camp",
       icon: "flame",
-      foes: ["goblin", "goblin", "cinderling"],
+      foes: ["goblin", "goblin", "bonfire"],
       names: ["Hurrah", "Hooray", "Bang"],
       arrive: [
-        "Inside the camp the goblins are rehearsing a royal welcome for King Grotbag. Hurrah and Hooray, two goblins with flags, practise cheering. A Cinderling called Bang is the fireworks. Every time they reach the big finish, Bang goes off early, sets the flags alight, and they have to start again. They have started again forty times.",
+        "Inside the camp the goblins are rehearsing a royal welcome for King Grotbag. Hurrah and Hooray, two goblins with flags, practise cheering. A walking bonfire called Bang is the fireworks. Every time they reach the big finish, Bang goes off early, sets the flags alight, and they have to start again. They have started again forty times.",
         "They decide, with real relief, that strangers are a much better thing to throw fire bombs at than each other.",
       ],
       win: [
@@ -347,10 +359,10 @@ export const steps = [
     {
       place: "Mourner’s Row",
       icon: "skull",
-      foes: ["skeleton", "spider"],
+      foes: ["gargoyle", "spider"],
       names: ["Mr Pending", "Miss Pigeonhole"],
       arrive: [
-        "Back on Mourner’s Row, in a house the size of a cupboard, is the Crypt Lost-Property Office. A Bone Soldier called Mr Pending runs the front desk. A Crypt Spider called Miss Pigeonhole files things in webs on the ceiling, very neatly. Everything ever dropped in the crypt is up there: hats, keys, three hundred left gloves and, since this morning, a velvet cushion that looks a great deal like the Sunday Crown’s.",
+        "Back on Mourner’s Row, in a house the size of a cupboard, is the Crypt Lost-Property Office. A stone gargoyle called Mr Pending runs the front desk. A Crypt Spider called Miss Pigeonhole files things in webs on the ceiling, very neatly. Everything ever dropped in the crypt is up there: hats, keys, three hundred left gloves and, since this morning, a velvet cushion that looks a great deal like the Sunday Crown’s.",
         "Mr Pending would like to file the crown as well, as it is “clearly lost.” {knight} asks for the correct form to reclaim it. There is a form. It is forty pages long. Miss Pigeonhole has already started webbing.",
       ],
       win: [
@@ -360,10 +372,10 @@ export const steps = [
     {
       place: "The Drowned Crypt",
       icon: "spark",
-      foes: ["gloomstalker", "skeleton"],
+      foes: ["nightblade", "skeleton"],
       names: ["Quill", "Footnote"],
       arrive: [
-        "Rowing across the Drowned Crypt in a little boat comes Quill, a Gloom Stalker who is writing an unauthorised biography of the Duck Knight. He has never met the Duck Knight. He has never felt the need. His Bone Soldier assistant, Footnote, holds the ink and checks no facts whatsoever. Chapter one is called “Born in a Pond.”",
+        "Rowing across the Drowned Crypt in a little boat comes Quill, a figure of living smoke with a blank white mask, who is writing an unauthorised biography of the Duck Knight. He has never met the Duck Knight. He has never felt the need. His Bone Soldier assistant, Footnote, holds the ink and checks no facts whatsoever. Chapter one is called “Born in a Pond.”",
         "For the first time on the whole road, {knight} and {bard} are angry about exactly the same thing.",
       ],
       win: [
@@ -477,10 +489,10 @@ export const steps = [
     {
       place: "Kettle Tarn",
       icon: "spark",
-      foes: ["cinderling", "frostwhelp"],
+      foes: ["bonfire", "raincloud"],
       names: ["Simmer", "Shiver"],
       arrive: [
-        "By night, the Dowager’s bath-house on Kettle Tarn is run by two attendants: Simmer, a Cinderling who heats the water, and Shiver, a Frostwhelp who cools it. The Dowager likes her bath exactly right. In a hundred years it has never once been exactly right, and they blame each other in the tone of two people who have shared a small room for far too long.",
+        "By night, the Dowager’s bath-house on Kettle Tarn is run by two attendants: Simmer, a walking bonfire who heats the water, and Shiver, a small raincloud who cools it. The Dowager likes her bath exactly right. In a hundred years it has never once been exactly right, and they blame each other in the tone of two people who have shared a small room for far too long.",
         "They take one look at two travellers covered in crypt dust and decide, with frightening hospitality, that they need a bath.",
       ],
       win: [
@@ -512,6 +524,79 @@ export const steps = [
         "The Dowager sinks onto her hoard of crowns, lowers her great head, and waits for the end of the song.",
       ],
     },
+  ],
+];
+
+const moments = [
+  [
+    null,
+    { title: 'Quack, Sir, Quack', stat: 'wisdom', prize: 'gold', go: 'Count the verses',
+      tell: 'A farmer on the road to {place} is whistling the duck song and has lost count of the verses. There are eleven. Or twelve, if you count Twang’s. Somebody has to settle it before the chorus starts again.',
+      won: '{who} counts eleven, firmly. The farmer pays a coin for the peace. {knight} does not look at {bard}.', lost: '{who} counts twelve. {bard} looks pleased. {knight} looks at the sky.' },
+    null,
+    { title: 'Backing Howls', stat: 'speed', prize: 'atk', go: 'Come in on the chorus',
+      tell: 'Two howls from the wood on the road to {place} are doing “Quack, Sir, quack,” an octave down. They are waiting for the verses. {bard} cannot help himself. {knight} can. Somebody has to start.',
+      won: '{who} hits the chorus on the beat. The howls go quiet, impressed, and a bit of that fire stays in the arms.', lost: '{who} comes in early. The howls come in late. It is still, {knight} admits later, quite good.' },
+    null,
+    { title: 'Mungo’s Favourite', stat: 'wisdom', prize: 'hp', go: 'Hum it right through',
+      tell: 'On the far side of the Toll Bridge, on the road to {place}, Mungo is still humming. He wants to know if the duck was real. A kind hum might send him a little supper of courage.',
+      won: '{who} hums it through, honestly, without the splash. Mungo sighs. Everyone feels braver, and slightly fed.', lost: '{who} hums verse two. Mungo weeps. It is not a bad sound. It is a wet one.' },
+    { title: 'Five Stars', stat: 'strength', prize: 'block', go: 'Hold still for a review',
+      tell: 'A bark notebook is nailed to a post on the road to {place}. Someone has drawn a duck and given the road five stars. The post is loose. Somebody ought to hammer it in before the critics come back.',
+      won: '{who} hammers it straight. The duck, somehow, looks like a shield.', lost: '{who} hammers it. The duck now has three extra legs. A small critic, later, will give that five stars too.' },
+    null,
+    { title: 'Flags on Fire', stat: 'speed', prize: 'magic', go: 'Catch the last flag',
+      tell: 'Someone has been rehearsing a royal welcome on the road to {place}, and the flags are on fire again. One is still only slightly on fire. First to save it gets the spark.',
+      won: '{who} snatches it, smothers it, and the spark jumps happily into the next fight.', lost: '{who} snatches it. It is already finished. There is a lot of light. Not the useful kind.' },
+    null,
+  ],
+  [
+    { title: 'The Echo Vote', stat: 'wisdom', prize: 'magic', go: 'Sing one true note',
+      tell: 'The Weeping Stair on the road to {place} sends every note back three times. {bard} loves it. {knight} does not. One true note, not a joke, might be worth the echo.',
+      won: '{who} sings one clean note. It comes back warmer, and stays in the fingers.', lost: '{who} sings a quack, out of habit. It comes back three times. {knight} takes his helmet off so he cannot hear the third.' },
+    { title: 'Silence All Lutes', stat: 'speed', prize: 'block', go: 'Muffle the string',
+      tell: 'A sign on the road to {place} says PLEASE SILENCE ALL LUTES. {bard}’s lute has other plans. Somebody quick with a sock might save the next performance.',
+      won: '{who} muffles it just in time. The sock, oddly, feels like armour.', lost: '{who} muffles the wrong string. It honks. An usher, ahead, turns very slowly.' },
+    null,
+    { title: 'The Golden Duck', stat: 'strength', prize: 'atk', go: 'Lift the tapestry edge',
+      tell: 'A corner of Warp and Weft’s tapestry hangs into the road to {place}: a golden duck, mid-splash, in astonishing detail. It is heavier than thread. Somebody should roll it up before {knight} has to look at it again.',
+      won: '{who} rolls it gently. Under the duck, a spear-head the weavers used as a needle.', lost: '{who} rolls it. The duck unrolls. {knight} looks at it. He does not look away.' },
+    null,
+    { title: 'Over Here, Duck Knight', stat: 'wisdom', prize: 'gold', go: 'Give them nothing',
+      tell: 'Chalk arrows on the road to {place} all say DUCK KNIGHT THIS WAY. The paparazzi have been practising. A wise hero walks the other arrows.',
+      won: '{who} takes the unmarked door. Behind it, a dropped purse and a bit of quiet.', lost: '{who} follows the chalk. A ghost with a notebook looks delighted.' },
+    { title: 'Coffin-Lid Run', stat: 'speed', prize: 'hp', go: 'Sledge the tombs',
+      tell: 'The Drowned Crypt on the road to {place} is a sledging run. Tombstones are the jumps. {knight}’s shield would be perfect. He will not lend it. Somebody else will have to run.',
+      won: '{who} takes a coffin lid and flies. The landing is a feast of cold air and leftover courage.', lost: '{who} takes the lid. The lid takes {who}. {bard} calls it magnificent. It was not.' },
+    null,
+    { title: 'Chapter One: Born in a Pond', stat: 'wisdom', prize: 'block', go: 'Tear the page',
+      tell: 'A soaked first page floats on the water on the road to {place}. Chapter one is called “Born in a Pond.” {knight} and {bard} are angry about the same thing, for once. Somebody should fish it out.',
+      won: '{who} fishes it out and tears it. The rip sounds like a shield going up.', lost: '{who} fishes it out. It is already blank. The water, it seems, had standards.' },
+    null,
+  ],
+  [
+    { title: 'Encore of a Rockfall', stat: 'strength', prize: 'atk', go: 'Bow, then climb',
+      tell: 'A rockfall on the road to {place} has already had one encore, and the rocks are still in a heap. Somebody has to bow, then move them, or the audience will wait forever.',
+      won: '{who} bows, heaves, and the path opens with a swing still in the arms.', lost: '{who} bows. The rocks demand another encore. This is going to take a minute.' },
+    { title: 'The Shield Verse', stat: 'wisdom', prize: 'block', go: 'Keep it true',
+      tell: '{bard} is writing a verse about a shield on the road to {place} and keeps getting the rhymes in the way of the truth. {knight} will not glow. Nobody glows. Somebody has to hold the line.',
+      won: '{who} keeps it true. The verse sits on the shoulders like plate.', lost: '{who} lets it rhyme. {knight} “glows.” {bard} crosses it out before anyone sees. Almost.' },
+    null,
+    { title: 'The Glass Stone', stat: 'wisdom', prize: 'gold', go: 'Do not mention it',
+      tell: 'The Sunday Crown’s glass stone catches the mine-light on the road to {place}. The King asked that it not be mentioned. A careful eye might still count nine stones, and find a coin in the dust that matches the ninth.',
+      won: '{who} counts nine and says nothing. The coin is there anyway, as a kind of hush-money.', lost: '{who} says “glass.” {knight} coughs. {bard} writes it down and then, for once, rubs it out.' },
+    null,
+    { title: 'Cygnets on the Path', stat: 'speed', prize: 'hp', go: 'Wait for the last one',
+      tell: 'A line of cygnets is crossing the road to {place}. {knight} will not take a step until the last one has gone by. That is the moat. That is exactly the moat. Somebody has to wait well.',
+      won: '{who} waits. The last cygnet nods, which is rare, and everyone feels a little mended.', lost: '{who} waits, then fidgets. A swan looks at {who} as if money were owed.' },
+    { title: 'Page Nine', stat: 'strength', prize: 'magic', go: 'Trace the Code',
+      tell: 'The old Code of the Keepers is carved in the Keep wall on the road to {place}. Page nine: a foe who yields shall be spared, and spared kindly. Tracing it takes a firm hand.',
+      won: '{who} traces every letter. The stone warms. A little of that law stays in the blood.', lost: '{who} traces page eight by mistake. It is about hats. {knight} is very patient.' },
+    null,
+    { title: 'The Bucket Helmet', stat: 'speed', prize: 'atk', go: 'Catch the bucket',
+      tell: 'A small wyrm in a bucket for a helmet is practising charges on the road to {place}. The bucket keeps falling off. First to catch it gets a swing, and a very serious salute.',
+      won: '{who} catches it, sets it straight, and the salute is perfect. The next fight starts keen.', lost: '{who} catches it. It is still slightly on the wyrm. There is a clang. Granny, above, may have heard.' },
+    null,
   ],
 ];
 
@@ -552,7 +637,7 @@ export const actSpecs = [
       ["goblin", "cultist"],
       ["goblin", "goblin", "goblin"],
       ["goblin", "wolf"],
-      ["goblin", "goblin", "cinderling"],
+      ["goblin", "goblin", "bonfire"],
       ["goblinking"],
     ],
     names: [
@@ -573,6 +658,7 @@ export const actSpecs = [
       "7": 0.55,
       "9": 0.55,
     },
+    moments: moments[0],
     help: [],
   },
   {
@@ -610,8 +696,8 @@ export const actSpecs = [
       ["bonewarden"],
       ["gloomstalker", "wraith"],
       ["frostwhelp", "frostwhelp"],
-      ["skeleton", "spider"],
-      ["gloomstalker", "skeleton"],
+      ["gargoyle", "spider"],
+      ["nightblade", "skeleton"],
       ["lich"],
     ],
     names: [
@@ -633,6 +719,7 @@ export const actSpecs = [
       "8": 1,
       "9": 1.1,
     },
+    moments: moments[1],
     help: [],
   },
   {
@@ -671,7 +758,7 @@ export const actSpecs = [
       ["blazemorrow"],
       ["gloomstalker", "frostwhelp"],
       ["chainbinder", "cultist"],
-      ["cinderling", "frostwhelp"],
+      ["bonfire", "raincloud"],
       ["ashwyrm", "cinderling"],
       ["blazemorrow"],
     ],
@@ -707,6 +794,7 @@ export const actSpecs = [
         enemies: ["blazemorrow"],
       },
     },
+    moments: moments[2],
     help: [],
   },
 ];
