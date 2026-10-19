@@ -17,7 +17,7 @@ test('Pip Needs a Lift is a 1–6 any-hero pack with its own voice', () => {
   assert.equal(p.startMode, 'scaled');
   assert.equal(p.cover.img, MONSTERS.visitor.img);
   assert.equal(voiceOf({ pack: 'starfall' }).name, 'Mother Hob');
-  assert.equal(voiceOf({ pack: 'dawn' }), null);
+  assert.equal(voiceOf({ pack: 'dawn' }).name, 'the Lantern');
 });
 
 test('every Pip fight is cast from real minis, matches the story steps, and walks the painted places', () => {

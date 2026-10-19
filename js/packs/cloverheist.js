@@ -1,4 +1,16 @@
 // Writer copy for the cloverheist pack. Generated from the campaign markdown; edit the source file, not this one.
+// Casts are catalog ids from docs/MINIS.md. Sir Reginald Brush hands out the envelopes. Quiet road moments follow the feathers.
+
+export const voice = {
+  name: 'Sir Reginald Brush',
+  scenes: [
+    'A red fox in a monocle steps out of a hedge, bows, and produces four envelopes from a sack that was empty a moment ago. “Gentlemen. And so on. A little professional courtesy before we all try to rob the same magpie.”',
+    'Sir Reginald Brush is sitting on your pack, polishing his monocle. “Before you start,” he says, “I have an envelope for each of you. Read it. Don’t show the others. I shall know. I always know.” He hops down. Your purse is still there. This time.',
+    'A lumpy sack lands at your feet. Inside: one envelope each, and a note in very good handwriting: ONE EACH. NO PEEKING. DO KEEP UP. — R.B. From behind a stump comes the sound of a fox trying not to laugh.',
+    'Sir Reginald Brush tips his monocle, tucks an envelope into every pocket, and is gone before you can thank him. A feather sits where he stood. It is not a magpie feather. You decide not to ask.',
+  ],
+};
+
 export const beats = {
   "open:1": {
     kicker: "Prologue",
@@ -139,7 +151,7 @@ export const steps = [
     {
       place: "Burnt Orchard",
       icon: "flame",
-      foes: ["goblindrummer", "cinderling"],
+      foes: ["goblin", "cinderling"],
       names: ["Rumpus", "Glim"],
       arrive: [
         "In the Burnt Orchard a goblin called Rumpus is the magpies’ hired lookout. His job is to warn the gang if anyone comes. His warning signal is a cooking pot strapped to his belly and two wooden spoons, and he is beating it now, very hard, so that the whole of the Marches knows exactly where the lookout is. His friend Glim, a Cinderling, holds the light so the magpies can find their way home.",
@@ -178,7 +190,7 @@ export const steps = [
     {
       place: "The Toll Bridge",
       icon: "skull",
-      foes: ["badgerbaron"],
+      foes: ["ogre"],
       names: ["Baron Grumbletusk"],
       arrive: [
         "Baron Grumbletusk, an enormous hill ogre, is dug in across the Toll Bridge beside a heap of buttons and spoons he has been paid to keep the road shut. Thick hide. Big fists. He digs down when you hit him and comes up where you were not looking, and when he winds up, step away from the bridge.",
@@ -190,10 +202,10 @@ export const steps = [
     {
       place: "Smoke Hollow",
       icon: "coin",
-      foes: ["goblin", "cinderling"],
+      foes: ["goblin", "bonfire"],
       names: ["Honest Nob", "Sparkle"],
       arrive: [
-        "In Smoke Hollow a goblin called Honest Nob has set up a stall. HONEST NOB’S LUCKY CHARMS, says the sign. ALL GENUINE. Some of the charms are stolen. Some are turnips with a face painted on. His four-leaf clovers are three-leaf clovers with the fourth leaf drawn on in pencil. His assistant, Sparkle, a Cinderling, adds a little glow to anything that is not selling.",
+        "In Smoke Hollow a goblin called Honest Nob has set up a stall. HONEST NOB’S LUCKY CHARMS, says the sign. ALL GENUINE. Some of the charms are stolen. Some are turnips with a face painted on. His four-leaf clovers are three-leaf clovers with the fourth leaf drawn on in pencil. His assistant, Sparkle, a walking bonfire, adds a little glow to anything that is not selling.",
         "He offers you a lucky turnip at a very special price. When you decline, he decides you are bad for business.",
       ],
       win: [
@@ -229,10 +241,10 @@ export const steps = [
     {
       place: "Ashfall Camp",
       icon: "flame",
-      foes: ["goblin", "goblin", "goblindrummer"],
+      foes: ["tuskraider", "goblin", "goblin"],
       names: ["Hoist", "Heave", "Thump"],
       arrive: [
-        "Inside the camp, two goblins called Hoist and Heave are loading the king’s sacks onto a cart, and a goblin drummer called Thump is keeping time with a pot and two spoons. Thump keeps speeding up. Hoist and Heave keep trying to keep up. The cart has been loaded and unloaded nine times, and nobody is happy, least of all the cart.",
+        "Inside the camp, a hired Ash-Tusk called Hoist and a goblin called Heave are loading the king’s sacks onto a cart, and a goblin drummer called Thump is keeping time with a pot and two spoons. Thump keeps speeding up. Hoist and Heave keep trying to keep up. The cart has been loaded and unloaded nine times, and nobody is happy, least of all the cart.",
         "They see you and stop. They are glad of the rest. They are less glad of you.",
       ],
       win: [
@@ -282,14 +294,14 @@ export const steps = [
     {
       place: "The Pale Nave",
       icon: "skull",
-      foes: ["spider", "skeleton", "skeleton"],
+      foes: ["spider", "gargoyle", "skeleton"],
       names: ["Courier Eight", "Lug", "Heave-Ho"],
       arrive: [
-        "Down the Pale Nave comes a delivery: a Crypt Spider called Courier Eight, and two Bone Soldiers called Lug and Heave-Ho, carrying a sack of luck between them. Courier Eight has eight legs and is carrying nothing at all. Lug and Heave-Ho have four legs between them and are carrying everything. They have raised this with management. Management is Courier Eight.",
+        "Down the Pale Nave comes a delivery: a Crypt Spider called Courier Eight, a stone gargoyle called Lug, and a Bone Soldier called Heave-Ho, carrying a sack of luck between them. Courier Eight has eight legs and is carrying nothing at all. Lug and Heave-Ho have the sack. They have raised this with management. Management is Courier Eight.",
         "The sack must reach Grave-Silk Hall by supper. You are between it and supper.",
       ],
       win: [
-        "Lug and Heave-Ho put the sack down, sit on it and refuse to get up, and Courier Eight scuttles off to complain to someone higher up. Inside the sack are three horseshoes, a lucky thimble and a four-leaf clover with a silver thread tied round its stem, as if someone was about to sew it into something.",
+        "Lug sits down on the sack, which is the first rest a statue has had in years, Heave-Ho refuses to get up, and Courier Eight scuttles off to complain to someone higher up. Inside the sack are three horseshoes, a lucky thimble and a four-leaf clover with a silver thread tied round its stem, as if someone was about to sew it into something.",
       ],
     },
     {
@@ -409,13 +421,13 @@ export const steps = [
     {
       place: "Hoardfall Mine",
       icon: "coin",
-      foes: ["magpies"],
-      names: ["the Mine Gang"],
+      foes: ["magpies", "gargoyle"],
+      names: ["the Mine Gang", "Old Pit"],
       arrive: [
-        "At the mouth of Hoardfall Mine a magpie gang, the Mine Gang, is carrying out the mountain’s gold one coin at a time, because one coin is all a magpie can carry. They have been at it for a month. The mine is enormous. They are not even halfway, and they look at your purse as if it might speed things up.",
+        "At the mouth of Hoardfall Mine a magpie gang, the Mine Gang, is carrying out the mountain’s gold one coin at a time, because one coin is all a magpie can carry. They have been at it for a month. The mine is enormous. They are not even halfway. A stone gargoyle called Old Pit was meant to stop them, and has instead been holding the door. They look at your purse as if it might speed things up.",
       ],
       win: [
-        "The Mine Gang flies off, each magpie with exactly one coin. The mine is still nearly full. Among the dropped coins you find three lucky pennies, and above the mine door a horseshoe that nobody thought to steal, because it was the right way up.",
+        "The Mine Gang flies off, each magpie with exactly one coin, and Old Pit sits down in the doorway with a sound like a closing gate. The mine is still nearly full. Among the dropped coins you find three lucky pennies, and above the mine door a horseshoe that nobody thought to steal, because it was the right way up.",
       ],
     },
     {
@@ -434,7 +446,7 @@ export const steps = [
     {
       place: "The Brazen Bridge",
       icon: "skull",
-      foes: ["roc"],
+      foes: ["ashwyrm"],
       names: ["Bertha"],
       arrive: [
         "Bertha, a great wyrm the size of a cart, lands on the Brazen Bridge with a stolen weathervane in one claw. She guards the road to the nest, and she has decided that {someone}’s head is an egg. She circles before she dives, so watch the sky. When she has had enough she will fly off. Wyrms finish lunch, not fights.",
@@ -459,10 +471,10 @@ export const steps = [
     {
       place: "The Ember Throne",
       icon: "crown",
-      foes: ["magpies", "magpies", "cinderling"],
+      foes: ["magpies", "magpies", "bonfire"],
       names: ["The Throne Gang", "the Night Gang", "Ember"],
       arrive: [
-        "The Ember Queen is on holiday. There is a sign on her throne that says so. The magpies have noticed. Two whole gangs, the Throne Gang and the Night Gang, are taking her hoard apart coin by coin, while a Cinderling called Ember, who was meant to be minding the place, holds the door open for them because nobody told it not to.",
+        "The Ember Queen is on holiday. There is a sign on her throne that says so. The magpies have noticed. Two whole gangs, the Throne Gang and the Night Gang, are taking her hoard apart coin by coin, while a walking bonfire called Ember, who was meant to be minding the place, holds the door open for them because nobody told it not to.",
         "They have left the Queen a postcard on her pillow. It says WISH YOU WERE HERE (NOT REALLY).",
       ],
       win: [
@@ -510,6 +522,79 @@ export const steps = [
   ],
 ];
 
+const moments = [
+  [
+    null,
+    { title: 'A Feather in the Jam', stat: 'wisdom', prize: 'gold', go: 'Fish it out',
+      tell: 'On the road to {place} the sandwich lands butter-side down for the third time, and there is a magpie feather stuck in the jam. Somebody has to get it out without losing the lunch.',
+      won: '{who} extracts the feather, and a lucky penny that was hiding under the butter. The sandwich is still a sandwich.', lost: '{who} extracts the feather. The jam extracts {who}’s sleeve. Toast, watching, lands butter-side down in sympathy.' },
+    null,
+    { title: 'Lucky’s Stick', stat: 'strength', prize: 'atk', go: 'Throw a proper stick',
+      tell: 'Lucky the wolf has followed you out of Ravens’ Rest as far as the road to {place}, carrying a stick the size of a fence-post. He would like it thrown. He would like it thrown a long way.',
+      won: '{who} hurls it into next week. Lucky brings it back, and a fallen raider’s cleaver nobody asked for.', lost: '{who} throws it. It goes four feet. Lucky sits on {who} kindly, which is how wolves say never mind.' },
+    null,
+    { title: 'Painted Turnips', stat: 'wisdom', prize: 'magic', go: 'Spot the real clover',
+      tell: 'A trail of painted turnips leads toward {place}. One of them, people swear, is a real four-leaf clover with the paint still wet. A stall is smoking in the hollow ahead.',
+      won: '{who} finds it. The paint wipes off. The luck does not, and it tingles all the way up the arm.', lost: '{who} bites a turnip. It is a turnip. A sign in the hollow, dimly, says ALL GENUINE.' },
+    { title: 'Counting to Four', stat: 'speed', prize: 'hp', go: 'Count the clovers first',
+      tell: 'A heap of four-leaf clovers has been abandoned mid-count on the road to {place}, next to a pot of stew. The counters will be back. The first to four without starting over gets lunch.',
+      won: '{who} counts four leaves, twice, and claims the pot. It tastes of luck and slightly of boot, which is strengthening.', lost: '{who} gets to three, twice. A magpie takes the fourth leaf and will not give it back.' },
+    null,
+    { title: 'Buttons in the Grass', stat: 'speed', prize: 'block', go: 'Gather the buttons',
+      tell: 'King Snaffle’s goblins have no buttons left. The hill on the road to {place} is glittering with them. First to a handful gets a shield that actually stays up.',
+      won: '{who} fills a pocket and finds a round shield under the last button. The trousers of Cloverland owe {who} a favour.', lost: '{who} picks up three buttons. They are all the same button. Magpies have been here.' },
+    null,
+  ],
+  [
+    { title: 'Sign Here', stat: 'wisdom', prize: 'gold', go: 'Read the ledger',
+      tell: 'Hatch and Chute have left the parcel ledger open on the stair to {place}. Every line says the same thing. One line, near the bottom, has a coin pressed into the ink.',
+      won: '{who} reads past the stamps and lifts the coin. It is still lucky. The ledger smells of coal and secrets.', lost: '{who} signs for a parcel. The parcel is {who}. Hatch, later, will be delighted.' },
+    { title: 'Hot Beaks', stat: 'speed', prize: 'magic', go: 'Catch a dropped flame',
+      tell: 'The Candle Snatchers have been trying to pick up candle flames again on the road to {place}. One flame is falling. Somebody quick could catch it before Mrs Wick has a fit.',
+      won: '{who} cups it. It sits in the palm like a tame spark, and stays there for the next fight.', lost: '{who} catches it. Briefly. Mrs Wick’s sigh could put out a house.' },
+    null,
+    { title: 'A Loose Thread', stat: 'strength', prize: 'atk', go: 'Pull, but not too much',
+      tell: 'A silver thread trails out of Grave-Silk Hall onto the road to {place}. Pull it and pennies fall. Pull too hard and you wear a sleeve.',
+      won: '{who} tugs once, neatly. Pennies, a thimble, and a knitting needle that will do for a spear.', lost: '{who} pulls. {who} is now wearing a very long, very stylish sleeve. Purl, above, tuts.' },
+    null,
+    { title: 'Mabel’s Ring', stat: 'wisdom', prize: 'hp', go: 'Look in the crack',
+      tell: 'Mournful Mabel’s lucky ring was in a crack in the floor the whole time. On the road to {place} there are a lot of cracks. One of them is humming.',
+      won: '{who} finds a different ring, smaller, still warm from being missed. Mabel, somewhere, hums louder.', lost: '{who} finds a crack. In the crack, a beetle. The beetle is not lucky. It is judgemental.' },
+    { title: 'Coffin-Lid Sledge', stat: 'speed', prize: 'block', go: 'Ride the lid',
+      tell: 'Sir Reginald has left his coffin-lid sledge on the ice on the road to {place}. Nippy froze the path. It would be a very fast way across. It would also be a lid.',
+      won: '{who} rides it straight as a die and steps off with ice in their hair and a door for a shield.', lost: '{who} rides it in a circle, twice. Sir Reginald, from a safe distance, applauds the form.' },
+    null,
+    { title: 'Needles in the Dark', stat: 'wisdom', prize: 'magic', go: 'Follow the clicking',
+      tell: 'The clicking of knitting needles on the road to {place} is very fast now. If you walk toward it in time, the silk will not catch your feet.',
+      won: '{who} steps on the beat. The web parts like a curtain, and a little of the silver stays in the hands.', lost: '{who} steps off the beat. A sleeve attaches itself. Madam Silkwood, ahead, does not look up.' },
+    null,
+  ],
+  [
+    { title: 'Warm Rocks', stat: 'strength', prize: 'hp', go: 'Claim a step',
+      tell: 'The Kindling Steps on the road to {place} are warm enough to toast bread. The Step Gang has not saved you a seat. Somebody will have to take one.',
+      won: '{who} shoulders onto a high step. The heat soaks in. Toasty, rolling past, looks briefly jealous.', lost: '{who} sits down. The step is very warm. The step is also slightly on fire.' },
+    { title: 'Chained Sunshine', stat: 'wisdom', prize: 'gold', go: 'Unpick a padlock',
+      tell: 'Mr Clasp has chained a puddle of sunlight to the glass on the road to {place}. It is still trying to leave. The padlock is gold. So is what is under it.',
+      won: '{who} pops the lock. The sun goes home. The padlock stays, which is a kind of fee.', lost: '{who} picks at it. Mr Clasp, from behind a rock, says it is a specialist job.' },
+    null,
+    { title: 'One Coin at a Time', stat: 'speed', prize: 'atk', go: 'Beat the Mine Gang',
+      tell: 'The Mine Gang is still carrying gold out one coin at a time on the road to {place}. You could help. You could also be quicker.',
+      won: '{who} nips past with a handful and a swing that will do for the next fight.', lost: '{who} nips one coin. A magpie nips it back. Old Pit, in the doorway, does not blink.' },
+    null,
+    { title: 'A Spoon for Smoulder', stat: 'wisdom', prize: 'block', go: 'Find his spoon first',
+      tell: 'Smoulder’s spoon is still on the Keep steps, or it was. On the road to {place} the magpies have been dropping things. One of them is the right shape.',
+      won: '{who} finds it, leaves it on the ledge, and keeps the horseshoe that was under it. Smoulder pretends not to see. That is thanks.', lost: '{who} finds a fork. Smoulder, on his ledge, looks personally wounded.' },
+    { title: 'Wish You Were Here', stat: 'strength', prize: 'magic', go: 'Put the hoard back',
+      tell: 'The magpies have left the Ember Queen’s coins in a trail on the road to {place}. Somebody ought to put a few back. They are heavy. They are also slightly on fire.',
+      won: '{who} heaves a chest onto the throne steps. The postcard curls. A little of the Queen’s heat stays in the arms.', lost: '{who} heaves. The chest heaves back. Ember holds the door, helpfully, the wrong way.' },
+    null,
+    { title: 'A Shiny Pebble', stat: 'speed', prize: 'gold', go: 'Roll it first',
+      tell: 'The Royal Guard will break ranks for a shiny pebble. On the road to {place} there is a very shiny pebble. First to roll it down the mountain wins whatever falls out of the line.',
+      won: '{who} rolls it. Buttons, a thimble, and a coin with four leaves stamped on it bounce after.', lost: '{who} rolls it. It is a button. The line does not break. The pebble, later, will be famous.' },
+    null,
+  ],
+];
+
 export const actSpecs = [
   {
     id: 1,
@@ -540,14 +625,14 @@ export const actSpecs = [
     ],
     fights: [
       ["magpies"],
-      ["goblindrummer", "cinderling"],
+      ["goblin", "cinderling"],
       ["wolf", "magpies"],
       ["foxrogue", "wolf"],
-      ["badgerbaron"],
-      ["goblin", "cinderling"],
+      ["ogre"],
+      ["goblin", "bonfire"],
       ["goblin", "goblin", "goblin"],
       ["magpies", "magpies"],
-      ["goblin", "goblin", "goblindrummer"],
+      ["tuskraider", "goblin", "goblin"],
       ["goblinking"],
     ],
     names: [
@@ -568,6 +653,7 @@ export const actSpecs = [
       "7": 0.55,
       "9": 0.6,
     },
+    moments: moments[0],
     help: [],
   },
   {
@@ -600,7 +686,7 @@ export const actSpecs = [
     fights: [
       ["skeleton", "skeleton"],
       ["wraith", "magpies"],
-      ["spider", "skeleton", "skeleton"],
+      ["spider", "gargoyle", "skeleton"],
       ["spider", "spider"],
       ["bonewarden"],
       ["wraith"],
@@ -628,6 +714,7 @@ export const actSpecs = [
       "8": 1.2,
       "9": 1.15,
     },
+    moments: moments[1],
     help: [],
   },
   {
@@ -661,11 +748,11 @@ export const actSpecs = [
     fights: [
       ["magpies", "cinderling"],
       ["chainbinder", "magpies"],
-      ["magpies"],
+      ["magpies", "gargoyle"],
       ["frostwhelp", "frostwhelp", "magpies"],
-      ["roc"],
       ["ashwyrm"],
-      ["magpies", "magpies", "cinderling"],
+      ["ashwyrm"],
+      ["magpies", "magpies", "bonfire"],
       ["foxrogue", "cinderling"],
       ["magpies", "frostwhelp", "cinderling"],
       ["magpieking"],
@@ -673,7 +760,7 @@ export const actSpecs = [
     names: [
       ["The Step Gang", "Toasty"],
       ["Mr Clasp", "the Polishers"],
-      ["the Mine Gang"],
+      ["the Mine Gang", "Old Pit"],
       ["Glint", "Glimmer", "the Ice Gang"],
       ["Bertha"],
       ["Smoulder"],
@@ -684,17 +771,17 @@ export const actSpecs = [
     ],
     fightHp: {
       "2": 1.2,
-      "3": 1.5,
-      "4": 1.2,
+      "4": 0.55,
       "6": 1.2,
-      "7": 1.25,
+      "7": 0.5,
       "8": 1.2,
+      "9": 0.55,
     },
     gates: {
       "5": {
         kind: "elite",
         place: "The Brazen Bridge",
-        enemies: ["roc"],
+        enemies: ["ashwyrm"],
       },
       "10": {
         kind: "boss",
@@ -702,6 +789,7 @@ export const actSpecs = [
         enemies: ["magpieking"],
       },
     },
+    moments: moments[2],
     help: [],
   },
 ];

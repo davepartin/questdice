@@ -1,5 +1,5 @@
 // Campaign packs (Dave, Oct 2026): every story is one pack. The Dawn Lantern is the original
-// campaign; The Clover Heist is a 1–6 any-hero Cloverland tale; Pip Needs a Lift is a 1–6 escort story with its own road moments
+// campaign (beats in story.js, moments and envelope voice in packs/dawn.js); The Clover Heist is a 1–6 any-hero Cloverland tale; Pip Needs a Lift is a 1–6 escort story with its own road moments
 // and secret-objective voice; Rival Duo and That’s Not How It Went
 // are two-hero packs with their own locked fights.
 // Duo packs are played at a table, so their fights already fit the pair: the road sets where the heroes should be and
@@ -11,6 +11,7 @@ import * as rivalDuo from './packs/rivalduo.js';
 import * as balladPack from './packs/ballad.js';
 import * as cloverHeist from './packs/cloverheist.js';
 import * as starfall from './packs/starfall.js';
+import * as dawnPack from './packs/dawn.js';
 
 export const DEFAULT_PACK = 'dawn';
 
@@ -180,8 +181,10 @@ const DAWN = {
   forcedClasses: null,
   startMode: 'scaled',
   acts: ACTS,
+  voice: dawnPack.voice, // the stolen flame hands out the secret objectives (secrets.js)
   // beats + places live in story.js so existing tests and Dawn copy stay put
 };
+dawnPack.moments.forEach((m, i) => { ACTS[i].moments = m; });
 
 const RIVALDUO = {
   id: 'rivalduo',
@@ -194,6 +197,7 @@ const RIVALDUO = {
   startMode: 'fresh',
   // cultist / lich read as a wizard; ironwarden reads as a dwarf
   ban: ['cultist', 'lich', 'ironwarden'],
+  voice: rivalDuo.voice,
   acts: finishActs(rivalDuo.actSpecs, ['cultist', 'lich', 'ironwarden']),
   beats: rivalDuo.beats,
   steps: rivalDuo.steps,
@@ -210,6 +214,7 @@ const BALLAD = {
   startMode: 'fresh',
   // dirgesinger reads as a bard; armoured humans with shields read as knights
   ban: ['dirgesinger', 'shieldbearer', 'ironwarden', 'fallenchampion'],
+  voice: balladPack.voice,
   acts: finishActs(balladPack.actSpecs, ['dirgesinger', 'shieldbearer', 'ironwarden', 'fallenchampion']),
   beats: balladPack.beats,
   steps: balladPack.steps,
@@ -225,14 +230,10 @@ const CLOVERHEIST = {
   forcedClasses: null,
   startMode: 'scaled',
   ban: [],
-  // NICE-TO-HAVE fallbacks: delete each line once that painted mini lands.
   monsters: {
-    goblindrummer: { statsFrom: 'goblin', name: 'Goblin Drummer' }, // Rumpus: goblin mini until goblindrummer is painted
-    badgerbaron: { statsFrom: 'ogre', name: 'Baron Grumbletusk' }, // Grumbletusk: ogre mini until badgerbaron is painted
     silkwood: { name: 'Madam Silkwood' }, // painted silkwood mini; Heist keeps the comic name
-    roc: { statsFrom: 'ashwyrm', name: 'Bertha' }, // Bertha: Ashmaw mini until roc is painted
-    // marmalade / parrotcaptain cameos dropped (fightHp II.6 = 1.6, III.3 = 1.5) until those minis are painted
   },
+  voice: cloverHeist.voice,
   acts: finishActs(cloverHeist.actSpecs, []),
   beats: cloverHeist.beats,
   steps: cloverHeist.steps,

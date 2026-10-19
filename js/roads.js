@@ -1,7 +1,7 @@
 // The computer is the road. Events are seeded from the campaign, so the same company
 // meets the same scene every time they reload, and a choice is the only thing that branches.
 import { HELP_FIGHTS, placeOf } from './story.js';
-import { actsOf, helpFightsOf, helpOff } from './campaigns.js';
+import { actsOf, helpFightsOf, helpOff, fillNames } from './campaigns.js';
 import {
   hashSeed, makeRng, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf, questsFor,
 } from './engine.js';
@@ -266,7 +266,11 @@ const MOMENTS = [
 ];
 // A writer's own moment for this step: act.moments[step - 1] = { title, stat, tell, go, won, lost, prize } ({place} and {who} are filled in)
 const packMoment = (c) => { const acts = actsOf(c); return acts[(c.act - 1) % acts.length]?.moments?.[c.step - 1] || null; };
-const fillIn = (text, ctx, who = '') => String(text || '').replaceAll('{place}', toward(ctx).replace(/^the road to /, '')).replaceAll('{who}', who).replaceAll('{company}', joinNames(ctx.members));
+const fillIn = (text, ctx, who = '') => fillNames(
+  String(text || '').replaceAll('{place}', toward(ctx).replace(/^the road to /, '')).replaceAll('{who}', who).replaceAll('{company}', joinNames(ctx.members)),
+  ctx.members,
+  { seed: ctx.campaign?.seed, lineId: `moment:${ctx.campaign?.act}.${ctx.campaign?.step}` },
+);
 const PACK_MOMENT = moment({ id: 'm-pack', stat: 'speed', title: 'On the road', prize: 'magic', go: 'Give it a go',
   tell: (ctx) => fillIn(packMoment(ctx.campaign)?.tell, ctx), won: (ctx, who) => fillIn(packMoment(ctx.campaign)?.won, ctx, who), lost: (ctx, who) => fillIn(packMoment(ctx.campaign)?.lost, ctx, who) });
 for (const m of MOMENTS) ROADS.push(m);

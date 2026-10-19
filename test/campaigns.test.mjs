@@ -376,7 +376,7 @@ test('The Clover Heist is a 1–6 any-hero scaled pack with writer casts and fal
   assert.deepEqual(acts[2].fights[7], ['foxrogue', 'cinderling']);
   assert.deepEqual(acts[2].fights[9], ['magpieking']);
   assert.equal(acts[2].names[9][0], 'The Magpie King');
-  assert.deepEqual(acts[2].gates[5].enemies, ['roc']);
+  assert.deepEqual(acts[2].gates[5].enemies, ['ashwyrm']);
   assert.deepEqual(acts[2].gates[10].enemies, ['magpieking']);
   assert.equal(acts[2].route[9], 'Wyrmwatch');
   assert.deepEqual(acts[0].help, []);
@@ -388,20 +388,16 @@ test('The Clover Heist is a 1–6 any-hero scaled pack with writer casts and fal
   assert.deepEqual(acts[1].fights[5], ['wraith']);
   assert.deepEqual(acts[1].names[5], ['Mournful Mabel']);
   assert.equal(acts[1].fightHp[6], 1.6);
-  assert.deepEqual(acts[2].fights[2], ['magpies']);
-  assert.deepEqual(acts[2].names[2], ['the Mine Gang']);
-  assert.equal(acts[2].fightHp[3], 1.5);
-  // Nice-to-have minis stand in on existing sheets until they are painted.
-  assert.equal(monsterOf('goblindrummer', { pack: 'cloverheist' }).img, monsterOf('goblin').img);
-  assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).img, monsterOf('ogre').img);
-  assert.equal(monsterOf('badgerbaron', { pack: 'cloverheist' }).name, 'Baron Grumbletusk');
+  assert.deepEqual(acts[2].fights[2], ['magpies', 'gargoyle']);
+  assert.deepEqual(acts[2].names[2], ['the Mine Gang', 'Old Pit']);
+  assert.equal(acts[0].fights[4][0], 'ogre');
+  assert.equal(acts[2].fights[4][0], 'ashwyrm');
   const silk = monsterOf('silkwood', { pack: 'cloverheist' });
   assert.equal(silk.img, 'assets/miniatures/silkwood.webp');
   assert.equal(silk.name, 'Madam Silkwood');
   assert.equal(silk.adds, 'spider');
   assert.equal(silk.hp, monsterOf('lich').hp);
   assert.equal(monsterOf('silkwood').name, 'The Grave-Silk Matriarch');
-  assert.equal(monsterOf('roc', { pack: 'cloverheist' }).img, monsterOf('ashwyrm').img);
   assert.equal(monsterOf('magpieking').look, 'left');
   assert.equal(monsterOf('foxrogue').nemesis, false);
   const h = E.newHero({ name: 'Ada', cls: 'knight', seed: 4, pack: 'cloverheist' });
@@ -417,7 +413,7 @@ test('The Clover Heist is a 1–6 any-hero scaled pack with writer casts and fal
   h.campaign.act = 3; h.campaign.step = 5;
   const bertha = E.questsFor(h)[0];
   assert.equal(bertha.kind, 'elite');
-  assert.deepEqual(bertha.enemies, ['roc']);
+  assert.deepEqual(bertha.enemies, ['ashwyrm']);
   // PARTY numbers stay Dave’s (this pack is not wired through storyScale).
   assert.equal(PARTY.hpPer, 1.2);
   assert.equal(PARTY.flatPer, 10);

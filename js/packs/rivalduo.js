@@ -1,4 +1,16 @@
 // Writer copy for the rivalduo pack. Generated from the campaign markdown; edit the source file, not this one.
+// Casts are catalog ids from docs/MINIS.md. Madame Twill, who sold the bangle, hands out the envelopes.
+
+export const voice = {
+  name: 'Madame Twill',
+  scenes: [
+    'Madame Twill’s Novelty Charms has no shop-front on this road, and yet here she is, a small woman in seventeen scarves, pressing an envelope into each hand. “Small print,” she says. “Always read the small print. And don’t show your friend. That’s in the small print too.”',
+    'A brass bell that is not attached to anything rings, and Madame Twill leans over a stall that was not there a moment ago. “Before you start,” she says. “One each. The bangle likes a secret. So do I.”',
+    'There is a smell of polish and boiled sweets, and Madame Twill is tucking envelopes into pockets. “I only sold you a Friendship Bangle,” she says. “These are extra. No refunds. No peeking.”',
+    'A little card lands at your feet: NOVELTY CHARM, ONE WORTHY QUEST, ENVELOPES INCLUDED. Madame Twill’s handwriting. From somewhere behind the stall comes the sound of a woman counting to two and looking very pleased.',
+  ],
+};
+
 export const beats = {
   "open:1": {
     kicker: "Prologue",
@@ -347,10 +359,10 @@ export const steps = [
     {
       place: "Mourner’s Row",
       icon: "skull",
-      foes: ["skeleton", "spider"],
+      foes: ["gargoyle", "spider"],
       names: ["Sweeps", "Cobweb Kate"],
       arrive: [
-        "Back on Mourner’s Row, a Bone Soldier called Sweeps is losing a war. Every night he sweeps the street. Every night a Crypt Spider called Cobweb Kate webs it all back up behind him. They have done this for so long that neither can stop, in case the other one wins.",
+        "Back on Mourner’s Row, a stone gargoyle called Sweeps is losing a war. Every night he sweeps the street. Every night a Crypt Spider called Cobweb Kate webs it all back up behind him. They have done this for so long that neither can stop, in case the other one wins.",
         "Then they both decide, at the same moment, that the strangers are making a mess, and for the first time in a century they are on the same side.",
       ],
       win: [
@@ -426,10 +438,10 @@ export const steps = [
     {
       place: "Hoardfall Mine",
       icon: "coin",
-      foes: ["cinderling", "frostwhelp"],
+      foes: ["bonfire", "frostwhelp"],
       names: ["Brother Ingot", "Sister Frostbite"],
       arrive: [
-        "The coin-mine is silent because the miners are on strike, and the miners are two baby dragons. Brother Ingot, a Cinderling, and Sister Frostbite, a Frostwhelp, have heard the Duchess is getting the biggest coin in the world, and they want a share of it in their wages. Their banner says FAIR PAY, ROUND PAY, CHEESE PAY. They do not know the cheese part is true. They just like how it sounds.",
+        "The coin-mine is silent because the miners are on strike, and the miners are a walking bonfire and a baby dragon. Brother Ingot, who is the fire, and Sister Frostbite, a Frostwhelp, have heard the Duchess is getting the biggest coin in the world, and they want a share of it in their wages. Their banner says FAIR PAY, ROUND PAY, CHEESE PAY. They do not know the cheese part is true. They just like how it sounds.",
         "{dwarf}, who comes from a long line of miners, says he supports their right to strike but not the way they are holding that pickaxe. That is when Brother Ingot snatches his purse.",
       ],
       win: [
@@ -451,14 +463,14 @@ export const steps = [
     {
       place: "Kettle Tarn",
       icon: "spark",
-      foes: ["frostwhelp", "frostwhelp"],
+      foes: ["frostwhelp", "raincloud"],
       names: ["Drip", "Drop"],
       arrive: [
-        "Kettle Tarn boils at one end and freezes at the other, and two Frostwhelps, Drip and Drop, have decided this makes it the perfect place for tea. Their method: Drip fills the kettle at the boiling end. Drop puffs frost on it at once to cool it down. They have done this every day for a year and have never had a cup of tea, and they cannot work out why.",
+        "Kettle Tarn boils at one end and freezes at the other, and a Frostwhelp called Drip and a small furious raincloud called Drop have decided this makes it the perfect place for tea. Their method: Drip fills the kettle at the boiling end. Drop rains on it at once to cool it down. They have done this every day for a year and have never had a cup of tea, and they cannot work out why.",
         "{wizard} has not had a proper cup of tea since market day. He watches them frost the kettle a fourth time, and something in him snaps.",
       ],
       win: [
-        "Drip and Drop flee across the ice, abandoning the kettle. {wizard} makes the tea himself, properly, and pours three cups: one for himself, one for {dwarf}, and one on a rock for the whelps, who creep back for it when they think nobody is looking. {dwarf} says nothing at all, and drinks his with both hands around the cup.",
+        "Drip flees across the ice and Drop rains himself out into a sulk, abandoning the kettle. {wizard} makes the tea himself, properly, and pours three cups: one for himself, one for {dwarf}, and one on a rock for the pair, who creep back for it when they think nobody is looking. {dwarf} says nothing at all, and drinks his with both hands around the cup.",
       ],
     },
     {
@@ -477,10 +489,10 @@ export const steps = [
     {
       place: "Kettle Tarn",
       icon: "spark",
-      foes: ["gloomstalker", "frostwhelp"],
+      foes: ["nightblade", "frostwhelp"],
       names: ["Night-Watch Nora", "Pickle"],
       arrive: [
-        "By night the tarn is guarded by Night-Watch Nora, a Gloom Stalker who has been issued a guard dragon. The guard dragon is a Frostwhelp called Pickle. Pickle is meant to raise the alarm. Pickle mostly makes snowballs, and eats them. Nora stalks the shore with a black arrow, sighing every time Pickle wanders off to look at a pebble.",
+        "By night the tarn is guarded by Night-Watch Nora, a figure of living smoke in a blank white mask, who has been issued a guard dragon. The guard dragon is a Frostwhelp called Pickle. Pickle is meant to raise the alarm. Pickle mostly makes snowballs, and eats them. Nora stalks the shore with two shadow blades, sighing every time Pickle wanders off to look at a pebble.",
         "Pickle sees the heroes, wags its tail, and binds their knees with its icy wings out of pure friendliness. Nora takes this as her cue.",
       ],
       win: [
@@ -512,6 +524,79 @@ export const steps = [
         "The Duchess sinks onto her hoard, squints at the coin, and, for the very first time, takes a bite.",
       ],
     },
+  ],
+];
+
+const moments = [
+  [
+    null,
+    { title: 'The Sign Says No', stat: 'wisdom', prize: 'block', go: 'Read the fine print',
+      tell: '{dwarf}’s NO MAGIC sign has picked up a smudge on the road to {place}. Under the smudge, in Madame Twill’s hand, there is a line nobody noticed: except in emergencies, and also Tuesdays.',
+      won: '{who} spots it. {dwarf} pretends not to. The sign, slightly, protects everyone anyway.', lost: '{who} rubs the smudge. It says NO MAGNIFICENT. {wizard} is very quiet for a quarter of a mile.' },
+    null,
+    { title: 'Ten Paces Exactly', stat: 'speed', prize: 'atk', go: 'Measure the tug',
+      tell: 'The bangle on the road to {place} is getting opinions about distance. Somebody has to walk it out: ten paces, no more, and see who gets yanked first.',
+      won: '{who} hits ten exactly. The bangle purrs. The next swing starts a little keener.', lost: '{who} hits eleven. The bangle plays its tune and both heroes meet in the middle like cymbals.' },
+    null,
+    { title: 'A Rind on the Post', stat: 'strength', prize: 'hp', go: 'Lift Big Norman’s leftover',
+      tell: 'Big Norman paid himself in cheese rind and then ate it. On the road to {place} one rind is still nailed to the toll-post, out of reach, and it smells like a proper lunch.',
+      won: '{who} wrenches it down. It is terrible. It is also, somehow, strengthening.', lost: '{who} tugs. The post tugs back. Norman, from under the bridge, says it is one and a half rinds.' },
+    { title: 'Colin Is a Cheese', stat: 'wisdom', prize: 'gold', go: 'Settle the argument',
+      tell: 'On the road to {place}, {wizard} and {dwarf} are still arguing about whether Colin is a cheese. A peddler has left a wheel by the path with a label. The label might help.',
+      won: '{who} reads it: COLIN, HARD WHITE, WEDDINGS. {dwarf} was right. There is a coin under the rind.', lost: '{who} reads it upside down. It says NILOC. Nobody is happy. The bangle jingles, unhelpfully.' },
+    null,
+    { title: 'The Cheese Committee’s Notes', stat: 'speed', prize: 'magic', go: 'Grab the minutes',
+      tell: 'A burnt-stick page is still smoking on the road to {place}. The last line trails off. First to read it gets a spark of whatever they were voting on.',
+      won: '{who} snatches it: “Agreed: give cheese to King.” The spark jumps. So does {dwarf}’s eyebrow.', lost: '{who} snatches a blank page. From a bush, a goblin says that was the important one.' },
+    null,
+  ],
+  [
+    { title: 'Keep Left', stat: 'wisdom', prize: 'block', go: 'Read the signs',
+      tell: 'The cellar signs on the road to {place} say KEEP LEFT. NO RUNNING. NO CHEESE WITHOUT A TICKET. A wizard and a dwarf fastened at the wrist cannot keep left on a spiral stair. Unless somebody thinks.',
+      won: '{who} works it out: both take the wall. The stair, for once, does not argue.', lost: '{who} takes the banister. {dwarf} takes the wall. The bangle has a word, and the word is a yank.' },
+    { title: 'The Vault Door', stat: 'speed', prize: 'magic', go: 'Shut the door',
+      tell: 'The Candle Vault door on the road to {place} does not close. A wail is already practising in the dark. Somebody quick might wedge it with a blanket before the next one.',
+      won: '{who} wedges it. The draught stops. A little borrowed warmth stays in the hands.', lost: '{who} wedges it with {wizard}’s hat. The draught is now personal.' },
+    null,
+    { title: 'Mrs Tuffet’s Flat', stat: 'strength', prize: 'atk', go: 'Lift the tea table',
+      tell: 'A tea table made of silk and bone blocks the hall on the road to {place}. Mrs Tuffet-Next-Door left it there. It is heavier than furniture has any right to be.',
+      won: '{who} hoists it aside. Underneath, a spoon and a bit of fight nobody had budgeted for.', lost: '{who} lifts one end. The other end sits down. The spiders, later, will send a note.' },
+    null,
+    { title: 'Net Curtains', stat: 'wisdom', prize: 'hp', go: 'Wave politely',
+      tell: 'Net curtains on the road to {place} twitch even when nobody is home. A polite wave might still be worth something. An impolite one will be reported.',
+      won: '{who} waves. A very small plate of cold soup appears on the step. It is strengthening. It is also a test.', lost: '{who} waves with the wrong hand. The curtains snap shut. A note says “Reported.”' },
+    { title: 'Black Water', stat: 'strength', prize: 'gold', go: 'Break a path',
+      tell: 'The Drowned Crypt on the road to {place} is iced over, and a coin is frozen in the surface like a cherry in a bun. Somebody has to break a path without losing it.',
+      won: '{who} cracks a neat lane and flicks the coin free. It is cold enough to chime.', lost: '{who} stamps. The coin slides under. {dwarf}’s beard, unhelpfully, starts to frost.' },
+    null,
+    { title: 'The Form for Moving', stat: 'wisdom', prize: 'block', go: 'Fill it in',
+      tell: 'The Night Porter’s form for moving is nailed to a stone tree on the road to {place}. It is three hundred years out of date. It is also the only form. Somebody has to try.',
+      won: '{who} fills every blank. The cloister door, ahead, considers this. The dark steps back a pace.', lost: '{who} writes “cheese” in every box. The form, somehow, accepts it. The Porter will not.' },
+    null,
+  ],
+  [
+    { title: 'Buttons Are Not Gold', stat: 'speed', prize: 'gold', go: 'Save the buttons',
+      tell: 'Flicker’s Cousin Gareth is still thinking about {wizard}’s buttons on the road to {place}. First to cover them keeps them, and any coin Gareth dropped in the attempt.',
+      won: '{who} gets there first. Two buttons, one coin, and Gareth looking betrayed from a higher step.', lost: '{who} is too slow. Gareth has a button. {dwarf} already has a needle out.' },
+    { title: 'Barry’s First Day', stat: 'wisdom', prize: 'block', go: 'Answer his question',
+      tell: 'Barry the Shieldbearer has left a note on the glass on the road to {place}: “Do two heroes fastened together count as one target or two? Please advise. Also, where is lunch.”',
+      won: '{who} writes “one, and lunch is north.” Barry, later, will lock shields with the right person.', lost: '{who} writes “yes.” Barry will be confused until Thursday.' },
+    null,
+    { title: 'Fair Pay, Round Pay', stat: 'strength', prize: 'hp', go: 'Hold the banner',
+      tell: 'The strike banner on the road to {place} has fallen over: FAIR PAY, ROUND PAY, CHEESE PAY. It is heavier than cloth. The miners will want it back. Somebody should stand it up.',
+      won: '{who} plants it. The fire and the frost, ahead, look almost grateful. A crust is pressed into {who}’s hand.', lost: '{who} plants it upside down. It now says YAP ESEHC. Brother Ingot, later, will not notice.' },
+    null,
+    { title: 'A Proper Cup of Tea', stat: 'wisdom', prize: 'magic', go: 'Boil it once',
+      tell: 'A kettle sits between boil and freeze on the road to {place}. Someone has been filling it and cooling it, over and over, for a year. {wizard} has not had a cup of tea since market day. This is a test of character.',
+      won: '{who} makes it properly. The steam sparkles. Even {dwarf} takes a sip without complaining.', lost: '{who} lets the rain end in it. It is tea-flavoured weather. {wizard} does not speak for some time.' },
+    { title: 'Round and Golden', stat: 'speed', prize: 'atk', go: 'Rescue a door-knob',
+      tell: 'Mr Inventory has packed the door-knobs of Oathbreak Keep into a crate on the road to {place}. One has rolled out. It is round. It is golden. The Duchess would like it. So would a good throw.',
+      won: '{who} nips it and pockets it as ammunition. Lugg, later, will mark it missing.', lost: '{who} nips it. It is chained to the next one. Mr Inventory has thought of this.' },
+    null,
+    { title: 'The Last Ten Paces', stat: 'strength', prize: 'block', go: 'Climb together',
+      tell: 'The coin-slope to {place} is steep, and the bangle has opinions about heroes who climb at different speeds. Shoulder to shoulder, or it will sing.',
+      won: '{who} matches pace all the way. The bangle is quiet. The slope, for once, feels like a shield.', lost: '{who} pulls ahead. The tune plays. They arrive in a heap, which is still arriving.' },
+    null,
   ],
 ];
 
@@ -573,6 +658,7 @@ export const actSpecs = [
       "7": 0.55,
       "9": 0.55,
     },
+    moments: moments[0],
     help: [],
   },
   {
@@ -610,7 +696,7 @@ export const actSpecs = [
       ["bigwheel"],
       ["wraith", "gloomstalker"],
       ["frostwhelp", "frostwhelp"],
-      ["skeleton", "spider"],
+      ["gargoyle", "spider"],
       ["spider", "frostwhelp"],
       ["bonewarden"],
     ],
@@ -635,6 +721,7 @@ export const actSpecs = [
       "9": 1,
       "10": 1.25,
     },
+    moments: moments[1],
     help: [],
   },
   {
@@ -669,11 +756,11 @@ export const actSpecs = [
       ["cinderling", "cinderling"],
       ["shieldbearer", "gloomstalker"],
       ["chainbinder", "cinderling"],
-      ["cinderling", "frostwhelp"],
+      ["bonfire", "frostwhelp"],
       ["ashwyrm"],
-      ["frostwhelp", "frostwhelp"],
+      ["frostwhelp", "raincloud"],
       ["shieldbearer", "chainbinder"],
-      ["gloomstalker", "frostwhelp"],
+      ["nightblade", "frostwhelp"],
       ["ashwyrm", "shieldbearer"],
       ["goldbelly"],
     ],
@@ -692,11 +779,13 @@ export const actSpecs = [
     fightHp: {
       "2": 1.2,
       "3": 1.2,
-      "4": 1.3,
+      "4": 1.05,
       "5": 1.6,
       "6": 1.2,
       "7": 1.25,
-      "8": 1.2,
+      "8": 1.0,
+      "9": 0.55,
+      "10": 0.5,
     },
     gates: {
       "5": {
@@ -710,6 +799,7 @@ export const actSpecs = [
         enemies: ["goldbelly"],
       },
     },
+    moments: moments[2],
     help: [],
   },
 ];
