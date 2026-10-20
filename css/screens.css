@@ -17,7 +17,7 @@
 .sx-screen :focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; border-radius: 6px; }
 .sx-screen .ico { display: inline-grid; place-items: center; flex: none; line-height: 0; } .sx-screen .ico svg { display: block; }
 .sx-screen.title { --side: .36; } .sx-screen.create { --side: .4; } .sx-screen.board { --side: .62; } .sx-screen.road { --side: .46; } .sx-screen.camp { --side: .42; } .sx-screen.victory { --side: .44; } .sx-screen.defeat { --side: .42; }
-.sx-screen.title { --sheet: .46; } .sx-screen.create { --sheet: .56; } .sx-screen.board { --sheet: .6; } .sx-screen.road { --sheet: .56; } .sx-screen.camp { --sheet: .58; } .sx-screen.victory { --sheet: .58; } .sx-screen.defeat { --sheet: .5; }
+.sx-screen.title { --sheet: .46; } .sx-screen.create { --sheet: .56; } .sx-screen.board { --sheet: .6; } .sx-screen.road { --sheet: .56; } .sx-screen.camp { --sheet: .70; } .sx-screen.victory { --sheet: .58; } .sx-screen.defeat { --sheet: .5; }
 /* iPhone Safari: 100dvh is the tall viewport (chrome hidden). Size Choose-your-hero against the small
    viewport so the showcase stays fully on screen while the address bar and toolbar are showing. */
 .sx-screen.create { --vis-h: 100vh; --vis-h: 100dvh; --vis-h: 100svh; }
@@ -922,10 +922,10 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 /* the Diamond case in the Gear tab: Left / Right to carry one into the next fight */
 .zn-diamonds .db-hands { display: flex; gap: .45rem; width: 100%; } .zn-diamonds .db-hand { flex: 1; justify-content: center; }
 /* ---- the camp dice grid: your nine dice as on the battle board; tap one for its options */
-.sx-dicegrid { margin: .15rem 0 .35rem; }
-.dg-head { margin: 0 0 .25rem; text-align: center; color: var(--dim); font-size: .78rem; }
-.dg-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; }
-.dg-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .08rem; min-height: 5.15rem; padding: .3rem .2rem .28rem; border-radius: 12px; border: 1px solid var(--hair); background: linear-gradient(180deg, rgba(32, 32, 56, .92), rgba(12, 12, 24, .94)); color: var(--text); cursor: pointer; pointer-events: auto; }
+.sx-dicegrid { margin: .1rem 0 .2rem; }
+.dg-head { margin: 0 0 .2rem; text-align: center; color: var(--dim); font-size: .74rem; }
+.dg-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: .28rem; }
+.dg-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .04rem; min-height: 4.35rem; padding: .22rem .16rem .2rem; border-radius: 12px; border: 1px solid var(--hair); background: linear-gradient(180deg, rgba(32, 32, 56, .92), rgba(12, 12, 24, .94)); color: var(--text); cursor: pointer; pointer-events: auto; }
 .dg-cell:active { transform: scale(.97); }
 .dg-cell.s-NW, .dg-cell.s-NE { border-color: rgba(255, 110, 90, .45); }
 .dg-cell.s-SW, .dg-cell.s-SE { border-color: rgba(110, 170, 255, .45); }
@@ -972,6 +972,8 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-adv-body { display: flex; flex-direction: column; gap: .7rem; }
 .sx-camp .sx-side { gap: .45rem; }
 .sx-camp .sx-camp-title h1 { font-size: 1.7rem; }
+.sx-camp .sx-camp-scroll { padding-bottom: .35rem; }
+.sx-camp .sx-cta { position: relative; margin-top: .15rem; padding-top: .35rem; }
 .ss-die { display: grid; place-items: center; }
 .slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
 .slot-sheet .wrow2 { padding-top: .2rem; } .slot-sheet .wrow2 .ur-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
