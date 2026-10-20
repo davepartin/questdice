@@ -192,6 +192,17 @@ To decide first: how a turned hero's block works against friends, whether heals 
 
 Nothing here changes how the game starts or the class starting dice, which Dave asked to keep (10 Oct).
 
+## How the game feels today (Dave, 20 Oct)
+
+"Normal is easy and Hard is normal." Set beside the bots (docs/BALANCE.md, 16 Oct): on Normal the sensible bot wins about 90% of fights and 76-88% of bosses, the wise bot 96-99% and about 90%. Hard today is monster health x1.15 and +2 a hit; Legendary x1.6.
+
+What this suggests:
+
+- **The power creep is likely the cause, not the monster table.** The hammer, routine straights and +50% power levels are all things Dave plays with and the bots use less well. The three changes in "Order of work" (powers, straights, heart) should pull Normal down toward where Hard sits now, which is why monster health is touched only after them.
+- **Measure how hurt you get, not only whether you win.** "Not even close to being hurt" is the real complaint. Win rates near 90% are fine for ordinary fights; the tension should come from health worn down across a quest. Add the lowest health per fight and per quest to the first measurement.
+- **Dave is not a typical player.** He designed the game. The beta friends will play worse than Dave and probably worse than the wise bot, so the target is: Normal feels tense for a new player and comfortable for Dave, and Hard is where Dave should sweat.
+- **The quick fallback, if wanted before the rule changes:** move every setting down one step (today's Hard numbers become Normal, Normal becomes Easy, Legendary stays the pro road). One line in `DIFFICULTY`; easy to undo.
+
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
 
 **Checked against the code on `main` (52f9d7d):** 2 magic heals 4; straights pay 10 / 18 / 30 / 45 / 60; the heart amplifies only the exact number today (`HEART_AMP`); Storm Coil pays 26 at level 0 and 65 + 32 splash at level 3; `scaleNum` is +50% a level; the Wizard has 24 health and holds 15 magic; `ACT_HP` is 1.05 / 1.55 / 2.35. The heart-die averages in the table above re-derive the same from `FACE_PAY`. The plan matches Dave's voice notes (below) point for point.
