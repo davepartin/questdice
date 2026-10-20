@@ -1018,3 +1018,8 @@ test('story campaigns: storyScale fits monsters written for one hero of a level 
   const grown = newHero({ name: 'G', cls: 'knight', seed: 1 }); grown.level = 6; grown.strength = { W: 8, E: 8 }; grown.loadout.NW.size = 8;
   assert.ok(E.storyScale([grown, newHero({ name: 'B', cls: 'bard', seed: 2 })], 1).m > duo.m, 'heroes stronger than the story expects meet stronger monsters');
 });
+
+test('every straight from 5 up pays, and a longer one pays more (a 1-to-8 run used to pay nothing)', async () => {
+  const { STRAIGHT } = await import('../js/data.js');
+  for (let n = 5; n <= 9; n++) assert.ok(STRAIGHT[n] > (STRAIGHT[n - 1] || 0), `${n} in a row pays more than ${n - 1}`);
+});

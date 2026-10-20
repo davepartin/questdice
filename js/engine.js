@@ -479,7 +479,8 @@ export function evaluate(hero, board, opts = {}) {
   const sorted = [...numSlot.keys()].sort((x, y) => x - y);
   let best = 1, run = 1, top = sorted[0];
   for (let i = 1; i < sorted.length; i++) { run = sorted[i] === sorted[i - 1] + 1 ? run + 1 : 1; if (run > best) { best = run; top = sorted[i]; } }
-  if (STRAIGHT[best]) {
+  if (best >= 5) {
+    const keys = Object.keys(STRAIGHT).map(Number); best = Math.min(best, Math.max(...keys)); // a run past the table still pays its top prize
     out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];
     if ((opts.straight || 'atk') === 'gold') out.gold += out.straightBonus; else out.atk += out.straightBonus;

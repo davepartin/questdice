@@ -65,7 +65,7 @@ export const HEART_AMP = [2, 2, 2, 2];
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
-export const STRAIGHT = { 5: 10, 6: 18, 7: 30 };
+export const STRAIGHT = { 5: 10, 6: 18, 7: 30, 8: 45, 9: 60 }; // 8 and 9 in a row are possible with talent dice, the heart and weapon faces (Dave's 1-to-8 paid nothing)
 
 export const RARITY = ['Bronze', 'Silver', 'Gold']; // three metals (Dave, Oct 2026): Gold is the finished weapon
 export const RARITY_WEIGHTS = [70, 23, 7];
