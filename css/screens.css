@@ -972,8 +972,8 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-adv-body { display: flex; flex-direction: column; gap: .7rem; }
 .sx-camp .sx-side { gap: .45rem; }
 .sx-camp .sx-camp-title h1 { font-size: 1.7rem; }
-.sx-camp .sx-camp-scroll { padding-bottom: .35rem; }
-.sx-camp .sx-cta { position: relative; margin-top: .15rem; padding-top: .35rem; }
+.sx-camp .sx-camp-scroll { padding-bottom: .2rem; }
+.sx-camp .sx-cta { position: sticky; bottom: 0; margin-top: .15rem; padding-top: .45rem; }
 .ss-die { display: grid; place-items: center; }
 .slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
 .slot-sheet .wrow2 { padding-top: .2rem; } .slot-sheet .wrow2 .ur-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
