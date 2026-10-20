@@ -19,6 +19,7 @@ import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
+import { campDie } from './campart.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -1156,22 +1157,28 @@ function forgeNav(hero, ids) {
       return h('button', { class: `fn-chip ${n ? 'can' : ''}`, type: 'button', onclick: tap(() => jumpTo(id)), 'aria-label': `${FORGE_NAME[id]}: ${n} you can buy` }, ico(FORGE_ICON[id]), h('span', {}, FORGE_NAME[id]), n ? h('b', {}, String(n)) : null); })));
 }
 // ---- your dice, as on the battle board: tap a die for what can go there or grow there. The popup refreshes after every purchase.
-const SHEET = { slot: null, el: null };
+const SHEET = { slot: null, el: null, inline: false, hero: null, fromBoard: false, scroll: 0 };
 function diceGrid(hero) {
   E.ensureTwin?.(hero);
   const cells = GRID.map(([slot, label]) => {
-    const on = E.isActive(hero, slot); const can = slotCanBuy(hero, slot);
-    const price = slotPrice(hero, slot); const afford = price != null && hero.gold >= price;
-    let pic; let sub;
-    if (!on) { pic = h('span', { class: 'dg-lock' }, ico('lock')); sub = `Add · ${price}`; }
-    else if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; pic = inst ? h('span', { class: `dg-wart rar-${D.WEAPONS[inst.id].legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'dg-art', D.WEAPONS[inst.id].name)) : dieBadge(4); sub = `d${E.sidesOf(hero, slot)}`; }
-    else { const n = E.sidesOf(hero, slot); pic = dieBadge(n, 'dg-die'); sub = `d${n}`; }
-    const priceEl = on && price != null ? h('em', { class: `dg-price ${afford ? 'ok' : 'poor'}` }, `${price}g`) : null;
-    return h('button', { class: `dg-cell s-${slot} ${on ? '' : 'off'} ${can ? 'can' : ''}`, type: 'button', 'aria-label': `${label}, ${sub}${price != null && on ? `, ${price} gold` : ''}${can ? ', something to buy' : ''}`, onclick: tap(() => openSlot(slot)) },
-      h('small', { class: 'dg-label' }, label), pic, h('b', { class: `dg-size ${!on && price != null ? (afford ? 'ok' : 'poor') : ''}` }, sub), priceEl, can ? h('i', { class: 'dg-dot', 'aria-hidden': 'true' }) : null);
+    const active = E.isActive(hero, slot), can = slotCanBuy(hero, slot), price = slotPrice(hero, slot);
+    const size = E.sidesOf(hero, slot), weapon = slot === 'NW' || slot === 'NE', inst = hero.loadout[slot];
+    const selected = SHEET.inline && SHEET.slot === slot;
+    const pic = !active ? h('span', { class: 'cw-locked' }, ico('lock'))
+      : weapon && inst ? h('span', { class: `cw-weapon rar-${inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` },
+        art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'cw-weapon-art', D.WEAPONS[inst.id].name)) : campDie(hero, slot, size);
+    return h('button', { class: `cw-cell s-${slot} ${active ? '' : 'off'} ${can ? 'can' : ''} ${selected ? 'selected' : ''}`, type: 'button',
+      'aria-expanded': String(selected), 'aria-controls': 'camp-inspector',
+      'aria-label': `${label}, ${active ? `d${size}` : 'locked'}${price != null ? `, options from ${price} gold` : ''}`,
+      onclick: tap(() => openSlot(slot)) },
+      h('small', { class: 'cw-label' }, label), pic,
+      h('span', { class: 'cw-cell-foot' }, h('b', {}, !active ? 'Unlock' : weapon ? (inst?.twin ? 'Both hands' : `d${size}`) : slot === 'C' ? 'Heart die' : ''),
+        price != null ? h('span', { class: 'cw-price' }, ico('coin'), String(price)) : null),
+      can ? h('span', { class: 'cw-plus', 'aria-hidden': 'true' }, '+') : null);
   });
-  const n = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
-  return h('section', { class: 'sx-dicegrid', id: 'fs-dice' }, h('p', { class: 'dg-head' }, 'Tap a die.'), h('div', { class: 'dg-board' }, cells), n ? h('p', { class: 'dg-foot' }, h('i', { class: 'dg-dot' }), ` ${n} you can buy`) : null);
+  return h('section', { class: 'cw-dicegrid', id: 'fs-dice', 'aria-label': 'Your character dice' },
+    h('div', { class: 'cw-board' }, cells),
+    h('p', { class: 'cw-hint' }, SHEET.inline ? 'Tap another die to inspect it.' : 'Tap a die to inspect. + marks an available upgrade.'));
 }
 // The popup for one spot on the board (Dave, Oct 2026: "make it look AAA"): the die or weapon as it is now, big, then one clear
 // button per thing you can buy (it says what you get and what it costs, or why not yet), then what else could go there.
@@ -1185,9 +1192,9 @@ function shBuy(hero, { label, cost, ok, onBuy }) {
 }
 const shDone = (text) => h('p', { class: 'sh-done' }, ico('check'), text);
 const shLock = (text) => h('p', { class: 'sh-lockline' }, ico('lock'), text);
-const shBought = () => { sfx.level(); X.persist(); X.renderCamp(); };
+const shBought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); if (SHEET.inline) { SHEET.el?.focus({ preventScroll: true }); if (!X.net) toast('Upgrade complete.'); } };
 const shStage = (...kids) => h('div', { class: 'sh-stage' }, ...kids);
-const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, ico(`d${Math.min(10, n)}`, '', 60), h('b', {}, `d${n}`));
+const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, SHEET.inline ? campDie(X.S.hero, SHEET.slot, n) : ico(`d${Math.min(10, n)}`, '', 60), h('b', {}, `d${n}`));
 const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hidden': 'true' }, ico('chevron')) : null, b ? shDie(b, 'next') : null];
 // a weapon as a row: picture, name, metal and die, faces; an action on the right
 function shWeapon(inst, action, cls = '', badge = '') {
@@ -1198,8 +1205,8 @@ function shWeapon(inst, action, cls = '', badge = '') {
 function slotSheet(slot) {
   if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
-  const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', {}, label)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+  const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
   if (!E.isActive(hero, slot)) {
     const u = E.unlockInfo(hero, slot);
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
@@ -1211,7 +1218,13 @@ function slotSheet(slot) {
     const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'mind' ? E.mindUpgrade(hero) : E.speedUpgrade(hero);
     const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
       : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
-    return [head, shStage(...shGrow(size, u.next && !u.act ? u.next : null)), h('p', { class: 'sh-role' }, SH_ROLE[slot]), buy];
+    const next = u.next && !u.act ? u.next : null;
+    const stage = SHEET.inline ? h('div', { class: 'cw-compare' },
+      h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
+      next ? ico('chevron') : null,
+      next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next));
+    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, buy,
+      u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null];
   }
   if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
   // a weapon hand: the weapon there, Forge and Train, then what else could go there
@@ -1241,7 +1254,7 @@ function powerSheet(id) {
   const hero = X.S.hero; const row = E.powerLibrary(hero).find((x) => x.card.id === id); if (!row) return [h('p', {}, 'Not found.')];
   const k = row.card; const lvl = E.powerLevel(hero, id); const top = E.powerLevelsOf(hero);
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}`), h('b', {}, k.name)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
   const levels = h('div', { class: 'sh-levels' }, Array.from({ length: top + 1 }, (_, lv) => h('div', { class: `sh-lv ${row.equipped || row.learned ? (lv < lvl ? 'past' : lv === lvl ? 'now' : 'later') : lv === 0 ? 'now' : 'later'}` },
     h('b', {}, lv === 0 ? 'Base' : `Level ${lv}`), h('span', {}, shortLine(k, lv)))));
   let act;
@@ -1269,13 +1282,37 @@ function talentSheet(hero, slot) {
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
   return [shStage(...shGrow(size, up.next && !up.act ? up.next : null)), h('p', { class: 'sh-sec' }, 'Faces · tap a number to give it a symbol'), h('div', { class: 'sh-faces', style: { '--cols': String((3 + nums.length) <= 6 ? 3 + nums.length : Math.ceil((3 + nums.length) / 2)) } }, ...fixed, ...nums), picker, grow];
 }
-function openSlot(slot) {
-  sfx.card(); SHEET.slot = slot;
-  SHEET.el = h('div', { class: 'form slot-sheet' }, ...slotSheet(slot).filter(Boolean));
-  modal(SHEET.el);
+function closeSlot() {
+  const slot = SHEET.slot, inline = SHEET.inline;
+  SHEET.slot = null; SHEET.inline = false; SHEET.el = null;
+  if (inline) {
+    X.renderCamp(SHEET.fromBoard);
+    const side = $('.sx-camp .sx-side'); if (side) side.scrollTop = SHEET.scroll;
+    $(`.cw-cell.s-${slot}`)?.focus({ preventScroll: true });
+  } else closeModal();
 }
-// after a purchase the camp re-renders; the open popup follows it (and closes itself if it was dismissed)
+function campInspector() {
+  if (!SHEET.inline || !SHEET.slot) return null;
+  SHEET.el = h('section', { class: 'cw-inspector', id: 'camp-inspector', tabindex: '-1', 'aria-labelledby': 'camp-inspector-title',
+    onkeydown: (e) => { if (e.key === 'Escape') { e.preventDefault(); closeSlot(); } } }, ...slotSheet(SHEET.slot).filter(Boolean));
+  return SHEET.el;
+}
+function openSlot(slot) {
+  sfx.card();
+  const inline = !!$('.cw-camp') && !String(slot).startsWith('power:');
+  if (inline && !SHEET.inline) SHEET.scroll = $('.sx-side')?.scrollTop || 0;
+  SHEET.slot = slot; SHEET.inline = inline;
+  if (inline) {
+    X.S.campPage = 'dice'; X.S.tab = 'forge'; X.renderCamp(SHEET.fromBoard);
+    const side = $('.sx-side'), nav = $('.cw-nav');
+    if (side && nav) side.scrollTop += nav.getBoundingClientRect().top - side.getBoundingClientRect().top - 64;
+    SHEET.el?.focus({ preventScroll: true });
+  } else {
+    SHEET.el = h('div', { class: 'form slot-sheet' }, ...slotSheet(slot).filter(Boolean)); modal(SHEET.el);
+  }
+}
 function refreshSheet() {
+  if (SHEET.inline) return;
   if (!SHEET.slot || !SHEET.el?.isConnected) { SHEET.slot = null; return; }
   SHEET.el.replaceChildren(...slotSheet(SHEET.slot).filter(Boolean));
 }
@@ -1399,23 +1436,29 @@ function shrinkSection(hero) {
   if (hero.pet) add('pet', null, D.PETS[hero.pet.type].name, 'heart');
   return rows.length ? zone('zn-shrink', 'dice', 'Shrink', 'Pay gold to make a die smaller.', ...rows) : null;
 }
-function advancedBlock(fromBoard) {
-  const S = X.S; const hero = S.hero;
-  return h('div', { class: 'sx-advanced' },
-    h('button', { type: 'button', class: 'sx-adv-toggle sx-upgrades', 'aria-expanded': String(!!S.advanced),
-      onclick: tap(() => { S.advanced = !S.advanced; X.renderCamp(fromBoard); }) }, ico('anvil'), h('span', {}, S.advanced ? 'Hide upgrades' : 'Upgrades'), ico('chevron')),
-    S.advanced ? h('div', { class: 'sx-adv-body' },
-      gearTab({ grid: false, chips: false }),
-      heroTab({ chips: false }),
-      zone('zn-powers', 'spark', 'Powers', '', ...powersSection(hero)),
-      hero.pet ? petCard(hero) : null,
-      zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)),
-      shrinkSection(hero),
-      X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' })) : null);
+function campNavigation(fromBoard) {
+  return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['supplies', 'Supplies'], ['hero', 'Hero']].map(([id, label]) =>
+    h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null,
+      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
+}
+function campContent(hero) {
+  switch (X.S.campPage) {
+    case 'gear': return gearTab({ grid: false, chips: false });
+    case 'hero': return heroTab({ chips: false });
+    case 'powers': return zone('zn-powers', 'spark', 'Your powers', 'Learn, equip and improve.', ...powersSection(hero));
+    case 'supplies': return h('div', { class: 'cw-supplies' }, zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)), hero.pet ? petCard(hero) : null,
+      h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
+      X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
+    default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector());
+  }
 }
 export function camp(fromBoard) {
   const S = X.S; const hero = S.hero;
-  if (S.tab === 'hero' || S.tab === 'gear') { S.advanced = true; S.tab = 'forge'; }
+  const identity = `${hero.name}:${hero.cls}`;
+  if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; }
+  SHEET.fromBoard = fromBoard;
+  if (S.tab === 'hero' || S.tab === 'gear') { S.campPage = S.tab; S.tab = 'forge'; }
+  S.campPage ||= 'dice';
   const store = S.tab === 'store';
   const perkHero = X.net ? (hero.pendingPerks > 0 ? hero : null) : (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
   if (X.net) { S.perkOffer = perkHero ? X.netPerkOffer() : null; }
@@ -1431,8 +1474,8 @@ export function camp(fromBoard) {
   else tip = coachBox('c_hands');
   const body = store
     ? h('div', { class: 'sx-tab store' }, btn('Back to camp', () => { S.tab = 'forge'; X.renderCamp(fromBoard); }, { kind: 'ghost', icon: 'back' }), storeTab())
-    : h('div', { class: 'sx-tab forge' }, diceGrid(hero), storeBtn, tip, advancedBlock(fromBoard));
-  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
+    : h('div', { class: 'sx-tab forge' }, campNavigation(fromBoard), campContent(hero), !SHEET.inline ? storeBtn : null, !SHEET.inline && S.campPage === 'dice' ? tip : null);
+  mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
       X.partyBar?.(), seats, perkPanel, store ? null : campStatus(hero),
@@ -1449,6 +1492,7 @@ export function camp(fromBoard) {
 // ------------------------------------------------------------------------------------------------ plumbing
 // Phones: the page is one tall scroll (the 3D picture is the first screenful and scrolls away with everything else).
 function mountAs(cls, ...nodes) {
+  if (cls.trim().split(/\s+/)[0] !== 'camp' && SHEET.inline) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; }
   const app = $('#app'); const prev = $('.sx-side, .sx-board-main'); const kind = cls.trim().split(/\s+/)[0];
   const same = prev && app?.classList.contains('sx-screen') && app.classList.contains(kind); const y = same ? prev.scrollTop : 0;
   X.mountAs(`sx-screen ${cls}`, ...nodes);

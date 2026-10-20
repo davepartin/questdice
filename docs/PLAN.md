@@ -1161,3 +1161,12 @@ Dave's iPhone still cut the blue wizard's hair at the top of Choose your hero (S
 
 ## 2026-10-17 — repainted hero miniatures, clean cutouts
 Dave repainted all 15 hero coats (knight, ranger, wizard, dwarf, bard × 3). New cutouts from the studio photos: BiRefNet mask + a colour-distance mask against the fitted backdrop, interior holes filled unless they are real background gaps, edges decontaminated and trimmed 1px, floor shadow cut, base fitted as a cylinder so it stays solid. Same files and format as before (trimmed transparent WebP, long side 512); `imgBase` re-measured for every look. The plain class files (`knight.webp`, `ranger.webp`, …) are now copies of each class's default coat. Stamp `20261017g`.
+
+
+## 2026-10-20: camp artwork and contextual upgrades, review branch
+
+Dave asked for a stronger visual pass after reviewing the first camp redesign screenshots. Work is on ui/camp-art-pass for review, with no live main deployment. The nine-slot board now has large shaded vector dice, existing body markings and weapon portraits, dark textured tile surfaces, clearer selection, and an inline inspector with a large current/next comparison. Camp services are organized as Dice, Powers, Gear, Supplies and Hero; Store remains a separate entry and shrinking is under Supplies. Existing rules, purchase commands, online mutation adapter, and save formats are unchanged. Removed obsolete grid styling; camp-specific visuals live in css/camp.css and js/g3/campart.js. No new runtime dependencies or image assets, and no additional 3D scene.
+
+Verification: baseline and post-change npm test both report 318 passing / 2 failing out of 320, with the same pre-existing local server tests failing in test/server.test.mjs. The browser harness dev/camp-art-review.mjs exercises an actual d6-to-d8 purchase, exact gold, board refresh, local save/open round trip, closing/focus, five categories, Store, unaffordable and maximum states, a locked slot, weapon controls, talent access, reduced motion, and repeated open/close. It captures phone/short/tall/landscape/desktop layouts. See docs/ui-handoff/04-CAMP-ART-REVIEW.md for results and screenshots.
+
+Limits: physical iPhone Safari performance, live cloud saves, remote online rooms, complete party play, and a full campaign were not verified. Screenshots are test fixtures. Battle magic-powers layout has not been redesigned in this pass.
