@@ -178,6 +178,7 @@ export function faceImage(spec, label, px = 112) {
   return url;
 }
 
+const SIDE_DIM_D8 = Number(globalThis.__d8dim ?? 0.8); // 0.94 hides a d8's sides; 0.6 shows their numbers too loudly (dev/d8sides.mjs)
 const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
 
 /** Build a die mesh for a spec (spec.theme, spec.sides, spec.labels[label-1]). */
@@ -204,7 +205,9 @@ export function createDie({ spec, quality = 'high' }) {
     setView(dirWorld) {
       if (spec.sides === 4) { u.uFocusDir.value.copy(dirWorld); u.uFocusRange.value.set(0.55, 0.78); } else { u.uFocusDir.value.set(0, 1, 0); u.uFocusRange.value.set(0.52, 0.82); }
     },
-    setRest(k01) { u.uSide.value = 1 - 0.94 * k01; }, // at rest only the face you read stays lit; the sides go nearly dark
+    // at rest only the face you read stays lit; the sides go nearly dark. A d8 keeps its sides a little lit (Dave, Oct 2026: from
+    // above its top face is a triangle like a d4's, and the faces around it are what say "d8")
+    setRest(k01) { u.uSide.value = 1 - (spec.sides === 8 ? SIDE_DIM_D8 : 0.94) * k01; },
     updateCamera(camera) { mesh.updateMatrixWorld(); u.uCamObj.value.copy(camera.position); mesh.worldToLocal(u.uCamObj.value); },
     dispose() { material.dispose(); },
   };
