@@ -4,6 +4,10 @@ Prepared for Dave Partin | October 20, 2026
 Repository: https://github.com/Davepartin/questdice
 Live game: https://davepartin.github.io/questdice/
 
+## Current implementation status
+
+October 20 checkpoint: draft PR #30 on `ui/camp-art-pass` now contains the camp artwork/body dice pass, the weapon workshop, and the talent die editor. Read 04-CAMP-ART-REVIEW.md, 05-WEAPON-WORKSHOP-REVIEW.md and 06-TALENT-WORKSHOP-REVIEW.md before editing. These implemented checkpoints supersede the exploratory state and Phase 1 starting instructions below. Next bounded section: camp Powers organization and inspection, followed later by a separate battle powers pass. Keep this work on the review branch until Dave approves publishing.
+
 ## Purpose
 
 Raise the quality of an already working mobile web game, especially camp and upgrades. Preserve the enjoyable dice, tabletop identity, battle counters, and existing mechanics. Improve organization, texture, visual hierarchy, and the feeling of interacting with a character.

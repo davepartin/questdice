@@ -989,7 +989,7 @@ function rerollDieRow(hero) {
 const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
 const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
 const DIE_NAME = { SW: 'Left talent die', SE: 'Right talent die', NE: 'Right weapon die' };
-const TAL = { slot: null, face: null };
+const TAL = { slot: null, face: null, sym: null };
 // Dice you do not have yet: a row each, to add them to the board.
 function unlockRows(hero, slots) {
   return D.UNLOCK_ORDER.filter((s) => slots.includes(s) && !E.isActive(hero, s)).map((slot) => {
@@ -1311,8 +1311,62 @@ function powerSheet(id) {
   return [head, h('p', { class: 'sh-text' }, k.text), h('p', { class: 'sh-cost' }, ico('spark'), `Uses ${k.cost}${k.kind === 'scale' ? `–${k.max}` : ''} magic`, row.equipped ? h('em', {}, 'In use') : null),
     h('p', { class: 'sh-sec' }, 'Levels'), levels, act];
 }
+// Camp talent workbench: inspect first, preview a symbol, then use the existing purchase command.
+function talentWorkshop(hero, slot) {
+  const size = hero.special[slot], info = E.talentInfo(hero, slot), up = E.specialUpgrade(hero, slot);
+  const stored = hero.talent?.[slot] || [];
+  const symbol = (f) => Array.isArray(stored[f]) ? stored[f][0] : stored[f];
+  const face = TAL.slot === slot && TAL.face != null && TAL.face >= 0 && TAL.face < info.faces ? TAL.face : null;
+  const current = face != null ? symbol(face) : null, chosen = current || TAL.sym;
+  const refresh = (selector) => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
+  const fixed = [1, 2, 3].map((n) => h('div', { class: `tw-face fixed ${n === 2 ? 'double' : ''}`, 'aria-label': `Face ${n}: ${n === 2 ? 'doubles this hand' : 'blank'}. Fixed.` },
+    h('b', {}, String(n)), h('span', {}, n === 2 ? '×2' : '·'), h('small', {}, n === 2 ? 'Hand' : 'Blank')));
+  const editable = info.nums.map((n, f) => {
+    const k = symbol(f), active = face === f;
+    return h('button', { type: 'button', class: `tw-face ${k ? SYM_ICO[k][1] : 'tw-unset'} ${active ? 'selected' : ''}`, 'data-face': String(f), 'aria-pressed': String(active),
+      'aria-label': `Face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold to set`}. Inspect face.`,
+      onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); }) },
+    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), h('small', {}, k ? D.TALENT_SYMS[k].name : `${info.costs[f]} gold`));
+  });
+  let detail;
+  if (face == null) detail = h('div', { class: 'tw-empty' }, ico('dice'), h('b', {}, 'Choose a numbered face'), h('p', {}, 'Inspect its symbol or choose what an empty face will give you.'));
+  else {
+    const n = info.nums[face], cost = info.costs[face];
+    const left = chosen ? info.same - E.talentCount(hero, slot, chosen) : 0;
+    const can = !!chosen && left > 0 && hero.gold >= cost;
+    const preview = h('div', { class: `tw-result ${chosen ? SYM_ICO[chosen][1] : ''}`, 'aria-live': 'polite' },
+      h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
+      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
+        h('p', {}, chosen ? `When you roll ${n}, gain ${n} ${D.TALENT_SYMS[chosen].name.toLowerCase()}.` : 'Preview a symbol below. Gold is spent only when you buy.')));
+    const options = !current ? h('div', { class: 'tw-symbols', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
+      const count = E.talentCount(hero, slot, k), full = count >= info.same;
+      return h('button', { type: 'button', class: `tw-symbol ${SYM_ICO[k][1]} ${TAL.sym === k ? 'selected' : ''}`, disabled: full, 'data-symbol': k, 'aria-pressed': String(TAL.sym === k),
+        'aria-label': `${def.name}, ${count} of ${info.same} used${full ? ', limit reached' : ''}`,
+        onclick: full ? null : tap(() => { TAL.sym = k; refresh(`.tw-symbol[data-symbol="${k}"]`); }) }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${info.same} used`));
+    })) : null;
+    const action = current ? h('div', { class: 'tw-clear' }, h('p', {}, `Clearing gives no refund. A new symbol on face ${n} will cost ${cost} gold.`),
+      h('button', { type: 'button', class: 'tw-clear-btn', 'aria-label': `Clear face ${n} without refund`, onclick: tap(() => {
+        if (HE.removeTalent(hero, slot, face, 0)) { TAL.sym = null; sfx.card(); X.persist(); refresh(`.tw-face[data-face="${face}"]`); }
+      }) }, 'Clear this face'))
+      : h('div', { class: 'tw-purchase' }, shBuy(hero, { label: chosen ? `Set ${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol first', cost, ok: can,
+        onBuy: () => { if (chosen && HE.addTalent(hero, slot, face, chosen)) { TAL.sym = null; shBought(); } } }),
+        can ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null);
+    detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
+  }
+  const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
+    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
+  return h('div', { class: 'tw-workshop' },
+    h('div', { class: 'tw-overview' }, campDie(hero, slot, size), h('div', {}, h('small', {}, 'YOUR TALENT DIE'), h('h3', {}, 'Shape your next roll'), h('p', {}, `${info.used} of ${info.faces} symbol faces set`))),
+    h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
+    h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
+    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Up to ${info.same} of each symbol per die.`), detail,
+    h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
+      h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
+        up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
+}
 // a talent die: grow it, then tap an empty number face to pick its symbol
 function talentSheet(hero, slot) {
+  if (SHEET.inline) return [talentWorkshop(hero, slot)];
   const size = hero.special[slot]; const up = E.specialUpgrade(hero, slot); const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
   const sym = (f) => { const e = faces[f]; return Array.isArray(e) ? e[0] : e; };
   const pickFace = TAL.slot === slot && TAL.face != null && TAL.face < info.faces && !sym(TAL.face) ? TAL.face : null;
@@ -1347,7 +1401,7 @@ function openSlot(slot) {
   sfx.card();
   const inline = !!$('.cw-camp') && !String(slot).startsWith('power:');
   if (inline && !SHEET.inline) SHEET.scroll = $('.sx-side')?.scrollTop || 0;
-  if (SHEET.slot !== slot) SHEET.weaponMode = 'forge';
+  if (SHEET.slot !== slot) { SHEET.weaponMode = 'forge'; TAL.face = null; TAL.sym = null; }
   SHEET.slot = slot; SHEET.inline = inline;
   if (inline) {
     X.S.campPage = 'dice'; X.S.tab = 'forge'; X.renderCamp(SHEET.fromBoard);

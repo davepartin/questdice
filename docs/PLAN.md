@@ -1175,3 +1175,7 @@ Limits: physical iPhone Safari performance, live cloud saves, remote online room
 ## 20 October 2026: weapon workshop review checkpoint
 
 Draft PR #30, branch `ui/camp-art-pass`: equipped weapon inspection now has an existing-art portrait, Forge/Train choices, authoritative current/target face previews, hand-cap explanations, exact prices and remaining gold. Pack and Diamond actions remain accessible. Right-hand two-handed inspection targets its own UID, matching existing independent die upgrades; no engine or save changes. Cache stamp: `20261020weapons1`. See `docs/ui-handoff/05-WEAPON-WORKSHOP-REVIEW.md` for screenshots, checks and limits. This checkpoint is for review, not live publication. Next bounded section is the talent editor.
+
+## 20 October 2026: talent workbench review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: talent dice now show a complete face grid, preview-first symbol selection, exact existing costs and remaining gold, usage limits, explicit no-refund clearing and separate die growth. Uses existing talent engine commands and online mutation adapter; no engine or save changes. Cache stamp `20261020talents1`. See `docs/ui-handoff/06-TALENT-WORKSHOP-REVIEW.md` for screenshots, validation and limits. Keep on the review branch until Dave approves publishing. Next bounded section: camp Powers organization/inspection, with the battle triangle reserved for a later section.
