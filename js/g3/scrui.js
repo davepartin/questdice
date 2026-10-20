@@ -18,6 +18,7 @@ import { petImg } from './pets.js';
 import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
+import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -99,7 +100,7 @@ const LAYOUT = {
   create: { land: { right: 0.4 }, port: { bottom: 0.56 } },
   board: { land: { right: 0.62 }, port: { bottom: 0.6 } },
   road: { land: { right: 0.46 }, port: { bottom: 0.56 } },
-  camp: { land: { right: 0.42 }, port: { bottom: 0.58 } },
+  camp: { land: { right: 0.42 }, port: { bottom: 0.74 } },
   victory: { land: { right: 0.44 }, port: { bottom: 0.58 } },
   defeat: { land: { right: 0.42 }, port: { bottom: 0.5 } },
 };
@@ -259,12 +260,12 @@ function charmCard(id, { actions = [], cls = '', badge = '' } = {}) {
     actions.length ? h('div', { class: 'ch-acts' }, actions) : null);
 }
 // A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
-function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
+function weaponCard(inst, { actions = [], note = '', compact = true, badge = '', cls = '' } = {}) {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
   // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
   // Just the data (Dave, Oct 2026: "the name, the faces, the small picture and the dice size. No other explanation needed.")
-  const size = E.weaponSize(inst); void compact; void note;
-  return h('article', { class: `sx-wc rar-${r} compact ${cls}` },
+  const size = E.weaponSize(inst); void note;
+  return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
     h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
@@ -382,7 +383,7 @@ export function create(opts = {}) {
       heroStats(c.hp, c.feet || 4, c),
       h('p', { class: 'ci-rule' }, `Every hero has the same nine dice and may reroll ${D.REROLL_DICE} at a time. Classes differ in where they start.`),
       eyebrow('Wields'),
-      h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true }))),
+      h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: false }))),
       eyebrow('Magical powers'),
       h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
       h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
@@ -882,7 +883,6 @@ export function defeat(retreat, loss) {
 }
 
 // ------------------------------------------------------------------------------------------------ camp
-const TABS = [['store', 'Store', 'coin'], ['forge', 'Forge', 'anvil'], ['gear', 'Gear', 'bag'], ['hero', 'Hero', 'hero']];
 function dieBadge(size, cls = '') { return h('span', { class: `sx-die d${size} ${cls}` }, ico(`d${size}`, '', 44), h('b', {}, String(size))); }
 // ---- the Forge as a shop (Dave, Oct 2026: "you don't even realize how many things you can upgrade"). One compact row per upgrade: an
 // icon or die, a name with what it becomes, one short line, and the price: bright when you can afford it, dim with what you still need
@@ -892,7 +892,7 @@ const tallyUp = (n = 1) => { if (FORGE.tally && FORGE.sec) FORGE.tally[FORGE.sec
 function priceBtn(label, price, ok, buy, aria) {
   const hero = X.S.hero; if (ok) tallyUp();
   const b = btn(label ? `${label} · ${price}` : String(price), buy, { icon: 'coin', iconAfter: !!label, disabled: !ok, cls: `ur-buy ${!ok ? 'poor' : ''}`, aria });
-  if (!ok && hero && hero.gold < price) b.append(h('small', { class: 'need' }, `need ${price - hero.gold}`));
+  if (!ok && hero && hero.gold < price) b.append(h('span', { class: 'need-row' }, h('small', { class: 'need' }, `need ${price - hero.gold}`), coin(hero.gold, 'inline purse')));
   return b;
 }
 const maxTag = (text = 'Max') => h('span', { class: 'ur-max' }, ico('check'), text);
@@ -903,7 +903,7 @@ function upgradeRow(kind, slot, label, line) {
   const hero = X.S.hero; if (kind === 'speed') E.feetSize(hero); if (kind === 'mind') E.mindSize(hero); const size = hero[kind][slot];
   const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'speed' ? E.speedUpgrade(hero) : kind === 'mind' ? E.mindUpgrade(hero) : E.specialUpgrade(hero, slot);
   return h('div', { class: `sx-urow cmp ${u.ok ? 'can' : ''} ${!u.next ? 'maxed' : ''}` }, dieBadge(size, 'ur-die'),
-    h('div', { class: 'ur-copy' }, h('b', {}, label, u.next ? h('em', { class: 'ur-to' }, ` d${size} → d${u.next}`) : h('em', { class: 'ur-to' }, ` d${size}`)), h('small', {}, line), shrinkBtn(kind, slot, label)),
+    h('div', { class: 'ur-copy' }, h('b', {}, label, u.next ? h('em', { class: 'ur-to' }, ` d${size} → d${u.next}`) : h('em', { class: 'ur-to' }, ` d${size}`)), h('small', {}, line)),
     !u.next ? maxTag() : u.act && !u.ok ? gateTag(`Act ${D.ROMAN[u.act]}`)
       : priceBtn('', u.cost, u.ok, () => { if (HE.upgradeDie(hero, kind, slot)) bought(); }, `Upgrade ${label} to d${u.next} for ${u.cost} gold`));
 }
@@ -930,12 +930,12 @@ function weaponRow(inst, label = '') {
       : btn(`Train d${t.next}`, () => { if (HE.trainWeapon(hero, inst.uid)) bought(); }, { cls: 'ur-buy', disabled: !t.ok, aria: `Train ${w.name} to d${t.next}` });
   return h('div', { class: 'sx-urow cmp wrow2' }, rowIco(w.lean === 'def' ? 'shield' : 'sword'),
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name, h('em', { class: 'ur-to' }, ` ${D.tierName(inst)} · d${size}`)),
-      h('small', {}, `Forge for more icons and a bigger crit; train for bigger numbers${t.why === 'hands' ? ` (needs a d${t.next} hand)` : ''}.`), shrinkBtn('weapon', inst.uid, w.name)),
+      h('small', {}, `Forge for more icons and a bigger crit; train for bigger numbers${t.why === 'hands' ? ` (needs a d${t.next} hand)` : ''}.`)),
     h('div', { class: 'ur-btns' }, forge, train));
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
 function campStatus(hero) {
-  const c = hero.campaign; const act = X.actOf(hero); const next = E.questsFor(hero)[0];
+  const c = hero.campaign; const act = X.actOf(hero);
   const r = E.potionBuyInfo(hero);
   const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
     const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);
@@ -945,9 +945,9 @@ function campStatus(hero) {
   const vials = h('span', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
   const buy = r.have >= r.max ? h('span', { class: 'sp-full' }, 'Full')
     : btn(`${r.price}`, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
-  return h('section', { class: `sx-cstat ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
-    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act} · ${act.name}`), h('small', {}, `Quest ${c.step} of ${D.QUESTS_PER_ACT}${next?.place ? ` · next: ${next.kind === 'boss' ? next.name : next.place}` : ''}`), pips),
-    h('div', { class: 'cs-pots' }, h('small', {}, 'Potions'), vials, buy));
+  return h('section', { class: `sx-cstat slim ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
+    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act}`), pips),
+    h('div', { class: 'cs-pots' }, vials, buy));
 }
 // Potion belt: carry a third healing potion.
 function potionRow(hero) {
@@ -956,8 +956,13 @@ function potionRow(hero) {
     h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt', h('em', { class: 'ur-to' }, u.next ? ` ${cur} → ${u.next}` : ` ${cur}`)), h('small', {}, `Carry one more healing potion (each heals ${E.potionHpOf(hero)}).`)),
     !u.next ? maxTag() : locked ? gateTag(u.why) : priceBtn('', u.cost, u.ok, () => { if (HE.upgradePotions(hero)) bought(); }, `Carry ${u.next} potions for ${u.cost} gold`));
 }
-// The 4th reroll die: every reroll may take one more die, for good.
+// The 4th reroll die: every reroll may take one more die, for good. Hidden on a broke Act I camp.
+function showRerollDie(hero) {
+  const u = E.rerollDieInfo(hero);
+  return hero.gold >= D.REROLL_DIE_COST || (u.cur || 0) > D.REROLL_DICE || (hero.campaign?.act || 1) >= 2;
+}
 function rerollDieRow(hero) {
+  if (!showRerollDie(hero)) return null;
   const u = E.rerollDieInfo(hero);
   return h('div', { class: 'sx-urow cmp' }, rowIco('reroll'),
     h('div', { class: 'ur-copy' }, h('b', {}, 'Rerolls', h('em', { class: 'ur-to' }, u.next ? ` ${u.cur} → ${u.next} dice` : ` ${u.cur} dice`)), h('small', {}, 'Each reroll in battle can take one more die.')),
@@ -1005,7 +1010,7 @@ function talentCard(hero, slot) {
     h('div', { class: 'tal-strip mini' },
       h('div', { class: 'tal-face blank', title: 'Face 1: blank' }, h('b', {}, '·')), h('div', { class: 'tal-face x2', title: `Face 2: doubles your ${slot === 'SW' ? 'left' : 'right'} hand` }, h('b', {}, '2×')),
       h('div', { class: 'tal-face blank', title: 'Face 3: blank' }, h('b', {}, '·')), symFaces),
-    picker, shrinkBtn('special', slot, `the ${DIE_NAME[slot]}`));
+    picker);
 }
 // ---- pets (Dave, Oct 2026): the Camp Store sells one a camp. Train it like a talent die and grow it d4 -> d6 -> d8.
 const PET = { face: null };
@@ -1015,7 +1020,7 @@ const petLeft = (hero, k) => (k === D.PETS[hero.pet.type].kind ? D.petKindMax(he
 function petOfferCard(hero) {
   const o = E.petOffer(hero); if (!o) return null; const p = D.PETS[o.type];
   const swap = hero.pet && !o.owned;
-  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train your pet in the Forge tab. Try not to get too attached. You will.`); } else { sfx.error(); toast('Not enough gold.'); } };
+  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train it under Advanced.`); } else { sfx.error(); toast('Not enough gold.'); } };
   const ask = () => {
     if (!swap) return adopt();
     const old = D.PETS[hero.pet.type].name;
@@ -1025,7 +1030,7 @@ function petOfferCard(hero) {
   };
   const chip = (k) => (k ? symChip(k) : h('span', { class: 'fx blank' }, '·'));
   return h('div', { class: 'pet-offer', style: { '--pc': p.color } }, petPic(o.type, 96),
-    h('div', { class: 'po-copy' }, h('small', { class: 'po-kicker' }, 'A pet for the road. It will judge you kindly.'), h('b', {}, p.name), h('small', {}, p.text),
+    h('div', { class: 'po-copy' }, h('small', { class: 'po-kicker' }, 'A pet for the road.'), h('b', {}, p.name), h('small', {}, p.text),
       h('div', { class: 'po-faces', 'aria-label': 'Its d4: one blank face, two symbols, one face to train' }, chip(null), chip(p.kind), chip(p.kind), h('span', { class: 'fx open' }, '+'))),
     o.owned ? h('span', { class: 'sold-tag' }, 'With you')
       : btn(`${swap ? 'Trade' : 'Adopt'} · ${o.price}`, ask, { icon: 'coin', iconAfter: true, disabled: hero.gold < o.price, cls: 'buy', aria: `Adopt ${p.name} for ${o.price} gold` }));
@@ -1053,7 +1058,6 @@ function petCard(hero) {
     h('div', { class: 'tal-strip syms pet-strip' }, h('div', { class: 'tal-face blank' }, h('small', {}, 'Face 1'), h('b', {}, 'blank')), faces),
     picker,
     g.next ? h('small', { class: 'ur-next' }, `Grow from d${pet.size} to d${g.next}: every symbol pays ${D.PET_POWER[g.next]} instead of ${pw}, and the die gets another slot.`) : null,
-    shrinkBtn('pet', null, p.name),
     g.next ? priceBtn(`Grow to d${g.next}`, g.cost, g.ok, () => { if (HE.growPet(hero)) bought(); }, `Grow ${p.name} to a d${g.next} for ${g.cost} gold`) : maxTag('Full grown'));
 }
 function petSection(hero) {
@@ -1062,7 +1066,7 @@ function petSection(hero) {
   if (hero.gold >= o.price) tallyUp();
   return [h('div', { class: 'sx-urow cmp pet-hint', style: { '--pc': D.PETS[o.type].color } }, petPic(o.type, 44),
     h('div', { class: 'ur-copy' }, h('b', {}, `${D.PETS[o.type].name}, a pet`, h('em', { class: 'ur-to' }, ` ${o.price} gold`)), h('small', {}, 'The Camp Store has one today. A pet rolls one more die beside your board.')),
-    btn('See it', () => { X.S.tab = 'gear'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }))];
+    btn('See it', () => { X.S.tab = 'store'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }))];
 }
 // Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
 // Magical powers at camp: three slots (A big move, B every round, C charge). The equipped power can be upgraded; the other
@@ -1130,37 +1134,28 @@ function forgeNav(hero, ids) {
     h('div', { class: 'fn-chips' }, ids.map((id) => { const n = FORGE.tally[id] || 0;
       return h('button', { class: `fn-chip ${n ? 'can' : ''}`, type: 'button', onclick: tap(() => jumpTo(id)), 'aria-label': `${FORGE_NAME[id]}: ${n} you can buy` }, ico(FORGE_ICON[id]), h('span', {}, FORGE_NAME[id]), n ? h('b', {}, String(n)) : null); })));
 }
-// ---- your dice, as on the battle board (Dave, Oct 2026: "this will make the dice grid much more understandable"): tap a die for what
-// can go there or grow there. The same grid sits at the top of the Forge and of Gear; the popup refreshes after every purchase.
-const GRID = [['NW', 'Left weapon'], ['N', 'Head'], ['NE', 'Right weapon'], ['W', 'Left hand'], ['C', 'Heart'], ['E', 'Right hand'], ['SW', 'Talent one'], ['S', 'Feet'], ['SE', 'Talent two']];
+// ---- your dice, as on the battle board: tap a die for what can go there or grow there. The popup refreshes after every purchase.
 const SHEET = { slot: null, el: null };
-function slotCanBuy(hero, slot) {
-  if (!E.isActive(hero, slot)) return E.unlockInfo(hero, slot).ok;
-  if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; if (!inst || inst.twin || inst.id === 'fists') return false; return E.forgeInfo(hero, inst.uid).ok || !!E.trainInfo(hero, inst.uid).cost && E.trainInfo(hero, inst.uid).ok; }
-  if (slot === 'W' || slot === 'E') return E.strengthUpgrade(hero, slot).ok;
-  if (slot === 'N') return E.mindUpgrade(hero).ok;
-  if (slot === 'S') return E.speedUpgrade(hero).ok;
-  if (slot === 'SW' || slot === 'SE') { if (E.specialUpgrade(hero, slot).ok) return true; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || []; return info.costs.some((c, f) => !(faces[f] && (Array.isArray(faces[f]) ? faces[f].length : true)) && hero.gold >= c); }
-  return false;
-}
 function diceGrid(hero) {
   E.ensureTwin?.(hero);
   const cells = GRID.map(([slot, label]) => {
     const on = E.isActive(hero, slot); const can = slotCanBuy(hero, slot);
+    const price = slotPrice(hero, slot); const afford = price != null && hero.gold >= price;
     let pic; let sub;
-    if (!on) { pic = h('span', { class: 'dg-lock' }, ico('lock')); sub = `Add · ${E.unlockInfo(hero, slot).cost}`; }
+    if (!on) { pic = h('span', { class: 'dg-lock' }, ico('lock')); sub = `Add · ${price}`; }
     else if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; pic = inst ? art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'dg-art', D.WEAPONS[inst.id].name) : dieBadge(4); sub = `d${E.sidesOf(hero, slot)}`; }
     else { const n = E.sidesOf(hero, slot); pic = dieBadge(n, 'dg-die'); sub = `d${n}`; }
-    return h('button', { class: `dg-cell s-${slot} ${on ? '' : 'off'} ${can ? 'can' : ''}`, type: 'button', 'aria-label': `${label}, ${sub}${can ? ', something to buy' : ''}`, onclick: tap(() => openSlot(slot)) },
-      h('small', { class: 'dg-label' }, label), pic, h('b', { class: 'dg-size' }, sub), can ? h('i', { class: 'dg-dot', 'aria-hidden': 'true' }) : null);
+    const priceEl = on && price != null ? h('em', { class: `dg-price ${afford ? 'ok' : 'poor'}` }, `${price}g`) : null;
+    return h('button', { class: `dg-cell s-${slot} ${on ? '' : 'off'} ${can ? 'can' : ''}`, type: 'button', 'aria-label': `${label}, ${sub}${price != null && on ? `, ${price} gold` : ''}${can ? ', something to buy' : ''}`, onclick: tap(() => openSlot(slot)) },
+      h('small', { class: 'dg-label' }, label), pic, h('b', { class: `dg-size ${!on && price != null ? (afford ? 'ok' : 'poor') : ''}` }, sub), priceEl, can ? h('i', { class: 'dg-dot', 'aria-hidden': 'true' }) : null);
   });
   const n = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
-  return h('section', { class: 'sx-dicegrid', id: 'fs-dice' }, h('p', { class: 'dg-head' }, 'Your dice. Tap one to change it.'), h('div', { class: 'dg-board' }, cells), n ? h('p', { class: 'dg-foot' }, h('i', { class: 'dg-dot' }), ` ${n} you can buy`) : null);
+  return h('section', { class: 'sx-dicegrid', id: 'fs-dice' }, h('p', { class: 'dg-head' }, 'Tap a die.'), h('div', { class: 'dg-board' }, cells), n ? h('p', { class: 'dg-foot' }, h('i', { class: 'dg-dot' }), ` ${n} you can buy`) : null);
 }
 // The popup for one spot on the board: what is there, what can grow, what could go there instead.
 function slotSheet(slot) {
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
-  const head = h('header', { class: 'ss-head' }, h('b', {}, label), h('button', { class: 'sx-btn sx-ghost ss-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+  const head = h('header', { class: 'ss-head' }, h('b', {}, label), coin(hero.gold, 'inline purse'), h('button', { class: 'sx-btn sx-ghost ss-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
   if (!E.isActive(hero, slot)) return [head, ...unlockRows(hero, [slot])];
   if (slot === 'C') return [head, h('div', { class: 'ss-die' }, dieBadge(6)), h('p', { class: 'fine center' }, 'd6. The heart does not change.')];
   if (slot === 'W' || slot === 'E') return [head, upgradeRow('strength', slot, label, '')];
@@ -1175,7 +1170,7 @@ function slotSheet(slot) {
   const gems = E.diamondsOf(hero).filter(() => E.diamondHands(hero).includes(slot)).map((d) => { const at = E.armedSlot(hero, d.uid);
     return weaponCard(d, { badge: at === slot ? 'Next fight' : '', actions: [btn(at === slot ? 'Keep in case' : 'Bring next fight', () => { HE.armDiamond(hero, d.uid, at === slot ? null : slot); sfx.select?.(); X.persist(); X.renderCamp(); }, { kind: at === slot ? 'primary' : 'ghost' })] }); });
   return [head,
-    real && real.id !== 'fists' ? h('div', { class: 'ss-now' }, weaponCard(real, { badge: two ? 'Both hands' : 'Equipped' }), weaponRow(real, D.WEAPONS[real.id].name)) : null,
+    real && real.id !== 'fists' ? h('div', { class: 'ss-now' }, weaponCard(real, { compact: false, badge: two ? 'Both hands' : 'Equipped' }), weaponRow(real, D.WEAPONS[real.id].name)) : null,
     options.length ? h('p', { class: 'ss-sub' }, 'From your pack') : h('p', { class: 'fine center' }, 'Nothing in your pack to swap in.'), options.length ? h('div', { class: 'wc-grid' }, options) : null,
     gems.length ? h('p', { class: 'ss-sub' }, 'Diamonds (one fight)') : null, gems.length ? h('div', { class: 'wc-grid' }, gems) : null];
 }
@@ -1190,24 +1185,7 @@ function refreshSheet() {
   SHEET.el.replaceChildren(...slotSheet(SHEET.slot).filter(Boolean));
 }
 function forgeTab() {
-  const hero = X.S.hero; FORGE.tally = {};
-  E.ensureTwin(hero);
-  const wdef = D.WEAPONS[hero.loadout.NW.id];
-  // a two-hander lists each hand on its own (the bow, then its arrows) so either die can be forged or trained
-  const weaponRows = () => (E.isTwoHanded(hero)
-    ? [weaponRowFor(hero.loadout.NW, wdef.twinName ? wdef.name : `${wdef.name} · left`), weaponRowFor(hero.loadout.NE, wdef.twinName || `${wdef.name} · right`)]
-    : [...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map((i) => weaponRowFor(i, '')));
-  void weaponRows;
-  // the dice themselves live on the grid (tap one to grow it or swap it); the rest are sections below
-  FORGE.tally.dice = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
-  const secs = [
-    forgeSection('supplies', () => [rerollDieRow(hero), potionRow(hero)]),
-    forgeSection('powers', () => powersSection(hero)),
-    forgeSection('pet', () => petSection(hero)),
-  ];
-  FORGE.sec = null;
-  const ids = ['dice', 'supplies', 'powers', 'pet'].filter((id) => id === 'dice' || secs.some((x) => x?.id === `fs-${id}`));
-  return h('div', { class: 'sx-tab forge' }, forgeNav(hero, ids), diceGrid(hero), ...secs);
+  return h('div', { class: 'sx-tab forge' }, diceGrid(X.S.hero));
 }
 const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
   h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
@@ -1226,7 +1204,7 @@ function storeTab() {
     return it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) ok(); else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` }); };
   // worth saving for: the dearest thing still on the shelf
   const best = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.sold).sort((a, b) => b.it.price - a.it.price)[0];
-  const save = best ? zone('zn-save', 'crown', 'Worth saving for', best.it.price > hero.gold ? `You have ${hero.gold} of ${best.it.price} gold. Win a few fights and it could be yours, if nobody else buys it first.` : 'You can afford it right now.',
+  const save = best ? zone('zn-save', 'crown', 'Worth saving for', best.it.price > hero.gold ? `${hero.gold} of ${best.it.price} gold.` : 'You can afford it now.',
     h('div', { class: 'st-save' }, weaponCard(best.it.inst, { compact: true, badge: best.it.inst.diamond ? 'Diamond' : 'Special', actions: [buyWeapon(best.it, best.i)] }),
       h('div', { class: 'st-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(best.it.price), 'aria-valuenow': String(Math.min(hero.gold, best.it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / best.it.price) * 100)}%` } })))) : null;
   const tonics = E.storeTonics(hero).map((t) => h('div', { class: `sx-urow cmp st-tonic ${t.bought ? 'have' : ''}` }, rowIco(TONIC_ICO[t.icon] || 'star'),
@@ -1240,13 +1218,13 @@ function storeTab() {
   const charmOffer = sc ? charmCard(sc.id, { cls: sc.sold ? 'sold' : '', badge: 'Charm', actions: [sc.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.charmFull(hero) ? 'Charms full' : String(sc.price), () => { if (HE.buyCharm(hero)) { sfx.level(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.charmFull(hero) ? `You carry ${D.CHARM_MAX} charms. Drop one first.` : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < sc.price || E.charmFull(hero), cls: 'buy', aria: `Buy the ${D.CHARMS[sc.id].name} for ${sc.price} gold` })] }) : null;
   const shelf = stock.map((it, i) => ({ it, i })).filter(({ i }) => i !== best?.i);
   return h('div', { class: 'sx-tab store' },
-    h('p', { class: 'st-hello' }, coin(hero.gold, 'inline'), h('span', {}, 'in your purse. New stock every camp; today’s specials last one fight and are yours alone.')),
+    h('p', { class: 'st-hello' }, coin(hero.gold, 'inline'), h('span', {}, 'in your purse. New stock this camp.')),
     save,
     zone('zn-specials', 'star', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'st-rows' }, tonics, bundle)),
     zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [buyWeapon(it, i)] })))),
     charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, petOfferCard(hero)) : null);
 }
-function gearTab() {
+function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
   const sync = () => { sfx.card(); X.persist(); X.renderCamp(); };
   const wear = (inst, side) => { const c = E.canEquip(hero, inst.uid, side); if (!c.ok) { sfx.error(); toast(c.why); return; } HE.equip(hero, inst.uid, side); sync(); };
@@ -1260,12 +1238,12 @@ function gearTab() {
   });
   // the places a weapon can be, each its own panel with its heading centered on the top edge
   void worn;
-  const chips = jumpChips([{ id: 'dice', label: 'Your dice', icon: 'dice' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
+  const jump = chips ? jumpChips([{ id: 'dice', label: 'Your dice', icon: 'dice' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
     E.charmsOf(hero).length ? { id: 'zn-charms', label: 'Charms', icon: 'star', n: E.charmsOf(hero).length } : null,
-    E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null]);
+    E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null]) : null;
   return h('div', { class: 'sx-tab gear' },
-    chips, coachBox('g_gear'),
-    diceGrid(hero),
+    jump, coachBox('g_gear'),
+    grid ? diceGrid(hero) : null,
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then in the Camp Store.',
       h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
@@ -1286,13 +1264,13 @@ function hallOfFame(hero) {
     h('div', { class: 'hf-row' }, cell('Total points', r.points.toLocaleString(), 'big'), cell('Battles', r.battles), cell('Best battle', r.best)),
     r.firsts || r.seconds ? h('div', { class: 'hf-row two' }, cell('1st place', r.firsts, 'gold'), cell('2nd place', r.seconds, 'silver')) : h('p', { class: 'fine' }, 'Trophies for 1st and 2nd place are won in party games.'));
 }
-function heroTab() {
+function heroTab({ chips = false } = {}) {
   const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; hero.perks.forEach((p) => { pc[p] = (pc[p] || 0) + 1; });
   const log = (X.S.company?.campaign || hero.campaign)?.chronicle || [];
   const need = D.xpToNext(hero.level);
   const anchor = (id) => h('span', { class: 'fx-anchor', id: `fs-${id}` });
   return h('div', { class: 'sx-tab herotab' },
-    jumpChips([{ id: 'h-stats', label: 'Stats', icon: 'hero' }, { id: 'h-diff', label: 'Difficulty', icon: 'skull' }, { id: 'h-perks', label: 'Perks', icon: 'star', n: hero.pendingPerks || 0, note: 'to choose' }, { id: 'h-powers', label: 'Powers', icon: 'spark' }]),
+    chips ? jumpChips([{ id: 'h-stats', label: 'Stats', icon: 'hero' }, { id: 'h-diff', label: 'Difficulty', icon: 'skull' }, { id: 'h-perks', label: 'Perks', icon: 'star', n: hero.pendingPerks || 0, note: 'to choose' }, { id: 'h-powers', label: 'Powers', icon: 'spark' }]) : null,
     anchor('h-stats'),
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
@@ -1308,34 +1286,64 @@ function heroTab() {
     eyebrow('Healing'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal with magic'), h('small', {}, `Restore ${E.healAmountOf(hero)} health`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, '0', ico('spark')), h('b', {}, 'Healing potion'), h('small', {}, `${E.potionStock(hero)} on your belt, ${E.potionHpOf(hero)} health each`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart change'), h('small', {}, 'Turn your heart die by 1'))),
     log.length ? [eyebrow('The road remembers'), h('div', { class: 'ht-log' }, log.slice(0, 8).map((e) => h('div', {}, h('b', {}, e.title), h('small', {}, e.text))))] : null);
 }
+function shrinkSection(hero) {
+  E.ensureTwin(hero);
+  const rows = [];
+  const add = (kind, slot, label, icon = 'dice') => {
+    const b = shrinkBtn(kind, slot, label); if (!b) return;
+    rows.push(h('div', { class: 'sx-urow cmp shrink-row' }, rowIco(icon), h('div', { class: 'ur-copy' }, h('b', {}, label)), b));
+  };
+  add('strength', 'W', 'Left hand'); add('strength', 'E', 'Right hand'); add('mind', 'N', 'Head'); add('speed', 'S', 'Feet');
+  if (E.isActive(hero, 'SW')) add('special', 'SW', DIE_NAME.SW);
+  if (E.isActive(hero, 'SE')) add('special', 'SE', DIE_NAME.SE);
+  for (const slot of ['NW', 'NE']) {
+    const inst = hero.loadout[slot]; if (!inst || inst.twin || inst.id === 'fists') continue;
+    add('weapon', inst.uid, D.WEAPONS[inst.id].name, 'sword');
+  }
+  if (hero.pet) add('pet', null, D.PETS[hero.pet.type].name, 'heart');
+  return rows.length ? zone('zn-shrink', 'dice', 'Shrink', 'Pay gold to make a die smaller.', ...rows) : null;
+}
+function advancedBlock(fromBoard) {
+  const S = X.S; const hero = S.hero;
+  return h('div', { class: 'sx-advanced' },
+    h('button', { type: 'button', class: 'sx-adv-toggle', 'aria-expanded': String(!!S.advanced),
+      onclick: tap(() => { S.advanced = !S.advanced; X.renderCamp(fromBoard); }) }, S.advanced ? 'Hide advanced' : 'Advanced'),
+    S.advanced ? h('div', { class: 'sx-adv-body' },
+      gearTab({ grid: false, chips: false }),
+      heroTab({ chips: false }),
+      zone('zn-powers', 'spark', 'Powers', '', ...powersSection(hero)),
+      hero.pet ? petCard(hero) : null,
+      zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)),
+      shrinkSection(hero),
+      X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' })) : null);
+}
 export function camp(fromBoard) {
   const S = X.S; const hero = S.hero;
-  const body = S.tab === 'gear' ? gearTab() : S.tab === 'hero' ? heroTab() : S.tab === 'store' ? storeTab() : forgeTab();
+  if (S.tab === 'hero' || S.tab === 'gear') { S.advanced = true; S.tab = 'forge'; }
+  const store = S.tab === 'store';
   const perkHero = X.net ? (hero.pendingPerks > 0 ? hero : null) : (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
   if (X.net) { S.perkOffer = perkHero ? X.netPerkOffer() : null; }
   else { if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, X.fresh()); S.perkFor = perkHero.name; } if (!perkHero) { S.perkOffer = null; S.perkFor = null; } }
   const perkPanel = perkHero && S.perkOffer ? panel('sx-perks glow', eyebrow(`${perkHero.name} still owes a perk`, 'gold'), h('div', { class: 'perk-row' }, S.perkOffer.map((id, i) => perkCard(id, perkHero, () => { if (X.net) { sfx.level(); X.netPerk(id); return; } E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); X.persist(); X.renderCamp(fromBoard); }, i)))) : null;
   const seats = !X.net && (S.company?.members.length || 0) > 1 ? h('div', { class: 'sx-seats' }, S.company.members.map((m, i) => h('button', { type: 'button', class: S.seat === i ? 'on' : '', onclick: tap(() => { S.seat = i; S.hero = m; sfx.select(); X.renderCamp(fromBoard); }) }, emblem(m.cls), h('span', {}, h('b', {}, m.name), h('small', {}, `Lv ${m.level} · ${m.gold}g`))))) : null;
-  // badges: Store and Forge count what your gold can buy, Hero a perk you still owe
-  if (S.tab !== 'forge') { const keepSec = FORGE.sec; forgeTab(); FORGE.sec = keepSec; }
-  const forgeN = Object.values(FORGE.tally || {}).reduce((a, n) => a + n, 0);
-  const storeN = storeCanBuy(hero);
-  const badge = { store: storeN ? String(storeN) : '', forge: forgeN ? String(forgeN) : '', gear: '', hero: hero.pendingPerks > 0 ? '!' : '' };
-  const tabs = h('div', { class: 'sx-tabs', role: 'tablist' }, TABS.map(([id, label, ic]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', 'aria-selected': String(S.tab === id), 'aria-label': `${label}${badge[id] ? ` (${badge[id] === '!' ? 'a perk to choose' : `${badge[id]} to buy`})` : ''}`,
-    onclick: tap((e) => { if (S.tab === id) { const side = e.currentTarget.closest('.sx-side'); const t = side?.querySelector('.sx-camp-scroll'); if (side && t) side.scrollTo({ top: side.scrollTop + t.getBoundingClientRect().top - side.getBoundingClientRect().top - ((side.querySelector('.sx-sidetop')?.offsetHeight || 0) + (side.querySelector('.sx-tabs')?.offsetHeight || 0) + 10), behavior: reduced() ? 'auto' : 'smooth' }); return; } S.tab = id; X.renderCamp(fromBoard); }) },
-    ico(ic), h('span', {}, label), badge[id] ? h('b', { class: `tab-badge ${badge[id] === '!' ? 'alert' : ''}` }, badge[id]) : null)));
   const keep = $('.sx-camp-scroll'); const y = keep && S.holdScroll !== false ? keep.scrollTop : 0;
-  // the Camp Store button sits beside your purse (Dave: not over the fire): one tap opens its tab, with a count of what you can afford
-  const storeBtn = h('button', { type: 'button', class: 'sx-storebtn', 'aria-label': `Camp Store${storeN ? `: ${storeN} you can afford` : ''}`, onclick: tap(() => { S.tab = 'store'; X.renderCamp(fromBoard); const side = $('.sx-side'); const t = side?.querySelector('.sx-tabs'); if (side && t) side.scrollTo({ top: Math.max(0, t.offsetTop - 8), behavior: reduced() ? 'auto' : 'smooth' }); }) },
-    ico('coin'), h('span', {}, 'Camp Store'), storeN ? h('b', {}, `${storeN} to buy`) : null, ico('chevron'));
-  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, eyebrow('The fire is warm, and so is the stew, mostly'), h('h1', {}, 'Camp')))),
+  const storeBtn = h('button', { type: 'button', class: 'sx-storebtn', 'aria-label': 'Store', onclick: tap(() => { S.tab = 'store'; X.renderCamp(fromBoard); }) },
+    ico('coin'), h('span', {}, 'Store'), ico('chevron'));
+  const canBuyDie = GRID.some(([slot]) => slotCanBuy(hero, slot));
+  let tip = null;
+  if (!hero.tips?.c_first && Coach.hintsOn()) { if (hero.gold > 0 && canBuyDie) tip = coachBox('c_first'); }
+  else tip = coachBox('c_hands');
+  const body = store
+    ? h('div', { class: 'sx-tab store' }, btn('Back to camp', () => { S.tab = 'forge'; X.renderCamp(fromBoard); }, { kind: 'ghost', icon: 'back' }), storeTab())
+    : h('div', { class: 'sx-tab forge' }, diceGrid(hero), storeBtn, tip, advancedBlock(fromBoard));
+  mountAs('camp', h('div', { class: 'sx-split sx-camp' }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
-      h('div', { class: 'sx-sidetop' }, heroChip(hero), X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key', cls: 'compact' })),
-      S.tab === 'store' ? null : storeBtn, tabs, X.partyBar?.(), seats, perkPanel, campStatus(hero), (hero.tips?.c_first || !Coach.hintsOn() ? coachBox('c_hands') : coachBox('c_first')),
+      h('div', { class: 'sx-sidetop' }, heroChip(hero)),
+      X.partyBar?.(), seats, perkPanel, store ? null : campStatus(hero),
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
-  { const side = $('.sx-side'); const st = side?.querySelector('.sx-sidetop'); if (side && st) side.style.setProperty('--stick', `${st.offsetHeight}px`); } // the tabs pin just under the hero chip
+  { const side = $('.sx-side'); const st = side?.querySelector('.sx-sidetop'); if (side && st) side.style.setProperty('--stick', `${st.offsetHeight}px`); }
   lay('camp');
   SCR.enter('camp', { hero, heroes: X.members() }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
   SCR.current()?.sync?.(hero);
