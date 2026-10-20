@@ -1121,3 +1121,23 @@ body.sx .modal-card .slot-sheet { max-height: none; overflow: visible; padding-t
 .sh-mini.sell b { font-size: .82rem; color: #ffd34a; letter-spacing: 0; }
 .sx-zone .sh-list .sh-row { background: rgba(0, 0, 0, .34); }
 .sh-rbody .wc-faces { grid-template-columns: repeat(4, minmax(0, 2.9rem)); }
+/* every small weapon card is a row now (spoils, Store, pack): one per line, its buttons along the bottom */
+.loot-row:has(> .sh-row), .wc-grid:has(> .sh-row), .sx-diamond .loot-row.one:has(> .sh-row) { display: flex; flex-direction: column; gap: .5rem; max-width: none; }
+.sh-acts .sx-btn { flex: 1 1 0; min-width: 0; min-height: 2.5rem; padding: .3rem .6rem; font-size: .74rem; letter-spacing: .08em; }
+.sh-acts .sx-btn.sell, .sh-acts .sold-tag { flex: 0 0 auto; margin-left: auto; padding: .3rem .8rem; }
+.sh-acts .sx-btn .ic, .sh-acts .sx-btn .ico svg { width: .95rem; height: .95rem; }
+.sh-rart { position: relative; }
+.sh-badge { position: absolute; left: 0; right: 0; bottom: 0; padding: .08rem 0; background: rgba(5, 6, 12, .8); color: var(--rc); font: 800 .5rem var(--font-display); letter-spacing: .12em; text-transform: uppercase; text-align: center; }
+.sh-row.sold { opacity: .5; filter: grayscale(.7); }
+.sx-loot .sh-row, .sx-diamond .sh-row { background: rgba(0, 0, 0, .34); }
+.sh-row { text-align: left; }
+/* the charm glossary: a small button under the charms, and the popup with all of them */
+.ch-guide-btn { align-self: center; display: inline-flex; align-items: center; gap: .4rem; min-height: 2.4rem; padding: .3rem 1rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid rgba(200, 160, 255, .5); background: rgba(150, 100, 255, .1); color: #e2d2ff; font: 800 .72rem var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
+.ch-guide-btn .ico svg { width: 1rem; height: 1rem; }
+.ch-guide .ch-list { display: flex; flex-direction: column; gap: .45rem; }
+.ch-guide .sx-charm { text-align: left; }
+.ch-guide .sx-charm.mine { border-color: rgba(63, 209, 122, .6); }
+.ch-guide .sx-charm.mine .ch-badge { color: #8ff0b4; }
+.sx-charms-loot .ch-guide-btn { margin: -.2rem 0 .3rem; }
+.ch-guide .sx-charm.mine .ch-badge { background: rgba(63, 209, 122, .16); border: 1px solid rgba(63, 209, 122, .55); color: #8ff0b4; -webkit-text-fill-color: #8ff0b4; }

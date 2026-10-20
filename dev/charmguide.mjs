@@ -1,0 +1,21 @@
+// The Charms zone in Upgrades → Gear, and the glossary of every charm.  node dev/charmguide.mjs [tag]
+import { chromium } from 'playwright-core';
+const tag = process.argv[2] || 'cg';
+const out = '/tmp/claude-0/-home-user-questdice/8c0c8fef-1ceb-56a5-957d-404bdc291d52/scratchpad';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
+p.on('pageerror', (e) => console.log('ERR', e.message));
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; for (let i = 0; i < Math.round(s * 15); i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+await p.evaluate(() => { const { S, E, showCamp } = window.QD; const h = E.newHero({ name: 'Magic Dave', cls: 'wizard', seed: 7 }); h.level = 7; h.gold = 131; E.takeCharm(h, 'ember'); E.takeCharm(h, 'twins'); S.hero = h; S.company = { members: [h] }; showCamp(); });
+await pump(2);
+await p.evaluate(() => document.querySelector('.sx-upgrades')?.click()); await pump(1);
+await p.evaluate(() => [...document.querySelectorAll('.sx-adv-body button, .sx-adv-body [role=tab]')].find((e) => /^\s*Gear/i.test(e.textContent))?.click()); await pump(1);
+await p.evaluate(() => { document.querySelector('.zn-charms')?.scrollIntoView({ block: 'start' }); document.querySelectorAll('.sx-side, .sx-camp-scroll').forEach((s) => { s.scrollTop -= 80; }); }); await pump(1);
+await p.screenshot({ path: `${out}/${tag}_zone.png` });
+await p.evaluate(() => document.querySelector('.zn-charms .ch-guide-btn')?.click()); await pump(1); await p.waitForTimeout(800); await pump(0.5);
+await p.screenshot({ path: `${out}/${tag}_guide.png` });
+await p.evaluate(() => { document.querySelector('.modal-card').scrollTop = 9999; }); await pump(0.5);
+await p.screenshot({ path: `${out}/${tag}_guide2.png` });
+await b.close();

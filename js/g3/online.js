@@ -336,7 +336,7 @@ function revealFirst(t, won) {
 }
 function victory(t) {
   if (revealFirst(t, true)) return;
-  const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard, charmCard } = K();
+  const { btn, panel, eyebrow, flourish, mountAs, lay, emblem, ico, weaponCard, perkCard, charmCard, charmGuideBtn } = K();
   const R = t.rewards; const members = t.company.members; const n = members.length; const you = Sess.me(); const hero = you.hero;
   const offer = Sess.view()?.perkOffer; const draft = R.draft; const who = E.draftWho(draft);
   const placeWord = (p) => (p === 1 && n >= 2 ? '1st place' : p === 2 && n >= 3 ? '2nd place' : '');
@@ -358,7 +358,7 @@ function victory(t) {
     : owing.length ? panel('sx-perks', h('p', { class: 'muted' }, `Waiting for ${owing.join(', ')} to choose a perk.`), Sess.isHost() ? h('div', { class: 'sx-push' }, btn('Go on without them', () => Sess.send({ type: 'push' }).catch(fail), { kind: 'ghost', cls: 'wide' })) : null) : null;
   // your own charm offer (each hero rolls their own, as solo): take one, or swap one out when you carry three
   const myCharms = (R.charms && R.charms[hero.name]) || []; const took = R.charmTaken && R.charmTaken[hero.name];
-  const charms = myCharms.length ? panel('sx-charms-loot', eyebrow(myCharms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'),
+  const charms = myCharms.length ? panel('sx-charms-loot', eyebrow(myCharms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'), charmGuideBtn(),
     took ? h('p', { class: 'muted' }, `You took the ${D.CHARMS[took].name}. It works from your next fight.`)
       : h('div', { class: 'ch-list' }, myCharms.map((id) => charmCard(id, { actions: E.charmFull(hero)
         ? E.charmsOf(hero).map((old) => btn(`Swap for ${D.CHARMS[old].name}`, () => { sfx.level(); Sess.send({ type: 'charm', id, swap: old }).catch(fail); }, { kind: 'ghost', cls: 'ch-swap' }))

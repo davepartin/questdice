@@ -121,17 +121,18 @@ export const DIAMOND = {
 // Charms (Dave, Oct 2026: "items that bend the rules", like relics in other roguelikes). Small trinkets, three at most, each changing one
 // rule of the dice rather than adding a number. Found in the spoils of big fights and now and then in the Camp Store; kept for good.
 export const CHARM_MAX = 3;
+// Said plainly (Dave, Oct 2026: "I have no idea what charms are or what these words are saying"); the glossary lists all of them
 export const CHARMS = {
-  ember: { name: 'Ember Locket', icon: 'flame', text: 'A blank weapon face burns anyway: 6 attack and 2 magic.' },
-  mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight also heals you 12.' },
-  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice on the same number: attack like a triple (+10, more in later acts).' },
-  thorns: { name: 'Thorn Crown', icon: 'crown', text: 'Every icon on your weapon dice counts double: a crit of three arrows pays six.' },
-  bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'A 1 on your head, hands or feet counts as a 6, for everything.' },
-  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple pays double.' },
-  lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One more free reroll every round.' },
-  phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a blow that would fell you leaves you at 10 health.' },
+  ember: { name: 'Ember Locket', icon: 'flame', text: 'If a weapon die lands on 0, you still get 6 attack and 2 magic.' },
+  mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight you roll also heals you 12.' },
+  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice land on the same number: bonus attack, the same as a triple.' },
+  thorns: { name: 'Thorn Crown', icon: 'crown', text: 'The small icons on your weapon faces count twice. Three arrows give 6, not 3.' },
+  bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'A 1 on your head, hand or feet die counts as a 6.' },
+  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple you roll pays double.' },
+  lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One extra free reroll every round.' },
+  phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a hit that would knock you out leaves you at 10 health.' },
   pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with full magic, but 8 less health.' },
-  heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die rolls twice and keeps the higher.' },
+  heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die rolls twice, and you keep the higher number.' },
 };
 export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one
 export const CHARM_PRICE = [110, 150, 200]; // the Camp Store's price, by act

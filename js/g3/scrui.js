@@ -259,13 +259,29 @@ function charmCard(id, { actions = [], cls = '', badge = '' } = {}) {
     h('div', { class: 'ch-copy' }, h('b', {}, c.name, badge ? h('em', { class: 'ch-badge' }, badge) : null), h('small', {}, c.text)),
     actions.length ? h('div', { class: 'ch-acts' }, actions) : null);
 }
+// Every charm in the game, in one popup (Dave, Oct 2026: "a glossary of charms so you can get an idea of what to look for")
+function charmGuide() {
+  const hero = X.S.hero; sfx.card?.();
+  const ids = Object.keys(D.CHARMS);
+  modal(h('div', { class: 'form slot-sheet ch-guide' },
+    h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${ids.length} in all · carry ${D.CHARM_MAX}`), h('b', {}, 'Charms')),
+      h('button', { class: 'sh-x', type: 'button', onclick: () => closeModal() }, 'Done')),
+    h('p', { class: 'sh-role' }, 'A charm changes one rule for you, in every fight. Bosses and big fights drop them. The Camp Store sometimes sells one.'),
+    h('div', { class: 'ch-list' }, ids.map((id) => charmCard(id, { cls: hasCharmHere(hero, id) ? 'mine' : '', badge: hasCharmHere(hero, id) ? 'You have it' : '' })))));
+}
+const hasCharmHere = (hero, id) => !!hero && E.charmsOf(hero).includes(id);
+function charmGuideBtn() {
+  return h('button', { class: 'ch-guide-btn', type: 'button', onclick: tap(charmGuide) }, ico('book'), `All ${Object.keys(D.CHARMS).length} charms`);
+}
 // A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
 function weaponCard(inst, { actions = [], note = '', compact = true, badge = '', cls = '' } = {}) {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
   // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
   // Just the data (Dave, Oct 2026: "the name, the faces, the small picture and the dice size. No other explanation needed.")
   const size = E.weaponSize(inst); void note;
-  return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
+  // a small card is the popup's row (Dave, Oct 2026: the spoils lost their pictures): picture, name, faces, its buttons below
+  if (compact) return shWeapon(inst, actions.length ? h('div', { class: 'sh-acts' }, actions) : null, `pk ${cls}`, badge);
+  return h('article', { class: `sx-wc rar-${r} ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
     h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
@@ -841,7 +857,7 @@ export function victory(first) {
         : [gemLine(`Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}). Sell this one, or leave it behind and use a Diamond in a fight to make room.`),
           h('div', { class: 'row end' }, btn(`Sell it ${E.diamondSellValue(Rw.diamond)}`, () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost', icon: 'coin', iconAfter: true }))]) : null;
   // charms in the spoils: take one (a boss offers two to choose from); with three already, swap one out
-  const charmPanel = Rw.charms?.length && !Rw.repeat ? panel('sx-charms-loot', eyebrow(Rw.charms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'),
+  const charmPanel = Rw.charms?.length && !Rw.repeat ? panel('sx-charms-loot', eyebrow(Rw.charms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'), charmGuideBtn(),
     Rw.charmTaken ? h('p', { class: 'muted' }, `You took the ${D.CHARMS[Rw.charmTaken].name}. It works from your next fight.`)
       : h('div', { class: 'ch-list' }, Rw.charms.map((id) => charmCard(id, { actions: E.charmFull(hero)
         ? E.charmsOf(hero).map((old) => btn(`Swap for ${D.CHARMS[old].name}`, () => { HE.dropCharm(hero, old); if (HE.takeCharm(hero, id)) { Rw.charmTaken = id; sfx.level(); X.persist(); X.renderVictory(); } }, { kind: 'ghost', cls: 'ch-swap' }))
@@ -1174,9 +1190,9 @@ const shStage = (...kids) => h('div', { class: 'sh-stage' }, ...kids);
 const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, ico(`d${Math.min(10, n)}`, '', 60), h('b', {}, `d${n}`));
 const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hidden': 'true' }, ico('chevron')) : null, b ? shDie(b, 'next') : null];
 // a weapon as a row: picture, name, metal and die, faces; an action on the right
-function shWeapon(inst, action, cls = '') {
+function shWeapon(inst, action, cls = '', badge = '') {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0];
-  return h('div', { class: `sh-row rar-${r} ${cls}` }, h('div', { class: 'sh-rart' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'sh-img', w.name)),
+  return h('div', { class: `sh-row rar-${r} ${cls}` }, h('div', { class: 'sh-rart' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'sh-img', w.name), badge ? h('span', { class: 'sh-badge' }, badge) : null),
     h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)), action);
 }
 function slotSheet(slot) {
@@ -1301,7 +1317,7 @@ function storeTab() {
     save,
     zone('zn-specials', 'star', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'st-rows' }, tonics, bundle)),
     zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [buyWeapon(it, i)] })))),
-    charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, petOfferCard(hero)) : null);
+    charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, charmOffer ? charmGuideBtn() : null, petOfferCard(hero)) : null);
 }
 function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
@@ -1325,8 +1341,9 @@ function gearTab({ grid = false, chips = false } = {}) {
     jump, coachBox('g_gear'),
     grid ? diceGrid(hero) : null,
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'sh-list' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
-    E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then in the Camp Store.',
-      h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
+    zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each one changes a rule for you, in every fight.',
+      E.charmsOf(hero).length ? h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] }))) : h('p', { class: 'muted empty' }, 'None yet. Bosses and big fights drop them.'),
+      charmGuideBtn()),
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'One fight each, then it shatters. Left or Right: the hand it goes in next fight.',
       h('div', { class: 'sh-list' }, E.diamondsOf(hero).map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
         // Left / Right here at camp works at a table too (Dave, Oct 2026: the quest board's Bring strip is solo only)
@@ -1442,4 +1459,4 @@ function mountAs(cls, ...nodes) {
 export function chrome(mute) { const m = $('#mute'); if (m) m.replaceChildren(ico(mute ? 'mute' : 'sound', '', 18)); const hlp = $('#help'); if (hlp && !hlp.querySelector('svg')) hlp.replaceChildren(ico('help', '', 20)); const hm = $('#home'); if (hm && !hm.querySelector('svg')) hm.replaceChildren(ico('home', '', 20)); const gm = $('#gmenu'); if (gm && !gm.querySelector('svg')) gm.replaceChildren(ico('menu', '', 20)); }
 
 // The building blocks, for the screens of the shared table (g3/online.js).
-export const kit = { coin, btn, panel, eyebrow, flourish, plaque, ico, emblem, heroChip, topBar, mountAs, lay, tap, coachBox, tipBox, storyCard, perkCard, weaponCard, charmCard, questCard, trail, CLS_HUE, romans, clsName };
+export const kit = { coin, btn, panel, eyebrow, flourish, plaque, ico, emblem, heroChip, topBar, mountAs, lay, tap, coachBox, tipBox, storyCard, perkCard, weaponCard, charmCard, charmGuideBtn, questCard, trail, CLS_HUE, romans, clsName };
