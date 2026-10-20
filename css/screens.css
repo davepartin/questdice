@@ -601,7 +601,7 @@ label.sx-check { justify-content: flex-start; cursor: pointer; }
 .sx-top, .sx-top { right: var(--pad); }
 body:has(#gmenu:not([hidden])) .sx-top, body:has(#gmenu:not([hidden])) .sx-back { margin-left: 3.3rem; }
 /* camp: the hero chip (gold) sticks to the top of the screen while the sheet scrolls (Dave: needed for the choices) */
-.sx-sidetop:has(.sx-chip) { position: sticky; top: 0; z-index: 4; margin: 0 -1rem; padding: calc(.4rem + var(--safe-t)) 1rem .6rem;
+.sx-sidetop:has(.sx-chip) { position: sticky; top: 0; z-index: 4; margin: 0 -1rem; padding: calc(.25rem + var(--safe-t)) 1rem .35rem;
   background: linear-gradient(180deg, rgba(5, 6, 12, .94) 72%, rgba(5, 6, 12, 0)); }
 body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem; }
 
@@ -689,6 +689,10 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
    card's full width below. The body's children join the card's own grid (display: contents) so the faces can span both columns. */
 .sx-wc { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); grid-auto-rows: auto; column-gap: .5rem; row-gap: .2rem; align-content: start; padding: .45rem .45rem .5rem; border-radius: 9px; }
 .sx-wc .wc-stage, .sx-wc.compact .wc-stage { grid-column: 1; grid-row: 1 / span 2; width: 3.4rem; height: 3.4rem; aspect-ratio: 1; min-height: 0; border-radius: 7px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
+.sx-wc.compact { grid-template-columns: minmax(0, 1fr); }
+.sx-wc.compact .wc-stage { display: none; }
+.sx-wc.compact .wc-name { grid-column: 1; grid-row: 1; }
+.sx-wc.compact .wc-sub { grid-column: 1; grid-row: 2; }
 .sx-wc .wc-stage .wc-art img { inset: 2%; width: 96%; height: 96%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .55)); }
 .sx-wc .wc-banner { top: auto; bottom: 0; left: 0; right: 0; padding: .06rem 0; font-size: .44rem; letter-spacing: .12em; text-align: center; clip-path: none; box-shadow: none; }
 .sx-wc .wc-badge { top: 0; left: 0; right: 0; padding: .05rem 0; border: 0; border-radius: 0; font-size: .44rem; letter-spacing: .1em; text-align: center; background: rgba(5, 6, 12, .78); }
@@ -895,13 +899,12 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .st-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f6c445, #ffe58a); border-radius: inherit; }
 .st-rows { display: grid; gap: .45rem; }
 .st-tonic.have, .st-bundle.have { opacity: .72; }
-/* the Camp Store button, beside the hero's purse at the top of the camp panel (the fire scene stays clear) */
-.sx-storebtn { display: flex; align-items: center; gap: .45rem; width: 100%; margin: 0 0 .5rem; padding: .6rem .8rem; border-radius: 12px;
+/* the Store button sits under the dice grid */
+.sx-storebtn { display: flex; align-items: center; gap: .45rem; width: 100%; margin: .15rem 0 .35rem; padding: .5rem .8rem; border-radius: 12px;
   border: 1px solid #ffe3a0; background: linear-gradient(180deg, #ffd65a, #e19b12); color: #2a1804; font: 900 .85rem/1 var(--font-ui, system-ui); letter-spacing: .05em; text-transform: uppercase;
   box-shadow: 0 4px 12px rgba(0, 0, 0, .4); cursor: pointer; }
 .sx-storebtn svg { width: 1.15rem; height: 1.15rem; }
 .sx-storebtn span { flex: 1; text-align: left; }
-.sx-storebtn b { display: grid; place-items: center; height: 1.35rem; padding: 0 .5rem; border-radius: 99px; background: #2a1804; color: #ffe38a; font-size: .68rem; letter-spacing: .02em; }
 /* a coin is gold wherever it sits (on a gold button it was a black dot): gold with a dark rim */
 .ico-coin svg circle { fill: #ffd34a; stroke: #5a3a06; stroke-width: 2.2; }
 /* four camp tabs (Store, Forge, Gear, Hero) on one line, even on a narrow phone */
@@ -918,33 +921,57 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-saved em { font-style: normal; color: #ffe38a; font-weight: 700; white-space: nowrap; }
 /* the Diamond case in the Gear tab: Left / Right to carry one into the next fight */
 .zn-diamonds .db-hands { display: flex; gap: .45rem; width: 100%; } .zn-diamonds .db-hand { flex: 1; justify-content: center; }
-/* ---- the camp dice grid (Forge and Gear): your nine dice as on the battle board; tap one for its options */
-.sx-dicegrid { margin: .4rem 0 1rem; }
-.dg-head { margin: 0 0 .45rem; text-align: center; color: var(--dim); font-size: .86rem; }
-.dg-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; }
-.dg-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .15rem; min-height: 6.6rem; padding: .45rem .25rem .4rem; border-radius: 12px; border: 1px solid var(--hair); background: linear-gradient(180deg, rgba(32, 32, 56, .92), rgba(12, 12, 24, .94)); color: var(--text); cursor: pointer; pointer-events: auto; }
+/* ---- the camp dice grid: your nine dice as on the battle board; tap one for its options */
+.sx-dicegrid { margin: .15rem 0 .35rem; }
+.dg-head { margin: 0 0 .25rem; text-align: center; color: var(--dim); font-size: .78rem; }
+.dg-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; }
+.dg-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .08rem; min-height: 5.15rem; padding: .3rem .2rem .28rem; border-radius: 12px; border: 1px solid var(--hair); background: linear-gradient(180deg, rgba(32, 32, 56, .92), rgba(12, 12, 24, .94)); color: var(--text); cursor: pointer; pointer-events: auto; }
 .dg-cell:active { transform: scale(.97); }
 .dg-cell.s-NW, .dg-cell.s-NE { border-color: rgba(255, 110, 90, .45); }
 .dg-cell.s-SW, .dg-cell.s-SE { border-color: rgba(110, 170, 255, .45); }
 .dg-cell.s-C { border-color: rgba(255, 120, 160, .45); }
 .dg-cell.off { opacity: .72; border-style: dashed; }
 .dg-cell.can { box-shadow: 0 0 0 1px #3fd17a inset, 0 0 14px rgba(63, 209, 122, .25); }
-.dg-label { font-family: var(--font-display); font-weight: 700; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
-.dg-art { width: 3.1rem; height: 3.1rem; } .dg-art img { width: 100%; height: 100%; object-fit: contain; }
-.dg-cell .sx-die { transform: scale(.82); margin: -.2rem 0; }
-.dg-lock { display: grid; place-items: center; width: 3rem; height: 3rem; color: var(--faint); } .dg-lock .ico svg { width: 1.6rem; height: 1.6rem; }
-.dg-size { font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: #fff; }
-.dg-cell.off .dg-size { font-size: .78rem; color: var(--gold); }
-.dg-dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; background: #3fd17a; box-shadow: 0 0 6px #3fd17a; }
-.dg-cell .dg-dot { position: absolute; top: .4rem; right: .4rem; }
-.dg-foot { margin: .45rem 0 0; text-align: center; color: #9be8b9; font-size: .84rem; }
+.dg-label { font-family: var(--font-display); font-weight: 700; font-size: .54rem; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+.dg-art { width: 2.35rem; height: 2.35rem; } .dg-art img { width: 100%; height: 100%; object-fit: contain; }
+.dg-cell .sx-die { transform: scale(.68); margin: -.35rem 0 -.3rem; }
+.dg-lock { display: grid; place-items: center; width: 2.3rem; height: 2.3rem; color: var(--faint); } .dg-lock .ico svg { width: 1.3rem; height: 1.3rem; }
+.dg-size { font-family: var(--font-display); font-weight: 800; font-size: .82rem; color: #fff; line-height: 1.1; }
+.dg-cell.off .dg-size { font-size: .72rem; }
+.dg-size.ok, .dg-price.ok { color: var(--gold); }
+.dg-size.poor, .dg-price.poor { color: #8a8498; }
+.dg-price { font-style: normal; font-family: var(--font-display); font-weight: 800; font-size: .7rem; line-height: 1; }
+.dg-dot { display: inline-block; width: .45rem; height: .45rem; border-radius: 50%; background: #3fd17a; box-shadow: 0 0 6px #3fd17a; }
+.dg-cell .dg-dot { position: absolute; top: .3rem; right: .3rem; }
+.dg-foot { margin: .3rem 0 0; text-align: center; color: #9be8b9; font-size: .78rem; }
 /* the popup for one die */
 .slot-sheet { max-height: 78vh; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; }
-.ss-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.ss-head { display: flex; align-items: center; justify-content: space-between; gap: .45rem; flex-wrap: wrap; }
 .ss-head b { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; color: #fff; }
+.ss-head .sx-coin.purse { margin-left: auto; }
 .ss-x { min-height: 2.2rem; padding: .3rem .9rem; }
 .ss-sub { margin: .4rem 0 0; font-family: var(--font-display); font-weight: 700; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
 .ss-now { display: grid; gap: .5rem; }
+.ss-now .sx-wc { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; padding: .7rem .7rem .6rem; }
+.ss-now .sx-wc .wc-stage {
+  display: grid; place-items: center; grid-column: 1; grid-row: auto; width: 7rem; height: 7rem; min-height: 7rem; max-width: 7.5rem;
+  aspect-ratio: 1; border-radius: 14px;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 22%, #fffaf2), color-mix(in srgb, var(--rc) 12%, #f3ead6) 70%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 38%, #fff), 0 8px 18px rgba(0, 0, 0, .28);
+}
+.ss-now .sx-wc .wc-stage .wc-art img { filter: drop-shadow(0 4px 6px rgba(40, 24, 8, .28)); }
+.ss-now .sx-wc .wc-name, .ss-now .sx-wc .wc-sub { grid-column: 1; text-align: center; }
+.need-row { flex-basis: 100%; display: flex; align-items: center; justify-content: center; gap: .35rem; }
+.need-row .sx-coin { font-size: .72rem; }
+.sx-cstat.slim { padding: .28rem .5rem; gap: .45rem; }
+.sx-cstat.slim .cs-pots > small { display: none; }
+.sx-cstat.slim .cs-step { height: 1.15rem; }
+.sx-advanced { display: flex; flex-direction: column; gap: .55rem; }
+.sx-adv-toggle { width: 100%; min-height: 40px; padding: .4rem .7rem; border-radius: 10px; border: 1px dashed var(--hair); background: rgba(5, 6, 12, .45); color: var(--dim); font: 800 .72rem var(--font-display); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
+.sx-adv-toggle[aria-expanded="true"] { color: var(--gold-hi); border-style: solid; }
+.sx-adv-body { display: flex; flex-direction: column; gap: .7rem; }
+.sx-camp .sx-side { gap: .45rem; }
+.sx-camp .sx-camp-title h1 { font-size: 1.7rem; }
 .ss-die { display: grid; place-items: center; }
 .slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
 .slot-sheet .wrow2 { padding-top: .2rem; } .slot-sheet .wrow2 .ur-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }

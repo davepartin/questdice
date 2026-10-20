@@ -1013,7 +1013,7 @@ function renderCamp(fromBoard) {
   const perkPanel = perkHero && S.perkOffer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${perkHero.name} still owes a perk`),
     h('div', { class: 'perks' }, S.perkOffer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); persist(); renderCamp(fromBoard); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
   mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm, and so is the stew, mostly'), h('h2', {}, 'Camp')), heroChip()),
+    h('div', { class: 'topline' }, h('div', {}, h('h2', {}, 'Camp')), heroChip()),
     h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
     tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
