@@ -526,6 +526,27 @@ test('secret objectives at a table: everyone opens an envelope, the fight waits 
   assert.equal(rv.lines.length, 3); for (const l of rv.lines) assert.doesNotMatch(l.line, /undefined|NaN/);
 });
 
+test('a solo table fight offers a Bonus Goal instead of an envelope', () => {
+  const { table, players } = make([['Ada', 'knight']]);
+  table.envelopes = 'every';
+  assert.equal(command(table, players[0].id, { type: 'ready' }).ok, true);
+  assert.equal(command(table, players[0].id, { type: 'start' }).ok, true);
+  const road = playerView(table, players[0].id).road;
+  assert.equal(command(table, players[0].id, { type: 'choose', id: road.choices[0].id }).ok, true);
+  assert.equal(command(table, players[0].id, { type: 'onward' }).ok, true);
+  const q = playerView(table, players[0].id).board.quests[0];
+  assert.equal(command(table, players[0].id, { type: 'quest', id: q.id }).ok, true);
+  assert.equal(table.phase, 'envelope');
+  assert.ok(table.bonus);
+  assert.equal(table.envelope, null);
+  const v = playerView(table, players[0].id).envelope;
+  assert.equal(v.card.kind, 'bonus');
+  assert.equal(v.bonus, true);
+  assert.equal(command(table, players[0].id, { type: 'envelope', accept: true }).ok, true);
+  assert.equal(table.phase, 'battle');
+  assert.equal(table.bonus.accepted, true);
+});
+
 test('the host can move an envelope on for a phone that went quiet (an offered bribe counts as declined)', () => {
   const { table, players } = make([['WizKid', 'wizard'], ['Smalls', 'dwarf']]);
   begin(table, players);

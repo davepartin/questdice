@@ -658,17 +658,27 @@ function startQuest(q) {
   if (world.available && !S.net) {
     const go = () => { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); };
     if (members.length > 1) return go();
-    // a secret challenge before the fight (secrets.js; solo gets challenge cards only)
     const hero = members[0];
-    S.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: [hero], enemies: S.battle.enemies, salt: `${quest.id}:${hero.stats.battles}`, big: ['elite', 'boss'].includes(quest.kind) || !!quest.perilous });
-    return SCRUI.envelope(SO.cardView(S.envelope, hero.name), { questName: quest.name, solo: true, onAnswer: () => { SO.answer(S.envelope, hero.name); go(); } });
+    S.envelope = null; S.bonus = null;
+    if (SO.wantsBonus(quest.kind)) {
+      S.bonus = SO.dealBonusGoal({ c: hero.campaign, hero, salt: `${quest.id}:${hero.stats.battles}` });
+      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept }); go(); } });
+    }
+    return go();
   }
   renderReset();
 }
-// After a solo battle: open the envelope, pay it, and keep the Reveal line for the rewards screen.
+// After a solo battle: pay the Bonus Goal (or an old envelope) and keep the Reveal line for the rewards screen.
 function revealSolo(won) {
-  const env = S.envelope; S.envelope = null; const hero = S.hero;
-  if (!env || !S.battle || S.battle.fighters || !hero) return null;
+  const hero = S.hero;
+  if (!S.battle || S.battle.fighters || !hero) { S.envelope = null; S.bonus = null; return null; }
+  if (S.bonus) {
+    const goal = S.bonus; S.bonus = null;
+    const j = SO.judgeBonus(goal, S.battle, { won }); SO.payBonus(j, hero);
+    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+  }
+  const env = S.envelope; S.envelope = null;
+  if (!env) return null;
   const j = SO.judge(env, S.battle, { won }); SO.payOut(j, { [hero.name]: hero });
   return { won, voice: env.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
 }
@@ -1013,7 +1023,7 @@ function renderCamp(fromBoard) {
   const perkPanel = perkHero && S.perkOffer ? h('section', { class: 'panel glow' }, h('div', { class: 't-eyebrow mb' }, `${perkHero.name} still owes a perk`),
     h('div', { class: 'perks' }, S.perkOffer.map((id) => h('button', { class: 'perk', type: 'button', onclick: () => { E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); persist(); renderCamp(fromBoard); } }, h('b', {}, D.PERKS[id].name), h('small', {}, D.PERKS[id].text))))) : null;
   mount(
-    h('div', { class: 'topline' }, h('div', {}, h('div', { class: 't-eyebrow' }, 'The fire is warm, and so is the stew, mostly'), h('h2', {}, 'Camp')), heroChip()),
+    h('div', { class: 'topline' }, h('div', {}, h('h2', {}, 'Camp')), heroChip()),
     h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
     tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),

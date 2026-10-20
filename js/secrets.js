@@ -22,10 +22,10 @@ export const COVER_LINES = [
 export const VOICE = {
   name: 'Old Whisper',
   scenes: [
-    'The air goes cold and smells faintly of pawn shop. Old Whisper, a ghost who sells second-hand everything, leans in close to each of you in turn. Old Whisper is very bad at whispering.',
-    'Before the first die is thrown, a small grey ghost with a price tag on one ear drifts between you. "Psst," says Old Whisper, to everyone, loudly. "Something for each of you."',
-    'Old Whisper floats up out of a puddle, straightens a hat that is not there, and slips a sealed envelope into every hand. "Read it. Then eat it. Or don’t. I’m not your mother."',
-    'A candle that was not there a moment ago flickers on a rock. Beside it, Old Whisper is counting envelopes. "One each. No peeking at your neighbour’s. Yes, you."',
+    'Old Whisper, a ghost who runs a pawn shop, hands you a sealed envelope. Read it. Don’t show the others.',
+    'A small grey ghost drifts between you and holds out one envelope each. Read yours. No peeking.',
+    'Old Whisper slips a sealed envelope into your hand. Read it. Keep it to yourself.',
+    'Old Whisper counts out one envelope each. Read yours. Do not look at anyone else’s.',
   ],
 };
 
@@ -33,52 +33,52 @@ export const VOICE = {
 // mode for bribes: offer (Accept / Decline) or forced. team: only at a table of two or more. pay: a share of G (gold by act).
 export const CARDS = {
   // ---- cover cards
-  lead: { kind: 'cover', name: 'Lead the Charge', flavor: 'No tricks this time. The voice just wants a good show, and a good show ends with the monsters running.', rule: 'Win this battle.', pay: 0.5, check: (x) => x.won },
-  shield: { kind: 'cover', team: true, name: 'The Shield', flavor: 'Someone has to stand at the front. The voice thinks it should be you. It is very rarely wrong about faces.', rule: 'Be the monsters’ target in 2 or more rounds and still be standing at the end.', pay: 1, check: (x) => x.me.filter((r) => r.leader).length >= 2 && x.F.hp > 0 },
-  medic: { kind: 'cover', team: true, name: 'Field Medic', flavor: 'You smell of herbs and good intentions. The voice wants you to use both.', rule: 'Heal your friends for 15 or more health (thrown potions, revives).', pay: 1, check: (x) => (x.F.stats?.healGiven || 0) >= 15 },
-  together: { kind: 'cover', team: true, name: 'No One Left Behind', flavor: 'Nobody gets left on the ground today. Not one. The voice has had enough of funerals this week.', rule: 'No hero is down when the battle ends.', pay: 1, check: (x) => Object.values(x.fighters).every((f) => f.hp > 0) },
-  quick: { kind: 'cover', name: 'Quick Work', flavor: 'The voice is late for lunch. Make it quick.', rule: 'Win in 4 rounds or fewer.', pay: 1, check: (x) => x.rounds <= 4 },
-  spark: { kind: 'cover', team: true, name: 'Spark Plug', flavor: 'You have more magic than sense. Share some.', rule: 'Share magic with a friend twice.', pay: 0.5, check: (x) => (x.F.stats?.shares || 0) >= 2 },
+  lead: { kind: 'cover', name: 'Lead the Charge', flavor: 'Win this fight. That is the job.', rule: 'Win this battle.', pay: 0.5, check: (x) => x.won },
+  shield: { kind: 'cover', team: true, name: 'The Shield', flavor: 'Stand at the front. Draw the hits.', rule: 'Be the monsters’ target in 2 or more rounds and still be standing at the end.', pay: 1, check: (x) => x.me.filter((r) => r.leader).length >= 2 && x.F.hp > 0 },
+  medic: { kind: 'cover', team: true, name: 'Field Medic', flavor: 'Keep the others on their feet.', rule: 'Heal your friends for 15 or more health (thrown potions, revives).', pay: 1, check: (x) => (x.F.stats?.healGiven || 0) >= 15 },
+  together: { kind: 'cover', team: true, name: 'No One Left Behind', flavor: 'Nobody goes down today.', rule: 'No hero is down when the battle ends.', pay: 1, check: (x) => Object.values(x.fighters).every((f) => f.hp > 0) },
+  quick: { kind: 'cover', name: 'Quick Work', flavor: 'Finish this fight fast.', rule: 'Win in 4 rounds or fewer.', pay: 1, check: (x) => x.rounds <= 4 },
+  spark: { kind: 'cover', team: true, name: 'Spark Plug', flavor: 'Share your magic. The others need it.', rule: 'Share magic with a friend twice.', pay: 0.5, check: (x) => (x.F.stats?.shares || 0) >= 2 },
   // ---- rivalries (never hinted: the card does not say anyone else has it)
-  goldrush: { kind: 'rival', name: 'Gold Rush', what: 'gold', flavor: 'Gold glints in every corner of this fight. The voice wants you to pocket more of it than anyone. It also wants a cut, later.', rule: 'Earn more gold this battle than anyone. Win and your gold is doubled.', score: (x) => sum(x.me, (r) => r.gold), doubles: true },
-  arcane: { kind: 'rival', name: 'Arcane Ace', what: 'magic damage', flavor: 'Show them what magic is for. The voice is keeping score.', rule: 'Deal the most damage with your magic powers.', score: (x) => sum(x.me, (r) => r.magic) },
-  finisher: { kind: 'rival', name: 'The Finisher', what: 'killing blows', flavor: 'Anyone can wound a monster. The voice remembers who finished it.', rule: 'Land the most killing blows.', score: (x) => sum(x.me, (r) => r.kills.length) },
-  wall: { kind: 'rival', name: 'Stone Wall', what: 'blocks', flavor: 'Let them hit you. Let them get tired of it.', rule: 'Block the most damage.', score: (x) => sum(x.me, (r) => r.blocked) },
-  bigswing: { kind: 'rival', name: 'Big Swing', what: 'the biggest round', flavor: 'One round. One enormous round. Make it count.', rule: 'Deal the most damage in a single round.', score: (x) => Math.max(0, ...x.me.map((r) => r.dealt)) },
-  lucky: { kind: 'rival', name: 'Lucky Streak', what: 'triples', flavor: 'Three of a kind, again and again. The voice loves a pattern.', rule: 'Roll the most triples.', score: (x) => sum(x.me, (r) => r.triples) },
-  straights: { kind: 'rival', name: 'Straight Shooter', what: 'straights', flavor: 'One, two, three, four. The voice counts along.', rule: 'Roll the most straights.', score: (x) => x.me.filter((r) => r.straight).length },
-  fleet: { kind: 'rival', name: 'Fleet Foot', what: 'feet rolls', flavor: 'Your boots itch to move. Roll fast.', rule: 'Roll the highest total on your feet die across the battle.', score: (x) => sum(x.me, (r) => r.S) },
-  strongarm: { kind: 'rival', name: 'Strong Arm', what: 'hand rolls', flavor: 'Your hands are full of thunder. Prove it.', rule: 'Roll the highest total on your hand dice across the battle.', score: (x) => sum(x.me, (r) => r.W + r.E) },
-  bright: { kind: 'rival', name: 'Bright Spark', what: 'head rolls', flavor: 'Use your head. No, really: roll it high.', rule: 'Roll the highest total on your head die across the battle.', score: (x) => sum(x.me, (r) => r.N) },
-  crowd: { kind: 'rival', name: 'Crowd Favourite', what: 'battle points', flavor: 'The crowd is watching. Well, the voice is. Same thing.', rule: 'Score the most battle points.', score: (x) => x.F.points || 0 },
+  goldrush: { kind: 'rival', name: 'Gold Rush', what: 'gold', flavor: 'Take more gold than anyone else.', rule: 'Earn more gold this battle than anyone. Win and your gold is doubled.', score: (x) => sum(x.me, (r) => r.gold), doubles: true },
+  arcane: { kind: 'rival', name: 'Arcane Ace', what: 'magic damage', flavor: 'Deal the most damage with magic.', rule: 'Deal the most damage with your magic powers.', score: (x) => sum(x.me, (r) => r.magic) },
+  finisher: { kind: 'rival', name: 'The Finisher', what: 'killing blows', flavor: 'Land the last hit more than anyone.', rule: 'Land the most killing blows.', score: (x) => sum(x.me, (r) => r.kills.length) },
+  wall: { kind: 'rival', name: 'Stone Wall', what: 'blocks', flavor: 'Block more damage than anyone.', rule: 'Block the most damage.', score: (x) => sum(x.me, (r) => r.blocked) },
+  bigswing: { kind: 'rival', name: 'Big Swing', what: 'the biggest round', flavor: 'Have the biggest single round of damage.', rule: 'Deal the most damage in a single round.', score: (x) => Math.max(0, ...x.me.map((r) => r.dealt)) },
+  lucky: { kind: 'rival', name: 'Lucky Streak', what: 'triples', flavor: 'Roll more triples than anyone.', rule: 'Roll the most triples.', score: (x) => sum(x.me, (r) => r.triples) },
+  straights: { kind: 'rival', name: 'Straight Shooter', what: 'straights', flavor: 'Roll more straights than anyone.', rule: 'Roll the most straights.', score: (x) => x.me.filter((r) => r.straight).length },
+  fleet: { kind: 'rival', name: 'Fleet Foot', what: 'feet rolls', flavor: 'Roll your feet die higher than anyone.', rule: 'Roll the highest total on your feet die across the battle.', score: (x) => sum(x.me, (r) => r.S) },
+  strongarm: { kind: 'rival', name: 'Strong Arm', what: 'hand rolls', flavor: 'Roll your hand dice higher than anyone.', rule: 'Roll the highest total on your hand dice across the battle.', score: (x) => sum(x.me, (r) => r.W + r.E) },
+  bright: { kind: 'rival', name: 'Bright Spark', what: 'head rolls', flavor: 'Roll your head die higher than anyone.', rule: 'Roll the highest total on your head die across the battle.', score: (x) => sum(x.me, (r) => r.N) },
+  crowd: { kind: 'rival', name: 'Crowd Favourite', what: 'battle points', flavor: 'Score the most battle points.', rule: 'Score the most battle points.', score: (x) => x.F.points || 0 },
   // ---- challenges (yours alone)
-  thrice: { kind: 'challenge', name: 'Three Times Lucky', flavor: 'Once is luck. Twice is talent. Three times is a story.', rule: 'Roll a triple in 3 different rounds.', pay: 1, check: (x) => x.me.filter((r) => r.triples > 0).length >= 3 },
-  mittens: { kind: 'challenge', name: 'Matching Mittens', flavor: 'Your left hand and your right hand should get along better.', rule: 'Both hand dice show the same number, in 2 rounds.', pay: 0.5, check: (x) => x.me.filter((r) => r.W && r.W === r.E).length >= 2 },
-  thinker: { kind: 'challenge', name: 'Big Thinker', flavor: 'Somewhere in your head is a very big number. Find it.', rule: 'Roll your head die’s top face.', pay: 0.5, check: (x) => x.me.some((r) => r.N === mindSize(x.F.hero)) },
-  neverlast: { kind: 'challenge', team: true, name: 'Never Last', flavor: 'Do not be the slow one. The slow one gets hit.', rule: 'Never be the slowest hero (the monsters’ target).', pay: 0.5, check: (x) => !x.me.some((r) => r.leader) },
-  teetotal: { kind: 'challenge', name: 'Teetotaler', flavor: 'No potions today. You are tougher than that. Probably.', rule: 'Win without drinking a potion.', pay: 0.5, check: (x) => (x.F.potions0 ?? 0) - (x.F.potions ?? 0) - (x.F.stats?.potionsThrown || 0) <= 0 },
-  biggame: { kind: 'challenge', name: 'Big Game Hunter', flavor: 'Ignore the small fry. The big one is yours.', rule: 'Land the killing blow on the toughest monster.', pay: 1, check: (x) => x.me.some((r) => r.kills.includes(x.toughest)) },
-  thrifty: { kind: 'challenge', name: 'Thrifty', flavor: 'Magic rerolls are for people who do not believe in themselves.', rule: 'Use no magic rerolls.', pay: 0.5, check: (x) => x.me.every((r) => !r.paid) },
-  heartmatch: { kind: 'challenge', name: 'Heart Match', flavor: 'Your heart and your head should agree, just once.', rule: 'Your heart die matches your head die in some round.', pay: 0.5, check: (x) => x.me.some((r) => r.C && r.C === r.N) },
-  cliffhanger: { kind: 'challenge', name: 'Cliffhanger', flavor: 'Win it at the very edge. The voice loves a close one.', rule: 'Win while at 5 health or less.', pay: 1, check: (x) => x.F.hp > 0 && x.F.hp <= 5 },
-  saver: { kind: 'challenge', name: 'Saver', flavor: 'Spend wisely. End richer in magic than you began.', rule: 'End the battle with more magic than you started with.', pay: 0.5, check: (x) => (x.F.magic ?? 0) > (x.F.magic0 ?? 0) },
-  talentshow: { kind: 'challenge', name: 'Talent Show', flavor: 'Both of your talents, at once, for an audience of one.', rule: 'Both talent dice pay in the same round.', pay: 0.5, needs: (hero) => isActive(hero, 'SW') && isActive(hero, 'SE'), check: (x) => x.me.some((r) => r.talents >= 2) },
+  thrice: { kind: 'challenge', name: 'Three Times Lucky', flavor: 'Hit a triple in three different rounds.', rule: 'Roll a triple in 3 different rounds.', pay: 1, check: (x) => x.me.filter((r) => r.triples > 0).length >= 3 },
+  mittens: { kind: 'challenge', name: 'Matching Mittens', flavor: 'Match both hand dice, twice.', rule: 'Both hand dice show the same number, in 2 rounds.', pay: 0.5, check: (x) => x.me.filter((r) => r.W && r.W === r.E).length >= 2 },
+  thinker: { kind: 'challenge', name: 'Big Thinker', flavor: 'Roll the top face of your head die.', rule: 'Roll your head die’s top face.', pay: 0.5, check: (x) => x.me.some((r) => r.N === mindSize(x.F.hero)) },
+  neverlast: { kind: 'challenge', team: true, name: 'Never Last', flavor: 'Do not be the slowest. The slowest gets hit.', rule: 'Never be the slowest hero (the monsters’ target).', pay: 0.5, check: (x) => !x.me.some((r) => r.leader) },
+  teetotal: { kind: 'challenge', name: 'Teetotaler', flavor: 'Win without a potion.', rule: 'Win without drinking a potion.', pay: 0.5, check: (x) => (x.F.potions0 ?? 0) - (x.F.potions ?? 0) - (x.F.stats?.potionsThrown || 0) <= 0 },
+  biggame: { kind: 'challenge', name: 'Big Game Hunter', flavor: 'Finish the toughest monster yourself.', rule: 'Land the killing blow on the toughest monster.', pay: 1, check: (x) => x.me.some((r) => r.kills.includes(x.toughest)) },
+  thrifty: { kind: 'challenge', name: 'Thrifty', flavor: 'Do not spend magic on rerolls.', rule: 'Use no magic rerolls.', pay: 0.5, check: (x) => x.me.every((r) => !r.paid) },
+  heartmatch: { kind: 'challenge', name: 'Heart Match', flavor: 'Match your heart die to your head die.', rule: 'Your heart die matches your head die in some round.', pay: 0.5, check: (x) => x.me.some((r) => r.C && r.C === r.N) },
+  cliffhanger: { kind: 'challenge', name: 'Cliffhanger', flavor: 'Win with 5 health or less.', rule: 'Win while at 5 health or less.', pay: 1, check: (x) => x.F.hp > 0 && x.F.hp <= 5 },
+  saver: { kind: 'challenge', name: 'Saver', flavor: 'End with more magic than you started.', rule: 'End the battle with more magic than you started with.', pay: 0.5, check: (x) => (x.F.magic ?? 0) > (x.F.magic0 ?? 0) },
+  talentshow: { kind: 'challenge', name: 'Talent Show', flavor: 'Get both talent dice to pay in one round.', rule: 'Both talent dice pay in the same round.', pay: 0.5, needs: (hero) => isActive(hero, 'SW') && isActive(hero, 'SE'), check: (x) => x.me.some((r) => r.talents >= 2) },
   // ---- bribes: offered (Accept / Decline), the brutal ones
-  slacker: { kind: 'bribe', mode: 'offer', name: 'The Slacker', flavor: 'Why work so hard? Let the others do it. Nobody will notice. Probably.', rule: 'Deal the least damage of anyone.', check: (x) => x.others.every((n) => sum(x.rows[n], (r) => r.dealt) >= sum(x.me, (r) => r.dealt)) },
-  glass: { kind: 'bribe', mode: 'offer', name: 'Glass Shield', flavor: 'Lower your guard. Just for a little while. The voice wants to see what happens.', rule: 'Have no block at all in 2 rounds.', check: (x) => x.me.filter((r) => !r.blk).length >= 2 },
-  cold: { kind: 'bribe', mode: 'offer', name: 'Cold Shoulder', flavor: 'They can look after themselves. You have your own problems.', rule: 'Help nobody: no thrown potion, no shared magic, no revive.', check: (x) => !(x.F.stats?.potionsThrown || x.F.stats?.shares || x.F.stats?.revives) },
-  longfight: { kind: 'bribe', mode: 'offer', name: 'The Long Fight', flavor: 'Make it last. The voice has popcorn.', rule: 'The battle lasts 5 rounds or more.', check: (x) => x.rounds >= 5 },
-  pact: { kind: 'bribe', mode: 'offer', name: 'The Pact', flavor: 'The monster makes you a promise: it will never knock you out today. In return, you go easy on it.', rule: 'You cannot be knocked out this battle, but you deal half damage.', check: () => true },
-  fall: { kind: 'bribe', mode: 'offer', name: 'Someone Has to Fall', flavor: 'Not you. Never you. But someone on your side has to hit the ground before this is over.', rule: 'Another hero is knocked out at least once (a revive still counts).', check: (x) => x.others.some((n) => x.rows[n].some((r) => r.hp <= 0)) || x.others.some((n) => x.fighters[n]?.hp <= 0) },
-  laststand: { kind: 'bribe', mode: 'offer', name: 'Last One Standing', flavor: 'When the dust settles, the voice wants you to be the healthiest one there.', rule: 'End the battle with more health than every teammate.', check: (x) => x.others.every((n) => (x.fighters[n]?.hp ?? 0) < x.F.hp) },
+  slacker: { kind: 'bribe', mode: 'offer', name: 'The Slacker', flavor: 'Let the others do the work. Deal the least damage.', rule: 'Deal the least damage of anyone.', check: (x) => x.others.every((n) => sum(x.rows[n], (r) => r.dealt) >= sum(x.me, (r) => r.dealt)) },
+  glass: { kind: 'bribe', mode: 'offer', name: 'Glass Shield', flavor: 'Drop your guard. No block, twice.', rule: 'Have no block at all in 2 rounds.', check: (x) => x.me.filter((r) => !r.blk).length >= 2 },
+  cold: { kind: 'bribe', mode: 'offer', name: 'Cold Shoulder', flavor: 'Help nobody this fight.', rule: 'Help nobody: no thrown potion, no shared magic, no revive.', check: (x) => !(x.F.stats?.potionsThrown || x.F.stats?.shares || x.F.stats?.revives) },
+  longfight: { kind: 'bribe', mode: 'offer', name: 'The Long Fight', flavor: 'Make the fight last five rounds or more.', rule: 'The battle lasts 5 rounds or more.', check: (x) => x.rounds >= 5 },
+  pact: { kind: 'bribe', mode: 'offer', name: 'The Pact', flavor: 'The monster will not knock you out. You deal half damage.', rule: 'You cannot be knocked out this battle, but you deal half damage.', check: () => true },
+  fall: { kind: 'bribe', mode: 'offer', name: 'Someone Has to Fall', flavor: 'Someone on your side has to fall. Not you.', rule: 'Another hero is knocked out at least once (a revive still counts).', check: (x) => x.others.some((n) => x.rows[n].some((r) => r.hp <= 0)) || x.others.some((n) => x.fighters[n]?.hp <= 0) },
+  laststand: { kind: 'bribe', mode: 'offer', name: 'Last One Standing', flavor: 'End with more health than every teammate.', rule: 'End the battle with more health than every teammate.', check: (x) => x.others.every((n) => (x.fighters[n]?.hp ?? 0) < x.F.hp) },
   // ---- bribes: forced ("you have been chosen"), milder; they look exactly like an ordinary card
-  goldfumble: { kind: 'bribe', mode: 'forced', name: 'Golden Fumble', flavor: 'You have been chosen. Gold, gold, gold. You cannot help yourself.', rule: 'Take the Gold side of every straight you roll (and roll at least one).', check: (x) => x.me.some((r) => r.straight) && x.me.every((r) => !r.straight || r.straight === 'gold') },
-  spare: { kind: 'bribe', mode: 'forced', name: 'Spare That One', flavor: 'You have been chosen. That one there is the voice’s cousin. Be nice.', rule: 'Let {spare} be the last monster to fall.', check: (x) => { // any length of fight (a short one could never reach "round 4"); the same round counts
+  goldfumble: { kind: 'bribe', mode: 'forced', name: 'Golden Fumble', flavor: 'You have been chosen. Take gold from every straight you roll.', rule: 'Take the Gold side of every straight you roll (and roll at least one).', check: (x) => x.me.some((r) => r.straight) && x.me.every((r) => !r.straight || r.straight === 'gold') },
+  spare: { kind: 'bribe', mode: 'forced', name: 'Spare That One', flavor: 'You have been chosen. Let that monster fall last.', rule: 'Let {spare} be the last monster to fall.', check: (x) => { // any length of fight (a short one could never reach "round 4"); the same round counts
     const rows = Object.values(x.rows).flat(); const k = rows.find((r) => r.kills.includes(x.card.spare)); if (!k) return true;
     return rows.every((r) => r.kills.every((uid) => uid === x.card.spare || r.r <= k.r));
   } },
-  hoarder: { kind: 'bribe', mode: 'forced', name: 'The Hoarder', flavor: 'You have been chosen. Keep your magic close. Do not spend it all.', rule: 'End the battle with 6 or more magic unspent.', check: (x) => (x.F.magic ?? 0) >= 6 },
-  lonewolf: { kind: 'bribe', mode: 'forced', name: 'Lone Wolf', flavor: 'You have been chosen. Work alone. Never hit the same monster as a teammate.', rule: 'Never attack the monster a teammate attacks that round.', check: (x) => x.me.every((r) => r.target == null || !x.others.some((n) => x.rows[n].some((o) => o.r === r.r && o.target === r.target))) },
+  hoarder: { kind: 'bribe', mode: 'forced', name: 'The Hoarder', flavor: 'You have been chosen. Keep 6 magic unspent.', rule: 'End the battle with 6 or more magic unspent.', check: (x) => (x.F.magic ?? 0) >= 6 },
+  lonewolf: { kind: 'bribe', mode: 'forced', name: 'Lone Wolf', flavor: 'You have been chosen. Never hit the same monster as a teammate.', rule: 'Never attack the monster a teammate attacks that round.', check: (x) => x.me.every((r) => r.target == null || !x.others.some((n) => x.rows[n].some((o) => o.r === r.r && o.target === r.target))) },
 };
 const ids = (kind, team) => Object.keys(CARDS).filter((id) => CARDS[id].kind === kind && (team || !CARDS[id].team));
 
@@ -123,11 +123,13 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '', big = false 
       for (const h of open.slice(0, size)) give(h, id);
     }
   }
-  // everyone else: a cover card or a challenge
-  for (const h of [...open]) {
-    const cover = team && rng() < 0.4;
-    const list = ids(cover ? 'cover' : 'challenge', team).filter((id) => fits(id, h) && (big || !HARSH.has(id)));
-    give(h, pick(list));
+  // solo heroes get a Bonus Goal instead (dealBonusGoal); everyone at a table of 2+ gets a cover card or a challenge
+  if (team) {
+    for (const h of [...open]) {
+      const cover = rng() < 0.4;
+      const list = ids(cover ? 'cover' : 'challenge', true).filter((id) => fits(id, h) && (big || !HARSH.has(id)));
+      give(h, pick(list));
+    }
   }
   return env;
 }
@@ -141,7 +143,7 @@ export function cardView(env, name) {
 function rewardLine(env, mine, team) {
   const G = gOf(env.act); const d = CARDS[mine.id]; const win = team ? 'if the team wins' : 'if you win';
   if (d.kind === 'rival') return d.doubles ? `Double the gold you earn (up to ${2 * G}), ${win}.` : `${G} gold, ${win}.`;
-  if (d.kind === 'bribe' && mine.mode === 'offer') return `Accept: ${2 * G} gold if you pull it off and the team wins; lose the battle and ${env.voice || VOICE.name} takes ${Math.round(G / 2)} of yours. Decline: a little gold for your Honor.`;
+  if (d.kind === 'bribe' && mine.mode === 'offer') return `Pull it off and win, and you get ${2 * G} gold. Lose, and you pay ${Math.round(G / 2)}. Or say no for a little Honor gold.`;
   if (d.kind === 'bribe') return `${G} gold, ${win}.`;
   return `${r5((d.pay || 1) * G)} gold, ${win}.`;
 }
@@ -224,6 +226,78 @@ function revealLine(env, r, rivalWin, crooks, won) {
     return `${r.name} took the bribe from ${v}! ${card} ${r.met ? `${r.name} pulled it off.` : `${r.name} could not do it.`}${coin}`;
   }
   return `${r.name} was offered a bribe by ${v} (${d.name}) and said no. Honor${won ? '' : ', even in defeat'}.${coin}`;
+}
+
+// Solo (1 hero): no envelopes. The campaign gold-giver offers one hard Bonus Goal on a fight or elite (~50–60 gold).
+export const BONUS_G = [50, 55, 60];
+export const bonusG = (act) => BONUS_G[Math.min(3, Math.max(1, act | 0)) - 1];
+export const BONUS_HONOR = 10;
+export const wantsBonus = (kind) => kind === 'battle' || kind === 'elite';
+export const BONUS_GOALS = {
+  nopotion: { name: 'No potions', rule: 'Win without using a potion.', check: (x) => (x.F.potions0 ?? 0) - (x.F.potions ?? 0) - (x.F.stats?.potionsThrown || 0) <= 0 },
+  block40: { name: 'Hold the line', rule: 'Block 40 damage this fight.', check: (x) => sum(x.me, (r) => r.blocked) >= 40 },
+  magic40: { name: 'Spark storm', rule: 'Deal 40 magic damage this fight.', check: (x) => sum(x.me, (r) => r.magic) >= 40 },
+  noreroll: { name: 'First rolls', rule: 'Win without using a magic reroll.', check: (x) => x.me.every((r) => !r.paid) },
+  deal50: { name: 'Heavy hitter', rule: 'Deal 50 damage this fight.', check: (x) => sum(x.me, (r) => r.dealt) >= 50 },
+};
+export function dealBonusGoal({ c, hero, salt = '' }) {
+  const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'bonus', salt));
+  const keys = Object.keys(BONUS_GOALS);
+  const id = keys[Math.floor(rng() * keys.length)];
+  const voice = c.voice || voiceOf(c) || VOICE;
+  const gold = bonusG(c.act);
+  void hero;
+  return {
+    kind: 'bonus', id, act: c.act, voice: voice.name,
+    scene: `${voice.name} has a hard extra job for you this fight.`,
+    name: BONUS_GOALS[id].name, rule: BONUS_GOALS[id].rule, gold, honor: BONUS_HONOR, answered: false, accepted: null,
+  };
+}
+export function bonusView(goal) {
+  if (!goal) return null;
+  return {
+    id: goal.id, kind: 'bonus', mode: 'offer', name: goal.name,
+    flavor: `${goal.voice} offers you extra gold if you can pull this off.`,
+    rule: goal.rule,
+    reward: `Pull it off and win, and you get ${goal.gold} gold. Or say no for a little Honor gold.`,
+    scene: goal.scene, cover: '', voice: goal.voice, answered: !!goal.answered, accepted: goal.accepted,
+  };
+}
+export function answerBonus(goal, { accept } = {}) {
+  if (!goal) return false;
+  goal.accepted = !!accept;
+  goal.answered = true;
+  return true;
+}
+function soloFighter(battle) {
+  if (battle.fighters) return battle.fighters[0];
+  return { hero: battle.hero, hp: battle.hp, maxHp: battle.maxHp, magic: battle.magic, magic0: battle.magic0, potions: battle.potions, potions0: battle.potions0, stats: battle.stats, points: battle.points };
+}
+export function judgeBonus(goal, battle, { won }) {
+  const d = BONUS_GOALS[goal.id]; const F = soloFighter(battle); const log = (battle.secretLog || []).filter((r) => r.name === F.hero.name);
+  const x = { me: log, F, won, rounds: Math.max(0, ...log.map((r) => r.r)) };
+  const met = !!goal.accepted && won && !!d.check(x);
+  let gold = 0; let line;
+  const who = F.hero.name;
+  if (!goal.accepted) {
+    gold = goal.honor;
+    line = `${goal.voice} offered a Bonus Goal (${goal.name}) and ${who} said no. Honor. ${who} receives ${gold} gold.`;
+  } else if (won && met) {
+    gold = goal.gold;
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold.`;
+  } else if (won) {
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Not this time.`;
+  } else {
+    line = `${who} took the Bonus Goal. The fight was lost, so no prize.`;
+  }
+  return { results: [{ name: who, id: goal.id, kind: 'bonus', mode: 'offer', accepted: goal.accepted, met, gold, line }], voice: goal.voice, won };
+}
+export function payBonus(judged, hero) {
+  const r = judged.results[0]; if (!r || !hero) return;
+  hero.gold = Math.max(0, (hero.gold || 0) + r.gold);
+  const rec = ((hero.record ||= {}).secrets ||= { done: 0, rivalries: 0, bribesTaken: 0, bribesDeclined: 0, forced: 0, honor: 0 });
+  if (!r.accepted) rec.honor++;
+  else if (r.met && judged.won) rec.done++;
 }
 
 // Pay the results to the heroes and keep score in the Hall of Fame.

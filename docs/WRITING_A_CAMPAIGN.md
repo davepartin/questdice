@@ -43,6 +43,16 @@ moments: [
 `stat` is `wisdom` (head die), `strength` (hands) or `speed` (feet); `prize` is `magic`, `gold`, `hp`, `atk` or `block`.
 `{place}` is where the road leads (the next fight), `{who}` the hero who rolled best, `{company}` everyone.
 
+## Plain writing
+
+Write in conversational modern English. Not witty. Not old-British. No running jokes, asides, or narrator gags.
+
+Between battles (beats, arrive, win), use at most one or two short paragraphs. Say what is happening and what the danger is.
+
+Secret-objective envelopes are a simple rule plus gold. Four short voice scenes per pack: who hands the envelope, and “Read it. Don’t show the others.”
+
+Solo games (1 hero) get no secret objectives or envelopes. The campaign gold-giver offers one hard Bonus Goal per fight or elite fight, worth about 50–60 gold (win without a potion, block 40 damage, deal 40 magic damage). Tables of 2–6 keep secret objectives.
+
 ## Balance
 
 Casts from another land, and fights of three monsters, need `fightHp`. Measure against the Dawn Lantern and tune until each step

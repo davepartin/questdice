@@ -17,7 +17,7 @@ that is the fun.
 5. **Rewards**: the step's spoils, then **the Reveal** (every card, and what each hero did with it) and the objectives' payouts.
 6. Back to **camp**.
 
-Every battle has envelopes, at every table size from 2 to 6 heroes. A solo hero gets challenge cards only.
+Every battle has envelopes at tables of 2 to 6 heroes. A solo game (1 hero) gets no secret objectives or envelopes. The campaign gold-giver offers one hard Bonus Goal per fight or elite fight, worth about 50–60 gold (win without a potion, block 40 damage, deal 40 magic damage).
 
 ## The Envelope screen
 
@@ -45,7 +45,7 @@ every phone has tapped.
 
 | Heroes | Cover cards | Rivalries | Challenges | Bribes (offered or forced) |
 |---|---|---|---|---|
-| 1 (solo) | — | — | always | — |
+| 1 (solo) | no envelopes; one hard Bonus Goal per fight or elite (~50–60 gold) | — | — | — |
 | 2 | often (sometimes both heroes get Lead the Charge) | one pair now and then (both heroes, same goal, one winner) | often | rare in ordinary fights; about 1 elite or boss in 3 |
 | 3–4 | about a third | one pair most battles | about a third | about 1 battle in 3 |
 | 5–6 | about a third | one or two pairs, or a three-way race | about a third | about 1 battle in 2 (at most one offered and one forced) |

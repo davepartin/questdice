@@ -114,7 +114,7 @@ export async function showTrial3D(trial, { title = '', members = [], own = true 
   const dice = trial.heroSizes.length > 1 ? 'dice' : 'die';
   const go = h('button', { type: 'button', class: 'dr-ok tr-go t3-go' }, own ? `Roll your ${dice}` : `Watch ${who} roll`);
   const head = h('header', { class: 't3-head' }, h('small', { class: 'dr-kicker' }, st.word), h('h3', {}, title),
-    h('p', {}, `${own ? 'You roll' : `${who} rolls`} ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`}${own ? '' : ' for the company'}. Highest total wins; a tie goes to you.`));
+    h('p', {}, `${own ? 'You roll' : `${who} rolls`} ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`}${own ? '' : ' for the company'}. Highest total wins. Ties go to you.`));
   const layer = h('div', { class: `t3 st-${trial.stat}`, role: 'dialog', 'aria-label': `${st.word}: ${title}` }, head, foePlate, score, myPlate, h('footer', { class: 't3-foot' }, verdict, go));
   document.body.append(layer); document.body.classList.add('t3-on'); sfx.uiOpen?.();
 
@@ -181,7 +181,7 @@ export async function showTrial3D(trial, { title = '', members = [], own = true 
       await Promise.all([mineP, theirP]);
       if (!fast) await stage.wait(0.35);
       layer.classList.add(trial.win ? 'won' : 'lost');
-      verdict.replaceChildren(h('b', {}, trial.win ? 'You win!' : 'Not this time'), h('span', {}, trial.win ? (trial.heroTotal === trial.oppTotal ? `${trial.heroTotal} ties ${trial.oppTotal}, and a tie goes to you` : `${trial.heroTotal} beats ${trial.oppTotal}`) : `${trial.oppTotal} beats ${trial.heroTotal}`));
+      verdict.replaceChildren(h('b', {}, trial.win ? 'You win.' : 'Not this time.'), h('span', {}, `${trial.heroTotal} to ${trial.oppTotal}`));
       if (trial.win) { sfx.level?.(); slots.forEach((sl) => tray.pulse(sl, 'heal')); } else sfx.error?.();
       go.textContent = 'Continue'; go.disabled = false; state = 2; go.focus?.();
     };

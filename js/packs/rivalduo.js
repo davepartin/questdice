@@ -4,10 +4,10 @@
 export const voice = {
   name: 'Madame Twill',
   scenes: [
-    'Madame Twill’s Novelty Charms has no shop-front on this road, and yet here she is, a small woman in seventeen scarves, pressing an envelope into each hand. “Small print,” she says. “Always read the small print. And don’t show your friend. That’s in the small print too.”',
-    'A brass bell that is not attached to anything rings, and Madame Twill leans over a stall that was not there a moment ago. “Before you start,” she says. “One each. The bangle likes a secret. So do I.”',
-    'There is a smell of polish and boiled sweets, and Madame Twill is tucking envelopes into pockets. “I only sold you a Friendship Bangle,” she says. “These are extra. No refunds. No peeking.”',
-    'A little card lands at your feet: NOVELTY CHARM, ONE WORTHY QUEST, ENVELOPES INCLUDED. Madame Twill’s handwriting. From somewhere behind the stall comes the sound of a woman counting to two and looking very pleased.',
+    'Madame Twill hands you a sealed envelope. Read it. Don’t show the others.',
+    'Madame Twill hands out one envelope each. Read yours. Don’t show your friend.',
+    'Madame Twill tucks an envelope into every pocket. Read it. Keep it to yourself.',
+    'Madame Twill leaves one envelope each. Read yours. Don’t peek.',
   ],
 };
 
@@ -17,9 +17,8 @@ export const beats = {
     title: "Some Assembly Required",
     icon: "spark",
     text: [
-      "Market day in Cinder Ford, and {wizard} the wizard is having a trying morning. His spellbook has run off again. It does that. So he has bought a Friendship Bangle from Madame Twill’s Novelty Charms, a little brass trinket for keeping a dear companion close, and he is improving the charm with a flourish of his own. Wizards cannot leave anything alone. It is a professional condition.",
-      "The flourish goes sideways. The bangle leaps off the book, splits in two with a cheerful ting, and clasps one wrist of {wizard} and one wrist of the nearest bystander: {dwarf}, a dwarf who was at the next stall buying a sign that says NO MAGIC. He has not stopped looking at the sign since. Neither, to be fair, has the sign.",
-      "The small print reads: “Removes on completion of One Worthy Quest, undertaken jointly. Wearers straying more than ten paces apart will be gently corrected.” Gently means it plays a little tune and yanks. Just then a lone goblin called Crumb staggers past, left behind by his raiding party, carrying the least valuable part of any cheese: the label. Gerald, the Centenary Cheese, has been stolen. The bangle jingles. Apparently cheese counts.",
+      "Market day in Cinder Ford. {wizard} bought a Friendship Bangle from Madame Twill’s Novelty Charms and tried to improve the charm. The flourish goes sideways. The bangle splits in two and clasps one wrist of {wizard} and one wrist of {dwarf}, who was buying a sign that says NO MAGIC.",
+      "The small print reads: “Removes on completion of One Worthy Quest, undertaken jointly. Wearers straying more than ten paces apart will be gently corrected.” Gently means it plays a tune and yanks. A goblin called Crumb staggers past carrying the label from Gerald, the Centenary Cheese. Gerald has been stolen. The bangle jingles. Cheese counts.",
     ],
   },
   "elite:1": {
@@ -27,9 +26,8 @@ export const beats = {
     title: "One and a Half Fares",
     icon: "skull",
     text: [
-      "The Toll Bridge has a new toll-keeper: Big Norman, a hill ogre who counts on his fingers and runs out at four. The goblins paid him in cheese rind to stop anyone following. He ate the rind on the first morning, so technically he is now working for free, and he resents it.",
-      "His sign says ONE PERSON, ONE PENNY. He looks at {wizard}. He looks at {dwarf}. He looks at the bangle. You can hear the thought arriving, slowly, like a cart on a hill: is that one person, or two? He settles on one and a half, charges extra for the half, and winds up a very large club to explain the pricing.",
-      "{dwarf} raises his tower shield and announces he is not paying for a wizard. {wizard} announces he is worth considerably more than half. It is the first thing they have agreed on all day, though neither of them has noticed.",
+      "The Toll Bridge has a new toll-keeper: Big Norman, a hill ogre. The goblins paid him in cheese rind to stop anyone following.",
+      "His sign says ONE PERSON, ONE PENNY. He looks at {wizard}. He looks at {dwarf}. He looks at the bangle. He settles on one and a half, and winds up a very large club to explain the pricing.",
     ],
   },
   "boss:1": {
@@ -37,9 +35,8 @@ export const beats = {
     title: "His Royal Cheesiness",
     icon: "crown",
     text: [
-      "At the top of the hill sits the Goblin King, Grabbo, on a throne that is round, golden, waxed, and smells faintly of a cellar. It is Gerald. He is sitting on Gerald.",
-      "He has never once eaten the cheese. He simply cannot bear anyone else to have it, which is the goblin royal motto and is stitched on all his cushions. When pressed, he claps, and more goblins come running, because nobody on the hill has yet worked out that the clapping is optional.",
-      "{dwarf} opens his little grudge book to a fresh page and writes GRABBO in capitals. {wizard} remarks that “grudge” is spelled wrong on the cover. {dwarf} writes {wizard} on the next page down.",
+      "At the top of the hill sits the Goblin King, Grabbo, on a throne that is round, golden and waxed. It is Gerald. He is sitting on Gerald.",
+      "He has never eaten the cheese. He will not let anyone else have it. When pressed, he claps, and more goblins come running.",
     ],
   },
   "close:1": {
@@ -47,9 +44,8 @@ export const beats = {
     title: "Gerald Rolls On",
     icon: "shine",
     text: [
-      "King Grabbo topples off his throne in a heap of crown, cushion and indignation, and Gerald, free at last, does what any wheel does at the top of a hill. He rolls.",
-      "He rolls through the camp, flattening a tent. He rolls past the Toll Bridge, where Big Norman tries to charge him a penny. And he rolls, with a sound like a very slow drum, straight down the old crypt stair and into the dark beneath the Marches. Somewhere far below, something bony says “ow.”",
-      "{wizard} and {dwarf} look at the stair. They look at each other. The bangle jingles, encouragingly. It has no idea what it is asking.",
+      "King Grabbo topples off his throne. Gerald, free at last, rolls. He rolls through the camp, past the Toll Bridge, and straight down the old crypt stair into the dark beneath the Marches.",
+      "{wizard} and {dwarf} look at the stair. The bangle jingles. They follow.",
     ],
   },
   "open:2": {
@@ -57,9 +53,8 @@ export const beats = {
     title: "The Cellars Under Everything",
     icon: "skull",
     text: [
-      "Long before it was a crypt, the hollow under the Marches was the finest cheese cellar in the land: cool, dark and quiet. The dead moved in later and kept the quiet. They have also kept the rules. There are signs on every landing. KEEP LEFT. NO RUNNING. NO CHEESE WITHOUT A TICKET.",
-      "On the first landing two Bone Soldiers, Left and Right, are enforcing the first sign with great seriousness. You cannot keep left on a spiral stair when you are fastened at the wrist to someone who insists on keeping right. {dwarf} knows this. {wizard} knows this. Left and Right do not care.",
-      "{wizard} lights the end of his staff so they can see the steps. {dwarf} says thank you before he can stop himself, and spends the next three landings pretending he said something else.",
+      "Long before it was a crypt, the hollow under the Marches was the finest cheese cellar in the land. The dead moved in later and kept the rules. KEEP LEFT. NO RUNNING. NO CHEESE WITHOUT A TICKET.",
+      "On the first landing two Bone Soldiers, Left and Right, are enforcing the first sign. You cannot keep left on a spiral stair when you are fastened at the wrist. Left and Right do not care.",
     ],
   },
   "elite:2": {
@@ -67,9 +62,8 @@ export const beats = {
     title: "Big Wheel",
     icon: "shield",
     text: [
-      "Every cellar forgets something. This one forgot a great deal. A hundred years of cheeses left on the back shelves have quietly matured, and then matured some more, and then, sometime last spring, matured into a person.",
-      "Big Wheel stands at the Ossuary Gate: eight feet of stacked rounds and rinds, a cheese-wire in one fist, and a smell you could lean a ladder against. It heard Gerald roll past and has decided he is family. It is not entirely wrong.",
-      "{wizard} insists this is not magic, it is neglect. {dwarf}, who grew up under a mountain where cheese is taken very seriously indeed, has gone pale and keeps whispering “the waste.” Watch it wind up. It hits like a falling larder.",
+      "A hundred years of cheeses left on the back shelves have matured into a person. Big Wheel stands at the Ossuary Gate: eight feet of stacked rounds and rinds, a cheese-wire in one fist. It heard Gerald roll past and has decided he is family.",
+      "Watch it wind up. It hits like a falling larder.",
     ],
   },
   "boss:2": {
@@ -77,9 +71,8 @@ export const beats = {
     title: "The Night Porter",
     icon: "crown",
     text: [
-      "At the bottom of the crypt stands the Night Porter: a giant of old bones who has minded the cellar door for three hundred years and has never once let anyone in after dark. It is always dark. This is the point.",
-      "Gerald is behind him, safe, cool and slightly dusty. The Porter will not move. There is a form for moving, and the form must be signed by his supervisor, and his supervisor is a skull on a shelf that has not answered since the old king’s day. When pressed, he calls a colleague from the back. The colleague is also bones.",
-      "{dwarf} sets his boots. {wizard} steps behind the tower shield without being asked. Neither of them says a word about it. Both of them notice.",
+      "At the bottom of the crypt stands the Night Porter: a giant of old bones who has minded the cellar door for three hundred years and has never once let anyone in after dark. It is always dark.",
+      "Gerald is behind him. The Porter will not move. When pressed, he calls a colleague from the back. The colleague is also bones. {dwarf} sets his boots. {wizard} steps behind the tower shield.",
     ],
   },
   "close:2": {
@@ -87,9 +80,8 @@ export const beats = {
     title: "Gone in a Puff",
     icon: "shine",
     text: [
-      "The Night Porter sits down at last, slowly, like a man who has finally been told his shift is over. He looks almost grateful. He hands {dwarf} his keys and asks him to lock up on the way out.",
-      "And then, just as {wizard} reaches for Gerald, a long golden snout comes down the cloister chimney, sniffs once, and with a delicate crunch of claws plucks the cheese up and away into the sky. Far above, a voice cries, “Oh, Her Grace will be PLEASED.”",
-      "The scorch marks on the chimney point toward the Ember Peaks. {dwarf} says, quietly, that he would have hated all this a month ago. {wizard} says he still hates it. They are both lying, a little, and the bangle jingles as if it knows.",
+      "The Night Porter sits down and hands {dwarf} his keys. Then, just as {wizard} reaches for Gerald, a long golden snout comes down the cloister chimney and plucks the cheese up and away into the sky.",
+      "The scorch marks on the chimney point toward the Ember Peaks. {wizard} and {dwarf} follow.",
     ],
   },
   "open:3": {
@@ -97,9 +89,8 @@ export const beats = {
     title: "The Long Way Up",
     icon: "flame",
     text: [
-      "The Ember Peaks belong to the Duchess Goldbelly, a dragon of enormous appetite and very poor eyesight, who collects everything round and golden. Coins. Crowns. Door-knobs. One unfortunate sunflower. Word has reached her of the largest, roundest, goldest coin in all the world, and she has sent her Taster to fetch it. The coin is Gerald.",
-      "On the first steps two Cinderlings, Flicker and Flicker’s Cousin Gareth, are biting every coin that comes up the stair to see whether it is real. They have bitten the coins. They have bitten the steps. They have bitten each other. They are now looking at {wizard}’s buttons with great interest.",
-      "The climb is long, and both heroes are slow. On the first morning, snails overtake them, and wave. {dwarf} offers {wizard} his arm on the steep bits. {wizard} offers {dwarf} a small warming charm for his feet. {dwarf} accepts. Nobody tell the sign.",
+      "The Ember Peaks belong to the Duchess Goldbelly, a dragon of enormous appetite and very poor eyesight, who collects everything round and golden. Word has reached her of the largest, roundest, goldest coin in the world. The coin is Gerald.",
+      "On the first steps two Cinderlings, Flicker and Flicker’s Cousin Gareth, are biting every coin that comes up the stair. They are now looking at {wizard}’s buttons.",
     ],
   },
   "elite:3": {
@@ -107,9 +98,8 @@ export const beats = {
     title: "The Royal Taster",
     icon: "crown",
     text: [
-      "On the bronze bridge waits Lord Grillbert, the Duchess’s Taster: a wyrm with a napkin tucked under his chin and a guilty look about the mouth. It was his snout that came down the chimney. He has been tasting Gerald, in a strictly professional capacity, for three days.",
-      "He has views. He thinks Gerald is the finest coin he has ever tasted, a touch soft for currency, perhaps, and he is not sure money ought to smell like that. He inhales before every breath of fire, and every time, the cheese dust tickles his nose, and the whole bridge waits to see whether it will be fire or a sneeze.",
-      "He will not stay to finish this. Tasters never stay for the bill. When he has had enough he will flap off to tell the Duchess, and the Duchess will want a word.",
+      "On the bronze bridge waits Lord Grillbert, the Duchess’s Taster. It was his snout that came down the chimney. He has been tasting Gerald for three days.",
+      "He inhales before every breath of fire. When he has had enough he will flap off to tell the Duchess.",
     ],
   },
   "boss:3": {
@@ -117,9 +107,8 @@ export const beats = {
     title: "Her Grace, the Duchess Goldbelly",
     icon: "crown",
     text: [
-      "The throne room is the inside of the volcano, and on top of a hill of round golden things lies the Duchess Goldbelly, squinting. Gerald is propped up beside her like a prize plate. She has been admiring him for a week. She has not once noticed that he is cheese.",
-      "“The biggest coin in the world,” she purrs. “Mine.” {wizard} begins to explain about dairy, at length, with diagrams. {dwarf} begins to explain about property, with a mace. The Duchess, to her credit, listens to neither of them.",
-      "The bangle gives one small, hopeful jingle. Worthy Quest. Undertaken jointly. Nearly finished. Do try not to come a cropper at the very last bit.",
+      "The throne room is the inside of the volcano. On a hill of round golden things lies the Duchess Goldbelly, squinting. Gerald is propped up beside her. She has not noticed that he is cheese.",
+      "“The biggest coin in the world,” she says. “Mine.” The bangle jingles. Worthy Quest. Undertaken jointly. Nearly finished.",
     ],
   },
   "close:3": {
@@ -127,9 +116,8 @@ export const beats = {
     title: "Ten Paces",
     icon: "shine",
     text: [
-      "Beaten and squinting, the Duchess finally does what she should have done a week ago. She bites the coin. There is a long silence. Then a very small voice says, “Oh. Oh, that’s lovely.” She lets them take Gerald home, in exchange for one cheese, delivered every Midsummer. A dragon, it turns out, can change her whole collection with one good mouthful.",
-      "Gerald reaches the Cinder Ford fair a day late and slightly bitten, and wins first prize anyway. And there in the square, in front of everyone, the Friendship Bangle plays its little tune one last time and clicks open. Worthy Quest, completed. Madame Twill nods from her stall, as if she knew all along.",
-      "{wizard} and {dwarf} step apart. One pace. Five. Ten. Nothing tugs. They stand there like two people who have forgotten what to do with their arms. Then {dwarf} takes out his NO MAGIC sign, writes “except {wizard}” underneath in small, careful letters, and they walk home the same way, on purpose.",
+      "The Duchess bites the coin. She lets them take Gerald home, in exchange for one cheese delivered every Midsummer. Gerald reaches the Cinder Ford fair a day late and slightly bitten, and wins first prize. The Friendship Bangle clicks open. Worthy Quest, completed.",
+      "{wizard} and {dwarf} step apart. One pace. Five. Ten. Nothing tugs. Then {dwarf} writes “except {wizard}” on his NO MAGIC sign, and they walk home the same way, on purpose.",
     ],
   },
 };
@@ -142,11 +130,11 @@ export const steps = [
       foes: ["goblin"],
       names: ["Crumb"],
       arrive: [
-        "The ferry landing is deserted except for a goblin called Crumb, who was given the most important job in the raid: carrying Gerald’s prize label. The others carried Gerald. Crumb carried a small card reading “Centenary Cheese, Do Not Touch”. He has been holding it proudly all morning and has only now realised that everyone else has gone home.",
-        "He brandishes the label at {wizard} and {dwarf} like a sword. It is a card. It does not help. He also tries to pick {wizard}’s pocket, which is a goblin’s idea of a second opinion.",
+        "The ferry landing is deserted except for a goblin called Crumb, who was given the job of carrying Gerald’s prize label. The others carried Gerald. He has only now realised that everyone else has gone home.",
+        "He brandishes the label at {wizard} and {dwarf}. He also tries to pick {wizard}’s pocket.",
       ],
       win: [
-        "Crumb drops the label and scampers uphill after his friends, shouting that they should have waited. {dwarf} pockets the card as evidence. {wizard} reads it over his shoulder and objects to the spelling. The first fight of a long partnership. Nobody enjoyed it, except possibly the river.",
+        "Crumb drops the label and scampers uphill after his friends. {dwarf} pockets the card as evidence.",
       ],
     },
     {
@@ -155,11 +143,11 @@ export const steps = [
       foes: ["cinderling", "goblin"],
       names: ["Toastie", "Grater"],
       arrive: [
-        "Every apple in the orchard has baked on the branch. Under the trees, a goblin called Grater and a Cinderling called Toastie have invented cheese on toast, in theory. Toastie does the toasting. Grater holds the bread. They have been waiting all morning for the cheese part to come down the road, and they have heard it is called Gerald.",
-        "Then they see {dwarf}’s beard. It is yellowish. It is roughly the right shape. They look at each other with dreadful hope. {dwarf} has never been so insulted in his life, and he has been fastened to a wizard since breakfast.",
+        "Every apple in the orchard has baked on the branch. A goblin called Grater and a Cinderling called Toastie have been waiting for the cheese called Gerald.",
+        "Then they see {dwarf}’s beard. It is yellowish. They look at each other with hope. {dwarf} has never been so insulted in his life.",
       ],
       win: [
-        "Toastie flees with a slice of toast in its mouth, which is at least breakfast, and Grater runs the other way with the loaf. {wizard} offers to tidy {dwarf}’s singed beard with a small charm. {dwarf} says that if {wizard} points one finger at his beard, the staff goes home in two pieces. Progress is slow on this road.",
+        "Toastie flees with a slice of toast. Grater runs the other way with the loaf.",
       ],
     },
     {
@@ -168,11 +156,11 @@ export const steps = [
       foes: ["wolf", "goblin"],
       names: ["Sniffer", "Lead"],
       arrive: [
-        "At the old waystation, the ravens are watching a goblin called Lead being taken for a walk by his wolf. The wolf is called Sniffer. She was trained to sniff out cheese, and she is very good at it, and Lead cannot let go of her rope because he has tied it round his own wrist. {wizard} and {dwarf} watch him being dragged across the yard with an uncomfortable sense of fellow feeling.",
-        "Sniffer catches the scent of Gerald on {dwarf}’s gloves. She does not wait for orders. Lead does not have any.",
+        "At the old waystation a goblin called Lead is being taken for a walk by his wolf. The wolf is called Sniffer. She was trained to sniff out cheese. Lead has tied the rope round his own wrist.",
+        "Sniffer catches the scent of Gerald on {dwarf}’s gloves. She does not wait for orders.",
       ],
       win: [
-        "Sniffer bolts into the trees with Lead bouncing behind her like a kite, still shouting “Heel!” The ravens drop a single feather at {wizard}’s feet, which he takes as a tribute to his spellwork. They were, in fact, looking at {dwarf}’s gloves, which still smell of cheese.",
+        "Sniffer bolts into the trees with Lead bouncing behind her. The ravens drop a single feather at {wizard}’s feet.",
       ],
     },
     {
@@ -181,11 +169,11 @@ export const steps = [
       foes: ["wolf", "wolf"],
       names: ["Grizzle", "Also Grizzle"],
       arrive: [
-        "Two dire wolves step out of the tree line: the brothers Grizzle and Also Grizzle, named by a mother who loved them both and ran out of ideas. One stalks low through the bracken. The other howls to make you look the wrong way.",
-        "The trouble is the bangle. {wizard} dodges left. {dwarf} charges right. The bangle reaches ten paces, plays its little tune, and the two heroes slam back together in the middle like a pair of cymbals. Both Grizzles sit down to watch. It is the best thing they have seen all year.",
+        "Two dire wolves step out of the tree line: Grizzle and Also Grizzle. One stalks low through the bracken. The other howls to make you look the wrong way.",
+        "The trouble is the bangle. {wizard} dodges left. {dwarf} charges right. The bangle reaches ten paces, plays its tune, and yanks them back together.",
       ],
       win: [
-        "Grizzle and Also Grizzle trot back into the wood, still arguing about which of them is the original. {dwarf} says, through his teeth, that from now on they go round things on the same side. {wizard} says that was precisely his plan. It was not. But it is now, which is how teamwork starts.",
+        "Grizzle and Also Grizzle trot back into the wood. {dwarf} says that from now on they go round things on the same side.",
       ],
     },
     {
@@ -194,10 +182,10 @@ export const steps = [
       foes: ["ogre"],
       names: ["Big Norman"],
       arrive: [
-        "Big Norman sits on the Toll Bridge eating a loaf in one bite. His sign says ONE PERSON, ONE PENNY, and he is staring at the bangle like a man doing sums he never agreed to. Two people fastened together, he has decided, come to one and a half. When the sums get too hard, he stands up and winds up his club. That is how he settles most arithmetic.",
+        "Big Norman sits on the Toll Bridge. His sign says ONE PERSON, ONE PENNY, and he is staring at the bangle. Two people fastened together, he has decided, come to one and a half. When the sums get too hard, he winds up his club.",
       ],
       win: [
-        "Big Norman sits down heavily and counts the dents in his club. There are more than four, so he gives up. {wizard} leaves a penny on the post anyway, on principle. {dwarf} takes it back, on a different principle. On the far side, a cheese-shaped rut leads on toward Smoke Hollow.",
+        "Big Norman sits down heavily. On the far side, a cheese-shaped rut leads on toward Smoke Hollow.",
       ],
     },
     {
@@ -206,11 +194,11 @@ export const steps = [
       foes: ["shieldbearer", "goblin"],
       names: ["Private Standhere", "Nudge"],
       arrive: [
-        "In the middle of the hollow stands a hired Shieldbearer, Private Standhere, who was told by the goblins to stand here. So he has. For three days. In the smoke. Without lunch. A goblin called Nudge has been left to keep him company and to remind him, at intervals, that he is standing here. Nobody has told either of them why.",
-        "Private Standhere locks his shield and will not let anyone past, on the grounds that he was told to stand here, and here is precisely where you are trying to go.",
+        "In the middle of the hollow stands a hired Shieldbearer, Private Standhere, who was told by the goblins to stand here. A goblin called Nudge has been left to keep him company.",
+        "Private Standhere locks his shield and will not let anyone past.",
       ],
       win: [
-        "Private Standhere sits down at last. It turns out nobody ever told him not to. Nudge runs off to report this. {wizard} lights his staff so the hollow is less gloomy, and {dwarf} admits, grudgingly, that it is a useful sort of light. He writes it in his grudge book on the wrong page, the page for things that are fine.",
+        "Private Standhere sits down at last. Nudge runs off to report this.",
       ],
     },
     {
@@ -219,11 +207,11 @@ export const steps = [
       foes: ["goblin", "goblin", "goblin"],
       names: ["Brie", "Edam", "Colin"],
       arrive: [
-        "Guarding the goblin camp are three goblin triplets: Brie, Edam and Colin. Their mother named them after cheeses and ran out at the third. Brie throws fire bombs. Edam pinches anything not nailed down. Colin hides behind the other two and calls it strategy.",
-        "{wizard} announces, loftily, that Colin is not a cheese. {dwarf} says that under the mountain Colin is a perfectly good cheese, a hard white one, very popular at weddings. They argue about it for so long that the triplets get bored and attack first.",
+        "Guarding the goblin camp are three goblin triplets: Brie, Edam and Colin. Brie throws fire bombs. Edam pinches anything not nailed down. Colin hides behind the other two.",
+        "{wizard} says Colin is not a cheese. {dwarf} says it is. They argue long enough that the triplets attack first.",
       ],
       win: [
-        "Brie’s last fire bomb goes off in the cookpot. Edam tries to pinch {wizard}’s hat and finds he cannot reach it. Colin was already halfway down the hill. {wizard} admits, quietly, that he would like to try the cheese called Colin one day. {dwarf} says he knows a place. It is the first plan they have ever made for afterwards.",
+        "Brie’s last fire bomb goes off in the cookpot. Edam tries to pinch {wizard}’s hat. Colin was already halfway down the hill.",
       ],
     },
     {
@@ -232,11 +220,11 @@ export const steps = [
       foes: ["wolf", "cinderling"],
       names: ["Mrs Paws", "Little Sizzle"],
       arrive: [
-        "Back through Smoke Hollow at dusk, a dire wolf called Mrs Paws has adopted a Cinderling. She calls it Little Sizzle. It calls her nothing, because it is a dragon and mostly says “hff”. She is fiercely protective, and every time she licks the top of its head she burns her tongue and pretends she did not.",
-        "The goblins sent Little Sizzle to sniff out Gerald. Mrs Paws has come along to make sure it wears its scarf.",
+        "Back through Smoke Hollow at dusk, a dire wolf called Mrs Paws has adopted a Cinderling. She calls it Little Sizzle. She is fiercely protective.",
+        "The goblins sent Little Sizzle to sniff out Gerald. Mrs Paws has come along.",
       ],
       win: [
-        "Little Sizzle flees in a puff of sparks the moment things go badly, and Mrs Paws lopes after it with the scarf in her mouth. {dwarf} watches them go and mutters that it is nice to see somebody looking after somebody. {wizard} pretends not to hear. For the rest of the evening he walks on the side nearest the wolves.",
+        "Little Sizzle flees in a puff of sparks. Mrs Paws lopes after it.",
       ],
     },
     {
@@ -245,11 +233,11 @@ export const steps = [
       foes: ["goblin", "goblin", "shieldbearer"],
       names: ["Chairman Gob", "Minutes", "Sergeant Quorum"],
       arrive: [
-        "In the heart of the camp the goblins are holding a meeting of the Cheese Committee. Chairman Gob bangs a ladle for order. A goblin called Minutes writes everything down with a burnt stick. A hired Shieldbearer, Sergeant Quorum, stands at the door, because a meeting is not official without a large man at the door.",
-        "They have been meeting for four days. They have agreed on nothing except that there should be another meeting. Today’s first item is “Intruders, two, fastened.”",
+        "In the heart of the camp the goblins are holding a meeting of the Cheese Committee. Chairman Gob bangs a ladle. A goblin called Minutes writes everything down. A hired Shieldbearer, Sergeant Quorum, stands at the door.",
+        "Today’s first item is two fastened intruders.",
       ],
       win: [
-        "The Committee breaks up without a vote, as committees do. Sergeant Quorum leaves to find a more decisive employer. Minutes drops his notes. The last line reads: “Agreed: give cheese to King. King to sit on cheese. Nobody to eat cheese. Carried.” {dwarf} looks up the hill and grinds his teeth.",
+        "The Committee breaks up. Sergeant Quorum leaves. Minutes drops his notes. The last line reads: “Agreed: give cheese to King. Nobody to eat cheese.”",
       ],
     },
     {
@@ -258,10 +246,10 @@ export const steps = [
       foes: ["goblinking"],
       names: ["King Grabbo"],
       arrive: [
-        "At the top of the hill King Grabbo sits on Gerald, crown askew, with a cushion between himself and the cheese for dignity. He claps when he wants more goblins. He throws fire bombs when he wants attention. When he winds up his sceptre, it is best to be elsewhere. He has never eaten a bite of the cheese, and he will not let anybody else, either.",
+        "At the top of the hill King Grabbo sits on Gerald. He claps when he wants more goblins. He throws fire bombs when he wants attention. When he winds up his sceptre, it is best to be elsewhere. He will not let anybody eat the cheese.",
       ],
       win: [
-        "King Grabbo slides off Gerald in a landslide of cushions and crown, and Gerald, for the first time in a week, is free. This turns out not to be entirely good news.",
+        "King Grabbo slides off Gerald. Gerald, for the first time in a week, is free.",
       ],
     },
   ],
@@ -272,11 +260,11 @@ export const steps = [
       foes: ["skeleton", "skeleton"],
       names: ["Left", "Right"],
       arrive: [
-        "Two Bone Soldiers, Left and Right, are the Stair Monitors of the Weeping Stair. They enforce the sign KEEP LEFT with real enthusiasm. Left keeps left. Right also keeps left, which has caused him some personal difficulty over the years.",
-        "A wizard and a dwarf, fastened at the wrist, coming down a spiral stair, one hugging the wall and one hugging the banister, is the worst thing to happen to Left and Right in three hundred years. Up go the shields. One of them is saving a bone to throw. Rules are rules.",
+        "Two Bone Soldiers, Left and Right, enforce the sign KEEP LEFT on the Weeping Stair. A wizard and a dwarf fastened at the wrist cannot keep left on a spiral stair.",
+        "Up go the shields. One of them is saving a bone to throw.",
       ],
       win: [
-        "Left and Right clatter into a heap at the bottom, still arguing about which way is left. {wizard} takes the wall, {dwarf} takes the banister, and the bangle hums between them like a washing line. It is not elegant, but it gets them down the stairs.",
+        "Left and Right clatter into a heap at the bottom. {wizard} takes the wall. {dwarf} takes the banister. It gets them down the stairs.",
       ],
     },
     {
@@ -285,11 +273,11 @@ export const steps = [
       foes: ["wraith", "skeleton"],
       names: ["Mildred", "Spare Rib"],
       arrive: [
-        "The Candle Vault is blazing with light, because a Wraith called Mildred has lit every candle in the place. Mildred is always cold. She has been cold for two hundred years, and she blames the draught. Her assistant, a Bone Soldier called Spare Rib, follows her about with a blanket and a hot-water bottle that went cold in the reign of the old king.",
-        "Mildred takes one look at the heroes and wails that they have left the door open. They have. It is a crypt. The door does not close. She drifts through a wall to make her point, which only makes the draught worse.",
+        "The Candle Vault is blazing with light, because a Wraith called Mildred has lit every candle. She has been cold for two hundred years. Her assistant, a Bone Soldier called Spare Rib, follows her about with a blanket.",
+        "Mildred wails that they have left the door open. She drifts through a wall to make her point.",
       ],
       win: [
-        "Mildred sinks into her blanket and admits that she might, possibly, be the draught. Spare Rib tucks her in. On the way out {wizard} slips a small warming charm into the hot-water bottle. {dwarf} calls that soft. Then he goes back and checks it is still warm. Twice.",
+        "Mildred sinks into her blanket. Spare Rib tucks her in. {wizard} slips a small warming charm into the bottle on the way out.",
       ],
     },
     {
@@ -298,11 +286,11 @@ export const steps = [
       foes: ["dirgesinger", "skeleton", "skeleton"],
       names: ["Madam Shush", "Stamp", "Overdue"],
       arrive: [
-        "The Pale Nave has become a library, mostly of cheese recipes, and its Head Librarian is a Dirge Singer called Madam Shush. She has not sung a note in a hundred years. She hushes. Her hush is so strong it takes the words out of your next roll. Her junior librarians, two Bone Soldiers called Stamp and Overdue, stamp books and frown at people, respectively.",
-        "{wizard} is delighted: a library! {dwarf} is horrified: a library. The bangle, which has never learned to whisper, jingles. Every skull in the nave turns at once.",
+        "The Pale Nave has become a library. Its Head Librarian is a Dirge Singer called Madam Shush. Her hush takes the words out of your next roll. Her junior librarians, two Bone Soldiers called Stamp and Overdue, stamp books and frown.",
+        "The bangle jingles. Every skull in the nave turns at once.",
       ],
       win: [
-        "Madam Shush’s last hush cracks into a small, surprised hiccup, and Stamp and Overdue fall over in alphabetical order. {wizard} borrows a book on the great cheeses of the Under-Hills, and on page forty he finds a hard white cheese called Colin. He shows {dwarf}. {dwarf} does not say “told you.” He just looks it, very loudly.",
+        "Madam Shush’s last hush cracks. Stamp and Overdue fall over. {wizard} finds a book that names a hard white cheese called Colin. He shows {dwarf}.",
       ],
     },
     {
@@ -311,11 +299,11 @@ export const steps = [
       foes: ["spider", "spider"],
       names: ["Mrs Tuffet", "Mrs Tuffet-Next-Door"],
       arrive: [
-        "Two Crypt Spiders, Mrs Tuffet and Mrs Tuffet-Next-Door, run a knitting circle in Grave-Silk Hall. They have heard there are visitors, and they have made them a present: one web jumper, very warm, with two neck holes and three sleeves, for the gentlemen who share.",
-        "They would very much like {wizard} and {dwarf} to try it on, and they are not taking no for an answer. One webs the door. The other comes down from the beams with a tape measure and a mouthful of venom, which, for a spider, are the same tool.",
+        "Two Crypt Spiders, Mrs Tuffet and Mrs Tuffet-Next-Door, have made a web jumper with two neck holes and three sleeves.",
+        "They would like {wizard} and {dwarf} to try it on. One webs the door. The other comes down from the beams with a tape measure and a mouthful of venom.",
       ],
       win: [
-        "The Tuffets scuttle back into the rafters to start on something else. Possibly socks. {dwarf} cuts the jumper off with a sniff. {wizard} quietly keeps the third sleeve, because it is very warm, and the crypt is very cold, and nobody has ever knitted him anything before.",
+        "The Tuffets scuttle back into the rafters. {dwarf} cuts the jumper off. {wizard} keeps the third sleeve. The crypt is cold.",
       ],
     },
     {
@@ -324,10 +312,10 @@ export const steps = [
       foes: ["bigwheel"],
       names: ["Big Wheel"],
       arrive: [
-        "Big Wheel blocks the Ossuary Gate: eight feet of forgotten cheeses that matured until they stood up, with a cheese-wire in one hand and a smell you could lean on. It heard Gerald roll past and has decided he is family. It roars, which smells worse than it sounds, and winds up its whole body for a blow like a falling larder.",
+        "Big Wheel blocks the Ossuary Gate: eight feet of forgotten cheeses that matured until they stood up, with a cheese-wire in one hand. It heard Gerald roll past and has decided he is family. It winds up for a blow like a falling larder.",
       ],
       win: [
-        "Big Wheel topples and rolls away into the dark in eleven separate pieces, each of them grumbling. {dwarf} watches them go and says it is a crime to waste cheese like that. {wizard} pats him on the shoulder. It is the first time either has touched the other on purpose. Nobody mentions it.",
+        "Big Wheel topples and rolls away into the dark. {dwarf} says it is a crime to waste cheese like that.",
       ],
     },
     {
@@ -336,11 +324,11 @@ export const steps = [
       foes: ["wraith", "gloomstalker"],
       names: ["Mrs Peering", "Constable Lurk"],
       arrive: [
-        "Mourner’s Row has a Neighbourhood Watch. A Wraith called Mrs Peering watches from behind her net curtains, all day and all night, which for a wraith is the same thing. A Gloom Stalker, Constable Lurk, patrols the street with a black arrow and a notebook. Nothing has happened on the Row for two hundred years, which is why they are so excited about you.",
-        "Two strangers, fastened together, walking in step, at night? Mrs Peering says it is very suspicious. Constable Lurk agrees, fades into a wall, and begins to stalk.",
+        "Mourner’s Row has a Neighbourhood Watch. A Wraith called Mrs Peering watches from behind her net curtains. A Gloom Stalker, Constable Lurk, patrols the street with a black arrow.",
+        "Two strangers, fastened together, at night. Mrs Peering says it is suspicious. Constable Lurk fades into a wall and begins to stalk.",
       ],
       win: [
-        "Mrs Peering draws her curtains with a sniff and a long chill. Constable Lurk leaves an arrow in the lintel with a note on it that says “Reported.” {wizard} remarks that they will be the talk of the Row. {dwarf} says he has never been the talk of anything, and walks on with his chin a little higher.",
+        "Mrs Peering draws her curtains. Constable Lurk leaves an arrow in the lintel with a note that says “Reported.”",
       ],
     },
     {
@@ -349,11 +337,11 @@ export const steps = [
       foes: ["frostwhelp", "frostwhelp"],
       names: ["Sorbet", "Slush"],
       arrive: [
-        "Two Frostwhelps, Sorbet and Slush, have moved into the Drowned Crypt because it is exactly the right temperature: cold enough for whelps, and cold enough for cheese. They are very proud of this. They are excellent at keeping things cold. They are terrible at everything else, including manners, sharing and blinking.",
-        "They heard a cheese went by, and they would like it, please, to keep cold forever. One puffs frost across the water. The other ties {dwarf}’s boots together with a flick of its wings and looks thrilled with itself.",
+        "Two Frostwhelps, Sorbet and Slush, have moved into the Drowned Crypt because it is cold enough for cheese. They heard a cheese went by, and they would like it.",
+        "One puffs frost across the water. The other ties {dwarf}’s boots together with a flick of its wings.",
       ],
       win: [
-        "Sorbet and Slush flee across the ice, as whelps do when the fight turns. {dwarf}’s beard has frozen solid. {wizard} thaws it very carefully, a little at a time, with the tip of his staff, and {dwarf} lets him. Neither of them speaks the whole time, which says a great deal.",
+        "Sorbet and Slush flee across the ice. {dwarf}’s beard has frozen solid. {wizard} thaws it with the tip of his staff.",
       ],
     },
     {
@@ -362,11 +350,11 @@ export const steps = [
       foes: ["gargoyle", "spider"],
       names: ["Sweeps", "Cobweb Kate"],
       arrive: [
-        "Back on Mourner’s Row, a stone gargoyle called Sweeps is losing a war. Every night he sweeps the street. Every night a Crypt Spider called Cobweb Kate webs it all back up behind him. They have done this for so long that neither can stop, in case the other one wins.",
-        "Then they both decide, at the same moment, that the strangers are making a mess, and for the first time in a century they are on the same side.",
+        "Back on Mourner’s Row, a stone gargoyle called Sweeps sweeps the street every night. Every night a Crypt Spider called Cobweb Kate webs it all back up.",
+        "Then they both decide the strangers are making a mess, and for the first time they are on the same side.",
       ],
       win: [
-        "Sweeps and Cobweb Kate end up in a tangle of broom and web, looking at each other with something very like respect. {wizard} observes that some partnerships only work against a common enemy. {dwarf} asks if he means the spider. {wizard} says yes. He does not.",
+        "Sweeps and Cobweb Kate end up in a tangle of broom and web.",
       ],
     },
     {
@@ -375,11 +363,11 @@ export const steps = [
       foes: ["spider", "frostwhelp"],
       names: ["Netta", "Sorbet"],
       arrive: [
-        "Sorbet the Frostwhelp is back, and has joined a club. The Ice-Fishing Club has two members: Sorbet, who freezes a hole in the black water, and a Crypt Spider called Netta, who fishes through it with a net of web. They have been at it all week. The catch so far is one boot, one hat, and a very surprised eel.",
-        "Netta looks at the bangle and wonders aloud whether two heroes, tied together, count as one big fish.",
+        "Sorbet the Frostwhelp is back, freezing a hole in the black water. A Crypt Spider called Netta fishes through it with a net of web.",
+        "Netta looks at the bangle and wonders whether two heroes, tied together, count as one big fish.",
       ],
       win: [
-        "The Ice-Fishing Club disbands early. Sorbet flees with the hat, and Netta keeps the eel, who seems to have made his peace with it. Beyond the water, between the stone trees, a cold light shows the way to the Ash Cloister, where Gerald waits with somebody very tall standing in front of him.",
+        "Sorbet flees with a hat. Netta keeps the eel. Beyond the water, a cold light shows the way to the Ash Cloister, where Gerald waits.",
       ],
     },
     {
@@ -388,10 +376,10 @@ export const steps = [
       foes: ["bonewarden"],
       names: ["The Night Porter"],
       arrive: [
-        "The Night Porter stands at the cloister door with Gerald behind him. He has minded this door for three hundred years and never once let anyone in after dark. It is always dark. He will put up a wall of bone, call a colleague from the back, and wind up a swing that could clear a room. There is a form for moving. Nobody has ever filled it in.",
+        "The Night Porter stands at the cloister door with Gerald behind him. He will put up a wall of bone, call a colleague from the back, and wind up a swing that could clear a room. There is a form for moving. Nobody has ever filled it in.",
       ],
       win: [
-        "The Night Porter sits down, slowly, like a man allowed off his feet for the first time in three centuries. He hands {dwarf} the keys and asks him to lock up on the way out. And then, from the chimney above, comes the scrape of claws.",
+        "The Night Porter sits down. He hands {dwarf} the keys and asks him to lock up on the way out. From the chimney above comes the scrape of claws.",
       ],
     },
   ],
@@ -402,11 +390,11 @@ export const steps = [
       foes: ["cinderling", "cinderling"],
       names: ["Flicker", "Cousin Gareth"],
       arrive: [
-        "Two Cinderlings guard the Kindling Steps for the Duchess: Flicker, and Flicker’s Cousin Gareth. Their job is to bite every coin that comes up the stair to see whether it is gold. They have bitten every coin. Then the stair. Then each other. Gareth is now looking very hard at {wizard}’s buttons.",
-        "Flicker puffs a spray of sparks over both heroes. Gareth snatches a button. Neither will run before the other does, out of family pride.",
+        "Two Cinderlings guard the Kindling Steps for the Duchess: Flicker, and Flicker’s Cousin Gareth. Their job is to bite every coin that comes up the stair. Gareth is now looking very hard at {wizard}’s buttons.",
+        "Flicker puffs sparks over both heroes. Gareth snatches a button.",
       ],
       win: [
-        "Flicker and Gareth flee uphill in a shower of sparks. Gareth is still chewing the button, which he has discovered is not gold, and he looks betrayed. That night by the fire {dwarf} sews up the gap in {wizard}’s robe with small, neat stitches, muttering the whole time that it is only so he does not have to look at it.",
+        "Flicker and Gareth flee uphill. That night {dwarf} sews up the gap in {wizard}’s robe.",
       ],
     },
     {
@@ -415,11 +403,11 @@ export const steps = [
       foes: ["shieldbearer", "gloomstalker"],
       names: ["Barry", "Shade"],
       arrive: [
-        "On the Glass Fields a hired Shieldbearer called Barry is on his first day. He is very keen. He has polished his shield. He has polished his spear. He has questions. On the ridge above him waits his supervisor, a Gloom Stalker called Shade, who does not do first days, does not do questions, and fades out of sight whenever Barry starts one.",
-        "Barry’s first question, shouted up the ridge, is whether two heroes fastened together count as one target or two for the purposes of his overtime.",
+        "On the Glass Fields a hired Shieldbearer called Barry is on his first day. On the ridge above him waits his supervisor, a Gloom Stalker called Shade, who fades out of sight whenever Barry asks a question.",
+        "Barry’s first question is whether two heroes fastened together count as one target or two.",
       ],
       win: [
-        "Barry sits down on the glass and makes a note that his first day went badly. Shade’s last arrow skitters off into the glare without an answer. {wizard} tells Barry he did well, for a first day, and Barry beams. {dwarf} says that was kind. {wizard} says he remembers his own first day. Everyone has had one.",
+        "Barry sits down on the glass. Shade’s last arrow skitters off into the glare. {wizard} tells Barry he did well for a first day.",
       ],
     },
     {
@@ -428,11 +416,11 @@ export const steps = [
       foes: ["chainbinder", "cinderling"],
       names: ["Constable Clank", "Snitch"],
       arrive: [
-        "At Wyrmwatch the Duchess’s Gold-Chain Jailer, Constable Clank, keeps the law of the Peaks, which says that all jewellery belongs to Her Grace. He has spotted the Friendship Bangle. It is brass. It is round. In the Constable’s view, it is unlicensed. A Cinderling called Snitch rings the tower bells whenever anybody moves, so the Constable always knows where to look.",
-        "{dwarf} is all in favour of the arrest, until it becomes clear the Constable means to arrest the wrist as well. Clank starts chaining your dice down so they cannot change their minds.",
+        "At Wyrmwatch the Duchess’s Gold-Chain Jailer, Constable Clank, has spotted the Friendship Bangle. In his view it is unlicensed. A Cinderling called Snitch rings the tower bells whenever anybody moves.",
+        "Clank starts chaining your dice down so they cannot change their minds.",
       ],
       win: [
-        "Constable Clank’s chains go slack. Snitch flies out of a window, still holding a bell-rope, and rings one last, sulky note. {dwarf} looks at the bangle for a long moment and says that a week ago, he would have let the Constable take it. {wizard} asks, and now? {dwarf} says, now he would want a receipt.",
+        "Constable Clank’s chains go slack. Snitch flies out of a window, still holding a bell-rope.",
       ],
     },
     {
@@ -441,11 +429,11 @@ export const steps = [
       foes: ["bonfire", "frostwhelp"],
       names: ["Brother Ingot", "Sister Frostbite"],
       arrive: [
-        "The coin-mine is silent because the miners are on strike, and the miners are a walking bonfire and a baby dragon. Brother Ingot, who is the fire, and Sister Frostbite, a Frostwhelp, have heard the Duchess is getting the biggest coin in the world, and they want a share of it in their wages. Their banner says FAIR PAY, ROUND PAY, CHEESE PAY. They do not know the cheese part is true. They just like how it sounds.",
-        "{dwarf}, who comes from a long line of miners, says he supports their right to strike but not the way they are holding that pickaxe. That is when Brother Ingot snatches his purse.",
+        "The coin-mine is silent because the miners are on strike. Brother Ingot, a walking bonfire, and Sister Frostbite, a Frostwhelp, want a share of the Duchess’s biggest coin. Their banner says FAIR PAY, ROUND PAY, CHEESE PAY.",
+        "{dwarf} says he supports their right to strike. That is when Brother Ingot snatches his purse.",
       ],
       win: [
-        "Brother Ingot flees with both cheeks stuffed with coins, which is a kind of back pay, and Sister Frostbite flees with the banner. Afterwards {dwarf} spends ten minutes teaching {wizard} to hold a pickaxe properly. {wizard} is very bad at it. {dwarf} is very patient. It is the most peaceful ten minutes of the whole quest.",
+        "Brother Ingot flees with both cheeks stuffed with coins. Sister Frostbite flees with the banner.",
       ],
     },
     {
@@ -454,10 +442,10 @@ export const steps = [
       foes: ["ashwyrm"],
       names: ["Lord Grillbert"],
       arrive: [
-        "Lord Grillbert, the Duchess’s Taster, sits on the bronze bridge with a napkin under his chin and crumbs of Gerald in his whiskers. He inhales before each breath of fire, and each time the cheese dust tickles his nose, and the whole bridge holds its breath to see whether it will be fire or a sneeze. When the fight turns he will fly to Her Grace. Tasters never stay for the bill.",
+        "Lord Grillbert, the Duchess’s Taster, sits on the bronze bridge with crumbs of Gerald in his whiskers. He inhales before each breath of fire. When the fight turns he will fly to Her Grace.",
       ],
       win: [
-        "Lord Grillbert takes off with a roar that ends in an enormous sneeze, and flaps away up the mountain to complain to the Duchess. He leaves his napkin behind. {dwarf} offers to take the shield on the steep side of the next climb, so {wizard} can keep both hands free for spells. {wizard} accepts without a single long word. For those who know him, it is a moving moment.",
+        "Lord Grillbert takes off and flaps away up the mountain to complain to the Duchess. {dwarf} offers to take the shield on the next climb so {wizard} can keep both hands free for spells.",
       ],
     },
     {
@@ -466,11 +454,11 @@ export const steps = [
       foes: ["frostwhelp", "raincloud"],
       names: ["Drip", "Drop"],
       arrive: [
-        "Kettle Tarn boils at one end and freezes at the other, and a Frostwhelp called Drip and a small furious raincloud called Drop have decided this makes it the perfect place for tea. Their method: Drip fills the kettle at the boiling end. Drop rains on it at once to cool it down. They have done this every day for a year and have never had a cup of tea, and they cannot work out why.",
-        "{wizard} has not had a proper cup of tea since market day. He watches them frost the kettle a fourth time, and something in him snaps.",
+        "Kettle Tarn boils at one end and freezes at the other. A Frostwhelp called Drip and a small raincloud called Drop have been trying to make tea for a year. Drip fills the kettle at the boiling end. Drop rains on it at once.",
+        "{wizard} has not had a proper cup of tea since market day.",
       ],
       win: [
-        "Drip flees across the ice and Drop rains himself out into a sulk, abandoning the kettle. {wizard} makes the tea himself, properly, and pours three cups: one for himself, one for {dwarf}, and one on a rock for the pair, who creep back for it when they think nobody is looking. {dwarf} says nothing at all, and drinks his with both hands around the cup.",
+        "Drip flees across the ice. Drop rains himself out. {wizard} makes the tea properly and pours three cups: one for himself, one for {dwarf}, and one on a rock for the pair.",
       ],
     },
     {
@@ -479,11 +467,11 @@ export const steps = [
       foes: ["shieldbearer", "chainbinder"],
       names: ["Lugg", "Mr Inventory"],
       arrive: [
-        "The Duchess has sent her removals team to Oathbreak Keep to collect anything round and golden. A Shieldbearer called Lugg does the lifting. A Gold-Chain Jailer called Mr Inventory does the counting, and chains things down so they cannot wander off before they are counted, which, in a castle, is mostly unnecessary. So far they have packed the soup tureens, the door-knobs and a portrait of a man with a very round face.",
+        "The Duchess has sent her removals team to Oathbreak Keep to collect anything round and golden. A Shieldbearer called Lugg does the lifting. A Gold-Chain Jailer called Mr Inventory does the counting.",
         "Mr Inventory looks at {dwarf}’s round shield, writes it down, and sends Lugg to fetch it.",
       ],
       win: [
-        "Lugg drops a crate of door-knobs on his own foot and decides to retire. Mr Inventory’s chains clatter to the floor, and he writes himself down as missing. {dwarf} hands {wizard} his shield to hold while he hangs the portrait back on the wall. He has never let anyone hold the shield. {wizard} holds it as if it were made of glass.",
+        "Lugg drops a crate of door-knobs. Mr Inventory’s chains clatter to the floor. {dwarf} hands {wizard} his shield to hold while he hangs a portrait back on the wall.",
       ],
     },
     {
@@ -492,11 +480,11 @@ export const steps = [
       foes: ["nightblade", "frostwhelp"],
       names: ["Night-Watch Nora", "Pickle"],
       arrive: [
-        "By night the tarn is guarded by Night-Watch Nora, a figure of living smoke in a blank white mask, who has been issued a guard dragon. The guard dragon is a Frostwhelp called Pickle. Pickle is meant to raise the alarm. Pickle mostly makes snowballs, and eats them. Nora stalks the shore with two shadow blades, sighing every time Pickle wanders off to look at a pebble.",
-        "Pickle sees the heroes, wags its tail, and binds their knees with its icy wings out of pure friendliness. Nora takes this as her cue.",
+        "By night the tarn is guarded by Night-Watch Nora, a figure of living smoke in a blank white mask, and a Frostwhelp called Pickle. Pickle is meant to raise the alarm.",
+        "Pickle sees the heroes and binds their knees with its icy wings. Nora takes this as her cue.",
       ],
       win: [
-        "Night-Watch Nora fades into the steam like someone who will be asking for a different dragon. Pickle flees after her, comes back for its pebble, then flees again. {wizard} laughs out loud. {dwarf} laughs too. Then they both stop, surprised, because neither of them has ever heard the other laugh.",
+        "Night-Watch Nora fades into the steam. Pickle flees after her, comes back for a pebble, then flees again.",
       ],
     },
     {
@@ -505,11 +493,10 @@ export const steps = [
       foes: ["ashwyrm", "shieldbearer"],
       names: ["Lord Grillbert", "Barry"],
       arrive: [
-        "Lord Grillbert is back on the golden slope with a fresh napkin and a fresh grudge. Beside him stands Barry the Shieldbearer, on his second day and already promoted, because he was the only one who turned up. Barry has a new shield and new questions. Grillbert is inhaling before Barry can ask any of them.",
-        "Barry waves at {wizard}. {wizard} waves back. Then everyone remembers why they are here, and it gets awkward.",
+        "Lord Grillbert is back on the golden slope with a fresh grudge. Beside him stands Barry the Shieldbearer, on his second day. Grillbert is inhaling before Barry can ask any questions.",
       ],
       win: [
-        "Lord Grillbert flees uphill roaring for Her Grace, which is becoming a habit. Barry lays down his shield and says he is going home to think about a career in something quieter, possibly cheese. {dwarf} gives him directions to a good dairy. Above them the whole mountain rumbles. The Duchess has noticed that her coin is being discussed.",
+        "Lord Grillbert flees uphill roaring for Her Grace. Barry lays down his shield. Above them the mountain rumbles. The Duchess has noticed.",
       ],
     },
     {
@@ -518,10 +505,10 @@ export const steps = [
       foes: ["goldbelly"],
       names: ["Duchess Goldbelly"],
       arrive: [
-        "The Duchess Goldbelly lies on her hill of round golden things, squinting, with Gerald propped beside her like a prize plate. She will breathe fire that splashes on you both, frighten your dice still, and inhale before her biggest blasts. Her eyesight is poor and her nose is excellent, and she still has not noticed that her coin is cheese.",
+        "The Duchess Goldbelly lies on her hill of round golden things, squinting, with Gerald propped beside her. She will breathe fire that splashes on you both, frighten your dice still, and inhale before her biggest blasts. She still has not noticed that her coin is cheese.",
       ],
       win: [
-        "The Duchess sinks onto her hoard, squints at the coin, and, for the very first time, takes a bite.",
+        "The Duchess sinks onto her hoard, squints at the coin, and, for the first time, takes a bite.",
       ],
     },
   ],
@@ -531,71 +518,71 @@ const moments = [
   [
     null,
     { title: 'The Sign Says No', stat: 'wisdom', prize: 'block', go: 'Read the fine print',
-      tell: '{dwarf}’s NO MAGIC sign has picked up a smudge on the road to {place}. Under the smudge, in Madame Twill’s hand, there is a line nobody noticed: except in emergencies, and also Tuesdays.',
-      won: '{who} spots it. {dwarf} pretends not to. The sign, slightly, protects everyone anyway.', lost: '{who} rubs the smudge. It says NO MAGNIFICENT. {wizard} is very quiet for a quarter of a mile.' },
+      tell: '{dwarf}’s NO MAGIC sign has picked up a smudge on the road to {place}. Under the smudge, in Madame Twill’s hand, there is a line nobody noticed: except in emergencies.',
+      won: '{who} spots it. The sign protects everyone a little.', lost: '{who} rubs the smudge. The line is gone.' },
     null,
     { title: 'Ten Paces Exactly', stat: 'speed', prize: 'atk', go: 'Measure the tug',
       tell: 'The bangle on the road to {place} is getting opinions about distance. Somebody has to walk it out: ten paces, no more, and see who gets yanked first.',
-      won: '{who} hits ten exactly. The bangle purrs. The next swing starts a little keener.', lost: '{who} hits eleven. The bangle plays its tune and both heroes meet in the middle like cymbals.' },
+      won: '{who} hits ten exactly. The next swing starts a little keener.', lost: '{who} hits eleven. The bangle plays its tune and both heroes meet in the middle.' },
     null,
     { title: 'A Rind on the Post', stat: 'strength', prize: 'hp', go: 'Lift Big Norman’s leftover',
-      tell: 'Big Norman paid himself in cheese rind and then ate it. On the road to {place} one rind is still nailed to the toll-post, out of reach, and it smells like a proper lunch.',
-      won: '{who} wrenches it down. It is terrible. It is also, somehow, strengthening.', lost: '{who} tugs. The post tugs back. Norman, from under the bridge, says it is one and a half rinds.' },
+      tell: 'Big Norman paid himself in cheese rind and then ate it. On the road to {place} one rind is still nailed to the toll-post, out of reach.',
+      won: '{who} wrenches it down. It is terrible. It is also strengthening.', lost: '{who} tugs. The post tugs back.' },
     { title: 'Colin Is a Cheese', stat: 'wisdom', prize: 'gold', go: 'Settle the argument',
-      tell: 'On the road to {place}, {wizard} and {dwarf} are still arguing about whether Colin is a cheese. A peddler has left a wheel by the path with a label. The label might help.',
-      won: '{who} reads it: COLIN, HARD WHITE, WEDDINGS. {dwarf} was right. There is a coin under the rind.', lost: '{who} reads it upside down. It says NILOC. Nobody is happy. The bangle jingles, unhelpfully.' },
+      tell: 'On the road to {place}, {wizard} and {dwarf} are still arguing about whether Colin is a cheese. A peddler has left a wheel by the path with a label.',
+      won: '{who} reads it: COLIN, HARD WHITE, WEDDINGS. {dwarf} was right. There is a coin under the rind.', lost: '{who} reads it upside down. Nobody is happy.' },
     null,
     { title: 'The Cheese Committee’s Notes', stat: 'speed', prize: 'magic', go: 'Grab the minutes',
       tell: 'A burnt-stick page is still smoking on the road to {place}. The last line trails off. First to read it gets a spark of whatever they were voting on.',
-      won: '{who} snatches it: “Agreed: give cheese to King.” The spark jumps. So does {dwarf}’s eyebrow.', lost: '{who} snatches a blank page. From a bush, a goblin says that was the important one.' },
+      won: '{who} snatches it: “Agreed: give cheese to King.” The spark jumps.', lost: '{who} snatches a blank page.' },
     null,
   ],
   [
     { title: 'Keep Left', stat: 'wisdom', prize: 'block', go: 'Read the signs',
-      tell: 'The cellar signs on the road to {place} say KEEP LEFT. NO RUNNING. NO CHEESE WITHOUT A TICKET. A wizard and a dwarf fastened at the wrist cannot keep left on a spiral stair. Unless somebody thinks.',
-      won: '{who} works it out: both take the wall. The stair, for once, does not argue.', lost: '{who} takes the banister. {dwarf} takes the wall. The bangle has a word, and the word is a yank.' },
+      tell: 'The cellar signs on the road to {place} say KEEP LEFT. NO RUNNING. NO CHEESE WITHOUT A TICKET. A wizard and a dwarf fastened at the wrist cannot keep left on a spiral stair unless somebody thinks.',
+      won: '{who} works it out: both take the wall.', lost: '{who} takes the banister. {dwarf} takes the wall. The bangle yanks.' },
     { title: 'The Vault Door', stat: 'speed', prize: 'magic', go: 'Shut the door',
-      tell: 'The Candle Vault door on the road to {place} does not close. A wail is already practising in the dark. Somebody quick might wedge it with a blanket before the next one.',
-      won: '{who} wedges it. The draught stops. A little borrowed warmth stays in the hands.', lost: '{who} wedges it with {wizard}’s hat. The draught is now personal.' },
+      tell: 'The Candle Vault door on the road to {place} does not close. A wail is already practising in the dark. Somebody quick might wedge it with a blanket.',
+      won: '{who} wedges it. The draught stops. A little warmth stays in the hands.', lost: '{who} wedges it with {wizard}’s hat.' },
     null,
     { title: 'Mrs Tuffet’s Flat', stat: 'strength', prize: 'atk', go: 'Lift the tea table',
       tell: 'A tea table made of silk and bone blocks the hall on the road to {place}. Mrs Tuffet-Next-Door left it there. It is heavier than furniture has any right to be.',
-      won: '{who} hoists it aside. Underneath, a spoon and a bit of fight nobody had budgeted for.', lost: '{who} lifts one end. The other end sits down. The spiders, later, will send a note.' },
+      won: '{who} hoists it aside. Underneath, a spoon and a bit of fight.', lost: '{who} lifts one end. The other end sits down.' },
     null,
     { title: 'Net Curtains', stat: 'wisdom', prize: 'hp', go: 'Wave politely',
-      tell: 'Net curtains on the road to {place} twitch even when nobody is home. A polite wave might still be worth something. An impolite one will be reported.',
-      won: '{who} waves. A very small plate of cold soup appears on the step. It is strengthening. It is also a test.', lost: '{who} waves with the wrong hand. The curtains snap shut. A note says “Reported.”' },
+      tell: 'Net curtains on the road to {place} twitch even when nobody is home. A polite wave might still be worth something.',
+      won: '{who} waves. A very small plate of cold soup appears on the step. It is strengthening.', lost: '{who} waves with the wrong hand. The curtains snap shut. A note says “Reported.”' },
     { title: 'Black Water', stat: 'strength', prize: 'gold', go: 'Break a path',
-      tell: 'The Drowned Crypt on the road to {place} is iced over, and a coin is frozen in the surface like a cherry in a bun. Somebody has to break a path without losing it.',
-      won: '{who} cracks a neat lane and flicks the coin free. It is cold enough to chime.', lost: '{who} stamps. The coin slides under. {dwarf}’s beard, unhelpfully, starts to frost.' },
+      tell: 'The Drowned Crypt on the road to {place} is iced over, and a coin is frozen in the surface. Somebody has to break a path without losing it.',
+      won: '{who} cracks a neat lane and flicks the coin free.', lost: '{who} stamps. The coin slides under.' },
     null,
     { title: 'The Form for Moving', stat: 'wisdom', prize: 'block', go: 'Fill it in',
-      tell: 'The Night Porter’s form for moving is nailed to a stone tree on the road to {place}. It is three hundred years out of date. It is also the only form. Somebody has to try.',
-      won: '{who} fills every blank. The cloister door, ahead, considers this. The dark steps back a pace.', lost: '{who} writes “cheese” in every box. The form, somehow, accepts it. The Porter will not.' },
+      tell: 'The Night Porter’s form for moving is nailed to a stone tree on the road to {place}. It is three hundred years out of date. It is also the only form.',
+      won: '{who} fills every blank. The dark steps back a pace.', lost: '{who} writes “cheese” in every box. The form accepts it. The Porter will not.' },
     null,
   ],
   [
     { title: 'Buttons Are Not Gold', stat: 'speed', prize: 'gold', go: 'Save the buttons',
       tell: 'Flicker’s Cousin Gareth is still thinking about {wizard}’s buttons on the road to {place}. First to cover them keeps them, and any coin Gareth dropped in the attempt.',
-      won: '{who} gets there first. Two buttons, one coin, and Gareth looking betrayed from a higher step.', lost: '{who} is too slow. Gareth has a button. {dwarf} already has a needle out.' },
+      won: '{who} gets there first. Two buttons, one coin.', lost: '{who} is too slow. Gareth has a button.' },
     { title: 'Barry’s First Day', stat: 'wisdom', prize: 'block', go: 'Answer his question',
-      tell: 'Barry the Shieldbearer has left a note on the glass on the road to {place}: “Do two heroes fastened together count as one target or two? Please advise. Also, where is lunch.”',
-      won: '{who} writes “one, and lunch is north.” Barry, later, will lock shields with the right person.', lost: '{who} writes “yes.” Barry will be confused until Thursday.' },
+      tell: 'Barry the Shieldbearer has left a note on the glass on the road to {place}: “Do two heroes fastened together count as one target or two? Please advise.”',
+      won: '{who} writes “one.” Barry, later, will lock shields with the right person.', lost: '{who} writes “yes.” Barry will be confused.' },
     null,
     { title: 'Fair Pay, Round Pay', stat: 'strength', prize: 'hp', go: 'Hold the banner',
-      tell: 'The strike banner on the road to {place} has fallen over: FAIR PAY, ROUND PAY, CHEESE PAY. It is heavier than cloth. The miners will want it back. Somebody should stand it up.',
-      won: '{who} plants it. The fire and the frost, ahead, look almost grateful. A crust is pressed into {who}’s hand.', lost: '{who} plants it upside down. It now says YAP ESEHC. Brother Ingot, later, will not notice.' },
+      tell: 'The strike banner on the road to {place} has fallen over: FAIR PAY, ROUND PAY, CHEESE PAY. The miners will want it back. Somebody should stand it up.',
+      won: '{who} plants it. A crust is pressed into {who}’s hand.', lost: '{who} plants it upside down.' },
     null,
     { title: 'A Proper Cup of Tea', stat: 'wisdom', prize: 'magic', go: 'Boil it once',
-      tell: 'A kettle sits between boil and freeze on the road to {place}. Someone has been filling it and cooling it, over and over, for a year. {wizard} has not had a cup of tea since market day. This is a test of character.',
-      won: '{who} makes it properly. The steam sparkles. Even {dwarf} takes a sip without complaining.', lost: '{who} lets the rain end in it. It is tea-flavoured weather. {wizard} does not speak for some time.' },
+      tell: 'A kettle sits between boil and freeze on the road to {place}. Someone has been filling it and cooling it for a year. {wizard} has not had a cup of tea since market day.',
+      won: '{who} makes it properly. The steam sparkles. Even {dwarf} takes a sip.', lost: '{who} lets the rain end in it.' },
     { title: 'Round and Golden', stat: 'speed', prize: 'atk', go: 'Rescue a door-knob',
-      tell: 'Mr Inventory has packed the door-knobs of Oathbreak Keep into a crate on the road to {place}. One has rolled out. It is round. It is golden. The Duchess would like it. So would a good throw.',
-      won: '{who} nips it and pockets it as ammunition. Lugg, later, will mark it missing.', lost: '{who} nips it. It is chained to the next one. Mr Inventory has thought of this.' },
+      tell: 'Mr Inventory has packed the door-knobs of Oathbreak Keep into a crate on the road to {place}. One has rolled out. It is round. It is golden.',
+      won: '{who} nips it and pockets it as ammunition.', lost: '{who} nips it. It is chained to the next one.' },
     null,
     { title: 'The Last Ten Paces', stat: 'strength', prize: 'block', go: 'Climb together',
       tell: 'The coin-slope to {place} is steep, and the bangle has opinions about heroes who climb at different speeds. Shoulder to shoulder, or it will sing.',
-      won: '{who} matches pace all the way. The bangle is quiet. The slope, for once, feels like a shield.', lost: '{who} pulls ahead. The tune plays. They arrive in a heap, which is still arriving.' },
+      won: '{who} matches pace all the way. The bangle is quiet. The slope feels like a shield.', lost: '{who} pulls ahead. The tune plays. They arrive in a heap.' },
     null,
   ],
 ];
