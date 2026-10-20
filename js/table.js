@@ -320,9 +320,18 @@ function startQuest(table, cmd) {
   for (const f of table.battle.fighters) { f.locked = false; f.skipped = false; }
   table.lastReport = null;
   table.reveal = null;
-  // Secret objectives (docs/SECRET_OBJECTIVES.md): every hero opens an envelope first; the fight starts when all have answered
-  if (table.envelopes !== 'off') {
-    table.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: members(table), enemies: table.battle.enemies, salt: `t${table.seq}`, big: ['elite', 'boss'].includes(table.quest?.kind) || !!table.quest?.perilous });
+  table.bonus = null;
+  const hs = members(table);
+  // Solo: no envelopes; a fight or elite gets a Bonus Goal. Tables of 2–6 keep secret objectives.
+  // envelopes === 'off' skips both (the host turned the extras off).
+  if (table.envelopes !== 'off' && hs.length === 1 && SO.wantsBonus(quest.kind)) {
+    table.bonus = SO.dealBonusGoal({ c: hero.campaign, hero: hs[0], salt: `t${table.seq}` });
+    table.envelope = null;
+    table.phase = 'envelope';
+    return ok();
+  }
+  if (hs.length > 1 && table.envelopes !== 'off') {
+    table.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: hs, enemies: table.battle.enemies, salt: `t${table.seq}`, big: ['elite', 'boss'].includes(table.quest?.kind) || !!table.quest?.perilous });
     table.phase = 'envelope';
     return ok();
   }
@@ -332,11 +341,18 @@ function startQuest(table, cmd) {
 }
 // Your envelope: Got it (or Accept / Decline for an offered bribe). When every hero has answered, the battle begins.
 function openEnvelope(table, player, cmd) {
-  if (table.phase !== 'envelope' || !table.envelope) return fail('There is no envelope now.');
+  if (table.phase !== 'envelope') return fail('There is no envelope now.');
+  if (table.bonus) {
+    if (!SO.answerBonus(table.bonus, { accept: !!cmd.accept })) return fail('There is no Bonus Goal for you.');
+    table.phase = 'battle';
+    return ok();
+  }
+  if (!table.envelope) return fail('There is no envelope now.');
   if (!SO.answer(table.envelope, player.hero.name, { accept: !!cmd.accept })) return fail('There is no envelope for you.');
   return beginAfterEnvelopes(table);
 }
 function beginAfterEnvelopes(table) {
+  if (table.bonus) { table.phase = 'battle'; return ok(); }
   if (!SO.everyoneAnswered(table.envelope, members(table).map((m) => m.name))) return ok();
   for (const f of table.battle.fighters) { const c = table.envelope.cards[f.hero.name]; if (c?.id === 'pact' && c.accepted) f.pactBribe = true; }
   table.phase = 'battle';
@@ -344,7 +360,15 @@ function beginAfterEnvelopes(table) {
 }
 // After the battle: every card is revealed and paid (won or lost).
 function revealEnvelopes(table, won) {
-  const env = table.envelope; const b = table.battle; if (!env || !b) return;
+  const b = table.battle;
+  if (table.bonus && b) {
+    const j = SO.judgeBonus(table.bonus, b, { won });
+    SO.payBonus(j, members(table)[0]);
+    table.reveal = { won, voice: table.bonus.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+    table.bonus = null;
+    return;
+  }
+  const env = table.envelope; if (!env || !b) return;
   const j = SO.judge(env, b, { won });
   SO.payOut(j, Object.fromEntries(members(table).map((m) => [m.name, m])));
   table.reveal = { won, voice: env.voice, crooks: j.crooks, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
@@ -387,6 +411,10 @@ function upgrade(table, player, cmd) {
 // their pick of the spoils is passed, and they count as ready.
 function push(table, player) {
   if (player.id !== table.hostId) return fail('Only the host can move the table on.');
+  if (table.phase === 'envelope' && table.bonus) {
+    if (!table.bonus.answered) SO.answerBonus(table.bonus, { accept: false });
+    return beginAfterEnvelopes(table);
+  }
   if (table.phase === 'envelope' && table.envelope) { // a phone went quiet on its envelope: its card stands, an offered bribe declined
     for (const m of members(table)) if (!table.envelope.answered[m.name]) SO.answer(table.envelope, m.name, { accept: false });
     return beginAfterEnvelopes(table);
@@ -811,6 +839,11 @@ export function playerView(table, playerId) {
       id: p.id, name: p.name, cls: p.cls, level: p.hero.level, gold: p.hero.gold,
       ready: !!p.ready, pending: p.hero.pendingPerks || 0,
     }));
+    return base;
+  }
+  if (table.phase === 'envelope' && table.bonus) {
+    base.envelope = { card: SO.bonusView(table.bonus), waiting: table.bonus.answered ? [] : members(table).map((m) => m.name), questName: table.quest?.name || '', bonus: true };
+    base.hero = me ? clone(me) : null;
     return base;
   }
   if (table.phase === 'envelope' && table.envelope) {

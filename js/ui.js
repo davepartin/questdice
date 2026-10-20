@@ -658,17 +658,27 @@ function startQuest(q) {
   if (world.available && !S.net) {
     const go = () => { SCR.release(); quest.seed = E.hashSeed(members[0].campaign.seed, quest.id); B3.start(battleCtx()); };
     if (members.length > 1) return go();
-    // a secret challenge before the fight (secrets.js; solo gets challenge cards only)
     const hero = members[0];
-    S.envelope = SO.dealEnvelopes({ c: hero.campaign, heroes: [hero], enemies: S.battle.enemies, salt: `${quest.id}:${hero.stats.battles}`, big: ['elite', 'boss'].includes(quest.kind) || !!quest.perilous });
-    return SCRUI.envelope(SO.cardView(S.envelope, hero.name), { questName: quest.name, solo: true, onAnswer: () => { SO.answer(S.envelope, hero.name); go(); } });
+    S.envelope = null; S.bonus = null;
+    if (SO.wantsBonus(quest.kind)) {
+      S.bonus = SO.dealBonusGoal({ c: hero.campaign, hero, salt: `${quest.id}:${hero.stats.battles}` });
+      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept }); go(); } });
+    }
+    return go();
   }
   renderReset();
 }
-// After a solo battle: open the envelope, pay it, and keep the Reveal line for the rewards screen.
+// After a solo battle: pay the Bonus Goal (or an old envelope) and keep the Reveal line for the rewards screen.
 function revealSolo(won) {
-  const env = S.envelope; S.envelope = null; const hero = S.hero;
-  if (!env || !S.battle || S.battle.fighters || !hero) return null;
+  const hero = S.hero;
+  if (!S.battle || S.battle.fighters || !hero) { S.envelope = null; S.bonus = null; return null; }
+  if (S.bonus) {
+    const goal = S.bonus; S.bonus = null;
+    const j = SO.judgeBonus(goal, S.battle, { won }); SO.payBonus(j, hero);
+    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+  }
+  const env = S.envelope; S.envelope = null;
+  if (!env) return null;
   const j = SO.judge(env, S.battle, { won }); SO.payOut(j, { [hero.name]: hero });
   return { won, voice: env.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
 }

@@ -748,8 +748,9 @@ export function envelope(card, o = {}) {
   const hero = X.S.hero || X.members()[0]; let sent = card.answered;
   const offer = card.mode === 'offer';
   const answer = (accept) => { if (sent) return; sent = true; sfx.card(); o.onAnswer?.(accept); };
+  const bonus = !!(o.bonus || card.kind === 'bonus');
   const choice = card.answered
-    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? 'You took the bribe. Keep a straight face.' : 'You said no. Honor, quietly.') : 'Sealed. Keep it to yourself.')
+    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Goal accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
     : h('div', { class: 'env-btns' },
       ...(offer ? [btn('Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
         : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
@@ -759,10 +760,10 @@ export function envelope(card, o = {}) {
       X.partyBar?.(),
       storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', String(card.voice || '').replace(/^./, (ch) => ch.toUpperCase()), card.scene, { icon: 'scroll' }),
       h('article', { class: 'env-card' }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
-        h('div', { class: 'env-eye' }, 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
+        h('div', { class: 'env-eye' }, bonus ? 'Bonus Goal' : 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
         h('p', { class: 'env-flavor' }, card.flavor),
         h('p', { class: 'env-rule' }, card.rule), h('p', { class: 'env-pay' }, ico('coin'), h('span', {}, card.reward))),
-      o.solo ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
+      o.solo || bonus ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
       choice, waiting, card.answered ? o.extra || null : null)));
   const place = E.questsFor(hero)[0]?.place;
   lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
@@ -771,10 +772,16 @@ export function envelope(card, o = {}) {
 // perks, one screen with every card turned over, and a Continue. o: { hero, place, won, onDone }.
 export function reveal(rv, o = {}) {
   const hero = o.hero || X.S.hero; let done = false;
-  const title = o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened';
+  const bonus = !!(o.bonus || rv?.bonus || rv?.lines?.some((l) => l.kind === 'bonus'));
+  const title = bonus
+    ? (o.won === false ? 'The fight is lost, but the Bonus Goal still counts' : 'Bonus Goal')
+    : (o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened');
+  const line = bonus
+    ? `${rv.voice || 'The gold-giver'} checks the Bonus Goal.`
+    : `${title}. ${rv.voice || 'The voice'} reads every card aloud.`;
   mountAs('victory', h('div', { class: 'sx-split sx-victory sx-revealbeat' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      h('header', { class: 'vc-head rv-head' }, eyebrow('The Reveal', 'gold'), h('p', {}, `${title}. ${rv.voice || 'The voice'} reads every card aloud.`), flourish()),
+      h('header', { class: 'vc-head rv-head' }, eyebrow(bonus ? 'Bonus Goal' : 'The Reveal', 'gold'), h('p', {}, line), flourish()),
       revealPanel(rv, hero?.name, { bare: true }),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); o.onDone?.(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('victory'); if (hero) SCR[o.won === false ? 'defeat' : 'victory'](hero, o.place);

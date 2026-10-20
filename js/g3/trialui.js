@@ -38,7 +38,7 @@ function showTrialFlat(trial, { title = '', host = document.body, own = true } =
     const go = h('button', { type: 'button', class: 'dr-ok tr-go' }, own ? `Roll ${trial.heroSizes.length > 1 ? 'your dice' : 'your die'}` : `Watch ${trial.who} roll`);
     const card = h('div', { class: `dr-card tr-card st-${trial.stat}`, role: 'dialog', 'aria-label': `${st.word}: ${title}` },
       h('small', { class: 'dr-kicker' }, st.word), h('h3', {}, title),
-      h('p', { class: 'tr-who' }, `${trial.who} rolls ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`} for ${st.name.toLowerCase()}. Highest wins; a tie goes to you.`),
+      h('p', { class: 'tr-who' }, `${trial.who} rolls ${st.die === 'hands' ? 'both hands' : `the ${st.die} die`} for ${st.name.toLowerCase()}. Highest total wins. Ties go to you.`),
       h('div', { class: 'tr-field' },
         h('div', { class: 'tr-side me' }, h('small', {}, trial.who), board, sumMine),
         h('div', { class: 'tr-vs' }, 'VS'),
@@ -65,7 +65,7 @@ function showTrialFlat(trial, { title = '', host = document.body, own = true } =
           clearInterval(flick);
           later(350, () => {
             card.classList.add(trial.win ? 'won' : 'lost');
-            verdict.replaceChildren(h('b', {}, trial.win ? 'You win!' : 'Not this time'), h('span', {}, `${trial.heroTotal} against ${trial.oppTotal}`));
+            verdict.replaceChildren(h('b', {}, trial.win ? 'You win.' : 'Not this time.'), h('span', {}, `${trial.heroTotal} to ${trial.oppTotal}`));
             if (trial.win) sfx.level?.(); else sfx.error?.();
             go.textContent = 'Continue'; go.disabled = false; go.focus?.();
           });

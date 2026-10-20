@@ -274,7 +274,7 @@ function envelope(t) {
   const you = Sess.hero()?.name; const waiting = v.waiting.filter((n) => n !== you);
   const { btn } = K();
   const push = Sess.isHost() && waiting.length ? h('div', { class: 'sx-push' }, btn('Go on without them', () => Sess.send({ type: 'push' }).catch(fail), { kind: 'ghost', icon: 'chevron', iconAfter: true, cls: 'wide', aria: 'Start the battle without the heroes who have not read their envelope' })) : null;
-  SCRUI.envelope(v.card, { questName: v.questName, waiting, extra: push, onAnswer: (accept) => Sess.send({ type: 'envelope', accept }).catch(fail) });
+  SCRUI.envelope(v.card, { questName: v.questName, waiting, extra: push, bonus: !!v.bonus || v.card?.kind === 'bonus', solo: v.card?.kind === 'bonus', onAnswer: (accept) => Sess.send({ type: 'envelope', accept }).catch(fail) });
 }
 // ------------------------------------------------------------------------------------------------ battle
 function battle(t) {
