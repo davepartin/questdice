@@ -1086,3 +1086,10 @@ body.sx .modal-card:has(.slot-sheet) { padding: 0; width: min(100%, 26rem); bord
 .ps-sq.poor { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .14); color: #8f8aa0; box-shadow: none; cursor: default; }
 .sx-pslot .sx-urow.cmp > .ps-sq, .sx-pslot .sx-urow.cmp > .gate, .sx-pslot .sx-urow.cmp > .ur-max { grid-column: 2; }
 .ps-sq .ico svg circle { fill: #ffd34a; stroke: #5a3a06; } .ps-sq.poor .ico svg circle { fill: #6d6878; stroke: #3a3644; }
+/* camp (Dave, Oct 2026): the hero's name and gold float in the empty top-right corner, beside "Camp", and stay there as the sheet
+   scrolls; the sheet no longer gives them a row of their own, so the act strip and the dice sit closer to the fire */
+.sx-camp .sx-sidetop:has(.sx-chip) { position: fixed; top: calc(var(--safe-t) + .55rem); right: .6rem; left: auto; z-index: 30; margin: 0; padding: 0; background: none; pointer-events: auto; }
+body:has(#gmenu:not([hidden])) .sx-camp .sx-sidetop:has(.sx-chip) { padding-left: 0; }
+.sx-camp .sx-sidetop .sx-chip { gap: .45rem; padding: .25rem .7rem .25rem .3rem; background: linear-gradient(180deg, rgba(24, 26, 44, .92), rgba(8, 9, 18, .94)); }
+.sx-camp .sx-sidetop .sx-emblem { width: 2rem; height: 2rem; }
+.sx-camp .sx-sidetop .ch-copy b { font-size: .86rem; max-width: 8rem; } .sx-camp .sx-sidetop .ch-copy small { font-size: .64rem; }
