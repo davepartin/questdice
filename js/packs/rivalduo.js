@@ -4,10 +4,10 @@
 export const voice = {
   name: 'Madame Twill',
   scenes: [
-    'Madame Twill, a small woman in seventeen scarves, hands you a sealed envelope. Read it. Don’t show the others.',
-    'Madame Twill leans over a stall. “Before you start,” she says. “One each. Don’t show your friend.”',
-    'There is a smell of polish and boiled sweets, and Madame Twill tucks envelopes into pockets. “I only sold you a Friendship Bangle,” she says. “These are extra. No peeking.”',
-    'A little card lands at your feet: ONE WORTHY QUEST, ENVELOPES INCLUDED. Madame Twill’s handwriting.',
+    'Madame Twill hands you a sealed envelope. Read it. Don’t show the others.',
+    'Madame Twill hands out one envelope each. Read yours. Don’t show your friend.',
+    'Madame Twill tucks an envelope into every pocket. Read it. Keep it to yourself.',
+    'Madame Twill leaves one envelope each. Read yours. Don’t peek.',
   ],
 };
 

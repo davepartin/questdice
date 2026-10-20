@@ -7,10 +7,10 @@
 export const voice = {
   name: 'Mother Hob',
   scenes: [
-    'Mother Hob, a goblin grandmother in eleven shawls, hands you a sealed envelope. Read it. Don’t show the others.',
-    'Mother Hob is sitting on a rock, knitting. “Before you start,” she says. “Hob has an envelope for each of you. Read it. Don’t show the others.”',
-    'There is a smell of peppermint and old pennies, and Mother Hob tucks envelopes into pockets. “Hob only wants the star,” she says. “Hob pays for small favours in the meantime.”',
-    'A jar rolls to a stop at your feet. Inside is a folded envelope, and a note: ONE EACH. NO PEEKING. — HOB.',
+    'Mother Hob hands you a sealed envelope. Read it. Don’t show the others.',
+    'Mother Hob hands out one envelope each. Read yours. Don’t peek.',
+    'Mother Hob tucks an envelope into every pocket. Read it. Keep it to yourself.',
+    'Mother Hob leaves one envelope each. Read yours. Don’t show the others.',
   ],
 };
 

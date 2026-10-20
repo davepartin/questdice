@@ -771,10 +771,16 @@ export function envelope(card, o = {}) {
 // perks, one screen with every card turned over, and a Continue. o: { hero, place, won, onDone }.
 export function reveal(rv, o = {}) {
   const hero = o.hero || X.S.hero; let done = false;
-  const title = o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened';
+  const bonus = !!(o.bonus || rv?.bonus || rv?.lines?.some((l) => l.kind === 'bonus'));
+  const title = bonus
+    ? (o.won === false ? 'The fight is lost, but the Bonus Goal still counts' : 'Bonus Goal')
+    : (o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened');
+  const line = bonus
+    ? `${rv.voice || 'The gold-giver'} checks the Bonus Goal.`
+    : `${title}. ${rv.voice || 'The voice'} reads every card aloud.`;
   mountAs('victory', h('div', { class: 'sx-split sx-victory sx-revealbeat' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      h('header', { class: 'vc-head rv-head' }, eyebrow('The Reveal', 'gold'), h('p', {}, `${title}. ${rv.voice || 'The voice'} reads every card aloud.`), flourish()),
+      h('header', { class: 'vc-head rv-head' }, eyebrow(bonus ? 'Bonus Goal' : 'The Reveal', 'gold'), h('p', {}, line), flourish()),
       revealPanel(rv, hero?.name, { bare: true }),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); o.onDone?.(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('victory'); if (hero) SCR[o.won === false ? 'defeat' : 'victory'](hero, o.place);

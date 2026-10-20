@@ -5,9 +5,9 @@ export const voice = {
   name: 'the King',
   scenes: [
     'A royal courier hands you a sealed note from the King. Read it. Don’t show the others.',
-    'The King has sent four envelopes, one each. Do not peek at anyone else’s.',
+    'The King has sent one envelope each. Read yours. Don’t peek.',
     'The King says these are small jobs for the road. Read yours. Keep it to yourself.',
-    'Four envelopes sit beside the Sunday Crown. One each. Do not sing them.',
+    'One envelope each sits beside the Sunday Crown. Read yours. Don’t show the others.',
   ],
 };
 

@@ -5,9 +5,9 @@ export const voice = {
   name: 'Sir Reginald Brush',
   scenes: [
     'Sir Reginald Brush hands you a sealed envelope. Read it. Don’t show the others.',
-    'Sir Reginald Brush sits on your pack, polishing his monocle. “Before you start,” he says. “One envelope each. I shall know.”',
-    'A lumpy sack lands at your feet. Inside: one envelope each, and a note: ONE EACH. NO PEEKING. — R.B.',
-    'Sir Reginald Brush tips his monocle, tucks an envelope into every pocket, and is gone.',
+    'Sir Reginald Brush hands out one envelope each. Read yours. Don’t peek.',
+    'Sir Reginald Brush drops one envelope in front of each of you. Read it. Don’t show the others.',
+    'Sir Reginald Brush tucks an envelope into every pocket. Read yours. Keep it to yourself.',
   ],
 };
 

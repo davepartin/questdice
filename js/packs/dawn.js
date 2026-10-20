@@ -5,10 +5,10 @@
 export const voice = {
   name: 'the Lantern',
   scenes: [
-    'The spark in your pack brightens. A small warm voice speaks. “A job,” it says. “Read it. Don’t show the others.”',
-    'The stolen flame leans against the inside of its cage. “Before you start,” it says. “One envelope each.”',
-    'A smell of lamp-oil and cut grass. The spark tucks a folded envelope into every pocket. “Bring me home,” it says.',
-    'The cage rattles once. Four envelopes slide out between the bars, still warm. A note on the top one: ONE EACH. NO PEEKING.',
+    'The spark in your pack speaks. “A job. Read it. Don’t show the others.”',
+    'The stolen flame hands out one envelope each. Read yours. Don’t peek.',
+    'The spark tucks a folded envelope into every pocket. Read it. Keep it to yourself.',
+    'The cage rattles. One envelope each. Read yours. Don’t show the others.',
   ],
 };
 

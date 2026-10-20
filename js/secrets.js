@@ -259,7 +259,7 @@ export function bonusView(goal) {
     id: goal.id, kind: 'bonus', mode: 'offer', name: goal.name,
     flavor: `${goal.voice} offers you extra gold if you can pull this off.`,
     rule: goal.rule,
-    reward: `${goal.rule} Pull it off and win, and you get ${goal.gold} gold. Or say no for a little Honor gold.`,
+    reward: `Pull it off and win, and you get ${goal.gold} gold. Or say no for a little Honor gold.`,
     scene: goal.scene, cover: '', voice: goal.voice, answered: !!goal.answered, accepted: goal.accepted,
   };
 }
