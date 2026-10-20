@@ -17,7 +17,7 @@
 .sx-screen :focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; border-radius: 6px; }
 .sx-screen .ico { display: inline-grid; place-items: center; flex: none; line-height: 0; } .sx-screen .ico svg { display: block; }
 .sx-screen.title { --side: .36; } .sx-screen.create { --side: .4; } .sx-screen.board { --side: .62; } .sx-screen.road { --side: .46; } .sx-screen.camp { --side: .42; } .sx-screen.victory { --side: .44; } .sx-screen.defeat { --side: .42; }
-.sx-screen.title { --sheet: .46; } .sx-screen.create { --sheet: .56; } .sx-screen.board { --sheet: .6; } .sx-screen.road { --sheet: .56; } .sx-screen.camp { --sheet: .70; } .sx-screen.victory { --sheet: .58; } .sx-screen.defeat { --sheet: .5; }
+.sx-screen.title { --sheet: .46; } .sx-screen.create { --sheet: .56; } .sx-screen.board { --sheet: .6; } .sx-screen.road { --sheet: .56; } .sx-screen.camp { --sheet: .74; } .sx-screen.victory { --sheet: .58; } .sx-screen.defeat { --sheet: .5; }
 /* iPhone Safari: 100dvh is the tall viewport (chrome hidden). Size Choose-your-hero against the small
    viewport so the showcase stays fully on screen while the address bar and toolbar are showing. */
 .sx-screen.create { --vis-h: 100vh; --vis-h: 100dvh; --vis-h: 100svh; }
@@ -972,7 +972,7 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-adv-body { display: flex; flex-direction: column; gap: .7rem; }
 .sx-camp .sx-side { gap: .45rem; }
 .sx-camp .sx-camp-title h1 { font-size: 1.7rem; }
-.sx-camp .sx-camp-scroll { padding-bottom: .2rem; }
+.sx-camp .sx-camp-scroll { padding-bottom: 4.4rem; }
 .sx-camp .sx-cta { position: sticky; bottom: 0; margin-top: .15rem; padding-top: .45rem; }
 .ss-die { display: grid; place-items: center; }
 .slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */

@@ -100,7 +100,7 @@ const LAYOUT = {
   create: { land: { right: 0.4 }, port: { bottom: 0.56 } },
   board: { land: { right: 0.62 }, port: { bottom: 0.6 } },
   road: { land: { right: 0.46 }, port: { bottom: 0.56 } },
-  camp: { land: { right: 0.42 }, port: { bottom: 0.70 } },
+  camp: { land: { right: 0.42 }, port: { bottom: 0.74 } },
   victory: { land: { right: 0.44 }, port: { bottom: 0.58 } },
   defeat: { land: { right: 0.42 }, port: { bottom: 0.5 } },
 };
