@@ -967,12 +967,12 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-cstat.slim .cs-pots > small { display: none; }
 .sx-cstat.slim .cs-step { height: 1.15rem; }
 .sx-advanced { display: flex; flex-direction: column; gap: .55rem; }
-.sx-adv-toggle { width: 100%; min-height: 40px; padding: .4rem .7rem; border-radius: 10px; border: 1px dashed var(--hair); background: rgba(5, 6, 12, .45); color: var(--dim); font: 800 .72rem var(--font-display); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
+.sx-adv-toggle { width: 100%; min-height: 36px; padding: .32rem .7rem; border-radius: 10px; border: 1px dashed var(--hair); background: rgba(5, 6, 12, .45); color: var(--dim); font: 800 .7rem var(--font-display); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
 .sx-adv-toggle[aria-expanded="true"] { color: var(--gold-hi); border-style: solid; }
 .sx-adv-body { display: flex; flex-direction: column; gap: .7rem; }
 .sx-camp .sx-side { gap: .45rem; }
 .sx-camp .sx-camp-title h1 { font-size: 1.7rem; }
-.sx-camp .sx-camp-scroll { padding-bottom: 4.4rem; }
+.sx-camp .sx-camp-scroll { padding-bottom: .25rem; }
 .sx-camp .sx-cta { position: sticky; bottom: 0; margin-top: .15rem; padding-top: .45rem; }
 .ss-die { display: grid; place-items: center; }
 .slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
