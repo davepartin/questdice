@@ -975,6 +975,86 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-camp .sx-camp-scroll { padding-bottom: .25rem; }
 .sx-camp .sx-cta { position: sticky; bottom: 0; margin-top: .15rem; padding-top: .45rem; }
 .ss-die { display: grid; place-items: center; }
-.slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
-.slot-sheet .wrow2 { padding-top: .2rem; } .slot-sheet .wrow2 .ur-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
-.slot-sheet .ur-copy small { display: none; }
+
+/* ---- the die popup (Oct 2026, "make it look AAA"): one framed sheet, the die or weapon big at the top, then clear buy buttons */
+body.sx .modal-card:has(.slot-sheet) { padding: 0; width: min(100%, 26rem); border-radius: 16px; border-color: rgba(240, 192, 96, .45);
+  background: radial-gradient(120% 50% at 50% 0%, rgba(240, 192, 96, .12), transparent 60%), linear-gradient(180deg, rgba(26, 24, 42, .98), rgba(9, 9, 18, .99));
+  box-shadow: inset 0 0 0 4px rgba(9, 9, 18, .55), inset 0 0 0 5px rgba(240, 192, 96, .18), 0 30px 80px rgba(0, 0, 0, .75); }
+.slot-sheet { max-height: 84dvh; overflow-y: auto; gap: .75rem; padding: 1rem 1rem 1.1rem; }
+.sh-head { display: flex; align-items: center; gap: .55rem; padding-bottom: .65rem; border-bottom: 1px solid rgba(240, 192, 96, .22); }
+.sh-title { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.sh-title small { font-family: var(--font-display); font-weight: 800; font-size: .66rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+.sh-title b { font-family: var(--font-story); font-weight: 700; font-size: 1.55rem; line-height: 1.05; color: #fff4dc; }
+.sh-purse { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .65rem; border-radius: 999px; background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 211, 74, .45); }
+.sh-purse b { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: #ffd34a; } .sh-purse .ico svg { width: 1.05rem; height: 1.05rem; }
+.sh-x { min-height: 2.25rem; padding: .3rem .8rem; border-radius: 10px; border: 1px solid var(--hair); background: rgba(255, 255, 255, .04); color: var(--text); font: 800 .72rem var(--font-display); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.sh-stage { position: relative; display: flex; align-items: center; justify-content: center; gap: .8rem; padding: 1rem .5rem; border-radius: 14px;
+  background: radial-gradient(60% 80% at 50% 50%, rgba(240, 192, 96, .14), transparent 70%), rgba(0, 0, 0, .28); border: 1px solid rgba(240, 192, 96, .2); }
+.sh-stage .sh-die { transform: scale(1.45); margin: .55rem 1.1rem; }
+.sh-stage .sh-die.next { filter: drop-shadow(0 0 10px rgba(255, 211, 74, .55)); }
+.sh-arrow { color: var(--gold); } .sh-arrow .ico svg { width: 1.6rem; height: 1.6rem; }
+.sh-locked { display: grid; place-items: center; width: 4.4rem; height: 4.4rem; border-radius: 50%; border: 2px dashed rgba(240, 192, 96, .4); color: var(--gold); } .sh-locked .ico svg { width: 1.8rem; height: 1.8rem; }
+.sh-role { margin: 0; text-align: center; color: var(--dim); font-size: .92rem; }
+.sh-warn { margin: 0; text-align: center; color: #ffb27a; font-size: .86rem; }
+.sh-sec { margin: .3rem 0 0; font-family: var(--font-display); font-weight: 800; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+/* the buy button: what you get, and the price */
+.sh-buy { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; min-height: 3.1rem; padding: .5rem .55rem .5rem 1rem; border-radius: 12px; border: 1px solid #ffd77a; cursor: pointer;
+  background: linear-gradient(180deg, #ffe7a0, #f0b43c 55%, #c9861e); color: #2a1804; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 6px 16px rgba(240, 160, 40, .25); }
+.sh-buy:active { transform: translateY(1px); }
+.sh-buy-l { display: flex; flex-direction: column; align-items: flex-start; font: 800 .95rem var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
+.sh-buy-l small { font: 600 .72rem var(--font-ui, inherit); letter-spacing: 0; text-transform: none; }
+.sh-buy-p { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .6rem; border-radius: 9px; background: rgba(42, 24, 4, .9); color: #ffd34a; }
+.sh-buy-p b { font: 800 1rem var(--font-display); } .sh-buy-p .ico svg { width: 1rem; height: 1rem; }
+.sh-buy.poor { cursor: default; background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .12); color: #8f8aa0; box-shadow: none; }
+.sh-buy.poor .sh-buy-p { background: rgba(0, 0, 0, .35); color: #8f8aa0; }
+.sh-done, .sh-lockline { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: 0; min-height: 3.1rem; border-radius: 12px; font: 800 .82rem var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
+.sh-done { color: #8ff0b4; background: rgba(63, 209, 122, .08); border: 1px solid rgba(63, 209, 122, .35); }
+.sh-lockline { color: #c9c3d8; background: rgba(255, 255, 255, .03); border: 1px dashed rgba(255, 255, 255, .2); }
+/* weapons as rows */
+.sh-row { --rc: #c98a4a; display: grid; grid-template-columns: 4.2rem 1fr auto; align-items: center; gap: .7rem; padding: .55rem; border-radius: 12px; background: rgba(0, 0, 0, .3); border: 1px solid color-mix(in srgb, var(--rc) 45%, transparent); }
+.sh-row.rar-silver { --rc: #cfd6e4; } .sh-row.rar-gold { --rc: #ffd34a; } .sh-row.rar-diamond { --rc: #7fe3ff; } .sh-row.rar-legend { --rc: #ff8ad8; }
+.sh-row.now { grid-template-columns: 6rem 1fr; padding: .7rem; background: radial-gradient(90% 120% at 0% 50%, color-mix(in srgb, var(--rc) 16%, transparent), transparent 70%), rgba(0, 0, 0, .32); }
+.sh-rart { width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 26%, #fffaf2), color-mix(in srgb, var(--rc) 14%, #efe4cc) 72%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--rc) 60%, #fff); }
+.sh-rart .sh-img, .sh-rart img { width: 100%; height: 100%; object-fit: contain; }
+.sh-rbody { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+.sh-rbody > b { font-family: var(--font-display); font-weight: 800; font-size: 1.02rem; color: #fff; line-height: 1.1; }
+.sh-row.now .sh-rbody > b { font-size: 1.2rem; }
+.sh-rbody > small { font-family: var(--font-display); font-weight: 700; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--rc); }
+.sh-rbody .faces, .sh-rbody .fchips { flex-wrap: wrap; }
+.sh-equip { min-width: 4.6rem; min-height: 2.6rem; padding: .3rem .7rem; border-radius: 10px; border: 1px solid #ffd77a; background: linear-gradient(180deg, #ffe7a0, #f0b43c 55%, #c9861e); color: #2a1804; font: 800 .74rem var(--font-display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.sh-equip:disabled { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .12); color: #8f8aa0; cursor: default; }
+.sh-equip.on { background: rgba(63, 209, 122, .15); border-color: rgba(63, 209, 122, .6); color: #8ff0b4; }
+.sh-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+.sh-tile { display: flex; flex-direction: column; gap: .35rem; }
+.sh-tile > small { font-family: var(--font-display); font-weight: 800; font-size: .66rem; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); text-align: center; }
+.sh-tile .sh-buy { padding-left: .7rem; } .sh-tile .sh-buy-l { font-size: .85rem; }
+/* talent faces */
+.sh-faces { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: .4rem; }
+.sh-face { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; min-height: 3.6rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .03); color: var(--text); }
+.sh-face b { font: 800 1.25rem var(--font-display); } .sh-face small { font-size: .62rem; color: var(--faint); display: inline-flex; align-items: center; gap: .15rem; }
+.sh-face.fixed { opacity: .55; } .sh-face.x2 b { color: #ffb27a; }
+.sh-face.open { cursor: pointer; border-style: dashed; border-color: rgba(255, 211, 74, .5); } .sh-face.open small { color: #ffd34a; } .sh-face.open small .ico svg { width: .7rem; height: .7rem; }
+.sh-face.open.poor { border-color: rgba(255, 255, 255, .15); } .sh-face.open.poor small { color: var(--faint); }
+.sh-face.picking { border-style: solid; border-color: #ffd34a; box-shadow: 0 0 0 2px rgba(255, 211, 74, .3); background: rgba(255, 211, 74, .08); }
+.sh-face.set { cursor: pointer; } .sh-face.set .ico svg { width: 1.1rem; height: 1.1rem; }
+.sh-picker { display: flex; flex-direction: column; gap: .45rem; padding: .6rem; border-radius: 12px; background: rgba(255, 211, 74, .05); border: 1px solid rgba(255, 211, 74, .3); }
+.sh-syms { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+.sh-sym { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-height: 3.4rem; padding: .35rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(0, 0, 0, .35); color: var(--text); cursor: pointer; }
+.sh-sym b { font: 700 .72rem var(--font-display); letter-spacing: .06em; } .sh-sym small { font-size: .6rem; color: var(--faint); } .sh-sym .ico svg { width: 1.2rem; height: 1.2rem; }
+.sh-sym:disabled { opacity: .4; cursor: default; }
+
+.slot-sheet .sh-title b { font-family: var(--font-story); font-weight: 700; font-size: 1.55rem; letter-spacing: 0; text-transform: none; color: #fff4dc; }
+.sh-dbox { display: flex; flex-direction: column; align-items: center; gap: .3rem; color: #d8d2e8; }
+.sh-dbox .ico svg { width: 3.6rem; height: 3.6rem; }
+.sh-dbox b { font: 800 1.05rem var(--font-display); color: #fff; }
+.sh-dbox.next { color: #ffd34a; filter: drop-shadow(0 0 12px rgba(255, 211, 74, .45)); } .sh-dbox.next b { color: #ffd34a; }
+.sh-face.c-atk { color: #ff6a5a; } .sh-face.c-block { color: #6aa8ff; } .sh-face.c-pierce { color: #ff9a3a; } .sh-face.c-magic { color: #b48cff; } .sh-face.c-heal { color: #5be38f; } .sh-face.c-gold { color: #ffd34a; }
+.sh-face.set { border-color: currentColor; background: color-mix(in srgb, currentColor 10%, transparent); } .sh-face.set b { color: #fff; }
+.sh-sym.c-atk .ico { color: #ff6a5a; } .sh-sym.c-block .ico { color: #6aa8ff; } .sh-sym.c-magic .ico { color: #b48cff; } .sh-sym.c-heal .ico { color: #5be38f; } .sh-sym.c-gold .ico { color: #ffd34a; } .sh-sym.c-pierce .ico { color: #ff9a3a; }
+
+/* the weapon on the grid: framed like a card, tinted by its metal */
+.dg-wart { --rc: #c98a4a; display: grid; place-items: center; width: 3.3rem; height: 3.3rem; border-radius: 10px; overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 26%, #fffaf2), color-mix(in srgb, var(--rc) 14%, #efe4cc) 72%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--rc) 60%, #fff), 0 4px 10px rgba(0, 0, 0, .35); }
+.dg-wart.rar-silver { --rc: #cfd6e4; } .dg-wart.rar-gold { --rc: #ffd34a; } .dg-wart.rar-diamond { --rc: #7fe3ff; } .dg-wart.rar-legend { --rc: #ff8ad8; }
+.dg-wart .dg-art { width: 100%; height: 100%; } .dg-wart img { width: 100%; height: 100%; object-fit: contain; }

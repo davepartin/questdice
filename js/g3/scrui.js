@@ -1143,7 +1143,7 @@ function diceGrid(hero) {
     const price = slotPrice(hero, slot); const afford = price != null && hero.gold >= price;
     let pic; let sub;
     if (!on) { pic = h('span', { class: 'dg-lock' }, ico('lock')); sub = `Add · ${price}`; }
-    else if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; pic = inst ? art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'dg-art', D.WEAPONS[inst.id].name) : dieBadge(4); sub = `d${E.sidesOf(hero, slot)}`; }
+    else if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; pic = inst ? h('span', { class: `dg-wart rar-${D.WEAPONS[inst.id].legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'dg-art', D.WEAPONS[inst.id].name)) : dieBadge(4); sub = `d${E.sidesOf(hero, slot)}`; }
     else { const n = E.sidesOf(hero, slot); pic = dieBadge(n, 'dg-die'); sub = `d${n}`; }
     const priceEl = on && price != null ? h('em', { class: `dg-price ${afford ? 'ok' : 'poor'}` }, `${price}g`) : null;
     return h('button', { class: `dg-cell s-${slot} ${on ? '' : 'off'} ${can ? 'can' : ''}`, type: 'button', 'aria-label': `${label}, ${sub}${price != null && on ? `, ${price} gold` : ''}${can ? ', something to buy' : ''}`, onclick: tap(() => openSlot(slot)) },
@@ -1152,27 +1152,84 @@ function diceGrid(hero) {
   const n = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
   return h('section', { class: 'sx-dicegrid', id: 'fs-dice' }, h('p', { class: 'dg-head' }, 'Tap a die.'), h('div', { class: 'dg-board' }, cells), n ? h('p', { class: 'dg-foot' }, h('i', { class: 'dg-dot' }), ` ${n} you can buy`) : null);
 }
-// The popup for one spot on the board: what is there, what can grow, what could go there instead.
+// The popup for one spot on the board (Dave, Oct 2026: "make it look AAA"): the die or weapon as it is now, big, then one clear
+// button per thing you can buy (it says what you get and what it costs, or why not yet), then what else could go there.
+const SH_KIND = { W: 'strength', E: 'strength', N: 'mind', S: 'speed' };
+const SH_ROLE = { W: 'Adds to your left weapon.', E: 'Adds to your right weapon.', N: 'Wisdom on the road.', S: 'Speed. The fastest acts first.', C: 'Lifts the dice that match it. Always a d6.' };
+// a buy button: what you get on the left, the price on the right; short of gold it says how much more
+function shBuy(hero, { label, cost, ok, onBuy }) {
+  return h('button', { class: `sh-buy ${ok ? '' : 'poor'}`, type: 'button', disabled: !ok, 'aria-label': `${label} for ${cost} gold`, onclick: ok ? tap(onBuy) : null },
+    h('span', { class: 'sh-buy-l' }, label, !ok && hero.gold < cost ? h('small', {}, `Need ${cost - hero.gold} more`) : null),
+    h('span', { class: 'sh-buy-p' }, ico('coin'), h('b', {}, String(cost))));
+}
+const shDone = (text) => h('p', { class: 'sh-done' }, ico('check'), text);
+const shLock = (text) => h('p', { class: 'sh-lockline' }, ico('lock'), text);
+const shBought = () => { sfx.level(); X.persist(); X.renderCamp(); };
+const shStage = (...kids) => h('div', { class: 'sh-stage' }, ...kids);
+const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, ico(`d${Math.min(10, n)}`, '', 60), h('b', {}, `d${n}`));
+const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hidden': 'true' }, ico('chevron')) : null, b ? shDie(b, 'next') : null];
+// a weapon as a row: picture, name, metal and die, faces; an action on the right
+function shWeapon(inst, action, cls = '') {
+  const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0];
+  return h('div', { class: `sh-row rar-${r} ${cls}` }, h('div', { class: 'sh-rart' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'sh-img', w.name)),
+    h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)), action);
+}
 function slotSheet(slot) {
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
-  const head = h('header', { class: 'ss-head' }, h('b', {}, label), coin(hero.gold, 'inline purse'), h('button', { class: 'sx-btn sx-ghost ss-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
-  if (!E.isActive(hero, slot)) return [head, ...unlockRows(hero, [slot])];
-  if (slot === 'C') return [head, h('div', { class: 'ss-die' }, dieBadge(6)), h('p', { class: 'fine center' }, 'd6. The heart does not change.')];
-  if (slot === 'W' || slot === 'E') return [head, upgradeRow('strength', slot, label, '')];
-  if (slot === 'N') return [head, upgradeRow('mind', 'N', label, '')];
-  if (slot === 'S') return [head, upgradeRow('speed', 'S', label, '')];
-  if (slot === 'SW' || slot === 'SE') return [head, talentCard(hero, slot)];
-  // a weapon hand: the weapon there (forge it, train it), then what from your pack could go there
+  const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', {}, label)),
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+  if (!E.isActive(hero, slot)) {
+    const u = E.unlockInfo(hero, slot);
+    return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
+      shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
+  }
+  if (slot === 'C') return [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
+  if (SH_KIND[slot]) {
+    const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
+    const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'mind' ? E.mindUpgrade(hero) : E.speedUpgrade(hero);
+    const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
+      : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
+    return [head, shStage(...shGrow(size, u.next && !u.act ? u.next : null)), h('p', { class: 'sh-role' }, SH_ROLE[slot]), buy];
+  }
+  if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
+  // a weapon hand: the weapon there, Forge and Train, then what else could go there
   const inst = hero.loadout[slot]; const two = E.isTwoHanded(hero); const real = inst?.twin ? hero.loadout.NW : inst;
-  const wear = (it) => { const c = E.canEquip(hero, it.uid, slot); if (!c.ok) { sfx.error(); toast(c.why); return; } HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
-  const options = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);
-    return weaponCard(it, { actions: [btn(D.WEAPONS[it.id].hands === 2 ? 'Equip (both hands)' : 'Equip here', () => wear(it), { disabled: !c.ok, aria: `Equip ${D.WEAPONS[it.id].name} ${slot === 'NW' ? 'left' : 'right'}` })] }); });
-  const gems = E.diamondsOf(hero).filter(() => E.diamondHands(hero).includes(slot)).map((d) => { const at = E.armedSlot(hero, d.uid);
-    return weaponCard(d, { badge: at === slot ? 'Next fight' : '', actions: [btn(at === slot ? 'Keep in case' : 'Bring next fight', () => { HE.armDiamond(hero, d.uid, at === slot ? null : slot); sfx.select?.(); X.persist(); X.renderCamp(); }, { kind: at === slot ? 'primary' : 'ghost' })] }); });
-  return [head,
-    real && real.id !== 'fists' ? h('div', { class: 'ss-now' }, weaponCard(real, { compact: false, badge: two ? 'Both hands' : 'Equipped' }), weaponRow(real, D.WEAPONS[real.id].name)) : null,
-    options.length ? h('p', { class: 'ss-sub' }, 'From your pack') : h('p', { class: 'fine center' }, 'Nothing in your pack to swap in.'), options.length ? h('div', { class: 'wc-grid' }, options) : null,
-    gems.length ? h('p', { class: 'ss-sub' }, 'Diamonds (one fight)') : null, gems.length ? h('div', { class: 'wc-grid' }, gems) : null];
+  const out = [head];
+  if (real && real.id !== 'fists') {
+    const rolls = E.sidesOf(hero, slot); const size = E.weaponSize(real);
+    out.push(shWeapon(real, null, 'now'));
+    if (rolls < size && !real.diamond) out.push(h('p', { class: 'sh-warn' }, `Rolls as a d${rolls} until your hand is a d${size}.`));
+    const f = E.forgeInfo(hero, real.uid); const t = E.trainInfo(hero, real.uid);
+    out.push(h('div', { class: 'sh-tiles' },
+      h('div', { class: 'sh-tile' }, h('small', {}, 'Forge'), f.next ? shBuy(hero, { label: D.RARITY[f.next], cost: f.cost, ok: f.ok, onBuy: () => { if (HE.forgeWeapon(hero, real.uid)) shBought(); } }) : shDone(f.why === 'legendary' ? 'Legendary' : 'Best metal')),
+      h('div', { class: 'sh-tile' }, h('small', {}, 'Train'), !t.next ? shDone('Biggest die') : t.why === 'hands' ? shLock(`Needs a d${t.next} hand`)
+        : shBuy(hero, { label: `d${t.next}`, cost: t.cost || 0, ok: t.ok, onBuy: () => { if (HE.trainWeapon(hero, real.uid)) shBought(); } }))));
+  } else out.push(shStage(h('span', { class: 'sh-locked' }, ico('hero'))), h('p', { class: 'sh-role' }, 'Empty hand.'));
+  const wear = (it) => { HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
+  const pack = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);
+    return shWeapon(it, h('button', { class: 'sh-equip', type: 'button', disabled: !c.ok, onclick: c.ok ? tap(() => wear(it)) : null, 'aria-label': `Equip ${D.WEAPONS[it.id].name}` }, 'Equip')); });
+  if (pack.length) out.push(h('p', { class: 'sh-sec' }, 'Swap in from your pack'), ...pack);
+  const gems = E.diamondsOf(hero).filter(() => E.diamondHands(hero).includes(slot)).map((d) => { const at = E.armedSlot(hero, d.uid) === slot;
+    return shWeapon(d, h('button', { class: `sh-equip ${at ? 'on' : ''}`, type: 'button', onclick: tap(() => { HE.armDiamond(hero, d.uid, at ? null : slot); sfx.select?.(); X.persist(); X.renderCamp(); }) }, at ? 'Next fight ✓' : 'Bring')); });
+  if (gems.length) out.push(h('p', { class: 'sh-sec' }, 'Diamonds · one fight'), ...gems);
+  void two; return out;
+}
+// a talent die: grow it, then tap an empty number face to pick its symbol
+function talentSheet(hero, slot) {
+  const size = hero.special[slot]; const up = E.specialUpgrade(hero, slot); const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
+  const sym = (f) => { const e = faces[f]; return Array.isArray(e) ? e[0] : e; };
+  const pickFace = TAL.slot === slot && TAL.face != null && TAL.face < info.faces && !sym(TAL.face) ? TAL.face : null;
+  const fixed = [h('div', { class: 'sh-face fixed' }, h('b', {}, '1'), h('small', {}, 'blank')), h('div', { class: 'sh-face fixed x2' }, h('b', {}, '2'), h('small', {}, '×2 hand')), h('div', { class: 'sh-face fixed' }, h('b', {}, '3'), h('small', {}, 'blank'))];
+  const nums = info.nums.map((n, f) => { const k = sym(f); const cost = info.costs[f];
+    if (k) return h('button', { class: `sh-face set ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `Face ${n}: ${n} ${D.TALENT_SYMS[k].name}. Tap to clear.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, 0); sfx.card(); X.persist(); X.renderCamp(); }) }, h('b', {}, String(n)), ico(SYM_ICO[k][0]));
+    return h('button', { class: `sh-face open ${pickFace === f ? 'picking' : ''} ${hero.gold >= cost ? '' : 'poor'}`, type: 'button', 'aria-label': `Face ${n}: empty. ${cost} gold.`, onclick: tap(() => { TAL.slot = slot; TAL.face = pickFace === f ? null : f; X.renderCamp(); }) }, h('b', {}, String(n)), h('small', {}, ico('coin'), String(cost))); });
+  const picker = pickFace != null ? h('div', { class: 'sh-picker' }, h('p', { class: 'sh-sec' }, `Face ${info.nums[pickFace]} pays ${info.nums[pickFace]} of…`),
+    h('div', { class: 'sh-syms' }, Object.keys(D.TALENT_SYMS).map((k) => { const left = info.same - E.talentCount(hero, slot, k); const can = left > 0 && hero.gold >= info.costs[pickFace];
+      return h('button', { class: `sh-sym ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, onclick: can ? tap(() => { if (HE.addTalent(hero, slot, pickFace, k)) { TAL.face = null; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) : null }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), left > 0 ? null : h('small', {}, 'used twice')); })),
+    h('p', { class: 'sh-role' }, `${info.costs[pickFace]} gold, once. Tap a symbol to buy it.`)) : null;
+  const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
+    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
+  return [shStage(...shGrow(size, up.next && !up.act ? up.next : null)), h('p', { class: 'sh-sec' }, 'Faces · tap a number to give it a symbol'), h('div', { class: 'sh-faces', style: { '--cols': String((3 + nums.length) <= 6 ? 3 + nums.length : Math.ceil((3 + nums.length) / 2)) } }, ...fixed, ...nums), picker, grow];
 }
 function openSlot(slot) {
   sfx.card(); SHEET.slot = slot;
