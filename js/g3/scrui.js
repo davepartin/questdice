@@ -928,7 +928,7 @@ function weaponRow(inst, label = '') {
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
 function campStatus(hero) {
-  const c = hero.campaign;
+  const c = hero.campaign; const act = X.actOf(hero);
   const r = E.potionBuyInfo(hero);
   const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
     const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);
