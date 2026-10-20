@@ -3,7 +3,7 @@
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
 // the context handed to bind(); this file only decides what things look like.
 import { shortLine } from './powers.js';
-import { h, $, $$, modal, toast } from '../dom.js';
+import { h, $, $$, modal, closeModal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as SV from '../save.js';
@@ -262,12 +262,11 @@ function charmCard(id, { actions = [], cls = '', badge = '' } = {}) {
 function weaponCard(inst, { actions = [], note = '', compact = false, badge = '', cls = '' } = {}) {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
   // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
-  const size = E.weaponSize(inst); const hero = X.S?.hero; const wi = hero && inst.id !== 'fists' && !inst.diamond && !String(inst.uid).startsWith('c-') ? E.wieldInfo(hero, inst) : null;
-  const need = inst.diamond ? h('p', { class: 'wc-need diamond' }, ico('gem'), 'Any hand · one fight, then it shatters') : size > 4 ? h('p', { class: `wc-need ${wi && !wi.ok ? 'short' : 'ok'}` }, ico(wi && !wi.ok ? 'lock' : 'check'),
-    wi && !wi.ok ? `Needs d${size} Strength${wi.two ? ' in both hands' : ''}. Rolls as a d${wi.rollsAs} until you train it.` : `Needs d${size} Strength${wi?.two ? ' in both hands' : ''}`) : null;
-  return h('article', { class: `sx-wc rar-${r} ${compact ? 'compact' : ''} ${cls}` },
+  // Just the data (Dave, Oct 2026: "the name, the faces, the small picture and the dice size. No other explanation needed.")
+  const size = E.weaponSize(inst); void compact; void note;
+  return h('article', { class: `sx-wc rar-${r} compact ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `${w.legendary ? 'Legendary · ' : ''}${w.hands === 2 ? 'Two-handed' : 'One-handed'} · d${size}`), faceChips(inst), need, compact && !w.legendary ? null : h('p', { class: `wc-tag ${w.legendary ? 'legend' : ''}` }, inst.diamond ? 'Diamond: no blanks, an icon on every face, and its top number a crit with three. Made for the one fight that matters.' : w.tag), note ? h('p', { class: 'wc-note' }, note) : null),
+    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
 }
 // ---- the daily challenge's page: the briefing (intro), a breath between fights (between), and the score (result).
@@ -1089,14 +1088,15 @@ const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used
 // first. Each section's longer explanation sits behind a small "?".
 const FORGE_INTRO = {
+  supplies: 'More dice for each reroll, and more potions on your belt.',
   body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
   weapons: 'Forging raises a weapon’s metal: Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Training grows its die to bigger numbers, but never past the hand that holds it. Hands first. Then the steel.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',
   pet: 'Your pet rolls its own die beside the board. One face is always blank; put symbols on the rest. Grow the die and every symbol pays more. They will pretend they earned it.',
 };
-const FORGE_NAME = { body: 'Body dice', weapons: 'Weapons', powers: 'Powers', talents: 'Talent dice', pet: 'Pet' };
-const FORGE_ICON = { body: 'dice', weapons: 'sword', powers: 'spark', talents: 'star', pet: 'heart' };
+const FORGE_NAME = { dice: 'Your dice', supplies: 'Rerolls & potions', body: 'Body dice', weapons: 'Weapons', powers: 'Powers', talents: 'Talent dice', pet: 'Pet' };
+const FORGE_ICON = { dice: 'dice', supplies: 'plus', body: 'dice', weapons: 'sword', powers: 'spark', talents: 'star', pet: 'heart' };
 function forgeSection(id, build) {
   FORGE.sec = id; const rows = build().filter(Boolean); if (!rows.length) return null;
   const open = FORGE.info.has(id); const n = FORGE.tally[id] || 0;
@@ -1123,6 +1123,65 @@ function forgeNav(hero, ids) {
     h('div', { class: 'fn-chips' }, ids.map((id) => { const n = FORGE.tally[id] || 0;
       return h('button', { class: `fn-chip ${n ? 'can' : ''}`, type: 'button', onclick: tap(() => jumpTo(id)), 'aria-label': `${FORGE_NAME[id]}: ${n} you can buy` }, ico(FORGE_ICON[id]), h('span', {}, FORGE_NAME[id]), n ? h('b', {}, String(n)) : null); })));
 }
+// ---- your dice, as on the battle board (Dave, Oct 2026: "this will make the dice grid much more understandable"): tap a die for what
+// can go there or grow there. The same grid sits at the top of the Forge and of Gear; the popup refreshes after every purchase.
+const GRID = [['NW', 'Left weapon'], ['N', 'Head'], ['NE', 'Right weapon'], ['W', 'Left hand'], ['C', 'Heart'], ['E', 'Right hand'], ['SW', 'Talent one'], ['S', 'Feet'], ['SE', 'Talent two']];
+const SHEET = { slot: null, el: null };
+function slotCanBuy(hero, slot) {
+  if (!E.isActive(hero, slot)) return E.unlockInfo(hero, slot).ok;
+  if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; if (!inst || inst.twin || inst.id === 'fists') return false; return E.forgeInfo(hero, inst.uid).ok || !!E.trainInfo(hero, inst.uid).cost && E.trainInfo(hero, inst.uid).ok; }
+  if (slot === 'W' || slot === 'E') return E.strengthUpgrade(hero, slot).ok;
+  if (slot === 'N') return E.mindUpgrade(hero).ok;
+  if (slot === 'S') return E.speedUpgrade(hero).ok;
+  if (slot === 'SW' || slot === 'SE') { if (E.specialUpgrade(hero, slot).ok) return true; const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || []; return info.costs.some((c, f) => !(faces[f] && (Array.isArray(faces[f]) ? faces[f].length : true)) && hero.gold >= c); }
+  return false;
+}
+function diceGrid(hero) {
+  E.ensureTwin?.(hero);
+  const cells = GRID.map(([slot, label]) => {
+    const on = E.isActive(hero, slot); const can = slotCanBuy(hero, slot);
+    let pic; let sub;
+    if (!on) { pic = h('span', { class: 'dg-lock' }, ico('lock')); sub = `Add · ${E.unlockInfo(hero, slot).cost}`; }
+    else if (slot === 'NW' || slot === 'NE') { const inst = hero.loadout[slot]; pic = inst ? art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'dg-art', D.WEAPONS[inst.id].name) : dieBadge(4); sub = `d${E.sidesOf(hero, slot)}`; }
+    else { const n = E.sidesOf(hero, slot); pic = dieBadge(n, 'dg-die'); sub = `d${n}`; }
+    return h('button', { class: `dg-cell s-${slot} ${on ? '' : 'off'} ${can ? 'can' : ''}`, type: 'button', 'aria-label': `${label}, ${sub}${can ? ', something to buy' : ''}`, onclick: tap(() => openSlot(slot)) },
+      h('small', { class: 'dg-label' }, label), pic, h('b', { class: 'dg-size' }, sub), can ? h('i', { class: 'dg-dot', 'aria-hidden': 'true' }) : null);
+  });
+  const n = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
+  return h('section', { class: 'sx-dicegrid', id: 'fs-dice' }, h('p', { class: 'dg-head' }, 'Your dice. Tap one to change it.'), h('div', { class: 'dg-board' }, cells), n ? h('p', { class: 'dg-foot' }, h('i', { class: 'dg-dot' }), ` ${n} you can buy`) : null);
+}
+// The popup for one spot on the board: what is there, what can grow, what could go there instead.
+function slotSheet(slot) {
+  const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
+  const head = h('header', { class: 'ss-head' }, h('b', {}, label), h('button', { class: 'sx-btn sx-ghost ss-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+  if (!E.isActive(hero, slot)) return [head, ...unlockRows(hero, [slot])];
+  if (slot === 'C') return [head, h('div', { class: 'ss-die' }, dieBadge(6)), h('p', { class: 'fine center' }, 'd6. The heart does not change.')];
+  if (slot === 'W' || slot === 'E') return [head, upgradeRow('strength', slot, label, '')];
+  if (slot === 'N') return [head, upgradeRow('mind', 'N', label, '')];
+  if (slot === 'S') return [head, upgradeRow('speed', 'S', label, '')];
+  if (slot === 'SW' || slot === 'SE') return [head, talentCard(hero, slot)];
+  // a weapon hand: the weapon there (forge it, train it), then what from your pack could go there
+  const inst = hero.loadout[slot]; const two = E.isTwoHanded(hero); const real = inst?.twin ? hero.loadout.NW : inst;
+  const wear = (it) => { const c = E.canEquip(hero, it.uid, slot); if (!c.ok) { sfx.error(); toast(c.why); return; } HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
+  const options = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);
+    return weaponCard(it, { actions: [btn(D.WEAPONS[it.id].hands === 2 ? 'Equip (both hands)' : 'Equip here', () => wear(it), { disabled: !c.ok, aria: `Equip ${D.WEAPONS[it.id].name} ${slot === 'NW' ? 'left' : 'right'}` })] }); });
+  const gems = E.diamondsOf(hero).filter(() => E.diamondHands(hero).includes(slot)).map((d) => { const at = E.armedSlot(hero, d.uid);
+    return weaponCard(d, { badge: at === slot ? 'Next fight' : '', actions: [btn(at === slot ? 'Keep in case' : 'Bring next fight', () => { HE.armDiamond(hero, d.uid, at === slot ? null : slot); sfx.select?.(); X.persist(); X.renderCamp(); }, { kind: at === slot ? 'primary' : 'ghost' })] }); });
+  return [head,
+    real && real.id !== 'fists' ? h('div', { class: 'ss-now' }, weaponCard(real, { badge: two ? 'Both hands' : 'Equipped' }), weaponRow(real, D.WEAPONS[real.id].name)) : null,
+    options.length ? h('p', { class: 'ss-sub' }, 'From your pack') : h('p', { class: 'fine center' }, 'Nothing in your pack to swap in.'), options.length ? h('div', { class: 'wc-grid' }, options) : null,
+    gems.length ? h('p', { class: 'ss-sub' }, 'Diamonds (one fight)') : null, gems.length ? h('div', { class: 'wc-grid' }, gems) : null];
+}
+function openSlot(slot) {
+  sfx.card(); SHEET.slot = slot;
+  SHEET.el = h('div', { class: 'form slot-sheet' }, ...slotSheet(slot).filter(Boolean));
+  modal(SHEET.el);
+}
+// after a purchase the camp re-renders; the open popup follows it (and closes itself if it was dismissed)
+function refreshSheet() {
+  if (!SHEET.slot || !SHEET.el?.isConnected) { SHEET.slot = null; return; }
+  SHEET.el.replaceChildren(...slotSheet(SHEET.slot).filter(Boolean));
+}
 function forgeTab() {
   const hero = X.S.hero; FORGE.tally = {};
   E.ensureTwin(hero);
@@ -1131,20 +1190,17 @@ function forgeTab() {
   const weaponRows = () => (E.isTwoHanded(hero)
     ? [weaponRowFor(hero.loadout.NW, wdef.twinName ? wdef.name : `${wdef.name} · left`), weaponRowFor(hero.loadout.NE, wdef.twinName || `${wdef.name} · right`)]
     : [...new Map(['NW', 'NE'].map((k) => hero.loadout[k]).filter((i) => i && i.id !== 'fists').map((i) => [i.uid, i])).values()].map((i) => weaponRowFor(i, '')));
+  void weaponRows;
+  // the dice themselves live on the grid (tap one to grow it or swap it); the rest are sections below
+  FORGE.tally.dice = GRID.filter(([slot]) => slotCanBuy(hero, slot)).length;
   const secs = [
-    forgeSection('body', () => [...unlockRows(hero, ['NE']),
-      upgradeRow('strength', 'W', 'Left hand', 'Its numbers add to your left weapon.'), upgradeRow('strength', 'E', 'Right hand', 'Its numbers add to your right weapon.'),
-      upgradeRow('mind', 'N', 'Head', 'Wiser on the road’s tests, bigger numbers in battle.'), upgradeRow('speed', 'S', 'Feet', 'Strike before the monsters more often.'),
-      rerollDieRow(hero), potionRow(hero)]),
-    forgeSection('weapons', weaponRows),
+    forgeSection('supplies', () => [rerollDieRow(hero), potionRow(hero)]),
     forgeSection('powers', () => powersSection(hero)),
-    forgeSection('talents', () => [...['SW', 'SE'].filter((k) => E.isActive(hero, k)).map((k) => talentCard(hero, k)), ...unlockRows(hero, ['SW', 'SE'])]),
     forgeSection('pet', () => petSection(hero)),
   ];
   FORGE.sec = null;
-  const ids = ['body', 'weapons', 'powers', 'talents', 'pet'].filter((id) => secs.some((x) => x?.id === `fs-${id}`));
-  const hasTalent = ['SW', 'SE'].some((k) => E.isActive(hero, k));
-  return h('div', { class: 'sx-tab forge' }, forgeNav(hero, ids), hasTalent ? coachBox('c_talent') : null, ...secs);
+  const ids = ['dice', 'supplies', 'powers', 'pet'].filter((id) => id === 'dice' || secs.some((x) => x?.id === `fs-${id}`));
+  return h('div', { class: 'sx-tab forge' }, forgeNav(hero, ids), diceGrid(hero), ...secs);
 }
 const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
   h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
@@ -1196,17 +1252,17 @@ function gearTab() {
     return weaponCard(inst, { actions: acts, compact: true });
   });
   // the places a weapon can be, each its own panel with its heading centered on the top edge
-  const chips = jumpChips([{ id: 'zn-body', label: 'On your body', icon: 'hero' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
+  void worn;
+  const chips = jumpChips([{ id: 'dice', label: 'Your dice', icon: 'dice' }, { id: 'zn-pack', label: `Pack ${bag.length}/${D.BAG_MAX}`, icon: 'bag' },
     E.charmsOf(hero).length ? { id: 'zn-charms', label: 'Charms', icon: 'star', n: E.charmsOf(hero).length } : null,
     E.diamondsOf(hero).length ? { id: 'zn-diamonds', label: 'Diamonds', icon: 'gem', n: E.diamondsOf(hero).length } : null]);
   return h('div', { class: 'sx-tab gear' },
     chips, coachBox('g_gear'),
-    zone('zn-body', 'hero', 'On your body', 'Equipped. These are the weapon dice you roll. They go where you go.', h('div', { class: `wc-grid worn n${worn.length}` }, worn),
-      h('p', { class: 'fine' }, 'Red faces attack, blue faces defend. Three alike across a row (Weapons, Strength, Talent Triple): +10 attack. Three alike down a column (Head to Toe, Left or Right Guard Triple): +10 block. Triples pay 15 in Act II and 20 in Act III.')),
-    zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, 'Spares you carry. Put one in a hand, or sell it.', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
+    diceGrid(hero),
+    zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then in the Camp Store.',
       h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
-    E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'Rare weapons for one fight each. Tap Left or Right to carry one into your next fight in that hand (two can go, one in each hand); tap it again to keep it in the case. When that fight ends, it shatters.',
+    E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'One fight each, then it shatters. Left or Right: the hand it goes in next fight.',
       h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
         // Left / Right here at camp works at a table too (Dave, Oct 2026: the quest board's Bring strip is solo only)
         const hand = (s) => btn(s === 'NW' ? 'Left' : 'Right', () => { HE.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); X.renderCamp(); },
@@ -1276,6 +1332,7 @@ export function camp(fromBoard) {
   lay('camp');
   SCR.enter('camp', { hero, heroes: X.members() }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
   SCR.current()?.sync?.(hero);
+  refreshSheet();
 }
 
 // ------------------------------------------------------------------------------------------------ plumbing

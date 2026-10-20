@@ -918,3 +918,34 @@ body:has(#gmenu:not([hidden])) .sx-sidetop:has(.sx-chip) { padding-left: 4.3rem;
 .sx-saved em { font-style: normal; color: #ffe38a; font-weight: 700; white-space: nowrap; }
 /* the Diamond case in the Gear tab: Left / Right to carry one into the next fight */
 .zn-diamonds .db-hands { display: flex; gap: .45rem; width: 100%; } .zn-diamonds .db-hand { flex: 1; justify-content: center; }
+/* ---- the camp dice grid (Forge and Gear): your nine dice as on the battle board; tap one for its options */
+.sx-dicegrid { margin: .4rem 0 1rem; }
+.dg-head { margin: 0 0 .45rem; text-align: center; color: var(--dim); font-size: .86rem; }
+.dg-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; }
+.dg-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .15rem; min-height: 6.6rem; padding: .45rem .25rem .4rem; border-radius: 12px; border: 1px solid var(--hair); background: linear-gradient(180deg, rgba(32, 32, 56, .92), rgba(12, 12, 24, .94)); color: var(--text); cursor: pointer; pointer-events: auto; }
+.dg-cell:active { transform: scale(.97); }
+.dg-cell.s-NW, .dg-cell.s-NE { border-color: rgba(255, 110, 90, .45); }
+.dg-cell.s-SW, .dg-cell.s-SE { border-color: rgba(110, 170, 255, .45); }
+.dg-cell.s-C { border-color: rgba(255, 120, 160, .45); }
+.dg-cell.off { opacity: .72; border-style: dashed; }
+.dg-cell.can { box-shadow: 0 0 0 1px #3fd17a inset, 0 0 14px rgba(63, 209, 122, .25); }
+.dg-label { font-family: var(--font-display); font-weight: 700; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.dg-art { width: 3.1rem; height: 3.1rem; } .dg-art img { width: 100%; height: 100%; object-fit: contain; }
+.dg-cell .sx-die { transform: scale(.82); margin: -.2rem 0; }
+.dg-lock { display: grid; place-items: center; width: 3rem; height: 3rem; color: var(--faint); } .dg-lock .ico svg { width: 1.6rem; height: 1.6rem; }
+.dg-size { font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: #fff; }
+.dg-cell.off .dg-size { font-size: .78rem; color: var(--gold); }
+.dg-dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; background: #3fd17a; box-shadow: 0 0 6px #3fd17a; }
+.dg-cell .dg-dot { position: absolute; top: .4rem; right: .4rem; }
+.dg-foot { margin: .45rem 0 0; text-align: center; color: #9be8b9; font-size: .84rem; }
+/* the popup for one die */
+.slot-sheet { max-height: 78vh; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; }
+.ss-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.ss-head b { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; color: #fff; }
+.ss-x { min-height: 2.2rem; padding: .3rem .9rem; }
+.ss-sub { margin: .4rem 0 0; font-family: var(--font-display); font-weight: 700; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.ss-now { display: grid; gap: .5rem; }
+.ss-die { display: grid; place-items: center; }
+.slot-sheet .wrow2 .ur-ico, .slot-sheet .wrow2 .ur-copy { display: none; } /* the weapon's card sits just above: only its Forge / Train buttons */
+.slot-sheet .wrow2 { padding-top: .2rem; } .slot-sheet .wrow2 .ur-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.slot-sheet .ur-copy small { display: none; }
