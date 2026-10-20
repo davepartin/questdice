@@ -1058,3 +1058,31 @@ body.sx .modal-card:has(.slot-sheet) { padding: 0; width: min(100%, 26rem); bord
   background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 26%, #fffaf2), color-mix(in srgb, var(--rc) 14%, #efe4cc) 72%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--rc) 60%, #fff), 0 4px 10px rgba(0, 0, 0, .35); }
 .dg-wart.rar-silver { --rc: #cfd6e4; } .dg-wart.rar-gold { --rc: #ffd34a; } .dg-wart.rar-diamond { --rc: #7fe3ff; } .dg-wart.rar-legend { --rc: #ff8ad8; }
 .dg-wart .dg-art { width: 100%; height: 100%; } .dg-wart img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Upgrades (was Advanced): a clear, important button */
+.sx-adv-toggle.sx-upgrades { display: flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3.2rem; border-radius: 12px; border: 1.5px solid #f0c060; border-style: solid;
+  background: linear-gradient(180deg, rgba(60, 40, 12, .9), rgba(26, 18, 6, .95)); color: #ffe2a0; font: 800 .95rem var(--font-display); letter-spacing: .18em; box-shadow: inset 0 1px 0 rgba(255, 235, 190, .25), 0 6px 18px rgba(0, 0, 0, .4), 0 0 18px rgba(240, 170, 60, .18); }
+.sx-adv-toggle.sx-upgrades .ico svg { width: 1.2rem; height: 1.2rem; } .sx-adv-toggle.sx-upgrades .ico:last-child { transform: rotate(90deg); transition: transform .2s; }
+.sx-adv-toggle.sx-upgrades[aria-expanded="true"] .ico:last-child { transform: rotate(-90deg); }
+/* a power row's name and text open its details */
+.ps-open { appearance: none; border: 0; background: none; padding: 0; text-align: left; color: inherit; cursor: pointer; font: inherit; }
+.ps-open b { display: inline-flex; align-items: center; gap: .3rem; } .ps-open b .ico { color: var(--gold); opacity: .8; } .ps-open b .ico svg { width: .85rem; height: .85rem; }
+/* the power popup */
+.sh-text { margin: 0; font-family: var(--font-story); font-size: 1.12rem; line-height: 1.5; color: #ece2cc; }
+.sh-cost { display: flex; align-items: center; gap: .4rem; margin: 0; color: #c9a8ff; font: 700 .82rem var(--font-display); letter-spacing: .06em; }
+.sh-cost em { margin-left: auto; font-style: normal; color: #8ff0b4; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
+.sh-levels { display: flex; flex-direction: column; gap: .35rem; }
+.sh-lv { display: grid; grid-template-columns: 4.6rem 1fr; gap: .5rem; align-items: baseline; padding: .5rem .65rem; border-radius: 10px; background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .08); }
+.sh-lv b { font: 800 .68rem var(--font-display); letter-spacing: .16em; text-transform: uppercase; color: var(--faint); } .sh-lv span { font-size: .92rem; color: var(--dim); }
+.sh-lv.past b, .sh-lv.past span { color: #8ff0b4; } .sh-lv.now { border-color: rgba(255, 211, 74, .6); background: rgba(255, 211, 74, .08); } .sh-lv.now b { color: #ffd34a; } .sh-lv.now span { color: #fff; }
+
+/* power rows: the words get the room, the button is a small square */
+.sx-pslot .sx-urow.cmp { grid-template-columns: minmax(0, 1fr) auto; }
+.sx-pslot .ps-open small.clamp { -webkit-line-clamp: 3; }
+.ps-sq { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; width: 4.4rem; min-height: 4.4rem; padding: .35rem; border-radius: 12px; border: 1px solid #ffd77a; cursor: pointer;
+  background: linear-gradient(180deg, #ffe7a0, #f0b43c 55%, #c9861e); color: #2a1804; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 4px 12px rgba(240, 160, 40, .2); }
+.ps-sq small { font: 800 .62rem var(--font-display); letter-spacing: .1em; text-transform: uppercase; text-align: center; line-height: 1.1; }
+.ps-sq b { display: inline-flex; align-items: center; gap: .2rem; font: 800 1rem var(--font-display); } .ps-sq b .ico svg { width: .85rem; height: .85rem; }
+.ps-sq.poor { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .14); color: #8f8aa0; box-shadow: none; cursor: default; }
+.sx-pslot .sx-urow.cmp > .ps-sq, .sx-pslot .sx-urow.cmp > .gate, .sx-pslot .sx-urow.cmp > .ur-max { grid-column: 2; }
+.ps-sq .ico svg circle { fill: #ffd34a; stroke: #5a3a06; } .ps-sq.poor .ico svg circle { fill: #6d6878; stroke: #3a3644; }

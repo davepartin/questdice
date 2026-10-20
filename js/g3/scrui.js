@@ -1020,7 +1020,7 @@ const petLeft = (hero, k) => (k === D.PETS[hero.pet.type].kind ? D.petKindMax(he
 function petOfferCard(hero) {
   const o = E.petOffer(hero); if (!o) return null; const p = D.PETS[o.type];
   const swap = hero.pet && !o.owned;
-  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train it under Advanced.`); } else { sfx.error(); toast('Not enough gold.'); } };
+  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train it under Upgrades.`); } else { sfx.error(); toast('Not enough gold.'); } };
   const ask = () => {
     if (!swap) return adopt();
     const old = D.PETS[hero.pet.type].name;
@@ -1081,19 +1081,24 @@ function powersSection(hero) {
       eq ? powerRow(hero, eq.card) : null,
       ...others.map(({ card: k, learned, gate }) => {
         const li = E.learnInfo(hero, k.id);
-        const action = learned ? btn('Swap in', () => { if (HE.equipPower(hero, k.id)) { sfx.select(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', cls: 'ur-buy', aria: `Put ${k.name} in slot ${slot}` })
+        const action = learned ? sqBuy('Swap in', null, true, () => { if (HE.equipPower(hero, k.id)) { sfx.select(); X.persist(); X.renderCamp(); } }, `Put ${k.name} in slot ${slot}`)
           : gate ? gateTag(`Level ${gate}`)
-            : priceBtn('Learn', li.cost, li.ok, () => { if (HE.learnPower(hero, k.id)) bought(); }, `Learn ${k.name} for ${li.cost} gold`);
-        return h('div', { class: 'sx-urow cmp ps-alt' }, h('div', { class: 'ur-copy' }, h('b', {}, k.name, learned ? h('em', { class: 'ps-tag' }, 'Learned') : null), h('small', { class: 'clamp' }, k.text)), action);
+            : sqBuy('Learn', li.cost, li.ok, () => { if (HE.learnPower(hero, k.id)) bought(); }, `Learn ${k.name} for ${li.cost} gold`);
+        return h('div', { class: 'sx-urow cmp ps-alt' }, h('button', { class: 'ur-copy ps-open', type: 'button', 'aria-label': `${k.name}: read more`, onclick: tap(() => openSlot(`power:${k.id}`)) }, h('b', {}, k.name, learned ? h('em', { class: 'ps-tag' }, 'Learned') : null, ico('chevron')), h('small', { class: 'clamp' }, k.text)), action);
       }));
   });
+}
+// a small square button for the power rows (Dave: "make the button square and less wide" so the words have room)
+function sqBuy(top, cost, ok, onBuy, aria) {
+  return h('button', { class: `ps-sq ${ok ? '' : 'poor'}`, type: 'button', disabled: !ok, 'aria-label': aria, onclick: ok ? tap(onBuy) : null }, h('small', {}, top), cost == null ? null : h('b', {}, ico('coin'), String(cost)));
 }
 function powerRow(hero, k) {
   const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
   return h('div', { class: 'sx-urow cmp ps-eq' },
-    h('div', { class: 'ur-copy' }, h('b', {}, k.name, lvl ? h('em', { class: 'ur-to' }, ` ${'★'.repeat(lvl)}`) : null), h('small', {}, `Now: ${shortLine(k, lvl)} · ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
+    h('button', { class: 'ur-copy ps-open', type: 'button', 'aria-label': `${k.name}: read more`, onclick: tap(() => openSlot(`power:${k.id}`)) }, h('b', {}, k.name, lvl ? h('em', { class: 'ur-to' }, ` ${'★'.repeat(lvl)}`) : null, ico('chevron')),
+      h('small', {}, `Level ${lvl}${lvl ? '' : ' (base)'} now: ${shortLine(k, lvl)} · ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
       u.next ? h('small', { class: 'ur-next' }, `Level ${u.next}: ${shortLine(k, u.next)}`) : null),
-    u.next ? priceBtn(`Level ${u.next}`, u.cost, u.ok, () => { if (HE.upgradePower(hero, k.id)) bought(); }, `Upgrade ${k.name} for ${u.cost} gold`) : maxTag());
+    u.next ? sqBuy(`Level ${u.next}`, u.cost, u.ok, () => { if (HE.upgradePower(hero, k.id)) bought(); }, `Upgrade ${k.name} to level ${u.next} for ${u.cost} gold`) : maxTag('Top'));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used
@@ -1175,6 +1180,7 @@ function shWeapon(inst, action, cls = '') {
     h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)), action);
 }
 function slotSheet(slot) {
+  if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', {}, label)),
     h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
@@ -1213,6 +1219,22 @@ function slotSheet(slot) {
     return shWeapon(d, h('button', { class: `sh-equip ${at ? 'on' : ''}`, type: 'button', onclick: tap(() => { HE.armDiamond(hero, d.uid, at ? null : slot); sfx.select?.(); X.persist(); X.renderCamp(); }) }, at ? 'Next fight ✓' : 'Bring')); });
   if (gems.length) out.push(h('p', { class: 'sh-sec' }, 'Diamonds · one fight'), ...gems);
   void two; return out;
+}
+// a power: everything it does, what it costs to use, what each level adds, and the one thing you can do with it now
+function powerSheet(id) {
+  const hero = X.S.hero; const row = E.powerLibrary(hero).find((x) => x.card.id === id); if (!row) return [h('p', {}, 'Not found.')];
+  const k = row.card; const lvl = E.powerLevel(hero, id); const top = E.powerLevelsOf(hero);
+  const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}`), h('b', {}, k.name)),
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: () => { SHEET.slot = null; closeModal(); } }, 'Done'));
+  const levels = h('div', { class: 'sh-levels' }, Array.from({ length: top + 1 }, (_, lv) => h('div', { class: `sh-lv ${row.equipped || row.learned ? (lv < lvl ? 'past' : lv === lvl ? 'now' : 'later') : lv === 0 ? 'now' : 'later'}` },
+    h('b', {}, lv === 0 ? 'Base' : `Level ${lv}`), h('span', {}, shortLine(k, lv)))));
+  let act;
+  if (row.equipped) { const u = E.powerUpgradeInfo(hero, id); act = u.next ? shBuy(hero, { label: `Upgrade to level ${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradePower(hero, id)) shBought(); } }) : shDone('Top level'); }
+  else if (row.learned) act = h('button', { class: 'sh-buy', type: 'button', onclick: tap(() => { if (HE.equipPower(hero, id)) { sfx.select(); X.persist(); X.renderCamp(); } }) }, h('span', { class: 'sh-buy-l' }, `Use in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, h('b', {}, 'Free')));
+  else if (row.gate) act = shLock(`Opens at level ${row.gate}`);
+  else { const li = E.learnInfo(hero, id); act = shBuy(hero, { label: 'Learn it', cost: li.cost, ok: li.ok, onBuy: () => { if (HE.learnPower(hero, id)) shBought(); } }); }
+  return [head, h('p', { class: 'sh-text' }, k.text), h('p', { class: 'sh-cost' }, ico('spark'), `Uses ${k.cost}${k.kind === 'scale' ? `–${k.max}` : ''} magic`, row.equipped ? h('em', {}, 'In use') : null),
+    h('p', { class: 'sh-sec' }, 'Levels'), levels, act];
 }
 // a talent die: grow it, then tap an empty number face to pick its symbol
 function talentSheet(hero, slot) {
@@ -1363,8 +1385,8 @@ function shrinkSection(hero) {
 function advancedBlock(fromBoard) {
   const S = X.S; const hero = S.hero;
   return h('div', { class: 'sx-advanced' },
-    h('button', { type: 'button', class: 'sx-adv-toggle', 'aria-expanded': String(!!S.advanced),
-      onclick: tap(() => { S.advanced = !S.advanced; X.renderCamp(fromBoard); }) }, S.advanced ? 'Hide advanced' : 'Advanced'),
+    h('button', { type: 'button', class: 'sx-adv-toggle sx-upgrades', 'aria-expanded': String(!!S.advanced),
+      onclick: tap(() => { S.advanced = !S.advanced; X.renderCamp(fromBoard); }) }, ico('anvil'), h('span', {}, S.advanced ? 'Hide upgrades' : 'Upgrades'), ico('chevron')),
     S.advanced ? h('div', { class: 'sx-adv-body' },
       gearTab({ grid: false, chips: false }),
       heroTab({ chips: false }),
