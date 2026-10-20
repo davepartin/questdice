@@ -111,3 +111,57 @@
   .cw-compare .cw-die { width: 70px; }
   .cw-inspector .sh-title b { font-size: 1.45rem; }
 }
+
+/* Weapon workshop: one selected action and previews from the live face rules. */
+.ww-workshop { display: flex; flex-direction: column; gap: .8rem; }
+.ww-hero { --ww-metal: #c69055; position: relative; display: flex; flex-direction: column; align-items: center; padding: .4rem .6rem .8rem; border-radius: 9px; background: radial-gradient(ellipse at 50% 40%,#b98b4e26,transparent 68%),linear-gradient(120deg,#14151c,#1f1c20,#11131a); border-bottom: 1px solid #9f7d4340; }
+.ww-hero.rar-silver { --ww-metal: #cfdae7; background: radial-gradient(ellipse at 50% 40%,#9fb5d326,transparent 68%),#151820; }
+.ww-hero.rar-gold { --ww-metal: #f0cb76; }
+.ww-hero.rar-diamond { --ww-metal: #93e5f4; }
+.ww-display { position: relative; width: 100%; height: 145px; }
+.ww-display::after { content: ''; position: absolute; left: 24%; right: 24%; bottom: 0; height: 7px; border-radius: 50%; background: #0006; }
+.ww-art { width: 100%; height: 100%; z-index: 1; }
+.ww-art img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 7px 6px #0009); }
+.ww-art:not(.ready) img { opacity: 0; }
+.ww-identity { text-align: center; padding-top: .45rem; }
+.ww-identity small { display: block; color: var(--ww-metal); font-size: .67rem; letter-spacing: .1em; }
+.ww-identity h3 { margin: .2rem 0 0; color: #fff0d3; font: 600 1.7rem/1.1 var(--font-story); }
+.ww-modes { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+.ww-modes button { display: flex; align-items: center; justify-content: center; gap: .6rem; min-height: 66px; padding: .5rem; border: 1px solid #625b50; border-radius: 8px; background: linear-gradient(#25272e,#191b22); color: #bcb7ad; cursor: pointer; }
+.ww-modes button.on { border-color: #e1bf80; color: #ffe0a2; background: linear-gradient(#3d3428,#26231f); box-shadow: inset 0 1px #fff3; }
+.ww-modes button > .ico svg { width: 1.45rem; height: 1.45rem; }
+.ww-modes button > span:last-child { display: flex; flex-direction: column; gap: .15rem; text-align: left; }
+.ww-modes b { font: 600 1.05rem var(--font-body); text-transform: none; letter-spacing: 0; }
+.ww-modes small { font: 400 .62rem var(--font-body); color: #b5aa96; }
+.ww-preview { display: flex; flex-direction: column; gap: .7rem; padding: .7rem .6rem; border-radius: 9px; background: #080b1240; border: 1px solid #b99a5730; }
+.ww-change { display: flex; align-items: center; justify-content: center; gap: .9rem; color: #c0b6a4; font: 600 1.25rem var(--font-story); }
+.ww-change > b { color: #f7d896; font-weight: 600; }
+.ww-change .ico svg { width: 1rem; height: 1rem; color: #a98b55; }
+.ww-explain { margin: -.3rem 0 0; text-align: center; color: #a9a49a; font-size: .68rem; line-height: 1.4; }
+.ww-face-label { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-bottom: .3rem; color: #c0b6a4; font-size: .64rem; }
+.ww-face-label b { font-weight: 600; letter-spacing: .04em; }
+.ww-face-label > span { font-size: .61rem; color: #9f9789; }
+.ww-face-group .wc-faces { display: grid; grid-template-columns: repeat(var(--face-cols),minmax(0,1fr)); gap: .3rem; }
+.ww-face-group .wf { min-width: 0; min-height: 42px; padding: .2rem .05rem; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; }
+.ww-face-group .wf > b { font: 700 1rem var(--font-display); }
+.ww-face-group .wf-fx { justify-content: center; flex-wrap: wrap; gap: 3px; font-size: .56rem; }
+.ww-face-group .fx .ico svg { width: .64rem; height: .64rem; }
+.ww-face-group[data-preview="after upgrade"] .ww-face-label b { color: #f1cd8b; }
+.ww-note { display: flex; align-items: flex-start; gap: .45rem; margin: 0; padding: .55rem .6rem; border: 1px solid #c59e4a40; border-radius: 7px; background: #a37b1f0d; font-size: .74rem; line-height: 1.45; color: #dbcba9; }
+.ww-note .ico { padding-top: 2px; color: #c6a363; }
+.ww-note .ico svg { width: .9rem; height: .9rem; }
+.ww-workshop .sh-lockline, .ww-workshop .sh-done { font-size: .73rem; text-transform: none; letter-spacing: .02em; padding: .6rem; }
+.ww-pack { border: 1px solid #86704a70; border-radius: 8px; background: #090c1240; }
+.ww-pack summary { display: flex; align-items: center; gap: .5rem; min-height: 48px; padding: .65rem .7rem; color: #dbc6a2; cursor: pointer; font-size: .78rem; }
+.ww-pack summary::after { content: '+'; margin-left: auto; color: #dbc6a2; font-size: 1.1rem; }
+.ww-pack[open] summary::after { content: '−'; }
+.ww-pack summary .ico svg { width: 1.1rem; height: 1.1rem; }
+.ww-pack > .sh-list { padding: 0 .5rem .5rem; }
+.ww-pack .sh-row { grid-template-columns: 3.6rem minmax(0,1fr) auto; gap: .4rem; padding: .45rem; }
+.ww-pack .sh-rbody > b { font-size: .9rem; }
+.ww-pack .sh-rbody > small { font-size: .58rem; }
+.ww-pack .sh-equip { min-height: 44px; min-width: 3.5rem; padding: .3rem .4rem; }
+.ww-pack .wc-faces { display: flex; flex-wrap: wrap; gap: .2rem; }
+.ww-pack .wf { min-width: 23px; min-height: 28px; padding: .1rem; }
+.ww-pack .wf > b { font-size: .75rem; }
+@media (max-height: 650px) { .ww-display { height: 115px; } }

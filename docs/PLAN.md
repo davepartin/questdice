@@ -1170,3 +1170,8 @@ Dave asked for a stronger visual pass after reviewing the first camp redesign sc
 Verification: baseline and post-change npm test both report 318 passing / 2 failing out of 320, with the same pre-existing local server tests failing in test/server.test.mjs. The browser harness dev/camp-art-review.mjs exercises an actual d6-to-d8 purchase, exact gold, board refresh, local save/open round trip, closing/focus, five categories, Store, unaffordable and maximum states, a locked slot, weapon controls, talent access, reduced motion, and repeated open/close. It captures phone/short/tall/landscape/desktop layouts. See docs/ui-handoff/04-CAMP-ART-REVIEW.md for results and screenshots.
 
 Limits: physical iPhone Safari performance, live cloud saves, remote online rooms, complete party play, and a full campaign were not verified. Screenshots are test fixtures. Battle magic-powers layout has not been redesigned in this pass.
+
+
+## 20 October 2026: weapon workshop review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: equipped weapon inspection now has an existing-art portrait, Forge/Train choices, authoritative current/target face previews, hand-cap explanations, exact prices and remaining gold. Pack and Diamond actions remain accessible. Right-hand two-handed inspection targets its own UID, matching existing independent die upgrades; no engine or save changes. Cache stamp: `20261020weapons1`. See `docs/ui-handoff/05-WEAPON-WORKSHOP-REVIEW.md` for screenshots, checks and limits. This checkpoint is for review, not live publication. Next bounded section is the talent editor.
