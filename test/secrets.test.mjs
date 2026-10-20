@@ -2,22 +2,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { CARDS, dealEnvelopes, judge, cardView, answer, payOut, gOf, COVER_LINES } from '../js/secrets.js';
+import { CARDS, dealEnvelopes, judge, cardView, answer, payOut, gOf, COVER_LINES, dealBonusGoal, bonusView, answerBonus, judgeBonus, payBonus, wantsBonus, bonusG, BONUS_GOALS, BONUS_HONOR } from '../js/secrets.js';
 
 const NAMES = ['WizKid', 'Smalls', 'Ada', 'Bea', 'Cy', 'Di'];
 const CLS = ['wizard', 'dwarf', 'knight', 'bard', 'ranger', 'knight'];
 const company = (n, seed = 1) => { const hs = NAMES.slice(0, n).map((name, i) => E.newHero({ name, cls: CLS[i], seed: seed + i })); for (const h of hs) h.campaign = hs[0].campaign; return hs; };
 const quest = { enemies: ['goblin', 'wolf'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle', perilous: false };
 
-test('every hero gets one card; solo gets a challenge; team-only cards stay at tables; a rivalry always has two or more holders', () => {
+test('every hero gets one card; solo gets no envelopes; team-only cards stay at tables; a rivalry always has two or more holders', () => {
   for (let n = 1; n <= 6; n++) {
     for (let seed = 1; seed <= 40; seed++) {
       const hs = company(n, seed); hs[0].campaign.step = 1 + (seed % 9);
       const env = dealEnvelopes({ c: hs[0].campaign, heroes: hs, enemies: [{ uid: 'e1', name: 'Gob', tier: 'minion', hp: 10 }, { uid: 'e2', name: 'Wolf', tier: 'minion', hp: 10 }] });
-      assert.equal(Object.keys(env.cards).length, n);
       assert.ok(COVER_LINES.includes(env.cover));
+      if (n === 1) { assert.equal(Object.keys(env.cards).length, 0); continue; }
+      assert.equal(Object.keys(env.cards).length, n);
       const kinds = Object.values(env.cards).map((c) => CARDS[c.id].kind);
-      if (n === 1) { assert.deepEqual(kinds, ['challenge']); assert.equal(CARDS[env.cards.WizKid.id].team, undefined); }
       assert.ok(kinds.filter((k) => k === 'bribe').length <= 1, 'at most one bribe');
       const rivals = {}; for (const c of Object.values(env.cards)) if (CARDS[c.id].kind === 'rival') rivals[c.id] = (rivals[c.id] || 0) + 1;
       for (const k of Object.values(rivals)) assert.ok(k >= 2, 'a rivalry has two or more holders');
@@ -104,11 +104,47 @@ test('a solo battle keeps the log too, and a solo challenge pays only on a win',
   const h = E.newHero({ name: 'Solo', cls: 'knight', seed: 3 });
   const b = E.newBattle(h, quest, E.makeRng(5), 1);
   const env = dealEnvelopes({ c: h.campaign, heroes: [h] });
+  assert.equal(Object.keys(env.cards).length, 0);
   for (let i = 0; i < 12 && !b.outcome; i++) { E.startRoll(b); E.resolve(b, { target: 0 }); if (!b.outcome) E.beginReset(b); }
   assert.ok(b.secretLog.length >= 1);
-  const j = judge(env, b, { won: b.outcome === 'victory' });
-  assert.equal(j.results.length, 1); assert.doesNotMatch(j.results[0].line, /undefined|NaN/);
-  if (b.outcome !== 'victory') assert.equal(j.results[0].gold, 0);
+});
+
+test('solo fights and elites get one hard Bonus Goal; bosses do not; 2–6 keep secrets', () => {
+  assert.equal(wantsBonus('battle'), true);
+  assert.equal(wantsBonus('elite'), true);
+  assert.equal(wantsBonus('boss'), false);
+  assert.equal(bonusG(1), 50); assert.equal(bonusG(2), 55); assert.equal(bonusG(3), 60);
+  const h = E.newHero({ name: 'Solo', cls: 'knight', seed: 3, pack: 'cloverheist' });
+  const goal = dealBonusGoal({ c: h.campaign, hero: h, salt: 't1' });
+  assert.ok(BONUS_GOALS[goal.id]);
+  assert.equal(goal.voice, 'Sir Reginald Brush');
+  assert.equal(goal.gold, 50);
+  const v = bonusView(goal);
+  assert.match(v.rule, /potion|40|50|reroll/i);
+  assert.match(v.reward, /50 gold/);
+  assert.equal(v.kind, 'bonus');
+  const team = dealEnvelopes({ c: company(2)[0].campaign, heroes: company(2) });
+  assert.equal(Object.keys(team.cards).length, 2);
+});
+
+test('a Bonus Goal pays on a win if met; skip pays Honor; a loss pays nothing if accepted', () => {
+  const h = E.newHero({ name: 'Solo', cls: 'wizard', seed: 4 });
+  h.gold = 20;
+  const battle = fakeBattle([row(1, 'Solo', { blocked: 40, magic: 40, dealt: 50, paid: 0 })], [{ name: 'Solo', hp: 10, potions0: 2, potions: 2, magic: 5, magic0: 4 }]);
+  battle.hero = h;
+  const goal = { kind: 'bonus', id: 'block40', act: 1, voice: 'the Lantern', name: BONUS_GOALS.block40.name, rule: BONUS_GOALS.block40.rule, gold: 50, honor: BONUS_HONOR, answered: true, accepted: true };
+  const win = judgeBonus(goal, battle, { won: true });
+  assert.equal(win.results[0].met, true); assert.equal(win.results[0].gold, 50);
+  payBonus(win, h); assert.equal(h.gold, 70);
+  const skip = { ...goal, accepted: false };
+  const honor = judgeBonus(skip, battle, { won: true });
+  assert.equal(honor.results[0].gold, BONUS_HONOR);
+  const lost = judgeBonus(goal, battle, { won: false });
+  assert.equal(lost.results[0].gold, 0);
+  const miss = { ...goal, id: 'magic40' };
+  battle.secretLog = [row(1, 'Solo', { magic: 10 })];
+  assert.equal(judgeBonus(miss, battle, { won: true }).results[0].gold, 0);
+  answerBonus(goal, { accept: false }); assert.equal(goal.accepted, false);
 });
 
 test('Spare That One works in a fight of any length: the spared monster has to be the last to fall', () => {

@@ -747,8 +747,9 @@ export function envelope(card, o = {}) {
   const hero = X.S.hero || X.members()[0]; let sent = card.answered;
   const offer = card.mode === 'offer';
   const answer = (accept) => { if (sent) return; sent = true; sfx.card(); o.onAnswer?.(accept); };
+  const bonus = !!(o.bonus || card.kind === 'bonus');
   const choice = card.answered
-    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? 'You took the bribe. Keep a straight face.' : 'You said no. Honor, quietly.') : 'Sealed. Keep it to yourself.')
+    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Goal accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
     : h('div', { class: 'env-btns' },
       ...(offer ? [btn('Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
         : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
@@ -758,10 +759,10 @@ export function envelope(card, o = {}) {
       X.partyBar?.(),
       storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', String(card.voice || '').replace(/^./, (ch) => ch.toUpperCase()), card.scene, { icon: 'scroll' }),
       h('article', { class: 'env-card' }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
-        h('div', { class: 'env-eye' }, 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
+        h('div', { class: 'env-eye' }, bonus ? 'Bonus Goal' : 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
         h('p', { class: 'env-flavor' }, card.flavor),
         h('p', { class: 'env-rule' }, card.rule), h('p', { class: 'env-pay' }, ico('coin'), h('span', {}, card.reward))),
-      o.solo ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
+      o.solo || bonus ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
       choice, waiting, card.answered ? o.extra || null : null)));
   const place = E.questsFor(hero)[0]?.place;
   lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);

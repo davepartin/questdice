@@ -123,11 +123,13 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '', big = false 
       for (const h of open.slice(0, size)) give(h, id);
     }
   }
-  // everyone else: a cover card or a challenge
-  for (const h of [...open]) {
-    const cover = team && rng() < 0.4;
-    const list = ids(cover ? 'cover' : 'challenge', team).filter((id) => fits(id, h) && (big || !HARSH.has(id)));
-    give(h, pick(list));
+  // solo heroes get a Bonus Goal instead (dealBonusGoal); everyone at a table of 2+ gets a cover card or a challenge
+  if (team) {
+    for (const h of [...open]) {
+      const cover = rng() < 0.4;
+      const list = ids(cover ? 'cover' : 'challenge', true).filter((id) => fits(id, h) && (big || !HARSH.has(id)));
+      give(h, pick(list));
+    }
   }
   return env;
 }
@@ -141,7 +143,7 @@ export function cardView(env, name) {
 function rewardLine(env, mine, team) {
   const G = gOf(env.act); const d = CARDS[mine.id]; const win = team ? 'if the team wins' : 'if you win';
   if (d.kind === 'rival') return d.doubles ? `Double the gold you earn (up to ${2 * G}), ${win}.` : `${G} gold, ${win}.`;
-  if (d.kind === 'bribe' && mine.mode === 'offer') return `Accept: ${2 * G} gold if you pull it off and the team wins; lose the battle and ${env.voice || VOICE.name} takes ${Math.round(G / 2)} of yours. Decline: a little gold for your Honor.`;
+  if (d.kind === 'bribe' && mine.mode === 'offer') return `Pull it off and win, and you get ${2 * G} gold. Lose, and you pay ${Math.round(G / 2)}. Or say no for a little Honor gold.`;
   if (d.kind === 'bribe') return `${G} gold, ${win}.`;
   return `${r5((d.pay || 1) * G)} gold, ${win}.`;
 }
@@ -224,6 +226,78 @@ function revealLine(env, r, rivalWin, crooks, won) {
     return `${r.name} took the bribe from ${v}! ${card} ${r.met ? `${r.name} pulled it off.` : `${r.name} could not do it.`}${coin}`;
   }
   return `${r.name} was offered a bribe by ${v} (${d.name}) and said no. Honor${won ? '' : ', even in defeat'}.${coin}`;
+}
+
+// Solo (1 hero): no envelopes. The campaign gold-giver offers one hard Bonus Goal on a fight or elite (~50–60 gold).
+export const BONUS_G = [50, 55, 60];
+export const bonusG = (act) => BONUS_G[Math.min(3, Math.max(1, act | 0)) - 1];
+export const BONUS_HONOR = 10;
+export const wantsBonus = (kind) => kind === 'battle' || kind === 'elite';
+export const BONUS_GOALS = {
+  nopotion: { name: 'No potions', rule: 'Win without using a potion.', check: (x) => (x.F.potions0 ?? 0) - (x.F.potions ?? 0) - (x.F.stats?.potionsThrown || 0) <= 0 },
+  block40: { name: 'Hold the line', rule: 'Block 40 damage this fight.', check: (x) => sum(x.me, (r) => r.blocked) >= 40 },
+  magic40: { name: 'Spark storm', rule: 'Deal 40 magic damage this fight.', check: (x) => sum(x.me, (r) => r.magic) >= 40 },
+  noreroll: { name: 'First rolls', rule: 'Win without using a magic reroll.', check: (x) => x.me.every((r) => !r.paid) },
+  deal50: { name: 'Heavy hitter', rule: 'Deal 50 damage this fight.', check: (x) => sum(x.me, (r) => r.dealt) >= 50 },
+};
+export function dealBonusGoal({ c, hero, salt = '' }) {
+  const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'bonus', salt));
+  const keys = Object.keys(BONUS_GOALS);
+  const id = keys[Math.floor(rng() * keys.length)];
+  const voice = c.voice || voiceOf(c) || VOICE;
+  const gold = bonusG(c.act);
+  void hero;
+  return {
+    kind: 'bonus', id, act: c.act, voice: voice.name,
+    scene: `${voice.name} has a hard extra job for you this fight.`,
+    name: BONUS_GOALS[id].name, rule: BONUS_GOALS[id].rule, gold, honor: BONUS_HONOR, answered: false, accepted: null,
+  };
+}
+export function bonusView(goal) {
+  if (!goal) return null;
+  return {
+    id: goal.id, kind: 'bonus', mode: 'offer', name: goal.name,
+    flavor: `${goal.voice} offers you extra gold if you can pull this off.`,
+    rule: goal.rule,
+    reward: `${goal.rule} Pull it off and win, and you get ${goal.gold} gold. Or say no for a little Honor gold.`,
+    scene: goal.scene, cover: '', voice: goal.voice, answered: !!goal.answered, accepted: goal.accepted,
+  };
+}
+export function answerBonus(goal, { accept } = {}) {
+  if (!goal) return false;
+  goal.accepted = !!accept;
+  goal.answered = true;
+  return true;
+}
+function soloFighter(battle) {
+  if (battle.fighters) return battle.fighters[0];
+  return { hero: battle.hero, hp: battle.hp, maxHp: battle.maxHp, magic: battle.magic, magic0: battle.magic0, potions: battle.potions, potions0: battle.potions0, stats: battle.stats, points: battle.points };
+}
+export function judgeBonus(goal, battle, { won }) {
+  const d = BONUS_GOALS[goal.id]; const F = soloFighter(battle); const log = (battle.secretLog || []).filter((r) => r.name === F.hero.name);
+  const x = { me: log, F, won, rounds: Math.max(0, ...log.map((r) => r.r)) };
+  const met = !!goal.accepted && won && !!d.check(x);
+  let gold = 0; let line;
+  const who = F.hero.name;
+  if (!goal.accepted) {
+    gold = goal.honor;
+    line = `${goal.voice} offered a Bonus Goal (${goal.name}) and ${who} said no. Honor. ${who} receives ${gold} gold.`;
+  } else if (won && met) {
+    gold = goal.gold;
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold.`;
+  } else if (won) {
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Not this time.`;
+  } else {
+    line = `${who} took the Bonus Goal. The fight was lost, so no prize.`;
+  }
+  return { results: [{ name: who, id: goal.id, kind: 'bonus', mode: 'offer', accepted: goal.accepted, met, gold, line }], voice: goal.voice, won };
+}
+export function payBonus(judged, hero) {
+  const r = judged.results[0]; if (!r || !hero) return;
+  hero.gold = Math.max(0, (hero.gold || 0) + r.gold);
+  const rec = ((hero.record ||= {}).secrets ||= { done: 0, rivalries: 0, bribesTaken: 0, bribesDeclined: 0, forced: 0, honor: 0 });
+  if (!r.accepted) rec.honor++;
+  else if (r.met && judged.won) rec.done++;
 }
 
 // Pay the results to the heroes and keep score in the Hall of Fame.
