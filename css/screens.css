@@ -1093,3 +1093,31 @@ body:has(#gmenu:not([hidden])) .sx-camp .sx-sidetop:has(.sx-chip) { padding-left
 .sx-camp .sx-sidetop .sx-chip { gap: .45rem; padding: .25rem .7rem .25rem .3rem; background: linear-gradient(180deg, rgba(24, 26, 44, .92), rgba(8, 9, 18, .94)); }
 .sx-camp .sx-sidetop .sx-emblem { width: 2rem; height: 2rem; }
 .sx-camp .sx-sidetop .ch-copy b { font-size: .86rem; max-width: 8rem; } .sx-camp .sx-sidetop .ch-copy small { font-size: .64rem; }
+
+/* ---- popup pass 2 (Dave, Oct 2026: "a border inside a border that has to scroll", "the fonts are a little off"): the card itself
+   is the one scroller, the header sticks to its top, one frame, and one font family at three sizes */
+body.sx .modal-card:has(.slot-sheet) { max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 30px 80px rgba(0, 0, 0, .75); }
+body.sx .modal-card .slot-sheet { max-height: none; overflow: visible; padding-top: 0; }
+.slot-sheet .sh-head { position: sticky; top: 0; z-index: 3; margin: 0 -1rem; padding: 1rem 1rem .7rem; background: #19172a; }
+.slot-sheet .sh-title { gap: .1rem; }
+.slot-sheet .sh-title small { font-size: .62rem; letter-spacing: .18em; }
+.slot-sheet .sh-title b { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1.1; letter-spacing: .01em; color: #fff; }
+.slot-sheet .sh-sec, .sh-tile > small { font-size: .64rem; letter-spacing: .16em; }
+.sh-rbody > b { font-size: 1rem; }
+.sh-row.now .sh-rbody > b { font-size: 1.12rem; }
+.sh-rbody > small { font-size: .62rem; letter-spacing: .1em; }
+.sh-buy-l { font-size: .88rem; letter-spacing: .05em; }
+.sh-role { font-size: .88rem; }
+/* weapons in a list: the pack and the Diamond case */
+.sh-list { display: flex; flex-direction: column; gap: .5rem; }
+.sh-row.pk { grid-template-columns: 4.2rem minmax(0, 1fr); row-gap: .55rem; }
+.sh-row.pk > .sh-acts { grid-column: 1 / -1; display: flex; gap: .4rem; }
+.sh-mini { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; min-height: 2.5rem; padding: .3rem .6rem; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(255, 215, 122, .55); background: rgba(255, 211, 74, .08); color: #ffe3a0; font: 800 .74rem var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
+.sh-mini:active { transform: translateY(1px); }
+.sh-mini.on { border-color: rgba(63, 209, 122, .65); background: rgba(63, 209, 122, .14); color: #8ff0b4; }
+.sh-mini .ico svg { width: .95rem; height: .95rem; }
+.sh-mini.sell { flex: 0 0 auto; margin-left: auto; border-color: rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .04); color: #c9c3d8; }
+.sh-mini.sell b { font-size: .82rem; color: #ffd34a; letter-spacing: 0; }
+.sx-zone .sh-list .sh-row { background: rgba(0, 0, 0, .34); }
+.sh-rbody .wc-faces { grid-template-columns: repeat(4, minmax(0, 2.9rem)); }

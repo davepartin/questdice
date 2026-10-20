@@ -1308,12 +1308,13 @@ function gearTab({ grid = false, chips = false } = {}) {
   const sync = () => { sfx.card(); X.persist(); X.renderCamp(); };
   const wear = (inst, side) => { const c = E.canEquip(hero, inst.uid, side); if (!c.ok) { sfx.error(); toast(c.why); return; } HE.equip(hero, inst.uid, side); sync(); };
   const worn = two ? [weaponCard(hero.loadout.NW, { note: 'Both hands', cls: 'worn', badge: 'Equipped' })] : [weaponCard(hero.loadout.NW, { note: 'Left hand', cls: 'worn', badge: 'Left' }), weaponCard(hero.loadout.NE, { note: 'Right hand', cls: 'worn', badge: 'Right' })];
+  // the pack and the Diamond case as the popup's rows (Dave, Oct 2026: "look at your pack"): picture, name, faces, buttons below
+  const sell = (n, onSell, aria) => h('button', { class: 'sh-mini sell', type: 'button', 'aria-label': aria, onclick: tap(onSell) }, h('span', {}, 'Sell'), ico('coin'), h('b', {}, String(n)));
   const bag = hero.bag.map((inst) => {
     const w = D.WEAPONS[inst.id];
-    const acts = w.hands === 2 ? [btn('Equip', () => wear(inst, 'NW'), { kind: 'ghost' })]
-      : [btn('Left', () => wear(inst, 'NW'), { kind: 'ghost', aria: `Equip ${w.name} in left hand` }), btn('Right', () => wear(inst, 'NE'), { kind: 'ghost', aria: `Equip ${w.name} in right hand` })];
-    acts.push(btn(`Sell ${E.sellValue(inst)}`, () => { HE.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell ${w.name} for ${E.sellValue(inst)} gold` }));
-    return weaponCard(inst, { actions: acts, compact: true });
+    const hand = (side, label) => h('button', { class: 'sh-mini', type: 'button', 'aria-label': `Equip ${w.name}${w.hands === 2 ? '' : ` in ${side === 'NW' ? 'left' : 'right'} hand`}`, onclick: tap(() => wear(inst, side)) }, label);
+    return shWeapon(inst, h('div', { class: 'sh-acts' }, w.hands === 2 ? hand('NW', 'Equip') : [hand('NW', 'Left'), hand('NE', 'Right')],
+      sell(E.sellValue(inst), () => { HE.sellItem(hero, inst.uid); sfx.coin(); X.persist(); X.renderCamp(); }, `Sell ${w.name} for ${E.sellValue(inst)} gold`)), 'pk');
   });
   // the places a weapon can be, each its own panel with its heading centered on the top edge
   void worn;
@@ -1323,17 +1324,16 @@ function gearTab({ grid = false, chips = false } = {}) {
   return h('div', { class: 'sx-tab gear' },
     jump, coachBox('g_gear'),
     grid ? diceGrid(hero) : null,
-    zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'wc-grid' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
+    zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'sh-list' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
     E.charmsOf(hero).length ? zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each bends one rule of the dice, in every fight. Found in the spoils of big fights, and now and then in the Camp Store.',
       h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] })))) : null,
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'One fight each, then it shatters. Left or Right: the hand it goes in next fight.',
-      h('div', { class: 'wc-grid' }, E.diamondsOf(hero).map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
+      h('div', { class: 'sh-list' }, E.diamondsOf(hero).map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
         // Left / Right here at camp works at a table too (Dave, Oct 2026: the quest board's Bring strip is solo only)
-        const hand = (s) => btn(s === 'NW' ? 'Left' : 'Right', () => { HE.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); X.renderCamp(); },
-          { kind: at === s ? 'primary' : 'ghost', cls: 'db-hand', aria: `${at === s ? 'Keep' : 'Bring'} the Diamond ${w.name}${at === s ? ' in its case' : ` in your ${s === 'NW' ? 'left' : 'right'} hand next fight`}` });
-        return weaponCard(d, { compact: true, badge: at ? `${at === 'NW' ? 'Left' : 'Right'} hand` : '',
-          actions: [h('span', { class: 'db-hands' }, E.diamondHands(hero).map(hand)),
-            btn(`Sell ${E.diamondSellValue(d)}`, () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, { kind: 'ghost', icon: 'coin', iconAfter: true, cls: 'sell', aria: `Sell the Diamond ${w.name} for ${E.diamondSellValue(d)} gold` })] }); }))) : null);
+        const hand = (s) => h('button', { class: `sh-mini db-hand ${at === s ? 'on' : ''}`, type: 'button', onclick: tap(() => { HE.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); X.renderCamp(); }),
+          'aria-label': `${at === s ? 'Keep' : 'Bring'} the Diamond ${w.name}${at === s ? ' in its case' : ` in your ${s === 'NW' ? 'left' : 'right'} hand next fight`}` }, at === s ? ico('check') : null, s === 'NW' ? 'Left' : 'Right');
+        return shWeapon(d, h('div', { class: 'sh-acts' }, E.diamondHands(hero).map(hand),
+          sell(E.diamondSellValue(d), () => { if (HE.sellDiamond(hero, d.uid)) { sfx.coin(); X.persist(); X.renderCamp(); } }, `Sell the Diamond ${w.name} for ${E.diamondSellValue(d)} gold`)), 'pk'); }))) : null);
 }
 // The hero's lifetime score: every battle's points add up here, with party trophies.
 function hallOfFame(hero) {
