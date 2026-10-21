@@ -2,7 +2,7 @@
 // road events, victory / defeat and camp. Glassy panels over the live scene from screens.js.
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
 // the context handed to bind(); this file only decides what things look like.
-import { shortLine } from './powers.js';
+import { shortLine, effectLine, glyph as powerGlyph, toneOf } from './powers.js';
 import { h, $, $$, modal, closeModal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
@@ -1085,37 +1085,49 @@ function petSection(hero) {
     h('div', { class: 'ur-copy' }, h('b', {}, `${D.PETS[o.type].name}, a pet`, h('em', { class: 'ur-to' }, ` ${o.price} gold`)), h('small', {}, 'The Camp Store has one today. A pet rolls one more die beside your board.')),
     btn('See it', () => { X.S.tab = 'store'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }))];
 }
-// Powers: what each does, how it is used, and a gold upgrade (more dice and bigger numbers).
-// Magical powers at camp: three slots (A big move, B every round, C charge). The equipped power can be upgraded; the other
-// powers of the class library are learned here for gold, then swapped into their slot like a weapon into a hand.
-function powersSection(hero) {
-  const lib = E.powerLibrary(hero);
-  return D.POWER_SLOTS.map((slot) => {
-    const rows = lib.filter((x) => x.card.slot === slot);
-    const eq = rows.find((x) => x.equipped); const others = rows.filter((x) => !x.equipped);
-    return h('section', { class: `sx-pslot cmp s-${slot}` },
-      h('header', { class: 'ps-head' }, h('b', { class: 'ps-letter' }, slot), h('span', {}, D.SLOT_NAME[slot]), h('small', {}, slot === 'A' ? 'strong, once a battle' : slot === 'B' ? 'small, every round' : 'store a charge each round')),
-      eq ? powerRow(hero, eq.card) : null,
-      ...others.map(({ card: k, learned, gate }) => {
-        const li = E.learnInfo(hero, k.id);
-        const action = learned ? sqBuy('Swap in', null, true, () => { if (HE.equipPower(hero, k.id)) { sfx.select(); X.persist(); X.renderCamp(); } }, `Put ${k.name} in slot ${slot}`)
-          : gate ? gateTag(`Level ${gate}`)
-            : sqBuy('Learn', li.cost, li.ok, () => { if (HE.learnPower(hero, k.id)) bought(); }, `Learn ${k.name} for ${li.cost} gold`);
-        return h('div', { class: 'sx-urow cmp ps-alt' }, h('button', { class: 'ur-copy ps-open', type: 'button', 'aria-label': `${k.name}: read more`, onclick: tap(() => openSlot(`power:${k.id}`)) }, h('b', {}, k.name, learned ? h('em', { class: 'ps-tag' }, 'Learned') : null, ico('chevron')), h('small', { class: 'clamp' }, k.text)), action);
-      }));
-  });
-}
-// a small square button for the power rows (Dave: "make the button square and less wide" so the words have room)
-function sqBuy(top, cost, ok, onBuy, aria) {
-  return h('button', { class: `ps-sq ${ok ? '' : 'poor'}`, type: 'button', disabled: !ok, 'aria-label': aria, onclick: ok ? tap(onBuy) : null }, h('small', {}, top), cost == null ? null : h('b', {}, ico('coin'), String(cost)));
-}
-function powerRow(hero, k) {
-  const u = E.powerUpgradeInfo(hero, k.id); const lvl = E.powerLevel(hero, k.id);
-  return h('div', { class: 'sx-urow cmp ps-eq' },
-    h('button', { class: 'ur-copy ps-open', type: 'button', 'aria-label': `${k.name}: read more`, onclick: tap(() => openSlot(`power:${k.id}`)) }, h('b', {}, k.name, lvl ? h('em', { class: 'ur-to' }, ` ${'★'.repeat(lvl)}`) : null, ico('chevron')),
-      h('small', {}, `Level ${lvl}${lvl ? '' : ' (base)'} now: ${shortLine(k, lvl)} · ${k.cost}${k.kind === 'scale' ? '–' + k.max : ''} magic`),
-      u.next ? h('small', { class: 'ur-next' }, `Level ${u.next}: ${shortLine(k, u.next)}`) : null),
-    u.next ? sqBuy(`Level ${u.next}`, u.cost, u.ok, () => { if (HE.upgradePower(hero, k.id)) bought(); }, `Upgrade ${k.name} to level ${u.next} for ${u.cost} gold`) : maxTag('Top'));
+// A focused class library for camp. Browsing never changes the equipped powers.
+const CP = { hero: null, slot: 'A', id: null };
+function campPowers(hero) {
+  const lib = E.powerLibrary(hero), identity = `${hero.name}:${hero.cls}`;
+  if (CP.hero !== identity) { CP.hero = identity; CP.slot = 'A'; CP.id = null; }
+  const rows = lib.filter((r) => r.card.slot === CP.slot);
+  const row = rows.find((r) => r.card.id === CP.id) || rows.find((r) => r.equipped) || rows[0];
+  if (!row) return h('p', {}, 'No powers in this slot.');
+  CP.id = row.card.id;
+  const k = row.card, level = E.powerLevel(hero, k.id), up = E.powerUpgradeInfo(hero, k.id);
+  const equipped = rows.find((r) => r.equipped)?.card;
+  const refresh = (selector = '.cp-detail') => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
+  const done = () => { sfx.level(); X.persist(); refresh(); };
+  const status = (r) => r.equipped ? 'Equipped' : r.gate ? `Level ${r.gate} required` : r.learned ? 'Learned' : `Learn · ${E.learnInfo(hero, r.card.id).cost} gold`;
+  const magic = (c) => `${c.cost}${c.kind === 'scale' ? `–${c.max}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
+  const tabs = h('div', { class: 'cp-slots', role: 'group', 'aria-label': 'Power slots' }, D.POWER_SLOTS.map((slot) => {
+    const eq = lib.find((r) => r.card.slot === slot && r.equipped)?.card;
+    return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
+      onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('b', {}, slot), h('span', {}, D.SLOT_NAME[slot]), h('small', {}, eq?.name || 'Empty'));
+  }));
+  const cards = h('div', { class: 'cp-library' }, rows.map((r) => h('button', { type: 'button', class: `cp-card tone-${toneOf(r.card)} ${r.card.id === k.id ? 'selected' : ''}`, 'data-power': r.card.id,
+    'aria-pressed': String(r.card.id === k.id), 'aria-label': `${r.card.name}: ${status(r)}. Inspect power.`, onclick: tap(() => { CP.id = r.card.id; refresh(`.cp-card[data-power="${r.card.id}"]`); }) },
+    h('span', { class: 'cp-card-icon' }, powerGlyph(r.card)), h('span', { class: 'cp-card-copy' }, h('small', {}, status(r)), h('b', {}, r.card.name), h('span', {}, shortLine(r.card, E.powerLevel(hero, r.card.id)))), h('span', { class: 'cp-card-cost' }, ico('spark'), magic(r.card)))));
+  let action, cost = null;
+  if (row.gate) action = shLock(`Opens at hero level ${row.gate}`);
+  else if (row.equipped) {
+    if (up.next) { cost = up.cost; action = shBuy(hero, { label: `Upgrade to level ${up.next}`, cost, ok: up.ok, onBuy: () => { if (HE.upgradePower(hero, k.id)) done(); } }); }
+    else action = shDone('Highest power level');
+  } else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in slot ${k.slot} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
+    h('span', { class: 'sh-buy-l' }, `Equip in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, 'Free'));
+  else { const learn = E.learnInfo(hero, k.id); cost = learn.cost; action = shBuy(hero, { label: 'Learn & equip', cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
+  const when = k.kind === 'charge' ? `Store one charge each round, up to ${k.max}. Release them together.` : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
+  const levels = h('details', { class: 'cp-levels ww-pack' }, h('summary', {}, ico('spark'), 'All power levels'),
+    h('div', { class: 'cp-level-list' }, Array.from({ length: E.powerLevelsOf(hero) + 1 }, (_, lv) => h('div', { class: lv === level ? 'current' : '' }, h('b', {}, `Level ${lv}${lv === level ? ' · current' : ''}`), h('span', {}, shortLine(k, lv))))));
+  return h('div', { class: 'cp-workshop' }, tabs, h('p', { class: 'cp-instruction' }, 'Choose a slot, then inspect a power. One equipped power per slot.'), cards,
+    h('section', { class: `cp-detail tone-${toneOf(k)}`, tabindex: '-1', 'aria-labelledby': 'cp-title' },
+      h('div', { class: 'cp-title-row' }, h('span', { class: 'cp-medal' }, powerGlyph(k)), h('div', {}, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]} · ${status(row)}`), h('h3', { id: 'cp-title' }, k.name))),
+      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Power level ${level}`)),
+      h('p', { class: 'cp-effect' }, effectLine(k, { level })), h('p', { class: 'cp-when' }, when),
+      row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · LEVEL ${level}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · LEVEL ${up.next}`), h('b', {}, shortLine(k, up.next)))) : null,
+      !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
+      action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
+      levels, h('details', { class: 'cp-base ww-pack' }, h('summary', {}, 'Base description'), h('p', {}, k.text))));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used
@@ -1546,7 +1558,7 @@ function campContent(hero) {
   switch (X.S.campPage) {
     case 'gear': return gearTab({ grid: false, chips: false });
     case 'hero': return heroTab({ chips: false });
-    case 'powers': return zone('zn-powers', 'spark', 'Your powers', 'Learn, equip and improve.', ...powersSection(hero));
+    case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
     case 'supplies': return h('div', { class: 'cw-supplies' }, zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));

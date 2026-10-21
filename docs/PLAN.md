@@ -1179,3 +1179,7 @@ Draft PR #30, branch `ui/camp-art-pass`: equipped weapon inspection now has an e
 ## 20 October 2026: talent workbench review checkpoint
 
 Draft PR #30, branch `ui/camp-art-pass`: talent dice now show a complete face grid, preview-first symbol selection, exact existing costs and remaining gold, usage limits, explicit no-refund clearing and separate die growth. Uses existing talent engine commands and online mutation adapter; no engine or save changes. Cache stamp `20261020talents1`. See `docs/ui-handoff/06-TALENT-WORKSHOP-REVIEW.md` for screenshots, validation and limits. Keep on the review branch until Dave approves publishing. Next bounded section: camp Powers organization/inspection, with the battle triangle reserved for a later section.
+
+## 20 October 2026: camp power library review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: camp Powers now has A/B/C slot browsing, equipped/learned/locked states, reusable battle glyphs and effect descriptions, current/next upgrade comparison, exact prices, remaining gold and explicit learn-and-equip/free-swap behavior. All-level previews use each class's cap. Unused power-row builders removed. No engine, class data or save changes. Cache stamp `20261020powers1`. See `docs/ui-handoff/07-CAMP-POWERS-REVIEW.md` for screenshots and verification. Not merged or deployed live. Next bounded section: battle magic-powers triangle and casting details.
