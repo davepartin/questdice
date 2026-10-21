@@ -39,3 +39,9 @@ export function campDie(hero, slot, size, { plain = false } = {}) {
     <path d="${size === 6 ? "M24 24L40 20" : size === 4 ? "M58 16L20 94" : "M57 15L20 59"}" stroke="#fff" stroke-width="1.3" opacity=".35" stroke-linecap="round"/>
   </svg>` });
 }
+
+// Reuse the existing class illustration behind each recessed board slot.
+export function campSlotMark(hero, slot) {
+  const src = bodyWatermarkSrc(hero.cls, slot);
+  return src ? h('img', { class: 'cw-slot-mark', src, alt: '', 'aria-hidden': 'true', decoding: 'async' }) : null;
+}

@@ -17,8 +17,9 @@ Current review branch: `ui/camp-art-pass`, draft PR #30. Read these checkpoints 
 - [Weapon workshop](05-WEAPON-WORKSHOP-REVIEW.md)
 - [Talent die editor](06-TALENT-WORKSHOP-REVIEW.md)
 - [Camp power library](07-CAMP-POWERS-REVIEW.md)
+- [Camp material and framing pass](08-CAMP-VISUAL-FINISH-REVIEW.md)
 
-Next section: battle magic-powers triangle and casting details. Camp Powers organization and inspection are complete. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
+Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing and materials are implemented; the richer campsite illustration and further dice presentation remain separate bounded passes. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
 
 ## Original builder instructions
 

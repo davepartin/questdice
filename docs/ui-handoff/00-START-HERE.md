@@ -6,7 +6,7 @@ Live game: https://davepartin.github.io/questdice/
 
 ## Current implementation status
 
-October 20 checkpoint: draft PR #30 on `ui/camp-art-pass` now contains the camp artwork/body dice pass, the weapon workshop, the talent die editor, and the camp power library. Read 04-CAMP-ART-REVIEW.md, 05-WEAPON-WORKSHOP-REVIEW.md 06-TALENT-WORKSHOP-REVIEW.md and 07-CAMP-POWERS-REVIEW.md before editing. These implemented checkpoints supersede the exploratory state and Phase 1 starting instructions below. Next bounded section: the battle magic-powers triangle and casting details. Keep this work on the review branch until Dave approves publishing.
+October 20 checkpoint: draft PR #30 on `ui/camp-art-pass` now contains the camp artwork/body dice pass, the weapon workshop, the talent die editor, and the camp power library. Read 04-CAMP-ART-REVIEW.md, 05-WEAPON-WORKSHOP-REVIEW.md 06-TALENT-WORKSHOP-REVIEW.md and 07-CAMP-POWERS-REVIEW.md before editing. These implemented checkpoints supersede the exploratory state and Phase 1 starting instructions below. Latest steering prioritizes camp visual finish toward the original concept. Read 08-CAMP-VISUAL-FINISH-REVIEW.md. Next bounded section: richer campsite atmosphere, followed by further dice presentation review; battle magic powers follows camp. Keep this work on the review branch until Dave approves publishing.
 
 ## Purpose
 

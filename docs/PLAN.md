@@ -1183,3 +1183,8 @@ Draft PR #30, branch `ui/camp-art-pass`: talent dice now show a complete face gr
 ## 20 October 2026: camp power library review checkpoint
 
 Draft PR #30, branch `ui/camp-art-pass`: camp Powers now has A/B/C slot browsing, equipped/learned/locked states, reusable battle glyphs and effect descriptions, current/next upgrade comparison, exact prices, remaining gold and explicit learn-and-equip/free-swap behavior. All-level previews use each class's cap. Unused power-row builders removed. No engine, class data or save changes. Cache stamp `20261020powers1`. See `docs/ui-handoff/07-CAMP-POWERS-REVIEW.md` for screenshots and verification. Not merged or deployed live. Next bounded section: battle magic-powers triangle and casting details.
+
+
+## Camp framing checkpoint, October 21, 2026
+
+User returned to the original illustrated concept and prioritized camp visual finish before battle magic powers. Applied wood framing, recessed slots, existing body artwork, selection corners and blue cloth inspector/road surfaces. No rule or save changes. Existing camp browser review passed; see docs/ui-handoff/08-CAMP-VISUAL-FINISH-REVIEW.md for scope, screenshots and remaining art gap. Continue on ui/camp-art-pass / draft PR #30, not live main.
