@@ -283,7 +283,7 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
   if (compact) return shWeapon(inst, actions.length ? h('div', { class: 'sh-acts' }, actions) : null, `pk ${cls}`, badge);
   return h('article', { class: `sx-wc rar-${r} ${cls}` },
     h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)),
+    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}${inst.id !== 'fists' ? ` · ${E.wearLabel(inst)}` : ''}`), faceChips(inst)),
     actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
 }
 // ---- the daily challenge's page: the briefing (intro), a breath between fights (between), and the score (result).
@@ -864,12 +864,13 @@ export function victory(first) {
         : [btn('Take', () => { if (HE.takeCharm(hero, id)) { Rw.charmTaken = id; sfx.level(); X.persist(); X.renderVictory(); } }, { icon: 'star' })] }))),
     !Rw.charmTaken && E.charmFull(hero) ? h('p', { class: 'fine' }, `You carry ${D.CHARM_MAX} charms, the most there is. Swap one out, or leave this behind.`) : null) : null;
   const shattered = Rw.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${Rw.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light.`) : null;
+  const worn = (Rw.broken || []).map((l) => h('p', { class: 'dm-line worn' }, ico('sword'), l)); // weapons that wore out (Oct 2026)
   const ready = !Rw.offer && hero.pendingPerks === 0 && Rw.picked != null;
   const note = Rw.repeat ? h('p', { class: 'sx-repeat' }, SV.repeatNote(Rw.share)) : null;
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, shattered, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, ...worn, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -891,6 +892,7 @@ export function defeat(retreat, loss) {
       h('header', { class: 'df-head' }, eyebrow(S.quest?.name || ''), h('h1', { class: 'df-title' }, retreat ? 'You withdraw' : 'You have fallen'), h('p', {}, retreat ? 'A wise person lives to fight tomorrow. Tomorrow is still yours.' : 'The dark wins this round. It does not get to keep you. Up you get.'), flourish()),
       panel('sx-grace', h('p', { class: 'df-loss' }, loss ? h('span', {}, `You dropped `, coin(loss, 'inline'), ' in the dust. Coins can be found again.') : 'You lost nothing but pride, and pride grows back.'),
         S.shattered?.length ? h('p', { class: 'dm-line shattered' }, ico('gem'), `${S.shattered.map((d) => `Your Diamond ${D.WEAPONS[d.id].name}`).join(' and ')} shattered into light. Diamonds are for one fight, whatever its ending.`) : null,
+        ...(S.broken || []).map((l) => h('p', { class: 'dm-line worn' }, ico('sword'), l)),
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
       h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'),
@@ -946,7 +948,7 @@ function weaponRow(inst, label = '') {
       : btn(`Train d${t.next}`, () => { if (HE.trainWeapon(hero, inst.uid)) bought(); }, { cls: 'ur-buy', disabled: !t.ok, aria: `Train ${w.name} to d${t.next}` });
   return h('div', { class: 'sx-urow cmp wrow2' }, rowIco(w.lean === 'def' ? 'shield' : 'sword'),
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name, h('em', { class: 'ur-to' }, ` ${D.tierName(inst)} · d${size}`)),
-      h('small', {}, `Forge for more icons and a bigger crit; train for bigger numbers${t.why === 'hands' ? ` (needs a d${t.next} hand)` : ''}.`)),
+      h('small', {}, `${E.wearLabel(inst)}. Weapons are found or bought now, not forged.`)),
     h('div', { class: 'ur-btns' }, forge, train));
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
@@ -1122,7 +1124,7 @@ const weaponRowFor = (inst, label) => weaponRow(inst, label);
 const FORGE_INTRO = {
   supplies: 'More dice for each reroll, and more potions on your belt.',
   body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
-  weapons: 'Forging raises a weapon’s metal: Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Training grows its die to bigger numbers, but never past the hand that holds it. Hands first. Then the steel.',
+  weapons: 'A weapon lasts a number of battles, then it is gone: Bronze 4, Silver 6, Gold 8. Every battle it is in your hands counts, win or lose; one in your pack rests. Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Battles mostly leave Bronze; the Camp Store sells Silver and Gold. A weapon die never rolls bigger than the hand that holds it, so grow your hands to wield the bigger ones.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',
   pet: 'Your pet rolls its own die beside the board. One face is always blank; put symbols on the rest. Grow the die and every symbol pays more. They will pretend they earned it.',
@@ -1193,7 +1195,7 @@ const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hid
 function shWeapon(inst, action, cls = '', badge = '') {
   const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0];
   return h('div', { class: `sh-row rar-${r} ${cls}` }, h('div', { class: 'sh-rart' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'sh-img', w.name), badge ? h('span', { class: 'sh-badge' }, badge) : null),
-    h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`), faceChips(inst)), action);
+    h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`, inst.id !== 'fists' ? h('span', { class: `sh-wear ${E.battlesLeft(inst) <= 1 ? 'last' : ''}` }, ` · ${E.wearLabel(inst)}`) : null), faceChips(inst)), action);
 }
 function slotSheet(slot) {
   if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
@@ -1222,10 +1224,8 @@ function slotSheet(slot) {
     out.push(shWeapon(real, null, 'now'));
     if (rolls < size && !real.diamond) out.push(h('p', { class: 'sh-warn' }, `Rolls as a d${rolls} until your hand is a d${size}.`));
     const f = E.forgeInfo(hero, real.uid); const t = E.trainInfo(hero, real.uid);
-    out.push(h('div', { class: 'sh-tiles' },
-      h('div', { class: 'sh-tile' }, h('small', {}, 'Forge'), f.next ? shBuy(hero, { label: D.RARITY[f.next], cost: f.cost, ok: f.ok, onBuy: () => { if (HE.forgeWeapon(hero, real.uid)) shBought(); } }) : shDone(f.why === 'legendary' ? 'Legendary' : 'Best metal')),
-      h('div', { class: 'sh-tile' }, h('small', {}, 'Train'), !t.next ? shDone('Biggest die') : t.why === 'hands' ? shLock(`Needs a d${t.next} hand`)
-        : shBuy(hero, { label: `d${t.next}`, cost: t.cost || 0, ok: t.ok, onBuy: () => { if (HE.trainWeapon(hero, real.uid)) shBought(); } }))));
+    void f; void t; // forging and training retired with wear (Oct 2026): say how long the weapon has left instead
+    out.push(h('p', { class: `sh-role sh-wearline ${E.battlesLeft(real) <= 1 ? 'last' : ''}` }, real.diamond ? 'A Diamond lasts one fight.' : `${E.wearLabel(real)}. After its last battle it is gone.`));
   } else out.push(shStage(h('span', { class: 'sh-locked' }, ico('hero'))), h('p', { class: 'sh-role' }, 'Empty hand.'));
   const wear = (it) => { HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
   const pack = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);

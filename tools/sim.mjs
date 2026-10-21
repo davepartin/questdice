@@ -6,7 +6,7 @@ import {
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
   buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink,
 } from '../js/engine.js';
-import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT } from '../js/data.js';
+import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
 export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };
@@ -213,8 +213,25 @@ export function botCamp(hero, rng) {
   items.forEach((it, i) => {
     if (it.sold || hero.gold < it.price + 30) return;
     const r = bestSlotFor(hero, it.inst); if (r.gain < 1) return;
-    if (buyItem(hero, i)) { equip(hero, it.inst.uid, r.side); while (hero.bag.length) sellItem(hero, hero.bag[0].uid); }
+    if (buyItem(hero, i)) { equip(hero, it.inst.uid, r.side); trimBag(hero); }
   });
+  botReady(hero);
+}
+// Wear (Oct 2026): a broken weapon leaves an empty hand. Before the next fight the bot fills it with the best weapon in its pack.
+export function botReady(hero) {
+  for (let guard = 0; guard < 3; guard++) {
+    const empty = ['NW', 'NE'].some((k) => (k === 'NW' || isActiveSlot(hero, k)) && (!hero.loadout[k] || hero.loadout[k].id === 'fists'));
+    if (!empty || !hero.bag.length) return;
+    let pick = null;
+    for (const w of hero.bag) { const r = bestSlotFor(hero, w); if (!pick || r.gain > pick.gain) pick = { w, ...r }; }
+    if (!pick?.side || !equip(hero, pick.w.uid, pick.side)) return;
+  }
+}
+const isActiveSlot = (hero, k) => !hero.dice || hero.dice.includes(k);
+// The bot keeps a few spares (weapons wear out now) and sells the least valuable past what the pack holds.
+function trimBag(hero) {
+  const keep = Math.max(0, BAG_MAX - 1); // room for the next spoils
+  while (hero.bag.length > keep) { const worst = [...hero.bag].sort((a, b) => sellValueOf(a) - sellValueOf(b))[0]; sellItem(hero, worst.uid); }
 }
 
 // Talent dice (v3): buy a symbol for the biggest empty number face while there is gold to spare, the class's own symbols first.
@@ -256,13 +273,10 @@ export function botLoot(hero, drops) {
   if (!drops?.length) return;
   let pick = null;
   for (const d of drops) { const r = bestSlotFor(hero, d); if (r.gain > 0.4 && (!pick || r.gain > pick.gain)) pick = { d, ...r }; }
-  if (pick) {
-    hero.bag.push(pick.d); equip(hero, pick.d.uid, pick.side);
-    while (hero.bag.length) sellItem(hero, hero.bag[0].uid); // the bot travels light: sell what it put down
-    return;
-  }
-  const best = [...drops].sort((a, b) => sellValueOf(b) - sellValueOf(a))[0];
-  sellDrop(hero, best);
+  if (pick) { hero.bag.push(pick.d); equip(hero, pick.d.uid, pick.side); }
+  // the rest go in the pack as spares (weapons wear out), and the pack sheds its least valuable past what it holds
+  for (const d of drops) if (d !== pick?.d && !hero.bag.includes(d)) hero.bag.push(d);
+  trimBag(hero); botReady(hero);
 }
 const sellValueOf = (inst) => { const h = { gold: 0 }; sellDrop(h, inst); return h.gold; };
 void takeDrop; void isTwoHanded;

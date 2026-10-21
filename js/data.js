@@ -78,10 +78,19 @@ export const SIZE_VALUE = { 4: 1, 6: 1.5, 8: 2.2, 10: 3 };
 export const SELL_SHARE = 0.5;
 // You carry what you wield plus a small pack. A full pack means choosing: sell, swap, or leave the spoils.
 export const BAG_MAX = 4;
+// Weapons wear out (Dave, Oct 2026: "it's good for so many battles, and then it's done"; no repair). Battles a weapon lasts by
+// metal (Bronze, Silver, Gold); a legendary lasts as Gold; a Diamond is its own one-fight rule. Every battle it is carried into
+// counts, won, lost or left. It never breaks mid-fight: after its last battle it is gone.
+export const WEAR_BATTLES = [4, 6, 8];
+// Spoils are mostly Bronze (Dave: "you rarely get them just for free for beating a boss"); Silver and Gold come from the store.
+export const SPOILS_RARITY = [85, 13, 2];
+// The Camp Store's four weapons, by metal: one Bronze, two Silver, one Gold. The fancy weapons are bought, and saved up for.
+export const STORE_RARITY = [0, 1, 1, 2];
 // The size of a found weapon. A bigger die needs a hand (Strength) at least that big, or it rolls as the hand's size.
 // Weights for [d4, d6, d8, d10] by act; the boss always drops one a size up, the perilous road leans bigger.
 export const DROP_SIZES = { 1: [100, 0, 0, 0], 1.5: [70, 30, 0, 0], 2: [45, 45, 10, 0], 3: [15, 50, 30, 5] };
-// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
+// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries. (Forging and training weapons retired with wear, Oct 2026: a
+// weapon is what you find or buy. These prices stay for old tools.)
 export const FORGE_COST = [0, 40, 120];                 // gold to reach Silver, Gold (two-handed x1.4)
 // SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
 export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a weapon from this size to the next
@@ -1060,7 +1069,7 @@ export const ACT_HP = [1.05, 1.55, 2.35]; // (Oct 2026: heroes grow ~+10 damage 
 export const ACT_FLAT = [0, 2, 5];
 export const STEP_HP = 0.06;
 // The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
-export const ACT_GOLD = [1, 1.3, 1.8];
+export const ACT_GOLD = [1, 1.1, 1.2]; // Oct 2026 (gold as a currency): the monsters' gold grows slowly, so the dice stay at least half of what a fight pays (was 1, 1.3, 1.8)
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).

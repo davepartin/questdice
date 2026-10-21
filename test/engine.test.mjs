@@ -270,31 +270,58 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
   assert.equal(weaponFaces(h.loadout.NW, sidesOf(h, 'NW')).length, 6);
 });
 
-test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.strength = { W: 4, E: 4 };
-  const uid = h.loadout.NW.uid;
-  h.gold = 1000;
-  assert.equal(trainInfo(h, uid).why, 'hands');
-  assert.equal(trainWeapon(h, uid), false);
-  h.strength.W = 6; assert.equal(trainWeapon(h, uid), true);
-  assert.equal(h.loadout.NW.size, 6); assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4]);
-  assert.equal(trainInfo(h, uid).why, 'hands'); // d8 needs a d8 hand
-  assert.equal(forgeWeapon(h, uid), true); assert.equal(h.loadout.NW.rarity, 1);
-  assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4] - FORGE_COST[1]);
-  h.gold = 0; assert.equal(forgeInfo(h, uid).why, 'gold');
-  // a two-hander sits in both hands, but each hand's die (the bow, then its arrows) is forged on its own
-  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); r.gold = 1000; const ru = r.loadout.NW.uid;
-  assert.equal(r.loadout.NE.twin, true); assert.notEqual(r.loadout.NE.uid, ru);
-  assert.equal(forgeWeapon(r, ru), true);
-  assert.equal(r.loadout.NW.rarity, 1); assert.equal(r.loadout.NE.rarity, 0, 'the arrows stay as they were');
-  assert.equal(r.gold, 1000 - Math.round(FORGE_COST[1] * 1.4));
-  assert.equal(forgeWeapon(r, r.loadout.NE.uid), true); assert.equal(r.loadout.NE.rarity, 1);
+test('weapons are what you find or buy: forging and training are retired (wear, Oct 2026)', () => {
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.gold = 9999; const uid = h.loadout.NW.uid; h.strength.W = 8;
+  assert.equal(forgeInfo(h, uid).ok, false); assert.equal(forgeWeapon(h, uid), false);
+  assert.equal(trainInfo(h, uid).ok, false); assert.equal(trainWeapon(h, uid), false);
+  assert.equal(h.gold, 9999); assert.equal(h.loadout.NW.rarity, 0); void WEAPON_SIZE_STEPS; void FORGE_COST;
 });
 
-test('Gold, the best metal, cannot be forged further and fists cannot be improved', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.gold = 9999; const uid = h.loadout.NW.uid;
-  for (let i = 0; i < 2; i++) assert.equal(forgeWeapon(h, uid), true);
-  assert.equal(h.loadout.NW.rarity, 2); assert.equal(forgeInfo(h, uid).why, 'max');
+test('a weapon lasts its battles (Bronze 4, Silver 6, Gold 8), then breaks after the fight; the hand is empty', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'W', cls: 'knight', seed: 1 }); const sword = h.loadout.NW; const shield = h.loadout.NE;
+  assert.equal(E.battlesLeft(sword), 4);
+  const spare = makeWeapon('dagger', 2, makeRng(3)); h.bag.push(spare); assert.equal(E.battlesLeft(spare), 8);
+  for (let i = 0; i < 3; i++) E.shatterDiamonds(h);
+  assert.equal(E.battlesLeft(h.loadout.NW), 1, 'three battles used'); assert.equal(E.battlesLeft(spare), 8, 'a weapon in the pack rests');
+  assert.equal(h.justBroke, undefined);
+  E.shatterDiamonds(h);
+  assert.equal(h.loadout.NW.id, 'fists'); assert.equal(h.loadout.NE.id, 'fists', 'the shield broke the same battle');
+  assert.deepEqual(h.justBroke.map((w) => w.id), [sword.id, shield.id]);
+  assert.ok(h.bag.includes(spare), 'the pack is untouched: equip the spare at camp');
+});
+
+test('a two-hander counts once and breaks whole; with empty hands and an empty pack a plain Bronze weapon waits', async () => {
+  const E = await import('../js/engine.js');
+  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); assert.equal(r.loadout.NE.twin, true);
+  for (let i = 0; i < 3; i++) E.shatterDiamonds(r);
+  assert.equal(E.battlesLeft(r.loadout.NW), 1); assert.equal(E.battlesLeft(r.loadout.NE), 1, 'the arrows keep step with the bow');
+  E.shatterDiamonds(r);
+  assert.equal(r.justBroke.length, 1, 'one weapon, not two');
+  assert.equal(r.loadout.NW.id, 'bow', 'nothing in the pack: a plain Bronze bow waits'); assert.equal(r.loadout.NW.rarity, 0);
+  assert.equal(E.battlesLeft(r.loadout.NW), 4);
+});
+
+test('a hand that held a Diamond does not wear its own weapon; a worn weapon sells for less', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'D', cls: 'knight', seed: 2 }); const own = h.loadout.NW;
+  const d = E.makeDiamond(makeRng(4), 1); E.takeDiamond(h, d); E.armDiamond(h, d.uid, 'NW'); E.wieldDiamonds(h);
+  E.shatterDiamonds(h);
+  assert.equal(h.loadout.NW, own); assert.equal(E.battlesLeft(own), 4, 'set aside for the Diamond, so it rested');
+  assert.equal(E.battlesLeft(h.loadout.NE), 3, 'the shield fought');
+  const g = makeWeapon('sword', 2, makeRng(5)); const full = E.sellValue(g); g.left = 4;
+  assert.equal(E.sellValue(g), Math.round(E.weaponValue(g) * 0.5 * 4 / 8)); assert.ok(E.sellValue(g) < full);
+});
+
+test('spoils are mostly Bronze, a boss leaves at least Silver; the store sells one Bronze, two Silver and one Gold', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'S', cls: 'knight', seed: 9 });
+  const metal = [0, 0, 0]; const rng = makeRng(11);
+  for (let i = 0; i < 400; i++) for (const w of E.rollDrops(rng, 2, { weights: [85, 13, 2] })) metal[w.rarity]++;
+  assert.ok(metal[0] > 600 && metal[2] < 40, `spoils metal ${metal}`);
+  for (let s = 1; s <= 6; s++) { h.campaign.step = s; h.campaign.shop = null;
+    const items = E.shopStock(h).filter((it) => !it.inst.diamond && it.inst.rarity < 3);
+    if (items.length === 4) assert.deepEqual(items.map((it) => it.inst.rarity), [0, 1, 1, 2]); }
 });
 
 function duel(hero, enemyId, intent, boardSpec, opts = {}) {

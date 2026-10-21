@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_MIN,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
@@ -159,12 +159,59 @@ export function wieldDiamonds(hero) {
   hero.wielding = [pick2.NW, pick2.NE].filter(Boolean);
   return hero.wielding;
 }
-// The fight is over (won, lost or left): the Diamonds shatter and the hands get their own weapons back. Returns what shattered.
+// The fight is over (won, lost or left): the Diamonds shatter and the hands get their own weapons back, and every weapon that was in
+// a hand wears a battle (a weapon set aside for a Diamond does not). Returns what shattered; what broke is left in hero.justBroke.
 export function shatterDiamonds(hero) {
-  if (!hero?.lent) return [];
-  const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
-  if (L.dice) hero.dice = L.dice; else delete hero.dice;
-  const gone = hero.wielding || []; delete hero.lent; delete hero.wielding; return gone;
+  if (!hero?.loadout) return [];
+  const skip = new Set(['NW', 'NE'].filter((k) => hero.loadout[k]?.diamond)); // hands a Diamond held this fight
+  let gone = [];
+  if (hero.lent) {
+    const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
+    if (L.dice) hero.dice = L.dice; else delete hero.dice;
+    gone = hero.wielding || []; delete hero.lent; delete hero.wielding;
+  }
+  const broke = wearHands(hero, skip);
+  if (broke.length) hero.justBroke = [...(hero.justBroke || []), ...broke]; // the victory or defeat screen says so, then clears it
+  return gone;
+}
+// ---- wear (Oct 2026): battles a weapon lasts, and how many it has left. Fists and Diamonds never wear here.
+export const battlesFull = (inst) => (!inst || inst.id === 'fists' || inst.diamond ? Infinity : WEAR_BATTLES[isLegendary(inst) ? 2 : Math.min(2, inst.rarity | 0)]);
+export const battlesLeft = (inst) => { const f = battlesFull(inst); return f === Infinity ? Infinity : Math.max(0, Math.min(f, inst.left ?? f)); };
+// One battle off every weapon in the hands (a two-hander counts once). A weapon with none left breaks: its hand is empty.
+// A hero is never left with nothing at all: with empty hands and an empty pack, a plain Bronze weapon of the class is waiting.
+export function wearHands(hero, skip = new Set()) {
+  const broke = [];
+  for (const k of ['NW', 'NE']) {
+    const w = hero.loadout[k]; if (!w || w.id === 'fists' || w.twin || w.diamond || skip.has(k)) continue;
+    w.left = battlesLeft(w) - 1;
+    const two = WEAPONS[w.id]?.hands === 2;
+    if (two && hero.loadout.NE?.twin) hero.loadout.NE.left = w.left;
+    if (w.left > 0) continue;
+    broke.push({ id: w.id, rarity: w.rarity | 0, size: weaponSize(w) });
+    if (two) { hero.loadout.NW = fists('L'); hero.loadout.NE = fists('R'); } else hero.loadout[k] = fists(k === 'NW' ? 'L' : 'R');
+  }
+  const empty = ['NW', 'NE'].every((k) => !hero.loadout[k] || hero.loadout[k].id === 'fists');
+  if (broke.length && empty && !hero.bag.length) {
+    const id = CLASSES[hero.cls]?.weapons?.[0] || 'sword'; const c = hero.campaign || {};
+    const w = makeWeapon(id, 0, makeRng(hashSeed(c.seed || 1, c.act || 1, c.step || 1, 'spare', hero.stats?.battles || 0)));
+    hero.loadout.NW = w; if (WEAPONS[id].hands === 2) hero.loadout.NE = twinOf(w);
+    hero.justSpare = id;
+  }
+  return broke;
+}
+// What broke after the last fight (and the plain weapon waiting, if both hands came up empty), for the victory or defeat screen.
+// Reading it clears it.
+export function takeBroken(hero) { const broke = hero?.justBroke || []; const spare = hero?.justSpare || null; if (hero) { delete hero.justBroke; delete hero.justSpare; } return { broke, spare }; }
+export function brokenLine({ broke, spare }) {
+  if (!broke?.length) return '';
+  const names = broke.map((w) => `${RARITY[w.rarity] || ''} ${WEAPONS[w.id]?.name || 'weapon'}`.trim());
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  return `Your ${list} ${names.length > 1 ? 'are' : 'is'} worn out after this battle.${spare ? ` A plain Bronze ${WEAPONS[spare]?.name || 'weapon'} is waiting.` : ' Equip a spare from your pack at camp.'}`;
+}
+// What a weapon card says about its wear: "3 battles left", or "one fight" for a Diamond.
+export function wearLabel(inst) {
+  if (!inst || inst.id === 'fists') return ''; if (inst.diamond) return 'one fight';
+  const n = battlesLeft(inst); return `${n} battle${n === 1 ? '' : 's'} left`;
 }
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
@@ -1054,13 +1101,13 @@ export function dropSizeWeights(act, step, up = 0) {
   for (let i = 0; i < up; i++) { const last = w.pop(); w.unshift(0); w[3] += last; } // shift the odds one size up (d10 keeps what falls off the end)
   return w;
 }
-export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = [100, 0, 0, 0], minSize = 4 } = {}) {
+export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = [100, 0, 0, 0], minSize = 4, weights = RARITY_WEIGHTS, rarities = null } = {}) {
   const drops = [];
   const ids = Object.keys(LOOT_WEIGHTS);
   for (let i = 0; i < count; i++) {
     const id = ids[weighted(rng, ids.map((k) => LOOT_WEIGHTS[k]))];
-    const w = RARITY_WEIGHTS.map((x, r) => (r === 0 ? Math.max(1, x - rarityBoost * 4) : x + rarityBoost * (r === 1 ? 3 : r === 2 ? 1.5 : 0.5)));
-    const rarity = Math.max(minRarity, weighted(rng, w));
+    const w = weights.map((x, r) => (r === 0 ? Math.max(1, x - rarityBoost * 4) : x + rarityBoost * (r === 1 ? 3 : r === 2 ? 1.5 : 0.5)));
+    const rolled = weighted(rng, w); const rarity = Math.max(minRarity, rarities ? rarities[i % rarities.length] : rolled);
     const size = Math.max(minSize, SIZES[weighted(rng, sizes)] || 4);
     drops.push(makeWeapon(id, rarity, rng, size));
   }
@@ -1091,9 +1138,10 @@ export function battleRewards(b) {
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
-  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : nemesisKill ? 2 : 0;
+  // spoils are mostly Bronze (wear, Oct 2026): a boss or a nemesis leaves at least a Silver one, Gold only now and then
+  const minRarity = quest.kind === 'boss' || nemesisKill ? 1 : 0;
   const c = hero.campaign; const sizes = dropSizeWeights(c.act, c.step, quest.perilous ? 1 : 0);
-  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
+  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 1 : 0) + (quest.kind === 'boss' ? 1 : 0), sizes, weights: SPOILS_RARITY });
   if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
@@ -1208,6 +1256,9 @@ export function upgradeDie(hero, kind, slot) {
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
 const handsMul = (inst) => (WEAPONS[inst.id].hands === 2 ? 1.4 : 1);
 export function forgeInfo(hero, uid) {
+  return { ok: false, why: 'wear' }; // retired with wear (Oct 2026): a weapon is what you find or buy
+}
+export function forgeInfoOld(hero, uid) {
   ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const next = (inst.rarity | 0) + 1;
@@ -1221,6 +1272,9 @@ export function forgeWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
 }
 export function trainInfo(hero, uid) {
+  return { ok: false, why: 'wear' }; // retired with wear (Oct 2026)
+}
+export function trainInfoOld(hero, uid) {
   ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
@@ -1235,7 +1289,8 @@ export function trainWeapon(hero, uid) {
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
 export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[weaponSize(inst)] || 1)));
-export const sellValue = (inst) => (inst.id === 'fists' ? 0 : Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE)));
+// A sale returns half its worth, less for a worn weapon (by the battles it has left).
+export const sellValue = (inst) => { if (inst.id === 'fists') return 0; const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
 export const bagFull = (hero) => bagRoom(hero) <= 0;
@@ -1248,7 +1303,7 @@ export function shopStock(hero) {
   const flags = c.campFlags || {};
   const priceMod = Math.max(0.4, 1 - (flags.discount || 0) + (flags.hike || 0));
   void mult;
-  const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4), sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({
+  const items = rollDrops(rng, 4, { rarities: STORE_RARITY, sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({ // one Bronze, two Silver, one Gold
     inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false,
   }));
   // from Act II the Camp Store sometimes stocks one legendary you do not already own

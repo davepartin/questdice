@@ -181,12 +181,12 @@ To decide first: how a turned hero's block works against friends, whether heals 
 
 ## Order of work
 
-- [ ] **Measure the real curve:** per-round damage with powers and rerolls, by act and class, and how often heroes drop below half health on Normal.
+- [x] **Measure the real curve:** per-round damage with powers and rerolls, by act and class, and how often heroes drop below half health on Normal.
 - [ ] **Powers and the exchange rate:** level scaling +50% to +25%, charge steps 4, 6, 8, 10, Arc Bolt dice priced up.
-- [ ] **Straights:** minimum length grows with your biggest die.
+- [x] **Straights:** minimum length grows with your biggest die (built 21 Oct on `claude/economy-pass`: d4 5, d6 6, d8+ 7).
 - [ ] **Heart die by symbol.**
 - [ ] **Re-check Normal difficulty** after the three changes above; only then touch monster health.
-- [ ] **Weapon wear and Repair** (needs a save field and camp UI; waits for the camp UI work to settle).
+- [x] **Weapon wear** (built 21 Oct on `claude/economy-pass`: 4 / 6 / 8 battles, no repair, spoils mostly Bronze, Silver and Gold in the store, monster gold grows slowly). Display polish goes to the UI builder.
 - [ ] **Bonus Goal wagers.**
 - [ ] **Team ideas:** design only; pick one to prototype after Act III has its own monsters.
 
