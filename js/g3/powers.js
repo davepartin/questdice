@@ -73,60 +73,48 @@ const chip = (f, v, extra = '') => h('span', { class: `pw-chip t-${TONE[f] || 'm
 
 // the numbers of a power at a level: every number steps up by the same rule as the engine (scaleNum); a free reroll gains one die a level
 const lvlFx = (fx, level) => Object.fromEntries(Object.entries(fx || {}).map(([f, v]) => [f, f === 'free' ? v + level : E.scaleNum(v, level)]));
-// Charges, listed exactly as the engine pays them: "+5, 7, 9, 11 attack", "heal 4, 6, 8, 10", "+2, 4, 6, 8 attack and block".
-const listWords = (f, xs) => (f === 'heal' ? `heal ${xs.join(', ')}` : `+${xs.join(', ')} ${NAME[f] || f}`);
-function chargeList(k, level, n = k.max) {
-  const groups = []; // effects that pay the same numbers share one list
-  for (const [f, xs] of Object.entries(E.chargeValues(k, n, level))) { const g = groups.find((x) => x.xs.join() === xs.join() && f !== 'heal' && x.fs[0] !== 'heal'); if (g) g.fs.push(f); else groups.push({ fs: [f], xs }); }
-  return groups.map((g) => (g.fs.length > 1 ? `+${g.xs.join(', ')} ${g.fs.map((f) => NAME[f] || f).join(' and ')}` : listWords(g.fs[0], g.xs))).join(' and ');
-}
-const chargeTotal = (k, level) => fxWords(E.chargeGain(k, k.max, level));
-// What a power level adds to a round power (the engine boosts the whole round's number, scaleNum).
-const ROUND_BOOST = ['', 'plus a quarter', 'plus half', 'doubled'];
-const roundRule = (k, level) => `${k.per} × the round number${level ? `, ${ROUND_BOOST[Math.min(level, 3)]} (at least ${D.POWER_LEVEL_MIN[Math.min(level, 3)]} more)` : ''}`;
-const roundSamples = (k, level) => { const r0 = Math.max(2, k.minRound || 0); return [r0, r0 + 1, r0 + 2].map((r, i) => `${i ? '' : 'round '}${r}: +${E.roundGain(k, r, level)}`).join(', '); };
 const scaleTop = (k, level) => E.powerDice(k, E.scaleMax(k, level), level);
 
-// A short plain line: what this power gives, at its level (with the magic you chose for a scale power).
+// Power words are kept short (Dave, Oct 2026: "this is way too many words... less words please"). The numbers come from the engine.
+const totWords = (k, level) => Object.entries(E.chargeGain(k, k.max, level)).map(([f, v]) => (f === 'heal' ? `heal ${v}` : `${v} ${NAME[f] || f}`)).join(', ');
+const splashWord = (k) => (k.splash === 'half' ? ' Half splashes.' : '');
+// What this power does, at its level (the camp page and the battle sheet).
 export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
-  const lvl = level ? ` (level ${level})` : '';
-  if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
-  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = ` (up to ${scaleTop(k, level)}d${k.dice.s} for ${E.scaleMax(k, level)} magic)`; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die` : 'Each extra magic adds a die'}${top}${lvl}.`; }
-  if (k.kind === 'round') return `Attack equal to ${roundRule(k, level)}. R${round ? `ound ${round}: +${E.roundGain(k, round, level)}` : roundSamples(k, level).slice(1)}${k.splash === 'half' ? ', half splashing on the other monsters' : ''}${lvl}.`;
-  if (k.kind === 'charge') return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}, or release them, not both in one round. Each charge is worth more than the last: ${chargeList(k, level)}. All ${k.max} together: ${chargeTotal(k, level)}${k.splash === 'half' ? ', half splashing on the other monsters' : ''}${lvl}.`;
-  if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
-  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(E.LUCK.mid, level)} attack, 5–6 +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic.`;
-  return `${fxWords(lvlFx(k.fx, level))} this round${lvl}.`;
+  if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
+  if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
+  if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return `Attack grows each round. Round ${r}: +${E.roundGain(k, r, level)}.${splashWord(k)}`; }
+  if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} stored. `}Store 1 a round, or release all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
+  if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to every monster.`;
+  if (k.kind === 'luck') return `Roll a d6. 1–2: +${1 + level} magic. 3–4: +${E.scaleNum(E.LUCK.mid, level)} attack. 5–6: +${E.scaleNum(E.LUCK.top, level)} attack, +1 magic.`;
+  const t = fxWords(lvlFx(k.fx, level)); return `${t[0].toUpperCase()}${t.slice(1)}.`;
 }
-// Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+3, 5, 7, 9 pierce (all 4: +24)", "3d6 pierce".
+// Just the result at a level, for the compare box and the level list: "Total 28 attack", "3d6 attack", "+5 block".
 export function shortLine(k, level = 0) {
   if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
-  if (k.kind === 'scale') return `${k.cost} magic = ${E.powerDice(k, k.cost, level)}d${k.dice.s} ${NAME[k.dice.to]}, up to ${scaleTop(k, level)}d${k.dice.s}`;
-  if (k.kind === 'round') { const t = roundSamples(k, level); return `${t[0].toUpperCase()}${t.slice(1)} attack`; }
-  if (k.kind === 'charge') { const tot = Object.entries(E.chargeGain(k, k.max, level)); return `${chargeList(k, level)} (all ${k.max}: ${tot.length > 1 ? chargeTotal(k, level) : `${tot[0][0] === 'heal' ? 'heal ' : '+'}${tot[0][1]}`})`; }
+  if (k.kind === 'scale') return `${E.powerDice(k, k.cost, level)}d${k.dice.s}, max ${scaleTop(k, level)}d${k.dice.s}`;
+  if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `Round ${r}: +${E.roundGain(k, r, level)} attack`; }
+  if (k.kind === 'charge') return `Total ${totWords(k, level)}`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
-  if (k.kind === 'luck') return `d6: +${1 + level} magic, +${E.scaleNum(E.LUCK.mid, level)} attack, or +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic`;
+  if (k.kind === 'luck') return `+${1 + level} magic / +${E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, level)} attack`;
   return fxWords(lvlFx(k.fx, level));
 }
-
-// What one upgrade changes, in plain words from the engine's numbers (Dave, Oct 2026: "make sure that the communication is clear what
-// the power does and what the magic upgrade would give you that's different"). "+1 on every charge (+4 when all 4 go)".
+// What one upgrade adds, in a few words: "+1 each charge (+4 total)", "+1 die", "+1 block".
 export function upgradeLine(k, level = 0) {
-  const nx = level + 1; const every = k.atwill ? ' every round' : '';
+  const nx = level + 1;
   if (k.kind === 'charge') {
-    const a = E.chargeValues(k, k.max, level); const b2 = E.chargeValues(k, k.max, nx); const tot = E.chargeGain(k, k.max, nx); const tot0 = E.chargeGain(k, k.max, level);
-    const parts = Object.keys(a).map((f) => { const d = b2[f].map((x, i) => x - a[f][i]); const word = f === 'heal' ? 'healing' : NAME[f] || f; return d.every((x) => x === d[0]) ? `+${d[0]} ${word}` : `+${d.join(', ')} ${word}`; });
-    const same = Object.keys(a).every((f) => b2[f].map((x, i) => x - a[f][i]).every((x, _, d) => x === d[0]));
-    return `${parts.join(' and ')} on ${same ? 'every charge' : 'the charges, first to last'} (${Object.keys(tot).map((f) => `+${tot[f] - tot0[f]}`).join(' and ')} when all ${k.max} go).`;
+    const a = E.chargeValues(k, k.max, level); const b2 = E.chargeValues(k, k.max, nx); const t0 = E.chargeGain(k, k.max, level); const t1 = E.chargeGain(k, k.max, nx);
+    const fs = Object.keys(a); const words = fs.map((f) => (f === 'heal' ? 'heal' : NAME[f] || f)); const ds = fs.map((f) => b2[f].map((x, i) => x - a[f][i]));
+    if (ds.every((d) => d.every((x) => x === ds[0][0]))) return `+${ds[0][0]} ${words.join(' and ')} each charge (+${t1[fs[0]] - t0[fs[0]]} ${fs.length > 1 ? 'each' : 'total'})`;
+    return fs.map((f, i) => `+${t1[f] - t0[f]} ${words[i]} total`).join(', ');
   }
-  if (k.kind === 'dice') return `One more die: ${k.dice.n + nx}d${k.dice.s} instead of ${k.dice.n + level}d${k.dice.s} (about +${((k.dice.s + 1) / 2).toFixed(1).replace(/\.0$/, '')} ${NAME[k.dice.to]}).`;
-  if (k.kind === 'scale') return `One more die for the same magic: ${k.cost} magic rolls ${E.powerDice(k, k.cost, nx)}d${k.dice.s} instead of ${E.powerDice(k, k.cost, level)}d${k.dice.s}${E.scaleMax(k, nx) < E.scaleMax(k, level) ? `, and the most dice cost ${E.scaleMax(k, level) - E.scaleMax(k, nx)} less magic` : ''}.`;
-  if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `More each round: round ${r} gives +${E.roundGain(k, r, nx)} instead of +${E.roundGain(k, r, level)}, and the gap grows as the fight goes on.`; }
-  if (k.kind === 'luck') return `1–2: +${1 + nx} magic instead of +${1 + level}; 3–4: +${E.scaleNum(E.LUCK.mid, nx)} attack instead of +${E.scaleNum(E.LUCK.mid, level)}; 5–6: +${E.scaleNum(E.LUCK.top, nx)} instead of +${E.scaleNum(E.LUCK.top, level)}.`;
+  if (k.kind === 'dice') return `+1 die (${k.dice.n + nx}d${k.dice.s})`;
+  if (k.kind === 'scale') return `+1 die for the same magic`;
+  if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `+${E.roundGain(k, r, nx) - E.roundGain(k, r, level)} attack in round ${r}, more later`; }
+  if (k.kind === 'luck') return `+1 magic, +${E.scaleNum(E.LUCK.mid, nx) - E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, nx) - E.scaleNum(E.LUCK.top, level)} attack`;
   const ch = Object.entries(k.fx).map(([f, v]) => { const o = f === 'free' ? v + level : E.scaleNum(v, level); const n = f === 'free' ? v + nx : E.scaleNum(v, nx);
-    return f === 'free' ? `${n - o} more die in the free reroll (${n} instead of ${o})` : f === 'weaken' ? `monsters hit ${n - o} softer still (${n} instead of ${o})` : `+${n - o} ${NAME[f] || f} (${n} instead of ${o})`; });
-  if (k.kind === 'super') ch.push(`+${E.scaleNum(k.aoe, nx) - E.scaleNum(k.aoe, level)} to every monster (${E.scaleNum(k.aoe, nx)} instead of ${E.scaleNum(k.aoe, level)})`);
-  return `${ch.join(', ')}${every}.`;
+    return f === 'free' ? `+${n - o} reroll die` : f === 'weaken' ? `hit ${n - o} softer` : `+${n - o} ${NAME[f] || f}`; });
+  if (k.kind === 'super') ch.push(`+${E.scaleNum(k.aoe, nx) - E.scaleNum(k.aoe, level)} to all`);
+  return ch.join(', ');
 }
 
 // ------------------------------------------------------------------------------------------------ the sigil (powers sheet)
@@ -266,7 +254,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       const pips = h('div', { class: 'cr-charges' }, Array.from({ length: k.max }, (_, i) => h('i', { class: `${i < n - 1 ? 'on' : ''} ${i === n - 1 ? 'new' : ''}` }, i === n - 1 ? HK.icon('windup') : null)));
       const now = Object.entries(E.chargeGain(k, n, level)).map(([f, v]) => chip(f, v)); void per;
       const next = n < k.max ? Object.entries(E.chargeGain(k, n + 1, level)).map(([f, v]) => `${v} ${NAME[f] || f}`).join(', ') : '';
-      art.append(h('p', { class: 'dr-what' }, `Charge ${n} of ${k.max} stored. Each one is worth more than the last.${next ? ` One more and they release for ${next}.` : ''}`), pips,
+      art.append(h('p', { class: 'dr-what' }, `Charge ${n} of ${k.max}.${next ? ` Next: ${next}.` : ''}`), pips,
         h('div', { class: 'cr-note' }, h('small', {}, 'Release them now for'), h('div', { class: 'cr-now' }, now)));
       later(450, () => { pips.querySelector('.new')?.classList.add('fill'); sfx.magic?.(); });
       finish(1050); skip = () => { pips.querySelector('.new')?.classList.add('fill'); finish(0); };
@@ -276,7 +264,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       const nums = Object.fromEntries(Object.keys(gains).map((f) => [f, h('b', {}, '0')]));
       const rows = h('div', { class: 'cr-tally' }, Object.entries(nums).map(([f, el]) => h('span', { class: `pw-chip t-${TONE[f] || 'magic'}` }, HK.icon(FX_ICON[f] || 'magic'), el, ' ', NAME[f] || f)));
       const steps = Object.values(E.chargeValues(k, n, level))[0] || [1]; const sumTo = (i) => steps.slice(0, i + 1).reduce((a, v) => a + v, 0); // each pip adds a little more than the last
-      art.append(h('p', { class: 'dr-what' }, `${n} stored charge${n > 1 ? 's' : ''} let go, each worth more than the last: ${steps.join(' + ')}.`), pips, rows); Object.keys(gains).forEach((f) => shown.add(f));
+      art.append(h('p', { class: 'dr-what' }, `${steps.join(' + ')}`), pips, rows); Object.keys(gains).forEach((f) => shown.add(f));
       const step = (i) => { const pip = pips.children[i]; pip?.classList.add('pop'); sfx.dieSettle?.(); for (const [f, el] of Object.entries(nums)) count(el, Math.round((gains[f] * sumTo(i)) / sumTo(n - 1)), 260); };
       for (let i = 0; i < n; i++) later(500 + i * 330, () => { step(i); if (i === n - 1) finish(); });
       skip = () => { for (let i = 0; i < n; i++) pips.children[i]?.classList.add('pop'); for (const [f, el] of Object.entries(nums)) el.textContent = String(gains[f]); finish(0); };

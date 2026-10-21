@@ -1118,19 +1118,19 @@ function campPowers(hero) {
   } else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in slot ${k.slot} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
     h('span', { class: 'sh-buy-l' }, `Equip in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, 'Free'));
   else { const learn = E.learnInfo(hero, k.id); cost = learn.cost; action = shBuy(hero, { label: 'Learn & equip', cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
-  const when = k.kind === 'charge' ? `Store one charge each round, up to ${k.max}. Release them together.` : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
+  const when = k.kind === 'charge' ? '' : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
   const levels = h('details', { class: 'cp-levels ww-pack' }, h('summary', {}, ico('spark'), 'All power levels'),
     h('div', { class: 'cp-level-list' }, Array.from({ length: E.powerLevelsOf(hero) + 1 }, (_, lv) => h('div', { class: lv === level ? 'current' : '' }, h('b', {}, `Level ${lv}${lv === level ? ' · current' : ''}`), h('span', {}, shortLine(k, lv))))));
   return h('div', { class: 'cp-workshop' }, tabs, h('p', { class: 'cp-instruction' }, 'Choose a slot, then inspect a power. One equipped power per slot.'), cards,
     h('section', { class: `cp-detail tone-${toneOf(k)}`, tabindex: '-1', 'aria-labelledby': 'cp-title' },
       h('div', { class: 'cp-title-row' }, h('span', { class: 'cp-medal' }, powerGlyph(k)), h('div', {}, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]} · ${status(row)}`), h('h3', { id: 'cp-title' }, k.name))),
-      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Power level ${level}`)),
-      h('p', { class: 'cp-effect' }, effectLine(k, { level })), h('p', { class: 'cp-when' }, when),
+      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Level ${level}`)),
+      h('p', { class: 'cp-effect' }, effectLine(k, { level })), when ? h('p', { class: 'cp-when' }, when) : null,
       row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · LEVEL ${level}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · LEVEL ${up.next}`), h('b', {}, shortLine(k, up.next)))) : null,
-      row.equipped && up.next ? h('p', { class: 'cp-change' }, h('small', {}, 'WHAT THE UPGRADE ADDS'), h('span', {}, upgradeLine(k, level))) : null,
+      row.equipped && up.next ? h('p', { class: 'cp-change' }, h('small', {}, 'UPGRADE ADDS'), h('span', {}, upgradeLine(k, level))) : null,
       !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
       action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
-      levels, h('details', { class: 'cp-base ww-pack' }, h('summary', {}, 'Base description · level 0'), h('p', {}, k.text))));
+      levels));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used

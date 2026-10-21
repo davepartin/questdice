@@ -1,7 +1,7 @@
 // Balance simulator: a simple bot plays the real engine. Usage: node tools/sim.mjs [battles] [class]
 import {
   makeRng, newHero, newBattle, startRoll, reroll, rerollInfo, evaluate, resolve, playCard, healSpend,
-  cardsOf, powerState, castPower, upgradePower, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
+  cardsOf, powerState, castPower, upgradePower, powerUpgradeInfo, recharge, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
   buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink,
@@ -84,6 +84,8 @@ function wiseChoices(b) {
       continue;
     }
     if (c.fx?.free) continue;
+    // a spent big move can be bought back for RECHARGE_COST and cast again (the player does it before the roll; the cost is the same)
+    if (!c.atwill && c.kind !== 'super' && b.used[c.id]) { const n = c.kind === 'scale' ? Math.max(c.cost, Math.floor((b.magic - 3) / 2)) : undefined; out.push({ k: `${c.id}^`, go: (x) => recharge(x, c.id) && !!castPower(x, c.id, { x: n }) }); continue; }
     if (c.kind === 'scale') { for (const n of new Set([c.cost, Math.max(c.cost, Math.floor(b.magic / 2)), Math.min(c.max, b.magic)])) out.push({ k: `${c.id}:${n}`, go: (x) => castPower(x, c.id, { x: n }) }); continue; }
     out.push({ k: c.id, go: (x) => castPower(x, c.id) });
   }
@@ -193,7 +195,6 @@ export function fight(hero, quest, rng) {
 export function botCamp(hero, rng) {
   while (hero.pendingPerks > 0) takePerk(hero, offerPerks(hero, rng)[0]);
   while (buyPotion(hero)) { /* refill the belt first: potions are bought at camp now */ }
-  for (const k of cardsOf(hero)) if (hero.gold > 260) upgradePower(hero, k.id);
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   if (hero.gold >= 230) buyRerollDie(hero); // the 4th reroll die once there is a little to spare
   if (SIM.pets) botPet(hero);
@@ -204,6 +205,8 @@ export function botCamp(hero, rng) {
     for (const slot of ['W', 'E']) if (upgradeDie(hero, 'strength', slot)) acted = true;
     for (const slot of ['SW', 'SE']) if (upgradeDie(hero, 'special', slot)) acted = true;
   }
+  // power levels after the dice, keeping a little gold back (tools/worth.mjs: a level is worth about a bigger hand die per gold)
+  for (const k of cardsOf(hero)) { const u = powerUpgradeInfo(hero, k.id); if (u.cost && hero.gold >= u.cost + 30) upgradePower(hero, k.id); }
   // weapons: train them as the hands allow, then forge tiers with spare gold
   const held = [...new Set(['NW', 'NE'].map((k) => hero.loadout[k]).filter((w) => w && w.id !== 'fists').map((w) => w.uid))];
   for (const uid of held) while (trainWeapon(hero, uid)) { /* grow it */ }

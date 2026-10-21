@@ -25,12 +25,11 @@ test('charge powers: the listed charges and total are what a release pays, at ev
     const vals = chargeValues(k, k.max, lvl); const tot = chargeGain(k, k.max, lvl);
     const short = shortLine(k, lvl); const long = effectLine(k, { level: lvl });
     for (const [f, xs] of Object.entries(vals)) {
-      assert.ok(short.includes(xs.join(', ')), `${k.name} L${lvl} short "${short}" lists ${xs}`);
       assert.ok(long.includes(xs.join(', ')), `${k.name} L${lvl} effect lists ${xs}`);
-      assert.ok(short.includes(String(tot[f])), `${k.name} L${lvl} short shows the total ${tot[f]}`);
+      assert.ok(short.includes(String(tot[f])) && long.includes(String(tot[f])), `${k.name} L${lvl} shows the total ${tot[f]}`);
       assert.equal(xs.reduce((a, x) => a + x, 0), tot[f]);
     }
-    assert.ok(!/per charge/.test(short), `${k.name}: no flat "per charge" number (each charge is worth more than the last)`);
+    assert.ok(short.startsWith('Total '), `${k.name}: the short line is just the total ("${short}")`);
     // the engine pays exactly the total
     const b = castable(clsIdOf(cls), k, lvl); const id = k.id;
     for (let i = 0; i < k.max; i++) { b.usedRound = {}; assert.ok(castPower(b, id), `${k.name} stores charge ${i + 1}`); }
@@ -40,17 +39,19 @@ test('charge powers: the listed charges and total are what a release pays, at ev
   }
 });
 
-test('Storm Coil reads the way the engine pays it: 4, 6, 8, 10 now and 5, 7, 9, 11 after the first upgrade', () => {
+test('Storm Coil reads the way the engine pays it: 4, 6, 8, 10 now and 6, 8, 10, 12 after the first upgrade', () => {
   const coil = all.find((x) => x.k.id === 'coil').k;
-  assert.equal(shortLine(coil, 0), '+4, 6, 8, 10 attack (all 4: +28)');
-  assert.equal(shortLine(coil, 1), '+5, 7, 9, 11 attack (all 4: +32)');
+  assert.equal(shortLine(coil, 0), 'Total 28 attack');
+  assert.equal(shortLine(coil, 1), 'Total 36 attack');
+  assert.ok(effectLine(coil, { level: 0 }).includes('4, 6, 8, 10 attack. Total 28.'));
+  assert.ok(effectLine(coil, { level: 1 }).includes('6, 8, 10, 12 attack. Total 36.'));
 });
 
 test('round powers: the sample rounds shown are what a cast in that round gives', () => {
   for (const { cls, k } of all.filter((x) => x.k.kind === 'round')) for (const lvl of LEVELS) {
-    const r0 = Math.max(2, k.minRound || 0);
+    const r0 = Math.max(4, k.minRound || 0);
+    assert.ok(shortLine(k, lvl).includes(`Round ${r0}: +${roundGain(k, r0, lvl)}`), `${k.name} L${lvl} round ${r0}`);
     for (const r of [r0, r0 + 1, r0 + 2]) {
-      assert.ok(shortLine(k, lvl).includes(`${r}: +${roundGain(k, r, lvl)}`), `${k.name} L${lvl} round ${r}`);
       const b = castable(clsIdOf(cls), k, lvl, r); const a0 = b.mods.atk;
       assert.ok(castPower(b, k.id)); assert.equal(b.mods.atk - a0, roundGain(k, r, lvl), `${k.name} L${lvl} cast in round ${r}`);
       assert.ok(effectLine(k, { level: lvl, round: r }).includes(`Round ${r}: +${roundGain(k, r, lvl)}`));
@@ -66,8 +67,8 @@ test('dice and scale powers: the dice named are the dice rolled, and the top of 
     assert.equal(r.rolls.length, n, `${k.name} L${lvl} rolls ${n} dice`);
     if (k.kind === 'scale') {
       const top = powerDice(k, scaleMax(k, lvl), lvl);
-      assert.ok(shortLine(k, lvl).includes(`up to ${top}d${k.dice.s}`), `${k.name} L${lvl} top ${top}`);
-      assert.ok(effectLine(k, { level: lvl }).includes(`up to ${top}d${k.dice.s} for ${scaleMax(k, lvl)} magic`), `${k.name} L${lvl} effect top`);
+      assert.ok(shortLine(k, lvl).includes(`max ${top}d${k.dice.s}`), `${k.name} L${lvl} top ${top}`);
+      assert.ok(effectLine(k, { level: lvl }).includes(`max ${top}d${k.dice.s}`), `${k.name} L${lvl} effect top`);
       const b2 = castable(clsIdOf(cls), k, lvl); assert.equal(castPower(b2, k.id, { x: 99 }).rolls.length, top, `${k.name} L${lvl} at full magic`);
     }
   }
@@ -91,7 +92,8 @@ test('the upgrade line says what the next level adds, in the engine\'s numbers',
   for (const { k } of all) for (const lvl of [0, 1, 2]) {
     const line = upgradeLine(k, lvl); assert.ok(line && !/NaN|undefined/.test(line), `${k.name} L${lvl}: ${line}`);
     if (k.kind === 'charge') { const a = chargeGain(k, k.max, lvl); const b = chargeGain(k, k.max, lvl + 1); for (const f of Object.keys(a)) assert.ok(line.includes(`+${b[f] - a[f]}`), `${k.name} L${lvl} total gain ${b[f] - a[f]}: ${line}`); }
-    if (k.kind === 'flat') for (const [f, v] of Object.entries(k.fx)) { const n = f === 'free' ? v + lvl + 1 : scaleNum(v, lvl + 1); assert.ok(line.includes(`(${n} instead of`), `${k.name} L${lvl}: ${line}`); }
-    if (k.kind === 'dice') assert.ok(line.includes(`${k.dice.n + lvl + 1}d${k.dice.s} instead of ${k.dice.n + lvl}d${k.dice.s}`));
+    if (k.kind === 'flat') for (const [f, v] of Object.entries(k.fx)) { const d = f === 'free' ? 1 : scaleNum(v, lvl + 1) - scaleNum(v, lvl); assert.ok(line.includes(`${d}`), `${k.name} L${lvl}: ${line}`); }
+    if (k.kind === 'dice') assert.ok(line.includes(`(${k.dice.n + lvl + 1}d${k.dice.s})`));
+    assert.ok(line.length <= 48, `${k.name}: the upgrade line stays short ("${line}")`);
   }
 });

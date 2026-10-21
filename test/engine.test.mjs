@@ -435,7 +435,7 @@ test('scale powers: more magic, more dice; round powers grow; supers wait for ro
 
 test('power upgrades cost gold and make numbers and dice bigger', () => {
   const h = knight(); h.gold = 500;
-  assert.equal(powerUpgradeInfo(h, 'cleave').cost, 60); assert.ok(upgradePower(h, 'cleave')); assert.equal(h.gold, 440);
+  assert.equal(powerUpgradeInfo(h, 'cleave').cost, 50); assert.ok(upgradePower(h, 'cleave')); assert.equal(h.gold, 450);
   assert.ok(upgradePower(h, 'cleave')); assert.ok(upgradePower(h, 'cleave'), 'a third level for every class'); assert.equal(upgradePower(h, 'cleave'), false); assert.equal(powerLevel(h, 'cleave'), 3);
   assert.equal(upgradePower(h, 'nonsense'), false);
 });
@@ -823,10 +823,10 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 7]);
   assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 8, 10]);
   assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 15, 18, 24]);
-  // charges start one lower and climb by 2; a release grows an eighth, a quarter, a half by level
+  // charges start one lower and climb by 2; every level adds 2 to each charge
   assert.deepEqual(chargeSteps(5, 4), [4, 6, 8, 10]);
   const coil = { per: { atk: 5 } };
-  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 36, 42]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 36, 44, 52]); // +2 on every charge a level
   // healing with magic: 2 magic heals 3, the same price every time
   assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 2);
   const { CLASSES } = await import('../js/data.js');

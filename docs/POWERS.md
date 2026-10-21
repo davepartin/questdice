@@ -3,7 +3,7 @@
 Every class has four powers. Magic pays for them. Most work once a battle; the weak "every round" ones come back each round. Rules live in `castPower` (engine.js); data in `CLASSES[x].cards` (data.js).
 
 Kinds: `flat` fixed numbers; `dice` roll NdS; `scale` more magic = more dice; `round` grows with the round number; `luck` roll a d6 for a table; `super` unlocks at hero level 5, usable from round 3, hits every monster, once, cannot be recharged.
-Upgrades (three levels: gold 60, 140, 260): every number steps up by a clear amount (a 3 becomes 4, 5, 6; a 12 becomes 15, 18, 21: a quarter of the base, at least 1), +1 die on dice powers, +1 die on a free reroll. Pierce powers are always a little weaker than the matching attack powers, because nothing blocks them. Splash goes to every other monster; `aoe` goes to all.
+Upgrades (three levels: gold 50, 90, 140): every charge gets +2 a level; every other number steps up by a clear amount (a 3 becomes 4, 5, 6; a 12 becomes 15, 18, 21: a quarter of the base, at least 1), +1 die on dice powers, +1 die on a free reroll. Pierce powers are always a little weaker than the matching attack powers, because nothing blocks them. Splash goes to every other monster; `aoe` goes to all.
 
 | Class | Every round | Dice / luck | Fixed | Super (lvl 5) |
 |---|---|---|---|---|
