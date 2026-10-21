@@ -8,6 +8,9 @@
 import * as THREE from 'three';
 import { world } from './world.js';
 import { portrait as renderPortrait, hasPortrait } from './portrait.js';
+import { createDie, restQuat } from '../gfx/dice/dice.js';
+import { diceStyle } from '../gfx/dice/faces.js';
+import { preloadBodyWatermarks } from '../gfx/dice/bodywm.js';
 import { createWeapon } from '../gfx/weapons.js';
 import * as D from '../data.js';
 import { h } from '../dom.js';
@@ -116,6 +119,22 @@ function queue(key, fn) {
 }
 export const portraitQ = {
   has: (key) => hasPortrait(key),
+  die(spec, label = spec.sides) {
+    const key = `cd:${diceStyle().name}:${label}:${spec.key}`;
+    // Only still images are retained here; mesh materials are released after each render.
+    const previous = [...pmem.keys()].filter(k => k.startsWith('cd:'));
+    if (previous.length >= 48 && !pmem.has(key)) pmem.delete(previous[0]);
+    return queue(key, async () => {
+      await preloadBodyWatermarks();
+      const die = createDie({ spec, quality: 'med' });
+      die.mesh.quaternion.copy(restQuat(die.poly, label, 0, -1));
+      die.setRest(0.35); // camp shows the side faces, without changing battle shading
+      try {
+        return renderPortrait(die.mesh, { size: [224, 224], trim: true, yaw: 0.18, pitch: spec.sides === 4 ? 0.68 : 1.03, pad: 1.08, fov: 28,
+          prepare: camera => { die.setView(camera.position.clone().normalize()); die.updateCamera(camera); } });
+      } finally { die.dispose(); }
+    });
+  },
   weapon(id, rarity = 0, { size = [200, 200] } = {}) { // cards show it as a small thumbnail (about 54px; 200 stays sharp on a 3x phone)
     const key = `w:${id}:${rarity}`;
     return queue(key, async () => {

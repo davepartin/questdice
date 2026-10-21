@@ -1198,3 +1198,8 @@ Added a single 155 KiB shipped campsite painting with tents, lanterns and mounta
 ## Camp dice checkpoint, October 21, 2026
 
 Camp now reuses battle face definitions, numeral paths and symbol paths for still previews, with separate size labels and an All faces current/upgrade comparison. Heart shows all six boosts. No rule changes or new downloaded artwork. Existing camp browser review and 125 preview cases passed. See docs/ui-handoff/10-CAMP-DICE-REVIEW.md. Next bounded section: battle magic-powers triangle. Work remains in ui/camp-art-pass / draft PR #30.
+
+
+## Actual dice correction, October 21, 2026
+
+Dave explicitly requested actual battle dice in every camp slot, including weapons and talents, highest numeric face displayed with lighter camp-only side shading. Removed approximated SVG silhouettes and now render the existing meshes/materials to cached portraits through the existing shared renderer/idle queue. Weapon workshop main image also uses its actual die. See docs/ui-handoff/11-ACTUAL-DICE-REVIEW.md. Do not substitute redraws again. No mechanics/save/multiplayer changes; work stays in ui/camp-art-pass / draft PR #30.

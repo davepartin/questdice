@@ -1177,8 +1177,7 @@ function diceGrid(hero) {
     const size = E.sidesOf(hero, slot), weapon = slot === 'NW' || slot === 'NE', inst = hero.loadout[slot];
     const selected = SHEET.inline && SHEET.slot === slot;
     const pic = !active ? h('span', { class: 'cw-locked' }, ico('lock'))
-      : weapon && inst ? h('span', { class: `cw-weapon rar-${inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` },
-        art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'cw-weapon-art', D.WEAPONS[inst.id].name)) : campDie(hero, slot, size);
+      : campDie(hero, slot, size);
     return h('button', { class: `cw-cell s-${slot} ${active ? '' : 'off'} ${can ? 'can' : ''} ${selected ? 'selected' : ''}`, type: 'button',
       'aria-expanded': String(selected), 'aria-controls': 'camp-inspector',
       'aria-label': `${label}, ${active ? `d${size}` : 'locked'}${price != null ? `, options from ${price} gold` : ''}`,
@@ -1222,7 +1221,7 @@ function weaponWorkshop(hero, slot, inst) {
   const target = info.next ? { ...inst, ...(mode === 'forge' ? { rarity: info.next } : { size: info.next }) } : null;
   const targetRoll = target ? E.sidesOf({ ...hero, loadout: { ...hero.loadout, [slot]: target } }, slot) : null;
   const frame = h('div', { class: `ww-hero rar-${w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` },
-    h('div', { class: 'ww-display' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'ww-art', w.name)),
+    h('div', { class: 'ww-display' }, campDie(hero, slot, rolling)),
     h('div', { class: 'ww-identity' }, h('small', {}, `${D.tierName(inst)} · d${size}${w.hands === 2 ? ` · ${slot === 'NE' ? 'right' : 'left'} die` : ''}`), h('h3', {}, w.name)));
   const modes = h('div', { class: 'ww-modes', role: 'group', 'aria-label': 'Weapon upgrade type' },
     [['forge', 'Forge', 'Improve metal', 'anvil'], ['train', 'Train', 'Increase die size', 'dice']].map(([id, label, sub, icon]) => h('button', {

@@ -1,5 +1,7 @@
 # Camp dice and face previews
 
+Superseded: Dave requested the actual battle dice, including weapons. Read 11-ACTUAL-DICE-REVIEW.md. The silhouette approach below was replaced.
+
 October 21, 2026. Review branch `ui/camp-art-pass`, draft PR #30. Not merged or deployed.
 
 ## Implemented

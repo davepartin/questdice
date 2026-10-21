@@ -305,3 +305,13 @@
 .cw-face-flat.amethyst { background: #14565c; }
 .cw-face-flat img { display: block; width: 100%; }
 .cw-face-grid figcaption { font: 400 .6rem/1.3 var(--font-body); color: #c8c4bb; text-align: center; margin-top: .25rem; }
+
+/* Actual battle meshes rendered once to still portraits, including weapon dice. */
+.cw-die.cw-rendered { aspect-ratio: 1; }
+.cw-real-die { display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+.cw-rendered.ready .cw-real-die { opacity: 1; }
+.cw-cell .cw-rendered { width: 86%; max-width: 96px; }
+.cw-compare .cw-rendered { width: 112px; }
+
+.ww-display > .cw-rendered { width: 140px; max-width: none; margin: 0 auto; }
+.ww-display > .cw-rendered .cw-size { display: none; }

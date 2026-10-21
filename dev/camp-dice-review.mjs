@@ -6,7 +6,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH ||
 const p=await browser.newPage({viewport:{width:390,height:740},deviceScaleFactor:2,hasTouch:true});const errors=[];p.on('pageerror',e=>errors.push(e.message));
 await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com/,r=>r.abort());await p.addInitScript(()=>{localStorage.setItem('qd.hints','off');localStorage.setItem('qd.tutorial.done','1');});
 const setup=async({cls='knight',gold=420,act=2,full=true,hand=6,name='Dave'}={})=>p.evaluate(async o=>{const {S,E,showCamp}=window.QD;const hero=E.newHero({name:o.name,cls:o.cls,seed:7});hero.level=9;hero.gold=o.gold;hero.campaign.act=o.act;if(o.full)hero.dice=null;hero.strength={W:o.hand,E:o.hand};S.hero=hero;S.company={members:[hero]};S.seat=0;S.tab='forge';S.campPage='dice';const SV=await import('./js/save.js');if(!SV.heroExists(hero.name))await SV.createSave(hero,'testpass');showCamp();}, {cls,gold,act,full,hand,name});
-const settle=async()=>{await p.waitForFunction(()=>[...document.querySelectorAll('.cw-weapon-art img')].every(x=>x.complete&&x.naturalWidth>0),null,{timeout:30000});await p.waitForTimeout(150);};
+const settle=async()=>{await p.waitForFunction(()=>[...document.querySelectorAll('.cw-rendered')].every(x=>x.classList.contains('ready')),null,{timeout:90000});await p.waitForTimeout(150);};
 const shot=async name=>{await settle();await p.waitForFunction(()=>!document.querySelector('#toast .toast'));await p.screenshot({path:out+'/'+name+'.png'});};
 const results=[];
 try {
