@@ -1074,7 +1074,7 @@ export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1.05, 1.55, 2.35]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
+export const ACT_HP = [1.05, 1.55, 2.1]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
 export const ACT_FLAT = [0, 2, 5];
 // A monster's fight bonus is rolled as extra dice of its own size (engine extraDice): at most this many extra dice a blow.
 export const MONSTER_DICE_MAX = 3;
@@ -1087,7 +1087,7 @@ export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
 export const ORDINARY = { flat: [3, 5, 6], lone: 2 };
 // Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
-export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.3, 1.15, 2.2], flat: [1, 2, 5] } };
+export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.3, 1.15, 1.6], flat: [1, 2, 5] } }; // Act III bosses 2.2 -> 1.6 (21 Oct): about 13 rounds instead of 18
 export const ELITE_STEPS = [5];
 // What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
 export function stepKind(act, step) {
