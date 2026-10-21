@@ -166,7 +166,7 @@ test('in a table fight: powers with their magic, potions from your own belt', ()
   assert.equal(f.lastCast.rolls.length, 3, 'Arc Bolt: 6 magic is 3 dice, and the table remembers what was rolled');
   assert.equal(f.magic, 3);
   assert.equal(command(table, wiz.id, { type: 'card', id: 'coil' }).ok, true); assert.equal(f.charge.coil, 1);
-  assert.equal(command(table, wiz.id, { type: 'card', id: 'coil', release: true }).ok, true);
+  assert.equal(command(table, wiz.id, { type: 'card', id: 'coil', release: true }).ok, false, 'stored this round: release next round');
   f.hp = f.maxHp - 5; const potions = f.hero.potions ?? 2; assert.ok(command(table, wiz.id, { type: 'drink' }).ok); assert.equal(f.hero.potions, potions - 1);
   assert.equal(command(table, wiz.id, { type: 'drink' }).ok, false, 'full health: no potion wasted');
 });

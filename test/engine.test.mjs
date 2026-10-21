@@ -455,6 +455,7 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   const b = newBattle(k, questsFor(k)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
   castPower(b, 'rally'); b.usedRound = {}; castPower(b, 'rally');
   const before = { atk: b.mods.atk, block: b.mods.block };
+  b.usedRound = {}; // the next round (a round stores or releases, not both)
   const rel = castPower(b, 'rally', { release: true });
   assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6); // one lower to start, then 2 more each: 2 + 4
 });
@@ -573,7 +574,9 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   assert.equal(castPower(b, 'coil').charged, 1); assert.equal(castPower(b, 'coil'), null); // one charge a round
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 2);
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 5 + 6 + 7: each charge worth 1 more
+  assert.equal(castPower(b, 'coil', { release: true }), null, 'stored this round: release next round');
+  beginReset(b); startRoll(b);
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 4 + 6 + 8: one lower to start, then 2 more each
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
@@ -1079,4 +1082,16 @@ test('the heart backs its symbol on any face: a heart 1 boosts every heal face (
   assert.deepEqual(boosted.heartSlots.sort(), ['E', 'N', 'W']);
   const gold = E.evaluate(h, bd({ C: 4, N: 4, W: 8, E: 10, S: 3 }));
   assert.equal(gold.heartSlots.length, 3, 'a 4, an 8 and a 10 all carry gold');
+});
+
+test('a charge power either stores a charge or releases them in a round, never both', async () => {
+  const E = await import('../js/engine.js');
+  const h = E.newHero({ name: 'C', cls: 'knight', seed: 4 });
+  const b = E.newBattle(h, E.questsFor(h)[0], E.makeRng(4), 1); E.startRoll(b); b.magic = 12;
+  assert.ok(E.castPower(b, 'rally')); b.usedRound = {}; assert.ok(E.castPower(b, 'rally'));
+  assert.equal(E.castPower(b, 'rally', { release: true }), null, 'stored this round: no release');
+  b.usedRound = {};
+  assert.ok(E.castPower(b, 'rally', { release: true }), 'a new round: release');
+  assert.equal(E.castPower(b, 'rally'), null, 'released this round: no storing');
+  assert.equal(E.powerState(b, E.cardsOf(h).find((c) => c.id === 'rally')).spent, true);
 });

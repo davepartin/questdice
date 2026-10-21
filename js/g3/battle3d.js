@@ -315,7 +315,7 @@ async function doTeam(kind, to) {
   if (kind === 'potion') { sfx.heal(); fa.heal(); fa.num(`+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
   if (kind === 'magic') { sfx.magic(); fa.glow('magic'); fa.num(`+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
   if (kind === 'revive') { sfx.level?.(); fa.stand(); fa.glow('buff'); fa.num(`REVIVED +${friend.hp}`, 'heal'); banner(`${friend.hero.name.toUpperCase()} IS BACK!`, 'good'); }
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderRoster(); updateScore(); refresh();
+  renderRoster(); updateScore(); refresh(); renderSheet(); // the sheet stays open until you close it
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -569,7 +569,7 @@ function showPowerDetail(id) {
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
   const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
     : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
-    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Each charge is worth 2 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
+    : k.kind === 'charge' ? `You pay ${k.cost} magic in a round to store a charge, up to ${k.max}, or you release them: one or the other each round. Each charge is worth 2 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
     : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
     : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
   const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'
@@ -580,7 +580,7 @@ function showPowerDetail(id) {
   const stepRow = k.kind === 'scale' && !st.spent && shape ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
-  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && b.usedRound[`${k.id}:release`])
+  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   const useBtn = rechargeBtn || h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`);
@@ -796,9 +796,9 @@ async function doReroll() {
 }
 async function doNudge(dir) {
   let b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape(); return; }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet(); return; }
   if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
+  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet();
 }
 async function doHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;
@@ -818,8 +818,7 @@ async function doCard(id, opts = {}) {
   sfx.card(); buzz(20); B.fresh = id;
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
-  myPc().sparkle(sparkleOf(B.hero?.cls));
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open');
+  myPc().sparkle(sparkleOf(B.hero?.cls)); // (the magic sheet stays open: you may want two or three powers; Close shuts it)
   // what the power actually added this round (the counters before and after)
   const gains = {};
   for (const [key, v] of Object.entries(b.mods)) { const d = (v || 0) - (modsBefore[key] || 0); if (d > 0) gains[key] = d; }
@@ -831,7 +830,7 @@ async function doCard(id, opts = {}) {
   B.busy = true; renderShape();
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id) }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  renderShape(); bumpCounters(gains);
+  renderShape(); renderSheet(); bumpCounters(gains);
 }
 // The counters that a power just filled give a little pulse, so you can see where it went.
 function bumpCounters(gains) {

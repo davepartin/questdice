@@ -883,7 +883,7 @@ export function powerDice(card, x, lvl = 0) {
   return card.maxDice == null ? n : Math.min(card.maxDice, n);
 }
 export function powerState(b, card) {
-  const spent = card.atwill ? !!(b.usedRound && b.usedRound[card.id]) : !!b.used[card.id];
+  const spent = card.atwill ? !!(b.usedRound && (b.usedRound[card.id] || (card.kind === 'charge' && b.usedRound[`${card.id}:release`]))) : !!b.used[card.id]; // a charge released this round cannot store too
   const early = !!(card.minRound && b.round < card.minRound);
   return { spent, early, canPay: b.magic >= card.cost };
 }
@@ -901,7 +901,7 @@ export function castPower(b, id, { x, release } = {}) {
   if (!card || b.phase !== 'shape') return null;
   if (card.kind === 'charge' && release) { // let the stored charges go
     b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
-    if (!n || (b.usedRound && b.usedRound[key])) return null;
+    if (!n || (b.usedRound && (b.usedRound[key] || b.usedRound[id]))) return null; // a round either stores a charge or releases them, not both (Dave, Oct 2026)
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
     const lvl = powerLevel(b.hero, id); let total = 0;
     const per = typeof card.per === 'number' ? { atk: card.per } : card.per; const gain = chargeGain(card, n, lvl);
