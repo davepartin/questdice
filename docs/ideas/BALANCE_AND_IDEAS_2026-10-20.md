@@ -203,6 +203,35 @@ What this suggests:
 - **Dave is not a typical player.** He designed the game. The beta friends will play worse than Dave and probably worse than the wise bot, so the target is: Normal feels tense for a new player and comfortable for Dave, and Hard is where Dave should sweat.
 - **The quick fallback, if wanted before the rule changes:** move every setting down one step (today's Hard numbers become Normal, Normal becomes Easy, Legendary stays the pro road). One line in `DIFFICULTY`; easy to undo.
 
+## Monsters grow by dice, not by plus (Dave, 21 Oct)
+
+Dave: make the game harder by giving monsters more dice instead of more base attack. "This boss has 30 attack + 1 die" takes the fun out; "it rolls 3d8" is scary, and the swing (some very low rolls, some very high) is the fun.
+
+**Today:** every monster rolls one power die (d8 to d12) and adds a fixed part that grows: its own base, +0 / +2 / +5 by act (`ACT_FLAT`), +1 every three steps, +2 on Hard and Legendary. By Act III a typical blow is about 13 + d12, mostly fixed.
+
+**What different dice really roll** (same average, worked out exactly):
+
+| Blow | Average | Lowest to highest | 8 rolls in 10 land in |
+| --- | --- | --- | --- |
+| Today, Act III: 13 + d12 | 19.5 | 14 to 25 | 15 to 24 |
+| 3d12 | 19.5 | 3 to 36 | 12 to 27 |
+| 2d12 + 6 | 19 | 8 to 30 | 12 to 26 |
+| 4d8 + 1 | 19 | 5 to 33 | 13 to 25 |
+| 6d6 | 20 | 5 to 35 | 15 to 25 |
+| Today, Act II: 5 + d10 | 10.5 | 6 to 15 | 6 to 14 |
+| 2d10 | 11 | 2 to 20 | 5 to 16 |
+| 3d6 + 1 | 11.5 | 4 to 19 | 8 to 15 |
+
+**The surprise in the numbers:** a few big dice swing the most; many small dice settle near the middle (6d6 lands about where 13 + d12 does, and only its rare extremes differ). Pick the dice for the feeling: two or three big dice when a monster should be wild, a handful of small ones when it should look scary but stay fair.
+
+**A shape to try:**
+
+- Act I monsters roll one die, Act II two, Act III three (this replaces `ACT_FLAT`). A boss rolls one more than its act. A small base stays for a monster's character (the ogre is always strong).
+- Difficulty adds a die instead of a plus: Hard gives every monster one more small die (a d4, worth about +2.5, close to today's +2); Legendary one more of the monster's own size.
+- Keep the averages close to today's so the bots' balance holds; what changes is the feel and the spikes.
+
+**How it would play:** blocking becomes a real read ("about 13, could be 20"), a lucky low roll is a breath of relief, and a spike is what finally hurts a frail Wizard on Normal, which helps with "Normal is easy" without raising monster health. Watch the top end: 3d12 can roll 36, so check how often a full-health hero falls in one round. The monster plate, info sheet and recap already show monster dice as red and blue die chips; "3d8" just needs room on them (UI lane, later).
+
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
 
 **Checked against the code on `main` (52f9d7d):** 2 magic heals 4; straights pay 10 / 18 / 30 / 45 / 60; the heart amplifies only the exact number today (`HEART_AMP`); Storm Coil pays 26 at level 0 and 65 + 32 splash at level 3; `scaleNum` is +50% a level; the Wizard has 24 health and holds 15 magic; `ACT_HP` is 1.05 / 1.55 / 2.35. The heart-die averages in the table above re-derive the same from `FACE_PAY`. The plan matches Dave's voice notes (below) point for point.
