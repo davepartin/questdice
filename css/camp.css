@@ -286,3 +286,22 @@
 @media (min-aspect-ratio: 1085/1000) and (min-width: 900px) {
   .cw-camp .sc-stage.k-camp { top: calc(78px + var(--safe-t)); left: 14px; right: 14px; bottom: auto; height: min(calc(100% - 92px - var(--safe-t)),420px); border: 1px solid #b18b4c80; border-radius: 4px; }
 }
+
+/* Camp uses the battle symbol language; size stays separate from sample face value. */
+.cw-die { position: relative; padding-bottom: 12px; box-sizing: content-box; }
+.cw-die .cw-size { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font: 700 .68rem/1.1 var(--font-body); color: #fff0d0; background: #10151c; border: 1px solid #98794b; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+.cw-cell .cw-die { width: 76%; padding-bottom: 0; }
+.cw-cell .cw-size { display: none; }
+.cw-cell-foot > b { color: #fff0d0; font-weight: 700; font-size: .68rem; }
+.cw-compare .cw-die .cw-size { font-size: .85rem; }
+.cw-example { margin: -.2rem 0 0; font-size: .65rem; text-align: center; color: #bdb5a4; }
+.cw-all-faces { border-top: 1px solid #a9894c55; }
+.cw-all-faces summary { min-height: 44px; padding: .8rem 0; color: #e7d2ad; font-size: .78rem; cursor: pointer; }
+.cw-face-list h4 { color: #e7d2ad; font: 500 .8rem var(--font-body); margin: .6rem 0; }
+.cw-face-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .5rem; }
+.cw-face-grid figure { margin: 0; min-width: 0; }
+.cw-face-flat { display: block; background: #f6f1e6; border: 1px solid #c2b690; border-radius: 4px; }
+.cw-face-flat.heart { background: #10121a; border-color: #b99a50; }
+.cw-face-flat.amethyst { background: #14565c; }
+.cw-face-flat img { display: block; width: 100%; }
+.cw-face-grid figcaption { font: 400 .6rem/1.3 var(--font-body); color: #c8c4bb; text-align: center; margin-top: .25rem; }

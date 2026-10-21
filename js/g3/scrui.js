@@ -19,7 +19,7 @@ import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
-import { campDie, campSlotMark } from './campart.js';
+import { campDie, campSlotMark, campFaceList } from './campart.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -1184,13 +1184,13 @@ function diceGrid(hero) {
       'aria-label': `${label}, ${active ? `d${size}` : 'locked'}${price != null ? `, options from ${price} gold` : ''}`,
       onclick: tap(() => openSlot(slot)) },
       campSlotMark(hero, slot), h('small', { class: 'cw-label' }, label), pic,
-      h('span', { class: 'cw-cell-foot' }, h('b', {}, !active ? 'Unlock' : weapon ? `d${size}` : slot === 'C' ? 'Heart die' : ''),
+      h('span', { class: 'cw-cell-foot' }, h('b', {}, !active ? 'Unlock' : `d${size}`),
         price != null ? h('span', { class: 'cw-price' }, ico('coin'), String(price)) : null),
       can ? h('span', { class: 'cw-plus', 'aria-hidden': 'true' }, '+') : null);
   });
   return h('section', { class: 'cw-dicegrid', id: 'fs-dice', 'aria-label': 'Your character dice' },
     h('div', { class: 'cw-board' }, cells),
-    h('p', { class: 'cw-hint' }, SHEET.inline ? 'Tap another die to inspect it.' : 'Tap a die to inspect. + marks an available upgrade.'));
+    h('p', { class: 'cw-hint' }, SHEET.inline ? 'Tap another die to inspect it.' : 'Example faces · tap a die to inspect. + means upgrade.'));
 }
 // The popup for one spot on the board (Dave, Oct 2026: "make it look AAA"): the die or weapon as it is now, big, then one clear
 // button per thing you can buy (it says what you get and what it costs, or why not yet), then what else could go there.
@@ -1206,7 +1206,7 @@ const shDone = (text) => h('p', { class: 'sh-done' }, ico('check'), text);
 const shLock = (text) => h('p', { class: 'sh-lockline' }, ico('lock'), text);
 const shBought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); if (SHEET.inline) { SHEET.el?.focus({ preventScroll: true }); if (!X.net) toast('Upgrade complete.'); } };
 const shStage = (...kids) => h('div', { class: 'sh-stage' }, ...kids);
-const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, SHEET.inline ? campDie(X.S.hero, SHEET.slot, n) : ico(`d${Math.min(10, n)}`, '', 60), h('b', {}, `d${n}`));
+const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, SHEET.inline ? campDie(X.S.hero, SHEET.slot, n) : ico(`d${Math.min(10, n)}`, '', 60), SHEET.inline ? null : h('b', {}, `d${n}`));
 const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hidden': 'true' }, ico('chevron')) : null, b ? shDie(b, 'next') : null];
 // a weapon as a row: picture, name, metal and die, faces; an action on the right
 function shWeapon(inst, action, cls = '', badge = '') {
@@ -1262,7 +1262,7 @@ function slotSheet(slot) {
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
+  if (slot === 'C') return [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C), SHEET.inline ? campFaceList(hero, slot, 6) : null];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
     const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'mind' ? E.mindUpgrade(hero) : E.speedUpgrade(hero);
@@ -1273,8 +1273,9 @@ function slotSheet(slot) {
       h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
       next ? ico('chevron') : null,
       next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next));
-    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, buy,
-      u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null];
+    const allFaces = SHEET.inline ? h('details', { class: 'cw-all-faces' }, h('summary', {}, next ? 'All faces · current and upgrade' : 'All faces'), campFaceList(hero, slot, size, 'Current'), next ? campFaceList(hero, slot, next, 'After upgrade') : null) : null;
+    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
+      u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null, allFaces];
   }
   if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
   // a weapon hand: the weapon there, Forge and Train, then what else could go there

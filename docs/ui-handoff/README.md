@@ -19,8 +19,9 @@ Current review branch: `ui/camp-art-pass`, draft PR #30. Read these checkpoints 
 - [Camp power library](07-CAMP-POWERS-REVIEW.md)
 - [Camp material and framing pass](08-CAMP-VISUAL-FINISH-REVIEW.md)
 - [Painted campsite](09-CAMPSITE-ART-REVIEW.md)
+- [Camp dice and face previews](10-CAMP-DICE-REVIEW.md)
 
-Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing, materials and the painted campsite are implemented. Next bounded pass: bring camp die presentation closer to the existing battle dice while retaining explicit sizes and exact face previews. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
+Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing, materials and the painted campsite are implemented. Camp now reuses battle face definitions and glyphs in lightweight still previews. Next bounded pass: battle magic-powers triangle and casting details. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
 
 ## Original builder instructions
 
