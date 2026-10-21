@@ -67,9 +67,9 @@ export const HEART_AMP = [2, 2, 2, 2];
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
-// (Dave, Oct 2026) Five in a row is gone: six in a row is the shortest straight for the whole game, and the prize climbs 10, 20, 30, 50.
+// (Dave, Oct 2026) Five in a row is gone: six in a row is the shortest straight for the whole game, and the prize doubles: 10, 20, 40, 80.
 export const STRAIGHT_RULE = { less: 2, min: 6, max: 6 }; // engine straightMin: the shortest straight (kept as a rule so it can grow again)
-export const STRAIGHT = { 6: 10, 7: 20, 8: 30, 9: 50 }; // a longer run pays more; 9 in a row is the jackpot
+export const STRAIGHT = { 6: 10, 7: 20, 8: 40, 9: 80 }; // each step doubles (Dave); 9 in a row is the jackpot
 
 export const RARITY = ['Bronze', 'Silver', 'Gold']; // three metals (Dave, Oct 2026): Gold is the finished weapon
 export const RARITY_WEIGHTS = [70, 23, 7];

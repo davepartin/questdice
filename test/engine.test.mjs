@@ -1061,9 +1061,9 @@ test('story campaigns: storyScale fits monsters written for one hero of a level 
   assert.ok(E.storyScale([grown, newHero({ name: 'B', cls: 'bard', seed: 2 })], 1).m > duo.m, 'heroes stronger than the story expects meet stronger monsters');
 });
 
-test('straights start at six in a row and pay 10, 20, 30, 50; five in a row pays nothing', async () => {
+test('straights start at six in a row and pay 10, 20, 40, 80; five in a row pays nothing', async () => {
   const { STRAIGHT } = await import('../js/data.js');
-  assert.deepEqual([5, 6, 7, 8, 9].map((n) => STRAIGHT[n] || 0), [0, 10, 20, 30, 50]);
+  assert.deepEqual([5, 6, 7, 8, 9].map((n) => STRAIGHT[n] || 0), [0, 10, 20, 40, 80]);
 });
 
 test('six in a row is the shortest straight for the whole game, however many dice', async () => {

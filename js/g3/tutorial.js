@@ -213,7 +213,7 @@ const LESSONS = [
       row(ic('atk'), 'Talent Triple: +10 attack', 'Bottom row. Talent, feet and talent match (a talent blank never does; the 2× counts as a 2).'),
       row(ic('block'), 'Head to Toe Triple: +10 block', 'Head, heart and feet match.'),
       row(ic('block'), 'Left and Right Guard Triples: +10 block each', 'A side column: that weapon’s +number, that hand and that talent die match. Blanks never count, and there are no diagonals.'),
-      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Six numbers in a row anywhere on your dice (like 1-2-3-4-5-6). Before you lock in, choose: +10 attack, or cash it in for +10 gold. Seven in a row pays 20, eight 30, all nine 50.'),
+      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Six numbers in a row anywhere on your dice (like 1-2-3-4-5-6). Before you lock in, choose: +10 attack, or cash it in for +10 gold. Seven in a row pays 20, eight 40, all nine 80.'),
     ],
   },
   {
