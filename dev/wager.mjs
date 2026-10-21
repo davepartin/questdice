@@ -1,0 +1,21 @@
+// The Bonus Goal as a wager (Oct 2026): "Bet 10 gold" to try, or Decline.   node dev/wager.mjs [out dir]
+import { chromium } from 'playwright-core';
+const out = process.argv[2] || 'docs/ingame';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
+const p = await b.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, hasTouch: true });
+const problems = []; p.on('pageerror', (e) => problems.push(e.message));
+await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
+await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; for (let i = 0; i < Math.round(s * 15); i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
+await p.evaluate(() => { const { S, E, showBoard } = window.QD; const h = E.newHero({ name: 'Dave', cls: 'knight', seed: 5 }); h.gold = 45; S.hero = h; S.company = { members: [h] }; showBoard(); });
+await pump(1);
+await p.evaluate(() => { const E = window.QD.E; window.QD.startQuest({ ...E.questsFor(window.QD.S.hero)[0], enemies: ['goblin'], kind: 'battle' }); });
+for (let i = 0; i < 60 && !(await p.evaluate(() => [...document.querySelectorAll('button')].some((x) => /^Bet /.test(x.textContent.trim())))); i++) await pump(0.5);
+const btns = await p.evaluate(() => [...document.querySelectorAll('button')].map((x) => x.textContent.trim()).filter((t) => /Bet|Decline|Accept/.test(t)));
+console.log('buttons:', btns.join(' | '), '· pay line:', await p.evaluate(() => document.querySelector('.env-pay')?.textContent));
+await p.evaluate(() => document.querySelector('.env-pay')?.scrollIntoView({ block: 'center' })); await pump(0.5);
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/wager.png` });
+await p.evaluate(() => [...document.querySelectorAll('button')].find((x) => /^Bet /.test(x.textContent.trim()))?.click()); await pump(1);
+console.log('gold after betting:', await p.evaluate(() => window.QD.S.hero.gold));
+if (!btns.some((t) => /^Bet 10 gold$/.test(t))) problems.push('no "Bet 10 gold" button');
+console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no problems'); await b.close();

@@ -662,7 +662,7 @@ function startQuest(q) {
     S.envelope = null; S.bonus = null;
     if (SO.wantsBonus(quest.kind)) {
       S.bonus = SO.dealBonusGoal({ c: hero.campaign, hero, salt: `${quest.id}:${hero.stats.battles}` });
-      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept }); go(); } });
+      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept, hero }); go(); } });
     }
     return go();
   }
@@ -767,7 +767,7 @@ function renderReset() {
     section('You',
       h('div', { class: 'hero-hp-row' }, h('span', { class: 'c-heal' }, '❤'), h('div', { class: 'hero-hp' }, V.hpBar(b.hp, b.maxHp, { cls: 'hero-bar' })), h('span', { class: 'magic-badge' }, `✦ ${b.magic}`)),
       h('div', { class: 'row' },
-        ghost(`✚ Heal +${E.healAmountOf(hero)} HP · ${E.healCostOf(hero)}✦`, spendHeal, { disabled: b.magic < E.healCostOf(hero) || b.hp >= b.maxHp })),
+        ghost(`✚ Heal +${E.healAmountOf(hero)} HP · ${E.healCostOf(hero, b)}✦`, spendHeal, { disabled: b.magic < E.healCostOf(hero, b) || b.hp >= b.maxHp })),
       cards.length ? h('div', { class: 'cardlist' }, cards.map((k) => h('div', { class: `mini-card ${b.used[k.id] ? 'spent' : ''}` },
         h('b', {}, k.name), h('small', {}, `${k.cost}✦ · ${k.text}`),
         b.used[k.id] ? ghost(`Recharge · ${D.RECHARGE_COST}✦`, () => { if (E.recharge(b, k.id)) { sfx.magic(); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); } }, { disabled: b.magic < D.RECHARGE_COST, cls: 'small' }) : h('em', {}, 'Ready')))) : null),
@@ -866,7 +866,7 @@ function renderBattle() {
     h('div', { class: 'actions' },
       h('div', { class: 'row between' }, pips, h('div', { class: 'row tight' },
         ghost('♥ ▼', () => doNudge(-1), { cls: 'small', disabled: b.magic < D.NUDGE_COST || b.board.C.v <= 1 }), ghost('♥ ▲', () => doNudge(1), { cls: 'small', disabled: b.magic < D.NUDGE_COST || b.board.C.v >= 6 }),
-        ghost(`✚ ${E.healCostOf(hero)}✦`, spendHeal, { cls: 'small', disabled: b.magic < E.healCostOf(hero) || b.hp >= b.maxHp }))),
+        ghost(`✚ ${E.healCostOf(hero, b)}✦`, spendHeal, { cls: 'small', disabled: b.magic < E.healCostOf(hero, b) || b.hp >= b.maxHp }))),
       h('button', { id: 'reroll', class: 'btn btn-buy wide', type: 'button', onclick: doReroll, disabled: !E.canReroll(b, [...S.sel]) }, rerollLabel(info))),
     cards.length ? h('div', { class: 'cardbar' }, cards.map((k) => h('button', { class: `cardbtn ${b.used[k.id] ? 'spent' : ''}`, type: 'button', disabled: b.used[k.id] || b.magic < k.cost, onclick: () => doCard(k.id) }, h('b', {}, k.name), h('span', {}, `${k.cost}✦`), h('small', {}, b.used[k.id] ? 'spent' : k.text)))) : null,
     tip('shape', 'Tap up to 3 dice to reroll them. The first reroll is free; more cost ✦. The chips show exactly what you will get. Red weapon faces attack, blue ones block. Press the Lock-in button when you are happy.'),
@@ -912,6 +912,7 @@ function showVictory() {
   const party = b?.fighters?.length > 1;
   const r = party ? E.partyRewards(b) : E.battleRewards(b);
   const shattered = members.map((m) => E.shatterDiamonds(m)).flat();
+  const broken = members.map((m) => { const l = E.brokenLine(E.takeBroken(m)); return l && members.length > 1 ? `${m.name}: ${l}` : l; }).filter(Boolean); // weapons worn out by this battle
   const place = S.quest?.place;
   E.recordFled(hero.campaign, b);
   ST.applyPlaceVictory(hero.campaign, place);
@@ -951,7 +952,7 @@ function showVictory() {
   LG.noteBattle(hero.campaign, b, { won: true, quest: S.quest, reveal }); // for the act's Legend
   concludeRoadEffects();
   E.advanceCampaign(hero); persist();
-  S.rewards = { ...r, reveal, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
+  S.rewards = { ...r, reveal, points: r.points ?? 0, lvBefore, levels: hero.level - lvBefore, drops: r.drops, shattered, broken, diamondTaken, picked: (r.repeat || !r.drops?.length) ? 'none' : null, quest, offer: null, repeat: !!r.repeat };
   sfx.win(); if (hero.level > lvBefore) setTimeout(sfx.level, 700);
   // the Reveal has its own beat, before the spoils (after the place's win page, if it has one)
   const next = () => (reveal && SCRUI.on() && world.battle ? SCRUI.reveal(reveal, { hero, place: quest?.place, won: true, onDone: renderVictory }) : renderVictory());
@@ -988,6 +989,7 @@ function renderVictory() {
 function defeat(retreat) {
   const heroes = membersOf();
   S.shattered = heroes.flatMap((m) => E.shatterDiamonds(m)); // win, lose or withdraw, a Diamond brought to the fight shatters
+  S.broken = heroes.map((m) => { const l = E.brokenLine(E.takeBroken(m)); return l && heroes.length > 1 ? `${m.name}: ${l}` : l; }).filter(Boolean); // and a weapon may wear out
   concludeRoadEffects();
   let loss = 0;
   for (const hero of heroes) { const cut = Math.floor(hero.gold * 0.15); hero.gold -= cut; hero.stats.defeats++; loss += cut; }

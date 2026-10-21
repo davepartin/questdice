@@ -36,6 +36,8 @@ export const LANES = {
 export const CARDINALS = ['N', 'W', 'E', 'S']; // head, hands, feet: the "always contribute" dice
 
 export const MAGIC_CAP = 12;
+// The magic cap grows like health (Dave, Oct 2026): +1 every MAGIC_CAP_LEVELS levels (level 3, 5, 7...), and the Deep Well perk adds 2.
+export const MAGIC_CAP_LEVELS = 2;
 export const MAX_LEVEL = 20;
 // Rerolls: `free` actions cost nothing, then `paid` actions cost 1 magic per die. Each action rerolls up to the class's dice (+diceBonus).
 // (Mutable so the balance simulator can compare rule sets.)
@@ -48,8 +50,8 @@ export const REROLL_DICE_MAX = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const TRIPLE_BY_ACT = [10, 15, 20]; // what each triple pays in Act I / II / III, attack or block (Dave, Oct 2026: triples keep up with the act)
-export const HEAL_COST = 2; // magic
-export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
+export const HEAL_COST = 2; // magic, the same every time (the rising price was dropped: magic is your health)
+export const HEAL_AMOUNT = 3; // hp  (Dave, Oct 2026: 2 magic heals 3, every time; was 4)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
 
@@ -60,12 +62,14 @@ export const FACE_PAY = [null,
   { heal: 3 }, { pierce: 2 }, { magic: 2 }, { gold: 2 },        // 1-4: the same on every die
   { heal: 3 }, { pierce: 3 }, { magic: 3 }, { gold: 3 },        // 5-8: three of the symbol
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
-// Heart amplifier: +2 per matching head / hand / feet die. Faces 1-4 (heal, pierce, magic, gold).
+// Heart amplifier: a heart of 1-4 (heal, pierce, magic, gold) adds +2 for every head / hand / feet die showing that symbol (any face).
 export const HEART_AMP = [2, 2, 2, 2];
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
-// Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
-export const STRAIGHT = { 5: 10, 6: 18, 7: 30, 8: 45, 9: 60 }; // 8 and 9 in a row are possible with talent dice, the heart and weapon faces (Dave's 1-to-8 paid nothing)
+// Straights across the numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
+// (Dave, Oct 2026) Five in a row is gone: six in a row is the shortest straight for the whole game, and the prize doubles: 10, 20, 40, 80.
+export const STRAIGHT_RULE = { less: 2, min: 6, max: 6 }; // engine straightMin: the shortest straight (kept as a rule so it can grow again)
+export const STRAIGHT = { 6: 10, 7: 20, 8: 40, 9: 80 }; // each step doubles (Dave); 9 in a row is the jackpot
 
 export const RARITY = ['Bronze', 'Silver', 'Gold']; // three metals (Dave, Oct 2026): Gold is the finished weapon
 export const RARITY_WEIGHTS = [70, 23, 7];
@@ -76,10 +80,19 @@ export const SIZE_VALUE = { 4: 1, 6: 1.5, 8: 2.2, 10: 3 };
 export const SELL_SHARE = 0.5;
 // You carry what you wield plus a small pack. A full pack means choosing: sell, swap, or leave the spoils.
 export const BAG_MAX = 4;
+// Weapons wear out (Dave, Oct 2026: "it's good for so many battles, and then it's done"; no repair). Battles a weapon lasts by
+// metal (Bronze, Silver, Gold); a legendary lasts as Gold; a Diamond is its own one-fight rule. Every battle it is carried into
+// counts, won, lost or left. It never breaks mid-fight: after its last battle it is gone.
+export const WEAR_BATTLES = [4, 6, 8];
+// Spoils are mostly Bronze (Dave: "you rarely get them just for free for beating a boss"); Silver and Gold come from the store.
+export const SPOILS_RARITY = [85, 13, 2];
+// The Camp Store's four weapons, by metal: one Bronze, two Silver, one Gold. The fancy weapons are bought, and saved up for.
+export const STORE_RARITY = [0, 1, 1, 2];
 // The size of a found weapon. A bigger die needs a hand (Strength) at least that big, or it rolls as the hand's size.
 // Weights for [d4, d6, d8, d10] by act; the boss always drops one a size up, the perilous road leans bigger.
 export const DROP_SIZES = { 1: [100, 0, 0, 0], 1.5: [70, 30, 0, 0], 2: [45, 45, 10, 0], 3: [15, 50, 30, 5] };
-// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries: forging adds the weapon's next `bonus`. Numbers never change.
+// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries. (Forging and training weapons retired with wear, Oct 2026: a
+// weapon is what you find or buy. These prices stay for old tools.)
 export const FORGE_COST = [0, 40, 120];                 // gold to reach Silver, Gold (two-handed x1.4)
 // SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
 export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a weapon from this size to the next
@@ -246,6 +259,15 @@ export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less t
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
 // kinds: flat (fixed numbers) | dice (roll NdS) | scale (more Magic = more dice) | round (grows with the round number) | luck (roll for a table) | super (round gate, hits everyone).
+// What a power level adds (Dave, Oct 2026: "go up in relation to how much magic is worth in attack compared to the gold it costs to
+// upgrade"). At camp about 105-175 gold buys +1 to an average round (tools/economy.mjs priceList), so the 60 / 140 / 260 gold levels add
+// a quarter, a quarter more, then half more of the power's number (at least 1, 2, 4): level 3 doubles it. Charge releases grow by an
+// eighth, a quarter, then a half, since one release stands for several rounds of saving. (Was +50% of the number every level.)
+export const POWER_LEVEL_FRAC = [0, 0.25, 0.5, 1];
+export const POWER_LEVEL_MIN = [0, 1, 2, 4];
+export const CHARGE_LEVEL_FRAC = [0, 0.125, 0.25, 0.5];
+// Charges start one lower and climb by 2 (Dave: "start one attack less... then increases after every charge"): +5 a charge is 4, 6, 8, 10.
+export const CHARGE_STEP = 2;
 export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2, 3. Each level: a steady step up in the numbers (see scaleNum), +1 die on dice powers.
 // Learning another power from your class library at camp (it then swaps freely into its slot). Supers also need level 5.
 export const POWER_LEARN = 50;
@@ -276,7 +298,7 @@ export const DIFFICULTY = {
   hard: { name: 'Hard', text: 'Tougher monsters, and the moves they announce hit harder. Pays 15% more gold. You will earn it.', hp: 1.15, flat: 2, gold: 1.15, budget: 1.15, edge: { slam: 3, burn: 2 } },
   // edge (optional, Hard and Legendary): the moves a monster announces hit harder. slam: added to a wind-up Slam and a Pounce; burn: added to Fire
 // Ward's burn. A player who reads the plaque (blocks the Slam, hits the stalker, leaves the ward alone) pays little for it; one who doesn't pays a lot.
-  legendary: { name: 'Legendary', text: 'The cruellest road. Monsters are much tougher, and slams and wards hit far harder: read every monster and spend your magic well. Finish it and you are a pro. For heroes who have beaten Hard.', hp: 1.6, flat: 2, gold: 1.25, budget: 1.25, edge: { slam: 6, burn: 4 } },
+  legendary: { name: 'Legendary', text: 'The cruellest road. Monsters are much tougher, and slams and wards hit far harder: read every monster and spend your magic well. Finish it and you are a pro. For heroes who have beaten Hard.', hp: 1.4, flat: 2, gold: 1.25, budget: 1.25, edge: { slam: 6, burn: 4 } },
 };
 const DIFFICULTY_ALIAS = { noob: 'easy', mid: 'normal', expert: 'hard' };
 export function normalizeDifficulty(id) {
@@ -354,8 +376,8 @@ export const CLASSES = {
       { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
       { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
       { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
-      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and +3 block, and each one after gives 1 more.' },
-      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 5, and each one after heals 1 more. Up you get.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +2 attack and +2 block, and each one after gives 2 more.' },
+      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 4, and each one after heals 2 more. Up you get.' },
     ],
   },
   ranger: {
@@ -369,8 +391,8 @@ export const CLASSES = {
       { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
       { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
       { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
-      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 pierce, and each one after gives 1 more.' },
-      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +5 block, and each one after gives 1 more. Now you see me.' },
+      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 3 pierce, and each one after gives 2 more.' },
+      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +4 block, and each one after gives 2 more. Now you see me.' },
     ],
   },
   wizard: {
@@ -384,8 +406,8 @@ export const CLASSES = {
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
       { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
       { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
-      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 5 attack, each one after gives 1 more, half splashing.' },
-      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 6, and each one after heals 1 more. Warm as a window.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 attack, each one after gives 2 more, half splashing.' },
+      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 5, and each one after heals 2 more. Warm as a window.' },
     ],
   },
   dwarf: {
@@ -399,8 +421,8 @@ export const CLASSES = {
       { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
       { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
       { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
-      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +6 block, and each one after gives 1 more.' },
-      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +4 attack and +2 block, and each one after gives 1 more.' },
+      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +5 block, and each one after gives 2 more.' },
+      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and +1 block, and each one after gives 2 more.' },
     ],
   },
   bard: {
@@ -412,10 +434,10 @@ export const CLASSES = {
     cards: [
       { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'A tune you can feel in the ribs. Roll 2d6 and heal that much.' },
       { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
-      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +5 attack, 5-6 +9 attack and +2 magic. Fingers crossed. Professionally.' },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +3 attack, 5-6 +6 attack and +1 magic. Fingers crossed. Professionally.' },
       { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
-      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and heal 3, and each one after gives 1 more.' },
-      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 gold, and each one after gives 1 more. Music to a peddler\'s ears.' },
+      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +2 attack and heal 2, and each one after gives 2 more.' },
+      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 3 gold, and each one after gives 2 more. Music to a peddler\'s ears.' },
     ],
   },
 };
@@ -501,6 +523,7 @@ export const PERKS = {
   diamond: { name: 'A Diamond weapon', text: 'One goes into your Diamond case: no blanks, an icon on every face, a crit of three. Good for one fight.', max: 1, retired: true, diamond: true },
   vitality: { name: 'Vitality', text: '+6 max HP. Room for one more bruise.', max: 5, mod: { maxHp: 6 } },
   reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic. A spark in the pocket.', max: 3, mod: { startMagic: 1 } },
+  deepwell: { name: 'Deep Well', text: '+2 max magic. More room to save up for a big moment.', max: 3, mod: { magicCap: 2 } }, // Dave, Oct 2026: grow the magic cap like health
   quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it
   keen: { name: 'Keen Edge', text: '+1 attack from every weapon that is attacking (red face). Sharper mornings.', max: 3, mod: { redBonus: 1 } },
   ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face). Hold a little harder.', max: 3, mod: { blueBonus: 1 } },
@@ -1054,18 +1077,20 @@ export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
-export const ACT_HP = [1.05, 1.55, 2.35]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
+export const ACT_HP = [1.05, 1.55, 2.1]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
 export const ACT_FLAT = [0, 2, 5];
+// A monster's fight bonus is rolled as extra dice of its own size (engine extraDice): at most this many extra dice a blow.
+export const MONSTER_DICE_MAX = 3;
 export const STEP_HP = 0.06;
 // The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
-export const ACT_GOLD = [1, 1.3, 1.8];
+export const ACT_GOLD = [1, 1.1, 1.2]; // Oct 2026 (gold as a currency): the monsters' gold grows slowly, so the dice stay at least half of what a fight pays (was 1, 1.3, 1.8)
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
 export const ORDINARY = { flat: [3, 5, 6], lone: 2 };
 // Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
-export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.3, 1.15, 2.2], flat: [1, 2, 5] } };
+export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.3, 1.15, 1.6], flat: [1, 2, 5] } }; // Act III bosses 2.2 -> 1.6 (21 Oct): about 13 rounds instead of 18
 export const ELITE_STEPS = [5];
 // What a numbered step is, for the trail and the road. An act may pin set-pieces in `gates`.
 export function stepKind(act, step) {

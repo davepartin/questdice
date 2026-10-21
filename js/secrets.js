@@ -228,10 +228,16 @@ function revealLine(env, r, rivalWin, crooks, won) {
   return `${r.name} was offered a bribe by ${v} (${d.name}) and said no. Honor${won ? '' : ', even in defeat'}.${coin}`;
 }
 
-// Solo (1 hero): no envelopes. The campaign gold-giver offers one hard Bonus Goal on a fight or elite (~50–60 gold).
-export const BONUS_G = [50, 55, 60];
-export const bonusG = (act) => BONUS_G[Math.min(3, Math.max(1, act | 0)) - 1];
-export const BONUS_HONOR = 10;
+// Solo (1 hero): no envelopes. The campaign gold-giver offers one hard Bonus Goal on a fight or elite, as a wager (Dave, Oct 2026:
+// "you pay gold to attempt it, or you can decline it... if you pay to attempt it, it's worth the chance"). Put down the act's stake
+// to try: pull it off and win, and you get BONUS_RETURN times the stake back; miss it (or lose the fight) and the stake is gone.
+// Saying no costs and pays nothing. A hero who cannot afford the stake may try for free, for a small prize (the stake itself).
+export const BONUS_STAKE = [10, 20, 30];
+export const BONUS_RETURN = 3;
+export const bonusStake = (act) => BONUS_STAKE[Math.min(3, Math.max(1, act | 0)) - 1];
+export const bonusG = (act) => bonusStake(act) * BONUS_RETURN; // what a paid Bonus Goal returns
+export const BONUS_G = BONUS_STAKE.map((s) => s * BONUS_RETURN);
+export const BONUS_HONOR = 0;
 export const wantsBonus = (kind) => kind === 'battle' || kind === 'elite';
 export const BONUS_GOALS = {
   nopotion: { name: 'No potions', rule: 'Win without using a potion.', check: (x) => (x.F.potions0 ?? 0) - (x.F.potions ?? 0) - (x.F.stats?.potionsThrown || 0) <= 0 },
@@ -245,28 +251,35 @@ export function dealBonusGoal({ c, hero, salt = '' }) {
   const keys = Object.keys(BONUS_GOALS);
   const id = keys[Math.floor(rng() * keys.length)];
   const voice = c.voice || voiceOf(c) || VOICE;
-  const gold = bonusG(c.act);
-  void hero;
+  const stake = bonusStake(c.act);
+  const free = !!hero && (hero.gold || 0) < stake; // short of gold: a small free one instead
   return {
     kind: 'bonus', id, act: c.act, voice: voice.name,
     scene: `${voice.name} has a hard extra job for you this fight.`,
-    name: BONUS_GOALS[id].name, rule: BONUS_GOALS[id].rule, gold, honor: BONUS_HONOR, answered: false, accepted: null,
+    name: BONUS_GOALS[id].name, rule: BONUS_GOALS[id].rule, stake: free ? 0 : stake, free, gold: free ? stake : stake * BONUS_RETURN, honor: BONUS_HONOR, answered: false, accepted: null,
   };
 }
 export function bonusView(goal) {
   if (!goal) return null;
+  const reward = goal.free
+    ? `You are short of gold, so this one is free. Pull it off and win, and you get ${goal.gold} gold. Or say no.`
+    : `Put down ${goal.stake} gold to try. Pull it off and win, and you get ${goal.gold} back. Miss it, and the ${goal.stake} is gone. Or say no; it costs nothing.`;
   return {
     id: goal.id, kind: 'bonus', mode: 'offer', name: goal.name,
-    flavor: `${goal.voice} offers you extra gold if you can pull this off.`,
-    rule: goal.rule,
-    reward: `Pull it off and win, and you get ${goal.gold} gold. Or say no for a little Honor gold.`,
+    flavor: goal.free ? `${goal.voice} offers you a small job, on the house.` : `${goal.voice} will take a wager on it.`,
+    rule: goal.rule, reward, stake: goal.stake || 0,
     scene: goal.scene, cover: '', voice: goal.voice, answered: !!goal.answered, accepted: goal.accepted,
   };
 }
-export function answerBonus(goal, { accept } = {}) {
+// Accepting a paid Bonus Goal takes its stake from the hero's purse (if the purse has fallen short since, it is free after all).
+export function answerBonus(goal, { accept, hero } = {}) {
   if (!goal) return false;
   goal.accepted = !!accept;
   goal.answered = true;
+  if (goal.accepted && goal.stake && hero) {
+    if ((hero.gold || 0) >= goal.stake) { hero.gold -= goal.stake; goal.paid = goal.stake; }
+    else { goal.free = true; goal.gold = goal.stake; goal.stake = 0; }
+  }
   return true;
 }
 function soloFighter(battle) {
@@ -279,16 +292,17 @@ export function judgeBonus(goal, battle, { won }) {
   const met = !!goal.accepted && won && !!d.check(x);
   let gold = 0; let line;
   const who = F.hero.name;
+  const lost = goal.paid ? ` The ${goal.paid} gold stake is gone.` : '';
   if (!goal.accepted) {
-    gold = goal.honor;
-    line = `${goal.voice} offered a Bonus Goal (${goal.name}) and ${who} said no. Honor. ${who} receives ${gold} gold.`;
+    gold = goal.honor || 0;
+    line = `${goal.voice} offered a Bonus Goal (${goal.name}) and ${who} said no.${gold ? ` Honor. ${who} receives ${gold} gold.` : ' No harm done.'}`;
   } else if (won && met) {
     gold = goal.gold;
-    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold.`;
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold${goal.paid ? ` (for a stake of ${goal.paid})` : ''}.`;
   } else if (won) {
-    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Not this time.`;
+    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Not this time.${lost}`;
   } else {
-    line = `${who} took the Bonus Goal. The fight was lost, so no prize.`;
+    line = `${who} took the Bonus Goal. The fight was lost, so no prize.${lost}`;
   }
   return { results: [{ name: who, id: goal.id, kind: 'bonus', mode: 'offer', accepted: goal.accepted, met, gold, line }], voice: goal.voice, won };
 }

@@ -80,9 +80,9 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : `Each extra magic adds a die${top || ` (up to ${k.max}d${k.dice.s})`}.`}${lvl}`; }
   if (k.kind === 'round') { const per = E.scaleNum(k.per, level); return `${per} × the round number${round ? ` (round ${round}: about +${per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`; }
-  if (k.kind === 'charge') { const first = Object.values(lvlFx(perOf(k), level))[0]; return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}. Each charge is worth more than the last: ${fxWords(lvlFx(perOf(k), level))} for the first, then ${E.chargeSteps(first, k.max).slice(1).join(', ')}${lvl}.`; }
+  if (k.kind === 'charge') { const tot = Array.from({ length: k.max }, (_, i) => Object.values(E.chargeGain(k, i + 1, level))[0]); const each = tot.map((t, i) => t - (tot[i - 1] || 0)); return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}, or release them, not both in one round. Each charge is worth more than the last: ${fxWords(E.chargeGain(k, 1, level))} for the first, then ${each.slice(1).join(', ')}${lvl}.`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
-  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(5, level)} attack, 5–6 +${E.scaleNum(9, level)} attack and 2 magic.`;
+  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(E.LUCK.mid, level)} attack, 5–6 +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic.`;
   return `${fxWords(lvlFx(k.fx, level))}${lvl}, this round.`;
 }
 // Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+6 pierce per charge", "3d6 pierce".
@@ -92,7 +92,7 @@ export function shortLine(k, level = 0) {
   if (k.kind === 'round') return `${E.scaleNum(k.per, level)} × the round, attack`;
   if (k.kind === 'charge') return `${fxWords(lvlFx(perOf(k), level))} per charge`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
-  if (k.kind === 'luck') return `+${E.scaleNum(5, level)} or +${E.scaleNum(9, level)} attack, +${1 + level} magic`;
+  if (k.kind === 'luck') return `+${E.scaleNum(E.LUCK.mid, level)} or +${E.scaleNum(E.LUCK.top, level)} attack, +${1 + level} magic`;
   return fxWords(lvlFx(k.fx, level));
 }
 
@@ -132,7 +132,7 @@ export function sigil(ctx) {
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // Available magic and health remain readable above the choices.
   const tally = h('div', { class: 'pw-tally' },
-    h('div', { class: 'pw-center', 'aria-label': `${b.magic} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic')),
+    h('div', { class: 'pw-center', 'aria-label': `${b.magic} of ${E.magicCapOf(b.hero)} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, `/ ${E.magicCapOf(b.hero)} magic`)),
     h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`)));
   // Helpers sit in a separate row under the class powers, each with its cost.
   // Tapping one when it cannot help (full health, no potions) says so in a short pop-up instead of opening its panel.
@@ -163,7 +163,7 @@ function detailPanel(ctx, sel) {
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
       h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
-    const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && b.usedRound[`${k.id}:release`]);
+    const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
       : h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`);

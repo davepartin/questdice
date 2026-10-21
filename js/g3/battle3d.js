@@ -315,7 +315,7 @@ async function doTeam(kind, to) {
   if (kind === 'potion') { sfx.heal(); fa.heal(); fa.num(`+${friend.hp - before.hp}`, 'heal'); banner(`POTION FOR ${friend.hero.name.toUpperCase()}`, 'good'); }
   if (kind === 'magic') { sfx.magic(); fa.glow('magic'); fa.num(`+${friend.magic - before.magic} magic`, 'pierce'); banner(`MAGIC FOR ${friend.hero.name.toUpperCase()}`, 'gold'); }
   if (kind === 'revive') { sfx.level?.(); fa.stand(); fa.glow('buff'); fa.num(`REVIVED +${friend.hp}`, 'heal'); banner(`${friend.hero.name.toUpperCase()} IS BACK!`, 'good'); }
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderRoster(); updateScore(); refresh();
+  renderRoster(); updateScore(); refresh(); renderSheet(); // the sheet stays open until you close it
 }
 function buildHero() {
   const hero = B.hero; const cls = D.CLASSES[hero.cls];
@@ -344,7 +344,7 @@ function updateHero() {
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   { const dh = B.hud.diff; const d = D.DIFFICULTY[D.normalizeDifficulty(B.hero?.difficulty)]; const id = D.normalizeDifficulty(B.hero?.difficulty); if (dh) { dh.className = `sx-diffchip b3-diffchip dc-${id}`; dh.querySelector('b').textContent = d.name; dh.title = `${d.name}: ${d.text}`; dh.setAttribute('aria-label', `Difficulty: ${d.name}`); } }
-  const mc = B.hud.magchip; if (mc) mc.querySelector('b').textContent = String(b.magic);
+  const mc = B.hud.magchip; if (mc) { mc.querySelector('b').textContent = String(b.magic); let cap = mc.querySelector('small'); if (!cap) { cap = h('small', { class: 'mc-cap' }); mc.append(cap); } cap.textContent = `/${E.magicCapOf(B.hero)}`; mc.title = `Magic: ${b.magic} of ${E.magicCapOf(B.hero)}`; } // 9/12: there is a cap
   const gc = B.hud.goldchip;
   if (gc) { // your purse plus what this fight has won so far (paid for real at victory), climbing round by round like magic (Dave)
     const mine = B.party ? b.fighters[B.active] || b.fighters.find((f) => f.hero === B.hero) : null; // a team game: this phone's own hero, never the company's sum (Dave)
@@ -441,14 +441,14 @@ function readyText(e) {
 // "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
 // A blow is its BASE (the number it always has) plus the die it rolls (times a multiplier for the big moves): "base 6 + d8".
 const dieName = (n) => `d${n}`;
-const baseDie = (base, i, s) => [base > 0 ? `base ${base}` : null, ...Array.from({ length: i.m || 0 }, () => dieName(s))].filter(Boolean).join(' + '); // a x2 move rolls two separate dice
+const baseDie = (base, i, s, e = null) => [base > 0 ? `base ${base}` : null, E.diceText(e ? E.diceOf(e, i) : (i.m || 0), s) || null].filter(Boolean).join(' + '); // "base 2 + 3d8": its fight bonus is rolled as dice
 function diceRows(e, def) {
   const s = e.powerDie; const i = e.intent; const rows = [];
   const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));
   const faces = e.faces || def.faces || [];
   const hit = faces.find((f) => ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(f.v));
   // what it hits with (this round's move if it is a blow, else its usual blow)
-  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s)));
+  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s, e)));
   // what it defends with: its guard move's base and die, or a crossed-out blue shield when it has none to roll
   const gd = GUARD_INTENT.has(i?.v) ? i : faces.find((f) => GUARD_INTENT.has(f.v));
   const ar = e.armor || def.armor;
@@ -516,11 +516,11 @@ function clearDock() {
   B.hud.caption.replaceChildren();
 }
 const UTIL = [
-  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A matching number can boost your head, hands and feet; a 5 pumps every blocking weapon, a 6 every attacking weapon.' },
+  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A heart of 1 to 4 boosts every head, hand and feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon, a 6 every attacking weapon.' },
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal health right now. As often as you can pay.` },
   { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: 'Drink a potion and heal right away. Potions are bought at camp; what you drink is gone until you buy more.' },
 ];
-const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
+const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero, B.b) : u.cost);
 function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
   if (!shape && u.id !== 'u:bigheal') why = 'Roll your dice first. You use powers while you shape the roll.'; // a potion can be drunk any time before you lock in
@@ -549,7 +549,7 @@ function cardTiles(reset) {
     { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, tag: heal.tag, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
     { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
-      body: 'Turn your heart die one step up or down. Match your head, hands or feet for 2 more of their symbol; a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
+      body: 'Turn your heart die one step up or down. A heart of 1 to 4 adds 2 more to every head, hand or feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
       extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)] },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
@@ -569,7 +569,7 @@ function showPowerDetail(id) {
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
   const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
     : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
-    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Each charge is worth 1 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
+    : k.kind === 'charge' ? `You pay ${k.cost} magic in a round to store a charge, up to ${k.max}, or you release them: one or the other each round. Each charge is worth 2 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
     : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
     : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
   const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'
@@ -580,7 +580,7 @@ function showPowerDetail(id) {
   const stepRow = k.kind === 'scale' && !st.spent && shape ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
-  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && b.usedRound[`${k.id}:release`])
+  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   const useBtn = rechargeBtn || h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`);
@@ -655,7 +655,7 @@ const powersBtn = () => {
 
 export function renderReset() {
   try { B.fit?.(); } catch { /* ignore */ }
-  B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null);
+  B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null); B.bw?.tray?.setHeart?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
@@ -675,7 +675,7 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
+  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) { if (B.card) B.flourishLater = b.round; else HK.roundFlourish(B.root, b.round); } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -746,6 +746,7 @@ export function renderShape() {
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight glow a soft cyan underneath
+  bw.tray.setHeart?.(ev.heartBoost?.slots || null, ev.heartBoost?.sym); // Heart Boost: the heart and the dice it backs beat together in the symbol's colour
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
@@ -796,9 +797,9 @@ async function doReroll() {
 }
 async function doNudge(dir) {
   let b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape(); return; }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet(); return; }
   if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); B.sheetOpen = false; B.hud.sheet.classList.remove('open'); renderShape();
+  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet();
 }
 async function doHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;
@@ -818,8 +819,7 @@ async function doCard(id, opts = {}) {
   sfx.card(); buzz(20); B.fresh = id;
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
-  myPc().sparkle(sparkleOf(B.hero?.cls));
-  B.sheetOpen = false; B.hud.sheet.classList.remove('open');
+  myPc().sparkle(sparkleOf(B.hero?.cls)); // (the magic sheet stays open: you may want two or three powers; Close shuts it)
   // what the power actually added this round (the counters before and after)
   const gains = {};
   for (const [key, v] of Object.entries(b.mods)) { const d = (v || 0) - (modsBefore[key] || 0); if (d > 0) gains[key] = d; }
@@ -831,7 +831,7 @@ async function doCard(id, opts = {}) {
   B.busy = true; renderShape();
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id) }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  renderShape(); bumpCounters(gains);
+  renderShape(); renderSheet(); bumpCounters(gains);
 }
 // The counters that a power just filled give a little pulse, so you can see where it went.
 function bumpCounters(gains) {
@@ -1064,7 +1064,9 @@ function showCard(el = B.card) {
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
 function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
-function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
+function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
+// The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
+function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) HK.roundFlourish(B.root, r); }
 async function lockLocalParty() {
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const f = b.fighters[B.active];
@@ -1166,7 +1168,7 @@ async function lockInInner() {
   bw.tray.unlock?.();
   setHud({ phase: 'resolve' });
   for (const e of b.enemies) updatePlate(e);
-  await wait(0.35);
+  await wait(1.0); // (Dave, Oct 2026: let the last hits, falls and numbers finish on the board before the recap covers it)
 
   // ---------- 3. next
   B.busy = false;
@@ -1236,7 +1238,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   for (const e of b.enemies) updatePlate(e);
   B.replaying = false;
   paintHeroes();
-  await wait(pace.close);
+  await wait(pace.close + 0.6); // let the board settle before the recap covers it
   B.busy = false;
   if (outcome === 'victory') return win(B.net ? null : rep); // at a shared table every phone moves on together (no waiting on a tap)
   if (outcome === 'defeat') return lose(B.net ? null : rep);

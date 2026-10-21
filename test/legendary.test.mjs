@@ -24,13 +24,15 @@ test('six legendaries, each borrowing an ordinary weapon\'s shape, about +10 at 
   assert.equal(tierName({ id: 'dawnbreaker', rarity: 3 }), 'Legendary'); assert.equal(tierName({ id: 'sword', rarity: 2 }), 'Gold');
 });
 
-test('a legendary\'s faces are fixed: no metal raise, no forging, but it can be trained a size up', () => {
+test('a legendary\'s faces are fixed, it cannot be forged or trained (wear, Oct 2026), and it lasts as long as Gold', async () => {
+  const { battlesFull } = await import('../js/engine.js');
   const inst = makeWeapon('oakheart', 3, makeRng(1));
   assert.deepEqual(weaponFaces(inst).map((f) => f.v), [1, 2, 3, 4]);
   assert.deepEqual(weaponFaces(inst)[2].fx, { heal: 2 });
   const h = knight(); h.gold = 9999; h.bag.push(inst);
-  assert.equal(forgeInfo(h, inst.uid).why, 'legendary');
-  h.strength.W = 6; const t = trainInfo(h, inst.uid); assert.ok(t.ok); assert.equal(t.next, 6);
+  assert.equal(forgeInfo(h, inst.uid).ok, false);
+  h.strength.W = 6; assert.equal(trainInfo(h, inst.uid).ok, false);
+  assert.equal(battlesFull(inst), 8);
   assert.equal(weaponValue(inst), WEAPONS.oakheart.price);
 });
 

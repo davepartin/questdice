@@ -343,7 +343,7 @@ function startQuest(table, cmd) {
 function openEnvelope(table, player, cmd) {
   if (table.phase !== 'envelope') return fail('There is no envelope now.');
   if (table.bonus) {
-    if (!SO.answerBonus(table.bonus, { accept: !!cmd.accept })) return fail('There is no Bonus Goal for you.');
+    if (!SO.answerBonus(table.bonus, { accept: !!cmd.accept, hero: members(table)[0] })) return fail('There is no Bonus Goal for you.');
     table.phase = 'battle';
     return ok();
   }
@@ -673,6 +673,7 @@ function enterVictory(table) {
   revealEnvelopes(table, true);
   LG.noteBattle(table.company.campaign, b, { won: true, quest: table.quest || b.quest, reveal: table.reveal }); // for the act's Legend
   const shattered = Object.fromEntries(members(table).map((m) => [m.name, E.shatterDiamonds(m).map((d) => d.id)]).filter(([, l]) => l.length)); // win or lose, a Diamond brought to the fight shatters
+  const worn = Object.fromEntries(members(table).map((m) => [m.name, E.brokenLine(E.takeBroken(m))]).filter(([, l]) => l)); // weapons worn out by this battle (Oct 2026)
   const levels = {};
   for (const f of b.fighters) levels[f.hero.name] = f.hero.level;
   const r = E.partyRewards(b);
@@ -704,7 +705,7 @@ function enterVictory(table) {
   table.rewards = {
     xp: r.xp, gold, drops, order: r.order, contrib: r.contrib, points: r.points, place: r.place,
     levels, draft: E.newDraft(firstOrder, drops.length), questName: table.quest?.name || '',
-    repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])), shattered,
+    repeat, stats: Object.fromEntries(b.fighters.map((f) => [f.hero.name, { ...(f.stats || {}) }])), shattered, worn,
     charms, charmTaken: {},
   };
   table.phase = 'victory';
@@ -763,7 +764,7 @@ function passLoot(table, player) {
 function enterDefeat(table, retreatFlag) {
   revealEnvelopes(table, false);
   if (table.battle) LG.noteBattle(table.company.campaign, table.battle, { won: false, quest: table.quest || table.battle.quest, reveal: table.reveal });
-  for (const m of members(table)) E.shatterDiamonds(m);
+  for (const m of members(table)) { E.shatterDiamonds(m); E.takeBroken(m); } // (a worn-out weapon shows in the hero's pack at camp)
   let loss = 0;
   for (const m of members(table)) {
     const cut = Math.floor(m.gold * 0.15);

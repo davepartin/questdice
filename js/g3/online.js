@@ -380,7 +380,7 @@ function victory(t) {
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, shattered, reopen, rows, perks, charms, loot)));
+      partyBar(), note, shattered, R.worn?.[hero.name] ? h('p', { class: 'dm-line worn' }, ico('sword'), R.worn[hero.name]) : null, reopen, rows, perks, charms, loot)));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }

@@ -219,8 +219,11 @@ test('the battle gold chip climbs round by round and ends on what victory pays',
   }
 });
 
-test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
+test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', async () => {
+  const { STRAIGHT_RULE, STRAIGHT } = await import('../js/data.js'); const keep = { ...STRAIGHT_RULE };
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
+  assert.equal(evaluate(r, board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 })).straight, 0, 'five in a row is no straight now');
+  Object.assign(STRAIGHT_RULE, { min: 5, max: 5 }); STRAIGHT[5] = 10; // the rest checks how a run is read and paid, on a five-run
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)
   const b = board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 });
   const atk = evaluate(r, b, { straight: 'atk' });
@@ -232,6 +235,7 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   // a 1-2-3-4 is only four long: no payout
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straightSlots, undefined);
+  Object.assign(STRAIGHT_RULE, keep); delete STRAIGHT[5];
 });
 
 test('honest dice: a dN never shows more than N; size is the range, metal adds the icons (Bronze is a little dull from a d6 up)', () => {
@@ -266,31 +270,58 @@ test('a weapon die is as big as its size, capped by the hand that holds it', () 
   assert.equal(weaponFaces(h.loadout.NW, sidesOf(h, 'NW')).length, 6);
 });
 
-test('training a weapon needs the hand first, and gold; forging a tier costs gold and keeps both copies in step', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.strength = { W: 4, E: 4 };
-  const uid = h.loadout.NW.uid;
-  h.gold = 1000;
-  assert.equal(trainInfo(h, uid).why, 'hands');
-  assert.equal(trainWeapon(h, uid), false);
-  h.strength.W = 6; assert.equal(trainWeapon(h, uid), true);
-  assert.equal(h.loadout.NW.size, 6); assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4]);
-  assert.equal(trainInfo(h, uid).why, 'hands'); // d8 needs a d8 hand
-  assert.equal(forgeWeapon(h, uid), true); assert.equal(h.loadout.NW.rarity, 1);
-  assert.equal(h.gold, 1000 - WEAPON_SIZE_STEPS[4] - FORGE_COST[1]);
-  h.gold = 0; assert.equal(forgeInfo(h, uid).why, 'gold');
-  // a two-hander sits in both hands, but each hand's die (the bow, then its arrows) is forged on its own
-  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); r.gold = 1000; const ru = r.loadout.NW.uid;
-  assert.equal(r.loadout.NE.twin, true); assert.notEqual(r.loadout.NE.uid, ru);
-  assert.equal(forgeWeapon(r, ru), true);
-  assert.equal(r.loadout.NW.rarity, 1); assert.equal(r.loadout.NE.rarity, 0, 'the arrows stay as they were');
-  assert.equal(r.gold, 1000 - Math.round(FORGE_COST[1] * 1.4));
-  assert.equal(forgeWeapon(r, r.loadout.NE.uid), true); assert.equal(r.loadout.NE.rarity, 1);
+test('weapons are what you find or buy: forging and training are retired (wear, Oct 2026)', () => {
+  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.gold = 9999; const uid = h.loadout.NW.uid; h.strength.W = 8;
+  assert.equal(forgeInfo(h, uid).ok, false); assert.equal(forgeWeapon(h, uid), false);
+  assert.equal(trainInfo(h, uid).ok, false); assert.equal(trainWeapon(h, uid), false);
+  assert.equal(h.gold, 9999); assert.equal(h.loadout.NW.rarity, 0); void WEAPON_SIZE_STEPS; void FORGE_COST;
 });
 
-test('Gold, the best metal, cannot be forged further and fists cannot be improved', () => {
-  const h = newHero({ name: 'T', cls: 'knight', seed: 1 }); h.gold = 9999; const uid = h.loadout.NW.uid;
-  for (let i = 0; i < 2; i++) assert.equal(forgeWeapon(h, uid), true);
-  assert.equal(h.loadout.NW.rarity, 2); assert.equal(forgeInfo(h, uid).why, 'max');
+test('a weapon lasts its battles (Bronze 4, Silver 6, Gold 8), then breaks after the fight; the hand is empty', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'W', cls: 'knight', seed: 1 }); const sword = h.loadout.NW; const shield = h.loadout.NE;
+  assert.equal(E.battlesLeft(sword), 4);
+  const spare = makeWeapon('dagger', 2, makeRng(3)); h.bag.push(spare); assert.equal(E.battlesLeft(spare), 8);
+  for (let i = 0; i < 3; i++) E.shatterDiamonds(h);
+  assert.equal(E.battlesLeft(h.loadout.NW), 1, 'three battles used'); assert.equal(E.battlesLeft(spare), 8, 'a weapon in the pack rests');
+  assert.equal(h.justBroke, undefined);
+  E.shatterDiamonds(h);
+  assert.equal(h.loadout.NW.id, 'fists'); assert.equal(h.loadout.NE.id, 'fists', 'the shield broke the same battle');
+  assert.deepEqual(h.justBroke.map((w) => w.id), [sword.id, shield.id]);
+  assert.ok(h.bag.includes(spare), 'the pack is untouched: equip the spare at camp');
+});
+
+test('a two-hander counts once and breaks whole; with empty hands and an empty pack a plain Bronze weapon waits', async () => {
+  const E = await import('../js/engine.js');
+  const r = newHero({ name: 'R', cls: 'ranger', seed: 1 }); assert.equal(r.loadout.NE.twin, true);
+  for (let i = 0; i < 3; i++) E.shatterDiamonds(r);
+  assert.equal(E.battlesLeft(r.loadout.NW), 1); assert.equal(E.battlesLeft(r.loadout.NE), 1, 'the arrows keep step with the bow');
+  E.shatterDiamonds(r);
+  assert.equal(r.justBroke.length, 1, 'one weapon, not two');
+  assert.equal(r.loadout.NW.id, 'bow', 'nothing in the pack: a plain Bronze bow waits'); assert.equal(r.loadout.NW.rarity, 0);
+  assert.equal(E.battlesLeft(r.loadout.NW), 4);
+});
+
+test('a hand that held a Diamond does not wear its own weapon; a worn weapon sells for less', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'D', cls: 'knight', seed: 2 }); const own = h.loadout.NW;
+  const d = E.makeDiamond(makeRng(4), 1); E.takeDiamond(h, d); E.armDiamond(h, d.uid, 'NW'); E.wieldDiamonds(h);
+  E.shatterDiamonds(h);
+  assert.equal(h.loadout.NW, own); assert.equal(E.battlesLeft(own), 4, 'set aside for the Diamond, so it rested');
+  assert.equal(E.battlesLeft(h.loadout.NE), 3, 'the shield fought');
+  const g = makeWeapon('sword', 2, makeRng(5)); const full = E.sellValue(g); g.left = 4;
+  assert.equal(E.sellValue(g), Math.round(E.weaponValue(g) * 0.5 * 4 / 8)); assert.ok(E.sellValue(g) < full);
+});
+
+test('spoils are mostly Bronze, a boss leaves at least Silver; the store sells one Bronze, two Silver and one Gold', async () => {
+  const E = await import('../js/engine.js');
+  const h = newHero({ name: 'S', cls: 'knight', seed: 9 });
+  const metal = [0, 0, 0]; const rng = makeRng(11);
+  for (let i = 0; i < 400; i++) for (const w of E.rollDrops(rng, 2, { weights: [85, 13, 2] })) metal[w.rarity]++;
+  assert.ok(metal[0] > 600 && metal[2] < 40, `spoils metal ${metal}`);
+  for (let s = 1; s <= 6; s++) { h.campaign.step = s; h.campaign.shop = null;
+    const items = E.shopStock(h).filter((it) => !it.inst.diamond && it.inst.rarity < 3);
+    if (items.length === 4) assert.deepEqual(items.map((it) => it.inst.rarity), [0, 1, 1, 2]); }
 });
 
 function duel(hero, enemyId, intent, boardSpec, opts = {}) {
@@ -424,8 +455,9 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   const b = newBattle(k, questsFor(k)[0], makeRng(4), 1); startRoll(b); b.magic = 12;
   castPower(b, 'rally'); b.usedRound = {}; castPower(b, 'rally');
   const before = { atk: b.mods.atk, block: b.mods.block };
+  b.usedRound = {}; // the next round (a round stores or releases, not both)
   const rel = castPower(b, 'rally', { release: true });
-  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 7); assert.equal(b.mods.block - before.block, 7); // each charge 1 more than the last: 3 + 4
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6); // one lower to start, then 2 more each: 2 + 4
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {
@@ -542,7 +574,9 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   assert.equal(castPower(b, 'coil').charged, 1); assert.equal(castPower(b, 'coil'), null); // one charge a round
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 2);
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 5 + 6 + 7: each charge worth 1 more
+  assert.equal(castPower(b, 'coil', { release: true }), null, 'stored this round: release next round');
+  beginReset(b); startRoll(b);
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 4 + 6 + 8: one lower to start, then 2 more each
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
@@ -637,14 +671,16 @@ test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and tal
   h.campaign.act = 3; assert.ok(upgradeDie(h, 'special', 'SW')); assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 10);
 });
 
-test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', () => {
-  const h = knight(); h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
+test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', async () => {
+  const { STRAIGHT_RULE, STRAIGHT } = await import('../js/data.js'); const keep = { ...STRAIGHT_RULE }; Object.assign(STRAIGHT_RULE, { min: 5, max: 5 }); STRAIGHT[5] = 10; // read five-runs here
+  const h = knight(); h.strength.W = 4; h.strength.E = 4; // d4 body dice: five in a row is a straight h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
   // head 1, talent 2x (a 2), heart 3, left hand 4, right talent 5 (no symbol yet): 1-2-3-4-5
   const run = evaluate(h, board({ N: 1, SW: 2, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 }));
   assert.equal(run.straight, 5);
   assert.ok(run.straightSlots.includes('SW') && run.straightSlots.includes('SE'));
   const gap = evaluate(h, board({ N: 1, SW: 3, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 })); // a blank 3 on the talent die is no 2
   assert.equal(gap.straight, 0);
+  Object.assign(STRAIGHT_RULE, keep); delete STRAIGHT[5];
 });
 
 test('a talent die always has two blanks and one 2x; the rest of its faces can carry symbols', () => {
@@ -667,7 +703,7 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
   assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
   assert.equal(DIFFICULTY.hard.hp, 1.15); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
-  assert.equal(DIFFICULTY.legendary.hp, 1.6); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(DIFFICULTY.legendary.hp, 1.4); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
   assert.equal(normalizeDifficulty('noob'), 'easy');
   assert.equal(normalizeDifficulty('mid'), 'normal');
   assert.equal(normalizeDifficulty('expert'), 'hard');
@@ -704,7 +740,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
   assert.equal(mid.enemies[0].maxHp, 30);
   assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.15));
-  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.6)); // Legendary is tougher than Hard (Oct 2026; 1.6 once triples grew by act)
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.4)); // Legendary is tougher than Hard (Oct 2026; 1.4 once weapons wore out and straights grew rarer)
   assert.equal(easy.enemies[0].flat, -1);
   assert.equal(hard.enemies[0].flat, 2);
   assert.equal(legend.enemies[0].flat, 2);
@@ -719,7 +755,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const party = newPartyBattle([host, guest], quest, makeRng(4));
   const m = party.team.m; // the company's strength in "strongest heroes" (Oct 2026)
   assert.ok(m > 1 && m <= 2);
-  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * party.team.hp), 'Hard health, times the company');
+  assert.ok(Math.abs(party.enemies[0].maxHp - 30 * 1.15 * party.team.hp) <= 1, 'Hard health, times the company (team.hp is shown to two places)');
   assert.equal(party.enemies[0].flat, 2 + party.team.flat, 'Hard adds 2 to a hit, the company the rest');
   assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
 });
@@ -782,11 +818,17 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
   assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
 });
 
-test('each power level adds half the base number (3, 5, 7, 9), and pierce stays a little under attack', async () => {
-  const { scaleNum } = await import('../js/engine.js');
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 5, 7, 9]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 8, 11, 14]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 18, 24, 30]);
+test('power levels add a quarter, a quarter more, then half more (at least 1, 2, 4): level 3 doubles; pierce stays a little under attack', async () => {
+  const { scaleNum, chargeGain, chargeSteps, healCostOf } = await import('../js/engine.js');
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 7]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 8, 10]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 15, 18, 24]);
+  // charges start one lower and climb by 2; a release grows an eighth, a quarter, a half by level
+  assert.deepEqual(chargeSteps(5, 4), [4, 6, 8, 10]);
+  const coil = { per: { atk: 5 } };
+  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 35, 42]);
+  // healing with magic: 2 magic heals 3, the same price every time
+  assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 2);
   const { CLASSES } = await import('../js/data.js');
   const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
   const all = Object.values(CLASSES).flatMap((c) => c.cards);
@@ -978,11 +1020,11 @@ test('Line Breaker: every triple pays +2 more a rank, attack or block; Stout Hea
   assert.ok(!offers.has('grit'), 'Stout Heart is retired'); assert.ok(offers.has('linebreaker'), 'Line Breaker is offered');
 });
 
-test('Heal with Magic is the same for every hero: 2 magic for 4 health; an old Frugal Mender is refunded as a perk pick', async () => {
+test('Heal with Magic is the same for every hero: 2 magic for 3 health; an old Frugal Mender is refunded as a perk pick', async () => {
   const E = await import('../js/engine.js'); const SV = await import('../js/save.js');
   for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) {
     const h = newHero({ name: 'H', cls, seed: 1 }); h.perks.push('frugal');
-    assert.equal(E.healCostOf(h), 2, `${cls} pays 2`); assert.equal(E.healAmountOf(h), 4, `${cls} heals 4`);
+    assert.equal(E.healCostOf(h), 2, `${cls} pays 2`); assert.equal(E.healAmountOf(h), 3, `${cls} heals 3`);
   }
   const old = newHero({ name: 'Old', cls: 'wizard', seed: 1 }); old.perks = ['vitality', 'frugal']; old.pendingPerks = 0;
   SV.migrateHero(old);
@@ -1019,7 +1061,46 @@ test('story campaigns: storyScale fits monsters written for one hero of a level 
   assert.ok(E.storyScale([grown, newHero({ name: 'B', cls: 'bard', seed: 2 })], 1).m > duo.m, 'heroes stronger than the story expects meet stronger monsters');
 });
 
-test('every straight from 5 up pays, and a longer one pays more (a 1-to-8 run used to pay nothing)', async () => {
+test('straights start at six in a row and pay 10, 20, 40, 80; five in a row pays nothing', async () => {
   const { STRAIGHT } = await import('../js/data.js');
-  for (let n = 5; n <= 9; n++) assert.ok(STRAIGHT[n] > (STRAIGHT[n - 1] || 0), `${n} in a row pays more than ${n - 1}`);
+  assert.deepEqual([5, 6, 7, 8, 9].map((n) => STRAIGHT[n] || 0), [0, 10, 20, 40, 80]);
+});
+
+test('six in a row is the shortest straight for the whole game, however many dice', async () => {
+  const E = await import('../js/engine.js'); const h = E.newHero({ name: 'S', cls: 'knight', seed: 2 });
+  assert.equal(E.diceInPlay(h), 7); assert.equal(E.straightMin(h), 6);
+  h.dice.push('NE', 'SE'); assert.equal(E.diceInPlay(h), 9); assert.equal(E.straightMin(h), 6);
+});
+
+test('the heart backs its symbol on any face: a heart 1 boosts every heal face (1, 5, 9), a 4 every gold face (4, 8, 10)', async () => {
+  const E = await import('../js/engine.js');
+  const h = E.newHero({ name: 'H', cls: 'knight', seed: 3 }); h.strength = { W: 10, E: 10 };
+  const bd = (o) => Object.fromEntries(['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE', 'P'].map((s) => [s, { v: o[s] ?? 2, bound: false }]));
+  const base = E.evaluate(h, bd({ C: 6, N: 1, W: 5, E: 9, S: 2 })).heal;
+  const boosted = E.evaluate(h, bd({ C: 1, N: 1, W: 5, E: 9, S: 2 }));
+  assert.equal(boosted.heal - base, 6, 'head 1, hand 5 and hand 9 all show heal: +2 each');
+  assert.deepEqual(boosted.heartSlots.sort(), ['E', 'N', 'W']);
+  const gold = E.evaluate(h, bd({ C: 4, N: 4, W: 8, E: 10, S: 3 }));
+  assert.equal(gold.heartSlots.length, 3, 'a 4, an 8 and a 10 all carry gold');
+});
+
+test('a charge power either stores a charge or releases them in a round, never both', async () => {
+  const E = await import('../js/engine.js');
+  const h = E.newHero({ name: 'C', cls: 'knight', seed: 4 });
+  const b = E.newBattle(h, E.questsFor(h)[0], E.makeRng(4), 1); E.startRoll(b); b.magic = 12;
+  assert.ok(E.castPower(b, 'rally')); b.usedRound = {}; assert.ok(E.castPower(b, 'rally'));
+  assert.equal(E.castPower(b, 'rally', { release: true }), null, 'stored this round: no release');
+  b.usedRound = {};
+  assert.ok(E.castPower(b, 'rally', { release: true }), 'a new round: release');
+  assert.equal(E.castPower(b, 'rally'), null, 'released this round: no storing');
+  assert.equal(E.powerState(b, E.cardsOf(h).find((c) => c.id === 'rally')).spent, true);
+});
+
+test('the magic cap grows like health: +1 every two levels, +2 a Deep Well perk; the Wizard stays 3 higher', async () => {
+  const E = await import('../js/engine.js');
+  const k = E.newHero({ name: 'K', cls: 'knight', seed: 1 }); const w = E.newHero({ name: 'W', cls: 'wizard', seed: 1 });
+  assert.equal(E.magicCapOf(k), 12); assert.equal(E.magicCapOf(w), 15);
+  k.level = 3; assert.equal(E.magicCapOf(k), 13); k.level = 11; assert.equal(E.magicCapOf(k), 17);
+  k.perks.push('deepwell', 'deepwell'); assert.equal(E.magicCapOf(k), 21);
+  w.level = 11; assert.equal(E.magicCapOf(w), 20);
 });

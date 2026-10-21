@@ -2,11 +2,11 @@
 // battles are reproducible and the balance simulator (tools/sim.mjs) can run the same code.
 
 import {
-  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  ROLE, LANES, CARDINALS, MAGIC_CAP, MAGIC_CAP_LEVELS, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
@@ -159,12 +159,59 @@ export function wieldDiamonds(hero) {
   hero.wielding = [pick2.NW, pick2.NE].filter(Boolean);
   return hero.wielding;
 }
-// The fight is over (won, lost or left): the Diamonds shatter and the hands get their own weapons back. Returns what shattered.
+// The fight is over (won, lost or left): the Diamonds shatter and the hands get their own weapons back, and every weapon that was in
+// a hand wears a battle (a weapon set aside for a Diamond does not). Returns what shattered; what broke is left in hero.justBroke.
 export function shatterDiamonds(hero) {
-  if (!hero?.lent) return [];
-  const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
-  if (L.dice) hero.dice = L.dice; else delete hero.dice;
-  const gone = hero.wielding || []; delete hero.lent; delete hero.wielding; return gone;
+  if (!hero?.loadout) return [];
+  const skip = new Set(['NW', 'NE'].filter((k) => hero.loadout[k]?.diamond)); // hands a Diamond held this fight
+  let gone = [];
+  if (hero.lent) {
+    const L = hero.lent; hero.loadout.NW = L.NW; if (L.NE) hero.loadout.NE = L.NE; else delete hero.loadout.NE;
+    if (L.dice) hero.dice = L.dice; else delete hero.dice;
+    gone = hero.wielding || []; delete hero.lent; delete hero.wielding;
+  }
+  const broke = wearHands(hero, skip);
+  if (broke.length) hero.justBroke = [...(hero.justBroke || []), ...broke]; // the victory or defeat screen says so, then clears it
+  return gone;
+}
+// ---- wear (Oct 2026): battles a weapon lasts, and how many it has left. Fists and Diamonds never wear here.
+export const battlesFull = (inst) => (!inst || inst.id === 'fists' || inst.diamond ? Infinity : WEAR_BATTLES[isLegendary(inst) ? 2 : Math.min(2, inst.rarity | 0)]);
+export const battlesLeft = (inst) => { const f = battlesFull(inst); return f === Infinity ? Infinity : Math.max(0, Math.min(f, inst.left ?? f)); };
+// One battle off every weapon in the hands (a two-hander counts once). A weapon with none left breaks: its hand is empty.
+// A hero is never left with nothing at all: with empty hands and an empty pack, a plain Bronze weapon of the class is waiting.
+export function wearHands(hero, skip = new Set()) {
+  const broke = [];
+  for (const k of ['NW', 'NE']) {
+    const w = hero.loadout[k]; if (!w || w.id === 'fists' || w.twin || w.diamond || skip.has(k)) continue;
+    w.left = battlesLeft(w) - 1;
+    const two = WEAPONS[w.id]?.hands === 2;
+    if (two && hero.loadout.NE?.twin) hero.loadout.NE.left = w.left;
+    if (w.left > 0) continue;
+    broke.push({ id: w.id, rarity: w.rarity | 0, size: weaponSize(w) });
+    if (two) { hero.loadout.NW = fists('L'); hero.loadout.NE = fists('R'); } else hero.loadout[k] = fists(k === 'NW' ? 'L' : 'R');
+  }
+  const empty = ['NW', 'NE'].every((k) => !hero.loadout[k] || hero.loadout[k].id === 'fists');
+  if (broke.length && empty && !hero.bag.length) {
+    const id = CLASSES[hero.cls]?.weapons?.[0] || 'sword'; const c = hero.campaign || {};
+    const w = makeWeapon(id, 0, makeRng(hashSeed(c.seed || 1, c.act || 1, c.step || 1, 'spare', hero.stats?.battles || 0)));
+    hero.loadout.NW = w; if (WEAPONS[id].hands === 2) hero.loadout.NE = twinOf(w);
+    hero.justSpare = id;
+  }
+  return broke;
+}
+// What broke after the last fight (and the plain weapon waiting, if both hands came up empty), for the victory or defeat screen.
+// Reading it clears it.
+export function takeBroken(hero) { const broke = hero?.justBroke || []; const spare = hero?.justSpare || null; if (hero) { delete hero.justBroke; delete hero.justSpare; } return { broke, spare }; }
+export function brokenLine({ broke, spare }) {
+  if (!broke?.length) return '';
+  const names = broke.map((w) => `${RARITY[w.rarity] || ''} ${WEAPONS[w.id]?.name || 'weapon'}`.trim());
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  return `Your ${list} ${names.length > 1 ? 'are' : 'is'} worn out after this battle.${spare ? ` A plain Bronze ${WEAPONS[spare]?.name || 'weapon'} is waiting.` : ' Equip a spare from your pack at camp.'}`;
+}
+// What a weapon card says about its wear: "3 battles left", or "one fight" for a Diamond.
+export function wearLabel(inst) {
+  if (!inst || inst.id === 'fists') return ''; if (inst.diamond) return 'one fight';
+  const n = battlesLeft(inst); return `${n} battle${n === 1 ? '' : 's'} left`;
 }
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
 
@@ -187,7 +234,7 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
 }
 
 export function heroMods(hero) {
-  const m = { maxHp: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0, tripleBonus: 0 };
+  const m = { maxHp: 0, magicCap: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0, tripleBonus: 0 };
   for (const id of hero.perks) for (const [k, v] of Object.entries(PERKS[id].mod)) m[k] += v;
   return m;
 }
@@ -201,8 +248,8 @@ export function dropCharm(hero, id) { const i = (hero.charms || []).indexOf(id);
 export function charmChoices(hero, rng, n = 1) { const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
-export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
-export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 4 health, no class or perk changes it
+export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
+export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
 export const rerollTotal = () => RULES.free + RULES.paid;
@@ -215,7 +262,7 @@ export function rerollDieInfo(hero) {
   return { ok: true, cost: REROLL_DIE_COST, next: cur + 1, cur };
 }
 export function buyRerollDie(hero) { const r = rerollDieInfo(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.rerollDie = true; return true; }
-export const healCostOf = () => HEAL_COST;
+export const healCostOf = (hero, b = null) => HEAL_COST; // the same every time (Dave, Oct 2026; b is kept for callers)
 // Powers: three slots (A big move, B every round, C charge), one power in each. hero.powers = { A: id, B: id, C: id };
 // a slot nobody chose holds the class's `start` power. hero.learned lists powers bought from the class library at camp.
 const libraryOf = (hero) => CLASSES[hero.cls].cards;
@@ -380,6 +427,10 @@ const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the fee
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 // What one triple pays this act: 10 / 15 / 20 (attack or block). A team triple adds the same again.
 export function tripleBonus(hero) { const a = Math.min(3, Math.max(1, hero?.campaign?.act || 1)); return TRIPLE_BY_ACT[a - 1] ?? SYNERGY_BONUS; }
+// How long a straight must be (Dave, Oct 2026: "remove the five straight from the game"): six in a row for the whole game
+// (STRAIGHT_RULE; it can be made to grow with the dice in play again). The dice in play are the ones a straight reads.
+export const diceInPlay = (hero) => ['NW', 'N', 'NE', 'W', 'C', 'E', 'S', 'SW', 'SE'].filter((k) => !['NW', 'NE', 'SW', 'SE'].includes(k) || isActive(hero, k)).length;
+export function straightMin(hero) { return Math.max(STRAIGHT_RULE.min, Math.min(STRAIGHT_RULE.max, diceInPlay(hero) - STRAIGHT_RULE.less)); }
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
@@ -402,10 +453,15 @@ export function evaluate(hero, board, opts = {}) {
   const hushed = !!(opts.hushed || board.C?.hushed);
   if (hushed) { out.heart = 0; out.notes.push('Heart hushed'); }
   if (hv <= 4 && !hushed) {
-    const matches = PAYERS.filter((s) => val(s) === hv).length;
+    // Dave, Oct 2026: the heart backs its SYMBOL, not just its number, so it stays useful as the dice grow: a heart 1 (heal)
+    // boosts every head / hand / feet die showing a heal face (1, 5 or 9); 2 pierce (2, 6, 9); 3 magic (3, 7, 10); 4 gold (4, 8, 10).
+    const sym = ['heal', 'pierce', 'magic', 'gold'][hv - 1];
+    const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
+    const matches = hit.length;
+    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
     const amp = HEART_AMP[hv - 1] * matches;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
-    if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
+    if (matches) out.notes.push(`Heart Boost +${HEART_AMP[hv - 1] * matches} ${sym}`);
   }
 
   // Lanes: weapon (color + number) + hand strength (doubled by 2x); a talent number face pays its number in its symbol.
@@ -479,7 +535,7 @@ export function evaluate(hero, board, opts = {}) {
   const sorted = [...numSlot.keys()].sort((x, y) => x - y);
   let best = 1, run = 1, top = sorted[0];
   for (let i = 1; i < sorted.length; i++) { run = sorted[i] === sorted[i - 1] + 1 ? run + 1 : 1; if (run > best) { best = run; top = sorted[i]; } }
-  if (best >= 5) {
+  if (best >= straightMin(hero)) {
     const keys = Object.keys(STRAIGHT).map(Number); best = Math.min(best, Math.max(...keys)); // a run past the table still pays its top prize
     out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];
@@ -565,24 +621,37 @@ function settleStalks(b, rep) {
 }
 // A monster rolls its power die once for each point of the move's multiplier (Dave): a Lunge (x2) rolls TWO separate dice, a Bite (x1) one.
 // (A move with no multiplier still draws one die so the random stream is the same as before; it just does not count.)
-export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, intent?.m || 0) }, () => die(rng, e.powerDie));
-const diceSum = (intent, dice) => (dice || []).slice(0, intent.m || 0).reduce((a, v) => a + v, 0);
+// Monsters roll dice, not big fixed numbers (Dave, Oct 2026: "seeing that it's gonna roll 3 d8s is kind of scary"). A blow's fight bonus
+// (act, step, difficulty, the kind of fight: e.flat) is rolled as extra dice of the monster's own size, as many as it is worth on
+// average (up to MONSTER_DICE_MAX), and what is left over stays a small number. Same average blow as before, with real swings.
+export function extraDice(e, intent = e?.intent) {
+  const fl = e?.flat || 0;
+  if (!intent || !isDamageIntent(intent) || !(intent.m > 0) || fl <= 0 || !e.powerDie) return { k: 0, rem: fl };
+  const avg = (e.powerDie + 1) / 2; const k = Math.min(MONSTER_DICE_MAX, Math.floor(fl / avg + 0.25));
+  return { k, rem: Math.round(fl - k * avg) || 0 };
+}
+// How many dice a move rolls (its own, plus the fight bonus as dice for a blow), and how to say it: "3d8".
+export const diceOf = (e, i = e?.intent) => (i ? (i.m || 0) + extraDice(e, i).k : 0);
+export const diceText = (n, size) => (n > 1 ? `${n}d${size}` : n === 1 ? `d${size}` : '');
+export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, (intent?.m || 0) + extraDice(e, intent).k) }, () => die(rng, e.powerDie));
+const diceSum = (e, intent, dice) => (dice || []).slice(0, (intent.m || 0) + extraDice(e, intent).k).reduce((a, v) => a + v, 0);
 function magnitude(e, intent, dice, weaken) {
-  let m = intent.f + diceSum(intent, dice);
-  if (isDamageIntent(intent)) m = Math.max(0, m + e.flat + e.buff - weaken);
+  let m = intent.f + diceSum(e, intent, dice);
+  if (isDamageIntent(intent)) m = Math.max(0, m + extraDice(e, intent).rem + e.buff - weaken);
   return m;
 }
 // What made a monster's number this round, for the recap: its move's fixed part, the dice it rolled, the fight's flat bonus, a howl, and any
 // softening from your powers. (f + the dice + flat + howl - softened = the attack or guard.)
-const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p: dice[0], dice: dice.slice(0, Math.max(1, intent.m || 0)), size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
+const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); const x = extraDice(e, intent); return { f: intent.f, m: (intent.m || 0) + x.k, p: dice[0], dice: dice.slice(0, Math.max(1, (intent.m || 0) + x.k)), size: e.powerDie, flat: dmg ? x.rem : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
 // A monster's BASE attack (or guard): the number it always has before its dice. The move's own number, plus the fight's extra hit and any
 // howl for a blow; a guard has just the move's own number. The attack is then base + the dice it rolls.
-export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? (e.flat || 0) + (e.buff || 0) : 0) : 0);
+export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? extraDice(e, i).rem + (e.buff || 0) : 0) : 0);
 export function intentRange(e) {
   const i = e.intent;
   if (!i || !(i.m || i.f)) return null;
-  const lo = i.f + i.m + (isDamageIntent(i) ? e.flat + e.buff : 0);
-  const hi = i.f + i.m * e.powerDie + (isDamageIntent(i) ? e.flat + e.buff : 0);
+  const n = diceOf(e, i); const add = isDamageIntent(i) ? extraDice(e, i).rem + e.buff : 0;
+  const lo = Math.max(0, i.f + n + add);
+  const hi = Math.max(0, i.f + n * e.powerDie + add);
   return [lo, hi];
 }
 
@@ -673,7 +742,7 @@ const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, spla
 
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {};
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
@@ -732,9 +801,9 @@ export function nudge(b, dir) {
   b.magic -= NUDGE_COST; b.board.C.v = v; b.board.nudged = true; return true;
 }
 export function healSpend(b) {
-  const cost = healCostOf(b.hero);
+  const cost = healCostOf(b.hero, b);
   if (b.magic < cost || b.hp >= b.maxHp) return false;
-  b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
+  b.magic -= cost; b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
 }
 // Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
 // Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
@@ -792,10 +861,10 @@ export function recordBattle(hero, { points = 0, place = 0, heroes = 1, won = tr
 }
 export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers; the real amount is potionHpOf)
 export const healBig = (b) => drinkPotion(b);
-// ---- powers. Each level makes a power stronger: +50% of its numbers per level (Dave, Oct 2026: magic should grow with you) and +1 die on dice powers.
+// ---- powers. Each level makes a power stronger by about what its gold buys elsewhere at camp (POWER_LEVEL_FRAC: a quarter, a quarter, a half; level 3 doubles) and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
 // Each power level adds half the base number (at least 1): a 4 becomes 6, 8, 10; a 12 becomes 18, 24, 30.
-export const scaleNum = (v, lvl) => v + lvl * Math.max(1, Math.round(v * 0.5));
+export const scaleNum = (v, lvl) => { const l = Math.max(0, Math.min(POWER_LEVEL_FRAC.length - 1, lvl | 0)); return l ? v + Math.max(POWER_LEVEL_MIN[l], Math.round(v * POWER_LEVEL_FRAC[l])) : v; };
 // Scale powers: `cost` buys the first dice, every `step` more magic (default 1) adds a die, up to `max` magic and, if set,
 // `maxDice` dice in all (power levels add dice, so an upgraded power reaches the cap for less magic).
 export const scaleStep = (card) => card.step || 1;
@@ -813,23 +882,25 @@ export function powerDice(card, x, lvl = 0) {
   return card.maxDice == null ? n : Math.min(card.maxDice, n);
 }
 export function powerState(b, card) {
-  const spent = card.atwill ? !!(b.usedRound && b.usedRound[card.id]) : !!b.used[card.id];
+  const spent = card.atwill ? !!(b.usedRound && (b.usedRound[card.id] || (card.kind === 'charge' && b.usedRound[`${card.id}:release`]))) : !!b.used[card.id]; // a charge released this round cannot store too
   const early = !!(card.minRound && b.round < card.minRound);
   return { spent, early, canPay: b.magic >= card.cost };
 }
 // Charges grow (Dave, Oct 2026: "the first round does three, the next four, the next five, the next six; that motivates you to keep
 // investing"): each stored charge is worth 1 more of each of its effects than the one before, so 4 charges of +5 give 5+6+7+8 = 26.
-export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => v + i);
+// (Oct 2026: they start one lower and climb by CHARGE_STEP, so +5 a charge stores 4, 6, 8, 10.)
+export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => Math.max(1, v - 1) + CHARGE_STEP * i);
 export function chargeGain(card, n, lvl = 0) {
   const per = typeof card.per === 'number' ? { atk: card.per } : card.per || {};
-  return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, scaleNum(v * n + (n * (n - 1)) / 2, lvl)]));
+  const l = Math.max(0, Math.min(CHARGE_LEVEL_FRAC.length - 1, lvl | 0));
+  return Object.fromEntries(Object.entries(per).map(([k, v]) => { const t = chargeSteps(v, n).reduce((a, x) => a + x, 0); return [k, Math.round(t * (1 + CHARGE_LEVEL_FRAC[l]))]; }));
 }
 export function castPower(b, id, { x, release } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
   if (card.kind === 'charge' && release) { // let the stored charges go
     b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
-    if (!n || (b.usedRound && b.usedRound[key])) return null;
+    if (!n || (b.usedRound && (b.usedRound[key] || b.usedRound[id]))) return null; // a round either stores a charge or releases them, not both (Dave, Oct 2026)
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
     const lvl = powerLevel(b.hero, id); let total = 0;
     const per = typeof card.per === 'number' ? { atk: card.per } : card.per; const gain = chargeGain(card, n, lvl);
@@ -859,7 +930,7 @@ export function castPower(b, id, { x, release } = {}) {
     b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];
   } else if (card.kind === 'luck') {
     const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
-    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(5, lvl)); else { add('atk', scaleNum(9, lvl)); add('magic', 2); }
+    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(LUCK.mid, lvl)); else { add('atk', scaleNum(LUCK.top, lvl)); add('magic', 1); }
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
@@ -867,6 +938,8 @@ export function castPower(b, id, { x, release } = {}) {
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; return out;
 }
+// Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
+export const LUCK = { mid: 3, top: 6 };
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
   const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };
@@ -1048,13 +1121,13 @@ export function dropSizeWeights(act, step, up = 0) {
   for (let i = 0; i < up; i++) { const last = w.pop(); w.unshift(0); w[3] += last; } // shift the odds one size up (d10 keeps what falls off the end)
   return w;
 }
-export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = [100, 0, 0, 0], minSize = 4 } = {}) {
+export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = [100, 0, 0, 0], minSize = 4, weights = RARITY_WEIGHTS, rarities = null } = {}) {
   const drops = [];
   const ids = Object.keys(LOOT_WEIGHTS);
   for (let i = 0; i < count; i++) {
     const id = ids[weighted(rng, ids.map((k) => LOOT_WEIGHTS[k]))];
-    const w = RARITY_WEIGHTS.map((x, r) => (r === 0 ? Math.max(1, x - rarityBoost * 4) : x + rarityBoost * (r === 1 ? 3 : r === 2 ? 1.5 : 0.5)));
-    const rarity = Math.max(minRarity, weighted(rng, w));
+    const w = weights.map((x, r) => (r === 0 ? Math.max(1, x - rarityBoost * 4) : x + rarityBoost * (r === 1 ? 3 : r === 2 ? 1.5 : 0.5)));
+    const rolled = weighted(rng, w); const rarity = Math.max(minRarity, rarities ? rarities[i % rarities.length] : rolled);
     const size = Math.max(minSize, SIZES[weighted(rng, sizes)] || 4);
     drops.push(makeWeapon(id, rarity, rng, size));
   }
@@ -1085,9 +1158,10 @@ export function battleRewards(b) {
   const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
-  const minRarity = quest.kind === 'boss' ? 2 : quest.kind === 'elite' ? 1 : nemesisKill ? 2 : 0;
+  // spoils are mostly Bronze (wear, Oct 2026): a boss or a nemesis leaves at least a Silver one, Gold only now and then
+  const minRarity = quest.kind === 'boss' || nemesisKill ? 1 : 0;
   const c = hero.campaign; const sizes = dropSizeWeights(c.act, c.step, quest.perilous ? 1 : 0);
-  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 2 : 0) + (quest.kind === 'boss' ? 2 : 0) + c.act - 1, sizes });
+  const drops = rollDrops(rng, b.players + 1, { minRarity, rarityBoost: (quest.perilous ? 1 : 0) + (quest.kind === 'boss' ? 1 : 0), sizes, weights: SPOILS_RARITY });
   if (quest.kind === 'boss' || quest.kind === 'elite') { const big = SIZES[Math.min(3, SIZES.indexOf(weaponSize(drops[0])) + 1)]; drops[0].size = big; } // the big fights always leave one weapon a size up
   addLegendary(drops, quest, [hero], hashSeed(c.seed, c.act, c.step, 'legend'));
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
@@ -1202,6 +1276,9 @@ export function upgradeDie(hero, kind, slot) {
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
 const handsMul = (inst) => (WEAPONS[inst.id].hands === 2 ? 1.4 : 1);
 export function forgeInfo(hero, uid) {
+  return { ok: false, why: 'wear' }; // retired with wear (Oct 2026): a weapon is what you find or buy
+}
+export function forgeInfoOld(hero, uid) {
   ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const next = (inst.rarity | 0) + 1;
@@ -1215,6 +1292,9 @@ export function forgeWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
 }
 export function trainInfo(hero, uid) {
+  return { ok: false, why: 'wear' }; // retired with wear (Oct 2026)
+}
+export function trainInfoOld(hero, uid) {
   ensureTwin(hero);
   const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
   const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
@@ -1229,7 +1309,8 @@ export function trainWeapon(hero, uid) {
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
 export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[weaponSize(inst)] || 1)));
-export const sellValue = (inst) => (inst.id === 'fists' ? 0 : Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE)));
+// A sale returns half its worth, less for a worn weapon (by the battles it has left).
+export const sellValue = (inst) => { if (inst.id === 'fists') return 0; const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
 export const bagFull = (hero) => bagRoom(hero) <= 0;
@@ -1242,7 +1323,7 @@ export function shopStock(hero) {
   const flags = c.campFlags || {};
   const priceMod = Math.max(0.4, 1 - (flags.discount || 0) + (flags.hike || 0));
   void mult;
-  const items = rollDrops(rng, 4, { rarityBoost: c.act - 1 + Math.floor(c.step / 4), sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({
+  const items = rollDrops(rng, 4, { rarities: STORE_RARITY, sizes: dropSizeWeights(c.act, c.step) }).map((inst) => ({ // one Bronze, two Silver, one Gold
     inst, price: Math.max(1, Math.round(weaponValue(inst) * priceMod)), sold: false,
   }));
   // from Act II the Camp Store sometimes stocks one legendary you do not already own
@@ -1640,7 +1721,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
@@ -1676,7 +1757,7 @@ export function newPartyBattle(heroes, quest0, rng) {
 function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
 export function beginPartyRound(b) {
   b.round += 1; b.phase = 'reset';
-  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.straight = 'atk'; }
+  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; }
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 export function startFighter(b, i) {
