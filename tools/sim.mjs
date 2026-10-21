@@ -153,7 +153,7 @@ export function smartActs(b) {
   const wise = false;
   // potions first (free), then magic heals, when hurt
   while (b.hp <= b.maxHp - POTION_HP && b.hp < b.maxHp * 0.5 && drinkPotion(b)) { /* gulp */ }
-  while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero)) healSpend(b);
+  while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero, b) && healSpend(b)) { /* heal; each further heal in a round costs 1 more */ }
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;
   // charges: release when full, when hurt, or when a foe is nearly down; otherwise keep storing
