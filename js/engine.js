@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_MIN,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
@@ -262,7 +262,7 @@ export function rerollDieInfo(hero) {
   return { ok: true, cost: REROLL_DIE_COST, next: cur + 1, cur };
 }
 export function buyRerollDie(hero) { const r = rerollDieInfo(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.rerollDie = true; return true; }
-export const healCostOf = () => HEAL_COST;
+export const healCostOf = (hero, b = null) => HEAL_COST + (b?.healsRound || 0); // each further heal in the same round costs 1 more
 // Powers: three slots (A big move, B every round, C charge), one power in each. hero.powers = { A: id, B: id, C: id };
 // a slot nobody chose holds the class's `start` power. hero.learned lists powers bought from the class library at camp.
 const libraryOf = (hero) => CLASSES[hero.cls].cards;
@@ -730,7 +730,7 @@ const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, spla
 
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {};
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
@@ -789,9 +789,9 @@ export function nudge(b, dir) {
   b.magic -= NUDGE_COST; b.board.C.v = v; b.board.nudged = true; return true;
 }
 export function healSpend(b) {
-  const cost = healCostOf(b.hero);
+  const cost = healCostOf(b.hero, b);
   if (b.magic < cost || b.hp >= b.maxHp) return false;
-  b.magic -= cost; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
+  b.magic -= cost; b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
 }
 // Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
 // Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
@@ -849,10 +849,10 @@ export function recordBattle(hero, { points = 0, place = 0, heroes = 1, won = tr
 }
 export const BIG_HEAL = { cost: 0, hp: POTION_HP }; // (old name, kept for callers; the real amount is potionHpOf)
 export const healBig = (b) => drinkPotion(b);
-// ---- powers. Each level makes a power stronger: +50% of its numbers per level (Dave, Oct 2026: magic should grow with you) and +1 die on dice powers.
+// ---- powers. Each level makes a power stronger by about what its gold buys elsewhere at camp (POWER_LEVEL_FRAC: a quarter, a quarter, a half; level 3 doubles) and +1 die on dice powers.
 export const powerLevel = (hero, id) => (hero.powerLevel && hero.powerLevel[id]) || 0;
 // Each power level adds half the base number (at least 1): a 4 becomes 6, 8, 10; a 12 becomes 18, 24, 30.
-export const scaleNum = (v, lvl) => v + lvl * Math.max(1, Math.round(v * 0.5));
+export const scaleNum = (v, lvl) => { const l = Math.max(0, Math.min(POWER_LEVEL_FRAC.length - 1, lvl | 0)); return l ? v + Math.max(POWER_LEVEL_MIN[l], Math.round(v * POWER_LEVEL_FRAC[l])) : v; };
 // Scale powers: `cost` buys the first dice, every `step` more magic (default 1) adds a die, up to `max` magic and, if set,
 // `maxDice` dice in all (power levels add dice, so an upgraded power reaches the cap for less magic).
 export const scaleStep = (card) => card.step || 1;
@@ -876,10 +876,12 @@ export function powerState(b, card) {
 }
 // Charges grow (Dave, Oct 2026: "the first round does three, the next four, the next five, the next six; that motivates you to keep
 // investing"): each stored charge is worth 1 more of each of its effects than the one before, so 4 charges of +5 give 5+6+7+8 = 26.
-export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => v + i);
+// (Oct 2026: they start one lower and climb by CHARGE_STEP, so +5 a charge stores 4, 6, 8, 10.)
+export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => Math.max(1, v - 1) + CHARGE_STEP * i);
 export function chargeGain(card, n, lvl = 0) {
   const per = typeof card.per === 'number' ? { atk: card.per } : card.per || {};
-  return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, scaleNum(v * n + (n * (n - 1)) / 2, lvl)]));
+  const l = Math.max(0, Math.min(CHARGE_LEVEL_FRAC.length - 1, lvl | 0));
+  return Object.fromEntries(Object.entries(per).map(([k, v]) => { const t = chargeSteps(v, n).reduce((a, x) => a + x, 0); return [k, Math.round(t * (1 + CHARGE_LEVEL_FRAC[l]))]; }));
 }
 export function castPower(b, id, { x, release } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
@@ -916,7 +918,7 @@ export function castPower(b, id, { x, release } = {}) {
     b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];
   } else if (card.kind === 'luck') {
     const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
-    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(5, lvl)); else { add('atk', scaleNum(9, lvl)); add('magic', 2); }
+    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(LUCK.mid, lvl)); else { add('atk', scaleNum(LUCK.top, lvl)); add('magic', 1); }
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
@@ -924,6 +926,8 @@ export function castPower(b, id, { x, release } = {}) {
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; return out;
 }
+// Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
+export const LUCK = { mid: 3, top: 6 };
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
   const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };

@@ -82,7 +82,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'round') { const per = E.scaleNum(k.per, level); return `${per} × the round number${round ? ` (round ${round}: about +${per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`; }
   if (k.kind === 'charge') { const first = Object.values(lvlFx(perOf(k), level))[0]; return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}. Each charge is worth more than the last: ${fxWords(lvlFx(perOf(k), level))} for the first, then ${E.chargeSteps(first, k.max).slice(1).join(', ')}${lvl}.`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
-  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(5, level)} attack, 5–6 +${E.scaleNum(9, level)} attack and 2 magic.`;
+  if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(E.LUCK.mid, level)} attack, 5–6 +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic.`;
   return `${fxWords(lvlFx(k.fx, level))}${lvl}, this round.`;
 }
 // Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+6 pierce per charge", "3d6 pierce".
@@ -92,7 +92,7 @@ export function shortLine(k, level = 0) {
   if (k.kind === 'round') return `${E.scaleNum(k.per, level)} × the round, attack`;
   if (k.kind === 'charge') return `${fxWords(lvlFx(perOf(k), level))} per charge`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
-  if (k.kind === 'luck') return `+${E.scaleNum(5, level)} or +${E.scaleNum(9, level)} attack, +${1 + level} magic`;
+  if (k.kind === 'luck') return `+${E.scaleNum(E.LUCK.mid, level)} or +${E.scaleNum(E.LUCK.top, level)} attack, +${1 + level} magic`;
   return fxWords(lvlFx(k.fx, level));
 }
 

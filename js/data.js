@@ -48,7 +48,7 @@ export const REROLL_DICE_MAX = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const TRIPLE_BY_ACT = [10, 15, 20]; // what each triple pays in Act I / II / III, attack or block (Dave, Oct 2026: triples keep up with the act)
-export const HEAL_COST = 2; // magic
+export const HEAL_COST = 2; // magic; each further heal in the same round costs 1 more (too much of one thing is worth less)
 export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
@@ -257,6 +257,15 @@ export const UNLOCK_COST = { SW: 15, SE: 35, NE: 30 }; // the first costs less t
 export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 // POWERS (the old "cards"): spent with magic. A power is used once per battle unless it is `atwill` (once per round, weaker).
 // kinds: flat (fixed numbers) | dice (roll NdS) | scale (more Magic = more dice) | round (grows with the round number) | luck (roll for a table) | super (round gate, hits everyone).
+// What a power level adds (Dave, Oct 2026: "go up in relation to how much magic is worth in attack compared to the gold it costs to
+// upgrade"). At camp about 105-175 gold buys +1 to an average round (tools/economy.mjs priceList), so the 60 / 140 / 260 gold levels add
+// a quarter, a quarter more, then half more of the power's number (at least 1, 2, 4): level 3 doubles it. Charge releases grow by an
+// eighth, a quarter, then a half, since one release stands for several rounds of saving. (Was +50% of the number every level.)
+export const POWER_LEVEL_FRAC = [0, 0.25, 0.5, 1];
+export const POWER_LEVEL_MIN = [0, 1, 2, 4];
+export const CHARGE_LEVEL_FRAC = [0, 0.125, 0.25, 0.5];
+// Charges start one lower and climb by 2 (Dave: "start one attack less... then increases after every charge"): +5 a charge is 4, 6, 8, 10.
+export const CHARGE_STEP = 2;
 export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2, 3. Each level: a steady step up in the numbers (see scaleNum), +1 die on dice powers.
 // Learning another power from your class library at camp (it then swaps freely into its slot). Supers also need level 5.
 export const POWER_LEARN = 50;
@@ -365,8 +374,8 @@ export const CLASSES = {
       { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
       { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
       { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
-      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and +3 block, and each one after gives 1 more.' },
-      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 5, and each one after heals 1 more. Up you get.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +2 attack and +2 block, and each one after gives 2 more.' },
+      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 4, and each one after heals 2 more. Up you get.' },
     ],
   },
   ranger: {
@@ -380,8 +389,8 @@ export const CLASSES = {
       { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
       { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
       { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
-      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 pierce, and each one after gives 1 more.' },
-      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +5 block, and each one after gives 1 more. Now you see me.' },
+      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 3 pierce, and each one after gives 2 more.' },
+      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +4 block, and each one after gives 2 more. Now you see me.' },
     ],
   },
   wizard: {
@@ -395,8 +404,8 @@ export const CLASSES = {
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
       { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
       { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
-      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 5 attack, each one after gives 1 more, half splashing.' },
-      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 6, and each one after heals 1 more. Warm as a window.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 attack, each one after gives 2 more, half splashing.' },
+      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first heals 5, and each one after heals 2 more. Warm as a window.' },
     ],
   },
   dwarf: {
@@ -410,8 +419,8 @@ export const CLASSES = {
       { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
       { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
       { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
-      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +6 block, and each one after gives 1 more.' },
-      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +4 attack and +2 block, and each one after gives 1 more.' },
+      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +5 block, and each one after gives 2 more.' },
+      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and +1 block, and each one after gives 2 more.' },
     ],
   },
   bard: {
@@ -423,10 +432,10 @@ export const CLASSES = {
     cards: [
       { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'A tune you can feel in the ribs. Roll 2d6 and heal that much.' },
       { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
-      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +5 attack, 5-6 +9 attack and +2 magic. Fingers crossed. Professionally.' },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +3 attack, 5-6 +6 attack and +1 magic. Fingers crossed. Professionally.' },
       { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
-      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +3 attack and heal 3, and each one after gives 1 more.' },
-      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 4 gold, and each one after gives 1 more. Music to a peddler\'s ears.' },
+      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives +2 attack and heal 2, and each one after gives 2 more.' },
+      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Every round: 1 magic stores a charge (up to 4). Release them together: the first gives 3 gold, and each one after gives 2 more. Music to a peddler\'s ears.' },
     ],
   },
 };

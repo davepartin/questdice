@@ -520,7 +520,7 @@ const UTIL = [
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal health right now. As often as you can pay.` },
   { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: 'Drink a potion and heal right away. Potions are bought at camp; what you drink is gone until you buy more.' },
 ];
-const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero) : u.cost);
+const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero, B.b) : u.cost);
 function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
   if (!shape && u.id !== 'u:bigheal') why = 'Roll your dice first. You use powers while you shape the roll.'; // a potion can be drunk any time before you lock in
@@ -569,7 +569,7 @@ function showPowerDetail(id) {
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
   const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
     : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
-    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Each charge is worth 1 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
+    : k.kind === 'charge' ? `You pay ${k.cost} magic each round to store a charge, up to ${k.max}. Each charge is worth 2 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
     : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
     : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
   const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'

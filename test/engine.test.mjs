@@ -456,7 +456,7 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   castPower(b, 'rally'); b.usedRound = {}; castPower(b, 'rally');
   const before = { atk: b.mods.atk, block: b.mods.block };
   const rel = castPower(b, 'rally', { release: true });
-  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 7); assert.equal(b.mods.block - before.block, 7); // each charge 1 more than the last: 3 + 4
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6); // one lower to start, then 2 more each: 2 + 4
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {
@@ -813,11 +813,17 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
   assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
 });
 
-test('each power level adds half the base number (3, 5, 7, 9), and pierce stays a little under attack', async () => {
-  const { scaleNum } = await import('../js/engine.js');
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 5, 7, 9]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 8, 11, 14]);
-  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 18, 24, 30]);
+test('power levels add a quarter, a quarter more, then half more (at least 1, 2, 4): level 3 doubles; pierce stays a little under attack', async () => {
+  const { scaleNum, chargeGain, chargeSteps, healCostOf } = await import('../js/engine.js');
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 7]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 8, 10]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(12, l)), [12, 15, 18, 24]);
+  // charges start one lower and climb by 2; a release grows an eighth, a quarter, a half by level
+  assert.deepEqual(chargeSteps(5, 4), [4, 6, 8, 10]);
+  const coil = { per: { atk: 5 } };
+  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 35, 42]);
+  // healing with magic costs 1 more each time in the same round
+  assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 4);
   const { CLASSES } = await import('../js/data.js');
   const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
   const all = Object.values(CLASSES).flatMap((c) => c.cards);
