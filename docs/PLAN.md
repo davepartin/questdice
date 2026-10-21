@@ -1172,7 +1172,7 @@ Dave's three, from the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-20.md)
 - For the UI builder: a "battles left" mark is on every weapon card (small text); the Forge's weapon rows and the hand sheet's Forge / Train tiles are gone or say how long the weapon lasts. Shot: `node dev/wear.mjs` (Gear tab and the victory line).
 - **Hard and Legendary after the pass** (wise bot, 15 campaigns each): Hard got harder, as Dave asked (Normal felt easy, Hard felt normal): 11 / 15 campaigns cleared, bosses 70 / 64 / 69% (was 15 / 15 and 83 / 77 / 88%). Legendary went too far (4 / 15 cleared), so its monster health is x1.4 (was x1.6): 15 / 15 cleared, bosses 65 / 53 / 63%, a pro's road again. Normal: 15 / 15, bosses 95 / 90 / 88%. Tables: `SKILL=<difficulty> STYLE=wise sh tools/curve-all.sh 3 3`.
 
-## 2026-10-22 — the second pass: heart by symbol, a recap that waits, Bonus Goal wagers, magic priced by gold, monsters that roll dice
+## 2026-10-22 — the second pass: heart by symbol, a recap that waits, Bonus Goal wagers, magic priced by gold, monsters that roll dice (stamp 20261022a)
 Dave's go on the rest of the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-20.md). Triples stay as they are; the team ideas wait.
 - **The heart backs its symbol on any face**: a heart 1 (heal) adds +2 to every head, hand and feet die showing a heal face (1, 5, 9); 2 pierce (2, 6, 9); 3 magic (3, 7, 10); 4 gold (4, 8, 10). It still matters with d10 dice. (`out.heartSlots` names the dice for a future glow.)
 - **The recap no longer hides the next round**: the board gets a beat after the replay (the last hits, falls and numbers finish), and the ROUND banner waits until you close the recap. Check: `node dev/recapbeat.mjs`.
