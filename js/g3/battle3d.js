@@ -826,8 +826,10 @@ async function doCard(id, opts = {}) {
   B.busy = true; renderShape();
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id) }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  renderShape(); renderSheet(); bumpCounters(gains);
+  B.pwSel = null; // back to the top of the sheet with nothing picked, ready for the next power (Dave, Oct 2026)
+  renderShape(); renderSheet(); bumpCounters(gains); sheetTop();
 }
+const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });
 // The counters that a power just filled give a little pulse, so you can see where it went.
 function bumpCounters(gains) {
   const chips = B.hud.forecast?._chips; if (!chips) return;

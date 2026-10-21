@@ -25,4 +25,7 @@ await p.evaluate(() => [...document.querySelectorAll('.pw-btn.go')].find((x) => 
 for (let i = 0; i < 10 && !(await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); return ok && !ok.disabled; })); i++) await pump(0.6);
 console.log('reveal:', await p.evaluate(() => document.querySelector('.cr-card')?.innerText.replace(/\s+/g, ' ')));
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/powerwords-${cls}-${slot}-reveal.png` });
+await p.evaluate(() => document.querySelector('.dr-ok')?.click()); await p.waitForTimeout(700); await pump(1.5);
+console.log('after the cast: sheet scrolled to', await p.evaluate(() => document.querySelector('.b3-cards')?.scrollTop), '· picked:', await p.evaluate(() => document.querySelector('.pw-medal.on')?.dataset.power || 'none'));
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/powerwords-${cls}-${slot}-after.png` });
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no page errors'); await b.close();
