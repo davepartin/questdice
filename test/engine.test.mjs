@@ -698,7 +698,7 @@ test('game difficulty is Easy/Normal/Hard/Legendary, with old noob/mid/expert na
   assert.equal(DIFFICULTY.easy.hp, 0.8); assert.equal(DIFFICULTY.easy.flat, -1); assert.equal(DIFFICULTY.easy.gold, 1); assert.equal(DIFFICULTY.easy.budget, 0.7);
   assert.equal(DIFFICULTY.normal.hp, 1); assert.equal(DIFFICULTY.normal.flat, 0); assert.equal(DIFFICULTY.normal.gold, 1); assert.equal(DIFFICULTY.normal.budget, 1);
   assert.equal(DIFFICULTY.hard.hp, 1.15); assert.equal(DIFFICULTY.hard.flat, 2); assert.equal(DIFFICULTY.hard.gold, 1.15); assert.equal(DIFFICULTY.hard.budget, 1.15);
-  assert.equal(DIFFICULTY.legendary.hp, 1.6); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
+  assert.equal(DIFFICULTY.legendary.hp, 1.4); assert.equal(DIFFICULTY.legendary.flat, 2); assert.equal(DIFFICULTY.legendary.gold, 1.25); assert.equal(DIFFICULTY.legendary.budget, 1.25);
   assert.equal(normalizeDifficulty('noob'), 'easy');
   assert.equal(normalizeDifficulty('mid'), 'normal');
   assert.equal(normalizeDifficulty('expert'), 'hard');
@@ -735,7 +735,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   assert.equal(easy.enemies[0].maxHp, Math.round(30 * 0.8));
   assert.equal(mid.enemies[0].maxHp, 30);
   assert.equal(hard.enemies[0].maxHp, Math.round(30 * 1.15));
-  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.6)); // Legendary is tougher than Hard (Oct 2026; 1.6 once triples grew by act)
+  assert.equal(legend.enemies[0].maxHp, Math.round(30 * 1.4)); // Legendary is tougher than Hard (Oct 2026; 1.4 once weapons wore out and straights grew rarer)
   assert.equal(easy.enemies[0].flat, -1);
   assert.equal(hard.enemies[0].flat, 2);
   assert.equal(legend.enemies[0].flat, 2);
