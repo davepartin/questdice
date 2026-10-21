@@ -1,13 +1,13 @@
 /* QuestDice battle HUD. Everything is scoped under .b3-layer / .b3 (or body.in-battle for the few
    elements the game appends to <body>), so the classic DOM screens are untouched.
    Type: Cinzel for names and titles, Oxanium for figures and buttons. Glyphs are inline SVG (js/g3/hudkit.js). */
-/* Cinzel is added by js/g3/hudkit.js (non-blocking <link>); the serif stack below is the fallback. */
+/* Battle titles use the game's one serif (Cormorant Garamond, loaded in index.html); css/fonts.css has the three-font rule. */
 
 .b3-layer, body.in-battle {
   --h-atk: #ff3b3b; --h-block: #3aa4ff; --h-magic: #a64dff; --h-pierce: #ff8a1a; --h-heal: #38e87a; --h-gold: #ffd21a;
   --h-ember: #ff7a3a; --gild-hi: #ffeab8; --gild: #e2b24c; --gild-lo: #8a5a14;
   --h-ink: #07080f; --h-text: #f3efe6; --h-dim: #b3aec2;
-  --serif: 'Cinzel', 'Trajan Pro', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --serif: var(--font-story, 'Cormorant Garamond', Georgia, serif);
   --disp: var(--font-display, 'Oxanium', system-ui, sans-serif);
   --glass: linear-gradient(180deg, rgba(30,26,42,.80), rgba(10,10,20,.88));
   --edge: linear-gradient(155deg, rgba(255,236,190,.55), rgba(255,236,190,.10) 42%, rgba(255,236,190,.34));
@@ -255,7 +255,7 @@
 .bn-rule { flex: 1; height: 2px; max-width: 28vw; background: linear-gradient(90deg, transparent, var(--bc)); box-shadow: 0 0 10px var(--bc); transform-origin: right; animation: bnRule .6s ease-out both; } .bn-rule.r { transform: scaleX(-1); }
 .bn-core { display: flex; align-items: center; gap: .6rem; }
 .bn-core { max-width: calc(100vw - 1rem); }
-.bn-core b { font-family: var(--font-logo); font-weight: 400; font-size: min(clamp(1.9rem, 9vw, 3.4rem), calc((100vw - 6.5rem) / (var(--n, 12) * .7))); line-height: 1; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; background: linear-gradient(180deg, var(--bc1) 15%, var(--bc2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.85)) drop-shadow(0 0 16px color-mix(in srgb, var(--bc) 70%, transparent)); }
+.bn-core b { font-family: var(--font-display); font-weight: 800; font-size: min(clamp(1.9rem, 9vw, 3.4rem), calc((100vw - 6.5rem) / (var(--n, 12) * .7))); line-height: 1; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; background: linear-gradient(180deg, var(--bc1) 15%, var(--bc2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.85)) drop-shadow(0 0 16px color-mix(in srgb, var(--bc) 70%, transparent)); }
 .bn-core em { font-family: var(--disp); font-style: normal; font-weight: 800; font-size: clamp(1.2rem, 5vw, 1.8rem); color: #fff; padding: .05rem .5rem; border-radius: .3rem; background: color-mix(in srgb, var(--bc) 80%, #000); text-shadow: 0 2px 0 rgba(0,0,0,.5); }
 .bn-ic { font-size: clamp(1.6rem, 7vw, 2.4rem); color: var(--bc); } .bn-ic.r { transform: scaleX(-1); }
 .b3-banner .sparkles i { width: .7rem; height: .7rem; animation: bnSpark 1.2s ease-out both; left: 50%; top: 50%; }

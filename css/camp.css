@@ -40,7 +40,7 @@
 .cw-price { display: inline-flex; align-items: center; gap: .15rem; font: 600 .64rem var(--font-body); color: #baa98a; }
 .cw-price .ico svg { width: .65rem; height: .65rem; }
 .cw-cell.can .cw-price { color: #ebce94; }
-.cw-plus { position: absolute; bottom: 22%; right: 4%; display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid #d7b478; border-radius: 50%; background: #191715; color: #ffe4a5; font: 500 17px/1 Georgia,serif; box-shadow: 0 2px 5px #0009; }
+.cw-plus { position: absolute; bottom: 22%; right: 4%; display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid #d7b478; border-radius: 50%; background: #191715; color: #ffe4a5; font: 700 15px/1 var(--font-display); box-shadow: 0 2px 5px #0009; }
 .cw-locked { flex: 1; display: grid; place-items: center; color: #938677; }
 .cw-locked .ico svg { width: 1.9rem; height: 1.9rem; }
 .cw-cell.off { border-color: #615a4b; background: linear-gradient(140deg,#161b22,#0c1017); }
