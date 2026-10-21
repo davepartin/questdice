@@ -21,7 +21,7 @@ console.log('labels:', await p.evaluate(() => [...document.querySelectorAll('.sh
 await p.evaluate(() => { const { S, E } = window.QD; S.hero.loadout.NW.left = 1; window.QD.startQuest({ ...E.questsFor(S.hero)[0], enemies: ['goblin'], kind: 'battle' }); });
 for (let i = 0; i < 200; i++) {
   if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break;
-  await p.evaluate(() => { const go = [...document.querySelectorAll('button')].find((x) => /^(fight|begin|accept|take it|to battle|onward|continue|let'?s go|start)/i.test(x.textContent.trim()) && !x.disabled); go?.click(); });
+  await p.evaluate(() => { const go = [...document.querySelectorAll('button')].find((x) => /^(fight|begin|accept|decline|take it|to battle|onward|continue|let'?s go|start)/i.test(x.textContent.trim()) && !x.disabled); go?.click(); });
   await pump(0.5);
 }
 console.log('in battle:', await p.evaluate(() => !!document.querySelector('#b3-roll')), await p.evaluate(() => [...document.querySelectorAll('button')].map((x) => x.textContent.trim()).filter(Boolean).slice(0, 12).join(' | ')));
