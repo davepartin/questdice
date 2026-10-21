@@ -219,8 +219,11 @@ test('the battle gold chip climbs round by round and ends on what victory pays',
   }
 });
 
-test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', () => {
+test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', async () => {
+  const { STRAIGHT_MIN } = await import('../js/data.js'); const keep = STRAIGHT_MIN[6];
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
+  assert.equal(evaluate(r, board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 })).straight, 0, 'with a d6 die a straight needs six in a row now');
+  STRAIGHT_MIN[6] = 5; // the rest checks how a five-run is read and paid
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)
   const b = board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 });
   const atk = evaluate(r, b, { straight: 'atk' });
@@ -232,6 +235,7 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   // a 1-2-3-4 is only four long: no payout
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straightSlots, undefined);
+  STRAIGHT_MIN[6] = keep;
 });
 
 test('honest dice: a dN never shows more than N; size is the range, metal adds the icons (Bronze is a little dull from a d6 up)', () => {
@@ -638,7 +642,7 @@ test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and tal
 });
 
 test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', () => {
-  const h = knight(); h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
+  const h = knight(); h.strength.W = 4; h.strength.E = 4; // d4 body dice: five in a row is a straight h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
   // head 1, talent 2x (a 2), heart 3, left hand 4, right talent 5 (no symbol yet): 1-2-3-4-5
   const run = evaluate(h, board({ N: 1, SW: 2, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 }));
   assert.equal(run.straight, 5);
@@ -719,7 +723,7 @@ test('difficulty scales monsters, never the hero, including in a party battle', 
   const party = newPartyBattle([host, guest], quest, makeRng(4));
   const m = party.team.m; // the company's strength in "strongest heroes" (Oct 2026)
   assert.ok(m > 1 && m <= 2);
-  assert.equal(party.enemies[0].maxHp, Math.round(30 * 1.15 * party.team.hp), 'Hard health, times the company');
+  assert.ok(Math.abs(party.enemies[0].maxHp - 30 * 1.15 * party.team.hp) <= 1, 'Hard health, times the company (team.hp is shown to two places)');
   assert.equal(party.enemies[0].flat, 2 + party.team.flat, 'Hard adds 2 to a hit, the company the rest');
   assert.equal(maxHpOf(guest), maxHpOf(newHero({ name: 'Bea', cls: 'bard', seed: 3 })));
 });
@@ -1022,4 +1026,12 @@ test('story campaigns: storyScale fits monsters written for one hero of a level 
 test('every straight from 5 up pays, and a longer one pays more (a 1-to-8 run used to pay nothing)', async () => {
   const { STRAIGHT } = await import('../js/data.js');
   for (let n = 5; n <= 9; n++) assert.ok(STRAIGHT[n] > (STRAIGHT[n - 1] || 0), `${n} in a row pays more than ${n - 1}`);
+});
+
+test('a straight must grow with the biggest body die: d4 five in a row, d6 six, d8 and d10 seven', async () => {
+  const E = await import('../js/engine.js'); const h = E.newHero({ name: 'S', cls: 'knight', seed: 2 });
+  h.strength.W = 4; h.strength.E = 4; assert.equal(E.straightMin(h), 5);
+  h.strength.W = 6; assert.equal(E.straightMin(h), 6);
+  h.strength.W = 8; assert.equal(E.straightMin(h), 7);
+  h.strength.E = 10; assert.equal(E.straightMin(h), 7);
 });

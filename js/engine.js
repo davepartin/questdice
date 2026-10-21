@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_MIN,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES,
@@ -380,6 +380,12 @@ const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the fee
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 // What one triple pays this act: 10 / 15 / 20 (attack or block). A team triple adds the same again.
 export function tripleBonus(hero) { const a = Math.min(3, Math.max(1, hero?.campaign?.act || 1)); return TRIPLE_BY_ACT[a - 1] ?? SYNERGY_BONUS; }
+// How long a straight must be (Dave, Oct 2026: with nine dice and talent faces a straight came most rounds). It grows with the
+// hero's biggest body die (head, hands, feet), so it stays special as the dice grow: d4 five in a row, d6 six, d8 and d10 seven.
+export function straightMin(hero) {
+  const big = Math.max(...['N', 'W', 'E', 'S'].map((s) => sidesOf(hero, s) || 4));
+  return STRAIGHT_MIN[big] ?? (big >= 8 ? 7 : big >= 6 ? 6 : 5);
+}
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
   const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
@@ -479,7 +485,7 @@ export function evaluate(hero, board, opts = {}) {
   const sorted = [...numSlot.keys()].sort((x, y) => x - y);
   let best = 1, run = 1, top = sorted[0];
   for (let i = 1; i < sorted.length; i++) { run = sorted[i] === sorted[i - 1] + 1 ? run + 1 : 1; if (run > best) { best = run; top = sorted[i]; } }
-  if (best >= 5) {
+  if (best >= straightMin(hero)) {
     const keys = Object.keys(STRAIGHT).map(Number); best = Math.min(best, Math.max(...keys)); // a run past the table still pays its top prize
     out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];

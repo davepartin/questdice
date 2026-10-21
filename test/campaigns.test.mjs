@@ -254,7 +254,8 @@ test('duo locked fights stay near Dawn threat, with the writer’s fightHp knobs
   mate.campaign = wheel.campaign;
   const solo = E.newBattle(wheel, q, E.makeRng(1), 1);
   const pair = E.newPartyBattle([wheel, mate], q, E.makeRng(1));
-  assert.equal(Math.round(pair.enemies[0].maxHp / solo.enemies[0].maxHp * 10) / 10, PARTY.hp[1]);
+  const ratio = pair.enemies[0].maxHp / solo.enemies[0].maxHp; // from the two heroes' real strength (teamFactor), so near PARTY.hp[1], not exactly
+  assert.ok(Math.abs(ratio - PARTY.hp[1]) <= 0.15, `pair x${ratio.toFixed(2)} vs PARTY.hp ${PARTY.hp[1]}`);
 });
 
 test('per-campaign saves keep Dawn keys and namespace the duo packs', () => {

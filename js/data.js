@@ -65,6 +65,8 @@ export const HEART_AMP = [2, 2, 2, 2];
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the seven numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
+// The shortest straight that counts, by the hero's biggest body die (engine straightMin): stays special as the dice grow (Dave, Oct 2026).
+export const STRAIGHT_MIN = { 4: 5, 6: 6, 8: 7, 10: 7 }; // about one round in three in every act (tools/curve.mjs, 21 Oct)
 export const STRAIGHT = { 5: 10, 6: 18, 7: 30, 8: 45, 9: 60 }; // 8 and 9 in a row are possible with talent dice, the heart and weapon faces (Dave's 1-to-8 paid nothing)
 
 export const RARITY = ['Bronze', 'Silver', 'Gold']; // three metals (Dave, Oct 2026): Gold is the finished weapon
