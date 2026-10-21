@@ -1263,3 +1263,8 @@ Dave on Storm Coil in camp: the text said the charges paid 4, 6, 8, 10, while th
 - Lucky Verse: the cast reveal's table said +5 / +9 attack and +2 magic. It now shows the real +3 / +6 and +1 magic, and their levelled values.
 - The old battle detail panel (showPowerDetail) uses the same effect line. "Base description" is labelled "level 0".
 - test/powertext.test.mjs casts every power of every class at levels 0 to 3 and checks that the camp line and the effect line show exactly what the engine adds. dev/powerwords.mjs screenshots a levelled power's sheet line and cast reveal.
+
+
+## 21 October 2026: battle dice satin review, separate from live main
+
+Dave approved a modest satin-material exploration, with smoothness and clear dice as priorities. Branch `ui/dice-satin` starts at main f5c2c70. Existing clean dice keep lighter resting sides and restrained surface highlights; no new assets, geometry, lights, passes or animation loops. See `docs/ui-handoff/15-BATTLE-DICE-SATIN-REVIEW.md` and `docs/screens/dice-satin/`. Actual battle review covers d4/d6/d8/d10 screenshots and physical throws, unchanged seeded boards/geometry, no page errors. npm test: 330 pass, same 2 known server failures. Do not claim physical iPhone FPS verification. This new checkpoint needs visual review before merging, unlike camp/magic work already merged in PR #30.
