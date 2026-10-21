@@ -192,6 +192,28 @@ To decide first: how a turned hero's block works against friends, whether heals 
 
 Nothing here changes how the game starts or the class starting dice, which Dave asked to keep (10 Oct).
 
+## Measured: the real curve (21 Oct, tools/curve.mjs)
+
+Full tables in docs/balance/curve_2026-10-21.txt (`SKILL=normal STYLE=wise sh tools/curve-all.sh 3 3`; also Hard, and the sensible bot). A round's throw is attack + pierce + splash, after rerolls and powers.
+
+| Normal, best bot | Act I | Act II | Act III |
+| --- | --- | --- | --- |
+| Average round | 31 | 45 | 59 |
+| Rounds a fight (boss) | 4 (7) | 6 (10) | 9 (16) |
+| Fights won (bosses) | 97% (93%) | 98% (87%) | 96% (89%) |
+| Fights that dip below half health | 28% | 36% | 39% |
+| Rounds with a straight / an attack triple | 57% / 32% | 67% / 27% | 60% / 20% |
+
+What it says:
+
+- **The growth is right; the level is not.** Rounds grow about 1.5x into Act II and 2x into Act III, which is Dave's instinct, but they start at about double the plan's targets (31 against 10-15).
+- **The big numbers are the dice, not the powers.** About three quarters of every round is dice (weapons, body, heart, talents); powers add only 6-11%, triples 8-14%, straights 5-13%. "Big moments" (a round twice the average) are 1-3% of rounds. So the 80-a-round feeling comes from the whole board being big, not from spikes.
+- **Straights and triples are far too common.** A straight in about 6 rounds of 10; an attack triple in 1 round of 3 in Act I, still 1 in 5 in Act III. Confirms Dave.
+- **Act III fights drag.** Monster health a fight grows 105 / 232 / 497 (with more monsters), faster than damage, so fights go 4 / 6 / 9 rounds and Act III bosses about 16.
+- **Normal is comfortable for good play.** The best bot wins 96-98% of fights and dips below half health in about a third of them; the sensible bot in half (Act I) to four in five (Act III). Hard: bosses 83 / 77 / 88%, below half in 42-49% of fights. Dave plays better than the best bot, so "Normal is easy" fits.
+- **One kind of weapon wins.** Every class ends Act I holding a two-handed bow and Act III a Gold bow or long sword; knights and dwarves set down their shields. On a single roll every Gold d8 weapon scores within about 20% of the others (bow 30, long sword 29, sword and shield 27, war hammer 27), but the bot always takes the top one, and a two-hander rolls both hands as attack. Weapons need variety as well as wear.
+- **For weapon wear:** fights more than double in length from Act I to Act III, so counting rounds makes the same weapon wear out twice as fast in Act III. Counting battles keeps it steady and is easier to read ("2 battles left").
+
 ## How the game feels today (Dave, 20 Oct)
 
 "Normal is easy and Hard is normal." Set beside the bots (docs/BALANCE.md, 16 Oct): on Normal the sensible bot wins about 90% of fights and 76-88% of bosses, the wise bot 96-99% and about 90%. Hard today is monster health x1.15 and +2 a hit; Legendary x1.6.
