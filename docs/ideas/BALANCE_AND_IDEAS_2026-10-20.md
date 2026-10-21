@@ -182,12 +182,12 @@ To decide first: how a turned hero's block works against friends, whether heals 
 ## Order of work
 
 - [x] **Measure the real curve:** per-round damage with powers and rerolls, by act and class, and how often heroes drop below half health on Normal.
-- [ ] **Powers and the exchange rate:** level scaling +50% to +25%, charge steps 4, 6, 8, 10, Arc Bolt dice priced up.
+- [x] **Powers and the exchange rate** (22 Oct: levels priced by gold, charges 4/6/8/10, rising heal cost): level scaling +50% to +25%, charge steps 4, 6, 8, 10, Arc Bolt dice priced up.
 - [x] **Straights:** minimum length grows with your biggest die (built 21 Oct on `claude/economy-pass`: d4 5, d6 6, d8+ 7).
-- [ ] **Heart die by symbol.**
-- [ ] **Re-check Normal difficulty** after the three changes above; only then touch monster health.
+- [x] **Heart die by symbol** (22 Oct).
+- [x] **Re-check Normal difficulty** (22 Oct, with monster dice and shorter Act III fights) after the three changes above; only then touch monster health.
 - [x] **Weapon wear** (built 21 Oct on `claude/economy-pass`: 4 / 6 / 8 battles, no repair, spoils mostly Bronze, Silver and Gold in the store, monster gold grows slowly). Display polish goes to the UI builder.
-- [ ] **Bonus Goal wagers.**
+- [x] **Bonus Goal wagers** (22 Oct: 10 / 20 / 30 stake, three times back).
 - [ ] **Team ideas:** design only; pick one to prototype after Act III has its own monsters.
 
 Nothing here changes how the game starts or the class starting dice, which Dave asked to keep (10 Oct).
