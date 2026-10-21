@@ -675,7 +675,7 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) HK.roundFlourish(B.root, b.round); }
+  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) { if (B.card) B.flourishLater = b.round; else HK.roundFlourish(B.root, b.round); } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -1064,7 +1064,9 @@ function showCard(el = B.card) {
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
 function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
-function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: hideCard }); return B.lastCard; }
+function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
+// The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
+function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) HK.roundFlourish(B.root, r); }
 async function lockLocalParty() {
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const f = b.fighters[B.active];
@@ -1166,7 +1168,7 @@ async function lockInInner() {
   bw.tray.unlock?.();
   setHud({ phase: 'resolve' });
   for (const e of b.enemies) updatePlate(e);
-  await wait(0.35);
+  await wait(1.0); // (Dave, Oct 2026: let the last hits, falls and numbers finish on the board before the recap covers it)
 
   // ---------- 3. next
   B.busy = false;
@@ -1236,7 +1238,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   for (const e of b.enemies) updatePlate(e);
   B.replaying = false;
   paintHeroes();
-  await wait(pace.close);
+  await wait(pace.close + 0.6); // let the board settle before the recap covers it
   B.busy = false;
   if (outcome === 'victory') return win(B.net ? null : rep); // at a shared table every phone moves on together (no waiting on a tap)
   if (outcome === 'defeat') return lose(B.net ? null : rep);
