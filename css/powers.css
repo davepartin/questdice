@@ -120,3 +120,47 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* short phones: smaller helper medallions and a shorter panel so the triangle keeps its room */
 @media (max-height: 720px) { .pw-detail { min-height: 6.8rem; } }
+
+/* Battle power selection: three class powers, then three distinct helpers. */
+.b3-sheet:has(.pw-sigil) { border-radius: 7px; background: repeating-linear-gradient(0deg,#ffffff02 0 1px,#0000 1px 4px),linear-gradient(145deg,#241c38,#0d1420 75%); box-shadow: inset 0 0 0 1px #a5865655,0 0 0 1px #ab8b59,0 15px 35px #000a; padding: .7rem; }
+.b3-sheet .b3-cards:has(.pw-sigil) { overflow-y: auto; overscroll-behavior: contain; }
+.pw-sigil { flex: none; gap: .7rem; padding: 2px; }
+.pw-tally { position: sticky; top: 0; z-index: 6; width: 100%; flex-direction: row; gap: .6rem; background: #181b2c; padding: 2px 0; }
+.pw-tally > div { flex: 1; border-radius: 4px; padding: .5rem .6rem; background: #0b111c; box-shadow: inset 0 0 0 1px #a483574f; }
+.pw-center b, .pw-life b { text-shadow: none; }
+.pw-wrap { flex: none; height: clamp(185px,25vh,220px); padding: 0; }
+.pw-stage { width: min(100%,280px); height: 100%; aspect-ratio: 300/290; max-width: none; }
+@supports (width: 1cqh) { .pw-stage { width: min(96cqw,calc(100cqh * 300 / 290)); } }
+.pw-medal { --r: clamp(3rem,23cqw,4.1rem); }
+.pw-medal.at-A { left: 50%; top: 13.8%; }
+.pw-medal.at-B { left: 22%; top: 72.4%; }
+.pw-medal.at-C { left: 78%; top: 72.4%; }
+.pw-ring, .pw-medal.st-ready .pw-ring { animation: none; background: linear-gradient(135deg,#f1d7a0,#9a7840 45%,#3a2c20 70%,#bf9c60); box-shadow: 0 2px 6px #0009,inset 0 0 0 1px #e8d39c70; }
+.pw-core { background: radial-gradient(ellipse at top,color-mix(in srgb,var(--c) 24%,#13212e),#0c1420); }
+.pw-core .ic { filter: none; }
+.pw-edge { filter: none; opacity: .55; stroke-width: 2; }
+.pw-fill, .pw-pick .pp-arrow { animation: none; }
+.pw-medal.on .pw-ring { transform: none; box-shadow: 0 0 0 2px #ffe0a0,0 0 0 4px #a6854745; }
+.pw-medal.on .pw-name { color: #ffe6b2; border-color: #e6bf78; }
+.pw-name { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: clamp(.64rem,3.4cqw,.76rem); border-radius: 3px; background: #111725; border: 1px solid #8e7958; box-shadow: 0 2px 4px #0009; }
+.pw-slot { box-shadow: 0 0 0 1px #8a704c; background: #e9d2a4; color: #21182a; }
+.pw-cost { border-radius: 4px; background: #6035a2; box-shadow: 0 0 0 1px #bd9fe0; }
+.pw-helpers { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; padding-top: .6rem; border-top: 1px solid #aa8d574a; }
+.pw-helpers .pw-medal { position: relative; inset: auto; width: auto; min-height: 70px; transform: none; padding: .45rem .2rem; background: #101b28; border: 1px solid #796547; border-radius: 4px; gap: .3rem; }
+.pw-helpers .pw-ring { width: 30px; height: 30px; background: none; box-shadow: none; }
+.pw-helpers .pw-core { width: 30px; height: 30px; background: none; box-shadow: none; }
+.pw-helpers .pw-core .ic { width: 23px; height: 23px; }
+.pw-helpers .pw-name { position: static; transform: none; width: auto; max-width: 100%; padding: 0; background: none; border: none; box-shadow: none; font-size: .67rem; }
+.pw-helpers .pw-cost { top: .2rem; right: .2rem; font-size: .58rem; }
+.pw-helpers .pw-cost.free { font-size: .48rem; }
+.pw-detail { animation: none; border-radius: 4px; background: linear-gradient(135deg,#1a2c38,#101925); padding: .8rem; gap: .3rem; box-shadow: inset 0 0 0 1px #ae8f565e; }
+.pd-id b { font: 600 1.4rem var(--font-story); color: #fff0d3; }
+.pd-id em { line-height: 1.4; color: #bfc4ce; }
+.pd-line { font-size: .8rem; line-height: 1.45; }
+.pd-row { flex-wrap: wrap; gap: .65rem; }
+.pw-step { min-height: 44px; border-radius: 4px; background: #111b27; padding: 0; gap: .35rem; }
+.pw-step button { min-width: 44px; min-height: 44px; border-radius: 4px; background: #483363; }
+.pw-btn { border-radius: 4px; box-shadow: inset 0 0 0 1px #e1cbff80,0 3px 0 #231038; text-transform: none; letter-spacing: .01em; }
+.pw-detail.pw-pick { min-height: 72px; }
+.pw-medal:focus-visible, .pw-btn:focus-visible, .pw-step button:focus-visible { outline: 2px solid #ffe2a0; outline-offset: 3px; }
+@media (max-height: 650px) { .pw-wrap { height: 190px; } }

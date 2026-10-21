@@ -1203,3 +1203,8 @@ Camp now reuses battle face definitions, numeral paths and symbol paths for stil
 ## Actual dice correction, October 21, 2026
 
 Dave explicitly requested actual battle dice in every camp slot, including weapons and talents, highest numeric face displayed with lighter camp-only side shading. Removed approximated SVG silhouettes and now render the existing meshes/materials to cached portraits through the existing shared renderer/idle queue. Weapon workshop main image also uses its actual die. See docs/ui-handoff/11-ACTUAL-DICE-REVIEW.md. Do not substitute redraws again. No mechanics/save/multiplayer changes; work stays in ui/camp-art-pass / draft PR #30.
+
+
+## Battle powers layout, October 21, 2026
+
+Separated class powers A/B/C in the triangle from Potion/Heal/Heart Change helper row. Added persistent resource totals, calmer materials and scrollable detail/cast access for short phones. No spell handler or engine changes. Browser review covers selection immutability, scaled preview, actual cast cost, charge detail and heart actions across phone/landscape/desktop. See docs/ui-handoff/12-BATTLE-POWERS-REVIEW.md. Continue review on ui/camp-art-pass / draft PR #30; not live main.
