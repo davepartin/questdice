@@ -283,6 +283,17 @@ Proposal, to settle together with wear (one decision: price, how long it lasts, 
 - The tension: paying a lot for something that breaks in about six fights can feel bad. Either expensive metals last longer (try Bronze 15, Silver 25, Gold 40 rounds instead of 15 / 20 / 25), or the forge refreshes them (already planned), or both.
 - A "sell spares" button at camp so clearing Bronze clutter is one tap (UI lane).
 
+**Recommended package (Claude, 21 Oct), one decision instead of many:**
+
+1. **Weapons wear by battles, not rounds:** Bronze 4 battles, Silver 6, Gold 8 (Diamond 1, as now). Same spirit as Dave's 15 / 20 / 25 rounds in Act I, but steady in Act III, where fights are twice as long. A weapon with one battle left can always be saved for the boss; it never breaks mid-fight.
+2. **Where they come from:** spoils are Bronze, sometimes Silver; Gold only now and then from a boss. The Camp Store and the traveller sell Silver and Gold, the thing you save up for.
+3. **What camp does to a weapon: repair, nothing else.** Metal is what you find or buy (no forging Bronze to Silver); size is what you find or buy (no training d6 to d8; bigger weapons already drop as the acts go on). Repair refills a weapon's battles for about a third of its value: the way to keep a favourite. Your hand still caps a weapon's die, so Strength upgrades are what let you wield the bigger weapons you find.
+4. **Prices:** Silver 3x Bronze, Gold 8x. A sale returns half, less for a worn weapon (by battles left).
+5. **Where the gold goes:** body dice, talent dice, powers, potions, buying a weapon, repairing a favourite. Target: at each camp you can afford one good thing and are saving toward one big thing. Measure it with tools/economy.mjs after the change (gold left at each camp, camps with nothing affordable).
+6. **Later:** give one-handers and shields a reason to exist (today a two-hander wins for every class).
+
+Note for the UI lane: this removes the forge's metal and size rows at camp and adds a battles-left mark and a Repair button, so decide before the camp redesign polishes those rows.
+
 **Who builds what:** the rule, the save field, the bot (it must learn to rest a good weapon for big fights) and the measurement are the balance lane. Showing "rounds left" on each weapon card and in battle is the UI builder's job; the rule should land first behind the scenes, then the display, so the two never edit the same screens at once.
 
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
