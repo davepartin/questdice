@@ -109,6 +109,26 @@ export function shortLine(k, level = 0) {
   return fxWords(lvlFx(k.fx, level));
 }
 
+// What one upgrade changes, in plain words from the engine's numbers (Dave, Oct 2026: "make sure that the communication is clear what
+// the power does and what the magic upgrade would give you that's different"). "+1 on every charge (+4 when all 4 go)".
+export function upgradeLine(k, level = 0) {
+  const nx = level + 1; const every = k.atwill ? ' every round' : '';
+  if (k.kind === 'charge') {
+    const a = E.chargeValues(k, k.max, level); const b2 = E.chargeValues(k, k.max, nx); const tot = E.chargeGain(k, k.max, nx); const tot0 = E.chargeGain(k, k.max, level);
+    const parts = Object.keys(a).map((f) => { const d = b2[f].map((x, i) => x - a[f][i]); const word = f === 'heal' ? 'healing' : NAME[f] || f; return d.every((x) => x === d[0]) ? `+${d[0]} ${word}` : `+${d.join(', ')} ${word}`; });
+    const same = Object.keys(a).every((f) => b2[f].map((x, i) => x - a[f][i]).every((x, _, d) => x === d[0]));
+    return `${parts.join(' and ')} on ${same ? 'every charge' : 'the charges, first to last'} (${Object.keys(tot).map((f) => `+${tot[f] - tot0[f]}`).join(' and ')} when all ${k.max} go).`;
+  }
+  if (k.kind === 'dice') return `One more die: ${k.dice.n + nx}d${k.dice.s} instead of ${k.dice.n + level}d${k.dice.s} (about +${((k.dice.s + 1) / 2).toFixed(1).replace(/\.0$/, '')} ${NAME[k.dice.to]}).`;
+  if (k.kind === 'scale') return `One more die for the same magic: ${k.cost} magic rolls ${E.powerDice(k, k.cost, nx)}d${k.dice.s} instead of ${E.powerDice(k, k.cost, level)}d${k.dice.s}${E.scaleMax(k, nx) < E.scaleMax(k, level) ? `, and the most dice cost ${E.scaleMax(k, level) - E.scaleMax(k, nx)} less magic` : ''}.`;
+  if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `More each round: round ${r} gives +${E.roundGain(k, r, nx)} instead of +${E.roundGain(k, r, level)}, and the gap grows as the fight goes on.`; }
+  if (k.kind === 'luck') return `1–2: +${1 + nx} magic instead of +${1 + level}; 3–4: +${E.scaleNum(E.LUCK.mid, nx)} attack instead of +${E.scaleNum(E.LUCK.mid, level)}; 5–6: +${E.scaleNum(E.LUCK.top, nx)} instead of +${E.scaleNum(E.LUCK.top, level)}.`;
+  const ch = Object.entries(k.fx).map(([f, v]) => { const o = f === 'free' ? v + level : E.scaleNum(v, level); const n = f === 'free' ? v + nx : E.scaleNum(v, nx);
+    return f === 'free' ? `${n - o} more die in the free reroll (${n} instead of ${o})` : f === 'weaken' ? `monsters hit ${n - o} softer still (${n} instead of ${o})` : `+${n - o} ${NAME[f] || f} (${n} instead of ${o})`; });
+  if (k.kind === 'super') ch.push(`+${E.scaleNum(k.aoe, nx) - E.scaleNum(k.aoe, level)} to every monster (${E.scaleNum(k.aoe, nx)} instead of ${E.scaleNum(k.aoe, level)})`);
+  return `${ch.join(', ')}${every}.`;
+}
+
 // ------------------------------------------------------------------------------------------------ the sigil (powers sheet)
 // ctx: { b, hero, reset, powers: [{ k, st, stored, x, level, afford }], utils: [{ id, name, icon, cost, why, flag, text, body, actions }],
 //        selected, select(id), use(id, opts), recharge(id), step(id, x), rechargeCost, round }

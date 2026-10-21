@@ -85,3 +85,13 @@ test('flat and super powers: the numbers shown are the numbers added', () => {
     if (k.kind === 'super') assert.ok(shortLine(k, lvl).includes(`${scaleNum(k.aoe, lvl)} to all`));
   }
 });
+
+test('the upgrade line says what the next level adds, in the engine\'s numbers', async () => {
+  const { upgradeLine } = await import('../js/g3/powers.js');
+  for (const { k } of all) for (const lvl of [0, 1, 2]) {
+    const line = upgradeLine(k, lvl); assert.ok(line && !/NaN|undefined/.test(line), `${k.name} L${lvl}: ${line}`);
+    if (k.kind === 'charge') { const a = chargeGain(k, k.max, lvl); const b = chargeGain(k, k.max, lvl + 1); for (const f of Object.keys(a)) assert.ok(line.includes(`+${b[f] - a[f]}`), `${k.name} L${lvl} total gain ${b[f] - a[f]}: ${line}`); }
+    if (k.kind === 'flat') for (const [f, v] of Object.entries(k.fx)) { const n = f === 'free' ? v + lvl + 1 : scaleNum(v, lvl + 1); assert.ok(line.includes(`(${n} instead of`), `${k.name} L${lvl}: ${line}`); }
+    if (k.kind === 'dice') assert.ok(line.includes(`${k.dice.n + lvl + 1}d${k.dice.s} instead of ${k.dice.n + lvl}d${k.dice.s}`));
+  }
+});

@@ -265,6 +265,8 @@
 .cp-compare b { display: block; margin-top: .3rem; font: 600 .83rem/1.4 var(--font-body); color: #d3c8b4; }
 .cp-compare > div:last-child b { color: #f1d49b; }
 .cp-compare > .ico svg { width: .65rem; height: .65rem; color: #b5a07d; }
+.cp-change { margin: -.2rem 0 0; padding: .55rem .65rem; border-left: 2px solid #d6b26a; border-radius: 0 6px 6px 0; background: #d6b26a14; color: #efe3c9; font-size: .78rem; line-height: 1.45; }
+.cp-change small { display: block; color: #c9ad75; font-size: .53rem; letter-spacing: .06em; margin-bottom: .15rem; }
 .cp-swap-note { margin: 0; padding: .6rem; color: #bdb3c4; font-size: .72rem; line-height: 1.5; border-radius: 6px; background: #0b0d154d; }
 .cp-detail .sh-buy { margin: 0; }
 .cp-level-list { display: flex; flex-direction: column; gap: .3rem; padding: 0 .5rem .5rem; }

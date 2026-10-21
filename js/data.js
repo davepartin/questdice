@@ -266,6 +266,7 @@ export const UNLOCK_ORDER = ['SW', 'NE', 'SE'];
 export const POWER_LEVEL_FRAC = [0, 0.25, 0.5, 1];
 export const POWER_LEVEL_MIN = [0, 1, 2, 4];
 export const CHARGE_LEVEL_FRAC = [0, 0.125, 0.25, 0.5];
+export const CHARGE_LEVEL_ADD = [0, 0, 0, 0]; // and/or a flat amount added to every charge at each level (tools/worth.mjs tests both)
 // Charges start one lower and climb by 2 (Dave: "start one attack less... then increases after every charge"): +5 a charge is 4, 6, 8, 10.
 export const CHARGE_STEP = 2;
 export const POWER_UPGRADE = [60, 140, 260]; // gold to reach level 1, 2, 3. Each level: a steady step up in the numbers (see scaleNum), +1 die on dice powers.

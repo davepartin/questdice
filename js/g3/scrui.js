@@ -2,7 +2,7 @@
 // road events, victory / defeat and camp. Glassy panels over the live scene from screens.js.
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
 // the context handed to bind(); this file only decides what things look like.
-import { shortLine, effectLine, glyph as powerGlyph, toneOf } from './powers.js';
+import { shortLine, effectLine, upgradeLine, glyph as powerGlyph, toneOf } from './powers.js';
 import { h, $, $$, modal, closeModal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
@@ -1127,6 +1127,7 @@ function campPowers(hero) {
       h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Power level ${level}`)),
       h('p', { class: 'cp-effect' }, effectLine(k, { level })), h('p', { class: 'cp-when' }, when),
       row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · LEVEL ${level}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · LEVEL ${up.next}`), h('b', {}, shortLine(k, up.next)))) : null,
+      row.equipped && up.next ? h('p', { class: 'cp-change' }, h('small', {}, 'WHAT THE UPGRADE ADDS'), h('span', {}, upgradeLine(k, level))) : null,
       !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
       action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
       levels, h('details', { class: 'cp-base ww-pack' }, h('summary', {}, 'Base description · level 0'), h('p', {}, k.text))));
