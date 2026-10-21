@@ -28,10 +28,10 @@ let bodyMarks = 0;
 export function setBodyMarks(k) { bodyMarks = k || 0; }
 
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
-export function dieSpecs(hero) {
+export function dieSpecs(hero, previewSizes = {}) {
   const out = {};
   for (const slot of D.SLOTS) {
-    const role = D.ROLE[slot]; const sides = E.sidesOf(hero, slot);
+    const role = D.ROLE[slot]; const sides = previewSizes[slot] ?? E.sidesOf(hero, slot);
     let theme; let labels = [];
     if (role === 'weapon') {
       theme = 'weapon';

@@ -3,7 +3,7 @@
 // feet. Flat DOM, no WebGL: a full-screen painting (#scene, behind the screen's panels) and a stage of figures inside the
 // screen's `.sx-viewport`, so the panels and the figures share one layout.
 //
-// Backgrounds, best first. Grokabot is painting the camp and road scenes; until a file exists the next one down is used:
+// Backgrounds, best first. Registered paintings precede the existing act fallback:
 //   camp:  assets/bg/camp-act<N>.webp, assets/bg/camp.webp, then a calm painted place of the act
 //   road:  assets/bg/road-act<N>.webp, then the painting of the place where the next fight is
 import { h } from '../dom.js';
@@ -13,9 +13,9 @@ import { petImg } from './pets.js';
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 // A calm place for each act's camp, until the camp paintings arrive.
 const CAMP_PLACE = { 1: 'wolfwood-edge', 2: 'candle-vault', 3: 'kettle-tarn' };
-// Paintings made for these scenes. When Grokabot's files are in assets/bg, add their names here (no guessing at the network):
+// Register shipped paintings here, without speculative network requests:
 //   'camp-act1', 'camp-act2', 'camp-act3', 'camp' (any act), 'road-act1', 'road-act2', 'road-act3'
-export const PAINTED = [];
+export const PAINTED = ['camp'];
 const have = (names) => names.filter((n) => PAINTED.includes(n)).map((n) => `assets/bg/${n}.webp`);
 export const campArt = (act = 1) => [...have([`camp-act${act}`, 'camp']), `assets/bg/${CAMP_PLACE[Math.min(3, act)] || CAMP_PLACE[1]}.webp`];
 export const roadArt = (act = 1, place = '') => [...have([`road-act${act}`]), D.placeLook(place).url || `assets/bg/${CAMP_PLACE[1]}.webp`];
@@ -64,10 +64,10 @@ export function enter(kind, { heroes = [], act = 1, place = '', hot = true } = {
   const bg = el.querySelector('.sc-bg'); const full = `url("${url}")`;
   if (bg.style.backgroundImage !== full) bg.style.backgroundImage = full;
   void token; el.className = `scene on k-${kind} act-${act}`; document.body.classList.add('has-scene');
-  mountStage(kind, heroes, hot);
+  mountStage(kind, heroes, hot, url);
 }
 // The figures go inside the screen's own viewport (the screen has just been mounted).
-export function mountStage(kind, heroes, hot = true) {
+export function mountStage(kind, heroes, hot = true, backdrop = null) {
   let host = document.querySelector('.sx-viewport');
   if (!host) { // the quest board has no viewport of its own: give it one
     const root = document.getElementById('app'); if (!root || !root.classList.contains('sx-screen')) return false;
@@ -78,6 +78,8 @@ export function mountStage(kind, heroes, hot = true) {
   const slots = kind === 'camp' ? AROUND_FIRE : ROAD_N[members.length] || ON_ROAD;
   const figs = members.map((m, i) => figure(m, slots[i], {})).sort((a, b) => parseFloat(a.style.getPropertyValue('--y')) - parseFloat(b.style.getPropertyValue('--y')));
   const stage = h('div', { class: `sc-stage k-${kind} n${members.length} ${reduced() ? 'still' : ''}` }, h('i', { class: 'sc-warm' }), kind === 'camp' && hot ? fireEl() : null, ...figs);
+  // Fit the painting to the visible camp banner, independently of the full-screen shade.
+  if (kind === 'camp' && backdrop) stage.style.backgroundImage = `linear-gradient(#07101c18,#080c1430),url("${backdrop}")`;
   host.prepend(stage);
   return true;
 }

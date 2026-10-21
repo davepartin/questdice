@@ -24,7 +24,22 @@ function aces(r, g, b, exposure) {
   const o = (i) => Math.min(1, Math.max(0, ACES_OUT[i * 3] * a + ACES_OUT[i * 3 + 1] * bb + ACES_OUT[i * 3 + 2] * c));
   return [o(0), o(1), o(2)];
 }
-function renderShared(size) {
+function tightCanvas(source, size) {
+  const c = document.createElement('canvas'); c.width = source.width; c.height = source.height;
+  const ctx = c.getContext('2d'); ctx.drawImage(source, 0, 0);
+  const pixels = ctx.getImageData(0, 0, c.width, c.height).data;
+  let left = c.width, right = -1, top = c.height, bottom = -1;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (pixels[(y * c.width + x) * 4 + 3] > 12) {
+    left = Math.min(left, x); right = Math.max(right, x); top = Math.min(top, y); bottom = Math.max(bottom, y);
+  }
+  if (right < left) return source;
+  const out = document.createElement('canvas'); [out.width, out.height] = size;
+  const w = right - left + 1, h = bottom - top + 1;
+  const scale = Math.min((out.width - 16) / w, (out.height - 16) / h);
+  out.getContext('2d').drawImage(c, left, top, w, h, (out.width - w * scale) / 2, (out.height - h * scale) / 2, w * scale, h * scale);
+  return out;
+}
+function renderShared(size, trim = false) {
   const r = shared.renderer; const key = size.join('x');
   if (!rt || rtKey !== key) { rt?.dispose(); rt = new THREE.WebGLRenderTarget(size[0], size[1], { type: THREE.HalfFloatType, samples: 4, depthBuffer: true }); rtKey = key; }
   const prevT = r.getRenderTarget(); const prevC = r.getClearColor(new THREE.Color()); const prevA = r.getClearAlpha(); const prevSM = r.shadowMap.enabled;
@@ -41,7 +56,7 @@ function renderShared(size) {
     img.data[j] = srgb(rr) * 255; img.data[j + 1] = srgb(gg) * 255; img.data[j + 2] = srgb(bb) * 255; img.data[j + 3] = al * 255;
   }
   ctx.putImageData(img, 0, 0);
-  return cv.toDataURL('image/png');
+  return (trim ? tightCanvas(cv, size) : cv).toDataURL('image/png');
 }
 
 function ensure(size) {
@@ -98,9 +113,10 @@ export function portrait(obj, o = {}) {
   const d = Math.max(fitH, dist * 0.7);
   cam.position.set(target.x + Math.sin(0) * d, target.y + Math.sin(pitch) * d, target.z + Math.cos(pitch) * d);
   cam.lookAt(target);
+  o.prepare?.(cam);
   let url;
-  if (shared) url = renderShared(size);
-  else { R.render(scene, cam); url = R.domElement.toDataURL('image/png'); }
+  if (shared) url = renderShared(size, o.trim);
+  else { R.render(scene, cam); url = (o.trim ? tightCanvas(R.domElement, size) : R.domElement).toDataURL('image/png'); }
   scene.remove(holder); holder.remove(obj);
   if (key) cache.set(key, url);
   return url;

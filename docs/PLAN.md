@@ -1162,6 +1162,63 @@ Dave's iPhone still cut the blue wizard's hair at the top of Choose your hero (S
 ## 2026-10-17 — repainted hero miniatures, clean cutouts
 Dave repainted all 15 hero coats (knight, ranger, wizard, dwarf, bard × 3). New cutouts from the studio photos: BiRefNet mask + a colour-distance mask against the fitted backdrop, interior holes filled unless they are real background gaps, edges decontaminated and trimmed 1px, floor shadow cut, base fitted as a cylinder so it stays solid. Same files and format as before (trimmed transparent WebP, long side 512); `imgBase` re-measured for every look. The plain class files (`knight.webp`, `ranger.webp`, …) are now copies of each class's default coat. Stamp `20261017g`.
 
+
+## 2026-10-20: camp artwork and contextual upgrades, review branch
+
+Dave asked for a stronger visual pass after reviewing the first camp redesign screenshots. Work is on ui/camp-art-pass for review, with no live main deployment. The nine-slot board now has large shaded vector dice, existing body markings and weapon portraits, dark textured tile surfaces, clearer selection, and an inline inspector with a large current/next comparison. Camp services are organized as Dice, Powers, Gear, Supplies and Hero; Store remains a separate entry and shrinking is under Supplies. Existing rules, purchase commands, online mutation adapter, and save formats are unchanged. Removed obsolete grid styling; camp-specific visuals live in css/camp.css and js/g3/campart.js. No new runtime dependencies or image assets, and no additional 3D scene.
+
+Verification: baseline and post-change npm test both report 318 passing / 2 failing out of 320, with the same pre-existing local server tests failing in test/server.test.mjs. The browser harness dev/camp-art-review.mjs exercises an actual d6-to-d8 purchase, exact gold, board refresh, local save/open round trip, closing/focus, five categories, Store, unaffordable and maximum states, a locked slot, weapon controls, talent access, reduced motion, and repeated open/close. It captures phone/short/tall/landscape/desktop layouts. See docs/ui-handoff/04-CAMP-ART-REVIEW.md for results and screenshots.
+
+Limits: physical iPhone Safari performance, live cloud saves, remote online rooms, complete party play, and a full campaign were not verified. Screenshots are test fixtures. Battle magic-powers layout has not been redesigned in this pass.
+
+
+## 20 October 2026: weapon workshop review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: equipped weapon inspection now has an existing-art portrait, Forge/Train choices, authoritative current/target face previews, hand-cap explanations, exact prices and remaining gold. Pack and Diamond actions remain accessible. Right-hand two-handed inspection targets its own UID, matching existing independent die upgrades; no engine or save changes. Cache stamp: `20261020weapons1`. See `docs/ui-handoff/05-WEAPON-WORKSHOP-REVIEW.md` for screenshots, checks and limits. This checkpoint is for review, not live publication. Next bounded section is the talent editor.
+
+## 20 October 2026: talent workbench review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: talent dice now show a complete face grid, preview-first symbol selection, exact existing costs and remaining gold, usage limits, explicit no-refund clearing and separate die growth. Uses existing talent engine commands and online mutation adapter; no engine or save changes. Cache stamp `20261020talents1`. See `docs/ui-handoff/06-TALENT-WORKSHOP-REVIEW.md` for screenshots, validation and limits. Keep on the review branch until Dave approves publishing. Next bounded section: camp Powers organization/inspection, with the battle triangle reserved for a later section.
+
+## 20 October 2026: camp power library review checkpoint
+
+Draft PR #30, branch `ui/camp-art-pass`: camp Powers now has A/B/C slot browsing, equipped/learned/locked states, reusable battle glyphs and effect descriptions, current/next upgrade comparison, exact prices, remaining gold and explicit learn-and-equip/free-swap behavior. All-level previews use each class's cap. Unused power-row builders removed. No engine, class data or save changes. Cache stamp `20261020powers1`. See `docs/ui-handoff/07-CAMP-POWERS-REVIEW.md` for screenshots and verification. Not merged or deployed live. Next bounded section: battle magic-powers triangle and casting details.
+
+
+## Camp framing checkpoint, October 21, 2026
+
+User returned to the original illustrated concept and prioritized camp visual finish before battle magic powers. Applied wood framing, recessed slots, existing body artwork, selection corners and blue cloth inspector/road surfaces. No rule or save changes. Existing camp browser review passed; see docs/ui-handoff/08-CAMP-VISUAL-FINISH-REVIEW.md for scope, screenshots and remaining art gap. Continue on ui/camp-art-pass / draft PR #30, not live main.
+
+
+## Painted campsite checkpoint, October 20, 2026
+
+Added a single 155 KiB shipped campsite painting with tents, lanterns and mountains. Existing hero/pet miniatures and fire remain separate. Camp background drift is disabled. Phone banner and desktop stage have bounded dimensions. No mechanics, save or multiplayer changes. Review and resume details: docs/ui-handoff/09-CAMPSITE-ART-REVIEW.md. Keep changes on ui/camp-art-pass / draft PR #30. Next: review camp dice against existing battle dice artwork.
+
+
+## Camp dice checkpoint, October 21, 2026
+
+Camp now reuses battle face definitions, numeral paths and symbol paths for still previews, with separate size labels and an All faces current/upgrade comparison. Heart shows all six boosts. No rule changes or new downloaded artwork. Existing camp browser review and 125 preview cases passed. See docs/ui-handoff/10-CAMP-DICE-REVIEW.md. Next bounded section: battle magic-powers triangle. Work remains in ui/camp-art-pass / draft PR #30.
+
+
+## Actual dice correction, October 21, 2026
+
+Dave explicitly requested actual battle dice in every camp slot, including weapons and talents, highest numeric face displayed with lighter camp-only side shading. Removed approximated SVG silhouettes and now render the existing meshes/materials to cached portraits through the existing shared renderer/idle queue. Weapon workshop main image also uses its actual die. See docs/ui-handoff/11-ACTUAL-DICE-REVIEW.md. Do not substitute redraws again. No mechanics/save/multiplayer changes; work stays in ui/camp-art-pass / draft PR #30.
+
+
+## Battle powers layout, October 21, 2026
+
+Separated class powers A/B/C in the triangle from Potion/Heal/Heart Change helper row. Added persistent resource totals, calmer materials and scrollable detail/cast access for short phones. No spell handler or engine changes. Browser review covers selection immutability, scaled preview, actual cast cost, charge detail and heart actions across phone/landscape/desktop. See docs/ui-handoff/12-BATTLE-POWERS-REVIEW.md. Continue review on ui/camp-art-pass / draft PR #30; not live main.
+
+
+## Magic visual finish, October 21, 2026
+
+Dave requested a stronger art pass after finding the previous powers layout too basic and its triangle unbalanced. Added a single 28,512-byte violet material/haze asset, equilateral triangle with shared medallion coordinates, glass/metal lighting, quieter helpers and a textured selected spell card. Inspection scales the triangle proportionally. No mechanical changes. See docs/ui-handoff/13-MAGIC-VISUAL-REVIEW.md for geometry checks, actual screenshots, asset prompt and resume notes. Remains on ui/camp-art-pass / draft PR #30.
+
+
+## Phone flow checkpoint, October 21, 2026
+
+Reviewed connected camp -> upgrade -> Store return -> road -> real quest/roll -> spell cast -> save/open. Added explicit static portrait loading/failure feedback. The actual medium-detail battle dice remain; a softer lower-detail trial was reverted after only a small software-browser timing difference. No mechanics changes. See docs/ui-handoff/14-PHONE-FLOW-REVIEW.md for fixture scope, cold-loading observation and resume instructions. Still draft PR #30, ui/camp-art-pass. Physical iPhone checks and approval precede live publishing.
+
 ## 2026-10-21 — economy pass: rarer straights, weapons that wear out, gold as a currency (stamp 20261021a)
 Dave's three, from the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-20.md), measured with the new tools/curve.mjs and tools/gold.mjs:
 - **Straights grow with your biggest body die** (`STRAIGHT_MIN`, engine `straightMin`): d4 five in a row, d6 six, d8 and d10 seven. A straight now lands in about one round in three in every act (was about six in ten). The straight hint says so.
@@ -1191,3 +1248,8 @@ Dave's go on the rest of the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-
 - (22 Oct, later) Dave: **five in a row is gone; six in a row is the shortest straight for the whole game, and the prize climbs 10 / 20 / 30 / 50** for 6 / 7 / 8 / 9 in a row (`STRAIGHT`, `STRAIGHT_RULE` min 6), attack or gold as before (a softened top: 10/20/40/80 let a chaser in Act III land 40 four rounds in ten and 80 one in ten). Hint, lessons and the help page say so. Normal, wise bot: 14 / 15 cleared, bosses 88 / 77 / 88%, straights in 20 / 30 / 29% of rounds. Stamp 20261022h.
 - (22 Oct, later) Dave changed his mind: **straights double, 10 / 20 / 40 / 80** for 6 / 7 / 8 / 9 in a row (knowing a full chase in Act III can land 40 about four rounds in ten and 80 about one in ten). Stamp 20261022i.
 - (22 Oct, later) **Heart Boost** (Dave picked the name): when the heart (1 heal, 2 pierce, 3 magic, 4 gold) backs dice showing its symbol, the heart's socket and those dice glow in the symbol's colour (green, orange, purple, gold) and beat together, lub-dub about once a second, with a flare and a little hop when a die joins; a "HEART BOOST +4 heal" chip shows under the counters. Unlike a straight's steady cyan or a triple's line. Brightness is one knob (`tray.heartStrength`, 1 for now) for Dave to tune by eye. Shot: `node dev/heartboost.mjs [out] [strength]`. Stamp 20261022j.
+
+
+## Merge approval and integration, October 21, 2026
+
+Dave authorized merging PR #30. Integrated main through 9056a4cd18531be160f64e7b61d2eab5c14a44b2, preserving its newer balance, weapon wear, heart-boost, magic-cap and sheet-stays-open changes. Resolved the plan/cache-version conflicts and adapted the inline weapon inspector to display wear/current faces instead of retired Forge/Train controls. Combined suite: 325 pass, same two known server-test failures; connected phone journey passes with no page errors.

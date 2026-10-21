@@ -58,7 +58,7 @@ The nine slots remain in this exact arrangement:
 | W: Left hand | C: Heart | E: Right hand |
 | SW: Talent one | S: Feet | SE: Talent two |
 
-Use actual E.isActive, E.sidesOf, equipment data, and the current slot helpers. A two-handed weapon is one linked equipment instance. Its second slot must not suggest an independent weapon or independent upgrade.
+Use actual E.isActive, E.sidesOf, equipment data, and the current slot helpers. A two-handed weapon occupies both weapon slots, but each hand has its own weapon die and UID. Forge and Train must target the selected hand independently, as the current engine does. Equipping or replacing the whole weapon still follows the existing two-handed equipment rules.
 
 Display actual die sizes clearly. In camp a die-size token may say d6, but it must not look like a live result of six that has already been rolled. Do not show fictional faces or projected combat values.
 
