@@ -174,6 +174,9 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-tally { background: #14101fec; border-radius: 6px; gap: .6rem; padding: 3px; }
 .pw-tally > div { padding: .45rem .6rem; background: radial-gradient(ellipse at top left,#59257744,#100e19); border-radius: 5px; box-shadow: inset 0 0 0 1px #bb96e340; }
 .pw-tally .pw-life { background: radial-gradient(ellipse at top left,#26754a2b,#100e19); }
+/* the icon sits beside its number, not across the box (Dave, Oct 2026: "too spread out") */
+.pw-tally .pw-center, .pw-tally .pw-life { grid-template-columns: auto auto auto; justify-content: center; column-gap: .35rem; }
+.pw-tally .pw-center b, .pw-tally .pw-life b { text-align: left; }
 .pw-wrap { height: auto; padding: .5rem 0 .1rem; display: block; container-type: normal; }
 .pw-stage { width: min(100%,320px); height: auto; aspect-ratio: 360/280; margin: 0 auto; container-type: inline-size; }
 .pw-medal.at-A { left: 50%; top: 14.2382%; }
