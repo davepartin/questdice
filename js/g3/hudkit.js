@@ -47,7 +47,6 @@ const ICONS = {
   flee: '<path class="f" d="M3.4 12.2 C8.8 7.8 13.6 7 19.4 9.2 C16.2 11.4 12.2 12.4 7.6 12.5 Z"/><path class="f" d="M3.4 12.8 C8.6 16.8 13.6 17.4 19.6 15.2 C16.2 13.4 12 12.8 7.4 13 Z"/><path class="s" d="M4.4 12.5 L2.6 8.6 M4.4 12.5 L2.4 16.8"/>',
 };
 try { // display serif for names and titles, loaded without blocking the HUD stylesheet
-  if (!document.getElementById('hud-font')) document.head.append(Object.assign(document.createElement('link'), { id: 'hud-font', rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap' }));
 } catch { /* ignore */ }
 const SVGNS = 'http://www.w3.org/2000/svg';
 export function iconSvg(name, inner = true) { return ICONS[name] || ICONS.star; }

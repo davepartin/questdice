@@ -363,7 +363,7 @@
 
 /* the little "i" on a monster's plaque: there is more to read about it */
 .fb-info { position: absolute; z-index: 3; top: -.4rem; right: -.3rem; width: 1.05rem; height: 1.05rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; -webkit-tap-highlight-color: transparent;
-  font: italic 900 .72rem/1 Georgia, 'Times New Roman', serif; color: #2a1804; background: linear-gradient(180deg, #fff1c0, #e2b24c 70%, #b8862c); box-shadow: 0 0 0 1.5px #4a300a, 0 2px 6px rgba(0, 0, 0, .65); }
+  font: italic 800 .72rem/1 var(--font-display); color: #2a1804; background: linear-gradient(180deg, #fff1c0, #e2b24c 70%, #b8862c); box-shadow: 0 0 0 1.5px #4a300a, 0 2px 6px rgba(0, 0, 0, .65); }
 .fb-info::after { content: ''; position: absolute; inset: -.65rem; border-radius: 50%; }
 .fb-slot.dead .fb-info { display: none; }
 

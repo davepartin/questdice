@@ -1268,3 +1268,11 @@ Dave on Storm Coil in camp: the text said the charges paid 4, 6, 8, 10, while th
 ## 21 October 2026: battle dice satin review, separate from live main
 
 Dave approved a modest satin-material exploration, with smoothness and clear dice as priorities. Branch `ui/dice-satin` starts at main f5c2c70. Existing clean dice keep lighter resting sides and restrained surface highlights; no new assets, geometry, lights, passes or animation loops. See `docs/ui-handoff/15-BATTLE-DICE-SATIN-REVIEW.md` and `docs/screens/dice-satin/`. Actual battle review covers d4/d6/d8/d10 screenshots and physical throws, unchanged seeded boards/geometry, no page errors. npm test: 330 pass, same 2 known server failures. Do not claim physical iPhone FPS verification. This new checkpoint needs visual review before merging, unlike camp/magic work already merged in PR #30.
+
+## Font review, October 21, 2026
+
+Dave: "the camp fonts are getting kind of too many... stick with just a few". dev/fonts.mjs counted what every screen asks for. There were six families: Oxanium, Inter, Cormorant Garamond, Cinzel (loaded separately by the battle HUD), Georgia (two badges) and Archivo Black (the logo, plus banners and titles). One camp grid mixed three of them. Now there are three, each with one job (css/fonts.css, loaded last):
+- **Oxanium**: the game's voice. Buttons, tabs, labels, numbers, prices, badges, and the "To the road" button.
+- **Inter**: reading. Descriptions, hints, small print.
+- **Cormorant Garamond**: names and titles. The screen title, hero, power and monster names, story text, and the battle's round and quest titles (this replaces Cinzel; --serif points to it, and hudkit no longer loads Cinzel).
+- Archivo Black is used for the QuestDice logo only. Victory and defeat titles, banners, room codes and the round number flourish use Oxanium 800.
