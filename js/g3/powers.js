@@ -115,14 +115,20 @@ export function sigil(ctx) {
         h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(p.x ?? k.cost)))),
       h('span', { class: 'pw-name' }, k.name, pips), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
   };
-  const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 300 290'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
+  const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 360 280'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
   // Three class powers form the triangle; shared helpers occupy their own row below.
-  tri.setAttribute('viewBox', '0 0 300 290');
-  tri.innerHTML = `<defs><linearGradient id="pwG" gradientUnits="userSpaceOnUse" x1="0" y1="40" x2="0" y2="231"><stop offset="0" stop-color="#e2b8ff"/><stop offset=".55" stop-color="#9b4dff"/><stop offset="1" stop-color="#5a1ec8"/></linearGradient>
-    <radialGradient id="pwF" cx=".5" cy=".6" r=".62"><stop offset="0" stop-color="#7a3cf0" stop-opacity=".5"/><stop offset="1" stop-color="#1a0838" stop-opacity="0"/></radialGradient></defs>
-    <path class="pw-fill" d="M150 40 L234 210 H66 Z" fill="url(#pwF)"/>
-    <path class="pw-lat" d="M108 125 H192 L150 210 Z"/>
-    <path class="pw-edge e-L" d="M150 40 L66 210"/><path class="pw-edge e-B" d="M66 210 H234"/><path class="pw-edge e-R" d="M234 210 L150 40"/>`;
+  tri.setAttribute('viewBox', '0 0 360 280');
+  // Side length 208, altitude 104*sqrt(3): a true equilateral triangle.
+  tri.innerHTML = `<defs>
+    <linearGradient id="pwG" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#f1d4ff"/><stop offset=".4" stop-color="#b56bfa"/><stop offset="1" stop-color="#7440cf"/></linearGradient>
+    <linearGradient id="pwGlass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#bc85ff" stop-opacity=".22"/><stop offset=".6" stop-color="#7432b5" stop-opacity=".07"/><stop offset="1" stop-color="#b881f7" stop-opacity=".23"/></linearGradient>
+  </defs>
+    <path class="pw-aura" d="M180 39.867 L284 220 H76 Z"/>
+    <path class="pw-metal" d="M180 39.867 L284 220 H76 Z"/>
+    <path class="pw-fill" d="M180 39.867 L284 220 H76 Z" fill="url(#pwGlass)"/>
+    <path class="pw-edge e-L" d="M180 39.867 L76 220"/><path class="pw-edge e-B" d="M76 220 H284"/><path class="pw-edge e-R" d="M284 220 L180 39.867"/>
+    <path class="pw-glint" d="M180 52 L86 215 M91 224 H264"/>`;
+
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // Available magic and health remain readable above the choices.
   const tally = h('div', { class: 'pw-tally' },
@@ -162,6 +168,7 @@ function detailPanel(ctx, sel) {
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
       : h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`);
     return h('div', { class: `pw-detail t-${toneOf(k)}`, 'aria-label': `${k.name} details` },
+      h('span', { class: 'pw-imprint', 'aria-hidden': 'true' }, glyph(k)),
       h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
         h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
       h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),

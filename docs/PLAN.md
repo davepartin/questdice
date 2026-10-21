@@ -1208,3 +1208,8 @@ Dave explicitly requested actual battle dice in every camp slot, including weapo
 ## Battle powers layout, October 21, 2026
 
 Separated class powers A/B/C in the triangle from Potion/Heal/Heart Change helper row. Added persistent resource totals, calmer materials and scrollable detail/cast access for short phones. No spell handler or engine changes. Browser review covers selection immutability, scaled preview, actual cast cost, charge detail and heart actions across phone/landscape/desktop. See docs/ui-handoff/12-BATTLE-POWERS-REVIEW.md. Continue review on ui/camp-art-pass / draft PR #30; not live main.
+
+
+## Magic visual finish, October 21, 2026
+
+Dave requested a stronger art pass after finding the previous powers layout too basic and its triangle unbalanced. Added a single 28,512-byte violet material/haze asset, equilateral triangle with shared medallion coordinates, glass/metal lighting, quieter helpers and a textured selected spell card. Inspection scales the triangle proportionally. No mechanical changes. See docs/ui-handoff/13-MAGIC-VISUAL-REVIEW.md for geometry checks, actual screenshots, asset prompt and resume notes. Remains on ui/camp-art-pass / draft PR #30.

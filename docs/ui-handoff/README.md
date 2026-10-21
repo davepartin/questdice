@@ -22,8 +22,9 @@ Current review branch: `ui/camp-art-pass`, draft PR #30. Read these checkpoints 
 - [Camp dice and face previews](10-CAMP-DICE-REVIEW.md)
 - [Actual battle dice portraits, supersedes camp approximations](11-ACTUAL-DICE-REVIEW.md)
 - [Battle magic-powers layout](12-BATTLE-POWERS-REVIEW.md)
+- [Magic screen visual finish and equilateral geometry](13-MAGIC-VISUAL-REVIEW.md)
 
-Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing, materials and the painted campsite are implemented. Camp now renders the actual battle die meshes/materials to still portraits, including weapons, with the highest numeric face displayed. The earlier SVG approximation has been removed. Battle magic powers now has separate class-power and helper choices, persistent resource totals, and a scrollable detail/cast panel. Next: review the full phone journey and compare the actual screenshots with the intended direction before widening scope. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
+Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing, materials and the painted campsite are implemented. Camp now renders the actual battle die meshes/materials to still portraits, including weapons, with the highest numeric face displayed. The earlier SVG approximation has been removed. Battle magic powers now has separate class-power and helper choices, persistent resource totals, and a scrollable detail/cast panel. The magic screen visual finish in checkpoint 13 adds a textured violet backdrop, exact equilateral geometry and a tactile spell card. Next: review actual phone screenshots with Dave before widening scope. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
 
 ## Original builder instructions
 
