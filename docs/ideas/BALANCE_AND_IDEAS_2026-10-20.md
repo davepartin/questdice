@@ -294,6 +294,22 @@ Proposal, to settle together with wear (one decision: price, how long it lasts, 
 
 Note for the UI lane: this removes the forge's metal and size rows at camp and adds a battles-left mark and a Repair button, so decide before the camp redesign polishes those rows.
 
+**Dave's decision (21 Oct): no repair.** "A weapon is good for so many battles, and then it's done... Repair lets you keep the weapon longer and doesn't have the same ownership. If you use it for a battle and lose, you feel kind of sad that you didn't progress. These are all good things for a human to feel in a game." So:
+
+- Bronze 4 battles, Silver 6, Gold 8, Diamond 1. Every battle it is carried into counts, won, lost or retreated. It never breaks mid-fight; after its last battle it is gone.
+- No repair, no forging metal, no training size. A weapon is what you found or bought.
+- Spoils mostly Bronze; Silver and Gold mostly from the store, priced from what a player really earns.
+
+**What a player earns today** (sensible bot, two campaigns a class), per won fight / for the whole act:
+
+| | Act I | Act II | Act III |
+| --- | --- | --- | --- |
+| Battle gold | 74 / about 740 | 202 / about 2,000 | 341 / about 3,400 |
+| Selling spare spoils | 30 a fight | 47 a fight | 97 a fight |
+| Spoils that are Silver / Gold today | 33% / 13% | 35% / 15% | 33% / 34% |
+
+So today a third of Act III's spoils are Gold. **Price rule to try:** a Gold weapon costs about three or four fights of gold in its act. Gold at 8x Bronze lands there naturally, because bigger weapons are worth more: a Gold d6 sword about 290 (Act I), a Gold d8 long sword about 790 (Act II), a Gold d10 long sword about 1,080 (Act III). Silver at 3x: a Silver d6 sword about 110. Re-measure after the change.
+
 **Who builds what:** the rule, the save field, the bot (it must learn to rest a good weapon for big fights) and the measurement are the balance lane. Showing "rounds left" on each weapon card and in battle is the UI builder's job; the rule should land first behind the scenes, then the display, so the two never edit the same screens at once.
 
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
