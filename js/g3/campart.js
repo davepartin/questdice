@@ -59,13 +59,17 @@ export function campDie(hero, slot, size) {
   const score = face => Number.isFinite(parseFloat(face.text)) ? parseFloat(face.text) : -Infinity;
   const label = spec.labels.reduce((best, face, i) => score(face) >= score(spec.labels[best]) ? i : best, 0) + 1;
   const img = h('img', { class: 'cw-real-die', alt: '', decoding: 'async', draggable: 'false' });
+  const loadingText = h('small', {}, 'Preparing die');
+  const loading = h('span', { class: 'cw-die-loading' }, h('strong', {}, `d${size}`), loadingText);
   const box = h('span', { class: 'cw-die cw-rendered', 'aria-hidden': 'true', 'data-slot': slot, 'data-sides': String(size), 'data-face': String(label) },
-    img, h('b', { class: 'cw-size' }, `d${size}`));
+    img, loading, h('b', { class: 'cw-size' }, `d${size}`));
+  const unavailable = () => { box.classList.add('missing'); loadingText.textContent = 'Preview unavailable'; };
+  img.onerror = unavailable;
   portraitQ.die(spec, label).then(src => {
-    if (!src) { box.classList.add('missing'); return; }
+    if (!src) { unavailable(); return; }
     img.onload = () => box.classList.add('ready');
     img.src = src;
-  }).catch(() => box.classList.add('missing'));
+  }).catch(unavailable);
   return box;
 }
 

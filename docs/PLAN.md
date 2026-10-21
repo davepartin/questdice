@@ -1213,3 +1213,8 @@ Separated class powers A/B/C in the triangle from Potion/Heal/Heart Change helpe
 ## Magic visual finish, October 21, 2026
 
 Dave requested a stronger art pass after finding the previous powers layout too basic and its triangle unbalanced. Added a single 28,512-byte violet material/haze asset, equilateral triangle with shared medallion coordinates, glass/metal lighting, quieter helpers and a textured selected spell card. Inspection scales the triangle proportionally. No mechanical changes. See docs/ui-handoff/13-MAGIC-VISUAL-REVIEW.md for geometry checks, actual screenshots, asset prompt and resume notes. Remains on ui/camp-art-pass / draft PR #30.
+
+
+## Phone flow checkpoint, October 21, 2026
+
+Reviewed connected camp -> upgrade -> Store return -> road -> real quest/roll -> spell cast -> save/open. Added explicit static portrait loading/failure feedback. The actual medium-detail battle dice remain; a softer lower-detail trial was reverted after only a small software-browser timing difference. No mechanics changes. See docs/ui-handoff/14-PHONE-FLOW-REVIEW.md for fixture scope, cold-loading observation and resume instructions. Still draft PR #30, ui/camp-art-pass. Physical iPhone checks and approval precede live publishing.

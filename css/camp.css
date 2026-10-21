@@ -315,3 +315,10 @@
 
 .ww-display > .cw-rendered { width: 140px; max-width: none; margin: 0 auto; }
 .ww-display > .cw-rendered .cw-size { display: none; }
+
+/* Keep cold or unavailable portraits identifiable without another animated effect. */
+.cw-die-loading { position: absolute; inset: 7% 0 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; color: #b7a68b; pointer-events: none; }
+.cw-die-loading strong { font: 500 1.6rem var(--font-story); color: #d9c49d; }
+.cw-die-loading small { font: 400 .52rem/1.2 var(--font-body); text-align: center; max-width: 100%; }
+.cw-rendered.ready .cw-die-loading { display: none; }
+.cw-rendered.missing .cw-die-loading strong { color: #b7a68b; }
