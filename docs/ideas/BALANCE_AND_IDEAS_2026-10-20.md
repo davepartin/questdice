@@ -310,6 +310,21 @@ Note for the UI lane: this removes the forge's metal and size rows at camp and a
 
 So today a third of Act III's spoils are Gold. **Price rule to try:** a Gold weapon costs about three or four fights of gold in its act. Gold at 8x Bronze lands there naturally, because bigger weapons are worth more: a Gold d6 sword about 290 (Act I), a Gold d8 long sword about 790 (Act II), a Gold d10 long sword about 1,080 (Act III). Silver at 3x: a Silver d6 sword about 110. Re-measure after the change.
 
+**Dave (21 Oct): keep gold a currency where small numbers matter.** "If things cost 1,000 gold, that's a lot of rolling the number four that gives you two gold... I want to make sure the weapons sold and bought don't explode bigger than what you can actually gain during the battle, and that the victory gold is not too big... there are times you choose not to have a big attack so you can get a little more gold. 1,000 gold is crazy." The "8x Bronze" price rule above is withdrawn.
+
+**Where a fight's gold really comes from today** (sensible bot, per won fight):
+
+| | Act I | Act II | Act III |
+| --- | --- | --- | --- |
+| Straights taken as gold | 38 | 93 | 103 |
+| Gold faces (4s, 8s, 10s, heart, talents, pet) | about 6 | about 45 | about 75 |
+| For the monsters you beat | 28 | 65 | 162 |
+| Total | 74 | 202 | 341 |
+
+So the gold faces Dave cares about are a small part (in Act I almost nothing); straights taken as gold are the biggest part, because straights land in most rounds. Making straights rarer cuts gold income sharply, so **straights and the gold economy have to be set together.**
+
+**Proposed principle:** a fight pays two-digit gold all game (about 30 / 50 / 80 by act, against 74 / 202 / 341 today), roughly half from the dice (gold faces and the occasional gold straight) and half from the monsters. Prices are set in "fights of gold": a potion about a third of a fight, a die step one or two fights, a Gold weapon three or four fights (about 100 / 200 / 300 by act). Nothing in the game costs more than a few hundred. Order: make straights rarer, re-measure gold, then set the whole price list (camp and weapons) on this scale in one pass.
+
 **Who builds what:** the rule, the save field, the bot (it must learn to rest a good weapon for big fights) and the measurement are the balance lane. Showing "rounds left" on each weapon card and in battle is the UI builder's job; the rule should land first behind the scenes, then the display, so the two never edit the same screens at once.
 
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
