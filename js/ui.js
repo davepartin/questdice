@@ -662,7 +662,7 @@ function startQuest(q) {
     S.envelope = null; S.bonus = null;
     if (SO.wantsBonus(quest.kind)) {
       S.bonus = SO.dealBonusGoal({ c: hero.campaign, hero, salt: `${quest.id}:${hero.stats.battles}` });
-      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept }); go(); } });
+      return SCRUI.envelope(SO.bonusView(S.bonus), { questName: quest.name, solo: true, bonus: true, onAnswer: (accept) => { SO.answerBonus(S.bonus, { accept, hero }); go(); } });
     }
     return go();
   }

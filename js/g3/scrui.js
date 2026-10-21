@@ -768,7 +768,7 @@ export function envelope(card, o = {}) {
   const choice = card.answered
     ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Goal accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
     : h('div', { class: 'env-btns' },
-      ...(offer ? [btn('Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
+      ...(offer ? [btn(bonus && card.stake ? `Bet ${card.stake} gold` : 'Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
         : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
   const waiting = card.answered && o.waiting?.length ? h('p', { class: 'fine center' }, `Waiting for ${o.waiting.join(', ')} to read their envelope.`) : null;
   mountAs('road', h('div', { class: 'sx-split sx-road sx-envelope' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),

@@ -343,7 +343,7 @@ function startQuest(table, cmd) {
 function openEnvelope(table, player, cmd) {
   if (table.phase !== 'envelope') return fail('There is no envelope now.');
   if (table.bonus) {
-    if (!SO.answerBonus(table.bonus, { accept: !!cmd.accept })) return fail('There is no Bonus Goal for you.');
+    if (!SO.answerBonus(table.bonus, { accept: !!cmd.accept, hero: members(table)[0] })) return fail('There is no Bonus Goal for you.');
     table.phase = 'battle';
     return ok();
   }

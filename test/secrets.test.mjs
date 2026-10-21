@@ -113,15 +113,20 @@ test('solo fights and elites get one hard Bonus Goal; bosses do not; 2–6 keep 
   assert.equal(wantsBonus('battle'), true);
   assert.equal(wantsBonus('elite'), true);
   assert.equal(wantsBonus('boss'), false);
-  assert.equal(bonusG(1), 50); assert.equal(bonusG(2), 55); assert.equal(bonusG(3), 60);
-  const h = E.newHero({ name: 'Solo', cls: 'knight', seed: 3, pack: 'cloverheist' });
+  assert.equal(bonusG(1), 30); assert.equal(bonusG(2), 60); assert.equal(bonusG(3), 90); // a paid stake of 10 / 20 / 30 returns three times
+  const h = E.newHero({ name: 'Solo', cls: 'knight', seed: 3, pack: 'cloverheist' }); h.gold = 50;
   const goal = dealBonusGoal({ c: h.campaign, hero: h, salt: 't1' });
   assert.ok(BONUS_GOALS[goal.id]);
   assert.equal(goal.voice, 'Sir Reginald Brush');
-  assert.equal(goal.gold, 50);
+  assert.equal(goal.stake, 10); assert.equal(goal.gold, 30);
   const v = bonusView(goal);
   assert.match(v.rule, /potion|40|50|reroll/i);
-  assert.match(v.reward, /50 gold/);
+  assert.match(v.reward, /10 gold to try.*30 back/);
+  answerBonus(goal, { accept: true, hero: h }); assert.equal(h.gold, 40, 'the stake is paid when you accept');
+  const broke = E.newHero({ name: 'Poor', cls: 'knight', seed: 3 }); broke.gold = 4;
+  const fr = dealBonusGoal({ c: broke.campaign, hero: broke, salt: 't2' });
+  assert.equal(fr.free, true); assert.equal(fr.stake, 0); assert.equal(fr.gold, 10, 'short of gold: free, for a small prize');
+  assert.match(bonusView(fr).reward, /free/);
   assert.equal(v.kind, 'bonus');
   const team = dealEnvelopes({ c: company(2)[0].campaign, heroes: company(2) });
   assert.equal(Object.keys(team.cards).length, 2);
