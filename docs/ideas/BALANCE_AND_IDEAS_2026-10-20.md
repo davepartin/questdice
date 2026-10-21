@@ -250,6 +250,17 @@ Dave: keep it. "If you're being offered a new weapon after every battle, a weapo
 6. **Selling:** a weapon sells for less the fewer rounds it has left.
 7. **Choosing what to bring:** swapping happens at camp (Gear tab) as now. A quick swap on the quest card (like the Diamond strip) is the nicer later version.
 
+**Gold should be precious (Dave, 21 Oct):** "Gold and fancy weapons should be really expensive, so you literally save up to buy them, at least four times a normal weapon, because you can always grab a Bronze weapon at the end of a battle... most of the time you sell them just to get 10 to 20 gold. It's a little bit of a waste; they're just weapons everywhere."
+
+Today: value = base price x metal (Bronze 1, Silver 2, Gold 4: `RARITY_MULT`) x size (`SIZE_VALUE`); a sale returns half. A Bronze sword is worth 24 (sells 12), a Bronze dagger sells 9, a Gold d8 War Hammer is worth 422. But a win offers two weapons (`battleRewards`), metal odds 70 / 23 / 7 (`RARITY_WEIGHTS`, nudged up by act, bosses and the perilous road), and forging any Bronze weapon to Gold costs only 160 (x1.4 two-handed: `FORGE_COST`). The price says treasure; the game hands them out.
+
+Proposal, to settle together with wear (one decision: price, how long it lasts, what spoils offer):
+
+- Bronze is the everyday weapon: everywhere in spoils, cheap, wears out. Ordinary spoils are almost all Bronze.
+- Silver and Gold are saved up for: rare in spoils (Gold from bosses), mostly bought or forged, at 6 to 8 times Bronze (Dave's floor is 4).
+- The tension: paying a lot for something that breaks in about six fights can feel bad. Either expensive metals last longer (try Bronze 15, Silver 25, Gold 40 rounds instead of 15 / 20 / 25), or the forge refreshes them (already planned), or both.
+- A "sell spares" button at camp so clearing Bronze clutter is one tap (UI lane).
+
 **Who builds what:** the rule, the save field, the bot (it must learn to rest a good weapon for big fights) and the measurement are the balance lane. Showing "rounds left" on each weapon card and in battle is the UI builder's job; the rule should land first behind the scenes, then the display, so the two never edit the same screens at once.
 
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
