@@ -1101,7 +1101,7 @@ function campPowers(hero) {
   const refresh = (selector = '.cp-detail') => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
   const done = () => { sfx.level(); X.persist(); refresh(); };
   const status = (r) => r.equipped ? 'Equipped' : r.gate ? `Level ${r.gate} required` : r.learned ? 'Learned' : `Learn · ${E.learnInfo(hero, r.card.id).cost} gold`;
-  const magic = (c) => `${c.cost}${c.kind === 'scale' ? `–${c.max}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
+  const magic = (c) => `${c.cost}${c.kind === 'scale' ? `–${E.scaleMax(c, E.powerLevel(hero, c.id))}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
   const tabs = h('div', { class: 'cp-slots', role: 'group', 'aria-label': 'Power slots' }, D.POWER_SLOTS.map((slot) => {
     const eq = lib.find((r) => r.card.slot === slot && r.equipped)?.card;
     return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
@@ -1129,7 +1129,7 @@ function campPowers(hero) {
       row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · LEVEL ${level}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · LEVEL ${up.next}`), h('b', {}, shortLine(k, up.next)))) : null,
       !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
       action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
-      levels, h('details', { class: 'cp-base ww-pack' }, h('summary', {}, 'Base description'), h('p', {}, k.text))));
+      levels, h('details', { class: 'cp-base ww-pack' }, h('summary', {}, 'Base description · level 0'), h('p', {}, k.text))));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used

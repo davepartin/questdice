@@ -890,11 +890,16 @@ export function powerState(b, card) {
 // investing"): each stored charge is worth 1 more of each of its effects than the one before, so 4 charges of +5 give 5+6+7+8 = 26.
 // (Oct 2026: they start one lower and climb by CHARGE_STEP, so +5 a charge stores 4, 6, 8, 10.)
 export const chargeSteps = (v, n) => Array.from({ length: Math.max(0, n) }, (_, i) => Math.max(1, v - 1) + CHARGE_STEP * i);
-export function chargeGain(card, n, lvl = 0) {
+// What each of the first n charges is worth at a power level, effect by effect: Storm Coil level 1 is { atk: [5, 7, 9, 11] }.
+// A level lifts every charge by CHARGE_LEVEL_FRAC, rounded charge by charge, so the screens can list exactly what you get.
+export function chargeValues(card, n, lvl = 0) {
   const per = typeof card.per === 'number' ? { atk: card.per } : card.per || {};
   const l = Math.max(0, Math.min(CHARGE_LEVEL_FRAC.length - 1, lvl | 0));
-  return Object.fromEntries(Object.entries(per).map(([k, v]) => { const t = chargeSteps(v, n).reduce((a, x) => a + x, 0); return [k, Math.round(t * (1 + CHARGE_LEVEL_FRAC[l]))]; }));
+  return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, chargeSteps(v, n).map((x) => Math.round(x * (1 + CHARGE_LEVEL_FRAC[l])))]));
 }
+export const chargeGain = (card, n, lvl = 0) => Object.fromEntries(Object.entries(chargeValues(card, n, lvl)).map(([k, xs]) => [k, xs.reduce((a, x) => a + x, 0)]));
+// A round power's attack in a given round: per x the round, then the level's boost on the whole (scaleNum).
+export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lvl);
 export function castPower(b, id, { x, release } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
@@ -924,7 +929,7 @@ export function castPower(b, id, { x, release } = {}) {
     add(card.dice.to, out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
   } else if (card.kind === 'round') {
-    out.total = scaleNum(card.per * b.round, lvl); add('atk', out.total);
+    out.total = roundGain(card, b.round, lvl); add('atk', out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
   } else if (card.kind === 'charge') {
     b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];

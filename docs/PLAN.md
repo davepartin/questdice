@@ -1253,3 +1253,13 @@ Dave's go on the rest of the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-
 ## Merge approval and integration, October 21, 2026
 
 Dave authorized merging PR #30. Integrated main through 9056a4cd18531be160f64e7b61d2eab5c14a44b2, preserving its newer balance, weapon wear, heart-boost, magic-cap and sheet-stays-open changes. Resolved the plan/cache-version conflicts and adapted the inline weapon inspector to display wear/current faces instead of retired Forge/Train controls. Combined suite: 325 pass, same two known server-test failures; connected phone journey passes with no page errors.
+
+## Power words match the rules, October 21, 2026
+
+Dave on Storm Coil in camp: the text said the charges paid 4, 6, 8, 10, while the compare box said "+5 attack per charge → +6 per charge". Neither number was real. Every power's words now come from the same engine helpers the battle uses, at every level:
+- Charges: a new `chargeValues(card, n, lvl)` lists what each stored charge is worth, and `chargeGain` adds them up. A level now lifts each charge by CHARGE_LEVEL_FRAC and rounds each one, instead of rounding the total, so the list can be read out exactly: Storm Coil 4, 6, 8, 10 (28) → 5, 7, 9, 11 (32) → 5, 8, 10, 13 (36) → 6, 9, 12, 15 (42). Only level 2 moves, by about 1 (35 → 36). The camp compare box reads "+4, 6, 8, 10 attack (all 4: +28)". The release reveal counts up the levelled charges.
+- Round powers (Meteor, Grudge): a new `roundGain` is what the engine casts. The text used to multiply the levelled per-round number, which overstated Grudge. The words now give the real numbers for sample rounds: "Round 2: +5, 3: +8, 4: +10 attack".
+- Scale powers (Aimed Shot, Arc Bolt): "up to" now counts the level's extra dice and the lower magic top ("up to 5d6 for 4 magic"), and the camp magic range uses `scaleMax` at your level.
+- Lucky Verse: the cast reveal's table said +5 / +9 attack and +2 magic. It now shows the real +3 / +6 and +1 magic, and their levelled values.
+- The old battle detail panel (showPowerDetail) uses the same effect line. "Base description" is labelled "level 0".
+- test/powertext.test.mjs casts every power of every class at levels 0 to 3 and checks that the camp line and the effect line show exactly what the engine adds. dev/powerwords.mjs screenshots a levelled power's sheet line and cast reveal.

@@ -73,26 +73,39 @@ const chip = (f, v, extra = '') => h('span', { class: `pw-chip t-${TONE[f] || 'm
 
 // the numbers of a power at a level: every number steps up by the same rule as the engine (scaleNum); a free reroll gains one die a level
 const lvlFx = (fx, level) => Object.fromEntries(Object.entries(fx || {}).map(([f, v]) => [f, f === 'free' ? v + level : E.scaleNum(v, level)]));
+// Charges, listed exactly as the engine pays them: "+5, 7, 9, 11 attack", "heal 4, 6, 8, 10", "+2, 4, 6, 8 attack and block".
+const listWords = (f, xs) => (f === 'heal' ? `heal ${xs.join(', ')}` : `+${xs.join(', ')} ${NAME[f] || f}`);
+function chargeList(k, level, n = k.max) {
+  const groups = []; // effects that pay the same numbers share one list
+  for (const [f, xs] of Object.entries(E.chargeValues(k, n, level))) { const g = groups.find((x) => x.xs.join() === xs.join() && f !== 'heal' && x.fs[0] !== 'heal'); if (g) g.fs.push(f); else groups.push({ fs: [f], xs }); }
+  return groups.map((g) => (g.fs.length > 1 ? `+${g.xs.join(', ')} ${g.fs.map((f) => NAME[f] || f).join(' and ')}` : listWords(g.fs[0], g.xs))).join(' and ');
+}
+const chargeTotal = (k, level) => fxWords(E.chargeGain(k, k.max, level));
+// What a power level adds to a round power (the engine boosts the whole round's number, scaleNum).
+const ROUND_BOOST = ['', 'plus a quarter', 'plus half', 'doubled'];
+const roundRule = (k, level) => `${k.per} × the round number${level ? `, ${ROUND_BOOST[Math.min(level, 3)]} (at least ${D.POWER_LEVEL_MIN[Math.min(level, 3)]} more)` : ''}`;
+const roundSamples = (k, level) => { const r0 = Math.max(2, k.minRound || 0); return [r0, r0 + 1, r0 + 2].map((r, i) => `${i ? '' : 'round '}${r}: +${E.roundGain(k, r, level)}`).join(', '); };
+const scaleTop = (k, level) => E.powerDice(k, E.scaleMax(k, level), level);
 
 // A short plain line: what this power gives, at its level (with the magic you chose for a scale power).
 export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   const lvl = level ? ` (level ${level})` : '';
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} for ${NAME[k.dice.to]}${k.splash === 'half' ? '; half splashes on the other monsters' : ''}.`;
-  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = k.maxDice ? ` (up to ${k.maxDice}d${k.dice.s})` : ''; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die${top}.` : `Each extra magic adds a die${top || ` (up to ${k.max}d${k.dice.s})`}.`}${lvl}`; }
-  if (k.kind === 'round') { const per = E.scaleNum(k.per, level); return `${per} × the round number${round ? ` (round ${round}: about +${per * round})` : ''} attack${k.splash === 'half' ? ', half splashing on the others' : ''}${lvl}.`; }
-  if (k.kind === 'charge') { const tot = Array.from({ length: k.max }, (_, i) => Object.values(E.chargeGain(k, i + 1, level))[0]); const each = tot.map((t, i) => t - (tot[i - 1] || 0)); return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}, or release them, not both in one round. Each charge is worth more than the last: ${fxWords(E.chargeGain(k, 1, level))} for the first, then ${each.slice(1).join(', ')}${lvl}.`; }
+  if (k.kind === 'scale') { const st = E.scaleStep(k); const top = ` (up to ${scaleTop(k, level)}d${k.dice.s} for ${E.scaleMax(k, level)} magic)`; return `${x ?? k.cost} magic rolls ${E.powerDice(k, x, level)}d${k.dice.s} for ${NAME[k.dice.to]}. ${st > 1 ? `Every ${st} more magic adds a die` : 'Each extra magic adds a die'}${top}${lvl}.`; }
+  if (k.kind === 'round') return `Attack equal to ${roundRule(k, level)}. R${round ? `ound ${round}: +${E.roundGain(k, round, level)}` : roundSamples(k, level).slice(1)}${k.splash === 'half' ? ', half splashing on the other monsters' : ''}${lvl}.`;
+  if (k.kind === 'charge') return `Store a charge each round${stored == null ? '' : ` (${stored} of ${k.max} now)`}, or release them, not both in one round. Each charge is worth more than the last: ${chargeList(k, level)}. All ${k.max} together: ${chargeTotal(k, level)}${k.splash === 'half' ? ', half splashing on the other monsters' : ''}${lvl}.`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to EVERY monster${lvl}.`;
   if (k.kind === 'luck') return `Roll a d6: 1–2 gives +${1 + level} magic, 3–4 +${E.scaleNum(E.LUCK.mid, level)} attack, 5–6 +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic.`;
-  return `${fxWords(lvlFx(k.fx, level))}${lvl}, this round.`;
+  return `${fxWords(lvlFx(k.fx, level))} this round${lvl}.`;
 }
-// Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+6 pierce per charge", "3d6 pierce".
+// Just the numbers of a power at a level, as short as it can be, for the camp: "+4 attack", "+3, 5, 7, 9 pierce (all 4: +24)", "3d6 pierce".
 export function shortLine(k, level = 0) {
   if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
-  if (k.kind === 'scale') return `${k.cost} magic = ${E.powerDice(k, k.cost, level)}d${k.dice.s} ${NAME[k.dice.to]}`;
-  if (k.kind === 'round') return `${E.scaleNum(k.per, level)} × the round, attack`;
-  if (k.kind === 'charge') return `${fxWords(lvlFx(perOf(k), level))} per charge`;
+  if (k.kind === 'scale') return `${k.cost} magic = ${E.powerDice(k, k.cost, level)}d${k.dice.s} ${NAME[k.dice.to]}, up to ${scaleTop(k, level)}d${k.dice.s}`;
+  if (k.kind === 'round') { const t = roundSamples(k, level); return `${t[0].toUpperCase()}${t.slice(1)} attack`; }
+  if (k.kind === 'charge') { const tot = Object.entries(E.chargeGain(k, k.max, level)); return `${chargeList(k, level)} (all ${k.max}: ${tot.length > 1 ? chargeTotal(k, level) : `${tot[0][0] === 'heal' ? 'heal ' : '+'}${tot[0][1]}`})`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
-  if (k.kind === 'luck') return `+${E.scaleNum(E.LUCK.mid, level)} or +${E.scaleNum(E.LUCK.top, level)} attack, +${1 + level} magic`;
+  if (k.kind === 'luck') return `d6: +${1 + level} magic, +${E.scaleNum(E.LUCK.mid, level)} attack, or +${E.scaleNum(E.LUCK.top, level)} attack and 1 magic`;
   return fxWords(lvlFx(k.fx, level));
 }
 
@@ -219,7 +232,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       const faces = r.rolls.map((v, i) => { const n = h('b', {}, String(1 + Math.floor(Math.random() * sides))); return { v, n, el: h('div', { class: `dr-die d${sides} t-${luck ? 'gold' : to} rolling`, style: { '--i': i } }, h('span', { class: 'dr-shape' }), n) }; });
       const tot = h('b', { class: 'dr-total' }, '0');
       art.append(h('p', { class: 'dr-what' }, luck ? 'Roll a d6 for luck.' : `Rolling ${faces.length}d${sides} for ${NAME[to]}.`), h('div', { class: `dr-dice n${Math.min(faces.length, 6)}` }, faces.map((f) => f.el)));
-      const table = luck ? h('div', { class: 'cr-luck' }, [[[1, 2], 'magic', '+1 magic'], [[3, 4], 'atk', '+5 attack'], [[5, 6], 'atk', '+9 attack, +2 magic']].map(([[a, b2], t, txt]) => h('div', { class: `cl-row t-${t}`, 'data-a': a, 'data-b': b2 }, h('b', {}, `${a}–${b2}`), h('span', {}, txt)))) : h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, '='), tot, h('span', { class: `dr-kind t-${to}` }, HK.icon(FX_ICON[to] || 'atk'), NAME[to]));
+      const table = luck ? h('div', { class: 'cr-luck' }, [[[1, 2], 'magic', `+${1 + level} magic`], [[3, 4], 'atk', `+${E.scaleNum(E.LUCK.mid, level)} attack`], [[5, 6], 'atk', `+${E.scaleNum(E.LUCK.top, level)} attack, +1 magic`]].map(([[a, b2], t, txt]) => h('div', { class: `cl-row t-${t}`, 'data-a': a, 'data-b': b2 }, h('b', {}, `${a}–${b2}`), h('span', {}, txt)))) : h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, '='), tot, h('span', { class: `dr-kind t-${to}` }, HK.icon(FX_ICON[to] || 'atk'), NAME[to]));
       art.append(table); if (!luck) shown.add(to);
       const flick = reduced ? null : setInterval(() => { for (const f of faces) if (f.el.classList.contains('rolling')) f.n.textContent = String(1 + Math.floor(Math.random() * sides)); }, 70);
       if (!reduced) sfx.diceRoll?.(Math.min(9, 3 + faces.length * 2));
@@ -242,16 +255,17 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       const pips = h('div', { class: 'cr-charges burst' }, Array.from({ length: k.max }, (_, i) => h('i', { class: i < n ? 'on' : '' }, i < n ? HK.icon('windup') : null)));
       const nums = Object.fromEntries(Object.keys(gains).map((f) => [f, h('b', {}, '0')]));
       const rows = h('div', { class: 'cr-tally' }, Object.entries(nums).map(([f, el]) => h('span', { class: `pw-chip t-${TONE[f] || 'magic'}` }, HK.icon(FX_ICON[f] || 'magic'), el, ' ', NAME[f] || f)));
-      const base = Object.values(per)[0] || 1; const steps = E.chargeSteps(base, n); const sumTo = (i) => steps.slice(0, i + 1).reduce((a, v) => a + v, 0); // each pip adds a little more than the last
+      const steps = Object.values(E.chargeValues(k, n, level))[0] || [1]; const sumTo = (i) => steps.slice(0, i + 1).reduce((a, v) => a + v, 0); // each pip adds a little more than the last
       art.append(h('p', { class: 'dr-what' }, `${n} stored charge${n > 1 ? 's' : ''} let go, each worth more than the last: ${steps.join(' + ')}.`), pips, rows); Object.keys(gains).forEach((f) => shown.add(f));
       const step = (i) => { const pip = pips.children[i]; pip?.classList.add('pop'); sfx.dieSettle?.(); for (const [f, el] of Object.entries(nums)) count(el, Math.round((gains[f] * sumTo(i)) / sumTo(n - 1)), 260); };
       for (let i = 0; i < n; i++) later(500 + i * 330, () => { step(i); if (i === n - 1) finish(); });
       skip = () => { for (let i = 0; i < n; i++) pips.children[i]?.classList.add('pop'); for (const [f, el] of Object.entries(nums)) el.textContent = String(gains[f]); finish(0); };
     } else if (k.kind === 'round') { // ---- grows with the round: one pip per round lights up, the number climbs
       const R = Math.max(1, round); const nPips = Math.min(R, 10); const val = h('b', { class: 'dr-total' }, '0'); const amt = gains.atk ?? r.total;
-      art.append(h('p', { class: 'dr-what' }, `${k.per} attack for every round of the fight. This is round ${R}.`),
+      const boost = amt - k.per * R; // the power level's share
+      art.append(h('p', { class: 'dr-what' }, `${k.per} attack for every round of the fight${boost > 0 ? `, plus ${boost} for level ${level}` : ''}. This is round ${R}.`),
         h('div', { class: 'cr-rounds' }, Array.from({ length: nPips }, (_, i) => h('i', { style: { '--i': i } }, String(i + 1)))),
-        h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, `${k.per} × ${R} =`), val, h('span', { class: 'dr-kind t-atk' }, HK.icon('atk'), 'attack'))); shown.add('atk');
+        h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, `${k.per} × ${R}${boost > 0 ? ` + ${boost}` : ''} =`), val, h('span', { class: 'dr-kind t-atk' }, HK.icon('atk'), 'attack'))); shown.add('atk');
       const lights = [...art.querySelectorAll('.cr-rounds i')];
       lights.forEach((el, i) => later(350 + i * 170, () => { el.classList.add('on'); sfx.settle?.(i); count(val, Math.round((amt * (i + 1)) / nPips), 160); if (i === lights.length - 1) finish(); }));
       skip = () => { lights.forEach((el) => el.classList.add('on')); val.textContent = String(amt); finish(0); };

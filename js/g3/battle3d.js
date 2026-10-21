@@ -565,13 +565,8 @@ function showPowerDetail(id) {
   const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0; B.powerX = B.powerX || {};
   const x = E.powerCost(k, B.powerX[k.id] ?? k.cost, E.powerLevel(hero, k.id)); B.powerX[k.id] = x;
   const shape = b.phase === 'shape'; const canRecharge = !k.atwill && k.kind !== 'super';
-  const word = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal' };
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
-  const how = k.kind === 'dice' ? `Rolls ${k.dice.n}d${k.dice.s}; the total is added as ${word[k.dice.to] || k.dice.to}.`
-    : k.kind === 'scale' ? `You choose how much magic to put in (${k.cost} to ${k.max}). Every extra magic adds a die, so more magic means a bigger roll.`
-    : k.kind === 'charge' ? `You pay ${k.cost} magic in a round to store a charge, up to ${k.max}, or you release them: one or the other each round. Each charge is worth 2 more than the last, so saving up pays: ${Object.entries(typeof k.per === 'number' ? { atk: k.per } : k.per).map(([f, v]) => `${E.chargeSteps(v, k.max).join(', ')} ${({ atk: 'attack', block: 'block', pierce: 'pierce', gold: 'gold', heal: 'heal' })[f] || f}`).join(' and ')}. Release them any round; they stay stored between rounds.`
-    : k.kind === 'round' ? `Grows with the round number. Not available until round ${k.minRound}.`
-    : k.kind === 'super' ? `Not available until round ${k.minRound}.` : 'A flat bonus for this round.';
+  const how = PW.effectLine(k, { x, round: b.round, level: E.powerLevel(hero, id), stored }); // the same words as the powers sheet, from the engine's numbers
   const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'
     : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.')
     : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
@@ -587,7 +582,7 @@ function showPowerDetail(id) {
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, k.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, k.text),
-    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, how), h('dt', {}, 'Cost'), h('dd', {}, k.kind === 'scale' ? `${k.cost}–${k.max} magic (you choose)` : k.kind === 'charge' ? `${k.cost} magic per charge` : `${k.cost} magic`)),
+    h('dl', { class: 'pd-facts' }, h('dt', {}, 'Uses'), h('dd', {}, uses), h('dt', {}, 'How it works'), h('dd', {}, how), h('dt', {}, 'Cost'), h('dd', {}, k.kind === 'scale' ? `${k.cost}–${E.scaleMax(k, E.powerLevel(hero, id))} magic (you choose)` : k.kind === 'charge' ? `${k.cost} magic per charge` : `${k.cost} magic`)),
     stored ? h('p', { class: 'pd-state' }, `${stored} charge${stored > 1 ? 's' : ''} stored.`) : null,
     stepRow, releaseRow,
     !rechargeBtn && reasons ? h('p', { class: 'pd-why' }, reasons) : null,

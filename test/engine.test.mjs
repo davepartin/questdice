@@ -826,7 +826,7 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   // charges start one lower and climb by 2; a release grows an eighth, a quarter, a half by level
   assert.deepEqual(chargeSteps(5, 4), [4, 6, 8, 10]);
   const coil = { per: { atk: 5 } };
-  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 35, 42]);
+  assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 36, 42]);
   // healing with magic: 2 magic heals 3, the same price every time
   assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 2);
   const { CLASSES } = await import('../js/data.js');
