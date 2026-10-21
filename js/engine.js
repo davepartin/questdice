@@ -455,7 +455,11 @@ export function evaluate(hero, board, opts = {}) {
   const hushed = !!(opts.hushed || board.C?.hushed);
   if (hushed) { out.heart = 0; out.notes.push('Heart hushed'); }
   if (hv <= 4 && !hushed) {
-    const matches = PAYERS.filter((s) => val(s) === hv).length;
+    // Dave, Oct 2026: the heart backs its SYMBOL, not just its number, so it stays useful as the dice grow: a heart 1 (heal)
+    // boosts every head / hand / feet die showing a heal face (1, 5 or 9); 2 pierce (2, 6, 9); 3 magic (3, 7, 10); 4 gold (4, 8, 10).
+    const sym = ['heal', 'pierce', 'magic', 'gold'][hv - 1];
+    const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
+    const matches = hit.length;
     const amp = HEART_AMP[hv - 1] * matches;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
     if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);

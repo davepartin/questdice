@@ -1062,3 +1062,15 @@ test('a straight must grow with the biggest body die: d4 five in a row, d6 six, 
   h.strength.W = 8; assert.equal(E.straightMin(h), 7);
   h.strength.E = 10; assert.equal(E.straightMin(h), 7);
 });
+
+test('the heart backs its symbol on any face: a heart 1 boosts every heal face (1, 5, 9), a 4 every gold face (4, 8, 10)', async () => {
+  const E = await import('../js/engine.js');
+  const h = E.newHero({ name: 'H', cls: 'knight', seed: 3 }); h.strength = { W: 10, E: 10 };
+  const bd = (o) => Object.fromEntries(['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE', 'P'].map((s) => [s, { v: o[s] ?? 2, bound: false }]));
+  const base = E.evaluate(h, bd({ C: 6, N: 1, W: 5, E: 9, S: 2 })).heal;
+  const boosted = E.evaluate(h, bd({ C: 1, N: 1, W: 5, E: 9, S: 2 }));
+  assert.equal(boosted.heal - base, 6, 'head 1, hand 5 and hand 9 all show heal: +2 each');
+  assert.deepEqual(boosted.heartSlots.sort(), ['E', 'N', 'W']);
+  const gold = E.evaluate(h, bd({ C: 4, N: 4, W: 8, E: 10, S: 3 }));
+  assert.equal(gold.heartSlots.length, 3, 'a 4, an 8 and a 10 all carry gold');
+});
