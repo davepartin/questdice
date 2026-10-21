@@ -40,6 +40,14 @@ const DEFAULT_HERO = { cls: 'knight', loadout: { NW: { id: 'sword', rarity: 0 },
 const ROLE_GLOW = { head: 0xffe6b0, feet: 0xffe6b0, hand: 0xa8c8e8, heart: 0xffb82e, special: 0xd8e0f0 };
 const STRAIGHT_GLOW = 0x7fe6ff; // the dice in a straight: a soft light cyan ring (Dave, Oct 2026: the magenta was too loud)
 const STRAIGHT_FLOOR = 0x1a7f95; // ...over a deeper cyan floor glow (the floor glow adds light, so a pale colour would haze the board)
+// Heart Boost (Dave, Oct 2026): the heart and every die it boosts glow in the symbol's colour and beat together like a heart (lub-dub),
+// unlike a straight's steady cyan or a triple's line. Deep floor colours (the floor glow adds light), a brighter rim ring.
+const HEART_FLOOR = { heal: 0x1c8a4a, pierce: 0xa04d16, magic: 0x5a2fa0, gold: 0x9a7414 };
+const HEART_RING = { heal: 0x6dffb0, pierce: 0xffa060, magic: 0xc9a2ff, gold: 0xffd75e };
+const HEART_PERIOD = 1.05; // seconds per beat
+// one heartbeat: a strong "lub" then a softer "dub", then rest (0..1)
+const beat = (t, phase = 0) => { const p = ((t + phase) % HEART_PERIOD) / HEART_PERIOD; const g = (c, w) => Math.exp(-(((p - c) / w) ** 2)); return Math.min(1, g(0.06, 0.055) + 0.65 * g(0.27, 0.06)); };
+const floorOf = (s) => (s.inHeart ? HEART_FLOOR[s.inHeart] : s.inStraight ? STRAIGHT_FLOOR : s.baseGlow ?? 0xffffff);
 const SLOT_ORDER = D.SLOTS;
 const ALL = [...SLOT_ORDER, 'P']; // the nine board sockets, then the pet's stand
 
@@ -314,7 +322,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       let col = ROLE_GLOW[S[slot].role] ?? 0xffffff;
       if (S[slot].role === 'weapon') col = D.WEAPONS[hero.loadout[slot].id]?.lean === 'def' ? 0x4db4ff : 0xff4d4d;
       if (slot === 'P') col = new THREE.Color(D.PETS[hero.pet?.type]?.color || '#ffffff').getHex(); // the pet's stand glows in the pet's colour
-      S[slot].baseGlow = col; glowU.uCol.value[S[slot].i].setHex(S[slot].inStraight ? STRAIGHT_FLOOR : col);
+      S[slot].baseGlow = col; glowU.uCol.value[S[slot].i].setHex(floorOf(S[slot]));
     });
   }
   // Light the sockets under the dice that make a straight (null or [] clears it).
@@ -322,8 +330,19 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
     const on = new Set(slots || []);
     for (const slot of SLOT_ORDER) {
       const s = S[slot]; const was = !!s.inStraight; s.inStraight = on.has(slot);
-      glowU.uCol.value[s.i].setHex(s.inStraight ? STRAIGHT_FLOOR : s.baseGlow ?? 0xffffff);
+      glowU.uCol.value[s.i].setHex(floorOf(s));
       if (s.inStraight && !was) s.glowBoost = Math.max(s.glowBoost, 0.35); // a small flare as it lights
+    }
+  };
+  // Heart Boost: the heart's socket and the dice it boosts glow in the symbol's colour (heal, pierce, magic, gold) and beat together.
+  // slots: the boosted dice (the heart 'C' is added), or null to clear. A die that newly joins gives one bright flare and a little hop.
+  tray.heartStrength = 1; // how bright the beat is (Dave tunes it by eye)
+  tray.setHeart = function setHeart(slots, sym) {
+    const on = new Set(slots?.length && HEART_FLOOR[sym] ? [...slots, 'C'] : []);
+    for (const slot of SLOT_ORDER) {
+      const s = S[slot]; const was = s.inHeart || null; s.inHeart = on.has(slot) ? sym : null;
+      glowU.uCol.value[s.i].setHex(floorOf(s));
+      if (s.inHeart && s.inHeart !== was && s.die) { s.flashCol.setHex(HEART_RING[sym]); s.flash = Math.max(s.flash, 0.85); s.glowBoost = Math.max(s.glowBoost, 0.7); s.hopV = Math.max(s.hopV, 1.4); }
     }
   };
   tray.setHero = function setHero(hero) {
@@ -606,10 +625,12 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       U.uRim.value.setHex(0xffe6b0).multiplyScalar(rimK * 0.8);
       U.uDim.value = s.dim;
       // ---- rings, halo, chain, hex
-      s.ring.visible = rimK > 0.01 || s.inStraight || s.ring.material.opacity > 0.01;
-      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.inStraight ? 0.42 : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
+      s.ring.visible = rimK > 0.01 || s.inStraight || s.inHeart || s.ring.material.opacity > 0.01;
+      const hb = s.inHeart ? beat(time) : 0;
+      const ro = s.ring.material.opacity + ((s.selected ? 0.95 : s.inStraight ? 0.42 : s.inHeart ? (0.3 + 0.55 * hb) * Math.min(1.4, tray.heartStrength) : s.hover ? 0.4 : 0) - s.ring.material.opacity) * (1 - Math.exp(-14 * dt));
       s.ring.material.opacity = ro; s.ring.scale.setScalar(1 + 0.07 * Math.sin(time * 6 + s.i)); s.ring.position.y = 0.012;
-      s.ring.material.color.setHex(s.selected ? 0xffe9a8 : s.inStraight ? STRAIGHT_GLOW : 0xcfe8ff);
+      s.ring.material.color.setHex(s.selected ? 0xffe9a8 : s.inStraight ? STRAIGHT_GLOW : s.inHeart ? HEART_RING[s.inHeart] : 0xcfe8ff);
+      if (s.inHeart && !s.inStraight && !s.selected) s.ring.scale.setScalar(0.98 + 0.05 * hb); // the ring swells a touch on each beat
       if (s.inStraight && !s.selected) s.ring.scale.setScalar(0.98 + 0.01 * Math.sin(time * 1.4 + s.i * 0.7)); // a calm cyan ring on the socket rim, barely breathing (bigger spills a pale wash over the frame)
       s.halo.visible = s.ring.visible; s.halo.material.opacity = ro * (s.inStraight ? 0 : 0.2) * (s.inStraight ? 0.95 + 0.05 * Math.sin(time * 1.4 + s.i) : 0.8 + 0.2 * Math.sin(time * 3 + s.i));
       if (s.halo.material.color) s.halo.material.color.setHex(s.inStraight && !s.selected ? STRAIGHT_GLOW : 0xffd98a);
@@ -636,6 +657,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
       g *= s.bound ? 0.25 : s.vacant || s.waiting ? 0.18 : s.dimmed ? 0.55 : 1;
       g += (s.selected ? 0.9 : 0) + (s.hover ? 0.4 : 0) + s.glowBoost * 1.6;
       if (s.inStraight) g = Math.max(g, 0.55 + 0.04 * Math.sin(time * 1.4 + s.i * 0.7)); // a soft, steady cyan glow (no haze across the board)
+      if (s.inHeart) g = Math.max(g, (0.45 + 0.95 * beat(time)) * tray.heartStrength); // Heart Boost: the floor beats lub-dub with the heart
       g = g * (1 - 0.55 * lockK) + lockFlare * 2.2;
       glowU.uG.value[s.i] = g;
     }

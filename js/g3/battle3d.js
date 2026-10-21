@@ -655,7 +655,7 @@ const powersBtn = () => {
 
 export function renderReset() {
   try { B.fit?.(); } catch { /* ignore */ }
-  B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null);
+  B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null); B.bw?.tray?.setHeart?.(null);
   B.resets = (B.resets || 0) + 1;
   const monsterHint = () => { for (const e of (B.b?.enemies || [])) { if (e.hp > 0 && Coach.HINTS['m_' + (e.id === 'goblinking' ? 'king' : e.id)] && Coach.wantHint(B.hero, 'm_' + (e.id === 'goblinking' ? 'king' : e.id))) return 'm_' + (e.id === 'goblinking' ? 'king' : e.id); } return null; };
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
@@ -746,6 +746,7 @@ export function renderShape() {
   }
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight glow a soft cyan underneath
+  bw.tray.setHeart?.(ev.heartBoost?.slots || null, ev.heartBoost?.sym); // Heart Boost: the heart and the dice it backs beat together in the symbol's colour
   B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);

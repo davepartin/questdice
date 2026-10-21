@@ -224,6 +224,7 @@ export function synergyList(ev, mods) {
   } else { const two = tri.length === 2; // two side by side: short names so neither gets cut off
     for (const t of tri) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: two ? `${t.name.replace(/\s*Triple$/i, '').toUpperCase()}!` : `${t.name.toUpperCase()}!`, sub: `${two ? 'Triple · ' : ''}+${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'}` }); }
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
+  if (ev.heartBoost) out.push({ key: 'hb', kind: 'good', icon: 'heart', text: 'HEART BOOST', sub: `+${ev.heartBoost.n} ${ev.heartBoost.sym}` }); // the heart backs every die showing its symbol
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;
 }

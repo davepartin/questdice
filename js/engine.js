@@ -458,9 +458,10 @@ export function evaluate(hero, board, opts = {}) {
     const sym = ['heal', 'pierce', 'magic', 'gold'][hv - 1];
     const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
     const matches = hit.length;
+    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
     const amp = HEART_AMP[hv - 1] * matches;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
-    if (matches) out.notes.push(`Heart ${hv} amplifies ${matches}`);
+    if (matches) out.notes.push(`Heart Boost +${HEART_AMP[hv - 1] * matches} ${sym}`);
   }
 
   // Lanes: weapon (color + number) + hand strength (doubled by 2x); a talent number face pays its number in its symbol.
