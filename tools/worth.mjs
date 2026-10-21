@@ -100,7 +100,7 @@ function report(rows) {
   console.log(`QuestDice: what a purchase is worth · ${process.env.SKILL || 'normal'} · ${PLAY.style} bot${process.env.TUNE ? ` · TUNE ${process.env.TUNE}` : ''}`);
   console.log('Per fight, against the same fights without it. Health saved = less health lost (and fewer potions). Per 100 gold = health saved a fight for every 100 gold.');
   console.log('act  purchase        n   price   throw/round  rounds  win%   health saved   per 100 gold   kept for   health over its life, per 100 gold');
-  for (const act of [1, 2, 3]) for (const name of Object.keys(BUYS)) {
+  for (const act of [1, 2, 3]) for (const name of [...new Set(rows.map((x) => x.name))]) {
     const r = rows.filter((x) => x.act === act && x.name === name); if (!r.length) continue;
     const m = (k) => r.reduce((a, x) => a + x.d[k], 0) / r.length; const cost = r.reduce((a, x) => a + x.cost, 0) / r.length; const keep = r.reduce((a, x) => a + x.keep, 0) / r.length;
     const per100 = (m('health') / (cost || 1)) * 100;
