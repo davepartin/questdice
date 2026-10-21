@@ -1066,11 +1066,11 @@ test('every straight from 5 up pays, and a longer one pays more (a 1-to-8 run us
   for (let n = 5; n <= 9; n++) assert.ok(STRAIGHT[n] > (STRAIGHT[n - 1] || 0), `${n} in a row pays more than ${n - 1}`);
 });
 
-test('a straight needs five in a row with 7 dice, and six from the 8th die on for the rest of the game', async () => {
+test('a straight needs all your dice but two: 7 dice five in a row, 8 dice six, 9 dice seven', async () => {
   const E = await import('../js/engine.js'); const h = E.newHero({ name: 'S', cls: 'knight', seed: 2 });
   assert.equal(E.diceInPlay(h), 7); assert.equal(E.straightMin(h), 5);
   h.dice.push('NE'); assert.equal(E.diceInPlay(h), 8); assert.equal(E.straightMin(h), 6, 'the 8th die retires the 5-straight');
-  h.dice.push('SE'); assert.equal(E.diceInPlay(h), 9); assert.equal(E.straightMin(h), 6, 'six in a row stays for the rest of the game');
+  h.dice.push('SE'); assert.equal(E.diceInPlay(h), 9); assert.equal(E.straightMin(h), 7, 'all nine dice: seven in a row');
 });
 
 test('the heart backs its symbol on any face: a heart 1 boosts every heal face (1, 5, 9), a 4 every gold face (4, 8, 10)', async () => {
