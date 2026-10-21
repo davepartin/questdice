@@ -441,14 +441,14 @@ function readyText(e) {
 // "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
 // A blow is its BASE (the number it always has) plus the die it rolls (times a multiplier for the big moves): "base 6 + d8".
 const dieName = (n) => `d${n}`;
-const baseDie = (base, i, s) => [base > 0 ? `base ${base}` : null, ...Array.from({ length: i.m || 0 }, () => dieName(s))].filter(Boolean).join(' + '); // a x2 move rolls two separate dice
+const baseDie = (base, i, s, e = null) => [base > 0 ? `base ${base}` : null, E.diceText(e ? E.diceOf(e, i) : (i.m || 0), s) || null].filter(Boolean).join(' + '); // "base 2 + 3d8": its fight bonus is rolled as dice
 function diceRows(e, def) {
   const s = e.powerDie; const i = e.intent; const rows = [];
   const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));
   const faces = e.faces || def.faces || [];
   const hit = faces.find((f) => ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(f.v));
   // what it hits with (this round's move if it is a blow, else its usual blow)
-  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s)));
+  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s, e)));
   // what it defends with: its guard move's base and die, or a crossed-out blue shield when it has none to roll
   const gd = GUARD_INTENT.has(i?.v) ? i : faces.find((f) => GUARD_INTENT.has(f.v));
   const ar = e.armor || def.armor;

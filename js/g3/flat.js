@@ -73,7 +73,7 @@ export function planOf(e, v) {
   // a long two-word move reads as its most telling word (Raise Dead -> RAISE, Fire Ward -> WARD, Gold Shield -> SHIELD): the longest, the last on a tie
   const word = words.length > 1 && raw.length > 8 ? words.reduce((best, w) => (w.length >= best.length ? w : best), '') : raw;
   // "6+d8": its base, then the die it rolls (2×d8 when the move rolls it twice over). No base shows just the die.
-  const base = E.intentBase(e, i); const die = i.m && e.powerDie ? Array.from({ length: i.m }, () => `d${e.powerDie}`).join('+') : ''; // 5+d8+d8: a x2 move rolls two separate dice
+  const base = E.intentBase(e, i); const die = i.m && e.powerDie ? E.diceText(E.diceOf(e, i), e.powerDie) : ''; // 2+3d8: its fight bonus is rolled as dice
   const dice = DICE_VERBS.has(i.v) && (die || base) ? `${base > 0 && die ? `${base}+` : base > 0 ? base : ''}${die}` : '';
   return { word: word.toUpperCase(), dice, icon: v.icon, tone: v.tone };
 }

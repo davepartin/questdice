@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_MIN,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
@@ -622,24 +622,37 @@ function settleStalks(b, rep) {
 }
 // A monster rolls its power die once for each point of the move's multiplier (Dave): a Lunge (x2) rolls TWO separate dice, a Bite (x1) one.
 // (A move with no multiplier still draws one die so the random stream is the same as before; it just does not count.)
-export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, intent?.m || 0) }, () => die(rng, e.powerDie));
-const diceSum = (intent, dice) => (dice || []).slice(0, intent.m || 0).reduce((a, v) => a + v, 0);
+// Monsters roll dice, not big fixed numbers (Dave, Oct 2026: "seeing that it's gonna roll 3 d8s is kind of scary"). A blow's fight bonus
+// (act, step, difficulty, the kind of fight: e.flat) is rolled as extra dice of the monster's own size, as many as it is worth on
+// average (up to MONSTER_DICE_MAX), and what is left over stays a small number. Same average blow as before, with real swings.
+export function extraDice(e, intent = e?.intent) {
+  const fl = e?.flat || 0;
+  if (!intent || !isDamageIntent(intent) || !(intent.m > 0) || fl <= 0 || !e.powerDie) return { k: 0, rem: fl };
+  const avg = (e.powerDie + 1) / 2; const k = Math.min(MONSTER_DICE_MAX, Math.floor(fl / avg + 0.25));
+  return { k, rem: Math.round(fl - k * avg) || 0 };
+}
+// How many dice a move rolls (its own, plus the fight bonus as dice for a blow), and how to say it: "3d8".
+export const diceOf = (e, i = e?.intent) => (i ? (i.m || 0) + extraDice(e, i).k : 0);
+export const diceText = (n, size) => (n > 1 ? `${n}d${size}` : n === 1 ? `d${size}` : '');
+export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, (intent?.m || 0) + extraDice(e, intent).k) }, () => die(rng, e.powerDie));
+const diceSum = (e, intent, dice) => (dice || []).slice(0, (intent.m || 0) + extraDice(e, intent).k).reduce((a, v) => a + v, 0);
 function magnitude(e, intent, dice, weaken) {
-  let m = intent.f + diceSum(intent, dice);
-  if (isDamageIntent(intent)) m = Math.max(0, m + e.flat + e.buff - weaken);
+  let m = intent.f + diceSum(e, intent, dice);
+  if (isDamageIntent(intent)) m = Math.max(0, m + extraDice(e, intent).rem + e.buff - weaken);
   return m;
 }
 // What made a monster's number this round, for the recap: its move's fixed part, the dice it rolled, the fight's flat bonus, a howl, and any
 // softening from your powers. (f + the dice + flat + howl - softened = the attack or guard.)
-const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); return { f: intent.f, m: intent.m, p: dice[0], dice: dice.slice(0, Math.max(1, intent.m || 0)), size: e.powerDie, flat: dmg ? e.flat : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
+const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); const x = extraDice(e, intent); return { f: intent.f, m: (intent.m || 0) + x.k, p: dice[0], dice: dice.slice(0, Math.max(1, (intent.m || 0) + x.k)), size: e.powerDie, flat: dmg ? x.rem : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
 // A monster's BASE attack (or guard): the number it always has before its dice. The move's own number, plus the fight's extra hit and any
 // howl for a blow; a guard has just the move's own number. The attack is then base + the dice it rolls.
-export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? (e.flat || 0) + (e.buff || 0) : 0) : 0);
+export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? extraDice(e, i).rem + (e.buff || 0) : 0) : 0);
 export function intentRange(e) {
   const i = e.intent;
   if (!i || !(i.m || i.f)) return null;
-  const lo = i.f + i.m + (isDamageIntent(i) ? e.flat + e.buff : 0);
-  const hi = i.f + i.m * e.powerDie + (isDamageIntent(i) ? e.flat + e.buff : 0);
+  const n = diceOf(e, i); const add = isDamageIntent(i) ? extraDice(e, i).rem + e.buff : 0;
+  const lo = Math.max(0, i.f + n + add);
+  const hi = Math.max(0, i.f + n * e.powerDie + add);
   return [lo, hi];
 }
 

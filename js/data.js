@@ -1076,6 +1076,8 @@ export const POTION_START = 2;
 // The perilous road: tougher (PERIL.hp, +PERIL.flat a hit), pays PERIL.reward x the gold and experience, and leans to bigger loot.
 export const ACT_HP = [1.05, 1.55, 2.35]; // (Oct 2026: heroes grow ~+10 damage a round each act now, so the monsters grow too; Act III 2.25 -> 2.35 when its triples went to +20)
 export const ACT_FLAT = [0, 2, 5];
+// A monster's fight bonus is rolled as extra dice of its own size (engine extraDice): at most this many extra dice a blow.
+export const MONSTER_DICE_MAX = 3;
 export const STEP_HP = 0.06;
 // The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
 export const ACT_GOLD = [1, 1.1, 1.2]; // Oct 2026 (gold as a currency): the monsters' gold grows slowly, so the dice stay at least half of what a fight pays (was 1, 1.3, 1.8)
