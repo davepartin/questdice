@@ -48,8 +48,8 @@ export const REROLL_DICE_MAX = 4;
 export const REROLL_ACTIONS = 6; // free + paid, for the UI pips
 export const SYNERGY_BONUS = 10;
 export const TRIPLE_BY_ACT = [10, 15, 20]; // what each triple pays in Act I / II / III, attack or block (Dave, Oct 2026: triples keep up with the act)
-export const HEAL_COST = 2; // magic; each further heal in the same round costs 1 more (too much of one thing is worth less)
-export const HEAL_AMOUNT = 4; // hp  (1 magic = 2 hp)
+export const HEAL_COST = 2; // magic, the same every time (the rising price was dropped: magic is your health)
+export const HEAL_AMOUNT = 3; // hp  (Dave, Oct 2026: 2 magic heals 3, every time; was 4)
 export const NUDGE_COST = 3; // turning the heart die is a special, pricey act
 export const RECHARGE_COST = 3;
 

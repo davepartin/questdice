@@ -249,7 +249,7 @@ export function charmChoices(hero, rng, n = 1) { const pool = Object.keys(CHARMS
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
 export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
-export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 4 health, no class or perk changes it
+export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
 export const rerollTotal = () => RULES.free + RULES.paid;
@@ -262,7 +262,7 @@ export function rerollDieInfo(hero) {
   return { ok: true, cost: REROLL_DIE_COST, next: cur + 1, cur };
 }
 export function buyRerollDie(hero) { const r = rerollDieInfo(hero); if (!r.ok) return false; hero.gold -= r.cost; hero.rerollDie = true; return true; }
-export const healCostOf = (hero, b = null) => HEAL_COST + (b?.healsRound || 0); // each further heal in the same round costs 1 more
+export const healCostOf = (hero, b = null) => HEAL_COST; // the same every time (Dave, Oct 2026; b is kept for callers)
 // Powers: three slots (A big move, B every round, C charge), one power in each. hero.powers = { A: id, B: id, C: id };
 // a slot nobody chose holds the class's `start` power. hero.learned lists powers bought from the class library at camp.
 const libraryOf = (hero) => CLASSES[hero.cls].cards;

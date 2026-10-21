@@ -822,8 +822,8 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   assert.deepEqual(chargeSteps(5, 4), [4, 6, 8, 10]);
   const coil = { per: { atk: 5 } };
   assert.deepEqual([0, 1, 2, 3].map((l) => chargeGain(coil, 4, l).atk), [28, 32, 35, 42]);
-  // healing with magic costs 1 more each time in the same round
-  assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 4);
+  // healing with magic: 2 magic heals 3, the same price every time
+  assert.equal(healCostOf(null, { healsRound: 0 }), 2); assert.equal(healCostOf(null, { healsRound: 2 }), 2);
   const { CLASSES } = await import('../js/data.js');
   const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
   const all = Object.values(CLASSES).flatMap((c) => c.cards);
@@ -1015,11 +1015,11 @@ test('Line Breaker: every triple pays +2 more a rank, attack or block; Stout Hea
   assert.ok(!offers.has('grit'), 'Stout Heart is retired'); assert.ok(offers.has('linebreaker'), 'Line Breaker is offered');
 });
 
-test('Heal with Magic is the same for every hero: 2 magic for 4 health; an old Frugal Mender is refunded as a perk pick', async () => {
+test('Heal with Magic is the same for every hero: 2 magic for 3 health; an old Frugal Mender is refunded as a perk pick', async () => {
   const E = await import('../js/engine.js'); const SV = await import('../js/save.js');
   for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) {
     const h = newHero({ name: 'H', cls, seed: 1 }); h.perks.push('frugal');
-    assert.equal(E.healCostOf(h), 2, `${cls} pays 2`); assert.equal(E.healAmountOf(h), 4, `${cls} heals 4`);
+    assert.equal(E.healCostOf(h), 2, `${cls} pays 2`); assert.equal(E.healAmountOf(h), 3, `${cls} heals 3`);
   }
   const old = newHero({ name: 'Old', cls: 'wizard', seed: 1 }); old.perks = ['vitality', 'frugal']; old.pendingPerks = 0;
   SV.migrateHero(old);

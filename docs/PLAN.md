@@ -1182,3 +1182,4 @@ Dave's go on the rest of the balance plan (docs/ideas/BALANCE_AND_IDEAS_2026-10-
 - **Act III fights end sooner**: ordinary monster health x2.1 (was 2.35), Act III bosses x1.6 (was 2.2): about 7 and 13 rounds (were about 7.5 and 18).
 - Results (wise bot, 15 campaigns each): Normal 15 / 15, bosses 92 / 92 / 93%, below half health in a third to two fifths of fights (tenser than before); Hard 14 / 15, bosses 71 / 80 / 79%; Legendary 10 / 15, bosses 55 / 60 / 76% (kept at x1.4: at x1.3 it played like Hard). Tables: `SKILL=<difficulty> STYLE=wise sh tools/curve-all.sh 3 3`.
 - Found on the way: the bot looped forever when a heal cost more than 2 (fixed in tools/sim.mjs); each party hero's heal count resets every round.
+- (22 Oct, later) Dave: **2 magic heals 3, the same price every time** (`HEAL_AMOUNT` 3, was 4; the rising price from the second pass is gone: magic is your health). Normal, wise bot: 15 / 15, bosses 97 / 83 / 98%. Stamp 20261022b.
