@@ -427,8 +427,8 @@ const PAYERS = CARDINALS; // head, hands and feet all pay their symbols; the fee
 // Turns a locked board into resource totals. This is also the live "forecast" the UI shows.
 // What one triple pays this act: 10 / 15 / 20 (attack or block). A team triple adds the same again.
 export function tripleBonus(hero) { const a = Math.min(3, Math.max(1, hero?.campaign?.act || 1)); return TRIPLE_BY_ACT[a - 1] ?? SYNERGY_BONUS; }
-// How long a straight must be (Dave, Oct 2026: "once you have your nine dice, maybe seven in a row is our minimum straight"):
-// 7 dice in play need 5 in a row, 8 dice 6, 9 dice 7 (STRAIGHT_RULE). The dice in play are the ones a straight reads.
+// How long a straight must be (Dave, Oct 2026: "remove the five straight from the game"): six in a row for the whole game
+// (STRAIGHT_RULE; it can be made to grow with the dice in play again). The dice in play are the ones a straight reads.
 export const diceInPlay = (hero) => ['NW', 'N', 'NE', 'W', 'C', 'E', 'S', 'SW', 'SE'].filter((k) => !['NW', 'NE', 'SW', 'SE'].includes(k) || isActive(hero, k)).length;
 export function straightMin(hero) { return Math.max(STRAIGHT_RULE.min, Math.min(STRAIGHT_RULE.max, diceInPlay(hero) - STRAIGHT_RULE.less)); }
 export function evaluate(hero, board, opts = {}) {

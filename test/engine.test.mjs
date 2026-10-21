@@ -220,10 +220,10 @@ test('the battle gold chip climbs round by round and ends on what victory pays',
 });
 
 test('straights need 5 in a row across the seven numeric dice; blanks never count; cash for gold', async () => {
-  const { STRAIGHT_RULE } = await import('../js/data.js'); const keep = STRAIGHT_RULE.less; const { straightMin } = await import('../js/engine.js');
+  const { STRAIGHT_RULE, STRAIGHT } = await import('../js/data.js'); const keep = { ...STRAIGHT_RULE };
   const r = ranger(); r.strength.E = 6; // a d6 hand can show a 5
-  if (straightMin(r) > 5) assert.equal(evaluate(r, board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 })).straight, 0, 'with more dice a straight needs more than five');
-  STRAIGHT_RULE.less = 9; // the rest checks how a five-run is read and paid
+  assert.equal(evaluate(r, board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 })).straight, 0, 'five in a row is no straight now');
+  Object.assign(STRAIGHT_RULE, { min: 5, max: 5 }); STRAIGHT[5] = 10; // the rest checks how a run is read and paid, on a five-run
   // head1 feet2 heart3 left-hand4 right-hand5 -> 1,2,3,4,5 (the bow's face 1 is a 1 too)
   const b = board({ N: 1, S: 2, C: 3, W: 4, E: 5, NW: 1, NE: 1 });
   const atk = evaluate(r, b, { straight: 'atk' });
@@ -235,7 +235,7 @@ test('straights need 5 in a row across the seven numeric dice; blanks never coun
   // a 1-2-3-4 is only four long: no payout
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straight, 0);
   assert.equal(evaluate(ranger(), board({ N: 1, S: 2, C: 3, W: 4, E: 4, NW: 1, NE: 1 })).straightSlots, undefined);
-  STRAIGHT_RULE.less = keep;
+  Object.assign(STRAIGHT_RULE, keep); delete STRAIGHT[5];
 });
 
 test('honest dice: a dN never shows more than N; size is the range, metal adds the icons (Bronze is a little dull from a d6 up)', () => {
@@ -672,7 +672,7 @@ test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and tal
 });
 
 test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', async () => {
-  const { STRAIGHT_RULE } = await import('../js/data.js'); const keep = STRAIGHT_RULE.less; STRAIGHT_RULE.less = 9; // read five-runs here
+  const { STRAIGHT_RULE, STRAIGHT } = await import('../js/data.js'); const keep = { ...STRAIGHT_RULE }; Object.assign(STRAIGHT_RULE, { min: 5, max: 5 }); STRAIGHT[5] = 10; // read five-runs here
   const h = knight(); h.strength.W = 4; h.strength.E = 4; // d4 body dice: five in a row is a straight h.special = { SW: 6, SE: 6 }; h.talent = { SW: [], SE: [] };
   // head 1, talent 2x (a 2), heart 3, left hand 4, right talent 5 (no symbol yet): 1-2-3-4-5
   const run = evaluate(h, board({ N: 1, SW: 2, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 }));
@@ -680,7 +680,7 @@ test('talent dice count in straights: the 2x face is a 2, every face from 4 up s
   assert.ok(run.straightSlots.includes('SW') && run.straightSlots.includes('SE'));
   const gap = evaluate(h, board({ N: 1, SW: 3, C: 3, W: 4, SE: 5, E: 1, S: 1, NW: 1, NE: 1 })); // a blank 3 on the talent die is no 2
   assert.equal(gap.straight, 0);
-  STRAIGHT_RULE.less = keep;
+  Object.assign(STRAIGHT_RULE, keep); delete STRAIGHT[5];
 });
 
 test('a talent die always has two blanks and one 2x; the rest of its faces can carry symbols', () => {
@@ -1061,16 +1061,15 @@ test('story campaigns: storyScale fits monsters written for one hero of a level 
   assert.ok(E.storyScale([grown, newHero({ name: 'B', cls: 'bard', seed: 2 })], 1).m > duo.m, 'heroes stronger than the story expects meet stronger monsters');
 });
 
-test('every straight from 5 up pays, and a longer one pays more (a 1-to-8 run used to pay nothing)', async () => {
+test('straights start at six in a row and pay 10, 20, 30, 50; five in a row pays nothing', async () => {
   const { STRAIGHT } = await import('../js/data.js');
-  for (let n = 5; n <= 9; n++) assert.ok(STRAIGHT[n] > (STRAIGHT[n - 1] || 0), `${n} in a row pays more than ${n - 1}`);
+  assert.deepEqual([5, 6, 7, 8, 9].map((n) => STRAIGHT[n] || 0), [0, 10, 20, 30, 50]);
 });
 
-test('a straight needs all your dice but two: 7 dice five in a row, 8 dice six, 9 dice seven', async () => {
+test('six in a row is the shortest straight for the whole game, however many dice', async () => {
   const E = await import('../js/engine.js'); const h = E.newHero({ name: 'S', cls: 'knight', seed: 2 });
-  assert.equal(E.diceInPlay(h), 7); assert.equal(E.straightMin(h), 5);
-  h.dice.push('NE'); assert.equal(E.diceInPlay(h), 8); assert.equal(E.straightMin(h), 6, 'the 8th die retires the 5-straight');
-  h.dice.push('SE'); assert.equal(E.diceInPlay(h), 9); assert.equal(E.straightMin(h), 7, 'all nine dice: seven in a row');
+  assert.equal(E.diceInPlay(h), 7); assert.equal(E.straightMin(h), 6);
+  h.dice.push('NE', 'SE'); assert.equal(E.diceInPlay(h), 9); assert.equal(E.straightMin(h), 6);
 });
 
 test('the heart backs its symbol on any face: a heart 1 boosts every heal face (1, 5, 9), a 4 every gold face (4, 8, 10)', async () => {

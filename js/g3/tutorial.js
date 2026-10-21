@@ -206,14 +206,14 @@ const LESSONS = [
       h('figure', {}, boardPic({ base: 'final', line: ['W', 'E'], small: true }), h('figcaption', {}, 'Strength')),
       h('figure', {}, boardPic({ base: 'tripH', line: ['N', 'S'], small: true }), h('figcaption', {}, 'Head to Toe')),
       h('figure', {}, boardPic({ base: 'tripL', line: ['NW', 'SW'], small: true }), h('figcaption', {}, 'Left · Right'))),
-    say: 'Three matching numbers in a line earn +10 (15 in Act II, 20 in Act III): rows attack, columns guard. Five in a row anywhere on your dice is a straight.',
+    say: 'Three matching numbers in a line earn +10 (15 in Act II, 20 in Act III): rows attack, columns guard. Six in a row anywhere on your dice is a straight.',
     body: () => [
       row(ic('atk'), 'Weapons Triple: +10 attack', 'Top row. Both weapons’ +numbers match your head.'),
       row(ic('atk'), 'Strength Triple: +10 attack', 'Middle row. Hand, heart and hand match.'),
       row(ic('atk'), 'Talent Triple: +10 attack', 'Bottom row. Talent, feet and talent match (a talent blank never does; the 2× counts as a 2).'),
       row(ic('block'), 'Head to Toe Triple: +10 block', 'Head, heart and feet match.'),
       row(ic('block'), 'Left and Right Guard Triples: +10 block each', 'A side column: that weapon’s +number, that hand and that talent die match. Blanks never count, and there are no diagonals.'),
-      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Five numbers in a row anywhere on your dice (like 1-2-3-4-5). Before you lock in, choose: +10 attack, or cash it in for +10 gold. Six in a row pays 18, seven pays 30.'),
+      row(h('span', { class: 'tu-ic t-gold' }, HK.icon('star')), 'Straight', 'Six numbers in a row anywhere on your dice (like 1-2-3-4-5-6). Before you lock in, choose: +10 attack, or cash it in for +10 gold. Seven in a row pays 20, eight 30, all nine 50.'),
     ],
   },
   {
