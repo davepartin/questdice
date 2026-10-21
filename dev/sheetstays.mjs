@@ -19,6 +19,8 @@ await p.evaluate(() => { window.QD.S.battle.magic = 12; window.QD.B3.battleState
 const open = () => p.evaluate(() => !!document.querySelector('.b3-sheet:not(.b3-info).open'));
 await p.evaluate(() => [...document.querySelectorAll('button')].find((x) => /Magic powers/i.test(x.textContent))?.click()); await pump(1);
 console.log('sheet open:', await open());
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/magiccap_sheet.png` });
+console.log('sheet magic:', await p.evaluate(() => document.querySelector('.pw-center')?.textContent));
 const castB = async (slot) => {
   await p.evaluate((slot) => document.querySelector(`.pw-medal.at-${slot}`)?.click(), slot); await pump(0.5);
   await p.evaluate(() => [...document.querySelectorAll('.pw-btn.go')].find((x) => !x.disabled)?.click()); await pump(1);
@@ -29,5 +31,6 @@ await castB('B'); console.log('after one power, still open:', await open(), '· 
 await castB('C'); console.log('after a second power, still open:', await open(), '· magic', await p.evaluate(() => window.QD.B3.battleState.b.magic));
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/sheetstays.png` });
 await p.evaluate(() => document.querySelector('.b3-sheet:not(.b3-info) .sh-x')?.click()); await pump(0.5);
-console.log('after Close:', await open());
+console.log('after Close:', await open(), '· chip:', await p.evaluate(() => document.querySelector('.b3-magchip:not(.b3-goldchip)')?.textContent));
+await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/magiccap_hud.png` });
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no page errors'); await b.close();

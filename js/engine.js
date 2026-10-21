@@ -2,7 +2,7 @@
 // battles are reproducible and the balance simulator (tools/sim.mjs) can run the same code.
 
 import {
-  ROLE, LANES, CARDINALS, MAGIC_CAP, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
+  ROLE, LANES, CARDINALS, MAGIC_CAP, MAGIC_CAP_LEVELS, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_MIN,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
@@ -234,7 +234,7 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
 }
 
 export function heroMods(hero) {
-  const m = { maxHp: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0, tripleBonus: 0 };
+  const m = { maxHp: 0, magicCap: 0, startMagic: 0, rerollDice: 0, redBonus: 0, blueBonus: 0, pierceBonus: 0, goldPct: 0, lastStandHp: 0, healCost: 0, tripleBonus: 0 };
   for (const id of hero.perks) for (const [k, v] of Object.entries(PERKS[id].mod)) m[k] += v;
   return m;
 }
@@ -248,7 +248,7 @@ export function dropCharm(hero, id) { const i = (hero.charms || []).indexOf(id);
 export function charmChoices(hero, rng, n = 1) { const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
-export const magicCapOf = (hero) => CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP;
+export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
 export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;

@@ -128,7 +128,7 @@ export function sigil(ctx) {
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // your magic and your health, one under the other, the same width, top right
   const tally = h('div', { class: 'pw-tally' },
-    h('div', { class: 'pw-center', 'aria-label': `${b.magic} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, 'magic')),
+    h('div', { class: 'pw-center', 'aria-label': `${b.magic} of ${E.magicCapOf(b.hero)} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, `/ ${E.magicCapOf(b.hero)} magic`)),
     h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`)));
   // the helpers (potion, heal, heart change): round medallions like the powers, in a row under the triangle, each with its cost.
   // Tapping one when it cannot help (full health, no potions) says so in a short pop-up instead of opening its panel.

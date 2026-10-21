@@ -1095,3 +1095,12 @@ test('a charge power either stores a charge or releases them in a round, never b
   assert.equal(E.castPower(b, 'rally'), null, 'released this round: no storing');
   assert.equal(E.powerState(b, E.cardsOf(h).find((c) => c.id === 'rally')).spent, true);
 });
+
+test('the magic cap grows like health: +1 every two levels, +2 a Deep Well perk; the Wizard stays 3 higher', async () => {
+  const E = await import('../js/engine.js');
+  const k = E.newHero({ name: 'K', cls: 'knight', seed: 1 }); const w = E.newHero({ name: 'W', cls: 'wizard', seed: 1 });
+  assert.equal(E.magicCapOf(k), 12); assert.equal(E.magicCapOf(w), 15);
+  k.level = 3; assert.equal(E.magicCapOf(k), 13); k.level = 11; assert.equal(E.magicCapOf(k), 17);
+  k.perks.push('deepwell', 'deepwell'); assert.equal(E.magicCapOf(k), 21);
+  w.level = 11; assert.equal(E.magicCapOf(w), 20);
+});

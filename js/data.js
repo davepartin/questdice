@@ -36,6 +36,8 @@ export const LANES = {
 export const CARDINALS = ['N', 'W', 'E', 'S']; // head, hands, feet: the "always contribute" dice
 
 export const MAGIC_CAP = 12;
+// The magic cap grows like health (Dave, Oct 2026): +1 every MAGIC_CAP_LEVELS levels (level 3, 5, 7...), and the Deep Well perk adds 2.
+export const MAGIC_CAP_LEVELS = 2;
 export const MAX_LEVEL = 20;
 // Rerolls: `free` actions cost nothing, then `paid` actions cost 1 magic per die. Each action rerolls up to the class's dice (+diceBonus).
 // (Mutable so the balance simulator can compare rule sets.)
@@ -521,6 +523,7 @@ export const PERKS = {
   diamond: { name: 'A Diamond weapon', text: 'One goes into your Diamond case: no blanks, an icon on every face, a crit of three. Good for one fight.', max: 1, retired: true, diamond: true },
   vitality: { name: 'Vitality', text: '+6 max HP. Room for one more bruise.', max: 5, mod: { maxHp: 6 } },
   reserve: { name: 'Arcane Reserve', text: 'Start every battle with +1 Magic. A spark in the pocket.', max: 3, mod: { startMagic: 1 } },
+  deepwell: { name: 'Deep Well', text: '+2 max magic. More room to save up for a big moment.', max: 3, mod: { magicCap: 2 } }, // Dave, Oct 2026: grow the magic cap like health
   quick: { name: 'Quick Hands', text: 'Reroll actions may reroll +1 die.', max: 2, mod: { rerollDice: 1 }, retired: true }, // no longer offered (the 4th die is bought at camp); heroes who took it keep it
   keen: { name: 'Keen Edge', text: '+1 attack from every weapon that is attacking (red face). Sharper mornings.', max: 3, mod: { redBonus: 1 } },
   ward: { name: 'Ironward', text: '+1 block from every weapon that is blocking (blue face). Hold a little harder.', max: 3, mod: { blueBonus: 1 } },
