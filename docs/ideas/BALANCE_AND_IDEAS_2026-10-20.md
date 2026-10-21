@@ -232,6 +232,26 @@ Dave: make the game harder by giving monsters more dice instead of more base att
 
 **How it would play:** blocking becomes a real read ("about 13, could be 20"), a lucky low roll is a breath of relief, and a spike is what finally hurts a frail Wizard on Normal, which helps with "Normal is easy" without raising monster health. Watch the top end: 3d12 can roll 36, so check how often a full-health hero falls in one round. The monster plate, info sheet and recap already show monster dice as red and blue die chips; "3d8" just needs room on them (UI lane, later).
 
+## Weapon wear: Dave's call (21 Oct)
+
+Dave: keep it. "If you're being offered a new weapon after every battle, a weapon finally breaking is no big deal, and you might have to downgrade, or you might hold onto a weapon you really like, especially if you know it only has so many rounds left." The fun is saving a favourite: use a spare on the easy fights and bring the good one out for the elite and the boss.
+
+**Dave's numbers:** Bronze 15 rounds, Silver 20, Gold 25 (counting rounds the weapon is in your hands, not damage).
+
+**What that means in play:** a solo win already offers two weapons (`battleRewards`: players + 1), and the pack holds four (`BAG_MAX`), so a replacement is never far away. Fights last about four rounds today (to be confirmed by tools/curve.mjs), so Bronze lasts about 4 fights, Silver 5, Gold 6. An act is 10 steps, so even a Gold weapon is gone by the end of the act unless you rest it. Counting rounds also rewards a strong weapon a little: it ends fights sooner, so it wears less per fight. If fights get longer after the balance changes, these numbers shorten in fights; keep an eye on it.
+
+**Recommended answers to settle before building:**
+
+1. **When it breaks:** never mid-fight. When its count runs out, it finishes that battle and breaks afterwards ("Your Gold War Hammer shattered after the fight").
+2. **What counts:** each round a weapon is in your hands, attack or block, ticks once. A two-handed weapon ticks once (it is one weapon). Diamonds stay one-fight weapons, outside this rule.
+3. **Forging and training:** forging up a metal refills the weapon to the new metal's count (so the forge is also the repair shop); training to a bigger die does not refill it. No separate Repair button, to keep camp simple.
+4. **Legendary weapons:** last far longer (about 40 rounds) rather than never breaking, so even a legend is a choice.
+5. **Never empty-handed:** if both hands break and the pack is empty, a plain Bronze weapon of your class's kind is waiting (and the traveller always has one).
+6. **Selling:** a weapon sells for less the fewer rounds it has left.
+7. **Choosing what to bring:** swapping happens at camp (Gear tab) as now. A quick swap on the quest card (like the Diamond strip) is the nicer later version.
+
+**Who builds what:** the rule, the save field, the bot (it must learn to rest a good weapon for big fights) and the measurement are the balance lane. Showing "rounds left" on each weapon card and in battle is the UI builder's job; the rule should land first behind the scenes, then the display, so the two never edit the same screens at once.
+
 ## A second read (Claude, 20 Oct): checks, catches and two ideas
 
 **Checked against the code on `main` (52f9d7d):** 2 magic heals 4; straights pay 10 / 18 / 30 / 45 / 60; the heart amplifies only the exact number today (`HEART_AMP`); Storm Coil pays 26 at level 0 and 65 + 32 splash at level 3; `scaleNum` is +50% a level; the Wizard has 24 health and holds 15 magic; `ACT_HP` is 1.05 / 1.55 / 2.35. The heart-die averages in the table above re-derive the same from `FACE_PAY`. The plan matches Dave's voice notes (below) point for point.
