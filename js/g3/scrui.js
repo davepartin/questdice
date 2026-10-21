@@ -911,7 +911,7 @@ const tallyUp = (n = 1) => { if (FORGE.tally && FORGE.sec) FORGE.tally[FORGE.sec
 function priceBtn(label, price, ok, buy, aria) {
   const hero = X.S.hero; if (ok) tallyUp();
   const b = btn(label ? `${label} · ${price}` : String(price), buy, { icon: 'coin', iconAfter: !!label, disabled: !ok, cls: `ur-buy ${!ok ? 'poor' : ''}`, aria });
-  if (!ok && hero && hero.gold < price) b.append(h('span', { class: 'need-row' }, h('small', { class: 'need' }, `need ${price - hero.gold}`), coin(hero.gold, 'inline purse')));
+  if (!ok && hero && hero.gold < price) b.append(h('span', { class: 'need-row' }, h('small', { class: 'need' }, `need ${price - hero.gold}`))); // (your gold is in the header; Dave: the button must not squash the text)
   return b;
 }
 const maxTag = (text = 'Max') => h('span', { class: 'ur-max' }, ico('check'), text);
