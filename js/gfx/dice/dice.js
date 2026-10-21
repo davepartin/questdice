@@ -110,7 +110,9 @@ function makeMaterial(atlas, themeName, quality) {
     emissive: new THREE.Color(1, 1, 1), emissiveMap: T.emissiveMap || null, emissiveIntensity: T.emissiveMap ? 0.9 : 1,
     sheen: 0, sheenColor: new THREE.Color(0xfff0d0), sheenRoughness: 0.5,
   });
-  if (diceStyle().clean) { m.clearcoat = 0; m.clearcoatRoughness = 0.6; m.specularIntensity = 0.12; m.envMapIntensity = 0.08; if (m.emissiveMap) m.emissiveIntensity = 0.2; } // matte-satin plastic: flat faces must not mirror the lights
+  // A restrained satin highlight uses the existing lighting and texture atlas. Keep
+  // clearcoat off: a second glossy lobe adds glare over the numbers and symbols.
+  if (diceStyle().clean) { m.clearcoat = 0; m.clearcoatRoughness = 0.6; m.specularIntensity = 0.26; m.envMapIntensity = 0.16; if (m.emissiveMap) m.emissiveIntensity = 0.2; }
   m.color.setScalar(({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1) * (typeof diceStyle().bodyK === 'object' ? (diceStyle().bodyK[theme] ?? 1) : diceStyle().bodyK));
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
@@ -205,9 +207,10 @@ export function createDie({ spec, quality = 'high' }) {
     setView(dirWorld) {
       if (spec.sides === 4) { u.uFocusDir.value.copy(dirWorld); u.uFocusRange.value.set(0.55, 0.78); } else { u.uFocusDir.value.set(0, 1, 0); u.uFocusRange.value.set(0.52, 0.82); }
     },
-    // at rest only the face you read stays lit; the sides go nearly dark. A d8 keeps its sides a little lit (Dave, Oct 2026: from
-    // above its top face is a triangle like a d4's, and the faces around it are what say "d8")
-    setRest(k01) { u.uSide.value = 1 - (spec.sides === 8 ? SIDE_DIM_D8 : 0.94) * k01; },
+    // Keep the result face dominant, but let the side faces describe the solid.
+    // A d8 needs slightly more side light to distinguish it from a triangular d4.
+    // During a throw (k01 = 0), every face retains its original full brightness.
+    setRest(k01) { const dim = diceStyle().clean ? (spec.sides === 8 ? 0.64 : 0.70) : (spec.sides === 8 ? SIDE_DIM_D8 : 0.94); u.uSide.value = 1 - dim * k01; },
     updateCamera(camera) { mesh.updateMatrixWorld(); u.uCamObj.value.copy(camera.position); mesh.worldToLocal(u.uCamObj.value); },
     dispose() { material.dispose(); },
   };
