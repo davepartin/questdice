@@ -1188,3 +1188,8 @@ Draft PR #30, branch `ui/camp-art-pass`: camp Powers now has A/B/C slot browsing
 ## Camp framing checkpoint, October 21, 2026
 
 User returned to the original illustrated concept and prioritized camp visual finish before battle magic powers. Applied wood framing, recessed slots, existing body artwork, selection corners and blue cloth inspector/road surfaces. No rule or save changes. Existing camp browser review passed; see docs/ui-handoff/08-CAMP-VISUAL-FINISH-REVIEW.md for scope, screenshots and remaining art gap. Continue on ui/camp-art-pass / draft PR #30, not live main.
+
+
+## Painted campsite checkpoint, October 20, 2026
+
+Added a single 155 KiB shipped campsite painting with tents, lanterns and mountains. Existing hero/pet miniatures and fire remain separate. Camp background drift is disabled. Phone banner and desktop stage have bounded dimensions. No mechanics, save or multiplayer changes. Review and resume details: docs/ui-handoff/09-CAMPSITE-ART-REVIEW.md. Keep changes on ui/camp-art-pass / draft PR #30. Next: review camp dice against existing battle dice artwork.

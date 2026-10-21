@@ -272,3 +272,17 @@
 .cp-level-list > div.current { background: #53433150; color: #ebd1a3; }
 .cp-level-list b { font-weight: 600; }
 .cp-base > p { margin: 0; padding: 0 .7rem .7rem; color: #bdb5c2; font-size: .74rem; line-height: 1.5; }
+
+/* One static painting, shared by the backdrop and the visible miniature stage. */
+.scene.k-camp .sc-bg { animation: none; transform: none; opacity: .18; }
+.cw-camp .sc-stage.k-camp { top: calc(62px + var(--safe-t)); background-position: center 55%; background-size: cover; background-repeat: no-repeat; border-bottom: 1px solid #b18b4c80; box-shadow: inset 0 -12px 20px #070c1660; }
+.cw-camp .sc-stage.k-camp .sc-fire { width: calc(var(--fh) * .65); height: calc(var(--fh) * .48); }
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen.camp:has(.cw-camp) { --gap: clamp(190px,25dvh,230px); }
+  .cw-camp .sx-viewport { height: var(--gap); bottom: auto; }
+  .cw-camp .sc-stage.k-camp.n1, .cw-camp .sc-stage.k-camp.n2 { --fh: min(70cqh,32cqw); }
+}
+
+@media (min-aspect-ratio: 1085/1000) and (min-width: 900px) {
+  .cw-camp .sc-stage.k-camp { top: calc(78px + var(--safe-t)); left: 14px; right: 14px; bottom: auto; height: min(calc(100% - 92px - var(--safe-t)),420px); border: 1px solid #b18b4c80; border-radius: 4px; }
+}
