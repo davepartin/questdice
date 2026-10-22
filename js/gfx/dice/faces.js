@@ -6,19 +6,10 @@
 
 import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
-import { bodyWatermarkImage, loadBodyWatermark, drawBodyWatermark } from './bodywm.js';
-const BODY_WM_DARK = 1.2; // Dave, Oct 2026: the body watermarks read 20% darker, so you can see them on a phone
 
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
 const SVG = {
-  // Compact solid silhouettes survive the phone-size corner better than line art.
-  slotHat: 'M20 73 C28 57 31 29 49 10 C56 3 65 5 75 13 L63 17 C59 30 65 55 74 73 Z M12 72 Q49 85 88 72 L94 83 Q50 99 6 83 Z',
-  slotHood: 'M50 5 Q16 19 11 66 L8 92 Q50 80 92 92 L89 66 Q84 19 50 5 Z M50 25 Q29 36 29 66 Q50 82 71 66 Q71 36 50 25 Z',
-  slotHelm: 'M50 7 Q15 7 13 43 V77 L32 94 L44 82 V47 H22 V34 H78 V47 H56 V82 L68 94 L87 77 V43 Q85 7 50 7 Z',
-  slotCap: 'M13 64 Q20 34 52 34 Q75 34 83 64 Z M8 68 Q50 78 92 68 V81 Q50 95 8 81 Z M56 34 Q57 11 90 4 Q84 27 65 39 Z',
-  slotGlove: 'M21 76 V37 Q21 29 30 29 V20 Q30 12 39 12 Q44 12 44 20 V14 Q44 5 53 5 Q61 5 61 14 V22 Q61 13 69 15 Q76 17 76 25 V54 L83 44 Q89 36 95 44 Q99 49 92 58 L78 78 V94 H24 V78 Z',
-  slotBoot: 'M21 8 H62 V47 Q64 56 84 61 Q96 65 95 82 H18 V68 H21 Z M16 85 H96 V96 H16 Z',
   talent: 'M77.1 46.5 L85.5 47.7 L85.5 60.3 L77.1 61.5 L73.3 70.7 L78.4 77.5 L69.5 86.4 L62.7 81.3 L53.5 85.1 L52.3 93.5 L39.7 93.5 L38.5 85.1 L29.3 81.3 L22.5 86.4 L13.6 77.5 L18.7 70.7 L14.9 61.5 L6.5 60.3 L6.5 47.7 L14.9 46.5 L18.7 37.3 L13.6 30.5 L22.5 21.6 L29.3 26.7 L38.5 22.9 L39.7 14.5 L52.3 14.5 L53.5 22.9 L62.7 26.7 L69.5 21.6 L78.4 30.5 L73.3 37.3 Z M65 54 A19 19 0 1 0 65 54.01 Z M46.0 40.0 L48.8 51.2 L60.0 54.0 L48.8 56.8 L46.0 68.0 L43.2 56.8 L32.0 54.0 L43.2 51.2 Z M86.0 2.0 L88.2 10.8 L97.0 13.0 L88.2 15.2 L86.0 24.0 L83.8 15.2 L75.0 13.0 L83.8 10.8 Z M92.0 28.5 L93.1 32.9 L97.5 34.0 L93.1 35.1 L92.0 39.5 L90.9 35.1 L86.5 34.0 L90.9 32.9 Z',
   mend: 'M37 8 H63 V37 H92 V63 H63 V92 H37 V63 H8 V37 H37 Z',
   mendBold: 'M34.4 8 H65.6 V34.4 H92 V65.6 H65.6 V92 H34.4 V65.6 H8 V34.4 H34.4 Z', // the heart die's cross: arms 20% thicker (Dave)
@@ -56,7 +47,7 @@ export function iconPath(name) {
   return paths.get(name);
 }
 export const hasIcon = (n) => !!SVG[n];
-const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent', 'slotHood']);
+const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
 export function drawIcon(ctx, name, x, y, size, { stroke = 0, flip = false } = {}) {
   ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(flip ? -s : s, s); ctx.translate(-50, -50);
@@ -347,16 +338,11 @@ const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
 /**
  * Paint the atlas for a die.
  * @param poly   makePoly(sides)
- * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block', wm: icon name, bodyWm: png url }
+ * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block' }
  * @param theme  'bone'|'smoke'|'heart'|'amethyst'|'weapon'
  */
 export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
-  const wmReady = faces.map((f) => {
-    if (!f?.bodyWm) return '-';
-    loadBodyWatermark(f.bodyWm);
-    return bodyWatermarkImage(f.bodyWm) ? '1' : '0';
-  }).join('');
-  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|bwm${wmReady}|${JSON.stringify(faces)}`;
+  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
   const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
   const ivoryInlay = ST.clean && theme === 'bone' && poly.sides === 6;
@@ -464,32 +450,6 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
       } else if (isPetTheme(theme)) { if (spec.paw) layer(ctxs, { A: th.paw, H: 'rgb(150,150,150)', O: 'rgb(0,120,0)' }, (c) => drawPaw(c, inR * 0.9)); } // the pet's always-blank face shows a paw
       else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
-    }
-
-    // ---- body watermark (class line-art on head / hands / feet), behind the number
-    // Cubes (d6) keep the quieter size Dave liked on the boots. Pointed faces (d4 / d8 / d10)
-    // get a larger, slightly stronger mark so the helmet and gauntlets still read on a phone.
-    if (spec.bodyWm && !blank) {
-      const im = bodyWatermarkImage(spec.bodyWm);
-      if (im) {
-        const sz = inR * (poly.sides === 4 ? 2.32 : poly.sides === 6 ? 1.76 : 2.08);
-        const a = (poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50) * BODY_WM_DARK;
-        layer(ctxs, { A: '#000', H: 'rgb(112,112,112)' }, (c, k) => {
-          c.save();
-          c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.closePath(); c.clip();
-          c.globalAlpha = k === 'H' ? a * 0.5 : a;
-          drawBodyWatermark(c, im, 0, inR * 0.02, sz);
-          c.restore();
-        });
-      }
-    }
-
-    // ---- watermark (weapon identity), shallow
-    if (spec.wm && !blank && !wface && theme === 'bone' && !spec.bodyWm) { // SVG mockup (helmet, gloves, boots): tone on tone, pressed into the ivory; skip when the live PNG is on the face
-      const k = spec.wmK ?? 0.16;
-      layer(ctxs, { A: `rgba(118,84,40,${k})`, H: `rgb(${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)})` }, (c) => drawIcon(c, spec.wm, 0, inR * (spec.wmY ?? 0.04), inR * (spec.wmS ?? 1.78), { flip: !!spec.wmFlip }));
-    } else if (spec.wm && !blank && !wface) {
-      layer(ctxs, { A: spec.tone === 'b' ? 'rgba(160,210,255,0.16)' : 'rgba(255,170,130,0.16)', H: 'rgb(112,112,112)' }, (c) => drawIcon(c, spec.wm, 0, inR * 0.02, inR * 1.7));
     }
 
     // ---- heart (clean): the boosted symbol fills the whole face in its own colour; the number sits on top
@@ -634,14 +594,6 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const ic = spec.mark === 'atk' ? 'sword' : 'shield'; const cc = spec.mark === 'atk' ? '#b0141c' : '#1c58b8';
       layer(ctxs, { H: 'rgb(40,40,40)', A: 'rgba(0,0,0,0.85)', O: 'rgb(0,140,0)' }, (c) => drawIcon(c, ic, bx, by, bs * 1.2));
       layer(ctxs, { H: 'rgb(84,84,84)', A: cc, O: 'rgb(0,60,0)' }, (c) => drawIcon(c, ic, bx, by, bs));
-    }
-    if (ivoryInlay && spec.cornerMark && !blank) {
-      const mark = spec.cornerMark;
-      const sz = inR * 0.35; const x = inR * (mark.right ? 0.63 : -0.63); const y = -inR * 0.63;
-      const paint = (c, dx = 0, dy = 0) => drawIcon(c, mark.icon, x + dx, y + dy, sz, { flip: mark.flip });
-      layer(ctxs, { A: '#fff9e6' }, c => paint(c, 0.7 * qk, 1.1 * qk));
-      layer(ctxs, { A: '#111318', H: 'rgb(66,66,66)', O: 'rgb(0,210,0)' }, c => paint(c));
-      audit[audit.length - 1].corner = { icon: mark.icon, x, y, size: sz, right: mark.right, flip: mark.flip };
     }
     for (const c of Object.values(ctxs)) c.restore();
   });

@@ -10,7 +10,6 @@ import { world } from './world.js';
 import { portrait as renderPortrait, hasPortrait } from './portrait.js';
 import { createDie, restQuat } from '../gfx/dice/dice.js';
 import { diceStyle } from '../gfx/dice/faces.js';
-import { preloadBodyWatermarks } from '../gfx/dice/bodywm.js';
 import { createWeapon } from '../gfx/weapons.js';
 import * as D from '../data.js';
 import { h } from '../dom.js';
@@ -125,7 +124,6 @@ export const portraitQ = {
     const previous = [...pmem.keys()].filter(k => k.startsWith('cd:'));
     if (previous.length >= 48 && !pmem.has(key)) pmem.delete(previous[0]);
     return queue(key, async () => {
-      await preloadBodyWatermarks();
       const die = createDie({ spec, quality: 'med' });
       die.mesh.quaternion.copy(restQuat(die.poly, label, 0, -1));
       die.setRest(0.35); // camp shows the side faces, without changing battle shading
