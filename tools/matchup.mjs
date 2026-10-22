@@ -13,6 +13,7 @@ import { botRound, botCamp, botLoot, PLAY, setScore } from './sim.mjs';
 const ENC = { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'] };
 const LOADOUTS = [['sword', 'shield'], ['dagger', 'shield'], ['spear', 'shield'], ['axe', 'tower'], ['shield', 'tower'], ['dagger', 'sword'], ['axe', 'spear'], ['dagger', 'dagger']];
 const name = (id) => (DATA.WEAPONS[id]?.name || id).replace('Round ', '');
+const own = (id) => (DATA.EXPERIMENT.weapons2 || id !== 'axe' ? id : 'mace'); // today's weapons have no Axe: the Mace stands in
 
 if (process.argv[2] === 'merge') { report(fs.readdirSync(process.argv[3]).filter((f) => f.endsWith('.json')).flatMap((f) => JSON.parse(fs.readFileSync(`${process.argv[3]}/${f}`, 'utf8')))); process.exit(0); }
 const T = Number(process.argv[2] || 24); const classes = process.argv[3] ? [process.argv[3]] : ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
@@ -36,10 +37,10 @@ for (const cls of classes) {
     if (act === 2 && [3, 7].includes(step)) {
       for (const [l, r] of LOADOUTS) for (const [enc, foes] of Object.entries(ENC)) for (const style of ['wise', 'greedy']) {
         const h = clone(hero); const size = Math.max(4, Math.min(h.strength.W, h.strength.E));
-        h.loadout.NW = { uid: `L${l}`, id: l, rarity: 0, size }; h.loadout.NE = { uid: `R${r}`, id: r, rarity: 0, size }; h.dice = [...new Set([...(h.dice || []), 'NE'])];
+        h.loadout.NW = { uid: `L${l}`, id: own(l), rarity: 0, size }; h.loadout.NE = { uid: `R${r}`, id: own(r), rarity: 0, size }; h.dice = [...new Set([...(h.dice || []), 'NE'])];
         const q = { ...quest, enemies: foes, kind: 'battle', foeNames: null };
         const res = Array.from({ length: T }, (_, i) => play(h, q, seed * 100 + step * 10 + i * 7919, style));
-        rows.push({ cls, step, loadout: `${name(l)} + ${name(r)}`, enc, style, win: res.reduce((a, x) => a + x.win, 0) / T, rounds: res.reduce((a, x) => a + x.rounds, 0) / T, health: res.reduce((a, x) => a + x.health, 0) / T });
+        rows.push({ cls, step, loadout: `${name(own(l))} + ${name(own(r))}`, enc, style, win: res.reduce((a, x) => a + x.win, 0) / T, rounds: res.reduce((a, x) => a + x.rounds, 0) / T, health: res.reduce((a, x) => a + x.health, 0) / T });
       }
       process.stderr.write(`${cls} 2.${step} `);
     }
@@ -55,7 +56,7 @@ if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); el
 function report(all) {
   const encs = Object.keys(ENC); const loads = [...new Set(all.map((x) => x.loadout))];
   const m = (f, k) => { const r = all.filter(f); return r.length ? r.reduce((a, x) => a + x[k], 0) / r.length : NaN; };
-  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts${DATA.EXPERIMENT.weapons2 ? ' (weapons experiment)' : ''}`);
+  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${process.env.PRESS ? ' · with pressure (fury, rallying swarms)' : ''}`);
   console.log('Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.');
   for (const style of ['wise', 'greedy']) {
     console.log(`\n${style === 'wise' ? 'Wise player' : 'Greedy player (always chases attack)'}`);

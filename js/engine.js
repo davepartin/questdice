@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -661,19 +661,19 @@ export const rollPower = (e, intent, rng) => Array.from({ length: Math.max(1, (i
 const diceSum = (e, intent, dice) => (dice || []).slice(0, (intent.m || 0) + extraDice(e, intent).k).reduce((a, v) => a + v, 0);
 function magnitude(e, intent, dice, weaken) {
   let m = intent.f + diceSum(e, intent, dice);
-  if (isDamageIntent(intent)) m = Math.max(0, m + extraDice(e, intent).rem + e.buff - weaken);
+  if (isDamageIntent(intent)) m = Math.max(0, m + extraDice(e, intent).rem + e.buff + (e.fury || 0) - weaken);
   return m;
 }
 // What made a monster's number this round, for the recap: its move's fixed part, the dice it rolled, the fight's flat bonus, a howl, and any
 // softening from your powers. (f + the dice + flat + howl - softened = the attack or guard.)
-const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); const x = extraDice(e, intent); return { f: intent.f, m: (intent.m || 0) + x.k, p: dice[0], dice: dice.slice(0, Math.max(1, (intent.m || 0) + x.k)), size: e.powerDie, flat: dmg ? x.rem : 0, buff: dmg ? e.buff : 0, weaken: dmg ? weaken : 0 }; };
+const magnitudeParts = (e, intent, dice, weaken) => { const dmg = isDamageIntent(intent); const x = extraDice(e, intent); return { f: intent.f, m: (intent.m || 0) + x.k, p: dice[0], dice: dice.slice(0, Math.max(1, (intent.m || 0) + x.k)), size: e.powerDie, flat: dmg ? x.rem : 0, buff: dmg ? e.buff : 0, fury: dmg ? e.fury || 0 : 0, weaken: dmg ? weaken : 0 }; };
 // A monster's BASE attack (or guard): the number it always has before its dice. The move's own number, plus the fight's extra hit and any
 // howl for a blow; a guard has just the move's own number. The attack is then base + the dice it rolls.
-export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? extraDice(e, i).rem + (e.buff || 0) : 0) : 0);
+export const intentBase = (e, i = e.intent) => (i ? i.f + (isDamageIntent(i) ? extraDice(e, i).rem + (e.buff || 0) + (e.fury || 0) : 0) : 0);
 export function intentRange(e) {
   const i = e.intent;
   if (!i || !(i.m || i.f)) return null;
-  const n = diceOf(e, i); const add = isDamageIntent(i) ? extraDice(e, i).rem + e.buff : 0;
+  const n = diceOf(e, i); const add = isDamageIntent(i) ? extraDice(e, i).rem + e.buff + (e.fury || 0) : 0;
   const lo = Math.max(0, i.f + n + add);
   const hi = Math.max(0, i.f + n * e.powerDie + add);
   return [lo, hi];
@@ -763,10 +763,29 @@ export function newBattle(hero, quest0, rng, players = 1) {
   return b;
 }
 const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, splash: 0, aoe: 0 });
+// Pressure (PRESSURE in js/data.js), at the start of every round: the monsters' fury, and a swarm calling one more. b.pressure says what
+// changed this round for the screens: { fury, furyUp, rallied: [uid] }.
+export const furyOf = (b) => { if (!PRESSURE.on) return 0; const F = PRESSURE.fury; const act = Math.min(3, Math.max(1, campOfBattle(b)?.act || 1)); const steps = Math.min(F.max, Math.max(0, b.round - F.from + 1)); return steps * F.per[act - 1]; };
+export const PRESSURE_ON = (on = true) => { PRESSURE.on = on; }; // for the tools (PRESS=1)
+export const isSwarm = (b) => !!(b.quest && b.quest.kind !== 'boss' && (b.swarmSize || 0) >= PRESSURE.rally.min);
+function pressure(b) {
+  b.pressure = { fury: 0, furyUp: false, rallied: [] }; if (!PRESSURE.on) return;
+  if (b.swarmSize == null) b.swarmSize = b.enemies.every((e) => (MONSTERS[e.id]?.hp ?? 999) <= PRESSURE.rally.small) ? b.enemies.length : 0;
+  const fury = furyOf(b); const before = b.enemies.find((e) => e.hp > 0)?.fury || 0;
+  for (const e of b.enemies) e.fury = fury;
+  b.pressure.fury = fury; b.pressure.furyUp = fury > before;
+  const R = PRESSURE.rally; const living = b.enemies.filter((e) => e.hp > 0);
+  if (isSwarm(b) && b.round > 1 && (b.round - 1) % R.every === 0 && living.length >= R.need && living.length < ENEMY_CAP) {
+    const like = living.reduce((a, e) => (e.maxHp < a.maxHp ? e : a), living[0]); // the smallest of them calls a friend
+    const s = spawnEnemy(like.id, { hpMult: like.hpMult, flat: like.flat - (like.teamFlat || 0), teamFlat: like.teamFlat || 0, rewardMult: 0, edge: like.edge, campaign: campOfBattle(b) }, b.rng);
+    s.fresh = true; s.fury = fury; b.enemies.push(s); b.pressure.rallied.push(s.uid);
+  }
+}
 
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
   b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
+  pressure(b);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
@@ -1788,6 +1807,7 @@ function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
 export function beginPartyRound(b) {
   b.round += 1; b.phase = 'reset';
   for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; }
+  pressure(b);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 export function startFighter(b, i) {

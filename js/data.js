@@ -241,6 +241,12 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
 export const EXPERIMENT = { weapons2: false };
+// Pressure (Dave, 22 Oct 2026: "go with what you think"). The matchups (tools/matchup.mjs) showed two shields winning every kind of fight,
+// because health is all a fight costs and nothing rewards finishing. Two rules give attack a reason:
+//   FURY   from round `from`, every monster's blow is `per[act]` harder for each round it has lasted (round 5: x1, round 6: x2 ...), at most `max` steps.
+//   RALLY  a group of `min` or more small monsters (each `small` health or less, never a boss fight) calls one more of its kind every `every`
+//          rounds while at least `need` of them still stand. Thin a swarm quickly and it stops coming.
+export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 } };
 export const WEAPONS2 = {
   faces: {
     sword: { 4: 'R0 B1 R2 R4', 6: 'R0 B1 R2 R3 B4 R6', 8: 'R0 B1 R2 R3 B4 R5 R6 R8', 10: 'R0 B1 R2 R3 B4 R5 R6 B7 R8 R10' },
