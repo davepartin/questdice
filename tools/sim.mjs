@@ -13,6 +13,7 @@ if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // t
 // CLASSID=1 the class-identity experiment (CLASS2 in js/data.js): Bard songs carry, Knight Guard, Dwarf Dig In; CLASSID=songs,guard,digIn for some of them
 if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON(); const w = process.env.CLASSID.split(','); if (w[0] !== '1') { ENGINE.CLASS2.songs = w.includes('songs'); ENGINE.CLASS2.guard = w.includes('guard'); if (!w.includes('digIn')) ENGINE.CLASS2.digIn = 0; } }
 if (typeof process !== 'undefined' && process.env.ARROW_NUM) DATA.WEAPONS2.faces.quiver.special = DATA.WEAPONS2.faces.quiver.numbered; // arrowheads that keep a number
+if (typeof process !== 'undefined' && process.env.ARROW_V2) DATA.WEAPONS2.arrowRules = { pierce: 'all', frost: 'strength' }; // the whole hit pierces; frost takes the hand's Strength off the next blow
 if (typeof process !== 'undefined' && process.env.AMMO) DATA.WEAPONS2.defaultAmmo = process.env.AMMO; // W2=1 AMMO=fire: every Arrows the bots carry (and have not been given another) shoots that ammunition
 // Pressure rules (PRESSURE in js/data.js), one at a time or together: PRESS=1 fury + rallying swarms; FURY=1, RALLY=1, MEND=1, BAG=1 each alone
 // (ChatGPT's review, 22 Oct: "isolate those effects before settling the rules").

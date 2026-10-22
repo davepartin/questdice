@@ -274,6 +274,8 @@ export const WEAPONS2 = {
       numbered: { 4: 'R0 R1 R2 A2', 6: 'R0 R1 R2 R3 A2 A3', 8: 'R0 R1 R2 R3 R4 A2 A3 A4', 10: 'R0 R1 R2 R3 R4 R5 R6 A3 A4 A5' },
     },
   },
+  // how an arrowhead pays (a test switch, ARROW_V2=1 in the tools: pierce 'all' = the whole hit is pierce; frost 'strength' = the next blow is the hand's Strength softer)
+  arrowRules: { pierce: 'strength', frost: 'half' },
   ammo: { normal: 'Normal arrows', pierce: 'Piercing arrows', fire: 'Fire arrows', frost: 'Frost arrows' },
   add: {
     bow: { name: 'Bow', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 24, set: 'quiver', tag: 'A little hit, a little guard. The arrows in your other hand do the rest.', faces: [F(0, 'b'), F(1, 'r'), F(2, 'b'), F(2, 'r')] },

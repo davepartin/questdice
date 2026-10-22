@@ -517,9 +517,10 @@ export function evaluate(hero, board, opts = {}) {
     if (wf.arrow) { // an arrowhead (the weapons experiment's arrows): the hand's printed Strength, in the ammunition's way
       L.arrow = wf.arrow; const s = str;
       out.arrow = { kind: wf.arrow, n: wf.arrow === 'fire' ? Math.floor(s / 2) : s }; // for the battle's banner
-      if (wf.arrow === 'pierce') { L.value -= s; out.pierce += s; out.notes.push(`Piercing arrow: ${s} pierce`); }
+      const AR = WEAPONS2.arrowRules || {};
+      if (wf.arrow === 'pierce') { const n = AR.pierce === 'all' ? L.value : s; L.value -= n; out.pierce += n; out.arrow.n = n; out.notes.push(`Piercing arrow: ${n} pierce`); }
       else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.floor(s / 2); out.notes.push(`Fire arrow: ${Math.floor(s / 2)} to every other monster`); } // half the printed Strength, rounded down (agreed 22 Oct)
-      else if (wf.arrow === 'frost') { out.frost = true; out.notes.push('Frost arrow: the target\'s next blow is halved'); }
+      else if (wf.arrow === 'frost') { out.frost = AR.frost === 'strength' ? Math.max(out.frost || 0, s) : true; out.notes.push(AR.frost === 'strength' ? `Frost arrow: the target's next blow is ${s} softer` : 'Frost arrow: the target\'s next blow is halved'); }
     }
     out.lanes[key] = L;
   }
@@ -646,7 +647,7 @@ export function rollIntent(e, rng) {
   return e.intent;
 }
 // A Frost arrow's chill: the next damaging blow is halved (rounded down) before your block, then it clears. It never stacks.
-export function thaw(e) { if (!e.frost || !isDamageIntent(e.intent || {}) || !(e.mag > 0)) return false; e.mag = Math.floor(e.mag / 2); e.frost = false; return true; }
+export function thaw(e) { if (!e.frost || !isDamageIntent(e.intent || {}) || !(e.mag > 0)) return false; e.mag = typeof e.frost === 'number' ? Math.max(0, e.mag - e.frost) : Math.floor(e.mag / 2); e.frost = false; return true; } // halved, or (arrowRules.frost 'strength') that much softer
 const shuffleIdx = (n, rng) => { const a = Array.from({ length: n }, (_, i) => i); for (let i = n - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 // What is still in a monster's move bag after this round's move, for its card (empty when it shuffles next round, or with no bag).
 export const bagLeft = (e) => (PRESSURE.on && PRESSURE.bag && e.bag && e.bagOf === e.faces ? e.bag.map((i) => e.faces[i]) : null);
@@ -1070,7 +1071,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
       (rep.splashed ||= []).push({ uid: e.uid, dealt: d }); b.stats.dealt += d;
       if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
     }
-    if (ev.frost && tgt && tgt.hp > 0) { tgt.frost = true; rep.frosted = tgt.uid; }
+    if (ev.frost && tgt && tgt.hp > 0) { tgt.frost = ev.frost === true || tgt.frost === true ? true : Math.max(tgt.frost || 0, ev.frost); rep.frosted = tgt.uid; }
   };
   const strike = () => {
     tgt = b.enemies[target];
@@ -2051,7 +2052,7 @@ export function resolveParty(b) {
       const before = e.hp; e.hp = Math.max(0, e.hp - (f.ev.fire - stop)); const d = before - e.hp;
       if (d > 0) { splashed.push({ uid: e.uid, dealt: d, killed: e.hp <= 0 }); f.stats.dealt += d; f._dealt += d; if (e.hp <= 0) kill(e); }
     }
-    if (f.ev.frost && tgt.hp > 0) { tgt.frost = true; (rep.frosted ||= []).push(tgt.uid); }
+    if (f.ev.frost && tgt.hp > 0) { tgt.frost = f.ev.frost === true || tgt.frost === true ? true : Math.max(tgt.frost || 0, f.ev.frost); (rep.frosted ||= []).push(tgt.uid); }
     const fm = f.mods || {}; const magic = (fm.atk || 0) + (fm.pierce || 0) + splash + aoe > 0; // a power put something into this blow
     rep.strikes.push({
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
