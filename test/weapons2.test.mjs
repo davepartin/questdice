@@ -61,7 +61,7 @@ test('stage 3, arrows: the Ranger carries Arrows and a Bow; each arrowhead pays 
   const head = faces('pierce', 4).findIndex((f) => f.arrow) + 1; // the d4's arrowhead face
   const plain = ev('normal', { NW: head, W: 3 }); const p = ev('pierce', { NW: head, W: 3 });
   assert.equal(p.pierce - plain.pierce, 3, 'Piercing: the left hand\'s 3 becomes 3 pierce');
-  const f = ev('fire', { NW: head, W: 3 }); assert.equal(f.fire, 2, 'Fire: half of 3, rounded up, to every other monster');
+  const f = ev('fire', { NW: head, W: 3 }); assert.equal(f.fire, 1, 'Fire: half of 3, rounded down, to every other monster');
   const fr = ev('frost', { NW: head, W: 3 }); assert.ok(fr.frost, 'Frost: the target is chilled');
   const charm = E.newHero({ name: 'C', cls: 'ranger', seed: 2 }); charm.dice = r.dice; charm.loadout.NW = { uid: 'qe', id: 'quiver', ammo: 'fire', rarity: 0 }; E.takeCharm(charm, 'ember');
   assert.ok(!E.evaluate(charm, board({ NW: head, W: 3, NE: 2 })).notes.some((n) => /Ember/.test(n)), 'an arrowhead is not a blank: no Ember Locket (the bow shows a 1, not its blank)');
@@ -83,4 +83,18 @@ test('stage 3, arrows in a fight: Fire splashes past the target (guard can stop 
   const o = b2.enemies[0]; o.intent = { n: 'Club', v: 'strike', f: 10, m: 0 }; o.windup = false;
   E.resolve(b2, { target: 0 }); const act = b2.report.acts.find((a) => a.uid === o.uid);
   assert.ok(act.frosted, 'its blow this round was halved'); assert.equal(act.mag, 5, '10 halved to 5'); assert.ok(!o.frost, 'and the frost cleared');
+});
+
+test('stage 3, arrows at a table: two archers\' frost still chills once', () => {
+  E.useWeapons2();
+  const fight = (ammo) => {
+    const mk = (n) => { const h = E.newHero({ name: n, cls: 'ranger', seed: n.length }); h.dice = [...new Set([...(h.dice || []), 'NE'])]; h.loadout.NW = { uid: `q${n}`, id: 'quiver', ammo, rarity: 0 }; return h; };
+    const b = E.newPartyBattle([mk('Ann'), mk('Cole')], { enemies: ['ogre', 'goblin'], hpMult: 3, flat: 0, rewardMult: 1, kind: 'battle' }, E.makeRng(5));
+    const head = E.weaponFaces({ id: 'quiver', ammo: 'frost', rarity: 0 }, 4).findIndex((f) => f.arrow) + 1;
+    for (let i = 0; i < 2; i++) { E.startFighter(b, i); const f = b.fighters[i]; for (const [k, v] of Object.entries({ NW: head, W: 4, NE: 1 })) f.board[k] = { v, bound: false }; f.target = 0; E.commitFighter(b, i); }
+    const o = b.enemies[0]; o.intent = { n: 'Club', v: 'strike', f: 12, m: 0 }; o.windup = false;
+    E.resolveParty(b); return { act: b.report.acts.find((x) => x.uid === o.uid), o };
+  };
+  const plain = fight('pierce'); const cold = fight('frost');
+  assert.ok(cold.act.frosted); assert.equal(cold.act.mag, Math.floor(plain.act.mag / 2), 'halved once, not quartered'); assert.ok(!cold.o.frost, 'and cleared');
 });

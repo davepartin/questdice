@@ -511,7 +511,7 @@ export function evaluate(hero, board, opts = {}) {
     if (wf.arrow) { // an arrowhead (the weapons experiment's arrows): the hand's printed Strength, in the ammunition's way
       L.arrow = wf.arrow; const s = str;
       if (wf.arrow === 'pierce') { L.value -= s; out.pierce += s; out.notes.push(`Piercing arrow: ${s} pierce`); }
-      else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.ceil(s / 2); out.notes.push(`Fire arrow: ${Math.ceil(s / 2)} to every other monster`); }
+      else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.floor(s / 2); out.notes.push(`Fire arrow: ${Math.floor(s / 2)} to every other monster`); } // half the printed Strength, rounded down (agreed 22 Oct)
       else if (wf.arrow === 'frost') { out.frost = true; out.notes.push('Frost arrow: the target\'s next blow is halved'); }
     }
     out.lanes[key] = L;
@@ -2020,6 +2020,15 @@ export function resolveParty(b) {
         if (e.hp <= 0) kill(e);
       }
     }
+    // the weapons experiment's arrows, as in a solo fight: a Fire arrow splashes past the target (each monster's guard, shared by the table,
+    // can stop it); a Frost arrow chills the target (two archers still chill it once: frost never stacks)
+    if (f.ev.fire > 0) for (const e of b.enemies) {
+      if (e === tgt || e.hp <= 0) continue;
+      const g = guardLeft.get(e.uid) || 0; const stop = Math.min(g, f.ev.fire); if (guardLeft.has(e.uid)) guardLeft.set(e.uid, g - stop);
+      const before = e.hp; e.hp = Math.max(0, e.hp - (f.ev.fire - stop)); const d = before - e.hp;
+      if (d > 0) { splashed.push({ uid: e.uid, dealt: d, killed: e.hp <= 0 }); f.stats.dealt += d; f._dealt += d; if (e.hp <= 0) kill(e); }
+    }
+    if (f.ev.frost && tgt.hp > 0) { tgt.frost = true; (rep.frosted ||= []).push(tgt.uid); }
     const fm = f.mods || {}; const magic = (fm.atk || 0) + (fm.pierce || 0) + splash + aoe > 0; // a power put something into this blow
     rep.strikes.push({
       name: f.hero.name, uid: f.hero.name, targetUid: tgt.uid, dealt, guarded, pierce: T.pierce, atk: T.atk,
@@ -2028,7 +2037,8 @@ export function resolveParty(b) {
   };
   const actFor = (e) => {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0 };
+    const frosted = thaw(e); // a Frost arrow halves its next damaging blow
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, frosted };
     switch (i.v) {
       case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
       case 'pierce': { Object.assign(act, strikeHit(e, true)); break; }

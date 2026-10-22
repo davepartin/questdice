@@ -157,7 +157,7 @@ The first two fit the matchups best: defence against the heavy hitter, attack ag
 - **Normal arrows** carry numbers only (d8: 0 1 2 3 5 6 7 8). **Piercing, Fire and Frost** carry low numbers and arrowheads: one on a d4, two on a d6, three on a d8 or d10.
 - **An arrowhead pays the hand's printed Strength:**
   - **Piercing** turns all of it into pierce.
-  - **Fire** hits the target and splashes half of it, rounded up, on every other monster, and each monster's guard can stop that splash.
+  - **Fire** hits the target and splashes half of it, rounded down, on every other monster, and each monster's guard can stop that splash.
   - **Frost** hits and chills the target. Its next damaging blow is halved, rounded down, before your block, then the frost clears. It never stacks, and if the monster already struck early this round, the frost waits for its next blow.
 - An arrowhead isn't a blank, so the Ember Locket doesn't fire on it. Fire and Frost aren't in team fights yet.
 - Tests: test/weapons2.test.mjs. Measure with `ARROWS=1 W2=1 node tools/matchup.mjs` (four ammunitions, plus Sword + Shield and Dagger + Sword to compare).

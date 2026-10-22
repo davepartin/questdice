@@ -259,7 +259,7 @@ export const WEAPONS2 = {
     shield: 'flip:sword', tower: 'flip:axe',
     // Stage 3, the bow set: the Bow in the right hand (a little hit, a little guard), the Arrows in the left. A is an arrowhead: it pays the
     // hand's Strength in the ammunition's way instead of a number (Piercing: all of it as pierce; Fire: it hits the target and half of it,
-    // rounded up, splashes on every other monster, which their guard can stop; Frost: it hits, and the target's next damaging blow is
+    // rounded down, splashes on every other monster, which their guard can stop; Frost: it hits, and the target's next damaging blow is
     // halved before your block, then the frost clears; it never stacks). Bigger dice carry more arrowheads. Normal arrows have none.
     bow: { 4: 'B0 R1 B2 R2', 6: 'B0 R1 B1 R2 B3 R3', 8: 'B0 R1 B1 R2 B3 R3 R4 B4', 10: 'B0 R1 B1 R2 B3 R3 R4 B4 R5 B5' },
     quiver: {
