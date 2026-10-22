@@ -187,10 +187,10 @@ test('Guard Triples: a side column (weapon +N, hand, talent) on the same number 
   assert.deepEqual(names({ ...rest, NW: 1, W: 1, SW: 1, NE: 1, E: 1, SE: 1 }), [], 'a +0 weapon never matches');
   const E = await import('../js/engine.js'); const fang = knight(); Object.assign(fang, { special: h.special, talent: h.talent }); assert.ok(E.takeCharm(fang, 'fang'));
   const lf = evaluate(fang, board({ ...rest, NW: 4, W: 4, SW: 4, NE: 1, E: 1, SE: 5 }));
-  assert.equal(lf.block - base.block, 20, 'Wolf Fang: +20'); assert.equal(lf.triples[0].bonus, 20);
+  assert.equal(lf.block - base.block, 15, 'Wolf Fang: +15'); assert.equal(lf.triples[0].bonus, 15);
 });
 
-test('triples pay 10 / 15 / 20 in Act I / II / III, attack and block alike; Wolf Fang doubles that', async () => {
+test('triples pay 10 / 15 / 20 in Act I / II / III, attack and block alike; Wolf Fang adds half again', async () => {
   const E = await import('../js/engine.js');
   const at = (act, fang = false) => { const h = knight(); h.campaign.act = act; if (fang) assert.ok(E.takeCharm(h, 'fang')); return h; };
   const gain = (h, b, base, k) => evaluate(h, board(b))[k] - evaluate(h, board(base))[k];
@@ -202,8 +202,8 @@ test('triples pay 10 / 15 / 20 in Act I / II / III, attack and block alike; Wolf
     assert.equal(evaluate(at(act), board(strength[0])).triples[0].bonus, want);
     assert.equal(E.tripleBonus(at(act)), want);
   }
-  assert.equal(gain(at(2, true), ...strength, 'atk'), 30, 'Wolf Fang in Act II');
-  assert.equal(gain(at(3, true), ...headtoe, 'block'), 40, 'Wolf Fang in Act III');
+  assert.equal(gain(at(2, true), ...strength, 'atk'), 23, 'Wolf Fang in Act II (15 x 1.5, rounded)');
+  assert.equal(gain(at(3, true), ...headtoe, 'block'), 30, 'Wolf Fang in Act III');
 });
 
 test('the battle gold chip climbs round by round and ends on what victory pays', async () => {
@@ -975,15 +975,20 @@ test('charms bend one rule each, three at most, and a boss offers a choice of tw
   // Twin Coin: both weapon dice on the same number
   const sw = E.weaponFaces(knight().loadout.NW, 4); const sh = E.weaponFaces(knight().loadout.NE, 4);
   const same = [1, 2, 3, 4].flatMap((a) => [1, 2, 3, 4].map((c) => [a, c])).find(([a, c]) => sw[a - 1].v > 0 && sw[a - 1].v === sh[c - 1].v);
-  if (same) assert.equal(diff('twins', { NW: same[0], NE: same[1] }, 'atk'), 10);
-  // Wolf Fang: a Head to Toe Triple pays 20 block, not 10
-  assert.equal(diff('fang', { N: 3, C: 3, S: 3 }, 'block'), 10);
+  if (same) assert.equal(diff('twins', { NW: same[0], NE: same[1] }, 'atk'), 5, 'half a triple');
+  // Wolf Fang: a Head to Toe Triple pays 15 block, not 10
+  assert.equal(diff('fang', { N: 3, C: 3, S: 3 }, 'block'), 5);
   // Gambler's Bone: a head 1 counts as 6 (6 with heart 6 and feet 6 is a Head to Toe Triple)
   assert.ok(E.evaluate(with_('bone'), board({ N: 1, C: 6, S: 2 })).triples.length >= 0);
   assert.ok(E.evaluate(with_('bone'), board({ N: 1, C: 6, S: 6, W: 2, E: 2 })).triples.some((t) => t.row === 'headtoe'));
   assert.ok(!E.evaluate(knight(), board({ N: 1, C: 6, S: 6, W: 2, E: 2 })).triples.some((t) => t.row === 'headtoe'));
+  // Gambler's Bone: only one 1 a round turns into a 6 (both hands on 1: one of them)
+  { const two = E.evaluate(with_('bone'), board({ W: 1, E: 1, N: 3, S: 2 })); const one = E.evaluate(with_('bone'), board({ W: 1, E: 2, N: 3, S: 2 })); const none = E.evaluate(knight(), board({ W: 1, E: 1, N: 3, S: 2 }));
+    assert.ok(two.atk + two.block - (none.atk + none.block) <= one.atk + one.block - E.evaluate(knight(), board({ W: 1, E: 2, N: 3, S: 2 })).atk - E.evaluate(knight(), board({ W: 1, E: 2, N: 3, S: 2 })).block + 0.001, 'a second 1 adds nothing more'); }
+  // Heartstone: the heart's boost counts double (heart 6: +8 on each red weapon instead of +4)
+  { const hb = (x) => { const e = E.evaluate(x, board({ C: 6 })); return Object.values(e.lanes).reduce((a, l) => a + (l.amp || 0), 0); }; const plainAmp = hb(knight()); if (plainAmp) assert.equal(hb(with_('heartstone')), plainAmp * 2); }
   // Mirror Shard: a straight heals 6
-  const st = { N: 1, W: 2, C: 3, E: 4, S: 5 }; if (E.evaluate(knight(), board(st)).straight) assert.equal(diff('mirror', st, 'heal'), 12);
+  const st = { N: 1, W: 2, C: 3, E: 4, S: 5 }; if (E.evaluate(knight(), board(st)).straight) assert.equal(diff('mirror', st, 'heal'), 6);
   // Thorn Crown: a Gold top face's three pierce count six
   const g = knight(); g.loadout.NW = E.makeWeapon('sword', 2, null, 4); const gt = knight(); gt.loadout.NW = E.makeWeapon('sword', 2, null, 4); E.takeCharm(gt, 'thorns');
   assert.equal(E.evaluate(gt, board({ NW: 4 })).pierce - E.evaluate(g, board({ NW: 4 })).pierce, 3);
@@ -992,10 +997,10 @@ test('charms bend one rule each, three at most, and a boss offers a choice of tw
   for (const id of ids.slice(0, CHARM_MAX)) assert.ok(E.takeCharm(h, id));
   assert.equal(E.takeCharm(h, ids[CHARM_MAX]), false); assert.ok(E.charmFull(h));
   assert.ok(E.dropCharm(h, ids[0])); assert.equal(E.takeCharm(h, ids[1]), false, 'no doubles');
-  // Blood Pact: full magic, 8 less health; Lantern: one more reroll; Phoenix: stands at 10 once
+  // Blood Pact: 8 more magic, 8 less health; Lantern: one more reroll; Phoenix: stands at 10 once
   const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
   const plain = E.newBattle(knight(), quest, makeRng(1), 1); const pact = E.newBattle(with_('pact'), quest, makeRng(1), 1);
-  assert.equal(pact.maxHp, plain.maxHp - 8); assert.equal(pact.magic, E.magicCapOf(knight()));
+  assert.equal(pact.maxHp, plain.maxHp - 8); assert.equal(pact.magic, Math.min(E.magicCapOf(knight()), plain.magic + 8));
   const lan = E.newBattle(with_('lantern'), quest, makeRng(1), 1); E.startRoll(lan); E.startRoll(plain); assert.equal(lan.actionsLeft, plain.actionsLeft + 1);
   const ph = E.newBattle(with_('phoenix'), { ...quest, enemies: ['ogre'] }, makeRng(2), 1); ph.hp = 1; E.startRoll(ph);
   for (let r = 0; r < 6 && !ph.outcome; r++) { E.resolve(ph, { target: 0 }); if (ph.phoenixUsed) break; if (!ph.outcome) E.startRoll(ph); }
@@ -1013,7 +1018,7 @@ test('Line Breaker: every triple pays +2 more a rank, attack or block; Stout Hea
   const k = knight(); assert.equal(gain(k, strength, 'atk'), 10);
   k.perks.push('linebreaker'); assert.equal(gain(k, strength, 'atk'), 12); assert.equal(gain(k, headtoe, 'block'), 12);
   k.perks.push('linebreaker', 'linebreaker'); assert.equal(gain(k, strength, 'atk'), 16, 'three ranks: +6');
-  assert.ok(E.takeCharm(k, 'fang')); assert.equal(gain(k, strength, 'atk'), 32, 'Wolf Fang doubles the lot');
+  assert.ok(E.takeCharm(k, 'fang')); assert.equal(gain(k, strength, 'atk'), 24, 'Wolf Fang adds half again to the lot');
   assert.equal(D.PERKS.linebreaker.max, 5);
   const old = knight(); const hp0 = E.maxHpOf(old); old.perks.push('grit'); assert.equal(E.maxHpOf(old), hp0 + 4, 'an old Stout Heart keeps its health');
   const offers = new Set(); const h = knight(); h.level = 4; h.pendingPerks = 1;

@@ -137,15 +137,15 @@ export const CHARM_MAX = 3;
 // Said plainly (Dave, Oct 2026: "I have no idea what charms are or what these words are saying"); the glossary lists all of them
 export const CHARMS = {
   ember: { name: 'Ember Locket', icon: 'flame', text: 'A weapon die lands on 0: you still get 3 attack and 1 magic (once a round).' },
-  mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight you roll also heals you 12.' },
-  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice land on the same number: bonus attack, the same as a triple.' },
+  mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight you roll also heals you 6.' },
+  twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice land on the same number: bonus attack, half a triple (5, 8, 10 by act).' },
   thorns: { name: 'Thorn Crown', icon: 'crown', text: 'The small icons on your weapon faces count twice. Three arrows give 6, not 3.' },
-  bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'A 1 on your head, hand or feet die counts as a 6.' },
-  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple you roll pays double.' },
+  bone: { name: 'Gambler’s Bone', icon: 'dice', text: 'One 1 on your head, hand or feet die counts as a 6 (once a round).' },
+  fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple you roll pays half again (15 instead of 10 in Act I).' },
   lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One extra free reroll every round.' },
   phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a hit that would knock you out leaves you at 10 health.' },
-  pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with full magic, but 8 less health.' },
-  heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die rolls twice, and you keep the higher number.' },
+  pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with 8 more magic, but 8 less health.' },
+  heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die\'s boost counts double.' },
 };
 export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one
 export const CHARM_PRICE = [110, 150, 200]; // the Camp Store's price, by act

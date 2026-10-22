@@ -417,7 +417,6 @@ export function rollSlot(hero, slot, rng) { return { v: die(rng, sidesOf(hero, s
 export function rollBoard(hero, rng) {
   const board = {};
   for (const s of Object.keys(ROLE)) board[s] = s === 'P' && !hero.pet ? { v: 1, bound: false } : rollSlot(hero, s, rng); // no pet: no roll (keeps the dice stream the same)
-  if (hasCharm(hero, 'heartstone')) { const again = rollSlot(hero, 'C', rng); if (again.v > board.C.v) board.C = again; } // Heartstone: the better of two
   return board;
 }
 
@@ -433,10 +432,11 @@ export const diceInPlay = (hero) => ['NW', 'N', 'NE', 'W', 'C', 'E', 'S', 'SW', 
 export function straightMin(hero) { return Math.max(STRAIGHT_RULE.min, Math.min(STRAIGHT_RULE.max, diceInPlay(hero) - STRAIGHT_RULE.less)); }
 export function evaluate(hero, board, opts = {}) {
   const mods = heroMods(hero);
-  const BONE = new Set(['N', 'W', 'E', 'S']); const boneOn = hasCharm(hero, 'bone'); // Gambler's Bone: a 1 on a white die is a 6
-  const bone = boneOn && [...BONE].some((s) => board[s]?.v === 1);
-  const val = (s) => (boneOn && BONE.has(s) && board[s].v === 1 ? 6 : board[s].v);
-  const TRIPLE = (tripleBonus(hero) + mods.tripleBonus) * (hasCharm(hero, 'fang') ? 2 : 1); // Line Breaker adds 2 a rank; Wolf Fang doubles the lot
+  // Gambler's Bone: ONE 1 on a head, hand or feet die counts as a 6, once a round (charm audit, Oct 2026: on every 1 it added about 7 attack a round)
+  const boneSlot = hasCharm(hero, 'bone') ? ['W', 'E', 'N', 'S'].find((s) => board[s]?.v === 1) : null;
+  const bone = !!boneSlot;
+  const val = (s) => (s === boneSlot ? 6 : board[s].v);
+  const TRIPLE = Math.round((tripleBonus(hero) + mods.tripleBonus) * (hasCharm(hero, 'fang') ? 1.5 : 1)); // Line Breaker adds 2 a rank; Wolf Fang adds half again (was double: about 8 attack a round)
   const out = {
     init: val('S'), atk: 0, block: 0, pierce: 0, heal: 0, magic: 0, gold: 0, splash: 0,
     lanes: {}, offense3: false, defense3: false, triples: [], straight: 0, straightBonus: 0, notes: [],
@@ -458,10 +458,11 @@ export function evaluate(hero, board, opts = {}) {
     const sym = ['heal', 'pierce', 'magic', 'gold'][hv - 1];
     const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
     const matches = hit.length;
-    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
-    const amp = HEART_AMP[hv - 1] * matches;
+    const hs = hasCharm(hero, 'heartstone') ? 2 : 1; // Heartstone: the heart's boost counts double (charm audit: rolling it twice was worth almost nothing)
+    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
+    const amp = HEART_AMP[hv - 1] * matches * hs;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
-    if (matches) out.notes.push(`Heart Boost +${HEART_AMP[hv - 1] * matches} ${sym}`);
+    if (matches) out.notes.push(`Heart Boost +${amp} ${sym}`);
   }
 
   // Lanes: weapon (color + number) + hand strength (doubled by 2x); a talent number face pays its number in its symbol.
@@ -497,8 +498,9 @@ export function evaluate(hero, board, opts = {}) {
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5 && !hushed) {
     const want = hv === 5 ? 'b' : 'r'; let n = 0;
-    for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += HEART_COLOR_BONUS; l.amp = HEART_COLOR_BONUS; n++; }
-    if (n) out.notes.push(`Heart ${hv}: +${HEART_COLOR_BONUS} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
+    const hb = HEART_COLOR_BONUS * (hasCharm(hero, 'heartstone') ? 2 : 1); // Heartstone doubles it
+    for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += hb; l.amp = hb; n++; }
+    if (n) out.notes.push(`Heart ${hv}: +${hb} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
   }
   for (const l of Object.values(out.lanes)) { if (l.color === 'r') out.atk += l.value; else out.block += l.value; }
 
@@ -543,9 +545,9 @@ export function evaluate(hero, board, opts = {}) {
     out.straightSlots = Array.from({ length: best }, (_, i) => numSlot.get(top - best + 1 + i));
     out.straight = best; out.straightBonus = STRAIGHT[best];
     if ((opts.straight || 'atk') === 'gold') out.gold += out.straightBonus; else out.atk += out.straightBonus;
-    if (hasCharm(hero, 'mirror')) { out.heal += 12; out.notes.push('Mirror Shard heals 12'); }
+    if (hasCharm(hero, 'mirror')) { out.heal += 6; out.notes.push('Mirror Shard heals 6'); } // was 12: 10 to 14 health a fight back in Acts II and III (charm audit)
   }
-  if (hasCharm(hero, 'twins') && out.lanes.L && out.lanes.R && out.lanes.L.weapon > 0 && out.lanes.L.weapon === out.lanes.R.weapon) { const tw = tripleBonus(hero); out.atk += tw; out.twinCoin = true; out.notes.push(`Twin Coin +${tw}`); }
+  if (hasCharm(hero, 'twins') && out.lanes.L && out.lanes.R && out.lanes.L.weapon > 0 && out.lanes.L.weapon === out.lanes.R.weapon) { const tw = Math.round(tripleBonus(hero) / 2); out.atk += tw; out.twinCoin = true; /* half a triple: weapon numbers cluster, so a bow matched 4 rolls in 10 (charm audit) */ out.notes.push(`Twin Coin +${tw}`); }
   if (bone) out.notes.push('Gambler’s Bone: a 1 is a 6');
   out.gold = Math.round(out.gold * (1 + mods.goldPct));
   return out;
@@ -727,12 +729,12 @@ export function newBattle(hero, quest0, rng, players = 1) {
   }
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign }, rng));
   const boon = pullBlessings(hero);
-  const pact = hasCharm(hero, 'pact'); // Blood Pact: full magic, 8 less health
+  const pact = hasCharm(hero, 'pact'); // Blood Pact: 8 more magic, 8 less health (was full magic, worth 10 health a fight late on)
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   const b = {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
     hp: Math.max(1, maxHp - (boon.wound || 0)), maxHp,
-    magic: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
+    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic + (pact ? PACT_MAGIC : 0))), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, lastStandUsed: false, potions: potionStock(hero), points: 0,
     mods: blankMods(), nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
@@ -948,6 +950,7 @@ export function castPower(b, id, { x, release } = {}) {
 }
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
 export const LUCK = { mid: 3, top: 6 };
+export const PACT_MAGIC = 8; // Blood Pact's extra starting magic (for 8 health)
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
   const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };
@@ -1718,11 +1721,11 @@ function makeFighter(hero) {
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   return {
     hero, maxHp, hp: Math.max(1, maxHp - (boon.wound || 0)),
-    magic: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), boon,
+    magic: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic + (pact ? PACT_MAGIC : 0))), boon,
     board: null, actionsLeft: rerollTotal(), freeActions: [], used: {}, usedRound: {}, charge: {}, mods: blankMods(), potions: potionStock(hero), points: 0, reviveUsed: false, teamRound: 0,
     nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, boundNow: 0, lastStandUsed: false, goldEarned: 0, straight: 'atk', target: 0,
     stats: blankPartyStats(), contrib: 0,
-    magic0: pact ? magicCapOf(hero) : Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic)), potions0: potionStock(hero), // for secret objectives
+    magic0: Math.max(0, Math.min(magicCapOf(hero), startMagicOf(hero) + boon.startMagic + (pact ? PACT_MAGIC : 0))), potions0: potionStock(hero), // for secret objectives
   };
 }
 function blankPartyStats() {
