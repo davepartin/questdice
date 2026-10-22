@@ -1276,3 +1276,11 @@ Dave: "the camp fonts are getting kind of too many... stick with just a few". de
 - **Inter**: reading. Descriptions, hints, small print.
 - **Cormorant Garamond**: names and titles. The screen title, hero, power and monster names, story text, and the battle's round and quest titles (this replaces Cinzel; --serif points to it, and hudkit no longer loads Cinzel).
 - Archivo Black is used for the QuestDice logo only. Victory and defeat titles, banners, room codes and the round number flourish use Oxanium 800.
+
+## Magic value pass, October 22, 2026
+
+Dave: test cheaper upgrades and stronger charges side by side, put a rough exchange rate on gold, magic, attack and health, and make the upgrade words clear and short. The new tool is tools/worth.mjs (+ worth-all.sh). It replays the same fights with and without one purchase. docs/balance/MAGIC_VALUE_2026-10-22.md has the exchange rate and the results.
+- Power levels cost 50/90/140 gold (was 60/140/260). Every charge gets +2 a level (CHARGE_LEVEL_ADD [0,2,4,6]; CHARGE_LEVEL_FRAC is now zeros). Every-round powers still get about +1.
+- Camp power page: "Total 28 attack", the compare box shows Total → Total, "Upgrade adds: +2 attack each charge (+8 total)", and the level list shows totals. The base description and the charge "when" line are gone. Shorter charge texts in data.js.
+- Sim bot: it recharges big moves (3 magic) and buys power levels after its dice, keeping 30 gold back.
+- Campaigns (20 each, same bot): 17 → 20 of 20 cleared, power share 5–7% → 6–9%, Act II boss wins 89% → 78% (watch this).

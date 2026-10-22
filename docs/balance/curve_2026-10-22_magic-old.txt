@@ -1,0 +1,57 @@
+QuestDice damage curve · normal · wise bot · 3 trials a step · campaigns cleared 17/20
+A round's THROW is attack + pierce + splash (the number the player sees). Health % is the lowest point of each fight.
+
+1. By act and kind of fight (all classes)
+                 fights  win rounds  throw   mid   90%   max   dice trip strt powr   landed  taken  low  <half <qtr   strt trip
+Act 1 battle       480   98%    3.5   28.0    27    44    80    75%  19%   1%   5%     21.5    6.6   61%   29%    8%    15%  44%
+Act 1 elite         60  100%    5.1   32.9    31    51    81    78%  18%   0%   4%     30.6    4.6   59%   37%    3%    19%  47%
+Act 1 boss          60   88%    7.5   36.0    35    54   105    80%  13%   2%   5%     32.2    7.7   40%   65%   23%    32%  37%
+Act 2 battle       453   98%    5.6   39.3    38    61   104    77%  16%   2%   5%     32.9   10.5   51%   44%   11%    29%  35%
+Act 2 elite         57   95%    8.7   40.8    39    64   102    75%  17%   1%   6%     37.0    6.0   54%   33%   11%    29%  39%
+Act 2 boss          54   89%    9.5   48.4    46    71   136    83%   9%   1%   7%     43.6    7.9   49%   39%   17%    31%  24%
+Act 3 battle       378   95%    7.4   46.8    45    74   148    79%  11%   3%   6%     40.7   11.4   51%   40%   12%    29%  23%
+Act 3 elite         54   96%    8.9   52.2    50    76   114    86%   7%   1%   5%     45.8    9.6   53%   35%    9%    39%  18%
+Act 3 boss         105   91%   15.2   48.4    47    76   135    81%   8%   2%   9%     43.2    8.3   43%   55%   26%    33%  18%
+Act 1 all          600   97%    4.1   30.1    29    48   105    77%  18%   1%   5%     24.6    6.5   59%   33%    9%    19%  43%
+Act 2 all          564   97%    6.3   40.8    39    63   136    78%  15%   2%   5%     35.1    9.5   51%   42%   11%    29%  34%
+Act 3 all          537   94%    9.1   47.8    46    75   148    81%  10%   2%   7%     42.0   10.2   50%   42%   15%    32%  21%
+
+2. By act and class (every kind of fight)
+                 fights  win rounds  throw   mid   90%   max   dice trip strt powr   landed  taken  low  <half <qtr   strt trip
+Act 1 knight       120   99%    4.1   30.6    29    51    76    78%  15%   1%   5%     24.9    6.1   63%   24%    4%    18%  38%
+Act 1 ranger       120   98%    4.0   30.6    31    47    80    76%  18%   1%   5%     25.1    6.1   59%   39%   10%    20%  46%
+Act 1 wizard       120   94%    3.8   32.2    30    51   105    73%  19%   2%   7%     26.1    7.0   52%   44%   17%    16%  50%
+Act 1 dwarf        120   99%    4.4   28.1    27    44    81    78%  17%   1%   4%     23.3    6.7   64%   24%    3%    21%  40%
+Act 1 bard         120   97%    4.2   29.1    28    48    92    77%  18%   1%   4%     23.9    6.6   57%   35%   12%    19%  43%
+Act 2 knight       120   96%    6.1   42.7    41    68   121    80%  15%   1%   4%     36.6    9.5   52%   42%   11%    22%  36%
+Act 2 ranger        99   96%    6.4   39.0    38    61   109    77%  13%   3%   6%     33.2    9.0   47%   46%   17%    33%  30%
+Act 2 wizard       120   96%    5.7   44.1    42    66   136    76%  15%   2%   7%     37.9   10.5   46%   53%   13%    28%  37%
+Act 2 dwarf        120   98%    6.7   38.5    37    61    93    78%  15%   2%   5%     33.2    8.9   59%   29%    4%    35%  33%
+Act 2 bard         105   98%    6.4   39.8    39    60    93    78%  16%   2%   4%     34.4    9.7   50%   41%   11%    28%  36%
+Act 3 knight       117   94%    8.7   49.6    47    76   135    85%   9%   2%   4%     43.5   10.8   48%   43%   16%    24%  20%
+Act 3 ranger        90   97%   10.5   41.9    40    69   138    75%  13%   3%   9%     36.7    8.6   51%   41%   14%    38%  23%
+Act 3 wizard       120   92%    8.5   50.1    47    75   130    79%  10%   4%   8%     44.3   11.2   42%   55%   23%    35%  22%
+Act 3 dwarf        120   97%    9.4   46.2    45    72   118    80%   8%   2%  10%     40.8    9.1   59%   28%    7%    32%  18%
+Act 3 bard          90   93%    8.3   52.2    50    78   148    83%   9%   2%   5%     45.7   11.8   49%   46%   13%    29%  22%
+
+3. Big moments: rounds whose throw is at least twice the act's average round
+  Act 1: average round 30.1 (plan's target 10 to 15); 2% of rounds are 2x or more, 0% are 5x or more; hero health about 40; monsters' health a fight 104
+  Act 2: average round 40.8 (plan's target 15 to 25); 2% of rounds are 2x or more, 0% are 5x or more; hero health about 60; monsters' health a fight 227
+  Act 3: average round 47.8 (plan's target 25 to 40); 2% of rounds are 2x or more, 0% are 5x or more; hero health about 80; monsters' health a fight 420
+
+4. What the hero holds at the end of each act (bot's choice by average throw)
+  Act 1 knight  Bronze War Hammer d6 (2h) | Silver Bow d6 (2h) | Bronze Staff d4 (2h) | Silver War Hammer d4 (2h)
+  Act 1 ranger  Bronze War Hammer d6 (2h) | Bronze Bow d6 (2h) | Bronze Staff d4 (2h) | Bronze Bow d4 (2h)
+  Act 1 wizard  Bronze War Hammer d6 (2h) | Silver Bow d6 (2h) | Bronze Staff d4 (2h) | Silver War Hammer d4 (2h)
+  Act 1 dwarf   Bronze War Hammer d6 (2h) | Silver Bow d6 (2h) | Bronze Staff d4 (2h) | Bronze Bow d4 (2h)
+  Act 1 bard    Bronze War Hammer d6 (2h) | Silver Bow d6 (2h) | Bronze Staff d4 (2h) | Bronze Bow d4 (2h)
+  Act 2 knight  Silver Staff d8 (2h) | Bronze Long Sword d4 (2h) | Silver Bow d8 (2h) | Silver Long Sword d6 (2h)
+  Act 2 ranger  Silver Staff d8 (2h) | Silver Bow d8 (2h) | Silver Long Sword d6 (2h)
+  Act 2 wizard  Silver Staff d8 (2h) | Bronze Long Sword d4 (2h) | Silver Bow d8 (2h) | Silver Long Sword d6 (2h)
+  Act 2 dwarf   Silver Staff d8 (2h) | Silver Spear d6 + Silver Mace d6 | Silver Bow d8 (2h) | Silver Staff d6 (2h)
+  Act 2 bard    Bronze Long Sword d6 (2h) | Bronze Bow d4 (2h) | Silver Long Sword d6 (2h)
+  Act 3 knight  Silver Long Sword d10 (2h) | Silver Staff d6 (2h) | Bronze War Hammer d10 (2h)
+  Act 3 ranger  Silver Long Sword d10 (2h) ×2 | Bronze Bow d4 (2h)
+  Act 3 wizard  Silver Long Sword d10 (2h) ×2 | Silver Staff d6 (2h) | Silver Bow d6 (2h)
+  Act 3 dwarf   Silver Long Sword d10 (2h) ×2 | Silver Bracer d10 + Bronze Mace d8 | Bronze War Hammer d10 (2h)
+  Act 3 bard    Silver Long Sword d10 (2h) | Silver Bracer d10 + Silver Spear d6 | Bronze War Hammer d10 (2h)
