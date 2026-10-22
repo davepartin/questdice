@@ -969,8 +969,9 @@ test('charms bend one rule each, three at most, and a boss offers a choice of tw
   const knight = () => { const h = newHero({ name: 'C', cls: 'knight', seed: 1 }); h.dice = [...new Set([...(h.dice || []), 'NE'])]; return h; };
   const with_ = (id) => { const h = knight(); assert.ok(E.takeCharm(h, id)); return h; };
   const diff = (id, b, k) => E.evaluate(with_(id), board(b))[k] - E.evaluate(knight(), board(b))[k];
-  // Bronze d4 sword face 1 is a blank: the Ember Locket pays 3 magic for it
-  assert.equal(diff('ember', { NW: 1, NE: 3 }, 'magic'), 2); assert.equal(diff('ember', { NW: 1, NE: 3 }, 'atk'), 6);
+  // Bronze d4 sword face 1 is a blank: the Ember Locket pays 3 attack and 1 magic for it, once a round however many blanks
+  assert.equal(diff('ember', { NW: 1, NE: 3 }, 'magic'), 1); assert.equal(diff('ember', { NW: 1, NE: 3 }, 'atk'), 3);
+  assert.equal(diff('ember', { NW: 1, NE: 1 }, 'atk'), 3, 'two blanks still pay once');
   // Twin Coin: both weapon dice on the same number
   const sw = E.weaponFaces(knight().loadout.NW, 4); const sh = E.weaponFaces(knight().loadout.NE, 4);
   const same = [1, 2, 3, 4].flatMap((a) => [1, 2, 3, 4].map((c) => [a, c])).find(([a, c]) => sw[a - 1].v > 0 && sw[a - 1].v === sh[c - 1].v);

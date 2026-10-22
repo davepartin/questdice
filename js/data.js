@@ -136,7 +136,7 @@ export const DIAMOND = {
 export const CHARM_MAX = 3;
 // Said plainly (Dave, Oct 2026: "I have no idea what charms are or what these words are saying"); the glossary lists all of them
 export const CHARMS = {
-  ember: { name: 'Ember Locket', icon: 'flame', text: 'If a weapon die lands on 0, you still get 6 attack and 2 magic.' },
+  ember: { name: 'Ember Locket', icon: 'flame', text: 'A weapon die lands on 0: you still get 3 attack and 1 magic (once a round).' },
   mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight you roll also heals you 12.' },
   twins: { name: 'Twin Coin', icon: 'coin', text: 'Both weapon dice land on the same number: bonus attack, the same as a triple.' },
   thorns: { name: 'Thorn Crown', icon: 'crown', text: 'The small icons on your weapon faces count twice. Three arrows give 6, not 3.' },

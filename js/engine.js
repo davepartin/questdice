@@ -465,6 +465,7 @@ export function evaluate(hero, board, opts = {}) {
   }
 
   // Lanes: weapon (color + number) + hand strength (doubled by 2x); a talent number face pays its number in its symbol.
+  let embered = false; // the Ember Locket pays once a round
   for (const [key, lane] of Object.entries(LANES)) {
     if (!isActive(hero, lane.weapon)) continue; // no weapon on this side yet
     const inst = hero.loadout[lane.weapon];
@@ -481,7 +482,9 @@ export function evaluate(hero, board, opts = {}) {
       out.pierce += x(wf.fx.pierce || 0); out.magic += x(wf.fx.magic || 0); out.heal += x(wf.fx.heal || 0);
       out.gold += x(wf.fx.loot || 0); out.splash += x(wf.fx.splash || 0);
     }
-    if (wf.v === 0 && hasCharm(hero, 'ember')) { out.atk += 6; out.magic += 2; out.notes.push('Ember Locket +6 attack, +2 magic'); }
+    // Ember Locket: a blank still pays a little, once a round (Dave, Oct 2026: "op for me, my gold weapon has 4 zeros"; at +6 and +2 on
+    // every blank it more than doubled a brutal weapon). Now about a third more on a mostly-blank weapon, a consolation not a reason to miss.
+    if (wf.v === 0 && hasCharm(hero, 'ember') && !embered) { embered = true; out.atk += 3; out.magic += 1; out.notes.push('Ember Locket +3 attack, +1 magic'); }
     for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
     out.lanes[key] = L;
   }
