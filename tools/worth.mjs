@@ -64,7 +64,10 @@ const metalBuy = (h) => {
   }
   return null;
 };
-const BUYS = {
+// a charm, at the Camp Store's price for the act (a boss gives one free, but this is what one is worth in gold)
+const charmBuy = (id) => (h) => { if ((h.charms || []).includes(id)) return null; (h.charms ||= []).push(id); return { cost: DATA.CHARM_PRICE[Math.min(3, h.campaign.act) - 1] }; };
+const CHARM_BUYS = Object.fromEntries(Object.keys(DATA.CHARMS).map((id) => [`charm ${id}`, charmBuy(id)]));
+const BUYS = process.env.WHAT === 'charms' ? CHARM_BUYS : {
   'hand die': dieBuy('strength', 'E', DATA.STRENGTH_STEPS), 'talent die': dieBuy('special', 'SE', DATA.SPECIAL_STEPS), 'head die': dieBuy('mind', 'N', DATA.MIND_STEPS),
   'power A': powerBuy('A'), 'power B': powerBuy('B'), 'power C': powerBuy('C'), 'power A x3': powerBuy('A', 3), 'power B x3': powerBuy('B', 3), 'power C x3': powerBuy('C', 3), 'weapon metal': metalBuy,
 };
@@ -106,6 +109,6 @@ function report(rows) {
     const per100 = (m('health') / (cost || 1)) * 100;
     console.log(`${act}    ${name.padEnd(14)} ${String(r.length).padStart(2)}   ${String(Math.round(cost)).padStart(5)}   ${f1(m('throw')).padStart(9)}    ${f1(-m('rounds')).padStart(5)}   ${f1(100 * m('win')).padStart(5)}   ${f1(-m('health')).padStart(10)}     ${f1(-per100).padStart(9)}      ${keep.toFixed(0).padStart(5)}      ${f1(-per100 * keep).padStart(8)}`);
   }
-  const b = (act) => { const r = rows.filter((x) => x.act === act && x.name === 'power B'); return r.length ? r[0].base : null; };
+  const b = (act) => { const r = rows.filter((x) => x.act === act); return r.length ? r[0].base : null; };
   for (const act of [1, 2, 3]) { const x = b(act); if (x) console.log(`  act ${act} baseline: throw ${x.throw.toFixed(1)} a round, ${x.rounds.toFixed(1)} rounds, a fight costs ${x.health.toFixed(1)} health, wins ${(100 * x.win).toFixed(0)}%`); }
 }
