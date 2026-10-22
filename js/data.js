@@ -257,12 +257,25 @@ export const WEAPONS2 = {
     axe: { 4: 'R0 B0 R4 R4', 6: 'R0 R0 B0 R4 R6 R6', 8: 'R0 R0 B0 R2 R4 R6 R8 R8', 10: 'R0 R0 R0 B0 R4 R6 R8 R8 R10 R10' },
     spear: { 4: 'R0 R1 B3 R4', 6: 'R0 R0 R1 B3 R5 R6', 8: 'R0 R0 R1 R2 B3 R6 R7 R8', 10: 'R0 R0 R1 R2 B3 R4 R7 R8 R9 R10' },
     shield: 'flip:sword', tower: 'flip:axe',
+    // Stage 3, the bow set: the Bow in the right hand (a little hit, a little guard), the Arrows in the left. A is an arrowhead: it pays the
+    // hand's Strength in the ammunition's way instead of a number (Piercing: all of it as pierce; Fire: it hits the target and half of it,
+    // rounded up, splashes on every other monster, which their guard can stop; Frost: it hits, and the target's next damaging blow is
+    // halved before your block, then the frost clears; it never stacks). Bigger dice carry more arrowheads. Normal arrows have none.
+    bow: { 4: 'B0 R1 B2 R2', 6: 'B0 R1 B1 R2 B3 R3', 8: 'B0 R1 B1 R2 B3 R3 R4 B4', 10: 'B0 R1 B1 R2 B3 R3 R4 B4 R5 B5' },
+    quiver: {
+      normal: { 4: 'R0 R2 R3 R4', 6: 'R0 R1 R2 R4 R5 R6', 8: 'R0 R1 R2 R3 R5 R6 R7 R8', 10: 'R0 R1 R2 R3 R4 R6 R7 R8 R9 R10' },
+      special: { 4: 'R0 R1 R2 A', 6: 'R0 R1 R2 R3 A A', 8: 'R0 R1 R2 R3 R4 A A A', 10: 'R0 R1 R2 R3 R4 R5 R6 A A A' },
+    },
   },
-  add: { axe: { name: 'Axe', hands: 1, lean: 'off', temper: 'risky', glyph: '🪓', price: 26, model: 'mace',
+  ammo: { normal: 'Normal arrows', pierce: 'Piercing arrows', fire: 'Fire arrows', frost: 'Frost arrows' },
+  add: {
+    bow: { name: 'Bow', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 24, set: 'quiver', tag: 'A little hit, a little guard. The arrows in your other hand do the rest.', faces: [F(0, 'b'), F(1, 'r'), F(2, 'b'), F(2, 'r')] },
+    quiver: { name: 'Arrows', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 20, model: 'bow', set: 'bow', tag: 'Choose the ammunition at camp: Normal, Piercing, Fire or Frost.', faces: [F(0, 'r'), F(1, 'r'), F(2, 'r'), F(3, 'r')] },
+    axe: { name: 'Axe', hands: 1, lean: 'off', temper: 'risky', glyph: '🪓', price: 26, model: 'mace',
     tag: 'More blanks, a weak guard, and two chances at the top number. Swing, and mean it.', faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')] } },
   names: { shield: 'Round Shield' },
   loot: { sword: 10, dagger: 10, axe: 8, spear: 8, shield: 10, tower: 7 },
-  classes: { knight: ['sword', 'shield'], ranger: ['spear', 'dagger'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'sword'] }, // stand-ins until the bow (stage 3)
+  classes: { knight: ['sword', 'shield'], ranger: ['quiver', 'bow'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'sword'] }, // stand-ins until the bow (stage 3)
   diamondPool: ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower'],
 };
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);

@@ -11,9 +11,11 @@ import * as DATA from '../js/data.js';
 import { botRound, botCamp, botLoot, PLAY, setScore } from './sim.mjs';
 
 const ENC = { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'], healer: ['treant'] }; // the Treant regrows its bark (a mend move)
-const LOADOUTS = [['sword', 'shield'], ['dagger', 'shield'], ['spear', 'shield'], ['axe', 'tower'], ['shield', 'tower'], ['dagger', 'sword'], ['axe', 'spear'], ['dagger', 'dagger']];
-const name = (id) => (DATA.WEAPONS[id]?.name || id).replace('Round ', '');
-const own = (id) => (DATA.EXPERIMENT.weapons2 || id !== 'axe' ? id : 'mace'); // today's weapons have no Axe: the Mace stands in
+// ARROWS=1: the four ammunitions with the Bow (the weapons experiment's stage 3), beside two ordinary loadouts to compare
+const ARROW_LOADOUTS = [['quiver:normal', 'bow'], ['quiver:pierce', 'bow'], ['quiver:fire', 'bow'], ['quiver:frost', 'bow'], ['sword', 'shield'], ['dagger', 'sword']];
+const LOADOUTS = process.env.ARROWS ? ARROW_LOADOUTS : [['sword', 'shield'], ['dagger', 'shield'], ['spear', 'shield'], ['axe', 'tower'], ['shield', 'tower'], ['dagger', 'sword'], ['axe', 'spear'], ['dagger', 'dagger']];
+const name = (id) => (id.startsWith('quiver:') ? DATA.WEAPONS2.ammo[id.slice(7)] : (DATA.WEAPONS[id]?.name || id).replace('Round ', ''));
+const own = (id) => (DATA.EXPERIMENT.weapons2 || id !== 'axe' ? id : 'mace'); // (arrows need W2=1) // today's weapons have no Axe: the Mace stands in
 
 if (process.argv[2] === 'merge') { report(fs.readdirSync(process.argv[3]).filter((f) => f.endsWith('.json')).flatMap((f) => JSON.parse(fs.readFileSync(`${process.argv[3]}/${f}`, 'utf8')))); process.exit(0); }
 const T = Number(process.argv[2] || 24); const classes = process.argv[3] ? [process.argv[3]] : ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
@@ -37,11 +39,12 @@ for (const cls of classes) {
     if (act === 2 && [3, 7].includes(step)) {
       for (const [l, r] of LOADOUTS) for (const [enc, foes] of Object.entries(ENC)) for (const style of ['wise', 'greedy']) {
         const h = clone(hero); const size = Math.max(4, Math.min(h.strength.W, h.strength.E));
-        h.loadout.NW = { uid: `L${l}`, id: own(l), rarity: 0, size }; h.loadout.NE = { uid: `R${r}`, id: own(r), rarity: 0, size }; h.dice = [...new Set([...(h.dice || []), 'NE'])];
+        const inst = (id, side) => (id.startsWith('quiver:') ? { uid: `${side}${id}`, id: 'quiver', ammo: id.slice(7), rarity: 0, size } : { uid: `${side}${id}`, id: own(id), rarity: 0, size });
+        h.loadout.NW = inst(l, 'L'); h.loadout.NE = inst(r, 'R'); h.dice = [...new Set([...(h.dice || []), 'NE'])];
         const q = { ...quest, enemies: foes, kind: 'battle', foeNames: null };
         const res = Array.from({ length: T }, (_, i) => play(h, q, seed * 100 + step * 10 + i * 7919, style));
         const av = (k) => res.reduce((a, x) => a + x[k], 0) / T;
-        rows.push({ cls, step, loadout: `${name(own(l))} + ${name(own(r))}`, enc, style, win: av('win'), unfinished: av('unfinished'), rounds: av('rounds'), health: av('health'), potions: av('potions') });
+        rows.push({ cls, step, loadout: `${name(l.includes(':') ? l : own(l))} + ${name(own(r))}`, enc, style, win: av('win'), unfinished: av('unfinished'), rounds: av('rounds'), health: av('health'), potions: av('potions') });
       }
       process.stderr.write(`${cls} 2.${step} `);
     }

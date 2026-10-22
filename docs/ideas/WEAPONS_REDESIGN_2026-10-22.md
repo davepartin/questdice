@@ -150,3 +150,15 @@ Dave approved ChatGPT's narrower plan:
 2. **Swarms call friends:** a group of small monsters adds one more every few rounds until thinned, which rewards attack against swarms.
 3. **Speed pays:** finishing in few rounds earns more gold or battle points.
 The first two fit the matchups best: defence against the heavy hitter, attack against the swarm, pierce against armour.
+
+## Stage 3 built (22 Oct): the bow and its arrows, behind the switch
+
+- **The Bow** goes in the right hand: a little hit and a little guard (d8: B0 R1 B1 R2 B3 R3 R4 B4). **The Arrows** go in the left. Their faces depend on the ammunition (`inst.ammo`), which will be chosen at camp. The Ranger starts with Arrows + Bow.
+- **Normal arrows** carry numbers only (d8: 0 1 2 3 5 6 7 8). **Piercing, Fire and Frost** carry low numbers and arrowheads: one on a d4, two on a d6, three on a d8 or d10.
+- **An arrowhead pays the hand's printed Strength:**
+  - **Piercing** turns all of it into pierce.
+  - **Fire** hits the target and splashes half of it, rounded up, on every other monster, and each monster's guard can stop that splash.
+  - **Frost** hits and chills the target. Its next damaging blow is halved, rounded down, before your block, then the frost clears. It never stacks, and if the monster already struck early this round, the frost waits for its next blow.
+- An arrowhead isn't a blank, so the Ember Locket doesn't fire on it. Fire and Frost aren't in team fights yet.
+- Tests: test/weapons2.test.mjs. Measure with `ARROWS=1 W2=1 node tools/matchup.mjs` (four ammunitions, plus Sword + Shield and Dagger + Sword to compare).
+- Still to build when this goes live: choosing ammunition at camp, finding or buying ammunition, the next-fight preview at camp, and arrowhead, flame and snowflake art and effects.

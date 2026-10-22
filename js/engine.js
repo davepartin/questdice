@@ -86,8 +86,9 @@ export function useWeapons2() {
 const W2CACHE = {};
 function faces2(id, size) {
   const key = `${id}:${size}`; if (W2CACHE[key]) return W2CACHE[key].map((f) => ({ ...f }));
-  const d = WEAPONS2.faces[id]; let out;
-  if (typeof d === 'string') out = faces2(d.slice(5), size).map((f) => ({ ...f, c: f.c === 'r' ? 'b' : 'r' })); // the colour swap
+  const d = WEAPONS2.faces[id.split(':')[0]]; let out;
+  if (id.startsWith('quiver:')) { const kind = id.slice(7); out = (kind === 'normal' ? WEAPONS2.faces.quiver.normal : WEAPONS2.faces.quiver.special)[size].split(' ').map((t) => (t === 'A' ? { v: 0, c: 'r', arrow: kind } : { v: Number(t.slice(1)), c: 'r' })); }
+  else if (typeof d === 'string') out = faces2(d.slice(5), size).map((f) => ({ ...f, c: f.c === 'r' ? 'b' : 'r' })); // the colour swap
   else out = (d[size] || d[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
   W2CACHE[key] = out; return out.map((f) => ({ ...f }));
 }
@@ -97,6 +98,7 @@ export function weaponFaces(inst, rollSize) {
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
+  if (EXPERIMENT.weapons2 && inst.id === 'quiver') return faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : 'normal'}`, size); // the arrows: faces by ammunition
   if (EXPERIMENT.weapons2 && WEAPONS2.faces[inst.id]) return faces2(inst.id, size); // stage 1: the same Bronze numbers at every metal
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
   const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
@@ -504,8 +506,14 @@ export function evaluate(hero, board, opts = {}) {
     }
     // Ember Locket: a blank still pays a little, once a round (Dave, Oct 2026: "op for me, my gold weapon has 4 zeros"; at +6 and +2 on
     // every blank it more than doubled a brutal weapon). Now about a third more on a mostly-blank weapon, a consolation not a reason to miss.
-    if (wf.v === 0 && hasCharm(hero, 'ember') && !embered) { embered = true; out.atk += 3; out.magic += 1; out.notes.push('Ember Locket +3 attack, +1 magic'); }
+    if (wf.v === 0 && !wf.arrow && hasCharm(hero, 'ember') && !embered) { embered = true; out.atk += 3; out.magic += 1; out.notes.push('Ember Locket +3 attack, +1 magic'); }
     for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
+    if (wf.arrow) { // an arrowhead (the weapons experiment's arrows): the hand's printed Strength, in the ammunition's way
+      L.arrow = wf.arrow; const s = str;
+      if (wf.arrow === 'pierce') { L.value -= s; out.pierce += s; out.notes.push(`Piercing arrow: ${s} pierce`); }
+      else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.ceil(s / 2); out.notes.push(`Fire arrow: ${Math.ceil(s / 2)} to every other monster`); }
+      else if (wf.arrow === 'frost') { out.frost = true; out.notes.push('Frost arrow: the target\'s next blow is halved'); }
+    }
     out.lanes[key] = L;
   }
   // The pet die: each symbol on the face it shows pays the pet's power.
@@ -630,6 +638,8 @@ export function rollIntent(e, rng) {
   }
   return e.intent;
 }
+// A Frost arrow's chill: the next damaging blow is halved (rounded down) before your block, then it clears. It never stacks.
+export function thaw(e) { if (!e.frost || !isDamageIntent(e.intent || {}) || !(e.mag > 0)) return false; e.mag = Math.floor(e.mag / 2); e.frost = false; return true; }
 const shuffleIdx = (n, rng) => { const a = Array.from({ length: n }, (_, i) => i); for (let i = n - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 // What is still in a monster's move bag after this round's move, for its card (empty when it shuffles next round, or with no bag).
 export const bagLeft = (e) => (PRESSURE.on && PRESSURE.bag && e.bag && e.bagOf === e.faces ? e.bag.map((i) => e.faces[i]) : null);
@@ -1036,6 +1046,17 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
   let tgt = null;
+  // After your blow: a Fire arrow's splash (each other monster's guard can stop it) and a Frost arrow's chill on the target.
+  const arrows = () => {
+    if (ev.fire > 0) for (const e of b.enemies) {
+      if (e === tgt || e.hp <= 0) continue;
+      const guard = (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0); const hit = Math.max(0, ev.fire - guard);
+      const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp; (rep.burned2 ||= []).push({ uid: e.uid, dealt: d, guarded: Math.min(guard, ev.fire) });
+      (rep.splashed ||= []).push({ uid: e.uid, dealt: d }); b.stats.dealt += d;
+      if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
+    }
+    if (ev.frost && tgt && tgt.hp > 0) { tgt.frost = true; rep.frosted = tgt.uid; }
+  };
   const strike = () => {
     tgt = b.enemies[target];
     if (!tgt || tgt.hp <= 0) tgt = alive[0];
@@ -1078,7 +1099,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null };
+    const frosted = thaw(e); // a Frost arrow halves its next damaging blow, before your block
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted };
     switch (i.v) {
       case 'strike': { const r = strikeHit(e, false); Object.assign(act, r); break; }
       case 'pierce': { const r = strikeHit(e, true); Object.assign(act, r); break; }
@@ -1128,7 +1150,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   actFor(early, true);
   const heroDown = early.length > 0 && Math.min(b.maxHp, b.hp + T.heal) - rep.taken <= 0;
   if (heroDown) { rep.heroDown = true; rep.targetUid = null; } else {
-    strike();
+    strike(); arrows();
     actFor(b.enemies.filter((e) => !early.includes(e)), false);
   }
   settleStalks(b, rep);
