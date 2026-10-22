@@ -144,7 +144,7 @@ export const CHARMS = {
   fang: { name: 'Wolf Fang', icon: 'skull', text: 'Every triple you roll pays half again (15 instead of 10 in Act I).' },
   lantern: { name: 'Wanderer’s Lantern', icon: 'reroll', text: 'One extra free reroll every round.' },
   phoenix: { name: 'Phoenix Feather', icon: 'heart', text: 'Once a battle, a hit that would knock you out leaves you at 10 health.' },
-  pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with 8 more magic, but 8 less health.' },
+  pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with 6 more magic, but 8 less health.' },
   heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die\'s boost counts double.' },
 };
 export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one

@@ -729,7 +729,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
   }
   for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign }, rng));
   const boon = pullBlessings(hero);
-  const pact = hasCharm(hero, 'pact'); // Blood Pact: 8 more magic, 8 less health (was full magic, worth 10 health a fight late on)
+  const pact = hasCharm(hero, 'pact'); // Blood Pact: 6 more magic, 8 less health (was full magic, worth 10 health a fight late on)
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
   const b = {
     rng, hero, quest, players, enemies, round: 0, phase: 'reset', outcome: null,
@@ -950,7 +950,7 @@ export function castPower(b, id, { x, release } = {}) {
 }
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
 export const LUCK = { mid: 3, top: 6 };
-export const PACT_MAGIC = 8; // Blood Pact's extra starting magic (for 8 health)
+export const PACT_MAGIC = 6; // Blood Pact's extra starting magic, for 8 health (8 still measured top of the charms)
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
   const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };

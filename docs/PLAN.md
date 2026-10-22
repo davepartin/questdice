@@ -1292,3 +1292,15 @@ Dave won on Hard with the wizard, then died at the very end: "I forgot to charge
 - (22 Oct) **Ember Locket** cut down (Dave: "op for me, my gold weapon has 4 zeros"). It paid 6 attack and 2 magic on *every* blank weapon die. On a brutal weapon (4 blanks of 8) that added about 3 attack and 1 magic a roll, more than the weapon's own 3.9. It now pays **3 attack and 1 magic, once a round**, which is about a third more on a mostly-blank weapon: a consolation, not a reason to miss.
 - (22 Oct) **No pinch-zoom** (Dave: "I can pinch to zoom on all these screens; that is wrong"). The viewport is maximum-scale=1 / user-scalable=no (which also stops iPhone zooming into a text box). The page is touch-action pan-x pan-y, and buttons are manipulation, so a quick second tap is not a double-tap zoom. js/main.js stops Safari's own gesture events and two-finger touch moves, because iPhone Safari ignores user-scalable=no. One-finger scrolling is unchanged, and no part of the game uses two fingers.
 - (22 Oct) **Bring a Diamond moved to camp** (Dave: "not sure why this weapon is here right before I go to battle; it should be very clearly an option at camp"). The Left / Right picker now sits on the camp's Dice page under your dice, titled "Bring a Diamond next fight?", and turns into "Bringing a Diamond next fight" once one is chosen. The road screen no longer shows it, and the Gear tab's Diamond Case still works too. Checked by dev/diamondcamp.mjs.
+
+## Charm audit, October 22, 2026
+
+Dave: "check the other charms for anything else that's overpowered". `WHAT=charms sh tools/worth-all.sh 80` replays the same fights with and without each charm, for 5 classes and 3 acts. The tables are docs/balance/charms_2026-10-22_before.txt and _after.txt. Before the change, five charms stood well above the rest:
+- **Twin Coin**: a full triple whenever both weapon dice matched. Weapon numbers cluster, so a two-handed bow matched 4 rolls in 10 (+6 to +9 attack a round). Now **half a triple** (5 / 8 / 10).
+- **Gambler's Bone**: every 1 on head, hands or feet was a 6 (+7 a round). Now **one 1 a round** (+4 to +5).
+- **Wolf Fang**: triples paid double, and the bot chased them (+5 to +10 a round). Now **half again** (15 instead of 10).
+- **Mirror Shard**: 12 health on every straight (10 to 14 health back a fight in Acts II and III). Now **6**.
+- **Blood Pact**: full magic, which grows with level. Now **+6 magic for 8 health** (+8 still measured top).
+- **Heartstone** did almost nothing (rolling the heart twice rarely helps; higher isn't always better). It now **doubles your heart die's boost** (+3.5 to +4.3 a round).
+- Lantern, Phoenix (pure safety), Thorn Crown and the fixed Ember Locket were already in range and are unchanged.
+After the change, every charm lands between about +1 and +5 attack a round, or 1 to 7 health a fight. Lantern and Blood Pact sit at the top, and Thorn Crown and Ember Locket at the bottom.

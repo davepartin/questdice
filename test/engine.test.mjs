@@ -997,10 +997,10 @@ test('charms bend one rule each, three at most, and a boss offers a choice of tw
   for (const id of ids.slice(0, CHARM_MAX)) assert.ok(E.takeCharm(h, id));
   assert.equal(E.takeCharm(h, ids[CHARM_MAX]), false); assert.ok(E.charmFull(h));
   assert.ok(E.dropCharm(h, ids[0])); assert.equal(E.takeCharm(h, ids[1]), false, 'no doubles');
-  // Blood Pact: 8 more magic, 8 less health; Lantern: one more reroll; Phoenix: stands at 10 once
+  // Blood Pact: 6 more magic, 8 less health; Lantern: one more reroll; Phoenix: stands at 10 once
   const quest = { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' };
   const plain = E.newBattle(knight(), quest, makeRng(1), 1); const pact = E.newBattle(with_('pact'), quest, makeRng(1), 1);
-  assert.equal(pact.maxHp, plain.maxHp - 8); assert.equal(pact.magic, Math.min(E.magicCapOf(knight()), plain.magic + 8));
+  assert.equal(pact.maxHp, plain.maxHp - 8); assert.equal(pact.magic, Math.min(E.magicCapOf(knight()), plain.magic + E.PACT_MAGIC));
   const lan = E.newBattle(with_('lantern'), quest, makeRng(1), 1); E.startRoll(lan); E.startRoll(plain); assert.equal(lan.actionsLeft, plain.actionsLeft + 1);
   const ph = E.newBattle(with_('phoenix'), { ...quest, enemies: ['ogre'] }, makeRng(2), 1); ph.hp = 1; E.startRoll(ph);
   for (let r = 0; r < 6 && !ph.outcome; r++) { E.resolve(ph, { target: 0 }); if (ph.phoenixUsed) break; if (!ph.outcome) E.startRoll(ph); }
