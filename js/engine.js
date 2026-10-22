@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -73,12 +73,31 @@ function legendaryFaces(def, size) {
   for (let i = 4; i < size; i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
   return faces;
 }
+// Weapons, second edition (an experiment, off in the game; WEAPONS2 in js/data.js). useWeapons2() switches it on for the tools: the six
+// one-handed weapons and their faces, their loot, the classes' starting weapons and the Diamond pool; two-handed legendaries leave the pool.
+export function useWeapons2() {
+  if (EXPERIMENT.weapons2) return; EXPERIMENT.weapons2 = true;
+  Object.assign(WEAPONS, WEAPONS2.add); for (const [id, n] of Object.entries(WEAPONS2.names)) WEAPONS[id] = { ...WEAPONS[id], name: n };
+  for (const k of Object.keys(LOOT_WEIGHTS)) delete LOOT_WEIGHTS[k]; Object.assign(LOOT_WEIGHTS, WEAPONS2.loot);
+  for (const [c, w] of Object.entries(WEAPONS2.classes)) CLASSES[c].weapons = w;
+  DIAMOND.pool.splice(0, DIAMOND.pool.length, ...WEAPONS2.diamondPool);
+  for (let i = LEGENDARY.length - 1; i >= 0; i--) if (WEAPONS[LEGENDARY[i]].hands === 2) LEGENDARY.splice(i, 1);
+}
+const W2CACHE = {};
+function faces2(id, size) {
+  const key = `${id}:${size}`; if (W2CACHE[key]) return W2CACHE[key].map((f) => ({ ...f }));
+  const d = WEAPONS2.faces[id]; let out;
+  if (typeof d === 'string') out = faces2(d.slice(5), size).map((f) => ({ ...f, c: f.c === 'r' ? 'b' : 'r' })); // the colour swap
+  else out = (d[size] || d[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
+  W2CACHE[key] = out; return out.map((f) => ({ ...f }));
+}
 export function weaponFaces(inst, rollSize) {
   const def = WEAPONS[inst.id];
   if (inst.diamond) return diamondFaces(def, weaponSize(inst)); // a Diamond rolls at its full size in any hand
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
+  if (EXPERIMENT.weapons2 && WEAPONS2.faces[inst.id]) return faces2(inst.id, size); // stage 1: the same Bronze numbers at every metal
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
   const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
   const faces = (WEAPON_DICE[temper][size] || WEAPON_DICE[temper][4]).map((f) => (typeof f !== 'object' ? { v: f, c: own } : f.plus ? { v: f.v, c: own, plus: f.plus } : { v: f.v, c: other }));

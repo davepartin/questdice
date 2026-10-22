@@ -234,6 +234,28 @@ export const WEAPONS = {
     faces: [F(1, 'b'), F(2, 'r'), F(3, 'r', { pierce: 1 }), F(3, 'r', { pierce: 1 })] },
 };
 export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legendary);
+// ---- Weapons, second edition: an EXPERIMENT, OFF in the game (Dave, ChatGPT and Claude, 22 Oct 2026; docs/ideas/WEAPONS_REDESIGN_2026-10-22.md).
+// The tools switch it on with W2=1 (useWeapons2 in js/engine.js); while it is off nothing here is used and no save changes.
+// Stage 1: six one-handed weapons, Bronze numbers for every metal (stage 2 adds the metal symbols, stage 3 the bow and its arrows).
+// Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
+// no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
+// Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
+export const EXPERIMENT = { weapons2: false };
+export const WEAPONS2 = {
+  faces: {
+    sword: { 4: 'R0 B1 R2 R4', 6: 'R0 B1 R2 R3 B4 R6', 8: 'R0 B1 R2 R3 B4 R5 R6 R8', 10: 'R0 B1 R2 R3 B4 R5 R6 B7 R8 R10' },
+    dagger: { 4: 'R0 B1 R3 R3', 6: 'R0 B1 R1 R3 R5 R5', 8: 'R0 B1 R1 R3 R3 R5 R5 R7', 10: 'R0 B1 R1 R3 R3 R5 R5 R7 R7 R9' },
+    axe: { 4: 'R0 B0 R4 R4', 6: 'R0 R0 B0 R4 R6 R6', 8: 'R0 R0 B0 R2 R4 R6 R8 R8', 10: 'R0 R0 R0 B0 R4 R6 R8 R8 R10 R10' },
+    spear: { 4: 'R0 R1 B3 R4', 6: 'R0 R0 R1 B3 R5 R6', 8: 'R0 R0 R1 R2 B3 R6 R7 R8', 10: 'R0 R0 R1 R2 B3 R4 R7 R8 R9 R10' },
+    shield: 'flip:sword', tower: 'flip:axe',
+  },
+  add: { axe: { name: 'Axe', hands: 1, lean: 'off', temper: 'risky', glyph: '🪓', price: 26, model: 'mace',
+    tag: 'More blanks, a weak guard, and two chances at the top number. Swing, and mean it.', faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')] } },
+  names: { shield: 'Round Shield' },
+  loot: { sword: 10, dagger: 10, axe: 8, spear: 8, shield: 10, tower: 7 },
+  classes: { knight: ['sword', 'shield'], ranger: ['spear', 'dagger'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'sword'] }, // stand-ins until the bow (stage 3)
+  diamondPool: ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower'],
+};
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
 export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows
 export const tierName = (inst) => (isLegendary(inst) ? 'Legendary' : inst?.diamond ? 'Diamond' : RARITY[(inst?.rarity | 0)] || 'Bronze');

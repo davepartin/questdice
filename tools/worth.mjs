@@ -67,7 +67,11 @@ const metalBuy = (h) => {
 // a charm, at the Camp Store's price for the act (a boss gives one free, but this is what one is worth in gold)
 const charmBuy = (id) => (h) => { if ((h.charms || []).includes(id)) return null; (h.charms ||= []).push(id); return { cost: DATA.CHARM_PRICE[Math.min(3, h.campaign.act) - 1] }; };
 const CHARM_BUYS = Object.fromEntries(Object.keys(DATA.CHARMS).map((id) => [`charm ${id}`, charmBuy(id)]));
-const BUYS = process.env.WHAT === 'charms' ? CHARM_BUYS : {
+// WHAT=weapons (with W2=1): put each of the six weapons in the left hand, same size and metal as what is there, at no cost; the table then
+// reads as "this weapon against the hero's own" (does each weapon earn its place?).
+const swapTo = (id) => (h) => { const w = h.loadout.NW; if (!w || w.id === 'fists' || w.diamond || DATA.WEAPONS[w.id]?.legendary || w.id === id) return null; h.loadout.NW = { ...w, id, uid: `${w.uid}~${id}` }; return { cost: 0, what: `${DATA.WEAPONS[w.id].name} → ${DATA.WEAPONS[id].name}` }; };
+const WEAPON_BUYS = Object.fromEntries(['sword', 'dagger', 'axe', 'spear', 'shield', 'tower'].map((id) => [`left: ${id}`, swapTo(id)]));
+const BUYS = process.env.WHAT === 'charms' ? CHARM_BUYS : process.env.WHAT === 'weapons' ? WEAPON_BUYS : {
   'hand die': dieBuy('strength', 'E', DATA.STRENGTH_STEPS), 'talent die': dieBuy('special', 'SE', DATA.SPECIAL_STEPS), 'head die': dieBuy('mind', 'N', DATA.MIND_STEPS),
   'power A': powerBuy('A'), 'power B': powerBuy('B'), 'power C': powerBuy('C'), 'power A x3': powerBuy('A', 3), 'power B x3': powerBuy('B', 3), 'power C x3': powerBuy('C', 3), 'weapon metal': metalBuy,
 };

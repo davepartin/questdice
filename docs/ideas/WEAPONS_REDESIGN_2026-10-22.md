@@ -123,3 +123,14 @@ ChatGPT agreed to the merged plan with these refinements, which this document no
 - **The triple claim was too broad, and ChatGPT was right.** With each triple counted on its own (`tools/weaponlab.mjs`, loadouts), the Dagger's extra triples come from the **top row**, and only with **two Daggers**. Dagger + Dagger makes a top-row triple 3.0% of the time in Act II, while Dagger + Round Shield makes one 1.5%, the same as Sword + Round Shield. In Act I a Dagger can never make its side-column triple, because a d4 talent die shows only a 4 and the Dagger d4 has no 4. Overall, weapons move triples by only 1 to 2 in 100 boards before rerolls. The Axe roughly halves straights (4.6% against 8.7%).
 
 **Next step:** build the six weapons, coloured blanks, the bow-and-arrows set with ammunition, and the half-Strength symbols in the engine behind a switch that is off in the live game. Then `tools/worth.mjs` and `tools/curve.mjs` can compare half and full Strength with rerolls, monster guard, damage after guard and damage prevented, before anything goes live.
+
+## Agreed and started (22 Oct): a staged experiment behind a switch that is off
+
+Dave approved ChatGPT's narrower plan:
+- **Top-row triples: no change.** Today's game already lets any two weapons make the top-row triple (left weapon, head and right weapon on the same number; `evaluate` in js/engine.js). It was never limited to two-handers, so removing two-handers changes nothing here.
+- **"Half Strength" means the rolled hand number**, before Heart Boost or a talent's 2×, rounded up. (Stage 2.)
+- **Frost:** halve the monster's next damaging attack before your block, rounded down, then clear it. It never stacks. (Stage 3.)
+- **Stages:** (1) six ordinary weapons, Bronze numbers, coloured +0s; (2) Silver and Gold symbols, half against full Strength; (3) the bow set, ammunition, fire and frost. Each stage is measured against today's weapons in real fights with rerolls: mixed loadouts, one and two weapons unlocked, solo and team, all three acts.
+- **Safety:** the switch (`EXPERIMENT.weapons2` in js/data.js, `useWeapons2()` in js/engine.js) is off in the live game. Only the tools turn it on (`W2=1`). Nothing in a save changes while it is off. A playable experimental mode will keep its saves separate, and none of it reaches the live game without Dave's approval.
+
+**Stage 1 is built (22 Oct):** `WEAPONS2` holds the six weapons' faces (Round Shield = Sword swapped, Tower Shield = Axe swapped), a new Axe (it borrows the Mace's 3D model for now), one-handed loot, stand-in class weapons until the bow arrives (Knight Sword + Round Shield, Ranger Spear + Dagger, Wizard Dagger + Round Shield, Dwarf Axe + Tower Shield, Bard Dagger + Sword), a one-handed Diamond pool, and no two-handed legendaries. Tests: test/weapons2.test.mjs. Measuring: `W2=1 sh tools/curve-all.sh`, `W2=1 WHAT=weapons sh tools/worth-all.sh`, `W2=1 node tools/party.mjs`.
