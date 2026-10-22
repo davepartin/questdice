@@ -270,6 +270,8 @@ export const WEAPONS2 = {
     quiver: {
       normal: { 4: 'R0 R2 R3 R4', 6: 'R0 R1 R2 R4 R5 R6', 8: 'R0 R1 R2 R3 R5 R6 R7 R8', 10: 'R0 R1 R2 R3 R4 R6 R7 R8 R9 R10' },
       special: { 4: 'R0 R1 R2 A', 6: 'R0 R1 R2 R3 A A', 8: 'R0 R1 R2 R3 R4 A A A', 10: 'R0 R1 R2 R3 R4 R5 R6 A A A' },
+      // a test (ARROW_NUM=1 in the tools): an arrowhead that keeps a modest number (A2 = 2 + the hand's Strength, and the effect)
+      numbered: { 4: 'R0 R1 R2 A2', 6: 'R0 R1 R2 R3 A2 A3', 8: 'R0 R1 R2 R3 R4 A2 A3 A4', 10: 'R0 R1 R2 R3 R4 R5 R6 A3 A4 A5' },
     },
   },
   ammo: { normal: 'Normal arrows', pierce: 'Piercing arrows', fire: 'Fire arrows', frost: 'Frost arrows' },

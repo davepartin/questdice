@@ -93,7 +93,7 @@ const W2CACHE = {};
 function faces2(id, size) {
   const key = `${id}:${size}`; if (W2CACHE[key]) return W2CACHE[key].map((f) => ({ ...f }));
   const d = WEAPONS2.faces[id.split(':')[0]]; let out;
-  if (id.startsWith('quiver:')) { const kind = id.slice(7); out = (kind === 'normal' ? WEAPONS2.faces.quiver.normal : WEAPONS2.faces.quiver.special)[size].split(' ').map((t) => (t === 'A' ? { v: 0, c: 'r', arrow: kind } : { v: Number(t.slice(1)), c: 'r' })); }
+  if (id.startsWith('quiver:')) { const kind = id.slice(7); out = (kind === 'normal' ? WEAPONS2.faces.quiver.normal : WEAPONS2.faces.quiver.special)[size].split(' ').map((t) => (t[0] === 'A' ? { v: Number(t.slice(1)) || 0, c: 'r', arrow: kind } : { v: Number(t.slice(1)), c: 'r' })); }
   else if (typeof d === 'string') out = faces2(d.slice(5), size).map((f) => ({ ...f, c: f.c === 'r' ? 'b' : 'r' })); // the colour swap
   else out = (d[size] || d[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
   W2CACHE[key] = out; return out.map((f) => ({ ...f }));
