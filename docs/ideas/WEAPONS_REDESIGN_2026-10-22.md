@@ -113,3 +113,13 @@ Where I would still differ:
 - **Wear is already decided at 4 / 6 / 8 battles** (Dave, 21 Oct), not +1 each.
 
 **Merged plan:** use ChatGPT's six weapons and dice as the Bronze base (colour-swapped shields, repeats allowed, coloured blanks) and its arrow effects. Keep this proposal's metal rule (symbols that pay strength) and the 4 / 6 / 8 wear. Leave the Mace, Staff and two-handers out until a role needs them.
+
+## ChatGPT's review of the merged plan, and the triple claim checked (22 Oct)
+
+ChatGPT agreed to the merged plan with these refinements, which this document now adopts:
+- **Metal symbols pay half the hand's Strength, rounded up** (Strength 7 gives 4). Full Strength is to be tested beside it, not assumed. Pierce, block and heal are worth different amounts, so the lab measures each.
+- **An arrow special that replaces the lane's attack pays full Strength.** Piercing turns it all into pierce. Fire is full Strength on the target and half as splash. Frost is a full Strength attack plus the slow. Strength is never counted twice.
+- **Frost halves one attack at every metal, with no stacking and no full freeze.** A complete freeze could later be a rare, limited ability.
+- **The triple claim was too broad, and ChatGPT was right.** With each triple counted on its own (`tools/weaponlab.mjs`, loadouts), the Dagger's extra triples come from the **top row**, and only with **two Daggers**. Dagger + Dagger makes a top-row triple 3.0% of the time in Act II, while Dagger + Round Shield makes one 1.5%, the same as Sword + Round Shield. In Act I a Dagger can never make its side-column triple, because a d4 talent die shows only a 4 and the Dagger d4 has no 4. Overall, weapons move triples by only 1 to 2 in 100 boards before rerolls. The Axe roughly halves straights (4.6% against 8.7%).
+
+**Next step:** build the six weapons, coloured blanks, the bow-and-arrows set with ammunition, and the half-Strength symbols in the engine behind a switch that is off in the live game. Then `tools/worth.mjs` and `tools/curve.mjs` can compare half and full Strength with rerolls, monster guard, damage after guard and damage prevented, before anything goes live.

@@ -73,3 +73,29 @@ for (const act of Object.keys(ACTS)) {
   const N = ACTS[act].hand;
   console.log(`  faces at d${N}: ${[...Object.keys(P), ...Object.keys(GPT)].map((p) => `${p.split(' ·')[0]} ${die(p, N).map((f) => (f.v ? `${f.v}${f.c === 'b' ? 'b' : ''}` : f.c === 'b' ? '–b' : '–')).join(' ')}`).join('  |  ')}`);
 }
+
+// ---- loadouts (ChatGPT's review, 22 Oct: "repeats help only when the other dice can contribute that number; report each triple"):
+// two different weapons, each triple counted on its own. top = left weapon, head, right weapon all the same number (needs BOTH
+// weapons); colL / colR = a weapon, its hand and its talent die. Straights as above.
+function loadout(act, left, right) {
+  const A = ACTS[act]; const L = die(left, A.hand); const R = die(right, A.hand);
+  const t = { top: 0, colL: 0, colR: 0, any: 0, s6: 0, atk: 0, blk: 0 };
+  for (let i = 0; i < ROLLS; i++) {
+    const wl = L[roll(A.hand) - 1]; const wr = R[roll(A.hand) - 1];
+    const head = roll(A.head), lh = roll(A.hand), rh = roll(A.hand), heart = roll(A.heart), feet = roll(A.feet), lt = talentNum(A.talent), rt = talentNum(A.talent);
+    const top = wl.v > 0 && wl.v === head && head === wr.v; const cl = wl.v > 0 && wl.v === lh && lh === lt; const cr = wr.v > 0 && wr.v === rh && rh === rt;
+    t.top += top; t.colL += cl; t.colR += cr; t.any += (top || cl || cr) ? 1 : 0;
+    for (const [w, h2] of [[wl, lh], [wr, rh]]) { if (w.c === 'b') t.blk += w.v + h2; else t.atk += w.v + h2; }
+    if (longest([wl.v, wr.v, head, lh, rh, heart, feet, lt, rt]) >= 6) t.s6++;
+  }
+  const pct = (x) => `${(100 * x / ROLLS).toFixed(1)}%`.padStart(6); const avg = (x) => (x / ROLLS).toFixed(1).padStart(5);
+  return `${`${left.replace('GPT ', '')} + ${right.replace('GPT ', '')}`.padEnd(30)} ${avg(t.atk)} ${avg(t.blk)}  ${pct(t.top)} ${pct(t.colL)} ${pct(t.colR)} ${pct(t.any)}  ${pct(t.s6)}`;
+}
+{ // loadouts always print after the patterns
+  const LO = [['GPT Dagger', 'GPT Dagger'], ['GPT Sword', 'GPT Sword'], ['GPT Dagger', 'GPT Round Shield'], ['GPT Sword', 'GPT Round Shield'], ['GPT Axe', 'GPT Tower Shield'], ['GPT Spear', 'GPT Round Shield'], ['GPT Dagger', 'GPT Sword'], ['GPT Axe', 'GPT Axe']];
+  for (const act of Object.keys(ACTS)) {
+    console.log(`\n${act} loadouts (left + right; each triple on its own; no rerolls)`);
+    console.log(`${'loadout'.padEnd(30)}   atk   blk     top   colL   colR    any    s6+`);
+    for (const [a, b2] of LO) console.log(loadout(act, a, b2));
+  }
+}
