@@ -241,6 +241,11 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
 export const EXPERIMENT = { weapons2: false };
+// Class identity (an experiment, off in the game; docs/ideas/CLASS_IDENTITY_2026-10-22.md). Each is one sentence:
+//   songs  team games: the Bard's healing powers heal the most hurt hero at the table (the Bard included), not only the Bard
+//   guard  team games: a Knight who uses Shield Up takes the double share of the monsters' blows that round, whatever the feet say
+//   digIn  from round 5 the Dwarf heals this much at the start of every round (0 = off)
+export const CLASS2 = { on: false, songs: true, guard: true, digIn: 2 };
 // Pressure (Dave, 22 Oct 2026: "go with what you think"). The matchups (tools/matchup.mjs) showed two shields winning every kind of fight,
 // because health is all a fight costs and nothing rewards finishing. Two rules give attack a reason:
 //   FURY   from round `from`, every monster's blow is `per[act]` harder for each round it has lasted (round 5: x1, round 6: x2 ...), at most `max` steps.

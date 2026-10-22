@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -806,10 +806,17 @@ function pressure(b) {
   }
 }
 
+// Class identity (CLASS2 in js/data.js; off in the game). Dig In: from round 5 a Dwarf heals CLASS2.digIn at the start of each round.
+export const CLASS2_ON = (on = true) => { CLASS2.on = on; }; // for the tools (CLASSID=1)
+export { CLASS2 };
+function digIn(who, round) {
+  if (!CLASS2.on || !CLASS2.digIn || round < 5 || who.hero.cls !== 'dwarf' || who.hp <= 0) return 0;
+  const n = Math.min(CLASS2.digIn, who.maxHp - who.hp); who.hp += n; who.dugIn = n; return n;
+}
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
   b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
-  pressure(b);
+  pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
@@ -1842,7 +1849,7 @@ export function newPartyBattle(heroes, quest0, rng) {
 function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
 export function beginPartyRound(b) {
   b.round += 1; b.phase = 'reset';
-  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; }
+  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; f.dugIn = 0; digIn(f, b.round); }
   pressure(b);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
@@ -1954,8 +1961,16 @@ export function resolveParty(b) {
     e.mag = magnitude(e, e.intent, e.pdice, weaken); e.calc = magnitudeParts(e, e.intent, e.pdice, weaken);
     e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng);
   }
+  // Class identity (CLASS2, off in the game). Songs carry: a Bard's healing powers land on the most hurt hero at the table.
+  if (CLASS2.on && CLASS2.songs && acting.length > 1) for (const f of acting) {
+    const song = (f.hero.cls === 'bard' && f.mods?.heal) || 0; if (!song) continue;
+    const to = acting.reduce((a, x) => (x.hp / x.maxHp < a.hp / a.maxHp ? x : a), f);
+    if (to !== f) { f.T.heal -= song; to.T.heal += song; (f.stats.healGiven = (f.stats.healGiven || 0) + song); (b.songs ||= []).push({ from: f.hero.name, to: to.hero.name, n: song, round: b.round }); }
+  }
   const order = rankFighters(acting, b.rng); // who acts first
   const heat = heatRank(acting, b.rng);      // who the monsters go after
+  // Guard: a Knight who used Shield Up this round steps in front and takes the double share
+  if (CLASS2.on && CLASS2.guard && heat.length > 1) { const k = heat.findIndex((r) => r.f.hero.cls === 'knight' && r.f.usedRound?.shieldwall); if (k > 0) heat.unshift(heat.splice(k, 1)[0]); }
   const rep = {
     round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, moral: [],
     killed: [], raged: [], summoned: [], acts: [],

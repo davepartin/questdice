@@ -28,11 +28,11 @@ function teamFight(heroes, quest, rng) {
       const f = b.fighters[i]; f.target = o.target; f.straight = o.straight; f.locked = true;
     }
     resolveParty(b);
-    for (const f of b.fighters) f.locked = false;
+    for (const f of b.fighters) { f.locked = false; f._low = Math.min(f._low ?? 1, Math.max(0, f.hp) / f.maxHp); if (f.hp <= 0) f._fell = 1; }
   }
   return b;
 }
-const acts = {}; const key = (a, k) => `${a}|${k}`;
+const acts = {}; const key = (a, k) => `${a}|${k}`; const byClass = {}; // each class at the table: its own lowest health, its friend's, the damage it took and the healing it gave friends
 const mAt = []; // the company's strength factor, by act
 const add = (a, kind, mode, won, rounds, hpk) => { const r = (acts[key(a, kind)] ||= { a, kind, solo: { n: 0, w: 0, r: 0, h: 0 }, team: { n: 0, w: 0, r: 0, h: 0 } })[mode]; r.n++; r.w += won ? 1 : 0; r.r += rounds; r.h += hpk; };
 for (let run = 0; run < RUNS; run++) {
@@ -47,6 +47,9 @@ for (let run = 0; run < RUNS; run++) {
       const tb = teamFight(heroes, quest, rng); (mAt[act] ||= []).push(tb.team?.m || 0);
       const alive = tb.fighters.reduce((a, f) => a + Math.max(0, f.hp) / f.maxHp, 0) / tb.fighters.length;
       add(act, quest.kind, 'team', tb.outcome === 'victory', tb.round, tb.outcome === 'victory' ? alive : 0);
+      tb.fighters.forEach((f, i) => { const mate = tb.fighters.filter((x) => x !== f); const c = (byClass[f.hero.cls] ||= { n: 0, low: 0, fell: 0, taken: 0, given: 0, mateLow: 0, mateFell: 0 });
+        c.n++; c.low += f._low ?? 1; c.fell += f._fell || 0; c.taken += f.stats.taken || 0; c.given += f.stats.healGiven || 0;
+        c.mateLow += mate.reduce((a, x) => a + (x._low ?? 1), 0) / Math.max(1, mate.length); c.mateFell += mate.reduce((a, x) => a + (x._fell || 0), 0) / Math.max(1, mate.length); void i; });
       // each hero alone (the way the solo campaign grows them)
       for (const h of heroes) {
         const q = questsFor(h)[0];
@@ -67,3 +70,5 @@ for (const r of Object.values(acts).sort((x, y) => x.a - y.a || x.kind.localeCom
   const s = r.solo; const t = r.team;
   console.log(`${r.a}   ${r.kind.padEnd(7)}   ${pct(s.w / s.n)}  ${(s.r / s.n).toFixed(1).padStart(4)}  ${pct(s.h / Math.max(1, s.w))}      ${pct(t.w / t.n)}  ${(t.r / t.n).toFixed(1).padStart(4)}  ${pct(t.h / Math.max(1, t.w))}`);
 }
+console.log(`\nBy class at the table${process.env.CLASSID ? ` · class identity ${process.env.CLASSID}` : ''}: lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell`);
+for (const [cls, c] of Object.entries(byClass)) console.log(`${cls.padEnd(7)} ${pct(c.low / c.n)}  ${pct(c.fell / c.n)}  ${(c.taken / c.n).toFixed(1).padStart(5)}  ${(c.given / c.n).toFixed(1).padStart(5)}     ${pct(c.mateLow / c.n)}  ${pct(c.mateFell / c.n)}`);
