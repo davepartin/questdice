@@ -1132,6 +1132,20 @@ function campPowers(hero) {
       action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
       levels));
 }
+// Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
+// potions"). Refill buys what the gold allows; Go anyway leaves, and the camp does not ask again this visit.
+const POT_ASKED = { key: null };
+function toRoad(hero) {
+  const r = E.potionBuyInfo(hero); const key = `${hero.name}:${hero.campaign?.act}.${hero.campaign?.step}`;
+  const n = Math.min(r.max - r.have, Math.floor(hero.gold / r.price));
+  if (n < 1 || POT_ASKED.key === key) { X.showRoadOrBoard(); return; }
+  POT_ASKED.key = key; sfx.select?.();
+  const cta = $('.sx-cta'); if (!cta) { X.showRoadOrBoard(); return; }
+  const refill = () => { for (let i = 0; i < n; i++) E.buyPotion(hero); sfx.coin?.(); X.persist(); X.showRoadOrBoard(); };
+  cta.replaceChildren(h('div', { class: 'sx-potask', role: 'alertdialog', 'aria-label': 'Potion belt not full' },
+    h('p', {}, ico('plus'), h('span', {}, `Potion belt: ${r.have} of ${r.max}. Refill${n < r.max - r.have ? ` ${n}` : ''} for ${n * r.price} gold?`)),
+    h('div', { class: 'sx-potask-btns' }, btn(`Refill ${n * r.price}`, refill, { icon: 'coin', iconAfter: true, cls: 'wide potask-yes' }), btn('Go anyway', () => X.showRoadOrBoard(), { kind: 'ghost', cls: 'wide potask-no' }))));
+}
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used
 // first. Each section's longer explanation sits behind a small "?".
@@ -1600,7 +1614,7 @@ export function camp(fromBoard) {
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
       X.partyBar?.(), seats, perkPanel, store ? null : campStatus(hero),
       h('div', { class: 'sx-camp-scroll' }, body),
-      h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', X.showRoadOrBoard, { big: true, icon: 'map', cls: 'wide' })))));
+      h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', () => toRoad(hero), { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
   { const side = $('.sx-side'); const st = side?.querySelector('.sx-sidetop'); if (side && st) side.style.setProperty('--stick', `${st.offsetHeight}px`); }
   lay('camp');

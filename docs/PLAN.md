@@ -1284,3 +1284,7 @@ Dave: test cheaper upgrades and stronger charges side by side, put a rough excha
 - Camp power page: "Total 28 attack", the compare box shows Total → Total, "Upgrade adds: +2 attack each charge (+8 total)", and the level list shows totals. The base description and the charge "when" line are gone. Shorter charge texts in data.js.
 - Sim bot: it recharges big moves (3 magic) and buys power levels after its dice, keeping 30 gold back.
 - Campaigns (20 each, same bot): 17 → 20 of 20 cleared, power share 5–7% → 6–9%, Act II boss wins 89% → 78% (watch this).
+
+## Potion reminder, October 22, 2026
+
+Dave won on Hard with the wizard, then died at the very end: "I forgot to charge my potions." When you tap "To the road" with room on the potion belt and gold for at least one potion, the button is replaced for a moment by "Potion belt: 0 of 2. Refill for 40 gold?" with **Refill 40** (it buys what your gold allows) and **Go anyway**. The reminder appears once per camp visit and never blocks you. dev/potask.mjs checks Refill, Go anyway and a full belt.
