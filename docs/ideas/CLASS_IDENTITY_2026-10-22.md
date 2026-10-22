@@ -111,4 +111,34 @@ Two questions for each class, answered by the bots (the same wise bot that plays
 
 ## 5. Results
 
-*Pending: class kits (today's powers), team games with each ammunition, the arrow matchups, and the monster rules one at a time.*
+### 5.1 Class kits with today's powers (docs/balance/classkit_today.txt)
+
+Act II heroes, every kit of their class, the four fights, 16 fights a cell, wise bot, today's weapons, no pressure rules.
+
+| Class | Start kit, health a fight | Best single kit | Its health a fight | Choosing per fight is worth | Kits that win a fight |
+|---|---|---|---|---|---|
+| Knight | 20.5 | Judgment / Shield Up / Rally Cry | 19.2 | 0.4 | 3 |
+| Ranger | 21.6 | Aimed Shot / Snare / **Vanish** | 19.3 | 0.8 | 3 |
+| Wizard | 17.2 | Meteor / **Barrier** / **Healing Light** | 11.9 | 0.8 | 3 |
+| Dwarf | 11.3 | Avalanche / **Brace** / Stonehide | 9.7 | 0.3 | 3 |
+| Bard | 15.5 | Mending Song / **Discord** / Rising Ballad | 14.7 | 1.0 | 4 |
+
+What it says:
+
+1. **Choosing powers per fight is worth almost nothing today: 0.3 to 1.0 health a fight.** Different kits do edge out in
+   different fights (three or four winners per class), but the margins are small. This answers ChatGPT's magic test: a
+   situational choice is barely better than a favourite.
+2. **The safe option wins every slot, for every class.** The Wizard's best kit swaps Storm Coil for Healing Light and Magic
+   Missile for Barrier (17.2 down to 11.9 a fight). The Dwarf takes Brace over Shield Bash, the Ranger Vanish (block) over
+   Volley (pierce), the Bard Discord (monsters hit softer) over Lucky Verse. This is the same root cause the weapon matchups
+   found: health is the only thing a fight costs, so block and healing always pay and attack only pays by ending the fight a
+   little sooner. Left alone, every class drifts toward the same careful kit, which is the opposite of identity.
+3. **The start kits are never the best kit.** The Wizard's is the furthest off (5.3 health a fight). Worth a look regardless:
+   a new player should start with a kit that is at least close to good.
+4. **Class strength is uneven in these fights.** Dwarf 9.7, Wizard 11.9, Bard 14.7, Knight 19.2, Ranger 19.3 health a fight
+   (best kits). One snapshot per class at two quests, so treat it as a hint; the full campaign (curve) has the Dwarf safest
+   and the Wizard most fragile.
+
+So the identity proposals only make sense together with the pressure work: until long fights cost something, the "careful"
+power wins for everyone. Next run: the same kits with fury on (from round 4), to see whether attacking kits start winning
+some fights.
