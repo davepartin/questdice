@@ -799,7 +799,8 @@ function pressure(b) {
   for (const e of b.enemies) e.fury = fury;
   b.pressure.fury = fury; b.pressure.furyUp = fury > before;
   const R = PRESSURE.rally; const living = b.enemies.filter((e) => e.hp > 0);
-  if (isSwarm(b) && b.round > 1 && (b.round - 1) % R.every === 0 && living.length >= R.need && living.length < ENEMY_CAP) {
+  if (isSwarm(b) && b.round > 1 && (b.round - 1) % R.every === 0 && living.length >= R.need && living.length < ENEMY_CAP && (b.ralliedN || 0) < (R.most ?? 99)) {
+    b.ralliedN = (b.ralliedN || 0) + 1;
     const like = living.reduce((a, e) => (e.maxHp < a.maxHp ? e : a), living[0]); // the smallest of them calls a friend
     const s = spawnEnemy(like.id, { hpMult: like.hpMult, flat: like.flat - (like.teamFlat || 0), teamFlat: like.teamFlat || 0, rewardMult: 0, edge: like.edge, campaign: campOfBattle(b) }, b.rng);
     s.fresh = true; s.fury = fury; b.enemies.push(s); b.pressure.rallied.push(s.uid);

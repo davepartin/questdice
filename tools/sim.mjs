@@ -21,6 +21,7 @@ if (typeof process !== 'undefined' && ['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG'].
   if (!env.PRESS && !env.RALLY) ENGINE.PRESSURE.rally.min = 99;
   if (!env.MEND) ENGINE.PRESSURE.mend.share = 0;
   if (!env.BAG) ENGINE.PRESSURE.bag = false;
+  if (env.FURY_FROM) ENGINE.PRESSURE.fury.from = Number(env.FURY_FROM); if (env.RALLY_EVERY) ENGINE.PRESSURE.rally.every = Number(env.RALLY_EVERY); if (env.RALLY_MOST) ENGINE.PRESSURE.rally.most = Number(env.RALLY_MOST); // try other settings
 }
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
 export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };

@@ -60,7 +60,7 @@ if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); el
 function report(all) {
   const encs = Object.keys(ENC); const loads = [...new Set(all.map((x) => x.loadout))];
   const m = (f, k) => { const r = all.filter(f); return r.length ? r.reduce((a, x) => a + x[k], 0) / r.length : NaN; };
-  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()}`).join('')}`);
+  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG', 'FURY_FROM', 'RALLY_EVERY', 'RALLY_MOST'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()}${/_/.test(k) ? ` ${process.env[k]}` : ''}`).join('')}`);
   console.log('Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.');
   for (const style of ['wise', 'greedy']) {
     console.log(`\n${style === 'wise' ? 'Wise player' : 'Greedy player (always chases attack)'}`);

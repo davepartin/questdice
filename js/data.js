@@ -254,7 +254,7 @@ export const CLASS2 = { on: false, songs: true, guard: true, digIn: 2 };
 //   MEND   a monster fighting alone that guards also heals `share` of what it guards (Dave: "maybe they have heal too, just like I have heal").
 //   BAG    a monster plays its six moves in a shuffled order, then shuffles them again (Dave: "you never know what order... some awareness
 //          but not perfect"), and its card shows what is still in the bag. Without it, it rolls its move die afresh each round.
-export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 }, mend: { share: 0.5 }, bag: true };
+export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 , most: 99}, mend: { share: 0.5 }, bag: true };
 export const WEAPONS2 = {
   faces: {
     sword: { 4: 'R0 B1 R2 R4', 6: 'R0 B1 R2 R3 B4 R6', 8: 'R0 B1 R2 R3 B4 R5 R6 R8', 10: 'R0 B1 R2 R3 B4 R5 R6 B7 R8 R10' },
