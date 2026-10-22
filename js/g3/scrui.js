@@ -650,8 +650,9 @@ function questCard(q, idx) {
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
     h('span', { class: 'qc-go' }, h('span', {}, q.kind === 'boss' ? `Face ${bossCall(q)}` : 'Fight'), ico('chevron')));
 }
-// Bring a Diamond (Dave, Oct 2026): under the quest card, each Diamond in your case with a Left and a Right button. Tap a hand to bring
-// it into this fight in that hand (tap again to keep it in its case). Two can go, one in each hand. It shatters when the fight ends.
+// Bring a Diamond (Dave, Oct 2026): on the camp's Dice page, under your dice (it used to sit under the quest card; Dave: "it should be very
+// clearly an option at camp"). Each Diamond in your case has a Left and a Right button: tap a hand to bring it into the next fight in that
+// hand (tap again to keep it in its case). Two can go, one in each hand. It shatters when that fight ends.
 function diamondBring(hero) {
   if (!E.diamondsOf(hero).length) return null;
   const box = h('section', { class: 'sx-dbring' });
@@ -659,11 +660,11 @@ function diamondBring(hero) {
     const ds = E.diamondsOf(hero); const hands = E.diamondHands(hero); const armed = ds.filter((d) => E.armedSlot(hero, d.uid));
     const two = E.isTwoHanded(hero) ? D.WEAPONS[hero.loadout.NW.id].name : null;
     box.replaceChildren(...[
-      h('p', { class: 'db-head' }, ico('gem'), h('b', {}, armed.length ? `Bringing ${armed.length === 2 ? 'two Diamonds' : 'a Diamond'}` : 'Bring a Diamond?'), h('small', {}, 'One fight, then it shatters. Win or lose.')),
+      h('p', { class: 'db-head' }, ico('gem'), h('b', {}, armed.length ? `Bringing ${armed.length === 2 ? 'two Diamonds' : 'a Diamond'} next fight` : 'Bring a Diamond next fight?'), h('small', {}, 'One fight, then it shatters. Win or lose.')),
       h('div', { class: 'db-list' }, ds.map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
         return h('div', { class: `db-item ${at ? 'on' : ''}` },
           h('div', { class: 'db-top' }, h('b', { class: 'db-name' }, `Diamond ${w.name}`), h('small', {}, `d${d.size}`),
-            h('span', { class: 'db-hands' }, hands.map((s) => btn(s === 'NW' ? 'Left' : 'Right', () => { E.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); paint(); },
+            h('span', { class: 'db-hands' }, hands.map((s) => btn(s === 'NW' ? 'Left' : 'Right', () => { HE.armDiamond(hero, d.uid, at === s ? null : s); sfx.select?.(); X.persist(); paint(); },
               { kind: at === s ? 'primary' : 'ghost', cls: 'db-hand', aria: `${at === s ? 'Keep' : 'Bring'} the Diamond ${w.name}${at === s ? ' in its case' : ` in your ${s === 'NW' ? 'left' : 'right'} hand`}` })))),
           faceChips(d), two ? null : h('small', { class: 'db-swap' }, hands.map((s) => `${s === 'NW' ? 'Left' : 'Right'} sets aside your ${D.WEAPONS[hero.loadout[s]?.id]?.name || 'fists'}`).join(' · '))); })),
       two && armed.length ? h('small', { class: 'db-note' }, `Your ${two} is two-handed: it sits this fight out, and one Diamond fills both hands. Two Diamonds take a hand each.`) : null].filter(Boolean));
@@ -694,7 +695,7 @@ export function board() {
         ...boonNotes(blessings),
         ambush ? h('p', { class: 'note warn' }, ico('skull'), 'An ambush waits on whichever road you take.') : null, tipEl),
       eyebrow(quests[0]?.kind === 'boss' && quests[0]?.step >= D.QUESTS_PER_ACT ? 'The road ends here' : 'The road ahead', 'center'),
-      h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)), X.net ? null : diamondBring(hero))));
+      h('div', { class: `sx-quests n${quests.length}` }, quests.map(questCard)))));
   lay('board'); SCR.enter('road', { hero, heroes: X.members(), place, seed: c.seed }, `road:${place}:${hero.name}:${hero.cls}`);
   fitBoard(); requestAnimationFrame(fitBoard); setTimeout(fitBoard, 400); // again once the fonts and the card art have settled
 }
@@ -853,7 +854,7 @@ export function victory(first) {
   const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
   const gemLine = (txt) => h('p', { class: 'dm-line' }, ico('gem'), txt);
   const diamondPanel = Rw.diamond ? panel('sx-diamond', eyebrow('A Diamond weapon', 'gold'), h('div', { class: 'loot-row one' }, weaponCard(Rw.diamond, { cls: 'pick' })),
-    Rw.diamondTaken ? gemLine(`It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from the quest card when a fight matters.`)
+    Rw.diamondTaken ? gemLine(`It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from camp, under your dice, when a fight matters.`)
       : Rw.diamondSold ? gemLine(`Sold for ${E.diamondSellValue(Rw.diamond)} gold. A sensible choice. The Diamond disagrees, quietly.`)
         : [gemLine(`Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}). Sell this one, or leave it behind and use a Diamond in a fight to make room.`),
           h('div', { class: 'row end' }, btn(`Sell it ${E.diamondSellValue(Rw.diamond)}`, () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost', icon: 'coin', iconAfter: true }))]) : null;
@@ -1583,7 +1584,7 @@ function campContent(hero) {
     case 'supplies': return h('div', { class: 'cw-supplies' }, zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
-    default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector());
+    default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector(), SHEET.inline ? null : diamondBring(hero));
   }
 }
 export function camp(fromBoard) {
