@@ -11,10 +11,7 @@ import * as D from '../../data.js';
 import * as E from '../../engine.js';
 import { makePoly, roundedGeometry, restQuat, readLabel } from './poly.js';
 import { buildAtlas, diceStyle } from './faces.js';
-import { bodyWatermarkSrc, CLASS_BODY_WATERMARKS } from './bodywm.js';
-import { bodyCornerMark } from './bodymarks.js';
-
-export { CLASS_BODY_WATERMARKS, bodyWatermarkSrc };
+import { bodyFaceLabels } from './bodyfaces.js';
 
 export { makePoly, restQuat, readLabel };
 
@@ -22,11 +19,8 @@ export { makePoly, restQuat, readLabel };
 const PIP_BY_NUM = [null, 'heal', 'pierce', 'magic', 'gold'];
 const FX_PIP = { heal: 'heal', magic: 'magic', pierce: 'pierce', stagger: 'stagger' };
 
-// Body marks on the white dice (a helmet on the head, a glove on each hand, boots on the feet), behind the numbers.
-// A look being tried out (Dave, Oct 2026): off (0) in the game for now; setBodyMarks(k) turns it on at strength k.
-const BODY_MARK = { N: { wm: 'helmet' }, W: { wm: 'gauntlet' }, E: { wm: 'gauntlet', wmFlip: true }, S: { wm: 'bootpair' } }; // thumbs point in, toward the heart
-let bodyMarks = 0;
-export function setBodyMarks(k) { bodyMarks = k || 0; }
+// Retained for older development capture scripts; body identifiers are retired.
+export function setBodyMarks() {}
 
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
 export function dieSpecs(hero, previewSizes = {}) {
@@ -58,20 +52,8 @@ export function dieSpecs(hero, previewSizes = {}) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
-      // The ivory d6 pilot uses a compact moulded corner mark. Other shapes keep
-      // the existing artwork until their narrower faces receive a separate pass.
-      const cornerMark = bodyCornerMark(hero.cls, slot, sides);
-      const bodyWm = bodyMarks || cornerMark ? null : bodyWatermarkSrc(hero.cls, slot);
-      // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
-      for (let v = 1; v <= sides; v++) {
-        const pay = D.FACE_PAY[v]; const corners = []; for (const k of ['heal', 'pierce', 'magic', 'gold']) for (let i = 0; i < (pay?.[k] || 0); i++) corners.push(k);
-        labels.push({
-          text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined,
-          ...(bodyWm ? { bodyWm } : {}),
-          ...(cornerMark ? { cornerMark } : {}),
-          ...(bodyMarks && !cornerMark && BODY_MARK[slot] ? { ...BODY_MARK[slot], wmK: bodyMarks, wmS: sides === 4 || sides === 8 ? 2.3 : sides === 10 ? 2 : 1.8 } : {}),
-        });
-      }
+      // One shared face set per size: head, either hand and feet use the same die.
+      labels = bodyFaceLabels(sides);
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   }

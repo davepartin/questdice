@@ -26,10 +26,13 @@ Current review branch: `ui/camp-art-pass`, draft PR #30. Read these checkpoints 
 - [Phone flow review and portrait loading](14-PHONE-FLOW-REVIEW.md)
 - [Battle dice satin material and side visibility](15-BATTLE-DICE-SATIN-REVIEW.md)
 - [Ivory d6 corner icons and inset material pilot](16-IVORY-D6-INLAY.md)
+- [Four clean shared body dice, supersedes identity-mark experiments](17-CLEAN-BODY-DICE.md)
 
 Latest direction: bring camp toward the original illustrated reference before the battle powers triangle. Board framing, materials and the painted campsite are implemented. Camp now renders the actual battle die meshes/materials to still portraits, including weapons, with the highest numeric face displayed. The earlier SVG approximation has been removed. Battle magic powers now has separate class-power and helper choices, persistent resource totals, and a scrollable detail/cast panel. The magic screen visual finish in checkpoint 13 adds a textured violet backdrop, exact equilateral geometry and a tactile spell card. The linked phone journey now verifies camp, an upgrade, Store return, road, quest entry, a real roll/cast and save reopening. Portrait loading/failure states are explicit. Next: Dave’s visual review and physical-phone performance check before publishing or expanding scope. Work one section at a time, preserve mechanics, and leave screenshots and a resume checkpoint before moving on. These checkpoints supersede the original Phase 1 starting instruction below.
 
 ## Original builder instructions
+
+Current decision, 22 October: checkpoint 17 supersedes the corner-icon pilot. Body dice are clean white, with only numbers and effect symbols. Reuse the same d4/d6/d8/d10 artwork across head, hands and feet for every class.
 
 Read docs/ui-handoff/00-START-HERE.md and the other documents in that folder. Begin Phase 1 only, following 01-BUILDER-PROMPT.md. Preserve mechanics and phone performance. Work on a separate branch and return screenshots and the review report before publishing game changes.
 
