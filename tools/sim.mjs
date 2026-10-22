@@ -8,7 +8,9 @@ import {
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
+import * as DATA from '../js/data.js';
 if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // the weapons experiment (docs/ideas/WEAPONS_REDESIGN_2026-10-22.md)
+if (typeof process !== 'undefined' && process.env.AMMO) DATA.WEAPONS2.defaultAmmo = process.env.AMMO; // W2=1 AMMO=fire: every Arrows the bots carry (and have not been given another) shoots that ammunition
 // Pressure rules (PRESSURE in js/data.js), one at a time or together: PRESS=1 fury + rallying swarms; FURY=1, RALLY=1, MEND=1, BAG=1 each alone
 // (ChatGPT's review, 22 Oct: "isolate those effects before settling the rules").
 if (typeof process !== 'undefined' && ['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG'].some((k) => process.env[k])) {

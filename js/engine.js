@@ -104,7 +104,7 @@ export function weaponFaces(inst, rollSize) {
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
-  if (EXPERIMENT.weapons2 && inst.id === 'quiver') return faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : 'normal'}`, size); // the arrows: faces by ammunition
+  if (EXPERIMENT.weapons2 && inst.id === 'quiver') return faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}`, size); // the arrows: faces by ammunition
   if (EXPERIMENT.weapons2 && WEAPONS2.faces[inst.id]) return faces2(inst.id, size); // stage 1: the same Bronze numbers at every metal
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
   const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
