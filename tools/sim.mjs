@@ -9,7 +9,7 @@ import {
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
 if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // the weapons experiment (docs/ideas/WEAPONS_REDESIGN_2026-10-22.md)
-if (typeof process !== 'undefined' && process.env.PRESS) ENGINE.PRESSURE_ON(); // monsters' fury and rallying swarms (PRESSURE in js/data.js)
+if (typeof process !== 'undefined' && process.env.PRESS) { ENGINE.PRESSURE_ON(); if (!process.env.BAG) ENGINE.PRESSURE.bag = false; if (!process.env.MEND) ENGINE.PRESSURE.mend.share = 0; } // fury and rallying swarms (PRESSURE in js/data.js); BAG=1 the move bag, MEND=1 lone monsters heal when they guard
 // Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
 export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };
 

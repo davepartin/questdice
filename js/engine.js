@@ -622,11 +622,17 @@ export function rollIntent(e, rng) {
     const s = mdef(e.id).pounce || { f: 0, m: 0 };
     e.pounce = false;
     e.intent = { n: 'Pounce', v: 'strike', f: (s.f || 0) + (e.edge?.slam || 0), m: s.m || 0, slam: true, pounce: true };
+  } else if (PRESSURE.on && PRESSURE.bag) { // the move bag: each of its moves once, in a shuffled order, then shuffled again
+    if (!e.bag?.length || e.bagOf !== e.faces) { e.bag = shuffleIdx(e.faces.length, rng); e.bagOf = e.faces; }
+    e.intent = { ...e.faces[e.bag.shift()] };
   } else {
     e.intent = { ...e.faces[die(rng, 6) - 1] };
   }
   return e.intent;
 }
+const shuffleIdx = (n, rng) => { const a = Array.from({ length: n }, (_, i) => i); for (let i = n - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// What is still in a monster's move bag after this round's move, for its card (empty when it shuffles next round, or with no bag).
+export const bagLeft = (e) => (PRESSURE.on && PRESSURE.bag && e.bag && e.bagOf === e.faces ? e.bag.map((i) => e.faces[i]) : null);
 const DAMAGE_VERBS = new Set(['strike', 'pierce', 'drain', 'pilfer', 'breath']);
 const sumDice = (rng, n, s) => { let t = 0; for (let i = 0; i < n; i++) t += die(rng, s); return t; };
 export const armorOf = (e, rng) => (e?.armor ? sumDice(rng, e.armor.n, e.armor.s) : 0);
@@ -767,6 +773,7 @@ const blankMods = () => ({ atk: 0, pierce: 0, block: 0, heal: 0, weaken: 0, spla
 // changed this round for the screens: { fury, furyUp, rallied: [uid] }.
 export const furyOf = (b) => { if (!PRESSURE.on) return 0; const F = PRESSURE.fury; const act = Math.min(3, Math.max(1, campOfBattle(b)?.act || 1)); const steps = Math.min(F.max, Math.max(0, b.round - F.from + 1)); return steps * F.per[act - 1]; };
 export const PRESSURE_ON = (on = true) => { PRESSURE.on = on; }; // for the tools (PRESS=1)
+export { PRESSURE };
 export const isSwarm = (b) => !!(b.quest && b.quest.kind !== 'boss' && (b.swarmSize || 0) >= PRESSURE.rally.min);
 function pressure(b) {
   b.pressure = { fury: 0, furyUp: false, rallied: [] }; if (!PRESSURE.on) return;
@@ -1084,7 +1091,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
         if (r.net > 0) { const take = Math.min(hero.gold + b.goldEarned, 6); e.carried += take; rep.goldStolen += take; b.goldEarned -= take; }
         break;
       }
-      case 'guard': break;
+      case 'guard': { const sh = PRESSURE.on ? PRESSURE.mend.share : 0; if (sh && b.enemies.filter((x) => x.hp > 0).length === 1) { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + Math.round(e.mag * sh)); act.healed = e.hp - before; act.mended = true; } break; } // alone, a guard also licks its wounds (PRESSURE.mend)
       case 'mend': { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + e.mag); act.healed = e.hp - before; break; }
       case 'charge': if (!e.cancelled) { e.windup = true; } else act.cancelled = true; break;
       case 'howl': for (const o of living()) o.buff += i.k; break;
@@ -2014,7 +2021,7 @@ export function resolveParty(b) {
         }
         break;
       }
-      case 'guard': break;
+      case 'guard': { const sh = PRESSURE.on ? PRESSURE.mend.share : 0; if (sh && b.enemies.filter((x) => x.hp > 0).length === 1) { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + Math.round(e.mag * sh)); act.healed = e.hp - before; act.mended = true; } break; } // alone, a guard also licks its wounds (PRESSURE.mend)
       case 'mend': { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + e.mag); act.healed = e.hp - before; break; }
       case 'charge': if (!e.cancelled) e.windup = true; else act.cancelled = true; break;
       case 'howl': for (const o of livingNow()) o.buff += i.k; break;

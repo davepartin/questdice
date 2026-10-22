@@ -41,3 +41,23 @@ test('rally: a swarm calls one more every third round while two still stand; a t
   const big = E.newBattle(hero(), quest(['ogre', 'goblin', 'goblin']), E.makeRng(5), 1); toRound(big, 7); assert.equal(big.enemies.length, 3, 'a big monster is not a swarm');
   const boss = E.newBattle(hero(), quest(['goblin', 'goblin', 'goblin'], 'boss'), E.makeRng(6), 1); toRound(boss, 7); assert.equal(boss.enemies.length, 3, 'never in a boss fight');
 });
+
+test('the move bag: every move once in a shuffled order, then shuffled again; the card can read what is left', () => {
+  E.PRESSURE_ON(); PRESSURE.bag = true;
+  const b = E.newBattle(hero(), quest(['ogre']), E.makeRng(7), 1); const e = b.enemies[0];
+  const names = []; names.push(e.intent.n); for (let r = 0; r < 5; r++) { E.beginReset(b); names.push(e.intent.n); }
+  assert.deepEqual([...names].sort(), e.faces.map((f) => f.n).sort(), 'six rounds use each of its six moves once');
+  assert.equal(E.bagLeft(e).length, 0, 'the bag is empty: it shuffles next round');
+  E.beginReset(b); assert.equal(E.bagLeft(e).length, e.faces.length - 1, 'a fresh bag, less this round\'s move');
+});
+
+test('mend: a monster alone that guards also heals half of its guard; with friends it does not', () => {
+  E.PRESSURE_ON(); PRESSURE.mend.share = 0.5;
+  const guardFace = (e) => e.faces.find((f) => f.v === 'guard');
+  const lone = E.newBattle(hero(), quest(['ogre']), E.makeRng(8), 1); const o = lone.enemies[0]; const g = guardFace(o); assert.ok(g, 'the ogre can guard');
+  o.hp = o.maxHp - 20; o.intent = { ...g }; o.windup = false; E.startRoll(lone);
+  const before = o.hp; E.resolve(lone, { target: 0 }); const act = lone.report.acts.find((a) => a.uid === o.uid);
+  if (o.hp > 0 && o.mag > 0) assert.ok(act?.mended && o.hp >= before - lone.report.dealt + 1, 'it licked its wounds');
+  const two = E.newBattle(hero(), quest(['ogre', 'goblin']), E.makeRng(8), 1); const t = two.enemies[0]; t.hp = t.maxHp - 20; t.intent = { ...g }; E.startRoll(two);
+  E.resolve(two, { target: 1 }); assert.ok(!two.report.acts.find((a) => a.uid === t.uid)?.mended, 'not with a friend beside it');
+});

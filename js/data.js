@@ -246,7 +246,10 @@ export const EXPERIMENT = { weapons2: false };
 //   FURY   from round `from`, every monster's blow is `per[act]` harder for each round it has lasted (round 5: x1, round 6: x2 ...), at most `max` steps.
 //   RALLY  a group of `min` or more small monsters (each `small` health or less, never a boss fight) calls one more of its kind every `every`
 //          rounds while at least `need` of them still stand. Thin a swarm quickly and it stops coming.
-export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 } };
+//   MEND   a monster fighting alone that guards also heals `share` of what it guards (Dave: "maybe they have heal too, just like I have heal").
+//   BAG    a monster plays its six moves in a shuffled order, then shuffles them again (Dave: "you never know what order... some awareness
+//          but not perfect"), and its card shows what is still in the bag. Without it, it rolls its move die afresh each round.
+export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 }, mend: { share: 0.5 }, bag: true };
 export const WEAPONS2 = {
   faces: {
     sword: { 4: 'R0 B1 R2 R4', 6: 'R0 B1 R2 R3 B4 R6', 8: 'R0 B1 R2 R3 B4 R5 R6 R8', 10: 'R0 B1 R2 R3 B4 R5 R6 B7 R8 R10' },
