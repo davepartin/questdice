@@ -966,7 +966,7 @@ function campStatus(hero) {
     : btn(`${r.price}`, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
   return h('section', { class: `sx-cstat slim ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
     h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act}`), pips),
-    h('div', { class: 'cs-pots' }, vials, buy));
+    h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy)); // named, like the act beside it (Dave: "needs to say potion somewhere")
 }
 // Potion belt: carry a third healing potion.
 function potionRow(hero) {

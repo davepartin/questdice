@@ -1288,3 +1288,4 @@ Dave: test cheaper upgrades and stronger charges side by side, put a rough excha
 ## Potion reminder, October 22, 2026
 
 Dave won on Hard with the wizard, then died at the very end: "I forgot to charge my potions." When you tap "To the road" with room on the potion belt and gold for at least one potion, the button is replaced for a moment by "Potion belt: 0 of 2. Refill for 40 gold?" with **Refill 40** (it buys what your gold allows) and **Go anyway**. The reminder appears once per camp visit and never blocks you. dev/potask.mjs checks Refill, Go anyway and a full belt.
+- (22 Oct) The camp status row now says **Potions** above the green crosses, matching "Act II" beside it (Dave: "needs to say potion somewhere"). Checked by dev/potlabel.mjs.
