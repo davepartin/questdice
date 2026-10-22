@@ -1304,3 +1304,8 @@ Dave: "check the other charms for anything else that's overpowered". `WHAT=charm
 - **Heartstone** did almost nothing (rolling the heart twice rarely helps; higher isn't always better). It now **doubles your heart die's boost** (+3.5 to +4.3 a round).
 - Lantern, Phoenix (pure safety), Thorn Crown and the fixed Ember Locket were already in range and are unchanged.
 After the change, every charm lands between about +1 and +5 attack a round, or 1 to 7 health a fight. Lantern and Blood Pact sit at the top, and Thorn Crown and Ember Locket at the bottom.
+
+
+## 22 October 2026: ivory d6 inset identity and material pilot
+
+Dave authorized implementing and deploying the d6 material prototype directly for live development review. Six-sided ivory head/hands/feet now use compact black inset corner icons instead of background watermarks, with mirrored gloves and five class head silhouettes. Recessed numerals, subtle plastic grain, warm brass edges and balanced satin highlights use the existing atlas and geometry. Other die shapes and weapon/heart/talent materials are unchanged. See docs/ui-handoff/16-IVORY-D6-INLAY.md and docs/screens/ivory-inlay/. Browser checks: 240 face layouts at low/med across all classes, no corner/result overlaps, actual throws, selected/bound states, short phone and camp portraits, unchanged mesh/geometry counts and atlas sizes, zero page errors. npm test: 331 pass, the same two known server failures. Physical iPhone FPS remains unmeasured. Cache stamp 20261022ivory1. Next: Dave reviews the live ivory d6 at phone size before extending the treatment to other shapes.

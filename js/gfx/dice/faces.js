@@ -12,6 +12,13 @@ const BODY_WM_DARK = 1.2; // Dave, Oct 2026: the body watermarks read 20% darker
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
 const SVG = {
+  // Compact solid silhouettes survive the phone-size corner better than line art.
+  slotHat: 'M20 73 C28 57 31 29 49 10 C56 3 65 5 75 13 L63 17 C59 30 65 55 74 73 Z M12 72 Q49 85 88 72 L94 83 Q50 99 6 83 Z',
+  slotHood: 'M50 5 Q16 19 11 66 L8 92 Q50 80 92 92 L89 66 Q84 19 50 5 Z M50 25 Q29 36 29 66 Q50 82 71 66 Q71 36 50 25 Z',
+  slotHelm: 'M50 7 Q15 7 13 43 V77 L32 94 L44 82 V47 H22 V34 H78 V47 H56 V82 L68 94 L87 77 V43 Q85 7 50 7 Z',
+  slotCap: 'M13 64 Q20 34 52 34 Q75 34 83 64 Z M8 68 Q50 78 92 68 V81 Q50 95 8 81 Z M56 34 Q57 11 90 4 Q84 27 65 39 Z',
+  slotGlove: 'M21 76 V37 Q21 29 30 29 V20 Q30 12 39 12 Q44 12 44 20 V14 Q44 5 53 5 Q61 5 61 14 V22 Q61 13 69 15 Q76 17 76 25 V54 L83 44 Q89 36 95 44 Q99 49 92 58 L78 78 V94 H24 V78 Z',
+  slotBoot: 'M21 8 H62 V47 Q64 56 84 61 Q96 65 95 82 H18 V68 H21 Z M16 85 H96 V96 H16 Z',
   talent: 'M77.1 46.5 L85.5 47.7 L85.5 60.3 L77.1 61.5 L73.3 70.7 L78.4 77.5 L69.5 86.4 L62.7 81.3 L53.5 85.1 L52.3 93.5 L39.7 93.5 L38.5 85.1 L29.3 81.3 L22.5 86.4 L13.6 77.5 L18.7 70.7 L14.9 61.5 L6.5 60.3 L6.5 47.7 L14.9 46.5 L18.7 37.3 L13.6 30.5 L22.5 21.6 L29.3 26.7 L38.5 22.9 L39.7 14.5 L52.3 14.5 L53.5 22.9 L62.7 26.7 L69.5 21.6 L78.4 30.5 L73.3 37.3 Z M65 54 A19 19 0 1 0 65 54.01 Z M46.0 40.0 L48.8 51.2 L60.0 54.0 L48.8 56.8 L46.0 68.0 L43.2 56.8 L32.0 54.0 L43.2 51.2 Z M86.0 2.0 L88.2 10.8 L97.0 13.0 L88.2 15.2 L86.0 24.0 L83.8 15.2 L75.0 13.0 L83.8 10.8 Z M92.0 28.5 L93.1 32.9 L97.5 34.0 L93.1 35.1 L92.0 39.5 L90.9 35.1 L86.5 34.0 L90.9 32.9 Z',
   mend: 'M37 8 H63 V37 H92 V63 H63 V92 H37 V63 H8 V37 H37 Z',
   mendBold: 'M34.4 8 H65.6 V34.4 H92 V65.6 H65.6 V92 H34.4 V65.6 H8 V34.4 H34.4 Z', // the heart die's cross: arms 20% thicker (Dave)
@@ -49,7 +56,7 @@ export function iconPath(name) {
   return paths.get(name);
 }
 export const hasIcon = (n) => !!SVG[n];
-const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent']);
+const evenodd = new Set(['helmet', 'coin', 'shield', 'gauntlet', 'talent', 'slotHood']);
 // Draw an icon centred at (x,y) with size px, using whatever fill/stroke the context already has.
 export function drawIcon(ctx, name, x, y, size, { stroke = 0, flip = false } = {}) {
   ctx.save(); ctx.translate(x, y); const s = size / 100; ctx.scale(flip ? -s : s, s); ctx.translate(-50, -50);
@@ -352,6 +359,8 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|bwm${wmReady}|${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
   const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
+  const ivoryInlay = ST.clean && theme === 'bone' && poly.sides === 6;
+  if (ivoryInlay) Object.assign(th, { core: '#fffaf0', mid: '#eee4ce', edge: '#c4b38c', rough: 0.38, trim: ['#f4e6bc', '#b99a5d', '#695432'], trimRough: 0.3 });
   const WP = ST.wpn || WPN; const sw = ST.swirl;
   const n = poly.faces.length; const cells = n + 1;
   const cols = n <= 4 ? 3 : n <= 8 ? 3 : 4; const rows = Math.ceil(cells / cols);
@@ -411,6 +420,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
           for (let k = 0; k < 9; k++) { a += (rnd() - 0.5) * wob; x += Math.cos(a) * Rpx * 0.17; y += Math.sin(a) * Rpx * 0.17; A.lineTo(x, y); } A.stroke(); } };
       void vein; // smooth dark stone: no veins, so the number and its symbol have the face to themselves
       const gl = A.createRadialGradient(-inR * 0.3, -inR * 0.4, 0, 0, 0, inR * 1.3); gl.addColorStop(0, 'rgba(255,255,255,0.10)'); gl.addColorStop(1, 'rgba(0,0,0,0.22)'); A.fillStyle = gl; A.fillRect(-S / 2, -S / 2, S, S);
+    } else if (ivoryInlay) {
+      // Baked, faint moulded-plastic grain; no larger atlas or animated shader noise.
+      speckle(A, rnd, Rpx, '#8a7756', 180, 0.65 * qk, 0.035);
     } else if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
       const light = spec.tone === 'b' ? ['#7cc4ff', '#2f8cf5'] : ['#ff7a5a', '#ff3a3a'];
@@ -555,7 +567,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
       // (no offset drop shadow: a clean thin outline only)
-      layer(ctxs, { H: 'rgb(128,128,128)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: 0, cap: darkOnLight ? 'butt' : 'round' }));
+      if (ivoryInlay) {
+        // A narrow light lip at the lower edge reads as a recess even at low quality.
+        layer(ctxs, { A: '#fff9e9' }, c => drawNumeral(c, txt, nx + qk, ny + 1.3 * qk, numH, { grow: 1.5 * qk, cap: 'butt' }));
+        fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#07090c', '#1f2125', '#090a0c']);
+      }
+      layer(ctxs, { H: ivoryInlay ? 'rgb(66,66,66)' : 'rgb(128,128,128)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: 0, cap: darkOnLight ? 'butt' : 'round' }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, nx, ny, numH));
     }
     if (spec.sym === 'TALENT' && !blank) {
@@ -618,6 +635,14 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       layer(ctxs, { H: 'rgb(40,40,40)', A: 'rgba(0,0,0,0.85)', O: 'rgb(0,140,0)' }, (c) => drawIcon(c, ic, bx, by, bs * 1.2));
       layer(ctxs, { H: 'rgb(84,84,84)', A: cc, O: 'rgb(0,60,0)' }, (c) => drawIcon(c, ic, bx, by, bs));
     }
+    if (ivoryInlay && spec.cornerMark && !blank) {
+      const mark = spec.cornerMark;
+      const sz = inR * 0.35; const x = inR * (mark.right ? 0.63 : -0.63); const y = -inR * 0.63;
+      const paint = (c, dx = 0, dy = 0) => drawIcon(c, mark.icon, x + dx, y + dy, sz, { flip: mark.flip });
+      layer(ctxs, { A: '#fff9e6' }, c => paint(c, 0.7 * qk, 1.1 * qk));
+      layer(ctxs, { A: '#111318', H: 'rgb(66,66,66)', O: 'rgb(0,210,0)' }, c => paint(c));
+      audit[audit.length - 1].corner = { icon: mark.icon, x, y, size: sz, right: mark.right, flip: mark.flip };
+    }
     for (const c of Object.values(ctxs)) c.restore();
   });
 
@@ -634,7 +659,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   };
   const uvOf = (fi, x, y) => { const [cx, cy] = cellCenter(fi); return [(cx + (x / Hm) * (S / 2)) / W, 1 - (cy - (y / Hm) * (S / 2)) / Hh]; };
   const [tcx, tcy] = cellCenter(n);
-  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm, audit };
+  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm, audit, finish: ivoryInlay ? 'ivory-inlay' : null };
   cache.set(ck, out);
   return out;
 }
