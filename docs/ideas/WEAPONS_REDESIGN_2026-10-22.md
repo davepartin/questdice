@@ -134,3 +134,19 @@ Dave approved ChatGPT's narrower plan:
 - **Safety:** the switch (`EXPERIMENT.weapons2` in js/data.js, `useWeapons2()` in js/engine.js) is off in the live game. Only the tools turn it on (`W2=1`). Nothing in a save changes while it is off. A playable experimental mode will keep its saves separate, and none of it reaches the live game without Dave's approval.
 
 **Stage 1 is built (22 Oct):** `WEAPONS2` holds the six weapons' faces (Round Shield = Sword swapped, Tower Shield = Axe swapped), a new Axe (it borrows the Mace's 3D model for now), one-handed loot, stand-in class weapons until the bow arrives (Knight Sword + Round Shield, Ranger Spear + Dagger, Wizard Dagger + Round Shield, Dwarf Axe + Tower Shield, Bard Dagger + Sword), a one-handed Diamond pool, and no two-handed legendaries. Tests: test/weapons2.test.mjs. Measuring: `W2=1 sh tools/curve-all.sh`, `W2=1 WHAT=weapons sh tools/worth-all.sh`, `W2=1 node tools/party.mjs`.
+
+## Stage 1 results (22 Oct)
+
+**Campaigns** (docs/balance/curve_2026-10-22_weapons-today.txt against _weapons2-stage1.txt; 15 campaigns each, same bot): attack a round 30 / 41 / 49 became 26 / 37 / 46 by act, fights won 97 / 94 / 94% became 95 / 92 / 93%, and bosses 89 / 80 / 91% became 82 / 69 / 90%. That is the size of today's metal icons, which stage 1 leaves out. **The classes come much closer together:** Act III attack ran 42 to 55 by class with today's weapons, and runs 45 to 50 with the six.
+
+**Matchups** (tools/matchup.mjs, docs/balance/matchups_2026-10-22_weapons2-stage1.txt; Act II heroes of every class, 8 loadouts × a heavy hitter, a swarm of three and an armoured monster, a careful player and a greedy one):
+- **Decisions matter a lot.** The careful player loses 9 to 30 less health a fight than the greedy one with the same loadout, and wins the swarm 77 to 88% of the time against 57 to 61%.
+- **Partners matter.** Dagger + Shield costs 6.7 health against the heavy hitter, and Dagger + Dagger 10.3.
+- **But defence wins everywhere, for the careful player.** Shield + Tower Shield is best or tied in all three fights (2.7 / 39.4 / 3.1 health), only slower (6 to 9 rounds). Swapping a Shield or Tower Shield into the left hand saves the most health in every act (worth tool, `WHAT=weapons`). So "neither loadout wins everywhere" is **not** met yet.
+- **Why:** health is the only thing a fight costs. Nothing rewards finishing faster, so turtling is the best play. This is probably true of today's weapons too (not measured yet).
+
+**Ideas to give attack a reason** (for Dave to choose; none built):
+1. **Monsters escalate:** from about round 5, every monster hits a little harder each round, so a long turtle fight starts to cost.
+2. **Swarms call friends:** a group of small monsters adds one more every few rounds until thinned, which rewards attack against swarms.
+3. **Speed pays:** finishing in few rounds earns more gold or battle points.
+The first two fit the matchups best: defence against the heavy hitter, attack against the swarm, pierce against armour.
