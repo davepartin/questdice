@@ -1,0 +1,29 @@
+QuestDice matchups · Act II heroes, every class · Bronze loadouts · the six new weapons
+Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.
+
+Wise player
+loadout            heavy                 swarm                 guard                 healer                
+Normal arrows + Bow 9.4  · 4.1r · 100%    49.1  · 4.5r · 76%    16.1  · 6.1r · 100%   7.8  · 4.4r · 100%    
+Piercing arrows + Bow 7.3  · 4.2r · 100%    53.6  · 4.3r · 72%    19.7  · 6.2r · 99%    9.0  · 4.5r · 100%    
+Fire arrows + Bow  7.8  · 4.1r · 100%    51.3  · 4.3r · 75%    18.9  · 6.2r · 99%    8.5  · 4.4r · 100%    
+Frost arrows + Bow 5.9  · 4.1r · 100%    51.1  · 4.5r · 77%    15.3  · 6.2r · 100%   6.9  · 4.4r · 100%    
+Sword + Shield     4.6* · 4.6r · 100%    40.3* · 5.4r · 90%    8.6* · 7.1r · 100%    4.5* · 4.9r · 100%    
+Dagger + Sword     8.0  · 4.0r · 100%    47.3  · 4.5r · 79%    14.2  · 6.0r · 100%   8.6  · 4.4r · 100%    
+
+Greedy player (always chases attack)
+loadout            heavy                 swarm                 guard                 healer                
+Normal arrows + Bow 22.3  · 3.7r · 100%   66.8  · 3.5r · 57%    35.0  · 5.3r · 96%    19.4  · 4.1r · 100%   
+Piercing arrows + Bow 21.7  · 3.8r · 100%   67.4  · 3.5r · 57%    37.9  · 5.3r · 94%    20.4  · 4.2r · 99%    
+Fire arrows + Bow  21.7  · 3.8r · 100%   67.4  · 3.5r · 57%    37.9  · 5.4r · 94%    20.4  · 4.2r · 99%    
+Frost arrows + Bow 18.9* · 3.8r · 100%   67.0  · 3.6r · 58%    32.8  · 5.4r · 98%    17.2* · 4.2r · 99%    
+Sword + Shield     20.5  · 4.2r · 100%   65.2* · 3.8r · 61%    31.7* · 5.9r · 98%    19.3  · 4.5r · 99%    
+Dagger + Sword     20.6  · 3.8r · 100%   67.0  · 3.4r · 58%    35.9  · 5.3r · 95%    20.2  · 4.1r · 100%   
+
+What thinking is worth: health saved by the wise player over the greedy one, same loadout and fight
+loadout            heavy     swarm     guard     healer    
+Normal arrows + Bow +12.9     +17.7     +19.0     +11.6     
+Piercing arrows + Bow +14.4     +13.9     +18.3     +11.5     
+Fire arrows + Bow  +13.9     +16.2     +18.9     +12.0     
+Frost arrows + Bow +12.9     +15.9     +17.5     +10.3     
+Sword + Shield     +15.9     +24.8     +23.0     +14.7     
+Dagger + Sword     +12.7     +19.7     +21.7     +11.6     
