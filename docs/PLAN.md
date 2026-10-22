@@ -1314,3 +1314,8 @@ Dave authorized implementing and deploying the d6 material prototype directly fo
 ## 22 October 2026: four clean body dice replace identity artwork
 
 Dave removed corner icons and all background watermarks. Head, both hands and feet share four canonical white dice: d4/d6/d8/d10, number plus effect symbols only. bodyfaces.js holds immutable face sets with unchanged FACE_PAY, and render caches share atlas/geometry by size/quality across slots/classes. Removed runtime watermark imports, preloads/rebuild hooks, face painting and camp-cell body art; no old watermark image requests. Retained the existing clean materials and side lighting. See docs/ui-handoff/17-CLEAN-BODY-DICE.md; it supersedes the corner-icon experiment. Checks: 80 class/size/slot combinations share four low-quality atlases/geometries, real physical throws/screenshots for all sizes, camp portraits, no page errors. Unit checks exact payouts and shared-set immutability. Full suite: 332 pass, same two known server failures. Cache stamp 20261022cleanbody1. Deploy within the existing development-game authorization.
+
+
+## 22 October 2026: slower Heart Boost pulse
+
+Dave found Heart Boost too fast and blinky and requested about 75% slower. HEART_PERIOD in js/gfx/dice/tray.js is now 4.2 seconds, up from 1.05: one-quarter frequency, with the same waveform stretched over four times the duration. Both socket rings and floor glows still sample the same beat(time), keeping the heart and boosted dice synchronized. No brightness, selection, mechanics or roll changes. Syntax check and 500 waveform samples confirm exact time stretching. Cache stamp 20261022slowheart1.

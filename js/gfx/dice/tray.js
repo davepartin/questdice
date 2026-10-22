@@ -43,7 +43,7 @@ const STRAIGHT_FLOOR = 0x1a7f95; // ...over a deeper cyan floor glow (the floor 
 // unlike a straight's steady cyan or a triple's line. Deep floor colours (the floor glow adds light), a brighter rim ring.
 const HEART_FLOOR = { heal: 0x1c8a4a, pierce: 0xa04d16, magic: 0x5a2fa0, gold: 0x9a7414 };
 const HEART_RING = { heal: 0x6dffb0, pierce: 0xffa060, magic: 0xc9a2ff, gold: 0xffd75e };
-const HEART_PERIOD = 1.05; // seconds per beat
+const HEART_PERIOD = 4.2; // seconds per cycle: 75% slower than the original 1.05s; heart and boosted dice stay synchronized
 // one heartbeat: a strong "lub" then a softer "dub", then rest (0..1)
 const beat = (t, phase = 0) => { const p = ((t + phase) % HEART_PERIOD) / HEART_PERIOD; const g = (c, w) => Math.exp(-(((p - c) / w) ** 2)); return Math.min(1, g(0.06, 0.055) + 0.65 * g(0.27, 0.06)); };
 const floorOf = (s) => (s.inHeart ? HEART_FLOOR[s.inHeart] : s.inStraight ? STRAIGHT_FLOOR : s.baseGlow ?? 0xffffff);
