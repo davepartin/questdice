@@ -1,7 +1,7 @@
 // Matchups (Dave and ChatGPT, 22 Oct 2026: "Sword + Shield performs better against the heavy attacker, while two offensive weapons clear the
 // small enemies faster. Neither loadout wins everywhere"). Real heroes from the campaign (snapshots at two steps of Act II, every class)
 // hold each LOADOUT (left + right, the hero's own size, Bronze) and fight each ENCOUNTER many times:
-//   heavy  one big hitter          swarm  three small monsters          guard  one armoured monster
+//   heavy  one big hitter          swarm  three small monsters          guard  one armoured monster          healer  one that mends itself
 // Two players: wise (thinks about block, targets and rerolls, see tools/sim.mjs) and greedy (always chases the most attack). The gap
 // between them is what good decisions are worth there. It changes no rule; run with W2=1 for the weapons experiment.
 //   W2=1 node tools/matchup.mjs [fights=24] [class]        (OUT=file writes rows; node tools/matchup.mjs merge <dir> prints the table)
@@ -10,7 +10,7 @@ import * as E from '../js/engine.js';
 import * as DATA from '../js/data.js';
 import { botRound, botCamp, botLoot, PLAY, setScore } from './sim.mjs';
 
-const ENC = { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'] };
+const ENC = { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'], healer: ['treant'] }; // the Treant regrows its bark (a mend move)
 const LOADOUTS = [['sword', 'shield'], ['dagger', 'shield'], ['spear', 'shield'], ['axe', 'tower'], ['shield', 'tower'], ['dagger', 'sword'], ['axe', 'spear'], ['dagger', 'dagger']];
 const name = (id) => (DATA.WEAPONS[id]?.name || id).replace('Round ', '');
 const own = (id) => (DATA.EXPERIMENT.weapons2 || id !== 'axe' ? id : 'mace'); // today's weapons have no Axe: the Mace stands in
@@ -26,7 +26,7 @@ function play(hero0, quest, seed, style) {
   const b = E.newBattle(hero, quest, rng, 1); const hp0 = b.hp; const p0 = E.potionsLeft(b); let rounds = 0; let g = 0;
   while (!b.outcome && g++ < 60) { botRound(b, rng); if (b.report) rounds++; }
   const lost = Math.max(0, hp0 - b.hp) + (p0 - E.potionsLeft(b)) * E.potionHpOf(hero);
-  return { win: b.outcome === 'victory' ? 1 : 0, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30 };
+  const magic = (b.magicSpent || 0); return { win: b.outcome === 'victory' ? 1 : 0, unfinished: b.outcome ? 0 : 1, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30, potions: p0 - E.potionsLeft(b) };
 }
 const rows = [];
 for (const cls of classes) {
@@ -40,7 +40,8 @@ for (const cls of classes) {
         h.loadout.NW = { uid: `L${l}`, id: own(l), rarity: 0, size }; h.loadout.NE = { uid: `R${r}`, id: own(r), rarity: 0, size }; h.dice = [...new Set([...(h.dice || []), 'NE'])];
         const q = { ...quest, enemies: foes, kind: 'battle', foeNames: null };
         const res = Array.from({ length: T }, (_, i) => play(h, q, seed * 100 + step * 10 + i * 7919, style));
-        rows.push({ cls, step, loadout: `${name(own(l))} + ${name(own(r))}`, enc, style, win: res.reduce((a, x) => a + x.win, 0) / T, rounds: res.reduce((a, x) => a + x.rounds, 0) / T, health: res.reduce((a, x) => a + x.health, 0) / T });
+        const av = (k) => res.reduce((a, x) => a + x[k], 0) / T;
+        rows.push({ cls, step, loadout: `${name(own(l))} + ${name(own(r))}`, enc, style, win: av('win'), unfinished: av('unfinished'), rounds: av('rounds'), health: av('health'), potions: av('potions') });
       }
       process.stderr.write(`${cls} 2.${step} `);
     }
@@ -56,7 +57,7 @@ if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); el
 function report(all) {
   const encs = Object.keys(ENC); const loads = [...new Set(all.map((x) => x.loadout))];
   const m = (f, k) => { const r = all.filter(f); return r.length ? r.reduce((a, x) => a + x[k], 0) / r.length : NaN; };
-  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${process.env.PRESS ? ' · with pressure (fury, rallying swarms)' : ''}`);
+  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()}`).join('')}`);
   console.log('Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.');
   for (const style of ['wise', 'greedy']) {
     console.log(`\n${style === 'wise' ? 'Wise player' : 'Greedy player (always chases attack)'}`);
