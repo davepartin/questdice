@@ -20,8 +20,9 @@
   --shake: 4px;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { touch-action: pan-x pan-y; } /* a game, not a web page: scroll yes, pinch-zoom no (Dave, Oct 2026) */
 html, body { margin: 0; height: 100%; background: var(--void); color: var(--hull-100); font-family: var(--font-body); font-size: 16px; line-height: 1.45; overflow: hidden; }
-button { font: inherit; color: inherit; cursor: pointer; }
+button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; } /* no double-tap zoom on a quick second tap */
 button:disabled { cursor: not-allowed; }
 h1, h2, h3, p { margin: 0; }
 a { color: var(--shield); }
