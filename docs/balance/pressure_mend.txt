@@ -1,0 +1,35 @@
+QuestDice matchups · Act II heroes, every class · Bronze loadouts · the six new weapons · mend
+Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.
+
+Wise player
+loadout            heavy                 swarm                 guard                 healer                
+Sword + Shield     5.6  · 4.8r · 100%    42.1  · 5.5r · 85%    10.0  · 7.5r · 100%   4.8  · 5.1r · 100%    
+Dagger + Shield    6.4  · 4.7r · 100%    45.0  · 5.2r · 85%    10.6  · 7.3r · 100%   5.8  · 5.1r · 100%    
+Spear + Shield     5.7  · 4.8r · 100%    45.6  · 5.2r · 81%    9.3  · 7.1r · 100%    6.9  · 5.1r · 100%    
+Axe + Tower Shield 4.1  · 5.0r · 100%    43.4  · 5.4r · 83%    6.6  · 7.6r · 100%    3.6  · 5.3r · 100%    
+Shield + Tower Shield 1.6* · 6.3r · 100%    41.3* · 6.9r · 85%    3.1* · 9.9r · 100%    1.6* · 7.0r · 100%    
+Dagger + Sword     8.7  · 4.2r · 100%    49.8  · 4.5r · 78%    18.0  · 6.3r · 100%   8.6  · 4.5r · 100%    
+Axe + Spear        11.4  · 4.0r · 100%   49.0  · 4.4r · 79%    18.3  · 5.9r · 99%    10.9  · 4.1r · 100%   
+Dagger + Dagger    11.1  · 3.8r · 100%   50.9  · 4.1r · 74%    18.0  · 6.0r · 100%   11.2  · 4.1r · 100%   
+
+Greedy player (always chases attack)
+loadout            heavy                 swarm                 guard                 healer                
+Sword + Shield     20.9  · 4.1r · 99%    68.5  · 3.9r · 57%    31.8  · 6.2r · 98%    17.0  · 4.6r · 100%   
+Dagger + Shield    20.1  · 4.2r · 100%   68.6  · 3.8r · 58%    32.2  · 6.1r · 98%    21.0  · 4.4r · 100%   
+Spear + Shield     21.3  · 4.3r · 100%   68.9  · 3.8r · 57%    35.0  · 6.0r · 98%    19.2  · 4.5r · 99%    
+Axe + Tower Shield 18.4  · 4.4r · 100%   66.9  · 4.3r · 60%    28.4  · 6.9r · 99%    16.4  · 5.1r · 99%    
+Shield + Tower Shield 15.5* · 5.6r · 99%    68.8  · 4.5r · 57%    24.2* · 8.3r · 100%   13.8* · 6.0r · 100%   
+Dagger + Sword     21.1  · 3.9r · 100%   68.4  · 3.6r · 59%    36.8  · 5.5r · 95%    20.8  · 4.0r · 100%   
+Axe + Spear        21.9  · 3.7r · 99%    66.6  · 3.5r · 61%    35.6  · 5.3r · 93%    19.6  · 4.0r · 100%   
+Dagger + Dagger    23.1  · 3.7r · 100%   66.1* · 3.4r · 63%    38.8  · 5.3r · 95%    20.6  · 4.0r · 99%    
+
+What thinking is worth: health saved by the wise player over the greedy one, same loadout and fight
+loadout            heavy     swarm     guard     healer    
+Sword + Shield     +15.2     +26.3     +21.8     +12.2     
+Dagger + Shield    +13.7     +23.7     +21.7     +15.2     
+Spear + Shield     +15.6     +23.3     +25.6     +12.3     
+Axe + Tower Shield +14.3     +23.6     +21.7     +12.8     
+Shield + Tower Shield +14.0     +27.5     +21.1     +12.2     
+Dagger + Sword     +12.3     +18.7     +18.7     +12.2     
+Axe + Spear        +10.6     +17.6     +17.3     +8.7      
+Dagger + Dagger    +12.0     +15.1     +20.8     +9.4      
