@@ -142,3 +142,32 @@ What it says:
 So the identity proposals only make sense together with the pressure work: until long fights cost something, the "careful"
 power wins for everyone. Next run: the same kits with fury on (from round 4), to see whether attacking kits start winning
 some fights.
+
+### 5.2 Team games with the class rules (docs/balance/classteam_*.txt)
+
+`node tools/party.mjs 2 4` (Acts I and II, 20 companies of two: wizard+bard, knight+ranger, dwarf+wizard, ranger+bard,
+knight+dwarf), with CLASSID off, all on, songs only and guard only. Each class at the table:
+
+| | off: own lowest health · fell | off: friend's lowest · friend fell | rules on: own · fell | rules on: friend's · friend fell |
+|---|---|---|---|---|
+| Wizard | 49% · 7% | 63% · 5% | 49% · 6% | 62% · 4% |
+| Bard | 62% · 4% | **48%** · 6% | 62% · 4% | 48% · 6% |
+| Knight | 60% · 4% | 62% · 4% | 61% · 4% | 64% · 3% |
+| Ranger | 55% · 4% | 58% · 4% | 55% · 4% | 58% · 4% |
+| Dwarf | 66% · 3% | 60% · 3% | 65% · **1%** | 61% · 2% |
+
+What it says, honestly:
+
+1. **The Bard's friend is the most hurt hero at any table today** (lowest 48%): the "heart of the party" protects itself.
+2. **Songs carry barely fired**: the Bard gave friends 0.2 health a fight. The bots seldom cast the Bard's healing powers at a
+   table, because the bot judges a power by what it does for its own hero. The rule cannot be judged by these bots; it needs a
+   bot that values a friend's health, or human play in the lab.
+3. **Guard works as written but the bot does not choose it.** With Guard the Knight took 37.2 a fight instead of 34.8 and its
+   friend's lowest rose a little (62% to 63%), friends falling 4% to 3%. The bot casts Shield Up for its own block, not to
+   step in front, so this is the rule's effect without the decision.
+4. **Dig In** brings the Dwarf's falls from 3% to 1%; small, as expected without fury.
+
+Conclusion for ChatGPT's review: the three rules do what they say, but the effects are small in bot play, for two reasons
+that are not the rules' fault: (a) the team bot plays for itself, and (b) without fury, long fights cost little, so endurance
+and protection have little to protect against. Before tuning numbers, the next step is to teach the team bot to count its
+friends' health (so songs and Guard become decisions it can make), then measure again with fury on.

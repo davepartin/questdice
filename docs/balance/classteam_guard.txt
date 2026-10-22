@@ -1,0 +1,15 @@
+smart play · company strength by act 1: x1.91 2: x1.91 · normal, 2 heroes, 20 companies: win rate (first try) · rounds · health left when won
+act kind      solo: win  rnds  hp      team: win  rnds  hp
+1   battle      97%   3.9    76%        98%   3.5    79%
+1   boss        85%   8.3    62%        65%  10.2    69%
+1   elite      100%   6.0    84%       100%   5.5    87%
+2   battle      92%   6.0    63%        98%   5.3    73%
+2   boss        75%  11.2    61%       100%   9.9    74%
+2   elite       90%   9.9    74%       100%   9.2    83%
+
+By class at the table · class identity guard: lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell
+wizard    49%     7%   37.0    0.0       63%     5%
+bard      62%     4%   29.7    0.0       48%     6%
+knight    58%     4%   37.2    0.0       63%     3%
+ranger    55%     4%   32.2    0.0       58%     4%
+dwarf     67%     3%   32.8    0.0       58%     3%
