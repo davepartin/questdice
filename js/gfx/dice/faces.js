@@ -6,8 +6,6 @@
 
 import * as THREE from 'three';
 import { mulberry32, hashStr } from '../noise.js';
-import { bodyWatermarkImage, loadBodyWatermark, drawBodyWatermark } from './bodywm.js';
-const BODY_WM_DARK = 1.2; // Dave, Oct 2026: the body watermarks read 20% darker, so you can see them on a phone
 
 // ------------------------------------------------------------------------------- icons
 // All icons live in a 100x100 box, y down.
@@ -340,18 +338,15 @@ const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
 /**
  * Paint the atlas for a die.
  * @param poly   makePoly(sides)
- * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block', wm: icon name, bodyWm: png url }
+ * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block' }
  * @param theme  'bone'|'smoke'|'heart'|'amethyst'|'weapon'
  */
 export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
-  const wmReady = faces.map((f) => {
-    if (!f?.bodyWm) return '-';
-    loadBodyWatermark(f.bodyWm);
-    return bodyWatermarkImage(f.bodyWm) ? '1' : '0';
-  }).join('');
-  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|bwm${wmReady}|${JSON.stringify(faces)}`;
+  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
   const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
+  const ivoryInlay = ST.clean && theme === 'bone' && poly.sides === 6;
+  if (ivoryInlay) Object.assign(th, { core: '#fffaf0', mid: '#eee4ce', edge: '#c4b38c', rough: 0.38, trim: ['#f4e6bc', '#b99a5d', '#695432'], trimRough: 0.3 });
   const WP = ST.wpn || WPN; const sw = ST.swirl;
   const n = poly.faces.length; const cells = n + 1;
   const cols = n <= 4 ? 3 : n <= 8 ? 3 : 4; const rows = Math.ceil(cells / cols);
@@ -411,6 +406,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
           for (let k = 0; k < 9; k++) { a += (rnd() - 0.5) * wob; x += Math.cos(a) * Rpx * 0.17; y += Math.sin(a) * Rpx * 0.17; A.lineTo(x, y); } A.stroke(); } };
       void vein; // smooth dark stone: no veins, so the number and its symbol have the face to themselves
       const gl = A.createRadialGradient(-inR * 0.3, -inR * 0.4, 0, 0, 0, inR * 1.3); gl.addColorStop(0, 'rgba(255,255,255,0.10)'); gl.addColorStop(1, 'rgba(0,0,0,0.22)'); A.fillStyle = gl; A.fillRect(-S / 2, -S / 2, S, S);
+    } else if (ivoryInlay) {
+      // Baked, faint moulded-plastic grain; no larger atlas or animated shader noise.
+      speckle(A, rnd, Rpx, '#8a7756', 180, 0.65 * qk, 0.035);
     } else if (ST.clean) { /* flat colour: no swirls, no speckle */ } else if (theme === 'weapon') {
       const dark = blank ? ['#000', '#100508'] : ['#000', '#1a0408', spec.tone === 'b' ? '#031024' : '#2a0208'];
       const light = spec.tone === 'b' ? ['#7cc4ff', '#2f8cf5'] : ['#ff7a5a', '#ff3a3a'];
@@ -452,32 +450,6 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
       } else if (isPetTheme(theme)) { if (spec.paw) layer(ctxs, { A: th.paw, H: 'rgb(150,150,150)', O: 'rgb(0,120,0)' }, (c) => drawPaw(c, inR * 0.9)); } // the pet's always-blank face shows a paw
       else if (theme !== 'amethyst') layer(ctxs, { A: '#ffffff', H: 'rgb(96,96,96)' }, ring); // a blank talent face is simply blank
-    }
-
-    // ---- body watermark (class line-art on head / hands / feet), behind the number
-    // Cubes (d6) keep the quieter size Dave liked on the boots. Pointed faces (d4 / d8 / d10)
-    // get a larger, slightly stronger mark so the helmet and gauntlets still read on a phone.
-    if (spec.bodyWm && !blank) {
-      const im = bodyWatermarkImage(spec.bodyWm);
-      if (im) {
-        const sz = inR * (poly.sides === 4 ? 2.32 : poly.sides === 6 ? 1.76 : 2.08);
-        const a = (poly.sides === 4 ? 0.54 : poly.sides === 6 ? 0.42 : 0.50) * BODY_WM_DARK;
-        layer(ctxs, { A: '#000', H: 'rgb(112,112,112)' }, (c, k) => {
-          c.save();
-          c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.closePath(); c.clip();
-          c.globalAlpha = k === 'H' ? a * 0.5 : a;
-          drawBodyWatermark(c, im, 0, inR * 0.02, sz);
-          c.restore();
-        });
-      }
-    }
-
-    // ---- watermark (weapon identity), shallow
-    if (spec.wm && !blank && !wface && theme === 'bone' && !spec.bodyWm) { // SVG mockup (helmet, gloves, boots): tone on tone, pressed into the ivory; skip when the live PNG is on the face
-      const k = spec.wmK ?? 0.16;
-      layer(ctxs, { A: `rgba(118,84,40,${k})`, H: `rgb(${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)},${Math.round(128 - 110 * k)})` }, (c) => drawIcon(c, spec.wm, 0, inR * (spec.wmY ?? 0.04), inR * (spec.wmS ?? 1.78), { flip: !!spec.wmFlip }));
-    } else if (spec.wm && !blank && !wface) {
-      layer(ctxs, { A: spec.tone === 'b' ? 'rgba(160,210,255,0.16)' : 'rgba(255,170,130,0.16)', H: 'rgb(112,112,112)' }, (c) => drawIcon(c, spec.wm, 0, inR * 0.02, inR * 1.7));
     }
 
     // ---- heart (clean): the boosted symbol fills the whole face in its own colour; the number sits on top
@@ -555,7 +527,12 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
         fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#ffffff', '#f6ead0', '#d8c69c']); rr = 0.32; metal = 0;
       } else fillA = '#fff';
       // (no offset drop shadow: a clean thin outline only)
-      layer(ctxs, { H: 'rgb(128,128,128)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: 0, cap: darkOnLight ? 'butt' : 'round' }));
+      if (ivoryInlay) {
+        // A narrow light lip at the lower edge reads as a recess even at low quality.
+        layer(ctxs, { A: '#fff9e9' }, c => drawNumeral(c, txt, nx + qk, ny + 1.3 * qk, numH, { grow: 1.5 * qk, cap: 'butt' }));
+        fillA = lin(ctxs.A, 0, ny - numH / 2, 0, ny + numH / 2, ['#07090c', '#1f2125', '#090a0c']);
+      }
+      layer(ctxs, { H: ivoryInlay ? 'rgb(66,66,66)' : 'rgb(128,128,128)', A: fillA, O: `rgb(0,${Math.round(rr * 255)},${metal})` }, (c) => drawNumeral(c, txt, nx, ny, numH, { grow: 0, cap: darkOnLight ? 'butt' : 'round' }));
       if (theme === 'weapon' && !blank) layer(ctxs, { E: spec.tone === 'b' ? 'rgba(120,180,255,0.18)' : 'rgba(255,140,90,0.2)' }, (c) => drawNumeral(c, txt, nx, ny, numH));
     }
     if (spec.sym === 'TALENT' && !blank) {
@@ -634,7 +611,7 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   };
   const uvOf = (fi, x, y) => { const [cx, cy] = cellCenter(fi); return [(cx + (x / Hm) * (S / 2)) / W, 1 - (cy - (y / Hm) * (S / 2)) / Hh]; };
   const [tcx, tcy] = cellCenter(n);
-  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm, audit };
+  const out = { textures, uvOf, trimUV: [tcx / W, 1 - tcy / Hh], canvases: { A, Hc, O, E, normalC }, size: [W, Hh], Hm, audit, finish: ivoryInlay ? 'ivory-inlay' : null };
   cache.set(ck, out);
   return out;
 }

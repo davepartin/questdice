@@ -4,7 +4,6 @@ import { portraitQ } from './screens.js';
 import { h } from '../dom.js';
 import { dieSpecs } from '../gfx/dice/dice.js';
 import { drawSym, drawNumeral, diceStyle } from '../gfx/dice/faces.js';
-import { bodyWatermarkSrc } from '../gfx/dice/bodywm.js';
 
 // Bounded tiny 2D snapshots: no WebGL contexts, atlases or animation loops.
 const shots = new Map();
@@ -71,10 +70,4 @@ export function campDie(hero, slot, size) {
     img.src = src;
   }).catch(unavailable);
   return box;
-}
-
-// Reuse the existing class illustration behind each recessed board slot.
-export function campSlotMark(hero, slot) {
-  const src = bodyWatermarkSrc(hero.cls, slot);
-  return src ? h('img', { class: 'cw-slot-mark', src, alt: '', 'aria-hidden': 'true', decoding: 'async' }) : null;
 }

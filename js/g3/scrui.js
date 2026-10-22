@@ -19,7 +19,7 @@ import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
-import { campDie, campSlotMark, campFaceList } from './campart.js';
+import { campDie, campFaceList } from './campart.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -1200,7 +1200,7 @@ function diceGrid(hero) {
       'aria-expanded': String(selected), 'aria-controls': 'camp-inspector',
       'aria-label': `${label}, ${active ? `d${size}` : 'locked'}${price != null ? `, options from ${price} gold` : ''}`,
       onclick: tap(() => openSlot(slot)) },
-      campSlotMark(hero, slot), h('small', { class: 'cw-label' }, label), pic,
+      h('small', { class: 'cw-label' }, label), pic,
       h('span', { class: 'cw-cell-foot' }, h('b', {}, !active ? 'Unlock' : `d${size}`),
         price != null ? h('span', { class: 'cw-price' }, ico('coin'), String(price)) : null),
       can ? h('span', { class: 'cw-plus', 'aria-hidden': 'true' }, '+') : null);

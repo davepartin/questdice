@@ -1305,3 +1305,19 @@ Dave: "check the other charms for anything else that's overpowered". `WHAT=charm
 - Lantern, Phoenix (pure safety), Thorn Crown and the fixed Ember Locket were already in range and are unchanged.
 After the change, every charm lands between about +1 and +5 attack a round, or 1 to 7 health a fight. Lantern and Blood Pact sit at the top, and Thorn Crown and Ember Locket at the bottom.
 - (22 Oct) **Weapons rethought: proposal only**, in docs/ideas/WEAPONS_REDESIGN_2026-10-22.md. It covers honest dice whose blank patterns give each weapon its character, one-handed weapons only, a bow with arrow kinds (fire splash, frost freeze, broadhead pierce), symbols that pay your hand's number, and metals that add symbols and battles but never numbers. Measured with the new tools/weaponlab.mjs. Five questions are waiting on Dave before any code changes.
+
+
+
+## 22 October 2026: ivory d6 inset identity and material pilot
+
+Dave authorized implementing and deploying the d6 material prototype directly for live development review. Six-sided ivory head/hands/feet now use compact black inset corner icons instead of background watermarks, with mirrored gloves and five class head silhouettes. Recessed numerals, subtle plastic grain, warm brass edges and balanced satin highlights use the existing atlas and geometry. Other die shapes and weapon/heart/talent materials are unchanged. See docs/ui-handoff/16-IVORY-D6-INLAY.md and docs/screens/ivory-inlay/. Browser checks: 240 face layouts at low/med across all classes, no corner/result overlaps, actual throws, selected/bound states, short phone and camp portraits, unchanged mesh/geometry counts and atlas sizes, zero page errors. npm test: 331 pass, the same two known server failures. Physical iPhone FPS remains unmeasured. Cache stamp 20261022ivory1. Next: Dave reviews the live ivory d6 at phone size before extending the treatment to other shapes.
+
+
+## 22 October 2026: four clean body dice replace identity artwork
+
+Dave removed corner icons and all background watermarks. Head, both hands and feet share four canonical white dice: d4/d6/d8/d10, number plus effect symbols only. bodyfaces.js holds immutable face sets with unchanged FACE_PAY, and render caches share atlas/geometry by size/quality across slots/classes. Removed runtime watermark imports, preloads/rebuild hooks, face painting and camp-cell body art; no old watermark image requests. Retained the existing clean materials and side lighting. See docs/ui-handoff/17-CLEAN-BODY-DICE.md; it supersedes the corner-icon experiment. Checks: 80 class/size/slot combinations share four low-quality atlases/geometries, real physical throws/screenshots for all sizes, camp portraits, no page errors. Unit checks exact payouts and shared-set immutability. Full suite: 332 pass, same two known server failures. Cache stamp 20261022cleanbody1. Deploy within the existing development-game authorization.
+
+
+## 22 October 2026: slower Heart Boost pulse
+
+Dave found Heart Boost too fast and blinky and requested about 75% slower. HEART_PERIOD in js/gfx/dice/tray.js is now 4.2 seconds, up from 1.05: one-quarter frequency, with the same waveform stretched over four times the duration. Both socket rings and floor glows still sample the same beat(time), keeping the heart and boosted dice synchronized. No brightness, selection, mechanics or roll changes. Syntax check and 500 waveform samples confirm exact time stretching. Cache stamp 20261022slowheart1.

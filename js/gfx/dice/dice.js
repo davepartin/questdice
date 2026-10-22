@@ -11,9 +11,7 @@ import * as D from '../../data.js';
 import * as E from '../../engine.js';
 import { makePoly, roundedGeometry, restQuat, readLabel } from './poly.js';
 import { buildAtlas, diceStyle } from './faces.js';
-import { bodyWatermarkSrc, CLASS_BODY_WATERMARKS } from './bodywm.js';
-
-export { CLASS_BODY_WATERMARKS, bodyWatermarkSrc };
+import { bodyFaceLabels } from './bodyfaces.js';
 
 export { makePoly, restQuat, readLabel };
 
@@ -21,11 +19,8 @@ export { makePoly, restQuat, readLabel };
 const PIP_BY_NUM = [null, 'heal', 'pierce', 'magic', 'gold'];
 const FX_PIP = { heal: 'heal', magic: 'magic', pierce: 'pierce', stagger: 'stagger' };
 
-// Body marks on the white dice (a helmet on the head, a glove on each hand, boots on the feet), behind the numbers.
-// A look being tried out (Dave, Oct 2026): off (0) in the game for now; setBodyMarks(k) turns it on at strength k.
-const BODY_MARK = { N: { wm: 'helmet' }, W: { wm: 'gauntlet' }, E: { wm: 'gauntlet', wmFlip: true }, S: { wm: 'bootpair' } }; // thumbs point in, toward the heart
-let bodyMarks = 0;
-export function setBodyMarks(k) { bodyMarks = k || 0; }
+// Retained for older development capture scripts; body identifiers are retired.
+export function setBodyMarks() {}
 
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
 export function dieSpecs(hero, previewSizes = {}) {
@@ -57,18 +52,8 @@ export function dieSpecs(hero, previewSizes = {}) {
       for (let v = 1; v <= 6; v++) labels.push({ text: String(v), pip: v <= 4 ? PIP_BY_NUM[v] : null, tone: v === 5 ? 'b' : v === 6 ? 'r' : '', mark: v === 5 ? 'block' : v === 6 ? 'atk' : null });
     } else {
       theme = 'bone'; // head, hands and feet are all the same white die
-      // Live look: class head + shared gauntlets/boots behind the number.
-      // SVG mockup (`setBodyMarks`) is a separate try-out; when it is on, skip the PNG so they do not stack.
-      const bodyWm = bodyMarks ? null : bodyWatermarkSrc(hero.cls, slot);
-      // what the face pays is what it shows: one symbol per point of heal / pierce / magic / gold (D.FACE_PAY)
-      for (let v = 1; v <= sides; v++) {
-        const pay = D.FACE_PAY[v]; const corners = []; for (const k of ['heal', 'pierce', 'magic', 'gold']) for (let i = 0; i < (pay?.[k] || 0); i++) corners.push(k);
-        labels.push({
-          text: String(v), pip: corners[0] || null, corners: corners.length ? corners : undefined,
-          ...(bodyWm ? { bodyWm } : {}),
-          ...(bodyMarks && BODY_MARK[slot] ? { ...BODY_MARK[slot], wmK: bodyMarks, wmS: sides === 4 || sides === 8 ? 2.3 : sides === 10 ? 2 : 1.8 } : {}),
-        });
-      }
+      // One shared face set per size: head, either hand and feet use the same die.
+      labels = bodyFaceLabels(sides);
     }
     out[slot] = { slot, role, sides, theme, labels, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   }
@@ -113,13 +98,17 @@ function makeMaterial(atlas, themeName, quality) {
   // A restrained satin highlight uses the existing lighting and texture atlas. Keep
   // clearcoat off: a second glossy lobe adds glare over the numbers and symbols.
   if (diceStyle().clean) { m.clearcoat = 0; m.clearcoatRoughness = 0.6; m.specularIntensity = 0.26; m.envMapIntensity = 0.16; if (m.emissiveMap) m.emissiveIntensity = 0.2; }
+  const ivoryInlay = atlas.finish === 'ivory-inlay';
+  if (ivoryInlay) { m.specularIntensity = 0.48; m.envMapIntensity = 0.28; m.normalScale.setScalar(0.65); }
   m.color.setScalar(({ bone: 0.7, smoke: 0.5, weapon: 0.62, heart: 0.62, amethyst: 0.66 }[theme] ?? 1) * (typeof diceStyle().bodyK === 'object' ? (diceStyle().bodyK[theme] ?? 1) : diceStyle().bodyK));
+  if (ivoryInlay) m.color.multiplyScalar(1.15);
   if (!T.emissiveMap) m.emissive = new THREE.Color(0, 0, 0);
   const u = {
     uTime: { value: 0 }, uInner: { value: diceStyle().clean ? 0 : inn.k }, uInnerCol: { value: new THREE.Vector3(...(theme === 'heart' && diceStyle().corners ? [1.0, 0.3, 0.55] : theme === 'amethyst' && diceStyle().corners ? [0.85, 0.9, 1.0] : inn.col)) }, uInnerTint: { value: inn.tint },
     uCamObj: { value: new THREE.Vector3(0, 5, 5) }, uFocusDir: { value: new THREE.Vector3(0, 1, 0) }, uFocusRange: { value: new THREE.Vector2(0.5, 0.8) },
     uSide: { value: 1 }, uSelf: { value: (typeof diceStyle().selfFlat === 'object' ? diceStyle().selfFlat[theme] : diceStyle().selfFlat) ?? ({ weapon: 0.5, bone: 0.2, smoke: 0.3, heart: 0.18, amethyst: 0.3 }[theme] ?? 0.2) * diceStyle().selfK }, uFlash: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 0 },
   };
+  if (ivoryInlay) u.uSelf.value = 0.64;
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
