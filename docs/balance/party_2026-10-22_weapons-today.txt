@@ -1,0 +1,11 @@
+smart play · company strength by act 1: x1.90 2: x1.90 3: x1.91 · normal, 2 heroes, 10 companies: win rate (first try) · rounds · health left when won
+act kind      solo: win  rnds  hp      team: win  rnds  hp
+1   battle      96%   3.9    75%        96%   3.4    80%
+1   boss        95%   8.2    54%        60%  10.2    70%
+1   elite      100%   6.1    83%       100%   5.8    89%
+2   battle      92%   6.0    62%        98%   5.5    75%
+2   boss        75%  11.0    60%       100%   9.0    68%
+2   elite       85%   9.8    81%       100%   8.8    78%
+3   battle      91%   7.1    60%       100%   6.5    72%
+3   boss        95%  14.4    47%       100%  13.6    73%
+3   elite      100%   9.6    54%       100%   8.1    72%
