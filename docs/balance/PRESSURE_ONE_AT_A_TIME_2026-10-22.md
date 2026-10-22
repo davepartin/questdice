@@ -30,3 +30,25 @@ What it says:
 
 Proposed next settings to test (still off in the game): fury from round 4; rally every 4 rounds, at most once a fight; mend
 and the bag unchanged (judge them in play in the lab).
+
+## Second round: the proposed settings
+
+| Rules on | Heavy best · two shields | Swarm best · two shields | Swarm wins | Guard best · two shields | Healer best |
+|---|---|---|---|---|---|
+| fury from round 5 (first round) | two shields 3.9 | Axe + Tower 41.3 · 47.6 | 74-80% | two shields 10.5 | two shields 3.9 |
+| **fury from round 4** (pressure_fury4.txt) | two shields 3.2 (Sword + Shield 6.7) | **Sword + Shield 42.4** · 45.7 | 72-83% | two shields 10.0 (Sword + Shield 13.9) | two shields 4.9 |
+| fury from 4 + rally every 4, once a fight (pressure_tuned.txt) | two shields 3.6 | Sword + Shield 47.5 · 55.4 | 60-72% | two shields 9.2 | two shields 5.0 |
+
+1. **Fury from round 4 is the best single setting so far.** The swarm goes to Sword + Shield (a balanced pair), the gap between
+   two shields and the balanced pairs narrows in every fight (the ogre: 3.2 against 6.7, was 1.8 against 4.6 with no rules),
+   and wins stay where they were (72-83% in the swarm).
+2. **Rallying swarms cost about ten points of wins even once a fight.** One extra goblin, arriving in round 5 when the hero
+   is already worn, is the difference. Recommendation: leave rally out of the general rules and keep it as a feature of
+   particular quests (a goblin warren, a wolf pack), where the quest card can say so.
+3. **Two shields are still the safest pair against one monster.** Fury makes them pay more but not enough to change the
+   order. That may be fine: two shields win slowly and safely, the balanced pairs win faster, and the swarm now punishes the
+   slow pair. If Dave and ChatGPT want single fights to favour attack too, the next lever is the reward for finishing quickly
+   (for example a gold or experience bonus for rounds under the expected count), not more monster damage.
+
+Current recommendation (still off in the game): fury from round 4 on its own; mend and the move bag judged in the lab by
+playing; rally kept for named quests.
