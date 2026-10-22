@@ -1,0 +1,62 @@
+QuestDice class kits · Act II heroes · wise bot · today's weapons and powers
+Each cell: health a fight costs (lower is better) · win%. * = the best kit for that fight. (start) = the kit a new hero carries.
+
+Bard
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Mending Song / Lucky Verse / Rising Ballad (start) 8.9  100%     36.4  91%     12.0  100%    5.1* 100%      15.6
+Mending Song / Lucky Verse / Hymn of Gold      8.8  100%     36.1  88%     14.6  100%    5.7  100%      16.3
+Mending Song / Discord / Rising Ballad         5.0* 100%     33.2  94%     9.6* 100%     5.2  100%      13.2
+Mending Song / Discord / Hymn of Gold          5.1  100%     30.8* 94%     12.1  100%    6.0  100%      13.5
+Finale / Lucky Verse / Rising Ballad           10.0  100%    33.8  91%     12.0  100%    5.3  100%      15.3
+Finale / Lucky Verse / Hymn of Gold            10.3  100%    33.5  91%     15.3  100%    5.3  100%      16.1
+Finale / Discord / Rising Ballad               8.1  100%     34.0  97%     11.6  100%    7.7  100%      15.3
+Finale / Discord / Hymn of Gold                9.6  100%     36.8  91%     13.3  100%    6.3  100%      16.5
+  best single kit: Mending Song / Discord / Rising Ballad (13.2 a fight) · choosing per fight: 12.6 · choice is worth 0.6 health a fight · 3 different kits win the four fights
+
+Dwarf Warden
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Grudge / Shield Bash / Stonehide (start)       3.2  100%     29.1  100%    6.7  100%     1.9  100%      10.2
+Grudge / Shield Bash / Forge Fury              3.2  100%     28.9* 100%    7.1  100%     1.9  100%      10.3
+Grudge / Brace / Stonehide                     3.6  100%     30.6  100%    5.0  100%     2.6  100%      10.4
+Grudge / Brace / Forge Fury                    3.6  100%     29.0  100%    6.1  100%     2.8  100%      10.4
+Avalanche / Shield Bash / Stonehide            2.9* 100%     30.2  100%    6.4  100%     1.8  100%      10.3
+Avalanche / Shield Bash / Forge Fury           3.2  100%     30.3  100%    6.8  100%     1.8* 100%      10.5
+Avalanche / Brace / Stonehide                  3.8  100%     31.4  100%    4.6* 100%     2.9  100%      10.7
+Avalanche / Brace / Forge Fury                 3.9  100%     31.2  100%    5.6  100%     2.6  100%      10.8
+  best single kit: Grudge / Shield Bash / Stonehide (10.2 a fight) · choosing per fight: 9.5 · choice is worth 0.7 health a fight · 4 different kits win the four fights
+
+Knight
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Cleave / Shield Up / Rally Cry (start)         6.0  100%     40.1  94%     16.8  100%    5.1  100%      17.0
+Cleave / Shield Up / Second Wind               7.7  100%     36.4* 91%     15.6  100%    6.3  100%      16.5
+Cleave / Press the Attack / Rally Cry          5.8* 100%     39.9  91%     21.9  100%    6.7  100%      18.6
+Cleave / Press the Attack / Second Wind        6.5  100%     38.1  91%     18.3  100%    8.3  100%      17.8
+Judgment / Shield Up / Rally Cry               6.0  100%     40.5  94%     17.7  100%    5.6  100%      17.4
+Judgment / Shield Up / Second Wind             6.3  100%     41.4  97%     14.6* 100%    5.8  100%      17.0
+Judgment / Press the Attack / Rally Cry        8.1  100%     45.8  88%     20.5  100%    5.9  100%      20.1
+Judgment / Press the Attack / Second Wind      6.8  100%     46.9  84%     17.8  100%    5.0* 100%      19.1
+  best single kit: Cleave / Shield Up / Second Wind (16.5 a fight) · choosing per fight: 15.4 · choice is worth 1.0 health a fight · 4 different kits win the four fights
+
+Ranger
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Aimed Shot / Quick Draw / Volley (start)       12.9  100%    53.3  66%     27.7  100%    10.6  100%     26.1
+Aimed Shot / Quick Draw / Vanish               11.3* 100%    53.8  72%     24.3  100%    9.4  100%      24.7
+Aimed Shot / Snare / Volley                    12.9  100%    53.9  69%     27.7  100%    10.6  100%     26.3
+Aimed Shot / Snare / Vanish                    11.3* 100%    53.5  75%     24.9  100%    9.4  100%      24.8
+Rain of Arrows / Quick Draw / Volley           12.4  100%    46.7  88%     24.2  100%    9.2  100%      23.1
+Rain of Arrows / Quick Draw / Vanish           12.2  100%    49.1  78%     19.4* 100%    6.0* 100%      21.7
+Rain of Arrows / Snare / Volley                12.4  100%    46.6  81%     23.8  100%    9.2  100%      23.0
+Rain of Arrows / Snare / Vanish                12.1  100%    44.4* 88%     19.4* 100%    6.5  100%      20.6
+  best single kit: Rain of Arrows / Snare / Vanish (20.6 a fight) · choosing per fight: 20.3 · choice is worth 0.3 health a fight · 3 different kits win the four fights
+
+Wizard
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Arc Bolt / Magic Missile / Storm Coil (start)  9.1  100%     47.0  78%     19.5  100%    9.9  100%      21.4
+Arc Bolt / Magic Missile / Healing Light       8.5  100%     46.9  78%     16.9  100%    8.7  100%      20.3
+Arc Bolt / Barrier / Storm Coil                7.6  100%     46.8  78%     15.9  100%    6.7  100%      19.3
+Arc Bolt / Barrier / Healing Light             7.3* 100%     45.3  81%     13.3  100%    5.3* 100%      17.8
+Meteor / Magic Missile / Storm Coil            13.1  100%    50.2  75%     18.4  100%    8.8  100%      22.6
+Meteor / Magic Missile / Healing Light         9.3  100%     47.3  75%     12.5* 100%    6.8  100%      19.0
+Meteor / Barrier / Storm Coil                  12.1  100%    47.2  72%     17.3  97%     7.9  100%      21.1
+Meteor / Barrier / Healing Light               10.0  100%    43.7* 78%     13.7  97%     5.8  100%      18.3
+  best single kit: Arc Bolt / Barrier / Healing Light (17.8 a fight) · choosing per fight: 17.2 · choice is worth 0.6 health a fight · 3 different kits win the four fights

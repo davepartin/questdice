@@ -181,4 +181,47 @@ too small a change to make the Bard the team's support.** Two smallest next opti
 (a) at a table, Lucky Verse's roll goes to the most hurt friend as healing on a 3-6 (the every-round power becomes the Bard's
 support, and the gamble stays), or (b) at a table, Discord also heals each friend 2 a round (the Bard's safest power, which
 the class-kit run already found best, becomes the support power). Option (a) keeps the Bard's choice between gamble and
-safety; option (b) is the simplest to read. Team run with the smarter bot: *pending*.
+safety; option (b) is the simplest to read. Team run with the smarter bot: see 5.4.
+
+### 5.3 Class kits with fury from round 4 (docs/balance/classkit_fury4.txt)
+
+| Class | Best kit, no fury | Best kit, fury from round 4 | Choosing per fight is worth |
+|---|---|---|---|
+| Knight | Judgment / Shield Up / Rally Cry | Cleave / Shield Up / **Second Wind** | 1.0 (was 0.4) |
+| Ranger | Aimed Shot / Snare / Vanish | **Rain of Arrows** / Snare / Vanish | 0.3 |
+| Wizard | Meteor / Barrier / Healing Light | **Arc Bolt** / Barrier / Healing Light | 0.6 |
+| Dwarf | Avalanche / Brace / Stonehide | **Grudge / Shield Bash** / Stonehide (its start kit) | 0.7 (was 0.3) |
+| Bard | Mending Song / Discord / Rising Ballad | the same | 0.6 |
+
+With fury, attack powers start to win slots: the Dwarf's best kit becomes its starting kit (Shield Bash over Brace, Grudge
+over Avalanche, which fits "endurance": Grudge grows with the round), the Ranger's Rain of Arrows becomes best against the
+swarm, the Wizard's Arc Bolt replaces Meteor. The Wizard and the Bard still prefer their safe every-round power (Barrier,
+Discord). Choosing per fight is still worth only about a health a fight: the kits are close; the choice is real but small.
+
+### 5.4 Team games: smarter team bot, class rules off and on, with and without fury (classteam_*2.txt, *_fury*.txt)
+
+| | no fury, rules off | no fury, rules on | fury 4, rules off | fury 4, rules on |
+|---|---|---|---|---|
+| Bard's friend: lowest · fell | 48% · 6% | 50% · 3% | 47% · 8% | 47% · **4%** |
+| Bard's healing to friends a fight | 0.0 | 2.2 | 0.0 | 1.8 |
+| Knight: damage taken · friend's lowest · friend fell | 34.8 · 62% · 4% | 33.4 · 64% · 3% | 37.3 · 59% · 5% | **41.6 · 62% · 4%** |
+| Dwarf: fell | 3% | 1% | 6% | **3%** |
+| Wizard: fell (its partners are the Bard and the Dwarf) | 7% | 4% | 10% | 7% |
+
+With fury on, the three rules show their intent: the Bard's friends fall half as often (8% to 4%), the Knight takes about 4
+more damage a fight so its friend stays higher (59% to 62%), and the Dwarf falls half as often (6% to 3%). The effects are
+still modest, which suits "smallest change"; the Bard's is held back by its kit (see the follow-up in 5.2), so options (a)
+or (b) above are the natural next step for the Bard only.
+
+## 6. Recommendation for review
+
+1. Fury from round 4 is the foundation: without it, the careful option wins every slot for every class and the identity
+   rules have little to work on.
+2. Keep Guard (Knight) and Dig In (Dwarf) as written; both are one sentence, both show their intended effect with fury.
+3. For the Bard, choose between (a) Lucky Verse gambles for the most hurt friend and (b) Discord also heals each friend 2
+   a round; songs carry alone is too small.
+4. Wizard: no rule change yet. With fury its Arc Bolt kit is best; the remaining blur is Barrier (the same as Shield Up and
+   Brace), which is a content change for later.
+5. Ranger: identity comes from the arrows; their numbers are still being settled (docs/balance/ARROWS_2026-10-22.md).
+6. Start kits: the Wizard's start kit is the furthest from its best (Storm Coil and Magic Missile); worth swapping its
+   charge to Healing Light or making Storm Coil stronger, after fury is settled.
