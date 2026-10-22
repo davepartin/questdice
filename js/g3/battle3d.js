@@ -695,8 +695,8 @@ async function doRoll() {
   B.sel.clear(); B.focus = null; B.straight = 'atk';
   sfx.diceRoll ? sfx.diceRoll() : sfx.roll();
   for (const s of BOARD) { bw.tray.setDimmed?.(s, !E.isActive(B.hero, s)); bw.tray.setVacant?.(s, !E.isActive(B.hero, s)); }
-  renderShape();
-  await bw.tray.roll(b.board);
+  B.rolling = true; renderShape(); // the dice are in the air: nothing says what they made until they land (Dave: "the banners and lines spoil the triples and straights")
+  try { await bw.tray.roll(b.board); } finally { B.rolling = false; }
   for (const s of BOARD) bw.tray.setBound?.(s, !!b.board[s]?.bound);
   if (b.boundNow) { toast(`${b.boundNow} ${b.boundNow > 1 ? 'dice' : 'die'} held in a tangle.`, 'bad'); sfx.hurt(); }
   B.busy = false;
@@ -721,20 +721,22 @@ export function renderShape() {
   if (b.phase !== 'shape') return renderReset();
   paintHeroes();
   setHud({ phase: 'shape' });
-  const ev = E.evaluate(hero, b.board, { straight: B.straight });
+  // While the dice roll (B.rolling) the board keeps its secrets: no totals, no banners, no triple bars, no straight or Heart Boost glow.
+  // They all arrive together when the last die lands, so the player watches the dice, not a spoiler.
+  const rolling = !!B.rolling; const ev = rolling ? {} : E.evaluate(hero, b.board, { straight: B.straight });
   const info = E.rerollInfo(b);
   bw.tray.setSelected?.(B.sel);
   // synergy lines glow
   const lines = [];
   for (const t of ev.triples || []) lines.push(t.slots);
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
-  B.hud.forecast.classList.remove('idle');
-  HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods));
-  HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s'))); // the straight chooser in the bar says it already
+  B.hud.forecast.classList.toggle('idle', rolling);
+  HK.setForecast(B.hud.forecast, rolling ? {} : HK.forecastValues(ev, b.mods));
+  HK.setNotes(B.hud.forecast, rolling ? [] : HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s'))); // the straight chooser in the bar says it already
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
   // one card at a time, in teaching order: read the tiles, then target, triple, paid rerolls, lock in
-  hint('b_shape');
-  if (!Coach.wantHint(B.hero, 'b_shape')) {
+  if (!rolling) hint('b_shape');
+  if (!rolling && !Coach.wantHint(B.hero, 'b_shape')) {
     if (B.b.enemies.filter((e) => e.hp > 0).length > 1) hint('b_target');
     if (ev.offense3 || ev.defense3) hint('b_triple'); else if (ev.straight) hint('b_straight');
     if (E.rerollInfo(b).kind === 'paid') hint('b_paid'); else if (b.actionsLeft < E.rerollTotal()) hint('b_lock');
@@ -742,7 +744,7 @@ export function renderShape() {
   bw.tray.setLink?.((ev.triples || []).map((t) => ({ slots: t.slots, color: t.kind === 'atk' ? 0xff3b3b : 0x3aa4ff })));
   bw.tray.setStraight?.(ev.straightSlots || null); // the dice in a straight glow a soft cyan underneath
   bw.tray.setHeart?.(ev.heartBoost?.slots || null, ev.heartBoost?.sym); // Heart Boost: the heart and the dice it backs beat together in the symbol's colour
-  B.hud.caption.replaceChildren(B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
+  B.hud.caption.replaceChildren(rolling ? caption('Rolling…') : B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`)),
@@ -785,8 +787,8 @@ async function doReroll() {
   B.busy = true;
   if (B.net) { if (!(await netDo({ type: 'reroll', slots }))) { B.busy = false; renderShape(); return; } } else { E.reroll(b, slots); }
   B.sel.clear(); sfx.diceRoll ? sfx.diceRoll(slots.length) : sfx.roll();
-  renderShape();
-  await B.bw.tray.roll(B.b.board, { slots });
+  B.rolling = true; renderShape();
+  try { await B.bw.tray.roll(B.b.board, { slots }); } finally { B.rolling = false; }
   B.busy = false; renderShape();
   C.tut?.on('rerolled');
 }
