@@ -167,6 +167,8 @@ export function botShape(b, rng) {
 }
 
 // The smart bot's choices before it locks in (potions, magic heals, powers, target), applied to b. Returns the resolve options.
+// a Bard at a table with songs on: the most hurt friend's health share (0 when there is none to sing for)
+const songsAt = (b) => { const C2 = ENGINE.CLASS2; if (!C2.on || !C2.songs || b.hero?.cls !== 'bard' || !Array.isArray(b.fighters)) return 0; const m = b.fighters.filter((x) => x.hp > 0 && x.hero !== b.hero); return m.length ? Math.min(...m.map((x) => x.hp / x.maxHp)) : 0; };
 export function smartActs(b) {
   const wise = false;
   // potions first (free), then magic heals, when hurt
@@ -178,14 +180,21 @@ export function smartActs(b) {
   for (const c of cardsOf(b.hero)) {
     if (c.kind !== 'charge') continue; const n = (b.charge && b.charge[c.id]) || 0;
     const low = b.enemies.some((e) => e.hp > 0 && e.hp <= 12); const per = c.per || {};
-    if (n >= c.max || (n >= 2 && (low || (per.heal && b.hp < b.maxHp * 0.5) || (per.block && b.hp < b.maxHp * 0.5)))) castPower(b, c.id, { release: true });
+    if (n >= c.max || (n >= 2 && (low || (per.heal && (b.hp < b.maxHp * 0.5 || (songsAt(b) && songsAt(b) < 0.5))) || (per.block && b.hp < b.maxHp * 0.5)))) castPower(b, c.id, { release: true });
   }
+  // at a table with the class rules on (CLASSID): a Bard's songs heal the most hurt hero, so it sings when a friend is hurt;
+  // a Knight's Shield Up draws the blows, so it guards when a friend is the weaker one and not when it is itself the weaker
+  const ratio = (x) => x.hp / x.maxHp; const mates = Array.isArray(b.fighters) ? b.fighters.filter((x) => x.hp > 0 && x.hero !== b.hero) : [];
+  const C2 = ENGINE.CLASS2; const songs = mates.length && C2.on && C2.songs && b.hero.cls === 'bard';
+  const hurt = songs ? Math.min(ratio(b), ...mates.map(ratio)) : ratio(b);
+  const noGuard = mates.length && C2.on && C2.guard && b.hero.cls === 'knight' && ratio(b) < 0.5 && mates.every((x) => ratio(x) > ratio(b));
   for (const c of cardsOf(b.hero)) {
     const st = powerState(b, c); if (st.spent || st.early) continue;
     const f = c.fx; const x = c.kind === 'scale' ? Math.min(c.max, Math.max(c.cost, Math.floor(b.magic / 2))) : c.cost;
     if (b.magic < x) continue;
-    if (f.heal && !c.dice && b.hp > b.maxHp * 0.6) continue;
-    if (c.dice?.to === 'heal' && b.hp > b.maxHp * 0.6) continue;
+    if (c.id === 'shieldwall' && noGuard) continue;
+    if (f.heal && !c.dice && hurt > 0.6) continue;
+    if (c.dice?.to === 'heal' && hurt > 0.6) continue;
     if (f.free) continue;
     if (c.kind === 'super' && foes < 2 && b.round < 4) continue;
     if (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5)) continue;

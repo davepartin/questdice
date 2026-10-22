@@ -171,3 +171,14 @@ Conclusion for ChatGPT's review: the three rules do what they say, but the effec
 that are not the rules' fault: (a) the team bot plays for itself, and (b) without fury, long fights cost little, so endurance
 and protection have little to protect against. Before tuning numbers, the next step is to teach the team bot to count its
 friends' health (so songs and Guard become decisions it can make), then measure again with fury on.
+
+**Follow-up (same day).** The team bot now counts a friend when the class rules are on (tools/sim.mjs smartActs: a Bard
+sings when the most hurt hero is below 60%; a Knight skips Shield Up when it is itself the weaker one below half health). A
+check of 40 Bard + Wizard fights found the Bard's healing reaching a friend only 7 times in 226 rounds, although the friend was
+below 60% in 44 of them. The limit is the Bard's kit, not the bot: Mending Song is a big move (once a battle) and Rising
+Ballad has to be charged, so even a Bard who always helps can heal a friend about twice a fight. **So "songs carry" alone is
+too small a change to make the Bard the team's support.** Two smallest next options for review:
+(a) at a table, Lucky Verse's roll goes to the most hurt friend as healing on a 3-6 (the every-round power becomes the Bard's
+support, and the gamble stays), or (b) at a table, Discord also heals each friend 2 a round (the Bard's safest power, which
+the class-kit run already found best, becomes the support power). Option (a) keeps the Bard's choice between gamble and
+safety; option (b) is the simplest to read. Team run with the smarter bot: *pending*.
