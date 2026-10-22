@@ -36,6 +36,8 @@ const SVG = {
   helmet: 'M50 5 C27 5 13 22 13 46 V82 C13 89 18 94 25 94 H75 C82 94 87 89 87 82 V46 C87 22 73 5 50 5 Z M22 42 H78 V51 H22 Z M48 11 H52 V37 H48 Z M30 64 A3.2 3.2 0 1 0 30.1 64 Z M30 76 A3.2 3.2 0 1 0 30.1 76 Z M40 70 A3.2 3.2 0 1 0 40.1 70 Z M70 64 A3.2 3.2 0 1 0 70.1 64 Z M70 76 A3.2 3.2 0 1 0 70.1 76 Z M60 70 A3.2 3.2 0 1 0 60.1 70 Z',
   boots: 'M 20.8 1.2 L 27.7 10.8 L 21.2 21.2 L 16.3 10.8 Z M 10.0 8.8 L 15.0 8.8 L 23.1 26.0 L 24.6 63.2 L 20.4 67.6 C 16.2 52.0 12.3 30.0 10.0 8.8 Z M 33.5 8.0 L 43.7 6.0 C 43.8 26.0 42.3 48.4 38.8 65.2 L 28.1 64.4 L 26.7 63.2 L 25.4 26.4 Z M 14.6 78.4 L 25.0 71.6 L 35.8 70.4 L 39.2 79.6 L 38.8 89.6 L 32.7 90.4 L 31.5 85.2 Z M 1.5 94.0 C 6.7 89.0 11.5 85.0 15.4 82.4 L 30.4 87.2 L 31.9 97.6 C 31.9 98.8 31.2 99.4 30.0 99.4 L 3.8 99.4 C 1.9 99.4 0.8 97.0 1.5 94.0 Z M 76.9 1.2 L 70.0 10.8 L 76.5 21.2 L 81.3 10.8 Z M 87.7 8.8 L 82.7 8.8 L 74.6 26.0 L 73.1 63.2 L 77.3 67.6 C 81.5 52.0 85.4 30.0 87.7 8.8 Z M 64.2 8.0 L 54.0 6.0 C 53.8 26.0 55.4 48.4 58.8 65.2 L 69.6 64.4 L 71.0 63.2 L 72.3 26.4 Z M 83.1 78.4 L 72.7 71.6 L 61.9 70.4 L 58.5 79.6 L 58.8 89.6 L 65.0 90.4 L 66.2 85.2 Z M 96.2 94.0 C 91.0 89.0 86.2 85.0 82.3 82.4 L 67.3 87.2 L 65.8 97.6 C 65.8 98.8 66.5 99.4 67.7 99.4 L 93.8 99.4 C 95.8 99.4 96.9 97.0 96.2 94.0 Z',
   bootpair: 'M18 3 H62 V15 H59 V52 C66 57 80 59 88 63 C96 67 98 78 96 86 H21 V15 H18 Z M16 84 H98 V96 H16 Z', // one big boot, side on, toe forward: the feet die's watermark
+  flame: 'M50 2 C56 22 80 34 82 60 C84 84 68 98 50 98 C32 98 16 84 18 62 C19 48 28 40 33 28 C38 38 42 44 47 46 C49 32 44 16 50 2 Z', // a Fire arrowhead (the lab, js/lab.js)
+  snow: 'M55.0 96.0 L45.0 96.0 L45.0 4.0 L55.0 4.0 Z M12.7 77.3 L7.7 68.7 L87.3 22.7 L92.3 31.3 Z M7.7 31.3 L12.7 22.7 L92.3 68.7 L87.3 77.3 Z M47.4 22.4 L36.5 10.7 L41.7 5.9 L52.6 17.6 Z M47.4 17.6 L58.3 5.9 L63.5 10.7 L52.6 22.4 Z M72.6 34.0 L77.3 18.7 L84.0 20.7 L79.3 36.0 Z M76.8 31.6 L92.4 35.2 L90.8 42.0 L75.2 38.4 Z M75.2 61.6 L90.8 58.0 L92.4 64.8 L76.8 68.4 Z M79.3 64.0 L84.0 79.3 L77.3 81.3 L72.6 66.0 Z M52.6 77.6 L63.5 89.3 L58.3 94.1 L47.4 82.4 Z M52.6 82.4 L41.7 94.1 L36.5 89.3 L47.4 77.6 Z M27.4 66.0 L22.7 81.3 L16.0 79.3 L20.7 64.0 Z M23.2 68.4 L7.6 64.8 L9.2 58.0 L24.8 61.6 Z M24.8 38.4 L9.2 42.0 L7.6 35.2 L23.2 31.6 Z M20.7 36.0 L16.0 20.7 L22.7 18.7 L27.4 34.0 Z', // a Frost arrowhead
   heart: 'M50 94 C8 62 0 36 18 18 C32 4 48 12 50 28 C52 12 68 4 82 18 C100 36 92 62 50 94 Z',
   gauntlet: 'M22 74 H76 L82 97 H16 Z M25 70 V36 C25 29 35 29 35 36 V22 C35 14 46 14 46 22 V17 C46 9 57 9 57 17 V22 C57 15 68 15 68 23 V44 L74 37 C79 31 89 37 84 45 L71 64 C69 68 66 70 62 70 Z M34.6 38 H36.4 V56 H34.6 Z M45.6 26 H47.4 V56 H45.6 Z M56.6 26 H58.4 V56 H56.6 Z',
   skull: 'M50 4 C24 4 12 22 12 42 C12 54 18 60 24 64 V82 H38 V74 H44 V82 H56 V74 H62 V82 H76 V64 C82 60 88 54 88 42 C88 22 76 4 50 4 Z',
@@ -457,7 +459,10 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
       const kind = HEART_KIND[+spec.text]; const big = inR * 1.72;
       layer(ctxs, { H: 'rgb(60,60,60)', A: PIP_COLOR[kind], O: 'rgb(0,90,0)' }, (c) => drawSym(c, kind, 0, inR * 0.02, big, 0, true));
     }
-    if (wface) { // the big symbol: starburst for attack, shield for block (a +0 face shows it faded)
+    if (wface && spec.arrow) { // an arrowhead (the weapons experiment): its ammunition's mark, big and bright, and no number (it pays the hand's Strength)
+      const big = inR * (poly.sides === 4 ? 1.5 : 1.56); const AR = { pierce: ['arrow', PIP_COLOR.pierce], fire: ['flame', '#ff9a2a'], frost: ['snow', '#a8e6ff'] }[spec.arrow] || ['arrow', '#fff'];
+      layer(ctxs, { H: 'rgb(60,60,60)', A: AR[1], O: 'rgb(0,110,0)' }, (c) => drawIcon(c, AR[0], 0, 0, big));
+    } else if (wface) { // the big symbol: starburst for attack, shield for block (a +0 face shows it faded)
       const kind = spec.wface === 'b' ? 'def' : 'atk'; const big = inR * (poly.sides === 4 ? 1.62 : 1.7);
       layer(ctxs, { H: 'rgb(60,60,60)', A: spec.zero ? (kind === 'def' ? '#3a7cd6' : '#cc3e46') : PIP_COLOR[kind], O: 'rgb(0,110,0)' }, (c) => drawSym(c, kind, 0, inR * 0.04, big, 0, true));
     }

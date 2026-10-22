@@ -10,6 +10,7 @@ test('off by default: today\'s weapons, loot and classes', () => {
   assert.ok(!WEAPONS.axe, 'no Axe in the live game');
   assert.ok(LOOT_WEIGHTS.warhammer && LOOT_WEIGHTS.bow, 'two-handers still drop');
   assert.deepEqual(CLASSES.ranger.weapons, ['bow']);
+  const h = E.newHero({ name: 'L', cls: 'ranger', seed: 1 }); assert.equal(E.setAmmo(h, h.loadout.NW.uid, 'fire'), false, 'no ammunition to pick in the live game');
 });
 
 test('switched on: six one-handed weapons with the proposed Bronze faces', () => {
@@ -53,6 +54,8 @@ test('stage 3, arrows: the Ranger carries Arrows and a Bow; each arrowhead pays 
   E.useWeapons2();
   const r = E.newHero({ name: 'A', cls: 'ranger', seed: 2 }); r.dice = [...new Set([...(r.dice || []), 'NE'])];
   assert.deepEqual([r.loadout.NW.id, r.loadout.NE.id], ['quiver', 'bow']);
+  assert.ok(E.setAmmo(r, r.loadout.NW.uid, 'frost')); assert.equal(r.loadout.NW.ammo, 'frost', 'picked at camp');
+  assert.equal(E.setAmmo(r, r.loadout.NW.uid, 'poison'), false, 'only the four'); assert.equal(E.setAmmo(r, r.loadout.NE.uid, 'fire'), false, 'the Bow takes no ammunition');
   const faces = (ammo, n = 8) => E.weaponFaces({ uid: 'q', id: 'quiver', ammo, rarity: 0, size: n }, n);
   assert.equal(faces('normal').filter((f) => f.arrow).length, 0, 'normal arrows: numbers only');
   for (const a of ['pierce', 'fire', 'frost']) { assert.equal(faces(a, 4).filter((f) => f.arrow === a).length, 1); assert.equal(faces(a, 8).filter((f) => f.arrow === a).length, 3, 'bigger dice, more arrowheads'); }

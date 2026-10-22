@@ -8,6 +8,7 @@
 import { firebaseConfig } from './firebase-config.js';
 import { createTable, joinTable, command, playerByToken, playerView, saveTable, savePublic, loadTable, reclaimSeat, seatByName, joinRefusal } from './table.js';
 import * as SV from './save.js';
+import { LAB } from './lab.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -19,6 +20,7 @@ let given = null;
 export function useSdk(sdk, name) { given = { sdk, name }; }
 
 async function ready() {
+  if (LAB) throw told('The lab stays on this phone: no cloud saves and no online tables.'); // js/lab.js
   if (fb) return fb;
   let app, auth, fs;
   try {

@@ -751,7 +751,7 @@ function buildFists(r, P, pal) {
 const LEGEND_GLOW = { blade: 0xffe7a0, emissive: 0xd88a1a, halo: 0xffc040, face: 0xffb030 };
 export function createWeapon(id, rarity = 0, o = {}) {
   const legend = WEAPONS[id]?.legendary ? id : null;
-  if (legend) { id = WEAPONS[id].model; rarity = 3; }
+  if (legend) { id = WEAPONS[id].model; rarity = 3; } else if (WEAPONS[id]?.model) id = WEAPONS[id].model; // the lab's Axe and Arrows (js/lab.js) borrow the Mace and the Spear
   const r = Math.max(0, Math.min(3, rarity | 0)); const pal = PAL[r];
   const def = WEAPONS[id]; if (!def) throw new Error(`unknown weapon ${id}`);
   const group = new THREE.Group(); group.name = `weapon-${id}-${RNAMES[r]}`; const ud0 = group.userData;

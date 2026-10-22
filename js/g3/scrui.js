@@ -241,8 +241,18 @@ function heroStats(hp, feet, c = {}) {
     meter('Strength', hands, 4, 'hammer', 'm-str', 'Your strongest hand die. It powers the weapon above it.', `d${hands}`, [4, 6, 8, 10].indexOf(hands) + 1),
     meter('Magic', magic, 6, 'spark', 'm-mag', `Magic at the start of every fight${c.magicCap ? `; holds up to ${c.magicCap}` : ''}.`, String(magic)));
 }
+// The lab's Arrows (js/lab.js): each arrowhead face shows its ammunition's mark, and the weapon page picks the ammunition.
+const ARROW_MARK = { pierce: '➶', fire: '🔥', frost: '❄' };
+const AMMO_LINE = { normal: 'Bigger numbers. No arrowheads.', pierce: 'Arrowhead: your hand’s Strength goes through block.', fire: 'Arrowhead: hits, and half splashes on the others.', frost: 'Arrowhead: hits, and halves its next blow.' };
+function ammoPick(hero, inst) {
+  const now = D.WEAPONS2.ammo[inst.ammo] ? inst.ammo : 'normal';
+  return h('div', { class: 'ww-ammo', role: 'group', 'aria-label': 'Ammunition' }, h('small', {}, 'AMMUNITION · free to change at camp'),
+    Object.entries(D.WEAPONS2.ammo).map(([k, name]) => h('button', { type: 'button', class: k === now ? 'on' : '', 'aria-pressed': String(k === now), 'data-ammo': k,
+      onclick: tap(() => { if (k !== now && E.setAmmo(hero, inst.uid, k)) { sfx.select(); X.persist(); X.renderCamp(SHEET.fromBoard); } }) },
+    h('b', {}, k === 'normal' ? 'Normal' : `${ARROW_MARK[k]} ${name.split(' ')[0]}`), h('span', {}, AMMO_LINE[k]))));
+}
 function faceChips(inst) {
-  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}` }, h('b', {}, String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others
+  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}` }, h('b', {}, f.arrow ? ARROW_MARK[f.arrow] : String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others
 }
 // Drop a charm: asks twice (a second tap within four seconds), since it is gone for good.
 function dropBtn(hero, id) {
@@ -630,6 +640,13 @@ function questArt(q) {
 }
 // The boss button names who you face: 'the Goblin King', 'the Hollow Lich', 'the Ember Queen' (the part after a comma).
 const bossCall = (q) => { const n = q.foeNames?.[0] || foeOf(q.enemies?.[0])?.name || 'the boss'; const call = n.split(', ').pop().replace(/^The /, 'the '); return call.length > 16 ? `the ${call.split(' ').pop()}` : call; };
+// What the scouts say about a fight (the lab, js/lab.js; ChatGPT and Dave, 22 Oct 2026: a simple preview at camp so the ammunition is a
+// real choice). A few plain words from the monsters' own moves, at most three: enough to plan by, never the whole story.
+function scoutWords(q) {
+  const camp = campOf(); const ms = q.enemies.map((id) => foeOf(id, camp)).filter(Boolean); const moves = ms.flatMap((m) => m.faces || []); const has = (v) => moves.some((f) => f.v === v);
+  return [ms.some((m) => m.armor) && 'armoured', (q.enemies.length >= 3 || has('summon')) && 'a pack', (has('mend') || has('drain')) && 'heals',
+    (ms.some((m) => m.slam) || has('charge') || has('breath')) && 'hits hard', has('pierce') && 'cuts through block'].filter(Boolean).slice(0, 3);
+}
 function questCard(q, idx) {
   const camp = campOf();
   const xp = q.enemies.reduce((a, id) => a + Math.round(foeOf(id, camp).xp * q.rewardMult), 0);
@@ -645,6 +662,7 @@ function questCard(q, idx) {
     h('div', { class: 'qc-body' },
       h('b', { class: 'qc-name' }, q.kind === 'boss' ? q.name : (q.name.replace(place, '').replace(/\s+(on|at|near|in|of|by)\s*$/i, '').trim() || q.name)), h('small', { class: 'qc-place' }, ico('pin'), place),
       h('small', { class: 'qc-foes' }, groupNames(q)),
+      D.EXPERIMENT.weapons2 && scoutWords(q).length ? h('small', { class: 'qc-scout' }, ico('map'), `Scouts say: ${scoutWords(q).join(' · ')}`) : null,
       h('div', { class: 'qc-read' },
         h('div', { class: `qr danger dz-${dz.label.toLowerCase()}` }, h('span', {}, 'Danger'), pips(danger, 5, 'p-danger'), h('small', {}, `${dz.label} for you · ~${dz.rounds} round${dz.rounds > 1 ? 's' : ''}`)),
         h('div', { class: 'qr reward' }, h('span', {}, 'Reward'), pips(reward, 5, 'p-reward'), h('small', {}, `${xp} XP · ${gold}g+`)))),
@@ -1250,11 +1268,12 @@ function weaponWorkshop(hero, slot, inst) {
     const values = E.weaponFaces(it, rollSize);
     return h('div', { class: 'ww-face-group', 'data-preview': label.toLowerCase() }, h('div', { class: 'ww-face-label' }, h('b', {}, label), h('span', {}, `${D.tierName(it)} · d${rollSize}`)),
       h('div', { class: 'wc-faces', style: { '--face-cols': String(values.length <= 6 ? values.length : Math.ceil(values.length / 2)) }, 'aria-label': `${label} weapon faces` }, values.map((f) =>
-        h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.v === 0 ? 'zero' : ''}`, 'data-value': String(f.v) }, h('b', {}, String(f.v)),
+        h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}`, 'data-value': String(f.v) }, h('b', {}, f.arrow ? ARROW_MARK[f.arrow] : String(f.v)),
           f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))));
   };
+  const ammo = inst.id === 'quiver' && D.EXPERIMENT.weapons2 ? ammoPick(hero, inst) : null;
   if (forge.why === 'wear' && train.why === 'wear') {
-    return h('div', { class: 'ww-workshop' }, frame,
+    return h('div', { class: 'ww-workshop' }, frame, ammo,
       h('p', { class: 'ww-note' }, ico('sword'), E.wearLabel(inst)),
       faces(inst, rolling, 'Current'),
       h('p', { class: 'ww-explain' }, 'Find or buy a replacement, or swap from your pack below.'));
@@ -1272,7 +1291,7 @@ function weaponWorkshop(hero, slot, inst) {
     : mode === 'train' && info.why === 'hands' ? shLock(`Needs a d${info.next} hand`)
     : shBuy(hero, { label: mode === 'forge' ? `Forge to ${D.RARITY[info.next]}` : `Train to d${info.next}`, cost: info.cost, ok: info.ok,
       onBuy: () => { if ((mode === 'forge' ? HE.forgeWeapon(hero, inst.uid) : HE.trainWeapon(hero, inst.uid))) shBought(); } });
-  return h('div', { class: 'ww-workshop' }, frame, modes, preview, warning, action,
+  return h('div', { class: 'ww-workshop' }, frame, ammo, modes, preview, warning, action,
     info.ok && info.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - info.cost} after upgrade`) : null);
 }
 function slotSheet(slot) {

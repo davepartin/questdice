@@ -270,7 +270,7 @@ export const WEAPONS2 = {
   ammo: { normal: 'Normal arrows', pierce: 'Piercing arrows', fire: 'Fire arrows', frost: 'Frost arrows' },
   add: {
     bow: { name: 'Bow', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 24, set: 'quiver', tag: 'A little hit, a little guard. The arrows in your other hand do the rest.', faces: [F(0, 'b'), F(1, 'r'), F(2, 'b'), F(2, 'r')] },
-    quiver: { name: 'Arrows', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 20, model: 'bow', set: 'bow', tag: 'Choose the ammunition at camp: Normal, Piercing, Fire or Frost.', faces: [F(0, 'r'), F(1, 'r'), F(2, 'r'), F(3, 'r')] },
+    quiver: { name: 'Arrows', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 20, model: 'spear', set: 'bow', tag: 'Choose the ammunition at camp: Normal, Piercing, Fire or Frost.', faces: [F(0, 'r'), F(1, 'r'), F(2, 'r'), F(3, 'r')] },
     axe: { name: 'Axe', hands: 1, lean: 'off', temper: 'risky', glyph: '🪓', price: 26, model: 'mace',
     tag: 'More blanks, a weak guard, and two chances at the top number. Swing, and mean it.', faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')] } },
   names: { shield: 'Round Shield' },

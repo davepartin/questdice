@@ -4,8 +4,9 @@
 
 import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf } from './data.js';
 import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
+import { LAB } from './lab.js';
 
-const PREFIX = 'questdice.hero.';
+const PREFIX = LAB ? 'questdice.lab.hero.' : 'questdice.hero.'; // lab heroes (js/lab.js) live apart from the real ones
 export const nameKey = (name) => String(name || '').trim().toLowerCase();
 const namedPacks = () => Object.keys(CAMPAIGNS).filter((id) => id !== DEFAULT_PACK);
 export function key(name, pack) {
@@ -38,7 +39,7 @@ function store() { try { return window.localStorage; } catch { return null; } }
 // the beta, so every tester starts on today's rules. Returns how many heroes were retired.
 const EPOCH_KEY = 'questdice.epoch'; const EPOCH = 'beta-1'; export const SAVE_V = 2;
 export function startBeta() {
-  const s = store(); if (!s) return 0;
+  const s = store(); if (!s || LAB) return 0; // the lab never retires anything
   try {
     if (s.getItem(EPOCH_KEY) === EPOCH) return 0;
     const old = []; for (let i = 0; i < s.length; i++) { const k = s.key(i); if (k.startsWith(PREFIX) || k === 'questdice.seat') old.push(k); }

@@ -33,10 +33,10 @@ export function dieSpecs(hero, previewSizes = {}) {
       const inst = hero.loadout[slot]; const wid = D.modelOf(inst.id); // a legendary shows its model's mark
       const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'stagger' }; // Dawnbreaker's splash shows as a burst
       // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
-      labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => ({
+      labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => (f.arrow ? { wface: 'r', tone: 'r', arrow: f.arrow, corners: [], wm: 'arrows' } : { // an arrowhead: its mark, no number
         text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
         corners: [...Array(f.plus || 0).fill(f.c === 'b' ? 'def' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k]))].filter(Boolean), // +1 attack/block icons first, then a crit's icons (two or three)
-        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : wid,
+        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : inst.id === 'quiver' ? 'arrows' : wid,
       }));
     } else if (role === 'special') {
       theme = 'amethyst';

@@ -83,6 +83,12 @@ export function useWeapons2() {
   DIAMOND.pool.splice(0, DIAMOND.pool.length, ...WEAPONS2.diamondPool);
   for (let i = LEGENDARY.length - 1; i >= 0; i--) if (WEAPONS[LEGENDARY[i]].hands === 2) LEGENDARY.splice(i, 1);
 }
+// The weapons experiment's Arrows: pick the ammunition at camp (Normal, Piercing, Fire or Frost). Free, and changed as often as you like.
+export function setAmmo(hero, uid, kind) {
+  if (!EXPERIMENT.weapons2 || !WEAPONS2.ammo[kind]) return false;
+  const all = [...Object.values(hero.loadout || {}), ...(hero.bag || [])].filter((w) => w && w.uid === uid && w.id === 'quiver');
+  all.forEach((w) => { w.ammo = kind; }); return all.length > 0;
+}
 const W2CACHE = {};
 function faces2(id, size) {
   const key = `${id}:${size}`; if (W2CACHE[key]) return W2CACHE[key].map((f) => ({ ...f }));
@@ -510,6 +516,7 @@ export function evaluate(hero, board, opts = {}) {
     for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
     if (wf.arrow) { // an arrowhead (the weapons experiment's arrows): the hand's printed Strength, in the ammunition's way
       L.arrow = wf.arrow; const s = str;
+      out.arrow = { kind: wf.arrow, n: wf.arrow === 'fire' ? Math.floor(s / 2) : s }; // for the battle's banner
       if (wf.arrow === 'pierce') { L.value -= s; out.pierce += s; out.notes.push(`Piercing arrow: ${s} pierce`); }
       else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.floor(s / 2); out.notes.push(`Fire arrow: ${Math.floor(s / 2)} to every other monster`); } // half the printed Strength, rounded down (agreed 22 Oct)
       else if (wf.arrow === 'frost') { out.frost = true; out.notes.push('Frost arrow: the target\'s next blow is halved'); }

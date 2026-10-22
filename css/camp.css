@@ -333,3 +333,11 @@
 .cw-camp .sx-cta .sx-potask-btns .sx-btn { min-height: 48px; padding: .4rem .5rem; font-size: .95rem; letter-spacing: .04em; white-space: nowrap; }
 .cw-camp .sx-cta .sx-potask-btns .potask-yes { color: #2a1804; text-shadow: none; border-color: #ffe3a0; background: linear-gradient(180deg, #ffd65a, #e19b12); box-shadow: 0 3px 0 #7a4f08, 0 5px 12px #0008; }
 .cw-camp .sx-cta .sx-potask-btns .potask-no { background: #1a1d28; box-shadow: none; }
+/* the lab's Arrows (js/lab.js): pick the ammunition, two by two; each says in a line what its arrowhead does */
+.ww-ammo { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.ww-ammo > small { grid-column: 1 / -1; color: #bcb7ad; letter-spacing: .06em; font-size: .68rem; }
+.ww-ammo button { display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; min-height: 58px; padding: .45rem .55rem; text-align: left; border: 1px solid #625b50; border-radius: 8px; background: linear-gradient(#25272e,#191b22); color: #bcb7ad; cursor: pointer; }
+.ww-ammo button b { font-size: .9rem; color: #f2e6cc; }
+.ww-ammo button span { font-size: .72rem; line-height: 1.25; }
+.ww-ammo button.on { border-color: #e1bf80; background: linear-gradient(#3d3428,#26231f); box-shadow: inset 0 1px #fff3; }
+.wf.arrow b { font-size: .95em; }
