@@ -85,3 +85,31 @@ Fire (splash) and frost (freeze) can also appear on class powers. Examples are a
 2. Add arrows, fire and frost to the engine, the cast and round recap, and the monster cards ("Frozen").
 3. Re-measure with `tools/worth.mjs` and `tools/curve.mjs`, then tune how many symbol faces each metal gets.
 4. Art: arrowhead and snowflake icons, frozen and burning effects on the minis.
+
+## ChatGPT's version, measured the same way (added 22 Oct)
+
+Dave asked ChatGPT the same question. Its version has six weapons: Sword, Dagger, Axe and Spear, plus a Round Shield and a Tower Shield that are the Sword and Axe with their colours swapped. Repeated numbers are allowed (two 8s), and a blank keeps a colour ("a coloured +0"), so your strength still goes to attack or block. The bow and arrows are one set in both hands, with the ammunition chosen at camp. Fire hits the target and splashes half the strength (blockable); Frost halves the target's next hit (no stacking); Piercing turns the strength into pierce. Silver and Gold add one small bonus on about a quarter or a half of the faces, plus one battle each.
+
+`tools/weaponlab.mjs` now rolls both sets. Act II, same weapon in both hands:
+
+| d8 | Number a roll | Blank | Attack a side | Block a side | In a triple | 6+ straight |
+| --- | --- | --- | --- | --- | --- | --- |
+| ChatGPT Sword | 3.6 | 13% | 6.3 | 1.7 | 2% | 8% |
+| ChatGPT Dagger | 3.1 | 13% | 6.8 | 0.7 | **4%** | **9%** |
+| ChatGPT Axe | 3.4 | 38% | **7.4** | 0.5 | 1% | 5% |
+| ChatGPT Spear | 3.3 | 26% | 6.9 | 0.9 | 1% | 7% |
+| Claude Dagger (low run) | 1.9 | 37% | 5.5 | 0.8 | 2% | 7% |
+| Claude Mace (Dave's gap) | 3.0 | 37% | 6.7 | 0.7 | 1% | 6% |
+
+What it shows:
+- **ChatGPT's dice are better balanced.** Its attack weapons sit within about 1 of each other (6.3 to 7.4), while mine run from 5.5 to 7.1, and my Dagger is clearly the weakest. Allowing repeated numbers lets it keep blanks rarer without pushing numbers past the die's size.
+- **Repeats are a personality I missed.** The Dagger's repeated odd numbers make it twice as likely to land in a triple. That gives it a real reason to exist.
+- **Coloured blanks** are a good rule, and the engine already supports them (its weapons carry a colour on their blanks).
+- **One bow-and-arrows set, with ammunition chosen at camp,** is simpler than finding a bow and arrows separately.
+- **Its Fire and Frost are the safer first version**: half splash, blockable, and a non-stacking halving.
+
+Where I would still differ:
+- **Metal needs more than a small bonus.** The worth tool measured today's Gold over Bronze at about half an attack a round, so a small fixed bonus on a quarter or half of the faces will still feel flat. A symbol that pays the hand's number (or half of it) is what would make Gold worth chasing.
+- **Wear is already decided at 4 / 6 / 8 battles** (Dave, 21 Oct), not +1 each.
+
+**Merged plan:** use ChatGPT's six weapons and dice as the Bronze base (colour-swapped shields, repeats allowed, coloured blanks) and its arrow effects. Keep this proposal's metal rule (symbols that pay strength) and the 4 / 6 / 8 wear. Leave the Mace, Staff and two-handers out until a role needs them.

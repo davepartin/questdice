@@ -24,7 +24,21 @@ const P = {
   'Shield · evens (blue)': (N) => [...range(1, N).filter((v) => v % 2 === 0).map((v) => [v, 'b']), [N >= 6 ? 3 : 1, 'r']],
   'Tower · high + low (blue)': (N) => { const lo = Math.max(1, Math.floor(N / 3)); const hi = Math.ceil(N * 3 / 8); return [...range(1, lo).map((v) => [v, v === 1 ? 'r' : 'b']), ...range(N - hi + 1, N).map((v) => [v, 'b'])]; },
 };
-const die = (pat, N) => { const live = new Map(P[pat](N).map(([v, c]) => [v, c])); return range(1, N).map((v) => (live.has(v) ? { v, c: live.get(v) } : { v: 0 })); };
+// ChatGPT's proposal (Dave asked it the same question, 22 Oct): repeats allowed, and a blank keeps a colour ("a coloured +0"), so the
+// hand's number still goes to attack or block. Every entry is one face.
+const parse = (txt) => txt.split(/,\s*/).map((f) => ({ v: Number(f.slice(1)), c: f[0] === 'B' ? 'b' : 'r' }));
+const flip = (fs) => fs.map((f) => ({ ...f, c: f.c === 'r' ? 'b' : 'r' }));
+const GPT = {
+  'GPT Sword': { 4: 'R0, B1, R2, R4', 6: 'R0, B1, R2, R3, B4, R6', 8: 'R0, B1, R2, R3, B4, R5, R6, R8', 10: 'R0, B1, R2, R3, B4, R5, R6, B7, R8, R10' },
+  'GPT Dagger': { 4: 'R0, B1, R3, R3', 6: 'R0, B1, R1, R3, R5, R5', 8: 'R0, B1, R1, R3, R3, R5, R5, R7', 10: 'R0, B1, R1, R3, R3, R5, R5, R7, R7, R9' },
+  'GPT Axe': { 4: 'R0, B0, R4, R4', 6: 'R0, R0, B0, R4, R6, R6', 8: 'R0, R0, B0, R2, R4, R6, R8, R8', 10: 'R0, R0, R0, B0, R4, R6, R8, R8, R10, R10' },
+  'GPT Spear': { 4: 'R0, R1, B3, R4', 6: 'R0, R0, R1, B3, R5, R6', 8: 'R0, R0, R1, R2, B3, R6, R7, R8', 10: 'R0, R0, R1, R2, B3, R4, R7, R8, R9, R10' },
+};
+GPT['GPT Round Shield'] = 'flip:GPT Sword'; GPT['GPT Tower Shield'] = 'flip:GPT Axe';
+const gptDie = (name, N) => { const d = GPT[name]; return typeof d === 'string' ? flip(gptDie(d.slice(5), N)) : parse(d[N]); };
+// Claude's honest patterns: a blank takes the weapon's own colour too (the engine's weapons already carry a colour on their blanks)
+const OWN = (pat) => (/Shield|Tower|Bracer/.test(pat) ? 'b' : 'r');
+const die = (pat, N) => { if (GPT[pat]) return gptDie(pat, N); const live = new Map(P[pat](N).map(([v, c]) => [v, c])); return range(1, N).map((v) => (live.has(v) ? { v, c: live.get(v) } : { v: 0, c: OWN(pat) })); };
 
 // ---- the board by act (sizes from the campaign: what a hero usually holds there)
 const ACTS = {
@@ -43,7 +57,7 @@ function study(act, left, right) {
     const wl = L[roll(A.hand) - 1]; const wr = R[roll(A.hand) - 1];
     const head = roll(A.head), lh = roll(A.hand), rh = roll(A.hand), heart = roll(A.heart), feet = roll(A.feet), lt = talentNum(A.talent), rt = talentNum(A.talent);
     t.num += wl.v; t.blank += wl.v ? 0 : 1;
-    if (wl.c === 'r') t.red += wl.v + lh; else if (wl.c === 'b') t.blue += wl.v + lh; else t.red += lh; // a blank still adds the hand (as the engine does)
+    if (wl.c === 'b') t.blue += wl.v + lh; else t.red += wl.v + lh; // a blank still adds the hand, to its own colour (as the engine does)
     if (wl.v && ((wl.v === head && head === wr.v) || (wl.v === lh && lh === lt))) t.tri++;
     const s = longest([wl.v, wr.v, head, lh, rh, heart, feet, lt, rt]);
     if (s >= 6) t.s6++; if (s >= 7) t.s7++; if (s >= 8) t.s8++;
@@ -55,7 +69,7 @@ console.log(`Weapon lab · honest dice · ${ROLLS} boards a line · no rerolls. 
 for (const act of Object.keys(ACTS)) {
   console.log(`\n${act} (hands d${ACTS[act].hand}, head d${ACTS[act].head}, feet d${ACTS[act].feet}, talents d${ACTS[act].talent}; a triple pays ${ACTS[act].bonus})`);
   console.log(`${'pattern'.padEnd(34)} size  num  blank  red  blue   tri    s6+  s7+  s8+`);
-  for (const p of Object.keys(P)) console.log(study(act, p, p));
+  for (const p of [...Object.keys(P), ...Object.keys(GPT)]) console.log(study(act, p, p));
   const N = ACTS[act].hand;
-  console.log(`  faces at d${N}: ${Object.keys(P).map((p) => `${p.split(' ·')[0]} ${die(p, N).map((f) => (f.v ? `${f.v}${f.c === 'b' ? 'b' : ''}` : '–')).join(' ')}`).join('  |  ')}`);
+  console.log(`  faces at d${N}: ${[...Object.keys(P), ...Object.keys(GPT)].map((p) => `${p.split(' ·')[0]} ${die(p, N).map((f) => (f.v ? `${f.v}${f.c === 'b' ? 'b' : ''}` : f.c === 'b' ? '–b' : '–')).join(' ')}`).join('  |  ')}`);
 }
