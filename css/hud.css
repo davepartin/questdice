@@ -416,22 +416,32 @@ body.in-battle .chrome { z-index: 40; }
 .b3-tools { justify-content: space-between; }
 
 /* compact monster plates: name, life bar with its fraction, one small chip for what it plans */
-.b3-info { bottom: auto; top: 12rem; } .b3-info:not(.open) { display: none; }
+.b3-info:not(.open) { display: none; }
 .b3-info .fi-hp, .b3-info .fi-now { margin: 0; font-size: .8rem; color: #f1ead8; } .b3-info .fi-t { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: #d9b4ff; }
-/* monster sheet: a picture from the front and a stat line, a big "next" card in the move's colour, then chips for the other moves */
-.fi-top { display: flex; align-items: center; gap: .8rem; }
-.fi-pic { flex: none; width: 6.4rem; height: 6.4rem; border-radius: .7rem; overflow: hidden; background: radial-gradient(70% 70% at 50% 60%, rgba(240, 192, 96, .2), rgba(12, 11, 20, .9)); box-shadow: inset 0 0 0 1px rgba(240, 192, 96, .35), 0 6px 16px rgba(0, 0, 0, .45); }
-.fi-pic img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .55)); } .fi-pic.flip img { transform: scaleX(-1); } .fi-pic.shimmer img { opacity: 0; } .fi-pic.none { display: none; }
-.fi-top .fi-stats { flex-direction: column; gap: .35rem; }
-.fi-stats { display: flex; gap: .9rem; font: 700 .78rem var(--disp, inherit); color: #e8e0cc; } .fi-stats span { display: inline-flex; align-items: center; gap: .3rem; } .fi-stats .ic { font-size: .95rem; color: #ff7a7a; } .fi-stats span + span .ic { color: #ffd04a; }
-.fi-next { display: flex; align-items: center; gap: .6rem; padding: .55rem .7rem; border-radius: .7rem; background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 30%, #0c0b14), color-mix(in srgb, var(--tc) 8%, #0c0b14)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc) 55%, transparent); }
-.fi-ic { flex: none; width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tc) 35%, #0c0b14); font-size: 1.4rem; color: var(--tcl); }
-.fi-nx { flex: 1; min-width: 0; display: flex; flex-direction: column; } .fi-nx small { font: 800 .58rem var(--disp, inherit); letter-spacing: .14em; text-transform: uppercase; color: var(--tcl); opacity: .8; }
-.fi-nx b { font: 800 1rem var(--disp, inherit); color: #fff; } .fi-nx p { margin: .1rem 0 0; font-size: .8rem; line-height: 1.3; color: #efe7d4; }
-.fi-fig { flex: none; display: flex; flex-direction: column; align-items: center; font: 800 1.5rem var(--disp, inherit); color: var(--tcl); text-shadow: 0 0 12px var(--tc); line-height: 1; } .fi-fig small { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: #cfc6b0; text-shadow: none; margin-top: .15rem; }
-.fi-moves { display: flex; flex-wrap: wrap; gap: .35rem; } .fi-mv { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .5rem; border-radius: 999px; background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); font-size: .72rem; color: #d8d2c0; }
-.fi-mv .ic { font-size: .9rem; color: #e8dcc0; } .fi-mv b { color: #fff; font-size: .74rem; }
-@media (min-aspect-ratio: 5/4) { .b3-info { top: 6rem; bottom: auto; } }
+/* Enemy Details (ChatGPT's UI review, Oct 2026): a tall panel from the top bar to the counters; the miniature large and unboxed,
+   its numbers beside it; one strong Next Move card; the other abilities with their plain words. It scrolls only if it must. */
+.b3-info { top: calc(var(--safe-t) + .5rem); bottom: calc(var(--dock-top, 12rem) + .4rem); gap: .7rem; padding: .7rem .8rem .9rem; overflow-y: auto; overscroll-behavior: contain; background: #0d0a18; max-height: none; }
+.fi-head b { font-size: .72rem; letter-spacing: .18em; color: #c9a6f0; }
+.fi-name { margin: -.1rem 0 0; display: flex; align-items: baseline; gap: .5rem; font: 800 clamp(1.7rem, 8vw, 2.2rem)/1 var(--serif, inherit); color: #fff3d6; text-shadow: 0 2px 10px rgba(0, 0, 0, .6); }
+.fi-name small { font: 800 .62rem var(--disp, inherit); letter-spacing: .14em; text-transform: uppercase; color: #ffcf6a; }
+.fi-top { display: flex; align-items: stretch; gap: .6rem; }
+.fi-pic { flex: none; width: 46%; max-width: 13rem; height: clamp(11rem, 36vh, 19rem); position: relative; background: radial-gradient(60% 34% at 50% 92%, rgba(240, 192, 96, .22), transparent 70%); }
+.fi-pic img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .6)); } .fi-pic.flip img { transform: scaleX(-1); } .fi-pic.shimmer img { opacity: 0; } .fi-pic.none { display: none; }
+.fi-stats { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: .4rem; }
+.fi-stat { display: grid; grid-template-columns: 1.5rem 1fr; grid-template-rows: auto auto; column-gap: .45rem; align-items: center; padding: .38rem .55rem; border-radius: .6rem; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.fi-stat .ic { grid-row: 1 / 3; font-size: 1.2rem; justify-self: center; }
+.fi-stat small { font: 800 .58rem var(--disp, inherit); letter-spacing: .14em; text-transform: uppercase; color: #b9b0c8; }
+.fi-stat b { font: 800 1rem/1.15 var(--disp, inherit); color: #fff; overflow-wrap: anywhere; }
+.fi-stat.hp .ic { color: #ff7a7a; } .fi-stat.spd .ic { color: #ffd04a; } .fi-stat.atk .ic { color: #ff8f7a; } .fi-stat.atk b { color: #ffc4b8; } .fi-stat.def .ic { color: #8fc4ff; } .fi-stat.def b { color: #c8e2ff; } .fi-stat.def.none b { color: #9a93a8; }
+.fi-next { display: flex; align-items: flex-start; gap: .7rem; padding: .75rem .8rem; border-radius: .8rem; background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 32%, #0c0b14), color-mix(in srgb, var(--tc) 10%, #0c0b14)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tc) 60%, transparent), 0 6px 18px rgba(0, 0, 0, .35); }
+.fi-ic { flex: none; width: 2.8rem; height: 2.8rem; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--tc) 35%, #0c0b14); font-size: 1.6rem; color: var(--tcl); }
+.fi-nx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; } .fi-nx small { font: 800 .62rem var(--disp, inherit); letter-spacing: .16em; text-transform: uppercase; color: var(--tcl); }
+.fi-nx b { font: 800 1.3rem/1.15 var(--disp, inherit); color: #fff; } .fi-nx .fi-fig { color: var(--tcl); text-shadow: 0 0 12px var(--tc); white-space: nowrap; }
+.fi-nx p { margin: .2rem 0 0; font-size: .9rem; line-height: 1.35; color: #efe7d4; }
+.fi-moves { list-style: none; margin: -.2rem 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+.fi-mv { display: grid; grid-template-columns: 1.3rem 1fr; column-gap: .4rem; align-items: center; padding: .35rem .5rem; border-radius: .55rem; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.fi-mv .ic { grid-row: 1 / 3; font-size: 1.05rem; color: #e8dcc0; justify-self: center; } .fi-mv b { color: #fff; font-size: .84rem; line-height: 1.2; } .fi-mv small { font-size: .74rem; line-height: 1.25; color: #cfc8b6; }
+@media (min-aspect-ratio: 5/4) { .b3-info { top: 5rem; } .fi-pic { height: clamp(9rem, 34vh, 14rem); } }
 @media (max-width: 420px) { .b3-tools .hb-mini { width: 2.3rem; min-width: 2.3rem; height: 2.3rem; min-height: 2.3rem; } .b3-powers { padding-right: .6rem; font-size: .72rem; } .b3-pips i { width: .65rem; height: .65rem; } .b3-tools { gap: .25rem; } }
 
 

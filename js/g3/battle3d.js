@@ -17,7 +17,7 @@ import { petImg } from './pets.js';
 import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf } from './flat.js';
 import { monsterOf } from '../campaigns.js';
-import { roundCard, noDefence } from './roundcard.js';
+import { roundCard } from './roundcard.js';
 import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
 
 let C = null;                // context from ui.js
@@ -468,43 +468,43 @@ function readyText(e) {
     hush: 'Your heart is blanketed next round: no amp, no colour bonus, no triple.',
   }[i.v] || '';
 }
-// "Its dice": which dice the monster rolls, red for what it hits with, blue for what it blocks with (its speed die is in the stats above).
+// A monster's dice, in words: which dice it rolls to hit and to block (its speed die is its own stat).
 // A blow is its BASE (the number it always has) plus the die it rolls (times a multiplier for the big moves): "base 6 + d8".
 const dieName = (n) => `d${n}`;
 const baseDie = (base, i, s, e = null) => [base > 0 ? `base ${base}` : null, E.diceText(e ? E.diceOf(e, i) : (i.m || 0), s) || null].filter(Boolean).join(' + '); // "base 2 + 3d8": its fight bonus is rolled as dice
-function diceRows(e, def) {
-  const s = e.powerDie; const i = e.intent; const rows = [];
-  const die = (kind, size, label, text) => h('span', { class: `fi-die ${kind}` }, HK.icon(`d${[4, 6, 8, 10].includes(size) ? size : size > 10 ? 10 : 6}`), h('b', {}, label), h('small', {}, text));
-  const faces = e.faces || def.faces || [];
-  const hit = faces.find((f) => ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(f.v));
-  // what it hits with (this round's move if it is a blow, else its usual blow)
-  const atk = i && E.isDamageIntent(i) ? i : hit; if (atk && (atk.m || atk.f)) rows.push(die('red', s, 'Attack', baseDie(E.intentBase(e, atk), atk, s, e)));
-  // what it defends with: its guard move's base and die, or a crossed-out blue shield when it has none to roll
-  const gd = GUARD_INTENT.has(i?.v) ? i : faces.find((f) => GUARD_INTENT.has(f.v));
-  const ar = e.armor || def.armor;
-  if (gd && (gd.m || gd.f)) rows.push(die('blue', s, 'Defence', baseDie(gd.f, gd, s)));
-  else if (!ar) rows.push(h('span', { class: 'fi-die blue none' }, noDefence('No defence'), h('small', {}, 'does not roll for defence')));
-  if (ar) rows.push(die('blue', ar.s, 'Armor', `${ar.n}${dieName(ar.s)} blocked, every round`));
-  if (!rows.length) return null;
-  return h('div', { class: 'fi-dicebox' }, h('small', { class: 'fi-t' }, 'Its dice'), h('div', { class: 'fi-dice' }, ...rows));
-}
 const GUARD_INTENT = new Set(['guard', 'ward']);
+// Enemy Details (ChatGPT's UI review, Oct 2026: "inspecting a beautiful game piece"): a tall panel; the miniature large and unboxed
+// with health, speed, attack and defence beside it; one strong Next Move card; then the other abilities, each in plain words.
 function showFoeInfo(e) {
   const def = foeDef(e); const v = HK.intentView(e);
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const seen = new Set([e.intent?.n]);
   const others = (e.faces || def.faces).filter((f) => !seen.has(f.n) && seen.add(f.n));
-  // the painted miniature, beside its name and numbers
   const img = h('img', { alt: e.name, draggable: 'false', src: def.img }); const pic = h('div', { class: `fi-pic${D.needsFlip(def, 'left') ? ' flip' : ''}` }, img);
-  fillInfo(h('div', { class: 'sh-head' }, h('b', {}, `${e.name}${e.tier !== 'minion' ? ` · ${e.tier}` : ''}`), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
-    h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' }, h('span', {}, HK.icon('heart'), `${Math.max(0, e.hp)} / ${e.maxHp}`), h('span', {}, HK.icon('windup'), `Speed d${def.init || 4}`))),
+  const stat = (ic, label, val, cls = '') => h('div', { class: `fi-stat ${cls}` }, HK.icon(ic), h('small', {}, label), h('b', {}, val));
+  // its dice: what it hits with (this round's move if it is a blow, else its usual blow) and what it defends with
+  const s = e.powerDie; const i = e.intent; const faces = e.faces || def.faces || [];
+  const hit = faces.find((f) => ['strike', 'pierce', 'drain', 'pilfer', 'breath'].includes(f.v)); const atk = i && E.isDamageIntent(i) ? i : hit;
+  const gd = GUARD_INTENT.has(i?.v) ? i : faces.find((f) => GUARD_INTENT.has(f.v)); const ar = e.armor || def.armor;
+  const defence = ar ? `${ar.n}${dieName(ar.s)} armor` : gd && (gd.m || gd.f) ? baseDie(gd.f, gd, s) : 'None';
+  // the move in one line: "Touch · 3–30 damage"; moves that are not a number say what they do in plain words
+  const WORDS = { phase: 'only pierce hurts', stalk: 'hit it, or it pounces', charge: 'slam next round', hush: 'heart blanketed' };
+  const fig = !v?.fig ? '' : WORDS[i?.v] || (/^\d/.test(v.fig) ? `${v.fig} ${v.unit === 'dmg' ? 'damage' : v.unit}` : `${v.fig} ${v.unit || ''}`.trim());
+  fillInfo(h('div', { class: 'sh-head fi-head' }, h('b', {}, 'Enemy Details'), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
+    h('h2', { class: 'fi-name' }, e.name, e.tier !== 'minion' ? h('small', {}, e.tier) : null),
+    h('div', { class: 'fi-top' }, pic, h('div', { class: 'fi-stats' },
+      stat('heart', 'Health', `${Math.max(0, e.hp)} / ${e.maxHp}`, 'hp'),
+      stat('windup', 'Speed', `d${def.init || 4}`, 'spd'),
+      atk && (atk.m || atk.f) ? stat('atk', 'Attack', baseDie(E.intentBase(e, atk), atk, s, e), 'atk') : null,
+      stat('block', 'Defence', defence, `def${defence === 'None' ? ' none' : ''}`))),
     v ? h('div', { class: `fi-next tone-${v.tone}` }, h('span', { class: 'fi-ic' }, HK.icon(v.icon)),
-      h('div', { class: 'fi-nx' }, h('small', {}, 'Next'), h('b', {}, v.title), readyText(e) ? h('p', {}, readyText(e)) : null), // a plain hit says nothing: block is what stops an attack
-      v.fig ? h('strong', { class: 'fi-fig' }, v.fig, v.unit && /^\d/.test(v.fig) ? h('small', {}, v.unit === 'dmg' ? 'damage' : v.unit) : null) : null) : null,
-    diceRows(e, def),
-    others.length ? h('small', { class: 'fi-t' }, 'It might also') : null,
-    others.length ? h('div', { class: 'fi-moves' }, others.map((f) => { const [ic, txt] = MOVE[f.v] || ['atk', f.v]; return h('span', { class: 'fi-mv' }, HK.icon(ic), h('b', {}, f.n), h('small', {}, txt)); })) : null);
-  B.hud.info.classList.add('open'); sfx.select();
+      h('div', { class: 'fi-nx' }, h('small', {}, 'Next move'), h('b', {}, v.title, fig ? h('span', { class: 'fi-fig' }, ` · ${fig}`) : null), readyText(e) ? h('p', {}, readyText(e)) : null)) : null,
+    others.length ? h('small', { class: 'fi-t' }, 'Other abilities') : null,
+    others.length ? h('ul', { class: 'fi-moves' }, others.map((f) => { const [ic, txt] = MOVE[f.v] || ['atk', f.v]; return h('li', { class: 'fi-mv' }, HK.icon(ic), h('b', {}, f.n), h('small', {}, txt)); })) : null);
+  // on a phone it reaches down to the action buttons (the dice tray waits underneath); wide screens keep their side panel
+  const r = [B.hud.bar, ...B.hud.bar.querySelectorAll('button')].map((x) => x.getBoundingClientRect()).filter((x) => x.height > 0).sort((a, b) => a.top - b.top)[0];
+  B.hud.info.style.bottom = r && matchMedia('(max-aspect-ratio: 5/4)').matches ? `${Math.round(window.innerHeight - r.top + 8)}px` : '';
+  B.hud.info.classList.add('open'); B.hud.info.scrollTop = 0; sfx.select();
 }
 const BOARD = [...D.SLOTS, 'P']; // the nine sockets and the pet's stand (hidden when the hero has no pet)
 function idleTray() {

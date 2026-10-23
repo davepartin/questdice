@@ -267,7 +267,7 @@ export function bonusView(goal) {
   return {
     id: goal.id, kind: 'bonus', mode: 'offer', name: goal.name,
     flavor: goal.free ? `${goal.voice} offers you a small job, on the house.` : `${goal.voice} will take a wager on it.`,
-    rule: goal.rule, reward, stake: goal.stake || 0,
+    rule: goal.rule, reward, stake: goal.stake || 0, gold: goal.gold || 0, free: !!goal.free,
     scene: goal.scene, cover: '', voice: goal.voice, answered: !!goal.answered, accepted: goal.accepted,
   };
 }

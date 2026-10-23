@@ -784,23 +784,39 @@ export function envelope(card, o = {}) {
   const hero = X.S.hero || X.members()[0]; let sent = card.answered;
   const offer = card.mode === 'offer';
   const answer = (accept) => { if (sent) return; sent = true; sfx.card(); o.onAnswer?.(accept); };
-  const bonus = !!(o.bonus || card.kind === 'bonus');
+  const bonus = !!(o.bonus || card.kind === 'bonus'); const paid = bonus && card.stake > 0;
   const choice = card.answered
-    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Goal accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
+    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Challenge accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
     : h('div', { class: 'env-btns' },
-      ...(offer ? [btn(bonus && card.stake ? `Bet ${card.stake} gold` : 'Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
+      ...(offer ? [btn(paid ? `Bet ${card.stake} Gold` : 'Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
         : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
   const waiting = card.answered && o.waiting?.length ? h('p', { class: 'fine center' }, `Waiting for ${o.waiting.join(', ')} to read their envelope.`) : null;
-  mountAs('road', h('div', { class: 'sx-split sx-road sx-envelope' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
-    h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
+  // One parchment page (ChatGPT's UI review, Oct 2026): the hero's miniature beside the title and who offers it, the objective and its
+  // rule, then the stakes in plain numbers; the buttons stay at the bottom of the screen. The road scene keeps only a strip at the top.
+  const voice = String(card.voice || 'the voice').replace(/^./, (ch) => ch.toUpperCase());
+  const look = D.lookDef(hero); const mini = look?.img || D.CLASSES[hero.cls]?.img;
+  const intro = bonus ? (card.free ? 'A small job, on the house.' : 'A hard extra job for this fight, and a wager on it.') : card.scene;
+  const cell = (label, n) => h('div', { class: 'env-stake' }, h('small', {}, label), h('b', {}, ico('coin'), n ? `${n} gold` : 'Free'));
+  const stakes = bonus
+    ? [h('div', { class: 'env-stakes' }, cell('Wager', card.stake), cell('Return if successful', card.gold)),
+      h('p', { class: 'env-net' }, paid ? `Net gain: ${card.gold - card.stake} gold if you pull it off and win. Lose the wager if you fail.` : 'Nothing to lose: pull it off and win, and the gold is yours.')]
+    : [h('p', { class: 'env-pay' }, ico('coin'), h('span', {}, card.reward))];
+  mountAs('road offer', h('div', { class: 'sx-split sx-road sx-envelope' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
+    h('div', { class: 'sx-side' },
       X.partyBar?.(),
-      storyCard(o.questName ? `Before ${o.questName}` : 'Before the battle', String(card.voice || '').replace(/^./, (ch) => ch.toUpperCase()), card.scene, { icon: 'scroll' }),
       h('article', { class: 'env-card' }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
-        h('div', { class: 'env-eye' }, bonus ? 'Bonus Goal' : 'Your secret objective'), h('h2', { class: 'env-name' }, card.name),
-        h('p', { class: 'env-flavor' }, card.flavor),
-        h('p', { class: 'env-rule' }, card.rule), h('p', { class: 'env-pay' }, ico('coin'), h('span', {}, card.reward))),
+        h('div', { class: 'env-head' },
+          mini ? h('img', { class: `env-mini${D.needsFlip(D.CLASSES[hero.cls], 'right') ? ' flip' : ''}`, src: mini, alt: hero.name, draggable: 'false' }) : null,
+          h('div', { class: 'env-intro' },
+            h('h2', { class: 'env-title' }, bonus ? 'Bonus Challenge' : 'Secret Objective'),
+            h('small', { class: 'env-from' }, `${bonus ? 'Offered by' : 'From'} ${voice}`),
+            intro ? h('p', { class: 'env-flavor' }, intro) : null)),
+        h('div', { class: 'env-goal' }, h('div', { class: 'env-eye' }, bonus ? 'Your challenge' : 'Your objective'), h('b', { class: 'env-name' }, card.name),
+          !bonus && card.flavor ? h('p', { class: 'env-quote' }, card.flavor) : null,
+          h('p', { class: 'env-rule' }, card.rule)),
+        ...stakes),
       o.solo || bonus ? null : h('div', { class: 'env-cover' }, h('small', {}, 'Keep it secret. If anyone asks, say:'), h('b', {}, `“${card.cover}”`)),
-      choice, waiting, card.answered ? o.extra || null : null)));
+      h('div', { class: 'sx-cta env-cta' }, choice, waiting, card.answered ? o.extra || null : null))));
   const place = E.questsFor(hero)[0]?.place;
   lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
