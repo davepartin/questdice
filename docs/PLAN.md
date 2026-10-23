@@ -1,3 +1,5 @@
+> **Team coordination update, 23 October 2026:** Read [docs/team/BOARD.md](team/BOARD.md) first for Dave's current roles, priorities, design constraints and handoff protocol. Earlier state summaries below are historical and need reconciliation with current code. Preserve this log; record new task evidence on the board and linked briefs. This documentation-only setup changes no gameplay.
+
 # QuestDice — Ongoing Plan (shared between two Claude accounts)
 
 **Read this first, update it last.** This file is the single source of truth for what is done, what is next, and
