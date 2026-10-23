@@ -1,0 +1,60 @@
+/* CONCEPT rev 2: painted TCG layers (art/*.webp) with live HTML text on top. Not loaded by the game.
+   Stack, bottom to top: .tc-art (window background + object art) -> .tc-frame (painted frame PNG/WebP, window keyed transparent) -> live text/badges. */
+.tcpage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 12px 16px;
+ background:radial-gradient(90% 50% at 50% 35%,#2a1f14 0%,#0d0b0a 65%,#04060d 100%)}
+.tcpage .concept{position:static;transform:none;padding:4px 10px;border-radius:4px;font-size:.6rem;box-shadow:none}
+.tc{position:relative;width:min(340px,calc(100vw - 24px));aspect-ratio:3/4;container-type:inline-size;filter:drop-shadow(0 16px 26px #000c)}
+.tc>*{position:absolute}
+.tc-frame{inset:0;width:100%;height:100%;pointer-events:none}
+.tc-win{overflow:hidden;background:
+ repeating-conic-gradient(from 0deg at 50% 62%,#ffd98a14 0 5deg,transparent 5deg 14deg),
+ radial-gradient(60% 65% at 50% 58%,#f7d792 0%,#b9772e 30%,#4a2a14 68%,#1a0f08 100%)}
+.tc-win img{position:absolute;filter:drop-shadow(0 10px 12px #000a) drop-shadow(0 0 18px #fff3)}
+/* weapon frame geometry (percent of the painted frame) */
+.w .tc-win{left:12.4%;top:7%;width:75.2%;height:42%;border-radius:50% 50% 0 0/30% 30% 0 0}
+.w .tc-win img{height:96%;left:50%;top:3%;transform:translateX(-50%)}
+.kick{left:0;right:0;top:9.6%;text-align:center;font:800 2.9cqi/1 var(--font-display);letter-spacing:.24em;text-transform:uppercase;color:#fff3d0;text-shadow:0 1px 2px #000,0 0 8px #000}
+.ribbon{left:20%;right:20%;top:44.6%;height:6.4%;display:grid;place-items:center;font:700 7.4cqi/1 var(--font-story);color:#fff6e0;text-shadow:0 2px 0 #4a0d0d,0 0 6px #000a;letter-spacing:.02em}
+.tbox{left:15%;right:15%;top:59.5%;height:27%;display:flex;flex-direction:column;justify-content:center;gap:2cqi;text-align:center;color:#2a1c08}
+.badge{display:grid;place-items:center;text-align:center;font:800 5.4cqi/1 var(--font-display);color:#fff;text-shadow:0 0 3px #000,0 1px 0 #000,0 0 8px #000c}
+.badge.tl{left:3.2%;top:0.8%;width:14.8%;aspect-ratio:1}
+.badge.bl,.badge.br{bottom:4.2%;width:13%;aspect-ratio:1;gap:0;line-height:.9}
+.badge.bl{left:5.2%}.badge.br{right:5.2%}
+.badge svg{width:4.2cqi;height:4.2cqi;color:#ffd98a;display:block;margin:0 auto 1px}
+.badge b{font-size:5cqi}
+/* faces */
+.faces{display:grid;gap:1.8cqi}.faces.d6{grid-template-columns:repeat(3,1fr)}.faces.d10{grid-template-columns:repeat(5,1fr);gap:1.5cqi}
+.fc{height:12.6cqi;border-radius:2cqi;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3cqi;font:800 6cqi/1 var(--font-display);box-shadow:inset 0 1px 0 #fff3,0 2px 3px #0006}
+.d10 .fc{height:12.4cqi;font-size:5.4cqi}
+.fc.r{background:linear-gradient(180deg,#4a161d,#2e0c12);border:1.5px solid #d0414b;color:#ffc0c0}
+.fc.b{background:linear-gradient(180deg,#143c5e,#0c2338);border:1.5px solid #3aa4ff;color:#cfeaff}
+.fc.z{opacity:.7}
+.fc i{display:flex;align-items:center;gap:.3cqi;font:800 3.4cqi var(--font-display);font-style:normal}
+.fc svg{width:3.4cqi;height:3.4cqi}.fc svg .p,.legend svg .p,.badge svg .p{fill:currentColor}
+.t-pierce{color:#ff9a2e}.t-magic{color:#cf9bff}
+.under{width:min(340px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px}
+.legend{margin:0;display:flex;justify-content:center;flex-wrap:wrap;gap:2px 12px;font-size:.8rem;color:#d8cbb0}
+.legend b{display:inline-flex;align-items:center;gap:4px;font-weight:600}.legend svg{width:12px;height:12px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px}.sw.r{background:#d0414b}.sw.b{background:#3aa4ff}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts .btn{height:54px;line-height:1.1}.acts .btn small{display:block;font-size:.72rem;letter-spacing:.04em;text-transform:none;opacity:.85}
+.caption{margin:0;text-align:center;font-size:.85rem;color:#d8cbb0}
+/* objective frame geometry */
+.o .tc-win{left:18.4%;top:7.6%;width:63.2%;height:38.6%;border-radius:50%}
+.o .tc-win img{height:80%;left:50%;top:9%;transform:translateX(-50%)}
+.o .ribbon{top:46.6%}
+.o .tbox{top:61%;height:29%;gap:2.2cqi}
+.nogo{left:28%;top:14%;width:44%;aspect-ratio:1;border-radius:50%;border:2.4cqi solid #c8202acc;box-shadow:0 0 0 1px #fff6,0 0 12px #000a}
+.nogo::after{content:'';position:absolute;left:50%;top:-4%;width:2.4cqi;height:108%;background:#c8202acc;transform:translateX(-50%) rotate(45deg)}
+.okind{font:800 3cqi var(--font-display);letter-spacing:.24em;text-transform:uppercase;color:#8a2a1a}
+.orule{margin:0;font:700 4.8cqi/1.25 var(--font-body);color:#2a1404}
+.stk{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.6cqi}
+.stk div{border-radius:2cqi;padding:1.6cqi 0;background:#fffaebcc;border:1px solid #78460a59}
+.stk small{display:block;font:700 2.5cqi var(--font-display);letter-spacing:.1em;text-transform:uppercase;color:#7a4a12}
+.stk b{font:800 5.6cqi var(--font-display);color:#2a1404}.stk .net{background:#d9ecc8cc;border-color:#3b7a33aa}.stk .net b{color:#245a1e}
+/* back */
+.wm{left:0;right:0;bottom:12%;text-align:center;font:400 6.4cqi/1 'Archivo Black',var(--font-display);letter-spacing:.14em;color:#f3d9a0;text-shadow:0 2px 0 #3a2208,0 0 10px #000c}
+.w .tc-win img{height:72%;top:15%;left:50%}
+.tc-win{background:repeating-conic-gradient(from 0deg at 50% 70%,#ffe3a010 0 4deg,transparent 4deg 13deg),radial-gradient(55% 60% at 50% 62%,#f3cf8a 0%,#a8682a 34%,#3c2210 70%,#140b06 100%)}
+.nogo{left:22%;top:20%;width:56%;border-width:2cqi;border-color:#c8202ab3}.nogo::after{width:2cqi;background:#c8202ab3}
+.wm{bottom:9.4%}

@@ -1,4 +1,4 @@
-# T11 (Art): physical-card family, CONCEPT
+# T11 (Art): physical-card family, CONCEPT (rev 2: painted TCG layers)
 
 **Owner:** Art director (Grokbot) · **Status:** REVIEW · Docs only. Built on T10 (PR #36, `shared.css`). No runtime, rules, inventory or save changes.
 
@@ -13,6 +13,29 @@ One card family covers weapons, objective fronts and the objective back. It uses
 
 `node shoot-cards.mjs` re-renders everything. It uses Playwright 1.x, with headless Chrome and Playwright WebKit as a rough stand-in for Safari. Not tested on a physical iPhone.
 
+
+## Rev 2 (Dave: "Make a great looking card"): painted layers
+The flat CSS frame is replaced by painted, text-free art layers in `art/`. Each was generated, keyed and checked on magenta. All names, numbers, die faces and badges are still live HTML (`tcg.css`). `cards.css` was removed.
+
+| File | Size | What | Background removal |
+|---|---|---|---|
+| `art/frame-weapon.webp` | 720x960, 157 KB | Bevelled bronze/gold frame, arched art window, empty red name ribbon, parchment box, sapphire top-left socket (die size), ruby top-right, two bronze medallions at the bottom (battles left, sell value) | Chroma-green window and outer black keyed to alpha, green despilled |
+| `art/frame-objective.webp` | 720x960, 172 KB | Same family: circular medallion window, ribbon, tall parchment, two rubies, bottom rosettes | Same as above |
+| `art/card-back.webp` | 720x960, 198 KB | Blue tooled-leather back: gold shield holding an ivory d6 (five pips), ruby above, sapphire corners. No occult imagery | Outer black keyed. One stray pip mark on the die's top edge painted out |
+| `art/sword-silver.webp` | 719x720, 60 KB | Silver Sword item art in the minis' painted style (silver blade, sapphire pommel) | rembg with alpha matting, cropped to the object |
+| `art/potion.webp` | 482x640, 84 KB | Red healing potion for "No potions" | rembg with alpha matting |
+
+Generated but not kept: a blue-ribbon walnut frame variant (weaker metalwork), and a first card back (its die showed an impossible pip count).
+
+**Layer stack (bottom to top):**
+1. `.tc-win`, clipped to the window: a CSS spotlight and sunburst with the object art (sword or potion).
+2. `.tc-frame`: the painted frame, with its window transparent.
+3. Live HTML on top: kicker (metal and hands), ribbon name, sapphire die-size badge, the die faces from `weaponFaces()` in the parchment, and the hourglass battles-left and coin sell-value medallions. On the objective: kind, rule, and three stake tiles. A CSS prohibition ring sits over the potion.
+
+The legend, caption and Take/Sell or Bet/Decline buttons sit below the card. Positions are percentages of the frame, and type uses `cqi`, so text scales with the card, never below phone-readable size. At 375x548 the page scrolls (`*_full.png`). Nothing is cut off.
+
+**For integration:** ship the five WebP files under `assets/cards/`. Weapon art for other weapons needs one painted item image each, the same treatment as `sword-silver.webp`. Metal variants (Bronze, Gold) can be a CSS tint or separate paints. Total art weight is about 670 KB, so a smaller export is advisable before the files go live.
+
 ## Facts from code (main, 23 Oct)
 - Weapon faces come from `weaponFaces(makeWeapon('sword', 1, rng, size))` in js/engine.js:101. They follow the `balanced` row of `WEAPON_DICE` in js/data.js and get Silver icons from `metalIcons` (engine.js). The faces were printed by running the engine, not typed by hand.
   - d6: R0 · R2 · B3 · R4 · R5+magic1 · R6+pierce2
@@ -23,7 +46,7 @@ One card family covers weapons, objective fronts and the objective back. It uses
 - Icons are the pierce and magic paths from js/g3/hudkit.js. Colours are the red/blue face tiles from the camp face preview, pierce #ff8a1a and magic purple. A blank shows its colour (a red 0).
 
 ## Reusable assets
-- Weapon art: the existing Sword portrait. The mockup crops docs/screens/weapon-workshop/forge.webp with CSS. In the game, use `js/g3/portrait.js`, which already renders weapon PNGs at runtime. That gives the correct metal tint; the crop shows the Bronze render.
+- Weapon art: rev 2 uses the painted `art/sword-silver.webp`. The rev 1 crop of the camp screenshot is gone. `js/g3/portrait.js` remains the fallback for weapons that do not have a painted image yet.
 - Frame, parchment and gold CTA come from shared.css (T10) and css/screens.css `.obj-card`. Fonts are already loaded by index.html.
 
 ## New assets
