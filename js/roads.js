@@ -234,8 +234,8 @@ function moment({ id, stat, title, tell, go, won, lost, prize }) {
     choices: [{
       id: 'go', test: true, contest: true, label: () => go,
       hint: (ctx) => (ctx.members.length > 1 ? `Everyone rolls their ${DIE_WORD[stat]}. Best roll: ${prizeWords(ctx, prize)}.` : `${oddsLine(ctx.members, stat, ctx.act)} · win: ${prizeWords(ctx, prize)}`),
-      win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return `${won(ctx, r.who)} (${roll2(r)}) ${r.who}: ${p}.`; },
-      lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return `${lost(ctx, r.who)} (${roll2(r)}) No bonus this time, but a good story.`; },
+      win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return `${won(ctx, r.who)} ${r.who}: ${p}.`; },
+      lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return `${lost(ctx, r.who)} No bonus this time.`; },
       contest: (ctx, rows, winners) => { const p = givePrize(ctx, winners, prize); note(ctx, title, `${winners.join(' and ')} won it.`);
         const line = winners.length > 1 ? `A tie between ${joinNames(winners.map((name) => ({ name })))}, so ${winners.length === 2 ? 'both' : 'all'} win.` : won(ctx, winners[0]);
         return `${rows.map((x) => `${x.name} ${x.total}`).join(' · ')}. ${line} ${joinNames(winners.map((name) => ({ name })))}: ${p}.`; },
@@ -390,7 +390,7 @@ export function rematchTrial(hero, members) {
   const r = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choice.id}`, attempt: 1 });
   const stake = c.road.trial.stake || 0;
   let text;
-  if (r.win) text = choice.win(ctx, r); else text = `A rematch, ${roll2(r)}. No luck this time either. Some days the dice have other plans.`;
+  if (r.win) text = choice.win(ctx, r); else text = 'The rematch goes the same way. No luck this time.';
   c.road.trial = { ...r, choiceId: choice.id, stake, rematched: true };
   return { title: ev.title, text, trial: { ...r, foe: ev.foe, stake, canRematch: false, rematchCost: info.cost } };
 }
@@ -406,7 +406,7 @@ function givePotion(ctx, name) {
   if (have < max) { m.potions = have + 1; return `${m.name} tucks a healing potion into the belt.`; }
   const g = gp(ctx.act, 10); grantCompany([m], g); return `${m.name}’s belt is already full, so the gift becomes ${g} gold instead.`;
 }
-const roll2 = (r) => `${r.heroTotal} against ${r.oppTotal}`;
+// The roll itself is shown once on the result card (scrui.js roadResult), so the story lines never recite it (T09).
 
 const statWord = { wisdom: 'head', strength: 'hands', speed: 'feet' };
 void statWord;
@@ -417,8 +417,8 @@ export const TRIALS = [
     tell: (ctx) => `A troll sits on a bridge with a riddle and a club. "Answer right, I tell you where monsters are soft. Answer wrong, I use the club. Gently. Mostly." ${someone(ctx, 'troll')} cracks their knuckles, which does not help with riddles.`,
     choices: [
       { id: 'answer', test: true, label: () => 'Answer the riddle', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { const n = by(ctx, PIERCE); bless(ctx, { id: 'troll', name: 'The troll’s secret', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Riddling Troll', `${r.who} out-riddled a troll.`); return `"An echo!" says ${r.who}, ${roll2(r)}. The troll sulks, then whispers where monsters are soft. Next fight: +${n} pierce every round.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'club', name: 'Clubbed, gently', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Riddling Troll', `${r.who} lost a riddle and met the club.`); return `Wrong, ${roll2(r)}. The club is gentle-ish. Next fight, ${r.who} starts ${w} health down.`; } },
+        win: (ctx, r) => { const n = by(ctx, PIERCE); bless(ctx, { id: 'troll', name: 'The troll’s secret', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Riddling Troll', `${r.who} out-riddled a troll.`); return `"An echo!" The troll sulks and whispers where monsters are soft. Next fight: +${n} pierce every round.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'club', name: 'Clubbed, gently', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Riddling Troll', `${r.who} lost a riddle and met the club.`); return `Wrong answer. The club is gentle-ish. Next fight: ${r.who} starts ${w} health down.`; } },
       { id: 'around', label: () => 'Wade the river instead', hint: () => 'No test. Wet socks.', apply: (ctx) => { note(ctx, 'The Riddling Troll', 'Waded the river.'); return 'The river is cold and full of opinions. The troll shouts the answer after you anyway. It was "an echo".'; } },
     ],
   },
@@ -427,8 +427,8 @@ export const TRIALS = [
     tell: (ctx) => `A ring of mushrooms. Some heal. Some make you hear colours. ${someone(ctx, 'shroom')} is sure they know which is which. ${someone(ctx, 'shroom')} is usually sure.`,
     choices: [
       { id: 'forage', test: true, label: () => 'Pick the good ones', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { const t = potionsAll(ctx); note(ctx, 'Which Mushroom?', `${r.who} picked the good mushrooms.`); return `${r.who} picks well, ${roll2(r)}, and brews them up. ${t}`; },
-        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'shroom', name: 'The wrong mushroom', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Which Mushroom?', `${r.who} ate the wrong one.`); return `${r.who} eats the wrong one, ${roll2(r)}, and hears purple. Next fight, ${r.who} loses ${s} health every round, and hiccups.`; } },
+        win: (ctx, r) => { const t = potionsAll(ctx); note(ctx, 'Which Mushroom?', `${r.who} picked the good mushrooms.`); return `${r.who} picks the good ones and brews them up. ${t}`; },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'shroom', name: 'The wrong mushroom', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Which Mushroom?', `${r.who} ate the wrong one.`); return `${r.who} eats the wrong one and hears purple. Next fight: ${r.who} loses ${s} health every round.`; } },
       { id: 'leave', label: () => 'Leave the mushrooms alone', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Which Mushroom?', 'Left the mushrooms.'); return 'Wise. Probably. The mushrooms look disappointed, which is its own warning.'; } },
     ],
   },
@@ -438,8 +438,8 @@ export const TRIALS = [
     tell: (ctx) => `A rope across a muddy ditch. On the far side, goblins jeer. "Pull us over and we run off. Lose, and we follow you to your next fight." ${someone(ctx, 'tug')} looks at the mud. The mud looks back.`,
     choices: [
       { id: 'pull', test: true, label: () => 'Grab the rope and pull', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave! ${r.who} drags the whole band face-first into the mud, ${roll2(r)}. Your blood is up: round 1 of the next fight, +${n} attack.`; },
-        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins, ${roll2(r)}, and ${r.who} slides into the ditch. A delighted goblin follows you to the next fight and joins in.`; } },
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave! The goblins go face-first into the mud. Next fight: +${n} attack in round 1.`; },
+        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins and ${r.who} slides into the ditch. Next fight: a delighted goblin joins in.`; } },
       { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return 'Snip. Three goblins sit down very suddenly. They do not follow; they are arguing about whose fault it was.'; } },
     ],
   },
@@ -448,8 +448,8 @@ export const TRIALS = [
     tell: () => 'A farmer’s cart is stuck to the axles. "Push it out and you can borrow my late husband’s shield," she says. "He won’t need it. He is in the cart, also stuck, eating a pie."',
     choices: [
       { id: 'push', test: true, label: () => 'Put your shoulders into it', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'cart', name: 'A borrowed shield', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Stuck Cart', `${r.who} pushed a cart out of the mud.`); return `Squelch, pop! Out it comes, ${roll2(r)}. The husband waves his pie. Round 1 of the next fight: +${n} block from his shield.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'strain', name: 'Pulled something', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Stuck Cart', `${r.who} pulled something.`); return `The cart wins, ${roll2(r)}. ${r.who} pulls something important. Next fight, ${r.who} starts ${w} health down.`; } },
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'cart', name: 'A borrowed shield', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Stuck Cart', `${r.who} pushed a cart out of the mud.`); return `Squelch, pop! Out it comes. Next fight: +${n} block in round 1, from his shield.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'strain', name: 'Pulled something', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Stuck Cart', `${r.who} pulled something.`); return `The cart wins and ${r.who} pulls something important. Next fight: ${r.who} starts ${w} health down.`; } },
       { id: 'leave', label: () => 'Wish them luck and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'The Stuck Cart', 'Walked past a stuck cart.'); return '"Lovely," says the husband, through pie. You do not look back. You hear him eat the whole thing.'; } },
     ],
   },
@@ -459,8 +459,8 @@ export const TRIALS = [
     tell: (ctx) => `A prize chicken has escaped. "Catch Duchess and you can borrow my racing boots!" cries the owner. Duchess looks at ${someone(ctx, 'hen')} and smirks, which chickens should not be able to do.`,
     choices: [
       { id: 'chase', test: true, label: () => 'Chase the chicken', hint: (c) => oddsLine(c.members, 'speed', c.act),
-        win: (ctx, r) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'racing', name: 'Racing boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'Catch That Chicken!', `${r.who} caught Duchess.`); return `${r.who} dives, ${roll2(r)}, and comes up holding an outraged chicken. The racing boots are yours for a fight: your feet roll a d${n}.`; },
-        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'feathers', name: 'Feathers up the nose', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Catch That Chicken!', `${r.who} lost to a chicken.`); return `Duchess wins, ${roll2(r)}. ${r.who} gets a nose full of feathers and cannot stop sneezing. Next fight, ${r.who} loses ${s} health every round.`; } },
+        win: (ctx, r) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'racing', name: 'Racing boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'Catch That Chicken!', `${r.who} caught Duchess.`); return `${r.who} dives and comes up holding an outraged chicken. Next fight: racing boots, your feet roll a d${n}.`; },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'feathers', name: 'Feathers up the nose', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Catch That Chicken!', `${r.who} lost to a chicken.`); return `Duchess wins. ${r.who} gets a nose full of feathers. Next fight: ${r.who} loses ${s} health every round.`; } },
       { id: 'leave', label: () => 'Let Duchess live free', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Catch That Chicken!', 'Let the chicken go.'); return 'Duchess struts off into the sunset. Somewhere, a fox reconsiders its life choices.'; } },
     ],
   },
@@ -469,8 +469,8 @@ export const TRIALS = [
     tell: (ctx) => `A rumble, then the hillside starts to move. ${joinNames(ctx.members)} can run for the cave ahead, which glows faintly, or go back the long way round.`,
     choices: [
       { id: 'run', test: true, label: () => 'Run for the glowing cave', hint: (c) => oddsLine(c.members, 'speed', c.act, true),
-        win: (ctx, r) => { const n = by(ctx, MAGIC); bless(ctx, { id: 'moss', name: 'Glowing moss', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'Rockslide!', `${r.who} outran a rockslide.`); return `${r.who} makes it, ${roll2(r)}, into a cave full of glowing moss that tingles. Next fight: start with ${n} more magic.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'pebbles', name: 'Bruised by rocks', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'Rockslide!', 'Caught by a rockslide.'); return `Too slow, ${roll2(r)}. Nobody is squashed, but everybody is bruised. Next fight starts ${w} health down.`; } },
+        win: (ctx, r) => { const n = by(ctx, MAGIC); bless(ctx, { id: 'moss', name: 'Glowing moss', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'Rockslide!', `${r.who} outran a rockslide.`); return `${r.who} makes it into a cave of glowing moss. Next fight: start with ${n} more magic.`; },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'pebbles', name: 'Bruised by rocks', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'Rockslide!', 'Caught by a rockslide.'); return `Too slow. Nobody is squashed, everybody is bruised. Next fight: start ${w} health down.`; } },
       { id: 'back', label: () => 'Go back the long way', hint: () => 'No test. It takes all afternoon.', apply: (ctx) => { note(ctx, 'Rockslide!', 'Took the long way round.'); return 'It takes all afternoon, and the cave was probably lovely. You will never know.'; } },
     ],
   },

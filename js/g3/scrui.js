@@ -772,7 +772,7 @@ export function roadResult(res, o = {}) {
   const hero = X.S.hero || X.members()[0];
   mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      X.partyBar?.(), storyCard(o.kicker || 'The road answers', res.title, res.text), o.note ? h('p', { class: 'fine center' }, o.note) : null, o.extra || null, h('div', { class: 'sx-cta' }, btn(o.label || 'Onward', o.onward || X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide', disabled: !!o.disabled })))));
+      X.partyBar?.(), storyCard(o.kicker || (res.trial ? `${res.trial.win ? 'Won' : 'Lost'} · ${res.trial.heroTotal} to ${res.trial.oppTotal}` : 'The road answers'), res.title, res.text), /* a test shows its roll once, up top (T09) */ o.note ? h('p', { class: 'fine center' }, o.note) : null, o.extra || null, h('div', { class: 'sx-cta' }, btn(o.label || 'Onward', o.onward || X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide', disabled: !!o.disabled })))));
   lay('road');
 }
 
