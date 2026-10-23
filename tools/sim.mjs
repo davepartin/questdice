@@ -9,10 +9,13 @@ import {
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
 import * as DATA from '../js/data.js';
+import * as RELEASE_MOD from '../js/release.js';
 if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // the weapons experiment (docs/ideas/WEAPONS_REDESIGN_2026-10-22.md)
 // CLASSID=1 the class-identity experiment (CLASS2 in js/data.js): Bard Verse for a friend, Knight Guard, Dwarf Dig In; CLASSID=verse,songs,guard,digIn for some of them
 if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON(); const w = process.env.CLASSID.split(','); if (w[0] !== '1') { ENGINE.CLASS2.songs = w.includes('songs'); ENGINE.CLASS2.verse = w.includes('verse'); ENGINE.CLASS2.guard = w.includes('guard'); if (!w.includes('digIn')) ENGINE.CLASS2.digIn = 0; } }
 if (typeof process !== 'undefined' && process.env.ARROW_NUM) DATA.WEAPONS2.faces.quiver.special = DATA.WEAPONS2.faces.quiver.numbered; // arrowheads that keep a number
+// RELEASE=1: the rules the live game plays (js/release.js)
+if (typeof process !== 'undefined' && process.env.RELEASE) RELEASE_MOD.applyRelease();
 // the teamwork pass (TEAMWORK in js/data.js): H2H=1 Heart to Heart instead of Heartbeat; NOCHARM=1 charms resting; TEAMWORK=1 both
 if (typeof process !== 'undefined') { const env = process.env; if (env.H2H || env.TEAMWORK) DATA.TEAMWORK.heartToHeart = true; if (env.NOCHARM || env.TEAMWORK) DATA.TEAMWORK.noCharms = true; }
 if (typeof process !== 'undefined' && process.env.ARROW_V2) Object.assign(DATA.WEAPONS2.arrowRules, { pierce: 'all', frost: 'strength' });

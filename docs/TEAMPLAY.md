@@ -18,10 +18,10 @@ Weapons and Strength give +10 attack; Head to Toe gives +10 block.
 - **Team Strength Attack +10** each, when they hit the same monster.
 - **Team Head to Toe Block +10** each.
 
-**Heartbeat (automatic, the live game today).** If every hero's heart die shows the same face, each hero gains magic equal to
+**Heartbeat (retired 23 Oct 2026; the rule before Heart to Heart, still behind the switch for the tools).** If every hero's heart die shows the same face, each hero gains magic equal to
 the number of heroes (2 in a two-hero game, 6 in a six-hero game).
 
-**Heart to Heart (replaces Heartbeat; approved 22 Oct 2026, in the lab preview until Dave releases it; `TEAMWORK.heartToHeart`).**
+**Heart to Heart (replaces Heartbeat; approved 22 Oct, released to everyone 23 Oct 2026; `TEAMWORK.heartToHeart`, turned on in js/release.js).**
 Two or more heroes whose heart dice show the same number and who hit the same monster each get **+10 attack** that round.
 - It is worked out once, before anyone strikes, from the boards and targets the heroes locked in. Only heroes acting that
   round count (standing, with dice). A downed hero never counts; a hero who falls during the round keeps the bonus it already had.

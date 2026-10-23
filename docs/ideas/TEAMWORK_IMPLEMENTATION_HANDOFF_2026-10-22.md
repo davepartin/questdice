@@ -270,3 +270,10 @@ switching it on in the live game (Dave's decision).
 
 **Next step:** Checkpoint 5 (running): the teamwork evaluation, the Bard team measurement, the class kits and magic styles on
 the consistent baseline (today's weapons, fury from round 4, charms resting).
+
+### Release 1 (23 Oct 2026): the four approved changes for everyone
+Dave approved releasing the four approved changes and also "everything". js/release.js now turns on, for every player:
+Heart to Heart, heart faces and Ready, charms resting, perk previews (checked in the live game: `node dev/livecheck.mjs`).
+The weapons experiment, arrows, fury and class rules follow in release 2, after two gaps found while preparing it are closed:
+(1) stage-1 weapons roll the same at every metal, so Silver and Gold would be worth nothing (the planned metal abilities were
+never built); (2) old two-handed Bows must become the new Arrows + Bow pair. Then a full-campaign measurement with everything on.
