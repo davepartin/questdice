@@ -1,0 +1,38 @@
+QuestDice matchups · Act II heroes, every class · Bronze loadouts · today's weapons · encset
+Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.
+
+Wise player
+loadout            heavy                 swarm3                swarm4                summoner              guard                 
+Normal arrows + Bow 10.3  · 4.3r · 100%   49.3  · 4.4r · 73%    70.7  · 3.9r · 43%    35.6  · 8.0r · 81%    15.8  · 6.6r · 100%   
+Piercing arrows + Bow 8.8  · 4.1r · 100%    48.0  · 4.3r · 75%    71.3  · 3.7r · 39%    33.0  · 7.7r · 88%    18.0  · 6.0r · 100%   
+Fire arrows + Bow  9.1  · 4.1r · 100%    49.4  · 4.2r · 75%    69.7  · 3.6r · 42%    32.1  · 7.6r · 87%    16.9  · 6.2r · 100%   
+Frost arrows + Bow 7.3  · 4.2r · 100%    47.6  · 4.5r · 77%    69.7  · 3.8r · 43%    28.7  · 8.0r · 89%    12.5  · 6.2r · 100%   
+Sword + Shield     5.3* · 4.8r · 100%    43.1* · 5.3r · 78%    66.5* · 4.5r · 48%    28.3* · 10.3r · 89%   8.5* · 7.5r · 100%    
+Dagger + Sword     9.8  · 4.1r · 100%    48.3  · 4.4r · 76%    70.8  · 3.7r · 45%    32.8  · 8.1r · 89%    16.2  · 6.2r · 99%    
+
+Greedy player (always chases attack)
+loadout            heavy                 swarm3                swarm4                summoner              guard                 
+Normal arrows + Bow 24.9  · 3.9r · 99%    68.2  · 3.3r · 50%    85.1  · 2.6r · 18%    53.9  · 6.1r · 64%    37.1  · 5.4r · 91%    
+Piercing arrows + Bow 20.9  · 3.7r · 100%   65.8  · 3.4r · 54%    84.9  · 2.8r · 21%    51.8  · 6.0r · 67%    38.7  · 5.2r · 93%    
+Fire arrows + Bow  20.9  · 3.7r · 100%   65.1* · 3.3r · 56%    84.3  · 2.7r · 22%    51.6  · 6.0r · 67%    38.9  · 5.2r · 93%    
+Frost arrows + Bow 17.7* · 3.7r · 100%   65.4  · 3.4r · 55%    84.6  · 2.9r · 23%    47.7* · 6.4r · 71%    32.4  · 5.3r · 97%    
+Sword + Shield     20.3  · 4.3r · 100%   67.6  · 3.6r · 50%    84.1* · 2.8r · 19%    51.9  · 7.1r · 68%    32.2* · 6.2r · 98%    
+Dagger + Sword     25.1  · 3.9r · 99%    66.5  · 3.3r · 58%    84.3  · 2.7r · 20%    53.4  · 6.0r · 68%    39.4  · 5.5r · 94%    
+
+Wise player: health a fight ± its standard error · wins · unfinished · fights measured
+loadout            heavy                     swarm3                    swarm4                    summoner                  guard                     
+Normal arrows + Bow 10.3±1.0 100% u0% n160    49.3±2.5 73% u0% n160     70.7±2.1 43% u0% n160     35.6±2.5 81% u0% n160     15.8±1.3 100% u0% n160    
+Piercing arrows + Bow 8.8±1.0 100% u0% n160     48.0±2.4 75% u0% n160     71.3±2.0 39% u0% n160     33.0±2.3 88% u0% n160     18.0±1.3 100% u0% n160    
+Fire arrows + Bow  9.1±1.0 100% u0% n160     49.4±2.4 75% u0% n160     69.7±2.1 42% u0% n160     32.1±2.4 87% u0% n160     16.9±1.2 100% u0% n160    
+Frost arrows + Bow 7.3±0.8 100% u0% n160     47.6±2.4 77% u0% n160     69.7±2.0 43% u0% n160     28.7±2.3 89% u0% n160     12.5±1.0 100% u0% n160    
+Sword + Shield     5.3±0.6 100% u0% n160     43.1±2.5 78% u0% n160     66.5±2.1 48% u0% n160     28.3±2.2 89% u0% n160     8.5±0.9 100% u0% n160     
+Dagger + Sword     9.8±1.1 100% u0% n160     48.3±2.4 76% u0% n160     70.8±2.0 45% u0% n160     32.8±2.3 89% u0% n160     16.2±1.4 99% u0% n160     
+
+What thinking is worth: health saved by the wise player over the greedy one, same loadout and fight
+loadout            heavy     swarm3    swarm4    summoner  guard     
+Normal arrows + Bow +14.6     +18.8     +14.3     +18.3     +21.3     
+Piercing arrows + Bow +12.1     +17.8     +13.6     +18.8     +20.8     
+Fire arrows + Bow  +11.8     +15.7     +14.6     +19.6     +22.0     
+Frost arrows + Bow +10.4     +17.8     +15.0     +19.0     +20.0     
+Sword + Shield     +14.9     +24.5     +17.6     +23.6     +23.7     
+Dagger + Sword     +15.4     +18.2     +13.5     +20.6     +23.3     
