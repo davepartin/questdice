@@ -1,0 +1,15 @@
+Solo burst damage and sudden deaths · released rules · smart player · Acts I–III
+One-round damage is what the hero lost that round (after block) as a share of maximum health. A sudden death: dying in a round begun at 60% health or more.
+
+group              fights  won 1st  falls  rounds potions │ round damage: median  90%   99%   max  ≥30%  ≥50%  ≥60% │ sudden deaths (per 100 fights)  unlucky avoidable risky unavoidable
+hard knight           119      88%     21     7.4    1.17 │                 11%   41%   67%   91%   22%    5%    2% │     1 (0.8)                 1         0     0           0
+normal knight         120      92%     15     6.5    0.93 │                 12%   43%   66%   88%   21%    6%    2% │     3 (2.5)                 3         0     0           0
+
+normal Act 1           40      93%      3     4.5    0.67 │                 12%   50%   85%   88%   28%   11%    4% │     2 (5.0)                 2         0     0           0
+normal Act 2           40      88%      6     6.6    1.13 │                 14%   43%   60%   74%   23%    6%    2% │     0 (0.0)                 0         0     0           0
+normal Act 3           40      95%      6     8.2    0.98 │                 10%   35%   62%   73%   16%    4%    1% │     1 (2.5)                 1         0     0           0
+hard Act 1             40      95%      2     5.0    0.88 │                 14%   48%   82%   91%   32%   10%    5% │     0 (0.0)                 0         0     0           0
+hard Act 2             40      88%      6     6.9    1.26 │                 10%   44%   69%   83%   22%    6%    3% │     1 (2.5)                 1         0     0           0
+hard Act 3             39      82%     13     9.8    1.31 │                 11%   37%   56%   72%   17%    3%    0% │     0 (0.0)                 0         0     0           0
+
+Sudden deaths: 4. Warned (a wind-up, breath, stalk or slam was showing, this round or the one before): 2. Potions still in the belt at the start of the fatal round: 3.
