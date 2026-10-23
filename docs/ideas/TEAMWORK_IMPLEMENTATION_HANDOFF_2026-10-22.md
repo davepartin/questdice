@@ -1,0 +1,179 @@
+# Implementation handoff: teamwork, simpler progression, arrows and classes
+Date: October 22, 2026
+Owner: Claude implements; ChatGPT reviews design and evidence; Dave directs and approves release.
+
+## Purpose
+Make Quest Dice feel like friends solving a shared battle: quick target calls, small partnerships, a hero choosing to take the heavier hit, and informed preparation at camp. Preserve a fast phone experience and the existing dice art.
+
+This plan records Dave's approved design decisions and separately identifies experimental recommendations. It authorizes implementation work in isolated development checkpoints. It does not authorize switching unfinished experiments on in production. Dave requested a plan and a prompt for Claude, not simultaneous code editing by ChatGPT.
+
+## Read first
+Read this handoff and the actual current implementation. Fetch current main and reconcile this documentation with your existing work branch without overwriting work.
+Read your saved reports on that work branch:
+- docs/balance/PRESSURE_ONE_AT_A_TIME_2026-10-22.md
+- docs/balance/ARROWS_2026-10-22.md
+- docs/ideas/CLASS_IDENTITY_2026-10-22.md
+Also read:
+- docs/ideas/WEAPONS_REDESIGN_2026-10-22.md
+- docs/ideas/CAMPAIGNS_AND_SECRET_OBJECTIVES_2026-10-22.md
+- docs/SECRET_OBJECTIVES.md
+- Relevant current rules in docs/DESIGN.md, docs/POWERS.md and multiplayer documentation.
+
+The three work-branch reports above were identified by Claude in Dave's pasted message. ChatGPT has not independently reviewed those report files or the two Bard options. Do not interpret this handoff as verification of their contents. If a report is missing, locate your actual checkpoint and record its branch/commit.
+
+## Approved decisions
+### 1. Heart to Heart replaces Heartbeat
+Remove the old all-hearts-match bonus magic rule, named Heartbeat. Keep the personal Heart Boost effect.
+
+New rule:
+Two or more active heroes showing the same heart number and targeting the same monster each gain +10 normal attack once per round.
+
+- Two matching heroes add 20 total; six add 60.
+- Award once per qualifying hero, never once per matching pair.
+- Multiple groups can qualify against separate monsters. Distinguish monsters by identity, even if two have the same species.
+- Matching hearts against different targets do not qualify.
+- Different matching heart groups on the same monster may each qualify.
+- Heart Change can intentionally create the match. This is part of the strategy.
+- Bonus is a fixed 10 per qualifying hero, not automatically the act-scaled triple amount.
+- Solo does not qualify.
+- Keep existing personal Heart Boost, including its color effects. Do not change it based on the earlier voice assistant's mistaken weapon-face explanation.
+- Use the existing attack/Guard pipeline. Do not introduce Pierce or a new shared damage pool.
+- Clarify in code/docs the eligibility of downed heroes and the exact resolution snapshot. Recommended: determine groups once from eligible heroes' final locked boards and targets before resolving attacks. No mid-resolution repeat awards.
+- Remove obsolete magic rewards and update explanations, recap, simulations and tests.
+- The term Heartbeat here refers to the old team rule, not the visual heartbeat animation for personal Heart Boost. Preserve the slowed personal animation.
+
+### 2. Shared heart face and Ready state
+Display the actual heart die face, including its existing color, symbol and number, beside or underneath each teammate's miniature. Dave prefers reusing the real face over inventing another icon.
+
+- During shaping, synchronize the latest settled heart face and chosen target.
+- When a player locks in, show the word "Ready". Before lock-in, make clear the heart can still change.
+- Target selection already feels responsive across phones. Reuse the existing network approach after inspecting it.
+- Share only the intended public preview fields; do not expose the whole private board, secret objective, or unrelated locked-roll details.
+- Public previews must not become authoritative combat input. Final locked submissions remain authoritative.
+- Clear/reset Ready and stale heart previews at the next round; account for late updates, reconnects and departed/downed players.
+- Recommended presentation: retain faces during resolution so the Heart to Heart explanation is visible, then refresh for the next round.
+- Ensure six-player layout remains readable on a phone. Reuse small existing assets or drawing code; avoid six new animated 3D scenes.
+- Show clear bonus feedback without requiring everyone to open a detailed panel.
+
+### 3. Suspend charms
+Dave superseded the proposed Ember Locket adjustment by choosing to remove charms for now.
+
+- No active charm effects, including already-owned charms.
+- No charm loot, shop offers, choices, rewards, or acquisition prompts.
+- Audit indirect effects: starting resources, caps, combat, rerolls, pricing, drops, simulations and derived values.
+- Preserve saved ownership data for possible future restoration. Do not corrupt saves or silently convert old charms into new mechanics.
+- Hide inactive charm management from the normal flow; explain inactivity where needed for old saves.
+- Remove or replace dangling charm-only choices in encounters and rewards using existing valid alternatives.
+- Keep perks and other progression systems.
+
+### 4. Keep eight perks and clarify them
+Verify the current active perk pool against the eight discussed in the review. Preserve current mechanics and limits for this pass.
+
+- Show exact effects, including "per red weapon" and "per blue weapon" where applicable.
+- Distinguish starting magic from magic capacity.
+- Show accurate hero-specific before/after values, such as starting magic 6 to 7 or capacity 15 to 17. These are examples, not values to hard-code.
+- For conditional bonuses, explain the condition rather than implying an unconditional total.
+- Keep gold-perk numbers and existing pick cap unchanged for now. Measure campaign growth before proposing a numeric change.
+- Derive previews from the same rules used by gameplay.
+
+## Experimental recommendations, not settled release rules
+### Arrows and Fire
+Claude's pasted final table measured health lost per fight under fury starting round 4:
+| Ammo | Big monster | Three goblins | Armored monster | Healer |
+| --- | ---: | ---: | ---: | ---: |
+| Normal | 11.6 | 47.3 | 22.6 | 11.5 |
+| Piercing | 9.8 | 47.9 | 20.4 | 11.7 |
+| Fire | 9.4 | 48.4 | 21.6 | 11.8 |
+| Frost | 7.7 | 47.7 | 17.0 | 9.3 |
+
+These are reported results, not independently reproduced here. Normal's 0.4-health advantage over Frost against goblins does not establish a reliable winner without variation estimates. Frost leads three matchups by this metric; assess wins, rounds and resource spending too.
+
+Recommended next Fire experiment: full printed arrow-hand Strength as splash to other enemies, with Guard still applying, instead of half Strength. Preserve Fire's crowd role and Piercing's armor role.
+- Keep the main-hit formula from the documented experimental system consistent while changing one splash variable.
+- Explicitly specify whether Heart Boost and talent multipliers affect the Strength used. Our earlier proposal used printed rolled Strength.
+- Test three enemies and larger groups, multiple archers, repeated summons and high Guard.
+- Do not silently make Fire ignore Guard.
+
+Reconcile rule drift before finalizing:
+- Earlier proposal: symbol-only specials replacing the lane's attack; Frost halves the next damaging attack.
+- Claude's later report: small arrowhead numbers retained; Piercing converts the whole hit; Frost reduces the next blow by hand Strength.
+Document the exact current formulas, timings, nonstacking rules and rationale. These later variants are not automatically settled merely because the experiment implements them. Identify the decision needed for the final phone-play version.
+
+### Classes and Bard
+Desired identities:
+| Class | Decision emphasis |
+| --- | --- |
+| Knight | Protection and flexible attack |
+| Ranger | Arrow outcomes, precision and target selection |
+| Wizard | Magic expenditure, burst and control |
+| Dwarf | Endurance and timing a counterattack |
+| Bard | Choosing which teammate to help and when |
+
+Claude recommends retaining Knight Guard, Dwarf Dig In and current Wizard rules, with Ranger identity from arrows. Read the actual class report before applying that recommendation.
+
+For Bard, ChatGPT favors a targeted support option that creates a choice of teammate and also works solo through self-targeting. Read Claude's two proposed options, compare their exact effects and numbers, and recommend one before treating it as approved. Do not add an unrelated third system just because this handoff mentions support.
+Measure effective healing, prevention and extra damage enabled. A Bard should be useful without being compulsory, and duplicate Bards should not produce uncontrolled scaling.
+Continue approved independent work while this choice is pending.
+
+### Monsters
+Fury from round 4 is Claude's experimental foundation. Swarm reinforcement belongs in named encounters according to the pasted report; healing and the move bag need play evaluation.
+Keep the exact status of each switch explicit. This handoff does not authorize universal new monster behavior or establish a final fury number.
+Include summoners in evaluations. Offensive value includes preventing future summons and attacks, not just damage per roll.
+
+## Teamwork and balance evaluation
+Use identical starting parties/resources and comparable seeded encounters. Avoid changing loadouts, classes and monster rules simultaneously when attributing a result.
+
+Compare:
+1. Coordinated focus on one target.
+2. Deliberate split attacks.
+3. Adaptive decisions based on the current board and enemy threats.
+
+Include mixed encounters: summoner, heavy windup attacker and injured weaker enemy. Also test solo/boss pacing and several small enemies.
+Include Heart to Heart in these comparisons, because it changes the incentive to focus.
+Keep existing offense/defense structure: heroes target monsters; monster attacks are distributed across the party under existing rules, with the slowest taking the heavier share. Do not introduce engagement-only retaliation.
+Test the defensive choice of keeping/rerolling low feet to take the heavier share with useful block. Verify actual timing and tie rules rather than assuming low speed delays the hero's action.
+
+Report:
+- Wins, defeats, unfinished fights and time/round limits.
+- Health lost, rounds, effective damage, effective block/healing and resources spent.
+- Summons allowed and dangerous attacks prevented.
+- Heart to Heart participation and how often coordination improves the outcome.
+- Class and party-size breakdowns, including duplicate classes.
+- Sample counts and uncertainty or variability, not just one-decimal means.
+- Representative rounds showing a decision that helped and a tempting decision that hurt.
+Bots must understand the options being tested. Label limits of simulated decision-making. These tests do not establish whether human table talk is fun; phone playtests are also needed.
+
+Magic evaluation after the baseline is consistent:
+- Favorite-power-only versus situational power selection.
+- Immediate spending versus selective saving.
+- Different targets for the same power.
+- Use current power costs/upgrades and the same initial resources.
+- Avoid attributing arrow damage or reroll-enabled weapon damage to spells without an explicit source rule.
+
+## Later campaign and secret-objective work
+Preserve the separate plan in CAMPAIGNS_AND_SECRET_OBJECTIVES_2026-10-22.md:
+- Hidden pairs, groups and occasional whole-table contests.
+- Gold, magic damage, triples, straights and selected least-stat goals.
+- Possession, resisting by rolling badly, rewards and rescue variants.
+These are later work. Do not bundle possession or a full secret-objective expansion into this implementation pass.
+
+## Delivery sequence
+1. Save current experimental work and report the branch/commit and switch state.
+2. Implement Heart to Heart with shared heart/Ready visuals as one coherent checkpoint.
+3. Suspend charms and verify old-save behavior.
+4. Clarify perk offers and before/after previews.
+5. Run the Fire comparison; review the actual Bard alternatives and reconcile arrow formulas.
+6. Evaluate mixed encounters, classes, arrows and magic against the resulting consistent baseline.
+7. Provide a phone-playable preview using separate saves, with a short list of what is enabled.
+8. Present results and remaining decisions to Dave before merging/deploying gameplay changes.
+
+Each checkpoint should be recoverable if the session runs out: update this plan with completed work, tests, branch/commit, outstanding decisions and next step. Keep screenshots for visible changes. Do not claim a feature is live until deployment is verified.
+
+## Essential checks
+- Heart groups: two, three and six heroes; multiple groups; mismatched targets; identical monster species; solo; downed hero; no old matching-heart magic.
+- Correct Guard application and no pairwise multiplication or duplicate awards.
+- Two-phone synchronization, Ready transitions, next-round resets and reconnects; secrets remain private.
+- Old saves with charms load and have no active charm effects or dangling acquisition screens.
+- Perk descriptions and previews match actual results, including caps.
+- Existing required tests plus targeted tests for changed behavior.
+- Human phone review for readability, pacing and the intended quick teamwork.
