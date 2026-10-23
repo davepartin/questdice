@@ -307,7 +307,7 @@ function teamRules() {
   const open = !B.teamRulesSeen; B.teamRulesSeen = true; // open the first time; a tap folds it away after that
   return h('details', { class: 'tm-rules', open }, h('summary', {}, HK.icon('star'), 'How teams work'),
     h('ul', {},
-      rule('windup', 'Who the monsters go after', 'The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share. A tie goes against the hero with more health; if that ties too, a coin flip.'),
+      rule('windup', 'Who the monsters go after', `The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share. A tie goes against the hero with more health; if that ties too, a coin flip.${D.CLASS2.on && D.CLASS2.guard ? ' A Knight who uses Shield Up steps in front and takes the double share instead.' : ''}`),
       rule('block', 'Hold the line', `If the monsters came at you and you are still standing at the end of the round: +${D.POINTS.heldLine} points. While you are the target, your blocks score double.`),
       rule('atk', 'Team triples', `When two heroes roll the same triple in the same round, each gets +${tri} more. Attack rows (Weapons, Strength, Talent) count when you hit the same monster; guard columns (Head to Toe, Left, Right) count any time.`),
       D.TEAMWORK.heartToHeart ? rule('heart', 'Heart to Heart', `Two or more of you showing the same heart number and hitting the same monster: each gets +${D.HEART_TO_HEART} attack. Turn your heart to make a match.`)
@@ -1247,8 +1247,8 @@ async function playParty(rep, outcome = B.b.outcome) {
     for (const x of rep.init.heroes) pcOf(x.name)?.num(`⚡ ${x.init}`, 'pierce');
     for (const x of rep.init.foes) foePc(x.uid)?.num(`⚡ ${x.init}`, 'hurt');
   }
-  // the slowest Feet draws the monsters (a tie: whoever has more health)
-  if (rep.leader && rep.fighters.filter((x) => !x.down).length > 1) banner(`MONSTERS TARGET ${rep.leader.toUpperCase()} · SLOWEST FEET`, 'bad');
+  // the slowest Feet draws the monsters (a tie: whoever has more health), unless a Knight with Shield Up stepped in front (Guard)
+  if (rep.leader && rep.fighters.filter((x) => !x.down).length > 1) banner(`MONSTERS TARGET ${rep.leader.toUpperCase()} · ${rep.leaderWhy === 'guard' ? 'SHIELD UP' : 'SLOWEST FEET'}`, rep.leaderWhy === 'guard' ? 'good' : 'bad');
   await wait(pace.intro);
   const snapNames = rep.fighters.filter((x) => !x.down).map((x) => x.name);
   const strikes = rep.strikes.map((s) => ({ ...s })); const acts = rep.acts.map((a) => ({ ...a }));

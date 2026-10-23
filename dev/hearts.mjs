@@ -26,10 +26,12 @@ for (let k = 0; k < N; k++) {
   await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.board.C.v = 3; window.QD.B3.renderShape?.(); }); await pump(0.5);
   if (k === N - 1) { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/hearts-${N}-shaping.png` }); }
   console.log('hero', k, await p.evaluate(() => [...document.querySelectorAll('.fb-heart')].map((t) => `${t.querySelector('img')?.alt}:${t.querySelector('small').textContent}${t.classList.contains('match') ? ':match' : ''}`).join(' | ')));
+  if (k === 0 && process.env.GUARD) console.log('Shield Up:', await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.magic = 9; return !!window.QD.E.castPower(B.b, 'shieldwall'); })); // GUARD=1: the Knight steps in front
   await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await pump(1.5); if (k < N - 1) await busy();
 }
-for (let i = 0; i < 12; i++) { await pump(0.4); const t = await p.evaluate(() => document.querySelector('.b3-banner, .hk-banner, [class*="banner"]')?.innerText || ''); if (/HEART TO HEART/.test(t)) { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/hearts-${N}-banner.png` }); console.log('banner:', t.replace(/\s+/g, ' ')); break; } }
+for (let i = 0; i < (process.env.GUARD ? 40 : 12); i++) { await pump(0.4); const t = await p.evaluate(() => [...document.querySelectorAll('.b3-banner, .hk-banner, [class*="banner"]')].map((e) => e.innerText).join(' | ')); if (process.env.GUARD && /MONSTERS TARGET/.test(t)) { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/guard-banner.png` }); console.log('banner:', t.replace(/\s+/g, ' ')); break; } if (!process.env.GUARD && /HEART TO HEART/.test(t)) { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/hearts-${N}-banner.png` }); console.log('banner:', t.replace(/\s+/g, ' ')); break; } }
 await busy();
+console.log('leader:', await p.evaluate(() => { const r = window.QD.S.battle.report || window.QD.B3.battleState.lastRep; return `${r?.leader} (${r?.leaderWhy})`; }));
 console.log('report hearts:', await p.evaluate(() => JSON.stringify(window.QD.S.battle.report?.hearts || window.QD.B3.battleState.lastRep?.hearts)));
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${out}/hearts-${N}-after.png` });
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no page errors'); await b.close();

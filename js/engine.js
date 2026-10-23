@@ -2034,9 +2034,10 @@ export function resolveParty(b) {
   const order = rankFighters(acting, b.rng); // who acts first
   const heat = heatRank(acting, b.rng);      // who the monsters go after
   // Guard: a Knight who used Shield Up this round steps in front and takes the double share
-  if (CLASS2.on && CLASS2.guard && heat.length > 1) { const k = heat.findIndex((r) => r.f.hero.cls === 'knight' && r.f.usedRound?.shieldwall); if (k > 0) heat.unshift(heat.splice(k, 1)[0]); }
+  let guard = false; // the round report says why the leader drew the monsters: the slowest feet, or a Knight stepping in front
+  if (CLASS2.on && CLASS2.guard && heat.length > 1) { const k = heat.findIndex((r) => r.f.hero.cls === 'knight' && r.f.usedRound?.shieldwall); if (k > 0) heat.unshift(heat.splice(k, 1)[0]); guard = k >= 0; }
   const rep = {
-    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], verses, heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
+    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', leaderWhy: guard ? 'guard' : 'feet', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], verses, heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };

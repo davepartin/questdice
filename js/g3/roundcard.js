@@ -144,7 +144,7 @@ function partyCard(rep, b) {
       shares.length > 1 ? h('div', { class: 'rc-sub' }, shares.map((s) => h('span', { class: 'rc-share' }, h('b', {}, s.who), s.net <= 0 ? ` blocked all ${s.p}` : s.net === s.p ? ` took ${s.net}` : ` took ${s.net} (blocked ${s.p - s.net})`))) : null));
   }
   const tail = [];
-  if (rep.leader && (rep.fighters || []).filter((x) => !x.down).length > 1) tail.push(h('span', { class: 'rc-chip lead' }, HK.icon('windup'), `${rep.leader} drew the monsters (slowest feet)`));
+  if (rep.leader && (rep.fighters || []).filter((x) => !x.down).length > 1) tail.push(h('span', { class: 'rc-chip lead' }, HK.icon('windup'), rep.leaderWhy === 'guard' ? `${rep.leader} stepped in front (Shield Up) and took the double share` : `${rep.leader} drew the monsters (slowest feet)`));
   const youBox = h('div', { class: 'rc-you party' }, (rep.fighters || []).map((f) => h('span', { class: `rc-pf${f.down ? ' out' : ''}` },
     h('b', {}, f.name), h('i', {}, f.down ? 'down' : `${f.taken ? `−${f.taken}` : '0'}${f.absorbed ? ` (${f.absorbed} blocked)` : ''}${f.healed ? ` +${f.healed}` : ''} → ${Math.max(0, Math.ceil(f.hpAfter))}`))));
   return { mine, theirs, tail, youBox };

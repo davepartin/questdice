@@ -35,9 +35,9 @@ function table(a, c, setup) {
 
 test('Guard: a Knight who uses Shield Up takes the double share, even when a friend is slower', () => {
   E.CLASS2_ON();
-  const run = (guard) => { CLASS2.guard = guard; const b = table(hero('knight', 'Kay'), hero('wizard', 'Wil'), (bb) => { bb._cast = (x) => { x.fighters[0].magic = 9; assert.ok(E.castPower(x.fighters[0], 'shieldwall') || E.castPower(x, 'shieldwall')); }; }); return b.report.leader; };
-  assert.equal(run(false), 'Wil', 'without Guard the slower feet (1) draw the blows');
-  assert.equal(run(true), 'Kay', 'with Guard the Knight steps in front');
+  const run = (guard) => { CLASS2.guard = guard; const b = table(hero('knight', 'Kay'), hero('wizard', 'Wil'), (bb) => { bb._cast = (x) => { x.fighters[0].magic = 9; assert.ok(E.castPower(x.fighters[0], 'shieldwall') || E.castPower(x, 'shieldwall')); }; }); return [b.report.leader, b.report.leaderWhy].join(' '); };
+  assert.equal(run(false), 'Wil feet', 'without Guard the slower feet (1) draw the blows');
+  assert.equal(run(true), 'Kay guard', 'with Guard the Knight steps in front, and the report says why (the banner reads SHIELD UP)');
 });
 
 test('Songs carry: a Bard\'s healing power lands on the most hurt hero at the table', () => {
