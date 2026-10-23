@@ -322,4 +322,5 @@ a { color: var(--shield); }
 .chrome #home, .chrome #help, .chrome #mute { display: none !important; }
 /* ?lab (js/lab.js): the weapons experiment is on and its heroes are kept apart. Small, out of the way, always visible. */
 .lab-tag { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 1px); transform: translateX(-50%); z-index: 95; pointer-events: none;
+.lab-tag + .lab-tag { top: calc(env(safe-area-inset-top, 0px) + 1.45rem); } /* the lab and the replay preview together */
   font: 700 0.56rem/1 var(--font-display, sans-serif); letter-spacing: 0.08em; color: #1a1206; background: #ffcf4a; padding: 2px 6px; border-radius: 0 0 6px 6px; opacity: 0.85; }

@@ -35,9 +35,13 @@ const easeIO = (k) => (k < 0.5 ? 2 * k * k : 1 - ((-2 * k + 2) ** 2) / 2);
 // round is paced to about 15–20 seconds so each hero's strike, then each monster's answer, is readable.
 export const WAIT_SCALE = 0.5;
 const ANIM_BEAT = 0.85; // typical lunge + hit; remaining time is a pause so initiative order is clear
+// The replay-pace preview (?pace=actions, Oct 2026): every strike gets the same short beat, so a small round is short and a big one
+// longer, instead of every round filling 15–19 seconds. Off in the game until Dave has tried it on his phone.
+export const PACE = { actions: false };
 export function replayPace(n, { reduced: still = false, target = 17 } = {}) {
   const actors = Math.max(1, n | 0);
   if (still) return { intro: 0.35, gap: 0.15, close: 0.25, beat: 0.5 };
+  if (PACE.actions) return { intro: 1.0, gap: 0.6, close: 0.5, beat: ANIM_BEAT + 0.6 };
   const intro = 1.8; const close = 0.7; const lo = 15; const hi = 19;
   let gap = (target - intro - close) / actors - ANIM_BEAT;
   gap = clamp(gap, 0.5, 2.8);

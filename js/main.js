@@ -1,6 +1,7 @@
 import { startFx } from './fx.js';
 import { bindChrome, boot, debugApi } from './ui.js';
 import { LAB } from './lab.js';
+import { PACE } from './g3/flat.js';
 import { applyRelease, applyLab } from './release.js';
 
 // No pinch-zoom (Dave, Oct 2026: "I can zoom and pinch to zoom on all these screens; that is wrong"). iPhone Safari ignores
@@ -8,6 +9,7 @@ import { applyRelease, applyLab } from './release.js';
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 applyRelease(); // what everyone plays (js/release.js)
+if (/[?&]pace=actions\b/.test(location.search)) { PACE.actions = true; const tag = document.createElement('div'); tag.className = 'lab-tag pace-tag'; tag.textContent = 'PREVIEW · quick replay'; document.body.append(tag); } // the replay-pace preview (js/g3/flat.js)
 if (LAB) { applyLab(); const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = 'LAB · fury'; document.body.append(tag); } // ?lab: the release plus monster fury, its own heroes (js/lab.js)
 startFx(document.getElementById('fx'));
 bindChrome();

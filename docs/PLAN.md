@@ -1343,3 +1343,11 @@ ChatGPT's review asked for evidence before any further balance change, so none w
 - **Six heroes.** Party sizes 2/4/6 with equal progression, 10 campaigns each, with and without bots that use Heart to Heart and Guard on purpose. Six heroes win 87–88% of battles against 96–98%, and teamwork does not close it: the six-hero scaling is the suspect.
 - **Replay.** The round replay is fitted to 15–19 seconds however few strikes it shows.
 - **Waiting for Dave:** softer six-hero scaling, the Wizard start or a magic outlet, and a replay that scales with the strikes.
+
+## 23 October 2026: Enemy Details, Bonus Challenge, and a quick-replay preview
+
+ChatGPT's UI review: the art was strong, but framing crowded out the miniature and the decision, and the offer did not fit one phone screen.
+- **Enemy Details** (tap a monster twice): "Enemy Details" title with the monster's name large; a tall panel down to the action buttons; the miniature about twice the size, unboxed; health, speed, attack and defence beside it; one strong Next Move card ("Chill · 4–13 pierce", or "Phase · only pierce hurts"); Other Abilities with their plain words. No scrolling on 390×844, 430×932 or 375×667.
+- **Bonus Challenge** (solo) and **Secret Objective** (multiplayer): one parchment page. The hero's miniature stands beside the title with "Offered by the Lantern"; then the objective and rule; then wager, return if successful and net gain ("Net gain: 20 gold if you pull it off and win. Lose the wager if you fail."). Bet / Decline sit at the bottom. The scenery is a strip and the separate story box is gone. It fits 390×844 and 430×932; on 375×667 it scrolls with the buttons kept in view. dev/uipass.mjs checks both screens.
+- **The table's "Saved" line** no longer runs off the right edge.
+- **Quick-replay preview:** `?pace=actions` gives every strike the same short beat (about 1.45 s) instead of fitting each round into 15–19 seconds. It is opt-in and marked "PREVIEW · quick replay"; the live default is unchanged until Dave has tried it. dev/pace.mjs measures it.
