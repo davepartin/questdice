@@ -283,3 +283,25 @@ docs/balance/TEAMWORK_EVAL_2026-10-23.md: focus fire is clearly best; splitting 
 threat-first bot is a weak player (a simulation limit); Heart to Heart helps a little (mostly within the error), never hurts
 beyond the noise, and pulls 35-43% of heroes into groups when they look for it. Still running: Bard team measurement, class
 kits and magic styles on the consistent baseline, and the full campaign with release 2.
+
+### Release 2 (23 Oct 2026): everything Dave approved, less monster fury
+Full campaign, Normal, wise bot, 2 campaigns per class (docs/balance/curve_release*.txt):
+
+| | campaigns cleared | Act II boss first try | Act III boss first try | Act III fights below a quarter health |
+|---|---|---|---|---|
+| release 1 (live before this) | 10/10 | 80% | 90% | 12% |
+| everything, fury from round 4 | 5/10 | 50% | 41% | 43% |
+| everything, gentler fury (+1/+1/+2 a step, at most 3 steps) | 8/10 | 73% | 79% | 30% |
+| **everything without fury (released)** | **10/10** | **80%** | **88%** | **17%** |
+
+Fury alone causes the jump (Act III bosses last about 13 rounds, so it reaches +18 a blow), so release 2 ships without it;
+fury from round 4 stays in `?lab` (tag "LAB · fury"). Released: the six one-handed weapons with Bow and Arrows (camp ammunition,
+scouts line), the arrows as last measured (numbered arrowheads, Piercing = whole hit, Frost = Strength softer, Fire = full
+Strength splash), Silver/Gold of the new weapons carry today's metal icons (numbers unchanged; Bronze plain), the class rules
+(Guard, Dig In, Verse for a friend). Old saves: a two-handed Bow becomes Arrows + Bow with the right hand die (save.js
+`migrateWeapons2`, also for heroes inside a saved online table); other owned two-handed weapons keep working. The practice
+battle and its lessons use the new sword's +4 face (12 attack, then 22). Tests: test/release.test.mjs, test/tutorial.test.mjs.
+Live check: `node dev/livecheck.mjs`.
+
+Still open for Dave: whether fury returns (gentler, or with stronger heroes), the remaining evaluations (Bard team test, class
+kits and magic styles on the released baseline), and the lesson pictures (they show today's dice art, not the new sword's faces).

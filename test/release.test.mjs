@@ -12,8 +12,8 @@ test('an old save from before the new weapons: its two-handed Bow becomes Arrows
   assert.equal(old.loadout.NE.twin, true); assert.ok(!old.dice.includes('NE'));
   const saved = JSON.parse(JSON.stringify(old));
   applyRelease();
-  assert.equal(D.EXPERIMENT.weapons2, true); assert.equal(D.TEAMWORK.heartToHeart, true); assert.equal(D.CLASS2.on, true); assert.equal(D.PRESSURE.on, true);
-  assert.equal(D.PRESSURE.fury.from, 4); assert.equal(D.PRESSURE.rally.min, 99, 'no rallying swarms'); assert.equal(D.WEAPONS2.arrowRules.fire, 'full');
+  assert.equal(D.EXPERIMENT.weapons2, true); assert.equal(D.TEAMWORK.heartToHeart, true); assert.equal(D.CLASS2.on, true); assert.equal(D.PRESSURE.on, false, 'monster fury stays in the lab');
+  assert.equal(D.WEAPONS2.arrowRules.fire, 'full');
   const h = SV.migrateHero(saved);
   assert.equal(h.loadout.NW.id, 'quiver'); assert.equal(h.loadout.NW.ammo, 'normal'); assert.equal(h.loadout.NW.rarity, 1); assert.equal(h.loadout.NW.size, 6);
   assert.equal(h.loadout.NE.id, 'bow'); assert.ok(!h.loadout.NE.twin); assert.ok(h.dice.includes('NE'), 'the right hand die comes with it');

@@ -126,8 +126,8 @@ const LESSONS = [
     title: 'Hands are your Strength',
     eyebrow: 'Weapon plus hand',
     art: () => h('div', { class: 'tu-lane' }, boardPic({ base: 'start', dice: ['NW', 'W'], hi: ['NW', 'W'] }),
-      sum(img('weapon-red3', 'sm'), op('+'), img('white-4', 'sm'), op('='), counter('atk', 'Attack', 7))),
-    say: 'Each hand powers the weapon above it. My sword shows +3 and my hand rolled 4. That makes 7 attack.',
+      sum(img('weapon-red4', 'sm'), op('+'), img('white-4', 'sm'), op('='), counter('atk', 'Attack', 8))),
+    say: 'Each hand powers the weapon above it. My sword shows +4 and my hand rolled 4. That makes 8 attack.',
     body: () => [
       p('Add the weapon’s number to the hand’s number. The bigger your hand die, the harder every weapon hits.'),
       p('Your hands still pay their own symbol too, so that 4 also pays 2 gold.'),
@@ -150,7 +150,7 @@ const LESSONS = [
     more: true,
     eyebrow: 'The bottom corners',
     art: () => boardPic({ base: 'start', dice: ['SW', 'W', 'NW'], hi: ['SW', 'W', 'NW'] }),
-    say: 'My talent die rolled 2×, so my hand’s 4 counts twice in my sword: 3 + 4 + 4 = 11 attack.',
+    say: 'My talent die rolled 2×, so my hand’s 4 counts twice in my sword: 4 + 4 + 4 = 12 attack.',
     body: () => [
       row(img('talent-blank', 'xs'), 'Blank', 'Nothing this time. Faces 1 and 3 of every talent die are blank.'),
       row(img('talent-x2', 'xs'), '2× Strength', 'Face 2. Counts the hand above it twice in its weapon, and counts as a 2 in a straight.'),
@@ -186,7 +186,7 @@ const LESSONS = [
     title: 'Your six counters',
     more: true,
     eyebrow: 'What your roll adds up to',
-    art: () => h('div', { class: 'tu-counters fs' }, counter('atk', 'Attack', 21), counter('pierce', 'Pierce', 2), counter('block', 'Block', 4), counter('magic', 'Magic', 2), counter('heal', 'Heal', 2), counter('gold', 'Gold', 8)),
+    art: () => h('div', { class: 'tu-counters fs' }, counter('atk', 'Attack', 22), counter('pierce', 'Pierce', 2), counter('block', 'Block', 4), counter('magic', 'Magic', 2), counter('heal', 'Heal', 2), counter('gold', 'Gold', 8)),
     say: 'Everything your dice pay lands in these six counters. You will see them under your board in battle.',
     body: () => [
       row(ic('atk'), 'Attack', 'Damage to the monster you target.'),
@@ -342,7 +342,7 @@ export function closeLessons() { $('#tut')?.remove(); }
 
 // ------------------------------------------------------------------------------------------------ practice battle
 // A Knight with the standard starting dice against one goblin. The first roll and the first reroll are set so the
-// lesson lands: 11 attack, then a Strength Triple for 21. After that the dice are free and the guide steps back.
+// lesson lands: 12 attack, then a Strength Triple for 22. After that the dice are free and the guide steps back.
 export function startPractice() {
   const hero = E.newHero({ name: 'You', cls: 'knight' });
   hero.tips = Object.fromEntries(['b_roll', 'b_shape', 'b_target', 'b_lock', 'b_triple', 'b_straight', 'b_intent', 'm_goblin', 'b_paid'].map((k) => [k, 1])); // the guide replaces these hints
@@ -358,10 +358,10 @@ function guide() {
     { on: 'reset', target: 'divider', title: 'Your health', text: 'The bar across the middle is your health. Keep it above zero.', next: true },
     { on: 'reset', target: 'roll', title: 'Roll your body', text: 'Tap Roll dice to throw all your dice at once.', wait: 'rolled' },
     { on: 'shape', target: 'counters', title: 'Your roll adds up here', text: 'Attack 11, plus a little pierce, magic, heal and gold. Let’s make it bigger.', next: true },
-    { on: 'shape', target: ['NW', 'W', 'SW'], title: 'Your left side works together', text: 'Sword +3, plus your hand’s 4, plus the 2× talent counting that 4 again: 11 attack.', next: true },
+    { on: 'shape', target: ['NW', 'W', 'SW'], title: 'Your left side works together', text: 'Sword +4, plus your hand’s 4, plus the 2× talent counting that 4 again: 12 attack.', next: true },
     { on: 'shape', target: ['W', 'C', 'E'], title: 'Almost a Strength Triple', text: 'Left hand 4, heart 4, right hand 1. Match all three for +10 attack. Tap the right hand die, the 1.', wait: 'picked:E' },
     { on: 'shape', target: 'reroll', title: 'Now reroll it', text: 'Tap Reroll. Your first three rerolls each round are free.', wait: 'rerolled' },
-    { on: 'shape', target: ['W', 'C', 'E'], title: 'Strength Triple!', text: 'Three 4s in the middle row: +10 attack. You are up to 21.', next: true, cheer: true },
+    { on: 'shape', target: ['W', 'C', 'E'], title: 'Strength Triple!', text: 'Three 4s in the middle row: +10 attack. You are up to 22.', next: true, cheer: true },
     { on: 'shape', target: 'lock', title: 'Lock in and fight', text: 'Happy with the roll? Tap Lock In. You strike, then the goblin answers.', wait: 'locked' },
     { on: 'reset2', target: 'powers', title: 'Magic carries over', text: 'The magic you earned is saved. Spend it on extra rerolls or on your magic powers here.', next: true },
     { on: 'reset2', target: 'roll', title: 'Finish it yourself', text: 'The goblin is nearly beaten. Roll, pick dice to reroll, and lock in. You’ve got this.', next: true, last: true },

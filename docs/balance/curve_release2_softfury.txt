@@ -1,0 +1,57 @@
+QuestDice damage curve · normal · wise bot · 4 trials a step · campaigns cleared 8/10
+A round's THROW is attack + pierce + splash (the number the player sees). Health % is the lowest point of each fight.
+
+1. By act and kind of fight (all classes)
+                 fights  win rounds  throw   mid   90%   max   dice trip strt powr   landed  taken  low  <half <qtr   strt trip
+Act 1 battle       320   96%    4.0   23.9    23    40    86    74%  17%   1%   7%     18.9    6.6   58%   31%   11%    15%  36%
+Act 1 elite         40  100%    6.2   27.0    26    44    61    74%  20%   1%   5%     25.1    3.8   61%   35%    3%    20%  45%
+Act 1 boss          40   73%    8.2   34.7    33    53    78    83%   9%   3%   5%     29.9    8.5   35%   63%   40%    40%  25%
+Act 2 battle       320   92%    5.9   36.9    35    59   101    76%  15%   2%   6%     31.2   10.9   46%   49%   20%    26%  31%
+Act 2 elite         40   88%    9.2   37.0    36    60   104    78%  14%   2%   7%     33.7    7.4   45%   45%   28%    27%  29%
+Act 2 boss          40   73%    9.3   43.9    42    65    94    79%  10%   4%   6%     40.1   10.3   32%   68%   40%    33%  25%
+Act 3 battle       280   87%    6.9   47.7    46    74   143    76%  13%   4%   7%     41.7   13.6   41%   60%   28%    27%  26%
+Act 3 elite         40   95%    9.6   48.7    46    73   128    82%   9%   2%   7%     42.6   10.8   41%   55%   23%    41%  20%
+Act 3 boss          80   79%   13.7   52.0    50    80   148    79%   9%   4%   8%     46.8    9.9   31%   73%   41%    30%  21%
+Act 1 all          400   94%    4.6   26.3    26    44    86    76%  16%   2%   6%     21.6    6.6   56%   34%   13%    20%  35%
+Act 2 all          400   89%    6.5   37.9    36    60   104    77%  14%   3%   6%     32.8   10.3   45%   51%   23%    27%  30%
+Act 3 all          400   86%    8.5   49.2    47    77   148    78%  11%   4%   7%     43.4   12.1   39%   62%   30%    30%  24%
+
+2. By act and class (every kind of fight)
+                 fights  win rounds  throw   mid   90%   max   dice trip strt powr   landed  taken  low  <half <qtr   strt trip
+Act 1 knight        80   93%    4.8   25.7    25    43    86    79%  13%   1%   7%     21.0    6.5   59%   24%   13%    20%  29%
+Act 1 ranger        80   98%    4.7   26.9    26    44    78    79%  12%   3%   6%     21.5    6.4   50%   45%   18%    25%  29%
+Act 1 wizard        80   93%    4.5   26.0    26    45    74    71%  18%   2%   9%     21.9    6.3   50%   48%   16%    16%  39%
+Act 1 dwarf         80   98%    4.8   25.8    25    43    77    76%  18%   1%   5%     21.7    6.3   67%   14%    5%    21%  40%
+Act 1 bard          80   91%    4.4   26.9    26    44    64    76%  17%   1%   5%     22.3    7.4   52%   41%   15%    19%  40%
+Act 2 knight        80   88%    6.7   36.5    34    59   104    74%  17%   3%   6%     31.9   11.0   41%   60%   29%    26%  32%
+Act 2 ranger        80   89%    6.3   40.9    40    60    89    78%  13%   3%   6%     34.7   10.1   43%   50%   24%    31%  30%
+Act 2 wizard        80   91%    6.6   37.2    36    61   101    75%  14%   2%   8%     32.3    9.5   43%   57%   21%    25%  30%
+Act 2 dwarf         80   94%    6.8   37.1    35    59    93    78%  13%   3%   6%     32.0    9.8   55%   33%   10%    30%  27%
+Act 2 bard          80   85%    6.3   38.2    37    59    94    80%  14%   3%   4%     33.1   11.1   42%   54%   30%    22%  31%
+Act 3 knight        80   79%    8.6   48.3    46    72   137    80%  11%   4%   6%     42.2   12.0   37%   66%   31%    27%  22%
+Act 3 ranger        80   86%    8.7   47.5    46    74   116    78%  13%   3%   6%     42.2   11.8   35%   68%   34%    30%  27%
+Act 3 wizard        80   83%    8.2   50.7    49    82   148    71%  13%   5%  11%     44.7   12.0   34%   69%   40%    29%  28%
+Act 3 dwarf         80   95%    8.9   47.9    46    75   143    82%   7%   2%   9%     42.8   11.5   50%   45%   14%    33%  16%
+Act 3 bard          80   88%    8.2   51.8    50    79   122    80%  12%   3%   5%     45.4   13.4   39%   61%   30%    28%  27%
+
+3. Big moments: rounds whose throw is at least twice the act's average round
+  Act 1: average round 26.3 (plan's target 10 to 15); 4% of rounds are 2x or more, 0% are 5x or more; hero health about 39; monsters' health a fight 105
+  Act 2: average round 37.9 (plan's target 15 to 25); 2% of rounds are 2x or more, 0% are 5x or more; hero health about 60; monsters' health a fight 231
+  Act 3: average round 49.2 (plan's target 25 to 40); 2% of rounds are 2x or more, 0% are 5x or more; hero health about 77; monsters' health a fight 419
+
+4. What the hero holds at the end of each act (bot's choice by average throw)
+  Act 1 knight  Dawnbreaker d6 + Bronze Axe d4 | Bronze Dagger d6 + Silver Sword d4
+  Act 1 ranger  Silver Dagger d6 + Bronze Sword d6 | Bronze Spear d4 + Silver Sword d4
+  Act 1 wizard  Dawnbreaker d6 + Bronze Axe d4 | Bronze Dagger d6 + Silver Round Shield d6
+  Act 1 dwarf   Bronze Axe d4 + Dawnbreaker d6 | Silver Round Shield d6 + Bronze Sword d6
+  Act 1 bard    Bronze Sword d6 + Dawnbreaker d6 | Bronze Dagger d6 + Silver Sword d4
+  Act 2 knight  Bronze Axe d6 + Silver Sword d4 | Bronze Sword d8 + Silver Sword d4
+  Act 2 ranger  Dawnbreaker d6 + Silver Dagger d6 | Bronze Axe d4 + Silver Sword d4
+  Act 2 wizard  Silver Dagger d6 + Silver Dagger d6 | Silver Sword d4 + Bronze Sword d8
+  Act 2 dwarf   Bronze Dagger d6 + Silver Dagger d6 | Silver Axe d6 + Silver Spear d6
+  Act 2 bard    Bronze Axe d6 + Bronze Axe d6 | Silver Axe d6 + Silver Spear d6
+  Act 3 knight  Silver Sword d8 + Silver Sword d10
+  Act 3 ranger  Silver Sword d10 + Silver Axe d6 | Silver Dagger d6 + Silver Sword d10
+  Act 3 wizard  Bronze Spear d8 + Silver Dagger d10
+  Act 3 dwarf   Bronze Spear d8 + Silver Dagger d10 | Silver Sword d10 + Silver Round Shield d6
+  Act 3 bard    Silver Sword d10 + Bronze Dagger d8 | Silver Sword d10 + Silver Spear d6
