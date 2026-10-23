@@ -17,7 +17,7 @@ export function applyRelease() {
   CLASS2.on = true;
   // say the class rules where players read them: Shield Up's card (Guard) and the Dwarf's trait (Dig In)
   const say = (o, k, line) => { if (o && !o[k].includes(line)) o[k] = `${o[k]} ${line}`; };
-  if (CLASS2.guard) say(CLASSES.knight.cards.find((c) => c.id === 'shieldwall'), 'text', 'With friends: you step in front and take the monsters’ double share, not the slowest hero.');
+  if (CLASS2.guard) say(CLASSES.knight.cards.find((c) => c.id === 'shieldwall'), 'text', 'With friends: you step in front and take the double share of every monster’s blow instead of the slowest hero. Everyone else still takes a single share.');
   if (CLASS2.digIn) say(CLASSES.dwarf, 'trait', `Digs in: from round 5, heals ${CLASS2.digIn} at the start of every round.`);
 }
 // ?lab (js/lab.js): the release, its own saves, and what is still being tried: monster fury from round 4 (no rallying, mend or move bag)
