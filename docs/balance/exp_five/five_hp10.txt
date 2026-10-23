@@ -1,0 +1,30 @@
+SOFT {"from":5,"hpPer":1} · smart play using the teamwork rules on purpose (TEAMPLAY) · company strength by act  · normal, 5 heroes, 10 companies: win rate (first try) · rounds · health left when won
+act kind      solo: win  rnds  hp     n      team: win  rnds  hp     n   (n: fights; team wins ± one standard error)
+1   battle      92%   4.1    72%   400       100%   2.9    74%    80  ±0%
+1   boss        84%  10.2    62%    50       100%   8.5    79%    10  ±0%
+1   elite       96%   6.3    80%    50       100%   5.0    94%    10  ±0%
+2   battle      90%   6.2    61%   400       100%   4.6    73%    80  ±0%
+2   boss        76%  11.2    60%    50       100%   9.4    86%    10  ±0%
+2   elite       78%   9.8    72%    50       100%   8.0    84%    10  ±0%
+3   battle      87%   7.5    61%   350        99%   6.2    69%    70  ±1%
+3   boss        73%  15.2    52%   100       100%  15.0    63%    20  ±0%
+3   elite       96%  10.4    48%    50       100%   8.1    60%    10  ±0%
+
+By class at the table · the released rules: hero-fights · lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell · share of the team's damage · share of the team's block (a fair share is 1 / heroes) · rounds a fight taking the double share (of them by Shield Up). Every number is per hero: two heroes of one class each count separately.
+knight    300    59%     3%   41.7    0.0       58%     5%     20%    25%    2.1 (1.3)
+ranger    300    56%     7%   41.7    0.0       58%     5%     21%    18%    0.5 (0.0)
+wizard    240    57%     7%   38.3    0.0       58%     4%     18%    20%    0.9 (0.0)
+dwarf     300    66%     2%   40.7    0.0       57%     5%     20%    25%    1.6 (0.0)
+bard      360    53%     5%   44.3    3.8       59%     5%     21%    13%    0.6 (0.0)
+
+Support each hero gave, a fight (per hero: two of a class each count): healing to friends · verses sung for a friend · Discord casts (damage it could soften for the table, at most) · potions thrown · magic shared · revives · team triples joined · Heart to Heart groups joined · double-share rounds taken (from the table above)
+ranger  heal  0.00 · verses 0.00 · Discord 0.00 (up to 0.00) · potions 0.00 · magic 0.00 · revives 0.00 · triples 2.24 · H2H 3.56 · double shares 0.50
+wizard  heal  0.00 · verses 0.00 · Discord 0.00 (up to 0.00) · potions 0.00 · magic 0.00 · revives 0.00 · triples 2.31 · H2H 3.70 · double shares 0.90
+dwarf   heal  0.00 · verses 0.00 · Discord 0.00 (up to 0.00) · potions 0.00 · magic 0.00 · revives 0.00 · triples 2.34 · H2H 3.30 · double shares 1.65
+knight  heal  0.00 · verses 0.00 · Discord 0.00 (up to 0.00) · potions 0.00 · magic 0.00 · revives 0.00 · triples 2.45 · H2H 3.45 · double shares 2.14
+bard    heal  3.75 · verses 0.66 · Discord 0.00 (up to 0.00) · potions 0.00 · magic 0.00 · revives 0.00 · triples 2.00 · H2H 3.74 · double shares 0.59
+
+Independent campaigns: 10. Team battles won on the first try, per campaign:  100% ± 0% (standard error across campaigns). Act III boss, team: 20 of 20 won on the first try, in 10 campaigns.
+
+Teamwork the bots used, by company size: hero-rounds in a Heart to Heart group · hero-rounds on the most-chosen monster (focus) · rounds a Knight took the double share by Shield Up · Bard verses sung for a friend a fight, and the healing they gave
+5 heroes:   65% in Heart to Heart ·  100% focused ·   22% of rounds guarded · 0.14 verses for a friend a round (5.7 healing each) · 1717 team rounds

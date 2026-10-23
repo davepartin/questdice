@@ -1,0 +1,15 @@
+Base: docs/balance/exp_five/five_base.json (10 campaigns)
+  battles won first try                        97.4% ± 1.0%
+  hero-fights where the hero fell (battles)    7.0% ± 1.0%
+  health left after a won battle               70.7% ± 0.8%
+  rounds a battle                              5.10 ± 0.11
+  bosses won first try                         100.0% ± 0.0%
+  elites won first try                         100.0% ± 0.0%
+
+docs/balance/exp_five/five_hp10.json: {"from":5,"hpPer":1} · 10 matched campaigns
+  battles won first try                        99.6%   change +2.2% ± 1.2% (better in 5 of 10)
+  hero-fights where the hero fell (battles)    4.1%   change -2.9% ± 0.8% (better in 9 of 10)
+  health left after a won battle               72.2%   change +1.5% ± 0.7% (better in 8 of 10)
+  rounds a battle                              4.47   change -0.63 ± 0.07 (shorter in 10 of 10)
+  bosses won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)
+  elites won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)
