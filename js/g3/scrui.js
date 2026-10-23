@@ -206,7 +206,7 @@ export function title() {
   // Learn to play sits first until there is a saved hero, then it moves under the menu.
   if (!saves.length) menu.append(plaque({ eyebrow: 'Start here', title: 'Learn to play', sub: 'Two minutes, then a practice battle.', icon: 'book', primary: true, onclick: X.showLessons }));
   { const run = DAY.dailyRun(); const rec = DAY.dayRecord(run.key); const st = DAY.streak(run.key);
-    menu.append(plaque({ eyebrow: `Daily challenge${st > 1 ? ` · ${st} days in a row` : ''}`, title: `${D.CLASSES[run.cls].name} · ${D.CHARMS[run.charm].name}`,
+    menu.append(plaque({ eyebrow: `Daily challenge${st > 1 ? ` · ${st} days in a row` : ''}`, title: E.charmsResting() ? D.CLASSES[run.cls].name : `${D.CLASSES[run.cls].name} · ${D.CHARMS[run.charm].name}`,
       sub: rec.tries ? `Your best today: ${rec.best.toLocaleString()} points · ${rec.fights} of ${DAY.FIGHTS} fights` : `Five fights, the same for everyone. One score.`, icon: 'crown', tone: 'is-daily', onclick: X.showDaily })); }
   menu.append(
     plaque({ eyebrow: 'New game', title: 'Choose your story', sub: 'The Dawn Lantern, The Clover Heist, or a tale for two.', icon: 'book', primary: false, onclick: X.showStories }),
@@ -312,7 +312,7 @@ export function daily(v) {
     : v.mode === 'between'
       ? [eyebrow(`Fight ${v.fights.length} of ${DAY.FIGHTS} won`), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, 'Catch your breath. Your health is full again for the next fight; the potions you drank stay drunk.')]
       : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, 1 for every gold coin, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
-  const kit = h('section', { class: 'dl-kit' }, h('div', { class: 'dl-hero' }, emblem(run.cls, 'lg'), h('div', {}, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} · hands d${hero.strength.W} · ${D.tierName(hero.loadout.NW)} d${E.weaponSize(hero.loadout.NW)} ${D.WEAPONS[hero.loadout.NW.id].name}`))), charmCard(run.charm, { badge: 'Today' }));
+  const kit = h('section', { class: 'dl-kit' }, h('div', { class: 'dl-hero' }, emblem(run.cls, 'lg'), h('div', {}, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} · hands d${hero.strength.W} · ${D.tierName(hero.loadout.NW)} d${E.weaponSize(hero.loadout.NW)} ${D.WEAPONS[hero.loadout.NW.id].name}`))), E.charmsResting() ? null : charmCard(run.charm, { badge: 'Today' }));
   const cta = v.mode === 'between' ? btn(`Fight ${v.fights.length + 1}: ${run.quests[v.fights.length].kind === 'boss' ? run.quests[v.fights.length].name : 'onward'}`, v.onNext, { big: true, icon: 'sword', cls: 'wide' })
     : v.mode === 'result' ? h('div', { class: 'dl-acts' }, btn('Share', v.onShare, { kind: 'ghost', icon: 'people' }), btn('Try again', v.onStart, { big: true, icon: 'reroll' }))
       : btn('Begin', v.onStart, { big: true, icon: 'sword', cls: 'wide' });
@@ -1532,9 +1532,12 @@ function gearTab({ grid = false, chips = false } = {}) {
     jump, coachBox('g_gear'),
     grid ? diceGrid(hero) : null,
     zone('zn-pack', 'bag', `Your pack · ${bag.length} of ${D.BAG_MAX}`, '', bag.length ? h('div', { class: 'sh-list' }, bag) : h('p', { class: 'muted empty' }, 'Nothing yet. Monsters drop weapons, eventually, if you ask firmly.')),
-    zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each one changes a rule for you, in every fight.',
-      E.charmsOf(hero).length ? h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] }))) : h('p', { class: 'muted empty' }, 'None yet. Bosses and big fights drop them.'),
-      charmGuideBtn()),
+    E.charmsResting() // charms are suspended (teamwork pass): an old hero's charms are listed as kept, with no buttons; a new hero sees nothing
+      ? (E.charmsOf(hero).length ? zone('zn-charms', 'star', 'Charms · resting', 'Charms are switched off for now. Yours are kept safe in your save and do nothing until they come back.',
+        h('div', { class: 'ch-list resting' }, E.charmsOf(hero).map((id) => charmCard(id, { cls: 'resting', badge: 'Resting' })))) : null)
+      : zone('zn-charms', 'star', `Charms · ${E.charmsOf(hero).length} of ${D.CHARM_MAX}`, 'Each one changes a rule for you, in every fight.',
+        E.charmsOf(hero).length ? h('div', { class: 'ch-list' }, E.charmsOf(hero).map((id) => charmCard(id, { actions: [dropBtn(hero, id)] }))) : h('p', { class: 'muted empty' }, 'None yet. Bosses and big fights drop them.'),
+        charmGuideBtn()),
     E.diamondsOf(hero).length ? zone('zn-diamonds', 'gem', `Diamond case · ${E.diamondsOf(hero).length} of ${D.DIAMOND.max}`, 'One fight each, then it shatters. Left or Right: the hand it goes in next fight.',
       h('div', { class: 'sh-list' }, E.diamondsOf(hero).map((d) => { const at = E.armedSlot(hero, d.uid); const w = D.WEAPONS[d.id];
         // Left / Right here at camp works at a table too (Dave, Oct 2026: the quest board's Bring strip is solo only)

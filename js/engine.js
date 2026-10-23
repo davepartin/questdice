@@ -267,12 +267,15 @@ export function heroMods(hero) {
 }
 // ---- charms (data.js CHARMS): rule-benders, three at most
 export const charmsOf = (hero) => (hero?.charms || []).filter((id) => CHARMS[id]);
-export const hasCharm = (hero, id) => !!hero?.charms?.includes(id);
+// Charms are suspended in the teamwork pass (TEAMWORK.noCharms): no charm does anything and none is offered, sold or given. A hero's
+// charms stay in the save as they are (charmsOf still lists them) for when charms come back.
+export const charmsResting = () => !!TEAMWORK.noCharms;
+export const hasCharm = (hero, id) => !TEAMWORK.noCharms && !!hero?.charms?.includes(id);
 export const charmFull = (hero) => charmsOf(hero).length >= CHARM_MAX;
-export function takeCharm(hero, id) { if (!CHARMS[id] || hasCharm(hero, id) || charmFull(hero)) return false; (hero.charms ||= []).push(id); return true; }
+export function takeCharm(hero, id) { if (TEAMWORK.noCharms || !CHARMS[id] || hasCharm(hero, id) || charmFull(hero)) return false; (hero.charms ||= []).push(id); return true; }
 export function dropCharm(hero, id) { const i = (hero.charms || []).indexOf(id); if (i < 0) return false; hero.charms.splice(i, 1); return true; }
 // charms you could be offered: ones you do not hold, picked by a seeded rng
-export function charmChoices(hero, rng, n = 1) { const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
+export function charmChoices(hero, rng, n = 1) { if (TEAMWORK.noCharms) return []; const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
 export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
@@ -1240,7 +1243,7 @@ export function battleGoldSoFar(b) { return killGold(b, b.enemies.filter((e) => 
 // `salt` keeps heroes at one table from all being offered the same ones.
 export function charmOffer(hero, quest, salt = '') {
   const c = hero.campaign; const crng = makeRng(salt ? hashSeed(c.seed, c.act, c.step, 'charm', salt) : hashSeed(c.seed, c.act, c.step, 'charm')); // solo: the same roll as ever
-  const cch = CHARM_CHANCE[quest.kind] ?? CHARM_CHANCE.battle;
+  const cch = CHARM_CHANCE[quest.kind] ?? CHARM_CHANCE.battle; if (TEAMWORK.noCharms) return [];
   return !charmFull(hero) || quest.kind === 'boss' ? (crng() < cch ? charmChoices(hero, crng, quest.kind === 'boss' ? 2 : 1) : []) : [];
 }
 export function battleRewards(b) {
@@ -1434,7 +1437,7 @@ export function shopStock(hero) {
   c.shop = { step: `${c.act}.${c.step}`, items, charm: charm ? { id: charm, price: Math.round(CHARM_PRICE[Math.min(3, c.act) - 1] * priceMod), sold: false } : null };
   return items;
 }
-export function shopCharm(hero) { shopStock(hero); return hero.campaign.shop?.charm || null; }
+export function shopCharm(hero) { shopStock(hero); return TEAMWORK.noCharms ? null : hero.campaign.shop?.charm || null; }
 export function buyCharm(hero) {
   const c = shopCharm(hero); if (!c || c.sold || hero.gold < c.price || hasCharm(hero, c.id) || charmFull(hero)) return false;
   hero.gold -= c.price; c.sold = true; return takeCharm(hero, c.id);

@@ -73,5 +73,5 @@ export function streak(today = dayKey()) {
 }
 export function shareText(run, score, fights) {
   const marks = Array.from({ length: FIGHTS }, (_, i) => (fights[i] ? (fights[i].won ? (i === FIGHTS - 1 ? '👑' : '⚔️') : '💀') : '▫️')).join('');
-  return `QuestDice Daily ${run.key}\n${CLASSES[run.cls].name} with the ${CHARMS[run.charm].name}\n${marks} ${score.toLocaleString()} points\nhttps://davepartin.github.io/questdice/`;
+  return `QuestDice Daily ${run.key}\n${CLASSES[run.cls].name}${E.charmsResting() ? '' : ` with the ${CHARMS[run.charm].name}`}\n${marks} ${score.toLocaleString()} points\nhttps://davepartin.github.io/questdice/`;
 }

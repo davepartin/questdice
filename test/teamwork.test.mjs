@@ -84,3 +84,20 @@ test('online: the public preview is the heart face and the aim; the board stays 
   assert.ok(table.lastReport, 'the round resolved');
   assert.equal(adaRow().heart, null, 'a new round: no stale heart'); assert.equal(adaRow().aim, null, 'and no stale aim');
 });
+
+test('charms resting: an old save keeps its charms, but none works and none is offered, sold or given', async () => {
+  const { TEAMWORK: T } = await import('../js/data.js');
+  const h = E.newHero({ name: 'Old', cls: 'knight', seed: 9 }); T.noCharms = false;
+  assert.ok(E.takeCharm(h, 'mirror') && E.takeCharm(h, 'lantern'), 'a hero from before, carrying two charms');
+  const saved = JSON.stringify(h.charms);
+  const board = Object.fromEntries(['NW', 'NE', 'N', 'W', 'C', 'E', 'S', 'SW', 'SE', 'P'].map((k) => [k, { v: k === 'N' || k === 'W' || k === 'E' || k === 'S' ? 3 : 1 }]));
+  T.noCharms = true;
+  assert.equal(E.hasCharm(h, 'mirror'), false, 'no charm effect'); assert.deepEqual(E.charmsOf(h), ['mirror', 'lantern'], 'still listed as owned');
+  assert.ok(!E.evaluate(h, board).notes.some((n) => /Mirror/.test(n)), 'Mirror Shard does not heal');
+  const b = E.newBattle(h, { enemies: ['goblin'], hpMult: 1, flat: 0, rewardMult: 1, kind: 'battle' }, E.makeRng(1), 1); E.startRoll(b);
+  assert.equal(b.actionsLeft, E.rerollTotal(), 'the Lantern adds no reroll');
+  assert.deepEqual(E.charmOffer(h, { kind: 'boss' }), [], 'no charm from a boss'); assert.deepEqual(E.charmChoices(h, E.makeRng(2), 2), []);
+  assert.equal(E.shopCharm(h), null, 'none in the Camp Store'); assert.equal(E.takeCharm(h, 'fang'), false, 'none can be taken');
+  assert.equal(JSON.stringify(h.charms), saved, 'the save is untouched');
+  T.noCharms = false; assert.equal(E.hasCharm(h, 'mirror'), true, 'switch charms back on and they work again');
+});

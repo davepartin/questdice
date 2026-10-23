@@ -341,3 +341,5 @@
 .ww-ammo button span { font-size: .72rem; line-height: 1.25; }
 .ww-ammo button.on { border-color: #e1bf80; background: linear-gradient(#3d3428,#26231f); box-shadow: inset 0 1px #fff3; }
 .wf.arrow b { font-size: .95em; }
+/* charms resting (the teamwork pass): kept in the save, shown faded with no buttons */
+.ch-list.resting .sx-charm { opacity: .55; filter: grayscale(.6); }

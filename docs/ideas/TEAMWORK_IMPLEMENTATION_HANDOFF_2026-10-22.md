@@ -202,4 +202,18 @@ Each checkpoint should be recoverable if the session runs out: update this plan 
 - Screens: `node dev/hearts.mjs shots 3|6` (three and six heroes on one phone).
 - Open for Dave's phone review: six heroes on one monster are crowded (a pre-existing layout limit; one hero sits at the edge).
 
-**Next step:** Checkpoint 2, suspend charms.
+### Checkpoint 2: charms suspended (done)
+- `TEAMWORK.noCharms` (js/data.js). Engine gate in one place each: `hasCharm` (every charm effect: dice, triples, heart, Ember,
+  Mirror, Twin Coin, Blood Pact health and magic, Lantern reroll, Phoenix), `takeCharm` (nothing can be gained, daily run
+  included), `charmChoices` and `charmOffer` (no loot, no boss choice, solo or table), `shopCharm` (no Camp Store charm).
+  `charmsOf` still lists what a hero owns; the save is never rewritten.
+- Screens: camp Gear shows an old hero's charms faded under "Charms · resting" with one line of explanation and no buttons; a
+  new hero sees no charm panel; the victory and table spoils have no charm panel (their offers are empty); the Camp Store has
+  no charm; the daily run names no charm. Story flavour that mentions charms (two campaign packs) is unchanged.
+- Indirect effects checked: starting magic and health (Blood Pact), rerolls (Lantern), triples (Wolf Fang, Twin Coin), heart
+  (Heartstone), knock-outs (Phoenix), pricing (charm price used only by the store), hero strength for party scaling (reads
+  evaluate, so no charm counts), the tools (`NOCHARM=1` or `TEAMWORK=1`).
+- Test: test/teamwork.test.mjs "charms resting" (old save keeps charms; no effect; no Lantern reroll; no boss, shop, or take;
+  switching back on restores them). Screen: `node dev/charmsrest.mjs`.
+
+**Next step:** Checkpoint 3, perks.
