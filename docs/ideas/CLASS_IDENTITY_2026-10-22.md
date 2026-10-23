@@ -225,3 +225,26 @@ or (b) above are the natural next step for the Bard only.
 5. Ranger: identity comes from the arrows; their numbers are still being settled (docs/balance/ARROWS_2026-10-22.md).
 6. Start kits: the Wizard's start kit is the furthest from its best (Storm Coil and Magic Missile); worth swapping its
    charge to Healing Light or making Storm Coil stronger, after fury is settled.
+
+## 7. The Bard: comparing the two options and the recommendation (23 Oct 2026)
+
+ChatGPT favours targeted support: a choice of teammate that also works solo through self-targeting. The two options from 5.2:
+
+| | (a) Lucky Verse for a friend | (b) Discord heals every friend 2 a round |
+|---|---|---|
+| Who chooses | the Bard, every round it casts (1 magic) | nobody: automatic while Discord is on |
+| Exact effect | roll a d6: 1-2: the Bard +1 magic (as now). 3-4: **3**. 5-6: **6**, and the Bard +1 magic. The 3 or 6 goes to the hero the Bard chose: itself as attack (exactly today's Lucky Verse), a friend as healing. Upgrades raise the 3 and 6 the same way as today (scaleNum) | every other hero heals 2 a round, plus today's "monsters hit 2 softer" |
+| Solo | unchanged (self) | unchanged (no friends) |
+| Expected value a cast | 1 + 2 = 3 health or attack on average to one hero (a third of casts nothing but magic) | 2 x (heroes - 1) health a round: 2 at a pair, 10 at six |
+| Two Bards | two separate single targets (may both pick the same hero: 6 to 12) | 4 to everyone a round: grows with table size and with Bards |
+| Decision it creates | who needs it, and is it worth giving up my own attack | none in the moment (only whether to equip Discord) |
+
+**Recommendation: (a), "Verse for a friend."** It is the targeted option, it is the same power with the same numbers (no new
+system), solo is untouched, and it cannot snowball: one Bard gives one hero 3 or 6 at most a round. Option (b) is simpler to
+read but scales with the number of heroes and of Bards, which the handoff warns against, and it asks for no decision.
+
+Built behind `CLASS2.verse` (js/data.js; on in the lab): engine `castPower(b, 'luckyverse', { to })`, the healing lands with
+the friend before the monsters strike (`rep.verses`), the magic sheet asks "For me / For <friend> · <health>%", and the team bot
+sings for the most hurt friend when that friend is below 60% and worse off than the Bard. Test: test/classid.test.mjs. The
+team measurement (friend's lowest health, falls, healing given, with and without, duplicate Bards) is queued after the
+teamwork evaluation; results go in docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md.

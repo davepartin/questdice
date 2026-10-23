@@ -7,7 +7,7 @@ const p = await b.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFa
 const problems = []; p.on('pageerror', (e) => problems.push(e.message));
 await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
 await p.addInitScript(() => { try { localStorage.setItem('qd.tutorial.done', '1'); localStorage.setItem('qd.hints', 'off'); } catch {} });
-await p.goto('http://localhost:8135/?lab&debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+await p.goto('http://localhost:8135/?lab&debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 400000 });
 const pump = (s) => p.evaluate(async (s) => { const st = window.QD.world.stage; for (let i = 0; i < Math.round(s * 15); i++) { st.simulate(1 / 15, 1 / 30); await new Promise((r) => setTimeout(r, 0)); } }, s);
 console.log('lab:', await p.evaluate(() => ({ tag: document.querySelector('.lab-tag')?.textContent, w2: window.QD.D.EXPERIMENT.weapons2 })));
 await p.evaluate(async () => {

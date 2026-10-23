@@ -229,4 +229,21 @@ Each checkpoint should be recoverable if the session runs out: update this plan 
 - Test: test/teamwork.test.mjs "perk previews" (every perk for two classes: the after value equals the hero after taking it;
   Keen Edge adds exactly 1 on a red face; Line Breaker equals the triple paid). Screens: `node dev/perkpreview.mjs`.
 
-**Next step:** Checkpoint 4: the Fire splash test, the Bard recommendation, and the arrow formulas reconciled.
+### Checkpoint 4: Fire test, Bard recommendation, arrow formulas (done)
+- Fire: full printed Strength splash (guard still applies; `arrowRules.fire: 'full'`, `FIRE_FULL=1`) against half, with 3 and 4
+  goblins, a summoner (Bone Warden), high guard (armoured warden), the ogre, and teams of 2 and 3 archers. Result: full is never
+  worse and makes Fire the best arrow against crowds, but only by 0.2-1.6 health a fight, inside the error; Frost stays clearly
+  best against big hitters, armour and the summoner; several archers do not snowball. Recommendation: full, guard applies.
+  Details: docs/balance/ARROWS_2026-10-22.md ("Fire: half or full").
+- Arrow formulas reconciled (earlier agreed proposal against the later tested variant, exact Strength source, timing, non-stacking,
+  four decisions for Dave): docs/balance/ARROWS_2026-10-22.md ("Reconciling the arrow formulas").
+- Bard: option (a) "Verse for a friend" recommended over (b) with exact numbers and the comparison: docs/ideas/CLASS_IDENTITY_2026-10-22.md
+  section 7. Built behind `CLASS2.verse`: engine (`castPower(..., { to })`, `rep.verses`), table command, magic-sheet choice
+  ("For me / For <friend>"), team bot, test. Screen: `node dev/verse.mjs`.
+- Tools: `ENCSET=fire|mixed` encounter sets and ± standard errors in tools/matchup.mjs; `PAIRS=` companies in tools/party.mjs;
+  new tools/teamwork.mjs (focus / split / adaptive, with and without Heart to Heart).
+- Fixed on the way: a stray comment in js/main.js stopped the lab page loading (branch only, never on main); new
+  test/syntax.test.mjs parses every game script so that cannot recur. 358 tests pass.
+
+**Next step:** Checkpoint 5: the teamwork evaluation (running), Bard team measurement, class and magic evaluation against the
+consistent baseline; then the phone preview.

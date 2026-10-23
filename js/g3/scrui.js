@@ -252,7 +252,7 @@ function ammoPick(hero, inst) {
     h('b', {}, k === 'normal' ? 'Normal' : `${ARROW_MARK[k]} ${name.split(' ')[0]}`), h('span', {}, AMMO_LINE[k]))));
 }
 function faceChips(inst) {
-  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}` }, h('b', {}, f.arrow ? ARROW_MARK[f.arrow] : String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others
+  return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}` }, h('b', {}, f.arrow ? `${ARROW_MARK[f.arrow]}${f.v || ''}` : String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others
 }
 // Drop a charm: asks twice (a second tap within four seconds), since it is gone for good.
 function dropBtn(hero, id) {
@@ -1276,7 +1276,7 @@ function weaponWorkshop(hero, slot, inst) {
     const values = E.weaponFaces(it, rollSize);
     return h('div', { class: 'ww-face-group', 'data-preview': label.toLowerCase() }, h('div', { class: 'ww-face-label' }, h('b', {}, label), h('span', {}, `${D.tierName(it)} · d${rollSize}`)),
       h('div', { class: 'wc-faces', style: { '--face-cols': String(values.length <= 6 ? values.length : Math.ceil(values.length / 2)) }, 'aria-label': `${label} weapon faces` }, values.map((f) =>
-        h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}`, 'data-value': String(f.v) }, h('b', {}, f.arrow ? ARROW_MARK[f.arrow] : String(f.v)),
+        h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}`, 'data-value': String(f.v) }, h('b', {}, f.arrow ? `${ARROW_MARK[f.arrow]}${f.v || ''}` : String(f.v)),
           f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))));
   };
   const ammo = inst.id === 'quiver' && D.EXPERIMENT.weapons2 ? ammoPick(hero, inst) : null;

@@ -693,6 +693,8 @@ export function renderReset() {
   setTimeout(() => { if (Coach.wantHint(B.hero, 'b_roll')) hint('b_roll'); else if (Coach.wantHint(B.hero, 'b_intent')) hint('b_intent'); else if (monsterHint()) hint(monsterHint()); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_init')) hint('b_init'); else if (B.resets > 1 && Coach.wantHint(B.hero, 'b_round2')) hint('b_round2'); else if (B.resets > 1) hint('b_powers'); }, 300);
   if (B.ended) return;
   const b = B.b; const bw = B.bw;
+  // monster fury (PRESSURE, the lab): say it once each time it rises; the monsters' cards already show the bigger numbers
+  if (b.pressure?.furyUp && B.furyShown !== b.round) { B.furyShown = b.round; toast(`The monsters grow furious: every blow +${b.pressure.fury}.`, 'bad'); }
   if (B.net || B.party) renderRoster();
   setHud({ phase: 'reset' });
   targetEnemy();
