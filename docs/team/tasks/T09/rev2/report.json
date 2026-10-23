@@ -1,0 +1,476 @@
+[
+ {
+  "tag": "1-solo-success_390x664",
+  "seed": 2,
+  "tale": {
+   "top": 238,
+   "bottom": 572,
+   "h": 334
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": {
+   "top": 482,
+   "bottom": 549,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 831,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF WISDOM | The Riddling Troll | ROLL | Your roll 3 · Challenge 1 | SUCCESS | “An echo,” says Ann. The troll sulks, then whispers where monsters are soft. | Ann | Next fight: +3 pierce every round.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "2-solo-failure_390x664",
+  "seed": 8,
+  "tale": {
+   "top": 184,
+   "bottom": 518,
+   "h": 334
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": {
+   "top": 428,
+   "bottom": 495,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 886,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF SPEED | Catch That Chicken! | ROLL | Your roll 2 · Challenge 5 | FAILED | Duchess gets away. Ann gets a nose full of feathers. | Next fight, Ann loses 4 health every round.",
+  "buttons": "MENU / ASK FOR A REMATCH · 10 GOLD / ONWARD"
+ },
+ {
+  "tag": "3-company-winner_390x664",
+  "seed": 1,
+  "tale": {
+   "top": 209,
+   "bottom": 572,
+   "h": 364
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": {
+   "top": 482,
+   "bottom": 549,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 860,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | The Rope Swing | ROLLS | Ann 4 | Bob 3 | Cy 3 | Dee 2 | Eve 2 | Fitzwilliam 2 | SUCCESS | Ann sails across and lands like a cat. | Ann | Start the next fight with 2 more magic.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "4-company-tie_390x664",
+  "seed": 5,
+  "tale": {
+   "top": 235,
+   "bottom": 572,
+   "h": 337
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": {
+   "top": 455,
+   "bottom": 549,
+   "h": 93
+  },
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 834,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | Reading the Stars | ROLLS | Ann 2 | Bob 3 | Cy 3 | SUCCESS | A tie between Bob and Cy, so both win. | Bob and Cy | +8 block in round 1 of the next fight.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "5-walk-on_390x664",
+  "seed": 1,
+  "tale": {
+   "top": 402,
+   "bottom": 572,
+   "h": 170
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": null,
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 667,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 17.6,
+  "text": "ON THE ROAD | The Wishing Well | You leave the well undisturbed.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "6-cost-and-benefit_390x664",
+  "seed": 2,
+  "tale": {
+   "top": 306,
+   "bottom": 573,
+   "h": 267
+  },
+  "cta": {
+   "top": 583,
+   "bottom": 647,
+   "h": 64
+  },
+  "effect": {
+   "top": 456,
+   "bottom": 549,
+   "h": 93
+  },
+  "scrolls": true,
+  "sideH": 662,
+  "sideScroll": 763,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16.32,
+  "text": "ON THE ROAD | Questionable Stew | The lump disagrees. | Everyone | Next fight: +30 health, and lose 4 health every round.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "1-solo-success_430x746",
+  "seed": 2,
+  "tale": {
+   "top": 320,
+   "bottom": 654,
+   "h": 334
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": {
+   "top": 564,
+   "bottom": 631,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 744,
+  "sideScroll": 867,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF WISDOM | The Riddling Troll | ROLL | Your roll 3 · Challenge 1 | SUCCESS | “An echo,” says Ann. The troll sulks, then whispers where monsters are soft. | Ann | Next fight: +3 pierce every round.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "2-solo-failure_430x746",
+  "seed": 8,
+  "tale": {
+   "top": 266,
+   "bottom": 600,
+   "h": 334
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": {
+   "top": 510,
+   "bottom": 577,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 744,
+  "sideScroll": 922,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF SPEED | Catch That Chicken! | ROLL | Your roll 2 · Challenge 5 | FAILED | Duchess gets away. Ann gets a nose full of feathers. | Next fight, Ann loses 4 health every round.",
+  "buttons": "MENU / ASK FOR A REMATCH · 10 GOLD / ONWARD"
+ },
+ {
+  "tag": "3-company-winner_430x746",
+  "seed": 1,
+  "tale": {
+   "top": 291,
+   "bottom": 655,
+   "h": 364
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": {
+   "top": 564,
+   "bottom": 631,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 744,
+  "sideScroll": 896,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | The Rope Swing | ROLLS | Ann 4 | Bob 3 | Cy 3 | Dee 2 | Eve 2 | Fitzwilliam 2 | SUCCESS | Ann sails across and lands like a cat. | Ann | Start the next fight with 2 more magic.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "4-company-tie_430x746",
+  "seed": 5,
+  "tale": {
+   "top": 343,
+   "bottom": 654,
+   "h": 311
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": {
+   "top": 564,
+   "bottom": 630,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 744,
+  "sideScroll": 844,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | Reading the Stars | ROLLS | Ann 2 | Bob 3 | Cy 3 | SUCCESS | A tie between Bob and Cy, so both win. | Bob and Cy | +8 block in round 1 of the next fight.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "5-walk-on_430x746",
+  "seed": 1,
+  "tale": {
+   "top": 443,
+   "bottom": 613,
+   "h": 170
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": null,
+  "scrolls": false,
+  "sideH": 744,
+  "sideScroll": 744,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 17.6,
+  "text": "ON THE ROAD | The Wishing Well | You leave the well undisturbed.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "6-cost-and-benefit_430x746",
+  "seed": 2,
+  "tale": {
+   "top": 414,
+   "bottom": 654,
+   "h": 240
+  },
+  "cta": {
+   "top": 665,
+   "bottom": 729,
+   "h": 64
+  },
+  "effect": {
+   "top": 564,
+   "bottom": 631,
+   "h": 67
+  },
+  "scrolls": true,
+  "sideH": 744,
+  "sideScroll": 773,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16.32,
+  "text": "ON THE ROAD | Questionable Stew | The lump disagrees. | Everyone | Next fight: +30 health, and lose 4 health every round.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "1-solo-success_375x548",
+  "seed": 2,
+  "tale": {
+   "top": 167,
+   "bottom": 460,
+   "h": 293
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": {
+   "top": 376,
+   "bottom": 440,
+   "h": 64
+  },
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 717,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF WISDOM | The Riddling Troll | ROLL | Your roll 3 · Challenge 1 | SUCCESS | “An echo,” says Ann. The troll sulks, then whispers where monsters are soft. | Ann | Next fight: +3 pierce every round.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "2-solo-failure_375x548",
+  "seed": 8,
+  "tale": {
+   "top": 115,
+   "bottom": 408,
+   "h": 293
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": {
+   "top": 324,
+   "bottom": 388,
+   "h": 64
+  },
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 769,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16,
+  "text": "A TEST OF SPEED | Catch That Chicken! | ROLL | Your roll 2 · Challenge 5 | FAILED | Duchess gets away. Ann gets a nose full of feathers. | Next fight, Ann loses 4 health every round.",
+  "buttons": "MENU / ASK FOR A REMATCH · 10 GOLD / ONWARD"
+ },
+ {
+  "tag": "3-company-winner_375x548",
+  "seed": 1,
+  "tale": {
+   "top": 134,
+   "bottom": 460,
+   "h": 326
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": {
+   "top": 376,
+   "bottom": 440,
+   "h": 64
+  },
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 750,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | The Rope Swing | ROLLS | Ann 4 | Bob 3 | Cy 3 | Dee 2 | Eve 2 | Fitzwilliam 2 | SUCCESS | Ann sails across and lands like a cat. | Ann | Start the next fight with 2 more magic.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "4-company-tie_375x548",
+  "seed": 5,
+  "tale": {
+   "top": 160,
+   "bottom": 459,
+   "h": 299
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": {
+   "top": 349,
+   "bottom": 439,
+   "h": 90
+  },
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 724,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 15.2,
+  "text": "ON THE ROAD | Reading the Stars | ROLLS | Ann 2 | Bob 3 | Cy 3 | SUCCESS | A tie between Bob and Cy, so both win. | Bob and Cy | +8 block in round 1 of the next fight.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "5-walk-on_375x548",
+  "seed": 1,
+  "tale": {
+   "top": 317,
+   "bottom": 460,
+   "h": 143
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": null,
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 567,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16.96,
+  "text": "ON THE ROAD | The Wishing Well | You leave the well undisturbed.",
+  "buttons": "MENU / ONWARD"
+ },
+ {
+  "tag": "6-cost-and-benefit_375x548",
+  "seed": 2,
+  "tale": {
+   "top": 223,
+   "bottom": 459,
+   "h": 236
+  },
+  "cta": {
+   "top": 467,
+   "bottom": 531,
+   "h": 64
+  },
+  "effect": {
+   "top": 349,
+   "bottom": 439,
+   "h": 90
+  },
+  "scrolls": true,
+  "sideH": 546,
+  "sideScroll": 661,
+  "buttonsOverlap": false,
+  "effectUnderCta": false,
+  "minFont": 16.32,
+  "text": "ON THE ROAD | Questionable Stew | The lump disagrees. | Everyone | Next fight: +30 health, and lose 4 health every round.",
+  "buttons": "MENU / ONWARD"
+ }
+]
