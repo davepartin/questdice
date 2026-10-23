@@ -1326,6 +1326,28 @@ export function gainXp(hero, xp) {
   if (hero.level >= MAX_LEVEL) hero.xp = 0;
   return gained;
 }
+// What a perk does for this hero, exactly (the teamwork pass, TEAMWORK.perkPreview): the effect in one line, and the number it changes
+// before and after, worked out by the same rules the game plays by on a copy of the hero with the perk added. Conditional perks
+// (red or blue weapon faces, pierce dice) give the amount per die, not a total that depends on the roll.
+export function perkPreview(hero, id) {
+  const P = PERKS[id]; if (!P || P.diamond) return null;
+  const after = { ...hero, perks: [...(hero.perks || []), id] }; const m0 = heroMods(hero); const m1 = heroMods(after);
+  const have = (hero.perks || []).filter((x) => x === id).length; const rank = { now: have, next: have + 1, max: P.max };
+  const startMag = (h) => Math.min(magicCapOf(h), startMagicOf(h)); const triple = (h, m) => tripleBonus(h) + m.tripleBonus;
+  const row = (what, before, aft, text, note = '') => ({ id, what, before, after: aft, text, note, rank, same: String(before) === String(aft) });
+  switch (id) {
+    case 'vitality': return row('Most health', maxHpOf(hero), maxHpOf(after), `+${P.mod.maxHp} most health.`);
+    case 'reserve': { const b = startMag(hero); const a = startMag(after);
+      return row('Magic when a fight starts', b, a, `+${P.mod.startMagic} magic at the start of every fight. It does not raise the most you can hold.`, a === b ? `You already start full (you hold at most ${magicCapOf(hero)}): this does nothing until your most magic grows.` : ''); }
+    case 'deepwell': return row('Most magic you can hold', magicCapOf(hero), magicCapOf(after), `+${P.mod.magicCap} to the most magic you can hold. You do not start fights with more.`);
+    case 'keen': return row('Each weapon die on a red face', `+${m0.redBonus}`, `+${m1.redBonus}`, `+${P.mod.redBonus} attack from each weapon die that lands on a red (attack) face.`, 'Both weapon dice red: twice. A blue face gets nothing from it.');
+    case 'ward': return row('Each weapon die on a blue face', `+${m0.blueBonus}`, `+${m1.blueBonus}`, `+${P.mod.blueBonus} block from each weapon die that lands on a blue (block) face.`, 'Both weapon dice blue: twice. A red face gets nothing from it.');
+    case 'piercer': return row('Each body die that pays pierce', `+${m0.pierceBonus}`, `+${m1.pierceBonus}`, `+${P.mod.pierceBonus} pierce from each white die (head, hands, feet) that pays pierce.`, 'Only on a roll that shows the pierce symbol.');
+    case 'greed': return row('Gold from your dice and the fallen', `+${Math.round(m0.goldPct * 100)}%`, `+${Math.round(m1.goldPct * 100)}%`, `+${Math.round(P.mod.goldPct * 100)}% gold from your dice and from monsters you defeat.`);
+    case 'linebreaker': return row('Every triple pays', `+${triple(hero, m0)}`, `+${triple(hero, m1)}`, `+${P.mod.tripleBonus} to every triple, attack or block.`, 'Triples also grow with each act.');
+    default: return row(P.name, '', '', P.text);
+  }
+}
 export function offerPerks(hero, rng) {
   const have = (id) => hero.perks.filter((p) => p === id).length;
   const avail = Object.keys(PERKS).filter((id) => !PERKS[id].retired && have(id) < PERKS[id].max);

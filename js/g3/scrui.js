@@ -835,6 +835,14 @@ export function revealPanel(reveal, youName, { bare = false } = {}) {
 const PERK_ICON = { diamond: 'gem', vitality: 'heart', reserve: 'spark', quick: 'reroll', keen: 'sword', ward: 'shield', piercer: 'pierce', greed: 'coin', grit: 'skull', linebreaker: 'dice' };
 function perkCard(id, hero, onpick, i) {
   const p = D.PERKS[id]; const have = hero.perks.filter((x) => x === id).length;
+  const pv = D.TEAMWORK.perkPreview && E.perkPreview(hero, id);
+  if (pv) { // the teamwork pass: the exact effect, and this hero's number before and after (from the same rules the game uses)
+    return h('button', { class: `sx-perk perk-${id} pv`, type: 'button', style: { '--i': i }, onclick: tap(onpick), 'aria-label': `${p.name}. ${pv.text} ${pv.what}: ${pv.before} to ${pv.after}.` },
+      h('span', { class: 'pk-ico' }, ico(PERK_ICON[id] || 'star', '', 34)), h('b', {}, p.name), h('small', {}, pv.text),
+      h('span', { class: `pk-change ${pv.same ? 'same' : ''}` }, h('i', {}, pv.what), h('b', {}, String(pv.before)), ico('chevron'), h('b', { class: 'to' }, String(pv.after))),
+      pv.note ? h('small', { class: 'pk-note' }, pv.note) : null,
+      h('span', { class: 'pk-rank' }, pips(have, p.max), h('em', {}, `Rank ${have + 1} of ${p.max}`)));
+  }
   return h('button', { class: `sx-perk perk-${id}`, type: 'button', style: { '--i': i }, onclick: tap(onpick), 'aria-label': `${p.name}. ${p.text}` },
     h('span', { class: 'pk-ico' }, ico(PERK_ICON[id] || 'star', '', 34)), h('b', {}, p.name), h('small', {}, p.text), p.diamond ? h('span', { class: 'pk-rank' }, h('em', {}, `Case ${E.diamondsOf(hero).length + 1} of ${D.DIAMOND.max}`)) : h('span', { class: 'pk-rank' }, pips(have, p.max), h('em', {}, have + 1 > p.max ? 'Max' : `Rank ${have + 1}`)));
 }

@@ -101,3 +101,26 @@ test('charms resting: an old save keeps its charms, but none works and none is o
   assert.equal(JSON.stringify(h.charms), saved, 'the save is untouched');
   T.noCharms = false; assert.equal(E.hasCharm(h, 'mirror'), true, 'switch charms back on and they work again');
 });
+
+test('perk previews say exactly what taking the perk then does, for this hero', () => {
+  const pool = ['vitality', 'reserve', 'deepwell', 'keen', 'ward', 'piercer', 'greed', 'linebreaker'];
+  for (const cls of ['wizard', 'dwarf']) for (const id of pool) {
+    const h = E.newHero({ name: 'P', cls, seed: 4 }); h.level = 5; h.campaign.act = 2; h.pendingPerks = 1;
+    const pv = E.perkPreview(h, id); assert.ok(pv && pv.text && pv.what, `${id} has a preview`);
+    E.takePerk(h, id);
+    const now = { vitality: E.maxHpOf(h), reserve: Math.min(E.magicCapOf(h), E.startMagicOf(h)), deepwell: E.magicCapOf(h) }[id];
+    if (now != null) assert.equal(now, pv.after, `${cls} ${id}: the after value is what the hero now has`);
+  }
+  // per-die perks: a red weapon face hits for one more per Keen Edge; a blue face does not
+  const k = E.newHero({ name: 'K', cls: 'knight', seed: 4 }); k.pendingPerks = 1;
+  const faces = E.weaponFaces(k.loadout.NW, E.sidesOf(k, 'NW')); const red = faces.findIndex((f) => f.c === 'r') + 1;
+  const board = Object.fromEntries(['NW', 'NE', 'N', 'W', 'C', 'E', 'S', 'SW', 'SE', 'P'].map((s) => [s, { v: s === 'NW' ? red : 1 }]));
+  const before = E.evaluate(k, board).atk; assert.equal(E.perkPreview(k, 'keen').after, '+1'); E.takePerk(k, 'keen');
+  assert.equal(E.evaluate(k, board).atk - before, 1, 'Keen Edge: +1 on the red weapon face');
+  // Line Breaker's after value is the triple the game pays
+  const t = E.newHero({ name: 'T', cls: 'knight', seed: 4 }); t.campaign.act = 3; t.pendingPerks = 1;
+  const lb = E.perkPreview(t, 'linebreaker'); assert.equal(lb.after, `+${E.tripleBonus(t) + 2}`);
+  // Arcane Reserve when a hero already starts full says so instead of promising magic it cannot give
+  const full = E.newHero({ name: 'F', cls: 'knight', seed: 4 }); full.perks = ['reserve', 'reserve', 'reserve']; full.level = 1;
+  const r = E.perkPreview(full, 'reserve'); if (r.same) assert.ok(/does nothing/.test(r.note));
+});

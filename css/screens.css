@@ -1110,3 +1110,13 @@ body.sx .modal-card .slot-sheet { max-height: none; overflow: visible; padding-t
 .ch-guide .sx-charm.mine .ch-badge { background: rgba(63, 209, 122, .16); border: 1px solid rgba(63, 209, 122, .55); color: #8ff0b4; -webkit-text-fill-color: #8ff0b4; }
 /* the lab's scouts line on a quest card (js/lab.js) */
 .qc-scout { display: flex; align-items: center; gap: .3rem; color: #e8cf96; font-size: .76rem; margin-top: .15rem; } .qc-scout .ico svg { width: .85rem; height: .85rem; }
+/* the teamwork pass: a perk card shows the number it changes, before and after */
+.sx-perk.pv .pk-change { display: inline-flex; align-items: center; gap: .3rem; flex-wrap: wrap; justify-content: center; margin-top: .25rem; font: 600 .74rem/1.2 var(--font-display); color: #d9d2c4; }
+.sx-perk.pv .pk-change i { font-style: normal; width: 100%; text-align: center; color: #a69f92; font-size: .68rem; letter-spacing: .03em; }
+.sx-perk.pv .pk-change b { font-size: .95rem; color: #f2e6cc; } .sx-perk.pv .pk-change b.to { color: #ffd45a; }
+.sx-perk.pv .pk-change .ico svg { width: .8rem; height: .8rem; }
+.sx-perk.pv .pk-change.same b.to { color: #a69f92; }
+.sx-perk.pv .pk-note { color: #a69f92; font-size: .66rem; }
+.sx-perk.pv .pk-change { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; }
+.sx-perk.pv .pk-change b, .sx-perk.pv .pk-change .ico { flex: none !important; width: auto; }
+.sx-perk.pv .pk-note { flex: 1 1 100%; text-align: center; }

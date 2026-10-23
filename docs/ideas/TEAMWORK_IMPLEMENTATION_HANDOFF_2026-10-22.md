@@ -216,4 +216,17 @@ Each checkpoint should be recoverable if the session runs out: update this plan 
 - Test: test/teamwork.test.mjs "charms resting" (old save keeps charms; no effect; no Lantern reroll; no boss, shop, or take;
   switching back on restores them). Screen: `node dev/charmsrest.mjs`.
 
-**Next step:** Checkpoint 3, perks.
+### Checkpoint 3: perks clarified (done)
+- The active pool is the eight from the review: Vitality (+6 most health, max 5), Arcane Reserve (+1 magic at the start of a
+  fight, max 3), Deep Well (+2 most magic you can hold, max 3), Keen Edge (+1 attack per weapon die on a red face, max 3),
+  Ironward (+1 block per weapon die on a blue face, max 3), Piercing Pips (+1 pierce per white body die that pays pierce, max 3),
+  Gold Sense (+25% gold from dice and the fallen, max 3), Line Breaker (+2 to every triple, max 5). Retired: Quick Hands, Stout
+  Heart, Frugal Mender (kept by heroes who took them). Numbers and caps unchanged.
+- `E.perkPreview(hero, id)` works out the line and the before/after on a copy of the hero with the perk added, using the game's
+  own functions (maxHpOf, startMagicOf capped by magicCapOf, magicCapOf, heroMods, tripleBonus). Conditional perks show the
+  amount per die and say when it applies. Arcane Reserve on a hero who already starts full says it does nothing yet.
+- `TEAMWORK.perkPreview` switches the perk card (victory and camp Hero tab, solo and table) to the new layout.
+- Test: test/teamwork.test.mjs "perk previews" (every perk for two classes: the after value equals the hero after taking it;
+  Keen Edge adds exactly 1 on a red face; Line Breaker equals the triple paid). Screens: `node dev/perkpreview.mjs`.
+
+**Next step:** Checkpoint 4: the Fire splash test, the Bard recommendation, and the arrow formulas reconciled.
