@@ -47,8 +47,8 @@ for (let run = 0; run < RUNS; run++) {
       const tb = teamFight(heroes, quest, rng); (mAt[act] ||= []).push(tb.team?.m || 0);
       const alive = tb.fighters.reduce((a, f) => a + Math.max(0, f.hp) / f.maxHp, 0) / tb.fighters.length;
       add(act, quest.kind, 'team', tb.outcome === 'victory', tb.round, tb.outcome === 'victory' ? alive : 0);
-      tb.fighters.forEach((f, i) => { const mate = tb.fighters.filter((x) => x !== f); const c = (byClass[f.hero.cls] ||= { n: 0, low: 0, fell: 0, taken: 0, given: 0, mateLow: 0, mateFell: 0 });
-        c.n++; c.low += f._low ?? 1; c.fell += f._fell || 0; c.taken += f.stats.taken || 0; c.given += f.stats.healGiven || 0;
+      tb.fighters.forEach((f, i) => { const mate = tb.fighters.filter((x) => x !== f); const c = (byClass[f.hero.cls] ||= { n: 0, low: 0, fell: 0, taken: 0, given: 0, mateLow: 0, mateFell: 0, share: 0, blockShare: 0 }); const teamDealt = tb.fighters.reduce((a, x) => a + (x.stats.dealt || 0), 0); const teamBlocked = tb.fighters.reduce((a, x) => a + (x.stats.blocked || 0), 0);
+        c.n++; c.share += teamDealt ? (f.stats.dealt || 0) / teamDealt : 0; c.blockShare += teamBlocked ? (f.stats.blocked || 0) / teamBlocked : 0; c.low += f._low ?? 1; c.fell += f._fell || 0; c.taken += f.stats.taken || 0; c.given += f.stats.healGiven || 0;
         c.mateLow += mate.reduce((a, x) => a + (x._low ?? 1), 0) / Math.max(1, mate.length); c.mateFell += mate.reduce((a, x) => a + (x._fell || 0), 0) / Math.max(1, mate.length); void i; });
       // each hero alone (the way the solo campaign grows them)
       for (const h of heroes) {
@@ -70,5 +70,5 @@ for (const r of Object.values(acts).sort((x, y) => x.a - y.a || x.kind.localeCom
   const s = r.solo; const t = r.team;
   console.log(`${r.a}   ${r.kind.padEnd(7)}   ${pct(s.w / s.n)}  ${(s.r / s.n).toFixed(1).padStart(4)}  ${pct(s.h / Math.max(1, s.w))}      ${pct(t.w / t.n)}  ${(t.r / t.n).toFixed(1).padStart(4)}  ${pct(t.h / Math.max(1, t.w))}`);
 }
-console.log(`\nBy class at the table${process.env.CLASSID ? ` · class identity ${process.env.CLASSID}` : ''}: lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell`);
-for (const [cls, c] of Object.entries(byClass)) console.log(`${cls.padEnd(7)} ${pct(c.low / c.n)}  ${pct(c.fell / c.n)}  ${(c.taken / c.n).toFixed(1).padStart(5)}  ${(c.given / c.n).toFixed(1).padStart(5)}     ${pct(c.mateLow / c.n)}  ${pct(c.mateFell / c.n)}`);
+console.log(`\nBy class at the table${process.env.CLASSID ? ` · class identity ${process.env.CLASSID}` : ''}${process.env.RELEASE ? ' · the released rules' : ''}: hero-fights · lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell · share of the team's damage · share of the team's block (a fair share is 1 / heroes)`);
+for (const [cls, c] of Object.entries(byClass)) console.log(`${cls.padEnd(7)} ${String(c.n).padStart(5)}  ${pct(c.low / c.n)}  ${pct(c.fell / c.n)}  ${(c.taken / c.n).toFixed(1).padStart(5)}  ${(c.given / c.n).toFixed(1).padStart(5)}     ${pct(c.mateLow / c.n)}  ${pct(c.mateFell / c.n)}   ${pct(c.share / c.n)}  ${pct(c.blockShare / c.n)}`);
