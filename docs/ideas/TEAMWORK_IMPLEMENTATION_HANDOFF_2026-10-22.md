@@ -245,5 +245,28 @@ Each checkpoint should be recoverable if the session runs out: update this plan 
 - Fixed on the way: a stray comment in js/main.js stopped the lab page loading (branch only, never on main); new
   test/syntax.test.mjs parses every game script so that cannot recur. 358 tests pass.
 
-**Next step:** Checkpoint 5: the teamwork evaluation (running), Bard team measurement, class and magic evaluation against the
-consistent baseline; then the phone preview.
+### Checkpoint 6: phone preview (done; deployed and verified)
+Open **https://davepartin.github.io/questdice/?lab** on a phone (stamp `20261023lab2`, main `fa040eb`). A yellow "LAB · preview" tag
+shows on every screen. Lab heroes are saved apart (`questdice.lab.hero.*`), never reach the cloud or online tables, and the live
+game without `?lab` is unchanged (checked: `node dev/livecheck.mjs`).
+
+Enabled in the lab:
+| | Status |
+|---|---|
+| Heart to Heart (replaces Heartbeat), heart faces + Ready + aim dots | approved, preview |
+| Charms resting | approved, preview |
+| Perk cards with exact effect and before/after | approved, preview |
+| Six one-handed weapons, Bow + Arrows with ammunition at camp, Scouts line on quest cards | experiment |
+| Arrow rules as last measured: numbered arrowheads, Piercing = whole hit, Frost = Strength softer, Fire = full Strength splash | experiment, needs Dave's decisions |
+| Monster fury from round 4 (a notice when it rises); no rallying swarms, no mend, no move bag | experiment |
+| Knight Guard, Dwarf Dig In, Bard Verse for a friend | experiment |
+
+Not in the lab: rallying swarms, monster mend, the move bag (no screen yet for "what is left in the bag"), possession and the
+secret-objective expansion (later pass).
+
+Note for online play in the lab: the lab refuses cloud and online tables, so the online heart preview can only be tried on the
+shared-phone table in the lab. It is covered by test/teamwork.test.mjs; a two-phone check needs the online table, which means
+switching it on in the live game (Dave's decision).
+
+**Next step:** Checkpoint 5 (running): the teamwork evaluation, the Bard team measurement, the class kits and magic styles on
+the consistent baseline (today's weapons, fury from round 4, charms resting).
