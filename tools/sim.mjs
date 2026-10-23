@@ -91,7 +91,7 @@ function futureValue(c) {
   if (c.outcome === 'defeat' || c.hp <= 0) return -2000;
   const hpFrac = c.hp / c.maxHp;
   let v = c.hp * 1.0 - (hpFrac < 0.35 ? (0.35 - hpFrac) * c.maxHp * 2 : 0); // low health is worth less than it looks: the next hit may end it
-  v += c.magic * 2.2 + (c.potions || 0) * 9;
+  v += c.magic * (PLAY.magicW ?? 2.2) + (c.potions || 0) * 9; // PLAY.magicW: what the wise player thinks a point of magic in hand is worth (tools/magicaudit.mjs)
   for (const [id, n] of Object.entries(c.charge || {})) { const card = cardsOf(c.hero).find((k) => k.id === id); const per = card?.per || {}; v += n * 0.7 * Object.values(typeof per === 'number' ? { atk: per } : per).reduce((a, x) => a + x, 0); }
   if (c.outcome === 'victory') return v + 400;
   // focus fire: a point of damage is worth more on a monster that is nearly down (a living monster keeps hitting you every round)
@@ -210,7 +210,7 @@ export function smartActs(b) {
     if (f.free) continue;
     if (c.kind === 'super' && foes < 2 && b.round < 4) continue;
     // MAGIC=spend: cast whenever it can be paid for; MAGIC=save: keep 4 in hand unless hurt (the magic evaluation); default: as before
-    const keep = MAGIC_STYLE === 'spend' ? 0 : MAGIC_STYLE === 'save' ? 4 : null;
+    const style = PLAY.magic ?? MAGIC_STYLE; const keep = style === 'spend' ? 0 : style === 'save' ? 4 : null;
     if (keep != null ? (b.magic - x < keep && b.hp > b.maxHp * 0.5) : (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5))) continue;
     castPower(b, c.id, { x });
   }

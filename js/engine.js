@@ -987,6 +987,8 @@ export function chargeValues(card, n, lvl = 0) {
 export const chargeGain = (card, n, lvl = 0) => Object.fromEntries(Object.entries(chargeValues(card, n, lvl)).map(([k, xs]) => [k, xs.reduce((a, x) => a + x, 0)]));
 // A round power's attack in a given round: per x the round, then the level's boost on the whole (scaleNum).
 export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lvl);
+// The measuring tools listen to every cast (tools/magicaudit.mjs); the game never sets it.
+export const CAST_HOOK = { on: null };
 export function castPower(b, id, { x, release, to } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
@@ -1001,7 +1003,7 @@ export function castPower(b, id, { x, release, to } = {}) {
       if (k === 'gold') b.goldEarned = (b.goldEarned || 0) + amt; else b.mods[k] = (b.mods[k] || 0) + amt;
       if (k === 'atk' && card.splash === 'half') b.mods.splash += Math.floor(amt / 2);
     }
-    b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; return b.lastCast;
+    b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; CAST_HOOK.on?.(b, b.lastCast); return b.lastCast;
   }
   const st = powerState(b, card); if (st.spent || st.early) return null;
   const cost = powerCost(card, x, powerLevel(b.hero, id)); if (b.magic < cost) return null;
@@ -1031,7 +1033,7 @@ export function castPower(b, id, { x, release, to } = {}) {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
   }
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
-  b.lastCast = out; return out;
+  b.lastCast = out; CAST_HOOK.on?.(b, out); return out;
 }
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
 export const LUCK = { mid: 3, top: 6 };
