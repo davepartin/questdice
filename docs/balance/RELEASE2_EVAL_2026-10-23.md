@@ -88,7 +88,24 @@ The first kill is worth about 12 health for every round it comes sooner, so fini
 
 Equal progression: every hero also grows through the solo campaign step by step, and the table fights the same quest. TEAMPLAY=1 bots use the teamwork rules on purpose: a Knight above half health guards when a friend is worse off, and a hero joins a friend with the same heart, or turns its heart by one to match.
 
-SIX_HERO_TABLE
+| Company | Team battles won first try, per campaign | Act III battles (70 fights) | Act III boss, first try | Hero-fights where the hero fell |
+|---|---|---|---|---|
+| 2, plain | 96% ± 1% | 99% | 20 of 20 | 5.0% |
+| 2, team play | 98% ± 1% | 99% | 19 of 20 | 3.6% |
+| 4, plain | 97% ± 1% | 97% | 20 of 20 | 4.5% |
+| 4, team play | 97% ± 1% | 99% | 20 of 20 | 3.8% |
+| 6, plain | **87% ± 2%** | **80%** | 18 of 20 | **15.4%** |
+| 6, team play | **88% ± 2%** | **86%** | 17 of 20 | **14.8%** |
+
+**The six-hero gap is real, and better teamwork does not close it.** With equal progression and 10 independent campaigns per size:
+- six heroes win about 9 points fewer battles than two or four (87–88% against 96–98%, each ± 1–2%);
+- a hero falls in about one fight in seven, against one in twenty-five.
+
+Team play lifted Heart to Heart to 69% of hero-rounds and guarding to 27% of rounds, yet left the gap where it was. So it is the scaling (monsters are built at about 5.3 times a single hero's strength for six), not the bots ignoring the teamwork rules.
+
+The Act III boss is fine at every size: 17–20 of 20, each a separate campaign's boss. Ordinary battles are where six suffer.
+
+**Proposal, not applied:** soften the six-hero factor (and perhaps five), then rerun this same comparison. That means lowering the PARTY scaling for six until six-hero battles sit near 95%. It is a balance change, so it waits for Dave.
 
 **What the bots did with the teamwork rules:**
 
@@ -98,8 +115,8 @@ SIX_HERO_TABLE
 | 2, team play | 28% | 100% | 11% | 0.02 |
 | 4, plain | 47% | 100% | 12% | 0.10 |
 | 4, team play | 54% | 100% | 20% | 0.10 |
-
-SIX_HERO_USE
+| 6, plain | 61% | 100% | 17% | 0.23 |
+| 6, team play | 69% | 100% | 27% | 0.21 |
 
 All the bots focus fire (everyone on the weakest monster, or on one winding up). The Knight guards rarely, because it seldom has spare magic. The Bard almost never sings for a friend, because its rule waits for a friend below 60% health and worse off than itself.
 
@@ -157,3 +174,22 @@ Only presentation:
 - the Dwarf's Dig In line.
 
 No balance numbers moved.
+
+## Decisions waiting for Dave
+
+1. **Six-hero scaling.** Soften the six (and five) hero factor and rerun the same 10-campaign comparison until six-hero battles sit near 95%.
+2. **Wizard.** Either keep the start as it is, or adopt the Barrier start (1.6 ± 0.4 health a fight better). My preference is to try a magic outlet first (a priced second Arc Bolt, or a scaling Missile) and measure it against Barrier the same paired way.
+3. **Replay pacing.** Let the replay scale with the number of strikes (about 1.5 s each, no 15-second floor). Presentation only, best judged after the group playtest.
+4. **Bard support and encounters where speed pays.** Both belong to the class-identity and encounter work, not to this release.
+
+## Tools added for this report
+
+- **tools/magicaudit.mjs:** casts counted per policy, independent campaigns, Wizard variants.
+- **tools/party.mjs:**
+  - TEAMPLAY=1 bots;
+  - Heart to Heart, focus, guard and verse counts;
+  - double-share credit per hero;
+  - fight counts and errors per row;
+  - a per-campaign error.
+- **Engine:** CAST_HOOK, a listener only the tools set.
+- **test/syntax.test.mjs** now checks every tool and dev script parses. A stray comment had silently cost one batch.

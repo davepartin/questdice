@@ -305,3 +305,20 @@ Live check: `node dev/livecheck.mjs`.
 
 Still open for Dave: whether fury returns (gentler, or with stronger heroes), the remaining evaluations (Bard team test, class
 kits and magic styles on the released baseline), and the lesson pictures (they show today's dice art, not the new sword's faces).
+### After Release 2 (23 Oct 2026): ChatGPT's review, the follow-ups
+
+**Live (presentation only):**
+- tutorial pictures for the released sword and shield;
+- six-hero crowding;
+- Knight Guard visible everywhere: a double share to the Knight, a single share to everyone else;
+- the Dwarf's Dig In line.
+
+**Measured, no rule changed:** docs/balance/RELEASE2_EVAL_2026-10-23.md, with sample counts and errors across independent campaigns.
+
+**Headline findings:**
+- **Magic style:** spend and save now really differ. Spending is never worse, and the stakes are small.
+- **Wizard:** it is not the weak class across 5 campaigns. A Barrier start is 1.6 ± 0.4 better; stronger attack spells and more health change nothing. It ends fights holding 8–11 unspent magic.
+- **Six heroes:** they win 87–88% of battles against 96–98% for two or four, and deliberate teamwork does not close the gap.
+- **Replay:** fitted to 15–19 s a round regardless of how many strikes it shows.
+
+**Waiting for Dave:** six-hero scaling, the Wizard start or a magic outlet, and replay pacing.
