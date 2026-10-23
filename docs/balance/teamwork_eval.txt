@@ -1,0 +1,50 @@
+QuestDice teamwork · Act II heroes · smart bots · today's monsters and weapons · charms resting · 2016 fights
+Per fight, all heroes together: health lost (± standard error) · wins · rounds · summons allowed · slams that landed · heroes in a Heart to Heart group (share of hero-rounds)
+
+mixed
+policy                  n  health lost    win%  def%  unf%  rounds  dealt  block  heal  potions  summons  slams  H2H%
+focus                  84  32.4±2.5        100     0     0     6.0    643     94    47      0.7      0.5    1.7     0
+focus + H2H            84  33.0±2.6        100     0     0     5.6    636     85    44      0.7      0.4    1.5    30
+split                  84  52.2±4.2         99     1     0     6.5    649    109    70      1.5      0.5    2.0     0
+split + H2H            84  54.8±4.6         96     4     0     6.3    640    107    66      1.5      0.5    1.9    10
+adaptive               84  84.3±7.6         88    12     0     5.7    608    102    74      2.0      0.3    1.4     0
+adaptive + H2H         84  75.9±7.4         88    12     0     5.6    611    102    68      1.8      0.3    1.2    37
+
+swarm4
+policy                  n  health lost    win%  def%  unf%  rounds  dealt  block  heal  potions  summons  slams  H2H%
+focus                  84  61.4±4.2         96     4     0     3.4    288     74    44      1.3      0.0    0.0     0
+focus + H2H            84  58.7±4.0         98     2     0     3.3    290     74    44      1.3      0.0    0.0    27
+split                  84  113.7±7.8        77    23     0     3.8    266     95    65      2.3      0.0    0.0     0
+split + H2H            84  114.5±7.9        79    21     0     3.8    265     95    65      2.3      0.0    0.0     3
+adaptive               84  61.4±4.2         96     4     0     3.4    288     74    44      1.3      0.0    0.0     0
+adaptive + H2H         84  63.3±4.9         95     5     0     3.3    289     68    45      1.4      0.0    0.0    35
+
+heavy
+policy                  n  health lost    win%  def%  unf%  rounds  dealt  block  heal  potions  summons  slams  H2H%
+focus                  84  8.3±1.2         100     0     0     2.1    206     15     4      0.0      0.0    0.1     0
+focus + H2H            84  7.5±1.2         100     0     0     2.0    206     14     3      0.0      0.0    0.1    37
+split                  84  8.3±1.2         100     0     0     2.1    206     16     4      0.0      0.0    0.1     0
+split + H2H            84  7.5±1.2         100     0     0     2.0    206     15     3      0.0      0.0    0.1    34
+adaptive               84  8.6±1.3         100     0     0     2.1    206     16     4      0.0      0.0    0.1     0
+adaptive + H2H         84  6.7±1.1         100     0     0     2.0    206     14     3      0.0      0.0    0.1    43
+
+summoner
+policy                  n  health lost    win%  def%  unf%  rounds  dealt  block  heal  potions  summons  slams  H2H%
+focus                  84  12.3±1.4        100     0     0     3.5    389     30     9      0.1      0.3    0.5     0
+focus + H2H            84  11.6±1.5        100     0     0     3.3    390     28     9      0.0      0.3    0.4    35
+split                  84  14.9±1.7        100     0     0     3.5    389     33    11      0.1      0.3    0.5     0
+split + H2H            84  14.1±1.7        100     0     0     3.3    389     31    11      0.1      0.3    0.5    30
+adaptive               84  16.8±2.0        100     0     0     3.5    388     34    14      0.2      0.3    0.5     0
+adaptive + H2H         84  15.5±2.1        100     0     0     3.3    386     31    12      0.1      0.3    0.4    40
+
+By party (all encounters): health lost a fight, focus / split / adaptive, without and with Heart to Heart
+knight+ranger                focus 17.7±2.9 / 16.2±2.9     split 26.2±4.5 / 26.1±4.7     adaptive 25.0±4.4 / 25.8±5.2  
+wizard+bard                  focus 24.1±4.4 / 25.5±4.3     split 35.2±5.7 / 35.9±5.8     adaptive 31.5±5.3 / 31.6±5.9  
+dwarf+dwarf                  focus 30.4±4.4 / 32.8±4.3     split 45.2±6.4 / 48.2±6.8     adaptive 48.6±7.6 / 45.6±6.7  
+bard+bard                    focus 23.1±3.4 / 22.4±3.6     split 32.9±4.8 / 34.2±5.0     adaptive 31.3±5.0 / 27.1±4.3  
+knight+wizard+bard           focus 35.8±4.5 / 32.2±4.4     split 54.9±8.7 / 52.0±8.9     adaptive 41.4±5.9 / 38.0±5.6  
+ranger+ranger+dwarf          focus 30.1±5.2 / 27.2±5.1     split 53.9±9.3 / 53.4±9.4     adaptive 40.5±7.0 / 38.0±6.8  
+knight+ranger+wizard+bard    focus 39.1±6.0 / 37.6±5.7     split 82.6±13.9 / 84.4±14.1   adaptive 81.2±11.7 / 76.3±12.4
+
+A decision that helped: round 1: knight0 and ranger1 matched heart 4 on Goblin Skulker (27 health left); 27 damage with +20 from Heart to Heart: the kill needed it
+A tempting decision that hurt: round 2: the company hit Hill Ogre while Bone Warden's wound-up slam landed for 31

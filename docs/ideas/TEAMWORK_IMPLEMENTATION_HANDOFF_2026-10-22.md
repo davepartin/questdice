@@ -277,3 +277,9 @@ Heart to Heart, heart faces and Ready, charms resting, perk previews (checked in
 The weapons experiment, arrows, fury and class rules follow in release 2, after two gaps found while preparing it are closed:
 (1) stage-1 weapons roll the same at every metal, so Silver and Gold would be worth nothing (the planned metal abilities were
 never built); (2) old two-handed Bows must become the new Arrows + Bow pair. Then a full-campaign measurement with everything on.
+
+### Checkpoint 5, part 1: teamwork evaluation (done)
+docs/balance/TEAMWORK_EVAL_2026-10-23.md: focus fire is clearly best; splitting loses a quarter of 4-goblin fights; the
+threat-first bot is a weak player (a simulation limit); Heart to Heart helps a little (mostly within the error), never hurts
+beyond the noise, and pulls 35-43% of heroes into groups when they look for it. Still running: Bard team measurement, class
+kits and magic styles on the consistent baseline, and the full campaign with release 2.
