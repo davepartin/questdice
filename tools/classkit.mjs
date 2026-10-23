@@ -25,7 +25,7 @@ function play(hero0, quest, seed) {
   return { win: b.outcome === 'victory' ? 1 : 0, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30 };
 }
 // every kit a class offers, and the hero set up to carry it (each slot keeps the best level the hero bought in that slot)
-function kits(cls) { const by = (s) => DATA.CLASSES[cls].cards.filter((c) => c.slot === s); const out = []; for (const a of by('A')) for (const b of by('B')) for (const c of by('C')) out.push([a, b, c]); return out; }
+function kits(cls) { const by = (s) => DATA.CLASSES[cls].cards.filter((c) => c.slot === s && (!process.env.KIT || c.start)); // KIT=start: only the kit a new hero carries const out = []; for (const a of by('A')) for (const b of by('B')) for (const c of by('C')) out.push([a, b, c]); return out; }
 function wear(hero, kit) {
   const h = clone(hero); h.level = Math.max(h.level, 5); h.learned = DATA.CLASSES[h.cls].cards.map((c) => c.id); h.powerLevel = { ...(h.powerLevel || {}) };
   for (const card of kit) { const lv = Math.max(0, ...DATA.CLASSES[h.cls].cards.filter((c) => c.slot === card.slot).map((c) => E.powerLevel(hero, c.id))); h.powerLevel[card.id] = lv; E.equipPower(h, card.id); }
@@ -56,7 +56,7 @@ if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); el
 
 function report(all) {
   const encs = Object.keys(ENC); const m = (f, k) => { const r = all.filter(f); return r.length ? r.reduce((a, x) => a + x[k], 0) / r.length : NaN; };
-  console.log('QuestDice class kits · Act II heroes · wise bot · today\'s weapons and powers');
+  console.log(`QuestDice class kits · Act II heroes · wise bot · today's weapons and powers${['FURY_FROM', 'NOCHARM', 'MAGIC', 'KIT', 'CLASSID'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()} ${process.env[k]}`).join('')}`);
   console.log('Each cell: health a fight costs (lower is better) · win%. * = the best kit for that fight. (start) = the kit a new hero carries.');
   for (const cls of [...new Set(all.map((x) => x.cls))]) {
     const kitsHere = [...new Set(all.filter((x) => x.cls === cls).map((x) => x.kit))];

@@ -10,8 +10,8 @@ import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX }
 import * as ENGINE from '../js/engine.js';
 import * as DATA from '../js/data.js';
 if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // the weapons experiment (docs/ideas/WEAPONS_REDESIGN_2026-10-22.md)
-// CLASSID=1 the class-identity experiment (CLASS2 in js/data.js): Bard songs carry, Knight Guard, Dwarf Dig In; CLASSID=songs,guard,digIn for some of them
-if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON(); const w = process.env.CLASSID.split(','); if (w[0] !== '1') { ENGINE.CLASS2.songs = w.includes('songs'); ENGINE.CLASS2.guard = w.includes('guard'); if (!w.includes('digIn')) ENGINE.CLASS2.digIn = 0; } }
+// CLASSID=1 the class-identity experiment (CLASS2 in js/data.js): Bard Verse for a friend, Knight Guard, Dwarf Dig In; CLASSID=verse,songs,guard,digIn for some of them
+if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON(); const w = process.env.CLASSID.split(','); if (w[0] !== '1') { ENGINE.CLASS2.songs = w.includes('songs'); ENGINE.CLASS2.verse = w.includes('verse'); ENGINE.CLASS2.guard = w.includes('guard'); if (!w.includes('digIn')) ENGINE.CLASS2.digIn = 0; } }
 if (typeof process !== 'undefined' && process.env.ARROW_NUM) DATA.WEAPONS2.faces.quiver.special = DATA.WEAPONS2.faces.quiver.numbered; // arrowheads that keep a number
 // the teamwork pass (TEAMWORK in js/data.js): H2H=1 Heart to Heart instead of Heartbeat; NOCHARM=1 charms resting; TEAMWORK=1 both
 if (typeof process !== 'undefined') { const env = process.env; if (env.H2H || env.TEAMWORK) DATA.TEAMWORK.heartToHeart = true; if (env.NOCHARM || env.TEAMWORK) DATA.TEAMWORK.noCharms = true; }
@@ -173,6 +173,7 @@ export function botShape(b, rng) {
 // The smart bot's choices before it locks in (potions, magic heals, powers, target), applied to b. Returns the resolve options.
 // a Bard at a table with songs on: the most hurt friend's health share (0 when there is none to sing for)
 const songsAt = (b) => { const C2 = ENGINE.CLASS2; if (!C2.on || !C2.songs || b.hero?.cls !== 'bard' || !Array.isArray(b.fighters)) return 0; const m = b.fighters.filter((x) => x.hp > 0 && x.hero !== b.hero); return m.length ? Math.min(...m.map((x) => x.hp / x.maxHp)) : 0; };
+const MAGIC_STYLE = typeof process !== 'undefined' ? process.env.MAGIC || '' : '';
 export function smartActs(b) {
   const wise = false;
   // potions first (free), then magic heals, when hurt
@@ -205,7 +206,9 @@ export function smartActs(b) {
     if (c.dice?.to === 'heal' && hurt > 0.6) continue;
     if (f.free) continue;
     if (c.kind === 'super' && foes < 2 && b.round < 4) continue;
-    if (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5)) continue;
+    // MAGIC=spend: cast whenever it can be paid for; MAGIC=save: keep 4 in hand unless hurt (the magic evaluation); default: as before
+    const keep = MAGIC_STYLE === 'spend' ? 0 : MAGIC_STYLE === 'save' ? 4 : null;
+    if (keep != null ? (b.magic - x < keep && b.hp > b.maxHp * 0.5) : (c.atwill ? b.magic - x < 2 : (b.magic - x < 1 && b.hp > b.maxHp * 0.5))) continue;
     castPower(b, c.id, { x });
   }
   // target: weakest, but hit a Stalker or a foe winding up first, and leave a Fire Ward or a Phasing foe alone when there is another
