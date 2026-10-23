@@ -16,7 +16,7 @@ for (const mode of ['', 'pace=actions']) for (const N of sizes) {
     const ms = Array.from({ length: N }, (_, i) => { const h = E.newHero({ name: ['Ann', 'Ben', 'Cal', 'Dee', 'Eve', 'Fay'][i], cls: cls[i], seed: 30 + i }); h.campaign.act = 2; h.level = 6; return h; });
     S.hero = ms[0]; S.company = { members: ms }; showBoard(); }, N);
   await pump(1);
-  await p.evaluate(() => { const { E, S } = window.QD; window.QD.startQuest({ ...E.questsFor(S.hero)[0], enemies: ['ogre', 'goblin', 'goblin'], kind: 'battle' }); });
+  await p.evaluate(() => { const { E, S } = window.QD; window.QD.startQuest({ ...E.questsFor(S.hero)[0], enemies: ['ogre', 'ogre', 'goblin', 'goblin'], kind: 'battle' }); });
   for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)) break; await p.evaluate(() => [...document.querySelectorAll('button')].find((x) => /^(Decline|Continue|Start|Fight)$/.test(x.textContent.trim()))?.click()); await pump(0.5); }
   await pump(2); const rows = [];
   for (let r = 0; r < ROUNDS; r++) {
@@ -31,7 +31,7 @@ for (const mode of ['', 'pace=actions']) for (const N of sizes) {
       if (k === N - 1 || await p.evaluate(() => window.QD.B3.battleState.replaying)) {
         for (let i = 0; i < 400 && await p.evaluate(() => window.QD.B3.battleState.busy || window.QD.B3.battleState.replaying); i++) await pump(0.25);
         const t1 = await p.evaluate(() => window.QD.world.stage.time); const rep = await p.evaluate(() => window.QD.B3.battleState.lastRep);
-        rows.push({ round: rep?.round, strikes: rep?.order?.length || 0, seconds: +(t1 - t0).toFixed(1) }); break;
+        if (rep?.round && !(await p.evaluate(() => window.QD.B3.battleState.b?.outcome))) rows.push({ round: rep.round, strikes: rep.order?.length || 0, seconds: +(t1 - t0).toFixed(1) }); break; // the last round ends on the victory screen: not a replay
       }
       for (let i = 0; i < 20 && await p.evaluate(() => window.QD.B3.battleState.busy); i++) await pump(0.5);
     }
