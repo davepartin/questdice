@@ -8,7 +8,9 @@ next session needs lives here and in the repo.
 
 ## START HERE: the state of the game on 10 October 2026
 
-This section is current; the older sections below it are history (where they disagree, this section wins).
+> **23 October 2026:** this summary is now history. The current state (rules switched on by `js/release.js`, charms resting, levels, live build, experiments done) is in [docs/team/tasks/T01.md](team/tasks/T01.md); how to work in the repository is in [docs/team/WORKING_GUIDE.md](team/WORKING_GUIDE.md).
+
+This section was current on 10 October; the older sections below it are history.
 
 **Who and where.** The owner is Dave (davepartin on GitHub), a pastor who plays on an iPhone and tests on the live site,
 https://davepartin.github.io/questdice/ (repo `davepartin/questdice`, GitHub Pages from `main`). He likes warm, plain,
