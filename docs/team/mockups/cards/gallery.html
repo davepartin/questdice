@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>CONCEPT · Quest Dice card gallery (live data)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css">
+<style>body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter;padding:18px}h1{font:800 16px Oxanium;letter-spacing:.2em;color:#e0574a;margin:0}
+h2{font:700 24px 'Cormorant Garamond';margin:22px 0 10px}p.n{margin:4px 0 0;color:#a99c86;font-size:13px}.grid{display:flex;flex-wrap:wrap;gap:14px;--w:210px}</style></head><body>
+<h1>CONCEPT · CARD GALLERY · every card rendered live from js/data.js, js/engine.js, js/secrets.js</h1><p class="n" id="stamp"></p>
+<h2>Backs</h2><div class="grid" id="backs"></div>
+<h2>Weapons · every type × metal (shown at d6)</h2><div class="grid" id="weapons"></div>
+<h2>Legendary weapons</h2><div class="grid" id="legend"></div>
+<h2>Objectives · Bonus Goals (Act II stakes)</h2><div class="grid" id="obj"></div>
+<h2>Secret Objectives (Act II)</h2><div class="grid" id="sec"></div>
+<h2>Wagers (offered bribes, Act II)</h2><div class="grid" id="wag"></div>
+<script type="module">
+import { renderCard, renderBack, weaponData, objectiveData, secretData, ALL } from './card-template.js';
+const q = (id) => document.getElementById(id); const p = new URLSearchParams(location.search); const size = +(p.get('size') || 6);
+for (const k of ['weapon', 'objective', 'secret-objective', 'wager']) q('backs').append(renderBack(k));
+for (const [id, w] of Object.entries(ALL.WEAPONS)) { if (id === 'fists') continue;
+  if (w.legendary) q('legend').append(renderCard('weapon', weaponData(id, 2, size)));
+  else for (const r of [0, 1, 2]) q('weapons').append(renderCard('weapon', weaponData(id, r, size))); }
+for (const id of Object.keys(ALL.BONUS_GOALS)) q('obj').append(renderCard('objective', objectiveData(id)));
+for (const [id, c] of Object.entries(ALL.CARDS)) q(c.kind === 'bribe' && c.mode === 'offer' ? 'wag' : 'sec').append(renderCard(c.kind === 'bribe' && c.mode === 'offer' ? 'wager' : 'secret-objective', secretData(id)));
+q('stamp').textContent = `${document.querySelectorAll('.qc').length} cards rendered from code, no per-card images.`;
+document.body.dataset.ready = 1;
+</script></body></html>
