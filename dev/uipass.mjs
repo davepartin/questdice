@@ -23,7 +23,8 @@ for (const [W, H] of sizes) {
   await p.evaluate(() => { const E = window.QD.E; window.QD.startQuest({ ...E.questsFor(window.QD.S.hero)[0], enemies: ['wraith'], kind: 'battle' }); });
   for (let i = 0; i < 60 && !(await p.evaluate(() => [...document.querySelectorAll('button')].some((x) => /^Bet /.test(x.textContent.trim())))); i++) await pump(0.5);
   await pump(1); await shot('bonus');
-  console.log(tag, 'bonus: scrolls', await overflow('.sx-side, .sx-split, body'), 'px · title:', await p.evaluate(() => document.querySelector('.env-title, .env-eye')?.textContent), '· buttons:', await p.evaluate(() => [...document.querySelectorAll('.env-btns button')].map((x) => `${x.textContent.trim()} (${Math.round(x.getBoundingClientRect().bottom)}/${innerHeight})`).join(' | ')));
+  console.log(tag, 'bonus: scrolls', await overflow('.sx-side, .sx-split, body'), 'px · title:', await p.evaluate(() => document.querySelector('.obj-kind')?.textContent), '· buttons:', await p.evaluate(() => [...document.querySelectorAll('.env-btns button')].map((x) => `${x.textContent.trim()} (${Math.round(x.getBoundingClientRect().bottom)}/${innerHeight})`).join(' | ')));
+  await p.evaluate(() => document.querySelector('.obj-morebtn')?.click()); await pump(0.5); await shot('bonus-more'); // what More opens
   await p.evaluate(() => [...document.querySelectorAll('button')].find((x) => /^Decline$/.test(x.textContent.trim()))?.click()); await pump(1);
   for (let i = 0; i < 200 && !(await p.evaluate(() => !!document.querySelector('#b3-roll') && window.QD.B3.battleState.bw)); i++) await pump(0.5);
   await pump(2);

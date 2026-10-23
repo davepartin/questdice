@@ -317,27 +317,23 @@
 .env-cover small { color: var(--dim); font-size: .8rem; } .env-cover b { font-family: var(--font-story); font-size: 1.2rem; font-style: italic; color: var(--gold-hi); }
 .env-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin-top: .6rem; } .env-btns .env-one { grid-column: 1 / -1; }
 .env-sealed { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: .7rem 0 .2rem; color: var(--gold-hi); font-weight: 700; }
-/* the offer as one page (ChatGPT's UI review, Oct 2026): on a phone the sheet takes nearly the whole screen, the road scene a strip at
-   the top; the hero's miniature stands beside the title; the objective, then the stakes in plain numbers; the buttons at the bottom */
+/* the objective as a card you draw (Dave, Oct 2026: "less text, very clear ... a little card you would draw in a board game"): a
+   parchment playing card in the middle of the screen, its kind, the objective, one rule, the stakes in a chip or two; More for the rest */
 .sx-screen.road.offer { --sheet: .9; }
-.sx-envelope .env-card { margin-top: 1.5rem; padding: 1.4rem 1rem 1rem; }
-.env-head { display: flex; align-items: flex-end; gap: .75rem; margin: 0 0 .7rem; text-align: left; }
-.env-mini { flex: none; width: 8.4rem; height: 11rem; margin: -.6rem -.3rem -.2rem -.4rem; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 6px 7px rgba(60, 30, 0, .45)); user-select: none; -webkit-user-drag: none; }
-.env-mini.flip { transform: scaleX(-1); }
-.env-intro { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; padding-bottom: .2rem; }
-.sx-side .env-card .env-title { margin: 0; -webkit-text-fill-color: currentColor; background: none; text-shadow: none; letter-spacing: 0; text-transform: none; font-family: var(--font-story); font-weight: 700; font-size: clamp(1.55rem, 7vw, 2.1rem); line-height: 1.02; color: #2a1404; }
-.env-from { font-family: var(--font-display); font-weight: 800; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: #8a2a1a; }
-.env-intro .env-flavor { margin: .2rem 0 0; font-size: 1rem; line-height: 1.35; }
-.env-goal { padding: .6rem .8rem .7rem; border-radius: 10px; background: rgba(120, 70, 10, .1); border: 1px solid rgba(120, 70, 10, .35); }
-.sx-side .env-card .env-goal .env-name { display: block; margin: .1rem 0 .3rem; font-size: clamp(1.45rem, 6.2vw, 1.9rem); }
-.env-quote { margin: 0 0 .35rem; font-family: var(--font-story); font-style: italic; font-size: .98rem; line-height: 1.35; color: #4a3414; }
-.env-goal .env-rule { margin: 0; padding: 0; border: 0; background: none; font-size: 1.04rem; }
-.env-stakes { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .65rem; }
-.env-stake { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; padding: .45rem .4rem .5rem; border-radius: 10px; background: rgba(255, 250, 235, .6); border: 1px solid rgba(120, 70, 10, .3); }
-.env-stake small { font-family: var(--font-display); font-weight: 800; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: #6a4a18; text-align: center; line-height: 1.2; }
-.env-stake b { display: inline-flex; align-items: center; gap: .3rem; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; color: #2a1404; } .env-stake .ico svg { width: 1.1rem; height: 1.1rem; }
-.env-net { margin: .55rem 0 0; font-size: .92rem; line-height: 1.35; color: #4a3414; text-wrap: pretty; }
-.sx-envelope .env-cta { margin-top: auto; }
+.obj-stage { flex: 1 0 auto !important; display: grid; place-items: center; padding: 1.4rem 0 .6rem; }
+@media (max-height: 700px) { .sx-envelope .obj-card { min-height: 0; gap: .5rem; padding-top: 1.9rem; } .obj-rule { margin: .4rem 0; } .obj-stage { padding-top: 1.2rem; } }
+.sx-envelope .obj-card { width: min(19rem, 86vw); min-height: min(25rem, 54vh); margin: 0; padding: 2.2rem 1.3rem 1.1rem; display: flex; flex-direction: column; align-items: center; gap: .7rem; text-align: center; }
+.obj-card::after { content: ''; position: absolute; inset: 7px; border-radius: 8px; border: 1px solid rgba(150, 100, 30, .45); pointer-events: none; }
+.obj-kind { font-family: var(--font-display); font-weight: 800; font-size: .68rem; letter-spacing: .26em; text-transform: uppercase; color: #8a2a1a; }
+.sx-side .obj-card .obj-name { margin: .1rem 0 0; -webkit-text-fill-color: currentColor; background: none; text-shadow: none; letter-spacing: 0; text-transform: none; font-family: var(--font-story); font-weight: 700; font-size: clamp(1.9rem, 8.5vw, 2.4rem); line-height: 1.05; color: #2a1404; }
+.obj-rule { margin: auto 0; padding: .2rem .2rem; font-weight: 800; font-size: 1.15rem; line-height: 1.35; color: #2a1404; text-wrap: balance; }
+.obj-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+.obj-chips span { display: inline-flex; align-items: center; gap: .3rem; padding: .32rem .7rem; border-radius: 999px; background: rgba(255, 250, 235, .7); border: 1px solid rgba(120, 70, 10, .35); font-family: var(--font-display); font-weight: 800; font-size: .92rem; color: #2a1404; }
+.obj-chips .ico { display: inline-grid; place-items: center; width: auto; height: auto; padding: 0; margin: 0; border: 0; background: none; box-shadow: none; color: #c58a12; } .obj-chips .ico svg { width: 1rem; height: 1rem; }
+.obj-morebtn { position: relative; z-index: 1; padding: .3rem .9rem; border: 0; border-radius: 999px; background: none; font: 700 .82rem var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: #8a2a1a; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; pointer-events: auto; }
+.obj-more { width: 100%; text-align: left; border-top: 1px dashed rgba(120, 70, 10, .45); padding-top: .55rem; } .obj-more[hidden] { display: none; }
+.obj-more p { margin: 0 0 .45rem; font-size: .9rem; line-height: 1.4; color: #4a3414; } .obj-more p:last-child { margin-bottom: 0; }
+.sx-envelope .env-cta { margin-top: 0; }
 .sx-envelope .env-btns { margin-top: 0; }
 .sx-reveal .rv-list { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .45rem; }
 .rv-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--hair-2); background: rgba(12, 12, 24, .55); }

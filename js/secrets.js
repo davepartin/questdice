@@ -137,7 +137,15 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '', big = false 
 // What this hero sees (their card only), for the Envelope screen.
 export function cardView(env, name) {
   const mine = env?.cards?.[name]; if (!mine) return null; const d = CARDS[mine.id];
-  return { id: mine.id, kind: d.kind, mode: mine.mode || null, name: d.name, flavor: d.flavor, rule: d.rule.replace('{spare}', mine.spareName || 'that monster'), reward: rewardLine(env, mine, Object.keys(env.cards).length > 1), scene: env.scene, cover: env.cover, voice: env.voice, answered: !!env.answered[name], accepted: mine.accepted ?? null };
+  return { id: mine.id, kind: d.kind, mode: mine.mode || null, name: d.name, flavor: d.flavor, rule: d.rule.replace('{spare}', mine.spareName || 'that monster'), reward: rewardLine(env, mine, Object.keys(env.cards).length > 1), stakes: rewardChips(env, mine), scene: env.scene, cover: env.cover, voice: env.voice, answered: !!env.answered[name], accepted: mine.accepted ?? null };
+}
+// The prize as one or two chips for the card itself ("Win 40 gold", "Lose 10"); rewardLine has the full sentence for "More".
+function rewardChips(env, mine) {
+  const G = gOf(env.act); const d = CARDS[mine.id];
+  if (d.kind === 'rival') return [d.doubles ? `Win: double gold (up to ${2 * G})` : `Win ${G} gold`];
+  if (d.kind === 'bribe' && mine.mode === 'offer') return [`Win ${2 * G} gold`, `Fail: pay ${Math.round(G / 2)}`];
+  if (d.kind === 'bribe') return [`Win ${G} gold`];
+  return [`Win ${r5((d.pay || 1) * G)} gold`];
 }
 // The prize, in one plain line (the same sums judge() pays).
 function rewardLine(env, mine, team) {

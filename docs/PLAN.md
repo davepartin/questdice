@@ -1351,3 +1351,11 @@ ChatGPT's UI review: the art was strong, but framing crowded out the miniature a
 - **Bonus Challenge** (solo) and **Secret Objective** (multiplayer): one parchment page. The hero's miniature stands beside the title with "Offered by the Lantern"; then the objective and rule; then wager, return if successful and net gain ("Net gain: 20 gold if you pull it off and win. Lose the wager if you fail."). Bet / Decline sit at the bottom. The scenery is a strip and the separate story box is gone. It fits 390×844 and 430×932; on 375×667 it scrolls with the buttons kept in view. dev/uipass.mjs checks both screens.
 - **The table's "Saved" line** no longer runs off the right edge.
 - **Quick-replay preview:** `?pace=actions` gives every strike the same short beat (about 1.45 s) instead of fitting each round into 15–19 seconds. It is opt-in and marked "PREVIEW · quick replay"; the live default is unchanged until Dave has tried it. dev/pace.mjs measures it.
+
+Dave on the objective screen: "less text, very clear, almost like a little card you would draw in a board game". It is now a single parchment card in the middle of the screen, with no hero picture and no story box:
+- the kind (Bonus Challenge or Secret Objective);
+- the objective's name, large;
+- its one rule;
+- the stakes as one or two coin chips ("Bet 10 gold" / "Win 30 gold", "Win 80 gold" / "Fail: pay 20", "Win 20 gold").
+
+A small "More" opens the story, the full terms and the cover line. Below the card: Bet / Accept and Decline, or Continue when the objective is assigned. js/secrets.js gives each secret card its short chips (rewardChips) beside the full sentence. The double-size miniature stays on Enemy Details, where it was meant.
