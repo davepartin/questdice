@@ -9,6 +9,7 @@ The live site is a development/playtest site. Small tested updates may be publis
 Use focused assignments with finish lines. Director spends effort on judgment, design and targeted checks; implementation lead handles bulk runs. Save evidence and concise summaries; do not rerun completed batches without a reason.
 
 ## Session protocol
+How to work in the repository (commands, tests, stamp, screenshots, measuring tools, what not to touch): [WORKING_GUIDE.md](WORKING_GUIDE.md).
 1. Pull latest state; read this board, latest PLAN handoff, and relevant files. Reconcile work already in progress before claiming a task.
 2. One owner per task; record status and files/branch being edited. Do not edit another active owner's files. Refresh before writing shared docs; preserve others' changes.
 3. Status: READY / IN PROGRESS / REVIEW / DONE / BLOCKED. Claim before editing; do not assume another conversation has received an assignment.
