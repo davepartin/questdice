@@ -1,0 +1,17 @@
+
+Knight · 5 independent campaigns, 240 fights an arm (60 a fight type) · health a fight ± standard error across campaigns · win%
+arm                               heavy            swarm            guard            healer           all four        rounds  magic spent  magic left
+smart, default                    8.1±1.1 100%     45.2±5.4 87%     14.8±2.5 100%    8.3±0.2 100%     19.1±1.6           4.8          2.6         2.9
+smart, spend                      8.0±1.2 100%     45.5±6.3 87%     13.8±2.6 100%    8.9±1.5 100%     19.0±2.1           4.7          3.9         2.7
+smart, save                       7.9±1.5 100%     45.3±3.5 88%     13.7±1.3 100%    9.4±0.8 100%     19.1±1.1           4.9          1.4         3.3
+wise, default (magic worth 2.2)   3.5±1.2 100%     37.8±6.9 93%     7.9±1.8 100%     4.4±1.2 100%     13.4±1.3           4.7          3.9         5.1
+wise, spend (magic worth 0.8)     3.4±1.2 100%     35.5±5.5 93%     7.5±1.8 100%     4.1±1.2 100%     12.6±1.1           4.7          4.1         4.4
+wise, save (magic worth 4.5)      4.4±1.2 100%     38.5±3.7 93%     11.9±1.8 100%    3.7±0.6 100%     14.6±1.3           4.8          1.8         5.5
+  casts a fight (magic a cast; a charge release shows the magic it held):
+  smart, default                  cleave 0.63 (2.0) · shieldwall 0.81 (1.0) · rally 0.59 (1.2)
+  smart, spend                    shieldwall 1.55 (1.0) · cleave 0.71 (2.0) · rally 1.04 (1.2)
+  smart, save                     shieldwall 0.60 (1.0) · cleave 0.28 (2.0) · rally 0.26 (1.1)
+  wise, default (magic worth 2.2) cleave 0.89 (2.0) · rally 2.29 (1.1) · shieldwall 0.36 (1.0)
+  wise, spend (magic worth 0.8)   cleave 0.97 (2.0) · rally 2.17 (1.1) · shieldwall 0.45 (1.0)
+  wise, save (magic worth 4.5)    cleave 0.84 (2.0) · shieldwall 0.07 (1.0) · rally 0.11 (1.1)
+  swarm, smart, default: health lost a round with 3 / 2 / 1 goblins standing: 18.1 / 6.4 / 2.6 (each early kill is worth that difference every round it saves)

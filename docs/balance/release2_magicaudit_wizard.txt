@@ -1,0 +1,17 @@
+
+Wizard · 5 independent campaigns, 240 fights an arm (60 a fight type) · health a fight ± standard error across campaigns · win%
+arm                               heavy            swarm            guard            healer           all four        rounds  magic spent  magic left
+smart, default                    10.3±1.0 100%    44.2±4.5 72%     12.6±1.3 100%    8.3±1.2 100%     18.9±1.5           4.3          5.7         8.6
+smart, spend                      9.3±1.4 100%     45.6±5.4 75%     12.2±2.7 100%    7.9±1.3 100%     18.8±1.5           4.2          7.1         8.0
+smart, save                       10.1±1.8 100%    45.1±4.7 72%     13.1±1.3 100%    9.2±1.6 100%     19.4±1.9           4.3          5.2         8.4
+wise, default (magic worth 2.2)   5.6±0.4 100%     33.5±5.6 87%     9.5±3.1 100%     4.3±1.1 100%     13.2±2.3           4.1          7.2         9.7
+wise, spend (magic worth 0.8)     5.0±0.9 100%     31.3±5.5 85%     8.9±1.4 100%     3.4±0.8 100%     12.2±1.8           4.1          8.2         9.4
+wise, save (magic worth 4.5)      5.5±0.7 100%     32.6±6.6 87%     8.4±1.7 100%     3.5±1.1 100%     12.5±2.1           4.3          5.1        11.3
+  casts a fight (magic a cast; a charge release shows the magic it held):
+  smart, default                  arcbolt 0.85 (2.4) · bolt 2.08 (1.0) · coil 1.87 (1.3)
+  smart, spend                    arcbolt 0.92 (2.3) · bolt 2.90 (1.0) · coil 2.43 (1.3)
+  smart, save                     arcbolt 0.60 (3.6) · bolt 1.86 (1.0) · coil 1.32 (1.2)
+  wise, default (magic worth 2.2) arcbolt 1.10 (3.8) · coil 2.82 (1.1) · bolt 0.89 (1.0)
+  wise, spend (magic worth 0.8)   arcbolt 1.38 (3.7) · coil 2.63 (1.1) · bolt 1.08 (1.0)
+  wise, save (magic worth 4.5)    arcbolt 0.96 (4.6) · coil 0.43 (1.1) · bolt 0.35 (1.0)
+  swarm, smart, default: health lost a round with 3 / 2 / 1 goblins standing: 18.7 / 6.5 / 2.9 (each early kill is worth that difference every round it saves)
