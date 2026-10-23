@@ -1,0 +1,15 @@
+
+Wizard · 5 independent campaigns, 240 fights an arm (60 a fight type) · health a fight ± standard error across campaigns · win%
+arm                               heavy            swarm            guard            healer           all four        rounds  magic spent  magic left
+barrier                           4.5±0.7 100%     31.6±5.6 88%     7.0±2.9 100%     3.9±0.9 100%     11.7±2.0           4.2          7.1         9.9
+holdbolt                          5.8±0.7 100%     32.9±5.2 88%     9.4±2.8 100%     3.8±0.9 100%     13.0±2.0           4.1          6.9         9.9
+rearm2                            6.1±0.4 100%     32.3±5.4 88%     7.8±2.5 100%     4.4±1.1 100%     12.7±2.0           4.1          7.2         9.9
+rearm2hold                        5.6±0.6 100%     31.5±4.8 90%     9.6±2.7 100%     3.7±0.8 100%     12.6±1.9           4.1          7.1        10.3
+start                             5.9±0.5 100%     33.5±5.7 87%     8.3±2.6 100%     4.4±1.2 100%     13.0±2.1           4.1          6.9         9.7
+  casts a fight (magic a cast; a charge release shows the magic it held):
+  barrier                         arcbolt 1.17 (3.8) · coil 2.88 (1.1) · barrier 0.54 (1.0)
+  holdbolt                        arcbolt 0.93 (4.1) · coil 2.81 (1.1) · bolt 1.02 (1.0)
+  rearm2                          arcbolt 1.16 (3.8) · coil 2.75 (1.1) · bolt 0.80 (1.0)
+  rearm2hold                      arcbolt 1.02 (4.0) · coil 2.78 (1.1) · bolt 0.97 (1.0)
+  start                           arcbolt 1.05 (3.9) · coil 2.77 (1.1) · bolt 0.84 (1.0)
+  swarm, barrier: health lost a round with 3 / 2 / 1 goblins standing: 12.5 / 4.4 / 2.5 (each early kill is worth that difference every round it saves)
