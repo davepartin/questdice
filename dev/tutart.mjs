@@ -8,12 +8,10 @@ p.on('pageerror', (e) => console.log('ERR', e.message));
 const ANGLED = 'cam=0,4.96,6.24&look=0,0.25,0&fov=26';
 const TOP = 'cam=0,7.5,0.9&look=0,0,0&fov=30';
 const only = process.argv[2] ? process.argv[2].split(',') : null;
-const jobs = [
+const jobs = [ // the weapon faces come from dev/faceshot.mjs (the released weapons)
   ['white', 'slot=N&cls=knight', { 1: 'white-1', 2: 'white-2', 3: 'white-3', 4: 'white-4' }],
   ['hand6', 'slot=W&cls=knight', { 5: 'white-5', 6: 'white-6' }],
   ['heart', 'slot=C&cls=knight&cols=6', { 1: 'heart-1', 2: 'heart-2', 3: 'heart-3', 4: 'heart-4', 5: 'heart-5', 6: 'heart-6' }],
-  ['sword', 'slot=NW&cls=knight&weapons=sword,shield', { 1: 'weapon-zero', 3: 'weapon-red3', 4: 'weapon-red4' }],
-  ['shield', 'slot=NW&cls=knight&weapons=shield,sword', { 3: 'weapon-blue3', 4: 'weapon-blue4' }],
   ['talent', 'slot=SW&cls=knight&spec=4', { 1: 'talent-blank', 3: 'talent-x2', 4: 'talent-heal' }],
 ];
 for (const [tag, q, keep] of jobs) {

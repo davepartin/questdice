@@ -1,15 +1,14 @@
 // Stills of the real dice tray for Learn to play (assets/tutorial/board-*.webp) and where each socket sits in them
 // (js/g3/tutboard.js, generated).   node dev/trayshot.mjs   (needs node dev/serve.mjs 8135)
 import { chromium } from 'playwright-core'; import fs from 'node:fs';
-const START = { NW: 3, N: 2, W: 4, C: 4, E: 1, SW: 3, S: 3 };
+const START = { NW: 4, N: 2, W: 4, C: 4, E: 1, SW: 2, S: 3 }; // the practice battle's first roll (js/ui.js): sword +4, hand 4, talent 2x
 const SHOTS = {
   icons: { waiting: true },
   start: { board: START },
   final: { board: { ...START, E: 4 } },
-  tripW: { full: true, board: { NW: 3, N: 3, NE: 3, W: 5, C: 2, E: 1, SW: 1, S: 4, SE: 1 } },
+  tripW: { full: true, board: { NW: 4, N: 4, NE: 4, W: 5, C: 2, E: 1, SW: 1, S: 3, SE: 1 } }, // sword +4, head 4, shield +4
   tripH: { full: true, board: { NW: 2, N: 3, NE: 2, W: 2, C: 3, E: 5, SW: 2, S: 3, SE: 1 } },
   tripL: { full: true, board: { NW: 4, N: 2, NE: 1, W: 4, C: 3, E: 2, SW: 4, S: 1, SE: 2 } }, // sword +4, hand 4, talent 4: a Left Guard Triple
-  petDice: { board: { ...START, P: 2 }, pet: 'bunny', fit: [-3.75, 2.42], look: [-0.66, 0, 0.05], size: [880, 700] },
 };
 // one die alone per starting socket (same camera as the boards), for dice that drop in during a lesson
 for (const sl of ['NW', 'N', 'W', 'C', 'E', 'SW', 'S']) SHOTS[`d-${sl}`] = { board: START, only: sl, layer: true };

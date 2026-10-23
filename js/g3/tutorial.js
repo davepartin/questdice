@@ -136,13 +136,13 @@ const LESSONS = [
   {
     title: 'Weapon dice',
     eyebrow: 'Red attacks, blue blocks',
-    art: () => h('div', { class: 'tu-faces four' }, ['weapon-red3', 'weapon-blue3', 'weapon-zero', 'weapon-red4'].map((n) => img(n))),
+    art: () => h('div', { class: 'tu-faces four' }, ['weapon-red4', 'weapon-blue4', 'weapon-zero', 'weapon-silver4'].map((n) => img(n))),
     say: 'Watch the colour of your weapon’s face. Red means that weapon attacks, blue means it blocks.',
     body: () => [
-      row(img('weapon-red3', 'xs'), 'Red starburst = Attack', 'The weapon’s number plus your hand goes to attack.'),
-      row(img('weapon-blue3', 'xs'), 'Blue shield = Block', 'The same sum goes to block instead.'),
+      row(img('weapon-red4', 'xs'), 'Red starburst = Attack', 'The weapon’s number plus your hand goes to attack.'),
+      row(img('weapon-blue4', 'xs'), 'Blue shield = Block', 'The same sum goes to block instead.'),
       row(img('weapon-zero', 'xs'), '+0', 'Adds nothing, but your hand’s Strength still counts that way.'),
-      row(img('weapon-red4', 'xs'), 'Corner symbols', 'Small symbols in the corners are bonuses, like an extra pierce arrow. Silver and Gold weapons fill in blank faces and add more symbols. A weapon lasts a few battles (Bronze 4, Silver 6, Gold 8), then it is gone.'),
+      row(img('weapon-silver4', 'xs'), 'Bonus symbols', 'Bronze weapons are plain. Silver and Gold add small symbols to their best faces, like these pierce arrows; the numbers stay the same. A weapon lasts a few battles (Bronze 4, Silver 6, Gold 8), then it is gone.'),
     ],
   },
   {

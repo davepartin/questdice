@@ -12,6 +12,8 @@ import { createTray, slotPos } from './js/gfx/dice/tray.js';
 import { setDiceStyle } from './js/gfx/dice/faces.js';
 import { makeEnvironment } from './js/gfx/env.js';
 import { setBodyMarks } from './js/gfx/dice/dice.js';
+import { applyRelease } from './js/release.js';
+applyRelease(); // the pictures show the weapons everyone plays with
 setDiceStyle('clean');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -31,10 +33,11 @@ window.shot = async (spec) => {
   if (spec.pet) { hero.pet = E.newPet(spec.pet); if (spec.petFaces) hero.pet.faces = spec.petFaces; }
   Object.assign(hero, spec.hero || {});
   // camera: from the front and above, like the game; it looks at `look` and is backed off until `fit` (x range) fills the width
+  if (spec.face) { const q = slotPos(spec.face); spec.only = spec.face; spec.look = [q.x, 0.3, q.z]; spec.fit = [q.x - 0.62, q.x + 0.62]; spec.fitZ = q.z; spec.pitch ??= 72; } // one die's top face, close up (dev/faceshot.mjs)
   const pitch = THREE.MathUtils.degToRad(spec.pitch ?? 58); const look = new THREE.Vector3(...(spec.look || [0, 0, 0.05]));
   const [fx0, fx1] = spec.fit || [-2.42, 2.42]; const v = new THREE.Vector3();
   const place = (d) => { cam.position.set(look.x, look.y + d * Math.sin(pitch), look.z + d * Math.cos(pitch)); cam.lookAt(look); cam.updateMatrixWorld(); cam.updateProjectionMatrix(); };
-  let lo = 2, hi = 60; for (let i = 0; i < 40; i++) { const d = (lo + hi) / 2; place(d); const a = v.set(fx0, 0, 2.45).project(cam).x; const b = v.set(fx1, 0, 2.45).project(cam).x; if (b - a > 2 * (spec.fill || 0.96)) lo = d; else hi = d; }
+  let lo = 2, hi = 60; for (let i = 0; i < 40; i++) { const d = (lo + hi) / 2; place(d); const a = v.set(fx0, 0, spec.fitZ ?? 2.45).project(cam).x; const b = v.set(fx1, 0, spec.fitZ ?? 2.45).project(cam).x; if (b - a > 2 * (spec.fill || 0.96)) lo = d; else hi = d; }
   place((lo + hi) / 2);
   tray.setHero(hero);
   const board = {}; for (const s of [...D.SLOTS, 'P']) board[s] = { v: (spec.board || {})[s] || 1, bound: false };
@@ -50,6 +53,11 @@ window.shot = async (spec) => {
   if (spec.only) { // one die alone (a layer the lessons drop into its socket)
     tray.object.traverse((o) => { if (o.isMesh || o.isSprite || o.isLight === false) o.visible = false; });
     const m = tray._S[spec.only].die.mesh; m.visible = true; m.traverse((o) => { o.visible = true; });
+  }
+  if (spec.face) { // look straight down the numbered face's normal, its numeral upright
+    const s = tray._S[spec.face]; const m = s.die.mesh; m.updateMatrixWorld(true); const f = s.die.poly.faces[s.die.poly.labelFace[s.value - 1]];
+    const q = m.getWorldQuaternion(new THREE.Quaternion()); const n = f.n.clone().applyQuaternion(q); const up = f.e1.clone().applyQuaternion(q);
+    const c = f.c.clone().applyMatrix4(m.matrixWorld); cam.up.copy(up); cam.position.copy(c).addScaledVector(n, spec.dist || 3.2); cam.lookAt(c); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
   }
   renderer.render(scene, cam);
   const socks = {};

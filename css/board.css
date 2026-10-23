@@ -317,6 +317,17 @@
 .fb-pair .fb-slot.hero.back.locked .fb-img { height: calc(var(--ph) * .5); max-width: 2.9rem; }
 .fb-pair .fb-card.hero { position: absolute; left: 50%; bottom: 58%; transform: translateX(-50%); margin: 0; width: auto; z-index: 4; }
 .fb-pair .fb-hp { display: none; }
+/* a crowd at one monster (3 to 6 heroes, Oct 2026): three abreast, the fourth to sixth a step behind, higher and set between the heads in
+   front; the names step aside so the heart faces stay readable (a green ring is Ready, a pink glow is Heart to Heart; the banner names the +10) */
+.fb-pair:has(> .fb-slot:nth-child(3)) { flex-wrap: wrap-reverse; width: 7.2rem; justify-content: flex-end; align-content: flex-start; gap: 0 .1rem; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero { width: 2.3rem; max-width: 2.3rem; z-index: 3; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero:nth-child(n+4) { z-index: 2; margin-bottom: -1.5rem; transform: translateX(-1.2rem); }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero.locked .fb-img { height: calc(var(--ph) * .42); max-width: 2.3rem; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-name,
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart small,
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.match em { display: none; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
 .fb-slot.foe { overflow: visible; }
 .fb-links { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
 .fb.party .fb-letter { display: none !important; } /* pairing is visual; no A/B/C tags */
@@ -441,9 +452,9 @@
 .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); opacity: 1; }
 .fb-heart.match em { display: inline; }
 .fb-heart.hushed img { filter: grayscale(1) brightness(.7); }
-.fb[data-heroes="5"] .fb-heart small, .fb[data-heroes="6"] .fb-heart small { display: none; } /* six on a phone: the face, a green ring when ready */
-.fb[data-heroes="5"] .fb-heart.ready img, .fb[data-heroes="6"] .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
-.fb[data-heroes="5"] .fb-heart.match img, .fb[data-heroes="6"] .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
+.fb[data-heroes="4"] .fb-heart small, .fb[data-heroes="5"] .fb-heart small, .fb[data-heroes="6"] .fb-heart small { display: none; } /* four to six on a phone: the face, a green ring when ready */
+.fb[data-heroes="4"] .fb-heart.ready img, .fb[data-heroes="5"] .fb-heart.ready img, .fb[data-heroes="6"] .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
+.fb[data-heroes="4"] .fb-heart.match img, .fb[data-heroes="5"] .fb-heart.match img, .fb[data-heroes="6"] .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
 .fb-aims { position: absolute; top: -.36rem; left: 50%; transform: translateX(-50%); display: flex; gap: .16rem; pointer-events: none; }
 .fb-aims i { width: .46rem; height: .46rem; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1.5px var(--hue, #ffd23d); }
 .fb-aims i.on { background: var(--hue, #ffd23d); }

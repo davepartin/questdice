@@ -1,5 +1,5 @@
 // Heart to Heart in the lab (?lab): three heroes on one phone. Each picks a monster and rolls; two of them show the same heart on the
-// same monster. Shows the heart faces, Ready, the aim dots and the round's banner.   node dev/hearts.mjs [out=shots] [heroes=3]
+// same monster. Shows the heart faces, Ready, the aim dots and the round's banner.   node dev/hearts.mjs [out=shots] [heroes=3] [aims=0,0,1,0,1,0]
 import { chromium } from 'playwright-core';
 const out = process.argv[2] || 'shots'; const N = Number(process.argv[3] || 3);
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--disable-dev-shm-usage'] });
@@ -19,7 +19,7 @@ for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !!document.querySelec
 await pump(2);
 console.log('party:', await p.evaluate(() => ({ party: window.QD.B3.battleState.party, fighters: window.QD.S.battle.fighters?.length, h2h: window.QD.D.TEAMWORK.heartToHeart })));
 // each hero: aim (heroes 0 and 1 at the ogre, hero 2 at the goblin), roll, set the heart (3, 3, 3), lock in
-const aims = [0, 0, 1, 0, 1, 0];
+const aims = process.argv[4] ? process.argv[4].split(',').map(Number) : [0, 0, 1, 0, 1, 0]; // node dev/hearts.mjs shots 6 0,0,0,0,0,0: all six at the ogre
 for (let k = 0; k < N; k++) {
   await p.evaluate((t) => { const uid = window.QD.S.battle.enemies[t].uid; document.querySelector(`.fb-slot.foe[data-uid="${uid}"] .fb-pc, .fb-slot.foe[data-uid="${uid}"] img`)?.click(); }, aims[k]); await pump(0.5);
   await p.evaluate(() => document.querySelector('#b3-roll')?.click()); await pump(4); await busy();
