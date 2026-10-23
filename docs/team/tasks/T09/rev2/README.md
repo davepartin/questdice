@@ -10,7 +10,7 @@
 3. **Outcome:** the approved prose, no totals.
 4. **Consequence,** framed, with its recipient in a tag: the hero's name, the winners (`Bob and Cy`), or `Everyone` when the whole company gets it (the hero's name when alone). When the sentence already names the hero (`Next fight, Ann loses 4 health every round.`) the tag is left off rather than repeat the name.
 
-Walk-ons show only their sentence. The dice overlay shows `Success` / `Failed` and the same roll summary. On a phone the sheet now lifts on opening so the whole card, and a rematch button, sit above the sticky Onward button.
+Walk-ons show only their sentence. The dice overlay shows `Success` / `Failed` and the same roll summary. On a phone the sheet now lifts on opening so the whole card, and a rematch button, sit above the sticky Onward button. Below 620px of height (an SE in Safari) the card's spacing tightens, and the Menu button fades as it slides under the hero chip instead of showing half of itself; it comes back when the sheet is scrolled down. Text stays at 15px or more.
 
 ## Screenshots
 

@@ -793,9 +793,16 @@ function clearOfCta() {
   const fit = () => {
     const side = document.querySelector('.sx-roadres .sx-side'); const cta = side?.querySelector('.sx-cta'); const last = cta?.previousElementSibling; const tale = side?.querySelector('.sx-tale');
     if (!last || !tale) return;
-    const over = last.getBoundingClientRect().bottom + 10 - cta.getBoundingClientRect().top;
-    const room = tale.getBoundingClientRect().top - side.getBoundingClientRect().top - 96; // keep the crest clear of the hero chip
-    if (over > 0 && room > 0) side.scrollTop += Math.min(over, room);
+    const over = last.getBoundingClientRect().bottom + 10 - cta.getBoundingClientRect().top; if (over <= 0) return;
+    const chip = document.querySelector('.sx-roadres .sx-top')?.getBoundingClientRect().bottom ?? side.getBoundingClientRect().top;
+    const room = tale.getBoundingClientRect().top - chip - 20; // the card's crest stays clear of the hero chip
+    const lift = Math.min(over, room); if (lift <= 0) return;
+    side.scrollTop += lift;
+    // the Menu button fades as it slides under the hero chip, rather than showing half of itself, and comes back on scrolling down
+    const top = side.querySelector('.sx-sidetop'); if (!top || top.dataset.fade) return; top.dataset.fade = '1';
+    const fade = () => { const r = top.getBoundingClientRect(); const v = Math.max(0, Math.min(1, (r.top + r.height * 0.45 - chip) / 10)); // shown while its label is clear of the chip
+      top.style.opacity = String(v); top.style.pointerEvents = v < 0.5 ? 'none' : ''; };
+    side.addEventListener('scroll', fade, { passive: true }); fade();
   };
   requestAnimationFrame(() => requestAnimationFrame(fit)); setTimeout(fit, 450);
 }
