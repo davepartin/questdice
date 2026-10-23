@@ -1,0 +1,44 @@
+# Quest Dice Team Board
+Updated 2026-10-23. Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
+
+## Direction and ownership
+Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. These role names are explicitly authorized by Dave.
+Goal: a polished phone-based, middleweight cooperative board game for friends on a couch. Brief rules, meaningful choices, persistent heroes, readable danger, beautiful miniatures. Preserve magic's button-based interface and weapon tiles with hand choices and dice faces. Cards belong at suitable draw/reveal/keep moments.
+Dave reports charms have been removed and perks revised: verify current code before proposing anything that restores old systems.
+The live site is a development/playtest site. Small tested updates may be published for Dave to try. Preserve saves and make changes reversible. Published does not mean reviewed.
+Use focused assignments with finish lines. Director spends effort on judgment, design and targeted checks; implementation lead handles bulk runs. Save evidence and concise summaries; do not rerun completed batches without a reason.
+
+## Session protocol
+1. Pull latest state; read this board, latest PLAN handoff, and relevant files. Reconcile work already in progress before claiming a task.
+2. One owner per task; record status and files/branch being edited. Do not edit another active owner's files. Refresh before writing shared docs; preserve others' changes.
+3. Status: READY / IN PROGRESS / REVIEW / DONE / BLOCKED. Claim before editing; do not assume another conversation has received an assignment.
+4. Return commit/build, files changed, tests, screenshots for visual work, limitations and next action. Use docs/team/tasks/<ID>.md for detailed evidence when needed.
+5. Director reviews actual evidence; only mark DONE after required review. Human phone/playtest checks remain explicitly unverified until performed.
+6. Assistants do not automatically wake one another. Dave can prompt: "Read docs/team/BOARD.md and the latest docs/PLAN.md handoff. Continue your highest-priority ready assignment, record your result, and stop at its review checkpoint."
+7. Keep prior branch/release conventions in PLAN in view; verify active branches before syncing. No force pushes or overwriting concurrent work.
+
+## Queue
+| ID | Priority | Owner | Status | Assignment / completion evidence |
+|---|---|---|---|---|
+| T01 | First | Implementation lead | READY | Reconcile latest code and in-progress work with old PLAN summary and prior balance reports. Record current level cap, what each level grants, perks/charm state, live build, active branches, existing simulation batches and known gaps. Do not duplicate completed experiments. |
+| T02 | High | Implementation lead | READY | Audit solo burst damage and difficulty using existing harness first. Capture reproducible cases of death from roughly 60% health, available warning, legal defensive/healing/finishing responses, and whether competent choices change the outcome. Report distribution of one-round damage as fraction of max HP, falls, potion use, rounds and wins by class/progression/difficulty. Average win rate alone is insufficient. Distinguish unlucky, avoidable and unavoidable losses. Propose targeted adjustments separately; no blanket immunity threshold. |
+| T03 | High | Director | READY | Review progression and mixed-level design after T01. Define how veteran strength remains rewarding while newcomers contribute and survive. Compare existing strength-based scaling before inventing another system. Specify test matrix for solo and parties 2-6, equal and mixed progression, gear and class mix. Do not choose a new level cap without examining current progression. |
+| T04 | High | Art director | READY | Propose reusable Quest Dice objective card back, campaign independent, clean inset border and recognizable brand emblem, matching miniature art. Supply static preview, mobile-size crop and asset specs. No campaign-specific text; no occult symbols. Coordinate dimensions with T05 before final export. |
+| T05 | High | Implementation lead | READY | Integrate objective-card design after locating existing prototype and recording any unavailable source. Standard playing-card feel, compact readable face, clear wager/total return/profit, actions below content, tap reveal/private review. Preserve mechanics. Provide both face and back stills plus browser preview; the prior in-app attachment flip failed for Dave. Check small/short phones, larger text and reduced motion. Do not infer Safari success from desktop Chromium. |
+| T06 | High | Director | READY | Review battlefield information hierarchy with actual current solo and six-hero screenshots. Keep miniature silhouettes clear. Recommend one compact current-heart die-face badge rather than redundant symbol+mapping-number+label. Keep quantity numbers when they affect a decision (health, damage, stacks). Put full rules/secondary stats in tap details; never assume beginners know numerical mappings. Commission implementation only after evidence review. |
+| T07 | Next | Implementation lead | READY | Reconcile existing five/six-player and Wizard experiments before running more. Preserve saved results, simulator-policy audits and matched-campaign comparisons. Report uncertainty by independent campaign. Diagnose existing magic outlets before adding new ones. |
+| T08 | Next | Director | READY | Specify Bard targeted attack-or-defense song in existing power slot, hero miniature portraits with names and useful health context on Magic screen, self-target for solo. Exact costs/effects remain unsettled; proposal then implementation comparison. |
+| T09 | Next | Implementation lead | READY | After T01, compact road result copy: roll, short outcome, consequence; remove arithmetic narration such as "seven is bigger than two". Keep necessary rules available. Return before/after phone screenshots. |
+
+## Review criteria
+- Danger should be readable and offer meaningful responses. Death from 60% HP is not automatically a bug; untelegraphed or practically unavoidable routine bursts warrant investigation.
+- Normal should reward reasonable play with recoverable mistakes; Hard should demand stronger resource use and coordination. These are design goals, not verified current behavior.
+- Do not tune solely for high win rates. Check trivial wins, burst tails, choices that matter, battle length, individual contribution and real player pacing.
+- Persistent progression must feel valuable without a veteran erasing teammates' turns or scaling newcomers into unavoidable deaths.
+- Short rules: aim for one clear effect sentence plus necessary cost/duration/target. Details on demand; no concealed exceptions.
+- Miniatures remain the visual focus. Exact die face can express rolled state; numbers expressing magnitude stay visible where needed. Avoid decorative duplicate data.
+- Objective card and enemy-inspection screens need composed layouts, unobstructed actions and actual rendered screenshots. Enemy inspection should feature a larger miniature with compact adjacent stats.
+- Simulations prepare for a group test; they cannot certify the fun or a percentage of readiness. Run a short two-person phone session before asking six friends for a full evening.
+
+## Initial handoff
+2026-10-23, Director: Created coordination board from Dave's explicit direction. Read README, initial DESIGN/TEAMS sections and PLAN; no independent code/balance review or gameplay changes in this setup. Existing PLAN has old current-state headings: T01 must reconcile rather than overwrite its history. No other assistant has been automatically notified.
