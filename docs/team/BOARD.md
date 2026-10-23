@@ -2,7 +2,7 @@
 Updated 2026-10-23. Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
 
 ## Direction and ownership
-Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. These role names are explicitly authorized by Dave.
+Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. Story and Writing Lead = QuestStoryBot: story, campaign packs, and player-facing copy drafts; code integration stays with the implementation lead. These role names are explicitly authorized by Dave.
 Goal: a polished phone-based, middleweight cooperative board game for friends on a couch. Brief rules, meaningful choices, persistent heroes, readable danger, beautiful miniatures. Preserve magic's button-based interface and weapon tiles with hand choices and dice faces. Cards belong at suitable draw/reveal/keep moments.
 Dave reports charms have been removed and perks revised: verify current code before proposing anything that restores old systems.
 The live site is a development/playtest site. Small tested updates may be published for Dave to try. Preserve saves and make changes reversible. Published does not mean reviewed.
@@ -29,7 +29,16 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 | T06 | High | Director | READY | Review battlefield information hierarchy with actual current solo and six-hero screenshots. Keep miniature silhouettes clear. Recommend one compact current-heart die-face badge rather than redundant symbol+mapping-number+label. Keep quantity numbers when they affect a decision (health, damage, stacks). Put full rules/secondary stats in tap details; never assume beginners know numerical mappings. Commission implementation only after evidence review. |
 | T07 | Next | Implementation lead (Claude, branch claude/wizardly-newton-c0xpcq) | IN PROGRESS | Reconcile existing five/six-player and Wizard experiments before running more. Preserve saved results, simulator-policy audits and matched-campaign comparisons. Report uncertainty by independent campaign. Diagnose existing magic outlets before adding new ones. |
 | T08 | Next | Director | READY | Specify Bard targeted attack-or-defense song in existing power slot, hero miniature portraits with names and useful health context on Magic screen, self-target for solo. Exact costs/effects remain unsettled; proposal then implementation comparison. Implementation lead proposal for Director review (Dave asked for exact effects and costs): [tasks/T08.md](tasks/T08.md). Three versions behind `CLASS2.song` (off in the game); matched test queued. |
-| T09 | Next | Implementation lead (Claude, branch claude/wizardly-newton-c0xpcq) | REVIEW | After T01, compact road result copy: roll, short outcome, consequence; remove arithmetic narration such as "seven is bigger than two". Keep necessary rules available. Return before/after phone screenshots. **Done 23 Oct (Claude), deployed in 20261023road:** the roll is shown once in the card's top line ("Won · 4 to 3"), the story is a short outcome plus its consequence; 15 lines in js/roads.js. Before/after phone screenshots: [tasks/T09/](tasks/T09/). Headless Chromium, not Safari. |
+| T09 | Next | Writing: Story and Writing Lead (QuestStoryBot). Code integration and phone check: Implementation lead (Claude, branch claude/t09-road-copy). | Writing rev 2: approved by Director. v1 (Claude): deployed 20261023road, REVIEW. Rev 2 integration: IN PROGRESS (Claude) | After T01, compact road result copy: roll, short outcome, consequence; remove arithmetic narration such as "seven is bigger than two". Keep necessary rules available. Writing: [tasks/T09-road-copy.md](tasks/T09-road-copy.md) (rev 2, approved). v1, 23 Oct (Claude): kicker "Won · 4 to 3" and 15 trial lines, deployed; screenshots [tasks/T09/](tasks/T09/). Rev 2 integration on branch claude/t09-road-copy, PR for review before merge or deploy: separate roll summary, verdict, prose, named consequence; six phone examples first, then the full copy. |
+
+## Campaign backlog
+Waiting until assigned separately. Not in the active queue.
+
+| Item | Owner | Status | Notes |
+|---|---|---|---|
+| The Great Clover Race | Story and Writing Lead (QuestStoryBot) | BACKLOG | Campaign pack. Do not start until assigned. |
+| Saving for a Rainy Day | Story and Writing Lead (QuestStoryBot) | BACKLOG | Campaign pack. Do not start until assigned. |
+| Clover Heist moral forks | Story and Writing Lead (QuestStoryBot) | BACKLOG | One real moral fork per act as a road event, quotable by the chronicle and Legend. Do not start until assigned. |
 
 ## Review criteria
 - Danger should be readable and offer meaningful responses. Death from 60% HP is not automatically a bug; untelegraphed or practically unavoidable routine bursts warrant investigation.
