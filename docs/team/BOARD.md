@@ -2,7 +2,7 @@
 Updated 2026-10-23. Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
 
 ## Direction and ownership
-Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. These role names are explicitly authorized by Dave.
+Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. Story and Writing Lead = QuestStoryBot: story, campaign packs, and player-facing copy drafts; code integration stays with the implementation lead. These role names are explicitly authorized by Dave.
 Goal: a polished phone-based, middleweight cooperative board game for friends on a couch. Brief rules, meaningful choices, persistent heroes, readable danger, beautiful miniatures. Preserve magic's button-based interface and weapon tiles with hand choices and dice faces. Cards belong at suitable draw/reveal/keep moments.
 Dave reports charms have been removed and perks revised: verify current code before proposing anything that restores old systems.
 The live site is a development/playtest site. Small tested updates may be published for Dave to try. Preserve saves and make changes reversible. Published does not mean reviewed.
@@ -29,7 +29,16 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 | T06 | High | Director | READY | Review battlefield information hierarchy with actual current solo and six-hero screenshots. Keep miniature silhouettes clear. Recommend one compact current-heart die-face badge rather than redundant symbol+mapping-number+label. Keep quantity numbers when they affect a decision (health, damage, stacks). Put full rules/secondary stats in tap details; never assume beginners know numerical mappings. Commission implementation only after evidence review. |
 | T07 | Next | Implementation lead (Claude, branch claude/wizardly-newton-c0xpcq) | IN PROGRESS | Reconcile existing five/six-player and Wizard experiments before running more. Preserve saved results, simulator-policy audits and matched-campaign comparisons. Report uncertainty by independent campaign. Diagnose existing magic outlets before adding new ones. |
 | T08 | Next | Director | READY | Specify Bard targeted attack-or-defense song in existing power slot, hero miniature portraits with names and useful health context on Magic screen, self-target for solo. Exact costs/effects remain unsettled; proposal then implementation comparison. |
-| T09 | Next | Implementation lead | READY | After T01, compact road result copy: roll, short outcome, consequence; remove arithmetic narration such as "seven is bigger than two". Keep necessary rules available. Return before/after phone screenshots. |
+| T09 | Next | Writing: Story and Writing Lead (QuestStoryBot). Code integration and phone check: Implementation lead (Claude). | Writing: REVIEW (draft ready for Astra). Integration: READY after copy is approved. | After T01, compact road result copy: roll, short outcome, consequence; remove arithmetic narration such as "seven is bigger than two". Keep necessary rules available. Writing draft: [tasks/T09-road-copy.md](tasks/T09-road-copy.md) (READY FOR DIRECTOR REVIEW). After approval, Claude integrates the approved text and returns before/after phone screenshots. |
+
+## Campaign backlog
+Waiting until assigned separately. Not in the active queue.
+
+| Item | Owner | Status | Notes |
+|---|---|---|---|
+| The Great Clover Race | Story and Writing Lead (QuestStoryBot) | BACKLOG | Campaign pack. Do not start until assigned. |
+| Saving for a Rainy Day | Story and Writing Lead (QuestStoryBot) | BACKLOG | Campaign pack. Do not start until assigned. |
+| Clover Heist moral forks | Story and Writing Lead (QuestStoryBot) | BACKLOG | One real moral fork per act as a road event, quotable by the chronicle and Legend. Do not start until assigned. |
 
 ## Review criteria
 - Danger should be readable and offer meaningful responses. Death from 60% HP is not automatically a bug; untelegraphed or practically unavoidable routine bursts warrant investigation.
