@@ -331,6 +331,24 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     });
     pc.set('lunge', null);
   };
+  // Heart to Heart: each hero's heart face and Ready under its name; small coloured dots on a monster for every hero looking at it
+  fb.setHearts = (rows) => {
+    for (const pc of fb.heroes) {
+      const r = (rows || []).find((x) => x.i === pc.idx); let tag = pc.card.querySelector('.fb-heart');
+      if (!r || !r.src) { tag?.remove(); continue; }
+      if (!tag) { tag = h('span', { class: 'fb-heart' }, h('img', { alt: '', draggable: 'false' }), h('small', {}), h('em', {}, '+10')); pc.card.append(tag); }
+      const img = tag.querySelector('img'); if (img.getAttribute('src') !== r.src) img.setAttribute('src', r.src); img.alt = `Heart ${r.v}`;
+      tag.classList.toggle('ready', !!r.ready); tag.classList.toggle('match', !!r.match); tag.classList.toggle('hushed', !!r.hushed);
+      tag.querySelector('small').textContent = r.ready ? 'Ready' : 'Not ready';
+      tag.title = `${pc.name}: heart ${r.v}${r.hushed ? ' (hushed)' : ''}, ${r.ready ? 'ready' : 'still shaping: the heart can change'}${r.match ? '. Heart to Heart: +10 attack' : ''}`;
+    }
+    for (const foe of fb.foes.values()) {
+      const who = (rows || []).filter((r) => r.uid && r.uid === foe.uid); let dots = foe.c?.el.querySelector('.fb-aims');
+      if (!who.length) { dots?.remove(); continue; }
+      if (!dots) { dots = h('span', { class: 'fb-aims', 'aria-hidden': 'true' }); foe.c.el.append(dots); }
+      dots.replaceChildren(...who.map((r) => h('i', { class: r.ready ? 'on' : '', style: r.hue ? { '--hue': r.hue } : null })));
+    }
+  };
   fb.setPartyStance = (rows) => {
     if (!party) return;
     const jobs = [];

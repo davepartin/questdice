@@ -211,6 +211,7 @@ export function partyReportLines(rep, b) {
   const L = [];
   for (const t of rep.team || []) L.push({ kind: 'good', text: `${t.label} +${t.bonus}: ${t.names.join(' and ')}.` });
   if (rep.heartbeat) L.push({ kind: 'good', text: `Heartbeat! Every heart shows ${rep.heartbeat.face}: +${rep.heartbeat.magic} magic each.` });
+  for (const g of rep.hearts || []) L.push({ kind: 'good', text: `Heart to Heart +${g.bonus} attack each: ${g.names.join(' and ')} (heart ${g.face}, on ${name(g.uid)}).` });
   for (const m of rep.moral || []) L.push({ kind: 'good', text: `Morale Boost +${m.n}: ${m.from}’s killing blow fires up ${m.to}.` });
   if (rep.order?.length) {
     const seq = rep.order.map((x) => `${x.name}${x.v != null ? ` ⚡${x.v}` : ''}`).join('  →  ');

@@ -241,6 +241,13 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
 export const EXPERIMENT = { weapons2: false };
+// Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
+// until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
+//   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack
+//   noCharms      charms are suspended: no effects, offers, loot or prompts (owned charms stay in the save, untouched)
+//   perkPreview   perk offers show their exact effect and this hero's before and after
+export const TEAMWORK = { heartToHeart: false, noCharms: false, perkPreview: false };
+export const HEART_TO_HEART = 10; // a fixed +10 attack for each hero in a matching group, once a round (not act-scaled)
 // Class identity (an experiment, off in the game; docs/ideas/CLASS_IDENTITY_2026-10-22.md). Each is one sentence:
 //   songs  team games: the Bard's healing powers heal the most hurt hero at the table (the Bard included), not only the Bard
 //   guard  team games: a Knight who uses Shield Up takes the double share of the monsters' blows that round, whatever the feet say

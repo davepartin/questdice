@@ -248,7 +248,34 @@ function renderRoster() {
       h('i', { class: 'rs-hp' }, h('i', { style: { width: `${Math.max(0, Math.min(100, (f.hp / f.maxHp) * 100))}%` } })),
       h('small', { class: 'rs-pts' }, String(E.pointsOf(f))));
   }));
+  paintHearts();
 }
+// Heart to Heart (TEAMWORK.heartToHeart): every hero's real heart face under its miniature, with Ready once it has locked in (Not
+// ready until then: the heart can still change), and the monster it is looking at. Heroes whose hearts match on the same monster
+// glow and show +10, before anyone opens a panel. Only these public fields are shown; the rest of a friend's board is not. The
+// faces stay up through the round's replay and clear when the next round begins.
+function paintHearts(rep = null) {
+  const b = B.b; if (!B.fb?.setHearts || !b?.fighters || !(B.net || B.party) || !D.TEAMWORK.heartToHeart || (B.replaying && !rep)) return;
+  const heroes = b.fighters.map((f) => f.hero); const alive = (k) => (b.enemies[k]?.hp > 0 ? b.enemies[k].uid : null);
+  if (rep?.heartFaces) { // the round being played out: the faces as everyone locked them in, all ready, matches from the report
+    const got = new Set((rep.hearts || []).flatMap((g) => g.names));
+    B.fb.setHearts(b.fighters.map((f, i) => { const x = rep.heartFaces.find((y) => y.name === f.hero.name);
+      return { i, v: x?.v || null, src: x?.v ? heartFaceSrc(x.v) : null, ready: true, hushed: !!x?.hushed, uid: x?.uid || null, hue: D.lookOf(heroes, i)?.hue || null, match: got.has(f.hero.name) }; }));
+    return;
+  }
+  const rows = b.fighters.map((f, i) => {
+    const me = i === B.active; const board = me ? b.board : f.board; const up = f.hp > 0;
+    const ready = up && (!!f.locked || (!B.net && !!f.board && !me));
+    const aimAt = ready ? f.target : me ? (B.picked !== false ? B.target : null) : f.aim;
+    const v = up && board?.C ? board.C.v : null;
+    return { i, v, src: v ? heartFaceSrc(v) : null, ready, hushed: !!board?.C?.hushed, uid: up && aimAt != null ? alive(aimAt) : null, hue: D.lookOf(heroes, i)?.hue || null };
+  });
+  const key = (r) => (r.v && r.uid && !r.hushed ? `${r.uid}|${r.v}` : null); const count = {};
+  for (const r of rows) { const k = key(r); if (k) count[k] = (count[k] || 0) + 1; }
+  for (const r of rows) r.match = !!(key(r) && count[key(r)] >= 2);
+  B.fb.setHearts(rows);
+}
+function heartFaceSrc(v) { try { const spec = dieSpecs(B.hero).C; return spec ? faceImage(spec, v) : null; } catch { return null; } }
 // Team actions: one a round, on a friend. Uses the same potions as your own list.
 const TEAM = [
   { id: 'potion', name: 'Potion', icon: 'heal', text: 'Throw one of your potions to a friend to heal them. It comes out of your own belt.', cost: () => 'Free' },
@@ -283,7 +310,8 @@ function teamRules() {
       rule('windup', 'Who the monsters go after', 'The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share. A tie goes against the hero with more health; if that ties too, a coin flip.'),
       rule('block', 'Hold the line', `If the monsters came at you and you are still standing at the end of the round: +${D.POINTS.heldLine} points. While you are the target, your blocks score double.`),
       rule('atk', 'Team triples', `When two heroes roll the same triple in the same round, each gets +${tri} more. Attack rows (Weapons, Strength, Talent) count when you hit the same monster; guard columns (Head to Toe, Left, Right) count any time.`),
-      rule('magic', 'Heartbeat', `If every hero's heart die shows the same number, each of you gains ${n} magic (one for each hero).`),
+      D.TEAMWORK.heartToHeart ? rule('heart', 'Heart to Heart', `Two or more of you showing the same heart number and hitting the same monster: each gets +${D.HEART_TO_HEART} attack. Turn your heart to make a match.`)
+        : rule('magic', 'Heartbeat', `If every hero's heart die shows the same number, each of you gains ${n} magic (one for each hero).`),
       rule('atk', 'Morale Boost', `A killing blow fires up the next teammate to strike: +${D.MORAL_BOOST} attack.`),
       rule('windup', 'Turn order', 'Everyone acts by their feet roll, highest first. Ties go to the heroes, and round 1 is always the heroes’.'),
       rule('heal', 'Helping a friend', `One team action a round: throw a potion from your belt, share ${D.SHARE_MAGIC} magic, or (once a battle, ${D.REVIVE_COST} magic) stand a fallen friend back up with ${D.REVIVE_HP} health.`),
@@ -416,6 +444,8 @@ function selectTarget(uid) {
   if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
   const first = B.picked === false;
   B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
+  if (D.TEAMWORK.heartToHeart && B.party) { if (B.net) Sess.send({ type: 'aim', target: i }).catch(() => {}); else if (B.b.fighters[B.active]) B.b.fighters[B.active].aim = i; } // friends see where you are looking
+  paintHearts();
   if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : '')); }
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
@@ -746,6 +776,7 @@ export function renderShape() {
   bw.tray.setHeart?.(ev.heartBoost?.slots || null, ev.heartBoost?.sym); // Heart Boost: the heart and the dice it backs beat together in the symbol's colour
   B.hud.caption.replaceChildren(rolling ? caption('Rolling…') : B.focus ? caption(HK.rich(V.describeDie(hero, B.focus, b.board[B.focus].v)), 'captip') : caption('Tap dice to reroll, then Lock in.'));
   B.hud.cards.replaceChildren(...cardTiles(false));
+  paintHearts();
   const seg = (k, ic, label) => h('button', { type: 'button', class: B.straight === k ? 'on' : '', 'aria-pressed': B.straight === k ? 'true' : 'false', onclick: () => { B.straight = k; renderShape(); } }, HK.icon(ic), label);
   const straight = ev.straight ? h('div', { class: 'b3-straight' }, h('span', { class: 'st-l' }, HK.icon('star'), h('b', {}, `${ev.straight}-straight`)),
     h('div', { class: 'fseg' }, seg('atk', 'atk', `Attack ${ev.straightBonus}`), seg('gold', 'gold', `Gold ${ev.straightBonus}`))) : null;
@@ -1186,7 +1217,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   B.lastRep = rep;
   const card = makeCard(rep);
   const pcOf = (n) => heroPiece(n);
-  B.replaying = true;
+  paintHearts(rep); B.replaying = true; // the faces as locked in stay up while the round plays out
   B.fb?.setPartyStance?.(stanceOf(b.fighters, b.enemies, { strikes: rep.strikes }));
   const pace = replayPace((rep.order || []).length, { reduced: reduced() });
   // team triples and Heartbeat
@@ -1196,6 +1227,11 @@ async function playParty(rep, outcome = B.b.outcome) {
     await wait(1.0);
   }
   if (rep.heartbeat) { sfx.magic(); banner(`HEARTBEAT  +${rep.heartbeat.magic} MAGIC EACH`, 'good'); for (const pc of B.fb.heroes) pc.glow('heal'); await wait(1.0); }
+  for (const g of rep.hearts || []) { // Heart to Heart: one banner per group, the group's heroes glow
+    sfx.synergy(); banner(`HEART TO HEART  +${g.bonus} EACH`, 'gold'); stage.flash(0xff5a7a, 0.16);
+    for (const n of g.names) pcOf(n)?.glow('buff');
+    await wait(1.0);
+  }
   // initiative
   if (rep.init.forced) { banner('THE COMPANY STRIKES FIRST', 'gold'); }
   else {

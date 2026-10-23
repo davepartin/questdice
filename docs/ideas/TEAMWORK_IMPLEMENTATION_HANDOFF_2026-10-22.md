@@ -177,3 +177,29 @@ Each checkpoint should be recoverable if the session runs out: update this plan 
 - Perk descriptions and previews match actual results, including caps.
 - Existing required tests plus targeted tests for changed behavior.
 - Human phone review for readability, pacing and the intended quick teamwork.
+
+## Progress log (Claude)
+
+### Checkpoint 0: starting state (23 Oct 2026)
+- Work branch `claude/wizardly-newton-c0xpcq`, at `1112dfd` after merging main `630bd8c` (this handoff). Reports on the branch:
+  docs/balance/PRESSURE_ONE_AT_A_TIME_2026-10-22.md, docs/balance/ARROWS_2026-10-22.md, docs/ideas/CLASS_IDENTITY_2026-10-22.md
+  (all present; raw tables beside them in docs/balance/).
+- Switch state (all off in the live game): `EXPERIMENT.weapons2` (six weapons, Bow + Arrows), `PRESSURE` (fury, rally, mend, bag),
+  `CLASS2` (Bard songs carry, Knight Guard, Dwarf Dig In), arrow test switches in WEAPONS2 (`numbered` faces, `arrowRules`).
+  The lab (`?lab`, js/lab.js) turns on weapons2 with its own saves; nothing else is on in the lab yet.
+
+### Checkpoint 1: Heart to Heart and shared heart faces (done)
+- Rule: `TEAMWORK.heartToHeart` and `HEART_TO_HEART = 10` in js/data.js; engine `heartToHeart()` in js/engine.js (replaces the
+  Heartbeat branch of `teamBonuses` when on). Exact rules in docs/TEAMPLAY.md (resolution snapshot, downed and hushed heroes).
+- Display: battle3d `paintHearts()` + flat `setHearts()`: real heart face (the same picture the heart-change buttons use),
+  Ready / Not ready, +10 and a glow on matches, aim dots on monsters; kept through the replay from `rep.heartFaces`.
+- Online: `aim` command (preview only) and roster `heart` / `aim` in the player view; reset each round (`f.aim` in beginPartyRound).
+  Note for review: in the Firestore room the whole table already travels to every phone (that is how rooms work today); the
+  screens show only the public fields, and the server view (`playerView`) sends only those.
+- Banner "HEART TO HEART +10 EACH", log line, How teams work text.
+- Tests: test/teamwork.test.mjs (2, 3, 6 heroes; two groups; same species; mismatched targets; two numbers on one monster;
+  downed; lone survivor; guard; no Heartbeat magic; online preview, privacy and reset). 354 pass.
+- Screens: `node dev/hearts.mjs shots 3|6` (three and six heroes on one phone).
+- Open for Dave's phone review: six heroes on one monster are crowded (a pre-existing layout limit; one hero sits at the edge).
+
+**Next step:** Checkpoint 2, suspend charms.

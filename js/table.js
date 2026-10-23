@@ -131,6 +131,7 @@ function dispatch(table, player, cmd) {
     case 'nudge': return nudge(table, player, cmd);
     case 'card': return card(table, player, cmd);
     case 'drink': return drink(table, player);
+    case 'aim': return aim(table, player, cmd);
     case 'lock': return lock(table, player, cmd);
     case 'unlock': return unlock(table, player);
     case 'skip': return skip(table, player, cmd);
@@ -619,6 +620,16 @@ function maybeResolve(table) {
   for (const f of b.fighters) { f.locked = false; f.skipped = false; }
   return ok();
 }
+// The monster a hero is looking at while shaping (Heart to Heart: friends can see who is going where). A preview only: the target
+// sent with 'lock' is the one that counts. Ignored once locked in; cleared at the start of every round.
+function aim(table, player, cmd) {
+  if (table.phase !== 'battle') return fail('Not in a fight.');
+  const f = fighterOf(table, player);
+  if (!f || f.hp <= 0) return fail('You are down.');
+  if (f.locked) return ok();
+  const t = cmd.target | 0; if (!(table.battle.enemies[t]?.hp > 0)) return fail('That monster is down.');
+  f.aim = t; return ok();
+}
 function lock(table, player, cmd) {
   if (table.phase !== 'battle') return fail('Not in a fight.');
   const f = fighterOf(table, player);
@@ -862,6 +873,7 @@ export function playerView(table, playerId) {
       roster: table.battle.fighters.map((g) => ({
         id: table.players.find((p) => p.hero === g.hero)?.id,
         name: g.hero.name, cls: g.hero.cls, hp: g.hp, maxHp: g.maxHp, status: stageOf(g),
+        heart: g.hp > 0 && g.board?.C ? g.board.C.v : null, aim: g.locked ? g.target : (g.aim ?? null), // the public preview: heart face and target only
       })),
       me: f ? {
         stage, hp: f.hp, maxHp: f.maxHp, magic: f.magic,

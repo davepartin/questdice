@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -1851,7 +1851,7 @@ export function newPartyBattle(heroes, quest0, rng) {
 function livingFighters(b) { return b.fighters.filter((f) => f.hp > 0); }
 export function beginPartyRound(b) {
   b.round += 1; b.phase = 'reset';
-  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; f.dugIn = 0; digIn(f, b.round); }
+  for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; f.aim = null; f.dugIn = 0; digIn(f, b.round); }
   pressure(b);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
 }
@@ -1884,6 +1884,25 @@ function totalsFor(f) {
 // the same face, each gains magic equal to the number of heroes.
 const TEAM_LABEL = { weapons: 'Team Weapons Attack', strength: 'Team Strength Attack', talents: 'Team Talent Attack', headtoe: 'Team Head to Toe Block', left: 'Team Left Guard', right: 'Team Right Guard' };
 const GUARD_ROWS = new Set(['headtoe', 'left', 'right']); // the columns: they add block for the whole party, not attack on one monster
+// Heart to Heart (TEAMWORK.heartToHeart; replaces Heartbeat). Worked out once, before anyone strikes, from the locked boards and
+// targets of the heroes acting this round (standing, with a board): heroes whose heart dice show the same number and who aim at
+// the same monster (by the monster itself, not its kind) each get HEART_TO_HEART more attack this round. Two heroes add 20 in all,
+// six add 60; it is never counted per pair. Several groups can form at once, on different monsters or with different numbers on
+// one monster. A hushed heart does not join. The bonus is ordinary attack: it goes through the monster's guard like any other.
+function heartToHeart(b, acting, tgtOf) {
+  const groups = new Map();
+  for (const f of acting) {
+    const c = f.board?.C; const uid = tgtOf(f); if (!c || c.hushed || !uid) continue;
+    const k = `${uid}|${c.v}`; if (!groups.has(k)) groups.set(k, { uid, face: c.v, who: [] }); groups.get(k).who.push(f);
+  }
+  const out = [];
+  for (const g of groups.values()) {
+    if (g.who.length < 2) continue;
+    for (const f of g.who) { f.T.atk += HEART_TO_HEART; f._team++; f._heart2heart = HEART_TO_HEART; }
+    out.push({ uid: g.uid, face: g.face, names: g.who.map((f) => f.hero.name), bonus: HEART_TO_HEART, total: HEART_TO_HEART * g.who.length });
+  }
+  return out;
+}
 function teamBonuses(b, acting) {
   const out = { team: [], heartbeat: null };
   if (acting.length < 2) return out;
@@ -1900,6 +1919,7 @@ function teamBonuses(b, acting) {
       out.team.push({ row, label: TEAM_LABEL[row], names: g.map((f) => f.hero.name), bonus });
     }
   }
+  if (TEAMWORK.heartToHeart) { out.hearts = heartToHeart(b, acting, tgtOf); return out; }
   const face = acting[0].board.C.v;
   if (acting.every((f) => f.board.C.v === face)) { for (const f of acting) f.T.magic += acting.length; out.heartbeat = { face, magic: acting.length }; }
   return out;
@@ -1950,7 +1970,7 @@ export function resolveParty(b) {
   const acting = b.fighters.filter((f) => f.hp > 0 && f.board);
   for (const f of acting) {
     const { ev, T } = totalsFor(f);
-    f.ev = ev; f.T = T; f._dealt = 0; f._kills = 0; f._team = 0; f._killed = [];
+    f.ev = ev; f.T = T; f._dealt = 0; f._kills = 0; f._team = 0; f._heart2heart = 0; f._killed = [];
     if (ev.offense3 || ev.defense3) f.hero.stats.triples++;
     if (ev.straight) f.hero.stats.straights++;
     f.goldEarned += T.gold;
@@ -1974,7 +1994,7 @@ export function resolveParty(b) {
   // Guard: a Knight who used Shield Up this round steps in front and takes the double share
   if (CLASS2.on && CLASS2.guard && heat.length > 1) { const k = heat.findIndex((r) => r.f.hero.cls === 'knight' && r.f.usedRound?.shieldwall); if (k > 0) heat.unshift(heat.splice(k, 1)[0]); }
   const rep = {
-    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, moral: [],
+    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };

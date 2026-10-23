@@ -432,3 +432,25 @@
 .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: auto; left: 0; justify-items: start; padding-left: .4rem; }
 /* feel pass (Oct 2026): a hit of 25 or more is huge */
 .fb-num.huge { font-size: 2.6rem; color: #fff1c4; text-shadow: 0 2px 0 #000, 0 0 14px rgba(0, 0, 0, .9), 0 0 22px rgba(255, 190, 70, .8); }
+/* Heart to Heart (the teamwork pass): a hero's heart face and Ready under its name; dots on a monster for each hero looking at it */
+.fb-heart { display: inline-flex; align-items: center; gap: .22rem; margin-top: .08rem; font: 700 .58rem/1 var(--font-display); letter-spacing: .04em; color: #b8b2a6; white-space: nowrap; }
+.fb-heart img { width: 1.2rem; height: 1.2rem; border-radius: .22rem; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18); opacity: .78; }
+.fb-heart small { font-size: 1em; text-transform: uppercase; }
+.fb-heart em { display: none; font-style: normal; color: #ff8fa6; }
+.fb-heart.ready { color: #8ff0b0; } .fb-heart.ready img { opacity: 1; }
+.fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); opacity: 1; }
+.fb-heart.match em { display: inline; }
+.fb-heart.hushed img { filter: grayscale(1) brightness(.7); }
+.fb[data-heroes="5"] .fb-heart small, .fb[data-heroes="6"] .fb-heart small { display: none; } /* six on a phone: the face, a green ring when ready */
+.fb[data-heroes="5"] .fb-heart.ready img, .fb[data-heroes="6"] .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
+.fb[data-heroes="5"] .fb-heart.match img, .fb[data-heroes="6"] .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
+.fb-aims { position: absolute; top: -.36rem; left: 50%; transform: translateX(-50%); display: flex; gap: .16rem; pointer-events: none; }
+.fb-aims i { width: .46rem; height: .46rem; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1.5px var(--hue, #ffd23d); }
+.fb-aims i.on { background: var(--hue, #ffd23d); }
+/* beside a monster (locked in) the card is narrow: the face sits over a small READY, +10 tucked beside it */
+.fb-pair .fb-heart { flex-direction: column; gap: .08rem; font-size: .48rem; }
+.fb-pair .fb-heart img { width: 1rem; height: 1rem; }
+.fb-pair .fb-heart em { position: absolute; left: calc(50% + .6rem); top: -.1rem; font-size: .5rem; }
+.fb-pair .fb-heart { position: relative; }
+/* waiting on the left (half size): wrap the word under the face rather than spill out of the card */
+.fb-side.heroes .fb-heart { flex-wrap: wrap; justify-content: center; max-width: 100%; row-gap: .06rem; font-size: .5rem; }

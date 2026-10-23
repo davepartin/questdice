@@ -18,8 +18,24 @@ Weapons and Strength give +10 attack; Head to Toe gives +10 block.
 - **Team Strength Attack +10** each, when they hit the same monster.
 - **Team Head to Toe Block +10** each.
 
-**Heartbeat (automatic).** If every hero's heart die shows the same face, each hero gains magic equal to the number of
-heroes (2 in a two-hero game, 6 in a six-hero game).
+**Heartbeat (automatic, the live game today).** If every hero's heart die shows the same face, each hero gains magic equal to
+the number of heroes (2 in a two-hero game, 6 in a six-hero game).
+
+**Heart to Heart (replaces Heartbeat; approved 22 Oct 2026, in the lab preview until Dave releases it; `TEAMWORK.heartToHeart`).**
+Two or more heroes whose heart dice show the same number and who hit the same monster each get **+10 attack** that round.
+- It is worked out once, before anyone strikes, from the boards and targets the heroes locked in. Only heroes acting that
+  round count (standing, with dice). A downed hero never counts; a hero who falls during the round keeps the bonus it already had.
+- Each hero in a group gets +10 once: two heroes add 20, six add 60. It is never counted per pair.
+- The monster is the monster itself, not its kind: two Goblins are two targets. Several groups can form in one round, on
+  different monsters, or with different heart numbers on the same monster.
+- Same heart on different monsters does not count; a lone hero never qualifies; a hushed heart does not join.
+- Turning your heart (Heart Change) to make a match is part of the plan.
+- The bonus is ordinary attack and goes through the monster's guard like any other attack. It is a fixed 10, not act-scaled.
+- Your own Heart Boost (the heart lifting your matching dice) is unchanged.
+- At the table, every hero's real heart face shows under its miniature, with **Ready** once it has locked in (**Not ready**
+  until then: the heart can still change), and small dots on each monster show who is looking at it. Matching faces glow
+  and show +10. Online, a hero's heart face and the monster it is looking at are the only parts of its board shown to friends
+  (`aim` is a preview; the target sent with `lock` is the one that counts). Both clear when the next round begins.
 
 **Who the monsters go after (Dave, Oct 2026).** The hero with the lowest Feet that round draws the attacks and takes a
 double share of every hit; everyone else takes a single share. A tie goes to the hero with more health right now. Feet

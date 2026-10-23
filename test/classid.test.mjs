@@ -28,7 +28,7 @@ test('Dig In: from round 5 the Dwarf heals 2 at the start of each round; other c
 function table(a, c, setup) {
   const b = E.newPartyBattle([a, c], quest(['ogre']), E.makeRng(7));
   setup?.(b);
-  for (let i = 0; i < 2; i++) { E.startFighter(b, i); const f = b.fighters[i]; f.board = board({ S: i === 0 ? 4 : 1 }); f.target = 0; i === 0 && b._cast?.(b); E.commitFighter(b, i); }
+  for (let i = 0; i < 2; i++) { E.startFighter(b, i); const f = b.fighters[i]; b.board = board({ S: i === 0 ? 4 : 1 }); E.commitFighter(b); f.target = 0; if (i === 0) b._cast?.(b); }
   const o = b.enemies[0]; o.intent = { n: 'Club', v: 'strike', f: 12, m: 0 }; o.windup = false;
   E.resolveParty(b); return b;
 }
