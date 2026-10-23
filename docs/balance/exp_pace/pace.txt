@@ -1,0 +1,7 @@
+live pacing · 2 heroes: round 1: 6 strikes, 19.1 s
+live pacing · 4 heroes: round 1: 9 strikes, 18.3 s
+live pacing · 6 heroes: round 1: 12 strikes, 22.1 s
+pace=actions · 2 heroes: round 1: 6 strikes, 11.9 s · round 2: 6 strikes, 11.1 s
+pace=actions · 4 heroes: round 1: 9 strikes, 17.5 s
+pace=actions · 6 heroes: round 1: 12 strikes, 17 s · round 2: 11 strikes, 17.3 s
+no page errors
