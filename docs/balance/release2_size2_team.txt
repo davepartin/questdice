@@ -1,0 +1,23 @@
+smart play using the teamwork rules on purpose (TEAMPLAY) · company strength by act 1: x1.86 2: x1.91 3: x1.91 · normal, 2 heroes, 10 companies: win rate (first try) · rounds · health left when won
+act kind      solo: win  rnds  hp     n      team: win  rnds  hp     n   (n: fights; team wins ± one standard error)
+1   battle      92%   4.0    74%   160        96%   3.5    75%    80  ±2%
+1   boss        60%  10.8    55%    20        90%   9.1    88%    10  ±9%
+1   elite       95%   6.3    85%    20       100%   5.8    83%    10  ±0%
+2   battle      91%   6.1    64%   160        99%   5.8    74%    80  ±1%
+2   boss        80%  11.2    66%    20       100%  10.6    75%    10  ±0%
+2   elite       90%  11.0    64%    20       100%   9.8    80%    10  ±0%
+3   battle      86%   7.2    62%   140        99%   7.3    70%    70  ±1%
+3   boss        73%  14.3    45%    40        95%  14.1    72%    20  ±5%
+3   elite      100%   9.8    54%    20       100%   8.8    77%    10  ±0%
+
+By class at the table · the released rules: hero-fights · lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell · share of the team's damage · share of the team's block (a fair share is 1 / heroes) · rounds a fight taking the double share (of them by Shield Up). Every number is per hero: two heroes of one class each count separately.
+knight    120    57%     1%   44.2    0.0       58%     2%     51%    55%    4.3 (1.9)
+ranger    120    51%     4%   45.4    0.0       50%     3%     51%    49%    2.4 (0.0)
+wizard    120    51%     5%   47.5    0.0       53%     3%     47%    55%    3.6 (0.0)
+bard      120    45%     7%   56.3    2.0       47%     8%     51%    36%    2.9 (0.0)
+dwarf     120    61%     1%   49.3    0.0       57%     2%     51%    48%    3.3 (0.0)
+
+Independent campaigns: 10. Team battles won on the first try, per campaign:   98% ± 1% (standard error across campaigns). Act III boss, team: 19 of 20 won on the first try, in 10 campaigns.
+
+Teamwork the bots used, by company size: hero-rounds in a Heart to Heart group · hero-rounds on the most-chosen monster (focus) · rounds a Knight took the double share by Shield Up · Bard verses sung for a friend a fight, and the healing they gave
+2 heroes:   28% in Heart to Heart ·  100% focused ·   11% of rounds guarded · 0.02 verses for a friend a round (5.7 healing each) · 1977 team rounds
