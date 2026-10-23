@@ -104,8 +104,10 @@ export function weaponFaces(inst, rollSize) {
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
-  if (EXPERIMENT.weapons2 && inst.id === 'quiver') return faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}`, size); // the arrows: faces by ammunition
-  if (EXPERIMENT.weapons2 && WEAPONS2.faces[inst.id]) return faces2(inst.id, size); // stage 1: the same Bronze numbers at every metal
+  // the weapons experiment: its own Bronze numbers at every metal; Silver and Gold add the same metal icons as today's weapons (Bronze none)
+  const w2tier = Math.min(2, inst.rarity | 0); const w2 = (f) => (w2tier ? metalIcons(def, f, w2tier, def.temper, def.lean === 'def' ? 'b' : 'r') : f);
+  if (EXPERIMENT.weapons2 && inst.id === 'quiver') return w2(faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}`, size)); // the arrows: faces by ammunition
+  if (EXPERIMENT.weapons2 && WEAPONS2.faces[inst.id]) return w2(faces2(inst.id, size));
   const own = def.lean === 'def' ? 'b' : 'r'; const other = own === 'r' ? 'b' : 'r';
   const temper = WEAPON_DICE[def.temper] ? def.temper : 'balanced'; const tier = Math.min(2, inst.rarity | 0);
   const faces = (WEAPON_DICE[temper][size] || WEAPON_DICE[temper][4]).map((f) => (typeof f !== 'object' ? { v: f, c: own } : f.plus ? { v: f.v, c: own, plus: f.plus } : { v: f.v, c: other }));
@@ -114,7 +116,13 @@ export function weaponFaces(inst, rollSize) {
     let lo = -1; faces.forEach((f, k) => { if (f.c === own && f.v > 0 && (lo < 0 || f.v < faces[lo].v)) lo = k; });
     if (lo >= 0) faces[lo] = { v: 0, c: own };
   }
-  const kinds = [...new Set([...def.faces.flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
+  return metalIcons(def, faces, tier, temper, own);
+}
+// Metal adds abilities, never numbers: icons on the top faces, from the weapon's own symbols (Bronze one face, Silver half of them,
+// Gold every face of both colours), the top face a crit of 1, 2 or 3. Today's weapons and the weapons experiment share this rule.
+function metalIcons(def, faces, tier, temper, own) {
+  const hit = (f) => f.v + (f.plus || 0);
+  const kinds = [...new Set([...(def.faces || []).flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
   if (!kinds.length) kinds.push(own === 'r' ? 'pierce' : 'heal');
   // icons from the top face down: its own colour first (highest number, then the later face), the other colour only on Gold
   const live = faces.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0 && (x.f.c === own || tier >= 2))

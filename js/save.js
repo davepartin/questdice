@@ -2,7 +2,7 @@
 // reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
-import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT } from './data.js';
 import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
 import { LAB } from './lab.js';
 
@@ -88,7 +88,20 @@ export function migrateHero(hero) {
   const frugal = (hero.perks || []).filter((p) => p === 'frugal').length;
   if (frugal) { hero.perks = hero.perks.filter((p) => p !== 'frugal'); hero.pendingPerks = (hero.pendingPerks || 0) + frugal; }
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
+  migrateWeapons2(hero);
   return hero;
+}
+// The new weapons (released 23 Oct 2026): every weapon is one-handed. An old two-handed Bow (one weapon filling both hands) becomes
+// the new pair, Arrows in the left hand and the Bow in the right, same metal, size and wear, Normal arrows; the right hand die comes
+// with it. Other two-handed weapons a hero already owns (a staff, a war hammer, a long sword, a legendary) keep working as they are.
+export function migrateWeapons2(hero) {
+  if (!EXPERIMENT.weapons2 || !hero?.loadout) return false;
+  const L = hero.loadout; const NW = L.NW; const NE = L.NE;
+  if (!(NW?.id === 'bow' && NE?.id === 'bow' && NE.twin)) return false;
+  L.NW = { ...NW, id: 'quiver', ammo: 'normal' }; delete L.NW.twin;
+  L.NE = { ...NE }; delete L.NE.twin;
+  if (Array.isArray(hero.dice) && !hero.dice.includes('NE')) hero.dice.push('NE');
+  return true;
 }
 export async function createSave(hero, password) {
   if (String(password || '').length < MIN_PASSWORD) throw new Error('Choose a password of at least 3 characters.');
