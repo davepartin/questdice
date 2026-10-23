@@ -1,18 +1,20 @@
 // A test on the road: the choice screen, the roll screen before and after the throw, the result.  node dev/trialshot.mjs [cls] [act] [step] [seed]
-import { chromium } from 'playwright-core';
+import { chromium } from 'playwright-core'; import fs from 'node:fs';
 const [cls = 'ranger', act = 1, step = 2, seed = 7] = process.argv.slice(2);
+const OUT = process.env.OUT || 'docs/ingame'; fs.mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] });
 const p = await b.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, hasTouch: true });
+p.setDefaultTimeout(240000); // the 3D dice table renders slowly in software
 p.on('pageerror', (e) => console.log('ERR', e.message)); p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load/.test(m.text())) console.log('console.error', m.text().slice(0, 200)); });
 await p.addInitScript((HINTS) => { try { localStorage.setItem('qd.tutorial.done', '1'); if (!HINTS) localStorage.setItem('qd.hints', 'off'); } catch {} }, !!process.env.HINTS);
-await p.goto('http://localhost:8135/?debug&manual&q=low'); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
-const shot = async (n) => { await p.waitForTimeout(400); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `docs/ingame/trial_${n}.png` }); };
+await p.goto(`http://localhost:${process.env.PORT || 8135}/?debug&manual&q=low`); // PORT=8136 for a second server (a before/after pair) await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+const shot = async (n) => { await p.waitForTimeout(400); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${OUT}/trial_${n}.png` }); };
 await p.evaluate(({ cls, act, step, seed }) => { const { S, E } = window.QD; const h = E.newHero({ name: 'Dave', cls, seed: +seed }); h.gold = 120; Object.assign(h.campaign, { act: +act, step: +step, wins: +step - 1, seenStory: undefined }); h.campaign.storySeen = { all: true }; S.hero = h; S.company = { kind: 'solo', members: [h], campaign: h.campaign }; window.QD.showRoad(); }, { cls, act, step, seed });
 await p.waitForTimeout(1200); await p.evaluate(() => document.querySelector('.sx-choices')?.scrollIntoView({ block: 'center' })); await shot('1choice');
 console.log(await p.evaluate(() => [...document.querySelectorAll('.sx-choice')].map((e) => e.innerText.replace(/\n+/g, ' | ')).join('\n')));
 await p.evaluate(() => document.querySelector('.sx-choice:not(.off)')?.click()); await p.waitForTimeout(800); await shot('2roll');
 const run = async (frames) => { for (let i = 0; i < frames; i++) { await p.evaluate(() => window.QD.world.stage.step(1)); } };
-await p.evaluate(() => document.querySelector('.tr-go')?.click()); await run(26); await p.screenshot({ path: 'docs/ingame/trial_2bmid.png' });
+await p.evaluate(() => document.querySelector('.tr-go')?.click()); await run(26); await p.screenshot({ path: `${OUT}/trial_2bmid.png` });
 await run(110); await shot('3rolled');
 console.log(await p.evaluate(() => (document.querySelector('.t3-verdict') || document.querySelector('.tr-verdict'))?.innerText));
 await p.evaluate(() => document.querySelector('.tr-go')?.click()); await p.waitForTimeout(900); await shot('4result');

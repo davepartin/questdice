@@ -1363,3 +1363,7 @@ Dave on the objective screen: "less text, very clear, almost like a little card 
 - the stakes as one or two coin chips ("Bet 10 gold" / "Win 30 gold", "Win 80 gold" / "Fail: pay 20", "Win 20 gold").
 
 A small "More" opens the story, the full terms and the cover line. Below the card: Bet / Accept and Decline, or Continue when the objective is assigned. js/secrets.js gives each secret card its short chips (rewardChips) beside the full sentence. The double-size miniature stays on Enemy Details, where it was meant.
+
+## 23 October 2026: road test results, compact (T09)
+
+A test on the road (Wisdom, Strength, Speed) now shows its roll once, as the result card's top line ("Won · 4 to 3"; at a table: "Ann won · 4 to 3"). The story underneath is a short outcome and its consequence ("Next fight: +2 attack in round 1"), without reciting the roll mid-sentence ("…, 7 against 2, …") or extra narration. 15 result lines in js/roads.js were rewritten; js/g3/scrui.js roadResult and js/g3/online.js roadDone put the roll in the kicker. Before/after screenshots: docs/team/tasks/T09/. dev/trialshot.mjs takes PORT= and OUT= for before/after pairs.
