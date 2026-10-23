@@ -1367,3 +1367,7 @@ A small "More" opens the story, the full terms and the cover line. Below the car
 ## 23 October 2026: road test results, compact (T09)
 
 A test on the road (Wisdom, Strength, Speed) now shows its roll once, as the result card's top line ("Won · 4 to 3"; at a table: "Ann won · 4 to 3"). The story underneath is a short outcome and its consequence ("Next fight: +2 attack in round 1"), without reciting the roll mid-sentence ("…, 7 against 2, …") or extra narration. 15 result lines in js/roads.js were rewritten; js/g3/scrui.js roadResult and js/g3/online.js roadDone put the roll in the kicker. Before/after screenshots: docs/team/tasks/T09/. dev/trialshot.mjs takes PORT= and OUT= for before/after pairs.
+
+## 24 October 2026: online "waiting" state restored (hotfix, separate change)
+
+Since `20261023road`, the online road-result screen lost two button options: a mid-line comment in js/g3/online.js swallowed `label` and `disabled`, so a hero who had pressed Onward still saw an active "Onward" instead of a disabled "Waiting for the others". The comment is now `/* */` and the options sit on their own line. A new test (test/syntax.test.mjs) fails on any trailing `//` comment that still holds what reads as another entry of the same object; it fails on the old line and passes on the fix. 363 tests pass. Stamp 20261024wait. Checked by tests and reading only: no online table was driven in a browser. The T09 rev 2 branch (PR 37) carries the same fix; merging either first is fine.
