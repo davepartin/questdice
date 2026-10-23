@@ -5,7 +5,7 @@ import { actsOf, helpFightsOf, helpOff, fillNames } from './campaigns.js';
 import {
   hashSeed, makeRng, companyGold, payCompany, grantCompany, grantXpEach, potionStock, potionMaxOf, questsFor,
 } from './engine.js';
-import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost, statDice } from './trials.js';
+import { STATS, isTrialStep, rollTrial, oddsLine, rematchCost, statDice, rollLine } from './trials.js';
 
 export function joinNames(members) {
   const n = members.map((m) => m.name);
@@ -30,8 +30,11 @@ function pickHelp(ctx, i) {
   ctx.campaign.nextEnemies = (helpFightsOf(ctx.campaign) || HELP_FIGHTS)[saved] || null;
   ctx.campaign.saved = saved; ctx.campaign.forsaken = lost;
   note(ctx, 'A Call for Help', `They ran for ${saved}. ${lost} had to wait, and the road wrote it down.`);
-  return `You turn toward ${saved}. ${lost} will have to stand on its own. A chronicle line will remember the choice. Roads always do.`;
+  return said(`You turn toward ${saved}. ${lost} will have to stand on its own.`);
 }
+// A road result in parts (T09): the outcome, then its consequence and who gets it ('all': the whole company, or a hero's name).
+// chooseRoad adds the roll summary and the verdict, so no sentence here recites a roll.
+const said = (prose, effect = null, who = null) => ({ prose, effect, who });
 function note(ctx, title, text) {
   const c = ctx.campaign;
   c.chronicle = [{ act: c.act, step: c.step, title, text }, ...(c.chronicle || [])].slice(0, 18);
@@ -58,7 +61,7 @@ export const ROADS = [
         apply: (ctx) => {
           bless(ctx, { id: 'gate', name: 'Nine-stone push', text: 'Round 1: +10 attack.', fights: 1, openingAtk: 10 });
           note(ctx, 'The Nine-Stone Gate', 'They set the dice in. The hill knocked back, once, like a friend at the door.');
-          return 'The heart stone knocks back. One deep thump, like a fist on a tavern door at dawn. Right then. Off we go. For the first round of the fight ahead, every hero swings at +10 attack.';
+          return said('The heart stone knocks back, one deep thump.', 'Round 1 of the next fight: +10 attack for every hero.', 'all');
         },
       },
     ],
@@ -108,11 +111,11 @@ const ENCOUNTERS = [
       { id: 'pay', label: (ctx) => `Pay for the proper spell · ${gp(ctx.act, 15)} gold`, hint: (ctx) => `Next fight: +${by(ctx, PIERCE)} pierce every round, for ${each(ctx.members, 'you', 'everyone')}.`,
         can: (ctx) => companyGold(ctx.members) >= gp(ctx.act, 15),
         apply: (ctx) => { const n = by(ctx, PIERCE); payCompany(ctx.members, gp(ctx.act, 15)); bless(ctx, { id: 'enchant', name: 'Enchanted weapons', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Hedge Enchanter', 'Paid for the proper spell. The weapons hum.');
-          return `The enchanter mutters, one weapon hums, then all of them hum, in harmony, which nobody asked for. Next fight: +${n} pierce every round.`; } },
+          return said('The enchanter mutters; the weapons hum.', `Next fight: +${n} pierce every round.`, 'all'); } },
       { id: 'free', label: () => 'Let the apprentice try, for free', hint: (ctx) => `Half the time: +${by(ctx, PIERCE)} pierce every round. Half the time: lavender.`,
-        apply: (ctx) => { const n = by(ctx, PIERCE); if (ctx.rng() < 0.5) { bless(ctx, { id: 'enchant', name: 'Enchanted weapons', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Hedge Enchanter', 'The apprentice got it right. Everyone was surprised.'); return `It works! The apprentice is more surprised than anyone. Next fight: +${n} pierce every round.`; }
-          note(ctx, 'The Hedge Enchanter', 'The apprentice tried. The swords smell of lavender.'); return 'There is a flash, a pop, and a smell of lavender. That is the whole effect. The weapons are exactly as sharp as before, but they smell lovely.'; } },
-      { id: 'walk', label: () => 'Walk on', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Hedge Enchanter', 'Walked past the enchanter.'); return '"Your loss!" calls the enchanter, and then, quieter, "Probably."'; } },
+        apply: (ctx) => { const n = by(ctx, PIERCE); if (ctx.rng() < 0.5) { bless(ctx, { id: 'enchant', name: 'Enchanted weapons', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Hedge Enchanter', 'The apprentice got it right. Everyone was surprised.'); return said('It works. The apprentice is more surprised than anyone.', `Next fight: +${n} pierce every round.`, 'all'); }
+          note(ctx, 'The Hedge Enchanter', 'The apprentice tried. The swords smell of lavender.'); return said('A flash, a pop, and a smell of lavender. The weapons are unchanged.'); } },
+      { id: 'walk', label: () => 'Walk on', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Hedge Enchanter', 'Walked past the enchanter.'); return said('"Your loss," calls the enchanter, and then, quieter, "Probably."'); } },
     ],
   },
   {
@@ -121,9 +124,9 @@ const ENCOUNTERS = [
     choices: [
       { id: 'borrow', label: (ctx) => `Borrow ${each(ctx.members, 'a pair', 'a pair each')}`, hint: (ctx) => `Next fight: your feet roll a d${by(ctx, BOOTS)} (if that is bigger). He takes them back after.`,
         apply: (ctx) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'boots', name: 'Loaner boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'The Cobbler’s Loaners', 'Borrowed fast boots for a fight.');
-          return `They fit like a promise. Next fight, your feet roll a d${n}. After it, the cobbler wants them back, and he will know if you ran in a puddle.`; } },
+          return said('They fit.', `Next fight, your feet roll a d${n}. He wants them back after.`, 'all'); } },
       { id: 'polish', label: () => 'Polish boots for him instead', hint: (ctx) => `Earn ${gp(ctx.act, 8)} gold ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
-        apply: (ctx) => { grantCompany(ctx.members, gp(ctx.act, 8) * ctx.members.length); note(ctx, 'The Cobbler’s Loaners', 'Polished boots for coin.'); return `An hour of polishing. ${gp(ctx.act, 8)} gold ${each(ctx.members, 'for you', 'each')}, and the cleanest boots in the land, none of them yours.`; } },
+        apply: (ctx) => { grantCompany(ctx.members, gp(ctx.act, 8) * ctx.members.length); note(ctx, 'The Cobbler’s Loaners', 'Polished boots for coin.'); return said('An hour of polishing.', `${gp(ctx.act, 8)} gold ${each(ctx.members, 'for you', 'each')}.`, 'all'); } },
     ],
   },
   {
@@ -131,13 +134,13 @@ const ENCOUNTERS = [
     tell: (ctx) => `A cook with one eyebrow is stirring a cauldron. "Stew," he says. "Hearty." Something in the pot agrees. ${joinNames(ctx.members)} ${be(ctx.members, 'is', 'are')} very hungry.`,
     choices: [
       { id: 'bowl', label: () => 'Have a bowl', hint: (ctx) => `Next fight: +${by(ctx, HP)} health ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
-        apply: (ctx) => { const n = by(ctx, HP); bless(ctx, { id: 'stew', name: 'Hearty stew', text: `+${n} health.`, fights: 1, startHp: n }); note(ctx, 'Questionable Stew', 'Had a bowl. It was hearty.'); return `It is, against all the evidence, delicious. Next fight: +${n} health.`; } },
+        apply: (ctx) => { const n = by(ctx, HP); bless(ctx, { id: 'stew', name: 'Hearty stew', text: `+${n} health.`, fights: 1, startHp: n }); note(ctx, 'Questionable Stew', 'Had a bowl. It was hearty.'); return said('It is, against all the evidence, delicious.', `Next fight: +${n} health.`, 'all'); } },
       { id: 'seconds', label: () => 'Have seconds, and whatever that lump is', hint: (ctx) => `Next fight: +${by(ctx, HP) * 2} health, but the lump might disagree with you.`,
         apply: (ctx) => { const n = by(ctx, HP) * 2; const s = by(ctx, SICK); const sick = ctx.rng() < 0.5;
           bless(ctx, { id: 'stew2', name: 'Seconds', text: `+${n} health.`, fights: 1, startHp: n });
-          if (sick) { bless(ctx, { id: 'lump', name: 'The lump', text: `Lose ${s} health every round.`, fights: 1, sick: s, bane: true }); note(ctx, 'Questionable Stew', 'Had seconds. The lump disagreed.'); return `The lump disagrees. Loudly. Next fight: +${n} health, but you lose ${s} every round to a very unhappy stomach.`; }
-          note(ctx, 'Questionable Stew', 'Had seconds. The lump was a dumpling.'); return `The lump was a dumpling. Bliss. Next fight: +${n} health.`; } },
-      { id: 'pass', label: () => 'Politely decline', hint: () => 'Nothing gained, nothing risked.', apply: (ctx) => { note(ctx, 'Questionable Stew', 'Declined the stew.'); return 'The cook shrugs and eats it himself. The stew looks relieved.'; } },
+          if (sick) { bless(ctx, { id: 'lump', name: 'The lump', text: `Lose ${s} health every round.`, fights: 1, sick: s, bane: true }); note(ctx, 'Questionable Stew', 'Had seconds. The lump disagreed.'); return said('The lump disagrees.', `Next fight: +${n} health, and lose ${s} health every round.`, 'all'); }
+          note(ctx, 'Questionable Stew', 'Had seconds. The lump was a dumpling.'); return said('The lump was a dumpling.', `Next fight: +${n} health.`, 'all'); } },
+      { id: 'pass', label: () => 'Politely decline', hint: () => 'Nothing gained, nothing risked.', apply: (ctx) => { note(ctx, 'Questionable Stew', 'Declined the stew.'); return said('The cook shrugs and eats it himself.'); } },
     ],
   },
   {
@@ -145,9 +148,9 @@ const ENCOUNTERS = [
     tell: (ctx) => `A retired drill sergeant bursts out of a hedge. "YOU CALL THAT A STANCE?" he bellows at ${someone(ctx, 'sgt')}. He offers one free lesson. He offers it very loudly.`,
     choices: [
       { id: 'shield', label: () => 'Shield drill', hint: (ctx) => `Round 1 of the next fight: +${by(ctx, OPEN)} block ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
-        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-b', name: 'Shield drill', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Drill Sergeant', 'Shield drill, until the arms shook.'); return `"SHIELDS UP! NO, UP-ER!" An hour later, nobody can lower their arms. Round 1 of the next fight: +${n} block.`; } },
+        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-b', name: 'Shield drill', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Drill Sergeant', 'Shield drill, until the arms shook.'); return said('"Shields up." An hour later, nobody can lower their arms.', `Round 1 of the next fight: +${n} block.`, 'all'); } },
       { id: 'charge', label: () => 'Charge drill', hint: (ctx) => `Round 1 of the next fight: +${by(ctx, OPEN)} attack ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
-        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-a', name: 'Charge drill', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'The Drill Sergeant', 'Charge drill. A hedge was harmed.'); return `"CHARGE! AGAIN! WITH FEELING!" The hedge does not survive. Round 1 of the next fight: +${n} attack.`; } },
+        apply: (ctx) => { const n = by(ctx, OPEN); bless(ctx, { id: 'drill-a', name: 'Charge drill', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'The Drill Sergeant', 'Charge drill. A hedge was harmed.'); return said('"Charge. Again. With feeling." The hedge does not survive.', `Round 1 of the next fight: +${n} attack.`, 'all'); } },
     ],
   },
   {
@@ -155,10 +158,10 @@ const ENCOUNTERS = [
     tell: () => 'A herb cart has lost a wheel. The herbalist, a tiny woman with enormous gloves, glares at the wheel as if it did it on purpose. "Help me," she says, "and I will make it worth your while."',
     choices: [
       { id: 'fix', label: () => 'Fix the wheel', hint: (ctx) => `A healing potion ${each(ctx.members, 'for you', 'for each of you')}.`,
-        apply: (ctx) => { const t = potionsAll(ctx); note(ctx, 'The Herbalist’s Cart', 'Fixed a wheel; paid in potions.'); return `The wheel goes back on with a satisfying clunk. She pays in potions. ${t}`; } },
+        apply: (ctx) => { const t = potionsAll(ctx); note(ctx, 'The Herbalist’s Cart', 'Fixed a wheel; paid in potions.'); return said('The wheel goes back on. She pays in potions.', t); } },
       { id: 'nettles', label: (ctx) => `Pick her stinging nettles · ${gp(ctx.act, 20)} gold`, hint: (ctx) => `Gain the gold, but the rash costs ${by(ctx, SICK)} health a round next fight.`,
         apply: (ctx) => { const s = by(ctx, SICK); grantCompany(ctx.members, gp(ctx.act, 20)); bless(ctx, { id: 'rash', name: 'Nettle rash', text: `Lose ${s} health every round.`, fights: 1, sick: s, bane: true }); note(ctx, 'The Herbalist’s Cart', 'Picked nettles. Itched.');
-          return `${gp(ctx.act, 20)} gold and a rash with ambitions. Next fight, it costs ${s} health every round. Try not to scratch. You will scratch.`; } },
+          return said(`${gp(ctx.act, 20)} gold, and a rash.`, `Next fight: lose ${s} health every round.`, 'all'); } },
     ],
   },
   {
@@ -168,11 +171,11 @@ const ENCOUNTERS = [
       { id: 'wish', label: (ctx) => `Toss in ${gp(ctx.act, 8)} gold and wish`, hint: (ctx) => `Next fight: start with ${by(ctx, MAGIC)} more magic ${each(ctx.members, '', 'each')}.`.replace(' .', '.'),
         can: (ctx) => companyGold(ctx.members) >= gp(ctx.act, 8),
         apply: (ctx) => { const n = by(ctx, MAGIC); payCompany(ctx.members, gp(ctx.act, 8)); bless(ctx, { id: 'wish', name: 'A granted wish', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'The Wishing Well', 'Made a wish. The frog approved.');
-          return `Plink. The water glows purple, briefly. The frog nods. Next fight: start with ${n} more magic.`; } },
+          return said('The coin hits the water. The frog nods.', `Next fight: start with ${n} more magic.`, 'all'); } },
       { id: 'fish', label: (ctx) => `Fish out ${gp(ctx.act, 15)} gold`, hint: (ctx) => `The frogs bite: next fight starts ${by(ctx, WOUND)} health down.`,
         apply: (ctx) => { const w = by(ctx, WOUND); grantCompany(ctx.members, gp(ctx.act, 15)); bless(ctx, { id: 'frogs', name: 'Frog bites', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'The Wishing Well', 'Robbed a wishing well. The frogs remember.');
-          return `${gp(ctx.act, 15)} gold, damp. The frogs bite, and they hold grudges. Next fight starts ${w} health down.`; } },
-      { id: 'leave', label: () => 'Leave the frogs in peace', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Wishing Well', 'Left the well alone.'); return 'You leave. The frog watches you go, still judging.'; } },
+          return said(`${gp(ctx.act, 15)} gold, damp. The frogs bite.`, `Next fight starts ${w} health down.`, 'all'); } },
+      { id: 'leave', label: () => 'Leave the frogs in peace', hint: () => 'Nothing gained.', apply: (ctx) => { note(ctx, 'The Wishing Well', 'Left the well alone.'); return said('You leave the well undisturbed.'); } },
     ],
   },
   // ---- the night before the boss
@@ -181,9 +184,9 @@ const ENCOUNTERS = [
     tell: (ctx) => `The last camp before the boss. ${joinNames(ctx.members)} sit by the fire. Nobody says it. ${someone(ctx, 'eve')} pokes the fire, which is how heroes say "I am fine."`,
     choices: [
       { id: 'sharpen', label: () => 'Sharpen everything, twice', hint: (ctx) => `The boss fight: +${by(ctx, PIERCE) + 1} pierce every round.`,
-        apply: (ctx) => { const n = by(ctx, PIERCE) + 1; bless(ctx, { id: 'sharp', name: 'Sharpened twice', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Last Campfire', 'Sharpened everything, twice.'); return `Scrape, scrape, all night. By dawn the blades could cut a rumour. The boss fight: +${n} pierce every round.`; } },
+        apply: (ctx) => { const n = by(ctx, PIERCE) + 1; bless(ctx, { id: 'sharp', name: 'Sharpened twice', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Last Campfire', 'Sharpened everything, twice.'); return said('You sharpen everything, twice.', `The boss fight: +${n} pierce every round.`, 'all'); } },
       { id: 'sleep', label: () => 'Get a proper night’s sleep', hint: (ctx) => `The boss fight: +${by(ctx, HP)} health and ${by(ctx, MAGIC)} more magic at the start.`,
-        apply: (ctx) => { const n = by(ctx, HP); const m = by(ctx, MAGIC); bless(ctx, { id: 'rest', name: 'A good night’s sleep', text: `+${n} health, +${m} magic.`, fights: 1, startHp: n, startMagic: m }); note(ctx, 'The Last Campfire', 'Slept well, for once.'); return `Nobody snores, for once. You wake up feeling like a person. The boss fight: +${n} health and ${m} more magic.`; } },
+        apply: (ctx) => { const n = by(ctx, HP); const m = by(ctx, MAGIC); bless(ctx, { id: 'rest', name: 'A good night’s sleep', text: `+${n} health, +${m} magic.`, fights: 1, startHp: n, startMagic: m }); note(ctx, 'The Last Campfire', 'Slept well, for once.'); return said('A proper night’s sleep.', `The boss fight: +${n} health and ${m} more magic at the start.`, 'all'); } },
     ],
   },
   {
@@ -191,9 +194,9 @@ const ENCOUNTERS = [
     tell: (ctx) => `${someone(ctx, 'speech')} climbs onto a rock to give a speech. It starts badly. It gets worse. Then, somehow, right at the end, it gets good.`,
     choices: [
       { id: 'rousing', label: () => 'Cheer the rousing bit', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN) + 5} attack.`,
-        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-a', name: 'A rousing speech', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the rousing bit.'); return `"...AND THAT IS WHY WE FIGHT!" Everyone cheers, including a passing owl. Round 1 of the boss fight: +${n} attack.`; } },
+        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-a', name: 'A rousing speech', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the rousing bit.'); return said('"And that is why we fight."', `Round 1 of the boss fight: +${n} attack.`, 'all'); } },
       { id: 'sensible', label: () => 'Cheer the sensible bit about shields', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN) + 5} block.`,
-        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-b', name: 'A sensible speech', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the bit about shields.'); return `"...and keep your shields UP." It is not stirring, but it is correct. Round 1 of the boss fight: +${n} block.`; } },
+        apply: (ctx) => { const n = by(ctx, OPEN) + 5; bless(ctx, { id: 'speech-b', name: 'A sensible speech', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'A Speech Before the Boss', 'Cheered the bit about shields.'); return said('"And keep your shields up." It is not stirring, but it is correct.', `Round 1 of the boss fight: +${n} block.`, 'all'); } },
     ],
   },
   { // a third night, so an act's boss eve does not repeat within a campaign (the bots' playtest, Oct 2026)
@@ -201,9 +204,9 @@ const ENCOUNTERS = [
     tell: (ctx) => `Someone has drawn the boss's lair on the back of a menu. ${someone(ctx, 'map')} holds the candle. Everyone else argues about which way is north.`,
     choices: [
       { id: 'flank', label: () => 'Plan a surprise from the side', hint: (ctx) => `Round 1 of the boss fight: +${by(ctx, OPEN)} attack and +${by(ctx, PIERCE)} pierce every round.`,
-        apply: (ctx) => { const n = by(ctx, OPEN); const p = by(ctx, PIERCE); bless(ctx, { id: 'map-flank', name: 'The side door', text: `Round 1: +${n} attack. +${p} pierce every round.`, fights: 1, openingAtk: n, pierce: p }); note(ctx, 'The Map by Candlelight', 'Planned a surprise from the side.'); return `There is a side door. Of course there is a side door. Round 1 of the boss fight: +${n} attack, and +${p} pierce every round.`; } },
+        apply: (ctx) => { const n = by(ctx, OPEN); const p = by(ctx, PIERCE); bless(ctx, { id: 'map-flank', name: 'The side door', text: `Round 1: +${n} attack. +${p} pierce every round.`, fights: 1, openingAtk: n, pierce: p }); note(ctx, 'The Map by Candlelight', 'Planned a surprise from the side.'); return said('There is a side door.', `Round 1 of the boss fight: +${n} attack, and +${p} pierce every round.`, 'all'); } },
       { id: 'retreat', label: () => 'Plan a way out, just in case', hint: (ctx) => `The boss fight: +${by(ctx, HP)} health and +${by(ctx, OPEN)} block in round 1.`,
-        apply: (ctx) => { const n = by(ctx, HP); const b = by(ctx, OPEN); bless(ctx, { id: 'map-out', name: 'A way out', text: `+${n} health. Round 1: +${b} block.`, fights: 1, startHp: n, openingBlock: b }); note(ctx, 'The Map by Candlelight', 'Planned a way out.'); return `Knowing where the door is makes everyone braver. Odd, but true. The boss fight: +${n} health and +${b} block in round 1.`; } },
+        apply: (ctx) => { const n = by(ctx, HP); const b = by(ctx, OPEN); bless(ctx, { id: 'map-out', name: 'A way out', text: `+${n} health. Round 1: +${b} block.`, fights: 1, startHp: n, openingBlock: b }); note(ctx, 'The Map by Candlelight', 'Planned a way out.'); return said('You mark a way out.', `The boss fight: +${n} health, and +${b} block in round 1.`, 'all'); } },
     ],
   },
 ];
@@ -227,6 +230,7 @@ function givePrize(ctx, names, kind) {
 }
 // where the road leads: the next fight's place, so a moment points at what is coming
 const toward = (ctx) => { try { const q = questsFor(ctx.members[0])[0]; return q?.place ? `the road to ${q.place}` : 'the road'; } catch { return 'the road'; } };
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 const DIE_WORD = { wisdom: 'head die', strength: 'hands', speed: 'feet' };
 function moment({ id, stat, title, tell, go, won, lost, prize }) {
   return {
@@ -234,45 +238,45 @@ function moment({ id, stat, title, tell, go, won, lost, prize }) {
     choices: [{
       id: 'go', test: true, contest: true, label: () => go,
       hint: (ctx) => (ctx.members.length > 1 ? `Everyone rolls their ${DIE_WORD[stat]}. Best roll: ${prizeWords(ctx, prize)}.` : `${oddsLine(ctx.members, stat, ctx.act)} · win: ${prizeWords(ctx, prize)}`),
-      win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return `${won(ctx, r.who)} ${r.who}: ${p}.`; },
-      lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return `${lost(ctx, r.who)} No bonus this time.`; },
+      win: (ctx, r) => { const p = givePrize(ctx, [r.who], prize); note(ctx, title, `${r.who} won it.`); return said(won(ctx, r.who), `${cap(p)}.`, r.who); },
+      lose: (ctx, r) => { note(ctx, title, `${r.who} gave it a go.`); return said(lost(ctx, r.who), 'No bonus this time.'); },
       contest: (ctx, rows, winners) => { const p = givePrize(ctx, winners, prize); note(ctx, title, `${winners.join(' and ')} won it.`);
         const line = winners.length > 1 ? `A tie between ${joinNames(winners.map((name) => ({ name })))}, so ${winners.length === 2 ? 'both' : 'all'} win.` : won(ctx, winners[0]);
-        return `${rows.map((x) => `${x.name} ${x.total}`).join(' · ')}. ${line} ${joinNames(winners.map((name) => ({ name })))}: ${p}.`; },
+        return said(line, `${cap(p)}.`, joinNames(winners.map((name) => ({ name })))); }, // winners and ties only: no `lost` line for the rest
     }],
   };
 }
 const MOMENTS = [
   moment({ id: 'm-rope', stat: 'speed', title: 'The Rope Swing', prize: 'magic', go: 'Take a swing',
     tell: (ctx) => `A rope swing hangs over a stream on ${toward(ctx)}. The landing on the far side looks optional.`,
-    won: (ctx, who) => `${who} sails across and lands like a cat, if cats bowed.`, lost: (ctx, who) => `${who} lets go a little early. The stream is cold and very surprised.` }),
+    won: (ctx, who) => `${who} sails across and lands like a cat.`, lost: (ctx, who) => `${who} lets go a little early. The stream is cold.` }),
   moment({ id: 'm-stones', stat: 'wisdom', title: 'Skipping Stones', prize: 'gold', go: 'Skip a stone',
     tell: (ctx) => `A flat, still pond beside ${toward(ctx)}. A sign says: SKIP SEVEN, WIN A PRIZE. Under the sign, a jar of coins.`,
-    won: (ctx, who) => `${who} reads the water, flicks the wrist: seven skips and a showy eighth.`, lost: (ctx, who) => `${who}'s stone skips once, then sinks with dignity.` }),
+    won: (ctx, who) => `${who} skips seven, then a showy eighth.`, lost: (ctx, who) => `${who}’s stone skips once, then sinks with dignity.` }),
   moment({ id: 'm-arm', stat: 'strength', title: 'Arm-Wrestling at the Inn', prize: 'hp', go: 'Roll up a sleeve',
     tell: (ctx) => `A roadside inn on ${toward(ctx)}, and a sticky table built for arm-wrestling. The winner gets the big bowl of stew.`,
-    won: (ctx, who) => `${who} slams it down. The stew arrives with a ladle the size of a shovel.`, lost: (ctx, who) => `${who} meets the innkeeper's daughter, who has done this before.` }),
+    won: (ctx, who) => `${who} slams it down. The stew arrives.`, lost: (ctx, who) => `${who} meets the innkeeper’s daughter, who has done this before.` }),
   moment({ id: 'm-milestone', stat: 'speed', title: 'Race to the Milestone', prize: 'atk', go: 'Race',
     tell: (ctx) => `A milestone on ${toward(ctx)} says ONE MILE. Somebody says "race you". Nobody remembers who.`,
-    won: (ctx, who) => `${who} touches the stone first and is still bouncing an hour later.`, lost: (ctx, who) => `${who} arrives last, claiming to have been admiring the view.` }),
+    won: (ctx, who) => `${who} touches the stone first.`, lost: (ctx, who) => `${who} arrives last, claiming to have been admiring the view.` }),
   moment({ id: 'm-signpost', stat: 'wisdom', title: 'The Riddling Signpost', prize: 'magic', go: 'Answer the sign',
     tell: (ctx) => `A signpost on ${toward(ctx)} points four ways and asks a riddle. It glows faintly, as if pleased with itself.`,
-    won: (ctx, who) => `${who} answers. The sign glows warmer and tingles all the way up the arm.`, lost: (ctx, who) => `${who} guesses "a sandwich". The sign is disappointed in everyone.` }),
+    won: (ctx, who) => `${who} answers. The sign glows warmer.`, lost: (ctx, who) => `${who} guesses “a sandwich”. The sign is disappointed.` }),
   moment({ id: 'm-log', stat: 'strength', title: 'The Log in the Way', prize: 'gold', go: 'Heave the log',
     tell: (ctx) => `A fallen log blocks ${toward(ctx)}. Something underneath it glints, which is either treasure or a very shiny beetle.`,
-    won: (ctx, who) => `${who} rolls the log aside. Treasure! (And a beetle, who leaves.)`, lost: (ctx, who) => `${who} pushes. The log does not care. You climb over it instead.` }),
+    won: (ctx, who) => `${who} rolls the log aside. Treasure underneath.`, lost: (ctx, who) => `${who} pushes. The log does not care. You climb over it.` }),
   moment({ id: 'm-apples', stat: 'strength', title: 'The Apple Tree', prize: 'hp', go: 'Shake the tree',
     tell: (ctx) => `An apple tree leans over ${toward(ctx)}, heavy with fruit just out of reach.`,
-    won: (ctx, who) => `${who} shakes it. Apples rain down. One lands on a head, which is the price of apples.`, lost: (ctx, who) => `${who} shakes it. One apple falls. It is mostly worm.` }),
+    won: (ctx, who) => `${who} shakes it. Apples rain down.`, lost: (ctx, who) => `${who} shakes it. One apple falls. It is mostly worm.` }),
   moment({ id: 'm-stars', stat: 'wisdom', title: 'Reading the Stars', prize: 'block', go: 'Read the sky',
     tell: (ctx) => `Night falls on ${toward(ctx)}. The stars are out, and they seem to be pointing.`,
-    won: (ctx, who) => `${who} finds the Shield constellation and feels very well protected.`, lost: (ctx, who) => `${who} confidently identifies a constellation that is actually a moth.` }),
+    won: (ctx, who) => `${who} finds the Shield constellation.`, lost: (ctx, who) => `${who} names a constellation that is actually a moth.` }),
   moment({ id: 'm-puddle', stat: 'speed', title: 'The Great Puddle', prize: 'block', go: 'Jump it',
     tell: (ctx) => `A puddle the size of a small lake sits in the middle of ${toward(ctx)}. There is no way round. There is only over.`,
-    won: (ctx, who) => `${who} clears it with room to spare, dry as a biscuit.`, lost: (ctx, who) => `${who} lands in the exact middle. It was deeper than it looked. It always is.` }),
+    won: (ctx, who) => `${who} clears it, dry as a biscuit.`, lost: (ctx, who) => `${who} lands in the middle. It was deeper than it looked.` }),
   moment({ id: 'm-bell', stat: 'wisdom', title: 'The Old Bell', prize: 'atk', go: 'Ring it just right',
     tell: (ctx) => `An old bell hangs at a crossroads on ${toward(ctx)}. Ring the right note and, people say, courage rings back.`,
-    won: (ctx, who) => `${who} strikes it once, perfectly. The note hums in your bones.`, lost: (ctx, who) => `${who} rings it. A dog three villages away starts howling.` }),
+    won: (ctx, who) => `${who} strikes it once, perfectly. The note hums in ${who}’s bones.`, lost: (ctx, who) => `${who} rings it. A dog howls, far off.` }),
 ];
 // A writer's own moment for this step: act.moments[step - 1] = { title, stat, tell, go, won, lost, prize } ({place} and {who} are filled in)
 const packMoment = (c) => { const acts = actsOf(c); return acts[(c.act - 1) % acts.length]?.moments?.[c.step - 1] || null; };
@@ -360,21 +364,36 @@ export function chooseRoad(hero, members, choiceId) {
   const rng = makeRng(hashSeed(c.seed, c.act, c.step, 'road-choice', choiceId));
   const ctx = { campaign: c, members, rng, act: c.act, hero };
   if (choice.can && !choice.can(ctx)) return null;
-  let text; let trial = null; let contest = null;
+  let out; let trial = null; let contest = null;
   if (choice.contest && typeof choice.contest === 'function' && members.length > 1) { // a road moment in company: everybody has a go
     contest = members.map((m) => { const sizes = statDice(m, ev.stat); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'moment', m.name)); const dice = sizes.map((z) => 1 + Math.floor(r() * z)); return { name: m.name, cls: m.cls, sizes, dice, total: dice.reduce((a, v) => a + v, 0) }; });
     const best = Math.max(...contest.map((x) => x.total)); const winners = contest.filter((x) => x.total === best).map((x) => x.name);
-    text = choice.contest(ctx, contest, winners); c.road.contest = { rows: contest, winners };
+    out = choice.contest(ctx, contest, winners); c.road.contest = { rows: contest, winners };
   } else if (choice.test) { // a test: pay any stake, roll the champion's dice against the other side's, then win or lose
     const stake = choice.stake ? choice.stake(ctx) : 0;
     if (stake && !payCompany(members, stake)) return null;
     trial = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choiceId}` });
-    text = trial.win ? choice.win(ctx, trial) : choice.lose(ctx, trial);
+    out = trial.win ? choice.win(ctx, trial) : choice.lose(ctx, trial);
     c.road.trial = { ...trial, choiceId, stake, rematched: false };
-  } else text = choice.apply(ctx);
+  } else out = choice.apply(ctx);
   c.road.done = true;
   c.seenRoads = [...(c.seenRoads || []).filter((id) => id !== ev.id), ev.id].slice(-60); // the whole campaign, last seen at the end
-  return { title: ev.title, text, contest, trial: trial ? { ...trial, foe: ev.foe || ev.title, stake: c.road.trial.stake, canRematch: !trial.win && ev.when !== 'moment', rematchCost: rematchCost(c.act) } : null };
+  const winners = contest ? c.road.contest.winners : null;
+  return { title: ev.title, kicker: ev.kicker, ...card(out, members, trial, contest && { rows: contest, winners }), contest,
+    trial: trial ? { ...trial, foe: ev.foe || ev.title, stake: c.road.trial.stake, canRematch: !trial.win && ev.when !== 'moment', rematchCost: rematchCost(c.act) } : null };
+}
+// The result card in parts (T09): the roll summary, the verdict, the outcome, and the consequence with who gets it. `text` is all of it
+// in one paragraph for anything that shows plain text.
+function card(out, members, trial, contest) {
+  const o = typeof out === 'string' ? said(out) : out;
+  let who = o.who === 'all' ? (members.length > 1 ? 'Everyone' : members[0]?.name || null) : o.who || null;
+  if (who && who !== 'Everyone' && o.effect?.includes(who)) who = null; // the sentence already names them
+  const rolls = contest ? contest.rows.map((x) => ({ name: x.name, total: x.total, won: contest.winners.includes(x.name) })) : null;
+  const roll = contest ? rolls.map((x) => `${x.name} ${x.total}`).join(' · ') : trial ? rollLine(trial, members) : null;
+  const verdict = contest ? 'Success' : trial ? (trial.win ? 'Success' : 'Failed') : null;
+  const effectLine = o.effect ? (who ? `${who}: ${o.effect}` : o.effect) : '';
+  const text = [roll, verdict && `${verdict}.`, o.prose, effectLine].filter(Boolean).join(' ');
+  return { text, roll, rolls, verdict, prose: o.prose, effect: o.effect || null, who };
 }
 // After a lost test, one rematch for a little gold. A win pays out as usual; the first loss still stands.
 export function rematchInfo(hero, members) {
@@ -389,10 +408,9 @@ export function rematchTrial(hero, members) {
   const ctx = { campaign: c, members, rng: makeRng(hashSeed(c.seed, c.act, c.step, 'rematch')), act: c.act, hero };
   const r = rollTrial({ campaign: c, members, stat: ev.stat, hard: ev.hard, chooser: hero, key: `trial:${choice.id}`, attempt: 1 });
   const stake = c.road.trial.stake || 0;
-  let text;
-  if (r.win) text = choice.win(ctx, r); else text = 'The rematch goes the same way. No luck this time.';
+  const out = r.win ? choice.win(ctx, r) : said('The rematch fails. The first loss still stands.');
   c.road.trial = { ...r, choiceId: choice.id, stake, rematched: true };
-  return { title: ev.title, text, trial: { ...r, foe: ev.foe, stake, canRematch: false, rematchCost: info.cost } };
+  return { title: ev.title, kicker: ev.kicker, ...card(out, members, r, null), trial: { ...r, foe: ev.foe, stake, canRematch: false, rematchCost: info.cost } };
 }
 
 // ------------------------------------------------------------------------------------------------ tests on the road (trials.js)
@@ -404,7 +422,7 @@ const findHero = (ctx, name) => ctx.members.find((m) => m.name === name) || ctx.
 function givePotion(ctx, name) {
   const m = findHero(ctx, name); const have = potionStock(m); const max = potionMaxOf(m);
   if (have < max) { m.potions = have + 1; return `${m.name} tucks a healing potion into the belt.`; }
-  const g = gp(ctx.act, 10); grantCompany([m], g); return `${m.name}’s belt is already full, so the gift becomes ${g} gold instead.`;
+  const g = gp(ctx.act, 10); grantCompany([m], g); return `${m.name}’s belt is full, so the gift becomes ${g} gold instead.`;
 }
 // The roll itself is shown once on the result card (scrui.js roadResult), so the story lines never recite it (T09).
 
@@ -417,9 +435,9 @@ export const TRIALS = [
     tell: (ctx) => `A troll sits on a bridge with a riddle and a club. "Answer right, I tell you where monsters are soft. Answer wrong, I use the club. Gently. Mostly." ${someone(ctx, 'troll')} cracks their knuckles, which does not help with riddles.`,
     choices: [
       { id: 'answer', test: true, label: () => 'Answer the riddle', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { const n = by(ctx, PIERCE); bless(ctx, { id: 'troll', name: 'The troll’s secret', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Riddling Troll', `${r.who} out-riddled a troll.`); return `"An echo!" The troll sulks and whispers where monsters are soft. Next fight: +${n} pierce every round.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'club', name: 'Clubbed, gently', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Riddling Troll', `${r.who} lost a riddle and met the club.`); return `Wrong answer. The club is gentle-ish. Next fight: ${r.who} starts ${w} health down.`; } },
-      { id: 'around', label: () => 'Wade the river instead', hint: () => 'No test. Wet socks.', apply: (ctx) => { note(ctx, 'The Riddling Troll', 'Waded the river.'); return 'The river is cold and full of opinions. The troll shouts the answer after you anyway. It was "an echo".'; } },
+        win: (ctx, r) => { const n = by(ctx, PIERCE); bless(ctx, { id: 'troll', name: 'The troll’s secret', text: `+${n} pierce every round.`, fights: 1, pierce: n }); note(ctx, 'The Riddling Troll', `${r.who} out-riddled a troll.`); return said(`“An echo,” says ${r.who}. The troll sulks, then whispers where monsters are soft.`, `Next fight: +${n} pierce every round.`, 'all'); },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'club', name: 'Clubbed, gently', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Riddling Troll', `${r.who} lost a riddle and met the club.`); return said('Wrong. The club is gentle-ish.', `Next fight, ${r.who} starts ${w} health down.`, r.who); } },
+      { id: 'around', label: () => 'Wade the river instead', hint: () => 'No test. Wet socks.', apply: (ctx) => { note(ctx, 'The Riddling Troll', 'Waded the river.'); return said('You wade the river. The troll shouts the answer after you anyway: an echo.'); } },
     ],
   },
   {
@@ -427,9 +445,9 @@ export const TRIALS = [
     tell: (ctx) => `A ring of mushrooms. Some heal. Some make you hear colours. ${someone(ctx, 'shroom')} is sure they know which is which. ${someone(ctx, 'shroom')} is usually sure.`,
     choices: [
       { id: 'forage', test: true, label: () => 'Pick the good ones', hint: (c) => oddsLine(c.members, 'wisdom', c.act),
-        win: (ctx, r) => { const t = potionsAll(ctx); note(ctx, 'Which Mushroom?', `${r.who} picked the good mushrooms.`); return `${r.who} picks the good ones and brews them up. ${t}`; },
-        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'shroom', name: 'The wrong mushroom', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Which Mushroom?', `${r.who} ate the wrong one.`); return `${r.who} eats the wrong one and hears purple. Next fight: ${r.who} loses ${s} health every round.`; } },
-      { id: 'leave', label: () => 'Leave the mushrooms alone', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Which Mushroom?', 'Left the mushrooms.'); return 'Wise. Probably. The mushrooms look disappointed, which is its own warning.'; } },
+        win: (ctx, r) => { const t = potionsAll(ctx); note(ctx, 'Which Mushroom?', `${r.who} picked the good mushrooms.`); return said(`${r.who} picks the good ones and brews them.`, t); },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'shroom', name: 'The wrong mushroom', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Which Mushroom?', `${r.who} ate the wrong one.`); return said(`${r.who} eats the wrong one and hears purple.`, `Next fight, ${r.who} loses ${s} health every round.`, r.who); } },
+      { id: 'leave', label: () => 'Leave the mushrooms alone', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Which Mushroom?', 'Left the mushrooms.'); return said('You leave the mushrooms alone.'); } },
     ],
   },
   // ---- STRENGTH: both hands
@@ -438,9 +456,9 @@ export const TRIALS = [
     tell: (ctx) => `A rope across a muddy ditch. On the far side, goblins jeer. "Pull us over and we run off. Lose, and we follow you to your next fight." ${someone(ctx, 'tug')} looks at the mud. The mud looks back.`,
     choices: [
       { id: 'pull', test: true, label: () => 'Grab the rope and pull', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return `Heave! The goblins go face-first into the mud. Next fight: +${n} attack in round 1.`; },
-        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return `The rope wins and ${r.who} slides into the ditch. Next fight: a delighted goblin joins in.`; } },
-      { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return 'Snip. Three goblins sit down very suddenly. They do not follow; they are arguing about whose fault it was.'; } },
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'tug', name: 'Goblins in the mud', text: `Round 1: +${n} attack.`, fights: 1, openingAtk: n }); note(ctx, 'Tug-of-War', `${r.who} pulled the goblins into the ditch.`); return said(`${r.who} drags the goblins into the mud.`, `Round 1 of the next fight: +${n} attack.`, 'all'); },
+        lose: (ctx, r) => { ctx.campaign.ambush = [{ id: 'goblin', count: 1 }]; note(ctx, 'Tug-of-War', 'Lost a tug-of-war; a goblin followed them.'); return said(`${r.who} slides into the ditch.`, 'One goblin follows and joins the next fight.'); } },
+      { id: 'leave', label: () => 'Cut the rope and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Tug-of-War', 'Cut the rope.'); return said('You cut the rope. The goblins do not follow.'); } },
     ],
   },
   {
@@ -448,9 +466,9 @@ export const TRIALS = [
     tell: () => 'A farmer’s cart is stuck to the axles. "Push it out and you can borrow my late husband’s shield," she says. "He won’t need it. He is in the cart, also stuck, eating a pie."',
     choices: [
       { id: 'push', test: true, label: () => 'Put your shoulders into it', hint: (c) => oddsLine(c.members, 'strength', c.act),
-        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'cart', name: 'A borrowed shield', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Stuck Cart', `${r.who} pushed a cart out of the mud.`); return `Squelch, pop! Out it comes. Next fight: +${n} block in round 1, from his shield.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'strain', name: 'Pulled something', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Stuck Cart', `${r.who} pulled something.`); return `The cart wins and ${r.who} pulls something important. Next fight: ${r.who} starts ${w} health down.`; } },
-      { id: 'leave', label: () => 'Wish them luck and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'The Stuck Cart', 'Walked past a stuck cart.'); return '"Lovely," says the husband, through pie. You do not look back. You hear him eat the whole thing.'; } },
+        win: (ctx, r) => { const n = by(ctx, OPEN); bless(ctx, { id: 'cart', name: 'A borrowed shield', text: `Round 1: +${n} block.`, fights: 1, openingBlock: n }); note(ctx, 'The Stuck Cart', `${r.who} pushed a cart out of the mud.`); return said('The cart comes free. The husband waves his pie.', `Round 1 of the next fight: +${n} block.`, 'all'); },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'strain', name: 'Pulled something', text: `${r.who} starts ${w} health down.`, fights: 1, wound: w, who: r.who, bane: true }); note(ctx, 'The Stuck Cart', `${r.who} pulled something.`); return said(`The cart stays put. ${r.who} pulls something.`, `Next fight, ${r.who} starts ${w} health down.`, r.who); } },
+      { id: 'leave', label: () => 'Wish them luck and walk on', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'The Stuck Cart', 'Walked past a stuck cart.'); return said('You wish them luck and walk on.'); } },
     ],
   },
   // ---- SPEED: the feet
@@ -459,9 +477,9 @@ export const TRIALS = [
     tell: (ctx) => `A prize chicken has escaped. "Catch Duchess and you can borrow my racing boots!" cries the owner. Duchess looks at ${someone(ctx, 'hen')} and smirks, which chickens should not be able to do.`,
     choices: [
       { id: 'chase', test: true, label: () => 'Chase the chicken', hint: (c) => oddsLine(c.members, 'speed', c.act),
-        win: (ctx, r) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'racing', name: 'Racing boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'Catch That Chicken!', `${r.who} caught Duchess.`); return `${r.who} dives and comes up holding an outraged chicken. Next fight: racing boots, your feet roll a d${n}.`; },
-        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'feathers', name: 'Feathers up the nose', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Catch That Chicken!', `${r.who} lost to a chicken.`); return `Duchess wins. ${r.who} gets a nose full of feathers. Next fight: ${r.who} loses ${s} health every round.`; } },
-      { id: 'leave', label: () => 'Let Duchess live free', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Catch That Chicken!', 'Let the chicken go.'); return 'Duchess struts off into the sunset. Somewhere, a fox reconsiders its life choices.'; } },
+        win: (ctx, r) => { const n = by(ctx, BOOTS); bless(ctx, { id: 'racing', name: 'Racing boots', text: `Feet roll a d${n}.`, fights: 1, feet: n }); note(ctx, 'Catch That Chicken!', `${r.who} caught Duchess.`); return said(`${r.who} comes up holding an outraged chicken.`, `Racing boots for one fight: feet roll a d${n}.`, 'all'); },
+        lose: (ctx, r) => { const s = by(ctx, SICK); bless(ctx, { id: 'feathers', name: 'Feathers up the nose', text: `${r.who} loses ${s} health every round.`, fights: 1, sick: s, who: r.who, bane: true }); note(ctx, 'Catch That Chicken!', `${r.who} lost to a chicken.`); return said(`Duchess gets away. ${r.who} gets a nose full of feathers.`, `Next fight, ${r.who} loses ${s} health every round.`, r.who); } },
+      { id: 'leave', label: () => 'Let Duchess live free', hint: () => 'No test.', apply: (ctx) => { note(ctx, 'Catch That Chicken!', 'Let the chicken go.'); return said('You let Duchess go.'); } },
     ],
   },
   {
@@ -469,9 +487,9 @@ export const TRIALS = [
     tell: (ctx) => `A rumble, then the hillside starts to move. ${joinNames(ctx.members)} can run for the cave ahead, which glows faintly, or go back the long way round.`,
     choices: [
       { id: 'run', test: true, label: () => 'Run for the glowing cave', hint: (c) => oddsLine(c.members, 'speed', c.act, true),
-        win: (ctx, r) => { const n = by(ctx, MAGIC); bless(ctx, { id: 'moss', name: 'Glowing moss', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'Rockslide!', `${r.who} outran a rockslide.`); return `${r.who} makes it into a cave of glowing moss. Next fight: start with ${n} more magic.`; },
-        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'pebbles', name: 'Bruised by rocks', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'Rockslide!', 'Caught by a rockslide.'); return `Too slow. Nobody is squashed, everybody is bruised. Next fight: start ${w} health down.`; } },
-      { id: 'back', label: () => 'Go back the long way', hint: () => 'No test. It takes all afternoon.', apply: (ctx) => { note(ctx, 'Rockslide!', 'Took the long way round.'); return 'It takes all afternoon, and the cave was probably lovely. You will never know.'; } },
+        win: (ctx, r) => { const n = by(ctx, MAGIC); bless(ctx, { id: 'moss', name: 'Glowing moss', text: `+${n} magic at the start.`, fights: 1, startMagic: n }); note(ctx, 'Rockslide!', `${r.who} outran a rockslide.`); return said(`${r.who} makes the cave. The moss tingles.`, `Next fight: start with ${n} more magic.`, 'all'); },
+        lose: (ctx, r) => { const w = by(ctx, WOUND); bless(ctx, { id: 'pebbles', name: 'Bruised by rocks', text: `Start ${w} health down.`, fights: 1, wound: w, bane: true }); note(ctx, 'Rockslide!', 'Caught by a rockslide.'); return said('Too slow. Nobody is squashed, but everybody is bruised.', `Next fight starts ${w} health down.`, 'all'); } },
+      { id: 'back', label: () => 'Go back the long way', hint: () => 'No test. It takes all afternoon.', apply: (ctx) => { note(ctx, 'Rockslide!', 'Took the long way round.'); return said('You take the long way. The glowing cave stays behind you.'); } },
     ],
   },
 ];

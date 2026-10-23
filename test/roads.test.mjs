@@ -80,8 +80,8 @@ test('a three-way tie on the road says all win (both is for two), and moment lin
   const ev = ROADS.find((e) => e.when === 'moment' && e.id !== 'm-pack');
   const ctx = { campaign: hs[0].campaign, members: hs, act: 1 };
   const rows = hs.map((h) => ({ name: h.name, total: 5 }));
-  assert.match(ev.choices[0].contest(ctx, rows, hs.map((h) => h.name)), /so all win/);
-  assert.match(ev.choices[0].contest(ctx, rows, ['WizKid', 'Smalls']), /so both win/);
+  assert.match(ev.choices[0].contest(ctx, rows, hs.map((h) => h.name)).prose, /so all win/);
+  assert.match(ev.choices[0].contest(ctx, rows, ['WizKid', 'Smalls']).prose, /so both win/);
   const { packList } = await import('../js/campaigns.js');
   for (const p of packList()) for (const act of p.acts || []) for (const m of act.moments || []) if (m) {
     for (const t of [m.won, m.lost]) assert.doesNotMatch(t, /\btheir\b/, `${p.id}: ${m.title}`);
@@ -102,4 +102,47 @@ test('a whole campaign never repeats a road event while another of its kind is s
     if (ids.length <= total) assert.equal(new Set(ids).size, ids.length, `${kind}: ${ids.join(', ')}`);
   }
   assert.equal(new Set(byKind.boss).size, 3, 'three different boss nights');
+});
+
+test('T09: a road result comes in parts: roll summary, verdict, outcome without totals, and a named consequence', () => {
+  // a solo test: "Your roll N · Challenge M", Success / Failed, prose with no numbers from the roll
+  const h = newHero({ name: 'Ann', cls: 'knight', seed: 5 });
+  let seen = 0;
+  for (let act = 1; act <= 3; act++) {
+    at(h, act, 5, (act - 1) * 10 + 4); h.campaign.seenRoads = []; const ev = ensureRoad(h, [h]); if (!ev.stat) continue;
+    const ch = ev.choices.find((c) => c.test); const r = chooseRoad(h, [h], ch.id); seen++;
+    assert.equal(r.roll, `Your roll ${r.trial.heroTotal} · Challenge ${r.trial.oppTotal}`);
+    assert.equal(r.verdict, r.trial.win ? 'Success' : 'Failed');
+    assert.doesNotMatch(r.prose, /\bagainst\b|\d+ to \d+|roll/);
+    assert.ok(r.effect, 'a test always has a consequence');
+    assert.doesNotMatch(r.text, /undefined|\{|null/);
+  }
+  assert.ok(seen > 0);
+  // a company moment: names on totals, winners only, the prize named for them
+  const a = newHero({ name: 'Ann', cls: 'wizard', seed: 3 }); const b = newHero({ name: 'Bob', cls: 'dwarf', seed: 4 }); b.campaign = a.campaign;
+  at(a, 1, 2, 1); ensureRoad(a, [a, b]); const m = chooseRoad(a, [a, b], 'go');
+  assert.equal(m.roll, m.contest.map((x) => `${x.name} ${x.total}`).join(' · '));
+  assert.equal(m.verdict, 'Success');
+  const winners = m.rolls.filter((x) => x.won).map((x) => x.name);
+  assert.equal(m.who, winners.join(' and '));
+  assert.match(m.effect, /^[A-Z+]/);
+  // a walk-on: no roll, no verdict, one sentence, nothing gained
+  const w = newHero({ name: 'Cy', cls: 'ranger', seed: 9 }); at(w, 1, 3, 2);
+  w.campaign.road = { key: '1.3', id: 'well', done: false };
+  const leave = chooseRoad(w, [w], 'leave');
+  assert.deepEqual([leave.roll, leave.verdict, leave.effect, leave.prose], [null, null, null, 'You leave the well undisturbed.']);
+  // a company-wide blessing names everyone in a company, the hero alone; a hero's own bane is named in its sentence
+  const x = newHero({ name: 'Dee', cls: 'bard', seed: 11 }); const y = newHero({ name: 'Eve', cls: 'knight', seed: 12 }); y.campaign = x.campaign;
+  at(x, 1, 3, 2); x.campaign.road = { key: '1.3', id: 'stew', done: false };
+  const stew = chooseRoad(x, [x, y], 'bowl'); assert.equal(stew.who, 'Everyone'); assert.equal(stew.effect, 'Next fight: +10 health.');
+  at(w, 1, 3, 2); w.campaign.road = { key: '1.3', id: 'stew', done: false };
+  assert.equal(chooseRoad(w, [w], 'bowl').who, 'Cy');
+});
+
+test('T09: the chronicle keeps its own short record, apart from the result card', () => {
+  const h = newHero({ name: 'Ann', cls: 'knight', seed: 2 });
+  at(h, 1, 8, 7); ensureRoad(h, [h]); const res = chooseRoad(h, [h], 'save-a');
+  assert.equal(res.prose, 'You turn toward Cinder Ford. Burnt Orchard will have to stand on its own.');
+  assert.doesNotMatch(res.text, /chronicle/i);
+  assert.match(h.campaign.chronicle[0].text, /the road wrote it down/);
 });

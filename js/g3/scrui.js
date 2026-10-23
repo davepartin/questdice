@@ -768,12 +768,36 @@ export async function trialThen(res) {
   const hero = X.S.hero || X.members()[0]; const re = res.trial ? R.rematchInfo(hero, X.members()) : null;
   roadResult(res, re ? { extra: btn(`Ask for a rematch · ${re.cost} gold`, () => { const r2 = R.rematchTrial(hero, X.members()); if (!r2) { sfx.error(); toast('Not enough gold for a rematch.'); return; } sfx.card(); X.persist(); trialThen(r2); }, { kind: 'ghost', icon: 'reroll', cls: 'wide', disabled: !re.ok }) } : {});
 }
+// The road's answer (T09, Astra and the Story and Writing Lead): the roll summary on its own labelled line, the verdict, a short outcome,
+// then the consequence with who gets it. A result saved before T09 (plain text only) still shows as one paragraph.
+function resultParts(res) {
+  if (res.prose == null) return [h('p', { class: 'tl-tell' }, res.text)];
+  const roll = res.rolls?.length
+    ? h('div', { class: 'rr-roll' }, h('small', { class: 'rr-label' }, 'Rolls'), h('div', { class: 'rr-rolls' }, res.rolls.map((x) => h('span', { class: `rr-chip ${x.won ? 'won' : ''}` }, h('b', {}, x.name), ` ${x.total}`))))
+    : res.roll ? h('div', { class: 'rr-roll' }, h('small', { class: 'rr-label' }, 'Roll'), h('span', { class: 'rr-sum' }, res.roll)) : null;
+  return [roll,
+    res.verdict ? h('div', { class: `rr-verdict ${res.verdict === 'Success' ? 'ok' : 'no'}` }, res.verdict) : null,
+    h('p', { class: 'tl-tell rr-prose' }, res.prose),
+    res.effect ? h('div', { class: 'rr-effect' }, res.who ? h('b', { class: 'rr-who' }, res.who) : null, h('span', {}, res.effect)) : null];
+}
 export function roadResult(res, o = {}) {
   const hero = X.S.hero || X.members()[0];
-  mountAs('road', h('div', { class: 'sx-split sx-road' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
+  mountAs('road', h('div', { class: 'sx-split sx-road sx-roadres' }, h('div', { class: 'sx-viewport' }, topBar(heroChip(hero))),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      X.partyBar?.(), storyCard(o.kicker || (res.trial ? `${res.trial.win ? 'Won' : 'Lost'} · ${res.trial.heroTotal} to ${res.trial.oppTotal}` : 'The road answers'), res.title, res.text), /* a test shows its roll once, up top (T09) */ o.note ? h('p', { class: 'fine center' }, o.note) : null, o.extra || null, h('div', { class: 'sx-cta' }, btn(o.label || 'Onward', o.onward || X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide', disabled: !!o.disabled })))));
-  lay('road');
+      X.partyBar?.(), storyCard(o.kicker || res.kicker || 'The road answers', res.title, [], {}, ...resultParts(res)), o.note ? h('p', { class: 'fine center' }, o.note) : null, o.extra || null, h('div', { class: 'sx-cta' }, btn(o.label || 'Onward', o.onward || X.showBoard, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide', disabled: !!o.disabled })))));
+  lay('road'); clearOfCta();
+}
+// On a phone the sheet opens low and Onward sticks to the bottom: lift the sheet just enough that the whole card, and a rematch
+// button under it, sit above Onward instead of behind it (T09: no covered rewards, no overlapping buttons). The card's top stays in view.
+function clearOfCta() {
+  const fit = () => {
+    const side = document.querySelector('.sx-roadres .sx-side'); const cta = side?.querySelector('.sx-cta'); const last = cta?.previousElementSibling; const tale = side?.querySelector('.sx-tale');
+    if (!last || !tale) return;
+    const over = last.getBoundingClientRect().bottom + 10 - cta.getBoundingClientRect().top;
+    const room = tale.getBoundingClientRect().top - side.getBoundingClientRect().top - 96; // keep the crest clear of the hero chip
+    if (over > 0 && room > 0) side.scrollTop += Math.min(over, room);
+  };
+  requestAnimationFrame(() => requestAnimationFrame(fit)); setTimeout(fit, 450);
 }
 
 // ------------------------------------------------------------------------------------------------ secret objectives (secrets.js)

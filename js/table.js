@@ -279,12 +279,15 @@ function enterRoad(table) {
   return ok();
 }
 
+// what every phone shows after the road (T09): the roll summary, verdict, outcome and consequence travel with the plain text
+const roadCard = (res, player) => ({ title: res.title, kicker: res.kicker || null, text: res.text, roll: res.roll ?? null, rolls: res.rolls ?? null, verdict: res.verdict ?? null,
+  prose: res.prose ?? null, effect: res.effect ?? null, who: res.who ?? null, by: player.name, trial: res.trial || null });
 function chooseRoad(table, player, cmd) {
   if (table.phase !== 'road') return fail('There is no road in front of you.');
   if (table.company.campaign.road?.done) return fail('The company already chose.');
   const res = R.chooseRoad(player.hero, members(table), cmd.id);
   if (!res) return fail('The road will not take that.');
-  table.roadResult = { title: res.title, text: res.text, by: player.name, trial: res.trial || null };
+  table.roadResult = roadCard(res, player);
   table.players.forEach((p) => { p.ready = false; });
   return ok();
 }
@@ -294,7 +297,7 @@ function rematch(table, player) {
   if (table.phase !== 'road' || !table.roadResult?.trial) return fail('There is nothing to rematch.');
   const res = R.rematchTrial(player.hero, members(table));
   if (!res) return fail('No rematch: it is used, or the company cannot pay.');
-  table.roadResult = { title: res.title, text: res.text, by: player.name, trial: res.trial };
+  table.roadResult = roadCard(res, player);
   table.players.forEach((p) => { p.ready = false; });
   return ok();
 }

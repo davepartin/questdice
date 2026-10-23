@@ -3,7 +3,7 @@
 // the seeded roll; this only shows it. Resolves when the player taps Continue.
 import { h, reduced } from '../dom.js';
 import * as HK from './hudkit.js';
-import { STATS } from '../trials.js';
+import { STATS, rollLine } from '../trials.js';
 import { sfx } from '../audio.js';
 
 // the nine sockets, as on the battle board
@@ -65,7 +65,7 @@ function showTrialFlat(trial, { title = '', host = document.body, own = true } =
           clearInterval(flick);
           later(350, () => {
             card.classList.add(trial.win ? 'won' : 'lost');
-            verdict.replaceChildren(h('b', {}, trial.win ? 'You win.' : 'Not this time.'), h('span', {}, `${trial.heroTotal} to ${trial.oppTotal}`));
+            verdict.replaceChildren(h('b', {}, trial.win ? 'Success' : 'Failed'), h('span', {}, rollLine(trial, members)));
             if (trial.win) sfx.level?.(); else sfx.error?.();
             go.textContent = 'Continue'; go.disabled = false; go.focus?.();
           });

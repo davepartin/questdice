@@ -1367,3 +1367,17 @@ A small "More" opens the story, the full terms and the cover line. Below the car
 ## 23 October 2026: road test results, compact (T09)
 
 A test on the road (Wisdom, Strength, Speed) now shows its roll once, as the result card's top line ("Won · 4 to 3"; at a table: "Ann won · 4 to 3"). The story underneath is a short outcome and its consequence ("Next fight: +2 attack in round 1"), without reciting the roll mid-sentence ("…, 7 against 2, …") or extra narration. 15 result lines in js/roads.js were rewritten; js/g3/scrui.js roadResult and js/g3/online.js roadDone put the roll in the kicker. Before/after screenshots: docs/team/tasks/T09/. dev/trialshot.mjs takes PORT= and OUT= for before/after pairs.
+
+## 23 October 2026: road results in parts, with the approved copy (T09 rev 2, branch claude/t09-road-copy, not deployed)
+
+The Story and Writing Lead's catalogue (docs/team/tasks/T09-road-copy.md, rev 2, approved by the Director) is now in the code, and the road's answer is a card in four parts:
+- **the roll summary** on its own labelled line: "Roll · Your roll 7 · Challenge 2" alone, "Ann’s roll 7 · Challenge 2" in a company; for a company moment, "Rolls" and one chip per hero ("Ann 7", "Bob 4"), the winners lit, wrapping onto a second line at five or six heroes;
+- **the verdict:** Success or Failed (a company moment always has a winner, so Success);
+- **a short outcome**, with no totals in it;
+- **the consequence** in a framed line, with who gets it: a hero's name, the winners ("Bob and Cy"), or "Everyone" when the whole company gets it (the hero's name when alone). When the sentence already names the hero ("Next fight, Ann loses 4 health every round") the name is not repeated.
+
+Walk-on choices show only their one sentence. The dice overlay says Success / Failed and the same roll summary. On a phone, the sheet lifts on opening so the whole card and a rematch button sit above the Onward button rather than behind it.
+
+What changed: the result lines in js/roads.js return their parts (`said(prose, effect, who)`); chooseRoad and rematchTrial add the roll and verdict; `text` still holds everything in one paragraph for anything that shows plain text, and an online table now carries the parts to every phone (js/table.js). 21 of the 170 pack moment lines changed (the other 149 were approved as they are), all 20 default moment lines, every shared-road and test line. Mechanics, rewards, costs, recipients, ties and the chronicle are unchanged. Tests: 364 pass, two new (the parts of a result; the chronicle kept apart). Screenshots: docs/team/tasks/T09/rev2/ (dev/roadcards.mjs; headless Chromium at the space Safari leaves on an iPhone, not Safari itself).
+
+Also fixed: on an online table, the "Waiting for the others" label and the disabled Onward button had been swallowed by a mid-line comment in js/g3/online.js since 20261023road.
