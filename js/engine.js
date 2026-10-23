@@ -979,7 +979,7 @@ export function chargeValues(card, n, lvl = 0) {
 export const chargeGain = (card, n, lvl = 0) => Object.fromEntries(Object.entries(chargeValues(card, n, lvl)).map(([k, xs]) => [k, xs.reduce((a, x) => a + x, 0)]));
 // A round power's attack in a given round: per x the round, then the level's boost on the whole (scaleNum).
 export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lvl);
-export function castPower(b, id, { x, release } = {}) {
+export function castPower(b, id, { x, release, to } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
   if (card.kind === 'charge' && release) { // let the stored charges go
@@ -1014,7 +1014,10 @@ export function castPower(b, id, { x, release } = {}) {
     b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];
   } else if (card.kind === 'luck') {
     const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
-    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) add('atk', scaleNum(LUCK.mid, lvl)); else { add('atk', scaleNum(LUCK.top, lvl)); add('magic', 1); }
+    // Verse for a friend (CLASS2.verse, team games): the number goes to the chosen friend as healing instead of to the Bard as attack
+    const friend = CLASS2.on && CLASS2.verse && Array.isArray(b.fighters) && to != null && to !== b.active && b.fighters[to]?.hp > 0 ? to : null;
+    const give = (n) => { if (friend == null) add('atk', n); else { (b.mods.verse ||= []).push({ to: friend, n }); out.to = friend; } };
+    if (r <= 2) add('magic', 1 + lvl); else if (r <= 4) give(scaleNum(LUCK.mid, lvl)); else { give(scaleNum(LUCK.top, lvl)); add('magic', 1); }
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
@@ -2008,6 +2011,12 @@ export function resolveParty(b) {
     e.mag = magnitude(e, e.intent, e.pdice, weaken); e.calc = magnitudeParts(e, e.intent, e.pdice, weaken);
     e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng);
   }
+  // Verse for a friend (CLASS2.verse): healing a Bard's Lucky Verse sent to a friend lands with that friend (before the blows, like all healing)
+  const verses = [];
+  for (const f of acting) for (const v of f.mods?.verse || []) {
+    const to = b.fighters[v.to]; if (!to || to.hp <= 0 || !to.T) continue;
+    to.T.heal += v.n; f.stats.healGiven = (f.stats.healGiven || 0) + v.n; verses.push({ from: f.hero.name, to: to.hero.name, n: v.n });
+  }
   // Class identity (CLASS2, off in the game). Songs carry: a Bard's healing powers land on the most hurt hero at the table.
   if (CLASS2.on && CLASS2.songs && acting.length > 1) for (const f of acting) {
     const song = (f.hero.cls === 'bard' && f.mods?.heal) || 0; if (!song) continue;
@@ -2019,7 +2028,7 @@ export function resolveParty(b) {
   // Guard: a Knight who used Shield Up this round steps in front and takes the double share
   if (CLASS2.on && CLASS2.guard && heat.length > 1) { const k = heat.findIndex((r) => r.f.hero.cls === 'knight' && r.f.usedRound?.shieldwall); if (k > 0) heat.unshift(heat.splice(k, 1)[0]); }
   const rep = {
-    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
+    round: b.round, party: true, leader: heat[0]?.f.hero.name || '', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], verses, heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
   };

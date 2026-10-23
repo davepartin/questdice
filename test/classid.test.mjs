@@ -45,3 +45,13 @@ test('Songs carry: a Bard\'s healing power lands on the most hurt hero at the ta
   const b = table(hero('bard', 'Bea'), hero('knight', 'Kit'), (bb) => { bb.fighters[1].hp = 5; bb._cast = (x) => { const f = x.fighters[0]; f.magic = 9; f.mods.heal += 7; }; });
   assert.deepEqual(b.songs?.map((s) => [s.from, s.to, s.n]), [['Bea', 'Kit', 7]]);
 });
+
+test('Verse for a friend: the Bard chooses; for itself it is attack as before, for a friend the same number is healing', () => {
+  E.CLASS2_ON(); CLASS2.verse = true;
+  const play = (to) => {
+    const b = table(hero('bard', 'Bea'), hero('knight', 'Kit'), (bb) => { bb.fighters[1].hp = 5; bb._cast = (x) => { const f = x.fighters[0]; x.magic = 9; x.rng = () => 0.9; E.castPower(x, 'luckyverse', { to }); }; });
+    return b;
+  };
+  const self = play(undefined); assert.equal((self.report.verses || []).length, 0, 'no target: attack for the Bard, as now');
+  const friend = play(1); assert.deepEqual(friend.report.verses.map((v) => [v.from, v.to, v.n]), [['Bea', 'Kit', 6]], 'a 5-6 for Kit: 6 healing');
+});

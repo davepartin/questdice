@@ -608,7 +608,14 @@ function showPowerDetail(id) {
   const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
-  const useBtn = rechargeBtn || h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`);
+  // Verse for a friend (CLASS2.verse, the lab): at a table, Lucky Verse asks who it is for. You: attack as now. A friend: healing.
+  const verse = k.kind === 'luck' && B.party && D.CLASS2.on && D.CLASS2.verse && !rechargeBtn;
+  const friends = verse ? B.b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== B.active && f.hp > 0) : [];
+  const useBtn = rechargeBtn || (verse && friends.length
+    ? h('div', { class: 'pd-for' }, h('small', {}, 'Who is it for? You: attack. A friend: the same number as healing.'),
+      h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `For me · ${x} magic`),
+      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pd-btn go friend', disabled: !!reasons, onclick: () => { close(); doCard(id, { to: j }); } }, `For ${f.hero.name} · ${Math.round((f.hp / f.maxHp) * 100)}% health`)))
+    : h('button', { type: 'button', class: 'pd-btn go', disabled: !!reasons, onclick: () => { close(); doCard(id); } }, `Use · ${x} magic`));
   fillInfo(
     h('div', { class: 'sh-head' }, h('b', {}, k.name), h('button', { type: 'button', class: 'sh-x sh-cancel', onclick: close }, '✕ Close')),
     h('p', { class: 'pd-text' }, k.text),
@@ -841,7 +848,7 @@ async function doCard(id, opts = {}) {
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
   const modsBefore = { ...b.mods }; const magicBefore = b.magic; const goldBefore = b.goldEarned || 0; const freeBefore = (b.freeActions || []).length;
   let r;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release, to: opts.to }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;

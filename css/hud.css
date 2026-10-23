@@ -806,3 +806,7 @@ body.t3-on #scene { -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--
 .tm-rules li small { display: block; color: #cfe3d8; font-size: .78rem; line-height: 1.35; }
 /* magic shows its cap, "9/12" (Oct 2026: the cap grows with level and the Deep Well perk) */
 .b3-magchip .mc-cap { font-size: .6em; opacity: .72; margin-left: .05rem; font-weight: 700; }
+/* Verse for a friend (the lab): who Lucky Verse is for, one button each */
+.pd-for { display: flex; flex-direction: column; gap: .4rem; width: 100%; }
+.pd-for small { color: #bcb7ad; font-size: .74rem; text-align: center; }
+.pd-for .pd-btn.friend { background: linear-gradient(#1f5a3a, #14402a); border-color: #4fd38a; }

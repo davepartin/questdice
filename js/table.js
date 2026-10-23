@@ -593,7 +593,7 @@ function card(table, player, cmd) {
   if (table.phase !== 'battle') return fail('Not in a fight.');
   const done = withFighter(table, player, (b, f) => {
     if (f.hp <= 0 || f.locked || !f.board) return false;
-    return !!E.castPower(b, cmd.id, { x: cmd.x == null ? undefined : cmd.x | 0, release: !!cmd.release });
+    return !!E.castPower(b, cmd.id, { x: cmd.x == null ? undefined : cmd.x | 0, release: !!cmd.release, to: cmd.to == null ? undefined : cmd.to | 0 });
   });
   return done ? ok() : fail('Not enough ✦ Magic, or that power is spent.');
 }

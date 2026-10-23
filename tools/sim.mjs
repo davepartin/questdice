@@ -197,6 +197,10 @@ export function smartActs(b) {
     const f = c.fx; const x = c.kind === 'scale' ? Math.min(c.max, Math.max(c.cost, Math.floor(b.magic / 2))) : c.cost;
     if (b.magic < x) continue;
     if (c.id === 'shieldwall' && noGuard) continue;
+    if (c.kind === 'luck' && C2.on && C2.verse && mates.length) { // Verse for a friend: sing for the most hurt friend when they are below 60% and worse off than you
+      const low = mates.reduce((a, x) => (ratio(x) < ratio(a) ? x : a)); const to = ratio(low) < 0.6 && ratio(low) < ratio(b) ? b.fighters.indexOf(low) : undefined;
+      if (b.magic - x >= 2 || to != null) castPower(b, c.id, { x, to }); continue;
+    }
     if (f.heal && !c.dice && hurt > 0.6) continue;
     if (c.dice?.to === 'heal' && hurt > 0.6) continue;
     if (f.free) continue;
