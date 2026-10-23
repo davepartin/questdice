@@ -203,6 +203,16 @@ export function smartActs(b) {
     const f = c.fx; const x = c.kind === 'scale' ? Math.min(c.max, Math.max(c.cost, Math.floor(b.magic / 2))) : c.cost;
     if (b.magic < x) continue;
     if (c.id === 'shieldwall' && noGuard) continue;
+    if (c.kind === 'luck' && C2.on && C2.song) { // the targeted song (T08): Shelter whoever is in danger, else Courage for itself
+      const t = threatOf(b); let to; let song = 'atk';
+      const ready = mates.filter((m) => m.board); const slow = ready.length ? ready.reduce((a, m) => (m.board.S.v < a.board.S.v ? m : a)) : null; // the friend likely to take the double share
+      const low = mates.length ? mates.reduce((a, m) => (ratio(m) < ratio(a) ? m : a)) : null;
+      if (low && ratio(low) < 0.6 && ratio(low) < ratio(b)) { to = b.fighters.indexOf(low); song = 'block'; }
+      else if (slow && t >= 0.25 * slow.maxHp && (!b.board?.S || slow.board.S.v < b.board.S.v)) { to = b.fighters.indexOf(slow); song = 'block'; }
+      else if (ratio(b) < 0.5 || (!mates.length && t > b.hp * 0.35)) song = 'block';
+      if (b.magic - x >= 1 || to != null || song === 'block') castPower(b, c.id, { x, to, song });
+      continue;
+    }
     if (c.kind === 'luck' && C2.on && C2.verse && mates.length) { // Verse for a friend: sing for the most hurt friend when they are below 60% and worse off than you
       const low = mates.reduce((a, x) => (ratio(x) < ratio(a) ? x : a)); const to = ratio(low) < 0.6 && ratio(low) < ratio(b) ? b.fighters.indexOf(low) : undefined;
       if (b.magic - x >= 2 || to != null) castPower(b, c.id, { x, to }); continue;

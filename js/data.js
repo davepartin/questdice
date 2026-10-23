@@ -255,7 +255,7 @@ export const HEART_TO_HEART = 10; // a fixed +10 attack for each hero in a match
 //   verse  team games: the Bard chooses who Lucky Verse is for. For itself: as now (attack). For a friend: the same number as healing for
 //          that friend (3 on a 3-4, 6 on a 5-6; the Bard still gets its magic). The targeted support option, recommended 23 Oct over
 //          "Discord heals everyone 2", which grows with the size of the table and with every extra Bard.
-export const CLASS2 = { on: false, songs: false, verse: true, guard: true, digIn: 2 };
+export const CLASS2 = { on: false, songs: false, verse: true, guard: true, digIn: 2, song: null }; // song: the targeted-song experiment (docs/team/tasks/T08.md): 'steady' | 'lucky' | 'big'; null in the game
 // Pressure (Dave, 22 Oct 2026: "go with what you think"). The matchups (tools/matchup.mjs) showed two shields winning every kind of fight,
 // because health is all a fight costs and nothing rewards finishing. Two rules give attack a reason:
 //   FURY   from round `from`, every monster's blow is `per[act]` harder for each round it has lasted (round 5: x1, round 6: x2 ...), at most `max` steps.

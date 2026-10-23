@@ -7,13 +7,15 @@
 import fs from 'node:fs';
 import { CAST_HOOK, isDamageIntent, equipPower, nudge, castPower, makeRng, newHero, questsFor, battleRewards, gainXp, advanceCampaign, newPartyBattle, startFighter, commitFighter, resolveParty, withDifficulty } from '../js/engine.js';
 import { fight, botCamp, botShape, smartActs } from './sim.mjs';
-import { QUESTS_PER_ACT, PARTY, NUDGE_COST } from '../js/data.js';
+import { QUESTS_PER_ACT, PARTY, NUDGE_COST, CLASSES, CLASS2 } from '../js/data.js';
 if (process.env.PARTY_HP) process.env.PARTY_HP.split(',').forEach((v, i) => { if (v) PARTY.hp[i + 1] = Number(v); });
 if (process.env.FLAT_PER) for (const k of Object.keys(PARTY.flatBy)) PARTY.flatBy[k] = Number(process.env.FLAT_PER); // FLAT_PER=16: hit power per extra hero
 if (process.env.PARTY_FLAT) process.env.PARTY_FLAT.split(',').forEach((v, i) => { if (v) PARTY.flat[i + 1] = Number(v); }); // PARTY_FLAT=4: every hit +4 for two heroes // try other team health: PARTY_HP=2.4 (two heroes), PARTY_HP=2.4,3.2 (two, three)
 
 const ACTS = Number(process.argv[2] || 2); const RUNS = Number(process.argv[3] || 2); const N = Number(process.argv[4] || 2);
 const SKILL = process.env.SKILL || 'normal';
+// SONG=steady|lucky|big: the Bard's targeted song in place of Lucky Verse (docs/team/tasks/T08.md); big costs 2 magic
+if (process.env.SONG) { CLASS2.song = process.env.SONG; if (process.env.SONG === 'big') CLASSES.bard.cards.find((c) => c.id === 'luckyverse').cost = 2; }
 // SOFT=hp1.0,adds1,flat8,from6: the six-player experiment, gentler scaling for ordinary battles only (PARTY.ordinary)
 if (process.env.SOFT) { const o = { from: 6 }; for (const t of process.env.SOFT.split(',')) { const [, k, v] = t.match(/^([a-z]+)([\d.]+)$/i) || []; if (k === 'hp') o.hpPer = Number(v); else if (k === 'flat') o.flatPer = Number(v); else if (k === 'adds') o.adds = Number(v); else if (k === 'from') o.from = Number(v); } PARTY.ordinary = o; } const TEAMPLAY = !!process.env.TEAMPLAY;
 const PAIRS = process.env.PAIRS ? process.env.PAIRS.split(';').map((p) => p.split(',')) : [['wizard', 'bard'], ['knight', 'ranger'], ['dwarf', 'wizard'], ['ranger', 'bard'], ['knight', 'dwarf']]; // PAIRS=ranger,ranger;ranger,knight for other companies
@@ -90,7 +92,7 @@ for (let run = 0; run < RUNS; run++) {
         else if (quest.kind === 'battle') { c.bn++; c.bw += won; c.rounds += tb.round; c.heroFights += tb.fighters.length; c.falls += tb.fighters.filter((f) => f._fell).length; c.hpLeft += won ? tb.fighters.reduce((a, f) => a + Math.max(0, f.hp) / f.maxHp, 0) / tb.fighters.length : 0; } }
       tb.fighters.forEach((f, i) => { const mate = tb.fighters.filter((x) => x !== f); const c = (byClass[f.hero.cls] ||= { n: 0, low: 0, fell: 0, taken: 0, given: 0, mateLow: 0, mateFell: 0, share: 0, blockShare: 0 }); const teamDealt = tb.fighters.reduce((a, x) => a + (x.stats.dealt || 0), 0); const teamBlocked = tb.fighters.reduce((a, x) => a + (x.stats.blocked || 0), 0);
         c.n++; c.share += teamDealt ? (f.stats.dealt || 0) / teamDealt : 0; c.blockShare += teamBlocked ? (f.stats.blocked || 0) / teamBlocked : 0; c.low += f._low ?? 1; c.fell += f._fell || 0; c.taken += f.stats.taken || 0; c.given += f.stats.healGiven || 0; c.lead = (c.lead || 0) + (f._lead || 0); c.guard = (c.guard || 0) + (f._guard || 0);
-        { const u = supOf(f.hero.cls); u.n++; u.potions += f.stats.potionsThrown || 0; u.magic += f.stats.shares || 0; u.revives += f.stats.revives || 0; u.heal += f.stats.healGiven || 0; }
+        { const u = supOf(f.hero.cls); u.n++; u.potions += f.stats.potionsThrown || 0; u.magic += f.stats.shares || 0; u.revives += f.stats.revives || 0; u.heal += f.stats.healGiven || 0; u.song = (u.song || 0) + (f.stats.songGiven || 0); }
         c.mateLow += mate.reduce((a, x) => a + (x._low ?? 1), 0) / Math.max(1, mate.length); c.mateFell += mate.reduce((a, x) => a + (x._fell || 0), 0) / Math.max(1, mate.length); void i; });
       // each hero alone (the way the solo campaign grows them)
       for (const h of heroes) {
@@ -116,7 +118,7 @@ console.log(`\nBy class at the table${process.env.CLASSID ? ` · class identity 
 for (const [cls, c] of Object.entries(byClass)) console.log(`${cls.padEnd(7)} ${String(c.n).padStart(5)}  ${pct(c.low / c.n)}  ${pct(c.fell / c.n)}  ${(c.taken / c.n).toFixed(1).padStart(5)}  ${(c.given / c.n).toFixed(1).padStart(5)}     ${pct(c.mateLow / c.n)}  ${pct(c.mateFell / c.n)}   ${pct(c.share / c.n)}  ${pct(c.blockShare / c.n)}   ${((c.lead || 0) / c.n).toFixed(1).padStart(4)} (${((c.guard || 0) / c.n).toFixed(1)})`);
 if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify({ soft: PARTY.ordinary, camps: CAMP, support: SUP }));
 console.log('\nSupport each hero gave, a fight (per hero: two of a class each count): healing to friends · verses sung for a friend · Discord casts (damage it could soften for the table, at most) · potions thrown · magic shared · revives · team triples joined · Heart to Heart groups joined · double-share rounds taken (from the table above)');
-for (const [cls, u] of Object.entries(SUP)) { if (!u.n) continue; const k = (x) => (x / u.n).toFixed(2); console.log(`${cls.padEnd(7)} heal ${k(u.heal).padStart(5)} · verses ${k(u.verse)} · Discord ${k(u.discord)} (up to ${k(u.discordUpTo)}) · potions ${k(u.potions)} · magic ${k(u.magic)} · revives ${k(u.revives)} · triples ${k(u.triples)} · H2H ${k(u.h2h)} · double shares ${((byClass[cls]?.lead || 0) / u.n).toFixed(2)}`); }
+for (const [cls, u] of Object.entries(SUP)) { if (!u.n) continue; const k = (x) => (x / u.n).toFixed(2); console.log(`${cls.padEnd(7)} heal ${k(u.heal).padStart(5)} · verses ${k(u.verse)} · Discord ${k(u.discord)} (up to ${k(u.discordUpTo)}) · potions ${k(u.potions)} · magic ${k(u.magic)} · revives ${k(u.revives)} · song to friends ${k(u.song || 0)} · triples ${k(u.triples)} · H2H ${k(u.h2h)} · double shares ${((byClass[cls]?.lead || 0) / u.n).toFixed(2)}`); }
 { const cs = Object.values(CAMP); const rates = cs.filter((c) => c.bn).map((c) => c.bw / c.bn); const mu = rates.reduce((a, x) => a + x, 0) / rates.length; const se = Math.sqrt(rates.reduce((a, x) => a + (x - mu) ** 2, 0) / Math.max(1, rates.length - 1) / rates.length);
   console.log(`\nIndependent campaigns: ${cs.length}. Team battles won on the first try, per campaign: ${pct(mu)} ± ${Math.round(100 * se)}% (standard error across campaigns). Act III boss, team: ${cs.reduce((a, c) => a + c.xw, 0)} of ${cs.reduce((a, c) => a + c.xn, 0)} won on the first try, in ${cs.filter((c) => c.xn).length} campaigns.`); }
 console.log('\nTeamwork the bots used, by company size: hero-rounds in a Heart to Heart group · hero-rounds on the most-chosen monster (focus) · rounds a Knight took the double share by Shield Up · Bard verses sung for a friend a fight, and the healing they gave');

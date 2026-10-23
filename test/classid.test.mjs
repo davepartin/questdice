@@ -55,3 +55,13 @@ test('Verse for a friend: the Bard chooses; for itself it is attack as before, f
   const self = play(undefined); assert.equal((self.report.verses || []).length, 0, 'no target: attack for the Bard, as now');
   const friend = play(1); assert.deepEqual(friend.report.verses.map((v) => [v.from, v.to, v.n]), [['Bea', 'Kit', 6]], 'a 5-6 for Kit: 6 healing');
 });
+
+test('The targeted song (T08 experiment): Courage is attack, Shelter is block, for the Bard or a friend; off unless CLASS2.song is set', () => {
+  E.CLASS2_ON(); CLASS2.song = 'steady';
+  try {
+    const play = (to, song) => table(hero('bard', 'Bea'), hero('knight', 'Kit'), (bb) => { bb._cast = (x) => { x.magic = 9; E.castPower(x, 'luckyverse', { to, song }); }; });
+    const shelter = play(1, 'block'); assert.deepEqual(shelter.report.verses.map((v) => [v.from, v.to, v.n, v.k]), [['Bea', 'Kit', 5, 'block']], 'Shelter for Kit: +5 block on his share');
+    const courage = play(1, 'atk'); assert.deepEqual(courage.report.verses.map((v) => [v.to, v.n, v.k]), [['Kit', 4, 'atk']], 'Courage for Kit: +4 attack');
+    const self = play(undefined, 'block'); assert.equal((self.report.verses || []).length, 0, 'for herself it stays on her own board');
+  } finally { CLASS2.song = null; }
+});

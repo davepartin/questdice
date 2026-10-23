@@ -991,7 +991,7 @@ export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lv
 export const rechargeCostOf = (hero) => CLASSES[hero?.cls]?.rechargeCost ?? RECHARGE_COST;
 // The measuring tools listen to every cast and every point of magic (tools/magicaudit.mjs); the game never sets them.
 export const CAST_HOOK = { on: null, magic: null, income: null }; // on: a power cast; magic: other spending; income: a round's magic in
-export function castPower(b, id, { x, release, to } = {}) {
+export function castPower(b, id, { x, release, to, song } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
   if (card.kind === 'charge' && release) { // let the stored charges go
@@ -1024,6 +1024,15 @@ export function castPower(b, id, { x, release, to } = {}) {
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
   } else if (card.kind === 'charge') {
     b.charge = b.charge || {}; b.charge[id] = Math.min(card.max, (b.charge[id] || 0) + 1); out.charged = b.charge[id];
+  } else if (card.kind === 'luck' && CLASS2.on && CLASS2.song) {
+    // The targeted song (T08 experiment, off in the game): Courage (+attack) or Shelter (+block) for any hero, the Bard included
+    const S = SONG[CLASS2.song] || SONG.steady; const kind = song === 'block' ? 'block' : 'atk';
+    const friend = Array.isArray(b.fighters) && to != null && to !== b.active && b.fighters[to]?.hp > 0 ? to : null;
+    let n = 0;
+    if (S.luck) { const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6; out.total = r; if (r <= 2) add('magic', 1 + lvl); else { n = scaleNum(r <= 4 ? S.mid : S.top, lvl) + (kind === 'block' ? 1 : 0); if (r >= 5) add('magic', 1); } }
+    else n = scaleNum(S[kind], lvl);
+    if (n) { if (friend == null) add(kind, n); else { (b.mods.verse ||= []).push({ to: friend, n, k: kind }); out.to = friend; } }
+    out.song = kind; out.n = n;
   } else if (card.kind === 'luck') {
     const r = 1 + Math.floor(b.rng() * 6); out.rolls.push(r); out.die = 6;
     // Verse for a friend (CLASS2.verse, team games): the number goes to the chosen friend as healing instead of to the Bard as attack
@@ -1039,6 +1048,8 @@ export function castPower(b, id, { x, release, to } = {}) {
 }
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
 export const LUCK = { mid: 3, top: 6 };
+// The targeted-song versions under test (T08): sizes for Courage (atk) and Shelter (block); lucky rolls a d6 like Lucky Verse
+export const SONG = { steady: { atk: 4, block: 5 }, lucky: { luck: true, mid: 4, top: 7 }, big: { atk: 8, block: 9 } };
 export const PACT_MAGIC = 6; // Blood Pact's extra starting magic, for 8 health (8 still measured top of the charms)
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
@@ -2034,7 +2045,8 @@ export function resolveParty(b) {
   const verses = [];
   for (const f of acting) for (const v of f.mods?.verse || []) {
     const to = b.fighters[v.to]; if (!to || to.hp <= 0 || !to.T) continue;
-    to.T.heal += v.n; f.stats.healGiven = (f.stats.healGiven || 0) + v.n; verses.push({ from: f.hero.name, to: to.hero.name, n: v.n });
+    const k = v.k || 'heal'; to.T[k] += v.n; if (k === 'heal') f.stats.healGiven = (f.stats.healGiven || 0) + v.n; else f.stats.songGiven = (f.stats.songGiven || 0) + v.n; // a song: attack or block for the friend
+    verses.push({ from: f.hero.name, to: to.hero.name, n: v.n, k });
   }
   // Class identity (CLASS2, off in the game). Songs carry: a Bard's healing powers land on the most hurt hero at the table.
   if (CLASS2.on && CLASS2.songs && acting.length > 1) for (const f of acting) {
