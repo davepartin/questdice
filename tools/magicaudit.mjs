@@ -33,10 +33,14 @@ if (process.argv[2] === 'merge') { report(fs.readdirSync(process.argv[3]).filter
 // every real cast (the wise player also casts in its look-ahead copies; those are not counted)
 const real = new WeakSet(); let log = null;
 E.CAST_HOOK.on = (b, out) => { if (log && real.has(b)) log.push({ id: out.id, cost: out.cost || 0, released: out.released || 0 }); };
+// the magic ledger (MODE=ledger): every other spend, and each round's income (what the dice paid, what the cap threw away, what was stolen)
+let led = null;
+E.CAST_HOOK.magic = (b, kind, n) => { if (led && real.has(b)) led[kind] = (led[kind] || 0) + n; };
+E.CAST_HOOK.income = (b, x) => { if (led && real.has(b)) { led.earned += x.earned; led.over += x.over; led.stolen += x.stolen; } };
 
 function play(hero0, quest, seed) {
   const hero = clone(hero0); const rng = E.makeRng(seed);
-  const b = E.newBattle(hero, quest, rng, 1); real.add(b); log = [];
+  const b = E.newBattle(hero, quest, rng, 1); real.add(b); log = []; led = { start: b.magic, earned: 0, over: 0, stolen: 0 };
   const hp0 = b.hp; const p0 = E.potionsLeft(b); let rounds = 0; let g = 0; const byFoes = {};
   while (!b.outcome && g++ < 60) {
     const foes = b.enemies.filter((e) => e.hp > 0).length; const before = b.hp;
@@ -45,8 +49,8 @@ function play(hero0, quest, seed) {
   }
   const lost = Math.max(0, hp0 - b.hp) + (p0 - E.potionsLeft(b)) * E.potionHpOf(hero);
   const casts = {}; for (const c of log) (casts[c.id] ||= { n: 0, magic: 0, released: 0 }), casts[c.id].n++, casts[c.id].magic += c.cost, casts[c.id].released += c.released;
-  const out = { win: b.outcome === 'victory' ? 1 : 0, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30, spent: log.reduce((a, c) => a + c.cost, 0), left: b.magic, casts, byFoes, maxHp: b.maxHp };
-  log = null; return out;
+  const out = { win: b.outcome === 'victory' ? 1 : 0, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30, spent: log.reduce((a, c) => a + c.cost, 0), left: b.magic, casts, byFoes, maxHp: b.maxHp, hpLeft: Math.max(0, b.hp) / b.maxHp, ledger: led };
+  log = null; led = null; return out;
 }
 function wear(hero, ids) {
   const h = clone(hero); h.level = Math.max(h.level, 5); h.learned = DATA.CLASSES[h.cls].cards.map((c) => c.id); h.powerLevel = { ...(h.powerLevel || {}) };
@@ -68,6 +72,7 @@ function grow(cls, seed) {
   return snaps;
 }
 function arms() {
+  if (process.env.MODE === 'ledger') { const cls = process.env.CLS || 'wizard'; const start = DATA.CLASSES[cls].cards.filter((c) => c.start).map((c) => c.id); return [{ cls, arm: 'wise', policy: POLICIES['wise, default (magic worth 2.2)'], kit: start }, { cls, arm: 'smart', policy: POLICIES['smart, default'], kit: start }]; }
   if (process.env.MODE === 'wizard') { const v = process.env.VAR || 'start'; return [{ cls: 'wizard', arm: v, policy: POLICIES['wise, default (magic worth 2.2)'], kit: VARIANTS[v].kit, tweak: VARIANTS[v].tweak }]; }
   const cls = process.env.CLS || 'wizard'; const start = DATA.CLASSES[cls].cards.filter((c) => c.start).map((c) => c.id);
   return Object.entries(POLICIES).map(([arm, policy]) => ({ cls, arm, policy, kit: start }));
@@ -86,7 +91,19 @@ for (const a of todo) {
 }
 if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); else report(rows);
 
+function ledgerReport(all) {
+  console.log('Magic ledger, a fight (Act II heroes, the start kit): where every point comes from and goes. Spent = cast costs (a charge counts the magic stored, once); left = in hand at the end.');
+  console.log(`${'class · player'.padEnd(18)}${['start', 'earned', 'lost: cap', 'stolen', 'powers', 'rerolls', 'heals', 're-arm', 'heart turn', 'left', 'rounds', 'win', 'health left'].map((k) => k.padStart(11)).join('')}`);
+  for (const cls of [...new Set(all.map((r) => r.cls))]) for (const arm of [...new Set(all.filter((r) => r.cls === cls).map((r) => r.arm))]) {
+    const rs = all.filter((r) => r.cls === cls && r.arm === arm && r.ledger); const m = (f) => rs.reduce((a, r) => a + f(r), 0) / rs.length;
+    const L = (k) => m((r) => r.ledger[k] || 0);
+    console.log(`${`${cls} · ${arm}`.padEnd(18)}${[L('start'), L('earned'), L('over'), L('stolen'), m((r) => r.spent), L('reroll'), L('heal'), L('recharge'), L('nudge'), m((r) => r.left), m((r) => r.rounds)].map((x) => x.toFixed(2).padStart(11)).join('')}${`${(100 * m((r) => r.win)).toFixed(0)}%`.padStart(11)}${`${(100 * m((r) => r.hpLeft)).toFixed(0)}%`.padStart(11)}`);
+  }
+  const wz = all.filter((r) => r.cls === 'wizard' && r.arm === 'wise');
+  if (wz.length) { const byR = {}; for (const r of wz) { const k = Math.min(r.rounds, 7); (byR[k] ||= []).push(r.left); } console.log(`\nWizard (wise): magic left at the end, by fight length: ${Object.entries(byR).map(([k, v]) => `${k}${k === '7' ? '+' : ''} rounds ${(v.reduce((a, x) => a + x, 0) / v.length).toFixed(1)} (n ${v.length})`).join(' · ')}`); }
+}
 function report(all) {
+  if (all[0]?.ledger && all.every((r) => ['wise', 'smart'].includes(r.arm))) return ledgerReport(all);
   const encs = Object.keys(ENC);
   // a value's mean and its standard error across campaigns (each campaign's own mean is one sample)
   const stat = (rs, f) => { const byC = {}; for (const r of rs) (byC[r.camp] ||= []).push(f(r)); const m = Object.values(byC).map((v) => v.reduce((a, x) => a + x, 0) / v.length); const mu = m.reduce((a, x) => a + x, 0) / m.length; const sd = Math.sqrt(m.reduce((a, x) => a + (x - mu) ** 2, 0) / Math.max(1, m.length - 1)); return { mu, se: sd / Math.sqrt(m.length), k: m.length }; };

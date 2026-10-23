@@ -1181,6 +1181,7 @@ export const PARTY = {
   hp: [1, 2.2, 2.5, 3.1, 3.6, 4.0], // by head count, for a battle made without the heroes at hand
   adds: [0, 0, 0, 1, 1, 2], // goblins that join big tables, by head count
   flat: [0, 10, 0, 0, 0, 0],
+  ordinary: null, // the six-player experiment (tools/party.mjs SOFT=): { from, hpPer, flatPer, adds } for ordinary battles only; null in the game
 };
 
 export const ENEMY_CAP = 4;

@@ -873,7 +873,7 @@ export function canReroll(b, slots) {
 export function reroll(b, slots) {
   if (!canReroll(b, slots)) return false;
   const info = rerollInfo(b);
-  b.magic -= info.perDie * slots.length;
+  b.magic -= info.perDie * slots.length; CAST_HOOK.magic?.(b, 'reroll', info.perDie * slots.length);
   if (info.kind === 'card') b.freeActions.shift(); else b.actionsLeft -= 1;
   const plan = b.script?.rerolls?.shift();
   for (const s of slots) b.board[s] = { ...scripted(b.hero, s, plan?.[s], b.rng), bound: false };
@@ -885,12 +885,12 @@ export function nudge(b, dir) {
   if (!b.board || b.board.nudged || b.magic < NUDGE_COST || b.hushedNow || b.board.C?.hushed) return false;
   const v = b.board.C.v + dir;
   if (v < 1 || v > 6) return false;
-  b.magic -= NUDGE_COST; b.board.C.v = v; b.board.nudged = true; return true;
+  b.magic -= NUDGE_COST; CAST_HOOK.magic?.(b, 'nudge', NUDGE_COST); b.board.C.v = v; b.board.nudged = true; return true;
 }
 export function healSpend(b) {
   const cost = healCostOf(b.hero, b);
   if (b.magic < cost || b.hp >= b.maxHp) return false;
-  b.magic -= cost; b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
+  b.magic -= cost; CAST_HOOK.magic?.(b, 'heal', cost); b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
 }
 // Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
 // Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
@@ -987,8 +987,8 @@ export function chargeValues(card, n, lvl = 0) {
 export const chargeGain = (card, n, lvl = 0) => Object.fromEntries(Object.entries(chargeValues(card, n, lvl)).map(([k, xs]) => [k, xs.reduce((a, x) => a + x, 0)]));
 // A round power's attack in a given round: per x the round, then the level's boost on the whole (scaleNum).
 export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lvl);
-// The measuring tools listen to every cast (tools/magicaudit.mjs); the game never sets it.
-export const CAST_HOOK = { on: null };
+// The measuring tools listen to every cast and every point of magic (tools/magicaudit.mjs); the game never sets them.
+export const CAST_HOOK = { on: null, magic: null, income: null }; // on: a power cast; magic: other spending; income: a round's magic in
 export function castPower(b, id, { x, release, to } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
@@ -1050,7 +1050,7 @@ export function upgradePower(hero, id) {
 }
 export function recharge(b, id) {
   if (!b.used[id] || b.magic < RECHARGE_COST || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
-  b.magic -= RECHARGE_COST; b.used[id] = false; return true;
+  b.magic -= RECHARGE_COST; CAST_HOOK.magic?.(b, 'recharge', RECHARGE_COST); b.used[id] = false; return true;
 }
 
 // Resolve a locked round. Your blow lands first (the fallen do not strike back), then the survivors act.
@@ -1208,6 +1208,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   if (b.hp <= 0 && hasCharm(hero, 'phoenix') && !b.phoenixUsed) { b.phoenixUsed = true; b.hp = Math.min(b.maxHp, 10); rep.phoenix = true; } // Phoenix Feather
   if (boon.sick && b.hp > 1) { rep.sick = Math.min(boon.sick, b.hp - 1); b.hp -= rep.sick; } // a bug from the road: it hurts, it never finishes you
   const stolen = Math.min(b.magic + T.magic, rep.magicStolen); rep.magicStolen = stolen;
+  CAST_HOOK.income?.(b, { earned: T.magic, stolen, over: Math.max(0, b.magic + T.magic - stolen - magicCapOf(b.hero)) }); // the tools' magic ledger
   b.magic = Math.max(0, Math.min(magicCapOf(b.hero), b.magic + T.magic - stolen));
   rep.hpAfter = b.hp; rep.magicAfter = b.magic;
   hero.stats.rounds++;
@@ -1869,7 +1870,12 @@ export function commitFighter(b) {
 export function newPartyBattle(heroes, quest0, rng) {
   const players = heroes.length;
   const quest = withDifficulty(heroes[0], quest0);
-  const sc = partyScale(players, heroes);
+  let sc = partyScale(players, heroes);
+  // the six-player experiment (PARTY.ordinary in data.js, off in the game): ordinary battles for big tables, scaled more gently; bosses and elites as they are
+  const soft = PARTY.ordinary; if (soft && quest.kind === 'battle' && players >= (soft.from || 6) && sc.m) {
+    const per = soft.flatPer ?? (PARTY.flatBy?.[normalizeDifficulty(heroes[0]?.difficulty)] ?? PARTY.flatPer);
+    sc = { ...sc, hp: 1 + (sc.m - 1) * (soft.hpPer ?? PARTY.hpPer), flat: Math.round((sc.m - 1) * per), adds: soft.adds ?? sc.adds };
+  }
   const hpMult = quest.hpMult ?? 1; const flat = quest.flat ?? 0; const rewardMult = quest.rewardMult ?? 1; const edge = quest.edge || null;
   const enemies = [];
   for (let i = 0; i < quest.enemies.length; i++) {
