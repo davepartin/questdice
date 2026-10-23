@@ -13,7 +13,7 @@ if (process.env.PARTY_FLAT) process.env.PARTY_FLAT.split(',').forEach((v, i) => 
 
 const ACTS = Number(process.argv[2] || 2); const RUNS = Number(process.argv[3] || 2); const N = Number(process.argv[4] || 2);
 const SKILL = process.env.SKILL || 'normal';
-const PAIRS = [['wizard', 'bard'], ['knight', 'ranger'], ['dwarf', 'wizard'], ['ranger', 'bard'], ['knight', 'dwarf']];
+const PAIRS = process.env.PAIRS ? process.env.PAIRS.split(';').map((p) => p.split(',')) : [['wizard', 'bard'], ['knight', 'ranger'], ['dwarf', 'wizard'], ['ranger', 'bard'], ['knight', 'dwarf']]; // PAIRS=ranger,ranger;ranger,knight for other companies
 const ALL = ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
 
 // One team fight: each living hero rolls, rerolls and locks in with the smart bot, then the table resolves the round.
@@ -37,7 +37,7 @@ const mAt = []; // the company's strength factor, by act
 const add = (a, kind, mode, won, rounds, hpk) => { const r = (acts[key(a, kind)] ||= { a, kind, solo: { n: 0, w: 0, r: 0, h: 0 }, team: { n: 0, w: 0, r: 0, h: 0 } })[mode]; r.n++; r.w += won ? 1 : 0; r.r += rounds; r.h += hpk; };
 for (let run = 0; run < RUNS; run++) {
   for (const [p, pair0] of PAIRS.entries()) {
-    const pair = N === 2 ? pair0 : Array.from({ length: N }, (_, i) => ALL[(p + i) % ALL.length]);
+    const pair = process.env.PAIRS || N === 2 ? pair0 : Array.from({ length: N }, (_, i) => ALL[(p + i) % ALL.length]);
     const rng = makeRng(1000 * run + 17 * p + 3);
     const heroes = pair.map((cls, i) => { const h = newHero({ name: `${cls}${i}`, cls, seed: 97 * run + 13 * p + i, pack: process.env.PACK || undefined }); h.difficulty = SKILL; return h; });
     for (let n = 0; n < QUESTS_PER_ACT * ACTS; n++) {

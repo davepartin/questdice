@@ -282,7 +282,7 @@ export const WEAPONS2 = {
     },
   },
   // how an arrowhead pays (a test switch, ARROW_V2=1 in the tools: pierce 'all' = the whole hit is pierce; frost 'strength' = the next blow is the hand's Strength softer)
-  arrowRules: { pierce: 'strength', frost: 'half' },
+  arrowRules: { pierce: 'strength', frost: 'half', fire: 'half' }, // fire 'full' (FIRE_FULL=1): the whole printed Strength splashes, guard still stops it
   ammo: { normal: 'Normal arrows', pierce: 'Piercing arrows', fire: 'Fire arrows', frost: 'Frost arrows' },
   add: {
     bow: { name: 'Bow', hands: 1, lean: 'off', temper: 'steady', glyph: '🏹', price: 24, set: 'quiver', tag: 'A little hit, a little guard. The arrows in your other hand do the rest.', faces: [F(0, 'b'), F(1, 'r'), F(2, 'b'), F(2, 'r')] },

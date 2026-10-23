@@ -10,7 +10,14 @@ import * as E from '../js/engine.js';
 import * as DATA from '../js/data.js';
 import { botRound, botCamp, botLoot, PLAY, setScore } from './sim.mjs';
 
-const ENC = { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'], healer: ['treant'] }; // the Treant regrows its bark (a mend move)
+const ENC_SETS = {
+  base: { heavy: ['ogre'], swarm: ['goblin', 'goblin', 'goblin'], guard: ['ironwarden'], healer: ['treant'] }, // the Treant regrows its bark (a mend move)
+  // ENCSET=fire: crowds of every size, a summoner that keeps adding to the crowd, and high guard (the Fire splash test, 23 Oct)
+  fire: { heavy: ['ogre'], swarm3: ['goblin', 'goblin', 'goblin'], swarm4: ['goblin', 'goblin', 'goblin', 'goblin'], summoner: ['bonewarden'], guard: ['ironwarden'] },
+  // ENCSET=mixed: a summoner, a heavy hitter that winds up, and a weaker one (the teamwork handoff's mixed fight)
+  mixed: { mixed: ['bonewarden', 'ogre', 'goblin'], swarm3: ['goblin', 'goblin', 'goblin'], heavy: ['ogre'], summoner: ['bonewarden'] },
+};
+const ENC = ENC_SETS[process.env.ENCSET || 'base'];
 // ARROWS=1: the four ammunitions with the Bow (the weapons experiment's stage 3), beside two ordinary loadouts to compare
 const ARROW_LOADOUTS = [['quiver:normal', 'bow'], ['quiver:pierce', 'bow'], ['quiver:fire', 'bow'], ['quiver:frost', 'bow'], ['sword', 'shield'], ['dagger', 'sword']];
 const LOADOUTS = process.env.ARROWS ? ARROW_LOADOUTS : [['sword', 'shield'], ['dagger', 'shield'], ['spear', 'shield'], ['axe', 'tower'], ['shield', 'tower'], ['dagger', 'sword'], ['axe', 'spear'], ['dagger', 'dagger']];
@@ -28,7 +35,8 @@ function play(hero0, quest, seed, style) {
   const b = E.newBattle(hero, quest, rng, 1); const hp0 = b.hp; const p0 = E.potionsLeft(b); let rounds = 0; let g = 0;
   while (!b.outcome && g++ < 60) { botRound(b, rng); if (b.report) rounds++; }
   const lost = Math.max(0, hp0 - b.hp) + (p0 - E.potionsLeft(b)) * E.potionHpOf(hero);
-  const magic = (b.magicSpent || 0); return { win: b.outcome === 'victory' ? 1 : 0, unfinished: b.outcome ? 0 : 1, rounds, health: b.outcome === 'victory' ? lost : hp0 + 30, potions: p0 - E.potionsLeft(b) };
+  const health = b.outcome === 'victory' ? lost : hp0 + 30;
+  return { win: b.outcome === 'victory' ? 1 : 0, unfinished: b.outcome ? 0 : 1, rounds, health, h2: health * health, potions: p0 - E.potionsLeft(b) };
 }
 const rows = [];
 for (const cls of classes) {
@@ -44,7 +52,7 @@ for (const cls of classes) {
         const q = { ...quest, enemies: foes, kind: 'battle', foeNames: null };
         const res = Array.from({ length: T }, (_, i) => play(h, q, seed * 100 + step * 10 + i * 7919, style));
         const av = (k) => res.reduce((a, x) => a + x[k], 0) / T;
-        rows.push({ cls, step, loadout: `${name(l.includes(':') ? l : own(l))} + ${name(own(r))}`, enc, style, win: av('win'), unfinished: av('unfinished'), rounds: av('rounds'), health: av('health'), potions: av('potions') });
+        rows.push({ cls, step, loadout: `${name(l.includes(':') ? l : own(l))} + ${name(own(r))}`, enc, style, n: T, win: av('win'), unfinished: av('unfinished'), rounds: av('rounds'), health: av('health'), h2: av('h2'), potions: av('potions') });
       }
       process.stderr.write(`${cls} 2.${step} `);
     }
@@ -60,7 +68,7 @@ if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(rows)); el
 function report(all) {
   const encs = Object.keys(ENC); const loads = [...new Set(all.map((x) => x.loadout))];
   const m = (f, k) => { const r = all.filter(f); return r.length ? r.reduce((a, x) => a + x[k], 0) / r.length : NaN; };
-  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG', 'FURY_FROM', 'RALLY_EVERY', 'RALLY_MOST'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()}${/_/.test(k) ? ` ${process.env[k]}` : ''}`).join('')}`);
+  console.log(`QuestDice matchups · Act II heroes, every class · Bronze loadouts · ${process.env.W2 ? 'the six new weapons' : "today's weapons"}${['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG', 'FURY_FROM', 'RALLY_EVERY', 'RALLY_MOST', 'ARROW_NUM', 'ARROW_V2', 'FIRE_FULL', 'H2H', 'NOCHARM', 'TEAMWORK', 'ENCSET'].filter((k) => process.env[k]).map((k) => ` · ${k.toLowerCase()}${/_/.test(k) ? ` ${process.env[k]}` : ''}`).join('')}`);
   console.log('Each cell: health a fight costs (lower is better) · rounds · win%, for the wise player. Best loadout in each column is marked *.');
   for (const style of ['wise', 'greedy']) {
     console.log(`\n${style === 'wise' ? 'Wise player' : 'Greedy player (always chases attack)'}`);
@@ -68,6 +76,13 @@ function report(all) {
     const best = Object.fromEntries(encs.map((e) => [e, Math.min(...loads.map((l) => m((x) => x.loadout === l && x.enc === e && x.style === style, 'health')))]));
     for (const l of loads) console.log(`${l.padEnd(18)} ${encs.map((e) => { const f = (x) => x.loadout === l && x.enc === e && x.style === style; const h = m(f, 'health'); return `${h.toFixed(1)}${h === best[e] ? '*' : ' '} · ${m(f, 'rounds').toFixed(1)}r · ${(100 * m(f, 'win')).toFixed(0)}%`.padEnd(22); }).join('')}`);
   }
+  // the spread: each wise-player cell's standard error (fights pooled over classes and snapshots), so a small gap can be read
+  console.log('\nWise player: health a fight ± its standard error · wins · unfinished · fights measured');
+  console.log(`${'loadout'.padEnd(18)} ${encs.map((e) => e.padEnd(26)).join('')}`);
+  for (const l of loads) console.log(`${l.padEnd(18)} ${encs.map((e) => { const r = all.filter((x) => x.loadout === l && x.enc === e && x.style === 'wise'); const n = r.reduce((a, x) => a + (x.n || 1), 0);
+    const mean = r.reduce((a, x) => a + x.health * (x.n || 1), 0) / n; const sq = r.reduce((a, x) => a + (x.h2 ?? x.health * x.health) * (x.n || 1), 0) / n; const se = Math.sqrt(Math.max(0, sq - mean * mean) / Math.max(1, n - 1));
+    const w = r.reduce((a, x) => a + x.win * (x.n || 1), 0) / n; const u = r.reduce((a, x) => a + x.unfinished * (x.n || 1), 0) / n;
+    return `${mean.toFixed(1)}±${se.toFixed(1)} ${(100 * w).toFixed(0)}% u${(100 * u).toFixed(0)}% n${n}`.padEnd(26); }).join('')}`);
   console.log('\nWhat thinking is worth: health saved by the wise player over the greedy one, same loadout and fight');
   console.log(`${'loadout'.padEnd(18)} ${encs.map((e) => e.padEnd(10)).join('')}`);
   for (const l of loads) console.log(`${l.padEnd(18)} ${encs.map((e) => { const w = m((x) => x.loadout === l && x.enc === e && x.style === 'wise', 'health'); const g = m((x) => x.loadout === l && x.enc === e && x.style === 'greedy', 'health'); return `${(g - w >= 0 ? '+' : '')}${(g - w).toFixed(1)}`.padEnd(10); }).join('')}`);

@@ -519,10 +519,10 @@ export function evaluate(hero, board, opts = {}) {
     for (const t of tsyms) out[t] = (out[t] || 0) + val(lane.special); // a number face pays its number in its symbol (face 6 with magic = 6 magic)
     if (wf.arrow) { // an arrowhead (the weapons experiment's arrows): the hand's printed Strength, in the ammunition's way
       L.arrow = wf.arrow; const s = str;
-      out.arrow = { kind: wf.arrow, n: wf.arrow === 'fire' ? Math.floor(s / 2) : s }; // for the battle's banner
-      const AR = WEAPONS2.arrowRules || {};
+      const AR = WEAPONS2.arrowRules || {}; const burn = AR.fire === 'full' ? s : Math.floor(s / 2); // Fire splash: half the printed Strength (rounded down), or all of it (the 23 Oct test)
+      out.arrow = { kind: wf.arrow, n: wf.arrow === 'fire' ? burn : s }; // for the battle's banner
       if (wf.arrow === 'pierce') { const n = AR.pierce === 'all' ? L.value : s; L.value -= n; out.pierce += n; out.arrow.n = n; out.notes.push(`Piercing arrow: ${n} pierce`); }
-      else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + Math.floor(s / 2); out.notes.push(`Fire arrow: ${Math.floor(s / 2)} to every other monster`); } // half the printed Strength, rounded down (agreed 22 Oct)
+      else if (wf.arrow === 'fire') { out.fire = (out.fire || 0) + burn; out.notes.push(`Fire arrow: ${burn} to every other monster`); } // each other monster's guard still stops it
       else if (wf.arrow === 'frost') { out.frost = AR.frost === 'strength' ? Math.max(out.frost || 0, s) : true; out.notes.push(AR.frost === 'strength' ? `Frost arrow: the target's next blow is ${s} softer` : 'Frost arrow: the target\'s next blow is halved'); }
     }
     out.lanes[key] = L;
