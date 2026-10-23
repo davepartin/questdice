@@ -90,8 +90,8 @@ function report(parts) {
   console.log('');
   for (const s of [...new Set(F.map((x) => x.skill))]) for (const a of [1, 2, 3]) line(`${s} Act ${a}`, F.filter((x) => x.skill === s && x.act === a), R.filter((x) => x.skill === s && x.act === a), K.filter((x) => x.skill === s && x.act === a));
   console.log(`\nSudden deaths: ${K.length}. Warned (a wind-up, breath, stalk or slam was showing, this round or the one before): ${K.filter((k) => k.warned).length}. Potions still in the belt at the start of the fatal round: ${K.filter((k) => k.potions > 0).length}.`);
-  console.log('Survival of the fatal round on fresh rolls, by way of playing (mean over the cases): from its start', Object.keys(POLICY).map((p) => `${p} ${pc(K.reduce((a, k) => a + k.now[p], 0) / Math.max(1, K.length))}`).join(' · '),
-    '· from the round before (two rounds)', Object.keys(POLICY).map((p) => `${p} ${pc(K.filter((k) => k.before).reduce((a, k) => a + k.before[p], 0) / Math.max(1, K.filter((k) => k.before).length))}`).join(' · '));
+  console.log('Survival of the fatal round on fresh rolls, by way of playing (mean over the cases): from its start', ['smart', 'wise', 'guard'].map((p) => `${p} ${pc(K.reduce((a, k) => a + k.now[p], 0) / Math.max(1, K.length))}`).join(' · '),
+    '· from the round before (two rounds)', ['smart', 'wise', 'guard'].map((p) => `${p} ${pc(K.filter((k) => k.before).reduce((a, k) => a + k.before[p], 0) / Math.max(1, K.filter((k) => k.before).length))}`).join(' · '));
   console.log('\nExamples (up to 12):');
   for (const k of K.slice(0, 12)) console.log(`  ${k.skill} ${k.cls}, Act ${k.act} step ${k.step} (${k.kind}, try ${k.try}), round ${k.round}: from ${pc(k.from)} of ${k.maxHp}, took ${k.took}. Facing ${k.intents.map((x) => `${x.name} ${x.n || x.v}${x.slam ? ' (slam)' : ''}${x.range ? ` ${x.range[0]}–${x.range[1]}` : ''}`).join(', ')}. Potions ${k.potions}, magic ${k.magic}. ${k.verdict.toUpperCase()}: survives from this round smart ${pc(k.now.smart)}, wise ${pc(k.now.wise)}, guard ${pc(k.now.guard)}${k.before ? `; from the round before smart ${pc(k.before.smart)}, wise ${pc(k.before.wise)}, guard ${pc(k.before.guard)}` : ''}.`);
 }

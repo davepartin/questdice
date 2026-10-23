@@ -2,14 +2,37 @@ Solo burst damage and sudden deaths · released rules · smart player · Acts I�
 One-round damage is what the hero lost that round (after block) as a share of maximum health. A sudden death: dying in a round begun at 60% health or more.
 
 group              fights  won 1st  falls  rounds potions │ round damage: median  90%   99%   max  ≥30%  ≥50%  ≥60% │ sudden deaths (per 100 fights)  unlucky avoidable risky unavoidable
+hard bard             120      88%     25     7.2    1.26 │                 12%   47%   76%   97%   29%    9%    4% │     3 (2.5)                 2         1     0           0
+hard dwarf            120      90%     16     8.1    1.00 │                  9%   38%   69%  102%   18%    5%    2% │     3 (2.5)                 2         1     0           0
 hard knight           119      88%     21     7.4    1.17 │                 11%   41%   67%   91%   22%    5%    2% │     1 (0.8)                 1         0     0           0
+hard ranger           120      78%     46     7.4    1.25 │                 14%   47%   77%  121%   27%    8%    4% │     5 (4.2)                 4         1     0           0
+hard wizard           120      80%     43     6.9    1.21 │                 14%   52%   93%  167%   28%   11%    6% │    12 (10.0)                 9         3     0           0
+normal bard           120      87%     17     7.3    1.04 │                 10%   42%   76%  104%   22%    6%    3% │     2 (1.7)                 2         0     0           0
+normal dwarf          120      93%      9     6.9    0.84 │                 11%   39%   67%   98%   19%    4%    2% │     2 (1.7)                 2         0     0           0
 normal knight         120      92%     15     6.5    0.93 │                 12%   43%   66%   88%   21%    6%    2% │     3 (2.5)                 3         0     0           0
+normal ranger         120      93%     11     7.2    1.11 │                 11%   41%   66%   93%   20%    6%    2% │     1 (0.8)                 1         0     0           0
+normal wizard         120      87%     25     6.4    1.16 │                 16%   49%   79%  150%   29%   10%    4% │     4 (3.3)                 3         1     0           0
 
-normal Act 1           40      93%      3     4.5    0.67 │                 12%   50%   85%   88%   28%   11%    4% │     2 (5.0)                 2         0     0           0
-normal Act 2           40      88%      6     6.6    1.13 │                 14%   43%   60%   74%   23%    6%    2% │     0 (0.0)                 0         0     0           0
-normal Act 3           40      95%      6     8.2    0.98 │                 10%   35%   62%   73%   16%    4%    1% │     1 (2.5)                 1         0     0           0
-hard Act 1             40      95%      2     5.0    0.88 │                 14%   48%   82%   91%   32%   10%    5% │     0 (0.0)                 0         0     0           0
-hard Act 2             40      88%      6     6.9    1.26 │                 10%   44%   69%   83%   22%    6%    3% │     1 (2.5)                 1         0     0           0
-hard Act 3             39      82%     13     9.8    1.31 │                 11%   37%   56%   72%   17%    3%    0% │     0 (0.0)                 0         0     0           0
+normal Act 1          200      92%     20     4.7    0.68 │                 12%   50%   85%  150%   28%   12%    6% │    10 (5.0)                 9         1     0           0
+normal Act 2          200      88%     26     6.8    1.19 │                 13%   43%   70%   88%   24%    6%    3% │     1 (0.5)                 1         0     0           0
+normal Act 3          200      92%     31     9.0    1.17 │                 11%   38%   61%   83%   19%    4%    1% │     1 (0.5)                 1         0     0           0
+hard Act 1            200      86%     49     4.9    0.89 │                 14%   57%  100%  167%   33%   14%    9% │    19 (9.5)                14         5     0           0
+hard Act 2            200      83%     43     7.1    1.33 │                 14%   47%   77%   93%   27%    8%    4% │     4 (2.0)                 3         1     0           0
+hard Act 3            199      86%     59    10.0    1.32 │                 10%   39%   61%   91%   19%    4%    1% │     1 (0.5)                 1         0     0           0
 
-Sudden deaths: 4. Warned (a wind-up, breath, stalk or slam was showing, this round or the one before): 2. Potions still in the belt at the start of the fatal round: 3.
+Sudden deaths: 36. Warned (a wind-up, breath, stalk or slam was showing, this round or the one before): 13. Potions still in the belt at the start of the fatal round: 34.
+Survival of the fatal round on fresh rolls, by way of playing (mean over the cases): from its start smart 70% · wise 88% · guard 88% · from the round before (two rounds) smart 80% · wise 93% · guard 93%
+
+Examples (up to 12):
+  normal bard, Act 1 step 9 (battle, try 1), round 2: from 62% of 42, took 33. Facing Goblin Skulker Slash 4–25, Goblin Skulker Slash 4–25, Goblin Skulker Duck 2–9. Potions 2, magic 0. UNLUCKY: survives from this round smart 75%, wise 100%, guard 94%; from the round before smart 81%, wise 100%, guard 94%.
+  normal bard, Act 1 step 10 (boss, try 1), round 4: from 65% of 46, took 43. Facing The Goblin King Slam (slam) 7–40, Goblin Skulker Fire Bomb 6–20. Potions 1, magic 16. UNLUCKY: survives from this round smart 75%, wise 100%, guard 100%; from the round before smart 81%, wise 100%, guard 100%.
+  hard bard, Act 1 step 2 (battle, try 1), round 2: from 60% of 30, took 22. Facing Cinderling Tail Flick 5–19, Goblin Skulker Fire Bomb 4–18, Magpie Gang Shiny! 3–17. Potions 2, magic 0. AVOIDABLE: survives from this round smart 13%, wise 75%, guard 63%; from the round before smart 56%, wise 69%, guard 75%.
+  hard bard, Act 3 step 4 (battle, try 1), round 3: from 78% of 80, took 73. Facing Ironclad Warden Slam (slam) 12–57, Cinderling Puff 8–36. Potions 1, magic 11. UNLUCKY: survives from this round smart 88%, wise 100%, guard 100%; from the round before smart 81%, wise 100%, guard 100%.
+  hard bard, Act 1 step 9 (battle, try 2), round 2: from 61% of 46, took 34. Facing Goblin Skulker Pilfer 4–25, Goblin Skulker Pilfer 4–25. Potions 2, magic 10. UNLUCKY: survives from this round smart 88%, wise 100%, guard 94%; from the round before smart 94%, wise 88%, guard 88%.
+  normal dwarf, Act 1 step 4 (battle, try 1), round 2: from 89% of 44, took 43. Facing Dire Wolf Bite 3–17, Dire Wolf Pounce (slam) 4–25, Magpie Gang Stab 3–17. Potions 2, magic 2. UNLUCKY: survives from this round smart 100%, wise 88%, guard 100%; from the round before smart 94%, wise 100%, guard 100%.
+  normal dwarf, Act 2 step 3 (battle, try 1), round 2: from 63% of 64, took 45. Facing Dirge Singer Lute Smash 5–26, Bone Soldier Slash 5–26, Bone Soldier Slash 5–26. Potions 2, magic 8. UNLUCKY: survives from this round smart 81%, wise 100%, guard 100%; from the round before smart 94%, wise 100%, guard 100%.
+  hard dwarf, Act 1 step 10 (boss, try 3), round 8: from 61% of 56, took 40. Facing The Goblin King Slam (slam) 12–45, Goblin Skulker Fire Bomb 4–25. Potions 1, magic 4. AVOIDABLE: survives from this round smart 44%, wise 94%, guard 100%; from the round before smart 44%, wise 94%, guard 94%.
+  hard dwarf, Act 1 step 3 (battle, try 1), round 3: from 66% of 44, took 29. Facing Ember Mage Siphon 2–23, Dire Wolf Bite 3–24. Potions 2, magic 4. UNLUCKY: survives from this round smart 94%, wise 100%, guard 100%; from the round before smart 94%, wise 100%, guard 100%.
+  hard dwarf, Act 1 step 9 (battle, try 1), round 1: from 100% of 56, took 56. Facing Goblin Skulker Stab 5–26, Goblin Skulker Stab 5–26, Goblin Skulker Stab 5–26. Potions 2, magic 4. UNLUCKY: survives from this round smart 100%, wise 100%, guard 100%.
+  normal knight, Act 1 step 2 (battle, try 1), round 2: from 82% of 34, took 30. Facing Cinderling Puff 4–18, Goblin Skulker Stab 5–19. Potions 2, magic 1. UNLUCKY: survives from this round smart 100%, wise 100%, guard 100%; from the round before smart 88%, wise 100%, guard 100%.
+  normal knight, Act 3 step 6 (battle, try 1), round 3: from 68% of 78, took 57. Facing Frostwhelp Claw 7–28, Frostwhelp Claw 7–28, Ember Mage Ember 6–27. Potions 2, magic 2. UNLUCKY: survives from this round smart 100%, wise 100%, guard 100%; from the round before smart 100%, wise 100%, guard 100%.
