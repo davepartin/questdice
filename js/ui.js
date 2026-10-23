@@ -22,6 +22,7 @@ import * as RO from './readout.js';
 import * as DAY from './daily.js';
 import * as SO from './secrets.js';
 import * as LG from './legend.js';
+import * as BR from './battlereport.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -652,6 +653,7 @@ function startQuest(q) {
   const quest = E.withAmbush(q, members[0].campaign);
   S.quest = quest;
   S.battle = members.length > 1 ? E.newPartyBattle(members, quest, fresh()) : E.newBattle(members[0], quest, fresh(), 1);
+  BR.begin(S.battle); // the battle report keeps what happens in this fight, on this device (js/battlereport.js)
   S.hero = members[0];
   S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
   RO.reset(); S.envelope = null;
@@ -909,6 +911,7 @@ async function lockIn() {
 // ------------------------------------------------------------------ victory / defeat
 function showVictory() {
   const b = S.battle; const members = membersOf(); const hero = S.hero || members[0];
+  BR.finish(b, 'victory');
   const party = b?.fighters?.length > 1;
   const r = party ? E.partyRewards(b) : E.battleRewards(b);
   const shattered = members.map((m) => E.shatterDiamonds(m)).flat();
@@ -988,6 +991,7 @@ function renderVictory() {
 }
 function defeat(retreat) {
   const heroes = membersOf();
+  BR.finish(S.battle, retreat ? 'withdrew' : 'defeat');
   S.shattered = heroes.flatMap((m) => E.shatterDiamonds(m)); // win, lose or withdraw, a Diamond brought to the fight shatters
   S.broken = heroes.map((m) => { const l = E.brokenLine(E.takeBroken(m)); return l && heroes.length > 1 ? `${m.name}: ${l}` : l; }).filter(Boolean); // and a weapon may wear out
   concludeRoadEffects();

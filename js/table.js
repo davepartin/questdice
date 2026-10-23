@@ -896,12 +896,14 @@ export function playerView(table, playerId) {
       picker: r.draft.done ? r.order.length : r.draft.turn % r.order.length, picked: r.draft.picked, drops: r.drops,
       waiting: E.draftWho(r.draft),
     };
+    base.report = table.lastReport ? clone(table.lastReport) : null; // the last round's report, for this phone's battle report (already part of the table)
     base.hero = me ? clone(me) : null;
     base.perkOffer = me ? ensureOffer(table, me) : null;
     return base;
   }
   if (table.phase === 'defeat') {
     base.defeat = { retreat: !!table.retreat, loss: table.loss || 0, questName: table.quest?.name || '' };
+    base.report = table.lastReport ? clone(table.lastReport) : null;
     base.hero = me ? clone(me) : null;
     return base;
   }

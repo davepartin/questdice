@@ -17,6 +17,8 @@ import * as SV from '../save.js';
 import * as Net from '../net.js';
 import * as Sess from '../session.js';
 import * as SCRUI from './scrui.js';
+import * as BR from '../battlereport.js';
+import { reportRow } from './reportui.js';
 import * as SCR from './screens.js';
 import * as ST from '../story.js';
 import * as R from '../roads.js';
@@ -89,7 +91,7 @@ export function openTable(view) { // exported for dev/roadbeat.mjs (sits a phone
   const S = X.S;
   S.net = { code: view.code }; Net.tagSeat({ table: view.name, hero: view.you?.name });
   S.practice = null; S.battle = null; S.company = null; S.hero = null;
-  Sess.close(); Sess.open(view);
+  Sess.close(); BR.forgetOnline(); Sess.open(view);
   Sess.onChange((prev, next, info) => changed(prev, next, info));
   stop?.(); Net.connect((v) => Sess.adopt(v, 'feed')); const poll = waitPoll(); stop = () => { Net.disconnect(); clearInterval(poll); };
   show();
@@ -108,7 +110,7 @@ function waitPoll() {
 export function leave() {
   writeBack();
   stop?.(); stop = null;
-  Net.clearSeat(); Sess.close();
+  Net.clearSeat(); Sess.close(); BR.forgetOnline();
   const S = X.S; S.net = null; S.hero = null; S.company = null; S.battle = null;
   X.showTitle();
 }
@@ -127,6 +129,7 @@ function sync(t) {
 let shown = '';
 function changed(prev, next, info) {
   if (!inRoom()) return;
+  BR.observeView(Sess.view()); // this phone's battle report, built from what the table shows it (js/battlereport.js)
   if (prev && next && prev.phase !== next.phase && (next.phase === 'camp' || next.phase === 'victory' || next.phase === 'defeat' || next.phase === 'board')) writeBack();
   if (prev?.phase === 'road' && next?.phase !== 'road') import('./trialui.js').then((T) => T.dismissTrial()); // the table moved on: no roll left over the next screen
   if (B3.running()) { sync(next); B3.netChanged(prev, next); return; } // a battle is on screen: it decides when to show what
@@ -380,7 +383,7 @@ function victory(t) {
   mountAs('victory', h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(R.questName), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, youRepeat ? (n > 1 ? SV.REPEAT_PARTY : SV.REPEAT_NOTE) : sub), flourish()),
-      partyBar(), note, shattered, R.worn?.[hero.name] ? h('p', { class: 'dm-line worn' }, ico('sword'), R.worn[hero.name]) : null, reopen, rows, perks, charms, loot)));
+      partyBar(), note, shattered, R.worn?.[hero.name] ? h('p', { class: 'dm-line worn' }, ico('sword'), R.worn[hero.name]) : null, reopen, rows, perks, charms, loot, reportRow())));
   lay('victory'); if (!SCR.victory(hero, t.quest?.place)) SCR.enter('camp', { hero }, `victory:${hero.name}`);
   if (!you.seenBrag && bragDismissed !== bragKey(t) && !bragOpen()) openBrag(t, true);
 }
@@ -422,7 +425,7 @@ export function howToReturn(t = Sess.current()) {
 // Home, but the seat stays: the title shows "Rejoin" and the table carries on without a word.
 export function stepAway() {
   writeBack();
-  stop?.(); stop = null; Net.disconnect(); Sess.close();
+  stop?.(); stop = null; Net.disconnect(); Sess.close(); BR.forgetOnline();
   const S = X.S; S.net = null; S.hero = null; S.company = null; S.battle = null;
   X.showTitle();
 }
