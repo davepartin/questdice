@@ -24,10 +24,15 @@ const VARIANTS = {
   missile4: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { card('bolt').fx.pierce = 4; } },
   coil6: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { card('coil').per.atk = 6; card('coil').fx.atk = 6; } },
   hp28: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { DATA.CLASSES.wizard.hp = 28; } },
+  // T07, the Wizard's existing outlets (run with NUDGE=1 so the wise player also weighs turning the heart)
+  rearm2: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { DATA.CLASSES.wizard.rechargeCost = 2; } }, // re-arming Arc Bolt costs 2, not 3
+  holdbolt: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { PLAY.holdScale = 6; } }, // Arc Bolt only at 6+ magic (3+ dice) or to finish a monster
+  rearm2hold: { kit: ['arcbolt', 'bolt', 'coil'], tweak: () => { DATA.CLASSES.wizard.rechargeCost = 2; PLAY.holdScale = 6; } },
 };
 const card = (id) => DATA.CLASSES.wizard.cards.find((c) => c.id === id);
 const clone = (h) => JSON.parse(JSON.stringify(h));
 
+if (process.env.NUDGE) PLAY.nudge = true; // the wise player weighs turning the heart die (Heart Change)
 if (process.argv[2] === 'merge') { report(fs.readdirSync(process.argv[3]).filter((f) => f.endsWith('.json')).flatMap((f) => JSON.parse(fs.readFileSync(`${process.argv[3]}/${f}`, 'utf8')))); process.exit(0); }
 
 // every real cast (the wise player also casts in its look-ahead copies; those are not counted)

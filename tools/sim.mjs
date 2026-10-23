@@ -4,7 +4,7 @@ import {
   cardsOf, powerState, castPower, upgradePower, powerUpgradeInfo, recharge, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
-  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink,
+  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink, nudge,
 } from '../js/engine.js';
 import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
@@ -98,6 +98,7 @@ function futureValue(c) {
   for (const e of foes) v -= e.hp * 0.5 + 8 * Math.sqrt(e.hp) + 10 + (e.windup || e.pounce ? 12 : 0);
   return v;
 }
+const x0board = (b) => !!b.board?.C && !b.board.nudged;
 function wiseChoices(b) {
   const out = [];
   for (const c of cardsOf(b.hero)) {
@@ -109,9 +110,10 @@ function wiseChoices(b) {
     if (c.fx?.free) continue;
     // a spent big move can be bought back for RECHARGE_COST and cast again (the player does it before the roll; the cost is the same)
     if (!c.atwill && c.kind !== 'super' && b.used[c.id]) { const n = c.kind === 'scale' ? Math.max(c.cost, Math.floor((b.magic - 3) / 2)) : undefined; out.push({ k: `${c.id}^`, go: (x) => recharge(x, c.id) && !!castPower(x, c.id, { x: n }) }); continue; }
-    if (c.kind === 'scale') { for (const n of new Set([c.cost, Math.max(c.cost, Math.floor(b.magic / 2)), Math.min(c.max, b.magic)])) out.push({ k: `${c.id}:${n}`, go: (x) => castPower(x, c.id, { x: n }) }); continue; }
+    if (c.kind === 'scale') { for (const n of new Set([c.cost, Math.max(c.cost, Math.floor(b.magic / 2)), Math.min(c.max, b.magic)])) if (!PLAY.holdScale || n >= Math.min(c.max, PLAY.holdScale) || b.enemies.some((e) => e.hp > 0 && e.hp <= 12)) out.push({ k: `${c.id}:${n}`, go: (x) => castPower(x, c.id, { x: n }) }); continue; } // PLAY.holdScale: only big casts (or a finishing one)
     out.push({ k: c.id, go: (x) => castPower(x, c.id) });
   }
+  if (PLAY.nudge && x0board(b)) { out.push({ k: 'heart+', go: (x) => nudge(x, 1) }); out.push({ k: 'heart-', go: (x) => nudge(x, -1) }); } // PLAY.nudge: the wise player also weighs turning the heart die (3 magic)
   out.push({ k: 'heal', go: (x) => healSpend(x) });
   out.push({ k: 'potion', go: (x) => drinkPotion(x) });
   return out;

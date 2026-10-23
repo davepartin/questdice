@@ -987,6 +987,8 @@ export function chargeValues(card, n, lvl = 0) {
 export const chargeGain = (card, n, lvl = 0) => Object.fromEntries(Object.entries(chargeValues(card, n, lvl)).map(([k, xs]) => [k, xs.reduce((a, x) => a + x, 0)]));
 // A round power's attack in a given round: per x the round, then the level's boost on the whole (scaleNum).
 export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lvl);
+// Re-arming a spent big move: RECHARGE_COST, unless a class sets its own (only the Wizard experiment does; tools/magicaudit.mjs).
+export const rechargeCostOf = (hero) => CLASSES[hero?.cls]?.rechargeCost ?? RECHARGE_COST;
 // The measuring tools listen to every cast and every point of magic (tools/magicaudit.mjs); the game never sets them.
 export const CAST_HOOK = { on: null, magic: null, income: null }; // on: a power cast; magic: other spending; income: a round's magic in
 export function castPower(b, id, { x, release, to } = {}) {
@@ -1049,8 +1051,9 @@ export function upgradePower(hero, id) {
   hero.gold -= r.cost; hero.powerLevel = { ...(hero.powerLevel || {}), [id]: r.next }; return true;
 }
 export function recharge(b, id) {
-  if (!b.used[id] || b.magic < RECHARGE_COST || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
-  b.magic -= RECHARGE_COST; CAST_HOOK.magic?.(b, 'recharge', RECHARGE_COST); b.used[id] = false; return true;
+  const cost = rechargeCostOf(b.hero);
+  if (!b.used[id] || b.magic < cost || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
+  b.magic -= cost; CAST_HOOK.magic?.(b, 'recharge', cost); b.used[id] = false; return true;
 }
 
 // Resolve a locked round. Your blow lands first (the fallen do not strike back), then the survivors act.
