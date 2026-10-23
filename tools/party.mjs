@@ -64,11 +64,11 @@ for (let run = 0; run < RUNS; run++) {
 }
 void withDifficulty;
 const pct = (x) => `${Math.round(100 * x)}%`.padStart(5);
-console.log(`${process.env.PLAY || 'smart'} play${process.env.MIX ? ', a beginner joins in Act II' : ''} · company strength by act ${mAt.map((a, i) => (a ? `${i}: x${(a.reduce((s, x) => s + x, 0) / a.length).toFixed(2)}` : '')).filter(Boolean).join(' ')} · ${SKILL}, ${N} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
-console.log('act kind      solo: win  rnds  hp      team: win  rnds  hp');
+console.log(`${process.env.PLAY || 'smart'} play${process.env.MIX ? ', a beginner joins in Act II' : ''} · company strength by act ${mAt.map((a, i) => (a ? `${i}: x${(a.reduce((s, x) => s + x, 0) / a.length).toFixed(2)}` : '')).filter(Boolean).join(' ')} · ${SKILL}, ${[...new Set(PAIRS.map((p) => p.length))].join(" or ")} heroes, ${RUNS * PAIRS.length} companies: win rate (first try) · rounds · health left when won`);
+console.log('act kind      solo: win  rnds  hp     n      team: win  rnds  hp     n   (n: fights; team wins ± one standard error)');
 for (const r of Object.values(acts).sort((x, y) => x.a - y.a || x.kind.localeCompare(y.kind))) {
   const s = r.solo; const t = r.team;
-  console.log(`${r.a}   ${r.kind.padEnd(7)}   ${pct(s.w / s.n)}  ${(s.r / s.n).toFixed(1).padStart(4)}  ${pct(s.h / Math.max(1, s.w))}      ${pct(t.w / t.n)}  ${(t.r / t.n).toFixed(1).padStart(4)}  ${pct(t.h / Math.max(1, t.w))}`);
+  console.log(`${r.a}   ${r.kind.padEnd(7)}   ${pct(s.w / s.n)}  ${(s.r / s.n).toFixed(1).padStart(4)}  ${pct(s.h / Math.max(1, s.w))}  ${String(s.n).padStart(4)}      ${pct(t.w / t.n)}  ${(t.r / t.n).toFixed(1).padStart(4)}  ${pct(t.h / Math.max(1, t.w))}  ${String(t.n).padStart(4)}  ±${Math.round(100 * Math.sqrt((t.w / t.n) * (1 - t.w / t.n) / t.n))}%`);
 }
 console.log(`\nBy class at the table${process.env.CLASSID ? ` · class identity ${process.env.CLASSID}` : ''}${process.env.RELEASE ? ' · the released rules' : ''}: hero-fights · lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell · share of the team's damage · share of the team's block (a fair share is 1 / heroes)`);
 for (const [cls, c] of Object.entries(byClass)) console.log(`${cls.padEnd(7)} ${String(c.n).padStart(5)}  ${pct(c.low / c.n)}  ${pct(c.fell / c.n)}  ${(c.taken / c.n).toFixed(1).padStart(5)}  ${(c.given / c.n).toFixed(1).padStart(5)}     ${pct(c.mateLow / c.n)}  ${pct(c.mateFell / c.n)}   ${pct(c.share / c.n)}  ${pct(c.blockShare / c.n)}`);
