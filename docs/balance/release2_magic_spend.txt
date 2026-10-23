@@ -1,0 +1,27 @@
+QuestDice class kits · Act II heroes · wise bot · today's weapons and powers · kit start
+Each cell: health a fight costs (lower is better) · win%. * = the best kit for that fight. (start) = the kit a new hero carries.
+
+Bard
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Mending Song / Lucky Verse / Rising Ballad (start) 4.6* 100%     37.4* 88%     10.4* 100%    3.9* 100%      14.1
+  best single kit: Mending Song / Lucky Verse / Rising Ballad (14.1 a fight) · choosing per fight: 14.1 · choice is worth 0.0 health a fight · 1 different kit win the four fights
+
+Dwarf Warden
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Grudge / Shield Bash / Stonehide (start)       3.1* 100%     31.2* 100%    6.5* 100%     3.0* 100%      10.9
+  best single kit: Grudge / Shield Bash / Stonehide (10.9 a fight) · choosing per fight: 10.9 · choice is worth 0.0 health a fight · 1 different kit win the four fights
+
+Knight
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Cleave / Shield Up / Rally Cry (start)         9.5* 100%     46.3* 85%     13.8* 100%    6.4* 100%      19.0
+  best single kit: Cleave / Shield Up / Rally Cry (19.0 a fight) · choosing per fight: 19.0 · choice is worth 0.0 health a fight · 1 different kit win the four fights
+
+Ranger
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Aimed Shot / Quick Draw / Volley (start)       7.0* 100%     40.6* 92%     11.3* 100%    6.8* 100%      16.4
+  best single kit: Aimed Shot / Quick Draw / Volley (16.4 a fight) · choosing per fight: 16.4 · choice is worth 0.0 health a fight · 1 different kit win the four fights
+
+Wizard
+kit (big move / every round / charge)          heavy         swarm         guard         healer         all four
+Arc Bolt / Magic Missile / Storm Coil (start)  14.6* 100%    53.4* 69%     22.3* 98%     10.2* 100%     25.1
+  best single kit: Arc Bolt / Magic Missile / Storm Coil (25.1 a fight) · choosing per fight: 25.1 · choice is worth 0.0 health a fight · 1 different kit win the four fights

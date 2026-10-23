@@ -1,0 +1,18 @@
+smart play · company strength by act 1: x2.12 2: x2.13 3: x2.08 · normal, 2 heroes, 14 companies: win rate (first try) · rounds · health left when won
+act kind      solo: win  rnds  hp      team: win  rnds  hp
+1   battle      93%   4.1    73%        93%   3.4    78%
+1   boss        72%   9.5    51%        79%   9.8    85%
+1   elite       97%   6.4    87%       100%   5.8    87%
+2   battle      91%   6.4    68%        99%   5.5    74%
+2   boss        69%  11.7    57%        93%  10.4    74%
+2   elite       81%  10.8    68%       100%  10.0    82%
+3   battle      89%   7.8    62%        99%   7.0    76%
+3   boss        84%  15.4    61%       100%  14.3    75%
+3   elite       97%  10.8    52%       100%   8.4    73%
+
+By class at the table · the released rules: hero-fights · lowest health in a fight · fell · damage taken · healing given to friends · the friend's lowest health · the friend fell · share of the team's damage · share of the team's block (a fair share is 1 / heroes)
+knight    180    59%     2%   43.4    0.0       62%     3%     44%    49%
+ranger    240    57%     4%   38.5    0.0       54%     3%     44%    40%
+wizard    180    54%     6%   39.8    0.0       57%     6%     41%    44%
+bard      180    50%     6%   50.7    2.6       55%     7%     47%    29%
+dwarf     180    66%     2%   38.5    0.0       59%     2%     44%    48%
