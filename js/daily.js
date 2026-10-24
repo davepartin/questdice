@@ -3,6 +3,7 @@
 // then its elite and its boss), the same dice seed. Your score is the battle points you earn plus 100 for every fight you win and a 250 bonus for clearing all five. Play as
 // often as you like; your best counts. Pure logic here; the screens are in ui.js and g3/scrui.js, the leaderboard in cloud.js.
 import * as E from './engine.js';
+import { keyOf } from './lab.js';
 import { CLASSES, CHARMS } from './data.js';
 
 export const FIGHTS = 5;
@@ -53,7 +54,7 @@ export const fightScore = (b, won) => E.pointsOf(b) + (won ? WIN_BONUS : 0) + go
 export const finalScore = (fights) => fights.reduce((a, f) => a + f.score, 0) + (fights.length === FIGHTS && fights.every((f) => f.won) ? CLEAR_BONUS : 0);
 
 // This phone's record of the days it played: { [key]: { best, tries, cleared, fights } }
-const STORE = 'qd.daily';
+const STORE = keyOf('qd.daily'); // the lab and the preview keep their own record (js/lab.js)
 const read = () => { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } };
 const write = (v) => { try { localStorage.setItem(STORE, JSON.stringify(v)); } catch { /* storage blocked: the day is still played */ } };
 export const dayRecord = (key = dayKey()) => read()[key] || { best: 0, tries: 0, cleared: false, fights: 0 };

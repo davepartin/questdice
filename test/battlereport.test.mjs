@@ -286,3 +286,16 @@ test('the last-resort record is short enough for the smallest bound, even with l
   const f = BR.fit(rep, BR.MIN_REPORT_CHARS); assert.ok(JSON.stringify(f).length <= BR.MIN_REPORT_CHARS, String(JSON.stringify(f).length));
   assert.equal(f.outcome.result, rep.outcome.result); assert.deepEqual(f.rounds, []); assert.match(BR.summaryText(f), /Left out: all detail except how the fight ended/);
 });
+
+// ---- a preview copy keeps its own storage; the real site is never affected
+test('a preview copy (any page under /preview/) keeps its own saves, reports and daily record; the real site and the lab are unchanged', async () => {
+  const load = async (pathname, search = '') => { globalThis.location = { pathname, search }; try { return await import(`../js/lab.js?at=${encodeURIComponent(pathname + search)}`); } finally { delete globalThis.location; } };
+  const live = await load('/questdice/'); const prev = await load('/questdice/preview/battle-report/'); const lab = await load('/questdice/', '?lab');
+  assert.deepEqual([live.PREVIEW, live.SANDBOX, live.SANDBOX_NAME], [false, false, '']);
+  assert.deepEqual([prev.PREVIEW, prev.SANDBOX, prev.SANDBOX_NAME], [true, true, 'preview']);
+  assert.deepEqual([lab.PREVIEW, lab.SANDBOX, lab.SANDBOX_NAME], [false, true, 'lab']);
+  assert.equal(live.keyOf('qd.daily'), 'qd.daily'); assert.equal(prev.keyOf('qd.daily'), 'qd.preview.daily'); assert.equal(lab.keyOf('qd.daily'), 'qd.lab.daily');
+  assert.equal(live.keyOf('questdice.hero.'), 'questdice.hero.'); assert.equal(prev.keyOf('questdice.hero.'), 'questdice.preview.hero.');
+  assert.notEqual(BR.reportsKey(), 'questdice.preview.battlereports', 'this run is not a preview');
+  assert.equal(BR.reportsKey(), 'questdice.battlereports', 'the real key outside a preview');
+});

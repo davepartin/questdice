@@ -14,12 +14,12 @@
 // Storage: the latest three reports, each bounded in size, in this browser's own storage and nowhere else (no cloud, no analytics).
 import * as E from './engine.js';
 import * as D from './data.js';
-import { LAB } from './lab.js';
+import { SANDBOX, SANDBOX_NAME } from './lab.js';
 
 export const REPORT_VERSION = 1;
 export const MAX_REPORTS = 3;
 export const MAX_REPORT_CHARS = 40000; // one stored report, as JSON
-const KEY = LAB ? 'questdice.lab.battlereports' : 'questdice.battlereports';
+const KEY = SANDBOX ? `questdice.${SANDBOX_NAME}.battlereports` : 'questdice.battlereports';
 export const BUILD = (() => { try { return new URL(import.meta.url).searchParams.get('v') || 'dev'; } catch { return 'dev'; } })();
 
 const ROLE_WORD = { N: 'head', W: 'left hand', E: 'right hand', S: 'feet', C: 'heart', NW: 'left weapon', NE: 'right weapon', SW: 'left talent', SE: 'right talent', P: 'pet' };
