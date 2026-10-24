@@ -1415,3 +1415,6 @@ T17 isolation step 1, 24 October (build 20261024ns1, no gameplay change): every 
 
 
 24 October 2026, Director: Extended T19 with Dave's first-hand learning and safe dragon-only-phase observations. Preserve magic/Heart mastery while investigating boss pacing, late-loss cost and equal/mixed party scaling. Added T20 released-arrow demonstration request with source-checked camp selection, arrowhead triggers, Pierce/Fire/Frost behavior and isolated arithmetic examples. Release overrides take precedence over stale half-effect comments. Documentation only; no live balance change or browser demonstration performed in this intake. Claude posts results directly to board.
+
+
+24 October 2026, Director: Dave requested professional objective cards alongside the weapon template. Added T05-objective-art-followup.md and updated the existing T05 board next action. Grok refines three existing card types after his current weapon pass; Claude retains PR #49 and integrates reviewed visual changes. Reuse published templates/backs and current rules, preserve secret privacy, live text and reachable actions. Source docs reviewed; no new visual/browser verification or gameplay change in this coordination update.
