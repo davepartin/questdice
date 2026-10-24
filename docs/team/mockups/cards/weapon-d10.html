@@ -11,7 +11,7 @@
 <script type="module">
 import { weaponCard, weaponData, price } from './t13.js';
 const p = new URLSearchParams(location.search);
-const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), p.get('left') != null ? +p.get('left') : undefined);
+const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), p.get('left') != null ? +p.get('left') : undefined, p.get('ammo') || undefined);
 const store = p.get('ctx') === 'store';
 const card = weaponCard(d, store ? { label: 'Store', value: price(d) } : { label: 'Sell', value: d.sell }); slot.append(card);
 under.style.setProperty('--w', getComputedStyle(card).width);

@@ -31,3 +31,5 @@
 .strip13 i{position:relative;display:flex;align-items:center;justify-content:center;gap:1px;height:20px;border-radius:4px;font:800 11px 'Oxanium',sans-serif;font-style:normal}
 .strip13 i svg{width:8px;height:8px}.strip13 i.r{background:#3a1016;border:1px solid #c0414b;color:#ffd2d2}.strip13 i.b{background:#0e2c46;border:1px solid #3aa4ff;color:#d6eeff}
 .strip13 i.z{opacity:.7}.strip13 u{position:absolute;right:1px;top:1px;width:4px;height:4px;border-radius:50%;background:#ffc21a;box-shadow:0 0 3px #ffc21a}
+
+.f13 b{display:flex;align-items:center;gap:.4cqi}.f13 .ah{display:inline-flex}.f13 .ah svg{width:3.6cqi;height:3.6cqi;color:currentColor!important}.f13 .ah.am-pierce{color:#ff8a1a}.f13 .ah.am-fire{color:#ff5a2a}.f13 .ah.am-frost{color:#7fe3ff}

@@ -92,3 +92,14 @@ How a face reads, matching the dice (js/gfx/dice/dice.js:37-38):
   - The open question about the pair in T13 is now settled.
 - **For Claude:** the wager wording correction is still open. In the game, the offered-bribe chip "Fail: pay G/2" (secrets.js:146, 154) should say the loss applies only when the team loses. See WAGERS.md.
 - **Known gap:** the Arrows card does not show the chosen ammunition. It appears on the pack row ("Normal arrows").
+
+## Final check (23 Oct): see HANDOFF-CLAUDE.md
+- **Arrows:**
+  - An ammo badge (Normal, Piercing, Fire or Frost arrows) shows on the card, driven by `inst.ammo` with the release default.
+  - Arrowhead faces show a tinted arrowhead next to the number.
+  - `weaponData(id, metal, size, left, ammo)`; `weapon-d10.html?id=quiver&ammo=fire`.
+- **Objective, wager and secret cards:**
+  - A labelled Condition, then Stake, Reward and Decline/If-not rows with the WAGERS.md sums.
+  - The card kind is a badge in the art window, so it no longer overlaps the name.
+- **Small icons:** they use the baked steel-only tints (`<id>-<metal>-{64,128}.webp`). Sword now has baked tints too.
+- **Contact sheet:** `final.html` shows every active card. A PNG is in `png/final/`.

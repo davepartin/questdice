@@ -1,7 +1,7 @@
 // CONCEPT card template (docs only). renderCard(kind, data) and renderBack(kind) return DOM nodes.
 // Every word and number is live text from the game's own data; images are only text-free layers.
 // Read-only imports from the game (never modified here):
-import { WEAPONS, RARITY, isLegendary } from '../../../../js/data.js';
+import { WEAPONS, RARITY, isLegendary, WEAPONS2 } from '../../../../js/data.js';
 import { weaponFaces, makeWeapon, sellValue, battlesLeft, battlesFull, wearLabel, weaponSize } from '../../../../js/engine.js';
 import { BONUS_GOALS, bonusStake, bonusG, CARDS, gOf } from '../../../../js/secrets.js';
 
@@ -10,7 +10,7 @@ const OLD = new URL('../art/', import.meta.url).href;
 const BACKS = new URL('../backs/', import.meta.url).href;
 // One painted master per weapon TYPE. A type that is missing here gets the labelled placeholder silhouette.
 export const WEAPON_ART = { dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' }; // T14: the six active types painted
-const BAKED_TINT = Object.fromEntries(['dagger', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver'].map((k) => [k, ['bronze', 'silver', 'gold']])); // baked gradient-map tints (WEAPON_ART.md) // types with baked metal files; others use the CSS tint below
+const BAKED_TINT = Object.fromEntries(['dagger', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver'].map((k) => [k, ['bronze', 'silver', 'gold']])); // baked gradient-map tints (WEAPON_ART.md) // types with baked metal files; others use the CSS tint below
 
 // Symbol colours from css/powers.css (.t-pierce #ff8a1a, .t-magic #b46cff, .t-heal #38e87a, .t-gold #ffc21a, .t-atk #ff4b4b, .t-block #3aa4ff).
 export const SYM = {
@@ -20,6 +20,7 @@ export const SYM = {
   gold: { c: '#ffc21a', d: 'M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z' },
   atk: { c: '#ff4b4b', d: 'M12 1 L14.4 6.3 L19.8 4.2 L17.7 9.6 L23 12 L17.7 14.4 L19.8 19.8 L14.4 17.7 L12 23 L9.6 17.7 L4.2 19.8 L6.3 14.4 L1 12 L6.3 9.6 L4.2 4.2 L9.6 6.3 Z' },
   block: { c: '#3aa4ff', d: 'M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z' },
+  arrow: { c: '#e8e2d4', d: 'M12 1.5 L19 12 L14.6 10.4 V22.5 H9.4 V10.4 L5 12 Z' }, // an arrowhead face (WEAPONS2 quiver 'A'); tinted by ammo
   star: { c: '#ffe08a', d: 'M12 2 L20 12 L12 22 L4 12 Z' }, // anything else (splash, loot ...)
 };
 const svg = (k, cls = '') => { const s = SYM[k] || SYM.star; return `<svg class="${cls}" viewBox="0 0 24 24" style="color:${s.c}"><path fill="currentColor" d="${s.d}"/></svg>`; };
@@ -27,12 +28,15 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
 // ---- weapon data, derived (nothing typed by hand)
-export function weaponData(id, rarity = 0, size = 4, left) {
-  const def = WEAPONS[id]; const inst = makeWeapon(id, rarity, () => 0.5, size); if (left != null) inst.left = left;
+// ammo: Arrows only. Same default as engine weaponFaces (engine.js:109): inst.ammo, else WEAPONS2.defaultAmmo, else 'normal'.
+export const ammoOf = (inst) => (inst.id !== 'quiver' ? null : WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal');
+export function weaponData(id, rarity = 0, size = 4, left, ammo) {
+  const def = WEAPONS[id]; const inst = makeWeapon(id, rarity, () => 0.5, size); if (left != null) inst.left = left; if (ammo) inst.ammo = ammo;
   const faces = weaponFaces(inst);
   const kinds = [...new Set(faces.flatMap((f) => [...Object.keys(f.fx || {}), ...(f.plus ? [def.lean === 'def' ? 'block' : 'atk'] : [])]))];
   return {
     id, name: def.name, metal: isLegendary(inst) ? 'Legendary' : RARITY[rarity], hands: def.hands, size: weaponSize(inst),
+    ammo: ammoOf(inst), ammoName: ammoOf(inst) ? WEAPONS2.ammo[ammoOf(inst)] : null,
     left: battlesLeft(inst), full: battlesFull(inst), wear: wearLabel(inst), sell: sellValue(inst), faces,
     accents: kinds.length ? kinds : [def.lean === 'def' ? 'block' : 'atk'],
   };
@@ -69,17 +73,20 @@ export function renderCard(kind, d) {
     <div class="name">${esc(d.name)}</div>
     <div class="meta"><span class="m-${d.metal.toLowerCase()}">${esc(d.metal)}</span><span>d${d.size}</span><span>${esc(d.wear)}</span></div>
     <div class="faces n${d.faces.length}">${d.faces.map(faceTile).join('')}</div>
+    ${d.ammoName ? `<div class="ammo am-${d.ammo}">${svg('arrow')}${esc(d.ammoName)}</div>` : ''}
     <div class="sell"><small>${esc(d.moneyLabel || 'Sell')}</small>${svg('gold')}${d.money ?? d.sell}</div></article>`);
   const isObj = kind === 'objective';
-  const stakes = isObj ? `<div class="stk"><div><small>Stake</small><b>${d.stake}</b></div><div><small>Paid back</small><b>${d.back}</b></div><div class="net"><small>Win</small><b>+${d.net}</b></div></div>`
-    : kind === 'wager' ? `<div class="stk"><div class="net"><small>Done, team wins</small><b>+${d.win}</b></div><div><small>Not done, team wins</small><b>0</b></div><div class="bad"><small>Team loses</small><b>−${d.fail}</b></div></div>`
-      : `<div class="chips">${d.chips.map((c) => `<span>${esc(c)}</span>`).join('')}</div>`;
+  // Condition, Stake and Reward are always separate, labelled blocks (WAGERS.md has the sums and sources)
+  const row = (k, v, cls = '') => `<div class="sr ${cls}"><small>${k}</small><span>${v}</span></div>`;
+  const stakes = isObj ? `<div class="srs">${row('Stake', `<b>${d.stake}</b> gold, paid when you accept`)}${row('Reward', `<b>${d.back}</b> back if done and won · net <b>+${d.net}</b>`, 'good')}${row('If not', 'the stake is lost', 'bad')}</div>`
+    : kind === 'wager' ? `<div class="srs">${row('Stake', `none · <b>−${d.fail}</b> if the team loses`, 'bad')}${row('Reward', `<b>+${d.win}</b> if done and the team wins`, 'good')}${row('Decline', `Honor <b>+${d.honor[0]}</b> · <b>+${d.honor[1]}</b> if lost`)}</div>`
+      : `<div class="srs">${row('Stake', 'none')}${d.chips.map((c) => row('Reward', esc(c), 'good')).join('')}</div>`;
   const HEART = new URL('../../../../assets/tutorial/heart-6.png', import.meta.url).href;
   const art = kind === 'secret-objective' ? `<img class="art obj heart" src="${HEART}" alt="">` : d.id === 'nopotion' ? `<img class="art obj" src="${OLD}potion.webp" alt=""><i class="nogo"></i>` : `<div class="emb">${svg(isObj ? 'star' : 'gold')}</div>`;
   return el(`<article class="qc qc-${kind}" data-kind="${kind}">
     <div class="win scene-${kind}">${art}</div><img class="fr" src="${ART}front-frame.webp" alt="">${corners([kind === 'wager' ? 'gold' : 'star'])}
     <div class="name">${esc(d.name)}</div>
-    <div class="obox"><div class="okind">${LABEL[kind]}</div><p class="orule">${esc(d.rule)}</p>${stakes}</div></article>`);
+    <div class="okind">${LABEL[kind]}</div><div class="obox"><div class="cond"><small>Condition</small><p class="orule">${esc(d.rule)}</p></div>${stakes}</div></article>`);
 }
 // Backs: the approved painted backs; the live plate covers the concept's painted word (final art will ship with a blank plate).
 const BACK = { weapon: 'back-weapon', objective: 'back-objective', 'secret-objective': 'back-secret-objective', wager: 'back-wager' };
