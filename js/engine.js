@@ -831,6 +831,7 @@ export function beginReset(b) {
   b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
   pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
+  CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
 }
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
 // A slot it does not name rolls as usual. Normal battles have no script.
@@ -908,6 +909,7 @@ export function drinkPotion(b, to = b) {
   const before = to.hp; to.hp = Math.min(to.maxHp, to.hp + potionHpOf(b.hero));
   const got = to.hp - before; (to.stats || b.stats).healed += got;
   award(b, got * (to === b ? POINTS.healSelf : POINTS.healFriend));
+  CAST_HOOK.trace?.('potion', b, { to, before, got });
   return true;
 }
 // Potion belt: train it at camp to carry a third potion.
@@ -990,7 +992,7 @@ export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lv
 // Re-arming a spent big move: RECHARGE_COST, unless a class sets its own (only the Wizard experiment does; tools/magicaudit.mjs).
 export const rechargeCostOf = (hero) => CLASSES[hero?.cls]?.rechargeCost ?? RECHARGE_COST;
 // The measuring tools listen to every cast and every point of magic (tools/magicaudit.mjs); the game never sets them.
-export const CAST_HOOK = { on: null, magic: null, income: null }; // on: a power cast; magic: other spending; income: a round's magic in
+export const CAST_HOOK = { on: null, magic: null, income: null, trace: null }; // on: a power cast; magic: other spending; income: a round's magic in
 export function castPower(b, id, { x, release, to, song } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || b.phase !== 'shape') return null;
@@ -1070,6 +1072,7 @@ export function recharge(b, id) {
 // Resolve a locked round. Your blow lands first (the fallen do not strike back), then the survivors act.
 export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const { hero } = b;
+  CAST_HOOK.trace?.('resolving', b, { target, straight }); // observers only: the board, health and moves as they stand when you lock in
   const ev = evaluate(hero, b.board, { straight });
   const m = b.mods;
   const boon = b.boon || {};
@@ -1231,6 +1234,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
 
   b.report = rep;
   logRound(b, { hero, board: b.board, mods: m, _dealt: b.stats.dealt - (rep.dealtBefore ?? b.stats.dealt), _killed: rep.killed, T, ev, straight, actionsLeft: b.actionsLeft, hp: b.hp, magic: b.magic }, { blocked: rep.absorbed || 0 });
+  CAST_HOOK.trace?.('resolved', b, rep);
   if (living().length === 0) { b.outcome = 'victory'; b.phase = 'done'; }
   else if (b.hp <= 0) { b.outcome = 'defeat'; b.phase = 'done'; }
   else beginReset(b);
@@ -1912,6 +1916,7 @@ export function beginPartyRound(b) {
   for (const f of b.fighters) { f.board = null; f.mods = blankMods(); f.usedRound = {}; f.healsRound = 0; f.straight = 'atk'; f.aim = null; f.dugIn = 0; digIn(f, b.round); }
   pressure(b);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
+  CAST_HOOK.trace?.('round', b);
 }
 export function startFighter(b, i) {
   focusFighter(b, i);
@@ -2020,6 +2025,7 @@ function logRound(b, f, { blocked = 0, leader = false, target = null } = {}) {
   });
 }
 export function resolveParty(b) {
+  CAST_HOOK.trace?.('resolving', b);
   // Cards stack: two heroes can both soften a blow. A road blessing is one fact about the fight, so it applies once.
   const cardWeaken = b.fighters.reduce((a, f) => a + ((f.mods && f.mods.weaken) || 0), 0);
   const boonWeaken = b.fighters.reduce((a, f) => Math.max(a, (f.boon && f.boon.weaken) || 0), 0);
@@ -2258,6 +2264,7 @@ export function resolveParty(b) {
     rep.fighters.push({ name: f.hero.name, taken: 0, absorbed: 0, healed: 0, hpAfter: f.hp, magicAfter: f.magic, gold: 0, feet: 0, leader: false, contrib: f.contrib, down: true });
   }
   b.report = rep;
+  CAST_HOOK.trace?.('resolved', b, rep);
   const foes = b.enemies.filter((e) => e.hp > 0).length;
   const heroesUp = b.fighters.filter((f) => f.hp > 0).length;
   if (foes === 0) { b.outcome = 'victory'; b.phase = 'done'; }
