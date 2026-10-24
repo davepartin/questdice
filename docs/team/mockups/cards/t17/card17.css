@@ -94,3 +94,6 @@ html,body{margin:0;background:#07080c}
 @keyframes dieIn{0%{transform:scale(.6) translateY(1.4cqi);opacity:0}100%{transform:none;opacity:1}}
 .demo17{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:9;font:800 13px Oxanium;letter-spacing:.06em;padding:8px 14px;border-radius:99px;border:1px solid #c9a068;background:#2a1c10;color:#ffd98a}
 @media (prefers-reduced-motion:reduce){.cov.tok.gone{animation:tokFade .2s linear forwards}.row.reveal .d17{animation:none}@keyframes tokFade{to{opacity:0}}}
+
+/* rev 6: every row carries its info; a locked row's stays hidden under the token and fades in after the demo unlock */
+.row.locked .ri{visibility:hidden}.row.reveal .ri{visibility:visible;animation:dieIn .4s .45s both}

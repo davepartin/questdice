@@ -13,7 +13,7 @@ const INK = { r: ['#ff8a80', '#d8262a'], b: ['#9cc8ff', '#2f7ae0'], z: ['#c8b8b0
 let R, scene, cam, env;
 function setup() {
   if (R) return; R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-  R.setPixelRatio(1); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 0.9; R.outputColorSpace = THREE.SRGBColorSpace;
+  R.setPixelRatio(1); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 0.62; // rev 6: lower so bright icon colours are not washed out by the filmic curve R.outputColorSpace = THREE.SRGBColorSpace;
   scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); env = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environment = env;
   const key = new THREE.DirectionalLight(0xfff1dc, 2.6); key.position.set(-2.2, 3.4, 3); scene.add(key);
   const rim = new THREE.DirectionalLight(0xbfd4ff, 0.9); rim.position.set(3, 1.5, -2); scene.add(rim);
@@ -30,15 +30,16 @@ function grain(g, W, H, seed, a, C = 24) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4; const n = (at(x, y) - 0.5) * a + (rnd() - 0.5) * a * 0.55; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
   g.putImageData(img, 0, 0);
 }
-// rev 5: each mark sits in a dark inset well and is filled in the game's saturated icon colour (SYM.c) with a dark outline, so the
-// bonus reads on a red or blue body at phone size (no white wash)
-const POP = { atk: '#ffd23a', block: '#7fd0ff' }; // the attack burst / block shield: brighter than the body so they never sink into it
-const icon = (g, k, x, y, s) => { const p = new Path2D((SYM[k] || SYM.star).d); const col = POP[k] || (SYM[k] || SYM.star).c;
-  g.save(); g.translate(x, y); const r = s * 0.6; const w = g.createRadialGradient(0, -r * .25, r * .1, 0, 0, r);
-  w.addColorStop(0, '#2a0d08'); w.addColorStop(1, '#0d0403'); g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fillStyle = w; g.globalAlpha = .82; g.fill();
-  g.globalAlpha = 1; g.lineWidth = s * .05; g.strokeStyle = '#ffffff30'; g.beginPath(); g.arc(0, s * .02, r, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
-  g.translate(-s * .4, -s * .4); g.scale(s * .8 / 24, s * .8 / 24); g.lineJoin = 'round'; g.lineWidth = 3.2; g.strokeStyle = '#000'; g.stroke(p);
-  g.fillStyle = col; g.fill(p); g.restore(); };
+// rev 6 (Dave): no dark well; each mark is a rich saturated colour with a ~3-4 screen-px white border (scaled to the texture), a soft
+// drop shadow below and a light top bevel, so it reads as stamped/embossed into the die on red and blue bodies alike
+const RICH = { atk: '#e07a00', block: '#0b3c9e', gold: '#e39400', pierce: '#ee4400', magic: '#7410cc', heal: '#08a83a', star: '#e88600' }; // pre-tone-mapping, so they land rich
+const icon = (g, k, x, y, s) => { const p = new Path2D((SYM[k] || SYM.star).d); const col = RICH[k] || (SYM[k] || SYM.star).c;
+  const u = s / 24; const white = 9 / u; // ~9 texture px (stroke is centred, so ~4.5 px outside the shape) of white border (about 3-4 px on screen at the card's die sizes)
+  g.save(); g.translate(x - s / 2, y - s / 2); g.scale(u, u); g.lineJoin = 'round';
+  g.save(); g.translate(0, 5 / u); g.lineWidth = white; g.strokeStyle = '#3a0a0688'; g.stroke(p); g.restore(); // shadow under the stamp
+  g.lineWidth = white; g.strokeStyle = '#fffdf6'; g.stroke(p); g.fillStyle = col; g.fill(p);
+  g.save(); g.clip(p); g.lineWidth = 6 / u; g.translate(0, 3 / u); g.strokeStyle = '#0000004d'; g.stroke(p); g.translate(0, -6 / u); g.strokeStyle = '#ffffff66'; g.stroke(p); g.restore(); // inner bevel
+  g.restore(); };
 // atlas: one square cell per face; every face carries its own label (number, attack/block symbol, bonus icons) so the solid reads
 // coherently from any angle. faces[label-1] = { v, c 'r'|'b', icons }.
 function paintFace(g, poly, fi, f, stone, cell, Hm) {
@@ -51,7 +52,7 @@ function paintFace(g, poly, fi, f, stone, cell, Hm) {
   const tg = g.createLinearGradient(0, lift - fs / 2, 0, lift + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, lift);
   // the attack starburst or block shield, always first and drawn in ivory (or ink) so shape alone tells them apart; bonus icons follow
   const big = poly.sides >= 8 ? 1.35 : 1; const is = inR * (marks.length > 2 ? 0.5 : 0.62) * big;
-  marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.24, lift + fs * .55 + is * .5, is));
+  marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.22, lift + fs * .55 + is * .5, is));
 }
 function atlas(poly, faces, tone, stone, cell = 512) {
   const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });

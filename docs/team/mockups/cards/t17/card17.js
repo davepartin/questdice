@@ -40,7 +40,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
     const cover = !locked ? '' : avail
       ? `<div class="cov tok"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Uncover d${from} → d${s}</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">+${rows[s].length} faces · no refund · sell stays ${d.sell}</span></div>`
       : `<div class="cov tok off"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Locked · buy d${from} first</small></span><span class="cp"><i class="lock"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">Unavailable until d${from} is uncovered</span></div>`;
-    const info = locked ? '' : `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : `bought · ${STEP_PRICE[s]} gold`}</small><small>avg hit ${avgOf(s)}</small></span>`;
+    const info = `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : `bought · ${STEP_PRICE[s]} gold`}</small><small>avg hit ${avgOf(s)}</small></span>`;
     return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('');
   const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
