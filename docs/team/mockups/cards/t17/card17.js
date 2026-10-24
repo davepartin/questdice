@@ -47,7 +47,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const sq = slot ? `<div class="eq on"><div class="well"><img class="cur" src="${dieImage(size, open.map(face), size, { px: 360, view: 'slot', stone })}" alt="d${size} die resting in its socket"></div>
       <span class="loc">${GRID.map((g, i) => `<i class="${i === gi ? 'me' : ''}"></i>`).join('')}</span><span class="cap">${SLOTWORD[slot] || slot}</span><span class="pv">d${size} · preview face</span></div>`
     : `<div class="eq off"><div class="well"><span>EMPTY</span></div><span class="cap">Not equipped</span><span class="pv">in pack</span></div>`;
-  el.innerHTML = `<div class="art17">${win.outerHTML}${sq}<div class="chip"><span class="tier">${d.metal}</span><span>SIZE d${size}</span></div><div class="sell"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></div></div>
+  el.innerHTML = `<div class="art17">${win.outerHTML}${sq}<button type="button" class="sell" aria-haspopup="dialog" title="Sell this weapon (asks to confirm)"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></button></div>
 <img class="fr17" src="frame-t17.webp" alt="">
 <div class="title17"><span>${d.metal} ${d.name}</span></div>
 <div class="dice17">${body}</div>
@@ -63,6 +63,16 @@ ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[
         nx.querySelector('.cp').innerHTML = `<i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small>`; } }, { once: true });
     return true; };
   el.addEventListener('click', (e) => { if (e.target.closest('.cov.tok:not(.off)')) el.unlock(); });
+  // rev 8 (Dave): the Sell pill is a button and never sells on one tap: it opens a confirm step, Cancel is the default and primary
+  const nm = `${d.metal} ${d.name}`;
+  const ask = () => { if (el.querySelector('.sellq')) return; const q = document.createElement('div'); q.className = 'sellq'; q.setAttribute('role', 'alertdialog'); q.setAttribute('aria-modal', 'true');
+    q.innerHTML = `<div class="box"><b>Sell ${nm} for <i class="coin"></i>${d.sell} gold?</b><small>This can't be undone.${size > 4 ? ` Its d${size} upgrade is lost.` : ''}</small>
+      <div class="bt"><button type="button" class="no">Cancel</button><button type="button" class="yes">Sell</button></div></div>`;
+    el.append(q); const close = () => q.remove(); q.querySelector('.no').onclick = close; q.onclick = (e) => { if (e.target === q) close(); };
+    q.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    q.querySelector('.yes').onclick = () => { q.querySelector('.box').innerHTML = `<b>Sold (mockup: nothing happens)</b>`; setTimeout(close, 900); };
+    q.querySelector('.no').focus(); };
+  el.querySelector('.sell').addEventListener('click', ask); el.ask = ask;
   el.dataset.kinds = kinds.join(',') || 'none'; el.dataset.shown = JSON.stringify(shown);
   return el;
 }

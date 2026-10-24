@@ -100,3 +100,15 @@ html,body{margin:0;background:#07080c}
 
 /* rev 7: the slot die is drawn whole (camera pulled back in dice3d.js) and centred in the well, never cropped */
 .eq.on .well{overflow:visible}.eq.on .well img{width:112%;margin-top:-4%}
+
+/* rev 8: no metal/size chip on the art; the Sell pill is a real button with a confirmation step */
+button.sell{border:0;cursor:pointer;font-family:Oxanium;box-shadow:inset 0 0 0 .35cqi #e0b86acc,0 .5cqi 1cqi #000c;padding:0 2.4cqi 0 2cqi}
+button.sell::after{content:'';width:0;height:0;border-left:1cqi solid #e0b86a;border-top:.8cqi solid transparent;border-bottom:.8cqi solid transparent;margin-left:.4cqi}
+button.sell:hover,button.sell:focus-visible{outline:.4cqi solid #ffd98a;outline-offset:.3cqi}
+.sellq{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:#0008;border-radius:3cqi}
+.sellq .box{width:72%;box-sizing:border-box;padding:4cqi;border-radius:2.4cqi;text-align:center;background:linear-gradient(180deg,#2c1f14,#150d07);box-shadow:inset 0 0 0 .4cqi #c9a068,0 2cqi 4cqi #000c;display:flex;flex-direction:column;gap:2.2cqi;font-family:Oxanium}
+.sellq b{font:800 4.4cqi/1.25 Oxanium;color:#f2dcb0}.sellq b .coin{margin:0 .8cqi;vertical-align:-.3cqi}.sellq small{font:700 3cqi/1.3 Oxanium;color:#d8b880}
+.sellq .bt{display:flex;gap:2.4cqi;justify-content:center;margin-top:1cqi}
+.sellq button{font:800 3.8cqi/1 Oxanium;letter-spacing:.06em;padding:2.4cqi 0;flex:1;border-radius:99px;cursor:pointer;border:0}
+.sellq .no{background:linear-gradient(180deg,#ffe6a8,#e0b45a);color:#2a1a0a;box-shadow:0 0 0 .5cqi #fff4,0 .6cqi 0 #7a5420}
+.sellq .yes{background:transparent;color:#ff6a5a;box-shadow:inset 0 0 0 .4cqi #d8322a}
