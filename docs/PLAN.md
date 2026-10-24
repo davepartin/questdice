@@ -1421,3 +1421,6 @@ T17 isolation step 1, 24 October (build 20261024ns1, no gameplay change): every 
 
 
 24 October 2026, Director: Recorded Dave's objective naming decision in T05 brief and BOARD: two objective decks, Objectives (public/discussable) and Secret Objectives (private). Reuse approved Quest Dice backs with distinct emblem and words; no separate Wager deck. Existing rule categories may remain internal, with front-of-card stakes/rewards explicit. Preserve visibility, reveal timing, saved IDs and dealing/payout rules. Documentation only, no game changes or new verification claimed.
+
+
+24 October 2026, Director: Recorded Dave/Grok four-metal Dagger exploration in T17 and BOARD. More Bronze blanks, graduated special icons and exceptional Diamond power remain proposals. Same-size comparison requested; absent bonus icons versus blank combination numbers distinguished. Decoupling numbered faces from weapon damage would require explicit rules work. Permanent Diamond needs bounded sustained power, not rarity alone. Docs only; no new balance approval or runtime verification.
