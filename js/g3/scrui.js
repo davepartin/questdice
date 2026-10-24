@@ -17,6 +17,7 @@ import { ico, CLASS_ICON } from './icons.js';
 import { petImg } from './pets.js';
 import { showTrial, statBadge } from './trialui.js';
 import * as DAY from '../daily.js';
+import { reportRow } from './reportui.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
 import { campDie, campFaceList } from './campart.js';
@@ -920,7 +921,7 @@ export function victory(first) {
   mountAs(`victory ${animate ? 'anim' : ''}`, h('div', { class: 'sx-split sx-victory' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' },
       h('header', { class: 'vc-head' }, eyebrow(Rw.quest.name), h('h1', { class: 'vc-title' }, 'Victory'), h('p', {}, Rw.repeat ? SV.repeatNote(Rw.share) : 'The way is open. Go on, then.'), flourish()),
-      note, shattered, ...worn, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot,
+      note, shattered, ...worn, rewards, charmPanel, diamondPanel, perks, lootHint, Rw.repeat ? null : loot, reportRow(),
       h('div', { class: 'sx-cta' }, btn(ready ? 'To camp' : 'Choose a perk and spoils to continue', () => X.showCamp({ fromBoard: false }), { big: true, icon: ready ? 'tent' : null, disabled: !ready, cls: 'wide' })))));
   lay('victory'); SCR.victory(hero, Rw.quest?.place || S.quest?.place);
   // fill / count animations
@@ -945,7 +946,7 @@ export function defeat(retreat, loss) {
         ...(S.broken || []).map((l) => h('p', { class: 'dm-line worn' }, ico('sword'), l)),
         h('p', { class: 'muted' }, 'Everything that makes you stronger is still yours.'),
         h('ul', { class: 'df-keep' }, lines.map(([k, v, ic]) => h('li', {}, ico(ic), h('span', {}, k), h('b', {}, v), ico('check', 'ok'))))),
-      h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'),
+      h('p', { class: 'df-tip' }, 'Rest at camp, spend your gold on a bigger die, then walk the road again. The hill will wait. Hills always do.'), reportRow(),
       h('div', { class: 'sx-cta' }, btn('Return to camp', () => X.showCamp({ fromBoard: false }), { big: true, icon: 'tent', cls: 'wide' })))));
   lay('defeat'); SCR.defeat(hero, S.quest?.place);
 }

@@ -36,3 +36,10 @@ export const strip = (d) => `<div class="strip13">${d.faces.map((f) => `<i class
 export const chips = (d) => `<span class="ch13 m-${d.metal.toLowerCase()}">${esc(d.metal)}</span><span class="ch13">d${d.size}</span><span class="ch13">${esc(d.wear)}</span>`;
 export const price = (d) => weaponValue({ id: d.id, rarity: RARITY.indexOf(d.metal), size: d.size });
 export { BAG_MAX, WEAPONS };
+
+// T16: faces drawn by the game's own die-face renderer (dieface.js), in the die's real shape. Under each face: the attack starburst or
+// block shield (shape, not only colour) and the bonus icons from weaponFaces(), since the small corner pips do not survive at card size.
+export async function weaponCardDie(d, money) { // T16b: Dave's progression layout (shapes.js); all faces from weaponFaces()
+  const { facesHTML, injectDefs } = await import('./shapes.js'); injectDefs();
+  const c = weaponCard(d, money); c.querySelector('.faces13').outerHTML = facesHTML(d.faces); return c;
+}

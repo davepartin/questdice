@@ -1138,3 +1138,20 @@ body.sx .modal-card .slot-sheet { max-height: none; overflow: visible; padding-t
 .sx-perk.pv .pk-change { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; }
 .sx-perk.pv .pk-change b, .sx-perk.pv .pk-change .ico { flex: none !important; width: auto; }
 .sx-perk.pv .pk-note { flex: 1 1 100%; text-align: center; }
+
+/* Share battle report (T10): one quiet secondary button under the result screens, and the sheet it opens */
+.br-row { display: flex; flex-direction: column; align-items: center; gap: .3rem; margin: .2rem 0 .1rem; text-align: center; }
+.br-open { min-height: 40px; padding: .35rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 214, 140, .3); background: rgba(10, 12, 24, .5); color: #e8dcc0; font-family: var(--font-display); font-weight: 700; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.br-open:hover, .br-open:focus-visible { border-color: rgba(255, 214, 140, .6); color: #fff; }
+.br-row small { max-width: 24rem; font-size: .78rem; line-height: 1.35; color: #a99f8c; }
+.br-sheet { display: flex; flex-direction: column; gap: .6rem; max-height: min(calc(88dvh - 2.4rem), 40rem); overflow: hidden; }
+.br-main { display: flex; flex-direction: column; gap: .6rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.br-sheet > h2, .br-sheet > .br-note, .br-actions, .br-sheet > .row { flex: none; }
+.br-sheet h2 { margin: 0; font-size: 1.25rem; } .br-note { margin: 0; font-size: .85rem; }
+.br-list { display: flex; flex-direction: column; gap: .35rem; }
+.br-pick { display: flex; flex-direction: column; align-items: flex-start; gap: .05rem; width: 100%; padding: .45rem .7rem; border-radius: 8px; border: 1px solid rgba(255, 214, 140, .2); background: rgba(8, 10, 20, .55); color: #e8dcc0; text-align: left; cursor: pointer; }
+.br-pick b { font-size: .92rem; font-weight: 600; } .br-pick small { font-size: .76rem; color: #a99f8c; }
+.br-pick.on { border-color: rgba(122, 255, 176, .55); background: rgba(90, 255, 150, .08); }
+.br-preview { flex: none; min-height: 5rem; max-height: 12rem; overflow: auto; margin: 0; padding: .55rem .65rem; border-radius: 8px; border: 1px solid rgba(255, 214, 140, .16); background: rgba(2, 3, 8, .6); color: #cfc6b2; font: 400 .74rem/1.4 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.br-actions { display: flex; flex-wrap: wrap; gap: .5rem; } .br-actions .btn { flex: 1 1 6rem; }
+@media (max-height: 720px) { .br-preview { min-height: 3.5rem; max-height: 5.2rem; } .br-sheet { gap: .4rem; } .br-pick { padding: .32rem .6rem; } .br-pick b { font-size: .85rem; } .br-actions .btn { min-height: 40px; } }

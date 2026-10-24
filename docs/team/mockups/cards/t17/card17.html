@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T17 weapon card · size uncovering</title>
+<script type="importmap">{"imports":{"three":"../../../../../vendor/three/build/three.module.js","three/addons/":"../../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared.css"><link rel="stylesheet" href="../card.css"><link rel="stylesheet" href="card17.css"></head><body>
+<main class="pg"><div id="slot"></div></main>
+<script type="module">
+import { card17 } from './card17.js';
+const p = new URLSearchParams(location.search); await document.fonts.load('800 40px Oxanium'); await document.fonts.load('700 40px "Cormorant Garamond"');
+const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE');
+slot.append(c); console.log('nested', c.dataset.nested, 'kinds', c.dataset.kinds);
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); document.body.dataset.ready = 1;
+</script></body></html>

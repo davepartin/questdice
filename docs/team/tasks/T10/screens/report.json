@@ -1,0 +1,186 @@
+[
+ {
+  "tag": "390x664",
+  "defeatRow": {
+   "rowText": "SHARE BATTLE REPORT | Stored on this device only (the last three fights). Shared only when you choose.",
+   "rowVisibleInScroll": true,
+   "ctaText": "RETURN TO CAMP",
+   "sideScrolls": true
+  },
+  "sheet": {
+   "buttons": [
+    "COPY",
+    "DOWNLOAD"
+   ],
+   "fits": true,
+   "cardH": 382,
+   "vh": 664,
+   "previewLines": 15,
+   "closeInView": true,
+   "scrolls": false
+  },
+  "exp": {
+   "clipboardChars": 6436,
+   "clipboardHead": "QUEST DICE BATTLE REPORT | Defeat · Act II step 6 · Trouble at Mourner’s Row | Build 20261024report2 · solo · normal · defeat after 1 round",
+   "download": "questdice-battle-report-2026-10-24-defeat.txt",
+   "downloadBytes": 6463
+  },
+  "store": {
+   "keyChars": 12183,
+   "count": 3,
+   "each": [
+    {
+     "result": "victory",
+     "rounds": 1,
+     "chars": 3560
+    },
+    {
+     "result": "defeat",
+     "rounds": 1,
+     "chars": 4833
+    },
+    {
+     "result": "victory",
+     "rounds": 1,
+     "chars": 3786
+    }
+   ],
+   "heroSaveMentionsReport": false,
+   "keys": [
+    "questdice.battlereports"
+   ]
+  },
+  "failCheck": {
+   "closeInView": true,
+   "pickerTitles": [
+    "Defeat · Act II step 6 · Skirmish near Mourner’s Row",
+    "Victory · Act II step 6 · Showdown at Mourner’s Row",
+    "Defeat · Act II step 6 · Trouble at Mourner’s Row"
+   ],
+   "pickerFirstId": "mvlqjdx67jaw",
+   "firstIsStored": false,
+   "storedIds": 3,
+   "pickerCount": 3
+  },
+  "afterReload": 3
+ },
+ {
+  "tag": "390x664_native",
+  "defeatRow": {
+   "rowText": "SHARE BATTLE REPORT | Stored on this device only (the last three fights). Shared only when you choose.",
+   "rowVisibleInScroll": true,
+   "ctaText": "RETURN TO CAMP",
+   "sideScrolls": true
+  },
+  "sheet": {
+   "buttons": [
+    "SHARE",
+    "COPY",
+    "DOWNLOAD"
+   ],
+   "fits": true,
+   "cardH": 434,
+   "vh": 664,
+   "previewLines": 15,
+   "closeInView": true,
+   "scrolls": false
+  },
+  "exp": {
+   "shared": [
+    {
+     "title": "Quest Dice battle report: Defeat · Act II step 6 · Trouble at Mourner’s Row",
+     "files": [
+      {
+       "name": "questdice-battle-report-2026-10-24-defeat.txt",
+       "size": 6435,
+       "type": "text/plain"
+      }
+     ],
+     "text": "QUEST DICE BATTLE REPORT\nDefeat · Act II step 6 · Trouble at Mourner’s Row\nBuild"
+    }
+   ]
+  },
+  "store": {
+   "keyChars": 4804,
+   "count": 1,
+   "each": [
+    {
+     "result": "defeat",
+     "rounds": 1,
+     "chars": 4802
+    }
+   ],
+   "heroSaveMentionsReport": false,
+   "keys": [
+    "questdice.battlereports"
+   ]
+  },
+  "failCheck": null,
+  "afterReload": 1
+ },
+ {
+  "tag": "375x548",
+  "defeatRow": {
+   "rowText": "SHARE BATTLE REPORT | Stored on this device only (the last three fights). Shared only when you choose.",
+   "rowVisibleInScroll": true,
+   "ctaText": "RETURN TO CAMP",
+   "sideScrolls": true
+  },
+  "sheet": {
+   "buttons": [
+    "COPY",
+    "DOWNLOAD"
+   ],
+   "fits": true,
+   "cardH": 382,
+   "vh": 548,
+   "previewLines": 15,
+   "closeInView": true,
+   "scrolls": false
+  },
+  "exp": {
+   "clipboardChars": 6399,
+   "clipboardHead": "QUEST DICE BATTLE REPORT | Defeat · Act II step 6 · Trouble at Mourner’s Row | Build 20261024report2 · solo · normal · defeat after 1 round",
+   "download": "questdice-battle-report-2026-10-24-defeat.txt",
+   "downloadBytes": 6426
+  },
+  "store": {
+   "keyChars": 11947,
+   "count": 3,
+   "each": [
+    {
+     "result": "victory",
+     "rounds": 1,
+     "chars": 3533
+    },
+    {
+     "result": "defeat",
+     "rounds": 1,
+     "chars": 4808
+    },
+    {
+     "result": "victory",
+     "rounds": 1,
+     "chars": 3602
+    }
+   ],
+   "heroSaveMentionsReport": false,
+   "keys": [
+    "questdice.battlereports"
+   ]
+  },
+  "failCheck": {
+   "closeInView": true,
+   "pickerTitles": [
+    "Defeat · Act II step 6 · Skirmish near Mourner’s Row",
+    "Victory · Act II step 6 · Showdown at Mourner’s Row",
+    "Defeat · Act II step 6 · Trouble at Mourner’s Row"
+   ],
+   "pickerFirstId": "mvlqjy4grbai",
+   "firstIsStored": false,
+   "storedIds": 3,
+   "pickerCount": 3
+  },
+  "afterReload": 3
+ }
+]
