@@ -57,7 +57,9 @@ export function secretData(id, act = 2) {
   const chips = d.kind === 'rival' ? [d.doubles ? `Win: double gold (up to ${2 * G})` : `Win ${G} gold`]
     : d.kind === 'bribe' && d.mode === 'offer' ? [`Win ${2 * G} gold`, `Fail: pay ${Math.round(G / 2)}`]
       : d.kind === 'bribe' ? [`Win ${G} gold`] : [`Win ${r5((d.pay || 1) * G)} gold`];
-  return { id, name: d.name, kind: d.kind, mode: d.mode, flavor: d.flavor, rule: d.rule.replace('{spare}', 'that monster'), chips, win: 2 * G, fail: Math.round(G / 2) };
+  // T13 wager audit (WAGERS.md): an accepted offer pays 2G if it is done AND the team wins, 0 if the team wins without it, and costs
+  // G/2 if the team loses, done or not (secrets.js:201). The old "Fail: pay G/2" chip was wrong for a win without the deed.
+  return { id, name: d.name, kind: d.kind, mode: d.mode, flavor: d.flavor, rule: d.rule.replace('{spare}', 'that monster'), chips, win: 2 * G, fail: Math.round(G / 2), honor: [r5(G / 4), r5(G / 2)] };
 }
 
 const LABEL = { weapon: 'Weapon', objective: 'Bonus Challenge', 'secret-objective': 'Secret Objective', wager: 'Wager' };
@@ -70,7 +72,7 @@ export function renderCard(kind, d) {
     <div class="sell">${svg('gold')}${d.sell}</div></article>`);
   const isObj = kind === 'objective';
   const stakes = isObj ? `<div class="stk"><div><small>You bet</small><b>${d.stake}</b></div><div><small>You get back</small><b>${d.back}</b></div><div class="net"><small>Net gain</small><b>+${d.net}</b></div></div>`
-    : kind === 'wager' ? `<div class="stk two"><div class="net"><small>Pull it off</small><b>+${d.win}</b></div><div class="bad"><small>Fail</small><b>−${d.fail}</b></div></div>`
+    : kind === 'wager' ? `<div class="stk"><div class="net"><small>Done, team wins</small><b>+${d.win}</b></div><div><small>Not done, team wins</small><b>0</b></div><div class="bad"><small>Team loses</small><b>−${d.fail}</b></div></div>`
       : `<div class="chips">${d.chips.map((c) => `<span>${esc(c)}</span>`).join('')}</div>`;
   const HEART = new URL('../../../../assets/tutorial/heart-6.png', import.meta.url).href;
   const art = kind === 'secret-objective' ? `<img class="art obj heart" src="${HEART}" alt="">` : d.id === 'nopotion' ? `<img class="art obj" src="${OLD}potion.webp" alt=""><i class="nogo"></i>` : `<div class="emb">${svg(isObj ? 'star' : 'gold')}</div>`;

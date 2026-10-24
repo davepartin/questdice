@@ -28,7 +28,7 @@ Every word, number and die face is live HTML.
 | Objective bet / return | `BONUS_GOALS`, `bonusStake`, `bonusG`, js/secrets.js:243-256 |
 | Secret objective and wager prizes | `CARDS` and `gOf` in js/secrets.js. The sums mirror `rewardChips` (secrets.js:146), which is not exported; Claude should export it and drop the copy |
 
-"Wager" is my reading: the offered bribes (win 2G / fail pay G/2). Confirm with the director.
+"Wager" means the offered bribes. See WAGERS.md (T13) for the real payouts: the G/2 loss applies only when the team loses.
 
 ## Proof that stats flow through (temp copy, not committed)
 I changed three lines in a copy of the repo and re-rendered. No art was touched.
@@ -49,3 +49,31 @@ I changed three lines in a copy of the repo and re-rendered. No art was touched.
 3. Add `<id>: '<id>'` to `WEAPON_ART`.
 
 The faces, metal, wear, price and corner accents then come from the data. Until the art exists, the card shows a labelled placeholder silhouette. A legendary reuses its `model`'s art automatically.
+
+## T13: weapon card prototype (builds on the cards above; nothing is redesigned)
+Every T13 page imports `roster.js` first. It calls the game's own `applyRelease()` (js/release.js), so faces, names and pools are the **released** game's. See ROSTER.md.
+
+| File | What |
+|---|---|
+| `ROSTER.md` | Active / Legacy / Experiment / Proposed, with file:line |
+| `WAGERS.md` | Each wager's real stake, return and failure cost, by act |
+| `roster.js` | `applyRelease()` plus `statusOf(id)`. The gallery uses it to split Active from Legacy. |
+| `t13.js`, `t13.css` | `weaponCard(d)` is `renderCard('weapon', d)` with a d10-ready face grid and a metal treatment (engraved metal name, a metal ring over the frame). It also exports the compact views: `icon` (64/128 px art), `strip` (all faces in one row), `chips` and `price`. |
+| `weapon-d10.html` | **The d10 card:** Silver Dagger d10. `?id=&metal=&size=&left=` |
+| `inventory.html` | One phone page: the same card in Spoils, the hands and pack rows, the Camp Store shelf and the Ranger's paired Arrows + Bow |
+| `upgrade-concept.html` | CONCEPT: covered upgrade slots, prices unspecified, kept off the card face |
+| `back.html` | One card back at phone size (`?kind=wager`) |
+
+How a face reads, matching the dice (js/gfx/dice/dice.js:37-38):
+- `+N`: a blank is `+0`, because it still sends the hand's number.
+- Attack and block are told apart by shape **and** word: the red starburst with ATK, or the blue shield with BLK.
+- Blanks are hatched.
+- Bonus symbols are repeated as on the die: pierce 2 shows two arrows.
+- Repeats are shown face by face; all 10 faces are on the card.
+
+### Paired equipment (Bow and Arrows): follow current behaviour
+- In the released game, Bow and Arrows are **two separate one-handed weapons**: Arrows in the left hand, Bow in the right (data.js:291-292, 297). Each has its own `left` counter.
+- `wearHands` takes one battle off each hand's weapon (engine.js:217-226). The two-hander "counts once" path (engine.js:222-223) applies only to legacy two-handers.
+- The cards show exactly that: two cards, two counters. **Two visual cards must not create two wear events.** A card is a picture of an item. It must never call wear itself, and showing the pair must not add a decrement beyond what `wearHands` already does.
+- **Claude:** please verify wear against the equipment model. Today a Ranger's pair loses two item-battles per fight (one each), the same as any two one-handers. Whether that is intended for a pair is a gameplay decision for Dave and Astra, not a card decision.
+- The prototype does not show a permanent Bow, arrow restocking, a strength lock, carry limits, Diamond changes or returning two-handers.

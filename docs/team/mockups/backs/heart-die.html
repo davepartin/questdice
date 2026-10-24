@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>CONCEPT · Wager back with the Heart die (T13)</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@800&display=swap" rel="stylesheet">
+<!-- The Wager back (approved 23 Oct) with its two generic pip dice replaced by the game's Heart die (T13, Astra: three visible faces,
+coherent cube geometry, the game's real number-and-symbol arrangement). Faces from js/gfx/dice/dice.js:45 (1 heal, 2 pierce, 3 magic,
+4 gold, 5 block, 6 attack) and the cube layout from js/gfx/dice/poly.js:135 (1 +Y, 2 +Z, 3 +X, 4 -X, 5 -Z, 6 -Y; opposite pairs
+1/6, 2/5, 3/4). Seen with 6 toward us and 3 on the left (as in assets/tutorial/heart-6.png), the third visible face is 5 on top.
+The die is CSS 3D, so the cube is a true cube; this page is rendered once to back-wager.webp. -->
+<style>html,body{margin:0;background:#000}#back{position:relative;width:864px;height:1152px;background:url(heart-die-base.webp) 0 0/100% 100%;overflow:hidden}
+.glow{position:absolute;left:432px;top:672px;width:340px;height:120px;transform:translate(-50%,-10%);background:radial-gradient(50% 50% at 50% 50%,#000c,#0000);filter:blur(6px)}
+.scene{position:absolute;left:432px;top:668px;width:0;height:0;perspective:1400px}
+.cube{position:absolute;--s:138px;width:var(--s);height:var(--s);left:calc(var(--s) / -2);top:calc(var(--s) / -2);transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(34deg)}
+.f{position:absolute;inset:0;box-sizing:border-box;border-radius:14px;background:radial-gradient(90% 90% at 40% 30%,#1b1a20,#060608);
+ border:7px solid #c8901e;box-shadow:inset 0 0 0 2px #ffe08a99,inset 0 0 0 9px #0b0b0e,inset 0 0 18px #000;display:grid;place-items:center;backface-visibility:hidden}
+.f svg{width:78%;height:78%;grid-area:1/1}.f b{grid-area:1/1;font:800 60px/1 Oxanium,sans-serif;color:#f6e8d6;-webkit-text-stroke:5px #2a1a14;paint-order:stroke fill;text-shadow:0 2px 0 #0008;position:relative}
+.f b u{position:absolute;left:18%;right:18%;bottom:-2px;height:6px;background:#f6e8d6;border:2px solid #2a1a14;border-radius:2px;text-decoration:none}
+.front{transform:translateZ(calc(var(--s) / 2))}
+.left{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2));filter:brightness(.62)}
+.top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2));filter:brightness(.9)}
+.right,.back,.bottom{display:none}
+</style></head><body><div id="back"><div class="glow"></div><div class="scene"><div class="cube">
+<div class="f front"><svg viewBox="0 0 24 24"><path fill="#e8343c" stroke="#7a0e14" stroke-width=".5" d="M12 1 L14.4 6.3 L19.8 4.2 L17.7 9.6 L23 12 L17.7 14.4 L19.8 19.8 L14.4 17.7 L12 23 L9.6 17.7 L4.2 19.8 L6.3 14.4 L1 12 L6.3 9.6 L4.2 4.2 L9.6 6.3 Z"/></svg><b>6<u></u></b></div>
+<div class="f left"><svg viewBox="0 0 24 24"><path fill="#a24ae8" stroke="#3a1060" stroke-width=".5" d="M12 2.4 L22.2 20.6 H1.8 Z"/></svg><b style="top:8px">3</b></div>
+<div class="f top"><svg viewBox="0 0 24 24"><path fill="#2f8fd8" stroke="#0a2a48" stroke-width=".5" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/></svg><b>5</b></div>
+</div></div></div><script>document.fonts.ready.then(()=>document.body.dataset.ready=1)</script></body></html>

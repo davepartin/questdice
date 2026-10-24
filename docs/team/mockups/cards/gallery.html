@@ -2,21 +2,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="card.css">
 <style>body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter;padding:18px}h1{font:800 16px Oxanium;letter-spacing:.2em;color:#e0574a;margin:0}
-h2{font:700 24px 'Cormorant Garamond';margin:22px 0 10px}p.n{margin:4px 0 0;color:#a99c86;font-size:13px}.grid{display:flex;flex-wrap:wrap;gap:14px;--w:210px}</style></head><body>
+h2{font:700 24px 'Cormorant Garamond';margin:22px 0 10px}p.n{margin:4px 0 0;color:#a99c86;font-size:13px}.grid{display:flex;flex-wrap:wrap;gap:14px;--w:210px}.qc .tag{left:4%;top:44%;padding:2px 6px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.14em;background:#1f6b35;color:#fff;z-index:3}.legacy .qc .tag{background:#6b4a1f}.legacy .qc{filter:grayscale(.65) brightness(.8)}</style></head><body>
 <h1>CONCEPT · CARD GALLERY · every card rendered live from js/data.js, js/engine.js, js/secrets.js</h1><p class="n" id="stamp"></p>
 <h2>Backs</h2><div class="grid" id="backs"></div>
-<h2>Weapons · every type × metal (shown at d6)</h2><div class="grid" id="weapons"></div>
-<h2>Legendary weapons</h2><div class="grid" id="legend"></div>
+<h2>Active weapons · released game, every type × metal (shown at d6)</h2><p class="n">Loot, Camp Store, class starting weapons and the Diamond pool after applyRelease() (js/release.js:15). See ROSTER.md.</p><div class="grid" id="weapons"></div>
+<h2>Active legendary weapons</h2><div class="grid" id="legend"></div>
+<h2>Legacy · old saves only (nothing deals these any more)</h2><p class="n">Kept so old heroes still load (js/save.js:95-97). Not part of the roster; do not paint new art for them.</p><div class="grid legacy" id="legacy"></div>
 <h2>Objectives · Bonus Goals (Act II stakes)</h2><div class="grid" id="obj"></div>
 <h2>Secret Objectives (Act II)</h2><div class="grid" id="sec"></div>
-<h2>Wagers (offered bribes, Act II)</h2><div class="grid" id="wag"></div>
+<h2>Wagers (offered bribes, Act II) · payouts per WAGERS.md</h2><div class="grid" id="wag"></div>
 <script type="module">
+import { statusOf } from './roster.js'; // applyRelease() first, so the faces are the released ones
 import { renderCard, renderBack, weaponData, objectiveData, secretData, ALL } from './card-template.js';
 const q = (id) => document.getElementById(id); const p = new URLSearchParams(location.search); const size = +(p.get('size') || 6);
 for (const k of ['weapon', 'objective', 'secret-objective', 'wager']) q('backs').append(renderBack(k));
-for (const [id, w] of Object.entries(ALL.WEAPONS)) { if (id === 'fists') continue;
-  if (w.legendary) q('legend').append(renderCard('weapon', weaponData(id, 2, size)));
-  else for (const r of [0, 1, 2]) q('weapons').append(renderCard('weapon', weaponData(id, r, size))); }
+const tag = (c, t) => { const s = document.createElement('div'); s.className = 'tag'; s.textContent = t; c.append(s); return c; };
+for (const [id, w] of Object.entries(ALL.WEAPONS)) { const st = statusOf(id); if (st === 'hidden') continue;
+  const box = st === 'legacy' ? 'legacy' : w.legendary ? 'legend' : 'weapons';
+  if (w.legendary) q(box).append(tag(renderCard('weapon', weaponData(id, 2, size)), st === 'legacy' ? 'LEGACY' : 'ACTIVE'));
+  else for (const r of [0, 1, 2]) q(box).append(tag(renderCard('weapon', weaponData(id, r, size)), st === 'legacy' ? 'LEGACY' : 'ACTIVE')); }
 for (const id of Object.keys(ALL.BONUS_GOALS)) q('obj').append(renderCard('objective', objectiveData(id)));
 for (const [id, c] of Object.entries(ALL.CARDS)) q(c.kind === 'bribe' && c.mode === 'offer' ? 'wag' : 'sec').append(renderCard(c.kind === 'bribe' && c.mode === 'offer' ? 'wager' : 'secret-objective', secretData(id)));
 q('stamp').textContent = `${document.querySelectorAll('.qc').length} cards rendered from code, no per-card images.`;
