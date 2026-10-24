@@ -1,0 +1,449 @@
+{
+ "info": {
+  "build": "20261024ns1",
+  "rules": {
+   "pierce": "all",
+   "frost": "strength",
+   "fire": "full"
+  },
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36"
+ },
+ "results": {
+  "normal": [
+   {
+    "round": 1,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     60
+    ],
+    "hp": [
+     [
+      "Guard Goblin",
+      55,
+      false
+     ]
+    ],
+    "name": [
+     "Guard Goblin"
+    ],
+    "T": {
+     "atk": 8,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal"
+    ]
+   }
+  ],
+  "pierce": [
+   {
+    "round": 1,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     60
+    ],
+    "hp": [
+     [
+      "Guard Goblin",
+      54,
+      false
+     ]
+    ],
+    "name": [
+     "Guard Goblin"
+    ],
+    "T": {
+     "atk": 0,
+     "pierce": 6
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal",
+     "Piercing arrow: 6 pierce"
+    ]
+   }
+  ],
+  "fireGroup": [
+   {
+    "round": 1,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     60,
+     60,
+     60
+    ],
+    "hp": [
+     [
+      "Chosen Goblin",
+      57,
+      false
+     ],
+     [
+      "Open Goblin",
+      56,
+      false
+     ],
+     [
+      "Guarding Goblin",
+      59,
+      false
+     ]
+    ],
+    "name": [
+     "Chosen Goblin",
+     "Open Goblin",
+     "Guarding Goblin"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 4,
+    "frost": 0,
+    "splashed": [
+     4,
+     1
+    ],
+    "acts": [
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ],
+     [
+      "Wait",
+      0,
+      false,
+      false
+     ],
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal",
+     "Fire arrow: 4 to every other monster"
+    ]
+   }
+  ],
+  "fireLone": [
+   {
+    "round": 1,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     200
+    ],
+    "hp": [
+     [
+      "Lone Boss",
+      197,
+      false
+     ]
+    ],
+    "name": [
+     "Lone Boss"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 4,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal",
+     "Fire arrow: 4 to every other monster"
+    ]
+   }
+  ],
+  "fireNumbered": [
+   {
+    "round": 1,
+    "dice": 3,
+    "hand": 4,
+    "hpBefore": [
+     60,
+     60,
+     60
+    ],
+    "hp": [
+     [
+      "Chosen Goblin",
+      57,
+      false
+     ],
+     [
+      "Open Goblin",
+      60,
+      false
+     ],
+     [
+      "Open Goblin Two",
+      60,
+      false
+     ]
+    ],
+    "name": [
+     "Chosen Goblin",
+     "Open Goblin",
+     "Open Goblin Two"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Wing Wall",
+      3,
+      false,
+      false
+     ],
+     [
+      "Wait",
+      0,
+      false,
+      false
+     ],
+     [
+      "Wait",
+      0,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal"
+    ]
+   }
+  ],
+  "frostFirst": [
+   {
+    "round": 1,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     200
+    ],
+    "hp": [
+     [
+      "Ogre",
+      194,
+      false
+     ]
+    ],
+    "name": [
+     "Ogre"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 4,
+    "splashed": [],
+    "acts": [
+     [
+      "Club",
+      8,
+      true,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal",
+     "Frost arrow: the target's next blow is 4 softer"
+    ]
+   }
+  ],
+  "frostNumbered": [
+   {
+    "round": 1,
+    "dice": 3,
+    "hand": 4,
+    "hpBefore": [
+     200
+    ],
+    "hp": [
+     [
+      "Ogre",
+      194,
+      false
+     ]
+    ],
+    "name": [
+     "Ogre"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Club",
+      12,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +4 heal"
+    ]
+   }
+  ],
+  "frostLate": [
+   {
+    "round": 1,
+    "dice": 1,
+    "hand": 4,
+    "hpBefore": [
+     400
+    ],
+    "hp": [
+     [
+      "Ogre",
+      396,
+      false
+     ]
+    ],
+    "name": [
+     "Ogre"
+    ],
+    "T": {
+     "atk": 4,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Club",
+      12,
+      false,
+      false
+     ]
+    ],
+    "notes": [
+     "Heart Boost +6 heal"
+    ]
+   },
+   {
+    "round": 2,
+    "dice": 4,
+    "hand": 4,
+    "hpBefore": [
+     396
+    ],
+    "hp": [
+     [
+      "Ogre",
+      390,
+      true
+     ]
+    ],
+    "name": [
+     "Ogre"
+    ],
+    "T": {
+     "atk": 6,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 4,
+    "splashed": [],
+    "acts": [
+     [
+      "Club",
+      12,
+      false,
+      true
+     ]
+    ],
+    "notes": [
+     "Heart Boost +6 heal",
+     "Frost arrow: the target's next blow is 4 softer"
+    ]
+   },
+   {
+    "round": 3,
+    "dice": 1,
+    "hand": 4,
+    "hpBefore": [
+     390
+    ],
+    "hp": [
+     [
+      "Ogre",
+      386,
+      false
+     ]
+    ],
+    "name": [
+     "Ogre"
+    ],
+    "T": {
+     "atk": 4,
+     "pierce": 0
+    },
+    "fire": 0,
+    "frost": 0,
+    "splashed": [],
+    "acts": [
+     [
+      "Club",
+      8,
+      true,
+      true
+     ]
+    ],
+    "notes": [
+     "Heart Boost +6 heal"
+    ]
+   }
+  ]
+ }
+}

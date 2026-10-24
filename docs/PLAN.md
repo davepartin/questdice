@@ -1424,3 +1424,6 @@ T17 isolation step 1, 24 October (build 20261024ns1, no gameplay change): every 
 
 
 24 October 2026, Director: Recorded Dave/Grok four-metal Dagger exploration in T17 and BOARD. More Bronze blanks, graduated special icons and exceptional Diamond power remain proposals. Same-size comparison requested; absent bonus icons versus blank combination numbers distinguished. Decoupling numbered faces from weapon damage would require explicit rules work. Permanent Diamond needs bounded sustained power, not rarity alone. Docs only; no new balance approval or runtime verification.
+
+## 24 Oct 2026 (Claude): T20 arrow demonstration
+`tools/t20-arrows.mjs` resolves each released ammunition through the real engine with set dice (`b.script.rolls`) and asserts the board brief's numbers; `dev/t20arrows.mjs` and `dev/t20sheet.mjs` drive the real game and make captioned picture sheets (docs/team/tasks/T20-results.md). Finding: the camp ammunition card and the Frost banner still describe the old half-splash and halved-blow rules. No game change.
