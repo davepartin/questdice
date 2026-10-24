@@ -11,9 +11,11 @@ const SIZES = [4, 6, 8, 10];
 // nested faces as measured by Claude's tools/t17-faces.mjs (a proposal, not a rule): the real d4 faces, then for each bigger size the
 // highest-hit faces of today's spread at that size; the row for a size shows the faces that purchase adds (same as that script's ladder table)
 const hit = (f) => f.v + (f.plus || 0); const nb = (f) => (f.plus ? 1 : 0) + Object.keys(f.fx || {}).length;
-const inst = (id, r, s) => E.makeWeapon(id, r, () => 0.5, s);
-export function nested(id, r, s) { const base = E.weaponFaces(inst(id, r, 4)); if (s === 4) return base;
-  return [...base, ...[...E.weaponFaces(inst(id, r, s))].sort((a, b) => hit(b) - hit(a) || nb(b) - nb(a)).slice(0, s - 4)]; }
+// rev 9: faces come from Claude's cumulative ladder, docs/team/tasks/T17-faces.json (PROVISIONAL until Astra accepts it; Diamond is
+// Claude's proposal). Each size's list is an exact prefix of the next, so a row shows the faces that purchase adds.
+export const METALS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
+const T17 = await (await fetch(new URL('../../../tasks/T17-faces.json', import.meta.url))).json();
+export function nested(id, r, s) { return T17[id][METALS[r]][String(s)]; }
 export function ladder(id, r) { let prev = []; const rows = {}; for (const s of SIZES) { const n = nested(id, r, s); rows[s] = n.slice(prev.length); prev = n; } return rows; }
 const FXK = { loot: 'gold' };
 export const iconsOf = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k] || k))];
@@ -27,9 +29,9 @@ const SLOTWORD = { NW: 'Left weapon', NE: 'Right weapon' }; // the tray's two we
 const face = (f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: iconsOf(f) });
 export function card17(id, metal, size, slot, { stone = false } = {}) {
   const rows = ladder(id, metal); const all = SIZES.flatMap((s) => rows[s]); const open = all.slice(0, size);
-  const d = weaponData(id, metal, size); d.sell = weaponData(id, metal, 4).sell; // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
+  const d = weaponData(id, Math.min(metal, 2), size); d.sell = weaponData(id, Math.min(metal, 2), 4).sell; d.metal = METALS[metal]; // Diamond: Gold data + provisional sell // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
   const kinds = bonusKinds(open);
-  const win = renderCard('weapon', d).querySelector('.win');
+  const art = `<img class="art9" src="art/${id}-${d.metal.toLowerCase()}.webp" alt="${d.metal} ${d.name}">`;
   const px = { 4: 44, 6: 45, 8: 50, 10: 52 };
   const next = SIZES[SIZES.indexOf(size) + 1];
   const avgOf = (s) => { const n = nested(id, metal, s); return (n.reduce((a, f) => a + hit(f), 0) / n.length).toFixed(2); };
@@ -38,7 +40,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
       return `<figure class="d17" style="--px:${px[s]}"><img src="${dieImage(s, dieFaces, label, { px: px[s] * 5, stone })}" alt="face ${label}: ${ff.c === 'b' ? 'block' : 'attack'} +${f.v}${ff.icons.length ? ', ' + ff.icons.map((k) => NAME[k]).join(' ') : ''}"><figcaption>${label}<i>${ff.c === 'b' ? 'BLK' : 'ATK'}</i></figcaption></figure>`; }).join('');
     const locked = s > size; const avail = s === next;
     const cover = !locked ? '' : avail
-      ? `<div class="cov tok"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Uncover d${from} → d${s}</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">+${rows[s].length} faces · no refund · sell stays ${d.sell}</span></div>`
+      ? `<div class="cov tok" role="button" tabindex="0" aria-label="Upgrade to d${s} for ${STEP_PRICE[s]} gold"><span class="ct"><b>UPGRADE</b><small>d${from} → d${s} · +${rows[s].length} faces</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span></div>`
       : `<div class="cov tok off"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Locked · buy d${from} first</small></span><span class="cp"><i class="lock"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">Unavailable until d${from} is uncovered</span></div>`;
     const info = `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : `bought · ${STEP_PRICE[s]} gold`}</small><small>avg hit ${avgOf(s)}</small></span>`;
     return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('');
@@ -47,7 +49,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const sq = slot ? `<div class="eq on"><div class="well"><img class="cur" src="${dieImage(size, open.map(face), size, { px: 360, view: 'slot', stone })}" alt="d${size} die resting in its socket"></div>
       <span class="loc">${GRID.map((g, i) => `<i class="${i === gi ? 'me' : ''}"></i>`).join('')}</span><span class="cap">${SLOTWORD[slot] || slot}</span><span class="pv">d${size} · preview face</span></div>`
     : `<div class="eq off"><div class="well"><span>EMPTY</span></div><span class="cap">Not equipped</span><span class="pv">in pack</span></div>`;
-  el.innerHTML = `<div class="art17">${win.outerHTML}${sq}<button type="button" class="sell" aria-haspopup="dialog" title="Sell this weapon (asks to confirm)"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></button></div>
+  el.innerHTML = `<div class="art17">${art}${sq}<button type="button" class="sell" aria-haspopup="dialog" title="Sell this weapon (asks to confirm)"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></button></div>
 <img class="fr17" src="frame-t17.webp" alt="">
 <div class="title17"><span>${d.metal} ${d.name}</span></div>
 <div class="dice17">${body}</div>
@@ -59,7 +61,7 @@ ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[
     const nx = row.nextElementSibling?.querySelector('.cov.tok.off');
     t.addEventListener('animationend', () => { t.remove(); row.classList.remove('locked');
       if (nx) { const s = +nx.closest('.row').className.match(/s(\d+)/)[1]; const f = SIZES[SIZES.indexOf(s) - 1]; nx.classList.remove('off');
-        nx.querySelector('.ct small').textContent = `Uncover d${f} → d${s}`; nx.querySelector('.cn').textContent = `+${rows[s].length} faces · no refund · sell stays ${d.sell}`;
+        nx.querySelector('.ct b').textContent = 'UPGRADE'; nx.querySelector('.ct small').textContent = `d${f} → d${s} · +${rows[s].length} faces`; nx.querySelector('.cn').remove();
         nx.querySelector('.cp').innerHTML = `<i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small>`; } }, { once: true });
     return true; };
   el.addEventListener('click', (e) => { if (e.target.closest('.cov.tok:not(.off)')) el.unlock(); });
