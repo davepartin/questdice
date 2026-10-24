@@ -1427,3 +1427,6 @@ T17 isolation step 1, 24 October (build 20261024ns1, no gameplay change): every 
 
 ## 24 Oct 2026 (Claude): T20 arrow demonstration
 `tools/t20-arrows.mjs` resolves each released ammunition through the real engine with set dice (`b.script.rolls`) and asserts the board brief's numbers; `dev/t20arrows.mjs` and `dev/t20sheet.mjs` drive the real game and make captioned picture sheets (docs/team/tasks/T20-results.md). Finding: the camp ammunition card and the Frost banner still describe the old half-splash and halved-blow rules. No game change.
+
+## 24 Oct 2026 (Claude): T19 part 2
+`tools/t19-phase.mjs` (risky opening against boss-only phase) and `tools/t19-party.mjs` (tables of 2/4/6, equal and mixed, plus per-blow damage) with sections 8 to 10 of docs/team/tasks/T19-diagnosis.md and raw tables in T19-party-tables.md. Finding from `resolveParty`: an ordinary blow is split between heroes but breath is not (every living hero takes `ceil(0.6 x blow)`), so per-hero breath cost rises with the table. Proposals only; no game change.

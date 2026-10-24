@@ -38,17 +38,18 @@ function tableFight(hs, quest, seed) {
       if (!E.startFighter(b, i)) continue; botShape(b, rng); const o = smartActs(b); E.commitFighter(b); const f = b.fighters[i]; f.target = o.target; f.straight = o.straight; f.locked = true;
     }
     E.resolveParty(b); out.rounds = b.round;
+    for (const a of b.report?.acts || []) { if (!(a.mag > 0)) continue; const k = a.v === 'breath' ? 'breath' : (a.v === 'strike' || a.v === 'pierce' || a.v === 'drain' || a.v === 'pilfer') ? 'strike' : null; if (!k) continue; const parts = a.parts || []; (out.hits ||= []).push({ k, mag: a.mag, perHero: parts.length ? parts.reduce((x, y) => x + y, 0) / parts.length : 0, maxPart: parts.length ? Math.max(...parts) : 0, nets: a.nets ? a.nets.reduce((x, y) => x + y, 0) / a.nets.length : 0 }); }
     for (const f of b.fighters) { f.locked = false; f._low = Math.min(f._low ?? 1, Math.max(0, f.hp) / f.maxHp); if (f.hp <= 0) f._fell = 1; }
   }
   out.outcome = b.outcome || 'timeout';
   const F = b.fighters; const sum = (g) => F.reduce((a, f) => a + (g(f) || 0), 0); const tk = F.map((f) => f.stats.taken || 0); const dl = F.map((f) => f.stats.dealt || 0);
   out.heroes = F.length; out.falls = F.filter((f) => f._fell).length; out.dealt = sum((f) => f.stats.dealt); out.taken = sum((f) => f.stats.taken); out.takenMaxShare = out.taken ? Math.max(...tk) / out.taken : 0; out.dealtMaxShare = out.dealt ? Math.max(...dl) / out.dealt : 0;
   out.revives = sum((f) => f.stats.revives); out.healGiven = sum((f) => f.stats.healGiven); out.potions = sum((f) => f.stats.potionsThrown); out.endShare = F.reduce((a, f) => a + Math.max(0, f.hp) / f.maxHp, 0) / F.length; out.low = F.reduce((a, f) => a + (f._low ?? 1), 0) / F.length;
-  out.strengths = clones.map((h) => E.heroStrength(h)); return out;
+  out.strengths = clones.map((h) => E.heroStrength(h)); out.heroHp = F.reduce((a, f) => a + f.maxHp, 0) / F.length; return out;
 }
 const mean = (a) => a.reduce((x, y) => x + y, 0) / (a.length || 1); const pct = (a, p) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : 0; };
 const f1 = (x) => (Math.round(x * 10) / 10).toFixed(1); const f0 = (x) => String(Math.round(x));
-const rowsOut = []; const md = [`# T19 part 2b: Vharaxis at tables of 2, 4 and 6 (${FIGHTS} fights per cell; bot heroes, released rules)`, ''];
+const rowsOut = []; const HITS = {}; const md = [`# T19 part 2b: Vharaxis at tables of 2, 4 and 6 (${FIGHTS} fights per cell; bot heroes, released rules)`, ''];
 for (const [enc, mk] of Object.entries(setup)) {
   md.push(`## ${enc}`, '', '| Table | Heroes | Company factor m (hero strengths: low to high) | Foes at the start (health each) | Boss max health | Team +hit | Win % | Rounds p50 / p90 / max | Boss-only rounds | Heroes who fell | Table dealt per round | Share of damage taken by the worst-hit hero | Share of damage dealt by the top hero | Revives | Lowest hero health (mean) |', '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const n of [1, 2, 4, 6]) for (const kind of (n === 1 ? ['equal'] : ['equal', 'half', 'one'])) {
@@ -58,8 +59,12 @@ for (const [enc, mk] of Object.entries(setup)) {
     const foes = fs_[0].start.map((e) => `${e.id} ${e.hp}`).join(', ');
     const label = n === 1 ? 'Solo' : kind === 'equal' ? 'Equal' : kind === 'half' ? 'Half strong, half end of Act II' : 'One strong, rest level-1';
     md.push(`| ${label} | ${n} | ${f1(mean(fs_.map((f) => f.team.m)))} (${f0(Math.min(...st))}-${f0(Math.max(...st))}) | ${foes} | ${f0(mean(fs_.map((f) => f.boss)))} | +${f0(mean(fs_.map((f) => f.team.flat)))} | ${f0(100 * won.length / fs_.length)} | ${f0(pct(rd, 0.5))} / ${f0(pct(rd, 0.9))} / ${Math.max(...rd)} | ${f1(mean(fs_.map((f) => f.bossOnly)))} | ${f1(mean(fs_.map((f) => f.falls)))} of ${n} | ${f0(mean(fs_.map((f) => f.dealt / f.rounds)))} | ${f0(100 * mean(fs_.map((f) => f.takenMaxShare)))}% | ${f0(100 * mean(fs_.map((f) => f.dealtMaxShare)))}% | ${f1(mean(fs_.map((f) => f.revives)))} | ${f0(100 * mean(fs_.map((f) => f.low)))}% |`);
+    const hk = (k) => fs_.flatMap((f) => (f.hits || []).filter((h) => h.k === k)); const ag = (k) => { const a = hk(k); return { n: a.length, mag: mean(a.map((h) => h.mag)), per: mean(a.map((h) => h.perHero)), max: a.length ? Math.max(...a.map((h) => h.maxPart)) : 0, net: mean(a.map((h) => h.nets)) }; };
+    (HITS[enc] ||= []).push({ label: `${label} (${n})`, hp: mean(fs_.map((f) => f.heroHp)), breath: ag('breath'), strike: ag('strike') });
     rowsOut.push({ enc, n, kind, fights: fs_.map((f) => ({ outcome: f.outcome, rounds: f.rounds, bossOnly: f.bossOnly, falls: f.falls, dealt: f.dealt, taken: f.taken, m: f.team.m, boss: f.boss, start: f.start })) });
   }
+  md.push('', `### ${enc}: what one blow costs each hero`, '', '| Table | Hero max health (mean) | Breath blows (Inferno and slam): full size, then what EACH hero takes, worst single part, per hero after block | Other blows: full size, per hero (one blow is split between the heroes, the slowest takes a double share) |', '|---|---|---|---|');
+  for (const h of HITS[enc]) md.push(`| ${h.label} | ${f0(h.hp)} | ${h.breath.n ? `${f0(h.breath.mag)} full; ${f1(h.breath.per)} each (${f0(100 * h.breath.per / h.hp)}% of a hero); worst ${f0(h.breath.max)}; ${f1(h.breath.net)} after block` : 'none'} | ${h.strike.n ? `${f0(h.strike.mag)} full; ${f1(h.strike.per)} each (${f0(100 * h.strike.per / h.hp)}%); worst ${f0(h.strike.max)}` : 'none'} |`);
   md.push('');
 }
 console.log(md.join('\n')); fs.writeFileSync('/tmp/t19/party.json', JSON.stringify(rowsOut));
