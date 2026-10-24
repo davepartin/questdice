@@ -1,0 +1,5 @@
+Quest Dice preview: cards
+build 20261024cards2
+commit c031bc3836a2f0c3ddefc1210475cf93ea952884
+branch claude/cards-preview
+This folder is a copy for a phone check. It keeps its own saves and never reaches the cloud. The game at the site root is not changed.

@@ -1,0 +1,221 @@
+/* The magic powers sheet (Dave, Oct 2026): a glowing purple triangle with your three powers at its points, the magic you hold,
+   three always-ready helpers under it, and one panel for whatever you tapped. Built in js/g3/powers.js.
+   Sized from the sheet's own height (flex + container-query units), never from vh, so on an iPhone, where vh counts the hidden
+   browser bars, it still fits: the triangle is whatever is left once the helpers and the panel have their room. */
+
+/* ================================================================== the sheet */
+.b3-sheet:has(.pw-sigil) { top: calc(.5rem + var(--safe-t)); bottom: var(--counters-top, calc(var(--dock-top, 12rem) + .4rem)); max-height: none; overflow: hidden; flex-direction: column; gap: .4rem; padding: .5rem .6rem .6rem; justify-content: flex-start;
+  background: radial-gradient(120% 70% at 50% 14%, rgba(110, 40, 200, .38), rgba(12, 8, 24, .98) 62%), rgba(10, 7, 20, .98);
+  box-shadow: 0 0 0 1.5px rgba(182, 108, 255, .85), 0 0 40px rgba(140, 60, 255, .35), 0 18px 44px rgba(0, 0, 0, .7); }
+.b3-sheet:has(.pw-sigil) > .sh-head { flex: none; position: static; margin: 0; padding: 0; background: none; }
+.b3-sheet .b3-cards:has(.pw-sigil) { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: visible; padding: 0; margin: 0; }
+.sh-cancel { display: inline-flex; align-items: center; gap: .3rem; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+/* while it is open it takes the whole top of the screen: the round title and the chips step aside */
+body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b3-top, .b3:has(.b3-sheet.open .pw-sigil) .b3-magchip { visibility: hidden; }
+
+.pw-sigil { --c: #b46cff; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .5rem; }
+.pw-sigil .t-atk, .pw-chip.t-atk { --c: #ff4b4b; } .pw-sigil .t-block, .pw-chip.t-block { --c: #3aa4ff; } .pw-sigil .t-pierce, .pw-chip.t-pierce { --c: #ff8a1a; }
+.pw-sigil .t-heal, .pw-chip.t-heal { --c: #38e87a; } .pw-sigil .t-magic, .pw-chip.t-magic { --c: #b46cff; } .pw-sigil .t-gold, .pw-chip.t-gold { --c: #ffc21a; } .pw-sigil .t-weaken, .pw-chip.t-weaken { --c: #c8d0e0; }
+
+/* ================================================================== the triangle */
+/* the wrap takes whatever height is left; the stage is the biggest 300:260 triangle that fits in it */
+.pw-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding: .2rem 0 .3rem; container-type: size; }
+.pw-stage { position: relative; flex: none; width: min(100%, 11rem); aspect-ratio: 300 / 290; container-type: inline-size; }
+@supports (width: 1cqh) { .pw-stage { width: min(96cqw, 24rem, calc(100cqh * 300 / 290)); } }
+.pw-tri { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pw-edge { fill: none; stroke: url(#pwG); stroke-width: 3.6; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(180, 100, 255, .9)); opacity: .95; transition: opacity .3s, stroke-width .3s; }
+@keyframes pwFlow { to { stroke-dashoffset: -46; } }
+.pw-lat { fill: none; stroke: rgba(190, 140, 255, .32); stroke-width: 1.6; stroke-linejoin: round; stroke-dasharray: 4 6; }
+.pw-inner { fill: none; stroke: rgba(210, 160, 255, .3); stroke-width: 1.2; }
+.pw-rune { fill: none; stroke: rgba(210, 160, 255, .4); stroke-width: 1.2; stroke-dasharray: 2 6; transform-origin: 150px 159px; animation: pwSpin 40s linear infinite; }
+.pw-rune.r2 { stroke-dasharray: 10 5 2 5; stroke: rgba(255, 210, 120, .22); animation-direction: reverse; animation-duration: 60s; }
+@keyframes pwSpin { to { transform: rotate(360deg); } }
+.pw-fill { animation: pwBreathe 4.2s ease-in-out infinite; } @keyframes pwBreathe { 50% { opacity: .6; } }
+/* the magic and health you hold: two matching pills stacked in the top-right corner, same width, icons and numbers lined up */
+.pw-tally { position: absolute; right: 0; top: .1rem; z-index: 3; display: flex; flex-direction: column; gap: .3rem; align-items: stretch; width: 6.4rem; }
+.pw-center, .pw-life { display: grid; grid-template-columns: 1.2rem 1fr auto; align-items: center; column-gap: .3rem; padding: .2rem .55rem .2rem .45rem; border-radius: 999px; line-height: 1; }
+.pw-center { background: radial-gradient(circle at 50% 30%, rgba(150, 80, 255, .55), rgba(40, 12, 90, .92)); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .7), 0 0 14px rgba(150, 80, 255, .45); }
+.pw-life { background: radial-gradient(circle at 50% 30%, rgba(60, 200, 120, .45), rgba(8, 40, 24, .92)); box-shadow: 0 0 0 1.5px rgba(110, 240, 160, .65), 0 0 12px rgba(60, 220, 120, .35); }
+.pw-center .ic, .pw-life .ic { width: 1.05rem; height: 1.05rem; }
+.pw-center .ic { color: #e6c8ff; } .pw-life .ic { color: #7dffb0; }
+.pw-center b, .pw-life b { font: 900 1.2rem var(--disp, sans-serif); color: #fff; text-align: right; }
+.pw-center b { text-shadow: 0 0 12px rgba(180, 100, 255, .95); } .pw-life b { text-shadow: 0 0 10px rgba(90, 255, 150, .8); }
+.pw-center small, .pw-life small { font: 700 .5rem var(--disp, sans-serif); letter-spacing: .04em; text-transform: uppercase; }
+.pw-center small { color: #d9b4ff; } .pw-life small { color: #aaf0c8; }
+
+/* ================================================================== a medallion (a power at a point of the triangle) */
+.pw-medal { --r: clamp(2.5rem, 23cqw, 4.6rem); position: absolute; width: var(--r); display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; transform: translate(-50%, -50%); -webkit-tap-highlight-color: transparent; z-index: 2; }
+/* six circles in one pyramid on a triangular lattice: A on top, B and C under it, Potion / Heal / Heart change along the base (300 x 290 box) */
+.pw-medal.at-A { left: 50%; top: 13.8%; } .pw-medal.at-B { left: 31.67%; top: 46.64%; } .pw-medal.at-C { left: 68.33%; top: 46.64%; }
+.pw-medal.at-U0 { left: 13.33%; top: 79.48%; } .pw-medal.at-U1 { left: 50%; top: 79.48%; } .pw-medal.at-U2 { left: 86.67%; top: 79.48%; }
+.pw-ring { position: relative; width: var(--r); height: var(--r); border-radius: 50%; display: grid; place-items: center; transition: transform .25s cubic-bezier(.2, 1.4, .4, 1);
+  background: conic-gradient(from 210deg, #f6e2ff, #9b4dff, #4a1aa0, #b46cff, #f6e2ff); box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 16px color-mix(in srgb, var(--c) 55%, transparent), 0 8px 16px rgba(0, 0, 0, .6); }
+.pw-core { width: calc(var(--r) * .81); height: calc(var(--r) * .81); border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 55%, #2a1048), #12061f 75%); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 70%, transparent), inset 0 -6px 14px rgba(0, 0, 0, .6); }
+.pw-core .ic { width: calc(var(--r) * .48); height: calc(var(--r) * .48); color: var(--c); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 80%, transparent)); }
+.pw-slot { position: absolute; left: -.2rem; top: -.2rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; display: grid; place-items: center; font: 900 .72rem var(--disp, sans-serif); color: #2a0e5e; background: linear-gradient(180deg, #fff, #d9b4ff); box-shadow: 0 0 0 2px #2a0e5e, 0 0 10px rgba(200, 140, 255, .9); }
+
+.pw-cost { position: absolute; right: -.4rem; top: -.15rem; display: inline-flex; align-items: center; gap: .1rem; padding: .08rem .36rem .08rem .24rem; border-radius: 999px; font: 900 .72rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838; }
+.pw-cost .ic { width: .66rem; height: .66rem; color: #fff; }
+
+.pw-pips { position: static; transform: none; display: flex; gap: .16rem; }
+.pw-pips i { width: .46rem; height: .46rem; border-radius: 50%; background: #1c0d33; box-shadow: inset 0 0 0 1.2px color-mix(in srgb, var(--c) 70%, transparent); }
+.pw-pips i.on { background: var(--c); box-shadow: 0 0 6px var(--c); }
+.pw-name { position: absolute; left: 50%; top: calc(100% - .5rem); transform: translateX(-50%); width: max-content; max-width: 36cqw; display: flex; flex-direction: column; align-items: center; gap: .12rem; padding: .14rem .5rem .16rem; border-radius: 999px; text-align: center; white-space: normal;
+  font: 800 clamp(.48rem, 3cqw, .6rem) var(--disp, sans-serif); letter-spacing: .04em; text-transform: uppercase; line-height: 1.05; color: #f6ecff; text-shadow: 0 1px 2px #000;
+  background: linear-gradient(180deg, rgba(40, 18, 84, .96), rgba(14, 6, 32, .97)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 65%, transparent), 0 3px 8px rgba(0, 0, 0, .55); z-index: 3; }
+.pw-tag { position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: .15rem; padding: .05rem .4rem; border-radius: 999px; white-space: nowrap; font: 900 .48rem var(--disp, sans-serif); letter-spacing: .1em; color: #1a0838; background: #e6d4ff; z-index: 2; }
+.pw-tag .ic { width: .58rem; height: .58rem; } .pw-tag.used, .pw-tag.locked { background: #4a4258; color: #d6cfe2; } .pw-tag.recharge { background: #ffd21a; color: #2a1804; }
+.pw-medal.st-ready .pw-ring { animation: pwReady 2.4s ease-in-out infinite; background: conic-gradient(from 210deg, #fff3c4, #f0b838, #8a5a10, #ffd96a, #fff3c4); }
+.pw-medal.st-ready .pw-name { color: #fff; }
+@keyframes pwReady { 50% { box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 28px color-mix(in srgb, var(--c) 85%, transparent), 0 8px 16px rgba(0, 0, 0, .6); } }
+.pw-medal.st-used .pw-ring, .pw-medal.st-locked .pw-ring, .pw-medal.st-low .pw-ring { filter: grayscale(.75) brightness(.7); }
+.pw-medal.st-low .pw-cost { background: linear-gradient(180deg, #8a3a4a, #4a1424); }
+.pw-medal.on .pw-ring { transform: scale(1.12); box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px rgba(180, 100, 255, .55), 0 0 30px color-mix(in srgb, var(--c) 95%, transparent); }
+.pw-medal:active .pw-ring { transform: scale(1.04); }
+
+/* ================================================================== the helpers (potion, heal, heart change) sit in the same pyramid as the powers */
+/* the same round medallions as the triangle: always lit when usable, a quiet pop-up (not a dead button) when there is nothing to do */
+.pw-umedal.st-ready .pw-ring { animation: none; }
+.pw-cost.free { background: linear-gradient(180deg, #3ad07a, #1a7a44); font-size: .56rem; letter-spacing: .06em; padding: .1rem .36rem; }
+.pw-pop { position: absolute; left: 50%; bottom: 9.8rem; transform: translateX(-50%); z-index: 9; max-width: 88%; padding: .5rem .9rem; border-radius: 999px; text-align: center; font: 800 .8rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #3a2a66, #1c1038); box-shadow: 0 0 0 1.5px rgba(200, 150, 255, .8), 0 8px 22px rgba(0, 0, 0, .6); pointer-events: none; animation: pwPop 2s ease-out forwards; }
+@keyframes pwPop { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 70% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -6px); } }
+
+/* ================================================================== the panel for what you tapped */
+.pw-detail { --c: #b46cff; flex: none; position: relative; min-height: 8.2rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: .5rem .65rem .6rem; border-radius: .9rem; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, rgba(30, 18, 52, .95)), rgba(14, 9, 26, .96));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent), 0 6px 18px rgba(0, 0, 0, .4); animation: pwIn .24s ease-out; }
+@keyframes pwIn { from { opacity: 0; transform: translateY(6px); } }
+.pw-detail.empty { display: none; }
+.pd-top { display: flex; align-items: center; gap: .6rem; }
+.pd-badge { flex: none; width: 2.3rem; height: 2.3rem; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 50%, #2a1048), #12061f 80%); box-shadow: inset 0 0 0 1.5px var(--c); }
+.pd-badge .ic { width: 1.35rem; height: 1.35rem; color: var(--c); }
+.pd-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; } .pd-id small { font: 800 .55rem var(--disp, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: #cfa8ff; }
+.pd-id b { font: 800 1.05rem var(--disp, sans-serif); color: #fff; } .pd-id em { font-style: normal; font-size: .66rem; color: #d8cfe6; }
+.pd-cost { margin-left: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: .12rem; padding: .12rem .5rem .12rem .36rem; border-radius: 999px; font: 900 .9rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #b66cff, #5a1ec8); box-shadow: 0 0 0 1.5px #1a0838, 0 0 10px rgba(160, 80, 255, .5); }
+.pd-cost .ic { width: .8rem; height: .8rem; color: #fff; }
+.pd-line { margin: .4rem 0 0; font-size: .78rem; line-height: 1.3; color: #ddd4ea; }
+.pw-detail .pd-why { margin: .35rem 0 0; font-size: .72rem; color: #ffb38a; }
+.pd-row { display: flex; gap: .45rem; margin-top: .5rem; align-items: center; } .pd-row:empty { display: none; }
+.pw-step { flex: none; display: flex; align-items: center; gap: .25rem; padding: 0 .2rem; border-radius: 999px; background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(200, 150, 255, .35); }
+.pw-step b { min-width: 1.3rem; text-align: center; font: 900 1.2rem var(--disp, sans-serif); color: #fff; }
+.pw-step button { width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 0; cursor: pointer; font: 900 1.2rem var(--disp, sans-serif); color: #fff; background: linear-gradient(180deg, #8a46f0, #4c1aa0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+.pw-step button:disabled { opacity: .35; cursor: default; }
+.pw-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 44px; padding: .5rem .8rem; border: 0; border-radius: 12px; cursor: pointer; font: 800 .82rem var(--disp, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: #fff;
+  background: linear-gradient(180deg, #c27cff, #7a2fe0 55%, #5418b0); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 1.5px #2a0e5e, 0 6px 16px rgba(120, 60, 220, .45); }
+.pw-btn .ic { width: 1rem; height: 1rem; color: #fff; } .pw-btn.alt { background: linear-gradient(180deg, #ffe9a8, #e2b24c 60%, #b8862c); color: #2a1804; box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .5), 0 0 0 1.5px #5a3a08; } .pw-btn.alt .ic { color: #2a1804; }
+.pw-btn:disabled { opacity: .38; cursor: default; filter: grayscale(.5); } .pw-btn:active:not(:disabled) { transform: scale(.97); }
+/* nothing chosen yet */
+.pw-detail.pw-pick { text-align: center; align-items: center; padding: .5rem .8rem .55rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1.5px rgba(200, 150, 255, .35); }
+.pw-pick .pp-arrow { display: block; font-size: .7rem; line-height: 1; color: #d9b4ff; animation: ppBob 1.4s ease-in-out infinite; }
+.pw-pick b { display: block; margin-top: .15rem; font: 800 .95rem var(--disp, sans-serif); letter-spacing: .04em; color: #fff; }
+.pw-pick p { margin: .25rem 0 0; font-size: .74rem; line-height: 1.3; color: #d8cfe6; }
+@keyframes ppBob { 50% { transform: translateY(-3px); } }
+
+/* a chip: what a power gives (used by the cast reveal) */
+.pw-chip { --c: #b46cff; display: inline-flex; align-items: center; gap: .25rem; padding: .22rem .6rem; border-radius: 999px; font-size: .78rem; color: #eae4f2; background: color-mix(in srgb, var(--c) 18%, rgba(0, 0, 0, .4)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent); }
+.pw-chip b { color: var(--c); font: 900 .95rem var(--disp, sans-serif); } .pw-chip .ic { width: .95rem; height: .95rem; color: var(--c); } .pw-chip.each::after { content: ' each'; font-size: .7rem; color: #b8aec8; }
+
+/* wide screens: the sheet is the left column; give the triangle a sensible cap */
+@media (min-aspect-ratio: 5/4) { .pw-stage { max-width: 15rem; } }
+@media (prefers-reduced-motion: reduce) { .pw-rune, .pw-fill, .pw-medal.st-ready .pw-ring, .pw-edge, .pw-pick .pp-arrow, .pw-detail { animation: none !important; } }
+
+/* short phones: smaller helper medallions and a shorter panel so the triangle keeps its room */
+@media (max-height: 720px) { .pw-detail { min-height: 6.8rem; } }
+
+/* Battle power selection: three class powers, then three distinct helpers. */
+.b3-sheet:has(.pw-sigil) { border-radius: 7px; background: repeating-linear-gradient(0deg,#ffffff02 0 1px,#0000 1px 4px),linear-gradient(145deg,#241c38,#0d1420 75%); box-shadow: inset 0 0 0 1px #a5865655,0 0 0 1px #ab8b59,0 15px 35px #000a; padding: .7rem; }
+.b3-sheet .b3-cards:has(.pw-sigil) { overflow-y: auto; overscroll-behavior: contain; }
+.pw-sigil { flex: none; gap: .7rem; padding: 2px; }
+.pw-tally { position: sticky; top: 0; z-index: 6; width: 100%; flex-direction: row; gap: .6rem; background: #181b2c; padding: 2px 0; }
+.pw-tally > div { flex: 1; border-radius: 4px; padding: .5rem .6rem; background: #0b111c; box-shadow: inset 0 0 0 1px #a483574f; }
+.pw-center b, .pw-life b { text-shadow: none; }
+.pw-wrap { flex: none; height: clamp(185px,25vh,220px); padding: 0; }
+.pw-stage { width: min(100%,280px); height: 100%; aspect-ratio: 300/290; max-width: none; }
+@supports (width: 1cqh) { .pw-stage { width: min(96cqw,calc(100cqh * 300 / 290)); } }
+.pw-medal { --r: clamp(3rem,23cqw,4.1rem); }
+.pw-medal.at-A { left: 50%; top: 13.8%; }
+.pw-medal.at-B { left: 22%; top: 72.4%; }
+.pw-medal.at-C { left: 78%; top: 72.4%; }
+.pw-ring, .pw-medal.st-ready .pw-ring { animation: none; background: linear-gradient(135deg,#f1d7a0,#9a7840 45%,#3a2c20 70%,#bf9c60); box-shadow: 0 2px 6px #0009,inset 0 0 0 1px #e8d39c70; }
+.pw-core { background: radial-gradient(ellipse at top,color-mix(in srgb,var(--c) 24%,#13212e),#0c1420); }
+.pw-core .ic { filter: none; }
+.pw-edge { filter: none; opacity: .55; stroke-width: 2; }
+.pw-fill, .pw-pick .pp-arrow { animation: none; }
+.pw-medal.on .pw-ring { transform: none; box-shadow: 0 0 0 2px #ffe0a0,0 0 0 4px #a6854745; }
+.pw-medal.on .pw-name { color: #ffe6b2; border-color: #e6bf78; }
+.pw-name { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: clamp(.64rem,3.4cqw,.76rem); border-radius: 3px; background: #111725; border: 1px solid #8e7958; box-shadow: 0 2px 4px #0009; }
+.pw-slot { box-shadow: 0 0 0 1px #8a704c; background: #e9d2a4; color: #21182a; }
+.pw-cost { border-radius: 4px; background: #6035a2; box-shadow: 0 0 0 1px #bd9fe0; }
+.pw-helpers { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; padding-top: .6rem; border-top: 1px solid #aa8d574a; }
+.pw-helpers .pw-medal { position: relative; inset: auto; width: auto; min-height: 70px; transform: none; padding: .45rem .2rem; background: #101b28; border: 1px solid #796547; border-radius: 4px; gap: .3rem; }
+.pw-helpers .pw-ring { width: 30px; height: 30px; background: none; box-shadow: none; }
+.pw-helpers .pw-core { width: 30px; height: 30px; background: none; box-shadow: none; }
+.pw-helpers .pw-core .ic { width: 23px; height: 23px; }
+.pw-helpers .pw-name { position: static; transform: none; width: auto; max-width: 100%; padding: 0; background: none; border: none; box-shadow: none; font-size: .67rem; }
+.pw-helpers .pw-cost { top: .2rem; right: .2rem; font-size: .58rem; }
+.pw-helpers .pw-cost.free { font-size: .48rem; }
+.pw-detail { animation: none; border-radius: 4px; background: linear-gradient(135deg,#1a2c38,#101925); padding: .8rem; gap: .3rem; box-shadow: inset 0 0 0 1px #ae8f565e; }
+.pd-id b { font: 600 1.4rem var(--font-story); color: #fff0d3; }
+.pd-id em { line-height: 1.4; color: #bfc4ce; }
+.pd-line { font-size: .8rem; line-height: 1.45; }
+.pd-row { flex-wrap: wrap; gap: .65rem; }
+.pw-step { min-height: 44px; border-radius: 4px; background: #111b27; padding: 0; gap: .35rem; }
+.pw-step button { min-width: 44px; min-height: 44px; border-radius: 4px; background: #483363; }
+.pw-btn { border-radius: 4px; box-shadow: inset 0 0 0 1px #e1cbff80,0 3px 0 #231038; text-transform: none; letter-spacing: .01em; }
+.pw-detail.pw-pick { min-height: 72px; }
+.pw-medal:focus-visible, .pw-btn:focus-visible, .pw-step button:focus-visible { outline: 2px solid #ffe2a0; outline-offset: 3px; }
+@media (max-height: 650px) { .pw-wrap { height: 190px; } }
+
+/* Spellbook material pass: exact equilateral geometry, violet glass and worn metal. */
+.b3-sheet:has(.pw-sigil) { isolation: isolate; border: 1px solid #c4a875; border-radius: 12px 12px 7px 7px; background: linear-gradient(#0a061527,#0a071333),url('../assets/bg/magic-vellum.webp') center top/cover,#100c1b; box-shadow: inset 0 0 0 2px #17131d,inset 0 0 0 3px #a88c5745,0 14px 40px #000b; padding: .65rem .8rem .8rem; }
+.b3-sheet:has(.pw-sigil) > .sh-head { border-bottom: 1px solid #bfa37055; padding-bottom: .45rem; }
+.b3-sheet:has(.pw-sigil) > .sh-head > b { color: #f1dfb9; letter-spacing: .1em; font-weight: 500; }
+.b3-sheet:has(.pw-sigil) .sh-cancel { border-radius: 5px; min-height: 44px; background: linear-gradient(#342a3c,#1c1725); box-shadow: inset 0 0 0 1px #c2aa7655; font-size: .72rem; letter-spacing: .04em; }
+.pw-sigil { gap: .7rem; }
+.pw-tally { background: #14101fec; border-radius: 6px; gap: .6rem; padding: 3px; }
+.pw-tally > div { padding: .45rem .6rem; background: radial-gradient(ellipse at top left,#59257744,#100e19); border-radius: 5px; box-shadow: inset 0 0 0 1px #bb96e340; }
+.pw-tally .pw-life { background: radial-gradient(ellipse at top left,#26754a2b,#100e19); }
+/* the icon sits beside its number, not across the box (Dave, Oct 2026: "too spread out") */
+.pw-tally .pw-center, .pw-tally .pw-life { grid-template-columns: auto auto auto; justify-content: center; column-gap: .35rem; }
+.pw-tally .pw-center b, .pw-tally .pw-life b { text-align: left; }
+.pw-wrap { height: auto; padding: .5rem 0 .1rem; display: block; container-type: normal; }
+.pw-stage { width: min(100%,320px); height: auto; aspect-ratio: 360/280; margin: 0 auto; container-type: inline-size; }
+.pw-medal.at-A { left: 50%; top: 14.2382%; }
+.pw-medal.at-B { left: 21.1111%; top: 78.5714%; }
+.pw-medal.at-C { left: 78.8889%; top: 78.5714%; }
+.pw-stage .pw-medal { --r: clamp(48px,20cqw,66px); }
+.pw-aura { fill: none; stroke: #b65fff; stroke-width: 11; opacity: .34; filter: drop-shadow(0 0 7px #9e50f8); }
+.pw-metal { fill: none; stroke: #34283f; stroke-width: 9; stroke-linejoin: round; }
+.pw-edge { opacity: 1; stroke-width: 4; filter: drop-shadow(0 0 2px #c680ff); }
+.pw-glint { fill: none; stroke: #f6dbff; stroke-width: 1; opacity: .6; }
+.pw-stage .pw-ring, .pw-stage .pw-medal.st-ready .pw-ring { background: conic-gradient(from 140deg,#3d2c22,#d8bd85 14%,#74502d 27%,#f4e4b5 46%,#a0804f 60%,#332a27 76%,#b09261 90%,#3d2c22); box-shadow: 0 5px 8px #000a,inset 0 0 0 1px #edd3a466; }
+.pw-stage .pw-core { width: 83%; height: 83%; background: radial-gradient(ellipse at 38% 24%,color-mix(in srgb,var(--c) 26%,#362142),#0c0a15 73%); box-shadow: inset 0 1px 3px #f2d1ff33,inset 0 -5px 8px #000a,0 0 0 1px #0a0711; }
+.pw-stage .pw-core .ic { width: 54%; height: 54%; filter: drop-shadow(0 0 4px color-mix(in srgb,var(--c) 50%,transparent)); }
+.pw-stage .pw-medal.on .pw-ring { box-shadow: 0 0 0 1px #fff2ce,0 0 0 3px #c8996244,0 0 20px #bb67fb70,0 5px 10px #000a; }
+.pw-stage .pw-slot { width: 1.1rem; height: 1.1rem; font-size: .62rem; background: linear-gradient(#eddbb0,#9e804f); box-shadow: 0 0 0 1px #352332; }
+.pw-name { padding: .18rem .45rem; border-radius: 3px 3px 6px 6px; background: linear-gradient(#2e2233,#14101b); border: 1px solid #9f835c; color: #f5e6cc; font-family: var(--font-story); font-size: clamp(.68rem,3.5cqw,.83rem); font-weight: 600; box-shadow: inset 0 1px #fff1,0 3px 5px #0008; }
+.pw-cost { background: linear-gradient(#8050b4,#3c215f); border: 1px solid #c49cdd77; box-shadow: 0 2px 4px #0007; font-size: .65rem; }
+.pw-helpers { padding: .65rem .15rem .1rem; border-top: 1px solid #ac8b5e55; gap: .65rem; }
+.pw-helpers .pw-medal { min-height: 60px; padding: .35rem .1rem; background: linear-gradient(#4b36551f,#18121f77); border: 0; border-bottom: 1px solid #9c7c5644; border-radius: 0; }
+.pw-helpers .pw-name { font: 500 .68rem var(--font-body); }
+.pw-helpers .pw-ring { box-shadow: none; }
+.pw-detail { isolation: isolate; overflow: hidden; padding: .9rem; border: 1px solid #b69b68; border-radius: 3px 12px 3px 12px; background: radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--c) 13%,transparent),transparent 66%),linear-gradient(#171222e8,#110e1bef),url('../assets/bg/magic-vellum.webp') center/cover; box-shadow: inset 0 0 0 2px #0b0914,inset 0 0 0 3px #ac8e4e30,0 6px 14px #0007; gap: .4rem; }
+.pw-imprint { position: absolute; z-index: -1; right: -8px; top: 28px; width: 110px; height: 110px; opacity: .07; color: var(--c); transform: rotate(-12deg); pointer-events: none; }
+.pw-imprint .ic { width: 100%; height: 100%; }
+.pd-top { align-items: flex-start; gap: .65rem; }
+.pd-badge { width: 2.6rem; height: 2.6rem; border-radius: 6px; transform: rotate(-5deg); background: linear-gradient(#33203c,#100c18); box-shadow: inset 0 0 0 1px #c7a36d,inset 0 0 0 3px #0e0b17,0 3px 7px #0008; }
+.pd-badge .ic { transform: rotate(5deg); }
+.pd-id b { font: 500 1.55rem/1.1 var(--font-story); color: #f9e9c8; }
+.pd-id small { color: #b9a1d0; letter-spacing: .12em; font-size: .54rem; margin-bottom: .2rem; }
+.pd-id em { font-size: .64rem; margin-top: .25rem; color: #bfb4c9; }
+.pd-line { color: #e4dbe9; margin: .35rem 0 .15rem; line-height: 1.5; }
+.pd-cost { border-radius: 4px; background: linear-gradient(#654086,#2f1c47); box-shadow: inset 0 0 0 1px #c797db66; font-size: .8rem; padding: .25rem .4rem; }
+.pw-step { border: 1px solid #937b9a55; background: #0d0a14; }
+.pw-step button { background: linear-gradient(#3e2b4e,#24192e); border: 0; box-shadow: inset 0 0 0 1px #bd9cd035; }
+.pw-btn.go { background: linear-gradient(110deg,#9b64d0,#63368d 60%,#7b49ad); border: 1px solid #d6b5eb; box-shadow: inset 0 0 0 2px #4b2969,inset 0 0 0 3px #b88dd444,0 3px 0 #180c27; min-height: 48px; font-family: var(--font-story); font-size: 1rem; font-weight: 600; }
+.pw-detail.pw-pick { background: #130e1d99; min-height: 62px; border-color: #a68c5855; }
+.pw-pick .pp-arrow { display: none; }
+@media (max-height: 650px) { .pw-stage { width: min(100%,280px); } }
+/* Inspection gives the spell card room while retaining the same triangle proportions. */
+.pw-sigil:has(.pw-detail:not(.pw-pick)) { gap: .5rem; }
+.pw-sigil:has(.pw-detail:not(.pw-pick)) .pw-stage { width: min(100%,240px); }
+.pw-sigil:has(.pw-detail:not(.pw-pick)) .pw-helpers .pw-medal { min-height: 54px; }
