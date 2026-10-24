@@ -1,0 +1,54 @@
+/* T17 card: simple leather-and-metal frame, art on top (smaller), title in the middle, bottom half = dice by SIZE */
+html,body{margin:0;background:#07080c}
+.pg{min-height:100vh;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:10px;background:radial-gradient(90% 50% at 50% 35%,#221a14,#0b0a0a 65%,#04060d)}
+.qc17{--w:min(370px,calc(100vw - 20px));--mt:linear-gradient(180deg,#fff,#c9d1dd 50%,#7d8796);--edge:#aab3c2;position:relative;width:var(--w);aspect-ratio:5/7.3;container-type:inline-size;
+ border-radius:4.5cqi;font-family:Oxanium,sans-serif;filter:drop-shadow(0 10px 18px #000b);
+ background:radial-gradient(120% 70% at 50% 30%,#2a2118,#120d09 70%),#120d09;box-shadow:inset 0 0 0 .8cqi #0a0705,inset 0 0 0 1.3cqi var(--edge),inset 0 0 0 1.8cqi #2a2016,inset 0 0 0 2.1cqi #8a7656,inset 0 0 6cqi #000}
+.qc17::before{content:'';position:absolute;inset:0;border-radius:inherit;opacity:.35;mix-blend-mode:overlay;pointer-events:none;
+ background:repeating-radial-gradient(circle at 30% 20%,#fff1 0 .25cqi,#0000 .25cqi .9cqi),repeating-radial-gradient(circle at 70% 80%,#0002 0 .3cqi,#0000 .3cqi 1.1cqi)}
+.qc17.metal-gold{--mt:linear-gradient(180deg,#fff4c8,#f0c45a 50%,#a8761c);--edge:#d9b25a}.qc17.metal-bronze{--mt:linear-gradient(180deg,#ffe2c0,#c98a52 50%,#7a4a22);--edge:#c98a52}
+.qc17>*{position:absolute}
+/* art window: 30% of the height */
+.art17{left:5.5%;right:5.5%;top:4%;height:31%;border-radius:2.6cqi 2.6cqi 1cqi 1cqi;overflow:hidden;box-shadow:0 0 0 .5cqi #0a0705,0 0 0 .9cqi #8a7656,inset 0 0 4cqi #000c}
+.art17 .win{position:absolute;inset:0;width:auto;height:auto;left:0;top:0;border-radius:0}
+.art17 .win .art{position:absolute;width:auto;max-width:none;height:112%;top:-4%;left:40%;filter:drop-shadow(0 12px 10px #000b);transform:translateX(-50%)}
+.chip,.sell{position:absolute;bottom:2.2cqi;height:5.2cqi;display:flex;align-items:center;gap:1.2cqi;padding:0 2cqi;border-radius:99px;background:linear-gradient(180deg,#1c1712f2,#0b0907f2);
+ box-shadow:inset 0 0 0 .3cqi #b8a07a88,0 .4cqi 1cqi #000b;font:800 2.9cqi/1 Oxanium;letter-spacing:.1em;color:#eadfca;text-transform:uppercase}
+.chip{left:2.2cqi}.sell{left:auto;right:30cqi}.chip .tier{background:var(--mt);-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip span+span{padding-left:1.2cqi;border-left:.25cqi solid #b8a07a66}
+.sell small{font-size:2.4cqi;color:#cbb894}.sell b{font-size:3.6cqi;color:#ffd98a}
+.coin{width:3cqi;height:3cqi;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#9a6a06);box-shadow:inset 0 0 0 .3cqi #7a5204;display:inline-block;flex:none}
+/* equipment-slot square: the battle tray's weapon socket (tan-ringed dish in a leather cell, js/gfx/dice/tray.js), with the die resting in it */
+.eq{position:absolute;right:2.2cqi;top:2.2cqi;width:25cqi;aspect-ratio:1;border-radius:1.6cqi;box-sizing:border-box;
+ background:radial-gradient(70% 70% at 50% 45%,#4a3626,#24180f 75%);box-shadow:0 0 0 .5cqi #0a0705,0 0 0 .9cqi #c9a068,inset 0 0 0 .5cqi #1a110a,inset 0 .6cqi 1.6cqi #0009,0 1cqi 2cqi #000c}
+.eq .well{position:absolute;left:11%;top:9%;width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 40%,#1a110a,#2c1f14 70%,#3d2c1d);
+ box-shadow:inset 0 1cqi 1.6cqi #000c,0 0 0 .35cqi #a98e62aa;display:grid;place-items:center}
+.eq .well img{width:104%;margin-top:-6%;filter:drop-shadow(0 1.2cqi .8cqi #000d)}
+.eq .loc{position:absolute;left:1.3cqi;bottom:1.2cqi;display:grid;grid-template-columns:repeat(3,1.3cqi);gap:.3cqi}
+.eq .loc i{width:1.3cqi;height:1.3cqi;border-radius:.2cqi;background:#a98e6255}.eq .loc i.me{background:#ffd98a;box-shadow:0 0 .8cqi #ffd98a}
+.eq .cap{position:absolute;right:1.4cqi;bottom:.8cqi;font:800 2.5cqi/1 Oxanium;letter-spacing:.08em;color:#e8d3a6;text-shadow:0 .2cqi .3cqi #000}
+.eq.off{opacity:.62;filter:saturate(.4)}.eq.off .well{background:#1a110a99;box-shadow:inset 0 .6cqi 1cqi #000a,0 0 0 .3cqi #a98e6255;border:.3cqi dashed #a98e6288;box-sizing:border-box}
+.eq.off .well span{font:800 2.6cqi Oxanium;letter-spacing:.14em;color:#a98e62}.eq.off .cap{left:0;right:0;text-align:center;color:#a98e62}
+/* title, in the middle of the card, never clipped */
+.title17{left:5.5%;right:5.5%;top:36.6%;height:6.4%;display:flex;align-items:center;justify-content:center;border-radius:1cqi;
+ background:linear-gradient(180deg,#2a221a,#14100c);box-shadow:0 0 0 .5cqi #0a0705,0 0 0 .9cqi #8a7656,inset 0 .3cqi 0 #fff1}
+.title17 span{font:700 7cqi/1.3 'Cormorant Garamond',serif;white-space:nowrap;padding:0 2cqi;background:var(--mt);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 .3cqi 0 #000)}
+/* the dice: bottom half, one row per SIZE */
+.dice17{left:5.5%;right:5.5%;top:45%;bottom:4%;border-radius:1.4cqi;padding:1.4cqi 2cqi;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;
+ background:radial-gradient(120% 80% at 50% 30%,#e6d3ad,#c9b085 70%,#a88d62);box-shadow:0 0 0 .5cqi #0a0705,0 0 0 .9cqi #8a7656,inset 0 .6cqi 1.6cqi #5a3a1466}
+.row{position:relative;display:grid;grid-template-columns:13cqi 1fr;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.row:first-child{border-top:0}
+.sz{display:flex;flex-direction:column;align-items:center;font:800 5.2cqi/1 Oxanium;color:#3a2410}.sz small{font-size:2.5cqi;letter-spacing:.16em;color:#6a4a22}
+.row.cur .sz{color:#7a1a10}
+.dz{display:flex;justify-content:center;gap:2.6cqi}
+.d17{position:relative;margin:0;width:calc(var(--px) * .3cqi);aspect-ratio:1}.d17 img{width:100%;height:100%;display:block;filter:drop-shadow(0 .8cqi .6cqi #2a160699)}
+.d17 figcaption{position:absolute;right:-1.6cqi;bottom:.4cqi;font:700 2.3cqi/1 Oxanium;color:#6a4a22aa}
+/* the cover over a size not yet bought: embossed leather, stitched, with its step price */
+.cov{position:absolute;left:-.6cqi;right:-.6cqi;top:.5cqi;bottom:.5cqi;border-radius:1.4cqi;display:grid;grid-template:'t p' 1fr 'n n' auto/auto 1fr;align-items:center;padding:.8cqi 3cqi 0;column-gap:3cqi;
+ background:radial-gradient(130% 120% at 30% 20%,#7a5434,#4a3020 60%,#2e1d12),#4a3020;box-shadow:inset 0 .4cqi 0 #fff2,inset 0 -.5cqi .8cqi #0008,0 .8cqi 1.4cqi #000a;outline:.35cqi dashed #d8b88066;outline-offset:-1.4cqi}
+.cov .ct{display:flex;flex-direction:column;gap:.4cqi}.cov .ct b{font:800 4.6cqi/1 Oxanium;color:#f2dcb0;letter-spacing:.06em;text-shadow:0 -.2cqi 0 #000a,0 .2cqi 0 #fff3}
+.cov .ct small{font:700 2.6cqi/1 Oxanium;letter-spacing:.1em;color:#d8b880}
+.cov .cp{justify-self:end;display:flex;align-items:center;gap:1.2cqi;padding:1cqi 2.4cqi;border-radius:99px;background:linear-gradient(180deg,#2a1c10,#150d07);box-shadow:inset 0 0 0 .3cqi #c9a068aa}
+.cov .cp .coin{width:4cqi;height:4cqi}.cov .cp b{font:800 5.4cqi/1 Oxanium;color:#ffd98a}.cov .cp small{font:700 2.6cqi Oxanium;color:#d8b880;text-transform:uppercase}
+.cov .ct{grid-area:t}.cov .cp{grid-area:p}.cov .cn{grid-area:n;white-space:nowrap;font:700 2.5cqi/1 Oxanium;letter-spacing:.06em;color:#e8cfa0;padding-bottom:1.3cqi;text-align:center}
+.pb17{position:absolute;width:7.6%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;filter:drop-shadow(0 .5cqi .6cqi #000c)}.pb17 svg{display:block;width:100%;height:100%}
+.row.locked .dz{visibility:hidden}
