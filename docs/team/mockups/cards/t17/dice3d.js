@@ -42,21 +42,53 @@ const icon = (g, k, x, y, s) => { const p = new Path2D((SYM[k] || SYM.star).d); 
   g.restore(); };
 // atlas: one square cell per face; every face carries its own label (number, attack/block symbol, bonus icons) so the solid reads
 // coherently from any angle. faces[label-1] = { v, c 'r'|'b', icons }.
-function paintFace(g, poly, fi, f, stone, cell, Hm) {
-  const ppm = (cell / 2) / Hm; const inR = poly.faces[fi].inR2 * ppm; const tone = f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
-  const txt = `+${f.v}`; const d4 = poly.sides === 4; const fs = inR * (d4 ? 0.7 : poly.sides >= 8 ? 0.8 : txt.length > 2 ? 0.84 : 0.94);
-  const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 3)]; const lift = -inR * (poly.sides >= 8 ? 0.34 : d4 ? 0.36 : 0.2);
-  g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = '#000a'; g.fillText(txt, 0, lift + fs * .06); g.fillStyle = '#fff6'; g.fillText(txt, -fs * .02, lift - fs * .03);
-  const [i0, i1] = stone ? INK[tone] : ['#fffaf0', f.v === 0 ? '#b8aca0' : '#e6d6b8'];
-  const tg = g.createLinearGradient(0, lift - fs / 2, 0, lift + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, lift);
-  // the attack starburst or block shield, always first and drawn in ivory (or ink) so shape alone tells them apart; bonus icons follow
-  const big = poly.sides >= 8 ? 1.35 : 1; const is = d4 ? inR * (marks.length > 2 ? 0.4 : 0.48) : inR * (marks.length > 2 ? 0.5 : 0.62) * big;
-  // rev 7: on a d4 (apex up, centroid at 0, base edge at +inR) the icon row sits at +0.36 inR, where the face is ~2.5 inR wide, so the
-  // whole icon and its white border stay inside the triangle with margin (rev 6 put it at ~0.6 inR, half off the face)
-  const iy = d4 ? inR * 0.36 : lift + fs * .55 + is * .5;
-  marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.24, iy, is));
+// rev 10: a face layout system. Every face is fitted, not hand-tuned: the face's real polygon (poly.faces[fi].local, in texture px,
+// shrunk by the rounded-edge bevel plus a margin) is the box; the number sits on top and the marks (attack/block mark + up to 4 bonus
+// icons) go below in rows (1-3 in a row; 4 as 2x2; 5 as 3+2). For each row plan and a few vertical offsets, a binary search finds the
+// largest scale where the number's box and every icon's circle (white border included) are inside the polygon; the best plan wins.
+export const FIT = []; // per painted face: { sides, label, marks, scale, ok } (read by faces-test.html)
+const ROWS = { 1: [1], 2: [2], 3: [3], 4: [[2, 2], [4]], 5: [[3, 2], [2, 3]] };
+function edgeDist(P, x, y, sg = 1) { let m = Infinity; for (let i = 0; i < P.length; i++) { const [ax, ay] = P[i], [bx, by] = P[(i + 1) % P.length];
+  const ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey); const d = sg * ((x - ax) * ey - (y - ay) * ex) / L; m = Math.min(m, d); } return m; }
+function layout(P, sign, nMarks, txtW, inR, extra = 0) {
+  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra; const plans = [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
+  let best = null;
+  for (const plan of plans) for (let oy = -0.5; oy <= 0.5001; oy += 0.05) {
+    const fits = (k) => { const fs = k, is = k * 0.62, gap = is * 1.18; const rows = plan.length; const hT = fs * 0.78, hI = rows * gap;
+      const top = oy * inR - (hT + hI) / 2; const ny = top + hT / 2; const tw = txtW * fs;
+      for (const [cx, cy] of [[-tw / 2, ny - hT / 2], [tw / 2, ny - hT / 2], [-tw / 2, ny + hT / 2], [tw / 2, ny + hT / 2]]) if (!inside(cx, cy, 0)) return null;
+      const pts = []; plan.forEach((n, r) => { for (let i = 0; i < n; i++) pts.push([(i - (n - 1) / 2) * gap, top + hT + gap * (r + .5)]); });
+      const rr = is * 0.5 + Math.min(9, is * 0.085) / 2; for (const [x, y] of pts) if (!inside(x, y, rr)) return null;
+      return { fs, is, ny, pts }; };
+    let lo = 0, hi = inR * 2, got = null; for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; const r = fits(mid); if (r) { lo = mid; got = r; } else hi = mid; }
+    if (got && (!best || got.fs > best.fs)) best = got; }
+  return best;
 }
+function paintFace(g, poly, fi, f, stone, cell, Hm, label) {
+  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const tone = f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
+  const txt = `+${f.v}`; const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 4)];
+  // the face polygon in canvas px (y down), inset by the bevel (R_BY metres) + 4% of the inradius as the margin
+  const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1; // interior side of the edges
+  const inset = R_BY[poly.sides] * ppm * 1.15 + inR * 0.04; // inset = required clearance from every edge
+  g.font = `800 100px Oxanium, "Trebuchet MS", sans-serif`; const txtW = g.measureText(txt).width / 100 * 0.94;
+  const L = layout(P, sign, marks.length, txtW, inR, inset); const ok = !!L;
+  const { fs, is, ny, pts } = L || { fs: inR * .4, is: inR * .25, ny: -inR * .3, pts: marks.map((_, i) => [(i - (marks.length - 1) / 2) * inR * .3, inR * .2]) };
+  FIT.push({ sides: poly.sides, label, marks: marks.length, fs: +(fs / inR).toFixed(3), is: +(is / inR).toFixed(3), ok });
+  g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#000a'; g.fillText(txt, 0, ny + fs * .06); g.fillStyle = '#fff6'; g.fillText(txt, -fs * .02, ny - fs * .03);
+  const [i0, i1] = stone ? INK[tone] : ['#fffaf0', f.v === 0 ? '#b8aca0' : '#e6d6b8'];
+  const tg = g.createLinearGradient(0, ny - fs / 2, 0, ny + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, ny);
+  marks.forEach((k, i) => icon(g, k, pts[i][0], pts[i][1], is));
+  if (DEBUG) { g.save(); g.strokeStyle = '#0f0'; g.lineWidth = 3; g.beginPath(); P.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.stroke(); g.restore(); }
+}
+let DEBUG = false; export const setDebug = (v) => { DEBUG = v; };
+// flat atlas cells for the test sheet: returns a data URL of the face (sides, faces[label-1]) painted on its own, with its outline
+export function faceTile(sides, face, label = 1, px = 256) {
+  const poly = makePoly(sides); const fi = poly.labelFace[label - 1]; let Hm = 0; poly.faces.forEach((q) => q.local.forEach((p) => { Hm = Math.max(Hm, Math.abs(p[0]), Math.abs(p[1])); })); Hm *= 1.12;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 512; const g = cv.getContext('2d'); const ppm = 256 / Hm; const F = poly.faces[fi];
+  g.translate(256, 256); g.beginPath(); F.local.forEach(([x, y], i) => (i ? g.lineTo(x * ppm, -y * ppm) : g.moveTo(x * ppm, -y * ppm))); g.closePath();
+  g.fillStyle = BODY[face.c === 'b' ? 'b' : 'r'][0]; g.fill(); const was = DEBUG; DEBUG = true; paintFace(g, poly, fi, face, false, 512, Hm, label); DEBUG = was;
+  const o = document.createElement('canvas'); o.width = o.height = px; o.getContext('2d').drawImage(cv, 0, 0, px, px); return o.toDataURL(); }
 function atlas(poly, faces, tone, stone, cell = 512) {
   const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });
   // rev 5: every face cell gets the SAME flat body colour (rev 4 ran one gradient across the whole
@@ -71,7 +103,7 @@ function atlas(poly, faces, tone, stone, cell = 512) {
   if (!stone) faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi); cellFill(cx, cy, f.c === 'b' ? 'b' : 'r'); });
   grain(g, W, W, 7, stone ? 52 : 26); grain(g, W, W, 31, stone ? 34 : 16, 110); // the same grain over every face
   faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi);
-    g.save(); g.translate(cx, cy); paintFace(g, poly, fi, f, stone, cell, Hm); g.restore(); });
+    g.save(); g.translate(cx, cy); paintFace(g, poly, fi, f, stone, cell, Hm, li + 1); g.restore(); });
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.flipY = true;
   const trim = ctr(n); return { t, uvOf, trimUV: [trim[0] / W, 1 - trim[1] / W], cv };
 }

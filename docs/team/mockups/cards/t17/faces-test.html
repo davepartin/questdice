@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><title>T17 rev 10 face-fit test sheet</title>
+<script type="importmap">{"imports":{"three":"../../../../../vendor/three/build/three.module.js","three/addons/":"../../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#1a140e;color:#eadfca;font:600 13px Oxanium;padding:12px}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 10px;color:#cbb894}
+.g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.c{background:#2a1f14;border-radius:8px;padding:6px;text-align:center}.c img{width:100%;display:block}.c b{display:block;margin-top:4px}.c.bad{outline:3px solid #f33}</style></head><body>
+<h1>T17 rev 10 · face-fit test sheet (worst cases)</h1><p>Green line = the face's true edge. Each face is fitted so the number and every icon (white border included) keep a margin from the bevel. Top: flat face; bottom: the 3D die showing that face.</p>
+<div class="g" id="g"></div>
+<script type="module">
+import { faceTile, dieImage, FIT } from './dice3d.js';
+await document.fonts.load('800 40px Oxanium');
+const H = (n) => Array(n).fill('heal');
+const CASES = [[4, { v: 3, c: 'r', icons: H(4) }, '+3 · atk + 4 heal'], [6, { v: 5, c: 'r', icons: H(4) }, '+5 · atk + 4 heal'], [8, { v: 7, c: 'r', icons: H(4) }, '+7 · atk + 4 heal'], [10, { v: 9, c: 'r', icons: H(4) }, '+9 · atk + 4 heal'],
+  [4, { v: 1, c: 'b', icons: ['heal', 'pierce', 'gold', 'magic'] }, '+1 blk + 4 mixed'], [6, { v: 9, c: 'r', icons: ['pierce', 'heal', 'gold', 'magic'] }, '+9 + 4 mixed'], [8, { v: 12, c: 'r', icons: ['pierce', 'pierce', 'heal', 'magic'] }, '+12 + 4 mixed'], [10, { v: 12, c: 'b', icons: ['gold', 'gold', 'heal', 'magic'] }, '+12 blk + 4 mixed']];
+for (const [s, f, t] of CASES) { const n0 = FIT.length; const flat = faceTile(s, f, s); const faces = Array.from({ length: s }, (_, i) => (i === s - 1 ? f : { v: 1, c: 'r', icons: [] }));
+  const die = dieImage(s, faces, s, { px: 360 }); const fit = FIT[n0];
+  g.insertAdjacentHTML('beforeend', `<div class="c ${fit.ok ? '' : 'bad'}"><img src="${flat}"><img src="${die}"><b>d${s} · ${t}</b><small>${fit.ok ? 'fits' : 'DOES NOT FIT'} · number ${fit.fs} inR · icon ${fit.is} inR</small></div>`); }
+document.body.dataset.ok = FIT.every((x) => x.ok) ? 1 : 0; document.body.dataset.ready = 1;
+</script></body></html>

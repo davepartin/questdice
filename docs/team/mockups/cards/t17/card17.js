@@ -18,7 +18,7 @@ const T17 = await (await fetch(new URL('../../../tasks/T17-faces.json', import.m
 export function nested(id, r, s) { return T17[id][METALS[r]][String(s)]; }
 export function ladder(id, r) { let prev = []; const rows = {}; for (const s of SIZES) { const n = nested(id, r, s); rows[s] = n.slice(prev.length); prev = n; } return rows; }
 const FXK = { loot: 'gold' };
-export const iconsOf = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k] || k))];
+export const iconsOf = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(4, n | 0)).fill(FXK[k] || k))];
 const ORDER = ['atk', 'block', 'gold', 'heal', 'pierce', 'magic'];
 export const bonusKinds = (faces) => { const h = new Set(faces.flatMap(iconsOf)); return ORDER.filter((k) => h.has(k)).slice(0, 4); };
 const NAME = { atk: 'attack', block: 'block', gold: 'gold', heal: 'health', pierce: 'pierce', magic: 'magic' };
