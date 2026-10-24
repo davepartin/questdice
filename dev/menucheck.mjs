@@ -6,6 +6,8 @@ const port = process.argv[2] || 8142; const base = process.argv[3] || '/'; const
 const url = (q) => (/^http/.test(port) ? `${port}${base}${q}` : `http://localhost:${port}${base}${q}`);
 const launch = { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox'] };
 if (process.env.HTTPS_PROXY && /^http/.test(port)) launch.proxy = { server: process.env.HTTPS_PROXY };
+// Hosted runs go through this sandbox's egress proxy, whose CA Chromium does not know: CA_SPKI (base64 SHA-256 of that CA's public key, from /root/.ccr/agent-proxy-ca.crt) trusts that one CA, nothing else; certificate checking is not turned off.
+if (process.env.CA_SPKI) launch.args.push(`--ignore-certificate-errors-spki-list=${process.env.CA_SPKI}`);
 const b = await chromium.launch(launch);
 const ctx = await b.newContext({ viewport: { width: 390, height: 664 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
 const p = await ctx.newPage(); p.setDefaultTimeout(240000); p.on('pageerror', (e) => console.log('ERR', e.message));
