@@ -63,6 +63,8 @@ for (const [w, h] of SIZES) {
     res[kind] = await p.evaluate(() => { const c = document.querySelector('.cw-obj .qc'); const r = c?.getBoundingClientRect(); const cta = document.querySelector('.env-cta')?.getBoundingClientRect(); const box = document.querySelector('.cw-obj .obox'); const side = document.querySelector('.sx-side');
       return { kind: c?.dataset.kind, card: r && { w: Math.round(r.width), h: Math.round(r.height), top: Math.round(r.top), bottom: Math.round(r.bottom) }, ctaTop: cta && Math.round(cta.top), vh: innerHeight, buttons: [...document.querySelectorAll('.env-btns button')].map((x) => x.innerText.trim()), boxOverflow: box ? box.scrollHeight > box.clientHeight + 1 : null, sideScrolls: side ? side.scrollHeight > side.clientHeight + 2 : null, rows: [...document.querySelectorAll('.cw-obj .sr')].map((x) => x.innerText.replace(/\s+/g, ' ')) }; }); }
   await p.evaluate(() => window.QD.showCreate()); await pump(2); await shot('8_create'); res.create = await p.evaluate(() => ({ rows: document.querySelectorAll('.ci-weapons .cw-row').length, overflowX: document.documentElement.scrollWidth > innerWidth }));
+  res.build = await p.evaluate(async () => (await import('./js/previewtag.js').then(() => document.querySelector('.lab-tag')?.textContent || null)));
+  res.keys = await p.evaluate(() => Object.keys(localStorage).sort());
   log.push(res); await ctx.close();
 }
 fs.writeFileSync(`${OUT}/cards.json`, JSON.stringify(log, null, 1)); console.log(JSON.stringify(log, null, 1)); await b.close();
