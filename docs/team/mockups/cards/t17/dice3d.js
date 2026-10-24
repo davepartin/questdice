@@ -34,7 +34,7 @@ function grain(g, W, H, seed, a, C = 24) {
 // drop shadow below and a light top bevel, so it reads as stamped/embossed into the die on red and blue bodies alike
 const RICH = { atk: '#e07a00', block: '#0b3c9e', gold: '#e39400', pierce: '#ee4400', magic: '#7410cc', heal: '#08a83a', star: '#e88600' }; // pre-tone-mapping, so they land rich
 const icon = (g, k, x, y, s) => { const p = new Path2D((SYM[k] || SYM.star).d); const col = RICH[k] || (SYM[k] || SYM.star).c;
-  const u = s / 24; const white = 9 / u; // ~9 texture px (stroke is centred, so ~4.5 px outside the shape) of white border (about 3-4 px on screen at the card's die sizes)
+  const u = s / 24; const white = Math.min(9, s * 0.085) / u; // ~9 texture px on big icons, proportionally thinner on small d4 icons so the colour still dominates of white border (about 3-4 px on screen at the card's die sizes)
   g.save(); g.translate(x - s / 2, y - s / 2); g.scale(u, u); g.lineJoin = 'round';
   g.save(); g.translate(0, 5 / u); g.lineWidth = white; g.strokeStyle = '#3a0a0688'; g.stroke(p); g.restore(); // shadow under the stamp
   g.lineWidth = white; g.strokeStyle = '#fffdf6'; g.stroke(p); g.fillStyle = col; g.fill(p);
@@ -44,15 +44,18 @@ const icon = (g, k, x, y, s) => { const p = new Path2D((SYM[k] || SYM.star).d); 
 // coherently from any angle. faces[label-1] = { v, c 'r'|'b', icons }.
 function paintFace(g, poly, fi, f, stone, cell, Hm) {
   const ppm = (cell / 2) / Hm; const inR = poly.faces[fi].inR2 * ppm; const tone = f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
-  const txt = `+${f.v}`; const fs = inR * (poly.sides === 4 ? 0.86 : poly.sides >= 8 ? 0.8 : txt.length > 2 ? 0.84 : 0.94);
-  const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 3)]; const lift = -inR * (poly.sides >= 8 ? 0.34 : 0.2);
+  const txt = `+${f.v}`; const d4 = poly.sides === 4; const fs = inR * (d4 ? 0.7 : poly.sides >= 8 ? 0.8 : txt.length > 2 ? 0.84 : 0.94);
+  const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 3)]; const lift = -inR * (poly.sides >= 8 ? 0.34 : d4 ? 0.36 : 0.2);
   g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = '#000a'; g.fillText(txt, 0, lift + fs * .06); g.fillStyle = '#fff6'; g.fillText(txt, -fs * .02, lift - fs * .03);
   const [i0, i1] = stone ? INK[tone] : ['#fffaf0', f.v === 0 ? '#b8aca0' : '#e6d6b8'];
   const tg = g.createLinearGradient(0, lift - fs / 2, 0, lift + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, lift);
   // the attack starburst or block shield, always first and drawn in ivory (or ink) so shape alone tells them apart; bonus icons follow
-  const big = poly.sides >= 8 ? 1.35 : 1; const is = inR * (marks.length > 2 ? 0.5 : 0.62) * big;
-  marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.22, lift + fs * .55 + is * .5, is));
+  const big = poly.sides >= 8 ? 1.35 : 1; const is = d4 ? inR * (marks.length > 2 ? 0.4 : 0.48) : inR * (marks.length > 2 ? 0.5 : 0.62) * big;
+  // rev 7: on a d4 (apex up, centroid at 0, base edge at +inR) the icon row sits at +0.36 inR, where the face is ~2.5 inR wide, so the
+  // whole icon and its white border stay inside the triangle with margin (rev 6 put it at ~0.6 inR, half off the face)
+  const iy = d4 ? inR * 0.36 : lift + fs * .55 + is * .5;
+  marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.24, iy, is));
 }
 function atlas(poly, faces, tone, stone, cell = 512) {
   const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });
@@ -90,7 +93,7 @@ export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = 
     q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, sides === 4 ? 0.5 : 0.62, 0)));
   } else q.premultiply(new THREE.Quaternion().setFromEuler(tilt));
   mesh.quaternion.copy(q);
-  const d = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (view === 'slot' ? 0.9 : sides === 4 ? 0.78 : 0.86);
+  const d = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (view === 'slot' ? 1.18 : sides === 4 ? 0.78 : 0.86);
   if (view === 'slot') { const el = 0.72; cam.position.set(0, Math.sin(el) * d, Math.cos(el) * d); } else cam.position.set(0, 0, d);
   cam.lookAt(0, 0, 0); mesh.position.y = view !== 'slot' && sides === 4 ? -poly.outR * 0.08 : 0;
   R.render(scene, cam); const url = R.domElement.toDataURL('image/png');

@@ -97,3 +97,6 @@ html,body{margin:0;background:#07080c}
 
 /* rev 6: every row carries its info; a locked row's stays hidden under the token and fades in after the demo unlock */
 .row.locked .ri{visibility:hidden}.row.reveal .ri{visibility:visible;animation:dieIn .4s .45s both}
+
+/* rev 7: the slot die is drawn whole (camera pulled back in dice3d.js) and centred in the well, never cropped */
+.eq.on .well{overflow:visible}.eq.on .well img{width:112%;margin-top:-4%}
