@@ -1,6 +1,6 @@
 # T17 plan: weapon size, no wear (Claude: gameplay implementation and economy checks)
 
-Status: **plan and measurements only. No game code has changed.** Rules live behind a switch that is off at the live root; the experiment is published only as an isolated preview with its own storage. Source: the ruling in [T17.md](T17.md); measured faces in [T17-faces.md](T17-faces.md) (`node tools/t17-faces.mjs`).
+Status: **plan and measurements only. No game code has changed.** Corrected 24 Oct after the Director's review: the earlier face table (d4 preserved only) is **withdrawn**; the tables are now a cumulative ladder with prefix checks. Rules live behind a switch that is off at the live root; the experiment is published only as an isolated preview with its own storage. Source: the ruling in [T17.md](T17.md); measured faces in [T17-faces.md](T17-faces.md) (`node tools/t17-faces.mjs`).
 
 ## 1. Overlap audit (the Director asked for it; file and line are on main as of 24 Oct)
 
@@ -25,14 +25,18 @@ Status: **plan and measurements only. No game code has changed.** Rules live beh
 
 Today every page under `/preview/` uses one namespace, `questdice.preview.*` (`js/lab.js`). T17 gets its own: `SANDBOX_NAME` becomes `preview-weapon-size` for `/preview/weapon-size/`, giving `questdice.preview-weapon-size.hero.*`, `questdice.preview-weapon-size.battlereports` and `qd.preview-weapon-size.daily`. `battle-report` and `cards` keep `preview` exactly as now, so their saved heroes, reports and daily records are untouched. Verification before publishing: a browser run seeds live, lab and both existing preview namespaces, plays the T17 preview, and asserts every seeded value is byte-identical afterwards and only the new keys were written. No hero or equipment is imported or converted from any other namespace.
 
-## 4. Nested faces: what the measurements say (full tables: [T17-faces.md](T17-faces.md))
+## 4. Cumulative size ladder: what the corrected measurements say (full tables: [T17-faces.md](T17-faces.md); JSON for the mockup: [T17-faces.json](T17-faces.json); code: `tools/t17-ladder.mjs`, `test/t17faces.test.mjs`)
 
-The rule measured is a proposal for review: d4 faces fixed; a bigger size keeps them and adds (size − 4) faces, taken as the highest-hit faces of today's spread at that size, so the top end of today's weapon is kept and the metal still sets the icons.
+**Correction.** The first table built each size from d4 and the strongest faces of that size's released spread, so it protected only the original four faces. The new ladder is genuinely cumulative: d4 faces fixed; d6 appends two faces; d8 appends two to the d6 set; d10 appends two to the d8 set. Full face identity (colour, number, bonus plus, every effect, ammunition marking) never changes once on the ladder. The appended faces are the two best of what today's released spread at that size has beyond the faces already on the ladder. Checked for all eight active types (Dagger, Sword, Axe, Spear, Round Shield, Tower Shield, Bow, Arrows; the earlier plan said six), Bronze, Silver and Gold, and Arrows in Normal, Piercing, Fire and Frost: face count equals the die size and each size is an exact prefix of the next (6 tests; the check is itself tested against a reshuffled ladder). Attack and block are measured separately, with how often each effect is on the die.
 
-- **Today a bigger die reshuffles the lower faces** for every active sized weapon (Grok's finding, confirmed in the "Lower faces change today?" column). Nested faces make an upgrade a pure addition.
-- **The proposal is slightly stronger than today's spreads:** about +0.2 to +0.3 average hit at d6, d8 and d10 for the Silver dagger, and the added faces are all "useful" (3 or more, or carrying an icon). So this rule is a small buff, not a neutral re-expression. It also front-loads the value: the first 40 gold step (d4→d6) adds the most per gold.
-- **A bigger die is not always better in principle,** but under this rule it is, always, because it only adds. If the Director wants real trade-offs (a bigger size that also dilutes), the added faces need to include low or blank faces; that is a design decision, not made here.
-- **Diamond:** today's Diamond faces by size are tabulated for review. No Diamond bonus-face package is proposed yet; it needs the Director's review before any balance is implemented (ruling 6).
+**Result over all 99 purchases (11 variants × 3 metals × 3 steps):** the total of expected attack plus expected block **never falls**, but the purchase is not better in every respect:
+- **28 purchases lower E[attack] or E[block]** (never both). Mostly the Dagger, Spear, Sword and Round Shield: the appended faces are strong attack faces, so E[attack] rises a lot while E[block] slips slightly (for example Bronze Dagger d4→d6: +1.17 attack, −0.08 block); on the Round Shield the same happens the other way round.
+- **18 purchases dilute an effect's share of faces** even when its icon count holds: pierce on Dagger and Round Shield, magic on Sword and Round Shield, pierce on the Arrows variants. A d10 Silver Dagger has pierce on 0.20 of its faces against 0.33 at d6.
+- So the earlier "small buff" characterisation, from the Silver Dagger alone, is withdrawn. The honest reading: the ladder raises the main output, and trades some effect frequency and the other colour's share for it. Whether that is "worthwhile progression" for each weapon is the Director's call per the corrected rows; I am not claiming every upgrade is better.
+
+## 4b. Diamond proposal (for review; nothing implemented; acquisition stays held)
+
+Package, source and starting size are in [T17-faces.md](T17-faces.md) (section "Diamond") with every face listed: the weapon's Gold ladder plus a growing crit step, permanent, same d4 to d10 sizes and prices, cumulative (checked). **Source proposed:** a rare drop from the final Act III boss only (Vharaxis, step 10), 30% on a first victory, at most one Diamond per hero, never in the shop, starting at d6; eligible types Dagger, Sword, Axe, Spear, Round Shield, Tower Shield (Bow and Arrows are paired items and are not offered as Diamonds first). The old special-case Diamond table (which listed six faces for a d4) is not used.
 
 ## 5. Economy checks to run before anything goes near live play
 
@@ -46,17 +50,25 @@ The rule measured is a proposal for review: d4 faces fixed; a bigger size keeps 
 
 Switch off at the live root, lab and both previews; with it on: no wear for any weapon including Bow, Arrows and Diamond; size purchase prices and one-step ordering; a found d8 has d6 uncovered; purchases do not change sell value or the shop price; each owned weapon keeps its own size (two Silver Daggers); an unopened slot stays unopened; no strength requirement or `heroStrength` change; nested faces keep the lower faces at every size; Diamond permanent and absent from the ordinary shop; the card's price and "no refund" line match the purchase; storage namespace test (section 3).
 
-## 7. Old-save migration proposal (draft, required before any release)
+## 7. Old-save migration proposal (draft; live-save migration is not approved)
 
-Nothing converts silently. A hero keeps every weapon exactly as saved. On first load under the new rules: `left` (battles left) is ignored and then dropped on the next save; `size` is kept as the weapon's purchased size (so a d8 found weapon stays a d8); `sizeFound` is set to the current size so selling never pays a windfall; a Diamond in the old case is moved to a pack slot if there is room, otherwise it stays in the case (still usable) until the player makes room, and is never deleted; a hand die that was bought only to lift a weapon cap keeps its size. A one-time message states what changed. The hero's gold is not touched. Because the live root never switches the rules on until release, this proposal is for the Director's review first; it is written down here so it cannot be forgotten.
+Nothing converts silently. Under the experiment a hero keeps every weapon as saved; `left` (battles left) is ignored; `size` stays the purchased size; `sizeFound` is set to the current size; a Diamond in the old case is moved to a pack slot if there is room and otherwise stays in the case, never deleted; a hand die keeps its size; gold is not touched; a one-time message says what changed.
+
+**Correction to my earlier statement.** "So selling never pays a windfall" was wrong. Removing the wear discount **raises** what an old worn weapon sells for, because today a sale returns half the worth times the battles left over the full life. Measured with the engine's own functions over the eight active types, three metals and four sizes: a weapon with full life sells for the same as before (difference 0); with half its life left it sells for about **27 gold more** on average; with one battle left about **46 gold more** on average and up to **157 gold more** (a Gold Tower Shield d10 at 1 of 8 battles: 23 today, 180 under as-found half-worth). Examples: Silver Dagger d6 at 6, 3 and 1 battles left sells for 27, 14 and 5 today and 27 in every case under the experiment; Gold Axe d10 at 8, 4 and 1 sells for 156, 78 and 20 today and 156 under the experiment. A hero who keeps worn spares in the pack could therefore sell them all for a one-time gain. Options for the Director: accept the windfall (it is bounded by what a hero carries: four pack slots and two hands), cap it by keeping the old wear discount for already-worn weapons at migration, or sell old worn weapons at their old value once. The preview does not import any hero, so this decision is needed only before a release.
+
+**As-found basis stays stable:** `sizeFound` is written once when a weapon is found or bought, copied unchanged on save/load and on any transfer, and never changed by a size purchase. Tests: save/load round trip and a buy, upgrade, sell, rebuy cycle that never profits. One existing exception to check, not caused by T17: the shop's `priceMod` can go as low as 0.4 of the worth (`js/engine.js:1475`, discount camp flags) while a sale returns 0.5, so a discounted purchase can already be sold at a profit; the buy/sell test will measure it with and without discount flags.
 
 ## 8. Order of work (each step checked and recorded on the board)
 
-1. Namespace per preview folder (`js/lab.js`) with the isolation test. 2. The switch and the wear removal. 3. `sizeFound`, sell value, `sizeUpgradeInfo` and `buySize` with the sell and price tests. 4. The hand-die ceiling change behind the switch. 5. Nested faces for the six active types (data from the table, once the Director has seen it). 6. Card and camp UI (with Grok's revised mockup). 7. The isolated preview (`preview/weapon-size/`). 8. Economy runs and the report. Nothing is merged to the live root with the switch on.
+1. Namespace per preview folder (`js/lab.js`) with the isolation test. 2. The switch and the wear removal. 3. `sizeFound`, sell value, `sizeUpgradeInfo` and `buySize` with the sell and price tests. 4. The hand-die ceiling change behind the switch. 5. Cumulative faces for the eight active types (data from the table, once the Director has seen it). 6. Card and camp UI (with Grok's revised mockup). 7. The isolated preview (`preview/weapon-size/`). 8. Economy runs and the report. Nothing is merged to the live root with the switch on.
 
-## Questions for the Director (answers change the code)
+## Director's answers (24 Oct) and what changed
 
-1. Is the **nested-faces rule** as measured (top-end faces added, a small buff) the intended one, or should upgrades also add weaker faces so size is a real trade-off?
-2. With the hand-die weapon ceiling gone, should the **hand die upgrade prices** be revisited, or left alone for the first test?
-3. Where does a **Diamond** come from now (a drop, a boss reward, a quest reward), since it leaves the ordinary shop?
-4. Is it right that a sold weapon returns half its **as-found** worth even though wear no longer discounts it?
+1. **Faces:** worthwhile progression, no deliberate blanks; top-end additions acceptable only as a genuinely cumulative ladder with corrected measurements. Done: section 4. Not approved yet.
+2. **Hand upgrade prices:** unchanged for the first comparison; measure their remaining value without the weapon ceiling (economy check 5).
+3. **Diamond:** a rare late-campaign boss reward; exact encounter, chance, starting size and faces submitted together: section 4b. Acquisition stays held.
+4. **Sale value:** half the as-found worth, no wear discount, no refund for size increases: adopted, with the migration windfall now quantified (section 7).
+
+## Next (independent of the face review, preview only, off at the live root)
+
+Per-preview storage namespace and its isolation test; the switch-off baseline; the purchase infrastructure (`sizeFound`, `sizeUpgradeInfo`/`buySize`, no-refund line). Not started until the corrected tables are on the board; face balance is not published as settled.
