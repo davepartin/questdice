@@ -137,13 +137,19 @@ export function dealEnvelopes({ c, heroes, enemies = [], salt = '', big = false 
 // What this hero sees (their card only), for the Envelope screen.
 export function cardView(env, name) {
   const mine = env?.cards?.[name]; if (!mine) return null; const d = CARDS[mine.id];
-  return { id: mine.id, kind: d.kind, mode: mine.mode || null, name: d.name, flavor: d.flavor, rule: d.rule.replace('{spare}', mine.spareName || 'that monster'), reward: rewardLine(env, mine, Object.keys(env.cards).length > 1), stakes: rewardChips(env, mine), scene: env.scene, cover: env.cover, voice: env.voice, answered: !!env.answered[name], accepted: mine.accepted ?? null };
+  return { id: mine.id, kind: d.kind, mode: mine.mode || null, name: d.name, flavor: d.flavor, rule: d.rule.replace('{spare}', mine.spareName || 'that monster'), reward: rewardLine(env, mine, Object.keys(env.cards).length > 1), stakes: rewardChips(env, mine), terms: rewardTerms(env, mine), scene: env.scene, cover: env.cover, voice: env.voice, answered: !!env.answered[name], accepted: mine.accepted ?? null };
+}
+// The sums behind an accepted offer, for the card's labelled rows (null for every other card).
+export function rewardTerms(env, mine) {
+  if (CARDS[mine.id].kind !== 'bribe' || mine.mode !== 'offer') return null;
+  const G = gOf(env.act); return { win: 2 * G, fail: Math.round(G / 2), crooks: Math.round(G / 2), honor: [r5(G / 4), r5(G / 2)] };
 }
 // The prize as one or two chips for the card itself ("Win 40 gold", "Lose 10"); rewardLine has the full sentence for "More".
-function rewardChips(env, mine) {
+export function rewardChips(env, mine) {
   const G = gOf(env.act); const d = CARDS[mine.id];
   if (d.kind === 'rival') return [d.doubles ? `Win: double gold (up to ${2 * G})` : `Win ${G} gold`];
-  if (d.kind === 'bribe' && mine.mode === 'offer') return [`Win ${2 * G} gold`, `Fail: pay ${Math.round(G / 2)}`];
+  // an accepted offer: done and won pays 2G; won without doing it pays nothing; a team defeat costs G/2, and G/2 more when every offered bribe was taken (the "crooks" clause in judge(), below)
+  if (d.kind === 'bribe' && mine.mode === 'offer') return [`Done and won: ${2 * G} gold`, 'Won, not done: nothing', `Team defeated: pay ${Math.round(G / 2)}, ${Math.round(G / 2)} more if every bribe was taken`];
   if (d.kind === 'bribe') return [`Win ${G} gold`];
   return [`Win ${r5((d.pay || 1) * G)} gold`];
 }
@@ -151,7 +157,7 @@ function rewardChips(env, mine) {
 function rewardLine(env, mine, team) {
   const G = gOf(env.act); const d = CARDS[mine.id]; const win = team ? 'if the team wins' : 'if you win';
   if (d.kind === 'rival') return d.doubles ? `Double the gold you earn (up to ${2 * G}), ${win}.` : `${G} gold, ${win}.`;
-  if (d.kind === 'bribe' && mine.mode === 'offer') return `Pull it off and win, and you get ${2 * G} gold. Lose, and you pay ${Math.round(G / 2)}. Or say no for a little Honor gold.`;
+  if (d.kind === 'bribe' && mine.mode === 'offer') return `Pull it off and win, and you get ${2 * G} gold. Win without pulling it off and you get nothing. If the team is defeated you pay ${Math.round(G / 2)}, done or not, and ${Math.round(G / 2)} more if every offered bribe was taken. Or say no for a little Honor gold.`;
   if (d.kind === 'bribe') return `${G} gold, ${win}.`;
   return `${r5((d.pay || 1) * G)} gold, ${win}.`;
 }

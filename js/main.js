@@ -3,6 +3,7 @@ import { bindChrome, boot, debugApi } from './ui.js';
 import { LAB } from './lab.js';
 import { PACE } from './g3/flat.js';
 import { applyRelease, applyLab } from './release.js';
+import './previewtag.js';
 
 // No pinch-zoom (Dave, Oct 2026: "I can zoom and pinch to zoom on all these screens; that is wrong"). iPhone Safari ignores
 // user-scalable=no in the viewport tag, so its own pinch gesture and two-finger moves are stopped here; one-finger scrolling still works.

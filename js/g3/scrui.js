@@ -20,6 +20,7 @@ import * as DAY from '../daily.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
 import { campDie, campFaceList } from './campart.js';
+import * as CW from './cards.js';
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -101,6 +102,7 @@ const LAYOUT = {
   create: { land: { right: 0.4 }, port: { bottom: 0.56 } },
   board: { land: { right: 0.62 }, port: { bottom: 0.6 } },
   road: { land: { right: 0.46 }, port: { bottom: 0.56 } },
+  envelope: { land: { right: 0.5 }, port: { bottom: 0.8 } }, // the objective card is a whole card: give it the screen
   camp: { land: { right: 0.42 }, port: { bottom: 0.74 } },
   victory: { land: { right: 0.44 }, port: { bottom: 0.58 } },
   defeat: { land: { right: 0.42 }, port: { bottom: 0.5 } },
@@ -284,18 +286,30 @@ const hasCharmHere = (hero, id) => !!hero && E.charmsOf(hero).includes(id);
 function charmGuideBtn() {
   return h('button', { class: 'ch-guide-btn', type: 'button', onclick: tap(charmGuide) }, ico('book'), `All ${Object.keys(D.CHARMS).length} charms`);
 }
-// A weapon as a collectible: 3D portrait, rarity banner and glow, face chips, optional actions.
-function weaponCard(inst, { actions = [], note = '', compact = true, badge = '', cls = '' } = {}) {
-  const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : RAR[inst.rarity | 0]; const tier = D.tierName(inst);
-  // Strength is the limit: a weapon die never rolls bigger than the hand that holds it
-  // Just the data (Dave, Oct 2026: "the name, the faces, the small picture and the dice size. No other explanation needed.")
-  const size = E.weaponSize(inst); void note;
-  // a small card is the popup's row (Dave, Oct 2026: the spoils lost their pictures): picture, name, faces, its buttons below
-  if (compact) return shWeapon(inst, actions.length ? h('div', { class: 'sh-acts' }, actions) : null, `pk ${cls}`, badge);
-  return h('article', { class: `sx-wc rar-${r} ${cls}` },
-    h('div', { class: 'wc-stage' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'wc-art', `${tier} ${w.name}`), h('span', { class: 'wc-banner' }, tier), badge ? h('span', { class: 'wc-badge' }, badge) : null),
-    h('div', { class: 'wc-body' }, h('b', { class: 'wc-name' }, w.name), h('small', { class: 'wc-sub' }, `d${size}${w.hands === 2 ? ' · both hands' : ''}${inst.id !== 'fists' ? ` · ${E.wearLabel(inst)}` : ''}`), faceChips(inst)),
-    actions.length ? h('div', { class: 'wc-actions' }, actions) : null);
+// A weapon as a card (the approved card family, js/g3/cards.js, drawn from the weapon's own data). Three views of the same weapon:
+// compact = the row used in the pack and on the shelf; cls 'pick' = the spoils view (the card beside the decision); compact:false = the big card.
+// money labels the gold figure: Sell (the default, what the pack pays) or Store (what the shelf charges). Drawing a card only reads.
+function weaponCard(inst, { actions = [], note = '', compact = true, badge = '', cls = '', money = null } = {}) {
+  void note;
+  const acts = actions.length ? h('div', { class: 'sh-acts' }, actions) : null;
+  if (!compact) return h('article', { class: `cw-big ${cls}` }, CW.weaponCardOf(inst, money), acts);
+  if (/\bpick\b/.test(cls)) return spoilsView(inst, acts, cls, badge, money);
+  return shWeapon(inst, acts, `pk ${cls}`, badge, money);
+}
+// the full card, large, from any row or thumbnail
+function showWeaponCard(inst, money) {
+  const close = modal(h('div', { class: 'form cw-modal' }, h('div', { class: 'cw-big' }, CW.weaponCardOf(inst, money)),
+    h('div', { class: 'row end' }, btn('Close', () => close(), { kind: 'ghost' }))));
+}
+// spoils: the card itself (tap for the large one), then what the weapon is and the buttons below it
+function spoilsView(inst, acts, cls, badge, money) {
+  const d = CW.weaponData(inst, money); const thumb = CW.weaponCardEl(d); thumb.setAttribute('role', 'button'); thumb.tabIndex = 0;
+  thumb.addEventListener('click', () => { sfx.click(); showWeaponCard(inst, money); });
+  thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfx.click(); showWeaponCard(inst, money); } });
+  const info = h('div', { class: 'cw-info' }, h('b', { class: 'nm' }, `${d.metal} ${d.name}`), badge ? h('small', { class: 'cw-tag' }, badge) : null,
+    h('p', {}, `A d${d.size} weapon${d.hands === 2 ? ', both hands' : ''}${d.wear ? `, ${d.wear}` : ''}.`), h('small', { class: 'cw-hint' }, 'Tap the card to see it large.'));
+  const rest = h('div', { class: 'cw-rest' }); rest.innerHTML = CW.strip(d); if (acts) rest.append(acts);
+  return h('div', { class: `cw-spoil ${cls}` }, thumb, info, rest);
 }
 // ---- the daily challenge's page: the briefing (intro), a breath between fights (between), and the score (result).
 export function daily(v) {
@@ -410,7 +424,7 @@ export function create(opts = {}) {
       heroStats(c.hp, c.feet || 4, c),
       h('p', { class: 'ci-rule' }, `Every hero has the same nine dice and may reroll ${D.REROLL_DICE} at a time. Classes differ in where they start.`),
       eyebrow('Wields'),
-      h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: false }))),
+      h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true, money: { label: '', value: 0 } }))),
       eyebrow('Magical powers'),
       h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
       h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
@@ -794,7 +808,6 @@ export function envelope(card, o = {}) {
   // A card you draw (Dave, Oct 2026: "less text, very clear, almost like a little card you would draw in a board game"): what kind of
   // card, the objective, its one rule, the stakes in a chip or two; "More" holds the story, the full terms and the cover line.
   const voice = String(card.voice || 'the voice').replace(/^./, (ch) => ch.toUpperCase());
-  const chips = bonus ? (paid ? [`Bet ${card.stake} gold`, `Win ${card.gold} gold`] : ['Free try', `Win ${card.gold} gold`]) : (card.stakes || []);
   const more = [
     bonus ? `${voice} has a hard extra job for you this fight${paid ? ', and will take a wager on it' : ''}.` : card.scene,
     !bonus && card.flavor ? `“${card.flavor}”` : null,
@@ -807,15 +820,11 @@ export function envelope(card, o = {}) {
     h('div', { class: 'sx-side' },
       X.partyBar?.(),
       h('div', { class: 'obj-stage' },
-        h('article', { class: `env-card obj-card${bonus ? ' bonus' : ''}` }, h('span', { class: 'env-seal', 'aria-hidden': 'true' }, ico('key')),
-          h('small', { class: 'obj-kind' }, bonus ? 'Bonus Challenge' : 'Secret Objective'),
-          h('h2', { class: 'obj-name' }, card.name),
-          h('p', { class: 'obj-rule' }, card.rule),
-          chips.length ? h('div', { class: 'obj-chips' }, chips.map((c) => h('span', {}, ico('coin'), c))) : null,
-          moreBtn, details)),
+        h('div', { class: `cw-obj${bonus ? ' bonus' : ''}` }, CW.envelopeCardEl(card, bonus)),
+        h('div', { class: 'cw-more' }, moreBtn, details)),
       h('div', { class: 'sx-cta env-cta' }, choice, waiting, card.answered ? o.extra || null : null))));
   const place = E.questsFor(hero)[0]?.place;
-  lay('road'); if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
+  lay('envelope'); $('#app')?.style.setProperty('--sheet', window.innerHeight < 600 ? '0.9' : '0.86'); /* a whole card: the picture above gives up most of its room */ if (place) SCR.enter('road', { hero, heroes: X.members(), place, seed: hero.campaign.seed }, `road:${place}:${hero.name}:${hero.cls}`);
 }
 // The Reveal gets its own beat (the bots' playtest, Oct 2026): straight after the fight, before the brag board, the spoils and the
 // perks, one screen with every card turned over, and a Continue. o: { hero, place, won, onDone }.
@@ -1264,11 +1273,14 @@ const shBought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard)
 const shStage = (...kids) => h('div', { class: 'sh-stage' }, ...kids);
 const shDie = (n, cls = '') => h('span', { class: `sh-dbox ${cls}` }, SHEET.inline ? campDie(X.S.hero, SHEET.slot, n) : ico(`d${Math.min(10, n)}`, '', 60), SHEET.inline ? null : h('b', {}, `d${n}`));
 const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hidden': 'true' }, ico('chevron')) : null, b ? shDie(b, 'next') : null];
-// a weapon as a row: picture, name, metal and die, faces; an action on the right
-function shWeapon(inst, action, cls = '', badge = '') {
-  const w = D.WEAPONS[inst.id]; const r = w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0];
-  return h('div', { class: `sh-row rar-${r} ${cls}` }, h('div', { class: 'sh-rart' }, art(() => SCR.portraitQ.weapon(inst.id, inst.rarity | 0), 'sh-img', w.name), badge ? h('span', { class: 'sh-badge' }, badge) : null),
-    h('div', { class: 'sh-rbody' }, h('b', {}, w.name), h('small', {}, `${D.tierName(inst)} · d${E.weaponSize(inst)}${w.hands === 2 ? ' · both hands' : ''}`, inst.id !== 'fists' ? h('span', { class: `sh-wear ${E.battlesLeft(inst) <= 1 ? 'last' : ''}` }, ` · ${E.wearLabel(inst)}`) : null), faceChips(inst)), action);
+// a weapon as a row (pack, shelf, hands): the painted icon, name, metal, die and wear, the faces as a strip, the gold figure on the right
+// with its label; tap the row for the full card. The action buttons sit below the row, never inside it.
+function shWeapon(inst, action, cls = '', badge = '', money = null) {
+  const d = CW.weaponData(inst, money);
+  const row = h('button', { class: 'cw-row', type: 'button', 'aria-label': `${d.metal} ${d.name}, d${d.size}. Show the full card`, onclick: tap(() => showWeaponCard(inst, money)) });
+  row.innerHTML = `${CW.icon(d, 128)}<div><div class="nm"><span></span>${badge ? '<span class="where"></span>' : ''}</div><div class="ch">${CW.chips(d)}</div>${CW.strip(d)}</div>${d.money ? `<div class="act"><small>${d.moneyLabel}</small>${d.money}</div>` : '<div></div>'}`;
+  row.querySelector('.nm span').textContent = d.name; if (badge) row.querySelector('.where').textContent = badge;
+  return h('div', { class: `cw-wrap ${cls}` }, row, action);
 }
 // One equipped weapon, with a preview from the same face rules used in battle.
 function weaponWorkshop(hero, slot, inst) {
@@ -1512,7 +1524,7 @@ function storeTab() {
   // worth saving for: the dearest thing still on the shelf
   const best = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.sold).sort((a, b) => b.it.price - a.it.price)[0];
   const save = best ? zone('zn-save', 'crown', 'Worth saving for', best.it.price > hero.gold ? `${hero.gold} of ${best.it.price} gold.` : 'You can afford it now.',
-    h('div', { class: 'st-save' }, weaponCard(best.it.inst, { compact: true, badge: best.it.inst.diamond ? 'Diamond' : 'Special', actions: [buyWeapon(best.it, best.i)] }),
+    h('div', { class: 'st-save' }, weaponCard(best.it.inst, { compact: true, badge: best.it.inst.diamond ? 'Diamond' : 'Special', money: { label: 'Store', value: best.it.price }, actions: [buyWeapon(best.it, best.i)] }),
       h('div', { class: 'st-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(best.it.price), 'aria-valuenow': String(Math.min(hero.gold, best.it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / best.it.price) * 100)}%` } })))) : null;
   const tonics = E.storeTonics(hero).map((t) => h('div', { class: `sx-urow cmp st-tonic ${t.bought ? 'have' : ''}` }, rowIco(TONIC_ICO[t.icon] || 'star'),
     h('div', { class: 'ur-copy' }, h('b', {}, t.name), h('small', {}, t.text)),
@@ -1528,7 +1540,7 @@ function storeTab() {
     h('p', { class: 'st-hello' }, coin(hero.gold, 'inline'), h('span', {}, 'in your purse. New stock this camp.')),
     save,
     zone('zn-specials', 'star', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'st-rows' }, tonics, bundle)),
-    zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', actions: [buyWeapon(it, i)] })))),
+    zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', money: { label: 'Store', value: it.price }, actions: [buyWeapon(it, i)] })))),
     charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, charmOffer ? charmGuideBtn() : null, petOfferCard(hero)) : null);
 }
 function gearTab({ grid = false, chips = false } = {}) {
