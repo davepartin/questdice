@@ -45,7 +45,8 @@ function heroFacts(hero, f) {
     maxHealth: f.maxHp, startHealth: f.hp, startMagic: f.magic,
     potions: { have: E.potionsLeft(f), heals: E.potionHpOf(hero) },
     diceSides: Object.fromEntries(slots.map((s) => [s, E.sidesOf(hero, s)])),
-    weapons: Object.entries(hero.loadout || {}).filter(([, w]) => w && !w.twin).map(([slot, w]) => ({ slot: slotName(slot), id: w.id, name: weaponName(w.id), rarity: w.rarity ?? 0 })),
+    // a weapon can be equipped in a slot whose die is not unlocked at camp yet: it is carried but rolls nothing, so say which (captured from the game's own rule)
+    weapons: Object.entries(hero.loadout || {}).filter(([, w]) => w && !w.twin).map(([slot, w]) => ({ slot: slotName(slot), id: w.id, name: weaponName(w.id), rarity: w.rarity ?? 0, inPlay: E.isActive ? !!E.isActive(hero, slot) : true })),
     talents: plain(hero.talent),
     powers: E.cardsOf(hero).map(power),
     perks: (hero.perks || []).map((id) => ({ id, name: D.PERKS?.[id]?.name || id })),
@@ -453,7 +454,7 @@ export function summaryText(r) {
     if (h.detail === 'omitted') { L.push(`  ${h.name}, ${h.cls} level ${h.level}: health ${h.startHealth}/${h.maxHealth} (equipment, powers and perks left out to fit)`); continue; }
     if (h.detail === 'unavailable') { L.push(`  ${h.name}, ${h.classLabel}: health ${h.startHealth}/${h.maxHealth}; equipment, powers and perks unavailable on this phone`); continue; }
     L.push(`  ${h.name}, ${h.classLabel} level ${h.level}: health ${h.startHealth}/${h.maxHealth}, magic ${h.startMagic}, potions ${h.potions.have} (each heals ${h.potions.heals})`);
-    if (h.weapons?.length) L.push(`    weapons: ${h.weapons.map((w) => w.name).join(', ')}`);
+    if (h.weapons?.length) L.push(`    weapons: ${h.weapons.map((w) => `${w.name} (${w.slot}${w.inPlay === false ? ': equipped but NOT IN PLAY, its die is not unlocked, so it rolled nothing' : ''})`).join(', ')}`);
     if (h.powers?.length) L.push(`    powers: ${h.powers.map((p) => `${p.name}${p.level ? ` L${p.level}` : ''}`).join(', ')}`);
     if (h.perks?.length) L.push(`    perks: ${h.perks.map((p) => p.name).join(', ')}`);
     if (h.charms?.length) L.push(`    charms: ${h.charms.map((p) => p.name).join(', ')}`);
