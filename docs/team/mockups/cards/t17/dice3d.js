@@ -7,7 +7,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { makePoly, roundedGeometry } from '../../../../../js/gfx/dice/poly.js';
 import { SYM } from '../card-template.js';
 const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
-const BODY = { r: ['#6e0f12', '#2a0406'], b: ['#1b3f78', '#081530'], z: ['#4a2c2a', '#1c1110'] }; // attack, block, a +0 (dimmer red)
+const BODY = { r: ['#d21c22', '#6e0508'], b: ['#2a6fe0', '#0b2a78'], z: ['#7a3a36', '#3a1614'] }; // attack, block, a +0 (dimmer red)
 const STONE = ['#4a4640', '#1c1a17']; // T17 rev 2 variant: Dave's reference, dark stone body; colour moves to the numbers and symbols
 const INK = { r: ['#ff8a80', '#d8262a'], b: ['#9cc8ff', '#2f7ae0'], z: ['#c8b8b0', '#8a7a72'] };
 let R, scene, cam, env;
@@ -31,7 +31,7 @@ function grain(g, W, H, seed, a, C = 24) {
   g.putImageData(img, 0, 0);
 }
 const icon = (g, k, x, y, s, col = null) => { const p = new Path2D((SYM[k] || SYM.star).d); g.save(); g.translate(x - s / 2, y - s / 2); g.scale(s / 24, s / 24);
-  g.fillStyle = '#000a'; g.translate(.6, .9); g.fill(p); g.translate(-.6, -.9); g.fillStyle = col || (SYM[k] || SYM.star).c; g.fill(p); g.lineWidth = .9; g.strokeStyle = '#fff6'; g.stroke(p); g.restore(); };
+  g.fillStyle = '#000c'; g.translate(.5, .8); g.fill(p); g.translate(-.5, -.8); g.lineJoin = 'round'; g.lineWidth = 2.6; g.strokeStyle = col ? '#0008' : '#1a0a04'; g.stroke(p); g.fillStyle = col || (SYM[k] || SYM.star).c; g.fill(p); g.lineWidth = .7; g.strokeStyle = '#fffa'; g.stroke(p); g.restore(); };
 // atlas: one square cell per face; every face carries its own label (number, attack/block symbol, bonus icons) so the solid reads
 // coherently from any angle. faces[label-1] = { v, c 'r'|'b', icons }.
 function paintFace(g, poly, fi, f, stone, cell, Hm) {
@@ -43,13 +43,13 @@ function paintFace(g, poly, fi, f, stone, cell, Hm) {
   const [i0, i1] = stone ? INK[tone] : ['#fffaf0', f.v === 0 ? '#b8aca0' : '#e6d6b8'];
   const tg = g.createLinearGradient(0, lift - fs / 2, 0, lift + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, lift);
   // the attack starburst or block shield, always first and drawn in ivory (or ink) so shape alone tells them apart; bonus icons follow
-  const is = inR * (marks.length > 2 ? 0.48 : 0.58);
+  const is = inR * (marks.length > 2 ? 0.52 : 0.64);
   marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.08, lift + fs * .55 + is * .46, is, i === 0 ? (stone ? i1 : '#f4ead6') : null));
 }
 function atlas(poly, faces, tone, stone, cell = 512) {
   const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });
   const [c0, c1] = stone ? STONE : BODY[tone]; const gr = g.createLinearGradient(0, 0, W, W); gr.addColorStop(0, c0); gr.addColorStop(1, c1); g.fillStyle = gr; g.fillRect(0, 0, W, W);
-  grain(g, W, W, 7 + n, stone ? 52 : 40); grain(g, W, W, 31 + n, stone ? 34 : 26, 110);
+  grain(g, W, W, 7 + n, stone ? 52 : 30); grain(g, W, W, 31 + n, stone ? 34 : 20, 110);
   let Hm = 0; poly.faces.forEach((f) => f.local.forEach((p) => { Hm = Math.max(Hm, Math.abs(p[0]), Math.abs(p[1])); })); Hm *= 1.12;
   const ctr = (fi) => [(fi % cols + .5) * cell, ((fi / cols | 0) + .5) * cell];
   const uvOf = (fi, x, y) => { const [cx, cy] = ctr(fi); return [(cx + (x / Hm) * (cell / 2)) / W, 1 - (cy - (y / Hm) * (cell / 2)) / W]; };
@@ -67,7 +67,7 @@ export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = 
   const poly = makePoly(sides); const f0 = faces[label - 1]; const tone = f0.v === 0 ? 'z' : f0.c === 'b' ? 'b' : 'r';
   const A = atlas(poly, faces, tone, stone); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
   const bump = new THREE.CanvasTexture(A.cv); bump.flipY = true;
-  const mat = new THREE.MeshPhysicalMaterial({ map: A.t, roughness: stone ? 0.78 : 0.62, metalness: 0.08, clearcoat: stone ? 0.1 : 0.25, clearcoatRoughness: 0.5, bumpMap: bump, bumpScale: stone ? 2 : 1.4, envMapIntensity: 0.32 });
+  const mat = new THREE.MeshPhysicalMaterial({ map: A.t, roughness: stone ? 0.78 : 0.5, metalness: 0.04, clearcoat: stone ? 0.1 : 0.4, clearcoatRoughness: 0.5, bumpMap: bump, bumpScale: stone ? 2 : 1.4, envMapIntensity: 0.32 });
   const mesh = new THREE.Mesh(geo, mat); scene.add(mesh);
   const f = poly.faces[poly.labelFace[label - 1]];
   const m = new THREE.Matrix4().makeBasis(f.e2, f.e1, f.n).transpose(); const q = new THREE.Quaternion().setFromRotationMatrix(m);

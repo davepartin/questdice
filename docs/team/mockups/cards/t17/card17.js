@@ -32,15 +32,17 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const win = renderCard('weapon', d).querySelector('.win');
   const px = { 4: 44, 6: 45, 8: 46, 10: 47 };
   const next = SIZES[SIZES.indexOf(size) + 1];
+  const avgOf = (s) => { const n = nested(id, metal, s); return (n.reduce((a, f) => a + hit(f), 0) / n.length).toFixed(2); };
   const body = SIZES.map((s, r) => { const from = r ? SIZES[r - 1] : 0; const dieFaces = all.slice(0, s).map(face);
     const dice = rows[s].map((f, i) => { const label = from + i + 1; const ff = face(f);
       return `<figure class="d17" style="--px:${px[s]}"><img src="${dieImage(s, dieFaces, label, { px: px[s] * 5, stone })}" alt="face ${label}: ${ff.c === 'b' ? 'block' : 'attack'} +${f.v}${ff.icons.length ? ', ' + ff.icons.map((k) => NAME[k]).join(' ') : ''}"><figcaption>${label}<i>${ff.c === 'b' ? 'BLK' : 'ATK'}</i></figcaption></figure>`; }).join('');
     const locked = s > size; const avail = s === next;
     const cover = !locked ? '' : avail
-      ? `<div class="cov"><span class="ct"><b>SIZE d${s}</b><small>Uncover d${from} → d${s}</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">No refund · sell value stays ${d.sell} gold</span></div>`
-      : `<div class="cov off"><span class="ct"><b>SIZE d${s}</b><small>Locked · buy d${from} first</small></span><span class="cp"><i class="lock"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">Unavailable until d${from} is uncovered</span></div>`;
-    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${cover}</div>`; }).join('');
-  const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}${stone ? ' stone' : ''}`;
+      ? `<div class="cov tok"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Uncover d${from} → d${s}</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">+${rows[s].length} faces · no refund · sell stays ${d.sell}</span></div>`
+      : `<div class="cov tok off"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Locked · buy d${from} first</small></span><span class="cp"><i class="lock"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">Unavailable until d${from} is uncovered</span></div>`;
+    const info = locked ? '' : `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : `bought · ${STEP_PRICE[s]} gold`}</small><small>avg hit ${avgOf(s)}</small></span>`;
+    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('');
+  const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
   const sq = slot ? `<div class="eq on"><div class="well"><img class="cur" src="${dieImage(size, open.map(face), size, { px: 360, view: 'slot', stone })}" alt="d${size} die resting in its socket"></div>
       <span class="loc">${GRID.map((g, i) => `<i class="${i === gi ? 'me' : ''}"></i>`).join('')}</span><span class="cap">${SLOTWORD[slot] || slot}</span><span class="pv">d${size} · preview face</span></div>`

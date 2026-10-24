@@ -32,10 +32,10 @@ html,body{margin:0;background:#07080c}
 /* the dice: bottom half, one row per SIZE */
 .dice17{left:15.4%;right:15.2%;top:44.4%;bottom:9.6%;border-radius:1.6cqi;padding:.6cqi 1cqi;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;z-index:2;
  background:radial-gradient(120% 90% at 50% 40%,#5a3a1410,#3a220a30);box-shadow:inset 0 .5cqi 1.2cqi #2a160677,inset 0 -.3cqi 0 #fff4e033,0 .3cqi 0 #fff8e855}
-.row{position:relative;display:grid;grid-template-columns:9cqi 1fr;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.row:first-child{border-top:0}
+.row{position:relative;display:grid;grid-template-columns:9cqi 1fr 19cqi;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.row:first-child{border-top:0}
 .sz{display:flex;flex-direction:column;align-items:center;font:800 4.4cqi/1 Oxanium;color:#3a2410}.sz small{font-size:2.2cqi;letter-spacing:.16em;color:#6a4a22}
 .row.cur .sz{color:#7a1a10}
-.dz{display:flex;justify-content:center;gap:1.4cqi}
+.dz{display:flex;justify-content:center;gap:1.4cqi}.row:not(.s4) .dz{justify-content:flex-start;padding-left:2cqi}
 .d17{position:relative;margin:0;width:calc(var(--px) * .3cqi);aspect-ratio:1}.d17 img{width:100%;height:100%;display:block;filter:drop-shadow(0 .8cqi .6cqi #2a160699)}
 .d17 figcaption{position:absolute;left:0;right:0;bottom:-1.6cqi;text-align:center;font:700 2.1cqi/1 Oxanium;color:#5a3a18}.d17 figcaption i{font-style:normal;margin-left:.6cqi;letter-spacing:.08em}
 /* the cover over a size not yet bought: embossed leather, stitched, with its step price */
@@ -57,3 +57,26 @@ html,body{margin:0;background:#07080c}
 .eq .pv{top:auto;bottom:-3.2cqi}
 .pb17{width:7%}
 .eq .pv{white-space:nowrap;font-size:1.9cqi}
+
+/* rev 3: per-row info beside the dice (all from the face data and the ruling's prices) */
+.ri{display:flex;flex-direction:column;gap:.5cqi;align-items:flex-end;text-align:right;font:700 2.6cqi/1.1 Oxanium;color:#4a2c10}.ri b{font:800 3.1cqi/1 Oxanium;color:#3a2410}
+.row.s4 .ri{display:none}.row.s4{grid-template-columns:9cqi 1fr}
+/* rev 3: the locked size is a die-cut chipboard punch-out token lying on the tray, not a UI overlay */
+.cov.tok{left:.4cqi;right:.4cqi;top:.6cqi;bottom:1.1cqi;border-radius:1.2cqi;outline:none;
+ background:
+  radial-gradient(60% 90% at 4% 8%,#fff3 0,#0000 40%),
+  radial-gradient(30% 60% at 98% 96%,#0003 0,#0000 70%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .2 0 0 0 0 .1 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+  linear-gradient(170deg,#8a5a2e,#6a4020 55%,#4e2e16);
+ box-shadow:inset 0 0 0 .5cqi #e8c88a55,inset 0 0 0 .8cqi #2a160a66,inset 0 .3cqi .1cqi #fff3,
+  0 .25cqi 0 #b49a74,0 .5cqi 0 #a08660,0 .75cqi 0 #8c7450,0 1cqi 0 #6e5a3e,0 1.1cqi .1cqi #3a2a18,0 2cqi 1.6cqi #1a0e0699,0 3cqi 3cqi #1a0e0655}
+.cov.tok::before{content:'';position:absolute;inset:1.2cqi;border-radius:.6cqi;border:.25cqi solid #f2d8a055;pointer-events:none}
+.cov.tok::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.5;
+ background:radial-gradient(8% 20% at 0 0,#d8c09a 0,#0000 100%),radial-gradient(10% 24% at 100% 100%,#c8b088 0,#0000 100%),radial-gradient(6% 14% at 100% 0,#c8b08899 0,#0000 100%)}
+.cov.tok .tab{position:absolute;top:50%;width:1.4cqi;height:2.6cqi;margin-top:-1.3cqi;background:#c9b085;box-shadow:inset 0 0 0 .2cqi #8a7656aa}
+.cov.tok .tab.t1{left:-.7cqi;border-radius:0 .6cqi .6cqi 0}.cov.tok .tab.t2{right:-.7cqi;border-radius:.6cqi 0 0 .6cqi}
+.cov.tok .ct b{color:#fbe6bc;text-shadow:0 .25cqi 0 #2a1408,0 -.1cqi 0 #fff4}
+.cov.tok .cp{background:linear-gradient(180deg,#3a2414,#22140a);box-shadow:inset 0 0 0 .3cqi #e0b86a99,0 .2cqi 0 #fff2}
+.cov.tok.off{background-blend-mode:normal,normal,normal,luminosity;filter:none}.cov.tok.off::after{background:#3a32287a;opacity:1}.cov.tok.off .ct,.cov.tok.off .cp,.cov.tok.off .cn{position:relative;z-index:1}
+.cov.tok.off .ct b{color:#e0d0b0}
+.row.s10 .ri{padding-right:5.5cqi;align-self:start;margin-top:1.2cqi}
