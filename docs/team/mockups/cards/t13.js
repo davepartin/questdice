@@ -36,3 +36,15 @@ export const strip = (d) => `<div class="strip13">${d.faces.map((f) => `<i class
 export const chips = (d) => `<span class="ch13 m-${d.metal.toLowerCase()}">${esc(d.metal)}</span><span class="ch13">d${d.size}</span><span class="ch13">${esc(d.wear)}</span>`;
 export const price = (d) => weaponValue({ id: d.id, rarity: RARITY.indexOf(d.metal), size: d.size });
 export { BAG_MAX, WEAPONS };
+
+// T16: faces drawn by the game's own die-face renderer (dieface.js), in the die's real shape. Under each face: the attack starburst or
+// block shield (shape, not only colour) and the bonus icons from weaponFaces(), since the small corner pips do not survive at card size.
+export async function weaponCardDie(d, money, mode = 'die') {
+  const { weaponSpec, faceOf } = await import('./dieface.js');
+  const c = weaponCard(d, money); const spec = weaponSpec(d.id, ['Bronze', 'Silver', 'Gold'].indexOf(d.metal), d.size, d.ammo);
+  const urls = await Promise.all(d.faces.map((_, i) => faceOf(spec, i + 1, mode)));
+  c.querySelector('.faces13').outerHTML = `<div class="dfaces n${d.faces.length}${mode === 'ladder' ? ' ladder' : ''}">${d.faces.map((f, i) => {
+    const K = f.c === 'b' ? 'block' : 'atk'; const icons = [...Array(f.plus || 0).fill(K), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(k === 'loot' ? 'gold' : k))];
+    return `<div class="df ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}"><img src="${urls[i]}" alt="${K === 'atk' ? 'attack' : 'block'} +${f.v}"><span class="dk">${ico(K)}${f.arrow ? `<i class="ah am-${f.arrow}">${ico('arrow')}</i>` : ''}${icons.map((k) => ico(k)).join('')}</span></div>`; }).join('')}</div>`;
+  return c;
+}

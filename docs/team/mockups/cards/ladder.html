@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · size ladder</title>
+<script type="importmap">{"imports":{"three":"../../../../vendor/three/build/three.module.js","three/addons/":"../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter}main{max-width:430px;margin:0 auto;padding:10px;box-sizing:border-box}
+.concept{display:inline-block;padding:2px 7px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.14em;background:#b3261e;color:#fff}
+h2{margin:10px 0 4px;font:700 20px 'Cormorant Garamond',serif;color:#f2e6cc;display:flex;align-items:center;gap:8px}h2 img{width:34px;height:34px}
+.p{margin:0 0 6px;font:500 11.5px/1.4 Inter;color:#cbb894}
+.rung{background:linear-gradient(180deg,#1b1611,#120e0b);border:1px solid #5a4630;border-radius:12px;padding:6px 8px;margin-bottom:6px}
+.rh{display:flex;justify-content:space-between;align-items:baseline;font:800 13px Oxanium;color:#f2e6cc}.rh small{font:600 10.5px Inter;color:#a99c86}
+.fs{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:4px}
+.f{position:relative;display:grid;justify-items:center;gap:1px;padding:2px 0 1px;border-radius:6px}
+.f img{width:100%;max-width:34px;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 1px 1px #000c)}
+.f .k{display:flex;gap:1px;height:9px}.f .k svg{width:8px;height:8px}
+.f.ch{background:#ffc21a22;outline:1.5px solid #ffc21acc}.f .ix{font:700 8px Oxanium;color:#8a7a62}
+.leg svg{width:11px;height:11px;vertical-align:-1px}.leg{display:flex;gap:10px;font:700 10.5px Oxanium;color:#cbb894;margin:4px 0}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;outline:1.5px solid #ffc21a;background:#ffc21a22;vertical-align:-1px;margin-right:4px}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 4px;border-top:1px solid #ffffff12}.row:first-child{border-top:0}
+.row .nm{font:700 16px/1.1 'Cormorant Garamond',serif;color:#f2e6cc}.row .ch2{display:flex;gap:4px;margin:3px 0}
+.mini{display:grid;grid-template-columns:repeat(10,1fr);gap:1px}.mini img{width:100%;max-width:26px;aspect-ratio:1;object-fit:contain}
+.act{font:800 12px Oxanium;color:#ffd98a;text-align:right}.act small{display:block;font:600 10px Inter;color:#a99c86}
+</style></head><body><main>
+<span class="concept" id="cc"></span>
+<h2 id="hd"></h2><p class="p">Each row is what the game rolls at that size (weaponFaces after applyRelease), drawn by the game's die renderer. A gold ring marks a face that is <b>different</b> from the same face one size down.</p>
+<div class="leg"><span><i></i>changed from the size below</span><span id="lg"></span></div>
+<div id="lad"></div>
+<h2>Pack rows</h2><div class="rung" id="pack"></div>
+<script type="module">
+import { weaponData, icon, chips, ico } from './t13.js';
+import { weaponSpec, faceOf } from './dieface.js';
+const p = new URLSearchParams(location.search); const id = p.get('id') || 'dagger'; const metal = +(p.get('metal') ?? 1); const mode = p.get('mode') || 'die';
+cc.textContent = mode === 'ladder' ? 'CONCEPT · shape = the die a face first appears on' : 'CONCEPT · shape = this die';
+const key = (f) => JSON.stringify([f.c, f.v, f.plus || 0, f.arrow || '', f.fx || {}]);
+const D = {}; for (const s of [4, 6, 8, 10]) D[s] = weaponData(id, metal, s);
+hd.innerHTML = `${icon(D[10], 64)}${D[10].metal} ${D[10].name}: d4 to d10`;
+lg.innerHTML = `${ico('atk')} attack ${ico('block')} block`;
+const faces = async (d, m = mode) => { const sp = weaponSpec(id === d.id ? id : d.id, ['Bronze', 'Silver', 'Gold'].indexOf(d.metal), d.size, d.ammo); return Promise.all(d.faces.map((_, i) => faceOf(sp, i + 1, m))); };
+let prev = null;
+for (const s of [4, 6, 8, 10]) { const d = D[s]; const u = await faces(d);
+  const changed = prev ? d.faces.map((f, i) => i < prev.faces.length && key(f) !== key(prev.faces[i])) : d.faces.map(() => false);
+  const n = changed.filter(Boolean).length;
+  lad.insertAdjacentHTML('beforeend', `<div class="rung"><div class="rh">d${s}<small>${prev ? (n ? `${n} of the first ${prev.faces.length} faces differ from d${prev.size}` : `the first ${prev.faces.length} faces match d${prev.size}`) : 'smallest size'} · ${d.wear}</small></div>
+  <div class="fs">${d.faces.map((f, i) => { const icons = [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n)).fill(k))];
+    return `<div class="f${changed[i] ? ' ch' : ''}"><img src="${u[i]}" alt=""><span class="k">${ico(f.c === 'b' ? 'block' : 'atk')}${icons.map((k) => ico(k)).join('')}</span><span class="ix">${i + 1}</span></div>`; }).join('')}</div></div>`);
+  prev = d; }
+for (const d of [weaponData('dagger', 1, 10), weaponData('axe', 0, 6), weaponData('shield', 2, 8)]) { const u = await faces(d, 'die');
+  pack.insertAdjacentHTML('beforeend', `<div class="row">${icon(d, 128)}<div><div class="nm">${d.name}</div><div class="ch2">${chips(d)}</div><div class="mini">${u.map((x) => `<img src="${x}" alt="">`).join('')}</div></div><div class="act"><small>Sell</small>${d.sell}</div></div>`); }
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
+</script></main></body></html>
