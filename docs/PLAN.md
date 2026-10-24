@@ -1418,3 +1418,6 @@ T17 isolation step 1, 24 October (build 20261024ns1, no gameplay change): every 
 
 
 24 October 2026, Director: Dave requested professional objective cards alongside the weapon template. Added T05-objective-art-followup.md and updated the existing T05 board next action. Grok refines three existing card types after his current weapon pass; Claude retains PR #49 and integrates reviewed visual changes. Reuse published templates/backs and current rules, preserve secret privacy, live text and reachable actions. Source docs reviewed; no new visual/browser verification or gameplay change in this coordination update.
+
+
+24 October 2026, Director: Recorded Dave's objective naming decision in T05 brief and BOARD: two objective decks, Objectives (public/discussable) and Secret Objectives (private). Reuse approved Quest Dice backs with distinct emblem and words; no separate Wager deck. Existing rule categories may remain internal, with front-of-card stakes/rewards explicit. Preserve visibility, reveal timing, saved IDs and dealing/payout rules. Documentation only, no game changes or new verification claimed.
