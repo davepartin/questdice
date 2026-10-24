@@ -1,6 +1,6 @@
 /* T16c pro layout: one type scale (Cormorant for the name, Oxanium caps for labels and numbers), one 2.2cqi inner margin */
 .qc.pro{--m:2.2cqi}
-.pro .pb{width:7.4%;aspect-ratio:1;transform:translate(-50%,-50%);filter:drop-shadow(0 .5cqi .6cqi #000c)}.pro .pb svg{display:block;width:100%;height:100%}
+.pro .pb{z-index:3;width:7.4%;aspect-ratio:1;transform:translate(-50%,-50%);filter:drop-shadow(0 .5cqi .6cqi #000c)}.pro .pb svg{display:block;width:100%;height:100%}
 .pro .pa-l,.pro .pa-r{top:calc(53.75% - 6.6cqi);height:5cqi;display:flex;align-items:center;gap:1cqi;padding:0 2cqi;border-radius:99px;
  background:linear-gradient(180deg,#1c1712f2,#0b0907f2);box-shadow:inset 0 0 0 .3cqi #b8a07a88,inset 0 .3cqi 0 #fff2,0 .4cqi 1cqi #000b;font:800 2.9cqi/1 Oxanium;letter-spacing:.1em;text-transform:uppercase;color:#eadfca}
 .pro .pa-l{left:calc(14% + var(--m))}.pro .pa-r{right:calc(14.2% + var(--m))}
@@ -8,7 +8,7 @@
 .pro .die{text-transform:none;letter-spacing:.04em;padding-left:1cqi;border-left:.25cqi solid #b8a07a66}
 .pro .pa-r small{font:800 2.4cqi Oxanium;letter-spacing:.12em;color:#cbb894}.pro .pa-r b{font:800 3.6cqi/1 Oxanium;color:#ffd98a;letter-spacing:0}
 .pro .coin{width:3cqi;height:3cqi;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#9a6a06);box-shadow:inset 0 0 0 .3cqi #7a5204}
-.pro .pn{left:14%;right:14%;top:55.6%;height:5%;display:grid;place-items:center;font:700 7cqi/1 'Cormorant Garamond',serif;letter-spacing:.02em;
+.pro .pn{left:14%;right:14%;top:54.7%;height:6.4%;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;overflow:visible;padding-bottom:.4cqi;box-sizing:border-box;font:700 6.4cqi/1.35 'Cormorant Garamond',serif;letter-spacing:.02em;
  background:linear-gradient(180deg,#ffffff,#dfe4ec 45%,#9aa3b2 55%,#eef1f6);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 .3cqi 0 #000) drop-shadow(0 0 .8cqi #000)}
 .pro .pw{left:14.2%;right:13.9%;top:63.3%;height:3.4%;display:flex;align-items:center;justify-content:center;gap:2cqi;font:800 2.7cqi/1 Oxanium;letter-spacing:.18em;text-transform:uppercase;color:#4a2e0e}
 .pro .pw::before,.pro .pw::after{content:'';width:12cqi;height:.3cqi;background:linear-gradient(90deg,#4a2e0e00,#4a2e0eaa)}.pro .pw::after{transform:scaleX(-1)}
