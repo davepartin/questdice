@@ -355,3 +355,23 @@ ROUND 24
 OUTCOME: victory, 24 rounds resolved
 Captured = written down by the game when it happened. Derived = worked out afterwards from captured numbers.
 ```
+
+
+## Dave's follow-up: player learning and boss rhythm, 24 October 2026
+
+First-hand playtest context, reported by Dave after submitting the report:
+- Dave coached the player using Jasper on magic, the Knight's healing ability, Heart-die amplification of larger body dice, and prioritizing smaller enemies.
+- Dave reports that the player used magic well and could not win before learning/benefiting from those interactions. This is player testimony, not a controlled before/after comparison or proof that a particular patch alone caused the win.
+- Once the dragon was alone, the player was no longer worried: healing and magic generation felt sufficient to sustain the fight on Normal.
+- Dave is open to a longer boss battle if it remains fun and eventful. He is concerned about a hypothetical 40-round fight ending in defeat, not reporting a second 40-round match.
+- Desired rhythm: incoming danger, healing/recovery, meaningful damage and tactical decisions. Preserve the payoff from learning magic and upgrading dice. Do not automatically nerf healing or undo Heart support to shorten the encounter.
+- Dave asks how six-player bosses scale, including extra minions. Do not assume six players should mean a boss with six times the solo damage, or that more HP alone creates engaging difficulty.
+
+Extend the investigation:
+1. Separate the risky opening with multiple enemies from the sustained boss-only phase. Measure when the outcome becomes effectively secure, remaining rounds after that point, and how much choice remains.
+2. Treat learning success as a positive result. Investigate HP burden, damage throughput, target choice and boss move rhythm before recommending reductions to earned healing/magic.
+3. Add equal-strength and mixed-strength parties at 2/4/6 players for the relevant boss encounter. Report actual enemy HP, added enemies, damage distribution, party output, round-count tails, falls and recovery. Do not simply multiply Jasper's 1,002 HP by a player count and call it a prediction.
+4. Compare targeted pacing options in proposals, not live changes: reducing a safe final HP grind; meaningful telegraphed boss transitions or punishable openings; encounter composition that creates target decisions without endless replenishment. Avoid arbitrary late lethal spikes that punish a long investment, compulsory round timers, or guaranteed victory without review.
+5. Keep real elapsed-time evidence separate from round counts. This report contains no play duration.
+
+Director source check (not simulation): current partyScale(heroes) uses m = sum(heroStrength)/max(heroStrength), HP factor = 1 + 1.2*(m-1). Six equal-strength heroes yield factor 7, not 6, before any upstream quest/difficulty differences. Normal team flat adds round(10*(m-1)), therefore +50 at m=6, but damage distribution in party combat must be traced before describing it as +50 damage to each hero. newPartyBattle also appends two goblins for six players using the unmultiplied quest HP factor. These are code-level scaling observations, not a reproduced six-player Wyrmwatch encounter or an endorsement of current tuning.
