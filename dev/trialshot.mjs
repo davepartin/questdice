@@ -7,7 +7,7 @@ const p = await b.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFa
 p.setDefaultTimeout(240000); // the 3D dice table renders slowly in software
 p.on('pageerror', (e) => console.log('ERR', e.message)); p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load/.test(m.text())) console.log('console.error', m.text().slice(0, 200)); });
 await p.addInitScript((HINTS) => { try { localStorage.setItem('qd.tutorial.done', '1'); if (!HINTS) localStorage.setItem('qd.hints', 'off'); } catch {} }, !!process.env.HINTS);
-await p.goto(`http://localhost:${process.env.PORT || 8135}/?debug&manual&q=low`); // PORT=8136 for a second server (a before/after pair) await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
+await p.goto(`http://localhost:${process.env.PORT || 8135}/?debug&manual&q=low`); /* PORT=8136 for a second server (a before/after pair) */ await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 });
 const shot = async (n) => { await p.waitForTimeout(400); await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${OUT}/trial_${n}.png` }); };
 await p.evaluate(({ cls, act, step, seed }) => { const { S, E } = window.QD; const h = E.newHero({ name: 'Dave', cls, seed: +seed }); h.gold = 120; Object.assign(h.campaign, { act: +act, step: +step, wins: +step - 1, seenStory: undefined }); h.campaign.storySeen = { all: true }; S.hero = h; S.company = { kind: 'solo', members: [h], campaign: h.campaign }; window.QD.showRoad(); }, { cls, act, step, seed });
 await p.waitForTimeout(1200); await p.evaluate(() => document.querySelector('.sx-choices')?.scrollIntoView({ block: 'center' })); await shot('1choice');

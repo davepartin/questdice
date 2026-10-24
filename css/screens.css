@@ -291,6 +291,27 @@
 .tl-facts { list-style: none; margin: .6rem 0 .2rem; padding: 0; display: grid; gap: .45rem; }
 .tl-facts li { position: relative; padding-left: 1.3rem; font-family: var(--font-story); font-size: 1.08rem; line-height: 1.4; color: #ece2cc; }
 .tl-facts li::before { content: '✦'; position: absolute; left: 0; top: .05rem; color: #f0c060; font-size: .85rem; }
+/* the road's answer (T09): roll summary, verdict, outcome, consequence with who gets it */
+.rr-roll { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: .3rem .55rem; margin: 0 0 .45rem; text-align: center; }
+.rr-label { font-family: var(--font-display); font-weight: 700; font-size: .66rem; letter-spacing: .24em; text-transform: uppercase; color: #c9b48a; }
+.rr-sum { font-family: var(--font-body); font-weight: 600; font-size: 1rem; color: #fff4dc; font-variant-numeric: tabular-nums; }
+.rr-rolls { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem .35rem; }
+.rr-chip { padding: .12rem .5rem; border-radius: 999px; border: 1px solid rgba(240, 192, 96, .28); background: rgba(255, 255, 255, .04); font-size: .95rem; color: #e6dcc6; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rr-chip b { font-weight: 600; } .rr-chip.won { border-color: rgba(122, 255, 176, .6); background: rgba(90, 255, 150, .1); color: #c9ffdd; }
+.rr-verdict { margin: 0 0 .55rem; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: .12em; text-transform: uppercase; }
+.rr-verdict.ok { color: #7affb0; text-shadow: 0 0 12px rgba(90, 255, 150, .35); } .rr-verdict.no { color: #ffb38a; }
+.sx-tale .rr-prose { margin-bottom: .6rem; }
+.rr-effect { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .5rem; margin: .1rem 0 .2rem; padding: .55rem .75rem; border-radius: 10px; border: 1px solid rgba(240, 192, 96, .35); background: rgba(240, 192, 96, .08);
+  font-size: 1.02rem; line-height: 1.45; color: #fff1d6; }
+.rr-who { flex: none; padding: .05rem .5rem; border-radius: 6px; background: rgba(240, 192, 96, .22); color: #ffe2a0; font-weight: 700; font-size: .9rem; }
+.rr-effect span { flex: 1 1 12rem; min-width: 0; }
+/* a short phone (an SE in Safari leaves about 548px): the result card tightens so it fits above Onward without sliding under the hero chip */
+@media (max-height: 620px) {
+  .sx-roadres .sx-side { gap: .5rem; } .sx-roadres .sx-tale { margin-top: .9rem; padding-top: 1.5rem; padding-bottom: 1rem; } .sx-roadres .tl-crest { width: 2.5rem; height: 2.5rem; } .sx-roadres .tl-crest .ico svg { width: 1.25rem; height: 1.25rem; }
+  .sx-roadres .tl-title { font-size: 1.5rem; } .sx-roadres .tl-rule { margin: .4rem auto .5rem; }
+  .sx-roadres .rr-roll { margin-bottom: .3rem; } .sx-roadres .rr-verdict { margin-bottom: .4rem; font-size: 1.05rem; }
+  .sx-roadres .rr-prose { font-size: 1.06rem; line-height: 1.45; margin-bottom: .5rem; } .sx-roadres .rr-effect { padding: .45rem .65rem; }
+}
 .tl-teaser { margin: .9rem 0 .2rem; padding-top: .7rem; border-top: 1px solid rgba(240, 192, 96, .3); font-family: var(--font-story); font-style: italic; font-size: 1.08rem; line-height: 1.45; color: #ffe2a0; }
 .sx-choices { display: flex; flex-direction: column; gap: .55rem; }
 .sx-choice { position: relative; display: flex; align-items: center; gap: .85rem; width: 100%; padding: .7rem .9rem .7rem .7rem; min-height: 3.6rem; text-align: left; border-radius: 10px; border: 1px solid var(--hair); background: linear-gradient(90deg, rgba(26, 28, 48, .88), rgba(10, 11, 22, .9)); color: var(--text); cursor: pointer; pointer-events: auto; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: transform .22s var(--ease-snap), border-color .2s, box-shadow .25s; box-shadow: 0 10px 28px rgba(0, 0, 0, .4); }

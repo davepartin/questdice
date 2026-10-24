@@ -55,6 +55,11 @@ export function rollTrial({ campaign: c, members, stat, hard, chooser, attempt =
   return { stat, who: champ.name, cls: champ.cls, heroSizes, heroDice, heroTotal, oppSizes, oppDice, oppTotal, win: heroTotal >= oppTotal, attempt };
 }
 // The line under a test choice: your dice against theirs, and the odds, so nobody walks in blind.
+// The roll summary for a test (T09), the same on the result card and the dice overlay: "Your roll 7 · Challenge 2" alone,
+// "Ann’s roll 7 · Challenge 2" in a company, so every phone at a table reads the same.
+export function rollLine(trial, members = []) {
+  return `${members.length > 1 && trial.who ? `${trial.who}’s` : 'Your'} roll ${trial.heroTotal} · Challenge ${trial.oppTotal}`;
+}
 export function oddsLine(members, stat, act, hard) {
   const champ = championFor(members, stat);
   const mine = statDice(champ, stat); const opp = oppSize(act, hard);

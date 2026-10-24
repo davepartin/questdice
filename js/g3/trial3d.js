@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { world } from './world.js';
 import { h } from '../dom.js';
-import { STATS } from '../trials.js';
+import { STATS, rollLine } from '../trials.js';
 import { sfx } from '../audio.js';
 import { mat } from '../gfx/mats.js';
 import { worldUV } from '../gfx/util.js';
@@ -181,7 +181,7 @@ export async function showTrial3D(trial, { title = '', members = [], own = true 
       await Promise.all([mineP, theirP]);
       if (!fast) await stage.wait(0.35);
       layer.classList.add(trial.win ? 'won' : 'lost');
-      verdict.replaceChildren(h('b', {}, trial.win ? 'You win.' : 'Not this time.'), h('span', {}, `${trial.heroTotal} to ${trial.oppTotal}`));
+      verdict.replaceChildren(h('b', {}, trial.win ? 'Success' : 'Failed'), h('span', {}, rollLine(trial, members)));
       if (trial.win) { sfx.level?.(); slots.forEach((sl) => tray.pulse(sl, 'heal')); } else sfx.error?.();
       go.textContent = 'Continue'; go.disabled = false; state = 2; go.focus?.();
     };
