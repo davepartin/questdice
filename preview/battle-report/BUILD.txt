@@ -1,0 +1,5 @@
+Quest Dice preview: battle-report
+build 20261024report5
+commit ca58ebb5db28da0f7826b4285698bed9bb2fa01f
+branch claude/battle-report
+This folder is a copy for a phone check. It keeps its own saves and never reaches the cloud. The game at the site root is not changed.

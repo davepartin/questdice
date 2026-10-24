@@ -1,0 +1,12 @@
+/* Three fonts, one job each (Dave, Oct 2026: "the fonts are getting kind of too many... stick with just a few"). dev/fonts.mjs audits it.
+   Oxanium  (--font-display)  the game's voice: buttons, tabs, labels, numbers, prices, badges.
+   Inter    (--font-body)     reading: descriptions, hints, small print.
+   Cormorant Garamond (--font-story, also --serif)  names and titles: the screen title, hero / power / monster names, story text.
+   Archivo Black (--font-logo) is the QuestDice logo and nothing else. Loaded last, so these win over the screen sheets. */
+.cw-camp button, .cw-camp .sx-cta .sx-btn, .cw-label, .cw-price, .cw-cell-foot > b, .cw-die .cw-size, .cw-plus, .ww-change, .ww-modes b,
+.cp-slots b, .cp-slots span, .cp-card-cost, .cp-compare b, .cw-die-loading strong, .cw-inspector .sh-buy-l, .cw-inspector .sh-x, .cw-inspector .sh-title small,
+.tw-symbol b, .tw-clear-btn, .pw-btn, .pw-btn.go { font-family: var(--font-display); }
+.cw-label { font-weight: 600; letter-spacing: .02em; }
+.cw-camp .sx-cta .sx-btn { font-weight: 700; font-size: 1.15rem; letter-spacing: .06em; }
+/* the battle titles that used Cinzel now use the one serif, at the weight it is loaded in (600) */
+.b3-round small, .b3-round b, .b3-round-fl small, .b3-round-fl b, .tc-eyebrow, .tc-name, .tc-sub, .hb-name, .bc-name, .cc-tx b, .sh-head b { font-weight: 600; }
