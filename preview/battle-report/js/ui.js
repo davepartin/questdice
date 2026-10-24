@@ -23,6 +23,7 @@ import * as DAY from './daily.js';
 import * as SO from './secrets.js';
 import * as LG from './legend.js';
 import * as BR from './battlereport.js';
+import { openReports } from './g3/reportui.js';
 
 const S = {
   hero: null, company: null, seat: 0, battle: null, quest: null, sel: new Set(), straight: 'atk', target: 0, busy: false,
@@ -168,6 +169,7 @@ function globalMenu() {
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Menu'),
     h('div', { class: 'col' },
       ghost('Rules', () => { close(); showHowTo(); }),
+      ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
       open ? ghost('Save & go home', () => { close(); askHome(); }) : null,
@@ -577,6 +579,7 @@ function menu() {
     h('div', { class: 'col' },
       ghost('The story so far', () => { close(); showStorySoFar(); }),
       ghost('Rules', () => { close(); showHowTo(); }),
+      ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
