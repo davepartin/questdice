@@ -30,7 +30,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const d = weaponData(id, metal, size); d.sell = weaponData(id, metal, 4).sell; // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
   const kinds = bonusKinds(open);
   const win = renderCard('weapon', d).querySelector('.win');
-  const px = { 4: 44, 6: 45, 8: 46, 10: 47 };
+  const px = { 4: 44, 6: 45, 8: 50, 10: 52 };
   const next = SIZES[SIZES.indexOf(size) + 1];
   const avgOf = (s) => { const n = nested(id, metal, s); return (n.reduce((a, f) => a + hit(f), 0) / n.length).toFixed(2); };
   const body = SIZES.map((s, r) => { const from = r ? SIZES[r - 1] : 0; const dieFaces = all.slice(0, s).map(face);

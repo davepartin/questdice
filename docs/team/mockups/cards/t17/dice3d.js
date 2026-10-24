@@ -36,14 +36,14 @@ const icon = (g, k, x, y, s, col = null) => { const p = new Path2D((SYM[k] || SY
 // coherently from any angle. faces[label-1] = { v, c 'r'|'b', icons }.
 function paintFace(g, poly, fi, f, stone, cell, Hm) {
   const ppm = (cell / 2) / Hm; const inR = poly.faces[fi].inR2 * ppm; const tone = f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
-  const txt = `+${f.v}`; const fs = inR * (poly.sides === 4 ? 0.86 : txt.length > 2 ? 0.84 : 0.94);
-  const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 3)]; const lift = -inR * 0.2;
+  const txt = `+${f.v}`; const fs = inR * (poly.sides === 4 ? 0.86 : poly.sides >= 8 ? 0.8 : txt.length > 2 ? 0.84 : 0.94);
+  const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 3)]; const lift = -inR * (poly.sides >= 8 ? 0.34 : 0.2);
   g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = '#000a'; g.fillText(txt, 0, lift + fs * .06); g.fillStyle = '#fff6'; g.fillText(txt, -fs * .02, lift - fs * .03);
   const [i0, i1] = stone ? INK[tone] : ['#fffaf0', f.v === 0 ? '#b8aca0' : '#e6d6b8'];
   const tg = g.createLinearGradient(0, lift - fs / 2, 0, lift + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, lift);
   // the attack starburst or block shield, always first and drawn in ivory (or ink) so shape alone tells them apart; bonus icons follow
-  const is = inR * (marks.length > 2 ? 0.52 : 0.64);
+  const big = poly.sides >= 8 ? 1.35 : 1; const is = inR * (marks.length > 2 ? 0.52 : 0.64) * big;
   marks.forEach((k, i) => icon(g, k, (i - (marks.length - 1) / 2) * is * 1.08, lift + fs * .55 + is * .46, is, i === 0 ? (stone ? i1 : '#f4ead6') : null));
 }
 function atlas(poly, faces, tone, stone, cell = 512) {
