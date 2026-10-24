@@ -1407,3 +1407,6 @@ Director coordination check: Dave asks each contributor to check the team board 
 
 
 24 October 2026, Director: Added T19 to BOARD.md and saved Dave's full readable 24-round Jasper/Wyrmwatch export with selected supplied-JSON metadata in docs/team/tasks/T19-jasper-wyrmwatch.md. Act III step 8, report6, solo normal, level-13 Knight with legacy War Hammer. Export omitted rounds 1–5; no exact replay or elapsed-time claim. Counted 19 retained rounds and 35 universal Heal entries; boss remains alone for rounds 11–24. Claude has a focused scaling, output, pacing and healing-input investigation; findings/proposals return to board before any live balance change. Documentation only, no tests or game changes.
+
+
+24 October 2026, Director: Dave clarified T17 priorities: broader normal die-number coverage for straights, and distinct useful offensive weapon play styles. Recorded full brief in tasks/T17.md and next actions on BOARD. Current engine uses weapon base face value, not raw index, for combinations. Corrected cumulative tables delivered but not balance-approved. Claude to compare sequential-base candidate and weapon roles after active T19 work; Grok keeps art and labels numbers provisional. Read-only engine check plus docs changes; no gameplay implementation or probability tests performed.
