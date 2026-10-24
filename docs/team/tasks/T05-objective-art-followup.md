@@ -5,6 +5,24 @@ Requested by Dave on 24 October 2026. This remains part of T05, not a duplicate 
 
 Dave is working with Grok on the weapon-card template and wants the pre-battle objective and special/secret objectives to have the same professional physical-card quality. He reports the version he sees in the game still looks like the old panels.
 
+## Latest naming decision from Dave, 24 October 2026
+
+This supersedes the earlier request to present Objectives, Secret Objectives and Wagers as three separate deck types.
+
+There are **two player-facing objective decks**:
+- **Objectives**: public goals players may talk about around the table.
+- **Secret Objectives**: private goals, kept secret until the existing rules allow their reveal.
+
+Individual cards are an Objective or a Secret Objective. “Bonus Goal”, “Bonus Challenge”, “Wager” and “Bribe” may remain internal rule/data categories where necessary, but are not additional objective-deck names or backs. A stake or offer remains clearly explained on the front; simplifying the deck name does not erase its cost, conditions or consequences.
+
+Use the existing approved Quest Dice objective and secret-objective back artwork. Both backs share the same family treatment and differ through the objective/secret-objective emblem and words. Back titles: **OBJECTIVES** and **SECRET OBJECTIVES**. Do not show card-specific goal, stake, reward or other identifying information on a back. A distinct Wager back is no longer needed for this objective presentation; preserve source art rather than deleting historical assets.
+
+Grok: show the two backs together and representative public/private fronts. The previous three content examples remain useful to test different rules, but they belong to these two visual deck families, not three decks. Reuse the good existing backs; no unrelated redesign.
+
+Claude: map existing cards by actual visibility, not by reward formula. Any currently private offered bribe or other private goal remains a Secret Objective, even if it involves a wager. Public pre-battle goals use Objectives. Preserve existing reveal timing, private viewing, acceptance, payouts, dealing probabilities and saved IDs. If an existing visibility rule conflicts with this two-deck presentation, document that specific conflict on the board before changing who can see it. Dave's table analogy is a presentation/naming decision, not an instruction to merge all dealing pools, change probabilities or introduce a literal shuffled deck mechanic.
+
+Weapons still have their own weapon cards. This decision concerns the objective family.
+
 ## Reuse work already delivered
 
 Read BOARD.md, mockups/cards/README.md, HANDOFF-CLAUDE.md and WAGERS.md. Existing renderCard templates, painted frames and approved deck backs cover objectives, secret objectives and wagers. Claude's T05 PR #49 includes their integration and is awaiting review. Old handoff wording that says no art is merged is historical; the board records the art chain on main. Do not recreate that work or edit Claude's active implementation files.
