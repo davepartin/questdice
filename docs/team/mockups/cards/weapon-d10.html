@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · T13 weapon card, d10</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css"><link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#07080c}
+.pg{min-height:100vh;min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px 8px 10px;background:radial-gradient(90% 50% at 50% 35%,#221a14,#0b0a0a 65%,#04060d)}
+.qc{--w:min(370px,calc(100vw - 16px),calc((100vh - 84px) * .75))}
+.concept{padding:2px 6px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.16em;background:#b3261ecc;color:#fff}
+.under{width:var(--w);display:grid;grid-template-columns:1fr 1fr;gap:8px}.under .btn{height:44px;line-height:1.05;font-size:.95rem}.under small{display:block;font-size:.68rem;text-transform:none;opacity:.85}
+</style></head><body>
+<main class="pg"><div class="concept">CONCEPT · every word and number is live game data</div><div id="slot"></div><div class="under" id="under"><div class="btn go">Take</div><div class="btn no" id="sell"></div></div></main>
+<script type="module">
+import { weaponCard, weaponData, price } from './t13.js';
+const p = new URLSearchParams(location.search);
+const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), p.get('left') != null ? +p.get('left') : undefined, p.get('ammo') || undefined);
+const store = p.get('ctx') === 'store';
+const card = weaponCard(d, store ? { label: 'Store', value: price(d) } : { label: 'Sell', value: d.sell }); slot.append(card);
+under.style.setProperty('--w', getComputedStyle(card).width);
+sell.innerHTML = store ? `Buy<small>for ${price(d)} gold</small>` : `Sell<small>for ${d.sell} gold</small>`; if (store) document.querySelector('.btn.go').textContent = 'Not now';
+document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
+</script></body></html>

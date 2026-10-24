@@ -1,0 +1,280 @@
+[
+ {
+  "tag": "375x548",
+  "spoils": {
+   "cards": 2,
+   "buttons": [
+    "TAKE",
+    "SELL 54",
+    "TAKE",
+    "SELL 60"
+   ],
+   "overflowX": false
+  },
+  "modalFits": {
+   "top": 51,
+   "bottom": 516,
+   "vh": 548,
+   "closeInView": true
+  },
+  "pack": {
+   "rows": 3,
+   "labels": [
+    "Sell 54",
+    "Sell 60",
+    "Sell 106"
+   ],
+   "overflowX": false
+  },
+  "store": {
+   "rows": 4,
+   "labels": [
+    "Store 312",
+    "Store 60",
+    "Store 48",
+    "Store 108"
+   ],
+   "buyButtons": 6,
+   "overflowX": false
+  },
+  "noWear": {
+   "unchanged": true
+  },
+  "bonus": {
+   "kind": "objective",
+   "card": {
+    "w": 250,
+    "h": 333,
+    "top": 111,
+    "bottom": 444
+   },
+   "ctaTop": 467,
+   "vh": 548,
+   "buttons": [
+    "BET 20 GOLD",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE 20 gold, paid when you accept",
+    "REWARD 60 back if done and won · net +40",
+    "IF NOT the stake is lost, whether it was missed or the fight was lost"
+   ]
+  },
+  "poor": {
+   "kind": "objective",
+   "card": {
+    "w": 250,
+    "h": 333,
+    "top": 111,
+    "bottom": 444
+   },
+   "ctaTop": 467,
+   "vh": 548,
+   "buttons": [
+    "ACCEPT",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE none, a free try",
+    "REWARD 20 gold if done and won",
+    "IF NOT nothing is lost"
+   ]
+  },
+  "wager": {
+   "kind": "wager",
+   "card": {
+    "w": 250,
+    "h": 333,
+    "top": 111,
+    "bottom": 444
+   },
+   "ctaTop": 467,
+   "vh": 548,
+   "buttons": [
+    "ACCEPT",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "REWARD +140 if done and the team wins",
+    "WON, NOT DONE 0, nothing lost",
+    "TEAM DEFEATED pay 35, done or not; 35 more if every bribe was taken",
+    "DECLINE Honor +20, or +35 if the team is defeated"
+   ]
+  },
+  "secret": {
+   "kind": "secret-objective",
+   "card": {
+    "w": 250,
+    "h": 333,
+    "top": 111,
+    "bottom": 444
+   },
+   "ctaTop": 467,
+   "vh": 548,
+   "buttons": [
+    "CONTINUE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE none",
+    "REWARD Win 35 gold"
+   ]
+  },
+  "create": {
+   "rows": 2,
+   "overflowX": false
+  },
+  "build": "PREVIEW · cards · build 20261024cards2",
+  "keys": [
+   "qd.hints",
+   "qd.tutorial.done",
+   "questdice.preview.hero.dave"
+  ]
+ },
+ {
+  "tag": "390x664",
+  "spoils": {
+   "cards": 2,
+   "buttons": [
+    "TAKE",
+    "SELL 54",
+    "TAKE",
+    "SELL 60"
+   ],
+   "overflowX": false
+  },
+  "modalFits": {
+   "top": 90,
+   "bottom": 574,
+   "vh": 664,
+   "closeInView": true
+  },
+  "pack": {
+   "rows": 3,
+   "labels": [
+    "Sell 54",
+    "Sell 60",
+    "Sell 106"
+   ],
+   "overflowX": false
+  },
+  "store": {
+   "rows": 4,
+   "labels": [
+    "Store 312",
+    "Store 60",
+    "Store 48",
+    "Store 108"
+   ],
+   "buyButtons": 6,
+   "overflowX": false
+  },
+  "noWear": {
+   "unchanged": true
+  },
+  "bonus": {
+   "kind": "objective",
+   "card": {
+    "w": 318,
+    "h": 424,
+    "top": 149,
+    "bottom": 573
+   },
+   "ctaTop": 583,
+   "vh": 664,
+   "buttons": [
+    "BET 20 GOLD",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE 20 gold, paid when you accept",
+    "REWARD 60 back if done and won · net +40",
+    "IF NOT the stake is lost, whether it was missed or the fight was lost"
+   ]
+  },
+  "poor": {
+   "kind": "objective",
+   "card": {
+    "w": 318,
+    "h": 424,
+    "top": 149,
+    "bottom": 573
+   },
+   "ctaTop": 583,
+   "vh": 664,
+   "buttons": [
+    "ACCEPT",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE none, a free try",
+    "REWARD 20 gold if done and won",
+    "IF NOT nothing is lost"
+   ]
+  },
+  "wager": {
+   "kind": "wager",
+   "card": {
+    "w": 318,
+    "h": 424,
+    "top": 149,
+    "bottom": 573
+   },
+   "ctaTop": 583,
+   "vh": 664,
+   "buttons": [
+    "ACCEPT",
+    "DECLINE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "REWARD +140 if done and the team wins",
+    "WON, NOT DONE 0, nothing lost",
+    "TEAM DEFEATED pay 35, done or not; 35 more if every bribe was taken",
+    "DECLINE Honor +20, or +35 if the team is defeated"
+   ]
+  },
+  "secret": {
+   "kind": "secret-objective",
+   "card": {
+    "w": 318,
+    "h": 424,
+    "top": 149,
+    "bottom": 573
+   },
+   "ctaTop": 583,
+   "vh": 664,
+   "buttons": [
+    "CONTINUE"
+   ],
+   "boxOverflow": false,
+   "sideScrolls": true,
+   "rows": [
+    "STAKE none",
+    "REWARD Win 35 gold"
+   ]
+  },
+  "create": {
+   "rows": 2,
+   "overflowX": false
+  },
+  "build": "PREVIEW · cards · build 20261024cards2",
+  "keys": [
+   "qd.hints",
+   "qd.tutorial.done",
+   "questdice.preview.hero.dave"
+  ]
+ }
+]

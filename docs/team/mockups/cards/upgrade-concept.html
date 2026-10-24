@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · covered upgrade slots (prices unspecified)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter,sans-serif}main{max-width:430px;margin:0 auto;padding:10px;box-sizing:border-box}
+.concept{display:block;padding:6px 8px;border-radius:6px;font:800 11px/1.35 Oxanium;letter-spacing:.06em;background:#b3261e;color:#fff}
+.top{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;margin:10px 0}.top .qc{--w:150px}
+.top b{display:block;font:700 20px/1.1 'Cormorant Garamond',serif;color:#f2e6cc}.top p{margin:4px 0 0;font:600 12px/1.4 Inter;color:#cbb894}
+h2{margin:12px 0 6px;font:700 18px 'Cormorant Garamond',serif;color:#f2e6cc}
+.track{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.slot{position:relative;height:74px;border-radius:10px;display:grid;place-items:center;align-content:center;gap:2px;font:800 20px Oxanium;border:1px solid #8a7458;background:linear-gradient(180deg,#2a2018,#15100c)}
+.slot small{font:700 10px Oxanium;letter-spacing:.06em;color:#a99c86;text-transform:uppercase}
+.slot.on{border-color:#c3cde0;box-shadow:0 0 0 1px #c3cde066,inset 0 0 12px #c3cde033;color:#f2f4f8}
+.slot.cov{color:#6a5a48;background:repeating-linear-gradient(135deg,#2a2018 0 6px,#211913 6px 12px);border-style:dashed}
+.slot.cov::after{content:'';position:absolute;inset:8px;border-radius:7px;background:linear-gradient(180deg,#3b2e22,#2a2018);box-shadow:inset 0 1px 0 #ffffff14,0 2px 4px #0008}
+.slot.cov span{position:relative;z-index:1;display:grid;justify-items:center;gap:2px}
+.price{font:800 12px Oxanium;color:#ffd98a}.price.q{color:#a99c86}
+.note{margin:8px 2px 0;font:500 11.5px/1.45 Inter;color:#cbb894}.note code{font-size:10.5px;color:#ffd98a}
+</style></head><body><main>
+<div class="concept">CONCEPT · NOT IN THE GAME · PRICES UNSPECIFIED<br>Upgrades were retired with wear (engine.js:1425, 1441). Kept off the card face.</div>
+<div class="top"><div id="c"></div><div><b id="nm"></b><p id="sub"></p></div></div>
+<h2>Die size</h2><div class="track" id="size"></div>
+<h2>Metal</h2><div class="track" id="metal" style="grid-template-columns:repeat(3,1fr)"></div>
+<p class="note">Why no prices: the old costs do not map cleanly. <code>FORGE_COST [0, 40, 120]</code> (data.js:96) priced <b>metal</b> steps, not die sizes;
+<code>WEAPON_SIZE_STEPS {4:30, 6:80, 8:180}</code> (data.js:98) priced size steps but also needed a hand at least that big (engine.js:1448).
+Both now return "retired" (forgeInfo / trainInfo, engine.js:1425-1427, 1441-1443). Covered slots show only where a step would sit.
+This does not propose a strength lock, carry limit or price; those are open decisions.</p>
+<script type="module">
+import { weaponCard, weaponData } from './t13.js';
+const d = weaponData('dagger', 1, 6); c.append(weaponCard(d));
+nm.textContent = `${d.metal} ${d.name}, d${d.size}`; sub.textContent = `${d.wear}. Today a weapon is what you find or buy.`;
+const SZ = [4, 6, 8, 10]; size.innerHTML = SZ.map((s) => s <= d.size ? `<div class="slot on">d${s}<small>${s === d.size ? 'now' : 'had'}</small></div>`
+  : `<div class="slot cov"><span>d${s}<small>covered</small><b class="price q">price not set</b></span></div>`).join('');
+const MT = ['Bronze', 'Silver', 'Gold']; metal.innerHTML = MT.map((m, i) => i <= MT.indexOf(d.metal) ? `<div class="slot on">${m}<small>${m === d.metal ? 'now' : 'had'}</small></div>`
+  : `<div class="slot cov"><span>${m}<small>covered</small><b class="price q">price not set</b></span></div>`).join('');
+document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
+</script></main></body></html>

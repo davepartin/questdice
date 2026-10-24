@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>CONCEPT · final card contact sheet (released data)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter;padding:16px;width:1568px}h1{font:800 15px Oxanium;letter-spacing:.18em;color:#e0574a;margin:0}
+h2{font:700 22px 'Cormorant Garamond';margin:18px 0 8px}.grid{display:flex;flex-wrap:wrap;gap:12px;--w:182px}.n{color:#a99c86;font-size:12px;margin:2px 0}</style></head><body>
+<h1>CONCEPT · FINAL CARD SHEET · active cards only, rendered live after applyRelease()</h1><p class="n" id="stamp"></p>
+<h2>Active weapons · Bronze / Silver / Gold (d6)</h2><div class="grid" id="w"></div>
+<h2>Arrows · the four ammunitions (Silver d6)</h2><div class="grid" id="a"></div>
+<h2>Active legendaries (d6) · d10 stress test</h2><div class="grid" id="l"></div>
+<h2>Objectives (solo Bonus Goals, Act II)</h2><div class="grid" id="o"></div>
+<h2>Wagers (offered bribes, Act II)</h2><div class="grid" id="g"></div>
+<h2>Secret objectives (Act II)</h2><div class="grid" id="s"></div>
+<h2>Backs</h2><div class="grid" id="b"></div>
+<script type="module">
+import { statusOf } from './roster.js';
+import { renderBack, renderCard, weaponData, objectiveData, secretData, ALL } from './card-template.js';
+import { weaponCard } from './t13.js';
+const q = (i) => document.getElementById(i);
+const act = Object.keys(ALL.WEAPONS).filter((id) => statusOf(id) === 'active');
+for (const id of act.filter((id) => !ALL.WEAPONS[id].legendary)) for (const r of [0, 1, 2]) q('w').append(weaponCard(weaponData(id, r, 6)));
+for (const am of ['normal', 'pierce', 'fire', 'frost']) q('a').append(weaponCard(weaponData('quiver', 1, 6, undefined, am)));
+for (const id of act.filter((id) => ALL.WEAPONS[id].legendary)) q('l').append(weaponCard(weaponData(id, 2, 6)));
+for (const id of ['dagger', 'axe', 'shield', 'quiver']) q('l').append(weaponCard(weaponData(id, 1, 10, undefined, id === 'quiver' ? 'fire' : undefined)));
+for (const id of Object.keys(ALL.BONUS_GOALS)) q('o').append(renderCard('objective', objectiveData(id)));
+for (const [id, c] of Object.entries(ALL.CARDS)) { const w = c.kind === 'bribe' && c.mode === 'offer'; q(w ? 'g' : 's').append(renderCard(w ? 'wager' : 'secret-objective', secretData(id))); }
+for (const k of ['weapon', 'objective', 'secret-objective', 'wager']) q('b').append(renderBack(k));
+q('stamp').textContent = `${document.querySelectorAll('.qc').length} cards`;
+document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
+</script></body></html>
