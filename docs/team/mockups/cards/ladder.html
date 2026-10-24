@@ -18,31 +18,32 @@ h2{margin:10px 0 4px;font:700 20px 'Cormorant Garamond',serif;color:#f2e6cc;disp
 .row .nm{font:700 16px/1.1 'Cormorant Garamond',serif;color:#f2e6cc}.row .ch2{display:flex;gap:4px;margin:3px 0}
 .mini{display:grid;grid-template-columns:repeat(10,1fr);gap:1px}.mini img{width:100%;max-width:26px;aspect-ratio:1;object-fit:contain}
 .act{font:800 12px Oxanium;color:#ffd98a;text-align:right}.act small{display:block;font:600 10px Inter;color:#a99c86}
+.qfs.lad{--u:.335px;justify-content:flex-start;align-items:flex-start;margin-top:4px}.qfs.lad .qr{justify-content:flex-start}.qfs.lad .qg:first-child{padding-left:0}
+.qfs.mini{--u:.25px;align-items:flex-start;margin-top:2px}.qfs.mini .qg:first-child{padding-left:0}.qfs.mini .qg{padding:0 3px}
 </style></head><body><main>
 <span class="concept" id="cc"></span>
-<h2 id="hd"></h2><p class="p">Each row is what the game rolls at that size (weaponFaces after applyRelease), drawn by the game's die renderer. A gold ring marks a face that is <b>different</b> from the same face one size down.</p>
+<h2 id="hd"></h2><p class="p">Each row is what the game rolls at that size (weaponFaces after applyRelease), Shapes follow the progression (1-4 d4 triangles, 5-6 d6 squares, 7-8 d8 diamonds, 9-10 d10 kites). A gold glow marks a face that is <b>different</b> from the same face one size down.</p>
 <div class="leg"><span><i></i>changed from the size below</span><span id="lg"></span></div>
 <div id="lad"></div>
 <h2>Pack rows</h2><div class="rung" id="pack"></div>
 <script type="module">
 import { weaponData, icon, chips, ico } from './t13.js';
-import { weaponSpec, faceOf } from './dieface.js';
+import { facesHTML, injectDefs } from './shapes.js'; injectDefs();
 const p = new URLSearchParams(location.search); const id = p.get('id') || 'dagger'; const metal = +(p.get('metal') ?? 1); const mode = p.get('mode') || 'die';
-cc.textContent = mode === 'ladder' ? 'CONCEPT · shape = the die a face first appears on' : 'CONCEPT · shape = this die';
+cc.textContent = 'CONCEPT · progression faces · real released data';
 const key = (f) => JSON.stringify([f.c, f.v, f.plus || 0, f.arrow || '', f.fx || {}]);
 const D = {}; for (const s of [4, 6, 8, 10]) D[s] = weaponData(id, metal, s);
 hd.innerHTML = `${icon(D[10], 64)}${D[10].metal} ${D[10].name}: d4 to d10`;
 lg.innerHTML = `${ico('atk')} attack ${ico('block')} block`;
 const faces = async (d, m = mode) => { const sp = weaponSpec(id === d.id ? id : d.id, ['Bronze', 'Silver', 'Gold'].indexOf(d.metal), d.size, d.ammo); return Promise.all(d.faces.map((_, i) => faceOf(sp, i + 1, m))); };
 let prev = null;
-for (const s of [4, 6, 8, 10]) { const d = D[s]; const u = await faces(d);
+for (const s of [4, 6, 8, 10]) { const d = D[s];
   const changed = prev ? d.faces.map((f, i) => i < prev.faces.length && key(f) !== key(prev.faces[i])) : d.faces.map(() => false);
   const n = changed.filter(Boolean).length;
   lad.insertAdjacentHTML('beforeend', `<div class="rung"><div class="rh">d${s}<small>${prev ? (n ? `${n} of the first ${prev.faces.length} faces differ from d${prev.size}` : `the first ${prev.faces.length} faces match d${prev.size}`) : 'smallest size'} · ${d.wear}</small></div>
-  <div class="fs">${d.faces.map((f, i) => { const icons = [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n)).fill(k))];
-    return `<div class="f${changed[i] ? ' ch' : ''}"><img src="${u[i]}" alt=""><span class="k">${ico(f.c === 'b' ? 'block' : 'atk')}${icons.map((k) => ico(k)).join('')}</span><span class="ix">${i + 1}</span></div>`; }).join('')}</div></div>`);
+  ${facesHTML(d.faces, (i) => (changed[i] ? ' ch' : ''), { cls: 'flow lad', one: true })}</div>`);
   prev = d; }
-for (const d of [weaponData('dagger', 1, 10), weaponData('axe', 0, 6), weaponData('shield', 2, 8)]) { const u = await faces(d, 'die');
-  pack.insertAdjacentHTML('beforeend', `<div class="row">${icon(d, 128)}<div><div class="nm">${d.name}</div><div class="ch2">${chips(d)}</div><div class="mini">${u.map((x) => `<img src="${x}" alt="">`).join('')}</div></div><div class="act"><small>Sell</small>${d.sell}</div></div>`); }
+for (const d of [weaponData('dagger', 1, 10), weaponData('axe', 0, 6), weaponData('quiver', 1, 10, undefined, 'fire'), weaponData('shield', 2, 8)]) {
+  pack.insertAdjacentHTML('beforeend', `<div class="row">${icon(d, 128)}<div><div class="nm">${d.name}${d.ammo ? ` <small style="font:700 10px Oxanium;color:#ff8a5a">${d.ammoName || d.ammo}</small>` : ''}</div><div class="ch2">${chips(d)}</div>${facesHTML(d.faces, () => '', { cls: 'flow mini', one: true })}</div><div class="act"><small>Sell</small>${d.sell}</div></div>`); }
 await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
 </script></main></body></html>

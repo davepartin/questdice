@@ -43,3 +43,13 @@
 .df.z img{filter:drop-shadow(0 1px 1.5px #000c) saturate(.7) brightness(.85)}
 .df .dk{display:flex;align-items:center;gap:.2cqi;height:2.8cqi;padding:0 .8cqi;border-radius:99px;background:#1a120ccc}
 .df .dk svg{width:2.6cqi;height:2.6cqi}.df .dk .ah{display:inline-flex}.df .dk .ah svg{color:currentColor!important}
+/* T16b: progression faces (shapes.js). --u = one unit of the 100-unit face box; rows: d4|d6, then d8|d10 */
+.qfs{--u:.137cqi;position:absolute;left:14%;right:14%;top:69.6%;bottom:6.4%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1cqi}
+.qfs.n4{--u:.2cqi}.qfs.n6{--u:.15cqi}
+.qr{display:flex;align-items:center;justify-content:center}
+.qg{display:flex;align-items:center;padding:0 1.1cqi;position:relative}
+.qg+.qg::before{content:'';position:absolute;left:0;top:10%;bottom:10%;width:1.5px;border-radius:2px;background:linear-gradient(#d9a83e00,#e8c47aee,#d9a83e00)}
+.qcl{display:flex}.qcl svg{display:block;overflow:visible}
+.qf.z g polygon{filter:saturate(.5) brightness(.62)}.qf.z text{opacity:.5}
+.qfs.flow{position:static;inset:auto;--u:.3px}
+.qcl.ch svg{filter:drop-shadow(0 0 3px #ffc21a) drop-shadow(0 0 1px #ffc21a)}.qcl.new svg{filter:drop-shadow(0 0 2.5px #ffe9a8cc)}

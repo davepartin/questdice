@@ -15,16 +15,16 @@
 .f{display:grid;justify-items:center;gap:1px}.f img{width:100%;max-width:34px;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 1px 1px #000c)}
 .f .k{display:flex;gap:1px;height:9px}.f .k svg{width:8px;height:8px}
 .f.new{background:#ffc21a1a;border-radius:6px;outline:1px dashed #ffc21a88}
-.rw.locked{opacity:.42;filter:grayscale(.6)}.rw.locked .rh small::after{content:' · locked (no price set)'}
+.rw.locked{opacity:.6;filter:grayscale(.45)}.rw.locked .rh small::after{content:' · locked (no price set)'}
 .lk{position:absolute;right:8px;top:4px;font:800 10px Oxanium;color:#ffd98a}
+.qfs.lad{--u:.31px;justify-content:flex-start;align-items:flex-start;margin-top:4px}.qfs.lad .qr{justify-content:flex-start}.qfs.lad .qg:first-child{padding-left:0}
 </style></head><body><main>
 <div class="ban">CONCEPT · PROPOSED RULE, NOT DECIDED · "Nested faces"<br>Illustrative numbers, not balanced. The game does not work this way today (see ROSTER.md / ladder.html for what it rolls).</div>
-<p class="p">Proposal (Dave): faces 1-4 are the same on every size, 5-6 the same on d6/d8/d10, 7-8 on d8/d10, so a bigger die only <b>adds</b> faces (dashed = the faces a size adds). The metal sets how many bonus icons sit on the same base numbers: Bronze few, Silver more, Gold most. Diamond would be a fourth tier (not shown). Base numbers: the released Bronze Dagger d10 (r0 b1 r1 r3 r3 r5 r5 r7 r7 r9), which already nests without breaking "a dN never shows more than N". Larger sizes are dimmed as locked, with no prices.</p>
+<p class="p">Proposal (Dave): faces 1-4 are the same on every size, 5-6 the same on d6/d8/d10, 7-8 on d8/d10, so a bigger die only <b>adds</b> faces (glow = the faces a size adds; shapes follow the progression 1-4 triangles, 5-6 squares, 7-8 diamonds, 9-10 kites). The metal sets how many bonus icons sit on the same base numbers: Bronze few, Silver more, Gold most. Diamond would be a fourth tier (not shown). Base numbers: the released Bronze Dagger d10 (r0 b1 r1 r3 r3 r5 r5 r7 r7 r9), which already nests without breaking "a dN never shows more than N". Larger sizes are dimmed as locked, with no prices.</p>
 <div class="wrap" id="w"></div>
 <script type="module">
 import { weaponData, icon, ico } from './t13.js';
-import { weaponSpec, shaped } from './dieface.js';
-import { faceImage } from '../../../../js/gfx/dice/dice.js';
+import { facesHTML, injectDefs } from './shapes.js'; injectDefs();
 // illustrative base faces (from the released Bronze Dagger d10, weaponFaces after applyRelease) and icon placement by metal
 const base = weaponData('dagger', 0, 10).faces.map((f) => ({ v: f.v, c: f.c }));
 const ICONS = { // face number -> icons; nested, so a face keeps its icons on every size that has it
@@ -38,12 +38,8 @@ for (const [mi, metal] of ['Bronze', 'Silver', 'Gold'].entries()) {
   const own = weaponData('dagger', mi, 4); // name and art only
   let html = `<div class="nc m-${metal}"><div class="hd">${icon(own, 128)}<div><b>${metal} Dagger</b><small>ALL FOUR SIZES · CONCEPT</small></div></div>`;
   for (const s of [4, 6, 8, 10]) {
-    const real = weaponSpec('dagger', mi, s); // the game's label format for this die; only the face content is replaced
-    const labels = faces.slice(0, s).map((f, i) => ({ ...real.labels[i], text: `+${f.v}`, wface: f.c, zero: f.v === 0, tone: f.c, corners: Object.entries(f.fx || {}).flatMap(([k, n]) => Array(n).fill(FXK[k])) }));
-    const spec = { ...real, labels, key: `nested|${metal}|${s}` };
-    const urls = await Promise.all(labels.map((_, i) => shaped(faceImage(spec, i + 1, 160), s === 6 ? 0.13 : 0)));
     const prevN = { 4: 0, 6: 4, 8: 6, 10: 8 }[s];
-    html += `<div class="rw${s > 4 ? ' locked' : ''}"><div class="rh">d${s}<small>${s === 4 ? 'owned' : `adds faces ${prevN + 1}-${s}`}</small></div><div class="fs">${faces.slice(0, s).map((f, i) => `<div class="f${i >= prevN && s > 4 ? ' new' : ''}"><img src="${urls[i]}" alt=""><span class="k">${ico(f.c === 'b' ? 'block' : 'atk')}${Object.entries(f.fx || {}).flatMap(([k, n]) => Array(n).fill(k)).map((k) => ico(k)).join('')}</span></div>`).join('')}</div></div>`;
+    html += `<div class="rw${s > 4 ? ' locked' : ''}"><div class="rh">d${s}<small>${s === 4 ? 'owned' : `adds faces ${prevN + 1}-${s}`}</small></div>${facesHTML(faces.slice(0, s), (i) => (i >= prevN && s > 4 ? ' new' : ''), { cls: 'flow lad', one: true })}</div>`;
   }
   w.insertAdjacentHTML('beforeend', html + '</div>');
 }

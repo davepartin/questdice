@@ -12,6 +12,6 @@ const p = new URLSearchParams(location.search); const mode = p.get('mode') || 'd
 const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), undefined, p.get('ammo') || undefined);
 const card = await weaponCardDie(d, { label: 'Sell', value: d.sell }, mode); slot.append(card);
 under.style.width = getComputedStyle(card).width; sell.innerHTML = `Sell<small>for ${d.sell} gold</small>`;
-cc.textContent = mode === 'ladder' ? 'CONCEPT · faces shaped by the die they first appear on' : 'CONCEPT · faces drawn by the game’s own die renderer';
+cc.textContent = 'CONCEPT · faces 1-4 d4 triangles · 5-6 d6 squares · 7-8 d8 diamonds · 9-10 d10 kites';
 await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
 </script></body></html>

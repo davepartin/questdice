@@ -39,12 +39,7 @@ export { BAG_MAX, WEAPONS };
 
 // T16: faces drawn by the game's own die-face renderer (dieface.js), in the die's real shape. Under each face: the attack starburst or
 // block shield (shape, not only colour) and the bonus icons from weaponFaces(), since the small corner pips do not survive at card size.
-export async function weaponCardDie(d, money, mode = 'die') {
-  const { weaponSpec, faceOf } = await import('./dieface.js');
-  const c = weaponCard(d, money); const spec = weaponSpec(d.id, ['Bronze', 'Silver', 'Gold'].indexOf(d.metal), d.size, d.ammo);
-  const urls = await Promise.all(d.faces.map((_, i) => faceOf(spec, i + 1, mode)));
-  c.querySelector('.faces13').outerHTML = `<div class="dfaces n${d.faces.length}${mode === 'ladder' ? ' ladder' : ''}">${d.faces.map((f, i) => {
-    const K = f.c === 'b' ? 'block' : 'atk'; const icons = [...Array(f.plus || 0).fill(K), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(k === 'loot' ? 'gold' : k))];
-    return `<div class="df ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}"><img src="${urls[i]}" alt="${K === 'atk' ? 'attack' : 'block'} +${f.v}"><span class="dk">${ico(K)}${f.arrow ? `<i class="ah am-${f.arrow}">${ico('arrow')}</i>` : ''}${icons.map((k) => ico(k)).join('')}</span></div>`; }).join('')}</div>`;
-  return c;
+export async function weaponCardDie(d, money) { // T16b: Dave's progression layout (shapes.js); all faces from weaponFaces()
+  const { facesHTML, injectDefs } = await import('./shapes.js'); injectDefs();
+  const c = weaponCard(d, money); c.querySelector('.faces13').outerHTML = facesHTML(d.faces); return c;
 }

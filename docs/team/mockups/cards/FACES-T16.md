@@ -1,5 +1,8 @@
 # T16 die-shaped faces (presentation only, CONCEPT)
 
+**T16b (current main layout, Dave):** `shapes.js` draws every weapon face as inline SVG in a progression: faces 1-4 d4 triangles, 5-6 d6 squares, 7-8 d8 diamonds (rhombus), 9-10 d10 kites. Rows: d4|d6, then d8|d10, with a fine gold rule between groups. Game weapon-face colours (js/gfx/dice/faces.js:388), gold bevel lit from the upper left, number + attack/block symbol + bonus icons centred on each shape's centroid. Shapes sized by area, not bounding box. Used by `die-card.html`, `ladder.html`, `nested.html`. The earlier game-renderer path (`dieface.js`) remains for reference.
+
+
 - `die-card.html?id=&metal=&size=&ammo=` – weapon card with faces drawn by the game's own `faceImage()` (js/gfx/dice/dice.js, polygons from poly.js) via `dieface.js`; d4 triangle, d6 square, d8 triangle (the true d8 face; it read better than a rhombus and matches the 3D die), d10 kite. `&mode=ladder` = Dave's variant: each face keeps the shape of the smallest die that has it.
 - Faces come from `weaponFaces()` after `applyRelease()` (roster.js). Under each face: starburst = attack, shield = block (shape, not colour) plus bonus icons. Blanks are dimmed.
 - `ladder.html` – one weapon d4→d10; gold ring = face differs from the same face one size down. Bottom = pack/inventory rows.
