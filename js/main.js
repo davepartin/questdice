@@ -1,6 +1,6 @@
 import { startFx } from './fx.js';
 import { bindChrome, boot, debugApi } from './ui.js';
-import { LAB, PREVIEW } from './lab.js';
+import { LAB, PREVIEW, PREVIEW_NAME } from './lab.js';
 import { BUILD } from './battlereport.js';
 import { PACE } from './g3/flat.js';
 import { applyRelease, applyLab } from './release.js';
@@ -12,7 +12,7 @@ document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.prev
 applyRelease(); // what everyone plays (js/release.js)
 if (/[?&]pace=actions\b/.test(location.search)) { PACE.actions = true; const tag = document.createElement('div'); tag.className = 'lab-tag pace-tag'; tag.textContent = 'PREVIEW · quick replay'; document.body.append(tag); } // the replay-pace preview (js/g3/flat.js)
 if (LAB) { applyLab(); const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = 'LAB · fury'; document.body.append(tag); } // ?lab: the release plus monster fury, its own heroes (js/lab.js)
-if (PREVIEW && !LAB) { const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = `PREVIEW · battle report · build ${BUILD}`; document.body.append(tag); } // a preview copy: its own saves (js/lab.js)
+if (PREVIEW && !LAB) { const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = `PREVIEW · ${PREVIEW_NAME.replace(/-/g, ' ') || 'copy'} · build ${BUILD}`; document.body.append(tag); } // a preview copy: its own saves (js/lab.js)
 startFx(document.getElementById('fx'));
 bindChrome();
 boot();
