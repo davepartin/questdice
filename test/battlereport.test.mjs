@@ -221,6 +221,8 @@ test('sharing: native sharing with a file, the text fallback, and copy and downl
   const sent = []; const nav = (extra) => Object.defineProperty(globalThis, 'navigator', { value: extra, configurable: true });
   nav({ canShare: () => true, share: async (d) => { sent.push(d); } });
   assert.equal(await UI.nativeShare(r), true); assert.ok(sent[0].files?.[0] instanceof File && sent[0].files[0].name.endsWith('.txt'));
+  assert.equal(sent[0].text, undefined, 'a file share carries no text beside the file: Notes and Messages insert both, which doubled the heading on a real iPhone');
+  assert.equal((await sent[0].files[0].text()).split('QUEST DICE BATTLE REPORT').length - 1, 1, 'the heading is in the file once');
   nav({ share: async (d) => { sent.push(d); } }); assert.equal(await UI.nativeShare(r), true); assert.match(sent[1].text, /--- details \(JSON\) ---/);
   nav({ share: async () => { const e = new Error('closed'); e.name = 'AbortError'; throw e; } }); assert.equal(await UI.nativeShare(r), null, 'closing the share sheet is not an error');
   nav({ share: async () => { throw new Error('nope'); } }); assert.equal(await UI.nativeShare(r), false);
@@ -298,4 +300,14 @@ test('a preview copy (any page under /preview/) keeps its own saves, reports and
   assert.equal(live.keyOf('questdice.hero.'), 'questdice.hero.'); assert.equal(prev.keyOf('questdice.hero.'), 'questdice.preview.hero.');
   assert.notEqual(BR.reportsKey(), 'questdice.preview.battlereports', 'this run is not a preview');
   assert.equal(BR.reportsKey(), 'questdice.battlereports', 'the real key outside a preview');
+});
+
+test('a weapon equipped in a slot whose die is not unlocked is labelled as not in play, and an unlocked one is not', () => {
+  const h = hero(); h.dice = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; h.loadout.NE = { ...h.loadout.NW, id: 'shield' }; // the Round Shield, in the right weapon slot, whose die is not unlocked (camp, 30 gold)
+  const b = E.newBattle(h, quest(h), E.makeRng(11), 1); BR.begin(b); play(b); const r = BR.finish(b, b.outcome || 'withdrew');
+  const w = r.heroes[0].weapons; assert.equal(w.find((x) => x.slot === 'left weapon').inPlay, true); assert.equal(w.find((x) => x.slot === 'right weapon').inPlay, false);
+  const text = BR.summaryText(r); assert.match(text, /\(right weapon: equipped but NOT IN PLAY, its die is not unlocked, so it rolled nothing\)/); assert.doesNotMatch(text, /left weapon: equipped but NOT/);
+  assert.ok(r.rounds.every((rd) => mine(rd).dice.every((d) => d.slot !== 'NE')), 'no die was rolled for the locked slot');
+  const h2 = hero(); h2.dice = [...h2.dice, 'NE']; const b2 = E.newBattle(h2, quest(h2), E.makeRng(11), 1); BR.begin(b2); play(b2); const r2 = BR.finish(b2, b2.outcome || 'withdrew');
+  assert.ok(r2.heroes[0].weapons.every((x) => x.inPlay), 'with the die unlocked both are in play'); assert.doesNotMatch(BR.summaryText(r2), /NOT IN PLAY/);
 });
