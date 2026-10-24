@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · T13 rewards, pack and camp</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter,sans-serif}
+main{max-width:430px;margin:0 auto;padding:10px 10px 18px;box-sizing:border-box}
+.concept{display:inline-block;padding:2px 7px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.16em;background:#b3261e;color:#fff}
+h2{margin:12px 0 6px;font:700 19px/1.1 'Cormorant Garamond',serif;color:#f2e6cc;display:flex;justify-content:space-between;align-items:baseline}
+h2 small{font:700 11px Oxanium;letter-spacing:.08em;color:#a99c86;text-transform:uppercase}
+.panel{background:linear-gradient(180deg,#1b1611,#120e0b);border:1px solid #5a4630;border-radius:12px;padding:8px;box-shadow:inset 0 1px 0 #ffffff12}
+.reward{display:grid;grid-template-columns:136px 1fr;gap:10px;align-items:center}.reward .qc{--w:136px}
+.reward p{margin:0 0 6px;font:600 13px/1.35 Inter;color:#d8ccb4}.reward b.nm{display:block;font:700 19px/1.1 'Cormorant Garamond',serif;color:#f2e6cc;margin-bottom:4px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.bt{height:36px;border-radius:9px;display:grid;place-items:center;font:800 13px Oxanium;letter-spacing:.06em;text-transform:uppercase}
+.bt.go{background:linear-gradient(180deg,#f2c75a,#c08a22);color:#2a1404}.bt.no{background:#15161c;border:1px solid #5a4a36;color:#d8ccb4}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 4px;border-top:1px solid #ffffff12}.row:first-child{border-top:0}
+.row .nm{font:700 16px/1.1 'Cormorant Garamond',serif;color:#f2e6cc;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.row .nm .where{font:700 10px Oxanium;letter-spacing:.08em;color:#a99c86;text-transform:uppercase}
+.row .ch{display:flex;gap:4px;margin:3px 0 4px;flex-wrap:wrap}.row .act{font:800 12px Oxanium;color:#ffd98a;text-align:right;white-space:nowrap}
+.row .act small{display:block;font:600 10px Inter;color:#a99c86}
+.row.sel{background:#ffffff08;border-radius:8px;outline:1px solid #c3cde066}
+.pair{border-left:3px solid #8a7458;margin-left:2px;padding-left:4px}
+.note{margin:6px 2px 0;font:500 11px/1.4 Inter;color:#a99c86}
+.legend{display:flex;gap:10px;align-items:center;font:700 11px Oxanium;color:#cbb894;margin:4px 2px}.legend svg{width:11px;height:11px;vertical-align:-1px}
+.legend u{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ffc21a;margin-right:3px}
+</style></head><body><main>
+<span class="concept">CONCEPT · live game data · not a rule change</span>
+<h2>Spoils <small>after a battle</small></h2><div class="panel reward" id="reward"></div>
+<h2>Your weapons <small id="room"></small></h2><div class="panel" id="pack"></div>
+<div class="legend"><span id="lg"></span></div>
+<h2>Camp Store <small>the shelf</small></h2><div class="panel" id="store"></div>
+<h2>Paired equipment <small>Ranger, today's rules</small></h2><div class="panel pair" id="pair"></div>
+<p class="note">Bow and Arrows are two weapons in the released game, one in each hand, each with its own battles left (engine.js:217-226). The cards show that as it is. Nothing here adds a wear event; Claude to verify against the equipment model.</p>
+<script type="module">
+import { weaponCard, weaponData, icon, strip, chips, price, ico, BAG_MAX } from './t13.js';
+const $ = (id) => document.getElementById(id);
+const hero = weaponData('dagger', 1, 10); // the T13 card: Silver Dagger, d10
+const row = (d, where, act, cls = '') => `<div class="row ${cls}">${icon(d, 128)}<div><div class="nm">${d.name}<span class="where">${where}</span></div><div class="ch">${chips(d)}</div>${strip(d)}</div><div class="act">${act}</div></div>`;
+$('reward').innerHTML = `<div id="rc"></div><div><b class="nm">${hero.metal} ${hero.name}</b><p>A d${hero.size} weapon, ${hero.wear}.</p>${strip(hero)}<div class="btns"><div class="bt go">Take</div><div class="bt no">Sell ${hero.sell}</div></div></div>`;
+$('rc').append(weaponCard(hero));
+const hands = [[hero, 'left hand'], [weaponData('shield', 0, 6, 2), 'right hand']];
+const bag = [weaponData('sword', 2, 8), weaponData('spear', 0, 6)];
+$('room').textContent = `pack ${bag.length} / ${BAG_MAX}`;
+$('pack').innerHTML = hands.map(([d, w], i) => row(d, w, `<small>Sell</small>${d.sell}`, i === 0 ? 'sel' : '')).join('') + bag.map((d) => row(d, 'pack', `<small>Sell</small>${d.sell}`)).join('');
+$('lg').innerHTML = `${ico('atk')} attack &nbsp; ${ico('block')} block &nbsp; <u></u>bonus symbol on the face (tap a row for the full card)`;
+$('store').innerHTML = [weaponData('dagger', 1, 10), weaponData('axe', 0, 6)].map((d) => row(d, '', `<small>Store</small>${price(d)}`)).join('');
+$('pair').innerHTML = [[weaponData('quiver', 0, 6), 'left hand · Normal arrows'], [weaponData('bow', 0, 6), 'right hand']].map(([d, w]) => row(d, w, `<small>Sell</small>${d.sell}`)).join('');
+document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
+</script></main></body></html>
