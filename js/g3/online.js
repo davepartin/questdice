@@ -260,7 +260,8 @@ function roadDone(t) {
   const { btn } = K();
   const rematch = res.trial && res.trial.canRematch && !you.ready ? btn(`Ask for a rematch · ${res.trial.rematchCost} gold`, () => Sess.send({ type: 'rematch' }).catch(fail), { kind: 'ghost', icon: 'reroll', cls: 'wide' }) : null;
   SCRUI.roadResult({ title: res.title, text: res.text }, {
-    kicker: res.trial ? `${res.trial.who} ${res.trial.win ? 'won' : 'lost'} · ${res.trial.heroTotal} to ${res.trial.oppTotal}` : res.by ? `${res.by} chose for the company` : 'The road answers', // a test shows its roll once (T09) label: you.ready ? 'Waiting for the others' : 'Onward', disabled: you.ready,
+    kicker: res.trial ? `${res.trial.who} ${res.trial.win ? 'won' : 'lost'} · ${res.trial.heroTotal} to ${res.trial.oppTotal}` : res.by ? `${res.by} chose for the company` : 'The road answers', /* a test shows its roll once (T09) */
+    label: you.ready ? 'Waiting for the others' : 'Onward', disabled: you.ready,
     onward: () => Sess.send({ type: 'onward' }).catch(fail), note: you.ready && waiting.length ? `Waiting for ${waiting.join(', ')}.` : '', extra: you.ready ? pushButton(t) : rematch,
   });
 }
