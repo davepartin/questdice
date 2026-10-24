@@ -6,7 +6,7 @@
 <script type="module">
 import { card17 } from './card17.js';
 const p = new URLSearchParams(location.search); await document.fonts.load('800 40px Oxanium'); await document.fonts.load('700 40px "Cormorant Garamond"');
-const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE');
+const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE', { stone: p.has('stone') });
 slot.append(c); console.log('nested', c.dataset.nested, 'kinds', c.dataset.kinds);
 await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); document.body.dataset.ready = 1;
 </script></body></html>
