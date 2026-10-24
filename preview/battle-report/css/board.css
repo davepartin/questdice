@@ -1,0 +1,467 @@
+/* The tabletop (Dave, Oct 2026): the top of the battle is a board game. Painted miniatures stand on a calm table; what
+   happened is told by the round card, not by animation. Pieces and effects are built in js/g3/flat.js, the card in js/g3/roundcard.js.
+   Everything is scoped under .b3 (the battle layer). */
+
+/* ================================================================== the table */
+.fb { --felt-a: #4a392c; --felt-b: #2a1f18; --felt-c: #130d0a; --lamp: rgba(255, 224, 168, .13); --place-img: none; --place-x: 50%; --place-y: 80%; }
+.fb[data-place="cinder-ford"] { --place-img: url("../assets/bg/cinder-ford.webp"); }
+.fb[data-place="burnt-orchard"] { --place-img: url("../assets/bg/burnt-orchard.webp"); }
+.fb[data-place="ravens-rest"] { --place-img: url("../assets/bg/ravens-rest.webp"); }
+.fb[data-place="wolfwood-edge"] { --place-img: url("../assets/bg/wolfwood-edge.webp"); }
+.fb[data-place="smoke-hollow"] { --place-img: url("../assets/bg/smoke-hollow.webp"); }
+.fb[data-place="the-toll-bridge"] { --place-img: url("../assets/bg/the-toll-bridge.webp"); }
+.fb[data-place="ashfall-camp"] { --place-img: url("../assets/bg/ashfall-camp.webp"); }
+.fb[data-place="gallows-hill"] { --place-img: url("../assets/bg/gallows-hill.webp"); }
+.fb[data-place="the-weeping-stair"] { --place-img: url("../assets/bg/the-weeping-stair.webp"); }
+.fb[data-place="ossuary-gate"] { --place-img: url("../assets/bg/ossuary-gate.webp"); }
+.fb[data-place="candle-vault"] { --place-img: url("../assets/bg/candle-vault.webp"); }
+.fb[data-place="the-pale-nave"] { --place-img: url("../assets/bg/the-pale-nave.webp"); }
+.fb[data-place="grave-silk-hall"] { --place-img: url("../assets/bg/grave-silk-hall.webp"); }
+.fb[data-place="mourners-row"] { --place-img: url("../assets/bg/mourners-row.webp"); }
+.fb[data-place="the-drowned-crypt"] { --place-img: url("../assets/bg/the-drowned-crypt.webp"); }
+.fb[data-place="ash-cloister"] { --place-img: url("../assets/bg/ash-cloister.webp"); }
+.b3 .fb { position: absolute; left: 0; right: 0; top: 0; bottom: calc(100% - var(--line-y, 42%)); overflow: hidden; pointer-events: none; --ph: 120px; z-index: 0; }
+.fb.act-2 { --felt-a: #34454c; --felt-b: #1e2b31; --felt-c: #0b1115; --lamp: rgba(190, 226, 255, .12); }
+.fb.act-3 { --felt-a: #4c2c30; --felt-b: #2c181b; --felt-c: #120708; --lamp: rgba(255, 190, 160, .12); }
+.fb.boss { --lamp: rgba(255, 150, 120, .14); }
+/* landscape: a short crop of the painting; 58% keeps the ground under the minis' feet */
+@media (min-aspect-ratio: 5/4) { .fb { --place-y: 58%; } }
+/* crypt floors sit lower in the painting, so the crop drops toward the tiles */
+.fb[data-place="the-drowned-crypt"] { --place-y: 88%; }
+.fb[data-place="candle-vault"], .fb[data-place="the-weeping-stair"], .fb[data-place="the-pale-nave"], .fb[data-place="ash-cloister"] { --place-y: 82%; }
+.fb[data-place="ossuary-gate"], .fb[data-place="grave-silk-hall"], .fb[data-place="mourners-row"] { --place-y: 80%; }
+@media (min-aspect-ratio: 5/4) {
+  .fb[data-place="the-drowned-crypt"] { --place-y: 72%; }
+  .fb[data-place="candle-vault"], .fb[data-place="the-weeping-stair"], .fb[data-place="the-pale-nave"], .fb[data-place="ash-cloister"] { --place-y: 68%; }
+  .fb[data-place="ossuary-gate"], .fb[data-place="grave-silk-hall"], .fb[data-place="mourners-row"] { --place-y: 66%; }
+}
+.fb-table { position: absolute; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 58% 78%, var(--lamp), transparent 72%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.5'/></svg>"),
+    var(--place-img),
+    radial-gradient(130% 100% at 50% 18%, var(--felt-a) 0%, var(--felt-b) 55%, var(--felt-c) 100%);
+  background-size: auto, auto, cover, auto;
+  background-position: center, center, var(--place-x) var(--place-y), center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal, soft-light, normal, normal; }
+.fb-table::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 3px rgba(18, 11, 7, .9), inset 0 0 0 4px rgba(226, 178, 76, .5), inset 0 0 46px 6px rgba(0, 0, 0, .75);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .4), transparent 28%, transparent 74%, rgba(0, 0, 0, .5)); }
+.fb[data-place] .fb-table::after { background: linear-gradient(180deg, rgba(0, 0, 0, .52), transparent 26%, transparent 72%, rgba(0, 0, 0, .56)); }
+/* the lamp over the table breathes a little */
+.fb-lamp { position: absolute; left: 12%; right: 12%; top: -30%; height: 90%; border-radius: 50%; background: radial-gradient(closest-side, var(--lamp), transparent); opacity: .9; animation: fbLamp 7s ease-in-out infinite; pointer-events: none; }
+@keyframes fbLamp { 50% { opacity: .62; transform: scale(1.04); } }
+.fb-mote { position: absolute; left: var(--x); top: var(--y); width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 236, 200, .55); filter: blur(.4px); transform: scale(var(--s)); opacity: 0; animation: fbMote var(--t) ease-in-out var(--d) infinite; pointer-events: none; }
+@keyframes fbMote { 0% { opacity: 0; transform: translate(0, 0) scale(var(--s)); } 25% { opacity: .7; } 100% { opacity: 0; transform: translate(14px, -46px) scale(var(--s)); } }
+/* the table's front edge: a wooden rail with a gold line, shading onto the dice */
+.fb-rim { position: absolute; left: 0; right: 0; z-index: 2; }
+.fb-rim.top { display: none; }
+.fb-rim.bot { bottom: 0; height: 7px; background: linear-gradient(180deg, #7a5632, #4a301a 45%, #20140b); box-shadow: 0 -1px 0 rgba(255, 226, 160, .85), 0 -2px 6px rgba(226, 178, 76, .25), 0 7px 14px rgba(0, 0, 0, .7); }
+
+.fb-atmo { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.fb-fog { position: absolute; left: -22%; right: -22%; top: 6%; height: 72%; filter: blur(20px);
+  background: linear-gradient(90deg, transparent, rgba(255, 220, 180, .11) 42%, rgba(200, 176, 150, .08) 62%, transparent); opacity: .8; animation: fbFog 32s linear infinite; }
+.fb-fog.b { top: 28%; height: 54%; opacity: .5; animation-duration: 48s; animation-direction: reverse;
+  background: linear-gradient(90deg, transparent, rgba(255, 150, 70, .08), transparent); }
+@keyframes fbFog { from { transform: translateX(-8%); } to { transform: translateX(8%); } }
+.fb-ember { position: absolute; left: var(--x); top: var(--y); width: 3px; height: 3px; border-radius: 50%; background: #ff8a3a; box-shadow: 0 0 5px #ff6a18; transform: scale(var(--s)); opacity: 0; animation: fbMote var(--t) ease-in-out var(--d) infinite; pointer-events: none; }
+.fb-dust { position: absolute; left: var(--x); top: var(--y); width: 2px; height: 2px; border-radius: 50%; background: rgba(230, 214, 176, .45); transform: scale(var(--s)); opacity: 0; animation: fbDust var(--t) linear var(--d) infinite; pointer-events: none; }
+@keyframes fbDust { 0% { opacity: 0; transform: translate(0, 0) scale(var(--s)); } 22% { opacity: .45; } 100% { opacity: 0; transform: translate(-16px, 34px) scale(var(--s)); } }
+.fb-flicker { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(55% 70% at 50% 42%, rgba(255, 196, 120, .16), transparent 72%); animation: fbFlicker 3.2s ease-in-out infinite; }
+@keyframes fbFlicker { 0%, 100% { opacity: .4; } 16% { opacity: .72; } 22% { opacity: .42; } 40% { opacity: .82; } 58% { opacity: .5; } 70% { opacity: .76; } }
+.fb.wx-ash .fb-mote { background: #ff9a4a; box-shadow: 0 0 5px rgba(255, 110, 30, .7); }
+.fb.wx-crypt .fb-mote { background: rgba(255, 230, 190, .4); width: 2px; height: 2px; }
+.fb.wx-ember .fb-mote { background: #ff6a22; box-shadow: 0 0 7px rgba(255, 80, 10, .85); }
+.fb.wx-ember .fb-fog.ember { background: linear-gradient(90deg, transparent, rgba(255, 90, 20, .16) 42%, rgba(255, 160, 40, .12) 62%, transparent); }
+.fb.wx-ember .fb-flicker.ember { background: radial-gradient(55% 70% at 50% 42%, rgba(255, 110, 30, .28), transparent 72%); }
+.fb-ember.fb-spark { width: 4px; height: 4px; background: #ffb24a; box-shadow: 0 0 8px #ff5a10, 0 0 14px rgba(255, 90, 20, .6); }
+.fb-field { position: absolute; left: 2.5%; right: 2.5%; top: calc(3.4rem + var(--safe-t)); bottom: 1.45rem; display: flex; align-items: flex-end; gap: 2%; min-height: 0; z-index: 2; }
+.fb-side { display: flex; align-items: flex-end; min-width: 0; height: 100%; }
+.fb-side.heroes { flex: 0 0 clamp(22%, calc(36% - var(--foes, 2) * 4%), 31%); justify-content: center; }
+.fb-side.foes { flex: 1 1 0; justify-content: space-evenly; gap: 1%; }
+
+.fb-slot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1 1 0; min-width: 0; max-width: 11rem; transition: opacity .4s; }
+.fb-slot.foe.tier-elite, .fb-slot.foe.tier-boss { flex-grow: 1.35; max-width: 14rem; }
+.fb-slot.hero.back { flex-grow: .78; z-index: 0; } .fb-slot.hero.active { z-index: 1; }
+.fb-slot.hero.back .fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
+
+/* ================================================================== a piece */
+.fb-pc { position: relative; pointer-events: auto; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 14px rgba(255, 214, 160, .1)); }
+.fb-pc.hero { cursor: default; }
+.fb-pc::before { content: ''; position: absolute; left: 4%; right: 4%; bottom: -3px; height: 22%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, .6), transparent 72%); z-index: 0; }
+/* a base circle printed on the mat under every piece, and a pool of light */
+.fb-mark { position: absolute; left: -2%; right: -2%; bottom: -5px; height: 26%; border-radius: 50%; z-index: 0; pointer-events: none; border: 1.5px solid rgba(226, 178, 76, .3); background: radial-gradient(ellipse, rgba(255, 226, 170, .16), transparent 68%); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+.fb-img { height: calc(var(--ph) * .8); } .fb-slot.hero.back .fb-pc { filter: saturate(.8) brightness(.86) drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); }
+
+/* ================================================================== a piece */
+.fb-pc { position: relative; pointer-events: auto; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .6)); }
+.fb-pc.hero { cursor: default; }
+.fb-pc::before { content: ''; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 15%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, .55), transparent 72%); z-index: 0; }
+.fb-img { position: relative; z-index: 1; display: block; height: calc(var(--ph) * var(--rel, 1)); width: auto; max-width: 100%; object-fit: contain; object-position: 50% 100%; transform-origin: 50% 92%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.fb.party .fb-pc.hero::after { content: ''; position: absolute; left: 14%; right: 14%; bottom: 0; height: 12%; border-radius: 50%; z-index: 0; box-shadow: 0 0 0 2px color-mix(in srgb, var(--hue, #ffd23d) 60%, transparent); opacity: .7; }
+.fb.party .fb-slot.hero.active .fb-pc.hero::after { opacity: 1; box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 12px color-mix(in srgb, var(--hue, #ffd23d) 70%, transparent); }
+.fb.party .fb-slot.hero.active .fb-name { color: #ffe08a; }
+.fb-pc.down { pointer-events: none; }
+.fb-slot.dead .fb-card { opacity: 0; pointer-events: none; }
+.fb-slot.dead { pointer-events: none; }
+
+/* who you are aiming at: a gold ring on the table under its feet, and a small marker bobbing over its head */
+.fb-ring { position: absolute; left: -4%; right: -4%; bottom: -6px; height: 28%; border-radius: 50%; z-index: 0; border: 2px solid transparent; pointer-events: none; transition: border-color .2s, box-shadow .2s; }
+.fb-pc.targeted .fb-ring { border-color: #ffd96a; box-shadow: 0 0 14px rgba(255, 210, 61, .7), inset 0 0 12px rgba(255, 210, 61, .4); animation: fbRing 1.5s ease-in-out infinite; }
+@keyframes fbRing { 50% { box-shadow: 0 0 22px rgba(255, 210, 61, .9), inset 0 0 16px rgba(255, 210, 61, .55); } }
+.fb-chev { position: absolute; z-index: 3; left: 50%; top: -.55rem; width: 0; height: 0; margin-left: -.42rem; opacity: 0; pointer-events: none; border-left: .42rem solid transparent; border-right: .42rem solid transparent; border-top: .6rem solid #ffd96a; filter: drop-shadow(0 1px 2px #000) drop-shadow(0 0 6px rgba(255, 210, 61, .8)); }
+.fb-pc.targeted .fb-chev { opacity: 1; animation: fbChev 1.1s ease-in-out infinite; }
+@keyframes fbChev { 50% { transform: translateY(-4px); } }
+.fb-slot.foe:not(.targeted) .fb-img { opacity: .93; }
+.fb-pc.raged .fb-img { filter: sepia(.4) saturate(1.5) hue-rotate(-18deg); }
+
+/* a hazard flagged on the piece's shoulder ("POUNCE NEXT ROUND") */
+@keyframes fbCall { 50% { box-shadow: 0 0 0 1px rgba(255, 190, 150, .9), 0 0 12px rgba(255, 80, 50, .8); } }
+
+/* ================================================================== the card under a piece: a small token plaque */
+.fb-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: stretch; gap: .2rem; width: calc(100% - .16rem); max-width: 8.6rem; margin-top: .42rem; padding: .22rem .28rem .26rem; border-radius: .6rem; pointer-events: auto; transition: opacity .3s, transform .2s;
+  background: linear-gradient(180deg, rgba(48, 35, 27, .94), rgba(18, 12, 9, .96)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .38), inset 0 1px 0 rgba(255, 236, 190, .22), 0 5px 10px rgba(0, 0, 0, .55); }
+.fb-slot.targeted .fb-card { box-shadow: inset 0 0 0 1.5px #ffd96a, inset 0 1px 0 rgba(255, 236, 190, .3), 0 0 14px rgba(255, 210, 61, .35), 0 5px 10px rgba(0, 0, 0, .55); transform: translateY(-1px); }
+.fb-card.hero { pointer-events: none; padding: .16rem .3rem; align-items: center; }
+.fb-name { text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .62rem/1.05 var(--disp); letter-spacing: .09em; text-transform: uppercase; color: #f4e7cb; text-shadow: 0 1px 2px #000; }
+.fb-slot.targeted .fb-name { color: #ffe08a; }
+.fb-hp { position: relative; display: block; width: 100%; height: .74rem; border-radius: .4rem; overflow: hidden; background: #120907; box-shadow: inset 0 0 0 1px rgba(255, 236, 190, .28), inset 0 2px 3px rgba(0, 0, 0, .7); }
+.fb-card.hero .fb-hp { height: .36rem; width: 100%; }
+.fb-hp-ghost, .fb-hp-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: inherit; }
+.fb-hp-ghost { background: rgba(255, 255, 255, .6); transition: width .6s ease-out; }
+.fb-hp-fill { background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); transition: width .35s ease-out; }
+.fb-hp-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 11px, rgba(0, 0, 0, .28) 11px 12px), linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 45%); }
+.fb-hp.low .fb-hp-fill, .fb-slot.low .fb-hp-fill { animation: fbLow 1s ease-in-out infinite; }
+@keyframes fbLow { 50% { filter: brightness(1.5); } }
+.fb-hpn { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; font: 800 .58rem/1 var(--disp); font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+
+/* what the monster plans, in a chip: its sign and how hard */
+.fb-intent { display: none; align-items: center; justify-content: center; gap: .24rem; padding: .17rem .3rem; border-radius: .45rem; font: 800 .76rem/1 var(--disp); color: var(--tone, #ffd0c0); background: linear-gradient(180deg, color-mix(in srgb, var(--tone, #ff6a5a) 22%, #120a08), #120a08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #ff6a5a) 65%, transparent); white-space: nowrap; }
+.fb-intent[class*="tone-"] { display: flex; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name { letter-spacing: .03em; font-size: .56rem; }
+.fb-side.foes .fb-name.xl { font-size: .5rem; padding-right: 1.15rem; letter-spacing: 0; text-overflow: clip; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.xl { font-size: .4rem; padding-right: 0; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-name.long { letter-spacing: 0; font-size: .5rem; padding-right: .55rem; box-sizing: border-box; }
+.fb-intent svg { width: .98rem; height: .98rem; flex: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent)); }
+.fb-intent small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.fb-intent.tone-strike, .fb-intent.tone-slam, .fb-intent.tone-windup { --tone: #ff7a6a; }
+.fb-intent.tone-pierce { --tone: #ffa23a; }
+.fb-intent.tone-ward, .fb-intent.tone-stalk { --tone: #ffb85a; }
+.fb-intent.tone-guard { --tone: #7ab8ff; }
+.fb-intent.tone-mend { --tone: #7affb0; }
+.fb-intent.tone-phase, .fb-intent.tone-bind, .fb-intent.tone-howl, .fb-intent.tone-summon, .fb-intent.tone-drain { --tone: #cfa0ff; }
+.fb-intent.tone-pilfer { --tone: #ffd23d; }
+.fb-intent.hazard { animation: fbHaz 1.2s ease-in-out infinite; }
+@keyframes fbHaz { 50% { box-shadow: inset 0 0 0 1px var(--tone), 0 0 12px color-mix(in srgb, var(--tone) 70%, transparent); } }
+
+/* ================================================================== effects */
+.fb-fx { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.fb-num { position: absolute; transform: translate(-50%, 0); white-space: nowrap; font: 900 1.45rem/1 var(--disp); color: #ffe2a0; -webkit-text-stroke: .045em #1a0c06; paint-order: stroke fill; text-shadow: 0 2px 0 #000, 0 0 10px rgba(0, 0, 0, .9), 0 0 14px color-mix(in srgb, currentColor 45%, transparent); }
+.fb-num.big { font-size: 2rem; }
+.fb-num svg { width: 1em; height: 1em; vertical-align: -.14em; }
+.fb-num.hurt { color: #ff8a7a; } .fb-num.block { color: #8cc8ff; font-size: 1.1rem; } .fb-num.heal { color: #7affb0; } .fb-num.pierce { color: #ffb060; font-size: 1.05rem; }
+.fb-num.long { font-size: .95rem; }
+.fb-num.meh { color: #cfc8d8; font-size: 1rem; }
+.fb-spark { position: absolute; width: 0; height: 0; --k: 0; }
+.fb-sparkle { position: absolute; width: 0; height: 0; --k: 0; pointer-events: none; }
+.fb-sparkle i { position: absolute; left: 0; top: 0; font-style: normal; font-size: calc(21px * var(--z)); line-height: 1; color: #fff; text-shadow: 0 0 6px var(--c), 0 0 12px var(--c), 0 0 20px var(--c);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(var(--k) * var(--r) * -1)) rotate(calc(var(--a) * -1)) translateY(calc(var(--k) * var(--k) * -26px)) scale(calc(1 - var(--k) * .4)); }
+.fb-sparkle i:nth-child(3n) { color: var(--c); }
+.fb-shock { position: absolute; display: block; width: calc(50px * var(--p) * var(--k)); height: calc(50px * var(--p) * var(--k)); margin: calc(25px * var(--p) * var(--k) * -1) 0 0 calc(25px * var(--p) * var(--k) * -1); border-radius: 50%; border: 2px solid var(--c); opacity: calc(1 - var(--k)); box-shadow: 0 0 8px var(--c); }
+.fb-spark.heal .fb-shock { display: none; }
+.fb-spark-core { position: absolute; display: block; width: calc(34px * var(--p) * (.35 + var(--k))); height: calc(34px * var(--p) * (.35 + var(--k))); margin: calc(17px * var(--p) * (.35 + var(--k)) * -1) 0 0 calc(17px * var(--p) * (.35 + var(--k)) * -1); border-radius: 50%; background: radial-gradient(circle, #fff 0 22%, var(--c) 46%, transparent 72%); }
+.fb-spark i { position: absolute; left: -1.5px; top: 0; width: 3px; height: calc(var(--d) * 17px * var(--p)); border-radius: 2px; background: linear-gradient(var(--c), transparent); transform-origin: 50% 0; transform: rotate(var(--a)) translateY(calc(var(--k) * 30px * var(--p) + 3px)); }
+.fb-spark.block .fb-spark-core { background: none; border: 3px solid var(--c); box-shadow: 0 0 10px var(--c); }
+.fb-spark.block i { display: none; }
+.fb-spark.heal .fb-spark-core { display: none; }
+.fb-spark.heal i { left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); transform: translate(calc((var(--d) - 1) * 26px + (var(--a) / 360deg * 0px)), calc(var(--k) * -38px + 6px)); }
+.fb-spark.heal i:nth-child(odd) { transform: translate(calc((var(--d) - 1) * -26px), calc(var(--k) * -30px + 10px)); }
+.fb-flash { position: absolute; inset: 0; z-index: 5; opacity: 0; pointer-events: none; background: radial-gradient(120% 100% at 50% 50%, transparent 40%, var(--fc, #ff3a2a) 150%); }
+
+@media (prefers-reduced-motion: reduce) { .fb-pc.targeted .fb-ring, .fb-intent.hazard, .fb-hp.low .fb-hp-fill { animation: none; } }
+
+/* the older plate strip, hero strip text, ribbon and log are not used any more */
+.b3 .b3-ribbon, .b3 .b3-plates, .b3 .b3-more, .b3 .b3-leaders { display: none !important; }
+
+/* ================================================================== the round card */
+.rc-again { display: inline-flex; align-items: center; gap: .25rem; align-self: center; margin-left: .15rem; padding: .18rem .55rem .18rem .4rem; border-radius: 999px; border: 0; cursor: pointer; pointer-events: auto;
+  font: 800 .58rem/1 var(--disp); letter-spacing: .1em; text-transform: uppercase; color: #ffe8b8; background: rgba(40, 28, 20, .85); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .45); }
+.rc-again[hidden] { display: none; }
+.rc-again svg { width: .85rem; height: .85rem; }
+
+/* it sits over the dice table (empty between rounds), so the pieces and what each plans next stay in view above it */
+.b3 .rc { position: absolute; z-index: 5; left: .5rem; right: .5rem; top: calc(var(--line-y, 42%) + 14px); max-height: calc(100% - var(--line-y, 42%) - 14px - var(--bar-top, var(--dock-top, 12rem)) - .5rem); display: flex; flex-direction: column; gap: .35rem; padding: .4rem .55rem .35rem;
+  border-radius: .9rem; overflow-x: hidden; overflow-y: auto; pointer-events: auto; cursor: pointer; animation: rcIn .26s ease-out;
+  background: linear-gradient(180deg, rgba(44, 33, 26, .98), rgba(16, 11, 9, .99)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .55), inset 0 0 0 4px rgba(14, 9, 6, .9), inset 0 0 0 5px rgba(226, 178, 76, .22), 0 14px 34px rgba(0, 0, 0, .7); scrollbar-width: none; padding: .55rem .7rem .5rem; }
+.b3 .rc::-webkit-scrollbar { display: none; }
+@keyframes rcIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.rc-head { display: flex; align-items: center; gap: .5rem; flex: none; }
+.rc-head b { font: 800 .72rem/1 var(--disp); letter-spacing: .24em; text-transform: uppercase; color: #ffe39a; text-shadow: 0 0 10px rgba(255, 200, 80, .35); }
+.rc-head { padding-bottom: .3rem; border-bottom: 1px solid rgba(226, 178, 76, .3); }
+.rc-head span { flex: 1; font: 600 .6rem/1 var(--disp); color: #d8a88a; }
+.rc-head em { font: 600 .5rem/1 var(--disp); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 236, 190, .45); }
+.rc-x { flex: none; width: 1.7rem; height: 1.7rem; border: 0; border-radius: 50%; cursor: pointer; font: 700 .8rem/1 var(--disp); color: #f0e0c0; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 226, 170, .3); margin: -.3rem -.25rem -.3rem 0; }
+.rc-body { display: flex; flex-direction: column; gap: .4rem; min-height: 0; }
+.rc-sec { position: relative; padding: .1rem 0 .1rem .6rem; display: flex; flex-direction: column; }
+.rc-sec::before { content: ''; position: absolute; left: 0; top: .1rem; bottom: .1rem; width: 3px; border-radius: 2px; background: linear-gradient(180deg, var(--sec), color-mix(in srgb, var(--sec) 40%, transparent)); box-shadow: 0 0 8px color-mix(in srgb, var(--sec) 60%, transparent); }
+.rc-sec.you { --sec: #ffb04a; } .rc-sec.foes { --sec: #6ab4ff; }
+.rc-rows { display: flex; flex-direction: column; gap: .32rem; }
+.rc-line { display: flex; flex-direction: column; gap: .18rem; animation: rcLine .4s cubic-bezier(.2, .9, .3, 1) both; }
+.rc-rows > :nth-child(2) { animation-delay: .09s; } .rc-rows > :nth-child(3) { animation-delay: .18s; } .rc-rows > :nth-child(4) { animation-delay: .27s; } .rc-rows > :nth-child(5) { animation-delay: .36s; }
+@keyframes rcLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rc-who { display: flex; align-items: baseline; gap: .25rem; font: 600 .66rem/1.15 var(--disp); color: #cdbfa4; }
+.rc-who b { color: #fff0cf; font-weight: 800; letter-spacing: .03em; }
+.rc-who .rc-roll { flex: none; overflow: visible; white-space: nowrap; margin-left: auto; }
+.rc-roll { flex: none; display: inline-flex; align-items: center; gap: .18rem; padding: .08rem .38rem .08rem .26rem; border-radius: .45rem; font: 900 .95rem/1 var(--disp); }
+.rc-roll svg { width: 1.3rem; height: 1.3rem; } .rc-roll small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; opacity: .85; }
+.rc-roll.red { color: #ffd0c6; background: rgba(255, 60, 40, .4); box-shadow: inset 0 0 0 1px rgba(255, 110, 90, .6); }
+.rc-roll.blue { color: #d0e8ff; background: rgba(60, 140, 255, .4); box-shadow: inset 0 0 0 1px rgba(110, 170, 255, .6); }
+.rc-who span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-hp { flex: none; margin-left: auto; font: 700 .64rem/1 var(--disp); font-style: normal; color: #cdbfa4; } .rc-hp b { color: #fff; } .rc-hp.dead { color: #ffb4a0; }
+.rc-line.early .rc-who span { color: #ffb4a0; }
+.rc-sum { display: flex; align-items: center; flex-wrap: wrap; gap: .22rem; }
+.rc-tk { --tkc: #ffd8c8; display: inline-flex; align-items: center; gap: .2rem; padding: .16rem .42rem; border-radius: .5rem; color: var(--tkc); background: linear-gradient(180deg, color-mix(in srgb, var(--tkc) 20%, #140c09), #140c09); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tkc) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .14); }
+.rc-tk svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tkc) 60%, transparent)); }
+.rc-tk svg { width: .85rem; height: .85rem; flex: none; }
+.rc-tk b { font: 900 1.1rem/1 var(--disp); text-shadow: 0 0 8px color-mix(in srgb, var(--tkc) 40%, transparent); }
+.rc-tk small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.rc-tk.atk { --tkc: #ff8a7a; } .rc-tk.block { --tkc: #8cc8ff; } .rc-tk.guard { --tkc: #ffc860; } .rc-tk.pierce { --tkc: #ffae5a; }
+.rc-tk.out { --tkc: #fff; background: linear-gradient(180deg, #c03a2c, #6a1612); box-shadow: inset 0 0 0 1px rgba(255, 200, 180, .7), inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 14px rgba(255, 60, 40, .35); padding-right: .55rem; }
+.rc-tk.out b { font-size: 1.25rem; } .rc-tk.out.zero { background: linear-gradient(180deg, #2a7a4c, #123824); box-shadow: inset 0 0 0 1px rgba(150, 255, 190, .6), 0 0 12px rgba(80, 255, 150, .25); }
+.rc-op { font: 800 1rem/1 var(--disp); color: #cbb78f; }
+.rc-note { margin: 0; font: 600 .62rem/1.25 var(--disp); color: #cdbfa4; } .rc-note.bad { color: #ffb4a0; } .rc-note.good { color: #bff0d0; } .rc-note.you { color: #ffe0a0; } .rc-note svg { width: .8em; height: .8em; vertical-align: -.1em; }
+.rc-share { font: 600 .6rem/1.2 var(--disp); color: #cdbfa4; margin-right: .5rem; } .rc-share b { color: #fff; }
+.rc-line.plain .rc-who { color: #bcae94; }
+.rc-foot { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .4rem; padding-top: .3rem; margin-top: .1rem; border-top: 1px solid rgba(255, 226, 170, .16); }
+.rc-chip { display: inline-flex; align-items: center; gap: .2rem; padding: .12rem .45rem; border-radius: 999px; font: 700 .6rem/1 var(--disp); color: #cfe6ff; background: rgba(106, 180, 255, .12); box-shadow: inset 0 0 0 1px rgba(106, 180, 255, .4); }
+.rc-chip svg { width: .8rem; height: .8rem; } .rc-chip small { opacity: .7; font: 600 .52rem/1 var(--disp); }
+.rc-chip.heal { color: #c8ffe0; background: rgba(122, 255, 176, .1); box-shadow: inset 0 0 0 1px rgba(122, 255, 176, .4); }
+.rc-chip.lead { color: #ffe0b0; background: rgba(255, 190, 90, .1); box-shadow: inset 0 0 0 1px rgba(255, 190, 90, .4); }
+.rc-you { display: inline-flex; align-items: center; gap: .35rem; margin-left: auto; font: 700 .66rem/1 var(--disp); color: #f4e7cb; }
+.rc-you .rc-yl { letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.rc-hpbox b { font: 900 .95rem/1 var(--disp); color: #fff; } .rc-hpbox b.down { color: #ff9a8a; } .rc-hpbox b.up { color: #8affb8; }
+.rc-took { opacity: .75; font-weight: 600; }
+.rc-you.party { display: flex; flex-wrap: wrap; gap: .2rem .6rem; margin-left: 0; width: 100%; }
+.rc-pf { display: inline-flex; gap: .3rem; align-items: baseline; font: 600 .6rem/1.2 var(--disp); } .rc-pf b { color: #fff0cf; } .rc-pf i { font-style: normal; color: #cdbfa4; } .rc-pf.out { opacity: .6; }
+.rc-tap { flex: none; text-align: center; font: 600 .5rem/1 var(--disp); letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 236, 190, .4); }
+
+.b3 .b3-magchip, .b3 .b3-goldchip, .b3 .b3-petchip { z-index: 6; }
+
+/* wide screens: the card sits in the middle, between your hero panel and the controls */
+@media (min-aspect-ratio: 5/4) {
+  .b3 .rc { left: calc(var(--col) + 2.2rem); right: calc(var(--col) + 2.2rem); bottom: auto; max-height: calc(100% - var(--line-y, 42%) - 14px - .6rem); }
+  .b3 .fb-field { top: 3.6rem; }
+}
+
+/* victory and defeat: the hero's miniature on the felt (screens.js endTable) */
+.fb.fb-end { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.fb-end .fb-stand { position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%); height: min(64%, 24rem); display: flex; align-items: flex-end; justify-content: center; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .6)); z-index: 2; }
+.fb-end .fb-stand .fb-img { height: 100%; width: auto; max-width: 70vw; } .fb-end .fb-stand.flip .fb-img { transform: scaleX(-1); }
+.fb-end.victory .fb-stand { animation: fbEndHop 1.4s ease-in-out 3; }
+@keyframes fbEndHop { 50% { transform: translateX(-50%) translateY(-10px); } }
+.fb-end.victory .fb-table::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(70% 60% at 50% 70%, rgba(255, 224, 140, .28), transparent 70%); }
+.fb-end.defeat .fb-table { filter: saturate(.6) brightness(.8); }
+.fb-end.defeat .fb-stand { transform: translateX(-50%) rotate(80deg); transform-origin: 50% 50%; opacity: .62; bottom: 20%; height: min(46%, 17rem); }
+.fb-gold { position: absolute; left: var(--x); bottom: 14%; width: .5rem; height: .5rem; border-radius: 50%; background: radial-gradient(circle, #fff6c8, #ffd23d 60%, transparent 72%); box-shadow: 0 0 8px rgba(255, 210, 61, .8); transform: scale(var(--s)); opacity: 0; animation: fbGold 3s ease-out var(--d) infinite; }
+@keyframes fbGold { 0% { opacity: 0; transform: translateY(0) scale(var(--s)); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14rem) scale(calc(var(--s) * .6)); } }
+@media (prefers-reduced-motion: reduce) { .fb-end.victory .fb-stand, .fb-gold { animation: none; } .fb-gold { display: none; } }
+
+/* the hero's health: an engraved gold rail along the front edge of the table */
+.b3 .b3-divider { height: 22px; top: calc(var(--line-y, 46%) - 11px); }
+.b3 .b3-divider .dv-bar { height: 10px; border-radius: 6px; background: #170a0c; box-shadow: inset 0 0 0 1px rgba(255, 226, 160, .55), inset 0 2px 3px rgba(0, 0, 0, .8), 0 2px 8px rgba(0, 0, 0, .6); }
+.b3 .b3-divider .dv-fill { border-radius: 6px; background: linear-gradient(180deg, #ff9a7a, #e8262a 52%, #a8101a); }
+.b3 .b3-divider .dv-fill::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 13px, rgba(0, 0, 0, .28) 13px 14px), linear-gradient(180deg, rgba(255, 255, 255, .38), transparent 45%); }
+.b3 .b3-divider .dv-n { font-size: .74rem; }
+@media (prefers-reduced-motion: reduce) { .fb-lamp, .fb-mote, .fb-ember, .fb-dust, .fb-fog, .fb-flicker, .fb-pc.targeted .fb-chev, .rc-line { animation: none; } .fb-mote, .fb-ember, .fb-dust, .fb-fog { display: none; } .fb-flicker { opacity: .22; } }
+
+/* a company: the team stands small on the far left, the whole top of the table is the monsters' */
+.fb.party .fb-field { gap: 1%; }
+.fb.party .fb-side.heroes { flex: 0 0 21%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: end; align-items: end; gap: .3rem .1rem; padding-bottom: .1rem; }
+.fb.party[data-heroes="2"] .fb-side.heroes { flex-basis: 12%; grid-template-columns: minmax(0, 1fr); }
+.fb.party .fb-side.foes { flex: 1 1 0; }
+.fb.party .fb-slot.hero, .fb.party .fb-slot.hero.back { flex: none; max-width: none; margin: 0; }
+.fb.party .fb-slot.hero .fb-img, .fb.party .fb-slot.hero.back .fb-img { height: calc(var(--ph) * .34); }
+.fb.party .fb-slot.hero.back .fb-pc { filter: saturate(.85) brightness(.9) drop-shadow(0 4px 3px rgba(0, 0, 0, .6)); }
+.fb.party .fb-slot.hero .fb-pc::before { height: 18%; }
+.fb.party .fb-slot.hero .fb-mark { bottom: -3px; }
+.fb.party .fb-card.hero { margin-top: .12rem; padding: 0; background: none; box-shadow: none; gap: .08rem; width: 100%; }
+.fb.party .fb-card.hero .fb-name { font-size: .44rem; letter-spacing: .03em; }
+.fb.party .fb-card.hero .fb-hp { height: .26rem; width: 90%; }
+.fb.party .fb-slot.hero.active .fb-card.hero .fb-name { color: #ffe08a; }
+.fb.party .fb-slot.hero.active .fb-pc.hero::after { display: none; }
+.fb.party .fb-slot.hero.active .fb-mark { border-color: #ffd96a; box-shadow: 0 0 10px rgba(255, 210, 61, .6); }
+.fb.party .fb-slot.hero.down .fb-card { opacity: .5; }
+
+/* party wait zone (left): unlocked minis sit at half size. Locked minis scale up beside their target. */
+.fb.party .fb-side.heroes.wait { position: relative; }
+.fb.party .fb-side.heroes.wait::before { content: ''; position: absolute; left: 4%; right: 4%; top: 8%; bottom: 2%; border-radius: .7rem; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 80%, rgba(255, 226, 170, .08), transparent 72%); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .18); }
+.fb.party .fb-slot.hero.wait .fb-pc { transform: scale(0.5); transform-origin: 50% 100%; transition: transform .36s cubic-bezier(.2, .9, .3, 1); }
+.fb.party .fb-slot.hero.locked .fb-pc { transform: scale(1); transform-origin: 50% 100%; transition: transform .36s cubic-bezier(.2, .9, .3, 1); }
+.fb.party .fb-slot.hero.wait .fb-img, .fb.party .fb-slot.hero.locked .fb-img, .fb.party .fb-slot.hero.back.locked .fb-img { height: calc(var(--ph) * .62); }
+.fb.party .fb-slot.hero.locked.back .fb-pc { filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .6)); }
+.fb.party .fb-pc.hero.committed::after,
+.fb.party .fb-slot.hero.active .fb-pc.hero.committed::after { display: block; opacity: 1; height: 14%;
+  box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 16px color-mix(in srgb, var(--hue, #ffd23d) 80%, transparent);
+  animation: fbCommit 1.6s ease-in-out infinite; }
+@keyframes fbCommit { 50% { opacity: .65; box-shadow: 0 0 0 2px var(--hue, #ffd23d), 0 0 22px color-mix(in srgb, var(--hue, #ffd23d) 90%, transparent); } }
+/* locked minis stand at the monster's feet, just to the left, above the plaque */
+.fb-pair { position: absolute; left: auto; right: 78%; bottom: 4.3rem; display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: .12rem; z-index: 4; pointer-events: none; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-pair { right: 55%; }
+.fb-pair .fb-slot.hero { flex: none; width: 2.9rem; max-width: 2.9rem; margin: 0; pointer-events: none; }
+.fb-pair .fb-pc { pointer-events: none; }
+.fb-pair .fb-slot.hero.locked .fb-img,
+.fb-pair .fb-slot.hero.back.locked .fb-img { height: calc(var(--ph) * .5); max-width: 2.9rem; }
+.fb-pair .fb-card.hero { position: absolute; left: 50%; bottom: 58%; transform: translateX(-50%); margin: 0; width: auto; z-index: 4; }
+.fb-pair .fb-hp { display: none; }
+/* a crowd at one monster (3 to 6 heroes, Oct 2026): three abreast, the fourth to sixth a step behind, higher and set between the heads in
+   front; the names step aside so the heart faces stay readable (a green ring is Ready, a pink glow is Heart to Heart; the banner names the +10) */
+.fb-pair:has(> .fb-slot:nth-child(3)) { flex-wrap: wrap-reverse; width: 7.2rem; justify-content: flex-end; align-content: flex-start; gap: 0 .1rem; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero { width: 2.3rem; max-width: 2.3rem; z-index: 3; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero:nth-child(n+4) { z-index: 2; margin-bottom: -1.5rem; transform: translateX(-1.2rem); }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-slot.hero.locked .fb-img { height: calc(var(--ph) * .42); max-width: 2.3rem; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-name,
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart small,
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.match em { display: none; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
+.fb-pair:has(> .fb-slot:nth-child(3)) .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
+.fb-slot.foe { overflow: visible; }
+.fb-links { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+.fb.party .fb-letter { display: none !important; } /* pairing is visual; no A/B/C tags */
+@media (prefers-reduced-motion: reduce) {
+  .fb.party .fb-slot.hero.wait .fb-pc, .fb.party .fb-slot.hero.locked .fb-pc { transition: none; }
+  .fb.party .fb-pc.hero.committed::after { animation: none; }
+  .fb-links { display: none; }
+}
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-name { font-size: .5rem; letter-spacing: .01em; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { font-size: .68rem; padding: .15rem .2rem; }
+
+.b3 .b3-rline { flex-wrap: nowrap; white-space: nowrap; } .b3 .b3-rline .rc-again { flex: none; }
+.fb-slot.tier-boss .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 18px rgba(255, 110, 60, .38)); }
+.fb-slot.tier-elite .fb-pc { filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 14px rgba(255, 200, 100, .28)); }
+
+/* the two halves of the round card must never look alike: what you did (gold, green results) and what was done to you (red) */
+.rc-sec { padding: .4rem .55rem .45rem .7rem; border-radius: .75rem; }
+.rc-sec::before { top: .35rem; bottom: .35rem; left: .22rem; }
+.rc-sec.you { --sec: #ffc860; background: linear-gradient(180deg, rgba(226, 178, 76, .17), rgba(226, 178, 76, .05)); box-shadow: inset 0 0 0 1px rgba(226, 178, 76, .45); }
+.rc-sec.foes { --sec: #ff6a5a; background: linear-gradient(180deg, rgba(255, 70, 50, .2), rgba(255, 70, 50, .06)); box-shadow: inset 0 0 0 1px rgba(255, 100, 80, .5); }
+.rc-bar { display: flex; align-items: center; gap: .35rem; margin-bottom: .3rem; font: 900 .68rem var(--disp, sans-serif); letter-spacing: .16em; text-transform: uppercase; color: var(--sec); text-shadow: 0 0 10px color-mix(in srgb, var(--sec) 45%, transparent); }
+.rc-bar svg { width: 1rem; height: 1rem; color: var(--sec); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--sec) 70%, transparent)); }
+.rc-tk.out.deal { background: linear-gradient(180deg, #38b86a, #145a32); box-shadow: inset 0 0 0 1px rgba(170, 255, 200, .7), inset 0 1px 0 rgba(255, 255, 255, .35), 0 0 14px rgba(70, 255, 150, .35); }
+.rc-tk.out.deal.zero { background: linear-gradient(180deg, #4a4658, #26222e); box-shadow: inset 0 0 0 1px rgba(220, 210, 240, .3); }
+.rc-tk.out.take { background: linear-gradient(180deg, #d83a2a, #6a1008); box-shadow: inset 0 0 0 1px rgba(255, 190, 170, .8), inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 16px rgba(255, 50, 30, .45); }
+.rc-tk.out.take.zero { background: linear-gradient(180deg, #2a6aa8, #123058); box-shadow: inset 0 0 0 1px rgba(170, 215, 255, .6); }
+.rc-tk.out b { font-size: 1.5rem; } .rc-tk.out small { font-size: .56rem; letter-spacing: .12em; }
+.rc-sec.foes .rc-who b { color: #ffd6cc; } .rc-sec.you .rc-who b { color: #ffeab8; }
+/* the close button: the same pill as Cancel on the magic sheet, top right */
+.rc-close { flex: none; min-height: 2.2rem; padding: .35rem .85rem; font-size: .74rem; }
+.rc-head { padding-bottom: .4rem; }
+
+/* denser rows so even a long fight's recap fits without scrolling: token rows never wrap, spacing is tighter */
+.rc-sum { flex-wrap: wrap; gap: .18rem; row-gap: .25rem; }
+.rc-tk { padding: .12rem .34rem; gap: .16rem; flex: none; }
+.rc-tk b { font-size: 1rem; } .rc-tk.out b { font-size: 1.4rem; } .rc-tk small { font-size: .5rem; letter-spacing: .06em; } .rc-tk.out small { font-size: .52rem; letter-spacing: .08em; }
+.rc-op { font-size: .9rem; }
+.b3 .rc { gap: .25rem; padding: .45rem .6rem .4rem; }
+.rc-head { padding-bottom: .3rem; } .rc-close { min-height: 2rem; padding: .25rem .75rem; }
+.rc-close.rc-go { color: #2a1804; font-weight: 800; letter-spacing: .04em; background: linear-gradient(180deg, #ffe39a, #e0a53a); box-shadow: inset 0 0 0 1px rgba(255, 246, 214, .7), 0 0 14px rgba(255, 200, 80, .45); } /* the last round: Victory › / Continue › */
+.rc-body { gap: .3rem; } .rc-sec { padding: .3rem .5rem .35rem .65rem; } .rc-bar { margin-bottom: .2rem; }
+.rc-rows { gap: .24rem; } .rc-line { gap: .12rem; } .rc-foot { padding-top: .2rem; margin-top: 0; }
+@media (max-width: 380px) { .rc-tk b { font-size: .92rem; } .rc-tk.out b { font-size: 1.25rem; } .rc-tk small { font-size: .46rem; } .rc-tk.out small { font-size: .48rem; } .rc-tk svg { width: .75rem; height: .75rem; } .rc-tk { padding: .1rem .28rem; } }
+
+/* the little "i" on a monster's plaque: there is more to read about it */
+.fb-info { position: absolute; z-index: 3; top: -.4rem; right: -.3rem; width: 1.05rem; height: 1.05rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; -webkit-tap-highlight-color: transparent;
+  font: italic 800 .72rem/1 var(--font-display); color: #2a1804; background: linear-gradient(180deg, #fff1c0, #e2b24c 70%, #b8862c); box-shadow: 0 0 0 1.5px #4a300a, 0 2px 6px rgba(0, 0, 0, .65); }
+.fb-info::after { content: ''; position: absolute; inset: -.65rem; border-radius: 50%; }
+.fb-slot.dead .fb-info { display: none; }
+
+/* enemy ability pop-ups (Dave): big cards stacked in the middle of the screen, one under the other, clear of the miniatures and under the round recap */
+
+
+/* the die a monster rolled, and what it made: [die 8] rolled: 1 move + 8 die + 3 fight bonus = 12 attack */
+.rc-calc { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .3rem; margin-top: .05rem; }
+.rc-calc .rc-roll { margin-left: 0; }
+.rc-colon { font: 700 .6rem var(--disp); letter-spacing: .08em; text-transform: uppercase; color: #cdbfa6; }
+.rc-b { display: inline-flex; align-items: baseline; gap: .15rem; padding: .05rem .34rem; border-radius: .35rem; background: rgba(255, 255, 255, .08); color: #fff; }
+.rc-b b { font: 900 .85rem/1 var(--disp); } .rc-b small { font: 700 .48rem/1 var(--disp); letter-spacing: .07em; text-transform: uppercase; color: #cdbfa6; }
+.rc-b.soft { background: rgba(120, 200, 255, .18); } .rc-b i { font-style: normal; color: #9fd4ff; font-weight: 900; }
+.rc-calc.red .rc-b.total { background: rgba(255, 70, 50, .35); box-shadow: inset 0 0 0 1px rgba(255, 120, 100, .55); }
+.rc-calc.blue .rc-b.total { background: rgba(70, 140, 255, .35); box-shadow: inset 0 0 0 1px rgba(120, 175, 255, .55); }
+.rc-plus { font-style: normal; font-weight: 900; color: #cdbfa6; font-size: .8rem; }
+.rc-sum .rc-roll { margin-left: .1rem; }
+
+/* the plaque's plan (Dave, 14 Oct): [sign] ONE WORD  [dice], e.g. a red attack sign, POUNCE, 2xd8 */
+.fb-intent { gap: .2rem; padding: .17rem .26rem; }
+.fb-intent .fb-word { font: 900 .72rem/1 var(--disp); letter-spacing: .03em; white-space: nowrap; min-width: 0; overflow: hidden; }
+.fb-intent .fb-word.sm { font-size: .62rem; letter-spacing: .01em; } .fb-intent .fb-word.xs { font-size: .52rem; letter-spacing: 0; }
+.fb-intent .fb-dice { flex: none; padding: .1rem .26rem; border-radius: .3rem; background: rgba(0, 0, 0, .42); color: #fff; font: 800 .66rem/1 var(--disp); letter-spacing: 0; text-transform: none; opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #fff) 55%, transparent); }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent svg { width: .8rem; height: .8rem; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word { font-size: .58rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-dice { font-size: .58rem; padding: .08rem .18rem; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word.sm { font-size: .5rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-word.xs { font-size: .44rem; }
+
+.rc-move { font-style: normal; font: 900 .62rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; color: #ffd27a; background: rgba(255, 210, 120, .14); padding: .1rem .3rem; border-radius: .3rem; margin: 0 .2rem; }
+.fb-num.dmg { color: #ff5a48; }
+.fb-intent .fb-word { flex: 1 1 auto; text-align: center; text-overflow: clip; } .fb-intent { min-width: 0; }
+
+/* four monsters: no sign (the colour says it), the word and its dice side by side */
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent svg { display: none; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent { gap: .12rem; padding: .15rem .14rem; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word.sm, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-word.xs { font-size: .56rem; letter-spacing: 0; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-dice { font-size: .52rem; padding: .08rem .14rem; }
+
+/* base attack: [BASE 6] + [d8 5]; and the blue shield with a line through it for a monster that has no defence to roll */
+.rc-b.base { background: rgba(255, 255, 255, .12); } .rc-b.base small { order: -1; margin-right: .1rem; }
+.rc-nodef { position: relative; display: inline-flex; align-items: center; gap: .2rem; padding: .08rem .38rem .08rem .26rem; border-radius: .45rem; color: #a9cdf5; background: rgba(60, 140, 255, .22); box-shadow: inset 0 0 0 1px rgba(110, 170, 255, .45); }
+.rc-nodef svg { width: 1.15rem; height: 1.15rem; opacity: .85; }
+.rc-nodef::before { content: ''; position: absolute; left: .22rem; top: 50%; width: 1.25rem; height: 2px; background: #ff6a5a; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 1px rgba(0, 0, 0, .55); }
+.rc-nodef small { font: 700 .5rem/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; }
+.fi-die.none { gap: .4rem; }
+
+/* how a monster defends, at the far right of its health bar: [shield d8], [shield 2d4] for armour, or a crossed-out shield for none */
+.fb-def { position: absolute; right: 0; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; gap: .08rem; padding: 0 .28rem 0 .5rem; color: #cfe6ff; font: 800 .75rem/1 var(--disp); font-style: normal; background: linear-gradient(90deg, transparent, rgba(9, 24, 58, .9) 40%); }
+.fb-def svg { width: .84rem; height: .84rem; flex: none; filter: drop-shadow(0 0 2px rgba(120, 180, 255, .8)); } .fb-def b { font: inherit; text-shadow: 0 1px 2px #000; }
+.fb-def.none { position: absolute; } .fb-def.none svg { opacity: .9; }
+.fb-def.none::after { content: ''; position: absolute; right: .3rem; top: 50%; width: .95rem; height: 2px; background: #ff5a48; border-radius: 2px; transform: rotate(-45deg); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def { font-size: .66rem; padding-left: .4rem; } .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-def svg { width: .72rem; height: .72rem; }
+.fb-slot.dead .fb-def { display: none; }
+
+.rc-dice { display: inline-flex; align-items: center; gap: .2rem; }
+/* the plan's dice: a lighter, tighter face (Dave), so "5+d8+d8" reads at a glance without looking heavy */
+.fb-intent .fb-dice { font: 500 .66rem/1 'Inter', 'Helvetica Neue', Arial, sans-serif; letter-spacing: -.03em; font-stretch: condensed; font-variant-numeric: tabular-nums; }
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-intent .fb-dice { font-size: .6rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-intent .fb-dice { font-size: .54rem; }
+
+/* a taller bar on the monsters' plaques gives the defence room to be read */
+.fb-card.foe .fb-hp { height: 1.05rem; } .fb-card.foe .fb-hpn { font-size: .68rem; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def { font-size: .6rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def svg { width: .64rem; height: .64rem; }
+/* with three or four monsters the health number centres in the space left of the defence */
+.fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn { right: 2.1rem; }
+.fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: 1.75rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def { font-size: .56rem; padding-left: .3rem; } .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-def svg { width: .6rem; height: .6rem; }
+/* the health number sits at the far left of the bar, the defence at the far right (Dave) */
+.fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(3)) .fb-card.foe .fb-hpn, .fb-side.foes:has(.fb-slot:nth-child(4)) .fb-card.foe .fb-hpn { right: auto; left: 0; justify-items: start; padding-left: .4rem; }
+/* feel pass (Oct 2026): a hit of 25 or more is huge */
+.fb-num.huge { font-size: 2.6rem; color: #fff1c4; text-shadow: 0 2px 0 #000, 0 0 14px rgba(0, 0, 0, .9), 0 0 22px rgba(255, 190, 70, .8); }
+/* Heart to Heart (the teamwork pass): a hero's heart face and Ready under its name; dots on a monster for each hero looking at it */
+.fb-heart { display: inline-flex; align-items: center; gap: .22rem; margin-top: .08rem; font: 700 .58rem/1 var(--font-display); letter-spacing: .04em; color: #b8b2a6; white-space: nowrap; }
+.fb-heart img { width: 1.2rem; height: 1.2rem; border-radius: .22rem; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18); opacity: .78; }
+.fb-heart small { font-size: 1em; text-transform: uppercase; }
+.fb-heart em { display: none; font-style: normal; color: #ff8fa6; }
+.fb-heart.ready { color: #8ff0b0; } .fb-heart.ready img { opacity: 1; }
+.fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); opacity: 1; }
+.fb-heart.match em { display: inline; }
+.fb-heart.hushed img { filter: grayscale(1) brightness(.7); }
+.fb[data-heroes="4"] .fb-heart small, .fb[data-heroes="5"] .fb-heart small, .fb[data-heroes="6"] .fb-heart small { display: none; } /* four to six on a phone: the face, a green ring when ready */
+.fb[data-heroes="4"] .fb-heart.ready img, .fb[data-heroes="5"] .fb-heart.ready img, .fb[data-heroes="6"] .fb-heart.ready img { box-shadow: 0 0 0 1.5px #5be08f; }
+.fb[data-heroes="4"] .fb-heart.match img, .fb[data-heroes="5"] .fb-heart.match img, .fb[data-heroes="6"] .fb-heart.match img { box-shadow: 0 0 0 1.5px #ff6f8f, 0 0 10px rgba(255, 90, 130, .75); }
+.fb-aims { position: absolute; top: -.36rem; left: 50%; transform: translateX(-50%); display: flex; gap: .16rem; pointer-events: none; }
+.fb-aims i { width: .46rem; height: .46rem; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1.5px var(--hue, #ffd23d); }
+.fb-aims i.on { background: var(--hue, #ffd23d); }
+/* beside a monster (locked in) the card is narrow: the face sits over a small READY, +10 tucked beside it */
+.fb-pair .fb-heart { flex-direction: column; gap: .08rem; font-size: .48rem; }
+.fb-pair .fb-heart img { width: 1rem; height: 1rem; }
+.fb-pair .fb-heart em { position: absolute; left: calc(50% + .6rem); top: -.1rem; font-size: .5rem; }
+.fb-pair .fb-heart { position: relative; }
+/* waiting on the left (half size): wrap the word under the face rather than spill out of the card */
+.fb-side.heroes .fb-heart { flex-wrap: wrap; justify-content: center; max-width: 100%; row-gap: .06rem; font-size: .5rem; }
