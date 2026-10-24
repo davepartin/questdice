@@ -1,0 +1,1895 @@
+{
+  "version": 1,
+  "writerGuide": "## For campaign writers (and QuestStoryBot)\n\nCast every fight from this catalog **by `id`**. You may rename a mini, revoice it, and give it a new job in the story. You may not invent a picture or point a fight at art that is not listed here.\n\n- Pick the miniature whose **title** and **description** match the creature you need. `reskinAs` is a hint list, not a limit.\n- Put that `id` in the pack's `foes` / `fights` list. Set a display name beside it if the story name differs from the catalog name.\n- If no miniature fits, **request a new painted mini** rather than stretching a wrong one or describing unseen art.\n- Comic-tone minis (`puffball`, `moonjelly`, `yeti`, and the already-funny Heist pieces) are rare relief. At most one written comic step per act; never a finale.\n- Merged packs keep their locked casts. New campaigns should still choose from these ids.\n",
+  "minis": [
+    {
+      "id": "knight-default",
+      "image": "assets/miniatures/knight-blue.webp",
+      "lookId": "default",
+      "title": "Armored knight in blue with a gold lion shield and a raised longsword",
+      "description": "A human knight in polished silver plate, mid-lunge to the right. A blue surcoat and scarf sit under the armour, and a blue plume streams from the closed helm. The left hand holds a heater shield painted blue with a gold lion rampant; the right extends a longsword. He stands on a round grassy gravel base. The pose is braced and heroic.",
+      "tone": "fierce",
+      "statsFrom": "knight",
+      "names": [
+        {
+          "name": "Knight (Blue)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "captain of the watch",
+        "lion-house champion",
+        "oathbound bodyguard",
+        "tourney knight"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "knight"
+    },
+    {
+      "id": "knight-crimson",
+      "image": "assets/miniatures/knight-crimson.webp",
+      "lookId": "crimson",
+      "title": "Armored knight in crimson with a gold lion shield and a raised longsword",
+      "description": "The same plate-armoured knight as the blue coat, now in a red surcoat, red plume, and a crimson heater shield with a gold lion. Silver armour, gold trim, and a longsword held out to the right. Round gravel-and-grass base. Same braced, charging pose.",
+      "tone": "fierce",
+      "statsFrom": "knight",
+      "names": [
+        {
+          "name": "Knight (Crimson)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "red-house champion",
+        "bloodied captain",
+        "festival jouster",
+        "royal guard"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "knight"
+    },
+    {
+      "id": "knight-green",
+      "image": "assets/miniatures/knight-green.webp",
+      "lookId": "green",
+      "title": "Armored knight in green with a griffin shield and a raised longsword",
+      "description": "Plate-armoured knight in a green surcoat with a green helm plume. The heater shield is dark green with a gold griffin and a small star, not a lion. Longsword extended to the right, silver armour, round grassy base. Same mid-stride fighting pose as the other knight coats.",
+      "tone": "fierce",
+      "statsFrom": "knight",
+      "names": [
+        {
+          "name": "Knight (Green)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "forest warden-knight",
+        "griffin-house champion",
+        "border marshal",
+        "green-sash paladin"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "knight"
+    },
+    {
+      "id": "ranger-default",
+      "image": "assets/miniatures/ranger-green.webp",
+      "lookId": "default",
+      "title": "Hooded woman archer in green drawing a longbow",
+      "description": "A lean woman in a deep green hooded cloak, drawing a wooden longbow to the right. Brown leather armour, belt pouches, and a quiver of arrows on her back. Short hair visible under the hood, focused face. She stands on a round grassy gravel base. Woodland hunter, not a knight.",
+      "tone": "fierce",
+      "statsFrom": "ranger",
+      "names": [
+        {
+          "name": "Ranger (Green)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "woodland scout",
+        "king's huntress",
+        "border archer",
+        "green-cloak spy"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "ranger"
+    },
+    {
+      "id": "ranger-rust",
+      "image": "assets/miniatures/ranger-rust.webp",
+      "lookId": "rust",
+      "title": "Hooded woman archer in rust-orange drawing a longbow",
+      "description": "The same hooded archer in a rust-orange cloak and matching hood, drawing a longbow to the right. Brown leathers, pouches, quiver on the back. She stands on a rocky grass base. Autumn hunter colours; same determined pose.",
+      "tone": "fierce",
+      "statsFrom": "ranger",
+      "names": [
+        {
+          "name": "Ranger (Rust)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "autumn hunter",
+        "canyon scout",
+        "rust-cloak ranger",
+        "dust-road archer"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "ranger"
+    },
+    {
+      "id": "ranger-grey",
+      "image": "assets/miniatures/ranger-grey.webp",
+      "lookId": "grey",
+      "title": "Hooded man archer in grey holding a longbow at rest",
+      "description": "A bearded man in a grey hooded cloak, longbow held low across the body rather than fully drawn. Dark brown leathers, wrapped bracers, quiver at the hip. Weathered face under the hood. Round grassy gravel base. Older, quieter hunter than the green coat.",
+      "tone": "fierce",
+      "statsFrom": "ranger",
+      "names": [
+        {
+          "name": "Ranger (Grey)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "grey-cloak watcher",
+        "mountain tracker",
+        "retired huntmaster",
+        "mist-road scout"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "ranger"
+    },
+    {
+      "id": "wizard-default",
+      "image": "assets/miniatures/wizard-blue.webp",
+      "lookId": "default",
+      "title": "White-bearded wizard in a starry blue robe with a crystal staff and lightning",
+      "description": "An old wizard with a long white beard and hair, in a flowing royal-blue robe stitched with gold stars. He holds a twisted wooden staff topped with a glowing blue crystal; lightning forks from it to the left. The other hand is raised as if casting. Brown boots, gold trim, round dry-grass base. Classic high wizard.",
+      "tone": "fierce",
+      "statsFrom": "wizard",
+      "names": [
+        {
+          "name": "Wizard (Blue)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "court mage",
+        "storm scholar",
+        "star-robe hermit",
+        "tower wizard"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "wizard"
+    },
+    {
+      "id": "wizard-crimson",
+      "image": "assets/miniatures/wizard-crimson.webp",
+      "lookId": "crimson",
+      "title": "White-bearded wizard in a gold-trimmed crimson robe with a crystal staff and blue flame",
+      "description": "The same elderly wizard in a deep crimson robe with heavy gold bands and a matching cap. Staff with a blue crystal in one hand; a tongue of blue fire in the open palm. White beard, stern face, round grassy base. Warmer, more ceremonial than the blue coat.",
+      "tone": "fierce",
+      "statsFrom": "wizard",
+      "names": [
+        {
+          "name": "Wizard (Crimson)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "battle mage",
+        "fire-college don",
+        "royal pyromancer",
+        "red-robe enchanter"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "wizard"
+    },
+    {
+      "id": "wizard-white",
+      "image": "assets/miniatures/wizard-white.webp",
+      "lookId": "white",
+      "title": "White-bearded wizard in a white-and-gold robe swinging a crystal staff",
+      "description": "Elderly wizard in an ivory robe with ornate gold embroidery, mid-stride to the right, staff with a blue crystal raised behind him. White hair and beard, clenched free fist, brown boots. Round grassy gravel base. Bright, ceremonial, less starry than the blue coat.",
+      "tone": "fierce",
+      "statsFrom": "wizard",
+      "names": [
+        {
+          "name": "Wizard (White and gold)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "high priest-mage",
+        "dawn liturgist",
+        "white-tower sage",
+        "gold-order wizard"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "wizard"
+    },
+    {
+      "id": "dwarf-default",
+      "image": "assets/miniatures/dwarf-blue.webp",
+      "lookId": "default",
+      "title": "Armored dwarf with a braided red beard, rune hammer, and blue geometric shield",
+      "description": "A stocky dwarf in silver plate with a long braided auburn beard bound in gold rings. He holds a blocky rune-stamped warhammer in the right hand and a round blue shield with a gold geometric rune in the left. Blue sash at the waist, brown boots, scowling face. Round gravel-and-grass base.",
+      "tone": "fierce",
+      "statsFrom": "dwarf",
+      "names": [
+        {
+          "name": "Dwarf (Deep blue)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "hold warden",
+        "rune-hammer captain",
+        "gate guardian",
+        "clan champion"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "dwarf"
+    },
+    {
+      "id": "dwarf-crimson",
+      "image": "assets/miniatures/dwarf-crimson.webp",
+      "lookId": "crimson",
+      "title": "Armored dwarf with a braided red beard, rune hammer, and crimson eagle shield",
+      "description": "The same plate-armoured dwarf, hammer raised, with a crimson sash and a round red-gold shield bearing a gold eagle. Braided auburn beard, gold-ringed braids, silver armour. Round gravel base. Warmer heraldry than the blue coat.",
+      "tone": "fierce",
+      "statsFrom": "dwarf",
+      "names": [
+        {
+          "name": "Dwarf (Crimson)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "red-clan champion",
+        "eagle-hold warden",
+        "festival hammerer",
+        "oath-guard"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "dwarf"
+    },
+    {
+      "id": "dwarf-green",
+      "image": "assets/miniatures/dwarf-green.webp",
+      "lookId": "green",
+      "title": "Armored dwarf with a braided red beard, rune hammer, and green tree-rune shield",
+      "description": "Plate-armoured dwarf with a green tunic under the armour and a round green-gold shield marked with a gold branching rune. Hammer held across the body, long auburn beard, gold hair-rings. Round grassy gravel base. Same stocky warden silhouette.",
+      "tone": "fierce",
+      "statsFrom": "dwarf",
+      "names": [
+        {
+          "name": "Dwarf (Moss)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "moss-hold warden",
+        "deep-root guardian",
+        "green-rune smith",
+        "forest-gate dwarf"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "dwarf"
+    },
+    {
+      "id": "bard-default",
+      "image": "assets/miniatures/bard-teal.webp",
+      "lookId": "default",
+      "title": "Laughing curly-haired bard in a teal feathered hat playing a lute",
+      "description": "A short, merry figure with curly brown hair, pointed ears, and a huge grin, in a teal hat with a long teal plume. Teal cloak, red scarf, mustard coat, lute held across the chest, a dagger at the hip. Dancing step on a cobbled round base. Comic, musical, not a fighter-first pose.",
+      "tone": "comic",
+      "statsFrom": "bard",
+      "names": [
+        {
+          "name": "Bard (Teal)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "inn minstrel",
+        "court fool-musician",
+        "road troubadour",
+        "festival piper"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "bard"
+    },
+    {
+      "id": "bard-crimson",
+      "image": "assets/miniatures/bard-crimson.webp",
+      "lookId": "crimson",
+      "title": "Grinning curly-haired swashbuckler in a crimson feathered hat lunging with a rapier",
+      "description": "The same curly-haired performer in a crimson coat, white shirt, and a wide crimson hat with a red plume. A lute is slung on the back; the right hand thrusts a rapier forward. Brown boots, gold trim, cobbled round base. More duellist than the teal lute pose, still comic.",
+      "tone": "comic",
+      "statsFrom": "bard",
+      "names": [
+        {
+          "name": "Bard (Crimson)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "rapier bravo",
+        "opera duellist",
+        "scarlet troubadour",
+        "stage-fight captain"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "bard"
+    },
+    {
+      "id": "bard-blue",
+      "image": "assets/miniatures/bard-blue.webp",
+      "lookId": "blue",
+      "title": "Laughing curly-haired bard in a starry blue coat playing a lute on a rock",
+      "description": "Curly-haired bard in a bright blue coat with gold stars, blue hat and pale-blue plume, red scarf, lute in both hands. One foot up on a grey rock, dagger at the hip, huge smile. Cobbled round base. Night-sky coat variant of the teal minstrel.",
+      "tone": "comic",
+      "statsFrom": "bard",
+      "names": [
+        {
+          "name": "Bard (Blue)"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "cloverheist",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "starlight minstrel",
+        "night-market singer",
+        "blue-cloak troubadour",
+        "harbour bard"
+      ],
+      "kind": "hero",
+      "family": "hero",
+      "size": "medium",
+      "role": "hero",
+      "look": "right",
+      "class": "bard"
+    },
+    {
+      "id": "goblin",
+      "image": "assets/miniatures/goblin.webp",
+      "title": "Small green goblin in a ragged hood with a skull pin, crouching with a short knife",
+      "description": "A scrawny green-skinned goblin, crouched low and looking left, ears long and sharp. Tattered brown hood and wrap, a tiny skull pin at the throat, wrappings on the forearms and shins. A short dirty knife is held forward in the right hand. Bare clawed feet on a round cobbled base. Mean, small, and ready to bolt.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "goblin",
+      "names": [
+        {
+          "name": "Goblin Skulker"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "tunnel rat",
+        "camp thief",
+        "gremlin skulker",
+        "alley knife"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "wolf",
+      "image": "assets/miniatures/wolf.webp",
+      "title": "Grey dire wolf snarling, four-legged, no tack or clothes",
+      "description": "A large grey wolf standing four-legged on a round cobbled disc, lips peeled back from white fangs, looking left. Thick ruff, pale belly, yellow-green eyes, tail curved behind. Nothing worn. Lean predator, not a dire-bear size.",
+      "family": "beast",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "wolf",
+      "names": [
+        {
+          "name": "Dire Wolf"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "winter wolf",
+        "pack hunter",
+        "moor wolf",
+        "watch-dog gone wild"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "cultist",
+      "image": "assets/miniatures/cultist.webp",
+      "title": "Hooded figure in a tattered crimson robe holding a ball of fire",
+      "description": "A standing humanoid in a deep red hooded robe, face a shadowed skull-like mask. Gold skull ornaments hang on the chest. The right hand cups a bright orange flame; the left is gloved and empty. Robe hem charred, round lava-rock base with a four-leaf clover. Menacing fire-priest, not a hero wizard.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "cultist",
+      "names": [
+        {
+          "name": "Ember Mage"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "ballad"
+      ],
+      "reskinAs": [
+        "ash priest",
+        "fire-robe warlock",
+        "ember acolyte",
+        "cinder cultist"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "ogre",
+      "image": "assets/miniatures/ogre.webp",
+      "title": "Huge green hill ogre with a wooden club and a spiked shoulder pauldron",
+      "description": "A hulking green ogre, pot-bellied, looking left with a snarl and two tusks. A rough wooden club is in the right hand. A brown fur loincloth, bone necklace, wrist wraps, and a spiked brown pauldron on the left shoulder. Topknot of dark hair. Round grassy gravel base. Bigger than a goblin, smaller than a giant.",
+      "family": "giant",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "Hill Ogre"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo"
+      ],
+      "reskinAs": [
+        "bridge troll",
+        "camp bruiser",
+        "hill raider",
+        "gate-breaker"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "bigwheel",
+      "image": "assets/miniatures/bigwheel.webp",
+      "title": "Sad cheese-golem of stacked wheels with a wooden staff, steam from its head",
+      "description": "A comic construct made of stacked cheese wheels: a frowning round head, a veined blue-cheese midriff, red-wax rings as sleeves, yellow cheese limbs with brown wooden pegs. It holds a thin wooden staff across the body. Two wisps of steam rise from the head. Round cobbled base. Clearly food, not a person.",
+      "family": "construct",
+      "tone": "comic",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "Big Wheel"
+        }
+      ],
+      "campaigns": [
+        "rivalduo"
+      ],
+      "reskinAs": [
+        "animated cheese",
+        "dairy golem",
+        "festival food-fight bruiser",
+        "pantry guardian"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "mungo",
+      "image": "assets/miniatures/mungo.webp",
+      "title": "Cheerful fat green ogre with a daisy in his hair, a club, and a blank wooden sign",
+      "description": "A round, smiling green ogre, much friendlier than the hill ogre, looking left. A white daisy is tucked above one ear, white dots of paint on the cheeks. He holds a thick branch-club on the right shoulder and a blank wooden sign in the left hand. Ragged brown loincloth, rope belt, round grassy base. Comic, not menacing.",
+      "family": "giant",
+      "tone": "comic",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "Mungo"
+        }
+      ],
+      "campaigns": [
+        "ballad"
+      ],
+      "reskinAs": [
+        "gentle giant",
+        "sign-post ogre",
+        "village bumbler",
+        "daisy ogre"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "goblinking",
+      "image": "assets/miniatures/goblinking.webp",
+      "title": "Green goblin king in a spiked crown with a lit bomb and a skull-topped staff",
+      "description": "A squat green goblin in a jagged silver crown, purple furred cape, and a belt of round silver bombs. The right hand holds a lit black bomb; the left a staff topped with a skull and a purple gem. Skulls on the belt. Snarling, looking left, on a grassy round base. Boss-sized goblin, still shorter than an ogre.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "boss",
+      "statsFrom": "goblinking",
+      "names": [
+        {
+          "name": "The Goblin King"
+        },
+        {
+          "name": "King Snaffle",
+          "packs": [
+            "cloverheist"
+          ]
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "bomb-lord",
+        "warren king",
+        "crown goblin",
+        "raid boss"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "skeleton",
+      "image": "assets/miniatures/skeleton.webp",
+      "title": "Animated skeleton soldier with a rusted sword, round shield, and red rags",
+      "description": "A full human skeleton standing on a round stone disc, looking left. Rust-brown sword in the right hand, a battered round shield in the left, a ragged red cloak and loincloth, one pauldron. No helm. Grim, ordinary undead infantry.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "skeleton",
+      "names": [
+        {
+          "name": "Bone Soldier"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "crypt guard",
+        "barrow footman",
+        "ossuary levy",
+        "grave conscript"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "wraith",
+      "image": "assets/miniatures/wraith.webp",
+      "title": "Hooded pale-blue ghost on a clear flying stem, reaching with clawed hands",
+      "description": "A floating spirit in tattered ice-blue cloth, hollow hood with two purple pin-light eyes. Both clawed grey hands reach left. The figure stands on a clear glass flying stem over a rocky round base. No legs. Cold, faceless, hovering.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "wraith",
+      "names": [
+        {
+          "name": "Wraith"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "grave mist",
+        "cold shade",
+        "drowned ghost",
+        "vault haunt"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "spider",
+      "image": "assets/miniatures/spider.webp",
+      "title": "Pale blotched crypt spider with eight legs on a gravel base",
+      "description": "A large white-and-grey spider, abdomen mottled like old bone, eight jointed legs planted on a round gravel disc. Cluster of black eyes, pale fangs. No web props. Low, wide, camera-close. Beast, not a person.",
+      "family": "beast",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "spider",
+      "names": [
+        {
+          "name": "Crypt Spider"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "cave spider",
+        "tomb spinner",
+        "bone-pale hunter",
+        "web sentry"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "bonewarden",
+      "image": "assets/miniatures/bonewarden.webp",
+      "title": "Armored skeletal warden in a horned helm with a skull shield and a great axe",
+      "description": "A tall undead knight, skeleton in dark plate, horned greathelm, looking left. A tower shield painted with a skull sits on the right arm; a two-handed axe with a skull on the haft is in the left. Skulls on the belt. Round rocky base. Elite undead captain, not a mounted rider.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "elite",
+      "statsFrom": "bonewarden",
+      "names": [
+        {
+          "name": "Bone Warden"
+        },
+        {
+          "name": "Old Finders-Keepers",
+          "packs": [
+            "cloverheist"
+          ]
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "ossuary captain",
+        "crypt marshal",
+        "grave warden",
+        "skull-shield elite"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "lich",
+      "image": "assets/miniatures/lich.webp",
+      "title": "Crowned skeletal lich in a ragged purple robe with a green-crystal staff",
+      "description": "A standing skeleton in a tattered purple-black robe and a gold crown, looking left. The right hand lifts a bone staff with antlered branches and a tall green crystal; a matching green gem sits in the chest. Spiked pauldrons, reaching left hand. Round dry-grass base. Undead sorcerer-king.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "large",
+      "role": "boss",
+      "statsFrom": "lich",
+      "names": [
+        {
+          "name": "The Hollow Lich"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "ballad"
+      ],
+      "reskinAs": [
+        "crown of bones",
+        "vault lich",
+        "green-gem necromancer",
+        "ash cloister lord"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "shieldbearer",
+      "image": "assets/miniatures/shieldbearer.webp",
+      "title": "Bearded soldier in bronze plate, red hood, spear, and a claw-mark shield",
+      "description": "A human infantryman in bronze-gold plate with a red hooded cloak, looking left. Long spear upright in the right hand, round shield with three black claw-marks in the left. Coins on a lava-rock round base. Living soldier, not a hero knight: no lion, no plume.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "shieldbearer",
+      "names": [
+        {
+          "name": "Shieldbearer"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo"
+      ],
+      "reskinAs": [
+        "city watch",
+        "caravan guard",
+        "red-hood levy",
+        "spear wall"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "gloomstalker",
+      "image": "assets/miniatures/gloomstalker.webp",
+      "title": "Faceless hooded archer in charcoal cloak with a short bow and a hip knife",
+      "description": "A completely hooded figure in layered charcoal cloth, no face visible, looking left. Short dark bow in the left hand, a knife at the hip, quiver of arrows on the back, ragged cloak. Round lava-rock base with coins. Shadow hunter; easy to lose on a dark table.",
+      "family": "shadow",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "gloomstalker",
+      "names": [
+        {
+          "name": "Gloom Stalker"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad"
+      ],
+      "reskinAs": [
+        "night archer",
+        "ash-cloak assassin",
+        "ruin scout",
+        "black-bow hunter"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "chainbinder",
+      "image": "assets/miniatures/chainbinder.webp",
+      "title": "Bald jailer draped in gold chains and padlocks, holding a short iron rod",
+      "description": "A heavy bald man in a dark sleeveless coat, looking left, scowling. Thick gold chains hang around the neck and torso; padlocks and keys dangle at the hip. Iron cuffs on both wrists. A short dark rod or mace in the right hand. Lava-rock base with coins. Living jailer, not a mage.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "chainbinder",
+      "names": [
+        {
+          "name": "Gold-Chain Jailer"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "prison warden",
+        "slave-taker",
+        "lock-and-key brute",
+        "chain bounty-man"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "dirgesinger",
+      "image": "assets/miniatures/dirgesinger.webp",
+      "title": "Gaunt undead minstrel in tattered grey robes singing with a cracked lute",
+      "description": "A pale, skull-faced figure in ragged grey-white robes, mouth open in a wail, looking left. Both hands hold a worn brown lute with a cracked soundboard. Bare feet, beads at the neck. Round lava-rock base with coins. Ghost musician, not the living bard hero.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "dirgesinger",
+      "names": [
+        {
+          "name": "Dirge Singer"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo"
+      ],
+      "reskinAs": [
+        "grave choir",
+        "wailing minstrel",
+        "crypt cantor",
+        "lute-ghost"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "ironwarden",
+      "image": "assets/miniatures/ironwarden.webp",
+      "title": "Fully enclosed iron knight with a red-crest helm, axe, and slashed-cross shield",
+      "description": "A bulky figure in complete bronze-iron plate, visor down, red crest on the helm, looking left. Axe in the right hand, large heater shield with a slashed gold cross in the left. Coins on a lava-rock base. Faceless living (or once-living) warden, not the hero knight.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ironwarden",
+      "names": [
+        {
+          "name": "Ironclad Warden"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "gate golem-knight",
+        "mine warden",
+        "oathkeep guard",
+        "iron marshal"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "fallenchampion",
+      "image": "assets/miniatures/fallenchampion.webp",
+      "title": "Tarnished knight in a ragged white tabard with a slotted cross, sword, lantern and pocket-watch",
+      "description": "A tall knight in battered dark plate and a dirty white tabard marked with a gold slotted cross, looking left. Longsword point-down in the right hand; the left holds a round pocket-watch and a hanging lantern. Coins on lava rock. Fallen paladin, weary, not shining.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "large",
+      "role": "boss",
+      "statsFrom": "fallenchampion",
+      "names": [
+        {
+          "name": "The Fallen Champion"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "oathbreaker knight",
+        "lantern paladin",
+        "watch-time champion",
+        "ruined templar"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "cinderling",
+      "image": "assets/miniatures/cinderling.webp",
+      "title": "Tiny red dragon sitting up, clutching a gold coin, puffing blocky fire",
+      "description": "A small red-and-cream dragon, sitting on its haunches, looking left with a wide smile. Gold coin hugged to the chest, little wings spread, a pixelated puff of fire from the mouth. Extra coins on a lava-rock base. Cute whelp, comic more than terrible.",
+      "family": "dragon",
+      "tone": "comic",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "cinderling",
+      "names": [
+        {
+          "name": "Cinderling"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "coin hatchling",
+        "hearth wyrmling",
+        "pocket dragon",
+        "ember whelp"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "frostwhelp",
+      "image": "assets/miniatures/frostwhelp.webp",
+      "title": "Tiny pale-blue dragon with frost breath, egg shell and coins on lava rock",
+      "description": "A small ice-blue dragon standing four-legged, looking left, white puff of frost at the snout. Pale blue wings raised, white belly, broken white eggshell and two coins on a lava-rock base. Cute whelp, not an adult dragon.",
+      "family": "dragon",
+      "tone": "comic",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "frostwhelp",
+      "names": [
+        {
+          "name": "Frostwhelp"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "ice hatchling",
+        "tarn wyrmling",
+        "snow whelp",
+        "egg-thief dragon"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "ashwyrm",
+      "image": "assets/miniatures/ashwyrm.webp",
+      "title": "Grey-and-ember four-legged dragon with orange membranes and lava cracks",
+      "description": "A medium dragon, four-legged, looking left, grey stony scales split by glowing orange cracks. Orange wing membranes, pale horns, red eye. Coins on a lava-rock base. Adult wyrm, not the sitting queen. Fierce.",
+      "family": "dragon",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ashwyrm",
+      "names": [
+        {
+          "name": "Ashmaw the Wyrm"
+        }
+      ],
+      "campaigns": [
+        "dawn",
+        "rivalduo",
+        "ballad",
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "ridge wyrm",
+        "ash dragon",
+        "cracked-lava drake",
+        "peak fire-lizard"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "vharaxis",
+      "image": "assets/miniatures/vharaxis.webp",
+      "title": "Huge red-and-gold dragon rearing over a hoard of coins and a crown",
+      "description": "A large red dragon with gold filigree along the wings, horns, and chest, looking left, wings spread. Orange glow in the chest cracks. A gold crown sits on a pile of coins at the feet, lava rock around. Queenly, winged, on all fours. Biggest red dragon in the set.",
+      "family": "dragon",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "boss",
+      "statsFrom": "vharaxis",
+      "names": [
+        {
+          "name": "Vharaxis, the Ember Queen"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "ember queen",
+        "hoard matriarch",
+        "gold-filigree dragon",
+        "throne wyrm"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "goldbelly",
+      "image": "assets/miniatures/goldbelly.webp",
+      "title": "All-gold dragon on a coin hoard with a split wheel of cheese",
+      "description": "A dragon sculpted entirely in gold, four-legged, looking left, wings up. It stands on a bed of gold coins; a large wheel of yellow cheese, split open, sits under the chest. Lava rock at the rim. Comic hoard-dragon, cheese and all.",
+      "family": "dragon",
+      "tone": "comic",
+      "size": "huge",
+      "role": "boss",
+      "statsFrom": "vharaxis",
+      "names": [
+        {
+          "name": "Duchess Goldbelly"
+        }
+      ],
+      "campaigns": [
+        "rivalduo"
+      ],
+      "reskinAs": [
+        "cheese dragon",
+        "gilded hoard wyrm",
+        "duchess of coin",
+        "gold-leaf dragon"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "blazemorrow",
+      "image": "assets/miniatures/blazemorrow.webp",
+      "title": "Dark bronze-and-ember dragon, four-legged, smoke at the snout",
+      "description": "A large dark-brown dragon with ember glow along the chest and wing undersides, looking left, wings half-raised. Smoke wisps from the nostrils, curved horns, no hoard props. Rocky lava base. Sterner, older dragon than the gold or red queens.",
+      "family": "dragon",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "boss",
+      "statsFrom": "vharaxis",
+      "names": [
+        {
+          "name": "The Dowager Blazemorrow"
+        }
+      ],
+      "campaigns": [
+        "ballad"
+      ],
+      "reskinAs": [
+        "dowager wyrm",
+        "smoke dragon",
+        "old ember drake",
+        "widow of the peaks"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "magpieking",
+      "image": "assets/miniatures/magpieking.webp",
+      "title": "Large magpie with a blue crest, wings spread, standing in a nest of stolen luck",
+      "description": "A big black-and-white magpie, teal-blue sheen on the wings and a spiky blue crest, beak open, looking left, one wing raised. It stands in a twig nest stuffed with horseshoes, coins, keys, clovers and a pocket-watch. Round rocky base. Boss bird, still a bird.",
+      "family": "beast",
+      "tone": "comic",
+      "size": "medium",
+      "role": "boss",
+      "statsFrom": "goblinking",
+      "names": [
+        {
+          "name": "The Magpie King"
+        }
+      ],
+      "campaigns": [
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "thief-bird king",
+        "nest tyrant",
+        "luck-hoard magpie",
+        "crested jay-lord"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "magpies",
+      "image": "assets/miniatures/magpies.webp",
+      "title": "Three black-and-white magpies on a branch, one stealing a coin",
+      "description": "A trio of magpies on a round grassy base with a fallen horseshoe. One pecks a silver coin on the ground; one stands on the branch; one is taking off with wings up. Black heads, white bellies, teal wing-flashes. Comic gang, not a single bird.",
+      "family": "beast",
+      "tone": "comic",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "goblin",
+      "names": [
+        {
+          "name": "Magpie Gang"
+        }
+      ],
+      "campaigns": [
+        "cloverheist",
+        "dawn"
+      ],
+      "reskinAs": [
+        "thief flock",
+        "coin-jackdaws",
+        "luck-stealers",
+        "roadside gang"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "foxrogue",
+      "image": "assets/miniatures/foxrogue.webp",
+      "title": "Walking red fox in a monocle, carrying a sack of coins and a four-leaf clover",
+      "description": "An upright red fox with black socks and a white chest, looking left with a sly smile. A gold monocle on a chain sits over the right eye. A burlap sack of coins with a green four-leaf clover is slung over the left shoulder. No other clothes. Round grassy base. Gentleman thief, comic.",
+      "family": "beast",
+      "tone": "comic",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "gloomstalker",
+      "names": [
+        {
+          "name": "Sir Reginald Brush"
+        }
+      ],
+      "campaigns": [
+        "cloverheist"
+      ],
+      "reskinAs": [
+        "gentleman fox",
+        "lucky burglar",
+        "monocle rogue",
+        "sack-and-clover thief"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "treant",
+      "image": "assets/miniatures/treant.webp",
+      "title": "Walking oak with a mossy knot-hole face, autumn leaves, and a nest of blue eggs",
+      "description": "An ancient oak given legs of roots, looking left, a carved knot-hole face with a mossy green beard. Orange autumn leaves on the branches. A twig nest with three blue eggs sits in the crown. Round grassy base with rocks and a clover. Plant, not a person. Imposing more than cute.",
+      "family": "plant",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "The Wrath-Oak"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "angry orchard",
+        "elder tree",
+        "root-walker",
+        "grove warden"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "puffball",
+      "image": "assets/miniatures/puffball.webp",
+      "title": "Waddling red-capped mushroom with white spots, sneezing a green spore cloud",
+      "description": "A pale round mushroom-person with tiny arms and legs, looking left, eyes squeezed shut, mouth open. A red cap with large white polka dots. A green spore cloud bursts from the mouth. Round grassy gravel base with a clover. Comic minion.",
+      "family": "plant",
+      "tone": "comic",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "frostwhelp",
+      "names": [
+        {
+          "name": "Puffball"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "spore toadstool",
+        "sneeze-cap",
+        "polka-dot fungus",
+        "garden pest"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "raincloud",
+      "image": "assets/miniatures/raincloud.webp",
+      "title": "Angry grey thundercloud with a scowling face, lightning bolt, standing in its rain-puddle",
+      "description": "A dark grey cloud with a heavy brow and a downturned mouth, looking left. A yellow lightning bolt is stamped on the right side. A column of blue rain falls into a puddle that is also its body, on a rocky grassy base with a clover. Elemental, no clothes. Storm foot-soldier.",
+      "family": "elemental",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "frostwhelp",
+      "names": [
+        {
+          "name": "Squall"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "thunderhead",
+        "walking storm",
+        "puddle elemental",
+        "lightning cloud"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "bonfire",
+      "image": "assets/miniatures/bonfire.webp",
+      "title": "Walking fire-log elemental with a flame head, ember eyes, and an armful of burning sticks",
+      "description": "A small humanoid of charred logs and lava cracks, looking left, mid-stride. The head is a roaring orange fire with a snarling face and red eyes. Both arms clutch a bundle of burning sticks. Sparks fly. Round grassy base with a clover. Walking prairie fire.",
+      "family": "elemental",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "cinderling",
+      "names": [
+        {
+          "name": "Wildfire"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "log-fire spirit",
+        "barn-eater",
+        "ember walker",
+        "hearth gone feral"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "wisp",
+      "image": "assets/miniatures/wisp.webp",
+      "title": "Bobbing blue-green will-o'-the-wisp with a grin, glowing tail, on a clear stem",
+      "description": "A round pale turquoise light with a simple face: two dark pits for eyes and a toothy grin, looking left. A glowing tail curls behind. It sits on a clear glass flying stem over a grassy base with a clover and a tiny pool. Shadow-light, not a person.",
+      "family": "shadow",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "wraith",
+      "names": [
+        {
+          "name": "Will-o’-the-Wisp"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "bog light",
+        "misleading lantern",
+        "marsh spark",
+        "ghost-fire"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "lampsnuffer",
+      "image": "assets/miniatures/lampsnuffer.webp",
+      "title": "Tall ink-black smoke-shadow with huge white eyes, pinching out a candle",
+      "description": "A vertical column of black smoke shaped into a slender figure, looking left, two large round white eyes. Long smoky fingers pinch toward a small lit candle on the base. No clothes, no face beyond the eyes. Grassy rocky disc with a clover. The dark that eats lamps.",
+      "family": "shadow",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "bonewarden",
+      "names": [
+        {
+          "name": "The Lamp-Snuffer"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "candle-eater",
+        "vault dark",
+        "smoke assassin",
+        "snuff-wraith"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "moonjelly",
+      "image": "assets/miniatures/moonjelly.webp",
+      "title": "Pale-blue floating jellyfish with one huge eye and long ribbon tentacles",
+      "description": "A translucent pale-blue jellyfish, bell toward the left, with a single large realistic blue eye in the bell. Many long wavy tentacles hang almost to the base. No flying stem; it simply floats above a grassy disc with a clover. Comic, sleepy, otherworldly.",
+      "family": "otherworldly",
+      "tone": "comic",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "wraith",
+      "names": [
+        {
+          "name": "Peepers, the Moon-Jelly"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "sky jellyfish",
+        "one-eye floater",
+        "dream jelly",
+        "night-tide blob"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "visitor",
+      "image": "assets/miniatures/visitor.webp",
+      "title": "Small green three-eyed blob sitting in a cracked, smoking meteorite",
+      "description": "A chubby lime-green creature with three round black eyes and tiny nubs for arms, sitting in a split grey-and-orange meteor. Smoke rises from the crack. The pod sits on a burnt grassy base with a clover. Cute scout; still an alien, not a goblin.",
+      "family": "otherworldly",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "dirgesinger",
+      "names": [
+        {
+          "name": "The Hive Scout"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "crash-pod alien",
+        "star-egg scout",
+        "three-eye visitor",
+        "meteor grub"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "hedgeboar",
+      "image": "assets/miniatures/hedgeboar.webp",
+      "title": "Bristly brown wild boar with tusks, an acorn on one tusk, hoof scraping",
+      "description": "A heavy brown boar, looking left, mane of coarse bristles along the spine. Long pale tusks; a round brown acorn is stuck on the near tusk. One hoof is forward, as if pawing. Round grassy gravel base with a clover. War-beast, no tack.",
+      "family": "beast",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "wolf",
+      "names": [
+        {
+          "name": "Razorback"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "war boar",
+        "tusker",
+        "stampede hog",
+        "acorn brute"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "silkwood",
+      "image": "assets/miniatures/silkwood.webp",
+      "title": "Huge dark spider on a silver web, knitting a white yarn ball with wooden needles",
+      "description": "A large grey-and-black armoured spider, looking left, standing over a circular silver web stretched between wooden posts. Two forelegs hold knitting needles working a white ball of yarn. Copper coins and clovers sit in the web. Round grassy base. Same mini is comic Madam Silkwood in the Heist and the fierce Grave-Silk Matriarch elsewhere.",
+      "family": "beast",
+      "tone": "comic",
+      "size": "large",
+      "role": "boss",
+      "statsFrom": "lich",
+      "names": [
+        {
+          "name": "The Grave-Silk Matriarch"
+        },
+        {
+          "name": "Madam Silkwood",
+          "packs": [
+            "cloverheist"
+          ]
+        }
+      ],
+      "campaigns": [
+        "cloverheist",
+        "dawn"
+      ],
+      "reskinAs": [
+        "weaver queen",
+        "yarn spider",
+        "web matriarch",
+        "knitting horror"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "gargoyle",
+      "image": "assets/miniatures/gargoyle.webp",
+      "title": "Squat grey stone gargoyle with bat wings, moss on the head, mouth open as a spout",
+      "description": "A crouching stone gargoyle, looking left, elbows on knees, mouth a wide rain-spout. Small bat wings, moss tuft on the head, pointed ears, stone claws. Round flagstone base with moss and a clover. Construct, not a living beast.",
+      "family": "construct",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "shieldbearer",
+      "names": [
+        {
+          "name": "Vault Sentinel"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "gutter statue",
+        "roof watcher",
+        "stone spout",
+        "church grim-goyle"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "yeti",
+      "image": "assets/miniatures/yeti.webp",
+      "title": "Shaggy white yeti with blue skin showing, arms wide for a hug, on a snowy base",
+      "description": "A tall white-furred yeti, looking left, mouth open in a grin, blue skin on the face, palms, and feet. Both arms are spread wide as if to hug. No teapot, no clothes. Round snow-and-ice base with a clover. Comic elite, friendly menace.",
+      "family": "giant",
+      "tone": "comic",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "Big Muriel"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "mountain hugger",
+        "snow ape",
+        "pass yeti",
+        "frost cousin"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "direbear",
+      "image": "assets/miniatures/direbear.webp",
+      "title": "Towering slate-grey bear reared on hind legs, rock plates on one shoulder, roaring",
+      "description": "A huge dark-grey bear standing on its hind legs, looking left, jaws wide. A ridge of rocky bone plates armour the left shoulder. Long claws, no clothes or tack. Round gravel base with a clover. War-beast elite, bigger than the wolf.",
+      "family": "beast",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ogre",
+      "names": [
+        {
+          "name": "Gravelhide, the Dire Bear"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "cave bear",
+        "ash-hide",
+        "shoulder-plate bear",
+        "wood-edge terror"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "tuskraider",
+      "image": "assets/miniatures/tuskraider.webp",
+      "title": "Hulking grey-green tusked raider in scorched scale armour with a cleaver and spike-shield",
+      "description": "A brutish green-grey warrior, looking left, two tusks, small pointed ears. Scorched brown scale and leather, a round iron shield with a central spike in the left hand, a notched cleaver raised in the right. Ember-eyed, ash on the armour. Round lava-gravel base with a clover. Warband minion, not the hero knight.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "shieldbearer",
+      "names": [
+        {
+          "name": "Ash-Tusk Raider"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "orc raider",
+        "ash-clan brute",
+        "cleaver levy",
+        "tusked shield-man"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "tuskwarlord",
+      "image": "assets/miniatures/tuskwarlord.webp",
+      "title": "Armored tusked warlord in spiked black plate with a cleaver-axe and a tattered banner",
+      "description": "A towering tusked warlord in heavy dark iron plate, spiked pauldrons, horned helm, looking left with a snarl. A two-handed cleaver-axe is raised in the right hand. A tattered brown banner on a pole stands behind the left hip. Tusks jut through the helm. Ember base with a clover. Boss of the ash-tusk warband.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "large",
+      "role": "boss",
+      "statsFrom": "goblinking",
+      "names": [
+        {
+          "name": "Gorvash, Warlord of the Ash-Tusks"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "orc warlord",
+        "banner chief",
+        "iron-tusk king",
+        "cleaver-axe tyrant"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "barrowrider",
+      "image": "assets/miniatures/barrowrider.webp",
+      "title": "Undead knight on a rearing skeletal horse, greatsword raised, green eyes, grave-mist base",
+      "description": "A rider in rust-dark plate and a crested greathelm, visor down, cold green light in the eyes, looking left. The horse is half-skeletal, rearing, green eye, tattered barding like a ragged cape. A notched greatsword is raised; a heater shield with a star is on the left arm. Tombstones and mist on the round base. Mounted undead, not the hero knight.",
+      "family": "undead",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "elite",
+      "statsFrom": "bonewarden",
+      "names": [
+        {
+          "name": "The Barrow Rider"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "death rider",
+        "ossuary cavalry",
+        "green-eye knight",
+        "grave charger"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "stormtyrant",
+      "image": "assets/miniatures/stormtyrant.webp",
+      "title": "Warlord in storm-blue spiked plate with a lightning glaive, skull tabard, and a purple cape",
+      "description": "A tall armoured warlord, looking left, visor a crown of spikes, blue-white eyes in the slot. Storm-blue plate with lightning cracks, purple cape, a skull on a purple tabard. A long forked glaive crawls with blue lightning; more lightning forks across the broken-stone base. No robe, no wizard hat. Weather warlord.",
+      "family": "folk",
+      "tone": "fierce",
+      "size": "large",
+      "role": "elite",
+      "statsFrom": "ashwyrm",
+      "names": [
+        {
+          "name": "Vexmor, the Storm-Tyrant"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "lightning marshal",
+        "tornado knight",
+        "glaive tyrant",
+        "bottled-storm lord"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "hivedrone",
+      "image": "assets/miniatures/hivedrone.webp",
+      "title": "Amber glass insect with shard wings, glowing core, coiled to spring among crystals",
+      "description": "A dog-sized six-legged insect of cracked amber-and-smoke glass, looking left, low and coiled. Translucent shard wings, glowing orange-red eyes, a barb over the back. It stands among upright amber crystals on a round base with a clover. Otherworldly, not a spider.",
+      "family": "otherworldly",
+      "tone": "fierce",
+      "size": "small",
+      "role": "minion",
+      "statsFrom": "spider",
+      "names": [
+        {
+          "name": "Glass-Hive Stinger"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "crystal wasp",
+        "amber drone",
+        "glass locust",
+        "star-core bug"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "hivequeen",
+      "image": "assets/miniatures/hivequeen.webp",
+      "title": "Vast purple-amber glass queen with scythe forelimbs, crystal spikes, swollen abdomen",
+      "description": "A huge insect queen rearing among orange-purple crystals, looking left. Segmented glass-amber carapace, glowing orange eyes, two scythe arms, a swollen faceted abdomen curling behind. Crown-like crystal spikes along the back. Round crystal base with a clover. Hive boss, not a dragon.",
+      "family": "otherworldly",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "boss",
+      "statsFrom": "lich",
+      "names": [
+        {
+          "name": "The Glass-Hive Queen"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "crystal empress",
+        "amber broodmother",
+        "star-hive queen",
+        "scythe matriarch"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "nightblade",
+      "image": "assets/miniatures/nightblade.webp",
+      "title": "Crouching figure of living smoke with a blank white mask and two curved shadow blades",
+      "description": "A lean assassin crouched low, looking left. The body is black smoke and ragged cloth; the face is a smooth white mask with two slit eyes. Each hand holds a long curved blade. Smoke trails off the back like a torn cloak. Cobbled round base with a clover. No bow, no hooded archer silhouette.",
+      "family": "shadow",
+      "tone": "fierce",
+      "size": "medium",
+      "role": "minion",
+      "statsFrom": "gloomstalker",
+      "names": [
+        {
+          "name": "The Nightblade"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "mask assassin",
+        "smoke duellist",
+        "white-face killer",
+        "shadow blades"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "basilisk",
+      "image": "assets/miniatures/basilisk.webp",
+      "title": "Low red armoured lizard with a horned frill, glowing eye, and a stone mouse on lava rock",
+      "description": "A long, low four-legged lizard, looking left, crimson scales with a crest of beige horn-plates along the back and head. Mouth open, one glowing yellow eye. A small grey mouse, looking petrified, sits on the lava-rock base beside a clover. Wide and short. No clothes. Horse-length, not tiny.",
+      "family": "beast",
+      "tone": "fierce",
+      "size": "large",
+      "role": "minion",
+      "statsFrom": "chainbinder",
+      "names": [
+        {
+          "name": "Glarefang, the Basilisk"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "stone-gaze lizard",
+        "frilled drake",
+        "petrifier",
+        "glass-field lizard"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "slagcolossus",
+      "image": "assets/miniatures/slagcolossus.webp",
+      "title": "Hulking lava golem in black iron-rock, molten chest and fist drawn back",
+      "description": "A massive construct of cracked black slag, looking left, mid-punch with the right fist. Orange lava glows in every crack and in a furnace face. The chest is an open molten core. No clothes, iron-band look to the stone. Round lava base with a clover. Forge-golem elite.",
+      "family": "construct",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "elite",
+      "statsFrom": "ironwarden",
+      "names": [
+        {
+          "name": "The Slag Colossus"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "lava golem",
+        "mine guardian",
+        "furnace brute",
+        "iron-band colossus"
+      ],
+      "kind": "monster",
+      "look": "left"
+    },
+    {
+      "id": "frostgiant",
+      "image": "assets/miniatures/frostgiant.webp",
+      "title": "Blue-white ice giant with a frozen beard, swinging a spiked ice-sheathed pine trunk",
+      "description": "A giant of pale blue ice, looking left, beard a frozen waterfall, craggy brow. Both hands swing a whole pine trunk sheathed in ice and spikes. A ragged brown fur loincloth, no helm, no hammer. Round snowy rock base with a clover. High-glacier elite, taller than an ogre.",
+      "family": "giant",
+      "tone": "fierce",
+      "size": "huge",
+      "role": "elite",
+      "statsFrom": "bonewarden",
+      "names": [
+        {
+          "name": "Hrimvald, the Rime-Giant"
+        }
+      ],
+      "campaigns": [
+        "dawn"
+      ],
+      "reskinAs": [
+        "glacier giant",
+        "rime brute",
+        "ice-trunk ogre",
+        "tarn colossus"
+      ],
+      "kind": "monster",
+      "look": "left"
+    }
+  ]
+}
