@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Silver Dagger d10 · pro layout</title>
+<script type="importmap">{"imports":{"three":"../../../../vendor/three/build/three.module.js","three/addons/":"../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css"><link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css"><link rel="stylesheet" href="pro.css">
+<style>html,body{margin:0;background:#07080c}.pg{min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px;background:radial-gradient(90% 50% at 50% 35%,#221a14,#0b0a0a 65%,#04060d)}
+.qc{--w:min(370px,calc(100vw - 20px),calc((100vh - 74px) * .75))}
+.under{display:grid;grid-template-columns:1fr 1fr;gap:10px}.under .btn{height:42px;font-size:.95rem}</style></head><body>
+<main class="pg"><div id="slot"></div><div class="under" id="under"><div class="btn go">Take</div><div class="btn no" id="sell">Sell</div></div></main>
+<script type="module">
+import { weaponData } from './t13.js'; import { proCard } from './pro.js';
+const p = new URLSearchParams(location.search);
+const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), undefined, p.get('ammo') || undefined);
+const card = proCard(d); slot.append(card); under.style.width = getComputedStyle(card).width;
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
+</script></body></html>
