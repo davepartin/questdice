@@ -37,7 +37,8 @@ export async function nativeShare(report) {
   try {
     if (typeof File === 'function' && navigator.canShare) {
       const file = new File([text], BR.exportName(report), { type: 'text/plain' });
-      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title, text: BR.summaryText(report).split('\n').slice(0, 3).join('\n') }); return true; }
+      // no `text` beside the file: apps such as Notes and Messages insert both, which doubled the heading (real iPhone, 24 October)
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title }); return true; }
     }
     if (navigator.share) { await navigator.share({ title, text }); return true; }
   } catch (e) { if (e && e.name === 'AbortError') return null; }
