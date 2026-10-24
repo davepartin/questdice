@@ -52,6 +52,17 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
 <div class="title17"><span>${d.metal} ${d.name}</span></div>
 <div class="dice17">${body}</div>
 ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[i][1]}%" title="${NAME[k]} (legend: a bonus type on the unlocked faces)">${badge(k, d.metal)}</span>`).join('')}`;
+  // rev 5 demo (mockup only, no gold spent): click the available token, or the demo button, to see the unlock: the token slides off,
+  // the row's dice settle in, and the next size's token wakes from locked to available
+  el.unlock = () => { const t = el.querySelector('.cov.tok:not(.off):not(.gone)'); if (!t) return false; const row = t.closest('.row');
+    t.classList.add('gone'); row.classList.add('reveal');
+    const nx = row.nextElementSibling?.querySelector('.cov.tok.off');
+    t.addEventListener('animationend', () => { t.remove(); row.classList.remove('locked');
+      if (nx) { const s = +nx.closest('.row').className.match(/s(\d+)/)[1]; const f = SIZES[SIZES.indexOf(s) - 1]; nx.classList.remove('off');
+        nx.querySelector('.ct small').textContent = `Uncover d${f} → d${s}`; nx.querySelector('.cn').textContent = `+${rows[s].length} faces · no refund · sell stays ${d.sell}`;
+        nx.querySelector('.cp').innerHTML = `<i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small>`; } }, { once: true });
+    return true; };
+  el.addEventListener('click', (e) => { if (e.target.closest('.cov.tok:not(.off)')) el.unlock(); });
   el.dataset.kinds = kinds.join(',') || 'none'; el.dataset.shown = JSON.stringify(shown);
   return el;
 }
