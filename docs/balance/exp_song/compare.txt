@@ -1,0 +1,31 @@
+Base: docs/balance/exp_song/song_base.json (10 campaigns)
+  battles won first try                        97.0% ± 1.5%
+  hero-fights where the hero fell (battles)    6.3% ± 1.0%
+  health left after a won battle               72.7% ± 1.3%
+  rounds a battle                              5.27 ± 0.08
+  bosses won first try                         100.0% ± 0.0%
+  elites won first try                         100.0% ± 0.0%
+
+docs/balance/exp_song/song_steady.json: null · 10 matched campaigns
+  battles won first try                        97.4%   change +0.4% ± 1.9% (better in 4 of 10)
+  hero-fights where the hero fell (battles)    5.9%   change -0.4% ± 1.3% (better in 5 of 10)
+  health left after a won battle               73.5%   change +0.8% ± 1.4% (better in 6 of 10)
+  rounds a battle                              5.30   change +0.03 ± 0.15 (shorter in 5 of 10)
+  bosses won first try                         95.0%   change -5.0% ± 3.3% (better in 0 of 10)
+  elites won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)
+
+docs/balance/exp_song/song_lucky.json: null · 10 matched campaigns
+  battles won first try                        98.7%   change +1.7% ± 1.9% (better in 4 of 10)
+  hero-fights where the hero fell (battles)    4.2%   change -2.1% ± 1.2% (better in 7 of 10)
+  health left after a won battle               71.5%   change -1.2% ± 1.6% (better in 5 of 10)
+  rounds a battle                              5.10   change -0.17 ± 0.10 (shorter in 7 of 10)
+  bosses won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)
+  elites won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)
+
+docs/balance/exp_song/song_big.json: null · 10 matched campaigns
+  battles won first try                        98.3%   change +1.3% ± 2.1% (better in 4 of 10)
+  hero-fights where the hero fell (battles)    5.3%   change -1.0% ± 1.9% (better in 6 of 10)
+  health left after a won battle               73.1%   change +0.4% ± 2.0% (better in 6 of 10)
+  rounds a battle                              5.22   change -0.05 ± 0.11 (shorter in 5 of 10)
+  bosses won first try                         97.5%   change -2.5% ± 2.5% (better in 0 of 10)
+  elites won first try                         100.0%   change +0.0% ± 0.0% (better in 0 of 10)

@@ -1,0 +1,17 @@
+/* QuestDice 3D layer: full-screen WebGL canvas with a heads-up display on top.
+   Dark glass, ember gold, Oxanium type. Keeps the Fleet Dice semantic colours. */
+:root {
+  --glass: linear-gradient(180deg, rgba(22,26,44,.78), rgba(10,12,24,.82));
+  --glass-border: rgba(255,226,170,.16);
+  --ember: #ff8a3a; --gold-hi: #ffe39a; --gold-lo: #b9801e;
+  --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+}
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: none; }
+.app-frame.has-gl { background: #05060c; }
+.app-frame.has-gl .stage-canvas { display: none; }
+.hidden { display: none !important; }
+/* DOM screens (title, camp, board...) float over the live 3D world */
+.app-frame.has-gl #app { position: absolute; z-index: 5; background: linear-gradient(180deg, rgba(4,6,13,.55), rgba(4,6,13,.78)); backdrop-filter: blur(3px); inset: 0; max-width: none; }
+.app-frame.has-gl #app > * { width: min(100%, 34rem); margin-left: auto; margin-right: auto; }
+
+/* The battle HUD (.b3-*) lives in css/hud.css. */
