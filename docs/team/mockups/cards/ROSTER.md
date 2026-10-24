@@ -60,4 +60,4 @@ PR #39's gallery imported `js/data.js` without `applyRelease()`, so it drew pre-
   - **Missing:** Axe and Arrows.
   - **Legacy:** Bracer, Mace, Staff, Long Sword, War Hammer, Starfire Staff and Twinfang Bow.
 - The gallery now has three sections: Active, Active legendary and Legacy. Legacy cards are greyed and tagged LEGACY. The roster was not expanded.
-- **Pilot art:** Dagger and Sword are active. The Mace pilot is now a legacy weapon, so do not paint more Mace variants. The next masters to paint are Axe, Spear, Round Shield, Tower Shield, Bow and Arrows.
+- **Art:** all 8 active types now have painted masters (Dagger and Sword are pilots; the other six came in T14). The Mace pilot is legacy, so do not paint more Mace variants.

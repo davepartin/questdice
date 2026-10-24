@@ -9,11 +9,12 @@
 </style></head><body>
 <main class="pg"><div class="concept">CONCEPT · every word and number is live game data</div><div id="slot"></div><div class="under" id="under"><div class="btn go">Take</div><div class="btn no" id="sell"></div></div></main>
 <script type="module">
-import { weaponCard, weaponData } from './t13.js';
+import { weaponCard, weaponData, price } from './t13.js';
 const p = new URLSearchParams(location.search);
 const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), p.get('left') != null ? +p.get('left') : undefined);
-const card = weaponCard(d); slot.append(card);
+const store = p.get('ctx') === 'store';
+const card = weaponCard(d, store ? { label: 'Store', value: price(d) } : { label: 'Sell', value: d.sell }); slot.append(card);
 under.style.setProperty('--w', getComputedStyle(card).width);
-sell.innerHTML = `Sell<small>for ${d.sell} gold</small>`;
+sell.innerHTML = store ? `Buy<small>for ${price(d)} gold</small>` : `Sell<small>for ${d.sell} gold</small>`; if (store) document.querySelector('.btn.go').textContent = 'Not now';
 document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
 </script></body></html>

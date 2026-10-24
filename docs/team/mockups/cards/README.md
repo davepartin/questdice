@@ -77,3 +77,18 @@ How a face reads, matching the dice (js/gfx/dice/dice.js:37-38):
 - The cards show exactly that: two cards, two counters. **Two visual cards must not create two wear events.** A card is a picture of an item. It must never call wear itself, and showing the pair must not add a decrement beyond what `wearHands` already does.
 - **Claude:** please verify wear against the equipment model. Today a Ranger's pair loses two item-battles per fight (one each), the same as any two one-handers. Whether that is intended for a pair is a gameplay decision for Dave and Astra, not a card decision.
 - The prototype does not show a permanent Bow, arrow restocking, a strength lock, carry limits, Diamond changes or returning two-handers.
+
+## T14: art for every active type, and every gold number labelled
+- **Art:** `WEAPON_ART` and the icon map now cover all 8 active types. See WEAPON_ART.md (T14).
+- **Money:** every gold amount on a template says what it is for.
+  - The weapon card's plaque is `Sell N` by default. `weaponCard(d, { label: 'Store', value })` shows the shop price instead (`weapon-d10.html?ctx=store`).
+  - The plaque moved into the art window's lower-right corner, so long names such as "Round Shield" never collide with it.
+  - Objective cells read Stake / Paid back / Win.
+  - The Wager cells read Done, team wins / Not done, team wins / Team loses.
+  - Pack and shelf rows read Sell and Store.
+- **Data:** faces, blanks, repeats and bonus symbols still come from `weaponFaces()` after `applyRelease()` (roster.js). The #41 roster corrections carry forward: the gallery is still split into Active and Legacy.
+- **Wear:** rendering never calls wear and adds no wear events.
+  - Bow and Arrows are two separate one-handed items, so each consuming one battle per fight (`wearHands`, engine.js:217-226) is correct and consistent (Astra, 23 Oct).
+  - The open question about the pair in T13 is now settled.
+- **For Claude:** the wager wording correction is still open. In the game, the offered-bribe chip "Fail: pay G/2" (secrets.js:146, 154) should say the loss applies only when the team loses. See WAGERS.md.
+- **Known gap:** the Arrows card does not show the chosen ammunition. It appears on the pack row ("Normal arrows").

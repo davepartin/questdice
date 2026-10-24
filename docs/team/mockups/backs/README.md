@@ -26,3 +26,12 @@ Astra asked for the Heart die to show three visible faces, with coherent cube ge
 - **Cube layout** (js/gfx/dice/poly.js:135): 1 +Y, 2 +Z, 3 +X, 4 −X, 5 −Z, 6 −Y, so the opposite pairs are 1/6, 2/5 and 3/4. Seen as in heart-6.png (6 toward us, 3 on the left), the third visible face is **5 on top**. Those three faces are pairwise adjacent.
 - `heart-die.html` builds the die as a real CSS 3D cube over `heart-die-base.webp` (the approved back with the pip dice painted out). It is rendered once to `back-wager.webp`. The first version is kept as `alternates/back-wager-v1-pip-dice.webp`.
 - The other three backs have no die, so they are unchanged. `contact-sheet.webp` was re-made with the new Wager back.
+
+## T14: the Heart die, painted finish
+The die keeps the same three faces and the same arrangement: 6 front, 3 left, 5 top. What changed:
+- a bevelled gold edge made from a multi-stop metal gradient with a dark inner line
+- lit from the upper left, matching the card art: the top face is brightest and the left face darkest
+- a fine noise grain, a soft sheen and gradient-filled symbols
+- a contact shadow under the die
+
+The previous flat version is `alternates/back-wager-v2-flat-heart.webp`; the pip-dice original is `alternates/back-wager-v1-pip-dice.webp`. The contact sheet has been re-made.

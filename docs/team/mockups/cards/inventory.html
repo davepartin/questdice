@@ -39,9 +39,9 @@ $('rc').append(weaponCard(hero));
 const hands = [[hero, 'left hand'], [weaponData('shield', 0, 6, 2), 'right hand']];
 const bag = [weaponData('sword', 2, 8), weaponData('spear', 0, 6)];
 $('room').textContent = `pack ${bag.length} / ${BAG_MAX}`;
-$('pack').innerHTML = hands.map(([d, w], i) => row(d, w, `${d.sell}<small>sell</small>`, i === 0 ? 'sel' : '')).join('') + bag.map((d) => row(d, 'pack', `${d.sell}<small>sell</small>`)).join('');
+$('pack').innerHTML = hands.map(([d, w], i) => row(d, w, `<small>Sell</small>${d.sell}`, i === 0 ? 'sel' : '')).join('') + bag.map((d) => row(d, 'pack', `<small>Sell</small>${d.sell}`)).join('');
 $('lg').innerHTML = `${ico('atk')} attack &nbsp; ${ico('block')} block &nbsp; <u></u>bonus symbol on the face (tap a row for the full card)`;
-$('store').innerHTML = [weaponData('dagger', 1, 10), weaponData('axe', 0, 6)].map((d) => row(d, '', `${price(d)}<small>buy</small>`)).join('');
-$('pair').innerHTML = [[weaponData('quiver', 0, 6), 'left hand · Normal arrows'], [weaponData('bow', 0, 6), 'right hand']].map(([d, w]) => row(d, w, `${d.sell}<small>sell</small>`)).join('');
+$('store').innerHTML = [weaponData('dagger', 1, 10), weaponData('axe', 0, 6)].map((d) => row(d, '', `<small>Store</small>${price(d)}`)).join('');
+$('pair').innerHTML = [[weaponData('quiver', 0, 6), 'left hand · Normal arrows'], [weaponData('bow', 0, 6), 'right hand']].map(([d, w]) => row(d, w, `<small>Sell</small>${d.sell}`)).join('');
 document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
 </script></main></body></html>

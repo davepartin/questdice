@@ -59,3 +59,22 @@ Docs only. Nothing here is wired into the game.
 - **Live HTML:** name, metal, die size, battles left, the Silver Dagger d6 faces from `weaponFaces()` (R2 · B2 · R3 · R3+heal1 · R4+pierce1 · R5+heal2) and sell value 27.
 - **Corner accents** are keyed to the weapon's symbols, using the css/powers.css colours: orange pierce arrows (#ff8a1a) and green heal plus (#38e87a). A magic weapon would show purple triangles (#b46cff).
 - **Layout:** Take/Sell sit below the card. Renders: `weapons/png/weapon-front_{390x664,375x548}_{chromium,webkit}.webp`. 375x548 scrolls slightly (`_full`).
+
+## T14: the six active types (Axe, Spear, Round Shield, Tower Shield, Bow, Arrows)
+These were painted with the image generator, using the Sword pilot as the style reference. They follow the same finish as the pilots:
+- semi-realistic neutral steel with leather and wood
+- warm key light from the upper left and a cool rim light
+- 45° diagonal with the grip at the lower left (the shields stand upright)
+- a white background, cut out with rembg (isnet) plus a white key, then the alpha is smoothed and re-sharpened so blade edges are straight, not wavy, and un-premultiplied from white
+- no text, no runes
+
+Each one fills about 470 of 512 px, like the pilots.
+
+**Files:**
+- `weapons/art/<id>-{512,128,64}.webp`, for `axe`, `spear`, `shield`, `tower`, `bow` and `quiver`.
+- `<id>-{bronze,silver,gold}-512.webp`: metal tints baked with the pilot method. A gradient map is applied only to the low-saturation steel pixels, so wood and leather keep their colour.
+- The 64 and 128 px icons are the neutral master. Lists tint them with the CSS filter, as in T13.
+
+**Contact sheet:** `cards/png/t14/weapons-contact-sheet.webp` (card size, 128 and 64 px) and `weapons-64px-strip.webp`.
+
+Dagger and Sword are still the closest pair at 64 px. Both are pilots and were not repainted.

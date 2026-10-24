@@ -18,15 +18,16 @@ export function face(f) {
   return `<div class="f13 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" aria-label="${K.long} +${f.v}${icons.length ? ', ' + icons.join(' ') : ''}">
     <span class="k">${ico(K.k)}<em>${K.w}</em></span><b>+${f.v}</b><span class="fx">${icons.map((k) => ico(k)).join('')}</span></div>`;
 }
-export function weaponCard(d) {
-  const c = renderCard('weapon', d);
+// money: { label: 'Sell' | 'Store', value } so a card never shows an unexplained gold number (Astra, T14)
+export function weaponCard(d, money) {
+  const c = renderCard('weapon', money ? { ...d, moneyLabel: money.label, money: money.value } : d);
   c.classList.add('t13', `metal-${d.metal.toLowerCase()}`);
   const n = c.querySelector('.name'); n.innerHTML = `<span>${n.innerHTML}</span>`;
   c.querySelector('.faces').outerHTML = `<div class="faces13 n${d.faces.length}">${d.faces.map(face).join('')}</div>`;
   return c;
 }
 // the 64 / 128 px icon export of the same painted master (WEAPON_ART.md); a type with no art yet gets a labelled silhouette
-const ICON = { dagger: 'dagger', sword: 'sword', mace: 'mace' };
+const ICON = { dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' };
 export const icon = (d, px = 128) => (ICON[d.id] ? `<img class="ic13 tint-${d.metal.toLowerCase()}" src="${ART}${ICON[d.id]}-${px}.webp" alt="">`
   : `<span class="ic13 ph13" title="art to come">${esc(d.name.slice(0, 1))}</span>`);
 export const strip = (d) => `<div class="strip13">${d.faces.map((f) => `<i class="${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}">${ico(f.c === 'b' ? 'block' : 'atk')}${f.v}${(f.plus || Object.keys(f.fx || {}).length) ? '<u></u>' : ''}</i>`).join('')}</div>`;

@@ -2,5 +2,5 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="card.css"><style>html,body{margin:0;background:#07080c}.pg{min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;background:radial-gradient(90% 50% at 50% 35%,#221a14,#0b0a0a 65%,#04060d)}
 .qc{--w:min(370px,calc(100vw - 16px),calc((100vh - 40px) * .75))}.concept{padding:2px 7px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.16em;background:#b3261e;color:#fff}</style></head><body>
-<main class="pg"><div class="concept">CONCEPT · WAGER BACK · HEART DIE (T13)</div><div id="slot"></div></main>
+<main class="pg"><div class="concept">CONCEPT · WAGER BACK · HEART DIE</div><div id="slot"></div></main>
 <script type="module">import { renderBack } from './card-template.js'; slot.append(renderBack(new URLSearchParams(location.search).get('kind') || 'wager')); document.fonts.ready.then(() => { document.body.dataset.ready = 1; });</script></body></html>

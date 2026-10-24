@@ -29,8 +29,8 @@ import { weaponCard, weaponData } from './t13.js';
 const d = weaponData('dagger', 1, 6); c.append(weaponCard(d));
 nm.textContent = `${d.metal} ${d.name}, d${d.size}`; sub.textContent = `${d.wear}. Today a weapon is what you find or buy.`;
 const SZ = [4, 6, 8, 10]; size.innerHTML = SZ.map((s) => s <= d.size ? `<div class="slot on">d${s}<small>${s === d.size ? 'now' : 'had'}</small></div>`
-  : `<div class="slot cov"><span>d${s}<small>covered</small><b class="price q">price —</b></span></div>`).join('');
+  : `<div class="slot cov"><span>d${s}<small>covered</small><b class="price q">price not set</b></span></div>`).join('');
 const MT = ['Bronze', 'Silver', 'Gold']; metal.innerHTML = MT.map((m, i) => i <= MT.indexOf(d.metal) ? `<div class="slot on">${m}<small>${m === d.metal ? 'now' : 'had'}</small></div>`
-  : `<div class="slot cov"><span>${m}<small>covered</small><b class="price q">price —</b></span></div>`).join('');
+  : `<div class="slot cov"><span>${m}<small>covered</small><b class="price q">price not set</b></span></div>`).join('');
 document.fonts.ready.then(() => { document.body.dataset.ready = 1; });
 </script></main></body></html>

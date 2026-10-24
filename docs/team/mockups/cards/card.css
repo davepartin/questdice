@@ -43,3 +43,8 @@
 .qb-secret-objective .plate{top:70.5%;left:16%;right:16%;height:10.5%;font-size:5cqi}
 .qb-wager .plate{top:67.6%;left:21%;right:21%;height:10.5%;background:linear-gradient(180deg,#f2d27a,#b8862e 55%,#d9ae54);color:#3a2206;text-shadow:0 1px 0 #fff6}
 .qc .art.heart{height:62%;top:19%;border-radius:12%}
+
+/* T14: every gold amount says what it is for */
+.qc .sell small{font:800 2.5cqi 'Oxanium',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e8d6b0;margin-right:.6cqi}
+/* T14: the gold plaque sits in the art window's lower-right corner, so a long name never runs into it */
+.qc .sell{top:auto;bottom:47.6%;right:15%;height:auto;padding:.8cqi 2cqi;border-radius:99px;background:#0b0906d9;border:1px solid #c8901e99;box-shadow:0 2px 4px #0009}

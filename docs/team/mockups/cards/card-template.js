@@ -9,8 +9,8 @@ const ART = new URL('../weapons/art/', import.meta.url).href;
 const OLD = new URL('../art/', import.meta.url).href;
 const BACKS = new URL('../backs/', import.meta.url).href;
 // One painted master per weapon TYPE. A type that is missing here gets the labelled placeholder silhouette.
-export const WEAPON_ART = { dagger: 'dagger', sword: 'sword', mace: 'mace' };
-const BAKED_TINT = { dagger: ['bronze', 'silver', 'gold'] }; // types with baked metal files; others use the CSS tint below
+export const WEAPON_ART = { dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' }; // T14: the six active types painted
+const BAKED_TINT = Object.fromEntries(['dagger', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver'].map((k) => [k, ['bronze', 'silver', 'gold']])); // baked gradient-map tints (WEAPON_ART.md) // types with baked metal files; others use the CSS tint below
 
 // Symbol colours from css/powers.css (.t-pierce #ff8a1a, .t-magic #b46cff, .t-heal #38e87a, .t-gold #ffc21a, .t-atk #ff4b4b, .t-block #3aa4ff).
 export const SYM = {
@@ -69,9 +69,9 @@ export function renderCard(kind, d) {
     <div class="name">${esc(d.name)}</div>
     <div class="meta"><span class="m-${d.metal.toLowerCase()}">${esc(d.metal)}</span><span>d${d.size}</span><span>${esc(d.wear)}</span></div>
     <div class="faces n${d.faces.length}">${d.faces.map(faceTile).join('')}</div>
-    <div class="sell">${svg('gold')}${d.sell}</div></article>`);
+    <div class="sell"><small>${esc(d.moneyLabel || 'Sell')}</small>${svg('gold')}${d.money ?? d.sell}</div></article>`);
   const isObj = kind === 'objective';
-  const stakes = isObj ? `<div class="stk"><div><small>You bet</small><b>${d.stake}</b></div><div><small>You get back</small><b>${d.back}</b></div><div class="net"><small>Net gain</small><b>+${d.net}</b></div></div>`
+  const stakes = isObj ? `<div class="stk"><div><small>Stake</small><b>${d.stake}</b></div><div><small>Paid back</small><b>${d.back}</b></div><div class="net"><small>Win</small><b>+${d.net}</b></div></div>`
     : kind === 'wager' ? `<div class="stk"><div class="net"><small>Done, team wins</small><b>+${d.win}</b></div><div><small>Not done, team wins</small><b>0</b></div><div class="bad"><small>Team loses</small><b>−${d.fail}</b></div></div>`
       : `<div class="chips">${d.chips.map((c) => `<span>${esc(c)}</span>`).join('')}</div>`;
   const HEART = new URL('../../../../assets/tutorial/heart-6.png', import.meta.url).href;
