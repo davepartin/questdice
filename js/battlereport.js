@@ -66,7 +66,6 @@ const moveFacts = (e) => {
 
 // ------------------------------------------------------------------------------------------------ the live recorder (solo and shared phone)
 const live = new WeakMap(); // the battle -> its draft
-const mem = { reports: [] }; // when the device's storage is full or blocked, the latest reports stay here for this visit
 
 function newDraft(b, mode) {
   const fighters = b.fighters || [b];
@@ -195,6 +194,7 @@ function deriveSolo(round, h, rep) {
   return { startedFrom: num(h.healthBeforeResolution), healingLandedFirst: num(rep.healed), steps, lethalBlow: lethal };
 }
 function deriveParty(round, rep, names) {
+  const sure = round.healthBasis !== 'last observed'; // online, with updates missed: the health before resolution is only the last value seen
   const hpNow = {}; const dead = {}; const per = {};
   for (const n of names) { const h = round.heroes[n] || {}; hpNow[n] = num(h.healthBeforeResolution) + num((rep.fighters.find((f) => f.name === n) || {}).healed); per[n] = []; }
   let ai = 0; let si = 0;
@@ -211,8 +211,13 @@ function deriveParty(round, rep, names) {
   const seq = rep.order || [];
   if (seq.length) for (const x of seq) { if (x.kind === 'hero') { if (!(rep.fallen || []).includes(x.name)) strike(x.name); } else if (rep.acts[ai] && rep.acts[ai].uid === x.uid) blow(rep.acts[ai]); }
   else rep.acts.forEach(blow);
+  const fell = rep.fighters.filter((f) => f.hpAfter <= 0 && !f.down).map((f) => f.name); // captured: the engine's own result
+  if (!sure) {
+    return { uncertain: 'health before resolution is the last value this phone saw, and updates were missed, so the order of health is not derived', fell,
+      perHero: Object.fromEntries(names.map((n) => [n, { blows: per[n].map(({ healthAfter, ...rest }) => rest) }])), lethalBlow: {} };
+  }
   const lethalBlow = Object.fromEntries(names.filter((n) => dead[n]).map((n) => [n, per[n][dead[n] - 1]?.what]));
-  return { perHero: Object.fromEntries(names.map((n) => [n, { startedFrom: num(round.heroes[n]?.healthBeforeResolution), blows: per[n] }])), lethalBlow };
+  return { fell, perHero: Object.fromEntries(names.map((n) => [n, { startedFrom: num(round.heroes[n]?.healthBeforeResolution), blows: per[n] }])), lethalBlow };
 }
 
 // ------------------------------------------------------------------------------------------------ begin, finish, hook
@@ -227,12 +232,12 @@ export function install() {
 // A fight starts (solo or one phone shared by a company). Call once, right after the battle is made.
 export function begin(b, { mode } = {}) {
   if (!b || live.has(b)) return;
-  try { install(); const d = newDraft(b, mode || (b.fighters ? 'shared-phone' : 'solo')); live.set(b, d); startRound(d, b); } catch { /* the report is optional */ }
+  try { install(); const d = newDraft(b, mode || (b.fighters ? 'shared-phone' : 'solo')); live.set(b, d); for (const f of b.fighters || []) live.set(f, d); startRound(d, b); } catch { /* the report is optional */ }
 }
 // The fight is over: assemble, bound and keep the report. Returns it (or null when this fight was not recorded).
 export function finish(b, result) {
   const d = b && live.get(b); if (!d) return null;
-  live.delete(b);
+  live.delete(b); for (const f of b.fighters || []) live.delete(f);
   try {
     if (d.cur && (Object.values(d.cur.heroes).some((h) => h.actions.length) || result === 'withdrew')) d.rounds.push({ ...d.cur, unresolved: true });
     const report = build(d, result, b.enemies.filter((e) => e.hp > 0).map((e) => d.labels.get(e.uid) || e.name));
@@ -243,11 +248,11 @@ export function finish(b, result) {
 
 const UNAVAILABLE = {
   solo: [], 'shared-phone': [],
-  online: ['powers cast, rerolls and potions used by the other heroes', 'the other heroes’ dice faces and equipment', 'health a hero had just before resolution, if this phone missed that update'],
+  online: ['powers cast, rerolls and potions used by the other heroes', 'the other heroes’ dice faces and equipment', 'exact health before resolution when this phone missed an update (it is then marked "last observed" and no lethal blow is derived)'],
 };
 function build(d, result, enemiesLeft) {
   return {
-    v: REPORT_VERSION, kind: 'Quest Dice battle report', id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, build: BUILD, savedAt: new Date().toISOString(),
+    v: REPORT_VERSION, kind: 'Quest Dice battle report', id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, build: BUILD, savedAt: new Date().toISOString(), savedMs: Date.now(),
     mode: d.mode, difficulty: d.difficulty, act: d.act, step: d.step, quest: d.quest,
     legend: { captured: 'written down by the game at the moment it happened', derived: 'worked out afterwards from captured numbers (inside `derived` blocks)', unavailable: UNAVAILABLE[d.mode] || [] },
     heroes: d.heroes, enemies: d.enemies, rounds: d.rounds.map(tidy),
@@ -278,31 +283,39 @@ function onlineRound(d, bt) {
   if (bt.me) { const h = heroSlot(round, MY(bt)); h.magicAtStart = bt.me.magic; round.potions = bt.me.hero?.potions; round.lastHp = bt.me.hp; }
   d.cur = round; d.curN = bt.round;
 }
-// The last view of a round before the report: each hero's health and this phone's own board as the player locked in.
-function onlinePre(d, bt) {
+// The last view of a round before the report: each hero's health and this phone's own board as it last saw them. `seq` is the table's
+// command counter: when the report arrives as the very next command after this view, nothing changed in between and these are exact;
+// when it jumps by more, a view was missed and they are only the last values seen.
+function onlinePre(d, bt, seq) {
   const r = d.cur; if (!r) return;
-  r.pre = { health: Object.fromEntries((bt.roster || []).map((x) => [x.name, x.hp])), me: bt.me && { magic: bt.me.magic, board: bt.me.board && plain(bt.me.board), mods: nonZero(bt.me.mods), target: bt.me.target, straight: bt.me.straight, potions: bt.me.hero?.potions, hp: bt.me.hp } };
-  const me = bt.me; if (me && r.potions != null && me.hero?.potions < r.potions) {
-    heroSlot(r, MY(bt)).actions.push({ kind: 'potion', thrownBy: MY(bt), for: '(this hero, seen on this phone)', healthBefore: r.lastHp, healthAfter: me.hp, healed: me.hp - r.lastHp, potionsLeft: me.hero.potions });
+  r.pre = { seq, health: Object.fromEntries((bt.roster || []).map((x) => [x.name, x.hp])), me: bt.me && { magic: bt.me.magic, board: bt.me.board && plain(bt.me.board), mods: nonZero(bt.me.mods), target: bt.me.target, straight: bt.me.straight, potions: bt.me.hero?.potions, hp: bt.me.hp } };
+  const me = bt.me;
+  // The only thing a view shows about a potion is this hero's own belt count. A drop means a potion left this belt; it does not say who it
+  // was for (a drink, or thrown to a friend) or how much it healed, so those stay unavailable and the event is marked inferred.
+  if (me && r.potions != null && me.hero?.potions < r.potions) {
+    heroSlot(r, MY(bt)).actions.push({ kind: 'potion', inferred: true, count: r.potions - me.hero.potions, thrownBy: MY(bt), for: 'unavailable', healed: 'unavailable', healthBefore: 'unavailable', healthAfter: 'unavailable', potionsLeft: me.hero.potions,
+      basis: 'this hero’s potion belt count dropped between two views; who it was for and how much it healed are not shown by the view' });
   }
-  if (me) { r.potions = me.hero?.potions; r.lastHp = me.hp; }
+  if (me) r.potions = me.hero?.potions;
 }
-function onlineResolve(d, rep) {
+function onlineResolve(d, rep, seq) {
   const r = d.cur; if (!r || r.resolved) return;
-  for (const [n, hp] of Object.entries(r.pre?.health || {})) heroSlot(r, n).healthBeforeResolution = hp;
+  const exact = !!r.pre && Number.isFinite(seq) && Number.isFinite(r.pre.seq) && seq === r.pre.seq + 1;
+  r.healthBasis = exact ? 'exact' : 'last observed';
+  for (const [n, hp] of Object.entries(r.pre?.health || {})) { const h = heroSlot(r, n); h.healthBeforeResolution = hp; h.healthBeforeResolutionBasis = r.healthBasis; }
   const me = r.pre?.me; const mine = d.mine && heroSlot(r, d.mine);
   if (me && mine) {
     const hero = d.heroes.find((x) => x.name === d.mine);
-    mine.magicBeforeResolution = me.magic; mine.potionsLeft = me.potions; mine.straight = me.straight || 'atk'; mine.powersThisRound = me.mods;
+    mine.magicBeforeResolution = me.magic; mine.potionsLeft = me.potions; mine.straight = me.straight || 'atk'; mine.powersThisRound = me.mods; mine.diceBasis = r.healthBasis;
     const tgt = (rep.strikes || []).find((s) => s.name === d.mine)?.targetUid; mine.target = tgt ? d.labels.get(tgt) || null : null;
     if (me.board && hero?.name) mine.dice = Object.entries(me.board).filter(([, x]) => x && typeof x === 'object' && Number.isFinite(x.v)).map(([slot, x]) => ({ slot, role: slotName(slot), sides: hero.diceSides?.[slot] ?? null, v: x.v, ...(x.bound ? { bound: true } : {}) }));
   }
-  recordResolution(d, r, rep, true); r.resolved = true; delete r.pre; delete r.potions; delete r.lastHp; d.rounds.push(r); d.cur = null;
+  recordResolution(d, r, rep, true); r.resolved = true; delete r.pre; delete r.potions; d.rounds.push(r); d.cur = null;
 }
 function onlineFinish(d, result) {
   const left = [];
   const report = build(d, result, left);
-  report.legend.unavailable = [...UNAVAILABLE.online, ...(d.joinedMidFight ? ['rounds before this phone joined the view'] : []), 'the quest’s kind and place, and the other monsters’ armour and initiative dice'];
+  report.legend.unavailable = [...UNAVAILABLE.online, 'who a potion was for and how much it healed (a belt count dropping is shown as an inferred event)', ...(d.joinedMidFight ? ['rounds before this phone joined the view'] : []), 'the quest’s kind and place, and the other monsters’ armour and initiative dice'];
   saveReport(report);
   return report;
 }
@@ -315,17 +328,17 @@ export function observeView(view) {
       if (online.d && (bt.round < online.d.curN || (bt.questName && bt.questName !== online.d.quest.name))) online.d = null;
       const d = online.d ||= newOnline(view, bt);
       if (bt.round !== d.curN) {
-        if (d.cur && bt.report && bt.report.round === d.curN) onlineResolve(d, bt.report);
+        if (d.cur && bt.report && bt.report.round === d.curN) onlineResolve(d, bt.report, view.seq);
         else if (d.cur) { d.rounds.push({ ...d.cur, resolved: false, missed: true }); d.cur = null; }
         onlineRound(d, bt);
       }
-      onlinePre(d, bt);
+      onlinePre(d, bt, view.seq);
       return null;
     }
     const d = online.d;
     if (d && (view.phase === 'victory' || view.phase === 'defeat')) {
       online.d = null;
-      if (d.cur && view.report && view.report.round === d.curN) onlineResolve(d, view.report);
+      if (d.cur && view.report && view.report.round === d.curN) onlineResolve(d, view.report, view.seq);
       return onlineFinish(d, view.phase === 'victory' ? 'victory' : (view.defeat?.retreat ? 'withdrew' : 'defeat'));
     }
     if (d && view.phase !== 'battle' && view.phase !== 'envelope') online.d = null;
@@ -337,20 +350,53 @@ export const forgetOnline = () => { online.d = null; };
 // ------------------------------------------------------------------------------------------------ keeping reports (the latest three)
 const storeOf = () => { try { return typeof window !== 'undefined' ? window.localStorage : null; } catch { return null; } };
 const sizeOf = (r) => JSON.stringify(r).length;
-// Bound one report: drop the heaviest detail from the earliest rounds first, then whole early rounds, and say so.
+const recency = (r) => (Number.isFinite(r?.savedMs) ? r.savedMs : Date.parse(r?.savedAt) || 0);
+
+// ---- one report, bounded. Steps, each recorded in `omitted`: the heaviest detail from the earliest rounds, then whole early rounds (down to
+// the last one), then the detail inside what is kept, then everything but a short record of how it ended. Whatever the report, the result
+// is never longer than `max` (for any max of MIN_REPORT_CHARS or more), keeps the outcome, and says what it left out.
+export const MIN_REPORT_CHARS = 1000; // the bare record of how a fight ended always fits in this
+const clip = (v, n = 120) => String(v ?? '').slice(0, n);
 export function fit(report, max = MAX_REPORT_CHARS) {
-  let r = plain(report); if (sizeOf(r) <= max) return r;
-  const trim = [(x) => { x.heroes.forEach((h) => { delete h.diceSides; delete h.talents; }); }, (x) => { x.rounds.slice(0, -2).forEach((rd) => rd.heroes.forEach((h) => { delete h.ev; })); },
-    (x) => { x.rounds.slice(0, -2).forEach((rd) => rd.heroes.forEach((h) => { delete h.dice; })); }];
-  for (const t of trim) { t(r); if (sizeOf(r) <= max) { r.trimmed = true; return r; } }
-  const total = r.rounds.length; let keep = total;
-  while (keep > 2 && sizeOf(r) > max) { keep -= 1; r.rounds = r.rounds.slice(-keep); }
-  r.trimmed = true; r.roundsOmitted = total - r.rounds.length;
-  return r;
+  const r = plain(report); if (sizeOf(r) <= max) return r;
+  const omitted = []; r.trimmed = true; r.omitted = omitted; const done = (what) => { omitted.push(what); return sizeOf(r) <= max; }; // measured with the notes in place
+  const early = (x, f) => x.rounds.slice(0, -2).forEach((rd) => rd.heroes?.forEach(f));
+  const steps = [
+    ['dice sizes and talents on each hero', () => r.heroes.forEach((h) => { delete h.diceSides; delete h.talents; })],
+    ['weapon-by-weapon breakdowns in the early rounds', () => early(r, (h) => { delete h.ev; })],
+    ['dice faces in the early rounds', () => early(r, (h) => { delete h.dice; })],
+  ];
+  for (const [what, f] of steps) { f(); if (done(what)) return r; }
+  const total = r.rounds.length;
+  while (r.rounds.length > 1 && sizeOf(r) > max) r.rounds = r.rounds.slice(1);
+  r.roundsOmitted = total - r.rounds.length; if (r.roundsOmitted) { if (done(`${r.roundsOmitted} early round${r.roundsOmitted === 1 ? '' : 's'}`)) return r; }
+  r.rounds.forEach((rd) => { rd.heroes?.forEach((h) => { delete h.ev; delete h.dice; delete h.powersThisRound; }); if (rd.resolution) { rd.resolution.acts?.forEach((a) => { delete a.parts; }); delete rd.resolution.order; delete rd.resolution.initiative; delete rd.resolution.bonuses; } });
+  if (done('the detail inside the rounds that are kept (dice, breakdowns, damage parts)')) return r;
+  r.heroes = r.heroes.map((h) => ({ name: clip(h.name, 40), cls: h.cls, level: h.level, maxHealth: h.maxHealth, startHealth: h.startHealth, detail: 'omitted' })); r.enemies = r.enemies.map((e) => ({ label: clip(e.label, 60), tier: e.tier, maxHealth: e.maxHealth }));
+  if (done('equipment, powers, perks and enemy details')) return r;
+  // the last resort: how it ended, and who was standing in the last round
+  const last = r.rounds[r.rounds.length - 1];
+  r.rounds = last ? [{ n: last.n, resolved: !!last.resolved, shown: (last.shown || []).slice(0, 6).map((m) => ({ enemy: clip(m.enemy, 60), move: clip(m.move, 40) })),
+    heroes: (last.heroes || []).slice(0, 8).map((h) => ({ name: clip(h.name, 40), healthAtStart: h.healthAtStart, healthBeforeResolution: h.healthBeforeResolution, healthAfter: h.healthAfter, actions: [] })), derived: last.derived && { lethalBlow: last.derived.lethalBlow, uncertain: last.derived.uncertain, fell: last.derived.fell } }] : [];
+  if (done('all but the last round’s health and lethal blow')) return r;
+  const stub = { v: r.v, kind: r.kind, id: clip(r.id, 30), build: clip(r.build, 24), savedAt: clip(r.savedAt, 30), savedMs: r.savedMs, mode: clip(r.mode, 14), difficulty: clip(r.difficulty, 14), act: r.act, step: r.step,
+    quest: { name: clip(r.quest?.name, 80) }, legend: { unavailable: [] }, heroes: [], enemies: [], rounds: [],
+    outcome: { result: clip(r.outcome?.result, 14), roundsResolved: r.outcome?.roundsResolved ?? 0, enemiesLeft: [] }, trimmed: true, roundsOmitted: total, omitted: ['all detail except how the fight ended'] };
+  return stub;
+}
+
+// ---- keeping reports: the latest three. Memory and storage are one list, merged by id and recency, so a write that failed never hides
+// the newest fight behind older saved ones (nor does an older copy in memory hide a newer one in storage).
+const mem = { reports: [] }; // the reports saved in this visit, whether or not the device kept them
+const readStore = (storage) => { try { const raw = storage?.getItem(KEY); const list = raw ? JSON.parse(raw) : null; if (Array.isArray(list)) return list.filter((r) => r && r.id && r.v === REPORT_VERSION && Array.isArray(r.rounds)); } catch { /* damaged: ignore it */ } return []; };
+export function loadReports(storage = storeOf()) {
+  const seen = new Map();
+  for (const r of [...mem.reports, ...readStore(storage)]) if (!seen.has(r.id)) seen.set(r.id, r);
+  return [...seen.values()].map((r, i) => ({ r, i })).sort((a, b) => recency(b.r) - recency(a.r) || a.i - b.i).map((x) => x.r).slice(0, MAX_REPORTS);
 }
 export function saveReport(report, storage = storeOf()) {
   const kept = fit(report);
-  const list = [kept, ...loadReports(storage).filter((x) => x.id !== kept.id)].slice(0, MAX_REPORTS);
+  const list = [kept, ...loadReports(storage).filter((x) => x.id !== kept.id)].sort((a, b) => recency(b) - recency(a)).slice(0, MAX_REPORTS);
   mem.reports = list;
   if (!storage) return { stored: false, reason: 'storage is unavailable', kept: list.length };
   for (let n = list.length; n >= 1; n--) {
@@ -358,10 +404,9 @@ export function saveReport(report, storage = storeOf()) {
   }
   return { stored: false, reason: 'storage is full', kept: list.length };
 }
-export function loadReports(storage = storeOf()) {
-  try { const raw = storage?.getItem(KEY); const list = raw ? JSON.parse(raw) : null; if (Array.isArray(list)) return list.filter((r) => r && r.v === REPORT_VERSION && Array.isArray(r.rounds)).slice(0, MAX_REPORTS); } catch { /* damaged: ignore */ }
-  return mem.reports.slice(0, MAX_REPORTS);
-}
+// what the picker lists, from the same merged list
+const MODE_LABEL = { solo: 'solo', 'shared-phone': 'shared phone', online: 'online table' };
+export const pickerEntries = (storage) => loadReports(storage).map((r) => ({ id: r.id, title: titleOf(r), mode: MODE_LABEL[r.mode] || r.mode, rounds: r.outcome?.roundsResolved ?? 0, savedAt: r.savedAt, trimmed: !!r.trimmed }));
 export const latestReport = (storage) => loadReports(storage)[0] || null;
 export function forgetReports(storage = storeOf()) { mem.reports = []; try { storage?.removeItem(KEY); } catch { /* nothing to forget */ } }
 export const reportsKey = () => KEY;
@@ -378,9 +423,11 @@ function roundLines(r, rd, solo) {
   out.push(`  Moves shown before you committed: ${(rd.shown || []).map((m) => `${m.enemy} ${m.move}${m.damageRange ? ` ${m.damageRange.low}–${m.damageRange.high}` : ''}${m.slam ? ' (slam)' : ''}`).join('; ') || 'none'}`);
   for (const h of rd.heroes) {
     const who = solo ? 'You' : h.name;
-    out.push(`  ${who}: health at round start ${hp(h.healthAtStart)}, before resolution ${hp(h.healthBeforeResolution)}, after ${hp(h.healthAfter)}`);
+    const seen = h.healthBeforeResolutionBasis === 'last observed' ? ' (last observed, may be stale)' : '';
+    out.push(`  ${who}: health at round start ${hp(h.healthAtStart)}, before resolution ${hp(h.healthBeforeResolution)}${seen}, after ${hp(h.healthAfter)}`);
     for (const a of h.actions || []) {
-      if (a.kind === 'potion') out.push(`    drank a potion for ${a.for}: ${a.healthBefore} → ${a.healthAfter} (+${a.healed}), ${plural(a.potionsLeft, 'potion')} left`);
+      if (a.kind === 'potion' && a.inferred) out.push(`    ${plural(a.count || 1, 'potion')} left this hero\u2019s belt (inferred from the belt count; who it was for and how much it healed are unavailable), ${plural(a.potionsLeft, 'potion')} left`);
+      else if (a.kind === 'potion') out.push(`    ${a.thrownBy && a.thrownBy !== a.for ? `${a.thrownBy} threw a potion to ${a.for}` : `drank a potion for ${a.for}`}: ${a.healthBefore} → ${a.healthAfter} (+${a.healed}), ${plural(a.potionsLeft, 'potion')} left`);
       else if (a.kind === 'power') out.push(`    power ${a.name}${a.rolled ? ` rolled ${a.rolled.join('+')}` : ''}${a.gave ? ` (${a.gave})` : ''}${a.for ? ` for ${a.for}` : ''}, ${plural(a.magicCost, 'magic')}`);
       else out.push(`    ${a.kind} (${plural(a.magicCost, 'magic')})`);
     }
@@ -392,15 +439,18 @@ function roundLines(r, rd, solo) {
   for (const a of res.acts) out.push(`  ${a.enemy} ${a.move}: rolled ${a.damageRolled}${a.enemyArmor ? ` (armour ${a.enemyArmor})` : ''}${a.chilled ? ', chilled' : ''}${a.perHero ? `; ${a.perHero.map((p) => `${p.hero} blocked ${p.absorbed}, took ${p.took}`).join('; ')}` : a.tookAfterBlock != null ? `; blocked ${a.absorbedByBlock}, took ${a.tookAfterBlock}` : ''}`);
   const d = rd.derived;
   if (d?.steps) { out.push(`  Order of blows (derived): ${d.steps.map((s) => `${s.order}. ${s.what} → health ${s.healthAfter}`).join('; ')}`); out.push(`  Lethal blow (derived): ${d.lethalBlow ? `${d.lethalBlow.order}. ${d.lethalBlow.what}` : 'none'}`); }
-  if (d?.perHero) for (const [n, v] of Object.entries(d.perHero)) out.push(`  ${n} (derived): ${v.blows.map((s) => `${s.order}. ${s.what} → ${s.healthAfter}`).join('; ') || 'no blows'}${d.lethalBlow?.[n] ? ` — lethal: ${d.lethalBlow[n]}` : ''}`);
+  if (d && !d.steps && !d.perHero && d.lethalBlow && !d.uncertain) out.push(`  Lethal blow (derived): ${typeof d.lethalBlow === 'object' && !d.lethalBlow.what ? Object.entries(d.lethalBlow).map(([n, w]) => `${n}: ${w}`).join('; ') || 'none' : d.lethalBlow.what}`);
+  if (d?.uncertain) out.push(`  Lethal blow: not derived (${d.uncertain})${d.fell?.length ? `; fell this round (captured): ${d.fell.join(', ')}` : ''}`);
+  if (d?.perHero) for (const [n, v] of Object.entries(d.perHero)) out.push(`  ${n} (derived): ${v.blows.map((s) => (s.healthAfter == null ? `${s.order}. ${s.what}` : `${s.order}. ${s.what} → ${s.healthAfter}`)).join('; ') || 'no blows'}${d.lethalBlow?.[n] ? ` — lethal: ${d.lethalBlow[n]}` : ''}`);
   return out;
 }
 export function summaryText(r) {
   const solo = r.mode === 'solo'; const L = [];
   L.push('QUEST DICE BATTLE REPORT', titleOf(r), `Build ${r.build} · ${MODE_WORD[r.mode] || r.mode} · ${r.difficulty} · ${r.outcome.result} after ${plural(r.outcome.roundsResolved, 'round')}`);
-  if (r.trimmed) L.push(`(Trimmed to fit${r.roundsOmitted ? `: the first ${plural(r.roundsOmitted, 'round')} left out` : ''}.)`);
+  if (r.trimmed) L.push(`(Trimmed to fit. Left out: ${(r.omitted && r.omitted.length ? r.omitted : [r.roundsOmitted ? `the first ${plural(r.roundsOmitted, 'round')}` : 'some detail']).join('; ')}.)`);
   L.push('', 'HEROES');
-  for (const h of r.heroes) {
+  for (const h of r.heroes || []) {
+    if (h.detail === 'omitted') { L.push(`  ${h.name}, ${h.cls} level ${h.level}: health ${h.startHealth}/${h.maxHealth} (equipment, powers and perks left out to fit)`); continue; }
     if (h.detail === 'unavailable') { L.push(`  ${h.name}, ${h.classLabel}: health ${h.startHealth}/${h.maxHealth}; equipment, powers and perks unavailable on this phone`); continue; }
     L.push(`  ${h.name}, ${h.classLabel} level ${h.level}: health ${h.startHealth}/${h.maxHealth}, magic ${h.startMagic}, potions ${h.potions.have} (each heals ${h.potions.heals})`);
     if (h.weapons?.length) L.push(`    weapons: ${h.weapons.map((w) => w.name).join(', ')}`);
@@ -410,7 +460,7 @@ export function summaryText(r) {
     if (h.roadEffects?.length) L.push(`    road effects: ${h.roadEffects.map((p) => `${p.name} (${p.text})`).join('; ')}`);
   }
   L.push('', 'ENEMIES');
-  for (const e of r.enemies) L.push(`  ${e.label} (${e.tier}): health ${e.maxHealth}, power die d${e.powerDie}, fight bonus ${e.fightBonus}${e.armor ? `, armour ${e.armor.dice}d${e.armor.sides}` : ''}${e.joinedRound ? `, joined round ${e.joinedRound}` : ''}`);
+  for (const e of r.enemies || []) L.push(`  ${e.label} (${e.tier}): health ${e.maxHealth}${e.powerDie ? `, power die d${e.powerDie}, fight bonus ${e.fightBonus}` : ''}${e.armor ? `, armour ${e.armor.dice}d${e.armor.sides}` : ''}${e.joinedRound ? `, joined round ${e.joinedRound}` : ''}`);
   L.push('');
   for (const rd of r.rounds) L.push(...roundLines(r, rd, solo), '');
   L.push(`OUTCOME: ${r.outcome.result}, ${plural(r.outcome.roundsResolved, 'round')} resolved${r.outcome.enemiesLeft.length ? `; still standing: ${r.outcome.enemiesLeft.join(', ')}` : ''}`);

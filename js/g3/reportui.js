@@ -8,11 +8,11 @@ import * as BR from '../battlereport.js';
 const NOTE = 'Stored on this device only (the last three fights). Shared only when you choose.';
 
 // The quiet row under a result screen: one small button and one honest line. The screen's own actions stay the prominent ones.
-export function reportRow() {
-  const have = BR.loadReports();
+export function reportRow(storage) {
+  const have = BR.loadReports(storage);
   if (!have.length) return null;
   return h('div', { class: 'br-row' },
-    h('button', { class: 'br-open', type: 'button', onclick: () => { sfx.click?.(); openReports(); } }, 'Share battle report'),
+    h('button', { class: 'br-open', type: 'button', onclick: () => { sfx.click?.(); openReports({ storage }); } }, 'Share battle report'),
     h('small', {}, NOTE));
 }
 
@@ -46,16 +46,16 @@ export async function nativeShare(report) {
 export const canShareNatively = () => typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
 // ---- the sheet
-export function openReports({ onClose } = {}) {
-  const list = BR.loadReports(); if (!list.length) { toast('No battle report on this device yet.'); return; }
+export function openReports({ onClose, storage } = {}) {
+  const list = BR.loadReports(storage); const entries = BR.pickerEntries(storage); if (!list.length) { toast('No battle report on this device yet.'); return; }
   let pick = 0;
   const preview = h('pre', { class: 'br-preview', tabindex: '0', 'aria-label': 'Report preview' });
   const choices = h('div', { class: 'br-list', role: 'radiogroup', 'aria-label': 'Which fight' });
   const draw = () => {
     const r = list[pick];
     preview.textContent = BR.summaryText(r).split('\n').slice(0, 14).join('\n') + '\n…';
-    choices.replaceChildren(...list.map((x, i) => h('button', { class: `br-pick ${i === pick ? 'on' : ''}`, type: 'button', role: 'radio', 'aria-checked': String(i === pick), onclick: () => { pick = i; draw(); } },
-      h('b', {}, BR.titleOf(x)), h('small', {}, `${x.mode === 'online' ? 'online' : x.mode === 'shared-phone' ? 'shared phone' : 'solo'} · ${x.outcome.roundsResolved} round${x.outcome.roundsResolved === 1 ? '' : 's'} · ${new Date(x.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`))));
+    choices.replaceChildren(...entries.map((x, i) => h('button', { class: `br-pick ${i === pick ? 'on' : ''}`, type: 'button', role: 'radio', 'aria-checked': String(i === pick), onclick: () => { pick = i; draw(); } },
+      h('b', {}, x.title), h('small', {}, `${x.mode} · ${x.rounds} round${x.rounds === 1 ? '' : 's'}${x.trimmed ? ' · trimmed' : ''} · ${new Date(x.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`))));
   };
   draw();
   const done = (ok, what) => { if (ok === null) return; if (ok) toast(what); else toast('That did not work here. Try another option below.', 'bad'); };
@@ -65,7 +65,7 @@ export function openReports({ onClose } = {}) {
   const sheet = h('div', { class: 'form br-sheet' },
     h('h2', {}, 'Share battle report'),
     h('p', { class: 'muted br-note' }, NOTE),
-    choices, preview,
+    h('div', { class: 'br-main' }, choices, preview),
     h('div', { class: 'br-actions' },
       canShareNatively() ? share : null,
       h('button', { class: 'btn btn-ghost', type: 'button', onclick: act((r) => copyText(BR.exportText(r)), 'Copied. Paste it where Dave can read it.') }, 'Copy'),

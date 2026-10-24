@@ -1,5 +1,5 @@
 // T10: the Share battle report row, sheet and fallbacks on phone-sized screens, with the storage measurements.
-//   node dev/reportshot.mjs     PORT=8135 OUT=docs/team/tasks/T10/shots SIZES=390x664,375x548
+//   node dev/reportshot.mjs     PORT=8135 OUT=docs/team/tasks/T10/screens SIZES=390x664,375x548
 import { chromium } from 'playwright-core'; import fs from 'node:fs';
 const OUT = process.env.OUT || 'docs/ingame/report'; fs.mkdirSync(OUT, { recursive: true });
 const SIZES = (process.env.SIZES || '390x664,375x548').split(',').map((s) => s.split('x').map(Number));
@@ -42,7 +42,7 @@ for (const [w, h] of SIZES) for (const native of [false, true]) {
   await p.evaluate(() => document.querySelector('.br-open').click()); await pump(0.5);
   await p.waitForTimeout(700); await p.screenshot({ path: `${OUT}/sheet_${tag}.png` });
   const sheet = await p.evaluate(() => { const s = document.querySelector('.br-sheet'); const card = document.querySelector('.modal-card'); const r = card.getBoundingClientRect();
-    return { buttons: [...s.querySelectorAll('.br-actions .btn')].map((x) => x.innerText), fits: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth, cardH: Math.round(r.height), vh: innerHeight, previewLines: s.querySelector('.br-preview').innerText.split('\n').length }; });
+    return { buttons: [...s.querySelectorAll('.br-actions .btn')].map((x) => x.innerText), fits: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth, cardH: Math.round(r.height), vh: innerHeight, previewLines: s.querySelector('.br-preview').innerText.split('\n').length, closeInView: (() => { const c = [...s.querySelectorAll('.btn')].find((x) => /close/i.test(x.innerText)).getBoundingClientRect(); const k = card.getBoundingClientRect(); return c.bottom <= Math.min(innerHeight, k.bottom) + 0.5; })(), scrolls: s.scrollHeight > s.clientHeight + 2 }; });
   const exp = {};
   if (native) {
     await p.evaluate(() => [...document.querySelectorAll('.br-actions .btn')].find((x) => /^share$/i.test(x.innerText)).click()); await pump(0.3);
@@ -65,10 +65,22 @@ for (const [w, h] of SIZES) for (const native of [false, true]) {
   const store = await p.evaluate(() => { const raw = localStorage.getItem('questdice.battlereports'); const list = raw ? JSON.parse(raw) : [];
     const heroKey = Object.keys(localStorage).find((k) => k.startsWith('questdice.hero.')); const heroRaw = heroKey ? localStorage.getItem(heroKey) : '';
     return { keyChars: raw?.length || 0, count: list.length, each: list.map((r) => ({ result: r.outcome.result, rounds: r.outcome.roundsResolved, chars: JSON.stringify(r).length })), heroSaveMentionsReport: /battle ?report|rounds":\[\{"n"/i.test(heroRaw), keys: Object.keys(localStorage).filter((k) => /report/i.test(k)) }; });
+  // review: a write that fails (storage full) must not hide the newest fight behind the older saved ones
+  let failCheck = null;
+  if (!native) {
+    await p.evaluate(() => { const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === 'questdice.battlereports') throw new DOMException('full', 'QuotaExceededError'); return orig.call(this, k, v); }; });
+    await fight('defeat', 4);
+    await p.evaluate(() => document.querySelector('.br-open').click()); await p.waitForTimeout(800);
+    failCheck = await p.evaluate(async () => { const BR = await import('./js/battlereport.js'); const stored = JSON.parse(localStorage.getItem('questdice.battlereports') || '[]').map((r) => r.id);
+      const close = [...document.querySelectorAll('.br-sheet .btn')].find((x) => /close/i.test(x.innerText)).getBoundingClientRect(); const card = document.querySelector('.modal-card').getBoundingClientRect();
+      return { closeInView: close.bottom <= Math.min(innerHeight, card.bottom) + 0.5, pickerTitles: [...document.querySelectorAll('.br-pick b')].map((x) => x.innerText), pickerFirstId: BR.loadReports()[0].id, firstIsStored: stored.includes(BR.loadReports()[0].id), storedIds: stored.length, pickerCount: document.querySelectorAll('.br-pick').length }; });
+    await p.screenshot({ path: `${OUT}/picker_after_failed_write_${tag}.png` });
+    await p.evaluate(() => [...document.querySelectorAll('.modal-card .btn')].find((x) => /close/i.test(x.innerText)).click());
+  }
   // a reload keeps them, and the share row is still offered
   await p.reload(); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 120000 });
   const afterReload = await p.evaluate(async () => { const BR = await import('./js/battlereport.js'); return BR.loadReports().length; });
-  log.push({ tag, defeatRow, sheet, exp, store, afterReload });
+  log.push({ tag, defeatRow, sheet, exp, store, failCheck, afterReload });
   await ctx.close();
 }
 fs.writeFileSync(`${OUT}/report.json`, JSON.stringify(log, null, 1)); console.log(JSON.stringify(log, null, 1));
