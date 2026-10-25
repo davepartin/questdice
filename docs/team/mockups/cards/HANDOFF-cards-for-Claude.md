@@ -28,8 +28,8 @@ Approved by Dave:
 Port into the game (current rules):
 1. Add `css/cards17.css` from `t17/card17.css` minus `.eq*`, `.pg`, `.demo17`; keep the container-query units (cqi) so the card scales with its box. Link it in `index.html` next to `css/cards.css` (remember the test that pins the stylesheet link).
 2. Move `dice3d.js` to `js/g3/dice3d.js` (uses the existing `vendor/three`). Render each die once and cache the image by `sides+faces+metal` key; one shared WebGL context; release it after rendering.
-3. Replace the body of `weaponCardHtml(d)` in `js/g3/cards.js` (line ~70) with the card17 markup, fed by the existing `weaponData(inst, money)` (released faces from `weaponFaces`, current size, wear label, current sell value). Keep `aria-label` text.
-4. **Current-rule mode** (what ships now): show only the weapon's current released die row (its real size), the released wear label where the old `.meta` showed it (small chip under the title; Grok can restyle on request), **no covers, no UPGRADE prices**. Bow/Arrows keep the ammo badge (`.ammo`) from current cards.js.
+3. Replace the body of `weaponCardHtml(d)` in `js/g3/cards.js` (line ~70) with the card17 markup, fed by the existing `weaponData(inst, money)` (released faces from `weaponFaces`, current size, current sell value; **no wear**). Keep `aria-label` text.
+4. **Current-rule mode** (what ships now): show only the weapon's current released die row (its real size), **no wear / 'battles left' anywhere (Dave, 25 Oct: weapons no longer wear; the earlier 'wear shown' instruction here is OUTDATED)**, no covers, no UPGRADE prices. Bow/Arrows keep the ammo badge (`.ammo`) from current cards.js.
 5. Art: dagger has all four metals in `t17/art/`. Other weapons use `assets/cards/weapons/<id>-<metal>-512.webp` (bronze/silver/gold exist for axe, bow, dagger, mace, quiver, shield, spear, sword, tower; check). Diamond art exists only for the dagger: fall back to the gold art with the diamond tint and note it.
 6. Where it appears (T05 / T21 asks): reward/spoils card (`scrui.js:296` `cw-big`), tap-to-inspect modal from **online** pack, equipment and store rows (`scrui.js:302` modal, `:307` thumb). Compact rows may stay; tapping a row must open the full card with Equip Left/Right and Sell kept as buttons **outside** the card art.
 
@@ -50,7 +50,7 @@ Sizes / states to check: card width `min(370px, 100vw - 20px)`; at 375x548 the m
 ## 4. Conflicts / notes against T05 and T21
 
 1. **T21 starter rule (both top dice active, Bronze left weapon + Bronze right shield, Ranger Bronze Arrows + Bow).** No visual conflict, but the weapon card must render **Bronze shields and Bronze Bow/Arrows** in current-rule mode: needs shield/bow/quiver Bronze art (present in `assets/cards/weapons/`) and blue-faced shield dice. The Bronze plain-faces look (no icons) is a PROPOSAL; current Bronze faces come from `weaponFaces`.
-2. **Covers and size rows assume T17 rules** (size purchase, no wear), which are not approved for release. In current-rule mode hide covers and other size rows; show wear. Not a design change, just the off state.
+2. **Covers and size rows assume T17 rules** (size purchase), which is not approved for release. In current-rule mode hide covers and other size rows. No wear is shown (Dave, 25 Oct: weapons no longer wear). Not a design change, just the off state.
 3. **Rev 4 wording** (WAGER/CHALLENGE chips, "Wager"/"Payout" rows, Accept/Pass) conflicts with T05's "do not silently adopt unsettled payout wording": ship current wording; keep the mockup wording as a proposal.
 4. **Back title text:** the painted T12 backs say **OBJECTIVE** and **SECRET OBJECTIVE** (singular); the T05 follow-up brief says **OBJECTIVES / SECRET OBJECTIVES**. Repainting is needed if the plural stands. Blocker for Astra/Dave; use the painted backs as they are meanwhile.
 5. **Phone space (T21 Heart / iPhone):** cards must not push actions below the fold on 375x548 with Safari chrome. The height-capped `--w` above handles the weapon modal; objective cards already fit per T05 measurements but need re-measuring with the emblem layout.
@@ -62,7 +62,7 @@ Sizes / states to check: card width `min(370px, 100vw - 20px)`; at 375x548 the m
 - Bronze plain-faces table (rev 14): d10 = -, 1R, 2B, 3R, -, 4R, 2B, 5R, -, 6R; red/blue kept, icons dropped.
 - Diamond found pre-upgraded at a set size, no covers; which sizes; permanence.
 - Sell values 18 (Silver) / 36 (Gold), Diamond borrowing Gold.
-- Size upgrade costs 40 / 80 / 140 (d4→d6, d6→d8, d8→d10) and no-wear.
+- Size upgrade costs 40 / 80 / 140 (d4→d6, d6→d8, d8→d10). (No wear is no longer a proposal: Dave decided it 25 Oct.)
 - Objective wording: WAGER (stake) vs CHALLENGE (no stake), "Wager N gold" / "Payout N gold", Accept / Pass; kind chips (RIVALRY, BRIBE, SECRET GOAL); "Payout" replacing "Reward".
 - Mockup wager/payout amounts (20 / 60 at act 2 etc.) are the game's own Bonus Goal values, shown for illustration only.
 
@@ -73,3 +73,6 @@ Read this handoff. Keep the original painted OBJECTIVE and SECRET OBJECTIVE back
 Existing Mace art is acceptable as a fallback. Do not add Mace to the active roster merely because art exists; preserve current legacy-save support. Metal-specific Mace painting is not a release blocker. Use available current weapon art and honest metal labels; never substitute Dagger artwork for another weapon.
 
 Claude may proceed with current-rule integration as specified here under T05/T21, prioritizing starter/reward/Heart fixes. Keep proposed faces, upgrade controls, no-wear and wager wording off. Verify online routes, legible face numbers and reachable controls; shrinking the whole card must not make its text unreadable. Record performance and Safari limitations. This is handoff/scope approval, not a claim that all 44 rendered fronts or the finished integration have passed visual review.
+
+## 6. Pack view mockup (25 Oct, awaiting Dave)
+`pack/pack.html` (+ `pack.css`, `pack.js`, `shoot-pack.mjs`): Camp > Gear pack as a 2x2 grid of physical card thumbnails (real current faces and sell values via `weaponData`, no wear), empty 4th slot dashed. Tap a card: it scales up from its spot (Web Animations, 380 ms, reduced motion = instant); Equip Left / Equip Right / Sell (with the approved confirm) appear below the card, outside the art; tap the card or the backdrop to shrink it back. Fits 375x548 and 390x844 with no inner scroll. Previews: `png/pack/`.

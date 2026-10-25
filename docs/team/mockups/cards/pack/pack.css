@@ -1,0 +1,36 @@
+/* Pack mockup (Crockpot / Grok Bot, 25 Oct): the pack as physical card thumbnails; tap to lift a card to full size. No wear (Dave). */
+:root{--bg:#14110e;--ink:#efe6d4;--dim:#a8977c;--gold:#e0b25a;--line:#ffffff1a}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.scr{height:100svh;display:flex;flex-direction:column;padding:12px 14px 14px;box-sizing:border-box;overflow:hidden}
+.hd{display:flex;align-items:baseline;justify-content:space-between;padding:2px 2px 10px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.hd h1{margin:0;font:800 17px/1 Cinzel,serif;letter-spacing:.06em}.hd span{font:600 12px/1 Inter;color:var(--dim);letter-spacing:.08em}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;place-items:center}
+.cell{height:100%;width:100%;display:grid;place-items:center;min-height:0}
+.slot{--w:min(100%, calc((100svh - 106px) / 2 * 720 / 1052));width:var(--w);aspect-ratio:720/1052;position:relative;border:0;padding:0;background:none;cursor:pointer}
+.slot.empty{border:2px dashed #a8977c55;border-radius:10px;display:grid;place-items:center;color:var(--dim);font:700 11px/1.3 Inter;letter-spacing:.14em;text-align:center;cursor:default;box-sizing:border-box}
+.slot.lifted{visibility:hidden}
+/* the card itself (frame from T17 rev 14) */
+.pc{position:absolute;inset:0;container-type:inline-size;--mt:linear-gradient(180deg,#fff,#c9d1dd 50%,#7d8796);filter:drop-shadow(0 6px 10px #000a)}
+.pc.metal-gold{--mt:linear-gradient(180deg,#fff4c8,#f0c45a 50%,#a8761c)}.pc.metal-bronze{--mt:linear-gradient(180deg,#ffe2c0,#c98a52 50%,#7a4a22)}
+.pc>*{position:absolute}
+.pc .fr{inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.pc .art{left:13.4%;right:13.4%;top:9.4%;height:26%;overflow:hidden;background:radial-gradient(70% 80% at 50% 45%,#3a2c20,#120d09)}
+.pc .art img{position:absolute;left:50%;top:50%;height:165%;transform:translate(-50%,-50%) rotate(-55deg);filter:drop-shadow(0 2cqi 1.6cqi #000c)}
+.pc .ttl{left:14%;right:14%;top:36.7%;height:5%;display:flex;align-items:center;justify-content:center;z-index:2}
+.pc .ttl span{font:800 6.4cqi/1.25 Cinzel,serif;white-space:nowrap;background:var(--mt);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 .3cqi 0 #000)}
+.pc .dice{left:15.4%;right:15.2%;top:45%;bottom:10%;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5cqi}
+.pc .sz{font:800 4.4cqi/1 Oxanium,sans-serif;color:#3a2410;letter-spacing:.04em}
+.pc .dz{display:flex;flex-wrap:wrap;justify-content:center;gap:.8cqi 1cqi;width:100%}
+.pc .dz img{width:var(--d);aspect-ratio:1;filter:drop-shadow(0 .8cqi .6cqi #2a160699)}
+/* the lifted view */
+.veil{position:fixed;inset:0;background:#0b0907e6;opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}.veil.on{opacity:1;pointer-events:auto}
+.big{position:fixed;z-index:6;aspect-ratio:720/1052;cursor:pointer;transform-origin:0 0}
+.acts{position:fixed;left:14px;right:14px;bottom:14px;z-index:7;display:grid;grid-template-columns:1fr 1fr;gap:8px;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none}
+.acts.on{opacity:1;transform:none;pointer-events:auto}
+.acts button{height:44px;border-radius:10px;border:0;font:800 13px/1 Inter;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.acts .eq{background:#efe6d4;color:#1a140e}.acts .sell{grid-column:1/-1;background:transparent;color:#ff8a80;box-shadow:inset 0 0 0 1.5px #ff8a8088}
+.acts .sell b{color:var(--gold)}
+.ask{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:#0008}.ask .box{width:min(320px,86vw);background:#1e1914;border-radius:14px;padding:18px;box-shadow:0 0 0 1px #ffffff22}
+.ask b{display:block;font:700 16px/1.3 Inter}.ask small{display:block;color:var(--dim);margin:6px 0 14px}.ask .bt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ask button{height:42px;border-radius:9px;border:0;font:800 13px Inter}.ask .no{background:#efe6d4}.ask .yes{background:#b3261e;color:#fff}
+@media (prefers-reduced-motion:reduce){.veil,.acts{transition:none}}
