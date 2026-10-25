@@ -126,7 +126,7 @@ export function weaponCardHtml(d) {
 function weaponCardSized(d) {
   const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.rows.filter((r) => r.owned).flatMap((r) => r.faces)); const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
   return (`<article class="qc17 qc-weapon sized metal-${d.metal.toLowerCase()}" data-kind="weapon" data-size="${d.size}" aria-label="${esc(`${name}, d${d.size}`)}">
-    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
+    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell est" title="Provisional: the sale value under Dave's upgrade rule is not final"><small>${esc(d.moneyLabel)} · est.</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
     <img class="fr17" src="${ART}frame-t17.webp" alt="">
     <div class="title17"><span style="font-size:${tf}cqi">${esc(name)}</span></div>
     <div class="dice17 rows">${d.rows.map(rowHtml).join('')}</div>
@@ -161,6 +161,7 @@ function wireSizes(card, d, { onBuy } = {}) {
   const say = (t, text) => { card.querySelector('.toast17')?.remove(); const m = document.createElement('div'); m.className = 'toast17'; m.setAttribute('role', 'status'); m.textContent = text; t.closest('.row').append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };
   const wiggle = (t) => { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope'); };
   const unlock = (t) => { // the cover slides away, then the row's new dice settle in
+    card.querySelector('.toast17')?.remove(); clearTimeout(toastT); // a refusal from an earlier tap must not outlive a successful buy
     const row = t.closest('.row'); const size = +row.dataset.size; const r = d.rows.find((x) => x.size === size);
     row.querySelector('.dz').replaceChildren(...[...r.faces.slice(r.from).map((f, i) => { const tpl = document.createElement('template'); tpl.innerHTML = figureOf(f, r.from + i); return tpl.content.firstElementChild; })]);
     t.classList.add('gone'); row.classList.add('reveal'); hydrateDice(row); card.dataset.size = String(size);

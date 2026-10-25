@@ -61,3 +61,5 @@ Q2 and Q4-Q6 are not answered here.
 - Whether "choose your start" (A/B/C) is offered at hero creation or the start stays fixed to A.
 
 No numbers changed.
+
+**Dave decision (25 Oct, 6:32 PM CT, recorded by Crockpot):** no weapon wear in the live game or the previews. Weapons last forever. Starters and loadouts assume no wear. Claude implements; details are in T17.md.
