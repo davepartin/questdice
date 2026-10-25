@@ -4,6 +4,7 @@
 // (data.js FACE_PAY) and covers priced from the game's CURRENT steps (MIND_STEPS, STRENGTH_STEPS, SPEED_STEPS, SPECIAL_STEPS). No wear anywhere.
 import { card17, nested } from '../t17/card17.js';
 import { dieImage } from '../t17/dice3d.js';
+import { PICK } from '../helmet/heads.js'; // Dave's head icon pick (25 Oct); live faces.js still has the old helmet until Claude swaps it
 // v2 tilt (Dave Oct 25): lower camera on each die + whole tray leaned toward the seated player. ?tilt=0 shows the old flat board.
 const TILT = new URLSearchParams(location.search).get('tilt') === '0' ? { el: 0.72 } : { el: 0.42 };
 if (TILT.el !== 0.72) document.documentElement.classList.add('tilted');
@@ -28,7 +29,8 @@ const SLOTS = [
 ];
 const iconArt = (name, flip) => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
   const gr = g.createLinearGradient(0, 40, 0, 470); gr.addColorStop(0, '#ffe2b0'); gr.addColorStop(.5, '#d39a52'); gr.addColorStop(1, '#7a4a1e'); g.fillStyle = gr;
-  g.shadowColor = '#000a'; g.shadowBlur = 18; g.shadowOffsetY = 10; drawIcon(g, name, 256, 256, 420, { flip }); return c.toDataURL(); };
+  g.shadowColor = '#000a'; g.shadowBlur = 18; g.shadowOffsetY = 10;
+  if (name === 'helmet') { g.translate(46, 46); g.scale(4.2, 4.2); g.fill(new Path2D(PICK), 'evenodd'); } else drawIcon(g, name, 256, 256, 420, { flip }); return c.toDataURL(); };
 function gearCard(s) {
   const g = s.g; let cur = g.size; const sizes = g.heart ? [6] : SIZES.filter((z) => z <= g.max);
   const facesOf = (z) => g.heart ? HEART : Array.from({ length: z }, (_, i) => gearFace(i + 1));
@@ -53,6 +55,12 @@ function weaponCard(s) {
 }
 const fitTitle = (c) => { const t = c.querySelector('.title17 span'), box = c.querySelector('.title17'); let f = 7; t.style.fontSize = f + 'cqi'; while (t.scrollWidth > box.clientWidth && f > 4) { f -= 0.2; t.style.fontSize = f + 'cqi'; } };
 const board = document.getElementById('board'); const big = document.getElementById('big'); const veil = document.getElementById('veil'); const acts = document.getElementById('acts');
+{ // cover the old carved helmet baked into board-icons.webp with Dave's pick (mockup overlay)
+  const c = document.createElement('canvas'); c.width = c.height = 240; const g = c.getContext('2d'); const st = g.createRadialGradient(120, 100, 8, 120, 120, 118);
+  st.addColorStop(0, '#4a423b'); st.addColorStop(1, '#2c2622'); g.fillStyle = st; g.beginPath(); g.arc(120, 120, 118, 0, 7); g.fill();
+  g.translate(64, 62); g.scale(1.12, 1.12); g.save(); g.translate(0, 2.5); g.fillStyle = '#120c08cc'; g.fill(new Path2D(PICK), 'evenodd'); g.restore();
+  const gr = g.createLinearGradient(0, 0, 0, 100); gr.addColorStop(0, '#d9a874'); gr.addColorStop(1, '#a8703f'); g.fillStyle = gr; g.fill(new Path2D(PICK), 'evenodd');
+  c.className = 'slotfix'; Object.assign(c.style, { position: 'absolute', left: '50%', top: '21%', width: '15%', transform: 'translate(-50%,-50%)', borderRadius: '50%' }); document.getElementById('board').append(c); }
 for (const s of SLOTS) {
   if (s.locked) { const l = document.createElement('div'); l.className = 'lockd'; Object.assign(l.style, { left: s.x + '%', top: s.y + '%' }); l.innerHTML = `LOCKED<br><small>unlock · ${s.locked} gold</small>`; board.append(l); continue; }
   let faces, sides, top;
