@@ -1,0 +1,37 @@
+/* Weapon card (T05, Grok's T17 rev 14 in current-rule mode): sized by --w, everything inside scales with cqi. Draws only live game data (js/g3/cards.js).
+   No dice covers, upgrade rows or equipment-slot square: size purchase is not a released rule. */
+.qc17{--w:min(370px,calc(100vw - 20px));--mt:linear-gradient(180deg,#fff,#c9d1dd 50%,#7d8796);position:relative;width:var(--w);aspect-ratio:720/1052;container-type:inline-size;font-family:'Oxanium',sans-serif;filter:drop-shadow(0 10px 18px #000b)}
+.qc17.metal-gold{--mt:linear-gradient(180deg,#fff4c8,#f0c45a 50%,#a8761c)}.qc17.metal-bronze{--mt:linear-gradient(180deg,#ffe2c0,#c98a52 50%,#7a4a22)}.qc17.metal-diamond{--mt:linear-gradient(180deg,#fff,#cfeaff 45%,#8fb6d8)}
+.qc17.metal-legendary{--mt:linear-gradient(180deg,#ffe9f6,#e3b8f5 50%,#9a64c8)}
+.qc17>*{position:absolute}
+.fr17{left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.qc17.metal-bronze .fr17{filter:sepia(.55) saturate(1.5) hue-rotate(-10deg) brightness(.95)}
+.qc17.metal-gold .fr17{filter:sepia(.6) saturate(2.1) hue-rotate(4deg) brightness(1.05)}
+.qc17.metal-diamond .fr17{filter:saturate(.7) hue-rotate(185deg) brightness(1.08) sepia(.1)}
+.art17{left:13.4%;right:13.4%;top:9.4%;height:26%;overflow:hidden;z-index:2;background:#1a120c}
+.art17 .art9{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 48%}
+.art17 .win{position:absolute;inset:0;width:auto;height:auto;left:0;top:0;border-radius:0;overflow:hidden}
+.art17 .win .art{position:absolute;width:auto;max-width:none;height:122%;top:-8%;left:50%;transform:translateX(-50%);filter:drop-shadow(0 12px 10px #000b)}
+.art17 .ph17{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:#cbb894;font:700 4cqi 'Oxanium',sans-serif}.art17 .ph17 small{font-size:2.6cqi;opacity:.8}
+.qc17 .sell{position:absolute;right:1.6cqi;bottom:1.6cqi;height:4.8cqi;display:flex;align-items:center;gap:1.2cqi;padding:0 2.4cqi 0 2cqi;border-radius:99px;background:linear-gradient(180deg,#1c1712f2,#0b0907f2);
+ box-shadow:inset 0 0 0 .3cqi #b8a07a88,0 .4cqi 1cqi #000b;font:800 2.9cqi/1 'Oxanium',sans-serif;letter-spacing:.1em;color:#eadfca;text-transform:uppercase}
+.qc17 .sell small{font-size:2.4cqi;color:#cbb894}.qc17 .sell b{font-size:3.6cqi;color:#ffd98a}
+.qc17 .coin{width:3cqi;height:3cqi;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#9a6a06);box-shadow:inset 0 0 0 .3cqi #7a5204;display:inline-block;flex:none}
+.qc17 .ammo{position:absolute;left:1.6cqi;bottom:1.6cqi;display:flex;align-items:center;gap:.8cqi;height:4.8cqi;padding:0 2.2cqi;border-radius:99px;background:#0b0906d9;border:1px solid currentColor;font:800 3cqi 'Oxanium',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.qc17 .ammo svg{width:3.4cqi;height:3.4cqi;color:inherit!important}
+.title17{left:16%;right:16%;top:36.7%;height:5%;display:flex;align-items:center;justify-content:center;z-index:2;transform:translateY(1.35cqi)}
+.title17 span{font:700 6.4cqi/1.25 'Cormorant Garamond',serif;letter-spacing:.01em;white-space:nowrap;padding:0 1cqi;background:var(--mt);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 .3cqi 0 #000)}
+.dice17{left:15.4%;right:15.2%;top:44.4%;bottom:9.6%;border-radius:1.6cqi;padding:1.2cqi 1cqi;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqi;z-index:2;
+ background:radial-gradient(120% 90% at 50% 40%,#5a3a1410,#3a220a30);box-shadow:inset 0 .5cqi 1.2cqi #2a160677,inset 0 -.3cqi 0 #fff4e033,0 .3cqi 0 #fff8e855}
+.szl{display:flex;align-items:baseline;gap:1.4cqi;font:800 5cqi/1 'Oxanium',sans-serif;color:#3a2410}.szl small{font-size:2.4cqi;letter-spacing:.16em;text-transform:uppercase;color:#6a4a22}
+.szl em{font:700 2.6cqi/1 'Oxanium',sans-serif;font-style:normal;letter-spacing:.06em;color:#6a4a22;margin-left:1cqi}
+.dz{display:grid;grid-template-columns:repeat(var(--cols,4),var(--dw,15.6cqi));justify-content:center;gap:1.8cqi 1.6cqi}
+.d17{position:relative;margin:0;width:var(--dw,15.6cqi);aspect-ratio:1}
+.d17 img{width:100%;height:100%;display:block;filter:drop-shadow(0 .8cqi .6cqi #2a160699)}
+.d17 .ph17t{position:absolute;inset:8%;display:grid;place-items:center;border-radius:22%;font:800 5cqi/1 'Oxanium',sans-serif;color:#fff6e6;background:linear-gradient(160deg,#d3202a,#7a0a10);box-shadow:inset 0 0 0 .35cqi #fff3,0 .6cqi .6cqi #2a160699}
+.d17.b .ph17t{background:linear-gradient(160deg,#2a6ae0,#0e3490)}
+.pb17{position:absolute;width:7%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:4;filter:drop-shadow(0 .5cqi .6cqi #000c)}.pb17 svg{display:block;width:100%;height:100%}
+/* where the card sits */
+.cw-spoil .qc17{--w:100%;cursor:pointer}
+.cw-big .qc17{--w:min(88vw,340px)}
+.cw-modal .cw-big{width:100%;display:grid;justify-items:center}.cw-modal .cw-big .qc17{--w:min(100%,330px,calc((100svh - 190px) * 720 / 1052))}

@@ -63,7 +63,7 @@ try {
   const spoils = await waiterPhone.page.evaluate(() => { const t = [...document.querySelectorAll('.loot-row [role=button]')].filter((e) => e.offsetParent); return { n: t.length, hint: !!document.querySelector('.loot-row .cw-hint') }; });
   check('the online spoils picker lists cards that open large (with a hint saying so)', spoils.n > 0 && spoils.hint, JSON.stringify(spoils));
   await waiterPhone.page.evaluate(() => [...document.querySelectorAll('.loot-row [role=button]')].find((e) => e.offsetParent)?.click()); await sleep(500);
-  const big = await waiterPhone.page.evaluate(() => { const m = document.querySelector('.cw-modal .cw-big'); const c = [...document.querySelectorAll('.cw-modal button')].find((x) => /close/i.test(x.textContent)); const q = c?.getBoundingClientRect(); return { open: !!m, faces: document.querySelectorAll('.cw-modal .f13').length, closeBottom: q ? Math.round(q.bottom) : null, vh: innerHeight }; });
+  const big = await waiterPhone.page.evaluate(() => { const m = document.querySelector('.cw-modal .cw-big'); const c = [...document.querySelectorAll('.cw-modal button')].find((x) => /close/i.test(x.textContent)); const q = c?.getBoundingClientRect(); return { open: !!m, faces: document.querySelectorAll('.cw-modal .d17').length, closeBottom: q ? Math.round(q.bottom) : null, vh: innerHeight }; });
   check('tapping a spoils card online opens the full card with its faces, and Close is on screen', big.open && big.faces >= 4 && big.closeBottom != null && big.closeBottom <= big.vh, JSON.stringify(big));
   await waiterPhone.shot(`${OUT}/online-${label}-spoils-card.png`);
   await waiterPhone.page.evaluate(() => [...document.querySelectorAll('.cw-modal button')].find((x) => /close/i.test(x.textContent))?.click()); await sleep(400);

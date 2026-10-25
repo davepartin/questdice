@@ -67,16 +67,71 @@ const metalClass = (d) => `metal-${d.metal.toLowerCase()}`;
 
 // ---- the cards
 const LABEL = { weapon: 'Weapon', objective: 'Objective', 'secret-objective': 'Secret Objective', wager: 'Secret Objective, offered bribe' };
-export function weaponCardHtml(d) {
-  return (`<article class="qc qc-weapon t13 ${metalClass(d)}" data-kind="weapon" aria-label="${esc(`${d.metal} ${d.name}, d${d.size}${d.wear ? ', ' + d.wear : ''}`)}">
-    <div class="win scene-forge">${weaponArt(d)}</div><img class="fr" src="${ART}front-frame.webp" alt="">${corners(d.accents)}
-    <div class="name"><span>${esc(d.name)}</span></div>
-    <div class="meta"><span class="m-${d.metal.toLowerCase()}">${esc(d.metal)}</span><span>d${d.size}</span>${d.wear ? `<span>${esc(d.wear)}</span>` : ''}</div>
-    <div class="faces13 n${d.faces.length}">${d.faces.map(face).join('')}</div>
-    ${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}
-    ${d.money ? `<div class="gp"><small>${esc(d.moneyLabel)}</small>${ico('gold')}${d.money}</div>` : ''}</article>`);
+// The weapon card (T05, Grok's T17 rev 14 look in current-rule mode): painted art on top, the title, one tray holding every face of the weapon's REAL die
+// as a photographed die, corner badges for the bonus types it carries. Words and numbers are the game's own data, so a price, a face or a wear rule that
+// changes shows up here by itself. No upgrade covers and no size rows: size purchase is not a released rule. The gold figure is a label, not a button
+// (selling and equipping stay on the screens that own them). The dice are drawn by js/g3/dice3d.js (WebGL), on demand, cached by the faces that make them.
+const SOCK = [[8.75, 5.8], [90.97, 5.8], [8.47, 93.3], [91.39, 93.35]]; // the badge sockets of frame-t17.webp, % of width / height
+const BADGE_METAL = { Bronze: ['#ffe2c0', '#c98a52', '#7a4a22', '#3a2010'], Silver: ['#ffffff', '#c9d1dd', '#7d8796', '#2c323c'], Gold: ['#fff4c8', '#f0c45a', '#a8761c', '#4a3006'], Diamond: ['#ffffff', '#cfeaff', '#8fb6d8', '#2a3a4c'] };
+const ENAMEL = { pierce: ['#ffb45a', '#e86a0a'], heal: ['#7af0a8', '#14a850'], magic: ['#d4a4ff', '#8a3ee8'], gold: ['#ffe27a', '#d8960a'], atk: ['#ff7a7a', '#c81e28'], block: ['#7ac4ff', '#1a6ad8'], star: ['#ffeaa8', '#c8a040'] };
+let badgeUid = 0;
+export function badge(kind, metal) {
+  const [m0, m1, m2, m3] = BADGE_METAL[metal] || BADGE_METAL.Silver; const [e0, e1] = ENAMEL[kind] || ENAMEL.star; const p = (SYM[kind] || SYM.star).d; const i = ++badgeUid;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs>
+<linearGradient id="bR${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${m0}"/><stop offset=".35" stop-color="${m1}"/><stop offset=".7" stop-color="${m2}"/><stop offset="1" stop-color="${m3}"/></linearGradient>
+<linearGradient id="bF${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${m2}"/><stop offset=".55" stop-color="${m1}"/><stop offset="1" stop-color="${m0}"/></linearGradient>
+<radialGradient id="bD${i}" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#3c3732"/><stop offset=".6" stop-color="#16130f"/><stop offset="1" stop-color="#050404"/></radialGradient>
+<linearGradient id="bE${i}" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${e0}"/><stop offset="1" stop-color="${e1}"/></linearGradient></defs>
+<circle cx="50" cy="50" r="49" fill="url(#bR${i})"/><circle cx="50" cy="50" r="42.5" fill="url(#bF${i})"/><circle cx="50" cy="50" r="38" fill="url(#bD${i})"/>
+<g transform="translate(50 50) scale(2.4) translate(-12 -12)"><path d="${p}" fill="url(#bR${i})" stroke="url(#bR${i})" stroke-width="1.1" stroke-linejoin="round"/>
+<path d="${p}" fill="url(#bE${i})" transform="translate(12 12) scale(.86) translate(-12 -12)"/></g><circle cx="50" cy="50" r="45.6" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="1"/></svg>`;
 }
-export const weaponCardEl = (d) => el(weaponCardHtml(d));
+const BADGE_ORDER = ['atk', 'block', 'gold', 'heal', 'pierce', 'magic'];
+const badgeKinds = (faces) => { const has = new Set(faces.flatMap((f) => [...(f.plus ? [f.c === 'b' ? 'block' : 'atk'] : []), ...Object.entries(f.fx || {}).filter(([, n]) => n > 0).map(([k]) => (k === 'loot' ? 'gold' : k))])); return BADGE_ORDER.filter((k) => has.has(k)).slice(0, 4); };
+const dieIcons = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(4, n | 0)).fill(k === 'loot' ? 'gold' : k)), ...(f.arrow ? [`arrow_${f.arrow}`] : [])];
+export const dieFaces = (faces) => faces.map((f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: dieIcons(f) }));
+const DIE_SIDES = new Set([4, 6, 8, 10]);
+const TRAY = { 4: { cols: 4, w: 16 }, 6: { cols: 3, w: 18 }, 8: { cols: 4, w: 15.6 }, 10: { cols: 4, w: 15.6 } }; // dice per row and each die's width (cqi)
+const faceWords = (f) => `${f.arrow ? `${f.arrow} arrowhead, ` : ''}${f.c === 'b' ? 'block' : 'attack'} +${f.v}${(f.plus || Object.keys(f.fx || {}).length) ? ', with bonus symbols' : ''}`;
+function weaponArt17(d) {
+  const key = artKey(d); const m = key ? bakedMetal(d, key) : '';
+  if (key === 'dagger' && ['bronze', 'silver', 'gold'].includes(m)) return `<img class="art9" src="${WART}dagger-${m}-wide.webp" alt="${esc(d.name)}">`;
+  if (!key) return `<div class="ph17">${esc(d.name)}<small>art to come</small></div>`;
+  return `<div class="win scene-forge"><img class="art${m ? '' : ' tint-' + d.metal.toLowerCase()}" src="${WART}${key}-${m ? m + '-' : ''}512.webp" alt="${esc(d.name)}"></div>`;
+}
+export function weaponCardHtml(d) {
+  const n = d.faces.length; const tray = TRAY[n] || TRAY[4]; const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.faces); const df = JSON.stringify(dieFaces(d.faces));
+  const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
+  return (`<article class="qc17 qc-weapon metal-${d.metal.toLowerCase()}" data-kind="weapon" aria-label="${esc(`${name}, d${d.size}${d.wear ? ', ' + d.wear : ''}`)}">
+    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
+    <img class="fr17" src="${ART}frame-t17.webp" alt="">
+    <div class="title17"><span style="font-size:${tf}cqi">${esc(name)}</span></div>
+    <div class="dice17"><div class="szl"><small>Die</small>d${d.size}${d.wear ? `<em>${esc(d.wear)}</em>` : ''}</div>
+      <div class="dz" data-sides="${DIE_SIDES.has(n) ? n : 0}" data-faces="${esc(df)}" style="--cols:${tray.cols};--dw:${tray.w}cqi">${d.faces.map((f, i) => `<figure class="d17 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" role="img" aria-label="face ${i + 1}: ${faceWords(f)}"><span class="ph17t">+${f.v}</span></figure>`).join('')}</div></div>
+    ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[i][1]}%">${badge(k, d.metal)}</span>`).join('')}</article>`);
+}
+// Photographed dice: built on demand (WebGL, three.js) and cached by the faces; a card shows plain number tiles until its dice are ready, and keeps them if
+// graphics are unavailable. One job at a time, a breath between jobs, so a screen with several cards stays responsive.
+const DIE_CACHE = new Map(); let dieQueue = Promise.resolve(); let dieMod = null;
+const SYM_ALL = { ...SYM };
+const placeDice = (dz, urls) => { [...dz.children].forEach((fg, i) => { if (!urls[i]) return; const img = new Image(); img.alt = ''; img.decoding = 'async'; img.src = urls[i]; fg.replaceChildren(img); fg.classList.add('got'); }); };
+export function hydrateDice(root) {
+  for (const dz of root.querySelectorAll('.dz[data-faces]:not([data-done])')) {
+    dz.dataset.done = '1'; const key = dz.dataset.faces; const sides = +dz.dataset.sides; if (!sides) continue;
+    if (DIE_CACHE.has(key)) { placeDice(dz, DIE_CACHE.get(key)); continue; }
+    dieQueue = dieQueue.then(async () => {
+      try {
+        if (!DIE_CACHE.has(key)) {
+          dieMod ||= await import('./dice3d.js'); dieMod.setSymbols(SYM_ALL);
+          await new Promise((r) => setTimeout(r, 24)); DIE_CACHE.set(key, dieMod.dieSet(sides, JSON.parse(key)));
+          if (DIE_CACHE.size > 80) DIE_CACHE.delete(DIE_CACHE.keys().next().value);
+        }
+        placeDice(dz, DIE_CACHE.get(key));
+      } catch { /* no WebGL here: the number tiles stay */ }
+    });
+  }
+}
+export const weaponCardEl = (d) => { const e = el(weaponCardHtml(d)); hydrateDice(e); return e; };
 // Objective data from what the game already holds. A Bonus Goal view (secrets.js bonusView) has stake and gold; a secret card's view
 // (cardView) has its chips and, for an offer, structured terms. Condition, Stake and Reward are always separate, labelled blocks.
 export function objectiveFromView(v) {

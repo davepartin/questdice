@@ -19,52 +19,18 @@
    }
   ],
   "big": {
-   "top": 58,
-   "bottom": 466,
+   "top": 67,
+   "bottom": 425,
    "width": 306,
-   "closeBottom": 523,
+   "closeBottom": 481,
    "vh": 548,
    "faces": 6
   },
   "shelf": [
-   "Gold Dagger, d4. Show the full card",
+   "Gold Spear, d4. Show the full card",
    "Bronze Spear, d4. Show the full card",
-   "Silver Tower Shield, d4. Show the full card",
-   "Silver Spear, d4. Show the full card"
-  ]
- },
- {
-  "size": "390x664",
-  "rows": [
-   {
-    "label": "Silver Sword, d6. Show the full card",
-    "h": 79,
-    "vis": true
-   },
-   {
-    "label": "Gold Axe, d8. Show the full card",
-    "h": 79,
-    "vis": true
-   },
-   {
-    "label": "Silver Arrows, d10. Show the full card",
-    "h": 103,
-    "vis": true
-   }
-  ],
-  "big": {
-   "top": 90,
-   "bottom": 517,
-   "width": 321,
-   "closeBottom": 574,
-   "vh": 664,
-   "faces": 6
-  },
-  "shelf": [
-   "Gold Dagger, d4. Show the full card",
-   "Bronze Dagger, d4. Show the full card",
-   "Silver Spear, d4. Show the full card",
-   "Silver Dagger, d4. Show the full card"
+   "Silver Dagger, d4. Show the full card",
+   "Silver Sword, d4. Show the full card"
   ]
  }
 ]

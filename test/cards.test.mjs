@@ -19,15 +19,16 @@ test('a weapon card is the weapon\'s own data: faces, die, metal, wear and the p
     assert.equal(d.size, E.weaponSize(w)); assert.equal(d.metal, D.tierName(w)); assert.equal(d.wear, E.wearLabel(w));
     assert.equal(d.sell, E.sellValue(w)); assert.equal(d.money, E.sellValue(w)); assert.equal(d.moneyLabel, 'Sell');
     const html = CW.weaponCardHtml(d);
-    assert.equal((html.match(/class="f13 /g) || []).length, d.faces.length, 'one tile for every face');
+    assert.equal((html.match(/class="d17 /g) || []).length, d.faces.length, 'one die for every face');
+    assert.equal(JSON.parse(html.match(/data-faces="([^"]*)"/)[1].replace(/&quot;/g, '"')).length, d.faces.length, 'the dice are drawn from the weapon\'s own faces');
     assert.ok(html.includes(`d${d.size}`) && html.includes(d.metal) && html.includes(`Sell</small>`));
   }
 });
 
 test('a d10 card has ten face tiles and a strip of ten; a d4 has four', () => {
   const d10 = CW.weaponData(inst('dagger', 1, 10)); const d4 = CW.weaponData(inst('dagger', 0, 4));
-  assert.equal(d10.faces.length, 10); assert.match(CW.weaponCardHtml(d10), /faces13 n10/); assert.equal((CW.strip(d10).match(/<i /g) || []).length, 10);
-  assert.equal(d4.faces.length, 4); assert.match(CW.weaponCardHtml(d4), /faces13 n4/);
+  assert.equal(d10.faces.length, 10); assert.equal((CW.weaponCardHtml(d10).match(/class="d17 /g) || []).length, 10); assert.equal((CW.strip(d10).match(/<i /g) || []).length, 10);
+  assert.equal(d4.faces.length, 4); assert.equal((CW.weaponCardHtml(d4).match(/class="d17 /g) || []).length, 4);
 });
 
 test('the store label shows what the shelf charges, and the price is only ever the number it is given', () => {
@@ -44,7 +45,7 @@ test('Arrows show the selected ammunition and the matching arrowhead faces, with
     assert.equal(d.ammo, am); assert.equal(d.ammoName, D.WEAPONS2.ammo[am]);
     const html = CW.weaponCardHtml(d); assert.match(html, new RegExp(`class="ammo am-${am}"`)); assert.ok(html.includes(D.WEAPONS2.ammo[am]));
     const heads = d.faces.filter((f) => f.arrow); if (am !== 'normal') assert.ok(heads.length > 0, `${am} arrows have arrowhead faces`); assert.ok(heads.every((f) => f.arrow === am), `every arrowhead face is ${am}`);
-    assert.equal((html.match(new RegExp(`class="ah am-${am}"`, 'g')) || []).length, heads.length, 'the arrowhead mark follows the ammunition');
+    assert.equal((html.match(new RegExp(`arrow_${am}`, 'g')) || []).length, heads.length, 'the arrowhead mark on the dice follows the ammunition');
     if (heads.length) assert.match(CW.strip(d), new RegExp(`am-${am}`)); assert.match(CW.chips(d), new RegExp(`am-${am}`));
   }
   const bare = inst('quiver', 0, 6); delete bare.ammo;
@@ -132,4 +133,19 @@ test('objective fronts: every Objective and Secret Objective has a focus emblem 
   const sec = CW.objectiveCardHtml('secret-objective', CW.secretData('thrice', 2)); assert.match(sec, /class="chip">Secret Objective</); assert.match(sec, /front-secret-objective-frame/);
   const w = CW.objectiveCardHtml('wager', { id: 'slacker', name: 'x', rule: 'y', terms: S.rewardTerms({ act: 2 }, { id: 'slacker', mode: 'offer' }) }); assert.match(w, /front-secret-objective-frame/, 'an offered bribe is a Secret Objective, not a third deck');
   assert.doesNotMatch(obj + sec + w, /WAGER|CHALLENGE|Payout/, 'the unsettled payout wording stays out');
+});
+
+test('the weapon card carries no upgrade covers or size rows (size purchase is not a released rule), draws every face as a die, and shows wear while the game has it', () => {
+  const w = inst('axe', 2, 8); const d = CW.weaponData(w); const html = CW.weaponCardHtml(d);
+  assert.doesNotMatch(html, /UPGRADE|cover|class="row |found17/i);
+  assert.equal(d.wear, E.wearLabel(w)); if (d.wear) assert.ok(html.includes(d.wear), 'the released wear label is shown'); else assert.ok(!/battles? left/.test(html));
+  assert.match(html, /class="dz" data-sides="8"/); assert.match(html, /frame-t17\.webp/);
+  for (const [id, c] of [['shield', 'b'], ['tower', 'b']]) assert.ok(CW.dieFaces(CW.weaponData(inst(id, 0)).faces).some((f) => f.c === c), `${id} has block-coloured dice`);
+});
+
+test('index.html links the weapon card stylesheet and every die and card asset exists', async () => {
+  const { readFileSync, existsSync } = await import('node:fs'); const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<link rel="stylesheet" href="css\/cards17\.css\?v=[A-Za-z0-9]+">/);
+  assert.ok(existsSync(new URL('../assets/cards/frame-t17.webp', import.meta.url)) && existsSync(new URL('../js/g3/dice3d.js', import.meta.url)));
+  for (const m of ['bronze', 'silver', 'gold']) assert.ok(existsSync(new URL(`../assets/cards/weapons/dagger-${m}-wide.webp`, import.meta.url)));
 });

@@ -22,7 +22,7 @@
   {
    "name": "the phone whose live feed is stalled still learns of the victory (locked-in fallback)",
    "ok": true,
-   "detail": "15 ms"
+   "detail": "11 ms"
   },
   {
    "name": "there are spoils to choose and one hero is the picker",
@@ -46,7 +46,7 @@
   {
    "name": "the waiting phone, feed stalled, learns it is its turn to choose (within 6 s)",
    "ok": true,
-   "detail": "2263 ms"
+   "detail": "1848 ms"
   },
   {
    "name": "the online spoils picker lists cards that open large (with a hint saying so)",
@@ -56,7 +56,7 @@
   {
    "name": "tapping a spoils card online opens the full card with its faces, and Close is on screen",
    "ok": true,
-   "detail": "{\"open\":true,\"faces\":4,\"closeBottom\":516,\"vh\":548}"
+   "detail": "{\"open\":true,\"faces\":4,\"closeBottom\":481,\"vh\":548}"
   },
   {
    "name": "looking at a spoils card changed nothing",
@@ -64,8 +64,8 @@
   }
  ],
  "timings": {
-  "victoryOnStalledPhoneMs": 15,
-  "waiterLearnsItIsItsTurnMs": 2263,
+  "victoryOnStalledPhoneMs": 11,
+  "waiterLearnsItIsItsTurnMs": 1848,
   "waiterReadsWhileWaiting": 1
  },
  "notes": [
