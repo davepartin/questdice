@@ -1,6 +1,9 @@
 <!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Objective / Secret Objective FRONT template (Grok mockup for review)</title>
-<!-- Grok art-director mockup, 24 Oct. Fronts in the same family as the approved T12 backs (black tooled leather, thin engraved border,
+<!-- rev 3 (Grok, 25 Oct, Dave's direction): the centre emblem is the game's own symbol for what the goal is about (SYM in js/g3/cards.js:
+     magic triangle, gold coin, attack star, block shield, heal cross; dice from js/g3/icons.js), drawn premium by make-emblems.mjs, with a soft card tint in that colour.
+     Compass/envelope dropped: the chip + parchment-vs-dark palette already tell Objective from Secret Objective.
+     Grok art-director mockup, 24 Oct. Fronts in the same family as the approved T12 backs (black tooled leather, thin engraved border,
      small filigree corners). Objective = parchment + brass; Secret Objective = dark leather, crimson accent, silver text.
      Painted layers are text-free; every word and number is live HTML from the game's own data (js/g3/cards.js, js/secrets.js). -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -13,8 +16,9 @@ body{margin:0;background:#15100c;padding:20px;font-family:Inter,sans-serif}
 .chip{font:800 3.1cqi/1 Inter;letter-spacing:.16em;padding:1.2cqi 2.8cqi;border-radius:9cqi;margin-top:1cqi}
 .ttl{font:900 8.4cqi/1.04 Cinzel,serif;margin:2.6cqi 0 0;letter-spacing:.02em}
 .vigold{width:30cqi;aspect-ratio:1;border-radius:50%;margin:3cqi 0 2.4cqi;background-size:cover;flex:0 0 auto}
-.emb{flex:1 1 0;min-height:0;width:100%;margin:1.6cqi 0;position:relative}.emb img{position:absolute;left:50%;top:0;height:100%;width:auto;max-width:100%;transform:translateX(-50%);-webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent 98%);mask-image:radial-gradient(closest-side,#000 55%,transparent 98%)}
-.obj .emb img{mix-blend-mode:multiply}
+.emb{flex:1 1 0;min-height:0;width:100%;margin:1.6cqi 0;position:relative}.emb img{position:absolute;left:50%;top:0;height:100%;width:auto;max-width:100%;transform:translateX(-50%)}
+.tint{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 42% at 50% 44%,var(--tc) 0,transparent 100%)}
+.obj .tint{opacity:.22;mix-blend-mode:multiply}.sec .tint{opacity:.3;mix-blend-mode:screen}
 .goal{font:700 6cqi/1.28 Inter;margin:0 0 3cqi;padding:0 1cqi}
 .choice{display:grid;grid-template-columns:1fr 1fr;gap:2cqi;width:100%;margin-top:.6cqi}.choice span{font:800 3.6cqi/1 Inter;letter-spacing:.1em;padding:2cqi 0;border-radius:1.6cqi}
 .obj .choice .y{background:#3a2610;color:#f6e2a8;box-shadow:inset 0 0 0 .35cqi #b08a4a}.obj .choice .n{color:#3a2410;box-shadow:inset 0 0 0 .35cqi #7a5a2a}
@@ -49,21 +53,24 @@ import { objectiveData, secretData, ico } from '../../../../../js/g3/cards.js';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const g = (n) => `${ico('gold')}<b>${n}</b>`;
 // type chip: Objectives are today's Bonus Goals; Secret Objective chips name the internal kind (PROPOSED words, see README)
+// rev 3: goal -> the game symbol it is about
+const FOCUS = { nopotion: 'heal', block40: 'block', deal50: 'atk', magic40: 'magic', noreroll: 'magic', thrice: 'dice', slacker: 'atk', goldfumble: 'gold', wall: 'block', hoarder: 'magic' };
+const TC = { magic: '#b46cff', gold: '#ffc21a', atk: '#ff4b4b', block: '#3aa4ff', heal: '#38e87a', dice: '#c8b89a' };
 const CHIP = { cover: 'SECRET GOAL', rival: 'RIVALRY', challenge: 'CHALLENGE', offer: 'WAGER', bribe: 'BRIBE' };
 // rev 2 wording PROPOSAL (Dave, 24 Oct; mockup only): Objectives are optional. With a stake = WAGER (Wager / Payout, Accept or Pass);
 // without = CHALLENGE (just the Payout). Amounts are the game's own Bonus Goal values (a free try returns bonusG).
-function objective(id, { free = false } = {}) { const d = objectiveData(id); if (free) { d.stake = 0; d.free = true; }
+function objective(id, { free = false } = {}) { const d = objectiveData(id); d.id = id; if (free) { d.stake = 0; d.free = true; }
   const terms = d.stake ? `<div class="t"><small>Wager</small><span>${g(d.stake)} gold</span></div><div class="t"><small>Payout</small><span>${g(d.back)} gold</span></div>`
     : `<div class="t"><small>Payout</small><span>${g(d.back)} gold</span></div>`;
-  return card('obj', d.stake ? 'WAGER' : 'CHALLENGE', d.name, d.rule, terms, id + (d.stake ? '-wager' : '-challenge'), !!d.stake); }
+  return card('obj', d.stake ? 'WAGER' : 'CHALLENGE', d.name, d.rule, terms, id + (d.stake ? '-wager' : '-challenge'), !!d.stake, FOCUS[id]); }
 function secret(id) { const d = secretData(id); const k = d.mode === 'offer' ? 'offer' : d.kind; let terms;
   if (d.terms) { const t = d.terms; terms = `<div class="t"><small>Payout</small><span>${g(t.win)}</span></div><div class="t"><small>Team defeated</small><span>pay ${g(t.fail)} <em>+${t.crooks} if all bribes taken</em></span></div><div class="t"><small>Decline</small><span>Honor +${t.honor[0]} (+${t.honor[1]} if defeated)</span></div>`; }
   else terms = d.stakes.map((s) => { const m = s.match(/^Win (\d+) gold$/); return `<div class="t"><small>Payout</small><span>${m ? g(m[1]) + ' gold' : esc(s.replace(/^Win: /, ''))}</span></div>`; }).join('');
-  return card('sec' + (d.terms ? ' tight' : ''), CHIP[k], d.name, d.rule, terms, id); }
-function card(cls, chip, name, rule, terms, key, choice = false) {
-  return `<article class="of ${cls}" data-k="${key}"><img class="fr" src="front-${cls.startsWith('obj') ? 'objective' : 'secret-objective'}-frame.webp" alt=""><div class="in">
-  <div class="chip">${chip}</div><h2 class="ttl">${esc(name)}</h2><div class="emb"><img src="emb-${cls.startsWith('obj') ? 'compass' : 'envelope'}.webp" alt=""></div><p class="goal">${esc(rule)}</p><div class="terms">${terms}</div>${choice ? '<div class="choice"><span class="y">ACCEPT</span><span class="n">PASS</span></div>' : ''}</div></article>`; }
-const list = [objective('nopotion'), objective('block40'), objective('deal50', { free: true }), objective('magic40', { free: true }), secret('thrice'), secret('slacker')];
+  return card('sec' + (d.terms ? ' tight' : ''), CHIP[k], d.name, d.rule, terms, id, false, FOCUS[id]); }
+function card(cls, chip, name, rule, terms, key, choice = false, f = 'gold') {
+  return `<article class="of ${cls}" data-k="${key}" data-f="${f}" style="--tc:${TC[f]}"><img class="fr" src="front-${cls.startsWith('obj') ? 'objective' : 'secret-objective'}-frame.webp" alt=""><i class="tint"></i><div class="in">
+  <div class="chip">${chip}</div><h2 class="ttl">${esc(name)}</h2><div class="emb"><img src="emb-${f}.svg" alt=""></div><p class="goal">${esc(rule)}</p><div class="terms">${terms}</div>${choice ? '<div class="choice"><span class="y">ACCEPT</span><span class="n">PASS</span></div>' : ''}</div></article>`; }
+const list = [objective('magic40', { free: true }), objective('deal50', { free: true }), objective('block40'), objective('nopotion'), secret('goldfumble'), secret('thrice'), secret('slacker'), secret('wall')];
 document.getElementById('cards').innerHTML = list.join('');
 document.getElementById('hand').innerHTML = list.join('');
 document.getElementById('pairO').insertAdjacentHTML('afterbegin', objective('nopotion'));
