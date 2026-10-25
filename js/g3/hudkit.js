@@ -3,6 +3,8 @@
 // Pure builders and tiny updaters; the controller (battle3d.js) owns state and flow.
 import { h, reduced, buzz } from '../dom.js';
 import * as E from '../engine.js';
+import { WEAPONS2 } from '../data.js';
+import { arrowBannerSub } from '../ammotext.js';
 
 // ------------------------------------------------------------------------------------------------ icons
 // 24x24 grid. Classes: f = duotone body, s = stroke only, h = highlight, p = solid.
@@ -225,7 +227,7 @@ export function synergyList(ev, mods) {
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
   if (ev.heartBoost) out.push({ key: 'hb', kind: 'good', icon: 'heart', text: 'HEART BOOST', sub: `+${ev.heartBoost.n} ${ev.heartBoost.sym}` }); // the heart backs every die showing its symbol
   if (ev.arrow) { const a = ev.arrow; out.push({ key: `ar-${a.kind}`, kind: 'good', icon: a.kind === 'pierce' ? 'pierce' : a.kind === 'fire' ? 'stagger' : 'weaken', // the lab's arrowheads (js/lab.js)
-    text: `${a.kind === 'pierce' ? 'PIERCING' : a.kind.toUpperCase()} ARROW`, sub: a.kind === 'pierce' ? `${a.n} pierce` : a.kind === 'fire' ? (a.n ? `${a.n} to the others` : 'too weak to spread') : 'halves its next blow' }); }
+    text: `${a.kind === 'pierce' ? 'PIERCING' : a.kind.toUpperCase()} ARROW`, sub: arrowBannerSub(a, WEAPONS2.arrowRules) }); }
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;
 }

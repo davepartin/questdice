@@ -3,6 +3,7 @@
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
 // the context handed to bind(); this file only decides what things look like.
 import { shortLine, effectLine, upgradeLine, glyph as powerGlyph, toneOf } from './powers.js';
+import { ammoLine } from '../ammotext.js';
 import { h, $, $$, modal, closeModal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
@@ -244,13 +245,12 @@ function heroStats(hp, feet, c = {}) {
 }
 // The lab's Arrows (js/lab.js): each arrowhead face shows its ammunition's mark, and the weapon page picks the ammunition.
 const ARROW_MARK = { pierce: '➶', fire: '🔥', frost: '❄' };
-const AMMO_LINE = { normal: 'Bigger numbers. No arrowheads.', pierce: 'Arrowhead: your hand’s Strength goes through block.', fire: 'Arrowhead: hits, and half splashes on the others.', frost: 'Arrowhead: hits, and halves its next blow.' };
 function ammoPick(hero, inst) {
   const now = D.WEAPONS2.ammo[inst.ammo] ? inst.ammo : 'normal';
   return h('div', { class: 'ww-ammo', role: 'group', 'aria-label': 'Ammunition' }, h('small', {}, 'AMMUNITION · free to change at camp'),
     Object.entries(D.WEAPONS2.ammo).map(([k, name]) => h('button', { type: 'button', class: k === now ? 'on' : '', 'aria-pressed': String(k === now), 'data-ammo': k,
       onclick: tap(() => { if (k !== now && E.setAmmo(hero, inst.uid, k)) { sfx.select(); X.persist(); X.renderCamp(SHEET.fromBoard); } }) },
-    h('b', {}, k === 'normal' ? 'Normal' : `${ARROW_MARK[k]} ${name.split(' ')[0]}`), h('span', {}, AMMO_LINE[k]))));
+    h('b', {}, k === 'normal' ? 'Normal' : `${ARROW_MARK[k]} ${name.split(' ')[0]}`), h('span', {}, ammoLine(k, D.WEAPONS2.arrowRules)))));
 }
 function faceChips(inst) {
   return h('div', { class: 'wc-faces' }, E.weaponFaces(inst).map((f) => h('span', { class: `wf ${f.c === 'r' ? 'red' : 'blue'} ${f.arrow ? `arrow a-${f.arrow}` : f.v === 0 ? 'zero' : ''}` }, h('b', {}, f.arrow ? `${ARROW_MARK[f.arrow]}${f.v || ''}` : String(f.v)), f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))); // a +1 icon shows like the others

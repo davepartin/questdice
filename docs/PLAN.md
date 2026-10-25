@@ -1437,3 +1437,6 @@ Reviewed diagnosis parts 1/2, phase/party/trace tools and engine source. Full ru
 
 ## 25 Oct 2026 (Claude): T17 weapon-size infrastructure
 `EXPERIMENT.weaponSize` (data.js, off) with size bought at camp (40/80/140, one step, no hand check) through the existing `trainInfo`/`trainWeapon`, no wear, sale on half the as-found worth (`foundSize`), no Diamonds, weapon shrink off, `WEAPON_SIZE.ladder` hook for a reviewed face table; on only for preview/weapon-size/ (main.js). Tests: test/weaponsize.test.mjs; real-game check dev/t17sizecheck.mjs. No preview published; live rules unchanged.
+
+## 25 Oct 2026 (Claude): arrow wording
+`js/ammotext.js` words the camp ammunition card and the Frost banner from `WEAPONS2.arrowRules` (they still described the older half-splash and halved-blow tests); `test/ammotext.test.mjs`. Words only.
