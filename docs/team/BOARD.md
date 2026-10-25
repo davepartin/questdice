@@ -1,5 +1,5 @@
 # Quest Dice Team Board
-Updated 2026-10-24 (reconciled against every open branch and pull request). Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
+Updated 2026-10-25 (latest Director checkpoint below; historical reconciliation retained). Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
 
 ## Direction and ownership
 Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. Story and Writing Lead = QuestStoryBot: story, campaign packs and player-facing copy drafts; code integration stays with the implementation lead. These role names are explicitly authorized by Dave.
@@ -22,6 +22,30 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 9. Board edits: this board on main is the one copy. If your branch also edits it, merge main first and keep main's table (add or update only your own rows); do not paste back an older table. Overlapping files: check `git diff origin/main...<branch> --stat` before merging and preserve both owners' work.
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
+
+## Director checkpoint: 25 October 2026, current co-op review
+
+Reviewed main at 8f8ec3293103c7fac6dd6b47e8ebeb62664c5642, latest PLAN entries, WORKING_GUIDE, T05/T17/T19/T21/T22 notes and the card handoff. Latest main changes are coordination/docs; the latest implementation entry is 81709f4 (T17 card infrastructure, switch off at live root). No newer Grok visual delivery is established by this main history. Implemented/build claims below come from committed results; this checkpoint did not fetch the hosted stamp or independently verify deployment.
+
+**Current owners and order**
+- Claude: T22 replay reproduction and per-hero HP/shared-block feedback first. Keep engine results unchanged. Return an ordered UI event trace or short recording on both clients; still images cannot verify timing. Then the smallest independent approved timing/multi-heal change. T19 B/C preview remains authorized but lower priority than live co-op defects.
+- Grok: active card/size visuals, tilted board, helmet options and Magic visuals. Record exact branch/head and file reservation before additional shared-file edits. Existing reservation on cards.js/cards17.css remains; coordinate scrui.js, battle and Magic files explicitly before overlap. Supply a concrete handoff commit and rendered phone screenshots.
+- Director: T05/T21 visual follow-up reviewed below; objective eligibility review next; T17 numeric review remains open. Dave remains final decision-maker. No new generic approval or repeat screenshot request is needed.
+
+**Fresh screenshot review, not a runtime test**
+- Inspected T21/magic/after6-375x548-aimed.jpg and after6-375x548-team.jpg. Accept compact Ranger layout as the current baseline: selected power, cost, action and Close fit; Team actions are readable. Do not call all-class usability DONE. Grok preserves this functionality in his new visuals; Claude verifies every class, unavailable/used states, larger text and loaded production fonts after handoff. Six narrow action tiles remain a touch/readability check.
+- Inspected T05/online/offer-375x548-Dav.png. The initial view still hides the Decline consequence beneath the pinned answer bar. T05 remains REVIEW with this follow-up. Use less header/decorative space and a clear scroll affordance where necessary; keep all terms reachable above the bar at normal and larger text, without shrinking text further. Capture initial and fully scrolled states and verify Accept/Decline against current terms. Coordinate card CSS changes with Grok; Claude may work on the owning online layout only after file reservation is clear.
+- T05 results already record weapon rev14 delivered in build t05b and naming delivered in t05c. Earlier row wording saying rev14 is still unported is historical and superseded. Pack-grid direction was already accepted in T22; it is not waiting on another generic Dave approval. Implementation still needs current-rule behavior and complete camp-screen verification.
+- T21 delivered starter/reward/report corrections remain implemented with author-reported checks, not independently certified here. Exact Dav/JP loss was not replayed; no real Safari/iPhone/Firestore verification was performed. Remaining Magic/talent/report limitations stay open.
+
+**Objective audit: focused source review and next evidence**
+Read OBJECTIVE-CARD-AUDIT.md against current js/secrets.js. Confirmed bribes only filter Spare's encounter eligibility; rivals do not use a participant capability filter; cover/challenge deals do apply needs(hero). Lone Wolf compares same-round target IDs without considering the remaining target count. Glass Shield requires zero block in two logged rounds. These justify focused fixtures, not accepting all audit labels as proven.
+Claude, after T22: reproduce Lone Wolf with one initial enemy and with a multi-enemy fight reduced to one; distinguish ordinary forced targeting from skipped/fallen/no-strike cases. Reproduce Glass Shield using the actual released shield faces and legal player actions; do not equate owning a shield with guaranteed positive block. Report structural impossibility separately from low probability. Director's preferred remedy is eligibility filtering for structurally incompatible deals, preserving existing dealt envelopes and payouts; exact filter and any changed condition return for review before release. Do not replace zero block with an unmeasured threshold or globally remove cards. Keep intentional easy cover cards; do not treat conserving magic/potions/rerolls as cost-free without measuring the sacrificed combat options.
+
+**Open rulings**
+T17 cumulative/number-coverage face choice, Bronze strength, Diamond acquisition/found size and exact resale recovery remain open. Resale must rise after upgrades; fixed as-found value is superseded. Use the proposed 50% recovery as a comparison candidate, not a released rule; include found upgrades, transfers, old saves, rounding and buy/upgrade/sell loops in the economy evidence. No-wear and other unresolved T17 mechanics remain isolated under Dave's current instruction. Original painted singular card backs and Objective naming are already settled, not blockers.
+
+This checkpoint changes documentation only. No game/save files changed, tests rerun, live build certified or new gameplay released.
 
 ## Queue
 | ID | Priority | Owner | Status | Assignment / completion evidence | Next action |
