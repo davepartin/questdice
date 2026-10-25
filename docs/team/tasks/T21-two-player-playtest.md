@@ -94,3 +94,9 @@ The newest T17 weapon mockups and T05 objective-front revisions are not the depl
 - Checked presentation and Heart UI fixes are authorized for main under standing authorization; no further general "go" from Dave is required. Post actual build, online route screenshots and limitations. T21 functional corrections take priority over broad polish; deliver small verified updates.
 
 No additional phone test requested from Dave in this intake. No code fix or visual integration is claimed complete.
+
+
+## Dave follow-up, 25 October: progression and Magic usability
+Dave clarifies that JP is his son. Their Normal two-Ranger defeat is the concrete early-game reference, not a late-game boss example. Both active basic top weapons should make starting play exciting; show the remaining bottom-corner talent as an available next expansion, then upgrades. Do not remove the existing first talent or alter prices without a separate decision.
+
+The delivered compact Heart selector is only one Magic-screen improvement. Claude: continue the authorized usability pass: keep each power's name, brief effect, actual cost, target where applicable and primary action together; explain disabled/used states in words; put long rules behind Details; keep health/magic and Close visible. Include universal Heal and Heart plus all Ranger powers and online Team Actions. Preserve power mechanics and authority. Validate short-phone layouts in the actual online path and show before/after evidence. Do not mark the whole Magic area finished solely because Heart fits. Coordinate this with already authorized multi-heal to avoid conflicting edits. No new generic permission request is needed for checked UI-only improvements.

@@ -3,6 +3,7 @@
 import * as E from '../../../../../js/engine.js';
 import { weaponData } from '../../../../../js/g3/cards.js';
 import { dieImage } from '../t17/dice3d.js';
+import { sellProposal, SELL_PCT } from '../t17/card17.js'; // rev 15 PROPOSAL: sell = SELL_PCT of metal price + covers bought
 const ART = '../../../../../assets/cards/weapons/';
 const FXK = { loot: 'gold' };
 const icons = (f, def) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(4, n | 0)).fill(FXK[k] || k))];
@@ -14,7 +15,7 @@ function cardEl(inst) {
   const dice = faces.map((f, i) => `<img style="--d:${px}cqi" src="${dieImage(d.size, faces, i + 1, { px: 200 })}" alt="face ${i + 1}: ${f.c === 'b' ? 'block' : 'attack'} +${f.v}${f.icons.length ? ', ' + f.icons.join(' ') : ''}">`).join('');
   const el = document.createElement('div'); el.className = `pc metal-${m}`;
   el.innerHTML = `<div class="art"><img src="${ART}${d.id}-${m}-512.webp" alt=""></div><img class="fr" src="../t17/frame-t17.webp" alt=""><div class="ttl"><span>${d.metal} ${d.name}</span></div><div class="dice"><span class="sz">d${d.size}</span><div class="dz">${dice}</div></div>`;
-  el.d = d; return el;
+  d.sell = sellProposal(inst.id, inst.rarity | 0, d.size); el.d = d; return el;
 }
 const grid = document.getElementById('grid'); const veil = document.getElementById('veil'); const acts = document.getElementById('acts');
 document.getElementById('cnt').textContent = `${PACK.filter(Boolean).length} OF 4`;
@@ -34,7 +35,7 @@ function lift(slot) {
   const s = r.width / t.width; const from = `translate(${r.left - t.left}px,${r.top - t.top}px) scale(${s})`;
   big.animate([{ transform: from }, { transform: 'none' }], { duration: DUR, easing: EASE });
   veil.classList.add('on'); const d = card.d;
-  acts.innerHTML = `<button class="eq" data-a="L">Equip Left</button><button class="eq" data-a="R">Equip Right</button><button class="sell">Sell for <b>${d.sell}</b> gold</button>`;
+  acts.innerHTML = `<button class="eq" data-a="L">Equip Left</button><button class="eq" data-a="R">Equip Right</button><button class="sell">Sell for <b>${d.sell}</b> gold <small style="opacity:.7;letter-spacing:.04em;text-transform:none">(proposal, ${Math.round(SELL_PCT * 100)}%)</small></button>`;
   acts.classList.add('on'); open = { slot, big, from };
   big.onclick = drop; veil.onclick = drop; acts.querySelector('.sell').onclick = () => ask(d); acts.querySelectorAll('.eq').forEach((x) => (x.onclick = drop));
 }

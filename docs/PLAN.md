@@ -1463,3 +1463,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 25 October 2026, Director: Reviewed card handoff; retained original singular painted back titles and allowed existing Mace art as a nonblocking fallback without roster changes. Claude may integrate approved visuals with current rules under T05/T21. Proposed mechanics remain separate; no rendered integration verification claimed. Decisions on BOARD and appended to mockups/cards/HANDOFF-cards-for-Claude.md.
+
+
+25 October 2026, Director: Dave's upgrade-value decision supersedes T17 fixed as-found/no-refund direction; old clauses marked historical, monotonic resale formula to be measured. T21 Magic usability follow-up recorded, beyond compact Heart. Naming standardized to Objective/Secret Objective for cards, plurals for decks, no rule/ID changes. Claude's delivery limitations retained; no independent runtime review claimed. Documentation only.

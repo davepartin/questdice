@@ -152,3 +152,12 @@ button.sell:hover,button.sell:focus-visible{outline:.4cqi solid #ffd98a;outline-
 .found17{flex-direction:row;padding:.8cqi 0 .3cqi}.found17 small{font:700 2.4cqi/1 Oxanium;letter-spacing:.04em}
 .prop17 small{color:#7a1e0e;font-weight:800}
 .found17{padding-left:10cqi;padding-right:10cqi}.found17 small{font-size:2.8cqi}
+
+/* rev 15: no Sell pill on the art; one sell chip in the right gutter of the highest revealed size row (PROPOSAL values) */
+.row{grid-template-columns:9cqi 1fr 9cqi}
+.sl17{grid-column:3;justify-self:end;margin-right:-1.4cqi;display:flex;flex-direction:column;align-items:center;gap:.5cqi;padding:1cqi .9cqi;border:0;border-radius:1.4cqi;cursor:pointer;
+ background:linear-gradient(180deg,#2c1f14,#150d07);box-shadow:inset 0 0 0 .3cqi #c9a068,0 .5cqi .9cqi #0008;font-family:Oxanium;z-index:3}
+.sl17 small{font:800 2.2cqi/1 Oxanium;letter-spacing:.14em;color:#e0b86a}.sl17 span{display:flex;align-items:center;gap:.5cqi}.sl17 b{font:800 3.4cqi/1 Oxanium;color:#ffd98a}
+.sl17 .coin{width:2.6cqi;height:2.6cqi}.sl17:focus-visible,.sl17:hover{outline:.4cqi solid #ffd98a;outline-offset:.3cqi}
+.row.locked .sl17{display:none}
+.row.s4 .dz{gap:1.4cqi}
