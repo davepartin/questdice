@@ -6,9 +6,9 @@ const srv = spawn('python3', ['-m', 'http.server', '8775', '-d', root], { stdio:
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome' });
 const p = await b.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 2 }); p.on('pageerror', (e) => console.log('ERR', e.message));
 await p.goto('http://localhost:8775/docs/team/mockups/cards/objectives/fronts.html'); await p.waitForSelector('body[data-ready]');
-for (const c of await p.locator('#cards .of').all()) { const k = await c.getAttribute('data-k'); await c.screenshot({ path: `${out}/front-${k}_375w.png` }); }
-await p.locator('#cards').screenshot({ path: `${out}/fronts-6up.png` });
-await p.locator('#hand').screenshot({ path: `${out}/fronts-hand-120px.png` });
-await p.locator('#pairO').screenshot({ path: `${out}/pair-objective-front-back.png` });
-await p.locator('#pairS').screenshot({ path: `${out}/pair-secret-objective-front-back.png` });
+for (const c of await p.locator('#cards .of').all()) { const k = await c.getAttribute('data-k'); await c.screenshot({ path: `${out}/front-${k}_375w_rev2.png` }); }
+await p.locator('#cards').screenshot({ path: `${out}/fronts-6up_rev2.png` });
+await p.locator('#hand').screenshot({ path: `${out}/fronts-hand-120px_rev2.png` });
+await p.locator('#pairO').screenshot({ path: `${out}/pair-objective-front-back_rev2.png` });
+await p.locator('#pairS').screenshot({ path: `${out}/pair-secret-objective-front-back_rev2.png` });
 await b.close(); srv.kill();
