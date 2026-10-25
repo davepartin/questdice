@@ -67,7 +67,7 @@ function layout(P, sign, nMarks, txtW, inR, extra = 0) {
 function paintFace(g, poly, fi, f, stone, cell, Hm, label) {
   const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const tone = f.c === 'n' ? 'n' : f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
   // rev 13: 'n' = a plain Bronze face (Dave direction, PROPOSAL): no attack/block marker, just the number, or nothing for a blank
-  const plain = f.c === 'n'; if (plain && !f.v && !f.icons.length) return;
+  const plain = f.c === 'n' || f.plain; if (plain && !f.v && !f.icons.length) return;
   const txt = plain ? (f.v ? `${f.v}` : '') : `+${f.v}`; const marks = [...(plain ? [] : [f.c === 'b' ? 'block' : 'atk']), ...f.icons.slice(0, 4)];
   // the face polygon in canvas px (y down), inset by the bevel (R_BY metres) + 4% of the inradius as the margin
   const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1; // interior side of the edges
