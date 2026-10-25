@@ -9,3 +9,7 @@ PNGs: `../png/objectives/` (`back-objective_375w.png`, `back-secret-objective_37
 The earlier approved backs in `../../backs/` (T12) are kept untouched; this is an alternative for Astra to compare, since the T05 follow-up brief said to reuse them.
 
 **Rejected by Dave Oct 24: too ornate; use the T12 backs in mockups/backs/.** (Files kept for history.)
+
+## Fronts (24 Oct, Grok mockup for review): `fronts.html`
+Same family as the T12 backs: black tooled leather, thin engraved border, small filigree corners (painted, text-free `front-*-frame.webp`). Objective = parchment with brass and dark ink, the back's compass as the vignette (`vig-compass.webp`, cropped from the T12 back). Secret Objective = dark leather with a crimson line and silver text, the back's wax seal as the vignette (`vig-seal.webp`). All text is live HTML from the game's data (`objectiveData` / `secretData` in js/g3/cards.js): type chip, title (Cinzel), goal (`rule`), and a terms block (stake / reward / if not; for a wager: done + won, team defeated with the all-bribes clause, decline honour) with the game's gold icon.
+Examples: No potions, Hold the line, Heavy hitter (free try) as Objectives; Three Times Lucky (challenge), The Slacker (offered bribe = WAGER), Gold Rush (rival) as Secret Objectives. Chip words for secret kinds (SECRET GOAL, RIVALRY, CHALLENGE, WAGER, BRIBE) are a proposal. PNGs: `../png/objectives/fronts/`; re-shoot `node shoot-fronts.mjs`.
