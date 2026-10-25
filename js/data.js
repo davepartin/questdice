@@ -84,6 +84,7 @@ export const BAG_MAX = 4;
 // metal (Bronze, Silver, Gold); a legendary lasts as Gold; a Diamond is its own one-fight rule. Every battle it is carried into
 // counts, won, lost or left. It never breaks mid-fight: after its last battle it is gone.
 export const WEAR_BATTLES = [4, 6, 8];
+export const WEAR = { off: false }; // Dave, 25 Oct 2026: weapons never wear out in the live game (js/release.js turns this on); the old rule stays here for the lab and the old tools
 // Spoils are mostly Bronze (Dave: "you rarely get them just for free for beating a boss"); Silver and Gold come from the store.
 export const SPOILS_RARITY = [85, 13, 2];
 // The Camp Store's four weapons, by metal: one Bronze, two Silver, one Gold. The fancy weapons are bought, and saved up for.

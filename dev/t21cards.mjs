@@ -24,9 +24,11 @@ for (const [w, h] of sizes) {
     const rows = await a.page.evaluate(() => [...document.querySelectorAll('.cw-row')].map((e) => ({ label: e.getAttribute('aria-label'), h: Math.round(e.getBoundingClientRect().height), vis: e.offsetParent !== null })));
     r.rows = rows; check(`${w}x${h}: the online Gear tab lists pack weapons as rows that offer the full card`, rows.length >= 3 && rows.every((x) => /Show the full card/.test(x.label || '')), `${rows.length} rows`);
     await a.shot(`${OUT}/cards-${w}x${h}-gear-rows.png`);
+    check(`${w}x${h}: nothing on the Gear tab says a weapon wears out (no "battles left")`, !/battles? left|worn out|wears out/i.test(await a.page.evaluate(() => document.body.innerText)), '');
     const before = JSON.stringify(await a.me());
     await a.page.evaluate(() => { const e = [...document.querySelectorAll('.cw-row')].find((x) => /Sword|Axe|Arrows/.test(x.getAttribute('aria-label') || '')); e?.click(); }); await a.pump(1.5); await sleep(300);
     const big = await a.page.evaluate(() => { const m = document.querySelector('.cw-modal .cw-big'); if (!m) return null; const q = m.getBoundingClientRect(); const c = [...document.querySelectorAll('.cw-modal button')].find((x) => /close/i.test(x.textContent)); const cq = c?.getBoundingClientRect(); return { top: Math.round(q.top), bottom: Math.round(q.bottom), width: Math.round(q.width), closeBottom: cq ? Math.round(cq.bottom) : null, vh: innerHeight, faces: document.querySelectorAll('.cw-modal .d17').length }; });
+    check(`${w}x${h}: the full card shows no wear line`, !/battles? left/i.test(await a.page.evaluate(() => document.querySelector('.cw-modal')?.innerText || '')), '');
     r.big = big; check(`${w}x${h}: tapping a pack row opens the full card with its faces, and Close stays on screen`, !!big && big.faces >= 4 && big.closeBottom != null && big.closeBottom <= big.vh, JSON.stringify(big));
     await a.shot(`${OUT}/cards-${w}x${h}-gear-big.png`);
     await a.page.evaluate(() => [...document.querySelectorAll('.cw-modal button')].find((x) => /close/i.test(x.textContent))?.click()); await a.pump(1);

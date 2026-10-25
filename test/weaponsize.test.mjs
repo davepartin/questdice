@@ -20,8 +20,10 @@ test('off: no size purchase, the hand still caps the die, weapons wear, a worn w
   const h = hero(); const w = mk('sword', 1, 8); h.bag.push(w);
   assert.deepEqual(E.trainInfo(h, w.uid), { ok: false, why: 'wear' });
   h.strength = { W: 4, E: 4 }; h.loadout.NW = w; assert.equal(E.sidesOf(h, 'NW'), 4, 'a d8 weapon in a d4 hand rolls a d4');
-  assert.ok(Number.isFinite(E.battlesFull(w))); assert.match(E.wearLabel(w), /battles? left/);
-  const fresh = E.sellValue(mk('sword', 1, 6)); const worn = { ...mk('sword', 1, 6), left: 1 }; assert.ok(E.sellValue(worn) < fresh, 'wear lowers a sale today');
+  assert.equal(D.WEAR.off, true, 'the released game never wears weapons (Dave, 25 Oct 2026)'); assert.equal(E.battlesFull(w), Infinity); assert.equal(E.wearLabel(w), ''); assert.equal(E.sellValue({ ...mk('sword', 1, 6), left: 1 }), E.sellValue(mk('sword', 1, 6)), 'an old save with a worn counter sells at full worth');
+  D.WEAR.off = false; // the old rule is still there behind the switch (the lab and the old tools)
+  try { assert.ok(Number.isFinite(E.battlesFull(w))); assert.match(E.wearLabel(w), /battles? left/);
+    const fresh = E.sellValue(mk('sword', 1, 6)); const worn = { ...mk('sword', 1, 6), left: 1 }; assert.ok(E.sellValue(worn) < fresh, 'wear lowers a sale when the old rule is on'); } finally { D.WEAR.off = true; }
   assert.equal(E.weaponValue(mk('axe', 0, 8)), E.weaponValue({ ...mk('axe', 0, 8), found: 4 }), 'found is ignored when the switch is off');
   assert.ok(E.downgradeInfo(h, 'weapon', w.uid).ok !== undefined && E.downgradeInfo(h, 'weapon', w.uid).why !== 'none', 'shrinking a weapon still works');
   OFF.shop = 0; for (let s = 0; s < 600; s++) { const g = hero('knight', s); g.campaign.seed = s; g.campaign.act = 2; g.campaign.step = 3; delete g.campaign.shop; if (E.shopStock(g).some((it) => it.inst.diamond)) OFF.shop++; }

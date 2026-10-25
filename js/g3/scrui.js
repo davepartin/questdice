@@ -999,7 +999,7 @@ function weaponRow(inst, label = '') {
       : btn(`Train d${t.next}`, () => { if (HE.trainWeapon(hero, inst.uid)) bought(); }, { cls: 'ur-buy', disabled: !t.ok, aria: `Train ${w.name} to d${t.next}` });
   return h('div', { class: 'sx-urow cmp wrow2' }, rowIco(w.lean === 'def' ? 'shield' : 'sword'),
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name, h('em', { class: 'ur-to' }, ` ${D.tierName(inst)} · d${size}`)),
-      h('small', {}, D.EXPERIMENT.weaponSize ? 'Never wears out. Size is bought at camp.' : `${E.wearLabel(inst)}. Weapons are found or bought now, not forged.`)),
+      h('small', {}, D.EXPERIMENT.weaponSize ? 'Never wears out. Size is bought at camp.' : E.noWear() ? 'Never wears out. Weapons are found or bought, not forged.' : `${E.wearLabel(inst)}. Weapons are found or bought now, not forged.`)),
     h('div', { class: 'ur-btns' }, forge, train));
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
@@ -1202,7 +1202,7 @@ const weaponRowFor = (inst, label) => weaponRow(inst, label);
 const FORGE_INTRO = {
   supplies: 'More dice for each reroll, and more potions on your belt.',
   body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
-  weapons: 'A weapon lasts a number of battles, then it is gone: Bronze 4, Silver 6, Gold 8. Every battle it is in your hands counts, win or lose; one in your pack rests. Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Battles mostly leave Bronze; the Camp Store sells Silver and Gold. A weapon die never rolls bigger than the hand that holds it, so grow your hands to wield the bigger ones.',
+  weapons: 'A weapon never wears out. Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Battles mostly leave Bronze; the Camp Store sells Silver and Gold, and what you sell comes back as gold. A weapon die never rolls bigger than the hand that holds it, so grow your hands to wield the bigger ones.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',
   pet: 'Your pet rolls its own die beside the board. One face is always blank; put symbols on the rest. Grow the die and every symbol pays more. They will pretend they earned it.',
@@ -1316,7 +1316,7 @@ function weaponWorkshop(hero, slot, inst) {
   }
   if (forge.why === 'wear' && train.why === 'wear') {
     return h('div', { class: 'ww-workshop' }, frame, ammo,
-      h('p', { class: 'ww-note' }, ico('sword'), E.wearLabel(inst)),
+      h('p', { class: 'ww-note' }, ico('sword'), E.noWear() ? 'Never wears out.' : E.wearLabel(inst)),
       faces(inst, rolling, 'Current'),
       h('p', { class: 'ww-explain' }, 'Find or buy a replacement, or swap from your pack below.'));
   }
@@ -1374,7 +1374,7 @@ function slotSheet(slot) {
     if (rolls < size && !real.diamond) out.push(h('p', { class: 'sh-warn' }, `Rolls as a d${rolls} until your hand is a d${size}.`));
     const f = E.forgeInfo(hero, real.uid); const t = E.trainInfo(hero, real.uid);
     void f; void t; // forging and training retired with wear (Oct 2026): say how long the weapon has left instead
-    out.push(h('p', { class: `sh-role sh-wearline ${E.battlesLeft(real) <= 1 ? 'last' : ''}` }, D.EXPERIMENT.weaponSize ? 'Never wears out.' : real.diamond ? 'A Diamond lasts one fight.' : `${E.wearLabel(real)}. After its last battle it is gone.`));
+    out.push(h('p', { class: `sh-role sh-wearline ${!E.noWear() && E.battlesLeft(real) <= 1 ? 'last' : ''}` }, real.diamond ? 'A Diamond lasts one fight.' : E.noWear() ? 'Never wears out.' : `${E.wearLabel(real)}. After its last battle it is gone.`));
   } else out.push(shStage(h('span', { class: 'sh-locked' }, ico('hero'))), h('p', { class: 'sh-role' }, 'Empty hand.'));
   const wear = (it) => { HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
   const pack = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);

@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
@@ -217,12 +217,13 @@ export function shatterDiamonds(hero) {
   return gone;
 }
 // ---- wear (Oct 2026): battles a weapon lasts, and how many it has left. Fists and Diamonds never wear here.
-export const battlesFull = (inst) => (EXPERIMENT.weaponSize || !inst || inst.id === 'fists' || inst.diamond ? Infinity : WEAR_BATTLES[isLegendary(inst) ? 2 : Math.min(2, inst.rarity | 0)]);
+export const noWear = () => !!(WEAR.off || EXPERIMENT.weaponSize); // weapons never wear out (Dave, 25 Oct 2026; the T17 preview too)
+export const battlesFull = (inst) => (noWear() || !inst || inst.id === 'fists' || inst.diamond ? Infinity : WEAR_BATTLES[isLegendary(inst) ? 2 : Math.min(2, inst.rarity | 0)]);
 export const battlesLeft = (inst) => { const f = battlesFull(inst); return f === Infinity ? Infinity : Math.max(0, Math.min(f, inst.left ?? f)); };
 // One battle off every weapon in the hands (a two-hander counts once). A weapon with none left breaks: its hand is empty.
 // A hero is never left with nothing at all: with empty hands and an empty pack, a plain Bronze weapon of the class is waiting.
 export function wearHands(hero, skip = new Set()) {
-  const broke = [];
+  const broke = []; if (noWear()) return broke; // nothing wears: no battle is counted, nothing breaks (an old save's counters are ignored)
   for (const k of ['NW', 'NE']) {
     const w = hero.loadout[k]; if (!w || w.id === 'fists' || w.twin || w.diamond || skip.has(k)) continue;
     w.left = battlesLeft(w) - 1;
@@ -252,7 +253,9 @@ export function brokenLine({ broke, spare }) {
 }
 // What a weapon card says about its wear: "3 battles left", or "one fight" for a Diamond.
 export function wearLabel(inst) {
-  if (!inst || inst.id === 'fists' || EXPERIMENT.weaponSize) return ''; // T17: weapons never wear out if (inst.diamond) return 'one fight';
+  if (!inst || inst.id === 'fists') return '';
+  if (inst.diamond) return 'one fight'; // a Diamond still shatters after one fight
+  if (noWear()) return ''; // weapons never wear out
   const n = battlesLeft(inst); return `${n} battle${n === 1 ? '' : 's'} left`;
 }
 export const isTwoHanded = (hero) => WEAPONS[hero.loadout.NW.id].hands === 2;
