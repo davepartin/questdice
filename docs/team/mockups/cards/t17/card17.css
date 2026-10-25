@@ -140,3 +140,8 @@ button.sell:hover,button.sell:focus-visible{outline:.4cqi solid #ffd98a;outline-
 @media (prefers-reduced-motion:reduce){.cov.tok.nope{animation:none}.toast17{animation:none}}
 .found17{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:.6cqi;padding:1.2cqi 0 .4cqi;border-top:.25cqi solid #6a4a2233}
 .found17 b{font:800 3.4cqi/1 Oxanium;color:#1c2a3a;letter-spacing:.06em}.found17 small{font:700 2.3cqi/1.2 Oxanium;color:#2a3a4a;text-align:center}
+
+/* rev 12: every size label the same colour (no accent on the current/largest size) */
+.row.cur .sz{color:#3a2410}
+/* rev 12: no slot square; the art fills the whole window, framed so each metal's blade reads in full */
+.art17 .art9{object-position:50% 48%}

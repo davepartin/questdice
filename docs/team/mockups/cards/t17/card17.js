@@ -46,9 +46,7 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
     return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('') + (found ? `<div class="found17"><b>Found at d${size}</b><small>Diamond dice come fully upgraded · no dice covers · PROVISIONAL</small></div>` : '');
   const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
-  const sq = slot ? `<div class="eq on"><div class="well"><img class="cur" src="${dieImage(size, open.map(face), size, { px: 360, view: 'slot', stone })}" alt="d${size} die resting in its socket"></div>
-      <span class="loc">${GRID.map((g, i) => `<i class="${i === gi ? 'me' : ''}"></i>`).join('')}</span><span class="cap">${SLOTWORD[slot] || slot}</span><span class="pv">d${size} · preview face</span></div>`
-    : `<div class="eq off"><div class="well"><span>EMPTY</span></div><span class="cap">Not equipped</span><span class="pv">in pack</span></div>`;
+  const sq = ''; // rev 12 (Dave): no equipment-slot square or 3D die on the card; the dice rows already show the die
   el.innerHTML = `<div class="art17">${art}${sq}<button type="button" class="sell" aria-haspopup="dialog" title="Sell this weapon (asks to confirm)"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></button></div>
 <img class="fr17" src="frame-t17.webp" alt="">
 <div class="title17"><span>${d.metal} ${d.name}</span></div>
