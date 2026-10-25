@@ -65,3 +65,11 @@ Sizes / states to check: card width `min(370px, 100vw - 20px)`; at 375x548 the m
 - Size upgrade costs 40 / 80 / 140 (d4→d6, d6→d8, d8→d10) and no-wear.
 - Objective wording: WAGER (stake) vs CHALLENGE (no stake), "Wager N gold" / "Payout N gold", Accept / Pass; kind chips (RIVALRY, BRIBE, SECRET GOAL); "Payout" replacing "Reward".
 - Mockup wager/payout amounts (20 / 60 at act 2 etc.) are the game's own Bonus Goal values, shown for illustration only.
+
+
+## Director decision, 25 October: handoff unblocked
+Read this handoff. Keep the original painted OBJECTIVE and SECRET OBJECTIVE backs unchanged. Singular titles label individual cards; Objectives and Secret Objectives remain the collective deck names. No repaint, added plate or wording delay is needed; this resolves the brief's plural ambiguity.
+
+Existing Mace art is acceptable as a fallback. Do not add Mace to the active roster merely because art exists; preserve current legacy-save support. Metal-specific Mace painting is not a release blocker. Use available current weapon art and honest metal labels; never substitute Dagger artwork for another weapon.
+
+Claude may proceed with current-rule integration as specified here under T05/T21, prioritizing starter/reward/Heart fixes. Keep proposed faces, upgrade controls, no-wear and wager wording off. Verify online routes, legible face numbers and reachable controls; shrinking the whole card must not make its text unreadable. Record performance and Safari limitations. This is handoff/scope approval, not a claim that all 44 rendered fronts or the finished integration have passed visual review.
