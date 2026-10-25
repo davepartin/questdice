@@ -1441,3 +1441,6 @@ Reviewed diagnosis parts 1/2, phase/party/trace tools and engine source. Full ru
 
 ## 25 Oct 2026 (Claude): arrow wording
 `js/ammotext.js` words the camp ammunition card and the Frost banner from `WEAPONS2.arrowRules` (they still described the older half-splash and halved-blow tests); `test/ammotext.test.mjs`. Words only.
+
+## 25 Oct 2026 (Claude): T19 corrections
+Per the Director's review: `tools/t19-lib.mjs` (shared fights: genuine solo and party, the nemesis arms A/B/C, Wilson intervals), `t19-run.mjs` (one cell per process), `t19-phase.mjs` and `t19-party.mjs` (reports), committed fixtures in `docs/team/tasks/T19/fixtures/`, v1 tools and tables moved to `T19/superseded/`. Outputs: T19-v2-solo.md, T19-v2-party.md, revised part 2 in T19-diagnosis.md. No game change.

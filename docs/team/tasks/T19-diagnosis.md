@@ -2,7 +2,9 @@
 
 > **Director review, 24 October:** The investigation below is preserved as submitted. [Seven rulings and evidence corrections](T19-director-review.md) now govern the next work. In particular, the party-tool Solo row is a one-fighter party, the phase tool measures net health loss rather than damage, and the claimed secure outcome is not established. The reconstructed flight/wound history is not independently captured. Scoped preview, multi-heal and timing work are authorized in that review; no live balance change is approved.
 
-Brief and evidence: [T19-jasper-wyrmwatch.md](T19-jasper-wyrmwatch.md). **Investigation only: no game file changed, no balance change applied or authorised.** Tools (all read-only): `tools/t19-trace.mjs` (how the fight is built), `tools/t19-fights.mjs` (late Act III fights across classes), `tools/t19-jasper.mjs` (an approximate Jasper), `tools/t19-loadout.mjs` (the War Hammer against active weapons), and for part 2 `tools/t19-phase.mjs` (opening against boss-only phase) and `tools/t19-party.mjs` (tables of 2, 4 and 6; raw tables in [T19-party-tables.md](T19-party-tables.md), rows in [T19-party-rows.json](T19-party-rows.json)). Raw rows: [T19-rows.json](T19-rows.json).
+Brief and evidence: [T19-jasper-wyrmwatch.md](T19-jasper-wyrmwatch.md). **Investigation only: no game file changed, no balance change applied or authorised.** Tools (all read-only): `tools/t19-trace.mjs` (how the fight is built), `tools/t19-fights.mjs` (late Act III fights across classes), `tools/t19-jasper.mjs` (an approximate Jasper), `tools/t19-loadout.mjs` (the War Hammer against active weapons), and for part 2 `tools/t19-phase.mjs` (opening against boss-only phase) and `tools/t19-party.mjs` (tables of 1, 2, 4 and 6; raw tables in [T19-v2-party.md](T19-v2-party.md), rows in `T19/rows-v2.tar.gz`). Raw rows: [T19-rows.json](T19-rows.json).
+
+> **Status, 25 October 2026 (after the Director's review).** Part 1 stands as the diagnosis of what the code does (sections 1 to 7), with two cautions: its bot win rates (11% for the return, 94% for the designed step 8) came from the v1 tools and are superseded by the v2 solo table below (7% and 81% at the finale), and **the nemesis return is a reconstruction**: the report lacks its first rounds and the save, so the step 5 flight, the 30% wound and the 651 starting health are assumptions; 1,002 is the captured maximum health, not proof it began full. **Part 2 as first posted is superseded** (kept in `T19/superseded/`); the revised part 2 is at the end of this file. Corrected tools: `tools/t19-lib.mjs`, `t19-run.mjs`, `t19-phase.mjs`, `t19-party.mjs`; committed hero fixtures in `T19/fixtures/`.
 
 ## Diagnosis in one paragraph
 
@@ -133,77 +135,61 @@ The three options hold the nemesis at the designed elite scaling for step 8 (636
 3. Do you want the multi-heal control proposed in section 5?
 4. Should the other packs' bosses that can flee as elites (Goldbelly, Blazemorrow) be checked before any change?
 
+
 ---
 
-# Part 2 (24 October 2026): opening against the sustained phase, learning, and tables of 2, 4 and 6
+# Part 2, revised (25 October 2026): opening against sustained phase, and tables of 1, 2, 4 and 6
 
-Still **investigation only: nothing changed, nothing approved.** Same limits as part 1: the bots are greedy plain players (weaker than Dave), the heroes are the bots' own campaigns, samples are small (45 hero slots for the solo measures, 10 fights per party cell, so a win rate is good to about ±15 points), and **rounds are not elapsed time**: the report has no duration, and a round at a six-player table takes six players' turns, so a round count says nothing about minutes. Elapsed time is therefore not measured here at all.
+**Investigation only: nothing in the game changed and no balance change is approved.** This replaces part 2 as first posted, after the Director's review. What changed in the method: the genuine solo reference is a real `newBattle` / `resolve` fight (the old "Solo" row was the party code with one hero); damage is the engine's captured damage after block (`report.taken`), healing is captured separately, and an attack is the engine's own damage test (the first version counted any move with a number, so a Wing Wall guard counted as an attack); nothing is called "secure"; "equal" parties are now of two kinds (identical clones, whose strength really is equal, and same-stage heroes of mixed classes, whose strengths differ and are labelled so); each hero's exposure is measured against that hero's own maximum health; every cell shows its denominators, timeouts and distinct fixtures; compositions are never pooled. Hero fixtures and the revision are committed (`T19/fixtures/`, revision in each output header) so another agent can reproduce the tables: `node tools/t19-run.mjs ...` per cell, then `node tools/t19-phase.mjs DIR` and `node tools/t19-party.mjs DIR`. Full tables: [T19-v2-solo.md](T19-v2-solo.md) and [T19-v2-party.md](T19-v2-party.md); every cell's raw rows are in `T19/rows-v2.tar.gz` (unpack to a folder and pass it to the two report tools).
 
-## 8. The risky opening and the sustained boss-only phase (`tools/t19-phase.mjs`)
+**What these numbers are not.** Bots are plain greedy players, weaker than Dave, with known gaps (revives are never used; teamwork is incidental). Win-rate intervals are Wilson 95% intervals that treat fights as independent; with 12 fights a cell they are wide (a 12/12 is 76 to 100%), and the 70 solo fights are 35 fixtures fought twice. **No elapsed time exists in the data**: rounds are not minutes, and a round at a six-player table takes six players' turns.
 
-For every won fight I looked for the round from which the hero never again ended a round below 40% of maximum health. That is retrospective (a player cannot know it in the moment), so it measures when the fight *was* safe, not when it felt safe. "Pressured" rounds are those with a hit of 15% of maximum health or more, or an end below half health: the rounds that still ask for a defensive decision.
+## 8. Opening and boss-only phase, solo (35 bot heroes, 2 seeds each)
 
-| Fight | Win % | Rounds p50 / p90 / max | Opening (boss and another foe) | Boss alone | Safe from round | Rounds left after that | Boss health left then | Pressured rounds among them |
-|---|---|---|---|---|---|---|---|---|
-| Nemesis return as Dave met it | 11 (4 of 35) | 8 / 19 / 28 | 6.5 | 13.5 | 14.5 of 20 | 6.5 (31%) | 21% | 2.0 |
-| Nemesis alone (1,002 max) | 74 | 14 / 18 / 30 | 0 | 16.1 | 10.2 of 16.1 | 6.9 (40%) | 21% | 1.6 |
-| Designed step 10 boss (690 max) | 74 | 15 / 21 / 26 | 0 | 16.1 | 10.3 of 16.1 | 6.7 (41%) | 36% | 1.2 |
-| Option B (636 max plus one foe) | 54 | 12 / 17 / 23 | 4.7 | 9.6 | 10.6 of 14.3 | 4.7 (29%) | 19% | 0.9 |
-
-What this says. **The danger is the opening; the length is the boss alone.** When the three foes stand together the bot loses nine times in ten, and the losses come early (lost fights last 8.5 rounds on average). Once it is through the opening, it is safe by round 10 or 11 in every variant, and then it needs about 7 more rounds in the finale-shaped fights, of which only 1 to 2 are rounds that still threaten a hit of 15% or an end below half. That is the "foregone conclusion" Dave worried about: **about 40% of a designed boss fight, and 40% of the nemesis-alone fight, is played after the outcome is secure**, and in most of those rounds the choices left are how to spend magic and how to shape the dice for damage, not whether to defend. With one other foe (Option B) there is a target decision (kill the Gloom Stalker first or ignore it) and the safe tail shrinks to 29%.
-
-Rhythm. Across won fights the boss did not attack in about a third of its rounds (5.2 of 16.1 at the designed boss, 5.8 of 16.1 alone; Dave's own 14 boss-only rounds had 6, 43%). In an idle round the bot's damage taken was about 0% of maximum health; in an attacking round about 13 to 15%. So the rhythm exists as Dave described it: a round of danger costs about a seventh of a hero, an idle round is a recovery window, and the bot pressed heals in both kinds (4.5 against 5.8 in the nemesis fights; 1.0 against 1.2 at the designed boss). The healing and magic generation are not what makes the tail safe: in the safe tail the bot pressed only about 1 to 2 heals in total and took about 30% to 44% of maximum health in damage across about seven rounds. The tail is long because the boss has a lot of health for the output (about 40 a round after armour), not because earned healing is too strong. **I do not recommend reducing healing or Heart support on this evidence**; the learning curve Dave describes (magic, Heart amplification, small enemies first) is what turns the 11%-win opening into a win, and that is a positive result.
-
-## 9. Tables of 2, 4 and 6: how the encounter really scales (`tools/t19-party.mjs`)
-
-Source facts, confirmed against the code and the Director's check. The company factor is `m = sum(heroStrength) / max(heroStrength)`: six equal bot heroes came out at **m 5.3, not 6** (strengths 56 to 73), and a company of one strong hero and five level-1 heroes at m 2.2. Boss health is the encounter's health times `1 + 1.2 (m − 1)`: **690 at one hero, 1,442 at two equal, 2,885 at four equal, 4,249 at six equal** (the exact figures are in the tables). Each blow also gets a team bonus of `round(10 (m − 1))` (+9, +27, +43 at 2, 4, 6 equal) **rolled as extra monster dice**, not a flat add, and two goblins join at six (74 health each: the quest's health factor without the party factor, so they are tiny next to the boss).
-
-**How a blow is shared out, traced in `resolveParty`.** An ordinary blow (Talons, Bite, Club) is *split* between the heroes: the slowest takes a double share and the others a single share, and each hero's block soaks only their own part. So the team bonus is **not** +43 to each hero; it is added to a blow that is then divided (at six equal heroes an ordinary blow averages 69 whole and 12 per hero, 14% of a hero). **Breath is different:** every living hero takes `ceil(0.6 × the whole blow)` (`BREATH_SHARE`, data.js), unsplit. Vharaxis's Inferno and its Slam are breath. So at a bigger table the same blow grows with the team bonus and then lands on everyone at once:
-
-| Table (equal heroes, designed boss) | Hero health (mean) | Breath blow, whole | Each hero takes from one breath | After block | An ordinary blow, per hero |
-|---|---|---|---|---|---|
-| 1 (solo) | 85 | 31 | 19 (23% of a hero) | 7 | 27 (31%) |
-| 2 | 87 | 42 | 25 (29%) | 13 | 19 (21%) |
-| 4 | 85 | 58 | 35 (42%) | 19 | 14 (16%) |
-| 6 | 85 | 78 | 47 (55%) | 27 | 12 (14%) |
-
-Hero health does not grow with the table, so **the danger that grows with head count is the breath**: from about a quarter of every hero's health at one hero to over half of every hero's health at six, taken by all six at once, while the table's total damage to heroes per breath goes from 19 to about 280. (The new-recruit rows are worse: with five level-1 heroes of about 40 health each, one breath takes 65% of each.) Everything else shrinks per hero as the table grows.
-
-Outcomes (10 fights per cell; win % in brackets; the 6 rows are noisy):
-
-| Table | Designed boss: win %, rounds p50 / p90 | Heroes who fell | Nemesis return (stacked): win % | Heroes who fell |
+| Fight | Wins (95% interval) | Rounds, wins (mean; p50 / p90 / max) | Rounds, defeats (mean; p50) | In defeats: rounds with the boss and another foe / boss alone |
 |---|---|---|---|---|
-| Solo | 100, 17 / 32 | 0 of 1 | 40 | 0.6 of 1 |
-| 2 equal | 100, 16 / 20 | 0.2 of 2 | 60 | 1.1 of 2 |
-| 2: one strong, one level-1 | 100, 15 / 29 | 0.2 of 2 | 40 | 1.6 of 2 |
-| 4 equal | 90, 14 / 17 | 0.7 of 4 | 40 | 2.7 of 4 |
-| 4: half strong, half end of Act II | 100, 13 / 16 | 0.1 of 4 | 40 | 3.2 of 4 |
-| 4: one strong, three level-1 | 100, 11 / 19 | 1.2 of 4 | 60 | 2.9 of 4 |
-| 6 equal | 80, 14 / 18 | 2.7 of 6 | **0** | 6.0 of 6 |
-| 6: half strong, half end of Act II | 80, 13 / 25 | 2.1 of 6 | **0** | 6.0 of 6 |
-| 6: one strong, five level-1 | 90, 15 / 26 | 3.4 of 6 | 30 | 5.7 of 6 |
+| Designed step 10 boss (690 max) | 57/70 (81%, 71-89%) | 16.5; 16 / 22 / 29 | 11.3; 11 | 0 / 11.3 |
+| Nemesis return, unchanged (1,002 max, both foes) | 5/70 (7%, 3-16%) | 26.6; 26 / 37 / 37 | 5.9; 5 | 5.4 / 0.5 |
 
-(Solo rows differ a little from section 3 because the party tool builds its own heroes and its seeds; the small samples move them by tens of points. They are a reference, not a second measurement of the same thing.)
+- **The opening decides the returning fight; the boss alone sets its length.** In the unchanged return 65 of 70 fights are lost, on average after 5.9 rounds, almost all of them (5.4 rounds) while the boss and another foe both stand. The five that are won take 26.6 rounds, 17.6 of them against the boss alone.
+- **The designed finale is itself long** (wins 16.5 rounds, p90 22, max 29) and costs a lot even when won: whole-fight captured damage after block averages 192% of maximum health, balanced by 79% healing received and 3.0 heal presses. Healing is doing real work in that fight.
+- **Retrospective healthy suffix (replaces "secure").** Among the 57 wins at the designed boss, from round 9.5 of 16.5 on the hero both started and ended every round at 40% or more of maximum health: 8.0 rounds, 47% of the fight on average (the range across fights is 0% to 100%), with the boss at 42% of its health when it starts. That is a description of how won fights went, **not** a finding that defeat was impossible or that no decision mattered: in those rounds the hero still took 72% of maximum health in total, received 48% in healing, and 2.6 rounds had captured damage of 15% or more of maximum health or ended below half. **The earlier claim that about 40% of the fight is played after the outcome is secure is withdrawn.** (For the unchanged return, the five wins have a 6.8-round suffix, 21%.)
+- **Boss rhythm, captured (designed boss, 70 fights).** What the boss announces: Inferno 20% of its rounds, Inhale 19%, Breath Slam 18%, Talons 13%, Terrify 13%, Bite 10%, Wing Wall 8%. The three that do no damage themselves (Inhale, Terrify, Wing Wall) are **40%** of its rounds (the first version's 32% was the Wing Wall miscount). They are not all harmless: Inhale is followed by the Slam, which is the heaviest hit (a hero loses 26% of maximum health in the round a Slam is announced and 21% in an Inferno round, against 15 to 16% for Talons and Bite), and Terrify binds dice. Where the boss stands alone, the rounds it announces Inhale, Terrify or Wing Wall cost the hero nothing in that round (0.0% captured damage) and the rounds with the heavy hits cost 15 to 26% on average, so the rhythm Dave describes (a hit, then a breather) is in the captured data.
+- **Healing and magic.** I make no recommendation to reduce them: the evidence above shows heals paying for the damage the fight deals, not an unearned tail, and Dave's coaching (magic, Heart, small enemies first) is what a 7%-win opening needs. The healthy suffix contains about one heal press on average; the heals are spent earlier, where the damage is.
 
-- **Rounds are held roughly constant by the HP formula** (the designed fight runs a median of 11 to 17 rounds at every size): the table's output rises as fast as the boss's health (41 a round solo, 95 at two, 208 at four, 305 at six), so the length does not blow up with head count. The 90th percentile does (17 to 26 at six, and 62 to 65 in the stacked fight at two heroes, where the table sometimes stalemates for dozens of rounds), so the tail, not the average, is where a six-player boss drags.
-- **What the scaling does change is falls:** from almost none at two to 2 to 3 heroes down per fight at six, with 10 to 20% of fights lost. Revives were 0.0 in every cell in the bot's play, so recovery after a fall is the bots' blind spot, not evidence the rule fails.
-- **The stacked nemesis fight scales terribly**: at six the two companies of strong heroes won 0 of 20 fights (every hero fell, every time), because the six-fold boss, two 1,000-health minions and the extra goblins arrive with the breath cost above. Whatever fixes the nemesis stacking (section 6) matters more at bigger tables than at one.
-- **Mixed companies:** the factor uses strength, so a weak hero adds little boss health, but breath takes the same 60% from each hero whatever its health. Five level-1 heroes beside one veteran face about 1,700 boss health (small) and still fall at 3.4 per fight. That is the case where the rule is least fair, and it is also the likeliest at a real table (a new friend joining a veteran).
-- **Not simply "multiply by the head count":** Jasper's 1,002 times six would be 6,012, which the formula never produces (4,249 at six equal for the designed boss, 6,171 for the stacked one). The multiplier is 6.2 at six equal (m 5.3), by design a bit more than one per hero.
+## 9. The returning boss: unchanged, A, B and C (same fixtures and seeds in every arm)
 
-## 10. Pacing options (proposals only; none measured as a change, none applied)
+Arms (what each suppresses, exactly): **unchanged** = as the road builds it (boss 1,002 max, Gloom Stalker 179, Dirge Singer 165; in a party also the party's health factor and the goblins it adds). **A** = boss health corrected to the act and step elite basis (636, times the table's health factor), everything else kept. **B** = A, and the whole starting encounter keeps at most one finite companion (the Gloom Stalker): the Dirge Singer and every party goblin are removed. **C** = A with every other foe removed (Stalker, Singer, goblins). Reference: the designed step 10 boss.
 
-All are proposals for the Director's ruling. I have not changed anything, and none would approve itself by arithmetic. None adds a timer, a late lethal spike or guaranteed victory.
+| Solo | Wins (95%) | Rounds, wins (mean) | Defeats: rounds |
+|---|---|---|---|
+| Designed finale (reference) | 57/70 (81%, 71-89%) | 16.5 | 11.3 |
+| Unchanged | 5/70 (7%, 3-16%) | 26.6 | 5.9 |
+| A | 5/70 (7%, 3-16%) | 19.6 | 5.8 |
+| B | 38/70 (54%, 43-65%) | 14.3 | 9.4 |
+| C | 64/70 (91%, 83-96%) | 10.2 | 8.7 |
 
-1. **Fix the nemesis return first (section 6, Options B or C).** It is the biggest cause of the 24-round fight and of the 0% win at six. It also removes the unwinnable opening before anything else is tuned.
-2. **Shorten the safe grind with a punishable opening, not less boss health.** The boss already telegraphs (Inhale, Terrify and a wind-up before the slam). Proposal: while the boss is spending a round on a telegraph, it is *exposed*: its armour (the 2d4 that takes 2 to 8 off every strike) does not apply that round, or the hero's strike counts for a fixed amount more. That is a reward for reading the rhythm that does not touch what a hero takes. Arithmetic only (not a simulation): at Dave's 553 health left and 39.5 a round, a 50% bonus in telegraph rounds (43% of rounds) would turn 14 boss-only rounds into about 11.5; at the bot's 32% telegraph share, about 12; a doubled bonus about 10 to 10.5. The fight stays long enough to be an event and the danger rounds are unchanged. I would test it in a preview behind a switch before anyone judged it.
-3. **Create target decisions with a finite composition, not replenishment.** Option B (the boss plus one foe, finite) gave a 54% bot win rate, a real opening of 4.7 rounds and a safe tail of 29%, and a choice between targets. A boss that keeps summoning would stretch the safe grind again, so I do not propose one.
-4. **Scale party bosses through breath share, not only through health.** At six equal heroes one breath costs 55% of every hero. Options for the Director to weigh: shrink `BREATH_SHARE` as the table grows so that the per-hero cost stays near today's two-hero value (about 29%); or apply the team bonus to split blows only, not breath; or keep the numbers and rely on potions and block. Each changes live party balance, so each needs a ruling and a preview with matched campaigns first. The mixed-strength case (new friend with a veteran) argues for making breath scale with the hero's health share rather than a flat share.
-5. **Do not shorten the encounter by reducing earned healing or Heart support** (Dave's instruction, and the numbers do not point there: the safe tail uses 1 to 2 heals in total).
-6. **Separate evidence still missing:** real elapsed time (the exporter has none; a play-duration line in the report would give it), a six-player live report, and a human-player sample of the opening.
+**Health alone (A) does not change the result; the foes do** (7% to 7%). B is meaningfully harder than the finale for a bot soloist (54% against 81%; the intervals do not overlap) and keeps a target decision (in B's wins the opening is 5.4 rounds); C is easier than the finale (91%). At tables, compared with the designed finale at the same table (wins out of 12; falls = heroes down per fight; the full table is in T19-v2-party.md):
 
-## Questions for the Director (added)
+| Table (equal-strength clones) | Designed finale | Unchanged return | B | C |
+|---|---|---|---|---|
+| 2 | 12/12; falls 0.1 | 4/12; falls 1.4 | 11/12; falls 0.3 | 12/12; falls 0.0 |
+| 4 | 10/12; falls 1.2 | 2/12; falls 3.7 | 9/12; falls 1.3 | 12/12; falls 0.0 |
+| 6 | 6/12; falls 3.7 | **0/12**; falls 6.0 | 4/12; falls 4.7 | 10/12; falls 1.5 |
 
-5. Should the nemesis-return fix be limited to boss-tier nemeses (Q2), given it also decides whether six-player nemesis fights are winnable at all?
-6. Of the pacing options above, which should be measured in a preview behind a switch first: the exposed telegraph round (2), the finite one-foe composition (3), or breath scaling at bigger tables (4)?
-7. Should the battle report record the time each round took, so the next playtest gives real elapsed time?
+For the three other compositions (same-stage mixed classes, half end-of-Act-II, one veteran with level-1 friends) the unchanged return is won 0 to 6 of 12 and B 7 to 12 of 12 at every table size (6 of those 9 cells at 11/12 or better). **A is not distinguishable from the unchanged return anywhere. B tracks the designed finale across table sizes**: slightly below it at two and four (11/12, 11/12, 10/12 against 12/12 at two; 9/12, 11/12, 11/12, 11/12 against 10/12, 11/12, 12/12, 12/12 at four) and, at six, equal for three compositions (7/12 and 9/12 and 12/12 against 7/12, 9/12 and 12/12) and lower for clones (4/12 against 6/12, intervals overlapping). Falls at six are high in the finale and in B alike (finale 3.0 to 3.9 a fight, B 2.3 to 4.7), because the breath, not the companion, is what hurts there (below). I have not tuned to a number and make no claim that B's results are acceptable; this is the comparison the Director asked for, to judge across classes and compositions.
+
+## 10. How a table's boss really scales (code trace and captured per-hero exposure)
+
+- **Strength and health.** Boss health is the fight's health times `1 + 1.2 (m − 1)`, with `m = sum(strength) / max(strength)`. For truly equal heroes (clones) m is exactly n: the factor is 2.2, 4.6 and **7.0** at two, four and six, so the designed boss is 1,518, 3,174 and 4,829. For same-stage heroes of mixed classes (strengths 56 to 73) six give m 5.4 (4,357). Group means are not individual exposure: the tables below use each hero's own maximum health.
+- **How a blow is shared, traced in `resolveParty`.** The table's bonus (`round(10 (m − 1))`, +50 at six clones) is rolled as extra monster dice on every blow. An ordinary blow is then split between heroes (the leader takes a double share), so the bonus is not +50 to each hero. **Breath is not split:** every living hero takes `ceil(0.6 × the whole blow)`, and Vharaxis's Inferno and Slam are breath (37% of its rounds at the designed boss).
+- **Genuine solo against tables, captured (designed boss).** One breath blow, whole, against a lone hero is **36% of that hero's maximum health** (p90 48%, max 61%), **25% after block**; an ordinary blow 30%. At a table, one breath costs each hero, against its own maximum health, before and after block: two equal clones 31% and 18%; four 45% and 27%; six **57% and 38%** (p90 66% before block, max 79%). So the per-hero breath cost at six is about **1.6 times a lone hero's** (57 against 36, before block; 38 against 25 after) while an ordinary blow falls to 15% per hero (from 30%). The earlier "23% solo to 55% at six" was wrong: the "solo" figure was the party code's 60% share for one hero (23% before block, 11% after), not a lone fight.
+- **Mixed tables.** In a veteran-and-recruits table the breath takes the same 60% from everyone whatever their health: against their own maximum health level-1 recruits lose about 69% of it at two, 72% at four and 83% at six (before block), and take 113 to 174% of it over a fight (veterans 51 to 105%), with falls of 3.0 at six (the boss is smaller there, 1,627 at six, so the table is won 12 of 12 with heavy losses). The strongest hero's own exposure is below the equal-strength case.
+- **Total damage a hero takes over a whole fight** (captured, as % of its own maximum, with healing in the mix) is about the same solo and at six clones (192% and 195%) and lower at two (144%); what the table adds is the same cost borne by every hero at once and, with it, 3.7 of 6 heroes down at the finale (50% win).
+- **What I would test, as one narrow separate experiment (proposal only; the Director asked for exactly one):** for **boss-tier breath only, at tables of four or more**, scale the per-hero share from 0.6 down so that a hero's part before block stays near a lone hero's 36% of its maximum health at six equal clones (about 0.38), measured as a fifth arm beside unchanged, A, B and C on the same fixtures and seeds, with falls, low health and win rates per composition reported separately. No global breath change, no change to `heroStrength`, `storyScale` or global `PARTY`.
+
+## Questions for the Director
+
+1. B is harsher than the finale for a solo bot (54% against 81%) and comparable at tables of two and four; C is easier. Is B the arm to build as the isolated preview as is, or should the preview carry B and C switchable so Dave can feel both?
+2. Should the single breath experiment above be built into the same preview as a switch, or measured only in the harness first?
+3. Round timing (approved): shall I land it as its own checked commit before the preview, so the next playtest report carries real durations?
