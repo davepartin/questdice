@@ -1448,3 +1448,7 @@ Per the Director's review: `tools/t19-lib.mjs` (shared fights: genuine solo and 
 
 ## 25 October 2026, Director: T19 v2 follow-up unblocked
 Reviewed revised diagnosis, solo/party tables and source tools. Three answers posted in team/tasks/T19-director-review.md: land observation-only timing first; build and publish B/C selectable before a fight in its isolated preview, recording the arm; keep the explicit boss-tier breath candidate harness-only pending results (4/5/6 starting heroes: 0.50/0.44/0.38 share). Multi-heal still independently authorized. No live balance release. Paired uncertainty and boss-HP phase labeling remain measurement polish, not a preview block. BOARD marks READY and gives Claude the next sequence. Review was source/table inspection, no independent rerun or phone test.
+
+
+## 25 October 2026, Director: urgent two-player playtest T21
+Dave reports slow reward-turn handoff, no Bow visible for two archers, and older cards. Details and assigned scope: team/tasks/T21-two-player-playtest.md. Hosted root fetched as 20261025cards4 with cards stylesheet; device versions unknown. Source leads: online waitPoll only covers battle, not victory drafting; Ranger starts with quiver NW/Bow NE while START_DICE omits NE. Claude prioritizes reproduction and checked fixes over experimental balance work, preserving saves and authoritative reward selection. T17/current objective mockups remain undeployed. No runtime change or two-phone reproduction in this intake.
