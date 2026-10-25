@@ -1,0 +1,744 @@
+{
+ "heroes": 4,
+ "label": "after",
+ "phones": {
+  "Dav": [
+   {
+    "at": 35854,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 35854,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 52301,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 52301,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 52301,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 52301,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 52301,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 52301,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 53929,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 108
+   },
+   {
+    "at": 53929,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 69946,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 78
+   },
+   {
+    "at": 69946,
+    "ev": "strike",
+    "name": "Dave1",
+    "target": "u93w7v",
+    "dealt": 30,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 70485,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 51
+   },
+   {
+    "at": 70485,
+    "ev": "strike",
+    "name": "Pal2",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 70973,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 70973,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u93w7v",
+    "dealt": 21,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 71598,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 20
+   },
+   {
+    "at": 71598,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 23
+   },
+   {
+    "at": 71598,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 21
+   },
+   {
+    "at": 71598,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 21
+   },
+   {
+    "at": 72218,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 10
+   },
+   {
+    "at": 72218,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 20
+   },
+   {
+    "at": 72218,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 17
+   },
+   {
+    "at": 72218,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 13
+   },
+   {
+    "at": 72763,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 72763,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 73265,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 73265,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   }
+  ],
+  "JP": [
+   {
+    "at": 43831,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 43831,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 51845,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 51845,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 51845,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 51845,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 51845,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 51845,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 53480,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 108
+   },
+   {
+    "at": 53480,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 69554,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 78
+   },
+   {
+    "at": 69554,
+    "ev": "strike",
+    "name": "Dave1",
+    "target": "u93w7v",
+    "dealt": 30,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 70037,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 51
+   },
+   {
+    "at": 70037,
+    "ev": "strike",
+    "name": "Pal2",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 70526,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 70526,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u93w7v",
+    "dealt": 21,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 71151,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 20
+   },
+   {
+    "at": 71151,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 23
+   },
+   {
+    "at": 71151,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 21
+   },
+   {
+    "at": 71151,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 21
+   },
+   {
+    "at": 71776,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 10
+   },
+   {
+    "at": 71776,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 20
+   },
+   {
+    "at": 71776,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 17
+   },
+   {
+    "at": 71776,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 13
+   },
+   {
+    "at": 72331,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 72331,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 72937,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 72937,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   }
+  ],
+  "Cy": [
+   {
+    "at": 41536,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 41536,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 46623,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 46623,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 46623,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 46623,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 46623,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 46623,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 48265,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 108
+   },
+   {
+    "at": 48265,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 64342,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 78
+   },
+   {
+    "at": 64342,
+    "ev": "strike",
+    "name": "Dave1",
+    "target": "u93w7v",
+    "dealt": 30,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 64823,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 51
+   },
+   {
+    "at": 64823,
+    "ev": "strike",
+    "name": "Pal2",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 65321,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 65321,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u93w7v",
+    "dealt": 21,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 65937,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 20
+   },
+   {
+    "at": 65937,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 23
+   },
+   {
+    "at": 65937,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 21
+   },
+   {
+    "at": 65937,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 21
+   },
+   {
+    "at": 66565,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 10
+   },
+   {
+    "at": 66565,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 20
+   },
+   {
+    "at": 66565,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 17
+   },
+   {
+    "at": 66565,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 13
+   },
+   {
+    "at": 67127,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 67127,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 67875,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 67875,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   }
+  ],
+  "Di": [
+   {
+    "at": 37499,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 37499,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 40588,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 135
+   },
+   {
+    "at": 40588,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 40588,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 40588,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 40588,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 40588,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 42060,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 108
+   },
+   {
+    "at": 42060,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 58082,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 78
+   },
+   {
+    "at": 58082,
+    "ev": "strike",
+    "name": "Dave1",
+    "target": "u93w7v",
+    "dealt": 30,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 58569,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 51
+   },
+   {
+    "at": 58569,
+    "ev": "strike",
+    "name": "Pal2",
+    "target": "u93w7v",
+    "dealt": 27,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 59036,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 59036,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u93w7v",
+    "dealt": 21,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 59617,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 20
+   },
+   {
+    "at": 59617,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 23
+   },
+   {
+    "at": 59617,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 21
+   },
+   {
+    "at": 59617,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 21
+   },
+   {
+    "at": 60233,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 10
+   },
+   {
+    "at": 60233,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 20
+   },
+   {
+    "at": 60233,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 17
+   },
+   {
+    "at": 60233,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 13
+   },
+   {
+    "at": 60821,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 60821,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   },
+   {
+    "at": 61260,
+    "ev": "plate",
+    "uid": "u93w7v",
+    "shown": 30
+   },
+   {
+    "at": 61260,
+    "ev": "plate",
+    "uid": "ua3m9c",
+    "shown": 32
+   }
+  ]
+ },
+ "pre": [
+  {
+   "uid": "u93w7v",
+   "hp": 135
+  },
+  {
+   "uid": "ua3m9c",
+   "hp": 32
+  }
+ ]
+}

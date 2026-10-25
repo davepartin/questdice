@@ -407,7 +407,16 @@ function petInfo() {
 }
 
 // The monsters' cards (name, health, what each plans) live under their pieces on the table (flat.js).
-function updatePlate(e) { B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.picked !== false && B.b.enemies[B.target]?.uid === e.uid }); }
+function updatePlate(e, hp) { const shown = hp !== undefined ? hp : (B.staged ? stagedEnemy(e) : null); B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.picked !== false && B.b.enemies[B.target]?.uid === e.uid, hp: shown }); if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'plate', uid: e.uid, shown: shown ?? e.hp }); }
+// While a company round replays, the table already holds the round's FINAL state, so each plate is painted from the hits played so far: the health
+// before the round, then down by each strike's real loss in report order (never the round's total on the first hero's blow).
+const stagedEnemy = (e) => { const g = B.staged; return g ? Math.max(0, Math.min(e.maxHp, e.hp + (g.e.get(e.uid) || 0))) : null; };
+const paintStaged = (e) => updatePlate(e, stagedEnemy(e));
+function stageStrike(s) { const g = B.staged; if (!g) return; const take = (uid, n) => { if (uid && n > 0) g.e.set(uid, Math.max(0, (g.e.get(uid) || 0) - n)); }; take(s.targetUid, s.dealt); for (const sp of s.splashed || []) take(sp.uid, sp.dealt); }
+const heroIndex = (name) => B.b.fighters.findIndex((f) => f.hero.name === name);
+function paintHeroStaged(name) { const g = B.staged; const i = heroIndex(name); if (!g || i < 0) return; const f = B.b.fighters[i]; const hp = Math.max(0, Math.min(f.maxHp, g.h.get(name) ?? f.hp)); B.fb?.paintHero(i, hp, f.maxHp); if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'hero', name, shown: hp }); }
+export const traceStart = () => { B.trace = []; return B.trace; };
+export const traceRead = () => B.trace || [];
 function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
 export const refreshPlates = () => updatePlates(); // (dev scripts)
 function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
@@ -422,7 +431,7 @@ const foePc = (uid) => B.fb?.foe(uid);
 const myPc = () => B.fb.hero(Math.max(0, B.active ?? 0));
 function paintHeroes() {
   const fb = B.fb; if (!fb) return;
-  if (B.party) B.b.fighters.forEach((f, i) => fb.paintHero(i, f.hp, f.maxHp));
+  if (B.party) B.b.fighters.forEach((f, i) => fb.paintHero(i, B.staged && B.staged.h.has(f.hero.name) ? Math.max(0, Math.min(f.maxHp, B.staged.h.get(f.hero.name))) : f.hp, f.maxHp));
   fb.setActive(Math.max(0, B.active ?? 0));
   if (B.party) fb.setPartyStance?.(stanceOf(B.b.fighters, B.b.enemies, B.replaying ? { strikes: B.lastRep?.strikes } : {}));
 }
@@ -1244,6 +1253,12 @@ async function playParty(rep, outcome = B.b.outcome) {
   const card = makeCard(rep);
   const pcOf = (n) => heroPiece(n);
   paintHearts(rep); B.replaying = true; // the faces as locked in stay up while the round plays out
+  // staged health: every monster back to its health before the round (final health plus the damage the strikes will deal), every hero to theirs before the blows
+  B.staged = { e: new Map(), h: new Map() };
+  for (const st of rep.strikes) { const add = (uid, n) => { if (uid && n > 0) B.staged.e.set(uid, (B.staged.e.get(uid) || 0) + n); }; add(st.targetUid, st.dealt); for (const sp of st.splashed || []) add(sp.uid, sp.dealt); }
+  for (const x of rep.fighters) if (!x.down) B.staged.h.set(x.name, Math.min(b.fighters[heroIndex(x.name)]?.maxHp ?? 1e9, x.hpAfter + x.taken - x.healed));
+  for (const e of b.enemies) paintStaged(e);
+  for (const x of rep.fighters) if (!x.down) paintHeroStaged(x.name);
   B.fb?.setPartyStance?.(stanceOf(b.fighters, b.enemies, { strikes: rep.strikes }));
   const pace = replayPace((rep.order || []).length, { reduced: reduced() });
   // team triples and Heartbeat
@@ -1273,7 +1288,7 @@ async function playParty(rep, outcome = B.b.outcome) {
   for (const step of rep.order) {
     const started = t0();
     if (step.kind === 'hero') { const s = strikes.find((x) => x.name === step.name && !x.done); if (s) { s.done = true; await playStrike(s, rep); } }
-    else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames); } }
+    else { const act = acts.find((x) => x.uid === step.uid && !x.done); if (act) { act.done = true; await playFoe(act, snapNames); if (Array.isArray(act.nets)) snapNames.forEach((n, i) => { const net = act.nets[i] || 0; if (net > 0) { B.staged.h.set(n, (B.staged.h.get(n) ?? 0) - net); paintHeroStaged(n); } }); } }
     const rest = pace.beat - (t0() - started); if (rest > 0.05) await wait(rest);
   }
   for (const st of rep.stalks || []) { const a = foePc(st.uid); if (a) a.num(st.broken ? 'Stalk broken!' : 'Ready to pounce!', st.broken ? 'block' : 'hurt'); }
@@ -1296,6 +1311,7 @@ async function playParty(rep, outcome = B.b.outcome) {
     banner(`${rep.shield.name.toUpperCase()} HELD THE LINE`, 'good'); sfx.block?.(); await wait(0.9);
   }
   bw.tray.unlock?.();
+  B.staged = null; // the round is played: the plates and bars show the real state
   for (const e of b.enemies) updatePlate(e);
   B.replaying = false;
   paintHeroes();
@@ -1323,11 +1339,13 @@ async function playStrike(s, rep) {
   if (m) { banner(`MORALE BOOST +${m.n} · ${s.name.toUpperCase()}`, 'good'); ha.glow('buff'); await wait(0.5); }
   const hero = b.fighters.find((f) => f.hero.name === s.name)?.hero; const wid = D.modelOf(hero?.loadout.NW.id);
   await strikeAnim(ha, s, { caster: wid === 'staff', cls: hero?.cls });
-  const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) updatePlate(e);
+  stageStrike(s); // this strike's real loss comes off the plate now (and nobody else's)
+  const e = b.enemies.find((x) => x.uid === s.targetUid); if (e) paintStaged(e);
+  if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'strike', name: s.name, target: s.targetUid, dealt: s.dealt, guarded: s.guarded || 0, killed: !!s.killed });
   for (const sp of s.splashed || []) { // splash / area damage on the other monsters
     const a = foePc(sp.uid); if (!a || sp.dealt <= 0) continue;
     a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'dmg');
-    const x = b.enemies.find((y) => y.uid === sp.uid); if (x) updatePlate(x);
+    const x = b.enemies.find((y) => y.uid === sp.uid); if (x) paintStaged(x);
   }
   const down = [...(s.killed ? [s.targetUid] : []), ...(s.splashed || []).filter((sp) => sp.killed && sp.uid !== s.targetUid).map((sp) => sp.uid)];
   if (down.length) { await killMoment(down); await wait(0.5); }

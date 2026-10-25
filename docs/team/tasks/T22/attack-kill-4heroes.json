@@ -1,0 +1,308 @@
+{
+ "heroes": 4,
+ "label": "kill",
+ "phones": {
+  "Dav": [
+   {
+    "at": 36259,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 49997,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 49997,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 49997,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 49997,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 49997,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 51585,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 10
+   },
+   {
+    "at": 51585,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u963sr",
+    "dealt": 35,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 65985,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   },
+   {
+    "at": 65985,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u963sr",
+    "dealt": 10,
+    "guarded": 0,
+    "killed": true
+   },
+   {
+    "at": 67864,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   }
+  ],
+  "JP": [
+   {
+    "at": 40769,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 49443,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 49443,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 49443,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 49443,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 49443,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 51039,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 10
+   },
+   {
+    "at": 51039,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u963sr",
+    "dealt": 35,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 65442,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   },
+   {
+    "at": 65442,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u963sr",
+    "dealt": 10,
+    "guarded": 0,
+    "killed": true
+   },
+   {
+    "at": 67333,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   }
+  ],
+  "Cy": [
+   {
+    "at": 38904,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 44657,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 44657,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 44657,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 44657,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 44657,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 46267,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 10
+   },
+   {
+    "at": 46267,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u963sr",
+    "dealt": 35,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 60670,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   },
+   {
+    "at": 60670,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u963sr",
+    "dealt": 10,
+    "guarded": 0,
+    "killed": true
+   },
+   {
+    "at": 62565,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   }
+  ],
+  "Di": [
+   {
+    "at": 36032,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 38904,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 45
+   },
+   {
+    "at": 38904,
+    "ev": "hero",
+    "name": "Pal2",
+    "shown": 28
+   },
+   {
+    "at": 38904,
+    "ev": "hero",
+    "name": "Dave1",
+    "shown": 28
+   },
+   {
+    "at": 38904,
+    "ev": "hero",
+    "name": "Pal3",
+    "shown": 34
+   },
+   {
+    "at": 38904,
+    "ev": "hero",
+    "name": "Pal4",
+    "shown": 30
+   },
+   {
+    "at": 40357,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 10
+   },
+   {
+    "at": 40357,
+    "ev": "strike",
+    "name": "Pal4",
+    "target": "u963sr",
+    "dealt": 35,
+    "guarded": 0,
+    "killed": false
+   },
+   {
+    "at": 54753,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   },
+   {
+    "at": 54753,
+    "ev": "strike",
+    "name": "Pal3",
+    "target": "u963sr",
+    "dealt": 10,
+    "guarded": 0,
+    "killed": true
+   },
+   {
+    "at": 56608,
+    "ev": "plate",
+    "uid": "u963sr",
+    "shown": 0
+   }
+  ]
+ },
+ "pre": [
+  {
+   "uid": "u963sr",
+   "hp": 45
+  }
+ ]
+}

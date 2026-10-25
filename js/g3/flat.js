@@ -373,12 +373,13 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     pc.slot.classList.toggle('low', k <= 0.3 && hp > 0);
     if (down && !pc.dead) pc.fall(-1);
   };
-  fb.paintFoe = (e, { intents = true, targeted = false } = {}) => {
+  fb.paintFoe = (e, { intents = true, targeted = false, hp: shown = null } = {}) => {
     const pc = fb.foes.get(e.uid); if (!pc) return; const c = pc.c;
-    const dead = e.hp <= 0; const k = clamp(e.hp / Math.max(1, e.maxHp), 0, 1);
+    const hpNow = shown ?? e.hp; // a round being replayed shows the health after the hits played so far, not the round's final health
+    const dead = hpNow <= 0; const k = clamp(hpNow / Math.max(1, e.maxHp), 0, 1);
     c.hp.querySelector('.fb-hp-fill').style.width = `${k * 100}%`;
     const ghost = c.hp.querySelector('.fb-hp-ghost'); if (k * 100 >= parseFloat(ghost.style.width || '100')) ghost.style.width = `${k * 100}%`; else { clearTimeout(c.gt); c.gt = setTimeout(() => { ghost.style.width = `${k * 100}%`; }, 420); }
-    c.hpNum.textContent = String(Math.max(0, Math.ceil(e.hp)));
+    c.hpNum.textContent = String(Math.max(0, Math.ceil(hpNow)));
     if (c.defSig !== (e.armor ? 'a' : '') + (e.faces?.length || 0)) { // its defence (guard die, armour, or none) does not change with the round
       c.defSig = (e.armor ? 'a' : '') + (e.faces?.length || 0);
       const d = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {}; const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
@@ -400,7 +401,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
       c.intent.className = `fb-intent${plan ? ` tone-${plan.tone}` : ''}`;
       c.intent.replaceChildren(...(plan ? [HK.icon(plan.icon), h('b', { class: `fb-word${plan.word.length > 8 ? ' xs' : plan.word.length > 6 ? ' sm' : ''}` }, plan.word), plan.dice ? h('small', { class: 'fb-dice' }, plan.dice) : null].filter(Boolean) : []));
       requestAnimationFrame(() => fitPlan(c.intent));
-      pc.el.setAttribute('aria-label', plan ? `${e.name}, ${Math.max(0, e.hp)} of ${e.maxHp} health. Plans ${plan.word}${plan.dice ? `, rolling ${plan.dice}` : ''}.` : `${e.name}${dead ? ', defeated' : ''}`);
+      pc.el.setAttribute('aria-label', plan ? `${e.name}, ${Math.max(0, hpNow)} of ${e.maxHp} health. Plans ${plan.word}${plan.dice ? `, rolling ${plan.dice}` : ''}.` : `${e.name}${dead ? ', defeated' : ''}`);
     }
     return pc;
   };
