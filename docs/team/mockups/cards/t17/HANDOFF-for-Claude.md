@@ -56,7 +56,7 @@ Serve the repo root (e.g. `python3 -m http.server 8773`) and open
 - Diamond: which sizes it's found at; one-use vs permanent (current ruling: permanent).
 - Sell values: 18 / 36 are placeholders (Diamond borrows Gold).
 - Removal of the on-card slot square, and where the equipped hand shows instead (battle map or equip screen?).
-- Objective card backs: "OBJECTIVE" vs the plural "OBJECTIVES" (see `../objectives/`).
+- (Settled, not waiting) Card backs = the approved T12 backs in `docs/team/mockups/backs/` (`back-objective.webp`, `back-secret-objective.webp`). The ornate `../objectives/` backs were rejected by Dave on 24 Oct.
 
 ## Known limits
 
