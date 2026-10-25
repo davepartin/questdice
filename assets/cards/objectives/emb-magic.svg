@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 36 36"><defs>
+<radialGradient id="halo"><stop offset="0" stop-color="#b46cff" stop-opacity=".55"/><stop offset=".55" stop-color="#b46cff" stop-opacity=".18"/><stop offset="1" stop-color="#b46cff" stop-opacity="0"/></radialGradient>
+<linearGradient id="face" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#ddbdff"/><stop offset=".45" stop-color="#b46cff"/><stop offset="1" stop-color="#513173"/></linearGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4cf"/><stop offset=".35" stop-color="#d9a84a"/><stop offset=".7" stop-color="#7a5418"/><stop offset="1" stop-color="#f0d08a"/></linearGradient>
+<linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<clipPath id="cp"><path d="M12 2.4 L22.2 20.6 H1.8 Z" clip-rule="nonzero"/></clipPath>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy=".6" stdDeviation=".6" flood-color="#281838" flood-opacity=".8"/></filter></defs>
+<circle cx="12" cy="12" r="17.5" fill="url(#halo)"/>
+<path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ddbdff" opacity=".22" transform="rotate(0 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ddbdff" opacity=".22" transform="rotate(45 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ddbdff" opacity=".22" transform="rotate(90 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ddbdff" opacity=".22" transform="rotate(135 12 12)"/>
+<g filter="url(#sh)"><path d="M12 2.4 L22.2 20.6 H1.8 Z" fill="#281838" stroke="url(#rim)" stroke-width="1.50" stroke-linejoin="round"/><path d="M12 2.4 L22.2 20.6 H1.8 Z" fill="url(#face)"/>
+<g clip-path="url(#cp)"><path d="M12 2.4 L22.2 20.6 H1.8 Z" fill="none" stroke="#513173" stroke-width="1.40" opacity=".7" transform="translate(0.35 0.5)"/><path d="M12 2.4 L22.2 20.6 H1.8 Z" fill="none" stroke="#ddbdff" stroke-width="1.00" opacity=".8" transform="translate(-0.25 -0.35)"/>
+<path d="M12 8.2 L13 11 L15.8 12 L13 13 L12 15.8 L11 13 L8.2 12 L11 11 Z" fill="#fff" opacity=".85" transform="translate(0 2.6)"/><rect x="-2" y="-2" width="28" height="12.5" fill="url(#gloss)" transform="rotate(-8 12 12)"/></g>
+<path d="M12 2.4 L22.2 20.6 H1.8 Z" fill="none" stroke="#fff8e0" stroke-width="0.30" stroke-linejoin="round" opacity=".7"/></g></svg>

@@ -1,0 +1,107 @@
+{
+ "size": "390x664",
+ "phones": [
+  {
+   "who": "Dav",
+   "kind": "secret-objective",
+   "focus": "crown",
+   "chip": "Secret Objective",
+   "title": "Lead the Charge",
+   "w": 258,
+   "top": 235,
+   "bottom": 579,
+   "vh": 664,
+   "spill": -1,
+   "emblem": 161,
+   "btns": [
+    {
+     "text": "Continue",
+     "top": 593,
+     "bottom": 647
+    }
+   ],
+   "moreVisible": true,
+   "minFont": 8,
+   "imgs": true
+  },
+  {
+   "who": "JP",
+   "kind": "secret-objective",
+   "focus": "team",
+   "chip": "Secret Objective",
+   "title": "No One Left Behind",
+   "w": 258,
+   "top": 235,
+   "bottom": 579,
+   "vh": 664,
+   "spill": -1,
+   "emblem": 118,
+   "btns": [
+    {
+     "text": "Continue",
+     "top": 593,
+     "bottom": 647
+    }
+   ],
+   "moreVisible": true,
+   "minFont": 8,
+   "imgs": true
+  },
+  {
+   "who": "Dav-offer",
+   "kind": "wager",
+   "focus": "team",
+   "chip": "Secret Objective",
+   "title": "Someone Has to Fall",
+   "w": 258,
+   "top": 235,
+   "bottom": 579,
+   "vh": 664,
+   "spill": -1,
+   "emblem": 53,
+   "btns": [
+    {
+     "text": "Accept",
+     "top": 593,
+     "bottom": 647
+    },
+    {
+     "text": "Decline",
+     "top": 593,
+     "bottom": 647
+    }
+   ],
+   "moreVisible": true,
+   "minFont": 8,
+   "imgs": true
+  },
+  {
+   "who": "JP-offer",
+   "kind": "wager",
+   "focus": "atk",
+   "chip": "Secret Objective",
+   "title": "The Slacker",
+   "w": 258,
+   "top": 235,
+   "bottom": 579,
+   "vh": 664,
+   "spill": -1,
+   "emblem": 67,
+   "btns": [
+    {
+     "text": "Accept",
+     "top": 593,
+     "bottom": 647
+    },
+    {
+     "text": "Decline",
+     "top": 593,
+     "bottom": 647
+    }
+   ],
+   "moreVisible": true,
+   "minFont": 8,
+   "imgs": true
+  }
+ ]
+}

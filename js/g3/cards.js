@@ -66,7 +66,7 @@ const corners = (ks) => [0, 1, 2, 3].map((i) => `<span class="cn c${i + 1}">${ic
 const metalClass = (d) => `metal-${d.metal.toLowerCase()}`;
 
 // ---- the cards
-const LABEL = { weapon: 'Weapon', objective: 'Bonus Challenge', 'secret-objective': 'Secret Objective', wager: 'Wager' };
+const LABEL = { weapon: 'Weapon', objective: 'Objective', 'secret-objective': 'Secret Objective', wager: 'Secret Objective, offered bribe' };
 export function weaponCardHtml(d) {
   return (`<article class="qc qc-weapon t13 ${metalClass(d)}" data-kind="weapon" aria-label="${esc(`${d.metal} ${d.name}, d${d.size}${d.wear ? ', ' + d.wear : ''}`)}">
     <div class="win scene-forge">${weaponArt(d)}</div><img class="fr" src="${ART}front-frame.webp" alt="">${corners(d.accents)}
@@ -89,19 +89,29 @@ export function secretData(id, act = 2) { // an envelope card from CARDS; the sa
   const d = CARDS[id]; const env = { act }; const mine = { id, mode: d.kind === 'bribe' && d.mode === 'offer' ? 'offer' : null };
   return { id, name: d.name, kind: d.kind, mode: mine.mode, rule: d.rule.replace('{spare}', 'that monster'), stakes: rewardChips(env, mine), terms: rewardTerms(env, mine), G: gOf(act) };
 }
-const row = (k, v, cls = '') => `<div class="sr ${cls}"><small>${k}</small><span>${v}</span></div>`;
+// The Objective and Secret Objective fronts (T05, Grok rev 4): two painted, text-free frames (parchment and brass for the public Objective, dark leather
+// and crimson for the Secret Objective), a centre emblem that is the game's own symbol for what the goal is about, and live text for everything else.
+// Two decks only: a solo Bonus Goal is an Objective; a secret card and a private offered bribe are Secret Objectives. The words are the game's
+// current wording (rewardChips / rewardTerms); nothing here decides what a card pays.
+const OBJ_ART = `${ART}objectives/`;
+export const OBJ_FOCUS = { nopotion: 'heal', block40: 'block', magic40: 'magic', noreroll: 'magic', deal50: 'atk',
+  lead: 'crown', shield: 'block', medic: 'heal', together: 'team', quick: 'windup', spark: 'magic',
+  goldrush: 'gold', arcane: 'magic', finisher: 'skull', wall: 'block', bigswing: 'atk', lucky: 'dice', straights: 'straight', fleet: 'boots', strongarm: 'gauntlet', bright: 'helmet', crowd: 'crown',
+  thrice: 'dice', mittens: 'gauntlet', thinker: 'helmet', neverlast: 'boots', teetotal: 'heal', biggame: 'skull', thrifty: 'magic', heartmatch: 'heart', cliffhanger: 'heart', saver: 'magic', talentshow: 'talent',
+  slacker: 'atk', glass: 'block', cold: 'team', longfight: 'slam', pact: 'heart', fall: 'team', laststand: 'heart',
+  goldfumble: 'gold', spare: 'skull', hoarder: 'magic', lonewolf: 'team' };
+export const OBJ_TINT = { magic: '#b46cff', gold: '#ffc21a', atk: '#ff4b4b', block: '#3aa4ff', heal: '#38e87a', dice: '#c8b89a', crown: '#ffd86a', straight: '#ffe08a', slam: '#ff7a3a', windup: '#ffd23d', team: '#9fd0ff', heart: '#ff4f7a', skull: '#b8b0a2', helmet: '#d6a456', gauntlet: '#d6a456', boots: '#d6a456', talent: '#f2b84a' };
+export const objectiveFocus = (id) => (OBJ_FOCUS[id] && OBJ_TINT[OBJ_FOCUS[id]] ? OBJ_FOCUS[id] : 'gold');
+const term = (k, v, cls = '') => `<div class="t ${cls}"><small>${k}</small><span>${v}</span></div>`;
 export function objectiveCardHtml(kind, d) {
-  const isObj = kind === 'objective';
-  let stakes;
-  if (isObj) stakes = `<div class="srs">${row('Stake', d.stake ? `<b>${d.stake}</b> gold, paid when you accept` : 'none, a free try')}${row('Reward', `<b>${d.back}</b>${d.stake ? ' back' : ' gold'} if done and won${d.stake ? ` · net <b>+${d.net}</b>` : ''}`, 'good')}${row('If not', d.stake ? 'the stake is lost, whether it was missed or the fight was lost' : 'nothing is lost', 'bad')}</div>`;
-  else if (kind === 'wager') { const t = d.terms; stakes = `<div class="srs w4">${row('Reward', `<b>+${t.win}</b> if done and the team wins`, 'good')}${row('Won, not done', '<b>0</b>, nothing lost')}${row('Team defeated', `pay <b>${t.fail}</b>, done or not; <b>${t.crooks}</b> more if every bribe was taken`, 'bad')}${row('Decline', `Honor <b>+${t.honor[0]}</b>, or <b>+${t.honor[1]}</b> if the team is defeated`)}</div>`; }
-  else stakes = `<div class="srs">${row('Stake', 'none')}${(d.stakes || []).map((c) => row('Reward', esc(c), 'good')).join('')}</div>`;
-  const HEART = new URL('../../assets/tutorial/heart-6.png', import.meta.url).href;
-  const art = kind === 'secret-objective' ? `<img class="art obj heart" src="${HEART}" alt="">` : d.id === 'nopotion' ? `<img class="art obj" src="${ART}potion.webp" alt=""><i class="nogo"></i>` : `<div class="emb">${ico(isObj ? 'star' : 'gold')}</div>`;
-  return (`<article class="qc qc-${kind}" data-kind="${kind}" aria-label="${esc(`${LABEL[kind]}: ${d.name}`)}">
-    <div class="win scene-${kind}">${art}</div><img class="fr" src="${ART}front-frame.webp" alt="">${corners([kind === 'wager' ? 'gold' : 'star'])}
-    <div class="name"><span>${esc(d.name)}</span></div>
-    <div class="okind">${LABEL[kind]}</div><div class="obox"><div class="cond"><small>Condition</small><p class="orule">${esc(d.rule)}</p></div>${stakes}</div></article>`);
+  const isObj = kind === 'objective'; let terms;
+  if (isObj) terms = term('Stake', d.stake ? `<b>${d.stake}</b> gold, paid when you accept` : 'none, a free try') + term('Reward', `<b>${d.back}</b>${d.stake ? ' back' : ' gold'} if done and won${d.stake ? ` · net <b>+${d.net}</b>` : ''}`, 'good') + term('If not', d.stake ? 'the stake is lost, whether it was missed or the fight was lost' : 'nothing is lost', 'bad');
+  else if (kind === 'wager') { const t = d.terms; terms = term('Reward', `<b>+${t.win}</b> if done and the team wins`, 'good') + term('Won, not done', '<b>0</b>, nothing lost') + term('Team defeated', `pay <b>${t.fail}</b>, done or not; <b>${t.crooks}</b> more if every bribe was taken`, 'bad') + term('Decline', `Honor <b>+${t.honor[0]}</b>, or <b>+${t.honor[1]}</b> if the team is defeated`); }
+  else terms = term('Stake', 'none') + (d.stakes || []).map((c) => term('Reward', esc(c), 'good')).join('');
+  const f = objectiveFocus(d.id); const deck = isObj ? 'objective' : 'secret-objective';
+  return (`<article class="qo qo-${kind} ${isObj ? 'obj' : 'sec'}${kind === 'wager' ? ' tight' : ''}" data-kind="${kind}" data-focus="${f}" style="--tc:${OBJ_TINT[f]}" aria-label="${esc(`${LABEL[kind]}: ${d.name}`)}">
+    <img class="fr" src="${OBJ_ART}front-${deck}-frame.webp" alt=""><i class="tint"></i>
+    <div class="in"><div class="chip">${isObj ? 'Objective' : 'Secret Objective'}</div><h2 class="ttl">${esc(d.name)}</h2><div class="emb"><img src="${OBJ_ART}emb-${f}.svg" alt=""></div><p class="goal">${esc(d.rule)}</p><div class="terms">${terms}</div></div></article>`);
 }
 export const objectiveCardEl = (kind, d) => el(objectiveCardHtml(kind, d));
 // The card for an envelope or Bonus Goal screen: bonus (solo) -> objective; an accepted-able offer -> wager; anything else -> secret objective.

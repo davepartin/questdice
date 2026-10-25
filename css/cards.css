@@ -115,7 +115,7 @@
 .strip13 i.ar svg{width:8px;height:8px}.strip13 i.am-pierce svg{color:#ff8a1a!important}.strip13 i.am-fire svg{color:#ff5a2a!important}.strip13 i.am-frost svg{color:#7fe3ff!important}
 .ch13.am-pierce{color:#8a3c00}.ch13.am-fire{color:#8a1c00}.ch13.am-frost{color:#0a4a63}
 /* the envelope and Bonus Challenge screen: the card, then the More button under it */
-.cw-obj{display:grid;justify-items:center}.cw-obj .qc{--w:max(250px,min(88vw,330px,calc((100dvh - 15rem) * .75)))}
+.cw-obj{display:grid;justify-items:center}.cw-obj .qc{--w:max(250px,min(88vw,330px,calc((100dvh - 15rem) * .75)))}.cw-obj .qo{--w:max(250px,min(88vw,330px,calc((100dvh - 20rem) * .75)))}
 .cw-more{display:grid;justify-items:center;gap:6px;margin-top:8px;width:100%;padding-bottom:5.5rem}
 
 .loot-row:has(> .cw-spoil),.loot-row:has(> .cw-wrap),.wc-grid:has(> .cw-wrap),.sx-diamond .loot-row.one:has(> .cw-spoil){display:flex;flex-direction:column;gap:.6rem;max-width:none}
@@ -135,3 +135,32 @@
 .cw-more .obj-morebtn{color:#f2d9a0;text-decoration-color:#f2d9a0}.cw-more .obj-more{max-width:min(88vw,330px)}.cw-more .obj-more p{color:#e8dcc4}
 .ci-weapons:has(> .cw-wrap){grid-template-columns:1fr!important}
 .ci-weapons .cw-row{padding:6px 2px}
+
+/* Objective and Secret Objective fronts (T05, rev 4): painted frame and emblem layers, every word live. Sized by --w; text has a pixel floor so a small card stays readable. */
+.qo{position:relative;width:var(--w,320px);aspect-ratio:3/4;container-type:inline-size;border-radius:4cqi;overflow:hidden;box-shadow:0 8px 20px #000c;font-family:'Inter',sans-serif}
+.qo>img.fr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.qo .in{position:absolute;left:12.5%;right:12.5%;top:9%;bottom:9%;display:flex;flex-direction:column;align-items:center;text-align:center}
+.qo .chip{font:800 max(8px,3.1cqi)/1 'Oxanium',sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:1.2cqi 2.8cqi;border-radius:9cqi;margin-top:1cqi;white-space:nowrap}
+.qo .ttl{font:600 max(17px,9.4cqi)/1.02 'Cormorant Garamond',serif;margin:2.2cqi 0 0;letter-spacing:.01em}
+.qo .emb{flex:1 1 0;min-height:0;width:100%;margin:1.4cqi 0;position:relative}
+.qo .emb img{position:absolute;left:50%;top:0;height:100%;width:auto;max-width:100%;transform:translateX(-50%)}
+.qo .tint{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 42% at 50% 44%,var(--tc) 0,transparent 100%)}
+.qo.obj .tint{opacity:.22;mix-blend-mode:multiply}.qo.sec .tint{opacity:.3;mix-blend-mode:screen}
+.qo .goal{font:700 max(12.5px,5.8cqi)/1.22 'Inter',sans-serif;margin:0 0 2.2cqi;padding:0 1cqi}
+.qo .terms{width:100%;display:flex;flex-direction:column;gap:1.2cqi;margin-bottom:.4cqi}
+.qo .t{display:flex;align-items:center;justify-content:space-between;gap:2cqi;padding:1.3cqi 2.4cqi;border-radius:1.6cqi;font:600 max(10.5px,3.6cqi)/1.2 'Inter',sans-serif;text-align:left}
+.qo .t small{font:800 max(8.5px,2.7cqi)/1 'Oxanium',sans-serif;letter-spacing:.1em;text-transform:uppercase;flex:0 0 auto}
+.qo .t span{display:block;text-align:right}
+.qo .t b{font:800 max(12px,4.4cqi)/1 'Inter',sans-serif}
+.qo.tight .ttl{font-size:max(16px,7.6cqi);margin-top:1.4cqi}.qo.tight .emb{margin:.4cqi 0;min-height:12cqi}.qo.tight .goal{font-size:max(11.5px,4.8cqi);line-height:1.15;margin-bottom:1.2cqi}
+.qo.tight .terms{gap:.9cqi}.qo.tight .t{flex-direction:column;align-items:stretch;gap:.5cqi;padding:.8cqi 2.2cqi}.qo.tight .t small{font-size:max(8px,2.4cqi)}.qo.tight .t span{text-align:left}
+/* Objective: parchment, dark ink, brass */
+.qo.obj .chip{background:#3a2610;color:#f0d89a;box-shadow:inset 0 0 0 .35cqi #b08a4a}
+.qo.obj .ttl{color:#2a1606;text-shadow:0 .3cqi 0 #fff5}
+.qo.obj .goal{color:#2e1c0a}
+.qo.obj .t{background:#f6e8c4cc;color:#3a2410;box-shadow:inset 0 0 0 .3cqi #a8844a88}.qo.obj .t small{color:#7a5420}.qo.obj .t.bad{background:#e8d2b0aa}.qo.obj .t.good b{color:#245a1e}.qo.obj .t.bad b{color:#8a1a12}
+/* Secret Objective: dark leather, crimson accent, silver text */
+.qo.sec .chip{background:#5a0c12;color:#f4eee6;box-shadow:inset 0 0 0 .35cqi #c8202a}
+.qo.sec .ttl{color:#efeae2;text-shadow:0 .4cqi .6cqi #000}
+.qo.sec .goal{color:#d8d4cc}
+.qo.sec .t{background:#ffffff10;color:#e6e2da;box-shadow:inset 0 0 0 .3cqi #9a1a2288}.qo.sec .t small{color:#e08a90}.qo.sec .t b{color:#fff}

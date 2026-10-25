@@ -76,7 +76,7 @@ test('Bonus Challenge cards carry the game\'s stake, reward and net, by act', ()
   for (const act of [1, 2, 3]) for (const id of Object.keys(S.BONUS_GOALS)) {
     const o = CW.objectiveData(id, act); assert.equal(o.stake, S.bonusStake(act)); assert.equal(o.back, S.bonusG(act)); assert.equal(o.net, S.bonusG(act) - S.bonusStake(act));
     const html = CW.objectiveCardHtml('objective', o);
-    assert.ok(html.includes(`<b>${o.stake}</b>`) && html.includes(`<b>${o.back}</b>`) && html.includes(`+${o.net}`) && html.includes('Condition') && html.includes('Stake') && html.includes('Reward'));
+    assert.ok(html.includes(`<b>${o.stake}</b>`) && html.includes(`<b>${o.back}</b>`) && html.includes(`+${o.net}`) && html.includes(o.rule) && html.includes('Stake') && html.includes('Reward'));
   }
   const view = S.bonusView(S.dealBonusGoal({ c: { seed: 1, act: 2, step: 1 }, hero: { gold: 0 } })); // too poor to stake: a free try
   const free = CW.objectiveCardHtml('objective', CW.objectiveFromView(view)); assert.match(free, /a free try/); assert.match(free, /nothing is lost/);
@@ -119,4 +119,17 @@ test('rewardChips is exported for the card, and the envelope view carries the st
 test('index.html links the card stylesheet (without it the cards render at full-screen size)', async () => {
   const { readFileSync } = await import('node:fs'); const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(html, /<link rel="stylesheet" href="css\/cards\.css\?v=[A-Za-z0-9]+">/);
+});
+
+test('objective fronts: every Objective and Secret Objective has a focus emblem and tint, the files exist, and the chip names the deck', async () => {
+  const { existsSync } = await import('node:fs');
+  const dir = new URL('../assets/cards/objectives/', import.meta.url);
+  for (const id of [...Object.keys(S.BONUS_GOALS), ...Object.keys(S.CARDS)]) {
+    assert.ok(CW.OBJ_FOCUS[id], `${id} has a focus`); const f = CW.objectiveFocus(id); assert.ok(CW.OBJ_TINT[f], `${id} tint`); assert.ok(existsSync(new URL(`emb-${f}.svg`, dir)), `emblem for ${f}`);
+  }
+  for (const f of ['front-objective-frame.webp', 'front-secret-objective-frame.webp']) assert.ok(existsSync(new URL(f, dir)), f);
+  const obj = CW.objectiveCardHtml('objective', CW.objectiveData('nopotion', 2)); assert.match(obj, /class="chip">Objective</); assert.match(obj, /front-objective-frame/); assert.match(obj, /emb-heal\.svg/);
+  const sec = CW.objectiveCardHtml('secret-objective', CW.secretData('thrice', 2)); assert.match(sec, /class="chip">Secret Objective</); assert.match(sec, /front-secret-objective-frame/);
+  const w = CW.objectiveCardHtml('wager', { id: 'slacker', name: 'x', rule: 'y', terms: S.rewardTerms({ act: 2 }, { id: 'slacker', mode: 'offer' }) }); assert.match(w, /front-secret-objective-frame/, 'an offered bribe is a Secret Objective, not a third deck');
+  assert.doesNotMatch(obj + sec + w, /WAGER|CHALLENGE|Payout/, 'the unsettled payout wording stays out');
 });
