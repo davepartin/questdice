@@ -18,7 +18,7 @@ The contact sheet is `contact-sheet.webp`. The second tries are in `alternates/`
 - `assets/tutorial/heart-6.png`: the heart die.
 - `assets/dice/knight/mockup.png`: die symbols and colours.
 
-**Final production:** the category word is painted into these concepts. The shipped backs will use the same art with a *blank* plate, and the word as live HTML text, so it can be translated and kept crisp.
+**Final production:** the shipped backs use the T12 art as is, with the painted titles (per Dave, 24 Oct). No blank plate or live text.
 
 ## T13: the Heart die on the Wager back
 Astra asked for the Heart die to show three visible faces, with coherent cube geometry and the game's real arrangement.
