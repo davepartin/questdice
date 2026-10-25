@@ -35,3 +35,25 @@
 .cw-spoil .qc17{--w:100%;cursor:pointer}
 .cw-big .qc17{--w:min(88vw,340px)}
 .cw-modal .cw-big{width:100%;display:grid;justify-items:center}.cw-modal .cw-big .qc17{--w:min(100%,330px,calc((100svh - 190px) * 720 / 1052))}
+
+/* Size mode (T17 preview only, EXPERIMENT.weaponSize): one row per size, the faces each size adds, a cardboard dice cover over every size not yet bought. */
+.dice17.rows{padding:.6cqi 1cqi;gap:0;align-items:stretch;justify-content:space-between}
+.dice17.rows .row{position:relative;display:grid;grid-template-columns:9cqi 1fr 9cqi;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.dice17.rows .row:first-child{border-top:0}
+.dice17.rows .sz{display:flex;flex-direction:column;align-items:center;font:800 4.4cqi/1 'Oxanium',sans-serif;color:#3a2410}.dice17.rows .sz small{font-size:2.2cqi;letter-spacing:.16em;text-transform:uppercase;color:#6a4a22}
+.dice17.rows .dz{display:flex;justify-content:center;gap:2.2cqi}
+.dice17.rows .row.locked .dz{visibility:hidden}
+.cov.tok{position:absolute;left:-.6cqi;right:-.6cqi;top:.2cqi;bottom:.6cqi;z-index:2;display:grid;grid-template:'t p' 1fr/auto 1fr;align-items:center;column-gap:1.4cqi;padding:2.4cqi 5.6cqi 3.4cqi 5.4cqi;cursor:pointer;
+ background:url(../assets/cards/token-open.webp) 0 0/100% 100% no-repeat;filter:drop-shadow(0 .8cqi .7cqi #2a1606aa)}
+.cov.tok .ct{grid-area:t;display:flex;flex-direction:column;gap:.5cqi}.cov.tok .ct b{font:800 5.4cqi/1 'Oxanium',sans-serif;letter-spacing:.1em;color:#2a1608;text-shadow:0 .2cqi 0 #fff8}
+.cov.tok .ct small{font:700 2.4cqi/1 'Oxanium',sans-serif;letter-spacing:.06em;color:#4a2c12;white-space:nowrap}
+.cov.tok .cp{grid-area:p;justify-self:end;display:flex;align-items:center;gap:.9cqi;padding:1cqi 2.4cqi;border-radius:99px;background:linear-gradient(180deg,#3a2414,#22140a);box-shadow:inset 0 0 0 .3cqi #e0b86a99,0 .2cqi 0 #fff4}
+.cov.tok .cp .coin{width:4.4cqi;height:4.4cqi}.cov.tok .cp b{font:800 5.4cqi/1 'Oxanium',sans-serif;color:#ffd98a}.cov.tok .cp small{font:700 3cqi 'Oxanium',sans-serif;color:#ffd98a;text-transform:uppercase}
+.cov.tok.gone{animation:tokOut .65s cubic-bezier(.5,-.25,.7,.4) forwards;pointer-events:none}
+@keyframes tokOut{0%{transform:none}22%{transform:translateY(-1.4cqi) scale(1.04) rotate(-1.5deg);filter:drop-shadow(0 2.4cqi 1.6cqi #2a1606aa)}100%{transform:translate(115%,-2cqi) rotate(9deg);opacity:0}}
+.dice17.rows .row.reveal .dz{visibility:visible}.dice17.rows .row.reveal .d17{animation:dieIn .45s .25s cubic-bezier(.3,1.5,.6,1) both}.dice17.rows .row.reveal .d17:nth-child(2){animation-delay:.32s}
+@keyframes dieIn{0%{transform:scale(.6) translateY(1.4cqi);opacity:0}100%{transform:none;opacity:1}}
+.cov.tok.nope{animation:wig .45s ease}
+@keyframes wig{20%{transform:translateX(-1.4cqi) rotate(-1deg)}40%{transform:translateX(1.2cqi) rotate(.8deg)}60%{transform:translateX(-.8cqi)}80%{transform:translateX(.5cqi)}}
+.toast17{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;padding:1.4cqi 3cqi;border-radius:99px;background:#1c120acc;box-shadow:inset 0 0 0 .35cqi #e0b86a,0 .8cqi 1.6cqi #000a;font:800 3.6cqi/1 'Oxanium',sans-serif;letter-spacing:.04em;color:#ffd98a;white-space:nowrap;pointer-events:none;animation:toastIn 1.5s ease both}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,-30%)}12%,80%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cov.tok.gone{animation:tokFade .2s linear forwards}.dice17.rows .row.reveal .d17,.cov.tok.nope,.toast17{animation:none}@keyframes tokFade{to{opacity:0}}}

@@ -96,7 +96,7 @@ function atlas(poly, faces, cell = 256) {
 
 // dieSet(sides, faces, { px }): one PNG data URL per label 1..sides, each the die turned so that label faces the viewer (tipped a little).
 // faces[label - 1] = { v, c: 'r' | 'b', icons: [kind...] }. One atlas, one solid, one render per label.
-export function dieSet(sides, faces, { px = 200 } = {}) {
+export function dieSet(sides, faces, { px = 200, from = 0 } = {}) {
   setup(); R.setSize(px, px, false);
   const poly = makePoly(sides); const A = atlas(poly, faces); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
   const bump = new THREE.CanvasTexture(A.cv); bump.flipY = true;
@@ -105,6 +105,7 @@ export function dieSet(sides, faces, { px = 200 } = {}) {
   const tilt = new THREE.Euler(-0.3, sides === 4 ? 0.22 : 0.24, 0); const dist = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (sides === 4 ? 0.78 : 0.86);
   cam.position.set(0, 0, dist); cam.lookAt(0, 0, 0); mesh.position.y = sides === 4 ? -poly.outR * 0.08 : 0;
   for (let label = 1; label <= sides; label++) {
+    if (label <= from) { urls.push(null); continue; } // a size row shows only the faces its purchase added
     const f = poly.faces[poly.labelFace[label - 1]]; const m = new THREE.Matrix4().makeBasis(f.e2, f.e1, f.n).transpose();
     mesh.quaternion.setFromRotationMatrix(m).premultiply(new THREE.Quaternion().setFromEuler(tilt));
     R.render(scene, cam); urls.push(R.domElement.toDataURL('image/png'));

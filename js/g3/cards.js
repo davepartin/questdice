@@ -2,7 +2,7 @@
 // number and die face is live text and a change to a price, a wear rule or a face shows up here by itself. The images are only
 // text-free layers (frame, scene, painted weapon). Everything in this module only READS: it never calls a wear, sell, buy or save
 // function, so drawing a card cannot change a weapon or a hero (test/cards.test.mjs checks that).
-import { WEAPONS, RARITY, WEAPONS2, tierName, isLegendary } from '../data.js';
+import { WEAPONS, RARITY, WEAPONS2, EXPERIMENT, WEAPON_SIZE, tierName, isLegendary } from '../data.js';
 import { weaponFaces, weaponSize, battlesLeft, wearLabel, sellValue, diamondSellValue } from '../engine.js';
 import { BONUS_GOALS, CARDS, bonusStake, bonusG, rewardChips, rewardTerms, gOf } from '../secrets.js';
 
@@ -31,12 +31,21 @@ const el = (html) => { const t = document.createElement('template'); t.innerHTML
 // ---- weapon data, read from a real instance (nothing typed by hand)
 // Arrows: the badge follows inst.ammo, with the same default weaponFaces uses (engine.js): defaultAmmo, else normal.
 export const ammoOf = (inst) => (inst.id !== 'quiver' ? null : WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal');
+// T17 (EXPERIMENT.weaponSize, preview only): the card as Dave's mockup shows it: one row per size, the faces each size adds, and a cardboard dice cover
+// over every size not yet bought. Needs the cumulative face table; without it (or for a Diamond, a legendary, Fists) the plain tray is shown.
+const SIZES17 = [4, 6, 8, 10];
+export function sizeRows(inst) {
+  if (!EXPERIMENT.weaponSize || !WEAPON_SIZE.ladder || inst.diamond || inst.id === 'fists' || WEAPONS[inst.id]?.legendary) return null;
+  const size = weaponSize(inst); let prev = 0; const rows = [];
+  for (const s of SIZES17) { const faces = weaponFaces({ ...inst, size: s }); if (faces.length !== s) return null; rows.push({ size: s, from: prev, faces, owned: s <= size, price: prev ? WEAPON_SIZE.prices[prev] : 0 }); prev = s; }
+  return rows;
+}
 export function weaponData(inst, money) {
   const def = WEAPONS[inst.id]; const faces = weaponFaces(inst); const ammo = ammoOf(inst);
   const kinds = [...new Set(faces.flatMap((f) => [...Object.keys(f.fx || {}), ...(f.plus ? [def.lean === 'def' ? 'block' : 'atk'] : [])]))];
   const sell = inst.id === 'fists' ? 0 : inst.diamond ? diamondSellValue(inst) : sellValue(inst);
   return {
-    id: inst.id, name: def.name, metal: tierName(inst), hands: def.hands, size: weaponSize(inst),
+    rows: sizeRows(inst), id: inst.id, name: def.name, metal: tierName(inst), hands: def.hands, size: weaponSize(inst),
     ammo, ammoName: ammo ? WEAPONS2.ammo[ammo] : null,
     left: battlesLeft(inst), wear: inst.id === 'fists' ? '' : wearLabel(inst), sell, faces,
     // what the gold figure is called: Sell (what the pack pays) or Store (what the shelf charges); the caller says which
@@ -99,7 +108,11 @@ function weaponArt17(d) {
   if (!key) return `<div class="ph17">${esc(d.name)}<small>art to come</small></div>`;
   return `<div class="win scene-forge"><img class="art${m ? '' : ' tint-' + d.metal.toLowerCase()}" src="${WART}${key}-${m ? m + '-' : ''}512.webp" alt="${esc(d.name)}"></div>`;
 }
+const figureOf = (f, i) => `<figure class="d17 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" role="img" aria-label="face ${i + 1}: ${faceWords(f)}"><span class="ph17t">+${f.v}</span></figure>`;
+const coverHtml = (r) => `<div class="cov tok" role="button" tabindex="0" data-step="${r.size}" aria-label="Dice cover: upgrade d${r.from} to d${r.size} for ${r.price} gold"><span class="ct"><b>UPGRADE</b><small>d${r.from} → d${r.size} · +${r.size - r.from} faces</small></span><span class="cp"><i class="coin"></i><b>${r.price}</b><small>gold</small></span></div>`;
+const rowHtml = (r) => `<div class="row s${r.size}${r.owned ? '' : ' locked'}" data-size="${r.size}"><span class="sz"><small>Size</small>d${r.size}</span><div class="dz" data-sides="${r.size}" data-from="${r.from}" data-faces="${esc(JSON.stringify(dieFaces(r.faces)))}" style="--dw:${{ 4: 13.4, 6: 14.2, 8: 14.8, 10: 15 }[r.size]}cqi">${r.owned ? r.faces.slice(r.from).map((f, i) => figureOf(f, r.from + i)).join('') : ''}</div>${r.owned ? '' : coverHtml(r)}</div>`;
 export function weaponCardHtml(d) {
+  if (d.rows) return weaponCardSized(d);
   const n = d.faces.length; const tray = TRAY[n] || TRAY[4]; const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.faces); const df = JSON.stringify(dieFaces(d.faces));
   const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
   return (`<article class="qc17 qc-weapon metal-${d.metal.toLowerCase()}" data-kind="weapon" aria-label="${esc(`${name}, d${d.size}${d.wear ? ', ' + d.wear : ''}`)}">
@@ -110,28 +123,57 @@ export function weaponCardHtml(d) {
       <div class="dz" data-sides="${DIE_SIDES.has(n) ? n : 0}" data-faces="${esc(df)}" style="--cols:${tray.cols};--dw:${tray.w}cqi">${d.faces.map((f, i) => `<figure class="d17 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" role="img" aria-label="face ${i + 1}: ${faceWords(f)}"><span class="ph17t">+${f.v}</span></figure>`).join('')}</div></div>
     ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[i][1]}%">${badge(k, d.metal)}</span>`).join('')}</article>`);
 }
+function weaponCardSized(d) {
+  const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.rows.filter((r) => r.owned).flatMap((r) => r.faces)); const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
+  return (`<article class="qc17 qc-weapon sized metal-${d.metal.toLowerCase()}" data-kind="weapon" data-size="${d.size}" aria-label="${esc(`${name}, d${d.size}`)}">
+    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
+    <img class="fr17" src="${ART}frame-t17.webp" alt="">
+    <div class="title17"><span style="font-size:${tf}cqi">${esc(name)}</span></div>
+    <div class="dice17 rows">${d.rows.map(rowHtml).join('')}</div>
+    ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[i][1]}%">${badge(k, d.metal)}</span>`).join('')}</article>`);
+}
 // Photographed dice: built on demand (WebGL, three.js) and cached by the faces; a card shows plain number tiles until its dice are ready, and keeps them if
 // graphics are unavailable. One job at a time, a breath between jobs, so a screen with several cards stays responsive.
 const DIE_CACHE = new Map(); let dieQueue = Promise.resolve(); let dieMod = null;
 const SYM_ALL = { ...SYM };
-const placeDice = (dz, urls) => { [...dz.children].forEach((fg, i) => { if (!urls[i]) return; const img = new Image(); img.alt = ''; img.decoding = 'async'; img.src = urls[i]; fg.replaceChildren(img); fg.classList.add('got'); }); };
+const placeDice = (dz, urls, from = 0) => { [...dz.querySelectorAll('figure')].forEach((fg, i) => { if (!urls[from + i]) return; const img = new Image(); img.alt = ''; img.decoding = 'async'; img.src = urls[from + i]; fg.replaceChildren(img); fg.classList.add('got'); }); };
 export function hydrateDice(root) {
   for (const dz of root.querySelectorAll('.dz[data-faces]:not([data-done])')) {
-    dz.dataset.done = '1'; const key = dz.dataset.faces; const sides = +dz.dataset.sides; if (!sides) continue;
-    if (DIE_CACHE.has(key)) { placeDice(dz, DIE_CACHE.get(key)); continue; }
+    const sides = +dz.dataset.sides; const from = +dz.dataset.from || 0; if (!sides || !dz.querySelector('figure')) continue; // a covered row draws nothing until it is bought
+    dz.dataset.done = '1'; const key = `${dz.dataset.faces}|${from}`;
+    if (DIE_CACHE.has(key)) { placeDice(dz, DIE_CACHE.get(key), from); continue; }
     dieQueue = dieQueue.then(async () => {
       try {
         if (!DIE_CACHE.has(key)) {
           dieMod ||= await import('./dice3d.js'); dieMod.setSymbols(SYM_ALL);
-          await new Promise((r) => setTimeout(r, 24)); DIE_CACHE.set(key, dieMod.dieSet(sides, JSON.parse(key)));
+          await new Promise((r) => setTimeout(r, 24)); DIE_CACHE.set(key, dieMod.dieSet(sides, JSON.parse(dz.dataset.faces), { from }));
           if (DIE_CACHE.size > 80) DIE_CACHE.delete(DIE_CACHE.keys().next().value);
         }
-        placeDice(dz, DIE_CACHE.get(key));
+        placeDice(dz, DIE_CACHE.get(key), from);
       } catch { /* no WebGL here: the number tiles stay */ }
     });
   }
 }
-export const weaponCardEl = (d) => { const e = el(weaponCardHtml(d)); hydrateDice(e); return e; };
+// opts.onBuy(step) -> true when the size was bought, or a short reason (a size card only; without it the covers are for show).
+export const weaponCardEl = (d, opts = {}) => { const e = el(weaponCardHtml(d)); hydrateDice(e); if (d.rows) wireSizes(e, d, opts); return e; };
+function wireSizes(card, d, { onBuy } = {}) {
+  const nextCover = () => card.querySelector('.cov.tok:not(.gone)'); let toastT;
+  const say = (t, text) => { card.querySelector('.toast17')?.remove(); const m = document.createElement('div'); m.className = 'toast17'; m.setAttribute('role', 'status'); m.textContent = text; t.closest('.row').append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };
+  const wiggle = (t) => { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope'); };
+  const unlock = (t) => { // the cover slides away, then the row's new dice settle in
+    const row = t.closest('.row'); const size = +row.dataset.size; const r = d.rows.find((x) => x.size === size);
+    row.querySelector('.dz').replaceChildren(...[...r.faces.slice(r.from).map((f, i) => { const tpl = document.createElement('template'); tpl.innerHTML = figureOf(f, r.from + i); return tpl.content.firstElementChild; })]);
+    t.classList.add('gone'); row.classList.add('reveal'); hydrateDice(row); card.dataset.size = String(size);
+    t.addEventListener('animationend', () => { t.remove(); row.classList.remove('locked'); }, { once: true }); setTimeout(() => { if (t.isConnected) { t.remove(); row.classList.remove('locked'); } }, 900);
+  };
+  const tap = (t) => {
+    if (t !== nextCover()) { wiggle(t); say(t, `Upgrade to d${nextCover().dataset.step} first`); return; }
+    if (!onBuy) return; const got = onBuy(+t.dataset.step);
+    if (got === true) unlock(t); else { wiggle(t); say(t, typeof got === 'string' ? got : 'Not available'); }
+  };
+  card.addEventListener('click', (e) => { const t = e.target.closest('.cov.tok:not(.gone)'); if (t) { e.stopPropagation(); tap(t); } });
+  card.addEventListener('keydown', (e) => { const t = e.target.closest?.('.cov.tok'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(t); } });
+}
 // Objective data from what the game already holds. A Bonus Goal view (secrets.js bonusView) has stake and gold; a secret card's view
 // (cardView) has its chips and, for an offer, structured terms. Condition, Stake and Reward are always separate, labelled blocks.
 export function objectiveFromView(v) {
@@ -176,7 +218,7 @@ export function envelopeCardParts(card, bonus) {
   return ['secret-objective', { id: card.id, name: card.name, rule: card.rule, stakes: card.stakes }];
 }
 export const envelopeCardEl = (card, bonus) => objectiveCardEl(...envelopeCardParts(card, bonus));
-export const weaponCardOf = (inst, money) => weaponCardEl(weaponData(inst, money));
+export const weaponCardOf = (inst, money, opts) => weaponCardEl(weaponData(inst, money), opts);
 
 // ---- compact views: the 128 px icon of the same painted master, the face strip, the chips
 export function icon(d, px = 128) {

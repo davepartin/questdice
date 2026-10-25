@@ -1307,6 +1307,13 @@ function weaponWorkshop(hero, slot, inst) {
           f.fx || f.plus ? h('span', { class: 'wf-fx' }, fxItems({ ...(f.plus ? { [f.c === 'b' ? 'block' : 'atk']: f.plus } : {}), ...(f.fx || {}) })) : null))));
   };
   const ammo = inst.id === 'quiver' && D.EXPERIMENT.weapons2 ? ammoPick(hero, inst) : null;
+  if (SZ) { // the card as designed: a row for every size, a dice cover over each one not yet bought; tapping the next cover buys it
+    const d0 = CW.weaponData(inst);
+    if (d0.rows) {
+      const card = CW.weaponCardEl(d0, { onBuy: () => { const t = E.trainInfo(hero, inst.uid); if (!t.ok) return t.why === 'gold' ? `Need ${t.cost - hero.gold} more gold` : 'Not available'; if (!HE.trainWeapon(hero, inst.uid)) return 'Not available'; sfx.level(); X.persist(); const p = $('.sh-purse b'); if (p) p.textContent = String(hero.gold); return true; } });
+      return h('div', { class: 'ww-workshop sized' }, h('div', { class: 'cw-big' }, card), ammo, h('p', { class: 'cw-balance' }, 'Tap the next dice cover to buy that size. Size is not refunded.'));
+    }
+  }
   if (forge.why === 'wear' && train.why === 'wear') {
     return h('div', { class: 'ww-workshop' }, frame, ammo,
       h('p', { class: 'ww-note' }, ico('sword'), E.wearLabel(inst)),

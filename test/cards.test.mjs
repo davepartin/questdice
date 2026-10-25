@@ -149,3 +149,19 @@ test('index.html links the weapon card stylesheet and every die and card asset e
   assert.ok(existsSync(new URL('../assets/cards/frame-t17.webp', import.meta.url)) && existsSync(new URL('../js/g3/dice3d.js', import.meta.url)));
   for (const m of ['bronze', 'silver', 'gold']) assert.ok(existsSync(new URL(`../assets/cards/weapons/dagger-${m}-wide.webp`, import.meta.url)));
 });
+
+test('size mode (the T17 preview): one row per size, a dice cover on every size not yet bought, the next price on each, nothing changes with the switch off', async () => {
+  const { readFileSync } = await import('node:fs'); const ladder = JSON.parse(readFileSync(new URL('../assets/t17-faces.json', import.meta.url), 'utf8'));
+  const off = CW.weaponCardHtml(CW.weaponData(inst('dagger', 1, 6))); assert.doesNotMatch(off, /class="cov tok"|class="row /, 'live: the plain tray, no covers');
+  D.EXPERIMENT.weaponSize = true; D.WEAPON_SIZE.ladder = ladder;
+  try {
+    const w = inst('dagger', 1, 6); const d = CW.weaponData(w); assert.equal(d.rows.length, 4);
+    assert.deepEqual(d.rows.map((r) => r.owned), [true, true, false, false]); assert.deepEqual(d.rows.map((r) => r.faces.length), [4, 6, 8, 10]);
+    for (let i = 1; i < 4; i++) assert.deepEqual(d.rows[i].faces.slice(0, d.rows[i - 1].faces.length), d.rows[i - 1].faces, 'each size is a prefix of the next');
+    const html = CW.weaponCardHtml(d); assert.equal((html.match(/class="cov tok"/g) || []).length, 2, 'covers on d8 and d10 only');
+    assert.match(html, /upgrade d6 to d8 for 80 gold/); assert.match(html, /upgrade d8 to d10 for 140 gold/); assert.doesNotMatch(html, /upgrade d4 to d6/);
+    assert.equal((html.match(/class="d17 /g) || []).length, 6, 'only the owned rows carry dice: d4 shows 4, d6 shows its 2 new faces');
+    const full = CW.weaponCardHtml(CW.weaponData(inst('dagger', 2, 10))); assert.doesNotMatch(full, /class="cov tok"/, 'a d10 has nothing left to uncover');
+    assert.equal(CW.weaponData({ ...inst('dagger', 1, 6), diamond: true }).rows, null, 'a Diamond has no size rows');
+  } finally { D.EXPERIMENT.weaponSize = false; D.WEAPON_SIZE.ladder = null; }
+});
