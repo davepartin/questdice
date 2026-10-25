@@ -35,15 +35,15 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const px = { 4: 44, 6: 45, 8: 50, 10: 52 };
   const next = SIZES[SIZES.indexOf(size) + 1];
   const avgOf = (s) => { const n = nested(id, metal, s); return (n.reduce((a, f) => a + hit(f), 0) / n.length).toFixed(2); };
-  const body = SIZES.map((s, r) => { const from = r ? SIZES[r - 1] : 0; const dieFaces = all.slice(0, s).map(face);
+  const found = metal === 3; // rev 11, Dave idea for Astra (PROVISIONAL): Diamond is found fully upgraded at a set size, no dice covers
+  const body = SIZES.filter((s) => !found || s <= size).map((s, r) => { const from = r ? SIZES[r - 1] : 0; const dieFaces = all.slice(0, s).map(face);
     const dice = rows[s].map((f, i) => { const label = from + i + 1; const ff = face(f);
       return `<figure class="d17" style="--px:${px[s]}"><img src="${dieImage(s, dieFaces, label, { px: px[s] * 5, stone })}" alt="face ${label}: ${ff.c === 'b' ? 'block' : 'attack'} +${f.v}${ff.icons.length ? ', ' + ff.icons.map((k) => NAME[k]).join(' ') : ''}"><figcaption>${label}<i>${ff.c === 'b' ? 'BLK' : 'ATK'}</i></figcaption></figure>`; }).join('');
     const locked = s > size; const avail = s === next;
-    const cover = !locked ? '' : avail
-      ? `<div class="cov tok" role="button" tabindex="0" aria-label="Upgrade to d${s} for ${STEP_PRICE[s]} gold"><span class="ct"><b>UPGRADE</b><small>d${from} → d${s} · +${rows[s].length} faces</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span></div>`
-      : `<div class="cov tok off"><i class="tab t1"></i><i class="tab t2"></i><span class="ct"><b>SIZE d${s}</b><small>Locked · buy d${from} first</small></span><span class="cp"><i class="lock"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span><span class="cn">Unavailable until d${from} is uncovered</span></div>`;
-    const info = `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : `bought · ${STEP_PRICE[s]} gold`}</small><small>avg hit ${avgOf(s)}</small></span>`;
-    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('');
+    // rev 11 (Dave): "dice covers", one standard design for every step (d6 40, d8 80, d10 140); only the next one can be bought
+    const cover = !locked ? '' : `<div class="cov tok" role="button" tabindex="0" data-step="${s}" data-from="${from}" aria-label="Dice cover: upgrade d${from} to d${s} for ${STEP_PRICE[s]} gold"><span class="ct"><b>UPGRADE</b><small>d${from} → d${s} · +${rows[s].length} faces</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span></div>`;
+    const info = `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : (found ? "came with the find" : `bought · ${STEP_PRICE[s]} gold`)}</small><small>avg hit ${avgOf(s)}</small></span>`;
+    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('') + (found ? `<div class="found17"><b>Found at d${size}</b><small>Diamond dice come fully upgraded · no dice covers · PROVISIONAL</small></div>` : '');
   const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
   const sq = slot ? `<div class="eq on"><div class="well"><img class="cur" src="${dieImage(size, open.map(face), size, { px: 360, view: 'slot', stone })}" alt="d${size} die resting in its socket"></div>
@@ -56,15 +56,18 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
 ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[i][1]}%" title="${NAME[k]} (legend: a bonus type on the unlocked faces)">${badge(k, d.metal)}</span>`).join('')}`;
   // rev 5 demo (mockup only, no gold spent): click the available token, or the demo button, to see the unlock: the token slides off,
   // the row's dice settle in, and the next size's token wakes from locked to available
-  el.unlock = () => { const t = el.querySelector('.cov.tok:not(.off):not(.gone)'); if (!t) return false; const row = t.closest('.row');
+  // demo (mockup only, no gold spent): tap the next dice cover (or the demo button): it slides away and the row's dice settle in.
+  // Tapping a later cover buys nothing: it wiggles and the card says which size to upgrade first (~1.5 s)
+  const nextCov = () => el.querySelector('.cov.tok:not(.gone)');
+  el.unlock = () => { const t = nextCov(); if (!t) return false; const row = t.closest('.row');
     t.classList.add('gone'); row.classList.add('reveal');
-    const nx = row.nextElementSibling?.querySelector('.cov.tok.off');
-    t.addEventListener('animationend', () => { t.remove(); row.classList.remove('locked');
-      if (nx) { const s = +nx.closest('.row').className.match(/s(\d+)/)[1]; const f = SIZES[SIZES.indexOf(s) - 1]; nx.classList.remove('off');
-        nx.querySelector('.ct b').textContent = 'UPGRADE'; nx.querySelector('.ct small').textContent = `d${f} → d${s} · +${rows[s].length} faces`; nx.querySelector('.cn').remove();
-        nx.querySelector('.cp').innerHTML = `<i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small>`; } }, { once: true });
-    return true; };
-  el.addEventListener('click', (e) => { if (e.target.closest('.cov.tok:not(.off)')) el.unlock(); });
+    t.addEventListener('animationend', () => { t.remove(); row.classList.remove('locked'); }, { once: true }); return true; };
+  let toastT; el.refuse = (t) => { const n = nextCov(); t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope');
+    el.querySelector('.toast17')?.remove(); const m = document.createElement('div'); m.className = 'toast17'; m.setAttribute('role', 'status');
+    m.textContent = `Upgrade to d${n.dataset.step} first`; t.closest('.row').append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };
+  const tap = (t) => { if (t === nextCov()) el.unlock(); else el.refuse(t); };
+  el.addEventListener('click', (e) => { const t = e.target.closest('.cov.tok:not(.gone)'); if (t) tap(t); });
+  el.addEventListener('keydown', (e) => { const t = e.target.closest?.('.cov.tok'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(t); } });
   // rev 8 (Dave): the Sell pill is a button and never sells on one tap: it opens a confirm step, Cancel is the default and primary
   const nm = `${d.metal} ${d.name}`;
   const ask = () => { if (el.querySelector('.sellq')) return; const q = document.createElement('div'); q.className = 'sellq'; q.setAttribute('role', 'alertdialog'); q.setAttribute('aria-modal', 'true');

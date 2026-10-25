@@ -146,3 +146,5 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 2026-10-24, Director: Reviewed T19 parts 1 and 2 against the measurement tools and engine. Answered all seven questions in tasks/T19-director-review.md. Required corrections to the solo baseline, net-damage/safety claims, group labels and uncertainty before balance conclusions. Authorized a boss-tier-only isolated composition/health comparison, plus separate multi-heal usability and report timing work. No healing/Heart nerf, live balance release or new phone test requested. Claude has the next action; no T19 art needed. Source review only, no independent rerun.
+
+2026-10-24, Grok: T17 mockup rev 11 (mockup files only, no gameplay change): titles 5 px lower; "dice covers" (Dave's name for the cardboard covers) now one standard design for d6/d8/d10 (40/80/140 gold), a later cover refuses with a wiggle and "Upgrade to d6 first" for 1.5 s; Diamond shown found fully upgraded at its size with no covers (provisional). Dave idea for Astra added to tasks/T17.md: Diamond found pre-upgraded, and whether Diamond is one-use or permanent (current ruling: permanent). Data JSON unchanged.

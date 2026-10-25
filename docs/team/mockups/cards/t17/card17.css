@@ -128,3 +128,15 @@ button.sell:hover,button.sell:focus-visible{outline:.4cqi solid #ffd98a;outline-
 .cov.tok:not(.off){padding-top:2cqi;padding-bottom:3.2cqi}
 .cov.tok:not(.off){grid-template:'t p' 1fr/auto 1fr;padding-top:2.4cqi;padding-bottom:3.4cqi}
 .cov.tok:not(.off) .ct small{white-space:nowrap}
+
+/* rev 11: the title sits 5 px lower (at a 370 px card) in the bar */
+.title17{transform:translateY(1.35cqi)}
+/* rev 11: dice covers, one look for every step; a later cover refuses with a wiggle and a short label */
+.cov.tok.nope{animation:wig .45s ease}
+@keyframes wig{20%{transform:translateX(-1.4cqi) rotate(-1deg)}40%{transform:translateX(1.2cqi) rotate(.8deg)}60%{transform:translateX(-.8cqi)}80%{transform:translateX(.5cqi)}}
+.toast17{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;padding:1.4cqi 3cqi;border-radius:99px;background:#1c120acc;box-shadow:inset 0 0 0 .35cqi #e0b86a,0 .8cqi 1.6cqi #000a;
+ font:800 3.6cqi/1 Oxanium;letter-spacing:.04em;color:#ffd98a;white-space:nowrap;pointer-events:none;animation:toastIn 1.5s ease both}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,-30%)}12%,80%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cov.tok.nope{animation:none}.toast17{animation:none}}
+.found17{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:.6cqi;padding:1.2cqi 0 .4cqi;border-top:.25cqi solid #6a4a2233}
+.found17 b{font:800 3.4cqi/1 Oxanium;color:#1c2a3a;letter-spacing:.06em}.found17 small{font:700 2.3cqi/1.2 Oxanium;color:#2a3a4a;text-align:center}
