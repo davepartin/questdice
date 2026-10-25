@@ -31,3 +31,33 @@ Act I step 2 with Bronze d4: every set wins (95 to 100%), so the early fight doe
 4. **Resale:** a sale pays half of everything put into a weapon, its found worth plus the gold spent on sizes, so each upgrade returns half and there is no buy-and-sell profit. This replaces the as-found rule in the preview and is still only a candidate until measured against the price list.
 5. **Cards for the dice:** the white dice (head, feet, the talent and the Heart) use existing numbers and can be drawn from the existing rules now; a Left and Right Hands card is a visual candidate with two independent purchases, and the camp's dice grid opens the card of the die you tap.
 6. Next after your answers: the Spear and icon candidates measured on this harness, then whole loadouts against the real monsters (the data above is one hero shell), then human play.
+
+## Dave's direction + Crockpot proposal - needs Astra ruling (Crockpot (Grok Bot), 25 Oct)
+
+**Dave's answer to Q1 and Q3 (25 Oct, 6:13 PM CT, in his words summarised):**
+- **No "reach weapon" role.** He doesn't want it. The Spear needs a different fix.
+- **Each weapon should balance attack (red) and block (blue).**
+- **The class only sets the STARTING weapons, all Bronze.** For example Knight sword and shield, Ranger bow and arrows, Wizard maybe a generic staff ("consider a few options").
+- **No rules on which class can use which weapon.** Players start with Bronze basics and will probably buy and use a great Gold weapon as soon as they find one.
+
+Q2 and Q4-Q6 are not answered here.
+
+**PROPOSED starting-weapon options (Bronze only, the eight T22 types, existing card art where it exists).** Option A is the recommended default for each class.
+
+| Class | A (default) | B | C | Art / notes |
+|---|---|---|---|---|
+| Knight | Sword + Round Shield (today) | Sword + Tower Shield | Spear + Round Shield | All art exists. |
+| Ranger | Bow + Arrows, normal ammo (today) | Bow + Arrows, choose any ammo at start | Dagger + Round Shield (close-quarters hunter) | All art exists. Bow + Arrows has no blue hand; Dave's attack/block balance has to come from the Bow's own blue faces. |
+| Wizard | Staff (two-handed, generic) | Dagger + Round Shield ("staff" stand-in) | Spear + Round Shield (quarterstaff stand-in) | **Gap:** the Staff is not one of the eight T22 types and has no Bronze/Silver/Gold card art (`assets/cards/weapons` has no staff-*). A = new art plus keeping the Staff as a 9th type. B and C use existing art. An "orb" would be a new type, so it is not proposed. |
+| Dwarf | Axe + Tower Shield (today mace + tower; the Axe is the T22 name, art `axe-*`) | Axe + Round Shield | Sword + Tower Shield | All art exists. |
+| Bard | Dagger + Round Shield (T21 default: every non-Ranger has a Bronze shield) | Dagger + Dagger (fast, risky, offered as a choice) | Sword + Round Shield | All art exists. The data model still has Dagger + Bracer; the Bracer has no card art and is not one of the eight. B has no blue hand: faster, but it fell behind by Act III in the measured fights. |
+
+**Rules this proposal assumes (from Dave):**
+- Every class can buy and use every weapon. The class only picks its Bronze starters.
+- Every start includes at least one weapon with blue faces. The exceptions are Ranger A/B (the Bow's blue faces carry the block) and Bard B, which is the optional aggressive pick.
+
+**Open for Astra:**
+- Whether the Wizard keeps a Staff (a 9th type plus new art) or uses a stand-in.
+- Whether "choose your start" (A/B/C) is offered at hero creation or the start stays fixed to A.
+
+No numbers changed.
