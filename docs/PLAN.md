@@ -1466,3 +1466,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 25 October 2026, Director: Dave's upgrade-value decision supersedes T17 fixed as-found/no-refund direction; old clauses marked historical, monotonic resale formula to be measured. T21 Magic usability follow-up recorded, beyond compact Heart. Naming standardized to Objective/Secret Objective for cards, plurals for decks, no rule/ID changes. Claude's delivery limitations retained; no independent runtime review claimed. Documentation only.
+
+
+25 October 2026, Director: Created T22 coordination/static screenshot review and per-hero attack-feedback task. Reviewed Magic after, size-card d6, pack grid and dense online objective screenshots; noted clipped consequence, potentially stale upgrade toast and tiny thumbnail text. Pack grid accepted as direction with current rules. Dave reports Grok actively doing tilted board, helmet options and new Magic visuals; reserve touched files and coordinate handoff with Claude, who owns replay/engine/integration. Source confirms individual strikes sharing spent guard/armor pool; diagnose aggregate HP jump without changing balance. Existing Magic evidence referenced, no new Dave upload needed. No runtime/Safari test performed.
