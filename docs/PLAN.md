@@ -1460,3 +1460,6 @@ Saved a labelled diagnostic extract of Dave's online cards4 two-Ranger defeat (A
 
 ## 25 October 2026, Director: co-op visual delivery and Heart usability
 Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, online victory ranks, compact Gear pack rows and a Heart selector with clipped/scrolled destination controls. T21 now specifies a compact current-face plus two labelled destination controls with cost/used state and Close visible together, long rules behind disclosure, unchanged mechanics. T05 next action now includes full current-rule weapon inspection from online pack/equipment/store and latest objective-focus presentation with original T12 backs. Visual-only integration may ship independently of unresolved T17 balance after phone render/online-route checks; no new generic approval needed. Prioritize starter/reward/Heart fixes. Screenshot review and docs only, no runtime changes or independent Safari reproduction.
+
+
+25 October 2026, Director: Reviewed card handoff; retained original singular painted back titles and allowed existing Mace art as a nonblocking fallback without roster changes. Claude may integrate approved visuals with current rules under T05/T21. Proposed mechanics remain separate; no rendered integration verification claimed. Decisions on BOARD and appended to mockups/cards/HANDOFF-cards-for-Claude.md.
