@@ -57,3 +57,17 @@ The report derives Magpie's Stab as lethal to both. Dav still has two potions be
 5. Post reproduction, narrow fixes and any distinct balance proposal on BOARD. Starter/reward/report corrections remain priority; a blanket early-game nerf is not authorized by this one report.
 
 This intake reviewed the supplied text/JSON arithmetic only. No new simulation or two-client reproduction performed.
+
+## Dave's explicit starter rule, 25 October (supersedes Ranger-only scope)
+Dave: "each person should start with two weapons at the top, a bronze shield on the top right, and a bronze something else on the top left ... for the ranger ... a bow and arrow ... having that extra dice in the top right feels correct."
+
+**Approved for implementation and checked live deployment within T21:**
+- Every new hero starts with NW and NE weapon dice active at d4. NE is not a paid starter unlock. Do not unlock the second talent or any unrelated slot.
+- New heroes use Bronze equipment in both active weapon slots. Preserve each class's current starting left weapon. For non-Rangers use a right shield: retain the existing class shield where one exists (Round Shield for Knight/Wizard, Tower Shield for Dwarf); Bard receives a Bronze Round Shield instead of its starting Sword.
+- Ranger exception: Bronze Arrows NW and Bronze Bow NE, both active. Retain this existing orientation and the real ammunition rules. No new arrow powers or face tables.
+- Existing heroes: preserve both equipped items, rarities, sizes, upgrades and bags, and enable a missing NE once. Do not replace earned right weapons with shields or duplicate starter gear. Preserve heroes already unlocked. Do not invent a refund for previous unlock spending; record it as a migration/economy consideration if relevant. Do not charge anyone to activate the now-standard starting die.
+- Cover solo, shared-phone company, online newly created and brought/imported heroes, local/cloud loading and existing saved tables. Use an authoritative, idempotent migration for online state, not a client-only temporary patch. Explain how already-open sessions receive the fix without corrupting an in-progress round; do not mutate a committed round halfway through resolution.
+- Keep heroStrength formula unchanged, but verify it evaluates the newly active loadout correctly. Check early Normal encounters after the starter change before proposing monster nerfs.
+- This is a specific live starter-rule authorization from Dave. It is independent of T17: no no-wear, size purchasing, new faces or Diamond change is approved here.
+
+Next: Claude implements and verifies this broader starter rule alongside reward-handoff recovery, reports the build and migration checks on BOARD. Dave should not have to restart or discard his Rangers.
