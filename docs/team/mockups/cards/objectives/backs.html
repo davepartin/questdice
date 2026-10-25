@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Objective / Secret Objective card backs (mockup for Astra's review)</title>
+<!-- Grok art-director mockup, T05 art follow-up, 24 Oct. Two backs only: Objectives and Secret Objectives. Painted art is text-free;
+     the deck name is live Cinzel text on the art's blank nameplate. 3:4, the same proportion as the live objective fronts (css/cards.css .qc). -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#15100c;display:flex;flex-wrap:wrap;gap:24px;padding:24px;justify-content:center}
+.ob{position:relative;width:var(--w,327px);aspect-ratio:3/4;container-type:inline-size;border-radius:4.5cqi;overflow:hidden;box-shadow:0 10px 24px #000c,inset 0 0 0 1px #0008}
+.ob img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ob .nm{position:absolute;display:grid;place-items:center;text-align:center;font:900 7.4cqi/1 Cinzel,serif;letter-spacing:.06em}
+.ob.obj .nm{left:24%;right:24%;top:75.5%;height:13%;color:#3a1c06;text-shadow:0 .3cqi 0 #f6dc9a,0 -.2cqi 0 #6a3a10aa}
+.ob.sec .nm{left:21%;right:21%;top:71%;height:16%;font-size:7.4cqi;line-height:1.08;color:#f2d68c;text-shadow:0 .3cqi .4cqi #000,0 0 3cqi #b070ff88}
+</style>
+<body>
+<div class="ob obj" data-k="objective"><img src="back-objective-art.webp" alt=""><div class="nm">OBJECTIVE</div></div>
+<div class="ob sec" data-k="secret"><img src="back-secret-objective-art.webp" alt=""><div class="nm">SECRET<br>OBJECTIVE</div></div>
+<script>document.fonts.ready.then(()=>document.body.dataset.ready=1)</script>
