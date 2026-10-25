@@ -1,0 +1,101 @@
+{
+ "root": {
+  "weaponSize": false,
+  "tag": null
+ },
+ "preview": {
+  "weaponSize": true,
+  "tag": "PREVIEW · weapon size · build 20261025ws1",
+  "keysBefore": [
+   "qd.daily",
+   "qd.hints",
+   "qd.tutorial.done",
+   "questdice.battlereports",
+   "questdice.hero.liveknight"
+  ]
+ },
+ "steps": [
+  {
+   "text": "Silver · d4 Sword d4 d6 A bigger die. Preview the faces at the next size. Current Silver · d4 0 1 2 1 4 2 After upgrade Silver · d6 0 1 2 3 1 4 6 2 Size is not refunded. Selling pays half of what this weapon was worth when found: 24 gold, whatever size you buy. Buy size d6 40 400 gold 360 after upgrade",
+   "gold": 400,
+   "size": 4,
+   "found": null,
+   "modes": false,
+   "buy": [
+    "Buy size d6 40"
+   ]
+  },
+  {
+   "text": "Silver · d6 Sword d6 d8 A bigger die. Preview the faces at the next size. Current Silver · d6 0 1 2 3 1 4 6 2 After upgrade Silver · d8 0 1 2 3 4 5 1 6 1 8 2 Size is not refunded. Selling pays half of what this weapon was worth when found: 24 gold, whatever size you buy. Buy size d8 80 360 gold 280 after upgrade",
+   "gold": 360,
+   "size": 6,
+   "found": 4,
+   "modes": false,
+   "buy": [
+    "Buy size d8 80"
+   ]
+  },
+  {
+   "text": "Silver · d8 Sword d8 d10 A bigger die. Preview the faces at the next size. Current Silver · d8 0 1 2 3 4 5 1 6 1 8 2 After upgrade Silver · d10 0 1 2 3 4 5 6 1 7 8 1 10 2 Size is not refunded. Selling pays half of what this weapon was worth when found: 24 gold, whatever size you buy. Buy size d10 140 280 gold 140 after upgrade",
+   "gold": 280,
+   "size": 8,
+   "found": 4,
+   "modes": false,
+   "buy": [
+    "Buy size d10 140"
+   ]
+  },
+  {
+   "text": "Silver · d10 Sword d10 Maximum size A bigger die. Preview the faces at the next size. Current Silver · d10 0 1 2 3 4 5 6 1 7 8 1 10 2 Selling pays half of what this weapon was worth when found: 24 gold. Biggest die",
+   "gold": 140,
+   "size": 10,
+   "found": 4,
+   "modes": false,
+   "buy": []
+  }
+ ],
+ "after": {
+  "text": "Silver · d10 Sword d10 Maximum size A bigger die. Preview the faces at the next size. Current Silver · d10 0 1 2 3 4 5 6 1 7 8 1 10 2 Selling pays half of what this weapon was worth when found: 24 gold. Biggest die",
+  "gold": 140,
+  "size": 10,
+  "found": 4,
+  "modes": false,
+  "buy": []
+ },
+ "fight": {
+  "sides": 10,
+  "handSides": 4,
+  "faces": 10,
+  "die": 1,
+  "battleWear": ""
+ },
+ "afterFight": {
+  "id": "sword",
+  "size": 10,
+  "left": null,
+  "broke": {
+   "broke": [],
+   "spare": null
+  }
+ },
+ "save": [
+  {
+   "key": "questdice.preview-weapon-size.hero.sizer",
+   "found": true,
+   "size": true
+  }
+ ],
+ "keysAfter": [
+  "qd.daily",
+  "qd.hints",
+  "qd.tutorial.done",
+  "questdice.battlereports",
+  "questdice.hero.liveknight",
+  "questdice.preview-weapon-size.hero.sizer"
+ ],
+ "liveUntouched": {
+  "hero": "{\"live\":\"untouched\"}",
+  "reports": "{\"live\":\"untouched\"}",
+  "daily": "{\"live\":\"untouched\"}"
+ }
+}

@@ -240,7 +240,12 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
-export const EXPERIMENT = { weapons2: false };
+export const EXPERIMENT = { weapons2: false, weaponSize: false };
+// T17 weapon size (an isolated experiment, off in the game and in every preview but /preview/weapon-size/; docs/team/tasks/T17.md). With it on: weapons
+// never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
+// weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
+// the shop and the spoils until their acquisition is specified. `ladder` is where a reviewed cumulative face table plugs in (null: today's faces).
+export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null };
 // Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
 // until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
 //   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack

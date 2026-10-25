@@ -990,7 +990,7 @@ function weaponRow(inst, label = '') {
       : btn(`Train d${t.next}`, () => { if (HE.trainWeapon(hero, inst.uid)) bought(); }, { cls: 'ur-buy', disabled: !t.ok, aria: `Train ${w.name} to d${t.next}` });
   return h('div', { class: 'sx-urow cmp wrow2' }, rowIco(w.lean === 'def' ? 'shield' : 'sword'),
     h('div', { class: 'ur-copy' }, h('b', {}, label || w.name, h('em', { class: 'ur-to' }, ` ${D.tierName(inst)} · d${size}`)),
-      h('small', {}, `${E.wearLabel(inst)}. Weapons are found or bought now, not forged.`)),
+      h('small', {}, D.EXPERIMENT.weaponSize ? 'Never wears out. Size is bought at camp.' : `${E.wearLabel(inst)}. Weapons are found or bought now, not forged.`)),
     h('div', { class: 'ur-btns' }, forge, train));
 }
 // Camp's status bar (Oct 2026): where you are on the road and your potions, in one slim strip above the tabs.
@@ -1275,7 +1275,8 @@ function shWeapon(inst, action, cls = '', badge = '') {
 function weaponWorkshop(hero, slot, inst) {
   const w = D.WEAPONS[inst.id], size = E.weaponSize(inst), rolling = E.sidesOf(hero, slot);
   const forge = E.forgeInfo(hero, inst.uid), train = E.trainInfo(hero, inst.uid);
-  const mode = SHEET.weaponMode === 'train' ? 'train' : 'forge', info = mode === 'forge' ? forge : train;
+  const SZ = D.EXPERIMENT.weaponSize; // T17 (preview only): size is bought here, one step at a time; weapons never wear out; metal is not forged
+  const mode = SZ || SHEET.weaponMode === 'train' ? 'train' : 'forge', info = mode === 'forge' ? forge : train;
   const target = info.next ? { ...inst, ...(mode === 'forge' ? { rarity: info.next } : { size: info.next }) } : null;
   const targetRoll = target ? E.sidesOf({ ...hero, loadout: { ...hero.loadout, [slot]: target } }, slot) : null;
   const frame = h('div', { class: `ww-hero rar-${w.legendary ? 'legend' : inst.diamond ? 'diamond' : RAR[inst.rarity | 0]}` },
@@ -1303,7 +1304,7 @@ function weaponWorkshop(hero, slot, inst) {
   const preview = h('div', { class: 'ww-preview' },
     h('div', { class: 'ww-change' }, h('span', {}, mode === 'forge' ? D.tierName(inst) : `d${size}`), target ? ico('chevron') : null,
       target ? h('b', {}, mode === 'forge' ? D.tierName(target) : `d${E.weaponSize(target)}`) : h('b', {}, mode === 'forge' ? 'Finished metal' : 'Maximum size')),
-    h('p', { class: 'ww-explain' }, mode === 'forge' ? 'Same die size. Preview the new metal’s faces.' : 'More sides. Preview the faces in this hand.'),
+    h('p', { class: 'ww-explain' }, mode === 'forge' ? 'Same die size. Preview the new metal’s faces.' : SZ ? 'A bigger die. Preview the faces at the next size.' : 'More sides. Preview the faces in this hand.'),
     faces(inst, rolling, 'Current'), target ? faces(target, targetRoll, 'After upgrade') : null);
   const capped = target && targetRoll < E.weaponSize(target);
   const warning = inst.diamond ? h('p', { class: 'ww-note' }, ico('gem'), 'Diamond: one battle, then it shatters.')
@@ -1311,9 +1312,10 @@ function weaponWorkshop(hero, slot, inst) {
     : rolling < size ? h('p', { class: 'ww-note' }, ico('lock'), `This hand rolls d${rolling}. The weapon is d${size}.`) : null;
   const action = !info.next ? shDone(mode === 'forge' ? (forge.why === 'legendary' ? 'Legendary metal is fixed' : 'Best metal') : 'Biggest die')
     : mode === 'train' && info.why === 'hands' ? shLock(`Needs a d${info.next} hand`)
-    : shBuy(hero, { label: mode === 'forge' ? `Forge to ${D.RARITY[info.next]}` : `Train to d${info.next}`, cost: info.cost, ok: info.ok,
+    : shBuy(hero, { label: mode === 'forge' ? `Forge to ${D.RARITY[info.next]}` : SZ ? `Buy size d${info.next}` : `Train to d${info.next}`, cost: info.cost, ok: info.ok,
       onBuy: () => { if ((mode === 'forge' ? HE.forgeWeapon(hero, inst.uid) : HE.trainWeapon(hero, inst.uid))) shBought(); } });
-  return h('div', { class: 'ww-workshop' }, frame, ammo, modes, preview, warning, action,
+  const noRefund = SZ && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Size is not refunded. Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold, whatever size you buy.`) : SZ ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold.`) : null;
+  return h('div', { class: 'ww-workshop' }, frame, ammo, SZ ? null : modes, preview, warning, noRefund, action,
     info.ok && info.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - info.cost} after upgrade`) : null);
 }
 function slotSheet(slot) {
@@ -1353,7 +1355,7 @@ function slotSheet(slot) {
     if (rolls < size && !real.diamond) out.push(h('p', { class: 'sh-warn' }, `Rolls as a d${rolls} until your hand is a d${size}.`));
     const f = E.forgeInfo(hero, real.uid); const t = E.trainInfo(hero, real.uid);
     void f; void t; // forging and training retired with wear (Oct 2026): say how long the weapon has left instead
-    out.push(h('p', { class: `sh-role sh-wearline ${E.battlesLeft(real) <= 1 ? 'last' : ''}` }, real.diamond ? 'A Diamond lasts one fight.' : `${E.wearLabel(real)}. After its last battle it is gone.`));
+    out.push(h('p', { class: `sh-role sh-wearline ${E.battlesLeft(real) <= 1 ? 'last' : ''}` }, D.EXPERIMENT.weaponSize ? 'Never wears out.' : real.diamond ? 'A Diamond lasts one fight.' : `${E.wearLabel(real)}. After its last battle it is gone.`));
   } else out.push(shStage(h('span', { class: 'sh-locked' }, ico('hero'))), h('p', { class: 'sh-role' }, 'Empty hand.'));
   const wear = (it) => { HE.equip(hero, it.uid, slot); sfx.card(); X.persist(); X.renderCamp(); };
   const pack = hero.bag.map((it) => { const c = E.canEquip(hero, it.uid, slot);
