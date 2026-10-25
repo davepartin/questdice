@@ -113,24 +113,11 @@ function weaponArt(id, side) {
 
 function helmet() {
   const steel = nid('helm');
-  const gold = nid('hgold');
   return svg(`
     <defs>
       <linearGradient id="${steel}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f9ff"/><stop offset=".45" stop-color="#c5d0e2"/><stop offset="1" stop-color="#6d7d96"/></linearGradient>
-      <linearGradient id="${gold}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c4"/><stop offset="1" stop-color="#b88828"/></linearGradient>
     </defs>
-    <path d="M60 1 C63 10 61 18 60 24 C70 12 78 8 76 1 C70 0 64 0 60 1Z" fill="#ff4d4d"/>
-    <path d="M60 2 C57 12 59 18 60 24 C50 12 40 8 44 2 C50 0 56 0 60 2Z" fill="#ff6b6b"/>
-    <path d="M60 0 C62 16 60 28 60 34 C78 18 96 10 92 0 Z" fill="#e1062c"/>
-    <path d="M60 1 C58 16 60 28 60 34 C42 18 24 10 28 1 Z" fill="#ff4d4d"/>
-    <path d="M60 6 C61 20 60 30 60 36" stroke="#7c1220" stroke-width="1.4"/>
-    <path d="M16 58 C14 28 34 12 60 10 C86 12 106 28 104 58 L96 70 H24 Z" fill="url(#${steel})" stroke="#2c3648" stroke-width="1"/>
-    <path d="M28 34 H92" stroke="url(#${gold})" stroke-width="5" stroke-linecap="round"/>
-    <path d="M34 42 H86" stroke="#12151e" stroke-width="4" stroke-linecap="round"/>
-    <path d="M40 42 V34 M60 42 V30 M80 42 V34" stroke="#e1b34a" stroke-width="2"/>
-    <path d="M16 56 C6 66 8 92 26 100 L30 64 Z" fill="#9aadc4"/>
-    <path d="M104 56 C114 66 112 92 94 100 L90 64 Z" fill="#7d90a8"/>
-    <circle cx="32" cy="28" r="2.6" fill="#e1b34a"/><circle cx="88" cy="28" r="2.6" fill="#e1b34a"/>
+    <path d="M 44.8 10.6 C 29.2 13 16.4 32 16.4 56 V 74 L 45.68 96 L 40.56 51.4 H 30.32 V 46 H 44.8 Z M 55.2 10.6 C 70.8 13 83.6 32 83.6 56 V 74 L 54.32 96 L 59.44 51.4 H 69.68 V 46 H 55.2 Z M 46.4 6 Q 46.4 4 48 4 H 52 Q 53.6 4 53.6 6 V 65 L 50 73 L 46.4 65 Z M 50 8.4 A 1.3 1.3 0 1 0 50.08 8.4 Z M 50 17.7 A 1.3 1.3 0 1 0 50.08 17.7 Z M 50 26.9 A 1.3 1.3 0 1 0 50.08 26.9 Z M 50 36.1 A 1.3 1.3 0 1 0 50.08 36.1 Z" fill="url(#${steel})" fill-rule="evenodd" stroke="#2c3648" stroke-width="1" transform="translate(10 0)"/>
     ${socket('N', '#d5deee')}
     ${label('HEAD', 60, 11, 'middle', '#f4f1e8')}`);
 }
