@@ -1,5 +1,7 @@
 # T19 diagnosis: Jasper's 24-round Wyrmwatch fight (Claude, 24 October 2026)
 
+> **Director review, 24 October:** The investigation below is preserved as submitted. [Seven rulings and evidence corrections](T19-director-review.md) now govern the next work. In particular, the party-tool Solo row is a one-fighter party, the phase tool measures net health loss rather than damage, and the claimed secure outcome is not established. The reconstructed flight/wound history is not independently captured. Scoped preview, multi-heal and timing work are authorized in that review; no live balance change is approved.
+
 Brief and evidence: [T19-jasper-wyrmwatch.md](T19-jasper-wyrmwatch.md). **Investigation only: no game file changed, no balance change applied or authorised.** Tools (all read-only): `tools/t19-trace.mjs` (how the fight is built), `tools/t19-fights.mjs` (late Act III fights across classes), `tools/t19-jasper.mjs` (an approximate Jasper), `tools/t19-loadout.mjs` (the War Hammer against active weapons), and for part 2 `tools/t19-phase.mjs` (opening against boss-only phase) and `tools/t19-party.mjs` (tables of 2, 4 and 6; raw tables in [T19-party-tables.md](T19-party-tables.md), rows in [T19-party-rows.json](T19-party-rows.json)). Raw rows: [T19-rows.json](T19-rows.json).
 
 ## Diagnosis in one paragraph
