@@ -179,3 +179,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 2026-10-25, Director: Inspected Dave's online iPhone screenshots. Earlier ornate objective card is present; camp uses compact pack rows; Heart action panel clips a destination and requires inner scrolling. Added explicit Heart layout acceptance criteria to T21 and current-rule visual integration to T05. Visual delivery is not blocked on T17 balance. Checked small updates may ship; verify co-op routes directly and report limits. No code change in this handoff.
+
+
+2026-10-25, Director: Read Crockpot's HANDOFF-cards-for-Claude.md. Back-title question resolved: keep original painted singular OBJECTIVE / SECRET OBJECTIVE unchanged; plurals name the decks collectively. Plain Mace art is an acceptable nonblocking fallback for existing legacy support, not permission to add it to the active roster. Claude proceeds with current-rule T05/T21 integration, no experimental numbers/wording. Detailed ruling appended to the handoff. No repaint needed; rendered integration still requires online phone-layout checks.
