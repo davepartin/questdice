@@ -71,3 +71,26 @@ Dave: "each person should start with two weapons at the top, a bronze shield on 
 - This is a specific live starter-rule authorization from Dave. It is independent of T17: no no-wear, size purchasing, new faces or Diamond change is approved here.
 
 Next: Claude implements and verifies this broader starter rule alongside reward-handoff recovery, reports the build and migration checks on BOARD. Dave should not have to restart or discard his Rangers.
+
+## Real-iPhone online screenshots and Heart controls, 25 October
+Dave supplied IMG_7264.jpeg, IMG_7265.png, IMG_7266.jpeg and IMG_7267.jpeg in chat. Images visually inspected in the conversation; descriptions below are evidence, not copies of the image files in this repository.
+
+- Secret Objective Gold Rush already renders in an ornate frame with a Heart die picture, condition and stake/reward strips. Thus some T05 presentation reached the online flow. It is not the latest objective-focus art. The hero header overlaps the table status area.
+- Victory rankings show Dav and JP, confirming the multiplayer presentation. This is a score screen, not a weapon-selection screenshot.
+- Online camp Gear shows compact Axe/Dagger pack rows with thumbnails, face strips, LEFT/RIGHT/SELL actions and duplicate sale values. No full weapon card is shown here. This matches the original compact-row integration scope; do not assume stale client caching is the cause.
+- Magic/Heart sheet shows 7/12 magic, 18/28 health, a long explanation, "Used this round", current Heart 3, Down to 2 and a partly clipped Up to 4 near the panel edge. Dave reports scrolling within the selection and unclear up/down actions. Disabled controls are consistent with the visible used state, but clipping and unclear interaction are still usability defects.
+
+### Authorized immediate UI correction
+Claude: prioritize Heart control clarity with the starter/reward fixes. Use one compact control group with current Heart face in the center and explicit adjacent destination buttons, e.g. "Down to 2" / "Up to 4", each showing its real destination symbol. Show actual cost and whether already used; both choices and Close must fit together without scrolling inside the selector. Put long explanation behind a Rules/Details disclosure. Preserve legal endpoints, once-per-round limit, cost, current engine behavior and authoritative online commands; no wraparound or additional use unless the engine already allows it. After activation update face, magic, projected effect and used state without closing/reopening. A brief label such as "Used this round" must explain disabled choices, not rely on dimming alone.
+
+Broader magic layout: show power name, short effect, current cost and action together, reuse existing game art, and keep selected action controls visible above any scrollable explanation. Do not redesign the rules or bury controls under a paragraph.
+
+### Card delivery clarification and assignment
+The newest T17 weapon mockups and T05 objective-front revisions are not the deployed cards4 presentation. Dave wants that visual quality in co-op. Presentation work must not remain blocked just because T17 balance is unsettled:
+- Within T05, make full current-rule weapon cards readily accessible from online pack/equipment/store rows (tap the item to inspect; keep equip/sell actions clear and safe), and verify full cards on reward selection. Compact browsing can remain, but it must not be the only view.
+- Integrate the latest objective-focus presentation through the shared renderer with real online data after inspecting the rendered phone results; retain Dave's original T12 painted backs. Keep current payouts, privacy/reveal timing and existing rule categories. Do not silently adopt unsettled WAGER/CHALLENGE payout wording.
+- Reuse Grok's supplied assets/templates instead of commissioning another round of unrelated concepts. A visual front may use current released faces, wear and prices; do not activate experimental upgrades/no-wear as part of presentation.
+- Check the actual online routes, including private offers, pack inspection, reward turns and Heart changes, at 375/390 px and short viewports with Safari chrome space/larger text. Use two-client verification where authority or handoff matters. Distinguish emulation from real Safari.
+- Checked presentation and Heart UI fixes are authorized for main under standing authorization; no further general "go" from Dave is required. Post actual build, online route screenshots and limitations. T21 functional corrections take priority over broad polish; deliver small verified updates.
+
+No additional phone test requested from Dave in this intake. No code fix or visual integration is claimed complete.
