@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>T12 backs with a live-text title (Grok mockup)</title>
+<!-- T12 art unchanged; the painted plate is covered by a plain, slightly larger plate with the title as live Cinzel text (backs README plan). -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@900&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#15100c;padding:24px;font-family:Cinzel,serif}
+.row{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-end}
+.bk{position:relative;width:var(--w,327px);aspect-ratio:3/4;container-type:inline-size;border-radius:4cqi;overflow:hidden;box-shadow:0 8px 20px #000c}
+.bk img{position:absolute;inset:0;width:100%;height:100%}
+.pl{position:absolute;display:grid;place-items:center;text-align:center;font-weight:900;line-height:1;letter-spacing:.05em;border-radius:1.4cqi}
+.obj .pl{left:15%;right:15%;top:72%;height:10.5%;font-size:9cqi;background:linear-gradient(#f3e2b8,#dcc48c);color:#2a1606;border:.9cqi solid #8a6428;box-shadow:0 .8cqi 1.6cqi #000a,inset 0 .4cqi 0 #fff8;text-shadow:0 .3cqi 0 #fff6}
+.sec .pl{left:11%;right:11%;top:68%;height:15%;font-size:8.2cqi;line-height:1.05;background:linear-gradient(#26232a,#121014);color:#f6f2ea;border:.9cqi solid #a8141c;box-shadow:0 .8cqi 1.6cqi #000c,inset 0 0 0 .3cqi #0008;text-shadow:0 .35cqi .5cqi #000}
+.hand{margin-top:28px;padding:12px 0;display:flex;justify-content:center;gap:0}.hand .bk{--w:120px;margin:0 4px;transform:rotate(var(--r))}
+</style>
+<body>
+<div class="row" id="big">
+<div class="bk obj" data-k="objective"><img src="back-objective.webp" alt=""><div class="pl">OBJECTIVE</div></div>
+<div class="bk sec" data-k="secret-objective"><img src="back-secret-objective.webp" alt=""><div class="pl">SECRET<br>OBJECTIVE</div></div>
+</div>
+<div class="hand" id="hand"></div>
+<script>
+const h=document.getElementById('hand');[['obj',-6],['sec',-2],['obj',2],['sec',6]].forEach(([k,r])=>{const c=document.querySelector('.'+k).cloneNode(true);c.removeAttribute('data-k');c.style.setProperty('--r',r+'deg');h.append(c)});
+document.fonts.ready.then(()=>document.body.dataset.ready=1)</script>

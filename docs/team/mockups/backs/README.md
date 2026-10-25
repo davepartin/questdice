@@ -35,3 +35,6 @@ The die keeps the same three faces and the same arrangement: 6 front, 3 left, 5 
 - a contact shadow under the die
 
 The previous flat version is `alternates/back-wager-v2-flat-heart.webp`; the pip-dice original is `alternates/back-wager-v1-pip-dice.webp`. The contact sheet has been re-made.
+
+## Live-text title (24 Oct, Dave: make the title stand out)
+`backs-title.html` keeps the T12 art and covers the painted plate with a plain, slightly larger plate and the title as live Cinzel 900 text: Objective = cream plate, brass edge, dark ink; Secret Objective = near-black plate, crimson edge, white text. Singular titles. PNGs: `../cards/png/backs-title/` (375w each, side-by-side, a hand at 120 px). Re-shoot: `node shoot-backs-title.mjs`.
