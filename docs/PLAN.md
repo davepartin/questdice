@@ -1444,3 +1444,7 @@ Reviewed diagnosis parts 1/2, phase/party/trace tools and engine source. Full ru
 
 ## 25 Oct 2026 (Claude): T19 corrections
 Per the Director's review: `tools/t19-lib.mjs` (shared fights: genuine solo and party, the nemesis arms A/B/C, Wilson intervals), `t19-run.mjs` (one cell per process), `t19-phase.mjs` and `t19-party.mjs` (reports), committed fixtures in `docs/team/tasks/T19/fixtures/`, v1 tools and tables moved to `T19/superseded/`. Outputs: T19-v2-solo.md, T19-v2-party.md, revised part 2 in T19-diagnosis.md. No game change.
+
+
+## 25 October 2026, Director: T19 v2 follow-up unblocked
+Reviewed revised diagnosis, solo/party tables and source tools. Three answers posted in team/tasks/T19-director-review.md: land observation-only timing first; build and publish B/C selectable before a fight in its isolated preview, recording the arm; keep the explicit boss-tier breath candidate harness-only pending results (4/5/6 starting heroes: 0.50/0.44/0.38 share). Multi-heal still independently authorized. No live balance release. Paired uncertainty and boss-HP phase labeling remain measurement polish, not a preview block. BOARD marks READY and gives Claude the next sequence. Review was source/table inspection, no independent rerun or phone test.
