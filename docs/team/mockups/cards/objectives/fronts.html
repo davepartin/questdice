@@ -1,6 +1,7 @@
 <!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Objective / Secret Objective FRONT template (Grok mockup for review)</title>
-<!-- rev 3 (Grok, 25 Oct, Dave's direction): the centre emblem is the game's own symbol for what the goal is about (SYM in js/g3/cards.js:
+<!-- rev 4 (Grok, 25 Oct): every Objective and Secret Objective type mapped (FOCUS below); new emblems from hudkit.js and gfx/dice/faces.js icons.
+     rev 3 (Grok, 25 Oct, Dave's direction): the centre emblem is the game's own symbol for what the goal is about (SYM in js/g3/cards.js:
      magic triangle, gold coin, attack star, block shield, heal cross; dice from js/g3/icons.js), drawn premium by make-emblems.mjs, with a soft card tint in that colour.
      Compass/envelope dropped: the chip + parchment-vs-dark palette already tell Objective from Secret Objective.
      Grok art-director mockup, 24 Oct. Fronts in the same family as the approved T12 backs (black tooled leather, thin engraved border,
@@ -50,12 +51,19 @@ body{margin:0;background:#15100c;padding:20px;font-family:Inter,sans-serif}
 <div class="pair" id="pairS"><img class="bk" src="../../backs/back-secret-objective.webp" alt=""></div>
 <script type="module">
 import { objectiveData, secretData, ico } from '../../../../../js/g3/cards.js';
+import { BONUS_GOALS, CARDS } from '../../../../../js/secrets.js';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const g = (n) => `${ico('gold')}<b>${n}</b>`;
 // type chip: Objectives are today's Bonus Goals; Secret Objective chips name the internal kind (PROPOSED words, see README)
 // rev 3: goal -> the game symbol it is about
-const FOCUS = { nopotion: 'heal', block40: 'block', deal50: 'atk', magic40: 'magic', noreroll: 'magic', thrice: 'dice', slacker: 'atk', goldfumble: 'gold', wall: 'block', hoarder: 'magic' };
-const TC = { magic: '#b46cff', gold: '#ffc21a', atk: '#ff4b4b', block: '#3aa4ff', heal: '#38e87a', dice: '#c8b89a' };
+// rev 4: every Objective (BONUS_GOALS) and Secret Objective (CARDS) -> the game icon for its main focus
+const FOCUS = { nopotion: 'heal', block40: 'block', magic40: 'magic', noreroll: 'magic', deal50: 'atk',
+  lead: 'crown', shield: 'block', medic: 'heal', together: 'team', quick: 'windup', spark: 'magic',
+  goldrush: 'gold', arcane: 'magic', finisher: 'skull', wall: 'block', bigswing: 'atk', lucky: 'dice', straights: 'straight', fleet: 'boots', strongarm: 'gauntlet', bright: 'helmet', crowd: 'crown',
+  thrice: 'dice', mittens: 'gauntlet', thinker: 'helmet', neverlast: 'boots', teetotal: 'heal', biggame: 'skull', thrifty: 'magic', heartmatch: 'heart', cliffhanger: 'heart', saver: 'magic', talentshow: 'talent',
+  slacker: 'atk', glass: 'block', cold: 'team', longfight: 'slam', pact: 'heart', fall: 'team', laststand: 'heart',
+  goldfumble: 'gold', spare: 'skull', hoarder: 'magic', lonewolf: 'team' };
+const TC = { magic: '#b46cff', gold: '#ffc21a', atk: '#ff4b4b', block: '#3aa4ff', heal: '#38e87a', dice: '#c8b89a', crown: '#ffd86a', straight: '#ffe08a', slam: '#ff7a3a', windup: '#ffd23d', team: '#9fd0ff', heart: '#ff4f7a', skull: '#b8b0a2', helmet: '#d6a456', gauntlet: '#d6a456', boots: '#d6a456', talent: '#f2b84a' };
 const CHIP = { cover: 'SECRET GOAL', rival: 'RIVALRY', challenge: 'CHALLENGE', offer: 'WAGER', bribe: 'BRIBE' };
 // rev 2 wording PROPOSAL (Dave, 24 Oct; mockup only): Objectives are optional. With a stake = WAGER (Wager / Payout, Accept or Pass);
 // without = CHALLENGE (just the Payout). Amounts are the game's own Bonus Goal values (a free try returns bonusG).
@@ -70,9 +78,10 @@ function secret(id) { const d = secretData(id); const k = d.mode === 'offer' ? '
 function card(cls, chip, name, rule, terms, key, choice = false, f = 'gold') {
   return `<article class="of ${cls}" data-k="${key}" data-f="${f}" style="--tc:${TC[f]}"><img class="fr" src="front-${cls.startsWith('obj') ? 'objective' : 'secret-objective'}-frame.webp" alt=""><i class="tint"></i><div class="in">
   <div class="chip">${chip}</div><h2 class="ttl">${esc(name)}</h2><div class="emb"><img src="emb-${f}.svg" alt=""></div><p class="goal">${esc(rule)}</p><div class="terms">${terms}</div>${choice ? '<div class="choice"><span class="y">ACCEPT</span><span class="n">PASS</span></div>' : ''}</div></article>`; }
-const list = [objective('magic40', { free: true }), objective('deal50', { free: true }), objective('block40'), objective('nopotion'), secret('goldfumble'), secret('thrice'), secret('slacker'), secret('wall')];
+const list = [...Object.keys(BONUS_GOALS).map((id) => objective(id, { free: id !== 'block40' && id !== 'nopotion' })), ...Object.keys(CARDS).map((id) => secret(id))];
+const missing = [...Object.keys(BONUS_GOALS), ...Object.keys(CARDS)].filter((id) => !FOCUS[id]); if (missing.length) console.log('NO FOCUS', missing);
 document.getElementById('cards').innerHTML = list.join('');
-document.getElementById('hand').innerHTML = list.join('');
+document.getElementById('hand').innerHTML = list.slice(0, 8).join('');
 document.getElementById('pairO').insertAdjacentHTML('afterbegin', objective('nopotion'));
 document.getElementById('pairS').insertAdjacentHTML('afterbegin', secret('thrice'));
 document.fonts.ready.then(() => setTimeout(() => (document.body.dataset.ready = 1), 200));
