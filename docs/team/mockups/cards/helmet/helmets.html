@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Head icon alternatives</title>
+<script type="importmap">{"imports":{"three":"../../../../../vendor/three/build/three.module.js","three/addons/":"../../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@600;700;800&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared.css"><link rel="stylesheet" href="../card.css"><link rel="stylesheet" href="../t17/card17.css"><link rel="stylesheet" href="../diceboard/diceboard.css">
+<style>
+body{background:#14100c;color:#f2dcb0;font:600 14px Inter;margin:0;padding:18px}
+h1{font:800 26px Cinzel;margin:0 0 4px}.sub{color:#c9a068;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:200px 170px 170px 230px;gap:14px 18px;align-items:center}
+.hd2{font:800 12px Oxanium;letter-spacing:.12em;color:#c9a068;text-transform:uppercase}
+.nm2 b{display:block;font:800 17px Cinzel;color:#ffe2b0}.nm2 small{color:#bfa27c;font-size:12.5px;line-height:1.35;display:block;margin-top:4px}
+.cur .nm2 b{color:#d9b48a}.grid canvas{width:160px;height:160px;border-radius:14px}
+.cardbox{width:230px}.cardbox .qc17{width:230px}
+#hidden{position:absolute;left:-9999px;top:0;width:390px}
+.row-line{grid-column:1/-1;height:1px;background:#3a2c1f}
+</style></head><body>
+<h1>Head icon: 4 alternatives</h1><p class="sub">Same 100-box SVG path format as js/gfx/dice/faces.js → swap one string. Shown carved in the board slot, on a head-die face, and on the Head card.</p>
+<div class="grid" id="grid"><div class="hd2">Icon</div><div class="hd2">Board slot</div><div class="hd2">Head die face</div><div class="hd2">Head card</div></div>
+<div id="hidden"><div class="board" id="board"><img class="bg" src="../../../../../assets/tutorial/board-icons.webp" alt=""></div><div class="veil" id="veil"></div><div class="big" id="big"></div><div class="acts" id="acts"></div></div>
+<script type="module" src="helmets.js"></script></body></html>

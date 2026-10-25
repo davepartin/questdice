@@ -115,7 +115,7 @@ function atlas(poly, faces, tone, stone, cell = 512) {
 // dieImage(sides, faces, label, { px, view: 'row' | 'slot', stone })  faces = the die's faces in label order (1..sides)
 // 'row': the shown face toward the viewer, tipped a little. 'slot': resting on its socket seen from a higher oblique angle, so three
 // faces of the solid show (top face = the shown label, plus two side faces with their own real labels).
-export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = false } = {}) {
+export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = false, el = 0.72 } = {}) {
   setup(); R.setSize(px, px, false);
   const poly = makePoly(sides); const f0 = faces[label - 1]; const tone = toneOf(f0);
   const A = atlas(poly, faces, tone, stone); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
@@ -131,7 +131,7 @@ export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = 
   } else q.premultiply(new THREE.Quaternion().setFromEuler(tilt));
   mesh.quaternion.copy(q);
   const d = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (view === 'slot' ? 1.18 : sides === 4 ? 0.78 : 0.86);
-  if (view === 'slot') { const el = 0.72; cam.position.set(0, Math.sin(el) * d, Math.cos(el) * d); } else cam.position.set(0, 0, d);
+  if (view === 'slot') { cam.position.set(0, Math.sin(el) * d, Math.cos(el) * d); } else cam.position.set(0, 0, d);
   cam.lookAt(0, 0, 0); mesh.position.y = view !== 'slot' && sides === 4 ? -poly.outR * 0.08 : 0;
   R.render(scene, cam); const url = R.domElement.toDataURL('image/png');
   scene.remove(mesh); geo.dispose(); mat.dispose(); A.t.dispose(); bump.dispose();

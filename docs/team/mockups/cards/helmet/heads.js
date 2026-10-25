@@ -1,0 +1,9 @@
+// Head icon alternatives (Crockpot, 25 Oct). Same 100x100 box + evenodd fill rule as js/gfx/dice/faces.js,
+// so any of these can drop straight into SVG.helmet there. Mockup only: the live game is untouched.
+export const HEADS = {
+  current: { name: 'Current helmet', note: 'faces.js SVG.helmet today', d: 'M50 5 C27 5 13 22 13 46 V82 C13 89 18 94 25 94 H75 C82 94 87 89 87 82 V46 C87 22 73 5 50 5 Z M22 42 H78 V51 H22 Z M48 11 H52 V37 H48 Z M30 64 A3.2 3.2 0 1 0 30.1 64 Z M30 76 A3.2 3.2 0 1 0 30.1 76 Z M40 70 A3.2 3.2 0 1 0 40.1 70 Z M70 64 A3.2 3.2 0 1 0 70.1 64 Z M70 76 A3.2 3.2 0 1 0 70.1 76 Z M60 70 A3.2 3.2 0 1 0 60.1 70 Z' },
+  nasal: { name: 'A · Nasal helm', note: 'pointed dome, cheek guards, nose bar: reads "warrior head" at any size', d: 'M50 3 C66 10 84 22 85 46 V72 L72 95 H61 V58 H39 V95 H28 L15 72 V46 C16 22 34 10 50 3 Z M18 43 H82 V49 H18 Z M46 49 H54 V80 C54 84 46 84 46 80 Z M48.5 8 H51.5 V40 H48.5 Z' },
+  hood: { name: 'B · Hood', note: 'cowl with shadowed face: fits ranger / wizard / bard as well as knight', d: 'M50 2 C72 10 88 30 88 56 C88 74 92 86 97 96 H3 C8 86 12 74 12 56 C12 30 28 10 50 2 Z M50 28 C36 28 28 42 28 58 C28 74 38 84 50 84 C62 84 72 74 72 58 C72 42 64 28 50 28 Z M37 56 C41 52 45 52 47 56 C44 58 40 58 37 56 Z M53 56 C55 52 59 52 63 56 C60 58 56 58 53 56 Z' },
+  circlet: { name: 'C · Circlet', note: 'crown band with a gem: "mind / focus", no armour implied', d: 'M8 52 C30 42 70 42 92 52 V70 C70 60 30 60 8 70 Z M50 10 L59 46 H41 Z M24 26 L33 48 L20 51 Z M76 26 L80 51 L67 48 Z M50 51 A6 6 0 1 0 50.1 51 Z M26 57 A3.5 3.5 0 1 0 26.1 57 Z M74 57 A3.5 3.5 0 1 0 74.1 57 Z' },
+  visor: { name: 'D · Visored great helm', note: 'flat-top helm with eye slit and breaths: heaviest, most knightly', d: 'M50 4 C30 4 16 12 16 30 V80 L30 96 H70 L84 80 V30 C84 12 70 4 50 4 Z M22 40 H46 V47 H22 Z M54 40 H78 V47 H54 Z M47 30 H53 V92 H47 Z M28 60 H38 V63 H28 Z M28 68 H38 V71 H28 Z M62 60 H72 V63 H62 Z M62 68 H72 V71 H62 Z' },
+};

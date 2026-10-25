@@ -4,6 +4,9 @@
 // (data.js FACE_PAY) and covers priced from the game's CURRENT steps (MIND_STEPS, STRENGTH_STEPS, SPEED_STEPS, SPECIAL_STEPS). No wear anywhere.
 import { card17, nested } from '../t17/card17.js';
 import { dieImage } from '../t17/dice3d.js';
+// v2 tilt (Dave Oct 25): lower camera on each die + whole tray leaned toward the seated player. ?tilt=0 shows the old flat board.
+const TILT = new URLSearchParams(location.search).get('tilt') === '0' ? { el: 0.72 } : { el: 0.42 };
+if (TILT.el !== 0.72) document.documentElement.classList.add('tilted');
 import { drawIcon } from '../../../../../js/gfx/dice/faces.js';
 import { FACE_PAY, MIND_STEPS, STRENGTH_STEPS, SPEED_STEPS, SPECIAL_STEPS, UNLOCK_COST } from '../../../../../js/data.js';
 const WART = '../../../../../assets/cards/weapons/';
@@ -56,7 +59,7 @@ for (const s of SLOTS) {
   if (s.w) { sides = s.w[2]; faces = nested(s.w[0], s.w[1], sides).map((f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: [] })); top = sides; }
   else if (s.g.heart) { sides = 6; faces = HEART; top = 6; } else { sides = s.g.size; faces = Array.from({ length: sides }, (_, i) => gearFace(i + 1)); top = sides; }
   const b = document.createElement('button'); b.className = 'die'; Object.assign(b.style, { left: s.x + '%', top: s.y + '%' });
-  b.innerHTML = `<img src="${dieImage(sides, faces, top, { px: 220, view: 'slot' })}" alt="">`; b.setAttribute('aria-label', `${s.name || s.g.title}, d${sides}. Tap for its card`);
+  b.innerHTML = `<img src="${dieImage(sides, faces, top, { px: 220, view: 'slot', el: TILT.el })}" alt="">`; b.setAttribute('aria-label', `${s.name || s.g.title}, d${sides}. Tap for its card`);
   const nm = document.createElement('div'); nm.className = 'nm'; Object.assign(nm.style, { left: s.x + '%', top: `calc(${s.y}% + 8.4cqi)` }); nm.innerHTML = `${s.name || s.g.title}<small>d${sides}</small>`;
   board.append(b, nm); s.btn = b; s.card = s.w ? weaponCard(s) : gearCard(s); b.onclick = () => lift(s);
 }

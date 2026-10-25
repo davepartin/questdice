@@ -1,0 +1,59 @@
+:root{--kraft:#d8bd8f;--kraft2:#c4a372;--edge:#8a6438;--ink:#2e1d10;--ink2:#5a4026;--mag:#7b45d6;--mag2:#b28cff;--ok:#2f7d4a;--bg:#16110c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:600 14px/1.3 Inter;color:var(--ink);-webkit-font-smoothing:antialiased}
+.scr{width:100vw;height:100svh;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.scene{height:30%;background:url(../../../../../assets/miniatures/wizard-blue.webp) 16% 70%/auto 80% no-repeat,radial-gradient(120% 90% at 50% 100%,#3a2a1a,#120d09);border-bottom:2px solid #000;position:relative}
+.scene .hint{position:absolute;right:12px;bottom:10px;color:#f2dcb0;font:800 12px Oxanium;letter-spacing:.08em;background:#000a;padding:5px 9px;border-radius:99px}
+/* the tray: a cardboard lid the cards sit in */
+.tray{flex:1;min-height:0;margin:-10px 8px 8px;padding:12px 12px 10px;border-radius:16px;background:linear-gradient(#e2c99b,#cfb07d);box-shadow:inset 0 0 0 3px #a98250,inset 0 0 0 5px #e9d6b0,0 10px 24px #000a;position:relative;display:flex;flex-direction:column;gap:10px}
+.tray h2{margin:0;font:800 18px Cinzel;letter-spacing:.04em;display:flex;align-items:center;justify-content:space-between}
+.x{font:800 12px Oxanium;letter-spacing:.08em;border:2px solid var(--ink2);border-radius:9px;background:#f0e2c4;color:var(--ink);padding:6px 10px}
+/* magic you have: purple triangle tokens */
+.pool{display:flex;align-items:center;gap:10px;background:#f3e6c9;border-radius:12px;padding:8px 10px;box-shadow:inset 0 0 0 2px #b18c5c}
+.pool .big{font:800 30px/1 Oxanium;color:var(--mag);display:flex;align-items:center;gap:6px}
+.pool .lbl{font:700 12px/1.25 Inter;color:var(--ink2)}.pool .lbl b{color:var(--ink)}
+.tri{display:inline-block;width:.8em;height:.72em;background:var(--mag);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.toks{display:flex;flex-wrap:wrap;gap:2px;max-width:120px;margin-left:auto}.toks i{width:9px;height:8px;background:var(--mag);clip-path:polygon(50% 0,100% 100%,0 100%)}.toks i.off{background:#c9b48f}
+/* small power cards */
+.hand{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pc{position:relative;border:0;padding:0;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.pc .face{aspect-ratio:5/7;border-radius:10px;background:linear-gradient(#fbf1dc,#ecdcb9);box-shadow:inset 0 0 0 2px var(--edge),inset 0 0 0 4px #fbf1dc,inset 0 0 0 5px #c9a874,0 3px 0 #8a6438,0 6px 10px #0006;padding:8px 7px 7px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pc .slot{align-self:stretch;display:flex;justify-content:space-between;align-items:center;font:800 10px Oxanium;letter-spacing:.08em;color:var(--ink2);text-transform:uppercase}
+.pc .slot b{background:var(--ink);color:#f3e6c9;border-radius:5px;padding:1px 5px}
+.pc .art{width:62%;aspect-ratio:1;border-radius:50%;background:radial-gradient(#4b2a6e,#1e1030);display:grid;place-items:center;box-shadow:0 0 0 2px #c9a874}
+.pc .art svg{width:66%;height:66%}
+.pc .nm{font:800 13px/1.05 Cinzel;text-align:center;margin-top:2px}
+.pc .ef{font:700 11px/1.2 Inter;color:var(--ink2);text-align:center}
+.cost{display:inline-flex;vertical-align:middle;gap:2px;align-items:center;font:800 12px Oxanium;color:var(--mag)}.cost i{width:11px;height:10px;background:var(--mag);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.pc .st{margin-top:auto;align-self:stretch;text-align:center;font:800 10.5px Oxanium;letter-spacing:.06em;border-radius:6px;padding:4px 2px;text-transform:uppercase}
+.st.ready{background:var(--ok);color:#fff}.st.no{background:#6d5a44;color:#f3e6c9}.st.used{background:#9b8a70;color:#f3e6c9}
+.pc.off .face{filter:grayscale(.85) brightness(.9)}.pc.off .art{opacity:.6}
+.pc.sel .face{transform:translateY(-6px);box-shadow:inset 0 0 0 2px var(--mag),inset 0 0 0 4px #fbf1dc,0 0 0 3px var(--mag2),0 9px 0 #8a6438,0 12px 16px #0008}
+/* helpers: round tokens, clearly a different kind of thing */
+.helpers{display:flex;gap:8px}.hl{flex:1;display:flex;align-items:center;gap:7px;background:#f3e6c9;border-radius:99px;padding:5px 9px 5px 5px;box-shadow:inset 0 0 0 2px #b18c5c;font:700 12px Inter;border:0;color:var(--ink)}
+.hl .ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#2e1d10;color:#fff;font:800 13px Oxanium}.hl small{display:block;font:700 10.5px Inter;color:var(--ink2)}
+.sec{font:800 11px Oxanium;letter-spacing:.12em;color:var(--ink2);text-transform:uppercase;display:flex;justify-content:space-between}
+.tip{font:600 12px/1.35 Inter;color:var(--ink2);text-align:center;margin-top:auto}
+/* enlarged card */
+.veil{position:absolute;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:14px}
+.bigc{width:min(84vw,330px);border-radius:16px;background:linear-gradient(#fbf1dc,#ead8b2);box-shadow:inset 0 0 0 3px var(--edge),inset 0 0 0 6px #fbf1dc,inset 0 0 0 7px #c9a874,0 6px 0 #8a6438,0 18px 30px #000c;padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.bigc .slot{display:flex;justify-content:space-between;font:800 12px Oxanium;letter-spacing:.08em;color:var(--ink2);text-transform:uppercase}.bigc .slot b{background:var(--ink);color:#f3e6c9;border-radius:6px;padding:1px 7px;margin-right:6px}
+.bigc h3{margin:0;font:800 26px Cinzel;text-align:center}
+.bigc .art{width:38%;aspect-ratio:1;margin:0 auto;border-radius:50%;background:radial-gradient(#5b3486,#1e1030);display:grid;place-items:center;box-shadow:0 0 0 3px #c9a874}.bigc .art svg{width:64%}
+.bigc p{margin:0;font:600 14px/1.4 Inter;text-align:center}.bigc .rule{font:700 12px Inter;color:var(--ink2);text-align:center}
+.pick{background:#f3e6c9;border-radius:12px;box-shadow:inset 0 0 0 2px #b18c5c;padding:8px 10px}
+.pick .q{font:800 11px Oxanium;letter-spacing:.1em;color:var(--ink2);text-transform:uppercase;margin-bottom:6px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.steps button{border:0;border-radius:9px;padding:6px 0 5px;background:#e8d6b1;box-shadow:inset 0 0 0 2px #b18c5c;font:800 13px Oxanium;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px}
+.steps button .cost{font-size:12px}.steps button.on{background:var(--mag);color:#fff;box-shadow:0 0 0 2px var(--mag2)}.steps button.on .cost{color:#fff}.steps button.on .cost i{background:#fff}
+.steps button[disabled]{opacity:.38}
+.after{font:700 12.5px Inter;color:var(--ink2);text-align:center}.after b{color:var(--mag)}
+.go{border:0;border-radius:12px;padding:13px 10px;background:linear-gradient(#8d57e6,#6a36c4);color:#fff;font:800 17px Oxanium;letter-spacing:.04em;box-shadow:0 4px 0 #40207a;display:flex;align-items:center;justify-content:center;gap:8px}.go .tri{background:#fff}
+.go[disabled]{background:#9b8a70;box-shadow:0 4px 0 #6d5a44;color:#f3e6c9}
+.why{background:#6d5a44;color:#fff;border-radius:9px;padding:7px 10px;font:700 12.5px Inter;text-align:center}
+.back{border:2px solid #f2dcb0;background:transparent;color:#f2dcb0;border-radius:12px;padding:9px 26px;font:800 14px Oxanium;letter-spacing:.08em}
+/* camp */
+.camphd{padding:16px 16px 6px;color:#f2dcb0}.camphd h1{margin:0;font:800 24px Cinzel}.camphd p{margin:2px 0 0;font:600 13px Inter;color:#c9a068}
+.sockets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lib{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.price{display:flex;align-items:center;gap:4px;font:800 11px Oxanium;color:#6b4a12}.price i{width:11px;height:11px;border-radius:50%;background:radial-gradient(#ffe48a,#c58a16)}
+.lockp{opacity:.9}
