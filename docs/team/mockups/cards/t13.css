@@ -33,3 +33,23 @@
 .strip13 i.z{opacity:.7}.strip13 u{position:absolute;right:1px;top:1px;width:4px;height:4px;border-radius:50%;background:#ffc21a;box-shadow:0 0 3px #ffc21a}
 
 .f13 b{display:flex;align-items:center;gap:.4cqi}.f13 .ah{display:inline-flex}.f13 .ah svg{width:3.6cqi;height:3.6cqi;color:currentColor!important}.f13 .ah.am-pierce{color:#ff8a1a}.f13 .ah.am-fire{color:#ff5a2a}.f13 .ah.am-frost{color:#7fe3ff}
+
+/* T16: die-shaped faces from the game's renderer */
+.dfaces{position:absolute;left:14.6%;right:14.6%;top:67.6%;display:grid;grid-template-columns:repeat(5,1fr);gap:.4cqi 1cqi;justify-items:center}
+.dfaces.n4{grid-template-columns:repeat(4,1fr)}.dfaces.n6{grid-template-columns:repeat(3,1fr)}.dfaces.n8{grid-template-columns:repeat(4,1fr)}
+.df{display:grid;justify-items:center;gap:.2cqi;width:100%}
+.df img{width:13.6cqi;height:13.6cqi;object-fit:contain;filter:drop-shadow(0 1px 1.5px #000c)}
+.n4 .df img,.n6 .df img{width:14cqi;height:14cqi}.n6 .df img{width:11cqi;height:11cqi}
+.df.z img{filter:drop-shadow(0 1px 1.5px #000c) saturate(.7) brightness(.85)}
+.df .dk{display:flex;align-items:center;gap:.2cqi;height:2.8cqi;padding:0 .8cqi;border-radius:99px;background:#1a120ccc}
+.df .dk svg{width:2.6cqi;height:2.6cqi}.df .dk .ah{display:inline-flex}.df .dk .ah svg{color:currentColor!important}
+/* T16b: progression faces (shapes.js). --u = one unit of the 100-unit face box; rows: d4|d6, then d8|d10 */
+.qfs{--u:.137cqi;position:absolute;left:14%;right:14%;top:69.6%;bottom:6.4%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1cqi}
+.qfs.n4{--u:.2cqi}.qfs.n6{--u:.15cqi}
+.qr{display:flex;align-items:center;justify-content:center}
+.qg{display:flex;align-items:center;padding:0 1.1cqi;position:relative}
+.qg+.qg::before{content:'';position:absolute;left:0;top:10%;bottom:10%;width:1.5px;border-radius:2px;background:linear-gradient(#d9a83e00,#e8c47aee,#d9a83e00)}
+.qcl{display:flex}.qcl svg{display:block;overflow:visible}
+.qf.z g polygon{filter:saturate(.5) brightness(.62)}.qf.z text{opacity:.5}
+.qfs.flow{position:static;inset:auto;--u:.3px}
+.qcl.ch svg{filter:drop-shadow(0 0 3px #ffc21a) drop-shadow(0 0 1px #ffc21a)}.qcl.new svg{filter:drop-shadow(0 0 2.5px #ffe9a8cc)}

@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · nested faces (proposed rule, not decided)</title>
+<script type="importmap">{"imports":{"three":"../../../../vendor/three/build/three.module.js","three/addons/":"../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#0b0a0c;color:#eadfca;font-family:Inter}main{padding:10px;box-sizing:border-box;max-width:1240px;margin:0 auto}
+.ban{padding:7px 9px;border-radius:6px;background:#b3261e;color:#fff;font:800 11.5px/1.4 Oxanium;letter-spacing:.04em}
+.p{margin:6px 0;font:500 12px/1.45 Inter;color:#cbb894}.wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
+.nc{width:min(390px,100%);box-sizing:border-box;border-radius:16px;padding:10px;background:linear-gradient(180deg,#191410,#0e0b09);border:2px solid var(--mc);box-shadow:inset 0 0 0 1px #000,0 8px 18px #000a}
+.m-Bronze{--mc:#b57a45}.m-Silver{--mc:#c3cde0}.m-Gold{--mc:#e0a83a}
+.hd{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center}.hd img{width:64px;height:64px;border-radius:12px;background:radial-gradient(70% 70% at 50% 45%,#3a2c1e,#120d09);border:1px solid #8a7458}
+.hd b{display:block;font:700 22px/1 'Cormorant Garamond',serif;color:#f2e6cc}.hd small{font:700 11px Oxanium;color:#a99c86;letter-spacing:.06em}
+.rw{margin-top:7px;border-radius:10px;padding:5px 6px;background:#ffffff08;border:1px solid #ffffff14;position:relative}
+.rh{display:flex;justify-content:space-between;font:800 12px Oxanium;color:#f2e6cc}.rh small{font:700 10px Oxanium;color:#a99c86;letter-spacing:.08em;text-transform:uppercase}
+.fs{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:3px}
+.f{display:grid;justify-items:center;gap:1px}.f img{width:100%;max-width:34px;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 1px 1px #000c)}
+.f .k{display:flex;gap:1px;height:9px}.f .k svg{width:8px;height:8px}
+.f.new{background:#ffc21a1a;border-radius:6px;outline:1px dashed #ffc21a88}
+.rw.locked{opacity:.6;filter:grayscale(.45)}.rw.locked .rh small::after{content:' · locked (no price set)'}
+.lk{position:absolute;right:8px;top:4px;font:800 10px Oxanium;color:#ffd98a}
+.qfs.lad{--u:.31px;justify-content:flex-start;align-items:flex-start;margin-top:4px}.qfs.lad .qr{justify-content:flex-start}.qfs.lad .qg:first-child{padding-left:0}
+</style></head><body><main>
+<div class="ban">CONCEPT · PROPOSED RULE, NOT DECIDED · "Nested faces"<br>Illustrative numbers, not balanced. The game does not work this way today (see ROSTER.md / ladder.html for what it rolls).</div>
+<p class="p">Proposal (Dave): faces 1-4 are the same on every size, 5-6 the same on d6/d8/d10, 7-8 on d8/d10, so a bigger die only <b>adds</b> faces (glow = the faces a size adds; shapes follow the progression 1-4 triangles, 5-6 squares, 7-8 diamonds, 9-10 kites). The metal sets how many bonus icons sit on the same base numbers: Bronze few, Silver more, Gold most. Diamond would be a fourth tier (not shown). Base numbers: the released Bronze Dagger d10 (r0 b1 r1 r3 r3 r5 r5 r7 r7 r9), which already nests without breaking "a dN never shows more than N". Larger sizes are dimmed as locked, with no prices.</p>
+<div class="wrap" id="w"></div>
+<script type="module">
+import { weaponData, icon, ico } from './t13.js';
+import { facesHTML, injectDefs } from './shapes.js'; injectDefs();
+// illustrative base faces (from the released Bronze Dagger d10, weaponFaces after applyRelease) and icon placement by metal
+const base = weaponData('dagger', 0, 10).faces.map((f) => ({ v: f.v, c: f.c }));
+const ICONS = { // face number -> icons; nested, so a face keeps its icons on every size that has it
+  Bronze: { 4: { pierce: 1 }, 8: { heal: 1 } },
+  Silver: { 3: { heal: 1 }, 4: { pierce: 1 }, 6: { heal: 1 }, 8: { pierce: 1 }, 10: { heal: 2 } },
+  Gold: { 2: { heal: 1 }, 3: { pierce: 1 }, 4: { heal: 1 }, 5: { pierce: 1 }, 6: { heal: 1 }, 7: { pierce: 1 }, 8: { heal: 1 }, 9: { pierce: 2 }, 10: { heal: 3 } },
+};
+const FXK = { pierce: 'pierce', heal: 'heal', magic: 'magic' };
+for (const [mi, metal] of ['Bronze', 'Silver', 'Gold'].entries()) {
+  const faces = base.map((f, i) => ({ ...f, fx: ICONS[metal][i + 1] || null }));
+  const own = weaponData('dagger', mi, 4); // name and art only
+  let html = `<div class="nc m-${metal}"><div class="hd">${icon(own, 128)}<div><b>${metal} Dagger</b><small>ALL FOUR SIZES · CONCEPT</small></div></div>`;
+  for (const s of [4, 6, 8, 10]) {
+    const prevN = { 4: 0, 6: 4, 8: 6, 10: 8 }[s];
+    html += `<div class="rw${s > 4 ? ' locked' : ''}"><div class="rh">d${s}<small>${s === 4 ? 'owned' : `adds faces ${prevN + 1}-${s}`}</small></div>${facesHTML(faces.slice(0, s), (i) => (i >= prevN && s > 4 ? ' new' : ''), { cls: 'flow lad', one: true })}</div>`;
+  }
+  w.insertAdjacentHTML('beforeend', html + '</div>');
+}
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
+</script></main></body></html>

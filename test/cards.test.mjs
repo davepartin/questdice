@@ -115,3 +115,8 @@ test('rewardChips is exported for the card, and the envelope view carries the st
   assert.deepEqual(CW.envelopeCardParts(S.cardView(env, 'Ada'), false)[0], 'wager'); assert.equal(CW.envelopeCardParts(S.cardView(env, 'Bea'), false)[0], 'secret-objective');
   assert.equal(CW.envelopeCardParts({ id: 'nopotion', name: 'n', rule: 'r', stake: 10, gold: 30 }, true)[0], 'objective');
 });
+
+test('index.html links the card stylesheet (without it the cards render at full-screen size)', async () => {
+  const { readFileSync } = await import('node:fs'); const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<link rel="stylesheet" href="css\/cards\.css\?v=[A-Za-z0-9]+">/);
+});

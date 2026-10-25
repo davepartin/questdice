@@ -1,0 +1,993 @@
+{
+ "build": null,
+ "rules": {
+  "pierce": "all",
+  "frost": "strength",
+  "fire": "full"
+ },
+ "scenarios": [
+  {
+   "title": "normal: the fourth face against a target guarding for 3",
+   "why": "Arrow lane in isolation: face 4 with the left hand showing 4.",
+   "ammo": "normal",
+   "face": "R4",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "R4",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 8,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal"
+      ]
+     },
+     "T": {
+      "atk": 8,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Guard Goblin",
+       "before": 60,
+       "after": 55,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Guard Goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "u3ffqa",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "pierce: the fourth face against a target guarding for 3",
+   "why": "Arrow lane in isolation: face 4 with the left hand showing 4.",
+   "ammo": "pierce",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 0,
+      "pierce": 6,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Piercing arrow: 6 pierce"
+      ]
+     },
+     "T": {
+      "atk": 0,
+      "pierce": 6
+     },
+     "enemies": [
+      {
+       "name": "Guard Goblin",
+       "before": 60,
+       "after": 54,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Guard Goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "u6ffqa",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "fire: the fourth face against a target guarding for 3",
+   "why": "Arrow lane in isolation: face 4 with the left hand showing 4.",
+   "ammo": "fire",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 4,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Fire arrow: 4 to every other monster"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Guard Goblin",
+       "before": 60,
+       "after": 57,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Guard Goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "u9ffqa",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "frost: the fourth face against a target guarding for 3",
+   "why": "Arrow lane in isolation: face 4 with the left hand showing 4.",
+   "ammo": "frost",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 4,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Frost arrow: the target's next blow is 4 softer"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Guard Goblin",
+       "before": 60,
+       "after": 57,
+       "frostBefore": false,
+       "frostAfter": true
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Guard Goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "ucffqa",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": true
+    }
+   ]
+  },
+  {
+   "title": "Fire at a group: the arrowhead hits the chosen goblin and splashes the others",
+   "why": "Splash is the hand number (4) to every OTHER living enemy; each one's guard can stop it.",
+   "ammo": "fire",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 4,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Fire arrow: 4 to every other monster"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Chosen goblin",
+       "before": 60,
+       "after": 57,
+       "frostBefore": false,
+       "frostAfter": false
+      },
+      {
+       "name": "Open goblin",
+       "before": 60,
+       "after": 56,
+       "frostBefore": false,
+       "frostAfter": false
+      },
+      {
+       "name": "Guarding goblin",
+       "before": 60,
+       "after": 59,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [
+      {
+       "uid": "ugtty",
+       "dealt": 4,
+       "name": "Open goblin"
+      },
+      {
+       "uid": "uh9s00",
+       "dealt": 1,
+       "name": "Guarding goblin"
+      }
+     ],
+     "acts": [
+      {
+       "who": "Chosen goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      },
+      {
+       "who": "Open goblin",
+       "move": "Wait",
+       "blow": 0,
+       "frosted": false,
+       "early": false
+      },
+      {
+       "who": "Guarding goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "ufffqa",
+        "init": null,
+        "die": 6
+       },
+       {
+        "uid": "ugtty",
+        "init": null,
+        "die": 6
+       },
+       {
+        "uid": "uh9s00",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "Fire at a lone boss: nobody to splash",
+   "why": "Same arrowhead, same 6 on the target, but no other enemy stands: the splash has nowhere to go.",
+   "ammo": "fire",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 4,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Fire arrow: 4 to every other monster"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Lone boss",
+       "before": 200,
+       "after": 197,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Lone boss",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "ukffqa",
+        "init": null,
+        "die": 4
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "Fire, ordinary numbered face 3 (not an arrowhead): same 6 on the target, no splash",
+   "why": "Only the marked arrowhead triggers the effect. The numbered face is R2 + 4 = 6 and nobody else is touched.",
+   "ammo": "fire",
+   "face": "R2",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 3,
+      "face": "R2",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Chosen goblin",
+       "before": 60,
+       "after": 57,
+       "frostBefore": false,
+       "frostAfter": false
+      },
+      {
+       "name": "Open goblin",
+       "before": 60,
+       "after": 60,
+       "frostBefore": false,
+       "frostAfter": false
+      },
+      {
+       "name": "Open goblin 2",
+       "before": 60,
+       "after": 60,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Chosen goblin",
+       "move": "Wing Wall",
+       "blow": 3,
+       "frosted": false,
+       "early": false
+      },
+      {
+       "who": "Open goblin",
+       "move": "Wait",
+       "blow": 0,
+       "frosted": false,
+       "early": false
+      },
+      {
+       "who": "Open goblin 2",
+       "move": "Wait",
+       "blow": 0,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "unffqa",
+        "init": null,
+        "die": 6
+       },
+       {
+        "uid": "uotty",
+        "init": null,
+        "die": 6
+       },
+       {
+        "uid": "up9s00",
+        "init": null,
+        "die": 6
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "Frost, ordinary numbered face 3 (not an arrowhead): no chill",
+   "why": "The monster's 12-point blow stays 12.",
+   "ammo": "frost",
+   "face": "R2",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 3,
+      "face": "R2",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +4 heal"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Ogre",
+       "before": 200,
+       "after": 194,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Ogre",
+       "move": "Club",
+       "blow": 12,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "usffqa",
+        "init": null,
+        "die": 4
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    }
+   ]
+  },
+  {
+   "title": "Frost, archer first: the chilled blow is softer in the same round",
+   "why": "Round 1: the archer always acts first, so the 12-point Club is 12 - 4 = 8 before any block.",
+   "ammo": "frost",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 4,
+      "notes": [
+       "Heart Boost +4 heal",
+       "Frost arrow: the target's next blow is 4 softer"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Ogre",
+       "before": 200,
+       "after": 194,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Ogre",
+       "move": "Club",
+       "blow": 8,
+       "frosted": true,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 4,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "uvffqa",
+        "init": null,
+        "die": 4
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": true
+    }
+   ]
+  },
+  {
+   "title": "Frost, monster first: the first blow lands in full, the chill softens the NEXT one",
+   "why": "Round 2: the monster's initiative die beats the archer's feet (set for the demonstration), so it strikes first at 12. The chill the arrow leaves is spent on its next blow in round 3: 8.",
+   "ammo": "frost",
+   "face": "A2 (arrowhead)",
+   "log": [
+    {
+     "round": 1,
+     "dice": {
+      "arrowDie": 1,
+      "face": "R0",
+      "hand": 4,
+      "feet": 1
+     },
+     "ev": {
+      "atk": 4,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +6 heal"
+      ]
+     },
+     "T": {
+      "atk": 4,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Ogre",
+       "before": 400,
+       "after": 396,
+       "frostBefore": false,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Ogre",
+       "move": "Club",
+       "blow": 12,
+       "frosted": false,
+       "early": false
+      }
+     ],
+     "init": {
+      "hero": 1,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "uyffqa",
+        "init": null,
+        "die": 4
+       }
+      ],
+      "first": "hero",
+      "forced": true
+     },
+     "frosted": false
+    },
+    {
+     "round": 2,
+     "dice": {
+      "arrowDie": 4,
+      "face": "A2 (arrowhead)",
+      "hand": 4,
+      "feet": 1
+     },
+     "ev": {
+      "atk": 6,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 4,
+      "notes": [
+       "Heart Boost +6 heal",
+       "Frost arrow: the target's next blow is 4 softer"
+      ]
+     },
+     "T": {
+      "atk": 6,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Ogre",
+       "before": 396,
+       "after": 390,
+       "frostBefore": false,
+       "frostAfter": true
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Ogre",
+       "move": "Club",
+       "blow": 12,
+       "frosted": false,
+       "early": true
+      }
+     ],
+     "init": {
+      "hero": 1,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "uyffqa",
+        "init": 482,
+        "die": 1000
+       }
+      ],
+      "first": "foes",
+      "forced": false
+     },
+     "frosted": true
+    },
+    {
+     "round": 3,
+     "dice": {
+      "arrowDie": 1,
+      "face": "R0",
+      "hand": 4,
+      "feet": 1
+     },
+     "ev": {
+      "atk": 4,
+      "pierce": 0,
+      "fire": 0,
+      "frost": 0,
+      "notes": [
+       "Heart Boost +6 heal"
+      ]
+     },
+     "T": {
+      "atk": 4,
+      "pierce": 0
+     },
+     "enemies": [
+      {
+       "name": "Ogre",
+       "before": 390,
+       "after": 386,
+       "frostBefore": true,
+       "frostAfter": false
+      }
+     ],
+     "splashed": [],
+     "acts": [
+      {
+       "who": "Ogre",
+       "move": "Club",
+       "blow": 8,
+       "frosted": true,
+       "early": true
+      }
+     ],
+     "init": {
+      "hero": 1,
+      "heroDie": 6,
+      "foes": [
+       {
+        "uid": "uyffqa",
+        "init": 264,
+        "die": 1000
+       }
+      ],
+      "first": "foes",
+      "forced": false
+     },
+     "frosted": false
+    }
+   ]
+  }
+ ],
+ "perRoll": [
+  {
+   "size": 4,
+   "normal": {
+    "arrowheads": 0,
+    "chance": "0/4",
+    "laneAvgBy": {
+     "0": 6.25,
+     "3": 3.25,
+     "6": 0.75
+    }
+   },
+   "pierce": {
+    "arrowheads": 1,
+    "chance": "1/4",
+    "laneAvgBy": {
+     "0": 5.25,
+     "3": 3,
+     "6": 1.5
+    }
+   },
+   "fire": {
+    "arrowheads": 1,
+    "chance": "1/4",
+    "laneAvgBy": {
+     "0": 5.25,
+     "3": 2.25,
+     "6": 0
+    }
+   },
+   "frost": {
+    "arrowheads": 1,
+    "chance": "1/4",
+    "laneAvgBy": {
+     "0": 5.25,
+     "3": 2.25,
+     "6": 0
+    }
+   }
+  },
+  {
+   "size": 6,
+   "normal": {
+    "arrowheads": 0,
+    "chance": "0/6",
+    "laneAvgBy": {
+     "0": 7,
+     "3": 4,
+     "6": 1.5
+    }
+   },
+   "pierce": {
+    "arrowheads": 2,
+    "chance": "2/6",
+    "laneAvgBy": {
+     "0": 5.83,
+     "3": 3.83,
+     "6": 2.33
+    }
+   },
+   "fire": {
+    "arrowheads": 2,
+    "chance": "2/6",
+    "laneAvgBy": {
+     "0": 5.83,
+     "3": 2.83,
+     "6": 0.33
+    }
+   },
+   "frost": {
+    "arrowheads": 2,
+    "chance": "2/6",
+    "laneAvgBy": {
+     "0": 5.83,
+     "3": 2.83,
+     "6": 0.33
+    }
+   }
+  },
+  {
+   "size": 8,
+   "normal": {
+    "arrowheads": 0,
+    "chance": "0/8",
+    "laneAvgBy": {
+     "0": 8,
+     "3": 5,
+     "6": 2.38
+    }
+   },
+   "pierce": {
+    "arrowheads": 3,
+    "chance": "3/8",
+    "laneAvgBy": {
+     "0": 6.38,
+     "3": 4.5,
+     "6": 3
+    }
+   },
+   "fire": {
+    "arrowheads": 3,
+    "chance": "3/8",
+    "laneAvgBy": {
+     "0": 6.38,
+     "3": 3.38,
+     "6": 0.75
+    }
+   },
+   "frost": {
+    "arrowheads": 3,
+    "chance": "3/8",
+    "laneAvgBy": {
+     "0": 6.38,
+     "3": 3.38,
+     "6": 0.75
+    }
+   }
+  },
+  {
+   "size": 10,
+   "normal": {
+    "arrowheads": 0,
+    "chance": "0/10",
+    "laneAvgBy": {
+     "0": 9,
+     "3": 6,
+     "6": 3.3
+    }
+   },
+   "pierce": {
+    "arrowheads": 3,
+    "chance": "3/10",
+    "laneAvgBy": {
+     "0": 7.3,
+     "3": 5.2,
+     "6": 3.4
+    }
+   },
+   "fire": {
+    "arrowheads": 3,
+    "chance": "3/10",
+    "laneAvgBy": {
+     "0": 7.3,
+     "3": 4.3,
+     "6": 1.6
+    }
+   },
+   "frost": {
+    "arrowheads": 3,
+    "chance": "3/10",
+    "laneAvgBy": {
+     "0": 7.3,
+     "3": 4.3,
+     "6": 1.6
+    }
+   }
+  }
+ ]
+}

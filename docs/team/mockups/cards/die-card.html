@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CONCEPT · die-shaped faces</title>
+<script type="importmap">{"imports":{"three":"../../../../vendor/three/build/three.module.js","three/addons/":"../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css"><link rel="stylesheet" href="card.css"><link rel="stylesheet" href="t13.css">
+<style>html,body{margin:0;background:#07080c}.pg{min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;background:radial-gradient(90% 50% at 50% 35%,#221a14,#0b0a0a 65%,#04060d)}
+.qc{--w:min(370px,calc(100vw - 16px),calc((100vh - 84px) * .75))}.concept{padding:2px 7px;border-radius:3px;font:800 9px Oxanium;letter-spacing:.14em;background:#b3261e;color:#fff}
+.under{display:grid;grid-template-columns:1fr 1fr;gap:8px}.under .btn{height:44px;line-height:1.05;font-size:.95rem}.under small{display:block;font-size:.68rem;text-transform:none;opacity:.85}</style></head><body>
+<main class="pg"><div class="concept" id="cc"></div><div id="slot"></div><div class="under" id="under"><div class="btn go">Take</div><div class="btn no" id="sell"></div></div></main>
+<script type="module">
+import { weaponCardDie, weaponData } from './t13.js';
+const p = new URLSearchParams(location.search); const mode = p.get('mode') || 'die';
+const d = weaponData(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 10), undefined, p.get('ammo') || undefined);
+const card = await weaponCardDie(d, { label: 'Sell', value: d.sell }, mode); slot.append(card);
+under.style.width = getComputedStyle(card).width; sell.innerHTML = `Sell<small>for ${d.sell} gold</small>`;
+cc.textContent = 'CONCEPT · faces 1-4 d4 triangles · 5-6 d6 squares · 7-8 d8 diamonds · 9-10 d10 kites';
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); await document.fonts.ready; document.body.dataset.ready = 1;
+</script></body></html>
