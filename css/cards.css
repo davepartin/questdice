@@ -164,3 +164,10 @@
 .qo.sec .ttl{color:#efeae2;text-shadow:0 .4cqi .6cqi #000}
 .qo.sec .goal{color:#d8d4cc}
 .qo.sec .t{background:#ffffff10;color:#e6e2da;box-shadow:inset 0 0 0 .3cqi #9a1a2288}.qo.sec .t small{color:#e08a90}.qo.sec .t b{color:#fff}
+
+/* Short phones (Director, 25 Oct): the answer bar must not hide the consequence on the first view. The "Saved" reassurance and the stage padding step aside while a card is being decided, so the whole card sits above Accept and Decline. */
+@media (max-height: 640px) {
+  .sx-envelope .sx-saved { display: none; }
+  .sx-envelope .obj-stage { padding: .05rem 0 0; }
+  .sx-envelope .cw-obj .qo { --w: max(250px, min(88vw, 330px, calc((100dvh - 17rem) * .75))); }
+}

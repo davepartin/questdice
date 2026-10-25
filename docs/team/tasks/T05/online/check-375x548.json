@@ -4,12 +4,12 @@
   {
    "who": "Dav",
    "kind": "secret-objective",
-   "focus": "straight",
+   "focus": "crown",
    "chip": "Secret Objective",
-   "title": "Straight Shooter",
+   "title": "Lead the Charge",
    "w": 250,
-   "top": 197,
-   "bottom": 530,
+   "top": 140,
+   "bottom": 473,
    "vh": 548,
    "spill": -1,
    "emblem": 155,
@@ -20,22 +20,22 @@
      "bottom": 531
     }
    ],
-   "moreVisible": false,
+   "moreVisible": true,
    "minFont": 8,
    "imgs": true
   },
   {
    "who": "JP",
    "kind": "secret-objective",
-   "focus": "straight",
+   "focus": "gauntlet",
    "chip": "Secret Objective",
-   "title": "Straight Shooter",
+   "title": "Matching Mittens",
    "w": 250,
-   "top": 197,
-   "bottom": 530,
+   "top": 140,
+   "bottom": 473,
    "vh": 548,
    "spill": -1,
-   "emblem": 155,
+   "emblem": 120,
    "btns": [
     {
      "text": "Continue",
@@ -43,47 +43,19 @@
      "bottom": 531
     }
    ],
-   "moreVisible": false,
+   "moreVisible": true,
    "minFont": 8,
    "imgs": true
   },
   {
    "who": "Dav-offer",
    "kind": "wager",
-   "focus": "team",
-   "chip": "Secret Objective",
-   "title": "Someone Has to Fall",
-   "w": 250,
-   "top": 197,
-   "bottom": 530,
-   "vh": 548,
-   "spill": -1,
-   "emblem": 47,
-   "btns": [
-    {
-     "text": "Accept",
-     "top": 477,
-     "bottom": 531
-    },
-    {
-     "text": "Decline",
-     "top": 477,
-     "bottom": 531
-    }
-   ],
-   "moreVisible": false,
-   "minFont": 8,
-   "imgs": true
-  },
-  {
-   "who": "JP-offer",
-   "kind": "wager",
    "focus": "atk",
    "chip": "Secret Objective",
    "title": "The Slacker",
    "w": 250,
-   "top": 197,
-   "bottom": 530,
+   "top": 140,
+   "bottom": 473,
    "vh": 548,
    "spill": -1,
    "emblem": 61,
@@ -99,7 +71,35 @@
      "bottom": 531
     }
    ],
-   "moreVisible": false,
+   "moreVisible": true,
+   "minFont": 8,
+   "imgs": true
+  },
+  {
+   "who": "JP-offer",
+   "kind": "wager",
+   "focus": "team",
+   "chip": "Secret Objective",
+   "title": "Someone Has to Fall",
+   "w": 250,
+   "top": 140,
+   "bottom": 473,
+   "vh": 548,
+   "spill": -1,
+   "emblem": 47,
+   "btns": [
+    {
+     "text": "Accept",
+     "top": 477,
+     "bottom": 531
+    },
+    {
+     "text": "Decline",
+     "top": 477,
+     "bottom": 531
+    }
+   ],
+   "moreVisible": true,
    "minFont": 8,
    "imgs": true
   }

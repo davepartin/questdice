@@ -4,15 +4,15 @@
   {
    "who": "Dav",
    "kind": "secret-objective",
-   "focus": "crown",
+   "focus": "gauntlet",
    "chip": "Secret Objective",
-   "title": "Lead the Charge",
+   "title": "Matching Mittens",
    "w": 258,
    "top": 235,
    "bottom": 579,
    "vh": 664,
    "spill": -1,
-   "emblem": 161,
+   "emblem": 125,
    "btns": [
     {
      "text": "Continue",
@@ -27,15 +27,15 @@
   {
    "who": "JP",
    "kind": "secret-objective",
-   "focus": "team",
+   "focus": "crown",
    "chip": "Secret Objective",
-   "title": "No One Left Behind",
+   "title": "Lead the Charge",
    "w": 258,
    "top": 235,
    "bottom": 579,
    "vh": 664,
    "spill": -1,
-   "emblem": 118,
+   "emblem": 161,
    "btns": [
     {
      "text": "Continue",
