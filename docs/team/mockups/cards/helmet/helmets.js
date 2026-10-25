@@ -27,7 +27,8 @@ function iconArt(k) { const c = document.createElement('canvas'); c.width = c.he
   const gr = g.createLinearGradient(0, 40, 0, 470); gr.addColorStop(0, '#ffe2b0'); gr.addColorStop(.5, '#d39a52'); gr.addColorStop(1, '#7a4a1e'); g.fillStyle = gr;
   g.shadowColor = '#000a'; g.shadowBlur = 18; g.shadowOffsetY = 10; g.translate(46, 46); g.scale(4.2, 4.2); g.fill(P(k), 'evenodd'); return c.toDataURL(); }
 const head = window.SL.find((s) => s.k === 'N').card;
-for (const k of Object.keys(HEADS)) {
+const only = new URLSearchParams(location.search).get('only')?.split(',');
+for (const k of Object.keys(HEADS).filter((k) => !only || only.includes(k))) {
   const n = document.createElement('div'); n.className = 'nm2' + (k === 'current' ? ' cur' : ''); n.innerHTML = `<b>${HEADS[k].name}</b><small>${HEADS[k].note}</small>`;
   const card = head.cloneNode(true); card.querySelector('.gi').src = iconArt(k); const box = document.createElement('div'); box.className = 'cardbox'; box.append(card);
   grid.append(n, slot(k), face(k), box);
