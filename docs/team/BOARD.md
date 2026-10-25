@@ -23,6 +23,15 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## Latest Dave priority: equipment foundation before final cards, 25 October
+
+**Current sequencing supersedes older next-action ordering:** finish an already active co-op correctness fix at a safe checkpoint, then Claude prioritizes T17's validated weapon roster, cumulative faces and resale economy. Grok continues reusable card visuals. Broader monster/magic retuning follows the equipment foundation. Full acceptance criteria: [T17 current equipment direction](tasks/T17.md#daves-current-direction-validated-equipment-before-final-cards-25-october-2026).
+
+- **Claude:** start from eight existing types (four offensive weapons, two shields, Bow and Arrows); prove distinct roles using existing evidence plus focused matched tests. Produce one versioned engine/card dataset and compact role/face/economy comparison. Test complete loadouts, combinations and current powers/monsters, not just averages. Separate bot evidence from human playtesting. 50% resale recovery is the leading test candidate, not a settled percentage.
+- **Grok:** continue art, covers and Camp grid -> matching card -> upgrade flow. Final numerical card content waits for the reviewed dataset; use dynamic data and PROPOSED labels meanwhile. Head/hands/feet cards use existing rules; a split Left/Right Hands card is a visual candidate with independent purchases. Respect feet limits and class-specific talents.
+- **Director:** review the equipment comparison before numerical freeze. No new weapon families without a demonstrated role. Bard two daggers is a candidate only; approved Bronze offense+shield starters and Ranger pair remain.
+- **Boundary:** no T17 live activation or save migration approved by this note. Preserve current shared-file reservations and existing co-op fix assignments. Do not tune monsters to compensate for an unfinished weapon table.
+
 ## Director checkpoint: 25 October 2026, current co-op review
 
 Reviewed main at 8f8ec3293103c7fac6dd6b47e8ebeb62664c5642, latest PLAN entries, WORKING_GUIDE, T05/T17/T19/T21/T22 notes and the card handoff. Latest main changes are coordination/docs; the latest implementation entry is 81709f4 (T17 card infrastructure, switch off at live root). No newer Grok visual delivery is established by this main history. Implemented/build claims below come from committed results; this checkpoint did not fetch the hosted stamp or independently verify deployment.
