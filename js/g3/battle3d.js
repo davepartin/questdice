@@ -304,8 +304,8 @@ function teamRules() {
   const b = B.b; const act = Math.min(3, Math.max(1, b.quest?.act || B.hero?.campaign?.act || 1)); const tri = D.TRIPLE_BY_ACT[act - 1] * D.TEAM_TRIPLE_BONUS / D.TRIPLE_BY_ACT[0];
   const n = b.fighters?.length || 2;
   const rule = (icon, title, text) => h('li', {}, h('span', { class: 'tr-ic' }, HK.icon(icon)), h('div', {}, h('b', {}, title), h('small', {}, text)));
-  const open = !B.teamRulesSeen; B.teamRulesSeen = true; // open the first time; a tap folds it away after that
-  return h('details', { class: 'tm-rules', open }, h('summary', {}, HK.icon('star'), 'How teams work'),
+  return h('details', { class: 'tm-rules' }, // closed: the long rules wait behind the summary (T21 follow-up), the actions come first
+     h('summary', {}, HK.icon('star'), 'How teams work'),
     h('ul', {},
       rule('windup', 'Who the monsters go after', `The slowest hero this round (lowest feet roll) is the target and takes a double share of every hit. Everyone else takes a single share. Your block only covers your own share. A tie goes against the hero with more health; if that ties too, a coin flip.${D.CLASS2.on && D.CLASS2.guard ? ' A Knight who uses Shield Up steps in front and takes the double share instead; everyone else still takes a single share.' : ''}`),
       rule('block', 'Hold the line', `If the monsters came at you and you are still standing at the end of the round: +${D.POINTS.heldLine} points. While you are the target, your blocks score double.`),

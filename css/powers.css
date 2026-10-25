@@ -219,3 +219,44 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-sigil:has(.pw-detail:not(.pw-pick)) { gap: .5rem; }
 .pw-sigil:has(.pw-detail:not(.pw-pick)) .pw-stage { width: min(100%,240px); }
 .pw-sigil:has(.pw-detail:not(.pw-pick)) .pw-helpers .pw-medal { min-height: 54px; }
+
+/* T21 follow-up (Dave, 25 Oct): on a phone-height screen the triangle gives way to one row of six tiles (the class powers, then the helpers), so every choice, the chosen
+   power's name, short effect, real cost, the reason it cannot be used and its action, the health and magic, and Close fit together with no inner scrolling. */
+@media (max-height: 760px) {
+  .b3-sheet.open .pw-sigil { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .3rem; padding: 0; align-content: start; }
+  .b3-sheet.open .pw-sigil > * { min-width: 0; }
+  .b3-sheet.open .pw-tally, .b3-sheet.open .pw-detail { grid-column: 1 / -1; }
+  .b3-sheet.open .pw-wrap, .b3-sheet.open .pw-stage, .b3-sheet.open .pw-helpers { display: contents; }
+  .b3-sheet.open .pw-tri, .b3-sheet.open .pw-stage .pw-medal.empty { display: none; }
+  .b3-sheet.open .pw-tally { position: static; padding: 2px; gap: .4rem; }
+  .b3-sheet.open .pw-tally > div { padding: .12rem .5rem; }
+  .b3-sheet.open .pw-tally .pw-center b, .b3-sheet.open .pw-tally .pw-life b { font-size: 1.05rem; }
+  .b3-sheet.open .pw-stage .pw-medal, .b3-sheet.open .pw-helpers .pw-medal { --r: 28px; position: relative; inset: auto; left: auto; top: auto; width: auto; min-height: 0; transform: none; padding: .95rem .1rem .25rem; gap: .12rem; background: #101b28; border: 1px solid #796547; border-radius: 4px; justify-content: flex-start; }
+  .b3-sheet.open .pw-stage .pw-ring, .b3-sheet.open .pw-helpers .pw-ring, .b3-sheet.open .pw-stage .pw-core, .b3-sheet.open .pw-helpers .pw-core { width: 28px; height: 28px; }
+  .b3-sheet.open .pw-stage .pw-core .ic, .b3-sheet.open .pw-helpers .pw-core .ic { width: 20px; height: 20px; }
+  .b3-sheet.open .pw-stage .pw-medal.on, .b3-sheet.open .pw-helpers .pw-medal.on { border-color: #ffe0a0; box-shadow: 0 0 0 1px #ffe0a0; background: #1c2a3c; }
+  .b3-sheet.open .pw-stage .pw-name, .b3-sheet.open .pw-helpers .pw-name { position: static; transform: none; width: auto; max-width: 100%; padding: 0; background: none; border: 0; box-shadow: none; font: 600 .6rem/1.05 var(--font-body); text-align: center; overflow-wrap: anywhere; }
+  .b3-sheet.open .pw-stage .pw-slot { left: .1rem; top: .1rem; width: .9rem; height: .9rem; font-size: .55rem; }
+  .b3-sheet.open .pw-stage .pw-cost, .b3-sheet.open .pw-helpers .pw-cost { top: .1rem; right: .1rem; padding: .02rem .22rem; font-size: .56rem; }
+  .b3-sheet.open .pw-helpers .pw-cost .ic, .b3-sheet.open .pw-stage .pw-cost .ic { width: .5rem; height: .5rem; }
+  .b3-sheet.open .pw-stage .pw-tag { position: static; transform: none; padding: 0 .25rem; font-size: .45rem; }
+  .b3-sheet.open .pw-pips i { width: .34rem; height: .34rem; }
+  .b3-sheet.open .pw-detail { min-height: 0; padding: .5rem .6rem; gap: .2rem; }
+  .b3-sheet.open .pw-detail .pd-badge { width: 2rem; height: 2rem; }
+  .b3-sheet.open .pw-detail .pd-id b { font-size: 1.05rem; line-height: 1.05; }
+  .b3-sheet.open .pw-detail .pd-id small { margin: 0; }
+  .b3-sheet.open .pw-detail .pd-id em { margin-top: .05rem; }
+  .b3-sheet.open .pw-detail .pd-top { gap: .5rem; }
+  .b3-sheet.open .pw-detail .pd-line { margin: .15rem 0 0; font-size: .76rem; line-height: 1.3; }
+  .b3-sheet.open .pw-detail .pd-why { margin: .2rem 0 0; }
+  .b3-sheet.open .pw-detail .pd-row { margin-top: .3rem; gap: .4rem; flex-wrap: nowrap; }
+  .b3-sheet.open .pw-detail .pw-btn { min-height: 44px; font-size: .9rem; padding: .3rem .6rem; }
+  .b3-sheet.open .sh-head { min-height: 0; gap: .35rem; }
+  .b3-sheet.open .sh-tabs { flex: 1; min-width: 0; gap: .25rem; }
+  .b3-sheet.open .sh-tabs button { flex: 1 1 0; min-width: 0; min-height: 40px; padding: .2rem .3rem; font-size: .6rem; letter-spacing: .03em; white-space: nowrap; }
+  .b3-sheet.open .sh-head .sh-x { flex: none; min-height: 40px; padding: .2rem .6rem; font-size: .64rem; white-space: nowrap; }
+  .b3-sheet.open .pw-detail.pw-pick { min-height: 0; padding: .45rem .6rem; }
+}
+@media (max-height: 760px) {
+  .b3-sheet.open .b3-cards:not(:has(.pw-sigil)) .bc-name { white-space: normal; overflow: visible; text-overflow: clip; padding-right: 0; line-height: 1.05; }
+}

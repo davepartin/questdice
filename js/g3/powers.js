@@ -162,7 +162,7 @@ export function sigil(ctx) {
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
   const utilRow = utils.map((u, i) => h('button', { type: 'button',
     class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${u.why && !soft(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}`,
-    onclick: () => { if (soft(u)) { sfx.error?.(); pop((u.why || '').replace(/ Buy more at camp\./, '')); } else ctx.select(u.id); } },
+    onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g'))), costBadge(u),
     h('span', { class: 'pw-name' }, u.name)));
   const detail = detailPanel(ctx, sel);

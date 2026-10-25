@@ -1,0 +1,1102 @@
+[
+ {
+  "size": "375x548",
+  "label": "after6",
+  "items": {
+   "aimed": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 243,
+     "text": "Aimed Shot",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 305,
+     "right": 341,
+     "text": "2",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 281,
+     "bottom": 325,
+     "left": 162,
+     "right": 341,
+     "text": "Cast · 2 magic",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 335,
+     "left": 23,
+     "right": 352,
+     "text": "A · Big moveAimed ShotOnce a battle · recharge 3 magic22 magic: 2d6 pierce. +1 die per ext",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 35,
+      "right": 79,
+      "text": "–",
+      "disabled": true
+     },
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 111,
+      "right": 155,
+      "text": "+",
+      "disabled": false
+     },
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 162,
+      "right": 341,
+      "text": "Cast · 2 magic",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "A · Big moveAimed ShotOnce a battle · recharge 3 magic22 magic: 2d6 pierce. +1 die per extra magic, max 4d6.–2+Cast · 2 magic"
+   },
+   "quickdraw": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 175,
+     "text": "Quick Draw",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 305,
+     "right": 341,
+     "text": "1",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 264,
+     "bottom": 308,
+     "left": 34,
+     "right": 341,
+     "text": "Cast · 1 magic",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 317,
+     "left": 23,
+     "right": 352,
+     "text": "B · Every roundQuick DrawEvery round1A free reroll of 2 dice.Cast · 1 magic",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 264,
+      "bottom": 308,
+      "left": 34,
+      "right": 341,
+      "text": "Cast · 1 magic",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "B · Every roundQuick DrawEvery round1A free reroll of 2 dice.Cast · 1 magic"
+   },
+   "volley": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 140,
+     "text": "Volley",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 305,
+     "right": 341,
+     "text": "1",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 280,
+     "bottom": 324,
+     "left": 34,
+     "right": 341,
+     "text": "Store a charge · 1",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 333,
+     "left": 23,
+     "right": 352,
+     "text": "C · ChargeVolleyEvery round10 of 4 stored. Store 1 a round, or release all: 3, 5, 7, 9 pie",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 280,
+      "bottom": 324,
+      "left": 34,
+      "right": 341,
+      "text": "Store a charge · 1",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "C · ChargeVolleyEvery round10 of 4 stored. Store 1 a round, or release all: 3, 5, 7, 9 pierce. Total 24.Store a charge · 1"
+   },
+   "u:bigheal": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 173,
+     "text": "Potion",
+     "disabled": false
+    },
+    "cost": null,
+    "why": {
+     "top": 278,
+     "bottom": 295,
+     "left": 34,
+     "right": 341,
+     "text": "You are at full health.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 303,
+     "bottom": 347,
+     "left": 34,
+     "right": 341,
+     "text": "Drink a potion",
+     "disabled": true
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 356,
+     "left": 23,
+     "right": 352,
+     "text": "Always readyPotion2 left · free to drinkHeal 10 right away. Once it is gone it is gone; bu",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 303,
+      "bottom": 347,
+      "left": 34,
+      "right": 341,
+      "text": "Drink a potion",
+      "disabled": true
+     }
+    ],
+    "allVisible": true,
+    "text": "Always readyPotion2 left · free to drinkHeal 10 right away. Once it is gone it is gone; buy more at camp.You are at full health.Drink a potion"
+   },
+   "u:heal": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 247,
+     "text": "Heal",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 305,
+     "right": 341,
+     "text": "2",
+     "disabled": false
+    },
+    "why": {
+     "top": 262,
+     "bottom": 279,
+     "left": 34,
+     "right": 341,
+     "text": "You are at full health.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 287,
+     "bottom": 331,
+     "left": 34,
+     "right": 341,
+     "text": "Heal 3 · 2 magic",
+     "disabled": true
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 340,
+     "left": 23,
+     "right": 352,
+     "text": "Always readyHeal2 magic · as often as you can pay2Turn 2 magic into 3 health, right now.Yo",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 287,
+      "bottom": 331,
+      "left": 34,
+      "right": 341,
+      "text": "Heal 3 · 2 magic",
+      "disabled": true
+     }
+    ],
+    "allVisible": true,
+    "text": "Always readyHeal2 magic · as often as you can pay2Turn 2 magic into 3 health, right now.You are at full health.Heal 3 · 2 magic"
+   },
+   "u:heart": {
+    "vw": 375,
+    "vh": 548,
+    "sheet": {
+     "top": 8,
+     "bottom": 381
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 281,
+     "right": 352,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 352,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 200,
+     "bottom": 218,
+     "left": 34,
+     "right": 149,
+     "text": "Heart change",
+     "disabled": false
+    },
+    "cost": {
+     "top": 296,
+     "bottom": 325,
+     "left": 34,
+     "right": 341,
+     "text": "Costs 3 magic. You have 4. Now: no die shows the heart's symbol yet.",
+     "disabled": false
+    },
+    "why": {
+     "top": 296,
+     "bottom": 325,
+     "left": 34,
+     "right": 341,
+     "text": "Costs 3 magic. You have 4. Now: no die shows the heart's symbol yet.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 232,
+     "bottom": 291,
+     "left": 34,
+     "right": 159,
+     "text": "▼ Down to 3",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 364,
+     "left": 23,
+     "right": 352,
+     "text": "Heart change3 magic · once a roundClose▼ Down to 3Now▲ Up to 5Costs 3 magic. You have 4. N",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 192,
+      "bottom": 227,
+      "left": 277,
+      "right": 341,
+      "text": "Close",
+      "disabled": false
+     },
+     {
+      "top": 232,
+      "bottom": 291,
+      "left": 34,
+      "right": 159,
+      "text": "▼ Down to 3",
+      "disabled": false
+     },
+     {
+      "top": 232,
+      "bottom": 291,
+      "left": 216,
+      "right": 341,
+      "text": "▲ Up to 5",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "Heart change3 magic · once a roundClose▼ Down to 3Now▲ Up to 5Costs 3 magic. You have 4. Now: no die shows the heart's symbol yet.RulesOnce a round, turn the heart die up or down by one. A heart of 1 to 4 boosts every he"
+   }
+  },
+  "ids": [
+   "aimed",
+   "quickdraw",
+   "volley",
+   "u:bigheal",
+   "u:heal",
+   "u:heart"
+  ],
+  "team": {
+   "vh": 548,
+   "sheet": {
+    "top": 90,
+    "bottom": 362
+   },
+   "scrolls": false,
+   "buttons": [
+    {
+     "text": "Magical powers",
+     "top": 99,
+     "bottom": 139,
+     "disabled": false
+    },
+    {
+     "text": "Team actions",
+     "top": 99,
+     "bottom": 139,
+     "disabled": false
+    },
+    {
+     "text": "✕ Close",
+     "top": 99,
+     "bottom": 139,
+     "disabled": false
+    },
+    {
+     "text": "Potion+10Throw one of your potions to a friend to heal them.",
+     "top": 164,
+     "bottom": 211,
+     "disabled": false
+    },
+    {
+     "text": "Share magicPay 2 magic; your friend gains 2.2ONCE A ROUND",
+     "top": 164,
+     "bottom": 211,
+     "disabled": false
+    },
+    {
+     "text": "ReviveOnce a battle: pay 10 magic and a fallen friend stands",
+     "top": 224,
+     "bottom": 271,
+     "disabled": false
+    }
+   ],
+   "text": "MAGICAL POWERS TEAM ACTIONS ✕ CLOSE POTION +10 FREE 2 LEFT SHARE MAGIC 2 ONCE A ROUND REVIVE 10 ONCE One team action a round. Pick it, then choose a friend. HOW TEAMS WORK"
+  },
+  "pick": {
+   "vh": 548,
+   "panel": {
+    "top": 5,
+    "bottom": 348
+   },
+   "scrolls": false,
+   "close": {
+    "top": 16,
+    "bottom": 55,
+    "text": "✕ Close",
+    "disabled": false
+   },
+   "friends": [
+    {
+     "top": 115,
+     "bottom": 170,
+     "text": "Pal228 / 28 health · 4 magicGive",
+     "disabled": false
+    }
+   ],
+   "text": "SHARE MAGIC ✕ CLOSE Pay 2 magic; your friend gains 2. Pal2 28 / 28 health · 4 magic GIVE Close"
+  }
+ },
+ {
+  "size": "390x664",
+  "label": "after6",
+  "items": {
+   "aimed": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 243,
+     "text": "Aimed Shot",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 320,
+     "right": 356,
+     "text": "2",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 281,
+     "bottom": 325,
+     "left": 162,
+     "right": 356,
+     "text": "Cast · 2 magic",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 335,
+     "left": 23,
+     "right": 367,
+     "text": "A · Big moveAimed ShotOnce a battle · recharge 3 magic22 magic: 2d6 pierce. +1 die per ext",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 35,
+      "right": 79,
+      "text": "–",
+      "disabled": true
+     },
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 111,
+      "right": 155,
+      "text": "+",
+      "disabled": false
+     },
+     {
+      "top": 281,
+      "bottom": 325,
+      "left": 162,
+      "right": 356,
+      "text": "Cast · 2 magic",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "A · Big moveAimed ShotOnce a battle · recharge 3 magic22 magic: 2d6 pierce. +1 die per extra magic, max 4d6.–2+Cast · 2 magic"
+   },
+   "quickdraw": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 175,
+     "text": "Quick Draw",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 320,
+     "right": 356,
+     "text": "1",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 264,
+     "bottom": 308,
+     "left": 34,
+     "right": 356,
+     "text": "Cast · 1 magic",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 317,
+     "left": 23,
+     "right": 367,
+     "text": "B · Every roundQuick DrawEvery round1A free reroll of 2 dice.Cast · 1 magic",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 264,
+      "bottom": 308,
+      "left": 34,
+      "right": 356,
+      "text": "Cast · 1 magic",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "B · Every roundQuick DrawEvery round1A free reroll of 2 dice.Cast · 1 magic"
+   },
+   "volley": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 140,
+     "text": "Volley",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 320,
+     "right": 356,
+     "text": "1",
+     "disabled": false
+    },
+    "why": null,
+    "primary": {
+     "top": 280,
+     "bottom": 324,
+     "left": 34,
+     "right": 356,
+     "text": "Store a charge · 1",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 333,
+     "left": 23,
+     "right": 367,
+     "text": "C · ChargeVolleyEvery round10 of 4 stored. Store 1 a round, or release all: 3, 5, 7, 9 pie",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 280,
+      "bottom": 324,
+      "left": 34,
+      "right": 356,
+      "text": "Store a charge · 1",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "C · ChargeVolleyEvery round10 of 4 stored. Store 1 a round, or release all: 3, 5, 7, 9 pierce. Total 24.Store a charge · 1"
+   },
+   "u:bigheal": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 173,
+     "text": "Potion",
+     "disabled": false
+    },
+    "cost": null,
+    "why": {
+     "top": 278,
+     "bottom": 295,
+     "left": 34,
+     "right": 356,
+     "text": "You are at full health.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 303,
+     "bottom": 347,
+     "left": 34,
+     "right": 356,
+     "text": "Drink a potion",
+     "disabled": true
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 356,
+     "left": 23,
+     "right": 367,
+     "text": "Always readyPotion2 left · free to drinkHeal 10 right away. Once it is gone it is gone; bu",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 303,
+      "bottom": 347,
+      "left": 34,
+      "right": 356,
+      "text": "Drink a potion",
+      "disabled": true
+     }
+    ],
+    "allVisible": true,
+    "text": "Always readyPotion2 left · free to drinkHeal 10 right away. Once it is gone it is gone; buy more at camp.You are at full health.Drink a potion"
+   },
+   "u:heal": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 202,
+     "bottom": 219,
+     "left": 74,
+     "right": 247,
+     "text": "Heal",
+     "disabled": false
+    },
+    "cost": {
+     "top": 192,
+     "bottom": 215,
+     "left": 320,
+     "right": 356,
+     "text": "2",
+     "disabled": false
+    },
+    "why": {
+     "top": 262,
+     "bottom": 279,
+     "left": 34,
+     "right": 356,
+     "text": "You are at full health.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 287,
+     "bottom": 331,
+     "left": 34,
+     "right": 356,
+     "text": "Heal 3 · 2 magic",
+     "disabled": true
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 340,
+     "left": 23,
+     "right": 367,
+     "text": "Always readyHeal2 magic · as often as you can pay2Turn 2 magic into 3 health, right now.Yo",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 287,
+      "bottom": 331,
+      "left": 34,
+      "right": 356,
+      "text": "Heal 3 · 2 magic",
+      "disabled": true
+     }
+    ],
+    "allVisible": true,
+    "text": "Always readyHeal2 magic · as often as you can pay2Turn 2 magic into 3 health, right now.You are at full health.Heal 3 · 2 magic"
+   },
+   "u:heart": {
+    "vw": 390,
+    "vh": 664,
+    "sheet": {
+     "top": 8,
+     "bottom": 497
+    },
+    "scrollers": [],
+    "close": {
+     "top": 19,
+     "bottom": 59,
+     "left": 296,
+     "right": 367,
+     "text": "✕ Close",
+     "disabled": false
+    },
+    "tally": {
+     "top": 74,
+     "bottom": 102,
+     "left": 23,
+     "right": 367,
+     "text": "4/ 12 magic28/ 28",
+     "disabled": false
+    },
+    "name": {
+     "top": 200,
+     "bottom": 218,
+     "left": 34,
+     "right": 149,
+     "text": "Heart change",
+     "disabled": false
+    },
+    "cost": {
+     "top": 296,
+     "bottom": 325,
+     "left": 34,
+     "right": 356,
+     "text": "Costs 3 magic. You have 4. Now: the heart backs your weapons.",
+     "disabled": false
+    },
+    "why": {
+     "top": 296,
+     "bottom": 325,
+     "left": 34,
+     "right": 356,
+     "text": "Costs 3 magic. You have 4. Now: the heart backs your weapons.",
+     "disabled": false
+    },
+    "primary": {
+     "top": 232,
+     "bottom": 291,
+     "left": 34,
+     "right": 166,
+     "text": "▼ Down to 4",
+     "disabled": false
+    },
+    "detail": {
+     "top": 183,
+     "bottom": 364,
+     "left": 23,
+     "right": 367,
+     "text": "Heart change3 magic · once a roundClose▼ Down to 4Now▲ Up to 6Costs 3 magic. You have 4. N",
+     "disabled": false
+    },
+    "buttons": [
+     {
+      "top": 192,
+      "bottom": 227,
+      "left": 292,
+      "right": 356,
+      "text": "Close",
+      "disabled": false
+     },
+     {
+      "top": 232,
+      "bottom": 291,
+      "left": 34,
+      "right": 166,
+      "text": "▼ Down to 4",
+      "disabled": false
+     },
+     {
+      "top": 232,
+      "bottom": 291,
+      "left": 224,
+      "right": 356,
+      "text": "▲ Up to 6",
+      "disabled": false
+     }
+    ],
+    "allVisible": true,
+    "text": "Heart change3 magic · once a roundClose▼ Down to 4Now▲ Up to 6Costs 3 magic. You have 4. Now: the heart backs your weapons.RulesOnce a round, turn the heart die up or down by one. A heart of 1 to 4 boosts every head, han"
+   }
+  },
+  "ids": [
+   "aimed",
+   "quickdraw",
+   "volley",
+   "u:bigheal",
+   "u:heal",
+   "u:heart"
+  ],
+  "team": {
+   "vh": 664,
+   "sheet": {
+    "top": 206,
+    "bottom": 478
+   },
+   "scrolls": false,
+   "buttons": [
+    {
+     "text": "Magical powers",
+     "top": 215,
+     "bottom": 255,
+     "disabled": false
+    },
+    {
+     "text": "Team actions",
+     "top": 215,
+     "bottom": 255,
+     "disabled": false
+    },
+    {
+     "text": "✕ Close",
+     "top": 215,
+     "bottom": 255,
+     "disabled": false
+    },
+    {
+     "text": "Potion+10Throw one of your potions to a friend to heal them.",
+     "top": 280,
+     "bottom": 327,
+     "disabled": false
+    },
+    {
+     "text": "Share magicPay 2 magic; your friend gains 2.2ONCE A ROUND",
+     "top": 280,
+     "bottom": 327,
+     "disabled": false
+    },
+    {
+     "text": "ReviveOnce a battle: pay 10 magic and a fallen friend stands",
+     "top": 340,
+     "bottom": 387,
+     "disabled": false
+    }
+   ],
+   "text": "MAGICAL POWERS TEAM ACTIONS ✕ CLOSE POTION +10 FREE 2 LEFT SHARE MAGIC 2 ONCE A ROUND REVIVE 10 ONCE One team action a round. Pick it, then choose a friend. HOW TEAMS WORK"
+  },
+  "pick": {
+   "vh": 664,
+   "panel": {
+    "top": 7,
+    "bottom": 463
+   },
+   "scrolls": false,
+   "close": {
+    "top": 18,
+    "bottom": 57,
+    "text": "✕ Close",
+    "disabled": false
+   },
+   "friends": [
+    {
+     "top": 117,
+     "bottom": 171,
+     "text": "Pal228 / 28 health · 4 magicGive",
+     "disabled": false
+    }
+   ],
+   "text": "SHARE MAGIC ✕ CLOSE Pay 2 magic; your friend gains 2. Pal2 28 / 28 health · 4 magic GIVE Close"
+  }
+ }
+]

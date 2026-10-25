@@ -5,114 +5,114 @@
    "vw": 375,
    "vh": 548,
    "down": {
-    "top": 226,
-    "bottom": 284,
-    "left": 40,
+    "top": 222,
+    "bottom": 280,
+    "left": 39,
     "right": 160,
-    "disabled": false,
-    "text": "▼ Down to 2"
+    "disabled": true,
+    "text": "Lowest"
    },
    "up": {
-    "top": 226,
-    "bottom": 284,
+    "top": 222,
+    "bottom": 280,
     "left": 215,
-    "right": 335,
+    "right": 336,
     "disabled": false,
-    "text": "▲ Up to 4"
+    "text": "▲ Up to 2"
    },
    "cur": {
-    "top": 226,
-    "bottom": 284,
+    "top": 222,
+    "bottom": 280,
     "left": 166,
     "right": 209,
     "disabled": false,
     "text": "Now"
    },
    "close": {
-    "top": 187,
-    "bottom": 222,
-    "left": 273,
-    "right": 335,
+    "top": 184,
+    "bottom": 218,
+    "left": 274,
+    "right": 336,
     "disabled": false,
     "text": "Close"
    },
    "state": {
-    "top": 288,
-    "bottom": 316,
-    "left": 40,
-    "right": 335,
+    "top": 285,
+    "bottom": 313,
+    "left": 39,
+    "right": 336,
     "disabled": false,
-    "text": "Costs 3 magic. You have 4. Now: +2 magic on the dice showing"
+    "text": "Costs 3 magic. You have 4. Now: +2 heal on the dice showing "
    },
    "rules": {
-    "top": 321,
-    "bottom": 346,
-    "left": 40,
-    "right": 335,
+    "top": 317,
+    "bottom": 342,
+    "left": 39,
+    "right": 336,
     "disabled": false,
     "text": "Rules"
    },
    "detailOpen": true,
    "sheetScrolls": false,
-   "heart": 3,
+   "heart": 1,
    "magic": 4,
    "nudged": false,
-   "stateText": "Costs 3 magic. You have 4. Now: +2 magic on the dice showing magic."
+   "stateText": "Costs 3 magic. You have 4. Now: +2 heal on the dice showing heal."
   },
   "after": {
    "vw": 375,
    "vh": 548,
    "down": {
-    "top": 235,
-    "bottom": 295,
-    "left": 35,
+    "top": 232,
+    "bottom": 291,
+    "left": 34,
     "right": 159,
     "disabled": true,
-    "text": "▼ Down to 3"
+    "text": "▼ Down to 1"
    },
    "up": {
-    "top": 235,
-    "bottom": 295,
+    "top": 232,
+    "bottom": 291,
     "left": 216,
-    "right": 340,
+    "right": 341,
     "disabled": true,
-    "text": "▲ Up to 5"
+    "text": "▲ Up to 3"
    },
    "cur": {
-    "top": 235,
-    "bottom": 295,
+    "top": 232,
+    "bottom": 291,
     "left": 165,
     "right": 210,
     "disabled": false,
     "text": "Now"
    },
    "close": {
-    "top": 195,
-    "bottom": 231,
-    "left": 276,
-    "right": 340,
+    "top": 192,
+    "bottom": 227,
+    "left": 277,
+    "right": 341,
     "disabled": false,
     "text": "Close"
    },
    "state": {
-    "top": 300,
-    "bottom": 328,
-    "left": 35,
-    "right": 340,
+    "top": 296,
+    "bottom": 325,
+    "left": 34,
+    "right": 341,
     "disabled": false,
     "text": "Used this round. The heart turns once a round, so both choic"
    },
    "rules": {
-    "top": 333,
-    "bottom": 359,
-    "left": 35,
-    "right": 340,
+    "top": 329,
+    "bottom": 355,
+    "left": 34,
+    "right": 341,
     "disabled": false,
     "text": "Rules"
    },
    "detailOpen": true,
    "sheetScrolls": false,
-   "heart": 4,
+   "heart": 2,
    "magic": 1,
    "nudged": true,
    "stateText": "Used this round. The heart turns once a round, so both choices rest until the next one."
@@ -128,114 +128,114 @@
    "vw": 390,
    "vh": 664,
    "down": {
-    "top": 338,
-    "bottom": 395,
-    "left": 40,
+    "top": 224,
+    "bottom": 282,
+    "left": 39,
     "right": 167,
-    "disabled": false,
-    "text": "▼ Down to 2"
+    "disabled": true,
+    "text": "Lowest"
    },
    "up": {
-    "top": 338,
-    "bottom": 395,
+    "top": 224,
+    "bottom": 282,
     "left": 223,
-    "right": 350,
+    "right": 351,
     "disabled": false,
-    "text": "▲ Up to 4"
+    "text": "▲ Up to 2"
    },
    "cur": {
-    "top": 338,
-    "bottom": 395,
+    "top": 224,
+    "bottom": 282,
     "left": 173,
     "right": 217,
     "disabled": false,
     "text": "Now"
    },
    "close": {
-    "top": 299,
-    "bottom": 333,
-    "left": 288,
-    "right": 350,
+    "top": 185,
+    "bottom": 220,
+    "left": 289,
+    "right": 351,
     "disabled": false,
     "text": "Close"
    },
    "state": {
-    "top": 400,
-    "bottom": 428,
-    "left": 40,
-    "right": 350,
+    "top": 286,
+    "bottom": 314,
+    "left": 39,
+    "right": 351,
     "disabled": false,
-    "text": "Costs 3 magic. You have 4. Now: +6 magic on the dice showing"
+    "text": "Costs 3 magic. You have 4. Now: +2 heal on the dice showing "
    },
    "rules": {
-    "top": 432,
-    "bottom": 457,
-    "left": 40,
-    "right": 350,
+    "top": 319,
+    "bottom": 344,
+    "left": 39,
+    "right": 351,
     "disabled": false,
     "text": "Rules"
    },
    "detailOpen": true,
    "sheetScrolls": false,
-   "heart": 3,
+   "heart": 1,
    "magic": 4,
    "nudged": false,
-   "stateText": "Costs 3 magic. You have 4. Now: +6 magic on the dice showing magic."
+   "stateText": "Costs 3 magic. You have 4. Now: +2 heal on the dice showing heal."
   },
   "after": {
    "vw": 390,
    "vh": 664,
    "down": {
-    "top": 348,
-    "bottom": 408,
-    "left": 35,
+    "top": 232,
+    "bottom": 291,
+    "left": 34,
     "right": 166,
     "disabled": true,
-    "text": "▼ Down to 3"
+    "text": "▼ Down to 1"
    },
    "up": {
-    "top": 348,
-    "bottom": 408,
+    "top": 232,
+    "bottom": 291,
     "left": 224,
-    "right": 355,
+    "right": 356,
     "disabled": true,
-    "text": "▲ Up to 5"
+    "text": "▲ Up to 3"
    },
    "cur": {
-    "top": 348,
-    "bottom": 408,
+    "top": 232,
+    "bottom": 291,
     "left": 173,
     "right": 217,
     "disabled": false,
     "text": "Now"
    },
    "close": {
-    "top": 308,
-    "bottom": 344,
-    "left": 291,
-    "right": 355,
+    "top": 192,
+    "bottom": 227,
+    "left": 292,
+    "right": 356,
     "disabled": false,
     "text": "Close"
    },
    "state": {
-    "top": 413,
-    "bottom": 441,
-    "left": 35,
-    "right": 355,
+    "top": 296,
+    "bottom": 325,
+    "left": 34,
+    "right": 356,
     "disabled": false,
     "text": "Used this round. The heart turns once a round, so both choic"
    },
    "rules": {
-    "top": 446,
-    "bottom": 472,
-    "left": 35,
-    "right": 355,
+    "top": 329,
+    "bottom": 355,
+    "left": 34,
+    "right": 356,
     "disabled": false,
     "text": "Rules"
    },
    "detailOpen": true,
    "sheetScrolls": false,
-   "heart": 4,
+   "heart": 2,
    "magic": 1,
    "nudged": true,
    "stateText": "Used this round. The heart turns once a round, so both choices rest until the next one."
