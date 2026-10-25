@@ -801,7 +801,7 @@ export function envelope(card, o = {}) {
   const answer = (accept) => { if (sent) return; sent = true; sfx.card(); o.onAnswer?.(accept); };
   const bonus = !!(o.bonus || card.kind === 'bonus'); const paid = bonus && card.stake > 0;
   const choice = card.answered
-    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Bonus Challenge accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
+    ? h('p', { class: 'env-sealed' }, ico('check'), offer ? (card.accepted ? (bonus ? 'Objective accepted.' : 'You took the bribe.') : 'You said no.') : 'Sealed.')
     : h('div', { class: 'env-btns' },
       ...(offer ? [btn(paid ? `Bet ${card.stake} Gold` : 'Accept', () => answer(true), { big: true, cls: 'wide' }), btn('Decline', () => answer(false), { big: true, kind: 'ghost', cls: 'wide' })]
         : [btn('Continue', () => answer(true), { big: true, icon: 'chevron', iconAfter: true, cls: 'wide env-one' })]));
@@ -833,14 +833,14 @@ export function reveal(rv, o = {}) {
   const hero = o.hero || X.S.hero; let done = false;
   const bonus = !!(o.bonus || rv?.bonus || rv?.lines?.some((l) => l.kind === 'bonus'));
   const title = bonus
-    ? (o.won === false ? 'The fight is lost, but the Bonus Goal still counts' : 'Bonus Goal')
+    ? (o.won === false ? 'The fight is lost, but the Objective still counts' : 'Objective')
     : (o.won === false ? 'The battle is lost, but the envelopes still open' : 'Every envelope, opened');
   const line = bonus
-    ? `${rv.voice || 'The gold-giver'} checks the Bonus Goal.`
+    ? `${rv.voice || 'The gold-giver'} checks the Objective.`
     : `${title}. ${rv.voice || 'The voice'} reads every card aloud.`;
   mountAs('victory', h('div', { class: 'sx-split sx-victory sx-revealbeat' }, h('div', { class: 'sx-viewport' }),
     h('div', { class: 'sx-side' }, h('div', { class: 'sx-sidetop' }, btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' })),
-      h('header', { class: 'vc-head rv-head' }, eyebrow(bonus ? 'Bonus Goal' : 'The Reveal', 'gold'), h('p', {}, line), flourish()),
+      h('header', { class: 'vc-head rv-head' }, eyebrow(bonus ? 'Objective' : 'The Reveal', 'gold'), h('p', {}, line), flourish()),
       revealPanel(rv, hero?.name, { bare: true }),
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); o.onDone?.(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('victory'); if (hero) SCR[o.won === false ? 'defeat' : 'victory'](hero, o.place);

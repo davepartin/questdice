@@ -309,14 +309,14 @@ export function judgeBonus(goal, battle, { won }) {
   const lost = goal.paid ? ` The ${goal.paid} gold stake is gone.` : '';
   if (!goal.accepted) {
     gold = goal.honor || 0;
-    line = `${goal.voice} offered a Bonus Goal (${goal.name}) and ${who} said no.${gold ? ` Honor. ${who} receives ${gold} gold.` : ' No harm done.'}`;
+    line = `${goal.voice} offered an Objective (${goal.name}) and ${who} said no.${gold ? ` Honor. ${who} receives ${gold} gold.` : ' No harm done.'}`;
   } else if (won && met) {
     gold = goal.gold;
-    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold${goal.paid ? ` (for a stake of ${goal.paid})` : ''}.`;
+    line = `${who} took the Objective: ${goal.rule.replace(/\.$/, '')}. Done. ${who} receives ${gold} gold${goal.paid ? ` (for a stake of ${goal.paid})` : ''}.`;
   } else if (won) {
-    line = `${who} took the Bonus Goal: ${goal.rule.replace(/\.$/, '')}. Not this time.${lost}`;
+    line = `${who} took the Objective: ${goal.rule.replace(/\.$/, '')}. Not this time.${lost}`;
   } else {
-    line = `${who} took the Bonus Goal. The fight was lost, so no prize.${lost}`;
+    line = `${who} took the Objective. The fight was lost, so no prize.${lost}`;
   }
   return { results: [{ name: who, id: goal.id, kind: 'bonus', mode: 'offer', accepted: goal.accepted, met, gold, line }], voice: goal.voice, won };
 }
