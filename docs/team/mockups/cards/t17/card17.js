@@ -39,7 +39,8 @@ const SLOTWORD = { NW: 'Left weapon', NE: 'Right weapon' }; // the tray's two we
 const face = (f) => ({ v: f.v, c: f.c === 'n' ? 'n' : f.c === 'b' ? 'b' : 'r', icons: iconsOf(f), plain: !!f.plain });
 export function card17(id, metal, size, slot, { stone = false, proposal = false } = {}) {
   const rows = ladder(id, metal, proposal); const all = SIZES.flatMap((s) => rows[s]); const open = all.slice(0, size);
-  const d = weaponData(id, Math.min(metal, 2), size); d.sell = weaponData(id, Math.min(metal, 2), 4).sell; d.metal = METALS[metal]; // Diamond: Gold data + provisional sell // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
+  const wid = id.startsWith('quiver') ? 'bow' : id; // dice board mockup: Arrows are the Bow's twin in the game data (WEAPONS.bow.twinName)
+  const d = weaponData(wid, Math.min(metal, 2), size); d.sell = weaponData(wid, Math.min(metal, 2), 4).sell; if (wid !== id) d.name = 'Arrows'; d.metal = METALS[metal]; // Diamond: Gold data + provisional sell // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
   const kinds = bonusKinds(open);
   const art = `<img class="art9" src="art/${id}-${d.metal.toLowerCase()}.webp" alt="${d.metal} ${d.name}">`;
   const px = { 4: 44, 6: 45, 8: 50, 10: 52 };
@@ -87,7 +88,7 @@ ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[
     q.querySelector('.no').focus(); };
   // rev 15 (Dave idea, PROPOSAL numbers): one sell chip at the right of the highest revealed size row; lower and covered rows show none
   let cur = size; const place = () => { el.querySelectorAll('.sl17').forEach((x) => x.remove()); const row = el.querySelector(`.row.s${cur}`); if (!row) return;
-    d.sell = sellProposal(id, metal, cur); const b = document.createElement('button'); b.type = 'button'; b.className = 'sl17'; b.setAttribute('aria-haspopup', 'dialog');
+    d.sell = sellProposal(wid, metal, cur); const b = document.createElement('button'); b.type = 'button'; b.className = 'sl17'; b.setAttribute('aria-haspopup', 'dialog');
     b.setAttribute('aria-label', `Sell for ${d.sell} gold (proposal)`); b.innerHTML = `<small>SELL</small><span><i class="coin"></i><b>${d.sell}</b></span>`; b.onclick = (e) => { e.stopPropagation(); ask(); }; row.append(b); };
   const un = el.unlock; el.unlock = () => { const t = el.querySelector('.cov.tok:not(.gone)'); const ok = un(); if (ok && t) { cur = +t.dataset.step; place(); } return ok; };
   place(); el.ask = ask;
