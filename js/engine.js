@@ -2083,6 +2083,7 @@ export function resolveParty(b) {
     round: b.round, party: true, leader: heat[0]?.f.hero.name || '', leaderWhy: guard ? 'guard' : 'feet', strikes: [], team: team.team, heartbeat: team.heartbeat, hearts: team.hearts || [], verses, heartFaces: TEAMWORK.heartToHeart ? acting.map((f) => ({ name: f.hero.name, v: f.board.C?.v || null, hushed: !!f.board.C?.hushed, uid: b.enemies[f.target]?.hp > 0 ? b.enemies[f.target].uid : null })) : undefined, moral: [],
     killed: [], raged: [], summoned: [], acts: [],
     fighters: [], bound: 0, magicStolen: 0, goldStolen: 0,
+    committed: acting.map((f) => ({ name: f.hero.name, atk: f.T.atk, pierce: f.T.pierce, block: f.T.block, heal: f.T.heal, magic: f.T.magic, targetUid: b.enemies[f.target]?.uid ?? null })), // what each hero locked in, even one who falls before striking (the battle report)
   };
   const guardLeft = new Map();
   for (const e of alive) {

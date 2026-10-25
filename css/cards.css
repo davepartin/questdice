@@ -100,6 +100,7 @@
 .cw-row .ch{display:flex;gap:4px;margin:3px 0 4px;flex-wrap:wrap}
 .cw-row .act{font:800 12px Oxanium,sans-serif;color:#ffd98a;text-align:right;white-space:nowrap}
 .cw-row .act small{display:block;font:600 10px Inter,sans-serif;color:#a99c86}
+.cw-row .act .more{display:block;margin-top:5px;font:700 10px Oxanium,sans-serif;font-style:normal;letter-spacing:.04em;color:#7fc7ff;text-decoration:underline;text-underline-offset:2px}
 .cw-wrap{border-top:1px solid #ffffff12}.cw-wrap:first-child{border-top:0}.cw-wrap .cw-row{border-top:0}
 .cw-wrap .sh-acts,.cw-wrap .cw-acts{padding:0 4px 8px}
 /* spoils: the card itself beside what the player decides */

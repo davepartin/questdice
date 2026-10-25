@@ -1,0 +1,248 @@
+[
+ {
+  "size": "375x548",
+  "before": {
+   "vw": 375,
+   "vh": 548,
+   "down": {
+    "top": 226,
+    "bottom": 284,
+    "left": 40,
+    "right": 160,
+    "disabled": false,
+    "text": "▼ Down to 2"
+   },
+   "up": {
+    "top": 226,
+    "bottom": 284,
+    "left": 215,
+    "right": 335,
+    "disabled": false,
+    "text": "▲ Up to 4"
+   },
+   "cur": {
+    "top": 226,
+    "bottom": 284,
+    "left": 166,
+    "right": 209,
+    "disabled": false,
+    "text": "Now"
+   },
+   "close": {
+    "top": 187,
+    "bottom": 222,
+    "left": 273,
+    "right": 335,
+    "disabled": false,
+    "text": "Close"
+   },
+   "state": {
+    "top": 288,
+    "bottom": 316,
+    "left": 40,
+    "right": 335,
+    "disabled": false,
+    "text": "Costs 3 magic. You have 4. Now: +2 magic on the dice showing"
+   },
+   "rules": {
+    "top": 321,
+    "bottom": 346,
+    "left": 40,
+    "right": 335,
+    "disabled": false,
+    "text": "Rules"
+   },
+   "detailOpen": true,
+   "sheetScrolls": false,
+   "heart": 3,
+   "magic": 4,
+   "nudged": false,
+   "stateText": "Costs 3 magic. You have 4. Now: +2 magic on the dice showing magic."
+  },
+  "after": {
+   "vw": 375,
+   "vh": 548,
+   "down": {
+    "top": 235,
+    "bottom": 295,
+    "left": 35,
+    "right": 159,
+    "disabled": true,
+    "text": "▼ Down to 3"
+   },
+   "up": {
+    "top": 235,
+    "bottom": 295,
+    "left": 216,
+    "right": 340,
+    "disabled": true,
+    "text": "▲ Up to 5"
+   },
+   "cur": {
+    "top": 235,
+    "bottom": 295,
+    "left": 165,
+    "right": 210,
+    "disabled": false,
+    "text": "Now"
+   },
+   "close": {
+    "top": 195,
+    "bottom": 231,
+    "left": 276,
+    "right": 340,
+    "disabled": false,
+    "text": "Close"
+   },
+   "state": {
+    "top": 300,
+    "bottom": 328,
+    "left": 35,
+    "right": 340,
+    "disabled": false,
+    "text": "Used this round. The heart turns once a round, so both choic"
+   },
+   "rules": {
+    "top": 333,
+    "bottom": 359,
+    "left": 35,
+    "right": 340,
+    "disabled": false,
+    "text": "Rules"
+   },
+   "detailOpen": true,
+   "sheetScrolls": false,
+   "heart": 4,
+   "magic": 1,
+   "nudged": true,
+   "stateText": "Used this round. The heart turns once a round, so both choices rest until the next one."
+  },
+  "errors": {
+   "Dav": [],
+   "JP": []
+  }
+ },
+ {
+  "size": "390x664",
+  "before": {
+   "vw": 390,
+   "vh": 664,
+   "down": {
+    "top": 338,
+    "bottom": 395,
+    "left": 40,
+    "right": 167,
+    "disabled": false,
+    "text": "▼ Down to 2"
+   },
+   "up": {
+    "top": 338,
+    "bottom": 395,
+    "left": 223,
+    "right": 350,
+    "disabled": false,
+    "text": "▲ Up to 4"
+   },
+   "cur": {
+    "top": 338,
+    "bottom": 395,
+    "left": 173,
+    "right": 217,
+    "disabled": false,
+    "text": "Now"
+   },
+   "close": {
+    "top": 299,
+    "bottom": 333,
+    "left": 288,
+    "right": 350,
+    "disabled": false,
+    "text": "Close"
+   },
+   "state": {
+    "top": 400,
+    "bottom": 428,
+    "left": 40,
+    "right": 350,
+    "disabled": false,
+    "text": "Costs 3 magic. You have 4. Now: +6 magic on the dice showing"
+   },
+   "rules": {
+    "top": 432,
+    "bottom": 457,
+    "left": 40,
+    "right": 350,
+    "disabled": false,
+    "text": "Rules"
+   },
+   "detailOpen": true,
+   "sheetScrolls": false,
+   "heart": 3,
+   "magic": 4,
+   "nudged": false,
+   "stateText": "Costs 3 magic. You have 4. Now: +6 magic on the dice showing magic."
+  },
+  "after": {
+   "vw": 390,
+   "vh": 664,
+   "down": {
+    "top": 348,
+    "bottom": 408,
+    "left": 35,
+    "right": 166,
+    "disabled": true,
+    "text": "▼ Down to 3"
+   },
+   "up": {
+    "top": 348,
+    "bottom": 408,
+    "left": 224,
+    "right": 355,
+    "disabled": true,
+    "text": "▲ Up to 5"
+   },
+   "cur": {
+    "top": 348,
+    "bottom": 408,
+    "left": 173,
+    "right": 217,
+    "disabled": false,
+    "text": "Now"
+   },
+   "close": {
+    "top": 308,
+    "bottom": 344,
+    "left": 291,
+    "right": 355,
+    "disabled": false,
+    "text": "Close"
+   },
+   "state": {
+    "top": 413,
+    "bottom": 441,
+    "left": 35,
+    "right": 355,
+    "disabled": false,
+    "text": "Used this round. The heart turns once a round, so both choic"
+   },
+   "rules": {
+    "top": 446,
+    "bottom": 472,
+    "left": 35,
+    "right": 355,
+    "disabled": false,
+    "text": "Rules"
+   },
+   "detailOpen": true,
+   "sheetScrolls": false,
+   "heart": 4,
+   "magic": 1,
+   "nudged": true,
+   "stateText": "Used this round. The heart turns once a round, so both choices rest until the next one."
+  },
+  "errors": {
+   "Dav": [],
+   "JP": []
+  }
+ }
+]

@@ -89,6 +89,7 @@ export function migrateHero(hero) {
   if (frugal) { hero.perks = hero.perks.filter((p) => p !== 'frugal'); hero.pendingPerks = (hero.pendingPerks || 0) + frugal; }
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   migrateWeapons2(hero);
+  migrateStarterDice(hero);
   return hero;
 }
 // The new weapons (released 23 Oct 2026): every weapon is one-handed. An old two-handed Bow (one weapon filling both hands) becomes
@@ -101,6 +102,15 @@ export function migrateWeapons2(hero) {
   L.NW = { ...NW, id: 'quiver', ammo: 'normal' }; delete L.NW.twin;
   L.NE = { ...NE }; delete L.NE.twin;
   if (Array.isArray(hero.dice) && !hero.dice.includes('NE')) hero.dice.push('NE');
+  return true;
+}
+// T21 (Dave, 25 Oct 2026): every hero starts with both weapon dice live. A hero made before then, whose right weapon die was still locked,
+// gets it switched on, once and for nothing: nothing a hero carries, owns or paid for is touched (no gear swapped, no refund invented), and a
+// hero whose die is already live, or who plays with every die (dice: null), is left exactly as it is, so loading again changes nothing.
+export function migrateStarterDice(hero) {
+  if (!EXPERIMENT.weapons2 || !hero?.loadout || !Array.isArray(hero.dice) || hero.dice.includes('NE')) return false;
+  hero.dice.push('NE');
+  if (!hero.loadout.NE) hero.loadout.NE = { uid: 'fists-R', id: 'fists', rarity: 0 }; // an empty right hand holds bare fists, as a bought die always did
   return true;
 }
 export async function createSave(hero, password) {

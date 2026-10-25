@@ -580,7 +580,7 @@ function cardTiles(reset) {
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
     { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
       body: 'Turn your heart die one step up or down. A heart of 1 to 4 adds 2 more to every head, hand or feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
-      extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)] },
+      extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)], panel: heartPanel(b, heart.cost, heart.why) },
   ];
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
     select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
@@ -637,6 +637,23 @@ function heartAction(b, d, label = d < 0 ? 'Turn down' : 'Turn up') {
   const cur = b.board?.C?.v || 0; const to = cur + d; const off = !cur || to < 1 || to > 6;
   return { alt: d < 0, disabled: off, aria: off ? label : `${label} to ${to}`, fn: () => doNudge(d),
     content: [d < 0 ? h('span', { class: 'hc-arrow' }, '▼') : null, off ? null : heartFace(to, 'to'), h('span', { class: 'hc-word' }, off ? label : `${d < 0 ? 'Down' : 'Up'} to ${to}`), d > 0 ? h('span', { class: 'hc-arrow' }, '▲') : null] };
+}
+// The heart change on the powers sheet (T21, Dave's phone: the choices were clipped and the rules sat above them): one compact control group. The face the
+// heart shows now sits in the middle, a button either side says where it would turn it (the destination face itself), what it costs and whether it is spent
+// show in one line, Close stays beside them, and the long explanation waits behind Rules. Same engine rules: once a round, 1 to 6, no wrap, 2 magic.
+function heartPanel(b, cost, why) {
+  const cur = b.board?.C?.v || 0; const used = E.nudgedThisRound(b);
+  const dest = (d) => { const to = cur + d; return !cur || to < 1 || to > 6 ? null : to; };
+  const go = (d) => { const to = dest(d); const word = d < 0 ? 'Down' : 'Up'; const off = to == null || !!why;
+    return h('button', { type: 'button', class: `hc-btn hc-${d < 0 ? 'down' : 'up'}`, disabled: off, 'aria-label': to == null ? `${word}: the heart cannot go further` : `${word} to ${to}, ${cost} magic`, onclick: () => doNudge(d) },
+      to == null ? null : heartFace(to, 'to'), h('span', { class: 'hc-word' }, to == null ? (d < 0 ? 'Lowest' : 'Highest') : `${d < 0 ? '▼' : '▲'} ${word} to ${to}`)); };
+  let effect = ''; try { const hb = E.evaluate(B.hero, b.board)?.heartBoost; effect = hb ? `Now: +${hb.n} ${hb.sym} on the dice showing ${hb.sym}.` : (cur >= 5 ? 'Now: the heart backs your weapons.' : 'Now: no die shows the heart\'s symbol yet.'); } catch { /* the words above still say it */ }
+  const state = used ? 'Used this round. The heart turns once a round, so both choices rest until the next one.' : (why || `Costs ${cost} magic. You have ${b.magic}.`);
+  return h('div', { class: 'hc-panel' },
+    h('div', { class: 'hc-top' }, h('b', {}, 'Heart change'), h('span', { class: 'hc-cost' }, `${cost} magic · once a round`), h('button', { type: 'button', class: 'hc-close', 'aria-label': 'Close the magic powers', onclick: () => togglePowers(false) }, 'Close')),
+    h('div', { class: 'hc-row' }, go(-1), h('div', { class: 'hc-cur', 'aria-label': `Heart now ${cur}` }, h('small', {}, 'Now'), heartFace(cur, 'now') || h('b', {}, String(cur))), go(1)),
+    h('p', { class: `hc-state ${used ? 'used' : ''}`, role: 'status' }, state, effect && !used ? ` ${effect}` : ''),
+    h('details', { class: 'hc-rules' }, h('summary', {}, 'Rules'), h('p', {}, UTIL.find((x) => x.id === 'u:heart').text)));
 }
 function showUtilDetail(id) {
   const b = B.b; const u = UTIL.find((x) => x.id === id); if (!u) return; const shape = b.phase === 'shape'; const { cost, why } = utilState(u, shape);

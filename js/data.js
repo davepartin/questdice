@@ -299,7 +299,7 @@ export const WEAPONS2 = {
     tag: 'More blanks, a weak guard, and two chances at the top number. Swing, and mean it.', faces: [F(0, 'r'), F(0, 'b'), F(4, 'r'), F(4, 'r')] } },
   names: { shield: 'Round Shield' },
   loot: { sword: 10, dagger: 10, axe: 8, spear: 8, shield: 10, tower: 7 },
-  classes: { knight: ['sword', 'shield'], ranger: ['quiver', 'bow'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'sword'] }, // stand-ins until the bow (stage 3)
+  classes: { knight: ['sword', 'shield'], ranger: ['quiver', 'bow'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'shield'] }, // every class starts with a left weapon and a right shield (the Ranger: Arrows and Bow); T21, 25 Oct 2026
   diamondPool: ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower'],
 };
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);

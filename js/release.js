@@ -7,12 +7,13 @@
 //                add today's metal icons), the arrows as last measured, and the class rules (Knight Guard, Dwarf Dig In, Bard Verse for a
 //                friend). Old two-handed Bows become Arrows + Bow when a save loads (save.js migrateWeapons2). Monster fury from round 4
 //                stays in ?lab: with it the campaign cleared 5 of 10 times on Normal (10 of 10 without; docs/balance/curve_release*.txt).
-import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES } from './data.js';
+import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES, START_DICE } from './data.js';
 import { useWeapons2 } from './engine.js';
 
 export function applyRelease() {
   Object.assign(TEAMWORK, { heartToHeart: true, noCharms: true, perkPreview: true });
   useWeapons2();
+  if (!START_DICE.includes('NE')) START_DICE.push('NE'); // T21 (Dave, 25 Oct 2026): every hero starts with both weapon dice live, the right one at no charge
   Object.assign(WEAPONS2.arrowRules, { pierce: 'all', frost: 'strength', fire: 'full' }); WEAPONS2.faces.quiver.special = WEAPONS2.faces.quiver.numbered;
   CLASS2.on = true;
   // say the class rules where players read them: Shield Up's card (Guard) and the Dwarf's trait (Dig In)

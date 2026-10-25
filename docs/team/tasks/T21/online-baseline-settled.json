@@ -1,0 +1,84 @@
+{
+ "label": "baseline-settled",
+ "checks": [
+  {
+   "name": "Dav: Ranger starts with Bronze Arrows left and Bow right, both dice live",
+   "ok": true,
+   "detail": "{\"NW\":\"quiver\",\"NE\":\"bow\",\"dice\":\"NWCESNWSWNE\"}"
+  },
+  {
+   "name": "JP: Ranger starts with Bronze Arrows left and Bow right, both dice live",
+   "ok": true,
+   "detail": "{\"NW\":\"quiver\",\"NE\":\"bow\",\"dice\":\"NWCESNWSWNE\"}"
+  },
+  {
+   "name": "both phones reach the battle",
+   "ok": true
+  },
+  {
+   "name": "the phone that locked last sees victory",
+   "ok": true
+  },
+  {
+   "name": "the phone whose live feed is stalled still learns of the victory (locked-in fallback)",
+   "ok": true,
+   "detail": "13 ms"
+  },
+  {
+   "name": "there are spoils to choose and one hero is the picker",
+   "ok": true,
+   "detail": "{\"waiting\":\"Pal2\",\"picked\":{},\"drops\":3}"
+  },
+  {
+   "name": "before the pass, the waiter sees someone else choosing",
+   "ok": true,
+   "detail": "Pal2"
+  },
+  {
+   "name": "the picker passes (a real command through the cloud transaction)",
+   "ok": true,
+   "detail": "{\"ok\":true}"
+  },
+  {
+   "name": "the stored table now says it is the waiter's turn",
+   "ok": true
+  },
+  {
+   "name": "the waiting phone, feed stalled, learns it is its turn to choose (within 6 s)",
+   "ok": false,
+   "detail": "never within 15 s"
+  },
+  {
+   "name": "the online spoils picker lists cards that open large (with a hint saying so)",
+   "ok": true,
+   "detail": "{\"n\":3,\"hint\":true}"
+  },
+  {
+   "name": "tapping a spoils card online opens the full card with its faces, and Close is on screen",
+   "ok": true,
+   "detail": "{\"open\":true,\"faces\":4,\"closeBottom\":576,\"vh\":664}"
+  },
+  {
+   "name": "looking at a spoils card changed nothing",
+   "ok": true
+  }
+ ],
+ "timings": {
+  "victoryOnStalledPhoneMs": 13,
+  "waiterLearnsItIsItsTurnMs": null,
+  "waiterReadsWhileWaiting": 0
+ },
+ "notes": [
+  {
+   "spoils": {
+    "waiting": "Pal2",
+    "picked": {},
+    "drops": 3
+   }
+  }
+ ],
+ "errors": {
+  "Dav": [],
+  "JP": []
+ }
+}

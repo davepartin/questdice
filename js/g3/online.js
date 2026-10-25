@@ -93,19 +93,36 @@ export function openTable(view) { // exported for dev/roadbeat.mjs (sits a phone
   S.practice = null; S.battle = null; S.company = null; S.hero = null;
   Sess.close(); BR.forgetOnline(); Sess.open(view);
   Sess.onChange((prev, next, info) => changed(prev, next, info));
-  stop?.(); Net.connect((v) => Sess.adopt(v, 'feed')); const poll = waitPoll(); stop = () => { Net.disconnect(); clearInterval(poll); };
+  stop?.(); Net.connect((v) => Sess.adopt(v, 'feed')); const poll = waitPoll(); stop = () => { Net.disconnect(); poll(); };
   show();
 }
-// Safety net (Dave's first team game: after both locked in, one phone played the round and the other sat waiting a long time).
-// The live feed can stall on a phone (Safari, mobile data), so while this hero is locked in, away or down in a fight, the phone
-// also asks the table itself every few seconds. Older tables are refused by Sess.adopt, so a late answer does no harm.
+// Safety net (Dave's first team games: after both locked in, one phone played the round and the other sat waiting a long time; after a fight,
+// the second player waited too long before they could choose spoils). The live feed can stall on a phone (Safari, mobile data), so while this
+// phone is waiting on another phone's move it also asks the table itself every few seconds, and once whenever it comes back to the screen or the
+// network returns. The live feed stays primary. One fetch at a time; an older answer is refused by Sess.adopt (it never steps back), a newer table
+// waits its turn while a round plays on screen (hold), and nothing here sends a command, so it cannot skip anybody's choice.
+const WAIT_MS = 2500;
+function waitingOnOthers() {
+  const t = Sess.current(); const me = Sess.me(); if (!t || !me) return false;
+  switch (t.phase) {
+    case 'battle': { const f = t.battle?.fighters?.[Sess.index()]; return !!f && (f.locked || f.skipped || f.hp <= 0); }
+    case 'victory': { const who = t.rewards ? E.draftWho(t.rewards.draft) : null; return !(who && who === me.name); } // everything but my own pick waits on someone
+    case 'envelope': return !!t.envelope?.answered?.[me.name] && (t.company?.members || []).some((m) => !t.envelope.answered[m.name]);
+    case 'lobby': return t.hostId === me.id ? t.players.some((p) => p.id !== t.hostId && !p.ready) : !!me.ready;
+    case 'road': case 'board': case 'camp': return !!me.ready && t.players.some((p) => !p.ready);
+    default: return false;
+  }
+}
+let polling = false;
+async function askTable(why) {
+  if (polling || !inRoom()) return; polling = true;
+  try { const v = await Net.snapshot(); if (v && !v.missing) Sess.adopt(v, why); } catch { /* the feed may still bring it */ } finally { polling = false; }
+}
 function waitPoll() {
-  return setInterval(async () => {
-    if (document.hidden || !inRoom()) return;
-    const t = Sess.current(); const i = Sess.index(); const f = t?.phase === 'battle' ? t.battle?.fighters?.[i] : null;
-    if (!f || !(f.locked || f.skipped || f.hp <= 0)) return;
-    try { const v = await Net.snapshot(); if (v && !v.missing) Sess.adopt(v, 'poll'); } catch { /* the feed may still bring it */ }
-  }, 3000);
+  const timer = setInterval(() => { if (!document.hidden && waitingOnOthers()) askTable('poll'); }, WAIT_MS);
+  const back = () => { if (!document.hidden) askTable('resume'); };
+  document.addEventListener('visibilitychange', back); window.addEventListener('online', back); window.addEventListener('pageshow', back);
+  return () => { clearInterval(timer); document.removeEventListener('visibilitychange', back); window.removeEventListener('online', back); window.removeEventListener('pageshow', back); };
 }
 export function leave() {
   writeBack();

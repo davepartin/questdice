@@ -311,3 +311,15 @@ test('a weapon equipped in a slot whose die is not unlocked is labelled as not i
   const h2 = hero(); h2.dice = [...h2.dice, 'NE']; const b2 = E.newBattle(h2, quest(h2), E.makeRng(11), 1); BR.begin(b2); play(b2); const r2 = BR.finish(b2, b2.outcome || 'withdrew');
   assert.ok(r2.heroes[0].weapons.every((x) => x.inPlay), 'with the die unlocked both are in play'); assert.doesNotMatch(BR.summaryText(r2), /NOT IN PLAY/);
 });
+
+test('online (T21): a defeat names the foes last seen, no locked slot is listed as a die, and every hero keeps the totals they locked in', () => {
+  const { table, players: [ada, bea], seen, watch } = atBattle();
+  watch(); for (const p of [ada, bea]) { command(table, p.id, { type: 'roll' }); watch(); }
+  command(table, ada.id, { type: 'lock', target: 0, straight: 'atk' }); watch(); command(table, bea.id, { type: 'lock', target: 0, straight: 'atk' }); watch();
+  assert.equal(table.phase, 'defeat'); const r = seen[0]; const rd = lastRound(r);
+  assert.ok(r.outcome.enemiesLeft.length > 0 && r.outcome.enemiesLeft.every((s) => /last seen/.test(s)), 'a defeat no longer reports an empty list of foes');
+  assert.match(r.outcome.enemiesLeftBasis, /last observed/);
+  for (const d of mine(rd, 'Ada').dice) assert.ok(Number.isFinite(d.sides) && d.sides > 0, `${d.slot} has a real die`);
+  assert.doesNotMatch(JSON.stringify(r), /"sides":null/);
+  for (const h of rd.heroes) assert.ok(h.totals && Number.isFinite(h.totals.attack), `${h.name}: totals present even if they fell before striking`);
+});

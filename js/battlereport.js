@@ -171,6 +171,10 @@ function recordResolution(d, round, rep, party) {
       h.totals = { attack: s.atk, pierce: s.pierce, block: s.T?.block, heal: s.T?.heal, magic: s.T?.magic }; h.ev = evFacts(s.ev);
       r.strikes.push({ by: s.name, target: d.labels.get(s.targetUid) || null, dealt: s.dealt, blockedByMonster: s.guarded, killed: !!s.killed, ...(s.burned ? { burnedYou: s.burned } : {}) });
     }
+    for (const c of rep.committed || []) { // a hero who fell before striking still locked something in: keep its totals and target, marked as never struck
+      const h = heroSlot(round, c.name);
+      if (!h.totals) { h.totals = { attack: c.atk, pierce: c.pierce, block: c.block, heal: c.heal, magic: c.magic }; h.struck = false; h.target = h.target || (c.targetUid ? d.labels.get(c.targetUid) || null : null); }
+    }
     r.acts = rep.acts.map((a) => actFacts(d, a, a.parts ? a.parts.map((part, i) => ({ hero: names[i], share: part, absorbed: part - num(a.nets?.[i]), took: num(a.nets?.[i]) })) : null));
     r.bonuses = { team: rep.team || 0, heartToHeart: rep.hearts || [], verses: rep.verses || [] };
     for (const [k, val] of Object.entries({ fallen: rep.fallen, sick: rep.sick, phoenix: rep.phoenix })) if (val?.length) r[k] = plain(val);
@@ -298,6 +302,7 @@ function onlinePre(d, bt, seq) {
       basis: 'this hero’s potion belt count dropped between two views; who it was for and how much it healed are not shown by the view' });
   }
   if (me) r.potions = me.hero?.potions;
+  d.lastEnemies = (bt.enemies || []).filter((e) => e.hp > 0).map((e) => ({ label: label(d, e, bt.round), health: e.hp })); // for the outcome: what still stood when the last round began
 }
 function onlineResolve(d, rep, seq) {
   const r = d.cur; if (!r || r.resolved) return;
@@ -309,13 +314,15 @@ function onlineResolve(d, rep, seq) {
     const hero = d.heroes.find((x) => x.name === d.mine);
     mine.magicBeforeResolution = me.magic; mine.potionsLeft = me.potions; mine.straight = me.straight || 'atk'; mine.powersThisRound = me.mods; mine.diceBasis = r.healthBasis;
     const tgt = (rep.strikes || []).find((s) => s.name === d.mine)?.targetUid; mine.target = tgt ? d.labels.get(tgt) || null : null;
-    if (me.board && hero?.name) mine.dice = Object.entries(me.board).filter(([, x]) => x && typeof x === 'object' && Number.isFinite(x.v)).map(([slot, x]) => ({ slot, role: slotName(slot), sides: hero.diceSides?.[slot] ?? null, v: x.v, ...(x.bound ? { bound: true } : {}) }));
+    if (me.board && hero?.name && hero.diceSides) mine.dice = Object.entries(me.board).filter(([slot, x]) => x && typeof x === 'object' && Number.isFinite(x.v) && hero.diceSides[slot] != null).map(([slot, x]) => ({ slot, role: slotName(slot), sides: hero.diceSides[slot], v: x.v, ...(x.bound ? { bound: true } : {}) })); // only dice the hero has (a locked slot has no sides and rolled nothing)
   }
   recordResolution(d, r, rep, true); r.resolved = true; delete r.pre; delete r.potions; d.rounds.push(r); d.cur = null;
 }
 function onlineFinish(d, result) {
-  const left = [];
+  // on a defeat the table's next view no longer shows the foes: report the ones standing when the last round began, marked as last seen (a victory leaves none)
+  const left = result === 'victory' ? [] : (d.lastEnemies || []).map((x) => `${x.label} (${x.health} health, last seen)`);
   const report = build(d, result, left);
+  if (result !== 'victory') report.outcome.enemiesLeftBasis = d.lastEnemies ? 'last observed when the final round began; the final round itself is not shown to this phone' : 'unavailable';
   report.legend.unavailable = [...UNAVAILABLE.online, 'who a potion was for and how much it healed (a belt count dropping is shown as an inferred event)', ...(d.joinedMidFight ? ['rounds before this phone joined the view'] : []), 'the quest’s kind and place, and the other monsters’ armour and initiative dice'];
   saveReport(report);
   return report;

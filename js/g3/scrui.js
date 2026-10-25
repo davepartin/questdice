@@ -1279,7 +1279,7 @@ const shGrow = (a, b) => [shDie(a), b ? h('span', { class: 'sh-arrow', 'aria-hid
 function shWeapon(inst, action, cls = '', badge = '', money = null) {
   const d = CW.weaponData(inst, money);
   const row = h('button', { class: 'cw-row', type: 'button', 'aria-label': `${d.metal} ${d.name}, d${d.size}. Show the full card`, onclick: tap(() => showWeaponCard(inst, money)) });
-  row.innerHTML = `${CW.icon(d, 128)}<div><div class="nm"><span></span>${badge ? '<span class="where"></span>' : ''}</div><div class="ch">${CW.chips(d)}</div>${CW.strip(d)}</div>${d.money ? `<div class="act"><small>${d.moneyLabel}</small>${d.money}</div>` : '<div></div>'}`;
+  row.innerHTML = `${CW.icon(d, 128)}<div><div class="nm"><span></span>${badge ? '<span class="where"></span>' : ''}</div><div class="ch">${CW.chips(d)}</div>${CW.strip(d)}</div><div class="act">${d.money ? `<small>${d.moneyLabel}</small>${d.money}` : ''}<em class="more">Full card ›</em></div>`; // the row is the way in to the full card: say so
   row.querySelector('.nm span').textContent = d.name; if (badge) row.querySelector('.where').textContent = badge;
   return h('div', { class: `cw-wrap ${cls}` }, row, action);
 }

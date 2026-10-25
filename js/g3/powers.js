@@ -206,6 +206,7 @@ function detailPanel(ctx, sel) {
       h('b', {}, 'Tap a power'),
       h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'Choose A, B or C to inspect a power. Use the helper row for potions, healing and heart changes.'));
   }
+  if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, u.panel); // a helper that draws its own compact controls (the heart change)
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
       u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
