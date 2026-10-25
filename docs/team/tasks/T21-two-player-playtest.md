@@ -1,0 +1,19 @@
+# T21: two-player live playtest, rewards waiting and Ranger starting equipment
+25 October 2026. Owner: Claude. Priority: urgent live-playtest follow-up, before further experimental balance work.
+
+## Dave's report
+During a two-player game, the second player waited too long before being able to choose post-battle rewards. Dave asks for the game to check more often whose turn it is. Both players are archers and expect to start with Bow and Arrows, but see no Bow in their hands. Cards look older than the latest mockups. Exact device builds, duration, new versus imported heroes and online versus shared-phone mode are not yet confirmed; do not invent those details.
+
+## Initial source/deployment check by Director
+- Hosted root HTML fetched successfully on 25 October: build 20261025cards4, css/cards.css present. Main index matches. This does not establish either phone's loaded version.
+- T05 presentation integration is deployed; T17 weapon-size/no-wear cards and the latest objective-front mockups are not live.
+- js/g3/online.js waitPoll runs every 3 seconds only when a battle fighter is locked/skipped/down. It returns without fetching during victory/reward drafting. This is a plausible recovery gap, not proof of the observed cause.
+- Released WEAPONS2.classes.ranger is ['quiver','bow']; newHero puts these in NW/NE. START_DICE lacks NE, so the Bow can be equipped but its die locked. Check real online creation, imports/migration, rendering and saves before diagnosing the user's instance.
+
+## Assignment and authorization
+1. Reproduce two-player post-battle reward handoff through the real table/session/UI path. Trace authoritative draft advancement, listener arrival and rerender separately. Extend recovery to waiting reward selection and refresh on visible/resume/reconnect as appropriate. Keep live updates primary, deduplicate in-flight fetches, reject stale snapshots, stop on leave/hidden and preserve selection/scroll and pending commands. A bounded roughly 2–3 second fallback while visibly waiting is reasonable; do not blindly hammer Firebase or use host push to skip somebody's reward. Ensure only the eligible player can pick, each reward is taken once, and delayed/out-of-order replies cannot roll back the UI. Fix within existing behavior and publish under standing authorization after checks.
+2. Dave explicitly expects a new archer to begin with a usable Bow and Arrows pair. Reproduce the missing Bow and implement a narrow Ranger-start correction if the locked NE is the cause; preserve other classes and existing slot purchases. Distinguish equipped items, active dice and miniature appearance. Check online-created and solo-created Rangers and imported older Rangers. Never reset heroes, replace earned gear or grant duplicate weapons. Document a safe existing-Ranger repair policy before applying any conversion that overwrites equipment or refunds purchases. This request is independent of T17 and does not authorize no-wear or new face tables at the live root.
+3. Check card rendering on online victory/loot and camp against current T05 integration. Fix an omitted online rendering path if found. Do not treat absence of T17 mockups as a deployment bug or publish unfinished experimental card rules.
+4. Return minimal reproduction, cause, tests, build/commit and limitations directly to BOARD. Use a meaningful two-client UI test for the handoff and record whether real Firestore/two-phone testing happened. Keep fresh-page build versus already-open phone session distinct. Source/deployment reading here was not a two-phone reproduction.
+
+Dave is actively playing. Do not require him to clear browser storage, recreate heroes or abandon the current table to diagnose this. Capture whatever additional evidence is available without disrupting play. No fix is claimed in this intake.
