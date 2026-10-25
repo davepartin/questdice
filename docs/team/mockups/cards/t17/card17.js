@@ -15,8 +15,11 @@ const hit = (f) => f.v + (f.plus || 0); const nb = (f) => (f.plus ? 1 : 0) + Obj
 // Claude's proposal). Each size's list is an exact prefix of the next, so a row shows the faces that purchase adds.
 export const METALS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 const T17 = await (await fetch(new URL('../../../tasks/T17-faces.json', import.meta.url))).json();
-export function nested(id, r, s) { return T17[id][METALS[r]][String(s)]; }
-export function ladder(id, r) { let prev = []; const rows = {}; for (const s of SIZES) { const n = nested(id, r, s); rows[s] = n.slice(prev.length); prev = n; } return rows; }
+// rev 13: Dave direction for Astra (PROPOSAL, not data): Bronze is the basic tier, plain numbers plus blanks, no attack/block markers or
+// bonus icons. Cumulative ladder, each size a prefix of the next. See docs/team/tasks/T17.md. T17-faces.json is unchanged.
+const BRONZE_PROPOSAL = [0, 1, 2, 3, 0, 4, 2, 5, 0, 6].map((v) => ({ v, c: 'n' }));
+export function nested(id, r, s, prop = false) { return prop && r === 0 ? BRONZE_PROPOSAL.slice(0, s) : T17[id][METALS[r]][String(s)]; }
+export function ladder(id, r, prop = false) { let prev = []; const rows = {}; for (const s of SIZES) { const n = nested(id, r, s, prop); rows[s] = n.slice(prev.length); prev = n; } return rows; }
 const FXK = { loot: 'gold' };
 export const iconsOf = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(4, n | 0)).fill(FXK[k] || k))];
 const ORDER = ['atk', 'block', 'gold', 'heal', 'pierce', 'magic'];
@@ -26,9 +29,9 @@ const NAME = { atk: 'attack', block: 'block', gold: 'gold', heal: 'health', pier
 const SOCK = [[8.75, 5.8], [90.97, 5.8], [8.47, 93.3], [91.39, 93.35]];
 const GRID = ['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE'];
 const SLOTWORD = { NW: 'Left weapon', NE: 'Right weapon' }; // the tray's two weapon sockets (js/data.js ROLE)
-const face = (f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: iconsOf(f) });
-export function card17(id, metal, size, slot, { stone = false } = {}) {
-  const rows = ladder(id, metal); const all = SIZES.flatMap((s) => rows[s]); const open = all.slice(0, size);
+const face = (f) => ({ v: f.v, c: f.c === 'n' ? 'n' : f.c === 'b' ? 'b' : 'r', icons: iconsOf(f) });
+export function card17(id, metal, size, slot, { stone = false, proposal = false } = {}) {
+  const rows = ladder(id, metal, proposal); const all = SIZES.flatMap((s) => rows[s]); const open = all.slice(0, size);
   const d = weaponData(id, Math.min(metal, 2), size); d.sell = weaponData(id, Math.min(metal, 2), 4).sell; d.metal = METALS[metal]; // Diamond: Gold data + provisional sell // ruling 5: a size purchase never raises sell value (stand-in: the d4 sell price)
   const kinds = bonusKinds(open);
   const art = `<img class="art9" src="art/${id}-${d.metal.toLowerCase()}.webp" alt="${d.metal} ${d.name}">`;
@@ -38,12 +41,12 @@ export function card17(id, metal, size, slot, { stone = false } = {}) {
   const found = metal === 3; // rev 11, Dave idea for Astra (PROVISIONAL): Diamond is found fully upgraded at a set size, no dice covers
   const body = SIZES.filter((s) => !found || s <= size).map((s, r) => { const from = r ? SIZES[r - 1] : 0; const dieFaces = all.slice(0, s).map(face);
     const dice = rows[s].map((f, i) => { const label = from + i + 1; const ff = face(f);
-      return `<figure class="d17" style="--px:${px[s]}"><img src="${dieImage(s, dieFaces, label, { px: px[s] * 5, stone })}" alt="face ${label}: ${ff.c === 'b' ? 'block' : 'attack'} +${f.v}${ff.icons.length ? ', ' + ff.icons.map((k) => NAME[k]).join(' ') : ''}"><figcaption>${label}<i>${ff.c === 'b' ? 'BLK' : 'ATK'}</i></figcaption></figure>`; }).join('');
+      return `<figure class="d17" style="--px:${px[s]}"><img src="${dieImage(s, dieFaces, label, { px: px[s] * 5, stone })}" alt="face ${label}: ${ff.c === 'n' ? (f.v ? 'plain' : 'blank') : ff.c === 'b' ? 'block' : 'attack'} ${ff.c === 'n' ? (f.v || '') : '+' + f.v}${ff.icons.length ? ', ' + ff.icons.map((k) => NAME[k]).join(' ') : ''}"></figure>`; }).join('');
     const locked = s > size; const avail = s === next;
     // rev 11 (Dave): "dice covers", one standard design for every step (d6 40, d8 80, d10 140); only the next one can be bought
     const cover = !locked ? '' : `<div class="cov tok" role="button" tabindex="0" data-step="${s}" data-from="${from}" aria-label="Dice cover: upgrade d${from} to d${s} for ${STEP_PRICE[s]} gold"><span class="ct"><b>UPGRADE</b><small>d${from} → d${s} · +${rows[s].length} faces</small></span><span class="cp"><i class="coin"></i><b>${STEP_PRICE[s]}</b><small>gold</small></span></div>`;
     const info = `<span class="ri"><b>${s === 4 ? '4 base faces' : `+${rows[s].length} faces`}</b><small>${s === 4 ? 'always yours' : (found ? "came with the find" : `bought · ${STEP_PRICE[s]} gold`)}</small><small>avg hit ${avgOf(s)}</small></span>`;
-    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${info}${cover}</div>`; }).join('') + (found ? `<div class="found17"><b>Found at d${size}</b><small>Diamond dice come fully upgraded · no dice covers · PROVISIONAL</small></div>` : '');
+    return `<div class="row s${s}${locked ? ' locked' : ''}${s === size ? ' cur' : ''}"><span class="sz"><small>SIZE</small>d${s}</span><div class="dz">${dice}</div>${cover}</div>`; }).join('') + (found ? `<div class="found17"><small>Found at d${size} · provisional</small></div>` : '') + (proposal ? `<div class="found17 prop17"><small>PROPOSAL · plain Bronze</small></div>` : '');
   const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
   const sq = ''; // rev 12 (Dave): no equipment-slot square or 3D die on the card; the dice rows already show the die

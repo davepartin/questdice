@@ -7,9 +7,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { makePoly, roundedGeometry } from '../../../../../js/gfx/dice/poly.js';
 import { SYM } from '../card-template.js';
 const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
-const BODY = { r: ['#c0141a', '#6e0508'], b: ['#1f5fd0', '#0b2a78'], z: ['#c0141a', '#6e0508'] }; // attack, block, a +0 (rev 5: same red as attack, so every red die matches; the +0 shows in its number)
+const BODY = { n: ['#a86e34', '#5a3410'], r: ['#c0141a', '#6e0508'], b: ['#1f5fd0', '#0b2a78'], z: ['#c0141a', '#6e0508'] }; // attack, block, a +0 (rev 5: same red as attack, so every red die matches; the +0 shows in its number)
 const STONE = ['#4a4640', '#1c1a17']; // T17 rev 2 variant: Dave's reference, dark stone body; colour moves to the numbers and symbols
-const INK = { r: ['#ff8a80', '#d8262a'], b: ['#9cc8ff', '#2f7ae0'], z: ['#c8b8b0', '#8a7a72'] };
+const INK = { n: ['#fff0d0', '#c8a070'], r: ['#ff8a80', '#d8262a'], b: ['#9cc8ff', '#2f7ae0'], z: ['#c8b8b0', '#8a7a72'] };
 let R, scene, cam, env;
 function setup() {
   if (R) return; R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -65,8 +65,10 @@ function layout(P, sign, nMarks, txtW, inR, extra = 0) {
   return best;
 }
 function paintFace(g, poly, fi, f, stone, cell, Hm, label) {
-  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const tone = f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
-  const txt = `+${f.v}`; const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 4)];
+  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const tone = f.c === 'n' ? 'n' : f.v === 0 ? 'z' : f.c === 'b' ? 'b' : 'r';
+  // rev 13: 'n' = a plain Bronze face (Dave direction, PROPOSAL): no attack/block marker, just the number, or nothing for a blank
+  const plain = f.c === 'n'; if (plain && !f.v && !f.icons.length) return;
+  const txt = plain ? (f.v ? `${f.v}` : '') : `+${f.v}`; const marks = [...(plain ? [] : [f.c === 'b' ? 'block' : 'atk']), ...f.icons.slice(0, 4)];
   // the face polygon in canvas px (y down), inset by the bevel (R_BY metres) + 4% of the inradius as the margin
   const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1; // interior side of the edges
   const inset = R_BY[poly.sides] * ppm * 1.15 + inR * 0.04; // inset = required clearance from every edge
@@ -100,7 +102,7 @@ function atlas(poly, faces, tone, stone, cell = 512) {
   let Hm = 0; poly.faces.forEach((f) => f.local.forEach((p) => { Hm = Math.max(Hm, Math.abs(p[0]), Math.abs(p[1])); })); Hm *= 1.12;
   const ctr = (fi) => [(fi % cols + .5) * cell, ((fi / cols | 0) + .5) * cell];
   const uvOf = (fi, x, y) => { const [cx, cy] = ctr(fi); return [(cx + (x / Hm) * (cell / 2)) / W, 1 - (cy - (y / Hm) * (cell / 2)) / W]; };
-  if (!stone) faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi); cellFill(cx, cy, f.c === 'b' ? 'b' : 'r'); });
+  if (!stone) faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi); cellFill(cx, cy, f.c === 'n' ? 'n' : f.c === 'b' ? 'b' : 'r'); });
   grain(g, W, W, 7, stone ? 52 : 26); grain(g, W, W, 31, stone ? 34 : 16, 110); // the same grain over every face
   faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi);
     g.save(); g.translate(cx, cy); paintFace(g, poly, fi, f, stone, cell, Hm, li + 1); g.restore(); });
@@ -112,7 +114,7 @@ function atlas(poly, faces, tone, stone, cell = 512) {
 // faces of the solid show (top face = the shown label, plus two side faces with their own real labels).
 export function dieImage(sides, faces, label, { px = 240, view = 'row', stone = false } = {}) {
   setup(); R.setSize(px, px, false);
-  const poly = makePoly(sides); const f0 = faces[label - 1]; const tone = f0.v === 0 ? 'z' : f0.c === 'b' ? 'b' : 'r';
+  const poly = makePoly(sides); const f0 = faces[label - 1]; const tone = f0.c === 'n' ? 'n' : f0.v === 0 ? 'z' : f0.c === 'b' ? 'b' : 'r';
   const A = atlas(poly, faces, tone, stone); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
   const bump = new THREE.CanvasTexture(A.cv); bump.flipY = true;
   const mat = new THREE.MeshPhysicalMaterial({ map: A.t, roughness: stone ? 0.78 : 0.5, metalness: 0.04, clearcoat: stone ? 0.1 : 0.4, clearcoatRoughness: 0.5, bumpMap: bump, bumpScale: stone ? 2 : 1.4, envMapIntensity: 0.32 });

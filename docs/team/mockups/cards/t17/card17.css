@@ -145,3 +145,10 @@ button.sell:hover,button.sell:focus-visible{outline:.4cqi solid #ffd98a;outline-
 .row.cur .sz{color:#3a2410}
 /* rev 12: no slot square; the art fills the whole window, framed so each metal's blade reads in full */
 .art17 .art9{object-position:50% 48%}
+
+/* rev 13: no row data on the right; dice rows centred between the size label and a matching right gutter */
+.row,.row.s4{grid-template-columns:9cqi 1fr 9cqi}.ri{display:none!important}.row:not(.s4) .dz,.dz{justify-content:center;padding-left:0;gap:2.2cqi}
+.d17 figcaption{display:none}
+.found17{flex-direction:row;padding:.8cqi 0 .3cqi}.found17 small{font:700 2.4cqi/1 Oxanium;letter-spacing:.04em}
+.prop17 small{color:#7a1e0e;font-weight:800}
+.found17{padding-left:10cqi;padding-right:10cqi}.found17 small{font-size:2.8cqi}

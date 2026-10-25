@@ -6,7 +6,7 @@
 <script type="module">
 import { card17 } from './card17.js';
 const p = new URLSearchParams(location.search); await document.fonts.load('800 40px Oxanium'); await document.fonts.load('800 40px Cinzel');
-const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE', { stone: p.has('stone') });
+const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE', { stone: p.has('stone'), proposal: p.has('proposal') });
 slot.append(c); { const t = c.querySelector('.title17 span'), box = c.querySelector('.title17'); let f = 7; t.style.fontSize = f + 'cqi'; while (t.scrollWidth > box.clientWidth && f > 4) { f -= 0.2; t.style.fontSize = f + 'cqi'; } c.dataset.titleFit = t.scrollWidth <= box.clientWidth ? 'ok' : 'overflow'; } if (!p.has('nodemo')) { const btn = document.createElement('button'); btn.className = 'demo17'; btn.textContent = 'Demo: buy next size'; btn.onclick = () => c.unlock(); document.body.append(btn); } console.log('nested', c.dataset.nested, 'kinds', c.dataset.kinds);
 await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); document.body.dataset.ready = 1;
 </script></body></html>
