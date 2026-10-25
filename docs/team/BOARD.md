@@ -23,6 +23,30 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## Director handoff: weapon candidates and screenshot review, 25 October
+
+Dave confirms the workflow: Director checks committed evidence, posts decisions/proposals here, and tells Dave only when a contributor needs a prompt to pick up a handoff. No copying technical instructions between conversations. This handoff answers the six questions in tasks/T22-weapon-roster.md; it does not claim independent reproduction of the measurements.
+
+**Claude: proceed with the next equipment comparison; no general approval wait.**
+1. Keep the eight-type working roster. Authorize an isolated Spear candidate with a reliable, lower-peak base profile and armor-piercing identity on Silver/Gold. Compare against existing Spear and other weapons, including armored and unarmored foes; do not give Bronze special icons or finalize faces yet.
+2. Do not adopt the entire proposed icon redistribution together. First isolate Spear's base-profile effect from its icon changes. Then compare focused identities: Dagger sustain, Sword flexible offense/support, Axe high-variance burst, Spear anti-armor, Round Shield dependable defense/recovery, Tower Shield heavier but variable defense, Bow support for its ammunition partner, Arrows ammunition-driven utility. These are candidate role briefs, not numerical rules. Do not add gold farming or a new block-breaking mechanic merely for icon variety; identify exact existing engine semantics for any proposed effect. Bow/Arrows can be visually differentiated by their actual ammunition behavior without extra unrelated bonuses.
+3. Retain the approved Bard Dagger+Round Shield start. Two daggers remains a legal equipment choice where supported; no extra starter-choice UI commissioned now.
+4. Authorize implementing/testing 50% recovery as the isolated resale candidate, with one unambiguous valuation specification covering found size and paid size upgrades without double counting. The claim that half-value automatically prevents arbitrage is not established: check discount purchases, rounding, transfers and resale/rebuy loops. Show actual before/after sell value. Final economy/live approval follows evidence.
+5. Proceed with engine-derived Head/Hands/Feet/Heart card data and class/hero-specific Talent faces. Split Hands is a visual prototype with independent purchases, not a shared upgrade. Respect existing feet caps and fixed Heart d6. Coordinate shared renderer ownership with Grok.
+6. Return focused matched results before wider tuning. Current report uses one hero shell and released non-cumulative faces; it cannot validate the proposed cumulative ladder or all-class/party balance. Do not freeze the card numbers from this snapshot. Correct 'average hit' wherever it combines red attack and blue block; report them separately, and compute uncertainty from actual paired outcomes/campaign sampling rather than a blanket plus/minus 8 percentage points. Preserve current monster/magic rules as the comparison baseline.
+
+**Grok: screenshot review and next visual action.**
+Inspected actual main screenshots: mockups/cards/png/diceboard/diceboard-board_375x548.jpg and diceboard-card-head_375x548.jpg.
+- Accept tilted camp board and tap-die-to-card direction for continued integration. The Head label is partly hidden behind the Heart die, and the unlocked Talent One d4 slot is empty. Keep every slot label readable, show the actual talent die, and make locked Talent Two clearly distinct from an empty/unavailable item. Use real hero state and class talent faces.
+- Head card has coherent face row, covers and reachable Close in this screenshot. Keep that hierarchy. Capture the complete camp context with resources/navigation and an insufficient-gold state; this mockup alone does not prove production fit. Preserve independent hand purchases and engine-derived prices.
+- No second Magic redesign: retain Claude's delivered panel and approved refinements. Claude now reports build 20261025t21c; its new screenshots still need review before marking those refinements reviewed.
+- Return exact commit/file handoff and phone screenshots; coordinate reserved files before integration. No new Dave screenshot or general go needed.
+
+**Tracking:** equipment work is T17. Claude's newly named T22-weapon-roster/dataset/measured files are equipment evidence attached to T17; T22 continues to mean per-hero combat feedback. Do not rename files just to fix this; link them under T17 and keep the two tasks distinct.
+
+Review limits: source/report reading and two static mockup images, no fresh simulation, live stamp, Safari, Firebase or interaction test. All candidate gameplay stays isolated. Director will review the next comparison and rendered integration before numerical freeze.
+
+
 ## Latest Dave priority: equipment foundation before final cards, 25 October
 
 **Current sequencing supersedes older next-action ordering:** finish an already active co-op correctness fix at a safe checkpoint, then Claude prioritizes T17's validated weapon roster, cumulative faces and resale economy. Grok continues reusable card visuals. Broader monster/magic retuning follows the equipment foundation. Full acceptance criteria: [T17 current equipment direction](tasks/T17.md#daves-current-direction-validated-equipment-before-final-cards-25-october-2026).
