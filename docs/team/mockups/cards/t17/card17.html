@@ -1,12 +1,12 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T17 weapon card · size uncovering</title>
 <script type="importmap">{"imports":{"three":"../../../../../vendor/three/build/three.module.js","three/addons/":"../../../../../vendor/three/examples/jsm/"}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Cormorant+Garamond:wght@600;700&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../shared.css"><link rel="stylesheet" href="../card.css"><link rel="stylesheet" href="card17.css"></head><body>
+<link rel="stylesheet" href="../../shared.css"><link rel="stylesheet" href="../card.css"><link rel="stylesheet" href="card17.css"><style>#slot{display:flex;flex-direction:column;align-items:center;gap:8px}.propnote{margin:0;font:700 12px/1.3 Oxanium;color:#d8b880;letter-spacing:.04em;text-align:center}</style></head><body>
 <main class="pg"><div id="slot"></div></main>
 <script type="module">
-import { card17 } from './card17.js';
+import { card17, SELL_PCT } from './card17.js';
 const p = new URLSearchParams(location.search); await document.fonts.load('800 40px Oxanium'); await document.fonts.load('800 40px Cinzel');
 const c = card17(p.get('id') || 'dagger', +(p.get('metal') ?? 1), +(p.get('size') || 6), p.has('slot') ? (p.get('slot') || null) : 'NE', { stone: p.has('stone'), proposal: p.has('proposal') });
-slot.append(c); { const t = c.querySelector('.title17 span'), box = c.querySelector('.title17'); let f = 7; t.style.fontSize = f + 'cqi'; while (t.scrollWidth > box.clientWidth && f > 4) { f -= 0.2; t.style.fontSize = f + 'cqi'; } c.dataset.titleFit = t.scrollWidth <= box.clientWidth ? 'ok' : 'overflow'; } if (!p.has('nodemo')) { const btn = document.createElement('button'); btn.className = 'demo17'; btn.textContent = 'Demo: buy next size'; btn.onclick = () => c.unlock(); document.body.append(btn); } console.log('nested', c.dataset.nested, 'kinds', c.dataset.kinds);
+slot.append(c); { const n = document.createElement('p'); n.className = 'propnote'; n.textContent = `Sell values: PROPOSAL (${Math.round(SELL_PCT * 100)}% of metal price + covers bought), awaiting Astra`; slot.append(n); } { const t = c.querySelector('.title17 span'), box = c.querySelector('.title17'); let f = 7; t.style.fontSize = f + 'cqi'; while (t.scrollWidth > box.clientWidth && f > 4) { f -= 0.2; t.style.fontSize = f + 'cqi'; } c.dataset.titleFit = t.scrollWidth <= box.clientWidth ? 'ok' : 'overflow'; } if (!p.has('nodemo')) { const btn = document.createElement('button'); btn.className = 'demo17'; btn.textContent = 'Demo: buy next size'; btn.onclick = () => c.unlock(); document.body.append(btn); } console.log('nested', c.dataset.nested, 'kinds', c.dataset.kinds);
 await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); document.body.dataset.ready = 1;
 </script></body></html>

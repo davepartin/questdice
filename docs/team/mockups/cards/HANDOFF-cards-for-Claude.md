@@ -74,5 +74,27 @@ Existing Mace art is acceptable as a fallback. Do not add Mace to the active ros
 
 Claude may proceed with current-rule integration as specified here under T05/T21, prioritizing starter/reward/Heart fixes. Keep proposed faces, upgrade controls, no-wear and wager wording off. Verify online routes, legible face numbers and reachable controls; shrinking the whole card must not make its text unreadable. Record performance and Safari limitations. This is handoff/scope approval, not a claim that all 44 rendered fronts or the finished integration have passed visual review.
 
+## 5b. T17 rev 15 (25 Oct, mockup): per-row sell chip
+The Sell pill on the art is gone. One sell chip (`.sl17`, `card17.css` rev 15 block) sits in the right gutter of the **highest revealed size row** only; lower revealed rows and covered rows show none (cleanest: one price on the card, it moves down a row when a cover comes off; `el.unlock` wrapper in `card17.js`). The chip opens the existing confirm. Pack enlarged view (`pack/pack.js`) shows the same current-size value. Values are a PROPOSAL (below), not data.
+
+### PROPOSED - needs Astra ruling: sell value grows with size (rev 15, Crockpot (Grok Bot), 25 Oct)
+Dave's idea: every weapon card has d4 to d10 rows; once a size's dice cover is off, a small sell chip at the right of that row shows what the weapon is worth now. Worth grows with each upgrade, but a sale never returns everything invested, so selling helps pay for the next metal. Dave floated 50% and asked for Astra's view.
+
+**Formula (proposal):** sell = P% x (metal's d4 shop price + dice covers bought). Metal d4 price = engine `weaponValue` = base price x RARITY_MULT 1/2/4 (Dagger 18, Sword 24, Spear 27). Covers: d6 40, d8 80, d10 140, so 0 / 40 / 120 / 260 invested by d4 / d6 / d8 / d10. Diamond is never bought: it borrows Gold. Today's game: sell = 50% of weaponValue x SIZE_VALUE, no wear now.
+
+| Weapon | Metal | 50%: d4 / d6 / d8 / d10 | 60%: d4 / d6 / d8 / d10 |
+|---|---|---|---|
+| Dagger | Bronze | 9 / 29 / 69 / 139 | 11 / 35 / 83 / 167 |
+| Dagger | Silver | 18 / 38 / 78 / 148 | 22 / 46 / 94 / 178 |
+| Dagger | Gold (and Diamond) | 36 / 56 / 96 / 166 | 43 / 67 / 115 / 199 |
+| Sword | Bronze | 12 / 32 / 72 / 142 | 14 / 38 / 86 / 170 |
+| Sword | Silver | 24 / 44 / 84 / 154 | 29 / 53 / 101 / 185 |
+| Sword | Gold | 48 / 68 / 108 / 178 | 58 / 82 / 130 / 214 |
+| Spear | Bronze | 14 / 34 / 74 / 144 | 16 / 40 / 88 / 172 |
+| Spear | Silver | 27 / 47 / 87 / 157 | 32 / 56 / 104 / 188 |
+| Spear | Gold | 54 / 74 / 114 / 184 | 65 / 89 / 137 / 221 |
+
+Note for Astra: the covers (260 gold to d10) outweigh the metal price, so at d10 a Bronze and a Gold weapon sell for nearly the same. If metal should matter more when cashing out, scale the cover share separately (e.g. 50% of metal + 40% of covers) or make cover prices scale by metal. Mockup default 50%; `card17.html?sellpct=60` shows the alternative.
+
 ## 6. Pack view mockup (25 Oct, awaiting Dave)
 `pack/pack.html` (+ `pack.css`, `pack.js`, `shoot-pack.mjs`): Camp > Gear pack as a 2x2 grid of physical card thumbnails (real current faces and sell values via `weaponData`, no wear), empty 4th slot dashed. Tap a card: it scales up from its spot (Web Animations, 380 ms, reduced motion = instant); Equip Left / Equip Right / Sell (with the approved confirm) appear below the card, outside the art; tap the card or the backdrop to shrink it back. Fits 375x548 and 390x844 with no inner scroll. Previews: `png/pack/`.

@@ -6,6 +6,11 @@ import { renderCard } from '../card-template.js';
 import { badge } from '../pro.js';
 import * as E from '../../../../../js/engine.js';
 import { dieImage } from './dice3d.js';
+// rev 15 PROPOSAL (not data): sell = SELL_PCT of everything invested = the metal's d4 shop price (engine weaponValue) + the dice covers bought.
+// Diamond is never bought, so it borrows the Gold price. ?sellpct=60 shows the alternative.
+export const SELL_PCT = +(new URLSearchParams(location.search).get('sellpct') || 50) / 100;
+export const invested = (id, metal, s) => E.weaponValue({ id, rarity: Math.min(metal, 2) }) + [6, 8, 10].filter((x) => x <= s).reduce((a, x) => a + STEP_PRICE[x], 0);
+export const sellProposal = (id, metal, s, pct = SELL_PCT) => Math.max(1, Math.round(invested(id, metal, s) * pct));
 export const STEP_PRICE = { 6: 40, 8: 80, 10: 140 }; // provisional test prices (ruling 3)
 const SIZES = [4, 6, 8, 10];
 // nested faces as measured by Claude's tools/t17-faces.mjs (a proposal, not a rule): the real d4 faces, then for each bigger size the
@@ -52,7 +57,7 @@ export function card17(id, metal, size, slot, { stone = false, proposal = false 
   const el = document.createElement('article'); el.className = `qc17 metal-${d.metal.toLowerCase()}`;
   const gi = GRID.indexOf(slot); const shown = open[size - 1];
   const sq = ''; // rev 12 (Dave): no equipment-slot square or 3D die on the card; the dice rows already show the die
-  el.innerHTML = `<div class="art17">${art}${sq}<button type="button" class="sell" aria-haspopup="dialog" title="Sell this weapon (asks to confirm)"><small>Sell</small><i class="coin"></i><b>${d.sell}</b></button></div>
+  el.innerHTML = `<div class="art17">${art}${sq}</div>
 <img class="fr17" src="frame-t17.webp" alt="">
 <div class="title17"><span>${d.metal} ${d.name}</span></div>
 <div class="dice17">${body}</div>
@@ -73,14 +78,19 @@ ${kinds.map((k, i) => `<span class="pb17" style="left:${SOCK[i][0]}%;top:${SOCK[
   el.addEventListener('keydown', (e) => { const t = e.target.closest?.('.cov.tok'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(t); } });
   // rev 8 (Dave): the Sell pill is a button and never sells on one tap: it opens a confirm step, Cancel is the default and primary
   const nm = `${d.metal} ${d.name}`;
-  const ask = () => { if (el.querySelector('.sellq')) return; const q = document.createElement('div'); q.className = 'sellq'; q.setAttribute('role', 'alertdialog'); q.setAttribute('aria-modal', 'true');
+  const ask = () => { size = cur; if (el.querySelector('.sellq')) return; const q = document.createElement('div'); q.className = 'sellq'; q.setAttribute('role', 'alertdialog'); q.setAttribute('aria-modal', 'true');
     q.innerHTML = `<div class="box"><b>Sell ${nm} for <i class="coin"></i>${d.sell} gold?</b><small>This can't be undone.${size > 4 ? ` Its d${size} upgrade is lost.` : ''}</small>
       <div class="bt"><button type="button" class="no">Cancel</button><button type="button" class="yes">Sell</button></div></div>`;
     el.append(q); const close = () => q.remove(); q.querySelector('.no').onclick = close; q.onclick = (e) => { if (e.target === q) close(); };
     q.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
     q.querySelector('.yes').onclick = () => { q.querySelector('.box').innerHTML = `<b>Sold (mockup: nothing happens)</b>`; setTimeout(close, 900); };
     q.querySelector('.no').focus(); };
-  el.querySelector('.sell').addEventListener('click', ask); el.ask = ask;
+  // rev 15 (Dave idea, PROPOSAL numbers): one sell chip at the right of the highest revealed size row; lower and covered rows show none
+  let cur = size; const place = () => { el.querySelectorAll('.sl17').forEach((x) => x.remove()); const row = el.querySelector(`.row.s${cur}`); if (!row) return;
+    d.sell = sellProposal(id, metal, cur); const b = document.createElement('button'); b.type = 'button'; b.className = 'sl17'; b.setAttribute('aria-haspopup', 'dialog');
+    b.setAttribute('aria-label', `Sell for ${d.sell} gold (proposal)`); b.innerHTML = `<small>SELL</small><span><i class="coin"></i><b>${d.sell}</b></span>`; b.onclick = (e) => { e.stopPropagation(); ask(); }; row.append(b); };
+  const un = el.unlock; el.unlock = () => { const t = el.querySelector('.cov.tok:not(.gone)'); const ok = un(); if (ok && t) { cur = +t.dataset.step; place(); } return ok; };
+  place(); el.ask = ask;
   el.dataset.kinds = kinds.join(',') || 'none'; el.dataset.shown = JSON.stringify(shown);
   return el;
 }
