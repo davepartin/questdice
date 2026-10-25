@@ -260,3 +260,26 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 @media (max-height: 760px) {
   .b3-sheet.open .b3-cards:not(:has(.pw-sigil)) .bc-name { white-space: normal; overflow: visible; text-overflow: clip; padding-right: 0; line-height: 1.05; }
 }
+
+/* Magic panel tweaks (Dave, 25 Oct, UI only): the result beside Cast, "Need N more" on what you cannot pay for, the helpers set apart from the class powers,
+   and no unfinished-looking empty space under the detail panel. */
+.pw-btn.has-after { gap: .5rem; }
+.pw-btn .pb-lines { display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.1; min-width: 0; }
+.pw-btn .pb-lines small { font: 600 .6rem/1.15 var(--font-body); opacity: .92; white-space: nowrap; }
+.b3-sheet.open .pw-detail .pw-btn.has-after { padding: .3rem .45rem; }
+.pw-tag.low { background: #7a2b3a; color: #ffd9de; }
+.pw-helpers .pw-tag { position: static; transform: none; padding: 0 .3rem; font-size: .5rem; }
+@media (max-height: 760px) {
+  .b3-sheet.open .pw-sigil { grid-template-columns: repeat(3, minmax(0, 1fr)) .5rem repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto minmax(0, 1fr); flex: 1; min-height: 0; }
+  .b3-sheet.open .pw-stage .pw-medal:nth-of-type(1), .b3-sheet.open .pw-stage .pw-medal:nth-of-type(2), .b3-sheet.open .pw-stage .pw-medal:nth-of-type(3) { grid-column: auto; }
+  .b3-sheet.open .pw-helpers .pw-medal:nth-child(1) { grid-column: 5; position: relative; }
+  .b3-sheet.open .pw-helpers .pw-medal:nth-child(2) { grid-column: 6; } .b3-sheet.open .pw-helpers .pw-medal:nth-child(3) { grid-column: 7; }
+  .b3-sheet.open .pw-helpers .pw-medal:nth-child(1)::before { content: ''; position: absolute; left: -.34rem; top: .15rem; bottom: .15rem; width: 1px; background: #b99b64aa; }
+  .b3-sheet.open .pw-stage .pw-medal.st-low .pw-name, .b3-sheet.open .pw-helpers .pw-medal.st-low .pw-name { color: #b9b3c2; }
+  .b3-sheet.open .pw-detail { align-self: stretch; justify-content: flex-start; }
+  .b3-sheet.open .pw-detail .pd-row { margin-top: auto; padding-top: .3rem; }
+  .b3-sheet.open .pw-detail.pw-custom { justify-content: flex-start; }
+}
+@media (max-height: 760px) {
+  .b3-sheet.open .pw-stage .pw-tag, .b3-sheet.open .pw-helpers .pw-tag { white-space: nowrap; text-align: center; line-height: 1.05; font-size: .42rem; letter-spacing: 0; padding: .05rem .15rem; max-width: 100%; }
+}

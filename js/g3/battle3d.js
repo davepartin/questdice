@@ -555,8 +555,8 @@ function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
   if (!shape && u.id !== 'u:bigheal') why = 'Roll your dice first. You use powers while you shape the roll.'; // a potion can be drunk any time before you lock in
   else if (!shape && b.phase !== 'reset') why = 'Not now.';
-  else if (u.id === 'u:heart') why = E.nudgedThisRound(b) ? 'Used this round. You can turn the heart once a round.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
-  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Needs ${cost} magic. You have ${b.magic}.` : '';
+  else if (u.id === 'u:heart') why = E.nudgedThisRound(b) ? 'Used this round. You can turn the heart once a round.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
+  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
   else if (E.potionsLeft(b) <= 0) why = 'No potions left. Buy more at camp.'; else if (b.hp >= b.maxHp) why = 'You are at full health.';
   return { cost, why };
 }

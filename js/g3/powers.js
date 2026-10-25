@@ -89,6 +89,12 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   const t = fxWords(lvlFx(k.fx, level)); return `${t[0].toUpperCase()}${t.slice(1)}.`;
 }
 // Just the result at a level, for the compare box and the level list: "Total 28 attack", "3d6 attack", "+5 block".
+// What a cast leaves you with, beside the Cast button: "Rolls 2d6 · 2 magic left" (the dice only for a power that rolls dice).
+export function castPreview(k, { x, level = 0, magic = 0 } = {}) {
+  const cost = x ?? k.cost; const left = `${Math.max(0, magic - cost)} magic left`;
+  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.kind === 'charge' ? 'Stores 1 charge' : '';
+  return rolls ? `${rolls} · ${left}` : left;
+}
 export function shortLine(k, level = 0) {
   if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
   if (k.kind === 'scale') return `${E.powerDice(k, k.cost, level)}d${k.dice.s}, max ${scaleTop(k, level)}d${k.dice.s}`;
@@ -130,11 +136,12 @@ export function sigil(ctx) {
     const { k, st, stored } = p; const on = sel === k.id; const ready = isReady(p, reset);
     const state = st.early ? 'locked' : st.spent ? (reset && canRecharge(k) ? 'recharge' : 'used') : ready ? 'ready' : 'low';
     const pips = k.kind === 'charge' ? h('span', { class: 'pw-pips', 'aria-hidden': 'true' }, Array.from({ length: k.max }, (_, i) => h('i', { class: i < stored ? 'on' : '' }))) : null;
-    const tag = st.early ? `ROUND ${k.minRound}+` : st.spent ? (reset && canRecharge(k) ? 'RECHARGE' : k.atwill ? 'USED' : 'SPENT') : k.kind === 'super' ? 'SUPER' : null;
-    return h('button', { type: 'button', class: `pw-medal at-${slot} t-${toneOf(k)} st-${state} ${on ? 'on' : ''}`, 'data-power': k.id, 'aria-pressed': String(on), 'aria-label': `${slot}: ${k.name}. ${k.text}`, onclick: () => ctx.select(k.id) },
+    const need = !reset && !st.early && !st.spent && (p.x ?? k.cost) > b.magic ? (p.x ?? k.cost) - b.magic : 0; // cannot pay yet: greyed, and how much short
+    const tag = st.early ? `ROUND ${k.minRound}+` : st.spent ? (reset && canRecharge(k) ? 'RECHARGE' : k.atwill ? 'USED' : 'SPENT') : need ? `NEED ${need}` : k.kind === 'super' ? 'SUPER' : null;
+    return h('button', { type: 'button', class: `pw-medal at-${slot} t-${toneOf(k)} st-${state} ${on ? 'on' : ''}`, 'data-power': k.id, 'aria-pressed': String(on), 'aria-label': `${slot}: ${k.name}. ${k.text}${need ? ` Need ${need} more magic.` : ''}`, onclick: () => ctx.select(k.id) },
       h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(k, 'pw-g')), h('b', { class: 'pw-slot' }, slot),
         h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(p.x ?? k.cost)))),
-      h('span', { class: 'pw-name' }, k.name, pips), tag ? h('span', { class: `pw-tag ${state}` }, st.early ? HK.icon('lock') : null, tag) : null);
+      h('span', { class: 'pw-name' }, k.name, pips), tag ? h('span', { class: `pw-tag ${need ? 'low' : state}` }, st.early ? HK.icon('lock') : null, tag) : null);
   };
   const tri = document.createElementNS(SVGNS, 'svg'); tri.setAttribute('viewBox', '0 0 360 280'); tri.setAttribute('class', 'pw-tri'); tri.setAttribute('aria-hidden', 'true');
   // Three class powers form the triangle; shared helpers occupy their own row below.
@@ -160,11 +167,12 @@ export function sigil(ctx) {
   const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
   const soft = (u) => /full health|no potions/i.test(u.why || '');
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
+  const needOf = (u) => (!reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0);
   const utilRow = utils.map((u, i) => h('button', { type: 'button',
-    class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${u.why && !soft(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}`,
+    class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${(u.why && !soft(u)) || needOf(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}${needOf(u) ? ` Need ${needOf(u)} more magic.` : ''}`,
     onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g'))), costBadge(u),
-    h('span', { class: 'pw-name' }, u.name)));
+    h('span', { class: 'pw-name' }, u.name), needOf(u) ? h('span', { class: 'pw-tag low' }, `NEED ${needOf(u)}`) : null));
   const detail = detailPanel(ctx, sel);
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
     tally, h('div', { class: 'pw-wrap' }, h('div', { class: 'pw-stage', role: 'group', 'aria-label': 'Your class powers' }, tri, medal('A'), medal('B'), medal('C'))),
@@ -180,14 +188,14 @@ function detailPanel(ctx, sel) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : `Once a battle${canRecharge(k) ? ` · recharge ${ctx.rechargeCost} magic` : ''}`;
     const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '') : 'Roll your dice first. Powers are used while you shape your roll.')
-      : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
+      : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Need ${x - b.magic} more magic (it costs ${x}, you have ${b.magic}).` : '';
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
       h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
     const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
-      : h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`);
+      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`), h('small', {}, castPreview(k, { x, level: p.level || 0, magic: b.magic }))));
     // Verse for a friend (CLASS2.verse, the lab): at a table Lucky Verse asks who it is for. You: attack, as now. A friend: the same number as healing.
     const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
     const forRow = friends.length ? h('div', { class: 'pd-for' }, h('small', {}, 'Who is it for? You: attack. A friend: the same number as healing.'),

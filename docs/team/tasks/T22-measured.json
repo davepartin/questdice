@@ -1,0 +1,314 @@
+{
+ "Act I step 2, Bronze d4|Dagger + Round Shield": {
+  "win": 100,
+  "rounds": 4.45,
+  "left": 85.26315789473684,
+  "dealt": 15.37172619047619,
+  "taken": 4.14875,
+  "blocked": 5.871666666666668
+ },
+ "Act I step 2, Bronze d4|Sword + Round Shield": {
+  "win": 100,
+  "rounds": 4.325,
+  "left": 87.69736842105266,
+  "dealt": 15.870833333333334,
+  "taken": 3.1687499999999997,
+  "blocked": 6.055416666666666
+ },
+ "Act I step 2, Bronze d4|Axe + Round Shield": {
+  "win": 100,
+  "rounds": 4.125,
+  "left": 83.55263157894737,
+  "dealt": 16.4125,
+  "taken": 4.1675,
+  "blocked": 6.657500000000001
+ },
+ "Act I step 2, Bronze d4|Spear + Round Shield": {
+  "win": 97.5,
+  "rounds": 4.55,
+  "left": 87.92172739541161,
+  "dealt": 14.884077380952382,
+  "taken": 4.238392857142856,
+  "blocked": 6.30625
+ },
+ "Act I step 2, Bronze d4|Sword + Tower Shield": {
+  "win": 100,
+  "rounds": 4.45,
+  "left": 84.40789473684211,
+  "dealt": 15.425892857142856,
+  "taken": 3.136964285714286,
+  "blocked": 7.6641071428571435
+ },
+ "Act I step 2, Bronze d4|Dagger + Tower Shield": {
+  "win": 100,
+  "rounds": 5,
+  "left": 86.11842105263158,
+  "dealt": 13.748660714285714,
+  "taken": 3.6219047619047613,
+  "blocked": 7.278273809523808
+ },
+ "Act I step 2, Bronze d4|Dagger + Dagger": {
+  "win": 95,
+  "rounds": 3.475,
+  "left": 74.0304709141274,
+  "dealt": 18.502083333333328,
+  "taken": 6.969583333333333,
+  "blocked": 2.7212499999999995
+ },
+ "Act I step 2, Bronze d4|Sword + Sword": {
+  "win": 100,
+  "rounds": 3.7,
+  "left": 78.48684210526315,
+  "dealt": 18.281249999999996,
+  "taken": 5.9275,
+  "blocked": 4.2075000000000005
+ },
+ "Act I step 2, Bronze d4|Axe + Axe": {
+  "win": 100,
+  "rounds": 3.65,
+  "left": 77.0394736842105,
+  "dealt": 18.30833333333333,
+  "taken": 6.092916666666667,
+  "blocked": 3.2266666666666666
+ },
+ "Act I step 2, Bronze d4|Arrows (normal) + Bow": {
+  "win": 100,
+  "rounds": 3.775,
+  "left": 79.67105263157896,
+  "dealt": 17.929166666666667,
+  "taken": 4.427499999999999,
+  "blocked": 4.365
+ },
+ "Act I step 2, Bronze d4|Arrows (piercing) + Bow": {
+  "win": 100,
+  "rounds": 3.825,
+  "left": 76.25,
+  "dealt": 17.956249999999997,
+  "taken": 5.462916666666666,
+  "blocked": 3.609166666666667
+ },
+ "Act I step 2, Bronze d4|Arrows (fire) + Bow": {
+  "win": 100,
+  "rounds": 3.725,
+  "left": 76.51315789473682,
+  "dealt": 18.335416666666664,
+  "taken": 5.205416666666666,
+  "blocked": 3.8958333333333335
+ },
+ "Act I step 2, Bronze d4|Arrows (frost) + Bow": {
+  "win": 100,
+  "rounds": 3.875,
+  "left": 76.31578947368422,
+  "dealt": 17.739583333333332,
+  "taken": 5.063333333333333,
+  "blocked": 3.8658333333333332
+ },
+ "Act II step 5, Silver d6|Dagger + Round Shield": {
+  "win": 75,
+  "rounds": 13.425,
+  "left": 76,
+  "dealt": 16.613714569655265,
+  "taken": 8.084682690231762,
+  "blocked": 6.048438728346817
+ },
+ "Act II step 5, Silver d6|Sword + Round Shield": {
+  "win": 77.5,
+  "rounds": 13.225,
+  "left": 75.16129032258065,
+  "dealt": 17.86530207516082,
+  "taken": 7.390145201805417,
+  "blocked": 6.800744938326207
+ },
+ "Act II step 5, Silver d6|Axe + Round Shield": {
+  "win": 70,
+  "rounds": 11.75,
+  "left": 78.14285714285715,
+  "dealt": 17.50850018853695,
+  "taken": 8.544721640695908,
+  "blocked": 5.232594601068864
+ },
+ "Act II step 5, Silver d6|Spear + Round Shield": {
+  "win": 57.5,
+  "rounds": 12.3,
+  "left": 75.73913043478262,
+  "dealt": 13.948493021006232,
+  "taken": 9.262055048209854,
+  "blocked": 5.605360845864698
+ },
+ "Act II step 5, Silver d6|Sword + Tower Shield": {
+  "win": 60,
+  "rounds": 17.8,
+  "left": 83.91666666666669,
+  "dealt": 10.030254678134906,
+  "taken": 7.12215084745406,
+  "blocked": 8.693348206102465
+ },
+ "Act II step 5, Silver d6|Dagger + Tower Shield": {
+  "win": 75,
+  "rounds": 16.95,
+  "left": 87.86666666666665,
+  "dealt": 12.827612606523463,
+  "taken": 6.952129165423351,
+  "blocked": 7.992916638898899
+ },
+ "Act II step 5, Silver d6|Dagger + Dagger": {
+  "win": 67.5,
+  "rounds": 10.85,
+  "left": 74.5925925925926,
+  "dealt": 20.958125104062603,
+  "taken": 9.86324175824176,
+  "blocked": 2.8765625000000004
+ },
+ "Act II step 5, Silver d6|Sword + Sword": {
+  "win": 72.5,
+  "rounds": 10.95,
+  "left": 76.06896551724138,
+  "dealt": 20.819241230260964,
+  "taken": 8.203261179609862,
+  "blocked": 5.24765435040106
+ },
+ "Act II step 5, Silver d6|Axe + Axe": {
+  "win": 60,
+  "rounds": 8.55,
+  "left": 62.583333333333336,
+  "dealt": 26.012222360972363,
+  "taken": 11.420571026196026,
+  "blocked": 2.347234675047175
+ },
+ "Act II step 5, Silver d6|Arrows (normal) + Bow": {
+  "win": 65,
+  "rounds": 10.875,
+  "left": 60.84615384615385,
+  "dealt": 20.168498654123646,
+  "taken": 9.633664287101789,
+  "blocked": 3.8716973304473306
+ },
+ "Act II step 5, Silver d6|Arrows (piercing) + Bow": {
+  "win": 70,
+  "rounds": 10.275,
+  "left": 67.64285714285715,
+  "dealt": 20.67988421300921,
+  "taken": 9.335960844710844,
+  "blocked": 3.9340452602952594
+ },
+ "Act II step 5, Silver d6|Arrows (fire) + Bow": {
+  "win": 65,
+  "rounds": 9.75,
+  "left": 64.15384615384616,
+  "dealt": 23.431342060717057,
+  "taken": 9.495957271894772,
+  "blocked": 3.5304926670551673
+ },
+ "Act II step 5, Silver d6|Arrows (frost) + Bow": {
+  "win": 72.5,
+  "rounds": 10.2,
+  "left": 69.79310344827587,
+  "dealt": 22.383062680783265,
+  "taken": 8.348525853231735,
+  "blocked": 3.334933057138941
+ },
+ "Act III step 8, Gold d8|Dagger + Round Shield": {
+  "win": 60,
+  "rounds": 10.625,
+  "left": 66.39784946236557,
+  "dealt": 28.742143412143413,
+  "taken": 14.729028714341212,
+  "blocked": 11.299271943334443
+ },
+ "Act III step 8, Gold d8|Sword + Round Shield": {
+  "win": 62.5,
+  "rounds": 11,
+  "left": 59.741935483870954,
+  "dealt": 28.643763042513037,
+  "taken": 13.858400314962813,
+  "blocked": 11.66534795066045
+ },
+ "Act III step 8, Gold d8|Axe + Round Shield": {
+  "win": 70,
+  "rounds": 10.5,
+  "left": 62.84562211981568,
+  "dealt": 31.291779886779874,
+  "taken": 14.168798909423908,
+  "blocked": 11.383740530303031
+ },
+ "Act III step 8, Gold d8|Spear + Round Shield": {
+  "win": 52.5,
+  "rounds": 9.375,
+  "left": 59.9078341013825,
+  "dealt": 28.644925352425354,
+  "taken": 16.053658078033084,
+  "blocked": 10.11791042291042
+ },
+ "Act III step 8, Gold d8|Sword + Tower Shield": {
+  "win": 72.5,
+  "rounds": 12.65,
+  "left": 68.57619577308121,
+  "dealt": 26.520873489255838,
+  "taken": 11.873430482915781,
+  "blocked": 14.019730704344676
+ },
+ "Act III step 8, Gold d8|Dagger + Tower Shield": {
+  "win": 65,
+  "rounds": 12.25,
+  "left": 66.43920595533498,
+  "dealt": 25.42030340982546,
+  "taken": 14.067191854305824,
+  "blocked": 12.811711870645691
+ },
+ "Act III step 8, Gold d8|Dagger + Dagger": {
+  "win": 45,
+  "rounds": 7.1,
+  "left": 50.08960573476702,
+  "dealt": 36.681982323232326,
+  "taken": 21.837973484848487,
+  "blocked": 5.88669191919192
+ },
+ "Act III step 8, Gold d8|Sword + Sword": {
+  "win": 40,
+  "rounds": 7.1,
+  "left": 47.78225806451613,
+  "dealt": 36.15256132756132,
+  "taken": 20.414664502164506,
+  "blocked": 6.793204365079363
+ },
+ "Act III step 8, Gold d8|Axe + Axe": {
+  "win": 42.5,
+  "rounds": 6.875,
+  "left": 42.69449715370019,
+  "dealt": 38.685122655122655,
+  "taken": 20.129752886002887,
+  "blocked": 5.038150252525252
+ },
+ "Act III step 8, Gold d8|Arrows (normal) + Bow": {
+  "win": 40,
+  "rounds": 7.2,
+  "left": 43.24596774193547,
+  "dealt": 35.68499278499279,
+  "taken": 20.317926587301585,
+  "blocked": 6.821068722943721
+ },
+ "Act III step 8, Gold d8|Arrows (piercing) + Bow": {
+  "win": 45,
+  "rounds": 7.45,
+  "left": 43.63799283154122,
+  "dealt": 37.58375548063047,
+  "taken": 19.503244325119326,
+  "blocked": 7.6558217476967485
+ },
+ "Act III step 8, Gold d8|Arrows (fire) + Bow": {
+  "win": 45,
+  "rounds": 7.225,
+  "left": 48.74551971326164,
+  "dealt": 40.15921453546453,
+  "taken": 18.84577589077589,
+  "blocked": 8.00429674492175
+ },
+ "Act III step 8, Gold d8|Arrows (frost) + Bow": {
+  "win": 57.5,
+  "rounds": 7.625,
+  "left": 48.38709677419356,
+  "dealt": 38.73239364801864,
+  "taken": 16.688516414141418,
+  "blocked": 7.109918414918416
+ }
+}
