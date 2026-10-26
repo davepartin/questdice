@@ -26,3 +26,10 @@
 .pick div{display:flex;gap:1cqi}
 .pick button{display:grid;justify-items:center;gap:.4cqi;width:12cqi;padding:.6cqi 0;border:0;border-radius:1.4cqi;background:#3a2414;cursor:pointer}
 .pick button[disabled]{opacity:.35}.pick img{width:9cqi;height:9cqi}.pick small{font:800 2.3cqi/1 Oxanium;color:#ffd98a}
+/* rev 5: die-shape outline behind the size label (light, no fill) */
+.tr .sz{position:relative;display:grid;place-items:center;aspect-ratio:1}
+.tr .sz svg{position:absolute;inset:-1.4cqi;width:calc(100% + 2.8cqi);height:calc(100% + 2.8cqi);fill:#ffffff14;stroke:#f4ead8b3;stroke-width:1.6;stroke-linejoin:round}
+.tr .sz b{position:relative;font:inherit}
+.tr[data-size="8"] .sz svg,.tr[data-size="10"] .sz svg{inset:-1.8cqi -1.3cqi;width:calc(100% + 2.6cqi);height:calc(100% + 3.6cqi)}
+.tr[data-size="10"] .sz b{font-size:2.7cqi;margin-top:-.8cqi}.tr[data-size="8"] .sz b{font-size:3cqi}
+.tr:has(.cov) .sz svg{display:none} /* covered rows: the cover hides the whole row, label shape included */

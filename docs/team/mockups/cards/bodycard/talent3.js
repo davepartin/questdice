@@ -13,7 +13,7 @@ const COL = { atk: '#ff3b3b', block: '#3aa4ff', magic: '#a64dff', gold: '#ffd21a
 const KIND = (s) => (s === 'block' ? 'def' : s);
 // hero state for the three demo states (sizes + chits placed per slot, face -> symbol)
 const H = { fresh: { size: { SW: 4, SE: 0 }, chit: { SW: {}, SE: {} } },
-  placed: { size: { SW: 8, SE: 6 }, chit: { SW: { 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 5: 'gold' } } },
+  placed: { size: { SW: 10, SE: 6 }, chit: { SW: { 5: 'block', 6: 'magic', 7: 'atk', 8: 'heal' }, SE: { 5: 'gold' } } },
   choose: { size: { SW: 8, SE: 6 }, chit: { SW: { 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 5: 'gold' } }, pick: ['SW', 8] } }[STATE];
 const memo = new Map(); const once = (k, f) => (memo.has(k) ? memo.get(k) : (memo.set(k, f()), memo.get(k)));
 const cv = (px, draw) => { const c = document.createElement('canvas'); c.width = c.height = px; draw(c.getContext('2d'), px); return c.toDataURL(); };
@@ -37,6 +37,9 @@ const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => { //
   g.fillStyle = COL[sym]; g.strokeStyle = '#1a1208'; drawSym(g, KIND(sym), c, c - t / 2, s * 0.46, s * 0.025, true);
 }));
 const NAME = { SW: 'TALENT ONE', SE: 'TALENT TWO' }; const ADDS = { 6: [5, 6], 8: [7, 8], 10: [9, 10] }; const FROM = { 6: 4, 8: 6, 10: 8 };
+// rev 5 (Dave): a faint outline behind each size label previews the die's shape at that size (d6 square, d8 diamond, d10 kite)
+const SHAPE = { 6: '<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="3"/></svg>', 8: '<svg viewBox="0 0 40 40"><path d="M20 1 L38 20 L20 39 L2 20 Z"/></svg>',
+  10: '<svg viewBox="0 0 40 40"><path d="M20 1 L36 17 L20 39 L4 17 Z"/></svg>' };
 function slotEl(slot, v) {
   const sym = H.chit[slot][v];
   if (sym) return `<span class="ts set" aria-label="face ${v}: ${TALENT_SYMS[sym]?.name || sym} chit, pays ${v}"><i class="n">${v}</i><img class="chit" src="${chit(sym)}" alt=""></span>`;
@@ -45,7 +48,7 @@ function slotEl(slot, v) {
 function column(slot) {
   const size = H.size[slot]; const cls = CLASS_TALENT[CLS][slot];
   const d4 = `<div class="tr d4"><span class="sz">d4</span><div class="pf"><img src="${face('blank')}" alt="face 1 blank"><img src="${face('x2')}" alt="face 2 X2"><img src="${face('blank')}" alt="face 3 blank"><img src="${face('sym', cls)}" alt="face 4 class symbol"></div></div>`;
-  const rows = [6, 8, 10].map((z) => `<div class="tr" data-size="${z}"><span class="sz">d${z}</span><div class="sl">${ADDS[z].map((v) => slotEl(slot, v)).join('')}</div>${z > size ? `<div class="cov" data-step="${z}" role="button" aria-label="Grow ${NAME[slot]} to d${z}, ${SPECIAL_STEPS[FROM[z]][0]} gold"><span class="cp"><i class="coin"></i><b>${SPECIAL_STEPS[FROM[z]][0]}</b></span></div>` : ''}</div>`).join('');
+  const rows = [6, 8, 10].map((z) => `<div class="tr" data-size="${z}"><span class="sz">${SHAPE[z]}<b>d${z}</b></span><div class="sl">${ADDS[z].map((v) => slotEl(slot, v)).join('')}</div>${z > size ? `<div class="cov" data-step="${z}" role="button" aria-label="Grow ${NAME[slot]} to d${z}, ${SPECIAL_STEPS[FROM[z]][0]} gold"><span class="cp"><i class="coin"></i><b>${SPECIAL_STEPS[FROM[z]][0]}</b></span></div>` : ''}</div>`).join('');
   const lock = size === 0 ? `<div class="colock" role="button" aria-label="Unlock ${NAME[slot]}, ${UNLOCK_COST[slot]} gold"><span class="cp"><i class="coin"></i><b>${UNLOCK_COST[slot]}</b></span></div>` : '';
   return `<div class="tcol" data-slot="${slot}"><div class="th">${NAME[slot]}</div>${d4}${rows}${lock}</div>`;
 }
