@@ -189,12 +189,13 @@ export function weaponCard(hero, slot, inst, { say } = {}) {
   const size = E.weaponSize(inst); const SZ = [4, 6, 8, 10];
   if (inst.diamond || inst.id === 'fists' || !SZ.includes(size)) return CW.weaponCardOf(inst, { label: 'Sell', value: inst.diamond ? undefined : 0 });
   const d = CW.weaponData(inst, { label: 'Sell', value: 0 }); const faces = d.faces;
-  d.rows = SZ.map((s, i) => ({ size: s, from: s === size ? 0 : (SZ[i - 1] || 0), faces: s === size ? faces : [], owned: s <= size, price: 0 }));
+  // Dave's reference (T17 Bronze Dagger): each size row shows only the faces that size adds, drawn as that size's die. The data has no nested face
+  // ladder, so the weapon's real face list is split in order: d4 faces 1-4, d6 5-6, d8 7-8, d10 9-10 (each row's die is built from faces[0..size)).
+  d.rows = SZ.map((s, i) => ({ size: s, from: SZ[i - 1] || 0, faces: faces.slice(0, s), owned: s <= size, price: 0 }));
   const soon = 'Bigger weapon dice are not in the game yet';
   const card = CW.weaponCardEl(d, { onBuy: () => soon });
   card.classList.add('cb-weapon'); card.setAttribute('aria-label', `${d.metal} ${d.name}, d${size}`);
   for (const r of card.querySelectorAll('.row')) { const s = +r.dataset.size;
-    if (s < size) r.querySelector('.dz').append(h('span', { class: 'cb-in' }, `Part of the d${size} die`));
     const cov = r.querySelector('.cov.tok'); if (cov) { cov.setAttribute('aria-label', `Dice cover d${s}: ${soon}`); cov.querySelector('.ct small').textContent = `d${SZ[SZ.indexOf(s) - 1]} → d${s}`; cov.querySelector('.cp').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } }
   const row = card.querySelector(`.row.s${size}`); const value = E.sellValue(inst);
   const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
