@@ -183,8 +183,8 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 | Unlock Talent One | 15 (data.js:327) | 25 |
 | Unlock second weapon hand | 30 (data.js:327) | 50 |
 | Unlock Talent Two | 35 (data.js:327; old PROPOSED 35) | 50 |
-| Talent face 4 | 40 live (10 x 4); old PROPOSED 10 | **25** (Grok's reading of the 25/50/100/200 rule; Dave to confirm) |
-| Talent faces 5-10 | 10 x face number = 50, 60, 70, 80, 90, 100 (data.js:353) | **OPEN QUESTION** (see below) |
+| Talent face 4 | 40 live (10 x 4) | **10** (Dave, Oct 26: "first 4 can be 10"; exception to the 25/50/100/200 rule) |
+| Talent faces 5-10 | 10 x face number = 50, 60, 70, 80, 90, 100 (data.js:353) | **keep 10 x face** (Dave, Oct 26: "Talent dice can grow at 10"; exception to the rule) |
 | Potion belt third slot (Level 4) | 90 (data.js:1142) | 100 |
 | Pet | 90 (data.js:26) | 100 |
 | 4th reroll die | 200 (data.js:48) | 200 |
@@ -196,7 +196,7 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 | Road rematch | 5 / 10 / 15 (trials.js:21) | keep |
 | Weapon worth / sell 50% / Diamond x3.2 | formulas (data.js:78-80, 133) | keep |
 
-All one-offs above are 25, 50, 100 or 200: Talent One 25, weapon hand 50, Talent Two 50, face 4 25 (to confirm), pet 100, potion belt 100, reroll die 200, pet symbol 25. **Open question for Dave:** talent faces 5-10 cost 10 x the face (50, 60, 70, 80, 90, 100), so only 50 and 100 fit the 25/50/100/200 rule. Snap them (e.g. faces 5-6 = 50, 7-10 = 100), or keep 10 x face because it matches what the face pays? All PROPOSED for Astra's gold check; no game prices changed.
+All one-offs above are 25, 50, 100 or 200: Talent One 25, weapon hand 50, Talent Two 50, pet 100, potion belt 100, reroll die 200, pet symbol 25. **Exception (Dave, Oct 26):** talent faces are priced at 10 per face number: face 4 costs 10, faces 5-10 cost 10 x the face (50 ... 100). All PROPOSED for Astra's gold check; no game prices changed.
 
 **Waiting on Dave**
 1. Chit inventory (buy chits first, place later?): undecided.
@@ -494,3 +494,4 @@ Approved completed art/docs may be published under standing authorization withou
 - Crockpot (Grok Bot), 26 Oct 7:39 AM CT — BOARD: added the Grok (Crockpot) status section (live cards, weapon card cb1-cb5, Camp Store cs1/cs2, mockups, Dave's 26 Oct calls, Waiting on Dave, For Astra, Known limits).
 - Crockpot (Grok Bot), 26 Oct 8:14 AM CT — BOARD: recorded Dave's price direction (Oct 26, PROPOSED): shared 50/100/200 ladder for every multi-step upgrade, Heart keeps 150/300; audit table (today vs ladder) in Grok's section; For Astra: rerun tools/gold.mjs across all classes before anything ships (replaces the old body-costs 50/110/220 item). No game prices changed.
 - Crockpot (Grok Bot), 26 Oct 8:21 AM CT — BOARD: price direction updated (Dave, Oct 26): Heart 200/300; one-offs and unlocks only 25/50/100/200 (Talent Two 50 replaces PROPOSED 35; face 4 25 replaces PROPOSED 10, Grok's reading for Dave to confirm); per-face talent costs (10 x face) marked an open question; superseded 35 and 10 removed from For Astra. All PROPOSED; no game prices changed.
+- Crockpot (Grok Bot), 26 Oct 8:23 AM CT — BOARD: Dave answered the per-face question ("Talent dice can grow at 10. That is great. Also first 4 can be 10"): talent faces are an exception to the 25/50/100/200 rule; face 4 = 10 (replaces the 25 I flagged), faces 5-10 keep 10 x face. Open question removed. PROPOSED for Astra's gold check; no game prices changed.
