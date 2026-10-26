@@ -12,7 +12,7 @@ import * as R from '../roads.js';
 import * as Net from '../net.js';
 import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
-import { gearCardEl } from './gearcard.js';
+import { strengthCard, talentsCard, heartCard } from './cardboard.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
@@ -1348,7 +1348,7 @@ function slotSheet(slot) {
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return SHEET.inline ? [head, gearCardEl(hero, 'C', { title: 'Heart', size: 6, note: 'The Heart die is always a d6' }), h('p', { class: 'sh-role' }, SH_ROLE.C), campFaceList(hero, slot, 6)]
+  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero), h('p', { class: 'sh-role' }, SH_ROLE.C)] // Crockpot: the cardboard HEART card (no Heart purchase exists yet)
     : [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
@@ -1356,7 +1356,7 @@ function slotSheet(slot) {
     const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
       : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
     const next = u.next && !u.act ? u.next : null;
-    const card = SHEET.inline ? gearCardEl(hero, slot, { title: { N: 'Head', S: 'Feet', W: 'Left Hand', E: 'Right Hand' }[slot], size, up: u }) : null; // Crockpot: the card for Head, Feet and each Hand (each hand upgrades on its own)
+    const card = SHEET.inline ? strengthCard(hero, slot, { say: (t) => toast(t), onGrow: (s2) => { if (HE.upgradeDie(hero, SH_KIND[s2], s2)) shBought(); } }) : null; // Crockpot: the cardboard STRENGTH card; every cover buys through HE.upgradeDie // Crockpot: the card for Head, Feet and each Hand (each hand upgrades on its own)
     const stage = card || (SHEET.inline ? h('div', { class: 'cw-compare' },
       h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
       next ? ico('chevron') : null,
@@ -1455,7 +1455,9 @@ function talentWorkshop(hero, slot) {
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
   return h('div', { class: 'tw-workshop' },
-    gearCardEl(hero, slot, { title: slot === 'SW' ? 'Talent One' : 'Talent Two', size, up, note: `${info.used} of ${info.faces} symbol faces set` }), // Crockpot: the real Talent die on its card
+    talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
+      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); },
+      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) shBought(); }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) shBought(); } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
     h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Up to ${info.same} of each symbol per die.`), detail,
