@@ -167,6 +167,32 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 - Diamond weapons use the weapon card style with a diamond look (pale crystal / ice-blue sheen) (done in cs1).
 - A short scroll in the store is OK.
 
+**Dave's price direction (Oct 26), PROPOSED, needs Astra's gold check before anything ships.** One shared ladder: every multi-step upgrade costs 50 / 100 / 200; the Heart KEEPS 150 / 300 (T23); one-off buys use 100 or 200, small buys 25, by-act prices scale x1/x2/x3. No game prices are changed; these are not in data.js.
+
+| Item | Today (live, file:line) | Ladder (PROPOSED) |
+|---|---|---|
+| Hands (Strength) d4→d6→d8→d10 | 40 / 100 / 220 (data.js:395) | 50 / 100 / 200 |
+| Head (Mind) | 50 / 110 / 230 (data.js:404) | 50 / 100 / 200 |
+| Feet (Speed) d4→d6→d8 | 60 / 140 (data.js:405) | 50 / 100 |
+| Talent die | 60 / 130 / 240 (data.js:396) | 50 / 100 / 200 |
+| Power upgrades | 50 / 90 / 140 (data.js:341) | 50 / 100 / 200 |
+| Learn a power | 50 (data.js:343) | 50 |
+| Weapon size (switched off live) | 40 / 80 / 140 (data.js:249) | 50 / 100 / 200 |
+| Pet die grow | 80 / 180 (data.js:28) | 100 / 200 |
+| Heart ranks (T23) | 150 / 300 (PROPOSED, not built) | **150 / 300 (kept)** |
+| Unlock Talent One / second hand / Talent Two | 15 / 30 / 35 (data.js:327) | 25 / 50 / 50 |
+| Talent faces | 10 x face number (data.js:353) | keep |
+| Potion belt third slot (Level 4) | 90 (data.js:1142) | 100 |
+| Pet | 90 (data.js:26) | 100 |
+| 4th reroll die | 200 (data.js:48) | 200 |
+| Pet symbol slot | 25 (data.js:351) | 25 |
+| Shrink a die | 20 / 30 / 40 (data.js:410) | keep, or 25 flat |
+| Potions by act | 10 / 20 / 30 (data.js:1145) | 10 / 20 / 30 |
+| Tonics by act | 25/45/70 and 30/55/80 (data.js:157-162) | all 25 / 50 / 75 |
+| Mystery bundle by act | 70 / 95 / 120 (data.js:167) | 75 / 100 / 125 |
+| Road rematch | 5 / 10 / 15 (trials.js:21) | keep |
+| Weapon worth / sell 50% / Diamond x3.2 | formulas (data.js:78-80, 133) | keep |
+
 **Waiting on Dave**
 1. Chit inventory (buy chits first, place later?): undecided.
 2. A pierce chit on talent dice?
@@ -176,8 +202,9 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 6. Bigger dice and the slim sell pill from his weapon reference.
 
 **For Astra**
-1. Gold balance review of the PROPOSED prices: Talent face 4 at 10 (PROPOSED), Talent Two unlock at 35 (PROPOSED), body costs 50/110/220 (PROPOSED), weapon resale at about 50% of total spent (PROPOSED).
-2. The Heart rank mechanic is not built yet (T23).
+1. Gold balance review of the PROPOSED prices: Talent face 4 at 10 (PROPOSED), Talent Two unlock at 35 (PROPOSED), weapon resale at about 50% of total spent (PROPOSED).
+2. **Dave's price direction (Oct 26), PROPOSED:** please rerun `tools/gold.mjs` across ALL classes (e.g. `node tools/gold.mjs 2`) on the 50/100/200 ladder below (Heart keeps 150/300) and report before anything ships. Grok's rough single-run check (1 Knight campaign, normal): gold per won fight about 41 / 142 / 306 by act, plus about 21 / 37 / 63 from selling spoils; spent at camp about 54 / 178 / 237.
+3. The Heart rank mechanic is not built yet (T23).
 
 **Known limits**
 - The weapon face split per size row is by face order.
@@ -460,3 +487,4 @@ Approved completed art/docs may be published under standing authorization withou
 - Crockpot (Grok Bot), 26 Oct 7:28 AM CT — **RELEASED** the store coin fix reservation.
 - Crockpot (Grok Bot), 26 Oct 7:39 AM CT — **RELEASED** the older reservations still on record: js/g3/cards.js + css/cards17.css (25 Oct, T22 size card, done 4311068) and the camp dice-grid inspector files (25 Oct, done; see the line after it). No Crockpot reservations are open.
 - Crockpot (Grok Bot), 26 Oct 7:39 AM CT — BOARD: added the Grok (Crockpot) status section (live cards, weapon card cb1-cb5, Camp Store cs1/cs2, mockups, Dave's 26 Oct calls, Waiting on Dave, For Astra, Known limits).
+- Crockpot (Grok Bot), 26 Oct 8:14 AM CT — BOARD: recorded Dave's price direction (Oct 26, PROPOSED): shared 50/100/200 ladder for every multi-step upgrade, Heart keeps 150/300; audit table (today vs ladder) in Grok's section; For Astra: rerun tools/gold.mjs across all classes before anything ships (replaces the old body-costs 50/110/220 item). No game prices changed.
