@@ -1481,3 +1481,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 25 October 2026, Director: Dave instructed Grok to build the Heart upgrade card and set rank 2 to require Act II, rank 3 Act III. Updated T23 and BOARD: 150/300 gold retained, rank purchases sequential, act locks shown and enforced in authoritative purchase rules. Camp center die opens card; no combat gesture change. Documentation only.
+
+
+26 October 2026: took over implementation directly while Grok/Claude tokens are limited. Built T23 on current main with latest 200/300 Heart pricing, act gates, sequential/duplicate-safe camp purchase, per-hero resolution and persistence; preserved latest price chips, talent migration and mp2 inline Magic. Draft PR #50, 6f088bc; switch off at root and isolated preview entry only. Full suite 449/449; 12 focused tests; 864 current-code encounter diagnostics, no 80-round timeouts, max 28. Rendering unavailable after Chromium download failure; wider economy/sustain checks retained by implementation owner. Also fixed optional LAN enumeration breaking room creation: server.mjs plus explicit regression, ec61873 on main, independently verified. Board and T23 spec now reflect the current candidate; no work handed back to Grok/Claude.
