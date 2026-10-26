@@ -3,7 +3,7 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAGIC_CAP_LEVELS, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_RULE,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, HEART_RANKS, normalizeHeartRank, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
@@ -279,7 +279,7 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   const packId = packIdOf(pack);
   return {
-    v: 1, name, cls, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
+    v: 1, name, cls, heartRank: 1, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [], SE: [] } /* face 4 starts empty on both talent dice (Dave, 26 Oct 2026); the player fills it at camp */, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
@@ -527,8 +527,8 @@ export function evaluate(hero, board, opts = {}) {
     const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
     const matches = hit.length;
     const hs = hasCharm(hero, 'heartstone') ? 2 : 1; // Heartstone: the heart's boost counts double (charm audit: rolling it twice was worth almost nothing)
-    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
-    const amp = HEART_AMP[hv - 1] * matches * hs;
+    if (matches) out.heartBoost = { sym, n: (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
+    const amp = (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
     if (matches) out.notes.push(`Heart Boost +${amp} ${sym}`);
   }
@@ -574,7 +574,7 @@ export function evaluate(hero, board, opts = {}) {
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5 && !hushed) {
     const want = hv === 5 ? 'b' : 'r'; let n = 0;
-    const hb = HEART_COLOR_BONUS * (hasCharm(hero, 'heartstone') ? 2 : 1); // Heartstone doubles it
+    const hb = (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).lane : HEART_COLOR_BONUS) * (hasCharm(hero, 'heartstone') ? 2 : 1); // Heartstone doubles it
     for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += hb; l.amp = hb; n++; }
     if (n) out.notes.push(`Heart ${hv}: +${hb} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
   }
@@ -1425,6 +1425,26 @@ export function takePerk(hero, id) {
     if (!takeDiamond(hero, d)) return false; hero.pendingPerks--; return true;
   }
   hero.perks.push(id); hero.pendingPerks--; return true;
+}
+
+// T23 isolated Heart progression. The candidate is enabled only by its preview entry point.
+export const useHeartUpgrades = () => { EXPERIMENT.heartUpgrades = true; };
+export const heartRankOf = (hero) => EXPERIMENT.heartUpgrades ? normalizeHeartRank(hero?.heartRank) : 1;
+export const heartBoostOf = (hero) => HEART_RANKS[heartRankOf(hero)];
+export function heartUpgrade(hero) {
+  const rank = heartRankOf(hero); const next = rank + 1; const step = HEART_RANKS[next];
+  if (!EXPERIMENT.heartUpgrades) return { ok: false, why: 'Not in the game yet', rank };
+  if (!step) return { ok: false, why: 'Max rank', rank };
+  const info = { rank, next, cost: step.cost, act: step.act };
+  if (!Number.isInteger(hero.campaign?.act) || hero.campaign.act < step.act) return { ...info, ok: false, why: `Requires Act ${ROMAN[step.act]}` };
+  if (!Number.isFinite(hero.gold) || hero.gold < step.cost) return { ...info, ok: false, why: 'Need gold' };
+  return { ...info, ok: true };
+}
+// The requested target rank is mandatory: a repeated/stale rank-2 command can never buy rank 3.
+export function upgradeHeart(hero, targetRank) {
+  const up = heartUpgrade(hero);
+  if (!up.ok || targetRank !== up.next) return false;
+  hero.gold -= up.cost; hero.heartRank = up.next; return true;
 }
 
 // Camp economy.

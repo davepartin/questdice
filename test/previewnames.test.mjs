@@ -43,3 +43,10 @@ test('the same run in the live game, the lab and the existing previews writes wh
   const lab = run('/questdice/', '?lab'); assert.deepEqual(lab.changed, []); assert.ok(lab.written.every((k) => k.startsWith('questdice.lab.')), lab.written.join(', '));
   const old = run('/questdice/preview/cards/'); assert.deepEqual(old.changed, []); assert.ok(old.written.every((k) => k.startsWith('questdice.preview.')), old.written.join(', '));
 });
+
+
+test('Heart candidate saves use their own namespace, leaving every seeded live/lab/preview value untouched', () => {
+  const r = run('/questdice/preview/heart-upgrades/');
+  assert.deepEqual(r.changed, []);
+  assert.ok(r.written.length > 0 && r.written.every((k) => k.startsWith('questdice.preview-heart-upgrades.')));
+});
