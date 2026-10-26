@@ -21,12 +21,28 @@ const H = { fresh: { size: { SW: 4, SE: 0 }, chit: { SW: {}, SE: {} } },
 const memo = new Map(); const once = (k, f) => (memo.has(k) ? memo.get(k) : (memo.set(k, f()), memo.get(k)));
 const cv = (px, draw) => { const c = document.createElement('canvas'); c.width = c.height = px; draw(c.getContext('2d'), px); return c.toDataURL(); };
 // a printed emerald face (faces 1-4)
-const face = (kind, sym) => once(`f${kind}${sym}`, () => cv(160, (g) => { // rev 4: a d4 face is a TRIANGLE (true d4 shape), not a square
+// rev 8 (Dave): the X2 face copies the game's own ink line for line (js/gfx/dice/faces.js buildAtlas, 'SURGE' branch, clean style):
+// a white numeral '2' (drawNumeral, round caps) with a stroked 'x' set low at its right, a thin black outline, and 'STRENGTH' under it in
+// FOUR_FONT 900. Sizes are the same ratios of the face's inradius (inR); (cx, cy) = the triangle's incentre.
+const FOUR_FONT = '"Archivo Black", "Arial Black", "Helvetica Neue", Arial, sans-serif';
+function x2Ink(g, cx, cy, inR) {
+  g.save(); g.translate(cx, cy);
+  const th2 = inR * 0.78; const ny2 = -inR * 0.12; const xx = -inR * 0.18; const kx = inR * 0.32; const ky = inR * 0.16;
+  const nyx = ny2 + th2 * 0.3875 - ky - th2 * 0.07;
+  const times = (c, w) => { c.lineCap = 'butt'; c.lineWidth = w; c.beginPath(); c.moveTo(kx - ky, nyx - ky); c.lineTo(kx + ky, nyx + ky); c.moveTo(kx + ky, nyx - ky); c.lineTo(kx - ky, nyx + ky); c.stroke(); };
+  const wgt = th2 * 0.2; const k = inR / 82.5; // the atlas outline widths are in atlas px (d4 face inR = 82.5 px, measured); scale them to this tile
+  const word = (c, w) => { c.font = `900 ${Math.round(inR * 0.3)}px ${FOUR_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; const y = ny2 + th2 * 0.5 + inR * 0.26; const fit = Math.min(1, (inR * 1.5) / c.measureText('STRENGTH').width); c.save(); c.translate(0, y); c.scale(fit, 1); if (w) { c.lineJoin = 'round'; c.lineWidth = w / fit; c.strokeText('STRENGTH', 0, 0); } c.fillText('STRENGTH', 0, 0); c.restore(); };
+  for (const [col, grow, w2, ww] of [['#05060a', 4 * k, wgt + 4 * k, 5 * k], ['#ffffff', 0, wgt, 0]]) {
+    g.fillStyle = col; g.strokeStyle = col; drawNumeral(g, '2', xx, ny2, th2, { grow, cap: 'round' }); times(g, w2); word(g, ww);
+  }
+  g.restore();
+}
+export const face = (kind, sym) => once(`f${kind}${sym}`, () => cv(160, (g) => { // rev 4: a d4 face is a TRIANGLE (true d4 shape), not a square
   const tri = () => { g.beginPath(); const P = [[80, 10], [152, 140], [8, 140]]; for (let i = 0; i < 3; i++) { const a = P[i], b = P[(i + 1) % 3], c = P[(i + 2) % 3];
     const m1 = [a[0] + (b[0] - a[0]) * 0.1, a[1] + (b[1] - a[1]) * 0.1]; if (i === 0) g.moveTo(m1[0], m1[1]); g.arcTo(b[0], b[1], c[0], c[1], 14); } g.closePath(); };
   tri(); const gr = g.createRadialGradient(70, 80, 10, 80, 100, 110); gr.addColorStop(0, EM.core); gr.addColorStop(0.6, EM.mid); gr.addColorStop(1, EM.edge);
   g.save(); g.shadowColor = '#2a160677'; g.shadowBlur = 6; g.shadowOffsetY = 4; g.fillStyle = gr; g.fill(); g.restore(); g.lineWidth = 4; g.strokeStyle = EM.trim + '99'; g.stroke(); g.fillStyle = '#f4fbf8'; g.strokeStyle = '#f4fbf8';
-  if (kind === 'x2') { g.font = '800 40px Oxanium'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('×2', 80, 104); }
+  if (kind === 'x2') x2Ink(g, 80, 97.6, 42.4); // rev 8: the game's own X2 face ink (faces.js buildAtlas, spec.sym 'SURGE')
   if (kind === 'sym') { drawNumeral(g, '4', 80, 82, 32, { weight: 14, under: true }); g.fillStyle = COL[sym]; g.strokeStyle = '#0b1a1a'; drawSym(g, KIND(sym), 80, 118, 26, 3, true); }
 }));
 // the die-cut cardboard chit: a kraft disc with a darker cut edge, the icon printed on it
@@ -63,6 +79,7 @@ function picker(card, btn) {
   p.addEventListener('click', (e) => { const k = e.target.closest('button')?.dataset.sym; if (!k) return; H.chit[s][v] = k; p.remove(); btn.outerHTML = slotEl(s, v); });
 }
 async function build() {
+  await document.fonts.load('900 40px "Archivo Black"').catch(() => {});
   const card = document.createElement('article'); card.className = 'bc r2 titled t3';
   card.innerHTML = `<img class="fr" alt=""><div class="panel">${column('SW')}${column('SE')}</div>`;
   const u = await frameArt({ title: 'TALENTS' }); card.querySelector('.fr').src = u.card; card.insertAdjacentHTML('beforeend', `<img class="fr cn" src="${u.corners}" alt="">`);
