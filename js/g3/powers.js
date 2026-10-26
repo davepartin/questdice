@@ -214,25 +214,27 @@ function detailPanel(ctx, sel) {
       h('b', {}, 'Tap a power'),
       h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'Choose A, B or C to inspect a power. Use the helper row for potions, healing and heart changes.'));
   }
-  if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, u.panel); // a helper that draws its own compact controls (the heart change)
+  const note = u.note ? h('div', { class: `pd-result t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null; // what the last tap did, inside the tab
+  if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, note, u.panel); // a helper that draws its own compact controls (the heart change)
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
       u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
-    h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
+    h('p', { class: 'pd-line' }, u.body), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}${a.content ? ' hc-btn' : ''}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || null, onclick: a.fn }, ...(a.content || [a.label])))));
 }
 
 // ------------------------------------------------------------------------------------------------ the reveal
 // Show what a power just did. k: the card; r: E.castPower's result; gains: what reached the counters { atk: 8, ... };
 // round: the battle round. Resolves when the player taps OK (or taps the backdrop once it is done).
-export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
+// inline: the open .pw-detail panel; when given, the result plays inside the selected tab (no second window; Dave, 26 Oct mp2).
+export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const tone = r.released ? TONE[Object.keys(r.per || perOf(k))[0]] || toneOf(k) : toneOf(k);
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
     let shut = false; let done = false;
     const total = Object.values(gains).reduce((a, v) => a + v, 0);
-    const close = () => { if (shut) return; shut = true; timers.forEach(clearTimeout); layer.classList.add('out'); sfx.uiClose?.(); setTimeout(() => { layer.remove(); resolve(); }, 220); };
+    const close = () => { if (shut) return; shut = true; timers.forEach(clearTimeout); (inline ? card : layer).classList.add('out'); sfx.uiClose?.(); setTimeout(() => { if (inline) { card.remove(); inline.classList.remove('pw-casting'); } else layer.remove(); resolve(); }, 220); };
     const adds = Object.keys(gains).some((f) => !['free', 'weaken'].includes(f)); // a free reroll or softer hits do not add to a counter
     const ok = h('button', { type: 'button', class: 'dr-ok', disabled: true, onclick: close }, adds && !r.charged ? (r.rolls?.length && !(k.kind === 'luck') ? `Add ${r.total} to my roll` : 'Add it to my roll') : 'Got it');
     const shown = new Set(); // what the art already shows in full (its chips are not repeated under it)
@@ -242,11 +244,13 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
     const kicker = r.released ? 'Release' : r.charged ? 'Charge stored' : k.kind === 'super' ? 'Super power' : k.atwill ? 'Every-round power' : 'Big move';
     const head = h('div', { class: 'cr-head' }, h('span', { class: 'cr-sigil', 'aria-hidden': 'true' }, h('i', { class: 'cr-tri' }), h('span', { class: 'cr-medal' }, glyph(k))),
       h('small', { class: 'dr-kicker' }, `${k.slot ? `${k.slot} · ` : ''}${kicker}${r.cost ? ` · ${r.cost} magic` : ''}`), h('h3', {}, k.name));
-    const card = h('div', { class: `dr-card cr-card t-${tone} kind-${r.released ? 'release' : r.charged ? 'charge' : k.kind}`, role: 'dialog', 'aria-label': `${k.name}` }, head, art, chips, ok);
+    const card = h('div', { class: `dr-card cr-card t-${tone} kind-${r.released ? 'release' : r.charged ? 'charge' : k.kind}`, role: inline ? 'status' : 'dialog', 'aria-label': `${k.name}` }, head, art, chips, ok);
+    if (inline) card.classList.add('dr-inline');
     const layer = h('div', { class: 'dr-layer', onclick: (e) => { if (e.target === layer && done) close(); } }, card);
     card.addEventListener('click', (e) => { if (!done && e.target !== ok) { timers.forEach(clearTimeout); timers.length = 0; skip?.(); } }); // tap to hurry it along
     let skip = null;
-    host.append(layer); sfx.uiOpen?.();
+    if (inline) { inline.classList.add('pw-casting'); inline.replaceChildren(card); card.scrollIntoView?.({ block: 'nearest' }); const watch = setInterval(() => { if (shut) clearInterval(watch); else if (!card.isConnected) { clearInterval(watch); shut = true; timers.forEach(clearTimeout); resolve(); } }, 400); } // a re-render that drops the panel ends it
+    else host.append(layer); sfx.uiOpen?.();
     const count = (el, to, ms = 600) => { if (reduced) { el.textContent = String(to); return; } const t0 = performance.now(); const from = Number(el.textContent) || 0; const tick = () => { const q = Math.min(1, (performance.now() - t0) / ms); el.textContent = String(Math.round(from + (to - from) * q)); if (q < 1 && !shut) requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
 
     if (r.rolls?.length) { // ---- dice: tumble, land one by one, add up (Arc Bolt, Cleave, Aimed Shot, Mending Song, Lucky Verse)
@@ -307,6 +311,6 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       finish(800); skip = () => { big.classList.add('in'); finish(0); };
     }
     void total; void level;
-    later(30000, () => { if (!shut && done) close(); });
+    timers.push(setTimeout(() => { if (!shut && done) close(); }, 30000)); // a real 30 s even with reduced motion (it used to close at once)
   });
 }

@@ -307,3 +307,23 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 }
 .pw-helpers .pw-medal { padding-top: .8rem; }
 .pw-sigil:has(.pw-medal.on) .pw-detail { border-color: #ffe0a0; } /* tall screens: the chosen medal's gold carries into the panel's edge */
+
+/* ===== mp2 (Crockpot / Grok Bot, 26 Oct; Dave): a cast's result plays inside the selected tab's panel, not a second window ===== */
+.pw-detail.pw-casting { padding: .5rem .6rem .6rem; }
+.dr-card.dr-inline { width: 100%; max-width: none; padding: .35rem .2rem .2rem; gap: .4rem; border-radius: 0; background: none; box-shadow: none; animation: mpIn .25s ease-out both; overflow: visible; }
+.dr-card.dr-inline.out { animation: mpOut .2s ease-in forwards; }
+@keyframes mpIn { from { opacity: 0; transform: translateY(6px); } } @keyframes mpOut { to { opacity: 0; } }
+.dr-inline .cr-head { flex-direction: row; justify-content: center; flex-wrap: wrap; column-gap: .5rem; row-gap: 0; margin-top: 0; }
+.dr-inline .cr-sigil { width: 2.2rem; height: 2.2rem; } .dr-inline .cr-tri { display: none; }
+.dr-inline .cr-medal { width: 2.1rem; height: 2.1rem; margin-top: 0; } .dr-inline .cr-medal .ic { width: 1.3rem; height: 1.3rem; }
+.dr-inline .dr-kicker { order: 3; flex-basis: 100%; } .dr-inline h3 { font-size: 1.15rem; }
+.dr-inline .dr-dice { min-height: 3.2rem; padding: .1rem 0; gap: .4rem; }
+.dr-inline .dr-die { width: 2.9rem; height: 2.9rem; } .dr-inline .dr-die b { font-size: 1.25rem; }
+.dr-inline .dr-total { font-size: 1.9rem; } .dr-inline .dr-ok { min-height: 44px; margin-top: 0; }
+.dr-inline .cr-stamp { transform-origin: center; }
+@media (max-height: 759px) { .dr-inline .dr-what { font-size: .78rem; } .dr-inline .dr-dice { min-height: 2.8rem; } .dr-inline .dr-die { width: 2.5rem; height: 2.5rem; } }
+@media (prefers-reduced-motion: reduce) { .dr-card.dr-inline, .dr-card.dr-inline.out { animation: none !important; } }
+/* a helper's last result (potion, heal, heart change), shown in its own panel */
+.pd-result { --c: #38e87a; display: flex; align-items: center; justify-content: center; gap: .4rem; margin: .1rem 0 .35rem; padding: .3rem .6rem; border-radius: 10px; font-size: .82rem; color: #eae4f2;
+  background: color-mix(in srgb, var(--c) 16%, rgba(0, 0, 0, .35)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent); animation: mpIn .25s ease-out both; }
+.pd-result.t-gold { --c: #ffc21a; } .pd-result .ic { width: 1.1rem; height: 1.1rem; color: var(--c); } .pd-result b { font: 900 1.25rem var(--disp, sans-serif); color: var(--c); }

@@ -32,6 +32,30 @@ for (const [w, h] of [[390, 664], [390, 844]]) {
     if (name === 'none') check(`${w}x${h}: a clear gap or divider between A/B/C and the helpers`, m.row ? m.gap >= 12 && m.divider : true, `gap ${m.gap}px`);
     if (id && m.row) check(`${w}x${h} ${name}: the selected tab reaches into the panel (no gap) and shares its highlight`, m.on.b >= m.det.t + 0.5 && m.onBorder === m.detBorder, JSON.stringify(m));
   }
+  // mp2: Cast/Use results play inside the selected tab's panel, no second window (inline=/workspace/magic-inline-live)
+  const IN = process.env.INLINE_OUT || '/workspace/magic-inline-live'; fs.mkdirSync(IN, { recursive: true });
+  const fresh = () => p.evaluate(() => { const { B3 } = window.QD; const B = B3.battleState; B.b.magic = 9; B.b.hp = B.b.maxHp - 12; B.b.potions = 2; B.pwSel = null; B.pwNote = null; B.busy = false; B3.renderShape(); });
+  for (const [name, id, btn] of [['arcbolt', 'arcbolt', '.pw-detail .pw-btn.go'], ['magicmissile', 'bolt', '.pw-detail .pw-btn.go'], ['potion', 'u:bigheal', '.pw-detail .pw-btn.go']]) {
+    await fresh(); await pump(0.2);
+    if (name === 'arcbolt') { await clear(); await p.screenshot({ path: `${IN}/0-panel-before_${w}x${h}.png` }); }
+    await p.locator(`.b3-sheet.open [data-power="${id}"]`).click(); await pump(0.3);
+    await p.locator(`.b3-sheet.open ${btn}`).first().click(); await pump(0.3);
+    if (id.startsWith('u:')) { await p.waitForSelector('.b3-sheet.open .pw-detail .pd-result', { timeout: 5000 }).catch(() => {}); }
+    else await p.waitForSelector('.b3-sheet.open .pw-detail .dr-inline.done', { timeout: 8000 }).catch(() => {});
+    await pump(0.3); await clear();
+    const st = await p.evaluate(() => ({ layer: !!document.querySelector('.dr-layer'), inPanel: !!document.querySelector('.b3-sheet.open .pw-detail .dr-inline, .b3-sheet.open .pw-detail .pd-result'),
+      ok: document.querySelector('.pw-detail .dr-ok')?.textContent || '', note: document.querySelector('.pw-detail .pd-result')?.textContent || '',
+      fits: (() => { const d = document.querySelector('.b3-sheet.open .pw-detail'); if (!d) return false; const q = d.getBoundingClientRect(); return q.bottom <= innerHeight + 1 || d.closest('.b3-sheet').scrollHeight > 0; })() }));
+    const f = `${IN}/${name === 'arcbolt' ? 1 : name === 'magicmissile' ? 2 : 3}-${name}-inline_${w}x${h}.png`;
+    await p.evaluate(() => document.querySelector('.b3-sheet.open .pw-detail')?.scrollIntoView({ block: 'nearest' })); await p.screenshot({ path: f });
+    check(`${w}x${h} ${name}: result inside the selected tab, no second window`, !st.layer && st.inPanel, JSON.stringify(st));
+    if (!id.startsWith('u:')) {
+      check(`${w}x${h} ${name}: confirm button reads as before`, /to my roll/i.test(st.ok), st.ok);
+      if (await p.locator('.b3-sheet.open .pw-detail .dr-ok').count()) await p.locator('.b3-sheet.open .pw-detail .dr-ok').click(); await pump(0.6); await p.waitForTimeout(400); await pump(0.3);
+      const back = await p.evaluate(() => ({ card: !!document.querySelector('.dr-inline'), pick: !!document.querySelector('.b3-sheet.open .pw-pick'), busy: window.QD.B3.battleState.busy }));
+      check(`${w}x${h} ${name}: confirm returns to the normal panel`, !back.card && back.pick && !back.busy, JSON.stringify(back));
+    }
+  }
   check(`${w}x${h}: no page errors`, !errs.length, errs.join(' | ')); await p.close();
 }
 fs.writeFileSync(`${OUT}/${label}-geometry.json`, JSON.stringify(geo, null, 1));
