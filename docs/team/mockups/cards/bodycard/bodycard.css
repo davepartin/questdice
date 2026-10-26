@@ -1,0 +1,31 @@
+/* Body card mockup (Crockpot / Grok Bot, 25 Oct 2026, for Dave + Astra). One tall card: 4 columns (Head, Left Hand, Right Hand, Feet), rows d4-d10. */
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#14100c;font-family:Oxanium,sans-serif}
+main{min-height:100svh;display:grid;place-items:center;padding:12px}
+.wrap{position:relative}
+.bc{--w:min(92vw,380px,calc((100svh - 24px) * 720 / 1052));width:var(--w);aspect-ratio:720/1052;position:relative;container-type:inline-size;user-select:none}
+.bc .fr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* one kraft panel over the frame's art window, plaque and text box: the whole card is the grid */
+.bc .panel{position:absolute;left:12.6%;right:12.6%;top:8.4%;bottom:7.6%;border-radius:2cqi;
+ background:radial-gradient(120% 90% at 50% 40%,#d9bf90,#c4a372 70%,#ad8a58);box-shadow:inset 0 0 0 .5cqi #6a4a22,inset 0 0 3cqi #5a3a1a66;
+ display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto repeat(4,1fr);gap:1.4cqi 1.2cqi;padding:2.4cqi 2cqi}
+.ic{display:grid;place-items:center;padding-bottom:1.2cqi;border-bottom:.35cqi solid #6a4a2266}.ic img{width:13cqi;height:13cqi}
+.cell{position:relative;display:grid;place-items:center;border-radius:1.6cqi;background:#00000012;box-shadow:inset 0 .3cqi .6cqi #3a22104d}
+.cell img.die{width:100%;max-width:17cqi;aspect-ratio:1;filter:drop-shadow(0 .7cqi .5cqi #2a160699)}
+.cell.cap{background:#2a1a0e22;box-shadow:inset 0 .4cqi 1cqi #2a160680}
+.cell.cap .x{width:5cqi;height:.8cqi;border-radius:1cqi;background:#6a4a2288}
+/* the standard cardboard dice cover (t17 token-open.webp), cost only */
+.cov{position:absolute;inset:-.4cqi;z-index:2;cursor:pointer;display:grid;place-items:center;border-style:solid;border-width:1.6cqi 1.8cqi 2cqi;
+ border-image:url(../t17/token-open.webp) 118 112 132 112 fill / 1.6cqi 1.8cqi 2cqi stretch;filter:drop-shadow(0 .7cqi .6cqi #2a1606aa)}
+.cov .cp{display:flex;align-items:center;gap:.8cqi;padding:.8cqi 1.6cqi;border-radius:99px;background:linear-gradient(180deg,#3a2414,#22140a);box-shadow:inset 0 0 0 .3cqi #e0b86a99}
+.cov .cp b{font:800 4cqi/1 Oxanium,sans-serif;color:#ffd98a}
+.coin{width:3.2cqi;height:3.2cqi;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#9a6a06);box-shadow:inset 0 0 0 .3cqi #7a5204;display:inline-block}
+.cov.gone{animation:tokOut .65s cubic-bezier(.5,-.25,.7,.4) forwards;pointer-events:none}
+@keyframes tokOut{0%{transform:none}22%{transform:translateY(-1.4cqi) scale(1.04) rotate(-1.5deg)}100%{transform:translate(115%,-2cqi) rotate(9deg);opacity:0}}
+.cell.reveal img.die{animation:dieIn .45s .25s cubic-bezier(.3,1.5,.6,1) both}
+@keyframes dieIn{0%{transform:scale(.6) translateY(1.4cqi);opacity:0}100%{transform:none;opacity:1}}
+.cov.nope{animation:wig .45s ease}
+@keyframes wig{20%{transform:translateX(-1.4cqi) rotate(-1deg)}40%{transform:translateX(1.2cqi) rotate(.8deg)}60%{transform:translateX(-.8cqi)}80%{transform:translateX(.5cqi)}}
+.toast{position:absolute;left:50%;z-index:5;transform:translate(-50%,-50%);padding:1.6cqi 3.4cqi;border-radius:99px;background:#1c120ae6;box-shadow:inset 0 0 0 .35cqi #e0b86a,0 .8cqi 1.6cqi #000a;
+ font:800 4cqi/1 Oxanium,sans-serif;color:#ffd98a;white-space:nowrap;pointer-events:none;animation:toastIn 1.5s ease both}
+@keyframes toastIn{0%{opacity:0}12%,80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cov.gone{animation:tokFade .2s linear forwards}.cell.reveal img.die,.cov.nope,.toast{animation:none}@keyframes tokFade{to{opacity:0}}}
