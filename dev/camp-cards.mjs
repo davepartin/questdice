@@ -16,13 +16,21 @@ for (const [w, h] of [[375, 548], [390, 844]]) {
   await p.evaluate(async (name) => { const { S, E, showCamp } = window.QD; const hh = E.newHero({ name, cls: 'knight', seed: 5 }); hh.gold = 200; hh.campaign.act = 1; hh.campaign.step = 3;
     S.hero = hh; S.company = { members: [hh] }; S.seat = 0; S.tab = 'forge'; S.campPage = 'dice'; const SV = await import('./js/save.js'); if (!SV.heroExists(hh.name)) await SV.createSave(hh, 'testpass'); showCamp(); }, name);
   await pump(2);
-  for (const [slot, n] of [['N', 'head'], ['S', 'feet'], ['C', 'heart']]) {
+  for (const [slot, n] of [['N', 'head'], ['S', 'feet'], ['C', 'heart'], ['W', 'lefthand'], ['E', 'righthand']]) {
     await p.locator(`.cw-cell.s-${slot}`).click(); await pump(1.5); await p.waitForTimeout(600);
     await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const side = i?.closest('.sx-side'); if (i && side) side.scrollTop += i.getBoundingClientRect().top - 70; }); await pump(0.5); await p.waitForTimeout(300);
     await p.screenshot({ path: `${OUT}/camp-${n}-${TAG}_${tag}.jpg`, type: 'jpeg', quality: 82 });
     const st = await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const c = i?.querySelector('.qc-gear'); const done = [...(i?.querySelectorAll('button') || [])].find((x) => /Done|Close/.test(x.textContent));
       return { card: !!c, title: c?.querySelector('.title17')?.textContent || '', buy: !!i?.querySelector('.sh-buy, .sh-done, .sh-lockline'), close: !!done, cardW: c ? Math.round(c.getBoundingClientRect().width) : 0, vw: innerWidth }; });
     check(`${tag} ${n}: inspector has ${TAG === 'after' ? 'the card, ' : ''}a buy/limit line and Done`, (TAG !== 'after' || (st.card && st.cardW <= st.vw)) && (n === 'heart' || st.buy) && st.close, JSON.stringify(st));
+  }
+  if (TAG === 'after') { // the hands grow independently: buy the right hand only
+    await p.locator('.cw-cell.s-E').click(); await pump(1);
+    const b0 = await p.evaluate(() => ({ ...window.QD.S.hero.strength, gold: window.QD.S.hero.gold }));
+    await p.locator('#camp-inspector .sh-buy:not([disabled])').first().click(); await pump(1.5);
+    const b1 = await p.evaluate(() => ({ ...window.QD.S.hero.strength, gold: window.QD.S.hero.gold, card: document.querySelector('#camp-inspector .qc-gear .sz17')?.textContent }));
+    check(`${tag}: buying the Right Hand grows E only (W unchanged), spends gold`, b1.E > b0.E && b1.W === b0.W && b1.gold < b0.gold, JSON.stringify({ b0, b1 }));
+    await p.screenshot({ path: `${OUT}/camp-righthand-bought_${tag}.jpg`, type: 'jpeg', quality: 82 });
   }
   if (TAG === 'after') {
     await p.locator('.cw-cell.s-N').click(); await pump(1);

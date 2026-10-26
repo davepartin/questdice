@@ -1356,7 +1356,7 @@ function slotSheet(slot) {
     const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
       : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
     const next = u.next && !u.act ? u.next : null;
-    const card = SHEET.inline && (slot === 'N' || slot === 'S') ? gearCardEl(hero, slot, { title: slot === 'N' ? 'Head' : 'Feet', size, up: u }) : null; // Crockpot: the card for Head and Feet
+    const card = SHEET.inline ? gearCardEl(hero, slot, { title: { N: 'Head', S: 'Feet', W: 'Left Hand', E: 'Right Hand' }[slot], size, up: u }) : null; // Crockpot: the card for Head, Feet and each Hand (each hand upgrades on its own)
     const stage = card || (SHEET.inline ? h('div', { class: 'cw-compare' },
       h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
       next ? ico('chevron') : null,

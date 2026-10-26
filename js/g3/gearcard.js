@@ -18,7 +18,7 @@ function iconArt(name, flip = false) {
 const faceRow = (hero, slot, size) => h('div', { class: `gc-faces n${size}` }, campFaceImgs(hero, slot, size).map((f) => h('img', { class: `gc-face ${f.theme}`, src: f.src, alt: f.alt })));
 // up: the inspector's upgrade info ({ next, cost, ok, why, act }) or null for a die that never grows (the Heart)
 export function gearCardEl(hero, slot, { title, size, up = null, note = '' } = {}) {
-  const next = up?.next && !up.act ? up.next : null; const lock = up && !up.next && up.act ? String(up.why || '') : '';
+  const next = up?.next && !up.act ? up.next : null; const lock = up?.act && String(up.why || '').startsWith('Act') ? String(up.why) : '';
   const cover = next ? h('div', { class: 'gc-cover', 'aria-hidden': 'true' }, h('span', { class: 'gc-ct' }, h('b', {}, 'UPGRADE'), h('small', {}, `d${size} → d${next}`)),
     h('span', { class: 'gc-cp' }, h('i', { class: 'coin' }), h('b', {}, String(up.cost)), h('small', {}, 'gold')))
     : lock ? h('div', { class: 'gc-cover lockd', 'aria-hidden': 'true' }, h('span', { class: 'gc-ct' }, h('b', {}, 'LOCKED'), h('small', {}, `Grows again in ${lock}`))) : null;
