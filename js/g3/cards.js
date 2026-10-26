@@ -157,7 +157,7 @@ export function hydrateDice(root) {
 }
 // opts.onBuy(step) -> true when the size was bought, or a short reason (a size card only; without it the covers are for show).
 export const weaponCardEl = (d, opts = {}) => { const e = el(weaponCardHtml(d)); hydrateDice(e); if (d.rows) wireSizes(e, d, opts); return e; };
-function wireSizes(card, d, { onBuy } = {}) {
+function wireSizes(card, d, { onBuy, onBought } = {}) {
   const nextCover = () => card.querySelector('.cov.tok:not(.gone)'); let toastT;
   const say = (t, text) => { card.querySelector('.toast17')?.remove(); const m = document.createElement('div'); m.className = 'toast17'; m.setAttribute('role', 'status'); m.textContent = text; t.closest('.row').append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };
   const wiggle = (t) => { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope'); };
@@ -171,7 +171,7 @@ function wireSizes(card, d, { onBuy } = {}) {
   const tap = (t) => {
     if (t !== nextCover()) { wiggle(t); say(t, `Upgrade to d${nextCover().dataset.step} first`); return; }
     if (!onBuy) return; const got = onBuy(+t.dataset.step);
-    if (got === true) unlock(t); else { wiggle(t); say(t, typeof got === 'string' ? got : 'Not available'); }
+    if (got === true) { unlock(t); onBought?.(); } else { wiggle(t); say(t, typeof got === 'string' ? got : 'Not available'); }
   };
   card.addEventListener('click', (e) => { const t = e.target.closest('.cov.tok:not(.gone)'); if (t) { e.stopPropagation(); tap(t); } });
   card.addEventListener('keydown', (e) => { const t = e.target.closest?.('.cov.tok'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(t); } });

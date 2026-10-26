@@ -1,0 +1,26 @@
+PASS spoils: the real camp T17 weapon card (rows d4-d10), scaled to the thumbnail, no old mini card or stray size label, Sell uses the chip {"spoil":true,"real":true,"rows":4,"oldMini":false,"szl":false,"w":133,"cw":133,"sell":true}
+PASS spoils: every price chip is the shared chip {"n":10,"all":true}
+shot shots/price-regression/spoils_390x844.png
+PASS spoils: tapping the card opens the same card large {"open":true,"w":321}
+shot shots/price-regression/spoils-card-large_390x844.png
+PASS camp grid: tile costs use the shared chip, red where gold is short {"grid":{"n":8,"all":true},"poorGrid":[["50",false],["50",false],["50",false],["40",false],["40",false],["60",false],["60",false],["35",false]]}
+shot shots/price-regression/camp-grid_390x844.png
+PASS old save: locked Talent Two lost the auto-filled Heal on load; Talent One keeps its face {"se":"[[]]","sw":"[[\"magic\"]]","gold":60}
+shot shots/price-regression/talent-two-locked_390x844.png
+PASS Talent Two unlocked for 35: face 4 is an EMPTY slot priced 10 with the chip {"active":true,"face4":null,"gold":25,"hole":true}
+PASS Talents card: every price is the shared chip {"n":7,"all":true}
+shot shots/price-regression/talent-two-unlocked_390x844.png
+PASS fill face 4: the buy button shows the chip with 10 {"n":1,"all":true}
+shot shots/price-regression/talent-two-face4-pick_390x844.png
+PASS fill face 4: 10 gold, Gold on face 4 {"g0":25,"fill":{"gold":15,"se":"[[\"gold\"]]"}}
+shot shots/price-regression/talent-two-face4-filled_390x844.png
+PASS Add this die: the chip, red when short {"n":"35","poor":true}
+shot shots/price-regression/add-this-die-short_390x844.png
+PASS powers page: any price shown is the shared chip {"n":1,"all":true}
+shot shots/price-regression/camp-powers_390x844.png
+PASS store: every tag carries the shared chip (no old coin), red chip on short tags {"tags":11,"chip":true,"oldCoin":false,"poorOk":true}
+PASS store: chips styled as the shared chip 
+shot shots/price-regression/store_390x844.png
+shot shots/price-regression/store-supplies_390x844.png
+PASS no page errors 
+all passed

@@ -2,6 +2,8 @@ import test from 'node:test';
 import os from 'node:os';
 import assert from 'node:assert/strict';
 import { start } from '../server.mjs';
+import * as E from '../js/engine.js';
+import { loadTable } from '../js/table.js';
 
 async function post(port, body) {
   const res = await fetch(`http://127.0.0.1:${port}/api/room`, {
@@ -10,6 +12,33 @@ async function post(port, body) {
   const data = await res.json();
   return { status: res.status, data };
 }
+
+test('LAN camp purchases use released rules, persist on the wire and reject duplicate or foreign upgrades', async () => {
+  const server = await start(0); const port = server.address().port;
+  try {
+    const hero = E.newHero({ name: 'Sizer', cls: 'wizard', seed: 5 }); hero.gold = 350;
+    const host = (await post(port, { op: 'create', name: hero.name, cls: hero.cls, hero })).data;
+    const friend = (await post(port, { op: 'join', code: host.code, name: 'Friend', cls: 'knight' })).data;
+    const act = async (token, cmd) => post(port, { op: 'act', code: host.code, token, cmd });
+    for (const token of [host.token, friend.token]) await act(token, { type: 'ready' });
+    let answer = await act(host.token, { type: 'start' });
+    const choice = answer.data.view.road.choices[0].id;
+    await act(host.token, { type: 'choose', id: choice });
+    for (const token of [host.token, friend.token]) await act(token, { type: 'onward' });
+    answer = await act(host.token, { type: 'camp' }); assert.equal(answer.data.view.phase, 'camp');
+    const uid = hero.loadout.NW.uid;
+    const upgrade = (size) => ({ type: 'op', op: 'trainWeapon', args: [uid, size] });
+    assert.equal((await act(friend.token, upgrade(6))).status, 400);
+    for (const [size, gold] of [[6, 300], [8, 200], [10, 0]]) {
+      answer = await act(host.token, upgrade(size)); assert.equal(answer.status, 200);
+      const table = loadTable(answer.data.view.state); const h = table.players.find((p) => p.name === hero.name).hero;
+      assert.equal(h.gold, gold); assert.equal(E.sidesOf(h, 'NW'), size); assert.equal(h.strength.W, 4);
+      assert.equal((await act(host.token, upgrade(size))).status, 400, 'a repeated request cannot buy the next step');
+    }
+    const table = loadTable(answer.data.view.state); const h = table.players.find((p) => p.name === hero.name).hero;
+    assert.equal(E.sellValue(h.loadout.NW), 184);
+  } finally { server.closeAllConnections?.(); await new Promise((r) => server.close(r)); }
+});
 
 test('two phones can sit, and a lock stays private on the wire', async () => {
   const server = await start(0);

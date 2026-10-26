@@ -11,6 +11,8 @@
 .qc17 .qd-price{font-size:4.2cqi}
 .qc17 .sell .qd-price{font-size:3.6cqi;padding:.15em .5em .15em .3em}
 .qc17 .cov .cp .qd-price{font-size:4cqi}
+.qc17 .cov.tok .cp .qd-price b{font:800 1em/1 var(--font-display,Oxanium),Oxanium,sans-serif;color:#ffd98a}
+.qc17 .cov.tok .cp .qd-price.poor b{color:#ff7a6a}
 .cw-price.qd-price{font-size:11px}
 .sh-buy .qd-price{font-size:16px}
 .sx-btn .qd-price{font-size:14px;margin-left:.45em}

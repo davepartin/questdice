@@ -1,0 +1,29 @@
+[
+  {
+    "width": 375,
+    "height": 548,
+    "gold": 0,
+    "size": 10,
+    "sell": 184,
+    "rolled": 10,
+    "passed": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "gold": 0,
+    "size": 10,
+    "sell": 184,
+    "rolled": 10,
+    "passed": true
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "gold": 0,
+    "size": 10,
+    "sell": 184,
+    "rolled": 10,
+    "passed": true
+  }
+]

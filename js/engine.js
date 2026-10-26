@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -53,6 +53,8 @@ export const weaponSize = (inst) => inst.size || 4;
 // T17 weapon size (EXPERIMENT.weaponSize, off in the game): the size a weapon was FOUND at is what the shop priced it by and what a sale pays on,
 // whatever size has been bought since. `found` is written the first time a size is bought (a weapon never upgraded is still at its found size).
 export const useWeaponSize = () => { EXPERIMENT.weaponSize = true; };
+export const weaponTrainingOn = () => WEAPON_TRAINING.on && !EXPERIMENT.weaponSize;
+export const weaponRollsFull = () => EXPERIMENT.weaponSize || weaponTrainingOn();
 export const foundSize = (inst) => inst.found || weaponSize(inst);
 // A weapon's faces: honest dice (Dave, Oct 2026). A dN never shows more than N; each temperament has its own custom faces for every
 // size (data.js WEAPON_DICE), so size is the range: a bigger die has bigger numbers, more numbers for straights, and its blanks
@@ -144,9 +146,10 @@ function metalIcons(def, faces, tier, temper, own) {
   return faces;
 }
 export function makeWeapon(id, rarity = 0, rng, size = 4) { const w = { uid: newUid(rng), id, rarity }; if (size > 4) w.size = size; return w; }
-// The hand that holds a weapon caps its die: a d6 weapon in a d4 hand rolls as a d4. `wieldInfo` says what a weapon needs.
+// Released purchasing separates weapon size from Strength. The older comparison mode retains the hand ceiling.
 export function wieldInfo(hero, inst) {
-  const need = weaponSize(inst); if (EXPERIMENT.weaponSize) return { need, have: need, ok: true, rollsAs: need, two: WEAPONS[inst.id]?.hands === 2 }; // T17: the weapon's size is its die, whatever the hand const two = WEAPONS[inst.id]?.hands === 2;
+  const need = weaponSize(inst); const two = WEAPONS[inst.id]?.hands === 2;
+  if (inst.diamond || weaponRollsFull()) return { need, have: need, ok: true, rollsAs: need, two };
   const have = two ? Math.min(hero.strength.W, hero.strength.E) : Math.max(hero.strength.W, hero.strength.E);
   return { need, have, ok: have >= need, rollsAs: Math.min(need, have), two };
 }
@@ -386,7 +389,7 @@ export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
     case 'head': return mindSize(hero);
     case 'feet': return Math.max(feetSize(hero), borrowedFeet(hero)); // borrowed boots from an encounter, for one fight
-    case 'weapon': return hero.loadout[slot]?.diamond || EXPERIMENT.weaponSize ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling (a Diamond ignores it)
+    case 'weapon': return hero.loadout[slot]?.diamond || weaponRollsFull() ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']);
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
@@ -1463,6 +1466,16 @@ export function forgeWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
 }
 export function trainInfo(hero, uid) {
+  if (weaponTrainingOn()) {
+    const inst = copiesOf(hero, uid)[0];
+    if (!inst) return { ok: false, why: 'missing' };
+    const size = weaponSize(inst), next = NEXT_SIZE[size];
+    if (inst.id === 'fists' || inst.diamond || WEAPONS[inst.id]?.legendary || !WEAPONS[inst.id] || !next) return { ok: false, why: 'max' };
+    const cost = WEAPON_TRAINING.prices[size];
+    const sellBefore = sellValue(inst);
+    const sellAfter = sellValue({ ...inst, size: next, sizeInvestment: nextInvestment(inst, cost) });
+    return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, sellBefore, sellAfter };
+  }
   if (!EXPERIMENT.weaponSize) return { ok: false, why: 'wear' }; // retired with wear (Oct 2026)
   // T17: buy the next size, one step at a time, at the same price for every weapon and metal. No hand check: the size is the weapon's die.
   ensureTwin(hero);
@@ -1481,14 +1494,33 @@ export function trainInfoOld(hero, uid) {
   const cost = Math.round(WEAPON_SIZE_STEPS[size] * handsMul(inst));
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
 }
-export function trainWeapon(hero, uid) {
+const nextInvestment = (inst, cost) => ({ from: inst.sizeInvestment?.from || weaponSize(inst), gold: (inst.sizeInvestment?.gold || 0) + cost });
+export function trainWeapon(hero, uid, expectedNext) {
   const r = trainInfo(hero, uid); if (!r.ok) return false;
-  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) { if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w); w.size = r.next; } return true;
+  if (expectedNext !== undefined && expectedNext !== r.next) return false; // stale/repeated cover tap cannot buy a different size
+  const copies = copiesOf(hero, uid);
+  const investment = weaponTrainingOn() ? nextInvestment(copies[0], r.cost) : null;
+  hero.gold -= r.cost;
+  for (const w of copies) {
+    if (investment) w.sizeInvestment = { ...investment };
+    if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w);
+    w.size = r.next;
+  }
+  return true;
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
 export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[EXPERIMENT.weaponSize ? foundSize(inst) : weaponSize(inst)] || 1)));
 // A sale returns half its worth, less for a worn weapon (by the battles it has left).
-export const sellValue = (inst) => { if (inst.id === 'fists') return 0; const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
+export const sellValue = (inst) => {
+  if (inst.id === 'fists') return 0;
+  const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f;
+  // Anchor to the value before its first paid upgrade. A found d8 keeps its old sale value;
+  // buying d10 adds half the actual 200 paid, rather than pretending its earlier sizes were paid too.
+  const paid = inst.sizeInvestment;
+  const worth = paid && [4, 6, 8].includes(paid.from) && Number.isFinite(paid.gold) && paid.gold > 0
+    ? weaponValue({ ...inst, size: paid.from, found: paid.from }) + paid.gold : weaponValue(inst);
+  return Math.max(1, Math.round(worth * SELL_SHARE * share));
+};
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
 export const bagFull = (hero) => bagRoom(hero) <= 0;
@@ -2372,7 +2404,7 @@ function shrinkLoss(hero, kind, slot, next) {
 export function downgradeInfo(hero, kind, slot) {
   let size;
   if (kind === 'speed') size = feetSize(hero); else if (kind === 'mind') size = mindSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
-  else if (kind === 'weapon') { if (EXPERIMENT.weaponSize) return { ok: false, why: 'none' }; /* T17: a bought size stays bought */ ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
+  else if (kind === 'weapon') { if (weaponRollsFull()) return { ok: false, why: 'none' }; /* a bought size stays bought */ ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
   else if (kind === 'pet') size = hero.pet?.size;
   const next = PREV_SIZE[size]; if (!size || !next) return { ok: false, why: 'smallest', size };
   const cost = DOWNGRADE_COST[size]; const lose = kind === 'pet' ? (hero.pet.faces || []).slice(next - 1).flat().length : shrinkLoss(hero, kind, slot, next);

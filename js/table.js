@@ -454,6 +454,7 @@ function heroOp(table, player, cmd) {
   if (!HERO_OPS.has(cmd.op)) return fail('Unknown camp choice.');
   const args = Array.isArray(cmd.args) ? cmd.args : [];
   if (args.length > 4 || args.some((a) => !['string', 'number', 'boolean'].includes(typeof a))) return fail('That choice was not understood.');
+  if (cmd.op === 'trainWeapon' && E.weaponTrainingOn() && args[1] !== E.trainInfo(player.hero, args[0]).next) return fail('That weapon upgrade has changed. Open its card again.');
   if (E[cmd.op](player.hero, ...args) === false) return fail('That will not work right now.');
   player.ready = false;
   return ok();

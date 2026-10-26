@@ -36,7 +36,7 @@ for (const [w, h] of [[390, 844], [375, 548]]) {
     const g0 = await p.evaluate(() => window.QD.S.hero.gold); const cov = p.locator('#camp-inspector .qc17.cb-weapon .cov.tok').first();
     if (await cov.count()) { await cov.click({ timeout: 10000 }); await pump(0.5); } await p.locator('#camp-inspector .qc17.cb-weapon .sl17').click({ force: true, timeout: 10000 }); await pump(0.5);
     const g1 = await p.evaluate((slot) => ({ gold: window.QD.S.hero.gold, still: !!window.QD.S.hero.loadout[slot] && window.QD.S.hero.loadout[slot].id !== 'fists' }), slot);
-    check(`${tag} ${n}: tapping a cover or the sell chip changes nothing (no size purchase or loadout sale in the current rules)`, g1.gold === g0 && g1.still, JSON.stringify({ g0, g1 }));
+    check(`${tag} ${n}: the cover buys d6 for 50, while the sell chip keeps the equipped weapon`, g1.gold === g0 - 50 && g1.still && await p.evaluate((slot) => window.QD.E.weaponSize(window.QD.S.hero.loadout[slot]) === 6, slot), JSON.stringify({ g0, g1 }));
   }
   for (const [slot, n] of [['W', 'lefthand'], ['E', 'righthand'], ['S', 'feet'], ['SE', 'talent-two']]) { await open(slot); await shot(n); }
   const buy = async (slot, sel, read, label) => { await open(slot); const a = await p.evaluate(read); await p.locator(sel).first().click(); await pump(1.5); await p.waitForTimeout(500); const z = await p.evaluate(read);
