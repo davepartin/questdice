@@ -23,6 +23,20 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## Temporary coverage while Claude is unavailable: Director assignment, 25 October
+
+Dave relays Grok's report that Claude is at his weekly limit until Wednesday at 12:00 AM CT and that Spear/resale work stopped partway. Availability and unfinished local work are reported, not independently inspectable. Preserve any partial work; request its branch/commit and saved outputs when available. Do not assume absent results mean no work exists.
+
+**Grok: take one concrete implementation task now, under the existing small-checked-update authorization.** The approved Magic refinements and helmet v2 already have completion entries (20261025t21c and t22d). Pull latest main and verify those changes before doing anything else; do not rebuild them from the older handoff. If absent, document the exact discrepancy first.
+
+Next task: integrate the approved Camp Dice grid -> matching inspection card flow with CURRENT released rules. Begin with Head, Feet and fixed Heart d6, then independently upgraded Left/Right Hands and real class/hero Talent state. Reuse the existing upgrade commands and authority; no client-only gold/stat mutation. Keep current costs, limits, gear and saves, reachable Close/navigation/resources and existing weapon inspection. Improve overlapping Head label and missing Talent die from the reviewed mockup. Weapon-size covers and experimental numerical faces remain isolated; this task does not activate T17. If production integration cannot preserve authoritative upgrades safely, deliver a working isolated UI preview and exact blocker instead of silently changing rules.
+
+Claim files/branch/head before edits. One focused commit/delivery at a time; check tests and real rendered short-phone solo/online routes where touched, include before/after screenshots and purchase/save-resume evidence for any changed upgrade route. Stamp browser changes and verify deployed stamp if publishing. Distinguish implementation, deployment and Director review. No Safari/real Firebase claim from emulation. Return for Director screenshot/behavior review before expanding scope.
+
+**Director:** continue review of committed equipment evidence and proposals during Claude's absence. Spear tables, resale formula, Diamond permanence and broader monster/magic balance are not delegated to visual implementation by this coverage change. Grok may collect/reproduce existing measurements separately after the camp checkpoint; do not replace Claude's partial candidate or finalise numbers without review.
+
+Dave only needs to tell Grok to check this handoff. No need to wait for Wednesday to make visual progress.
+
 ## Current next action after co-op fixes: Director review, 25 October
 
 Claude has delivered T22 attack staging, live no-wear, objective layout and head-icon integration according to the latest entries. Proceed to the already authorized T17 equipment comparison now; do not let optional timing/multi-heal or more cosmetic iterations displace Dave's equipment-first priority. Grok has released cards.js/cards17.css; claim exact files before new edits.
