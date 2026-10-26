@@ -283,3 +283,27 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 @media (max-height: 760px) {
   .b3-sheet.open .pw-stage .pw-tag, .b3-sheet.open .pw-helpers .pw-tag { white-space: nowrap; text-align: center; line-height: 1.05; font-size: .42rem; letter-spacing: 0; padding: .05rem .15rem; max-width: 100%; }
 }
+
+/* Magic panel, Dave 26 Oct (Crockpot / Grok Bot, approved live while Claude is out): (1) a selected tile and the detail panel read as ONE folder-tab
+   shape with a shared gold edge; (2) a clear divider between the class powers A/B/C and the three helpers; (3) cost badges sit off the icons. */
+/* tall screens (the triangle): the cost tag sits beside the medal, the helpers' tag on the tile's top edge */
+.pw-stage .pw-cost { right: auto; left: calc(100% + 3px); top: 50%; transform: translateY(-50%); }
+.pw-helpers .pw-cost, .pw-helpers .pw-cost.free { top: -.55rem; right: auto; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+.pw-helpers { padding-top: 1rem; border-top: 2px solid #c9a86a99; }
+@media (max-height: 760px) {
+  /* the tiles' top edge carries the cost, so give them room under the tally */
+  .b3-sheet.open .pw-stage .pw-medal, .b3-sheet.open .pw-helpers .pw-medal { margin-top: .5rem; padding-top: .7rem; }
+  .b3-sheet.open .pw-stage .pw-ring { position: static; }
+  .b3-sheet.open .pw-stage .pw-cost, .b3-sheet.open .pw-helpers .pw-cost { top: -.55rem; right: auto; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap; box-shadow: 0 0 0 2px #0b0914, 0 2px 4px #0008; }
+  .b3-sheet.open .pw-stage .pw-slot { left: .15rem; top: .15rem; }
+  /* (2) a wider gutter with a bright gold rule and a small diamond between the powers and the helpers */
+  .b3-sheet.open .pw-sigil { grid-template-columns: repeat(3, minmax(0, 1fr)) .9rem repeat(3, minmax(0, 1fr)); }
+  .b3-sheet.open .pw-helpers .pw-medal:nth-child(1)::before { left: calc(-.3rem - .45rem - 1px); top: .1rem; bottom: .1rem; width: 2px; background: linear-gradient(#e6c98400, #e6c984 20%, #e6c984 80%, #e6c98400); }
+  .b3-sheet.open .pw-helpers .pw-medal:nth-child(1)::after { content: ''; position: absolute; left: calc(-.3rem - .45rem - 4px); top: 50%; width: 8px; height: 8px; margin-top: -4px; transform: rotate(45deg); background: #e6c984; box-shadow: 0 0 0 2px #0b0914; }
+  /* (1) the folder tab: the chosen tile drops into the panel, its gold sides run into the panel's gold edge, one fill, no seam */
+  .b3-sheet.open .pw-sigil .pw-medal.on { z-index: 3; border-color: #ffe0a0; border-bottom-color: #1c2a3c; border-radius: 6px 6px 0 0; background: #1c2a3c; box-shadow: none; margin-bottom: calc(-.3rem - 2px); padding-bottom: calc(.25rem + .3rem + 2px); }
+  .b3-sheet.open .pw-sigil:has(.pw-medal.on) .pw-detail { border-color: #ffe0a0; border-radius: 0 0 8px 8px; background: linear-gradient(#1c2a3c, #151f2d 40%, #121a26); box-shadow: 0 6px 14px #0007; }
+  .b3-sheet.open .pw-sigil:has(.pw-medal.on) .pw-detail::before { content: none; }
+}
+.pw-helpers .pw-medal { padding-top: .8rem; }
+.pw-sigil:has(.pw-medal.on) .pw-detail { border-color: #ffe0a0; } /* tall screens: the chosen medal's gold carries into the panel's edge */
