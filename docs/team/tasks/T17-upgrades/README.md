@@ -1,6 +1,6 @@
 # T17: camp weapon purchases, 26 October 2026
 
-Status: implemented for review on `codex/weapon-upgrades`, candidate build `20261026wu1`. Not deployed. Dave supplied the live NOT YET screenshot and explicitly asked for implementation. This bounded delivery uses the current released face tables. The wider T17 cumulative face/role redesign and T23 Heart candidate are separate.
+Status: **DEPLOYED**, build `20261026wu1`. Dave explicitly approved publication on 26 October 2026. [PR #51](https://github.com/davepartin/questdice/pull/51) merged as `04b55af3cdbfd45e6b0ce67b8ef027b7b081f8bc`; [Pages deployment](https://github.com/davepartin/questdice/actions/runs/40416038386) succeeded and the hosted root stamp was verified. Dave supplied the live NOT YET screenshot and explicitly asked for implementation. This bounded delivery uses the current released face tables. The wider T17 cumulative face/role redesign and T23 Heart candidate are separate.
 
 ## Behavior
 
@@ -41,3 +41,6 @@ There are 100 won encounters per act across the ten campaign runs. The runner pe
 No real iPhone Safari or two-phone Firebase/Firestore end-to-end session was run. Co-op commands and serialization were tested directly and over the local HTTP transport. Current non-cumulative faces retain their existing secondary-output tradeoffs; final role/straight balance remains T17 follow-up. There are no new act gates on weapons, consistent with the existing T17 size-purchase path; other dice retain their act caps.
 
 Automatic approval review rejected the initial documentation push directly to main because it publishes to the shared default branch without explicit deployment approval. This delivery will use a separate branch and pull request. Do not describe build wu1 as live until deployment is authorized and verified.
+
+
+Publication update, 26 October 2026: the initial automatic approval block above was resolved by Dave's explicit instruction to publish and push to main. The verified implementation is live. No further approval is pending for this delivery.

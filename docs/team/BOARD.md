@@ -1,4 +1,6 @@
 # Quest Dice Team Board
+
+**Latest publication: PR #51 weapon upgrades is live, build 20261026wu1 (26 October 2026).** See the dated deployment record at the end; earlier candidate/not-deployed notes are historical.
 Updated 2026-10-25 (latest Director checkpoint below; historical reconciliation retained). Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
 
 ## Direction and ownership
@@ -516,3 +518,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 26 October 2026, T17 weapon purchases IMPLEMENTED for review on codex/weapon-upgrades, candidate build 20261026wu1. Dave explicitly requested implementation from the live NOT YET screenshot. Current face tables retained; covers buy d6/d8/d10 at 50/100/200, gold/ownership/duplicate checks, full-size weapon rolls independently of Strength, next-size face preview and full card refresh, sale increases by half actual upgrade spending, saves preserved. No broad T17 switch or Heart candidate activation. LAN server release initialization corrected and HTTP purchases tested. 450/450 tests pass; browser purchase/reload/combat checks at 375/390/430 widths; all-class two-campaign gold smoke completed (300 won encounters, retries allowed, not a win-rate result). Camp/store browser checks exposed poor-price CSS specificity, fixed and price regression rerun. Full evidence and limits: tasks/T17-upgrades/README.md. Safari/Firebase e2e unverified. Direct-main push was rejected by automatic approval review; separate PR delivery, not deployed. File reservations released after delivery.
+
+
+26 October 2026: Dave explicitly approved publishing PR #51 and pushing to main (no other players). Merged as 04b55af3cdbfd45e6b0ce67b8ef027b7b081f8bc; GitHub Pages deployment 40416038386 succeeded. Hosted root verified as build 20261026wu1. Weapon covers now purchase d6/d8/d10 for 50/100/200 with persistent size/increasing resale. The exact tested tree was merged; 450/450 tests and phone-width purchase/reload/combat evidence remain in tasks/T17-upgrades/README.md. No Heart or broader cumulative face-table activation. Safari and Firebase e2e remain unverified. T17 purchase implementation DEPLOYED; reservations released.
