@@ -442,3 +442,58 @@
 /* Dave 11:47 + 11:55 PM CT: one dice size (13cqi) on every size row, evenly spaced */
 .qc17.cb-weapon .dice17.rows .row{grid-template-columns:8cqi minmax(0,1fr) 1cqi}.qc17.cb-weapon .dice17.rows .dz{gap:1cqi 0;justify-content:space-evenly;flex-wrap:wrap;min-width:0}
 .qc17.cb-weapon .dice17.rows .d17{width:13cqi!important;height:auto!important;flex:none}
+
+/* ---- the cardboard Camp Store (Crockpot / Grok Bot, 26 Oct 2026; Dave approved shop mockup v2, f05b1e7): wood table, cardboard cards,
+   paper price tags with pencil coins (red when short). */
+.cst-store{display:flex;flex-direction:column;gap:14px;margin:6px -4px 0;padding:12px 10px 18px;border-radius:10px;font-family:Oxanium,sans-serif;
+ background:repeating-linear-gradient(0deg,#0000 0 76px,#0000003a 76px 78px),repeating-linear-gradient(90deg,#ffffff06 0 3px,#0000000c 3px 9px),linear-gradient(180deg,#7a4f2c,#6b4423 40%,#5e3a1e);box-shadow:inset 0 0 0 1px #2a160888}
+.cst-sign{position:relative;padding:10px 70px 9px;border-radius:6px;text-align:center;background:linear-gradient(180deg,#4a2c14,#3a2210);box-shadow:inset 0 0 0 2px #8a5a2c,inset 0 0 0 5px #2a1608,0 6px 10px #0008}
+.cst-sign h2{margin:0;font:700 24px/1 "Cormorant Garamond",Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:#f3d48c;text-shadow:0 2px 0 #1a0c04}
+.cst-sign p{margin:4px 0 0;font:700 11px/1.2 Oxanium;color:#e8c88a}
+.cst-purse{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:99px;background:#1c1008;box-shadow:inset 0 0 0 1.5px #e0b86a;font:800 14px/1 Oxanium;color:#ffd98a}
+.cst-purse svg{width:14px;height:14px;color:#ffc21a}
+.cst-zone h2{margin:0 0 3px;font:700 17px/1 "Cormorant Garamond",Georgia,serif;letter-spacing:.08em;text-transform:uppercase;color:#f3d48c;text-shadow:0 1px 0 #1a0c04}
+.cst-sub{margin:0 0 9px;font:700 11px/1.3 Oxanium;color:#efd8acdd}
+.cst-grid{display:grid;gap:20px 8px}.cst-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.cst-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.cst-grid.one{grid-template-columns:1fr}
+.cst-counter{padding:10px 8px 18px;border-radius:6px;background:linear-gradient(180deg,#8a5a30,#734a26);box-shadow:inset 0 2px 0 #b07a44,inset 0 -3px 0 #4a2c14,0 6px 10px #0007}
+.cst-card{position:relative;display:flex;flex-direction:column;border-radius:7px;min-height:136px;
+ background:radial-gradient(120% 90% at 40% 25%,#ecd6a6,#d2b07a 70%,#b8945e);box-shadow:0 1.5px 0 #8a683a,0 3px 0 #6a4a22,0 8px 10px #0008,inset 0 0 0 1.5px #7a5a3066}
+.cst-grid>.cst-card:nth-child(3n+1){transform:rotate(-1.2deg)}.cst-grid>.cst-card:nth-child(3n+2){transform:rotate(.7deg)}.cst-grid>.cst-card:nth-child(3n){transform:rotate(-.4deg)}
+.cst-face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 6px 26px;border:0;background:none;font:inherit;color:inherit;text-align:center;cursor:default}
+button.cst-face{cursor:pointer}
+.cst-art{width:62px;height:62px;display:grid;place-items:center;border-radius:6px;background:#00000014;box-shadow:inset 0 2px 4px #3a22104d}
+.cst-art canvas,.cst-art img{width:54px;height:54px;object-fit:contain}
+.cst-title{font:800 13px/1.1 Oxanium;color:#2e1a08}
+.cst-face small{font:700 11px/1.25 Oxanium;color:#4e3216}
+.cst-band{position:absolute;left:0;right:0;top:0;height:5px;border-radius:7px 7px 0 0}
+.cst-card.r0 .cst-band{background:linear-gradient(90deg,#8a5a2a,#c98a4a,#8a5a2a)}.cst-card.r1 .cst-band{background:linear-gradient(90deg,#8a96a2,#e6eef4,#8a96a2)}.cst-card.r2 .cst-band,.cst-card.r3 .cst-band{background:linear-gradient(90deg,#b8860b,#ffe07a,#b8860b)}
+.cst-metal{padding:1px 7px;border-radius:99px;font:800 11px/1.3 Oxanium;color:#fff;text-transform:uppercase;letter-spacing:.04em;background:#7a8894}
+.r0 .cst-metal{background:#8a5a2a}.r2 .cst-metal,.r3 .cst-metal{background:#a8780a}
+.cst-card.save{box-shadow:0 0 0 2px #ffd98a,0 1.5px 0 #8a683a,0 3px 0 #6a4a22,0 8px 12px #000a}
+.cst-ribbon{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:2;padding:2px 8px;border-radius:3px;background:#2a1a10;box-shadow:inset 0 0 0 1px #e0b86a;font:800 11px/1.2 Oxanium;color:#ffd98a;white-space:nowrap}
+.cst-bar{display:block;width:90%;height:5px;border-radius:9px;background:#3a221055;overflow:hidden}.cst-bar i{display:block;height:100%;background:#f2b416}
+.cst-card.parcel{background:repeating-linear-gradient(45deg,#e9dcc0 0 8px,#d9c8a4 8px 16px)}
+.cst-odds{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}.cst-odds span{font:800 11px/1.25 Oxanium;padding:1px 4px;border-radius:3px;color:#fff}.cst-odds .m0{background:#8a5a2a}.cst-odds .m1{background:#6e7c88}.cst-odds .m2{background:#a8780a}
+.cst-card.pet .cst-art{width:84px;height:84px}.cst-card.pet .cst-art img{width:78px;height:78px}
+/* the paper price tag, hung from the card's corner; the coin is drawn in pencil */
+.cst-tag{position:absolute;bottom:-10px;right:6px;z-index:3;display:flex;align-items:center;gap:3px;min-height:30px;padding:3px 8px 3px 13px;border:0;transform:rotate(-6deg);
+ background:#f6ecd2;clip-path:polygon(9px 0,100% 0,100% 100%,9px 100%,0 50%);font:700 21px/1 Caveat,"Comic Sans MS",cursive;color:#3a3a3a;filter:drop-shadow(0 2px 2px #0007);cursor:pointer}
+.cst-tag::before{content:'';position:absolute;left:5px;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:#6b4423}
+.cst-tag b{font:inherit;color:#2a2622}.cst-tag small{font:700 15px/1 Caveat,cursive;margin-right:2px}
+.cst-pcoin{width:18px;height:18px;color:#4a4a4a}
+.cst-tag.poor,.cst-tag.poor b,.cst-tag.poor .cst-pcoin{color:#b3261e}.cst-tag[disabled]{cursor:not-allowed}
+.cst-sticker{position:absolute;top:-9px;right:-4px;z-index:3;padding:3px 7px;transform:rotate(3deg);background:#2a1a10;box-shadow:inset 0 0 0 1px #e0b86a,0 2px 3px #0006;border-radius:3px;font:800 11px/1.15 Oxanium;color:#ffd98a;white-space:nowrap}
+.cst-stamp{position:absolute;bottom:6px;right:8px;z-index:3;padding:1px 6px;border:2px solid #7a2a10;border-radius:4px;transform:rotate(-8deg);font:800 12px/1.2 Oxanium;color:#7a2a10;text-transform:uppercase;letter-spacing:.06em}
+.cst-card.sold .cst-face,.cst-card.have .cst-face{opacity:.6}
+/* the Diamond case: the camp's T17 weapon card with a pale crystal / ice-blue faceted sheen */
+.cst-diacase{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;padding:4px 0 8px}
+.cst-diawrap{position:relative}.cst-diawrap .qc17{--w:min(240px,70vw);cursor:pointer}.cst-diawrap.sold .qc17{opacity:.55}
+.cst-diawrap>.cst-tag{bottom:-8px;right:-4px;font-size:24px}
+.qc17.cst-dia{filter:drop-shadow(0 0 10px #bfefffaa) drop-shadow(0 10px 16px #000a)}
+.qc17.cst-dia::after{content:'';position:absolute;inset:1.2%;border-radius:3.4cqi;pointer-events:none;z-index:6;mix-blend-mode:screen;
+ background:linear-gradient(115deg,#0000 0 18%,#e8fbffaa 22%,#0000 30% 52%,#cfefff88 57%,#0000 64%),
+  conic-gradient(from 210deg at 30% 22%,#bfe9ff33,#0000 12%,#e6fbff40 22%,#0000 34%,#9fd6f033 48%,#0000 60%,#d8f6ff3a 74%,#0000 86%,#bfe9ff33),
+  conic-gradient(from 20deg at 76% 70%,#0000,#cdf2ff38 10%,#0000 22%,#a8dcf233 40%,#0000 55%,#e8fbff30 70%,#0000 84%)}
+.qc17.cst-dia::before{content:'';position:absolute;inset:0;border-radius:3.6cqi;pointer-events:none;z-index:7;box-shadow:inset 0 0 0 .6cqi #e6fbffcc,inset 0 0 3cqi #8fd0ee88}
+.qc17.cst-dia .title17 span{color:#eafcff!important;text-shadow:0 0 1.2cqi #7cc8ea,0 .3cqi 0 #12324a}
+.cst-diatag{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:8;padding:2px 9px;border-radius:99px;background:linear-gradient(180deg,#f2fdff,#9fd8ea);color:#123a52;font:800 11px/1.3 Oxanium;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 4px #0008}
