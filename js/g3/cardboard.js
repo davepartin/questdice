@@ -212,12 +212,11 @@ const icanvas = (draw) => { const c = document.createElement('canvas'); c.width 
 export const storeIcon = (name, col) => icanvas((g) => { g.fillStyle = col; g.strokeStyle = '#1a1208'; drawIcon(g, name, 56, 56, 92, { stroke: 7 }); });
 export const storeSym = (k) => icanvas((g) => { g.fillStyle = COL[k] || '#ffe08a'; g.strokeStyle = '#1a1208'; drawSym(g, KIND(k), 56, 56, 90, 6, true); });
 export const storeText = (t, col = '#f4ead0', px = 64) => icanvas((g) => { g.font = `900 ${px}px Oxanium, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 6; g.strokeStyle = '#1a1208'; g.fillStyle = col; g.strokeText(t, 56, 60); g.fillText(t, 56, 60); });
-// a coin drawn in pencil: two loose rings, a little hatching (graphite grey, the tag's only ink besides the number)
-const PENCIL = '<svg class="cst-pcoin" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12.3 2.6c5.2.1 9.3 4.1 9.1 9.4-.2 5.3-4.4 9.3-9.6 9.2C6.6 21 2.6 16.9 2.7 11.8 2.9 6.6 7 2.5 12.3 2.6z" stroke-width="1.5"/><path d="M11.8 3.3c4.9.3 8.6 4.2 8.3 8.9" stroke-width=".8" opacity=".6"/><path d="M12 6.4c3.2 0 5.7 2.6 5.6 5.7-.1 3.1-2.6 5.5-5.7 5.5-3.1-.1-5.5-2.6-5.4-5.7.1-3 2.5-5.5 5.5-5.5z" stroke-width="1.1"/><path d="M8.6 13.8l2.6-2.6M10.4 15.4l3.9-3.9M12.6 16.4l3-3" stroke-width=".7" opacity=".7"/></g></svg>';
+// the tag's coin: the mockup's yellow coin (docs/team/mockups/cards/shop.css .coin), drawn in CSS so it matches it exactly
 export function priceTag(price, { poor = false, onBuy = null, aria = '', label = '' } = {}) {
   const t = h(onBuy ? 'button' : 'span', { class: `cst-tag ${poor ? 'poor' : ''}`, type: onBuy ? 'button' : null, 'aria-label': aria || `${price} gold`, disabled: onBuy && poor ? true : null, onclick: onBuy && !poor ? onBuy : null },
     label ? h('small', {}, label) : null, h('b', {}, String(price)));
-  t.insertAdjacentHTML('afterbegin', PENCIL); return t;
+  t.prepend(h('i', { class: 'cst-coin', 'aria-hidden': 'true' })); return t;
 }
 // one cardboard item card: art window, title, short lines, then a tag (or a sticker for a gate like "Needs Level 4", or a stamp like "Sold")
 export function storeCard({ cls = '', art, title, lines = [], tag = null, sticker = '', stamp = '', ribbon = '', onOpen = null, aria = '' } = {}) {
