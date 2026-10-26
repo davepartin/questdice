@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diamond weapon card v1 (mockup)</title>
+<!-- Crockpot (Grok Bot), 26 Oct 2026. MOCKUP ONLY. The camp's T17 weapon card, real Diamond data (seed 5 Camp Store, Act I), diamond sheen. -->
+<script type="importmap">{"imports":{"three":"../../../../vendor/three/build/three.module.js","three/addons/":"../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@800&family=Oxanium:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../../css/cards.css"><link rel="stylesheet" href="../../../../css/cards17.css"><link rel="stylesheet" href="diamond.css">
+<style>html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 40%,#24384a,#0c1218)}.qc17{--w:340px}*{box-sizing:border-box}main{min-height:100svh;display:grid;place-items:center;padding:10px}</style></head>
+<body><main id="m"></main><script type="module">
+import * as E from '../../../../js/engine.js'; import * as CW from '../../../../js/g3/cards.js';
+const hero = E.newHero({ name: 'Dave', cls: 'knight', seed: 5 }); const it = E.shopStock(hero).find((x) => x.inst.diamond);
+const c = CW.weaponCardEl(CW.weaponData(it.inst, { label: 'Store', value: it.price })); c.classList.add('dia'); c.dataset.chk = '1';
+c.insertAdjacentHTML('beforeend', '<span class="dia-tag">DIAMOND</span>'); document.getElementById('m').append(c);
+setTimeout(() => { document.body.dataset.done = '1'; }, 2500);
+</script></body></html>

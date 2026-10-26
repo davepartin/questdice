@@ -6,7 +6,7 @@ const exe = `${os.homedir()}/.cache/ms-playwright/chromium-1248/chrome-linux64/c
 const srv = spawn('python3', ['-m', 'http.server', '8817', '-d', root], { stdio: 'ignore' }); await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const jobs = (process.env.ONLY || 'chittray,shop').split(',');
-const pages = { chittray: ['chittray.html?state=tray', '/workspace/card-previews-chittray-v1', 'chittray'], shop: ['shop.html', '/workspace/card-previews-shop-v1', 'shop'] };
+const pages = { chittray: ['chittray.html?state=tray', '/workspace/card-previews-chittray-v1', 'chittray'], shop: ['shop.html', '/workspace/card-previews-shop-v1', 'shop'], shop2: ['shop.html?seed=5', '/workspace/card-previews-shop-v2', 'shop'], diamond: ['diamond.html', '/workspace/card-previews-shop-v2', 'diamond-card'] };
 for (const j of jobs) { const [u, out, name] = pages[j]; mkdirSync(out, { recursive: true });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 }); const errs = []; p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
   await p.goto(`http://localhost:8817/docs/team/mockups/cards/${u}`); await p.waitForSelector('body[data-done]', { timeout: 15000 }).catch(() => errs.push('timeout')); await p.waitForTimeout(400);
