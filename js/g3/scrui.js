@@ -12,6 +12,7 @@ import * as R from '../roads.js';
 import * as Net from '../net.js';
 import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
+import { gearCardEl } from './gearcard.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
@@ -1347,19 +1348,21 @@ function slotSheet(slot) {
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C), SHEET.inline ? campFaceList(hero, slot, 6) : null];
+  if (slot === 'C') return SHEET.inline ? [head, gearCardEl(hero, 'C', { title: 'Heart', size: 6, note: 'The Heart die is always a d6' }), h('p', { class: 'sh-role' }, SH_ROLE.C), campFaceList(hero, slot, 6)]
+    : [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
     const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'mind' ? E.mindUpgrade(hero) : E.speedUpgrade(hero);
     const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
       : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
     const next = u.next && !u.act ? u.next : null;
-    const stage = SHEET.inline ? h('div', { class: 'cw-compare' },
+    const card = SHEET.inline && (slot === 'N' || slot === 'S') ? gearCardEl(hero, slot, { title: slot === 'N' ? 'Head' : 'Feet', size, up: u }) : null; // Crockpot: the card for Head and Feet
+    const stage = card || (SHEET.inline ? h('div', { class: 'cw-compare' },
       h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
       next ? ico('chevron') : null,
-      next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next));
+      next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next)));
     const allFaces = SHEET.inline ? h('details', { class: 'cw-all-faces' }, h('summary', {}, next ? 'All faces · current and upgrade' : 'All faces'), campFaceList(hero, slot, size, 'Current'), next ? campFaceList(hero, slot, next, 'After upgrade') : null) : null;
-    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
+    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, card ? null : h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
       u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null, allFaces];
   }
   if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];

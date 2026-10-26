@@ -343,3 +343,21 @@
 .wf.arrow b { font-size: .95em; }
 /* charms resting (the teamwork pass): kept in the save, shown faded with no buttons */
 .ch-list.resting .sx-charm { opacity: .55; filter: grayscale(.6); }
+/* Camp gear card (Crockpot for Claude, 25 Oct): the inspector's body-die card, T17 frame, current faces, next size under a cover */
+.cw-inspector .qc-gear{--w:min(300px,100%);margin:.4rem auto .7rem}
+.qc-gear .gc-art{display:grid;place-items:center;background:radial-gradient(90% 90% at 50% 40%,#4a2e18,#1a120c)}.qc-gear .gc-art img{width:58%;height:auto}
+.qc-gear .title17 span{font-family:'Cinzel',serif;font-size:6.6cqi;font-weight:700}
+.qc-gear .gc-dice{justify-content:flex-start;gap:2.4cqi;padding:3cqi 2.4cqi;background:linear-gradient(#e9d6ad,#cfb27c);box-shadow:inset 0 0 0 .4cqi #8a6438}
+.qc-gear .gc-row{display:flex;align-items:center;gap:2cqi;width:100%}
+.qc-gear .sz17{flex:none;width:11cqi;text-align:center;font:800 5cqi/1 'Oxanium',sans-serif;color:#3a2614}.qc-gear .sz17 small{display:block;font-size:2.4cqi;letter-spacing:.12em;opacity:.75}
+.qc-gear .gc-faces{flex:1;display:flex;flex-wrap:wrap;gap:1.4cqi;justify-content:center}
+.qc-gear .gc-face{width:12.5cqi;aspect-ratio:256/248;border-radius:2cqi;background:#f3ead8;box-shadow:inset 0 0 0 .35cqi #b9a785,0 .5cqi 0 #8a6438}
+.qc-gear .gc-face.heart{background:#1c1a1c;box-shadow:inset 0 0 0 .35cqi #555,0 .5cqi 0 #000}
+.qc-gear .gc-face.amethyst{background:#7d4bd6}
+.qc-gear .gc-faces.n8 .gc-face,.qc-gear .gc-faces.n10 .gc-face{width:10cqi}
+.qc-gear .gc-cover{flex:1;display:flex;align-items:center;justify-content:space-between;padding:2.2cqi 3cqi;border-radius:2cqi;background:linear-gradient(#f3e6c9,#d8bd8f);box-shadow:inset 0 0 0 .5cqi #6a4a22,0 .8cqi 0 #4a3216}
+.qc-gear .gc-ct b{display:block;font:800 5.4cqi/1 'Oxanium',sans-serif;letter-spacing:.12em;color:#2e1d10}.qc-gear .gc-ct small{font:700 3cqi 'Inter',sans-serif;color:#5a4026}
+.qc-gear .gc-cp{display:flex;align-items:center;gap:1cqi;background:#2e1d10;color:#ffd86a;border-radius:99px;padding:1.2cqi 2.6cqi;font:800 5cqi 'Oxanium',sans-serif}.qc-gear .gc-cp small{font-size:2.6cqi;color:#f3e6c9}
+.qc-gear .gc-cp .coin{width:4.4cqi;height:4.4cqi;border-radius:50%;background:radial-gradient(#ffe48a,#c58a16)}
+.qc-gear .gc-cover.lockd{opacity:.8}
+.qc-gear .gc-note{margin:auto 0 0;font:700 3.2cqi 'Inter',sans-serif;color:#3a2614;text-align:center}
