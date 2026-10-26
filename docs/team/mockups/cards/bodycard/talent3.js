@@ -39,7 +39,7 @@ const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => { //
 const NAME = { SW: 'TALENT ONE', SE: 'TALENT TWO' }; const ADDS = { 6: [5, 6], 8: [7, 8], 10: [9, 10] }; const FROM = { 6: 4, 8: 6, 10: 8 };
 // rev 5 (Dave): a faint outline behind each size label previews the die's shape at that size (d6 square, d8 diamond, d10 kite)
 const SHAPE = { 6: '<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="3"/></svg>', 8: '<svg viewBox="0 0 40 40"><path d="M20 1 L38 20 L20 39 L2 20 Z"/></svg>',
-  10: '<svg viewBox="0 0 40 40"><path d="M20 1 L36 17 L20 39 L4 17 Z"/></svg>' };
+  10: '<svg viewBox="0 0 40 40"><path d="M20 1 L34.5 31.7 L20 39 L5.5 31.7 Z"/></svg>' /* rev 6: the game\'s own d10 kite (poly.js rho .415, h .44): sharp 50deg apex on top, side corners at 81% down, blunt 127deg bottom */ };
 function slotEl(slot, v) {
   const sym = H.chit[slot][v];
   if (sym) return `<span class="ts set" aria-label="face ${v}: ${TALENT_SYMS[sym]?.name || sym} chit, pays ${v}"><i class="n">${v}</i><img class="chit" src="${chit(sym)}" alt=""></span>`;

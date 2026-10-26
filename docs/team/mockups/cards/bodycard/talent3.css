@@ -31,5 +31,5 @@
 .tr .sz svg{position:absolute;inset:-1.4cqi;width:calc(100% + 2.8cqi);height:calc(100% + 2.8cqi);fill:#ffffff14;stroke:#f4ead8b3;stroke-width:1.6;stroke-linejoin:round}
 .tr .sz b{position:relative;font:inherit}
 .tr[data-size="8"] .sz svg,.tr[data-size="10"] .sz svg{inset:-1.8cqi -1.3cqi;width:calc(100% + 2.6cqi);height:calc(100% + 3.6cqi)}
-.tr[data-size="10"] .sz b{font-size:2.7cqi;margin-top:-.8cqi}.tr[data-size="8"] .sz b{font-size:3cqi}
+.tr[data-size="10"] .sz b{font-size:2.3cqi;margin-top:2.4cqi}.tr[data-size="10"] .sz svg{inset:-2.6cqi -2cqi;width:calc(100% + 4cqi);height:calc(100% + 5.2cqi)}.tr[data-size="8"] .sz b{font-size:3cqi}
 .tr:has(.cov) .sz svg{display:none} /* covered rows: the cover hides the whole row, label shape included */
