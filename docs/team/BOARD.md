@@ -146,6 +146,49 @@ T17 cumulative/number-coverage face choice, Bronze strength, Diamond acquisition
 
 This checkpoint changes documentation only. No game/save files changed, tests rerun, live build certified or new gameplay released.
 
+## Grok (Crockpot) status, 26 October 2026 (Grok's rows only; signed Crockpot (Grok Bot))
+
+**Live in the game (Dave approved; built while Claude is out until Wed 28 Oct)**
+| Item | Status | Commit / build | Notes |
+|---|---|---|---|
+| Camp cardboard cards: STRENGTH, TALENTS, HEART | LIVE | d0ccfc3, 20261025cb1 | Camp dice grid opens the cards; covers buy only through HE.upgradeDie / HE.unlockDie at current data.js prices. Heart shows Level 1 only (no rank mechanic yet). |
+| Camp T17 weapon card | LIVE | eabd6e3 cb2 → 6671562 cb3 → 848003c cb4 → b3df942 **20261026cb5** | Rev 15 sized layout in current-rule mode; one dice size (13cqi) on every row; sell chip in the art window; each size row shows only the faces that size adds, in that die's shape. |
+| Cardboard Camp Store | LIVE | e85b71c **20261026cs1** → a10a694 **20261026cs2** | Wood sign + purse; specials counter, weapon shelf, Diamond case, odds and ends (pet), Supplies. Paper price tags, red when short. cs2: the mockup's yellow coin on every tag and the purse, handwritten (Caveat) numbers. Every tag runs the existing HE.* buy; no new items or prices; no charms. |
+
+**Mockups (docs/team/mockups/cards/, no live change)**
+| Item | Status | Commit | Notes |
+|---|---|---|---|
+| Talent chit tray (chittray.html) | MOCKUP; chit inventory **UNDECIDED** (Dave) | 8bf85f0 | Punch-out sheet of owned chits beside the Talent card. Nothing built. |
+| Camp Store v1 / v2 (shop.html), Diamond card (diamond.html) | DONE → v2 went live | 8bf85f0, f05b1e7 | All items and prices read from engine.js. |
+
+**Dave's calls recorded (26 Oct)**
+- Charms are gone from the game: left out of every card, mockup and the store.
+- Healing potions, the potion belt's third slot (needs Level 4) and the 4th reroll die move into the Camp Store (done in cs1).
+- Diamond weapons use the weapon card style with a diamond look (pale crystal / ice-blue sheen) (done in cs1).
+- A short scroll in the store is OK.
+
+**Waiting on Dave**
+1. Chit inventory (buy chits first, place later?): undecided.
+2. A pierce chit on talent dice?
+3. Talent faces 9-10.
+4. The faint preview text on the Heart covers.
+5. Corner icons on the STRENGTH card.
+6. Bigger dice and the slim sell pill from his weapon reference.
+
+**For Astra**
+1. Gold balance review of the PROPOSED prices: Talent face 4 at 10 (PROPOSED), Talent Two unlock at 35 (PROPOSED), body costs 50/110/220 (PROPOSED), weapon resale at about 50% of total spent (PROPOSED).
+2. The Heart rank mechanic is not built yet (T23).
+
+**Known limits**
+- The weapon face split per size row is by face order.
+- Weapon sizes cannot be bought (covers are display only under the current rules).
+- Selling from the weapon card is disabled.
+- dev/campstore.mjs is out of date (targets the old .st-tonic store rows); dev/camp-cardboard.mjs has the store checks.
+- The store shelf uses flat game icons, not painted weapon art (tap a card for the full card).
+- Two potion top-ups remain outside the store on purpose: the + button in camp's status bar and the "refill before the road?" prompt.
+
+**File reservations:** none open. All Crockpot reservations are released (see the log below).
+
 ## Queue
 | ID | Priority | Owner | Status | Assignment / completion evidence | Next action |
 |---|---|---|---|---|---|
@@ -415,3 +458,5 @@ Approved completed art/docs may be published under standing authorization withou
 - Crockpot (Grok Bot), 26 Oct 7:24 AM CT — **RESERVATION** (Dave: store price-tag coin must be the mockup's yellow coin) from main 00ae8ee: js/g3/cardboard.js (store priceTag only), js/g3/scrui.js (store sign purse only), css/camp.css (store block), index.html (stamp → 20261026cs2), dev/camp-cardboard.mjs.
 - Crockpot (Grok Bot), 26 Oct 7:28 AM CT — LIVE store coin fix (Dave: "It needs to be that yellow one you made"): a10a694, build **20261026cs2** (Pages serves it, checked). Why it differed: in cs1 I read "pencil-drawn coins" as a new grey SVG pencil sketch instead of reusing the mockup's yellow CSS coin (shop.css .coin), and a generic rule overrode the tag numbers' Caveat hand, so they showed in Oxanium; the sign purse used the game's SVG coin icon. Now every price tag and the purse use the mockup's exact coin (12 px, radial #fff3b0 → #f2b416 → #a86a08, rim #8a5a06; stays yellow on red tags) and the mockup's handwritten Caveat numbers (red #a33 when short). The Diamond card's own Store chip keeps the T17 card's coin (it is the card's, as in the mockup). npm test 433/433; dev/camp-cardboard.mjs all passed (new check: yellow coin on every tag and the purse, no SVG coin, Caveat numbers). Crops + screens: /workspace/camp-store-live/coin-fix/.
 - Crockpot (Grok Bot), 26 Oct 7:28 AM CT — **RELEASED** the store coin fix reservation.
+- Crockpot (Grok Bot), 26 Oct 7:39 AM CT — **RELEASED** the older reservations still on record: js/g3/cards.js + css/cards17.css (25 Oct, T22 size card, done 4311068) and the camp dice-grid inspector files (25 Oct, done; see the line after it). No Crockpot reservations are open.
+- Crockpot (Grok Bot), 26 Oct 7:39 AM CT — BOARD: added the Grok (Crockpot) status section (live cards, weapon card cb1-cb5, Camp Store cs1/cs2, mockups, Dave's 26 Oct calls, Waiting on Dave, For Astra, Known limits).
