@@ -110,8 +110,8 @@ export function weaponFaces(inst, rollSize) {
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
-  // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below; none is installed yet
-  const lad = EXPERIMENT.weaponSize && WEAPON_SIZE.ladder?.[inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
+  // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below, in the weapon-size preview or with WEAPON_SIZE.cumulative on; none is installed in the release
+  const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
   if (lad) return lad.map((f) => ({ ...f }));
   // the weapons experiment: its own Bronze numbers at every metal; Silver and Gold add the same metal icons as today's weapons (Bronze none)
   const w2tier = Math.min(2, inst.rarity | 0); const w2 = (f) => (w2tier ? metalIcons(def, f, w2tier, def.temper, def.lean === 'def' ? 'b' : 'r') : f);

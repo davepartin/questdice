@@ -6,8 +6,9 @@ process.env.RELEASE = '1';
 import fs from 'node:fs';
 const E = await import('../js/engine.js'); const D = await import('../js/data.js'); const SIM = await import('./sim.mjs'); const { smartActs, botShape } = SIM;
 const N = +process.argv[2] || 80; const OUT = process.argv[3] || '/tmp/t22.md';
-const ENC = [ // [label, act, step, level, die size, metal index]
-  ['Act I step 2, Bronze d4', 1, 2, 2, 4, 0], ['Act II step 5, Silver d6', 2, 5, 5, 6, 1], ['Act III step 8, Gold d8', 3, 8, 8, 8, 2]];
+const ENC_ALL = [ // [label, act, step, level, die size, metal index]
+  ['Act I step 2, Bronze d4', 1, 2, 2, 4, 0], ['Act II step 5, Silver d6', 2, 5, 5, 6, 1], ['Act III step 8, Gold d8', 3, 8, 8, 8, 2], ['Act III step 9, Gold d10', 3, 9, 9, 10, 2]];
+const ENC = process.env.ENC ? process.env.ENC.split(',').map((i) => ENC_ALL[+i]) : ENC_ALL.slice(0, 3); // ENC=0,1 runs some of them (so slices can run on separate cores); T17_CAND=1 plays the T17 candidate faces
 const mk = (id, r, s, ammo) => { const w = E.makeWeapon(id, r, () => 0.5, s); if (ammo) w.ammo = ammo; return w; };
 const SETS = [ // [label, left id, right id, ammo]
   ['Dagger + Round Shield', 'dagger', 'shield'], ['Sword + Round Shield', 'sword', 'shield'], ['Axe + Round Shield', 'axe', 'shield'], ['Spear + Round Shield', 'spear', 'shield'],

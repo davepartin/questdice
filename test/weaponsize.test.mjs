@@ -34,7 +34,7 @@ test('off: no size purchase, the hand still caps the die, weapons wear, a worn w
 test('the switch is only turned on in preview/weapon-size/, never at the live root', () => {
   const main = fs.readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
   assert.match(main, /if \(PREVIEW && PREVIEW_NAME === 'weapon-size'\) \{ useWeaponSize\(\);/);
-  assert.equal((main.match(/WEAPON_SIZE\.ladder\s*=/g) || []).length, 1, 'the proposed face table is installed in one place'); assert.match(main, /PREVIEW_NAME === 'weapon-size'\) \{[^\n]*WEAPON_SIZE\.ladder\s*=/, 'and only inside the preview guard');
+  assert.equal((main.match(/WEAPON_SIZE\.ladder\s*=/g) || []).length, 2, 'the proposed face tables are installed in two places'); assert.match(main, /PREVIEW_NAME === 'weapon-size'\) \{[^\n]*WEAPON_SIZE\.ladder\s*=/, 'one inside the weapon-size preview guard'); assert.match(main, /PREVIEW_NAME === 'weapon-roles'\) \{[^\n]*WEAPON_SIZE\.ladder\s*=/, 'the other inside the weapon-roles preview guard (T17 candidate)');
   assert.equal((main.match(/useWeaponSize\(/g) || []).length, 1, 'one call, and it is the guarded one');
   assert.ok(!/EXPERIMENT\.weaponSize\s*=\s*true/.test(fs.readFileSync(new URL('../js/data.js', import.meta.url), 'utf8')));
   assert.equal(D.WEAPON_SIZE.ladder, null, 'no unreviewed face table is installed');

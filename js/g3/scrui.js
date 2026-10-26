@@ -1376,7 +1376,7 @@ function slotSheet(slot) {
         const preview = h('details', { class: 'cw-all-faces ww-upgrade-preview' }, h('summary', {}, `Preview d${t.next} faces`));
         const strip = h('div', { 'aria-label': `All faces after upgrading to d${t.next}` }); strip.innerHTML = CW.strip(CW.weaponData(next)); preview.append(strip);
         out.push(h('p', { class: 'ww-note' }, `Rolls d${t.next} after purchase. Sell value: ${t.sellBefore} → ${t.sellAfter} gold.`),
-          h('p', { class: 'cw-balance' }, 'Face numbers and symbols can change at each size.'), preview);
+          h('p', { class: 'cw-balance' }, D.WEAPON_SIZE.cumulative ? 'Every face you have stays. The new size adds two.' : 'Face numbers and symbols can change at each size.'), preview);
       }
       if (real.id === 'quiver' && D.EXPERIMENT.weapons2) out.push(ammoPick(hero, real));
     }

@@ -16,6 +16,8 @@ if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON();
 if (typeof process !== 'undefined' && process.env.ARROW_NUM) DATA.WEAPONS2.faces.quiver.special = DATA.WEAPONS2.faces.quiver.numbered; // arrowheads that keep a number
 // RELEASE=1: the rules the live game plays (js/release.js)
 if (typeof process !== 'undefined' && process.env.RELEASE) { RELEASE_MOD.applyRelease(); const env = process.env; if (env.LABRULES) RELEASE_MOD.applyLab(); if (env.NOFURY) ENGINE.PRESSURE.on = false; if (env.FURY_MAX) ENGINE.PRESSURE.fury.max = Number(env.FURY_MAX); if (env.FURY_PER) ENGINE.PRESSURE.fury.per = env.FURY_PER.split(',').map(Number); } // variants of the release: NOFURY=1, FURY_MAX=3, FURY_PER=1,1,2
+// T17_CAND=1: the T17 role-and-face candidate (js/weaponladder.js, PROPOSED): every weapon rolls its cumulative table (docs/team/tasks/T17-roles.md)
+if (typeof process !== 'undefined' && process.env.T17_CAND) { const WL = await import('../js/weaponladder.js'); DATA.WEAPON_SIZE.ladder = WL.buildLadder(); DATA.WEAPON_SIZE.cumulative = true; }
 // the teamwork pass (TEAMWORK in js/data.js): H2H=1 Heart to Heart instead of Heartbeat; NOCHARM=1 charms resting; TEAMWORK=1 both
 if (typeof process !== 'undefined') { const env = process.env; if (env.H2H || env.TEAMWORK) DATA.TEAMWORK.heartToHeart = true; if (env.NOCHARM || env.TEAMWORK) DATA.TEAMWORK.noCharms = true; }
 if (typeof process !== 'undefined' && process.env.ARROW_V2) Object.assign(DATA.WEAPONS2.arrowRules, { pierce: 'all', frost: 'strength' });

@@ -246,7 +246,10 @@ export const EXPERIMENT = { weapons2: false, weaponSize: false };
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
 // the shop and the spoils until their acquisition is specified. `ladder` is where a reviewed cumulative face table plugs in (null: today's faces).
-export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null };
+export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null,
+  // T17 candidate faces (js/weaponladder.js, PROPOSED, OFF): with `cumulative` on and a `ladder` installed, every weapon rolls its cumulative table
+  // in the live rules too (not only in the weapon-size preview). Nothing installs it in the release until Astra rules on docs/team/tasks/T17-roles.md.
+  cumulative: false };
 // Camp purchases using the released face tables. Independent of the wider T17 face/loot experiment.
 // Existing found weapons retain their value; half of gold paid for subsequent sizes is recoverable.
 export const WEAPON_TRAINING = { on: false, prices: { 4: 50, 6: 100, 8: 200 } };
