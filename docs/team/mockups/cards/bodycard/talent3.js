@@ -17,6 +17,7 @@ const KIND = (s) => (s === 'block' ? 'def' : s);
 const FACE4_FEE = 10; const fee = (v) => (v === 4 ? FACE4_FEE : talentFaceCost(v));
 const H = { fresh: { size: { SW: 4, SE: 0 }, chit: { SW: {}, SE: {} } },
   placed: { size: { SW: 10, SE: 6 }, chit: { SW: { 4: 'heal', 5: 'block', 6: 'magic', 7: 'atk', 8: 'heal' }, SE: { 4: 'atk', 5: 'gold' } } },
+  tray: { size: { SW: 8, SE: 6 }, chit: { SW: { 4: 'heal', 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 4: 'atk', 5: 'gold' } } }, // chittray.html (no picker)
   choose: { size: { SW: 8, SE: 6 }, chit: { SW: { 4: 'heal', 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 4: 'atk', 5: 'gold' } }, pick: ['SW', 8] } }[STATE];
 const memo = new Map(); const once = (k, f) => (memo.has(k) ? memo.get(k) : (memo.set(k, f()), memo.get(k)));
 const cv = (px, draw) => { const c = document.createElement('canvas'); c.width = c.height = px; draw(c.getContext('2d'), px); return c.toDataURL(); };
@@ -46,7 +47,7 @@ export const face = (kind, sym) => once(`f${kind}${sym}`, () => cv(160, (g) => {
   if (kind === 'sym') { drawNumeral(g, '4', 80, 82, 32, { weight: 14, under: true }); g.fillStyle = COL[sym]; g.strokeStyle = '#0b1a1a'; drawSym(g, KIND(sym), 80, 118, 26, 3, true); }
 }));
 // the die-cut cardboard chit: a kraft disc with a darker cut edge, the icon printed on it
-const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => { // rev 4: die-cut board edge + soft contact shadow, sits flush
+export const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => { // rev 4: die-cut board edge + soft contact shadow, sits flush
   const r = s * 0.44, c = s / 2, t = s * 0.028; // t = board thickness
   g.save(); g.shadowColor = '#1e100666'; g.shadowBlur = s * 0.025; g.shadowOffsetY = s * 0.012; g.beginPath(); g.arc(c, c + t / 2, r, 0, 7); g.fillStyle = '#6e4c24'; g.fill(); g.restore(); // the cut edge, seen below the top
   const eg = g.createLinearGradient(0, c, 0, c + r + t); eg.addColorStop(0, '#9a7040'); eg.addColorStop(1, '#5a3c1a'); g.beginPath(); g.arc(c, c + t / 2, r, 0, 7); g.fillStyle = eg; g.fill();
