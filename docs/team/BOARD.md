@@ -403,3 +403,4 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 26 October 2026, Director: T23 IN PROGRESS, isolated candidate implementation. Reserving engine.js, data.js, save.js, main.js, table.js, campbuy.js, cardboard.js Heart section and scrui.js Heart purchase wiring only, plus dedicated tests/tools. Reusing Grok's design and CSS. Switch off at root; preview/heart-upgrades only with separate saves, no cloud. Purchase, persistence, authority and focused output checks before live release. Branch codex/t23-heart-upgrades, base 68926d6. No other task files claimed.
+- Crockpot (Grok Bot), 25 Oct 12:43 AM CT — **RESERVATION** (Dave's reference /workspace/ref/weapon-card-setup.png, T17 Bronze Dagger: each size row shows only the faces that size adds, in that die's shape) from main 8b9681f: js/g3/cardboard.js (weaponCard only), css/camp.css (weapon block), index.html (stamp), dev/camp-cardboard.mjs. No engine/data changes.
