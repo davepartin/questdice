@@ -167,7 +167,7 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 - Diamond weapons use the weapon card style with a diamond look (pale crystal / ice-blue sheen) (done in cs1).
 - A short scroll in the store is OK.
 
-**Dave's price direction (Oct 26), PROPOSED, needs Astra's gold check before anything ships.** One shared ladder: every multi-step upgrade costs 50 / 100 / 200; the Heart KEEPS 150 / 300 (T23); one-off buys use 100 or 200, small buys 25, by-act prices scale x1/x2/x3. No game prices are changed; these are not in data.js.
+**Dave's price direction (Oct 26), PROPOSED, needs Astra's gold check before anything ships.** One shared ladder: every multi-step upgrade costs 50 / 100 / 200; the Heart is 200 then 300 (Dave, Oct 26 update; T23); every one-off buy or unlock costs only 25, 50, 100 or 200 (Dave: "25. Or 50. Or 100 or 200 for things like this"); by-act prices scale x1/x2/x3. No game prices are changed; these are not in data.js.
 
 | Item | Today (live, file:line) | Ladder (PROPOSED) |
 |---|---|---|
@@ -179,9 +179,12 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 | Learn a power | 50 (data.js:343) | 50 |
 | Weapon size (switched off live) | 40 / 80 / 140 (data.js:249) | 50 / 100 / 200 |
 | Pet die grow | 80 / 180 (data.js:28) | 100 / 200 |
-| Heart ranks (T23) | 150 / 300 (PROPOSED, not built) | **150 / 300 (kept)** |
-| Unlock Talent One / second hand / Talent Two | 15 / 30 / 35 (data.js:327) | 25 / 50 / 50 |
-| Talent faces | 10 x face number (data.js:353) | keep |
+| Heart ranks (T23) | 150 / 300 (PROPOSED, not built) | **200 / 300** (Dave, Oct 26 update) |
+| Unlock Talent One | 15 (data.js:327) | 25 |
+| Unlock second weapon hand | 30 (data.js:327) | 50 |
+| Unlock Talent Two | 35 (data.js:327; old PROPOSED 35) | 50 |
+| Talent face 4 | 40 live (10 x 4); old PROPOSED 10 | **25** (Grok's reading of the 25/50/100/200 rule; Dave to confirm) |
+| Talent faces 5-10 | 10 x face number = 50, 60, 70, 80, 90, 100 (data.js:353) | **OPEN QUESTION** (see below) |
 | Potion belt third slot (Level 4) | 90 (data.js:1142) | 100 |
 | Pet | 90 (data.js:26) | 100 |
 | 4th reroll die | 200 (data.js:48) | 200 |
@@ -193,6 +196,8 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 | Road rematch | 5 / 10 / 15 (trials.js:21) | keep |
 | Weapon worth / sell 50% / Diamond x3.2 | formulas (data.js:78-80, 133) | keep |
 
+All one-offs above are 25, 50, 100 or 200: Talent One 25, weapon hand 50, Talent Two 50, face 4 25 (to confirm), pet 100, potion belt 100, reroll die 200, pet symbol 25. **Open question for Dave:** talent faces 5-10 cost 10 x the face (50, 60, 70, 80, 90, 100), so only 50 and 100 fit the 25/50/100/200 rule. Snap them (e.g. faces 5-6 = 50, 7-10 = 100), or keep 10 x face because it matches what the face pays? All PROPOSED for Astra's gold check; no game prices changed.
+
 **Waiting on Dave**
 1. Chit inventory (buy chits first, place later?): undecided.
 2. A pierce chit on talent dice?
@@ -202,8 +207,8 @@ This checkpoint changes documentation only. No game/save files changed, tests re
 6. Bigger dice and the slim sell pill from his weapon reference.
 
 **For Astra**
-1. Gold balance review of the PROPOSED prices: Talent face 4 at 10 (PROPOSED), Talent Two unlock at 35 (PROPOSED), weapon resale at about 50% of total spent (PROPOSED).
-2. **Dave's price direction (Oct 26), PROPOSED:** please rerun `tools/gold.mjs` across ALL classes (e.g. `node tools/gold.mjs 2`) on the 50/100/200 ladder below (Heart keeps 150/300) and report before anything ships. Grok's rough single-run check (1 Knight campaign, normal): gold per won fight about 41 / 142 / 306 by act, plus about 21 / 37 / 63 from selling spoils; spent at camp about 54 / 178 / 237.
+1. Gold balance review of the PROPOSED weapon resale at about 50% of total spent (PROPOSED).
+2. **Dave's price direction (Oct 26), PROPOSED:** please rerun `tools/gold.mjs` across ALL classes (e.g. `node tools/gold.mjs 2`) on the 50/100/200 ladder above (Heart 200/300; one-offs only 25/50/100/200) and report before anything ships. Grok's rough single-run check (1 Knight campaign, normal): gold per won fight about 41 / 142 / 306 by act, plus about 21 / 37 / 63 from selling spoils; spent at camp about 54 / 178 / 237.
 3. The Heart rank mechanic is not built yet (T23).
 
 **Known limits**
@@ -488,3 +493,4 @@ Approved completed art/docs may be published under standing authorization withou
 - Crockpot (Grok Bot), 26 Oct 7:39 AM CT — **RELEASED** the older reservations still on record: js/g3/cards.js + css/cards17.css (25 Oct, T22 size card, done 4311068) and the camp dice-grid inspector files (25 Oct, done; see the line after it). No Crockpot reservations are open.
 - Crockpot (Grok Bot), 26 Oct 7:39 AM CT — BOARD: added the Grok (Crockpot) status section (live cards, weapon card cb1-cb5, Camp Store cs1/cs2, mockups, Dave's 26 Oct calls, Waiting on Dave, For Astra, Known limits).
 - Crockpot (Grok Bot), 26 Oct 8:14 AM CT — BOARD: recorded Dave's price direction (Oct 26, PROPOSED): shared 50/100/200 ladder for every multi-step upgrade, Heart keeps 150/300; audit table (today vs ladder) in Grok's section; For Astra: rerun tools/gold.mjs across all classes before anything ships (replaces the old body-costs 50/110/220 item). No game prices changed.
+- Crockpot (Grok Bot), 26 Oct 8:21 AM CT — BOARD: price direction updated (Dave, Oct 26): Heart 200/300; one-offs and unlocks only 25/50/100/200 (Talent Two 50 replaces PROPOSED 35; face 4 25 replaces PROPOSED 10, Grok's reading for Dave to confirm); per-face talent costs (10 x face) marked an open question; superseded 35 and 10 removed from For Astra. All PROPOSED; no game prices changed.
