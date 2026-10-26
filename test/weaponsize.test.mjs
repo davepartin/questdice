@@ -7,7 +7,8 @@ import { applyRelease } from '../js/release.js';
 import * as E from '../js/engine.js';
 import * as D from '../js/data.js';
 
-applyRelease(); // the released game's weapons, as main.js does before it boots
+applyRelease(); // test the older broad experiment independently of released camp purchasing
+D.WEAPON_TRAINING.on = false;
 const ACTIVE = ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver'].filter((id) => D.WEAPONS[id]);
 const mk = (id, rarity = 0, size = 4) => E.makeWeapon(id, rarity, E.makeRng(7), size);
 const hero = (cls = 'knight', seed = 3) => { const h = E.newHero({ name: 'Sizer', cls, seed }); h.gold = 1000; return h; };

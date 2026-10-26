@@ -1364,8 +1364,22 @@ function slotSheet(slot) {
   // a weapon hand: the weapon there, Forge and Train, then what else could go there
   const real = hero.loadout[slot];
   const out = [head];
-  if (SHEET.inline && real && real.id !== 'fists') {
-    out.push(D.EXPERIMENT.weaponSize ? weaponWorkshop(hero, slot, real) : h('div', { class: 'ww-workshop cb-ww' }, cbWeaponCard(hero, slot, real, { say: (t) => toast(t) }))); // Crockpot: the approved T17 weapon card (rev 15 sized layout) in the live camp
+  if ((SHEET.inline || E.weaponTrainingOn()) && real && real.id !== 'fists') {
+    const card = D.EXPERIMENT.weaponSize ? weaponWorkshop(hero, slot, real) : h('div', { class: 'ww-workshop cb-ww' }, cbWeaponCard(hero, slot, real, {
+      say: (t) => toast(t), onBuy: (step) => HE.trainWeapon(hero, real.uid, step), onBought: () => shBought(),
+    }));
+    out.push(card);
+    if (E.weaponTrainingOn()) {
+      const t = E.trainInfo(hero, real.uid);
+      if (t.next) {
+        const next = { ...real, size: t.next };
+        const preview = h('details', { class: 'cw-all-faces ww-upgrade-preview' }, h('summary', {}, `Preview d${t.next} faces`));
+        const strip = h('div', { 'aria-label': `All faces after upgrading to d${t.next}` }); strip.innerHTML = CW.strip(CW.weaponData(next)); preview.append(strip);
+        out.push(h('p', { class: 'ww-note' }, `Rolls d${t.next} after purchase. Sell value: ${t.sellBefore} → ${t.sellAfter} gold.`),
+          h('p', { class: 'cw-balance' }, 'Face numbers and symbols can change at each size.'), preview);
+      }
+      if (real.id === 'quiver' && D.EXPERIMENT.weapons2) out.push(ammoPick(hero, real));
+    }
   } else if (real && real.id !== 'fists') {
     const rolls = E.sidesOf(hero, slot); const size = E.weaponSize(real);
     out.push(shWeapon(real, null, 'now'));

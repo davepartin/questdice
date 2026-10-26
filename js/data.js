@@ -247,6 +247,9 @@ export const EXPERIMENT = { weapons2: false, weaponSize: false };
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
 // the shop and the spoils until their acquisition is specified. `ladder` is where a reviewed cumulative face table plugs in (null: today's faces).
 export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null };
+// Camp purchases using the released face tables. Independent of the wider T17 face/loot experiment.
+// Existing found weapons retain their value; half of gold paid for subsequent sizes is recoverable.
+export const WEAPON_TRAINING = { on: false, prices: { 4: 50, 6: 100, 8: 200 } };
 // Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
 // until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
 //   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack

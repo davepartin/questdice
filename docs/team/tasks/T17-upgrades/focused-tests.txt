@@ -1,0 +1,17 @@
+✔ released purchasing does not enable the wider face/loot experiment or alter existing face tables (4.576669ms)
+✔ each weapon and metal buys d6/d8/d10 for exactly 50/100/200, with increasing resale (4.385352ms)
+✔ insufficient funds, missing/foreign items, skipped sizes and repeated commands do not spend gold (0.290916ms)
+✔ found gear keeps its original sale value; only actual paid upgrades are recovered; no profitable loops (3.4044ms)
+✔ same-type weapons stay independent and duplicate references cost only once (0.234552ms)
+✔ Arrows preserve ammunition; Diamonds/Fists/legendaries cannot buy sizes; Diamond stock remains (2.593693ms)
+✔ real battle rolls and evaluation use the purchased weapon size with a d4 hand (4.932773ms)
+✔ local save/resume and old-save migration preserve purchases, value, gold and owned gear (6.994137ms)
+✔ authoritative co-op enforces ownership, camp phase, target size and duplicate rejection; packed table retains value (1.531379ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.367471

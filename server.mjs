@@ -10,6 +10,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createTable, joinTable, command, playerByToken, playerView, savePublic, reclaimSeat, seatByName, joinRefusal } from './js/table.js';
+import { applyRelease } from './js/release.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const TYPES = {
@@ -189,6 +190,7 @@ async function onRequest(req, res) {
 }
 
 export function start(port = 0) {
+  applyRelease(); // The authoritative LAN table must use the same released rules as its phones.
   const server = http.createServer(onRequest);
   return new Promise((resolve) => {
     server.listen(port, '0.0.0.0', () => {

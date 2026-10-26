@@ -182,27 +182,46 @@ export function heartCard(hero) {
 // ---------------------------------------------------------------- WEAPON (Dave 11:23 PM CT): the approved T17 weapon card, rev 15 sized layout
 // (docs/team/mockups/cards/t17/card17.*, T17.md rev 14/15): the painted weapon on top, the metal frame and title, one row per size d4..d10 with a
 // painted dice cover over every size above the weapon's die, a sell chip beside the highest uncovered size, no wear. Drawn by the game's own
-// card code (js/g3/cards.js, which only READS). CURRENT rules only: buying a weapon size is not a released rule (EXPERIMENT.weaponSize is off,
-// trainInfo refuses), so the covers carry no price and say so; the faces are the weapon's real die (no nested ladder in the data), shown in its
-// own size row; the chip shows the engine's sellValue, and an equipped weapon is sold from the pack (sellItem), so the chip points there.
+// card code (js/g3/cards.js, which only READS). Owned rows split the current die's actual faces.
+// A purchase re-renders every row because the released face tables are not cumulative. Only the camp inspector supplies purchase callbacks.
+// The sell chip shows engine sellValue; an equipped weapon is sold from the pack (sellItem).
 import * as CW from './cards.js';
-export function weaponCard(hero, slot, inst, { say } = {}) {
+export function weaponCard(hero, slot, inst, { say, onBuy, onBought } = {}) {
   const size = E.weaponSize(inst); const SZ = [4, 6, 8, 10];
   if (inst.diamond || inst.id === 'fists' || !SZ.includes(size)) return CW.weaponCardOf(inst, { label: 'Sell', value: inst.diamond ? undefined : 0 });
   const d = CW.weaponData(inst, { label: 'Sell', value: 0 }); const faces = d.faces;
   // Dave's reference (T17 Bronze Dagger): each size row shows only the faces that size adds, drawn as that size's die. The data has no nested face
   // ladder, so the weapon's real face list is split in order: d4 faces 1-4, d6 5-6, d8 7-8, d10 9-10 (each row's die is built from faces[0..size)).
-  d.rows = SZ.map((s, i) => ({ size: s, from: SZ[i - 1] || 0, faces: faces.slice(0, s), owned: s <= size, price: 0 }));
-  const soon = 'Bigger weapon dice are not in the game yet';
-  const card = CW.weaponCardEl(d, { onBuy: () => soon });
+  const live = E.weaponTrainingOn() && !D.WEAPONS[inst.id]?.legendary;
+  d.rows = SZ.map((s, i) => ({ size: s, from: SZ[i - 1] || 0,
+    faces: s <= size ? faces.slice(0, s) : E.weaponFaces({ ...inst, size: s }), owned: s <= size,
+    price: live ? D.WEAPON_TRAINING.prices[SZ[i - 1]] || 0 : 0 }));
+  const soon = D.WEAPONS[inst.id]?.legendary ? 'This legendary has a fixed size' : 'Bigger weapon dice are not in the game yet';
+  const card = CW.weaponCardEl(d, { onBuy: (step) => {
+    if (!live) return soon;
+    if (!onBuy) return 'Open this weapon from your camp dice grid to upgrade it';
+    const t = E.trainInfo(hero, inst.uid);
+    if (t.next !== step) return 'Open the weapon card again';
+    if (!t.ok) return t.why === 'gold' ? `Need ${t.cost - hero.gold} more gold` : 'Not available';
+    return onBuy(step);
+  }, onBought });
   card.classList.add('cb-weapon'); card.setAttribute('aria-label', `${d.metal} ${d.name}, d${size}`);
   for (const r of card.querySelectorAll('.row')) { const s = +r.dataset.size;
-    const cov = r.querySelector('.cov.tok'); if (cov) { cov.setAttribute('aria-label', `Dice cover d${s}: ${soon}`); cov.querySelector('.ct small').textContent = `d${SZ[SZ.indexOf(s) - 1]} → d${s}`; cov.querySelector('.cp').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } }
-  const row = card.querySelector(`.row.s${size}`); const value = E.sellValue(inst);
+    const cov = r.querySelector('.cov.tok'); if (cov) {
+      cov.querySelector('.ct small').textContent = `d${SZ[SZ.indexOf(s) - 1]} → d${s}`;
+      if (live) {
+        const cost = D.WEAPON_TRAINING.prices[SZ[SZ.indexOf(s) - 1]];
+        cov.querySelector('.cp').replaceChildren(priceChip(cost, { poor: hero.gold < cost }));
+      } else {
+        cov.setAttribute('aria-label', `Dice cover d${s}: ${soon}`);
+        cov.querySelector('.cp').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET'));
+      }
+    } }
+  const value = E.sellValue(inst);
   const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
     onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
   h('small', {}, 'SELL'), priceChip(value));
-  card.querySelector('.art17')?.append(chip); void row; void hero; void slot; // Dave 11:47 PM CT: the chip sits in the art window, not in a size row
+  card.querySelector('.art17')?.append(chip); void slot; // The chip sits in the art window.
   return card;
 }
 
