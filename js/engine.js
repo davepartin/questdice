@@ -271,7 +271,7 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
   return {
     v: 1, name, cls, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
-    strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
+    strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [], SE: [] } /* face 4 starts empty on both talent dice (Dave, 26 Oct 2026); the player fills it at camp */, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
@@ -360,6 +360,7 @@ export function unlockInfo(hero, slot) {
 }
 export function unlockDie(hero, slot) {
   const r = unlockInfo(hero, slot); if (!r.ok) return false;
+  clearAutoTalent(hero, slot); // a die bought now opens with face 4 empty, even on a hero made before 26 Oct 2026
   hero.gold -= r.cost; hero.dice = [...(hero.dice || []), slot];
   if (slot === 'NE' && !hero.loadout.NE) hero.loadout.NE = { uid: `fists-R`, id: 'fists', rarity: 0 };
   return true;
@@ -441,6 +442,15 @@ export function petGrowInfo(hero) {
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'Need gold', cost, cur: p.size, next: p.size + 2 };
 }
 export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
+// Before 26 Oct 2026 newHero pre-filled face 4 of BOTH talent dice with the class symbol (CLASS_TALENT), so Talent Two opened with it already
+// set (a Wizard's Heal). On a talent die that is still LOCKED the player could not have chosen it: if face 4 holds exactly that class symbol and
+// nothing else is set, it is cleared to an open slot. An unlocked die, or any other choice, is the player's and is never touched. Returns true if cleared.
+export function clearAutoTalent(hero, slot) {
+  if ((slot !== 'SW' && slot !== 'SE') || !hero?.talent?.[slot] || isActive(hero, slot)) return false;
+  const faces = hero.talent[slot]; const def = CLASS_TALENT[hero.cls]?.[slot]; const first = Array.isArray(faces[0]) ? faces[0] : faces[0] ? [faces[0]] : [];
+  if (!def || first.length !== 1 || first[0] !== def || faces.slice(1).some((e) => (Array.isArray(e) ? e.length : e))) return false;
+  hero.talent[slot] = faces.map(() => []); return true;
+}
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
   const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || [];

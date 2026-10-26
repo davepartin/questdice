@@ -1,0 +1,34 @@
+/* The one price chip (js/g3/price.js; Dave 26 Oct 2026): dark brown rounded chip, yellow coin, yellow number. Red number + red rim when short. */
+.qd-price{display:inline-flex;align-items:center;gap:.34em;padding:.26em .62em .26em .4em;border-radius:99px;background:linear-gradient(180deg,#3a2414,#22140a);
+ box-shadow:inset 0 0 0 .11em #e0b86a99,0 .08em .16em #0007;line-height:1;vertical-align:middle;white-space:nowrap;font-size:14px;flex:none}
+.qd-price .qd-coin{display:inline-block;flex:none;width:.92em;height:.92em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#9a6a06);box-shadow:inset 0 0 0 .09em #7a5204}
+.qd-price b{font:800 1em/1 var(--font-display,Oxanium),Oxanium,sans-serif;color:#ffd98a;letter-spacing:0}
+.qd-price.poor{box-shadow:inset 0 0 0 .13em #e2493c,0 .08em .16em #0007}
+.qd-price.poor b{color:#ff7a6a}
+/* sizes by place */
+.cb-card .qd-price{font-size:3.8cqi}
+.cb-card .cb-fee.qd-price{font-size:3.6cqi;position:absolute;bottom:-1.6cqi;left:50%;transform:translateX(-50%)}
+.qc17 .qd-price{font-size:4.2cqi}
+.qc17 .sell .qd-price{font-size:3.6cqi;padding:.15em .5em .15em .3em}
+.qc17 .cov .cp .qd-price{font-size:4cqi}
+.cw-price.qd-price{font-size:11px}
+.sh-buy .qd-price{font-size:16px}
+.sx-btn .qd-price{font-size:14px;margin-left:.45em}
+.sh-mini .qd-price{font-size:12px;margin-left:.3em}
+.tw-face .qd-price,.sh-face .qd-price{font-size:11px}
+.cst-tag .qd-price{font-size:14px}
+.cst-diawrap>.cst-tag .qd-price{font-size:17px}
+/* places whose older rules styled a bare <b> price: the chip's number wins there too */
+.cst-store .cst-tag .qd-price b,.cst-store .cst-diawrap>.cst-tag .qd-price b,.qc17.cb-weapon .sl17 .qd-price b,.qc17 .sell .qd-price b{font:800 1em/1 var(--font-display,Oxanium),Oxanium,sans-serif;color:#ffd98a}
+.cst-store .cst-tag.poor .qd-price b{color:#ff7a6a}
+.qc17.cb-weapon .sl17 span.qd-price{display:inline-flex;gap:.34em}
+.cw-inspector .sh-buy-p,.cw-inspector .sh-buy.poor .sh-buy-p{background:none;padding:0}
+.ur-buy.poor:disabled{opacity:.85;filter:none} /* the red chip carries "can't afford" */
+/* Spoils (Dave 26 Oct 2026): the real camp weapon card, laid out at 340 px and scaled down as one picture; tap opens the large card */
+.cw-spoil .cw-spoilcard{position:relative;width:100%;aspect-ratio:720/1052;cursor:pointer;overflow:hidden;border-radius:6px;-webkit-tap-highlight-color:transparent}
+.cw-spoil .cw-spoilscale{position:absolute;left:0;top:0;width:340px;transform-origin:0 0;transform:scale(var(--k,.4))}
+.cw-spoil .cw-spoilscale .qc17.cb-weapon{--w:340px;width:340px;margin:0;pointer-events:none}
+.cw-spoil .cw-spoilcard:focus-visible{outline:2px solid #ffd98a;outline-offset:2px}
+.cw-spoil:has(.cw-spoilcard){grid-template-columns:min(44%,164px) 1fr}
+.cw-spoil .cw-spoilscale .row .sz{visibility:hidden} /* Dave: no stray size label on the picture; "A d4 weapon." beside it says the size */
+.sh-buy .qd-price b,.sx-btn .qd-price b{color:#ffd98a}.sh-buy .qd-price.poor b,.sx-btn .qd-price.poor b{color:#ff7a6a}

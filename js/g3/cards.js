@@ -3,6 +3,7 @@
 // text-free layers (frame, scene, painted weapon). Everything in this module only READS: it never calls a wear, sell, buy or save
 // function, so drawing a card cannot change a weapon or a hero (test/cards.test.mjs checks that).
 import { WEAPONS, RARITY, WEAPONS2, EXPERIMENT, WEAPON_SIZE, tierName, isLegendary } from '../data.js';
+import { priceChipHtml } from './price.js'; // the one shared price chip
 import { weaponFaces, weaponSize, battlesLeft, wearLabel, sellValue, diamondSellValue } from '../engine.js';
 import { BONUS_GOALS, CARDS, bonusStake, bonusG, rewardChips, rewardTerms, gOf } from '../secrets.js';
 
@@ -109,14 +110,14 @@ function weaponArt17(d) {
   return `<div class="win scene-forge"><img class="art${m ? '' : ' tint-' + d.metal.toLowerCase()}" src="${WART}${key}-${m ? m + '-' : ''}512.webp" alt="${esc(d.name)}"></div>`;
 }
 const figureOf = (f, i) => `<figure class="d17 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" role="img" aria-label="face ${i + 1}: ${faceWords(f)}"><span class="ph17t">+${f.v}</span></figure>`;
-const coverHtml = (r) => `<div class="cov tok" role="button" tabindex="0" data-step="${r.size}" aria-label="Dice cover: upgrade d${r.from} to d${r.size} for ${r.price} gold"><span class="ct"><b>UPGRADE</b><small>d${r.from} → d${r.size} · +${r.size - r.from} faces</small></span><span class="cp"><i class="coin"></i><b>${r.price}</b><small>gold</small></span></div>`;
+const coverHtml = (r) => `<div class="cov tok" role="button" tabindex="0" data-step="${r.size}" aria-label="Dice cover: upgrade d${r.from} to d${r.size} for ${r.price} gold"><span class="ct"><b>UPGRADE</b><small>d${r.from} → d${r.size} · +${r.size - r.from} faces</small></span><span class="cp">${priceChipHtml(r.price)}</span></div>`;
 const rowHtml = (r) => `<div class="row s${r.size}${r.owned ? '' : ' locked'}" data-size="${r.size}"><span class="sz"><small>Size</small>d${r.size}</span><div class="dz" data-sides="${r.size}" data-from="${r.from}" data-faces="${esc(JSON.stringify(dieFaces(r.faces)))}" style="--dw:${{ 4: 13.4, 6: 14.2, 8: 14.8, 10: 15 }[r.size]}cqi">${r.owned ? r.faces.slice(r.from).map((f, i) => figureOf(f, r.from + i)).join('') : ''}</div>${r.owned ? '' : coverHtml(r)}</div>`;
 export function weaponCardHtml(d) {
   if (d.rows) return weaponCardSized(d);
   const n = d.faces.length; const tray = TRAY[n] || TRAY[4]; const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.faces); const df = JSON.stringify(dieFaces(d.faces));
   const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
   return (`<article class="qc17 qc-weapon metal-${d.metal.toLowerCase()}" data-kind="weapon" aria-label="${esc(`${name}, d${d.size}${d.wear ? ', ' + d.wear : ''}`)}">
-    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
+    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small>${priceChipHtml(d.money)}</div>` : ''}</div>
     <img class="fr17" src="${ART}frame-t17.webp" alt="">
     <div class="title17"><span style="font-size:${tf}cqi">${esc(name)}</span></div>
     <div class="dice17"><div class="szl"><small>Die</small>d${d.size}${d.wear ? `<em>${esc(d.wear)}</em>` : ''}</div>
@@ -126,7 +127,7 @@ export function weaponCardHtml(d) {
 function weaponCardSized(d) {
   const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.rows.filter((r) => r.owned).flatMap((r) => r.faces)); const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
   return (`<article class="qc17 qc-weapon sized metal-${d.metal.toLowerCase()}" data-kind="weapon" data-size="${d.size}" aria-label="${esc(`${name}, d${d.size}`)}">
-    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell est" title="Provisional: the sale value under Dave's upgrade rule is not final"><small>${esc(d.moneyLabel)} · est.</small><i class="coin"></i><b>${d.money}</b></div>` : ''}</div>
+    <div class="art17">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell est" title="Provisional: the sale value under Dave's upgrade rule is not final"><small>${esc(d.moneyLabel)} · est.</small>${priceChipHtml(d.money)}</div>` : ''}</div>
     <img class="fr17" src="${ART}frame-t17.webp" alt="">
     <div class="title17"><span style="font-size:${tf}cqi">${esc(name)}</span></div>
     <div class="dice17 rows">${d.rows.map(rowHtml).join('')}</div>

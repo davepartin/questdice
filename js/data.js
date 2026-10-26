@@ -350,8 +350,11 @@ export const TALENT_MAX_SAME = 2; // a die can carry two of one symbol at most: 
 export const TALENT_PER_FACE = 2; // (the pet's die still holds two symbols a face)
 export const TALENT_SLOT_COST = 25; // (a pet's symbol slot costs this; talent faces are priced by their number)
 export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 }; // number faces on a d4 / d6 / d8 / d10 (faces 4..size)
-export const TALENT_FACE_COST = 10; // gold per point on the face: 4 costs 40, 5 costs 50 ... 10 costs 100
-export const talentFaceCost = (num) => TALENT_FACE_COST * num;
+export const TALENT_FACE_COST = 10; // gold per point on the face: 5 costs 50 ... 10 costs 100
+// Face 4 (Dave, 26 Oct 2026, live: "both talent dice should start with the number four being empty, but only paying 10 coin to put an icon
+// in there"): a new or newly unlocked talent die starts with face 4 EMPTY, and filling it costs 10. Faces 5-10 keep 10 x face.
+export const TALENT_FACE_4_COST = 10;
+export const talentFaceCost = (num) => (num === 4 ? TALENT_FACE_4_COST : TALENT_FACE_COST * num);
 export const talentFaceNum = (faceIndex) => faceIndex + 4; // index in hero.talent[slot] -> the number on the die
 // (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {

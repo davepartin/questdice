@@ -11,6 +11,7 @@ import * as D from '../data.js';
 import { drawSym, drawIcon, drawNumeral } from '../gfx/dice/faces.js';
 import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
 import { campDie } from './campart.js';
+import { priceChip } from './price.js';
 const ART = new URL('../../assets/cards/', import.meta.url).href;
 const SERIF = '"Cormorant Garamond", Georgia, serif'; // the game's title serif (css/fonts.css); the mockups used Cinzel, which the game does not load
 const load = (s) => new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = s; });
@@ -73,7 +74,7 @@ function shell(title, cls, label, kids) {
   return h('article', { class: `cb-card ${cls}`, 'aria-label': label }, fr, h('div', { class: 'cb-panel' }, ...kids), cn);
 }
 const coin = () => h('i', { class: 'cb-coin', 'aria-hidden': 'true' });
-const price = (n) => h('span', { class: 'cb-cp' }, coin(), h('b', {}, String(n)));
+const price = (n, poor = false) => priceChip(n, { poor, cls: 'cb-cp' }); // the one shared price chip (price.js)
 const seal = (act) => h('span', { class: 'cb-seal', 'aria-hidden': 'true' }, h('i', {}, 'ACT'), h('b', {}, D.ROMAN[act] || String(act)));
 const press = (fn) => ({ role: 'button', tabindex: '0', onclick: (e) => { e.stopPropagation(); fn(); }, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } } });
 
@@ -102,7 +103,7 @@ export function strengthCard(hero, focus, { onGrow, say } = {}) {
     const ready = isNext && up?.ok;
     const tapCover = () => { if (ready) onGrow?.(c.k); else if (!isNext) say?.(`Grow ${c.name} to d${D.NEXT_SIZE[cur]} first`); else if (actLock) say?.(`${c.name} grows again in Act ${D.ROMAN[actLock]}`); else say?.(`Need ${cost - hero.gold} more gold`); };
     cells.push(h('div', { class: cls }, h('div', { class: `cb-cov ${ready ? 'ready' : ''}`, 'data-slot': c.k, 'aria-label': `${c.name}: grow to d${z} for ${cost} gold${actLock ? `, needs Act ${D.ROMAN[actLock]}` : ''}`, ...press(tapCover) },
-      price(cost), actLock ? seal(actLock) : null)));
+      price(cost, hero.gold < cost), actLock ? seal(actLock) : null)));
   }
   return shell('STRENGTH', 'cb-strength', `Strength dice card: ${BODY.map((c) => `${c.name} d${bodySize(hero, c)}`).join(', ')}`, [h('div', { class: 'cb-sgrid' }, ...head, ...cells)]);
 }
@@ -142,19 +143,19 @@ export function talentsCard(hero, focus, { selected = null, onFace, onGrow, onUn
   const column = (slot) => {
     if (!E.isActive(hero, slot)) { const u = E.unlockInfo(hero, slot);
       return h('div', { class: 'cb-tcol' }, h('div', { class: 'cb-th' }, TAL_NAME[slot]),
-        h('div', { class: `cb-cov cb-big ${u.ok ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Unlock ${TAL_NAME[slot]} for ${u.cost} gold`, ...press(() => (u.ok ? onUnlock?.(slot) : say?.(`Need ${u.cost - hero.gold} more gold`))) }, price(u.cost), h('small', {}, 'UNLOCK'))); }
+        h('div', { class: `cb-cov cb-big ${u.ok ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Unlock ${TAL_NAME[slot]} for ${u.cost} gold`, ...press(() => (u.ok ? onUnlock?.(slot) : say?.(`Need ${u.cost - hero.gold} more gold`))) }, price(u.cost, hero.gold < u.cost), h('small', {}, 'UNLOCK'))); }
     const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const stored = hero.talent?.[slot] || [];
     const sym = (f) => (Array.isArray(stored[f]) ? stored[f][0] : stored[f]);
     const hole = (f) => { const n = info.nums[f]; const k = f < info.faces ? sym(f) : null; const sel = selected && selected[0] === slot && selected[1] === f;
       if (k) return h('span', { class: `cb-hole set ${sel ? 'sel' : ''}`, 'aria-label': `Face ${n}: ${D.TALENT_SYMS[k]?.name || k}, pays ${n}. Inspect`, ...press(() => onFace?.(slot, f)) }, h('img', { src: chit(k), alt: '' }));
-      return h('span', { class: `cb-hole open ${sel ? 'sel' : ''}`, 'aria-label': `Face ${n}: empty, ${info.costs[f]} gold to set. Choose a symbol`, ...press(() => onFace?.(slot, f)) }, h('i', {}, String(n)), h('span', { class: 'cb-fee' }, coin(), String(info.costs[f]))); };
+      return h('span', { class: `cb-hole open ${sel ? 'sel' : ''}`, 'aria-label': `Face ${n}: empty, ${info.costs[f]} gold to set. Choose a symbol`, ...press(() => onFace?.(slot, f)) }, h('i', {}, String(n)), priceChip(info.costs[f], { poor: hero.gold < info.costs[f], cls: 'cb-fee' })); };
     const d4 = h('div', { class: 'cb-tr d4' }, sizeTag(4), h('div', { class: 'cb-pf' }, h('img', { src: triFace('blank'), alt: 'Face 1: blank' }), h('img', { src: triFace('x2'), alt: 'Face 2: doubles this hand' }), h('img', { src: triFace('blank'), alt: 'Face 3: blank' }), hole(0)));
     const rows = [6, 8, 10].map((z) => {
       const idx = { 6: [1, 2], 8: [3, 4], 10: [5, 6] }[z]; let cover = null;
       if (z > size) { const from = { 6: 4, 8: 6, 10: 8 }[z]; const cost = D.SPECIAL_STEPS[from]?.[0]; const isNext = from === size; const up = isNext ? E.specialUpgrade(hero, slot) : null;
         const actLock = z > cap ? Math.ceil((z - 4) / 2) : 0; const ready = isNext && up?.ok;
         cover = h('div', { class: `cb-cov ${ready ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Grow ${TAL_NAME[slot]} to d${z} for ${cost} gold${actLock ? `, needs Act ${D.ROMAN[actLock]}` : ''}`,
-          ...press(() => (ready ? onGrow?.(slot) : say?.(!isNext ? `Grow to d${D.NEXT_SIZE[size]} first` : actLock ? `Grows again in Act ${D.ROMAN[actLock]}` : `Need ${cost - hero.gold} more gold`))) }, price(cost), actLock ? seal(actLock) : null); }
+          ...press(() => (ready ? onGrow?.(slot) : say?.(!isNext ? `Grow to d${D.NEXT_SIZE[size]} first` : actLock ? `Grows again in Act ${D.ROMAN[actLock]}` : `Need ${cost - hero.gold} more gold`))) }, price(cost, hero.gold < cost), actLock ? seal(actLock) : null); }
       return h('div', { class: 'cb-tr' }, sizeTag(z), h('div', { class: 'cb-sl' }, ...idx.map((f) => (z <= size ? hole(f) : h('span', { class: 'cb-hole' })))), cover); });
     return h('div', { class: `cb-tcol ${slot === focus ? 'on' : ''}` }, h('div', { class: 'cb-th' }, TAL_NAME[slot]), d4, ...rows);
   };
@@ -200,7 +201,7 @@ export function weaponCard(hero, slot, inst, { say } = {}) {
   const row = card.querySelector(`.row.s${size}`); const value = E.sellValue(inst);
   const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
     onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
-  h('small', {}, 'SELL'), h('span', {}, h('i', { class: 'coin' }), h('b', {}, String(value))));
+  h('small', {}, 'SELL'), priceChip(value));
   card.querySelector('.art17')?.append(chip); void row; void hero; void slot; // Dave 11:47 PM CT: the chip sits in the art window, not in a size row
   return card;
 }
@@ -215,8 +216,8 @@ export const storeText = (t, col = '#f4ead0', px = 64) => icanvas((g) => { g.fon
 // the tag's coin: the mockup's yellow coin (docs/team/mockups/cards/shop.css .coin), drawn in CSS so it matches it exactly
 export function priceTag(price, { poor = false, onBuy = null, aria = '', label = '' } = {}) {
   const t = h(onBuy ? 'button' : 'span', { class: `cst-tag ${poor ? 'poor' : ''}`, type: onBuy ? 'button' : null, 'aria-label': aria || `${price} gold`, disabled: onBuy && poor ? true : null, onclick: onBuy && !poor ? onBuy : null },
-    label ? h('small', {}, label) : null, h('b', {}, String(price)));
-  t.prepend(h('i', { class: 'cst-coin', 'aria-hidden': 'true' })); return t;
+    label ? h('small', {}, label) : null, priceChip(price, { poor })); // the paper tag stays; its price is the shared chip (price.js)
+  return t;
 }
 // one cardboard item card: art window, title, short lines, then a tag (or a sticker for a gate like "Needs Level 4", or a stamp like "Sold")
 export function storeCard({ cls = '', art, title, lines = [], tag = null, sticker = '', stamp = '', ribbon = '', onOpen = null, aria = '' } = {}) {

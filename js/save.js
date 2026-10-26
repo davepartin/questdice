@@ -2,7 +2,7 @@
 // reachable) also in Firestore. The password is hashed (SHA-256 + salt) and gates opening a hero;
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
-import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT, CLASS_TALENT } from './data.js';
 import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
 import { LAB, SANDBOX, SANDBOX_NAME } from './lab.js';
 
@@ -90,7 +90,17 @@ export function migrateHero(hero) {
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   migrateWeapons2(hero);
   migrateStarterDice(hero);
+  for (const slot of ['SW', 'SE']) clearAutoTalent(hero, slot); // a still-locked talent die loses the face 4 the old newHero filled in (26 Oct 2026)
   return hero;
+}
+// Talent face 4 (26 Oct 2026): before then newHero pre-filled face 4 of BOTH talent dice with the class symbol, so Talent Two opened with it set.
+// On a die that is still LOCKED the player cannot have chosen it, so face 4 holding exactly the class symbol, with nothing else set, is cleared to an
+// open slot. Unlocked dice and every other choice are left alone. Same rule as engine.js clearAutoTalent (kept here to avoid an import cycle).
+export function clearAutoTalent(hero, slot) {
+  const faces = hero?.talent?.[slot]; if (!Array.isArray(faces) || !Array.isArray(hero.dice) || hero.dice.includes(slot)) return false;
+  const def = CLASS_TALENT[hero.cls]?.[slot]; const first = Array.isArray(faces[0]) ? faces[0] : faces[0] ? [faces[0]] : [];
+  if (!def || first.length !== 1 || first[0] !== def || faces.slice(1).some((e) => (Array.isArray(e) ? e.length : e))) return false;
+  hero.talent[slot] = faces.map(() => []); return true;
 }
 // The new weapons (released 23 Oct 2026): every weapon is one-handed. An old two-handed Bow (one weapon filling both hands) becomes
 // the new pair, Arrows in the left hand and the Bow in the right, same metal, size and wear, Normal arrows; the right hand die comes
