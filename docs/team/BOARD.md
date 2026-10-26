@@ -23,6 +23,29 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## Heart progression and emerald Talent card: Dave direction and Director proposal, 25 October
+
+Crockpot = Grokbot. Dave reports active Strength/white-dice card work and approves the visual direction of ONE emerald Talent card with Talent One and Talent Two side by side, using cardboard chits for purchased symbols and covers for newly available faces. Continue that existing work; do not interrupt it for Heart implementation.
+
+**Talent fidelity:** read actual class/hero talent data and engine slot counts. Include face 4 and later faces through the actual purchased d4/d6/d8/d10 size; Dave's '5 to 8' describes the mockup progression, not a new d8 cap or permission to omit d10 faces. Both talents keep independent sizes, unlock state and symbol purchases. Render existing blank/X2 positions from engine data rather than recalled notes. Chit choices must match actual allowed symbols: do not draw an arrow that implies Pierce if the legal option is Attack (talent Pierce is not currently offered). Preserve maximum repeats, actual per-face prices, chosen symbols and authoritative commands. Emerald card colour is approved visual direction, not a change to face rules.
+
+**Heart source finding:** current data.js HEART_AMP = [2,2,2,2], HEART_COLOR_BONUS = 4; engine sidesOf(C) = 6. evaluate adds +2 PER matching symbol-bearing Head/Hand/Feet die for Heart 1-4, or +4 PER matching blue/red weapon lane for Heart 5/6. campbuy slotPrice(C) returns null and slotCanBuy(C) falls through false. No Heart rank purchase exists in these inspected paths.
+
+**Director recommendation for an isolated candidate, not live activation:** three ranks, keeping the six-faced die:
+| Rank | Matching symbol boost per eligible die | Matching attack/block boost per lane |
+|---|---|---|
+| 1 (current/default) | +2 | +4 |
+| 2 | +3 | +6 |
+| 3 | +4 | +8 |
+
+Do not add rank 4 yet. Dave asks for progression and is exploring exact ranks; this table is the first comparison candidate. Heart-to-Heart team attack, turn-Heart cost/limits, die faces and combination numbers stay as current rules for the comparison. Price and act gates remain unsettled.
+
+**Next owners:** Grok may mock up a Heart card with the same six faces and three clearly labelled boost ranks under cardboard covers, showing the actual per-match/per-lane meaning. Label proposed ranks/prices honestly; do not invent an upgrade price or wire purchases at the live root. Keep the current live Heart inspection card honest until the mechanic exists. Director owns scope/price review; implementation lead on return measures and implements the candidate in isolation, preserving defaults for old saves, actual online authority and purchase/save consistency.
+
+**Measurement required:** extra attack/block, heal/pierce/magic/gold by actual matching counts, early/mid/late white-die sizes, both-weapon colours and representative classes/parties. Compare purchase value to white-die and weapon upgrades. Explicitly check gold amplification funding its own upgrades and surplus magic/healing loops; do not price this as one flat +1 because it can boost several slots in a round. Use the no-wear released baseline and existing simulations where possible. Report bot-policy gaps and evidence before final numerical or price approval.
+
+Documentation/source review only; no Heart rule, gold, save or live card behavior changed.
+
 ## Temporary coverage while Claude is unavailable: Director assignment, 25 October
 
 Dave relays Grok's report that Claude is at his weekly limit until Wednesday at 12:00 AM CT and that Spear/resale work stopped partway. Availability and unfinished local work are reported, not independently inspectable. Preserve any partial work; request its branch/commit and saved outputs when available. Do not assume absent results mean no work exists.
