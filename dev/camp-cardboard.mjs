@@ -19,13 +19,24 @@ for (const [w, h] of [[390, 844], [375, 548]]) {
   const open = async (slot) => { await p.locator(`.cw-cell.s-${slot}`).click(); await pump(1.5); await p.waitForTimeout(800);
     await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const c = i?.querySelector('.cb-card, .qc-gear') || i; const side = i?.closest('.sx-side'); if (c && side) side.scrollTop += c.getBoundingClientRect().top - 60; }); await pump(0.5); await p.waitForTimeout(400); };
   const shot = async (n) => { const f = `${OUT}/camp-${n}_${tag}.png`; const c = p.locator('#camp-inspector .cb-card, #camp-inspector .qc-gear').first(); await p.screenshot({ path: f }); return f; };
-  for (const [slot, n, want] of [['NW', 'weapon', 'qc-gear'], ['N', 'strength', 'STRENGTH'], ['SW', 'talents', 'TALENT'], ['C', 'heart', 'HEART']]) {
+  for (const [slot, n, want] of [['N', 'strength', 'STRENGTH'], ['SW', 'talents', 'TALENT'], ['C', 'heart', 'HEART']]) {
     await open(slot); await shot(n);
     const st = await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const c = i?.querySelector('.cb-card'); const r = c?.getBoundingClientRect();
       const tiny = c ? [...c.querySelectorAll('*')].filter((e) => e.childNodes[0]?.nodeType === 3 && e.textContent.trim() && e.getClientRects().length && parseFloat(getComputedStyle(e).fontSize) < 10.9).map((e) => e.textContent.trim()).slice(0, 5) : [];
       return { cb: c?.getAttribute('aria-label') || '', gear: !!i?.querySelector('.qc-gear, .ww, .sh-weapon, .gc-face'), x0: r ? Math.round(r.left) : 0, x1: r ? Math.round(r.right) : 0, vw: innerWidth, tiny }; });
     const ok = want === 'qc-gear' ? !st.cb : (st.cb.toUpperCase().includes(want) && st.x0 >= 0 && st.x1 <= st.vw && !st.tiny.length);
     check(`${tag} ${n}: opens the right card, fits, text >= 11 px`, ok, JSON.stringify(st));
+  }
+  for (const [slot, n] of [['NW', 'weapon-left'], ['NE', 'weapon-right']]) { // the approved T17 weapon card (rev 15 sized layout), current rules
+    await open(slot); await shot(n);
+    const st = await p.evaluate((slot) => { const { S, E } = window.QD; const inst = S.hero.loadout[slot]; const c = document.querySelector('#camp-inspector .qc17.cb-weapon'); const r = c?.getBoundingClientRect();
+      const tiny = c ? [...c.querySelectorAll('small,b,span,em')].filter((e) => e.childNodes[0]?.nodeType === 3 && e.textContent.trim() && e.getClientRects().length && parseFloat(getComputedStyle(e).fontSize) < 10.9).map((e) => e.textContent.trim()).slice(0, 5) : [];
+      return { card: !!c, id: inst?.id, size: E.weaponSize(inst), rows: c?.querySelectorAll('.row').length, covers: c?.querySelectorAll('.cov.tok').length, chipRow: c?.querySelector('.sl17')?.closest('.row')?.dataset.size, chip: c?.querySelector('.sl17 b')?.textContent, sell: E.sellValue(inst), wear: /wear|battles/i.test(c?.textContent || ''), x0: r ? Math.round(r.left) : -1, x1: r ? Math.round(r.right) : 999, vw: innerWidth, tiny }; }, slot);
+    check(`${tag} ${n}: T17 card, rows d4-d10, covers above d${st.size}, sell chip on d${st.size} = engine sellValue, no wear, fits, text >= 11 px`, st.card && st.rows === 4 && st.covers === [4, 6, 8, 10].filter((z) => z > st.size).length && +st.chipRow === st.size && +st.chip === st.sell && !st.wear && st.x0 >= 0 && st.x1 <= st.vw && !st.tiny.length, JSON.stringify(st));
+    const g0 = await p.evaluate(() => window.QD.S.hero.gold); const cov = p.locator('#camp-inspector .qc17.cb-weapon .cov.tok').first();
+    if (await cov.count()) { await cov.click({ timeout: 10000 }); await pump(0.5); } await p.locator('#camp-inspector .qc17.cb-weapon .sl17').click({ force: true, timeout: 10000 }); await pump(0.5);
+    const g1 = await p.evaluate((slot) => ({ gold: window.QD.S.hero.gold, still: !!window.QD.S.hero.loadout[slot] && window.QD.S.hero.loadout[slot].id !== 'fists' }), slot);
+    check(`${tag} ${n}: tapping a cover or the sell chip changes nothing (no size purchase or loadout sale in the current rules)`, g1.gold === g0 && g1.still, JSON.stringify({ g0, g1 }));
   }
   for (const [slot, n] of [['W', 'lefthand'], ['E', 'righthand'], ['S', 'feet'], ['SE', 'talent-two']]) { await open(slot); await shot(n); }
   const buy = async (slot, sel, read, label) => { await open(slot); const a = await p.evaluate(read); await p.locator(sel).first().click(); await pump(1.5); await p.waitForTimeout(500); const z = await p.evaluate(read);

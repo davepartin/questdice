@@ -12,7 +12,7 @@ import * as R from '../roads.js';
 import * as Net from '../net.js';
 import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
-import { strengthCard, talentsCard, heartCard } from './cardboard.js';
+import { strengthCard, talentsCard, heartCard, weaponCard as cbWeaponCard } from './cardboard.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
@@ -1370,7 +1370,7 @@ function slotSheet(slot) {
   const real = hero.loadout[slot];
   const out = [head];
   if (SHEET.inline && real && real.id !== 'fists') {
-    out.push(weaponWorkshop(hero, slot, real));
+    out.push(D.EXPERIMENT.weaponSize ? weaponWorkshop(hero, slot, real) : h('div', { class: 'ww-workshop cb-ww' }, cbWeaponCard(hero, slot, real, { say: (t) => toast(t) }))); // Crockpot: the approved T17 weapon card (rev 15 sized layout) in the live camp
   } else if (real && real.id !== 'fists') {
     const rolls = E.sidesOf(hero, slot); const size = E.weaponSize(real);
     out.push(shWeapon(real, null, 'now'));

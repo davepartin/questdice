@@ -177,3 +177,29 @@ export function heartCard(hero) {
     h('div', { class: 'cb-lvls' }, level(1, h('p', {}, h('span', {}, 'STRENGTH dice ', h('b', {}, `+${amp}`)), h('span', {}, 'WEAPON dice ', h('b', {}, `+${lane}`)))), later(2, 2), later(3, 3)),
   ]);
 }
+
+// ---------------------------------------------------------------- WEAPON (Dave 11:23 PM CT): the approved T17 weapon card, rev 15 sized layout
+// (docs/team/mockups/cards/t17/card17.*, T17.md rev 14/15): the painted weapon on top, the metal frame and title, one row per size d4..d10 with a
+// painted dice cover over every size above the weapon's die, a sell chip beside the highest uncovered size, no wear. Drawn by the game's own
+// card code (js/g3/cards.js, which only READS). CURRENT rules only: buying a weapon size is not a released rule (EXPERIMENT.weaponSize is off,
+// trainInfo refuses), so the covers carry no price and say so; the faces are the weapon's real die (no nested ladder in the data), shown in its
+// own size row; the chip shows the engine's sellValue, and an equipped weapon is sold from the pack (sellItem), so the chip points there.
+import * as CW from './cards.js';
+export function weaponCard(hero, slot, inst, { say } = {}) {
+  const size = E.weaponSize(inst); const SZ = [4, 6, 8, 10];
+  if (inst.diamond || inst.id === 'fists' || !SZ.includes(size)) return CW.weaponCardOf(inst, { label: 'Sell', value: inst.diamond ? undefined : 0 });
+  const d = CW.weaponData(inst, { label: 'Sell', value: 0 }); const faces = d.faces;
+  d.rows = SZ.map((s, i) => ({ size: s, from: s === size ? 0 : (SZ[i - 1] || 0), faces: s === size ? faces : [], owned: s <= size, price: 0 }));
+  const soon = 'Bigger weapon dice are not in the game yet';
+  const card = CW.weaponCardEl(d, { onBuy: () => soon });
+  card.classList.add('cb-weapon'); card.setAttribute('aria-label', `${d.metal} ${d.name}, d${size}`);
+  for (const r of card.querySelectorAll('.row')) { const s = +r.dataset.size;
+    if (s < size) r.querySelector('.dz').append(h('span', { class: 'cb-in' }, `Part of the d${size} die`));
+    const cov = r.querySelector('.cov.tok'); if (cov) { cov.setAttribute('aria-label', `Dice cover d${s}: ${soon}`); cov.querySelector('.ct small').textContent = `d${SZ[SZ.indexOf(s) - 1]} → d${s}`; cov.querySelector('.cp').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } }
+  const row = card.querySelector(`.row.s${size}`); const value = E.sellValue(inst);
+  const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
+    onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
+  h('small', {}, 'SELL'), h('span', {}, h('i', { class: 'coin' }), h('b', {}, String(value))));
+  row?.append(chip); void hero; void slot;
+  return card;
+}
