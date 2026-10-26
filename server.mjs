@@ -35,7 +35,9 @@ function makeCode() {
 }
 function lanUrls() {
   const urls = [];
-  for (const list of Object.values(os.networkInterfaces())) {
+  let interfaces;
+  try { interfaces = os.networkInterfaces(); } catch { return urls; } // LAN links are optional in hosted/restricted runtimes.
+  for (const list of Object.values(interfaces)) {
     for (const net of list || []) {
       if (net.family === 'IPv4' && !net.internal) urls.push(`http://${net.address}:${listenPort}`);
     }

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import os from 'node:os';
 import assert from 'node:assert/strict';
 import { start } from '../server.mjs';
 
@@ -75,5 +76,18 @@ test('a hero takes their seat back from a new phone after the game has started',
     const look = async (token) => (await fetch(`http://127.0.0.1:${port}/api/room/${host.data.code}?token=${encodeURIComponent(token)}`)).json();
     assert.equal((await look(back.data.token)).you?.name, 'Smalls', 'the new phone holds the seat');
     assert.notEqual((await look(friend.data.token)).you?.name, 'Smalls', 'the old phone no longer does');
+  } finally { server.close(); }
+});
+
+
+test('a room still opens when the host cannot enumerate LAN interfaces', async (t) => {
+  t.mock.method(os, 'networkInterfaces', () => { throw new Error('Interfaces unavailable'); });
+  const server = await start(0);
+  try {
+    const host = await post(server.address().port, { op: 'create', name: 'Ada', cls: 'knight', table: 'Ash' });
+    assert.equal(host.status, 200);
+    assert.equal(host.data.view.phase, 'lobby');
+    assert.deepEqual(host.data.view.links, []);
+    assert.equal(JSON.stringify(host.data.view).includes(host.data.token), false);
   } finally { server.close(); }
 });
