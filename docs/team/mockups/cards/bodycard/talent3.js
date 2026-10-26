@@ -12,9 +12,12 @@ const EM = { core: '#237f86', mid: '#14565c', edge: '#082a30', trim: '#cfeeee' }
 const COL = { atk: '#ff3b3b', block: '#3aa4ff', magic: '#a64dff', gold: '#ffd21a', heal: '#38e87a', pierce: '#ff9a2a' };
 const KIND = (s) => (s === 'block' ? 'def' : s);
 // hero state for the three demo states (sizes + chits placed per slot, face -> symbol)
+// rev 7 (Dave's decision 25 Oct 8:48 PM CT; numbers PROPOSED, game data unchanged): face 4 starts as an OPEN chit hole the player
+// fills with any icon for FACE4_FEE (not 10 x 4 = 40); Talent Two starts under one big cardboard cover, unlock UNLOCK_COST.SE (35, PROPOSED).
+const FACE4_FEE = 10; const fee = (v) => (v === 4 ? FACE4_FEE : talentFaceCost(v));
 const H = { fresh: { size: { SW: 4, SE: 0 }, chit: { SW: {}, SE: {} } },
-  placed: { size: { SW: 10, SE: 6 }, chit: { SW: { 5: 'block', 6: 'magic', 7: 'atk', 8: 'heal' }, SE: { 5: 'gold' } } },
-  choose: { size: { SW: 8, SE: 6 }, chit: { SW: { 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 5: 'gold' } }, pick: ['SW', 8] } }[STATE];
+  placed: { size: { SW: 10, SE: 6 }, chit: { SW: { 4: 'heal', 5: 'block', 6: 'magic', 7: 'atk', 8: 'heal' }, SE: { 4: 'atk', 5: 'gold' } } },
+  choose: { size: { SW: 8, SE: 6 }, chit: { SW: { 4: 'heal', 5: 'block', 6: 'magic', 7: 'atk' }, SE: { 4: 'atk', 5: 'gold' } }, pick: ['SW', 8] } }[STATE];
 const memo = new Map(); const once = (k, f) => (memo.has(k) ? memo.get(k) : (memo.set(k, f()), memo.get(k)));
 const cv = (px, draw) => { const c = document.createElement('canvas'); c.width = c.height = px; draw(c.getContext('2d'), px); return c.toDataURL(); };
 // a printed emerald face (faces 1-4)
@@ -43,19 +46,19 @@ const SHAPE = { 6: '<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height
 function slotEl(slot, v) {
   const sym = H.chit[slot][v];
   if (sym) return `<span class="ts set" aria-label="face ${v}: ${TALENT_SYMS[sym]?.name || sym} chit, pays ${v}"><i class="n">${v}</i><img class="chit" src="${chit(sym)}" alt=""></span>`;
-  return `<button class="ts open" data-slot="${slot}" data-v="${v}" aria-label="face ${v}: empty slot, place a chit for ${talentFaceCost(v)} gold"><i class="n">${v}</i><span class="fee"><i class="coin"></i>${talentFaceCost(v)}</span></button>`;
+  return `<button class="ts open" data-slot="${slot}" data-v="${v}" aria-label="face ${v}: empty slot, place a chit for ${fee(v)} gold"><i class="n">${v}</i><span class="fee"><i class="coin"></i>${fee(v)}</span></button>`;
 }
 function column(slot) {
   const size = H.size[slot]; const cls = CLASS_TALENT[CLS][slot];
-  const d4 = `<div class="tr d4"><span class="sz">d4</span><div class="pf"><img src="${face('blank')}" alt="face 1 blank"><img src="${face('x2')}" alt="face 2 X2"><img src="${face('blank')}" alt="face 3 blank"><img src="${face('sym', cls)}" alt="face 4 class symbol"></div></div>`;
+  const d4 = `<div class="tr d4"><span class="sz">d4</span><div class="pf"><img src="${face('blank')}" alt="face 1 blank"><img src="${face('x2')}" alt="face 2 X2"><img src="${face('blank')}" alt="face 3 blank">${slotEl(slot, 4)}</div></div>`;
   const rows = [6, 8, 10].map((z) => `<div class="tr" data-size="${z}"><span class="sz">${SHAPE[z]}<b>d${z}</b></span><div class="sl">${ADDS[z].map((v) => slotEl(slot, v)).join('')}</div>${z > size ? `<div class="cov" data-step="${z}" role="button" aria-label="Grow ${NAME[slot]} to d${z}, ${SPECIAL_STEPS[FROM[z]][0]} gold"><span class="cp"><i class="coin"></i><b>${SPECIAL_STEPS[FROM[z]][0]}</b></span></div>` : ''}</div>`).join('');
-  const lock = size === 0 ? `<div class="colock" role="button" aria-label="Unlock ${NAME[slot]}, ${UNLOCK_COST[slot]} gold"><span class="cp"><i class="coin"></i><b>${UNLOCK_COST[slot]}</b></span></div>` : '';
+  const lock = size === 0 ? `<div class="cov big" role="button" aria-label="Unlock ${NAME[slot]}, ${UNLOCK_COST[slot]} gold (PROPOSED)"><span class="cp"><i class="coin"></i><b>${UNLOCK_COST[slot]}</b></span><span class="prop2">PROPOSED</span></div>` : '';
   return `<div class="tcol" data-slot="${slot}"><div class="th">${NAME[slot]}</div>${d4}${rows}${lock}</div>`;
 }
 function picker(card, btn) {
   card.querySelector('.pick')?.remove(); card.querySelectorAll('.ts.sel').forEach((e) => e.classList.remove('sel'));
   const s = btn.dataset.slot, v = +btn.dataset.v; btn.classList.add('sel'); const used = (k) => Object.values(H.chit[s]).filter((x) => x === k).length;
-  const p = document.createElement('div'); p.className = 'pick'; p.innerHTML = `<p>Face ${v} chit · <i class="coin"></i>${talentFaceCost(v)}</p><div>${Object.keys(TALENT_SYMS).map((k) => `<button data-sym="${k}" ${used(k) >= TALENT_MAX_SAME ? 'disabled' : ''}><img src="${chit(k, 120)}" alt=""><small>${TALENT_SYMS[k].name}</small></button>`).join('')}</div>`;
+  const p = document.createElement('div'); p.className = 'pick'; p.innerHTML = `<p>Face ${v} chit · <i class="coin"></i>${fee(v)}</p><div>${Object.keys(TALENT_SYMS).map((k) => `<button data-sym="${k}" ${used(k) >= TALENT_MAX_SAME ? 'disabled' : ''}><img src="${chit(k, 120)}" alt=""><small>${TALENT_SYMS[k].name}</small></button>`).join('')}</div>`;
   const r = btn.getBoundingClientRect(), b = card.getBoundingClientRect(); p.style.top = ((r.bottom - b.top) / b.height * 100 + 1.5) + '%'; card.append(p); // opens BELOW the slot so the chits already placed stay visible
   p.addEventListener('click', (e) => { const k = e.target.closest('button')?.dataset.sym; if (!k) return; H.chit[s][v] = k; p.remove(); btn.outerHTML = slotEl(s, v); });
 }
