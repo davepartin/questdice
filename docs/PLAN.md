@@ -1478,3 +1478,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 25 October 2026, Director: Dave authorizes Heart progression and asks Director to settle costs while Grok handles visuals. Added T23-heart-upgrades.md and tools/heart-costs.mjs; selected initial candidate prices 150 gold to rank 2 (+3/+6), 300 additional to rank 3 (+4/+8), fixed d6. Exact uniform-roll arithmetic distinguishes per-match gain from focused policy bounds and notes price cannot prevent sustained-healing exploits after purchase. BOARD assigns isolated implementation and targeted magic/heal/gold tests before live release. Attached Talent card visually reviewed; retain style with accessible face-number/payout inspection. Source/arithmetic/documentation work only; no live mechanic or save changed, no combat simulations run.
+
+
+25 October 2026, Director: Dave instructed Grok to build the Heart upgrade card and set rank 2 to require Act II, rank 3 Act III. Updated T23 and BOARD: 150/300 gold retained, rank purchases sequential, act locks shown and enforced in authoritative purchase rules. Camp center die opens card; no combat gesture change. Documentation only.
