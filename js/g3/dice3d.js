@@ -42,14 +42,14 @@ const icon = (g, k, x, y, s) => { const sym = SYM[k.startsWith('arrow_') ? 'arro
   g.restore(); };
 
 // rev 10: a face layout system. Every face is fitted, not hand-tuned: the face's real polygon (poly.faces[fi].local, in texture px,
-// shrunk by the rounded-edge bevel plus a margin) is the box; the number sits on top and the marks (attack/block mark + up to 4 bonus
+// shrunk by the rounded-edge bevel plus a margin) is the box; the number sits on top and the marks (up to 5 bonus symbols; no plain attack/block mark
 // icons) go below in rows (1-3 in a row; 4 as 2x2; 5 as 3+2). For each row plan and a few vertical offsets, a binary search finds the
 // largest scale where the number's box and every icon's circle (white border included) are inside the polygon; the best plan wins.
 const ROWS = { 1: [1], 2: [2], 3: [3], 4: [[2, 2], [4]], 5: [[3, 2], [2, 3]] };
 function edgeDist(P, x, y, sg = 1) { let m = Infinity; for (let i = 0; i < P.length; i++) { const [ax, ay] = P[i], [bx, by] = P[(i + 1) % P.length];
   const ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey); const d = sg * ((x - ax) * ey - (y - ay) * ex) / L; m = Math.min(m, d); } return m; }
 function layout(P, sign, nMarks, txtW, inR, extra = 0) {
-  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra; const plans = [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
+  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra; const plans = !nMarks ? [[]] : [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
   let best = null;
   for (const plan of plans) for (let oy = -0.5; oy <= 0.5001; oy += 0.05) {
     const fits = (k) => { const fs = k, is = k * 0.62, gap = is * 1.18; const rows = plan.length; const hT = fs * 0.78, hI = rows * gap;
@@ -63,7 +63,7 @@ function layout(P, sign, nMarks, txtW, inR, extra = 0) {
   return best;
 }
 function paintFace(g, poly, fi, f, cell, Hm) {
-  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm;   const txt = `+${f.v}`; const marks = [f.c === 'b' ? 'block' : 'atk', ...f.icons.slice(0, 4)];
+  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm;   const txt = `+${f.v}`; const marks = f.icons.slice(0, 5); // only bonus symbols (Dave, cb6): the body colour already says attack (red) / block (blue)
   // the face polygon in canvas px (y down), inset by the bevel (R_BY metres) + 4% of the inradius as the margin
   const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1; // interior side of the edges
   const inset = R_BY[poly.sides] * ppm * 1.15 + inR * 0.04; // inset = required clearance from every edge
