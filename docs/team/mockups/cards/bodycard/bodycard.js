@@ -21,7 +21,8 @@ const COLS = [
   { k: 'S', icon: 'boots', steps: SPEED_STEPS, max: E.maxFeetOf(HERO) },
 ];
 // rev 2 (Dave 8:14 PM): ?rev=2 integrated frame + title (?title=GEAR|BODY|none); ?cost=equal uses the PROPOSED equal step cost.
-const REV2 = Q.get('rev') === '2'; const TITLE = Q.get('title') === 'none' ? '' : (Q.get('title') || 'GEAR');
+const REV2 = Q.get('rev') === '2'; const TITLE = Q.get('title') === 'none' ? '' : (Q.get('title') || 'STRENGTH');
+// rev 3 (Dave's decision, 25 Oct 8:27 PM CT): the white body dice are STRENGTH (head = wisdom, hands = physical strength, feet = initiative), so STRENGTH is the default title; ?title=GEAR|BODY|none kept for comparison.
 const EQUAL = { 4: [50], 6: [110], 8: [220] }; // PROPOSED, NOT FINAL: mean of the four columns' current step, rounded to 10
 if (Q.get('cost') === 'equal') COLS.forEach((c) => { c.steps = EQUAL; });
 const st = (Q.get('state') || '').split(',').map(Number);
