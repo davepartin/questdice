@@ -200,6 +200,6 @@ export function weaponCard(hero, slot, inst, { say } = {}) {
   const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
     onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
   h('small', {}, 'SELL'), h('span', {}, h('i', { class: 'coin' }), h('b', {}, String(value))));
-  row?.append(chip); void hero; void slot;
+  card.querySelector('.art17')?.append(chip); void row; void hero; void slot; // Dave 11:47 PM CT: the chip sits in the art window, not in a size row
   return card;
 }

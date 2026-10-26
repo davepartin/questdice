@@ -429,8 +429,8 @@
 .cb-soon{justify-items:start;padding-left:4cqi;padding-right:16cqi}.cb-soon small{white-space:normal;line-height:1.15}
 /* T17 weapon card in the camp (cardboard.js weaponCard): the sell chip beside the highest uncovered size, and covers with no price */
 .qc17.cb-weapon{--w:min(100%,340px);margin:.4rem auto .8rem;position:relative}
-.qc17.cb-weapon .sl17{position:absolute;right:.4cqi;top:50%;transform:translateY(-50%);z-index:3;display:grid;justify-items:center;gap:.4cqi;padding:1cqi 1.6cqi;border-radius:2cqi;border:0;
- background:linear-gradient(180deg,#3a2414,#22140a);box-shadow:inset 0 0 0 .35cqi #e0b86a99,0 .6cqi .8cqi #0008;font-family:'Oxanium',sans-serif;cursor:pointer}
+.qc17.cb-weapon .art17 .sl17{position:absolute;right:2cqi;top:2cqi;z-index:3;display:grid;justify-items:center;gap:.5cqi;padding:1.2cqi 1.8cqi;border-radius:2.2cqi;border:0;
+ background:linear-gradient(180deg,#3a2414f2,#22140af2);box-shadow:inset 0 0 0 .4cqi #e0b86acc,0 .6cqi 1cqi #000a;font-family:'Oxanium',sans-serif;cursor:pointer}
 .qc17.cb-weapon .sl17 small{font:800 3.7cqi/1 'Oxanium',sans-serif;color:#cbb894;letter-spacing:.08em}
 .qc17.cb-weapon .sl17 span{display:flex;align-items:center;gap:.7cqi}.qc17.cb-weapon .sl17 b{font:800 4.2cqi/1 'Oxanium',sans-serif;color:#ffd98a}
 .qc17.cb-weapon .sl17.cb-off{opacity:.8;filter:saturate(.6)}
@@ -438,8 +438,7 @@
 .qc17.cb-weapon .cov.tok .cp .cb-ny{font:800 3.6cqi/1 'Oxanium',sans-serif;color:#ffd98a;letter-spacing:.08em}
 .qc17.cb-weapon .cb-in{font:700 3.7cqi/1.1 'Oxanium',sans-serif;color:#6a4a22;align-self:center;padding-left:1cqi}
 .qc17.cb-weapon .dice17.rows .sz small{font-size:3.7cqi}
-.qc17.cb-weapon .dice17.rows .row:has(.sl17){grid-template-columns:9cqi 1fr 15cqi}.qc17.cb-weapon .dice17.rows .row:has(.sl17) .dz{gap:1.2cqi;--dw:11.4cqi!important}
-.qc17.cb-weapon .dice17.rows .row:has(.sl17){grid-template-columns:8cqi minmax(0,1fr) auto}
-.qc17.cb-weapon .dice17.rows .row .sl17{position:static;transform:none;grid-column:3;grid-row:1;margin-right:.6cqi}
-.qc17.cb-weapon .dice17.rows .row:has(.sl17) .dz{min-width:0;justify-content:space-evenly}
-.qc17.cb-weapon .dice17.rows .row:has(.sl17) .d17{width:8.8cqi!important;height:auto!important;flex:none}
+
+/* Dave 11:47 PM CT: one dice size on every size row, evenly spaced */
+.qc17.cb-weapon .dice17.rows .dz{gap:0;justify-content:space-evenly;min-width:0}
+.qc17.cb-weapon .dice17.rows .d17{width:10cqi!important;height:auto!important;flex:none}
