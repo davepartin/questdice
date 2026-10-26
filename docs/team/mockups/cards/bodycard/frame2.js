@@ -27,7 +27,15 @@ export async function frameArt({ title = '' } = {}) {
   }
   if (title) { // the frame's own plaque, moved to the top of the field
     const py = y + 22; g.save(); g.shadowColor = '#0009'; g.shadowBlur = 8; g.shadowOffsetY = 4; g.drawImage(f, 74, 386, 572, 60, 160, py, 400, 54); g.restore();
-    g.font = '800 34px Cinzel'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#1a0e06'; g.fillText(title, W / 2, py + 29); g.fillStyle = '#f0d49a'; g.fillText(title, W / 2, py + 27);
+    // rev 4: centre the text's INK box (not the font's em box) on the plaque's dark inner band, measured from the drawn pixels
+    const col = g.getImageData(Math.round(W / 2) - 60, py, 1, 54).data; let t0 = -1, t1 = -1;
+    for (let i = 0; i < 54; i++) { const L = 0.3 * col[i * 4] + 0.59 * col[i * 4 + 1] + 0.11 * col[i * 4 + 2]; if (L < 60) { if (t0 < 0) t0 = i; t1 = i; } }
+    const bandMid = t0 < 0 ? py + 27 : py + (t0 + t1 + 1) / 2;
+    g.font = '800 34px Cinzel'; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; const m = g.measureText(title);
+    const tx = W / 2 - (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2; const base = bandMid + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+    g.fillStyle = '#1a0e06'; g.fillText(title, tx, base + 2); g.fillStyle = '#f0d49a'; g.fillText(title, tx, base);
+    const inkL = tx - m.actualBoundingBoxLeft, inkR = tx + m.actualBoundingBoxRight;
+    globalThis.__title = { plaque: { x: 160, y: py, w: 400, h: 54, bandTop: py + t0, bandBot: py + t1 + 1 }, ink: { l: inkL, r: inkR, t: base - m.actualBoundingBoxAscent, b: base + m.actualBoundingBoxDescent }, W };
   }
   return { card: c.toDataURL('image/jpeg', 0.92), corners: top.toDataURL() }; // corners: a layer to lay over the grid as well
 }

@@ -29,7 +29,7 @@ const st = (Q.get('state') || '').split(',').map(Number);
 COLS.forEach((c, i) => { c.cur = st[i] || E.sidesOf(HERO, c.k) || 4; });
 const KIND = { heal: 'heal', pierce: 'pierce', magic: 'magic', gold: 'gold' };
 const gearFace = (v) => ({ v, c: 'w', icons: Object.entries(FACE_PAY[v] || {}).flatMap(([k, n]) => Array(n).fill(KIND[k])) });
-const dieOf = (z) => dieImage(z, Array.from({ length: z }, (_, i) => gearFace(i + 1)), z, { px: 200, view: 'slot', el: 0.42 });
+const dieOf = (z) => dieImage(z, Array.from({ length: z }, (_, i) => gearFace(i + 1)), z, { px: 200, view: 'row' } /* rev 4: 'row' = shown face toward the viewer, upright, like the game's dice ('slot' showed the side faces upside down) */);
 const iconArt = (name, flip) => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
   const gr = g.createLinearGradient(0, 20, 0, 236); gr.addColorStop(0, '#8a5a2a'); gr.addColorStop(1, '#4a2c12'); g.fillStyle = gr;
   g.shadowColor = '#fff6'; g.shadowOffsetY = 3;
