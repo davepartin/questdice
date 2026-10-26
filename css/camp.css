@@ -439,6 +439,6 @@
 .qc17.cb-weapon .cb-in{font:700 3.7cqi/1.1 'Oxanium',sans-serif;color:#6a4a22;align-self:center;padding-left:1cqi}
 .qc17.cb-weapon .dice17.rows .sz small{font-size:3.7cqi}
 
-/* Dave 11:47 PM CT: one dice size on every size row, evenly spaced */
-.qc17.cb-weapon .dice17.rows .dz{gap:0;justify-content:space-evenly;min-width:0}
-.qc17.cb-weapon .dice17.rows .d17{width:10cqi!important;height:auto!important;flex:none}
+/* Dave 11:47 + 11:55 PM CT: one dice size (13cqi) on every size row, evenly spaced */
+.qc17.cb-weapon .dice17.rows .row{grid-template-columns:8cqi minmax(0,1fr) 1cqi}.qc17.cb-weapon .dice17.rows .dz{gap:1cqi 0;justify-content:space-evenly;flex-wrap:wrap;min-width:0}
+.qc17.cb-weapon .dice17.rows .d17{width:13cqi!important;height:auto!important;flex:none}
