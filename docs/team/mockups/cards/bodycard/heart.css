@@ -1,0 +1,21 @@
+/* Heart upgrade card (Crockpot / Grok Bot, 25 Oct): three rank tiers under cardboard covers, act seals. Mockup only. */
+.hcard .panel{display:flex;flex-direction:column;gap:1.4cqi;grid-template:none}
+.strip{display:flex;justify-content:center;gap:1cqi;padding-bottom:1cqi;border-bottom:.35cqi solid #6a4a2255}.strip img{width:9.2cqi;height:9.2cqi;border-radius:1.4cqi;box-shadow:0 .4cqi .6cqi #2a160677}
+.how{margin:0;text-align:center;font:700 2.9cqi/1.25 Oxanium,sans-serif;color:#3a220e}
+.tier{position:relative;flex:1;display:grid;grid-template-columns:13cqi 1fr;align-items:center;gap:1.4cqi;border-radius:1.6cqi;background:#00000010;box-shadow:inset 0 .3cqi .6cqi #3a22103d;padding:1cqi 1.4cqi}
+.tier.cur{background:#ffffff26;box-shadow:inset 0 0 0 .5cqi #b0283c88,inset 0 .3cqi .6cqi #3a22103d}
+.rk{position:relative;display:grid;place-items:center}.rk img{width:12cqi;height:12cqi}.rk b{position:absolute;font:800 3.6cqi/1 Cinzel,serif;color:#fff4e8;text-shadow:0 .3cqi .3cqi #3a0a14;margin-top:-1cqi}
+.bo{display:grid;gap:1cqi}.bo p{margin:0;display:grid;grid-template-columns:6cqi 20cqi 1fr;grid-template-rows:auto auto;column-gap:1.2cqi;align-items:center}
+.bo .wd{grid-row:span 2;width:6cqi;height:6cqi}.ics{display:flex;gap:.3cqi;grid-row:span 2}.ics img{width:4.6cqi;height:4.6cqi}
+.bo b{font:800 5cqi/1 Oxanium,sans-serif;color:#2a1608}.bo small{grid-column:3;font:700 2.3cqi/1 Oxanium,sans-serif;color:#5a3a1a}
+.now{position:absolute;top:-1.2cqi;right:1.6cqi;padding:.5cqi 1.4cqi;border-radius:99px;background:#b0283c;color:#fff0e8;font:800 2.3cqi/1 Oxanium,sans-serif;letter-spacing:.12em}
+.cov.hc{inset:-.3cqi}.cov.hc .cp b{font-size:4.6cqi}
+.cov.ready{filter:drop-shadow(0 0 1.6cqi #ffd36a) drop-shadow(0 .7cqi .6cqi #2a1606aa)}
+/* wax seal: the act lock pressed onto the cover */
+.seal{position:absolute;right:4cqi;top:50%;transform:translateY(-50%) rotate(-10deg);width:13cqi;height:13cqi;border-radius:50%;display:grid;place-items:center;align-content:center;
+ background:radial-gradient(circle at 38% 32%,#d8454a,#9a1820 55%,#5e0a10);box-shadow:0 .5cqi .8cqi #2a0608aa,inset 0 0 0 .9cqi #7a121a,inset 0 0 0 1.2cqi #c4383e66;
+ clip-path:polygon(50% 0,62% 4%,74% 2%,82% 12%,94% 18%,94% 30%,100% 42%,96% 54%,100% 66%,92% 76%,88% 88%,76% 92%,66% 100%,54% 96%,42% 100%,32% 94%,20% 96%,14% 84%,4% 78%,6% 66%,0 54%,4% 42%,2% 30%,10% 20%,16% 8%,28% 6%,38% 0)}
+.seal i{font:800 2.2cqi/1 Cinzel,serif;font-style:normal;color:#ffd8c8;letter-spacing:.1em}.seal b{font:800 5cqi/1 Cinzel,serif;color:#ffe8dc;text-shadow:0 .2cqi 0 #4a0408}
+.purse{display:flex;justify-content:space-between;font:800 3cqi/1 Oxanium,sans-serif;color:#3a220e;padding:0 1cqi}.purse span{display:flex;align-items:center;gap:.8cqi}
+.cov.hc .up{position:absolute;left:5cqi;top:50%;transform:translateY(-50%);font:800 4cqi/1 Oxanium,sans-serif;color:#5a3a1a;opacity:.8}
+.cov.hc .up small{display:block;font-size:2.2cqi;opacity:.85;margin-top:.5cqi}
