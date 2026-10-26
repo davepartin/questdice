@@ -1455,7 +1455,7 @@ function talentWorkshop(hero, slot) {
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
   return h('div', { class: 'tw-workshop' },
-    h('div', { class: 'tw-overview' }, campDie(hero, slot, size), h('div', {}, h('small', {}, 'YOUR TALENT DIE'), h('h3', {}, 'Shape your next roll'), h('p', {}, `${info.used} of ${info.faces} symbol faces set`))),
+    gearCardEl(hero, slot, { title: slot === 'SW' ? 'Talent One' : 'Talent Two', size, up, note: `${info.used} of ${info.faces} symbol faces set` }), // Crockpot: the real Talent die on its card
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
     h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Up to ${info.same} of each symbol per die.`), detail,

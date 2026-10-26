@@ -16,13 +16,22 @@ for (const [w, h] of [[375, 548], [390, 844]]) {
   await p.evaluate(async (name) => { const { S, E, showCamp } = window.QD; const hh = E.newHero({ name, cls: 'knight', seed: 5 }); hh.gold = 200; hh.campaign.act = 1; hh.campaign.step = 3;
     S.hero = hh; S.company = { members: [hh] }; S.seat = 0; S.tab = 'forge'; S.campPage = 'dice'; const SV = await import('./js/save.js'); if (!SV.heroExists(hh.name)) await SV.createSave(hh, 'testpass'); showCamp(); }, name);
   await pump(2);
-  for (const [slot, n] of [['N', 'head'], ['S', 'feet'], ['C', 'heart'], ['W', 'lefthand'], ['E', 'righthand']]) {
+  for (const [slot, n] of [['N', 'head'], ['S', 'feet'], ['C', 'heart'], ['W', 'lefthand'], ['E', 'righthand'], ['SW', 'talent']]) {
     await p.locator(`.cw-cell.s-${slot}`).click(); await pump(1.5); await p.waitForTimeout(600);
     await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const side = i?.closest('.sx-side'); if (i && side) side.scrollTop += i.getBoundingClientRect().top - 70; }); await pump(0.5); await p.waitForTimeout(300);
     await p.screenshot({ path: `${OUT}/camp-${n}-${TAG}_${tag}.jpg`, type: 'jpeg', quality: 82 });
     const st = await p.evaluate(() => { const i = document.querySelector('#camp-inspector'); const c = i?.querySelector('.qc-gear'); const done = [...(i?.querySelectorAll('button') || [])].find((x) => /Done|Close/.test(x.textContent));
       return { card: !!c, title: c?.querySelector('.title17')?.textContent || '', buy: !!i?.querySelector('.sh-buy, .sh-done, .sh-lockline'), close: !!done, cardW: c ? Math.round(c.getBoundingClientRect().width) : 0, vw: innerWidth }; });
     check(`${tag} ${n}: inspector has ${TAG === 'after' ? 'the card, ' : ''}a buy/limit line and Done`, (TAG !== 'after' || (st.card && st.cardW <= st.vw)) && (n === 'heart' || st.buy) && st.close, JSON.stringify(st));
+  }
+  if (TAG === 'after') { // the Talent die grows through its existing button; its card follows
+    await p.locator('.cw-cell.s-SW').click(); await pump(1);
+    const t0 = await p.evaluate(() => ({ size: window.QD.S.hero.special.SW, gold: window.QD.S.hero.gold, sym: JSON.stringify(window.QD.S.hero.talent.SW) }));
+    await p.evaluate(() => { const d = document.querySelector('#camp-inspector .tw-grow'); if (d) d.open = true; });
+    await p.locator('#camp-inspector .tw-grow .sh-buy:not([disabled])').first().click(); await pump(1.5);
+    const t1 = await p.evaluate(() => ({ size: window.QD.S.hero.special.SW, gold: window.QD.S.hero.gold, sym: JSON.stringify(window.QD.S.hero.talent.SW), card: document.querySelector('#camp-inspector .qc-gear .sz17')?.textContent, faces: document.querySelectorAll('#camp-inspector .qc-gear .gc-face').length }));
+    check(`${tag}: growing Talent One keeps its symbol, spends gold, and the card shows d${t1.size}`, t1.size > t0.size && t1.gold < t0.gold && t1.sym === t0.sym && t1.faces === t1.size, JSON.stringify({ t0, t1 }));
+    await p.screenshot({ path: `${OUT}/camp-talent-grown_${tag}.jpg`, type: 'jpeg', quality: 82 });
   }
   if (TAG === 'after') { // the hands grow independently: buy the right hand only
     await p.locator('.cw-cell.s-E').click(); await pump(1);
