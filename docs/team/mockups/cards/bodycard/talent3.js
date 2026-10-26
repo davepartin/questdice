@@ -82,7 +82,7 @@ async function build() {
   await document.fonts.load('900 40px "Archivo Black"').catch(() => {});
   const card = document.createElement('article'); card.className = 'bc r2 titled t3';
   card.innerHTML = `<img class="fr" alt=""><div class="panel">${column('SW')}${column('SE')}</div>`;
-  const u = await frameArt({ title: 'TALENTS' }); card.querySelector('.fr').src = u.card; card.insertAdjacentHTML('beforeend', `<img class="fr cn" src="${u.corners}" alt="">`);
+  const u = await frameArt({ title: 'TALENTS', emblem: true }); card.querySelector('.fr').src = u.card; card.insertAdjacentHTML('beforeend', `<img class="fr cn" src="${u.corners}" alt="">`);
   card.addEventListener('click', (e) => { const b = e.target.closest('.ts.open'); if (b && !b.closest('.tr').querySelector('.cov')) picker(card, b); });
   document.getElementById('wrap').append(card);
   if (H.pick) picker(card, card.querySelector(`.ts.open[data-slot="${H.pick[0]}"][data-v="${H.pick[1]}"]`));

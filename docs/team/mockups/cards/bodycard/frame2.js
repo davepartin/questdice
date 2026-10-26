@@ -5,7 +5,21 @@
 const SRC = '../../../../../assets/cards/frame-t17.webp';
 const load = (s) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = s; });
 export const FIELD = { x: 86, y: 84, w: 548, h: 884 }; // in frame pixels (720 x 1052)
-export async function frameArt({ title = '' } = {}) {
+import { drawSym } from '../../../../../js/gfx/dice/faces.js';
+// rev 9 (Dave, Talent card): opt-in emblems stamped into the four round corner insets, the game's own icon shapes, metal-toned with a faint tint.
+const EMB = [['atk', '#ff3b3b'], ['def', '#3aa4ff'], ['magic', '#a64dff'], ['heal', '#38e87a']]; // TL, TR, BL, BR
+function emblems(g, W, H) {
+  const o = 63, size = 34; const at = [[o, o], [W - o, o], [o, H - o], [W - o, H - o]];
+  at.forEach(([x, y], i) => { const [kind, tint] = EMB[i];
+    const ink = (fill, dx, dy, s = size) => { g.fillStyle = fill; g.strokeStyle = fill; drawSym(g, kind, x + dx, y + dy, s, 0, true); };
+    g.save(); ink('#000000b0', 1.6, 2.2); ink('#e8e2d0a0', -1, -1.2); // stamped: dark lower edge, lit upper edge
+    const q = document.createElement('canvas'); q.width = q.height = size * 2; const qg = q.getContext('2d'); const c0 = size;
+    const m = qg.createLinearGradient(c0 - size / 2, c0 - size / 2, c0 + size / 2, c0 + size / 2); m.addColorStop(0, '#b4ae9c'); m.addColorStop(0.5, '#7c776a'); m.addColorStop(1, '#4c483f');
+    qg.fillStyle = m; qg.strokeStyle = m; drawSym(qg, kind, c0, c0, size, 0, true);
+    qg.globalCompositeOperation = 'source-atop'; qg.globalAlpha = 0.14; qg.fillStyle = tint; qg.fillRect(0, 0, size * 2, size * 2); // faint tint, metal stays metal
+    g.drawImage(q, x - c0, y - c0); g.restore(); });
+}
+export async function frameArt({ title = '', emblem = false } = {}) {
   await document.fonts.load('800 34px Cinzel').catch(() => {}); const f = await load(SRC); const W = 720, H = 1052; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   g.drawImage(f, 0, 0);
   // kraft field
@@ -37,5 +51,6 @@ export async function frameArt({ title = '' } = {}) {
     const inkL = tx - m.actualBoundingBoxLeft, inkR = tx + m.actualBoundingBoxRight;
     globalThis.__title = { plaque: { x: 160, y: py, w: 400, h: 54, bandTop: py + t0, bandBot: py + t1 + 1 }, ink: { l: inkL, r: inkR, t: base - m.actualBoundingBoxAscent, b: base + m.actualBoundingBoxDescent }, W };
   }
+  if (emblem) emblems(g, W, H);
   return { card: c.toDataURL('image/jpeg', 0.92), corners: top.toDataURL() }; // corners: a layer to lay over the grid as well
 }
