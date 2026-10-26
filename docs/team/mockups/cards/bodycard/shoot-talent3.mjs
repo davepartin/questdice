@@ -1,7 +1,7 @@
-// Talent rev 3 renders -> /workspace/card-previews-talent-v3 (390x844 + 375x548)
+// Talent rev 4 renders -> /workspace/card-previews-talent-v4 (390x844 + 375x548)
 import { chromium } from '/workspace/pw/node_modules/playwright/index.mjs';
 import { spawn } from 'node:child_process'; import { mkdirSync } from 'node:fs';
-const root = new URL('../../../../../', import.meta.url).pathname, out = process.env.OUT || '/workspace/card-previews-talent-v3'; mkdirSync(out, { recursive: true });
+const root = new URL('../../../../../', import.meta.url).pathname, out = process.env.OUT || '/workspace/card-previews-talent-v4'; mkdirSync(out, { recursive: true });
 const srv = spawn('python3', ['-m', 'http.server', '8816', '-d', root], { stdio: 'ignore' }); await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 for (const s of ['fresh', 'placed', 'choose']) for (const [w, h] of [[390, 844], [375, 548]]) {

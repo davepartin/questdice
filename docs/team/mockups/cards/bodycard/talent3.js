@@ -18,19 +18,23 @@ const H = { fresh: { size: { SW: 4, SE: 0 }, chit: { SW: {}, SE: {} } },
 const memo = new Map(); const once = (k, f) => (memo.has(k) ? memo.get(k) : (memo.set(k, f()), memo.get(k)));
 const cv = (px, draw) => { const c = document.createElement('canvas'); c.width = c.height = px; draw(c.getContext('2d'), px); return c.toDataURL(); };
 // a printed emerald face (faces 1-4)
-const face = (kind, sym) => once(`f${kind}${sym}`, () => cv(160, (g) => {
-  g.beginPath(); g.roundRect(8, 8, 144, 144, 26); const gr = g.createRadialGradient(64, 54, 10, 80, 80, 110); gr.addColorStop(0, EM.core); gr.addColorStop(0.6, EM.mid); gr.addColorStop(1, EM.edge);
-  g.fillStyle = gr; g.fill(); g.lineWidth = 4; g.strokeStyle = EM.trim + '99'; g.stroke(); g.fillStyle = '#f4fbf8'; g.strokeStyle = '#f4fbf8';
-  if (kind === 'x2') { g.font = '800 58px Oxanium'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('×2', 80, 82); }
-  if (kind === 'sym') { drawNumeral(g, '4', 80, 60, 46, { weight: 16, under: true }); g.fillStyle = COL[sym]; g.strokeStyle = '#0b1a1a'; drawSym(g, KIND(sym), 80, 116, 40, 3, true); }
+const face = (kind, sym) => once(`f${kind}${sym}`, () => cv(160, (g) => { // rev 4: a d4 face is a TRIANGLE (true d4 shape), not a square
+  const tri = () => { g.beginPath(); const P = [[80, 10], [152, 140], [8, 140]]; for (let i = 0; i < 3; i++) { const a = P[i], b = P[(i + 1) % 3], c = P[(i + 2) % 3];
+    const m1 = [a[0] + (b[0] - a[0]) * 0.1, a[1] + (b[1] - a[1]) * 0.1]; if (i === 0) g.moveTo(m1[0], m1[1]); g.arcTo(b[0], b[1], c[0], c[1], 14); } g.closePath(); };
+  tri(); const gr = g.createRadialGradient(70, 80, 10, 80, 100, 110); gr.addColorStop(0, EM.core); gr.addColorStop(0.6, EM.mid); gr.addColorStop(1, EM.edge);
+  g.save(); g.shadowColor = '#2a160677'; g.shadowBlur = 6; g.shadowOffsetY = 4; g.fillStyle = gr; g.fill(); g.restore(); g.lineWidth = 4; g.strokeStyle = EM.trim + '99'; g.stroke(); g.fillStyle = '#f4fbf8'; g.strokeStyle = '#f4fbf8';
+  if (kind === 'x2') { g.font = '800 40px Oxanium'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('×2', 80, 104); }
+  if (kind === 'sym') { drawNumeral(g, '4', 80, 82, 32, { weight: 14, under: true }); g.fillStyle = COL[sym]; g.strokeStyle = '#0b1a1a'; drawSym(g, KIND(sym), 80, 118, 26, 3, true); }
 }));
 // the die-cut cardboard chit: a kraft disc with a darker cut edge, the icon printed on it
-const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => {
-  const r = s * 0.44, c = s / 2; g.save(); g.shadowColor = '#2a1606aa'; g.shadowBlur = s * 0.05; g.shadowOffsetY = s * 0.03;
-  g.beginPath(); g.arc(c, c, r, 0, 7); g.fillStyle = '#8a6434'; g.fill(); g.restore(); // cut edge (board thickness)
-  g.beginPath(); g.arc(c, c - s * 0.015, r * 0.93, 0, 7); const gr = g.createRadialGradient(c * 0.8, c * 0.7, 2, c, c, r); gr.addColorStop(0, '#f1dcae'); gr.addColorStop(1, '#cfa96c'); g.fillStyle = gr; g.fill();
-  g.lineWidth = s * 0.012; g.strokeStyle = '#6a4a2288'; g.beginPath(); g.arc(c, c - s * 0.015, r * 0.8, 0, 7); g.stroke();
-  g.fillStyle = COL[sym]; g.strokeStyle = '#1a1208'; drawSym(g, KIND(sym), c, c - s * 0.015, s * 0.46, s * 0.025, true);
+const chit = (sym, px = 160) => once(`c${sym}${px}`, () => cv(px, (g, s) => { // rev 4: die-cut board edge + soft contact shadow, sits flush
+  const r = s * 0.44, c = s / 2, t = s * 0.028; // t = board thickness
+  g.save(); g.shadowColor = '#1e100666'; g.shadowBlur = s * 0.025; g.shadowOffsetY = s * 0.012; g.beginPath(); g.arc(c, c + t / 2, r, 0, 7); g.fillStyle = '#6e4c24'; g.fill(); g.restore(); // the cut edge, seen below the top
+  const eg = g.createLinearGradient(0, c, 0, c + r + t); eg.addColorStop(0, '#9a7040'); eg.addColorStop(1, '#5a3c1a'); g.beginPath(); g.arc(c, c + t / 2, r, 0, 7); g.fillStyle = eg; g.fill();
+  g.beginPath(); g.arc(c, c - t / 2, r, 0, 7); const gr = g.createRadialGradient(c * 0.8, c * 0.7, 2, c, c, r); gr.addColorStop(0, '#f1dcae'); gr.addColorStop(1, '#cfa96c'); g.fillStyle = gr; g.fill();
+  g.lineWidth = s * 0.008; g.strokeStyle = '#fff4d855'; g.beginPath(); g.arc(c, c - t / 2, r - s * 0.006, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); // light catching the top cut
+  g.lineWidth = s * 0.012; g.strokeStyle = '#6a4a2288'; g.beginPath(); g.arc(c, c - t / 2, r * 0.8, 0, 7); g.stroke();
+  g.fillStyle = COL[sym]; g.strokeStyle = '#1a1208'; drawSym(g, KIND(sym), c, c - t / 2, s * 0.46, s * 0.025, true);
 }));
 const NAME = { SW: 'TALENT ONE', SE: 'TALENT TWO' }; const ADDS = { 6: [5, 6], 8: [7, 8], 10: [9, 10] }; const FROM = { 6: 4, 8: 6, 10: 8 };
 function slotEl(slot, v) {
