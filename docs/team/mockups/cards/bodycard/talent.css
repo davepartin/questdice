@@ -1,0 +1,21 @@
+/* Talent card concept (Crockpot / Grok Bot, 25 Oct): design-your-own-die. Each face is a slot; covers hide the slots a bigger die adds. */
+.tc .panel{display:flex;gap:2.4cqi;grid-template:none}
+.tcol{flex:1;display:flex;flex-direction:column;gap:1.4cqi;position:relative}
+.thd{display:flex;align-items:center;justify-content:center;gap:1.4cqi;padding-bottom:1cqi;border-bottom:.35cqi solid #6a4a2255}
+.thd img{width:9cqi;height:9cqi}.thd .cs{width:7cqi;height:7cqi}
+.trow{position:relative;flex:1;display:grid;grid-template-columns:7cqi 1fr;align-items:center;border-radius:1.6cqi;background:#00000010;box-shadow:inset 0 .3cqi .6cqi #3a22103d;padding:.8cqi}
+.trow.d4{flex:1.9}
+.trow .sz{font:800 3.6cqi/1 Oxanium,sans-serif;color:#4a2c12;text-align:center}
+.slots{display:flex;flex-wrap:wrap;justify-content:center;gap:1.2cqi}
+.one .slots{flex-wrap:nowrap}
+.slot{position:relative;width:var(--s,13cqi);aspect-ratio:1;display:grid;place-items:center;border:0;padding:0;background:none}
+.slot img{width:100%;height:100%;filter:drop-shadow(0 .5cqi .4cqi #2a160677)}
+.slot.empty{cursor:pointer}
+.slot .fee{position:absolute;bottom:-1cqi;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.5cqi;padding:.3cqi 1cqi;border-radius:99px;background:#22140ae6;font:800 2.4cqi/1 Oxanium,sans-serif;color:#ffd98a;white-space:nowrap}
+.slot .fee .coin{width:2.2cqi;height:2.2cqi}
+.trow .cov{inset:-.3cqi}
+.colock{position:absolute;inset:-.4cqi;z-index:4;display:grid;place-items:center;align-content:center;gap:1.4cqi;border-style:solid;border-width:2cqi;border-image:url(../t17/token-locked.webp) 100 232 112 92 fill / 2cqi 5cqi 2.4cqi 2cqi stretch}
+.colock .cp{display:flex;align-items:center;gap:.8cqi;padding:.8cqi 1.6cqi;border-radius:99px;background:linear-gradient(180deg,#3a2414,#22140a);box-shadow:inset 0 0 0 .3cqi #e0b86a99}.colock .cp b{font:800 4cqi/1 Oxanium;color:#ffd98a}
+.pick{position:absolute;z-index:8;left:50%;transform:translate(-50%,-100%);display:flex;gap:1cqi;padding:1.2cqi;border-radius:2cqi;background:#1c120af0;box-shadow:inset 0 0 0 .35cqi #e0b86a,0 1cqi 2cqi #000b}
+.pick button{display:grid;justify-items:center;gap:.4cqi;width:10cqi;padding:.6cqi 0;border:0;border-radius:1.4cqi;background:#3a2414;cursor:pointer}
+.pick button[disabled]{opacity:.35}.pick img{width:7cqi;height:7cqi}.pick small{font:800 2.4cqi/1 Oxanium;color:#ffd98a}

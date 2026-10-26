@@ -3,6 +3,7 @@
 // Covers come off smallest first ("Upgrade to dX first", same as the size card). Costs are the game's CURRENT steps (data.js
 // MIND_STEPS 50/110/230, STRENGTH_STEPS 40/100/220, SPEED_STEPS 60/140; feet d8 Ranger only via CLASSES maxFeet). No wear.
 // ?cls=knight|ranger|...  ?state=4,6,8,6 (Head,L,R,Feet sizes)
+import { frameArt, FIELD } from './frame2.js';
 import { dieImage } from '../t17/dice3d.js';
 import { PICK } from '../helmet/heads.js';
 import { drawIcon } from '../../../../../js/gfx/dice/faces.js';
@@ -19,6 +20,10 @@ const COLS = [
   { k: 'E', icon: 'gauntlet', steps: STRENGTH_STEPS, max: 10, flip: true },
   { k: 'S', icon: 'boots', steps: SPEED_STEPS, max: E.maxFeetOf(HERO) },
 ];
+// rev 2 (Dave 8:14 PM): ?rev=2 integrated frame + title (?title=GEAR|BODY|none); ?cost=equal uses the PROPOSED equal step cost.
+const REV2 = Q.get('rev') === '2'; const TITLE = Q.get('title') === 'none' ? '' : (Q.get('title') || 'GEAR');
+const EQUAL = { 4: [50], 6: [110], 8: [220] }; // PROPOSED, NOT FINAL: mean of the four columns' current step, rounded to 10
+if (Q.get('cost') === 'equal') COLS.forEach((c) => { c.steps = EQUAL; });
 const st = (Q.get('state') || '').split(',').map(Number);
 COLS.forEach((c, i) => { c.cur = st[i] || E.sidesOf(HERO, c.k) || 4; });
 const KIND = { heal: 'heal', pierce: 'pierce', magic: 'magic', gold: 'gold' };
@@ -43,6 +48,8 @@ function build() {
     panel.append(cell);
   }
   card.innerHTML = '<img class="fr" src="../../../../../assets/cards/frame-t17.webp" alt="">'; card.append(panel);
+  if (REV2) { card.classList.add('r2'); if (TITLE) card.classList.add('titled'); frameArt({ title: TITLE }).then((u) => { card.querySelector('.fr').src = u.card; card.insertAdjacentHTML('beforeend', `<img class="fr cn" src="${u.corners}" alt="">`); document.body.dataset.ready = '1'; });
+    if (Q.get('cost') === 'equal') card.insertAdjacentHTML('beforeend', '<div class="prop">PROPOSED · equal cost</div>'); }
   let toastT;
   const say = (cell, text) => { card.querySelector('.toast')?.remove(); const m = document.createElement('div'); m.className = 'toast'; m.setAttribute('role', 'status'); m.textContent = text;
     const r = cell.getBoundingClientRect(), b = card.getBoundingClientRect(); m.style.top = ((r.top + r.height / 2 - b.top) / b.height * 100) + '%'; card.append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };
@@ -56,4 +63,4 @@ function build() {
   return card;
 }
 document.getElementById('wrap').append(build());
-document.body.dataset.ready = '1';
+if (!REV2) document.body.dataset.ready = '1';
