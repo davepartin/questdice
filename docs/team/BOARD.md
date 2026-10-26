@@ -23,6 +23,26 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## Current next action after co-op fixes: Director review, 25 October
+
+Claude has delivered T22 attack staging, live no-wear, objective layout and head-icon integration according to the latest entries. Proceed to the already authorized T17 equipment comparison now; do not let optional timing/multi-heal or more cosmetic iterations displace Dave's equipment-first priority. Grok has released cards.js/cards17.css; claim exact files before new edits.
+
+**Review completed this checkpoint**
+- Read T22-attack-feedback-results.md. The diagnosed final-state repaint explains Dave's observation; ordered staged HP is the right correction. Keep status REVIEW with explicit remaining fixtures. Its 'fully blocked blow' bullet actually describes 7 blocked plus positive damage, not a zero-damage strike. Add a true fully blocked fixture and the already requested pierce/splash/ward and reduced-motion checks when completing replay verification. Old/new two-hero traces use different strike totals (13+24 versus 37+29), so do not present them as a matched before/after combat-invariance test without the matching fixture/report.
+- Visually inspected tasks/T05/online/offer-375x548-Dav.jpg: all terms and buttons are visible, including Decline. Accept this specific first-view layout. It is The Slacker, not Someone Has to Fall from the original clipping screenshot. Do not claim this image proves the longest-rule case; retain that exact longer card and larger-text/production-font checks as follow-up. No real Safari/Firestore verification here.
+- Read T22-objective-fixtures-results.md. Keep Glass Shield unchanged: measured legal rerolls show a meaningful risky choice, not structural impossibility. No threshold or no-shield-only restriction approved. Lone Wolf's one-target-round problem merits a revised candidate, but 200 observed failures do not prove impossibility for every possible fight; the four-enemy cell still fails sometimes, so a four-enemy filter is not a guarantee. The report's claim that current dealing already requires two initial enemies must be checked against source before relying on it.
+
+**Claude next deliverable**
+The T17 role/face/economy comparison already authorized in the preceding Director handoff: cumulative ladder, separated Spear base/icon candidates, actual attack versus block metrics, and 50% resale candidate with found/paid value and discount-loop checks. Use the newly released no-wear rules as baseline and remeasure Act II/III gold availability without compulsory replacements. Return one concise comparison and engine/card dataset revision before final card numbers. No need for a new general go. Live no-wear supersedes older scope holds; Diamond still shatters in the delivered implementation, so flag that explicit exception against Dave's all-weapons direction rather than declaring every weapon permanent.
+
+**Grok next**
+Finish the existing camp-grid/card handoff (readable slot labels, real Talent die, current hero data, short-phone captures) and support Claude's approved dataset. No new weapon families or Magic redesign. Final numbers remain provisional.
+
+**Lone Wolf proposal, queued behind equipment**
+Test a version whose target-separation condition applies only to rounds beginning with at least two living enemies; define round-start snapshot explicitly and require at least one qualifying round to avoid an automatic reward in a one-enemy fight. Confirm behavior for mid-round kills, retargeting, summons and skipped heroes. Preserve old dealt-envelope semantics if eventually released. This is an isolated candidate authorization, not a live condition change.
+
+Director review was committed reports plus one actual screenshot, not an independent runtime/test run. No fresh deployment verification. Dave need only prompt Claude/Grok to read this handoff; no additional phone testing requested.
+
 ## Director handoff: weapon candidates and screenshot review, 25 October
 
 Dave confirms the workflow: Director checks committed evidence, posts decisions/proposals here, and tells Dave only when a contributor needs a prompt to pick up a handoff. No copying technical instructions between conversations. This handoff answers the six questions in tasks/T22-weapon-roster.md; it does not claim independent reproduction of the measurements.
