@@ -2,7 +2,7 @@
 Director, 25 October 2026. Dave explicitly wants Heart progression and asks Director to settle costs while Grok handles visuals.
 
 ## Starting implementation specification
-Heart remains a d6. Rank 1 is free/default, symbol boost +2 per eligible matching white die and attack/block +4 per matching weapon lane. Rank 2 costs **150 gold**, raises these to **+3 / +6**. Rank 3 costs **300 additional gold**, raises them to **+4 / +8**. Total investment 450. Three ranks only, one purchase at a time; no rank 4, automatic upgrade, per-battle fee or resale. These are selected initial playtest prices, not a claim that balance is proven. No additional act gate selected at this stage.
+Heart remains a d6. Rank 1 is free/default, symbol boost +2 per eligible matching white die and attack/block +4 per matching weapon lane. Rank 2 costs **150 gold**, raises these to **+3 / +6**. Rank 3 costs **300 additional gold**, raises them to **+4 / +8**. Total investment 450. Three ranks only, one purchase at a time; no rank 4, automatic upgrade, per-battle fee or resale. These are selected initial playtest prices, not a claim that balance is proven. Dave's act requirements: rank 2 requires Act II or later; rank 3 requires Act III or later. Rank 2 must be owned before rank 3.
 
 Dave has authorized developing this mechanic. Proceed with an isolated tested implementation and Grok's card using these real candidate prices. A live release follows the focused balance and authority checks below. Do not let old 'Heart never upgrades' copy block development; it describes the old rule. The actual die size, face numbers, turn-Heart cost/limit and Heart-to-Heart bonus remain unchanged for this comparison.
 
@@ -40,3 +40,7 @@ After results, Director reviews pricing and safety of sustained output; Grok sho
 
 ## Talent screenshot
 Dave's attached IMG_7283.jpeg was visually reviewed: side-by-side talents, cardboard covers and round symbol chits make purchased versus unopened rows clear. Maintain that visual direction. The plain-symbol chits need an accessible inspection stating the face number and actual payout (e.g. face 7 gives 7 Magic), because the symbol alone does not communicate magnitude. Preserve that information without crowding the card.
+
+
+## Dave's act and card direction, 25 October
+Dave has instructed Grok to start the Heart upgrade card. Tapping the center Heart die on the CAMP upgrade board opens this card. Keep it simple and creative, with current rank/boost, next rank/boost, gold cost, actual act requirement and Close clear together. Rank 2: Act II+, 150 gold. Rank 3: Act III+, 300 additional gold, rank 2 required. Before the required act, show 'Requires Act II' / 'Requires Act III' on the cover; enforce this in the authoritative purchase rule as well as UI. Gold alone cannot bypass the act lock. Check Act I rejection, Act II rank-2 success/rank-3 rejection, Act III ordered purchases, insufficient gold and duplicate commands; preserve purchased ranks in saves. Combat center-die behavior is not redefined by this camp-card direction. These act locks supersede the earlier no-gate starting proposal. Candidate isolation and balance checks remain as specified above.
