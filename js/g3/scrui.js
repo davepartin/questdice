@@ -134,7 +134,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
+const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeHeart', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -1343,7 +1343,7 @@ function slotSheet(slot) {
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero), h('p', { class: 'sh-role' }, SH_ROLE.C)] // Crockpot: the cardboard HEART card (no Heart purchase exists yet)
+  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero, { say: (t) => toast(t), onGrow: (rank) => { if (HE.upgradeHeart(hero, rank)) shBought(); } }), h('p', { class: 'sh-role' }, SH_ROLE.C)]
     : [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];

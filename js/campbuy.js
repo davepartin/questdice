@@ -18,7 +18,7 @@ function emptyFace(faces, f) {
 }
 
 export function slotPrice(hero, slot) {
-  if (slot === 'C') return null;
+  if (slot === 'C') return E.heartUpgrade(hero).cost ?? null;
   if (!E.isActive(hero, slot)) return E.unlockInfo(hero, slot).cost ?? null;
   if (slot === 'NW' || slot === 'NE') {
     const inst = hero.loadout[slot];
@@ -40,6 +40,7 @@ export function slotPrice(hero, slot) {
 }
 
 export function slotCanBuy(hero, slot) {
+  if (slot === 'C') return E.heartUpgrade(hero).ok;
   if (!E.isActive(hero, slot)) return E.unlockInfo(hero, slot).ok;
   if (slot === 'NW' || slot === 'NE') {
     const inst = hero.loadout[slot];

@@ -4,7 +4,7 @@
 // callback the camp inspector hands in, which runs the game's existing purchase (HE.upgradeDie / HE.unlockDie / the talent face editor).
 // No PROPOSED numbers: body costs are MIND_STEPS / STRENGTH_STEPS / SPEED_STEPS, talent faces cost talentFaceCost, Talent Two unlocks at
 // UNLOCK_COST.SE, the act caps come from dieCapForAct. The Heart has no rank mechanic in the live game yet, so its card shows Level 1 (the
-// real HEART_AMP / HEART_COLOR_BONUS) and Levels 2 and 3 as "not in the game yet" covers with Dave's act seals; nothing there can be bought.
+// base boosts) and unavailable covers. T23 enables purchases only in its isolated candidate, through HE.upgradeHeart.
 import { h } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
@@ -166,16 +166,26 @@ export function talentsCard(hero, focus, { selected = null, onFace, onGrow, onUn
 function miniGrid(lit) { return cv(120, (g) => { g.fillStyle = '#3a2410'; g.beginPath(); g.roundRect(2, 2, 116, 116, 14); g.fill();
   D.SLOTS.forEach((s, i) => { const x = 10 + (i % 3) * 35, y = 10 + ((i / 3) | 0) * 35; g.beginPath(); g.roundRect(x, y, 30, 30, 6); g.fillStyle = lit[s] || (s === 'C' ? '#7a3040' : '#6a5038'); g.fill(); if (lit[s]) { g.lineWidth = 2.5; g.strokeStyle = '#1a0e06'; g.stroke(); } }); }); }
 let GRIDS = null;
-export function heartCard(hero) {
+export function heartCard(hero, { onGrow, say } = {}) {
   GRIDS ||= { str: miniGrid({ N: '#f6efe0', W: '#f6efe0', E: '#f6efe0', S: '#f6efe0' }), wpn: miniGrid({ NW: '#e8343c', NE: '#2f8ef0' }) };
   const spec = dieSpecs(hero).C; const fi = (i) => h('img', { class: 'cb-hface', src: faceImage(spec, i, 120), alt: `Heart face ${i}` });
-  const amp = D.HEART_AMP[0], lane = D.HEART_COLOR_BONUS; // live values today (Heartstone doubles both in battle)
-  const level = (n, body) => h('div', { class: 'cb-slot' }, h('div', { class: 'cb-lv' }, h('span', { class: 'cb-lt' }, `LEVEL ${n}`), body));
+  const rank = E.heartRankOf(hero); const up = E.heartUpgrade(hero);
+  const level = (n, body) => h('div', { class: 'cb-slot' }, h('div', { class: 'cb-lv' }, h('span', { class: 'cb-lt' }, `LEVEL ${n}${D.EXPERIMENT.heartUpgrades && n === rank ? " NOW" : ""}`), body));
   const later = (n, act) => h('div', { class: 'cb-slot' }, h('div', { class: 'cb-cov cb-soon', 'aria-label': `Level ${n}: not in the game yet. Needs Act ${D.ROMAN[act]}` }, h('b', {}, `LEVEL ${n}`), h('small', {}, 'Not in the game yet'), seal(act)));
   return shell('HEART', 'cb-heart', 'Heart die card', [
     h('div', { class: 'cb-key' }, h('div', { class: 'cb-fs' }, fi(1), fi(2), fi(3), fi(4)), h('div', { class: 'cb-map' }, h('img', { src: GRIDS.str, alt: 'dice grid: head, hands and feet' }), h('span', {}, 'Upgrades', h('br'), 'STRENGTH dice'))),
     h('div', { class: 'cb-key' }, h('div', { class: 'cb-fs' }, fi(5), fi(6)), h('div', { class: 'cb-map' }, h('img', { src: GRIDS.wpn, alt: 'dice grid: the two weapon dice' }), h('span', {}, 'Upgrades', h('br'), 'WEAPON dice'))),
-    h('div', { class: 'cb-lvls' }, level(1, h('p', {}, h('span', {}, 'STRENGTH dice ', h('b', {}, `+${amp}`)), h('span', {}, 'WEAPON dice ', h('b', {}, `+${lane}`)))), later(2, 2), later(3, 3)),
+    h('div', { class: 'cb-lvls' }, ...[1, 2, 3].map((n) => {
+      const step = D.HEART_RANKS[n];
+      const body = h('p', {}, h('span', {}, D.EXPERIMENT.heartUpgrades ? 'Each match ' : 'STRENGTH dice ', h('b', {}, `+${step.amp}`)), h('span', {}, D.EXPERIMENT.heartUpgrades ? 'Each lane ' : 'WEAPON dice ', h('b', {}, `+${step.lane}`)));
+      if (n <= rank) return level(n, body);
+      if (!D.EXPERIMENT.heartUpgrades) return later(n, step.act);
+      const locked = (hero.campaign?.act || 1) < step.act; const ready = n === up.next && up.ok;
+      const why = locked ? `Requires Act ${D.ROMAN[step.act]}` : n !== up.next ? `Buy Level ${n - 1} first` : `Need ${Math.max(0, step.cost - hero.gold)} more gold`;
+      return h('div', { class: 'cb-slot' }, h('div', { class: `cb-cov ${ready ? 'ready' : ''}`, 'data-heart-rank': n,
+        'aria-label': `Level ${n}: +${step.amp} each matching strength die, +${step.lane} each matching weapon lane. ${step.cost} gold. ${ready ? 'Buy upgrade' : why}`,
+        ...press(() => ready ? onGrow?.(n) : say?.(why)) }, price(step.cost, hero.gold < step.cost), h('small', {}, `LEVEL ${n}: +${step.amp} / +${step.lane}`), locked ? seal(step.act) : null));
+    })),
   ]);
 }
 

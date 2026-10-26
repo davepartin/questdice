@@ -64,6 +64,8 @@ export const FACE_PAY = [null,
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
 // Heart amplifier: a heart of 1-4 (heal, pierce, magic, gold) adds +2 for every head / hand / feet die showing that symbol (any face).
 export const HEART_AMP = [2, 2, 2, 2];
+export const HEART_RANKS = Object.freeze([null, Object.freeze({ amp: 2, lane: 4, cost: 0, act: 1 }), Object.freeze({ amp: 3, lane: 6, cost: 200, act: 2 }), Object.freeze({ amp: 4, lane: 8, cost: 300, act: 3 })]);
+export const normalizeHeartRank = (rank) => (Number.isInteger(rank) && rank >= 1 && rank <= 3 ? rank : 1);
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
@@ -241,7 +243,7 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
-export const EXPERIMENT = { weapons2: false, weaponSize: false };
+export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: false };
 // T17 weapon size (an isolated experiment, off in the game and in every preview but /preview/weapon-size/; docs/team/tasks/T17.md). With it on: weapons
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
