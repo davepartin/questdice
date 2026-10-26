@@ -8,16 +8,29 @@ export const FIELD = { x: 86, y: 84, w: 548, h: 884 }; // in frame pixels (720 x
 import { drawSym } from '../../../../../js/gfx/dice/faces.js';
 // rev 9 (Dave, Talent card): opt-in emblems stamped into the four round corner insets, the game's own icon shapes, metal-toned with a faint tint.
 const EMB = [['atk', '#ff3b3b'], ['def', '#3aa4ff'], ['magic', '#a64dff'], ['heal', '#38e87a']]; // TL, TR, BL, BR
+// rev 10: the circles' TRUE centres, fitted to frame-t17.webp (dark disc vs metal rim, 0.5 px grid; radius ~26.5 px). The bottom insets sit
+// 8 px higher than the top ones are low, so the old mirrored (63, 63) guess was off by up to 8 px.
+export const INSETS = [[63, 60, 26.5], [655.5, 60, 26.5], [61.5, 981, 26.5], [657, 981, 26]]; // TL, TR, BL, BR: x, y, r (frame px)
 function emblems(g, W, H) {
-  const o = 63, size = 34; const at = [[o, o], [W - o, o], [o, H - o], [W - o, H - o]];
-  at.forEach(([x, y], i) => { const [kind, tint] = EMB[i];
-    const ink = (fill, dx, dy, s = size) => { g.fillStyle = fill; g.strokeStyle = fill; drawSym(g, kind, x + dx, y + dy, s, 0, true); };
-    g.save(); ink('#000000b0', 1.6, 2.2); ink('#e8e2d0a0', -1, -1.2); // stamped: dark lower edge, lit upper edge
-    const q = document.createElement('canvas'); q.width = q.height = size * 2; const qg = q.getContext('2d'); const c0 = size;
-    const m = qg.createLinearGradient(c0 - size / 2, c0 - size / 2, c0 + size / 2, c0 + size / 2); m.addColorStop(0, '#b4ae9c'); m.addColorStop(0.5, '#7c776a'); m.addColorStop(1, '#4c483f');
-    qg.fillStyle = m; qg.strokeStyle = m; drawSym(qg, kind, c0, c0, size, 0, true);
-    qg.globalCompositeOperation = 'source-atop'; qg.globalAlpha = 0.14; qg.fillStyle = tint; qg.fillRect(0, 0, size * 2, size * 2); // faint tint, metal stays metal
-    g.drawImage(q, x - c0, y - c0); g.restore(); });
+  const size = 34; const before = g.getImageData(0, 0, W, H).data; const meas = [];
+  INSETS.forEach(([x, y, r], i) => { const [kind, tint] = EMB[i];
+    // centre by the icon's VISUAL bounding box (alpha > 0), not its path origin
+    const n = size * 2; const q = document.createElement('canvas'); q.width = q.height = n; const qg = q.getContext('2d', { willReadFrequently: true });
+    qg.fillStyle = '#000'; drawSym(qg, kind, n / 2, n / 2, size, 0, true); const d = qg.getImageData(0, 0, n, n).data;
+    let x0 = n, x1 = -1, y0 = n, y1 = -1; for (let j = 0; j < n * n; j++) if (d[j * 4 + 3] > 0) { const px = j % n, py = (j / n) | 0; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+    const ox = x - (x0 + x1 + 1) / 2 + n / 2, oy = y - (y0 + y1 + 1) / 2 + n / 2; // where the path origin must go
+    const ink = (fill, dx, dy) => { g.fillStyle = fill; g.strokeStyle = fill; drawSym(g, kind, ox + dx, oy + dy, size, 0, true); };
+    g.save(); ink('#000000b0', 1.2, 1.2); ink('#e8e2d0a0', -1.2, -1.2); // stamped: shadow + light, equal and opposite so the centre stays put
+    qg.clearRect(0, 0, n, n); const m = qg.createLinearGradient(n / 2 - size / 2, n / 2 - size / 2, n / 2 + size / 2, n / 2 + size / 2); m.addColorStop(0, '#b4ae9c'); m.addColorStop(0.5, '#7c776a'); m.addColorStop(1, '#4c483f');
+    qg.fillStyle = m; drawSym(qg, kind, n / 2, n / 2, size, 0, true);
+    qg.globalCompositeOperation = 'source-atop'; qg.globalAlpha = 0.14; qg.fillStyle = tint; qg.fillRect(0, 0, n, n);
+    g.drawImage(q, ox - n / 2, oy - n / 2); g.restore();
+    // measure what was actually painted: changed pixels near this inset
+    const after = g.getImageData(0, 0, W, H).data; let a0 = W, a1 = -1, b0 = H, b1 = -1;
+    for (let yy = Math.floor(y - r); yy <= y + r; yy++) for (let xx = Math.floor(x - r); xx <= x + r; xx++) { const k = (yy * W + xx) * 4; if (Math.abs(after[k] - before[k]) + Math.abs(after[k + 1] - before[k + 1]) + Math.abs(after[k + 2] - before[k + 2]) > 6) { a0 = Math.min(a0, xx); a1 = Math.max(a1, xx); b0 = Math.min(b0, yy); b1 = Math.max(b1, yy); } }
+    meas.push({ kind, circle: { l: x - r, r: x + r, t: y - r, b: y + r }, icon: { l: a0, r: a1 + 1, t: b0, b: b1 + 1 } });
+  });
+  globalThis.__emb = meas;
 }
 export async function frameArt({ title = '', emblem = false } = {}) {
   await document.fonts.load('800 34px Cinzel').catch(() => {}); const f = await load(SRC); const W = 720, H = 1052; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
