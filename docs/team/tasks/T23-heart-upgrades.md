@@ -1,7 +1,13 @@
 # Heart upgrade pricing decision and evidence
 Director, 25 October 2026. Dave explicitly wants Heart progression and asks Director to settle costs while Grok handles visuals.
 
-## Starting implementation specification
+## Current candidate, 26 October 2026
+
+Dave's latest price direction is **200 gold for rank 2 and 300 additional gold for rank 3 (500 total)**, superseding the earlier 150/300 candidate below. Act II/III requirements and +3/+6 then +4/+8 boosts remain. Implemented directly on current main in draft [PR #50](https://github.com/davepartin/questdice/pull/50), commit 6f088bc. [Implementation, evidence and remaining checks](https://github.com/davepartin/questdice/blob/codex/t23-current/docs/team/tasks/T23/current-implementation.md). Full suite 449/449, 12 focused checks, 864 diagnostic fights without an 80-round timeout. The price itself is still a candidate: actual campaign opportunity cost and broader sustain tests remain. The earlier 150-gold payback arithmetic is historical and must not be applied to the 200-gold price.
+
+Phone rendering could not run because Chromium is unavailable and its download failed. No visual/Safari/Firebase completion or live activation claimed. Existing shared price chips, empty talent face 4 and mp2 Magic retained. Implementation owner retains remaining checks; no Grok/Claude work requested.
+
+## Starting implementation specification (historical 150/300 candidate)
 Heart remains a d6. Rank 1 is free/default, symbol boost +2 per eligible matching white die and attack/block +4 per matching weapon lane. Rank 2 costs **150 gold**, raises these to **+3 / +6**. Rank 3 costs **300 additional gold**, raises them to **+4 / +8**. Total investment 450. Three ranks only, one purchase at a time; no rank 4, automatic upgrade, per-battle fee or resale. These are selected initial playtest prices, not a claim that balance is proven. Dave's act requirements: rank 2 requires Act II or later; rank 3 requires Act III or later. Rank 2 must be owned before rank 3.
 
 Dave has authorized developing this mechanic. Proceed with an isolated tested implementation and Grok's card using these real candidate prices. A live release follows the focused balance and authority checks below. Do not let old 'Heart never upgrades' copy block development; it describes the old rule. The actual die size, face numbers, turn-Heart cost/limit and Heart-to-Heart bonus remain unchanged for this comparison.
