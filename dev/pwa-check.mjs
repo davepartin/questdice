@@ -24,8 +24,8 @@ try {
   // Auto on this phone (Android, the test browser's cores) and the menu
   const stage0 = await p.evaluate(() => ({ q: window.QD.world.stage.quality, saver: window.QD.world.stage.saver }));
   check('default stage is not on High for an Android phone', stage0.q !== 'high', JSON.stringify(stage0));
-  const openMenu = async () => { await p.evaluate(() => document.querySelector('#gmenu').click()); await sleep(300); await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^Graphics:/.test(b.textContent))?.click()); await sleep(300); };
-  await openMenu(); check('Graphics & install opens from the menu', await p.evaluate(() => /Graphics & install/.test(document.querySelector('#modal').innerText)));
+  const openMenu = async (word = /^Graphics:/) => { await p.evaluate(() => document.querySelector('#gmenu').click()); await sleep(300); await p.evaluate((src) => [...document.querySelectorAll('#modal button')].find((b) => new RegExp(src).test(b.textContent))?.click(), word.source); await sleep(300); };
+  await openMenu(); check('Graphics opens from the menu and has no download button', await p.evaluate(() => /Graphics/.test(document.querySelector('#modal').innerText) && !/Download the game/i.test(document.querySelector('#modal').innerText)));
   await p.screenshot({ path: `${out}/menu.png` });
   const press = (re) => p.evaluate((src) => { const r = new RegExp(src, 'i'); const b = [...document.querySelectorAll('#modal button')].find((x) => r.test(x.textContent) && !x.disabled); if (!b) return false; b.click(); return true; }, re.source);
   check('pick Low and turn Battery saver on', (await press(/^Low$/)) && (await press(/^Battery saver: Off/)));
@@ -37,7 +37,7 @@ try {
   const frames = await p.evaluate(() => new Promise((res) => { let n = 0; const off = window.QD.world.stage.onFrame(() => { n++; }); setTimeout(() => { off(); res(n); }, 2000); }));
   check('frame rate is capped near 30 a second', frames <= 70, `${frames} frames in 2 s`);
   // download the game to the phone
-  await openMenu(); await press(/Download the game to this phone/);
+  await openMenu(/^Download game/); check('Download game is its own menu word and opens its screen', await p.evaluate(() => /Download game/.test(document.querySelector('#modal').innerText))); await p.screenshot({ path: `${out}/download-menu.png` }); await press(/Download the game to this phone/);
   const done = await p.waitForFunction(() => /Saved on this phone: .* files/.test(document.querySelector('#modal')?.innerText || ''), null, { timeout: 120000 }).then(() => true).catch(() => false);
   const cached = await p.evaluate(async () => (await (await caches.open('qd-static-1')).keys()).length);
   check('Download saves every file', done && cached >= 600, `${cached} files saved; ${await p.evaluate(() => document.querySelector('#modal')?.innerText.split('\n').find((l) => /Saved on this phone/.test(l)))}`);
@@ -56,7 +56,7 @@ try {
   await p.screenshot({ path: `${out}/update-bar.png` });
   await p.evaluate(() => document.querySelector('#qd-update .later')?.click());
   check('Later dismisses it', await p.evaluate(() => !document.querySelector('#qd-update')));
-  await openMenu(); const vtxt = await p.evaluate(() => document.querySelector('#modal').innerText.replace(/\s+/g, ' '));
+  await openMenu(/^Download game/); const vtxt = await p.evaluate(() => document.querySelector('#modal').innerText.replace(/\s+/g, ' '));
   check('the menu shows the running version and the newer one', /Version \d+\w+/.test(vtxt) && /newer version is ready \(newer9999\)/i.test(vtxt) && /Newer files are available/.test(vtxt), vtxt.match(/Version.{0,80}/)?.[0]);
   await p.screenshot({ path: `${out}/menu-newer.png` }); await p.unroute(/version\.json/);
   // the way out

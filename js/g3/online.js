@@ -420,6 +420,7 @@ export function menu() {
       X.ghost('Rules', () => { close(); X.showHowTo(); }),
       X.soundItem(() => close()),
       X.deviceItem(() => close()),
+      X.downloadItem(() => close()),
       t?.phase === 'battle' && Sess.isHost() ? X.ghost('Retreat (every hero loses 15% gold). Live to try again.', () => { close(); askRetreat(); }) : null,
       X.ghost('Your game is saved: how to come back', () => { close(); howToReturn(t); }),
       X.ghost('Step away (keep my seat)', () => { close(); stepAway(); }),
