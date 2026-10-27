@@ -7,6 +7,33 @@ const supported = () => typeof navigator !== 'undefined' && 'serviceWorker' in n
 // Preview copies (preview/<name>/) keep their own saves and never get the worker.
 const eligible = () => !!here && supported() && (here.protocol === 'https:' || here.hostname === 'localhost' || here.hostname === '127.0.0.1') && !/\/preview\//.test(here.pathname);
 
+// The build this page is running (the ?v= on this module's own address, stamped by tools/stamp.mjs) and the newest one the server has (version.json).
+export const RUNNING = (() => { try { return new URL(import.meta.url).searchParams.get('v') || 'dev'; } catch { return 'dev'; } })();
+let latest = null; let dismissed = null;
+export const latestBuild = () => latest;
+export const updateReady = () => !!latest && RUNNING !== 'dev' && latest !== RUNNING;
+export async function checkLatest() {
+  if (!here || RUNNING === 'dev') return null;
+  try { const r = await fetch('version.json', { cache: 'no-store' }); if (r.ok) { const b = (await r.json()).build; if (typeof b === 'string' && b) latest = b; } } catch { /* no signal: say nothing */ }
+  if (updateReady()) showUpdateBanner();
+  return latest;
+}
+// A small bar, not a popup: the player finishes what they are doing and restarts when they choose. The hero is saved; a fight in progress starts over.
+function showUpdateBanner() {
+  if (dismissed === latest || document.getElementById('qd-update')) return;
+  const bar = document.createElement('div'); bar.id = 'qd-update'; bar.setAttribute('role', 'status');
+  const msg = document.createElement('span'); msg.textContent = 'A new version of Quest Dice is ready.';
+  const go = document.createElement('button'); go.type = 'button'; go.textContent = 'Restart'; go.onclick = () => location.reload();
+  const later = document.createElement('button'); later.type = 'button'; later.className = 'later'; later.textContent = 'Later'; later.onclick = () => { dismissed = latest; bar.remove(); };
+  bar.append(msg, go, later); document.body.append(bar);
+}
+export function watchUpdates() {
+  const run = () => { checkLatest(); };
+  if (document.readyState === 'complete') setTimeout(run, 3000); else window.addEventListener('load', () => setTimeout(run, 3000), { once: true });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') run(); });
+  setInterval(run, 10 * 60 * 1000);
+}
+
 let deferred = null; // Chrome's install prompt, kept until the player taps Install
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; });
@@ -16,6 +43,7 @@ if (typeof window !== 'undefined') {
 export async function startPwa() {
   if (!eligible()) return;
   if (/[?&]nosw\b/.test(here.search)) { await removeAll(); return; } // the way out if a saved copy ever misbehaves
+  watchUpdates();
   const go = () => navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* the game works without it */ });
   if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
 }

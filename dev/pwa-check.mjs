@@ -49,6 +49,16 @@ try {
   await sleep(3000); const titleText = await p.evaluate(() => document.querySelector('#app')?.innerText.replace(/\s+/g, ' ').slice(0, 120)); check('the title screen shows offline', /quest|play|continue|new|hero/i.test(titleText || ''), titleText);
   await p.screenshot({ path: `${out}/offline.png` });
   await ctx.setOffline(false);
+  // a newer build on the server: the bar appears, the menu says so, Restart reloads
+  await p.route(/version\.json/, (r) => r.fulfill({ json: { build: 'newer9999' } }));
+  await p.goto(url); await ready(); await p.waitForSelector('#qd-update', { timeout: 15000 }).catch(() => {});
+  check('an update bar appears when the server has a newer build', await p.evaluate(() => /new version/i.test(document.querySelector('#qd-update')?.innerText || '')));
+  await p.screenshot({ path: `${out}/update-bar.png` });
+  await p.evaluate(() => document.querySelector('#qd-update .later')?.click());
+  check('Later dismisses it', await p.evaluate(() => !document.querySelector('#qd-update')));
+  await openMenu(); const vtxt = await p.evaluate(() => document.querySelector('#modal').innerText.replace(/\s+/g, ' '));
+  check('the menu shows the running version and the newer one', /Version \d+\w+/.test(vtxt) && /newer version is ready \(newer9999\)/i.test(vtxt) && /Newer files are available/.test(vtxt), vtxt.match(/Version.{0,80}/)?.[0]);
+  await p.screenshot({ path: `${out}/menu-newer.png` }); await p.unroute(/version\.json/);
   // the way out
   await p.goto(`${url}&nosw`); await sleep(2500);
   check('?nosw removes the worker and the saved files', await p.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length === 0 && !(await caches.has('qd-static-1'))));

@@ -5,7 +5,7 @@
 //   - everything else under this folder (pictures, fonts, 3D files): saved copy first, refreshed in the background
 //   - never touched: other websites (Firebase), /api/ (the local table server), preview/ pages, range requests, anything but GET
 // Open the game with ?nosw to remove this worker and every saved file (js/pwa.js).
-const BUILD = '20261027gfx1';
+const BUILD = '20261027gfx2';
 const CACHE = 'qd-static-1';
 const SCOPE = new URL(self.registration.scope);
 let off = false; // set by js/pwa.js removeAll(): stop saving and serving while the worker is being removed
@@ -45,7 +45,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request; if (off || req.method !== 'GET' || req.headers.has('range')) return;
   const url = new URL(req.url); if (url.origin !== SCOPE.origin || !url.pathname.startsWith(SCOPE.pathname)) return;
   const rel = url.pathname.slice(SCOPE.pathname.length);
-  if (rel.startsWith('api/') || rel.startsWith('preview/') || rel.startsWith('docs/') || rel === 'sw.js' || rel === 'offline-files.json') return;
+  if (rel.startsWith('api/') || rel.startsWith('preview/') || rel.startsWith('docs/') || rel === 'sw.js' || rel === 'offline-files.json' || rel === 'version.json') return;
   if (req.mode === 'navigate') { if (rel === '' || rel === 'index.html') event.respondWith(pageFirst(req)); return; }
   event.respondWith(url.searchParams.has('v') ? savedFirst(req, event) : refreshing(req, event));
 });

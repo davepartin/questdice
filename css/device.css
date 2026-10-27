@@ -8,3 +8,8 @@
 .dev-bar { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; margin: .5rem 0; }
 .dev-bar i { display: block; height: 100%; width: 0; background: #ffd23d; transition: width .2s; }
 .dev-dl { display: grid; gap: .3rem; margin-top: .4rem; }
+.dev-new { color: #ffd23d; }
+#qd-update { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 9999; display: flex; gap: .5rem; align-items: center; padding: .6rem .8rem; border-radius: 14px; background: rgba(21, 29, 52, .96); border: 1px solid #ffd23d; color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, .5); font: inherit; }
+#qd-update span { flex: 1; font-size: .95rem; }
+#qd-update button { min-height: 40px; padding: 0 .9rem; border-radius: 10px; border: 0; background: #ffd23d; color: #1a1205; font: inherit; font-weight: 700; }
+#qd-update button.later { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .35); font-weight: 500; }

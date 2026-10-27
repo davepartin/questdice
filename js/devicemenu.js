@@ -18,7 +18,10 @@ export function graphicsMenu({ modal, ghost, primary, toast, persist }) {
     const picks = QUALITIES.map((k) => h('button', { type: 'button', class: `dev-pick ${q === k ? 'on' : ''}`, 'aria-pressed': String(q === k), onclick: () => { q = k; render(); } }, QUALITY_NAME[k]));
     const state = P.offlineState(); const installed = P.isInstalled();
     const dl = h('div', { class: 'dev-dl' });
-    const status = state ? `Saved on this phone: ${P.formatSize(state.bytes)}, ${state.files} files.` : 'Not saved yet.';
+    const newer = P.updateReady(); const stale = state && P.latestBuild() && state.build !== P.latestBuild();
+    const version = h('div', { class: 'dev-version' }, h('p', { class: 'muted' }, `Version ${P.RUNNING}`),
+      newer ? h('p', { class: 'dev-new' }, `A newer version is ready (${P.latestBuild()}). `, h('button', { type: 'button', class: 'btn btn-ghost small', onclick: () => location.reload() }, 'Restart')) : P.latestBuild() ? h('p', { class: 'muted' }, 'This is the newest version.') : null);
+    const status = state ? `Saved on this phone: ${P.formatSize(state.bytes)}, ${state.files} files (version ${state.build}).${stale ? ' Newer files are available: download again.' : ''}` : 'Not saved yet.';
     const msg = h('p', { class: 'muted dev-status', role: 'status' }, status);
     const bar = h('div', { class: 'dev-bar', hidden: true }, h('i', {}));
     const dlBtn = primary(state ? 'Download again (get the newest)' : 'Download the game to this phone', async () => {
@@ -44,8 +47,9 @@ export function graphicsMenu({ modal, ghost, primary, toast, persist }) {
       h('div', { class: 'row end' }, ghost('Close', () => close()), changed() ? primary('Apply and restart', () => { setGfx({ q, saver }); try { persist?.(); } catch { /* ignore */ } location.reload(); }) : null),
       h('h3', {}, 'Keep the game on this phone'),
       h('p', { class: 'muted' }, 'A saved copy opens faster and uses less data. A shared table still needs the internet.'),
-      install, dl);
+      install, dl, version);
   }
+  P.checkLatest().then(() => { if (body.isConnected) render(); }); // the newest version, when there is a signal
   render(); close = modal(body); return close;
 }
 export const graphicsLabel = () => { const g = getGfx(); return `Graphics: ${g.saver ? 'Battery saver' : QUALITY_NAME[g.q]}`; };

@@ -14,5 +14,6 @@ export function offlineList() {
   const files = [...out].sort().map((u) => ({ u, s: fs.existsSync(path.join(root, u.split('?')[0])) ? fs.statSync(path.join(root, u.split('?')[0])).size : 0 }));
   return { build: (html.match(/main\.js\?v=([A-Za-z0-9]+)/) || [])[1] || 'dev', bytes: files.reduce((a, f) => a + f.s, 0), files };
 }
-export function writeOfflineList() { const l = offlineList(); fs.writeFileSync(path.join(root, 'offline-files.json'), JSON.stringify(l)); return l; }
+// version.json is the tiny file phones poll to learn a newer build exists (js/pwa.js); it is never saved by the service worker.
+export function writeOfflineList() { const l = offlineList(); fs.writeFileSync(path.join(root, 'offline-files.json'), JSON.stringify(l)); fs.writeFileSync(path.join(root, 'version.json'), JSON.stringify({ build: l.build })); return l; }
 if (import.meta.url === `file://${process.argv[1]}`) { const l = writeOfflineList(); console.log(`offline-files.json: ${l.files.length} files, ${(l.bytes / 1048576).toFixed(1)} MB, build ${l.build}`); }

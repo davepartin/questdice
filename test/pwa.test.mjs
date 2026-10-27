@@ -30,6 +30,12 @@ test('the offline list covers every module, stylesheet and icon of this build, a
   for (const f of l.files) assert.ok(fs.existsSync(path.join(root, f.u.split('?')[0])), `${f.u} exists`);
   assert.equal(JSON.parse(read('offline-files.json')).build, l.build, 'offline-files.json is current: run node tools/stamp.mjs');
 });
+test('version.json names the stamped build and the worker never saves it', () => {
+  const build = read('index.html').match(/main\.js\?v=([A-Za-z0-9]+)/)[1];
+  assert.equal(JSON.parse(read('version.json')).build, build, 'run node tools/stamp.mjs');
+  assert.ok(read('sw.js').includes("rel === 'version.json'"));
+  assert.match(read('js/pwa.js'), /fetch\('version\.json', \{ cache: 'no-store' \}\)/);
+});
 test('graphics settings: saved on the device, the address wins, saver forces Low, Auto avoids High on phones', async () => {
   const mem = new Map(); globalThis.localStorage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v), removeItem: (k) => mem.delete(k) };
   globalThis.location = { search: '' }; Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 (Linux; Android 13; SM-A135F) Mobile', hardwareConcurrency: 8, deviceMemory: 4 }, configurable: true });
