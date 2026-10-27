@@ -8,7 +8,7 @@ const exe = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/c
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
 const b = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
-for (const [w, h] of [[390, 664], [390, 844]]) {
+for (const [w, h] of [[390, 664], [390, 844], [412, 915]]) { // 27 Oct (Dave): the tabs layout on every screen height, never the triangle
   const p = await b.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: true }); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
   await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); });
@@ -29,6 +29,7 @@ for (const [w, h] of [[390, 664], [390, 844]]) {
     if (id) { await p.locator(`.b3-sheet.open [data-power="${id}"]`).click(); await pump(0.3); }
     await clear(); const f = `${OUT}/${label}-${name}_${w}x${h}.png`; await p.screenshot({ path: f }); const m = await measure(id); geo[f] = m;
     check(`${w}x${h} ${name}: cost badges clear of every icon`, m.overlap === 0, `overlap ${m.overlap}px²`);
+    if (name === 'none') check(`${w}x${h}: tabs layout at every height (a row of 6 tiles, no triangle, no circle medallions)`, m.row && await p.evaluate(() => { const t = document.querySelector('.b3-sheet.open .pw-tri'); const tiles = [...document.querySelectorAll('.b3-sheet.open [data-power]')]; return (!t || getComputedStyle(t).display === 'none') && tiles.length === 6 && new Set(tiles.map((e) => Math.round(e.getBoundingClientRect().top))).size === 1; }), JSON.stringify({ row: m.row }));
     if (name === 'none') check(`${w}x${h}: a clear gap or divider between A/B/C and the helpers`, m.row ? m.gap >= 12 && m.divider : true, `gap ${m.gap}px`);
     if (id && m.row) check(`${w}x${h} ${name}: the selected tab reaches into the panel (no gap) and shares its highlight`, m.on.b >= m.det.t + 0.5 && m.onBorder === m.detBorder, JSON.stringify(m));
   }

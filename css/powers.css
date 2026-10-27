@@ -222,7 +222,7 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* T21 follow-up (Dave, 25 Oct): on a phone-height screen the triangle gives way to one row of six tiles (the class powers, then the helpers), so every choice, the chosen
    power's name, short effect, real cost, the reason it cannot be used and its action, the health and magic, and Close fit together with no inner scrolling. */
-@media (max-height: 760px) {
+@media all {
   .b3-sheet.open .pw-sigil { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .3rem; padding: 0; align-content: start; }
   .b3-sheet.open .pw-sigil > * { min-width: 0; }
   .b3-sheet.open .pw-tally, .b3-sheet.open .pw-detail { grid-column: 1 / -1; }
@@ -269,7 +269,7 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open .pw-detail .pw-btn.has-after { padding: .3rem .45rem; }
 .pw-tag.low { background: #7a2b3a; color: #ffd9de; }
 .pw-helpers .pw-tag { position: static; transform: none; padding: 0 .3rem; font-size: .5rem; }
-@media (max-height: 760px) {
+@media all {
   .b3-sheet.open .pw-sigil { grid-template-columns: repeat(3, minmax(0, 1fr)) .5rem repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto minmax(0, 1fr); flex: 1; min-height: 0; }
   .b3-sheet.open .pw-stage .pw-medal:nth-of-type(1), .b3-sheet.open .pw-stage .pw-medal:nth-of-type(2), .b3-sheet.open .pw-stage .pw-medal:nth-of-type(3) { grid-column: auto; }
   .b3-sheet.open .pw-helpers .pw-medal:nth-child(1) { grid-column: 5; position: relative; }
@@ -280,7 +280,7 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
   .b3-sheet.open .pw-detail .pd-row { margin-top: auto; padding-top: .3rem; }
   .b3-sheet.open .pw-detail.pw-custom { justify-content: flex-start; }
 }
-@media (max-height: 760px) {
+@media all {
   .b3-sheet.open .pw-stage .pw-tag, .b3-sheet.open .pw-helpers .pw-tag { white-space: nowrap; text-align: center; line-height: 1.05; font-size: .42rem; letter-spacing: 0; padding: .05rem .15rem; max-width: 100%; }
 }
 
@@ -290,7 +290,7 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pw-stage .pw-cost { right: auto; left: calc(100% + 3px); top: 50%; transform: translateY(-50%); }
 .pw-helpers .pw-cost, .pw-helpers .pw-cost.free { top: -.55rem; right: auto; left: 50%; transform: translateX(-50%); white-space: nowrap; }
 .pw-helpers { padding-top: 1rem; border-top: 2px solid #c9a86a99; }
-@media (max-height: 760px) {
+@media all {
   /* the tiles' top edge carries the cost, so give them room under the tally */
   .b3-sheet.open .pw-stage .pw-medal, .b3-sheet.open .pw-helpers .pw-medal { margin-top: .5rem; padding-top: .7rem; }
   .b3-sheet.open .pw-stage .pw-ring { position: static; }
