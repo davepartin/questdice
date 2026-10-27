@@ -1,0 +1,1482 @@
+[
+  {
+    "name": "objective-reveal",
+    "tag": "375x548-16",
+    "families": {
+      "Inter": [
+        "Menu",
+        "Every envelope, opened. Madame Twil",
+        "Dave kept the promise: no healing p",
+        "Friend took the bribe but missed th",
+        "Continue"
+      ],
+      "Cormorant Garamond": [
+        "The Reveal"
+      ],
+      "Oxanium": [
+        "+40",
+        "-20"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "secret-objective",
+    "tag": "375x548-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Secret Objective",
+        "Another hero is knocked out at leas",
+        "Reward",
+        "+140 if done and the team wins",
+        "Won, not done",
+        "0, nothing lost",
+        "Team defeated",
+        "pay 35, done or not; 35 more if eve",
+        "Decline",
+        "Honor +20, or +35 if the team is de",
+        "More",
+        "Accept",
+        "Decline"
+      ],
+      "Oxanium": [
+        "225",
+        "+140",
+        "0",
+        "35",
+        "35",
+        "+20",
+        "+35"
+      ],
+      "Cormorant Garamond": [
+        "Someone Has to Fall"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "story",
+    "tag": "375x548-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue"
+      ],
+      "Oxanium": [
+        "225"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "battle-summary",
+    "tag": "375x548-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue",
+        "Crumb at the Ford",
+        "Dave did the most this battle.",
+        "Dave",
+        "Level 4",
+        "points",
+        "Most damage",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Friend",
+        "Level 1",
+        "points",
+        "Wall of the company",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Onward"
+      ],
+      "Oxanium": [
+        "225",
+        "1",
+        "71",
+        "46",
+        "0",
+        "12",
+        "8",
+        "0",
+        "40",
+        "62",
+        "35",
+        "0",
+        "29",
+        "4",
+        "0",
+        "20"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required",
+        "Victory"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "rewards",
+    "tag": "375x548-16",
+    "families": {
+      "Inter": [
+        "Night Raid on Cinder Ford",
+        "Victory",
+        "The way is open. Go on, then.",
+        "Experience",
+        "Gold",
+        "Battle points",
+        "0 / 64 XP to level 5",
+        "Choose your spoils \u00b7 pack 0/4",
+        "A d4 weapon.",
+        "Tap the card to see it large.",
+        "Choose a perk and spoils to continu"
+      ],
+      "Oxanium": [
+        "+18",
+        "18",
+        "+38",
+        "38",
+        "71",
+        "SELL",
+        "18",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "UPGRADE",
+        "d6 \u2192 d8",
+        "100"
+      ],
+      "Cormorant Garamond": [
+        "Silver Dagger",
+        "Silver Dagger"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "weapon",
+    "tag": "375x548-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Left weapon"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Act I",
+        "1",
+        "2",
+        "3",
+        "4",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Potions",
+        "Full",
+        "Dice",
+        "Powers",
+        "Gear",
+        "Supplies",
+        "Hero",
+        "Left weapon",
+        "+",
+        "Head",
+        "+",
+        "Right weapon",
+        "+",
+        "Left hand",
+        "+",
+        "Heart",
+        "Right hand",
+        "+",
+        "Talent one",
+        "+",
+        "Feet",
+        "+",
+        "Talent two",
+        "+",
+        "Tap another die to inspect it.",
+        "d4",
+        "Done",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "40",
+        "d6",
+        "d4",
+        "40",
+        "d4",
+        "10",
+        "d4",
+        "60",
+        "Unlock",
+        "35",
+        "SELL"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "store",
+    "tag": "375x548-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Camp Store",
+        "Today\u2019s specials",
+        "On the shelf"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Back to camp",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "New stock every camp",
+        "225",
+        "One fight of help. Bought today, us",
+        "Hearty Stew",
+        "+10 health for your next fight.",
+        "25",
+        "Strong Tea",
+        "Start your next fight with 3 more m",
+        "30",
+        "Mystery bundle",
+        "A weapon wrapped in a tablecloth.",
+        "50% Bronze",
+        "32% Silver",
+        "18% Gold",
+        "70",
+        "Weapons. What you buy goes in your "
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "objective-reveal",
+    "tag": "390x844-16",
+    "families": {
+      "Inter": [
+        "Menu",
+        "Every envelope, opened. Madame Twil",
+        "Dave kept the promise: no healing p",
+        "Friend took the bribe but missed th",
+        "Continue",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Cormorant Garamond": [
+        "The Reveal"
+      ],
+      "Oxanium": [
+        "+40",
+        "-20"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "secret-objective",
+    "tag": "390x844-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Secret Objective",
+        "Another hero is knocked out at leas",
+        "Reward",
+        "+140 if done and the team wins",
+        "Won, not done",
+        "0, nothing lost",
+        "Team defeated",
+        "pay 35, done or not; 35 more if eve",
+        "Decline",
+        "Honor +20, or +35 if the team is de",
+        "More",
+        "Accept",
+        "Decline"
+      ],
+      "Oxanium": [
+        "225",
+        "+140",
+        "0",
+        "35",
+        "35",
+        "+20",
+        "+35"
+      ],
+      "Cormorant Garamond": [
+        "Someone Has to Fall"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "story",
+    "tag": "390x844-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue"
+      ],
+      "Oxanium": [
+        "225"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "battle-summary",
+    "tag": "390x844-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue",
+        "Crumb at the Ford",
+        "Dave did the most this battle.",
+        "Dave",
+        "Level 4",
+        "points",
+        "Most damage",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Friend",
+        "Level 1",
+        "points",
+        "Wall of the company",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Onward"
+      ],
+      "Oxanium": [
+        "225",
+        "1",
+        "71",
+        "46",
+        "0",
+        "12",
+        "8",
+        "0",
+        "40",
+        "62",
+        "35",
+        "0",
+        "29",
+        "4",
+        "0",
+        "20"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required",
+        "Victory"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "rewards",
+    "tag": "390x844-16",
+    "families": {
+      "Inter": [
+        "Night Raid on Cinder Ford",
+        "Victory",
+        "The way is open. Go on, then.",
+        "Experience",
+        "Gold",
+        "Battle points",
+        "0 / 64 XP to level 5",
+        "Choose your spoils \u00b7 pack 0/4",
+        "A d4 weapon.",
+        "Tap the card to see it large.",
+        "Take",
+        "Sell",
+        "Choose a perk and spoils to continu"
+      ],
+      "Oxanium": [
+        "+18",
+        "18",
+        "+38",
+        "38",
+        "71",
+        "SELL",
+        "18",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "UPGRADE",
+        "d6 \u2192 d8",
+        "100",
+        "UPGRADE",
+        "d8 \u2192 d10",
+        "200",
+        "0",
+        "1",
+        "3",
+        "3",
+        "18"
+      ],
+      "Cormorant Garamond": [
+        "Silver Dagger",
+        "Silver Dagger"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "weapon",
+    "tag": "390x844-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Left weapon",
+        "Bronze Dagger"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Act I",
+        "1",
+        "2",
+        "3",
+        "4",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Potions",
+        "Full",
+        "Dice",
+        "Powers",
+        "Gear",
+        "Supplies",
+        "Hero",
+        "Left weapon",
+        "+",
+        "Head",
+        "+",
+        "Right weapon",
+        "+",
+        "Left hand",
+        "+",
+        "Heart",
+        "Right hand",
+        "+",
+        "Talent one",
+        "+",
+        "Feet",
+        "+",
+        "Talent two",
+        "+",
+        "Tap another die to inspect it.",
+        "d4",
+        "Done",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "40",
+        "d6",
+        "d4",
+        "40",
+        "d4",
+        "10",
+        "d4",
+        "60",
+        "Unlock",
+        "35",
+        "SELL",
+        "9",
+        "Sized4",
+        "Size",
+        "Sized6",
+        "Size",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "Sized8",
+        "Size",
+        "UPGRADE",
+        "100"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "store",
+    "tag": "390x844-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Camp Store",
+        "Today\u2019s specials",
+        "On the shelf"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Back to camp",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "New stock every camp",
+        "225",
+        "One fight of help. Bought today, us",
+        "Hearty Stew",
+        "+10 health for your next fight.",
+        "25",
+        "Strong Tea",
+        "Start your next fight with 3 more m",
+        "30",
+        "Mystery bundle",
+        "A weapon wrapped in a tablecloth.",
+        "50% Bronze",
+        "32% Silver",
+        "18% Gold",
+        "70",
+        "Weapons. What you buy goes in your ",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Axe",
+        "Gold",
+        "d4 \u00b7 One hand",
+        "104"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "objective-reveal",
+    "tag": "430x932-16",
+    "families": {
+      "Inter": [
+        "Menu",
+        "Every envelope, opened. Madame Twil",
+        "Dave kept the promise: no healing p",
+        "Friend took the bribe but missed th",
+        "Continue",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Cormorant Garamond": [
+        "The Reveal"
+      ],
+      "Oxanium": [
+        "+40",
+        "-20"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "secret-objective",
+    "tag": "430x932-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Secret Objective",
+        "Another hero is knocked out at leas",
+        "Reward",
+        "+140 if done and the team wins",
+        "Won, not done",
+        "0, nothing lost",
+        "Team defeated",
+        "pay 35, done or not; 35 more if eve",
+        "Decline",
+        "Honor +20, or +35 if the team is de",
+        "More",
+        "Accept",
+        "Decline"
+      ],
+      "Oxanium": [
+        "225",
+        "+140",
+        "0",
+        "35",
+        "35",
+        "+20",
+        "+35"
+      ],
+      "Cormorant Garamond": [
+        "Someone Has to Fall"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "story",
+    "tag": "430x932-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue"
+      ],
+      "Oxanium": [
+        "225"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "battle-summary",
+    "tag": "430x932-16",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue",
+        "Crumb at the Ford",
+        "Dave did the most this battle.",
+        "Dave",
+        "Level 4",
+        "points",
+        "Most damage",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Friend",
+        "Level 1",
+        "points",
+        "Wall of the company",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Onward"
+      ],
+      "Oxanium": [
+        "225",
+        "1",
+        "71",
+        "46",
+        "0",
+        "12",
+        "8",
+        "0",
+        "40",
+        "62",
+        "35",
+        "0",
+        "29",
+        "4",
+        "0",
+        "20"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required",
+        "Victory"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "rewards",
+    "tag": "430x932-16",
+    "families": {
+      "Inter": [
+        "Night Raid on Cinder Ford",
+        "Victory",
+        "The way is open. Go on, then.",
+        "Experience",
+        "Gold",
+        "Battle points",
+        "0 / 64 XP to level 5",
+        "Choose your spoils \u00b7 pack 0/4",
+        "A d4 weapon.",
+        "Tap the card to see it large.",
+        "Take",
+        "Sell",
+        "Choose a perk and spoils to continu"
+      ],
+      "Oxanium": [
+        "+18",
+        "18",
+        "+38",
+        "38",
+        "71",
+        "SELL",
+        "18",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "UPGRADE",
+        "d6 \u2192 d8",
+        "100",
+        "UPGRADE",
+        "d8 \u2192 d10",
+        "200",
+        "0",
+        "1",
+        "3",
+        "3",
+        "18"
+      ],
+      "Cormorant Garamond": [
+        "Silver Dagger",
+        "Silver Dagger"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "weapon",
+    "tag": "430x932-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Left weapon",
+        "Bronze Dagger"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Act I",
+        "1",
+        "2",
+        "3",
+        "4",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Potions",
+        "Full",
+        "Dice",
+        "Powers",
+        "Gear",
+        "Supplies",
+        "Hero",
+        "Left weapon",
+        "+",
+        "Head",
+        "+",
+        "Right weapon",
+        "+",
+        "Left hand",
+        "+",
+        "Heart",
+        "Right hand",
+        "+",
+        "Talent one",
+        "+",
+        "Feet",
+        "+",
+        "Talent two",
+        "+",
+        "Tap another die to inspect it.",
+        "d4",
+        "Done",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "40",
+        "d6",
+        "d4",
+        "40",
+        "d4",
+        "10",
+        "d4",
+        "60",
+        "Unlock",
+        "35",
+        "SELL",
+        "9",
+        "Sized4",
+        "Size",
+        "Sized6",
+        "Size",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "Sized8",
+        "Size",
+        "UPGRADE",
+        "d6 \u2192 d8",
+        "100",
+        "Sized10",
+        "Size",
+        "UPGRADE",
+        "d8 \u2192 d10",
+        "200"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "store",
+    "tag": "430x932-16",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Camp Store",
+        "Today\u2019s specials",
+        "On the shelf",
+        "Diamond case"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Back to camp",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "New stock every camp",
+        "225",
+        "One fight of help. Bought today, us",
+        "Hearty Stew",
+        "+10 health for your next fight.",
+        "25",
+        "Strong Tea",
+        "Start your next fight with 3 more m",
+        "30",
+        "Mystery bundle",
+        "A weapon wrapped in a tablecloth.",
+        "50% Bronze",
+        "32% Silver",
+        "18% Gold",
+        "70",
+        "Weapons. What you buy goes in your ",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Axe",
+        "Gold",
+        "d4 \u00b7 One hand",
+        "104",
+        "A Diamond is used up in one fight. ",
+        "Diamond \u00b7 worth saving for"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "objective-reveal",
+    "tag": "390x844-20",
+    "families": {
+      "Inter": [
+        "Menu",
+        "Every envelope, opened. Madame Twil",
+        "Dave kept the promise: no healing p",
+        "Friend took the bribe but missed th",
+        "Continue",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Cormorant Garamond": [
+        "The Reveal"
+      ],
+      "Oxanium": [
+        "+40",
+        "-20"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "secret-objective",
+    "tag": "390x844-20",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Secret Objective",
+        "Another hero is knocked out at leas",
+        "Reward",
+        "+140 if done and the team wins",
+        "Won, not done",
+        "0, nothing lost",
+        "Team defeated",
+        "pay 35, done or not; 35 more if eve",
+        "Decline",
+        "Honor +20, or +35 if the team is de",
+        "More",
+        "Accept",
+        "Decline"
+      ],
+      "Oxanium": [
+        "225",
+        "+140",
+        "0",
+        "35",
+        "35",
+        "+20",
+        "+35"
+      ],
+      "Cormorant Garamond": [
+        "Someone Has to Fall"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "story",
+    "tag": "390x844-20",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue"
+      ],
+      "Oxanium": [
+        "225"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "battle-summary",
+    "tag": "390x844-20",
+    "families": {
+      "Inter": [
+        "Friend",
+        "Dave",
+        "Dave",
+        "Level 4 Wizard",
+        "Menu",
+        "Prologue",
+        "Market day in Cinder Ford. Dave bou",
+        "M",
+        "The small print reads: \u201cRemoves on ",
+        "Continue",
+        "Crumb at the Ford",
+        "Dave did the most this battle.",
+        "Dave",
+        "Level 4",
+        "points",
+        "Most damage",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Friend",
+        "Level 1",
+        "points",
+        "Wall of the company",
+        "Damage",
+        "Kills",
+        "Blocked",
+        "Healed",
+        "Taken",
+        "Gold",
+        "Onward"
+      ],
+      "Oxanium": [
+        "225",
+        "1",
+        "71",
+        "46",
+        "0",
+        "12",
+        "8",
+        "0",
+        "40",
+        "62",
+        "35",
+        "0",
+        "29",
+        "4",
+        "0",
+        "20"
+      ],
+      "Cormorant Garamond": [
+        "Some Assembly Required",
+        "Victory"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "rewards",
+    "tag": "390x844-20",
+    "families": {
+      "Inter": [
+        "Night Raid on Cinder Ford",
+        "Victory",
+        "The way is open. Go on, then.",
+        "Experience",
+        "Gold",
+        "Battle points",
+        "0 / 64 XP to level 5",
+        "Choose your spoils \u00b7 pack 0/4",
+        "A d4 weapon.",
+        "Tap the card to see it large.",
+        "Choose a perk and spoils to continu"
+      ],
+      "Oxanium": [
+        "+18",
+        "18",
+        "+38",
+        "38",
+        "71",
+        "SELL",
+        "18",
+        "UPGRADE",
+        "d4 \u2192 d6",
+        "50",
+        "UPGRADE",
+        "d6 \u2192 d8",
+        "100",
+        "UPGRADE",
+        "d8 \u2192 d10",
+        "200",
+        "0",
+        "1",
+        "3",
+        "3"
+      ],
+      "Cormorant Garamond": [
+        "Silver Dagger",
+        "Silver Dagger"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "weapon",
+    "tag": "390x844-20",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Left weapon",
+        "Bronze Dagger"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Act I",
+        "1",
+        "2",
+        "3",
+        "4",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Potions",
+        "Full",
+        "Dice",
+        "Powers",
+        "Gear",
+        "Supplies",
+        "Hero",
+        "Left weapon",
+        "+",
+        "Head",
+        "+",
+        "Right weapon",
+        "+",
+        "Left hand",
+        "+",
+        "Heart",
+        "Right hand",
+        "+",
+        "Talent one",
+        "+",
+        "Feet",
+        "+",
+        "Talent two",
+        "+",
+        "Tap another die to inspect it.",
+        "d4",
+        "Done",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "50",
+        "d4",
+        "40",
+        "d6",
+        "d4",
+        "40",
+        "d4",
+        "10",
+        "d4",
+        "60",
+        "Unlock",
+        "35",
+        "SELL",
+        "9",
+        "Sized4",
+        "Size",
+        "Sized6",
+        "Size",
+        "UPGRADE",
+        "50"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  },
+  {
+    "name": "store",
+    "tag": "390x844-20",
+    "families": {
+      "Cormorant Garamond": [
+        "Camp",
+        "Camp Store",
+        "Today\u2019s specials",
+        "On the shelf"
+      ],
+      "Inter": [
+        "Dave",
+        "Level 4 Wizard",
+        "Back to camp",
+        "Could not save. Is browser storage ",
+        "Could not save. Is browser storage "
+      ],
+      "Oxanium": [
+        "225",
+        "New stock every camp",
+        "225",
+        "One fight of help. Bought today, us",
+        "Hearty Stew",
+        "+10 health for your next fight.",
+        "25",
+        "Strong Tea",
+        "Start your next fight with 3 more m",
+        "30",
+        "Mystery bundle",
+        "A weapon wrapped in a tablecloth.",
+        "50% Bronze",
+        "32% Silver",
+        "18% Gold",
+        "70",
+        "Weapons. What you buy goes in your ",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Tower Shield",
+        "Silver",
+        "d4 \u00b7 One hand",
+        "60",
+        "Axe",
+        "Gold",
+        "d4 \u00b7 One hand",
+        "104"
+      ]
+    },
+    "escapedCardText": false,
+    "overflow": false,
+    "loaded": {
+      "Inter": true,
+      "Cormorant Garamond": true,
+      "Oxanium": true
+    }
+  }
+]

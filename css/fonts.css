@@ -1,12 +1,218 @@
-/* Three fonts, one job each (Dave, Oct 2026: "the fonts are getting kind of too many... stick with just a few"). dev/fonts.mjs audits it.
-   Oxanium  (--font-display)  the game's voice: buttons, tabs, labels, numbers, prices, badges.
-   Inter    (--font-body)     reading: descriptions, hints, small print.
-   Cormorant Garamond (--font-story, also --serif)  names and titles: the screen title, hero / power / monster names, story text.
-   Archivo Black (--font-logo) is the QuestDice logo and nothing else. Loaded last, so these win over the screen sheets. */
-.cw-camp button, .cw-camp .sx-cta .sx-btn, .cw-label, .cw-price, .cw-cell-foot > b, .cw-die .cw-size, .cw-plus, .ww-change, .ww-modes b,
-.cp-slots b, .cp-slots span, .cp-card-cost, .cp-compare b, .cw-die-loading strong, .cw-inspector .sh-buy-l, .cw-inspector .sh-x, .cw-inspector .sh-title small,
-.tw-symbol b, .tw-clear-btn, .pw-btn, .pw-btn.go { font-family: var(--font-display); }
+/* Self-hosted Google Fonts; original SIL Open Font Licenses are in assets/fonts/. */
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(../assets/fonts/archivo-black-1.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(../assets/fonts/archivo-black-2.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../assets/fonts/cormorant-garamond-1.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../assets/fonts/cormorant-garamond-2.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../assets/fonts/cormorant-garamond-3.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../assets/fonts/cormorant-garamond-4.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../assets/fonts/cormorant-garamond-5.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-1.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-2.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-3.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-4.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-5.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-6.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(../assets/fonts/inter-7.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Oxanium';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url(../assets/fonts/oxanium-1.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxanium';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url(../assets/fonts/oxanium-2.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Quest Dice typography: three text families, one role each.
+   Inter: reading and controls. Cormorant Garamond: short fantasy titles.
+   Oxanium: dice and numeric readouts. Archivo Black is only the existing logo/die artwork.
+   Keep new text on these tokens instead of introducing a local family or browser serif. */
+:root {
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --disp: var(--font-body);
+  --font-title: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-story: var(--font-title);
+  --serif: var(--font-title);
+  --font-number: 'Oxanium', 'Inter', system-ui, sans-serif;
+  --font-logo: 'Archivo Black', 'Arial Black', system-ui, sans-serif;
+}
+
+/* Reading stays upright and open; emphasis comes from weight, not another face. */
+.tl-tell, .tl-facts li, .tl-teaser, .env-flavor, .env-cover b, .sh-text,
+.ssf-beat p, .ht-log small, .brag-lead, .vc-head p, .df-head p, .df-tip,
+.obj-more p, .ww-explain, .ww-note, .cw-balance, .cw-example, .sh-role {
+  font-family: var(--font-body); font-style: normal; font-weight: 400;
+  letter-spacing: normal; line-height: 1.5;
+}
+.tl-tell { font-size: clamp(1rem, 2vw, 1.125rem); }
+.tl-facts li, .tl-teaser, .sh-text, .ssf-beat p, .ht-log small { font-size: .9375rem; }
+.brag-lead, .vc-head p, .df-head p, .df-tip { font-size: .9375rem; }
+
+/* Titles carry the fantasy character; body copy and controls do not borrow it. */
+.sx-h1, .tl-title, .vc-title, .df-title, .brag-title, .ww-identity h3,
+.cp-title-row h3, .cw-camp .sx-camp-title h1, .sh-title b,
+.sx-side .env-card .env-name, .sx-side .obj-card .obj-name, .ssf-beat h3,
+.title17 span, .qc-gear .title17 span, .qo .ttl, .cst-sign h2, .cst-zone h2 {
+  font-family: var(--font-title); font-weight: 600; font-style: normal; letter-spacing: .01em;
+}
+.cw-camp button, .cw-camp .sx-cta .sx-btn, .cw-label, .ww-modes b,
+.cw-inspector .sh-buy-l, .cw-inspector .sh-x, .cw-inspector .sh-title small,
+.tw-symbol b, .tw-clear-btn, .pw-btn, .pw-btn.go,
+.cst-store .cst-tag, .cst-store .cst-tag b, .cst-store .cst-tag small {
+  font-family: var(--font-body); font-style: normal;
+}
 .cw-label { font-weight: 600; letter-spacing: .02em; }
-.cw-camp .sx-cta .sx-btn { font-weight: 700; font-size: 1.15rem; letter-spacing: .06em; }
-/* the battle titles that used Cinzel now use the one serif, at the weight it is loaded in (600) */
-.b3-round small, .b3-round b, .b3-round-fl small, .b3-round-fl b, .tc-eyebrow, .tc-name, .tc-sub, .hb-name, .bc-name, .cc-tx b, .sh-head b { font-weight: 600; }
+.sx-btn, .pw-btn, .cw-inspector .sh-x { font-weight: 600; letter-spacing: .04em; }
+.sx-eye { font-weight: 600; letter-spacing: .12em; }
+.cw-camp .sx-cta .sx-btn { font-weight: 600; font-size: 1.05rem; letter-spacing: .03em; }
+.cst-store .cst-tag small { font-size: 12px; font-weight: 600; }
+
+/* Post-battle objectives: one clear title, one reading face and an aligned reward. */
+.rv-head .sx-eye {
+  font-family: var(--font-title); font-size: clamp(1.75rem, 5vw, 2.15rem);
+  font-weight: 600; line-height: 1.1; letter-spacing: .01em; text-transform: none;
+}
+.rv-head p { font-family: var(--font-body); font-size: .9375rem; font-style: normal; line-height: 1.5; }
+.rv-row p { font-family: var(--font-body); font-size: .96875rem; font-weight: 400; line-height: 1.5; letter-spacing: normal; }
+.qo .goal, .qo .t { font-family: var(--font-body); font-style: normal; }
+.qo .t small { font-family: var(--font-body); font-weight: 600; font-size: max(10px, 2.9cqi); line-height: 1.2; letter-spacing: .02em; text-transform: none; }
+.qo .chip { font-family: var(--font-body); font-weight: 700; letter-spacing: .1em; }
+.qo .goal { font-weight: 600; line-height: 1.3; }
+.qo .t { line-height: 1.3; }
+.qo .t span { font-weight: 500; }
+.qo.tight .emb { min-height: 6cqi; }
+.vc-stat small, .vc-lvl small, .brag-pts small, .brag-grid dt, .brag-who small {
+  font-family: var(--font-body); font-weight: 600; letter-spacing: .08em;
+}
+
+/* Numbers have one face everywhere, including chips with their own legacy font shorthands. */
+.qd-price b { font-family: var(--font-number) !important; }
+.rv-gold, .sx-coin, .vc-stat > div, .vc-lvl b, .brag-pts b, .brag-grid dd,
+.brag-medal, .qo .t b, .cw-price, .cw-cell-foot > b, .cw-die .cw-size,
+.cp-slots b, .cp-card-cost, .cp-compare b, .cw-die-loading strong {
+  font-family: var(--font-number); font-style: normal; font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.b3-round small, .b3-round b, .b3-round-fl small, .b3-round-fl b,
+.tc-eyebrow, .tc-name, .tc-sub, .hb-name, .bc-name, .cc-tx b, .sh-head b { font-weight: 600; }
+
+/* Objective results are a reading screen: give the text the space and put Continue after it. */
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen.victory:has(.sx-revealbeat) { --sheet: .9; }
+}
+.sx-revealbeat .sx-cta { position: static; }
+/* Small result captions still need to read cleanly on a phone. */
+.brag-grid dt, .brag-pts small, .vc-stat small, .vc-lvl small { font-size: .6875rem; line-height: 1.3; }
+.brag-badge { font-size: .6875rem; letter-spacing: .06em; }
+.pw-cost, .pw-slot, .pw-center b, .pw-life b, .pw-chip b,
+.dr-die b, .dr-total, .dr-eq, .dr-gain b { font-family: var(--font-number); font-variant-numeric: tabular-nums; }
+@media (max-aspect-ratio: 1085/1000) and (max-height: 640px) {
+  .sx-screen.victory:has(.sx-revealbeat) { --sheet: .98; }
+  .sx-revealbeat .sx-side { gap: .55rem; }
+}
