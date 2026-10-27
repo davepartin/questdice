@@ -464,6 +464,18 @@ export function create(opts = {}) {
     pending(''); msg.textContent = '';
     if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
     if (T && loaded) { loaded.difficulty = diff; return seat(loaded, { pack: pack.id }); }
+    // A refused seat ("This story needs the Wizard and Dwarf Warden") leaves the hero this form forged. If the player then changes the class, colour or name, the
+    // next tap must forge THAT hero, not reuse the old one (trip playtest, 26 Oct 2026: a friend who picked the wrong class could never get a seat).
+    if (T && made && !madeProven) {
+      const nm = name.value.trim().replace(/\s+/g, ' ');
+      if (nm && nm !== made.name) { SV.deleteHero(made.name, pack.id); made = null; }
+      else if (made.cls !== cls || (made.color ?? color) !== color) {
+        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.difficulty = made.difficulty;
+        SV.saveHero(redo); // the local save keeps its password; only the hero in it changes
+        try { await (await import('../cloud.js')).putHero(redo, pw.value); } catch { /* saved on this device; the cloud copy follows when it can */ }
+        made = redo; X.adopt(redo);
+      }
+    }
     if (T && made) { made.difficulty = diff; return seat(made, { pack: pack.id, proven: madeProven }); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }

@@ -38,6 +38,19 @@ try {
   await tap(B, /I am ready/); await sleep(500); await tap(A, /I am ready/).catch(() => {}); await sleep(400);
   assert.ok(await tap(A, /Take the road/), 'the host takes the road'); await sleep(900);
   for (const p of [A, B]) await p.pump(3);
-  note('after take the road: ' + (await text(A)).slice(0, 160)); await snap(A, '04_intro_A'); await snap(B, '05_intro_B');
+  // ---- the starters, as each phone sees its own hero
+  const mine = (p) => p.page.evaluate(() => { const h = window.QD.S.hero; return h ? { name: h.name, cls: h.cls, nw: h.loadout.NW?.id, ne: h.loadout.NE?.id, gold: h.gold, level: h.level } : null; });
+  const ha = await mine(A); const hb = await mine(B);
+  assert.deepEqual([ha.cls, ha.nw, ha.ne], ['wizard', 'dagger', 'shield'], 'the Wizard starts with a Dagger and a Round Shield'); assert.deepEqual([hb.cls, hb.nw, hb.ne], ['dwarf', 'axe', 'tower'], 'the Dwarf starts with an Axe and a Tower Shield');
+  note(`PASS starters: ${ha.name} wizard dagger + shield, ${hb.name} dwarf axe + tower shield`);
+  // ---- walk the story pages and the road to the first quest, printing what each phone shows
+  for (let i = 0; i < 14; i++) {
+    const onBoard = await A.page.evaluate(() => !!document.querySelector('.sx-quest, .quest-card, [class*=quest-card], #quest-board'));
+    const ta = (await text(A)).slice(0, 110); const tb = (await text(B)).slice(0, 110); note(`  step ${i}: A: ${ta} | B: ${tb}`);
+    if (await A.page.evaluate(() => !!document.querySelector('#b3-roll'))) break;
+    let moved = false; for (const p of [A, B]) { for (const re of [/^\s*continue\s*$/, /onward/, /begin the fight|start the fight|fight/, /^\s*begin/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
+    await sleep(900); for (const p of [A, B]) await p.pump(2); void onBoard; if (!moved) break;
+  }
+  await snap(A, '04_after_walk_A'); await snap(B, '05_after_walk_B');
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
