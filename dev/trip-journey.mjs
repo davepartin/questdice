@@ -54,9 +54,10 @@ try {
   // ---- the first fight: both heroes roll and lock in, a power on the way, until the table wins
   assert.ok(await waitFor(A, () => !!document.querySelector('#b3-roll'), 60000) && await waitFor(B, () => !!document.querySelector('#b3-roll'), 60000), 'both phones reach the first battle');
   note('PASS battle: both phones reached ' + (await text(A)).slice(0, 60)); await snap(A, '04_battle_A'); await snap(B, '05_battle_B');
+  if (process.env.WEAK) { await cheat(code, 'weak'); note('(WEAK=1: the monsters were made one hit from falling for speed)'); }
   let powerNote = null;
   for (let round = 1; round <= 40; round++) {
-    const done = await A.page.evaluate(() => /victory|defeat/i.test(document.body.innerText) && !document.querySelector('#b3-roll')); if (done) break;
+    const done = await A.page.evaluate(() => !document.querySelector('#b3-roll') && /victory|defeat|the reveal|spoils|envelope/i.test(document.body.innerText)); if (done) break;
     for (const p of [A, B]) { if (await p.page.evaluate(() => !!document.querySelector('#b3-roll'))) { await p.click('#b3-roll'); await sleep(900); await p.pump(5); } }
     if (round === 1 && !powerNote) { // open the Magic Powers panel on the Wizard's phone and say what is in it
       await tap(A, /magic\s*powers/); await A.pump(2); await sleep(500); await snap(A, '06_powers_A');
@@ -67,7 +68,17 @@ try {
     await sleep(1500); for (const p of [A, B]) await p.pump(10);
     if (round % 5 === 0) note(`  round ${round}: ${(await text(A)).slice(0, 140)}`);
   }
-  note('after the fight: A: ' + (await text(A)).slice(0, 200)); await snap(A, '07_after_fight_A'); await snap(B, '08_after_fight_B');
-  await snap(A, '04_after_walk_A'); await snap(B, '05_after_walk_B');
+  note('after the fight: A: ' + (await text(A)).slice(0, 200));
+  const buttons = (p) => p.page.evaluate(() => [...document.querySelectorAll('button, .sx-plaque, [role=button]')].filter((e) => e.offsetParent && !e.disabled).map((e) => e.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)).filter(Boolean).slice(0, 14));
+  for (let i = 0; i < 24; i++) {
+    const [ta, tb] = [(await text(A)).slice(0, 150), (await text(B)).slice(0, 150)]; const [ba, bb] = [await buttons(A), await buttons(B)];
+    note(`  after ${i}: A: ${ta} || btns ${JSON.stringify(ba)}`); note(`           B: ${tb} || btns ${JSON.stringify(bb)}`);
+    await snap(A, `10_${String(i).padStart(2, '0')}_A`); await snap(B, `10_${String(i).padStart(2, '0')}_B`);
+    if (/To the road|Rest at camp|CAMP/.test(ta) && process.env.STOP_AT_CAMP) break;
+    let moved = false;
+    for (const p of [A, B]) { for (const re of [/^\s*continue\s*$/, /^\s*take\b/, /^\s*onward/, /to the road/, /^\s*go on/]) { if (await tap(p, re)) { moved = true; break; } }
+      if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-perks .perk-card, .perk-row > *, .sx-loot .sx-wc button, .sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
+    await sleep(1200); for (const p of [A, B]) await p.pump(2); if (!moved) break;
+  }
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
