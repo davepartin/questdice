@@ -9,3 +9,9 @@ test('Heart card wording and talent notes', () => {
   assert.match(cb, /' boost to matching symbols on white strength dice'/); assert.match(cb, /' boost to matching weapon dice'/);
   assert.match(scr, /Max \$\{info\.same\} of the same power symbol per die\. Choose wisely\./); assert.match(scr, /Gives \+\$\{n\}/);
 });
+test('cp2: no bottom Store strip in camp; the camp picture does not make a layer above the hero chip', () => {
+  const css = ['../css/screens.css', '../css/camp.css'].map((f) => fs.readFileSync(new URL(f, import.meta.url), 'utf8')).join('\n');
+  assert.doesNotMatch(scr, /sx-storebtn|storeBtn/); assert.doesNotMatch(css, /sx-storebtn/);
+  assert.match(scr, /\['store', 'Store'\]/, 'the Store tab in the camp bar stays');
+  assert.match(css, /\.cw-camp \.sx-viewport \{ z-index: auto; will-change: auto; \}/);
+});
