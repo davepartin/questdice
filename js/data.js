@@ -478,7 +478,7 @@ export const CLASSES = {
     feet: 4, startMagic: 6, magicCap: 15,
     trait: 'Weak and slow, the strongest magic: starts with 6 and holds 15.',
     name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(456, 512, 262.5, 505, 355), hp: 24,
-    blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and the magic to keep mending.',
+    blurb: 'A frail body and a deep well of magic. A trick for every problem, and the magic to keep mending.',
     weapons: ['staff'],
     cards: [
       { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
@@ -491,7 +491,7 @@ export const CLASSES = {
   },
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
-    trait: 'The wall: the most health, a crushing mace and a tower shield.',
+    trait: 'The wall: the most health, a crushing axe and a tower shield.',
     name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(489, 512, 271, 505, 374), hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
