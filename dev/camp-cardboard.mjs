@@ -67,7 +67,7 @@ for (const [w, h] of [[390, 844], [375, 548]]) {
       poor: [...document.querySelectorAll('.cst-tag.poor')].map((t) => t.querySelector('b').textContent), dia: !!document.querySelector('.cst-diawrap .qc17.cst-dia'), charm: /charm/i.test(st?.textContent || ''), hit, out, tiny,
       gold: window.QD.S.hero.gold }; });
   let L = await look();
-  check(`${tag} store: sign, 5 sections in order, every tag's price is the shared chip (brown, yellow coin, Oxanium number; pc1), no svg coin, Diamond T17 card, no charms`, L.sign && L.zones.join() === 'zn-specials,zn-shelf,zn-diamond,zn-odd,zn-supplies' && L.pencil === L.ntag && L.ntag > 0 && L.hand && !L.svgcoin && L.dia && !L.charm, JSON.stringify(L));
+  check(`${tag} store: sign, 5 sections in order, every tag's price is the shared chip (brown, yellow coin, Oxanium number; pc1), no svg coin, Diamond T17 card, no charms`, L.sign && L.zones.join() === 'zn-supplies,zn-specials,zn-shelf,zn-diamond,zn-odd' && L.pencil === L.ntag && L.ntag > 0 && L.hand && !L.svgcoin && L.dia && !L.charm, JSON.stringify(L));
   const want = await p.evaluate(() => { const { S, E } = window.QD; const h = S.hero; const all = [...E.shopStock(h).map((i) => i.price), ...E.storeTonics(h).map((t) => t.price), E.bundleOffer(h).price, E.petOffer(h).price, E.potionBuyInfo(h).price, E.potionUpgrade(h).cost, E.rerollDieInfo(h).cost];
     return { poor: all.filter((x) => x > h.gold).sort((a, b) => a - b).join(), belt: E.potionUpgrade(h) }; });
   check(`${tag} store: tags are red exactly when the purse is short (60 gold), the belt shows Needs Level 4`, L.poor.map(Number).sort((a, b) => a - b).join() === want.poor && await p.locator('.cst-card.belt .cst-sticker').textContent() === 'Needs Level 4', JSON.stringify({ poor: L.poor, want }));

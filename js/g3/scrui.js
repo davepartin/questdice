@@ -1637,12 +1637,12 @@ function storeTab() {
       : CB.storeCard({ cls: 'reroll have', art: CB.storeText('+1'), title: 'Rerolls', lines: [`${rr.cur} dice`], stamp: 'Max' })];
   const sect = (cls, title, sub, ...kids) => h('section', { class: `cst-zone ${cls}` }, h('h2', {}, title), sub ? h('p', { class: 'cst-sub' }, sub) : null, ...kids);
   return h('div', { class: 'cst-store' },
-    h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, 'New stock every camp'), h('span', { class: 'cst-purse', 'aria-label': `${hero.gold} gold in your purse` }, h('i', { class: 'cst-coin', 'aria-hidden': 'true' }), h('b', {}, String(hero.gold)))),
+    h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, 'New stock every camp')),
+    sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
     sect('zn-specials', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))),
     sect('zn-shelf', 'On the shelf', 'Weapons. What you buy goes in your pack. Tap a card to see it.', h('div', { class: 'cst-grid two' }, shelf)),
     diamonds.length ? sect('zn-diamond', 'Diamond case', `A Diamond is used up in one fight. You carry at most ${D.DIAMOND.max}.`, h('div', { class: 'cst-diacase' }, diamonds)) : null,
-    pet ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null,
-    sect('zn-supplies', 'Supplies', 'Potions, a bigger belt, and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)));
+    pet ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
 }
 function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
