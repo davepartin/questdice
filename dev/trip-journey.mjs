@@ -72,15 +72,28 @@ try {
   }
   note('after the fight: A: ' + (await text(A)).slice(0, 200));
   const buttons = (p) => p.page.evaluate(() => [...document.querySelectorAll('button, .sx-plaque, [role=button]')].filter((e) => e.offsetParent && !e.disabled).map((e) => e.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)).filter(Boolean).slice(0, 14));
+  const inCamp = (p) => p.page.evaluate(() => /Camp/.test(document.body.innerText.slice(0, 80)) && [...document.querySelectorAll('button')].some((e) => /^Dice$/.test(e.textContent.trim())));
+  // ---- rewards: reveal, victory, the spoils draft (each hero takes or sells), until both phones are at camp
   for (let i = 0; i < 24; i++) {
-    const [ta, tb] = [(await text(A)).slice(0, 150), (await text(B)).slice(0, 150)]; const [ba, bb] = [await buttons(A), await buttons(B)];
-    note(`  after ${i}: A: ${ta} || btns ${JSON.stringify(ba)}`); note(`           B: ${tb} || btns ${JSON.stringify(bb)}`);
+    if (await inCamp(A) && await inCamp(B)) break;
+    const [ta, tb] = [(await text(A)).slice(0, 150), (await text(B)).slice(0, 150)];
+    note(`  after ${i}: A: ${ta} || btns ${JSON.stringify(await buttons(A))}`); note(`           B: ${tb} || btns ${JSON.stringify(await buttons(B))}`);
     await snap(A, `10_${String(i).padStart(2, '0')}_A`); await snap(B, `10_${String(i).padStart(2, '0')}_B`);
-    if (/To the road|Rest at camp|CAMP/.test(ta) && process.env.STOP_AT_CAMP) break;
     let moved = false;
-    for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /^\s*take\b/, /^\s*onward/, /to the road/, /^\s*go on/]) { if (await tap(p, re)) { moved = true; break; } }
-      if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-perks .perk-card, .perk-row > *, .sx-loot .sx-wc button, .sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
+    for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /^\s*take\b/, /^\s*onward/, /^\s*go on/]) { if (await tap(p, re)) { moved = true; break; } }
+      if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-perks .perk-card, .perk-row > *'); if (c) { c.click(); return true; } return false; }); }
     await sleep(1200); for (const p of [A, B]) await p.pump(2); if (!moved) break;
   }
+  assert.ok(await inCamp(A) && await inCamp(B), 'both phones reach camp'); note('PASS rewards: reveal, victory and the spoils draft lead to camp on both phones');
+  const gold = (p) => p.page.evaluate(() => ({ gold: window.QD.S.hero.gold, W: window.QD.S.hero.strength.W, E: window.QD.S.hero.strength.E, name: window.QD.S.hero.name }));
+  const g0 = await gold(A); const gb = await gold(B); note(`camp purses: ${g0.name} ${g0.gold} gold, ${gb.name} ${gb.gold} gold`); await snap(A, '20_camp_A'); await snap(B, '21_camp_B');
+  // ---- a legal upgrade with earned gold: the Wizard buys the Left hand (d4 to d6, 40 gold) through the real camp card
+  assert.ok(g0.gold >= 40, `the Wizard has the gold for a hand (${g0.gold})`);
+  assert.ok(await tap(A, /^left hand/), 'open the Left hand card'); await A.pump(2); await sleep(600); await snap(A, '22_hand_card_A');
+  note('hand card buttons: ' + JSON.stringify(await buttons(A)));
+  assert.ok(await A.page.evaluate(() => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
+  await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '23_hand_bought_A');
+  assert.equal(g1.gold, g0.gold - 40, 'the hand cost 40 gold'); assert.equal(g1.W, 6, 'the Left hand is a d6 now');
+  note(`PASS upgrade: ${g1.name} bought a d6 Left hand for 40 gold (${g0.gold} to ${g1.gold})`);
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
