@@ -61,6 +61,19 @@ for (const id of IDS) for (const r of [1, 2]) for (const s of [6, 10]) {
   P(`| | | | **candidate** | ${f0(b.fxFaces * 100)}% | ${f2(b.icons)} | ${kin(b)} | ${f0(b.top * 100)}% |`);
 }
 
+// ---- 2b. what each size step does (a bigger die keeps every face, but a share can move)
+P('\n## 2b. What each size step does to the weapon face (candidate)\n');
+P('Each step adds two faces and keeps all earlier ones, so no face is lost; but the average per roll is over all faces, so an added face can lower one output while raising another. Printed attack / block = the expected number the face sends to attack / block per roll (hand die not included); icons = effect icons per roll. A fall is marked with ▼.\n');
+P('| Weapon | step | printed attack | printed block | red share | Silver icons / roll | Gold icons / roll |\n|---|---|---|---|---|---|---|');
+const arrow = (a, b) => `${f2(a)} → ${f2(b)}${b < a - 1e-9 ? ' ▼' : ''}`;
+for (const id of IDS) for (let i = 1; i < SIZES.length; i++) {
+  const ammo = id === 'quiver' ? 'normal' : undefined; const a = SIZES[i - 1]; const b = SIZES[i];
+  const A = stats(candFaces(id, 0, a, ammo)); const B = stats(candFaces(id, 0, b, ammo));
+  const sa = stats(candFaces(id, 1, a, ammo)); const sb = stats(candFaces(id, 1, b, ammo)); const ga = stats(candFaces(id, 2, a, ammo)); const gb = stats(candFaces(id, 2, b, ammo));
+  P(`| ${nm(id)} | d${a} → d${b} | ${arrow(A.eAtk, B.eAtk)} | ${arrow(A.eBlk, B.eBlk)} | ${f0(100 * A.red / A.n)}% → ${f0(100 * B.red / B.n)}% | ${arrow(sa.icons, sb.icons)} | ${arrow(ga.icons, gb.icons)} |`);
+}
+P('\nSteps with at least one ▼ are the ones to describe honestly on a card: the die is bigger and keeps everything, but it is not better in every output.\n');
+
 // ---- 3. how different are the weapons? A distance over a handful of shape numbers at the sizes that matter
 const shape = (get) => IDS.filter((id) => id !== 'quiver').map((id) => {
   const v = [];

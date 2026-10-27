@@ -31,6 +31,7 @@ for (const enc of ENC) {
   md += `\n## ${enc[0]}\n\n| Weapons | Win % | Rounds | Health left when won | Dealt / round | Taken / round | Blocked / round |\n|---|---|---|---|---|---|---|\n`;
   for (const set of SETS) { const rs = []; for (let i = 0; i < N; i++) rs.push(fight(set, enc, 1000 + i)); const w = rs.filter((r) => r.win);
     const row = { win: 100 * w.length / N, rounds: mean(rs.map((r) => r.rounds)), left: w.length ? 100 * mean(w.map((r) => r.left)) : 0, dealt: mean(rs.map((r) => r.dealt / r.rounds)), taken: mean(rs.map((r) => r.taken / r.rounds)), blocked: mean(rs.map((r) => r.absorbed / r.rounds)) };
+    row.raw = rs.map((r, i) => ({ seed: 1000 + i, win: r.win ? 1 : 0, rounds: r.rounds, left: +r.left.toFixed(3), dealt: r.dealt, taken: r.taken, absorbed: r.absorbed })); // per-seed outcomes, so a matched comparison can be paired (T17 review, 26 Oct)
     all[`${enc[0]}|${set[0]}`] = row; md += `| ${set[0]} | ${Math.round(row.win)} | ${f1(row.rounds)} | ${Math.round(row.left)}% | ${f1(row.dealt)} | ${f1(row.taken)} | ${f1(row.blocked)} |\n`; }
 }
 fs.writeFileSync(OUT, md); fs.writeFileSync(OUT.replace(/\.md$/, '.json'), JSON.stringify(all, null, 1)); console.log(md);

@@ -1,7 +1,6 @@
 # T17 candidate weapon faces: bot fights, today against candidate (PROPOSED, nothing live changes)
 
-Same hero (knight shell), same encounters and seeds (40 matched fights a cell, so about plus or minus 8 points on a win rate; only gaps of about 20 points mean anything), only the faces change: today = the live faces, candidate = js/weaponladder.js. Run with `RELEASE=1 [T17_CAND=1] ENC=<n,..> node tools/t22-weapons.mjs 40 <out.md>`; the raw per-cell files are the `.md` and `.json` that tool writes. Bots, not people: they play the same everywhere, so this compares face tables with each other and says nothing about how a person plays.
-
+Same hero (knight shell), same encounters and seeds (40 matched fights a cell, seeds 1000 to 1039 in both modes); only the faces change: today = the live faces, candidate = js/weaponladder.js. **These tables are descriptive.** The runner wrote only aggregate rows, so they cannot show that a change is significant, that a difference is noise, or that a weapon has stopped being an outlier (Director review, 26 Oct). New runs also keep every per-seed outcome (the `raw` field of the `.json` that `tools/t22-weapons.mjs` writes) so paired differences and intervals can be reported. Run with `RELEASE=1 [T17_CAND=1] ENC=<n,..> node tools/t22-weapons.mjs 40 <out.md>`. Bots, not people: the same bot plays everywhere, so this compares face tables with each other and says nothing about how a person plays.
 
 ## Act I step 2, Bronze d4
 

@@ -104,6 +104,13 @@ function faces2(id, size) {
   else out = (d[size] || d[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
   W2CACHE[key] = out; return out.map((f) => ({ ...f }));
 }
+// The key an ordinary weapon has in WEAPON_SIZE.ladder (the arrows by ammunition), and whether the cumulative table actually serves this item:
+// a Diamond, a legendary, Fists, or an ordinary weapon outside the table's roster (a retained Staff, Mace or Long Sword) keeps its own faces.
+const ladderKey = (inst) => (inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id);
+export function servedByLadder(inst) {
+  if (!inst || inst.diamond || inst.id === 'fists' || WEAPONS[inst.id]?.legendary) return false;
+  return !!((EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]);
+}
 export function weaponFaces(inst, rollSize) {
   const def = WEAPONS[inst.id];
   if (inst.diamond) return diamondFaces(def, weaponSize(inst)); // a Diamond rolls at its full size in any hand
@@ -111,7 +118,7 @@ export function weaponFaces(inst, rollSize) {
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
   // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below, in the weapon-size preview or with WEAPON_SIZE.cumulative on; none is installed in the release
-  const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
+  const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
   if (lad) return lad.map((f) => ({ ...f }));
   // the weapons experiment: its own Bronze numbers at every metal; Silver and Gold add the same metal icons as today's weapons (Bronze none)
   const w2tier = Math.min(2, inst.rarity | 0); const w2 = (f) => (w2tier ? metalIcons(def, f, w2tier, def.temper, def.lean === 'def' ? 'b' : 'r') : f);

@@ -6,6 +6,7 @@
 //   - every weapon has red and blue faces (Dave: each weapon balances attack and block); the weapon's role is how much of each, where its
 //     effects sit and how big they are;
 //   - metal adds effects, never numbers: Bronze none, Silver about half an icon a roll, Gold about one, placed by the weapon's role.
+// Bronze is plain except that a special ammunition's arrowheads are on every metal.
 // A face is { v, c: 'r' | 'b', fx?: { pierce | heal | magic: n }, arrow?: 'pierce' | 'fire' | 'frost' } like the faces in js/engine.js.
 export const SIZES = [4, 6, 8, 10];
 export const METALS = ['Bronze', 'Silver', 'Gold'];
@@ -14,21 +15,21 @@ export const METALS = ['Bronze', 'Silver', 'Gold'];
 // and big on the brutes. Budgets stay close to today's: Silver about half an icon a roll, Gold about one.
 const ALL = (n10 = 1) => ({ 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: n10 });
 export const ROLES = {
-  dagger: { name: 'Dagger', role: 'Quick: an even mix of strike and guard, a small effect on every other face: pierce when it strikes, a heal when it guards.', colors: 'RBRBRBRBRB', kinds: { r: 'pierce', b: 'heal' },
+  dagger: { name: 'Dagger', role: 'Mixed: an even split of strike and guard, with small effects spread over the faces: Silver pierces on the strikes, Gold adds a heal on the guards.', colors: 'RBRBRBRBRB', kinds: { r: 'pierce', b: 'heal' },
     silver: { 1: 1, 3: 1, 5: 1, 7: 1, 9: 1 }, gold: ALL(2) },
-  sword: { name: 'Sword', role: 'Reliable: leans to attack, guards almost as often; magic when it strikes, a heal when it guards.', colors: 'RRBRBRRBRB', kinds: { r: 'magic', b: 'heal' },
+  sword: { name: 'Sword', role: 'Reliable: leans to attack, guards almost as often. Silver pays magic on the strikes, Gold adds a heal on the guards.', colors: 'RRBRBRRBRB', kinds: { r: 'magic', b: 'heal' },
     silver: { 2: 1, 4: 1, 6: 1, 7: 1, 9: 1 }, gold: ALL(2) },
-  axe: { name: 'Axe', role: 'Brute: every big number attacks and only the big numbers carry effects, big ones; the two smallest guard.', colors: 'BBRRRRRRRR', kinds: { r: 'pierce' },
+  axe: { name: 'Axe', role: 'Brute: every big number attacks and only the big numbers carry effects (pierce, bigger with the number); the two smallest guard.', colors: 'BBRRRRRRRR', kinds: { r: 'pierce' },
     silver: { 4: 1, 6: 1, 8: 2, 10: 2 }, gold: { 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2, 9: 2, 10: 3 } },
-  spear: { name: 'Spear', role: 'Armour breaker: a steady single pierce on strike and guard faces alike, never a big one.', colors: 'RRBRRBRRBR', kinds: { r: 'pierce', b: 'pierce' },
+  spear: { name: 'Spear', role: 'Pierce on both colours: a single pierce on strike and guard faces alike, never a big one; Silver on half the faces, Gold on every face.', colors: 'RRBRRBRRBR', kinds: { r: 'pierce', b: 'pierce' },
     silver: { 2: 1, 3: 1, 5: 1, 8: 1, 9: 1 }, gold: ALL(1) },
   shield: { name: 'Round Shield', role: 'Steady guard: leans to block, and only its guards carry effects: a heal on the guard, nothing on the few strikes.', colors: 'BBRBBRBBRB', kinds: { b: 'heal' },
     silver: { 2: 1, 4: 1, 5: 1, 8: 1, 10: 2 }, gold: ALL(2) },
-  tower: { name: 'Tower Shield', role: 'Wall: every big number guards, only the big numbers carry effects (magic, and big); the two smallest strike.', colors: 'RRBBBBBBBB', kinds: { b: 'magic' },
+  tower: { name: 'Tower Shield', role: 'Wall: every big number guards, and only the big numbers carry effects (magic, bigger with the number); the two smallest strike.', colors: 'RRBBBBBBBB', kinds: { b: 'magic' },
     silver: { 4: 1, 6: 1, 8: 2, 10: 2 }, gold: { 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2, 9: 2, 10: 3 } },
-  bow: { name: 'Bow', role: 'Even: strikes and guards in turn, leaning a little to guard; a pierce on the strikes, magic on the guards.', colors: 'RBBRBRBBRB', kinds: { r: 'pierce', b: 'magic' },
+  bow: { name: 'Bow', role: 'Mixed, leaning a little to guard: a pierce on the strikes and magic on the guards, on half the faces at Silver and every face at Gold.', colors: 'RBBRBRBBRB', kinds: { r: 'pierce', b: 'magic' },
     silver: { 2: 1, 4: 1, 6: 1, 8: 1, 10: 2 }, gold: ALL(2) },
-  quiver: { name: 'Arrows', role: 'All attack: a pierce on every other strike, and the ammunition marks three arrowheads.', colors: 'RRRRRRRRRR', kinds: { r: 'pierce' }, heads: [3, 5, 7],
+  quiver: { name: 'Arrows', role: 'All attack: a pierce on every other strike at Silver and every strike at Gold; the three arrowheads (3, 5 and 7) carry the ammunition, Bronze included.', colors: 'RRRRRRRRRR', kinds: { r: 'pierce' }, heads: [3, 5, 7],
     silver: { 2: 1, 4: 1, 6: 1, 8: 1, 10: 2 }, gold: ALL(2) },
 };
 export const AMMO = ['normal', 'pierce', 'fire', 'frost'];
