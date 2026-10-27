@@ -19,3 +19,8 @@
 .gv-card { margin-top: .6rem; }
 .gv-note { text-align: center; }
 .fb-card.hero.tappable { pointer-events: auto; cursor: pointer; }
+/* the daily's potion shop between fights */
+.dl-shop { display: grid; gap: .5rem; margin: .8rem 0; padding: .7rem .8rem; border-radius: 14px; border: 1px solid rgba(255, 210, 61, .3); background: rgba(21, 29, 52, .7); }
+.dl-shop-t { display: flex; gap: .6rem; align-items: center; }
+.dl-shop-t span { display: grid; }
+.dl-shop-t small { opacity: .8; }

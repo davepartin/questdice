@@ -713,7 +713,7 @@ function showDaily() {
 }
 function startDaily() {
   const run = DAY.dailyRun(); const hero = DAY.dailyHero(run);
-  S.daily = { run, idx: 0, fights: [] }; S.hero = hero; S.company = { members: [hero] }; S.practice = null;
+  S.daily = { run, idx: 0, fights: [], spent: 0 }; S.hero = hero; S.company = { members: [hero] }; S.practice = null;
   dailyFight();
 }
 function dailyFight() {
@@ -728,13 +728,13 @@ function dailyAfter(won) {
   const d = S.daily; if (!d) return showTitle();
   d.fights.push({ won, score: DAY.fightScore(S.battle, won), name: S.quest?.name || '' }); d.idx++;
   if (won) sfx.win?.(); else sfx.lose?.();
-  const score = DAY.finalScore(d.fights);
-  if (won && d.idx < DAY.FIGHTS) return SCRUI.daily({ mode: 'between', run: d.run, fights: d.fights, score, onNext: dailyFight, onHome: showTitle });
+  const score = DAY.finalScore(d.fights, d.spent);
+  if (won && d.idx < DAY.FIGHTS) { const rest = () => SCRUI.daily({ mode: 'between', run: d.run, fights: d.fights, score: DAY.finalScore(d.fights, d.spent), spent: d.spent || 0, shop: DAY.potionShop(d, S.hero), onBuyPotion: () => { if (DAY.buyPotion(d, S.hero)) { sfx.select(); rest(); } }, onNext: dailyFight, onHome: showTitle }); return rest(); }
   const rec = DAY.recordRun(d.run.key, score, d.fights);
   const hero = S.hero; const name = (SV.listSaves().find((x) => x.kind === 'hero')?.name) || hero.name;
   const board = import('./cloud.js').then(async (C) => { await C.submitDaily(d.run.key, { name, cls: d.run.cls, score: rec.best, fights: rec.fights }); return C.topDaily(d.run.key, 10); });
   const text = DAY.shareText(d.run, score, d.fights);
-  SCRUI.daily({ mode: 'result', run: d.run, fights: d.fights, score, rec, streak: DAY.streak(d.run.key), board, onStart: startDaily, onHome: showTitle,
+  SCRUI.daily({ mode: 'result', run: d.run, fights: d.fights, score, spent: d.spent || 0, rec, streak: DAY.streak(d.run.key), board, onStart: startDaily, onHome: showTitle,
     onShare: () => { if (navigator.share) navigator.share({ text }).catch(() => {}); else if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied. Paste it to a friend.')); else toast(text); } });
 }
 // Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).

@@ -335,11 +335,15 @@ export function daily(v) {
     if (!r.rows.length) { boardEl.replaceChildren(h('p', { class: 'fine' }, 'Nobody has a score today yet. Be the first.')); return; }
     boardEl.replaceChildren(h('ol', { class: 'dl-top' }, r.rows.map((x, i) => h('li', { class: x.uid === r.me ? 'me' : '' }, h('span', { class: 'dl-rank' }, String(i + 1)), emblem(x.cls), h('b', {}, x.name), h('small', {}, `${x.fights}/${DAY.FIGHTS}`), h('em', {}, x.score.toLocaleString()))))); }).catch(() => {});
   const head = v.mode === 'result'
-    ? [eyebrow(DAY.dayLabel(run.key)), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, `${v.fights.filter((f) => f.won).length} of ${DAY.FIGHTS} fights won${v.rec?.isBest ? ' · a new best today!' : ` · your best today: ${v.rec.best.toLocaleString()}`}${v.streak > 1 ? ` · ${v.streak} days in a row` : ''}`)]
+    ? [eyebrow(DAY.dayLabel(run.key)), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, `${v.fights.filter((f) => f.won).length} of ${DAY.FIGHTS} fights won${v.spent ? ` · ${v.spent} points spent on potions` : ''}${v.rec?.isBest ? ' · a new best today!' : ` · your best today: ${v.rec.best.toLocaleString()}`}${v.streak > 1 ? ` · ${v.streak} days in a row` : ''}`)]
     : v.mode === 'between'
       ? [eyebrow(`Fight ${v.fights.length} of ${DAY.FIGHTS} won`), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, 'Catch your breath. Your health is full again for the next fight; the potions you drank stay drunk.')]
-      : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, 1 for every gold coin, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
+      : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, 1 for every gold coin, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Between fights you can spend points on potions. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
   const kit = h('section', { class: 'dl-kit' }, h('div', { class: 'dl-hero' }, emblem(run.cls, 'lg'), h('div', {}, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} · hands d${hero.strength.W} · ${D.tierName(hero.loadout.NW)} d${E.weaponSize(hero.loadout.NW)} ${D.WEAPONS[hero.loadout.NW.id].name}`))), E.charmsResting() ? null : charmCard(run.charm, { badge: 'Today' }));
+  // Between fights: potions for points (js/daily.js potionShop). The score on screen already has the spending taken off.
+  const shop = v.mode === 'between' && v.shop ? h('section', { class: 'dl-shop', 'aria-label': 'Potion shop' },
+    h('div', { class: 'dl-shop-t' }, ico('potion'), h('span', {}, h('b', {}, 'Potions'), h('small', {}, `${v.shop.have} of ${v.shop.max} on your belt · each heals ${v.shop.heal}${v.spent ? ` · ${v.spent} points spent so far` : ''}`))),
+    btn(v.shop.ok ? `Buy a potion · ${v.shop.cost} pts` : v.shop.why, v.onBuyPotion, { kind: 'ghost', disabled: !v.shop.ok, cls: 'wide' })) : null;
   const gearBtn = v.mode === 'result' ? null : btn('See your gear', () => openGear(v.mode === 'between' ? (X.S.hero || hero) : hero), { kind: 'ghost', icon: 'bag', cls: 'wide' }); // the dice grid and cards, look only
   const cta = v.mode === 'between' ? btn(`Fight ${v.fights.length + 1}: ${run.quests[v.fights.length].kind === 'boss' ? run.quests[v.fights.length].name : 'onward'}`, v.onNext, { big: true, icon: 'sword', cls: 'wide' })
     : v.mode === 'result' ? h('div', { class: 'dl-acts' }, btn('Share', v.onShare, { kind: 'ghost', icon: 'people' }), btn('Try again', v.onStart, { big: true, icon: 'reroll' }))
@@ -348,7 +352,7 @@ export function daily(v) {
     topBar(h('div', { class: 'sx-chip dl-chip' }, ico('crown'), h('b', {}, 'Daily')), h('div', { class: 'sx-top-actions' }, btn(v.mode === 'between' ? 'Give up' : 'Home', v.onHome, { kind: 'ghost', icon: 'home' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' }, ...head),
-      v.mode === 'intro' ? kit : null, gearBtn,
+      v.mode === 'intro' ? kit : null, shop, gearBtn,
       h('ol', { class: 'dl-fights' }, run.quests.map(fightRow)),
       h('div', { class: 'sx-cta' }, cta),
       v.mode === 'between' ? null : [eyebrow('Today’s best', 'center'), boardEl])));
