@@ -11,6 +11,8 @@ const log = []; const note = (s) => { log.push(s); console.log(s); };
 const snap = async (p, tag) => { await p.pump(1); await p.shot(`${OUT}/${tag}.png`); };
 const text = async (p) => (await p.text()).replace(/\s+/g, ' ');
 const tap = (p, re) => p.page.evaluate((src) => { const r = new RegExp(src, 'i'); const el = [...document.querySelectorAll('button, .sx-plaque, a, [role=button]')].find((e) => e.offsetParent !== null && !e.disabled && r.test(e.textContent)); if (!el) return false; el.click(); return true; }, re.source);
+// a secret objective that is a bribe asks Accept or Decline: the Wizard accepts, the Dwarf declines, so both answers are exercised
+const offer = (p) => (p === A ? /^\s*accept\s*$/ : /^\s*decline\s*$/);
 const waitFor = async (p, fn, ms = 60000, arg) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await p.page.evaluate(fn, arg)) return true; await p.pump(0.5); await sleep(150); } return false; };
 try {
   await A.open(); await B.open();
@@ -48,7 +50,7 @@ try {
     const onBoard = await A.page.evaluate(() => !!document.querySelector('.sx-quest, .quest-card, [class*=quest-card], #quest-board'));
     const ta = (await text(A)).slice(0, 110); const tb = (await text(B)).slice(0, 110); note(`  step ${i}: A: ${ta} | B: ${tb}`);
     if (await A.page.evaluate(() => !!document.querySelector('#b3-roll'))) break;
-    let moved = false; for (const p of [A, B]) { for (const re of [/^\s*continue\s*$/, /onward/, /begin the fight|start the fight|fight/, /^\s*begin/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
+    let moved = false; for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /onward/, /begin the fight|start the fight|fight/, /^\s*begin/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
     await sleep(900); for (const p of [A, B]) await p.pump(2); void onBoard; if (!moved) break;
   }
   // ---- the first fight: both heroes roll and lock in, a power on the way, until the table wins
@@ -76,7 +78,7 @@ try {
     await snap(A, `10_${String(i).padStart(2, '0')}_A`); await snap(B, `10_${String(i).padStart(2, '0')}_B`);
     if (/To the road|Rest at camp|CAMP/.test(ta) && process.env.STOP_AT_CAMP) break;
     let moved = false;
-    for (const p of [A, B]) { for (const re of [/^\s*continue\s*$/, /^\s*take\b/, /^\s*onward/, /to the road/, /^\s*go on/]) { if (await tap(p, re)) { moved = true; break; } }
+    for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /^\s*take\b/, /^\s*onward/, /to the road/, /^\s*go on/]) { if (await tap(p, re)) { moved = true; break; } }
       if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-perks .perk-card, .perk-row > *, .sx-loot .sx-wc button, .sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
     await sleep(1200); for (const p of [A, B]) await p.pump(2); if (!moved) break;
   }
