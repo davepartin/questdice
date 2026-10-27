@@ -1041,7 +1041,7 @@ function campStatus(hero) {
     h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act}`), pips),
     h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy)); // named, like the act beside it (Dave: "needs to say potion somewhere")
 }
-// (Potion belt and the 4th reroll die are sold in the cardboard Camp Store now: storeTab, Supplies.)
+// (Potion belt and the 4th reroll die are sold in the cardboard Camp Store: storeTab.)
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
 const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
 const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
@@ -1432,6 +1432,16 @@ function powerSheet(id) {
     h('p', { class: 'sh-sec' }, 'Levels'), levels, act];
 }
 // Camp talent workbench: inspect first, preview a symbol, then use the existing purchase command.
+// After a talent die is unlocked or grown, glide down to the symbol choosing area (the numbered faces, then the symbols under them) so the next step is on screen.
+function toTalentSymbols() {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const side = $('.sx-camp .sx-side'), el = $('.tw-face-heading'); if (!side || !el) return;
+    const stick = parseFloat(side.style.getPropertyValue('--stick')) || 0;
+    const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 8;
+    const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    side.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });
+  }));
+}
 function talentWorkshop(hero, slot) {
   const size = hero.special[slot], info = E.talentInfo(hero, slot), up = E.specialUpgrade(hero, slot);
   const stored = hero.talent?.[slot] || [];
@@ -1446,7 +1456,7 @@ function talentWorkshop(hero, slot) {
     return h('button', { type: 'button', class: `tw-face ${k ? SYM_ICO[k][1] : 'tw-unset'} ${active ? 'selected' : ''}`, 'data-face': String(f), 'aria-pressed': String(active),
       'aria-label': `Face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold to set`}. Inspect face.`,
       onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); }) },
-    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), k ? h('small', {}, D.TALENT_SYMS[k].name) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
+    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), k ? h('small', { class: 'tw-gives' }, `Gives +${n}`) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
   });
   let detail;
   if (face == null) detail = h('div', { class: 'tw-empty' }, ico('dice'), h('b', {}, 'Choose a numbered face'), h('p', {}, 'Inspect its symbol or choose what an empty face will give you.'));
@@ -1456,7 +1466,7 @@ function talentWorkshop(hero, slot) {
     const can = !!chosen && left > 0 && hero.gold >= cost;
     const preview = h('div', { class: `tw-result ${chosen ? SYM_ICO[chosen][1] : ''}`, 'aria-live': 'polite' },
       h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
-      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
+      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `Gives +${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
         h('p', {}, chosen ? `When you roll ${n}, gain ${n} ${D.TALENT_SYMS[chosen].name.toLowerCase()}.` : 'Preview a symbol below. Gold is spent only when you buy.')));
     const options = !current ? h('div', { class: 'tw-symbols', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
       const count = E.talentCount(hero, slot, k), full = count >= info.same;
@@ -1474,14 +1484,15 @@ function talentWorkshop(hero, slot) {
     detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
   }
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
-    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
+    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
   return h('div', { class: 'tw-workshop' },
     talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
       onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); },
-      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) shBought(); }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) shBought(); } }),
+      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Up to ${info.same} of each symbol per die.`), detail,
+    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Each numbered face gives you that many of its symbol: "Gives +6" means 6.`),
+    h('p', { class: 'tw-max' }, `Max ${info.same} of the same power symbol per die. Choose wisely.`), detail,
     h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
       h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
         up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
@@ -1555,7 +1566,7 @@ function storeCanBuy(hero) {
 }
 // The cardboard Camp Store (Dave approved 26 Oct 2026, mockup docs/team/mockups/cards/shop.html v2): a wood sign, cardboard cards on the table,
 // paper price tags with pencil coins (red when you are short). Sections: specials counter, the weapon shelf, the Diamond case (the T17 card with
-// an ice-blue sheen), odds and ends (the pet), supplies (potions, the belt's third slot, the 4th reroll die; moved here from Camp > Supplies).
+// an ice-blue sheen), odds and ends (the pet), supplies (potions, the belt's third slot, the 4th reroll die).
 // Every tag runs the same HE.* purchase the old rows did; every price and gate is read from engine.js.
 const METAL_INK = ['#c98a4a', '#d8e2ea', '#ffd24a', '#ffd24a'];
 function storeTab() {
@@ -1698,16 +1709,15 @@ function shrinkSection(hero) {
   return rows.length ? zone('zn-shrink', 'dice', 'Shrink', 'Pay gold to make a die smaller.', ...rows) : null;
 }
 function campNavigation(fromBoard) {
-  return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['supplies', 'Supplies'], ['hero', 'Hero']].map(([id, label]) =>
-    h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null,
-      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
+  return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['store', 'Store'], ['hero', 'Hero']].map(([id, label]) =>
+    h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null, 'data-camp-page': id,
+      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; if (id === 'store') X.S.tab = 'store'; else X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
 }
 function campContent(hero) {
   switch (X.S.campPage) {
     case 'gear': return gearTab({ grid: false, chips: false });
-    case 'hero': return heroTab({ chips: false });
     case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
-    case 'supplies': return h('div', { class: 'cw-supplies' }, zone('zn-supplies', 'plus', 'Rerolls & potions', 'Potions, the potion belt and the 4th reroll die are sold in the Camp Store now.', btn('Open the Camp Store', () => { X.S.tab = 'store'; X.renderCamp(SHEET.fromBoard); }, { kind: 'ghost', icon: 'coin', cls: 'wide cst-goto' })), hero.pet ? petCard(hero) : null,
+    case 'hero': return h('div', { class: 'cw-supplies' }, heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
     default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector(), SHEET.inline ? null : diamondBring(hero));

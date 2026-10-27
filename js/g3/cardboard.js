@@ -177,14 +177,15 @@ export function heartCard(hero, { onGrow, say } = {}) {
     h('div', { class: 'cb-key' }, h('div', { class: 'cb-fs' }, fi(5), fi(6)), h('div', { class: 'cb-map' }, h('img', { src: GRIDS.wpn, alt: 'dice grid: the two weapon dice' }), h('span', {}, 'Upgrades', h('br'), 'WEAPON dice'))),
     h('div', { class: 'cb-lvls' }, ...[1, 2, 3].map((n) => {
       const step = D.HEART_RANKS[n];
-      const body = h('p', {}, h('span', {}, D.EXPERIMENT.heartUpgrades ? 'Each match ' : 'STRENGTH dice ', h('b', {}, `+${step.amp}`)), h('span', {}, D.EXPERIMENT.heartUpgrades ? 'Each lane ' : 'WEAPON dice ', h('b', {}, `+${step.lane}`)));
+      const lines = () => [h('span', {}, h('b', {}, `+${step.amp}`), ' boost to matching symbols on white strength dice'), h('span', {}, h('b', {}, `+${step.lane}`), ' boost to matching weapon dice')];
+      const body = h('p', { class: 'cb-hl' }, ...lines());
       if (n <= rank) return level(n, body);
       if (!D.EXPERIMENT.heartUpgrades) return later(n, step.act);
       const locked = (hero.campaign?.act || 1) < step.act; const ready = n === up.next && up.ok;
       const why = locked ? `Requires Act ${D.ROMAN[step.act]}` : n !== up.next ? `Buy Level ${n - 1} first` : `Need ${Math.max(0, step.cost - hero.gold)} more gold`;
       return h('div', { class: 'cb-slot' }, h('div', { class: `cb-cov ${ready ? 'ready' : ''}`, 'data-heart-rank': n,
-        'aria-label': `Level ${n}: +${step.amp} each matching strength die, +${step.lane} each matching weapon lane. ${step.cost} gold. ${ready ? 'Buy upgrade' : why}`,
-        ...press(() => ready ? onGrow?.(n) : say?.(why)) }, price(step.cost, hero.gold < step.cost), h('small', {}, `LEVEL ${n}: +${step.amp} / +${step.lane}`), locked ? seal(step.act) : null));
+        'aria-label': `Level ${n}: +${step.amp} boost to matching symbols on white strength dice, +${step.lane} boost to matching weapon dice. ${step.cost} gold. ${ready ? 'Buy upgrade' : why}`,
+        ...press(() => ready ? onGrow?.(n) : say?.(why)) }, price(step.cost, hero.gold < step.cost), h('small', {}, `LEVEL ${n}`), h('p', { class: 'cb-hl cb-hl-cov' }, ...lines()), locked ? seal(step.act) : null));
     })),
   ]);
 }
