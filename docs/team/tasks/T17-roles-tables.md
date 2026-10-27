@@ -8,14 +8,14 @@ R red = attack, B blue = block; the number is the face number (what straights an
 
 | Weapon | Role | Bronze | Silver | Gold |
 |---|---|---|---|---|
-| Dagger | Quick: an even mix of strike and guard, a small effect on every other face: pierce when it strikes, a heal when it guards. | R1 B2 R3 B4 R5 B6 R7 B8 R9 B10 | R1[p1] B2 R3[p1] B4 R5[p1] B6 R7[p1] B8 R9[p1] B10 | R1[p1] B2[h1] R3[p1] B4[h1] R5[p1] B6[h1] R7[p1] B8[h1] R9[p1] B10[h2] |
-| Sword | Reliable: leans to attack, guards almost as often; magic when it strikes, a heal when it guards. | R1 R2 B3 R4 B5 R6 R7 B8 R9 B10 | R1 R2[m1] B3 R4[m1] B5 R6[m1] R7[m1] B8 R9[m1] B10 | R1[m1] R2[m1] B3[h1] R4[m1] B5[h1] R6[m1] R7[m1] B8[h1] R9[m1] B10[h2] |
-| Axe | Brute: every big number attacks and only the big numbers carry effects, big ones; the two smallest guard. | B1 B2 R3 R4 R5 R6 R7 R8 R9 R10 | B1 B2 R3 R4[p1] R5 R6[p1] R7 R8[p2] R9 R10[p2] | B1 B2 R3[p1] R4[p1] R5[p1] R6[p1] R7[p1] R8[p2] R9[p2] R10[p3] |
-| Spear | Armour breaker: a steady single pierce on strike and guard faces alike, never a big one. | R1 R2 B3 R4 R5 B6 R7 R8 B9 R10 | R1 R2[p1] B3[p1] R4 R5[p1] B6 R7 R8[p1] B9[p1] R10 | R1[p1] R2[p1] B3[p1] R4[p1] R5[p1] B6[p1] R7[p1] R8[p1] B9[p1] R10[p1] |
+| Dagger | Mixed: an even split of strike and guard, with small effects spread over the faces: Silver pierces on the strikes, Gold adds a heal on the guards. | R1 B2 R3 B4 R5 B6 R7 B8 R9 B10 | R1[p1] B2 R3[p1] B4 R5[p1] B6 R7[p1] B8 R9[p1] B10 | R1[p1] B2[h1] R3[p1] B4[h1] R5[p1] B6[h1] R7[p1] B8[h1] R9[p1] B10[h2] |
+| Sword | Reliable: leans to attack, guards almost as often. Silver pays magic on the strikes, Gold adds a heal on the guards. | R1 R2 B3 R4 B5 R6 R7 B8 R9 B10 | R1 R2[m1] B3 R4[m1] B5 R6[m1] R7[m1] B8 R9[m1] B10 | R1[m1] R2[m1] B3[h1] R4[m1] B5[h1] R6[m1] R7[m1] B8[h1] R9[m1] B10[h2] |
+| Axe | Brute: every big number attacks and only the big numbers carry effects (pierce, bigger with the number); the two smallest guard. | B1 B2 R3 R4 R5 R6 R7 R8 R9 R10 | B1 B2 R3 R4[p1] R5 R6[p1] R7 R8[p2] R9 R10[p2] | B1 B2 R3[p1] R4[p1] R5[p1] R6[p1] R7[p1] R8[p2] R9[p2] R10[p3] |
+| Spear | Pierce on both colours: a single pierce on strike and guard faces alike, never a big one; Silver on half the faces, Gold on every face. | R1 R2 B3 R4 R5 B6 R7 R8 B9 R10 | R1 R2[p1] B3[p1] R4 R5[p1] B6 R7 R8[p1] B9[p1] R10 | R1[p1] R2[p1] B3[p1] R4[p1] R5[p1] B6[p1] R7[p1] R8[p1] B9[p1] R10[p1] |
 | Round Shield | Steady guard: leans to block, and only its guards carry effects: a heal on the guard, nothing on the few strikes. | B1 B2 R3 B4 B5 R6 B7 B8 R9 B10 | B1 B2[h1] R3 B4[h1] B5[h1] R6 B7 B8[h1] R9 B10[h2] | B1[h1] B2[h1] R3 B4[h1] B5[h1] R6 B7[h1] B8[h1] R9 B10[h2] |
-| Tower Shield | Wall: every big number guards, only the big numbers carry effects (magic, and big); the two smallest strike. | R1 R2 B3 B4 B5 B6 B7 B8 B9 B10 | R1 R2 B3 B4[m1] B5 B6[m1] B7 B8[m2] B9 B10[m2] | R1 R2 B3[m1] B4[m1] B5[m1] B6[m1] B7[m1] B8[m2] B9[m2] B10[m3] |
-| Bow | Even: strikes and guards in turn, leaning a little to guard; a pierce on the strikes, magic on the guards. | R1 B2 B3 R4 B5 R6 B7 B8 R9 B10 | R1 B2[m1] B3 R4[p1] B5 R6[p1] B7 B8[m1] R9 B10[m2] | R1[p1] B2[m1] B3[m1] R4[p1] B5[m1] R6[p1] B7[m1] B8[m1] R9[p1] B10[m2] |
-| Arrows | All attack: a pierce on every other strike, and the ammunition marks three arrowheads. | R1 R2 R3^p R4 R5^p R6 R7^p R8 R9 R10 | R1 R2[p1] R3^p R4[p1] R5^p R6[p1] R7^p R8[p1] R9 R10[p2] | R1[p1] R2[p1] R3^p R4[p1] R5^p R6[p1] R7^p R8[p1] R9[p1] R10[p2] |
+| Tower Shield | Wall: every big number guards, and only the big numbers carry effects (magic, bigger with the number); the two smallest strike. | R1 R2 B3 B4 B5 B6 B7 B8 B9 B10 | R1 R2 B3 B4[m1] B5 B6[m1] B7 B8[m2] B9 B10[m2] | R1 R2 B3[m1] B4[m1] B5[m1] B6[m1] B7[m1] B8[m2] B9[m2] B10[m3] |
+| Bow | Mixed, leaning a little to guard: a pierce on the strikes and magic on the guards, on half the faces at Silver and every face at Gold. | R1 B2 B3 R4 B5 R6 B7 B8 R9 B10 | R1 B2[m1] B3 R4[p1] B5 R6[p1] B7 B8[m1] R9 B10[m2] | R1[p1] B2[m1] B3[m1] R4[p1] B5[m1] R6[p1] B7[m1] B8[m1] R9[p1] B10[m2] |
+| Arrows | All attack: a pierce on every other strike at Silver and every strike at Gold; the three arrowheads (3, 5 and 7) carry the ammunition, Bronze included. | R1 R2 R3^p R4 R5^p R6 R7^p R8 R9 R10 | R1 R2[p1] R3^p R4[p1] R5^p R6[p1] R7^p R8[p1] R9 R10[p2] | R1[p1] R2[p1] R3^p R4[p1] R5^p R6[p1] R7^p R8[p1] R9[p1] R10[p2] |
 
 (The Arrows are shown with piercing heads; Normal arrows have none, Fire and Frost mark the same three faces.)
 
@@ -174,6 +174,40 @@ Icons per roll = the average number of effect icons the weapon face pays each ro
 | | | | **candidate** | 67% | 0.67 | p0.67 | 50% |
 | Arrows | Gold | 10 | today | 90% | 1.10 | p1.10 | 0% |
 | | | | **candidate** | 70% | 0.80 | p0.80 | 50% |
+
+## 2b. What each size step does to the weapon face (candidate)
+
+Each step adds two faces and keeps all earlier ones, so no face is lost; but the average per roll is over all faces, so an added face can lower one output while raising another. Printed attack / block = the expected number the face sends to attack / block per roll (hand die not included); icons = effect icons per roll. A fall is marked with ▼.
+
+| Weapon | step | printed attack | printed block | red share | Silver icons / roll | Gold icons / roll |
+|---|---|---|---|---|---|---|
+| Dagger | d4 → d6 | 1.00 → 1.50 | 1.50 → 2.00 | 50% → 50% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Dagger | d6 → d8 | 1.50 → 2.00 | 2.00 → 2.50 | 50% → 50% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Dagger | d8 → d10 | 2.00 → 2.50 | 2.50 → 3.00 | 50% → 50% | 0.50 → 0.50 | 1.00 → 1.10 |
+| Sword | d4 → d6 | 1.75 → 2.17 | 0.75 → 1.33 | 75% → 67% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Sword | d6 → d8 | 2.17 → 2.50 | 1.33 → 2.00 | 67% → 63% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Sword | d8 → d10 | 2.50 → 2.90 | 2.00 → 2.60 | 63% → 60% | 0.50 → 0.50 | 1.00 → 1.10 |
+| Axe | d4 → d6 | 1.75 → 3.00 | 0.75 → 0.50 ▼ | 50% → 67% | 0.25 → 0.33 | 0.50 → 0.67 |
+| Axe | d6 → d8 | 3.00 → 4.13 | 0.50 → 0.38 ▼ | 67% → 75% | 0.33 → 0.50 | 0.67 → 0.88 |
+| Axe | d8 → d10 | 4.13 → 5.20 | 0.38 → 0.30 ▼ | 75% → 80% | 0.50 → 0.60 | 0.88 → 1.20 |
+| Spear | d4 → d6 | 1.75 → 2.00 | 0.75 → 1.50 | 75% → 67% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Spear | d6 → d8 | 2.00 → 3.38 | 1.50 → 1.13 ▼ | 67% → 75% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Spear | d8 → d10 | 3.38 → 3.70 | 1.13 → 1.80 | 75% → 70% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Round Shield | d4 → d6 | 0.75 → 1.50 | 1.75 → 2.00 | 25% → 33% | 0.50 → 0.50 | 0.75 → 0.67 ▼ |
+| Round Shield | d6 → d8 | 1.50 → 1.13 ▼ | 2.00 → 3.38 | 33% → 25% | 0.50 → 0.50 | 0.67 → 0.75 |
+| Round Shield | d8 → d10 | 1.13 → 1.80 | 3.38 → 3.70 | 25% → 30% | 0.50 → 0.60 | 0.75 → 0.80 |
+| Tower Shield | d4 → d6 | 0.75 → 0.50 ▼ | 1.75 → 3.00 | 50% → 33% | 0.25 → 0.33 | 0.50 → 0.67 |
+| Tower Shield | d6 → d8 | 0.50 → 0.38 ▼ | 3.00 → 4.13 | 33% → 25% | 0.33 → 0.50 | 0.67 → 0.88 |
+| Tower Shield | d8 → d10 | 0.38 → 0.30 ▼ | 4.13 → 5.20 | 25% → 20% | 0.50 → 0.60 | 0.88 → 1.20 |
+| Bow | d4 → d6 | 1.25 → 1.83 | 1.25 → 1.67 | 50% → 50% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Bow | d6 → d8 | 1.83 → 1.38 ▼ | 1.67 → 3.13 | 50% → 38% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Bow | d8 → d10 | 1.38 → 2.00 | 3.13 → 3.50 | 38% → 40% | 0.50 → 0.60 | 1.00 → 1.10 |
+| Arrows | d4 → d6 | 2.50 → 3.50 | 0.00 → 0.00 | 100% → 100% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Arrows | d6 → d8 | 3.50 → 4.50 | 0.00 → 0.00 | 100% → 100% | 0.50 → 0.50 | 1.00 → 1.00 |
+| Arrows | d8 → d10 | 4.50 → 5.50 | 0.00 → 0.00 | 100% → 100% | 0.50 → 0.60 | 1.00 → 1.10 |
+
+Steps with at least one ▼ are the ones to describe honestly on a card: the die is bigger and keeps everything, but it is not better in every output.
+
 
 ## 3. How different the weapons are
 
