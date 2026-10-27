@@ -4,7 +4,7 @@
 // often as you like; your best counts. Pure logic here; the screens are in ui.js and g3/scrui.js, the leaderboard in cloud.js.
 import * as E from './engine.js';
 import { keyOf } from './lab.js';
-import { CLASSES, CHARMS } from './data.js';
+import { CLASSES, CHARMS, CLASS_TALENT } from './data.js';
 
 export const FIGHTS = 5;
 export const WIN_BONUS = 100;
@@ -42,7 +42,13 @@ export function dailyHero(run) {
   h.dice = [...new Set([...(h.dice || ['NW', 'N', 'W', 'C', 'E', 'S']), ...B.extra])];
   h.strength = { W: B.hands, E: B.hands }; h.special = { SW: B.talent, SE: B.talent }; h.mind = { N: B.head }; h.speed = { S: Math.max(B.feet, E.feetSize(h)) };
   for (const k of ['NW', 'NE']) { const w = h.loadout[k]; if (w && w.id !== 'fists') { w.rarity = B.rarity; if (B.size > 4) w.size = B.size; } }
-  h.gold = 10000; for (const k of E.cardsOf(h)) E.upgradePower(h, k.id); h.gold = 0; // every equipped power at level 1
+  h.gold = 10000; for (const k of E.cardsOf(h)) E.upgradePower(h, k.id);
+  // Talent dice: a careful player has bought symbols by now. Since 26 Oct talent faces start empty (they used to carry the class symbol), so the hero of the day buys them here:
+  // 1 face in Act I, 2 in Act II, 4 in Act III on each active talent die, the die's own class symbol first and the other die's after it (at most two of one symbol).
+  const talentFaces = { 1: 1, 2: 2, 3: 4 }[run.act || 2]; const own = CLASS_TALENT[run.cls];
+  for (const slot of ['SW', 'SE']) { if (!h.dice.includes(slot)) continue; const mine = own[slot]; const other = own[slot === 'SW' ? 'SE' : 'SW'];
+    for (let f = 0; f < talentFaces; f++) E.addTalent(h, slot, f, f < 2 ? mine : other); }
+  h.gold = 0; // every equipped power at level 1
   if (B.rerollDie) h.rerollDie = true; // a 4th reroll die, as a hero this far has bought
   E.takeCharm(h, run.charm);
   return h;

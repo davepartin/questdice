@@ -11,6 +11,7 @@ import * as ST from './story.js';
 import { CAMPAIGNS, packList, packOf, packIdOf, actsOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from './campaigns.js';
 import { hintsOn, setHints } from './coach.js';
 import { graphicsMenu, graphicsLabel, downloadMenu } from './devicemenu.js';
+import { openGear } from './g3/gearview.js';
 import * as Net from './net.js';
 import * as Online from './g3/online.js';
 import * as Sess from './session.js';
@@ -698,10 +699,10 @@ function revealSolo(won) {
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
-  if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
-  if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
-  if (S.daily) return { S, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
-  return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+  if (S.net) return { S, net: true, gear: openGear, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
+  if (S.practice) return { S, gear: openGear, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
+  if (S.daily) return { S, gear: openGear, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
+  return { S, gear: openGear, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 // ------------------------------------------------------------------ the daily challenge (daily.js): the same day for everyone
 // The briefing; then five fights in a row with the hero of the day (never saved); between fights a breath; at the end the score,
@@ -812,7 +813,7 @@ async function flicker(slots) {
 function battleMenu() {
   if (S.net) return Online.menu();
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
-    h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
+    h('div', { class: 'col' }, S.hero ? ghost('Your gear', () => { close(); openGear(S.hero); }) : null, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
       deviceItem(() => close()),

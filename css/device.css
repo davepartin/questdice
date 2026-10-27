@@ -13,3 +13,9 @@
 #qd-update span { flex: 1; font-size: .95rem; }
 #qd-update button { min-height: 40px; padding: 0 .9rem; border-radius: 10px; border: 0; background: #ffd23d; color: #1a1205; font: inherit; font-weight: 700; }
 #qd-update button.later { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .35); font-weight: 500; }
+/* Your gear: the camp dice grid and cards, look only (js/g3/gearview.js) */
+.gv { max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.gv .cw-board { max-width: 21rem; margin: 0 auto; }
+.gv-card { margin-top: .6rem; }
+.gv-note { text-align: center; }
+.fb-card.hero.tappable { pointer-events: auto; cursor: pointer; }
