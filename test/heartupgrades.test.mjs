@@ -10,24 +10,22 @@ applyRelease();
 const hero = (act = 3, gold = 1000) => { const h = E.newHero({ name: 'Heart', cls: 'knight', seed: 5 }); h.campaign.act = act; h.gold = gold; return h; };
 const board = (body, heart) => Object.fromEntries(D.SLOTS.map((s) => [s, { v: s === 'C' ? heart : ['N','W','E','S'].includes(s) ? body : 1 }]));
 
-test('live release ignores candidate ranks and rejects purchases', () => {
-  D.EXPERIMENT.heartUpgrades = false;
-  const h = hero(); h.heartRank = 3;
-  assert.equal(E.heartRankOf(h), 1); assert.equal(E.heartUpgrade(h).ok, false);
-  assert.equal(E.upgradeHeart(h, 2), false); assert.equal(h.gold, 1000);
-  assert.equal(slotPrice(h, 'C'), null); assert.equal(slotCanBuy(h, 'C'), false);
+test('Heart ranks are live: 200 then 300 gold, no act gate', () => {
+  assert.equal(D.EXPERIMENT.heartUpgrades, true);
+  const h = hero(1, 199); assert.equal(E.heartRankOf(h), 1);
+  assert.equal(slotPrice(h, 'C'), 200); assert.equal(slotCanBuy(h, 'C'), false); assert.equal(E.upgradeHeart(h, 2), false);
+  h.gold = 200; assert.equal(E.upgradeHeart(h, 2), true); assert.equal(h.gold, 0);
+  h.gold = 299; assert.equal(E.upgradeHeart(h, 3), false); h.gold = 300; assert.equal(E.upgradeHeart(h, 3), true); assert.equal(h.heartRank, 3);
 });
-test('act gates, exact funds, sequential ranks, max and repeated/stale commands', () => {
+test('exact funds, sequential ranks, max and repeated/stale commands', () => {
   E.useHeartUpgrades();
   const h = hero(1, 500);
-  assert.equal(E.upgradeHeart(h, 2), false); assert.equal(h.gold, 500);
-  h.campaign.act = 2; h.gold = 199;
+  h.gold = 199;
   assert.equal(slotPrice(h, 'C'), 200); assert.equal(slotCanBuy(h, 'C'), false);
   assert.equal(E.upgradeHeart(h, 2), false);
   h.gold = 200; assert.equal(E.upgradeHeart(h, 2), true); assert.equal(h.gold, 0); assert.equal(h.heartRank, 2);
-  h.gold = 300; assert.equal(E.upgradeHeart(h, 3), false); assert.equal(h.gold, 300);
-  h.campaign.act = 3;
-  assert.equal(E.upgradeHeart(h, 2), false); assert.equal(E.upgradeHeart(h, '3'), false);
+  h.gold = 299; assert.equal(E.upgradeHeart(h, 3), false); assert.equal(h.gold, 299);
+  h.gold = 300; assert.equal(E.upgradeHeart(h, 2), false); assert.equal(E.upgradeHeart(h, '3'), false);
   assert.equal(E.upgradeHeart(h, 3), true); assert.equal(h.gold, 0); assert.equal(h.heartRank, 3);
   assert.equal(E.upgradeHeart(h, 3), false); assert.equal(E.upgradeHeart(h, 4), false);
   const ordered = hero(); assert.equal(E.upgradeHeart(ordered, 3), false);
@@ -68,15 +66,14 @@ test('all six faces use each hero rank, white symbols only, hush and fixed d6', 
     assert.equal(out.heartBoost?.n || 0,D.FACE_PAY[10][sym] ? 16 : 0);
   }
 });
-test('authoritative camp operations reject battle, act bypass, skipped ranks, duplicates and other players stay untouched', () => {
+test('authoritative camp operations reject battle, skipped ranks, duplicates and other players stay untouched', () => {
   const t=createTable({code:'HRT',seed:5});
   const p=joinTable(t,{name:'One',cls:'knight',token:'one12345'}).player;
   const q=joinTable(t,{name:'Two',cls:'bard',token:'two12345'}).player;
   p.hero=hero(3,1000); q.hero=hero(3,1000); t.company={members:[p.hero,q.hero],campaign:p.hero.campaign};
   const cmd={type:'op',op:'upgradeHeart',args:[2]};
   t.phase='battle'; assert.equal(command(t,p.id,cmd).ok,false);
-  t.phase='camp'; p.hero.campaign.act=1; assert.equal(command(t,p.id,cmd).ok,false);
-  p.hero.campaign.act=3; assert.equal(command(t,p.id,{...cmd,args:[3]}).ok,false);
+  t.phase='camp'; assert.equal(command(t,p.id,{...cmd,args:[3]}).ok,false);
   assert.equal(command(t,p.id,cmd).ok,true); assert.equal(command(t,p.id,cmd).ok,false);
   assert.equal(p.hero.heartRank,2); assert.equal(p.hero.gold,800); assert.equal(q.hero.heartRank,1); assert.equal(q.hero.gold,1000);
   const restored=loadTable(saveTable(t)); const rp=restored.players.find(x=>x.id===p.id);

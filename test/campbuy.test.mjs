@@ -9,13 +9,13 @@ const fresh = (gold = 0) => {
   return h;
 };
 
-test('slot prices do not throw, and the heart has none', () => {
+test('slot prices do not throw, and the heart costs 200 gold for rank 2', () => {
   const h = fresh(0);
   for (const [slot] of GRID) {
     assert.doesNotThrow(() => slotPrice(h, slot));
     assert.doesNotThrow(() => slotCanBuy(h, slot));
   }
-  assert.equal(slotPrice(h, 'C'), null);
+  assert.equal(slotPrice(h, 'C'), 200);
   assert.equal(slotCanBuy(h, 'C'), false);
 });
 

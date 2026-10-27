@@ -6,13 +6,12 @@ import { statDice, championFor, winChance, rollTrial, oppSize, TRIAL_STEPS } fro
 
 const at = (h, act, step) => { Object.assign(h.campaign, { act, step, wins: step - 1 + (act - 1) * 10, road: null }); return h; };
 
-test('the head die is wisdom: it starts a d4 and grows like a hand, as far as the act allows', () => {
+test('the head die is wisdom: it starts a d4 and grows like a hand, up to d10 in any act', () => {
   const h = newHero({ name: 'W', cls: 'wizard', seed: 1 }); h.gold = 999;
   assert.equal(sidesOf(h, 'N'), 4);
   assert.ok(upgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 6);
-  assert.equal(mindUpgrade(h).why, 'Act II', 'Act I stops at d6');
-  h.campaign.act = 2; assert.ok(upgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 8);
-  h.campaign.act = 3; assert.ok(upgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 10);
+  assert.ok(upgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 8);
+  assert.ok(upgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 10);
   assert.ok(downgradeDie(h, 'mind', 'N')); assert.equal(sidesOf(h, 'N'), 8);
 });
 

@@ -309,7 +309,7 @@ export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MA
 export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
 export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
-export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
+export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 10;
 export const rerollTotal = () => RULES.free + RULES.paid;
 export const rerollDiceOf = (hero) => Math.min(REROLL_DICE_MAX, REROLL_DICE + (hero.rerollDie ? 1 : 0) + heroMods(hero).rerollDice);
 // The 4th reroll die: bought once at camp for REROLL_DIE_COST gold.
@@ -1448,7 +1448,7 @@ export function upgradeHeart(hero, targetRank) {
 }
 
 // Camp economy.
-// A die can only grow as far as the act allows (Act I d6, Act II d8, Act III d10): the hero must reach the next act first.
+// Dave, 27 Oct 2026: no act limit on die growth (ACT_MAX_DIE is d10 in every act), so this gate never refuses; kept so the rule is one line to bring back.
 function actGate(hero, size) {
   const act = hero.campaign?.act || 1; const next = NEXT_SIZE[size];
   if (next > dieCapForAct(act)) { const need = Math.ceil((next - 4) / 2); return { ok: false, why: `Act ${ROMAN[need]}`, act: need, next }; }

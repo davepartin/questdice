@@ -1035,7 +1035,7 @@ function renderCamp(fromBoard) {
     h('div', { class: 'topline' }, h('div', {}, h('h2', {}, 'Camp')), heroChip()),
     h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
-    tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
+    tip('camp', 'Bigger hand dice are how a hero grows, and any die can grow to a d10 when you can pay. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
     body,
     h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }, { cls: 'small' })),
@@ -1051,7 +1051,7 @@ function upgradeRow(kind, slot, label) {
 function campForge() {
   const hero = S.hero;
   return h('div', { class: 'col' },
-    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. A die can only grow as far as the act allows. Patience, then punch.'),
+    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. Any die can grow up to a d10 when you can pay. Patience, then punch.'),
       upgradeRow('strength', 'W', 'Left hand'), upgradeRow('strength', 'E', 'Right hand')),
     section('Special dice', h('p', { class: 'fine' }, 'Always two blank faces, so a bigger die misses less often. Luck, with homework.'),
       upgradeRow('special', 'SW', 'Left special · ✚ Mend, ⚡ Surge'), upgradeRow('special', 'SE', 'Right special · ✦ Spark, ⚡ Surge')),

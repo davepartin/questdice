@@ -1209,7 +1209,7 @@ const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // first. Each section's longer explanation sits behind a small "?".
 const FORGE_INTRO = {
   supplies: 'More dice for each reroll, and more potions on your belt.',
-  body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
+  body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. Any die can grow up to a d10 when you can pay. Patience, then punch.',
   weapons: 'A weapon never wears out. Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Battles mostly leave Bronze; the Camp Store sells Silver and Gold, and what you sell comes back as gold. A weapon die never rolls bigger than the hand that holds it, so grow your hands to wield the bigger ones.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',

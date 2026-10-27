@@ -64,7 +64,8 @@ export const FACE_PAY = [null,
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
 // Heart amplifier: a heart of 1-4 (heal, pierce, magic, gold) adds +2 for every head / hand / feet die showing that symbol (any face).
 export const HEART_AMP = [2, 2, 2, 2];
-export const HEART_RANKS = Object.freeze([null, Object.freeze({ amp: 2, lane: 4, cost: 0, act: 1 }), Object.freeze({ amp: 3, lane: 6, cost: 200, act: 2 }), Object.freeze({ amp: 4, lane: 8, cost: 300, act: 3 })]);
+// Heart ranks (Dave, 27 Oct 2026): rank 2 costs 200 gold, rank 3 a further 300; no act gate, the player decides when.
+export const HEART_RANKS = Object.freeze([null, Object.freeze({ amp: 2, lane: 4, cost: 0, act: 1 }), Object.freeze({ amp: 3, lane: 6, cost: 200, act: 1 }), Object.freeze({ amp: 4, lane: 8, cost: 300, act: 1 })]);
 export const normalizeHeartRank = (rank) => (Number.isInteger(rank) && rank >= 1 && rank <= 3 ? rank : 1);
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
@@ -243,7 +244,7 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
-export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: false };
+export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: true };
 // T17 weapon size (an isolated experiment, off in the game and in every preview but /preview/weapon-size/; docs/team/tasks/T17.md). With it on: weapons
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
@@ -402,18 +403,18 @@ export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ?
 export const talentName = (sym) => (sym === 'X2' ? '2× Strength' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
 export const talentText = (sym) => (sym === 'X2' ? 'Doubles the strength this hand adds to its weapon.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
 
-// Strength / special upgrade ladder: [gold to grow from this size]. No level gate (Dave): the only limit besides gold is the act's die cap below.
+// Strength / special upgrade ladder: [gold to grow from this size]. No level gate (Dave): the only limit is gold (the old act cap is gone, 27 Oct 2026).
 export const STRENGTH_STEPS = { 4: [40], 6: [100], 8: [220] };
 export const SPECIAL_STEPS = { 4: [60], 6: [130], 8: [240] }; // the talent die grows d4 -> d6 -> d8 -> d10
 // The act decides how big a die can grow (Dave): Act I d4 -> d6, Act II d6 -> d8, Act III d8 -> d10. Applies to strength and talent dice.
-export const ACT_MAX_DIE = { 1: 6, 2: 8, 3: 10 };
+export const ACT_MAX_DIE = { 1: 10, 2: 10, 3: 10 }; // no act limit any more (Dave, 27 Oct 2026): every die can grow to d10 whenever the gold is there
 export const dieCapForAct = (act) => ACT_MAX_DIE[Math.min(3, Math.max(1, act | 0 || 1))];
 export const ROMAN = { 1: 'I', 2: 'II', 3: 'III' };
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
-// Company looks live after CLASSES (painted colour variants). The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, as far as the act allows. It is rolled in every battle (its faces
+// Company looks live after CLASSES (painted colour variants). The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, up to d10. It is rolled in every battle (its faces
 // pay heal / pierce / magic / gold like the hands) and in the road's Tests of Wisdom (trials.js).
 export const MIND_STEPS = { 4: [50], 6: [110], 8: [230] };
-export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
+export const SPEED_STEPS = { 4: [60], 6: [140], 8: [240] }; // the feet (initiative) die grows like the head and talent dice, to d10 (Dave, 27 Oct 2026)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 export const PREV_SIZE = { 6: 4, 8: 6, 10: 8 };
 // Shrinking a die (Dave): sometimes a smaller die is the better die. It costs gold (by the size it leaves), nothing is refunded, and on a talent
@@ -462,7 +463,7 @@ export const CLASSES = {
     ],
   },
   ranger: {
-    feet: 6, maxFeet: 8, startMagic: 4,
+    feet: 6, startMagic: 4,
     trait: 'The fastest on the road. The only class that can train speed to a d8.',
     name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(344, 512, 162.5, 505, 313), hp: 28,
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',

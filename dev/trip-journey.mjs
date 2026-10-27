@@ -13,6 +13,7 @@ const text = async (p) => (await p.text()).replace(/\s+/g, ' ');
 const tap = (p, re) => p.page.evaluate((src) => { const r = new RegExp(src, 'i'); const el = [...document.querySelectorAll('button, .sx-plaque, a, [role=button]')].find((e) => e.offsetParent !== null && !e.disabled && r.test(e.textContent)); if (!el) return false; el.click(); return true; }, re.source);
 // a secret objective that is a bribe asks Accept or Decline: the Wizard accepts, the Dwarf declines, so both answers are exercised
 const offer = (p) => (p === A ? /^\s*accept\s*$/ : /^\s*decline\s*$/);
+const buttons = (p) => p.page.evaluate(() => [...document.querySelectorAll('button, .sx-plaque, [role=button]')].filter((e) => e.offsetParent && !e.disabled).map((e) => e.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)).filter(Boolean).slice(0, 14));
 const waitFor = async (p, fn, ms = 60000, arg) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await p.page.evaluate(fn, arg)) return true; await p.pump(0.5); await sleep(150); } return false; };
 try {
   await A.open(); await B.open();
@@ -64,14 +65,23 @@ try {
     if (round === 1 && !powerNote) { // open the Magic Powers panel on the Wizard's phone and say what is in it
       await tap(A, /magic\s*powers/); await A.pump(2); await sleep(500); await snap(A, '06_powers_A');
       powerNote = await A.page.evaluate(() => [...document.querySelectorAll('.b3-sheet button, .pw-detail button, .pw-tile, .pw-helper, [class*=pw-] button')].filter((e) => e.offsetParent).map((e) => `${e.className.toString().slice(0, 24)}:${e.textContent.trim().replace(/\s+/g, ' ').slice(0, 30)}`).slice(0, 24));
-      note('powers panel buttons: ' + JSON.stringify(powerNote)); await tap(A, /close|done|back/); await sleep(300);
+      note('powers panel buttons: ' + JSON.stringify(powerNote));
+      // cast a real power on the Wizard's phone: the Heal medal after the table is hurt a little (QD_CHEAT hpmates), then Arc Bolt
+      const hp = (p) => p.page.evaluate(() => { const m = document.body.innerText.match(/(\d+)\s*\/\s*(\d+)/g) || []; return m.slice(0, 4).join(' | '); });
+      await cheat(code, 'hpmates'); await waitFor(A, () => /\b12 \/ 24\b/.test(document.body.innerText), 8000); await A.pump(3); note('hp before the heal: ' + await hp(A));
+      const medal = (cls) => A.page.evaluate((c) => { const e = [...document.querySelectorAll('.pw-medal')].find((x) => x.offsetParent && x.classList.contains(c)); if (!e) return false; e.click(); return true; }, cls);
+      assert.ok(await medal('at-U1'), 'tap the Heal medal'); await A.pump(2); await sleep(500); await snap(A, '07_heal_medal');
+      note('after tapping Heal, buttons: ' + JSON.stringify(await buttons(A)));
+      for (const re of [/^\s*(cast|use|heal|confirm|drink)\b/i]) await tap(A, re); await A.pump(3); await sleep(800); note('hp after the heal: ' + await hp(A)); await snap(A, '08_after_heal');
+      assert.ok(await medal('at-A'), 'tap the Arc Bolt medal'); await A.pump(2); await sleep(500); await snap(A, '09_arcbolt_medal'); note('after tapping Arc Bolt, buttons: ' + JSON.stringify(await buttons(A)));
+      await tap(A, /^\s*(cast|use|confirm)\b/i); await A.pump(3); await sleep(800); await snap(A, '10_after_arcbolt'); note('after Arc Bolt: ' + (await text(A)).slice(0, 200));
+      await tap(A, /close|done|back/); await sleep(300);
     }
     for (const p of [A, B]) { if (await p.page.evaluate(() => !!document.querySelector('#b3-lock') && !document.querySelector('#b3-lock').disabled)) { await p.click('#b3-lock'); await sleep(900); await p.pump(2); } }
     await sleep(1500); for (const p of [A, B]) await p.pump(10);
     if (round % 5 === 0) note(`  round ${round}: ${(await text(A)).slice(0, 140)}`);
   }
   note('after the fight: A: ' + (await text(A)).slice(0, 200));
-  const buttons = (p) => p.page.evaluate(() => [...document.querySelectorAll('button, .sx-plaque, [role=button]')].filter((e) => e.offsetParent && !e.disabled).map((e) => e.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)).filter(Boolean).slice(0, 14));
   const inCamp = (p) => p.page.evaluate(() => /Camp/.test(document.body.innerText.slice(0, 80)) && [...document.querySelectorAll('button')].some((e) => /^Dice$/.test(e.textContent.trim())));
   // ---- rewards: reveal, victory, the spoils draft (each hero takes or sells), until both phones are at camp
   for (let i = 0; i < 24; i++) {
@@ -86,7 +96,11 @@ try {
   }
   assert.ok(await inCamp(A) && await inCamp(B), 'both phones reach camp'); note('PASS rewards: reveal, victory and the spoils draft lead to camp on both phones');
   const gold = (p) => p.page.evaluate(() => ({ gold: window.QD.S.hero.gold, W: window.QD.S.hero.strength.W, E: window.QD.S.hero.strength.E, name: window.QD.S.hero.name }));
-  const g0 = await gold(A); const gb = await gold(B); note(`camp purses: ${g0.name} ${g0.gold} gold, ${gb.name} ${gb.gold} gold`); await snap(A, '20_camp_A'); await snap(B, '21_camp_B');
+  let g0 = await gold(A); let gb = await gold(B);
+  if (Math.max(g0.gold, gb.gold) < 10) { // the cheapest legal purchase is 10 gold; a poor first fight is normal, so top the purses up (QD_CHEAT, tests only) and say so
+    await cheat(code, 'gold'); await waitFor(A, () => window.QD.S.hero.gold >= 100, 20000); await waitFor(B, () => window.QD.S.hero.gold >= 100, 20000); g0 = await gold(A); gb = await gold(B); note('(the first fight paid under 10 gold, so the table was given 600 gold by the test hook)');
+  }
+  note(`camp purses: ${g0.name} ${g0.gold} gold, ${gb.name} ${gb.gold} gold`); await snap(A, '20_camp_A'); await snap(B, '21_camp_B');
   // ---- a legal upgrade with earned gold, through the real camp cards. A fresh hero's purse after one fight is 5 to 63, so the RICHER hero buys what it can afford:
   // a d4 hand grows to d6 (40 gold) when there is enough, otherwise Talent one's first empty face (10 gold, a symbol of the player's choice)
   const click = (p, fn, arg) => p.page.evaluate(fn, arg);
@@ -106,7 +120,7 @@ try {
     assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.cb-hole.open, .tw-face:not(.fixed)')].find((e) => e.offsetParent); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await rich.pump(1); await sleep(400);
     assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.tw-symbol, .sh-sym, .tal-opt')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'choose a symbol'); await rich.pump(1); await sleep(400);
     await snap(rich, '23_talent_choice'); note('after choosing: ' + JSON.stringify(await buttons(rich)));
-    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor), .cb-buy, button')].find((e) => e.offsetParent && !e.disabled && (e.classList.contains('sh-buy') || /\b10\b/.test(e.textContent) && /fill|buy|add|face|gold|get/i.test(e.textContent + (e.getAttribute('aria-label') || '')))); if (!f) return false; f.click(); return true; }), 'buy the face');
+    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor)')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'buy the face');
     await rich.pump(2); await sleep(800); const g1 = await gold(rich); await snap(rich, '24_talent_bought');
     const faceSet = await rich.page.evaluate(() => JSON.stringify(window.QD.S.hero.talent));
     assert.equal(g1.gold, rg.gold - 10, 'the face cost 10 gold'); assert.notEqual(faceSet, '{}', 'a talent symbol is on the die: ' + faceSet);
