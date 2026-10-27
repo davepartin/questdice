@@ -15,3 +15,13 @@ test('cp2: no bottom Store strip in camp; the camp picture does not make a layer
   assert.match(scr, /\['store', 'Store'\]/, 'the Store tab in the camp bar stays');
   assert.match(css, /\.cw-camp \.sx-viewport \{ z-index: auto; will-change: auto; \}/);
 });
+
+// cp3: tapping a camp die scrolls its card into view under the pinned header (checked in a browser by dev/camp-cp3.mjs)
+test('camp cp3: openSlot glides the card into view, instant under reduced motion, measuring the pinned header', () => {
+  const src = fs.readFileSync(new URL('../js/g3/scrui.js', import.meta.url), 'utf8');
+  const fn = src.slice(src.indexOf('function toCampCard()'), src.indexOf('function openSlot('));
+  assert.match(fn, /behavior: calm \? 'auto' : 'smooth'/); assert.match(fn, /reduced\(\)/); assert.match(fn, /campPinnedBottom\(side\)/);
+  const open = src.slice(src.indexOf('function openSlot('), src.indexOf('function refreshSheet('));
+  assert.match(open, /toCampCard\(\)/);
+  assert.match(src, /function toTalentSymbols\(\)/); // cp1 scroll to the face picker is untouched
+});

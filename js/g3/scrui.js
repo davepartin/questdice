@@ -1530,6 +1530,26 @@ function campInspector() {
     onkeydown: (e) => { if (e.key === 'Escape') { e.preventDefault(); closeSlot(); } } }, ...slotSheet(SHEET.slot).filter(Boolean));
   return SHEET.el;
 }
+// cp3 (Dave, 27 Oct: "when I click the dice to upgrade, I want the screen to scroll down and show the card"): after a die is tapped, glide the
+// camp sheet so the inspection/upgrade card starts just under everything pinned at the top of the screen (the wood Camp header band, the Camp
+// title and the name/coins chip). Instant under reduced motion. The pinned height is measured, not guessed, so it follows any phone and notch.
+function campPinnedBottom(side) {
+  const sr = side.getBoundingClientRect(); let bottom = sr.top;
+  const top = side.querySelector('.sx-sidetop'); const title = document.querySelector('.cw-camp .sx-viewport .sx-top');
+  for (const el of [top, title]) { if (el) bottom = Math.max(bottom, el.getBoundingClientRect().bottom); }
+  if (top) { const band = parseFloat(getComputedStyle(top, '::before').height); if (band > 0) bottom = Math.max(bottom, band); } // the fixed wood band is 62px + the notch, from the top of the screen
+  return bottom;
+}
+function toCampCard() {
+  const run = () => {
+    const side = $('.sx-camp .sx-side'), el = SHEET.el || $('#camp-inspector'); if (!side || !el || !el.isConnected) return;
+    const aim = () => Math.max(0, side.scrollTop + el.getBoundingClientRect().top - campPinnedBottom(side) - 10);
+    const calm = reduced();
+    side.scrollTo({ top: aim(), behavior: calm ? 'auto' : 'smooth' });
+    if (!calm) setTimeout(() => { if (el.isConnected && Math.abs(side.scrollTop - aim()) > 6) side.scrollTo({ top: aim(), behavior: 'smooth' }); }, 700); // late layout (art, fonts) moved the card: aim again
+  };
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
 function openSlot(slot) {
   sfx.card();
   const inline = !!$('.cw-camp') && !String(slot).startsWith('power:');
@@ -1538,9 +1558,8 @@ function openSlot(slot) {
   SHEET.slot = slot; SHEET.inline = inline;
   if (inline) {
     X.S.campPage = 'dice'; X.S.tab = 'forge'; X.renderCamp(SHEET.fromBoard);
-    const side = $('.sx-side'), nav = $('.cw-nav');
-    if (side && nav) side.scrollTop += nav.getBoundingClientRect().top - side.getBoundingClientRect().top - 64;
     SHEET.el?.focus({ preventScroll: true });
+    toCampCard();
   } else {
     SHEET.el = h('div', { class: 'form slot-sheet' }, ...slotSheet(slot).filter(Boolean)); modal(SHEET.el);
   }
