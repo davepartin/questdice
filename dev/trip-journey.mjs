@@ -87,28 +87,43 @@ try {
   assert.ok(await inCamp(A) && await inCamp(B), 'both phones reach camp'); note('PASS rewards: reveal, victory and the spoils draft lead to camp on both phones');
   const gold = (p) => p.page.evaluate(() => ({ gold: window.QD.S.hero.gold, W: window.QD.S.hero.strength.W, E: window.QD.S.hero.strength.E, name: window.QD.S.hero.name }));
   const g0 = await gold(A); const gb = await gold(B); note(`camp purses: ${g0.name} ${g0.gold} gold, ${gb.name} ${gb.gold} gold`); await snap(A, '20_camp_A'); await snap(B, '21_camp_B');
-  // ---- a legal upgrade with earned gold, through the real camp cards. A fresh hero's purse after one fight is 27 to 63, so the Wizard buys what it can:
-  // the Left hand (d4 to d6, 40 gold) when there is enough, otherwise Talent one's first empty face (10 gold, a symbol of the player's choice)
+  // ---- a legal upgrade with earned gold, through the real camp cards. A fresh hero's purse after one fight is 5 to 63, so the RICHER hero buys what it can afford:
+  // a d4 hand grows to d6 (40 gold) when there is enough, otherwise Talent one's first empty face (10 gold, a symbol of the player's choice)
   const click = (p, fn, arg) => p.page.evaluate(fn, arg);
-  if (g0.gold >= 40) {
-    assert.ok(await tap(A, /^left hand/), 'open the Left hand card'); await A.pump(2); await sleep(600); await snap(A, '22_hand_card_A');
-    note('hand card buttons: ' + JSON.stringify(await buttons(A)));
-    assert.ok(await click(A, () => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
-    await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '23_hand_bought_A');
-    assert.equal(g1.gold, g0.gold - 40, 'the hand cost 40 gold'); assert.equal(g1.W, 6, 'the Left hand is a d6 now');
-    note(`PASS upgrade: ${g1.name} bought a d6 Left hand for 40 gold (${g0.gold} to ${g1.gold})`);
+  const rich = g0.gold >= gb.gold ? A : B; const rg = g0.gold >= gb.gold ? g0 : gb; const who = rg.name;
+  const handSlot = rg.W === 4 ? { re: /^left hand/, key: 'W', label: 'Left hand' } : rg.E === 4 ? { re: /^right hand/, key: 'E', label: 'Right hand' } : null;
+  if (rg.gold >= 40 && handSlot) {
+    assert.ok(await tap(rich, handSlot.re), `open the ${handSlot.label} card`); await rich.pump(2); await sleep(600); await snap(rich, '22_hand_card');
+    note('hand card buttons: ' + JSON.stringify(await buttons(rich)));
+    assert.ok(await click(rich, () => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
+    await rich.pump(2); await sleep(800); const g1 = await gold(rich); await snap(rich, '23_hand_bought');
+    assert.equal(g1.gold, rg.gold - 40, 'the hand cost 40 gold'); assert.equal(g1[handSlot.key], 6, `the ${handSlot.label} is a d6 now`);
+    note(`PASS upgrade: ${who} bought a d6 ${handSlot.label} for 40 gold (${rg.gold} to ${g1.gold})`);
   } else {
-    assert.ok(g0.gold >= 10, `the Wizard can afford a talent face (${g0.gold})`);
-    assert.ok(await tap(A, /^talent one/), 'open the Talent one card'); await A.pump(2); await sleep(600); await snap(A, '22_talent_card_A');
-    note('talent card buttons: ' + JSON.stringify(await buttons(A)));
-    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.tw-face:not(.fixed), .sh-face.open, .tal-face')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await A.pump(1); await sleep(400);
-    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.tw-symbol, .sh-sym, .tal-opt')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'choose a symbol'); await A.pump(1); await sleep(400);
-    await snap(A, '23_talent_choice_A'); note('after choosing: ' + JSON.stringify(await buttons(A)));
-    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor), .cb-buy, button')].find((e) => e.offsetParent && !e.disabled && (e.classList.contains('sh-buy') || /\b10\b/.test(e.textContent) && /fill|buy|add|face|gold|get/i.test(e.textContent + (e.getAttribute('aria-label') || '')))); if (!f) return false; f.click(); return true; }), 'buy the face');
-    await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '24_talent_bought_A');
-    const faceSet = await A.page.evaluate(() => JSON.stringify(window.QD.S.hero.talent));
-    assert.equal(g1.gold, g0.gold - 10, 'the face cost 10 gold'); assert.notEqual(faceSet, '{}', 'a talent symbol is on the die: ' + faceSet);
-    note(`PASS upgrade: ${g1.name} filled a Talent one face for 10 gold (${g0.gold} to ${g1.gold}) ${faceSet}`);
+    assert.ok(rg.gold >= 10, `the richer hero can afford a talent face (${rg.gold})`);
+    assert.ok(await tap(rich, /^talent one/), 'open the Talent one card'); await rich.pump(2); await sleep(600); await snap(rich, '22_talent_card');
+    note('talent card buttons: ' + JSON.stringify(await buttons(rich)));
+    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.tw-face:not(.fixed), .sh-face.open, .tal-face')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await rich.pump(1); await sleep(400);
+    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.tw-symbol, .sh-sym, .tal-opt')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'choose a symbol'); await rich.pump(1); await sleep(400);
+    await snap(rich, '23_talent_choice'); note('after choosing: ' + JSON.stringify(await buttons(rich)));
+    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor), .cb-buy, button')].find((e) => e.offsetParent && !e.disabled && (e.classList.contains('sh-buy') || /\b10\b/.test(e.textContent) && /fill|buy|add|face|gold|get/i.test(e.textContent + (e.getAttribute('aria-label') || '')))); if (!f) return false; f.click(); return true; }), 'buy the face');
+    await rich.pump(2); await sleep(800); const g1 = await gold(rich); await snap(rich, '24_talent_bought');
+    const faceSet = await rich.page.evaluate(() => JSON.stringify(window.QD.S.hero.talent));
+    assert.equal(g1.gold, rg.gold - 10, 'the face cost 10 gold'); assert.notEqual(faceSet, '{}', 'a talent symbol is on the die: ' + faceSet);
+    note(`PASS upgrade: ${who} filled a Talent one face for 10 gold (${rg.gold} to ${g1.gold}) ${faceSet}`);
   }
+  // ---- back to the road, then one phone closes and rejoins: the upgrade, the gold and the shared progress must survive
+  const snapState = (p) => p.page.evaluate(() => { const h = window.QD.S.hero; return h ? { name: h.name, gold: h.gold, W: h.strength.W, E: h.strength.E, talent: JSON.stringify(h.talent || {}), step: h.campaign?.step, act: h.campaign?.act, nw: h.loadout.NW?.id, ne: h.loadout.NE?.id, net: window.QD.S.net?.code || null } : null; });
+  const beforeLeave = await snapState(rich); note('state before leaving camp: ' + JSON.stringify(beforeLeave));
+  for (const p of [A, B]) { await tap(p, /to the road|ready|onward/); await sleep(700); }
+  for (let i = 0; i < 6; i++) { for (const p of [A, B]) await p.pump(2); const ta = (await text(A)).slice(0, 110); note(`  road ${i}: A: ${ta}`); if (/QUEST 2 OF 10|quest 2/i.test(ta)) break; for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /^\s*onward/]) { if (await tap(p, re)) break; } } await sleep(900); }
+  await snap(A, '30_road_A'); await snap(B, '31_road_B'); note('PASS road: both phones left camp: ' + (await text(A)).slice(0, 100));
+  // the rich phone loses its page (a closed tab or a dead battery) and opens the game again in the same browser
+  await rich.page.reload(); await rich.page.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 }); await sleep(1500); await rich.pump(2);
+  note('after reload: ' + (await text(rich)).slice(0, 220)); await snap(rich, '32_reload');
+  note('title buttons: ' + JSON.stringify(await buttons(rich)));
+  let rejoined = false;
+  for (const re of [/rejoin|come back|back to your table|your table/i, /play together/i]) { if (await tap(rich, re)) { rejoined = true; await sleep(800); await rich.pump(2); note(`tapped ${re}: ` + (await text(rich)).slice(0, 220)); await snap(rich, '33_rejoin_step'); break; } }
+  note('buttons now: ' + JSON.stringify(await buttons(rich)));
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
