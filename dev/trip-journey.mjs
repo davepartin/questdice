@@ -95,7 +95,7 @@ try {
   if (rg.gold >= 40 && handSlot) {
     assert.ok(await tap(rich, handSlot.re), `open the ${handSlot.label} card`); await rich.pump(2); await sleep(600); await snap(rich, '22_hand_card');
     note('hand card buttons: ' + JSON.stringify(await buttons(rich)));
-    assert.ok(await click(rich, () => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
+    assert.ok(await click(rich, (key) => { const c = [...document.querySelectorAll('.cb-cov')].find((e) => e.offsetParent && e.dataset.slot === key && /grow to d6/i.test(e.getAttribute('aria-label') || '')); if (!c) return false; c.click(); return true; }, handSlot.key), 'tap the hand cover (grow to d6)');
     await rich.pump(2); await sleep(800); const g1 = await gold(rich); await snap(rich, '23_hand_bought');
     assert.equal(g1.gold, rg.gold - 40, 'the hand cost 40 gold'); assert.equal(g1[handSlot.key], 6, `the ${handSlot.label} is a d6 now`);
     note(`PASS upgrade: ${who} bought a d6 ${handSlot.label} for 40 gold (${rg.gold} to ${g1.gold})`);
@@ -103,7 +103,7 @@ try {
     assert.ok(rg.gold >= 10, `the richer hero can afford a talent face (${rg.gold})`);
     assert.ok(await tap(rich, /^talent one/), 'open the Talent one card'); await rich.pump(2); await sleep(600); await snap(rich, '22_talent_card');
     note('talent card buttons: ' + JSON.stringify(await buttons(rich)));
-    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.tw-face:not(.fixed), .sh-face.open, .tal-face')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await rich.pump(1); await sleep(400);
+    assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.cb-hole.open, .tw-face:not(.fixed)')].find((e) => e.offsetParent); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await rich.pump(1); await sleep(400);
     assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.tw-symbol, .sh-sym, .tal-opt')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'choose a symbol'); await rich.pump(1); await sleep(400);
     await snap(rich, '23_talent_choice'); note('after choosing: ' + JSON.stringify(await buttons(rich)));
     assert.ok(await click(rich, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor), .cb-buy, button')].find((e) => e.offsetParent && !e.disabled && (e.classList.contains('sh-buy') || /\b10\b/.test(e.textContent) && /fill|buy|add|face|gold|get/i.test(e.textContent + (e.getAttribute('aria-label') || '')))); if (!f) return false; f.click(); return true; }), 'buy the face');
@@ -116,14 +116,19 @@ try {
   const snapState = (p) => p.page.evaluate(() => { const h = window.QD.S.hero; return h ? { name: h.name, gold: h.gold, W: h.strength.W, E: h.strength.E, talent: JSON.stringify(h.talent || {}), step: h.campaign?.step, act: h.campaign?.act, nw: h.loadout.NW?.id, ne: h.loadout.NE?.id, net: window.QD.S.net?.code || null } : null; });
   const beforeLeave = await snapState(rich); note('state before leaving camp: ' + JSON.stringify(beforeLeave));
   for (const p of [A, B]) { await tap(p, /to the road|ready|onward/); await sleep(700); }
-  for (let i = 0; i < 6; i++) { for (const p of [A, B]) await p.pump(2); const ta = (await text(A)).slice(0, 110); note(`  road ${i}: A: ${ta}`); if (/QUEST 2 OF 10|quest 2/i.test(ta)) break; for (const p of [A, B]) { for (const re of [offer(p), /^\s*continue\s*$/, /^\s*onward/]) { if (await tap(p, re)) break; } } await sleep(900); }
+  for (let i = 0; i < 6; i++) { for (const p of [A, B]) await p.pump(2); const ta = (await text(A)).slice(0, 110); note(`  road ${i}: A: ${ta}`); if (/QUEST 2 OF 10|quest 2/i.test(ta)) break; for (const p of [A, B]) { let moved = false; for (const re of [offer(p), /^\s*continue\s*$/, /^\s*onward/, /^\s*got it/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) await p.page.evaluate(() => document.querySelector('.sx-choice:not(.off)')?.click()); } await sleep(900); }
   await snap(A, '30_road_A'); await snap(B, '31_road_B'); note('PASS road: both phones left camp: ' + (await text(A)).slice(0, 100));
   // the rich phone loses its page (a closed tab or a dead battery) and opens the game again in the same browser
   await rich.page.reload(); await rich.page.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 90000 }); await sleep(1500); await rich.pump(2);
   note('after reload: ' + (await text(rich)).slice(0, 220)); await snap(rich, '32_reload');
-  note('title buttons: ' + JSON.stringify(await buttons(rich)));
-  let rejoined = false;
-  for (const re of [/rejoin|come back|back to your table|your table/i, /play together/i]) { if (await tap(rich, re)) { rejoined = true; await sleep(800); await rich.pump(2); note(`tapped ${re}: ` + (await text(rich)).slice(0, 220)); await snap(rich, '33_rejoin_step'); break; } }
-  note('buttons now: ' + JSON.stringify(await buttons(rich)));
+  // the reloaded phone is back at the same table with the same hero: name, purse, upgraded hand and the shared step
+  const after = await snapState(rich); note('state after reload: ' + JSON.stringify(after));
+  assert.equal(after.net, beforeLeave.net, 'the reloaded phone is still at the same table'); assert.equal(after.name, beforeLeave.name); assert.equal(after.gold, beforeLeave.gold, 'the purse survived the reload');
+  assert.deepEqual([after.W, after.E, after.nw, after.ne], [beforeLeave.W, beforeLeave.E, beforeLeave.nw, beforeLeave.ne], 'the upgraded hand and the weapons survived the reload');
+  const other = rich === A ? B : A; const so = await snapState(other); assert.equal(so.step, after.step, 'both phones show the same step'); assert.equal(so.act, after.act);
+  note(`PASS rejoin: ${after.name} reloaded back into table ${after.net}, gold ${after.gold}, hands d${after.W}/d${after.E}, Act ${after.act} step ${after.step}, same step as ${so.name}`);
+  // the table still plays on: the road event resolves for both and the next quest is offered
+  for (let i = 0; i < 6; i++) { const ta = (await text(rich)).slice(0, 200); if (/QUEST \d+ OF 10/i.test(ta)) break; for (const p of [A, B]) { let moved = false; for (const re of [offer(p), /^\s*continue\s*$/, /^\s*onward/, /^\s*got it/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) await p.page.evaluate(() => document.querySelector('.sx-choice:not(.off)')?.click()); } await sleep(900); for (const p of [A, B]) await p.pump(2); }
+  note('after the road event: A: ' + (await text(A)).slice(0, 160) + ' | B: ' + (await text(B)).slice(0, 160)); await snap(A, '34_next_A'); await snap(B, '35_next_B');
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
