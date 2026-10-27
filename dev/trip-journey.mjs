@@ -51,6 +51,23 @@ try {
     let moved = false; for (const p of [A, B]) { for (const re of [/^\s*continue\s*$/, /onward/, /begin the fight|start the fight|fight/, /^\s*begin/]) { if (await tap(p, re)) { moved = true; break; } } if (!moved) moved = await p.page.evaluate(() => { const c = document.querySelector('.sx-choice:not(.off)'); if (c) { c.click(); return true; } return false; }); }
     await sleep(900); for (const p of [A, B]) await p.pump(2); void onBoard; if (!moved) break;
   }
+  // ---- the first fight: both heroes roll and lock in, a power on the way, until the table wins
+  assert.ok(await waitFor(A, () => !!document.querySelector('#b3-roll'), 60000) && await waitFor(B, () => !!document.querySelector('#b3-roll'), 60000), 'both phones reach the first battle');
+  note('PASS battle: both phones reached ' + (await text(A)).slice(0, 60)); await snap(A, '04_battle_A'); await snap(B, '05_battle_B');
+  let powerNote = null;
+  for (let round = 1; round <= 40; round++) {
+    const done = await A.page.evaluate(() => /victory|defeat/i.test(document.body.innerText) && !document.querySelector('#b3-roll')); if (done) break;
+    for (const p of [A, B]) { if (await p.page.evaluate(() => !!document.querySelector('#b3-roll'))) { await p.click('#b3-roll'); await sleep(900); await p.pump(5); } }
+    if (round === 1 && !powerNote) { // open the Magic Powers panel on the Wizard's phone and say what is in it
+      await tap(A, /magic\s*powers/); await A.pump(2); await sleep(500); await snap(A, '06_powers_A');
+      powerNote = await A.page.evaluate(() => [...document.querySelectorAll('.b3-sheet button, .pw-detail button, .pw-tile, .pw-helper, [class*=pw-] button')].filter((e) => e.offsetParent).map((e) => `${e.className.toString().slice(0, 24)}:${e.textContent.trim().replace(/\s+/g, ' ').slice(0, 30)}`).slice(0, 24));
+      note('powers panel buttons: ' + JSON.stringify(powerNote)); await tap(A, /close|done|back/); await sleep(300);
+    }
+    for (const p of [A, B]) { if (await p.page.evaluate(() => !!document.querySelector('#b3-lock') && !document.querySelector('#b3-lock').disabled)) { await p.click('#b3-lock'); await sleep(900); await p.pump(2); } }
+    await sleep(1500); for (const p of [A, B]) await p.pump(10);
+    if (round % 5 === 0) note(`  round ${round}: ${(await text(A)).slice(0, 140)}`);
+  }
+  note('after the fight: A: ' + (await text(A)).slice(0, 200)); await snap(A, '07_after_fight_A'); await snap(B, '08_after_fight_B');
   await snap(A, '04_after_walk_A'); await snap(B, '05_after_walk_B');
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
