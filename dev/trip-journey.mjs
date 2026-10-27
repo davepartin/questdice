@@ -87,13 +87,28 @@ try {
   assert.ok(await inCamp(A) && await inCamp(B), 'both phones reach camp'); note('PASS rewards: reveal, victory and the spoils draft lead to camp on both phones');
   const gold = (p) => p.page.evaluate(() => ({ gold: window.QD.S.hero.gold, W: window.QD.S.hero.strength.W, E: window.QD.S.hero.strength.E, name: window.QD.S.hero.name }));
   const g0 = await gold(A); const gb = await gold(B); note(`camp purses: ${g0.name} ${g0.gold} gold, ${gb.name} ${gb.gold} gold`); await snap(A, '20_camp_A'); await snap(B, '21_camp_B');
-  // ---- a legal upgrade with earned gold: the Wizard buys the Left hand (d4 to d6, 40 gold) through the real camp card
-  assert.ok(g0.gold >= 40, `the Wizard has the gold for a hand (${g0.gold})`);
-  assert.ok(await tap(A, /^left hand/), 'open the Left hand card'); await A.pump(2); await sleep(600); await snap(A, '22_hand_card_A');
-  note('hand card buttons: ' + JSON.stringify(await buttons(A)));
-  assert.ok(await A.page.evaluate(() => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
-  await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '23_hand_bought_A');
-  assert.equal(g1.gold, g0.gold - 40, 'the hand cost 40 gold'); assert.equal(g1.W, 6, 'the Left hand is a d6 now');
-  note(`PASS upgrade: ${g1.name} bought a d6 Left hand for 40 gold (${g0.gold} to ${g1.gold})`);
+  // ---- a legal upgrade with earned gold, through the real camp cards. A fresh hero's purse after one fight is 27 to 63, so the Wizard buys what it can:
+  // the Left hand (d4 to d6, 40 gold) when there is enough, otherwise Talent one's first empty face (10 gold, a symbol of the player's choice)
+  const click = (p, fn, arg) => p.page.evaluate(fn, arg);
+  if (g0.gold >= 40) {
+    assert.ok(await tap(A, /^left hand/), 'open the Left hand card'); await A.pump(2); await sleep(600); await snap(A, '22_hand_card_A');
+    note('hand card buttons: ' + JSON.stringify(await buttons(A)));
+    assert.ok(await click(A, () => { const c = [...document.querySelectorAll('.cov, [data-step], button')].find((e) => e.offsetParent && /d4\s*→\s*d6|upgrade/i.test(e.textContent + (e.getAttribute('aria-label') || ''))); if (!c) return false; c.click(); return true; }), 'tap the hand upgrade');
+    await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '23_hand_bought_A');
+    assert.equal(g1.gold, g0.gold - 40, 'the hand cost 40 gold'); assert.equal(g1.W, 6, 'the Left hand is a d6 now');
+    note(`PASS upgrade: ${g1.name} bought a d6 Left hand for 40 gold (${g0.gold} to ${g1.gold})`);
+  } else {
+    assert.ok(g0.gold >= 10, `the Wizard can afford a talent face (${g0.gold})`);
+    assert.ok(await tap(A, /^talent one/), 'open the Talent one card'); await A.pump(2); await sleep(600); await snap(A, '22_talent_card_A');
+    note('talent card buttons: ' + JSON.stringify(await buttons(A)));
+    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.tw-face:not(.fixed), .sh-face.open, .tal-face')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'tap the first empty talent face'); await A.pump(1); await sleep(400);
+    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.tw-symbol, .sh-sym, .tal-opt')].find((e) => e.offsetParent && !e.disabled); if (!f) return false; f.click(); return true; }), 'choose a symbol'); await A.pump(1); await sleep(400);
+    await snap(A, '23_talent_choice_A'); note('after choosing: ' + JSON.stringify(await buttons(A)));
+    assert.ok(await click(A, () => { const f = [...document.querySelectorAll('.sh-buy:not(.poor), .cb-buy, button')].find((e) => e.offsetParent && !e.disabled && (e.classList.contains('sh-buy') || /\b10\b/.test(e.textContent) && /fill|buy|add|face|gold|get/i.test(e.textContent + (e.getAttribute('aria-label') || '')))); if (!f) return false; f.click(); return true; }), 'buy the face');
+    await A.pump(2); await sleep(800); const g1 = await gold(A); await snap(A, '24_talent_bought_A');
+    const faceSet = await A.page.evaluate(() => JSON.stringify(window.QD.S.hero.talent));
+    assert.equal(g1.gold, g0.gold - 10, 'the face cost 10 gold'); assert.notEqual(faceSet, '{}', 'a talent symbol is on the die: ' + faceSet);
+    note(`PASS upgrade: ${g1.name} filled a Talent one face for 10 gold (${g0.gold} to ${g1.gold}) ${faceSet}`);
+  }
 } catch (e) { note('FAIL ' + e.message); process.exitCode = 1; await snap(A, 'fail_A').catch(() => {}); await snap(B, 'fail_B').catch(() => {}); }
 finally { fs.writeFileSync(`${OUT}/journey.log`, log.join('\n')); await browser.close(); stop(); }
