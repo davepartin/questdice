@@ -10,6 +10,7 @@ import * as R from './roads.js';
 import * as ST from './story.js';
 import { CAMPAIGNS, packList, packOf, packIdOf, actsOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from './campaigns.js';
 import { hintsOn, setHints } from './coach.js';
+import { graphicsMenu, graphicsLabel } from './devicemenu.js';
 import * as Net from './net.js';
 import * as Online from './g3/online.js';
 import * as Sess from './session.js';
@@ -163,6 +164,8 @@ export function bindChrome() {
 }
 // One button on screen (Dave): Home, Rules and Sound live in the menus. Screens with their own Menu (battle, quest board,
 // road) add them there; everywhere else a single menu button sits in the top-left corner.
+// Graphics quality, Battery saver, Install and Download live behind one entry (js/devicemenu.js)
+const deviceItem = (close) => ghost(graphicsLabel(), () => { close(); graphicsMenu({ modal, ghost, primary, toast, persist }); });
 const soundItem = (close) => ghost(`Sound: ${isMuted() ? 'Off' : 'On'}`, () => { setMuted(!isMuted()); SCRUI.chrome?.(isMuted()); close(); toast(isMuted() ? 'Sound off.' : 'Sound on.'); });
 function globalMenu() {
   const open = (S.hero || S.company || S.practice) && !S.net;
@@ -172,6 +175,7 @@ function globalMenu() {
       ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
       open ? ghost('Save & go home', () => { close(); askHome(); }) : null,
       S.net ? ghost('Step away (keep my seat)', () => { close(); Online.stepAway(); }) : null,
       S.net ? ghost('Leave this table for good', () => { close(); Online.menu(); }) : null,
@@ -582,6 +586,7 @@ function menu() {
       ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       S.hero && recallPw(S.hero.name) ? ghost('Save to the cloud now', async () => { close(); const ok = await flushCloud(S.hero); toast(ok ? 'Saved to the cloud.' : 'Could not reach the cloud.', ok ? 'good' : 'bad'); }) : null,
       !S.net ? ghost('Open a table with this hero', () => { close(); Online.hostLoaded(); }) : null,
@@ -807,6 +812,7 @@ function battleMenu() {
     h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
       S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold). Live to try again.', () => { close(); B3.stop(); defeat(true); }),
       S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }
@@ -1099,7 +1105,7 @@ SCRUI.bind({
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist, soundItem });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist, soundItem, deviceItem });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }

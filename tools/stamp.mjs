@@ -10,4 +10,8 @@ let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 html = html.replace(/<script type="importmap">[\s\S]*?<\/script>/, `<script type="importmap">${JSON.stringify({ imports })}</script>`);
 html = html.replace(/\?v=[A-Za-z0-9]+(?=")/g, `?v=${v}`);
 fs.writeFileSync(path.join(root, 'index.html'), html);
+// the service worker carries the build too (a changed sw.js is how phones notice a new game), and the offline file list follows the stamp
+const swPath = path.join(root, 'sw.js');
+if (fs.existsSync(swPath)) fs.writeFileSync(swPath, fs.readFileSync(swPath, 'utf8').replace(/const BUILD = '[^']*';/, `const BUILD = '${v}';`));
+const { writeOfflineList } = await import('./offline-list.mjs'); writeOfflineList();
 console.log(`stamped ${files.length} modules with v=${v}`);

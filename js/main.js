@@ -7,6 +7,7 @@ import { applyRelease, applyLab } from './release.js';
 import { useWeaponSize, useHeartUpgrades } from './engine.js';
 import { WEAPON_SIZE } from './data.js';
 import { buildLadder } from './weaponladder.js';
+import { startPwa } from './pwa.js';
 
 // No pinch-zoom (Dave, Oct 2026: "I can zoom and pinch to zoom on all these screens; that is wrong"). iPhone Safari ignores
 // user-scalable=no in the viewport tag, so its own pinch gesture and two-finger moves are stopped here; one-finger scrolling still works.
@@ -19,6 +20,7 @@ if (PREVIEW && PREVIEW_NAME === 'weapon-roles') { WEAPON_SIZE.ladder = buildLadd
 if (/[?&]pace=actions\b/.test(location.search)) { PACE.actions = true; const tag = document.createElement('div'); tag.className = 'lab-tag pace-tag'; tag.textContent = 'PREVIEW · quick replay'; document.body.append(tag); } // the replay-pace preview (js/g3/flat.js)
 if (LAB) { applyLab(); const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = 'LAB · fury'; document.body.append(tag); } // ?lab: the release plus monster fury, its own heroes (js/lab.js)
 if (PREVIEW && !LAB) { const tag = document.createElement('div'); tag.className = 'lab-tag'; tag.textContent = `PREVIEW · ${PREVIEW_NAME.replace(/-/g, ' ') || 'copy'} · build ${BUILD}`; document.body.append(tag); } // a preview copy: its own saves (js/lab.js)
+startPwa(); // keeps the game on the phone (sw.js); never on preview copies
 startFx(document.getElementById('fx'));
 bindChrome();
 boot();

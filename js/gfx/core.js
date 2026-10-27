@@ -12,22 +12,17 @@ import * as THREE from 'three';
 import { createPost } from './post.js';
 import { makeEnvironment } from './env.js';
 import { makeNoise } from './noise.js';
+import { chosenQuality, batterySaver } from './settings.js';
 
-export function detectQuality() {
-  const q = new URLSearchParams(location.search).get('q');
-  if (q === 'low' || q === 'med' || q === 'high') return q;
-  const mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-  const cores = navigator.hardwareConcurrency || 4;
-  if (mobile) return cores >= 6 ? 'med' : 'low'; // current iPhones report 6 cores; they have the power for med
-  return 'high';
-}
+export function detectQuality() { return chosenQuality(); } // the address wins, then Battery saver, then the choice saved on this phone, then Auto (js/gfx/settings.js)
 
 export function createStage(canvas, opts = {}) {
   const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
   const quality = opts.quality || detectQuality();
   const manual = opts.manual ?? params.has('manual');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false, stencil: false });
-  renderer.shadowMap.enabled = true;
+  const saver = batterySaver(); // 30 frames a second, 1x pixels, no shadows: for a slow or hot phone
+  renderer.shadowMap.enabled = !saver;
   renderer.shadowMap.type = THREE.PCFShadowMap; // (three r18x: PCF is already soft; use light.shadow.radius)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -42,11 +37,11 @@ export function createStage(canvas, opts = {}) {
 
   const post = createPost(renderer, scene, camera, { quality, ao: opts.ao ?? true });
   const maxDpr = quality === 'low' ? 1.5 : 2; // phones are 3x screens: rendering at 1x looked pixelated
-  const dprCap = Number(params.get('dpr')) || maxDpr;
+  const dprCap = Number(params.get('dpr')) || (saver ? 1 : maxDpr);
   const shakeNoise = makeNoise(5);
 
   const S = {
-    renderer, scene, camera, post, trayScene: post.trayPass.scene, trayCamera: post.trayPass.camera, quality, manual, canvas,
+    renderer, scene, camera, post, trayScene: post.trayPass.scene, trayCamera: post.trayPass.camera, quality, saver, manual, canvas,
     time: 0, frame: 0, frozen: false, width: 1, height: 1, dpr: 1,
     env: null,
     _frameFns: new Set(), _tweens: [], _waits: [], _shake: 0, _flash: 0, _hurt: 0, _raf: 0, _last: 0, _viewTarget: null,
@@ -135,6 +130,7 @@ export function createStage(canvas, opts = {}) {
     S._last = performance.now();
     const loop = (now) => {
       S._raf = requestAnimationFrame(loop);
+      if (saver && now - S._last < 31) return; // ~30 fps: skip every other frame (S._last is only moved when a frame is drawn)
       const dt = Math.min(0.05, (now - S._last) / 1000); S._last = now;
       if (S.frozen) return;
       tick(dt); render(dt);

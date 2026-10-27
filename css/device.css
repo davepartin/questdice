@@ -1,0 +1,10 @@
+/* Graphics & install menu (js/devicemenu.js) */
+.dev-menu h3 { margin: 1rem 0 .4rem; font-size: 1rem; letter-spacing: .04em; }
+.dev-picks { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.dev-pick, .dev-saver { min-height: 44px; border-radius: 12px; border: 1px solid rgba(255, 210, 61, .28); background: rgba(21, 29, 52, .85); color: inherit; font: inherit; padding: .5rem; cursor: pointer; }
+.dev-pick.on, .dev-saver.on { border-color: #ffd23d; background: rgba(255, 210, 61, .16); box-shadow: 0 0 0 1px #ffd23d inset; }
+.dev-saver { width: 100%; margin-top: .4rem; display: grid; gap: .15rem; text-align: left; padding: .6rem .8rem; }
+.dev-saver small { opacity: .8; }
+.dev-bar { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; margin: .5rem 0; }
+.dev-bar i { display: block; height: 100%; width: 0; background: #ffd23d; transition: width .2s; }
+.dev-dl { display: grid; gap: .3rem; margin-top: .4rem; }
