@@ -387,3 +387,20 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 /* mp5 (Dave: "This gradient font is wrong. Needs to be clean colors"): solid fills everywhere in the panel's text, the Cast button solid violet */
 .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn.go { background: #7440b0; }
 .b3-sheet.open:has(.pw-sigil) .pw-detail .pd-cost { background: #6a36a8; }
+/* mp6 (Dave: "Just say what you are buying"): the purchase row, [magic N] -> [icon xN], solid colours, Cinzel title above */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-when { display: inline-block; align-self: flex-start; margin-top: .25rem; padding: .08rem .45rem; border-radius: 4px; background: #2a1f12; border: 1px solid #f0c87066; font: 800 .62rem var(--mp-ui); letter-spacing: .06em; text-transform: uppercase; color: #f0c870; text-shadow: none; }
+.b3-sheet.open:has(.pw-sigil) .pd-buy { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .5rem .6rem; margin: .7rem 0 .4rem; padding: .6rem .5rem; border-radius: 10px; background: #0f1320; border: 1px solid #ffffff1f; }
+.b3-sheet.open:has(.pw-sigil) .pb-pay { display: inline-flex; align-items: center; gap: .25rem; padding: .3rem .6rem; border-radius: 8px; background: #6a36a8; border: 1.5px solid #e9d4ff; color: #fff; }
+.b3-sheet.open:has(.pw-sigil) .pb-pay .ic { width: 1.25rem; height: 1.25rem; color: #fff; } .b3-sheet.open:has(.pw-sigil) .pb-pay b { font: 900 1.5rem/1 var(--mp-ui); text-shadow: 0 1px 0 #1a0630; }
+.b3-sheet.open:has(.pw-sigil) .pb-pay.free { background: #1f9a55; border-color: #d6ffe6; } .b3-sheet.open:has(.pw-sigil) .pb-pay.free b { font-size: 1.05rem; letter-spacing: .06em; }
+.b3-sheet.open:has(.pw-sigil) .pb-arrow { font: 900 1.6rem/1 var(--mp-ui); color: #f2c14e; text-shadow: 0 2px 0 #1e0f04; }
+.b3-sheet.open:has(.pw-sigil) .pb-gets { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem .7rem; }
+.b3-sheet.open:has(.pw-sigil) .pb-get { --c: #b46cff; display: grid; grid-template-columns: auto auto; align-items: center; column-gap: .25rem; }
+.b3-sheet.open:has(.pw-sigil) .pb-get .ic { width: 2rem; height: 2rem; color: var(--c); filter: drop-shadow(0 2px 0 #000a); }
+.b3-sheet.open:has(.pw-sigil) .pb-get b { font: 900 1.7rem/1 var(--mp-ui); color: var(--c); text-shadow: 0 2px 0 #000; }
+.b3-sheet.open:has(.pw-sigil) .pb-get small { grid-column: 1 / -1; justify-self: center; font: 800 .6rem var(--mp-ui); letter-spacing: .06em; text-transform: uppercase; color: #e6d6b4; }
+.b3-sheet.open:has(.pw-sigil) .pb-get.t-pierce { --c: #ffa14a; } .b3-sheet.open:has(.pw-sigil) .pb-get.t-atk { --c: #ff6a5a; } .b3-sheet.open:has(.pw-sigil) .pb-get.t-block { --c: #6cb8ff; }
+.b3-sheet.open:has(.pw-sigil) .pb-get.t-heal { --c: #5cf08f; } .b3-sheet.open:has(.pw-sigil) .pb-get.t-gold { --c: #ffd23d; } .b3-sheet.open:has(.pw-sigil) .pb-get.t-magic { --c: #d6a8ff; }
+.b3-sheet.open:has(.pw-sigil) .pb-note { font: 800 .7rem var(--mp-ui); color: #e6d6b4; }
+/* Heart change (its panel and words are drawn in battle3d.js): the Down/Up buttons say what you buy; the long sentence is hidden, Rules keeps it */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-state { display: none; }

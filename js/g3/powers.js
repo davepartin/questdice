@@ -127,6 +127,25 @@ export function upgradeLine(k, level = 0) {
   return ch.join(', ');
 }
 
+// mp6 (Dave: "Just say what you are buying. Use the arrow pierce symbols even."): the detail reads as a purchase, mostly icons:
+// [magic N]  ->  [pierce icon x2 dice]. Numbers come from the engine, the same ones the rules use; only the words are gone.
+const BUY_WORD = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'softer hits', free: 'free rerolls', aoe: 'to all' };
+const buyItem = (f, n, { dice = false, word = null } = {}) => h('span', { class: `pb-get t-${TONE[f] || 'magic'}` }, HK.icon(FX_ICON[f] || 'magic'),
+  h('b', {}, dice ? `×${n}` : f === 'free' ? `×${n}` : `+${n}`), h('small', {}, word ?? (dice ? `${BUY_WORD[f] || f} ${n === 1 ? 'die' : 'dice'}` : BUY_WORD[f] || f)));
+function buyRow(cost, items, extra = null) {
+  return h('div', { class: 'pd-buy', 'aria-label': `${cost ? `${cost} magic` : 'Free'} buys ${items.map((i) => i.textContent).join(', ')}` },
+    h('span', { class: `pb-pay ${cost ? '' : 'free'}` }, cost ? [HK.icon('magic'), h('b', {}, String(cost))] : h('b', {}, 'FREE')),
+    h('span', { class: 'pb-arrow', 'aria-hidden': 'true' }, '→'), h('span', { class: 'pb-gets' }, items), extra);
+}
+export function buyItems(k, { x, round, level = 0, stored = null } = {}) {
+  if (k.kind === 'dice') return [buyItem(k.dice.to, k.dice.n + level, { dice: true })];
+  if (k.kind === 'scale') return [buyItem(k.dice.to, E.powerDice(k, x ?? k.cost, level), { dice: true })];
+  if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return [buyItem('atk', E.roundGain(k, r, level))]; }
+  if (k.kind === 'charge') return Object.entries(E.chargeGain(k, k.max, level)).map(([f, v]) => buyItem(f, v, { word: `${BUY_WORD[f] || f} at ${k.max}` }));
+  if (k.kind === 'super') return [...Object.entries(lvlFx(k.fx, level)).map(([f, v]) => buyItem(f, v)), buyItem('aoe', E.scaleNum(k.aoe, level))];
+  if (k.kind === 'luck') return [buyItem('magic', 1 + level, { word: '1–2' }), buyItem('atk', E.scaleNum(E.LUCK.mid, level), { word: '3–4' }), buyItem('atk', E.scaleNum(E.LUCK.top, level), { word: '5–6' })];
+  return Object.entries(lvlFx(k.fx, level)).map(([f, v]) => buyItem(f, v));
+}
 // ------------------------------------------------------------------------------------------------ the sigil (powers sheet)
 // ctx: { b, hero, reset, powers: [{ k, st, stored, x, level, afford }], utils: [{ id, name, icon, cost, why, flag, text, body, actions }],
 //        selected, select(id), use(id, opts), recharge(id), step(id, x), rechargeCost, round }
@@ -190,7 +209,7 @@ function detailPanel(ctx, sel) {
   const p = ctx.powers.find((x) => x.k.id === sel);
   if (p) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
-    const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : `Once a battle${canRecharge(k) ? ` · recharge ${ctx.rechargeCost} magic` : ''}`;
+    const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : 'Once a battle';
     const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '') : 'Roll your dice first. Powers are used while you shape your roll.')
       : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Need ${x - b.magic} more magic (it costs ${x}, you have ${b.magic}).` : '';
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
@@ -199,7 +218,7 @@ function detailPanel(ctx, sel) {
     const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
-      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`), h('small', {}, castPreview(k, { x, level: p.level || 0, magic: b.magic }))));
+      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`)));
     // Verse for a friend (CLASS2.verse, the lab): at a table Lucky Verse asks who it is for. You: attack, as now. A friend: the same number as healing.
     const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
     const forRow = friends.length ? h('div', { class: 'pd-for' }, h('small', {}, 'Who is it for? You: attack. A friend: the same number as healing.'),
@@ -207,9 +226,8 @@ function detailPanel(ctx, sel) {
       ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go friend', disabled: !!why, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), `For ${f.hero.name} · ${Math.round((f.hp / f.maxHp) * 100)}% health`))) : null;
     return h('div', { class: `pw-detail t-${toneOf(k)}`, 'aria-label': `${k.name} details` },
       h('span', { class: 'pw-imprint', 'aria-hidden': 'true' }, glyph(k)),
-      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
-        h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
-      h('p', { class: 'pd-line' }, marked(effectLine(k, { x, round: b.round, level: p.level, stored }))),
+      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', { class: 'pd-when' }, when))),
+      buyRow(x, buyItems(k, { x, round: b.round, level: p.level || 0, stored }), k.kind === 'charge' && stored != null ? h('span', { class: 'pb-note' }, `${stored}/${k.max}`) : null),
       why ? h('p', { class: 'pd-why' }, why) : null, forRow || h('div', { class: 'pd-row' }, step, release, main));
   }
   const u = ctx.utils.find((x) => x.id === sel);
@@ -221,9 +239,8 @@ function detailPanel(ctx, sel) {
   const note = u.note ? h('div', { class: `pd-result t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null; // what the last tap did, inside the tab
   if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, note, u.panel); // a helper that draws its own compact controls (the heart change)
   return h('div', { class: `pw-detail t-${u.tone}` },
-    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
-      u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
-    h('p', { class: 'pd-line' }, marked(u.body)), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
+    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('b', {}, u.name), u.id === 'u:bigheal' ? h('em', { class: 'pd-when' }, `${E.potionsLeft(b)} left`) : u.id === 'u:heal' ? h('em', { class: 'pd-when' }, 'Any time') : null)),
+    u.id === 'u:bigheal' ? buyRow(0, [buyItem('heal', E.potionHpOf(b.hero))]) : u.id === 'u:heal' ? buyRow(u.cost, [buyItem('heal', E.healAmountOf(b.hero))]) : h('p', { class: 'pd-line' }, marked(u.body)), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}${a.content ? ' hc-btn' : ''}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || null, onclick: a.fn }, ...(a.content || [a.label])))));
 }
 

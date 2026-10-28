@@ -1,7 +1,7 @@
 // mp3 (Crockpot / Grok Bot, 27 Oct 2026; Dave: magic panel fonts 'thin and too basic', make all six tabs AAA): every tab at 360x740, 390x844, 412x915,
 // screenshot + no text overflow/clipping in the sheet.  node dev/magic-aaa.mjs [label=after] [out=/workspace/magic-aaa]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
-const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-aaa3'; const port = +(process.argv[4] || 8179); fs.mkdirSync(OUT, { recursive: true });
+const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-simple'; const port = +(process.argv[4] || 8180); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0; const geo = {};
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
@@ -34,6 +34,12 @@ for (const [w, h] of [[360, 740], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
     check(`${w}x${h} ${id}: no text overflow or clipping`, !m.bad.length, JSON.stringify(m));
     if (process.env.MP4) check(`${w}x${h} ${id}: nothing thin (all text >= 700), Cinzel loaded`, !m.fonts.thin.length && m.fonts.cinzel && !m.fonts.grad.length, JSON.stringify(m.fonts));
   }
+  await p.locator('.b3-sheet.open [data-power="aimed"]').click(); await pump(0.3);
+  const st0 = await p.evaluate(() => document.querySelector('.pd-buy')?.textContent);
+  await p.locator('.b3-sheet.open .pw-step button').last().click(); await pump(0.3);
+  const st1 = await p.evaluate(() => ({ buy: document.querySelector('.pd-buy')?.textContent, btn: document.querySelector('.pw-detail .pw-btn.go')?.textContent, line: !!document.querySelector('.pw-detail .pd-line') }));
+  await p.screenshot({ path: `${OUT}/${label}-1-aimed-plus_${w}x${h}.png` });
+  check(`${w}x${h}: stepper updates the purchase live (2 -> 3 pierce dice), Cast reads only "Cast · 3 magic", no rulebook line`, /×2/.test(st0) && /3.*×3/.test(st1.buy) && st1.btn.trim() === 'Cast · 3 magic' && !st1.line, JSON.stringify({ st0, st1 }));
   check(`${w}x${h}: no page errors`, !errs.length, errs.join(' | ')); await p.close();
 }
 console.log(bad ? `${bad} FAILED` : 'all passed'); await b.close(); server.kill(); process.exit(bad ? 1 : 0);
