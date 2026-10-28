@@ -520,3 +520,16 @@ button.cst-face{cursor:pointer}
 .cw-camp .cs-trailbar .sx-trail { flex: 1 0 100%; margin: .55rem .2rem 1.05rem; }
 .cw-camp .cs-trailbar .tr-gem { width: 1.45rem; height: 1.45rem; font-size: .72rem; } .cw-camp .cs-trailbar .tr-node.now .tr-gem { width: 1.9rem; height: 1.9rem; }
 .cw-camp .cs-trailbar .tr-node.elite .tr-gem, .cw-camp .cs-trailbar .tr-node.boss .tr-gem { width: 1.65rem; height: 1.65rem; }
+/* cp6: shelf weapons are the real weapon cards (CB.weaponCard scaled as one picture, like the spoils), price chip on the corner */
+.cst-wcard{position:relative;display:flex;flex-direction:column;gap:6px;padding-bottom:14px}
+.cst-wcard .cw-spoilcard{position:relative;width:100%;aspect-ratio:720/1052;cursor:pointer;overflow:hidden;border-radius:6px;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 6px 10px #000a)}
+.cst-wcard .cw-spoilscale{position:absolute;left:0;top:0;width:340px;transform-origin:0 0;transform:scale(var(--k,.45))}
+.cst-wcard .cw-spoilscale .qc17.cb-weapon{--w:340px;width:340px;margin:0;pointer-events:none}
+.cst-wcard .cw-spoilcard:focus-visible{outline:2px solid #ffd98a;outline-offset:2px}
+.cst-wcard.save .cw-spoilcard{box-shadow:0 0 0 2px #ffd98a,0 0 14px #ffc24a88}
+.cst-wcard.sold .cw-spoilcard{opacity:.55}
+.cst-wcard>.cst-ribbon{top:-10px;z-index:4}
+.cst-wsave{display:grid;justify-items:center;gap:2px;padding-right:62px}.cst-wsave small{font:700 11px/1.2 Oxanium;color:#3a220e}.cst-wsave .cst-bar{width:100%}
+.cst-wcard>.cst-tag{bottom:-4px;right:-2px}.cst-wcard>.cst-sticker{top:auto;bottom:0;right:0}
+.cst-wcard>.cst-stamp{bottom:40%;right:50%;transform:translateX(50%) rotate(-12deg);font-size:18px;background:#f3e2bfcc}
+.cst-wcard .qc17 .sell{visibility:hidden} /* the store shows its own price; the card's Sell value would read as a second price */
