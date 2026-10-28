@@ -512,3 +512,11 @@ button.cst-face{cursor:pointer}
    over the chip and its wooden bar. In camp the box no longer makes a layer: the art (a plain child) sits under the sheet, the chip and its
    bar sit in the sheet's layer above the art, and the Camp title and menu (z-index 31) stay on top of both. */
 .cw-camp .sx-viewport { z-index: auto; will-change: auto; }
+/* cp5: the camp act bar reuses the road screen's .sx-trail; Act label + potions on one row, the trail full width below */
+.cw-camp .sx-cstat.cs-trailbar { flex-wrap: wrap; row-gap: 0; padding: .35rem .6rem .2rem; }
+.cw-camp .cs-trailbar .cs-where { justify-content: center; }
+.cw-camp .cs-trailbar .cs-pots { grid-template-columns: auto auto auto; }
+.cw-camp .cs-trailbar .cs-pots > .cs-potlabel { grid-column: auto; }
+.cw-camp .cs-trailbar .sx-trail { flex: 1 0 100%; margin: .55rem .2rem 1.05rem; }
+.cw-camp .cs-trailbar .tr-gem { width: 1.45rem; height: 1.45rem; font-size: .72rem; } .cw-camp .cs-trailbar .tr-node.now .tr-gem { width: 1.9rem; height: 1.9rem; }
+.cw-camp .cs-trailbar .tr-node.elite .tr-gem, .cw-camp .cs-trailbar .tr-node.boss .tr-gem { width: 1.65rem; height: 1.65rem; }

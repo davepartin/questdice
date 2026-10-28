@@ -22,7 +22,7 @@ check('camp bar reads Dice, Powers, Gear, Store, Hero', labels.join() === 'Dice,
 await shot('1-camp-bar-store');
 // 2. Store opens directly
 await p.locator('.cw-nav button[data-camp-page="store"]').click(); await pump(0.6); await p.waitForTimeout(600);
-const st = await p.evaluate(() => ({ tab: window.QD.S.tab, notice: /moved|now lives|sold in the Camp Store now|Open the Camp Store/i.test(document.body.textContent), store: !!document.querySelector('.sx-tab.store') }));
+const st = await p.evaluate(() => ({ tab: window.QD.S.campPage, notice: /moved|now lives|sold in the Camp Store now|Open the Camp Store/i.test(document.body.textContent), store: !!document.querySelector('.sx-tab.store') }));
 check('one tap on Store opens the store, with no "moved" notice', st.tab === 'store' && st.store && !st.notice, JSON.stringify(st));
 await p.evaluate(() => { const s = document.querySelector('.sx-side'); if (s) s.scrollTop = 0; window.scrollTo(0, 0); }); await pump(0.3);
 await shot('2-store-opened');

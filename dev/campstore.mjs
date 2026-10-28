@@ -12,7 +12,7 @@ await p.evaluate(() => document.querySelector('.cw-nav button[data-camp-page="st
 await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: 'docs/ingame/store_1tab.png', fullPage: false });
 const tall = await p.evaluate(() => { const s = document.querySelector('.sx-side'); return s ? s.scrollHeight : 0; });
 await p.setViewportSize({ width: 390, height: Math.min(4000, tall + 200) }); await pump(1);
-await p.evaluate(() => { const s = document.querySelector('.sx-side'); const t = s?.querySelector('.sx-tab.store'); if (s && t) s.scrollTop = t.offsetTop - 120; window.QD.world.stage.step(1); });
+await p.evaluate(() => { const s = document.querySelector('.sx-side'); const t = s?.querySelector('.cw-storepage'); if (s && t) s.scrollTop = t.offsetTop - 120; window.QD.world.stage.step(1); });
 await p.screenshot({ path: 'docs/ingame/store_2full.png' });
 // buy a special and open the bundle
 console.log(await p.evaluate(() => { const before = window.QD.S.hero.gold; document.querySelector('.st-tonic .ur-buy')?.click(); return `gold ${before} -> ${window.QD.S.hero.gold}; blessings ${JSON.stringify(window.QD.S.hero.campaign.blessings.map((x) => x.name))}`; }));

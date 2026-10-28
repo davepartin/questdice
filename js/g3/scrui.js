@@ -1035,17 +1035,13 @@ function weaponRow(inst, label = '') {
 function campStatus(hero) {
   const c = hero.campaign; const act = X.actOf(hero);
   const r = E.potionBuyInfo(hero);
-  const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
-    const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);
-    return h('button', { type: 'button', class: `cs-step ${done ? 'done' : ''} ${now ? 'now' : ''} ${reach ? 'reach' : ''} ${kind === 'battle' ? '' : kind}`, disabled: !!X.net, 'aria-label': `Quest ${n}${now ? ', you are here' : ''}`,
-      onclick: X.net ? null : tap(() => stepAsk(hero, c.act, n, () => X.renderCamp())) }, kind === 'boss' ? ico('crown') : kind === 'elite' ? ico('skull') : String(n));
-  }));
+  const pips = trail(c, X.net ? null : hero, () => X.renderCamp()); // the road screen's step bar, same look on both (Dave, cp5)
   const vials = h('span', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
   const buy = r.have >= r.max ? h('span', { class: 'sp-full' }, 'Full')
     : chipBtn('', r.price, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { poor: !r.ok, disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
-  return h('section', { class: `sx-cstat slim ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
-    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act}`), pips),
-    h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy)); // named, like the act beside it (Dave: "needs to say potion somewhere")
+  return h('section', { class: `sx-cstat slim cs-trailbar ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
+    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`)),
+    h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy), pips); // named, like the act beside it (Dave: "needs to say potion somewhere")
 }
 // (Potion belt and the 4th reroll die are sold in the cardboard Camp Store: storeTab.)
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
@@ -1736,11 +1732,12 @@ function shrinkSection(hero) {
 function campNavigation(fromBoard) {
   return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['store', 'Store'], ['hero', 'Hero']].map(([id, label]) =>
     h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null, 'data-camp-page': id,
-      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; if (id === 'store') X.S.tab = 'store'; else X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
+      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.tab = 'forge'; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
 }
 function campContent(hero) {
   switch (X.S.campPage) {
     case 'gear': return gearTab({ grid: false, chips: false });
+    case 'store': return h('div', { class: 'cw-storepage' }, storeTab()); // a real tab like Gear (Dave, cp5): nav, art, act bar stay
     case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
     case 'hero': return h('div', { class: 'cw-supplies' }, heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
@@ -1753,9 +1750,8 @@ export function camp(fromBoard) {
   const identity = `${hero.name}:${hero.cls}`;
   if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; }
   SHEET.fromBoard = fromBoard;
-  if (S.tab === 'hero' || S.tab === 'gear') { S.campPage = S.tab; S.tab = 'forge'; }
+  if (S.tab === 'hero' || S.tab === 'gear' || S.tab === 'store') { S.campPage = S.tab; S.tab = 'forge'; }
   S.campPage ||= 'dice';
-  const store = S.tab === 'store';
   const perkHero = X.net ? (hero.pendingPerks > 0 ? hero : null) : (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
   if (X.net) { S.perkOffer = perkHero ? X.netPerkOffer() : null; }
   else { if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, X.fresh()); S.perkFor = perkHero.name; } if (!perkHero) { S.perkOffer = null; S.perkFor = null; } }
@@ -1766,13 +1762,11 @@ export function camp(fromBoard) {
   let tip = null;
   if (!hero.tips?.c_first && Coach.hintsOn()) { if (hero.gold > 0 && canBuyDie) tip = coachBox('c_first'); }
   else tip = coachBox('c_hands');
-  const body = store
-    ? h('div', { class: 'sx-tab store' }, btn('Back to camp', () => { S.tab = 'forge'; X.renderCamp(fromBoard); }, { kind: 'ghost', icon: 'back' }), storeTab())
-    : h('div', { class: 'sx-tab forge' }, campNavigation(fromBoard), campContent(hero), !SHEET.inline && S.campPage === 'dice' ? tip : null);
+  const body = h('div', { class: `sx-tab forge ${S.campPage === 'store' ? 'store' : ''}` }, campNavigation(fromBoard), campContent(hero), !SHEET.inline && S.campPage === 'dice' ? tip : null);
   mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
-      X.partyBar?.(), seats, perkPanel, store ? null : campStatus(hero),
+      X.partyBar?.(), seats, perkPanel, campStatus(hero),
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', () => toRoad(hero), { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
