@@ -14,6 +14,10 @@ export function h(tag, attrs, ...kids) {
     if (c == null || c === false) continue;
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
+  // Every dismiss action shares one label, hit area and visual treatment.
+  if (tag === 'button' && /^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim())) {
+    el.textContent = 'Close'; el.classList.add('qd-close');
+  }
   return el;
 }
 export const $ = (sel, root = document) => root.querySelector(sel);

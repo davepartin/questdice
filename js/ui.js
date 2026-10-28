@@ -321,7 +321,7 @@ function copyCode(code) {
 }
 function showCode(code) {
   const ta = h('textarea', { class: 'input code', readonly: true, rows: 6 }, code);
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries this save and its password.'), ta, h('div', { class: 'row end' }, primary('Done', () => close()))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries this save and its password.'), ta, h('div', { class: 'row end' }, primary('Close', () => close()))));
   setTimeout(() => ta.select(), 50);
 }
 function showImport() {
@@ -689,7 +689,7 @@ function revealSolo(won) {
   if (S.bonus) {
     const goal = S.bonus; S.bonus = null;
     const j = SO.judgeBonus(goal, S.battle, { won }); SO.payBonus(j, hero);
-    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ objective: goal.rule, objectiveName: goal.name, stake: goal.paid || 0, name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
   }
   const env = S.envelope; S.envelope = null;
   if (!env) return null;

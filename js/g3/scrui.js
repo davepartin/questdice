@@ -287,7 +287,7 @@ function charmGuide() {
   const ids = Object.keys(D.CHARMS);
   modal(h('div', { class: 'form slot-sheet ch-guide' },
     h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${ids.length} in all · carry ${D.CHARM_MAX}`), h('b', {}, 'Charms')),
-      h('button', { class: 'sh-x', type: 'button', onclick: () => closeModal() }, 'Done')),
+      h('button', { class: 'sh-x', type: 'button', onclick: () => closeModal() }, 'Close')),
     h('p', { class: 'sh-role' }, 'A charm changes one rule for you, in every fight. Bosses and big fights drop them. The Camp Store sometimes sells one.'),
     h('div', { class: 'ch-list' }, ids.map((id) => charmCard(id, { cls: hasCharmHere(hero, id) ? 'mine' : '', badge: hasCharmHere(hero, id) ? 'You have it' : '' })))));
 }
@@ -880,7 +880,7 @@ export function revealPanel(reveal, youName, { bare = false } = {}) {
   return panel('sx-reveal', bare ? null : eyebrow('The Reveal', 'gold'),
     bare ? null : h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
     h('ul', { class: 'rv-list' }, reveal.lines.map((l) => h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
-      h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
+      h('div', { class: 'rv-person' }, h('b', {}, l.name), h('span', { class: 'rv-status' }, l.met === true ? 'Completed' : l.met === false ? 'Not completed' : l.gold > 0 ? 'Reward earned' : l.gold < 0 ? 'Gold lost' : 'Result')), l.objective ? h('div', { class: 'rv-objective' }, l.objectiveName ? h('h2', {}, l.objectiveName) : null, h('p', {}, l.objective), h('small', {}, l.accepted === false ? 'Declined' : l.met ? 'Objective completed.' : 'No reward earned.', l.stake && !l.met ? ` ${l.stake} gold stake lost.` : '')) : h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
 }
 
 // ------------------------------------------------------------------------------------------------ victory / defeat
@@ -1351,7 +1351,7 @@ function slotSheet(slot) {
   if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
   if (!E.isActive(hero, slot)) {
     const u = E.unlockInfo(hero, slot);
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
@@ -1422,7 +1422,7 @@ function powerSheet(id) {
   const hero = X.S.hero; const row = E.powerLibrary(hero).find((x) => x.card.id === id); if (!row) return [h('p', {}, 'Not found.')];
   const k = row.card; const lvl = E.powerLevel(hero, id); const top = E.powerLevelsOf(hero);
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}`), h('b', {}, k.name)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
   const levels = h('div', { class: 'sh-levels' }, Array.from({ length: top + 1 }, (_, lv) => h('div', { class: `sh-lv ${row.equipped || row.learned ? (lv < lvl ? 'past' : lv === lvl ? 'now' : 'later') : lv === 0 ? 'now' : 'later'}` },
     h('b', {}, lv === 0 ? 'Base' : `Level ${lv}`), h('span', {}, shortLine(k, lv)))));
   let act;

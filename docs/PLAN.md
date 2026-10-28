@@ -1499,3 +1499,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 27 October 2026, Director: typography polish COMPLETE, build 20261027type1. Shared Inter reading/controls, Cormorant Garamond titles, Oxanium numbers; existing logo/die art retained. Fixed missing family aliases, removed cursive/unloaded font drift, bundled licensed WOFF2 fonts locally, and made post-battle objective Continue follow the result text. 28/28 phone/larger-text layout checks and 20/20 existing card/price checks pass. Evidence and limits: [typography](team/tasks/typography/README.md). No gameplay/save changes. Reservation released; publishing under Dave's standing direct-main approval.
+
+
+27 October 2026, Director: compact enemy inspection, universal Close and objective results polish, build 20261027ui2. Changes scoped to css/fonts.css, js/dom.js, dismiss labels/result rendering in scrui.js and ui.js, and stamp files. Store shelf reservation preserved. No engine/data/save changes. Evidence: [compact details](team/tasks/compact-details/README.md). Existing card/price checks pass (20). Browser checks cover actual battle panels and the single objective result. Publishing under standing approval.

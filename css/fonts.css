@@ -216,3 +216,66 @@
   .sx-screen.victory:has(.sx-revealbeat) { --sheet: .98; }
   .sx-revealbeat .sx-side { gap: .55rem; }
 }
+
+/* One approved dismiss control across sheets, inspectors and dialogs. */
+html body button.qd-close.qd-close.qd-close {
+  position: static; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 76px; min-height: 44px; width: auto; height: auto; margin: 0;
+  padding: 0 16px; border: 1px solid #9e8965; border-radius: 8px;
+  background: linear-gradient(#282633, #191823); color: #fff3d6;
+  font: 600 .875rem/1 var(--font-body); letter-spacing: .02em; text-transform: none;
+  box-shadow: inset 0 1px 0 #ffffff12; cursor: pointer;
+}
+html body button.qd-close.qd-close.qd-close:hover { background: #35303e; border-color: #e1c891; }
+html body button.qd-close.qd-close.qd-close:focus-visible { outline: 2px solid #ffda83; outline-offset: 3px; }
+html body button.qd-close.qd-close.qd-close:active { transform: translateY(1px); }
+/* Enemy inspection: fit the miniature to the information, rather than a tall empty stage. */
+.b3-info:has(.fi-head) { gap: .45rem; padding: .65rem .75rem; border-radius: 16px; }
+.fi-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .35rem; }
+.fi-head b { font: 600 .6875rem/1.2 var(--font-body); letter-spacing: .1em; }
+.fi-name { font-family: var(--font-title); font-weight: 600; font-size: 1.8rem; }
+.fi-top { align-items: center; }
+.fi-pic { height: clamp(130px, 25dvh, 210px); width: 40%; }
+.fi-stats { gap: .25rem; }
+.fi-stat { padding: .28rem .45rem; grid-template-columns: 1.1rem 1fr; column-gap: .35rem; }
+.fi-stat small { font: 600 .625rem/1.2 var(--font-body); letter-spacing: .06em; }
+.fi-stat b { font: 600 .9375rem/1.2 var(--font-number); }
+.fi-next { padding: .55rem .6rem; gap: .5rem; }
+.fi-ic { width: 2rem; height: 2rem; font-size: 1.2rem; }
+.fi-nx b { font: 600 1rem/1.2 var(--font-body); }
+.fi-nx p { font-size: .8125rem; line-height: 1.3; }
+.fi-nx small { font-weight: 600; letter-spacing: .08em; }
+.fi-mv { padding: .3rem .4rem; }
+.fi-mv b { font-size: .8125rem; font-weight: 600; }
+.fi-mv small { font-size: .75rem; }
+/* Results read as a finished reward screen, with one frame and a clear outcome. */
+.sx-revealbeat .sx-viewport { display: none; }
+.sx-revealbeat { grid-template-columns: 1fr; }
+.sx-revealbeat .sx-side { width: 100%; max-width: 42rem; margin-inline: auto; gap: 1rem; }
+.sx-screen.victory:has(.sx-revealbeat) { --sheet: 1; }
+.sx-revealbeat .rv-head { text-align: left; margin: .25rem 0 0; }
+.sx-revealbeat .rv-head .sx-flourish { display: none; }
+.sx-revealbeat .sx-reveal { padding: 0; border: 0; background: none; box-shadow: none; }
+.sx-revealbeat .sx-reveal::before, .sx-revealbeat .sx-reveal::after { display: none; }
+.rv-row { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: .65rem; padding: 1rem; border-radius: 12px; background: linear-gradient(135deg,#26222b,#15131d); }
+.rv-person { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+.rv-person b { font: 600 1rem/1.3 var(--font-body); color: #fff3d6; overflow-wrap: anywhere; }
+.rv-status { font: 600 .75rem/1.3 var(--font-body); color: #dfc796; }
+.rv-row p { margin: 0; color: #d7d3df; }
+.rv-row .rv-gold { align-self: flex-start; font-size: 1.2rem; }
+.sx-revealbeat .sx-cta { margin-top: auto; padding-top: 1rem; }
+.sx-revealbeat .sx-reveal > .co { display: none; }
+.sx-revealbeat .rv-head { text-align: left; }
+.sx-revealbeat .sx-side::after { display: none; }
+@media (max-height: 640px) {
+  .sx-revealbeat .sx-side { gap: .6rem; }
+  .sx-revealbeat .rv-row { padding: .75rem; gap: .4rem; }
+  .sx-revealbeat .rv-head p { font-size: .875rem; }
+}
+@media (max-height: 640px) {
+  .b3-info:has(.fi-head) { gap: .3rem; padding: .5rem .65rem; }
+  .fi-pic { height: 22dvh; }
+  .fi-next { padding: .45rem .5rem; }
+}
+.rv-objective h2 { margin: .25rem 0 .6rem; font: 600 1.7rem/1.1 var(--font-title); color: #fff3d6; }
+.rv-objective small { display: block; margin-top: 1rem; color: #bcb5c8; font: 400 .875rem/1.4 var(--font-body); }
