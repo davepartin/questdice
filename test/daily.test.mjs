@@ -55,7 +55,7 @@ test('the hero of the day carries talent symbols: 1 face in Act I, 2 in Act II, 
 
 test('the potion shop between daily fights: points pay, the belt limits, the score cannot go below zero', () => {
   const run = DAY.dailyRun('2026-11-02'); const hero = DAY.dailyHero(run); const cost = DAY.potionCost(run);
-  assert.deepEqual(DAY.POTION_POINTS, [100, 150, 200]);
+  assert.deepEqual(DAY.POTION_POINTS, [50, 50, 50]);
   const d = { run, fights: [{ won: true, score: 400 }], spent: 0 };
   assert.equal(DAY.potionShop(d, hero).ok, false, 'belt starts full'); assert.equal(DAY.potionShop(d, hero).why, 'Belt full'); assert.equal(DAY.buyPotion(d, hero), false);
   hero.potions = 0; const s = DAY.potionShop(d, hero); assert.equal(s.ok, true); assert.equal(s.points, 400);

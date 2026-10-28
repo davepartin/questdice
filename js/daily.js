@@ -59,8 +59,8 @@ export const goldOf = (b) => Math.max(0, Math.round((b?.goldEarned || 0) + (b?.s
 export const fightScore = (b, won) => E.pointsOf(b) + (won ? WIN_BONUS : 0) + goldOf(b);
 // Points spent on potions between fights come off the score (Dave, 27 Oct 2026: "maybe you spend points for potions, since daily battles are about points").
 export const finalScore = (fights, spent = 0) => Math.max(0, fights.reduce((a, f) => a + f.score, 0) + (fights.length === FIGHTS && fights.every((f) => f.won) ? CLEAR_BONUS : 0) - spent);
-// A potion costs points: dearer each act, like its health (10 / 15 / 20). Only between fights, only up to the belt (2), and only with the points to pay: the score cannot go below 0.
-export const POTION_POINTS = [100, 150, 200];
+// A potion costs 50 points in every act (Dave, 28 Oct 2026; it started at 100 / 150 / 200). Only between fights, only up to the belt (2), and only with the points to pay: the score cannot go below 0.
+export const POTION_POINTS = [50, 50, 50];
 export const potionCost = (run) => POTION_POINTS[Math.max(1, Math.min(3, run?.act || 2)) - 1];
 export function potionShop(d, hero) {
   const have = E.potionStock(hero); const max = E.potionMaxOf(hero); const cost = potionCost(d.run); const points = finalScore(d.fights, d.spent || 0);
