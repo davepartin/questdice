@@ -59,7 +59,7 @@ for (const [w, h] of [[390, 844], [375, 548]]) {
     S.hero = hh; S.company = { members: [hh] }; S.seat = 0; S.tab = 'store'; const SV = await import('./js/save.js'); if (!SV.heroExists(hh.name)) await SV.createSave(hh, 'testpass'); showCamp(); }, `Store${w}`);
   await pump(1.5); await p.waitForTimeout(1500);
   const look = () => p.evaluate(() => { const st = document.querySelector('.cst-store'); const r = (e) => e.getBoundingClientRect();
-    const cards = [...document.querySelectorAll('.cst-card, .cst-diawrap')]; const tags = [...document.querySelectorAll('.cst-tag, .cst-sticker')];
+    const cards = [...document.querySelectorAll('.cst-card, .cst-wcard, .cst-diawrap')]; const tags = [...document.querySelectorAll('.cst-tag, .cst-sticker')];
     const hit = []; for (const t of tags) { const a = r(t); for (const c of cards) { if (c.contains(t)) continue; const b = r(c); if (a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2) hit.push(t.textContent + ' on ' + (c.querySelector('.cst-title')?.textContent || 'diamond')); } }
     const out = cards.filter((c) => { const b = r(c); return b.left < -1 || b.right > innerWidth + 1; }).length;
     const tiny = st ? [...st.querySelectorAll('small,b,span,h2,p')].filter((e) => e.childNodes[0]?.nodeType === 3 && e.textContent.trim() && e.getClientRects().length && !e.closest('.qc17') && parseFloat(getComputedStyle(e).fontSize) < 10.9).map((e) => e.textContent.trim()).slice(0, 5) : ['no store'];
@@ -82,7 +82,7 @@ for (const [w, h] of [[390, 844], [375, 548]]) {
   const P = await p.evaluate(() => { const { S, E } = window.QD; const h = S.hero; const st = E.shopStock(h); return { tonic: E.storeTonics(h)[0].price, bundle: E.bundleOffer(h).price, dia: st.find((i) => i.inst.diamond)?.price, wpn: st.find((i) => !i.inst.diamond).price, pet: E.petOffer(h).price, pot: E.potionBuyInfo(h).price, belt: E.potionUpgrade(h).cost, rr: E.rerollDieInfo(h).cost }; });
   await buyTag('.zn-specials .cst-card:not(.parcel) .cst-tag', 'a special buys through HE.buyTonic', P.tonic);
   await buyTag('.zn-specials .cst-card.parcel .cst-tag', 'the mystery bundle buys through HE.buyBundle', P.bundle);
-  await buyTag('.zn-shelf .cst-card .cst-tag', 'a shelf weapon buys through HE.buyItem', P.wpn);
+  await buyTag('.zn-shelf .cst-wcard .cst-tag', 'a shelf weapon buys through HE.buyItem', P.wpn);
   await buyTag('.zn-diamond .cst-tag', 'the Diamond buys into the Diamond case', P.dia);
   await buyTag('.zn-odd .cst-tag', 'the pet adopts through HE.buyPet', P.pet);
   await buyTag('.cst-card.potion .cst-tag', 'a healing potion buys through HE.buyPotion', P.pot);

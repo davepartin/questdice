@@ -1610,11 +1610,17 @@ function storeTab() {
     stamp: bo.bought ? 'Opened' : '', sticker: !bo.bought && E.bagFull(hero) ? 'Pack full' : '',
     tag: bo.bought || E.bagFull(hero) ? null : CB.priceTag(bo.price, { poor: hero.gold < bo.price, aria: `Buy the mystery bundle for ${bo.price} gold`,
       onBuy: tap(() => { const inst = HE.buyBundle(hero); if (inst) { sfx.level(); X.persist(); X.renderCamp(); toast(`Inside: a ${D.RARITY[inst.rarity | 0]} ${D.WEAPONS[inst.id].name}. It is in your pack.`); } else no('Not enough gold.'); }) }) }));
-  // the shelf: plain weapons as cardboard cards (tap the card for the full weapon card)
-  const shelf = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.inst.diamond).map(({ it, i }) => { const w = D.WEAPONS[it.inst.id]; const r = it.inst.rarity | 0; const top = best && best.i === i;
-    return CB.storeCard({ cls: `wpn r${Math.min(r, 3)} ${it.sold ? 'sold' : ''} ${top ? 'save' : ''}`, art: CB.storeIcon(it.inst.id, METAL_INK[r] || '#d8e2ea'), title: w.name, ribbon: top ? 'Worth saving for' : '',
-      lines: [h('span', { class: 'cst-metal' }, D.tierName ? D.tierName(it.inst) : D.RARITY[r]), `d${E.weaponSize ? E.weaponSize(it.inst) : ''} · ${w.hands === 2 ? 'Two hands' : 'One hand'}`, top && !it.sold ? bar(it) : null, top && !it.sold ? saveNote(it) : null],
-      stamp: it.sold ? 'Sold' : '', tag: buyWeapon(it, i), onOpen: tap(() => showWeaponCard(it.inst, { label: 'Store', value: it.price })), aria: `See the ${w.name} card` }); });
+  // the shelf: each weapon as its REAL weapon card (the camp T17 card the spoils show, CB.weaponCard, scaled as one picture), price chip on it
+  // (Dave, cp6: "The store needs cards. Not these fake cardboard items."); tap the card for the large one
+  const shelf = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.inst.diamond).map(({ it, i }) => { const w = D.WEAPONS[it.inst.id]; const top = best && best.i === i;
+    const real = CB.weaponCard(hero, null, it.inst); real.setAttribute('aria-hidden', 'true'); real.inert = true;
+    const open = () => { sfx.click(); showWeaponCard(it.inst, { label: 'Store', value: it.price }, { real: true }); };
+    const thumb = h('div', { class: 'cw-spoilcard', role: 'button', tabindex: '0', 'aria-label': `See the ${w.name} card` }, h('div', { class: 'cw-spoilscale' }, real));
+    if (typeof ResizeObserver === 'function') new ResizeObserver(([e]) => { if (e.contentRect.width) thumb.style.setProperty('--k', String(e.contentRect.width / 340)); }).observe(thumb);
+    thumb.addEventListener('click', open); thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    return h('div', { class: `cst-wcard ${it.sold ? 'sold' : ''} ${top ? 'save' : ''}` }, top ? h('span', { class: 'cst-ribbon' }, 'Worth saving for') : null, thumb,
+      top && !it.sold ? h('div', { class: 'cst-wsave' }, bar(it), h('small', {}, saveNote(it))) : null,
+      it.sold ? h('span', { class: 'cst-stamp' }, 'Sold') : null, buyWeapon(it, i)); });
   // the Diamond case: the T17 weapon card with the ice-blue sheen, a paper tag under it
   const diamonds = stock.map((it, i) => ({ it, i })).filter(({ it }) => it.inst.diamond).map(({ it, i }) => {
     const c = CW.weaponCardOf(it.inst, { label: 'Store', value: it.price }); c.classList.add('cst-dia'); c.setAttribute('role', 'button'); c.tabIndex = 0;
