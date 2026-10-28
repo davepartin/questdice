@@ -328,55 +328,60 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
   background: color-mix(in srgb, var(--c) 16%, rgba(0, 0, 0, .35)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent); animation: mpIn .25s ease-out both; }
 .pd-result.t-gold { --c: #ffc21a; } .pd-result .ic { width: 1.1rem; height: 1.1rem; color: var(--c); } .pd-result b { font: 900 1.25rem var(--disp, sans-serif); color: var(--c); }
 
-/* ---- mp3 (Crockpot / Grok Bot, 27 Oct 2026; Dave: "the fonts are not right. Looks thin and too basic ... make all these tabs AAA").
-   Typography and finish only, layout and interaction unchanged. Bundled fonts: Cormorant Garamond 700 (gilded headings), Oxanium 800 (labels,
-   numbers, badges, buttons), Inter 500-600 (readable body). */
+/* ---- mp4 (Crockpot / Grok Bot, 27 Oct 2026; Dave rejected mp3: "basic and out of place", the white words, the thin Aimed Shot title; "We want AAA").
+   Layout and interaction unchanged. Titles: Cinzel 900 (self-hosted, OFL) with a thick gold fill, dark outline and drop shadow. Everything else:
+   the battle buttons' family (Inter 800/900, as LOCK IN / MAGIC POWERS), uppercase where it is a label. Body text: warm parchment, heavier, shadowed,
+   with keyword highlights (js/g3/powers.js marked()). */
 .b3-sheet.open:has(.pw-sigil) {
-  --mp-gold: linear-gradient(180deg, #fff6d8 0%, #ffd98a 38%, #d49a3a 62%, #ffe7a8 100%);
-  --mp-label: 'Oxanium', 'Arial Black', system-ui, sans-serif;
-  --mp-title: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
-  --mp-ink: 0 1px 0 #000, 0 2px 3px #000c;
+  --mp-gold: linear-gradient(180deg, #fffbe6 0%, #ffe28a 30%, #f0b43a 55%, #b8741c 78%, #ffd36a 100%);
+  --mp-title: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --mp-ui: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --mp-ink: 0 1px 0 #000, 0 2px 0 #0009, 0 3px 6px #000b;
+  --mp-parch: #f3e3c0;
 }
-/* header: gilded, engraved */
-.b3-sheet.open:has(.pw-sigil) > .sh-head > b { font: 700 1.28rem/1.1 var(--mp-title); letter-spacing: .14em; text-transform: uppercase;
-  background: var(--mp-gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 #3a2410) drop-shadow(0 2px 3px #000b); }
-.b3-sheet.open:has(.pw-sigil) .sh-head .sh-x, .b3-sheet.open:has(.pw-sigil) .sh-cancel { font: 800 .74rem var(--mp-label); letter-spacing: .12em; text-transform: uppercase; color: #f6e6c4; text-shadow: var(--mp-ink); }
-/* magic and health bars */
-.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b, .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { font: 800 1.15rem/1 var(--mp-label); letter-spacing: .02em; text-shadow: 0 0 8px currentColor, var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b { color: #f1e2ff; } .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { color: #e6ffef; }
-.b3-sheet.open:has(.pw-sigil) .pw-tally small { font: 700 .58rem var(--mp-label); letter-spacing: .14em; text-transform: uppercase; color: #cdbfe0; text-shadow: var(--mp-ink); }
-/* tab labels: crisp, heavy, small caps feel */
-.b3-sheet.open:has(.pw-sigil) .pw-stage .pw-name, .b3-sheet.open:has(.pw-sigil) .pw-helpers .pw-name { font: 800 .62rem/1.08 var(--mp-label); letter-spacing: .05em; text-transform: uppercase; color: #f4e7cf; text-shadow: var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-medal.on .pw-name { color: #ffe6a6; text-shadow: 0 0 6px #ffb84a88, var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-slot { font: 800 .58rem var(--mp-label); color: #2a1606; background: linear-gradient(#fff1c8, #d4a650 60%, #9a6c2a); box-shadow: 0 0 0 1px #2a1606, 0 1px 2px #000a; }
-/* cost badges: struck metal */
-.b3-sheet.open:has(.pw-sigil) .pw-cost { font: 800 .64rem/1 var(--mp-label); letter-spacing: .03em; color: #fff; text-shadow: 0 1px 0 #1a0a30;
-  background: linear-gradient(180deg, #b07ae8, #6a35b0 55%, #3e1c74); border: 1px solid #e7cfff; box-shadow: inset 0 1px 0 #ffffff66, 0 0 0 1px #1a0a30, 0 2px 4px #000a; }
-.b3-sheet.open:has(.pw-sigil) .pw-cost.free { background: linear-gradient(180deg, #6ff0a4, #22a55a 55%, #136e3a); border-color: #c9ffe0; text-shadow: 0 1px 0 #06321a; letter-spacing: .08em; }
-.b3-sheet.open:has(.pw-sigil) .pw-tag { font-family: var(--mp-label); font-weight: 800; letter-spacing: .06em; }
-/* detail: kicker, gilded title, readable body */
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id small { font: 800 .6rem var(--mp-label); letter-spacing: .2em; text-transform: uppercase; color: #d8b6ff; text-shadow: var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id b, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top b { font: 700 1.5rem/1.05 var(--mp-title); letter-spacing: .01em;
-  background: var(--mp-gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 #3a2410) drop-shadow(0 2px 3px #000c); }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id em { font: 600 .68rem var(--font-body); letter-spacing: .02em; color: #cfc2dc; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-line, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-state, .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-pick p { font: 500 .84rem/1.42 var(--font-body); color: #ece4f4; text-shadow: 0 1px 1px #000a; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-cost { font: 800 .86rem var(--mp-label); color: #fff; text-shadow: 0 1px 0 #1a0a30; border: 1px solid #e7cfff88; box-shadow: inset 0 1px 0 #ffffff44, 0 2px 4px #000a; }
-.b3-sheet.open:has(.pw-sigil) .pw-pick b { font: 700 1.2rem var(--mp-title); letter-spacing: .04em; color: #ffe7a8; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) * { -webkit-font-smoothing: antialiased; }
+/* gold titles: header and each power's name */
+.b3-sheet.open:has(.pw-sigil) > .sh-head > b, .b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id b, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top b, .b3-sheet.open:has(.pw-sigil) .pw-pick b {
+  font-family: var(--mp-title); font-weight: 900; color: transparent; background: var(--mp-gold); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-stroke: .9px #3b1d06; paint-order: stroke fill; filter: drop-shadow(0 2px 0 #1a0b02) drop-shadow(0 3px 5px #000c); text-transform: none; }
+.b3-sheet.open:has(.pw-sigil) > .sh-head > b { font-size: 1.32rem; line-height: 1.05; letter-spacing: .06em; text-transform: uppercase; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id b { font-size: 1.62rem; line-height: 1.05; letter-spacing: .01em; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top b { font-size: 1.4rem; line-height: 1.05; flex: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-pick b { font-size: 1.2rem; }
+/* chunky labels: the battle buttons' family */
+.b3-sheet.open:has(.pw-sigil) .sh-head .sh-x, .b3-sheet.open:has(.pw-sigil) .sh-cancel, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-close { font: 900 .78rem var(--mp-ui); letter-spacing: .06em; text-transform: uppercase; color: #fff4dc; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b, .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { font: 900 1.25rem/1 var(--mp-ui); text-shadow: 0 0 10px currentColor, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b { color: #ecd4ff; } .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { color: #c9ffd9; }
+.b3-sheet.open:has(.pw-sigil) .pw-tally small { font: 900 .62rem var(--mp-ui); letter-spacing: .08em; text-transform: uppercase; color: #e6d6b4; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-stage .pw-name, .b3-sheet.open:has(.pw-sigil) .pw-helpers .pw-name { font: 900 .64rem/1.05 var(--mp-ui); letter-spacing: .01em; text-transform: none; color: var(--mp-parch); text-shadow: var(--mp-ink); word-break: normal; overflow-wrap: normal; hyphens: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-medal.on .pw-name { color: #ffe07a; text-shadow: 0 0 8px #ffb02e99, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-slot { font: 900 .6rem var(--mp-ui); color: #2a1404; background: linear-gradient(#fff3c4, #e2ad4a 55%, #9a6420); box-shadow: 0 0 0 1px #2a1404, 0 1px 2px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-cost { font: 900 .68rem/1 var(--mp-ui); color: #fff; text-shadow: 0 1px 0 #1a0630, 0 0 4px #0008;
+  background: linear-gradient(180deg, #c48cff, #7a3ad0 50%, #44188a); border: 1.5px solid #f0dcff; box-shadow: inset 0 1px 0 #ffffff88, inset 0 -1px 0 #2a0a5a, 0 0 0 1px #160428, 0 2px 4px #000b; }
+.b3-sheet.open:has(.pw-sigil) .pw-cost.free { background: linear-gradient(180deg, #7dffb0, #22b060 50%, #0f6a34); border-color: #d6ffe6; text-shadow: 0 1px 0 #04301a; letter-spacing: .04em; }
+.b3-sheet.open:has(.pw-sigil) .pw-tag { font-family: var(--mp-ui); font-weight: 900; letter-spacing: .04em; }
+/* detail */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id small { font: 900 .64rem var(--mp-ui); letter-spacing: .14em; text-transform: uppercase; color: #e2b8ff; text-shadow: 0 0 6px #b46cff88, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id em { font: 800 .72rem var(--mp-ui); color: #f0c870; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-line, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-state, .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-pick p, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-rules p {
+  font: 700 .9rem/1.45 var(--mp-ui); color: var(--mp-parch); text-shadow: 0 1px 0 #000, 0 2px 3px #0009; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-why { font: 800 .78rem var(--mp-ui); color: #ffb38a; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .kw { font-weight: 900; text-shadow: 0 0 8px currentColor, 0 1px 0 #000, 0 2px 3px #000a; }
+.b3-sheet.open:has(.pw-sigil) .kw-dice { color: #ffe07a; } .b3-sheet.open:has(.pw-sigil) .kw-magic { color: #d6a8ff; } .b3-sheet.open:has(.pw-sigil) .kw-pierce { color: #ffb070; }
+.b3-sheet.open:has(.pw-sigil) .kw-atk { color: #ff7a6a; } .b3-sheet.open:has(.pw-sigil) .kw-block { color: #7cc4ff; } .b3-sheet.open:has(.pw-sigil) .kw-heal { color: #6dffa0; }
+.b3-sheet.open:has(.pw-sigil) .kw-gold { color: #ffd23d; } .b3-sheet.open:has(.pw-sigil) .kw-num { color: #ffe9b0; } .b3-sheet.open:has(.pw-sigil) .kw-once { color: #f0c870; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-cost { font: 900 .9rem var(--mp-ui); color: #fff; text-shadow: 0 1px 0 #1a0630; border: 1.5px solid #f0dcff; box-shadow: inset 0 1px 0 #ffffff66, 0 2px 4px #000b; }
 /* stepper and buttons */
-.b3-sheet.open:has(.pw-sigil) .pw-step b { font: 800 1.35rem var(--mp-label); text-shadow: 0 0 8px #c89cff99, var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-step button { font: 800 1.25rem var(--mp-label); text-shadow: var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn { font: 800 .95rem/1.1 var(--mp-label); letter-spacing: .06em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 0 #2a0f4a, 0 2px 4px #000a; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines b { font: 800 1rem/1.1 var(--mp-label); letter-spacing: .07em; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines small { font: 600 .64rem/1.2 var(--font-body); letter-spacing: .02em; text-transform: none; color: #eadcff; opacity: 1; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn.go { box-shadow: inset 0 1px 0 #ffffff55, inset 0 0 0 2px #4b2969, inset 0 0 0 3px #d9b8f055, 0 3px 0 #180c27, 0 0 14px #a46ae055; }
-/* heart change (its panel is drawn in battle3d.js; styled here only) */
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: wrap; row-gap: .1rem; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { font: 800 .62rem var(--mp-label); letter-spacing: .1em; text-transform: uppercase; color: #ffd98a; white-space: nowrap; overflow: visible; text-overflow: clip; text-shadow: var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-word { font: 800 .86rem var(--mp-label); letter-spacing: .05em; text-transform: uppercase; text-shadow: var(--mp-ink); }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cur small, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-rules summary { font: 800 .6rem var(--mp-label); letter-spacing: .16em; text-transform: uppercase; color: #ffd98a; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-close { font: 800 .74rem var(--mp-label); letter-spacing: .12em; text-transform: uppercase; }
-/* mp3: never break a word inside a tab label; title-case so six labels fit on 360px */
-.b3-sheet.open:has(.pw-sigil) .pw-stage .pw-name, .b3-sheet.open:has(.pw-sigil) .pw-helpers .pw-name { font-size: .66rem; letter-spacing: .02em; text-transform: none; word-break: normal; overflow-wrap: normal; hyphens: none; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn, .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines b { text-transform: none; letter-spacing: .03em; white-space: nowrap; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: nowrap; } .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top > b { flex: none; }
-.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { min-width: 0; white-space: normal; line-height: 1.2; }
+.b3-sheet.open:has(.pw-sigil) .pw-step b { font: 900 1.4rem var(--mp-ui); color: #fff4dc; text-shadow: 0 0 10px #c89cffaa, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-step button { font: 900 1.3rem var(--mp-ui); text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn { font: 900 1rem/1.1 var(--mp-ui); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; text-shadow: 0 1px 0 #2a0f4a, 0 2px 0 #1a0630, 0 3px 6px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines b { font: 900 1.02rem/1.1 var(--mp-ui); letter-spacing: .03em; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines small { font: 800 .66rem/1.2 var(--mp-ui); text-transform: none; letter-spacing: .01em; color: #f3e3c0; opacity: 1; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn.go { box-shadow: inset 0 1px 0 #ffffff66, inset 0 0 0 2px #4b2969, inset 0 0 0 3px #e8c8ff55, 0 3px 0 #180c27, 0 0 16px #a46ae066; }
+/* heart change (drawn in battle3d.js; styled here only) */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { min-width: 0; white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; font: 900 .64rem/1.2 var(--mp-ui); letter-spacing: .04em; text-transform: uppercase; color: #f0c870; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-word { font: 900 .9rem var(--mp-ui); letter-spacing: .02em; text-transform: uppercase; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cur small, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-rules summary { font: 900 .66rem var(--mp-ui); letter-spacing: .1em; text-transform: uppercase; color: #f0c870; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: wrap; row-gap: .15rem; } .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top > b { order: 1; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-close { order: 2; } .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { order: 3; flex: 1 0 100%; white-space: nowrap; }

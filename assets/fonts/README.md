@@ -5,6 +5,7 @@ Self-hosted WOFF2 files served by Google Fonts, downloaded 26 October 2026. Orig
 - Inter (400–800): reading and controls.
 - Cormorant Garamond (500–700): short fantasy titles.
 - Oxanium (500–800): dice and numbers.
+- Cinzel (700–900, added 27 Oct 2026 for the Magical Powers panel titles; OFL, Cinzel-OFL.txt).
 - Archivo Black (400): existing Quest Dice brand mark and drawn die artwork only.
 
 The numbered files are the original Unicode subsets, with the original unicode-range declarations retained in css/fonts.css. The full font payload is about 391 KiB; browsers request only the subsets used by the text. No Google Fonts stylesheet or external font requests are needed at runtime.

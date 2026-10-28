@@ -79,6 +79,10 @@ const scaleTop = (k, level) => E.powerDice(k, E.scaleMax(k, level), level);
 const totWords = (k, level) => Object.entries(E.chargeGain(k, k.max, level)).map(([f, v]) => (f === 'heal' ? `heal ${v}` : `${v} ${NAME[f] || f}`)).join(', ');
 const splashWord = (k) => (k.splash === 'half' ? ' Half splashes.' : '');
 // What this power does, at its level (the camp page and the battle sheet).
+// mp4 (Dave: "AAA for the magic"): keywords in a description light up in their colour: dice (2d6), +N, N magic, pierce/attack/block/heal/gold.
+const KW = /(\d+d\d+|[+\u2212-]?\d+\s+magic|\bmagic\b|[+]\d+|\bpierce\b|\battack\b|\bblock(?:ing)?\b|\bheal(?:th|s)?\b|\bgold\b|\bonce a (?:battle|round)\b)/gi;
+const kwTone = (w) => (/d\d/.test(w) ? 'dice' : /magic/i.test(w) ? 'magic' : /pierce/i.test(w) ? 'pierce' : /attack/i.test(w) ? 'atk' : /block/i.test(w) ? 'block' : /heal/i.test(w) ? 'heal' : /gold/i.test(w) ? 'gold' : /once/i.test(w) ? 'once' : 'num');
+export function marked(text) { if (typeof text !== 'string') return text; return text.split(KW).map((part, i) => (i % 2 ? h('b', { class: `kw kw-${kwTone(part)}` }, part) : part)).filter((x) => x !== ''); }
 export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
@@ -205,7 +209,7 @@ function detailPanel(ctx, sel) {
       h('span', { class: 'pw-imprint', 'aria-hidden': 'true' }, glyph(k)),
       h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
         h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
-      h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
+      h('p', { class: 'pd-line' }, marked(effectLine(k, { x, round: b.round, level: p.level, stored }))),
       why ? h('p', { class: 'pd-why' }, why) : null, forRow || h('div', { class: 'pd-row' }, step, release, main));
   }
   const u = ctx.utils.find((x) => x.id === sel);
@@ -219,7 +223,7 @@ function detailPanel(ctx, sel) {
   return h('div', { class: `pw-detail t-${u.tone}` },
     h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
       u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
-    h('p', { class: 'pd-line' }, u.body), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
+    h('p', { class: 'pd-line' }, marked(u.body)), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}${a.content ? ' hc-btn' : ''}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || null, onclick: a.fn }, ...(a.content || [a.label])))));
 }
 
