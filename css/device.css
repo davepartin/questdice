@@ -16,10 +16,8 @@
 /* Your gear: the camp dice grid and the card behind each die, look only, all on one screen (js/g3/gearview.js) */
 .gv-modal { padding: 8px 10px 10px !important; max-height: none !important; overflow: hidden !important; }
 .gv { display: grid; gap: 6px; }
-.gv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
-.gv-head h2 { margin: 0; font-size: 1.05rem; line-height: 1.15; }
-.gv-head small { opacity: .75; font-size: .7rem; }
-.gv-x { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .06); color: inherit; font-size: 1rem; }
+.gv-head { display: flex; align-items: center; min-height: 44px; padding-right: 92px; }
+.gv-head h2 { margin: 0; font: 800 1.35rem/1.1 var(--font-display, inherit); letter-spacing: .02em; color: #ffe3a4; overflow-wrap: anywhere; }
 .gv .cw-board { max-width: 250px; aspect-ratio: auto; padding: 5px; gap: 3px; }
 .gv .cw-cell { padding: 2px 1px 1px; min-height: 0; height: 58px; justify-content: flex-start; }
 .gv .cw-label { font-size: .54rem; }
@@ -37,3 +35,8 @@
 .dl-shop-t { display: flex; gap: .6rem; align-items: center; }
 .dl-shop-t span { display: grid; }
 .dl-shop-t small { opacity: .8; }
+
+/* The one Close control: top right of every dialog that has one (js/dom.js modal moves it there) */
+.modal-card.has-close { position: relative; }
+html body button.qd-close.qd-close.qd-close.qd-close-top { position: absolute; top: 10px; right: 10px; z-index: 5; }
+.modal-card.has-close .form > h2:first-child, .modal-card.has-close > h2:first-child { padding-right: 92px; }

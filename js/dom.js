@@ -44,11 +44,19 @@ export const buzz = (ms = 15) => { try { navigator.vibrate?.(ms); } catch { /* i
 // Close any open dialog. Always use this (not emptying #modal by hand): an empty but still "open" #modal
 // is an invisible full-screen layer that swallows every tap.
 export function closeModal() { const host = $('#modal'); host.replaceChildren(); host.classList.remove('open'); }
-export function modal(content, { dismiss = true } = {}) {
+export function modal(content, { dismiss = true, closeButton = false } = {}) {
   const host = $('#modal');
   const close = closeModal;
   const card = h('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' }, content);
   const back = h('div', { class: 'modal-back', onclick: (e) => { if (dismiss && e.target === back) close(); } }, card);
+  // One Close control, always top right (Dave, 28 Oct 2026): the dialog's own Close button moves to the corner; duplicates and the rows they leave empty go.
+  if (closeButton && !card.querySelector('button.qd-close')) card.append(h('button', { type: 'button', onclick: close }, 'Close')); // a dialog with no Close of its own asks for one
+  const closers = [...card.querySelectorAll('button.qd-close')];
+  if (closers.length) {
+    const x = closers[0]; for (const extra of closers.slice(1)) extra.remove();
+    x.classList.add('qd-close-top'); card.append(x); card.classList.add('has-close');
+    for (const row of card.querySelectorAll('.row')) if (!row.children.length) row.remove();
+  }
   host.replaceChildren(back); host.classList.add('open');
   return close;
 }

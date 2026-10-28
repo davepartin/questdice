@@ -39,12 +39,12 @@ export function openGear(hero, { slot = 'NW' } = {}) {
     });
     fit.replaceChildren(cardFor(hero, cur));
     body.replaceChildren(
-      h('header', { class: 'gv-head' }, h('div', {}, h('h2', {}, `${hero.name}: your gear`), h('small', {}, 'Look only. Upgrades happen at camp.')), h('button', { type: 'button', class: 'gv-x', 'aria-label': 'Close', onclick: () => close() }, '✕')),
+      h('header', { class: 'gv-head' }, h('h2', {}, hero.name)), // just the hero's name; the Close button is the game's one, top right (dom.js modal)
       h('section', { class: 'cw-dicegrid gv-grid', 'aria-label': 'Your character dice' }, h('div', { class: 'cw-board' }, cells)), box);
     requestAnimationFrame(fitCard);
     ro?.disconnect(); ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => fitCard()) : null; ro?.observe(fit);
   }
-  render(); close = modal(body); body.closest('.modal-card')?.classList.add('gv-modal'); requestAnimationFrame(fitCard);
+  render(); close = modal(body, { closeButton: true }); body.closest('.modal-card')?.classList.add('gv-modal'); requestAnimationFrame(fitCard);
   window.addEventListener('resize', fitCard);
   return close;
 }

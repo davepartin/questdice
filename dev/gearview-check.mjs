@@ -21,7 +21,7 @@ try {
   check('open the daily intro', await click(/daily challenge|^\s*daily/)); await sleep(900);
   check('the intro has See your gear', await click(/see your gear/)); await sleep(600);
   let txt = await p.evaluate(() => document.querySelector('#modal')?.innerText.replace(/\s+/g, ' ') || '');
-  check('the gear view shows the dice grid labels and look-only text', /Left weapon/i.test(txt) && /Talent one/i.test(txt) && /Heart/i.test(txt) && /Look only/i.test(txt), txt.slice(0, 160)); await p.screenshot({ path: `${out}/gear-weapon.png` });
+  check('the gear view shows the dice grid and only the hero name as its title', /Left weapon/i.test(txt) && /Talent one/i.test(txt) && /Heart/i.test(txt) && !/Look only/i.test(txt) && !/your gear/i.test(txt), txt.slice(0, 160)); await p.screenshot({ path: `${out}/gear-weapon.png` });
   for (const [label, shot] of [['Talent one', 'talent'], ['Heart', 'heart'], ['Head', 'head'], ['Right weapon', 'weapon2']]) { await p.evaluate((l) => [...document.querySelectorAll('#modal .cw-cell')].find((c) => c.getAttribute('aria-label')?.startsWith(l))?.click(), label); await sleep(400); await p.screenshot({ path: `${out}/gear-${shot}.png` }); }
   // every die's card fits on the screen together with the nine boxes (Dave, 28 Oct): the modal sits inside the viewport and nothing scrolls
   const slots = ['Left weapon', 'Head', 'Right weapon', 'Left hand', 'Heart', 'Right hand', 'Talent one', 'Feet', 'Talent two'];
@@ -35,17 +35,18 @@ try {
   check('the talent card shows the daily hero\'s symbols', talentFaces >= 1, `${talentFaces} filled faces`);
   const tap = await p.evaluate(() => { const g = [...document.querySelectorAll('#modal .cb-hole.open, #modal .cb-cov')][0]; g?.click(); return !!g; }); await sleep(300);
   check('tapping a cover only says "camp" and changes nothing', await p.evaluate(() => !document.querySelector('.tw-workshop, .sh-buy')));
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.getAttribute('aria-label') || b.textContent))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
   // in the fight: the hero's name and the battle menu
   check('begin the daily', await click(/^\s*begin/)); await p.waitForFunction(() => document.querySelector('#b3-roll'), null, { timeout: 60000 }).catch(() => {}); await sleep(1500);
   check('tap the hero character', await p.evaluate(() => { const c = document.querySelector('.fb-pc.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.getAttribute('aria-label') === 'Close')?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
   check('tap the name plate too', await p.evaluate(() => { const c = document.querySelector('.fb-card.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
-  check('the gear opens in the fight', await p.evaluate(() => /your gear/i.test(document.querySelector('#modal')?.innerText || ''))); await p.screenshot({ path: `${out}/gear-in-battle.png` });
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.getAttribute('aria-label') || b.textContent))?.click()); await sleep(300);
+  check('the gear opens in the fight', await p.evaluate(() => !!document.querySelector('#modal .gv'))); await p.screenshot({ path: `${out}/gear-in-battle.png` });
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
   await p.evaluate(() => document.querySelector('.b3-menu')?.click()); await sleep(400);
   check('the battle menu has Your gear', await click(/^your gear/, '#modal')); await sleep(400);
-  check('and it opens', await p.evaluate(() => /your gear/i.test(document.querySelector('#modal')?.innerText || '')));
+  check('and it opens', await p.evaluate(() => !!document.querySelector('#modal .gv')));
+  check('Close is the game\'s one button, top right of the card', await p.evaluate(() => { const c = document.querySelector('#modal .modal-card'); const x = c.querySelector('button.qd-close-top'); if (!x) return false; const a = c.getBoundingClientRect(); const b = x.getBoundingClientRect(); return b.right <= a.right && a.right - b.right < 20 && b.top - a.top < 20 && x.textContent === 'Close' && c.querySelectorAll('button.qd-close').length === 1; }));
   check('no page errors', !errors.length, errors.slice(0, 3).join('; '));
 } finally { await browser?.close(); server.kill(); }
 process.exitCode = failed ? 1 : 0;
