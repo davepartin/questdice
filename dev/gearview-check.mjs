@@ -35,18 +35,18 @@ try {
   check('the talent card shows the daily hero\'s symbols', talentFaces >= 1, `${talentFaces} filled faces`);
   const tap = await p.evaluate(() => { const g = [...document.querySelectorAll('#modal .cb-hole.open, #modal .cb-cov')][0]; g?.click(); return !!g; }); await sleep(300);
   check('tapping a cover only says "camp" and changes nothing', await p.evaluate(() => !document.querySelector('.tw-workshop, .sh-buy')));
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close'))?.click()); await sleep(300);
   // in the fight: the hero's name and the battle menu
   check('begin the daily', await click(/^\s*begin/)); await p.waitForFunction(() => document.querySelector('#b3-roll'), null, { timeout: 60000 }).catch(() => {}); await sleep(1500);
   check('tap the hero character', await p.evaluate(() => { const c = document.querySelector('.fb-pc.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close'))?.click()); await sleep(300);
   check('tap the name plate too', await p.evaluate(() => { const c = document.querySelector('.fb-card.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
   check('the gear opens in the fight', await p.evaluate(() => !!document.querySelector('#modal .gv'))); await p.screenshot({ path: `${out}/gear-in-battle.png` });
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close-top'))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.classList.contains('qd-close'))?.click()); await sleep(300);
   await p.evaluate(() => document.querySelector('.b3-menu')?.click()); await sleep(400);
   check('the battle menu has Your gear', await click(/^your gear/, '#modal')); await sleep(400);
   check('and it opens', await p.evaluate(() => !!document.querySelector('#modal .gv')));
-  check('Close is the game\'s one button, top right of the card', await p.evaluate(() => { const c = document.querySelector('#modal .modal-card'); const x = c.querySelector('button.qd-close-top'); if (!x) return false; const a = c.getBoundingClientRect(); const b = x.getBoundingClientRect(); return b.right <= a.right && a.right - b.right < 20 && b.top - a.top < 20 && x.textContent === 'Close' && c.querySelectorAll('button.qd-close').length === 1; }));
+  check('Close is the game\'s one button, top right of the card', await p.evaluate(() => { const c = document.querySelector('#modal .modal-card'); const x = c.querySelector('button.qd-close'); if (!x) return false; const a = c.getBoundingClientRect(); const b = x.getBoundingClientRect(); return b.right <= a.right && a.right - b.right < 20 && b.top - a.top < 20 && x.textContent === 'Close' && c.querySelectorAll('button.qd-close').length === 1; }));
   check('no page errors', !errors.length, errors.slice(0, 3).join('; '));
 } finally { await browser?.close(); server.kill(); }
 process.exitCode = failed ? 1 : 0;

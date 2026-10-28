@@ -15,10 +15,32 @@ export function h(tag, attrs, ...kids) {
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
   // Every dismiss action shares one label, hit area and visual treatment.
-  if (tag === 'button' && /^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim())) {
+  if (tag === 'button' && (/^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim()) || (/^[✕×x]$/i.test(el.textContent.trim()) && /^Close\b/i.test(el.getAttribute('aria-label') || el.title || '')))) {
     el.textContent = 'Close'; el.classList.add('qd-close');
   }
+  // Build dismiss headers in one place, including forms rebuilt after an action.
+  if (tag !== 'button') {
+    const ownClose = [...el.children].find(c => c.matches?.('button.qd-close'));
+    if (ownClose && (el.matches('.gv-head, .sh-head, .hc-top') || el.querySelector(':scope > h1, :scope > h2, :scope > h3, :scope > b'))) el.classList.add('qd-window-head');
+    if (el.classList.contains('form')) alignWindowClose(el);
+  }
   return el;
+}
+// Keep a single dismiss action in the title row, never floating over the title.
+export function alignWindowClose(content) {
+  const buttons = [...content.querySelectorAll('button.qd-close')];
+  if (!buttons.length) return;
+  const button = buttons[0];
+  const existing = button.closest('.qd-window-head, .gv-head, .sh-head, .hc-top');
+  if (existing) existing.classList.add('qd-window-head');
+  else {
+    const title = content.querySelector(':scope > h1, :scope > h2, :scope > h3');
+    const header = document.createElement('header'); header.className = 'qd-window-head';
+    if (title) header.append(title);
+    const old = button.parentElement; header.append(button); content.prepend(header);
+    if (old && old !== content && !old.textContent.trim() && !old.children.length) old.remove();
+  }
+  for (const duplicate of buttons.slice(1)) duplicate.remove();
 }
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -47,16 +69,10 @@ export function closeModal() { const host = $('#modal'); host.replaceChildren();
 export function modal(content, { dismiss = true, closeButton = false } = {}) {
   const host = $('#modal');
   const close = closeModal;
+  if ((dismiss || closeButton) && !content.querySelector('button.qd-close')) content.append(h('button', { type: 'button', onclick: close }, 'Close'));
+  alignWindowClose(content);
   const card = h('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' }, content);
   const back = h('div', { class: 'modal-back', onclick: (e) => { if (dismiss && e.target === back) close(); } }, card);
-  // One Close control, always top right (Dave, 28 Oct 2026): the dialog's own Close button moves to the corner; duplicates and the rows they leave empty go.
-  if (closeButton && !card.querySelector('button.qd-close')) card.append(h('button', { type: 'button', onclick: close }, 'Close')); // a dialog with no Close of its own asks for one
-  const closers = [...card.querySelectorAll('button.qd-close')];
-  if (closers.length) {
-    const x = closers[0]; for (const extra of closers.slice(1)) extra.remove();
-    x.classList.add('qd-close-top'); card.append(x); card.classList.add('has-close');
-    for (const row of card.querySelectorAll('.row')) if (!row.children.length) row.remove();
-  }
   host.replaceChildren(back); host.classList.add('open');
   return close;
 }

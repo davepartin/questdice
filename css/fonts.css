@@ -279,3 +279,8 @@ html body button.qd-close.qd-close.qd-close:active { transform: translateY(1px);
 }
 .rv-objective h2 { margin: .25rem 0 .6rem; font: 600 1.7rem/1.1 var(--font-title); color: #fff3d6; }
 .rv-objective small { display: block; margin-top: 1rem; color: #bcb5c8; font: 400 .875rem/1.4 var(--font-body); }
+/* Every window uses the same title-row alignment and fixed touch target. */
+.qd-window-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; width: 100%; }
+.qd-window-head > :is(h1,h2,h3,b) { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+html body .qd-window-head > button.qd-close { width: 76px; height: 44px; min-width: 76px; min-height: 44px; margin-left: auto; white-space: nowrap; }
+.gv-head.qd-window-head { padding-right: 0; }

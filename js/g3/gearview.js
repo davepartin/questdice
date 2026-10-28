@@ -39,7 +39,7 @@ export function openGear(hero, { slot = 'NW' } = {}) {
     });
     fit.replaceChildren(cardFor(hero, cur));
     body.replaceChildren(
-      h('header', { class: 'gv-head' }, h('h2', {}, hero.name)), // just the hero's name; the Close button is the game's one, top right (dom.js modal)
+      h('header', { class: 'gv-head' }, h('h2', {}, hero.name), h('button', { type: 'button', onclick: () => close(), 'aria-label': 'Close' }, 'Close')), // just the hero's name; the Close button is the game's one, top right (dom.js modal)
       h('section', { class: 'cw-dicegrid gv-grid', 'aria-label': 'Your character dice' }, h('div', { class: 'cw-board' }, cells)), box);
     requestAnimationFrame(fitCard);
     ro?.disconnect(); ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => fitCard()) : null; ro?.observe(fit);

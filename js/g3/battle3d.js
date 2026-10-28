@@ -3,7 +3,7 @@
 //
 // ui.js calls start(ctx) when a solo quest begins. This module owns Reset -> Roll -> Shape -> Lock ->
 // Resolve until the fight ends, then hands back to ui.js (ctx.showVictory / ctx.defeat).
-import { h, $, $$, toast, buzz, reduced } from '../dom.js';
+import { h, $, $$, toast, buzz, reduced, alignWindowClose } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
@@ -599,7 +599,7 @@ function cardTiles(reset) {
 }
 function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
 // Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Close.
-const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean));
+const fillInfo = (...kids) => { B.hud.info.replaceChildren(...kids.filter(Boolean)); alignWindowClose(B.hud.info); };
 function showPowerDetail(id) {
   const b = B.b; const hero = B.hero; const k = E.cardsOf(hero).find((c) => c.id === id); if (!k) return;
   const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0; B.powerX = B.powerX || {};

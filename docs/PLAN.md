@@ -1502,3 +1502,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 27 October 2026, Director: compact enemy inspection, universal Close and objective results polish, build 20261027ui2. Changes scoped to css/fonts.css, js/dom.js, dismiss labels/result rendering in scrui.js and ui.js, and stamp files. Store shelf reservation preserved. No engine/data/save changes. Evidence: [compact details](team/tasks/compact-details/README.md). Existing card/price checks pass (20). Browser checks cover actual battle panels and the single objective result. Publishing under standing approval.
+
+
+27 October 2026, Director: uniform top-right window Close follow-up, build 20261028close2. Fixed gear icon-only X, shared title-row alignment for dialogs/battle info, missing and duplicate dismiss controls. Existing Close style retained; no scrui/store/engine/save edits. Four targeted dialog cases and actual enemy panel checks pass; 390x660 gear screenshot reviewed. Evidence: [window Close](team/tasks/window-close/README.md).
