@@ -13,11 +13,24 @@
 #qd-update span { flex: 1; font-size: .95rem; }
 #qd-update button { min-height: 40px; padding: 0 .9rem; border-radius: 10px; border: 0; background: #ffd23d; color: #1a1205; font: inherit; font-weight: 700; }
 #qd-update button.later { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .35); font-weight: 500; }
-/* Your gear: the camp dice grid and cards, look only (js/g3/gearview.js) */
-.gv { max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.gv .cw-board { max-width: 21rem; margin: 0 auto; }
-.gv-card { margin-top: .6rem; }
-.gv-note { text-align: center; }
+/* Your gear: the camp dice grid and the card behind each die, look only, all on one screen (js/g3/gearview.js) */
+.gv-modal { padding: 8px 10px 10px !important; max-height: none !important; overflow: hidden !important; }
+.gv { display: grid; gap: 6px; }
+.gv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.gv-head h2 { margin: 0; font-size: 1.05rem; line-height: 1.15; }
+.gv-head small { opacity: .75; font-size: .7rem; }
+.gv-x { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .06); color: inherit; font-size: 1rem; }
+.gv .cw-board { max-width: 250px; aspect-ratio: auto; padding: 5px; gap: 3px; }
+.gv .cw-cell { padding: 2px 1px 1px; min-height: 0; height: 58px; justify-content: flex-start; }
+.gv .cw-label { font-size: .54rem; }
+.gv .cw-cell .cw-die { width: 46%; max-width: 34px; margin: 0; }
+.gv .cw-die-loading small { display: none; }
+.gv .cw-cell-foot { min-height: 10px; }
+.gv .cw-cell-foot > b { font-size: .56rem; }
+.gv .cw-locked { font-size: .9rem; }
+.gv-card { overflow: hidden; width: 100%; }
+.gv-fit { width: 100%; }
+.gv-note { text-align: center; padding: 1rem 0; }
 .fb-card.hero.tappable { pointer-events: auto; cursor: pointer; }
 /* the daily's potion shop between fights */
 .dl-shop { display: grid; gap: .5rem; margin: .8rem 0; padding: .7rem .8rem; border-radius: 14px; border: 1px solid rgba(255, 210, 61, .3); background: rgba(21, 29, 52, .7); }

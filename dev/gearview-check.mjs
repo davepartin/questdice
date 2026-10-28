@@ -10,7 +10,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 try {
   await new Promise((r) => server.stdout.once('data', r));
   browser = await chromium.launch({ executablePath: process.env.CHROME || chromium.executablePath(), args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true }); const p = await ctx.newPage(); const errors = [];
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 660 }, hasTouch: true, isMobile: true }); const p = await ctx.newPage(); const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
   await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
   await p.addInitScript(() => { try { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); } catch { /* ignore */ } });
@@ -23,16 +23,26 @@ try {
   let txt = await p.evaluate(() => document.querySelector('#modal')?.innerText.replace(/\s+/g, ' ') || '');
   check('the gear view shows the dice grid labels and look-only text', /Left weapon/i.test(txt) && /Talent one/i.test(txt) && /Heart/i.test(txt) && /Look only/i.test(txt), txt.slice(0, 160)); await p.screenshot({ path: `${out}/gear-weapon.png` });
   for (const [label, shot] of [['Talent one', 'talent'], ['Heart', 'heart'], ['Head', 'head'], ['Right weapon', 'weapon2']]) { await p.evaluate((l) => [...document.querySelectorAll('#modal .cw-cell')].find((c) => c.getAttribute('aria-label')?.startsWith(l))?.click(), label); await sleep(400); await p.screenshot({ path: `${out}/gear-${shot}.png` }); }
+  // every die's card fits on the screen together with the nine boxes (Dave, 28 Oct): the modal sits inside the viewport and nothing scrolls
+  const slots = ['Left weapon', 'Head', 'Right weapon', 'Left hand', 'Heart', 'Right hand', 'Talent one', 'Feet', 'Talent two'];
+  for (const l of slots) {
+    await p.evaluate((x) => [...document.querySelectorAll('#modal .cw-cell')].find((c) => c.getAttribute('aria-label')?.startsWith(x))?.click(), l); await sleep(700);
+    const m = await p.evaluate(() => { const f = document.querySelector('#modal .modal-card').getBoundingClientRect(); const c = document.querySelector('#modal .gv-fit'); const cell = document.querySelector('#modal .cw-cell').getBoundingClientRect(); const fr = c.getBoundingClientRect(); const wrap = document.querySelector('#modal .gv-card').getBoundingClientRect(); return { top: Math.round(f.top), bottom: Math.round(f.bottom), vh: innerHeight, cell: Math.round(cell.height), cardBottom: Math.round(fr.bottom), wrapBottom: Math.round(wrap.bottom), scrolls: document.querySelector('#modal .modal-card').scrollHeight > document.querySelector('#modal .modal-card').clientHeight + 1 }; });
+    check(`${l}: the card and the nine boxes fit on a 390x660 screen`, m.top >= 0 && m.bottom <= m.vh && m.cardBottom <= m.wrapBottom + 8 && !m.scrolls && m.cell <= 62, JSON.stringify(m));
+    await p.screenshot({ path: `${out}/fit-${l.replace(/ /g, '-')}.png` });
+  }
   const talentFaces = await p.evaluate(() => { [...document.querySelectorAll('#modal .cw-cell')].find((c) => c.getAttribute('aria-label')?.startsWith('Talent one'))?.click(); return document.querySelectorAll('#modal .cb-hole.set').length; });
   check('the talent card shows the daily hero\'s symbols', talentFaces >= 1, `${talentFaces} filled faces`);
   const tap = await p.evaluate(() => { const g = [...document.querySelectorAll('#modal .cb-hole.open, #modal .cb-cov')][0]; g?.click(); return !!g; }); await sleep(300);
   check('tapping a cover only says "camp" and changes nothing', await p.evaluate(() => !document.querySelector('.tw-workshop, .sh-buy')));
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.textContent))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.getAttribute('aria-label') || b.textContent))?.click()); await sleep(300);
   // in the fight: the hero's name and the battle menu
   check('begin the daily', await click(/^\s*begin/)); await p.waitForFunction(() => document.querySelector('#b3-roll'), null, { timeout: 60000 }).catch(() => {}); await sleep(1500);
-  check('tap the hero\'s name under the mini', await p.evaluate(() => { const c = document.querySelector('.fb-card.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
+  check('tap the hero character', await p.evaluate(() => { const c = document.querySelector('.fb-pc.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => b.getAttribute('aria-label') === 'Close')?.click()); await sleep(300);
+  check('tap the name plate too', await p.evaluate(() => { const c = document.querySelector('.fb-card.hero.tappable'); c?.click(); return !!c; })); await sleep(600);
   check('the gear opens in the fight', await p.evaluate(() => /your gear/i.test(document.querySelector('#modal')?.innerText || ''))); await p.screenshot({ path: `${out}/gear-in-battle.png` });
-  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.textContent))?.click()); await sleep(300);
+  await p.evaluate(() => [...document.querySelectorAll('#modal button')].find((b) => /^close$/i.test(b.getAttribute('aria-label') || b.textContent))?.click()); await sleep(300);
   await p.evaluate(() => document.querySelector('.b3-menu')?.click()); await sleep(400);
   check('the battle menu has Your gear', await click(/^your gear/, '#modal')); await sleep(400);
   check('and it opens', await p.evaluate(() => /your gear/i.test(document.querySelector('#modal')?.innerText || '')));
