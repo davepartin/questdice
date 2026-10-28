@@ -327,3 +327,56 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .pd-result { --c: #38e87a; display: flex; align-items: center; justify-content: center; gap: .4rem; margin: .1rem 0 .35rem; padding: .3rem .6rem; border-radius: 10px; font-size: .82rem; color: #eae4f2;
   background: color-mix(in srgb, var(--c) 16%, rgba(0, 0, 0, .35)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent); animation: mpIn .25s ease-out both; }
 .pd-result.t-gold { --c: #ffc21a; } .pd-result .ic { width: 1.1rem; height: 1.1rem; color: var(--c); } .pd-result b { font: 900 1.25rem var(--disp, sans-serif); color: var(--c); }
+
+/* ---- mp3 (Crockpot / Grok Bot, 27 Oct 2026; Dave: "the fonts are not right. Looks thin and too basic ... make all these tabs AAA").
+   Typography and finish only, layout and interaction unchanged. Bundled fonts: Cormorant Garamond 700 (gilded headings), Oxanium 800 (labels,
+   numbers, badges, buttons), Inter 500-600 (readable body). */
+.b3-sheet.open:has(.pw-sigil) {
+  --mp-gold: linear-gradient(180deg, #fff6d8 0%, #ffd98a 38%, #d49a3a 62%, #ffe7a8 100%);
+  --mp-label: 'Oxanium', 'Arial Black', system-ui, sans-serif;
+  --mp-title: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --mp-ink: 0 1px 0 #000, 0 2px 3px #000c;
+}
+/* header: gilded, engraved */
+.b3-sheet.open:has(.pw-sigil) > .sh-head > b { font: 700 1.28rem/1.1 var(--mp-title); letter-spacing: .14em; text-transform: uppercase;
+  background: var(--mp-gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 #3a2410) drop-shadow(0 2px 3px #000b); }
+.b3-sheet.open:has(.pw-sigil) .sh-head .sh-x, .b3-sheet.open:has(.pw-sigil) .sh-cancel { font: 800 .74rem var(--mp-label); letter-spacing: .12em; text-transform: uppercase; color: #f6e6c4; text-shadow: var(--mp-ink); }
+/* magic and health bars */
+.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b, .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { font: 800 1.15rem/1 var(--mp-label); letter-spacing: .02em; text-shadow: 0 0 8px currentColor, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-tally .pw-center b { color: #f1e2ff; } .b3-sheet.open:has(.pw-sigil) .pw-tally .pw-life b { color: #e6ffef; }
+.b3-sheet.open:has(.pw-sigil) .pw-tally small { font: 700 .58rem var(--mp-label); letter-spacing: .14em; text-transform: uppercase; color: #cdbfe0; text-shadow: var(--mp-ink); }
+/* tab labels: crisp, heavy, small caps feel */
+.b3-sheet.open:has(.pw-sigil) .pw-stage .pw-name, .b3-sheet.open:has(.pw-sigil) .pw-helpers .pw-name { font: 800 .62rem/1.08 var(--mp-label); letter-spacing: .05em; text-transform: uppercase; color: #f4e7cf; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-medal.on .pw-name { color: #ffe6a6; text-shadow: 0 0 6px #ffb84a88, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-slot { font: 800 .58rem var(--mp-label); color: #2a1606; background: linear-gradient(#fff1c8, #d4a650 60%, #9a6c2a); box-shadow: 0 0 0 1px #2a1606, 0 1px 2px #000a; }
+/* cost badges: struck metal */
+.b3-sheet.open:has(.pw-sigil) .pw-cost { font: 800 .64rem/1 var(--mp-label); letter-spacing: .03em; color: #fff; text-shadow: 0 1px 0 #1a0a30;
+  background: linear-gradient(180deg, #b07ae8, #6a35b0 55%, #3e1c74); border: 1px solid #e7cfff; box-shadow: inset 0 1px 0 #ffffff66, 0 0 0 1px #1a0a30, 0 2px 4px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-cost.free { background: linear-gradient(180deg, #6ff0a4, #22a55a 55%, #136e3a); border-color: #c9ffe0; text-shadow: 0 1px 0 #06321a; letter-spacing: .08em; }
+.b3-sheet.open:has(.pw-sigil) .pw-tag { font-family: var(--mp-label); font-weight: 800; letter-spacing: .06em; }
+/* detail: kicker, gilded title, readable body */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id small { font: 800 .6rem var(--mp-label); letter-spacing: .2em; text-transform: uppercase; color: #d8b6ff; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id b, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top b { font: 700 1.5rem/1.05 var(--mp-title); letter-spacing: .01em;
+  background: var(--mp-gold); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 #3a2410) drop-shadow(0 2px 3px #000c); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-id em { font: 600 .68rem var(--font-body); letter-spacing: .02em; color: #cfc2dc; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-line, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-state, .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-pick p { font: 500 .84rem/1.42 var(--font-body); color: #ece4f4; text-shadow: 0 1px 1px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pd-cost { font: 800 .86rem var(--mp-label); color: #fff; text-shadow: 0 1px 0 #1a0a30; border: 1px solid #e7cfff88; box-shadow: inset 0 1px 0 #ffffff44, 0 2px 4px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-pick b { font: 700 1.2rem var(--mp-title); letter-spacing: .04em; color: #ffe7a8; text-shadow: var(--mp-ink); }
+/* stepper and buttons */
+.b3-sheet.open:has(.pw-sigil) .pw-step b { font: 800 1.35rem var(--mp-label); text-shadow: 0 0 8px #c89cff99, var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-step button { font: 800 1.25rem var(--mp-label); text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn { font: 800 .95rem/1.1 var(--mp-label); letter-spacing: .06em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 0 #2a0f4a, 0 2px 4px #000a; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines b { font: 800 1rem/1.1 var(--mp-label); letter-spacing: .07em; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines small { font: 600 .64rem/1.2 var(--font-body); letter-spacing: .02em; text-transform: none; color: #eadcff; opacity: 1; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn.go { box-shadow: inset 0 1px 0 #ffffff55, inset 0 0 0 2px #4b2969, inset 0 0 0 3px #d9b8f055, 0 3px 0 #180c27, 0 0 14px #a46ae055; }
+/* heart change (its panel is drawn in battle3d.js; styled here only) */
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: wrap; row-gap: .1rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { font: 800 .62rem var(--mp-label); letter-spacing: .1em; text-transform: uppercase; color: #ffd98a; white-space: nowrap; overflow: visible; text-overflow: clip; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-word { font: 800 .86rem var(--mp-label); letter-spacing: .05em; text-transform: uppercase; text-shadow: var(--mp-ink); }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cur small, .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-rules summary { font: 800 .6rem var(--mp-label); letter-spacing: .16em; text-transform: uppercase; color: #ffd98a; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-close { font: 800 .74rem var(--mp-label); letter-spacing: .12em; text-transform: uppercase; }
+/* mp3: never break a word inside a tab label; title-case so six labels fit on 360px */
+.b3-sheet.open:has(.pw-sigil) .pw-stage .pw-name, .b3-sheet.open:has(.pw-sigil) .pw-helpers .pw-name { font-size: .66rem; letter-spacing: .02em; text-transform: none; word-break: normal; overflow-wrap: normal; hyphens: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn, .b3-sheet.open:has(.pw-sigil) .pw-detail .pw-btn .pb-lines b { text-transform: none; letter-spacing: .03em; white-space: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top { flex-wrap: nowrap; } .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-top > b { flex: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail .hc-cost { min-width: 0; white-space: normal; line-height: 1.2; }
