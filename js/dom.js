@@ -34,7 +34,7 @@ export function alignWindowClose(content) {
   const existing = button.closest('.qd-window-head, .gv-head, .sh-head, .hc-top');
   if (existing) existing.classList.add('qd-window-head');
   else {
-    const title = content.querySelector(':scope > h1, :scope > h2, :scope > h3');
+    const title = content.querySelector(':scope > h1, :scope > h2, :scope > h3') || content.querySelector('h1, h2, h3'); // a dialog whose heading sits one level down (the Rules) gets it in the title row too
     const header = document.createElement('header'); header.className = 'qd-window-head';
     if (title) header.append(title);
     const old = button.parentElement; header.append(button); content.prepend(header);

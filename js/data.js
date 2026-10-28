@@ -464,7 +464,7 @@ export const CLASSES = {
   },
   ranger: {
     feet: 6, startMagic: 4,
-    trait: 'The fastest on the road. The only class that can train speed to a d8.',
+    trait: 'The fastest on the road. Starts with a d6 on its feet, so it acts first.',
     name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(344, 512, 162.5, 505, 313), hp: 28,
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],

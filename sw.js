@@ -5,7 +5,7 @@
 //   - everything else under this folder (pictures, fonts, 3D files): saved copy first, refreshed in the background
 //   - never touched: other websites (Firebase), /api/ (the local table server), preview/ pages, range requests, anything but GET
 // Open the game with ?nosw to remove this worker and every saved file (js/pwa.js).
-const BUILD = '20261028close2';
+const BUILD = '20261028polish1';
 const CACHE = 'qd-static-1';
 const SCOPE = new URL(self.registration.scope);
 let off = false; // set by js/pwa.js removeAll(): stop saving and serving while the worker is being removed
