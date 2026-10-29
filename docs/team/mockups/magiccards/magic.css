@@ -170,3 +170,15 @@
 svg.slot0.ds{border:0;border-radius:0;background:none;transform:none;overflow:visible}svg.slot0.lock{opacity:.6;background:none;border:0}svg.slot0.lock::after{content:none}
 .ptag{position:absolute;top:3.2%;left:15%;z-index:6;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #0008}
 .pt-build{background:#2a6a9a}.pt-dice{background:#a0521a}.pt-one-shot{background:#6a2a9a}
+
+/* t429 roll flow. Look reused from the live power-dice roll (css/hud.css .dr-die drThrow / drWobble / drLand) */
+.ctl .pmrow .use.pmc{width:auto;min-width:62px;padding:0 10px;font:900 1.1rem/1 Inter,sans-serif;display:inline-flex;gap:3px}.ctl .pmrow .use.pmc .ic{width:15px;height:15px}
+@keyframes drThrow{0%{transform:translate(-40px,-60px) rotate(-260deg) scale(.5);opacity:0}60%{opacity:1}100%{transform:none}}
+@keyframes drWobble{0%,100%{transform:rotate(-9deg) translateY(0)}50%{transform:rotate(9deg) translateY(-6px)}}
+@keyframes drLand{0%{transform:scale(1.25) rotate(8deg)}100%{transform:none}}
+svg.d6.rolling{animation:drWobble .32s ease-in-out infinite;transform:rotate(calc(-14deg + var(--i) * 11deg)) translateY(calc(var(--i) * -2px));opacity:.85;filter:blur(.3px)}
+svg.d6.landed{animation:drLand .38s cubic-bezier(.2,1.6,.4,1) both;filter:drop-shadow(0 0 4px #fff8)}
+.total.rl{color:#8a7aa0;font-style:italic}
+.flyto{position:fixed;left:50%;z-index:20;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font:800 .95rem Inter,sans-serif;color:#fff;background:#0008;box-shadow:inset 0 0 0 1.5px currentColor;animation:flyUp .35s ease-out both;width:max-content}
+.flyto b{font:900 1.2rem Inter,sans-serif}.flyto .ic{width:18px;height:18px}.flyto.fx-atk{color:#ff4b4b}.flyto.fx-pierce{color:#ff8a1a}.flyto.fx-block{color:#3aa4ff}.flyto.fx-heal{color:#38e87a}.flyto.fx-gold{color:#ffc21a}
+@keyframes flyUp{0%{transform:translate(-50%,120px) scale(.8);opacity:0}100%{transform:translate(-50%,0);opacity:1}}.flyto{transform:translate(-50%,0);background:#000c}

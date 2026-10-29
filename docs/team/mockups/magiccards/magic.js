@@ -51,7 +51,7 @@ const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_
   el.innerHTML = s !== 6 ? `<path d="${SHAPE[s] || SHAPE[8]}" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="${TY[s] || 16.2}" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="${s === 4 || s === 10 ? 9.5 : 11}" fill="${p}">${v || s}</text>`
     : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v || 6].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`; return el; };
 // t411: seeded mock roll for the cast frame
-const CAST = q.has('cast'); const roll = (n, s) => { let r = 7; return Array.from({ length: n }, () => { r = (r * 9301 + 49297) % 233280; return 1 + Math.floor((r / 233280) * s); }); };
+const CAST = q.has('cast'); const ROLLING = q.has('roll'); /* t429: ?roll=1 = mid-tumble frame, ?cast=1 = settled result */ const roll = (n, s) => { let r = 7; return Array.from({ length: n }, () => { r = (r * 9301 + 49297) % 233280; return 1 + Math.floor((r / 233280) * s); }); };
 const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s, 0, true)); // t412: every die on the template (orange, white pips/numbers)
 const mg = (n) => h('span', { class: 'pc' }, HK.icon('magic'), String(n));
 const eq = () => h('span', { class: 'to' }, '=');
@@ -68,8 +68,8 @@ const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = ai
 function rows(k, l) {
   const f = k.dice?.to;
   if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to; const R = roll(S.n, k.dice.s); const tot = R.reduce((a, b) => a + b, 0);
-    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : space(k.dice.s, i >= S.aff)))),
-      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), (CAST && S.n && k.splash === 'half' ? h('span', { class: 'prop' }, `+ ${Math.floor(tot / 2)} arcs to every other monster`) : ''), h('span', { class: 'prop' }, aimP(k) ? 'PROPOSED path: II d8 · III 6 dice' : k.note ? `${k.note} · PROPOSED max ${MAXD}` : `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
+    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : ROLLING ? 1 + ((i * 5 + 3) % k.dice.s) : 0, true); if (ROLLING) { d.classList.add('rolling'); d.style.setProperty('--i', i); } else if (CAST) d.classList.add('landed'); else if (i === S.n - 1) d.classList.add('drop'); return d; })() : space(k.dice.s, false)))),
+      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ROLLING ? h('span', { class: `total fx-${f} rl` }, 'rolling…') : ''), (CAST && S.n && k.splash === 'half' ? h('span', { class: 'prop' }, `+ ${Math.floor(tot / 2)} arcs to every other monster`) : ''), h('span', { class: 'prop' }, aimP(k) ? 'PROPOSED path: II d8 · III 6 dice' : k.note ? `${k.note} · PROPOSED max ${MAXD}` : `PROPOSED max ${MAXD} dice` + '')]; }
   if (aimP(k)) return [ln(mg(1), eq(), ...dice(1, f, AIM[l].s)), mx(`UP TO ${AIM[l].m}×`, die(f, AIM[l].s, 0, true))];
   if (k.kind === 'super') return [ln(mg(k.cost), eq(), fxv(Object.keys(k.fx)[0], E.scaleNum(Object.values(k.fx)[0], l))), mx(`+${E.scaleNum(k.aoe, l)} TO EVERY MONSTER · ROUND ${k.minRound}+`)];
   if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l);
@@ -139,11 +139,12 @@ const go = (d) => { const u = new URL(location.href); u.searchParams.set('d', d)
 const pcol = (k) => k ? (k.dice?.to || (k.per && typeof k.per === 'object' ? Object.keys(k.per)[0] : typeof k.per === 'number' ? 'atk' : null) || (k.fx ? Object.keys(k.fx)[0] : null) || 'magic') : 'magic';
 const useBtns = () => { const u = UTIL[sel]; const k = card(sel); const pc = 'pc-' + pcol(k);
   if (k?.kind === 'scale') { const S = scaleState(k); const can = S.n < S.aff && S.x + (S.n ? S.st : k.cost) <= BANK;
-    const sub = h('button', { class: 'use sm sub', 'aria-label': 'remove die', disabled: !S.n || CAST, onclick: () => go(S.n - 1) }, '−'), add = h('button', { class: 'use sm add', 'aria-label': 'add die', disabled: !can || CAST, onclick: () => go(S.n + 1) }, '+');
-    return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: `use cast ${pc}`, disabled: !S.n }, CAST ? 'Rolled' : 'Cast', CAST ? '' : HK.icon('magic'), CAST ? '' : String(S.x))]; }
+    const busy = CAST || ROLLING; /* t429: +/- show the magic each die costs; main button is Roll */
+    const sub = h('button', { class: 'use sm sub pmc', 'aria-label': `remove die, refund ${S.st} magic`, disabled: !S.n || busy, onclick: () => go(S.n - 1) }, '−', HK.icon('magic'), String(S.n === 1 ? k.cost : S.st)), add = h('button', { class: 'use sm add pmc', 'aria-label': `add die for ${S.st} magic`, disabled: !can || busy, onclick: () => go(S.n + 1) }, '+', HK.icon('magic'), String(S.n ? S.st : k.cost));
+    return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: `use cast ${pc}`, disabled: !S.n || busy }, CAST ? 'Rolled' : ROLLING ? 'Rolling…' : 'Roll')]; }
   if (k?.kind === 'charge') return [h('div', { class: 'pmrow' }, h('button', { class: 'use sm add', 'aria-label': 'add magic' }, '+')), h('button', { class: `use cast ${pc}` }, `Release ${charges}`)];
   if (u && !u.cost) return [h('button', { class: 'use heal' }, u.use || 'Use')];
-  return [h('button', { class: `use cast ${pc}` }, k?.kind === 'flat' ? 'Use' : 'Cast', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
+  return [h('button', { class: `use cast ${pc}` }, k?.kind === 'flat' ? 'Use' : k?.kind === 'dice' ? (CAST ? 'Rolled' : 'Roll') : 'Cast', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
 const slots = [...mine.map((k) => [k.id, k.name, k.cost]), ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', D.HEAL_COST], ['u:heart', 'Heart change', D.NUDGE_COST]];
 const app = document.getElementById('app'); app.classList.add(`v-${variant}`);
 const stage = h('div', { class: 'stage' }, powerCard());
@@ -158,5 +159,8 @@ requestAnimationFrame(() => requestAnimationFrame(() => {
   else if (variant === 'float') c.append(h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()));
   else { const rail = h('div', { class: 'rail' }); stage.append(rail); const btns = useBtns(); const H = 40, gap = 6; const mid = ar.top - cr.top + ar.height / 2; const tot = btns.length * H + (btns.length - 1) * gap;
     btns.forEach((b, i) => { b.style.top = `${mid - tot / 2 + i * (H + gap)}px`; rail.append(b); }); }
+  /* t429: result frame: the total flies up to the matching stat */
+  const kk = card(sel); const tt = c.querySelector('.total:not(.rl)'); if (CAST && tt && kk?.dice) { const f = kk.dice.to; const n = (tt.textContent.match(/\d+/) || [0])[0]; const STAT = { atk: 'Attack', pierce: 'Pierce attack', block: 'Block', heal: 'Health', gold: 'Gold', magic: 'Magic' };
+    const fl = h('div', { class: `flyto fx-${f}` }, HK.icon(ICON[f]), h('b', {}, `+${n}`), ` → ${STAT[f]}`); const cb = app.querySelector('.ctl')?.getBoundingClientRect(); fl.style.top = `${(cb ? cb.bottom : 300) + 4}px`; document.body.append(fl); }
   document.body.dataset.ready = '1';
 }));
