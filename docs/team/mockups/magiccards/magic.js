@@ -26,18 +26,18 @@ const PROP = cls === 'ranger' ? [
   { id: 'vein', slot: 'C', name: 'Gold Vein', kind: 'flat', cost: 1, fx: { block: 2, gold: 2 }, note: 'BLOCK + GOLD EVERY ROUND', prop: true },
 ] : [];
 // t422 PROPOSED tweaks shown in the mockup only (live data untouched): Rally block 3->2, Judgment area 12->10, Arc Bolt arcs (½ splash) + max 6 dice, Storm Coil per 5->4
-const TWEAK = { dwarf: { grudge: { kind: 'trick', cost: 2, fx: { atk: 1 }, lv: ['HITS TAKEN', 'HITS TAKEN +3', 'HITS TAKEN +6'], note: 'ATTACK = DAMAGE YOU TOOK LAST ROUND', prop: true }, avalanche: { aoe: 8 } }, knight: { rally: { per: { atk: 3, block: 2 } }, judgment: { aoe: 10 } }, wizard: { arcbolt: { splash: 'half', maxDice: 6, note: '½ ARCS TO EVERY OTHER MONSTER' }, coil: { per: { atk: 4 } } } };
+const TWEAK = { bard: { mending: { kind: 'scale', cost: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, note: 'HEALS EVERY HERO IN THE PARTY', prop: true }, ballad: { per: { atk: 3, heal: 2 } }, finale: { aoe: 6 } }, dwarf: { grudge: { kind: 'trick', cost: 2, fx: { atk: 1 }, lv: ['HITS TAKEN', 'HITS TAKEN +3', 'HITS TAKEN +6'], note: 'ATTACK = DAMAGE YOU TOOK LAST ROUND', prop: true }, avalanche: { aoe: 8 } }, knight: { rally: { per: { atk: 3, block: 2 } }, judgment: { aoe: 10 } }, wizard: { arcbolt: { splash: 'half', maxDice: 6, note: '½ ARCS TO EVERY OTHER MONSTER' }, coil: { per: { atk: 4 } } } };
 if (TWEAK[cls]) C.cards = C.cards.map((k) => (TWEAK[cls][k.id] ? { ...k, ...TWEAK[cls][k.id] } : k));
 if (PROP.length) C.cards = [...C.cards, ...PROP.filter((k) => k.prop)];
 // t413 PROPOSED Aimed Shot path: I = up to 4d6, II = dice become d8 (up to 4d8), III = up to 6d8. 1 magic per die throughout.
 const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const CLV = [{ n: 2, s: 6 }, { n: 3, s: 6 }, { n: 3, s: 8 }]; const clvP = (k) => cls === 'knight' && k?.id === 'cleave'; // t414 PROPOSED Cleave path: 2d6 / 3d6 / 3d8
 const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
 // t421 PROPOSED starter order: each hero's 3 most fun cards start; the rest are unlocks
-const ORDER = { ranger: [['aimed', 'mark', 'volley'], ['quickdraw', 'herbs', 'rain']], knight: [['cleave', 'riposte', 'rally'], ['shieldwall', 'spoils', 'judgment']], wizard: [['arcbolt', 'polymorph', 'coil'], ['meteor', 'light', 'bolt']], dwarf: [['anvil', 'grudge', 'stonehide'], ['avalanche', 'bulwark', 'vein']] };
+const ORDER = { ranger: [['aimed', 'mark', 'volley'], ['quickdraw', 'herbs', 'rain']], knight: [['cleave', 'riposte', 'rally'], ['shieldwall', 'spoils', 'judgment']], wizard: [['arcbolt', 'polymorph', 'coil'], ['meteor', 'light', 'bolt']], dwarf: [['anvil', 'grudge', 'stonehide'], ['avalanche', 'bulwark', 'vein']], bard: [['mending', 'luckyverse', 'ballad'], ['finale', 'discord', 'goldhymn']] };
 const byId = (id) => (C.cards || []).find((k) => k.id === id);
 const isProp = ORDER[cls] ? ORDER[cls][1].includes(q.get('p')) : PROP.some((k) => k.id === q.get('p'));
 const mine = ORDER[cls] ? ORDER[cls][isProp ? 1 : 0].map(byId) : isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
-const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || ['ranger', 'knight', 'wizard', 'dwarf'].includes(cls) ? 'top' : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
+const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || ['ranger', 'knight', 'wizard', 'dwarf', 'bard'].includes(cls) ? 'top' : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
@@ -52,10 +52,10 @@ const CAST = q.has('cast'); const roll = (n, s) => { let r = 7; return Array.fro
 const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s, 0, true)); // t412: every die on the template (orange, white pips/numbers)
 const mg = (n) => h('span', { class: 'pc' }, HK.icon('magic'), String(n));
 const eq = () => h('span', { class: 'to' }, '=');
-const ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', free: 'reroll' };
+const ICON = { weaken: 'weaken', atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', free: 'reroll' };
 const fxv = (fx, n) => h('span', { class: `fv fx-${fx}` }, HK.icon(ICON[fx] || 'magic'), h('b', {}, fx === 'free' ? `${n}` : `+${n}`));
 const ln = (...k) => h('span', { class: 'ln' }, ...k); const mx = (...k) => h('span', { class: 'mx' }, ...k);
-const WORD = { pierce: 'pierce attack', atk: 'attack', heal: 'heal', gold: 'gold', block: 'block', magic: 'magic' };
+const WORD = { pierce: 'pierce attack', atk: 'attack', heal: 'heal', gold: 'gold', block: 'block', magic: 'magic', weaken: 'monsters hit softer' };
 // t409: dice bought with magic — the dice added so far (empty slots up to the max) and magic spent vs the bank, driven by ?d=
 const BANK = 6;
 const MAXD = 6; // t410 PROPOSED max dice for every buy-dice power (mockup only)

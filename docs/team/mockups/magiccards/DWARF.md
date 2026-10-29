@@ -39,3 +39,7 @@ The Dwarf is a little lower on paper, but it starts with 40 health (Knight 34, R
 ## Open questions
 - Grudge: should it count all damage taken last round, or only damage that got past your block?
 - Anvil Strike: is a gold spark on 8s fun enough, or should the Dwarf's dice be gold dice outright?
+
+## Decided (Grok, PROPOSED)
+- Grudge counts only the damage that got past your block. Blocking well and then using Grudge pays less, so the two don't stack.
+- Anvil Strike keeps the gold spark on 8s. Blue block dice stay true to the colour code, and the spark is the lucky moment.
