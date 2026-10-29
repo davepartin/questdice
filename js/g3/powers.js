@@ -10,7 +10,8 @@ import * as HK from './hudkit.js';
 import * as D from '../data.js';
 import * as E from '../engine.js';
 import { sfx } from '../audio.js';
-import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
+// die art for the heart stepper: loaded lazily so node tests (no three.js) can still import this file; battle3d.js already has it loaded
+let DICE = null; if (typeof window !== 'undefined') import('../gfx/dice/dice.js').then((m) => { DICE = m; }).catch(() => {});
 
 // ------------------------------------------------------------------------------------------------ glyphs
 // One picture per power (24x24, the HUD's duotone classes: f body, s stroke, h highlight, p solid).
@@ -253,7 +254,7 @@ function utilRow(ctx, u) {
   if (u.id === 'u:heart') {
     get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
     // mq2 (Dave): a stepper — the heart's current face big in the middle, ▼ left and ▲ right (battle3d.js heart actions, reused)
-    const cur = b.board?.C?.v || 0; let src = null; try { const spec = dieSpecs(ctx.hero || b.hero).C; src = spec && cur ? faceImage(spec, cur) : null; } catch { src = null; }
+    const cur = b.board?.C?.v || 0; let src = null; try { const spec = DICE?.dieSpecs(ctx.hero || b.hero).C; src = spec && cur ? DICE.faceImage(spec, cur) : null; } catch { src = null; }
     const btn = (a, i) => h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), u.cost ? mc(u.cost) : null);
     const [dn, up] = u.actions;
     acts = h('span', { class: 'hc-step' }, dn ? btn(dn, 0) : null, h('span', { class: 'hc-mid', 'aria-label': `Heart now ${cur}` }, src ? h('img', { class: 'hc-face now', src, alt: `heart ${cur}` }) : h('b', {}, String(cur || '–'))), up ? btn(up, 1) : null);
