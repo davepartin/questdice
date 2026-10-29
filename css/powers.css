@@ -434,3 +434,24 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pr-pay { grid-area: pay; } .b3-sheet.open:has(.pw-sigil) .pr-get { grid-area: get; justify-content: center; } .b3-sheet.open:has(.pw-sigil) .pr-acts { grid-area: acts; }
 .b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { justify-items: stretch; padding-right: .55rem !important; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { width: 100%; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { min-width: 5.6rem; }
 .b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { grid-template-columns: minmax(0, 1fr); width: 100%; } .b3-sheet.open:has(.pw-sigil) .pr-acts { justify-self: end; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { width: 5.8rem; }
+/* mp8 (Dave: "We don't need the tabs ... 6 rows"): no tile tabs, six compact one-line rows: name + tag | ▲cost | what you get | button */
+.b3-sheet.open:has(.pw-sigil) .pw-sigil { display: flex !important; flex-direction: column; gap: .45rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { gap: .32rem; padding: .4rem !important; margin: 0; border-radius: 10px; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows::before, .b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows::after { display: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { grid-template-columns: minmax(0, 1fr) auto minmax(2.6rem, auto) auto; grid-template-areas: "id pay get acts"; column-gap: .4rem; row-gap: .25rem; padding: .32rem .4rem; min-height: 52px; }
+.b3-sheet.open:has(.pw-sigil) .pr-id { display: grid; gap: .12rem; align-content: center; }
+.b3-sheet.open:has(.pw-sigil) .pr-name { font-size: .92rem; white-space: normal; line-height: 1.02; }
+.b3-sheet.open:has(.pw-sigil) .pr-tag { font-size: .5rem; padding: .02rem .3rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-step { width: 1.35rem; height: 1.35rem; font-size: .85rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-cost { padding: .14rem .32rem; } .b3-sheet.open:has(.pw-sigil) .pr-cost b { font-size: .9rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-cost.free { background: #1f9a55; border-color: #d6ffe6; } .b3-sheet.open:has(.pw-sigil) .pr-cost.free b { font-size: .66rem; letter-spacing: .05em; }
+.b3-sheet.open:has(.pw-sigil) .pr-get .ic { width: 1.15rem; height: 1.15rem; } .b3-sheet.open:has(.pw-sigil) .pr-get b { font-size: .95rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-get .ic-heart { color: #ff6b6b; width: 1.3rem; height: 1.3rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { width: 4.7rem; min-width: 0; min-height: 40px; padding: .2rem .3rem; font-size: .74rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-rel { min-height: 40px; padding: .2rem .4rem; font-size: .68rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-hc { width: 2.55rem; display: inline-flex; align-items: center; justify-content: center; gap: .1rem; padding: .15rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-hc .hc-face { width: 1.3rem; height: 1.3rem; border-radius: 4px; outline: 0; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-hc .hc-arrow { font-size: .7rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-fors { flex-wrap: wrap; justify-content: flex-end; max-width: 9.8rem; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-for { width: auto; min-width: 3.4rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-split { display: block; height: 1px; margin: .1rem .3rem; background: #f2c14e44; }
+.b3-sheet.open:has(.pw-sigil) .pr-note { grid-column: 1 / -1; margin: 0; padding: .15rem .4rem; font-size: .72rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-tag { white-space: normal; line-height: 1.15; } .b3-sheet.open:has(.pw-sigil) .pr-pay { gap: .1rem; }

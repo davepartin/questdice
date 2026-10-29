@@ -3,6 +3,8 @@
 // with toasts cleared: nothing selected, A, C, and a helper. Writes geometry JSON for the pixel check (dev/magicpanel-pixels.py).
 //   CHROME=... node dev/magicpanel.mjs [label=after] [out=/workspace/magic-panel-live] [port=8172]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
+// mp8 (Oct 2026): the Magic panel has no tabs any more (six rows). This tab-layout check is retired; dev/magic-aaa.mjs covers the rows.
+if (!process.env.OLD_TABS) { console.log('magicpanel.mjs: retired in mp8 (no tabs). Run dev/magic-aaa.mjs instead.'); process.exit(0); }
 const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-panel-live'; const port = +(process.argv[4] || 8172); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'; let bad = 0; const geo = {};
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };

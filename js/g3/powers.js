@@ -191,16 +191,15 @@ export function sigil(ctx) {
   const soft = (u) => /full health|no potions/i.test(u.why || '');
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
   const needOf = (u) => (!reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0);
-  const utilRow = utils.map((u, i) => h('button', { type: 'button',
+  const utilTiles = utils.map((u, i) => h('button', { type: 'button',
     class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${(u.why && !soft(u)) || needOf(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}${needOf(u) ? ` Need ${needOf(u)} more magic.` : ''}`,
     onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g'))), costBadge(u),
     h('span', { class: 'pw-name' }, u.name), needOf(u) ? h('span', { class: 'pw-tag low' }, `NEED ${needOf(u)}`) : null));
-  const detail = detailPanel(ctx, sel);
+  const detail = null;
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    tally, h('div', { class: 'pw-wrap' }, h('div', { class: 'pw-stage', role: 'group', 'aria-label': 'Your class powers' }, tri, medal('A'), medal('B'), medal('C'))),
-    h('div', { class: 'pw-helpers', role: 'group', 'aria-label': 'Potion, healing and heart change' }, ...utilRow),
-    detail);
+    tally, powerRows(ctx, sel)); // mp8: no tabs, the six rows (detail/medal/utilRow kept for reference, unused)
+  void detail; void utilTiles; void medal; void tri;
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
 function isReady(p, reset) { const { k, st } = p; return reset ? false : !st.spent && !st.early && p.afford; }
@@ -226,21 +225,50 @@ function powerRow(ctx, p, sel) {
   const castable = reset ? st.spent && canRecharge(k) : true;
   const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, `Recharge · ${ctx.rechargeCost}`) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, `Cast · ${x}`))
     : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? `Store · ${x}` : `Cast · ${x}`);
+  const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
+  if (friends.length) { // mp8: Lucky Verse at a table asks who it is for, right in its row: Me (attack) or a friend (the same number as healing)
+    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, `Me · ${x}`),
+      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Cast ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0]))];
+    return h('div', { class: `pr-row t-${toneOf(k)} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
+      h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
+      pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
+  }
   const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Release ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Release ${stored}`) : null;
   return h('div', { class: `pr-row t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
     h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
     pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go));
 }
+// mp8 (Dave: "We don't need the tabs. What if there are 6 rows!"): Potion, Heal and Heart change as rows too. Their buttons run battle3d.js's own
+// actions (u.actions: doBigHeal, doHeal, doNudge); the row is selected first so its result note (B.pwNote) shows in the row.
+function utilRow(ctx, u) {
+  const { b, reset } = ctx; const need = !reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0;
+  const why = u.why || (need ? `Need ${need}` : '');
+  const soft = /full health|no potions/i.test(u.why || '');
+  const tagTxt = u.tag || (need ? `Need ${need}` : u.id === 'u:bigheal' ? `${E.potionsLeft(b)} left` : u.id === 'u:heal' ? 'Any time' : 'Once a round');
+  const run = (a) => () => { ctx.select(u.id); a.fn(); };
+  const pay = h('span', { class: 'pr-pay' }, u.cost ? h('span', { class: 'pr-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pr-cost free' }, h('b', {}, 'FREE')));
+  let get; let acts;
+  if (u.id === 'u:heart') {
+    get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
+    acts = u.actions.map((a, i) => { const img = (a.content || []).find((n) => n && n.tagName === 'IMG');
+      return h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), img ? img.cloneNode(true) : null); });
+  } else {
+    const n = u.id === 'u:bigheal' ? E.potionHpOf(b.hero) : E.healAmountOf(b.hero);
+    get = h('span', { class: 'pr-get t-heal' }, HK.icon('heal'), h('b', {}, `+${n}`));
+    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, u.id === 'u:bigheal' ? 'Drink' : `Cast · ${u.cost}`));
+  }
+  const note = u.note ? h('div', { class: `pd-result pr-note t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null;
+  return h('div', { class: `pr-row pr-util t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
+    h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, u.name), h('small', { class: `pr-tag ${why ? 'low' : ''}` }, why && soft ? (u.tag || why) : tagTxt)),
+    pay, get, h('span', { class: 'pr-acts' }, acts), note);
+}
 function powerRows(ctx, sel) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
-  const friends = ctx.powers.find((p) => p.k.id === sel && p.k.kind === 'luck') && D.CLASS2.on && D.CLASS2.verse && Array.isArray(ctx.b.fighters) && ctx.b.fighters.length > 1;
-  if (friends) return null; // Lucky Verse at a table still asks who it is for: the old detail
-  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)));
+  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)), h('i', { class: 'pr-split', 'aria-hidden': 'true' }), ctx.utils.map((u) => utilRow(ctx, u)));
 }
 function detailPanel(ctx, sel) {
   const { b, reset } = ctx;
   const p = ctx.powers.find((x) => x.k.id === sel);
-  if (!sel || p) { const r = powerRows(ctx, sel); if (r) return r; }
   if (p) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : 'Once a battle';

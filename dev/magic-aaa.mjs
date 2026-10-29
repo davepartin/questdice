@@ -1,7 +1,7 @@
 // mp3 (Crockpot / Grok Bot, 27 Oct 2026; Dave: magic panel fonts 'thin and too basic', make all six tabs AAA): every tab at 360x740, 390x844, 412x915,
 // screenshot + no text overflow/clipping in the sheet.  node dev/magic-aaa.mjs [label=after] [out=/workspace/magic-aaa]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
-const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-rows'; const port = +(process.argv[4] || 8181); fs.mkdirSync(OUT, { recursive: true });
+const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-6rows'; const port = +(process.argv[4] || 8182); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0; const geo = {};
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
@@ -17,35 +17,43 @@ for (const [w, h] of [[360, 740], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
   await p.evaluate(() => { const { B3, E, S } = window.QD; const B = B3.battleState; B.b.board = E.rollBoard(S.hero, E.makeRng(5)); B.b.phase = 'shape'; B.b.magic = 6; B.b.hp = B.b.maxHp; B.busy = false; B3.renderShape(); });
   await p.locator('.b3-powers').first().click(); await pump(0.4);
   const clear = () => p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove()));
-  const ids = await p.evaluate(() => [...document.querySelectorAll('.b3-sheet.open [data-power]')].map((e) => e.dataset.power));
-  check(`${w}x${h}: six tabs`, ids.length === 6, ids.join());
-  for (const [i, id] of ids.entries()) {
-    await p.locator(`.b3-sheet.open [data-power="${id}"]`).click(); await pump(0.3); await clear();
-    const f = `${OUT}/${label}-${i + 1}-${id.replace(':', '-')}_${w}x${h}.png`; await p.screenshot({ path: f }); console.log('shot', f);
-    const m = await p.evaluate(() => { const sh = document.querySelector('.b3-sheet.open'); const bad = [];
-      for (const e of sh.querySelectorAll('b, small, em, span, p, button, h2, h3')) { if (!e.getClientRects().length || !e.textContent.trim()) continue; const cs = getComputedStyle(e); const q = e.getBoundingClientRect();
-        if (q.right > innerWidth + 1 || q.left < -1) bad.push('off:' + e.className + ':' + e.textContent.trim().slice(0, 20));
-        if (e.scrollWidth > e.clientWidth + 1 && cs.overflow !== 'visible' && e.clientWidth > 0) bad.push('clip:' + e.className + ':' + e.textContent.trim().slice(0, 20)); }
-      for (const e of sh.querySelectorAll('.pw-name, .pw-btn, .hc-word')) { const cs = getComputedStyle(e); const m = document.createElement('span'); m.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font:${cs.font};letter-spacing:${cs.letterSpacing};text-transform:${cs.textTransform}`; document.body.append(m);
-        for (const wd of (e.firstChild?.nodeType === 3 ? e.firstChild.textContent : e.textContent).split(/\s+/).filter(Boolean)) { m.textContent = wd; if (m.getBoundingClientRect().width > e.clientWidth + 0.5 && e.clientWidth) bad.push('word:' + wd); } m.remove(); }
-      { const a = sh.querySelector('.hc-cost'), z = sh.querySelector('.hc-close'), t = sh.querySelector('.hc-top > b'); const ov = (x, y) => { if (!x || !y) return false; const p = x.getBoundingClientRect(), q = y.getBoundingClientRect(); return p.left < q.right - 1 && p.right > q.left + 1 && p.top < q.bottom - 1 && p.bottom > q.top + 1; }; if (ov(a, z) || ov(t, z) || ov(a, t)) bad.push('overlap:heart-top'); }
-      const f = (s) => { const e = sh.querySelector(s); return e ? getComputedStyle(e).fontFamily.split(',')[0] + ' ' + getComputedStyle(e).fontWeight : null; };
-      return { bad: [...new Set(bad)].slice(0, 6), fonts: { head: f('.sh-head > b'), name: f('.pw-name'), title: f('.pw-detail .pd-id b'), kicker: f('.pw-detail .pd-id small'), line: f('.pw-detail .pd-line'), btn: f('.pw-detail .pw-btn'), lock: (() => { const e = document.querySelector('.b3-powers, .b3-lock'); return e ? getComputedStyle(e).fontFamily.split(',')[0] + ' ' + getComputedStyle(e).fontWeight : null; })(), thin: [...sh.querySelectorAll('b, small, em, span, p, button')].filter((e) => e.childNodes[0]?.nodeType === 3 && e.textContent.trim() && e.getClientRects().length && +getComputedStyle(e).fontWeight < 700).map((e) => e.className + ':' + e.textContent.trim().slice(0, 16)).slice(0, 6), cinzel: document.fonts.check('900 20px Cinzel'), grad: [...sh.querySelectorAll('*')].filter((e) => e.textContent.trim() && /text/.test(getComputedStyle(e).webkitBackgroundClip || getComputedStyle(e).backgroundClip)).map((e) => e.className).slice(0, 4) } }; });
-    check(`${w}x${h} ${id}: no text overflow or clipping`, !m.bad.length, JSON.stringify(m));
-    if (process.env.MP4) check(`${w}x${h} ${id}: nothing thin (all text >= 700), Cinzel loaded`, !m.fonts.thin.length && m.fonts.cinzel && !m.fonts.grad.length, JSON.stringify(m.fonts));
-  }
-  await p.locator('.b3-sheet.open [data-power="aimed"]').click(); await pump(0.3);
-  const r0 = await p.evaluate(() => { const rows = [...document.querySelectorAll('.b3-sheet.open .pw-rows .pr-row')]; const vb = innerHeight;
+  await clear(); await p.screenshot({ path: `${OUT}/${label}-rows_${w}x${h}.png` }); console.log('shot', `${OUT}/${label}-rows_${w}x${h}.png`);
+  const fit = await p.evaluate(() => { const sh = document.querySelector('.b3-sheet.open'); const rows = [...sh.querySelectorAll('.pr-row')]; const last = rows[rows.length - 1].getBoundingClientRect();
+    const scrollers = [sh, ...sh.querySelectorAll('*')].filter((e) => e.scrollHeight > e.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(e).overflowY)).map((e) => e.className + ':' + e.scrollHeight + '/' + e.clientHeight);
+    return { n: rows.length, ids: rows.map((r) => r.dataset.row), tabs: sh.querySelectorAll('[data-power]').length, lastBottom: Math.round(last.bottom), vh: innerHeight, sheetBottom: Math.round(sh.getBoundingClientRect().bottom), scrollers }; });
+  console.log('FIT', w, h, JSON.stringify(fit));
+  check(`${w}x${h}: no tabs, six rows`, fit.n === 6 && fit.tabs === 0, JSON.stringify(fit));
+  const m = await p.evaluate(() => { const sh = document.querySelector('.b3-sheet.open'); const bad = [];
+    for (const e of sh.querySelectorAll('b, small, em, span, p, button, h2, h3')) { if (!e.getClientRects().length || !e.textContent.trim()) continue; const cs = getComputedStyle(e); const q = e.getBoundingClientRect();
+      if (q.right > innerWidth + 1 || q.left < -1) bad.push('off:' + e.className + ':' + e.textContent.trim().slice(0, 20));
+      if (e.scrollWidth > e.clientWidth + 1 && cs.overflow !== 'visible' && e.clientWidth > 0) bad.push('clip:' + e.className + ':' + e.textContent.trim().slice(0, 20)); }
+    for (const r of sh.querySelectorAll('.pr-row')) { const kids = [...r.children].filter((k) => !k.classList.contains('pr-note')); const rb = r.getBoundingClientRect();
+      kids.forEach((a, i) => kids.slice(i + 1).forEach((z) => { const p = a.getBoundingClientRect(), q = z.getBoundingClientRect(); if (p.left < q.right - 1 && p.right > q.left + 1 && p.top < q.bottom - 1 && p.bottom > q.top + 1) bad.push('overlap:' + r.dataset.row + ':' + a.className + '/' + z.className); }));
+      for (const k of r.querySelectorAll('*')) { const q = k.getBoundingClientRect(); if (q.width && (q.right > rb.right + 1 || q.left < rb.left - 1)) bad.push('out:' + r.dataset.row + ':' + k.className); } }
+    const thin = [...sh.querySelectorAll('b, small, em, span, p, button')].filter((e) => e.childNodes[0]?.nodeType === 3 && e.textContent.trim() && e.getClientRects().length && +getComputedStyle(e).fontWeight < 700).map((e) => e.className + ':' + e.textContent.trim().slice(0, 16)).slice(0, 6);
+    return { bad: [...new Set(bad)].slice(0, 8), thin }; });
+  check(`${w}x${h}: no overflow, clipping or overlap; nothing thin`, !m.bad.length && !m.thin.length, JSON.stringify(m));
+  const r0 = await p.evaluate(() => { const rows = [...document.querySelectorAll('.b3-sheet.open .pw-rows .pr-row')].slice(0, 3); const vb = innerHeight;
     return { n: rows.length, ids: rows.map((r) => r.dataset.row), btns: rows.map((r) => { const g = r.querySelector('.pr-go'); const q = g.getBoundingClientRect(); return { t: g.textContent, dis: g.disabled, vis: q.bottom <= vb && q.right <= innerWidth }; }), arrows: rows[0]?.querySelectorAll('.pr-get .ic').length, overlap: rows.flatMap((r) => { const kids = [r.querySelector('.pr-name'), r.querySelector('.pr-tag'), r.querySelector('.pr-pay'), r.querySelector('.pr-get'), r.querySelector('.pr-acts')].filter(Boolean); const o = []; for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++) { const a = kids[i].getBoundingClientRect(), z = kids[j].getBoundingClientRect(); if (a.left < z.right - 1 && a.right > z.left + 1 && a.top < z.bottom - 1 && a.bottom > z.top + 1) o.push(r.dataset.row + ':' + kids[i].className + '/' + kids[j].className); } const rb = r.getBoundingClientRect(); for (const k of r.querySelectorAll('*')) { const q = k.getBoundingClientRect(); if (q.width && (q.right > rb.right + 1 || q.left < rb.left - 1)) o.push(r.dataset.row + ':out:' + k.className); } return o; }), old: !!document.querySelector('.b3-sheet.open .pw-detail .pd-buy, .b3-sheet.open .pw-step') }; });
   await p.locator('.b3-sheet.open .pr-row[data-row="aimed"] .pr-step').last().click(); await pump(0.3);
   const r1 = await p.evaluate(() => { const r = document.querySelector('.b3-sheet.open .pr-row[data-row="aimed"]'); const kids = [...r.children]; const ov = kids.some((a, i) => kids.slice(i + 1).some((z) => { const p = a.getBoundingClientRect(), q = z.getBoundingClientRect(); return p.left < q.right - 1 && p.right > q.left + 1 && p.top < q.bottom - 1 && p.bottom > q.top + 1; })); return { ov, cost: r.querySelector('.pr-cost').textContent, arrows: r.querySelectorAll('.pr-get .ic').length, btn: r.querySelector('.pr-go').textContent }; });
   await p.screenshot({ path: `${OUT}/${label}-rows-aimed-plus_${w}x${h}.png` });
-  check(`${w}x${h}: three rows A/B/C at once, each with its own enabled, on-screen Cast button; no old select-then-cast detail`, r0.n === 3 && r0.btns.every((x) => !x.dis && x.vis) && !r0.old && !r0.overlap.length, JSON.stringify(r0));
+  check(`${w}x${h}: A/B/C rows at once, each with its own enabled, on-screen Cast button; no old select-then-cast detail`, r0.n === 3 && r0.btns.every((x) => !x.dis && x.vis) && !r0.old && !r0.overlap.length, JSON.stringify(r0));
   check(`${w}x${h}: Aimed Shot + updates live (2 -> 3 magic, 2 -> 3 arrows, Cast · 3)`, r0.arrows === 2 && !r1.ov && r1.cost === '3' && r1.arrows === 3 && r1.btn === 'Cast · 3', JSON.stringify(r1));
   const m0 = await p.evaluate(() => window.QD.B3.battleState.b.magic);
   await p.locator('.b3-sheet.open .pr-row[data-row="quickdraw"] .pr-go').click(); await pump(0.6);
   const m1 = await p.evaluate(() => ({ magic: window.QD.B3.battleState.b.magic, used: !!window.QD.B3.battleState.b.usedRound?.quickdraw || !!document.querySelector('.dr-inline, .pd-result') || document.querySelector('.pr-row[data-row="quickdraw"] .pr-go')?.disabled }));
   check(`${w}x${h}: Quick Draw's own Cast button casts it (magic ${m0} -> less, power marked used)`, m1.magic < m0 && m1.used, JSON.stringify({ m0, m1 }));
+  await p.waitForSelector('.b3-sheet.open .dr-inline .dr-ok', { timeout: 8000 }).catch(() => {}); await clear(); await p.screenshot({ path: `${OUT}/${label}-rows-cast-result_${w}x${h}.png` });
+  if (await p.locator('.b3-sheet.open .dr-ok').count()) { await p.locator('.b3-sheet.open .dr-ok').first().click(); await pump(0.6); }
+  // helpers from their rows: Heal casts (needs missing health), Heart change down/up buttons present
+  await p.waitForFunction(() => !window.QD.B3.battleState.busy, null, { timeout: 15000 }).catch(() => {}); for (let i = 0; i < 6; i++) { if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; await pump(0.5); }
+  await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.hp = B.b.maxHp - 10; B.b.magic = 6; B.pwNote = null; window.QD.B3.renderShape(); }); await pump(0.3);
+  const hp0 = await p.evaluate(() => window.QD.B3.battleState.b.hp);
+  await p.locator('.b3-sheet.open .pr-row[data-row="u:heal"] .pr-go').click(); await pump(0.5);
+  const hv = await p.evaluate(() => ({ hp: window.QD.B3.battleState.b.hp, note: document.querySelector('.pr-row[data-row="u:heal"] .pr-note')?.textContent || '', tag: document.querySelector('.pr-row[data-row="u:heal"]')?.textContent, dis: document.querySelector('.pr-row[data-row="u:heal"] .pr-go')?.disabled, rows: document.querySelectorAll('.b3-sheet.open .pr-row').length, hc: document.querySelectorAll('.pr-row[data-row="u:heart"] .pr-hc').length }));
+  await clear(); await p.screenshot({ path: `${OUT}/${label}-rows-after-heal_${w}x${h}.png` });
+  check(`${w}x${h}: Heal casts from its row (hp up), result shows in the row, rows stay; Heart row has Down/Up`, hv.hp > hp0 && hv.rows === 6 && hv.hc === 2, JSON.stringify({ hp0, hv }));
   check(`${w}x${h}: no page errors`, !errs.length, errs.join(' | ')); await p.close();
 }
 console.log(bad ? `${bad} FAILED` : 'all passed'); await b.close(); server.kill(); process.exit(bad ? 1 : 0);
