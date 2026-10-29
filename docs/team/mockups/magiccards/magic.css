@@ -134,3 +134,11 @@
 .rail .use{justify-content:center;padding:0 4px}
 .v-margin .card{--w:min(63vw,246px,calc((100svh - 300px) * 720 / 1052))}.rail{min-width:104px}.rail .use{font-size:.8rem}
 .slot0.lock{border:1.5px solid #6b5a7a;background:repeating-linear-gradient(45deg,#3a2f45 0 4px,#2a2233 4px 8px);opacity:.55;position:relative}.slot0.lock::after{content:'🔒';position:absolute;inset:0;display:grid;place-items:center;font-size:.6em}.prop{display:block;font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#b0306a;margin-top:2px}
+
+/* t411 compact controls */
+.rail{min-width:96px;max-width:104px}.v-margin .card{--w:min(68vw,262px,calc((100svh - 300px) * 720 / 1052))}
+.rail .use,.rail .pmrow{height:40px;min-height:40px}.pmrow{position:absolute;left:0;right:0;display:flex;gap:6px}
+.pmrow .use{position:static;flex:1;width:auto;font:900 1.5rem/1 Inter,sans-serif;padding:0}
+.rail .use.cast{font-size:.8rem}
+@keyframes drop{0%{transform:translateY(-140%) scale(1.2);opacity:0}70%{transform:translateY(8%)}100%{transform:none;opacity:1}}.d6.drop{animation:drop .35s ease-out}
+.total{display:block;font:900 1.15rem/1.1 Inter,sans-serif;color:#d86a00;margin-top:2px}.total.fx-atk{color:#c02020}

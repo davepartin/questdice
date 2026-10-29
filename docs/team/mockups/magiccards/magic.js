@@ -14,9 +14,12 @@ const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
 // Dice colour code (Dave, 29 Oct): orange = pierce, purple = magic, green = health, yellow = gold, red = attack, blue = block. d6 = six pips, d8 = numbered.
 const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#2a1200'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#ffd21a', '#8a6a00', '#2a1e00'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'] };
-const die = (fx = 'pierce', s = 6) => { const [f, e, p] = DIE_COL[fx]; const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
-  el.innerHTML = s === 8 ? `<path d="M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="11" fill="${p}">8</text>`
-    : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${[7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => `<circle cx="${x}" cy="${y}" r="1.9"/>`)).join('')}</g>`; return el; };
+const PIPS = { 1: [[12, 12]], 2: [[7.3, 6.8], [16.7, 17.2]], 3: [[7.3, 6.8], [12, 12], [16.7, 17.2]], 4: [[7.3, 6.8], [16.7, 6.8], [7.3, 17.2], [16.7, 17.2]], 5: [[7.3, 6.8], [16.7, 6.8], [12, 12], [7.3, 17.2], [16.7, 17.2]], 6: [7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => [x, y])) };
+const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_COL[fx]; if (tpl) { [f, e] = DIE_COL.pierce; p = '#fff'; } const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
+  el.innerHTML = s !== 6 ? `<path d="M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="11" fill="${p}">${v || s}</text>`
+    : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v || 6].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`; return el; };
+// t411: seeded mock roll for the cast frame
+const CAST = q.has('cast'); const roll = (n, s) => { let r = 7; return Array.from({ length: n }, () => { r = (r * 9301 + 49297) % 233280; return 1 + Math.floor((r / 233280) * s); }); };
 const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s));
 const mg = (n) => h('span', { class: 'pc' }, HK.icon('magic'), String(n));
 const eq = () => h('span', { class: 'to' }, '=');
@@ -32,9 +35,9 @@ const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = l 
 // Printed rows per kind, at engine level l (card Level I/II/III = engine 0/1/2)
 function rows(k, l) {
   const f = k.dice?.to;
-  if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to;
-    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? die(f, k.dice.s) : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
-      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), h('span', { class: 'prop' }, `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
+  if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to; const R = roll(S.n, k.dice.s); const tot = R.reduce((a, b) => a + b, 0);
+    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
+      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), h('span', { class: 'prop' }, `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
   if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l);
     return [ln(mg(k.cost), eq(), ...dice(lo, f, k.dice.s)), mx('UP TO', ...dice(Math.min(hi, 6), f, k.dice.s))]; }
   if (k.kind === 'dice') { const n = k.dice.n + l; return [ln(mg(k.cost), eq(), ...dice(n, f, k.dice.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
@@ -93,10 +96,9 @@ function coverHint(k, l) {
 const go = (d) => { const u = new URL(location.href); u.searchParams.set('d', d); location.href = u; };
 const useBtns = () => { const u = UTIL[sel]; const k = card(sel);
   if (k?.kind === 'scale') { const S = scaleState(k); const can = S.n < S.aff && S.x + (S.n ? S.st : k.cost) <= BANK;
-    return [h('button', { class: 'use add', disabled: !can, onclick: () => go(S.n + 1) }, h('b', { class: 'pm' }, '+'), 'Die', HK.icon('magic'), String(S.n ? S.st : k.cost)),
-      h('button', { class: 'use sub', disabled: !S.n, onclick: () => go(S.n - 1) }, h('b', { class: 'pm' }, '−'), 'Remove'),
-      h('button', { class: 'use cast', disabled: !S.n }, 'Cast', HK.icon('magic'), String(S.x))]; }
-  if (k?.kind === 'charge') return [h('button', { class: 'use add' }, h('b', { class: 'pm' }, '+'), 'Magic', HK.icon('magic'), String(k.cost)), h('button', { class: 'use rel' }, `Release ${charges}`)];
+    const sub = h('button', { class: 'use sm sub', 'aria-label': 'remove die', disabled: !S.n || CAST, onclick: () => go(S.n - 1) }, '−'), add = h('button', { class: 'use sm add', 'aria-label': 'add die', disabled: !can || CAST, onclick: () => go(S.n + 1) }, '+');
+    return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: 'use cast', disabled: !S.n }, CAST ? 'Rolled' : 'Cast', CAST ? '' : HK.icon('magic'), CAST ? '' : String(S.x))]; }
+  if (k?.kind === 'charge') return [h('div', { class: 'pmrow' }, h('button', { class: 'use sm add', 'aria-label': 'add magic' }, '+')), h('button', { class: 'use cast' }, `Release ${charges}`)];
   if (u && !u.cost) return [h('button', { class: 'use heal' }, u.use || 'Use')];
   return [h('button', { class: 'use' }, 'Use', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
 const slots = [...mine.map((k) => [k.id, k.name, k.cost]), ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', D.HEAL_COST], ['u:heart', 'Heart change', D.NUDGE_COST]];
@@ -110,7 +112,7 @@ app.append(
 requestAnimationFrame(() => requestAnimationFrame(() => {
   const c = stage.querySelector('.card'); const act = c.querySelector('.lv.act'); const cr = c.getBoundingClientRect(); const ar = act.getBoundingClientRect();
   if (variant === 'float') c.append(h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()));
-  else { const rail = h('div', { class: 'rail' }); stage.append(rail); const btns = useBtns(); const H = 48, gap = 6; const mid = ar.top - cr.top + ar.height / 2; const tot = btns.length * H + (btns.length - 1) * gap;
+  else { const rail = h('div', { class: 'rail' }); stage.append(rail); const btns = useBtns(); const H = 40, gap = 6; const mid = ar.top - cr.top + ar.height / 2; const tot = btns.length * H + (btns.length - 1) * gap;
     btns.forEach((b, i) => { b.style.top = `${mid - tot / 2 + i * (H + gap)}px`; rail.append(b); }); }
   document.body.dataset.ready = '1';
 }));

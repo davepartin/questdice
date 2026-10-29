@@ -25,7 +25,7 @@ W = max(r.width for r in rows); ov = Image.new('RGB', (W, sum(r.height for r in 
 for r in rows: ov.paste(r, (0, y)); y += r.height
 ov = ov.resize((ov.width // 2, ov.height // 2)); ov.save(D + 'overview-all-heroes.png'); print('ok', ov.size)
 
-st = [Image.open(D + f'aimed-step{d}_390x844.png').convert('RGB').crop((0, 560, 780, 1700)) for d in (0, 3, 6)]
+st = [Image.open(D + f'aimed-step{d}_390x844.png').convert('RGB').crop((0, 560, 780, 1700)) for d in ('0', '3', '3cast')]
 w, h = st[0].size; sh = Image.new('RGB', (w * 3 + 40, h + 90), (10, 12, 22)); dr = ImageDraw.Draw(sh)
-for i, (im, t) in enumerate(zip(st, ['0 dice added', '3 dice added', '6 dice (max)'])): sh.paste(im, (10 + i * (w + 10), 80)); dr.text((20 + i * (w + 10), 20), t.upper(), fill=(242, 193, 78), font=font)
+for i, (im, t) in enumerate(zip(st, ['empty', '3 dice added', 'cast: total'])): sh.paste(im, (10 + i * (w + 10), 80)); dr.text((20 + i * (w + 10), 20), t.upper(), fill=(242, 193, 78), font=font)
 sh.save(D + 'aimedshot-steps.png'); print('steps', sh.size)
