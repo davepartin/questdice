@@ -525,3 +525,15 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 
 /* mq5 (Dave: "Why do the pierce arrows have a vertical line… Remove that white line"): the shared pierce icon draws a thin white highlight stroke (.h) down its shaft; hide it in the Magic panel only */
 .b3-sheet.open:has(.pw-sigil) .ic-pierce .h { display: none; }
+
+/* mq6 (Dave: Aimed Shot 1 magic per d6, a small d6 per magic → pierce) */
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] { min-height: 58px; }
+.b3-sheet.open:has(.pw-sigil) .pr-dice { display: inline-flex; gap: 2px; align-items: center; }
+.b3-sheet.open:has(.pw-sigil) .pr-d6 { width: 1.05rem; height: 1.05rem; display: block; filter: drop-shadow(0 1px 0 #000); }
+.b3-sheet.open:has(.pw-sigil) .pr-to { font: 800 .8rem Inter, sans-serif; color: #c9b58a; margin: 0 1px; }
+.b3-sheet.open:has(.pw-sigil) .pr-row[data-row="aimed"] .pr-get { display: inline-flex; align-items: center; gap: 2px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] { grid-template-columns: auto minmax(0,1fr) auto; grid-template-areas: "id id acts" "pay get acts"; row-gap: .3rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-pay { grid-area: pay; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-get { grid-area: get; justify-self: start; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-acts { grid-area: acts; align-self: center; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-d6 { width: 1.25rem; height: 1.25rem; }

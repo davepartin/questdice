@@ -214,6 +214,8 @@ function powerRow(ctx, p, sel) {
     : st.spent ? (k.atwill ? 'Used' : 'Spent') : st.early ? `Round ${k.minRound}+` : b.magic < x ? `Need ${x - b.magic}` : '';
   const tag = why && why !== 'Roll first' ? why : k.kind === 'charge' && stored != null ? `${when} · ${stored}/${k.max}` : when;
   const icons = (() => {
+    if (k.kind === 'scale') { const n = E.powerDice(k, x, level); const f = k.dice.to; // mq6 (Dave): one small d6 per magic, then where the total goes
+      return [h('span', { class: 'pr-dice', 'aria-label': `${n}d6` }, Array.from({ length: Math.min(n, 6) }, () => d6())), h('span', { class: 'pr-to', 'aria-hidden': 'true' }, '→'), HK.icon(FX_ICON[f] || 'magic')]; }
     if (k.kind === 'dice' || k.kind === 'scale') { const n = k.kind === 'dice' ? k.dice.n + level : E.powerDice(k, x, level); const f = k.dice.to;
       return n <= 4 ? Array.from({ length: n }, () => HK.icon(FX_ICON[f] || 'magic')) : [HK.icon(FX_ICON[f] || 'magic'), h('b', {}, `×${n}`)]; }
     return buyItems(k, { x, round: b.round, level, stored }).map((it) => [...it.childNodes].slice(0, 2)).flat();
@@ -242,6 +244,10 @@ function powerRow(ctx, p, sel) {
 // mp8 (Dave: "We don't need the tabs. What if there are 6 rows!"): Potion, Heal and Heart change as rows too. Their buttons run battle3d.js's own
 // actions (u.actions: doBigHeal, doHeal, doNudge); the row is selected first so its result note (B.pwNote) shows in the row.
 // small solid magic triangle + number, sized to the button text (Dave mp9)
+// a small d6 face (five pips) in the game's parchment + ink style
+const D6NS = 'http://www.w3.org/2000/svg';
+const d6 = () => { const s = document.createElementNS(D6NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'pr-d6'); s.setAttribute('aria-hidden', 'true');
+  s.innerHTML = '<rect x="2" y="2" width="20" height="20" rx="4.5" fill="#f3e3c0" stroke="#5a4320" stroke-width="1.5"/><g fill="#1a1208"><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="7.5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="7.5" cy="16.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></g>'; return s; };
 const mc = (n) => h('span', { class: 'pr-mc', 'aria-hidden': 'true' }, HK.icon('magic'), h('b', {}, String(n)));
 function utilRow(ctx, u) {
   const { b, reset } = ctx; const need = !reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0;

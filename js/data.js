@@ -469,7 +469,7 @@ export const CLASSES = {
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 4, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Breathe. Loose. Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 4d6).' },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 1, max: 4, dice: { n: 1, s: 6, to: 'pierce' }, fx: { pierce: 4 }, text: 'Breathe. Loose. 1 magic per d6, up to 4d6. The total adds to your pierce.' },
       { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
       { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
       { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
