@@ -154,3 +154,4 @@
 .ctl .pmrow{position:static;display:flex;gap:8px}.ctl .pmrow .use{width:52px;flex:none;font:900 1.5rem/1 Inter,sans-serif;padding:0}
 .ctl .use.cast,.ctl .use.rel{min-width:120px;font-size:.85rem}
 .v-top .stage{justify-content:center}.v-top .card{--w:min(84vw,330px,calc((100svh - 305px) * 720 / 1052))}
+.total.fx-block{color:#1f6fc0}.total.fx-heal{color:#16904a}.total.fx-gold{color:#a07800}
