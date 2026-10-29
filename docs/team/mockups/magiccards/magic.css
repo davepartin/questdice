@@ -155,3 +155,18 @@
 .ctl .use.cast,.ctl .use.rel{min-width:120px;font-size:.85rem}
 .v-top .stage{justify-content:center}.v-top .card{--w:min(84vw,330px,calc((100svh - 305px) * 720 / 1052))}
 .total.fx-block{color:#1f6fc0}.total.fx-heal{color:#16904a}.total.fx-gold{color:#a07800}
+
+/* t426: Cast matches power colour; text white or black for contrast */
+.use.cast.pc-atk{background:#ff3b3b;border-color:#ff8a8a;color:#fff;box-shadow:0 3px 0 #8a1010}
+.use.cast.pc-magic,.use.cast.pc-weaken{background:#a64dff;border-color:#cf9bff;color:#fff;box-shadow:0 3px 0 #4a1c80}
+.use.cast.pc-pierce{background:#ff8a1a;border-color:#ffb26a;color:#1a0b00;box-shadow:0 3px 0 #8a4200}
+.use.cast.pc-block{background:#3aa4ff;border-color:#8fcbff;color:#061a2e;box-shadow:0 3px 0 #0c4a80}
+.use.cast.pc-heal{background:#38e87a;border-color:#9af5bb;color:#06240f;box-shadow:0 3px 0 #106a34}
+.use.cast.pc-gold{background:#ffd21a;border-color:#ffe680;color:#2a1e00;box-shadow:0 3px 0 #8a6a00}
+.use.cast.pc-free{background:#ff8a1a;border-color:#ffb26a;color:#1a0b00;box-shadow:0 3px 0 #8a4200}
+.use.cast[class*=pc-] .ic *{fill:currentColor!important}
+
+/* t428 dice-shaped spaces + power type tag */
+svg.slot0.ds{border:0;border-radius:0;background:none;transform:none;overflow:visible}svg.slot0.lock{opacity:.6;background:none;border:0}svg.slot0.lock::after{content:none}
+.ptag{position:absolute;top:3.2%;left:15%;z-index:6;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #0008}
+.pt-build{background:#2a6a9a}.pt-dice{background:#a0521a}.pt-one-shot{background:#6a2a9a}

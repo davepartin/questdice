@@ -9,24 +9,24 @@ import { drawSym } from '../../../../js/gfx/dice/faces.js';
 const q = new URLSearchParams(location.search); const cls = q.get('h') || 'ranger'; const C = D.CLASSES[cls];
 // t412 PROPOSED Ranger unlockables (mockup only, not in js/data.js)
 const PROP = cls === 'ranger' ? [
-  { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', cost: 1, fx: { pierce: 2, gold: 3 }, note: 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND', prop: true },
-  { id: 'herbs', slot: 'B', name: 'Forager', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, prop: true },
+  { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', cost: 2, fx: { pierce: 2, gold: 3 }, note: 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND', prop: true },
+  { id: 'herbs', slot: 'B', name: 'Forager', kind: 'trick', cost: 2, fx: { heal: 1 }, lv: ['CLEANSE + 4 HEAL', 'CLEANSE + 6 HEAL', 'CLEANSE + 8 HEAL'], note: 'REMOVES POISON + CURSE', prop: true },
   D.CLASSES.ranger.cards.find((k) => k.id === 'rain'),
 ] : cls === 'knight' ? [
   // t414 PROPOSED Knight unlocks (mockup only)
   D.CLASSES.knight.cards.find((k) => k.id === 'judgment'),
-  { id: 'riposte', slot: 'B', name: 'Riposte', kind: 'flat', cost: 1, fx: { block: 4 }, note: 'BLOCK LEFT OVER HITS BACK AS ATTACK', prop: true },
+  { id: 'riposte', slot: 'B', name: 'Riposte', kind: 'flat', cost: 2, fx: { block: 4 }, note: 'BLOCK LEFT OVER HITS BACK AS ATTACK', prop: true },
   { id: 'spoils', slot: 'C', name: 'Spoils of War', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, gold: 2 }, prop: true },
 ] : cls === 'wizard' ? [
   // t422 PROPOSED Wizard trick (mockup only)
-  { id: 'polymorph', slot: 'B', name: 'Polymorph', kind: 'trick', cost: 2, fx: { weaken: 1 }, lv: ['FROG!', 'FROG + 4 PIERCE', 'FROG · 1 MAGIC'], note: "TARGET CAN'T ATTACK THIS ROUND", prop: true },
+  { id: 'polymorph', slot: 'B', name: 'Polymorph', kind: 'trick', cost: 3, fx: { weaken: 1 }, lv: ['FROG!', 'FROG TAKES +PIERCE', 'FROG · COSTS 2'], note: "TARGET CAN'T ATTACK THIS ROUND", prop: true },
 ] : cls === 'dwarf' ? [
   // t423 PROPOSED Dwarf cards (mockup only)
   { id: 'anvil', slot: 'A', name: 'Anvil Strike', kind: 'scale', cost: 1, max: 6, maxDice: 6, dice: { n: 1, s: 8, to: 'block' }, fx: { block: 4 }, note: 'EVERY 8 ALSO GIVES 3 GOLD', prop: true },
   { id: 'vein', slot: 'C', name: 'Gold Vein', kind: 'flat', cost: 1, fx: { block: 2, gold: 2 }, note: 'BLOCK + GOLD EVERY ROUND', prop: true },
 ] : [];
 // t422 PROPOSED tweaks shown in the mockup only (live data untouched): Rally block 3->2, Judgment area 12->10, Arc Bolt arcs (½ splash) + max 6 dice, Storm Coil per 5->4
-const TWEAK = { bard: { mending: { kind: 'scale', cost: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, note: 'HEALS EVERY HERO IN THE PARTY', prop: true }, ballad: { per: { atk: 3, heal: 2 } }, finale: { aoe: 6 } }, dwarf: { grudge: { kind: 'trick', cost: 2, fx: { atk: 1 }, lv: ['HITS TAKEN', 'HITS TAKEN +3', 'HITS TAKEN +6'], note: 'ATTACK = DAMAGE YOU TOOK LAST ROUND', prop: true }, avalanche: { aoe: 8 } }, knight: { rally: { per: { atk: 3, block: 2 } }, judgment: { aoe: 10 } }, wizard: { arcbolt: { splash: 'half', maxDice: 6, note: '½ ARCS TO EVERY OTHER MONSTER' }, coil: { per: { atk: 4 } } } };
+const TWEAK = { bard: { mending: { kind: 'scale', cost: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, note: 'HEALS EVERY HERO IN THE PARTY', prop: true }, ballad: { per: { atk: 3, heal: 2 } }, finale: { aoe: 6 }, luckyverse: { cost: 2, prop: true } }, dwarf: { grudge: { kind: 'trick', cost: 2, fx: { atk: 1 }, lv: ['HITS TAKEN', 'HITS TAKEN +3', 'HITS TAKEN +6'], note: 'HITS BACK FOR DAMAGE PAST YOUR BLOCK', prop: true }, avalanche: { aoe: 8 } }, knight: { rally: { per: { atk: 3, block: 2 } }, judgment: { aoe: 10 } }, wizard: { arcbolt: { splash: 'half', maxDice: 6, note: '½ ARCS TO EVERY OTHER MONSTER' }, coil: { per: { atk: 4 } } } };
 if (TWEAK[cls]) C.cards = C.cards.map((k) => (TWEAK[cls][k.id] ? { ...k, ...TWEAK[cls][k.id] } : k));
 if (PROP.length) C.cards = [...C.cards, ...PROP.filter((k) => k.prop)];
 // t413 PROPOSED Aimed Shot path: I = up to 4d6, II = dice become d8 (up to 4d8), III = up to 6d8. 1 magic per die throughout.
@@ -44,8 +44,11 @@ const SVG = 'http://www.w3.org/2000/svg';
 // Dice colour code (Dave, 29 Oct): orange = pierce, purple = magic, green = health, yellow = gold, red = attack, blue = block. d6 = six pips, d8 = numbered.
 const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#fff'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#e8b400', '#7a5a00', '#2a1e00'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'] };
 const PIPS = { 1: [[12, 12]], 2: [[7.3, 6.8], [16.7, 17.2]], 3: [[7.3, 6.8], [12, 12], [16.7, 17.2]], 4: [[7.3, 6.8], [16.7, 6.8], [7.3, 17.2], [16.7, 17.2]], 5: [[7.3, 6.8], [16.7, 6.8], [12, 12], [7.3, 17.2], [16.7, 17.2]], 6: [7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => [x, y])) };
+/* t428 PROPOSED dice-shaped spaces: d4 triangle, d6 square, d8 diamond, d10 upside-down kite */
+const SHAPE = { 4: 'M12 2 L22.5 21 L1.5 21 Z', 6: 'M6.5 2 H17.5 A4.5 4.5 0 0 1 22 6.5 V17.5 A4.5 4.5 0 0 1 17.5 22 H6.5 A4.5 4.5 0 0 1 2 17.5 V6.5 A4.5 4.5 0 0 1 6.5 2 Z', 8: 'M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z', 10: 'M12 1.5 L22.5 14.5 L12 22.5 L1.5 14.5 Z' }; const TY = { 4: 18.6, 8: 16.2, 10: 17.6 };
+const space = (s, lock) => { const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `slot0 ds d${s} ${lock ? 'lock' : ''}`); el.innerHTML = lock ? `<path d="${SHAPE[s]}" fill="#2f2639" stroke="#6b5a7a" stroke-width="1.4" stroke-linejoin="round"/><text x="12" y="${s === 4 ? 18 : 15.5}" text-anchor="middle" font-size="${s === 4 ? 7 : 9}">🔒</text>` : `<path d="${SHAPE[s]}" fill="#00000010" stroke="#a9864a" stroke-width="1.4" stroke-dasharray="2.4 1.8" stroke-linejoin="round"/>`; if (lock) el.setAttribute('title', 'not enough magic'); return el; };
 const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_COL[fx]; /* t425: bright green (#38e87a = hud --h-heal) and bright gold dice get near-black pips; others white */ const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
-  el.innerHTML = s !== 6 ? `<path d="M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="11" fill="${p}">${v || s}</text>`
+  el.innerHTML = s !== 6 ? `<path d="${SHAPE[s] || SHAPE[8]}" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="${TY[s] || 16.2}" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="${s === 4 || s === 10 ? 9.5 : 11}" fill="${p}">${v || s}</text>`
     : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v || 6].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`; return el; };
 // t411: seeded mock roll for the cast frame
 const CAST = q.has('cast'); const roll = (n, s) => { let r = 7; return Array.from({ length: n }, () => { r = (r * 9301 + 49297) % 233280; return 1 + Math.floor((r / 233280) * s); }); };
@@ -65,7 +68,7 @@ const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = ai
 function rows(k, l) {
   const f = k.dice?.to;
   if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to; const R = roll(S.n, k.dice.s); const tot = R.reduce((a, b) => a + b, 0);
-    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
+    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : space(k.dice.s, i >= S.aff)))),
       h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), (CAST && S.n && k.splash === 'half' ? h('span', { class: 'prop' }, `+ ${Math.floor(tot / 2)} arcs to every other monster`) : ''), h('span', { class: 'prop' }, aimP(k) ? 'PROPOSED path: II d8 · III 6 dice' : k.note ? `${k.note} · PROPOSED max ${MAXD}` : `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
   if (aimP(k)) return [ln(mg(1), eq(), ...dice(1, f, AIM[l].s)), mx(`UP TO ${AIM[l].m}×`, die(f, AIM[l].s, 0, true))];
   if (k.kind === 'super') return [ln(mg(k.cost), eq(), fxv(Object.keys(k.fx)[0], E.scaleNum(Object.values(k.fx)[0], l))), mx(`+${E.scaleNum(k.aoe, l)} TO EVERY MONSTER · ROUND ${k.minRound}+`)];
@@ -74,12 +77,12 @@ function rows(k, l) {
   if (k.kind === 'dice') { const P = clvP(k) ? CLV[l] : { n: k.dice.n + l, s: k.dice.s }; const n = P.n;
     if (l === 0 && CAST) { const R = roll(n, P.s); const t = R.reduce((a, b) => a + b, 0); return [ln(...R.map((v) => die(f, P.s, v, true))), h('span', { class: `total fx-${f}` }, `= ${t} ${WORD[f]}`), k.splash === 'half' ? h('span', { class: 'prop' }, `+ ${Math.floor(t / 2)} splash on every other monster`) : '']; }
     return [ln(mg(k.cost), eq(), ...dice(n, f, P.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
-  if (k.kind === 'trick') return [ln(mg(l === 2 && k.id === 'polymorph' ? 1 : k.cost), eq(), h('b', { class: 'hc' }, k.lv[l])), mx(k.note)];
+  if (k.kind === 'trick') return [ln(mg(l === 2 && k.id === 'polymorph' ? 2 : k.cost), eq(), h('b', { class: 'hc' }, k.lv[l])), mx(k.note)];
   if (k.kind === 'flat') return [ln(...Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)))), mx(k.note ? k.note : k.fx.free ? 'FREE REROLLS' : Object.keys(k.fx).map((x) => WORD[x]).join(' + ').toUpperCase())];
   if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; const fs = Object.keys(per);
     return [ln(...fs.map((x) => h('span', { class: `dots fx-${x}` }, HK.icon(ICON[x]), [1, 2, 3, 4].map((n) => h('span', { class: `dot ${l === 0 && n > charges ? 'g' : ''}` }, String(E.chargeGain(k, n, l)[x])))))), mx(`${charges} STORED · `, h('span', { class: 'wd' }, fs.map((x) => WORD[x]).join(' + ')), k.splash === 'half' ? ' · ½ SPLASH' : '')]; }
   if (k.kind === 'round') return [ln(h('span', { class: 'dots fx-atk' }, HK.icon('atk'), [1, 2, 3, 4].map((r) => h('span', { class: 'dot' }, String(E.roundGain(k, r, l)))))), mx('ROUND 1 · 2 · 3 · 4 …')];
-  if (k.kind === 'luck') return [ln(h('span', { class: 'lk' }, h('i', {}, '1-2'), fxv('magic', 1 + l)), h('span', { class: 'lk' }, h('i', {}, '3-4'), fxv('atk', E.scaleNum(E.LUCK.mid, l))), h('span', { class: 'lk' }, h('i', {}, '5-6'), fxv('atk', E.scaleNum(E.LUCK.top, l)), fxv('magic', 1))), mx('ROLL', die('magic'), 'EVERY ROUND')];
+  if (k.kind === 'luck') return [ln(h('span', { class: 'lk' }, h('i', {}, '1-2'), fxv('magic', 1 + l)), h('span', { class: 'lk' }, h('i', {}, '3-4'), fxv('atk', E.scaleNum(E.LUCK.mid, l))), h('span', { class: 'lk' }, h('i', {}, '5-6'), fxv('atk', E.scaleNum(E.LUCK.top, l)), fxv('magic', 1))), mx('ROLL', die('magic'), 'ONCE PER ROUND')];
   return [mx('?')];
 }
 const UTIL = {
@@ -87,7 +90,9 @@ const UTIL = {
   'u:heal': { name: 'Heal', cost: D.HEAL_COST, kick: 'any time', row: () => [ln(mg(D.HEAL_COST), eq(), fxv('heal', E.healAmountOf(hero))), mx('ANY TIME')], covers: [null, null] },
   'u:heart': { name: 'Heart Change', cost: D.NUDGE_COST, kick: 'once a round', row: () => [ln(mg(D.NUDGE_COST), eq(), h('b', { class: 'hc' }, '−1'), h('span', { class: 'or' }, 'or'), h('b', { class: 'hc' }, '+1')), mx('TURN YOUR HEART DIE · 1 TO 6')], covers: [null, null] },
 };
-const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: (k) => `${k.cost} magic · once a battle`, flat: (k) => `${k.cost} magic · every round`, charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll', trick: (k) => `${k.cost} magic · once a battle`, super: (k) => `${k.cost} magic · once · round ${k.minRound}+` };
+/* t428 PROPOSED: no once-per-battle limits, cost is the limit. Three types: BUILD / DICE / ONE-SHOT */
+const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: (k) => `${k.cost} magic · roll`, flat: (k) => `${k.cost} magic · once per round`, charge: () => 'store · release · once per round', round: () => 'grows each round', luck: (k) => `${k.cost} magic · once per round`, trick: (k) => `${k.cost} magic · once per round`, super: (k) => `${k.cost} magic · once per round · round ${k.minRound}+` };
+const PTYPE = { scale: 'DICE', dice: 'DICE', charge: 'BUILD', round: 'BUILD', flat: 'ONE-SHOT', trick: 'ONE-SHOT', super: 'ONE-SHOT', luck: 'ONE-SHOT' };
 // Corner stamps: the same embossed metal symbol as the camp cardboard cards (js/g3/cardboard.js emblems(): INSETS, size 34, dark + light offsets,
 // steel gradient, a tint over it), here the magic triangle in all four sockets with a purple tint (cardboard.js uses 0.14; 0.32 so it reads purple).
 function corners() {
@@ -113,7 +118,7 @@ function powerCard() {
       l && (u ? cov : true) ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, u ? cov[0] : `Level ${LV[l]}`, !u ? h('span', { class: 'cdice' }, coverHint(k, l)) : null), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(u ? cov[1] : D.POWER_UPGRADE[l - 1])))) : null,
       l && u && !cov ? h('span', { class: 'nolv' }, 'no upgrades') : null); };
   return h('div', { class: 'card purple' }, h('i', { class: 'under' }), corners(), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
-    h('div', { class: 'field' }, h('div', { class: 'plaque' }, u ? u.name : k.name), k?.prop ? h('div', { class: 'propband' }, 'PROPOSED') : null, h('div', { class: 'paint' }, h('img', { src: `art/${art}.webp`, alt: '' })),
+    h('div', { class: 'field' }, h('div', { class: 'plaque' }, u ? u.name : k.name), k?.prop ? h('div', { class: 'propband' }, 'PROPOSED') : null, k ? h('div', { class: `ptag pt-${PTYPE[k.kind].toLowerCase()}` }, PTYPE[k.kind]) : null, h('div', { class: 'paint' }, h('img', { src: `art/${art}.webp`, alt: '' })),
       h('div', { class: 'art small' }, glyph(k || { id: sel })), h('div', { class: 'kick' }, u ? u.kick : KICK[k.kind](k)), h('div', { class: 'levels' }, [0, 1, 2].map(lv))));
 }
 // what the cover hints at: the headline number of that level
@@ -131,13 +136,14 @@ function coverHint(k, l) {
   return [];
 }
 const go = (d) => { const u = new URL(location.href); u.searchParams.set('d', d); location.href = u; };
-const useBtns = () => { const u = UTIL[sel]; const k = card(sel);
+const pcol = (k) => k ? (k.dice?.to || (k.per && typeof k.per === 'object' ? Object.keys(k.per)[0] : typeof k.per === 'number' ? 'atk' : null) || (k.fx ? Object.keys(k.fx)[0] : null) || 'magic') : 'magic';
+const useBtns = () => { const u = UTIL[sel]; const k = card(sel); const pc = 'pc-' + pcol(k);
   if (k?.kind === 'scale') { const S = scaleState(k); const can = S.n < S.aff && S.x + (S.n ? S.st : k.cost) <= BANK;
     const sub = h('button', { class: 'use sm sub', 'aria-label': 'remove die', disabled: !S.n || CAST, onclick: () => go(S.n - 1) }, '−'), add = h('button', { class: 'use sm add', 'aria-label': 'add die', disabled: !can || CAST, onclick: () => go(S.n + 1) }, '+');
-    return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: 'use cast', disabled: !S.n }, CAST ? 'Rolled' : 'Cast', CAST ? '' : HK.icon('magic'), CAST ? '' : String(S.x))]; }
-  if (k?.kind === 'charge') return [h('div', { class: 'pmrow' }, h('button', { class: 'use sm add', 'aria-label': 'add magic' }, '+')), h('button', { class: 'use cast' }, `Release ${charges}`)];
+    return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: `use cast ${pc}`, disabled: !S.n }, CAST ? 'Rolled' : 'Cast', CAST ? '' : HK.icon('magic'), CAST ? '' : String(S.x))]; }
+  if (k?.kind === 'charge') return [h('div', { class: 'pmrow' }, h('button', { class: 'use sm add', 'aria-label': 'add magic' }, '+')), h('button', { class: `use cast ${pc}` }, `Release ${charges}`)];
   if (u && !u.cost) return [h('button', { class: 'use heal' }, u.use || 'Use')];
-  return [h('button', { class: 'use cast' }, k?.kind === 'flat' ? 'Use' : 'Cast', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
+  return [h('button', { class: `use cast ${pc}` }, k?.kind === 'flat' ? 'Use' : 'Cast', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
 const slots = [...mine.map((k) => [k.id, k.name, k.cost]), ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', D.HEAL_COST], ['u:heart', 'Heart change', D.NUDGE_COST]];
 const app = document.getElementById('app'); app.classList.add(`v-${variant}`);
 const stage = h('div', { class: 'stage' }, powerCard());

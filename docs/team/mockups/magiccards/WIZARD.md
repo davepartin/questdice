@@ -31,3 +31,8 @@ Starters across heroes, roughly: Ranger 4.5 / 3.5 / 7.8, Knight 5.3 / 4.5 / 8.2,
 - Polymorph: should frogs also take extra damage ("squishy"), or is "can't attack" enough?
 - Arc Bolt: OK to add arcs (half splash)? The alternative is going back to 1 magic per die, which you said was too strong.
 - Should the Wizard get the buy-dice area attack (2 magic per die, total hits everyone) instead of Meteor?
+
+## t428 power types (PROPOSED, approved plan)
+No once-per-battle limits: magic doubles as healing, so cost is the limit. Every card shows a type tag. BUILD stores over rounds and releases a sure amount, once per round. DICE pays per die (risk/roll). ONE-SHOT costs more and does something unique, once per round. Dice spaces are shaped by die size: d4 triangle, d6 square, d8 diamond, d10 upside-down kite.
+- Starters: Arc Bolt = DICE, Polymorph = ONE-SHOT, Storm Coil = BUILD.
+- Polymorph: every round for 3 magic (was 2, once a battle). L2: the frog takes extra pierce. L3: cost drops to 2.

@@ -70,3 +70,7 @@ Starters by hero: Ranger ~4.5 / 3.5 / 3.9-7.8 and Knight ~5.3 / 4.5 / ~9. The Kn
 ## t422: balance fixes applied in the mockup (PROPOSED, live data untouched)
 - Rally Cry: block per charge 3 → 2. Four charges now give 20 attack + 16 block, about 8.2 per magic.
 - Judgment: area 12 → 10. +14 on the target + 10 to every monster, about 5.7 per magic at 2 monsters.
+
+## t428 power types (PROPOSED, approved plan)
+No once-per-battle limits: magic doubles as healing, so cost is the limit. Every card shows a type tag. BUILD stores over rounds and releases a sure amount, once per round. DICE pays per die (risk/roll). ONE-SHOT costs more and does something unique, once per round. Dice spaces are shaped by die size: d4 triangle, d6 square, d8 diamond, d10 upside-down kite.
+- Starters: Cleave = DICE, Riposte = ONE-SHOT (cost 1→2), Rally = BUILD.

@@ -43,3 +43,8 @@ The Dwarf is a little lower on paper, but it starts with 40 health (Knight 34, R
 ## Decided (Grok, PROPOSED)
 - Grudge counts only the damage that got past your block. Blocking well and then using Grudge pays less, so the two don't stack.
 - Anvil Strike keeps the gold spark on 8s. Blue block dice stay true to the colour code, and the spark is the lucky moment.
+
+## t428 power types (PROPOSED, approved plan)
+No once-per-battle limits: magic doubles as healing, so cost is the limit. Every card shows a type tag. BUILD stores over rounds and releases a sure amount, once per round. DICE pays per die (risk/roll). ONE-SHOT costs more and does something unique, once per round. Dice spaces are shaped by die size: d4 triangle, d6 square, d8 diamond, d10 upside-down kite.
+- Starters: Anvil Strike = DICE, Grudge = ONE-SHOT, Stonehide = BUILD.
+- Grudge: every round for 2 magic; hits back for the damage that got past your block.

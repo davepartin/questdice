@@ -22,3 +22,7 @@ Cuts: none needed.
 ## Open questions
 1. Should Mending Song heal the whole party, or just one ally?
 2. Should Lucky Verse's 1–2 result give +1 magic or a reroll?
+
+## t428 power types (PROPOSED, approved plan)
+No once-per-battle limits: magic doubles as healing, so cost is the limit. Every card shows a type tag. BUILD stores over rounds and releases a sure amount, once per round. DICE pays per die (risk/roll). ONE-SHOT costs more and does something unique, once per round. Dice spaces are shaped by die size: d4 triangle, d6 square, d8 diamond, d10 upside-down kite.
+- Starters: Mending Song = DICE, Lucky Verse = ONE-SHOT (cost 1→2), Rising Ballad = BUILD.
