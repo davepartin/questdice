@@ -18,6 +18,9 @@ for (const [w, h] of [[360, 740], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
   await p.locator('.b3-powers').first().click(); await pump(0.4);
   const clear = () => p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove()));
   await clear(); await p.screenshot({ path: `${OUT}/${label}-rows_${w}x${h}.png` }); console.log('shot', `${OUT}/${label}-rows_${w}x${h}.png`);
+  if (w === 390) for (const id of ['aimed', 'volley']) { const r = await p.evaluate((id) => { const g = document.querySelector(`.b3-sheet.open .pr-row[data-row="${id}"] .pr-get`).getBoundingClientRect(); return { x: g.x - 6, y: g.y - 6, width: g.width + 12, height: g.height + 12 }; }, id); await p.screenshot({ path: `${OUT}/${label}-pierce-zoom-${id}_390x844.png`, clip: r }); }
+  const hLines = await p.evaluate(() => [...document.querySelectorAll('.b3-sheet.open .pw-rows .ic-pierce .h')].filter((e) => getComputedStyle(e).display !== 'none' && getComputedStyle(e).strokeOpacity !== '0').length);
+  if (label !== 'before') check(`${w}x${h}: pierce arrows in the Magic rows have no white line`, hLines === 0, String(hLines));
   const fit = await p.evaluate(() => { const sh = document.querySelector('.b3-sheet.open'); const rows = [...sh.querySelectorAll('.pr-row')]; const last = rows[rows.length - 1].getBoundingClientRect();
     const scrollers = [sh, ...sh.querySelectorAll('*')].filter((e) => e.scrollHeight > e.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(e).overflowY)).map((e) => e.className + ':' + e.scrollHeight + '/' + e.clientHeight);
     return { n: rows.length, ids: rows.map((r) => r.dataset.row), tabs: sh.querySelectorAll('[data-power]').length, lastBottom: Math.round(last.bottom), vh: innerHeight, sheetBottom: Math.round(sh.getBoundingClientRect().bottom), scrollers }; });

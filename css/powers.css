@@ -522,3 +522,6 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-acts { justify-self: stretch; align-self: stretch; display: flex; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pw-btn.pr-go { width: 100%; min-width: 0; min-height: 48px; height: 100%; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .hc-step { gap: .35rem; }
+
+/* mq5 (Dave: "Why do the pierce arrows have a vertical line… Remove that white line"): the shared pierce icon draws a thin white highlight stroke (.h) down its shaft; hide it in the Magic panel only */
+.b3-sheet.open:has(.pw-sigil) .ic-pierce .h { display: none; }
