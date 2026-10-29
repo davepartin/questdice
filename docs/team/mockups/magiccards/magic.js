@@ -24,7 +24,7 @@ const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const CLV = [{ n: 
 const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
 const isProp = PROP.some((k) => k.id === q.get('p'));
 const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
-const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
+const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? (cls === 'ranger' ? 'top' : 'margin') : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
@@ -130,10 +130,11 @@ app.append(
   h('div', { class: 'top' }, h('h1', {}, `${hero.name} · ${C.name}`), h('button', { class: 'close' }, 'Close')),
   h('div', { class: 'bank' }, h('div', { class: 'h' }, HK.icon('heal'), h('b', {}, '52'), h('small', {}, '/ 60 HEALTH')), h('div', { class: 'm' }, HK.icon('magic'), h('b', {}, '6'), h('small', {}, '/ 16 MAGIC'))),
   h('div', { class: 'grid' }, slots.map(([id, n, c]) => h('div', { class: `slot ${id === sel ? 'on' : ''}` }, glyph(card(id) || { id }), n, c ? h('span', { class: 'cost' }, HK.icon('magic'), String(c)) : h('span', { class: 'cost', style: 'color:#7cf0a6' }, 'FREE')))),
-  stage, h('div', { class: 'tag' }, 'MOCKUP'));
+  variant === 'top' ? h('div', { class: 'ctl' }, useBtns()) : null, stage, h('div', { class: 'tag' }, 'MOCKUP'));
 requestAnimationFrame(() => requestAnimationFrame(() => {
   const c = stage.querySelector('.card'); const act = c.querySelector('.lv.act'); const cr = c.getBoundingClientRect(); const ar = act.getBoundingClientRect();
-  if (variant === 'float') c.append(h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()));
+  if (variant === 'top') { /* t416: controls sit in .ctl above the card */ }
+  else if (variant === 'float') c.append(h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()));
   else { const rail = h('div', { class: 'rail' }); stage.append(rail); const btns = useBtns(); const H = 40, gap = 6; const mid = ar.top - cr.top + ar.height / 2; const tot = btns.length * H + (btns.length - 1) * gap;
     btns.forEach((b, i) => { b.style.top = `${mid - tot / 2 + i * (H + gap)}px`; rail.append(b); }); }
   document.body.dataset.ready = '1';

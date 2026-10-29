@@ -147,3 +147,10 @@
 .rail{flex:0 0 100px;margin-left:2px}
 .propband{position:absolute;top:3%;right:4%;z-index:6;background:#b0306a;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #4a0f2a}
 .propband{right:auto;left:50%;transform:translateX(-50%);top:1.2%}
+
+/* t416: controls above the card, card centred and large */
+.ctl{display:flex;gap:8px;justify-content:center;align-items:center;margin:2px 0 6px}
+.ctl .use,.ctl .pmrow .use{height:40px;min-height:40px;position:static}
+.ctl .pmrow{position:static;display:flex;gap:8px}.ctl .pmrow .use{width:52px;flex:none;font:900 1.5rem/1 Inter,sans-serif;padding:0}
+.ctl .use.cast,.ctl .use.rel{min-width:120px;font-size:.85rem}
+.v-top .stage{justify-content:center}.v-top .card{--w:min(84vw,330px,calc((100svh - 305px) * 720 / 1052))}
