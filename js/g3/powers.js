@@ -255,7 +255,7 @@ function utilRow(ctx, u) {
     get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
     // mq2 (Dave): a stepper — the heart's current face big in the middle, ▼ left and ▲ right (battle3d.js heart actions, reused)
     const cur = b.board?.C?.v || 0; let src = null; try { const spec = DICE?.dieSpecs(ctx.hero || b.hero).C; src = spec && cur ? DICE.faceImage(spec, cur) : null; } catch { src = null; }
-    const btn = (a, i) => h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), u.cost ? mc(u.cost) : null);
+    const btn = (a, i) => h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, (() => { const img = (a.content || []).find((n) => n && n.tagName === 'IMG'); return img ? img.cloneNode(true) : h('span', { class: 'hc-none' }, '–'); })(), u.cost ? mc(u.cost) : null); // mq4: the face it turns to, no arrows (Dave)
     const [dn, up] = u.actions;
     acts = h('span', { class: 'hc-step' }, dn ? btn(dn, 0) : null, h('span', { class: 'hc-mid', 'aria-label': `Heart now ${cur}` }, src ? h('img', { class: 'hc-face now', src, alt: `heart ${cur}` }) : h('b', {}, String(cur || '–'))), up ? btn(up, 1) : null);
   } else {

@@ -509,3 +509,16 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .hc-mid b { font: 900 1.4rem Inter, sans-serif; color: #F2C14E; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pw-btn.pr-hc:disabled { opacity: .45; }
 .b3-sheet.open:has(.pw-sigil) .hc-mid .hc-face { outline: 0 !important; border: 0 !important; box-shadow: none !important; }
+
+/* mq4 (Dave: faces on the heart buttons, no triangle arrows; fill the half cards) */
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pw-btn.pr-hc { width: 3.4rem; height: 54px; gap: 1px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .hc-face { width: 1.85rem; height: 1.85rem; border-radius: 5px; outline: 0; box-shadow: none; display: block; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .pr-mc { font-size: .6rem; opacity: .9; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .pr-mc .ic { width: .75em; height: .75em; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc .hc-none { font: 900 1.1rem Inter, sans-serif; line-height: 1.85rem; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid { width: 3.6rem; height: 3.6rem; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid .hc-face { width: 3.1rem; height: 3.1rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half { grid-template-columns: auto minmax(0,1fr); grid-template-areas: "id acts" "get acts" "note note"; column-gap: .5rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-acts { justify-self: stretch; align-self: stretch; display: flex; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pw-btn.pr-go { width: 100%; min-width: 0; min-height: 48px; height: 100%; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .hc-step { gap: .35rem; }
