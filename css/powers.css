@@ -455,3 +455,17 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pr-split { display: block; height: 1px; margin: .1rem .3rem; background: #f2c14e44; }
 .b3-sheet.open:has(.pw-sigil) .pr-note { grid-column: 1 / -1; margin: 0; padding: .15rem .4rem; font-size: .72rem; }
 .b3-sheet.open:has(.pw-sigil) .pr-tag { white-space: normal; line-height: 1.15; } .b3-sheet.open:has(.pw-sigil) .pr-pay { gap: .1rem; }
+
+/* mp9 (Dave: "Put the cost on the button… use a smaller triangle"): cost only on buttons, small solid triangle at text size, no glow */
+.b3-sheet.open:has(.pw-sigil) .pr-pay:empty { display: none; }
+.b3-sheet.open:has(.pw-sigil) .pr-go { display: inline-flex; align-items: center; justify-content: center; gap: .3em; }
+.b3-sheet.open:has(.pw-sigil) .pr-mc { display: inline-flex; align-items: center; gap: .12em; font: inherit; line-height: 1; }
+.b3-sheet.open:has(.pw-sigil) .pr-mc .ic { width: .9em; height: .9em; flex: none; filter: none; box-shadow: none; }
+.b3-sheet.open:has(.pw-sigil) .pr-mc .ic * { fill: #e9dcff; stroke: none; filter: none; }
+.b3-sheet.open:has(.pw-sigil) .pr-mc b { font: inherit; text-shadow: none; }
+.b3-sheet.open:has(.pw-sigil) .pr-go:disabled .pr-mc .ic * { fill: currentColor; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc { flex-direction: column; gap: 1px; width: 2.9rem; padding: 2px 0; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc .hc-top { display: inline-flex; align-items: center; gap: 2px; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc .pr-mc { font-size: .62rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc .hc-face { width: 1.05rem; height: 1.05rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-hc .hc-top { flex-direction: row !important; } .b3-sheet.open:has(.pw-sigil) .pr-hc .hc-arrow { font-size: .6rem; line-height: 1; }

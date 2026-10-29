@@ -219,16 +219,15 @@ function powerRow(ctx, p, sel) {
   const scale = k.kind === 'scale' && !st.spent && !reset;
   const pay = h('span', { class: 'pr-pay' },
     scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '−') : null,
-    h('span', { class: 'pr-cost' }, HK.icon('magic'), h('b', {}, String(x))),
     scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+') : null);
   const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
   const castable = reset ? st.spent && canRecharge(k) : true;
-  const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, `Recharge · ${ctx.rechargeCost}`) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, `Cast · ${x}`))
-    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? `Store · ${x}` : `Cast · ${x}`);
+  const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Cast', mc(x)))
+    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Store', mc(x)] : ['Cast', mc(x)]);
   const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
   if (friends.length) { // mp8: Lucky Verse at a table asks who it is for, right in its row: Me (attack) or a friend (the same number as healing)
-    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, `Me · ${x}`),
-      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Cast ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0]))];
+    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, 'Me', mc(x)),
+      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Cast ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0], mc(x)))];
     return h('div', { class: `pr-row t-${toneOf(k)} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
       h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
       pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
@@ -240,22 +239,24 @@ function powerRow(ctx, p, sel) {
 }
 // mp8 (Dave: "We don't need the tabs. What if there are 6 rows!"): Potion, Heal and Heart change as rows too. Their buttons run battle3d.js's own
 // actions (u.actions: doBigHeal, doHeal, doNudge); the row is selected first so its result note (B.pwNote) shows in the row.
+// small solid magic triangle + number, sized to the button text (Dave mp9)
+const mc = (n) => h('span', { class: 'pr-mc', 'aria-hidden': 'true' }, HK.icon('magic'), h('b', {}, String(n)));
 function utilRow(ctx, u) {
   const { b, reset } = ctx; const need = !reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0;
   const why = u.why || (need ? `Need ${need}` : '');
   const soft = /full health|no potions/i.test(u.why || '');
   const tagTxt = u.tag || (need ? `Need ${need}` : u.id === 'u:bigheal' ? `${E.potionsLeft(b)} left` : u.id === 'u:heal' ? 'Any time' : 'Once a round');
   const run = (a) => () => { ctx.select(u.id); a.fn(); };
-  const pay = h('span', { class: 'pr-pay' }, u.cost ? h('span', { class: 'pr-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pr-cost free' }, h('b', {}, 'FREE')));
+  const pay = null; // mp9: cost lives on the button only
   let get; let acts;
   if (u.id === 'u:heart') {
     get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
     acts = u.actions.map((a, i) => { const img = (a.content || []).find((n) => n && n.tagName === 'IMG');
-      return h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), img ? img.cloneNode(true) : null); });
+      return h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-top' }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), img ? img.cloneNode(true) : null), u.cost ? mc(u.cost) : null); });
   } else {
     const n = u.id === 'u:bigheal' ? E.potionHpOf(b.hero) : E.healAmountOf(b.hero);
     get = h('span', { class: 'pr-get t-heal' }, HK.icon('heal'), h('b', {}, `+${n}`));
-    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, u.id === 'u:bigheal' ? 'Drink' : `Cast · ${u.cost}`));
+    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, ...(u.id === 'u:bigheal' || !u.cost ? ['Drink'] : ['Cast', mc(u.cost)])));
   }
   const note = u.note ? h('div', { class: `pd-result pr-note t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null;
   return h('div', { class: `pr-row pr-util t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
