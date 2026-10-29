@@ -26,14 +26,15 @@ const ln = (...k) => h('span', { class: 'ln' }, ...k); const mx = (...k) => h('s
 const WORD = { pierce: 'pierce attack', atk: 'attack', heal: 'heal', gold: 'gold', block: 'block', magic: 'magic' };
 // t409: dice bought with magic — the dice added so far (empty slots up to the max) and magic spent vs the bank, driven by ?d=
 const BANK = 6;
-const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l), st = E.scaleStep(k);
-  const n = Math.max(0, Math.min(hi, q.has('d') ? +q.get('d') : lo)); const x = n ? k.cost + Math.max(0, n - lo) * st : 0; return { lo, hi, st, n, x }; };
+const MAXD = 6; // t410 PROPOSED max dice for every buy-dice power (mockup only)
+const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = l === 0 ? MAXD : E.powerDice(k, E.scaleMax(k, l), l), st = E.scaleStep(k);
+  const n = Math.max(0, Math.min(hi, q.has('d') ? +q.get('d') : lo)); const x = n ? k.cost + Math.max(0, n - lo) * st : 0; const aff = Math.min(hi, lo + Math.floor((BANK - k.cost) / st)); return { lo, hi, st, n, x, aff }; };
 // Printed rows per kind, at engine level l (card Level I/II/III = engine 0/1/2)
 function rows(k, l) {
   const f = k.dice?.to;
   if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to;
-    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? die(f, k.dice.s) : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''}` })))),
-      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`))]; }
+    return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? die(f, k.dice.s) : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
+      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), h('span', { class: 'prop' }, `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
   if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l);
     return [ln(mg(k.cost), eq(), ...dice(lo, f, k.dice.s)), mx('UP TO', ...dice(Math.min(hi, 6), f, k.dice.s))]; }
   if (k.kind === 'dice') { const n = k.dice.n + l; return [ln(mg(k.cost), eq(), ...dice(n, f, k.dice.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
@@ -91,7 +92,7 @@ function coverHint(k, l) {
 }
 const go = (d) => { const u = new URL(location.href); u.searchParams.set('d', d); location.href = u; };
 const useBtns = () => { const u = UTIL[sel]; const k = card(sel);
-  if (k?.kind === 'scale') { const S = scaleState(k); const can = S.n < S.hi && S.x + (S.n ? S.st : k.cost) <= BANK;
+  if (k?.kind === 'scale') { const S = scaleState(k); const can = S.n < S.aff && S.x + (S.n ? S.st : k.cost) <= BANK;
     return [h('button', { class: 'use add', disabled: !can, onclick: () => go(S.n + 1) }, h('b', { class: 'pm' }, '+'), 'Die', HK.icon('magic'), String(S.n ? S.st : k.cost)),
       h('button', { class: 'use sub', disabled: !S.n, onclick: () => go(S.n - 1) }, h('b', { class: 'pm' }, '−'), 'Remove'),
       h('button', { class: 'use cast', disabled: !S.n }, 'Cast', HK.icon('magic'), String(S.x))]; }

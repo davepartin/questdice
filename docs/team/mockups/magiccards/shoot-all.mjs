@@ -11,7 +11,7 @@ for (const h of heroes) { const ids = D.CLASSES[h].cards.filter((k) => k.start).
     const bad = await pg.evaluate(() => { const c = document.querySelector('.card').getBoundingClientRect(); return [...document.querySelectorAll('.lv .sy *')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && (r.right > c.right - c.width * 0.12 || r.left < c.left); }).length + (document.documentElement.scrollHeight > innerHeight + 1 ? 1000 : 0); });
     list.push({ h, p, f }); console.log(f, errs.join('|') || 'ok', bad ? `BAD ${bad}` : ''); await pg.close(); } }
 // t409: Aimed Shot at 0, 2 and 4 dice added
-for (const d of [0, 2, 4]) { const pg = await br.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+for (const d of [0, 3, 6]) { const pg = await br.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   await pg.goto(`http://localhost:8190/docs/team/mockups/magiccards/magic.html?h=ranger&p=aimed&d=${d}`); await pg.waitForSelector('body[data-ready]'); await pg.waitForTimeout(400);
   await pg.screenshot({ path: `${OUT}aimed-step${d}_390x844.png` }); console.log('step', d); await pg.close(); }
 await br.close(); fs.writeFileSync(`${OUT}list.json`, JSON.stringify(list));

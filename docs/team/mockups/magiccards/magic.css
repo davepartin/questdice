@@ -133,3 +133,4 @@
 .use.cast .ic *{fill:#4a1c80!important}
 .rail .use{justify-content:center;padding:0 4px}
 .v-margin .card{--w:min(63vw,246px,calc((100svh - 300px) * 720 / 1052))}.rail{min-width:104px}.rail .use{font-size:.8rem}
+.slot0.lock{border:1.5px solid #6b5a7a;background:repeating-linear-gradient(45deg,#3a2f45 0 4px,#2a2233 4px 8px);opacity:.55;position:relative}.slot0.lock::after{content:'🔒';position:absolute;inset:0;display:grid;place-items:center;font-size:.6em}.prop{display:block;font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#b0306a;margin-top:2px}
