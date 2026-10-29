@@ -9,7 +9,7 @@ Dice are the colour of what they add to the hero: orange pierce, green health, y
 | Start A | Aimed Shot | burst | Buy d6 pierce attack dice, 1 magic each. | 1 per die | up to 4d6 / up to 4d8 / up to 6d8 (**PROPOSED path**) |
 | Start B | Quick Draw | control | Every round, reroll some of your dice for free. | 1 a round | 2 / 3 / 4 rerolls |
 | Start C | Volley | build-up | Store 1 magic a round (up to 4), then release it all as pierce attack. | 1 per charge | totals for 1-4 charges: 3/8/15/24 · 5/12/21/32 · 7/16/27/40 |
-| Unlock A | Hunter's Mark (**PROPOSED**) | risk / economy | +2 pierce attack now; +3 gold if your target falls this round. | 1 a round | +2 & 3 gold / +3 & 4 gold / +4 & 6 gold |
+| Unlock A | Hunter's Mark (**PROPOSED**) | risk / economy | +2 pierce attack now; +3 gold if your target falls this round. | 1 a round | +2 & 3 gold / +3 & 4 gold / +4 & 5 gold |
 | Unlock B | Forager (**PROPOSED**) | sustain | Once a battle: heal by 2d6. | 2 | 2d6 / 3d6 / 4d6 heal |
 | Unlock C | Rain of Arrows (live) | area finisher | Round 3 or later: +6 pierce attack on your target and 9 to every monster. | 5 | +6 & 9 all / +8 & 11 / +9 & 14 |
 
