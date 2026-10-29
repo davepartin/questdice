@@ -142,3 +142,8 @@
 .rail .use.cast{font-size:.8rem}
 @keyframes drop{0%{transform:translateY(-140%) scale(1.2);opacity:0}70%{transform:translateY(8%)}100%{transform:none;opacity:1}}.d6.drop{animation:drop .35s ease-out}
 .total{display:block;font:900 1.15rem/1.1 Inter,sans-serif;color:#d86a00;margin-top:2px}.total.fx-atk{color:#c02020}
+
+/* t412 */
+.rail{flex:0 0 100px;margin-left:2px}
+.propband{position:absolute;top:3%;right:4%;z-index:6;background:#b0306a;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #4a0f2a}
+.propband{right:auto;left:50%;transform:translateX(-50%);top:1.2%}

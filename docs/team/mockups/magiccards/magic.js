@@ -7,8 +7,16 @@ import * as D from '../../../../js/data.js';
 import { glyph } from '../../../../js/g3/powers.js';
 import { drawSym } from '../../../../js/gfx/dice/faces.js';
 const q = new URLSearchParams(location.search); const cls = q.get('h') || 'ranger'; const C = D.CLASSES[cls];
-const mine = (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
-const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
+// t412 PROPOSED Ranger unlockables (mockup only, not in js/data.js)
+const PROP = cls === 'ranger' ? [
+  { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2, gold: 1 }, prop: true },
+  { id: 'herbs', slot: 'B', name: 'Forager', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, prop: true },
+  { id: 'twin', slot: 'C', name: 'Twin Arrows', kind: 'scale', cost: 2, step: 2, max: 6, dice: { n: 1, s: 8, to: 'pierce' }, prop: true },
+] : [];
+if (PROP.length) C.cards = [...C.cards, ...PROP];
+const isProp = PROP.some((k) => k.id === q.get('p'));
+const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
+const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
@@ -20,7 +28,7 @@ const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_
     : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v || 6].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`; return el; };
 // t411: seeded mock roll for the cast frame
 const CAST = q.has('cast'); const roll = (n, s) => { let r = 7; return Array.from({ length: n }, () => { r = (r * 9301 + 49297) % 233280; return 1 + Math.floor((r / 233280) * s); }); };
-const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s));
+const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s, 0, true)); // t412: every die on the template (orange, white pips/numbers)
 const mg = (n) => h('span', { class: 'pc' }, HK.icon('magic'), String(n));
 const eq = () => h('span', { class: 'to' }, '=');
 const ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', free: 'reroll' };
@@ -53,7 +61,7 @@ const UTIL = {
   'u:heal': { name: 'Heal', cost: D.HEAL_COST, kick: 'any time', row: () => [ln(mg(D.HEAL_COST), eq(), fxv('heal', E.healAmountOf(hero))), mx('ANY TIME')], covers: [null, null] },
   'u:heart': { name: 'Heart Change', cost: D.NUDGE_COST, kick: 'once a round', row: () => [ln(mg(D.NUDGE_COST), eq(), h('b', { class: 'hc' }, '−1'), h('span', { class: 'or' }, 'or'), h('b', { class: 'hc' }, '+1')), mx('TURN YOUR HEART DIE · 1 TO 6')], covers: [null, null] },
 };
-const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: () => 'once a battle', flat: () => 'every round', charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll' };
+const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: (k) => `${k.cost} magic · once a battle`, flat: (k) => `${k.cost} magic · every round`, charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll' };
 // Corner stamps: the same embossed metal symbol as the camp cardboard cards (js/g3/cardboard.js emblems(): INSETS, size 34, dark + light offsets,
 // steel gradient, a tint over it), here the magic triangle in all four sockets with a purple tint (cardboard.js uses 0.14; 0.32 so it reads purple).
 function corners() {
@@ -79,7 +87,7 @@ function powerCard() {
       l && (u ? cov : true) ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, u ? cov[0] : `Level ${LV[l]}`, !u ? h('span', { class: 'cdice' }, coverHint(k, l)) : null), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(u ? cov[1] : D.POWER_UPGRADE[l - 1])))) : null,
       l && u && !cov ? h('span', { class: 'nolv' }, 'no upgrades') : null); };
   return h('div', { class: 'card purple' }, h('i', { class: 'under' }), corners(), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
-    h('div', { class: 'field' }, h('div', { class: 'plaque' }, u ? u.name : k.name), h('div', { class: 'paint' }, h('img', { src: `art/${art}.webp`, alt: '' })),
+    h('div', { class: 'field' }, h('div', { class: 'plaque' }, u ? u.name : k.name), k?.prop ? h('div', { class: 'propband' }, 'PROPOSED') : null, h('div', { class: 'paint' }, h('img', { src: `art/${art}.webp`, alt: '' })),
       h('div', { class: 'art small' }, glyph(k || { id: sel })), h('div', { class: 'kick' }, u ? u.kick : KICK[k.kind](k)), h('div', { class: 'levels' }, [0, 1, 2].map(lv))));
 }
 // what the cover hints at: the headline number of that level
@@ -100,14 +108,14 @@ const useBtns = () => { const u = UTIL[sel]; const k = card(sel);
     return [h('div', { class: 'pmrow' }, sub, add), h('button', { class: 'use cast', disabled: !S.n }, CAST ? 'Rolled' : 'Cast', CAST ? '' : HK.icon('magic'), CAST ? '' : String(S.x))]; }
   if (k?.kind === 'charge') return [h('div', { class: 'pmrow' }, h('button', { class: 'use sm add', 'aria-label': 'add magic' }, '+')), h('button', { class: 'use cast' }, `Release ${charges}`)];
   if (u && !u.cost) return [h('button', { class: 'use heal' }, u.use || 'Use')];
-  return [h('button', { class: 'use' }, 'Use', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
+  return [h('button', { class: 'use cast' }, k?.kind === 'flat' ? 'Use' : 'Cast', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
 const slots = [...mine.map((k) => [k.id, k.name, k.cost]), ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', D.HEAL_COST], ['u:heart', 'Heart change', D.NUDGE_COST]];
 const app = document.getElementById('app'); app.classList.add(`v-${variant}`);
 const stage = h('div', { class: 'stage' }, powerCard());
 app.append(
   h('div', { class: 'top' }, h('h1', {}, `${hero.name} · ${C.name}`), h('button', { class: 'close' }, 'Close')),
   h('div', { class: 'bank' }, h('div', { class: 'h' }, HK.icon('heal'), h('b', {}, '52'), h('small', {}, '/ 60 HEALTH')), h('div', { class: 'm' }, HK.icon('magic'), h('b', {}, '6'), h('small', {}, '/ 16 MAGIC'))),
-  h('div', { class: 'grid' }, slots.map(([id, n, c]) => h('div', { class: `slot ${id === sel ? 'on' : ''}` }, glyph({ id }), n, c ? h('span', { class: 'cost' }, HK.icon('magic'), String(c)) : h('span', { class: 'cost', style: 'color:#7cf0a6' }, 'FREE')))),
+  h('div', { class: 'grid' }, slots.map(([id, n, c]) => h('div', { class: `slot ${id === sel ? 'on' : ''}` }, glyph(card(id) || { id }), n, c ? h('span', { class: 'cost' }, HK.icon('magic'), String(c)) : h('span', { class: 'cost', style: 'color:#7cf0a6' }, 'FREE')))),
   stage, h('div', { class: 'tag' }, 'MOCKUP'));
 requestAnimationFrame(() => requestAnimationFrame(() => {
   const c = stage.querySelector('.card'); const act = c.querySelector('.lv.act'); const cr = c.getBoundingClientRect(); const ar = act.getBoundingClientRect();
