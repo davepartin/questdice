@@ -66,3 +66,7 @@ Assumptions: 2 monsters; 1 attack = 1, 1 pierce ≈ 1.3, 1 block ≈ 0.8, 1 gold
 | Spoils of War | ~6.2 at 4 charges (20 attack + 16 gold) | fine |
 | *Area buy-dice option (PROPOSED, not approved)* | 2 magic per d6, up to 6 dice, the total hits every monster: ~3.5 at 2 monsters, ~5.3 at 3 | a fair alternative to the fixed area moves |
 Starters by hero: Ranger ~4.5 / 3.5 / 3.9-7.8 and Knight ~5.3 / 4.5 / ~9. The Knight runs hot mainly because of Rally Cry. Fix that and the two heroes are close.
+
+## t422: balance fixes applied in the mockup (PROPOSED, live data untouched)
+- Rally Cry: block per charge 3 → 2. Four charges now give 20 attack + 16 block, about 8.2 per magic.
+- Judgment: area 12 → 10. +14 on the target + 10 to every monster, about 5.7 per magic at 2 monsters.
