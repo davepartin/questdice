@@ -94,3 +94,9 @@
 .card.purple .lv .rn{background:#3a1a6a;color:#F2C14E}
 .card .plaque{z-index:2}.card .art{z-index:2}
 .card .stamps{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}.card .tri{display:none}
+/* rev 4: orange six-pip pierce dice, no arrow */
+.lv .d6{width:6.4cqi;height:6.4cqi}.lv .mx .d6{width:4.4cqi;height:4.4cqi}
+.cov .lvw{display:flex;align-items:center;gap:2cqi}
+.cov .cdice{display:inline-flex;align-items:center;gap:.8cqi;font:900 3.6cqi/1 Inter,sans-serif;color:#4a3216}
+.cov .cdice .d6{width:4.6cqi;height:4.6cqi}.cov .cdice .ic{width:3.6cqi;height:3.6cqi}.cov .cdice .pc{color:#5a2a90}
+.cov .lvw{white-space:nowrap;font-size:3.4cqi;gap:1.6cqi}.cov{padding:0 3cqi}
