@@ -26,8 +26,8 @@ function powerCard() {
   const k = card(sel); const rows = [0, 1, 2].map((l) => h('div', { class: `lv ${l === 0 ? 'act' : ''}`, 'data-l': l },
     h('span', { class: 'rn' }, ['I', 'II', 'III'][l]), h('span', { class: 'sy' }, ROWS[sel](l)),
     l ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, `Level ${['I', 'II', 'III'][l]}`), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(LV_COST[l - 1])))) : null));
-  return h('div', { class: 'card' }, h('i', { class: 'under' }), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
-    h('div', { class: 'field' }, h('div', { class: 'plaque' }, NAMES[sel]), h('div', { class: 'art' }, glyph(k)), h('div', { class: 'kick' }, KICK[sel]), h('div', { class: 'levels' }, rows)));
+  return h('div', { class: 'card purple' }, h('i', { class: 'under' }), ...[[8.75, 5.8], [90.97, 5.8], [8.47, 93.3], [91.39, 93.35]].map(([x, y]) => h('i', { class: 'tri', style: `left:${x}%;top:${y}%` })), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
+    h('div', { class: 'field' }, h('div', { class: 'plaque' }, NAMES[sel]), (sel === 'aimed' ? h('div', { class: 'paint' }, h('img', { src: 'art/aimed-shot.webp', alt: '' })) : null), h('div', { class: `art ${sel === 'aimed' ? 'small' : ''}` }, glyph(k)), h('div', { class: 'kick' }, KICK[sel]), h('div', { class: 'levels' }, rows)));
 }
 const useBtns = () => sel === 'volley' ? [h('button', { class: 'use rel' }, `Release ${charges}`), h('button', { class: 'use' }, 'Store', HK.icon('magic'), '1')]
   : [h('button', { class: 'use' }, 'Use', HK.icon('magic'), sel === 'aimed' ? '1' : '1')];
