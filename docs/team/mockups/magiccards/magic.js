@@ -1,30 +1,48 @@
-// Magic cards mockup (Crockpot / Grok Bot, 29 Oct 2026). MOCKUP ONLY. Numbers come from the live engine/data at each level.
+// Magic cards mockup (Crockpot / Grok Bot, 29 Oct 2026). MOCKUP ONLY. Every number comes from the live js/data.js + js/engine.js at each level.
+// URL: magic.html?h=knight|ranger|wizard|dwarf|bard &p=<power id or u:bigheal|u:heal|u:heart> &v=float|margin &c=<stored charges shown>
 import { h } from '../../../../js/dom.js';
 import * as HK from '../../../../js/g3/hudkit.js';
 import * as E from '../../../../js/engine.js';
 import * as D from '../../../../js/data.js';
 import { glyph } from '../../../../js/g3/powers.js';
 import { drawSym } from '../../../../js/gfx/dice/faces.js';
-const q = new URLSearchParams(location.search); const sel = q.get('p') || 'aimed'; const variant = q.get('v') || 'float'; const charges = +(q.get('c') || 2);
-const cards = D.CLASSES.ranger.cards || D.CLASSES.ranger.powers || [];
-const card = (id) => (Array.isArray(cards) ? cards : Object.values(cards)).find((c) => c.id === id);
+const q = new URLSearchParams(location.search); const cls = q.get('h') || 'ranger'; const C = D.CLASSES[cls];
+const mine = (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
+const sel = q.get('p') || mine[0].id; const variant = q.get('v') || ((C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind === 'charge' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
+const card = (id) => (C.cards || []).find((c) => c.id === id);
+const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
-// Magic dice colour code (Dave, 29 Oct): orange = pierce, purple = magic, green = health, yellow = gold. A d6 shows its largest face, six pips.
-const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#2a1200'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#ffd21a', '#8a6a00', '#2a1e00'] };
-const d6 = (fx = 'pierce') => { const [f, e, p] = DIE_COL[fx]; const s = document.createElementNS(SVG, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', `d6 d6-${fx}`); s.setAttribute('aria-label', `d6 for ${fx}`);
-  s.innerHTML = `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${[7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => `<circle cx="${x}" cy="${y}" r="1.9"/>`)).join('')}</g>`; return s; };
+// Dice colour code (Dave, 29 Oct): orange = pierce, purple = magic, green = health, yellow = gold, red = attack, blue = block. d6 = six pips, d8 = numbered.
+const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#2a1200'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#ffd21a', '#8a6a00', '#2a1e00'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'] };
+const die = (fx = 'pierce', s = 6) => { const [f, e, p] = DIE_COL[fx]; const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
+  el.innerHTML = s === 8 ? `<path d="M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="11" fill="${p}">8</text>`
+    : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${[7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => `<circle cx="${x}" cy="${y}" r="1.9"/>`)).join('')}</g>`; return el; };
+const dice = (n, fx, s) => Array.from({ length: n }, () => die(fx, s));
 const mg = (n) => h('span', { class: 'pc' }, HK.icon('magic'), String(n));
-const to = () => h('span', { class: 'to' }, '→');
-const LV_COST = D.POWER_UPGRADE; // gold for level 2 and 3 on the card (engine levels 1, 2)
-// each power's printed rows, per engine level 0/1/2 (card Levels I/II/III)
-const ROWS = {
-  aimed: (l) => { const k = card('aimed'); const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, k.max, l);
-    return [h('span', { class: 'ln' }, mg(1), h('span', { class: 'to' }, '='), ...Array.from({ length: lo }, () => d6('pierce'))), h('span', { class: 'mx' }, 'UP TO', ...Array.from({ length: hi }, () => d6('pierce')))]; },
-  quickdraw: (l) => [h('span', { class: 'ln' }, HK.icon('reroll'), h('span', { class: 'big' }, `${2 + l}`)), h('span', { class: 'mx' }, 'FREE REROLLS')],
-  volley: (l) => { const k = card('volley'); return [h('span', { class: 'dots' }, [1, 2, 3, 4].map((n) => h('span', { class: `dot ${l === 0 && n > charges ? 'g' : ''}` }, String(E.chargeGain(k, n, l).pierce)))), HK.icon('pierce')]; },
+const eq = () => h('span', { class: 'to' }, '=');
+const ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', free: 'reroll' };
+const fxv = (fx, n) => h('span', { class: `fv fx-${fx}` }, HK.icon(ICON[fx] || 'magic'), h('b', {}, fx === 'free' ? `${n}` : `+${n}`));
+const ln = (...k) => h('span', { class: 'ln' }, ...k); const mx = (...k) => h('span', { class: 'mx' }, ...k);
+const lvlRule = { notes: [] };
+// Printed rows per kind, at engine level l (card Level I/II/III = engine 0/1/2)
+function rows(k, l) {
+  const f = k.dice?.to;
+  if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l), st = E.scaleStep(k);
+    return [ln(mg(k.cost), eq(), ...dice(lo, f, k.dice.s)), mx('UP TO', ...dice(Math.min(hi, 6), f, k.dice.s))]; }
+  if (k.kind === 'dice') { const n = k.dice.n + l; return [ln(mg(k.cost), eq(), ...dice(n, f, k.dice.s)), k.splash === 'half' ? mx('+ ½ SPLASH') : mx(f === 'heal' ? 'HEAL THE TOTAL' : 'ROLL · ADD THE TOTAL')]; }
+  if (k.kind === 'flat') return [ln(...Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)))), mx(k.fx.free ? 'FREE REROLLS' : 'EVERY ROUND')];
+  if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; const fs = Object.keys(per);
+    return [ln(...fs.map((x) => h('span', { class: `dots fx-${x}` }, HK.icon(ICON[x]), [1, 2, 3, 4].map((n) => h('span', { class: `dot ${l === 0 && n > charges ? 'g' : ''}` }, String(E.chargeGain(k, n, l)[x])))))), mx(k.splash === 'half' ? 'RELEASE ALL · + ½ SPLASH' : 'RELEASE ALL')]; }
+  if (k.kind === 'round') return [ln(h('span', { class: 'dots fx-atk' }, HK.icon('atk'), [1, 2, 3, 4].map((r) => h('span', { class: 'dot' }, String(E.roundGain(k, r, l)))))), mx('ROUND 1 · 2 · 3 · 4 …')];
+  if (k.kind === 'luck') return [ln(h('span', { class: 'lk' }, h('i', {}, '1-2'), fxv('magic', 1 + l)), h('span', { class: 'lk' }, h('i', {}, '3-4'), fxv('atk', E.scaleNum(E.LUCK.mid, l))), h('span', { class: 'lk' }, h('i', {}, '5-6'), fxv('atk', E.scaleNum(E.LUCK.top, l)), fxv('magic', 1))), mx('ROLL', die('magic'), 'EVERY ROUND')];
+  return [mx('?')];
+}
+const UTIL = {
+  'u:bigheal': { name: 'Potion', cost: 0, kick: 'free · any time', row: () => [ln(fxv('heal', E.potionHpOf(hero))), mx(`${E.potionsLeft?.(hero) ?? 2} ON YOUR BELT`)], covers: [['Belt of 3', D.POTION_BELT?.[2]?.[0]], null], use: 'Drink' },
+  'u:heal': { name: 'Heal', cost: D.HEAL_COST, kick: 'any time', row: () => [ln(mg(D.HEAL_COST), eq(), fxv('heal', E.healAmountOf(hero))), mx('ANY TIME')], covers: [null, null] },
+  'u:heart': { name: 'Heart Change', cost: D.NUDGE_COST, kick: 'once a round', row: () => [ln(mg(D.NUDGE_COST), eq(), h('b', { class: 'hc' }, '−1'), h('span', { class: 'or' }, 'or'), h('b', { class: 'hc' }, '+1')), mx('TURN YOUR HEART DIE · 1 TO 6')], covers: [null, null] },
 };
-const NAMES = { aimed: 'Aimed Shot', quickdraw: 'Quick Draw', volley: 'Volley' };
-const KICK = { aimed: '1 magic per die', quickdraw: 'every round', volley: 'store · release' };
+const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: () => 'once a battle', flat: () => 'every round', charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll' };
 // Corner stamps: the same embossed metal symbol as the camp cardboard cards (js/g3/cardboard.js emblems(): INSETS, size 34, dark + light offsets,
 // steel gradient, a tint over it), here the magic triangle in all four sockets with a purple tint (cardboard.js uses 0.14; 0.32 so it reads purple).
 function corners() {
@@ -41,27 +59,45 @@ function corners() {
     g.drawImage(q, ox - n / 2, oy - n / 2); g.restore(); });
   return c;
 }
+
+const LV = ['I', 'II', 'III'];
 function powerCard() {
-  const k = card(sel); const rows = [0, 1, 2].map((l) => h('div', { class: `lv ${l === 0 ? 'act' : ''}`, 'data-l': l },
-    h('span', { class: 'rn' }, ['I', 'II', 'III'][l]), h('span', { class: 'sy' }, ROWS[sel](l)),
-    l ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, `Level ${['I', 'II', 'III'][l]}`, sel === 'aimed' ? h('span', { class: 'cdice' }, h('span', { class: 'pc' }, HK.icon('magic'), '1'), h('span', { class: 'eq' }, '='), ...Array.from({ length: E.powerDice(card('aimed'), 1, l) }, () => d6('pierce'))) : null), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(LV_COST[l - 1])))) : null));
+  const u = UTIL[sel]; const k = card(sel); const art = sel.startsWith('u:') ? sel.slice(2) : sel;
+  const lv = (l) => { const cov = u ? u.covers[l - 1] : true; const body = l === 0 ? (u ? u.row() : rows(k, l)) : (u ? [] : rows(k, l));
+    return h('div', { class: `lv ${l === 0 ? 'act' : ''} ${u && l ? 'none' : ''}` }, h('span', { class: 'rn' }, LV[l]), h('span', { class: 'sy' }, body),
+      l && (u ? cov : true) ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, u ? cov[0] : `Level ${LV[l]}`, !u ? h('span', { class: 'cdice' }, coverHint(k, l)) : null), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(u ? cov[1] : D.POWER_UPGRADE[l - 1])))) : null,
+      l && u && !cov ? h('span', { class: 'nolv' }, 'no upgrades') : null); };
   return h('div', { class: 'card purple' }, h('i', { class: 'under' }), corners(), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
-    h('div', { class: 'field' }, h('div', { class: 'plaque' }, NAMES[sel]), (sel === 'aimed' ? h('div', { class: 'paint' }, h('img', { src: 'art/aimed-shot.webp', alt: '' })) : null), h('div', { class: `art ${sel === 'aimed' ? 'small' : ''}` }, glyph(k)), h('div', { class: 'kick' }, KICK[sel]), h('div', { class: 'levels' }, rows)));
+    h('div', { class: 'field' }, h('div', { class: 'plaque' }, u ? u.name : k.name), h('div', { class: 'paint' }, h('img', { src: `art/${art}.webp`, alt: '' })),
+      h('div', { class: 'art small' }, glyph(k || { id: sel })), h('div', { class: 'kick' }, u ? u.kick : KICK[k.kind](k)), h('div', { class: 'levels' }, [0, 1, 2].map(lv))));
 }
-const useBtns = () => sel === 'volley' ? [h('button', { class: 'use rel' }, `Release ${charges}`), h('button', { class: 'use' }, 'Store', HK.icon('magic'), '1')]
-  : [h('button', { class: 'use' }, 'Use', HK.icon('magic'), sel === 'aimed' ? '1' : '1')];
-const hero = { name: 'Dave', cls: 'ranger' };
-const slots = [['aimed', 'Aimed Shot', 1], ['quickdraw', 'Quick Draw', 1], ['volley', 'Volley', 1], ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', 2], ['u:heart', 'Heart change', 3]];
+// what the cover hints at: the headline number of that level
+function coverHint(k, l) {
+  const f = k.dice?.to;
+  if (k.kind === 'scale') return [mg(k.cost), h('span', { class: 'eq' }, '='), ...dice(E.powerDice(k, k.cost, l), f, k.dice.s)];
+  if (k.kind === 'dice') return dice(k.dice.n + l, f, k.dice.s);
+  if (k.kind === 'flat') return Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)));
+  if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; return Object.keys(per).map((x) => fxv(x, E.chargeGain(k, 4, l)[x])); }
+  if (k.kind === 'round') return [fxv('atk', E.roundGain(k, 4, l)), h('span', { class: 'eq' }, 'ROUND 4')];
+  if (k.kind === 'luck') return [fxv('atk', E.scaleNum(E.LUCK.top, l))];
+  return [];
+}
+const useBtns = () => { const u = UTIL[sel]; const k = card(sel);
+  if (k?.kind === 'charge') return [h('button', { class: 'use rel' }, `Release ${charges}`), h('button', { class: 'use' }, 'Store', HK.icon('magic'), String(k.cost))];
+  if (u && !u.cost) return [h('button', { class: 'use heal' }, u.use || 'Use')];
+  return [h('button', { class: 'use' }, 'Use', HK.icon('magic'), String(u ? u.cost : k.cost))]; };
+const slots = [...mine.map((k) => [k.id, k.name, k.cost]), ['u:bigheal', 'Potion', 0], ['u:heal', 'Heal', D.HEAL_COST], ['u:heart', 'Heart change', D.NUDGE_COST]];
 const app = document.getElementById('app'); app.classList.add(`v-${variant}`);
 const stage = h('div', { class: 'stage' }, powerCard());
 app.append(
-  h('div', { class: 'top' }, h('h1', {}, `${hero.name} · Ranger`), h('button', { class: 'close' }, 'Close')),
+  h('div', { class: 'top' }, h('h1', {}, `${hero.name} · ${C.name}`), h('button', { class: 'close' }, 'Close')),
   h('div', { class: 'bank' }, h('div', { class: 'h' }, HK.icon('heal'), h('b', {}, '52'), h('small', {}, '/ 60 HEALTH')), h('div', { class: 'm' }, HK.icon('magic'), h('b', {}, '6'), h('small', {}, '/ 16 MAGIC'))),
   h('div', { class: 'grid' }, slots.map(([id, n, c]) => h('div', { class: `slot ${id === sel ? 'on' : ''}` }, glyph({ id }), n, c ? h('span', { class: 'cost' }, HK.icon('magic'), String(c)) : h('span', { class: 'cost', style: 'color:#7cf0a6' }, 'FREE')))),
   stage, h('div', { class: 'tag' }, 'MOCKUP'));
 requestAnimationFrame(() => requestAnimationFrame(() => {
   const c = stage.querySelector('.card'); const act = c.querySelector('.lv.act'); const cr = c.getBoundingClientRect(); const ar = act.getBoundingClientRect();
-  if (variant === 'float') { const wrap = h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()); c.append(wrap); }
+  if (variant === 'float') c.append(h('div', { class: 'float', style: `top:${ar.top - cr.top + ar.height / 2}px;display:flex;flex-direction:column;gap:6px` }, useBtns()));
   else { const rail = h('div', { class: 'rail' }); stage.append(rail); const btns = useBtns(); const H = 44, gap = 6; const mid = ar.top - cr.top + ar.height / 2; const tot = btns.length * H + (btns.length - 1) * gap;
     btns.forEach((b, i) => { b.style.top = `${mid - tot / 2 + i * (H + gap)}px`; rail.append(b); }); }
+  document.body.dataset.ready = '1';
 }));

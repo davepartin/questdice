@@ -100,3 +100,20 @@
 .cov .cdice{display:inline-flex;align-items:center;gap:.8cqi;font:900 3.6cqi/1 Inter,sans-serif;color:#4a3216}
 .cov .cdice .d6{width:4.6cqi;height:4.6cqi}.cov .cdice .ic{width:3.6cqi;height:3.6cqi}.cov .cdice .pc{color:#5a2a90}
 .cov .lvw{white-space:nowrap;font-size:3.4cqi;gap:1.6cqi}.cov{padding:0 3cqi}
+/* rev 5: every hero */
+.fv{display:inline-flex;align-items:center;gap:.6cqi;font:900 5.2cqi/1 Inter,sans-serif}.fv .ic{width:5.6cqi;height:5.6cqi}
+.fx-atk{color:#d42020}.fx-block{color:#1a74c8}.fx-pierce{color:#e06a00}.fx-heal{color:#14a04a}.fx-magic{color:#7a3dc0}.fx-gold{color:#b08a00}.fx-free{color:#b06a00}
+.fv.fx-atk .ic *{fill:#ff3b3b}.fv.fx-block .ic *{fill:#3aa4ff}.fv.fx-heal .ic *{fill:#38e87a}.fv.fx-magic .ic *{fill:#a64dff}.fv.fx-pierce .ic *{fill:#ff8a1a}
+.dots{display:inline-flex;align-items:center;gap:.9cqi}.dots>.ic{width:5cqi;height:5cqi}
+.dots.fx-atk .dot{background:#ff3b3b;color:#fff;box-shadow:inset 0 0 0 .4cqi #8a1010}.dots.fx-block .dot{background:#3aa4ff;color:#fff;box-shadow:inset 0 0 0 .4cqi #0c4a80}.dots.fx-heal .dot{background:#38e87a;color:#06240f;box-shadow:inset 0 0 0 .4cqi #106a34}
+.dots .dot.g{background:#e6d3a8!important;color:#8a6a3a!important;box-shadow:inset 0 0 0 .4cqi #b89a68!important}
+.lv .ln:has(.dots + .dots){flex-direction:column;align-items:flex-start;gap:1cqi}
+.lv .lk{display:inline-flex;align-items:center;gap:.6cqi}.lv .lk i{font:800 2.8cqi/1 Inter,sans-serif;font-style:normal;color:#6a4a22;padding:.4cqi .8cqi;border-radius:1cqi;background:#e6d3a8}
+.lv .lk .fv{font-size:4cqi}.lv .lk .fv .ic{width:4.2cqi;height:4.2cqi}
+.lv .hc{font:900 5.4cqi/1 Inter,sans-serif;color:#2a1a0a;padding:.4cqi 1.4cqi;border-radius:1.2cqi;background:#e6d3a8}.lv .or{font:800 3cqi Inter,sans-serif;color:#6a4a22}
+.lv.none{opacity:.55}.nolv{font:800 3cqi Cinzel,serif;color:#6a4a22;letter-spacing:.08em}
+.cov .cdice .fv{font-size:3.6cqi}.cov .cdice .fv .ic{width:3.8cqi;height:3.8cqi}
+.use.heal{background:#2a9a54;border-color:#7cf0a6;box-shadow:0 3px 0 #0e4a26}
+.lv .sy:has(.dots + .dots), .lv .sy:has(.lk){flex-direction:column;align-items:flex-start}
+.lv .ln:has(.lk){flex-wrap:wrap;gap:.8cqi 1.6cqi}
+.lv .sy:has(.dots){flex-direction:column!important;align-items:flex-start!important;flex-wrap:nowrap}
