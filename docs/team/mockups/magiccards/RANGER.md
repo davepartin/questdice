@@ -33,3 +33,14 @@ Dice are the colour of what they add to the hero: orange pierce, green health, y
 ## Open questions for Dave
 - Keep Snare and Vanish as alternate unlocks, or retire them?
 - Is +3 gold the right size for a Hunter's Mark kill?
+
+## t421: starter order (PROPOSED). The 3 most fun cards start.
+| | Power | Why |
+|---|---|---|
+| **Start** | Aimed Shot | The signature tactile toy: drop dice into spaces, then roll. Teaches magic-for-dice on turn 1. |
+| **Start** | Hunter's Mark | Press-your-luck from day one: mark the wounded monster and push for the kill and the gold. |
+| **Start** | Volley | Teaches saving: watch the charge pips fill, then a big release. |
+| Unlock | Quick Draw | Rerolls are strong but subtle; better once players know their dice. |
+| Unlock | Forager | Healing is useful, but it's a safety pick rather than the thrill. |
+| Unlock | Rain of Arrows | The aspirational round-3 screen-clearer; worth earning. |
+Balance and the area-dice option are in KNIGHT.md ("Cross-hero balance").

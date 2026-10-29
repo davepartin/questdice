@@ -38,3 +38,31 @@ Dice are the colour of what they add, with white pips and numbers.
 - Riposte: should leftover block hit back at full value, or half (like splash)?
 - Spoils: is up to 16 gold per battle at Level I too generous?
 - Should Judgment stay the Knight's area move, or should it splash (half) to match Cleave, and give the area moves to other heroes?
+
+## t421: starter order (PROPOSED). The 3 most fun cards start.
+| | Power | Why |
+|---|---|---|
+| **Start** | Cleave | Dice and splash: one swing hits the whole room, the Knight's identity. |
+| **Start** | Riposte | A reading-the-monster trick: over-block the Slam and the leftover hits back. Also covers Shield Up's protection job. |
+| **Start** | Rally Cry | Store-and-release, with attack and block together for the front line. |
+| Unlock | Shield Up | Plain +block. Riposte already does it, plus the twist. |
+| Unlock | Spoils of War | A gold plan for players who already know the loop. |
+| Unlock | Judgment | The aspirational round-3 room-clearer. |
+
+## Cross-hero balance (rough value per magic at Level I, PROPOSED)
+Assumptions: 2 monsters; 1 attack = 1, 1 pierce ≈ 1.3, 1 block ≈ 0.8, 1 gold ≈ 0.3, 1 heal ≈ 1.
+| Card | Rough value per magic | Note |
+|---|---|---|
+| Aimed Shot | ~4.5 (3.5 pierce) | baseline |
+| Hunter's Mark | ~3.5 (2.6 + gold only if the target falls) | fine; the gamble is the fun |
+| Volley | 3.9 at 1 charge → 7.8 at 4 (24 pierce / 4) | patience pays |
+| Cleave | ~5.3 (7 attack + 3.5 splash per other monster, / 2) | grows with crowd size |
+| Riposte | ~3.2 block + counter ≈ 4-5 | fine |
+| **Rally Cry** | **~9 at 4 charges (20 attack + 20 block / 4)** | **⚠ high: two effects at full value. Suggest per {atk:3, block:2} or a lower step.** |
+| Quick Draw | ~2-3 (2 rerolls) | fine as an unlock |
+| Forager | ~3.5 (7 heal / 2) | fine |
+| Rain of Arrows | ~4.8 (6 pierce + 9 × 2 / 5) | |
+| **Judgment** | **~6.3 (14 + 12 × 2 / 6)** | **⚠ about 30% above Rain. Suggest aoe 10 or Rain aoe 11.** |
+| Spoils of War | ~6.2 at 4 charges (20 attack + 16 gold) | fine |
+| *Area buy-dice option (PROPOSED, not approved)* | 2 magic per d6, up to 6 dice, the total hits every monster: ~3.5 at 2 monsters, ~5.3 at 3 | a fair alternative to the fixed area moves |
+Starters by hero: Ranger ~4.5 / 3.5 / 3.9-7.8 and Knight ~5.3 / 4.5 / ~9. The Knight runs hot mainly because of Rally Cry. Fix that and the two heroes are close.

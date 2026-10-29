@@ -22,8 +22,11 @@ if (PROP.length) C.cards = [...C.cards, ...PROP.filter((k) => k.prop)];
 // t413 PROPOSED Aimed Shot path: I = up to 4d6, II = dice become d8 (up to 4d8), III = up to 6d8. 1 magic per die throughout.
 const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const CLV = [{ n: 2, s: 6 }, { n: 3, s: 6 }, { n: 3, s: 8 }]; const clvP = (k) => cls === 'knight' && k?.id === 'cleave'; // t414 PROPOSED Cleave path: 2d6 / 3d6 / 3d8
 const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
-const isProp = PROP.some((k) => k.id === q.get('p'));
-const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
+// t421 PROPOSED starter order: each hero's 3 most fun cards start; the rest are unlocks
+const ORDER = { ranger: [['aimed', 'mark', 'volley'], ['quickdraw', 'herbs', 'rain']], knight: [['cleave', 'riposte', 'rally'], ['shieldwall', 'spoils', 'judgment']] };
+const byId = (id) => (C.cards || []).find((k) => k.id === id);
+const isProp = ORDER[cls] ? ORDER[cls][1].includes(q.get('p')) : PROP.some((k) => k.id === q.get('p'));
+const mine = ORDER[cls] ? ORDER[cls][isProp ? 1 : 0].map(byId) : isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
 const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? 'top' : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
