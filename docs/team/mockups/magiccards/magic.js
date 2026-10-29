@@ -4,6 +4,7 @@ import * as HK from '../../../../js/g3/hudkit.js';
 import * as E from '../../../../js/engine.js';
 import * as D from '../../../../js/data.js';
 import { glyph } from '../../../../js/g3/powers.js';
+import { drawSym } from '../../../../js/gfx/dice/faces.js';
 const q = new URLSearchParams(location.search); const sel = q.get('p') || 'aimed'; const variant = q.get('v') || 'float'; const charges = +(q.get('c') || 2);
 const cards = D.CLASSES.ranger.cards || D.CLASSES.ranger.powers || [];
 const card = (id) => (Array.isArray(cards) ? cards : Object.values(cards)).find((c) => c.id === id);
@@ -22,11 +23,27 @@ const ROWS = {
 };
 const NAMES = { aimed: 'Aimed Shot', quickdraw: 'Quick Draw', volley: 'Volley' };
 const KICK = { aimed: '1 magic per die', quickdraw: 'every round', volley: 'store · release' };
+// Corner stamps: the same embossed metal symbol as the camp cardboard cards (js/g3/cardboard.js emblems(): INSETS, size 34, dark + light offsets,
+// steel gradient, a tint over it), here the magic triangle in all four sockets with a purple tint (cardboard.js uses 0.14; 0.32 so it reads purple).
+function corners() {
+  const W = 720, H = 1052, c = document.createElement('canvas'); c.width = W; c.height = H; c.className = 'stamps'; const g = c.getContext('2d', { willReadFrequently: true });
+  const INSETS = [[63, 60], [655.5, 60], [61.5, 981], [657, 981]]; const size = 34, n = 68, kind = 'magic', tint = '#a64dff';
+  INSETS.forEach(([x, y]) => { const q = document.createElement('canvas'); q.width = q.height = n; const qg = q.getContext('2d', { willReadFrequently: true });
+    qg.fillStyle = '#000'; drawSym(qg, kind, n / 2, n / 2, size, 0, true); const d = qg.getImageData(0, 0, n, n).data;
+    let x0 = n, x1 = -1, y0 = n, y1 = -1; for (let j = 0; j < n * n; j++) if (d[j * 4 + 3] > 0) { const px = j % n, py = (j / n) | 0; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+    const ox = x - (x0 + x1 + 1) / 2 + n / 2, oy = y - (y0 + y1 + 1) / 2 + n / 2;
+    const ink = (fill, dx, dy) => { g.fillStyle = fill; drawSym(g, kind, ox + dx, oy + dy, size, 0, true); };
+    g.save(); ink('#000000b0', 1.2, 1.2); ink('#e8e2d0a0', -1.2, -1.2);
+    qg.clearRect(0, 0, n, n); const m = qg.createLinearGradient(n / 2 - 17, n / 2 - 17, n / 2 + 17, n / 2 + 17); m.addColorStop(0, '#b4ae9c'); m.addColorStop(0.5, '#7c776a'); m.addColorStop(1, '#4c483f');
+    qg.fillStyle = m; drawSym(qg, kind, n / 2, n / 2, size, 0, true); qg.globalCompositeOperation = 'source-atop'; qg.globalAlpha = 0.32; qg.fillStyle = tint; qg.fillRect(0, 0, n, n);
+    g.drawImage(q, ox - n / 2, oy - n / 2); g.restore(); });
+  return c;
+}
 function powerCard() {
   const k = card(sel); const rows = [0, 1, 2].map((l) => h('div', { class: `lv ${l === 0 ? 'act' : ''}`, 'data-l': l },
     h('span', { class: 'rn' }, ['I', 'II', 'III'][l]), h('span', { class: 'sy' }, ROWS[sel](l)),
     l ? h('div', { class: 'cov' }, h('span', { class: 'lvw' }, `Level ${['I', 'II', 'III'][l]}`), h('span', { class: 'cp' }, h('i', { class: 'coin' }), h('b', {}, String(LV_COST[l - 1])))) : null));
-  return h('div', { class: 'card purple' }, h('i', { class: 'under' }), ...[[8.75, 5.8], [90.97, 5.8], [8.47, 93.3], [91.39, 93.35]].map(([x, y]) => h('i', { class: 'tri', style: `left:${x}%;top:${y}%` })), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
+  return h('div', { class: 'card purple' }, h('i', { class: 'under' }), corners(), h('img', { class: 'fr', src: '../../../../assets/cards/frame-t17.webp', alt: '' }),
     h('div', { class: 'field' }, h('div', { class: 'plaque' }, NAMES[sel]), (sel === 'aimed' ? h('div', { class: 'paint' }, h('img', { src: 'art/aimed-shot.webp', alt: '' })) : null), h('div', { class: `art ${sel === 'aimed' ? 'small' : ''}` }, glyph(k)), h('div', { class: 'kick' }, KICK[sel]), h('div', { class: 'levels' }, rows)));
 }
 const useBtns = () => sel === 'volley' ? [h('button', { class: 'use rel' }, `Release ${charges}`), h('button', { class: 'use' }, 'Store', HK.icon('magic'), '1')]
