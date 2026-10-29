@@ -218,6 +218,11 @@ function powerRow(ctx, p, sel) {
       return [h('span', { class: 'pr-dice', 'aria-label': `${n}d6` }, Array.from({ length: Math.min(n, 6) }, () => d6())), h('span', { class: 'pr-to', 'aria-hidden': 'true' }, '→'), HK.icon(FX_ICON[f] || 'magic')]; }
     if (k.kind === 'dice' || k.kind === 'scale') { const n = k.kind === 'dice' ? k.dice.n + level : E.powerDice(k, x, level); const f = k.dice.to;
       return n <= 4 ? Array.from({ length: n }, () => HK.icon(FX_ICON[f] || 'magic')) : [HK.icon(FX_ICON[f] || 'magic'), h('b', {}, `×${n}`)]; }
+    if (k.kind === 'charge' && k.per) { // mq7 (Dave): one dot per charge, each holding what a release at that many charges gives (engine chargeGain); filled = stored
+      const f = Object.keys(typeof k.per === 'number' ? { atk: 1 } : k.per)[0]; const have = stored || 0;
+      return [h('span', { class: `pr-dots t-${f}`, 'aria-label': `${have} of ${k.max} stored, release now for ${have ? E.chargeGain(k, have, level)[f] : 0} ${NAME[f] || f}` },
+        Array.from({ length: k.max }, (_, i) => h('span', { class: `pr-dot ${i < have ? 'on' : ''} ${i === have - 1 ? 'now' : ''}` }, String(E.chargeGain(k, i + 1, level)[f])))), HK.icon(FX_ICON[f] || 'magic')]; }
+    if (k.kind === 'flat' && k.fx && k.fx.free) return [h('span', { class: 'pr-words' }, `${k.fx.free} Free Rerolls`)]; // mq7 (Dave): just say it
     return buyItems(k, { x, round: b.round, level, stored }).map((it) => [...it.childNodes].slice(0, 2)).flat();
   })();
   const scale = k.kind === 'scale' && !st.spent && !reset;
@@ -237,9 +242,9 @@ function powerRow(ctx, p, sel) {
       pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
   }
   const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Release ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Release ${stored}`) : null;
-  return h('div', { class: `pr-row t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
+  return h('div', { class: `pr-row pr-k-${k.kind} t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
     h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
-    pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go));
+    pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go), (() => { const n = ROW_NOTE[k.id]; return n && n.round === b.round ? h('div', { class: `pd-result pr-note pr-cnote t-${n.f}`, role: 'status' }, HK.icon(FX_ICON[n.f] || 'magic'), h('span', {}, n.text)) : null; })());
 }
 // mp8 (Dave: "We don't need the tabs. What if there are 6 rows!"): Potion, Heal and Heart change as rows too. Their buttons run battle3d.js's own
 // actions (u.actions: doBigHeal, doHeal, doNudge); the row is selected first so its result note (B.pwNote) shows in the row.
@@ -324,7 +329,15 @@ function detailPanel(ctx, sel) {
 // Show what a power just did. k: the card; r: E.castPower's result; gains: what reached the counters { atk: 8, ... };
 // round: the battle round. Resolves when the player taps OK (or taps the backdrop once it is done).
 // inline: the open .pw-detail panel; when given, the result plays inside the selected tab (no second window; Dave, 26 Oct mp2).
+// mq7 (Dave: "you won't need to open a new screen"): Volley (charge powers) store and release with no reveal card; the result shows in its own row this round
+const ROW_NOTE = {};
 export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
+  if (k?.kind === 'charge') {
+    const f = Object.keys(r.per || perOf(k))[0] || 'pierce'; const amt = gains[f] || r.total || 0;
+    ROW_NOTE[k.id] = { round, f, text: r.released ? `Released ${r.released}: +${amt} ${NAME[f] || f}` : `Stored: ${r.charged || 0} of ${k.max}` };
+    try { sfx.magic?.(); } catch { /* sound is optional */ }
+    return Promise.resolve();
+  }
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const tone = r.released ? TONE[Object.keys(r.per || perOf(k))[0]] || toneOf(k) : toneOf(k);

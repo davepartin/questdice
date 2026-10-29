@@ -537,3 +537,18 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-get { grid-area: get; justify-self: start; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-acts { grid-area: acts; align-self: center; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row[data-row="aimed"] .pr-d6 { width: 1.25rem; height: 1.25rem; }
+
+/* mq7 (Dave): Quick Draw says "2 Free Rerolls"; Volley shows its charge dots (number = what a release gives at that many charges); Release in pierce orange */
+.b3-sheet.open:has(.pw-sigil) .pr-words { font: 800 .8rem Inter, sans-serif; color: #f3e3c0; white-space: nowrap; letter-spacing: .01em; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "id acts" "get acts"; row-gap: .35rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge .pr-pay { display: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge .pr-get { grid-area: get; justify-self: start; display: inline-flex; align-items: center; gap: .3rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge .pr-acts { grid-area: acts; display: flex; flex-direction: column; gap: .3rem; align-self: center; }
+.b3-sheet.open:has(.pw-sigil) .pr-dots { display: inline-flex; gap: .28rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-dot { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; box-sizing: border-box; border: 1.5px solid #ff8a1a55; background: #151824; color: #8a7f6c; font: 900 .74rem Inter, sans-serif; line-height: 1; }
+.b3-sheet.open:has(.pw-sigil) .pr-dot.on { background: var(--h-pierce, #ff8a1a); border-color: var(--h-pierce, #ff8a1a); color: #2a1200; }
+.b3-sheet.open:has(.pw-sigil) .pr-dot.now { box-shadow: 0 0 0 2px #0a0d17, 0 0 0 3.5px #ffd0a0; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-rel { background: var(--h-pierce, #ff8a1a) !important; border-color: #ffb26a !important; color: #2a1200 !important; text-shadow: none !important; width: 4.7rem; min-height: 40px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-k-charge { grid-template-areas: "id acts" "get acts" "note note"; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row .pr-cnote { grid-area: note; display: flex; align-items: center; gap: .3rem; margin: 0; padding: .2rem .4rem; border-radius: 6px; background: #ff8a1a1f; color: #ffd0a0; font: 800 .74rem Inter, sans-serif; }
+.b3-sheet.open:has(.pw-sigil) .pr-cnote .ic { width: 1rem; height: 1rem; }
