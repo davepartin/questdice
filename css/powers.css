@@ -487,3 +487,25 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-tag { white-space: nowrap; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-acts { grid-area: acts; }
 .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-pair { width: 100%; }
+
+/* mq2 (Dave: "we need borders around the different powers"; heart change = center stepper) */
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { border: 0 !important; box-shadow: none !important; background: none !important; padding: 0 !important; gap: .5rem; overflow: visible; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-split { display: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { box-sizing: border-box; border: 1.5px solid #a9864a; border-radius: 8px; background: #0a0d17; box-shadow: inset 0 0 0 1px #00000080; padding: .4rem .5rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.off { border-color: #6d5a3a; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-name { white-space: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { min-height: 42px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-pair { gap: .5rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half { padding: .45rem .5rem; }
+/* heart stepper */
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "id acts"; min-height: 0; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-acts { justify-self: end; }
+.b3-sheet.open:has(.pw-sigil) .hc-step { display: inline-flex; align-items: center; gap: .45rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pw-btn.pr-hc { flex-direction: column; width: 3.1rem; min-width: 0; height: 46px; padding: 0; gap: 2px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .hc-arrow { font-size: .95rem; line-height: 1; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .pr-mc { font-size: .66rem; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid { display: grid; place-items: center; width: 3.2rem; height: 3.2rem; border-radius: 8px; border: 1.5px solid #a9864a; background: #05070d; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid .hc-face { width: 2.7rem; height: 2.7rem; border-radius: 6px; display: block; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid b { font: 900 1.4rem Inter, sans-serif; color: #F2C14E; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pw-btn.pr-hc:disabled { opacity: .45; }
+.b3-sheet.open:has(.pw-sigil) .hc-mid .hc-face { outline: 0 !important; border: 0 !important; box-shadow: none !important; }
