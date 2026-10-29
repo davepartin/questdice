@@ -36,7 +36,7 @@ for (const [w, h] of [[390, 664], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
   // mp2: Cast/Use results play inside the selected tab's panel, no second window (inline=/workspace/magic-inline-live)
   const IN = process.env.INLINE_OUT || '/workspace/magic-inline-live'; fs.mkdirSync(IN, { recursive: true });
   const fresh = () => p.evaluate(() => { const { B3 } = window.QD; const B = B3.battleState; B.b.magic = 9; B.b.hp = B.b.maxHp - 12; B.b.potions = 2; B.pwSel = null; B.pwNote = null; B.busy = false; B3.renderShape(); });
-  for (const [name, id, btn] of [['arcbolt', 'arcbolt', '.pw-detail .pw-btn.go'], ['magicmissile', 'bolt', '.pw-detail .pw-btn.go'], ['potion', 'u:bigheal', '.pw-detail .pw-btn.go']]) {
+  for (const [name, id, btn] of [['arcbolt', 'arcbolt', '.pr-row[data-row="arcbolt"] .pr-go'], ['magicmissile', 'bolt', '.pr-row[data-row="bolt"] .pr-go'], ['potion', 'u:bigheal', '.pw-detail .pw-btn.go']]) { // mp7: each power row has its own Cast
     await fresh(); await pump(0.2);
     if (name === 'arcbolt') { await clear(); await p.screenshot({ path: `${IN}/0-panel-before_${w}x${h}.png` }); }
     await p.locator(`.b3-sheet.open [data-power="${id}"]`).click(); await pump(0.3);
@@ -53,7 +53,7 @@ for (const [w, h] of [[390, 664], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
     if (!id.startsWith('u:')) {
       check(`${w}x${h} ${name}: confirm button reads as before`, /to my roll/i.test(st.ok), st.ok);
       if (await p.locator('.b3-sheet.open .pw-detail .dr-ok').count()) await p.locator('.b3-sheet.open .pw-detail .dr-ok').click(); await pump(0.6); await p.waitForTimeout(400); await pump(0.3);
-      const back = await p.evaluate(() => ({ card: !!document.querySelector('.dr-inline'), pick: !!document.querySelector('.b3-sheet.open .pw-pick'), busy: window.QD.B3.battleState.busy }));
+      const back = await p.evaluate(() => ({ card: !!document.querySelector('.dr-inline'), pick: !!document.querySelector('.b3-sheet.open .pw-pick, .b3-sheet.open .pw-rows'), busy: window.QD.B3.battleState.busy }));
       check(`${w}x${h} ${name}: confirm returns to the normal panel`, !back.card && back.pick && !back.busy, JSON.stringify(back));
     }
   }

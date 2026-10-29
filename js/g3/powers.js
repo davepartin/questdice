@@ -204,9 +204,43 @@ export function sigil(ctx) {
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
 function isReady(p, reset) { const { k, st } = p; return reset ? false : !st.spent && !st.early && p.afford; }
+// mp7 (Dave picked mockup A: "3 rows is perfect"): A, B and C at once, one row each: name + small tag, ▲cost (with −/+ for a scale power),
+// what you get in icons, and the row's own Cast button. The same ctx.use / ctx.step / ctx.recharge the old detail used; no rule changes.
+function powerRow(ctx, p, sel) {
+  const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const level = p.level || 0;
+  const when = k.atwill ? 'Every round' : k.kind === 'super' ? 'Super' : 'Once a battle';
+  const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Need ${ctx.rechargeCost}` : '') : 'Roll first')
+    : st.spent ? (k.atwill ? 'Used' : 'Spent') : st.early ? `Round ${k.minRound}+` : b.magic < x ? `Need ${x - b.magic}` : '';
+  const tag = why && why !== 'Roll first' ? why : k.kind === 'charge' && stored != null ? `${when} · ${stored}/${k.max}` : when;
+  const icons = (() => {
+    if (k.kind === 'dice' || k.kind === 'scale') { const n = k.kind === 'dice' ? k.dice.n + level : E.powerDice(k, x, level); const f = k.dice.to;
+      return n <= 4 ? Array.from({ length: n }, () => HK.icon(FX_ICON[f] || 'magic')) : [HK.icon(FX_ICON[f] || 'magic'), h('b', {}, `×${n}`)]; }
+    return buyItems(k, { x, round: b.round, level, stored }).map((it) => [...it.childNodes].slice(0, 2)).flat();
+  })();
+  const scale = k.kind === 'scale' && !st.spent && !reset;
+  const pay = h('span', { class: 'pr-pay' },
+    scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '−') : null,
+    h('span', { class: 'pr-cost' }, HK.icon('magic'), h('b', {}, String(x))),
+    scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+') : null);
+  const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
+  const castable = reset ? st.spent && canRecharge(k) : true;
+  const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, `Recharge · ${ctx.rechargeCost}`) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, `Cast · ${x}`))
+    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? `Store · ${x}` : `Cast · ${x}`);
+  const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Release ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Release ${stored}`) : null;
+  return h('div', { class: `pr-row t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
+    h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
+    pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go));
+}
+function powerRows(ctx, sel) {
+  const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
+  const friends = ctx.powers.find((p) => p.k.id === sel && p.k.kind === 'luck') && D.CLASS2.on && D.CLASS2.verse && Array.isArray(ctx.b.fighters) && ctx.b.fighters.length > 1;
+  if (friends) return null; // Lucky Verse at a table still asks who it is for: the old detail
+  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)));
+}
 function detailPanel(ctx, sel) {
   const { b, reset } = ctx;
   const p = ctx.powers.find((x) => x.k.id === sel);
+  if (!sel || p) { const r = powerRows(ctx, sel); if (r) return r; }
   if (p) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : 'Once a battle';

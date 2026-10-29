@@ -1,7 +1,7 @@
 // mp3 (Crockpot / Grok Bot, 27 Oct 2026; Dave: magic panel fonts 'thin and too basic', make all six tabs AAA): every tab at 360x740, 390x844, 412x915,
 // screenshot + no text overflow/clipping in the sheet.  node dev/magic-aaa.mjs [label=after] [out=/workspace/magic-aaa]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
-const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-simple'; const port = +(process.argv[4] || 8180); fs.mkdirSync(OUT, { recursive: true });
+const label = process.argv[2] || 'after'; const OUT = process.argv[3] || '/workspace/magic-rows'; const port = +(process.argv[4] || 8181); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0; const geo = {};
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
@@ -35,11 +35,17 @@ for (const [w, h] of [[360, 740], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
     if (process.env.MP4) check(`${w}x${h} ${id}: nothing thin (all text >= 700), Cinzel loaded`, !m.fonts.thin.length && m.fonts.cinzel && !m.fonts.grad.length, JSON.stringify(m.fonts));
   }
   await p.locator('.b3-sheet.open [data-power="aimed"]').click(); await pump(0.3);
-  const st0 = await p.evaluate(() => document.querySelector('.pd-buy')?.textContent);
-  await p.locator('.b3-sheet.open .pw-step button').last().click(); await pump(0.3);
-  const st1 = await p.evaluate(() => ({ buy: document.querySelector('.pd-buy')?.textContent, btn: document.querySelector('.pw-detail .pw-btn.go')?.textContent, line: !!document.querySelector('.pw-detail .pd-line') }));
-  await p.screenshot({ path: `${OUT}/${label}-1-aimed-plus_${w}x${h}.png` });
-  check(`${w}x${h}: stepper updates the purchase live (2 -> 3 pierce dice), Cast reads only "Cast · 3 magic", no rulebook line`, /×2/.test(st0) && /3.*×3/.test(st1.buy) && st1.btn.trim() === 'Cast · 3 magic' && !st1.line, JSON.stringify({ st0, st1 }));
+  const r0 = await p.evaluate(() => { const rows = [...document.querySelectorAll('.b3-sheet.open .pw-rows .pr-row')]; const vb = innerHeight;
+    return { n: rows.length, ids: rows.map((r) => r.dataset.row), btns: rows.map((r) => { const g = r.querySelector('.pr-go'); const q = g.getBoundingClientRect(); return { t: g.textContent, dis: g.disabled, vis: q.bottom <= vb && q.right <= innerWidth }; }), arrows: rows[0]?.querySelectorAll('.pr-get .ic').length, overlap: rows.flatMap((r) => { const kids = [r.querySelector('.pr-name'), r.querySelector('.pr-tag'), r.querySelector('.pr-pay'), r.querySelector('.pr-get'), r.querySelector('.pr-acts')].filter(Boolean); const o = []; for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++) { const a = kids[i].getBoundingClientRect(), z = kids[j].getBoundingClientRect(); if (a.left < z.right - 1 && a.right > z.left + 1 && a.top < z.bottom - 1 && a.bottom > z.top + 1) o.push(r.dataset.row + ':' + kids[i].className + '/' + kids[j].className); } const rb = r.getBoundingClientRect(); for (const k of r.querySelectorAll('*')) { const q = k.getBoundingClientRect(); if (q.width && (q.right > rb.right + 1 || q.left < rb.left - 1)) o.push(r.dataset.row + ':out:' + k.className); } return o; }), old: !!document.querySelector('.b3-sheet.open .pw-detail .pd-buy, .b3-sheet.open .pw-step') }; });
+  await p.locator('.b3-sheet.open .pr-row[data-row="aimed"] .pr-step').last().click(); await pump(0.3);
+  const r1 = await p.evaluate(() => { const r = document.querySelector('.b3-sheet.open .pr-row[data-row="aimed"]'); const kids = [...r.children]; const ov = kids.some((a, i) => kids.slice(i + 1).some((z) => { const p = a.getBoundingClientRect(), q = z.getBoundingClientRect(); return p.left < q.right - 1 && p.right > q.left + 1 && p.top < q.bottom - 1 && p.bottom > q.top + 1; })); return { ov, cost: r.querySelector('.pr-cost').textContent, arrows: r.querySelectorAll('.pr-get .ic').length, btn: r.querySelector('.pr-go').textContent }; });
+  await p.screenshot({ path: `${OUT}/${label}-rows-aimed-plus_${w}x${h}.png` });
+  check(`${w}x${h}: three rows A/B/C at once, each with its own enabled, on-screen Cast button; no old select-then-cast detail`, r0.n === 3 && r0.btns.every((x) => !x.dis && x.vis) && !r0.old && !r0.overlap.length, JSON.stringify(r0));
+  check(`${w}x${h}: Aimed Shot + updates live (2 -> 3 magic, 2 -> 3 arrows, Cast · 3)`, r0.arrows === 2 && !r1.ov && r1.cost === '3' && r1.arrows === 3 && r1.btn === 'Cast · 3', JSON.stringify(r1));
+  const m0 = await p.evaluate(() => window.QD.B3.battleState.b.magic);
+  await p.locator('.b3-sheet.open .pr-row[data-row="quickdraw"] .pr-go').click(); await pump(0.6);
+  const m1 = await p.evaluate(() => ({ magic: window.QD.B3.battleState.b.magic, used: !!window.QD.B3.battleState.b.usedRound?.quickdraw || !!document.querySelector('.dr-inline, .pd-result') || document.querySelector('.pr-row[data-row="quickdraw"] .pr-go')?.disabled }));
+  check(`${w}x${h}: Quick Draw's own Cast button casts it (magic ${m0} -> less, power marked used)`, m1.magic < m0 && m1.used, JSON.stringify({ m0, m1 }));
   check(`${w}x${h}: no page errors`, !errs.length, errs.join(' | ')); await p.close();
 }
 console.log(bad ? `${bad} FAILED` : 'all passed'); await b.close(); server.kill(); process.exit(bad ? 1 : 0);

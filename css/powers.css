@@ -404,3 +404,33 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pb-note { font: 800 .7rem var(--mp-ui); color: #e6d6b4; }
 /* Heart change (its panel and words are drawn in battle3d.js): the Down/Up buttons say what you buy; the long sentence is hidden, Rules keeps it */
 .b3-sheet.open:has(.pw-sigil) .pw-detail .hc-state { display: none; }
+/* mp7 (Dave picked mockup A): the class powers as three rows, each with its own Cast button */
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { display: grid; gap: .5rem; align-content: start; padding: .55rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: .45rem; padding: .55rem .5rem; border-radius: 10px; background: #0f1320; border: 1.5px solid #ffffff22; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.on { border-color: #f2c14e; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.off .pr-get, .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.off .pr-pay { opacity: .45; }
+.b3-sheet.open:has(.pw-sigil) .pr-id { display: grid; min-width: 0; gap: .15rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-name { font: 900 1rem/1.05 var(--mp-title); color: #f2c14e; text-shadow: 0 2px 0 #1e0f04; }
+.b3-sheet.open:has(.pw-sigil) .pr-tag { justify-self: start; padding: .04rem .35rem; border-radius: 4px; background: #2a1f12; border: 1px solid #f0c87055; font: 800 .54rem var(--mp-ui); letter-spacing: .05em; text-transform: uppercase; color: #f0c870; white-space: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pr-tag.low { color: #ffb38a; border-color: #ffb38a66; }
+.b3-sheet.open:has(.pw-sigil) .pr-pay { display: inline-flex; align-items: center; gap: .15rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-cost { display: inline-flex; align-items: center; gap: .1rem; padding: .18rem .4rem; border-radius: 7px; background: #6a36a8; border: 1.5px solid #e9d4ff; }
+.b3-sheet.open:has(.pw-sigil) .pr-cost .ic { width: .9rem; height: .9rem; color: #fff; } .b3-sheet.open:has(.pw-sigil) .pr-cost b { font: 900 1rem/1 var(--mp-ui); color: #fff; text-shadow: 0 1px 0 #1a0630; }
+.b3-sheet.open:has(.pw-sigil) .pr-step { width: 1.6rem; height: 1.6rem; padding: 0; border-radius: 50%; border: 1px solid #e9d4ff88; background: #2a1d44; color: #fff; font: 900 1rem/1 var(--mp-ui); cursor: pointer; }
+.b3-sheet.open:has(.pw-sigil) .pr-step:disabled { opacity: .35; cursor: default; }
+.b3-sheet.open:has(.pw-sigil) .pr-get { --c: #b46cff; display: inline-flex; align-items: center; gap: .05rem; min-width: 0; }
+.b3-sheet.open:has(.pw-sigil) .pr-get.t-pierce { --c: #ffa14a; } .b3-sheet.open:has(.pw-sigil) .pr-get.t-atk { --c: #ff6a5a; } .b3-sheet.open:has(.pw-sigil) .pr-get.t-block { --c: #6cb8ff; } .b3-sheet.open:has(.pw-sigil) .pr-get.t-heal { --c: #5cf08f; } .b3-sheet.open:has(.pw-sigil) .pr-get.t-gold { --c: #ffd23d; }
+.b3-sheet.open:has(.pw-sigil) .pr-get .ic { width: 1.35rem; height: 1.35rem; color: var(--c); filter: drop-shadow(0 2px 0 #000a); }
+.b3-sheet.open:has(.pw-sigil) .pr-get .ic-reroll { color: #ffd23d; } .b3-sheet.open:has(.pw-sigil) .pr-get .ic-pierce { color: #ffa14a; }
+.b3-sheet.open:has(.pw-sigil) .pr-get b { font: 900 1.05rem/1 var(--mp-ui); color: var(--c); text-shadow: 0 2px 0 #000; }
+.b3-sheet.open:has(.pw-sigil) .pr-acts { display: inline-flex; gap: .3rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go, .b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-rel { flex: none; min-height: 44px; min-width: 4.6rem; padding: .3rem .55rem; font: 900 .8rem/1 var(--mp-ui); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; border-radius: 10px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { background: #7440b0; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn:disabled { opacity: .45; filter: grayscale(.4); }
+/* rows: name and tag on top, then ▲cost, what you get, Cast; nothing squeezes the name (360px) */
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "id id id" "pay get acts"; row-gap: .35rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-id { grid-area: id; display: flex; align-items: baseline; gap: .45rem; flex-wrap: wrap; }
+.b3-sheet.open:has(.pw-sigil) .pr-name { font-size: 1.1rem; white-space: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pr-pay { grid-area: pay; } .b3-sheet.open:has(.pw-sigil) .pr-get { grid-area: get; justify-content: center; } .b3-sheet.open:has(.pw-sigil) .pr-acts { grid-area: acts; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { justify-items: stretch; padding-right: .55rem !important; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row { width: 100%; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { min-width: 5.6rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-detail.pw-rows { grid-template-columns: minmax(0, 1fr); width: 100%; } .b3-sheet.open:has(.pw-sigil) .pr-acts { justify-self: end; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pw-btn.pr-go { width: 5.8rem; }
