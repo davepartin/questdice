@@ -12,13 +12,19 @@ const PROP = cls === 'ranger' ? [
   { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', cost: 1, fx: { pierce: 2, gold: 3 }, note: 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND', prop: true },
   { id: 'herbs', slot: 'B', name: 'Forager', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, prop: true },
   D.CLASSES.ranger.cards.find((k) => k.id === 'rain'),
+] : cls === 'knight' ? [
+  // t414 PROPOSED Knight unlocks (mockup only)
+  D.CLASSES.knight.cards.find((k) => k.id === 'judgment'),
+  { id: 'riposte', slot: 'B', name: 'Riposte', kind: 'flat', cost: 1, fx: { block: 4 }, note: 'BLOCK LEFT OVER HITS BACK AS ATTACK', prop: true },
+  { id: 'spoils', slot: 'C', name: 'Spoils of War', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, gold: 2 }, prop: true },
 ] : [];
 if (PROP.length) C.cards = [...C.cards, ...PROP.filter((k) => k.prop)];
 // t413 PROPOSED Aimed Shot path: I = up to 4d6, II = dice become d8 (up to 4d8), III = up to 6d8. 1 magic per die throughout.
-const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
+const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const CLV = [{ n: 2, s: 6 }, { n: 3, s: 6 }, { n: 3, s: 8 }]; const clvP = (k) => cls === 'knight' && k?.id === 'cleave'; // t414 PROPOSED Cleave path: 2d6 / 3d6 / 3d8
+const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
 const isProp = PROP.some((k) => k.id === q.get('p'));
 const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
-const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
+const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
@@ -49,10 +55,12 @@ function rows(k, l) {
     return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
       h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), h('span', { class: 'prop' }, aimP(k) ? 'PROPOSED path: II d8 · III 6 dice' : `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
   if (aimP(k)) return [ln(mg(1), eq(), ...dice(1, f, AIM[l].s)), mx(`UP TO ${AIM[l].m}×`, die(f, AIM[l].s, 0, true))];
-  if (k.kind === 'super') return [ln(mg(k.cost), eq(), fxv('pierce', E.scaleNum(k.fx.pierce, l))), mx(`+${E.scaleNum(k.aoe, l)} TO EVERY MONSTER · ROUND ${k.minRound}+`)];
+  if (k.kind === 'super') return [ln(mg(k.cost), eq(), fxv(Object.keys(k.fx)[0], E.scaleNum(Object.values(k.fx)[0], l))), mx(`+${E.scaleNum(k.aoe, l)} TO EVERY MONSTER · ROUND ${k.minRound}+`)];
   if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l);
     return [ln(mg(k.cost), eq(), ...dice(lo, f, k.dice.s)), mx('UP TO', ...dice(Math.min(hi, 6), f, k.dice.s))]; }
-  if (k.kind === 'dice') { const n = k.dice.n + l; return [ln(mg(k.cost), eq(), ...dice(n, f, k.dice.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
+  if (k.kind === 'dice') { const P = clvP(k) ? CLV[l] : { n: k.dice.n + l, s: k.dice.s }; const n = P.n;
+    if (l === 0 && CAST) { const R = roll(n, P.s); const t = R.reduce((a, b) => a + b, 0); return [ln(...R.map((v) => die(f, P.s, v, true))), h('span', { class: `total fx-${f}` }, `= ${t} ${WORD[f]}`), k.splash === 'half' ? h('span', { class: 'prop' }, `+ ${Math.floor(t / 2)} splash on every other monster`) : '']; }
+    return [ln(mg(k.cost), eq(), ...dice(n, f, P.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
   if (k.kind === 'flat') return [ln(...Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)))), mx(k.note ? k.note : k.fx.free ? 'FREE REROLLS' : Object.keys(k.fx).map((x) => WORD[x]).join(' + ').toUpperCase())];
   if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; const fs = Object.keys(per);
     return [ln(...fs.map((x) => h('span', { class: `dots fx-${x}` }, HK.icon(ICON[x]), [1, 2, 3, 4].map((n) => h('span', { class: `dot ${l === 0 && n > charges ? 'g' : ''}` }, String(E.chargeGain(k, n, l)[x])))))), mx(`${charges} STORED · `, h('span', { class: 'wd' }, fs.map((x) => WORD[x]).join(' + ')), k.splash === 'half' ? ' · ½ SPLASH' : '')]; }
@@ -98,9 +106,9 @@ function powerCard() {
 function coverHint(k, l) {
   const f = k.dice?.to;
   if (aimP(k)) return [h('span', { class: 'eq' }, `UP TO ${AIM[l].m}×`), die(f, AIM[l].s, 0, true)];
-  if (k.kind === 'super') return [fxv('pierce', E.scaleNum(k.fx.pierce, l)), h('span', { class: 'eq' }, `+${E.scaleNum(k.aoe, l)} ALL`)];
+  if (k.kind === 'super') return [fxv(Object.keys(k.fx)[0], E.scaleNum(Object.values(k.fx)[0], l)), h('span', { class: 'eq' }, `+${E.scaleNum(k.aoe, l)} ALL`)];
   if (k.kind === 'scale') return [mg(k.cost), h('span', { class: 'eq' }, '='), ...dice(E.powerDice(k, k.cost, l), f, k.dice.s)];
-  if (k.kind === 'dice') return dice(k.dice.n + l, f, k.dice.s);
+  if (k.kind === 'dice') return clvP(k) ? dice(CLV[l].n, f, CLV[l].s) : dice(k.dice.n + l, f, k.dice.s);
   if (k.kind === 'flat') return Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)));
   if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; return Object.keys(per).map((x) => fxv(x, E.chargeGain(k, 4, l)[x])); }
   if (k.kind === 'round') return [fxv('atk', E.roundGain(k, 4, l)), h('span', { class: 'eq' }, 'ROUND 4')];
