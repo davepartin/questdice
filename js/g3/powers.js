@@ -252,20 +252,22 @@ function utilRow(ctx, u) {
   if (u.id === 'u:heart') {
     get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
     acts = u.actions.map((a, i) => { const img = (a.content || []).find((n) => n && n.tagName === 'IMG');
-      return h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-top' }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), img ? img.cloneNode(true) : null), u.cost ? mc(u.cost) : null); });
+      return h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, h('span', { class: 'hc-arrow' }, i ? '▲' : '▼'), img ? img.cloneNode(true) : null, u.cost ? mc(u.cost) : null); });
   } else {
     const n = u.id === 'u:bigheal' ? E.potionHpOf(b.hero) : E.healAmountOf(b.hero);
     get = h('span', { class: 'pr-get t-heal' }, HK.icon('heal'), h('b', {}, `+${n}`));
     acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, ...(u.id === 'u:bigheal' || !u.cost ? ['Drink'] : ['Cast', mc(u.cost)])));
   }
   const note = u.note ? h('div', { class: `pd-result pr-note t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null;
-  return h('div', { class: `pr-row pr-util t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
+  return h('div', { class: `pr-row pr-util ${u.id === 'u:heart' ? 'pr-hrow' : 'pr-half'} t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
     h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, u.name), h('small', { class: `pr-tag ${why ? 'low' : ''}` }, why && soft ? (u.tag || why) : tagTxt)),
     pay, get, h('span', { class: 'pr-acts' }, acts), note);
 }
 function powerRows(ctx, sel) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
-  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)), h('i', { class: 'pr-split', 'aria-hidden': 'true' }), ctx.utils.map((u) => utilRow(ctx, u)));
+  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)), h('i', { class: 'pr-split', 'aria-hidden': 'true' }), ...(() => { // mq1 (Dave): Heart change gets its own row, then Potion + Heal side by side
+    const hr = ctx.utils.filter((u) => u.id === 'u:heart'); const rest = ctx.utils.filter((u) => u.id !== 'u:heart');
+    return [hr.map((u) => utilRow(ctx, u)), rest.length ? h('div', { class: 'pr-pair' }, rest.map((u) => utilRow(ctx, u))) : null]; })());
 }
 function detailPanel(ctx, sel) {
   const { b, reset } = ctx;

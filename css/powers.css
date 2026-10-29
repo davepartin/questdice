@@ -469,3 +469,21 @@ body:has(.b3-sheet.open .pw-sigil) .chrome, .b3:has(.b3-sheet.open .pw-sigil) .b
 .b3-sheet.open:has(.pw-sigil) .pr-hc .pr-mc { font-size: .62rem; }
 .b3-sheet.open:has(.pw-sigil) .pr-hc .hc-face { width: 1.05rem; height: 1.05rem; }
 .b3-sheet.open:has(.pw-sigil) .pr-hc .hc-top { flex-direction: row !important; } .b3-sheet.open:has(.pw-sigil) .pr-hc .hc-arrow { font-size: .6rem; line-height: 1; }
+
+/* mq1 (Dave: Heart change its own row with bigger face buttons; Potion + Heal side by side) */
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "id acts"; min-height: 64px; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-heart { display: none; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-acts { gap: .45rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pw-btn.pr-hc { flex-direction: row; width: auto; min-width: 5.2rem; height: 54px; padding: 0 .5rem; gap: .35rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .hc-arrow { font-size: .8rem; display: inline; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .hc-face { width: 2.2rem; height: 2.2rem; display: block; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-hc .pr-mc { font-size: .78rem; }
+.b3-sheet.open:has(.pw-sigil) .pr-pair { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "id id" "get acts" "note note"; row-gap: .35rem; min-height: 0; padding: .5rem .55rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-get { grid-area: get; justify-self: start; align-self: center; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-acts { grid-area: acts; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pw-btn.pr-go { width: auto; min-width: 4.4rem; padding: 0 .55rem; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-note { grid-area: note; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-half .pr-tag { white-space: nowrap; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-id { grid-area: id; } .b3-sheet.open:has(.pw-sigil) .pw-rows .pr-row.pr-hrow .pr-acts { grid-area: acts; }
+.b3-sheet.open:has(.pw-sigil) .pw-rows .pr-pair { width: 100%; }
