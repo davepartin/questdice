@@ -1,32 +1,35 @@
-# Ranger magic cards: pass 1 (t412, mockup only)
+# Ranger magic cards (t412 → t413, mockup only)
 
-All numbers come from `js/data.js` and `js/engine.js` as they stand today. **PROPOSED** items are not in the game.
-Level upgrades cost 50 gold (Level II) and 90 gold (Level III), from `POWER_UPGRADE`.
-Every die uses the template: orange, with white pips on d6s and white numbers on d8s.
+Numbers come from `js/data.js` / `js/engine.js`. **PROPOSED** = not in the game. Upgrades cost 50 gold (Level II) and 90 gold (Level III).
+Dice are the colour of what they add to the hero: orange pierce, green health, yellow gold, purple magic, red attack, blue block. Pips and numbers are white.
 
-## Starting cards (live rules)
-| Power | One line | Cost | Level I / II / III |
-|---|---|---|---|
-| Aimed Shot | Buy d6 pierce attack dice, 1 magic each. | 1 per die | Live: 1d6 for 1 magic, up to 4 magic (4d6 / 5d6 / 6d6 at max). **Mockup shows a PROPOSED max of 6 dice.** |
-| Quick Draw | Every round, reroll some of your dice for free. | 1 a round | 2 / 3 / 4 free rerolls |
-| Volley | Store 1 magic a round (up to 4), then release it all as pierce attack. | 1 per charge | Release totals for 1/2/3/4 charges: I 3/8/15/24, II 5/12/21/32, III 7/16/27/40 |
+## Final Ranger set
+| | Power | Verb | One line | Cost | Level I / II / III |
+|---|---|---|---|---|---|
+| Start A | Aimed Shot | burst | Buy d6 pierce attack dice, 1 magic each. | 1 per die | up to 4d6 / up to 4d8 / up to 6d8 (**PROPOSED path**) |
+| Start B | Quick Draw | control | Every round, reroll some of your dice for free. | 1 a round | 2 / 3 / 4 rerolls |
+| Start C | Volley | build-up | Store 1 magic a round (up to 4), then release it all as pierce attack. | 1 per charge | totals for 1-4 charges: 3/8/15/24 · 5/12/21/32 · 7/16/27/40 |
+| Unlock A | Hunter's Mark (**PROPOSED**) | risk / economy | +2 pierce attack now; +3 gold if your target falls this round. | 1 a round | +2 & 3 gold / +3 & 4 gold / +4 & 6 gold |
+| Unlock B | Forager (**PROPOSED**) | sustain | Once a battle: heal by 2d6. | 2 | 2d6 / 3d6 / 4d6 heal |
+| Unlock C | Rain of Arrows (live) | area finisher | Round 3 or later: +6 pierce attack on your target and 9 to every monster. | 5 | +6 & 9 all / +8 & 11 / +9 & 14 |
 
-## PROPOSED unlockables (art: natural subject, purple only in the background)
-| Power | One line | Cost | Level I / II / III |
-|---|---|---|---|
-| Hunter's Mark (slot A) | Every round: +2 pierce attack, plus +1 gold. | 1 a round | +2 pierce +1 gold / +3 +2 / +4 +3 |
-| Forager (slot B) | Once a battle: roll d6s and heal that much. | 2 | 2d6 / 3d6 / 4d6 heal |
-| Twin Arrows (slot C) | Buy d8 pierce attack dice, 2 magic each (big-dice version of Aimed Shot). | 2 per die | 1d8 / 2d8 / 3d8 for 2 magic, +1d8 for each extra 2 magic, up to 6 dice |
+**Aimed Shot path:** Level II swaps the d6 for a d8 (bigger hits, same magic), and Level III raises the cap to 6 dice. Each upgrade feels different instead of just adding +1.
 
-## Rule mismatches and flags
-1. **Aimed Shot max.** The live card stops at 4 magic: 4d6 at Level I, 5d6 at II, 6d6 at III. The mockup shows 6 slots at Level I, the PROPOSED max from t410. Changing the rule would mean editing data.js. Not done.
-2. **Volley wording.** The text "3, 5, 7, 9 pierce" is what each charge adds. The released total is 3, 8, 15, 24. The card shows the totals.
-3. **Fourth upgrade price.** `POWER_UPGRADE` has a third price (140) that no card uses. The cards only show Levels II and III.
-4. **Ranger already has unlockables in data.js:** Rain of Arrows (A, unlocks at hero level 5), Snare (B) and Vanish (C). The 3 PROPOSED cards above are new ideas and would replace those or add to them. That's Dave's call.
-5. **Dice colour.** Every die is now template orange, including the Level II/III rows and the heal dice. The old colour code (green heal, red attack and so on) now shows only on icons and words.
+**Cut:** Twin Arrows. It was Aimed Shot with d8s, so the d8 is now Aimed Shot's Level II. Snare and Vanish stay in data.js as alternates but are not in this set: Vanish is the same store-and-release verb as Volley, and Snare's "monsters hit softer" overlaps Forager's defensive job.
+
+## Design reasoning
+- **One verb per power.** Burst (Aimed Shot), control (Quick Draw), build-up (Volley), economy with risk (Hunter's Mark), sustain (Forager) and an area finisher (Rain). No two powers answer the same question.
+- **A real choice each round.** Spending on Aimed Shot now competes with saving into Volley for later. Rain makes you hold 5 magic until round 3.
+- **Press your luck.** Hunter's Mark pays gold only if the target falls that round, so you mark the wounded monster and push for the kill. Aimed Shot's − / + is a small "how much do I bet" choice.
+- **Tactile and readable.** Dice drop into spaces and you see the total roll up. The dice colour tells you what you get before you read a word.
+- **Hunter's Mark decision:** I made it the economy and risk power, because the Ranger had no gold engine and no gamble. The earlier version (always +1 gold) was a dull passive.
+- **Forager:** numbers kept (Dave: not too strong).
+
+## Rule notes (live game unchanged)
+1. Live Aimed Shot: up to 4 magic, which is 4d6 / 5d6 / 6d6 by level (levels add a die). The PROPOSED path above would need a data.js change. Not done.
+2. Volley's text "3, 5, 7, 9" is what each charge adds; the card shows the totals.
+3. `POWER_UPGRADE` has an unused third price (140).
 
 ## Open questions for Dave
-- Should the 3 PROPOSED powers replace Rain of Arrows, Snare and Vanish, or be extra choices?
-- Should Hunter's Mark gold come every round, or only when the marked monster falls?
-- Is Forager too strong at 4d6 for Level III? Ranger HP is 28.
-- Should Twin Arrows' d8 dice also get a max of 6 dice, like Aimed Shot?
+- Keep Snare and Vanish as alternate unlocks, or retire them?
+- Is +3 gold the right size for a Hunter's Mark kill?

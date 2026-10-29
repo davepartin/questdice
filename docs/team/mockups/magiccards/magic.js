@@ -9,11 +9,13 @@ import { drawSym } from '../../../../js/gfx/dice/faces.js';
 const q = new URLSearchParams(location.search); const cls = q.get('h') || 'ranger'; const C = D.CLASSES[cls];
 // t412 PROPOSED Ranger unlockables (mockup only, not in js/data.js)
 const PROP = cls === 'ranger' ? [
-  { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2, gold: 1 }, prop: true },
+  { id: 'mark', slot: 'A', name: "Hunter's Mark", kind: 'flat', cost: 1, fx: { pierce: 2, gold: 3 }, note: 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND', prop: true },
   { id: 'herbs', slot: 'B', name: 'Forager', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, prop: true },
-  { id: 'twin', slot: 'C', name: 'Twin Arrows', kind: 'scale', cost: 2, step: 2, max: 6, dice: { n: 1, s: 8, to: 'pierce' }, prop: true },
+  D.CLASSES.ranger.cards.find((k) => k.id === 'rain'),
 ] : [];
-if (PROP.length) C.cards = [...C.cards, ...PROP];
+if (PROP.length) C.cards = [...C.cards, ...PROP.filter((k) => k.prop)];
+// t413 PROPOSED Aimed Shot path: I = up to 4d6, II = dice become d8 (up to 4d8), III = up to 6d8. 1 magic per die throughout.
+const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
 const isProp = PROP.some((k) => k.id === q.get('p'));
 const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
 const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' ? 'margin' : 'float'); const charges = +(q.get('c') || 2);
@@ -21,9 +23,9 @@ const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
 // Dice colour code (Dave, 29 Oct): orange = pierce, purple = magic, green = health, yellow = gold, red = attack, blue = block. d6 = six pips, d8 = numbered.
-const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#2a1200'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#ffd21a', '#8a6a00', '#2a1e00'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'] };
+const DIE_COL = { pierce: ['#ff8a1a', '#8a3c00', '#2a1200'], magic: ['#a64dff', '#4a1c80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#e8b400', '#7a5a00', '#2a1e00'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'] };
 const PIPS = { 1: [[12, 12]], 2: [[7.3, 6.8], [16.7, 17.2]], 3: [[7.3, 6.8], [12, 12], [16.7, 17.2]], 4: [[7.3, 6.8], [16.7, 6.8], [7.3, 17.2], [16.7, 17.2]], 5: [[7.3, 6.8], [16.7, 6.8], [12, 12], [7.3, 17.2], [16.7, 17.2]], 6: [7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => [x, y])) };
-const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_COL[fx]; if (tpl) { [f, e] = DIE_COL.pierce; p = '#fff'; } const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
+const die = (fx = 'pierce', s = 6, v = 0, tpl = false) => { let [f, e, p] = DIE_COL[fx]; if (tpl) p = '#fff'; /* t413: die = colour of what it adds, white pips/numbers */ const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', `d6 d-${fx}`); el.setAttribute('aria-label', `d${s} for ${fx}`);
   el.innerHTML = s !== 6 ? `<path d="M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="11" fill="${p}">${v || s}</text>`
     : `<rect x="2" y="2" width="20" height="20" rx="4.5" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v || 6].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`; return el; };
 // t411: seeded mock roll for the cast frame
@@ -38,18 +40,20 @@ const WORD = { pierce: 'pierce attack', atk: 'attack', heal: 'heal', gold: 'gold
 // t409: dice bought with magic — the dice added so far (empty slots up to the max) and magic spent vs the bank, driven by ?d=
 const BANK = 6;
 const MAXD = 6; // t410 PROPOSED max dice for every buy-dice power (mockup only)
-const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = l === 0 ? MAXD : E.powerDice(k, E.scaleMax(k, l), l), st = E.scaleStep(k);
+const scaleState = (k, l = 0) => { const lo = E.powerDice(k, k.cost, l), hi = aimP(k) ? AIM[l].m : l === 0 ? MAXD : E.powerDice(k, E.scaleMax(k, l), l), st = E.scaleStep(k);
   const n = Math.max(0, Math.min(hi, q.has('d') ? +q.get('d') : lo)); const x = n ? k.cost + Math.max(0, n - lo) * st : 0; const aff = Math.min(hi, lo + Math.floor((BANK - k.cost) / st)); return { lo, hi, st, n, x, aff }; };
 // Printed rows per kind, at engine level l (card Level I/II/III = engine 0/1/2)
 function rows(k, l) {
   const f = k.dice?.to;
   if (k.kind === 'scale' && l === 0) { const S = scaleState(k, l); const f = k.dice?.to; const R = roll(S.n, k.dice.s); const tot = R.reduce((a, b) => a + b, 0);
     return [h('span', { class: 'slots' }, Array.from({ length: S.hi }, (_, i) => (i < S.n ? (() => { const d = die(f, k.dice.s, CAST ? R[i] : 0, true); if (!CAST && i === S.n - 1) d.classList.add('drop'); return d; })() : h('i', { class: `slot0 ${k.dice.s === 8 ? 'd8' : ''} ${i >= S.aff ? 'lock' : ''}`, title: i >= S.aff ? 'not enough magic' : '' })))),
-      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), h('span', { class: 'prop' }, `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
+      h('span', { class: 'spent' }, HK.icon('magic'), h('b', {}, `${S.x}`), ` of ${BANK}`, h('span', { class: `wd fx-${f}` }, ` · ${S.n}d${k.dice.s} ${WORD[f]}`)), (CAST && S.n ? h('span', { class: `total fx-${f}` }, `= ${tot} ${WORD[f]}`) : ''), h('span', { class: 'prop' }, aimP(k) ? 'PROPOSED path: II d8 · III 6 dice' : `PROPOSED max ${MAXD} dice` + (S.aff < MAXD ? ` · 🔒 = needs more magic` : ''))]; }
+  if (aimP(k)) return [ln(mg(1), eq(), ...dice(1, f, AIM[l].s)), mx(`UP TO ${AIM[l].m}×`, die(f, AIM[l].s, 0, true))];
+  if (k.kind === 'super') return [ln(mg(k.cost), eq(), fxv('pierce', E.scaleNum(k.fx.pierce, l))), mx(`+${E.scaleNum(k.aoe, l)} TO EVERY MONSTER · ROUND ${k.minRound}+`)];
   if (k.kind === 'scale') { const lo = E.powerDice(k, k.cost, l), hi = E.powerDice(k, E.scaleMax(k, l), l);
     return [ln(mg(k.cost), eq(), ...dice(lo, f, k.dice.s)), mx('UP TO', ...dice(Math.min(hi, 6), f, k.dice.s))]; }
   if (k.kind === 'dice') { const n = k.dice.n + l; return [ln(mg(k.cost), eq(), ...dice(n, f, k.dice.s)), k.splash === 'half' ? mx('ATTACK + ½ SPLASH') : mx(WORD[f].toUpperCase())]; }
-  if (k.kind === 'flat') return [ln(...Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)))), mx(k.fx.free ? 'FREE REROLLS' : Object.keys(k.fx).map((x) => WORD[x]).join(' + ').toUpperCase())];
+  if (k.kind === 'flat') return [ln(...Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)))), mx(k.note ? k.note : k.fx.free ? 'FREE REROLLS' : Object.keys(k.fx).map((x) => WORD[x]).join(' + ').toUpperCase())];
   if (k.kind === 'charge') { const per = typeof k.per === 'number' ? { atk: k.per } : k.per; const fs = Object.keys(per);
     return [ln(...fs.map((x) => h('span', { class: `dots fx-${x}` }, HK.icon(ICON[x]), [1, 2, 3, 4].map((n) => h('span', { class: `dot ${l === 0 && n > charges ? 'g' : ''}` }, String(E.chargeGain(k, n, l)[x])))))), mx(`${charges} STORED · `, h('span', { class: 'wd' }, fs.map((x) => WORD[x]).join(' + ')), k.splash === 'half' ? ' · ½ SPLASH' : '')]; }
   if (k.kind === 'round') return [ln(h('span', { class: 'dots fx-atk' }, HK.icon('atk'), [1, 2, 3, 4].map((r) => h('span', { class: 'dot' }, String(E.roundGain(k, r, l)))))), mx('ROUND 1 · 2 · 3 · 4 …')];
@@ -61,7 +65,7 @@ const UTIL = {
   'u:heal': { name: 'Heal', cost: D.HEAL_COST, kick: 'any time', row: () => [ln(mg(D.HEAL_COST), eq(), fxv('heal', E.healAmountOf(hero))), mx('ANY TIME')], covers: [null, null] },
   'u:heart': { name: 'Heart Change', cost: D.NUDGE_COST, kick: 'once a round', row: () => [ln(mg(D.NUDGE_COST), eq(), h('b', { class: 'hc' }, '−1'), h('span', { class: 'or' }, 'or'), h('b', { class: 'hc' }, '+1')), mx('TURN YOUR HEART DIE · 1 TO 6')], covers: [null, null] },
 };
-const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: (k) => `${k.cost} magic · once a battle`, flat: (k) => `${k.cost} magic · every round`, charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll' };
+const KICK = { scale: (k) => (E.scaleStep(k) > 1 ? `${E.scaleStep(k)} magic per die` : '1 magic per die'), dice: (k) => `${k.cost} magic · once a battle`, flat: (k) => `${k.cost} magic · every round`, charge: () => 'store · release', round: () => 'grows each round', luck: () => 'every round · roll', super: (k) => `${k.cost} magic · once · round ${k.minRound}+` };
 // Corner stamps: the same embossed metal symbol as the camp cardboard cards (js/g3/cardboard.js emblems(): INSETS, size 34, dark + light offsets,
 // steel gradient, a tint over it), here the magic triangle in all four sockets with a purple tint (cardboard.js uses 0.14; 0.32 so it reads purple).
 function corners() {
@@ -93,6 +97,8 @@ function powerCard() {
 // what the cover hints at: the headline number of that level
 function coverHint(k, l) {
   const f = k.dice?.to;
+  if (aimP(k)) return [h('span', { class: 'eq' }, `UP TO ${AIM[l].m}×`), die(f, AIM[l].s, 0, true)];
+  if (k.kind === 'super') return [fxv('pierce', E.scaleNum(k.fx.pierce, l)), h('span', { class: 'eq' }, `+${E.scaleNum(k.aoe, l)} ALL`)];
   if (k.kind === 'scale') return [mg(k.cost), h('span', { class: 'eq' }, '='), ...dice(E.powerDice(k, k.cost, l), f, k.dice.s)];
   if (k.kind === 'dice') return dice(k.dice.n + l, f, k.dice.s);
   if (k.kind === 'flat') return Object.entries(k.fx).map(([x, v]) => fxv(x, x === 'free' ? v + l : E.scaleNum(v, l)));
