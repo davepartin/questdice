@@ -24,7 +24,7 @@ const AIM = [{ s: 6, m: 4 }, { s: 8, m: 4 }, { s: 8, m: 6 }]; const CLV = [{ n: 
 const aimP = (k) => cls === 'ranger' && k?.id === 'aimed';
 const isProp = PROP.some((k) => k.id === q.get('p'));
 const mine = isProp ? PROP : (C.cards || []).filter((k) => k.start).sort((a, b) => a.slot.localeCompare(b.slot));
-const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? (cls === 'ranger' ? 'top' : 'margin') : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
+const sel = q.get('p') || mine[0].id; const selKind = (C.cards || []).find((c) => c.id === (q.get('p') || mine[0].id))?.kind; const variant = q.get('v') || (['charge', 'scale'].includes(selKind) || cls === 'ranger' || cls === 'knight' ? 'top' : 'float'); /* t416: Ranger buttons above the card */ const charges = +(q.get('c') || 2);
 const card = (id) => (C.cards || []).find((c) => c.id === id);
 const hero = { name: 'Dave', cls, level: 1 };
 const SVG = 'http://www.w3.org/2000/svg';
