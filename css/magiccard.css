@@ -62,3 +62,15 @@
 .mc-dots.fx-block .mc-dot:not(.g){background:#3aa4ff;color:#061a2e;box-shadow:inset 0 0 0 .4cqi #0c4a80}
 .mc-dots.fx-heal .mc-dot:not(.g){background:#38e87a;color:#06240f;box-shadow:inset 0 0 0 .4cqi #106a34}
 .mc-dots.fx-gold .mc-dot:not(.g){background:#ffd21a;color:#2a1e00;box-shadow:inset 0 0 0 .4cqi #8a6a00}
+/* fs1 (Dave: the Magic screen is full screen, no scrolling): with the card panel open the sheet fills the whole phone (100dvh, safe areas),
+   the health and magic bar and the grid stay put, and the card takes whatever height is left, centred, buttons above it. */
+.b3-sheet.open:has(.mc-sheet){position:fixed;inset:0;width:auto;height:100vh;height:100dvh;max-height:none;z-index:60;border-radius:0;box-sizing:border-box;overflow:hidden;
+ padding:calc(.45rem + var(--safe-t,0px)) calc(.6rem + var(--safe-r,0px)) calc(.5rem + var(--safe-b,0px)) calc(.6rem + var(--safe-l,0px));gap:.4rem}
+.b3-sheet .b3-cards:has(.mc-sheet){flex:1;min-height:0;overflow:hidden!important;display:flex;flex-direction:column}
+.mc-sheet{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.mc-sheet>.pw-tally,.mc-sheet>.mc-grid,.mc-sheet>.mc-ctl{flex:none}
+.mc-grid{gap:4px;padding:4px}.mc-tile{height:clamp(46px,7.2dvh,62px)}
+.pw-detail.mc-stage{flex:1;min-height:0;container-type:size;align-items:center;justify-content:center;overflow:hidden}
+.mc-stage .mc-card{--w:min(100cqw,calc(100cqh * 720 / 1052),420px);min-width:0}
+.mc-stage .dr-card{max-height:100%;overflow:hidden}
+.mc-sheet>.pw-detail:not(.mc-stage){flex:1;min-height:0;overflow-y:auto}
