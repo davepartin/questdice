@@ -42,7 +42,7 @@ const m0 = await st(); await shot('mr1-mark-card'); await p.locator('.mc-ctl .mc
 for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
 const m1 = await st(); await settle(); await pick('mark');
 const mDis = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.disabled);
-check('Hunter\u2019s Mark: 2 magic, +2 pierce, gold armed 3, then used this round', m0.magic - m1.magic === 2 && m1.pierce - m0.pierce === 2 && m1.gold === 3 && mDis, JSON.stringify({ m0, m1, mDis }));
+check('Hunter\u2019s Mark: 2 magic, +3 pierce, gold armed 6, then used this round', m0.magic - m1.magic === 2 && m1.pierce - m0.pierce === 3 && m1.gold === 6 && mDis, JSON.stringify({ m0, m1, mDis }));
 await pick('volley');
 const v0 = await st(); await p.locator('.mc-ctl .mc-use.add').click(); for (let i = 0; i < 10; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
 await settle(); await pick('volley');

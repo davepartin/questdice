@@ -6,12 +6,12 @@ const ranger = () => newHero({ name: 'R', cls: 'ranger', seed: 3, full: true });
 test('Ranger starts with Aimed Shot, Hunter\'s Mark and Volley', () => {
   assert.deepEqual(cardsOf(ranger()).map((k) => k.id), ['aimed', 'mark', 'volley']);
 });
-test('Hunter\'s Mark: 2 magic, +2 pierce, once a round; +3 gold only if the target falls', () => {
+test('Hunter\'s Mark: 2 magic, +3 pierce, every round; +6 gold only if the target falls', () => {
   const h = ranger(); const b = newBattle(h, questsFor(h)[0], makeRng(2), 1); startRoll(b); b.magic = 6;
-  assert.ok(castPower(b, 'mark')); assert.equal(b.magic, 4); assert.equal(b.mods.pierce, 2); assert.equal(b.markGold, 3);
+  assert.ok(castPower(b, 'mark')); assert.equal(b.magic, 4); assert.equal(b.mods.pierce, 3); assert.equal(b.markGold, 6);
   assert.equal(castPower(b, 'mark'), null);
   b.enemies[0].hp = 1; const rep = resolve(b, { target: 0 });
-  assert.equal((rep.report || rep).markGold ?? b.report?.markGold ?? b.lastReport?.markGold, 3); assert.equal(b.markGold, 0);
+  assert.equal((rep.report || rep).markGold ?? b.report?.markGold ?? b.lastReport?.markGold, 6); assert.equal(b.markGold, 0);
   const h2 = ranger(); const b2 = newBattle(h2, questsFor(h2)[0], makeRng(2), 1); startRoll(b2); b2.magic = 6; castPower(b2, 'mark');
   b2.enemies[0].hp = 999; const rep2 = resolve(b2, { target: 0 }); assert.ok(!(rep2.report || rep2).markGold); assert.equal(b2.markGold, 0);
 });

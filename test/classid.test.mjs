@@ -54,7 +54,7 @@ test('Verse for a friend: the Bard chooses; for itself it is attack as before, f
     return b;
   };
   const self = play(undefined); assert.equal((self.report.verses || []).length, 0, 'no target: attack for the Bard, as now');
-  const friend = play(1); assert.deepEqual(friend.report.verses.map((v) => [v.from, v.to, v.n]), [['Bea', 'Kit', 6]], 'a 5-6 for Kit: 6 healing');
+  const friend = play(1); assert.deepEqual(friend.report.verses.map((v) => [v.from, v.to, v.n]), [['Bea', 'Kit', E.LUCK.top]], 'a 5-6 for Kit: the top result as healing (mc1: 10)');
 });
 
 test('The targeted song (T08 experiment): Courage is attack, Shelter is block, for the Bard or a friend; off unless CLASS2.song is set', () => {

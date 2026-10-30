@@ -77,3 +77,15 @@
 
 /* mw1: the frog */
 .mc-frog{font:900 5.4cqi/1 var(--ui,sans-serif);color:#1d8a3a;padding:.4cqi 1.4cqi;border-radius:1.2cqi;background:#d9f5df}
+
+/* mc1 (Dave's review pass): the hero's level gets the room; the other levels are one slim upgrade line each */
+.mc-levels{display:flex;flex-direction:column;gap:1.6cqi}
+.mc-lv{flex:none;min-height:9.6cqi;padding:.8cqi 2.4cqi}
+.mc-lv:not(.act) .mc-rn{width:6.4cqi;height:6.4cqi;font-size:3.2cqi}
+.mc-lv.act{flex:1;min-height:0;padding:2cqi 3cqi;align-items:center}
+.mc-lv.act .mc-sy{gap:2cqi;justify-content:center}
+.mc-lv.act .mc-slots .mc-die,.mc-lv.act .mc-space{width:10.4cqi;height:10.4cqi}
+.mc-lv.act .mc-spent{font-size:3.8cqi}.mc-lv.act .mc-mx{font-size:3.3cqi}
+.mc-lv.act .mc-fv{font-size:6cqi}.mc-lv.act .mc-fv .ic{width:6cqi;height:6cqi}
+.mc-lv.act .mc-dot{width:8.4cqi;height:8.4cqi;font-size:3.6cqi}
+.mc-had{font:900 3.2cqi/1 var(--disp,serif);color:#4a3216;gap:2cqi}

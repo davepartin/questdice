@@ -1085,7 +1085,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
   b.lastCast = out; CAST_HOOK.on?.(b, out); return out;
 }
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
-export const LUCK = { mid: 3, top: 6 };
+export const LUCK = { mid: 5, top: 10 }; // mc1 (PROPOSED): was 3 / 6 at 1 magic; Lucky Verse now costs 2
 // The targeted-song versions under test (T08): sizes for Courage (atk) and Shelter (block); lucky rolls a d6 like Lucky Verse
 export const SONG = { steady: { atk: 4, block: 5 }, lucky: { luck: true, mid: 4, top: 7 }, big: { atk: 8, block: 9 } };
 export const PACT_MAGIC = 6; // Blood Pact's extra starting magic, for 8 health (8 still measured top of the charms)
@@ -2253,8 +2253,11 @@ export function resolveParty(b) {
       killed, ev: f.ev, T, burned: burn || 0, phased: phase, splashed, magic,
     });
   };
+  const frogs = new Set(); // Polymorph in a party (mc1): each caster's target (or the first monster standing) is a frog this round
+  for (const f of snap) if (f.mods?.frog) { const t = b.enemies[f.target]?.hp > 0 ? b.enemies[f.target] : b.enemies.find((e) => e.hp > 0); if (t) { frogs.add(t.uid); (rep.frogs ||= []).push(t.uid); } }
   const actFor = (e) => {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
+    if (frogs.has(e.uid)) { rep.acts.push({ uid: e.uid, name: e.intent.n, v: 'frog', frog: true, mag: 0 }); return; } // Polymorph (mc1, PROPOSED): a frog cannot act
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, frosted };
     switch (i.v) {
@@ -2317,6 +2320,12 @@ export function resolveParty(b) {
   for (const x of line) {
     if (x.kind === 'hero') { if (runningHp(x.f) <= 0) { (rep.fallen = rep.fallen || []).push(x.f.hero.name); continue; } strikeFor(x.f); } else actFor(x.e);
   }
+  snap.forEach((f, i) => { // Riposte in a party (mc1, PROPOSED): the block this hero's share did not use hits their target back, minus armour
+    if (!f.riposte) return; f.riposte = false; if (runningHp(f) <= 0 || blocks[i] <= 0) return;
+    const rt = b.enemies[f.target]?.hp > 0 ? b.enemies[f.target] : b.enemies.find((e) => e.hp > 0); if (!rt) return;
+    const n = Math.min(rt.hp, Math.max(0, blocks[i] - (rt.arm || 0))); if (!n) return; rt.hp -= n; f.stats.dealt += n; f._dealt = (f._dealt || 0) + n;
+    (rep.ripostes ||= []).push({ name: f.hero.name, uid: rt.uid, n }); if (rt.hp <= 0) rep.killed.push(rt.uid);
+  });
   if (moral) b.moralNext = moral; // nobody left to act this round: it carries to the first hero next round
   settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
@@ -2343,7 +2352,7 @@ export function resolveParty(b) {
     if (f.hp <= 0 && hasCharm(f.hero, 'phoenix') && !f.phoenixUsed) { f.phoenixUsed = true; f.hp = Math.min(f.maxHp, 10); (rep.phoenix ||= []).push(f.hero.name); }
     if (f.pactBribe && f.hp < 1) f.hp = 1; // ...and the monster keeps its promise: never knocked out
     if (f.boon?.sick && f.hp > 1) { const n = Math.min(f.boon.sick, f.hp - 1); f.hp -= n; (rep.sick ||= []).push({ name: f.hero.name, n }); } // the road's bug: never the last point
-    f.stats.healed += healed; f.stats.taken += taken[i];
+    f.stats.healed += healed; f.stats.taken += taken[i]; f.lastHurt = taken[i]; // Grudge in a party (mc1)
     f.stats.blocked = (f.stats.blocked || 0) + absorbed[i];
     // The hero the monsters went after is the company's shield: blocks count double, and standing at the end holds the line.
     const shield = i === 0 && snap.length > 1;
