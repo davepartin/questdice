@@ -206,7 +206,7 @@ export function atmoLayers(weather) {
 }
 
 // ------------------------------------------------------------------------------------------ the board
-export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo }) {
+export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo, onHero }) {
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
   const camp = heroes[0]?.campaign;
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
@@ -235,8 +235,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const def = look || k;
     const pc = new Piece(fb, { kind: 'hero', key: `hero:${i}`, img: def.img || k.img, name: hero.name, rel: relOf('hero'), hue: look?.hue || null, flip: D.needsFlip(def, 'right') }).seat(def.imgBase || k.imgBase); // every hero looks toward the monsters
     pc.el.classList.add('hero');
+    if (onHero) { pc.el.classList.add('tappable'); pc.el.title = 'See this hero’s gear'; pc.el.setAttribute('aria-label', `${hero.name}: see gear`); pc.el.onclick = () => onHero(hero); } // the character itself opens the gear (Dave, 28 Oct), as the name plate does
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }));
-    const card = h('div', { class: 'fb-card hero' }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
+    const card = h('div', { class: `fb-card hero${onHero ? ' tappable' : ''}`, ...(onHero ? { role: 'button', tabindex: '0', title: 'See this hero’s gear', 'aria-label': `${hero.name}: see gear`, onclick: () => onHero(hero), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHero(hero); } } } : {}) }, h('b', { class: 'fb-name' }, hero.name), heroes.length > 1 ? hp : null);
     const slot = h('div', { class: `fb-slot hero${party ? ' wait' : ''}`, 'data-i': String(i) }, pc.el, card);
     pc.slot = slot; pc.card = card; pc.hpEl = hp; pc.idx = i; pc.home = heroSide;
     heroSide.append(slot); fb.heroes.push(pc);

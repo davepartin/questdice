@@ -12,6 +12,7 @@ import * as R from '../roads.js';
 import * as Net from '../net.js';
 import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
+import { strengthCard, talentsCard, heartCard, weaponCard as cbWeaponCard } from './cardboard.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
@@ -22,7 +23,10 @@ import { reportRow } from './reportui.js';
 import { packList, packOf, packIdOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from '../campaigns.js';
 import { GRID, slotPrice, slotCanBuy } from '../campbuy.js';
 import { campDie, campFaceList } from './campart.js';
+import { openGear } from './gearview.js';
 import * as CW from './cards.js';
+import * as CB from './cardboard.js';
+import { priceChip } from './price.js'; // the one shared price chip (Dave 26 Oct 2026)
 
 let X = null;
 export const bind = (ctx) => { X = ctx; };
@@ -37,6 +41,10 @@ const tap = (fn) => (e) => { sfx.click(); fn(e); };
 function btn(label, onclick, { kind = 'primary', icon, disabled = false, cls = '', aria, big = false, iconAfter = false } = {}) {
   return h('button', { class: `sx-btn sx-${kind} ${big ? 'sx-big' : ''} ${cls}`, type: 'button', disabled, 'aria-label': aria, onclick: disabled ? null : tap(onclick) },
     icon && !iconAfter ? ico(icon) : null, h('span', { class: 'lbl' }, label), icon && iconAfter ? ico(icon) : null);
+}
+// a button whose gold figure is the shared price chip: label on the left, chip on the right (poor: red chip)
+function chipBtn(label, price, onclick, { poor = false, aria, ...o } = {}) {
+  const b = btn(label, onclick, { ...o, aria: aria || `${label ? `${label} for ` : ''}${price} gold` }); b.append(priceChip(price, { poor })); return b;
 }
 function panel(cls, ...kids) {
   return h('section', { class: `sx-panel ${cls || ''}` }, h('i', { class: 'co tl' }), h('i', { class: 'co tr' }), h('i', { class: 'co bl' }), h('i', { class: 'co br' }), ...kids);
@@ -127,7 +135,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
+const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeHeart', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -279,7 +287,7 @@ function charmGuide() {
   const ids = Object.keys(D.CHARMS);
   modal(h('div', { class: 'form slot-sheet ch-guide' },
     h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${ids.length} in all · carry ${D.CHARM_MAX}`), h('b', {}, 'Charms')),
-      h('button', { class: 'sh-x', type: 'button', onclick: () => closeModal() }, 'Done')),
+      h('button', { class: 'sh-x', type: 'button', onclick: () => closeModal() }, 'Close')),
     h('p', { class: 'sh-role' }, 'A charm changes one rule for you, in every fight. Bosses and big fights drop them. The Camp Store sometimes sells one.'),
     h('div', { class: 'ch-list' }, ids.map((id) => charmCard(id, { cls: hasCharmHere(hero, id) ? 'mine' : '', badge: hasCharmHere(hero, id) ? 'You have it' : '' })))));
 }
@@ -298,15 +306,19 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
   return shWeapon(inst, acts, `pk ${cls}`, badge, money);
 }
 // the full card, large, from any row or thumbnail
-function showWeaponCard(inst, money) {
-  const close = modal(h('div', { class: 'form cw-modal' }, h('div', { class: 'cw-big' }, CW.weaponCardOf(inst, money)),
+function showWeaponCard(inst, money, { real = false } = {}) { // real: the camp T17 card (the spoils' picture, large)
+  const close = modal(h('div', { class: 'form cw-modal' }, h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money)),
     h('div', { class: 'row end' }, btn('Close', () => close(), { kind: 'ghost' }))));
 }
 // spoils: the card itself (tap for the large one), then what the weapon is and the buttons below it
 function spoilsView(inst, acts, cls, badge, money) {
-  const d = CW.weaponData(inst, money); const thumb = CW.weaponCardEl(d); thumb.setAttribute('role', 'button'); thumb.tabIndex = 0;
-  thumb.addEventListener('click', () => { sfx.click(); showWeaponCard(inst, money); });
-  thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfx.click(); showWeaponCard(inst, money); } });
+  // Dave, 26 Oct 2026: the spoils show the REAL weapon card, the camp T17 card with its per-size rows (cardboard.js weaponCard), drawn at full size
+  // and scaled down as one picture (so it is crisp and laid out exactly like the big card), not the old mini card with its stray size label.
+  const d = CW.weaponData(inst, money); const real = CB.weaponCard(X.S.hero, null, inst); real.setAttribute('aria-hidden', 'true'); real.inert = true;
+  const thumb = h('div', { class: 'cw-spoilcard', role: 'button', tabindex: '0', 'aria-label': `${d.metal} ${d.name} card. Tap to see it large` }, h('div', { class: 'cw-spoilscale' }, real));
+  if (typeof ResizeObserver === 'function') new ResizeObserver(([e]) => { if (e.contentRect.width) thumb.style.setProperty('--k', String(e.contentRect.width / 340)); }).observe(thumb);
+  thumb.addEventListener('click', () => { sfx.click(); showWeaponCard(inst, money, { real: true }); });
+  thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfx.click(); showWeaponCard(inst, money, { real: true }); } });
   const info = h('div', { class: 'cw-info' }, h('b', { class: 'nm' }, `${d.metal} ${d.name}`), badge ? h('small', { class: 'cw-tag' }, badge) : null,
     h('p', {}, `A d${d.size} weapon${d.hands === 2 ? ', both hands' : ''}${d.wear ? `, ${d.wear}` : ''}.`), h('small', { class: 'cw-hint' }, 'Tap the card to see it large.'));
   const rest = h('div', { class: 'cw-rest' }); rest.innerHTML = CW.strip(d); if (acts) rest.append(acts);
@@ -323,11 +335,16 @@ export function daily(v) {
     if (!r.rows.length) { boardEl.replaceChildren(h('p', { class: 'fine' }, 'Nobody has a score today yet. Be the first.')); return; }
     boardEl.replaceChildren(h('ol', { class: 'dl-top' }, r.rows.map((x, i) => h('li', { class: x.uid === r.me ? 'me' : '' }, h('span', { class: 'dl-rank' }, String(i + 1)), emblem(x.cls), h('b', {}, x.name), h('small', {}, `${x.fights}/${DAY.FIGHTS}`), h('em', {}, x.score.toLocaleString()))))); }).catch(() => {});
   const head = v.mode === 'result'
-    ? [eyebrow(DAY.dayLabel(run.key)), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, `${v.fights.filter((f) => f.won).length} of ${DAY.FIGHTS} fights won${v.rec?.isBest ? ' · a new best today!' : ` · your best today: ${v.rec.best.toLocaleString()}`}${v.streak > 1 ? ` · ${v.streak} days in a row` : ''}`)]
+    ? [eyebrow(DAY.dayLabel(run.key)), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, `${v.fights.filter((f) => f.won).length} of ${DAY.FIGHTS} fights won${v.spent ? ` · ${v.spent} points spent on potions` : ''}${v.rec?.isBest ? ' · a new best today!' : ` · your best today: ${v.rec.best.toLocaleString()}`}${v.streak > 1 ? ` · ${v.streak} days in a row` : ''}`)]
     : v.mode === 'between'
       ? [eyebrow(`Fight ${v.fights.length} of ${DAY.FIGHTS} won`), h('h1', { class: 'sx-act' }, `${v.score.toLocaleString()} points`), h('p', { class: 'dl-sub' }, 'Catch your breath. Your health is full again for the next fight; the potions you drank stay drunk.')]
-      : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, 1 for every gold coin, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
+      : [eyebrow(`Daily challenge · ${DAY.dayLabel(run.key)}`), h('h1', { class: 'sx-act' }, `${D.CLASSES[run.cls].name}, Act ${romans[run.act - 1]}`), h('p', { class: 'dl-sub' }, `The same five fights for everyone today. Battle points, 1 for every gold coin, +${DAY.WIN_BONUS} for every win, +${DAY.CLEAR_BONUS} for clearing all five. Between fights you can spend points on potions. Play as often as you like; your best counts.${v.rec?.tries ? ` Your best today: ${v.rec.best.toLocaleString()}.` : ''}${v.streak > 1 ? ` ${v.streak} days in a row.` : ''}`)];
   const kit = h('section', { class: 'dl-kit' }, h('div', { class: 'dl-hero' }, emblem(run.cls, 'lg'), h('div', {}, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} · hands d${hero.strength.W} · ${D.tierName(hero.loadout.NW)} d${E.weaponSize(hero.loadout.NW)} ${D.WEAPONS[hero.loadout.NW.id].name}`))), E.charmsResting() ? null : charmCard(run.charm, { badge: 'Today' }));
+  // Between fights: potions for points (js/daily.js potionShop). The score on screen already has the spending taken off.
+  const shop = v.mode === 'between' && v.shop ? h('section', { class: 'dl-shop', 'aria-label': 'Potion shop' },
+    h('div', { class: 'dl-shop-t' }, ico('potion'), h('span', {}, h('b', {}, 'Potions'), h('small', {}, `${v.shop.have} of ${v.shop.max} on your belt · each heals ${v.shop.heal}${v.spent ? ` · ${v.spent} points spent so far` : ''}`))),
+    btn(v.shop.ok ? `Buy a potion · ${v.shop.cost} pts` : v.shop.why, v.onBuyPotion, { kind: 'ghost', disabled: !v.shop.ok, cls: 'wide' })) : null;
+  const gearBtn = v.mode === 'result' ? null : btn('See your gear', () => openGear(v.mode === 'between' ? (X.S.hero || hero) : hero), { kind: 'ghost', icon: 'bag', cls: 'wide' }); // the dice grid and cards, look only
   const cta = v.mode === 'between' ? btn(`Fight ${v.fights.length + 1}: ${run.quests[v.fights.length].kind === 'boss' ? run.quests[v.fights.length].name : 'onward'}`, v.onNext, { big: true, icon: 'sword', cls: 'wide' })
     : v.mode === 'result' ? h('div', { class: 'dl-acts' }, btn('Share', v.onShare, { kind: 'ghost', icon: 'people' }), btn('Try again', v.onStart, { big: true, icon: 'reroll' }))
       : btn('Begin', v.onStart, { big: true, icon: 'sword', cls: 'wide' });
@@ -335,7 +352,7 @@ export function daily(v) {
     topBar(h('div', { class: 'sx-chip dl-chip' }, ico('crown'), h('b', {}, 'Daily')), h('div', { class: 'sx-top-actions' }, btn(v.mode === 'between' ? 'Give up' : 'Home', v.onHome, { kind: 'ghost', icon: 'home' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' }, ...head),
-      v.mode === 'intro' ? kit : null,
+      v.mode === 'intro' ? kit : null, shop, gearBtn,
       h('ol', { class: 'dl-fights' }, run.quests.map(fightRow)),
       h('div', { class: 'sx-cta' }, cta),
       v.mode === 'between' ? null : [eyebrow('Today’s best', 'center'), boardEl])));
@@ -453,6 +470,18 @@ export function create(opts = {}) {
     pending(''); msg.textContent = '';
     if (tcode && tcode.value.length !== 4) { msg.textContent = 'A table code is four letters.'; sfx.error(); tcode.focus(); return; }
     if (T && loaded) { loaded.difficulty = diff; return seat(loaded, { pack: pack.id }); }
+    // A refused seat ("This story needs the Wizard and Dwarf Warden") leaves the hero this form forged. If the player then changes the class, colour or name, the
+    // next tap must forge THAT hero, not reuse the old one (trip playtest, 26 Oct 2026: a friend who picked the wrong class could never get a seat).
+    if (T && made && !madeProven) {
+      const nm = name.value.trim().replace(/\s+/g, ' ');
+      if (nm && nm !== made.name) { SV.deleteHero(made.name, pack.id); made = null; }
+      else if (made.cls !== cls || (made.color ?? color) !== color) {
+        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.difficulty = made.difficulty;
+        SV.saveHero(redo); // the local save keeps its password; only the hero in it changes
+        try { await (await import('../cloud.js')).putHero(redo, pw.value); } catch { /* saved on this device; the cloud copy follows when it can */ }
+        made = redo; X.adopt(redo);
+      }
+    }
     if (T && made) { made.difficulty = diff; return seat(made, { pack: pack.id, proven: madeProven }); }
     const n = name.value.trim().replace(/\s+/g, ' ');
     if (n.length < 2) { msg.textContent = 'Give your hero a name (2–16 characters).'; sfx.error(); name.focus(); return; }
@@ -851,7 +880,7 @@ export function revealPanel(reveal, youName, { bare = false } = {}) {
   return panel('sx-reveal', bare ? null : eyebrow('The Reveal', 'gold'),
     bare ? null : h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
     h('ul', { class: 'rv-list' }, reveal.lines.map((l) => h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
-      h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
+      h('div', { class: 'rv-person' }, h('b', {}, l.name), h('span', { class: 'rv-status' }, l.met === true ? 'Completed' : l.met === false ? 'Not completed' : l.gold > 0 ? 'Reward earned' : l.gold < 0 ? 'Gold lost' : 'Result')), l.objective ? h('div', { class: 'rv-objective' }, l.objectiveName ? h('h2', {}, l.objectiveName) : null, h('p', {}, l.objective), h('small', {}, l.accepted === false ? 'Declined' : l.met ? 'Objective completed.' : 'No reward earned.', l.stake && !l.met ? ` ${l.stake} gold stake lost.` : '')) : h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
 }
 
 // ------------------------------------------------------------------------------------------------ victory / defeat
@@ -892,12 +921,12 @@ export function victory(first) {
   const packStrip = full && Rw.picked == null ? h('div', { class: 'sx-pack' },
     h('p', { class: 'pk-head' }, ico('bag'), h('b', {}, `Your pack is full (${hero.bag.length}/${D.BAG_MAX})`), h('small', {}, 'Sell one to make room, or sell the spoils.')),
     h('div', { class: 'pk-list' }, hero.bag.map((it) => h('div', { class: 'pk-item' }, h('span', {}, `${D.tierName(it)} ${D.WEAPONS[it.id].name} · d${E.weaponSize(it)}`),
-      btn(`Sell ${E.sellValue(it)}`, () => { HE.sellItem(hero, it.uid); done(); }, { kind: 'ghost', icon: 'coin', aria: `Sell ${D.WEAPONS[it.id].name} for ${E.sellValue(it)} gold` }))))) : null;
+      chipBtn('Sell', E.sellValue(it), () => { HE.sellItem(hero, it.uid); done(); }, { kind: 'ghost', aria: `Sell ${D.WEAPONS[it.id].name} for ${E.sellValue(it)} gold` }))))) : null;
   const loot = Rw.repeat || Rw.picked === 'none' ? null
     : Rw.picked == null
     ? panel('sx-loot', eyebrow(`Choose your spoils · pack ${hero.bag.length}/${D.BAG_MAX}`, 'gold'), packStrip, h('div', { class: 'loot-row' }, Rw.drops.map((inst, i) => weaponCard(inst, { cls: 'pick', actions: [
       btn(full ? 'Pack full' : 'Take', () => { if (!E.takeDrop(hero, inst)) return; Rw.picked = i; Rw.sold = false; done(); }, { kind: 'primary', icon: 'bag', disabled: full }),
-      btn(`Sell ${E.sellValue(inst)}`, () => { E.sellDrop(hero, inst); Rw.picked = i; Rw.sold = true; done(); }, { kind: 'ghost', icon: 'coin', cls: 'sell', aria: `Sell it now for ${E.sellValue(inst)} gold` }),
+      chipBtn('Sell', E.sellValue(inst), () => { E.sellDrop(hero, inst); Rw.picked = i; Rw.sold = true; done(); }, { kind: 'ghost', cls: 'sell', aria: `Sell it now for ${E.sellValue(inst)} gold` }),
     ] }))))
     : panel('sx-loot done', h('p', { class: 'muted' }, Rw.sold ? `You sold the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name} for ${E.sellValue(Rw.drops[Rw.picked])} gold. Coins, at least, never argue.` : `You took the ${D.tierName(Rw.drops[Rw.picked])} ${D.WEAPONS[Rw.drops[Rw.picked].id].name}. It waits in your pack, humming a little.`));
   const lootHint = Rw.repeat || Rw.picked != null ? null : (Rw.drops.some((d) => D.WEAPONS[d.id].hands === 2) && Coach.wantHint(hero, 'v_twohand') ? coachBox('v_twohand') : coachBox('v_loot'));
@@ -906,7 +935,7 @@ export function victory(first) {
     Rw.diamondTaken ? gemLine(`It is in your Diamond case (${E.diamondsOf(hero).length} of ${D.DIAMOND.max}). Bring it from camp, under your dice, when a fight matters.`)
       : Rw.diamondSold ? gemLine(`Sold for ${E.diamondSellValue(Rw.diamond)} gold. A sensible choice. The Diamond disagrees, quietly.`)
         : [gemLine(`Your Diamond case is full (${D.DIAMOND.max} of ${D.DIAMOND.max}). Sell this one, or leave it behind and use a Diamond in a fight to make room.`),
-          h('div', { class: 'row end' }, btn(`Sell it ${E.diamondSellValue(Rw.diamond)}`, () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost', icon: 'coin', iconAfter: true }))]) : null;
+          h('div', { class: 'row end' }, chipBtn('Sell it', E.diamondSellValue(Rw.diamond), () => { hero.gold += E.diamondSellValue(Rw.diamond); Rw.diamondSold = true; sfx.coin(); X.persist(); X.renderVictory(); }, { kind: 'ghost' }))]) : null;
   // charms in the spoils: take one (a boss offers two to choose from); with three already, swap one out
   const charmPanel = Rw.charms?.length && !Rw.repeat ? panel('sx-charms-loot', eyebrow(Rw.charms.length > 1 ? 'Choose a charm' : 'A charm', 'gold'), charmGuideBtn(),
     Rw.charmTaken ? h('p', { class: 'muted' }, `You took the ${D.CHARMS[Rw.charmTaken].name}. It works from your next fight.`)
@@ -960,7 +989,7 @@ const FORGE = { tally: null, sec: null, info: new Set() };
 const tallyUp = (n = 1) => { if (FORGE.tally && FORGE.sec) FORGE.tally[FORGE.sec] = (FORGE.tally[FORGE.sec] || 0) + n; };
 function priceBtn(label, price, ok, buy, aria) {
   const hero = X.S.hero; if (ok) tallyUp();
-  const b = btn(label ? `${label} · ${price}` : String(price), buy, { icon: 'coin', iconAfter: !!label, disabled: !ok, cls: `ur-buy ${!ok ? 'poor' : ''}`, aria });
+  const b = btn(label || '', buy, { disabled: !ok, cls: `ur-buy ${!ok ? 'poor' : ''}`, aria: aria || `${label ? `${label} for ` : ''}${price} gold` }); b.append(priceChip(price, { poor: !!hero && hero.gold < price }));
   if (!ok && hero && hero.gold < price) b.append(h('span', { class: 'need-row' }, h('small', { class: 'need' }, `need ${price - hero.gold}`))); // (your gold is in the header; Dave: the button must not squash the text)
   return b;
 }
@@ -1006,37 +1035,15 @@ function weaponRow(inst, label = '') {
 function campStatus(hero) {
   const c = hero.campaign; const act = X.actOf(hero);
   const r = E.potionBuyInfo(hero);
-  const pips = h('span', { class: 'cs-steps', role: X.net ? null : 'group', 'aria-label': 'Quests of this act: tap one you have reached to play it' }, Array.from({ length: D.QUESTS_PER_ACT }, (_, i) => {
-    const n = i + 1; const kind = D.stepKind(act, n); const done = n < c.step; const now = n === c.step; const reach = !done && !now && SV.canStartAt(hero, c.act, n);
-    return h('button', { type: 'button', class: `cs-step ${done ? 'done' : ''} ${now ? 'now' : ''} ${reach ? 'reach' : ''} ${kind === 'battle' ? '' : kind}`, disabled: !!X.net, 'aria-label': `Quest ${n}${now ? ', you are here' : ''}`,
-      onclick: X.net ? null : tap(() => stepAsk(hero, c.act, n, () => X.renderCamp())) }, kind === 'boss' ? ico('crown') : kind === 'elite' ? ico('skull') : String(n));
-  }));
+  const pips = trail(c, X.net ? null : hero, () => X.renderCamp()); // the road screen's step bar, same look on both (Dave, cp5)
   const vials = h('span', { class: 'sp-vials', 'aria-label': `${r.have} of ${r.max} potions` }, Array.from({ length: r.max }, (_, i) => h('i', { class: i < r.have ? 'full' : '' }, ico('plus'))));
   const buy = r.have >= r.max ? h('span', { class: 'sp-full' }, 'Full')
-    : btn(`${r.price}`, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { icon: 'coin', disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
-  return h('section', { class: `sx-cstat slim ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
-    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act}`), pips),
-    h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy)); // named, like the act beside it (Dave: "needs to say potion somewhere")
+    : chipBtn('', r.price, () => { if (HE.buyPotion(hero)) { sfx.coin(); X.persist(); X.renderCamp(); } else { sfx.error(); toast('Not enough gold.'); } }, { poor: !r.ok, disabled: !r.ok, cls: `sp-buy ${!r.ok ? 'poor' : ''}`, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${r.price} gold` });
+  return h('section', { class: `sx-cstat slim cs-trailbar ${r.have === 0 ? 'empty' : ''}`, 'aria-label': 'Where you are, and your potions' },
+    h('div', { class: 'cs-where' }, h('b', {}, `Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`)),
+    h('div', { class: 'cs-pots' }, h('b', { class: 'cs-potlabel' }, 'Potions'), vials, buy), pips); // named, like the act beside it (Dave: "needs to say potion somewhere")
 }
-// Potion belt: carry a third healing potion.
-function potionRow(hero) {
-  const u = E.potionUpgrade(hero); const cur = E.potionMaxOf(hero); const locked = u.why?.startsWith('Level');
-  return h('div', { class: 'sx-urow cmp' }, rowIco('plus'),
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Potion belt', h('em', { class: 'ur-to' }, u.next ? ` ${cur} → ${u.next}` : ` ${cur}`)), h('small', {}, `Carry one more healing potion (each heals ${E.potionHpOf(hero)}).`)),
-    !u.next ? maxTag() : locked ? gateTag(u.why) : priceBtn('', u.cost, u.ok, () => { if (HE.upgradePotions(hero)) bought(); }, `Carry ${u.next} potions for ${u.cost} gold`));
-}
-// The 4th reroll die: every reroll may take one more die, for good. Hidden on a broke Act I camp.
-function showRerollDie(hero) {
-  const u = E.rerollDieInfo(hero);
-  return hero.gold >= D.REROLL_DIE_COST || (u.cur || 0) > D.REROLL_DICE || (hero.campaign?.act || 1) >= 2;
-}
-function rerollDieRow(hero) {
-  if (!showRerollDie(hero)) return null;
-  const u = E.rerollDieInfo(hero);
-  return h('div', { class: 'sx-urow cmp' }, rowIco('reroll'),
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Rerolls', h('em', { class: 'ur-to' }, u.next ? ` ${u.cur} → ${u.next} dice` : ` ${u.cur} dice`)), h('small', {}, 'Each reroll in battle can take one more die.')),
-    u.next ? priceBtn('', u.cost, u.ok, () => { if (HE.buyRerollDie(hero)) bought(); }, `Reroll ${u.next} dice for ${u.cost} gold`) : maxTag());
-}
+// (Potion belt and the 4th reroll die are sold in the cardboard Camp Store: storeTab.)
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
 const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
 const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
@@ -1086,23 +1093,26 @@ const PET = { face: null };
 const petPic = (type, size = 84) => h('span', { class: 'pet-pic', 'aria-hidden': 'true', style: { '--pc': D.PETS[type]?.color } }, h('img', { src: petImg(type), alt: '', style: { height: `${size}px` } }));
 const petSyms = (hero) => [...new Set([...Object.keys(D.TALENT_SYMS), D.PETS[hero.pet.type].kind])]; // the pet's own symbol may be one talents lack (Bristle's pierce)
 const petLeft = (hero, k) => (k === D.PETS[hero.pet.type].kind ? D.petKindMax(hero.pet.size) : D.TALENT_MAX_SAME) - hero.pet.faces.flat().filter((x) => x === k).length;
+// adopting (or trading for) the store's pet: the same flow the old offer row ran, shared by the cardboard store card
+function petAsk(hero, o) {
+  const p = D.PETS[o.type]; const swap = hero.pet && !o.owned;
+  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train it under Upgrades.`); } else { sfx.error(); toast('Not enough gold.'); } };
+  if (!swap) return adopt();
+  const old = D.PETS[hero.pet.type].name;
+  const close = modal(h('div', { class: 'form confirm-home' }, h('h2', {}, `Trade ${old} for ${p.name}?`),
+    h('p', { class: 'muted' }, `${old} goes home to a warm hearth, and its training goes too. ${p.name} starts fresh as a d4. No hard feelings. Many feelings, none of them hard.`),
+    h('div', { class: 'row end' }, btn(`Keep ${old}`, () => close(), { kind: 'ghost' }), btn(`Adopt ${p.name}`, () => { close(); adopt(); }))));
+}
 function petOfferCard(hero) {
   const o = E.petOffer(hero); if (!o) return null; const p = D.PETS[o.type];
   const swap = hero.pet && !o.owned;
-  const adopt = () => { if (HE.buyPet(hero)) { PET.face = null; sfx.level(); X.persist(); X.renderCamp(); toast(`${p.name} joins you! Train it under Upgrades.`); } else { sfx.error(); toast('Not enough gold.'); } };
-  const ask = () => {
-    if (!swap) return adopt();
-    const old = D.PETS[hero.pet.type].name;
-    const close = modal(h('div', { class: 'form confirm-home' }, h('h2', {}, `Trade ${old} for ${p.name}?`),
-      h('p', { class: 'muted' }, `${old} goes home to a warm hearth, and its training goes too. ${p.name} starts fresh as a d4. No hard feelings. Many feelings, none of them hard.`),
-      h('div', { class: 'row end' }, btn(`Keep ${old}`, () => close(), { kind: 'ghost' }), btn(`Adopt ${p.name}`, () => { close(); adopt(); }))));
-  };
+  const ask = () => petAsk(hero, o);
   const chip = (k) => (k ? symChip(k) : h('span', { class: 'fx blank' }, '·'));
   return h('div', { class: 'pet-offer', style: { '--pc': p.color } }, petPic(o.type, 96),
     h('div', { class: 'po-copy' }, h('small', { class: 'po-kicker' }, 'A pet for the road.'), h('b', {}, p.name), h('small', {}, p.text),
       h('div', { class: 'po-faces', 'aria-label': 'Its d4: one blank face, two symbols, one face to train' }, chip(null), chip(p.kind), chip(p.kind), h('span', { class: 'fx open' }, '+'))),
     o.owned ? h('span', { class: 'sold-tag' }, 'With you')
-      : btn(`${swap ? 'Trade' : 'Adopt'} · ${o.price}`, ask, { icon: 'coin', iconAfter: true, disabled: hero.gold < o.price, cls: 'buy', aria: `Adopt ${p.name} for ${o.price} gold` }));
+      : chipBtn(swap ? 'Trade' : 'Adopt', o.price, ask, { disabled: hero.gold < o.price, poor: hero.gold < o.price, cls: 'buy', aria: `Adopt ${p.name} for ${o.price} gold` }));
 }
 function petCard(hero) {
   const pet = hero.pet; const p = D.PETS[pet.type]; const t = E.petTrainInfo(hero); const pw = E.petPowerOf(hero); const g = E.petGrowInfo(hero);
@@ -1194,14 +1204,14 @@ function toRoad(hero) {
   const refill = () => { for (let i = 0; i < n; i++) E.buyPotion(hero); sfx.coin?.(); X.persist(); X.showRoadOrBoard(); };
   cta.replaceChildren(h('div', { class: 'sx-potask', role: 'alertdialog', 'aria-label': 'Potion belt not full' },
     h('p', {}, ico('plus'), h('span', {}, `Potion belt: ${r.have} of ${r.max}. Refill${n < r.max - r.have ? ` ${n}` : ''} for ${n * r.price} gold?`)),
-    h('div', { class: 'sx-potask-btns' }, btn(`Refill ${n * r.price}`, refill, { icon: 'coin', iconAfter: true, cls: 'wide potask-yes' }), btn('Go anyway', () => X.showRoadOrBoard(), { kind: 'ghost', cls: 'wide potask-no' }))));
+    h('div', { class: 'sx-potask-btns' }, chipBtn('Refill', n * r.price, refill, { cls: 'wide potask-yes', poor: hero.gold < n * r.price }), btn('Go anyway', () => X.showRoadOrBoard(), { kind: 'ghost', cls: 'wide potask-no' }))));
 }
 const weaponRowFor = (inst, label) => weaponRow(inst, label);
 // The Forge: a strip at the top says how many things your gold can buy in each section and jumps there; then the sections, most-used
 // first. Each section's longer explanation sits behind a small "?".
 const FORGE_INTRO = {
   supplies: 'More dice for each reroll, and more potions on your belt.',
-  body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. A die can only grow as far as the act allows. Patience, then punch.',
+  body: 'Your hands are strength, your head is wisdom, your feet are speed: the road tests all three. Bigger hand dice also hit harder. Any die can grow up to a d10 when you can pay. Patience, then punch.',
   weapons: 'A weapon never wears out. Silver and Gold put more icons on its faces and a crit of two, then three, on its top number. A small burst (or shield) on a face is +1 attack (or block): a 3 with one hits for 4 but still counts as a 3 for triples and straights. Battles mostly leave Bronze; the Camp Store sells Silver and Gold, and what you sell comes back as gold. A weapon die never rolls bigger than the hand that holds it, so grow your hands to wield the bigger ones.',
   powers: 'Three slots: A is your big move, B works every round, C stores a charge each round to let go when you choose. Learn another power for a slot and swap it in. Upgrades add dice and numbers. Pack the one you will actually use.',
   talents: 'Each number face pays its own number in the symbol you buy for it: a 6 with magic is 6 magic. Pay once per face (a bigger number costs more), no pierce, and no more than two of one symbol on a die. Face 2 doubles your hand. A bigger die brings new empty faces. Homework, with sparkles.',
@@ -1251,7 +1261,7 @@ function diceGrid(hero) {
       onclick: tap(() => openSlot(slot)) },
       h('small', { class: 'cw-label' }, label), pic,
       h('span', { class: 'cw-cell-foot' }, h('b', {}, !active ? 'Unlock' : `d${size}`),
-        price != null ? h('span', { class: 'cw-price' }, ico('coin'), String(price)) : null),
+        price != null ? priceChip(price, { poor: hero.gold < price, cls: 'cw-price' }) : null),
       can ? h('span', { class: 'cw-plus', 'aria-hidden': 'true' }, '+') : null);
   });
   return h('section', { class: 'cw-dicegrid', id: 'fs-dice', 'aria-label': 'Your character dice' },
@@ -1266,7 +1276,7 @@ const SH_ROLE = { W: 'Adds to your left weapon.', E: 'Adds to your right weapon.
 function shBuy(hero, { label, cost, ok, onBuy }) {
   return h('button', { class: `sh-buy ${ok ? '' : 'poor'}`, type: 'button', disabled: !ok, 'aria-label': `${label} for ${cost} gold`, onclick: ok ? tap(onBuy) : null },
     h('span', { class: 'sh-buy-l' }, label, !ok && hero.gold < cost ? h('small', {}, `Need ${cost - hero.gold} more`) : null),
-    h('span', { class: 'sh-buy-p' }, ico('coin'), h('b', {}, String(cost))));
+    h('span', { class: 'sh-buy-p' }, priceChip(cost, { poor: !ok && hero.gold < cost })));
 }
 const shDone = (text) => h('p', { class: 'sh-done' }, ico('check'), text);
 const shLock = (text) => h('p', { class: 'sh-lockline' }, ico('lock'), text);
@@ -1333,9 +1343,7 @@ function weaponWorkshop(hero, slot, inst) {
     : mode === 'train' && info.why === 'hands' ? shLock(`Needs a d${info.next} hand`)
     : shBuy(hero, { label: mode === 'forge' ? `Forge to ${D.RARITY[info.next]}` : SZ ? `Buy size d${info.next}` : `Train to d${info.next}`, cost: info.cost, ok: info.ok,
       onBuy: () => { if ((mode === 'forge' ? HE.forgeWeapon(hero, inst.uid) : HE.trainWeapon(hero, inst.uid))) shBought(); } });
-  const noRefund = SZ && E.resaleOn() && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling this weapon pays ${info.sellNow} gold now and ${info.sellAfter} after this size.`)
-    : SZ && E.resaleOn() ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays ${E.sellValue(inst)} gold.`)
-    : SZ && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Size is not refunded. Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold, whatever size you buy.`) : SZ ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold.`) : null;
+  const noRefund = SZ && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Size is not refunded. Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold, whatever size you buy.`) : SZ ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold.`) : null;
   return h('div', { class: 'ww-workshop' }, frame, ammo, SZ ? null : modes, preview, warning, noRefund, action,
     info.ok && info.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - info.cost} after upgrade`) : null);
 }
@@ -1343,33 +1351,49 @@ function slotSheet(slot) {
   if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
   if (!E.isActive(hero, slot)) {
     const u = E.unlockInfo(hero, slot);
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C), SHEET.inline ? campFaceList(hero, slot, 6) : null];
+  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero, { say: (t) => toast(t), onGrow: (rank) => { if (HE.upgradeHeart(hero, rank)) shBought(); } }), h('p', { class: 'sh-role' }, SH_ROLE.C)]
+    : [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
     const u = kind === 'strength' ? E.strengthUpgrade(hero, slot) : kind === 'mind' ? E.mindUpgrade(hero) : E.speedUpgrade(hero);
     const buy = !u.next && !u.act ? shDone('Biggest size') : u.act && String(u.why).startsWith('Act') ? shLock(`Grows again in ${u.why}`)
       : shBuy(hero, { label: `Grow to d${u.next}`, cost: u.cost, ok: u.ok, onBuy: () => { if (HE.upgradeDie(hero, kind, slot)) shBought(); } });
     const next = u.next && !u.act ? u.next : null;
-    const stage = SHEET.inline ? h('div', { class: 'cw-compare' },
+    const card = SHEET.inline ? strengthCard(hero, slot, { say: (t) => toast(t), onGrow: (s2) => { if (HE.upgradeDie(hero, SH_KIND[s2], s2)) shBought(); } }) : null; // Crockpot: the cardboard STRENGTH card; every cover buys through HE.upgradeDie // Crockpot: the card for Head, Feet and each Hand (each hand upgrades on its own)
+    const stage = card || (SHEET.inline ? h('div', { class: 'cw-compare' },
       h('div', { class: 'cw-now' }, h('small', {}, 'CURRENT'), campDie(hero, slot, size)),
       next ? ico('chevron') : null,
-      next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next));
+      next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next)));
     const allFaces = SHEET.inline ? h('details', { class: 'cw-all-faces' }, h('summary', {}, next ? 'All faces · current and upgrade' : 'All faces'), campFaceList(hero, slot, size, 'Current'), next ? campFaceList(hero, slot, next, 'After upgrade') : null) : null;
-    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
+    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, card ? null : h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
       u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null, allFaces];
   }
   if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
   // a weapon hand: the weapon there, Forge and Train, then what else could go there
   const real = hero.loadout[slot];
   const out = [head];
-  if (SHEET.inline && real && real.id !== 'fists') {
-    out.push(weaponWorkshop(hero, slot, real));
+  if ((SHEET.inline || E.weaponTrainingOn()) && real && real.id !== 'fists') {
+    const card = D.EXPERIMENT.weaponSize ? weaponWorkshop(hero, slot, real) : h('div', { class: 'ww-workshop cb-ww' }, cbWeaponCard(hero, slot, real, {
+      say: (t) => toast(t), onBuy: (step) => HE.trainWeapon(hero, real.uid, step), onBought: () => shBought(),
+    }));
+    out.push(card);
+    if (E.weaponTrainingOn()) {
+      const t = E.trainInfo(hero, real.uid);
+      if (t.next) {
+        const next = { ...real, size: t.next };
+        const preview = h('details', { class: 'cw-all-faces ww-upgrade-preview' }, h('summary', {}, `Preview d${t.next} faces`));
+        const strip = h('div', { 'aria-label': `All faces after upgrading to d${t.next}` }); strip.innerHTML = CW.strip(CW.weaponData(next)); preview.append(strip);
+        out.push(h('p', { class: 'ww-note' }, `Rolls d${t.next} after purchase. Sell value: ${t.sellBefore} → ${t.sellAfter} gold.`),
+          h('p', { class: 'cw-balance' }, E.servedByLadder(real) ? 'Every face you have stays. The new size adds two.' : 'Face numbers and symbols can change at each size.'), preview);
+      }
+      if (real.id === 'quiver' && D.EXPERIMENT.weapons2) out.push(ammoPick(hero, real));
+    }
   } else if (real && real.id !== 'fists') {
     const rolls = E.sidesOf(hero, slot); const size = E.weaponSize(real);
     out.push(shWeapon(real, null, 'now'));
@@ -1398,7 +1422,7 @@ function powerSheet(id) {
   const hero = X.S.hero; const row = E.powerLibrary(hero).find((x) => x.card.id === id); if (!row) return [h('p', {}, 'Not found.')];
   const k = row.card; const lvl = E.powerLevel(hero, id); const top = E.powerLevelsOf(hero);
   const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}`), h('b', {}, k.name)),
-    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Done'));
+    h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
   const levels = h('div', { class: 'sh-levels' }, Array.from({ length: top + 1 }, (_, lv) => h('div', { class: `sh-lv ${row.equipped || row.learned ? (lv < lvl ? 'past' : lv === lvl ? 'now' : 'later') : lv === 0 ? 'now' : 'later'}` },
     h('b', {}, lv === 0 ? 'Base' : `Level ${lv}`), h('span', {}, shortLine(k, lv)))));
   let act;
@@ -1410,6 +1434,16 @@ function powerSheet(id) {
     h('p', { class: 'sh-sec' }, 'Levels'), levels, act];
 }
 // Camp talent workbench: inspect first, preview a symbol, then use the existing purchase command.
+// After a talent die is unlocked or grown, glide down to the symbol choosing area (the numbered faces, then the symbols under them) so the next step is on screen.
+function toTalentSymbols() {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const side = $('.sx-camp .sx-side'), el = $('.tw-face-heading'); if (!side || !el) return;
+    const stick = parseFloat(side.style.getPropertyValue('--stick')) || 0;
+    const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 8;
+    const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    side.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });
+  }));
+}
 function talentWorkshop(hero, slot) {
   const size = hero.special[slot], info = E.talentInfo(hero, slot), up = E.specialUpgrade(hero, slot);
   const stored = hero.talent?.[slot] || [];
@@ -1424,7 +1458,7 @@ function talentWorkshop(hero, slot) {
     return h('button', { type: 'button', class: `tw-face ${k ? SYM_ICO[k][1] : 'tw-unset'} ${active ? 'selected' : ''}`, 'data-face': String(f), 'aria-pressed': String(active),
       'aria-label': `Face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold to set`}. Inspect face.`,
       onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); }) },
-    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), h('small', {}, k ? D.TALENT_SYMS[k].name : `${info.costs[f]} gold`));
+    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), k ? h('small', { class: 'tw-gives' }, `Gives +${n}`) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
   });
   let detail;
   if (face == null) detail = h('div', { class: 'tw-empty' }, ico('dice'), h('b', {}, 'Choose a numbered face'), h('p', {}, 'Inspect its symbol or choose what an empty face will give you.'));
@@ -1434,7 +1468,7 @@ function talentWorkshop(hero, slot) {
     const can = !!chosen && left > 0 && hero.gold >= cost;
     const preview = h('div', { class: `tw-result ${chosen ? SYM_ICO[chosen][1] : ''}`, 'aria-live': 'polite' },
       h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
-      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
+      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `Gives +${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
         h('p', {}, chosen ? `When you roll ${n}, gain ${n} ${D.TALENT_SYMS[chosen].name.toLowerCase()}.` : 'Preview a symbol below. Gold is spent only when you buy.')));
     const options = !current ? h('div', { class: 'tw-symbols', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
       const count = E.talentCount(hero, slot, k), full = count >= info.same;
@@ -1452,12 +1486,15 @@ function talentWorkshop(hero, slot) {
     detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
   }
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
-    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
+    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
   return h('div', { class: 'tw-workshop' },
-    h('div', { class: 'tw-overview' }, campDie(hero, slot, size), h('div', {}, h('small', {}, 'YOUR TALENT DIE'), h('h3', {}, 'Shape your next roll'), h('p', {}, `${info.used} of ${info.faces} symbol faces set`))),
+    talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
+      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); },
+      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Up to ${info.same} of each symbol per die.`), detail,
+    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Each numbered face gives you that many of its symbol: "Gives +6" means 6.`),
+    h('p', { class: 'tw-max' }, `Max ${info.same} of the same power symbol per die. Choose wisely.`), detail,
     h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
       h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
         up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
@@ -1471,7 +1508,7 @@ function talentSheet(hero, slot) {
   const fixed = [h('div', { class: 'sh-face fixed' }, h('b', {}, '1'), h('small', {}, 'blank')), h('div', { class: 'sh-face fixed x2' }, h('b', {}, '2'), h('small', {}, '×2 hand')), h('div', { class: 'sh-face fixed' }, h('b', {}, '3'), h('small', {}, 'blank'))];
   const nums = info.nums.map((n, f) => { const k = sym(f); const cost = info.costs[f];
     if (k) return h('button', { class: `sh-face set ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `Face ${n}: ${n} ${D.TALENT_SYMS[k].name}. Tap to clear.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, 0); sfx.card(); X.persist(); X.renderCamp(); }) }, h('b', {}, String(n)), ico(SYM_ICO[k][0]));
-    return h('button', { class: `sh-face open ${pickFace === f ? 'picking' : ''} ${hero.gold >= cost ? '' : 'poor'}`, type: 'button', 'aria-label': `Face ${n}: empty. ${cost} gold.`, onclick: tap(() => { TAL.slot = slot; TAL.face = pickFace === f ? null : f; X.renderCamp(); }) }, h('b', {}, String(n)), h('small', {}, ico('coin'), String(cost))); });
+    return h('button', { class: `sh-face open ${pickFace === f ? 'picking' : ''} ${hero.gold >= cost ? '' : 'poor'}`, type: 'button', 'aria-label': `Face ${n}: empty. ${cost} gold.`, onclick: tap(() => { TAL.slot = slot; TAL.face = pickFace === f ? null : f; X.renderCamp(); }) }, h('b', {}, String(n)), priceChip(cost, { poor: hero.gold < cost })); });
   const picker = pickFace != null ? h('div', { class: 'sh-picker' }, h('p', { class: 'sh-sec' }, `Face ${info.nums[pickFace]} pays ${info.nums[pickFace]} of…`),
     h('div', { class: 'sh-syms' }, Object.keys(D.TALENT_SYMS).map((k) => { const left = info.same - E.talentCount(hero, slot, k); const can = left > 0 && hero.gold >= info.costs[pickFace];
       return h('button', { class: `sh-sym ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, onclick: can ? tap(() => { if (HE.addTalent(hero, slot, pickFace, k)) { TAL.face = null; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) : null }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), left > 0 ? null : h('small', {}, 'used twice')); })),
@@ -1495,6 +1532,26 @@ function campInspector() {
     onkeydown: (e) => { if (e.key === 'Escape') { e.preventDefault(); closeSlot(); } } }, ...slotSheet(SHEET.slot).filter(Boolean));
   return SHEET.el;
 }
+// cp3 (Dave, 27 Oct: "when I click the dice to upgrade, I want the screen to scroll down and show the card"): after a die is tapped, glide the
+// camp sheet so the inspection/upgrade card starts just under everything pinned at the top of the screen (the wood Camp header band, the Camp
+// title and the name/coins chip). Instant under reduced motion. The pinned height is measured, not guessed, so it follows any phone and notch.
+function campPinnedBottom(side) {
+  const sr = side.getBoundingClientRect(); let bottom = sr.top;
+  const top = side.querySelector('.sx-sidetop'); const title = document.querySelector('.cw-camp .sx-viewport .sx-top');
+  for (const el of [top, title]) { if (el) bottom = Math.max(bottom, el.getBoundingClientRect().bottom); }
+  if (top) { const band = parseFloat(getComputedStyle(top, '::before').height); if (band > 0) bottom = Math.max(bottom, band); } // the fixed wood band is 62px + the notch, from the top of the screen
+  return bottom;
+}
+function toCampCard() {
+  const run = () => {
+    const side = $('.sx-camp .sx-side'), el = SHEET.el || $('#camp-inspector'); if (!side || !el || !el.isConnected) return;
+    const aim = () => Math.max(0, side.scrollTop + el.getBoundingClientRect().top - campPinnedBottom(side) - 10);
+    const calm = reduced();
+    side.scrollTo({ top: aim(), behavior: calm ? 'auto' : 'smooth' });
+    if (!calm) setTimeout(() => { if (el.isConnected && Math.abs(side.scrollTop - aim()) > 6) side.scrollTo({ top: aim(), behavior: 'smooth' }); }, 700); // late layout (art, fonts) moved the card: aim again
+  };
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
 function openSlot(slot) {
   sfx.card();
   const inline = !!$('.cw-camp') && !String(slot).startsWith('power:');
@@ -1503,9 +1560,8 @@ function openSlot(slot) {
   SHEET.slot = slot; SHEET.inline = inline;
   if (inline) {
     X.S.campPage = 'dice'; X.S.tab = 'forge'; X.renderCamp(SHEET.fromBoard);
-    const side = $('.sx-side'), nav = $('.cw-nav');
-    if (side && nav) side.scrollTop += nav.getBoundingClientRect().top - side.getBoundingClientRect().top - 64;
     SHEET.el?.focus({ preventScroll: true });
+    toCampCard();
   } else {
     SHEET.el = h('div', { class: 'form slot-sheet' }, ...slotSheet(slot).filter(Boolean)); modal(SHEET.el);
   }
@@ -1525,35 +1581,76 @@ const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone 
 // up top with how close your purse is, so there is something to save up for.
 const TONIC_ICO = { pierce: 'pierce', boot: 'boot', block: 'shield', atk: 'burst', magic: 'spark', heal: 'heart' };
 function storeCanBuy(hero) {
-  const stock = E.shopStock(hero);
+  const stock = E.shopStock(hero); const pot = E.potionBuyInfo(hero);
   return stock.filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length
-    + E.storeTonics(hero).filter((t) => !t.bought && hero.gold >= t.price).length;
+    + E.storeTonics(hero).filter((t) => !t.bought && hero.gold >= t.price).length + (pot.ok ? 1 : 0) + (E.potionUpgrade(hero).ok ? 1 : 0) + (E.rerollDieInfo(hero).ok ? 1 : 0);
 }
+// The cardboard Camp Store (Dave approved 26 Oct 2026, mockup docs/team/mockups/cards/shop.html v2): a wood sign, cardboard cards on the table,
+// paper price tags with pencil coins (red when you are short). Sections: specials counter, the weapon shelf, the Diamond case (the T17 card with
+// an ice-blue sheen), odds and ends (the pet), supplies (potions, the belt's third slot, the 4th reroll die).
+// Every tag runs the same HE.* purchase the old rows did; every price and gate is read from engine.js.
+const METAL_INK = ['#c98a4a', '#d8e2ea', '#ffd24a', '#ffd24a'];
 function storeTab() {
   const hero = X.S.hero; const stock = E.shopStock(hero); const ok = () => { sfx.coin(); X.persist(); X.renderCamp(); };
-  const buyWeapon = (it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero);
-    return it.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(full ? (it.inst.diamond ? 'Case full' : 'Pack full') : String(it.price), () => { if (HE.buyItem(hero, i)) ok(); else { sfx.error(); toast(full ? (it.inst.diamond ? 'Your Diamond case is full. Use one in a fight first.' : 'Your pack is full. Sell something first.') : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < it.price || full, cls: 'buy', aria: `Buy for ${it.price} gold` }); };
-  // worth saving for: the dearest thing still on the shelf
+  const no = (why) => { sfx.error(); toast(why); };
   const best = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.sold).sort((a, b) => b.it.price - a.it.price)[0];
-  const save = best ? zone('zn-save', 'crown', 'Worth saving for', best.it.price > hero.gold ? `${hero.gold} of ${best.it.price} gold.` : 'You can afford it now.',
-    h('div', { class: 'st-save' }, weaponCard(best.it.inst, { compact: true, badge: best.it.inst.diamond ? 'Diamond' : 'Special', money: { label: 'Store', value: best.it.price }, actions: [buyWeapon(best.it, best.i)] }),
-      h('div', { class: 'st-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(best.it.price), 'aria-valuenow': String(Math.min(hero.gold, best.it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / best.it.price) * 100)}%` } })))) : null;
-  const tonics = E.storeTonics(hero).map((t) => h('div', { class: `sx-urow cmp st-tonic ${t.bought ? 'have' : ''}` }, rowIco(TONIC_ICO[t.icon] || 'star'),
-    h('div', { class: 'ur-copy' }, h('b', {}, t.name), h('small', {}, t.text)),
-    t.bought ? maxTag('Yours') : priceBtn('', t.price, hero.gold >= t.price, () => { if (HE.buyTonic(hero, t.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${t.name}: ready for your next fight.`); } }, `Buy ${t.name} for ${t.price} gold`)));
+  const buyWeapon = (it, i) => { const full = it.inst.diamond ? E.diamondCaseFull(hero) : E.bagFull(hero);
+    if (it.sold) return null;
+    if (full) return h('span', { class: 'cst-sticker' }, it.inst.diamond ? 'Case full' : 'Pack full');
+    return CB.priceTag(it.price, { poor: hero.gold < it.price, aria: `Buy ${D.WEAPONS[it.inst.id].name} for ${it.price} gold`, onBuy: tap(() => { if (HE.buyItem(hero, i)) ok(); else no('Not enough gold.'); }) }); };
+  const saveNote = (it) => hero.gold >= it.price ? 'You can afford it now.' : `${hero.gold} of ${it.price} gold.`;
+  const bar = (it) => h('span', { class: 'cst-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(it.price), 'aria-valuenow': String(Math.min(hero.gold, it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / it.price) * 100)}%` } }));
+  // the counter: today's specials and the mystery bundle
+  const specials = E.storeTonics(hero).map((t) => CB.storeCard({ cls: t.bought ? 'have' : '', art: t.icon === 'boot' ? CB.storeIcon('boots', '#c98a4a') : CB.storeSym(t.icon === 'block' ? 'block' : t.icon), title: t.name, lines: [t.text],
+    stamp: t.bought ? 'Yours' : '', tag: t.bought ? null : CB.priceTag(t.price, { poor: hero.gold < t.price, aria: `Buy ${t.name} for ${t.price} gold`,
+      onBuy: tap(() => { if (HE.buyTonic(hero, t.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${t.name}: ready for your next fight.`); } else no('Not enough gold.'); }) }) }));
   const bo = E.bundleOffer(hero);
-  const bundle = bo ? h('div', { class: `sx-urow cmp st-bundle ${bo.bought ? 'have' : ''}` }, rowIco('bag'),
-    h('div', { class: 'ur-copy' }, h('b', {}, 'Mystery bundle'), h('small', {}, `A weapon wrapped in a tablecloth. ${Math.round(bo.odds[0] * 100)}% Bronze, ${Math.round(bo.odds[1] * 100)}% Silver, ${Math.round(bo.odds[2] * 100)}% Gold. The shopkeeper does not know either.`)),
-    bo.bought ? maxTag('Opened') : E.bagFull(hero) ? gateTag('Pack full') : priceBtn('', bo.price, hero.gold >= bo.price, () => { const inst = HE.buyBundle(hero); if (inst) { sfx.level(); X.persist(); X.renderCamp(); toast(`Inside: a ${D.RARITY[inst.rarity | 0]} ${D.WEAPONS[inst.id].name}. It is in your pack.`); } }, `Buy the mystery bundle for ${bo.price} gold`)) : null;
-  const sc = X.net ? null : E.shopCharm(hero);
-  const charmOffer = sc ? charmCard(sc.id, { cls: sc.sold ? 'sold' : '', badge: 'Charm', actions: [sc.sold ? h('span', { class: 'sold-tag' }, 'Sold') : btn(E.charmFull(hero) ? 'Charms full' : String(sc.price), () => { if (HE.buyCharm(hero)) { sfx.level(); X.persist(); X.renderCamp(); } else { sfx.error(); toast(E.charmFull(hero) ? `You carry ${D.CHARM_MAX} charms. Drop one first.` : 'Not enough gold.'); } }, { icon: 'coin', disabled: hero.gold < sc.price || E.charmFull(hero), cls: 'buy', aria: `Buy the ${D.CHARMS[sc.id].name} for ${sc.price} gold` })] }) : null;
-  const shelf = stock.map((it, i) => ({ it, i })).filter(({ i }) => i !== best?.i);
-  return h('div', { class: 'sx-tab store' },
-    h('p', { class: 'st-hello' }, coin(hero.gold, 'inline'), h('span', {}, 'in your purse. New stock this camp.')),
-    save,
-    zone('zn-specials', 'star', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'st-rows' }, tonics, bundle)),
-    zone('zn-shelf', 'sword', 'On the shelf', 'Weapons. What you buy goes in your pack.', h('div', { class: 'wc-grid' }, shelf.map(({ it, i }) => weaponCard(it.inst, { compact: true, cls: it.sold ? 'sold' : '', money: { label: 'Store', value: it.price }, actions: [buyWeapon(it, i)] })))),
-    charmOffer || E.petOffer(hero) ? zone('zn-odd', 'gem', 'Odds and ends', '', charmOffer, charmOffer ? charmGuideBtn() : null, petOfferCard(hero)) : null);
+  if (bo) specials.push(CB.storeCard({ cls: `parcel ${bo.bought ? 'have' : ''}`, art: CB.storeText('?', '#c84a3a', 84), title: 'Mystery bundle', lines: ['A weapon wrapped in a tablecloth.',
+    h('span', { class: 'cst-odds' }, bo.odds.map((o, i) => h('span', { class: `m${i}` }, `${Math.round(o * 100)}% ${D.RARITY[i]}`)))],
+    stamp: bo.bought ? 'Opened' : '', sticker: !bo.bought && E.bagFull(hero) ? 'Pack full' : '',
+    tag: bo.bought || E.bagFull(hero) ? null : CB.priceTag(bo.price, { poor: hero.gold < bo.price, aria: `Buy the mystery bundle for ${bo.price} gold`,
+      onBuy: tap(() => { const inst = HE.buyBundle(hero); if (inst) { sfx.level(); X.persist(); X.renderCamp(); toast(`Inside: a ${D.RARITY[inst.rarity | 0]} ${D.WEAPONS[inst.id].name}. It is in your pack.`); } else no('Not enough gold.'); }) }) }));
+  // the shelf: each weapon as its REAL weapon card (the camp T17 card the spoils show, CB.weaponCard, scaled as one picture), price chip on it
+  // (Dave, cp6: "The store needs cards. Not these fake cardboard items."); tap the card for the large one
+  const shelf = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.inst.diamond).map(({ it, i }) => { const w = D.WEAPONS[it.inst.id]; const top = best && best.i === i;
+    const real = CB.weaponCard(hero, null, it.inst); real.setAttribute('aria-hidden', 'true'); real.inert = true;
+    const open = () => { sfx.click(); showWeaponCard(it.inst, { label: 'Store', value: it.price }, { real: true }); };
+    const thumb = h('div', { class: 'cw-spoilcard', role: 'button', tabindex: '0', 'aria-label': `See the ${w.name} card` }, h('div', { class: 'cw-spoilscale' }, real));
+    if (typeof ResizeObserver === 'function') new ResizeObserver(([e]) => { if (e.contentRect.width) thumb.style.setProperty('--k', String(e.contentRect.width / 340)); }).observe(thumb);
+    thumb.addEventListener('click', open); thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    return h('div', { class: `cst-wcard ${it.sold ? 'sold' : ''} ${top ? 'save' : ''}` }, top ? h('span', { class: 'cst-ribbon' }, 'Worth saving for') : null, thumb,
+      top && !it.sold ? h('div', { class: 'cst-wsave' }, bar(it), h('small', {}, saveNote(it))) : null,
+      it.sold ? h('span', { class: 'cst-stamp' }, 'Sold') : null, buyWeapon(it, i)); });
+  // the Diamond case: the T17 weapon card with the ice-blue sheen, a paper tag under it
+  const diamonds = stock.map((it, i) => ({ it, i })).filter(({ it }) => it.inst.diamond).map(({ it, i }) => {
+    const c = CW.weaponCardOf(it.inst, { label: 'Store', value: it.price }); c.classList.add('cst-dia'); c.setAttribute('role', 'button'); c.tabIndex = 0;
+    c.addEventListener('click', () => { sfx.click(); showWeaponCard(it.inst, { label: 'Store', value: it.price }); });
+    return h('div', { class: `cst-diawrap ${it.sold ? 'sold' : ''}` }, c, h('span', { class: 'cst-diatag' }, best && best.i === i && !it.sold ? 'Diamond · worth saving for' : 'Diamond'),
+      it.sold ? h('span', { class: 'cst-stamp' }, 'Sold') : buyWeapon(it, i)); });
+  // odds and ends: the pet
+  const po = E.petOffer(hero);
+  const pet = po ? CB.storeCard({ cls: 'pet', art: h('img', { src: petImg(po.type), alt: '' }), title: `${D.PETS[po.type].name}, a pet`, lines: [D.PETS[po.type].text, 'A pet rolls one more die beside your board.'],
+    stamp: po.owned ? 'With you' : '', tag: po.owned ? null : CB.priceTag(po.price, { poor: hero.gold < po.price, label: hero.pet ? 'Trade' : '', aria: `${hero.pet ? 'Trade for' : 'Adopt'} ${D.PETS[po.type].name} for ${po.price} gold`, onBuy: tap(() => petAsk(hero, po)) }) }) : null;
+  // supplies: the same rows' logic as before, as cards
+  const pot = E.potionBuyInfo(hero); const belt = E.potionUpgrade(hero); const rr = E.rerollDieInfo(hero); const bought = () => { sfx.level(); X.persist(); X.renderCamp(); };
+  const supplies = [CB.storeCard({ cls: 'potion', art: CB.storeSym('heal'), title: 'Healing potion', lines: [`Heals ${E.potionHpOf(hero)}.`, `Belt: ${pot.have} of ${pot.max}.`],
+      sticker: pot.why === 'Belt full' ? 'Belt full' : '', tag: pot.why === 'Belt full' ? null : CB.priceTag(pot.price, { poor: !pot.ok, aria: `Buy a healing potion (heals ${E.potionHpOf(hero)}) for ${pot.price} gold`,
+        onBuy: tap(() => { if (HE.buyPotion(hero)) ok(); else no('Not enough gold.'); }) }) }),
+    belt.next ? CB.storeCard({ cls: 'belt', art: CB.storeIcon('bracer', '#c98a4a'), title: 'Potion belt', lines: [`${belt.cur} → ${belt.next} potions`, `Carry one more (each heals ${E.potionHpOf(hero)}).`],
+      sticker: belt.why?.startsWith('Level') ? `Needs ${belt.why}` : '', tag: CB.priceTag(belt.cost, { poor: !belt.ok, aria: `Carry ${belt.next} potions for ${belt.cost} gold${belt.why?.startsWith('Level') ? ` (needs ${belt.why})` : ''}`,
+        onBuy: tap(() => { if (HE.upgradePotions(hero)) bought(); else no(belt.why?.startsWith('Level') ? `The belt needs ${belt.why}.` : 'Not enough gold.'); }) }) })
+      : CB.storeCard({ cls: 'belt have', art: CB.storeIcon('bracer', '#c98a4a'), title: 'Potion belt', lines: [`${belt.cur} potions`], stamp: 'Max' }),
+    rr.next ? CB.storeCard({ cls: 'reroll', art: CB.storeText('+1'), title: 'Rerolls', lines: [`${rr.cur} → ${rr.next} dice`, 'Each reroll in battle can take one more die.'],
+      tag: CB.priceTag(rr.cost, { poor: !rr.ok, aria: `Reroll ${rr.next} dice for ${rr.cost} gold`, onBuy: tap(() => { if (HE.buyRerollDie(hero)) bought(); else no('Not enough gold.'); }) }) })
+      : CB.storeCard({ cls: 'reroll have', art: CB.storeText('+1'), title: 'Rerolls', lines: [`${rr.cur} dice`], stamp: 'Max' })];
+  const sect = (cls, title, sub, ...kids) => h('section', { class: `cst-zone ${cls}` }, h('h2', {}, title), sub ? h('p', { class: 'cst-sub' }, sub) : null, ...kids);
+  return h('div', { class: 'cst-store' },
+    h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, 'New stock every camp')),
+    sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
+    sect('zn-specials', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))),
+    sect('zn-shelf', 'On the shelf', 'Weapons. What you buy goes in your pack. Tap a card to see it.', h('div', { class: 'cst-grid two' }, shelf)),
+    diamonds.length ? sect('zn-diamond', 'Diamond case', `A Diamond is used up in one fight. You carry at most ${D.DIAMOND.max}.`, h('div', { class: 'cst-diacase' }, diamonds)) : null,
+    pet ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
 }
 function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
@@ -1561,7 +1658,7 @@ function gearTab({ grid = false, chips = false } = {}) {
   const wear = (inst, side) => { const c = E.canEquip(hero, inst.uid, side); if (!c.ok) { sfx.error(); toast(c.why); return; } HE.equip(hero, inst.uid, side); sync(); };
   const worn = two ? [weaponCard(hero.loadout.NW, { note: 'Both hands', cls: 'worn', badge: 'Equipped' })] : [weaponCard(hero.loadout.NW, { note: 'Left hand', cls: 'worn', badge: 'Left' }), weaponCard(hero.loadout.NE, { note: 'Right hand', cls: 'worn', badge: 'Right' })];
   // the pack and the Diamond case as the popup's rows (Dave, Oct 2026: "look at your pack"): picture, name, faces, buttons below
-  const sell = (n, onSell, aria) => h('button', { class: 'sh-mini sell', type: 'button', 'aria-label': aria, onclick: tap(onSell) }, h('span', {}, 'Sell'), ico('coin'), h('b', {}, String(n)));
+  const sell = (n, onSell, aria) => h('button', { class: 'sh-mini sell', type: 'button', 'aria-label': aria, onclick: tap(onSell) }, h('span', {}, 'Sell'), priceChip(n));
   const bag = hero.bag.map((inst) => {
     const w = D.WEAPONS[inst.id];
     const hand = (side, label) => h('button', { class: 'sh-mini', type: 'button', 'aria-label': `Equip ${w.name}${w.hands === 2 ? '' : ` in ${side === 'NW' ? 'left' : 'right'} hand`}`, onclick: tap(() => wear(inst, side)) }, label);
@@ -1639,16 +1736,16 @@ function shrinkSection(hero) {
   return rows.length ? zone('zn-shrink', 'dice', 'Shrink', 'Pay gold to make a die smaller.', ...rows) : null;
 }
 function campNavigation(fromBoard) {
-  return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['supplies', 'Supplies'], ['hero', 'Hero']].map(([id, label]) =>
-    h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null,
-      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
+  return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['store', 'Store'], ['hero', 'Hero']].map(([id, label]) =>
+    h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null, 'data-camp-page': id,
+      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.tab = 'forge'; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
 }
 function campContent(hero) {
   switch (X.S.campPage) {
     case 'gear': return gearTab({ grid: false, chips: false });
-    case 'hero': return heroTab({ chips: false });
+    case 'store': return h('div', { class: 'cw-storepage' }, storeTab()); // a real tab like Gear (Dave, cp5): nav, art, act bar stay
     case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
-    case 'supplies': return h('div', { class: 'cw-supplies' }, zone('zn-supplies', 'plus', 'Rerolls & potions', '', rerollDieRow(hero), potionRow(hero)), hero.pet ? petCard(hero) : null,
+    case 'hero': return h('div', { class: 'cw-supplies' }, heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
     default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector(), SHEET.inline ? null : diamondBring(hero));
@@ -1659,28 +1756,23 @@ export function camp(fromBoard) {
   const identity = `${hero.name}:${hero.cls}`;
   if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; }
   SHEET.fromBoard = fromBoard;
-  if (S.tab === 'hero' || S.tab === 'gear') { S.campPage = S.tab; S.tab = 'forge'; }
+  if (S.tab === 'hero' || S.tab === 'gear' || S.tab === 'store') { S.campPage = S.tab; S.tab = 'forge'; }
   S.campPage ||= 'dice';
-  const store = S.tab === 'store';
   const perkHero = X.net ? (hero.pendingPerks > 0 ? hero : null) : (S.company?.members || [hero]).find((m) => m.pendingPerks > 0);
   if (X.net) { S.perkOffer = perkHero ? X.netPerkOffer() : null; }
   else { if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, X.fresh()); S.perkFor = perkHero.name; } if (!perkHero) { S.perkOffer = null; S.perkFor = null; } }
   const perkPanel = perkHero && S.perkOffer ? panel('sx-perks glow', eyebrow(`${perkHero.name} still owes a perk`, 'gold'), h('div', { class: 'perk-row' }, S.perkOffer.map((id, i) => perkCard(id, perkHero, () => { if (X.net) { sfx.level(); X.netPerk(id); return; } E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); X.persist(); X.renderCamp(fromBoard); }, i)))) : null;
   const seats = !X.net && (S.company?.members.length || 0) > 1 ? h('div', { class: 'sx-seats' }, S.company.members.map((m, i) => h('button', { type: 'button', class: S.seat === i ? 'on' : '', onclick: tap(() => { S.seat = i; S.hero = m; sfx.select(); X.renderCamp(fromBoard); }) }, emblem(m.cls), h('span', {}, h('b', {}, m.name), h('small', {}, `Lv ${m.level} · ${m.gold}g`))))) : null;
   const keep = $('.sx-camp-scroll'); const y = keep && S.holdScroll !== false ? keep.scrollTop : 0;
-  const storeBtn = h('button', { type: 'button', class: 'sx-storebtn', 'aria-label': 'Store', onclick: tap(() => { S.tab = 'store'; X.renderCamp(fromBoard); }) },
-    ico('coin'), h('span', {}, 'Store'), ico('chevron'));
   const canBuyDie = GRID.some(([slot]) => slotCanBuy(hero, slot));
   let tip = null;
   if (!hero.tips?.c_first && Coach.hintsOn()) { if (hero.gold > 0 && canBuyDie) tip = coachBox('c_first'); }
   else tip = coachBox('c_hands');
-  const body = store
-    ? h('div', { class: 'sx-tab store' }, btn('Back to camp', () => { S.tab = 'forge'; X.renderCamp(fromBoard); }, { kind: 'ghost', icon: 'back' }), storeTab())
-    : h('div', { class: 'sx-tab forge' }, campNavigation(fromBoard), campContent(hero), !SHEET.inline ? storeBtn : null, !SHEET.inline && S.campPage === 'dice' ? tip : null);
+  const body = h('div', { class: `sx-tab forge ${S.campPage === 'store' ? 'store' : ''}` }, campNavigation(fromBoard), campContent(hero), !SHEET.inline && S.campPage === 'dice' ? tip : null);
   mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
-      X.partyBar?.(), seats, perkPanel, store ? null : campStatus(hero),
+      X.partyBar?.(), seats, perkPanel, campStatus(hero),
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', () => toRoad(hero), { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;

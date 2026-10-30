@@ -1,0 +1,147 @@
+/* Post-battle brag board: phone portrait first, a full-screen overlay over the victory sheet. */
+.brag-layer {
+  position: fixed; inset: 0; z-index: 92; display: flex; flex-direction: column;
+  padding: calc(.7rem + env(safe-area-inset-top, 0px)) .85rem calc(.7rem + env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(90% 50% at 50% -10%, rgba(80, 52, 12, .45), transparent 58%),
+    radial-gradient(70% 50% at 50% 110%, rgba(20, 12, 6, .7), transparent 55%),
+    rgba(4, 6, 13, .94);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  color: #ece6d6; font-family: var(--font-body, Inter, system-ui, sans-serif);
+  pointer-events: auto;
+}
+.brag-sheet {
+  display: flex; flex-direction: column; gap: .7rem; width: min(100%, 28rem); margin: 0 auto;
+  min-height: 0; flex: 1; max-height: 100%;
+}
+.brag-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .15rem; flex: none; }
+.brag-head .sx-eye { margin-top: 0; }
+.brag-title {
+  margin: 0; font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.4rem, 12vw, 3.6rem); line-height: 1; letter-spacing: .04em;
+  background: linear-gradient(180deg, #fffbe8 0%, #ffe49a 30%, #e0a43a 52%, #fff0b8 58%, #b97a1e 80%, #8a5410 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #3a2208) drop-shadow(0 0 22px rgba(255, 170, 50, .45));
+}
+.brag-lead {
+  margin: .15rem 0 0; color: #a1a5bb; font-family: var(--font-story, 'Cormorant Garamond', Georgia, serif);
+  font-size: 1.08rem; font-style: italic; text-wrap: pretty;
+}
+.brag-list {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: .65rem;
+  -webkit-overflow-scrolling: touch; padding: .1rem 0 .2rem; scrollbar-width: none;
+}
+.brag-list::-webkit-scrollbar { display: none; }
+
+.brag-card {
+  position: relative; display: grid;
+  grid-template-columns: 1.7rem 3.4rem 1fr auto;
+  grid-template-areas:
+    "medal mini who pts"
+    "medal mini badge badge"
+    "grid grid grid grid";
+  gap: .35rem .55rem; align-items: center;
+  padding: .7rem .75rem .75rem;
+  border-radius: .95rem;
+  background: linear-gradient(180deg, rgba(28, 30, 50, .88), rgba(8, 9, 18, .92));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 10px 28px rgba(0, 0, 0, .4);
+}
+.brag-card.lead {
+  padding: .9rem .85rem 1rem; gap: .45rem .65rem;
+  grid-template-columns: 2rem 4.4rem 1fr auto;
+}
+.brag-card.gold {
+  background: linear-gradient(180deg, rgba(70, 50, 16, .92), rgba(18, 12, 6, .94));
+  box-shadow: inset 0 0 0 1.5px rgba(255, 208, 74, .75), 0 0 28px rgba(255, 180, 50, .22), 0 12px 32px rgba(0, 0, 0, .45);
+}
+.brag-card.silver {
+  background: linear-gradient(180deg, rgba(48, 52, 68, .9), rgba(12, 14, 22, .92));
+  box-shadow: inset 0 0 0 1.5px rgba(200, 210, 228, .55), 0 0 20px rgba(180, 190, 210, .12), 0 10px 28px rgba(0, 0, 0, .4);
+}
+.brag-card.you { box-shadow: inset 0 0 0 1.5px rgba(255, 230, 160, .85), 0 0 0 3px rgba(240, 192, 96, .22), 0 12px 32px rgba(0, 0, 0, .5); }
+.brag-card.you::after {
+  content: 'You'; position: absolute; top: .45rem; right: .55rem;
+  font-family: var(--font-display, Oxanium, system-ui); font-weight: 800; font-size: .58rem;
+  letter-spacing: .18em; text-transform: uppercase; color: #ffe9b0;
+}
+
+.brag-medal {
+  grid-area: medal; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+  font-family: var(--font-display, Oxanium, system-ui); font-weight: 800; font-size: .85rem; color: #2a1804;
+  background: rgba(255, 255, 255, .08);
+}
+.brag-card.lead .brag-medal { width: 2rem; height: 2rem; font-size: 1rem; }
+.brag-card.gold .brag-medal { background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc93a 60%, #b07d12); }
+.brag-card.silver .brag-medal { background: radial-gradient(circle at 35% 30%, #ffffff, #c9cfdc 60%, #7c8496); color: #1c2230; }
+
+.brag-mini { grid-area: mini; width: 3.4rem; height: 3.4rem; display: grid; place-items: center; }
+.brag-card.lead .brag-mini { width: 4.4rem; height: 4.4rem; }
+.brag-mini img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .55)); }
+.brag-glyph { font-size: 1.8rem; }
+
+.brag-who { grid-area: who; min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+.brag-who b { font-family: var(--font-display, Oxanium, system-ui); font-size: 1.05rem; color: #fff; line-height: 1.1; }
+.brag-card.lead .brag-who b { font-size: 1.22rem; }
+.brag-who small { color: #a1a5bb; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.brag-lvl {
+  font-style: normal; color: #1d1304; background: linear-gradient(180deg, #ffeeb4, #f0b540);
+  padding: .12rem .4rem; border-radius: 999px; font-weight: 800; letter-spacing: .08em; font-size: .62rem;
+}
+
+.brag-pts { grid-area: pts; display: grid; justify-items: end; line-height: 1; padding-right: .1rem; }
+.brag-card.you .brag-pts { margin-top: .7rem; }
+.brag-pts b { font-family: var(--font-display, Oxanium, system-ui); font-size: 1.45rem; color: #ffe08a; font-variant-numeric: tabular-nums; }
+.brag-card.lead .brag-pts b { font-size: 1.85rem; }
+.brag-pts small { font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: #6f748d; }
+
+.brag-badge {
+  grid-area: badge; justify-self: start;
+  font-family: var(--font-display, Oxanium, system-ui); font-weight: 800; font-size: .62rem;
+  letter-spacing: .14em; text-transform: uppercase; color: #1d1304;
+  background: linear-gradient(180deg, #ffe9b0, #e0a43a); padding: .22rem .55rem; border-radius: 999px;
+  box-shadow: 0 0 12px rgba(255, 190, 60, .35);
+}
+.brag-card.silver .brag-badge { background: linear-gradient(180deg, #f4f7ff, #c9cfdc); }
+
+.brag-grid {
+  grid-area: grid; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem;
+  margin: .25rem 0 0;
+}
+.brag-grid > div {
+  display: grid; justify-items: center; gap: .05rem; padding: .35rem .2rem;
+  border-radius: .55rem; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+}
+.brag-grid dt { font-size: .55rem; letter-spacing: .12em; text-transform: uppercase; color: #6f748d; }
+.brag-grid dd { margin: 0; font-family: var(--font-display, Oxanium, system-ui); font-weight: 800; font-size: .95rem; color: #fff; font-variant-numeric: tabular-nums; }
+.brag-card.gold .brag-grid dd { color: #ffe08a; }
+
+.brag-cta { flex: none; padding-top: .2rem; }
+.brag-reopen { width: 100%; margin: .1rem 0 .15rem; }
+
+@media (min-aspect-ratio: 1085/1000) {
+  .brag-layer { padding-left: max(1.2rem, env(safe-area-inset-left, 0px)); padding-right: max(1.2rem, env(safe-area-inset-right, 0px)); }
+  .brag-sheet { width: min(100%, 36rem); }
+  .brag-list { display: grid; grid-template-columns: 1fr; }
+}
+@media (min-aspect-ratio: 1085/1000) and (max-height: 520px) {
+  .brag-title { font-size: 2rem; }
+  .brag-lead { font-size: .95rem; margin: 0; }
+  .brag-head { gap: 0; }
+  .brag-sheet { gap: .4rem; }
+  .brag-list { gap: .4rem; }
+  .brag-card, .brag-card.lead { padding: .5rem .65rem .55rem; gap: .3rem .5rem; grid-template-columns: 1.7rem 3.2rem 1fr auto; }
+  .brag-card.lead .brag-mini, .brag-mini { width: 3.2rem; height: 3.2rem; }
+  .brag-card.lead .brag-who b { font-size: 1.05rem; }
+  .brag-card.lead .brag-pts b { font-size: 1.4rem; }
+  .brag-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); margin: .1rem 0 0; }
+  .brag-grid > div { padding: .2rem .1rem; }
+  .brag-grid dd { font-size: .85rem; }
+}
+@media (min-width: 1100px) and (min-aspect-ratio: 1085/1000) and (min-height: 600px) {
+  .brag-sheet { width: min(100%, 52rem); }
+  .brag-list { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); align-content: start; }
+  .brag-card.lead { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brag-layer, .brag-card { animation: none; }
+}

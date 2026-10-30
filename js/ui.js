@@ -10,6 +10,8 @@ import * as R from './roads.js';
 import * as ST from './story.js';
 import { CAMPAIGNS, packList, packOf, packIdOf, actsOf, monsterOf, partySize, forcedLine, coverClasses, DEFAULT_PACK } from './campaigns.js';
 import { hintsOn, setHints } from './coach.js';
+import { graphicsMenu, graphicsLabel, downloadMenu } from './devicemenu.js';
+import { openGear } from './g3/gearview.js';
 import * as Net from './net.js';
 import * as Online from './g3/online.js';
 import * as Sess from './session.js';
@@ -163,6 +165,9 @@ export function bindChrome() {
 }
 // One button on screen (Dave): Home, Rules and Sound live in the menus. Screens with their own Menu (battle, quest board,
 // road) add them there; everywhere else a single menu button sits in the top-left corner.
+// Graphics (quality, Battery saver) and Download game (Install, no-signal copy, version) each have their own menu word (js/devicemenu.js)
+const deviceItem = (close) => ghost(graphicsLabel(), () => { close(); graphicsMenu({ modal, ghost, primary, persist }); });
+const downloadItem = (close) => ghost('Download game', () => { close(); downloadMenu({ modal, ghost, primary, toast }); });
 const soundItem = (close) => ghost(`Sound: ${isMuted() ? 'Off' : 'On'}`, () => { setMuted(!isMuted()); SCRUI.chrome?.(isMuted()); close(); toast(isMuted() ? 'Sound off.' : 'Sound on.'); });
 function globalMenu() {
   const open = (S.hero || S.company || S.practice) && !S.net;
@@ -172,6 +177,8 @@ function globalMenu() {
       ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
+      downloadItem(() => close()),
       open ? ghost('Save & go home', () => { close(); askHome(); }) : null,
       S.net ? ghost('Step away (keep my seat)', () => { close(); Online.stepAway(); }) : null,
       S.net ? ghost('Leave this table for good', () => { close(); Online.menu(); }) : null,
@@ -314,7 +321,7 @@ function copyCode(code) {
 }
 function showCode(code) {
   const ta = h('textarea', { class: 'input code', readonly: true, rows: 6 }, code);
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries this save and its password.'), ta, h('div', { class: 'row end' }, primary('Done', () => close()))));
+  const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Your Soul Code'), h('p', { class: 'muted' }, 'Copy this and paste it on another device. It carries this save and its password.'), ta, h('div', { class: 'row end' }, primary('Close', () => close()))));
   setTimeout(() => ta.select(), 50);
 }
 function showImport() {
@@ -582,6 +589,8 @@ function menu() {
       ghost('Battle reports', () => { close(); openReports(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
+      downloadItem(() => close()),
       ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }),
       S.hero && recallPw(S.hero.name) ? ghost('Save to the cloud now', async () => { close(); const ok = await flushCloud(S.hero); toast(ok ? 'Saved to the cloud.' : 'Could not reach the cloud.', ok ? 'good' : 'bad'); }) : null,
       !S.net ? ghost('Open a table with this hero', () => { close(); Online.hostLoaded(); }) : null,
@@ -680,7 +689,7 @@ function revealSolo(won) {
   if (S.bonus) {
     const goal = S.bonus; S.bonus = null;
     const j = SO.judgeBonus(goal, S.battle, { won }); SO.payBonus(j, hero);
-    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ objective: goal.rule, objectiveName: goal.name, stake: goal.paid || 0, name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
   }
   const env = S.envelope; S.envelope = null;
   if (!env) return null;
@@ -690,10 +699,10 @@ function revealSolo(won) {
 // What the 3D battle needs from this module.
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
-  if (S.net) return { S, net: true, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
-  if (S.practice) return { S, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
-  if (S.daily) return { S, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
-  return { S, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
+  if (S.net) return { S, net: true, gear: openGear, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
+  if (S.practice) return { S, gear: openGear, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
+  if (S.daily) return { S, gear: openGear, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
+  return { S, gear: openGear, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
 }
 // ------------------------------------------------------------------ the daily challenge (daily.js): the same day for everyone
 // The briefing; then five fights in a row with the hero of the day (never saved); between fights a breath; at the end the score,
@@ -704,7 +713,7 @@ function showDaily() {
 }
 function startDaily() {
   const run = DAY.dailyRun(); const hero = DAY.dailyHero(run);
-  S.daily = { run, idx: 0, fights: [] }; S.hero = hero; S.company = { members: [hero] }; S.practice = null;
+  S.daily = { run, idx: 0, fights: [], spent: 0 }; S.hero = hero; S.company = { members: [hero] }; S.practice = null;
   dailyFight();
 }
 function dailyFight() {
@@ -719,13 +728,13 @@ function dailyAfter(won) {
   const d = S.daily; if (!d) return showTitle();
   d.fights.push({ won, score: DAY.fightScore(S.battle, won), name: S.quest?.name || '' }); d.idx++;
   if (won) sfx.win?.(); else sfx.lose?.();
-  const score = DAY.finalScore(d.fights);
-  if (won && d.idx < DAY.FIGHTS) return SCRUI.daily({ mode: 'between', run: d.run, fights: d.fights, score, onNext: dailyFight, onHome: showTitle });
+  const score = DAY.finalScore(d.fights, d.spent);
+  if (won && d.idx < DAY.FIGHTS) { const rest = () => SCRUI.daily({ mode: 'between', run: d.run, fights: d.fights, score: DAY.finalScore(d.fights, d.spent), spent: d.spent || 0, shop: DAY.potionShop(d, S.hero), onBuyPotion: () => { if (DAY.buyPotion(d, S.hero)) { sfx.select(); rest(); } }, onNext: dailyFight, onHome: showTitle }); return rest(); }
   const rec = DAY.recordRun(d.run.key, score, d.fights);
   const hero = S.hero; const name = (SV.listSaves().find((x) => x.kind === 'hero')?.name) || hero.name;
   const board = import('./cloud.js').then(async (C) => { await C.submitDaily(d.run.key, { name, cls: d.run.cls, score: rec.best, fights: rec.fights }); return C.topDaily(d.run.key, 10); });
   const text = DAY.shareText(d.run, score, d.fights);
-  SCRUI.daily({ mode: 'result', run: d.run, fights: d.fights, score, rec, streak: DAY.streak(d.run.key), board, onStart: startDaily, onHome: showTitle,
+  SCRUI.daily({ mode: 'result', run: d.run, fights: d.fights, score, spent: d.spent || 0, rec, streak: DAY.streak(d.run.key), board, onStart: startDaily, onHome: showTitle,
     onShare: () => { if (navigator.share) navigator.share({ text }).catch(() => {}); else if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied. Paste it to a friend.')); else toast(text); } });
 }
 // Learn to play: the practice battle. One goblin, the first roll and reroll set by the guide (see g3/tutorial.js).
@@ -804,9 +813,11 @@ async function flicker(slots) {
 function battleMenu() {
   if (S.net) return Online.menu();
   const close = modal(h('div', { class: 'form' }, h('h2', {}, 'Battle menu'),
-    h('div', { class: 'col' }, ghost('Rules', () => { close(); showHowTo(); }),
+    h('div', { class: 'col' }, S.hero ? ghost('Your gear', () => { close(); openGear(S.hero); }) : null, ghost('Rules', () => { close(); showHowTo(); }),
       ghost(`Hints: ${hintsOn() ? 'On' : 'Off'}`, () => { setHints(!hintsOn()); close(); toast(hintsOn() ? 'Hints on.' : 'Hints off.'); }),
       soundItem(() => close()),
+      deviceItem(() => close()),
+      downloadItem(() => close()),
       S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold). Live to try again.', () => { close(); B3.stop(); defeat(true); }),
       S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }
@@ -1035,7 +1046,7 @@ function renderCamp(fromBoard) {
     h('div', { class: 'topline' }, h('div', {}, h('h2', {}, 'Camp')), heroChip()),
     h('p', { class: 'muted' }, 'You are healed. Your powers are ready. Spend gold here. Magic waits for a fight, as magic should.'),
     perkPanel,
-    tip('camp', 'Bigger hand dice are how a hero grows, and a die can only grow as far as the act allows. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
+    tip('camp', 'Bigger hand dice are how a hero grows, and any die can grow to a d10 when you can pay. Equip weapons, or sell them. The company saves on its own, like a good mule.'),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { class: S.tab === id ? 'on' : '', type: 'button', role: 'tab', onclick: () => { S.tab = id; sfx.select(); renderCamp(fromBoard); } }, label))),
     body,
     h('div', { class: 'row' }, ghost('Copy Soul Code', () => { const c = currentCode(); if (c) copyCode(c); }, { cls: 'small' })),
@@ -1051,7 +1062,7 @@ function upgradeRow(kind, slot, label) {
 function campForge() {
   const hero = S.hero;
   return h('div', { class: 'col' },
-    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. A die can only grow as far as the act allows. Patience, then punch.'),
+    section('Strength dice', h('p', { class: 'fine' }, 'Bigger hands hit harder and pay out more when they roll 1–4. Any die can grow up to a d10 when you can pay. Patience, then punch.'),
       upgradeRow('strength', 'W', 'Left hand'), upgradeRow('strength', 'E', 'Right hand')),
     section('Special dice', h('p', { class: 'fine' }, 'Always two blank faces, so a bigger die misses less often. Luck, with homework.'),
       upgradeRow('special', 'SW', 'Left special · ✚ Mend, ⚡ Surge'), upgradeRow('special', 'SE', 'Right special · ✦ Spark, ⚡ Surge')),
@@ -1099,7 +1110,7 @@ SCRUI.bind({
   get partyBar() { return S.net ? Online.partyBar : null; }, get chooseRoad() { return S.net ? Online.chooseRoad : null; },
   get net() { return !!S.net; }, get netOp() { return S.net ? Online.netOp : null; }, netPerk: (id) => Online.netPerk(id), netPerkOffer: () => Online.netPerkOffer(), campCta: (btn) => Online.campCta(btn),
 });
-Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist, soundItem });
+Online.bind({ S, ghost, primary, showTitle, showHowTo, showStories, showHeroHub, battleCtx, flushCloud, persist, soundItem, deviceItem, downloadItem });
 export async function boot() {
   const gl = await world.boot($('#gl'));
   if (gl) { $('.app-frame').classList.add('has-gl'); document.body.classList.add('sx'); SCRUI.chrome(isMuted()); }

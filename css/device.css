@@ -1,0 +1,42 @@
+/* Graphics & install menu (js/devicemenu.js) */
+.dev-menu h3 { margin: 1rem 0 .4rem; font-size: 1rem; letter-spacing: .04em; }
+.dev-picks { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.dev-pick, .dev-saver { min-height: 44px; border-radius: 12px; border: 1px solid rgba(255, 210, 61, .28); background: rgba(21, 29, 52, .85); color: inherit; font: inherit; padding: .5rem; cursor: pointer; }
+.dev-pick.on, .dev-saver.on { border-color: #ffd23d; background: rgba(255, 210, 61, .16); box-shadow: 0 0 0 1px #ffd23d inset; }
+.dev-saver { width: 100%; margin-top: .4rem; display: grid; gap: .15rem; text-align: left; padding: .6rem .8rem; }
+.dev-saver small { opacity: .8; }
+.dev-bar { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; margin: .5rem 0; }
+.dev-bar i { display: block; height: 100%; width: 0; background: #ffd23d; transition: width .2s; }
+.dev-dl { display: grid; gap: .3rem; margin-top: .4rem; }
+.dev-new { color: #ffd23d; }
+#qd-update { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 9999; display: flex; gap: .5rem; align-items: center; padding: .6rem .8rem; border-radius: 14px; background: rgba(21, 29, 52, .96); border: 1px solid #ffd23d; color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, .5); font: inherit; }
+#qd-update span { flex: 1; font-size: .95rem; }
+#qd-update button { min-height: 40px; padding: 0 .9rem; border-radius: 10px; border: 0; background: #ffd23d; color: #1a1205; font: inherit; font-weight: 700; }
+#qd-update button.later { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .35); font-weight: 500; }
+/* Your gear: the camp dice grid and the card behind each die, look only, all on one screen (js/g3/gearview.js) */
+.gv-modal { padding: 8px 10px 10px !important; max-height: none !important; overflow: hidden !important; }
+.gv { display: grid; gap: 6px; }
+.gv-head { display: flex; align-items: center; min-height: 44px; padding-right: 92px; }
+.gv-head h2 { margin: 0; font: 800 1.35rem/1.1 var(--font-display, inherit); letter-spacing: .02em; color: #ffe3a4; overflow-wrap: anywhere; }
+.gv .cw-board { max-width: 250px; aspect-ratio: auto; padding: 5px; gap: 3px; }
+.gv .cw-cell { padding: 2px 1px 1px; min-height: 0; height: 58px; justify-content: flex-start; }
+.gv .cw-label { font-size: .54rem; }
+.gv .cw-cell .cw-die { width: 46%; max-width: 34px; margin: 0; }
+.gv .cw-die-loading small { display: none; }
+.gv .cw-cell-foot { min-height: 10px; }
+.gv .cw-cell-foot > b { font-size: .56rem; }
+.gv .cw-locked { font-size: .9rem; }
+.gv-card { overflow: hidden; width: 100%; }
+.gv-fit { width: 100%; }
+.gv-note { text-align: center; padding: 1rem 0; }
+.fb-card.hero.tappable { pointer-events: auto; cursor: pointer; }
+/* the daily's potion shop between fights */
+.dl-shop { display: grid; gap: .5rem; margin: .8rem 0; padding: .7rem .8rem; border-radius: 14px; border: 1px solid rgba(255, 210, 61, .3); background: rgba(21, 29, 52, .7); }
+.dl-shop-t { display: flex; gap: .6rem; align-items: center; }
+.dl-shop-t span { display: grid; }
+.dl-shop-t small { opacity: .8; }
+
+/* The one Close control: top right of every dialog that has one (js/dom.js modal moves it there) */
+.modal-card.has-close { position: relative; }
+html body button.qd-close.qd-close.qd-close.qd-close-top { position: absolute; top: 10px; right: 10px; z-index: 5; }
+.modal-card.has-close .form > h2:first-child, .modal-card.has-close > h2:first-child { padding-right: 92px; }

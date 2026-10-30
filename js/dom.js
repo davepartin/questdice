@@ -14,7 +14,33 @@ export function h(tag, attrs, ...kids) {
     if (c == null || c === false) continue;
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
+  // Every dismiss action shares one label, hit area and visual treatment.
+  if (tag === 'button' && (/^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim()) || (/^[✕×x]$/i.test(el.textContent.trim()) && /^Close\b/i.test(el.getAttribute('aria-label') || el.title || '')))) {
+    el.textContent = 'Close'; el.classList.add('qd-close');
+  }
+  // Build dismiss headers in one place, including forms rebuilt after an action.
+  if (tag !== 'button') {
+    const ownClose = [...el.children].find(c => c.matches?.('button.qd-close'));
+    if (ownClose && (el.matches('.gv-head, .sh-head, .hc-top') || el.querySelector(':scope > h1, :scope > h2, :scope > h3, :scope > b'))) el.classList.add('qd-window-head');
+    if (el.classList.contains('form')) alignWindowClose(el);
+  }
   return el;
+}
+// Keep a single dismiss action in the title row, never floating over the title.
+export function alignWindowClose(content) {
+  const buttons = [...content.querySelectorAll('button.qd-close')];
+  if (!buttons.length) return;
+  const button = buttons[0];
+  const existing = button.closest('.qd-window-head, .gv-head, .sh-head, .hc-top');
+  if (existing) existing.classList.add('qd-window-head');
+  else {
+    const title = content.querySelector(':scope > h1, :scope > h2, :scope > h3') || content.querySelector('h1, h2, h3'); // a dialog whose heading sits one level down (the Rules) gets it in the title row too
+    const header = document.createElement('header'); header.className = 'qd-window-head';
+    if (title) header.append(title);
+    const old = button.parentElement; header.append(button); content.prepend(header);
+    if (old && old !== content && !old.textContent.trim() && !old.children.length) old.remove();
+  }
+  for (const duplicate of buttons.slice(1)) duplicate.remove();
 }
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -40,9 +66,11 @@ export const buzz = (ms = 15) => { try { navigator.vibrate?.(ms); } catch { /* i
 // Close any open dialog. Always use this (not emptying #modal by hand): an empty but still "open" #modal
 // is an invisible full-screen layer that swallows every tap.
 export function closeModal() { const host = $('#modal'); host.replaceChildren(); host.classList.remove('open'); }
-export function modal(content, { dismiss = true } = {}) {
+export function modal(content, { dismiss = true, closeButton = false } = {}) {
   const host = $('#modal');
   const close = closeModal;
+  if ((dismiss || closeButton) && !content.querySelector('button.qd-close')) content.append(h('button', { type: 'button', onclick: close }, 'Close'));
+  alignWindowClose(content);
   const card = h('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' }, content);
   const back = h('div', { class: 'modal-back', onclick: (e) => { if (dismiss && e.target === back) close(); } }, card);
   host.replaceChildren(back); host.classList.add('open');

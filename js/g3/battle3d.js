@@ -3,7 +3,7 @@
 //
 // ui.js calls start(ctx) when a solo quest begins. This module owns Reset -> Roll -> Shape -> Lock ->
 // Resolve until the fight ends, then hands back to ui.js (ctx.showVictory / ctx.defeat).
-import { h, $, $$, toast, buzz, reduced } from '../dom.js';
+import { h, $, $$, toast, buzz, reduced, alignWindowClose } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as V from '../view.js';
@@ -165,7 +165,7 @@ function buildHud() {
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
   B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
-  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
+  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
     const r = hud.dock.getBoundingClientRect();
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
@@ -591,14 +591,15 @@ function cardTiles(reset) {
       body: 'Turn your heart die one step up or down. A heart of 1 to 4 adds 2 more to every head, hand or feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
       extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)], panel: heartPanel(b, heart.cost, heart.why) },
   ];
+  if (B.pwNote) for (const u of utils) if (u.id === B.pwNote.id && B.pwSel === u.id) u.note = B.pwNote;
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
-    select: (id) => { B.pwSel = id; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
+    select: (id) => { B.pwSel = id; B.pwNote = null; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
     step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = E.powerCost(k, x, E.powerLevel(hero, id)); sfx.click?.(); renderSheet(); },
     use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
 function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
 // Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Close.
-const fillInfo = (...kids) => B.hud.info.replaceChildren(...kids.filter(Boolean));
+const fillInfo = (...kids) => { B.hud.info.replaceChildren(...kids.filter(Boolean)); alignWindowClose(B.hud.info); };
 function showPowerDetail(id) {
   const b = B.b; const hero = B.hero; const k = E.cardsOf(hero).find((c) => c.id === id); if (!k) return;
   const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0; B.powerX = B.powerX || {};
@@ -687,6 +688,7 @@ async function doBigHeal() {
   if (!E.healBig(b)) { sfx.error(); return; }
   renderRoster();
   sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
+  B.pwNote = { id: 'u:bigheal', icon: 'heal', big: `+${b.hp - before}`, text: `health · now ${b.hp} / ${b.maxHp} · ${E.potionsLeft(b)} left` };
   updateScore(); refresh(); renderSheet(); // the sheet stays open (Dave): keep tapping, watch the health go up
 }
 // The powers sheet reaches right down to the top of the counter boxes (Dave: "there is room, so let's use it").
@@ -860,8 +862,9 @@ async function doReroll() {
 }
 async function doNudge(dir) {
   let b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet(); return; }
+  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` }; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet(); return; }
   if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
+  B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` };
   sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet();
 }
 async function doHeal() {
@@ -869,6 +872,7 @@ async function doHeal() {
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'heal' }); B.busy = false; if (!ok) return; b = B.b; } else
   if (!E.healSpend(b)) { sfx.error(); toast(b.hp >= b.maxHp ? 'You are at full health.' : 'Not enough ✦ Magic.'); return; }
   renderRoster(); sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
+  B.pwNote = { id: 'u:heal', icon: 'heal', big: `+${b.hp - before}`, text: `health · now ${b.hp} / ${b.maxHp}` };
   refresh(); renderSheet(); // stays open: every tap pays for another heal
 }
 async function doCard(id, opts = {}) {
@@ -890,9 +894,10 @@ async function doCard(id, opts = {}) {
   const gg = (b.goldEarned || 0) - goldBefore; if (gg > 0) gains.gold = gg;
   const fr = (b.freeActions || []).length - freeBefore; if (fr > 0) gains.free = b.freeActions[b.freeActions.length - 1];
   r.foes = b.enemies.filter((e) => e.hp > 0).length;
-  // every power shows what it did, in a small window, then OK (Dave: each one should feel special)
+  // every power shows what it did, then OK (Dave: each one should feel special), inside the selected tab's panel, not a second window (mp2)
   B.busy = true; renderShape();
-  try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id) }); } finally { B.busy = false; }
+  const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
+  try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   B.pwSel = null; // back to the top of the sheet with nothing picked, ready for the next power (Dave, Oct 2026)
   renderShape(); renderSheet(); bumpCounters(gains); sheetTop();

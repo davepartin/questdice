@@ -4,7 +4,7 @@
 // often as you like; your best counts. Pure logic here; the screens are in ui.js and g3/scrui.js, the leaderboard in cloud.js.
 import * as E from './engine.js';
 import { keyOf } from './lab.js';
-import { CLASSES, CHARMS } from './data.js';
+import { CLASSES, CHARMS, CLASS_TALENT } from './data.js';
 
 export const FIGHTS = 5;
 export const WIN_BONUS = 100;
@@ -42,7 +42,13 @@ export function dailyHero(run) {
   h.dice = [...new Set([...(h.dice || ['NW', 'N', 'W', 'C', 'E', 'S']), ...B.extra])];
   h.strength = { W: B.hands, E: B.hands }; h.special = { SW: B.talent, SE: B.talent }; h.mind = { N: B.head }; h.speed = { S: Math.max(B.feet, E.feetSize(h)) };
   for (const k of ['NW', 'NE']) { const w = h.loadout[k]; if (w && w.id !== 'fists') { w.rarity = B.rarity; if (B.size > 4) w.size = B.size; } }
-  h.gold = 10000; for (const k of E.cardsOf(h)) E.upgradePower(h, k.id); h.gold = 0; // every equipped power at level 1
+  h.gold = 10000; for (const k of E.cardsOf(h)) E.upgradePower(h, k.id);
+  // Talent dice: a careful player has bought symbols by now. Since 26 Oct talent faces start empty (they used to carry the class symbol), so the hero of the day buys them here:
+  // 1 face in Act I, 2 in Act II, 4 in Act III on each active talent die, the die's own class symbol first and the other die's after it (at most two of one symbol).
+  const talentFaces = { 1: 1, 2: 2, 3: 4 }[run.act || 2]; const own = CLASS_TALENT[run.cls];
+  for (const slot of ['SW', 'SE']) { if (!h.dice.includes(slot)) continue; const mine = own[slot]; const other = own[slot === 'SW' ? 'SE' : 'SW'];
+    for (let f = 0; f < talentFaces; f++) E.addTalent(h, slot, f, f < 2 ? mine : other); }
+  h.gold = 0; // every equipped power at level 1
   if (B.rerollDie) h.rerollDie = true; // a 4th reroll die, as a hero this far has bought
   E.takeCharm(h, run.charm);
   return h;
@@ -51,7 +57,20 @@ export function dailyHero(run) {
 // so gold counts as points): the gold your dice rolled, and the gold of each monster you felled.
 export const goldOf = (b) => Math.max(0, Math.round((b?.goldEarned || 0) + (b?.stolen || 0) + (b?.enemies || []).filter((e) => e.hp <= 0 && !e.fled).reduce((a, e) => a + (e.gold || 0), 0)));
 export const fightScore = (b, won) => E.pointsOf(b) + (won ? WIN_BONUS : 0) + goldOf(b);
-export const finalScore = (fights) => fights.reduce((a, f) => a + f.score, 0) + (fights.length === FIGHTS && fights.every((f) => f.won) ? CLEAR_BONUS : 0);
+// Points spent on potions between fights come off the score (Dave, 27 Oct 2026: "maybe you spend points for potions, since daily battles are about points").
+export const finalScore = (fights, spent = 0) => Math.max(0, fights.reduce((a, f) => a + f.score, 0) + (fights.length === FIGHTS && fights.every((f) => f.won) ? CLEAR_BONUS : 0) - spent);
+// A potion costs 50 points in every act (Dave, 28 Oct 2026; it started at 100 / 150 / 200). Only between fights, only up to the belt (2), and only with the points to pay: the score cannot go below 0.
+export const POTION_POINTS = [50, 50, 50];
+export const potionCost = (run) => POTION_POINTS[Math.max(1, Math.min(3, run?.act || 2)) - 1];
+export function potionShop(d, hero) {
+  const have = E.potionStock(hero); const max = E.potionMaxOf(hero); const cost = potionCost(d.run); const points = finalScore(d.fights, d.spent || 0);
+  const why = have >= max ? 'Belt full' : points < cost ? `Need ${cost - points} more points` : '';
+  return { have, max, cost, points, heal: E.potionHpOf(hero), ok: !why, why };
+}
+export function buyPotion(d, hero) {
+  const s = potionShop(d, hero); if (!s.ok) return false;
+  hero.potions = s.have + 1; d.spent = (d.spent || 0) + s.cost; return true;
+}
 
 // This phone's record of the days it played: { [key]: { best, tries, cleared, fights } }
 const STORE = keyOf('qd.daily'); // the lab and the preview keep their own record (js/lab.js)

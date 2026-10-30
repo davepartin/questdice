@@ -10,6 +10,9 @@ import * as HK from './hudkit.js';
 import * as D from '../data.js';
 import * as E from '../engine.js';
 import { sfx } from '../audio.js';
+import * as MC from './magiccard.js'; // mr1: the Ranger's magic as playing cards
+// die art for the heart stepper: loaded lazily so node tests (no three.js) can still import this file; battle3d.js already has it loaded
+let DICE = null; if (typeof window !== 'undefined') import('../gfx/dice/dice.js').then((m) => { DICE = m; }).catch(() => {});
 
 // ------------------------------------------------------------------------------------------------ glyphs
 // One picture per power (24x24, the HUD's duotone classes: f body, s stroke, h highlight, p solid).
@@ -44,13 +47,13 @@ const G = {
 // Which picture each power wears (the rest fall back to the icon of what they give).
 const POWER_GLYPH = {
   cleave: 'cleave', judgment: 'burst', shieldwall: 'hexshield', press: 'cleave', rally: 'flag', secondwind: 'wind',
-  aimed: 'crosshair', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
-  arcbolt: 'bolt', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
-  grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
+  aimed: 'crosshair', mark: 'hk:pierce', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
+  arcbolt: 'bolt', polymorph: 'hk:weaken', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
+  anvil: 'anvil', grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
   'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
 };
-const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk' };
+const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk', frog: 'weaken' };
 const SVGNS = 'http://www.w3.org/2000/svg';
 export function glyph(k, cls = '') {
   const name = POWER_GLYPH[k.id] || `hk:${FX_ICON[mainFx(k)] || 'magic'}`;
@@ -79,6 +82,10 @@ const scaleTop = (k, level) => E.powerDice(k, E.scaleMax(k, level), level);
 const totWords = (k, level) => Object.entries(E.chargeGain(k, k.max, level)).map(([f, v]) => (f === 'heal' ? `heal ${v}` : `${v} ${NAME[f] || f}`)).join(', ');
 const splashWord = (k) => (k.splash === 'half' ? ' Half splashes.' : '');
 // What this power does, at its level (the camp page and the battle sheet).
+// mp4 (Dave: "AAA for the magic"): keywords in a description light up in their colour: dice (2d6), +N, N magic, pierce/attack/block/heal/gold.
+const KW = /(\d+d\d+|[+\u2212-]?\d+\s+magic|\bmagic\b|[+]\d+|\bpierce\b|\battack\b|\bblock(?:ing)?\b|\bheal(?:th|s)?\b|\bgold\b|\bonce a (?:battle|round)\b)/gi;
+const kwTone = (w) => (/d\d/.test(w) ? 'dice' : /magic/i.test(w) ? 'magic' : /pierce/i.test(w) ? 'pierce' : /attack/i.test(w) ? 'atk' : /block/i.test(w) ? 'block' : /heal/i.test(w) ? 'heal' : /gold/i.test(w) ? 'gold' : /once/i.test(w) ? 'once' : 'num');
+export function marked(text) { if (typeof text !== 'string') return text; return text.split(KW).map((part, i) => (i % 2 ? h('b', { class: `kw kw-${kwTone(part)}` }, part) : part)).filter((x) => x !== ''); }
 export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
@@ -86,6 +93,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} stored. `}Store 1 a round, or release all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to every monster.`;
   if (k.kind === 'luck') return `Roll a d6. 1–2: +${1 + level} magic. 3–4: +${E.scaleNum(E.LUCK.mid, level)} attack. 5–6: +${E.scaleNum(E.LUCK.top, level)} attack, +1 magic.`;
+  if (k.grudge) return `Attack equal to the damage that got past your block last round${k.grudge[level] ? `, +${k.grudge[level]}` : ''}.`;
   const t = fxWords(lvlFx(k.fx, level)); return `${t[0].toUpperCase()}${t.slice(1)}.`;
 }
 // Just the result at a level, for the compare box and the level list: "Total 28 attack", "3d6 attack", "+5 block".
@@ -102,6 +110,7 @@ export function shortLine(k, level = 0) {
   if (k.kind === 'charge') return `Total ${totWords(k, level)}`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
   if (k.kind === 'luck') return `+${1 + level} magic / +${E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, level)} attack`;
+  if (k.grudge) return `Attack = damage taken${k.grudge[level] ? ` +${k.grudge[level]}` : ''}`;
   return fxWords(lvlFx(k.fx, level));
 }
 // What one upgrade adds, in a few words: "+1 each charge (+4 total)", "+1 die", "+1 block".
@@ -117,12 +126,32 @@ export function upgradeLine(k, level = 0) {
   if (k.kind === 'scale') return `+1 die for the same magic`;
   if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `+${E.roundGain(k, r, nx) - E.roundGain(k, r, level)} attack in round ${r}, more later`; }
   if (k.kind === 'luck') return `+1 magic, +${E.scaleNum(E.LUCK.mid, nx) - E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, nx) - E.scaleNum(E.LUCK.top, level)} attack`;
+  if (k.grudge) return `+${(k.grudge[nx] ?? k.grudge.at(-1)) - (k.grudge[level] ?? k.grudge.at(-1))} attack on top`;
   const ch = Object.entries(k.fx).map(([f, v]) => { const o = f === 'free' ? v + level : E.scaleNum(v, level); const n = f === 'free' ? v + nx : E.scaleNum(v, nx);
     return f === 'free' ? `+${n - o} reroll die` : f === 'weaken' ? `hit ${n - o} softer` : `+${n - o} ${NAME[f] || f}`; });
   if (k.kind === 'super') ch.push(`+${E.scaleNum(k.aoe, nx) - E.scaleNum(k.aoe, level)} to all`);
   return ch.join(', ');
 }
 
+// mp6 (Dave: "Just say what you are buying. Use the arrow pierce symbols even."): the detail reads as a purchase, mostly icons:
+// [magic N]  ->  [pierce icon x2 dice]. Numbers come from the engine, the same ones the rules use; only the words are gone.
+const BUY_WORD = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'softer hits', free: 'free rerolls', aoe: 'to all' };
+const buyItem = (f, n, { dice = false, word = null } = {}) => h('span', { class: `pb-get t-${TONE[f] || 'magic'}` }, HK.icon(FX_ICON[f] || 'magic'),
+  h('b', {}, dice ? `×${n}` : f === 'free' ? `×${n}` : `+${n}`), h('small', {}, word ?? (dice ? `${BUY_WORD[f] || f} ${n === 1 ? 'die' : 'dice'}` : BUY_WORD[f] || f)));
+function buyRow(cost, items, extra = null) {
+  return h('div', { class: 'pd-buy', 'aria-label': `${cost ? `${cost} magic` : 'Free'} buys ${items.map((i) => i.textContent).join(', ')}` },
+    h('span', { class: `pb-pay ${cost ? '' : 'free'}` }, cost ? [HK.icon('magic'), h('b', {}, String(cost))] : h('b', {}, 'FREE')),
+    h('span', { class: 'pb-arrow', 'aria-hidden': 'true' }, '→'), h('span', { class: 'pb-gets' }, items), extra);
+}
+export function buyItems(k, { x, round, level = 0, stored = null } = {}) {
+  if (k.kind === 'dice') return [buyItem(k.dice.to, k.dice.n + level, { dice: true })];
+  if (k.kind === 'scale') return [buyItem(k.dice.to, E.powerDice(k, x ?? k.cost, level), { dice: true })];
+  if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return [buyItem('atk', E.roundGain(k, r, level))]; }
+  if (k.kind === 'charge') return Object.entries(E.chargeGain(k, k.max, level)).map(([f, v]) => buyItem(f, v, { word: `${BUY_WORD[f] || f} at ${k.max}` }));
+  if (k.kind === 'super') return [...Object.entries(lvlFx(k.fx, level)).map(([f, v]) => buyItem(f, v)), buyItem('aoe', E.scaleNum(k.aoe, level))];
+  if (k.kind === 'luck') return [buyItem('magic', 1 + level, { word: '1–2' }), buyItem('atk', E.scaleNum(E.LUCK.mid, level), { word: '3–4' }), buyItem('atk', E.scaleNum(E.LUCK.top, level), { word: '5–6' })];
+  return Object.entries(lvlFx(k.fx, level)).map(([f, v]) => buyItem(f, v));
+}
 // ------------------------------------------------------------------------------------------------ the sigil (powers sheet)
 // ctx: { b, hero, reset, powers: [{ k, st, stored, x, level, afford }], utils: [{ id, name, icon, cost, why, flag, text, body, actions }],
 //        selected, select(id), use(id, opts), recharge(id), step(id, x), rechargeCost, round }
@@ -168,25 +197,105 @@ export function sigil(ctx) {
   const soft = (u) => /full health|no potions/i.test(u.why || '');
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
   const needOf = (u) => (!reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0);
-  const utilRow = utils.map((u, i) => h('button', { type: 'button',
+  const utilTiles = utils.map((u, i) => h('button', { type: 'button',
     class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${(u.why && !soft(u)) || needOf(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}${needOf(u) ? ` Need ${needOf(u)} more magic.` : ''}`,
     onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g'))), costBadge(u),
     h('span', { class: 'pw-name' }, u.name), needOf(u) ? h('span', { class: 'pw-tag low' }, `NEED ${needOf(u)}`) : null));
-  const detail = detailPanel(ctx, sel);
+  if (MC.CARD_CLASSES.has(ctx.hero?.cls || b.hero?.cls)) return MC.sheet(ctx, { glyph, detailPanel, tally }); // mr1 (Dave t435): Ranger cards; other heroes keep the rows
+  const detail = null;
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
-    tally, h('div', { class: 'pw-wrap' }, h('div', { class: 'pw-stage', role: 'group', 'aria-label': 'Your class powers' }, tri, medal('A'), medal('B'), medal('C'))),
-    h('div', { class: 'pw-helpers', role: 'group', 'aria-label': 'Potion, healing and heart change' }, ...utilRow),
-    detail);
+    tally, powerRows(ctx, sel)); // mp8: no tabs, the six rows (detail/medal/utilRow kept for reference, unused)
+  void detail; void utilTiles; void medal; void tri;
 }
 const canRecharge = (k) => !k.atwill && k.kind !== 'super';
 function isReady(p, reset) { const { k, st } = p; return reset ? false : !st.spent && !st.early && p.afford; }
+// mp7 (Dave picked mockup A: "3 rows is perfect"): A, B and C at once, one row each: name + small tag, ▲cost (with −/+ for a scale power),
+// what you get in icons, and the row's own Cast button. The same ctx.use / ctx.step / ctx.recharge the old detail used; no rule changes.
+function powerRow(ctx, p, sel) {
+  const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const level = p.level || 0;
+  const when = k.atwill ? 'Every round' : k.kind === 'super' ? 'Super' : 'Once a battle';
+  const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Need ${ctx.rechargeCost}` : '') : 'Roll first')
+    : st.spent ? (k.atwill ? 'Used' : 'Spent') : st.early ? `Round ${k.minRound}+` : b.magic < x ? `Need ${x - b.magic}` : '';
+  const tag = why && why !== 'Roll first' ? why : k.kind === 'charge' && stored != null ? `${when} · ${stored}/${k.max}` : when;
+  const icons = (() => {
+    if (k.kind === 'scale') { const n = E.powerDice(k, x, level); const f = k.dice.to; // mq6 (Dave): one small d6 per magic, then where the total goes
+      return [h('span', { class: 'pr-dice', 'aria-label': `${n}d6` }, Array.from({ length: Math.min(n, 6) }, () => d6())), h('span', { class: 'pr-to', 'aria-hidden': 'true' }, '→'), HK.icon(FX_ICON[f] || 'magic')]; }
+    if (k.kind === 'dice' || k.kind === 'scale') { const n = k.kind === 'dice' ? k.dice.n + level : E.powerDice(k, x, level); const f = k.dice.to;
+      return n <= 4 ? Array.from({ length: n }, () => HK.icon(FX_ICON[f] || 'magic')) : [HK.icon(FX_ICON[f] || 'magic'), h('b', {}, `×${n}`)]; }
+    if (k.kind === 'charge' && k.per) { // mq7 (Dave): one dot per charge, each holding what a release at that many charges gives (engine chargeGain); filled = stored
+      const f = Object.keys(typeof k.per === 'number' ? { atk: 1 } : k.per)[0]; const have = stored || 0;
+      return [h('span', { class: `pr-dots t-${f}`, 'aria-label': `${have} of ${k.max} stored, release now for ${have ? E.chargeGain(k, have, level)[f] : 0} ${NAME[f] || f}` },
+        Array.from({ length: k.max }, (_, i) => h('span', { class: `pr-dot ${i < have ? 'on' : ''} ${i === have - 1 ? 'now' : ''}` }, String(E.chargeGain(k, i + 1, level)[f])))), HK.icon(FX_ICON[f] || 'magic')]; }
+    if (k.kind === 'flat' && k.fx && k.fx.free) return [h('span', { class: 'pr-words' }, `${k.fx.free} Free Rerolls`)]; // mq7 (Dave): just say it
+    return buyItems(k, { x, round: b.round, level, stored }).map((it) => [...it.childNodes].slice(0, 2)).flat();
+  })();
+  const scale = k.kind === 'scale' && !st.spent && !reset;
+  const pay = h('span', { class: 'pr-pay' },
+    scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '−') : null,
+    scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+') : null);
+  const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
+  const castable = reset ? st.spent && canRecharge(k) : true;
+  const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Cast', mc(x)))
+    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Store', mc(x)] : ['Cast', mc(x)]);
+  const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
+  if (friends.length) { // mp8: Lucky Verse at a table asks who it is for, right in its row: Me (attack) or a friend (the same number as healing)
+    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, 'Me', mc(x)),
+      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Cast ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0], mc(x)))];
+    return h('div', { class: `pr-row t-${toneOf(k)} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
+      h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
+      pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
+  }
+  const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Release ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Release ${stored}`) : null;
+  return h('div', { class: `pr-row pr-k-${k.kind} t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
+    h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
+    pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go), (() => { const n = ROW_NOTE[k.id]; return n && n.round === b.round ? h('div', { class: `pd-result pr-note pr-cnote t-${n.f}`, role: 'status' }, HK.icon(FX_ICON[n.f] || 'magic'), h('span', {}, n.text)) : null; })());
+}
+// mp8 (Dave: "We don't need the tabs. What if there are 6 rows!"): Potion, Heal and Heart change as rows too. Their buttons run battle3d.js's own
+// actions (u.actions: doBigHeal, doHeal, doNudge); the row is selected first so its result note (B.pwNote) shows in the row.
+// small solid magic triangle + number, sized to the button text (Dave mp9)
+// a small d6 face (five pips) in the game's parchment + ink style
+const D6NS = 'http://www.w3.org/2000/svg';
+const d6 = () => { const s = document.createElementNS(D6NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'pr-d6'); s.setAttribute('aria-hidden', 'true');
+  s.innerHTML = '<rect x="2" y="2" width="20" height="20" rx="4.5" fill="#f3e3c0" stroke="#5a4320" stroke-width="1.5"/><g fill="#1a1208"><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="7.5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="7.5" cy="16.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></g>'; return s; };
+const mc = (n) => h('span', { class: 'pr-mc', 'aria-hidden': 'true' }, HK.icon('magic'), h('b', {}, String(n)));
+function utilRow(ctx, u) {
+  const { b, reset } = ctx; const need = !reset && u.cost && u.cost > b.magic ? u.cost - b.magic : 0;
+  const why = u.why || (need ? `Need ${need}` : '');
+  const soft = /full health|no potions/i.test(u.why || '');
+  const tagTxt = u.tag || (need ? `Need ${need}` : u.id === 'u:bigheal' ? `${E.potionsLeft(b)} left` : u.id === 'u:heal' ? 'Any time' : 'Once a round');
+  const run = (a) => () => { ctx.select(u.id); a.fn(); };
+  const pay = null; // mp9: cost lives on the button only
+  let get; let acts;
+  if (u.id === 'u:heart') {
+    get = h('span', { class: 'pr-get t-gold pr-heart' }, HK.icon('heart'));
+    // mq2 (Dave): a stepper — the heart's current face big in the middle, ▼ left and ▲ right (battle3d.js heart actions, reused)
+    const cur = b.board?.C?.v || 0; let src = null; try { const spec = DICE?.dieSpecs(ctx.hero || b.hero).C; src = spec && cur ? DICE.faceImage(spec, cur) : null; } catch { src = null; }
+    const btn = (a, i) => h('button', { type: 'button', class: `pw-btn go pr-go pr-hc ${i ? 'up' : 'down'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria, onclick: run(a) }, (() => { const img = (a.content || []).find((n) => n && n.tagName === 'IMG'); return img ? img.cloneNode(true) : h('span', { class: 'hc-none' }, '–'); })(), u.cost ? mc(u.cost) : null); // mq4: the face it turns to, no arrows (Dave)
+    const [dn, up] = u.actions;
+    acts = h('span', { class: 'hc-step' }, dn ? btn(dn, 0) : null, h('span', { class: 'hc-mid', 'aria-label': `Heart now ${cur}` }, src ? h('img', { class: 'hc-face now', src, alt: `heart ${cur}` }) : h('b', {}, String(cur || '–'))), up ? btn(up, 1) : null);
+  } else {
+    const n = u.id === 'u:bigheal' ? E.potionHpOf(b.hero) : E.healAmountOf(b.hero);
+    get = h('span', { class: 'pr-get t-heal' }, HK.icon('heal'), h('b', {}, `+${n}`));
+    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, ...(u.id === 'u:bigheal' || !u.cost ? ['Drink'] : ['Cast', mc(u.cost)])));
+  }
+  const note = u.note ? h('div', { class: `pd-result pr-note t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null;
+  return h('div', { class: `pr-row pr-util ${u.id === 'u:heart' ? 'pr-hrow' : 'pr-half'} t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
+    h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, u.name), h('small', { class: `pr-tag ${why ? 'low' : ''}` }, why && soft ? (u.tag || why) : tagTxt)),
+    pay, get, h('span', { class: 'pr-acts' }, acts), note);
+}
+function powerRows(ctx, sel) {
+  const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
+  return h('div', { class: 'pw-detail pw-rows', 'aria-label': 'Your powers' }, ps.map((p) => powerRow(ctx, p, sel)), h('i', { class: 'pr-split', 'aria-hidden': 'true' }), ...(() => { // mq1 (Dave): Heart change gets its own row, then Potion + Heal side by side
+    const hr = ctx.utils.filter((u) => u.id === 'u:heart'); const rest = ctx.utils.filter((u) => u.id !== 'u:heart');
+    return [hr.map((u) => utilRow(ctx, u)), rest.length ? h('div', { class: 'pr-pair' }, rest.map((u) => utilRow(ctx, u))) : null]; })());
+}
 function detailPanel(ctx, sel) {
   const { b, reset } = ctx;
   const p = ctx.powers.find((x) => x.k.id === sel);
   if (p) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
-    const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : `Once a battle${canRecharge(k) ? ` · recharge ${ctx.rechargeCost} magic` : ''}`;
+    const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : 'Once a battle';
     const why = reset ? (st.spent && canRecharge(k) ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '') : 'Roll your dice first. Powers are used while you shape your roll.')
       : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Need ${x - b.magic} more magic (it costs ${x}, you have ${b.magic}).` : '';
     const step = k.kind === 'scale' && !st.spent && !reset ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
@@ -195,7 +304,7 @@ function detailPanel(ctx, sel) {
     const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
-      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`), h('small', {}, castPreview(k, { x, level: p.level || 0, magic: b.magic }))));
+      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`)));
     // Verse for a friend (CLASS2.verse, the lab): at a table Lucky Verse asks who it is for. You: attack, as now. A friend: the same number as healing.
     const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
     const forRow = friends.length ? h('div', { class: 'pd-for' }, h('small', {}, 'Who is it for? You: attack. A friend: the same number as healing.'),
@@ -203,9 +312,8 @@ function detailPanel(ctx, sel) {
       ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go friend', disabled: !!why, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), `For ${f.hero.name} · ${Math.round((f.hp / f.maxHp) * 100)}% health`))) : null;
     return h('div', { class: `pw-detail t-${toneOf(k)}`, 'aria-label': `${k.name} details` },
       h('span', { class: 'pw-imprint', 'aria-hidden': 'true' }, glyph(k)),
-      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', {}, when)),
-        h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(x)))),
-      h('p', { class: 'pd-line' }, effectLine(k, { x, round: b.round, level: p.level, stored })),
+      h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(k)), h('div', { class: 'pd-id' }, h('small', {}, `${k.slot}${p.level ? ` · ${'★'.repeat(p.level)}` : ''}`), h('b', {}, k.name), h('em', { class: 'pd-when' }, when))),
+      buyRow(x, buyItems(k, { x, round: b.round, level: p.level || 0, stored }), k.kind === 'charge' && stored != null ? h('span', { class: 'pb-note' }, `${stored}/${k.max}`) : null),
       why ? h('p', { class: 'pd-why' }, why) : null, forRow || h('div', { class: 'pd-row' }, step, release, main));
   }
   const u = ctx.utils.find((x) => x.id === sel);
@@ -214,25 +322,34 @@ function detailPanel(ctx, sel) {
       h('b', {}, 'Tap a power'),
       h('p', {}, reset ? 'Roll first, then cast while you shape your dice. Tap one to read it.' : 'Choose A, B or C to inspect a power. Use the helper row for potions, healing and heart changes.'));
   }
-  if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, u.panel); // a helper that draws its own compact controls (the heart change)
+  const note = u.note ? h('div', { class: `pd-result t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null; // what the last tap did, inside the tab
+  if (u.panel) return h('div', { class: `pw-detail pw-custom t-${u.tone}` }, note, u.panel); // a helper that draws its own compact controls (the heart change)
   return h('div', { class: `pw-detail t-${u.tone}` },
-    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('small', {}, 'Always ready'), h('b', {}, u.name), h('em', {}, u.flag)),
-      u.cost ? h('span', { class: 'pd-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : null),
-    h('p', { class: 'pd-line' }, u.body), u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
+    h('div', { class: 'pd-top' }, h('span', { class: 'pd-badge' }, glyph(u)), h('div', { class: 'pd-id' }, h('b', {}, u.name), u.id === 'u:bigheal' ? h('em', { class: 'pd-when' }, `${E.potionsLeft(b)} left`) : u.id === 'u:heal' ? h('em', { class: 'pd-when' }, 'Any time') : null)),
+    u.id === 'u:bigheal' ? buyRow(0, [buyItem('heal', E.potionHpOf(b.hero))]) : u.id === 'u:heal' ? buyRow(u.cost, [buyItem('heal', E.healAmountOf(b.hero))]) : h('p', { class: 'pd-line' }, marked(u.body)), note, u.why ? h('p', { class: 'pd-why' }, u.why) : null, u.extra || null,
     h('div', { class: 'pd-row' }, u.actions.map((a) => h('button', { type: 'button', class: `pw-btn ${a.alt ? 'alt' : 'go'}${a.content ? ' hc-btn' : ''}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || null, onclick: a.fn }, ...(a.content || [a.label])))));
 }
 
 // ------------------------------------------------------------------------------------------------ the reveal
 // Show what a power just did. k: the card; r: E.castPower's result; gains: what reached the counters { atk: 8, ... };
 // round: the battle round. Resolves when the player taps OK (or taps the backdrop once it is done).
-export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
+// inline: the open .pw-detail panel; when given, the result plays inside the selected tab (no second window; Dave, 26 Oct mp2).
+// mq7 (Dave: "you won't need to open a new screen"): Volley (charge powers) store and release with no reveal card; the result shows in its own row this round
+const ROW_NOTE = {};
+export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
+  if (k?.kind === 'charge') {
+    const f = Object.keys(r.per || perOf(k))[0] || 'pierce'; const amt = gains[f] || r.total || 0;
+    ROW_NOTE[k.id] = { round, f, text: r.released ? `Released ${r.released}: +${amt} ${NAME[f] || f}` : `Stored: ${r.charged || 0} of ${k.max}` };
+    try { sfx.magic?.(); } catch { /* sound is optional */ }
+    return Promise.resolve();
+  }
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const tone = r.released ? TONE[Object.keys(r.per || perOf(k))[0]] || toneOf(k) : toneOf(k);
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
     let shut = false; let done = false;
     const total = Object.values(gains).reduce((a, v) => a + v, 0);
-    const close = () => { if (shut) return; shut = true; timers.forEach(clearTimeout); layer.classList.add('out'); sfx.uiClose?.(); setTimeout(() => { layer.remove(); resolve(); }, 220); };
+    const close = () => { if (shut) return; shut = true; timers.forEach(clearTimeout); (inline ? card : layer).classList.add('out'); sfx.uiClose?.(); setTimeout(() => { if (inline) { card.remove(); inline.classList.remove('pw-casting'); } else layer.remove(); resolve(); }, 220); };
     const adds = Object.keys(gains).some((f) => !['free', 'weaken'].includes(f)); // a free reroll or softer hits do not add to a counter
     const ok = h('button', { type: 'button', class: 'dr-ok', disabled: true, onclick: close }, adds && !r.charged ? (r.rolls?.length && !(k.kind === 'luck') ? `Add ${r.total} to my roll` : 'Add it to my roll') : 'Got it');
     const shown = new Set(); // what the art already shows in full (its chips are not repeated under it)
@@ -242,11 +359,13 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
     const kicker = r.released ? 'Release' : r.charged ? 'Charge stored' : k.kind === 'super' ? 'Super power' : k.atwill ? 'Every-round power' : 'Big move';
     const head = h('div', { class: 'cr-head' }, h('span', { class: 'cr-sigil', 'aria-hidden': 'true' }, h('i', { class: 'cr-tri' }), h('span', { class: 'cr-medal' }, glyph(k))),
       h('small', { class: 'dr-kicker' }, `${k.slot ? `${k.slot} · ` : ''}${kicker}${r.cost ? ` · ${r.cost} magic` : ''}`), h('h3', {}, k.name));
-    const card = h('div', { class: `dr-card cr-card t-${tone} kind-${r.released ? 'release' : r.charged ? 'charge' : k.kind}`, role: 'dialog', 'aria-label': `${k.name}` }, head, art, chips, ok);
+    const card = h('div', { class: `dr-card cr-card t-${tone} kind-${r.released ? 'release' : r.charged ? 'charge' : k.kind}`, role: inline ? 'status' : 'dialog', 'aria-label': `${k.name}` }, head, art, chips, ok);
+    if (inline) card.classList.add('dr-inline');
     const layer = h('div', { class: 'dr-layer', onclick: (e) => { if (e.target === layer && done) close(); } }, card);
     card.addEventListener('click', (e) => { if (!done && e.target !== ok) { timers.forEach(clearTimeout); timers.length = 0; skip?.(); } }); // tap to hurry it along
     let skip = null;
-    host.append(layer); sfx.uiOpen?.();
+    if (inline) { inline.classList.add('pw-casting'); inline.replaceChildren(card); card.scrollIntoView?.({ block: 'nearest' }); const watch = setInterval(() => { if (shut) clearInterval(watch); else if (!card.isConnected) { clearInterval(watch); shut = true; timers.forEach(clearTimeout); resolve(); } }, 400); } // a re-render that drops the panel ends it
+    else host.append(layer); sfx.uiOpen?.();
     const count = (el, to, ms = 600) => { if (reduced) { el.textContent = String(to); return; } const t0 = performance.now(); const from = Number(el.textContent) || 0; const tick = () => { const q = Math.min(1, (performance.now() - t0) / ms); el.textContent = String(Math.round(from + (to - from) * q)); if (q < 1 && !shut) requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
 
     if (r.rolls?.length) { // ---- dice: tumble, land one by one, add up (Arc Bolt, Cleave, Aimed Shot, Mending Song, Lucky Verse)
@@ -300,13 +419,13 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0 }) {
       finish(1300); skip = () => { card.classList.add('boom'); finish(0); };
     } else { // ---- a flat power: its mark stamps down and the bonus rises out of it
       const [f, v] = Object.entries(gains)[0] || Object.entries(k.fx)[0] || ['magic', 0];
-      const word = f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
-      const big = h('div', { class: `cr-stamp t-${TONE[f] || 'magic'}` }, h('span', { class: 'cs-ring' }, HK.icon(FX_ICON[f] || 'magic')), h('b', {}, f === 'free' ? `${v}` : f === 'weaken' ? `−${v}` : `+${v}`));
+      const word = k.grudge ? `${r.grudge ?? v} damage got past your block. It comes back as attack.` : f === 'frog' ? 'Your target is a frog this round. It cannot attack.' : f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
+      const big = h('div', { class: `cr-stamp t-${TONE[f] || 'magic'}` }, h('span', { class: 'cs-ring' }, HK.icon(FX_ICON[f] || 'magic')), h('b', {}, f === 'frog' ? 'FROG' : f === 'free' ? `${v}` : f === 'weaken' ? `−${v}` : `+${v}`));
       art.append(big, h('p', { class: 'dr-what' }, word)); shown.add(f);
       later(120, () => { big.classList.add('in'); sfx.magic?.(); });
       finish(800); skip = () => { big.classList.add('in'); finish(0); };
     }
     void total; void level;
-    later(30000, () => { if (!shut && done) close(); });
+    timers.push(setTimeout(() => { if (!shut && done) close(); }, 30000)); // a real 30 s even with reduced motion (it used to close at once)
   });
 }

@@ -37,3 +37,31 @@ test('daily score: battle points, +100 a win, +250 for clearing all five; share 
   assert.ok(t.includes('2026-10-16') && t.includes('1,234') && t.includes(CHARMS[run.charm].name));
   assert.equal(DAY.dayKey(new Date(2026, 0, 5)), '2026-01-05');
 });
+
+test('the hero of the day carries talent symbols: 1 face in Act I, 2 in Act II, 4 in Act III, never more than two of one symbol', () => {
+  const seen = new Set();
+  for (let d = 1; d <= 30; d++) {
+    const run = DAY.dailyRun(`2026-11-${String(d).padStart(2, '0')}`); const h = DAY.dailyHero(run); seen.add(run.act);
+    const want = { 1: 1, 2: 2, 3: 4 }[run.act];
+    for (const slot of ['SW', 'SE']) {
+      if (!h.dice.includes(slot)) continue;
+      const faces = (h.talent[slot] || []).filter((f) => (Array.isArray(f) ? f.length : f)); assert.equal(faces.length, want, `act ${run.act} ${slot}`);
+      for (const sym of ['atk', 'block', 'magic', 'heal', 'gold']) assert.ok(E.talentCount(h, slot, sym) <= 2, `${slot} ${sym}`);
+    }
+    assert.equal(h.gold, 0, 'the purchases are not charged to the hero');
+  }
+  assert.equal(seen.size, 3, 'all three acts were checked');
+});
+
+test('the potion shop between daily fights: points pay, the belt limits, the score cannot go below zero', () => {
+  const run = DAY.dailyRun('2026-11-02'); const hero = DAY.dailyHero(run); const cost = DAY.potionCost(run);
+  assert.deepEqual(DAY.POTION_POINTS, [50, 50, 50]);
+  const d = { run, fights: [{ won: true, score: 400 }], spent: 0 };
+  assert.equal(DAY.potionShop(d, hero).ok, false, 'belt starts full'); assert.equal(DAY.potionShop(d, hero).why, 'Belt full'); assert.equal(DAY.buyPotion(d, hero), false);
+  hero.potions = 0; const s = DAY.potionShop(d, hero); assert.equal(s.ok, true); assert.equal(s.points, 400);
+  assert.equal(DAY.buyPotion(d, hero), true); assert.equal(hero.potions, 1); assert.equal(d.spent, cost); assert.equal(DAY.finalScore(d.fights, d.spent), 400 - cost);
+  assert.equal(DAY.buyPotion(d, hero), true); assert.equal(hero.potions, 2); assert.equal(DAY.buyPotion(d, hero), false, 'the belt holds 2');
+  const poor = { run, fights: [{ won: true, score: cost - 1 }], spent: 0 }; hero.potions = 0;
+  assert.equal(DAY.potionShop(poor, hero).ok, false); assert.match(DAY.potionShop(poor, hero).why, /Need 1 more points/); assert.equal(DAY.buyPotion(poor, hero), false); assert.equal(hero.potions, 0);
+  assert.equal(DAY.finalScore([{ won: true, score: 10 }], 999), 0, 'never below zero');
+});

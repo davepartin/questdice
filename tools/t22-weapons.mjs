@@ -6,8 +6,9 @@ process.env.RELEASE = '1';
 import fs from 'node:fs';
 const E = await import('../js/engine.js'); const D = await import('../js/data.js'); const SIM = await import('./sim.mjs'); const { smartActs, botShape } = SIM;
 const N = +process.argv[2] || 80; const OUT = process.argv[3] || '/tmp/t22.md';
-const ENC = [ // [label, act, step, level, die size, metal index]
-  ['Act I step 2, Bronze d4', 1, 2, 2, 4, 0], ['Act II step 5, Silver d6', 2, 5, 5, 6, 1], ['Act III step 8, Gold d8', 3, 8, 8, 8, 2]];
+const ENC_ALL = [ // [label, act, step, level, die size, metal index]
+  ['Act I step 2, Bronze d4', 1, 2, 2, 4, 0], ['Act II step 5, Silver d6', 2, 5, 5, 6, 1], ['Act III step 8, Gold d8', 3, 8, 8, 8, 2], ['Act III step 9, Gold d10', 3, 9, 9, 10, 2]];
+const ENC = process.env.ENC ? process.env.ENC.split(',').map((i) => ENC_ALL[+i]) : ENC_ALL.slice(0, 3); // ENC=0,1 runs some of them (so slices can run on separate cores); T17_CAND=1 plays the T17 candidate faces
 const mk = (id, r, s, ammo) => { const w = E.makeWeapon(id, r, () => 0.5, s); if (ammo) w.ammo = ammo; return w; };
 const SETS = [ // [label, left id, right id, ammo]
   ['Dagger + Round Shield', 'dagger', 'shield'], ['Sword + Round Shield', 'sword', 'shield'], ['Axe + Round Shield', 'axe', 'shield'], ['Spear + Round Shield', 'spear', 'shield'],
@@ -30,6 +31,7 @@ for (const enc of ENC) {
   md += `\n## ${enc[0]}\n\n| Weapons | Win % | Rounds | Health left when won | Dealt / round | Taken / round | Blocked / round |\n|---|---|---|---|---|---|---|\n`;
   for (const set of SETS) { const rs = []; for (let i = 0; i < N; i++) rs.push(fight(set, enc, 1000 + i)); const w = rs.filter((r) => r.win);
     const row = { win: 100 * w.length / N, rounds: mean(rs.map((r) => r.rounds)), left: w.length ? 100 * mean(w.map((r) => r.left)) : 0, dealt: mean(rs.map((r) => r.dealt / r.rounds)), taken: mean(rs.map((r) => r.taken / r.rounds)), blocked: mean(rs.map((r) => r.absorbed / r.rounds)) };
+    row.raw = rs.map((r, i) => ({ seed: 1000 + i, win: r.win ? 1 : 0, rounds: r.rounds, left: +r.left.toFixed(3), dealt: r.dealt, taken: r.taken, absorbed: r.absorbed })); // per-seed outcomes, so a matched comparison can be paired (T17 review, 26 Oct)
     all[`${enc[0]}|${set[0]}`] = row; md += `| ${set[0]} | ${Math.round(row.win)} | ${f1(row.rounds)} | ${Math.round(row.left)}% | ${f1(row.dealt)} | ${f1(row.taken)} | ${f1(row.blocked)} |\n`; }
 }
 fs.writeFileSync(OUT, md); fs.writeFileSync(OUT.replace(/\.md$/, '.json'), JSON.stringify(all, null, 1)); console.log(md);

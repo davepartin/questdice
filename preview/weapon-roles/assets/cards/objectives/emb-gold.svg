@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 36 36"><defs>
+<radialGradient id="halo"><stop offset="0" stop-color="#ffc21a" stop-opacity=".55"/><stop offset=".55" stop-color="#ffc21a" stop-opacity=".18"/><stop offset="1" stop-color="#ffc21a" stop-opacity="0"/></radialGradient>
+<linearGradient id="face" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#ffe498"/><stop offset=".45" stop-color="#ffc21a"/><stop offset="1" stop-color="#73570c"/></linearGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4cf"/><stop offset=".35" stop-color="#d9a84a"/><stop offset=".7" stop-color="#7a5418"/><stop offset="1" stop-color="#f0d08a"/></linearGradient>
+<linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<clipPath id="cp"><path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" clip-rule="nonzero"/></clipPath>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy=".6" stdDeviation=".6" flood-color="#382b06" flood-opacity=".8"/></filter></defs>
+<circle cx="12" cy="12" r="17.5" fill="url(#halo)"/>
+<path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ffe498" opacity=".22" transform="rotate(0 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ffe498" opacity=".22" transform="rotate(45 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ffe498" opacity=".22" transform="rotate(90 12 12)"/><path d="M12 -3.5 L12.35 12 L12 27.5 L11.65 12 Z" fill="#ffe498" opacity=".22" transform="rotate(135 12 12)"/>
+<g filter="url(#sh)"><path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" fill="#382b06" stroke="url(#rim)" stroke-width="1.50" stroke-linejoin="round"/><path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" fill="url(#face)"/>
+<g clip-path="url(#cp)"><path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" fill="none" stroke="#73570c" stroke-width="1.40" opacity=".7" transform="translate(0.35 0.5)"/><path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" fill="none" stroke="#ffe498" stroke-width="1.00" opacity=".8" transform="translate(-0.25 -0.35)"/>
+<circle cx="12" cy="12" r="6.6" fill="none" stroke="url(#rim)" stroke-width=".45" opacity=".9"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#7a4a00" stroke-width=".25" stroke-dasharray=".5 .5" opacity=".5"/><rect x="-2" y="-2" width="28" height="12.5" fill="url(#gloss)" transform="rotate(-8 12 12)"/></g>
+<path d="M12 2.4 A9.6 9.6 0 1 0 12.01 2.4 Z" fill="none" stroke="#fff8e0" stroke-width="0.30" stroke-linejoin="round" opacity=".7"/></g></svg>

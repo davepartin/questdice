@@ -1,0 +1,184 @@
+/* Magic cards mockup (Crockpot / Grok Bot, 29 Oct 2026, for Dave). MOCKUP ONLY: not wired into the game. */
+*{box-sizing:border-box}html,body{margin:0;background:#07090f;color:#f3e3c0;font-family:Inter,sans-serif}
+#app{min-height:100svh;padding:10px 10px 14px;display:flex;flex-direction:column;gap:8px;background:radial-gradient(120% 60% at 50% 0%,#1b2140,#0b0e1a 70%)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:2px 4px}
+.top h1{margin:0;font:900 1.3rem Inter,sans-serif;color:#fff;letter-spacing:.01em}
+.close{height:40px;padding:0 16px;border-radius:9px;border:1.5px solid #b69b68;background:#141826;color:#f3e3c0;font:800 .95rem Inter,sans-serif}
+.bank{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bank div{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#0a0d17;border:1.5px solid #a9864a}
+.bank .ic{width:20px;height:20px}.bank b{font:900 1.15rem Inter,sans-serif}.bank small{font:800 .7rem Inter,sans-serif;color:#b9a988;letter-spacing:.06em}
+.bank .m b{color:#d6b4ff}.bank .h b{color:#7cf0a6}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:5px;border-radius:6px;background:#2a2010;border:1.5px solid #a9864a}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:66px;border-radius:4px;border:1.5px solid #5a4a30;background:#141721;color:#e9dcc0;font:700 .68rem Inter,sans-serif;padding:3px 2px}
+.slot .ic,.slot .pw-glyph{width:28px;height:28px}
+.slot small{font:800 .58rem Inter,sans-serif;color:#b9a988}
+.slot.on{border-color:#F2C14E;box-shadow:inset 0 0 0 1px #F2C14E;background:#1d2030}
+.slot.on::before,.slot.on::after{content:"";position:absolute;width:9px;height:9px;border:2px solid #F2C14E}
+.slot.on::before{left:3px;top:3px;border-right:0;border-bottom:0}.slot.on::after{right:3px;bottom:3px;border-left:0;border-top:0}
+.slot .cost{position:absolute;right:3px;top:3px;display:inline-flex;align-items:center;gap:1px;font:900 .6rem Inter,sans-serif;color:#d6b4ff}.slot .cost .ic{width:9px;height:9px}
+.stage{display:flex;gap:8px;align-items:stretch;justify-content:center}
+/* the card: T17 frame, playing-card proportions (720 x 1052) */
+.card{--w:min(100%,330px);width:var(--w);aspect-ratio:720/1052;position:relative;container-type:inline-size;flex:none}
+.v-margin .card{--w:min(72vw,280px)}
+.card .fr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.card .field{position:absolute;left:12.4%;right:12.4%;top:8.6%;bottom:8.2%;z-index:1;border-radius:2cqi;background:#e6d3a8;box-shadow:inset 0 0 0 .5cqi #6a4a22,inset 0 0 4cqi #8a6a3a55;
+ display:flex;flex-direction:column;padding:3cqi 3cqi 3.4cqi;gap:2.2cqi}
+.plaque{align-self:center;margin-top:-.4cqi;padding:1.2cqi 4cqi;border-radius:1.2cqi;background:#1c1610;box-shadow:inset 0 0 0 .5cqi #a9864a;font:900 5.6cqi/1 Cinzel,serif;color:#F2C14E;letter-spacing:.06em;white-space:nowrap}
+.art{align-self:center;display:grid;place-items:center;width:26cqi;height:26cqi;border-radius:50%;background:#20160c;box-shadow:inset 0 0 0 .8cqi #a9864a,inset 0 0 0 1.6cqi #20160c,inset 0 0 0 1.9cqi #6a4a22}
+.art .ic,.art .pw-glyph{width:15cqi;height:15cqi}
+.kick{align-self:center;font:800 3cqi/1 Inter,sans-serif;letter-spacing:.14em;color:#6a4a22;text-transform:uppercase;margin-top:-.6cqi}
+.levels{flex:1;display:grid;grid-template-rows:repeat(3,1fr);gap:1.8cqi}
+.lv{position:relative;display:flex;align-items:center;gap:2cqi;padding:1.4cqi 2.4cqi;border-radius:1.6cqi;background:#f3e6c9;box-shadow:inset 0 0 0 .4cqi #a9864a}
+.lv.act{background:#fbf2dc;box-shadow:inset 0 0 0 .6cqi #6a4a22}
+.lv .rn{flex:none;display:grid;place-items:center;width:8cqi;height:8cqi;border-radius:50%;background:#1c1610;color:#F2C14E;font:900 4cqi/1 Cinzel,serif}
+.lv .sy{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:1cqi 1.4cqi;font:900 5cqi/1 Inter,sans-serif;color:#2a1a0a}
+.lv .ic{width:6cqi;height:6cqi;flex:none}.lv .d6{width:5.6cqi;height:5.6cqi;flex:none}
+.lv .to{font:900 4.4cqi/1 Inter,sans-serif;color:#6a4a22}
+.lv .mx{font:800 3.2cqi/1 Inter,sans-serif;color:#6a4a22;letter-spacing:.04em}
+.lv .pc{display:inline-flex;align-items:center;gap:.3cqi;color:#7a3dc0}
+.dots{display:inline-flex;gap:1cqi}.dot{display:grid;place-items:center;width:8.4cqi;height:8.4cqi;border-radius:50%;background:#ff8a1a;color:#2a1200;font:900 3.6cqi/1 Inter,sans-serif;box-shadow:inset 0 0 0 .4cqi #a85400}
+.dot.g{background:#e6d3a8;color:#8a6a3a;box-shadow:inset 0 0 0 .4cqi #b89a68}
+/* cardboard cover (the dice-card token) */
+.cov{position:absolute;inset:-.4cqi;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:0 4cqi;border-style:solid;border-width:1.6cqi 1.8cqi 2cqi;
+ border-image:url(../../../../assets/cards/token-open.webp) 118 112 132 112 fill / 1.6cqi 1.8cqi 2cqi stretch;filter:drop-shadow(0 .6cqi .5cqi #2a1606aa)}
+.cov .lvw{font:900 4cqi/1 Cinzel,serif;color:#4a3216;letter-spacing:.06em}
+.cov .cp{display:flex;align-items:center;gap:.8cqi;padding:.9cqi 2cqi;border-radius:99px;background:#2a1a0e;box-shadow:inset 0 0 0 .35cqi #e0b86a99}
+.cov .cp b{font:900 4cqi/1 Inter,sans-serif;color:#ffd98a}
+.coin{width:3.4cqi;height:3.4cqi;border-radius:50%;background:#ffc21a;box-shadow:inset 0 0 0 .35cqi #9a6a06;display:inline-block}
+/* Use buttons */
+.use{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:0 12px;border-radius:9px;border:1.5px solid #c9a6ff;background:#7440b0;color:#fff;font:900 .86rem Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;box-shadow:0 3px 0 #3a1c62}
+.use .ic{width:.9em;height:.9em}.use .ic *{fill:#e9dcff!important;stroke:none!important}
+.use.rel{background:#ff8a1a;border-color:#ffb26a;color:#2a1200;box-shadow:0 3px 0 #8a4200}
+.float{position:absolute;z-index:6;right:-2.5cqi;transform:translateY(-50%)}
+.rail{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:8px;position:relative;min-width:0}
+.rail .use{width:100%;padding:0 6px;position:absolute;left:0;right:0}
+.rail .lbl{font:800 .62rem Inter,sans-serif;color:#b9a988;letter-spacing:.08em;text-align:center}
+.tag{position:fixed;left:6px;bottom:4px;font:800 .6rem Inter,sans-serif;color:#ff6b5a;letter-spacing:.1em}
+/* rev 1b: content sits in the frame's own windows (art window, name band, text box) */
+.card .fr{z-index:1}
+.card .field{z-index:2;background:none;box-shadow:none;padding:0;left:0;right:0;top:0;bottom:0;display:block}
+.card .plaque{position:absolute;left:50%;top:10.2%;transform:translateX(-50%);margin:0}
+.card .art{position:absolute;left:50%;top:17.6%;transform:translateX(-50%);width:23cqi;height:23cqi}
+.card .kick{position:absolute;left:14%;right:14%;top:37.6%;height:4.6%;display:grid;place-items:center;margin:0;color:#F2C14E;font-size:3.2cqi}
+.card .levels{position:absolute;left:15.6%;right:15.6%;top:45%;bottom:11.5%;gap:2.2cqi}
+.lv{background:#f6ead0e6}
+.bank .m .ic{color:#a64dff}
+.card .under{position:absolute;left:13%;right:13%;top:8%;bottom:8%;z-index:0;background:#e6d3a8;border-radius:2cqi}
+.lv .sy{flex-direction:column;align-items:flex-start;gap:1.2cqi}
+.lv .ln{display:flex;align-items:center;gap:1.2cqi}
+.lv .big{font:900 6cqi/1 Inter,sans-serif;color:#2a1a0a}
+.lv .mx{display:inline-flex;align-items:center;gap:1cqi}
+.lv .mx .d6{width:4.2cqi;height:4.2cqi}
+.card .ic-pierce,.lv .ic-pierce{color:#ff8a1a}.lv .ic-pierce *{fill:#ff8a1a;stroke:#7a3a00}
+.lv .ic-reroll{color:#c27a00;width:7cqi;height:7cqi}
+.lv .pc .ic *{fill:#7a3dc0}
+.slot .ic,.slot .pw-glyph{color:#F2C14E}
+.art .pw-glyph,.art .ic{color:#F2C14E}
+.card{--w:min(100%,330px,calc((100svh - 300px) * 720 / 1052))}
+.v-margin .card{--w:min(70vw,272px,calc((100svh - 300px) * 720 / 1052))}
+.lv .sy:has(.dots){flex-direction:row;align-items:center;flex-wrap:nowrap}
+.dot{width:7.6cqi;height:7.6cqi;font-size:3.3cqi}
+.use{white-space:nowrap}.rail .use{font-size:.78rem}
+.use .ic{color:#e9dcff}
+.stage{flex:1;align-items:flex-start}
+/* rev 2 (Dave: painted art, purple theme, purple triangles in the corners) */
+.card .paint{position:absolute;left:13.1%;right:13.1%;top:8.3%;height:28.4%;z-index:0;overflow:hidden;border-radius:1.4cqi}
+.card .paint img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block}
+.card .art.small{left:auto;right:16%;top:27%;transform:none;width:12cqi;height:12cqi;background:#1a1030;box-shadow:inset 0 0 0 .6cqi #b58cff,inset 0 0 0 1.2cqi #1a1030}
+.card .art.small .pw-glyph,.card .art.small .ic{width:8cqi;height:8cqi;color:#e7d6ff}
+.card .tri{position:absolute;z-index:4;width:7.4cqi;height:7.4cqi;transform:translate(-50%,-50%);background:#a64dff;clip-path:polygon(50% 8%,96% 88%,4% 88%);}
+.card .tri::after{content:"";position:absolute;inset:22% 24% 18%;background:#d6b4ff;clip-path:polygon(50% 8%,96% 88%,4% 88%);opacity:.55}
+.card.purple .plaque{background:#1a1030;box-shadow:inset 0 0 0 .5cqi #b58cff}
+.card.purple .kick{color:#d6b4ff}
+.card.purple .lv{box-shadow:inset 0 0 0 .4cqi #9a6ad8}.card.purple .lv.act{box-shadow:inset 0 0 0 .6cqi #6a2fb0}
+.card.purple .lv .rn{background:#3a1a6a;color:#F2C14E}
+.card .plaque{z-index:2}.card .art{z-index:2}
+.card .stamps{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}.card .tri{display:none}
+/* rev 4: orange six-pip pierce dice, no arrow */
+.lv .d6{width:6.4cqi;height:6.4cqi}.lv .mx .d6{width:4.4cqi;height:4.4cqi}
+.cov .lvw{display:flex;align-items:center;gap:2cqi}
+.cov .cdice{display:inline-flex;align-items:center;gap:.8cqi;font:900 3.6cqi/1 Inter,sans-serif;color:#4a3216}
+.cov .cdice .d6{width:4.6cqi;height:4.6cqi}.cov .cdice .ic{width:3.6cqi;height:3.6cqi}.cov .cdice .pc{color:#5a2a90}
+.cov .lvw{white-space:nowrap;font-size:3.4cqi;gap:1.6cqi}.cov{padding:0 3cqi}
+/* rev 5: every hero */
+.fv{display:inline-flex;align-items:center;gap:.6cqi;font:900 5.2cqi/1 Inter,sans-serif}.fv .ic{width:5.6cqi;height:5.6cqi}
+.fx-atk{color:#d42020}.fx-block{color:#1a74c8}.fx-pierce{color:#e06a00}.fx-heal{color:#14a04a}.fx-magic{color:#7a3dc0}.fx-gold{color:#b08a00}.fx-free{color:#b06a00}
+.fv.fx-atk .ic *{fill:#ff3b3b}.fv.fx-block .ic *{fill:#3aa4ff}.fv.fx-heal .ic *{fill:#38e87a}.fv.fx-magic .ic *{fill:#a64dff}.fv.fx-pierce .ic *{fill:#ff8a1a}
+.dots{display:inline-flex;align-items:center;gap:.9cqi}.dots>.ic{width:5cqi;height:5cqi}
+.dots.fx-atk .dot{background:#ff3b3b;color:#fff;box-shadow:inset 0 0 0 .4cqi #8a1010}.dots.fx-block .dot{background:#3aa4ff;color:#fff;box-shadow:inset 0 0 0 .4cqi #0c4a80}.dots.fx-heal .dot{background:#38e87a;color:#06240f;box-shadow:inset 0 0 0 .4cqi #106a34}
+.dots .dot.g{background:#e6d3a8!important;color:#8a6a3a!important;box-shadow:inset 0 0 0 .4cqi #b89a68!important}
+.lv .ln:has(.dots + .dots){flex-direction:column;align-items:flex-start;gap:1cqi}
+.lv .lk{display:inline-flex;align-items:center;gap:.6cqi}.lv .lk i{font:800 2.8cqi/1 Inter,sans-serif;font-style:normal;color:#6a4a22;padding:.4cqi .8cqi;border-radius:1cqi;background:#e6d3a8}
+.lv .lk .fv{font-size:4cqi}.lv .lk .fv .ic{width:4.2cqi;height:4.2cqi}
+.lv .hc{font:900 5.4cqi/1 Inter,sans-serif;color:#2a1a0a;padding:.4cqi 1.4cqi;border-radius:1.2cqi;background:#e6d3a8}.lv .or{font:800 3cqi Inter,sans-serif;color:#6a4a22}
+.lv.none{opacity:.55}.nolv{font:800 3cqi Cinzel,serif;color:#6a4a22;letter-spacing:.08em}
+.cov .cdice .fv{font-size:3.6cqi}.cov .cdice .fv .ic{width:3.8cqi;height:3.8cqi}
+.use.heal{background:#2a9a54;border-color:#7cf0a6;box-shadow:0 3px 0 #0e4a26}
+.lv .sy:has(.dots + .dots), .lv .sy:has(.lk){flex-direction:column;align-items:flex-start}
+.lv .ln:has(.lk){flex-wrap:wrap;gap:.8cqi 1.6cqi}
+.lv .sy:has(.dots){flex-direction:column!important;align-items:flex-start!important;flex-wrap:nowrap}
+/* t409: buy-dice controls */
+.lv .slots{display:flex;gap:1.2cqi;align-items:center}
+.lv .slots .d6{width:8cqi;height:8cqi}
+.slot0{display:block;width:8cqi;height:8cqi;border-radius:1.8cqi;border:.5cqi dashed #a9864a;background:#00000010;box-sizing:border-box}
+.slot0.d8{transform:rotate(45deg) scale(.78);border-radius:.8cqi}
+.lv .spent{display:flex;align-items:center;gap:.6cqi;font:800 3.4cqi/1 Inter,sans-serif;color:#6a4a22}.lv .spent b{font:900 4.6cqi/1 Inter,sans-serif;color:#7a3dc0}.lv .spent .ic{width:4cqi;height:4cqi}.lv .spent .ic *{fill:#a64dff}
+.wd{font-weight:900}.wd.fx-pierce{color:#e06a00}.wd.fx-atk{color:#d42020}
+.rail{gap:6px}.rail .use{height:48px;min-height:48px;font-size:.78rem;gap:4px}
+.use .pm{font:900 1.3rem/1 Inter,sans-serif;margin-right:2px}
+.use.add{background:#7440b0}.use.sub{background:#2a2438;border-color:#8a7aa8;box-shadow:0 3px 0 #120e1a}
+.use.cast{background:#ff8a1a;border-color:#ffb26a;color:#2a1200;box-shadow:0 3px 0 #8a4200}.use.cast .ic *{fill:#4a1c80!important}
+.use:disabled{opacity:.45;filter:grayscale(.4)}
+.use .ic{display:inline-block;width:.95em;height:.95em;flex:none}.use .ic *{fill:#e9dcff!important;stroke:none!important;opacity:1!important}
+.use.cast .ic *{fill:#4a1c80!important}
+.rail .use{justify-content:center;padding:0 4px}
+.v-margin .card{--w:min(63vw,246px,calc((100svh - 300px) * 720 / 1052))}.rail{min-width:104px}.rail .use{font-size:.8rem}
+.slot0.lock{border:1.5px solid #6b5a7a;background:repeating-linear-gradient(45deg,#3a2f45 0 4px,#2a2233 4px 8px);opacity:.55;position:relative}.slot0.lock::after{content:'🔒';position:absolute;inset:0;display:grid;place-items:center;font-size:.6em}.prop{display:block;font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#b0306a;margin-top:2px}
+
+/* t411 compact controls */
+.rail{min-width:96px;max-width:104px}.v-margin .card{--w:min(68vw,262px,calc((100svh - 300px) * 720 / 1052))}
+.rail .use,.rail .pmrow{height:40px;min-height:40px}.pmrow{position:absolute;left:0;right:0;display:flex;gap:6px}
+.pmrow .use{position:static;flex:1;width:auto;font:900 1.5rem/1 Inter,sans-serif;padding:0}
+.rail .use.cast{font-size:.8rem}
+@keyframes drop{0%{transform:translateY(-140%) scale(1.2);opacity:0}70%{transform:translateY(8%)}100%{transform:none;opacity:1}}.d6.drop{animation:drop .35s ease-out}
+.total{display:block;font:900 1.15rem/1.1 Inter,sans-serif;color:#d86a00;margin-top:2px}.total.fx-atk{color:#c02020}
+
+/* t412 */
+.rail{flex:0 0 100px;margin-left:2px}
+.propband{position:absolute;top:3%;right:4%;z-index:6;background:#b0306a;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #4a0f2a}
+.propband{right:auto;left:50%;transform:translateX(-50%);top:1.2%}
+
+/* t416: controls above the card, card centred and large */
+.ctl{display:flex;gap:8px;justify-content:center;align-items:center;margin:2px 0 6px}
+.ctl .use,.ctl .pmrow .use{height:40px;min-height:40px;position:static}
+.ctl .pmrow{position:static;display:flex;gap:8px}.ctl .pmrow .use{width:52px;flex:none;font:900 1.5rem/1 Inter,sans-serif;padding:0}
+.ctl .use.cast,.ctl .use.rel{min-width:120px;font-size:.85rem}
+.v-top .stage{justify-content:center}.v-top .card{--w:min(84vw,330px,calc((100svh - 305px) * 720 / 1052))}
+.total.fx-block{color:#1f6fc0}.total.fx-heal{color:#16904a}.total.fx-gold{color:#a07800}
+
+/* t426: Cast matches power colour; text white or black for contrast */
+.use.cast.pc-atk{background:#ff3b3b;border-color:#ff8a8a;color:#fff;box-shadow:0 3px 0 #8a1010}
+.use.cast.pc-magic,.use.cast.pc-weaken{background:#a64dff;border-color:#cf9bff;color:#fff;box-shadow:0 3px 0 #4a1c80}
+.use.cast.pc-pierce{background:#ff8a1a;border-color:#ffb26a;color:#1a0b00;box-shadow:0 3px 0 #8a4200}
+.use.cast.pc-block{background:#3aa4ff;border-color:#8fcbff;color:#061a2e;box-shadow:0 3px 0 #0c4a80}
+.use.cast.pc-heal{background:#38e87a;border-color:#9af5bb;color:#06240f;box-shadow:0 3px 0 #106a34}
+.use.cast.pc-gold{background:#ffd21a;border-color:#ffe680;color:#2a1e00;box-shadow:0 3px 0 #8a6a00}
+.use.cast.pc-free{background:#ff8a1a;border-color:#ffb26a;color:#1a0b00;box-shadow:0 3px 0 #8a4200}
+.use.cast[class*=pc-] .ic *{fill:currentColor!important}
+
+/* t428 dice-shaped spaces + power type tag */
+svg.slot0.ds{border:0;border-radius:0;background:none;transform:none;overflow:visible}svg.slot0.lock{opacity:.6;background:none;border:0}svg.slot0.lock::after{content:none}
+.ptag{position:absolute;top:3.2%;left:15%;z-index:6;color:#fff;font:900 .62rem Inter,sans-serif;letter-spacing:.1em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 0 #0008}
+.pt-build{background:#2a6a9a}.pt-dice{background:#a0521a}.pt-one-shot{background:#6a2a9a}
+
+/* t429 roll flow. Look reused from the live power-dice roll (css/hud.css .dr-die drThrow / drWobble / drLand) */
+.ctl .pmrow .use.pmc{width:auto;min-width:62px;padding:0 10px;font:900 1.1rem/1 Inter,sans-serif;display:inline-flex;gap:3px}.ctl .pmrow .use.pmc .ic{width:15px;height:15px}
+@keyframes drThrow{0%{transform:translate(-40px,-60px) rotate(-260deg) scale(.5);opacity:0}60%{opacity:1}100%{transform:none}}
+@keyframes drWobble{0%,100%{transform:rotate(-9deg) translateY(0)}50%{transform:rotate(9deg) translateY(-6px)}}
+@keyframes drLand{0%{transform:scale(1.25) rotate(8deg)}100%{transform:none}}
+svg.d6.rolling{animation:drWobble .32s ease-in-out infinite;transform:rotate(calc(-14deg + var(--i) * 11deg)) translateY(calc(var(--i) * -2px));opacity:.85;filter:blur(.3px)}
+svg.d6.landed{animation:drLand .38s cubic-bezier(.2,1.6,.4,1) both;filter:drop-shadow(0 0 4px #fff8)}
+.total.rl{color:#8a7aa0;font-style:italic}
+.flyto{position:fixed;left:50%;z-index:20;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font:800 .95rem Inter,sans-serif;color:#fff;background:#0008;box-shadow:inset 0 0 0 1.5px currentColor;animation:flyUp .35s ease-out both;width:max-content}
+.flyto b{font:900 1.2rem Inter,sans-serif}.flyto .ic{width:18px;height:18px}.flyto.fx-atk{color:#ff4b4b}.flyto.fx-pierce{color:#ff8a1a}.flyto.fx-block{color:#3aa4ff}.flyto.fx-heal{color:#38e87a}.flyto.fx-gold{color:#ffc21a}
+@keyframes flyUp{0%{transform:translate(-50%,120px) scale(.8);opacity:0}100%{transform:translate(-50%,0);opacity:1}}.flyto{transform:translate(-50%,0);background:#000c}

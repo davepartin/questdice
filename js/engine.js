@@ -3,12 +3,12 @@
 
 import {
   ROLE, LANES, CARDINALS, MAGIC_CAP, MAGIC_CAP_LEVELS, MAX_LEVEL, SYNERGY_BONUS, TRIPLE_BY_ACT, HEAL_COST,
-  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, STRAIGHT_RULE,
+  HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, HEART_RANKS, normalizeHeartRank, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -53,6 +53,8 @@ export const weaponSize = (inst) => inst.size || 4;
 // T17 weapon size (EXPERIMENT.weaponSize, off in the game): the size a weapon was FOUND at is what the shop priced it by and what a sale pays on,
 // whatever size has been bought since. `found` is written the first time a size is bought (a weapon never upgraded is still at its found size).
 export const useWeaponSize = () => { EXPERIMENT.weaponSize = true; };
+export const weaponTrainingOn = () => WEAPON_TRAINING.on && !EXPERIMENT.weaponSize;
+export const weaponRollsFull = () => EXPERIMENT.weaponSize || weaponTrainingOn();
 export const foundSize = (inst) => inst.found || weaponSize(inst);
 // A weapon's faces: honest dice (Dave, Oct 2026). A dN never shows more than N; each temperament has its own custom faces for every
 // size (data.js WEAPON_DICE), so size is the range: a bigger die has bigger numbers, more numbers for straights, and its blanks
@@ -102,14 +104,21 @@ function faces2(id, size) {
   else out = (d[size] || d[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
   W2CACHE[key] = out; return out.map((f) => ({ ...f }));
 }
+// The key an ordinary weapon has in WEAPON_SIZE.ladder (the arrows by ammunition), and whether the cumulative table actually serves this item:
+// a Diamond, a legendary, Fists, or an ordinary weapon outside the table's roster (a retained Staff, Mace or Long Sword) keeps its own faces.
+const ladderKey = (inst) => (inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id);
+export function servedByLadder(inst) {
+  if (!inst || inst.diamond || inst.id === 'fists' || WEAPONS[inst.id]?.legendary) return false;
+  return !!((EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]);
+}
 export function weaponFaces(inst, rollSize) {
   const def = WEAPONS[inst.id];
   if (inst.diamond) return diamondFaces(def, weaponSize(inst)); // a Diamond rolls at its full size in any hand
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
-  // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below; none is installed yet
-  const lad = EXPERIMENT.weaponSize && WEAPON_SIZE.ladder?.[inst.id === 'quiver' ? `quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}` : inst.id]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
+  // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below, in the weapon-size preview or with WEAPON_SIZE.cumulative on; none is installed in the release
+  const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
   if (lad) return lad.map((f) => ({ ...f }));
   // the weapons experiment: its own Bronze numbers at every metal; Silver and Gold add the same metal icons as today's weapons (Bronze none)
   const w2tier = Math.min(2, inst.rarity | 0); const w2 = (f) => (w2tier ? metalIcons(def, f, w2tier, def.temper, def.lean === 'def' ? 'b' : 'r') : f);
@@ -144,9 +153,10 @@ function metalIcons(def, faces, tier, temper, own) {
   return faces;
 }
 export function makeWeapon(id, rarity = 0, rng, size = 4) { const w = { uid: newUid(rng), id, rarity }; if (size > 4) w.size = size; return w; }
-// The hand that holds a weapon caps its die: a d6 weapon in a d4 hand rolls as a d4. `wieldInfo` says what a weapon needs.
+// Released purchasing separates weapon size from Strength. The older comparison mode retains the hand ceiling.
 export function wieldInfo(hero, inst) {
-  const need = weaponSize(inst); if (EXPERIMENT.weaponSize) return { need, have: need, ok: true, rollsAs: need, two: WEAPONS[inst.id]?.hands === 2 }; // T17: the weapon's size is its die, whatever the hand const two = WEAPONS[inst.id]?.hands === 2;
+  const need = weaponSize(inst); const two = WEAPONS[inst.id]?.hands === 2;
+  if (inst.diamond || weaponRollsFull()) return { need, have: need, ok: true, rollsAs: need, two };
   const have = two ? Math.min(hero.strength.W, hero.strength.E) : Math.max(hero.strength.W, hero.strength.E);
   return { need, have, ok: have >= need, rollsAs: Math.min(need, have), two };
 }
@@ -269,9 +279,9 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   const packId = packIdOf(pack);
   return {
-    v: 1, name, cls, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
+    v: 1, name, cls, heartRank: 1, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
-    strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [[CLASS_TALENT[cls].SW]], SE: [[CLASS_TALENT[cls].SE]] }, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
+    strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [], SE: [] } /* face 4 starts empty on both talent dice (Dave, 26 Oct 2026); the player fills it at camp */, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
     stats: { battles: 0, defeats: 0, rounds: 0, triples: 0, straights: 0, goldEarned: 0 },
     created: Date.now(),
@@ -299,7 +309,7 @@ export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MA
 export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
 export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
-export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 6;
+export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 10;
 export const rerollTotal = () => RULES.free + RULES.paid;
 export const rerollDiceOf = (hero) => Math.min(REROLL_DICE_MAX, REROLL_DICE + (hero.rerollDie ? 1 : 0) + heroMods(hero).rerollDice);
 // The 4th reroll die: bought once at camp for REROLL_DIE_COST gold.
@@ -360,6 +370,7 @@ export function unlockInfo(hero, slot) {
 }
 export function unlockDie(hero, slot) {
   const r = unlockInfo(hero, slot); if (!r.ok) return false;
+  clearAutoTalent(hero, slot); // a die bought now opens with face 4 empty, even on a hero made before 26 Oct 2026
   hero.gold -= r.cost; hero.dice = [...(hero.dice || []), slot];
   if (slot === 'NE' && !hero.loadout.NE) hero.loadout.NE = { uid: `fists-R`, id: 'fists', rarity: 0 };
   return true;
@@ -385,7 +396,7 @@ export function sidesOf(hero, slot) {
   switch (ROLE[slot]) {
     case 'head': return mindSize(hero);
     case 'feet': return Math.max(feetSize(hero), borrowedFeet(hero)); // borrowed boots from an encounter, for one fight
-    case 'weapon': return hero.loadout[slot]?.diamond || EXPERIMENT.weaponSize ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']); // the hand holding it is the ceiling (a Diamond ignores it)
+    case 'weapon': return hero.loadout[slot]?.diamond || weaponRollsFull() ? weaponSize(hero.loadout[slot]) : Math.min(weaponSize(hero.loadout[slot]), hero.strength[slot === 'NW' ? 'W' : 'E']);
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
@@ -441,6 +452,15 @@ export function petGrowInfo(hero) {
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'Need gold', cost, cur: p.size, next: p.size + 2 };
 }
 export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
+// Before 26 Oct 2026 newHero pre-filled face 4 of BOTH talent dice with the class symbol (CLASS_TALENT), so Talent Two opened with it already
+// set (a Wizard's Heal). On a talent die that is still LOCKED the player could not have chosen it: if face 4 holds exactly that class symbol and
+// nothing else is set, it is cleared to an open slot. An unlocked die, or any other choice, is the player's and is never touched. Returns true if cleared.
+export function clearAutoTalent(hero, slot) {
+  if ((slot !== 'SW' && slot !== 'SE') || !hero?.talent?.[slot] || isActive(hero, slot)) return false;
+  const faces = hero.talent[slot]; const def = CLASS_TALENT[hero.cls]?.[slot]; const first = Array.isArray(faces[0]) ? faces[0] : faces[0] ? [faces[0]] : [];
+  if (!def || first.length !== 1 || first[0] !== def || faces.slice(1).some((e) => (Array.isArray(e) ? e.length : e))) return false;
+  hero.talent[slot] = faces.map(() => []); return true;
+}
 export const talentCount = (hero, slot, sym) => (hero.talent?.[slot] || []).flat().filter((x) => x === sym).length;
 export function talentInfo(hero, slot) {
   const size = hero.special[slot]; const faces = TALENT_FACES[size] || 1; const cur = hero.talent?.[slot] || [];
@@ -507,8 +527,8 @@ export function evaluate(hero, board, opts = {}) {
     const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
     const matches = hit.length;
     const hs = hasCharm(hero, 'heartstone') ? 2 : 1; // Heartstone: the heart's boost counts double (charm audit: rolling it twice was worth almost nothing)
-    if (matches) out.heartBoost = { sym, n: HEART_AMP[hv - 1] * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
-    const amp = HEART_AMP[hv - 1] * matches * hs;
+    if (matches) out.heartBoost = { sym, n: (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
+    const amp = (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
     if (matches) out.notes.push(`Heart Boost +${amp} ${sym}`);
   }
@@ -554,7 +574,7 @@ export function evaluate(hero, board, opts = {}) {
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5 && !hushed) {
     const want = hv === 5 ? 'b' : 'r'; let n = 0;
-    const hb = HEART_COLOR_BONUS * (hasCharm(hero, 'heartstone') ? 2 : 1); // Heartstone doubles it
+    const hb = (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).lane : HEART_COLOR_BONUS) * (hasCharm(hero, 'heartstone') ? 2 : 1); // Heartstone doubles it
     for (const l of Object.values(out.lanes)) if (l.color === want) { l.value += hb; l.amp = hb; n++; }
     if (n) out.notes.push(`Heart ${hv}: +${hb} ${want === 'r' ? 'attack' : 'block'} on ${n} weapon${n > 1 ? 's' : ''}`);
   }
@@ -838,7 +858,7 @@ function digIn(who, round) {
 }
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.markGold = 0; b.riposte = false; b.usedRound = {}; b.healsRound = 0;
   pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
   CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
@@ -972,7 +992,7 @@ export function scaleMax(card, lvl = 0) {
   return Math.min(card.max, card.cost + Math.max(0, card.maxDice - card.dice.n - lvl) * scaleStep(card));
 }
 export function powerCost(card, x, lvl = 0) {
-  if (card.kind !== 'scale') return card.cost;
+  if (card.kind !== 'scale') return card.costLv ? card.costLv[Math.min(card.costLv.length - 1, lvl | 0)] : card.cost; // Polymorph (mw1, PROPOSED): cheaper at Level III
   const v = Math.max(card.cost, Math.min(scaleMax(card, lvl), x ?? card.cost)); const st = scaleStep(card);
   return card.cost + Math.floor((v - card.cost) / st) * st;
 }
@@ -1031,6 +1051,8 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = out.rolls.reduce((a, v) => a + v, 0); out.die = card.dice.s;
     add(card.dice.to, out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+    if (card.party && card.dice.to === 'heal' && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: out.total }); out.party = (out.party || 0) + 1; } // Mending Song (mb1, PROPOSED): heals every hero
+    if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
   } else if (card.kind === 'round') {
     out.total = roundGain(card, b.round, lvl); add('atk', out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
@@ -1054,6 +1076,10 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
+    if (card.frogPierce) b.mods.pierce += card.frogPierce[Math.min(card.frogPierce.length - 1, lvl)] || 0; // Polymorph Level II+: the frog takes extra pierce
+    if (card.grudge) { out.total = (b.lastHurt || 0) + (card.grudge[Math.min(card.grudge.length - 1, lvl)] || 0); out.grudge = b.lastHurt || 0; add('atk', out.total); } // Grudge (md1, PROPOSED): what got past your block last round comes back as attack
+    if (card.riposte) b.riposte = true; // Riposte (mk1, PROPOSED): leftover block hits back
+    if (card.markGold) b.markGold = (b.markGold || 0) + scaleNum(card.markGold, lvl); // Hunter's Mark (mr1, PROPOSED): gold if the target falls this round
   }
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; CAST_HOOK.on?.(b, out); return out;
@@ -1100,6 +1126,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
+  const frogged = m.frog ? (b.enemies[target]?.hp > 0 ? b.enemies[target] : alive[0]) : null; // Polymorph's frog: the target you lock in on
   for (const e of alive) { e.pdice = rollPower(e, e.intent, b.rng); e.p = e.pdice[0]; e.mag = magnitude(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.calc = magnitudeParts(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
@@ -1130,7 +1157,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     b.stats.dealt += rep.dealt;
     const burn = rep.dealt > 0 ? burnOf(tgt) : 0; // Fire Ward: hitting it burns you (block does not help)
     if (burn) { rep.burned = burn; rep.taken += burn; }
-    if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
+    if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; if (b.markGold) { b.goldEarned = (b.goldEarned || 0) + b.markGold; rep.markGold = b.markGold; } }
+    b.markGold = 0;
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
     const splash = m.splash + (ev.splash || 0); // powers, and Dawnbreaker's top face
@@ -1158,6 +1186,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
+    if (m.frog && e === frogged) { rep.acts.push({ uid: e.uid, name: 'Frog', v: 'frog', mag: 0, k: 0, early, frog: true }); rep.frog = e.uid; continue; } // Polymorph (mw1, PROPOSED): a frog cannot attack this round
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow, before your block
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted };
     switch (i.v) {
@@ -1212,6 +1241,12 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     strike(); arrows();
     actFor(b.enemies.filter((e) => !early.includes(e)), false);
   }
+  if (b.riposte && !rep.heroDown && block > 0) { // Riposte (mk1, PROPOSED): the block the monsters did not use hits back, at full value, minus armour
+    const rt = tgt && tgt.hp > 0 ? tgt : living()[0];
+    if (rt) { const n = Math.min(rt.hp, Math.max(0, block - (rt.arm || 0))); rt.hp -= n; b.stats.dealt += n; rep.dealt += n; rep.riposte = { uid: rt.uid, n };
+      if (rt.hp <= 0 && !rep.killed.includes(rt.uid)) { rep.killed.push(rt.uid); b.stolen += rt.carried; rt.carried = 0; } }
+  }
+  b.riposte = false;
   settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
 
@@ -1230,7 +1265,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const hpBeforeHit = b.hp;
   let hp = Math.min(b.maxHp, b.hp + T.heal) - rep.taken;
   rep.healed = Math.max(0, Math.min(b.maxHp, hpBeforeHit + T.heal) - hpBeforeHit);
-  b.stats.healed += rep.healed; b.stats.taken += rep.taken;
+  b.stats.healed += rep.healed; b.stats.taken += rep.taken; b.lastHurt = rep.taken; // Grudge reads this next round
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
   if (b.hp <= 0 && hasCharm(hero, 'phoenix') && !b.phoenixUsed) { b.phoenixUsed = true; b.hp = Math.min(b.maxHp, 10); rep.phoenix = true; } // Phoenix Feather
   if (boon.sick && b.hp > 1) { rep.sick = Math.min(boon.sick, b.hp - 1); b.hp -= rep.sick; } // a bug from the road: it hurts, it never finishes you
@@ -1407,8 +1442,28 @@ export function takePerk(hero, id) {
   hero.perks.push(id); hero.pendingPerks--; return true;
 }
 
+// T23 isolated Heart progression. The candidate is enabled only by its preview entry point.
+export const useHeartUpgrades = () => { EXPERIMENT.heartUpgrades = true; };
+export const heartRankOf = (hero) => EXPERIMENT.heartUpgrades ? normalizeHeartRank(hero?.heartRank) : 1;
+export const heartBoostOf = (hero) => HEART_RANKS[heartRankOf(hero)];
+export function heartUpgrade(hero) {
+  const rank = heartRankOf(hero); const next = rank + 1; const step = HEART_RANKS[next];
+  if (!EXPERIMENT.heartUpgrades) return { ok: false, why: 'Not in the game yet', rank };
+  if (!step) return { ok: false, why: 'Max rank', rank };
+  const info = { rank, next, cost: step.cost, act: step.act };
+  if (!Number.isInteger(hero.campaign?.act) || hero.campaign.act < step.act) return { ...info, ok: false, why: `Requires Act ${ROMAN[step.act]}` };
+  if (!Number.isFinite(hero.gold) || hero.gold < step.cost) return { ...info, ok: false, why: 'Need gold' };
+  return { ...info, ok: true };
+}
+// The requested target rank is mandatory: a repeated/stale rank-2 command can never buy rank 3.
+export function upgradeHeart(hero, targetRank) {
+  const up = heartUpgrade(hero);
+  if (!up.ok || targetRank !== up.next) return false;
+  hero.gold -= up.cost; hero.heartRank = up.next; return true;
+}
+
 // Camp economy.
-// A die can only grow as far as the act allows (Act I d6, Act II d8, Act III d10): the hero must reach the next act first.
+// Dave, 27 Oct 2026: no act limit on die growth (ACT_MAX_DIE is d10 in every act), so this gate never refuses; kept so the rule is one line to bring back.
 function actGate(hero, size) {
   const act = hero.campaign?.act || 1; const next = NEXT_SIZE[size];
   if (next > dieCapForAct(act)) { const need = Math.ceil((next - 4) / 2); return { ok: false, why: `Act ${ROMAN[need]}`, act: need, next }; }
@@ -1453,6 +1508,16 @@ export function forgeWeapon(hero, uid) {
   hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) w.rarity = r.next; return true;
 }
 export function trainInfo(hero, uid) {
+  if (weaponTrainingOn()) {
+    const inst = copiesOf(hero, uid)[0];
+    if (!inst) return { ok: false, why: 'missing' };
+    const size = weaponSize(inst), next = NEXT_SIZE[size];
+    if (inst.id === 'fists' || inst.diamond || WEAPONS[inst.id]?.legendary || !WEAPONS[inst.id] || !next) return { ok: false, why: 'max' };
+    const cost = WEAPON_TRAINING.prices[size];
+    const sellBefore = sellValue(inst);
+    const sellAfter = sellValue({ ...inst, size: next, sizeInvestment: nextInvestment(inst, cost) });
+    return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, sellBefore, sellAfter };
+  }
   if (!EXPERIMENT.weaponSize) return { ok: false, why: 'wear' }; // retired with wear (Oct 2026)
   // T17: buy the next size, one step at a time, at the same price for every weapon and metal. No hand check: the size is the weapon's die.
   ensureTwin(hero);
@@ -1460,8 +1525,7 @@ export function trainInfo(hero, uid) {
   const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
   if (inst.id === 'fists' || inst.diamond || !next) return { ok: false, why: 'max' };
   const cost = WEAPON_SIZE.prices[size];
-  const after = resaleOn() ? Math.max(1, Math.round(WEAPON_SIZE.resale * (resaleBasis(inst) + cost))) : null; // the sale value this purchase would give, shown before it is made
-  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, noRefund: !resaleOn(), sellNow: sellValue(inst), sellAfter: after ?? sellValue(inst) };
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, noRefund: true };
 }
 export function trainInfoOld(hero, uid) {
   ensureTwin(hero);
@@ -1472,19 +1536,33 @@ export function trainInfoOld(hero, uid) {
   const cost = Math.round(WEAPON_SIZE_STEPS[size] * handsMul(inst));
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
 }
-export function trainWeapon(hero, uid) {
+const nextInvestment = (inst, cost) => ({ from: inst.sizeInvestment?.from || weaponSize(inst), gold: (inst.sizeInvestment?.gold || 0) + cost });
+export function trainWeapon(hero, uid, expectedNext) {
   const r = trainInfo(hero, uid); if (!r.ok) return false;
-  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) { if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w); if (EXPERIMENT.weaponSize) w.upgraded = (w.upgraded || 0) + r.cost; w.size = r.next; } return true;
+  if (expectedNext !== undefined && expectedNext !== r.next) return false; // stale/repeated cover tap cannot buy a different size
+  const copies = copiesOf(hero, uid);
+  const investment = weaponTrainingOn() ? nextInvestment(copies[0], r.cost) : null;
+  hero.gold -= r.cost;
+  for (const w of copies) {
+    if (investment) w.sizeInvestment = { ...investment };
+    if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w);
+    w.size = r.next;
+  }
+  return true;
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
 export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[EXPERIMENT.weaponSize ? foundSize(inst) : weaponSize(inst)] || 1)));
 // A sale returns half its worth, less for a worn weapon (by the battles it has left).
-// T17 resale candidate (WEAPON_SIZE.resale, off everywhere): the sale pays `resale` x (what the weapon was worth as found, or what the camp store was actually
-// paid for it when that was less, plus every size bought since). `bought` is written when the store sells it, `upgraded` each time a size is bought, so the sale
-// is the same in the bag, in a hand, after a save and in an online table, and a weapon without them (an old save, a spoil) is worth its found worth.
-export const resaleOn = () => !!(EXPERIMENT.weaponSize && WEAPON_SIZE.resale);
-export const resaleBasis = (inst) => { const v = weaponValue(inst); return (inst.bought == null ? v : Math.min(v, inst.bought)) + (inst.upgraded || 0); };
-export const sellValue = (inst) => { if (inst.id === 'fists') return 0; if (resaleOn()) return Math.max(1, Math.round(WEAPON_SIZE.resale * resaleBasis(inst))); const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
+export const sellValue = (inst) => {
+  if (inst.id === 'fists') return 0;
+  const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f;
+  // Anchor to the value before its first paid upgrade. A found d8 keeps its old sale value;
+  // buying d10 adds half the actual 200 paid, rather than pretending its earlier sizes were paid too.
+  const paid = inst.sizeInvestment;
+  const worth = paid && [4, 6, 8].includes(paid.from) && Number.isFinite(paid.gold) && paid.gold > 0
+    ? weaponValue({ ...inst, size: paid.from, found: paid.from }) + paid.gold : weaponValue(inst);
+  return Math.max(1, Math.round(worth * SELL_SHARE * share));
+};
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
 export const bagFull = (hero) => bagRoom(hero) <= 0;
@@ -1524,7 +1602,7 @@ export function buyItem(hero, i) {
   if (!it || it.sold || hero.gold < it.price) return false;
   if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; (hero.diamonds ||= []).push(it.inst); return true; } // into the Diamond case
   if (bagFull(hero)) return false;
-  hero.gold -= it.price; it.sold = true; if (EXPERIMENT.weaponSize) it.inst.bought = it.price; hero.bag.push(it.inst); return true;
+  hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }
 // ---- the Camp Store's counter: two specials a camp (one fight each, for the hero who buys it) and a mystery bundle.
 // At a table the counter is shared but every hero buys their own; `who` lists the heroes who already have one.
@@ -1895,7 +1973,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'riposte', 'lastHurt', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;
@@ -2368,7 +2446,7 @@ function shrinkLoss(hero, kind, slot, next) {
 export function downgradeInfo(hero, kind, slot) {
   let size;
   if (kind === 'speed') size = feetSize(hero); else if (kind === 'mind') size = mindSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
-  else if (kind === 'weapon') { if (EXPERIMENT.weaponSize) return { ok: false, why: 'none' }; /* T17: a bought size stays bought */ ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
+  else if (kind === 'weapon') { if (weaponRollsFull()) return { ok: false, why: 'none' }; /* a bought size stays bought */ ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
   else if (kind === 'pet') size = hero.pet?.size;
   const next = PREV_SIZE[size]; if (!size || !next) return { ok: false, why: 'smallest', size };
   const cost = DOWNGRADE_COST[size]; const lose = kind === 'pet' ? (hero.pet.faces || []).slice(next - 1).flat().length : shrinkLoss(hero, kind, slot, next);

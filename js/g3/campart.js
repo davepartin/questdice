@@ -44,6 +44,8 @@ const faceDescription = (spec, index) => {
   const counts = Object.entries(symbols.reduce((a, k) => ({ ...a, [k]: (a[k] || 0) + 1 }), {}));
   return `${f.text}${counts.length ? ': ' + counts.map(([k, n]) => `${n} ${k === 'def' ? 'block' : k}`).join(', ') : ''}`;
 };
+// the flat face pictures of a die at a size (the camp gear card's dice rows; Crockpot, 25 Oct)
+export const campFaceImgs = (hero, slot, size) => { const spec = campSpec(hero, slot, size); return spec.labels.map((_, i) => ({ src: faceInk(spec, i + 1, true), alt: `Face ${i + 1}: ${faceDescription(spec, i + 1)}`, theme: spec.theme })); };
 export function campFaceList(hero, slot, size, title = 'All faces') {
   const spec = campSpec(hero, slot, size);
   return h('section', { class: 'cw-face-list', 'data-sides': String(size) },

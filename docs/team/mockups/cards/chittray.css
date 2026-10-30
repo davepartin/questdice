@@ -1,0 +1,24 @@
+/* Talent chit tray v1 (Crockpot / Grok Bot, 26 Oct 2026). Mockup only. */
+main.table{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:96px;padding:12px 10px;min-height:100svh;
+ background:repeating-linear-gradient(90deg,#00000000 0 58px,#0000002a 58px 60px),linear-gradient(90deg,#6b4423,#7d5230 30%,#6a4222 60%,#7a4f2c)}
+main.table::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-radial-gradient(ellipse 300px 14px at 40% 30%,#ffffff08 0 3px,#00000010 3px 7px)}
+.wrap .bc{--w:300px;filter:drop-shadow(0 10px 10px #0008)}
+.tray{position:relative;width:360px;padding:12px 14px 14px;border-radius:6px;transform:rotate(-1.2deg);
+ background:radial-gradient(130% 100% at 30% 20%,#e6cd9c,#cfae74 65%,#b8925a);box-shadow:0 2px 0 #7a5a30,0 5px 0 #5e4222,0 12px 16px #0009,inset 0 0 0 2px #8a683a55}
+.tray h2{margin:0 0 2px;font:800 15px/1 Cinzel,serif;letter-spacing:.08em;color:#3a220e;text-align:center}
+.tray p.sub{margin:0 0 8px;font:700 10.5px/1.25 Oxanium,sans-serif;color:#5a3a1a;text-align:center}
+.sheet{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 6px}
+.tc{position:relative;display:grid;justify-items:center;gap:3px}
+.hole{position:relative;width:66px;height:66px;border-radius:50%}
+/* the die-cut line around each chit, with two little uncut nubs */
+.hole::before{content:'';position:absolute;inset:-2px;border-radius:50%;border:1.5px dashed #6a4a22aa}
+.hole img{position:absolute;inset:0;width:100%;height:100%}
+.hole.out{background:radial-gradient(circle at 50% 40%,#3a2614,#1e1208 70%);box-shadow:inset 0 5px 8px #000c,inset 0 -2px 2px #f0d8a844}
+.hole.out::after{content:'';position:absolute;left:50%;top:-3px;width:6px;height:5px;margin-left:-3px;background:#cfae74;border-radius:1px}
+.tc b{font:800 10.5px/1 Oxanium,sans-serif;color:#3a220e;text-transform:uppercase;letter-spacing:.04em}
+.tc small{font:700 9.5px/1 Oxanium,sans-serif;color:#6a4a22}
+.lifted{position:absolute;width:72px;height:72px;z-index:20;transform:rotate(-14deg);filter:drop-shadow(4px 14px 6px #000a)}
+.path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:19;overflow:visible}
+.path path{fill:none;stroke:#ffe9b0;stroke-width:2.5;stroke-dasharray:6 6;opacity:.9}
+.tip{position:absolute;z-index:21;padding:5px 9px;border-radius:99px;background:#22140ae6;box-shadow:inset 0 0 0 1.5px #e0b86a;font:800 11px/1 Oxanium,sans-serif;color:#ffd98a;white-space:nowrap}
+.prop{display:inline-block;margin-left:4px;padding:1px 4px;border-radius:3px;background:#a32;color:#fff;font:800 8px/1.2 Oxanium}

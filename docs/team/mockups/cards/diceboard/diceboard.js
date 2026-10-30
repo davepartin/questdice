@@ -15,17 +15,32 @@ const KIND = { heal: 'heal', pierce: 'pierce', magic: 'magic', gold: 'gold' };
 const gearFace = (v) => ({ v, c: 'w', icons: Object.entries(FACE_PAY[v] || {}).flatMap(([k, n]) => Array(n).fill(KIND[k])) });
 const HEART = ['heal', 'pierce', 'magic', 'gold', 'block', 'atk'].map((k, i) => ({ v: i + 1, c: 'k', icons: [k] })); // js/gfx/dice/dice.js:45 heart faces
 const SIZES = [4, 6, 8, 10];
-// Dav the Ranger at Act I (Dave's screenshot): Bronze Arrows NW, Bronze Bow NE (T21 starter), head d4, hands d4, feet d6, talent one d4, talent two locked
+// v3 (Director 25 Oct: current hero data, real Talent die): the board is built from a real new hero of the released rules
+// (js/release.js applyRelease + engine newHero), ?cls=knight|ranger|wizard|dwarf|bard (default ranger). Sizes, active dice, weapons,
+// the class Talent face and the locked SE price all come from the engine; nothing is hard-coded except the slot positions.
+import { applyRelease } from '../../../../../js/release.js';
+import * as E from '../../../../../js/engine.js';
+applyRelease();
+const CLS = new URLSearchParams(location.search).get('cls') || 'ranger';
+const HERO = E.newHero({ name: 'Dav', cls: CLS, seed: 1 });
+const CNAME = { knight: 'Knight', ranger: 'Ranger', wizard: 'Wizard', dwarf: 'Dwarf', bard: 'Bard' }[CLS];
+document.querySelector('.hd span') && (document.querySelector('.hd span').textContent = `Dav · ${CNAME}`);
+const WNAME = { quiver: 'Arrows', bow: 'Bow', sword: 'Sword', shield: 'Round Shield', dagger: 'Dagger', axe: 'Axe', tower: 'Tower Shield', spear: 'Spear' };
+// the real Talent die (js/gfx/dice/dice.js dieSpecs 'special' + engine specialFace): amethyst; 1 and 3 blank, 2 = X2 surge, 4+ = number, with the bought symbol
+const talentFaces = (slot, z) => Array.from({ length: z }, (_, i) => { const v = i + 1; const sym = v <= HERO.special[slot] ? E.specialFace(HERO, slot, v) : null;
+  return sym === 'X2' ? { v: 0, txt: 'X2', c: 'p', icons: [] } : Array.isArray(sym) ? { v, c: 'p', icons: sym } : v >= 4 ? { v, c: 'p', icons: [] } : { v: 0, c: 'p', icons: [] }; });
+const wslot = (k, x, y) => { const inst = HERO.loadout[k]; const id = inst.id === 'quiver' ? 'quiver:normal' : inst.id; return { k, x, y, w: [id, inst.rarity || 0, E.sidesOf(HERO, k)], name: WNAME[inst.id] || inst.id, inst }; };
+const gslot = (k, x, y, g) => (E.isActive(HERO, k) ? { k, x, y, g: { ...g, size: E.sidesOf(HERO, k) } } : { k, x, y, locked: UNLOCK_COST[k] });
 const SLOTS = [
-  { k: 'NW', x: 29.5, y: 21.4, w: ['quiver:normal', 0, 4], name: 'Arrows' },
-  { k: 'N', x: 50, y: 21.4, g: { title: 'Head', icon: 'helmet', size: 4, steps: MIND_STEPS, max: 10 } },
-  { k: 'NE', x: 70.6, y: 21.4, w: ['bow', 0, 4], name: 'Bow' },
-  { k: 'W', x: 28, y: 43, g: { title: 'Left Hand', icon: 'gauntlet', size: 4, steps: STRENGTH_STEPS, max: 10 } },
+  wslot('NW', 29.5, 21.4),
+  gslot('N', 50, 21.4, { title: 'Head', icon: 'helmet', steps: MIND_STEPS, max: 10 }),
+  wslot('NE', 70.6, 21.4),
+  gslot('W', 28, 43, { title: 'Left Hand', icon: 'gauntlet', steps: STRENGTH_STEPS, max: 10 }),
   { k: 'C', x: 50, y: 43, g: { title: 'Heart', icon: 'heart', size: 6, heart: true } },
-  { k: 'E', x: 72, y: 43, g: { title: 'Right Hand', icon: 'gauntlet', size: 4, steps: STRENGTH_STEPS, max: 10, flip: true } },
-  { k: 'SW', x: 27.2, y: 65.6, g: { title: 'Talent One', icon: 'talent', size: 4, steps: SPECIAL_STEPS, max: 10 } },
-  { k: 'S', x: 50, y: 65.6, g: { title: 'Feet', icon: 'boots', size: 6, steps: SPEED_STEPS, max: 8} },
-  { k: 'SE', x: 72.8, y: 65.6, locked: UNLOCK_COST.SE },
+  gslot('E', 72, 43, { title: 'Right Hand', icon: 'gauntlet', steps: STRENGTH_STEPS, max: 10, flip: true }),
+  gslot('SW', 27.2, 65.6, { title: 'Talent One', icon: 'talent', steps: SPECIAL_STEPS, max: 10, talent: 'SW' }),
+  gslot('S', 50, 65.6, { title: 'Feet', icon: 'boots', steps: SPEED_STEPS, max: 8 }),
+  gslot('SE', 72.8, 65.6, { title: 'Talent Two', icon: 'talent', steps: SPECIAL_STEPS, max: 10, talent: 'SE' }),
 ];
 const iconArt = (name, flip) => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
   const gr = g.createLinearGradient(0, 40, 0, 470); gr.addColorStop(0, '#ffe2b0'); gr.addColorStop(.5, '#d39a52'); gr.addColorStop(1, '#7a4a1e'); g.fillStyle = gr;
@@ -33,7 +48,7 @@ const iconArt = (name, flip) => { const c = document.createElement('canvas'); c.
   if (name === 'helmet') { g.translate(46, 46); g.scale(4.2, 4.2); g.fill(new Path2D(PICK), 'evenodd'); } else drawIcon(g, name, 256, 256, 420, { flip }); return c.toDataURL(); };
 function gearCard(s) {
   const g = s.g; let cur = g.size; const sizes = g.heart ? [6] : SIZES.filter((z) => z <= g.max);
-  const facesOf = (z) => g.heart ? HEART : Array.from({ length: z }, (_, i) => gearFace(i + 1));
+  const facesOf = (z) => g.heart ? HEART : g.talent ? talentFaces(g.talent, z) : Array.from({ length: z }, (_, i) => gearFace(i + 1));
   const px = g.heart ? { 6: 34 } : { 4: 44, 6: 45, 8: 50, 10: 52 };
   const rows = sizes.map((z, r) => { const from = r ? sizes[r - 1] : 0; const all = facesOf(z); const add = g.heart ? all : all.slice(from);
     const dice = add.map((f, i) => `<figure class="d17" style="--px:${px[z]}"><img src="${dieImage(z, all, (g.heart ? 0 : from) + i + 1, { px: px[z] * 5 })}" alt="face ${f.v}: ${f.icons.join(' ')}"></figure>`).join('');
@@ -64,11 +79,11 @@ const board = document.getElementById('board'); const big = document.getElementB
 for (const s of SLOTS) {
   if (s.locked) { const l = document.createElement('div'); l.className = 'lockd'; Object.assign(l.style, { left: s.x + '%', top: s.y + '%' }); l.innerHTML = `LOCKED<br><small>unlock · ${s.locked} gold</small>`; board.append(l); continue; }
   let faces, sides, top;
-  if (s.w) { sides = s.w[2]; faces = nested(s.w[0], s.w[1], sides).map((f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: [] })); top = sides; }
-  else if (s.g.heart) { sides = 6; faces = HEART; top = 6; } else { sides = s.g.size; faces = Array.from({ length: sides }, (_, i) => gearFace(i + 1)); top = sides; }
+  if (s.w) { sides = s.w[2]; faces = E.weaponFaces(s.inst, sides).slice(0, sides).map((f) => ({ v: f.v || 0, c: f.c === 'b' ? 'b' : 'r', icons: f.arrow ? ['pierce'] : [] })); top = sides; } // the die on the board = today's live faces (engine)
+  else if (s.g.heart) { sides = 6; faces = HEART; top = 6; } else if (s.g.talent) { sides = s.g.size; faces = talentFaces(s.g.talent, sides); top = 4; } else { sides = s.g.size; faces = Array.from({ length: sides }, (_, i) => gearFace(i + 1)); top = sides; }
   const b = document.createElement('button'); b.className = 'die'; Object.assign(b.style, { left: s.x + '%', top: s.y + '%' });
   b.innerHTML = `<img src="${dieImage(sides, faces, top, { px: 220, view: 'slot', el: TILT.el })}" alt="">`; b.setAttribute('aria-label', `${s.name || s.g.title}, d${sides}. Tap for its card`);
-  const nm = document.createElement('div'); nm.className = 'nm'; Object.assign(nm.style, { left: s.x + '%', top: `calc(${s.y}% + 8.4cqi)` }); nm.innerHTML = `${s.name || s.g.title}<small>d${sides}</small>`;
+  const nm = document.createElement('div'); nm.className = 'nm'; Object.assign(nm.style, { left: s.x + '%', top: `calc(${s.y}% + 7cqi)` }); nm.innerHTML = `${s.name || s.g.title}<small>d${sides}</small>`;
   board.append(b, nm); s.btn = b; s.card = s.w ? weaponCard(s) : gearCard(s); b.onclick = () => lift(s);
 }
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; const DUR = reduce ? 1 : 400; const EASE = 'cubic-bezier(.2,.8,.2,1)';

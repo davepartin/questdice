@@ -1,0 +1,82 @@
+PASS 390x844 strength: opens the right card, fits, text >= 11 px {"cb":"Strength dice card: Head d4, Left Hand d6, Right Hand d4, Feet d4","gear":false,"x0":29,"x1":361,"vw":390,"tiny":[]}
+PASS 390x844 talents: opens the right card, fits, text >= 11 px {"cb":"Talent dice card","gear":false,"x0":29,"x1":361,"vw":390,"tiny":[]}
+PASS 390x844 heart: opens the right card, fits, text >= 11 px {"cb":"Heart die card","gear":false,"x0":29,"x1":361,"vw":390,"tiny":[]}
+PASS 390x844 weapon-left: T17 card, rows d4-d10, covers above d4, sell chip in the art window = engine sellValue, dice 13cqi on every row, inside their rows, each row only the faces its size adds, no wear, fits, text >= 11 px {"card":true,"id":"sword","size":4,"rows":4,"covers":3,"perRow":[[4,4]],"chipArt":true,"chipInRow":false,"dieW":[43],"overlap":false,"chip":"12","sell":12,"wear":false,"cw":332.03125,"spill":false,"x0":29,"x1":361,"vw":390,"tiny":[]}
+PASS 390x844 weapon-left: the cover buys d6 for 50, while the sell chip keeps the equipped weapon {"g0":400,"g1":{"gold":350,"still":true}}
+PASS 390x844 weapon-right: T17 card, rows d4-d10, covers above d4, sell chip in the art window = engine sellValue, dice 13cqi on every row, inside their rows, each row only the faces its size adds, no wear, fits, text >= 11 px {"card":true,"id":"shield","size":4,"rows":4,"covers":3,"perRow":[[4,4]],"chipArt":true,"chipInRow":false,"dieW":[43],"overlap":false,"chip":"12","sell":12,"wear":false,"cw":332.03125,"spill":false,"x0":29,"x1":361,"vw":390,"tiny":[]}
+PASS 390x844 weapon-right: the cover buys d6 for 50, while the sell chip keeps the equipped weapon {"g0":350,"g1":{"gold":300,"still":true}}
+PASS 390x844: Head cover buys through the game (gold down, die up) {"a":{"size":4,"gold":300},"z":{"size":6,"gold":250}}
+PASS 390x844: Right Hand cover grows E only {"a":{"size":4,"w":6,"gold":250},"z":{"size":6,"w":6,"gold":210}}
+PASS 390x844: Talent One cover grows the talent die {"a":{"size":4,"gold":210},"z":{"size":6,"gold":150}}
+PASS 390x844: Talent One keeps its symbols 
+PASS 390x844: the save has the new gold and Head size {"now":{"gold":150,"mind":6},"saved":{"gold":150,"mind":6}}
+PASS 390x844 store: sign, 5 sections in order, every tag's price is the shared chip (brown, yellow coin, Oxanium number; pc1), no svg coin, Diamond T17 card, no charms {"zones":["zn-specials","zn-shelf","zn-diamond","zn-odd","zn-supplies"],"sign":true,"pencil":11,"hand":true,"svgcoin":0,"ntag":11,"tags":12,"poor":["70","104","115","90","90","200"],"dia":true,"charm":false,"hit":[],"out":0,"tiny":[],"gold":60}
+PASS 390x844 store: tags are red exactly when the purse is short (60 gold), the belt shows Needs Level 4 {"poor":["70","104","115","90","90","200"],"want":{"poor":"70,90,90,104,115,200","belt":{"ok":false,"why":"Level 4","cost":90,"next":3,"cur":2}}}
+PASS 390x844 store: no tag or sticker over another card, every card inside the screen, text >= 11 px {"zones":["zn-specials","zn-shelf","zn-diamond","zn-odd","zn-supplies"],"sign":true,"pencil":11,"hand":true,"svgcoin":0,"ntag":11,"tags":12,"poor":["70","104","115","90","90","200"],"dia":true,"charm":false,"hit":[],"out":0,"tiny":[],"gold":60}
+PASS 390x844 store: a special buys through HE.buyTonic (gold 2000 -> 1975, price 25) 
+PASS 390x844 store: the mystery bundle buys through HE.buyBundle (gold 1975 -> 1905, price 70) 
+PASS 390x844 store: a shelf weapon buys through HE.buyItem (gold 1905 -> 1845, price 60) 
+PASS 390x844 store: the Diamond buys into the Diamond case (gold 1845 -> 1730, price 115) 
+PASS 390x844 store: the pet adopts through HE.buyPet (gold 1730 -> 1640, price 90) 
+PASS 390x844 store: a healing potion buys through HE.buyPotion (gold 1640 -> 1630, price 10) 
+PASS 390x844 store: the potion belt (level 4) buys through HE.upgradePotions (gold 1630 -> 1540, price 90) 
+PASS 390x844 store: the 4th reroll die buys through HE.buyRerollDie (gold 1540 -> 1340, price 200) 
+PASS 390x844 store: the hero got them (Diamond, pet, belt of 3, 4 reroll dice) and the cards stamp Sold / Yours / Opened / Max {"dia":1,"bag":2,"pet":true,"potMax":3,"rr":4,"stamps":["Yours","Opened","Sold","Sold","With you","Max","Max"]}
+PASS 390x844 store after buying: still no overlaps []
+PASS 390x844 Camp > Supplies: the potion and reroll rows moved to the store (a button opens it) 
+PASS 390x844: no page errors 
+PASS 375x548 strength: opens the right card, fits, text >= 11 px {"cb":"Strength dice card: Head d4, Left Hand d6, Right Hand d4, Feet d4","gear":false,"x0":29,"x1":346,"vw":375,"tiny":[]}
+PASS 375x548 talents: opens the right card, fits, text >= 11 px {"cb":"Talent dice card","gear":false,"x0":29,"x1":346,"vw":375,"tiny":[]}
+PASS 375x548 heart: opens the right card, fits, text >= 11 px {"cb":"Heart die card","gear":false,"x0":29,"x1":346,"vw":375,"tiny":[]}
+PASS 375x548 weapon-left: T17 card, rows d4-d10, covers above d4, sell chip in the art window = engine sellValue, dice 13cqi on every row, inside their rows, each row only the faces its size adds, no wear, fits, text >= 11 px {"card":true,"id":"sword","size":4,"rows":4,"covers":3,"perRow":[[4,4]],"chipArt":true,"chipInRow":false,"dieW":[41],"overlap":false,"chip":"12","sell":12,"wear":false,"cw":317.03125,"spill":false,"x0":29,"x1":346,"vw":375,"tiny":[]}
+PASS 375x548 weapon-left: the cover buys d6 for 50, while the sell chip keeps the equipped weapon {"g0":400,"g1":{"gold":350,"still":true}}
+PASS 375x548 weapon-right: T17 card, rows d4-d10, covers above d4, sell chip in the art window = engine sellValue, dice 13cqi on every row, inside their rows, each row only the faces its size adds, no wear, fits, text >= 11 px {"card":true,"id":"shield","size":4,"rows":4,"covers":3,"perRow":[[4,4]],"chipArt":true,"chipInRow":false,"dieW":[41],"overlap":false,"chip":"12","sell":12,"wear":false,"cw":317.03125,"spill":false,"x0":29,"x1":346,"vw":375,"tiny":[]}
+PASS 375x548 weapon-right: the cover buys d6 for 50, while the sell chip keeps the equipped weapon {"g0":350,"g1":{"gold":300,"still":true}}
+PASS 375x548: Head cover buys through the game (gold down, die up) {"a":{"size":4,"gold":300},"z":{"size":6,"gold":250}}
+PASS 375x548: Right Hand cover grows E only {"a":{"size":4,"w":6,"gold":250},"z":{"size":6,"w":6,"gold":210}}
+PASS 375x548: Talent One cover grows the talent die {"a":{"size":4,"gold":210},"z":{"size":6,"gold":150}}
+PASS 375x548: Talent One keeps its symbols 
+PASS 375x548: the save has the new gold and Head size {"now":{"gold":150,"mind":6},"saved":{"gold":150,"mind":6}}
+PASS 375x548 store: sign, 5 sections in order, every tag's price is the shared chip (brown, yellow coin, Oxanium number; pc1), no svg coin, Diamond T17 card, no charms {"zones":["zn-specials","zn-shelf","zn-diamond","zn-odd","zn-supplies"],"sign":true,"pencil":11,"hand":true,"svgcoin":0,"ntag":11,"tags":12,"poor":["70","104","115","90","90","200"],"dia":true,"charm":false,"hit":[],"out":0,"tiny":[],"gold":60}
+PASS 375x548 store: tags are red exactly when the purse is short (60 gold), the belt shows Needs Level 4 {"poor":["70","104","115","90","90","200"],"want":{"poor":"70,90,90,104,115,200","belt":{"ok":false,"why":"Level 4","cost":90,"next":3,"cur":2}}}
+PASS 375x548 store: no tag or sticker over another card, every card inside the screen, text >= 11 px {"zones":["zn-specials","zn-shelf","zn-diamond","zn-odd","zn-supplies"],"sign":true,"pencil":11,"hand":true,"svgcoin":0,"ntag":11,"tags":12,"poor":["70","104","115","90","90","200"],"dia":true,"charm":false,"hit":[],"out":0,"tiny":[],"gold":60}
+PASS 375x548 store: a special buys through HE.buyTonic (gold 2000 -> 1975, price 25) 
+PASS 375x548 store: the mystery bundle buys through HE.buyBundle (gold 1975 -> 1905, price 70) 
+PASS 375x548 store: a shelf weapon buys through HE.buyItem (gold 1905 -> 1845, price 60) 
+PASS 375x548 store: the Diamond buys into the Diamond case (gold 1845 -> 1730, price 115) 
+PASS 375x548 store: the pet adopts through HE.buyPet (gold 1730 -> 1640, price 90) 
+PASS 375x548 store: a healing potion buys through HE.buyPotion (gold 1640 -> 1630, price 10) 
+PASS 375x548 store: the potion belt (level 4) buys through HE.upgradePotions (gold 1630 -> 1540, price 90) 
+PASS 375x548 store: the 4th reroll die buys through HE.buyRerollDie (gold 1540 -> 1340, price 200) 
+PASS 375x548 store: the hero got them (Diamond, pet, belt of 3, 4 reroll dice) and the cards stamp Sold / Yours / Opened / Max {"dia":1,"bag":2,"pet":true,"potMax":3,"rr":4,"stamps":["Yours","Opened","Sold","Sold","With you","Max","Max"]}
+PASS 375x548 store after buying: still no overlaps []
+PASS 375x548 Camp > Supplies: the potion and reroll rows moved to the store (a button opens it) 
+PASS 375x548: no page errors 
+PASS spoils: the real camp T17 weapon card (rows d4-d10), scaled to the thumbnail, no old mini card or stray size label, Sell uses the chip {"spoil":true,"real":true,"rows":4,"oldMini":false,"szl":false,"w":133,"cw":133,"sell":true}
+FAIL spoils: every price chip is the shared chip {"n":10,"all":false}
+shot /workspace/price-chip-live/spoils_390x844.png
+PASS spoils: tapping the card opens the same card large {"open":true,"w":321}
+shot /workspace/price-chip-live/spoils-card-large_390x844.png
+PASS camp grid: tile costs use the shared chip, red where gold is short {"grid":{"n":8,"all":true},"poorGrid":[["50",false],["50",false],["50",false],["40",false],["40",false],["60",false],["60",false],["35",false]]}
+shot /workspace/price-chip-live/camp-grid_390x844.png
+PASS old save: locked Talent Two lost the auto-filled Heal on load; Talent One keeps its face {"se":"[[]]","sw":"[[\"magic\"]]","gold":60}
+shot /workspace/price-chip-live/talent-two-locked_390x844.png
+PASS Talent Two unlocked for 35: face 4 is an EMPTY slot priced 10 with the chip {"active":true,"face4":null,"gold":25,"hole":true}
+PASS Talents card: every price is the shared chip {"n":7,"all":true}
+shot /workspace/price-chip-live/talent-two-unlocked_390x844.png
+PASS fill face 4: the buy button shows the chip with 10 {"n":1,"all":true}
+shot /workspace/price-chip-live/talent-two-face4-pick_390x844.png
+PASS fill face 4: 10 gold, Gold on face 4 {"g0":25,"fill":{"gold":15,"se":"[[\"gold\"]]"}}
+shot /workspace/price-chip-live/talent-two-face4-filled_390x844.png
+PASS Add this die: the chip, red when short {"n":"35","poor":true}
+shot /workspace/price-chip-live/add-this-die-short_390x844.png
+PASS powers page: any price shown is the shared chip {"n":1,"all":true}
+shot /workspace/price-chip-live/camp-powers_390x844.png
+PASS store: every tag carries the shared chip (no old coin), red chip on short tags {"tags":11,"chip":true,"oldCoin":false,"poorOk":true}
+PASS store: chips styled as the shared chip 
+shot /workspace/price-chip-live/store_390x844.png
+shot /workspace/price-chip-live/store-supplies_390x844.png
+PASS no page errors 
+1 FAILED
+FAIL pc1: dev/pricechip.mjs (spoils card, shared price chip, talent face 4) exit 1
+1 FAILED

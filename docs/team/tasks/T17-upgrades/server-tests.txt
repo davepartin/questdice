@@ -1,0 +1,12 @@
+✔ LAN camp purchases use released rules, persist on the wire and reject duplicate or foreign upgrades (132.623696ms)
+✔ two phones can sit, and a lock stays private on the wire (103.515257ms)
+✔ a hero takes their seat back from a new phone after the game has started (16.477071ms)
+✔ a room still opens when the host cannot enumerate LAN interfaces (4.661086ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 376.289247

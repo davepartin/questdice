@@ -64,6 +64,9 @@ export const FACE_PAY = [null,
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
 // Heart amplifier: a heart of 1-4 (heal, pierce, magic, gold) adds +2 for every head / hand / feet die showing that symbol (any face).
 export const HEART_AMP = [2, 2, 2, 2];
+// Heart ranks (Dave, 27 Oct 2026): rank 2 costs 200 gold, rank 3 a further 300; no act gate, the player decides when.
+export const HEART_RANKS = Object.freeze([null, Object.freeze({ amp: 2, lane: 4, cost: 0, act: 1 }), Object.freeze({ amp: 3, lane: 6, cost: 200, act: 1 }), Object.freeze({ amp: 4, lane: 8, cost: 300, act: 1 })]);
+export const normalizeHeartRank = (rank) => (Number.isInteger(rank) && rank >= 1 && rank <= 3 ? rank : 1);
 export const HEART_COLOR_BONUS = 4; // face 5: +4 block on each blue weapon, face 6: +4 attack on each red weapon
 
 // Straights across the numeric dice (blanks never count): length -> bonus (attack, or the same number in gold).
@@ -241,14 +244,18 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
-export const EXPERIMENT = { weapons2: false, weaponSize: false };
+export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: true };
 // T17 weapon size (an isolated experiment, off in the game and in every preview but /preview/weapon-size/; docs/team/tasks/T17.md). With it on: weapons
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
 // the shop and the spoils until their acquisition is specified. `ladder` is where a reviewed cumulative face table plugs in (null: today's faces).
-// `resale` is the candidate resale rule (docs/team/tasks/T17-resale.md), null in every build: a share (0.5) of what a weapon was worth as found, or what was paid
-// for it if that was less, plus what was paid for sizes since, so an upgrade always raises the sale value and no loop of buying, growing and selling pays.
-export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null, resale: null };
+export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null,
+  // T17 candidate faces (js/weaponladder.js, PROPOSED, OFF): with `cumulative` on and a `ladder` installed, every weapon rolls its cumulative table
+  // in the live rules too (not only in the weapon-size preview). Nothing installs it in the release until Astra rules on docs/team/tasks/T17-roles.md.
+  cumulative: false };
+// Camp purchases using the released face tables. Independent of the wider T17 face/loot experiment.
+// Existing found weapons retain their value; half of gold paid for subsequent sizes is recoverable.
+export const WEAPON_TRAINING = { on: false, prices: { 4: 50, 6: 100, 8: 200 } };
 // Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
 // until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
 //   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack
@@ -352,8 +359,11 @@ export const TALENT_MAX_SAME = 2; // a die can carry two of one symbol at most: 
 export const TALENT_PER_FACE = 2; // (the pet's die still holds two symbols a face)
 export const TALENT_SLOT_COST = 25; // (a pet's symbol slot costs this; talent faces are priced by their number)
 export const TALENT_FACES = { 4: 1, 6: 3, 8: 5, 10: 7 }; // number faces on a d4 / d6 / d8 / d10 (faces 4..size)
-export const TALENT_FACE_COST = 10; // gold per point on the face: 4 costs 40, 5 costs 50 ... 10 costs 100
-export const talentFaceCost = (num) => TALENT_FACE_COST * num;
+export const TALENT_FACE_COST = 10; // gold per point on the face: 5 costs 50 ... 10 costs 100
+// Face 4 (Dave, 26 Oct 2026, live: "both talent dice should start with the number four being empty, but only paying 10 coin to put an icon
+// in there"): a new or newly unlocked talent die starts with face 4 EMPTY, and filling it costs 10. Faces 5-10 keep 10 x face.
+export const TALENT_FACE_4_COST = 10;
+export const talentFaceCost = (num) => (num === 4 ? TALENT_FACE_4_COST : TALENT_FACE_COST * num);
 export const talentFaceNum = (faceIndex) => faceIndex + 4; // index in hero.talent[slot] -> the number on the die
 // (No pierce on talent dice: it ignores block and has no defence, so it stays on weapons, cards and the number 2.)
 export const CLASS_TALENT = {
@@ -393,18 +403,18 @@ export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ?
 export const talentName = (sym) => (sym === 'X2' ? '2× Strength' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
 export const talentText = (sym) => (sym === 'X2' ? 'Doubles the strength this hand adds to its weapon.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');
 
-// Strength / special upgrade ladder: [gold to grow from this size]. No level gate (Dave): the only limit besides gold is the act's die cap below.
+// Strength / special upgrade ladder: [gold to grow from this size]. No level gate (Dave): the only limit is gold (the old act cap is gone, 27 Oct 2026).
 export const STRENGTH_STEPS = { 4: [40], 6: [100], 8: [220] };
 export const SPECIAL_STEPS = { 4: [60], 6: [130], 8: [240] }; // the talent die grows d4 -> d6 -> d8 -> d10
 // The act decides how big a die can grow (Dave): Act I d4 -> d6, Act II d6 -> d8, Act III d8 -> d10. Applies to strength and talent dice.
-export const ACT_MAX_DIE = { 1: 6, 2: 8, 3: 10 };
+export const ACT_MAX_DIE = { 1: 10, 2: 10, 3: 10 }; // no act limit any more (Dave, 27 Oct 2026): every die can grow to d10 whenever the gold is there
 export const dieCapForAct = (act) => ACT_MAX_DIE[Math.min(3, Math.max(1, act | 0 || 1))];
 export const ROMAN = { 1: 'I', 2: 'II', 3: 'III' };
 // Speed: the feet die is the initiative die; a bigger one beats more monster rolls. [gold, hero level]
-// Company looks live after CLASSES (painted colour variants). The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, as far as the act allows. It is rolled in every battle (its faces
+// Company looks live after CLASSES (painted colour variants). The head die is wisdom (Dave, 14 Oct): it starts a d4 and grows like a hand, up to d10. It is rolled in every battle (its faces
 // pay heal / pierce / magic / gold like the hands) and in the road's Tests of Wisdom (trials.js).
 export const MIND_STEPS = { 4: [50], 6: [110], 8: [230] };
-export const SPEED_STEPS = { 4: [60], 6: [140] }; // feet stop at d6 (the Ranger alone can train them to d8)
+export const SPEED_STEPS = { 4: [60], 6: [140], 8: [240] }; // the feet (initiative) die grows like the head and talent dice, to d10 (Dave, 27 Oct 2026)
 export const NEXT_SIZE = { 4: 6, 6: 8, 8: 10 };
 export const PREV_SIZE = { 6: 4, 8: 6, 10: 8 };
 // Shrinking a die (Dave): sometimes a smaller die is the better die. It costs gold (by the size it leaves), nothing is refunded, and on a talent
@@ -444,25 +454,27 @@ export const CLASSES = {
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
     // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'A wide swing. Roll 2d6 attack. Half of it splashes on every other monster.' },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'scale', atwill: true, cost: 2, step: 1, max: 4, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 2 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
       { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
-      { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
-      { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
-      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and block.' },
+      { id: 'shieldwall', slot: 'B', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
+      { id: 'riposte', slot: 'B', start: true, name: 'Riposte', kind: 'flat', atwill: true, cost: 2, fx: { block: 4 }, riposte: true, text: 'Once per round, 2 magic: +4 block, and any block the monsters do not use hits back as attack. (mk1, PROPOSED)' },
+    { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 2 }, fx: { atk: 3, block: 2 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and 1, 3, 5, 7 block. (mk1, PROPOSED block)' },
       { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Store 1 magic a round (max 4), then release: heal 4, 6, 8, 10. Up you get.' },
     ],
   },
   ranger: {
-    feet: 6, maxFeet: 8, startMagic: 4,
-    trait: 'The fastest on the road. The only class that can train speed to a d8.',
+    feet: 6, startMagic: 4,
+    trait: 'The fastest on the road. Starts with a d6 on its feet, so it acts first.',
     name: 'Ranger', glyph: '🏹', img: 'assets/miniatures/ranger-green.webp', look: 'right', imgBase: IB(344, 512, 162.5, 505, 313), hp: 28,
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', cost: 2, max: 4, dice: { n: 2, s: 6, to: 'pierce' }, fx: { pierce: 7 }, text: 'Breathe. Loose. Roll pierce dice: 2 magic = 2d6, each extra magic adds a die (up to 4d6).' },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', atwill: true, cost: 1, max: 4, dice: { n: 1, s: 6, to: 'pierce' }, fx: { pierce: 4 }, text: 'Breathe. Loose. 1 magic per d6, up to 4d6. The total adds to your pierce.' },
       { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
-      { id: 'quickdraw', slot: 'B', start: true, name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
-      { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
+      { id: 'quickdraw', slot: 'B', name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
+      { id: 'mark', slot: 'B', start: true, name: "Hunter's Mark", kind: 'flat', atwill: true, cost: 2, fx: { pierce: 2 }, markGold: 3, text: "Once per round, 2 magic: +2 pierce now, and +3 gold if your target falls this round. (mr1, PROPOSED)" },
+    { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
       { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 4 }, fx: { pierce: 4 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 pierce.' },
       { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Store 1 magic a round (max 4), then release: 4, 6, 8, 10 block. Now you see me.' },
     ],
@@ -471,27 +483,29 @@ export const CLASSES = {
     feet: 4, startMagic: 6, magicCap: 15,
     trait: 'Weak and slow, the strongest magic: starts with 6 and holds 15.',
     name: 'Wizard', glyph: '🧙', img: 'assets/miniatures/wizard-blue.webp', look: 'right', imgBase: IB(456, 512, 262.5, 505, 355), hp: 24,
-    blurb: 'A frail body and a deep well of magic. No shield. A trick for every problem, and the magic to keep mending.',
+    blurb: 'A frail body and a deep well of magic. A trick for every problem, and the magic to keep mending.',
     weapons: ['staff'],
     cards: [
-      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', atwill: true, splash: 'half', cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Every round: 2 magic per d8 attack (up to 6d8), and half of it arcs to every other monster. (mw1, PROPOSED)' }, // Dave: was 1 magic a die, too strong
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
-      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
-      { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
-      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Store 1 magic a round (max 4), then release: 4, 6, 8, 10 attack. Half splashes.' },
+      { id: 'bolt', slot: 'B', name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
+      { id: 'polymorph', slot: 'B', start: true, name: 'Polymorph', kind: 'flat', atwill: true, cost: 3, costLv: [3, 3, 2], fx: { frog: 1 }, frogPierce: [0, 4, 4], text: 'Once per round, 3 magic: your target turns into a frog and cannot attack this round. Level II: the frog takes +4 pierce. Level III: costs 2. (mw1, PROPOSED)' },
+    { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4 }, splash: 'half', fx: { atk: 4 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 attack. Half splashes. (mw1, PROPOSED per charge 5 to 4)' },
       { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Store 1 magic a round (max 4), then release: heal 5, 7, 9, 11. Warm as a window.' },
     ],
   },
   dwarf: {
     feet: 4, hands: 6, startMagic: 3, // the slowest, the toughest: one d6 hand (left) from the start
-    trait: 'The wall: the most health, a crushing mace and a tower shield.',
+    trait: 'The wall: the most health, a crushing axe and a tower shield.',
     name: 'Dwarf Warden', glyph: '🪓', img: 'assets/miniatures/dwarf-blue.webp', look: 'right', imgBase: IB(489, 512, 271, 505, 374), hp: 40,
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
-      { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late. Dwarves keep receipts.' },
+      { id: 'anvil', slot: 'A', start: true, name: 'Anvil Strike', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 8, to: 'block' }, goldOn: { face: 8, gold: 3 }, fx: { block: 4 }, text: 'Every round: 1 magic per blue d8 of block (up to 6d8). Every 8 rolled also gives 3 gold. (md1, PROPOSED)' },
       { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
-      { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
+      { id: 'grudge', slot: 'B', start: true, name: 'Grudge', kind: 'flat', atwill: true, cost: 2, fx: {}, grudge: [0, 3, 6], text: 'Every round: 2 magic. Attack equal to the damage that got past your block last round. Dwarves keep receipts. (md1, PROPOSED)' },
+      { id: 'bulwark', slot: 'B', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
       { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
       { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Store 1 magic a round (max 4), then release: 5, 7, 9, 11 block.' },
       { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },
@@ -504,11 +518,11 @@ export const CLASSES = {
     blurb: 'The heart of the party. Songs that heal, hymns that harden, and a knack for chaos that somehow helps.',
     weapons: ['dagger', 'bracer'],
     cards: [
-      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'heal' }, fx: { heal: 7 }, text: 'A tune you can feel in the ribs. Roll 2d6 and heal that much.' },
+      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, party: true, fx: { heal: 4 }, text: 'Every round: 1 magic per green d6 (up to 6d6). The total heals you and every hero in the party. (mb1, PROPOSED)' },
       { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
-      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round, roll a d6: 1-2 +1 magic, 3-4 +3 attack, 5-6 +6 attack and +1 magic. Fingers crossed. Professionally.' },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 2, fx: { atk: 4 }, text: 'Every round, 2 magic: roll a d6. 1-2 +1 magic, 3-4 +3 attack, 5-6 +6 attack and +1 magic. Fingers crossed. Professionally.' },
       { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
-      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 3 }, fx: { atk: 3, heal: 3 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and heal.' },
+      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 2 }, fx: { atk: 3, heal: 2 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and 1, 3, 5, 7 heal. (mb1, PROPOSED heal 3 → 2)' },
       { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 gold. Music to a peddler\'s ears.' },
     ],
   },

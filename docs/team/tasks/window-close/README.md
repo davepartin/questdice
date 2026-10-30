@@ -1,0 +1,5 @@
+# Uniform window Close
+
+Build 20261028close2. All dismiss controls use the existing shared dark/gold Close style and 76 by 44 touch area. The gear window now labels its former icon-only X. The DOM helper recognizes accessible icon-only legacy Close controls and aligns form dialogs into one title row, removing duplicate dismiss buttons. Dismissible modals get a Close control when missing; mandatory progression dialogs retain their existing actions. Battle info uses the same alignment helper, including power details formerly offering a second bottom Close. Title text wraps beside the button rather than under it. Primary Continue/Victory and purchase actions retain their semantics.
+
+Checks: dev/window-close-check.mjs passes four browser cases (bottom, icon, duplicate, missing): one labeled control, identical styling and dimensions, title separation, correct dismissal. Actual gear window screenshot visually reviewed at 390x660; gear grid/card fit preserved. Actual enemy and objective check passes at 390x664. No Safari or gameplay/balance verification claimed. [Gear screenshot](gear.png).

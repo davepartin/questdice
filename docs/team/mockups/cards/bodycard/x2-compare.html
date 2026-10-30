@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"../../../../../vendor/three/build/three.module.js","three/addons/":"../../../../../vendor/three/examples/jsm/"}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Oxanium:wght@700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#c9ab78;display:flex;gap:24px;padding:20px;font:700 14px Oxanium}figure{margin:0;text-align:center}img{width:240px;height:240px;display:block;background:#0002}</style></head><body>
+<figure><img id="game"><figcaption>GAME: faceImage(talent d4, face 2)<br>js/gfx/dice/dice.js, clean style</figcaption></figure>
+<script type="module">
+// x2 comparison (Crockpot / Grok Bot, 25 Oct): the game's own X2 face (cut from the 3D die texture) beside the card's X2 face.
+import { setDiceStyle } from '../../../../../js/gfx/dice/faces.js';
+import { dieSpecs, faceImage, makePoly } from '../../../../../js/gfx/dice/dice.js';
+import { applyRelease } from '../../../../../js/release.js';
+import * as E from '../../../../../js/engine.js';
+await document.fonts.load('900 40px "Archivo Black"'); applyRelease(); setDiceStyle('clean');
+const hero = E.newHero({ name: 'Dav', cls: 'knight', seed: 1 });
+const spec = dieSpecs(hero).SW; document.getElementById('game').src = faceImage(spec, 2, 480);
+window.__inR = (() => { const p = makePoly(4); const f = p.faces[p.labelFace[1]]; let Hm = 0; p.faces.forEach((q) => q.local.forEach((v) => { Hm = Math.max(Hm, Math.abs(v[0]), Math.abs(v[1])); })); Hm *= 1.12; return f.inR2 * (192 / Hm); })();
+window.__spec = JSON.stringify(spec.labels);
+document.body.dataset.ready = 1;
+</script></body></html>

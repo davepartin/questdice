@@ -397,8 +397,9 @@ test('rerolls: first action is free, later actions cost 1 Magic per die, bound d
   assert.equal(reroll(b, ['N', 'S', 'E', 'C']), false, 'a Knight rerolls at most 3 dice per action');
 });
 
+const shieldUp = (h) => { h.learned = [...(h.learned || []), 'shieldwall']; h.powers = { ...(h.powers || {}), B: 'shieldwall' }; return h; }; // mk1: Riposte starts in slot B; Shield Up is learned
 test('powers spend Magic and work once per battle; at-will powers return every round', () => {
-  const h = knight();
+  const h = shieldUp(knight());
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
   startRoll(b); b.magic = 5;
   const r = castPower(b, 'cleave'); assert.ok(r); assert.equal(b.magic, 3); assert.equal(r.rolls.length, 2);
@@ -407,6 +408,7 @@ test('powers spend Magic and work once per battle; at-will powers return every r
   assert.ok(castPower(b, 'shieldwall')); assert.equal(b.mods.block, 4); assert.equal(castPower(b, 'shieldwall'), null); // once a round
   beginReset(b); startRoll(b); assert.ok(castPower(b, 'shieldwall')); // back next round
   const w = newHero({ name: 'W', cls: 'ranger', seed: 3, full: true });
+  w.learned = [...(w.learned || []), 'quickdraw']; w.powers = { ...(w.powers || {}), B: 'quickdraw' }; // mr1: Hunter's Mark starts in slot B; Quick Draw is learned
   const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1); startRoll(b2); b2.magic = 3;
   assert.ok(playCard(b2, 'quickdraw')); assert.equal(rerollInfo(b2).kind, 'card');
   const before = b2.magic; assert.ok(reroll(b2, ['N', 'S'])); assert.equal(b2.magic, before);
@@ -445,8 +447,8 @@ test('powers: three slots, a start power in each, learn another at camp and swap
     assert.equal(c.cards.filter((k) => k.slot === slot && k.start).length, 1, `${id} ${slot} start`);
     assert.ok(c.cards.filter((k) => k.slot === slot).length >= 2, `${id} ${slot} has a choice`);
   }
-  const k = knight(); k.gold = 100;
-  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'shieldwall', 'rally']);
+  const k = knight(); k.gold = 150;
+  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'riposte', 'rally']); assert.ok(learnPower(k, 'shieldwall')); k.gold = 100; // mk1: Riposte starts, Shield Up is learned
   assert.equal(equipPower(k, 'press'), false, 'not learned yet');
   assert.ok(learnPower(k, 'press')); assert.equal(k.gold, 50);
   assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'press', 'rally']);
@@ -457,7 +459,7 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   const before = { atk: b.mods.atk, block: b.mods.block };
   b.usedRound = {}; // the next round (a round stores or releases, not both)
   const rel = castPower(b, 'rally', { release: true });
-  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6); // one lower to start, then 2 more each: 2 + 4
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 4); // mk1 PROPOSED block 2 a charge: 1 + 3
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {
@@ -576,7 +578,7 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
   assert.equal(castPower(b, 'coil', { release: true }), null, 'stored this round: release next round');
   beginReset(b); startRoll(b);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 4 + 6 + 8: one lower to start, then 2 more each
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7); // mw1 PROPOSED per 4: 3 + 5 + 7
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
@@ -644,31 +646,24 @@ test('two free healing potions a battle, 10 health each, never above max', async
   b.hp = 1; assert.equal(drinkPotion(b), false, 'only two'); assert.equal(potionsLeft(b), 0);
 });
 
-test('Arc Bolt: 2 magic a die, at most 5d8 (Dave)', () => {
+test('Arc Bolt: 2 magic a die, at most 6d8 (mw1, PROPOSED; was 5d8)', () => {
   const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true });
   const cast = (x, lvl = 0) => { w.powerLevel = { arcbolt: lvl }; const b = newBattle(w, questsFor(w)[0], makeRng(5), 1); startRoll(b); b.magic = 15; const r = castPower(b, 'arcbolt', { x }); return [r.rolls.length, 15 - b.magic]; };
   assert.deepEqual(cast(2), [1, 2]);
   assert.deepEqual(cast(3), [1, 2]); // an odd magic buys nothing extra
   assert.deepEqual(cast(6), [3, 6]);
   assert.deepEqual(cast(10), [5, 10]);
-  assert.deepEqual(cast(15), [5, 10]); // never more than 5 dice
-  assert.deepEqual(cast(15, 1), [5, 8]); // a level adds a die, so the cap comes cheaper
+  assert.deepEqual(cast(15), [6, 12]); // never more than 6 dice
+  assert.deepEqual(cast(15, 1), [6, 10]); // a level adds a die, so the cap comes cheaper
 });
 
-test('dice grow with the act: I d4->d6, II d6->d8, III d8->d10 (strength and talent dice)', async () => {
+test('dice grow to d10 in any act, gold the only limit (strength and talent dice)', async () => {
   const { strengthUpgrade, specialUpgrade, upgradeDie } = await import('../js/engine.js');
-  const h = knight(); h.gold = 9999; h.level = 20; h.strength.E = 4; h.special.SW = 4;
-  assert.equal(strengthUpgrade(h, 'E').ok, true); assert.equal(strengthUpgrade(h, 'E').next, 6);
-  assert.ok(upgradeDie(h, 'strength', 'E'));
-  const g = strengthUpgrade(h, 'E'); assert.equal(g.ok, false); assert.equal(g.why, 'Act II'); assert.equal(g.act, 2);
-  assert.equal(upgradeDie(h, 'strength', 'E'), false);
-  h.campaign.act = 2; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 8);
-  assert.equal(strengthUpgrade(h, 'E').why, 'Act III');
-  h.campaign.act = 3; assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, 10);
+  const h = knight(); h.gold = 9999; h.level = 1; h.strength.E = 4; h.special.SW = 4; h.campaign.act = 1;
+  for (const want of [6, 8, 10]) { assert.equal(strengthUpgrade(h, 'E').ok, true); assert.ok(upgradeDie(h, 'strength', 'E')); assert.equal(h.strength.E, want); }
   assert.equal(strengthUpgrade(h, 'E').why, 'Max size');
-  // the talent die follows the same ladder
-  h.campaign.act = 1; assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(specialUpgrade(h, 'SW').why, 'Act II');
-  h.campaign.act = 3; assert.ok(upgradeDie(h, 'special', 'SW')); assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, 10);
+  for (const want of [6, 8, 10]) { assert.ok(upgradeDie(h, 'special', 'SW')); assert.equal(h.special.SW, want); }
+  assert.equal(specialUpgrade(h, 'SW').why, 'Max size');
 });
 
 test('talent dice count in straights: the 2x face is a 2, every face from 4 up shows its number (bought or not); faces 1 and 3 count as nothing', async () => {
@@ -836,7 +831,8 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   for (const c of all.filter((x) => fxOf(x).pierce)) {
     if (c.kind === 'dice' || c.kind === 'scale') continue;
     const best = Math.max(...all.filter((x) => x.kind === c.kind && fxOf(x).atk && !x.dice).map((x) => fxOf(x).atk));
-    assert.ok(fxOf(c).pierce < best, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
+    const ok = c.kind === 'charge' ? fxOf(c).pierce <= best : fxOf(c).pierce < best; // mw1: Storm Coil per 4 ties Volley's 4 pierce; the coil's half splash keeps it ahead
+    assert.ok(ok, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
   }
 });
 
