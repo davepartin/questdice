@@ -407,6 +407,7 @@ test('powers spend Magic and work once per battle; at-will powers return every r
   assert.ok(castPower(b, 'shieldwall')); assert.equal(b.mods.block, 4); assert.equal(castPower(b, 'shieldwall'), null); // once a round
   beginReset(b); startRoll(b); assert.ok(castPower(b, 'shieldwall')); // back next round
   const w = newHero({ name: 'W', cls: 'ranger', seed: 3, full: true });
+  w.learned = [...(w.learned || []), 'quickdraw']; w.powers = { ...(w.powers || {}), B: 'quickdraw' }; // mr1: Hunter's Mark starts in slot B; Quick Draw is learned
   const b2 = newBattle(w, questsFor(w)[0], makeRng(2), 1); startRoll(b2); b2.magic = 3;
   assert.ok(playCard(b2, 'quickdraw')); assert.equal(rerollInfo(b2).kind, 'card');
   const before = b2.magic; assert.ok(reroll(b2, ['N', 'S'])); assert.equal(b2.magic, before);

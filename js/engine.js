@@ -858,7 +858,7 @@ function digIn(who, round) {
 }
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.usedRound = {}; b.healsRound = 0;
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.markGold = 0; b.usedRound = {}; b.healsRound = 0;
   pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
   CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
@@ -1074,6 +1074,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
+    if (card.markGold) b.markGold = (b.markGold || 0) + scaleNum(card.markGold, lvl); // Hunter's Mark (mr1, PROPOSED): gold if the target falls this round
   }
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; CAST_HOOK.on?.(b, out); return out;
@@ -1150,7 +1151,8 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     b.stats.dealt += rep.dealt;
     const burn = rep.dealt > 0 ? burnOf(tgt) : 0; // Fire Ward: hitting it burns you (block does not help)
     if (burn) { rep.burned = burn; rep.taken += burn; }
-    if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; }
+    if (tgt.hp <= 0) { rep.killed.push(tgt.uid); b.stolen += tgt.carried; tgt.carried = 0; if (b.markGold) { b.goldEarned = (b.goldEarned || 0) + b.markGold; rep.markGold = b.markGold; } }
+    b.markGold = 0;
     // splash (to the others) and area damage (to everyone), from powers
     rep.splashed = [];
     const splash = m.splash + (ev.splash || 0); // powers, and Dawnbreaker's top face
@@ -1958,7 +1960,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;

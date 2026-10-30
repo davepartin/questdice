@@ -10,6 +10,7 @@ import * as HK from './hudkit.js';
 import * as D from '../data.js';
 import * as E from '../engine.js';
 import { sfx } from '../audio.js';
+import * as MC from './magiccard.js'; // mr1: the Ranger's magic as playing cards
 // die art for the heart stepper: loaded lazily so node tests (no three.js) can still import this file; battle3d.js already has it loaded
 let DICE = null; if (typeof window !== 'undefined') import('../gfx/dice/dice.js').then((m) => { DICE = m; }).catch(() => {});
 
@@ -46,7 +47,7 @@ const G = {
 // Which picture each power wears (the rest fall back to the icon of what they give).
 const POWER_GLYPH = {
   cleave: 'cleave', judgment: 'burst', shieldwall: 'hexshield', press: 'cleave', rally: 'flag', secondwind: 'wind',
-  aimed: 'crosshair', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
+  aimed: 'crosshair', mark: 'hk:pierce', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
   arcbolt: 'bolt', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
   grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
@@ -198,6 +199,7 @@ export function sigil(ctx) {
     onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
     h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(u, 'pw-g'))), costBadge(u),
     h('span', { class: 'pw-name' }, u.name), needOf(u) ? h('span', { class: 'pw-tag low' }, `NEED ${needOf(u)}`) : null));
+  if (MC.CARD_CLASSES.has(ctx.hero?.cls || b.hero?.cls)) return MC.sheet(ctx, { glyph, detailPanel, tally }); // mr1 (Dave t435): Ranger cards; other heroes keep the rows
   const detail = null;
   return h('div', { class: `pw-sigil sel-${selSlot} ${reset ? 'is-reset' : ''}` },
     tally, powerRows(ctx, sel)); // mp8: no tabs, the six rows (detail/medal/utilRow kept for reference, unused)
