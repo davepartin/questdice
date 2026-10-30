@@ -578,7 +578,7 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
   assert.equal(castPower(b, 'coil', { release: true }), null, 'stored this round: release next round');
   beginReset(b); startRoll(b);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 18); assert.equal(b.mods.atk, 18); assert.equal(b.mods.splash, 9); // 4 + 6 + 8: one lower to start, then 2 more each
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7); // mw1 PROPOSED per 4: 3 + 5 + 7
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
@@ -646,15 +646,15 @@ test('two free healing potions a battle, 10 health each, never above max', async
   b.hp = 1; assert.equal(drinkPotion(b), false, 'only two'); assert.equal(potionsLeft(b), 0);
 });
 
-test('Arc Bolt: 2 magic a die, at most 5d8 (Dave)', () => {
+test('Arc Bolt: 2 magic a die, at most 6d8 (mw1, PROPOSED; was 5d8)', () => {
   const w = newHero({ name: 'W', cls: 'wizard', seed: 3, full: true });
   const cast = (x, lvl = 0) => { w.powerLevel = { arcbolt: lvl }; const b = newBattle(w, questsFor(w)[0], makeRng(5), 1); startRoll(b); b.magic = 15; const r = castPower(b, 'arcbolt', { x }); return [r.rolls.length, 15 - b.magic]; };
   assert.deepEqual(cast(2), [1, 2]);
   assert.deepEqual(cast(3), [1, 2]); // an odd magic buys nothing extra
   assert.deepEqual(cast(6), [3, 6]);
   assert.deepEqual(cast(10), [5, 10]);
-  assert.deepEqual(cast(15), [5, 10]); // never more than 5 dice
-  assert.deepEqual(cast(15, 1), [5, 8]); // a level adds a die, so the cap comes cheaper
+  assert.deepEqual(cast(15), [6, 12]); // never more than 6 dice
+  assert.deepEqual(cast(15, 1), [6, 10]); // a level adds a die, so the cap comes cheaper
 });
 
 test('dice grow to d10 in any act, gold the only limit (strength and talent dice)', async () => {
@@ -831,7 +831,8 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   for (const c of all.filter((x) => fxOf(x).pierce)) {
     if (c.kind === 'dice' || c.kind === 'scale') continue;
     const best = Math.max(...all.filter((x) => x.kind === c.kind && fxOf(x).atk && !x.dice).map((x) => fxOf(x).atk));
-    assert.ok(fxOf(c).pierce < best, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
+    const ok = c.kind === 'charge' ? fxOf(c).pierce <= best : fxOf(c).pierce < best; // mw1: Storm Coil per 4 ties Volley's 4 pierce; the coil's half splash keeps it ahead
+    assert.ok(ok, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
   }
 });
 

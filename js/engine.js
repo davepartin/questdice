@@ -992,7 +992,7 @@ export function scaleMax(card, lvl = 0) {
   return Math.min(card.max, card.cost + Math.max(0, card.maxDice - card.dice.n - lvl) * scaleStep(card));
 }
 export function powerCost(card, x, lvl = 0) {
-  if (card.kind !== 'scale') return card.cost;
+  if (card.kind !== 'scale') return card.costLv ? card.costLv[Math.min(card.costLv.length - 1, lvl | 0)] : card.cost; // Polymorph (mw1, PROPOSED): cheaper at Level III
   const v = Math.max(card.cost, Math.min(scaleMax(card, lvl), x ?? card.cost)); const st = scaleStep(card);
   return card.cost + Math.floor((v - card.cost) / st) * st;
 }
@@ -1074,6 +1074,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
+    if (card.frogPierce) b.mods.pierce += card.frogPierce[Math.min(card.frogPierce.length - 1, lvl)] || 0; // Polymorph Level II+: the frog takes extra pierce
     if (card.riposte) b.riposte = true; // Riposte (mk1, PROPOSED): leftover block hits back
     if (card.markGold) b.markGold = (b.markGold || 0) + scaleNum(card.markGold, lvl); // Hunter's Mark (mr1, PROPOSED): gold if the target falls this round
   }
@@ -1122,6 +1123,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   b.goldEarned += T.gold;
 
   const alive = b.enemies.filter((e) => e.hp > 0);
+  const frogged = m.frog ? (b.enemies[target]?.hp > 0 ? b.enemies[target] : alive[0]) : null; // Polymorph's frog: the target you lock in on
   for (const e of alive) { e.pdice = rollPower(e, e.intent, b.rng); e.p = e.pdice[0]; e.mag = magnitude(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.calc = magnitudeParts(e, e.intent, e.pdice, m.weaken + (boon.weaken || 0)); e.buffUsed = e.buff; e.buff = 0; e.hp0 = e.hp; e.arm = armorOf(e, b.rng); }
 
   let block = T.block; rep.dealtBefore = b.stats.dealt;
@@ -1181,6 +1183,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
+    if (m.frog && e === frogged) { rep.acts.push({ uid: e.uid, name: 'Frog', v: 'frog', mag: 0, k: 0, early, frog: true }); rep.frog = e.uid; continue; } // Polymorph (mw1, PROPOSED): a frog cannot attack this round
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow, before your block
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted };
     switch (i.v) {

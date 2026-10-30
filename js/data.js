@@ -486,11 +486,12 @@ export const CLASSES = {
     blurb: 'A frail body and a deep well of magic. A trick for every problem, and the magic to keep mending.',
     weapons: ['staff'],
     cards: [
-      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', cost: 2, step: 2, max: 10, maxDice: 5, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Point. Spark. Roll attack dice: 2 magic = 1d8, every 2 more magic adds a die (up to 5d8).' }, // Dave: was 1 magic a die, too strong
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', atwill: true, splash: 'half', cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Every round: 2 magic per d8 attack (up to 6d8), and half of it arcs to every other monster. (mw1, PROPOSED)' }, // Dave: was 1 magic a die, too strong
       { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
-      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
-      { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
-      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 5 }, splash: 'half', fx: { atk: 5 }, text: 'Store 1 magic a round (max 4), then release: 4, 6, 8, 10 attack. Half splashes.' },
+      { id: 'bolt', slot: 'B', name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' },
+      { id: 'polymorph', slot: 'B', start: true, name: 'Polymorph', kind: 'flat', atwill: true, cost: 3, costLv: [3, 3, 2], fx: { frog: 1 }, frogPierce: [0, 4, 4], text: 'Once per round, 3 magic: your target turns into a frog and cannot attack this round. Level II: the frog takes +4 pierce. Level III: costs 2. (mw1, PROPOSED)' },
+    { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4 }, splash: 'half', fx: { atk: 4 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 attack. Half splashes. (mw1, PROPOSED per charge 5 to 4)' },
       { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Store 1 magic a round (max 4), then release: heal 5, 7, 9, 11. Warm as a window.' },
     ],
   },

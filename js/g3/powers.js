@@ -48,12 +48,12 @@ const G = {
 const POWER_GLYPH = {
   cleave: 'cleave', judgment: 'burst', shieldwall: 'hexshield', press: 'cleave', rally: 'flag', secondwind: 'wind',
   aimed: 'crosshair', mark: 'hk:pierce', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
-  arcbolt: 'bolt', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
+  arcbolt: 'bolt', polymorph: 'hk:weaken', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
   grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
   'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
 };
-const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk' };
+const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk', frog: 'weaken' };
 const SVGNS = 'http://www.w3.org/2000/svg';
 export function glyph(k, cls = '') {
   const name = POWER_GLYPH[k.id] || `hk:${FX_ICON[mainFx(k)] || 'magic'}`;
@@ -416,8 +416,8 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
       finish(1300); skip = () => { card.classList.add('boom'); finish(0); };
     } else { // ---- a flat power: its mark stamps down and the bonus rises out of it
       const [f, v] = Object.entries(gains)[0] || Object.entries(k.fx)[0] || ['magic', 0];
-      const word = f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
-      const big = h('div', { class: `cr-stamp t-${TONE[f] || 'magic'}` }, h('span', { class: 'cs-ring' }, HK.icon(FX_ICON[f] || 'magic')), h('b', {}, f === 'free' ? `${v}` : f === 'weaken' ? `−${v}` : `+${v}`));
+      const word = f === 'frog' ? 'Your target is a frog this round. It cannot attack.' : f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
+      const big = h('div', { class: `cr-stamp t-${TONE[f] || 'magic'}` }, h('span', { class: 'cs-ring' }, HK.icon(FX_ICON[f] || 'magic')), h('b', {}, f === 'frog' ? 'FROG' : f === 'free' ? `${v}` : f === 'weaken' ? `−${v}` : `+${v}`));
       art.append(big, h('p', { class: 'dr-what' }, word)); shown.add(f);
       later(120, () => { big.classList.add('in'); sfx.magic?.(); });
       finish(800); skip = () => { big.classList.add('in'); finish(0); };
