@@ -52,6 +52,7 @@ const ENC = [ // [label, act, step, level, die size, metal, foes[]]
   ['Act I, Bronze d4, goblins (no armor)', 1, 2, 2, 4, 0, ['goblin', 'goblin']], ['Act I, Bronze d4, shieldbearers (armor 1d6)', 1, 2, 2, 4, 0, ['shieldbearer', 'shieldbearer']],
   ['Act II, Silver d6, ogre (no armor)', 2, 5, 5, 6, 1, ['ogre']], ['Act II, Silver d6, treant (armor 1d6)', 2, 5, 5, 6, 1, ['treant']], ['Act II, Silver d6, direbear (armor 1d4)', 2, 5, 5, 6, 1, ['direbear']],
   ['Act III, Gold d8, ogre (no armor)', 3, 8, 8, 8, 2, ['ogre']], ['Act III, Gold d8, treant (armor 1d6)', 3, 8, 8, 8, 2, ['treant']], ['Act III, Gold d8, direbear (armor 1d4)', 3, 8, 8, 8, 2, ['direbear']]];
+if (process.env.HARD) for (const e of ENC.splice(2)) { e[0] = e[0].replace(/ogre|treant|direbear/, (m) => `two ${m}s`); e[6] = [...e[6], ...e[6]]; ENC.push(e); } // HARD=1: the same Acts II and III foes, two of them (Act I is dropped by ONLY)
 const mkw = (id, tier, size) => E.makeWeapon(id, tier, () => 0.5, size);
 function fight(setup, enc, seed) {
   const [, act, step, level, size, metal, foes] = enc;
