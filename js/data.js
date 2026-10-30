@@ -246,7 +246,9 @@ export const EXPERIMENT = { weapons2: false, weaponSize: false };
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
 // the shop and the spoils until their acquisition is specified. `ladder` is where a reviewed cumulative face table plugs in (null: today's faces).
-export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null };
+// `resale` is the candidate resale rule (docs/team/tasks/T17-resale.md), null in every build: a share (0.5) of what a weapon was worth as found, or what was paid
+// for it if that was less, plus what was paid for sizes since, so an upgrade always raises the sale value and no loop of buying, growing and selling pays.
+export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null, resale: null };
 // Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
 // until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
 //   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack

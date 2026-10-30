@@ -1460,7 +1460,8 @@ export function trainInfo(hero, uid) {
   const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
   if (inst.id === 'fists' || inst.diamond || !next) return { ok: false, why: 'max' };
   const cost = WEAPON_SIZE.prices[size];
-  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, noRefund: true };
+  const after = resaleOn() ? Math.max(1, Math.round(WEAPON_SIZE.resale * (resaleBasis(inst) + cost))) : null; // the sale value this purchase would give, shown before it is made
+  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, noRefund: !resaleOn(), sellNow: sellValue(inst), sellAfter: after ?? sellValue(inst) };
 }
 export function trainInfoOld(hero, uid) {
   ensureTwin(hero);
@@ -1473,12 +1474,17 @@ export function trainInfoOld(hero, uid) {
 }
 export function trainWeapon(hero, uid) {
   const r = trainInfo(hero, uid); if (!r.ok) return false;
-  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) { if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w); w.size = r.next; } return true;
+  hero.gold -= r.cost; for (const w of copiesOf(hero, uid)) { if (EXPERIMENT.weaponSize && !w.found) w.found = weaponSize(w); if (EXPERIMENT.weaponSize) w.upgraded = (w.upgraded || 0) + r.cost; w.size = r.next; } return true;
 }
 // What a weapon is worth: base price x tier x size. The shop charges it; a sale returns half (SELL_SHARE).
 export const weaponValue = (inst) => (inst.id === 'fists' ? 0 : Math.round((WEAPONS[inst.id].price || 0) * (isLegendary(inst) ? 1 : RARITY_MULT[inst.rarity | 0]) * (SIZE_VALUE[EXPERIMENT.weaponSize ? foundSize(inst) : weaponSize(inst)] || 1)));
 // A sale returns half its worth, less for a worn weapon (by the battles it has left).
-export const sellValue = (inst) => { if (inst.id === 'fists') return 0; const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
+// T17 resale candidate (WEAPON_SIZE.resale, off everywhere): the sale pays `resale` x (what the weapon was worth as found, or what the camp store was actually
+// paid for it when that was less, plus every size bought since). `bought` is written when the store sells it, `upgraded` each time a size is bought, so the sale
+// is the same in the bag, in a hand, after a save and in an online table, and a weapon without them (an old save, a spoil) is worth its found worth.
+export const resaleOn = () => !!(EXPERIMENT.weaponSize && WEAPON_SIZE.resale);
+export const resaleBasis = (inst) => { const v = weaponValue(inst); return (inst.bought == null ? v : Math.min(v, inst.bought)) + (inst.upgraded || 0); };
+export const sellValue = (inst) => { if (inst.id === 'fists') return 0; if (resaleOn()) return Math.max(1, Math.round(WEAPON_SIZE.resale * resaleBasis(inst))); const f = battlesFull(inst); const share = f === Infinity ? 1 : battlesLeft(inst) / f; return Math.max(1, Math.round(weaponValue(inst) * SELL_SHARE * share)); };
 void RARITY_SELL;
 export const bagRoom = (hero) => Math.max(0, BAG_MAX - hero.bag.length);
 export const bagFull = (hero) => bagRoom(hero) <= 0;
@@ -1518,7 +1524,7 @@ export function buyItem(hero, i) {
   if (!it || it.sold || hero.gold < it.price) return false;
   if (it.inst.diamond) { if (diamondCaseFull(hero)) return false; hero.gold -= it.price; it.sold = true; (hero.diamonds ||= []).push(it.inst); return true; } // into the Diamond case
   if (bagFull(hero)) return false;
-  hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
+  hero.gold -= it.price; it.sold = true; if (EXPERIMENT.weaponSize) it.inst.bought = it.price; hero.bag.push(it.inst); return true;
 }
 // ---- the Camp Store's counter: two specials a camp (one fight each, for the hero who buys it) and a mystery bundle.
 // At a table the counter is shared but every hero buys their own; `who` lists the heroes who already have one.

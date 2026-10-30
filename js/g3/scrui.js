@@ -1333,7 +1333,9 @@ function weaponWorkshop(hero, slot, inst) {
     : mode === 'train' && info.why === 'hands' ? shLock(`Needs a d${info.next} hand`)
     : shBuy(hero, { label: mode === 'forge' ? `Forge to ${D.RARITY[info.next]}` : SZ ? `Buy size d${info.next}` : `Train to d${info.next}`, cost: info.cost, ok: info.ok,
       onBuy: () => { if ((mode === 'forge' ? HE.forgeWeapon(hero, inst.uid) : HE.trainWeapon(hero, inst.uid))) shBought(); } });
-  const noRefund = SZ && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Size is not refunded. Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold, whatever size you buy.`) : SZ ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold.`) : null;
+  const noRefund = SZ && E.resaleOn() && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling this weapon pays ${info.sellNow} gold now and ${info.sellAfter} after this size.`)
+    : SZ && E.resaleOn() ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays ${E.sellValue(inst)} gold.`)
+    : SZ && info.next ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Size is not refunded. Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold, whatever size you buy.`) : SZ ? h('p', { class: 'ww-note ww-norefund' }, ico('coin'), `Selling pays half of what this weapon was worth when found: ${E.sellValue(inst)} gold.`) : null;
   return h('div', { class: 'ww-workshop' }, frame, ammo, SZ ? null : modes, preview, warning, noRefund, action,
     info.ok && info.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - info.cost} after upgrade`) : null);
 }
