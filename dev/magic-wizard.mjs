@@ -49,11 +49,11 @@ await pick('coil');
 const v0 = await st(); await p.locator('.mc-ctl .mc-use.add').click(); for (let i = 0; i < 10; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
 await settle(); await pick('coil');
 const v1 = await st(); check('Storm Coil +▲1 stores a charge for 1 magic', v1.charge === v0.charge + 1 && v0.magic - v1.magic === 1, JSON.stringify({ v0, v1 }));
-await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; B.b.charge.coil = 2; B.b.mods.atk = 0; B.b.mods.block = 0; B.b.mods.splash = 0; window.QD.B3.renderShape(); }); await pump(0.3);
+await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; B.b.charge.coil = 2; window.QD.B3.renderShape(); }); await pump(0.3);
 await shot('mw1-coil-card');
 const rel = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.textContent);
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
-const v2 = await st(); check('Storm Coil Release 2 gives +8 attack and 4 splash', rel === 'Release 2' && v2.atk === 8 && v2.splash === 4 && v2.charge === 0, JSON.stringify({ rel, v2 }));
+const v2 = await st(); check('Storm Coil Release 2 adds +8 attack and 4 splash on top of the Arc Bolt attack', rel === 'Release 2' && v2.atk === v1.atk + 8 && v2.splash === v1.splash + 4 && v2.charge === 0, JSON.stringify({ rel, v1, v2 }));
 await settle(); await pick('coil'); await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; B.b.charge.coil = 1; window.QD.B3.renderShape(); }); await pump(0.3);
 const bg = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return cs.backgroundColor + ' / ' + cs.color; });
 check('Release button attack red with white text', /255, 59, 59/.test(bg) && /255, 255, 255\)$/.test(bg), bg);
