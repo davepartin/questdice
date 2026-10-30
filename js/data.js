@@ -454,11 +454,12 @@ export const CLASSES = {
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
     // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'dice', cost: 2, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'A wide swing. Roll 2d6 attack. Half of it splashes on every other monster.' },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'scale', atwill: true, cost: 2, step: 1, max: 4, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 2 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
       { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
-      { id: 'shieldwall', slot: 'B', start: true, name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
-      { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
-      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 3 }, fx: { atk: 3, block: 3 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and block.' },
+      { id: 'shieldwall', slot: 'B', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
+      { id: 'riposte', slot: 'B', start: true, name: 'Riposte', kind: 'flat', atwill: true, cost: 2, fx: { block: 4 }, riposte: true, text: 'Once per round, 2 magic: +4 block, and any block the monsters do not use hits back as attack. (mk1, PROPOSED)' },
+    { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 2 }, fx: { atk: 3, block: 2 }, text: 'Store 1 magic a round (max 4), then release: 2, 4, 6, 8 attack and 1, 3, 5, 7 block. (mk1, PROPOSED block)' },
       { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Store 1 magic a round (max 4), then release: heal 4, 6, 8, 10. Up you get.' },
     ],
   },

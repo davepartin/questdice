@@ -476,9 +476,10 @@ test('party stats accumulate kills, blocked, shield, team actions and a boss kil
   assert.equal(boss.fighters[0].stats.bossKill, false);
 });
 
+const shieldUp = (h) => { h.learned = [...(h.learned || []), 'shieldwall']; h.powers = { ...(h.powers || {}), B: 'shieldwall' }; return h; }; // mk1: Riposte starts in slot B; Shield Up is learned
 test('company: every-round powers come back each round, and each hero keeps their own charges', () => {
-  const a = newHero({ name: 'A', cls: 'knight', seed: 1, full: true });
-  const c = newHero({ name: 'C', cls: 'knight', seed: 2, full: true });
+  const a = shieldUp(newHero({ name: 'A', cls: 'knight', seed: 1, full: true }));
+  const c = shieldUp(newHero({ name: 'C', cls: 'knight', seed: 2, full: true }));
   const b = newPartyBattle([a, c], { ...questsFor(a)[0], enemies: ['ogre'] }, makeRng(3));
   for (const e of b.enemies) e.hp = 999;
   for (let round = 1; round <= 3; round++) {

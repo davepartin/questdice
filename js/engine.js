@@ -858,7 +858,7 @@ function digIn(who, round) {
 }
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.markGold = 0; b.usedRound = {}; b.healsRound = 0;
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.markGold = 0; b.riposte = false; b.usedRound = {}; b.healsRound = 0;
   pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
   CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
@@ -1074,6 +1074,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = r;
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
+    if (card.riposte) b.riposte = true; // Riposte (mk1, PROPOSED): leftover block hits back
     if (card.markGold) b.markGold = (b.markGold || 0) + scaleNum(card.markGold, lvl); // Hunter's Mark (mr1, PROPOSED): gold if the target falls this round
   }
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
@@ -1234,6 +1235,12 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     strike(); arrows();
     actFor(b.enemies.filter((e) => !early.includes(e)), false);
   }
+  if (b.riposte && !rep.heroDown && block > 0) { // Riposte (mk1, PROPOSED): the block the monsters did not use hits back, at full value, minus armour
+    const rt = tgt && tgt.hp > 0 ? tgt : living()[0];
+    if (rt) { const n = Math.min(rt.hp, Math.max(0, block - (rt.arm || 0))); rt.hp -= n; b.stats.dealt += n; rep.dealt += n; rep.riposte = { uid: rt.uid, n };
+      if (rt.hp <= 0 && !rep.killed.includes(rt.uid)) { rep.killed.push(rt.uid); b.stolen += rt.carried; rt.carried = 0; } }
+  }
+  b.riposte = false;
   settleStalks(b, rep);
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
 
@@ -1960,7 +1967,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'riposte', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;

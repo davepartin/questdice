@@ -397,8 +397,9 @@ test('rerolls: first action is free, later actions cost 1 Magic per die, bound d
   assert.equal(reroll(b, ['N', 'S', 'E', 'C']), false, 'a Knight rerolls at most 3 dice per action');
 });
 
+const shieldUp = (h) => { h.learned = [...(h.learned || []), 'shieldwall']; h.powers = { ...(h.powers || {}), B: 'shieldwall' }; return h; }; // mk1: Riposte starts in slot B; Shield Up is learned
 test('powers spend Magic and work once per battle; at-will powers return every round', () => {
-  const h = knight();
+  const h = shieldUp(knight());
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
   startRoll(b); b.magic = 5;
   const r = castPower(b, 'cleave'); assert.ok(r); assert.equal(b.magic, 3); assert.equal(r.rolls.length, 2);
@@ -446,8 +447,8 @@ test('powers: three slots, a start power in each, learn another at camp and swap
     assert.equal(c.cards.filter((k) => k.slot === slot && k.start).length, 1, `${id} ${slot} start`);
     assert.ok(c.cards.filter((k) => k.slot === slot).length >= 2, `${id} ${slot} has a choice`);
   }
-  const k = knight(); k.gold = 100;
-  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'shieldwall', 'rally']);
+  const k = knight(); k.gold = 150;
+  assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'riposte', 'rally']); assert.ok(learnPower(k, 'shieldwall')); k.gold = 100; // mk1: Riposte starts, Shield Up is learned
   assert.equal(equipPower(k, 'press'), false, 'not learned yet');
   assert.ok(learnPower(k, 'press')); assert.equal(k.gold, 50);
   assert.deepEqual(cardsOf(k).map((c) => c.id), ['cleave', 'press', 'rally']);
@@ -458,7 +459,7 @@ test('powers: three slots, a start power in each, learn another at camp and swap
   const before = { atk: b.mods.atk, block: b.mods.block };
   b.usedRound = {}; // the next round (a round stores or releases, not both)
   const rel = castPower(b, 'rally', { release: true });
-  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 6); // one lower to start, then 2 more each: 2 + 4
+  assert.equal(rel.released, 2); assert.equal(b.mods.atk - before.atk, 6); assert.equal(b.mods.block - before.block, 4); // mk1 PROPOSED block 2 a charge: 1 + 3
 });
 
 test('every class has at least three powers, at least one at will, and a super', () => {

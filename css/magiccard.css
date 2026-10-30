@@ -57,3 +57,8 @@
 .mc-stage .dr-card.done .dr-gain{animation:mcFly .6s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes mcFly{0%{transform:translateY(40px) scale(.8);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.mc-slots .mc-die,.mc-stage .dr-gain{animation:none!important}}
+/* mk1: a dot per effect, the colour of what it adds */
+.mc-dots.fx-atk .mc-dot:not(.g){background:#ff3b3b;color:#fff;box-shadow:inset 0 0 0 .4cqi #8a1010}
+.mc-dots.fx-block .mc-dot:not(.g){background:#3aa4ff;color:#061a2e;box-shadow:inset 0 0 0 .4cqi #0c4a80}
+.mc-dots.fx-heal .mc-dot:not(.g){background:#38e87a;color:#06240f;box-shadow:inset 0 0 0 .4cqi #106a34}
+.mc-dots.fx-gold .mc-dot:not(.g){background:#ffd21a;color:#2a1e00;box-shadow:inset 0 0 0 .4cqi #8a6a00}
