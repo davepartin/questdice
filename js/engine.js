@@ -1051,6 +1051,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = out.rolls.reduce((a, v) => a + v, 0); out.die = card.dice.s;
     add(card.dice.to, out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+    if (card.party && card.dice.to === 'heal' && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: out.total }); out.party = (out.party || 0) + 1; } // Mending Song (mb1, PROPOSED): heals every hero
     if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
   } else if (card.kind === 'round') {
     out.total = roundGain(card, b.round, lvl); add('atk', out.total);
