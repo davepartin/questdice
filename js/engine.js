@@ -1051,6 +1051,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     out.total = out.rolls.reduce((a, v) => a + v, 0); out.die = card.dice.s;
     add(card.dice.to, out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
+    if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
   } else if (card.kind === 'round') {
     out.total = roundGain(card, b.round, lvl); add('atk', out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
@@ -1075,6 +1076,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
   } else {
     for (const [k, v] of Object.entries(card.fx)) add(k, k === 'free' ? v + lvl : scaleNum(v, lvl)); // a free reroll gains one die a level
     if (card.frogPierce) b.mods.pierce += card.frogPierce[Math.min(card.frogPierce.length - 1, lvl)] || 0; // Polymorph Level II+: the frog takes extra pierce
+    if (card.grudge) { out.total = (b.lastHurt || 0) + (card.grudge[Math.min(card.grudge.length - 1, lvl)] || 0); out.grudge = b.lastHurt || 0; add('atk', out.total); } // Grudge (md1, PROPOSED): what got past your block last round comes back as attack
     if (card.riposte) b.riposte = true; // Riposte (mk1, PROPOSED): leftover block hits back
     if (card.markGold) b.markGold = (b.markGold || 0) + scaleNum(card.markGold, lvl); // Hunter's Mark (mr1, PROPOSED): gold if the target falls this round
   }
@@ -1262,7 +1264,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const hpBeforeHit = b.hp;
   let hp = Math.min(b.maxHp, b.hp + T.heal) - rep.taken;
   rep.healed = Math.max(0, Math.min(b.maxHp, hpBeforeHit + T.heal) - hpBeforeHit);
-  b.stats.healed += rep.healed; b.stats.taken += rep.taken;
+  b.stats.healed += rep.healed; b.stats.taken += rep.taken; b.lastHurt = rep.taken; // Grudge reads this next round
   b.hp = Math.max(0, Math.min(b.maxHp, hp));
   if (b.hp <= 0 && hasCharm(hero, 'phoenix') && !b.phoenixUsed) { b.phoenixUsed = true; b.hp = Math.min(b.maxHp, 10); rep.phoenix = true; } // Phoenix Feather
   if (boon.sick && b.hp > 1) { rep.sick = Math.min(boon.sick, b.hp - 1); b.hp -= rep.sick; } // a bug from the road: it hurts, it never finishes you
@@ -1970,7 +1972,7 @@ function blankPartyStats() {
   return { dealt: 0, taken: 0, healed: 0, kills: 0, blocked: 0, shieldRounds: 0, heldLine: 0, potionsThrown: 0, magicShared: 0, revives: 0, bossKill: false, shares: 0, healGiven: 0 };
 }
 // usedRound and charge are each hero's own: every-round powers come back each round, charges are stored per hero.
-const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'riposte', 'potions', 'points'];
+const MIRROR = ['hp', 'maxHp', 'magic', 'board', 'actionsLeft', 'freeActions', 'used', 'usedRound', 'healsRound', 'charge', 'lastCast', 'mods', 'nextBound', 'boundNow', 'nextChained', 'lastBoard', 'nextHushed', 'hushedNow', 'lastStandUsed', 'goldEarned', 'markGold', 'riposte', 'lastHurt', 'potions', 'points'];
 export function focusFighter(b, i) {
   const f = b.fighters[i];
   b.active = i; b.hero = f.hero; b.boon = f.boon; b.stats = f.stats;

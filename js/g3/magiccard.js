@@ -8,7 +8,7 @@ import * as HK from './hudkit.js';
 import * as D from '../data.js';
 import * as E from '../engine.js';
 let drawSym = null; const symReady = typeof document === 'undefined' ? Promise.resolve() : import('../gfx/dice/faces.js').then((m) => { drawSym = m.drawSym; }).catch(() => {}); // lazy: faces.js needs three (not in node tests)
-export const CARD_CLASSES = new Set(['ranger', 'knight', 'wizard']); // mk1: the Knight too; mw1: the Wizard
+export const CARD_CLASSES = new Set(['ranger', 'knight', 'wizard', 'dwarf']); // mk1: the Knight too; mw1: the Wizard; md1: the Dwarf
 const SVG = 'http://www.w3.org/2000/svg';
 const COL = { pierce: ['#ff8a1a', '#8a3c00', '#fff'], atk: ['#ff3b3b', '#7a1010', '#fff'], block: ['#3aa4ff', '#0c4a80', '#fff'], heal: ['#38e87a', '#106a34', '#06240f'], gold: ['#e8b400', '#7a5a00', '#2a1e00'], magic: ['#a64dff', '#4a1c80', '#fff'] };
 const PIPS = { 1: [[12, 12]], 2: [[7.3, 6.8], [16.7, 17.2]], 3: [[7.3, 6.8], [12, 12], [16.7, 17.2]], 4: [[7.3, 6.8], [16.7, 6.8], [7.3, 17.2], [16.7, 17.2]], 5: [[7.3, 6.8], [16.7, 6.8], [12, 12], [7.3, 17.2], [16.7, 17.2]], 6: [7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => [x, y])) };
@@ -19,7 +19,7 @@ export const die = (fx, s = 6, v = 6) => { const [f, e, p] = COL[fx] || COL.magi
   : `<path d="${SHAPE[s] || SHAPE[8]}" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-weight="900" font-size="10" fill="${p}">${v}</text>`); };
 const space = (s = 6) => svg(`mc-space d${s}`, `<path d="${SHAPE[s] || SHAPE[6]}" fill="#00000010" stroke="#a9864a" stroke-width="1.4" stroke-dasharray="2.4 1.8" stroke-linejoin="round"/>`);
 const TYPE = (k) => (k.kind === 'scale' || k.kind === 'dice' ? 'DICE' : k.kind === 'charge' || k.kind === 'round' ? 'BUILD' : 'ONE-SHOT');
-const FX = (k) => k.dice?.to || Object.keys(typeof k.per === 'object' ? k.per : k.fx || { magic: 1 })[0];
+const FX = (k) => k.dice?.to || (k.grudge ? 'atk' : null) || Object.keys(typeof k.per === 'object' ? k.per : k.fx || { magic: 1 })[0];
 const WORD = { pierce: 'pierce', atk: 'attack', block: 'block', heal: 'heal', gold: 'gold', magic: 'magic' };
 const mg = (n) => h('span', { class: 'mc-mg' }, HK.icon('magic'), h('b', {}, String(n)));
 const fxv = (f, n, extra = '') => h('span', { class: `mc-fv fx-${f}` }, HK.icon(f === 'atk' ? 'atk' : f), h('b', {}, `+${n}`), extra ? h('small', {}, extra) : null);
@@ -43,17 +43,18 @@ function rowBody(k, l, p, cur) {
     if (!now) return [h('span', { class: 'mc-ln' }, mg(E.scaleStep(k)), h('i', { class: 'mc-eq' }, '='), die(f, s)), h('span', { class: 'mc-mx' }, `UP TO ${top}×`, die(f, s))];
     const n = E.powerDice(k, p.x ?? k.cost, l);
     return [h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} dice` }, Array.from({ length: top }, (_, i) => (i < n ? die(f, s) : space(s)))),
-      h('span', { class: 'mc-spent' }, mg(p.x ?? k.cost), h('span', { class: `fx-${f}` }, ` · ${n} of ${top} dice · ${n}d${s} ${WORD[f]}`)), k.splash === 'half' ? h('span', { class: 'mc-mx' }, k.id === 'arcbolt' ? '½ ARCS TO EVERY OTHER MONSTER' : '½ SPLASHES ON EVERY OTHER MONSTER') : null]; }
+      h('span', { class: 'mc-spent' }, mg(p.x ?? k.cost), h('span', { class: `fx-${f}` }, ` · ${n} of ${top} dice · ${n}d${s} ${WORD[f]}`)), k.goldOn ? h('span', { class: 'mc-mx' }, `EVERY ${k.goldOn.face} ALSO GIVES `, fxv('gold', k.goldOn.gold)) : null, k.splash === 'half' ? h('span', { class: 'mc-mx' }, k.id === 'arcbolt' ? '½ ARCS TO EVERY OTHER MONSTER' : '½ SPLASHES ON EVERY OTHER MONSTER') : null]; }
   if (k.kind === 'charge') { const have = now ? p.stored || 0 : 0; const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
     return [...fs.map((x) => h('span', { class: `mc-dots fx-${x}` }, HK.icon(x), Array.from({ length: k.max }, (_, i) => h('span', { class: `mc-dot ${now && i >= have ? 'g' : ''} ${now && i === have - 1 ? 'now' : ''}` }, String(E.chargeGain(k, i + 1, l)[x]))))),
       h('span', { class: 'mc-mx' }, now ? `${have} STORED · ${fs.map((x) => WORD[x]).join(' + ')}` : `at 1 · 2 · 3 · 4 stored`)]; }
   if (k.fx?.frog) { const fp = k.frogPierce?.[l] || 0; const c = k.costLv?.[l] ?? k.cost; return [h('span', { class: 'mc-ln' }, h('b', { class: 'mc-frog' }, 'FROG!'), fp ? fxv('pierce', fp) : null, c !== k.cost ? h('span', { class: 'mc-mx' }, 'COSTS ', mg(c)) : null), h('span', { class: 'mc-mx' }, "YOUR TARGET CAN'T ATTACK THIS ROUND")]; }
+  if (k.grudge) { const g = k.grudge[l] || 0; return [h('span', { class: 'mc-ln' }, h('b', { class: 'mc-grudge' }, 'HURT'), h('i', { class: 'mc-eq' }, '='), now && p.hurt != null ? fxv('atk', p.hurt + g) : [fxv('atk', '?'), g ? fxv('atk', g, 'more') : null]), h('span', { class: 'mc-mx' }, now && p.hurt != null ? `${p.hurt} GOT PAST YOUR BLOCK LAST ROUND` : 'DAMAGE PAST YOUR BLOCK LAST ROUND HITS BACK')]; }
   if (k.riposte) return [h('span', { class: 'mc-ln' }, fxv('block', E.scaleNum(k.fx.block, l))), h('span', { class: 'mc-mx' }, 'LEFTOVER BLOCK HITS BACK AS ATTACK')];
   if (k.markGold) return [h('span', { class: 'mc-ln' }, fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))), h('span', { class: 'mc-mx' }, 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND')];
   if (k.kind === 'flat') return [h('span', { class: 'mc-ln' }, Object.entries(k.fx).map(([x, v]) => fxv(x === 'free' ? 'magic' : x, x === 'free' ? v + l : E.scaleNum(v, l))))];
   return [h('span', { class: 'mc-mx' }, k.text)];
 }
-const coverHint = (k, l) => (k.kind === 'scale' ? [`UP TO ${E.powerDice(k, E.scaleMax(k, l), l)}×`, die(FX(k), k.dice.s)] : k.kind === 'charge' ? Object.entries(E.chargeGain(k, k.max, l)).map(([x, v]) => fxv(x, v)) : k.riposte ? [fxv('block', E.scaleNum(k.fx.block, l))] : k.fx?.frog ? [k.frogPierce?.[l] ? fxv('pierce', k.frogPierce[l]) : null, (k.costLv?.[l] ?? k.cost) !== k.cost ? ['COSTS ', mg(k.costLv[l])] : null].flat().filter(Boolean) : k.markGold ? [fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))] : []);
+const coverHint = (k, l) => (k.kind === 'scale' ? [`UP TO ${E.powerDice(k, E.scaleMax(k, l), l)}×`, die(FX(k), k.dice.s)] : k.kind === 'charge' ? Object.entries(E.chargeGain(k, k.max, l)).map(([x, v]) => fxv(x, v)) : k.grudge ? [fxv('atk', k.grudge[l] || 0, 'more')] : k.riposte ? [fxv('block', E.scaleNum(k.fx.block, l))] : k.fx?.frog ? [k.frogPierce?.[l] ? fxv('pierce', k.frogPierce[l]) : null, (k.costLv?.[l] ?? k.cost) !== k.cost ? ['COSTS ', mg(k.costLv[l])] : null].flat().filter(Boolean) : k.markGold ? [fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))] : []);
 function card(k, p) {
   const cur = p.level || 0;
   const kick = k.kind === 'scale' ? `${E.scaleStep(k)} magic per die · every round` : k.kind === 'charge' ? 'store · release · once per round' : `${p.x ?? k.cost} magic · once per round`;
@@ -90,7 +91,7 @@ export function sheet(ctx, { glyph, detailPanel, tally }) {
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
     ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel)),
     utils.map((q) => tile(ctx, q.id, q.name, glyph(q, 'pw-g'), q.cost, q.id === sel)));
-  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls }))]
+  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, hurt: ctx.b.lastHurt ?? null }))]
     : u ? [detailPanel(ctx, sel)] : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? 'Roll first, then use magic while you shape your dice.' : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
   return h('div', { class: 'pw-sigil mc-sheet' }, tally, grid, ...body);
 }

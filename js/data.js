@@ -502,9 +502,10 @@ export const CLASSES = {
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
-      { id: 'grudge', slot: 'A', start: true, name: 'Grudge', kind: 'round', cost: 3, per: 2, fx: { atk: 6 }, text: 'Attack equal to 2 x the round number. Slow to start, brutal late. Dwarves keep receipts.' },
+      { id: 'anvil', slot: 'A', start: true, name: 'Anvil Strike', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 8, to: 'block' }, goldOn: { face: 8, gold: 3 }, fx: { block: 4 }, text: 'Every round: 1 magic per blue d8 of block (up to 6d8). Every 8 rolled also gives 3 gold. (md1, PROPOSED)' },
       { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
-      { id: 'bulwark', slot: 'B', start: true, name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
+      { id: 'grudge', slot: 'B', start: true, name: 'Grudge', kind: 'flat', atwill: true, cost: 2, fx: {}, grudge: [0, 3, 6], text: 'Every round: 2 magic. Attack equal to the damage that got past your block last round. Dwarves keep receipts. (md1, PROPOSED)' },
+      { id: 'bulwark', slot: 'B', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
       { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
       { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 6 }, fx: { block: 6 }, text: 'Store 1 magic a round (max 4), then release: 5, 7, 9, 11 block.' },
       { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Store 1 magic a round (max 4), then release: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },

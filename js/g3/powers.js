@@ -49,7 +49,7 @@ const POWER_GLYPH = {
   cleave: 'cleave', judgment: 'burst', shieldwall: 'hexshield', press: 'cleave', rally: 'flag', secondwind: 'wind',
   aimed: 'crosshair', mark: 'hk:pierce', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
   arcbolt: 'bolt', polymorph: 'hk:weaken', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
-  grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
+  anvil: 'anvil', grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
   'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
 };
@@ -93,6 +93,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} stored. `}Store 1 a round, or release all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to every monster.`;
   if (k.kind === 'luck') return `Roll a d6. 1–2: +${1 + level} magic. 3–4: +${E.scaleNum(E.LUCK.mid, level)} attack. 5–6: +${E.scaleNum(E.LUCK.top, level)} attack, +1 magic.`;
+  if (k.grudge) return `Attack equal to the damage that got past your block last round${k.grudge[level] ? `, +${k.grudge[level]}` : ''}.`;
   const t = fxWords(lvlFx(k.fx, level)); return `${t[0].toUpperCase()}${t.slice(1)}.`;
 }
 // Just the result at a level, for the compare box and the level list: "Total 28 attack", "3d6 attack", "+5 block".
@@ -109,6 +110,7 @@ export function shortLine(k, level = 0) {
   if (k.kind === 'charge') return `Total ${totWords(k, level)}`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
   if (k.kind === 'luck') return `+${1 + level} magic / +${E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, level)} attack`;
+  if (k.grudge) return `Attack = damage taken${k.grudge[level] ? ` +${k.grudge[level]}` : ''}`;
   return fxWords(lvlFx(k.fx, level));
 }
 // What one upgrade adds, in a few words: "+1 each charge (+4 total)", "+1 die", "+1 block".
@@ -124,6 +126,7 @@ export function upgradeLine(k, level = 0) {
   if (k.kind === 'scale') return `+1 die for the same magic`;
   if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `+${E.roundGain(k, r, nx) - E.roundGain(k, r, level)} attack in round ${r}, more later`; }
   if (k.kind === 'luck') return `+1 magic, +${E.scaleNum(E.LUCK.mid, nx) - E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, nx) - E.scaleNum(E.LUCK.top, level)} attack`;
+  if (k.grudge) return `+${(k.grudge[nx] ?? k.grudge.at(-1)) - (k.grudge[level] ?? k.grudge.at(-1))} attack on top`;
   const ch = Object.entries(k.fx).map(([f, v]) => { const o = f === 'free' ? v + level : E.scaleNum(v, level); const n = f === 'free' ? v + nx : E.scaleNum(v, nx);
     return f === 'free' ? `+${n - o} reroll die` : f === 'weaken' ? `hit ${n - o} softer` : `+${n - o} ${NAME[f] || f}`; });
   if (k.kind === 'super') ch.push(`+${E.scaleNum(k.aoe, nx) - E.scaleNum(k.aoe, level)} to all`);
@@ -416,7 +419,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
       finish(1300); skip = () => { card.classList.add('boom'); finish(0); };
     } else { // ---- a flat power: its mark stamps down and the bonus rises out of it
       const [f, v] = Object.entries(gains)[0] || Object.entries(k.fx)[0] || ['magic', 0];
-      const word = f === 'frog' ? 'Your target is a frog this round. It cannot attack.' : f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
+      const word = k.grudge ? `${r.grudge ?? v} damage got past your block. It comes back as attack.` : f === 'frog' ? 'Your target is a frog this round. It cannot attack.' : f === 'weaken' ? `Monsters hit ${v} softer this round` : f === 'free' ? `A free reroll of ${v} dice, ready to use` : `${NAME[f] || f} this round`;
       const big = h('div', { class: `cr-stamp t-${TONE[f] || 'magic'}` }, h('span', { class: 'cs-ring' }, HK.icon(FX_ICON[f] || 'magic')), h('b', {}, f === 'frog' ? 'FROG' : f === 'free' ? `${v}` : f === 'weaken' ? `−${v}` : `+${v}`));
       art.append(big, h('p', { class: 'dr-what' }, word)); shown.add(f);
       later(120, () => { big.classList.add('in'); sfx.magic?.(); });
