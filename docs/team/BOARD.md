@@ -671,3 +671,4 @@ Approved completed art/docs may be published under standing authorization withou
 - Oct 31 08:29 CT Crockpot: RESERVED pb2 board art — js/g3/gameboard.js, css/gameboard.css, assets/board/*, stamp files, test/gameboard.test.mjs, dev/prebattle-check.mjs
 - Oct 31 08:33 CT Crockpot: RELEASED pb2 board art files. Shipped 20261031pb2.
 - Oct 31 08:42 CT Crockpot: RESERVED pb3 — scrui.js board() only, js/g3/gameboard.js, css/gameboard.css, stamp files, test/gameboard.test.mjs, dev/prebattle-check.mjs
+- Oct 31 08:50 CT Crockpot: RELEASED pb3 files. Shipped 20261031pb3.
