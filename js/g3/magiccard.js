@@ -124,15 +124,34 @@ function tile(ctx, id, name, ico, cost, on, extra = null) {
   return h('button', { type: 'button', class: `mc-tile ${on ? 'on' : ''}`, 'data-power': id, 'aria-pressed': String(on), onclick: () => ctx.select(id) }, ico, h('span', {}, name),
     cost ? h('span', { class: 'mc-cost' }, HK.icon('magic'), String(cost)) : h('span', { class: 'mc-cost free' }, 'FREE'), extra);
 }
+const potionTrayCounts = new Map();
+function potionTray(ctx, n) {
+  const count = E.potionsLeft(ctx.b), hero = ctx.hero || ctx.b.hero, key = hero?.name || '';
+  const previous = potionTrayCounts.get(key); potionTrayCounts.set(key,count);
+  return h('div', { class: 'mc-potion-tray', 'data-count': count, 'aria-label': `${count} potions carried, ${E.potionMaxOf(hero)} unlocked spaces` }, Array.from({length:5}, (_,i) => h('div', { class: `mc-potion-slot ${i >= E.potionMaxOf(hero) ? 'future' : ''}`, 'aria-label': i < count ? `Potion ${i+1}: restores ${n} health` : i >= E.potionMaxOf(hero) ? 'Future potion space' : 'Empty potion space' }, i < count ? h('div', { class: `mc-potion-chit ${previous != null && i >= previous ? 'arriving' : ''}` }, h('img', {src:'assets/cards/potion.webp',alt:''}), h('b',{},`+${n}`)) : null)));
+}
+async function drinkChit(action) {
+  const tray = document.querySelector('.mc-potion-tray'), count = Number(tray?.dataset.count);
+  const chit = tray?.querySelector('.mc-potion-slot:nth-child('+count+') .mc-potion-chit');
+  const rect = chit?.getBoundingClientRect(), ghost = chit?.cloneNode(true);
+  await action();
+  if (!ghost || Number(document.querySelector('.mc-potion-tray')?.dataset.count) >= count) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  ghost.classList.add('mc-potion-depart'); ghost.setAttribute('aria-hidden','true');
+  Object.assign(ghost.style,{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px'});document.body.append(ghost);
+  const anim=ghost.animate([{transform:'translateX(0) rotate(0)',opacity:1},{transform:'translateX(130px) translateY(35px) rotate(24deg)',opacity:0}],{duration:450,easing:'ease-in',fill:'forwards'});
+  anim.finished.finally(()=>ghost.remove());
+}
+function lifeCorners() {return h('div',{class:'mc-life-corners','aria-hidden':'true'},[0,1,2,3].map(()=>HK.icon('heal')));}
 // Utility cards share the frame while retaining the controller's actions and disabled rules.
 function utilityCard(ctx, u, glyph) {
   const hero = ctx.hero || ctx.b.hero, heart = u.id === 'u:heart', potion = u.id === 'u:bigheal';
   const n = potion ? E.potionHpOf(hero) : E.healAmountOf(hero);
-  const actions = heart ? null : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
+  const actions = heart ? null : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: potion ? () => drinkChit(a.fn) : a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
   const note = u.note ? h('div', { class: 'mc-util-result', role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('small', {}, u.note.text)) : null;
   const effect = heart ? h('div', { class: 'mc-heart-effect' }, h('p', {}, 'Turn one step'), u.panel?.querySelector('.hc-row') || h('div', {}, u.actions.map(a => h('button', { disabled: !!u.why || a.disabled, onclick: a.fn }, ...(a.content || [a.label])))), h('small', {}, 'Once per round'))
-    : h('div', { class: 'mc-restore' }, fxv('heal', n), h('small', {}, 'Health now'), h('div', { class: 'mc-health-track', role: 'meter', 'aria-label': 'Health', 'aria-valuenow': ctx.b.hp, 'aria-valuemin': 0, 'aria-valuemax': ctx.b.maxHp }, h('i', { style: `width:${Math.min(100,100*ctx.b.hp/ctx.b.maxHp)}%` })), h('span', {}, `${ctx.b.hp} / ${ctx.b.maxHp}`), potion ? h('small', {}, `${E.potionsLeft(ctx.b)} potions left`) : null);
-  return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, potion ? h('img', { src: 'assets/cards/potion.webp', alt: '' }) : HK.icon(heart ? 'heart' : 'heal')), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-traits' }, h('span', { class: `mc-trait ${heart ? 'counter' : 'heal'}` }, heart ? 'Heart' : 'Restore')), h('div', { class: 'mc-plaque' }, u.name), h('div', { class: 'mc-util-panel' }, effect, note), h('div', { class: 'mc-util-footer' }, potion ? 'Restock at camp' : heart ? 'Shape your next bonus' : 'Magic into life')))];
+    : potion ? potionTray(ctx,n) : h('div', { class: 'mc-restore' }, fxv('heal', n), h('small', {}, 'Health now'), h('div', { class: 'mc-health-track', role: 'meter', 'aria-label': 'Health', 'aria-valuenow': ctx.b.hp, 'aria-valuemin': 0, 'aria-valuemax': ctx.b.maxHp }, h('i', { style: `width:${Math.min(100,100*ctx.b.hp/ctx.b.maxHp)}%` })), h('span', {}, `${ctx.b.hp} / ${ctx.b.maxHp}`), potion ? h('small', {}, `${E.potionsLeft(ctx.b)} potions left`) : null);
+  return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, potion ? h('img', { src: 'assets/cards/potion.webp', alt: '' }) : HK.icon(heart ? 'heart' : 'heal')), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), potion ? lifeCorners() : corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-traits' }, h('span', { class: `mc-trait ${heart ? 'counter' : 'heal'}` }, heart ? 'Heart' : 'Restore')), h('div', { class: 'mc-plaque' }, u.name), h('div', { class: 'mc-util-panel' }, effect, note), h('div', { class: 'mc-util-footer' }, potion ? 'Restock at camp' : heart ? 'Shape your next bonus' : 'Magic into life')))];
 }
 // the whole sheet for a card class. glyph and detailPanel come from powers.js (the helpers keep their current panel).
 export function sheet(ctx, { glyph, detailPanel, tally }) {

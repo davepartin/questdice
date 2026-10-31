@@ -304,3 +304,20 @@
 .b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur{min-width:0;display:flex;align-items:center;flex-direction:column;background:none;padding:0;color:#4a3216}
 .b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur small{font:700 3cqi/1 var(--font-body,sans-serif);color:#4a3216;text-shadow:none}
 .mc-utility .hc-btn:disabled{opacity:.4;filter:grayscale(1)}
+
+/* A physical potion tray: inventory chits, with future spaces left empty. */
+.mc-utility.potion .mc-util-art img,.mc-potion-chit img{filter:hue-rotate(100deg) saturate(.85) drop-shadow(0 1cqi 1cqi #0006)}
+.mc-utility.potion .mc-util-panel{background:#d2bb8f url(../assets/cards/token-open.webp) center/cover;box-shadow:inset 0 0 0 .5cqi #7d653d;padding:3cqi;gap:2cqi}
+.mc-potion-tray{display:grid;grid-template-columns:repeat(3,1fr);gap:2cqi;width:100%;align-content:center}
+.mc-potion-slot{position:relative;aspect-ratio:.77;border-radius:2cqi;border:.5cqi solid #957747;box-shadow:inset 0 1cqi 2cqi #45341c66;background:#a9926c66;padding:1cqi;min-width:0}
+.mc-potion-slot.future{border-style:dashed;background:#ddcda966;box-shadow:inset 0 .4cqi 1cqi #45341c33}
+.mc-potion-chit{width:100%;height:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:1.5cqi;background:#ead5ad url(../assets/cards/token-open.webp) center/cover;border:1px solid #705329;box-shadow:0 .8cqi 1cqi #38220b88,inset 0 0 0 .5cqi #f7e5c4;overflow:hidden}
+.mc-potion-chit img{height:72%;width:85%;object-fit:contain;min-height:0}
+.mc-potion-chit b{font:900 5.5cqi/1 var(--font-number,sans-serif);color:#185e35;text-shadow:0 1px #f6e6c7}
+.mc-potion-depart{position:fixed;z-index:10000;pointer-events:none}.mc-potion-depart b{font:900 18px/1 var(--font-number,sans-serif)}
+.mc-life-corners{position:absolute;inset:0;z-index:4;pointer-events:none}.mc-life-corners>.ic{position:absolute;width:4.5%;height:4.5%;color:#679c78;opacity:.6;filter:drop-shadow(0 1px 1px #000)}
+.mc-life-corners>.ic:nth-child(1){left:6.5%;top:3.5%}.mc-life-corners>.ic:nth-child(2){right:6.5%;top:3.5%}.mc-life-corners>.ic:nth-child(3){left:6.5%;bottom:4.6%}.mc-life-corners>.ic:nth-child(4){right:6.5%;bottom:4.6%}
+.mc-potion-chit.arriving{animation:mcPotionIn .4s ease-out}@keyframes mcPotionIn{from{transform:translateY(-15px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.mc-potion-chit.arriving{animation:none}}
+
+.mc-utility.potion .mc-util-panel,.mc-potion-chit{background-size:100% 400%}
