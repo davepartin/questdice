@@ -1505,3 +1505,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 27 October 2026, Director: uniform top-right window Close follow-up, build 20261028close2. Fixed gear icon-only X, shared title-row alignment for dialogs/battle info, missing and duplicate dismiss controls. Existing Close style retained; no scrui/store/engine/save edits. Four targeted dialog cases and actual enemy panel checks pass; 390x660 gear screenshot reviewed. Evidence: [window Close](team/tasks/window-close/README.md).
+
+
+30 October 2026, Director: Rally Cry approved template implemented first, build 20261030rt1. Title below art, flag on painting, plain Roman ranks, no BUILD/redundant charged sentence, Charge OR Use, printed cover prices in fixed right columns. Scoped to Rally Cry; other cards await individual review. No engine/data/save changes. Existing knight/charge-use checks and real battle phone fullscreen checks pass; rank fixtures cover all three ranks. Design rules, evidence and full library checklist: [magic template](team/tasks/magic-template/README.md).

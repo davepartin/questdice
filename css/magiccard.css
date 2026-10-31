@@ -127,3 +127,26 @@
 .mc-lv.act .mc-slots{gap:1cqi;flex-wrap:nowrap}
 .mc-lv.act .mc-spent{row-gap:1cqi}
 .mc-cov{padding:0 2cqi}.mc-cov .mc-lvw{gap:1cqi}
+/* Rally Cry: approved Build-card template, scoped while cards are reviewed individually. */
+.mc-build-template .mc-plaque{top:31.2%;left:13.1%;right:13.1%;height:5.2%;transform:none;display:grid;place-items:center;padding:0;border-radius:1cqi;font-size:7.5cqi;letter-spacing:0;white-space:nowrap}
+.mc-art-icon{position:absolute;z-index:3;right:16%;top:12%;width:9cqi;height:9cqi;display:grid;place-items:center;border:.35cqi solid #b58cff;border-radius:1cqi;background:#1a1030d9;color:#f2c14e}
+.mc-art-icon .ic{width:7cqi;height:7cqi}
+.mc-build-template .mc-rn{position:absolute;top:2cqi;left:3cqi;width:auto;height:auto;background:none;box-shadow:none;border-radius:0;color:#4a3216;font:700 6cqi/1 var(--font-title,Georgia,serif)}
+.mc-build-template .mc-sy{align-items:center;justify-content:center;width:100%;height:100%;padding-top:6cqi;gap:2cqi}
+.mc-build-template .mc-dots{flex-wrap:nowrap;gap:1.2cqi}
+.mc-build-template .mc-dots>.ic{width:5cqi;height:5cqi;flex:none}
+.mc-build-template .mc-lv.act .mc-dot{width:10cqi;height:10cqi;font-size:5.4cqi}
+.mc-build-template .mc-cov{display:grid;grid-template-columns:minmax(0,1fr) 15cqi;gap:1.5cqi;padding:0 2cqi}
+.mc-build-template .mc-lvw{gap:2cqi;font:700 5.5cqi/1 var(--font-title,Georgia,serif);letter-spacing:0}
+.mc-build-template .mc-cd{flex:1;justify-content:center;gap:1cqi}
+.mc-build-template .mc-cd .mc-fv{font-size:5.4cqi;gap:.4cqi}
+.mc-build-template .mc-cd .mc-fv .ic{width:4.5cqi;height:4.5cqi;flex:none}
+.mc-build-template .mc-cp{justify-content:flex-end;align-self:stretch;border-left:.2cqi solid #85653d88;padding:0 0 0 1.5cqi;border-radius:0;background:none;box-shadow:none;gap:.8cqi}
+.mc-build-template .mc-cp b{color:#4a3216;font:800 6cqi/1 var(--font-number,sans-serif)}
+.mc-build-template .mc-cp .mc-coin{width:4cqi;height:4cqi;background:none;border:.4cqi solid #8c6428;box-shadow:inset 0 0 0 .3cqi #c4a567}
+.mc-or{font:700 .85rem/1 var(--font-body,sans-serif);color:#f5e2b8;flex:none}
+.mc-art-icon svg{width:7cqi;height:7cqi}
+.mc-build-template .mc-lv:not(.act)>.mc-rn{display:none}
+.mc-build-template .mc-lv:not(.act) .mc-sy{padding:0}
+.mc-build-template .mc-had{justify-content:space-between;width:100%;font-size:5cqi}
+.mc-build-template .mc-cp b{font-weight:700}
