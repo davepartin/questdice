@@ -4,7 +4,7 @@ Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first
 
 ## Shared design decisions
 
-- Roman numerals I, II, III. No word Level or circular rank badge. Current numeral at the upper left.
+- Roman numerals I, II, III. No word Level or circular rank badge. Current numeral at the bottom left, per Dave's final placement.
 - Title in the band beneath the painting. Matching menu/power glyph in the painting's upper right.
 - No BUILD tag, cadence band or redundant charged/attack/block paragraph on this card. The two colored rows show the progression; selected charge keeps its outline.
 - Charge OR Use above the card. Engine already makes these exclusive per round. Preserve both engine checks and disabled button states.
