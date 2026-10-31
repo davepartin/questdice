@@ -1023,9 +1023,15 @@ export const roundGain = (card, round, lvl = 0) => scaleNum(card.per * round, lv
 export const rechargeCostOf = (hero) => CLASSES[hero?.cls]?.rechargeCost ?? RECHARGE_COST;
 // The measuring tools listen to every cast and every point of magic (tools/magicaudit.mjs); the game never sets them.
 export const CAST_HOOK = { on: null, magic: null, income: null, trace: null }; // on: a power cast; magic: other spending; income: a round's magic in
+// Magic before the roll (Dave, 31 Oct 2026: "players never feel punished for order-of-actions mistakes"): any power may be used before or after the dice
+// are rolled, except a free reroll, which has no dice to act on until they are out. A power is TARGETED when its effect belongs to the monster you hit
+// (Polymorph's frog, Hunter's Mark's bounty, and the supers); using one locks the target for the round. Heal, charge, release and the rest never lock.
+export const needsDice = (card) => !!card?.fx?.free;
+export const isTargeted = (card) => !!card && !!(card.fx?.frog || card.markGold || card.kind === 'super');
 export function castPower(b, id, { x, release, to, song } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
-  if (!card || b.phase !== 'shape') return null;
+  if (!card || (b.phase !== 'shape' && b.phase !== 'reset')) return null;
+  if (needsDice(card) && !b.board) return null; // a free reroll needs rolled dice (the cost is not paid)
   if (card.kind === 'charge' && release) { // let the stored charges go
     b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
     if (!n || (b.usedRound && (b.usedRound[key] || b.usedRound[id]))) return null; // a round either stores a charge or releases them, not both (Dave, Oct 2026)

@@ -108,7 +108,7 @@ function card(k, p, glyph) {
 // the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
 function buttons(ctx, p) {
   const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const f = FX(k); const level = p.level || 0;
-  const why = reset ? 'Roll your dice first' : st.spent ? 'Used this round' : st.early ? `Round ${k.minRound}+` : '';
+  const why = st.spent ? 'Used this round' : st.early ? `Round ${k.minRound}+` : reset && E.needsDice(k) ? 'Roll your dice first' : ''; // before the roll everything but a free reroll can be used
   const btn = (cls, label, on, dis, aria) => h('button', { type: 'button', class: `mc-use ${cls}`, disabled: !!dis, 'aria-label': aria || null, onclick: on }, ...label);
   if (k.kind === 'scale') { const step = E.scaleStep(k); const cap = Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic));
     return [btn('sub', ['−', HK.icon('magic'), String(step)], () => ctx.step(k.id, x - step), !!why || x <= k.cost, `One die fewer, ${step} magic back`),
@@ -117,7 +117,7 @@ function buttons(ctx, p) {
   if (k.kind === 'charge') { const relUsed = !!(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
     return [btn('add mc-charge', ['Charge', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), why || b.magic < k.cost || stored >= k.max, `Charge: 1 magic (${stored || 0} of ${k.max} charged)`),
       usesBuildTemplate(k) ? h('span', { class: 'mc-or' }, 'OR') : null,
-      btn(`go pc-${f}`, [`Use ${stored || 0}`], () => ctx.use(k.id, { release: true }), reset || !stored || relUsed, `Use ${stored || 0} charge${stored === 1 ? '' : 's'} for ${stored ? E.chargeGain(k, stored, level)[f] : 0} ${WORD[f]}`)]; }
+      btn(`go pc-${f}`, [`Use ${stored || 0}`], () => ctx.use(k.id, { release: true }), !stored || relUsed, `Use ${stored || 0} charge${stored === 1 ? '' : 's'} for ${stored ? E.chargeGain(k, stored, level)[f] : 0} ${WORD[f]}`)]; }
   return [btn(`go pc-${f}`, ['Cast', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x)];
 }
 function tile(ctx, id, name, ico, cost, on, extra = null) {
@@ -128,12 +128,12 @@ function tile(ctx, id, name, ico, cost, on, extra = null) {
 export function sheet(ctx, { glyph, detailPanel, tally }) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
   const sel = ctx.selected; const p = ps.find((q) => q.k.id === sel); const u = ctx.utils.find((q) => q.id === sel);
-  if (p && usesCardTemplate(p.k) && p.k.kind === 'scale' && !ctx.reset && !p.st.spent) { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); const meter = tally?.querySelector('.pw-center'); if (meter) { meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for ${p.k.name}`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } }
+  if (p && usesCardTemplate(p.k) && p.k.kind === 'scale' && !p.st.spent) { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); const meter = tally?.querySelector('.pw-center'); if (meter) { meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for ${p.k.name}`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } }
   const utils = ['u:bigheal', 'u:heal', 'u:heart'].map((id) => ctx.utils.find((q) => q.id === id)).filter(Boolean);
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
     ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel)),
     utils.map((q) => tile(ctx, q.id, q.name, glyph(q, 'pw-g'), q.cost, q.id === sel)));
-  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && ctx.reset ? h('div', { class: 'mc-guidance', role: 'status' }, ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')]) : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, round: ctx.b.round, hurt: ctx.b.lastHurt ?? null }, glyph))]
-    : u ? [detailPanel(ctx, sel)] : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? 'Roll first, then use magic while you shape your dice.' : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
+  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && ctx.reset && E.needsDice(p.k) ? h('div', { class: 'mc-guidance', role: 'status' }, ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')]) : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, round: ctx.b.round, hurt: ctx.b.lastHurt ?? null }, glyph))]
+    : u ? [detailPanel(ctx, sel)] : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? `Use magic now, then roll. Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.` : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
   return h('div', { class: 'pw-sigil mc-sheet' }, tally, grid, ...body);
 }

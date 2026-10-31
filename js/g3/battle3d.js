@@ -55,7 +55,7 @@ async function startTable(ctx) {
   const { S } = C;
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
   B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0;
-  if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
+  if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.pickRound = null; B.picked = undefined; B.tlock = null; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Setting up the table…')));
   $('#app').classList.add('hidden');
@@ -449,6 +449,7 @@ function selectTarget(uid) {
   const i = B.b.enemies.findIndex((e) => e.uid === uid);
   if (i < 0 || B.b.enemies[i].hp <= 0) return;
   const rolled = B.b.phase === 'shape';
+  if (B.tlock && B.b.enemies[i].uid !== B.tlock) { showFoeInfo(B.b.enemies[i]); toast('Your target is locked: you used a power on it this round.'); return; }
   if (B.picked !== false && B.target === i) { showFoeInfo(B.b.enemies[i]); return; } // tapping the chosen monster again opens its sheet
   if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
   const first = B.picked === false;
@@ -562,7 +563,7 @@ const UTIL = [
 const utilCost = (u) => (u.id === 'u:heal' ? E.healCostOf(B.hero, B.b) : u.cost);
 function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
-  if (!shape && u.id !== 'u:bigheal') why = 'Roll your dice first. You use powers while you shape the roll.'; // a potion can be drunk any time before you lock in
+  if (!shape && u.id === 'u:heart') why = 'Roll your dice first. The heart turns once your dice are out.'; // heal, charge and magic can all be used before the roll; a potion any time before you lock in
   else if (!shape && b.phase !== 'reset') why = 'Not now.';
   else if (u.id === 'u:heart') why = E.nudgedThisRound(b) ? 'Used this round. You can turn the heart once a round.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
   else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
@@ -581,7 +582,7 @@ function cardTiles(reset) {
   const util = (id) => { const u = UTIL.find((x) => x.id === id); return { u, ...utilState(u, !reset) }; };
   const pot = util('u:bigheal'); const heal = util('u:heal'); const heart = util('u:heart');
   const full = b.hp >= b.maxHp;
-  pot.tag = E.potionsLeft(b) <= 0 ? 'NONE LEFT' : full ? 'FULL HP' : ''; heal.tag = !reset && full ? 'FULL HP' : ''; heart.tag = !reset && E.nudgedThisRound(b) ? 'USED' : '';
+  pot.tag = E.potionsLeft(b) <= 0 ? 'NONE LEFT' : full ? 'FULL HP' : ''; heal.tag = full ? 'FULL HP' : ''; heart.tag = !reset && E.nudgedThisRound(b) ? 'USED' : '';
   const utils = [
     { id: 'u:bigheal', name: 'Potion', icon: 'heal', tone: 'heal', why: pot.why, tag: pot.tag, cost: 0, badge: `${E.potionsLeft(b)} LEFT`, flag: `${E.potionsLeft(b)} left · free to drink`, text: pot.u.text,
       body: `Heal ${E.potionHpOf(hero)} right away. Once it is gone it is gone; buy more at camp.`, actions: [{ label: 'Drink a potion', fn: () => doBigHeal() }] },
@@ -621,15 +622,15 @@ function showPowerDetail(id) {
   const shape = b.phase === 'shape'; const canRecharge = !k.atwill && k.kind !== 'super';
   const uses = k.atwill ? 'Every round. It comes back each round, so use it as often as you like.' : k.kind === 'super' ? 'Once per battle. A super power: the biggest one you have, and it cannot be recharged.' : `Once per battle. After you use it you can recharge it for ${D.RECHARGE_COST} magic between rounds.`;
   const how = PW.effectLine(k, { x, round: b.round, level: E.powerLevel(hero, id), stored }); // the same words as the powers sheet, from the engine's numbers
-  const reasons = !shape ? 'Roll your dice first. You use powers while you shape the roll.'
+  const reasons = !shape && E.needsDice(k) ? 'Roll your dice first. A free reroll needs dice to act on.'
     : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.')
     : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const again = () => showPowerDetail(id);
-  const stepRow = k.kind === 'scale' && !st.spent && shape ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
+  const stepRow = k.kind === 'scale' && !st.spent ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
-  const releaseRow = k.kind === 'charge' && stored > 0 && shape && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
+  const releaseRow = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   // Verse for a friend (CLASS2.verse, the lab): at a table, Lucky Verse asks who it is for. You: attack as now. A friend: healing.
@@ -739,11 +740,15 @@ export function renderReset() {
   if (b.pressure?.furyUp && B.furyShown !== b.round) { B.furyShown = b.round; toast(`The monsters grow furious: every blow +${b.pressure.fury}.`, 'bad'); }
   if (B.net || B.party) renderRoster();
   setHud({ phase: 'reset' });
+  const fell = b.enemies[B.target] && b.enemies[B.target].hp <= 0 && B.picked !== false && B.pickRound != null; // the monster you were aiming at went down last round
   targetEnemy();
-  if (B.pickRound !== b.round || B.pickRound == null) { B.pickRound = b.round; B.picked = alive().length <= 1; } // a new round: with several monsters, choose who to hit before you roll
+  // Your target stays your target from round to round while it stands; when it falls the next living monster is chosen for you, so you can just Roll.
+  // Only the very first round with several monsters asks you to choose. A lock from a targeted power lasts one round.
+  if (B.pickRound !== b.round || B.pickRound == null) { const firstRound = B.pickRound == null; B.pickRound = b.round; B.tlock = null; B.picked = alive().length <= 1 || (!firstRound && B.picked !== false);
+    if (fell && B.picked && alive().length) toast(`${b.enemies[B.target].name} is your target now.`); }
   B.sel.clear();
   updatePlates(); paintHeroes();
-  B.fb.setTarget(B.picked ? b.enemies[B.target]?.uid : null);
+  B.fb.setTarget(B.picked ? b.enemies[B.target]?.uid : null); B.fb.setLock?.(B.tlock);
   idleTray();
   HK.setForecast(B.hud.forecast, {}); HK.setNotes(B.hud.forecast, []);
   B.hud.forecast.classList.add('idle');
@@ -892,12 +897,14 @@ async function doHeal() {
 async function doCard(id, opts = {}) {
   let b = B.b; if (B.busy) return;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
+  if (k && E.isTargeted(k) && B.picked === false) { sfx.error?.(); toast(`${k.name} needs a target. Tap a monster first.`); return; } // a targeted power locks the target, so one has to be chosen
   const modsBefore = { ...b.mods }; const magicBefore = b.magic; const goldBefore = b.goldEarned || 0; const freeBefore = (b.freeActions || []).length;
   let r;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release, to: opts.to }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
+  if (E.isTargeted(k)) { B.tlock = b.enemies[B.target]?.uid || null; B.fb.setLock?.(B.tlock); } // used on this monster: it is the round's target now, with a lock on its piece
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
   myPc().sparkle(sparkleOf(B.hero?.cls)); // (the magic sheet stays open: you may want two or three powers; Close shuts it)
@@ -909,12 +916,12 @@ async function doCard(id, opts = {}) {
   const fr = (b.freeActions || []).length - freeBefore; if (fr > 0) gains.free = b.freeActions[b.freeActions.length - 1];
   r.foes = b.enemies.filter((e) => e.hp > 0).length;
   // every power shows what it did, then OK (Dave: each one should feel special), inside the selected tab's panel, not a second window (mp2)
-  B.busy = true; renderShape();
+  B.busy = true; refresh();
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   B.pwSel = k?.kind === 'charge' || ['knight', 'wizard', 'ranger', 'dwarf', 'bard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === id)) ? id : null; // Keep the charge track visible after Charge or Use.
-  renderShape(); renderSheet(); bumpCounters(gains); sheetTop();
+  refresh(); renderSheet(); bumpCounters(gains); sheetTop();
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });
 // The counters that a power just filled give a little pulse, so you can see where it went.
@@ -925,9 +932,16 @@ function bumpCounters(gains) {
 async function doRecharge(id) {
   const b = B.b; if (B.busy) return;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'recharge', id }); B.busy = false; if (ok) { sfx.magic(); myPc().glow('gold'); refresh(); } return; }
-  if (E.recharge(b, id)) { sfx.magic(); myPc().glow('gold'); renderReset(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
+  if (E.recharge(b, id)) { sfx.magic(); myPc().glow('gold'); refresh(); } else { sfx.error(); toast('Not enough ✦ Magic.'); }
 }
-function refresh() { if (B.b.phase === 'shape') renderShape(); else renderReset(); }
+// Before the roll a heal, a potion, a charge or a cast changes health, magic and the sheet but is not a new round: repaint those and leave the sheet open.
+function refreshReset() {
+  updatePlates(); paintHeroes(); if (B.net || B.party) renderRoster();
+  B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : ''));
+  B.fb.setLock?.(B.tlock);
+  if (B.sheetOpen) renderSheet(true); else B.hud.cards.replaceChildren(...cardTiles(true));
+}
+function refresh() { if (B.b.phase === 'shape') renderShape(); else refreshReset(); }
 
 
 // ------------------------------------------------------------------------------------------ at a shared table (net mode)

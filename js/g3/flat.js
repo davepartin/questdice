@@ -367,6 +367,9 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
 
   // ---- target ring and cards
   fb.setTarget = (uid, show = true) => { for (const [id, pc] of fb.foes) { const on = show && id === uid && !pc.dead; pc.el.classList.toggle('targeted', on); pc.slot.classList.toggle('targeted', on); } };
+  // a targeted power was used: this monster is the round's target and cannot be changed (a small lock on its piece and a lit plaque)
+  fb.setLock = (uid) => { for (const [id, pc] of fb.foes) { const on = !!uid && id === uid && !pc.dead; pc.slot.classList.toggle('locked', on); pc.el.classList.toggle('locked', on);
+    let badge = pc.el.querySelector('.fb-lock'); if (on && !badge) { badge = h('i', { class: 'fb-lock', role: 'img', 'aria-label': 'Target locked for this round' }, HK.icon('lock')); pc.el.append(badge); } if (badge) badge.hidden = !on; } };
   fb.setActive = (i) => { fb.active = i; fb.heroes.forEach((pc, k) => { pc.slot.classList.toggle('active', k === i); pc.slot.classList.toggle('back', k !== i); }); };
   fb.paintHero = (i, hp, maxHp, down = false) => {
     const pc = fb.heroes[i]; if (!pc) return; const k = clamp(hp / Math.max(1, maxHp), 0, 1);
