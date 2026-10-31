@@ -1,6 +1,6 @@
 # Magic card template, first card: Rally Cry
 
-Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight, Wizard and Ranger cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
+Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight, Wizard, Ranger and Dwarf cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
 
 ## Shared design decisions
 
@@ -45,13 +45,13 @@ Existing cards are already implemented in the game. The status below concerns ad
 | Wizard | Barrier | One-shot | Implemented, awaiting visual feedback |
 | Wizard | Storm Coil | Build | Implemented, awaiting visual feedback |
 | Wizard | Healing Light | Build | Implemented, awaiting visual feedback |
-| Dwarf Warden | Anvil Strike | Dice | Individual review pending |
-| Dwarf Warden | Avalanche | One-shot | Individual review pending |
-| Dwarf Warden | Grudge | One-shot | Individual review pending |
-| Dwarf Warden | Shield Bash | One-shot | Individual review pending |
-| Dwarf Warden | Brace | One-shot | Individual review pending |
-| Dwarf Warden | Stonehide | Build | Individual review pending |
-| Dwarf Warden | Forge Fury | Build | Individual review pending |
+| Dwarf Warden | Anvil Strike | Dice | Implemented, awaiting visual feedback |
+| Dwarf Warden | Avalanche | One-shot | Implemented, awaiting visual feedback |
+| Dwarf Warden | Grudge | One-shot | Implemented, awaiting visual feedback |
+| Dwarf Warden | Shield Bash | One-shot | Implemented, awaiting visual feedback |
+| Dwarf Warden | Brace | One-shot | Implemented, awaiting visual feedback |
+| Dwarf Warden | Stonehide | Build | Implemented, awaiting visual feedback |
+| Dwarf Warden | Forge Fury | Build | Implemented, awaiting visual feedback |
 | Bard | Mending Song | Dice | Individual review pending |
 | Bard | Finale | One-shot | Individual review pending |
 | Bard | Lucky Verse | One-shot | Individual review pending |
@@ -80,3 +80,7 @@ All seven Wizard cards now share the shell. Costs, dice and effects preserved. [
 ## Ranger family rollout
 
 All seven Ranger cards share the approved shell, with specialized Pierce, reroll, weakening and conditional-gold displays. [Details, shared-art limits and screenshots](ranger/README.md).
+
+## Dwarf Warden family rollout
+
+All seven Dwarf cards share the approved shell, including face-triggered gold and damage-based attack. [Details, shared-art limits and screenshots](dwarf/README.md).

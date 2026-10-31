@@ -27,14 +27,16 @@ await p.waitForTimeout(900); const fs1 = await p.evaluate(() => ({ sh: document.
 check('Magic sheet is full screen with no scroll', fs1.sh === fs1.vh && Math.abs(fs1.sheet - fs1.vh) < 2, JSON.stringify(fs1));
 await shot('md1-panel');
 await pick('anvil');
-const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent), fill: document.querySelector('.mc-card .mc-lv.act .mc-slots .mc-die path')?.getAttribute('fill'), gold: /EVERY 8 ALSO GIVES/.test(document.querySelector('.mc-card .mc-lv.act')?.textContent || '') }));
-const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent);
-check('Anvil Strike card: DICE tag, 1 blue d8 + 5 diamond spaces, −1 / +1 / Roll1, 1 of 6, gold-on-8 line', a0.tag === 'DICE' && a0.dice === 1 && a0.spaces === 5 && a0.btns.join('|') === '−1|+1|Roll1' && a0.fill === '#3aa4ff' && a0.gold && /1 of 6 dice/.test(lbl), JSON.stringify({ a0, lbl }));
+const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent), fill: document.querySelector('.mc-card .mc-lv.act .mc-slots .mc-die path')?.getAttribute('fill'), gold: document.querySelector('.mc-bonus')?.getAttribute('aria-label') === 'Each 8 rolled gives 3 gold' }));
+const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
+check('Anvil Strike card: shared template, 1 blue d8 + 5 diamond spaces, −1 / +1 / Roll1, 1 of 6, gold-on-8 line', a0.tag == null && a0.dice === 1 && a0.spaces === 5 && a0.btns.join('|') === '−1|+1|Roll1' && a0.fill === '#3aa4ff' && a0.gold && /1 of 6 block dice/.test(lbl), JSON.stringify({ a0, lbl }));
+await p.evaluate(()=>{window.anvilArt=document.querySelector('.mc-paint img');window.anvilFrame=document.querySelector('.mc-fr');});
 await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3); await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3);
-const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent, lbl: document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent }));
-check('two taps of +▲1 fill two more spaces; Roll ▲3; 3 of 6', a1.dice === 3 && a1.roll === 'Roll3' && /3 of 6 dice/.test(a1.lbl), JSON.stringify(a1));
+const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent, lbl: document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label') }));
+check('two taps of +▲1 fill two more spaces; Roll ▲3; 3 of 6', a1.dice === 3 && a1.roll === 'Roll3' && /3 of 6 block dice/.test(a1.lbl), JSON.stringify(a1));
 const rb0 = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return cs.backgroundColor + ' / ' + cs.color; });
 check('Anvil Roll button blue with dark text', /58, 164, 255/.test(rb0) && /6, 26, 46\)$/.test(rb0), rb0);
+check('Stable artwork, corner cost, reserved-magic preview', await p.evaluate(()=>document.querySelector('.mc-paint img')===window.anvilArt && document.querySelector('.mc-fr')===window.anvilFrame && document.querySelector('.mc-cast-cost').textContent==='3' && document.querySelector('.pw-center b').textContent===String(window.QD.B3.battleState.b.magic-3) && !document.querySelector('.mc-lv.act .mc-spent')));
 await shot('md1-anvil-card');
 const s0 = await st(); await p.locator('.mc-ctl .mc-use.go').click(); await pump(0.5); await shot('md1-anvil-rolling');
 for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
@@ -43,7 +45,7 @@ check('Roll: power-dice reveal plays, magic drops by 3, block rises by the dice,
 await settle(); await p.evaluate(() => { window.QD.B3.battleState.b.lastHurt = 7; window.QD.B3.renderShape(); }); await pump(0.3); await pick('grudge');
 const g0 = await st(); const gtxt = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act')?.textContent); await shot('md1-grudge-card');
 const gb = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return b.textContent + ' ' + cs.backgroundColor + ' / ' + cs.color; });
-check('Grudge card: ONE-SHOT, shows 7 got past your block, Cast ▲2 red with white text', /7 GOT PAST YOUR BLOCK/.test(gtxt) && /\+7/.test(gtxt) && /^Cast2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(gb), JSON.stringify({ gtxt, gb }));
+check('Grudge card: template shows 7 damage past block, Cast ▲2 red with white text', /7 damage past block/.test(gtxt) && /\+7/.test(gtxt) && /^Cast2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(gb), JSON.stringify({ gtxt, gb }));
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
 await shot('md1-grudge-after'); const g1 = await st(); await settle(); await pick('grudge');
 const gDis = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.disabled);
