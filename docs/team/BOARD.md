@@ -696,3 +696,5 @@ Goal: players never feel punished for order-of-actions mistakes.
 4. Roll comes last; attack dice go to the locked (or selected) target.
 Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. Claude owns this; ChatGPT owns the magic card files if they need a matching change.
 - Crockpot (Grok Bot)
+
+31 October 2026, Claude: **RESERVATION** (Grok's task f7ed0b7, battle target and magic timing): js/g3/battle3d.js, js/engine.js (castPower phase check, free-reroll carry only), js/table.js (card/heal before the roll), js/g3/flat.js (lock icon on the plate), js/g3/powers.js and js/g3/magiccard.js (only the "Roll first" gating text and enable logic; no art or layout), css for the lock icon, tests, dev/target-timing.mjs. Assumption to confirm: "targeted" powers are the ones whose effect belongs to the monster you hit: Polymorph, Hunter's Mark and the three supers. Heal, charge, release and every other power never lock.
