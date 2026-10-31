@@ -30,11 +30,7 @@ function corners() {
   if (!g) return c; if (!drawSym) { symReady.then(() => { if (drawSym) paint(); }); return c; } paint(); return c;
   function paint() {
   const INSETS = [[63, 60], [655.5, 60], [61.5, 981], [657, 981]]; const size = 34, n = 68;
-  INSETS.forEach(([x, y]) => { const q = document.createElement('canvas'); q.width = q.height = n; const qg = q.getContext('2d'); if (!qg) return;
-    const m = qg.createLinearGradient(n / 2 - 17, n / 2 - 17, n / 2 + 17, n / 2 + 17); m.addColorStop(0, '#b4ae9c'); m.addColorStop(0.5, '#7c776a'); m.addColorStop(1, '#4c483f');
-    g.fillStyle = '#000000b0'; drawSym(g, 'magic', x + 1.2, y + 1.6, size + 9, 0, true); g.fillStyle = '#ffffff'; drawSym(g, 'magic', x, y, size + 8, 0, true); /* mc2 (Dave): a crisp white outline */ g.fillStyle = '#000000b0'; drawSym(g, 'magic', x + 1.2, y + 1.2, size, 0, true); g.fillStyle = '#e8e2d0a0'; drawSym(g, 'magic', x - 1.2, y - 1.2, size, 0, true);
-    qg.fillStyle = m; drawSym(qg, 'magic', n / 2, n / 2, size, 0, true); qg.globalCompositeOperation = 'source-atop'; qg.globalAlpha = 0.32; qg.fillStyle = '#a64dff'; qg.fillRect(0, 0, n, n);
-    g.drawImage(q, x - n / 2, y - n / 2); }); }
+  INSETS.forEach(([x, y]) => { g.fillStyle = '#ffffff'; drawSym(g, 'magic', x, y, size + 8, 0, true); g.fillStyle = '#a64dff'; drawSym(g, 'magic', x, y, size, 0, true); }); } // mc4 (Dave): flat purple with a white line border, no shine, tint or shadow
 }
 // what a level row shows. l: the row's level; cur: the hero's level for it; p: the power's sheet state
 function rowBody(k, l, p, cur) {
