@@ -26,6 +26,7 @@ import { campDie, campFaceList } from './campart.js';
 import { openGear } from './gearview.js';
 import * as CW from './cards.js';
 import * as CB from './cardboard.js';
+import { gameBoard } from './gameboard.js'; // pb1: the quest track as a cardboard game board (portrait phones)
 import { priceChip } from './price.js'; // the one shared price chip (Dave 26 Oct 2026)
 
 let X = null;
@@ -745,13 +746,16 @@ export function board() {
   const blessings = (c.blessings || []).filter((b) => (b.fights ?? 1) > 0); const ambush = c.ambush?.length;
   const tipEl = tipBox('board', 'One fight waits on this stretch of road. Win it to walk on. The boss is at the end of the act, wearing a hat, probably.');
   const place = quests[0].place;
-  mountAs('board', h('div', { class: 'sx-board' },
+  mountAs('board', h('div', { class: 'sx-board gb-on' },
     topBar(heroChip(hero), h('div', { class: 'sx-top-actions' }, btn('Camp', () => X.showCamp({ fromBoard: true }), { kind: 'ghost', icon: 'tent' }), btn('Menu', X.menu, { kind: 'ghost', icon: 'menu', cls: 'sx-menubtn' }))),
     h('div', { class: 'sx-board-main' },
       h('div', { class: 'sx-board-head' },
         h('div', { class: 'sx-eyerow' }, eyebrow(`Act ${romans[c.act - 1] || c.act} · Quest ${c.step} of ${D.QUESTS_PER_ACT}`), diffChip(hero)),
         h('h1', { class: 'sx-act' }, X.actName(hero)), h('p', { class: 'sx-acttag' }, X.actOf(hero).tag),
-        trail(c, X.net ? null : hero, () => X.showBoard())),
+        trail(c, X.net ? null : hero, () => X.showBoard()),
+        gameBoard({ step: c.step, act: c.act, N: D.QUESTS_PER_ACT, kindOf: (n) => D.stepKind(X.actOf({ campaign: { pack: c.pack, act: c.act } }), n), label: `Quest ${c.step} of ${D.QUESTS_PER_ACT}`,
+          heroes: X.members().map((m) => ({ name: m.name, img: D.lookDef(m)?.img || D.CLASSES[m.cls].img })),
+          canPick: (n) => !X.net && SV.canStartAt(hero, c.act, n), pick: (n) => { if (!X.net) stepAsk(hero, c.act, n, () => X.showBoard()); } })),
       X.partyBar?.(),
       h('div', { class: 'sx-notes' },
         ...boonNotes(blessings),
