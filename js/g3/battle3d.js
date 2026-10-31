@@ -600,7 +600,7 @@ function cardTiles(reset) {
 function renderSheet(preserveCard = false) {
   if (!B.sheetOpen) return;
   const current = B.hud.cards.querySelector('.mc-sheet');
-  if (preserveCard && current?.querySelector('.mc-card[data-card="cleave"]')) {
+  if (preserveCard && current?.querySelector('.mc-card.mc-reviewed-template')) {
     const fresh = cardTiles(B.b.phase !== 'shape')[0];
     // Stepper changes update the numbers and dice only; keep the artwork and frame mounted.
     for (const selector of ['.pw-tally', '.mc-grid', '.mc-ctl', '.mc-levels', '.mc-cast-cost']) {
@@ -913,7 +913,7 @@ async function doCard(id, opts = {}) {
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  B.pwSel = k?.kind === 'charge' || D.CLASSES.knight.cards.some(c => c.id === id) ? id : null; // Keep the charge track visible after Charge or Use.
+  B.pwSel = k?.kind === 'charge' || ['knight', 'wizard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === id)) ? id : null; // Keep the charge track visible after Charge or Use.
   renderShape(); renderSheet(); bumpCounters(gains); sheetTop();
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });

@@ -675,3 +675,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 31 October 2026, Director: latest template complete for all seven Knight magic cards, build 20261031kt2. Shared corner cost, colored traits, title below art without outline, bottom-left Roman rank and printed price covers. Knight selection stays visible after casting. Dave-approved Cleave pricing now 3/4/5 magic for 2/3/4d6 at rank I; other power mechanics/prices preserved. 523 tests, 42 rank/phone renders and actual Knight controls/payment checks pass. Existing alternative artwork sharing remains documented. [Knight template](tasks/magic-template/knight/README.md).
+
+
+31 October 2026, Director: Wizard family template complete, build 20261031wt1. All seven cards share the approved shell and printed-price covers. Arc Bolt has stable stepper/artwork, large red d8s and reserved-magic preview; Meteor shows engine-derived current-round attack; Polymorph retains upgraded Pierce and rank III cost 2. Charge OR Use and retained selection apply to Wizard. Mechanics/prices preserved. 42 rank/phone fixtures, real Wizard controls, Knight regression and eight focused engine tests checked. Four alternatives share existing Wizard paintings. [Wizard template](tasks/magic-template/wizard/README.md). Magic files released.

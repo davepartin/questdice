@@ -1,11 +1,11 @@
 # Magic card template, first card: Rally Cry
 
-Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. Production styling is deliberately scoped to Rally Cry, via usesBuildTemplate and mc-build-template. No engine, balance, costs or save changes.
+Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight and Wizard cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
 
 ## Shared design decisions
 
 - Roman numerals I, II, III. No word Level or circular rank badge. Current numeral at the bottom left, per Dave's final placement.
-- Title in the band beneath the painting. Matching menu/power glyph in the painting's upper right.
+- Title in the band beneath the painting. Matching menu/power glyph in the painting's upper left; selected magic cost in its upper right.
 - No BUILD tag, cadence band or redundant charged/attack/block paragraph on this card. The two colored rows show the progression; selected charge keeps its outline.
 - Charge OR Use above the card. Engine already makes these exclusive per round. Preserve both engine checks and disabled button states.
 - Upgrade covers retain one parchment texture, with rank left, effects middle and a fixed-width price column right. Price reads as ink, without a separate pill. Rank II 50 and III 90 come from shared POWER_UPGRADE data.
@@ -38,13 +38,13 @@ Existing cards are already implemented in the game. The status below concerns ad
 | Ranger | Snare | One-shot | Individual review pending |
 | Ranger | Volley | Build | Individual review pending |
 | Ranger | Vanish | Build | Individual review pending |
-| Wizard | Arc Bolt | Dice | Individual review pending |
-| Wizard | Meteor | Build | Individual review pending |
-| Wizard | Magic Missile | One-shot | Individual review pending |
-| Wizard | Polymorph | One-shot | Individual review pending |
-| Wizard | Barrier | One-shot | Individual review pending |
-| Wizard | Storm Coil | Build | Individual review pending |
-| Wizard | Healing Light | Build | Individual review pending |
+| Wizard | Arc Bolt | Dice | Implemented, awaiting visual feedback |
+| Wizard | Meteor | Build | Implemented, awaiting visual feedback |
+| Wizard | Magic Missile | One-shot | Implemented, awaiting visual feedback |
+| Wizard | Polymorph | One-shot | Implemented, awaiting visual feedback |
+| Wizard | Barrier | One-shot | Implemented, awaiting visual feedback |
+| Wizard | Storm Coil | Build | Implemented, awaiting visual feedback |
+| Wizard | Healing Light | Build | Implemented, awaiting visual feedback |
 | Dwarf Warden | Anvil Strike | Dice | Individual review pending |
 | Dwarf Warden | Avalanche | One-shot | Individual review pending |
 | Dwarf Warden | Grudge | One-shot | Individual review pending |
@@ -72,3 +72,7 @@ Dave removed the charged/used explanation: grey disabled buttons are sufficient.
 ## Knight family rollout
 
 All seven Knight cards now use the shared shell. [Details, artwork limits and screenshots](knight/README.md). Other heroes remain pending individual review.
+
+## Wizard family rollout
+
+All seven Wizard cards now share the shell. Costs, dice and effects preserved. [Details, shared-art limits and screenshots](wizard/README.md).

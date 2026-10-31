@@ -192,3 +192,15 @@
 .mc-trait .ic{width:3.3cqi;height:3.3cqi}
 .mc-reviewed-template .mc-lv.act .mc-ln .mc-fv{font-size:9cqi}
 .mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-ln .mc-fv{font-size:7cqi}
+
+/* Wizard shares the approved shell; its d8s and effects retain their engine values. */
+.mc-trait.pierce{background:#ae510a;color:#fff}.mc-trait.transform{background:#673395;color:#fff}
+.mc-reviewed-template[data-card="arcbolt"] .mc-lv.act .mc-slots{display:grid;grid-template-columns:repeat(3,11cqi);gap:1.4cqi;justify-content:center}
+.mc-reviewed-template[data-card="arcbolt"] .mc-lv.act .mc-slots :is(.mc-die,.mc-space){width:11cqi;height:11cqi}
+.mc-reviewed-template[data-card="arcbolt"] .mc-sy{padding:0 0 4cqi}
+.mc-reviewed-template[data-card="arcbolt"] .mc-cd{font-size:4.6cqi;gap:.6cqi}
+.mc-reviewed-template[data-card="arcbolt"] .mc-cd .mc-die{width:5cqi;height:5cqi}
+.mc-reviewed-template[data-card="arcbolt"],.mc-reviewed-template[data-card="arcbolt"] *{animation:none!important}
+.mc-reviewed-template[data-card="polymorph"] .mc-mx,.mc-reviewed-template[data-card="meteor"] .mc-mx{font-size:3.4cqi;line-height:1.3;justify-content:center;text-align:center}
+.mc-reviewed-template[data-card="polymorph"] .mc-frog{font-size:8cqi}
+.mc-reviewed-template[data-card="bolt"] .mc-plaque,.mc-reviewed-template[data-card="light"] .mc-plaque{font-size:6cqi}

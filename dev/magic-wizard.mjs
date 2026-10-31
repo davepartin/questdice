@@ -27,12 +27,14 @@ check('2x3 grid: Arc Bolt, Polymorph, Storm Coil; Potion, Heal, Heart change', t
 await shot('mw1-panel');
 await p.locator('.b3-sheet.open .mc-tile[data-power="arcbolt"]').click(); await pump(0.4);
 const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent) }));
-const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent);
-check('Arc Bolt card: DICE tag, 1 d8 + 5 blank diamond spaces, −2 / +2 / Roll2, label 1 of 6', a0.tag === 'DICE' && a0.dice === 1 && a0.spaces === 5 && a0.btns.join('|') === '−2|+2|Roll2' && /1 of 6 dice/.test(lbl), JSON.stringify({ a0, lbl }));
+const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
+check('Arc Bolt card: shared template, 1 d8 + 5 blank diamond spaces, −2 / +2 / Roll2, label 1 of 6', a0.tag == null && a0.dice === 1 && a0.spaces === 5 && a0.btns.join('|') === '−2|+2|Roll2' && /1 of 6 attack dice/.test(lbl), JSON.stringify({ a0, lbl }));
+await p.evaluate(()=>{window.arcArt=document.querySelector('.mc-paint img');window.arcFrame=document.querySelector('.mc-fr');});
 await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3); await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3);
-const lbl4 = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent);
+const lbl4 = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
 const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent }));
-check('two taps of +▲2 fill two more spaces; Roll ▲6; label 3 of 6', a1.dice === 3 && a1.roll === 'Roll6' && /3 of 6 dice/.test(lbl4), JSON.stringify({ a1, lbl4 }));
+check('two taps of +▲2 fill two more spaces; Roll ▲6; label 3 of 6', a1.dice === 3 && a1.roll === 'Roll6' && /3 of 6 attack dice/.test(lbl4), JSON.stringify({ a1, lbl4 }));
+check('Stepper keeps artwork mounted and previews magic without paying twice',await p.evaluate(()=>document.querySelector('.mc-paint img')===window.arcArt && document.querySelector('.mc-fr')===window.arcFrame && document.querySelector('.mc-cast-cost').textContent==='6' && document.querySelector('.pw-center b').textContent===String(window.QD.B3.battleState.b.magic-6) && !document.querySelector('.mc-lv.act .mc-spent')));
 await shot('mw1-arcbolt-card');
 const s0 = await st(); await p.locator('.mc-ctl .mc-use.go').click(); await pump(0.5);
 await shot('mw1-arcbolt-rolling');
