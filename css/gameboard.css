@@ -1,6 +1,6 @@
-/* pb1 (Dave, 31 Oct 2026; Crockpot / Grok Bot): the pre-battle screen as a game board on portrait phones. The 3D picture is gone from
-   this screen (its big mini pushed everything down); the act's road is a printed cardboard board, the heroes stand on it as small minis,
-   and the whole screen (header, board, title, next-fight notes, the road-ahead card and Fight) fits with no scrolling. Landscape is unchanged. */
+/* pb1/pb2 (Dave, 31 Oct 2026; Crockpot / Grok Bot): the pre-battle screen as a game board on portrait phones. The 3D picture is gone from
+   this screen; the act is a painted aerial landscape (assets/board/act1.webp) with ten clean touching hexes over it, the heroes stand on
+   the current hex as small minis, and the whole screen (header, board, title, notes, the road-ahead card and Fight) fits with no scrolling. */
 .gb-board { display: none; }
 @media (max-aspect-ratio: 1085/1000) {
   .sx-screen.board:has(.gb-on) { --sheet: 1 !important; }
@@ -24,44 +24,30 @@
   .gb-on .qc-go { min-height: 2.9rem; }
 
   .gb-board { display: block; margin: .35rem 0 .1rem; }
-  .gb-print { position: relative; aspect-ratio: 2 / 1; border-radius: 14px; overflow: visible;
-    background:
-      radial-gradient(60% 80% at 20% 30%, #f6e3b8 0%, transparent 70%),
-      radial-gradient(50% 70% at 85% 75%, #ecd09a 0%, transparent 70%),
-      repeating-linear-gradient(115deg, #0000 0 3px, #8a64300a 3px 4px),
-      linear-gradient(160deg, #efd8a6, #ddbb7c 60%, #cfa865);
-    box-shadow: inset 0 0 0 3px #8a6236, inset 0 0 0 6px #f3dfb2, inset 0 0 0 7.5px #a87d45, inset 0 0 30px #7a52281f, 0 4px 0 #6e4c27, 0 5px 0 #4a321a, 0 12px 22px #000a; }
-  .gb-print::after { content: ''; position: absolute; inset: 9px; border-radius: 9px; border: 1.5px dashed #9c733f80; pointer-events: none; }
-  .gb-road { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .gb-road-edge { fill: none; stroke: #6b4726; stroke-width: 5.6; stroke-linecap: round; stroke-linejoin: round; opacity: .55; }
-  .gb-road-bed { fill: none; stroke: #c99a5a; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
-  .gb-road-dash { fill: none; stroke: #fff4d6; stroke-width: .5; stroke-dasharray: 1.4 1.6; stroke-linecap: round; opacity: .9; }
-  .gb-hills path { fill: #b99659; opacity: .55; }
-  .gb-river { fill: none; stroke: #6fa3c4; stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
-  .gb-pines path { fill: #5f7a3a; opacity: .75; }
+  .gb-print { position: relative; aspect-ratio: 2 / 1; border-radius: 12px; overflow: visible; background: #2a2118 center / cover no-repeat;
+    box-shadow: 0 0 0 1px #f3dfb233, inset 0 0 40px #0008, 0 10px 24px #000b; }
+  .gb-print::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(120% 120% at 50% 50%, #0000 55%, #0006 100%); }
   .gb-spaces { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-  .gb-space { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; }
-  .gb-tile { --c1: #fff6dc; --c2: #e3c48a; display: grid; place-items: center; width: 2.35rem; height: 2.1rem;
-    clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: linear-gradient(180deg, var(--c1), var(--c2));
-    filter: drop-shadow(0 2px 0 #6b4726) drop-shadow(0 3px 2px #0005); color: #4a2f14; font: 900 .95rem/1 var(--ui, sans-serif); }
-  .gb-tile .ic { width: 1.1rem; height: 1.1rem; }
-  .gb-space.done .gb-tile { --c1: #d9e6bf; --c2: #a9c07c; color: #2f5a1a; }
-  .gb-check .ic { width: 1.15rem; height: 1.15rem; color: #2f6a1a; filter: none; }
-  .gb-space.now .gb-tile { --c1: #fff2b8; --c2: #f2c14e; width: 2.7rem; height: 2.4rem; box-shadow: none; filter: drop-shadow(0 0 0 #fff) drop-shadow(0 2px 0 #7a4a10) drop-shadow(0 0 6px #ffd76aaa); }
+  .gb-space { --fill: #f6ecd21f; --edge: #fff6e0cc; --ink: #fff6e0; position: absolute; width: 14.7%; aspect-ratio: 100 / 115.47;
+    transform: translate(-50%, -50%); display: grid; place-items: center; }
+  .gb-hex { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .gb-hex polygon { fill: var(--fill); stroke: var(--edge); stroke-width: 2.2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .gb-mark { position: relative; color: var(--ink); font: 800 .78rem/1 var(--ui, sans-serif); text-shadow: 0 1px 2px #000c; opacity: .9; }
+  .gb-mark .ic { width: .85rem; height: .85rem; filter: drop-shadow(0 1px 1px #000a); }
+  .gb-space.done { --fill: #9fd28a40; --edge: #c8efb5dd; --ink: #dcf7cf; }
+  .gb-space.k-elite { --fill: #c8483a33; --edge: #f0a090dd; --ink: #ffd6cc; }
+  .gb-space.k-boss { --fill: #6a4a1240; --edge: #e2b85add; --ink: #f2cf72; }
+  .gb-space.now { --fill: #ffd76a2e; --edge: #ffd76a; --ink: #fff2b8; filter: drop-shadow(0 0 5px #ffd76acc); }
+  .gb-space.now polygon { stroke-width: 2.8; }
+  .gb-space.now .gb-mark { opacity: 0; }
   .gb-space.reach { cursor: pointer; }
-  .gb-space.k-elite .gb-tile { --c1: #e86a5a; --c2: #8e2418; color: #fff1dc; width: 2.6rem; height: 2.6rem; clip-path: polygon(50% 0, 100% 18%, 92% 72%, 50% 100%, 8% 72%, 0 18%); }
-  .gb-space.k-boss .gb-tile { --c1: #6c5d80; --c2: #2c2140; color: #f2c14e; width: 3.1rem; height: 2.9rem;
-    clip-path: polygon(0 18%, 14% 18%, 14% 0, 30% 0, 30% 18%, 42% 18%, 42% 0, 58% 0, 58% 18%, 70% 18%, 70% 0, 86% 0, 86% 18%, 100% 18%, 100% 100%, 0 100%); }
-  .gb-space.k-boss .gb-tile .ic { width: 1.45rem; height: 1.45rem; margin-top: .45rem; }
-  .gb-space.k-elite.done .gb-tile, .gb-space.k-boss.done .gb-tile { filter: saturate(.4) brightness(1.1) drop-shadow(0 2px 0 #6b4726); }
-  .gb-flag { margin-top: .05rem; padding: .05rem .35rem; border-radius: 4px; background: #4a2f14; color: #f6e3b8; font: 900 .5rem/1.2 var(--ui, sans-serif); letter-spacing: .12em; text-transform: uppercase; }
-  .gb-space.k-elite .gb-flag { background: #8e2418; } .gb-space.k-boss .gb-flag { background: #2c2140; color: #f2c14e; }
   /* the pieces: small minis on round bases, standing on the current space */
   .gb-pieces { position: absolute; z-index: 3; width: 0; height: 0; pointer-events: none; transition: left 1s cubic-bezier(.5, 0, .3, 1), top 1s cubic-bezier(.5, 0, .3, 1); }
-  .gb-piece { --dx: calc((var(--i) - (var(--n) - 1) / 2) * 1.05rem); position: absolute; left: var(--dx); bottom: .55rem; transform: translateX(-50%); display: block; width: 2.6rem; height: 3.3rem; }
-  .gb-pieces.n1 .gb-piece { width: 2.9rem; height: 3.7rem; }
+  .gb-piece { --dx: calc((var(--i) - (var(--n) - 1) / 2) * .95rem); position: absolute; left: var(--dx); bottom: -.35rem; transform: translateX(-50%); display: block; width: 2.4rem; height: 3.1rem; }
+  .gb-pieces.n1 .gb-piece { width: 2.8rem; height: 3.6rem; }
   .gb-piece img { position: absolute; left: 0; right: 0; bottom: .2rem; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 3px 2px #000a); }
-  .gb-base { position: absolute; left: 12%; right: 12%; bottom: 0; height: .55rem; border-radius: 50%; background: radial-gradient(closest-side, #2a1c10 60%, #2a1c1000); }
+  .gb-base { position: absolute; left: 12%; right: 12%; bottom: 0; height: .55rem; border-radius: 50%; background: radial-gradient(closest-side, #000c 55%, #0000); }
   .gb-pieces.moving .gb-piece img { animation: gbHop 1s ease-in-out; animation-delay: calc(var(--i) * 60ms); }
   @keyframes gbHop { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-.9rem); } 50% { transform: translateY(-.2rem); } 75% { transform: translateY(-.7rem); } }
   @media (prefers-reduced-motion: reduce) { .gb-pieces { transition: none; } .gb-pieces.moving .gb-piece img { animation: none; } }

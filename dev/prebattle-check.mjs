@@ -2,7 +2,7 @@
 // at 390x844 and 375x667; the pieces stand on the current space and slide there from the last one.
 //   CHROME=... node dev/prebattle-check.mjs [out=/workspace/prebattle] [port=8189]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
-const OUT = process.argv[2] || '/workspace/prebattle'; const port = +(process.argv[3] || 8189); fs.mkdirSync(OUT, { recursive: true });
+const OUT = process.argv[2] || '/workspace/prebattle2'; const port = +(process.argv[3] || 8189); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0;
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
@@ -11,9 +11,9 @@ const CLS = ['knight', 'wizard', 'ranger', 'bard'];
 const measure = (p) => p.evaluate(() => {
   const main = document.querySelector('.sx-board-main'); const q = (s) => document.querySelector(s)?.getBoundingClientRect();
   const scrollers = [document.scrollingElement, ...document.querySelectorAll('.sx-board *, .sx-board-main')].filter((e) => e && (e === document.scrollingElement ? e.scrollHeight > innerHeight + 1 : e.scrollHeight > e.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(e).overflowY))).map((e) => e.className || e.tagName);
-  const go = q('.sx-qcard .qc-go'); const board = q('.gb-board'); const title = q('.sx-act'); const pcs = [...document.querySelectorAll('.gb-piece')].map((e) => e.getBoundingClientRect()); const now = q('.gb-space.now');
+  const go = q('.sx-qcard .qc-go'); const board = q('.gb-board'); const title = q('.sx-act'); const pcs = [...document.querySelectorAll('.gb-piece')].map((e) => e.getBoundingClientRect()); const now = q('.gb-space.now'); const prev = q('.gb-space:nth-child(2)'); const on = (sp) => !!sp && pcs.length > 0 && pcs.every((r) => Math.abs(r.bottom - (sp.top + sp.height / 2)) < 30 && Math.abs((r.left + r.right) / 2 - (sp.left + sp.width / 2)) < 40);
   return { vh: innerHeight, docH: document.scrollingElement.scrollHeight, over: main ? main.scrollHeight - main.clientHeight : null, scrollers, goBottom: go ? Math.round(go.bottom) : null, board: board ? [Math.round(board.top), Math.round(board.bottom)] : null,
-    titleTop: title ? Math.round(title.top) : null, pieces: pcs.length, onNow: now && pcs.length ? pcs.every((r) => Math.abs(r.bottom - (now.top + now.height / 2)) < 30 && Math.abs((r.left + r.right) / 2 - (now.left + now.width / 2)) < 40) : false,
+    titleTop: title ? Math.round(title.top) : null, pieces: pcs.length, onNow: on(now), onSpace2: on(prev),
     scene: getComputedStyle(document.querySelector('.sx-screen.board') || document.body).getPropertyValue('--sheet').trim() };
 });
 async function open(w, hgt, n, step, from) {
@@ -41,7 +41,7 @@ for (const [w, hgt] of [[390, 844], [375, 667]]) for (const n of [1, 2, 3, 4]) {
   const before = await measure(p); await p.screenshot({ path: `${OUT}/slide_1_before_390x844.png` });
   await p.waitForTimeout(800); await p.screenshot({ path: `${OUT}/slide_2_moving_390x844.png` });
   await p.waitForTimeout(1600); const after = await measure(p); await p.screenshot({ path: `${OUT}/slide_3_after_390x844.png` });
-  check('slide: pieces start on the last space, then stand on the new one', !before.onNow && after.onNow && !errs.length, JSON.stringify({ before: before.onNow, after: after.onNow, errs }));
+  check('slide: pieces start on the last space, then stand on the new one', !before.onNow && before.onSpace2 && after.onNow && !errs.length, JSON.stringify({ beforeOnSpace2: before.onSpace2, beforeOnNow: before.onNow, after: after.onNow, errs }));
   await p.close();
 }
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'ALL PASS'); process.exit(bad ? 1 : 0);

@@ -30,3 +30,13 @@ test('board screen uses the game board with pieces that slide', () => {
   const ui = readFileSync(new URL('../js/g3/scrui.js', import.meta.url), 'utf8');
   assert.match(ui, /class: 'sx-board gb-on'/); assert.match(ui, /gameBoard\(/);
 });
+
+test('pb2: hexes form a touching honeycomb snake over painted art', () => {
+  const ps = Array.from({ length: 10 }, (_, i) => spacePos(i + 1, 10));
+  for (let i = 1; i < 5; i++) assert.equal(+(ps[i].x - ps[i - 1].x).toFixed(2), 15);
+  assert.equal(+(ps[4].x - ps[5].x).toFixed(2), -7.5, '5 and 6 touch across the rows');
+  assert.ok(readFileSync(new URL('../assets/board/act1.webp', import.meta.url)).length < 250000);
+  assert.match(readFileSync(new URL('../offline-files.json', import.meta.url), 'utf8'), /assets\/board\/act1\.webp/);
+  const css = readFileSync(new URL('../css/gameboard.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /gb-road|gb-pines|gb-flag/);
+});
