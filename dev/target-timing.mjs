@@ -22,7 +22,8 @@ await p.evaluate(async (n) => { const { S, E, showBoard } = window.QD; const hh 
 for (let i = 0; i < 120; i++) { await pump(0.5); if (await p.evaluate(() => window.QD.B3?.battleState?.bw && !window.QD.B3.battleState.busy)) break; }
 const st = () => p.evaluate(() => { const B = window.QD.B3.battleState; const b = B.b; return { round: b.round, phase: b.phase, picked: B.picked, target: B.target, tuid: b.enemies[B.target]?.uid, tlock: B.tlock, magic: b.magic, pierce: b.mods.pierce || 0, markGold: b.markGold || 0, charge: b.charge?.volley || 0, hp: b.hp, maxHp: b.maxHp, alive: b.enemies.filter((e) => e.hp > 0).length, lockBadge: [...document.querySelectorAll('.fb-lock')].filter((x) => !x.hidden).length, busy: B.busy }; });
 const shot = async (n) => { await p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove())); await p.screenshot({ path: `${OUT}/${n}_390x844.png` }); };
-const settle = async () => { for (let i = 0; i < 50; i++) { await pump(0.3); const busy = await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return window.QD.B3.battleState.busy; }); if (!busy) break; } await pump(0.4); };
+// (the reveal's OK button wakes on real timers, so the loops wait real time as well as simulated time)
+const settle = async () => { for (let i = 0; i < 60; i++) { await pump(0.3); await p.waitForTimeout(300); const busy = await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return window.QD.B3.battleState.busy; }); if (!busy) break; } await pump(0.4); };
 const openSheet = async () => { if (!await p.evaluate(() => !!document.querySelector('.b3-sheet.open'))) { await p.locator('.b3-powers').first().click(); await pump(1); } };
 const pick = async (id) => { await openSheet(); await p.locator(`.b3-sheet.open .mc-tile[data-power="${id}"]`).click(); await pump(0.5); };
 const useGo = async () => { await p.locator('.mc-ctl .mc-use.go, .mc-ctl .mc-use.add.mc-charge').first().click(); await settle(); };
@@ -55,19 +56,19 @@ await closeSheet(); await pump(0.4); await shot('3-locked-target');
 await clickFoe(0); s = await st(); check('tapping another monster while locked is refused', s.target === 1 && s.tlock === t1.tlock, JSON.stringify(s));
 
 // 4 Roll comes last
-await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 40; i++) { await pump(0.3); if (!(await st()).busy) break; }
+await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 60; i++) { await pump(0.3); await p.waitForTimeout(250); if (!(await st()).busy) break; }
 s = await st(); check('Roll: the dice are out, the lock and the power’s pierce are still there', s.phase === 'shape' && s.tlock === t1.tlock && s.pierce >= 3 && s.target === 1, JSON.stringify(s));
 // give the shot a chance to finish the target next round: leave it nearly dead
 await p.evaluate(() => { const b = window.QD.B3.battleState.b; b.enemies[1].hp = 1; });
-for (let i = 0; i < 6; i++) { const ok = await p.evaluate(() => { const l = document.querySelector('#b3-lock'); if (l && !l.disabled) { l.click(); return true; } return false; }); if (ok) break; await pump(0.5); }
-for (let i = 0; i < 160; i++) { await pump(0.3); const x = await st(); if (x.round === 2 && x.phase === 'reset' && !x.busy) break; }
+for (let i = 0; i < 6; i++) { const ok = await p.evaluate(() => { const l = document.querySelector('#b3-lock'); if (l && !l.disabled) { l.click(); return true; } return false; }); if (ok) break; await pump(0.5); await p.waitForTimeout(250); }
+for (let i = 0; i < 200; i++) { await pump(0.3); await p.waitForTimeout(250); const x = await st(); if (x.round === 2 && x.phase === 'reset' && !x.busy) break; }
 s = await st(); await shot('5-next-round');
 // 5 / 6 the target fell: the next living monster is chosen for you, the lock is gone
 const fell = await p.evaluate(() => { const B = window.QD.B3.battleState; return { dead: B.b.enemies[1].hp <= 0, target: B.target, tuid: B.b.enemies[B.target]?.uid, aliveIdx: B.b.enemies.map((e, i) => e.hp > 0 ? i : -1).filter((i) => i >= 0) }; });
 check('round two: the monster that fell is not the target; a living one is chosen for you (Roll, no choosing)', s.round === 2 && s.picked === true && fell.aliveIdx.includes(fell.target), JSON.stringify({ s, fell }));
 check('round two: the lock is gone', !s.tlock && s.lockBadge === 0, JSON.stringify(s));
 // the target stays while it lives
-const keep = s.target; await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 40; i++) { await pump(0.3); if (!(await st()).busy) break; }
+const keep = s.target; await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 60; i++) { await pump(0.3); await p.waitForTimeout(250); if (!(await st()).busy) break; }
 s = await st(); check('rolling again aims at the same living target (nothing was reset)', s.target === keep && s.phase === 'shape', JSON.stringify({ keep, s }));
 check('no page errors', errs.length === 0, errs.join(' | '));
 await br.close(); server.kill(); process.exit(bad ? 1 : 0);
