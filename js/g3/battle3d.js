@@ -456,7 +456,7 @@ function selectTarget(uid) {
   B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
   if (D.TEAMWORK.heartToHeart && B.party) { if (B.net) Sess.send({ type: 'aim', target: i }).catch(() => {}); else if (B.b.fighters[B.active]) B.b.fighters[B.active].aim = i; } // friends see where you are looking
   paintHearts();
-  if (first && !rolled) { document.getElementById('b3-roll')?.removeAttribute('disabled'); B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : '')); }
+  if (first && !rolled) { const rb = document.getElementById('b3-roll'); rb?.removeAttribute('disabled'); const sub = rb?.querySelector('small'); if (sub) sub.textContent = B.party ? 'throw' : 'tap to throw'; B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : '')); } // (the Roll button said "choose target" until the next repaint)
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],

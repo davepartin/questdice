@@ -56,7 +56,7 @@ await closeSheet(); await pump(0.4); await shot('3-locked-target');
 await clickFoe(0); s = await st(); check('tapping another monster while locked is refused', s.target === 1 && s.tlock === t1.tlock, JSON.stringify(s));
 
 // 4 Roll comes last
-await closeSheet(); await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 60; i++) { await pump(0.3); await p.waitForTimeout(250); if (!(await st()).busy) break; }
+for (let i = 0; i < 4; i++) await closeSheet(); await shot('4-before-roll'); console.log('sheet before roll:', await p.evaluate(() => ({ open: window.QD.B3.battleState.sheetOpen, cls: document.querySelector('.b3-sheet')?.className }))); await p.locator('#b3-roll').click(); await pump(0.6); for (let i = 0; i < 60; i++) { await pump(0.3); await p.waitForTimeout(250); if (!(await st()).busy) break; }
 s = await st(); check('Roll: the dice are out, the lock and the power’s pierce are still there', s.phase === 'shape' && s.tlock === t1.tlock && s.pierce >= 3 && s.target === 1, JSON.stringify(s));
 // give the shot a chance to finish the target next round: leave it nearly dead
 await p.evaluate(() => { const b = window.QD.B3.battleState.b; b.enemies[1].hp = 1; });
