@@ -913,7 +913,7 @@ async function doCard(id, opts = {}) {
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  B.pwSel = k?.kind === 'charge' ? id : null; // Keep the charge track visible after Charge or Use.
+  B.pwSel = k?.kind === 'charge' || D.CLASSES.knight.cards.some(c => c.id === id) ? id : null; // Keep the charge track visible after Charge or Use.
   renderShape(); renderSheet(); bumpCounters(gains); sheetTop();
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });

@@ -16,7 +16,7 @@ const pump = (s) => p.evaluate(async (s) => { for (let i = 0; i < s * 20; i++) {
 await p.evaluate(async (n) => { const { S, E, showBoard } = window.QD; const hh = E.newHero({ name: n, cls: 'knight', seed: 5 }); hh.dice = null; hh.level = 9; S.hero = hh; S.company = { members: [hh] }; const SV = await import('./js/save.js'); if (!SV.heroExists(n)) await SV.createSave(hh, 'testpass'); showBoard(); window.QD.startQuest({ ...E.questsFor(hh)[0], enemies: ['goblin'], kind: 'boss' }); }, 'Mk1Knight');
 for (let i = 0; i < 120; i++) { await pump(0.5); if (await p.evaluate(() => window.QD.B3?.battleState?.bw && !window.QD.B3.battleState.busy)) break; }
 const st = () => p.evaluate(() => { const b = window.QD.B3.battleState.b; return { magic: b.magic, atk: b.mods.atk || 0, block: b.mods.block || 0, splash: b.mods.splash || 0, rip: !!b.riposte, charge: b.charge?.rally || 0 }; });
-const fresh = () => p.evaluate(() => { const { B3, E, S } = window.QD; const B = B3.battleState; B.b.board = E.rollBoard(S.hero, E.makeRng(5)); B.b.phase = 'shape'; B.b.magic = 8; B.b.usedRound = {}; B.b.mods.atk = 0; B.b.mods.block = 0; B.b.mods.splash = 0; B.busy = false; B3.renderShape(); });
+const fresh = () => p.evaluate(() => { const { B3, E, S } = window.QD; const B = B3.battleState; B.b.board = E.rollBoard(S.hero, E.makeRng(5)); B.b.phase = 'shape'; B.b.magic = 10; B.b.usedRound = {}; B.b.mods.atk = 0; B.b.mods.block = 0; B.b.mods.splash = 0; B.busy = false; B3.renderShape(); });
 const settle = async () => { for (let i = 0; i < 40; i++) { await pump(0.3); const busy = await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return window.QD.B3.battleState.busy; }); if (!busy) break; } await pump(0.3); };
 const pick = async (id) => { for (let i = 0; i < 10; i++) { await p.waitForTimeout(400); await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); }); await p.locator(`.b3-sheet.open .mc-tile[data-power="${id}"]`).click(); await pump(0.4); if (await p.evaluate((id) => !!document.querySelector(`.mc-card[data-card="${id}"]`), id)) return; } };
 const clear = () => p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove()));
@@ -28,19 +28,19 @@ await shot('mk1-panel');
 await p.locator('.b3-sheet.open .mc-tile[data-power="cleave"]').click(); await pump(0.4);
 const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent) }));
 const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
-check('Cleave card: shared template, 2 dice + 2 blank spaces, −1 / +1 / Roll2, label says 2 of 4', a0.tag == null && a0.dice === 2 && a0.spaces === 2 && a0.btns.join('|') === '−1|+1|Roll2' && /2 of 4 attack dice/.test(lbl), JSON.stringify({ a0, lbl }));
+check('Cleave card: shared template, 2 dice + 2 blank spaces, −1 / +1 / Roll3, label says 2 of 4', a0.tag == null && a0.dice === 2 && a0.spaces === 2 && a0.btns.join('|') === '−1|+1|Roll3' && /2 of 4 attack dice/.test(lbl), JSON.stringify({ a0, lbl }));
 await p.evaluate(()=>{window.cleaveArt=document.querySelector('.mc-paint img');window.cleaveFrame=document.querySelector('.mc-fr');});
 await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3); await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3);
 const lbl4 = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
 const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent }));
-check('two taps of +▲1 fill the last two spaces; Roll ▲4; label 4 of 4', a1.dice === 4 && a1.roll === 'Roll4' && /4 of 4 attack dice/.test(lbl4), JSON.stringify({ a1, lbl4 }));
+check('two taps of +▲1 fill the last two spaces; Roll ▲5; label 4 of 4', a1.dice === 4 && a1.roll === 'Roll5' && /4 of 4 attack dice/.test(lbl4), JSON.stringify({ a1, lbl4 }));
 await shot('mk1-cleave-card');
-check('Stepper keeps art mounted, previews remaining magic, and puts cost on card',await p.evaluate(()=>document.querySelector('.mc-paint img')===window.cleaveArt && document.querySelector('.mc-fr')===window.cleaveFrame && document.querySelector('.mc-cast-cost').textContent==='4' && document.querySelector('.pw-center b').textContent===String(window.QD.S.battle.magic-4) && !document.querySelector('.mc-lv.act .mc-spent') && getComputedStyle(document.querySelector('.mc-lv.act .mc-die')).animationName==='none'));
+check('Stepper keeps art mounted, previews remaining magic, and puts cost on card',await p.evaluate(()=>document.querySelector('.mc-paint img')===window.cleaveArt && document.querySelector('.mc-fr')===window.cleaveFrame && document.querySelector('.mc-cast-cost').textContent==='5' && document.querySelector('.pw-center b').textContent===String(window.QD.S.battle.magic-5) && !document.querySelector('.mc-lv.act .mc-spent') && getComputedStyle(document.querySelector('.mc-lv.act .mc-die')).animationName==='none'));
 const s0 = await st(); await p.locator('.mc-ctl .mc-use.go').click(); await pump(0.5);
 await shot('mk1-cleave-rolling');
 for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
 await pump(0.6); const s1 = await st(); await shot('mk1-cleave-after-roll');
-check('Roll: power-dice reveal plays, magic drops by 4, attack rises and half splashes', s0.magic - s1.magic === 4 && s1.atk > s0.atk && s1.splash === Math.floor((s1.atk - s0.atk) / 2) && !!(await p.evaluate(() => document.querySelector('.dr-die'))), JSON.stringify({ s0, s1 }));
+check('Roll: power-dice reveal plays, magic drops by 5, attack rises and half splashes', s0.magic - s1.magic === 5 && s1.atk > s0.atk && s1.splash === Math.floor((s1.atk - s0.atk) / 2) && !!(await p.evaluate(() => document.querySelector('.dr-die'))), JSON.stringify({ s0, s1 }));
 await settle(); await pick('riposte');
 const m0 = await st(); await shot('mk1-riposte-card'); await p.locator('.mc-ctl .mc-use.go').click();
 for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }

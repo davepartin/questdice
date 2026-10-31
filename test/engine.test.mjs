@@ -402,7 +402,7 @@ test('powers spend Magic and work once per battle; at-will powers return every r
   const h = shieldUp(knight());
   const b = newBattle(h, questsFor(h)[0], makeRng(2), 1);
   startRoll(b); b.magic = 5;
-  const r = castPower(b, 'cleave'); assert.ok(r); assert.equal(b.magic, 3); assert.equal(r.rolls.length, 2);
+  const r = castPower(b, 'cleave'); assert.ok(r); assert.equal(b.magic, 2); assert.equal(r.rolls.length, 2);
   assert.equal(b.mods.atk, r.total); assert.equal(b.mods.splash, Math.floor(r.total / 2));
   assert.equal(castPower(b, 'cleave'), null);
   assert.ok(castPower(b, 'shieldwall')); assert.equal(b.mods.block, 4); assert.equal(castPower(b, 'shieldwall'), null); // once a round

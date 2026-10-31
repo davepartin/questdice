@@ -672,3 +672,6 @@ Approved completed art/docs may be published under standing authorization withou
 - Oct 31 08:33 CT Crockpot: RELEASED pb2 board art files. Shipped 20261031pb2.
 - Oct 31 08:42 CT Crockpot: RESERVED pb3 — scrui.js board() only, js/g3/gameboard.js, css/gameboard.css, stamp files, test/gameboard.test.mjs, dev/prebattle-check.mjs
 - Oct 31 08:50 CT Crockpot: RELEASED pb3 files. Shipped 20261031pb3.
+
+
+31 October 2026, Director: latest template complete for all seven Knight magic cards, build 20261031kt2. Shared corner cost, colored traits, title below art without outline, bottom-left Roman rank and printed price covers. Knight selection stays visible after casting. Dave-approved Cleave pricing now 3/4/5 magic for 2/3/4d6 at rank I; other power mechanics/prices preserved. 523 tests, 42 rank/phone renders and actual Knight controls/payment checks pass. Existing alternative artwork sharing remains documented. [Knight template](tasks/magic-template/knight/README.md).

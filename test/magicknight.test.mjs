@@ -5,10 +5,10 @@ import { cardsOf, makeRng, newHero, newBattle, startRoll, resolve, castPower, be
 const knight = () => newHero({ name: 'K', cls: 'knight', seed: 3, full: true });
 const fight = () => { const h = knight(); const b = newBattle(h, questsFor(h)[0], makeRng(2), 1); startRoll(b); return b; };
 test('Knight starts with Cleave, Riposte and Rally Cry', () => { assert.deepEqual(cardsOf(knight()).map((k) => k.id), ['cleave', 'riposte', 'rally']); });
-test('Cleave: 2 magic = 2d6, each extra magic a d6, up to 4d6, half splashes, every round', () => {
+test('Cleave: 3 magic = 2d6, each extra magic a d6, up to 4d6, half splashes, every round', () => {
   const b = fight(); b.magic = 9; const k = cardsOf(b.hero)[0];
-  assert.equal(powerDice(k, 2), 2); assert.equal(powerDice(k, 4), 4); assert.equal(powerDice(k, 9), 4);
-  const r = castPower(b, 'cleave', { x: 4 }); assert.equal(r.rolls.length, 4); assert.equal(b.magic, 5); assert.equal(b.mods.atk, r.total); assert.equal(b.mods.splash, Math.floor(r.total / 2));
+  assert.equal(powerDice(k, 3), 2); assert.equal(powerDice(k, 4), 3); assert.equal(powerDice(k, 5), 4); assert.equal(powerDice(k, 9), 4);
+  const r = castPower(b, 'cleave', { x: 5 }); assert.equal(r.rolls.length, 4); assert.equal(b.magic, 4); assert.equal(b.mods.atk, r.total); assert.equal(b.mods.splash, Math.floor(r.total / 2));
   assert.equal(castPower(b, 'cleave', { x: 2 }), null); beginReset(b); startRoll(b); assert.ok(castPower(b, 'cleave', { x: 2 }));
 });
 test('Riposte: 2 magic, +4 block, once a round; unused block hits back', () => {

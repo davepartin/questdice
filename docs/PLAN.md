@@ -1523,3 +1523,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 31 October 2026, Director: Cleave template refinements, build 20261031ct1. Stable stepper updates preserve painting/frame (no remount flash), larger dice, attack starburst, red Attack / white ½ Splash tags, dynamic top-right cost, remaining-magic preview, removed duplicate cost line and reviewed-title purple outline. Payment still occurs exactly once on Roll. Real controls/preview/payment/splash checks, six rank/size renders and five focused unit tests pass. [Evidence](team/tasks/magic-template/knight/README.md). No gameplay/save changes; pre-battle board preserved.
+
+
+31 October 2026, Director: latest template complete for all seven Knight magic cards, build 20261031kt2. Shared corner cost, colored traits, title below art without outline, bottom-left Roman rank and printed price covers. Knight selection stays visible after casting. Dave-approved Cleave pricing now 3/4/5 magic for 2/3/4d6 at rank I; other power mechanics/prices preserved. 523 tests, 42 rank/phone renders and actual Knight controls/payment checks pass. Existing alternative artwork sharing remains documented. [Knight template](team/tasks/magic-template/knight/README.md).

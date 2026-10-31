@@ -186,3 +186,9 @@
 .mc-reviewed-template[data-card="cleave"] .mc-lv.act .mc-slots :is(.mc-die,.mc-space){width:11cqi;height:11cqi;animation:none!important}
 .mc-reviewed-template[data-card="cleave"] .mc-sy{padding:0 0 4cqi}
 .mc-reviewed-template[data-card="cleave"],.mc-reviewed-template[data-card="cleave"] *{animation:none!important}
+/* Shared Knight traits and cost slot; each card keeps its own effect presentation. */
+.mc-reviewed-template .mc-art-icon{left:16%;right:auto}
+.mc-trait.atk{background:#a81e22;color:#fff}.mc-trait.block{background:#15588d;color:#fff}.mc-trait.heal{background:#165d39;color:#fff}.mc-trait.counter{background:#d3aa56;color:#211a10}
+.mc-trait .ic{width:3.3cqi;height:3.3cqi}
+.mc-reviewed-template .mc-lv.act .mc-ln .mc-fv{font-size:9cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-ln .mc-fv{font-size:7cqi}

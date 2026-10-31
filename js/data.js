@@ -454,7 +454,7 @@ export const CLASSES = {
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
     // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'scale', atwill: true, cost: 2, step: 1, max: 4, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 2 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'scale', atwill: true, cost: 3, step: 1, max: 5, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 3 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
       { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
       { id: 'shieldwall', slot: 'B', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
       { id: 'riposte', slot: 'B', start: true, name: 'Riposte', kind: 'flat', atwill: true, cost: 2, fx: { block: 4 }, riposte: true, text: 'Once per round, 2 magic: +4 block, and any block the monsters do not use hits back as attack. (mk1, PROPOSED)' },
