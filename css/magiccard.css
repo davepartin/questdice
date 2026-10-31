@@ -98,3 +98,32 @@
 .b3-sheet.open:has(.mc-sheet) .ic-magic{overflow:visible;filter:none!important}
 .b3-sheet.open:has(.mc-sheet) .ic-magic .h{display:none!important}
 .b3-sheet.open:has(.mc-sheet) .ic-magic .p{fill:#a64dff!important;stroke:#fff!important;stroke-width:2px!important;stroke-linejoin:round!important;paint-order:stroke fill!important;vector-effect:non-scaling-stroke;opacity:1!important}
+/* mc5 (Dave: "make the font 50% bigger on the cards ... on the phone the card words need to be able to be read"): every card text 1.5x.
+   The painting window gives up its lower part to the levels so it all still fits full screen. */
+.mc-ptag{font-size:4.2cqi}
+.mc-plaque{font-size:8.1cqi;padding:1.2cqi 3cqi}
+.mc-kick{font-size:4.35cqi;letter-spacing:.05em;top:31.2%;height:5.2%;left:13.1%;right:13.1%;background:#140a24d9;color:#e6ccff;border-radius:0 0 1.4cqi 1.4cqi}
+.mc-levels{top:37.6%;bottom:9.6%;left:13.6%;right:13.6%;gap:1.4cqi}
+.mc-paint{height:28.4%}
+.mc-sy{font-size:6.9cqi}
+.mc-mx{font-size:4.35cqi;line-height:1.05}
+.mc-spent{font-size:4.95cqi}
+.mc-lvw{font-size:5.1cqi;gap:1.4cqi}
+.mc-cd{font-size:5.1cqi}.mc-cd .mc-fv{font-size:5.4cqi}.mc-cd .mc-fv .ic{width:5cqi;height:5cqi}.mc-cd .mc-die{width:6cqi;height:6cqi}
+.mc-frog{font-size:8.1cqi}
+.mc-had{font-size:4.8cqi}
+.mc-lv{min-height:12.4cqi;padding:.6cqi 2cqi}
+.mc-lv.act{padding:1.4cqi 2.2cqi}
+.mc-lv.act .mc-sy{gap:1.4cqi}
+.mc-lv.act .mc-spent{font-size:5.7cqi}.mc-lv.act .mc-mx{font-size:4.95cqi}
+.mc-lv.act .mc-fv{font-size:9cqi}.mc-lv.act .mc-fv .ic{width:8cqi;height:8cqi}
+.mc-lv.act .mc-dot{width:10cqi;height:10cqi;font-size:5.4cqi}
+.mc-mg .ic{width:5.4cqi;height:5.4cqi}
+.mc-cp b{font-size:6cqi}
+.mc-cp .mc-coin{width:5cqi;height:5cqi}
+.mc-kick{left:11.5%;right:11.5%;letter-spacing:0;white-space:nowrap}
+.mc-spent .mc-br{flex-basis:100%;height:0}
+.mc-lv.act .mc-slots .mc-die,.mc-lv.act .mc-space{width:8.2cqi;height:8.2cqi}
+.mc-lv.act .mc-slots{gap:1cqi;flex-wrap:nowrap}
+.mc-lv.act .mc-spent{row-gap:1cqi}
+.mc-cov{padding:0 2cqi}.mc-cov .mc-lvw{gap:1cqi}
