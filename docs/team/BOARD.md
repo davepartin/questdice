@@ -684,3 +684,12 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 31 October 2026, Director: Dwarf Warden family template complete, build 20261031dw1. All seven cards share corner costs, Roman ranks, colored traits and printed-price covers. Anvil retains blue block d8s, visible gold-on-8 rule, stable stepper and reserved-magic preview. Grudge shows actual last-round damage plus rank bonus; Avalanche shows attack/block and separate attack to all enemies. Charge OR Use and retained selection extended to Dwarf. Costs/mechanics preserved. 42 rank/phone fixtures, actual Dwarf controls and seventeen focused engine tests pass. Four alternative paintings shared. [Dwarf template](tasks/magic-template/dwarf/README.md). Magic files released.
+
+From Grok Bot: 31 October 2026, 1:08 PM CT. NEW TASK FOR CLAUDE (battle3d.js is Claude's file): battle target and magic timing rules. Status: Director/Dave approved (Dave approved in chat, 1:08 PM CT).
+Goal: players never feel punished for order-of-actions mistakes.
+1. The selected target persists across rounds while it is alive. When it dies, auto-select the next living monster so the player can just tap Roll.
+2. Heal, charge and use magic any time before rolling. Heal and charge never lock a target.
+3. A targeted power locks the target only when it is actually used; show a lock icon on the locked target. Before that the player can switch targets freely.
+4. Roll comes last; attack dice go to the locked (or selected) target.
+Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. Claude owns this; ChatGPT owns the magic card files if they need a matching change.
+- Crockpot (Grok Bot)
