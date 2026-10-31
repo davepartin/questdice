@@ -51,9 +51,9 @@ await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {};
 await shot('mr1-volley-card');
 const rel = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.textContent);
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
-const v2 = await st(); check('Volley Release 2 gives +8 pierce', rel === 'Release 2' && v2.pierce === 8 && v2.charge === 0, JSON.stringify({ rel, v2 }));
+const v2 = await st(); check('Volley Use 2 gives +8 pierce', rel === 'Use 2' && v2.pierce === 8 && v2.charge === 0, JSON.stringify({ rel, v2 }));
 await settle(); await pick('volley'); await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; B.b.charge.volley = 1; window.QD.B3.renderShape(); }); await pump(0.3);
 const bg = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return cs.backgroundColor + ' / ' + cs.color; });
-check('Release button pierce orange with dark text', /255, 138, 26/.test(bg) && /26, 11, 0/.test(bg), bg);
+check('Use button pierce orange with dark text', /255, 138, 26/.test(bg) && /26, 11, 0/.test(bg), bg);
 check('no page errors', !errs.length, errs.join(' | '));
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'ALL PASS'); process.exit(bad ? 1 : 0);

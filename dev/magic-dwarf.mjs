@@ -1,6 +1,6 @@
 // md1 (Crockpot / Grok Bot, 29 Oct 2026): the Dwarf's magic cards in a real battle at 390x844.
 //   CHROME=... node dev/magic-dwarf.mjs [out=/workspace/magic-dwarf] [port=8187]
-// Anvil Strike (blue d8 block dice, 1 magic each, 8s give 3 gold), Grudge (2 magic, attack = damage past block last round), Stonehide store/release.
+// Anvil Strike (blue d8 block dice, 1 magic each, 8s give 3 gold), Grudge (2 magic, attack = damage past block last round), Stonehide charge/use.
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
 const OUT = process.argv[2] || '/workspace/magic-dwarf'; const port = +(process.argv[3] || 8187); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0;
@@ -56,6 +56,6 @@ await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {};
 await shot('md1-stonehide-card');
 const rel = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return b.textContent + ' ' + cs.backgroundColor + ' / ' + cs.color; });
 const v1b = await st(); await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
-const v2 = await st(); check('Stonehide Release 2 (blue, dark text) adds +12 block on top', /^Release 2 rgb\(58, 164, 255\) \/ rgb\(6, 26, 46\)$/.test(rel) && v2.block === v1b.block + 12 && v2.charge === 0 && v2.atk === v1b.atk, JSON.stringify({ rel, v1b, v2 }));
+const v2 = await st(); check('Stonehide Use 2 (blue, dark text) adds +12 block on top', /^Use 2 rgb\(58, 164, 255\) \/ rgb\(6, 26, 46\)$/.test(rel) && v2.block === v1b.block + 12 && v2.charge === 0 && v2.atk === v1b.atk, JSON.stringify({ rel, v1b, v2 }));
 check('no page errors', !errs.length, errs.join(' | '));
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'ALL PASS'); process.exit(bad ? 1 : 0);

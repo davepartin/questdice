@@ -27,14 +27,14 @@ for (const [w, h] of [[360, 740], [390, 844], [412, 915]]) { // 27 Oct (Dave): t
   check(`${w}x${h}: Volley 0 charges: 4 grey dots 3,8,15,24, Store ▲1, no Release; Quick Draw says 2 Free Rerolls`, v0.nums === '3,8,15,24' && v0.on === 0 && v0.store === 'Store1' && !v0.rel && !v0.ov && !v0.out && v0.qd === '2 Free Rerolls', JSON.stringify(v0));
   await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.charge = { ...(B.b.charge || {}), volley: 2 }; B.b.usedRound = {}; window.QD.B3.renderShape(); }); await pump(0.3);
   const v2 = await vrow(); await clear(); await p.screenshot({ path: `${OUT}/${label}-rows-volley-2charges_${w}x${h}.png` });
-  check(`${w}x${h}: Volley 2 charges: 2 orange dots, Release 2 in pierce orange, Store still there, fits`, v2.on === 2 && v2.rel === 'Release 2' && v2.relBg === 'rgb(255, 138, 26)' && v2.store === 'Store1' && !v2.ov && !v2.out, JSON.stringify(v2));
+  check(`${w}x${h}: Volley 2 charges: 2 orange dots, Use 2 in pierce orange, Charge still there, fits`, v2.on === 2 && v2.rel === 'Use 2' && v2.relBg === 'rgb(255, 138, 26)' && v2.store === 'Store1' && !v2.ov && !v2.out, JSON.stringify(v2));
   const fit2 = await p.evaluate(() => { const rows = [...document.querySelectorAll('.b3-sheet.open .pw-rows .pr-row')]; const sh = document.querySelector('.b3-sheet.open').getBoundingClientRect(); return { last: Math.round(rows.at(-1).getBoundingClientRect().bottom), sheet: Math.round(sh.bottom), vh: innerHeight }; });
   check(`${w}x${h}: still fits with 2 charges (no scrolling)`, fit2.last <= fit2.sheet && fit2.last <= fit2.vh, JSON.stringify(fit2));
   const pz0 = await p.evaluate(() => window.QD.B3.battleState.b.mods.pierce || 0);
   await p.locator('.b3-sheet.open .pr-row[data-row="volley"] .pr-rel').click(); await pump(0.8);
   const vr = await p.evaluate(() => ({ pz: window.QD.B3.battleState.b.mods.pierce || 0, overlay: !!document.querySelector('.dr-layer, .dr-inline, .dr-card'), note: document.querySelector('.b3-sheet.open .pr-row[data-row="volley"] .pr-note')?.textContent || '', rows: document.querySelectorAll('.b3-sheet.open .pw-rows .pr-row').length, busy: window.QD.B3.battleState.busy }));
   await clear(); await p.screenshot({ path: `${OUT}/${label}-rows-volley-released_${w}x${h}.png` });
-  check(`${w}x${h}: Volley Release stays in the panel (no reveal screen), +8 pierce, result in its row`, vr.pz - pz0 === 8 && !vr.overlay && /Released 2: \+8 pierce/.test(vr.note) && vr.rows === 6 && !vr.busy, JSON.stringify({ pz0, vr }));
+  check(`${w}x${h}: Volley Release stays in the panel (no reveal screen), +8 pierce, result in its row`, vr.pz - pz0 === 8 && !vr.overlay && /Used 2: \+8 pierce/.test(vr.note) && vr.rows === 6 && !vr.busy, JSON.stringify({ pz0, vr }));
   await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; window.QD.B3.renderShape(); }); await pump(0.3);
   await p.locator('.b3-sheet.open .pr-row[data-row="volley"] .pr-go').click(); await pump(0.8);
   const vs = await p.evaluate(() => ({ ch: window.QD.B3.battleState.b.charge?.volley, overlay: !!document.querySelector('.dr-layer, .dr-inline, .dr-card'), note: document.querySelector('.b3-sheet.open .pr-row[data-row="volley"] .pr-note')?.textContent || '', on: document.querySelectorAll('.b3-sheet.open .pr-row[data-row="volley"] .pr-dot.on').length }));

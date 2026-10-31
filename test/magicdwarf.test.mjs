@@ -1,4 +1,4 @@
-// md1 (PROPOSED): Dwarf magic cards live. Anvil Strike blue d8 block dice (8s give 3 gold), Grudge hits back for damage past block, Stonehide store/release.
+// md1 (PROPOSED): Dwarf magic cards live. Anvil Strike blue d8 block dice (8s give 3 gold), Grudge hits back for damage past block, Stonehide charge/use.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cardsOf, makeRng, newHero, newBattle, startRoll, resolve, castPower, beginReset, questsFor, chargeGain, powerDice, scaleMax } from '../js/engine.js';

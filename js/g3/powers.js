@@ -90,7 +90,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
   if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return `Attack grows each round. Round ${r}: +${E.roundGain(k, r, level)}.${splashWord(k)}`; }
-  if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} stored. `}Store 1 a round, or release all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
+  if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} charged. `}Charge 1 a round, or use them all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to every monster.`;
   if (k.kind === 'luck') return `Roll a d6. 1–2: +${1 + level} magic. 3–4: +${E.scaleNum(E.LUCK.mid, level)} attack. 5–6: +${E.scaleNum(E.LUCK.top, level)} attack, +1 magic.`;
   if (k.grudge) return `Attack equal to the damage that got past your block last round${k.grudge[level] ? `, +${k.grudge[level]}` : ''}.`;
@@ -100,7 +100,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
 // What a cast leaves you with, beside the Cast button: "Rolls 2d6 · 2 magic left" (the dice only for a power that rolls dice).
 export function castPreview(k, { x, level = 0, magic = 0 } = {}) {
   const cost = x ?? k.cost; const left = `${Math.max(0, magic - cost)} magic left`;
-  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.kind === 'charge' ? 'Stores 1 charge' : '';
+  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.kind === 'charge' ? 'Charges 1' : '';
   return rolls ? `${rolls} · ${left}` : left;
 }
 export function shortLine(k, level = 0) {
@@ -225,7 +225,7 @@ function powerRow(ctx, p, sel) {
       return n <= 4 ? Array.from({ length: n }, () => HK.icon(FX_ICON[f] || 'magic')) : [HK.icon(FX_ICON[f] || 'magic'), h('b', {}, `×${n}`)]; }
     if (k.kind === 'charge' && k.per) { // mq7 (Dave): one dot per charge, each holding what a release at that many charges gives (engine chargeGain); filled = stored
       const f = Object.keys(typeof k.per === 'number' ? { atk: 1 } : k.per)[0]; const have = stored || 0;
-      return [h('span', { class: `pr-dots t-${f}`, 'aria-label': `${have} of ${k.max} stored, release now for ${have ? E.chargeGain(k, have, level)[f] : 0} ${NAME[f] || f}` },
+      return [h('span', { class: `pr-dots t-${f}`, 'aria-label': `${have} of ${k.max} charged, use now for ${have ? E.chargeGain(k, have, level)[f] : 0} ${NAME[f] || f}` },
         Array.from({ length: k.max }, (_, i) => h('span', { class: `pr-dot ${i < have ? 'on' : ''} ${i === have - 1 ? 'now' : ''}` }, String(E.chargeGain(k, i + 1, level)[f])))), HK.icon(FX_ICON[f] || 'magic')]; }
     if (k.kind === 'flat' && k.fx && k.fx.free) return [h('span', { class: 'pr-words' }, `${k.fx.free} Free Rerolls`)]; // mq7 (Dave): just say it
     return buyItems(k, { x, round: b.round, level, stored }).map((it) => [...it.childNodes].slice(0, 2)).flat();
@@ -237,7 +237,7 @@ function powerRow(ctx, p, sel) {
   const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
   const castable = reset ? st.spent && canRecharge(k) : true;
   const go = reset ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Cast', mc(x)))
-    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Store a charge of' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Store', mc(x)] : ['Cast', mc(x)]);
+    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Charge' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Charge', mc(x)] : ['Cast', mc(x)]);
   const friends = k.kind === 'luck' && !reset && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
   if (friends.length) { // mp8: Lucky Verse at a table asks who it is for, right in its row: Me (attack) or a friend (the same number as healing)
     const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, 'Me', mc(x)),
@@ -246,7 +246,7 @@ function powerRow(ctx, p, sel) {
       h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
       pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
   }
-  const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Release ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Release ${stored}`) : null;
+  const rel = relOk ? h('button', { type: 'button', class: 'pw-btn alt pr-rel', 'aria-label': `Use ${stored} charge${stored > 1 ? 's' : ''}`, onclick: () => ctx.use(k.id, { release: true }) }, `Use ${stored}`) : null;
   return h('div', { class: `pr-row pr-k-${k.kind} t-${toneOf(k)} ${sel === k.id ? 'on' : ''} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
     h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
     pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts' }, rel, go), (() => { const n = ROW_NOTE[k.id]; return n && n.round === b.round ? h('div', { class: `pd-result pr-note pr-cnote t-${n.f}`, role: 'status' }, HK.icon(FX_ICON[n.f] || 'magic'), h('span', {}, n.text)) : null; })());
@@ -302,7 +302,7 @@ function detailPanel(ctx, sel) {
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
       h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
     const relOk = k.kind === 'charge' && stored > 0 && !reset && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
-    const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Release ${stored} charge${stored > 1 ? 's' : ''}`) : null;
+    const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Use ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = reset ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
       : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`)));
     // Verse for a friend (CLASS2.verse, the lab): at a table Lucky Verse asks who it is for. You: attack, as now. A friend: the same number as healing.
@@ -339,7 +339,7 @@ const ROW_NOTE = {};
 export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
   if (k?.kind === 'charge') {
     const f = Object.keys(r.per || perOf(k))[0] || 'pierce'; const amt = gains[f] || r.total || 0;
-    ROW_NOTE[k.id] = { round, f, text: r.released ? `Released ${r.released}: +${amt} ${NAME[f] || f}` : `Stored: ${r.charged || 0} of ${k.max}` };
+    ROW_NOTE[k.id] = { round, f, text: r.released ? `Used ${r.released}: +${amt} ${NAME[f] || f}` : `Charged: ${r.charged || 0} of ${k.max}` };
     try { sfx.magic?.(); } catch { /* sound is optional */ }
     return Promise.resolve();
   }
@@ -356,7 +356,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
     const chips = h('div', { class: 'dr-gains' });
     const finish = (delay = 380) => later(delay, () => { if (done) return; done = true; chips.replaceChildren(...Object.entries(gains).filter(([f]) => !shown.has(f)).map(([f, v]) => chip(f, v))); card.classList.add('done'); ok.disabled = false; ok.focus?.(); sfx.coin?.(); });
     const art = h('div', { class: 'cr-art' });
-    const kicker = r.released ? 'Release' : r.charged ? 'Charge stored' : k.kind === 'super' ? 'Super power' : k.atwill ? 'Every-round power' : 'Big move';
+    const kicker = r.released ? 'Use' : r.charged ? 'Charged' : k.kind === 'super' ? 'Super power' : k.atwill ? 'Every-round power' : 'Big move';
     const head = h('div', { class: 'cr-head' }, h('span', { class: 'cr-sigil', 'aria-hidden': 'true' }, h('i', { class: 'cr-tri' }), h('span', { class: 'cr-medal' }, glyph(k))),
       h('small', { class: 'dr-kicker' }, `${k.slot ? `${k.slot} · ` : ''}${kicker}${r.cost ? ` · ${r.cost} magic` : ''}`), h('h3', {}, k.name));
     const card = h('div', { class: `dr-card cr-card t-${tone} kind-${r.released ? 'release' : r.charged ? 'charge' : k.kind}`, role: inline ? 'status' : 'dialog', 'aria-label': `${k.name}` }, head, art, chips, ok);
@@ -388,7 +388,7 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
       const now = Object.entries(E.chargeGain(k, n, level)).map(([f, v]) => chip(f, v)); void per;
       const next = n < k.max ? Object.entries(E.chargeGain(k, n + 1, level)).map(([f, v]) => `${v} ${NAME[f] || f}`).join(', ') : '';
       art.append(h('p', { class: 'dr-what' }, `Charge ${n} of ${k.max}.${next ? ` Next: ${next}.` : ''}`), pips,
-        h('div', { class: 'cr-note' }, h('small', {}, 'Release them now for'), h('div', { class: 'cr-now' }, now)));
+        h('div', { class: 'cr-note' }, h('small', {}, 'Use them now for'), h('div', { class: 'cr-now' }, now)));
       later(450, () => { pips.querySelector('.new')?.classList.add('fill'); sfx.magic?.(); });
       finish(1050); skip = () => { pips.querySelector('.new')?.classList.add('fill'); finish(0); };
     } else if (r.released) { // ---- charges released: each pip bursts and adds its share

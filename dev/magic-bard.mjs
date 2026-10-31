@@ -1,6 +1,6 @@
 // mb1 (Crockpot / Grok Bot, 29 Oct 2026): the Bard's magic cards in a real battle at 390x844.
 //   CHROME=... node dev/magic-bard.mjs [out=/workspace/magic-bard] [port=8188]
-// Mending Song (green d6 heal, 1 magic each, party), Lucky Verse (2 magic d6), Rising Ballad store/release.
+// Mending Song (green d6 heal, 1 magic each, party), Lucky Verse (2 magic d6), Rising Ballad charge/use.
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
 const OUT = process.argv[2] || '/workspace/magic-bard'; const port = +(process.argv[3] || 8188); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0;
@@ -56,6 +56,6 @@ await shot('mb1-ballad-card');
 const dots = await p.evaluate(() => [...document.querySelectorAll('.mc-card .mc-lv.act .mc-dots')].map((d) => d.className + ':' + [...d.querySelectorAll('.mc-dot')].map((x) => x.textContent).join(',')));
 const rel = await css('.mc-ctl .mc-use.go');
 const v1b = await st(); await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
-const v2 = await st(); check('Rising Ballad: dots total 2,6,12,20 attack and 1,4,9,16 heal; Release 2 (red, white) adds +6 attack and +4 heal on top', dots.join('|').includes('fx-atk:2,6,12,20') && dots.join('|').includes('fx-heal:1,4,9,16') && /^Release 2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(rel) && v2.atk === v1b.atk + 6 && v2.heal === v1b.heal + 4 && v2.charge === 0, JSON.stringify({ dots, rel, v1b, v2 }));
+const v2 = await st(); check('Rising Ballad: dots total 2,6,12,20 attack and 1,4,9,16 heal; Use 2 (red, white) adds +6 attack and +4 heal on top', dots.join('|').includes('fx-atk:2,6,12,20') && dots.join('|').includes('fx-heal:1,4,9,16') && /^Use 2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(rel) && v2.atk === v1b.atk + 6 && v2.heal === v1b.heal + 4 && v2.charge === 0, JSON.stringify({ dots, rel, v1b, v2 }));
 check('no page errors', !errs.length, errs.join(' | '));
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'ALL PASS'); process.exit(bad ? 1 : 0);

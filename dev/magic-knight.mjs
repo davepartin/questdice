@@ -53,10 +53,10 @@ await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {};
 await shot('mk1-rally-card');
 const rel = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.textContent);
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
-const v2 = await st(); check('Rally Cry Release 2 gives +6 attack and +4 block', rel === 'Release 2' && v2.atk === 6 && v2.block === 4 && v2.charge === 0, JSON.stringify({ rel, v2 }));
+const v2 = await st(); check('Rally Cry Use 2 gives +6 attack and +4 block', rel === 'Use 2' && v2.atk === 6 && v2.block === 4 && v2.charge === 0, JSON.stringify({ rel, v2 }));
 await settle(); await pick('rally'); await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.usedRound = {}; B.b.charge.rally = 1; window.QD.B3.renderShape(); }); await pump(0.3);
 const bg = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return cs.backgroundColor + ' / ' + cs.color; });
-check('Release button attack red with white text', /255, 59, 59/.test(bg) && /255, 255, 255\)$/.test(bg), bg);
+check('Use button attack red with white text', /255, 59, 59/.test(bg) && /255, 255, 255\)$/.test(bg), bg);
 await pick('riposte'); const rb = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return cs.backgroundColor + ' / ' + cs.color; }); check('Riposte Cast blue with dark text', /58, 164, 255/.test(rb) && /6, 26, 46/.test(rb), rb);
 check('no page errors', !errs.length, errs.join(' | '));
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'ALL PASS'); process.exit(bad ? 1 : 0);
