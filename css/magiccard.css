@@ -246,3 +246,38 @@
 .mc-reviewed-template[data-card="avalanche"] .mc-mx,.mc-reviewed-template[data-card="grudge"] .mc-mx{font-size:3.2cqi;line-height:1.3;text-align:center;justify-content:center}
 .mc-reviewed-template[data-card="avalanche"] .mc-traits{top:20%}
 .mc-reviewed-template[data-card="avalanche"] .mc-trait{font-size:2.9cqi;padding:.5cqi 1cqi}
+
+/* Bard: party healing, explicit luck ranges and cumulative gold. */
+.mc-trait.magic{background:#673395;color:#fff}
+.mc-attack-track.fx-heal>.ic{color:#158044}
+.mc-reviewed-template[data-card="mending"] .mc-lv.act .mc-slots{display:grid;grid-template-columns:repeat(3,11cqi);gap:1.4cqi;justify-content:center}
+.mc-reviewed-template[data-card="mending"] .mc-lv.act .mc-slots :is(.mc-die,.mc-space){width:11cqi;height:11cqi}
+.mc-reviewed-template[data-card="mending"] .mc-sy{padding:0 0 4cqi}
+.mc-reviewed-template[data-card="mending"] .mc-cd{font-size:4.6cqi;gap:.6cqi}
+.mc-reviewed-template[data-card="mending"] .mc-cd .mc-die{width:5cqi;height:5cqi}
+.mc-reviewed-template[data-card="mending"],.mc-reviewed-template[data-card="mending"] *{animation:none!important}
+.mc-reviewed-template[data-card="finale"] .mc-traits{display:grid;grid-template-columns:repeat(2,max-content);gap:.6cqi}
+.mc-reviewed-template[data-card="finale"] .mc-trait{font-size:2.9cqi;padding:.5cqi 1cqi}
+.mc-reviewed-template[data-card="finale"] .mc-lv.act .mc-ln .mc-fv{font-size:6cqi}
+.mc-reviewed-template[data-card="finale"] .mc-fv small{font:600 3cqi/1.2 var(--font-body,sans-serif)}
+.mc-reviewed-template[data-card="finale"] .mc-cd{gap:.4cqi}
+.mc-reviewed-template[data-card="finale"] .mc-cd .mc-fv{font-size:3.2cqi;gap:.3cqi}
+.mc-reviewed-template[data-card="finale"] .mc-cd .mc-fv .ic{width:2.7cqi;height:2.7cqi}
+.mc-reviewed-template[data-card="finale"] .mc-mx{font-size:3.2cqi;line-height:1.3;text-align:center;justify-content:center}
+.mc-reviewed-template[data-card="discord"] .mc-fv small{font:600 3.3cqi/1.2 var(--font-body,sans-serif)}
+.mc-luck-table{display:grid;gap:2cqi;width:100%;padding:0 3cqi}
+.mc-luck-row{display:flex;align-items:center;justify-content:space-between;gap:1cqi}
+.mc-luck-row>.mc-die{width:7cqi;height:7cqi;flex:none}
+.mc-luck-row>small{font:700 4cqi/1 var(--font-number,sans-serif);color:#4a3216;white-space:nowrap}
+.mc-luck-payout{display:flex;align-items:center;justify-content:flex-start;gap:1cqi;min-width:27cqi}
+.mc-reviewed-template .mc-luck-table .mc-fv{font-size:6cqi}
+.mc-reviewed-template .mc-luck-table .mc-fv .ic{width:5cqi;height:5cqi}
+.mc-luck-cover{display:grid;grid-template-columns:repeat(3,max-content);gap:1.3cqi}
+.mc-luck-cover .mc-luck-row{flex-direction:column;gap:.3cqi;justify-content:center}
+.mc-luck-cover .mc-luck-row>small{font-size:2.7cqi}
+.mc-luck-cover .mc-luck-payout{min-width:0;gap:.5cqi}
+.mc-reviewed-template[data-card="luckyverse"] .mc-cd .mc-fv{font-size:3.3cqi;gap:.3cqi}
+.mc-reviewed-template[data-card="luckyverse"] .mc-cd .mc-fv .ic{width:3cqi;height:3cqi}
+.mc-reviewed-template[data-card="luckyverse"] .mc-sy{padding:0 0 3cqi}
+.mc-reviewed-template[data-card="goldhymn"] .mc-plaque{font-size:6.7cqi}
+.mc-reviewed-template .mc-dots.fx-gold>.ic{color:#946813}

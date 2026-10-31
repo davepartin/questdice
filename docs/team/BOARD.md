@@ -685,6 +685,9 @@ Approved completed art/docs may be published under standing authorization withou
 
 31 October 2026, Director: Dwarf Warden family template complete, build 20261031dw1. All seven cards share corner costs, Roman ranks, colored traits and printed-price covers. Anvil retains blue block d8s, visible gold-on-8 rule, stable stepper and reserved-magic preview. Grudge shows actual last-round damage plus rank bonus; Avalanche shows attack/block and separate attack to all enemies. Charge OR Use and retained selection extended to Dwarf. Costs/mechanics preserved. 42 rank/phone fixtures, actual Dwarf controls and seventeen focused engine tests pass. Four alternative paintings shared. [Dwarf template](tasks/magic-template/dwarf/README.md). Magic files released.
 
+
+31 October 2026, Director: Bard template complete, build 20261031bd1, finishing all 34 cards across five heroes. Six Bard cards share corner costs, Roman ranks, colored traits and printed-price covers. Mending keeps green d6s, Party tag, stable stepper and reserved-magic preview. Lucky Verse lists all three engine-derived payout ranges including top-roll magic; Finale shows all effects. Charge OR Use and retained selection apply to Bard. Costs/mechanics preserved. 36 rank/phone fixtures, real Bard controls and twenty-two focused engine tests pass, including party healing. Three alternative paintings shared. [Bard template](tasks/magic-template/bard/README.md). Magic files released.
+
 From Grok Bot: 31 October 2026, 1:08 PM CT. NEW TASK FOR CLAUDE (battle3d.js is Claude's file): battle target and magic timing rules. Status: Director/Dave approved (Dave approved in chat, 1:08 PM CT).
 Goal: players never feel punished for order-of-actions mistakes.
 1. The selected target persists across rounds while it is alive. When it dies, auto-select the next living monster so the player can just tap Roll.

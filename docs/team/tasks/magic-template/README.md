@@ -1,6 +1,6 @@
-# Magic card template, first card: Rally Cry
+# Shared magic card template
 
-Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight, Wizard, Ranger and Dwarf cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
+Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers all five heroes via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
 
 ## Shared design decisions
 
@@ -52,12 +52,12 @@ Existing cards are already implemented in the game. The status below concerns ad
 | Dwarf Warden | Brace | One-shot | Implemented, awaiting visual feedback |
 | Dwarf Warden | Stonehide | Build | Implemented, awaiting visual feedback |
 | Dwarf Warden | Forge Fury | Build | Implemented, awaiting visual feedback |
-| Bard | Mending Song | Dice | Individual review pending |
-| Bard | Finale | One-shot | Individual review pending |
-| Bard | Lucky Verse | One-shot | Individual review pending |
-| Bard | Discord | One-shot | Individual review pending |
-| Bard | Rising Ballad | Build | Individual review pending |
-| Bard | Hymn of Gold | Build | Individual review pending |
+| Bard | Mending Song | Dice | Implemented, awaiting visual feedback |
+| Bard | Finale | One-shot | Implemented, awaiting visual feedback |
+| Bard | Lucky Verse | One-shot | Implemented, awaiting visual feedback |
+| Bard | Discord | One-shot | Implemented, awaiting visual feedback |
+| Bard | Rising Ballad | Build | Implemented, awaiting visual feedback |
+| Bard | Hymn of Gold | Build | Implemented, awaiting visual feedback |
 
 ## Round flow correction, 20261030rt2
 
@@ -84,3 +84,7 @@ All seven Ranger cards share the approved shell, with specialized Pierce, reroll
 ## Dwarf Warden family rollout
 
 All seven Dwarf cards share the approved shell, including face-triggered gold and damage-based attack. [Details, shared-art limits and screenshots](dwarf/README.md).
+
+## Bard rollout and family completion
+
+All six Bard cards share the shell, completing all 34 cards across five heroes. Lucky Verse has an explicit three-range payout table; Mending Song retains its Party tag. [Details, shared-art limits and screenshots](bard/README.md).
