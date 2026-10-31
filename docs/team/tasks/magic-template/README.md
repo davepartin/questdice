@@ -1,6 +1,6 @@
 # Magic card template, first card: Rally Cry
 
-Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight and Wizard cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
+Build 20261030rt1. Dave approved the Rally Cry mockup. Implement this card first, then review the others individually. The approved shell now covers Knight, Wizard and Ranger cards via usesCardTemplate and mc-reviewed-template. No engine, balance, costs or save changes.
 
 ## Shared design decisions
 
@@ -31,13 +31,13 @@ Existing cards are already implemented in the game. The status below concerns ad
 | Knight | Press the Attack | One-shot | Implemented, awaiting visual feedback |
 | Knight | Rally Cry | Build | Implemented, awaiting visual feedback |
 | Knight | Second Wind | Build | Implemented, awaiting visual feedback |
-| Ranger | Aimed Shot | Dice | Individual review pending |
-| Ranger | Rain of Arrows | One-shot | Individual review pending |
-| Ranger | Quick Draw | One-shot | Individual review pending |
-| Ranger | Hunter's Mark | One-shot | Individual review pending |
-| Ranger | Snare | One-shot | Individual review pending |
-| Ranger | Volley | Build | Individual review pending |
-| Ranger | Vanish | Build | Individual review pending |
+| Ranger | Aimed Shot | Dice | Implemented, awaiting visual feedback |
+| Ranger | Rain of Arrows | One-shot | Implemented, awaiting visual feedback |
+| Ranger | Quick Draw | One-shot | Implemented, awaiting visual feedback |
+| Ranger | Hunter's Mark | One-shot | Implemented, awaiting visual feedback |
+| Ranger | Snare | One-shot | Implemented, awaiting visual feedback |
+| Ranger | Volley | Build | Implemented, awaiting visual feedback |
+| Ranger | Vanish | Build | Implemented, awaiting visual feedback |
 | Wizard | Arc Bolt | Dice | Implemented, awaiting visual feedback |
 | Wizard | Meteor | Build | Implemented, awaiting visual feedback |
 | Wizard | Magic Missile | One-shot | Implemented, awaiting visual feedback |
@@ -76,3 +76,7 @@ All seven Knight cards now use the shared shell. [Details, artwork limits and sc
 ## Wizard family rollout
 
 All seven Wizard cards now share the shell. Costs, dice and effects preserved. [Details, shared-art limits and screenshots](wizard/README.md).
+
+## Ranger family rollout
+
+All seven Ranger cards share the approved shell, with specialized Pierce, reroll, weakening and conditional-gold displays. [Details, shared-art limits and screenshots](ranger/README.md).

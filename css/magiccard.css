@@ -204,3 +204,24 @@
 .mc-reviewed-template[data-card="polymorph"] .mc-mx,.mc-reviewed-template[data-card="meteor"] .mc-mx{font-size:3.4cqi;line-height:1.3;justify-content:center;text-align:center}
 .mc-reviewed-template[data-card="polymorph"] .mc-frog{font-size:8cqi}
 .mc-reviewed-template[data-card="bolt"] .mc-plaque,.mc-reviewed-template[data-card="light"] .mc-plaque{font-size:6cqi}
+
+/* Ranger effects: orange Pierce, gold rerolls/rewards, and weakening arrows. */
+.mc-trait.free,.mc-trait.gold{background:#d3aa56;color:#211a10}.mc-trait.weaken{background:#465e37;color:#fff}
+.mc-attack-track.fx-pierce>.ic{color:#e57511}
+.mc-reviewed-template[data-card="aimed"] .mc-lv.act .mc-slots{display:grid;grid-template-columns:repeat(4,11cqi);gap:1.4cqi;justify-content:center}
+.mc-reviewed-template[data-card="aimed"] .mc-lv.act .mc-slots :is(.mc-die,.mc-space){width:11cqi;height:11cqi}
+.mc-reviewed-template[data-card="aimed"] .mc-sy{padding:0 0 4cqi}
+.mc-reviewed-template[data-card="aimed"] .mc-cd{font-size:4.6cqi;gap:.6cqi}
+.mc-reviewed-template[data-card="aimed"] .mc-cd .mc-die{width:5cqi;height:5cqi}
+.mc-reviewed-template[data-card="aimed"],.mc-reviewed-template[data-card="aimed"] *{animation:none!important}
+.mc-reviewed-template[data-card="rain"] .mc-plaque{font-size:6.3cqi}
+.mc-reviewed-template[data-card="rain"] .mc-lv.act .mc-ln .mc-fv{font-size:7cqi}
+.mc-reviewed-template[data-card="rain"] .mc-cd .mc-fv,.mc-reviewed-template[data-card="mark"] .mc-cd .mc-fv{font-size:4.5cqi}
+.mc-reviewed-template[data-card="rain"] .mc-cd .ic,.mc-reviewed-template[data-card="mark"] .mc-cd .ic{width:3.4cqi;height:3.4cqi}
+.mc-reviewed-template:is([data-card="rain"],[data-card="mark"],[data-card="snare"],[data-card="quickdraw"]) .mc-fv small{font:600 3.3cqi/1.2 var(--font-body,sans-serif)}
+.mc-reviewed-template:is([data-card="rain"],[data-card="mark"]) .mc-lv.act .mc-ln{flex-direction:column}
+.mc-reviewed-template[data-card="rain"] .mc-mx{font-size:3.2cqi;line-height:1.3}
+.mc-reviewed-template .fx-free{color:#84631b}
+
+.mc-reviewed-template .mc-lv :is(.fx-free,.fx-gold)>.ic{color:#946813}
+.mc-reviewed-template .mc-lv .fx-weaken>.ic{color:#426836}

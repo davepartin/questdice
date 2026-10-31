@@ -27,10 +27,12 @@ check('2x3 grid: Aimed Shot, Hunter\u2019s Mark, Volley; Potion, Heal, Heart cha
 await shot('mr1-panel');
 await p.locator('.b3-sheet.open .mc-tile[data-power="aimed"]').click(); await pump(0.4);
 const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent) }));
-check('Aimed Shot card: DICE tag, 1 die + 3 blank spaces, −1 / +1 / Roll1', a0.tag === 'DICE' && a0.dice === 1 && a0.spaces === 3 && a0.btns.join('|') === '−1|+1|Roll1', JSON.stringify(a0));
+check('Aimed Shot card: shared template, 1 die + 3 blank spaces, −1 / +1 / Roll1', a0.tag == null && a0.dice === 1 && a0.spaces === 3 && a0.btns.join('|') === '−1|+1|Roll1', JSON.stringify(a0));
+await p.evaluate(()=>{window.aimedArt=document.querySelector('.mc-paint img');window.aimedFrame=document.querySelector('.mc-fr');});
 await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3); await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3);
 const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent }));
 check('two taps of +▲1 fill two more spaces; Roll ▲3', a1.dice === 3 && a1.roll === 'Roll3', JSON.stringify(a1));
+check('Stable artwork, orange Pierce dice, corner cost and magic preview',await p.evaluate(()=>document.querySelector('.mc-paint img')===window.aimedArt && document.querySelector('.mc-fr')===window.aimedFrame && document.querySelector('.mc-cast-cost').textContent==='3' && document.querySelector('.pw-center b').textContent===String(window.QD.B3.battleState.b.magic-3) && document.querySelector('.mc-lv.act .mc-slots').getAttribute('aria-label')==='3 of 4 pierce dice' && !document.querySelector('.mc-lv.act .mc-spent')));
 await shot('mr1-aimed-card');
 const s0 = await st(); await p.locator('.mc-ctl .mc-use.go').click(); await pump(0.5);
 await shot('mr1-aimed-rolling');
