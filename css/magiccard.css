@@ -281,3 +281,26 @@
 .mc-reviewed-template[data-card="luckyverse"] .mc-sy{padding:0 0 3cqi}
 .mc-reviewed-template[data-card="goldhymn"] .mc-plaque{font-size:6.7cqi}
 .mc-reviewed-template .mc-dots.fx-gold>.ic{color:#946813}
+
+/* Shared utility cards: bottle, restorative magic and a living heart die. */
+.mc-utility .mc-util-art{display:grid;place-items:center;background:radial-gradient(ellipse at 60% 70%,#7d3c15,#171320 75%)}
+.mc-utility.healing .mc-util-art{background:radial-gradient(ellipse at 60% 70%,#26754b,#071d1a 75%)}
+.mc-utility.heart .mc-util-art{background:radial-gradient(ellipse at 60% 70%,#9c3255,#201025 75%)}
+.mc-utility .mc-util-art img{object-fit:contain;width:48%;height:95%;filter:drop-shadow(0 0 4cqi #ffb33466);transform:rotate(12deg)}
+.mc-utility .mc-util-art>.ic{width:27cqi;height:27cqi;color:#7df2ad;filter:drop-shadow(0 0 4cqi #4dff9a88);margin-left:12cqi}
+.mc-utility.heart .mc-util-art>.ic{color:#ffb7cd;filter:drop-shadow(0 0 4cqi #ff588988)}
+.mc-util-panel{position:absolute;z-index:2;left:15.6%;right:15.6%;top:39%;bottom:17%;background:#fbf2dc;border-radius:1.6cqi;box-shadow:inset 0 0 0 .6cqi #6a2fb0;padding:4cqi;display:flex;flex-direction:column;justify-content:center;gap:3cqi;text-align:center;color:#4a3216}
+.mc-restore{display:flex;flex-direction:column;align-items:center;gap:2cqi;font:700 5cqi/1.2 var(--font-number,sans-serif)}
+.mc-restore>.mc-fv{font-size:15cqi;gap:2cqi}.mc-restore>.mc-fv>.ic{width:12cqi;height:12cqi;color:#168044}
+.mc-restore small,.mc-heart-effect>small{font:600 3.5cqi/1.2 var(--font-body,sans-serif)}
+.mc-health-track{width:80%;height:2.5cqi;border-radius:2cqi;background:#d5c7a6;overflow:hidden}.mc-health-track>i{display:block;height:100%;background:#198b51}
+.mc-util-footer{position:absolute;z-index:2;left:16%;right:16%;bottom:10.5%;height:5%;display:grid;place-items:center;color:#4a3216;font:700 3.5cqi/1 var(--font-body,sans-serif);background:#e5d1aa;border:1px solid #9b7845;border-radius:1cqi}
+.mc-util-result{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:1cqi;font:800 5cqi/1 var(--font-number,sans-serif);color:#17693c}.mc-util-result>.ic{width:5cqi;height:5cqi}.mc-util-result small{flex-basis:100%;font:600 3cqi/1.2 var(--font-body,sans-serif)}
+.mc-heart-effect>p{font:700 5cqi/1 var(--font-body,sans-serif);margin:0 0 4cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-row{display:grid;grid-template-columns:1fr .8fr 1fr;gap:1cqi;align-items:center;margin:0 0 4cqi;padding:0}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-btn{min-width:0;padding:1cqi;border:1px solid #9d794a;border-radius:1.4cqi;min-height:20cqi;background:#352545;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-word{font:700 3cqi/1.2 var(--font-body,sans-serif);letter-spacing:0;text-shadow:none}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-face{width:10cqi;height:10cqi;max-width:100%}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur{min-width:0;display:flex;align-items:center;flex-direction:column;background:none;padding:0;color:#4a3216}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur small{font:700 3cqi/1 var(--font-body,sans-serif);color:#4a3216;text-shadow:none}
+.mc-utility .hc-btn:disabled{opacity:.4;filter:grayscale(1)}

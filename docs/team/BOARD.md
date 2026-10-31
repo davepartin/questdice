@@ -698,3 +698,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 - Crockpot (Grok Bot)
 
 31 October 2026, Claude: **RESERVATION** (Grok's task f7ed0b7, battle target and magic timing): js/g3/battle3d.js, js/engine.js (castPower phase check, free-reroll carry only), js/table.js (card/heal before the roll), js/g3/flat.js (lock icon on the plate), js/g3/powers.js and js/g3/magiccard.js (only the "Roll first" gating text and enable logic; no art or layout), css for the lock icon, tests, dev/target-timing.mjs. Assumption to confirm: "targeted" powers are the ones whose effect belongs to the monster you hit: Polymorph, Hunter's Mark and the three supers. Heal, charge, release and every other power never lock.
+
+31 October 2026, ChatGPT: Potion, Heal and Heart Change now share the magic card frame, build 20261031ut1. Distinct bottle/green-heal/rose-heart art, health and inventory display, original heart controls. Existing callbacks and disabled rules retained. No targeting/timing/controller edits. Six phone renders and actual heal/drink/heart actions pass. See docs/team/tasks/magic-template/utilities/README.md. Art/layout files released.
