@@ -594,10 +594,24 @@ function cardTiles(reset) {
   if (B.pwNote) for (const u of utils) if (u.id === B.pwNote.id && B.pwSel === u.id) u.note = B.pwNote;
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
     select: (id) => { B.pwSel = id; B.pwNote = null; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
-    step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = E.powerCost(k, x, E.powerLevel(hero, id)); sfx.click?.(); renderSheet(); },
+    step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = E.powerCost(k, x, E.powerLevel(hero, id)); sfx.click?.(); renderSheet(true); },
     backToDice: () => togglePowers(false), use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
-function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
+function renderSheet(preserveCard = false) {
+  if (!B.sheetOpen) return;
+  const current = B.hud.cards.querySelector('.mc-sheet');
+  if (preserveCard && current?.querySelector('.mc-card[data-card="cleave"]')) {
+    const fresh = cardTiles(B.b.phase !== 'shape')[0];
+    // Stepper changes update the numbers and dice only; keep the artwork and frame mounted.
+    for (const selector of ['.pw-tally', '.mc-grid', '.mc-ctl', '.mc-levels', '.mc-cast-cost']) {
+      const old = current.querySelector(selector), next = fresh.querySelector(selector);
+      if (old && next) old.replaceWith(next);
+    }
+    return;
+  }
+  if (B.party) setSheetTab(B.sheetTab || 'powers');
+  else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape'));
+}
 // Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Close.
 const fillInfo = (...kids) => { B.hud.info.replaceChildren(...kids.filter(Boolean)); alignWindowClose(B.hud.info); };
 function showPowerDetail(id) {

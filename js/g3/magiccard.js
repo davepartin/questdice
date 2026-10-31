@@ -46,7 +46,7 @@ function rowBody(k, l, p, cur) {
   if (k.kind === 'scale') { const top = E.powerDice(k, E.scaleMax(k, l), l); const s = k.dice.s;
     if (!now) return [h('span', { class: 'mc-ln' }, mg(E.scaleStep(k)), h('i', { class: 'mc-eq' }, '='), die(f, s)), h('span', { class: 'mc-mx' }, `UP TO ${top}×`, die(f, s))];
     const n = E.powerDice(k, p.x ?? k.cost, l);
-    if (k.id === 'cleave') return [h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} dice` }, Array.from({ length: top }, (_, i) => i < n ? die(f, s) : space(s))), h('span', { class: 'mc-spent' }, mg(p.x ?? k.cost), h('i', { class: 'mc-eq' }, '→'), `${n}×`, die(f, s)), h('span', { class: 'mc-mx' }, '½ to other enemies')];
+    if (k.id === 'cleave') return [h('span', { class: 'mc-attack-track' }, HK.icon('atk'), h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} attack dice` }, Array.from({ length: top }, (_, i) => i < n ? die(f, s) : space(s))))];
     return [h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} dice` }, Array.from({ length: top }, (_, i) => (i < n ? die(f, s) : space(s)))),
       h('span', { class: 'mc-spent' }, mg(p.x ?? k.cost), h('span', { class: `fx-${f}` }, ` · ${n} of ${top} dice`), h('i', { class: 'mc-br' }), h('span', { class: `fx-${f}` }, ` · ${n}d${s} ${WORD[f]}`)), k.party ? h('span', { class: 'mc-mx' }, 'HEALS EVERY HERO IN THE PARTY') : null, k.goldOn ? h('span', { class: 'mc-mx' }, `EVERY ${k.goldOn.face} ALSO GIVES `, fxv('gold', k.goldOn.gold)) : null, k.splash === 'half' ? h('span', { class: 'mc-mx' }, k.id === 'arcbolt' ? '½ ARCS TO EVERY OTHER MONSTER' : '½ SPLASHES ON EVERY OTHER MONSTER') : null]; }
   if (k.kind === 'charge') { const have = now ? p.stored || 0 : 0; const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
@@ -72,7 +72,7 @@ function card(k, p, glyph) {
   return h('div', { class: `mc-card${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}`, 'data-card': k.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
     h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(),
     usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
-    h('div', { class: 'mc-levels' }, [0, 1, 2].map(lv)));
+    k.id === 'cleave' ? h('div', { class: 'mc-cast-cost', 'aria-label': `Selected cost: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, k.id === 'cleave' ? h('div', { class: 'mc-traits' }, h('span', { class: 'mc-trait attack' }, HK.icon('atk'), 'Attack'), h('span', { class: 'mc-trait splash', title: 'Half the attack hits every other enemy' }, '½ Splash')) : null, h('div', { class: 'mc-levels' }, [0, 1, 2].map(lv)));
 }
 // the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
 function buttons(ctx, p) {
@@ -97,6 +97,7 @@ function tile(ctx, id, name, ico, cost, on, extra = null) {
 export function sheet(ctx, { glyph, detailPanel, tally }) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
   const sel = ctx.selected; const p = ps.find((q) => q.k.id === sel); const u = ctx.utils.find((q) => q.id === sel);
+  if (p?.k.id === 'cleave' && !ctx.reset && !p.st.spent) { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); const meter = tally?.querySelector('.pw-center'); if (meter) { meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for Cleave`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } }
   const utils = ['u:bigheal', 'u:heal', 'u:heart'].map((id) => ctx.utils.find((q) => q.id === id)).filter(Boolean);
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
     ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel)),

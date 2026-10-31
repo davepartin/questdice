@@ -1520,3 +1520,6 @@ Dave's real-iPhone screenshots show the earlier ornate Gold Rush objective, onli
 
 
 30 October 2026, Director: all seven Knight magic cards use the approved Rally shell, build 20261030kt1 (Dave expanded Cleave to all Knight cards). Existing mechanics preserved, specialized icon/dice/charge displays retained; four alternative cards share existing Knight paintings until dedicated art review. Other heroes unchanged. Real starter battle checks, 42 rank/phone fixtures and five focused unit tests pass. [Knight templates](team/tasks/magic-template/knight/README.md).
+
+
+31 October 2026, Director: Cleave template refinements, build 20261031ct1. Stable stepper updates preserve painting/frame (no remount flash), larger dice, attack starburst, red Attack / white ½ Splash tags, dynamic top-right cost, remaining-magic preview, removed duplicate cost line and reviewed-title purple outline. Payment still occurs exactly once on Roll. Real controls/preview/payment/splash checks, six rank/size renders and five focused unit tests pass. [Evidence](team/tasks/magic-template/knight/README.md). No gameplay/save changes; pre-battle board preserved.

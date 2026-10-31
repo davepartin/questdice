@@ -170,3 +170,19 @@
 .mc-reviewed-template .mc-lv.act .mc-ln{justify-content:center;gap:1.5cqi;flex-wrap:wrap}
 .mc-reviewed-template[data-card="riposte"] .mc-mx{font-size:3.7cqi;line-height:1.2}
 .mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-mx{font-size:3.2cqi;line-height:1.3;justify-content:center;text-align:center}
+/* Cleave template refinement: stable artwork, legible attack dice, cost on the card. */
+.mc-reviewed-template .mc-plaque{box-shadow:none;border:0}
+.mc-reviewed-template[data-card="cleave"] .mc-art-icon{left:16%;right:auto}
+.mc-cast-cost{position:absolute;z-index:4;right:16%;top:12%;min-width:12cqi;min-height:9cqi;padding:1cqi 1.5cqi;display:grid;place-items:center;border-radius:1cqi;background:#1a1030ed;border:.3cqi solid #d6c69f;color:#fff}
+.mc-cast-cost .mc-mg{color:#fff;font:800 7cqi/1 var(--font-number,sans-serif)}
+.mc-cast-cost .mc-mg .ic{width:6cqi;height:6cqi}
+.mc-traits{position:absolute;z-index:3;left:16%;top:22%;display:flex;flex-direction:column;align-items:flex-start;gap:.6cqi}
+.mc-trait{display:inline-flex;align-items:center;gap:.6cqi;padding:.65cqi 1.1cqi;border-radius:.6cqi;font:800 3.4cqi/1 var(--font-body,sans-serif);text-transform:uppercase}
+.mc-trait.attack{background:#a81e22;color:#fff}.mc-trait.attack .ic{width:3.3cqi;height:3.3cqi}
+.mc-trait.splash{background:#f5f0e4;color:#242027}
+.mc-attack-track{display:flex;align-items:center;justify-content:center;gap:1.5cqi;width:100%}
+.mc-attack-track>.ic{width:7cqi;height:7cqi;color:#df2525;flex:none}
+.mc-reviewed-template[data-card="cleave"] .mc-lv.act .mc-slots{display:grid;grid-template-columns:repeat(4,11cqi);gap:1.4cqi;justify-content:center}
+.mc-reviewed-template[data-card="cleave"] .mc-lv.act .mc-slots :is(.mc-die,.mc-space){width:11cqi;height:11cqi;animation:none!important}
+.mc-reviewed-template[data-card="cleave"] .mc-sy{padding:0 0 4cqi}
+.mc-reviewed-template[data-card="cleave"],.mc-reviewed-template[data-card="cleave"] *{animation:none!important}
