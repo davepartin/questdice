@@ -654,3 +654,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 30 October 2026, Director: Rally Cry round-flow fix, build 20261030rt2. Charge tracks remain selected after charging/using; reset phase explains Roll your dice first and provides Back to dice. Real UI charge -> engine next-round reset -> actual roll -> second charge passes at 390x844 and 375x667. No rule changes. Evidence: [magic template](tasks/magic-template/README.md).
+
+
+30 October 2026, Director: Dave requested quiet spent-state feedback for Rally Cry. Removed the already charged/used paragraph; disabled buttons alone communicate the spent state. Roll-first guidance remains for the separate pre-roll state. Card retention and game rules unchanged. Build 20261030rt3; syntax and whitespace checks pass.
