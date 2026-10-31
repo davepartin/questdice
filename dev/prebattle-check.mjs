@@ -2,18 +2,18 @@
 // at 390x844 and 375x667; the pieces stand on the current space and slide there from the last one.
 //   CHROME=... node dev/prebattle-check.mjs [out=/workspace/prebattle] [port=8189]
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
-const OUT = process.argv[2] || '/workspace/prebattle2'; const port = +(process.argv[3] || 8189); fs.mkdirSync(OUT, { recursive: true });
+const OUT = process.argv[2] || '/workspace/prebattle3'; const port = +(process.argv[3] || 8189); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome'; let bad = 0;
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
 const br = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
-const CLS = ['knight', 'wizard', 'ranger', 'bard'];
+const CLS = ['knight', 'wizard', 'ranger', 'bard', 'dwarf', 'knight'];
 const measure = (p) => p.evaluate(() => {
   const main = document.querySelector('.sx-board-main'); const q = (s) => document.querySelector(s)?.getBoundingClientRect();
   const scrollers = [document.scrollingElement, ...document.querySelectorAll('.sx-board *, .sx-board-main')].filter((e) => e && (e === document.scrollingElement ? e.scrollHeight > innerHeight + 1 : e.scrollHeight > e.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(e).overflowY))).map((e) => e.className || e.tagName);
-  const go = q('.sx-qcard .qc-go'); const board = q('.gb-board'); const title = q('.sx-act'); const pcs = [...document.querySelectorAll('.gb-piece')].map((e) => e.getBoundingClientRect()); const now = q('.gb-space.now'); const prev = q('.gb-space:nth-child(2)'); const on = (sp) => !!sp && pcs.length > 0 && pcs.every((r) => Math.abs(r.bottom - (sp.top + sp.height / 2)) < 30 && Math.abs((r.left + r.right) / 2 - (sp.left + sp.width / 2)) < 40);
+  const go = q('.sx-qcard .qc-go'); const board = q('.gb-board'); const title = q('.sx-act'); const pcs = [...document.querySelectorAll('.gb-piece')].map((e) => e.getBoundingClientRect()); const now = q('.gb-space.now'); const prev = q('.gb-space:nth-child(2)'); const on = (sp) => !!sp && pcs.length > 0 && pcs.every((r) => Math.abs(r.bottom - (sp.top + sp.height / 2)) < 48 && Math.abs((r.left + r.right) / 2 - (sp.left + sp.width / 2)) < 40);
   return { vh: innerHeight, docH: document.scrollingElement.scrollHeight, over: main ? main.scrollHeight - main.clientHeight : null, scrollers, goBottom: go ? Math.round(go.bottom) : null, board: board ? [Math.round(board.top), Math.round(board.bottom)] : null,
-    titleTop: title ? Math.round(title.top) : null, pieces: pcs.length, onNow: on(now), onSpace2: on(prev),
+    titleTop: title ? Math.round(title.top) : null, pieces: pcs.length, onNow: on(now), onSpace2: on(prev), awayOk: !!now && pcs.every((r) => document.querySelector('.gb-pieces.r1') ? r.bottom >= now.top + now.height / 2 - 4 : r.bottom <= now.top + now.height / 2 + 16), noteH: Math.round(q('.sx-notes')?.height || 0),
     scene: getComputedStyle(document.querySelector('.sx-screen.board') || document.body).getPropertyValue('--sheet').trim() };
 });
 async function open(w, hgt, n, step, from) {
@@ -22,17 +22,19 @@ async function open(w, hgt, n, step, from) {
   await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); });
   await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
   await p.evaluate(async ([n, step, from, CLS]) => { const { S, E, showBoard } = window.QD; const SV = await import('./js/save.js');
-    const hs = CLS.slice(0, n).map((cls, i) => { const x = E.newHero({ name: `Pb${cls}${i}`, cls, seed: 5 + i }); x.level = 3; x.campaign.step = step; return x; });
+    const hs = CLS.slice(0, n).map((cls, i) => { const x = E.newHero({ name: `Pb${cls}${i}`, cls, seed: 5 + i }); x.level = 3; x.campaign.step = step; x.campaign.blessings = [{ who: x.name, name: 'A good omen', text: '+5 health', fights: 1 }]; return x; });
     for (const x of hs) if (!SV.heroExists(x.name)) await SV.createSave(x, 'testpass');
     S.hero = hs[0]; S.company = n > 1 ? { kind: 'company', name: 'The Fellowship', members: hs } : { members: hs };
     localStorage.setItem(`qd.gb.${hs.map((x) => x.name).join('+')}.${hs[0].campaign.act}`, String(from)); showBoard(); }, [n, step, from, CLS]);
   await p.waitForSelector('.gb-board'); return { p, errs };
 }
-for (const [w, hgt] of [[390, 844], [375, 667]]) for (const n of [1, 2, 3, 4]) {
-  const { p, errs } = await open(w, hgt, n, 2, 2); await p.waitForTimeout(1500); const m = await measure(p);
-  const ok = m.docH === m.vh && m.over <= 0 && !m.scrollers.length && m.goBottom && m.goBottom <= m.vh && m.board && m.titleTop < m.board[0] && m.pieces === n && m.onNow && !errs.length;
-  check(`${w}x${hgt} party of ${n}: one screen, no scroll, Fight visible, ${n} piece(s) on the current space`, ok, JSON.stringify({ ...m, errs }));
-  const name = n === 1 ? `solo_${w}x${hgt}` : n === 3 && w === 390 ? 'party_390x844' : null;
+// pb3: real Safari shows less than the screen (toolbar + address bar), so test the visible heights too: 390x664 and 375x548.
+for (const [w, hgt] of [[390, 844], [390, 664], [375, 667], [375, 548]]) for (const n of [1, 2, 4, 6]) for (const step of [2, 8]) {
+  const { p, errs } = await open(w, hgt, n, step, step); await p.waitForTimeout(1500); const m = await measure(p);
+  const ok = m.docH === m.vh && m.over <= 0 && !m.scrollers.length && m.goBottom && m.goBottom <= m.vh && m.board && m.titleTop < m.board[0] && m.pieces === n && m.onNow && m.awayOk && m.noteH <= 26 && !errs.length;
+  check(`${w}x${hgt} party of ${n} on quest ${step}: one screen, no scroll, Fight visible, pieces on the hex, fanned away from the other row`, ok, JSON.stringify({ ...m, errs }));
+  const name = step === 2 && n === 1 && hgt === 844 ? `solo_${w}x${hgt}` : step === 2 && n === 1 && w === 390 && hgt === 664 ? 'safari_390x664' : step === 2 && n === 1 && hgt === 548 ? 'safari_375x548'
+    : n === 6 && w === 390 && hgt === 844 ? (step === 2 ? 'party6_390x844' : 'party6_bottomrow') : null;
   if (name) await p.screenshot({ path: `${OUT}/${name}.png` });
   await p.close();
 }

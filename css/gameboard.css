@@ -6,30 +6,40 @@
   .sx-screen.board:has(.gb-on) { --sheet: 1 !important; }
   .sx-screen.board:has(.gb-on) > .sc-host, .sx-screen.board:has(.gb-on) .sx-viewport { visibility: hidden; }
   .sx-screen.board:has(.gb-on) { background: radial-gradient(120% 60% at 50% 18%, #3a2a1c 0%, #1d140d 55%, #0d0906 100%); }
-  .gb-on .sx-board-main { top: 0; bottom: 0; overflow: hidden; padding: calc(4.3rem + var(--safe-t)) .7rem calc(.6rem + var(--safe-b)); gap: .45rem; background: none; }
+  .gb-on .sx-board-main { top: 0; bottom: 0; overflow: hidden; padding: calc(4.05rem + var(--safe-t)) .6rem calc(.4rem + var(--safe-b)); gap: .3rem; background: none; }
   .gb-on .sx-board-main::before { display: none; }
   .gb-on .sx-board-head { padding: 0; gap: .15rem; }
   .gb-on .sx-board-head .sx-eyerow { justify-content: space-between; }
-  .gb-on .sx-act { font-size: 1.55rem; line-height: 1.05; margin: 0; }
+  .gb-on .sx-act { font-size: 1.4rem; line-height: 1.05; margin: 0; }
   .gb-on .sx-acttag, .gb-on .sx-trail { display: none !important; }
-  .gb-on .sx-notes { gap: .3rem; } .gb-on .sx-notes .note { margin: 0; padding: .35rem .6rem; font-size: .8rem; line-height: 1.25; }
+  .gb-on .sx-notes { gap: .2rem; margin: 0; } .gb-on .sx-notes:not(:has(.note)) { display: none; }
+  /* pb3: the next-fight boon is a small one-line chip, not its own big row */
+  .gb-on .sx-notes .note { margin: 0; padding: .12rem .5rem; min-height: 0; font-size: .68rem; line-height: 1.3; border-radius: 999px; gap: .3rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
+  .gb-on .sx-notes .note > span { overflow: hidden; text-overflow: ellipsis; } .gb-on .sx-notes .note .ic, .gb-on .sx-notes .note svg { width: .8rem; height: .8rem; flex: none; }
   .gb-on .sx-notes .sx-tip { display: none; }
   .gb-on .sx-board-main > .sx-eye { margin: .1rem 0 0; }
   /* the road-ahead card, condensed */
   .gb-on .sx-quests { gap: .5rem; }
-  .gb-on .sx-qcard { grid-template-columns: 6.4rem 1fr; }
-  .gb-on .qa { padding-top: 1.6rem; }
-  .gb-on .qc-body { padding: .45rem .7rem .25rem; gap: .2rem; }
-  .gb-on .qc-read { gap: .3rem; }
-  .gb-on .qc-go { min-height: 2.9rem; }
+  .gb-on .sx-qcard { grid-template-columns: 5.6rem 1fr; }
+  .gb-on .qa { padding-top: 1.4rem; }
+  .gb-on .qc-body { padding: .35rem .6rem .1rem; gap: .1rem; }
+  .gb-on .qc-name { font-size: 1.1rem; } .gb-on .qc-foes { font-size: .78rem; line-height: 1.2; }
+  .gb-on .qc-scout { font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  /* danger and reward side by side, each a label, pips and one short line */
+  .gb-on .qc-read { grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .3rem; padding-top: .35rem; }
+  .gb-on .qr { grid-template-columns: auto; gap: .12rem; padding: 0; background: none; }
+  .gb-on .qr small { font-size: .66rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gb-on .qc-go { min-height: 2.5rem; padding-top: .2rem; padding-bottom: .2rem; }
+  .gb-on .sx-board-main > .sx-eye { margin: 0; font-size: .6rem; }
 
-  .gb-board { display: block; margin: .35rem 0 .1rem; }
+  .gb-board { display: block; margin: .55rem 0 0; }
   .gb-print { position: relative; aspect-ratio: 2 / 1; border-radius: 12px; overflow: visible; background: #2a2118 center / cover no-repeat;
     box-shadow: 0 0 0 1px #f3dfb233, inset 0 0 40px #0008, 0 10px 24px #000b; }
   .gb-print::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: radial-gradient(120% 120% at 50% 50%, #0000 55%, #0006 100%); }
   .gb-spaces { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
-  .gb-space { --fill: #f6ecd21f; --edge: #fff6e0cc; --ink: #fff6e0; position: absolute; width: 14.7%; aspect-ratio: 100 / 115.47;
+  .gb-space { --fill: #f6ecd21f; --edge: #fff6e0cc; --ink: #fff6e0; position: absolute; width: 13.3%; aspect-ratio: 100 / 115.47;
     transform: translate(-50%, -50%); display: grid; place-items: center; }
   .gb-hex { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .gb-hex polygon { fill: var(--fill); stroke: var(--edge); stroke-width: 2.2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
@@ -44,8 +54,11 @@
   .gb-space.reach { cursor: pointer; }
   /* the pieces: small minis on round bases, standing on the current space */
   .gb-pieces { position: absolute; z-index: 3; width: 0; height: 0; pointer-events: none; transition: left 1s cubic-bezier(.5, 0, .3, 1), top 1s cubic-bezier(.5, 0, .3, 1); }
-  .gb-piece { --dx: calc((var(--i) - (var(--n) - 1) / 2) * .95rem); position: absolute; left: var(--dx); bottom: -.35rem; transform: translateX(-50%); display: block; width: 2.4rem; height: 3.1rem; }
-  .gb-pieces.n1 .gb-piece { width: 2.8rem; height: 3.6rem; }
+  .gb-piece { --dx: calc((var(--i) - (var(--n) - 1) / 2) * .34rem); --up: calc(var(--i) * .26rem); position: absolute; left: var(--dx); bottom: calc(-.35rem + var(--up));
+    transform: translateX(-50%); display: block; width: 2.3rem; height: 3rem; z-index: calc(10 - var(--i)); }
+  .gb-pieces.r1 .gb-piece { bottom: calc(-.6rem - var(--up)); z-index: var(--i); } /* bottom row: fan downward, away from the top row */
+  .gb-pieces.n1 .gb-piece { width: 2.7rem; height: 3.5rem; }
+  .gb-pieces.n5 .gb-piece, .gb-pieces.n6 .gb-piece { width: 2rem; height: 2.6rem; }
   .gb-piece img { position: absolute; left: 0; right: 0; bottom: .2rem; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 3px 2px #000a); }
   .gb-base { position: absolute; left: 12%; right: 12%; bottom: 0; height: .55rem; border-radius: 50%; background: radial-gradient(closest-side, #000c 55%, #0000); }
   .gb-pieces.moving .gb-piece img { animation: gbHop 1s ease-in-out; animation-delay: calc(var(--i) * 60ms); }
