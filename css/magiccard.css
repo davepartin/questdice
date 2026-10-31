@@ -89,3 +89,7 @@
 .mc-lv.act .mc-fv{font-size:6cqi}.mc-lv.act .mc-fv .ic{width:6cqi;height:6cqi}
 .mc-lv.act .mc-dot{width:8.4cqi;height:8.4cqi;font-size:3.6cqi}
 .mc-had{font:900 3.2cqi/1 var(--disp,serif);color:#4a3216;gap:2cqi}
+
+/* mc2 (Dave: make them pop): a crisp white outline around every card button */
+.mc-ctl .mc-use{outline:2px solid #fff;outline-offset:1px}
+.mc-ctl .mc-use:disabled{outline-color:#ffffff66}
