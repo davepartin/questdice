@@ -124,6 +124,16 @@ function tile(ctx, id, name, ico, cost, on, extra = null) {
   return h('button', { type: 'button', class: `mc-tile ${on ? 'on' : ''}`, 'data-power': id, 'aria-pressed': String(on), onclick: () => ctx.select(id) }, ico, h('span', {}, name),
     cost ? h('span', { class: 'mc-cost' }, HK.icon('magic'), String(cost)) : h('span', { class: 'mc-cost free' }, 'FREE'), extra);
 }
+// Utility cards share the frame while retaining the controller's actions and disabled rules.
+function utilityCard(ctx, u, glyph) {
+  const hero = ctx.hero || ctx.b.hero, heart = u.id === 'u:heart', potion = u.id === 'u:bigheal';
+  const n = potion ? E.potionHpOf(hero) : E.healAmountOf(hero);
+  const actions = heart ? null : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
+  const note = u.note ? h('div', { class: 'mc-util-result', role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('small', {}, u.note.text)) : null;
+  const effect = heart ? h('div', { class: 'mc-heart-effect' }, h('p', {}, 'Turn one step'), u.panel?.querySelector('.hc-row') || h('div', {}, u.actions.map(a => h('button', { disabled: !!u.why || a.disabled, onclick: a.fn }, ...(a.content || [a.label])))), h('small', {}, 'Once per round'))
+    : h('div', { class: 'mc-restore' }, fxv('heal', n), h('small', {}, 'Health now'), h('div', { class: 'mc-health-track', role: 'meter', 'aria-label': 'Health', 'aria-valuenow': ctx.b.hp, 'aria-valuemin': 0, 'aria-valuemax': ctx.b.maxHp }, h('i', { style: `width:${Math.min(100,100*ctx.b.hp/ctx.b.maxHp)}%` })), h('span', {}, `${ctx.b.hp} / ${ctx.b.maxHp}`), potion ? h('small', {}, `${E.potionsLeft(ctx.b)} potions left`) : null);
+  return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, potion ? h('img', { src: 'assets/cards/potion.webp', alt: '' }) : HK.icon(heart ? 'heart' : 'heal')), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-traits' }, h('span', { class: `mc-trait ${heart ? 'counter' : 'heal'}` }, heart ? 'Heart' : 'Restore')), h('div', { class: 'mc-plaque' }, u.name), h('div', { class: 'mc-util-panel' }, effect, note), h('div', { class: 'mc-util-footer' }, potion ? 'Restock at camp' : heart ? 'Shape your next bonus' : 'Magic into life')))];
+}
 // the whole sheet for a card class. glyph and detailPanel come from powers.js (the helpers keep their current panel).
 export function sheet(ctx, { glyph, detailPanel, tally }) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
@@ -134,6 +144,6 @@ export function sheet(ctx, { glyph, detailPanel, tally }) {
     ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel)),
     utils.map((q) => tile(ctx, q.id, q.name, glyph(q, 'pw-g'), q.cost, q.id === sel)));
   const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && ctx.reset ? h('div', { class: 'mc-guidance', role: 'status' }, ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')]) : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, round: ctx.b.round, hurt: ctx.b.lastHurt ?? null }, glyph))]
-    : u ? [detailPanel(ctx, sel)] : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? 'Roll first, then use magic while you shape your dice.' : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
+    : u ? utilityCard(ctx, u, glyph) : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? 'Roll first, then use magic while you shape your dice.' : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
   return h('div', { class: 'pw-sigil mc-sheet' }, tally, grid, ...body);
 }
