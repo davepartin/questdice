@@ -27,10 +27,10 @@ check('2x3 grid: Cleave, Riposte, Rally Cry; Potion, Heal, Heart change', tiles.
 await shot('mk1-panel');
 await p.locator('.b3-sheet.open .mc-tile[data-power="cleave"]').click(); await pump(0.4);
 const a0 = await p.evaluate(() => ({ spaces: document.querySelectorAll('.mc-card .mc-lv.act .mc-space').length, dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, tag: document.querySelector('.mc-ptag')?.textContent, btns: [...document.querySelectorAll('.mc-ctl .mc-use')].map((b) => b.textContent) }));
-const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent);
-check('Cleave card: DICE tag, 2 dice + 2 blank spaces, −1 / +1 / Roll2, label says 2 of 4', a0.tag === 'DICE' && a0.dice === 2 && a0.spaces === 2 && a0.btns.join('|') === '−1|+1|Roll2' && /2 of 4 dice/.test(lbl), JSON.stringify({ a0, lbl }));
+const lbl = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
+check('Cleave card: shared template, 2 dice + 2 blank spaces, −1 / +1 / Roll2, label says 2 of 4', a0.tag == null && a0.dice === 2 && a0.spaces === 2 && a0.btns.join('|') === '−1|+1|Roll2' && /2 of 4 dice/.test(lbl), JSON.stringify({ a0, lbl }));
 await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3); await p.locator('.mc-ctl .mc-use.add').click(); await pump(0.3);
-const lbl4 = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-spent')?.textContent);
+const lbl4 = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act .mc-slots')?.getAttribute('aria-label'));
 const a1 = await p.evaluate(() => ({ dice: document.querySelectorAll('.mc-card .mc-lv.act .mc-slots .mc-die').length, roll: document.querySelector('.mc-ctl .mc-use.go')?.textContent }));
 check('two taps of +▲1 fill the last two spaces; Roll ▲4; label 4 of 4', a1.dice === 4 && a1.roll === 'Roll4' && /4 of 4 dice/.test(lbl4), JSON.stringify({ a1, lbl4 }));
 await shot('mk1-cleave-card');

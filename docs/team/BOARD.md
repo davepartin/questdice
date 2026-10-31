@@ -660,3 +660,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 30 October 2026, Director: Rally Cry current-rank Roman numeral moved to the bottom-left of its cream panel at Dave's request. Template placement rule updated. Build 20261030rt4. CSS-only presentation change; upgrade covers unchanged.
+
+
+30 October 2026, Director: all seven Knight magic cards use the approved Rally shell, build 20261030kt1 (Dave expanded Cleave to all Knight cards). Existing mechanics preserved, specialized icon/dice/charge displays retained; four alternative cards share existing Knight paintings until dedicated art review. Other heroes unchanged. Real starter battle checks, 42 rank/phone fixtures and five focused unit tests pass. [Knight templates](tasks/magic-template/knight/README.md).

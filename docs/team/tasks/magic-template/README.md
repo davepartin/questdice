@@ -24,13 +24,13 @@ Existing cards are already implemented in the game. The status below concerns ad
 
 | Hero | Card | Family | New template status |
 | --- | --- | --- | --- |
-| Knight | Cleave | Dice | Individual review pending |
-| Knight | Judgment | One-shot | Individual review pending |
-| Knight | Shield Up | One-shot | Individual review pending |
-| Knight | Riposte | One-shot | Individual review pending |
-| Knight | Press the Attack | One-shot | Individual review pending |
+| Knight | Cleave | Dice | Implemented, awaiting visual feedback |
+| Knight | Judgment | One-shot | Implemented, awaiting visual feedback |
+| Knight | Shield Up | One-shot | Implemented, awaiting visual feedback |
+| Knight | Riposte | One-shot | Implemented, awaiting visual feedback |
+| Knight | Press the Attack | One-shot | Implemented, awaiting visual feedback |
 | Knight | Rally Cry | Build | Implemented, awaiting visual feedback |
-| Knight | Second Wind | Build | Individual review pending |
+| Knight | Second Wind | Build | Implemented, awaiting visual feedback |
 | Ranger | Aimed Shot | Dice | Individual review pending |
 | Ranger | Rain of Arrows | One-shot | Individual review pending |
 | Ranger | Quick Draw | One-shot | Individual review pending |
@@ -68,3 +68,7 @@ Dave reported the card disappearing after charging and both controls disabled on
 ### Feedback refinement, 20261030rt3
 
 Dave removed the charged/used explanation: grey disabled buttons are sufficient. Do not put that paragraph back. Pre-roll guidance is separate and remains.
+
+## Knight family rollout
+
+All seven Knight cards now use the shared shell. [Details, artwork limits and screenshots](knight/README.md). Other heroes remain pending individual review.

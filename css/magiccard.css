@@ -128,27 +128,45 @@
 .mc-lv.act .mc-spent{row-gap:1cqi}
 .mc-cov{padding:0 2cqi}.mc-cov .mc-lvw{gap:1cqi}
 /* Rally Cry: approved Build-card template, scoped while cards are reviewed individually. */
-.mc-build-template .mc-plaque{top:31.2%;left:13.1%;right:13.1%;height:5.2%;transform:none;display:grid;place-items:center;padding:0;border-radius:1cqi;font-size:7.5cqi;letter-spacing:0;white-space:nowrap}
+.mc-reviewed-template .mc-plaque{top:31.2%;left:13.1%;right:13.1%;height:5.2%;transform:none;display:grid;place-items:center;padding:0;border-radius:1cqi;font-size:7.5cqi;letter-spacing:0;white-space:nowrap}
 .mc-art-icon{position:absolute;z-index:3;right:16%;top:12%;width:9cqi;height:9cqi;display:grid;place-items:center;border:.35cqi solid #b58cff;border-radius:1cqi;background:#1a1030d9;color:#f2c14e}
 .mc-art-icon .ic{width:7cqi;height:7cqi}
-.mc-build-template .mc-rn{position:absolute;top:auto;bottom:2cqi;left:3cqi;width:auto;height:auto;background:none;box-shadow:none;border-radius:0;color:#4a3216;font:700 6cqi/1 var(--font-title,Georgia,serif)}
-.mc-build-template .mc-sy{align-items:center;justify-content:center;width:100%;height:100%;padding-top:6cqi;gap:2cqi}
-.mc-build-template .mc-dots{flex-wrap:nowrap;gap:1.2cqi}
-.mc-build-template .mc-dots>.ic{width:5cqi;height:5cqi;flex:none}
-.mc-build-template .mc-lv.act .mc-dot{width:10cqi;height:10cqi;font-size:5.4cqi}
-.mc-build-template .mc-cov{display:grid;grid-template-columns:minmax(0,1fr) 15cqi;gap:1.5cqi;padding:0 2cqi}
-.mc-build-template .mc-lvw{gap:2cqi;font:700 5.5cqi/1 var(--font-title,Georgia,serif);letter-spacing:0}
-.mc-build-template .mc-cd{flex:1;justify-content:center;gap:1cqi}
-.mc-build-template .mc-cd .mc-fv{font-size:5.4cqi;gap:.4cqi}
-.mc-build-template .mc-cd .mc-fv .ic{width:4.5cqi;height:4.5cqi;flex:none}
-.mc-build-template .mc-cp{justify-content:flex-end;align-self:stretch;border-left:.2cqi solid #85653d88;padding:0 0 0 1.5cqi;border-radius:0;background:none;box-shadow:none;gap:.8cqi}
-.mc-build-template .mc-cp b{color:#4a3216;font:800 6cqi/1 var(--font-number,sans-serif)}
-.mc-build-template .mc-cp .mc-coin{width:4cqi;height:4cqi;background:none;border:.4cqi solid #8c6428;box-shadow:inset 0 0 0 .3cqi #c4a567}
+.mc-reviewed-template .mc-rn{position:absolute;top:auto;bottom:2cqi;left:3cqi;width:auto;height:auto;background:none;box-shadow:none;border-radius:0;color:#4a3216;font:700 6cqi/1 var(--font-title,Georgia,serif)}
+.mc-reviewed-template .mc-sy{align-items:center;justify-content:center;width:100%;height:100%;padding-top:6cqi;gap:2cqi}
+.mc-reviewed-template .mc-dots{flex-wrap:nowrap;gap:1.2cqi}
+.mc-reviewed-template .mc-dots>.ic{width:5cqi;height:5cqi;flex:none}
+.mc-reviewed-template .mc-lv.act .mc-dot{width:10cqi;height:10cqi;font-size:5.4cqi}
+.mc-reviewed-template .mc-cov{display:grid;grid-template-columns:minmax(0,1fr) 15cqi;gap:1.5cqi;padding:0 2cqi}
+.mc-reviewed-template .mc-lvw{gap:2cqi;font:700 5.5cqi/1 var(--font-title,Georgia,serif);letter-spacing:0}
+.mc-reviewed-template .mc-cd{flex:1;justify-content:center;gap:1cqi}
+.mc-reviewed-template .mc-cd .mc-fv{font-size:5.4cqi;gap:.4cqi}
+.mc-reviewed-template .mc-cd .mc-fv .ic{width:4.5cqi;height:4.5cqi;flex:none}
+.mc-reviewed-template .mc-cp{justify-content:flex-end;align-self:stretch;border-left:.2cqi solid #85653d88;padding:0 0 0 1.5cqi;border-radius:0;background:none;box-shadow:none;gap:.8cqi}
+.mc-reviewed-template .mc-cp b{color:#4a3216;font:800 6cqi/1 var(--font-number,sans-serif)}
+.mc-reviewed-template .mc-cp .mc-coin{width:4cqi;height:4cqi;background:none;border:.4cqi solid #8c6428;box-shadow:inset 0 0 0 .3cqi #c4a567}
 .mc-or{font:700 .85rem/1 var(--font-body,sans-serif);color:#f5e2b8;flex:none}
 .mc-art-icon svg{width:7cqi;height:7cqi}
-.mc-build-template .mc-lv:not(.act)>.mc-rn{display:none}
-.mc-build-template .mc-lv:not(.act) .mc-sy{padding:0}
-.mc-build-template .mc-had{justify-content:space-between;width:100%;font-size:5cqi}
-.mc-build-template .mc-cp b{font-weight:700}
+.mc-reviewed-template .mc-lv:not(.act)>.mc-rn{display:none}
+.mc-reviewed-template .mc-lv:not(.act) .mc-sy{padding:0}
+.mc-reviewed-template .mc-had{justify-content:space-between;width:100%;font-size:5cqi}
+.mc-reviewed-template .mc-cp b{font-weight:700}
 .mc-guidance{display:flex;align-items:center;justify-content:center;gap:8px;flex:none;color:#f0e4ce;font:600 .8rem/1.3 var(--font-body,sans-serif);text-align:center}
 .mc-back{min-height:44px;padding:0 12px;border:1px solid #b9a275;border-radius:7px;background:#252032;color:#fff3d6;font:600 .8rem var(--font-body,sans-serif);cursor:pointer}
+
+/* Cleave shares the approved shell; its content remains a dice purchase. */
+.mc-reviewed-template[data-card="cleave"] .mc-sy{padding-top:0;padding-bottom:5cqi;gap:3cqi}
+.mc-reviewed-template[data-card="cleave"] .mc-spent{justify-content:center;font-size:5cqi;gap:1.4cqi}
+.mc-reviewed-template[data-card="cleave"] .mc-spent .mc-die{width:6cqi;height:6cqi}
+.mc-reviewed-template[data-card="cleave"] .mc-mx{font-size:3.5cqi;line-height:1.2}
+.mc-reviewed-template[data-card="cleave"] .mc-cd{font-size:4.6cqi;gap:.6cqi}
+.mc-reviewed-template[data-card="cleave"] .mc-cd .mc-die{width:5cqi;height:5cqi}
+.mc-reviewed-template[data-card="press"] .mc-plaque{font-size:5.5cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-ln{font-size:6cqi;justify-content:center;gap:1cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-fv{font-size:7cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-fv small{font:600 3.2cqi/1.2 var(--font-body,sans-serif)}
+.mc-reviewed-template[data-card="judgment"] .mc-cd{gap:.5cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-cd .mc-fv{font-size:4.4cqi}
+.mc-reviewed-template[data-card="judgment"] .mc-cd .ic{width:3.3cqi;height:3.3cqi}
+.mc-reviewed-template .mc-lv.act .mc-ln{justify-content:center;gap:1.5cqi;flex-wrap:wrap}
+.mc-reviewed-template[data-card="riposte"] .mc-mx{font-size:3.7cqi;line-height:1.2}
+.mc-reviewed-template[data-card="judgment"] .mc-lv.act .mc-mx{font-size:3.2cqi;line-height:1.3;justify-content:center;text-align:center}
