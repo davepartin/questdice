@@ -93,3 +93,8 @@
 /* mc2 (Dave: make them pop): a crisp white outline around every card button */
 .mc-ctl .mc-use{outline:2px solid #fff;outline-offset:1px}
 .mc-ctl .mc-use:disabled{outline-color:#ffffff66}
+/* mc3 (Dave: an outline on the purple triangles everywhere): every magic triangle icon on the Magic screen (buttons, cost labels, upgrade lines,
+   tiles, the magic bar) gets a crisp white stroke drawn under its fill */
+.b3-sheet.open:has(.mc-sheet) .ic-magic{overflow:visible}
+.b3-sheet.open:has(.mc-sheet) .ic-magic *,.b3-sheet.open:has(.mc-sheet) .mc-use .ic-magic *{stroke:#fff!important;stroke-width:3px!important;stroke-linejoin:round!important;paint-order:stroke fill!important;vector-effect:non-scaling-stroke}
+.b3-sheet.open:has(.mc-sheet) .mc-use .ic-magic *{fill:#a64dff!important}
