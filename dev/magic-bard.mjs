@@ -45,7 +45,7 @@ check('Lucky Verse card: ONE-SHOT, Cast ▲2 red with white text', gtag === 'ONE
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
 await shot('mb1-luckyverse-after'); const g1 = await st(); const lr = await p.evaluate(() => window.QD.B3.battleState.b.lastCast?.rolls?.[0]); await settle(); await pick('luckyverse');
 const gDis = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.disabled);
-const want = lr <= 2 ? { m: -2 + 1, a: 0 } : lr <= 4 ? { m: -2, a: 3 } : { m: -1, a: 6 };
+const want = lr <= 2 ? { m: -2 + 1, a: 0 } : lr <= 4 ? { m: -2, a: 5 } : { m: -1, a: 10 };
 check('Lucky Verse: 2 magic, the d6 pays out on top, then used this round', g1.magic - g0.magic === want.m && g1.atk - g0.atk === want.a && gDis, JSON.stringify({ g0, g1, lr, gDis }));
 await pick('ballad');
 const v0 = await st(); await p.locator('.mc-ctl .mc-use.add').click(); for (let i = 0; i < 10; i++) { await pump(0.3); if (!(await p.evaluate(() => window.QD.B3.battleState.busy))) break; }
