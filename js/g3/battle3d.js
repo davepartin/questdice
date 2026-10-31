@@ -595,7 +595,7 @@ function cardTiles(reset) {
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
     select: (id) => { B.pwSel = id; B.pwNote = null; sfx.select?.(); renderSheet(); B.hud.sheet.querySelector('.pw-detail')?.scrollIntoView?.({ block: 'nearest' }); }, // short phones: bring its cast button into view
     step: (id, x) => { const k = E.cardsOf(hero).find((c) => c.id === id); B.powerX[id] = E.powerCost(k, x, E.powerLevel(hero, id)); sfx.click?.(); renderSheet(); },
-    use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
+    backToDice: () => togglePowers(false), use: (id, opts) => doCard(id, opts), recharge: (id) => doRecharge(id) })];
 }
 function renderSheet() { if (!B.sheetOpen) return; if (B.party) setSheetTab(B.sheetTab || 'powers'); else B.hud.cards.replaceChildren(...cardTiles(B.b.phase !== 'shape')); }
 // Tapping a power never casts it: it opens this card first (what it does, how often, what it costs) with Use / Close.
@@ -899,7 +899,7 @@ async function doCard(id, opts = {}) {
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
   try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
-  B.pwSel = null; // back to the top of the sheet with nothing picked, ready for the next power (Dave, Oct 2026)
+  B.pwSel = k?.kind === 'charge' ? id : null; // Keep the charge track visible after Charge or Use.
   renderShape(); renderSheet(); bumpCounters(gains); sheetTop();
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });

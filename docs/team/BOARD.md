@@ -651,3 +651,6 @@ Approved completed art/docs may be published under standing authorization withou
 
 
 30 October 2026, Director: Rally Cry approved template implemented first, build 20261030rt1. Title below art, flag on painting, plain Roman ranks, no BUILD/redundant charged sentence, Charge OR Use, printed cover prices in fixed right columns. Scoped to Rally Cry; other cards await individual review. No engine/data/save changes. Existing knight/charge-use checks and real battle phone fullscreen checks pass; rank fixtures cover all three ranks. Design rules, evidence and full library checklist: [magic template](tasks/magic-template/README.md).
+
+
+30 October 2026, Director: Rally Cry round-flow fix, build 20261030rt2. Charge tracks remain selected after charging/using; reset phase explains Roll your dice first and provides Back to dice. Real UI charge -> engine next-round reset -> actual roll -> second charge passes at 390x844 and 375x667. No rule changes. Evidence: [magic template](tasks/magic-template/README.md).

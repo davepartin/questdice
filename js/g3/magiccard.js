@@ -96,7 +96,7 @@ export function sheet(ctx, { glyph, detailPanel, tally }) {
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
     ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel)),
     utils.map((q) => tile(ctx, q.id, q.name, glyph(q, 'pw-g'), q.cost, q.id === sel)));
-  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, hurt: ctx.b.lastHurt ?? null }, glyph))]
+  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && (ctx.reset || p.st.spent) ? h('div', { class: 'mc-guidance', role: 'status' }, ctx.reset ? ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')] : 'Already charged or used this round. Choose again next round.') : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, hurt: ctx.b.lastHurt ?? null }, glyph))]
     : u ? [detailPanel(ctx, sel)] : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? 'Roll first, then use magic while you shape your dice.' : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
   return h('div', { class: 'pw-sigil mc-sheet' }, tally, grid, ...body);
 }

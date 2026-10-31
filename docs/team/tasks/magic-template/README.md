@@ -58,3 +58,9 @@ Existing cards are already implemented in the game. The status below concerns ad
 | Bard | Discord | One-shot | Individual review pending |
 | Bard | Rising Ballad | Build | Individual review pending |
 | Bard | Hymn of Gold | Build | Individual review pending |
+
+## Round flow correction, 20261030rt2
+
+Dave reported the card disappearing after charging and both controls disabled on the next round. The controller deliberately cleared every selected power after casting; charge powers now retain their track. The existing reset phase requires rolling the battle dice before using magic. Rally Cry now says “Roll your dice first” with a Back to dice action instead of leaving two unexplained disabled controls. A spent-round message also explains the exclusive charge/use choice. No engine rule change.
+
+`dev/rally-round-check.mjs` passes at 390x844 and 375x667: real Charge button spends one magic, track stays visible, both actions lock that round; engine beginReset starts next round, guidance appears, Back to dice closes the sheet, actual Roll button rolls, Charge re-enables, and clicking stores the second charge with the card visible. This is a bounded browser flow using the real round transition, not a complete battle resolution or Safari check. Five existing knight/charge-use tests pass. [Reset guidance](roll-first.webp).
