@@ -23,7 +23,7 @@ const shot = async (n) => { await clear(); await p.screenshot({ path: `${OUT}/${
 await fresh(); await p.locator('.b3-powers').first().click(); await pump(1.2);
 const tiles = await p.evaluate(() => [...document.querySelectorAll('.b3-sheet.open .mc-tile')].map((t) => t.dataset.power));
 check('2x3 grid: Mending Song, Lucky Verse, Rising Ballad; Potion, Heal, Heart change', tiles.join() === 'mending,luckyverse,ballad,u:bigheal,u:heal,u:heart', tiles.join());
-await p.waitForTimeout(900); const fs1 = await p.evaluate(() => ({ sh: document.scrollingElement.scrollHeight, vh: innerHeight, sheet: document.querySelector('.b3-sheet.open')?.getBoundingClientRect().height }));
+await p.waitForFunction(() => Math.abs(document.querySelector('.b3-sheet.open').getBoundingClientRect().height - innerHeight) < 2); const fs1 = await p.evaluate(() => ({ sh: document.scrollingElement.scrollHeight, vh: innerHeight, sheet: document.querySelector('.b3-sheet.open')?.getBoundingClientRect().height }));
 check('Magic sheet is full screen with no scroll', fs1.sh === fs1.vh && Math.abs(fs1.sheet - fs1.vh) < 2, JSON.stringify(fs1));
 await shot('mb1-panel');
 const css = (sel) => p.evaluate((sel) => { const b = document.querySelector(sel); const cs = getComputedStyle(b); return b.textContent + ' ' + cs.backgroundColor + ' / ' + cs.color; }, sel);
@@ -35,6 +35,12 @@ for(const id of ['u:bigheal','u:heal','u:heart']){
 await p.locator(`.mc-tile[data-power="${id}"]`).click();await pump(.3);
 const result=await p.evaluate(()=>{const c=document.querySelector('.mc-utility');const r=c.getBoundingClientRect();return{card:!!c,bottom:r.bottom,scroll:document.scrollingElement.scrollHeight,buttons:[...c.querySelectorAll('button')].length};});
 check(`${id} framed card fits ${width}`,result.card&&result.bottom<=height+1&&result.scroll===height,JSON.stringify(result));
+check('No utility footer caption', await p.locator('.mc-util-footer').count() === 0);
+if(id==='u:heart') {
+check('Heart Change title and boxed actual cost', await p.evaluate(()=>document.querySelector('.mc-utility .mc-plaque').textContent==='Heart Change' && document.querySelector('.mc-tile[data-power="u:heart"] span').textContent==='Heart Change' && document.querySelector('.mc-utility .mc-cast-cost').textContent.trim()==='3'));
+check('Dice grid and raised heart die artwork', await p.locator('.mc-heart-art .mc-heart-map').count()===1 && await p.locator('.mc-heart-die').count()===1);
+check('Buttons and destination labels fit', await p.evaluate(()=>[...document.querySelectorAll('.mc-utility .hc-btn')].every(b=>b.scrollWidth<=b.clientWidth+1 && b.querySelector('.hc-word')?.textContent.includes('to'))));
+}
 if(id==='u:bigheal') check('Five slots, two filled healing chits and green life corners',await p.evaluate(()=>document.querySelectorAll('.mc-potion-slot').length===5&&document.querySelectorAll('.mc-potion-chit').length===2&&document.querySelectorAll('.mc-life-corners>.ic').length===4&&[...document.querySelectorAll('.mc-potion-chit b')].every(e=>e.textContent==='+10')));
 await p.screenshot({path:`${OUT}/${id.slice(2)}-${width}.png`});
 }

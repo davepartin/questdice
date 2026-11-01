@@ -13,3 +13,11 @@ Existing callbacks, reasons and disabled rules are preserved. Heart controls mov
 Five cardboard recesses replace the large healing number. Carried potions fill them with green bottle chits labeled with the actual act-dependent potion healing amount (new heroes: two +10 chits). Unlocked empty spaces and dashed future spaces stay empty. Existing belt capacity, purchasing, saves and healing values are preserved. Potion corners use subtle green life crosses. A successful drink launches a departing chit after the controller confirms consumption; failed actions do not animate. Newly filled spaces animate on rerender. Reduced-motion preference disables movement. No new image asset is needed; the existing bottle and cardboard textures are reused.
 
 Actual utility flow checks at 390x844 and 375x667 cover five slots/two chits/corners, drinking and departure, refill via the existing purchase function, and Heal/Heart regression. Four existing potion engine tests pass.
+
+## Heart Change refinement, 20261101hc1
+
+Dave requested dice artwork rather than a large heart, title capitalization, a boxed top-right magic cost, clearer controls, and removal of the extra footer captions. Heart Change now combines the existing dice-board painting and a golden 3D heart-die sprite. Its original controller buttons retain their destination faces, payment, once-per-round and disabled rules, with larger hit areas, readable wrapping labels and keyboard focus. The top-right cost box has a stronger border. Potion, Heal and Heart Change no longer render their footer captions; the cream panels use the freed space. Battle controller edits are title strings only. No rules, save or target changes.
+
+Validation: all 527 tests pass. Real-battle utility checks cover phone layouts, actual Heal, Potion consumption/departure/restock, and Heart Up changing the face and disabling both choices. Final screenshots and build verification are recorded on the team board. Chromium only; human iPhone/Safari inspection remains unverified.
+
+Final phone renders: [390x844](heart-change-390.webp), [375x667](heart-change-375.webp). `dev/magic-utilities.mjs` passes all final assertions, including caption removal, title/cost, artwork and button label fit at both sizes.

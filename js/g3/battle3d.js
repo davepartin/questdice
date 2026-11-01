@@ -556,7 +556,7 @@ function clearDock() {
   B.hud.caption.replaceChildren();
 }
 const UTIL = [
-  { id: 'u:heart', name: 'Heart change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A heart of 1 to 4 boosts every head, hand and feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon, a 6 every attacking weapon.' },
+  { id: 'u:heart', name: 'Heart Change', kind: 'util', cost: D.NUDGE_COST, fx: {}, text: 'Once a round, turn the heart die up or down by one. A heart of 1 to 4 boosts every head, hand and feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon, a 6 every attacking weapon.' },
   { id: 'u:heal', name: 'Heal', kind: 'util', cost: 2, fx: { heal: D.HEAL_AMOUNT }, text: `Spend magic, heal health right now. As often as you can pay.` },
   { id: 'u:bigheal', name: 'Potion', kind: 'util', cost: 0, fx: { heal: E.POTION_HP }, text: 'Drink a potion and heal right away. Potions are bought at camp; what you drink is gone until you buy more.' },
 ];
@@ -588,7 +588,7 @@ function cardTiles(reset) {
       body: `Heal ${E.potionHpOf(hero)} right away. Once it is gone it is gone; buy more at camp.`, actions: [{ label: 'Drink a potion', fn: () => doBigHeal() }] },
     { id: 'u:heal', name: 'Heal', icon: 'heart', tone: 'heal', why: heal.why, tag: heal.tag, cost: heal.cost, flag: `${heal.cost} magic · as often as you can pay`, text: heal.u.text,
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
-    { id: 'u:heart', name: 'Heart change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
+    { id: 'u:heart', name: 'Heart Change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
       body: 'Turn your heart die one step up or down. A heart of 1 to 4 adds 2 more to every head, hand or feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
       extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)], panel: heartPanel(b, heart.cost, heart.why) },
   ];
@@ -675,7 +675,7 @@ function heartPanel(b, cost, why) {
   let effect = ''; try { const hb = E.evaluate(B.hero, b.board)?.heartBoost; effect = hb ? `Now: +${hb.n} ${hb.sym} on the dice showing ${hb.sym}.` : (cur >= 5 ? 'Now: the heart backs your weapons.' : 'Now: no die shows the heart\'s symbol yet.'); } catch { /* the words above still say it */ }
   const state = used ? 'Used this round. The heart turns once a round, so both choices rest until the next one.' : (why || `Costs ${cost} magic. You have ${b.magic}.`);
   return h('div', { class: 'hc-panel' },
-    h('div', { class: 'hc-top' }, h('b', {}, 'Heart change'), h('span', { class: 'hc-cost' }, `${cost} magic · once a round`), h('button', { type: 'button', class: 'hc-close', 'aria-label': 'Close the magic powers', onclick: () => togglePowers(false) }, 'Close')),
+    h('div', { class: 'hc-top' }, h('b', {}, 'Heart Change'), h('span', { class: 'hc-cost' }, `${cost} magic · once a round`), h('button', { type: 'button', class: 'hc-close', 'aria-label': 'Close the magic powers', onclick: () => togglePowers(false) }, 'Close')),
     h('div', { class: 'hc-row' }, go(-1), h('div', { class: 'hc-cur', 'aria-label': `Heart now ${cur}` }, h('small', {}, 'Now'), heartFace(cur, 'now') || h('b', {}, String(cur))), go(1)),
     h('p', { class: `hc-state ${used ? 'used' : ''}`, role: 'status' }, state, effect && !used ? ` ${effect}` : ''),
     h('details', { class: 'hc-rules' }, h('summary', {}, 'Rules'), h('p', {}, UTIL.find((x) => x.id === 'u:heart').text)));

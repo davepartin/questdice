@@ -321,3 +321,18 @@
 @media(prefers-reduced-motion:reduce){.mc-potion-chit.arriving{animation:none}}
 
 .mc-utility.potion .mc-util-panel,.mc-potion-chit{background-size:100% 400%}
+
+/* Heart Change: dice-grid art, clear choices, and no utility footer captions. */
+.mc-heart-art{position:relative;width:100%;height:100%;overflow:hidden;background:#141320}
+.mc-utility.heart .mc-util-art .mc-heart-map{position:absolute;left:0;top:-25%;width:90%;height:145%;object-fit:contain;transform:rotate(-10deg);filter:brightness(.65) saturate(.7);opacity:.9}
+.mc-heart-die{position:absolute;left:49%;top:8%;width:27cqi;height:27cqi;background:url(../assets/brand/die-heart.webp) 0 0/3200% 100% no-repeat;filter:drop-shadow(0 2cqi 1cqi #000b);transform:rotate(8deg)}
+.mc-utility .mc-util-panel{bottom:11%;}
+.mc-utility .mc-cast-cost{top:11%;right:15%;border:.5cqi solid #dfc995;box-shadow:0 .8cqi 1.2cqi #0008;min-height:10cqi;min-width:13cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-row{grid-template-columns:1fr .7fr 1fr;gap:2cqi;margin-bottom:5cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-btn{min-height:27cqi;padding:2cqi 1cqi;gap:2cqi;border:.5cqi solid #e4c987;background:#442064;box-shadow:0 1cqi 0 #251036;color:#fff;cursor:pointer}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-btn:not(:disabled):active{transform:translateY(.6cqi);box-shadow:0 .4cqi 0 #251036}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-btn:focus-visible{outline:.8cqi solid #a64dff;outline-offset:.8cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-word{font:800 3.5cqi/1.25 var(--font-body,sans-serif);text-transform:none;white-space:normal;max-width:100%;text-align:center}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-face{width:12cqi;height:12cqi}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur small{font-size:3.5cqi;margin-bottom:2cqi}
+.mc-utility .hc-btn:disabled{opacity:1;filter:grayscale(1);background:#b6ad9a!important;border-color:#cfc5b1!important;color:#fff8!important;box-shadow:none!important;cursor:default!important}
