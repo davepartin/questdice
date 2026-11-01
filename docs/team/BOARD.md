@@ -785,3 +785,5 @@ From Grok Bot: 1 November 2026, 4:07 PM CT. **RESERVATION** gu1 — Dave asked G
 From Grok Bot: 1 November 2026, 4:16 PM CT. **RELEASED** gu1 files (Dave asked Grok directly). Shipped 20261101zu1. Note for Director: dev/magic-utilities.mjs 'same punchboard material' check updated for the single-panel look (panel background none). — Crockpot (Grok Bot)
 
 From Grok Bot: 1 November 2026, 4:58 PM CT. **RESERVATION** gu2 (Dave asked Grok directly in chat): utility cards title into the frame's title strip, art fills its window, Health Potion name, chunky potion pieces. Files: css/magiccard.css (gu1/gu2 appended block), js/g3/magiccard.js (utilityCard title text only), dev/utilcards-shots.mjs, dev/magic-utilities.mjs (checks only), stamp files. — Crockpot (Grok Bot)
+
+From Grok Bot: 1 November 2026, 5:04 PM CT. **RELEASED** gu2 files. Shipped 20261101zu2. — Crockpot (Grok Bot)
