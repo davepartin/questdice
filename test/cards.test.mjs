@@ -77,10 +77,10 @@ test('Bonus Challenge cards carry the game\'s stake, reward and net, by act', ()
   for (const act of [1, 2, 3]) for (const id of Object.keys(S.BONUS_GOALS)) {
     const o = CW.objectiveData(id, act); assert.equal(o.stake, S.bonusStake(act)); assert.equal(o.back, S.bonusG(act)); assert.equal(o.net, S.bonusG(act) - S.bonusStake(act));
     const html = CW.objectiveCardHtml('objective', o);
-    assert.ok(html.includes(`<b>${o.stake}</b>`) && html.includes(`<b>${o.back}</b>`) && html.includes(`+${o.net}`) && html.includes(o.rule) && html.includes('Stake') && html.includes('Reward'));
+    assert.ok(html.includes(`<b>${o.stake}</b>`) && html.includes(`<b>${o.back}</b>`) && html.includes(`+${o.net}`) && html.includes(o.rule) && html.includes('>Bet<') && html.includes('>Win<') && !html.includes('If not'));
   }
   const view = S.bonusView(S.dealBonusGoal({ c: { seed: 1, act: 2, step: 1 }, hero: { gold: 0 } })); // too poor to stake: a free try
-  const free = CW.objectiveCardHtml('objective', CW.objectiveFromView(view)); assert.match(free, /a free try/); assert.match(free, /nothing is lost/);
+  const free = CW.objectiveCardHtml('objective', CW.objectiveFromView(view)); assert.match(free, /a free try/); assert.match(free, /nothing is lost/); assert.match(free, /class="free">Free</);
 });
 
 test('an offered bribe is worded by what judge() pays: done and won, won but not done, and team defeat (with the crooks clause)', () => {

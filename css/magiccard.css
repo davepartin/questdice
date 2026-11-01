@@ -435,3 +435,28 @@
 .b3-sheet.open:has(.mc-sheet) .mc-utility.healing .mc-heal-exchange .ic-magic .p{fill:#76508c!important;stroke:#50365e!important;stroke-width:.65px!important}
 .mc-utility.healing .mc-exchange-output .ic .f{fill:#54744e;stroke:#3d563a;stroke-width:.7}
 .mc-utility.healing .mc-exchange-arrow{color:#69563c;font-family:Georgia,serif}
+
+/* gu1 (Dave asked Grok in chat, 1 Nov 2026; Crockpot / Grok Bot): ONE clean lower panel on the three utility cards.
+   The card's under-layer (.mc-under) is the single surface: a warm, even card stock that fills the frame window. The inner paper
+   square is transparent and unframed, so only one background ever shows. Scoped to .mc-utility; other heroes' cards are unchanged. */
+.mc-card.mc-utility .mc-under{background:linear-gradient(180deg,#efe2c4 0%,#e6d4ad 55%,#dcc79c 100%);box-shadow:inset 0 0 4cqi #7a5b2c33}
+.mc-card.mc-utility .mc-util-panel,.mc-card.mc-utility.potion .mc-util-panel{background:none!important;border:0!important;box-shadow:none!important;border-radius:0}
+.mc-card.mc-utility .mc-util-footer{background:none;box-shadow:none;border:0}
+/* Potion: five bottle spaces in a tidy 3 + 2. A carried potion is the clean bottle art with +N printed on its label;
+   empty and future spaces are the same faint bottle silhouette. */
+.mc-card.mc-utility .mc-potion-tray{display:flex;flex-wrap:wrap;justify-content:center;gap:3cqi 2cqi;width:100%;align-content:center}
+.mc-card.mc-utility .mc-potion-slot{flex:0 0 31%;aspect-ratio:.9;filter:none}
+.mc-card.mc-utility .mc-potion-slot::before{inset:2%;background:#6e5530!important;opacity:.3;box-shadow:none!important;
+  -webkit-mask:url(../assets/cards/utilities/potion-printed.webp) center/contain no-repeat;mask:url(../assets/cards/utilities/potion-printed.webp) center/contain no-repeat;clip-path:none}
+.mc-card.mc-utility .mc-potion-chit{position:absolute;inset:0;filter:drop-shadow(0 .8cqi .6cqi #3b2a1455)}
+.mc-card.mc-utility .mc-potion-chit::before,.mc-card.mc-utility .mc-potion-chit::after{display:none}
+.mc-card.mc-utility .mc-potion-chit img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;clip-path:none;mix-blend-mode:normal;filter:none}
+.mc-card.mc-utility .mc-potion-chit b{position:absolute;z-index:3;left:50%;top:72%;transform:translate(-50%,-50%);padding:0;border:0;background:none;
+  padding:.7cqi 1.4cqi;border-radius:99px;background:#fbf1d6;box-shadow:0 0 0 .5cqi #1f6a32,0 .6cqi .8cqi #0005;
+  color:#1f6a32;font:900 4.6cqi/1 var(--font-number,sans-serif);letter-spacing:-.02em;mix-blend-mode:normal;text-shadow:none;white-space:nowrap}
+/* Heal: flat purple magic triangles with a white edge become bright green health pluses, on the one panel. */
+.mc-card.mc-utility.healing .mc-heal-exchange{mix-blend-mode:normal;opacity:1;gap:2.2cqi}
+.b3-sheet.open:has(.mc-sheet) .mc-card.mc-utility.healing .mc-heal-exchange .ic-magic .p{fill:#8a3ff0!important;stroke:#fff!important;stroke-width:1.4px!important;paint-order:stroke}
+.mc-card.mc-utility.healing .mc-exchange-output .ic .f{fill:#38e87a!important;stroke:#fff!important;stroke-width:1.2!important;paint-order:stroke}
+.mc-card.mc-utility.healing .mc-heal-exchange .ic{width:9.5cqi;height:9.5cqi;filter:drop-shadow(0 .5cqi .4cqi #0004)}
+.mc-card.mc-utility.healing .mc-exchange-arrow{color:#6b5232;font:800 9cqi/1 var(--font-body,sans-serif)}

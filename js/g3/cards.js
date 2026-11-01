@@ -204,7 +204,10 @@ export const objectiveFocus = (id) => (OBJ_FOCUS[id] && OBJ_TINT[OBJ_FOCUS[id]] 
 const term = (k, v, cls = '') => `<div class="t ${cls}"><small>${k}</small><span>${v}</span></div>`;
 export function objectiveCardHtml(kind, d) {
   const isObj = kind === 'objective'; let terms;
-  if (isObj) terms = term('Stake', d.stake ? `<b>${d.stake}</b> gold, paid when you accept` : 'none, a free try') + term('Reward', `<b>${d.back}</b>${d.stake ? ' back' : ' gold'} if done and won${d.stake ? ` · net <b>+${d.net}</b>` : ''}`, 'good') + term('If not', d.stake ? 'the stake is lost, whether it was missed or the fight was lost' : 'nothing is lost', 'bad');
+  // gu1 (Dave, 1 Nov 2026): an objective shows only what you put in and what you get back - Bet and Win, each a gold coin and a number.
+  if (isObj) terms = `<div class="deal" role="img" aria-label="${d.stake ? `Bet ${d.stake} gold, win ${d.back} gold back if done and won, net +${d.net}. Otherwise the bet is lost.` : `Free bet, a free try: win ${d.back} gold if done and won; nothing is lost.`}">`
+    + `<div class="dl bet"><small>Bet</small>${d.stake ? `<span><i class="coin" aria-hidden="true"></i><b>${d.stake}</b></span>` : '<span class="free">Free</span>'}</div>`
+    + `<i class="dl-arrow" aria-hidden="true">→</i><div class="dl win"><small>Win</small><span><i class="coin" aria-hidden="true"></i><b>${d.back}</b></span></div></div>`;
   else if (kind === 'wager') { const t = d.terms; terms = term('Reward', `<b>+${t.win}</b> if done and the team wins`, 'good') + term('Won, not done', '<b>0</b>, nothing lost') + term('Team defeated', `pay <b>${t.fail}</b>, done or not; <b>${t.crooks}</b> more if every bribe was taken`, 'bad') + term('Decline', `Honor <b>+${t.honor[0]}</b>, or <b>+${t.honor[1]}</b> if the team is defeated`); }
   else terms = term('Stake', 'none') + (d.stakes || []).map((c) => term('Reward', esc(c), 'good')).join('');
   const f = objectiveFocus(d.id); const deck = isObj ? 'objective' : 'secret-objective';
