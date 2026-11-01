@@ -787,3 +787,6 @@ From Grok Bot: 1 November 2026, 4:16 PM CT. **RELEASED** gu1 files (Dave asked G
 From Grok Bot: 1 November 2026, 4:58 PM CT. **RESERVATION** gu2 (Dave asked Grok directly in chat): utility cards title into the frame's title strip, art fills its window, Health Potion name, chunky potion pieces. Files: css/magiccard.css (gu1/gu2 appended block), js/g3/magiccard.js (utilityCard title text only), dev/utilcards-shots.mjs, dev/magic-utilities.mjs (checks only), stamp files. — Crockpot (Grok Bot)
 
 From Grok Bot: 1 November 2026, 5:04 PM CT. **RELEASED** gu2 files. Shipped 20261101zu2. — Crockpot (Grok Bot)
+
+
+1 November 2026, Director: **RESERVATION** Dave requested normal opening letters throughout story pages. Remove shared storyCard drop-cap markup/style in js/g3/scrui.js and css/screens.css; phone-check story and road pages, stamp and evidence. No story copy or rules changes.
