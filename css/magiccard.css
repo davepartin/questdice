@@ -460,3 +460,16 @@
 .mc-card.mc-utility.healing .mc-exchange-output .ic .f{fill:#38e87a!important;stroke:#fff!important;stroke-width:1.2!important;paint-order:stroke}
 .mc-card.mc-utility.healing .mc-heal-exchange .ic{width:9.5cqi;height:9.5cqi;filter:drop-shadow(0 .5cqi .4cqi #0004)}
 .mc-card.mc-utility.healing .mc-exchange-arrow{color:#6b5232;font:800 9cqi/1 var(--font-body,sans-serif)}
+/* gu2 (Dave asked Grok in chat, 1 Nov 2026; Crockpot / Grok Bot): on the three utility cards the title sits in the frame's own dark
+   title strip under the art (not over the art), and the art fills its whole window. Potions are chunky punch-out pieces that sit
+   exactly in bottle-shaped recesses of the same size. */
+.mc-reviewed-template.mc-utility .mc-paint{top:8.3%;height:28.9%;border-radius:1.2cqi 1.2cqi 0 0}
+.mc-reviewed-template.mc-utility .mc-paint img,.mc-reviewed-template.mc-utility .mc-util-art>img.mc-utility-scene{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:none}
+.mc-reviewed-template.mc-utility .mc-plaque{top:37.6%;height:4.6%;left:15%;right:15%;background:none;box-shadow:none;border:0;font-size:6.8cqi;line-height:1;text-shadow:0 .4cqi .6cqi #000c}
+.mc-card.mc-utility.potion .mc-util-panel{padding:1cqi!important;left:14%;right:14%}
+.mc-card.mc-utility .mc-potion-tray{gap:4cqi 1cqi}
+.mc-card.mc-utility .mc-potion-slot{flex:0 0 32%;aspect-ratio:.86}
+.mc-card.mc-utility .mc-potion-slot::before{inset:0;opacity:.32}
+.mc-card.mc-utility .mc-potion-chit{inset:0;filter:drop-shadow(.55cqi 0 0 #f1e2bd) drop-shadow(-.55cqi 0 0 #f1e2bd) drop-shadow(0 -.55cqi 0 #f1e2bd) drop-shadow(0 .55cqi 0 #f1e2bd)
+  drop-shadow(0 .7cqi 0 #a98352) drop-shadow(0 .7cqi 0 #7b5a30) drop-shadow(0 1.6cqi 1.2cqi #0007);transform:translateY(-1cqi)}
+.mc-card.mc-utility .mc-potion-chit b{top:70%;font-size:5cqi}
