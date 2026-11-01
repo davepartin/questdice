@@ -776,3 +776,6 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: **CHECKED** printed utility-card materials, build 20261101pm1. Natural unframed card-stock lower panels, muted printed Heal exchange, matte illustrated potion chits with printed values and natural thick cut edges; dynamic tallies/controls and Heart selection rings preserved. All 527 tests and 51 real utility checks pass at 390x844/375x667; rendered cards inspected. Evidence: docs/team/tasks/magic-template/utilities/README.md. No mechanics changes. Ready for atomic main publication.
+
+
+1 November 2026, Director: **DEPLOYED** printed utility materials, commit 015537b, build 20261101pm1. Live version.json and both new WebP assets verified by HTTPS (200, expected bytes). All 527 game tests and 51 real utility checks pass; 390x844/375x667 cards inspected in Chromium. Reservation released.
