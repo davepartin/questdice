@@ -722,3 +722,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 1 November 2026, Director: **DEPLOYED** bottle punchboard and center Heart refinement, commit b669de8, build 20261101pc2. Live version.json verified by HTTPS after Pages deployment. All 527 tests and final real utility checks pass. Filled/empty tray and Heart phone renders inspected; reservation released.
 - Oct 31 23:44 CT Crockpot (Grok Bot): RESERVED tz1 (Dave: talent face tap scrolls to Choose a face; tighten it) — js/g3/scrui.js talentWorkshop()/toTalentSymbols() only, css/camp.css (appended tz1 block), stamp files, dev/talentpick-shots.mjs
 - Oct 31 23:47 CT Crockpot (Grok Bot): RELEASED tz1 files. Shipped 20261101zt1.
+
+1 November 2026, Director: **RESERVATION** Potion cardboard material fix requested by Dave: remove doubled framed textures, use a continuous plain tray surface and thicker bottle-shaped cardboard chits. Files css/magiccard.css, js/g3/magiccard.js if a depth layer is needed, utility evidence and stamp files. Preserve tz1 talent work. No rules changes.
