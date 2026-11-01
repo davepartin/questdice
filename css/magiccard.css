@@ -386,3 +386,11 @@
 .mc-heart-current .hc-face{width:16cqi;height:16cqi;outline:.7cqi solid #ffd23d;outline-offset:1cqi}
 .mc-heart-outcome.unavailable{opacity:.4;filter:grayscale(.6)}
 .mc-heart-empty{width:12cqi;height:12cqi;display:grid;place-items:center;color:#a59170;font:700 6cqi/1 var(--font-number,sans-serif)}
+
+/* Utility paintings share the other magic cards' full art window; chit art stays unchanged. */
+.mc-utility .mc-util-art>img.mc-utility-scene{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;filter:none;transform:none}
+/* The choices are visually dominant; the smaller center face remains the current result. */
+.mc-heart-faces{grid-template-columns:1.15fr .8fr 1.15fr;gap:2.5cqi}
+.b3-sheet.open:has(.mc-sheet) .mc-utility.heart .mc-heart-outcome .hc-face{width:18cqi;height:18cqi}
+.b3-sheet.open:has(.mc-sheet) .mc-utility.heart .mc-heart-current .hc-face{width:12cqi;height:12cqi;outline-width:.5cqi;outline-offset:.8cqi}
+.mc-heart-empty{width:18cqi;height:18cqi}

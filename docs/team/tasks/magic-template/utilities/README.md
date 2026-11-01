@@ -49,3 +49,13 @@ All 527 tests pass. Real utility checks at 390x844 and 375x667 pass: exactly two
 Dave requested ▼ OR ▲ above Heart Change so switching powers does not resize the card, with face results shown on the card. Original controller buttons (handlers, accessible destination names and disabled rules) now live in the standard action row, with arrows only and OR between. The cream panel contains passive lower/current/higher face images; the current face is highlighted and updates after a successful change. Unavailable outcomes dim. All selected cards reserve the same 42px action row. No engine, save or payment changes.
 
 All 527 tests pass. Real-battle checks at 390x844 and 375x667 confirm all six selected cards have identical width, height and top position at each viewport; the external controls sit above the card; no buttons remain inside it. Up and Down each pay exactly 3 magic once, update the current face and disable both controls after use; faces 1 and 6 disable only the impossible arrow when otherwise eligible. Heal/Potion regressions and zero page errors pass. Both phone renders inspected in Chromium; Safari remains unverified. [390x844](heart-controls-390.webp) · [375x667](heart-controls-375.webp).
+
+## Fantasy utility paintings and larger Heart choices, 20261101ua1
+
+Dave asked to finish organizing the three second-row utility cards: active fantasy scenes for Heal and Potion, and larger destination faces on Heart Change. New original illustrations show purple healing ribbons around an armored chest and a gloved adventurer drawing a green bottle from a leather potion belt. Optimized WebP assets live in assets/cards/utilities/ (about 175 KB total); original generated PNGs remain in the workspace generated_images directory. Card art fills the existing window without the old bottle tint/rotation. Thick +10 chits and the two-magic/three-life exchange are unchanged.
+
+Heart destination faces are 18cqi versus 12cqi for the center current face, with the existing current-face outline. Scoped selectors override legacy heart-face dimensions. Outside ▼ OR ▲ buttons, costs and all six cards' common geometry remain. No mechanics or saves changed.
+
+All 527 game tests pass. Final real utility checks at 390x844 and 375x667 pass: both scenes loaded untinted, destination/current size ratio, identical six-card geometry, exact Heal payment, Potion departure/restock, Heart Up/Down payment, once-per-round and face boundaries, and zero page errors. The test now waits for table setup to finish and selects the actual Magic button explicitly. Final phone crops inspected in Chromium; Safari remains unverified.
+
+[Heal](fantasy-heal-375.webp) · [Potion](fantasy-potion-375.webp) · [Heart choices](heart-outcomes-375.webp).
