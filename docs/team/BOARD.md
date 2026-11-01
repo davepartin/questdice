@@ -734,3 +734,7 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Heal exchange-card redesign complete, build 20261101he1. Two purple magic triangles → three green life pluses; removed duplicate health meter/totals and result prose. Existing Heal button/cost/callback/disabled rules retained. No mechanics or saves changed. All 527 tests and real utility checks at 390x844/375x667 pass, including exact 2-magic/3-health payment and Potion/Heart regression. Both phone renders inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** Heal exchange card, commit 7e140f3, build 20261101he1. Live version.json verified by HTTPS. Heal task reservation released.
+
+1 November 2026, Director: **RESERVATION** Heart Change external controls requested by Dave: ▼ OR ▲ above the card; card shows face outcomes/current result; stable card size while switching powers. Files js/g3/magiccard.js, css/magiccard.css, dev/magic-utilities.mjs, utility evidence and stamps. Preserve existing payment, boundary and once-per-round rules.
