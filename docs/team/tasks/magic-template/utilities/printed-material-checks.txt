@@ -1,0 +1,52 @@
+PASS 2x3 grid: Mending Song, Lucky Verse, Rising Ballad; Potion, Heal, Heart change mending,luckyverse,ballad,u:bigheal,u:heal,u:heart
+PASS Magic sheet is full screen with no scroll {"sh":844,"vh":844,"sheet":844}
+shot /workspace/utility-20261101pm1-final/mb1-panel_390x844.png
+PASS u:bigheal framed card fits 390 {"card":true,"bottom":808.5,"scroll":844,"buttons":0}
+PASS No utility footer caption 
+PASS Fantasy utility scene loaded without a bottle tint 
+PASS Five slots, two filled healing chits and green life corners 
+PASS Used and future spaces share the same punchboard material 
+PASS u:heal framed card fits 390 {"card":true,"bottom":808.5,"scroll":844,"buttons":0}
+PASS No utility footer caption 
+PASS Heal has no redundant RESTORE tag 
+PASS Heal shows two magic triangles to three life pluses without duplicate health 
+PASS Fantasy utility scene loaded without a bottle tint 
+PASS u:heart framed card fits 390 {"card":true,"bottom":808.5,"scroll":844,"buttons":0}
+PASS No utility footer caption 
+PASS Destination faces are larger than the current center face 
+PASS No Heart instruction paragraphs 
+PASS Heart Change title and boxed actual cost 
+PASS Dice grid and raised heart die artwork 
+PASS Heart buttons above the card: down OR up, with accessible labels 
+PASS All six cards retain the same size and position 390 [[349.625,510.828125,297.671875],[349.625,510.828125,297.671875],[349.625,510.828125,297.671875],[349.625,510.828125,297.671875],[349.625,510.828125,297.671875],[349.625,510.828125,297.671875]]
+PASS u:bigheal framed card fits 375 {"card":true,"bottom":649.96875,"scroll":667,"buttons":0}
+PASS No utility footer caption 
+PASS Fantasy utility scene loaded without a bottle tint 
+PASS Five slots, two filled healing chits and green life corners 
+PASS Used and future spaces share the same punchboard material 
+PASS u:heal framed card fits 375 {"card":true,"bottom":649.96875,"scroll":667,"buttons":0}
+PASS No utility footer caption 
+PASS Heal has no redundant RESTORE tag 
+PASS Heal shows two magic triangles to three life pluses without duplicate health 
+PASS Fantasy utility scene loaded without a bottle tint 
+PASS u:heart framed card fits 375 {"card":true,"bottom":649.96875,"scroll":667,"buttons":0}
+PASS No utility footer caption 
+PASS Destination faces are larger than the current center face 
+PASS No Heart instruction paragraphs 
+PASS Heart Change title and boxed actual cost 
+PASS Dice grid and raised heart die artwork 
+PASS Heart buttons above the card: down OR up, with accessible labels 
+PASS All six cards retain the same size and position 375 [[258.578125,377.796875,272.171875],[258.578125,377.796875,272.171875],[258.578125,377.796875,272.171875],[258.578125,377.796875,272.171875],[258.578125,377.796875,272.171875],[258.578125,377.796875,272.171875]]
+PASS Heal button converts exactly two magic into three health and retains the exchange card 
+PASS Health gain flashes the top-right tally behind the updated number 
+PASS Health flash clears after its brief feedback 
+PASS Consumed chit slides away 
+PASS Potion inventory consumed and card retained 
+PASS Heart arrow only previews; Use is a separate action 
+PASS All five empty recesses look identical after drinking both 
+PASS Restocked potion fills its slot 
+PASS Full health does not offer Heal or start a flash 
+PASS A capped one-health gain still flashes and spends the normal cost 
+PASS Insufficient magic does not trigger health feedback 
+PASS Spent Heart keeps USED without a diagonal strike 
+PASS no page errors 

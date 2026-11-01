@@ -128,12 +128,13 @@ const potionTrayCounts = new Map();
 function potionTray(ctx, n) {
   const count = E.potionsLeft(ctx.b), hero = ctx.hero || ctx.b.hero, key = hero?.name || '';
   const previous = potionTrayCounts.get(key); potionTrayCounts.set(key,count);
-  return h('div', { class: 'mc-potion-tray', 'data-count': count, 'aria-label': `${count} potions carried, ${E.potionMaxOf(hero)} unlocked spaces` }, Array.from({length:5}, (_,i) => h('div', { class: `mc-potion-slot ${i >= E.potionMaxOf(hero) ? 'future' : ''}`, 'aria-label': i < count ? `Potion ${i+1}: restores ${n} health` : i >= E.potionMaxOf(hero) ? 'Future potion space' : 'Empty potion space' }, i < count ? h('div', { class: `mc-potion-chit ${previous != null && i >= previous ? 'arriving' : ''}` }, h('img', {src:'assets/cards/potion.webp',alt:''}), h('b',{},`+${n}`)) : null)));
+  return h('div', { class: 'mc-potion-tray', 'data-count': count, 'aria-label': `${count} potions carried, ${E.potionMaxOf(hero)} unlocked spaces` }, Array.from({length:5}, (_,i) => h('div', { class: `mc-potion-slot ${i >= E.potionMaxOf(hero) ? 'future' : ''}`, 'aria-label': i < count ? `Potion ${i+1}: restores ${n} health` : i >= E.potionMaxOf(hero) ? 'Future potion space' : 'Empty potion space' }, i < count ? h('div', { class: `mc-potion-chit ${previous != null && i >= previous ? 'arriving' : ''}` }, h('img', {src:'assets/cards/utilities/potion-printed.webp',alt:''}), h('b',{},`+${n}`)) : null)));
 }
 async function drinkChit(action) {
   const tray = document.querySelector('.mc-potion-tray'), count = Number(tray?.dataset.count);
   const chit = tray?.querySelector('.mc-potion-slot:nth-child('+count+') .mc-potion-chit');
   const rect = chit?.getBoundingClientRect(), ghost = chit?.cloneNode(true);
+  if (ghost) ghost.querySelector('b').style.fontSize = getComputedStyle(chit.querySelector('b')).fontSize;
   await action();
   if (!ghost || Number(document.querySelector('.mc-potion-tray')?.dataset.count) >= count) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;

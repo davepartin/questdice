@@ -421,3 +421,17 @@
 .mc-health-gain::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:#209e58;border:1px solid #a3f6c5;box-shadow:0 0 12px #4deb8d66;pointer-events:none;opacity:0;animation:mcHealthGain .65s ease-out}
 @keyframes mcHealthGain{0%{opacity:.9}100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.mc-health-gain::before{animation-duration:.2s}}
+
+/* Uncoated stock and restrained printed inks for the physical utility cards. */
+.mc-utility,.mc-potion-chit{--mc-stock:url(../assets/cards/utilities/card-stock.webp)}
+.mc-card.mc-utility .mc-util-panel{background:#d8cdb5 var(--mc-stock) center/100cqi 100cqi;border:.35cqi solid #8c795a;border-radius:.7cqi;box-shadow:inset 0 0 0 .45cqi #eee3cb99,inset 0 0 3cqi #6e583328}
+.mc-potion-slot::before{background:linear-gradient(#806e5033,#806e5033),var(--mc-stock) center/100cqi 100cqi;box-shadow:inset 0 .6cqi 1cqi #59492e40}
+.mc-potion-chit{filter:drop-shadow(0 .7cqi .5cqi #49351f55)}
+.mc-potion-chit::before{background:linear-gradient(#70573588,#70573588),var(--mc-stock) center/100cqi 100cqi;transform:translateY(4%)}
+.mc-potion-chit::after{background:#d8cdb5 var(--mc-stock) center/100cqi 100cqi}
+.mc-potion-chit img{filter:saturate(.72) contrast(.94);mix-blend-mode:multiply}
+.mc-potion-chit b{top:61%;padding:0;border:0;border-radius:0;background:none;color:#304b30;font:700 4.8cqi/1.1 Georgia,serif;mix-blend-mode:multiply}
+.mc-utility.healing .mc-heal-exchange{mix-blend-mode:multiply;opacity:.92}
+.b3-sheet.open:has(.mc-sheet) .mc-utility.healing .mc-heal-exchange .ic-magic .p{fill:#76508c!important;stroke:#50365e!important;stroke-width:.65px!important}
+.mc-utility.healing .mc-exchange-output .ic .f{fill:#54744e;stroke:#3d563a;stroke-width:.7}
+.mc-utility.healing .mc-exchange-arrow{color:#69563c;font-family:Georgia,serif}

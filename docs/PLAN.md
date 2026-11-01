@@ -1574,3 +1574,8 @@ Grok's board task f7ed0b7, Dave approved. The target now persists from round to 
 
 
 1 November 2026, Director: Utility polish complete, build 20261101hf1. Removed diagonal strikes while retaining USED stamps and spent-state semantics; removed RESTORE from Heal only. Successful Heal gains briefly light the top-right health tally behind the updated number, then fade; no flash on blocked heals. No rules/costs/save changes. All 527 tests and real utility phone checks at 390x844/375x667 pass, including capped gain, feedback cleanup and no false flash. Phone layouts and highlighted tally inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+
+### 1 November 2026 — printed utility-card materials (20261101pm1)
+
+Natural unframed card stock across the three lower utility panels; muted printed Heal exchange; matte green potion illustration, printed label values and natural thick cardboard edges. Dynamic controls/tallies and Heart selection rings retain their existing appearance. Mechanics unchanged. All 527 game tests pass; phone evidence and browser validation are in docs/team/tasks/magic-template/utilities/README.md.

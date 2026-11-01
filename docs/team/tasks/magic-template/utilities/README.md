@@ -85,3 +85,14 @@ Dave preferred the USED stamp alone, removed Heal's redundant RESTORE tag, and r
 After a successful Heal actually increases health, the newly updated top-right health tally gets a short green background glow behind its number. It fades after 650 ms, or 200 ms for reduced motion, with no movement/reflow. The animation class clears on completion and retriggers on subsequent successful heals. Full health, insufficient magic and failed actions do not trigger it. Existing cost, gain/cap, callbacks and save rules remain.
 
 All 527 tests pass. Real utility checks at 390x844 and 375x667 pass, including no Heal trait, exact conversion/payment, active health-number feedback and cleanup, a capped one-health gain, no flash for blocked heals, USED without a strike, unchanged six-card geometry, Potion/Heart regressions and zero page errors. Both phone layouts and the highlighted tally inspected in Chromium; Safari remains unverified. [Health flash](heal-health-flash.webp) · [USED without strike](used-without-strike.webp) · [Check log](health-feedback-checks.txt).
+
+
+## Printed utility materials, 20261101pm1
+
+The lower Potion, Heal and Heart Change panels now use one unframed, finely textured cotton-card stock. Heal's fixed exchange uses muted plum and forest inks blended into the paper instead of bright digital icons. The live magic/health tallies, action buttons, changing die faces and Heart selection rings remain distinct.
+
+Potion chits use a new naturalistic matte apothecary illustration, a plain printed value on its label, matching paper faces and a compressed cardboard cut edge. Used, empty and future recesses share the same quiet stock treatment. No duplicated frames or framed texture tiles. The departing piece retains its label's computed size when moved outside the card container. Costs, healing, inventory and availability rules are unchanged.
+
+New art was generated for this experiment; original PNGs remain in /workspace/generated_images/exec-c42071fc-3434-4d19-ac74-66c7aea35af3.png (paper) and exec-bb91a747-875a-4591-bab0-0c387dd82703.png (transparent bottle). Optimized WebP assets total 164,994 bytes. The browser check now expects unframed stock rather than flat-color backgrounds; flash cleanup waits for the animation's removal instead of assuming a fixed rendering time after a paused evidence screenshot.
+
+Validation: all 527 game tests pass. Real utility checks cover 390x844 and 375x667, all six card sizes, exact Heal exchange/payment and tally feedback, five matching potion slots, drinking/restocking, Heart preview/confirmation separation and USED state. Screenshots inspected in Chromium; Safari remains unverified. [Heal](printed-heal.webp) · [Potion](printed-potion.webp) · [Heart](printed-heart.webp) · [Check log](printed-material-checks.txt).
