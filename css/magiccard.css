@@ -336,3 +336,22 @@
 .b3-sheet.open:has(.pw-sigil) .mc-utility .hc-face{width:12cqi;height:12cqi}
 .b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur small{font-size:3.5cqi;margin-bottom:2cqi}
 .mc-utility .hc-btn:disabled{opacity:1;filter:grayscale(1);background:#b6ad9a!important;border-color:#cfc5b1!important;color:#fff8!important;box-shadow:none!important;cursor:default!important}
+
+/* One cardboard punchboard material, identical bottle recesses whether used or future. */
+.mc-potion-tray{--bottle-cut:polygon(35% 1%,65% 1%,69% 5%,69% 17%,73% 21%,70% 30%,83% 37%,94% 49%,99% 64%,97% 79%,88% 91%,73% 98%,27% 98%,12% 91%,3% 79%,1% 64%,6% 49%,17% 37%,30% 30%,27% 21%,31% 17%,31% 5%);gap:2.4cqi}
+.mc-potion-slot,.mc-potion-slot.future{aspect-ratio:.77;border:0;border-radius:0;background:none;box-shadow:none;padding:0;filter:drop-shadow(0 .5cqi .35cqi #573c2466)}
+.mc-potion-slot::before{content:"";position:absolute;inset:0;clip-path:var(--bottle-cut);background:#c5ad82 url(../assets/cards/token-open.webp) center/100% 400%;background-blend-mode:multiply;box-shadow:inset 0 1cqi 2cqi #4a301944}
+.mc-potion-chit{--bottle-cut:polygon(35% 1%,65% 1%,69% 5%,69% 17%,73% 21%,70% 30%,83% 37%,94% 49%,99% 64%,97% 79%,88% 91%,73% 98%,27% 98%,12% 91%,3% 79%,1% 64%,6% 49%,17% 37%,30% 30%,27% 21%,31% 17%,31% 5%);clip-path:var(--bottle-cut);border:0;border-radius:0;display:block;background:#ead5ad url(../assets/cards/token-open.webp) center/100% 400%;box-shadow:none;overflow:hidden}
+.mc-potion-chit img{position:absolute;inset:3% 4%;height:94%;width:92%;object-fit:fill;filter:hue-rotate(100deg) saturate(.85)}
+.mc-potion-chit b{position:absolute;z-index:1;top:65%;left:50%;transform:translateX(-50%);padding:.7cqi 1cqi;border-radius:1cqi;border:.3cqi solid #866a3d;background:#f5e4bc;color:#145c31;font-size:5.5cqi;text-shadow:none;white-space:nowrap}
+.mc-potion-depart b{font-size:18px;padding:2px 3px}
+/* The raised piece is a crop of the board's center die, not a separate die off to one side. */
+.mc-utility.heart .mc-util-art :is(.mc-heart-map,.mc-heart-die){position:absolute;left:4%;top:-20%;width:92%;height:auto;object-fit:contain;transform:rotate(-8deg);margin:0}
+.mc-utility.heart .mc-util-art .mc-heart-map{filter:brightness(.6) saturate(.65);opacity:1}
+.mc-utility.heart .mc-util-art .mc-heart-die{clip-path:none;mask-image:radial-gradient(ellipse 18% 23% at 50% 37%,#000 55%,transparent 100%);transform:rotate(-8deg) scale(1.12);transform-origin:50% 37%;filter:brightness(1.35);background:none}
+/* Face pictures and arrows only; the original buttons retain their accessible names and disabled rules. */
+.mc-heart-effect{width:100%}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-row{grid-template-columns:1fr .85fr 1fr;gap:3cqi;margin:0}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-btn{min-height:24cqi;gap:2cqi;padding:2cqi 1cqi;background:#f0e0bf;border:.4cqi solid #9c7d48;border-radius:2cqi;box-shadow:0 .7cqi 0 #806139;color:#522d77}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-word{font-size:5cqi;line-height:1}
+.b3-sheet.open:has(.pw-sigil) .mc-utility .hc-cur .hc-face{width:15cqi;height:15cqi}

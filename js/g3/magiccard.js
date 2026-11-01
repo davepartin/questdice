@@ -143,19 +143,30 @@ async function drinkChit(action) {
   anim.finished.finally(()=>ghost.remove());
 }
 function lifeCorners() {return h('div',{class:'mc-life-corners','aria-hidden':'true'},[0,1,2,3].map(()=>HK.icon('heal')));}
-// Use the game's real dice board and golden 3D heart-die sprite for the illustration.
+// Emphasize the actual center Heart die from the same board illustration.
 function heartArtwork() {
   return h('div', { class: 'mc-heart-art', role: 'img', 'aria-label': 'Golden three-dimensional heart die raised above the dice grid' },
     h('img', { class: 'mc-heart-map', src: 'assets/tutorial/board-start.webp', alt: '' }),
-    h('i', { class: 'mc-heart-die', 'aria-hidden': 'true' }));
+    h('img', { class: 'mc-heart-die', src: 'assets/tutorial/board-start.webp', alt: '' }));
+}
+// Keep the controller's buttons, callbacks and accessible labels; simplify only their visible content.
+function heartControls(u) {
+  const row = u.panel?.querySelector('.hc-row');
+  if (!row) return h('div', { class: 'hc-row' }, u.actions.map(a => h('button', { type: 'button', class: `hc-btn hc-${a.alt ? 'down' : 'up'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, ...(a.content || [a.label]))));
+  row.querySelector('.hc-cur small')?.remove();
+  row.querySelectorAll('.hc-btn').forEach(button => {
+    const arrow = button.classList.contains('hc-down') ? '▼' : '▲';
+    button.querySelector('.hc-word')?.replaceChildren(h('span', { 'aria-hidden': 'true' }, arrow));
+  });
+  return row;
 }
 // Utility cards share the frame while retaining the controller's actions and disabled rules.
 function utilityCard(ctx, u, glyph) {
   const hero = ctx.hero || ctx.b.hero, heart = u.id === 'u:heart', potion = u.id === 'u:bigheal';
   const n = potion ? E.potionHpOf(hero) : E.healAmountOf(hero);
   const actions = heart ? null : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: potion ? () => drinkChit(a.fn) : a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
-  const note = u.note ? h('div', { class: 'mc-util-result', role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('small', {}, u.note.text)) : null;
-  const effect = heart ? h('div', { class: 'mc-heart-effect' }, h('p', {}, 'Turn one step'), u.panel?.querySelector('.hc-row') || h('div', {}, u.actions.map(a => h('button', { disabled: !!u.why || a.disabled, onclick: a.fn }, ...(a.content || [a.label])))), h('small', {}, 'Once per round'))
+  const note = !heart && u.note ? h('div', { class: 'mc-util-result', role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('small', {}, u.note.text)) : null;
+  const effect = heart ? h('div', { class: 'mc-heart-effect' }, heartControls(u))
     : potion ? potionTray(ctx,n) : h('div', { class: 'mc-restore' }, fxv('heal', n), h('small', {}, 'Health now'), h('div', { class: 'mc-health-track', role: 'meter', 'aria-label': 'Health', 'aria-valuenow': ctx.b.hp, 'aria-valuemin': 0, 'aria-valuemax': ctx.b.maxHp }, h('i', { style: `width:${Math.min(100,100*ctx.b.hp/ctx.b.maxHp)}%` })), h('span', {}, `${ctx.b.hp} / ${ctx.b.maxHp}`), potion ? h('small', {}, `${E.potionsLeft(ctx.b)} potions left`) : null);
   return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, potion ? h('img', { src: 'assets/cards/potion.webp', alt: '' }) : heart ? heartArtwork() : HK.icon('heal')), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), potion ? lifeCorners() : corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-traits' }, h('span', { class: `mc-trait ${heart ? 'counter' : 'heal'}` }, heart ? 'Heart' : 'Restore')), h('div', { class: 'mc-plaque' }, heart ? 'Heart Change' : u.name), h('div', { class: 'mc-util-panel' }, effect, note)))];
 }
