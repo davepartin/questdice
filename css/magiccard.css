@@ -367,3 +367,12 @@
 .mc-potion-chit::after{z-index:1;background:#f3dfb9}
 .mc-potion-chit img{z-index:2;clip-path:var(--bottle-cut)}
 .mc-potion-chit b{z-index:3}
+
+/* Heal is a board-game exchange: two magic triangles become three life pluses. */
+.mc-heal-exchange{display:flex;align-items:center;justify-content:center;gap:1.8cqi;width:100%}
+.mc-exchange-input,.mc-exchange-output{display:flex;align-items:center;justify-content:center;gap:1cqi;flex:none}
+.mc-utility .mc-heal-exchange .ic{width:8.4cqi;height:8.4cqi;filter:none;flex:none}
+.mc-exchange-arrow{width:7cqi;flex:none;color:#71542f;font:700 10cqi/1 var(--font-body,sans-serif)}
+.mc-exchange-output .ic{color:#1b9b51}
+.mc-exchange-output .ic .f{fill:#29bc68;fill-opacity:1;stroke:#16773d;stroke-width:.9}
+.mc-exchange-output .ic .h{display:none}

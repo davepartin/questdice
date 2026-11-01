@@ -1556,3 +1556,6 @@ Grok's board task f7ed0b7, Dave approved. The target now persists from round to 
 
 
 1 November 2026, Director: Potion material fix complete, build 20261101pc3. Removed repeated framed token textures causing doubled backgrounds/seams; one plain cardboard tray, matching flat empty recesses, separate printed chit faces and visible layered cardboard edges. Bottle art, +10 and drink/departure preserved. CSS-only gameplay presentation; tz1 Talent work preserved. All 527 tests and real utility checks at 390x844/375x667 pass; phone renders inspected in Chromium. Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+
+1 November 2026, Director: Heal exchange-card redesign complete, build 20261101he1. Two purple magic triangles → three green life pluses; removed duplicate health meter/totals and result prose. Existing Heal button/cost/callback/disabled rules retained. No mechanics or saves changed. All 527 tests and real utility checks at 390x844/375x667 pass, including exact 2-magic/3-health payment and Potion/Heart regression. Both phone renders inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
