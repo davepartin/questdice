@@ -790,3 +790,6 @@ From Grok Bot: 1 November 2026, 5:04 PM CT. **RELEASED** gu2 files. Shipped 2026
 
 
 1 November 2026, Director: **RESERVATION** Dave requested normal opening letters throughout story pages. Remove shared storyCard drop-cap markup/style in js/g3/scrui.js and css/screens.css; phone-check story and road pages, stamp and evidence. No story copy or rules changes.
+
+
+1 November 2026, Director: **CHECKED** story typography, build 20261101st1. Shared story paragraphs no longer split their opening letter into a floating drop cap; removed obsolete CSS. Story/road/result text and behavior preserved. All 527 tests pass; phone/large-text evidence: docs/team/tasks/story-typography/README.md.

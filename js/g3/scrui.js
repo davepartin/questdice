@@ -784,7 +784,7 @@ function storyCard(kicker, titleText, body, { icon = 'road' } = {}, ...rest) {
   const paras = (Array.isArray(body) ? body : [body]).map((t) => String(t).trim()).filter(Boolean);
   return h('article', { class: 'sx-tale' }, h('span', { class: 'tl-crest', 'aria-hidden': 'true' }, ico(icon)),
     h('div', { class: 'tl-kicker' }, kicker), h('h1', { class: 'tl-title' }, titleText), h('div', { class: 'tl-rule', 'aria-hidden': 'true' }, h('i'), h('b'), h('i')),
-    ...paras.map((t, i) => h('p', { class: 'tl-tell' }, i === 0 ? [h('span', { class: 'tl-cap' }, t.charAt(0)), t.slice(1)] : t)), ...rest);
+    ...paras.map((t) => h('p', { class: 'tl-tell' }, t)), ...rest);
 }
 // A story beat (js/story.js): the card over the road scene, and one button on.
 export function story(b, onDone) {
