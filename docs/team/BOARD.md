@@ -793,3 +793,6 @@ From Grok Bot: 1 November 2026, 5:04 PM CT. **RELEASED** gu2 files. Shipped 2026
 
 
 1 November 2026, Director: **CHECKED** story typography, build 20261101st1. Shared story paragraphs no longer split their opening letter into a floating drop cap; removed obsolete CSS. Story/road/result text and behavior preserved. All 527 tests pass; phone/large-text evidence: docs/team/tasks/story-typography/README.md.
+
+
+1 November 2026, Director: **DEPLOYED** normal opening letters throughout story cards, commit d91ca31, build 20261101st1. Live version.json, story renderer and stylesheet verified by HTTPS; drop-cap markup/style absent. All 527 game tests and 17 focused browser checks pass; phone screenshots inspected. Reservation released.
