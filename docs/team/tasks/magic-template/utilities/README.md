@@ -31,3 +31,9 @@ Heart artwork uses two views of the same real board image: a dimmed grid and a s
 All 527 game tests pass. `dev/magic-utilities.mjs` passes real-battle checks at 390x844 and 375x667: all cards fit without scrolling, bottle silhouettes and identical slot materials, +10 labels, arrow-only controls with accessible names, Heal, Potion consumption/departure, an entirely empty tray after two drinks, Heart Up and restocking. Final renders inspected in Chromium; human Safari remains unverified.
 
 [Filled potion tray](potion-punchboard-390.webp) · [Empty potion tray](potion-empty-375.webp) · [Heart Change](heart-center-375.webp).
+
+## Continuous cardboard and thick chits, 20261101pc3
+
+The prior token-open texture included its own edge/frame and was repeated on the tray, empty bottle silhouettes and chits. That created the doubled panels and black seams Dave reported. The tray now has one unframed plain cardboard surface; identical empty bottle marks use a single flat shade. Chits have separate clipped printed faces and darker layered cut edges beneath them, plus a small contact shadow. Bottle art and +10 remain on top of the cardboard; the whole thick piece moves during the existing drink animation. CSS only; no mechanics or save changes. The concurrent tz1 Talent change is preserved.
+
+All 527 tests pass. Real utility checks at 390x844 and 375x667 pass, including no texture images behind the tray/spaces, identical recesses, drink/departure, empty tray, restock, Heal and Heart regression. Filled/empty phone renders inspected in Chromium; Safari remains unverified. [390x844](potion-thick-390.webp) · [375x667](potion-thick-375.webp).
