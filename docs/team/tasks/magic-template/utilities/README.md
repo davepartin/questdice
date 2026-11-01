@@ -69,3 +69,11 @@ Confirmation rechecks the selected face, round and hero, then uses the existing 
 All 527 game tests pass. Final dev/heart-preview.mjs checks pass at 390x844 and 375x667: vertical layout and ring travel, free Up/Down preview, cancel/switch discard, exact single payment, visible physical quaternion motion/desired final face, once-per-round and face-1/6 limits, stale face/round/hero rejection, affordability recheck, reduced motion and zero page errors. The separate magic-utilities check passes Heal/Potion/art/constant-card-size regressions. Rendered 3D turn frames and both phone card layouts inspected in Chromium. Manual Safari and two-phone online animation remain unverified; existing server/table authority tests pass.
 
 [Current face](heart-preview-current.webp) · [Selected destination](heart-preview-selected.webp) · [Turning in battle](heart-preview-turning.webp) · [Desired result](heart-preview-turned.webp) · [Focused check log](heart-preview-checks.txt).
+
+## Spent powers in the grid, 20261101sp1
+
+Dave requested an obvious crossed-out state after a limited-use power is consumed. Tiles now show a muted icon, burnished diagonal strike and a small USED stamp. Names and costs remain readable, and spent tiles remain tappable for inspection. Accessible labels/tooltips say used this round or used this battle.
+
+Power tiles use the existing engine powerState.spent result, including Charge/Use flags. Heart Change uses the current hero's board.nudged flag. No availability rules, costs or timers changed. Merely unaffordable/early powers and full-health Heal/Potion are not falsely marked used. Every-round powers clear on the actual next-round reset; once-per-battle powers retain the mark until the engine restores them.
+
+All 527 game tests pass. Extended dev/heart-preview.mjs checks actual Heart use at 390x844/375x667; actual Cleave/Riposte/Charge casts; passive inspection; real next-round resets; a Judgment cast remaining spent through another round and restoring in a new battle with zero magic; existing preview/confirm/rotation safeguards; and zero page errors. Both rendered grids inspected in Chromium; Safari remains unverified. [390x844](spent-grid-390.webp) · [375x667](spent-grid-375.webp) · [Check log](spent-grid-checks.txt).

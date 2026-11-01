@@ -75,7 +75,9 @@ try {
     await pump(.65); const done = await state();
     check(`Turn settles on desired face and unlocks battle controls ${width}`, done.face === 4 && done.magic === 9 && !done.busy && !done.turning && qDifferent(before.q, done.q));
     await draw(); await p.screenshot({ path: `${OUT}/turned-${width}.png` });
-    await p.locator('.b3-powers:not(.b3-team)').first().click(); await p.locator('.mc-tile[data-power="u:heart"]').click(); await p.locator('.hc-down').click();
+    await p.locator('.b3-powers:not(.b3-team)').first().click();
+    check(`Used Heart tile is crossed out and explains its duration ${width}`,await p.evaluate(()=>{const t=document.querySelector('.mc-tile[data-power="u:heart"]');return t.classList.contains('spent')&&t.querySelector('.mc-spent-tag')?.textContent==='USED'&&t.getAttribute('aria-label').includes('used this round')&&!t.disabled;}));
+    await p.locator('.mc-tile[data-power="u:heart"]').click(); await p.locator('.hc-down').click();
     check(`Once-per-round Use stays disabled after a turn ${width}`, await p.locator('.mc-heart-use').isDisabled() && (await state()).magic === 9);
     check(`Card still fits without scrolling ${width}`, await p.evaluate(() => { const r = document.querySelector('.mc-card').getBoundingClientRect(); return r.bottom <= innerHeight + 1 && document.scrollingElement.scrollHeight === innerHeight; }));
   }
@@ -101,6 +103,21 @@ try {
   check('Reduced-motion ring selection is immediate', await selectedRing(1));
   await p.locator('.mc-heart-use').click(); await pump(.05);
   check('Reduced motion confirms without animated rotation', (await state()).face === 4 && (await state()).magic === 9 && !(await state()).busy && await p.evaluate(() => window.heartTurnCalls[0]?.animate === false));
+  await p.emulateMedia({reducedMotion:'no-preference'}); await fixture(3,10);
+  await p.evaluate(()=>{const {E,B3}=window.QD;const b=B3.battleState.b;E.castPower(b,'cleave',{x:3});E.castPower(b,'riposte');E.castPower(b,'rally');E.nudge(b,1);B3.renderShape();});
+  check('Actual casts mark round powers, Charge and Heart as spent',await p.evaluate(()=>['cleave','riposte','rally','u:heart'].every(id=>document.querySelector(`.mc-tile[data-power="${id}"]`).classList.contains('spent'))));
+  check('Heal and Potion are not marked used merely because unavailable',await p.evaluate(()=>['u:heal','u:bigheal'].every(id=>!document.querySelector(`.mc-tile[data-power="${id}"]`).classList.contains('spent'))));
+  for(const [width,height] of [[390,844],[375,667]]){await p.setViewportSize({width,height});await p.screenshot({path:`${OUT}/spent-${width}.png`});}
+  const castMagic=(await state()).magic;await p.locator('.mc-tile[data-power="cleave"]').click();
+  check('Spent card remains inspectable without another cast',await p.locator('.mc-card[data-card="cleave"]').count()===1&&(await state()).magic===castMagic&&await p.locator('.mc-ctl .mc-use.go').isDisabled());
+  await p.evaluate(()=>{const {E,B3}=window.QD;E.beginReset(B3.battleState.b);B3.renderShape();});
+  check('Next round clears every-round and Heart spent marks',await p.evaluate(()=>['cleave','riposte','rally','u:heart'].every(id=>!document.querySelector(`.mc-tile[data-power="${id}"]`).classList.contains('spent'))));
+  await p.evaluate(()=>{const {E,B3}=window.QD;const B=B3.battleState;B.hero.gold=999;E.learnPower(B.hero,'judgment');E.equipPower(B.hero,'judgment');B.b.round=3;B.b.magic=20;E.castPower(B.b,'judgment');B3.renderShape();});
+  check('One-battle power gets a battle-length spent mark',await p.evaluate(()=>{const t=document.querySelector('.mc-tile[data-power="judgment"]');return t.classList.contains('spent')&&t.getAttribute('aria-label').includes('used this battle');}));
+  await p.evaluate(()=>{const {E,B3}=window.QD;E.beginReset(B3.battleState.b);B3.renderShape();});
+  check('A new round does not restore a one-battle power',await p.evaluate(()=>document.querySelector('.mc-tile[data-power="judgment"]').classList.contains('spent')));
+  await p.evaluate(()=>{const {E,B3}=window.QD;const B=B3.battleState;B.b=E.newBattle(B.hero,B.quest,E.makeRng(7));B.b.magic=0;B3.renderShape();});
+  check('A fresh battle restores one-battle powers even with no magic',await p.evaluate(()=>!document.querySelector('.mc-tile[data-power="judgment"]').classList.contains('spent')));
   check('No page errors', !errors.length, errors.join(' | '));
 } finally { await browser.close(); server.kill(); }
 process.exitCode = bad ? 1 : 0;

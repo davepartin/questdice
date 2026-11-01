@@ -1,0 +1,40 @@
+PASS Vertical higher/current/lower faces and rings at current 390 
+PASS Rings animate toward preview without paying 390 
+PASS Up preview selects higher face and leaves die unchanged 390 
+PASS Down preview can replace Up without paying 390 
+PASS Use pays exactly once, closes card and begins visible turn 390 
+PASS Physical heart die rotates in battle 390 
+PASS Turn settles on desired face and unlocks battle controls 390 
+PASS Used Heart tile is crossed out and explains its duration 390 
+PASS Once-per-round Use stays disabled after a turn 390 
+PASS Card still fits without scrolling 390 
+PASS Vertical higher/current/lower faces and rings at current 375 
+PASS Rings animate toward preview without paying 375 
+PASS Up preview selects higher face and leaves die unchanged 375 
+PASS Down preview can replace Up without paying 375 
+PASS Use pays exactly once, closes card and begins visible turn 375 
+PASS Physical heart die rotates in battle 375 
+PASS Turn settles on desired face and unlocks battle controls 375 
+PASS Used Heart tile is crossed out and explains its duration 375 
+PASS Once-per-round Use stays disabled after a turn 375 
+PASS Card still fits without scrolling 375 
+PASS Close cancels preview without spending or turning 
+PASS Switching cards discards the unconfirmed choice 
+PASS Use also confirms a lower face 
+PASS Boundary 1 blocks only impossible preview 
+PASS Boundary 6 blocks only impossible preview 
+PASS Unaffordable previews are safe; Use is disabled 
+PASS Use rechecks affordability before committing 
+PASS A stale preview cannot change a different face 
+PASS A stale preview cannot turn a die in another round 
+PASS A stale preview cannot act for another hero 
+PASS Reduced-motion ring selection is immediate 
+PASS Reduced motion confirms without animated rotation 
+PASS Actual casts mark round powers, Charge and Heart as spent 
+PASS Heal and Potion are not marked used merely because unavailable 
+PASS Spent card remains inspectable without another cast 
+PASS Next round clears every-round and Heart spent marks 
+PASS One-battle power gets a battle-length spent mark 
+PASS A new round does not restore a one-battle power 
+PASS A fresh battle restores one-battle powers even with no magic 
+PASS No page errors 
