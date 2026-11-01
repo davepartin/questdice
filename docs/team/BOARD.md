@@ -741,3 +741,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: External Heart Change controls complete, build 20261101hc2. Original buttons moved above the card as ▼ OR ▲; passive lower/current/higher face results inside, with current face highlighted. Common 42px action row keeps all six selected cards exactly the same size and position at both 390x844 and 375x667. Up/Down payment, current-face updates, once-per-round and face-1/6 boundaries checked; Heal/Potion regressions pass. All 527 tests pass; phone renders inspected in Chromium, Safari unverified. No mechanics/save changes. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** external Heart Change controls, commit 652f403, build 20261101hc2. Live version.json verified by HTTPS. All 527 tests and real controls/constant-card-size checks at both phone sizes pass. Reservation released.
