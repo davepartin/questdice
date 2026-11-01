@@ -913,6 +913,11 @@ async function doHeal() {
   renderRoster(); sfx.heal(); myPc().heal(); myPc().num(`+${b.hp - before}`, 'heal');
   B.pwNote = { id: 'u:heal', icon: 'heal', big: `+${b.hp - before}`, text: `health · now ${b.hp} / ${b.maxHp}` };
   refresh(); renderSheet(); // stays open: every tap pays for another heal
+  const health = B.hud.cards.querySelector('.pw-life');
+  if (b.hp > before && health) {
+    HK.replay(health, 'mc-health-gain');
+    health.addEventListener('animationend', () => health.classList.remove('mc-health-gain'), { once: true });
+  }
 }
 async function doCard(id, opts = {}) {
   let b = B.b; if (B.busy) return;

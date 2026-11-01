@@ -38,6 +38,7 @@ await p.locator(`.mc-tile[data-power="${id}"]`).click();await pump(.3);
 const result=await p.evaluate(()=>{const c=document.querySelector('.mc-utility');const r=c.getBoundingClientRect();return{card:!!c,bottom:r.bottom,scroll:document.scrollingElement.scrollHeight,buttons:[...c.querySelectorAll('button')].length};});
 check(`${id} framed card fits ${width}`,result.card&&result.bottom<=height+1&&result.scroll===height,JSON.stringify(result));
 check('No utility footer caption', await p.locator('.mc-util-footer').count() === 0);
+if(id==='u:heal') check('Heal has no redundant RESTORE tag',await p.locator('.mc-utility.healing .mc-traits').count()===0);
 if(id==='u:heal') check('Heal shows two magic triangles to three life pluses without duplicate health',await p.evaluate(()=>{const c=document.querySelector('.mc-utility.healing');return c.querySelectorAll('.mc-exchange-input .ic-magic').length===2&&c.querySelectorAll('.mc-exchange-output .ic-heal').length===3&&c.querySelector('.mc-exchange-arrow').textContent==='→'&&!c.querySelector('.mc-health-track,.mc-restore,[role="meter"]')&&c.querySelector('.mc-heal-exchange').scrollWidth<=c.querySelector('.mc-util-panel').clientWidth;}));
 if(id!=='u:heart') check('Fantasy utility scene loaded without a bottle tint',await p.evaluate(()=>{const im=document.querySelector('.mc-utility-scene');return im?.complete&&im.naturalWidth>0&&im.getAttribute('src').includes('/utilities/')&&getComputedStyle(im).filter==='none';}));
 if(id==='u:heart') {
@@ -55,8 +56,12 @@ const rects=[];
 for(const id of tiles){await p.locator(`.mc-tile[data-power="${id}"]`).click();await pump(.05);rects.push(await p.evaluate(()=>{const r=document.querySelector('.mc-card').getBoundingClientRect();return [r.width,r.height,r.top];}));}
 check(`All six cards retain the same size and position ${width}`,rects.every(r=>r.every((n,i)=>Math.abs(n-rects[0][i])<1)),JSON.stringify(rects));
 }
-await p.locator('.mc-tile[data-power="u:heal"]').click();const before=await p.evaluate(()=>{const b=window.QD.B3.battleState.b;return{hp:b.hp,magic:b.magic};});await p.locator('.mc-ctl .mc-use').click();await pump(.3);
+await p.locator('.mc-tile[data-power="u:heal"]').click();const before=await p.evaluate(()=>{const b=window.QD.B3.battleState.b;return{hp:b.hp,magic:b.magic};});await p.locator('.mc-ctl .mc-use').click();await pump(.05);
 check('Heal button converts exactly two magic into three health and retains the exchange card',await p.evaluate(before=>{const b=window.QD.B3.battleState.b;return b.hp===before.hp+3&&b.magic===before.magic-2&&!!document.querySelector('.mc-utility.healing .mc-heal-exchange')&&!document.querySelector('.mc-utility.healing .mc-util-result');},before));
+check('Health gain flashes the top-right tally behind the updated number',await p.evaluate(()=>{const el=document.querySelector('.pw-life');return el.classList.contains('mc-health-gain')&&+el.querySelector('b').textContent===window.QD.B3.battleState.b.hp&&el.getAnimations({subtree:true}).some(a=>a.animationName==='mcHealthGain');}));
+await p.evaluate(()=>{const a=document.querySelector('.pw-life').getAnimations({subtree:true}).find(a=>a.animationName==='mcHealthGain');if(a){a.pause();a.currentTime=100;}});await p.screenshot({path:`${OUT}/health-flash-375.png`});
+await p.evaluate(()=>document.querySelector('.pw-life').getAnimations({subtree:true}).forEach(a=>a.play()));await p.waitForTimeout(750);
+check('Health flash clears after its brief feedback',await p.locator('.pw-life.mc-health-gain').count()===0);
 await p.locator('.mc-tile[data-power="u:bigheal"]').click();const pot=await p.evaluate(()=>window.QD.E.potionsLeft(window.QD.B3.battleState.b));await p.locator('.mc-ctl .mc-use').click();check('Consumed chit slides away',await p.evaluate(()=>!!document.querySelector('.mc-potion-depart')));await pump(.3);check('Potion inventory consumed and card retained',await p.evaluate(pot=>window.QD.E.potionsLeft(window.QD.B3.battleState.b)===pot-1&&!!document.querySelector('.mc-utility.potion'),pot));
 await p.locator('.mc-tile[data-power="u:heart"]').click();const heartMagic=await p.evaluate(()=>window.QD.B3.battleState.b.magic);await p.locator('.mc-heart-ctl .hc-up').click();await pump(.1);
 check('Heart arrow only previews; Use is a separate action',await p.evaluate(m=>{const b=window.QD.B3.battleState.b;return b.board.C.v===3&&b.magic===m&&!b.board.nudged&&document.querySelector('.mc-heart-faces').dataset.selection==='1'&&!document.querySelector('.mc-heart-use').disabled;},heartMagic));
@@ -64,4 +69,13 @@ check('Heart arrow only previews; Use is a separate action',await p.evaluate(m=>
 await p.locator('.mc-tile[data-power="u:bigheal"]').click();await p.locator('.mc-ctl .mc-use').click();await pump(.3);check('All five empty recesses look identical after drinking both',await p.evaluate(()=>document.querySelectorAll('.mc-potion-tray .mc-potion-chit').length===0&&new Set([...document.querySelectorAll('.mc-potion-slot')].map(el=>{const s=getComputedStyle(el,'::before');return s.background+'|'+s.clipPath;})).size===1));await p.screenshot({path:`${OUT}/empty-potions.png`});
 await p.evaluate(()=>{const b=window.QD.B3.battleState.b;b.potions=1;b.hero.potions=1;});
 await p.evaluate(()=>{const {E,B3}=window.QD;const b=B3.battleState.b;b.hero.gold=100;E.buyPotion(b.hero);b.potions=b.hero.potions;B3.renderShape();});await p.locator('.mc-tile[data-power="u:bigheal"]').click();check('Restocked potion fills its slot',await p.evaluate(()=>document.querySelectorAll('.mc-potion-tray .mc-potion-chit').length===2));await p.screenshot({path:`${OUT}/restocked.png`});
+await p.locator('.mc-tile[data-power="u:heal"]').click();
+check('Full health does not offer Heal or start a flash',await p.locator('.mc-ctl .mc-use').isDisabled()&&await p.locator('.pw-life.mc-health-gain').count()===0);
+await p.evaluate(()=>{const {B3}=window.QD;const b=B3.battleState.b;b.hp=b.maxHp-1;b.magic=2;B3.renderShape();});await p.locator('.mc-ctl .mc-use').click();await pump(.05);
+check('A capped one-health gain still flashes and spends the normal cost',await p.evaluate(()=>{const b=window.QD.B3.battleState.b;return b.hp===b.maxHp&&b.magic===0&&!!document.querySelector('.pw-life.mc-health-gain');}));
+await p.evaluate(()=>{const {B3}=window.QD;const b=B3.battleState.b;b.hp=b.maxHp-3;b.magic=1;B3.renderShape();});
+check('Insufficient magic does not trigger health feedback',await p.locator('.mc-ctl .mc-use').isDisabled()&&await p.locator('.pw-life.mc-health-gain').count()===0);
+await p.evaluate(()=>{const {B3,E}=window.QD;const b=B3.battleState.b;b.magic=3;E.nudge(b,1);B3.renderShape();});
+check('Spent Heart keeps USED without a diagonal strike',await p.evaluate(()=>{const t=document.querySelector('.mc-tile[data-power="u:heart"]');return t.classList.contains('spent')&&t.querySelector('.mc-spent-tag').textContent==='USED'&&['none','normal'].includes(getComputedStyle(t,'::after').content);}));
+await p.screenshot({path:`${OUT}/used-no-strike-375.png`});
 check('no page errors',!errs.length,errs.join(' | '));await br.close();server.kill();process.exit(bad?1:0);

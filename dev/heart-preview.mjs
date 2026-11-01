@@ -76,7 +76,7 @@ try {
     check(`Turn settles on desired face and unlocks battle controls ${width}`, done.face === 4 && done.magic === 9 && !done.busy && !done.turning && qDifferent(before.q, done.q));
     await draw(); await p.screenshot({ path: `${OUT}/turned-${width}.png` });
     await p.locator('.b3-powers:not(.b3-team)').first().click();
-    check(`Used Heart tile is crossed out and explains its duration ${width}`,await p.evaluate(()=>{const t=document.querySelector('.mc-tile[data-power="u:heart"]');return t.classList.contains('spent')&&t.querySelector('.mc-spent-tag')?.textContent==='USED'&&t.getAttribute('aria-label').includes('used this round')&&!t.disabled;}));
+    check(`Used Heart tile shows its stamp and explains its duration ${width}`,await p.evaluate(()=>{const t=document.querySelector('.mc-tile[data-power="u:heart"]');return t.classList.contains('spent')&&t.querySelector('.mc-spent-tag')?.textContent==='USED'&&t.getAttribute('aria-label').includes('used this round')&&!t.disabled;}));
     await p.locator('.mc-tile[data-power="u:heart"]').click(); await p.locator('.hc-down').click();
     check(`Once-per-round Use stays disabled after a turn ${width}`, await p.locator('.mc-heart-use').isDisabled() && (await state()).magic === 9);
     check(`Card still fits without scrolling ${width}`, await p.evaluate(() => { const r = document.querySelector('.mc-card').getBoundingClientRect(); return r.bottom <= innerHeight + 1 && document.scrollingElement.scrollHeight === innerHeight; }));

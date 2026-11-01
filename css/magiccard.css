@@ -408,11 +408,16 @@
 .mc-heart-rings::after{inset:-1.9cqi;border-width:.75cqi}
 @media(prefers-reduced-motion:reduce){.mc-heart-rings{transition:none}}
 
-/* Exhausted powers are crossed off like spent board-game pieces, but remain inspectable. */
+/* Exhausted powers retain a USED stamp and stay inspectable. */
 .mc-tile.spent{background:#211f20;border-color:#75634b}
 .mc-tile.spent>.pw-glyph,.mc-tile.spent>.ic,.mc-tile.spent>svg.pw-g{opacity:.38;filter:grayscale(1)!important}
 .mc-tile.spent>.mc-tile-name{color:#bfb39d}
 .mc-tile.spent .mc-cost{opacity:.45}
-.mc-tile.spent::after{content:"";position:absolute;z-index:2;left:13%;top:44%;width:74%;height:2px;background:#bca278;box-shadow:0 2px 0 #1b1512,0 -1px 0 #ead5ad55;transform:rotate(-14deg);pointer-events:none}
 .mc-spent-tag{position:absolute;z-index:3;top:3px;left:3px;padding:1px 3px;border:1px solid #927a54;border-radius:2px;background:#352d25;color:#ead5ad;font:800 9px/1 var(--font-body,sans-serif);letter-spacing:.05em;pointer-events:none}
 .mc-tile.spent.on{border-color:#f2c14e;box-shadow:inset 0 0 0 1px #f2c14e}
+
+/* A successful Heal briefly lights the existing health tally behind its number. */
+.mc-sheet .pw-life{position:relative;isolation:isolate}
+.mc-health-gain::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:#209e58;border:1px solid #a3f6c5;box-shadow:0 0 12px #4deb8d66;pointer-events:none;opacity:0;animation:mcHealthGain .65s ease-out}
+@keyframes mcHealthGain{0%{opacity:.9}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.mc-health-gain::before{animation-duration:.2s}}
