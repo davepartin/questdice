@@ -718,3 +718,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Utility punchboard refinement complete, build 20261101pc2. All five potion spaces share one bottle silhouette/cardboard material; green bottle-shaped chits show +10 in Act I and still slide away when drunk. Heart artwork emphasizes the actual center die in the grid; buttons show faces/arrows only, with accessible destination names preserved. Removed Heart instruction/result prose. No mechanics, saves or timing changes. All 527 tests and real utility phone checks at 390x844/375x667 pass, including empty tray, restock and actual actions; screenshots inspected in Chromium. Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Art/layout reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** bottle punchboard and center Heart refinement, commit b669de8, build 20261101pc2. Live version.json verified by HTTPS after Pages deployment. All 527 tests and final real utility checks pass. Filled/empty tray and Heart phone renders inspected; reservation released.
