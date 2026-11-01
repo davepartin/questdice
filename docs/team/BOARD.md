@@ -711,3 +711,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Heart Change visual refinement complete, build 20261101hc1. Real dice-grid and raised golden heart-die artwork replace the large heart. Title capitalized throughout; stronger boxed top-right cost; larger original controls with wrapping labels/focus. Removed footer captions from Potion, Heal and Heart Change. No rule/save/timing changes. All 527 tests pass; real utility phone checks at 390x844 and 375x667 pass, including actual heal/drink/heart actions and label fit. Rendered phone screenshots inspected in Chromium; iPhone/Safari remains unverified. Evidence: [utility cards](tasks/magic-template/utilities/README.md). Files released after publication.
+
+1 November 2026, Director: **DEPLOYED** Heart Change refinement, commit bf25433, build 20261101hc1. Live version.json verified by HTTPS after Pages deployment; phone renders inspected at 390x844 and 375x667. Reservation released.
