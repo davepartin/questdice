@@ -1443,7 +1443,7 @@ function toTalentSymbols() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const side = $('.sx-camp .sx-side'), el = $('.tw-face-heading'); if (!side || !el) return;
     const stick = parseFloat(side.style.getPropertyValue('--stick')) || 0;
-    const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 8;
+    const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 24; // tz1: clear the camp header
     const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     side.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });
   }));
@@ -1493,7 +1493,7 @@ function talentWorkshop(hero, slot) {
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
   return h('div', { class: 'tw-workshop' },
     talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
-      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); },
+      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }, // tz1 (Dave): glide down to Choose a face
       onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
