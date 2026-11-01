@@ -748,3 +748,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Second-row utility art complete, build 20261101ua1. Heal shows purple magic healing an armored chest; Potion shows green bottles carried on an adventurer’s leather belt. Thick +10 chits and Heal exchange retained. Heart destination faces now 1.5x the width of the center current face. External buttons, prices, six-card geometry and rules unchanged. All 527 tests and final real phone checks at 390x844/375x667 pass; all three utility crops inspected in Chromium. Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** fantasy utility paintings and larger Heart destinations, commit 77252fe, build 20261101ua1. Live version.json and both WebP asset responses verified by HTTPS (200, expected sizes). All 527 tests and final real utility phone checks pass; three cards' final crops inspected. Reservation released.
