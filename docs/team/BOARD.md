@@ -806,3 +806,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 1 November 2026, Director: **CHECKED** Knight Counterstrike rename, build 20261101cs1. Display name only; riposte ID/mechanics/saves preserved. All 527 tests and real Knight card/grid checks at three phone sizes pass. gu3 release merged before stamping. Evidence: docs/team/tasks/counterstrike/README.md.
+
+
+1 November 2026, Director: **IMPLEMENTED / PUBLISHING QUEUED** Counterstrike display-name update, commit 29df21d, build 20261101cs1. All 527 tests and three actual phone card/grid checks pass; source tree verified against local files. GitHub Pages run 41361966237 is pending behind run 41361903138 (report-build-status in progress); live site still reports 20261101st1 and Riposte after repeated HTTPS checks. This is an external publishing delay; do not report the rename live until the stamp/name is verified. Implementation files released.
