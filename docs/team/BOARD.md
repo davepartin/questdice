@@ -738,3 +738,6 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 1 November 2026, Director: **DEPLOYED** Heal exchange card, commit 7e140f3, build 20261101he1. Live version.json verified by HTTPS. Heal task reservation released.
 
 1 November 2026, Director: **RESERVATION** Heart Change external controls requested by Dave: ▼ OR ▲ above the card; card shows face outcomes/current result; stable card size while switching powers. Files js/g3/magiccard.js, css/magiccard.css, dev/magic-utilities.mjs, utility evidence and stamps. Preserve existing payment, boundary and once-per-round rules.
+
+
+1 November 2026, Director: External Heart Change controls complete, build 20261101hc2. Original buttons moved above the card as ▼ OR ▲; passive lower/current/higher face results inside, with current face highlighted. Common 42px action row keeps all six selected cards exactly the same size and position at both 390x844 and 375x667. Up/Down payment, current-face updates, once-per-round and face-1/6 boundaries checked; Heal/Potion regressions pass. All 527 tests pass; phone renders inspected in Chromium, Safari unverified. No mechanics/save changes. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.

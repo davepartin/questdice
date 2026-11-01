@@ -149,16 +149,23 @@ function heartArtwork() {
     h('img', { class: 'mc-heart-map', src: 'assets/tutorial/board-start.webp', alt: '' }),
     h('img', { class: 'mc-heart-die', src: 'assets/tutorial/board-start.webp', alt: '' }));
 }
-// Keep the controller's buttons, callbacks and accessible labels; simplify only their visible content.
-function heartControls(u) {
+// Move the controller's live buttons above the card; show passive face outcomes inside it.
+function heartPresentation(ctx, u) {
   const row = u.panel?.querySelector('.hc-row');
-  if (!row) return h('div', { class: 'hc-row' }, u.actions.map(a => h('button', { type: 'button', class: `hc-btn hc-${a.alt ? 'down' : 'up'}`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, ...(a.content || [a.label]))));
-  row.querySelector('.hc-cur small')?.remove();
-  row.querySelectorAll('.hc-btn').forEach(button => {
-    const arrow = button.classList.contains('hc-down') ? '▼' : '▲';
-    button.querySelector('.hc-word')?.replaceChildren(h('span', { 'aria-hidden': 'true' }, arrow));
+  const buttons = row ? [...row.querySelectorAll('.hc-btn')] : u.actions.map(a => h('button', { type: 'button', class: a.alt ? 'hc-down' : 'hc-up', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, ...(a.content || [])));
+  const current = row?.querySelector('.hc-cur .hc-face')?.cloneNode(true) || h('b', {}, String(ctx.b.board?.C?.v || '—'));
+  const outcomes = buttons.map(button => {
+    const down = button.classList.contains('hc-down');
+    const face = button.querySelector('.hc-face')?.cloneNode(true);
+    const outcome = h('div', { class: `mc-heart-outcome ${button.disabled ? 'unavailable' : ''}`, 'aria-label': button.getAttribute('aria-label') }, face || h('span', { class: 'mc-heart-empty', 'aria-hidden': 'true' }, '—'));
+    button.className = `mc-use mc-heart-nudge hc-${down ? 'down' : 'up'}`;
+    button.replaceChildren(h('span', { 'aria-hidden': 'true' }, down ? '▼' : '▲'));
+    return outcome;
   });
-  return row;
+  return {
+    actions: h('div', { class: 'mc-ctl mc-heart-ctl' }, buttons[0], h('span', { class: 'mc-or' }, 'OR'), buttons[1]),
+    faces: h('div', { class: 'mc-heart-faces', role: 'group', 'aria-label': `Heart die now ${ctx.b.board?.C?.v || 'not rolled'}`, 'aria-live': 'polite' }, outcomes[0], h('div', { class: 'mc-heart-current' }, current), outcomes[1]),
+  };
 }
 // An exchange diagram shows the exact controller cost and engine healing amount.
 function healExchange(cost, health) {
@@ -172,9 +179,10 @@ function healExchange(cost, health) {
 function utilityCard(ctx, u, glyph) {
   const hero = ctx.hero || ctx.b.hero, heart = u.id === 'u:heart', potion = u.id === 'u:bigheal';
   const n = potion ? E.potionHpOf(hero) : E.healAmountOf(hero);
-  const actions = heart ? null : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: potion ? () => drinkChit(a.fn) : a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
+  const heartView = heart ? heartPresentation(ctx, u) : null;
+  const actions = heart ? heartView.actions : h('div', { class: 'mc-ctl' }, u.actions.map(a => h('button', { type: 'button', class: 'mc-use go pc-heal', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: potion ? () => drinkChit(a.fn) : a.fn }, potion ? 'Drink' : 'Heal', potion ? null : mg(u.cost))));
   const note = potion && u.note ? h('div', { class: 'mc-util-result', role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('small', {}, u.note.text)) : null;
-  const effect = heart ? h('div', { class: 'mc-heart-effect' }, heartControls(u))
+  const effect = heart ? h('div', { class: 'mc-heart-effect' }, heartView.faces)
     : potion ? potionTray(ctx,n) : healExchange(u.cost, n);
   return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, potion ? h('img', { src: 'assets/cards/potion.webp', alt: '' }) : heart ? heartArtwork() : HK.icon('heal')), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), potion ? lifeCorners() : corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-traits' }, h('span', { class: `mc-trait ${heart ? 'counter' : 'heal'}` }, heart ? 'Heart' : 'Restore')), h('div', { class: 'mc-plaque' }, heart ? 'Heart Change' : u.name), h('div', { class: 'mc-util-panel' }, effect, note)))];
 }

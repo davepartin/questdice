@@ -1559,3 +1559,6 @@ Grok's board task f7ed0b7, Dave approved. The target now persists from round to 
 
 
 1 November 2026, Director: Heal exchange-card redesign complete, build 20261101he1. Two purple magic triangles → three green life pluses; removed duplicate health meter/totals and result prose. Existing Heal button/cost/callback/disabled rules retained. No mechanics or saves changed. All 527 tests and real utility checks at 390x844/375x667 pass, including exact 2-magic/3-health payment and Potion/Heart regression. Both phone renders inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+
+1 November 2026, Director: External Heart Change controls complete, build 20261101hc2. Original buttons moved above the card as ▼ OR ▲; passive lower/current/higher face results inside, with current face highlighted. Common 42px action row keeps all six selected cards exactly the same size and position at both 390x844 and 375x667. Up/Down payment, current-face updates, once-per-round and face-1/6 boundaries checked; Heal/Potion regressions pass. All 527 tests pass; phone renders inspected in Chromium, Safari unverified. No mechanics/save changes. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.

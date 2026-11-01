@@ -376,3 +376,13 @@
 .mc-exchange-output .ic{color:#1b9b51}
 .mc-exchange-output .ic .f{fill:#29bc68;fill-opacity:1;stroke:#16773d;stroke-width:.9}
 .mc-exchange-output .ic .h{display:none}
+
+/* Every selected card reserves the same action row, including Heart Change. */
+.mc-sheet>.mc-ctl{height:42px;min-height:42px}
+.mc-heart-ctl .mc-heart-nudge{min-width:92px;font-size:1.25rem}
+.mc-heart-faces{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:center;justify-items:center;gap:3cqi;width:100%}
+.mc-heart-outcome,.mc-heart-current{display:grid;place-items:center;min-width:0}
+.mc-heart-faces .hc-face{width:12cqi;height:12cqi}
+.mc-heart-current .hc-face{width:16cqi;height:16cqi;outline:.7cqi solid #ffd23d;outline-offset:1cqi}
+.mc-heart-outcome.unavailable{opacity:.4;filter:grayscale(.6)}
+.mc-heart-empty{width:12cqi;height:12cqi;display:grid;place-items:center;color:#a59170;font:700 6cqi/1 var(--font-number,sans-serif)}
