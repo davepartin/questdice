@@ -762,3 +762,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Spent-power grid marks complete, build 20261101sp1. Consumed powers and Heart Change show muted icons, diagonal gold strikes and USED stamps, with round/battle duration in accessible labels. Still inspectable. Engine spent flags determine marks and automatic reset; no false USED mark for lack of magic or full health. All 527 tests and extended real-browser checks pass, including actual casts, next-round reset and once-per-battle persistence/new-battle restore. Both phone grids inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** spent-power grid marks, commit a16f404, build 20261101sp1. Live version.json verified by HTTPS. All 527 game tests and 40 focused browser checks pass; both phone grids inspected. Round/battle reset semantics preserved; reservation released.
