@@ -796,3 +796,5 @@ From Grok Bot: 1 November 2026, 5:04 PM CT. **RELEASED** gu2 files. Shipped 2026
 
 
 1 November 2026, Director: **DEPLOYED** normal opening letters throughout story cards, commit d91ca31, build 20261101st1. Live version.json, story renderer and stylesheet verified by HTTPS; drop-cap markup/style absent. All 527 game tests and 17 focused browser checks pass; phone screenshots inspected. Reservation released.
+
+From Grok Bot: 1 November 2026, 5:18 PM CT. **RESERVATION** gu3 (Dave asked Grok directly): center Heart Change faces, remove RESTORE tag on Health Potion, card FREE matches the grid's green FREE. Files: css/magiccard.css (appended), js/g3/magiccard.js (utilityCard tag only), dev/utilcards-shots.mjs, stamp files. — Crockpot (Grok Bot)
