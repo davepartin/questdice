@@ -590,7 +590,7 @@ function cardTiles(reset) {
       body: `Turn ${heal.cost} magic into ${E.healAmountOf(hero)} health, right now.`, actions: [{ label: `Heal ${E.healAmountOf(hero)} · ${heal.cost} magic`, fn: () => doHeal() }] },
     { id: 'u:heart', name: 'Heart Change', icon: 'heart', tone: 'gold', why: heart.why, tag: heart.tag, cost: heart.cost, flag: E.nudgedThisRound(b) ? 'Used this round' : `${heart.cost} magic · once a round`, text: heart.u.text,
       body: 'Turn your heart die one step up or down. A heart of 1 to 4 adds 2 more to every head, hand or feet die showing its symbol (1 heal, 2 pierce, 3 magic, 4 gold); a 5 pumps every blocking weapon (+4 block), a 6 every attacking weapon (+4 attack).',
-      extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)], panel: heartPanel(b, heart.cost, heart.why) },
+      extra: heartNow(b), actions: [heartAction(b, -1), heartAction(b, 1)], panel: heartPanel(b, heart.cost, heart.why), confirm: (dir, selection) => doNudge(dir, { ...selection, reveal: true }) },
   ];
   if (B.pwNote) for (const u of utils) if (u.id === B.pwNote.id && B.pwSel === u.id) u.note = B.pwNote;
   return [PW.sigil({ b, hero, reset, powers, utils, selected: B.pwSel, rechargeCost: D.RECHARGE_COST,
@@ -879,12 +879,32 @@ async function doReroll() {
   B.busy = false; renderShape();
   C.tut?.on('rerolled');
 }
-async function doNudge(dir) {
-  let b = B.b; if (B.busy) return;
-  if (B.net) { B.busy = true; const ok = await netDo({ type: 'nudge', dir }); B.busy = false; if (!ok) return; b = B.b; B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` }; sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet(); return; }
-  if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return; }
-  B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` };
-  sfx.magic(); B.bw.tray.setValue?.('C', b.board.C.v, { animate: true }); B.bw.tray.pulse?.('C', 'magic'); renderShape(); renderSheet();
+async function doNudge(dir, { from = null, round = null, hero = null, reveal = false } = {}) {
+  let b = B.b;
+  if (B.busy || B.ended || b.phase !== 'shape' || ![-1, 1].includes(dir)) return false;
+  // A preview is only valid for the face and round that the player actually selected.
+  if ((from != null && b.board?.C?.v !== from) || (round != null && b.round !== round) || (hero != null && B.hero?.name !== hero)) { renderSheet(); return false; }
+  const bw = B.bw, root = B.root;
+  B.busy = true;
+  try {
+    if (B.net) { if (!(await netDo({ type: 'nudge', dir }))) return false; b = B.b; }
+    else if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return false; }
+    B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` };
+    if (reveal) { togglePowers(false); B.hud.info.classList.remove('open'); hideCard(); }
+    sfx.magic();
+    root.dataset.heartTurning = `${from ?? b.board.C.v - dir}:${b.board.C.v}`;
+    const turn = bw.tray.setValue?.('C', b.board.C.v, { animate: !reduced() });
+    if (!reduced()) bw.tray.pulse?.('C', 'magic');
+    renderShape();
+    for (const button of B.hud.bar.querySelectorAll('button')) button.disabled = true;
+    // A table refresh may replace an in-flight pose; do not leave controls blocked in that case.
+    if (reduced()) await turn;
+    else await Promise.race([turn, wait(.9)]);
+    return true;
+  } finally {
+    delete root.dataset.heartTurning;
+    if (B.bw === bw && !B.ended) { B.busy = false; renderShape(); renderSheet(); }
+  }
 }
 async function doHeal() {
   let b = B.b; if (B.busy) return; const before = b.hp;

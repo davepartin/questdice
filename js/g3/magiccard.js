@@ -149,23 +149,46 @@ function heartArtwork() {
     h('img', { class: 'mc-heart-map', src: 'assets/tutorial/board-start.webp', alt: '' }),
     h('img', { class: 'mc-heart-die', src: 'assets/tutorial/board-start.webp', alt: '' }));
 }
-// Move the controller's live buttons above the card; show passive face outcomes inside it.
+// Arrow presses only preview a destination. The separate Use action confirms one turn.
 function heartPresentation(ctx, u) {
   const row = u.panel?.querySelector('.hc-row');
-  const buttons = row ? [...row.querySelectorAll('.hc-btn')] : u.actions.map(a => h('button', { type: 'button', class: a.alt ? 'hc-down' : 'hc-up', disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: a.fn }, ...(a.content || [])));
-  const current = row?.querySelector('.hc-cur .hc-face')?.cloneNode(true) || h('b', {}, String(ctx.b.board?.C?.v || '—'));
-  const outcomes = buttons.map(button => {
-    const down = button.classList.contains('hc-down');
-    const face = button.querySelector('.hc-face')?.cloneNode(true);
-    const outcome = h('div', { class: `mc-heart-outcome ${button.disabled ? 'unavailable' : ''}`, 'aria-label': button.getAttribute('aria-label') }, face || h('span', { class: 'mc-heart-empty', 'aria-hidden': 'true' }, '—'));
-    button.className = `mc-use mc-heart-nudge hc-${down ? 'down' : 'up'}`;
-    button.replaceChildren(h('span', { 'aria-hidden': 'true' }, down ? '▼' : '▲'));
-    return outcome;
-  });
-  return {
-    actions: h('div', { class: 'mc-ctl mc-heart-ctl' }, buttons[0], h('span', { class: 'mc-or' }, 'OR'), buttons[1]),
-    faces: h('div', { class: 'mc-heart-faces', role: 'group', 'aria-label': `Heart die now ${ctx.b.board?.C?.v || 'not rolled'}`, 'aria-live': 'polite' }, outcomes[0], h('div', { class: 'mc-heart-current' }, current), outcomes[1]),
+  const source = row ? [...row.querySelectorAll('.hc-btn')] : [];
+  const from = Number(ctx.b.board?.C?.v || 0), round = ctx.b.round, hero = (ctx.hero || ctx.b.hero)?.name;
+  let pending = 0, committing = false;
+  const current = row?.querySelector('.hc-cur .hc-face')?.cloneNode(true) || h('b', {}, String(from || '—'));
+  const outcome = (dir) => {
+    const original = source.find(button => button.classList.contains(dir < 0 ? 'hc-down' : 'hc-up'));
+    const face = original?.querySelector('.hc-face')?.cloneNode(true);
+    return h('div', { class: `mc-heart-outcome ${face ? '' : 'unavailable'}`, 'data-direction': dir, 'aria-label': face ? `${dir < 0 ? 'Lower' : 'Higher'} heart face ${from + dir}` : 'No further heart face' }, face || h('span', { class: 'mc-heart-empty', 'aria-hidden': 'true' }, '—'));
   };
+  const rings = h('div', { class: 'mc-heart-rings', 'aria-hidden': 'true' });
+  const faces = h('div', { class: 'mc-heart-faces mc-heart-vertical', role: 'group', 'aria-label': `Heart die now ${from || 'not rolled'}`, 'aria-live': 'polite', 'data-selection': '0' }, rings, outcome(1), h('div', { class: 'mc-heart-current' }, current), outcome(-1));
+  const choose = (dir) => {
+    if (committing || !from || from + dir < 1 || from + dir > 6) return;
+    pending = dir;
+    faces.style.setProperty('--heart-ring-row', dir > 0 ? '0' : '2');
+    faces.dataset.selection = String(dir);
+    faces.setAttribute('aria-label', `Heart die now ${from}; selected ${from + dir}`);
+    update();
+  };
+  const down = h('button', { type: 'button', class: 'mc-use mc-heart-nudge hc-down', 'aria-label': from > 1 ? `Preview heart ${from - 1}` : 'No lower heart face', onclick: () => choose(-1) }, h('span', { 'aria-hidden': 'true' }, '▼'));
+  const up = h('button', { type: 'button', class: 'mc-use mc-heart-nudge hc-up', 'aria-label': from && from < 6 ? `Preview heart ${from + 1}` : 'No higher heart face', onclick: () => choose(1) }, h('span', { 'aria-hidden': 'true' }, '▲'));
+  const use = h('button', { type: 'button', class: 'mc-use go mc-heart-use', disabled: true, 'aria-label': 'Select a heart face before using magic', onclick: async () => {
+    if (use.disabled || committing) return;
+    committing = true; update();
+    try { await u.confirm?.(pending, { from, round, hero }); }
+    finally { committing = false; if (use.isConnected) update(); }
+  } }, 'Use');
+  function update() {
+    down.disabled = committing || !from || from <= 1;
+    up.disabled = committing || !from || from >= 6;
+    down.setAttribute('aria-pressed', String(pending === -1));
+    up.setAttribute('aria-pressed', String(pending === 1));
+    use.disabled = committing || !pending || !!u.why || !u.confirm || ctx.b.round !== round || ctx.b.board?.C?.v !== from || E.nudgedThisRound(ctx.b);
+    use.setAttribute('aria-label', pending ? `Use ${u.cost} magic to turn the heart from ${from} to ${from + pending}` : 'Select a heart face before using magic');
+  }
+  update();
+  return { actions: h('div', { class: 'mc-ctl mc-heart-ctl mc-heart-confirm' }, down, h('span', { class: 'mc-or' }, 'OR'), up, use), faces };
 }
 // An exchange diagram shows the exact controller cost and engine healing amount.
 function healExchange(cost, health) {

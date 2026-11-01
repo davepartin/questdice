@@ -394,3 +394,16 @@
 .b3-sheet.open:has(.mc-sheet) .mc-utility.heart .mc-heart-outcome .hc-face{width:18cqi;height:18cqi}
 .b3-sheet.open:has(.mc-sheet) .mc-utility.heart .mc-heart-current .hc-face{width:12cqi;height:12cqi;outline-width:.5cqi;outline-offset:.8cqi}
 .mc-heart-empty{width:18cqi;height:18cqi}
+
+/* Heart Change is a vertical preview ladder; Use alone pays and returns to the dice. */
+.mc-heart-confirm .mc-heart-nudge{min-width:62px}
+.mc-heart-confirm .mc-heart-use{min-width:96px;background:#7440b0;color:#fff}
+.mc-heart-confirm .mc-heart-nudge[aria-pressed="true"]{background:#a64dff;box-shadow:0 3px 0 #4a1c80}
+.mc-heart-vertical{position:relative;grid-template-columns:1fr;grid-template-rows:repeat(3,20cqi);gap:1cqi;height:62cqi;isolation:isolate}
+.mc-heart-vertical>.mc-heart-outcome,.mc-heart-vertical>.mc-heart-current{position:relative;z-index:1}
+.b3-sheet.open:has(.mc-sheet) .mc-utility.heart .mc-heart-vertical .mc-heart-current .hc-face{outline:none;box-shadow:0 .5cqi 1cqi #0005}
+.mc-heart-rings{position:absolute;z-index:0;left:50%;top:calc(10cqi + var(--heart-ring-row,1) * 21cqi);width:21cqi;height:21cqi;transform:translate(-50%,-50%);border:1.1cqi solid #8037d0;border-radius:50%;background:#b36cff30;box-shadow:0 0 2cqi #a64dff66,inset 0 0 0 .5cqi #e1c6ff;pointer-events:none;transition:top .36s cubic-bezier(.2,.8,.2,1)}
+.mc-heart-rings::before,.mc-heart-rings::after{content:"";position:absolute;border-radius:50%;border:.65cqi solid #a353f0}
+.mc-heart-rings::before{inset:1.1cqi;border-color:#b77af5}
+.mc-heart-rings::after{inset:-1.9cqi;border-width:.75cqi}
+@media(prefers-reduced-motion:reduce){.mc-heart-rings{transition:none}}
