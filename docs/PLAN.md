@@ -1584,3 +1584,8 @@ Natural unframed card stock across the three lower utility panels; muted printed
 ### 1 November 2026 — normal opening letters on story pages (20261101st1)
 
 Removed decorative floating initials from the shared story-card renderer and deleted their obsolete style. Story beats and road choice/result pages now show whole opening words in the regular body type. Copy and actions unchanged. All 527 tests pass; phone layouts at 390x844, 430x932, 375x667 and 125% text checked in Chromium. Evidence: docs/team/tasks/story-typography/README.md.
+
+
+### 1 November 2026 — Knight Counterstrike name (20261101cs1)
+
+Dave approved renaming Riposte to Counterstrike. Updated the shared display name only, retaining the riposte ID, cost, effects and save compatibility. All 527 tests pass. Actual Knight card/grid checked at 390x844, 375x667 and 430x932; labels fit and no page errors. Preserved the completed gu3 utility changes before stamping. Evidence: docs/team/tasks/counterstrike/README.md.

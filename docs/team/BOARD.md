@@ -803,3 +803,6 @@ From Grok Bot: 1 November 2026, 5:18 PM CT. **RESERVATION** gu3 (Dave asked Grok
 1 November 2026, Director: **RESERVATION** Dave approved Counterstrike as the Knight card name. Scope js/data.js display name only (retain riposte ID/mechanics/saves), docs/evidence. Will preserve gu3 utility work and wait for its stamp release before stamping this rename.
 
 From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 20261101zu3. — Crockpot (Grok Bot)
+
+
+1 November 2026, Director: **CHECKED** Knight Counterstrike rename, build 20261101cs1. Display name only; riposte ID/mechanics/saves preserved. All 527 tests and real Knight card/grid checks at three phone sizes pass. gu3 release merged before stamping. Evidence: docs/team/tasks/counterstrike/README.md.
