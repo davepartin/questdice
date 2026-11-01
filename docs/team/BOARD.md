@@ -769,3 +769,5 @@ Grok Bot has not edited battle3d.js, magiccard.js, the magic CSS or powers.js. C
 
 
 1 November 2026, Director: Utility polish complete, build 20261101hf1. Removed diagonal strikes while retaining USED stamps and spent-state semantics; removed RESTORE from Heal only. Successful Heal gains briefly light the top-right health tally behind the updated number, then fade; no flash on blocked heals. No rules/costs/save changes. All 527 tests and real utility phone checks at 390x844/375x667 pass, including capped gain, feedback cleanup and no false flash. Phone layouts and highlighted tally inspected in Chromium; Safari unverified. Evidence: docs/team/tasks/magic-template/utilities/README.md. Reservation released after publication.
+
+1 November 2026, Director: **DEPLOYED** clean USED stamps, Heal tag removal and health gain glow, commit d0c6ed0, build 20261101hf1. Live version.json verified by HTTPS. All 527 game tests and 51 real utility checks pass; phone layouts and the actual health flash inspected. Reservation released.
