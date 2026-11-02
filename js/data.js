@@ -279,7 +279,7 @@ export const CLASS2 = { on: false, songs: false, verse: true, guard: true, digIn
 //   MEND   a monster fighting alone that guards also heals `share` of what it guards (Dave: "maybe they have heal too, just like I have heal").
 //   BAG    a monster plays its six moves in a shuffled order, then shuffles them again (Dave: "you never know what order... some awareness
 //          but not perfect"), and its card shows what is still in the bag. Without it, it rolls its move die afresh each round.
-// T24 Monster Specials (Dave + Claude + Grok, 2 Nov 2026; docs/team/tasks/T24-monster-specials.md). Off in the game; the ?lab preview turns it on.
+// T24 Monster Specials (Dave + Claude + Grok, 2 Nov 2026; docs/team/tasks/T24-monster-specials.md). Off here; js/release.js turns it on in the live game (Dave, 2 Nov).
 // A monster may carry one Special: a goal for the heroes (top of its label) and what happens if they miss it (bottom). Numbers by act (I, II, III);
 // team goals are scaled by the company's strength. PROPOSED numbers, to be sized from measured rolls.
 //   slam     Damage N on its wind-up round, or its next blow lands double

@@ -10,14 +10,14 @@ const br = await chromium.launch({ executablePath: exe, args: ['--use-gl=angle',
 const p = await br.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
 await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
 await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); });
-await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low&lab`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
+await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low${process.env.LAB ? '&lab' : ''}`); // the live root has the Specials on (Dave, 2 Nov); LAB=1 for the lab await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
 const pump = (s) => p.evaluate(async (s) => { for (let i = 0; i < s * 20; i++) { window.QD.world.stage.simulate(0.05, 0.033); await new Promise((r) => setTimeout(r, 0)); } }, s);
 const ready = async () => { for (let i = 0; i < 160; i++) { await pump(0.3); await p.waitForTimeout(200); if (await p.evaluate(() => { const B = window.QD.B3?.battleState; const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return B?.bw && !B.busy && B.b?.phase === 'reset'; })) return true; } return false; };
 await p.evaluate(async (n) => { const { S, E, showBoard } = window.QD; const hh = E.newHero({ name: n, cls: 'knight', seed: 5 }); hh.dice = null; hh.level = 6; hh.campaign.act = 1; hh.campaign.step = 10; S.hero = hh; S.company = { members: [hh] }; const SV = await import('./js/save.js'); if (!SV.heroExists(n)) await SV.createSave(hh, 'testpass'); showBoard(); window.QD.startQuest({ ...E.questsFor(hh)[0], enemies: ['goblinking'], kind: 'boss', step: 10 }); }, 'SpecialsSmoke');
 check('the boss battle opens', await ready());
 const data = () => p.evaluate(async () => { const E = await import('./js/engine.js'); const B = window.QD.B3.battleState; return { on: (await import('./js/data.js')).SPECIALS.on, foes: B.b.enemies.map((e) => ({ name: e.name, hp: e.hp, special: e.special?.id || null, view: E.specialView(B.b, e) })), plan: E.specialPlan(B.b), last: B.b.report?.specials || null, round: B.b.round }; });
 let d = await data(); console.log(JSON.stringify(d));
-check('Specials are on in ?lab', d.on === true);
+check('Specials are on', d.on === true);
 check('the Act I boss carries Regrow', d.foes[0]?.special === 'regrow', JSON.stringify(d.foes.map((f) => f.special)));
 check('the plan board has a line for each Special', d.plan.length >= 1 && d.plan.every((r) => r.line && r.top && r.bottom), JSON.stringify(d.plan));
 await p.screenshot({ path: `${OUT}/smoke-boss-round1_390x844.png` });

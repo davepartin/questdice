@@ -14,6 +14,7 @@ import { useWeapons2 } from './engine.js';
 export function applyRelease() {
   Object.assign(TEAMWORK, { heartToHeart: true, noCharms: true, perkPreview: true });
   useWeapons2();
+  SPECIALS.on = true; // T24 Monster Specials, live (Dave, 2 Nov 2026: "I want to not use the lab and do it on main")
   WEAPON_TRAINING.on = true; // Dave, 26 Oct: make the weapon card's size purchases work (50/100/200).
   WEAR.off = true; // Dave, 25 Oct 2026: weapons never wear out in the live game
   if (!START_DICE.includes('NE')) START_DICE.push('NE'); // T21 (Dave, 25 Oct 2026): every hero starts with both weapon dice live, the right one at no charge
@@ -27,5 +28,4 @@ export function applyRelease() {
 // ?lab (js/lab.js): the release, its own saves, and what is still being tried: monster fury from round 4 (no rallying, mend or move bag)
 export function applyLab() {
   Object.assign(PRESSURE, { on: true, bag: false }); PRESSURE.fury.from = 4; PRESSURE.rally.min = 99; PRESSURE.mend.share = 0;
-  SPECIALS.on = true; // T24 Monster Specials (docs/team/tasks/T24-monster-specials.md): tried here first, off at the live root
 }
