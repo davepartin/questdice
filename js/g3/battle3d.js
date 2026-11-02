@@ -1195,26 +1195,32 @@ function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.aga
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
 function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
-// The monster mini card target picker (Grok's js/g3/minicard.js): once, as a fight with two or more monsters opens. Attack on a card
-// chooses that monster exactly as tapping its piece would (every targeting rule stays selectTarget's), and the battle begins: no plan board in round one.
-const wantPicker = () => MC.on() && B.b?.round === 1 && B.picked === false && alive().length > 1 && B.mcFor !== B.b;
+// The monster cards (Grok's js/g3/minicard.js), like a board game's monster cards on the table (Dave, 2 Nov 2026): every fight opens with them
+// (after a boss or elite's title card), and any later round where a monster's Special is live shows them again in place of the old plan board.
+// The card on top is your current target; Attack keeps it or switches to the card you brought forward (selectTarget, every targeting rule
+// stays there), then straight to the battle. ?nominicards brings back the old plan board.
+const wantPicker = () => MC.on() && B.b?.round === 1 && B.mcFor !== B.b && alive().length > 0;
 function openPicker(afterTitle = false) {
   const b = B.b; B.mcFor = b; const t0 = Date.now();
-  const go = () => {
-    if (B.b !== b || B.ended || b.round !== 1 || b.phase !== 'reset' || B.picked !== false || alive().length < 2 || B.root.querySelector('.mnc-veil')) { if (B.b === b && !B.ended) showPlan(); return; }
-    const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const look = (id) => monsterOf(id, camp) || D.MONSTERS[id];
-    let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
-    if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
-    const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-      kid: look(D.SPECIALS.minion)?.name || null }, (uid) => { if (B.b === b) selectTarget(uid); }); // straight to the battle: the cards already showed this round's Specials (Dave, 2 Nov: no second screen)
-    if (v) { B.root.append(v); sfx.select?.(); } else showPlan();
-  };
-  const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : go()); // a boss or elite's title card goes first
-  if (afterTitle) hold(); else go();
+  const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : showCards(b));
+  if (afterTitle) hold(); else showCards(b);
 }
-// T24: the round-start plan board (Grok's js/g3/specials.js): one row per monster with a Special this round; nothing at all while Specials are off.
+function showCards(b = B.b) {
+  if (!b || B.b !== b || B.ended || b.phase !== 'reset' || !alive().length || B.root.querySelector('.mnc-veil')) return;
+  B.root.querySelector('.sp-plan')?.remove();
+  const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const look = (id) => monsterOf(id, camp) || D.MONSTERS[id];
+  let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
+  if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
+  const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
+  const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
+    kid: look(D.SPECIALS.minion)?.name || null, first: cur, head: choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}` },
+    (uid) => { if (B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
+  if (v) { B.root.append(v); sfx.select?.(); }
+}
+// T24: the round-start look at the monsters: the cards (above), or with ?nominicards Grok's plan board (js/g3/specials.js). Only rounds where a Special is live.
 function showPlan() {
   B.root?.querySelector('.sp-plan')?.remove();
+  if (MC.on()) { if (SP.planOf(B.b).length) showCards(); return; }
   const el = SP.planFor(B.b, { imgOf: (uid) => { const e = B.b?.enemies.find((x) => x.uid === uid); const d = e && (monsterOf(e.id, B.b.hero?.campaign) || D.MONSTERS[e.id]); return d?.img || ''; }, onFight: () => {} });
   if (el) B.root.append(el);
 }

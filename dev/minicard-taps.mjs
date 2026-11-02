@@ -2,14 +2,15 @@
 // Taps go through the browser's own hit-testing (Playwright touchscreen), not element.click(), so a layer that lets taps fall through shows up here.
 //   CHROME=/path/to/chrome node dev/minicard-taps.mjs [out=shots/minicard-taps] [port=8198]      (headless Chromium, not Safari)
 // For two, three and four monsters at 390x664: every card can be tapped to the front; Attack on it makes it the target and goes straight
-// to the battle (no plan board, no picker left), Roll is ready.
+// to the battle (no plan board, no picker left), Roll is ready. One monster: its card shows too, Attack closes it. Round two (a Special is
+// live): the cards come back with the current target on top; Attack on another card switches the target.
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
 const OUT = process.argv[2] || 'shots/minicard-taps'; const port = +(process.argv[3] || 8198); fs.mkdirSync(OUT, { recursive: true });
 const exe = process.env.CHROME || '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome'; let bad = 0; const errs = [];
 const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', n, d ?? ''); };
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
 const br = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
-const FIGHTS = { two: ['wraith', 'skeleton'], three: ['goblin', 'wolf', 'cultist'], four: ['goblin', 'skeleton', 'wolf', 'cultist'] };
+const FIGHTS = { one: ['ogre'], two: ['wraith', 'skeleton'], three: ['goblin', 'wolf', 'cultist'], four: ['goblin', 'skeleton', 'wolf', 'cultist'] };
 for (const [tag, foes] of Object.entries(FIGHTS)) {
   const p = await br.newPage({ viewport: { width: 390, height: 664 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }); p.on('pageerror', (e) => errs.push(e.message));
   await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
@@ -34,6 +35,19 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
   const after = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), plan: !!document.querySelector('.sp-plan'), picked: B.picked, tuid: B.b.enemies[B.target]?.uid, roll: !document.getElementById('b3-roll')?.disabled }; });
   check(`${tag}: Attack on the back card targets it and goes straight to the battle`, !after.veil && !after.plan && after.picked === true && after.tuid === uid && after.roll, JSON.stringify({ uid, ...after }));
   if (tag === 'two') await p.screenshot({ path: `${OUT}/${tag}-battle.png` });
+  if (tag === 'two') { // round two: roll, lock in, close the recap; the cards come back with the target on top
+    await p.locator('#b3-roll').click(); for (let i = 0; i < 40; i++) { await pump(0.3); await p.waitForTimeout(200); if (await p.evaluate(() => !window.QD.B3.battleState.busy && window.QD.B3.battleState.b.phase === 'shape')) break; }
+    for (let i = 0; i < 6; i++) { if (await p.evaluate(() => { const l = document.querySelector('#b3-lock'); if (l && !l.disabled) { l.click(); return true; } return false; })) break; await pump(0.5); await p.waitForTimeout(250); }
+    let r2 = false; for (let i = 0; i < 200 && !r2; i++) { await pump(0.3); await p.waitForTimeout(200); r2 = await p.evaluate(() => { document.querySelector('.dr-ok:not([disabled])')?.click(); document.querySelector('.rc-close')?.click(); return !!document.querySelector('.mnc-veil'); }); }
+    const top = await p.evaluate(() => { const B = window.QD.B3.battleState; return { round: B.b.round, head: document.querySelector('.mnc-head')?.textContent, top: document.querySelector('.mnc-card.top')?.dataset.uid, tuid: B.b.enemies[B.target]?.uid, live: B.b.enemies.filter((e) => e.hp > 0).length }; });
+    check('round two: the cards come back, the current target on top', r2 && top.round === 2 && (top.live < 2 || top.top === top.tuid), JSON.stringify(top));
+    await p.screenshot({ path: `${OUT}/two-round2-cards.png` });
+    if (r2 && top.live > 1) { const other = await p.evaluate(() => [...document.querySelectorAll('.mnc-card')].findIndex((c) => !c.classList.contains('top')));
+      const o = await spot(other); await p.touchscreen.tap(o.x, o.y); await p.waitForTimeout(350); const ou = await p.evaluate((i) => document.querySelectorAll('.mnc-card')[i].dataset.uid, other);
+      const bb = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await p.touchscreen.tap(bb.x, bb.y); await pump(1); await p.waitForTimeout(400);
+      const sw = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), sheet: !!document.querySelector('.fi-sheet, .foe-sheet, .b3-foeinfo'), tuid: B.b.enemies[B.target]?.uid, roll: !document.getElementById('b3-roll')?.disabled }; });
+      check('round two: Attack on the other card switches the target, straight to the battle', !sw.veil && sw.tuid === ou && sw.roll, JSON.stringify({ ou, ...sw })); }
+  }
   await p.close();
 }
 check('no page errors', errs.length === 0, errs.join(' | '));

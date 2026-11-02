@@ -42,19 +42,19 @@ export function demoData(enemies) {
   return { owns, plans };
 }
 
-export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null } = {}, onPick) {
+export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack' } = {}, onPick) {
   const M = MODES[mode] || MODES.solo; const foes = enemies.filter((e) => e.hp > 0); const n = foes.length;
   if (!n) return null;
   const kid = kidName || (sure ? foes.reduce((a, e) => (e.maxHp < a.maxHp ? e : a)).name : null); // battle3d passes what Spawn really calls (SPECIALS.minion)
-  const veil = h('div', { class: 'mnc-veil', role: 'dialog', 'aria-label': 'Choose your target' });
+  const veil = h('div', { class: 'mnc-veil', role: 'dialog', 'aria-label': head });
   const stack = h('div', { class: 'mnc-stack', style: `--n:${n}` });
-  let sel = 0;
+  let sel = Math.max(0, foes.findIndex((e) => e.uid === first)); // the card on top: the current target, or the first monster
   const paint = () => [...stack.children].forEach((c, i) => { c.classList.toggle('top', i === sel); c.style.setProperty('--z', String(i === sel ? 9 : n - Math.abs(i - sel))); });
   foes.forEach((e, i) => {
     const plan = plans[e.uid]; const now = plan?.id && POWERS[plan.id] ? plan.id : 'fights';
     const list = [...new Set([...(owns[e.uid] || []), ...(now !== 'fights' ? [now] : [])])].filter((k) => POWERS[k] && k !== 'fights'); list.push('fights');
     const lit = POWERS[now];
-    const stats = [['HP', Math.round(e.maxHp * M.hp)], ['ARM', e.armor || 0], ['DIE', String(e.powerDie || 'd8').replace(/^d/, 'd')], ['INIT', initOf(e) ?? '–']];
+    const stats = [['HP', Math.round(Math.max(0, e.hp) * M.hp)], ['ARM', e.armor || 0], ['DIE', String(e.powerDie || 'd8').replace(/^d/, 'd')], ['INIT', initOf(e) ?? '–']];
     const rows = list.map((k) => { const P = POWERS[k]; const isOn = k === now;
       return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, P.kw), ` ${P.name}`),
         isOn ? h('div', { class: 'mnc-goal' }, scale(P.goal(plan), M.goal)) : null, isOn ? h('div', { class: 'mnc-does' }, P.does(plan, { kid })) : null); });
@@ -65,8 +65,8 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
       h('div', { class: 'mnc-rows' }, ...rows));
     stack.append(card);
   });
-  const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => { ev.stopPropagation(); const uid = foes[sel].uid; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); } }, 'Attack');
-  veil.append(h('div', { class: 'mnc-head' }, 'Choose your target'), stack, go);
+  const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => { ev.stopPropagation(); const uid = foes[sel].uid; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); } }, pick);
+  veil.append(h('div', { class: 'mnc-head' }, head), stack, go);
   paint();
   return veil;
 }
