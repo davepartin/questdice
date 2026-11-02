@@ -1,7 +1,7 @@
 /* Monster mini card target picker (js/g3/minicard.js). Off unless ?minicards / ?minicarddemo. */
 .mnc-veil { position: absolute; inset: 0; z-index: 72; background: radial-gradient(ellipse at 50% 55%, #0006, #000c); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem; font-family: var(--ui, sans-serif); }
 .mnc-head { font: 800 1.15rem var(--disp, serif); color: #ffe08a; text-shadow: 0 2px 6px #000; }
-.mnc-stack { --w: 8.6rem; --ov: 2.4rem; position: relative; width: calc(var(--n) * var(--w) - (var(--n) - 1) * var(--ov)); height: 15.4rem; }
+.mnc-stack { --w: 8.6rem; --ov: max(2.4rem, calc((var(--n) * var(--w) - 100vw + 1.2rem) / max(1, var(--n) - 1))); position: relative; width: calc(var(--n) * var(--w) - (var(--n) - 1) * var(--ov)); height: 15.4rem; }
 .mnc-card { --c: #8a7a62; position: absolute; top: 0; width: var(--w); height: 15rem; left: calc(var(--i) * (var(--w) - var(--ov))); border-radius: .9rem; padding: .35rem; box-sizing: border-box; display: flex; flex-direction: column; gap: .25rem;
   background: linear-gradient(180deg, #2a1d14, #120b07); box-shadow: inset 0 0 0 3px var(--c), 0 8px 18px #000c; transform: translateY(.5rem) scale(.9) rotate(var(--r)); filter: brightness(.7) saturate(.8); transition: transform .25s, filter .25s, box-shadow .25s; cursor: pointer; z-index: var(--z); }
 .mnc-card.top { z-index: 9; transform: translateY(0) scale(1.04); filter: none; box-shadow: inset 0 0 0 3px var(--c), 0 0 0 2px #ffe08a, 0 0 22px #ffd96a88, 0 12px 24px #000d; }

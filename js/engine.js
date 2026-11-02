@@ -818,6 +818,12 @@ export function specialView(b, e) {
   const hero = b?.hero || b?.fighters?.[b?.active || 0]?.hero; const seen = hero?.seenSpecials || [];
   return { id: e.special.id, name: info.name, top: l.top, bottom: l.bottom, tone: info.tone, icon: info.icon, always: !!info.always, isNew: !seen.includes(e.special.id), progress: specialProgress(b, e) };
 }
+// Which Specials each living monster owns this fight (the mini card picker lists them all, lighting the one live this round).
+// A Special belongs to the fight, not to the kind of monster: act, step and fight kind decide (pickSpecials), one per monster at most.
+export function specialsOwned(b) {
+  if (!SPECIALS.on || !b?.enemies) return {};
+  return Object.fromEntries(b.enemies.filter((e) => e.hp > 0 && e.special && !(e.special.id === 'shield' && e.special.broken)).map((e) => [e.uid, [e.special.id]]));
+}
 // The round-start plan board: one row per monster with a Special this round.
 export function specialPlan(b) {
   if (!SPECIALS.on) return [];

@@ -9,7 +9,6 @@ import { h } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import * as HK from './hudkit.js';
-import * as MC from './minicard.js';
 
 const demo = () => typeof location !== 'undefined' && /[?&]t24demo\b/.test(location.search);
 let cur = null; // the battle the label reads (flat.js paints a monster without its battle; battle3d hands it over here)
@@ -74,28 +73,11 @@ export function planBoardEl(rows, { plain = [], round = 1, imgOf = () => '', onF
   return el;
 }
 // Convenience for the round-start seam: build from a battle (null when no monster has a Special this round).
-const mcSeen = new WeakSet();
+// (The mini card target picker, js/g3/minicard.js, is opened by battle3d itself at fight start; this is only the plan board.)
 export function planFor(b = cur, opts = {}) {
-  if (b && MC.on() && !mcSeen.has(b)) { mcSeen.add(b); const v = pickerFor(b, opts); if (v) return v; } // mini card picker first (flag only), then this board
-  return boardFor(b, opts);
-}
-function boardFor(b, opts) {
   const rows = planOf(b); if (!rows.length) return null;
   const has = new Set(rows.map((r) => r.uid));
   return planBoardEl(rows, { round: b?.round || 1, plain: foesOf(b).filter((e) => !has.has(e.uid)).map((e) => e.name), ...opts });
-}
-
-// The monster mini card target picker (js/g3/minicard.js), at fight start under ?minicards / ?minicarddemo. Until battle3d calls
-// MC.open itself (hook requested on the BOARD), the pick goes through the monster's own plaque tap, so the game's gold target ring
-// and every targeting rule stay battle3d's; the plan board follows.
-function pickerFor(b, opts) {
-  const foes = foesOf(b); if (foes.length < 2) return null;
-  let plans = {}; let owns = {};
-  if (MC.demo()) ({ plans, owns } = MC.demoData(foes));
-  else for (const e of foes) { const v = viewOf(e, b); if (v) { plans[e.uid] = v; owns[e.uid] = [v.id]; } } // real: this round's Special; full lists await Claude
-  return MC.open({ enemies: foes, plans, owns, mode: b.fighters ? 'party' : 'solo', imgOf: (e) => opts.imgOf?.(e.uid) || D.MONSTERS[e.id]?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null, sure: !MC.demo() || foes.length > 2 },
-    (uid, par) => { const slot = document.querySelector(`.fb-slot.foe[data-uid="${uid}"]`); (slot?.querySelector('.fb-card') || slot?.firstElementChild)?.click();
-      const board = boardFor(b, opts); if (board && par) par.append(board); });
 }
 
 // ---- 3. the after-round answer: one line per monster, ✓/✗ chip, misses first (Recap keeps the dice detail)

@@ -19,6 +19,7 @@ import { createFlat, replayPace, stanceOf } from './flat.js';
 import { monsterOf } from '../campaigns.js';
 import { roundCard } from './roundcard.js';
 import * as SP from './specials.js';
+import * as MC from './minicard.js';
 import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
 
 let C = null;                // context from ui.js
@@ -757,7 +758,9 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) { if (B.card) B.flourishLater = b.round; else { HK.roundFlourish(B.root, b.round); showPlan(); } } } // the next round's banner waits for the recap to close (it played unseen behind it)
+  if (B.shownRound !== b.round) { B.shownRound = b.round; const title = !!B.root.querySelector('.b3-titlecard');
+    if (wantPicker()) openPicker(title); // fight start: the mini cards first, then the target, then Roll (Dave, 2 Nov 2026)
+    else if (b.round > 1 || !title) { if (B.card) B.flourishLater = b.round; else { HK.roundFlourish(B.root, b.round); showPlan(); } } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -1192,6 +1195,23 @@ function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.aga
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
 function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
+// The monster mini card target picker (Grok's js/g3/minicard.js): once, as a fight with two or more monsters opens. Attack on a card
+// chooses that monster exactly as tapping its piece would (every targeting rule stays selectTarget's), then the Special plan board shows.
+const wantPicker = () => MC.on() && B.b?.round === 1 && B.picked === false && alive().length > 1 && B.mcFor !== B.b;
+function openPicker(afterTitle = false) {
+  const b = B.b; B.mcFor = b; const t0 = Date.now();
+  const go = () => {
+    if (B.b !== b || B.ended || b.round !== 1 || b.phase !== 'reset' || B.picked !== false || alive().length < 2 || B.root.querySelector('.mnc-veil')) { if (B.b === b && !B.ended) showPlan(); return; }
+    const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const look = (id) => monsterOf(id, camp) || D.MONSTERS[id];
+    let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
+    if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
+    const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
+      kid: look(D.SPECIALS.minion)?.name || null }, (uid) => { if (B.b !== b) return; selectTarget(uid); showPlan(); });
+    if (v) { B.root.append(v); sfx.select?.(); } else showPlan();
+  };
+  const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : go()); // a boss or elite's title card goes first
+  if (afterTitle) hold(); else go();
+}
 // T24: the round-start plan board (Grok's js/g3/specials.js): one row per monster with a Special this round; nothing at all while Specials are off.
 function showPlan() {
   B.root?.querySelector('.sp-plan')?.remove();
