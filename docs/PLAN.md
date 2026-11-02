@@ -1599,3 +1599,8 @@ Reviewed every Bard magic card against the Knight template. Added dedicated Fina
 ### 2 November 2026 — seven-card Wizard review (20261102wz2)
 
 Reviewed all Wizard magic cards after Knight/Bard. Added distinct Meteor/Magic Missile/Barrier/Healing Light paintings, paper rank panels and printed fixed effects. Meteor covers now show per-round growth; Polymorph uses a quiet Frog label and an explicit reduced-cost cover. Costs, IDs, effects and saves unchanged. All 527 tests, 84 phone/rank layouts, final detail checks, later-round Meteor and real Wizard battle checks pass. Evidence: docs/team/tasks/magic-template/wizard/README.md.
+
+
+### 2 November 2026 — seven-card Ranger review (20261102rn2)
+
+Reviewed all Ranger magic cards. Four distinct paintings replace shared art; natural paper rank panels and printed fixed effects match the recent hero reviews. Hunter's Mark separates immediate Pierce from conditional same-round gold; Rain of Arrows separates target Pierce and all-enemy attack in its panel and covers. Rules, numbers, costs, IDs and saves unchanged. All 527 tests, 84 phone/rank fixtures and real Ranger battle checks pass. Evidence: docs/team/tasks/magic-template/ranger/README.md.

@@ -1,0 +1,17 @@
+PASS 2x3 grid: Aimed Shot, Hunter’s Mark, Volley; Potion, Heal, Heart change aimed,mark,volley,u:bigheal,u:heal,u:heart
+shot /workspace/ranger-real/mr1-panel_390x844.png
+PASS Aimed Shot card: shared template, 1 die + 3 blank spaces, −1 / +1 / Roll1 {"spaces":3,"dice":1,"btns":["−1","+1","Roll1"]}
+PASS two taps of +▲1 fill two more spaces; Roll ▲3 {"dice":3,"roll":"Roll3"}
+PASS Stable artwork, orange Pierce dice, corner cost and magic preview 
+shot /workspace/ranger-real/mr1-aimed-card_390x844.png
+shot /workspace/ranger-real/mr1-aimed-rolling_390x844.png
+shot /workspace/ranger-real/mr1-aimed-after-roll_390x844.png
+PASS Roll: power-dice reveal plays, magic drops by 3, pierce rises by the total {"s0":{"magic":8,"pierce":0,"charge":0,"gold":0},"s1":{"magic":5,"pierce":15,"charge":0,"gold":0}}
+shot /workspace/ranger-real/mr1-mark-card_390x844.png
+PASS Hunter’s Mark: 2 magic, +3 pierce, gold armed 6, then used this round {"m0":{"magic":5,"pierce":15,"charge":0,"gold":0},"m1":{"magic":3,"pierce":18,"charge":0,"gold":6},"mDis":true}
+PASS Volley +▲1 stores a charge for 1 magic {"v0":{"magic":3,"pierce":18,"charge":0,"gold":6},"v1":{"magic":2,"pierce":18,"charge":1,"gold":6}}
+shot /workspace/ranger-real/mr1-volley-card_390x844.png
+PASS Volley Use 2 gives +8 pierce {"rel":"Use 2","v2":{"magic":2,"pierce":8,"charge":0,"gold":6}}
+PASS Use button pierce orange with dark text rgb(255, 138, 26) / rgb(26, 11, 0)
+PASS no page errors 
+ALL PASS

@@ -535,3 +535,25 @@
 .mc-wizard[data-card="polymorph"] .mc-cd .mc-fv>.ic{width:4cqi;height:4cqi}
 .mc-wizard[data-card="polymorph"] .mc-cd .mc-mg .ic{width:3.5cqi;height:3.5cqi}
 .mc-wizard:is([data-card="bolt"],[data-card="barrier"],[data-card="polymorph"]) .mc-lv.act .mc-fv{mix-blend-mode:multiply;filter:saturate(.65)}
+
+/* Ranger review: paper stock, distinct targets and conditional rewards. */
+.mc-ranger .mc-lv{background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;box-shadow:inset 0 0 0 .4cqi #8e7756,inset 0 0 3cqi #6e583320;border-radius:.7cqi}
+.mc-ranger .mc-cov .mc-fv{filter:saturate(.65);mix-blend-mode:multiply}
+.mc-ranger .mc-rain-effect,.mc-ranger .mc-mark-effect{display:grid;justify-items:center;gap:3cqi;width:100%;mix-blend-mode:multiply}
+.mc-ranger .mc-ranger-target,.mc-ranger .mc-ranger-secondary{display:flex;align-items:center;justify-content:center;gap:1.5cqi}
+.mc-ranger .mc-ranger-secondary{padding-top:2cqi;border-top:.2cqi solid #8c795a66}
+.mc-ranger .mc-ranger-target>small,.mc-ranger .mc-ranger-secondary>small{font:600 4cqi/1.2 var(--font-body,sans-serif);color:#58452c}
+.mc-ranger .mc-mark-effect .mc-ranger-secondary{flex-direction:column;gap:1.5cqi;width:100%}
+.mc-ranger[data-card="mark"] .mc-lv.act .mc-fv,.mc-ranger[data-card="rain"] .mc-lv.act .mc-fv{font-size:8cqi}
+.mc-ranger[data-card="mark"] .mc-lv.act .mc-fv .ic,.mc-ranger[data-card="rain"] .mc-lv.act .mc-fv .ic{width:7cqi;height:7cqi}
+.mc-ranger .mc-rain-cover{display:grid;gap:.8cqi;width:100%}
+.mc-ranger .mc-mark-cover{display:flex;align-items:center;justify-content:center;gap:3cqi;width:100%}
+.mc-ranger .mc-mark-cover .mc-ranger-secondary{display:grid;justify-items:center;gap:.7cqi;padding:0;border:0}
+.mc-ranger .mc-rain-cover .mc-ranger-secondary{padding-top:.7cqi}
+.mc-ranger :is(.mc-rain-cover,.mc-mark-cover) .mc-ranger-target>small,.mc-ranger :is(.mc-rain-cover,.mc-mark-cover) .mc-ranger-secondary>small{font-size:3.3cqi}
+.mc-ranger[data-card="rain"] .mc-lv:not(.act){min-height:18cqi}
+.mc-ranger[data-card="mark"] .mc-lv:not(.act){min-height:16cqi}
+.mc-ranger[data-card="rain"] .mc-cd .mc-fv,.mc-ranger[data-card="mark"] .mc-cd .mc-fv{font-size:4.8cqi}
+.mc-ranger[data-card="rain"] .mc-cd .mc-fv .ic,.mc-ranger[data-card="mark"] .mc-cd .mc-fv .ic{width:4cqi;height:4cqi}
+.mc-ranger:is([data-card="snare"],[data-card="quickdraw"]) .mc-lv.act .mc-fv{mix-blend-mode:multiply;filter:saturate(.65)}
+.mc-ranger:is([data-card="snare"],[data-card="quickdraw"]) .mc-lv.act .mc-fv small{font-size:4cqi}

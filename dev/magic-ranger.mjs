@@ -14,14 +14,14 @@ await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStor
 await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
 const pump = (s) => p.evaluate(async (s) => { for (let i = 0; i < s * 20; i++) { window.QD.world.stage.simulate(0.05, 0.033); await new Promise((r) => setTimeout(r, 0)); } }, s);
 await p.evaluate(async (n) => { const { S, E, showBoard } = window.QD; const hh = E.newHero({ name: n, cls: 'ranger', seed: 5 }); hh.dice = null; hh.level = 9; S.hero = hh; S.company = { members: [hh] }; const SV = await import('./js/save.js'); if (!SV.heroExists(n)) await SV.createSave(hh, 'testpass'); showBoard(); window.QD.startQuest({ ...E.questsFor(hh)[0], enemies: ['goblin'], kind: 'boss' }); }, 'Mr1Ranger');
-for (let i = 0; i < 120; i++) { await pump(0.5); if (await p.evaluate(() => window.QD.B3?.battleState?.bw && !window.QD.B3.battleState.busy)) break; }
+for (let i = 0; i < 180; i++) { await pump(0.5); if (await p.evaluate(() => { const B=window.QD.B3?.battleState;return B?.bw&&B.hud?.place&&!B.starting&&!B.busy; })) break; }
 const st = () => p.evaluate(() => { const b = window.QD.B3.battleState.b; return { magic: b.magic, pierce: b.mods.pierce || 0, charge: b.charge?.volley || 0, gold: b.markGold || 0 }; });
 const fresh = () => p.evaluate(() => { const { B3, E, S } = window.QD; const B = B3.battleState; B.b.board = E.rollBoard(S.hero, E.makeRng(5)); B.b.phase = 'shape'; B.b.magic = 8; B.b.usedRound = {}; B.b.mods.pierce = 0; B.busy = false; B3.renderShape(); });
 const settle = async () => { for (let i = 0; i < 40; i++) { await pump(0.3); const busy = await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return window.QD.B3.battleState.busy; }); if (!busy) break; } await pump(0.3); };
 const pick = async (id) => { for (let i = 0; i < 10; i++) { await p.waitForTimeout(400); await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); }); await p.locator(`.b3-sheet.open .mc-tile[data-power="${id}"]`).click(); await pump(0.4); if (await p.evaluate((id) => !!document.querySelector(`.mc-card[data-card="${id}"]`), id)) return; } };
 const clear = () => p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove()));
 const shot = async (n) => { await clear(); await p.screenshot({ path: `${OUT}/${n}_390x844.png` }); console.log('shot', `${OUT}/${n}_390x844.png`); };
-await fresh(); await p.locator('.b3-powers').first().click(); await pump(1.2);
+await fresh(); await p.locator('.b3-powers:not(.b3-team)').first().click(); await pump(1.2);
 const tiles = await p.evaluate(() => [...document.querySelectorAll('.b3-sheet.open .mc-tile')].map((t) => t.dataset.power));
 check('2x3 grid: Aimed Shot, Hunter\u2019s Mark, Volley; Potion, Heal, Heart change', tiles.join() === 'aimed,mark,volley,u:bigheal,u:heal,u:heart', tiles.join());
 await shot('mr1-panel');
