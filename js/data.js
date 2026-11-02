@@ -288,7 +288,7 @@ export const CLASS2 = { on: false, songs: false, verse: true, guard: true, digIn
 //   bounty   kill it within `bountyRounds` rounds for `bounty` gold (a reward, no punishment)
 //   regrow   Damage N each round, or it heals N
 //   sleeping does nothing until hurt; any hit that does not kill it wakes it, and awake it hits double
-export const SPECIALS = { on: false, slam: [20, 34, 52], shield: { goal: [25, 40, 60], block: [12, 20, 30] }, regrow: [8, 14, 20], bounty: [8, 15, 25], bountyRounds: 2, spawnMax: 3, minion: 'goblin' };
+export const SPECIALS = { on: false, slam: [15, 28, 44], shield: { goal: [25, 40, 60], block: [12, 20, 30] }, regrow: [8, 14, 20], bounty: [8, 15, 25], bountyRounds: 2, spawnMax: 3, bossMinionSpawns: 1, minion: 'goblin' }; // (measured 2 Nov: Slam at 20 was met a third of the time; the Act I boss's helper spawning 3 took the boss from 100% to 80% wins)
 export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 , most: 99}, mend: { share: 0.5 }, bag: true };
 export const WEAPONS2 = {
   faces: {

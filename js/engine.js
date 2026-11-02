@@ -777,7 +777,7 @@ export function assignSpecials(b) {
   b.enemies.forEach((e, i) => { if (ids[i]) e.special = makeSpecial(b, ids[i]); });
   if (kind === 'boss' && (c.act || 1) <= 1 && b.enemies.length === 1) { // the Act I boss brings a small friend who calls for help: kill the adds, or keep on the boss?
     const like = b.enemies[0]; const m = spawnEnemy(SPECIALS.minion, { hpMult: (like.hpMult || 1) * 0.6, flat: like.flat - (like.teamFlat || 0), teamFlat: like.teamFlat || 0, rewardMult: like.rewardMult, edge: like.edge, campaign: c }, b.rng);
-    m.special = makeSpecial(b, 'spawn'); b.enemies.push(m);
+    m.special = { ...makeSpecial(b, 'spawn'), max: SPECIALS.bossMinionSpawns }; b.enemies.push(m); // it calls for help once, not three times
   }
 }
 // The two label lines, at most 14 characters each (Grok's rule for the narrowest phone). Null when the monster has no Special or it is quiet this round.
@@ -786,7 +786,7 @@ function labelOf(e) {
   switch (sp.id) {
     case 'slam': return e.intent?.v === 'charge' ? { top: `Damage ${sp.goal}`, bottom: 'or Slam 2x' } : e.intent?.double ? { top: 'Block it!', bottom: 'Slams 2x now' } : null;
     case 'shield': return sp.broken ? null : { top: `Attack ${sp.goal}`, bottom: `or Blocks ${sp.block}` };
-    case 'spawn': return sp.spawned >= SPECIALS.spawnMax ? null : { top: 'Damage 1', bottom: 'or Spawn 1' };
+    case 'spawn': return sp.spawned >= (sp.max ?? SPECIALS.spawnMax) ? null : { top: 'Damage 1', bottom: 'or Spawn 1' };
     case 'bounty': return sp.left > 0 ? { top: sp.left > 1 ? `Kill in ${sp.left}` : 'Kill now', bottom: `+${sp.gold} gold` } : null;
     case 'regrow': return { top: `Damage ${sp.goal}`, bottom: `or Heals ${sp.goal}` };
     case 'sleeping': return sp.awake ? { top: 'Awake!', bottom: 'Hits 2x' } : { top: `Damage ${Math.max(0, Math.ceil(e.hp))}`, bottom: 'or Wakes: 2x' };
@@ -854,7 +854,7 @@ function settleSpecials(b, rep, { goldTo } = {}) {
       case 'spawn':
         if (dead || e.fresh) break;
         if (dmg > 0) row(true, 'Spawn stopped.');
-        else if (sp.spawned < SPECIALS.spawnMax && room() > 0) {
+        else if (sp.spawned < (sp.max ?? SPECIALS.spawnMax) && room() > 0) {
           sp.spawned++; const m = spawnEnemy(SPECIALS.minion, { hpMult: (e.hpMult || 1) * 0.5, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
           m.fresh = true; b.enemies.push(m); (rep.summoned ||= []).push(m.uid); row(false, 'Spawned a friend.');
         }
