@@ -1594,3 +1594,8 @@ Dave approved renaming Riposte to Counterstrike. Updated the shared display name
 ### 2 November 2026 — six-card Bard review (20261102bd2)
 
 Reviewed every Bard magic card against the Knight template. Added dedicated Finale/Discord/Hymn of Gold paintings, natural paper rank panels, clearer Finale target/all-enemy grouping, larger stacked Lucky Verse upgrade payouts and an All heroes tag for Mending Song. Existing controls, costs, values, saves and other heroes are unchanged. All 527 game tests, 72 rank/phone fixtures and actual Bard battle checks pass. Evidence: docs/team/tasks/magic-template/bard/README.md.
+
+
+### 2 November 2026 — seven-card Wizard review (20261102wz2)
+
+Reviewed all Wizard magic cards after Knight/Bard. Added distinct Meteor/Magic Missile/Barrier/Healing Light paintings, paper rank panels and printed fixed effects. Meteor covers now show per-round growth; Polymorph uses a quiet Frog label and an explicit reduced-cost cover. Costs, IDs, effects and saves unchanged. All 527 tests, 84 phone/rank layouts, final detail checks, later-round Meteor and real Wizard battle checks pass. Evidence: docs/team/tasks/magic-template/wizard/README.md.

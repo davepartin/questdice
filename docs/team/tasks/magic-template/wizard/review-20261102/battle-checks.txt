@@ -1,0 +1,18 @@
+PASS 2x3 grid: Arc Bolt, Polymorph, Storm Coil; Potion, Heal, Heart change arcbolt,polymorph,coil,u:bigheal,u:heal,u:heart
+shot /workspace/wizard-real/mw1-panel_390x844.png
+PASS Arc Bolt card: shared template, 1 d8 + 5 blank diamond spaces, −2 / +2 / Roll2, label 1 of 6 {"a0":{"spaces":5,"dice":1,"btns":["−2","+2","Roll2"]},"lbl":"1 of 6 attack dice"}
+PASS two taps of +▲2 fill two more spaces; Roll ▲6; label 3 of 6 {"a1":{"dice":3,"roll":"Roll6"},"lbl4":"3 of 6 attack dice"}
+PASS Stepper keeps artwork mounted and previews magic without paying twice 
+shot /workspace/wizard-real/mw1-arcbolt-card_390x844.png
+shot /workspace/wizard-real/mw1-arcbolt-rolling_390x844.png
+shot /workspace/wizard-real/mw1-arcbolt-after-roll_390x844.png
+PASS Roll: power-dice reveal plays, magic drops by 6, attack rises and half arcs {"s0":{"magic":12,"atk":0,"block":0,"splash":0,"frog":0,"charge":0},"s1":{"magic":6,"atk":20,"block":0,"splash":10,"frog":0,"charge":0}}
+shot /workspace/wizard-real/mw1-polymorph-card_390x844.png
+PASS Polymorph: 3 magic, the frog is set, then used this round {"m0":{"magic":6,"atk":20,"block":0,"splash":10,"frog":0,"charge":0},"m1":{"magic":3,"atk":20,"block":0,"splash":10,"frog":1,"charge":0},"mDis":true}
+PASS Storm Coil +▲1 stores a charge for 1 magic {"v0":{"magic":3,"atk":20,"block":0,"splash":10,"frog":1,"charge":0},"v1":{"magic":2,"atk":20,"block":0,"splash":10,"frog":1,"charge":1}}
+shot /workspace/wizard-real/mw1-coil-card_390x844.png
+PASS Storm Coil Use 2 adds +8 attack and 4 splash on top of the Arc Bolt attack {"rel":"Use 2","v1":{"magic":2,"atk":20,"block":0,"splash":10,"frog":1,"charge":1},"v2":{"magic":2,"atk":28,"block":0,"splash":14,"frog":1,"charge":0}}
+PASS Use button attack red with white text rgb(255, 59, 59) / rgb(255, 255, 255)
+PASS Polymorph Cast purple with white text rgb(116, 64, 176) / rgb(255, 255, 255)
+PASS no page errors 
+ALL PASS

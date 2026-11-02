@@ -513,3 +513,25 @@
 .mc-bard .mc-cov .mc-fv{filter:saturate(.65);mix-blend-mode:multiply}
 .mc-bard .mc-luck-table,.mc-bard .mc-finale-effect{mix-blend-mode:multiply}
 .mc-bard .mc-lv:not(.act){background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;box-shadow:inset 0 0 0 .35cqi #8e7756;border-radius:.7cqi}
+
+/* Wizard review: physical paper panels, distinct spells and round-based growth. */
+.mc-wizard .mc-lv{background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;box-shadow:inset 0 0 0 .4cqi #8e7756,inset 0 0 3cqi #6e583320;border-radius:.7cqi}
+.mc-wizard .mc-cov .mc-fv{filter:saturate(.65);mix-blend-mode:multiply}
+.mc-wizard .mc-meteor-effect{display:grid;justify-items:center;gap:3cqi;mix-blend-mode:multiply}
+.mc-wizard .mc-meteor-effect>small{font:600 5cqi/1.2 var(--font-body,sans-serif);color:#58452c}
+.mc-wizard[data-card="meteor"] .mc-lv.act .mc-fv{font-size:12cqi}
+.mc-wizard[data-card="meteor"] .mc-lv.act .mc-fv .ic{width:10cqi;height:10cqi}
+.mc-wizard[data-card="meteor"] .mc-mx{font-size:3.7cqi;letter-spacing:0}
+.mc-wizard .mc-round-formula{display:flex;align-items:center;gap:1cqi;color:#78382c;mix-blend-mode:multiply;font:700 5cqi/1 var(--font-number,sans-serif)}
+.mc-wizard .mc-round-formula>.ic{width:4.5cqi;height:4.5cqi;flex:none}
+.mc-wizard .mc-round-formula>small{font:600 4cqi/1 var(--font-body,sans-serif);color:#58452c}
+.mc-wizard[data-card="polymorph"] .mc-frog{background:none;padding:0;color:#4b5b32;font:700 9cqi/1.1 Georgia,serif}
+.mc-wizard[data-card="polymorph"] .mc-mx{font-size:4cqi;color:#58452c;letter-spacing:0}
+.mc-wizard[data-card="polymorph"] .mc-lv.act .mc-sy{gap:4cqi}
+.mc-wizard .mc-cover-cost{display:inline-flex;align-items:center;gap:.8cqi}
+.mc-wizard .mc-cover-cost>small{font:600 3.5cqi/1 var(--font-body,sans-serif);color:#58452c}
+.mc-wizard[data-card="polymorph"] .mc-cd{gap:1.2cqi}
+.mc-wizard[data-card="polymorph"] .mc-cd .mc-fv{font-size:4.8cqi}
+.mc-wizard[data-card="polymorph"] .mc-cd .mc-fv>.ic{width:4cqi;height:4cqi}
+.mc-wizard[data-card="polymorph"] .mc-cd .mc-mg .ic{width:3.5cqi;height:3.5cqi}
+.mc-wizard:is([data-card="bolt"],[data-card="barrier"],[data-card="polymorph"]) .mc-lv.act .mc-fv{mix-blend-mode:multiply;filter:saturate(.65)}

@@ -1,0 +1,3 @@
+PASS meteor 375 667 rank 1
+PASS meteor 375 667 rank 2
+PASS meteor 375 667 rank 3
