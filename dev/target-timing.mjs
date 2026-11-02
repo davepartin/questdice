@@ -41,7 +41,7 @@ check('Hunter’s Mark with no target chosen is refused and costs nothing', m1.m
 await clickFoe(1); s = await st(); check('tapping a monster chooses it', s.picked === true && s.target === 1, JSON.stringify(s));
 await p.evaluate(() => { const b = window.QD.B3.battleState.b; b.hp = Math.max(1, b.maxHp - 10); });
 await openSheet(); await p.locator('.b3-sheet.open .mc-tile[data-power="u:heal"]').click(); await pump(0.4);
-const h0 = await st(); await p.locator('.pw-detail .pw-btn.go, .pw-detail .pr-go, .pw-detail button.go').first().click(); await settle(); const h1 = await st();
+const h0 = await st(); await p.locator('.mc-ctl .mc-use.go, .pw-detail .pw-btn.go, .pw-detail button.go').first().click(); await settle(); const h1 = await st();
 check('Heal works before the roll, spends magic, and does not lock', h1.hp > h0.hp && h1.magic < h0.magic && !h1.tlock && h1.lockBadge === 0 && h1.phase === 'reset', JSON.stringify({ h0, h1 }));
 check('the sheet is still open after a pre-roll heal', await p.evaluate(() => !!document.querySelector('.b3-sheet.open')));
 await pick('volley'); const v0 = await st(); await useGo(); const v1 = await st();
