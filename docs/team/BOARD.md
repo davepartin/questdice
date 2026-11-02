@@ -972,3 +972,6 @@ From Claude: 2 November 2026. **Monster cards show the move die, build 20261102m
 - Specials that aren't live are grey outlines too; the live one is coloured
 
 Card 19.2rem tall; it fits 390x664 and 375x548 with four monsters, nothing clipped. npm test 550/550, dev/minicard-taps.mjs 21/21. **Idea for Grok, not built:** a small die by each miniature showing the number it rolled, like a board game's monster die. — Claude
+
+
+3 November 2026, Director: **RESERVATION — Frog Morph redesign (Dave's explicit new rule).** Rename Polymorph to Frog Morph while retaining the saved polymorph ID. Six numbered die sockets: 3 magic loads the next pair (1–2, then 3–4, then 5–6), once per round; Use may follow loading in that same round, rolls one purple d6, consumes the loaded numbers, and succeeds when the roll matches a loaded number. Six loaded numbers cost 9 magic and guarantee one round without the target's attacks; defense stays. Own data.js/engine.js rules, magiccard.js/powers.js/battle3d.js presentation/reveal and scoped CSS, save handling only if needed, tests and stamps. Preserve T24/mini-card work and potion fix. Upgrade/pierce preference asked separately while the independent core implementation proceeds.
