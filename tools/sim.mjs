@@ -98,7 +98,9 @@ function futureValue(c) {
   const hpFrac = c.hp / c.maxHp;
   let v = c.hp * 1.0 - (hpFrac < 0.35 ? (0.35 - hpFrac) * c.maxHp * 2 : 0); // low health is worth less than it looks: the next hit may end it
   v += c.magic * (PLAY.magicW ?? 2.2) + (c.potions || 0) * 9; // PLAY.magicW: what the wise player thinks a point of magic in hand is worth (tools/magicaudit.mjs)
-  for (const [id, n] of Object.entries(c.charge || {})) { const card = cardsOf(c.hero).find((k) => k.id === id); const per = card?.per || {}; v += n * 0.7 * Object.values(typeof per === 'number' ? { atk: per } : per).reduce((a, x) => a + x, 0); }
+  for (const [id, n] of Object.entries(c.charge || {})) { const card = cardsOf(c.hero).find((k) => k.id === id); const per = card?.per || {};
+    if (card?.frogNeed) { const big = Math.max(0, ...c.enemies.filter((e) => e.hp > 0 && e.intent && isDamageIntent(e.intent)).map((e) => { const r = intentRange(e) || [0, 0]; return (r[0] + r[1]) / 2; })); v += n * 0.3 * big; continue; } // a stored frog charge: about a third of the biggest blow it will stop
+    v += n * 0.7 * Object.values(typeof per === 'number' ? { atk: per } : per).reduce((a, x) => a + x, 0); }
   if (c.outcome === 'victory') return v + 400;
   // focus fire: a point of damage is worth more on a monster that is nearly down (a living monster keeps hitting you every round)
   for (const e of foes) v -= e.hp * 0.5 + 8 * Math.sqrt(e.hp) + 10 + (e.windup || e.pounce ? 12 : 0);
