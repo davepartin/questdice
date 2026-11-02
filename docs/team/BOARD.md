@@ -848,3 +848,6 @@ From Grok Bot: 2 November 2026, 6:25 AM CT. **RELEASED** ptc1 (shipped in ba19e8
 2 November 2026, Director: **CHECKED** all seven Dwarf cards, build 20261102df2. Four distinct paintings, paper panels, clear Avalanche area damage and Grudge damage-derived attack/upgrade formulas. All 527 tests, 84 rank/phone fixtures, final Grudge zero/damaged cases, Bard Finale regression and real Dwarf battle checks pass. Evidence: docs/team/tasks/magic-template/dwarf/README.md. No mechanics/save changes. ptc1 reservation preserved; tile-role work remains with its owner.
 
 Dwarf integration note: published ptc1 role colors were merged and preserved before the final 20261102df2 stamp. Both CSS blocks and role tags remain; full game and Dwarf layout checks repeated on the combined files.
+
+
+2 November 2026, Director: **DEPLOYED** seven-card Dwarf review, commit a458863, build 20261102df2. Live version.json and four new paintings verified by HTTPS (200). Published ptc1 tile colors preserved. All 527 game tests and 84 Dwarf phone/rank layouts pass on the merged source, plus final Grudge zero/damaged cases, Bard Finale regression and 13 real Dwarf battle checks. Seven rendered cards inspected. This completes the requested hero review sequence; reservation released.
