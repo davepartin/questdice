@@ -19,6 +19,13 @@ export const die = (fx, s = 6, v = s) => { const [f, e, p] = COL[fx] || COL.magi
   : `<path d="${SHAPE[s] || SHAPE[8]}" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-weight="900" font-size="10" fill="${p}">${v}</text>`); };
 const space = (s = 6) => svg(`mc-space d${s}`, `<path d="${SHAPE[s] || SHAPE[6]}" fill="#00000010" stroke="#a9864a" stroke-width="1.4" stroke-dasharray="2.4 1.8" stroke-linejoin="round"/>`);
 const TYPE = (k) => (k.kind === 'scale' || k.kind === 'dice' ? 'DICE' : k.kind === 'charge' || k.kind === 'round' ? 'BUILD' : 'ONE-SHOT');
+// Home-grid tile colours by role (Dave, 2 Nov 2026): attack/pierce = atk, block, heal, gold (incl. Hunter's Mark gold), anything else util.
+// Up to two roles; a two-role tile is split on the diagonal (css/magiccard.css, ptc1).
+const ROLE_OF = { atk: 'atk', pierce: 'atk', block: 'block', heal: 'heal', gold: 'gold' };
+const UTIL_ROLES = { 'u:bigheal': ['heal'], 'u:heal': ['heal'], 'u:heart': ['util'] };
+export const tileRoles = (id) => { if (UTIL_ROLES[id]) return UTIL_ROLES[id]; const k = Object.values(D.CLASSES).flatMap((c) => c.cards || []).find((c) => c.id === id); if (!k) return ['util'];
+  const keys = [k.dice?.to, k.grudge ? 'atk' : null, ...Object.keys(typeof k.per === 'object' ? k.per : {}), ...Object.keys(k.fx || {}), k.markGold ? 'gold' : null];
+  const r = [...new Set(keys.map((x) => ROLE_OF[x]).filter(Boolean))]; return r.length ? r.slice(0, 2) : ['util']; };
 const FX = (k) => k.dice?.to || (k.grudge ? 'atk' : null) || Object.keys(typeof k.per === 'object' ? k.per : k.fx || { magic: 1 })[0];
 const WORD = { pierce: 'pierce', atk: 'attack', block: 'block', heal: 'heal', gold: 'gold', magic: 'magic' };
 const mg = (n) => h('span', { class: 'mc-mg' }, HK.icon('magic'), h('b', {}, String(n)));
@@ -141,7 +148,8 @@ function buttons(ctx, p) {
   return [btn(`go pc-${f}`, ['Cast', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x)];
 }
 function tile(ctx, id, name, ico, cost, on, extra = null, spent = '') {
-  return h('button', { type: 'button', class: `mc-tile ${on ? 'on' : ''} ${spent ? 'spent' : ''}`, 'data-power': id, 'data-state': spent ? 'spent' : 'ready', 'aria-label': spent ? `${name}, ${spent}. Tap to inspect.` : null, title: spent ? `${name}: ${spent}` : null, 'aria-pressed': String(on), onclick: () => ctx.select(id) }, ico, h('span', { class: 'mc-tile-name' }, name),
+  const rl = tileRoles(id);
+  return h('button', { type: 'button', class: `mc-tile ${on ? 'on' : ''} ${spent ? 'spent' : ''} r-${rl[0]}${rl[1] ? ` r2-${rl[1]} split` : ''}`, 'data-power': id, 'data-r1': rl[0], 'data-r2': rl[1] || rl[0], 'data-state': spent ? 'spent' : 'ready', 'aria-label': spent ? `${name}, ${spent}. Tap to inspect.` : null, title: spent ? `${name}: ${spent}` : null, 'aria-pressed': String(on), onclick: () => ctx.select(id) }, ico, h('span', { class: 'mc-tile-name' }, name),
     cost ? h('span', { class: 'mc-cost' }, HK.icon('magic'), String(cost)) : h('span', { class: 'mc-cost free' }, 'FREE'), extra, spent ? h('span', { class: 'mc-spent-tag', 'aria-hidden': 'true' }, 'USED') : null);
 }
 const potionTrayCounts = new Map();

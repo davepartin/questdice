@@ -557,3 +557,19 @@
 .mc-ranger[data-card="rain"] .mc-cd .mc-fv .ic,.mc-ranger[data-card="mark"] .mc-cd .mc-fv .ic{width:4cqi;height:4cqi}
 .mc-ranger:is([data-card="snare"],[data-card="quickdraw"]) .mc-lv.act .mc-fv{mix-blend-mode:multiply;filter:saturate(.65)}
 .mc-ranger:is([data-card="snare"],[data-card="quickdraw"]) .mc-lv.act .mc-fv small{font-size:4cqi}
+/* ptc1 (Dave approved 2 Nov 2026; Crockpot / Grok Bot): the six home-grid power tiles coloured by what the power does.
+   Attack red, Block blue, Heal green, Gold gold, Utility purple; a two-role tile splits on the diagonal with a thin white seam. */
+.mc-tile[data-r1]{--atk:#b8322a;--atk-d:#7c1812;--block:#2a63b3;--block-d:#153c78;--heal:#24935a;--heal-d:#105c34;--gold:#c9921c;--gold-d:#7d5608;--util:#6d3fb0;--util-d:#3f2072;
+  --sheen:linear-gradient(180deg,#ffffff22 0%,#fff0 40%,#0000 55%,#00000040 100%);
+  border:1.5px solid #fff;color:#fff;text-shadow:0 1px 2px #000c;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -3px 0 #0000003a,0 2px 0 #0007;background:var(--sheen),linear-gradient(var(--c1),var(--d1))}
+.mc-tile[data-r1] :is(.pw-glyph,.ic,svg.pw-g){color:#fff;filter:drop-shadow(0 1px 1px #000a)}
+.mc-tile[data-r1] .mc-cost{color:#fff;text-shadow:0 1px 2px #000}
+.mc-tile[data-r1] .mc-cost .ic,.mc-tile[data-r1] .mc-cost svg{color:#fff;filter:drop-shadow(0 0 1px #000) drop-shadow(0 1px 1px #000a)}
+.b3-sheet.open:has(.mc-sheet) .mc-tile[data-r1] .mc-cost .ic-magic .p,.mc-tile[data-r1] .mc-cost .ic :is(.p,path){fill:#fff!important;stroke:#0008!important;stroke-width:1px!important}
+.mc-tile[data-r1] .mc-cost.free{color:#c9ffd9}
+.mc-tile[data-r1].on{border-color:#ffe08a;box-shadow:0 0 0 2px #ffe08a,inset 0 1px 0 #ffffff40,0 0 10px #ffd76a88}
+.mc-tile.r-atk{--c1:var(--atk);--d1:var(--atk-d)} .mc-tile.r-block{--c1:var(--block);--d1:var(--block-d)} .mc-tile.r-heal{--c1:var(--heal);--d1:var(--heal-d)}
+.mc-tile.r-gold{--c1:var(--gold);--d1:var(--gold-d)} .mc-tile.r-util{--c1:var(--util);--d1:var(--util-d)}
+.mc-tile.r2-atk{--c2:var(--atk)} .mc-tile.r2-block{--c2:var(--block)} .mc-tile.r2-heal{--c2:var(--heal)} .mc-tile.r2-gold{--c2:var(--gold)} .mc-tile.r2-util{--c2:var(--util)}
+.mc-tile.split[data-r1]{background:var(--sheen),linear-gradient(120deg,var(--c1) 0 49.2%,#fff 49.3% 50.7%,var(--c2) 50.8% 100%)}
+.mc-tile.spent[data-r1]{filter:saturate(.35) brightness(.7)}
