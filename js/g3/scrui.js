@@ -26,6 +26,7 @@ import { campDie, campFaceList } from './campart.js';
 import { openGear } from './gearview.js';
 import * as CW from './cards.js';
 import * as CB from './cardboard.js';
+import * as MC from './magiccard.js';
 import { gameBoard } from './gameboard.js'; // pb1: the quest track as a cardboard game board (portrait phones)
 import { priceChip } from './price.js'; // the one shared price chip (Dave 26 Oct 2026)
 
@@ -1153,9 +1154,10 @@ function petSection(hero) {
 }
 // Permanent descriptions use the same rank formulas without inventing a current battle outcome.
 function campPowerText(k, level) {
+  if (k.grudge) { const bonus = k.grudge[Math.min(level, k.grudge.length - 1)] || 0; return `Attack equals damage past your block last round${bonus ? `, +${bonus}` : ''}.`; }
   if (k.riposte) return `+${E.scaleNum(k.fx.block, level)} block. Unused block strikes back as attack.`;
-  if (k.frogNeed) return effectLine(k, { level });
-  if (k.fx?.frog) return `Your target becomes a frog and cannot attack this round.${k.frogPierce?.[level] ? ` The frog takes +${k.frogPierce[level]} pierce.` : ''}`;
+  if (k.frogNeed) return effectLine({ ...k, frogPierce: Array.from({ length: level + 1 }, (_, i) => k.frogPierce?.[Math.min(i, k.frogPierce.length - 1)] || 0) }, { level });
+  if (k.fx?.frog) return `Your target becomes a frog and cannot attack this round.${k.frogPierce?.[Math.min(level, k.frogPierce.length - 1)] ? ` The frog takes +${k.frogPierce[Math.min(level, k.frogPierce.length - 1)]} pierce.` : ''}`;
   const text = effectLine(k, { level });
   return k.markGold ? `${text} Gain ${E.scaleNum(k.markGold, level)} gold if your target falls this round.` : text;
 }
@@ -1179,9 +1181,10 @@ function campPowers(hero) {
     return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
       onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('b', {}, slot), h('span', {}, D.SLOT_NAME[slot]), h('small', {}, eq?.name || 'Empty'));
   }));
-  const cards = h('div', { class: 'cp-library' }, rows.map((r) => h('button', { type: 'button', class: `cp-card tone-${toneOf(r.card)} ${r.card.id === k.id ? 'selected' : ''}`, 'data-power': r.card.id,
-    'aria-pressed': String(r.card.id === k.id), 'aria-label': `${r.card.name}: ${status(r)}. Inspect power.`, onclick: tap(() => { CP.id = r.card.id; refresh(`.cp-card[data-power="${r.card.id}"]`); }) },
-    h('span', { class: 'cp-card-icon' }, powerGlyph(r.card)), h('span', { class: 'cp-card-copy' }, h('small', {}, status(r)), h('b', {}, r.card.name), h('span', {}, shortLine(r.card, E.powerLevel(hero, r.card.id)))), h('span', { class: 'cp-card-cost' }, ico('spark'), magic(r.card)))));
+  const cards = h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(Math.min(3, rows.length)) }, 'aria-label': `${D.SLOT_NAME[CP.slot]} powers` }, rows.map(r => MC.campChoice(hero, r, {
+    glyph: powerGlyph, selected: r.card.id === k.id, status: status(r),
+    onSelect: () => { CP.id = r.card.id; refresh(`.cp-library [data-power="${r.card.id}"]`); },
+  })));
   let action, cost = null;
   if (row.gate) action = shLock(`Opens at hero level ${row.gate}`);
   else if (row.equipped) {
@@ -1191,18 +1194,16 @@ function campPowers(hero) {
     h('span', { class: 'sh-buy-l' }, `Equip in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, 'Free'));
   else { const learn = E.learnInfo(hero, k.id); cost = learn.cost; action = shBuy(hero, { label: 'Learn & equip', cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
   const when = k.kind === 'charge' ? '' : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
-  const levels = h('details', { class: 'cp-levels ww-pack' }, h('summary', {}, ico('spark'), 'All power levels'),
-    h('div', { class: 'cp-level-list' }, Array.from({ length: E.powerLevelsOf(hero) + 1 }, (_, lv) => h('div', { class: lv === level ? 'current' : '' }, h('b', {}, `Rank ${romans[lv]}${lv === level ? ' · current' : ''}`), h('span', {}, shortLine(k, lv))))));
-  return h('div', { class: 'cp-workshop' }, tabs, h('p', { class: 'cp-instruction' }, 'Choose a slot, then inspect a power. One equipped power per slot.'), cards,
-    h('section', { class: `cp-detail tone-${toneOf(k)}`, tabindex: '-1', 'aria-labelledby': 'cp-title' },
-      h('div', { class: 'cp-title-row' }, h('span', { class: 'cp-medal' }, powerGlyph(k)), h('div', {}, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]} · ${status(row)}`), h('h3', { id: 'cp-title' }, k.name))),
-      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Rank ${romans[level]}`)),
-      h('p', { class: 'cp-effect' }, campPowerText(k, level)), when ? h('p', { class: 'cp-when' }, when) : null,
-      row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · RANK ${romans[level]}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · RANK ${romans[up.next]}`), h('b', {}, shortLine(k, up.next)))) : null,
-      row.equipped && up.next ? h('p', { class: 'cp-change' }, h('small', {}, 'UPGRADE ADDS'), h('span', {}, upgradeLine(k, level))) : null,
-      !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
-      action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
-      levels));
+  return h('div', { class: 'cp-workshop' }, tabs, cards,
+    h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card and camp actions` },
+      h('div', { class: 'cp-meta' }, h('span', {}, status(row)), h('span', {}, `Rank ${romans[level]}`), h('span', {}, ico('spark'), magic(k))),
+      h('div', { class: 'cp-actions' }, action),
+      !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name}${equipped ? `, replacing ${equipped.name}` : ''}.`) : null,
+      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph })),
+      h('details', { class: 'cp-rules' }, h('summary', {}, 'Card rules'), h('p', {}, campPowerText(k, level)), when ? h('p', {}, when) : null,
+        row.equipped && up.next ? h('p', {}, `Rank ${romans[up.next]}: ${campPowerText(k, up.next)}`) : null),
+      cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold → ${hero.gold - cost} after purchase`) : null));
+
 }
 // Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
 // potions"). Refill buys what the gold allows; Go anyway leaves, and the camp does not ask again this visit.
@@ -1800,7 +1801,7 @@ function campContent(hero) {
     case 'upgrades': return upgradesOverview(hero);
     case 'gear': return gearTab({ grid: false, chips: false });
     case 'store': return h('div', { class: 'cw-storepage' }, storeTab()); // a real tab like Gear (Dave, cp5): nav, art, act bar stay
-    case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
+    case 'powers': return campPowers(hero);
     case 'hero': return h('div', { class: 'cw-supplies' }, upgradeLink(), heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
@@ -1810,7 +1811,7 @@ function campContent(hero) {
 export function camp(fromBoard) {
   const S = X.S; const hero = S.hero;
   const identity = `${hero.name}:${hero.cls}`;
-  if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; }
+  if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; S.holdScroll = false; }
   SHEET.fromBoard = fromBoard;
   if (S.tab === 'hero' || S.tab === 'gear' || S.tab === 'store') { S.campPage = S.tab; S.tab = 'forge'; }
   S.campPage ||= 'dice';
@@ -1826,7 +1827,7 @@ export function camp(fromBoard) {
   if (!hero.tips?.c_first && Coach.hintsOn()) { if (hero.gold > 0 && canBuyDie) tip = coachBox('c_first'); }
   else tip = coachBox('c_hands');
   const body = h('div', { class: `sx-tab forge ${S.campPage === 'store' ? 'store' : ''}` }, campNavigation(fromBoard), campContent(hero), !SHEET.inline && S.campPage === 'dice' ? tip : null);
-  mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''} ${SHEET.inline || S.campPage === 'upgrades' ? 'cw-focused' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
+  mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''} ${SHEET.inline || ['upgrades', 'powers'].includes(S.campPage) ? 'cw-focused' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
       X.partyBar?.(), seats, perkPanel, campStatus(hero),

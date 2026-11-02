@@ -604,3 +604,45 @@
 
 /* potion tray stays put: the empty result line keeps its height (Dave, 2 Nov) */
 .mc-util-result.is-empty{visibility:hidden}
+
+/* Presentation-only camp adapter. Battle card dimensions and controls are unchanged. */
+.mc-camp-card .mc-levels { gap: 1.2cqi; }
+.mc-camp-card .mc-lv:not(.act) { min-height: 9cqi; padding: .6cqi 2cqi; }
+.mc-camp-card .mc-lvw { font-size: 4.9cqi; gap: 1cqi; }
+.mc-camp-card .mc-cd .mc-fv { font-size: 4.7cqi; }
+.mc-camp-card .mc-cov { grid-template-columns: minmax(0,1fr) 14cqi; }
+.mc-camp-card .mc-lv.act .mc-sy { gap: 1.5cqi; padding: 3cqi 0; }
+.mc-camp-formula, .mc-camp-exchange { display: flex; align-items: center; justify-content: center; gap: 1.4cqi; flex-wrap: wrap; font: 700 7cqi/1.1 var(--font-story); color: #493628; }
+.mc-camp-formula > .ic { width: 7cqi; height: 7cqi; color: #884132; }
+.mc-camp-exchange .mc-die { width: 9cqi; height: 9cqi; }
+.mc-camp-card .mc-lv.act .mc-dot { width: 8.3cqi; height: 8.3cqi; font-size: 4.6cqi; }
+.mc-camp-card .mc-lv.act .mc-mx { font: 600 3.4cqi/1.2 var(--font-body); text-align: center; justify-content: center; letter-spacing: 0; }
+.mc-camp-card .mc-lv.act .mc-bonus { font-size: 4cqi; }
+.mc-camp-card .mc-lv.act .mc-bonus .mc-die { width: 5.5cqi; height: 5.5cqi; }
+.mc-camp-card .mc-lv.act .mc-bonus .mc-fv { font-size: 5cqi; }
+.mc-camp-card .mc-lv.act .mc-bonus .mc-fv .ic { width: 4cqi; height: 4cqi; }
+.mc-camp-card .mc-lv.act { background: #e6d6b3 url('../assets/cards/utilities/card-stock.webp') center/cover; box-shadow: inset 0 0 0 .4cqi #9b8055; }
+.mc-camp-card .mc-dot { filter: saturate(.65); }
+.mc-camp-card .mc-dot.now { outline: none; }
+/* Rank IV is already sold by camp; give its active row room without changing ranks I–III. */
+.mc-four-ranks .mc-lv:not(.act) { min-height: 9cqi; padding: .6cqi 2cqi; }
+.mc-four-ranks .mc-levels { gap: 1.2cqi; }
+.mc-four-ranks .mc-lv.act .mc-sy { gap: 1.2cqi; padding: 2cqi 0; }
+.mc-four-ranks .mc-lv.act .mc-dot { width: 8.3cqi; height: 8.3cqi; font-size: 4.6cqi; }
+/* Four printed ranks need compact single-line summaries on the covered rows. */
+:is(.mc-camp-card,.mc-four-ranks).mc-card .mc-levels .mc-lv:not(.act) { min-height: 9cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) :is(.mc-finale-cover,.mc-rain-cover) { display: flex; align-items: center; justify-content: center; gap: 1.2cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) :is(.mc-finale-self,.mc-finale-all,.mc-ranger-target,.mc-ranger-secondary) { display: flex; flex-direction: row; align-items: center; gap: .6cqi; padding: 0; border: 0; width: auto; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) :is(.mc-ranger-target,.mc-ranger-secondary) > small { font-size: 2.6cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-cover { display: flex; gap: 1cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-row { flex-direction: column; gap: .5cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-payout { min-width: 0; gap: .4cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-row > small { font-size: 2.7cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-cover .mc-fv { font-size: 3.5cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv:not(.act) .mc-luck-cover .mc-fv .ic { width: 2.9cqi; height: 2.9cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv.act :is(.mc-rain-effect,.mc-mark-effect,.mc-finale-effect,.mc-grudge-effect) { gap: 1.3cqi; }
+:is(.mc-camp-card,.mc-four-ranks) .mc-lv.act :is(.mc-ranger-secondary,.mc-finale-all) { padding-top: 1cqi; }
+.mc-four-ranks .mc-lv.act .mc-mx { font-size: 3.2cqi; }
+.mc-four-ranks .mc-lv.act .mc-luck-table .mc-luck-row { padding-bottom: .6cqi; }
+.mc-four-ranks .mc-lv.act .mc-luck-table .mc-fv { font-size: 6cqi; }
+.mc-four-ranks .mc-lv.act .mc-luck-table .mc-fv .ic { width: 5cqi; height: 5cqi; }

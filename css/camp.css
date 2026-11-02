@@ -611,3 +611,26 @@ button.cst-face{cursor:pointer}
 }
 .tw-workshop .tw-add { color: #715334; }
 .tw-workshop .tw-symbol b { font-size: .7rem; }
+
+/* CAMP-01 Powers: library choices, camp actions, then the reviewed physical card. */
+.cp-workshop .cp-slots button { min-height: 58px; padding: .3rem .2rem; gap: .15rem; border-radius: 3px; background: var(--cw-wood); }
+.cp-workshop .cp-slots button.selected { border-color: #d7b572; background: var(--cw-cloth); }
+.cp-workshop .cp-slots b { display: none; }
+.cp-workshop .cp-slots span { font-size: .76rem; }
+.cp-workshop .cp-library { display: grid; grid-template-columns: repeat(var(--cp-options,3),minmax(0,1fr)); gap: .35rem; padding: .3rem; border-radius: 3px; }
+.cp-workshop .mc-camp-choice { height: auto; min-height: 84px; gap: .2rem; padding: .3rem; }
+.cp-workshop .mc-camp-choice .mc-cost { font-size: .65rem; }
+.cp-workshop .mc-camp-choice .mc-tile-name { font-size: .72rem; text-align: center; }
+.cp-workshop .mc-choice-status { font: 500 .6rem/1.2 var(--font-body); color: inherit; opacity: .85; text-align: center; }
+.cp-workshop .cp-reviewed { display: flex; flex-direction: column; gap: .55rem; padding: 0; border: 0; background: none; box-shadow: none; }
+.cp-reviewed .cp-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .35rem; padding: 0 .25rem; font-size: .72rem; }
+.cp-reviewed .cp-actions .sh-buy { width: 100%; min-height: 48px; margin: 0; border-radius: 3px; background: #dfbc77; color: #352613; border-color: #aa874a; box-shadow: 0 3px #715531; }
+.cp-reviewed .cp-actions .sh-buy:disabled { background: #302c28; color: #c3b49c; box-shadow: none; }
+.cp-card-stage { display: flex; justify-content: center; width: 100%; }
+.cp-card-stage > .mc-card { width: min(100%,420px); min-width: 0; }
+.cp-reviewed .cp-swap-note { margin: 0; color: #d9c8a7; font-size: .74rem; }
+.cp-rules { border-top: 1px solid #9a805444; padding: .5rem; color: #d8c8ad; font-size: .85rem; line-height: 1.5; }
+.cp-rules summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.cp-rules p { margin: .4rem 0; }
+.cp-reviewed .cp-actions { display: flex; align-items: center; min-height: 54px; }
+.cp-reviewed .cp-actions > :is(.sh-done,.sh-lockline) { margin: 0; width: 100%; }
