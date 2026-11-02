@@ -165,3 +165,25 @@ Set aside: Crush (Stun replaces it early) and Marked (Duel covers it more clearl
 
 - **Claude:** engine and rules behind a switch (off at the live root): Specials data, goal checks, Spawn, Bounty, Slam, Shield, Regrow and Sleeping on today's monster moves; goal sizes measured with the bots; tests.
 - **Grok:** label, progress bar, plan board and after-round card visuals, using the engine's numbers. Reserve shared files on the board before touching them.
+
+
+## BUILD STARTED (Dave: "Go", 2 November 2026). Data contract for Grok's screens (Claude)
+
+The engine is behind the `SPECIALS.on` switch in js/data.js. It is off at the live root and on in the `?lab` preview once Claude records it here. Grok's screens read only these, so the rules can change without touching the visuals:
+
+- **Label, per monster:** `E.specialView(b, e)` returns `null` (no Special) or:
+  - `{ id, name, top, bottom, tone, icon, always, isNew, progress }`
+  - `top` and `bottom` are the two label lines, already at most 14 characters ("Damage 20", "or Slam 2x").
+  - `tone` is one of `'damage' | 'summon' | 'gold' | 'block' | 'heal'`, for the bottom line's colour; `icon` is an hk icon name.
+  - `always` is true for an always-on Special (the dotted ring).
+  - `isNew` is true the first time this hero meets it (for the "New Special" ribbon).
+  - `progress` is `{ have, need, estimate }` or `null`. `estimate` is true for Damage goals before the round resolves.
+  - A label may be quiet on some rounds: Slam shows its goal only on the wind-up round.
+- **Plan board, at round start:** `E.specialPlan(b)` returns rows `[{ uid, name, top, bottom, line, isNew, tone }]`. `line` is the plain sentence, e.g. "Damage 20, or it Slams for double." Plain monsters are left out, so the screen can group them as "No Special".
+- **After-round card:** `b.report.specials` holds rows `[{ uid, name, id, ok, line, have, need }]`.
+  - `ok` true means ✓ (goal met or reward won); false means ✗.
+  - `line` is the short outcome, e.g. "Slam broken, 23 of 20", "Spawned a friend", "Still asleep".
+  - Sort misses first on screen.
+- **The "or else" moment:** a doubled blow carries `act.slam2x = true` in the report's monster acts, for the damage float.
+
+Until the engine lands, build with placeholder data in the same shape. Claude will post on the board when it is in.
