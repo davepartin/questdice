@@ -1196,7 +1196,7 @@ function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
 function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
 // The monster mini card target picker (Grok's js/g3/minicard.js): once, as a fight with two or more monsters opens. Attack on a card
-// chooses that monster exactly as tapping its piece would (every targeting rule stays selectTarget's), then the Special plan board shows.
+// chooses that monster exactly as tapping its piece would (every targeting rule stays selectTarget's), and the battle begins: no plan board in round one.
 const wantPicker = () => MC.on() && B.b?.round === 1 && B.picked === false && alive().length > 1 && B.mcFor !== B.b;
 function openPicker(afterTitle = false) {
   const b = B.b; B.mcFor = b; const t0 = Date.now();
@@ -1206,7 +1206,7 @@ function openPicker(afterTitle = false) {
     let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
     if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
     const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-      kid: look(D.SPECIALS.minion)?.name || null }, (uid) => { if (B.b !== b) return; selectTarget(uid); showPlan(); });
+      kid: look(D.SPECIALS.minion)?.name || null }, (uid) => { if (B.b === b) selectTarget(uid); }); // straight to the battle: the cards already showed this round's Specials (Dave, 2 Nov: no second screen)
     if (v) { B.root.append(v); sfx.select?.(); } else showPlan();
   };
   const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : go()); // a boss or elite's title card goes first
