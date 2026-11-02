@@ -1,0 +1,24 @@
+/* Monster mini card target picker (js/g3/minicard.js). Off unless ?minicards / ?minicarddemo. */
+.mnc-veil { position: absolute; inset: 0; z-index: 72; background: radial-gradient(ellipse at 50% 55%, #0006, #000c); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem; font-family: var(--ui, sans-serif); }
+.mnc-head { font: 800 1.15rem var(--disp, serif); color: #ffe08a; text-shadow: 0 2px 6px #000; }
+.mnc-stack { --w: 8.6rem; --ov: 2.4rem; position: relative; width: calc(var(--n) * var(--w) - (var(--n) - 1) * var(--ov)); height: 15.4rem; }
+.mnc-card { --c: #8a7a62; position: absolute; top: 0; width: var(--w); height: 15rem; left: calc(var(--i) * (var(--w) - var(--ov))); border-radius: .9rem; padding: .35rem; box-sizing: border-box; display: flex; flex-direction: column; gap: .25rem;
+  background: linear-gradient(180deg, #2a1d14, #120b07); box-shadow: inset 0 0 0 3px var(--c), 0 8px 18px #000c; transform: translateY(.5rem) scale(.9) rotate(var(--r)); filter: brightness(.7) saturate(.8); transition: transform .25s, filter .25s, box-shadow .25s; cursor: pointer; z-index: var(--z); }
+.mnc-card.top { z-index: 9; transform: translateY(0) scale(1.04); filter: none; box-shadow: inset 0 0 0 3px var(--c), 0 0 0 2px #ffe08a, 0 0 22px #ffd96a88, 0 12px 24px #000d; }
+.mnc-top { position: relative; height: 4.6rem; flex: none; display: flex; }
+.mnc-pic { width: 100%; height: 100%; border-radius: .6rem; background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--c) 45%, #2a1d14), #0c0806 75%); display: grid; place-items: end center; overflow: hidden; }
+.mnc-pic img { width: 96%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 4px 6px #000); }
+.mnc-tag { position: absolute; top: .2rem; right: .2rem; font: 800 .5rem var(--ui, sans-serif); letter-spacing: .05em; text-transform: uppercase; color: #2a1800; background: #ffe08a; padding: .08rem .3rem; border-radius: .3rem; }
+.mnc-title { font: 800 .8rem/1.1 var(--disp, serif); color: #fff; text-align: center; background: linear-gradient(90deg, transparent, #ffffff1a, transparent); border-top: 1px solid #ffffff2a; border-bottom: 1px solid #ffffff2a; padding: .18rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mnc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .15rem; }
+.mnc-stats span { display: flex; flex-direction: column; align-items: center; background: #0007; border-radius: .3rem; padding: .1rem 0; font: 800 .72rem/1 var(--ui, sans-serif); color: #fff; }
+.mnc-stats i { font: 700 .46rem/1.2 var(--ui, sans-serif); font-style: normal; color: #cdbb98; letter-spacing: .04em; }
+.mnc-rows { display: flex; flex-direction: column; gap: .2rem; }
+.mnc-row { border-radius: .35rem; padding: .16rem .3rem; background: #ffffff0d; opacity: .5; }
+.mnc-kw { font: 600 .62rem/1.15 var(--ui, sans-serif); color: #e8d6b0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mnc-kw b { font-weight: 900; color: #fff; }
+.mnc-row.on { opacity: 1; background: color-mix(in srgb, var(--rc) 28%, #1a120c); box-shadow: inset 0 0 0 1.5px var(--rc), 0 0 10px color-mix(in srgb, var(--rc) 50%, transparent); padding: .22rem .3rem; }
+.mnc-row.on .mnc-kw b { color: color-mix(in srgb, var(--rc) 40%, #fff); }
+.mnc-goal { font: 800 .74rem/1.15 var(--ui, sans-serif); color: #fff; margin-top: .1rem; }
+.mnc-does { font: 700 .66rem/1.15 var(--ui, sans-serif); color: color-mix(in srgb, var(--rc) 45%, #fff); }
+.mnc-pick { font: 800 1rem var(--disp, serif); color: #2a1800; border: 0; border-radius: .7rem; padding: .7rem 2.2rem; background: linear-gradient(180deg, #ffe08a, #d19a2a); box-shadow: 0 4px 10px #000a; }
