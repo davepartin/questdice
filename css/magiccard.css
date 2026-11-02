@@ -601,3 +601,6 @@
 .mc-dwarf .mc-grudge-cover>.ic{width:4.5cqi;height:4.5cqi;flex:none}
 .mc-dwarf .mc-grudge-cover>span{font:600 4.2cqi/1 var(--font-body,sans-serif);color:#58452c}
 .mc-dwarf:is([data-card="bulwark"],[data-card="brace"]) .mc-lv.act .mc-fv,.mc-dwarf .mc-bonus{filter:saturate(.65);mix-blend-mode:multiply}
+
+/* potion tray stays put: the empty result line keeps its height (Dave, 2 Nov) */
+.mc-util-result.is-empty{visibility:hidden}
