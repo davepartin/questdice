@@ -480,3 +480,36 @@
 .mc-card.mc-utility.heart .mc-heart-vertical{width:auto;margin:0 auto;justify-items:center}
 .mc-card.mc-utility.potion .mc-cast-cost{background:#0b0f1acc;border:0;box-shadow:none;min-width:0;min-height:0;padding:1cqi 2cqi;border-radius:1.2cqi}
 .mc-card.mc-utility.potion .mc-cast-cost b{color:#7cf0a6;font:900 6cqi/1 var(--ui,sans-serif);letter-spacing:.02em}
+
+/* Bard review: printed stock for the card, clear separate outcomes for its songs. */
+.mc-bard .mc-lv.act{background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;border-radius:.7cqi;box-shadow:inset 0 0 0 .4cqi #8e7756,inset 0 0 3cqi #6e583320}
+.mc-bard .mc-finale-effect{display:grid;justify-items:center;gap:4cqi;width:100%}
+.mc-bard .mc-finale-self{display:flex;align-items:center;justify-content:center;gap:2cqi}
+.mc-bard .mc-finale-all{display:flex;align-items:center;justify-content:center;gap:1.5cqi;padding-top:2cqi;border-top:.2cqi solid #8c795a66}
+.mc-bard .mc-finale-all>small{font:600 4cqi/1.2 var(--font-body,sans-serif);color:#58452c}
+.mc-bard[data-card="finale"] .mc-lv.act .mc-fv{font-size:7cqi}
+.mc-bard[data-card="finale"] .mc-lv.act .mc-fv .ic{width:6cqi;height:6cqi}
+.mc-bard .mc-finale-cover{display:grid;gap:.7cqi;width:100%}
+.mc-bard .mc-finale-cover .mc-finale-self{gap:1.5cqi}
+.mc-bard .mc-finale-cover .mc-finale-all{gap:1cqi;padding-top:.7cqi}
+.mc-bard .mc-finale-cover .mc-finale-all>small{font-size:3.5cqi}
+.mc-bard[data-card="finale"] .mc-cd .mc-fv{font-size:4.2cqi}
+.mc-bard[data-card="finale"] .mc-cd .mc-fv .ic{width:3.6cqi;height:3.6cqi}
+.mc-bard[data-card="finale"] .mc-lv:not(.act){min-height:18cqi}
+.mc-bard[data-card="luckyverse"] .mc-lv:not(.act){min-height:21cqi}
+.mc-bard .mc-luck-cover{grid-template-columns:1fr;gap:1cqi;width:100%}
+.mc-bard .mc-luck-cover .mc-luck-row{flex-direction:row;justify-content:space-between;gap:1.2cqi}
+.mc-bard .mc-luck-cover .mc-luck-row>small{font-size:4cqi}
+.mc-bard .mc-luck-cover .mc-luck-payout{min-width:26cqi;justify-content:flex-start;gap:1cqi}
+.mc-bard[data-card="luckyverse"] .mc-cd .mc-fv{font-size:4.2cqi;gap:.4cqi}
+.mc-bard[data-card="luckyverse"] .mc-cd .mc-fv .ic{width:3.7cqi;height:3.7cqi}
+.mc-bard .mc-luck-table{gap:1.5cqi;padding:0 1.5cqi}
+.mc-bard .mc-luck-table .mc-luck-row{padding-bottom:1cqi;border-bottom:.2cqi solid #8c795a44}
+.mc-bard .mc-luck-table .mc-luck-row:last-child{border:0;padding-bottom:0}
+.mc-bard .mc-luck-table .mc-luck-row>small{font-size:4.6cqi}
+.mc-bard[data-card="discord"] .mc-lv.act .mc-fv{gap:1cqi}
+.mc-bard[data-card="discord"] .mc-lv.act .mc-fv small{font-size:4cqi}
+
+.mc-bard .mc-cov .mc-fv{filter:saturate(.65);mix-blend-mode:multiply}
+.mc-bard .mc-luck-table,.mc-bard .mc-finale-effect{mix-blend-mode:multiply}
+.mc-bard .mc-lv:not(.act){background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;box-shadow:inset 0 0 0 .35cqi #8e7756;border-radius:.7cqi}

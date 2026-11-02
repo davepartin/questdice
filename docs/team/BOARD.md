@@ -812,3 +812,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 2 November 2026, Director: **RESERVATION** Dave requested Bard next in the hero-card review. Review all six Bard magic cards against the Knight shell, refine their readable effect/layout presentation and any card-specific artwork gaps; preserve mechanics/IDs/costs/saves and common utilities. Scope js/g3/magiccard.js Bard presentation, scoped css/magiccard.css, Bard art/evidence/browser checks and stamps.
+
+
+2 November 2026, Director: **CHECKED** all six Bard cards, build 20261102bd2. Dedicated art for Finale/Discord/Hymn of Gold, paper rank panels, readable Finale/Lucky Verse outcomes/covers and Mending All heroes tag. Knight controls/geometry preserved; no mechanics/save changes. All 527 tests, 72 rank/phone layouts and actual Bard battle checks pass. Evidence: docs/team/tasks/magic-template/bard/README.md. Also verified prior Counterstrike build 20261101cs1 now live.

@@ -1589,3 +1589,8 @@ Removed decorative floating initials from the shared story-card renderer and del
 ### 1 November 2026 — Knight Counterstrike name (20261101cs1)
 
 Dave approved renaming Riposte to Counterstrike. Updated the shared display name only, retaining the riposte ID, cost, effects and save compatibility. All 527 tests pass. Actual Knight card/grid checked at 390x844, 375x667 and 430x932; labels fit and no page errors. Preserved the completed gu3 utility changes before stamping. Evidence: docs/team/tasks/counterstrike/README.md.
+
+
+### 2 November 2026 — six-card Bard review (20261102bd2)
+
+Reviewed every Bard magic card against the Knight template. Added dedicated Finale/Discord/Hymn of Gold paintings, natural paper rank panels, clearer Finale target/all-enemy grouping, larger stacked Lucky Verse upgrade payouts and an All heroes tag for Mending Song. Existing controls, costs, values, saves and other heroes are unchanged. All 527 game tests, 72 rank/phone fixtures and actual Bard battle checks pass. Evidence: docs/team/tasks/magic-template/bard/README.md.
