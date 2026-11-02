@@ -818,3 +818,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 2 November 2026, Director: **DEPLOYED** full Bard review, commit d867f9d, build 20261102bd2. Live version.json and all three new paintings verified by HTTPS (200). All 527 tests, 72 rank/phone layouts, final paper details and real Bard battle checks pass. Six rendered Bard cards inspected. Reservation released.
+
+
+2 November 2026, Director: **RESERVATION** next hero review: all seven Wizard cards. Distinct art for four shared alternatives, printed paper rank panels, readable Meteor growth/Polymorph upgrades, preserve engine effects/IDs/costs/saves and other heroes. Scope js/g3/magiccard.js Wizard presentation, scoped css/magiccard.css, art, browser checks/evidence and stamps.
