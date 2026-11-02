@@ -1,0 +1,20 @@
+PASS 2x3 grid: Anvil Strike, Grudge, Stonehide; Potion, Heal, Heart change anvil,grudge,stonehide,u:bigheal,u:heal,u:heart
+PASS Magic sheet is full screen with no scroll {"sh":844,"vh":844,"sheet":844}
+shot /workspace/dwarf-real-final/md1-panel_390x844.png
+PASS Anvil Strike card: shared template, 1 blue d8 + 5 diamond spaces, −1 / +1 / Roll1, 1 of 6, gold-on-8 line {"a0":{"spaces":5,"dice":1,"btns":["−1","+1","Roll1"],"fill":"#3aa4ff","gold":true},"lbl":"1 of 6 block dice"}
+PASS two taps of +▲1 fill two more spaces; Roll ▲3; 3 of 6 {"dice":3,"roll":"Roll3","lbl":"3 of 6 block dice"}
+PASS Anvil Roll button blue with dark text rgb(58, 164, 255) / rgb(6, 26, 46)
+PASS Stable artwork, corner cost, reserved-magic preview 
+shot /workspace/dwarf-real-final/md1-anvil-card_390x844.png
+shot /workspace/dwarf-real-final/md1-anvil-rolling_390x844.png
+shot /workspace/dwarf-real-final/md1-anvil-after-roll_390x844.png
+PASS Roll: power-dice reveal plays, magic drops by 3, block rises by the dice, 3 gold per 8 {"s0":{"magic":12,"atk":0,"block":0,"splash":0,"gold":0,"charge":0},"s1":{"magic":9,"atk":0,"block":12,"splash":0,"gold":0,"charge":0},"rolls":[6,2,4]}
+shot /workspace/dwarf-real-final/md1-grudge-card_390x844.png
+PASS Grudge card: template shows 7 damage past block, Cast ▲2 red with white text {"gtxt":"I+77past block last round","gb":"Cast2 rgb(255, 59, 59) / rgb(255, 255, 255)"}
+shot /workspace/dwarf-real-final/md1-grudge-after_390x844.png
+PASS Grudge: 2 magic, +7 attack on top, then used this round {"g0":{"magic":9,"atk":0,"block":12,"splash":0,"gold":0,"charge":0},"g1":{"magic":7,"atk":7,"block":12,"splash":0,"gold":0,"charge":0},"gDis":true}
+PASS Stonehide +▲1 stores a charge for 1 magic {"v0":{"magic":7,"atk":7,"block":12,"splash":0,"gold":0,"charge":0},"v1":{"magic":6,"atk":7,"block":12,"splash":0,"gold":0,"charge":1}}
+shot /workspace/dwarf-real-final/md1-stonehide-card_390x844.png
+PASS Stonehide Use 2 (blue, dark text) adds +12 block on top {"rel":"Use 2 rgb(58, 164, 255) / rgb(6, 26, 46)","v1b":{"magic":6,"atk":7,"block":12,"splash":0,"gold":0,"charge":2},"v2":{"magic":6,"atk":7,"block":24,"splash":0,"gold":0,"charge":0}}
+PASS no page errors 
+ALL PASS

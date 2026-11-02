@@ -1,0 +1,3 @@
+PASS grudge 375 667 rank 1
+PASS grudge 375 667 rank 2
+PASS grudge 375 667 rank 3

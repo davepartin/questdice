@@ -1604,3 +1604,10 @@ Reviewed all Wizard magic cards after Knight/Bard. Added distinct Meteor/Magic M
 ### 2 November 2026 — seven-card Ranger review (20261102rn2)
 
 Reviewed all Ranger magic cards. Four distinct paintings replace shared art; natural paper rank panels and printed fixed effects match the recent hero reviews. Hunter's Mark separates immediate Pierce from conditional same-round gold; Rain of Arrows separates target Pierce and all-enemy attack in its panel and covers. Rules, numbers, costs, IDs and saves unchanged. All 527 tests, 84 phone/rank fixtures and real Ranger battle checks pass. Evidence: docs/team/tasks/magic-template/ranger/README.md.
+
+
+### 2 November 2026 — seven-card Dwarf review (20261102df2)
+
+Completed the hero review sequence with Dwarf: four distinct paintings, natural paper rank panels, separate Avalanche area damage and clearer Grudge damage/rank-bonus formulas. Fixed effects print as ink; active dice, tracks and controls remain distinct. Rules, numbers, IDs, costs and saves unchanged. All 527 tests, 84 phone/rank fixtures, Grudge zero/damaged cases, Bard Finale regression and actual Dwarf battle checks pass. Evidence: docs/team/tasks/magic-template/dwarf/README.md.
+
+Integrated the concurrently published ptc1 role-colored menu tiles before the final Dwarf stamp; retained both changes and repeated the game/rank checks.

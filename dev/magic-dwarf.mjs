@@ -13,17 +13,17 @@ await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStor
 await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low`); await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
 const pump = (s) => p.evaluate(async (s) => { for (let i = 0; i < s * 20; i++) { window.QD.world.stage.simulate(0.05, 0.033); await new Promise((r) => setTimeout(r, 0)); } }, s);
 await p.evaluate(async (n) => { const { S, E, showBoard } = window.QD; const hh = E.newHero({ name: n, cls: 'dwarf', seed: 5 }); hh.dice = null; hh.level = 9; S.hero = hh; S.company = { members: [hh] }; const SV = await import('./js/save.js'); if (!SV.heroExists(n)) await SV.createSave(hh, 'testpass'); showBoard(); window.QD.startQuest({ ...E.questsFor(hh)[0], enemies: ['goblin'], kind: 'boss' }); }, 'Md1Dwarf');
-for (let i = 0; i < 120; i++) { await pump(0.5); if (await p.evaluate(() => window.QD.B3?.battleState?.bw && !window.QD.B3.battleState.busy)) break; }
+for (let i = 0; i < 180; i++) { await pump(0.5); if (await p.evaluate(() => { const B=window.QD.B3?.battleState;return B?.bw&&B.hud?.place&&!B.starting&&!B.busy; })) break; }
 const st = () => p.evaluate(() => { const b = window.QD.B3.battleState.b; return { magic: b.magic, atk: b.mods.atk || 0, block: b.mods.block || 0, splash: b.mods.splash || 0, gold: b.goldEarned || 0, charge: b.charge?.stonehide || 0 }; });
 const fresh = () => p.evaluate(() => { const { B3, E, S } = window.QD; const B = B3.battleState; B.b.board = E.rollBoard(S.hero, E.makeRng(5)); B.b.phase = 'shape'; B.b.magic = 12; B.b.usedRound = {}; B.b.mods.atk = 0; B.b.mods.block = 0; B.b.mods.splash = 0; B.busy = false; B3.renderShape(); });
 const settle = async () => { for (let i = 0; i < 40; i++) { await pump(0.3); const busy = await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); return window.QD.B3.battleState.busy; }); if (!busy) break; } await pump(0.3); };
 const pick = async (id) => { for (let i = 0; i < 10; i++) { await p.waitForTimeout(400); await p.evaluate(() => { const ok = document.querySelector('.dr-ok'); if (ok && !ok.disabled) ok.click(); }); await p.locator(`.b3-sheet.open .mc-tile[data-power="${id}"]`).click(); await pump(0.4); if (await p.evaluate((id) => !!document.querySelector(`.mc-card[data-card="${id}"]`), id)) return; } };
 const clear = () => p.evaluate(() => document.querySelectorAll('#toast > *, .toast, .toast17, .pw-pop').forEach((t) => t.remove()));
 const shot = async (n) => { await clear(); await p.screenshot({ path: `${OUT}/${n}_390x844.png` }); console.log('shot', `${OUT}/${n}_390x844.png`); };
-await fresh(); await p.locator('.b3-powers').first().click(); await pump(1.2);
+await fresh(); await p.locator('.b3-powers:not(.b3-team)').first().click(); await pump(1.2);
 const tiles = await p.evaluate(() => [...document.querySelectorAll('.b3-sheet.open .mc-tile')].map((t) => t.dataset.power));
 check('2x3 grid: Anvil Strike, Grudge, Stonehide; Potion, Heal, Heart change', tiles.join() === 'anvil,grudge,stonehide,u:bigheal,u:heal,u:heart', tiles.join());
-await p.waitForTimeout(900); const fs1 = await p.evaluate(() => ({ sh: document.scrollingElement.scrollHeight, vh: innerHeight, sheet: document.querySelector('.b3-sheet.open')?.getBoundingClientRect().height }));
+await p.waitForFunction(()=>Math.abs(document.querySelector('.b3-sheet.open').getBoundingClientRect().height-innerHeight)<2); const fs1 = await p.evaluate(() => ({ sh: document.scrollingElement.scrollHeight, vh: innerHeight, sheet: document.querySelector('.b3-sheet.open')?.getBoundingClientRect().height }));
 check('Magic sheet is full screen with no scroll', fs1.sh === fs1.vh && Math.abs(fs1.sheet - fs1.vh) < 2, JSON.stringify(fs1));
 await shot('md1-panel');
 await pick('anvil');
@@ -45,7 +45,7 @@ check('Roll: power-dice reveal plays, magic drops by 3, block rises by the dice,
 await settle(); await p.evaluate(() => { window.QD.B3.battleState.b.lastHurt = 7; window.QD.B3.renderShape(); }); await pump(0.3); await pick('grudge');
 const g0 = await st(); const gtxt = await p.evaluate(() => document.querySelector('.mc-card .mc-lv.act')?.textContent); await shot('md1-grudge-card');
 const gb = await p.evaluate(() => { const b = document.querySelector('.mc-ctl .mc-use.go'); const cs = getComputedStyle(b); return b.textContent + ' ' + cs.backgroundColor + ' / ' + cs.color; });
-check('Grudge card: template shows 7 damage past block, Cast ▲2 red with white text', /7 damage past block/.test(gtxt) && /\+7/.test(gtxt) && /^Cast2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(gb), JSON.stringify({ gtxt, gb }));
+check('Grudge card: template shows 7 damage past block, Cast ▲2 red with white text', await p.evaluate(()=>document.querySelector('.mc-grudge-source>b')?.textContent==='7'&&document.querySelector('.mc-grudge-effect .fx-atk b')?.textContent==='+7') && /^Cast2 rgb\(255, 59, 59\) \/ rgb\(255, 255, 255\)$/.test(gb), JSON.stringify({ gtxt, gb }));
 await p.locator('.mc-ctl .mc-use.go').click(); for (let i = 0; i < 20; i++) { await pump(0.3); if (await p.evaluate(() => document.querySelector('.dr-card.done'))) break; }
 await shot('md1-grudge-after'); const g1 = await st(); await settle(); await pick('grudge');
 const gDis = await p.evaluate(() => document.querySelector('.mc-ctl .mc-use.go')?.disabled);

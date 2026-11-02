@@ -573,3 +573,31 @@
 .mc-tile.r2-atk{--c2:var(--atk)} .mc-tile.r2-block{--c2:var(--block)} .mc-tile.r2-heal{--c2:var(--heal)} .mc-tile.r2-gold{--c2:var(--gold)} .mc-tile.r2-util{--c2:var(--util)}
 .mc-tile.split[data-r1]{background:var(--sheen),linear-gradient(120deg,var(--c1) 0 49.2%,#fff 49.3% 50.7%,var(--c2) 50.8% 100%)}
 .mc-tile.spent[data-r1]{filter:saturate(.35) brightness(.7)}
+
+
+/* Dwarf review: paper stock, damage-derived Grudge and separate area damage. */
+.mc-dwarf .mc-lv{background:#d8cdb5 url(../assets/cards/utilities/card-stock.webp) center/100cqi 100cqi;box-shadow:inset 0 0 0 .4cqi #8e7756,inset 0 0 3cqi #6e583320;border-radius:.7cqi}
+.mc-dwarf .mc-cov .mc-fv{filter:saturate(.65);mix-blend-mode:multiply}
+.mc-dwarf .mc-finale-effect{display:grid;justify-items:center;gap:3cqi;width:100%;mix-blend-mode:multiply}
+.mc-dwarf .mc-finale-self{display:flex;align-items:center;justify-content:center;gap:3cqi}
+.mc-dwarf .mc-finale-all{display:flex;align-items:center;justify-content:center;gap:1.5cqi;padding-top:2cqi;border-top:.2cqi solid #8c795a66}
+.mc-dwarf .mc-finale-all>small{font:600 4cqi/1.2 var(--font-body,sans-serif);color:#58452c}
+.mc-dwarf[data-card="avalanche"] .mc-lv.act .mc-fv{font-size:7.5cqi}
+.mc-dwarf[data-card="avalanche"] .mc-lv.act .mc-fv .ic{width:6cqi;height:6cqi}
+.mc-dwarf .mc-finale-cover{display:grid;gap:.7cqi;width:100%}
+.mc-dwarf .mc-finale-cover .mc-finale-self{gap:2cqi}
+.mc-dwarf .mc-finale-cover .mc-finale-all{gap:1cqi;padding-top:.7cqi}
+.mc-dwarf .mc-finale-cover .mc-finale-all>small{font-size:3.5cqi}
+.mc-dwarf[data-card="avalanche"] .mc-cd .mc-fv{font-size:4.8cqi}
+.mc-dwarf[data-card="avalanche"] .mc-cd .mc-fv .ic{width:4cqi;height:4cqi}
+.mc-dwarf[data-card="avalanche"] .mc-lv:not(.act){min-height:18cqi}
+.mc-dwarf .mc-grudge-effect{display:grid;justify-items:center;gap:3cqi;width:100%}
+.mc-dwarf .mc-grudge-effect .mc-fv{font-size:12cqi}
+.mc-dwarf .mc-grudge-effect .mc-fv>.ic{width:10cqi;height:10cqi}
+.mc-dwarf .mc-grudge-source{display:flex;align-items:center;justify-content:center;gap:1.4cqi;color:#58452c}
+.mc-dwarf .mc-grudge-source>b{font:700 6cqi/1 var(--font-number,sans-serif)}
+.mc-dwarf .mc-grudge-source>small,.mc-dwarf .mc-grudge-rank{font:600 3.8cqi/1.2 var(--font-body,sans-serif);color:#58452c}
+.mc-dwarf .mc-grudge-cover{display:flex;align-items:center;justify-content:center;gap:1cqi;color:#793a2d;font:700 4.8cqi/1 var(--font-number,sans-serif);mix-blend-mode:multiply}
+.mc-dwarf .mc-grudge-cover>.ic{width:4.5cqi;height:4.5cqi;flex:none}
+.mc-dwarf .mc-grudge-cover>span{font:600 4.2cqi/1 var(--font-body,sans-serif);color:#58452c}
+.mc-dwarf:is([data-card="bulwark"],[data-card="brace"]) .mc-lv.act .mc-fv,.mc-dwarf .mc-bonus{filter:saturate(.65);mix-blend-mode:multiply}
