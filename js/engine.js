@@ -775,10 +775,7 @@ export function assignSpecials(b) {
   const r = makeRng(hashSeed(c.seed || 1, c.act || 1, q.step ?? c.step ?? 1, q.id || q.name || kind, 'specials'));
   const ids = pickSpecials(c.act || 1, q.step ?? c.step ?? 1, kind, b.enemies.length, r);
   b.enemies.forEach((e, i) => { if (ids[i]) e.special = makeSpecial(b, ids[i]); });
-  if (kind === 'boss' && (c.act || 1) <= 1 && b.enemies.length === 1) { // the Act I boss brings a small friend who calls for help: kill the adds, or keep on the boss?
-    const like = b.enemies[0]; const m = spawnEnemy(SPECIALS.minion, { hpMult: (like.hpMult || 1) * 0.6, flat: like.flat - (like.teamFlat || 0), teamFlat: like.teamFlat || 0, rewardMult: like.rewardMult, edge: like.edge, campaign: c }, b.rng);
-    m.special = { ...makeSpecial(b, 'spawn'), max: SPECIALS.bossMinionSpawns }; b.enemies.push(m); // it calls for help once, not three times
-  }
+
 }
 // The two label lines, at most 14 characters each (Grok's rule for the narrowest phone). Null when the monster has no Special or it is quiet this round.
 function labelOf(e) {

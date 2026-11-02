@@ -18,8 +18,8 @@ check('the boss battle opens', await ready());
 const data = () => p.evaluate(async () => { const E = await import('./js/engine.js'); const B = window.QD.B3.battleState; return { on: (await import('./js/data.js')).SPECIALS.on, foes: B.b.enemies.map((e) => ({ name: e.name, hp: e.hp, special: e.special?.id || null, view: E.specialView(B.b, e) })), plan: E.specialPlan(B.b), last: B.b.report?.specials || null, round: B.b.round }; });
 let d = await data(); console.log(JSON.stringify(d));
 check('Specials are on in ?lab', d.on === true);
-check('the Act I boss carries Regrow and brings a Spawn minion', d.foes[0]?.special === 'regrow' && d.foes.some((f) => f.special === 'spawn'), JSON.stringify(d.foes.map((f) => f.special)));
-check('the plan board has a line for each Special', d.plan.length >= 2 && d.plan.every((r) => r.line && r.top && r.bottom), JSON.stringify(d.plan));
+check('the Act I boss carries Regrow', d.foes[0]?.special === 'regrow', JSON.stringify(d.foes.map((f) => f.special)));
+check('the plan board has a line for each Special', d.plan.length >= 1 && d.plan.every((r) => r.line && r.top && r.bottom), JSON.stringify(d.plan));
 await p.screenshot({ path: `${OUT}/smoke-boss-round1_390x844.png` });
 for (let round = 0; round < 2; round++) {
   await p.evaluate(() => { const B = window.QD.B3.battleState; if (B.picked === false) [...B.fb.foes.values()][0]?.el.click(); });

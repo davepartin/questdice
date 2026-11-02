@@ -10,7 +10,7 @@ const cells = {}; const spec = {}; const cell = (k) => (cells[k] ||= { n: 0, win
 function play(hero, q, seed, on) {
   D.SPECIALS.on = on; S.PLAY.style = 'wise'; S.setScore(null);
   const b = E.newBattle(structuredClone(hero), q, E.makeRng(seed), 1); const r = E.makeRng(seed + 1); let low = 1, g = 0;
-  while (!b.outcome && g++ < 80) { S.botRound(b, r); low = Math.min(low, Math.max(0, b.hp) / b.maxHp); for (const x of b.report?.specials || []) { const c = (spec[x.id] ||= { n: 0, ok: 0 }); c.n++; c.ok += x.ok ? 1 : 0; } }
+  while (!b.outcome && g++ < 80) { S.botRound(b, r); low = Math.min(low, Math.max(0, b.hp) / b.maxHp); for (const x of b.report?.specials || []) { if (x.id === 'slam' && x.need == null) continue; /* the Slam landing is the miss already counted on its wind-up */ const c = (spec[x.id] ||= { n: 0, ok: 0 }); c.n++; c.ok += x.ok ? 1 : 0; } }
   D.SPECIALS.on = false; return { win: b.outcome === 'victory', rounds: b.round, low };
 }
 for (const cls of classes) for (let s = 0; s < N; s++) {

@@ -18,7 +18,7 @@ test('off: no monster gets a Special and nothing reads one', () => {
   assert.ok(b.enemies.every((e) => !e.special)); assert.deepEqual(E.specialPlan(b), []); assert.equal(E.specialView(b, b.enemies[0]), null);
 });
 
-test('assignment: Act I steps 1-2 plain, step 3 one soft Special, step 4 a Slam, the elite a Shield, the boss Regrow plus a Spawn minion', () => {
+test('assignment: Act I steps 1-2 plain, step 3 one soft Special, step 4 a Slam, the elite a Shield, the boss Regrow (alone)', () => {
   D.SPECIALS.on = true; const r = () => 0.3;
   assert.deepEqual(E.pickSpecials(1, 1, 'battle', 3, r), [null, null, null]);
   assert.equal(E.pickSpecials(1, 3, 'battle', 3, r).filter(Boolean).length, 1);
@@ -26,7 +26,7 @@ test('assignment: Act I steps 1-2 plain, step 3 one soft Special, step 4 a Slam,
   assert.ok(E.pickSpecials(1, 4, 'battle', 2, r).includes('slam'));
   assert.deepEqual(E.pickSpecials(1, 5, 'elite', 1, r), ['shield']);
   const boss = fight(['goblinking'], { step: 10, kind: 'boss' });
-  assert.equal(boss.enemies[0].special?.id, 'regrow'); assert.equal(boss.enemies.length, 2); assert.equal(boss.enemies[1].special?.id, 'spawn');
+  assert.equal(boss.enemies[0].special?.id, 'regrow'); assert.equal(boss.enemies.length, 1, 'no extra helper: measured, it cost 6 points of wins by its own blows');
   for (let s = 0; s < 40; s++) { const ids = E.pickSpecials(1, 6, 'battle', 3, () => (s * 0.37) % 1); assert.ok(ids.filter((x) => x && !E.specialInfo(x).soft).length <= 1, 'at most one punishing Special a fight in Act I'); }
 });
 
