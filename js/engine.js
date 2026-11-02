@@ -864,7 +864,7 @@ function settleSpecials(b, rep, { goldTo } = {}) {
       case 'regrow':
         if (dead) break;
         if (dmg >= sp.goal) row(true, `It couldn't regrow. ${dmg} of ${sp.goal}.`, dmg, sp.goal);
-        else { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + sp.goal); row(false, `It regrew ${e.hp - before}. ${dmg} of ${sp.goal}.`, dmg, sp.goal); }
+        else { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + sp.goal); row(false, e.hp > before ? `It regrew ${e.hp - before}. ${dmg} of ${sp.goal}.` : `Unhurt, nothing to regrow. ${dmg} of ${sp.goal}.`, dmg, sp.goal); }
         break;
       case 'sleeping':
         if (sp.awake) break;

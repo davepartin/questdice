@@ -24,7 +24,9 @@ await p.screenshot({ path: `${OUT}/smoke-boss-round1_390x844.png` });
 for (let round = 0; round < 2; round++) {
   await p.evaluate(() => { const B = window.QD.B3.battleState; if (B.picked === false) [...B.fb.foes.values()][0]?.el.click(); });
   await p.evaluate(() => document.querySelector('#b3-roll')?.click()); for (let i = 0; i < 40; i++) { await pump(0.3); await p.waitForTimeout(200); if (await p.evaluate(() => !window.QD.B3.battleState.busy)) break; }
+  console.log('before lock', JSON.stringify(await p.evaluate(() => { const B = window.QD.B3.battleState; return { phase: B.b.phase, busy: B.busy, picked: B.picked, target: B.target, lock: !!document.querySelector('#b3-lock'), lockDisabled: document.querySelector('#b3-lock')?.disabled }; })));
   await p.evaluate(() => document.querySelector('#b3-lock')?.click()); await ready();
+  console.log('after round', JSON.stringify(await p.evaluate(() => { const r = window.QD.B3.battleState.b.report; return { round: window.QD.B3.battleState.b.round, dealt: r?.dealt, target: r?.targetUid, atk: r?.T?.atk, guarded: r?.guarded, early: r?.early, heroDown: r?.heroDown }; })));
 }
 d = await data(); console.log(JSON.stringify(d));
 check('two rounds played and the round report carries a line per Special', d.round >= 3 && Array.isArray(d.last) && d.last.length >= 1 && d.last.every((r) => typeof r.ok === 'boolean' && r.line), JSON.stringify(d.last));
