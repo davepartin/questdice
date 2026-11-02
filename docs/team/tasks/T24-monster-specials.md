@@ -123,3 +123,45 @@ From Grok Bot: Dave asked me to check the board (Nov 2, 9:13 AM CT). Ideas only,
 **Pairing for the Act I boss.** Regrow plus a Spawn minion. Do you kill the adds or keep pressure on the boss? That's a clear question without needing to explain a new rule.
 
 — Crockpot (Grok Bot)
+
+
+## AGREED FIRST SET (Dave: no Director review needed; Claude and Grok take the best ideas). 2 November 2026, Claude
+
+**Status: design agreed, not built.**
+
+### Specials
+
+| When | Special | Top: goal | Bottom: or else | Kind |
+|---|---|---|---|---|
+| Act I, step 3 on | **Spawn** | Damage 1 | or Spawn 1 | soft |
+| Act I, step 3 on | **Bounty** | Kill now | +8 gold | reward, no punishment |
+| Act I, step 4 on | **Slam** | Damage 20 | or Slam 2x | punishing |
+| Act I elite (step 5) | **Shield** | Attack 25 | or Blocks 12 | punishing |
+| Act I boss (step 10) | **Regrow** + a Spawn minion | Damage 8 | or Heals 8 | punishing + soft |
+| End of Act I / Act II opener | **Sleeping** | Solo damage 40 | or Wakes: 2x | punishing (Dave's idea) |
+| Act II on | **Stun** (Grok's "Brace", renamed: the Dwarf already has a Brace power), **Thief** | Block 12 / Kill in 2 | or Lose 1 die / or Steals 10 gold | |
+| Act III, teams | **Split**, **Leader**, **Duel** | as listed above | | |
+
+Set aside: Crush (Stun replaces it early) and Marked (Duel covers it more clearly).
+
+### Rules
+
+- One Special per monster.
+- At most one punishing Special per round in Act I; pair it with a soft one (Spawn or Bounty).
+- Every monster still has to be defeated.
+- Goals are sized from measured rolls: Act I team goals at about 70% of the party's typical round, and solo goals from the single hero.
+- Label lines are at most 14 characters; check the longest, "Solo damage 40".
+- Every bottom line carries its icon as well as its colour.
+
+### Screens (Grok)
+
+- **Label:** two lines under the miniature. The top line is bold white. The bottom line takes the colour of its cost (red damage, purple summons, amber gold) plus its icon. A dotted ring marks an always-on Special.
+- **Progress bar behind the top line**, for example "14/20". It fills live while you reroll for Attack goals. For Damage goals it shows an estimate, because the monster's defence is rolled only after you lock in. At the goal it turns gold, the bottom line is struck through, and a "Broken" stamp appears.
+- **Round-start plan board:** at most 3 rows (plain monsters grouped as "No Special"), a "New Special" ribbon with one sentence on first sight, and one Fight button. Fits 375x548 without scrolling.
+- **After-round card:** one ✓ or ✗ line per monster, misses first. The long data page goes; Recap keeps the dice detail.
+- **"Or else" shown as it happens**, for example "Slam 2x" on the damage float.
+
+### Split of work, once Dave says go
+
+- **Claude:** engine and rules behind a switch (off at the live root): Specials data, goal checks, Spawn, Bounty, Slam, Shield, Regrow and Sleeping on today's monster moves; goal sizes measured with the bots; tests.
+- **Grok:** label, progress bar, plan board and after-round card visuals, using the engine's numbers. Reserve shared files on the board before touching them.
