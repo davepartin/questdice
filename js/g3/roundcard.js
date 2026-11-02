@@ -6,6 +6,7 @@
 // Built from the engine's round report only (nothing here changes a rule).
 import { h } from '../dom.js';
 import * as HK from './hudkit.js';
+import * as SP from './specials.js';
 
 const foe = (b, uid) => b?.enemies?.find((e) => e.uid === uid);
 const fname = (b, uid) => foe(b, uid)?.name || 'Monster';
@@ -157,6 +158,7 @@ export function roundCard(rep, b, { onClose, closeLabel = '✕ Close', title = '
   const el = h('section', { class: 'rc', role: 'dialog', 'aria-label': `Round ${rep.round} result`, onclick: (e) => { if (!e.target.closest('.rc-body a')) onClose?.(); } },
     h('header', { class: 'rc-head' }, h('b', {}, `Round ${rep.round}`), h('span', {}, title || (near ? 'a monster was quick' : '')), h('button', { type: 'button', class: `sh-x sh-cancel rc-close ${title ? 'rc-go' : ''}`, 'aria-label': title ? closeLabel : 'Close the round summary', onclick: (e) => { e.stopPropagation(); onClose?.(); } }, closeLabel)),
     h('div', { class: 'rc-body' },
+      SP.outcomeEl(SP.reportOf(rep, b)), // T24: one line per Special, misses first (nothing while Specials are off)
       h('div', { class: 'rc-sec you' }, h('div', { class: 'rc-bar' }, HK.icon('atk'), rep.party ? 'Your company strikes' : 'Your strike'), h('div', { class: 'rc-rows' }, c.mine.length ? c.mine : [note('meh', 'No strike this round.')])),
       h('div', { class: 'rc-sec foes' }, h('div', { class: 'rc-bar' }, HK.icon('slam'), 'The monsters strike back'), h('div', { class: 'rc-rows' }, c.theirs.length ? c.theirs : [note('good', 'Nothing hit back.')], h('div', { class: 'rc-foot' }, c.tail, c.youBox)))),
   );

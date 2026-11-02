@@ -7,6 +7,7 @@
 import { h, reduced } from '../dom.js';
 import * as D from '../data.js';
 import * as HK from './hudkit.js';
+import * as SP from './specials.js';
 import * as E from '../engine.js';
 import { monsterOf } from '../campaigns.js';
 
@@ -253,7 +254,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const def = h('i', { class: 'fb-def' });
     const hp = h('i', { class: 'fb-hp' }, h('i', { class: 'fb-hp-ghost' }), h('i', { class: 'fb-hp-fill' }), hpNum, def);
     const intent = h('div', { class: 'fb-intent' });
-    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent), name, hp, hpNum, intent, def };
+    const special = h('div', { class: 'fb-special' }); // T24: the Special's two-line label (js/g3/specials.js); empty while Specials are off
+    return { el: h('div', { class: 'fb-card foe' }, name, hp, intent, special), name, hp, hpNum, intent, def, special };
   };
   fb.addFoe = (e) => {
     const def = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {};
@@ -397,6 +399,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     pc.slot.classList.toggle('dead', dead); pc.slot.classList.toggle('raged', !!e.raged);
     pc.el.classList.toggle('targeted', targeted && !dead); pc.slot.classList.toggle('targeted', targeted && !dead);
     // the plaque's third line is the whole plan: the move's name in one word, and the dice it will roll (red = it hits, blue = it guards)
+    const sv = !dead ? SP.viewOf(e) : null; const ss = SP.labelSig(sv); // T24 Special label (null when off)
+    if (c.ssig !== ss) { c.ssig = ss; c.special.replaceChildren(...(sv ? [SP.labelEl(sv)] : [])); pc.slot.classList.toggle('has-special', !!sv); }
     const v = !dead && intents ? HK.intentView(e) : null;
     const plan = v ? planOf(e, v) : null;
     const sig = plan ? [plan.tone, plan.word, plan.dice, plan.icon].join('|') : '';
