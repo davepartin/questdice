@@ -827,3 +827,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 2 November 2026, Director: **DEPLOYED** seven-card Wizard review, commit 23d5237, build 20261102wz2. Live version.json and four new paintings verified by HTTPS (200). All 527 tests, 84 rank/phone layouts, final detail/round-eight checks and real Wizard battle checks pass. Seven rendered cards inspected. Reservation released.
+
+
+2 November 2026, Director: **RESERVATION** next hero review: all seven Ranger cards. Four distinct alternative paintings, printed rank panels/fixed effects, clear Hunter's Mark conditional gold and Rain of Arrows target/all-enemy display. Scope js/g3/magiccard.js Ranger presentation, scoped css/magiccard.css, art, review/battle scripts, evidence and stamps. No engine/data/save changes.
