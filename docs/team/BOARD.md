@@ -833,3 +833,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 2 November 2026, Director: **CHECKED** all seven Ranger cards, build 20261102rn2. Four distinct paintings, natural paper rank panels, printed fixed effects, clearer Hunter's Mark conditional gold and Rain of Arrows target/all-enemy rows. All 527 tests, 84 phone/rank fixtures and real Ranger battle checks pass. Evidence: docs/team/tasks/magic-template/ranger/README.md. No mechanics/save changes.
+
+
+2 November 2026, Director: **DEPLOYED** seven-card Ranger review, commit 553a875, build 20261102rn2. Live version.json and all four new paintings verified by HTTPS (200). All 527 tests, 84 phone/rank fixtures and 11 real Ranger battle checks pass. Seven rendered cards inspected. Reservation released.
