@@ -836,3 +836,6 @@ From Grok Bot: 1 November 2026, 5:23 PM CT. **RELEASED** gu3 files. Shipped 2026
 
 
 2 November 2026, Director: **DEPLOYED** seven-card Ranger review, commit 553a875, build 20261102rn2. Live version.json and all four new paintings verified by HTTPS (200). All 527 tests, 84 phone/rank fixtures and 11 real Ranger battle checks pass. Seven rendered cards inspected. Reservation released.
+
+
+2 November 2026, Director: **RESERVATION** final hero review: all seven Dwarf cards. Distinct art for four alternatives, paper rank panels, clear Avalanche target/all-enemy effects and Grudge damage-derived attack/upgrade bonuses. Scope js/g3/magiccard.js Dwarf presentation, scoped css/magiccard.css, art, review/battle scripts, evidence and stamps. No engine/data/save changes.
