@@ -1,0 +1,133 @@
+{
+  "rows": [
+    {
+      "context": "tab-dice",
+      "selected": "dice",
+      "hero": false,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nLeft weapon\nd4\n50\n+\nHead\nd4\nPreparing die\nd4\n50\n+\nRight weapon\nd4\nPreparing die\nd4\n50\n+\nLeft hand\nd6\nPreparing die\nd6\n100\n+\nHeart\nd6\nPreparing die\nd6\n200\n+\nRight hand\nd6\nPreparing die\nd6\n100\n+\nTalent one\nd6\nPreparing die\nd6\n50\n+\nFeet\nd4\nPreparing die\nd4\n60\n+\nTalent two\nd4\nPreparing die\nd4\n10\n+\n\nExample faces · tap a die to inspect. + means upgrade.",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-powers",
+      "selected": "powers",
+      "hero": false,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nYOUR POWERS\n\nKnight power library\n\nA\nBig move\nCleave\nB\nEvery round\nCounterstrike\nC\nCharge\nRally Cry\n\nChoose a slot, then inspect a power. One equipped power per slot.\n\nEquipped\nCleave\n2d6, max 4d6\n3–5 magic\nLearn · 50 gold\nJudgment\n+14 attack, 12 to all\n6 magic\nA · Big move · Equipped\nCleave\n3–5 magic\nLevel 0\n\n3 magic: 2d6 attack. +1 die per extra magic, max 4d6.\n\nOnce each round.\n\nCURRENT",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-gear",
+      "selected": "gear",
+      "hero": false,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nYOUR PACK · 1 OF 4\nSpear\nSilver\nd6\n0\n0\n1\n3\n5\n6\nSell\n41\nFull card ›\nLEFTRIGHT\nSELL\n41",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-store",
+      "selected": "store",
+      "hero": false,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nCAMP STORE\n\nNew stock every camp\n\nPOTIONS AND SUPPLIES\n\nHealing potions first, then a bigger belt and more dice for each reroll.\n\nHealing potion\nHeals 15.\nBelt: 2 of 2.\nBelt full\nPotion belt\n2 → 3 potions\nCarry one more (each heals 15).\n90\nRerolls\n3 → 4 dice\nEach reroll in battle can take one more die.\n200\nTODAY’S SPECIALS\n\nOne fight of help. Bought today, used in your next fight, gone aft",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-hero",
+      "selected": "hero",
+      "hero": true,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nAuditknight\nLevel 9 Knight\n0 / 124 XP\nHEALTH\n66\nHow much damage you can take.\nSPEED\nD4\nYour feet die. A bigger die strikes before the monsters more often, and the slowest hero draws the attacks in a team game.\nSTRENGTH\nD6\nYour strongest hand die. It powers the weapon above it.\nMAGIC\n4\nMagic at the start of every fight; holds up to 16.\nHALL OF FAME\n0\nTOTAL POINTS\n0\nBATTLES\n0\nBEST BATTLE\n\nTr",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-dice",
+      "selected": "dice",
+      "hero": false,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nLeft weapon\nd4\n50\n+\nHead\nd4\n50\n+\nRight weapon\nd4\n50\n+\nLeft hand\nd6\n100\n+\nHeart\nd6\n200\n+\nRight hand\nd6\n100\n+\nTalent one\nd6\n50\n+\nFeet\nd4\n60\n+\nTalent two\nd4\n10\n+\n\nExample faces · tap a die to inspect. + means upgrade.",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "tab-hero",
+      "selected": "hero",
+      "hero": true,
+      "content": "Dice\nPowers\nGear\nStore\nHero\nAuditknight\nLevel 9 Knight\n0 / 124 XP\nHEALTH\n66\nHow much damage you can take.\nSPEED\nD4\nYour feet die. A bigger die strikes before the monsters more often, and the slowest hero draws the attacks in a team game.\nSTRENGTH\nD6\nYour strongest hand die. It powers the weapon above it.\nMAGIC\n4\nMagic at the start of every fight; holds up to 16.\nHALL OF FAME\n0\nTOTAL POINTS\n0\nBATTLES\n0\nBEST BATTLE\n\nTr",
+      "overflow": false,
+      "scroll": 0,
+      "errors": []
+    },
+    {
+      "context": "talent",
+      "growFolded": true,
+      "faceButtons": 3,
+      "cardboardCards": 1,
+      "content": "D6\nTalent one\nClose\nTALENT ONE\nd4\nd6\n5\n50\n6\n60\nd8\n130\nd10\n240\nTALENT TWO\nd4\n4\n10\nd6\n60\nd8\n130\nd10\n240\nChoose a face\nd6 · 6 faces\n1\n·\nBlank\n2\n×2\nHand\n3\n·\nBlank\n4\nGives +4\n5\n+\n50\n6\n+\n60\n\nFaces 1 and 3 stay blank. Face 2 doubles your left hand. Each numbered face gives you that many of its symbol: \"Gives +6\" means 6.\n\nMax 2 of the same power symbol per die. Choose wisely.\n\nChoose a numbered face\n\nInspect its symbol or choose what an empty face will give you.\n\nGrow this die · d6 → d8"
+    },
+    {
+      "context": "talent-face",
+      "options": [
+        "Attack\n0 / 2 used",
+        "Block\n0 / 2 used",
+        "Magic\n1 / 2 used",
+        "Heal\n0 / 2 used",
+        "Gold\n0 / 2 used"
+      ],
+      "growth": "Grow this die · d6 → d8",
+      "preview": "FACE 5 · PREVIEW\nChoose a symbol\n\nPreview a symbol below. Gold is spent only when you buy."
+    },
+    {
+      "context": "hero-ranger",
+      "hero": 1,
+      "errors": []
+    },
+    {
+      "context": "hero-wizard",
+      "hero": 1,
+      "errors": []
+    },
+    {
+      "context": "hero-dwarf",
+      "hero": 1,
+      "errors": []
+    },
+    {
+      "context": "hero-bard",
+      "hero": 1,
+      "errors": []
+    },
+    {
+      "context": "polymorph-rank3",
+      "meta": "3 magic\nLevel 2",
+      "actualCost": 2
+    },
+    {
+      "context": "hero-summary",
+      "internalCopy": true,
+      "powers": "Auditwizard\nLevel 9 Wizard\n0 / 124 XP\nHEALTH\n56\nHow much damage you can take.\nSPEED\nD4\nYour feet die. A bigger die strikes before the monsters more often, and the slowest hero draws the attacks in a team game.\nSTRENGTH\nD6\nYour strongest hand die. It powers the weapon above it.\nMAGIC\n6\nMagic at the start of every fight; holds up to 19.\nHALL OF FAME\n0\nTOTAL POINTS\n0\nBATTLES\n0\nBEST BATTLE\n\nTrophies for 1st and 2nd place are won in party games.\n\nDIFFICULTY\nEasy\nNormal\nHard\nLegendary\nThe road as it was meant to be walked.\nHints: off\nTURN ON\n\n0 victories · 0 defeats · 0 triples · 0 straights\n\nPERKS\n\nYou earn a perk every level. Growing up, with extra steps.\n\nMAGICAL POWERS\n2\nA Arc Bolt\nEvery round: 2 magic per d8 attack (up to 6d8), and half of it arcs to every other monster. (mw1, PROPOSED)\n3\nB Polymorph\nOnce per round, 3 magic: your target turns into a frog and cannot attack this round. Level II: the frog takes +4 pierce. Level III: costs 2. (mw1, PROPOSED)\n1\nC Storm Coil\nCharge 1 magic a round (max 4), then use: 3, 5, 7, 9 attack. Half splashes. (mw1, PROPOSED per charge 5 to 4)\nHEALING\n2\nHeal with magic\nRestore 3 health\n0\nHealing potion\n2 on your belt, 15 health each\n3\nHeart change\nTurn your heart die by 1"
+    },
+    {
+      "context": "hero-after-scroll",
+      "rendered": true,
+      "headingY": 369.9375,
+      "viewport": 667,
+      "scrollers": [
+        {
+          "class": "sx-side",
+          "y": 0
+        },
+        {
+          "class": "sx-camp-scroll",
+          "y": 0
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

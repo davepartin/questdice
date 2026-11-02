@@ -1611,3 +1611,8 @@ Reviewed all Ranger magic cards. Four distinct paintings replace shared art; nat
 Completed the hero review sequence with Dwarf: four distinct paintings, natural paper rank panels, separate Avalanche area damage and clearer Grudge damage/rank-bonus formulas. Fixed effects print as ink; active dice, tracks and controls remain distinct. Rules, numbers, IDs, costs and saves unchanged. All 527 tests, 84 phone/rank fixtures, Grudge zero/damaged cases, Bard Finale regression and actual Dwarf battle checks pass. Evidence: docs/team/tasks/magic-template/dwarf/README.md.
 
 Integrated the concurrently published ptc1 role-colored menu tiles before the final Dwarf stamp; retained both changes and repeated the game/rank checks.
+
+
+### 2 November 2026 — CAMP-01 camp audit and team plan
+
+Audited actual camp tabs, Talent workshop and five-class Hero navigation; documented a staged plan at docs/team/tasks/camp-experience-plan.md. Priorities: Hero reliability investigation, one compact talent workbench with always-visible size growth, shared camp/battle power-card presentation, then Gear/Store/Hero consistency. Confirmed stale Hero development copy and rank-aware power-cost display mismatch; healthy Hero tests passed, intermittent failure remains unconfirmed. Evidence and ownership contracts included. Audit/plan only; no camp UI or rule changes.

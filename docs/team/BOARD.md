@@ -854,3 +854,12 @@ Dwarf integration note: published ptc1 role colors were merged and preserved bef
 
 
 2 November 2026, Director: **RESERVATION — AUDIT/PLAN ONLY** Dave requested a camp/Hero overview and a team-ready plan: clear card-to-camp interactions, cardboard talent dice, prominent die-size upgrades and visible face-customization choices. Audit actual tabs and Hero reliability, then write docs/team/tasks/camp-experience-plan.md and board work sequence. No app/rule changes in this pass; implementation tasks will be READY/unclaimed.
+
+
+2 November 2026, Director: **PLANNED / READY — CAMP-01** Dave's camp experience overview is complete. Plan: docs/team/tasks/camp-experience-plan.md; browser evidence: docs/team/tasks/camp-experience-evidence/README.md. Preserve dice-board → matching card. First slice: investigate intermittent Hero/tab reliability and build a compact physical Talent workbench with d4→d6→d8→d10 growth, current faces and all symbol choices visible without another disclosure. Follow with shared power-card/rank/cost presentation, then Gear/Store/Hero consistency. Confirmed stale Hero development text and upgraded Polymorph camp-cost mismatch; healthy Hero flows passed, reported intermittent failure remains open. No app/rule changes in this pass.
+
+**C01-A READY/unclaimed — Camp integrator.** Exclusive scrui.js ownership across all camp tabs, navigation/state/scroll/focus and transaction wiring; ui.js and camp CSS only as needed. Start with Hero reproduction and the talent workbench. Own imports, merged tests and stamps.
+
+**C01-B READY/unclaimed — Physical components.** Own cardboard.js, an isolated camp component module/stylesheet/assets, and an agreed reusable power-card presentation API in magiccard.js. Deliver compact talent growth rail, cardboard faces/chits, and power-card adapter. Agree callbacks with A first; no direct engine mutations or edits to A's scrui.js.
+
+**C01-C/D/E sequence** (see plan): talent integration first, then Powers, then Gear/Store/Hero and independent verification. Claim before editing; READY is not a reservation. One integrator for the shared monolithic camp file; component work can proceed separately after the API contract. Preserve rules/saves/prices and authoritative purchase paths. Attach phone/transaction evidence before marking implementation complete. Audit reservation released; implementation has not started.
