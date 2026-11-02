@@ -1,0 +1,53 @@
+@import url(../../../../css/fonts.css);
+:root{--gold:#F2C14E;--ink:0 1px 0 #000,0 2px 0 #000a;--parch:#f3e3c0;--violet:#7a3ad0}
+*{box-sizing:border-box}body{margin:0;background:#0b0a12;font-family:Inter,sans-serif;color:var(--parch);-webkit-font-smoothing:antialiased}
+.sheet{margin:14px;border:2px solid #9f835c;border-radius:10px;background:#141826;padding:12px;min-height:780px}
+.head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff22;padding-bottom:8px}
+.head b{font:900 1.32rem Cinzel;letter-spacing:.06em;color:var(--gold);text-shadow:0 2px 0 #1e0f04}
+.head button{font:900 .78rem Inter;letter-spacing:.06em;color:#fff4dc;background:#221c2b;border:1px solid #c2aa7666;border-radius:8px;padding:.6rem .9rem;text-shadow:var(--ink)}
+.tally{display:flex;gap:8px;margin:10px 0}.tally div{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;border-radius:6px;background:#1c1a30;border:1px solid #ffffff1a}
+.tally b{font:900 1.25rem Inter;text-shadow:var(--ink)}.tally small{font:900 .62rem Inter;letter-spacing:.08em;color:#e6d6b4}.tally .ic{width:1.1rem;height:1.1rem}
+.tabs{display:flex;gap:4px;border-bottom:2px solid #f2c14e88}.tabs span{flex:1;text-align:center;padding:.55rem 0;font:900 .72rem Inter;letter-spacing:.04em;text-transform:uppercase;color:#cdbfa0;background:#1a1d2c;border:1px solid #ffffff1a;border-bottom:0;border-radius:6px 6px 0 0}
+.tabs span.on{color:#1e0f04;background:var(--gold);text-shadow:none}
+.ic{display:inline-block;vertical-align:middle}.t-magic{color:#d6a8ff}.t-pierce{color:#ffa14a}.t-heal{color:#5cf08f}.t-reroll{color:#ffd23d}
+h2.cap{font:900 1rem Cinzel;color:var(--gold);text-shadow:0 2px 0 #1e0f04;margin:14px 2px 8px;letter-spacing:.04em}
+.cost{display:inline-flex;align-items:center;gap:2px;padding:.2rem .5rem;border-radius:7px;background:#6a36a8;border:1.5px solid #e9d4ff;font:900 1.1rem Inter;color:#fff;text-shadow:0 1px 0 #1a0630}.cost .ic{width:1rem;height:1rem;color:#fff}
+/* A */
+.rows{display:grid;gap:10px;margin-top:14px}
+.row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;padding:14px 12px;border-radius:10px;background:#0f1320;border:1.5px solid #ffffff22}
+.row:first-child{border-color:var(--gold)}
+.row .nm{font:900 1.15rem Cinzel;color:var(--gold);text-shadow:0 2px 0 #1e0f04}.arrow{font:900 1.5rem Inter;color:var(--gold);text-shadow:0 2px 0 #1e0f04}
+.res{display:flex;align-items:center;gap:2px}.res .ic{width:1.8rem;height:1.8rem;filter:drop-shadow(0 2px 0 #000a)}.res b{font:900 1.5rem Inter;text-shadow:0 2px 0 #000}
+.tag{font:800 .55rem Inter;letter-spacing:.06em;text-transform:uppercase;color:#f0c870;display:block;margin-top:2px}
+.hint{text-align:center;font:800 .72rem Inter;letter-spacing:.06em;text-transform:uppercase;color:#bfb29a;margin-top:12px}
+/* B */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.tile{position:relative;display:grid;justify-items:center;gap:6px;padding:22px 4px 12px;border-radius:12px;background:#0f1320;border:1.5px solid #ffffff22}
+.tile.on{border-color:var(--gold)}.tile .cost{position:absolute;top:-10px;right:-6px;font-size:.95rem}
+.tile .big .ic{width:3.4rem;height:3.4rem;filter:drop-shadow(0 3px 0 #000a)}.tile .n{font:900 1.6rem Inter;text-shadow:0 2px 0 #000}.tile .nm{font:900 .82rem Cinzel;color:var(--gold);text-shadow:0 2px 0 #1e0f04;text-align:center}
+.tile.dim{opacity:.38;filter:grayscale(.7)}.tile .need{font:900 .6rem Inter;letter-spacing:.06em;color:#ffb38a}
+.cast{display:block;width:100%;margin-top:16px;padding:.9rem;border-radius:12px;border:1px solid #d6b5eb;background:#7440b0;font:900 1.05rem Inter;letter-spacing:.03em;text-transform:uppercase;color:#fff;text-shadow:0 1px 0 #1a0630;box-shadow:inset 0 0 0 2px #4b2969,0 3px 0 #180c27}
+/* C */
+.pool{display:flex;justify-content:center;gap:10px;margin:18px 0 6px;padding:14px;border-radius:12px;background:#0f1320;border:1.5px solid #ffffff22}
+.gem .ic{width:2.4rem;height:2.4rem;color:#4a3a66}.gem.have .ic{color:#9a6ad8}.gem.lit .ic{color:#f1dcff;filter:drop-shadow(0 0 0 #fff)}.gem.lit{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+.poolcap{text-align:center;font:900 .7rem Inter;letter-spacing:.08em;text-transform:uppercase;color:#e6d6b4}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.ib{display:grid;justify-items:center;gap:4px;padding:14px 4px;border-radius:50%/40%;background:#0f1320;border:2px solid #ffffff22;aspect-ratio:1}
+.ib .ic{width:2.6rem;height:2.6rem}.ib b{font:900 .75rem Cinzel;color:var(--gold);text-shadow:0 2px 0 #1e0f04}.ib small{font:900 .8rem Inter;color:#fff}
+.ib.on{border-color:var(--gold);background:#1d1830;box-shadow:0 0 0 3px #f2c14e33}
+.gets{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:16px}
+/* the game's icon strokes (css/hud.css), solid, no glow */
+.ic .f{fill:currentColor;fill-opacity:.27;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}.ic .s{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ic .h{fill:none;stroke:#fff;stroke-opacity:.6;stroke-width:1;stroke-linecap:round;stroke-linejoin:round}.ic .p{fill:currentColor}
+.ic{width:1em;height:1em;overflow:visible}.cast .ic{width:1rem;height:1rem;color:#fff;vertical-align:-2px}
+.ic-magic{color:#d6a8ff}.cost .ic,.ic.x{color:#fff}.gem .ic{color:#4a3a66}.gem.have .ic{color:#9a6ad8}.gem.lit .ic{color:#f1dcff}
+.ic-pierce{color:#ffa14a}.ic-reroll{color:#ffd23d}.ic-heal{color:#5cf08f}.ic-windup{color:#ffb13a}
+.ib{min-width:0;aspect-ratio:auto;border-radius:16px;padding:14px 2px}.ib b{font-size:.72rem;text-align:center}
+.btns{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* v2: every power has its own cast button */
+.cb{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:.4rem .7rem;border-radius:10px;border:1px solid #d6b5eb;background:#7440b0;font:900 .85rem Inter;letter-spacing:.03em;text-transform:uppercase;color:#fff;text-shadow:0 1px 0 #1a0630;box-shadow:inset 0 0 0 2px #4b2969,0 3px 0 #180c27;white-space:nowrap}
+.row{grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;padding:12px 10px}.row:first-child{border-color:#ffffff22}.row .nm{font-size:1.02rem}
+.tile .cb{width:100%;margin-top:4px}.tile.on{border-color:#ffffff22}
+.ib{gap:6px;padding:12px 4px;border-radius:14px}.ib .res .ic{width:1.3rem;height:1.3rem}.ib .res .n{font:900 1.2rem Inter;color:inherit}
+.ib .cb{width:100%;padding:.4rem .3rem}.gcost{display:flex;gap:2px}.gcost .ic{width:1rem;height:1rem;color:#d6a8ff}
+.gem.lit{outline:0}

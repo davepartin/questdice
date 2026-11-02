@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="mock.css"></head><body>
+<div class="sheet"><div class="head"><b>MAGICAL POWERS</b><button>CLOSE</button></div>
+<div class="tally"><div><span id="tm"></span><b>3</b><small>/ 16 MAGIC</small></div><div><span id="th"></span><b style="color:#c9ffd9">60</b><small>/ 60</small></div></div>
+<div class="tabs"><span class="on">Magic</span><span>Potion</span><span>Heal</span><span>Heart</span></div>
+<div id="body"></div></div>
+<script type="module">
+import { icon } from '../../../../js/g3/hudkit.js';
+const I = (n, c) => { const s = icon(n); s.classList.add(c || 't-' + n); return s.outerHTML; };
+const cost = (n) => `<span class="cost">${I('magic', 'x')}${n}</span>`;
+document.getElementById('tm').innerHTML = I('magic'); document.getElementById('th').innerHTML = I('heal');
+const v = new URLSearchParams(location.search).get('v') || 'A'; const B = document.getElementById('body');
+const cb = (n) => `<button class="cb">Cast · ${n}</button>`;
+const gems = (n) => `<span class="gcost">${Array.from({ length: n }, () => I('magic', 'x')).join('')}</span>`;
+if (v === 'A') B.innerHTML = `<div class="rows">
+ <div class="row"><span class="nm">Aimed Shot<span class="tag">Once a battle</span></span>${cost(2)}<span class="res">${I('pierce')}${I('pierce')}</span>${cb(2)}</div>
+ <div class="row"><span class="nm">Quick Draw</span>${cost(1)}<span class="res t-reroll">${I('reroll')}<b>×2</b></span>${cb(1)}</div>
+ <div class="row"><span class="nm">Volley<span class="tag">Charge 0/4</span></span>${cost(1)}<span class="res t-pierce">${I('pierce')}<b>+1</b></span>${cb(1)}</div></div>`;
+if (v === 'B') B.innerHTML = `<div class="tiles">
+ <div class="tile">${cost(2)}<span class="big">${I('pierce')}</span><span class="n t-pierce">×2</span><span class="nm">Aimed Shot</span>${cb(2)}</div>
+ <div class="tile">${cost(1)}<span class="big">${I('reroll')}</span><span class="n t-reroll">×2</span><span class="nm">Quick Draw</span>${cb(1)}</div>
+ <div class="tile">${cost(1)}<span class="big">${I('pierce')}</span><span class="n t-pierce">+1</span><span class="nm">Volley</span>${cb(1)}</div></div>`;
+if (v === 'C') B.innerHTML = `<div class="pool">${[0,1,2].map(() => `<span class="gem have">${I('magic','x')}</span>`).join('')}${[0,1].map(() => `<span class="gem">${I('magic','x')}</span>`).join('')}</div>
+ <p class="poolcap">Your magic · 3</p>
+ <div class="btns">
+ <div class="ib">${I('pierce')}<b>Aimed Shot</b><span class="res">${I('pierce')}${I('pierce')}</span>${gems(2)}${cb(2)}</div>
+ <div class="ib">${I('reroll')}<b>Quick Draw</b><span class="res t-reroll"><b class="n">×2</b></span>${gems(1)}${cb(1)}</div>
+ <div class="ib">${I('windup','t-reroll')}<b>Volley</b><span class="res t-pierce">${I('pierce')}<b class="n">+1</b></span>${gems(1)}${cb(1)}</div></div>`;
+document.body.dataset.ready = '1';
+</script></body></html>

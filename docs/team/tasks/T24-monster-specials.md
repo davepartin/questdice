@@ -80,3 +80,46 @@ Splash becomes a real choice.
 ## Ideas from the team
 
 (Astra, Grok: add yours here, signed and dated.)
+
+### Grok (Crockpot (Grok Bot)), 2 November 2026, 9:20 AM CT
+
+From Grok Bot: Dave asked me to check the board (Nov 2, 9:13 AM CT). Ideas only, no code. Numbers are placeholders for Claude's measurements (Q4).
+
+**First-set shortlist (Act I).** I'd ship four and keep the rest for later acts:
+1. **Spawn** (Damage 1, or Spawn 1). The gentlest introduction, since any hit answers it. It teaches "read the label" in a fight you can't lose.
+2. **Slam** (Damage 20, or Slam 2x). This is today's charge, so it needs no new art. It teaches Damage versus Attack.
+3. **Shield** (Attack 25, or Shield stops 12). Used at the elite. It teaches that a mega roll counts before defence, which pairs with Slam to show the difference.
+4. **Regrow** (Damage 8, or Heals 8), as the boss's second Special. It's steady and readable, and it pushes solo players to hit every round instead of hoarding.
+
+**Three new ones to consider later.** Each uses one word and fits the two-line label.
+- **Brace** (Block 12, or Stunned 1 die). Your next roll loses one die. It's a softer Crush for Act I healers and tanks.
+- **Marked** (Solo damage 15 on the marked hero, or Mark spreads). A light Duel for two-hero parties.
+- **Bounty** (Kill this round, +8 gold). A reward Special with no punishment, which mirrors Thief. It gives a happy choice rather than another threat.
+
+**How it shows on the monster and board (my Q3).**
+- **Label.**
+  - Two lines under the mini at the existing name-plate width. Top line in white bold, bottom line smaller.
+  - The bottom line takes the colour of the cost: red for damage (Slam, Wakes), purple for summons (Spawn, Split) and amber for gold (Thief).
+  - It also uses the same role colours as the new magic tiles (red attack, blue block, green heal, amber gold). One colour language across the game.
+- **Progress (Q1).** A thin bar fills behind the top line as the party's total grows, with a number like **14/20**. At the goal the bar turns gold, the bottom line gets struck through, and a short "Broken" stamp replaces it. That gives a clear, instant signal on the phone without opening anything.
+- **Always-on ring.** A small dotted ring around the goal icon, so it doesn't change next round.
+- **Round-start popup = plan board.**
+  - One row per monster: a mini thumbnail, then "Damage 20 · or Slam 2x".
+  - A **New Special** ribbon on the first appearance, with one sentence.
+  - At most 3 rows. With more monsters, group the plain ones under "No Special".
+  - One "Fight" button. Make sure the popup fits 375x548 without scrolling.
+- **After-round card = the answer.**
+  - One line per monster with a ✓ or ✗ chip: "✓ Ogre: Slam broken, 23/20", "✗ Goblin: spawned a friend".
+  - Recap holds the dice detail.
+  - Sort misses first, so the consequence is the first thing you see.
+
+**Balance and phone notes.**
+- Size goals to the party's round average from Claude's numbers: about 70% of a party's typical round for Act I team goals. A good round should clear it, a careless one shouldn't.
+- Solo goals scale with the single hero, not the party.
+- No more than one punishing "or" per round in Act I. If two monsters have Specials, make one of them a soft one (Spawn or Bounty).
+- Keep all labels to 14 characters or fewer per line, so two lines fit under a mini at 375 width. Test with the longest one, "Solo damage 40".
+- Show the "or else" as it happens (Slam 2x on the damage float), so the player links cause and effect.
+
+**Pairing for the Act I boss.** Regrow plus a Spawn minion. Do you kill the adds or keep pressure on the boss? That's a clear question without needing to explain a new rule.
+
+— Crockpot (Grok Bot)
