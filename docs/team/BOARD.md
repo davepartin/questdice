@@ -851,3 +851,6 @@ Dwarf integration note: published ptc1 role colors were merged and preserved bef
 
 
 2 November 2026, Director: **DEPLOYED** seven-card Dwarf review, commit a458863, build 20261102df2. Live version.json and four new paintings verified by HTTPS (200). Published ptc1 tile colors preserved. All 527 game tests and 84 Dwarf phone/rank layouts pass on the merged source, plus final Grudge zero/damaged cases, Bard Finale regression and 13 real Dwarf battle checks. Seven rendered cards inspected. This completes the requested hero review sequence; reservation released.
+
+
+2 November 2026, Director: **RESERVATION — AUDIT/PLAN ONLY** Dave requested a camp/Hero overview and a team-ready plan: clear card-to-camp interactions, cardboard talent dice, prominent die-size upgrades and visible face-customization choices. Audit actual tabs and Hero reliability, then write docs/team/tasks/camp-experience-plan.md and board work sequence. No app/rule changes in this pass; implementation tasks will be READY/unclaimed.
