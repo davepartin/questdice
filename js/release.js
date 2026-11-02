@@ -8,7 +8,7 @@
 //                add today's metal icons), the arrows as last measured, and the class rules (Knight Guard, Dwarf Dig In, Bard Verse for a
 //                friend). Old two-handed Bows become Arrows + Bow when a save loads (save.js migrateWeapons2). Monster fury from round 4
 //                stays in ?lab: with it the campaign cleared 5 of 10 times on Normal (10 of 10 without; docs/balance/curve_release*.txt).
-import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES, START_DICE, WEAR, WEAPON_TRAINING } from './data.js';
+import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES, START_DICE, WEAR, WEAPON_TRAINING, SPECIALS } from './data.js';
 import { useWeapons2 } from './engine.js';
 
 export function applyRelease() {
@@ -27,4 +27,5 @@ export function applyRelease() {
 // ?lab (js/lab.js): the release, its own saves, and what is still being tried: monster fury from round 4 (no rallying, mend or move bag)
 export function applyLab() {
   Object.assign(PRESSURE, { on: true, bag: false }); PRESSURE.fury.from = 4; PRESSURE.rally.min = 99; PRESSURE.mend.share = 0;
+  SPECIALS.on = true; // T24 Monster Specials (docs/team/tasks/T24-monster-specials.md): tried here first, off at the live root
 }

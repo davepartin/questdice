@@ -811,6 +811,7 @@ function publicEnemy(e) {
     hp: e.hp, maxHp: e.maxHp, powerDie: e.powerDie, flat: e.flat, buff: e.buff,
     intent: e.intent ? { ...e.intent } : null,
     raged: !!e.raged, rageName: e.rageName || '', carried: e.carried || 0, windup: !!e.windup,
+    special: e.special ? { ...e.special } : null, // T24 Monster Specials
   };
 }
 
