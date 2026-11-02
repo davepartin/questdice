@@ -15,7 +15,7 @@ import { world } from './world.js';
 import * as THREE from 'three';
 import { petImg } from './pets.js';
 import * as Sess from '../session.js';
-import { createFlat, replayPace, stanceOf } from './flat.js';
+import { createFlat, replayPace, stanceOf, planOf as plaquePlan } from './flat.js';
 import { monsterOf } from '../campaigns.js';
 import { roundCard } from './roundcard.js';
 import * as SP from './specials.js';
@@ -1206,6 +1206,16 @@ function openPicker(afterTitle = false) {
   const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : showCards(b));
   if (afterTitle) hold(); else showCards(b);
 }
+// What the monster card says about a monster (the same numbers its plaque shows): life, this round's move and dice, block, speed.
+const UNIT_WORD = { dmg: 'damage', pierce: 'damage, through block', guard: 'block', heal: 'heals itself', breath: 'fire on every hero' };
+function cardFactsOf(e, b) {
+  const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const d = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {};
+  const v = HK.intentView(e); const p = v ? plaquePlan(e, v) : null; const cap = (t) => (t ? t[0].toUpperCase() + t.slice(1) : '');
+  const line = !v ? '' : /^\d/.test(String(v.fig)) && UNIT_WORD[v.unit] ? `${v.fig} ${UNIT_WORD[v.unit]}${v.subIcon ? `, ${v.hint}` : ''}` : v.call ? `${cap(v.call.head.toLowerCase())}: ${v.call.sub}` : cap(v.hint);
+  const faces = e.faces || d.faces || []; const armor = e.armor || d.armor;
+  const block = armor ? `${armor.n}d${armor.s}` : faces.some((f) => ['guard', 'ward', 'phase'].includes(f.v)) ? 'some rounds' : 'none'; // (this round's box says when it is guarding or fading)
+  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}` };
+}
 function showCards(b = B.b) {
   if (!b || B.b !== b || B.ended || b.phase !== 'reset' || !alive().length || B.root.querySelector('.mnc-veil')) return;
   B.root.querySelector('.sp-plan')?.remove();
@@ -1214,7 +1224,7 @@ function showCards(b = B.b) {
   if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
   const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
   const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-    kid: look(D.SPECIALS.minion)?.name || null, first: cur, head: choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}` },
+    kid: look(D.SPECIALS.minion)?.name || null, facts: (e) => cardFactsOf(e, b), first: cur, head: choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}` },
     (uid) => { if (B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
   if (v) { B.root.append(v); sfx.select?.(); }
 }

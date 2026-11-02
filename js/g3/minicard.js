@@ -7,6 +7,7 @@
 //   MC.open({ enemies, plans, owns, mode, imgOf, initOf, kid }, onPick)  -> the veil element; onPick(uid, parent) after Attack, then the veil closes
 //     enemies: live b.enemies; plans: { [uid]: specialView } (this round, may be empty); owns: { [uid]: [special ids] } (all powers)
 import { h } from '../dom.js';
+import * as HK from './hudkit.js';
 
 const q = () => (typeof location !== 'undefined' ? location.search : '');
 export const demo = () => /[?&]minicarddemo\b/.test(q());
@@ -42,7 +43,21 @@ export function demoData(enemies) {
   return { owns, plans };
 }
 
-export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack' } = {}, onPick) {
+// The card's facts (battle3d's facts(e)): { hp, maxHp, move: { word, dice, icon, tone, line } | null, block, speed }
+function cardFacts(F, specials) {
+  const pct = Math.max(0, Math.min(100, (100 * F.hp) / Math.max(1, F.maxHp)));
+  const m = F.move;
+  return [
+    h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
+    h('div', { class: `mnc-move tone-${m?.tone || 'none'}` }, h('small', {}, 'This round'),
+      m ? h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null) : h('div', { class: 'mnc-move-main' }, h('b', {}, 'Nothing')),
+      m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null),
+    h('div', { class: 'mnc-stats two' }, h('span', {}, h('i', {}, 'Block'), h('b', { class: F.block.length > 5 ? 'sm' : '' }, F.block)), h('span', {}, h('i', {}, 'Speed'), h('b', {}, F.speed))),
+    specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null,
+  ].filter(Boolean);
+}
+
+export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack', facts = null } = {}, onPick) {
   const M = MODES[mode] || MODES.solo; const foes = enemies.filter((e) => e.hp > 0); const n = foes.length;
   if (!n) return null;
   const kid = kidName || (sure ? foes.reduce((a, e) => (e.maxHp < a.maxHp ? e : a)).name : null); // battle3d passes what Spawn really calls (SPECIALS.minion)
@@ -58,11 +73,14 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
     const rows = list.map((k) => { const P = POWERS[k]; const isOn = k === now;
       return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, P.kw), ` ${P.name}`),
         isOn ? h('div', { class: 'mnc-goal' }, scale(P.goal(plan), M.goal)) : null, isOn ? h('div', { class: 'mnc-does' }, P.does(plan, { kid })) : null); });
-    const card = h('div', { class: 'mnc-card', style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg`, 'data-uid': e.uid, role: 'button', tabindex: '0', 'aria-label': e.name,
+    // Dave (2 Nov 2026): the card answers the targeting questions. How much life is left? What will it do this round, with which dice?
+    // Does it block, with what? How fast is it? Is its Special on? (battle3d's facts(e) reads the same numbers as the plaque.)
+    const F = facts?.(e); const body = F ? cardFacts(F, rows.filter((r) => r.dataset.power !== 'fights')) : [h('div', { class: 'mnc-stats' }, ...stats.map(([k, v]) => h('span', {}, h('i', {}, k), String(v)))), h('div', { class: 'mnc-rows' }, ...rows)];
+    const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg`, 'data-uid': e.uid, role: 'button', tabindex: '0',
+      'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
       onclick: () => { sel = i; paint(); } },
       h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), h('span', { class: 'mnc-tag' }, M.tag)),
-      h('div', { class: 'mnc-title' }, e.name), h('div', { class: 'mnc-stats' }, ...stats.map(([k, v]) => h('span', {}, h('i', {}, k), String(v)))),
-      h('div', { class: 'mnc-rows' }, ...rows));
+      h('div', { class: 'mnc-title' }, e.name), ...body);
     stack.append(card);
   });
   const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => { ev.stopPropagation(); const uid = foes[sel].uid; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); } }, pick);

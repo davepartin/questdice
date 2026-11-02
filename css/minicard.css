@@ -22,3 +22,31 @@
 .mnc-goal { font: 800 .74rem/1.15 var(--ui, sans-serif); color: #fff; margin-top: .1rem; }
 .mnc-does { font: 700 .66rem/1.15 var(--ui, sans-serif); color: color-mix(in srgb, var(--rc) 45%, #fff); }
 .mnc-pick { font: 800 1rem var(--disp, serif); color: #2a1800; border: 0; border-radius: .7rem; padding: .7rem 2.2rem; background: linear-gradient(180deg, #ffe08a, #d19a2a); box-shadow: 0 4px 10px #000a; }
+
+/* The facts card (Dave, 2 Nov 2026): life left, this round's move and dice, block, speed, then the Special. */
+.mnc-card.facts { height: 16.6rem; gap: .22rem; }
+.mnc-stack:has(.mnc-card.facts) { height: 17rem; }
+.mnc-card.facts .mnc-top { height: 3.5rem; }
+.mnc-life { display: flex; flex-direction: column; gap: .12rem; }
+.mnc-life-n { display: flex; align-items: center; gap: .2rem; font: 700 .66rem/1 var(--ui, sans-serif); color: #e8c9c0; }
+.mnc-life-n .ic { width: .8rem; height: .8rem; color: #ff6a5a; }
+.mnc-life-n b { font: 900 .9rem/1 var(--ui, sans-serif); color: #fff; }
+.mnc-life-bar { display: block; height: .38rem; border-radius: .2rem; background: #0009; box-shadow: inset 0 0 0 1px #ffffff1a; overflow: hidden; }
+.mnc-life-bar > i { display: block; height: 100%; background: linear-gradient(180deg, #ff6a5a, #c92a1e); border-radius: .2rem; }
+.mnc-life.low .mnc-life-n b { color: #ffb24a; }
+.mnc-move { --mc: #e0483c; border-radius: .4rem; padding: .18rem .3rem .22rem; background: color-mix(in srgb, var(--mc) 22%, #120b07); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mc) 70%, transparent); }
+.mnc-move.tone-guard, .mnc-move.tone-ward, .mnc-move.tone-phase { --mc: #3c8fe0; }
+.mnc-move.tone-mend { --mc: #3fae5a; }
+.mnc-move.tone-howl, .mnc-move.tone-bind, .mnc-move.tone-summon, .mnc-move.tone-drain, .mnc-move.tone-none { --mc: #a06ae6; }
+.mnc-move.tone-windup, .mnc-move.tone-slam, .mnc-move.tone-stalk { --mc: #ff8a1e; }
+.mnc-move > small { display: block; font: 800 .46rem/1.1 var(--ui, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: #cdbb98; }
+.mnc-move-main { display: flex; align-items: center; gap: .22rem; white-space: nowrap; overflow: hidden; }
+.mnc-move-main .ic { width: .85rem; height: .85rem; flex: none; color: color-mix(in srgb, var(--mc) 55%, #fff); }
+.mnc-move-main b { font: 900 .78rem/1.1 var(--ui, sans-serif); color: #fff; overflow: hidden; text-overflow: ellipsis; }
+.mnc-dice { margin-left: auto; font: 900 .74rem/1 var(--ui, sans-serif); color: #fff; background: #0008; border-radius: .3rem; padding: .1rem .25rem; }
+.mnc-move-line { font: 700 .62rem/1.15 var(--ui, sans-serif); color: color-mix(in srgb, var(--mc) 35%, #fff); margin-top: .08rem; }
+.mnc-stats.two { grid-template-columns: 1fr 1fr; }
+.mnc-stats.two span { flex-direction: row; justify-content: center; gap: .3rem; padding: .16rem 0; }
+.mnc-stats.two i { font-size: .5rem; text-transform: uppercase; }
+.mnc-stats.two b { font: 900 .74rem/1 var(--ui, sans-serif); color: #fff; }
+.mnc-stats.two b.sm { font-size: .56rem; }
