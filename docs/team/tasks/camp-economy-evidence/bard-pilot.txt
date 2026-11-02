@@ -1,0 +1,8 @@
+QuestDice gold · normal · smart bot · 1 campaign(s) a class. Per won fight unless it says otherwise.
+act   battle gold = straights as gold + gold faces + monsters   | selling spoils | spent at camp | purse after camp | rounds | spoils metal (B/S/G) and average value
+1       40       =    5            +    7       +   28       |     21         |     55        |     23           |   4.2  | 85% / 10% / 5%  26 / 54 / 104
+      straights taken as gold: 5 times in 10 fights; dice gold a round (faces only) 1.7
+2       93       =    8            +   31       +   54       |     39         |    131        |     43           |   6.2  | 70% / 30% / 0%  33 / 68 / -
+      straights taken as gold: 7 times in 10 fights; dice gold a round (faces only) 5.0
+3      286       =   43            +  106       +  136       |     57         |    305        |     61           |  10.1  | 55% / 45% / 0%  46 / 90 / -
+      straights taken as gold: 19 times in 10 fights; dice gold a round (faces only) 10.5

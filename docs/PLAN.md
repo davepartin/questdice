@@ -1616,3 +1616,8 @@ Integrated the concurrently published ptc1 role-colored menu tiles before the fi
 ### 2 November 2026 — CAMP-01 camp audit and team plan
 
 Audited actual camp tabs, Talent workshop and five-class Hero navigation; documented a staged plan at docs/team/tasks/camp-experience-plan.md. Priorities: Hero reliability investigation, one compact talent workbench with always-visible size growth, shared camp/battle power-card presentation, then Gear/Store/Hero consistency. Confirmed stale Hero development copy and rank-aware power-cost display mismatch; healthy Hero tests passed, intermittent failure remains unconfirmed. Evidence and ownership contracts included. Audit/plan only; no camp UI or rule changes.
+
+
+### 2 November 2026 — CAMP-02 permanent training and focused Store
+
+Extended CAMP-01 with Dave's removal of temporary next-fight Store buffs and proposed permanent health/starting-magic/capacity training plus an all-upgrades overview. Candidate gains/prices and authoritative save/co-op contracts are in docs/team/tasks/camp-economy-training-plan.md. Completed a bounded released-rule five-class, one-seed economy pilot and exact heart-gold sensitivity math; limitations documented. Keep heart 4 at +2 pending evidence, not an automatic +4 change. Price candidates require a larger matched-policy study. Docs/analysis only; no live mechanics changed.

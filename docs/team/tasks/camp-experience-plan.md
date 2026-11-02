@@ -2,6 +2,10 @@
 
 Status: planning complete; implementation tasks READY and unclaimed. Requested 2 November 2026. No camp UI or rule changes are included in this audit.
 
+## Economy extension
+
+[CAMP-02](camp-economy-training-plan.md) records Dave's subsequent direction: remove new temporary Store buffs, introduce permanent health/starting-magic/capacity training and an all-upgrades overview, and validate prices before changing income. It supersedes this visual plan's Store assortment and no-new-mechanics scope only through the separate economy/rules work packages. Keep the existing integration/component file ownership. Heart 4 stays +2 unless the study demonstrates a need to change it.
+
 ## Product direction
 
 Keep the strongest existing interaction: the character dice board opens the card belonging to the selected die. Make camp feel like the same physical game as battle: printed cards and thick cardboard pieces contain permanent information; selection, affordability, gold balance and actions are the clearly changing layer. The next purchase must be understandable before tapping it.

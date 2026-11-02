@@ -1,0 +1,105 @@
+{
+  "rules": {
+    "heartAmp": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "heartWeaponBonus": 4,
+    "bodyPayers": 4,
+    "weaponLanes": 2,
+    "powerUpgrade": [
+      50,
+      90,
+      140
+    ],
+    "strength": {
+      "4": [
+        40
+      ],
+      "6": [
+        100
+      ],
+      "8": [
+        220
+      ]
+    },
+    "talentGrowth": {
+      "4": [
+        60
+      ],
+      "6": [
+        130
+      ],
+      "8": [
+        240
+      ]
+    },
+    "potionPrice": [
+      10,
+      20,
+      30
+    ],
+    "sellShare": 0.5
+  },
+  "heart": [
+    {
+      "bodyDie": "d4",
+      "goldFaceChance": 0.25,
+      "extraGoldUnfocusedPerRound": 0.3333333333333333,
+      "extraGoldHoldingHeart4PerRound": 2,
+      "maxExtraPerRound": 8
+    },
+    {
+      "bodyDie": "d6",
+      "goldFaceChance": 0.16666666666666666,
+      "extraGoldUnfocusedPerRound": 0.2222222222222222,
+      "extraGoldHoldingHeart4PerRound": 1.3333333333333333,
+      "maxExtraPerRound": 8
+    },
+    {
+      "bodyDie": "d8",
+      "goldFaceChance": 0.25,
+      "extraGoldUnfocusedPerRound": 0.3333333333333333,
+      "extraGoldHoldingHeart4PerRound": 2,
+      "maxExtraPerRound": 8
+    },
+    {
+      "bodyDie": "d10",
+      "goldFaceChance": 0.3,
+      "extraGoldUnfocusedPerRound": 0.39999999999999997,
+      "extraGoldHoldingHeart4PerRound": 2.4,
+      "maxExtraPerRound": 8
+    }
+  ],
+  "trainingCandidates": [
+    {
+      "kind": "health",
+      "gain": 4,
+      "cost": [
+        50,
+        100,
+        180
+      ]
+    },
+    {
+      "kind": "startMagic",
+      "gain": 1,
+      "cost": [
+        75,
+        150,
+        250
+      ]
+    },
+    {
+      "kind": "magicCapacity",
+      "gain": 2,
+      "cost": [
+        40,
+        80,
+        140
+      ]
+    }
+  ]
+}
