@@ -18,6 +18,7 @@ import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf } from './flat.js';
 import { monsterOf } from '../campaigns.js';
 import { roundCard } from './roundcard.js';
+import * as SP from './specials.js';
 import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
 
 let C = null;                // context from ui.js
@@ -54,7 +55,7 @@ async function startTable(ctx) {
   C = ctx;
   const { S } = C;
   B.net = !!ctx.net; B.starting = true; B.resolving = false; B.lastSig = '';
-  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0;
+  B.b = S.battle; B.party = !!S.battle.fighters; B.hero = B.party ? S.battle.fighters[0].hero : S.hero; B.active = 0; SP.setBattle(B.b); // T24: the Special labels read this battle
   if (B.net) { B.active = Sess.index(); refocus(); } B.quest = S.quest; B.ended = false; B.busy = true; B.sel = new Set(); B.resets = 0; B.target = 0; B.pickRound = null; B.picked = undefined; B.tlock = null; B.lastRep = null; B.straight = 'atk'; B.shownRound = 0; B.fresh = null;
   const layer = $('#b3'); layer.replaceChildren(); layer.className = 'b3-layer on loading';
   layer.append(h('div', { class: 'b3-loading' }, h('div', { class: 'b3-spin' }), h('p', {}, 'Setting up the table…')));
@@ -417,7 +418,7 @@ const heroIndex = (name) => B.b.fighters.findIndex((f) => f.hero.name === name);
 function paintHeroStaged(name) { const g = B.staged; const i = heroIndex(name); if (!g || i < 0) return; const f = B.b.fighters[i]; const hp = Math.max(0, Math.min(f.maxHp, g.h.get(name) ?? f.hp)); B.fb?.paintHero(i, hp, f.maxHp); if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'hero', name, shown: hp }); }
 export const traceStart = () => { B.trace = []; return B.trace; };
 export const traceRead = () => B.trace || [];
-function updatePlates() { for (const e of B.b.enemies) updatePlate(e); }
+function updatePlates() { if (B.b) B.b.aim = B.picked === false ? null : B.target; for (const e of B.b.enemies) updatePlate(e); } // (b.aim: the Special labels fill their progress bar on your target only)
 export const refreshPlates = () => updatePlates(); // (dev scripts)
 function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
 function titleCard(name, sub, tier) {
@@ -756,7 +757,7 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) { if (B.card) B.flourishLater = b.round; else HK.roundFlourish(B.root, b.round); } } // the next round's banner waits for the recap to close (it played unseen behind it)
+  if (B.shownRound !== b.round) { B.shownRound = b.round; if (b.round > 1 || !B.root.querySelector('.b3-titlecard')) { if (B.card) B.flourishLater = b.round; else { HK.roundFlourish(B.root, b.round); showPlan(); } } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
 }
 const caption = (content, cls = '') => h('p', { class: cls }, content);
@@ -818,6 +819,7 @@ export function renderShape() {
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.classList.toggle('idle', rolling);
   HK.setForecast(B.hud.forecast, rolling ? {} : HK.forecastValues(ev, b.mods));
+  if (D.SPECIALS.on && !rolling) updatePlates(); // T24: a Special's progress bar fills as you reroll
   HK.setNotes(B.hud.forecast, rolling ? [] : HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s'))); // the straight chooser in the bar says it already
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
   // one card at a time, in teaching order: read the tiles, then target, triple, paid rerolls, lock in
@@ -978,7 +980,7 @@ function refocus() {
   const t = Sess.current(); const i = Sess.index(); if (!t?.battle || i < 0) return false;
   const b = t.battle; E.focusFighter(b, i); const f = b.fighters[i];
   b.phase = f.board && f.hp > 0 ? 'shape' : 'reset';
-  B.b = b; B.active = i; B.hero = b.hero; if (C?.S) { C.S.battle = b; C.S.hero = b.hero; }
+  B.b = b; SP.setBattle(b); B.active = i; B.hero = b.hero; if (C?.S) { C.S.battle = b; C.S.hero = b.hero; }
   return true;
 }
 // Send one command; true when the table took it.
@@ -1189,7 +1191,13 @@ function showCard(el = B.card) {
 function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
-function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) HK.roundFlourish(B.root, r); }
+function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
+// T24: the round-start plan board (Grok's js/g3/specials.js): one row per monster with a Special this round; nothing at all while Specials are off.
+function showPlan() {
+  B.root?.querySelector('.sp-plan')?.remove();
+  const el = SP.planFor(B.b, { imgOf: (uid) => { const e = B.b?.enemies.find((x) => x.uid === uid); const d = e && (monsterOf(e.id, B.b.hero?.campaign) || D.MONSTERS[e.id]); return d?.img || ''; }, onFight: () => {} });
+  if (el) B.root.append(el);
+}
 async function lockLocalParty() {
   if (B.busy) return; B.busy = true;
   const b = B.b; const bw = B.bw; const f = b.fighters[B.active];

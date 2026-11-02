@@ -805,7 +805,9 @@ const SPECIAL_LINE = {
 // reroll; Damage goals are an estimate until the round resolves, because the monster's defence is rolled then.
 function specialProgress(b, e) {
   const sp = e.special; if (!sp || !(sp.goal > 0) || !b) return null;
-  const aimers = Array.isArray(b.fighters) ? b.fighters.filter((f) => f.hp > 0 && f.board && b.enemies[f.target ?? f.aim] === e) : (b.board ? [b] : []);
+  // who is putting attack on it: alone, you (when it is your target, b.aim); at a table, the heroes locked in on it plus the hero choosing now (the mirror b)
+  const aimers = !Array.isArray(b.fighters) ? (b.board && b.enemies[b.aim ?? 0] === e ? [b] : [])
+    : b.fighters.map((f, i) => (i === b.active ? (b.board && b.enemies[b.aim ?? -1] === e ? b : null) : (f.hp > 0 && f.locked && f.board && b.enemies[f.target] === e ? f : null))).filter(Boolean);
   const throwOf = (x) => { try { const ev = evaluate(x.hero, x.board, { straight: x.straight || 'atk' }); const m = x.mods || {}; return { atk: ev.atk + (m.atk || 0), pierce: ev.pierce + (m.pierce || 0) }; } catch { return { atk: 0, pierce: 0 }; } };
   const sum = aimers.reduce((a, x) => { const t = throwOf(x); return { atk: a.atk + t.atk, pierce: a.pierce + t.pierce }; }, { atk: 0, pierce: 0 });
   if (sp.id === 'shield') return { have: sum.atk, need: sp.goal, estimate: false };
