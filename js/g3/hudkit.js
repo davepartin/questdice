@@ -103,6 +103,7 @@ export function intentView(e) {
     case 'phase': return { tone: 'phase', shape: 'shield', icon: 'phase', title: i.n, fig: '◆ONLY', unit: 'pierce hurts', hint: 'normal attack passes through it', call: { head: 'ATTACKS PASS THROUGH', sub: 'only pierce hurts it now', ico: 'phase' } };
     case 'guard': return { tone: 'guard', shape: 'shield', icon: 'block', title: i.n, fig: r, unit: 'guard', hint: 'soaks non-pierce dmg' };
     case 'mend': return { tone: 'mend', shape: 'circle', icon: 'heal', title: i.n, fig: r, unit: 'heal', hint: 'heals itself' };
+    case 'sleep': return { tone: 'mend', shape: 'circle', icon: 'windup', title: i.n || 'Asleep', fig: 'Zzz', unit: 'asleep', hint: 'any hit that does not kill it wakes it' }; // T24 Sleeping
     case 'charge': return { tone: 'windup', shape: 'octagon', icon: 'windup', title: i.n || 'Wind-Up', fig: 'SLAM', unit: 'next round', hint: 'brace with block', call: { head: 'SLAM NEXT ROUND', sub: 'brace with block', ico: 'windup' }, hazard: true };
     case 'howl': return { tone: 'howl', shape: 'circle', icon: 'howl', title: i.n, fig: `+${i.k}`, unit: 'all hits', hint: 'the pack grows bolder' };
     case 'bind': return { tone: 'bind', shape: 'circle', icon: 'bind', title: i.n, fig: `${i.k}`, unit: i.k > 1 ? 'dice locked' : 'die locked', hint: 'cannot be rerolled next round' };

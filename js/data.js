@@ -279,6 +279,16 @@ export const CLASS2 = { on: false, songs: false, verse: true, guard: true, digIn
 //   MEND   a monster fighting alone that guards also heals `share` of what it guards (Dave: "maybe they have heal too, just like I have heal").
 //   BAG    a monster plays its six moves in a shuffled order, then shuffles them again (Dave: "you never know what order... some awareness
 //          but not perfect"), and its card shows what is still in the bag. Without it, it rolls its move die afresh each round.
+// T24 Monster Specials (Dave + Claude + Grok, 2 Nov 2026; docs/team/tasks/T24-monster-specials.md). Off in the game; the ?lab preview turns it on.
+// A monster may carry one Special: a goal for the heroes (top of its label) and what happens if they miss it (bottom). Numbers by act (I, II, III);
+// team goals are scaled by the company's strength. PROPOSED numbers, to be sized from measured rolls.
+//   slam     Damage N on its wind-up round, or its next blow lands double
+//   shield   Attack N (what is thrown at it before its defence) breaks the shield for good; until then it stops `block` of every attack
+//   spawn    any damage each round, or it calls one small monster (at most `spawnMax` a fight)
+//   bounty   kill it within `bountyRounds` rounds for `bounty` gold (a reward, no punishment)
+//   regrow   Damage N each round, or it heals N
+//   sleeping does nothing until hurt; any hit that does not kill it wakes it, and awake it hits double
+export const SPECIALS = { on: false, slam: [20, 34, 52], shield: { goal: [25, 40, 60], block: [12, 20, 30] }, regrow: [8, 14, 20], bounty: [8, 15, 25], bountyRounds: 2, spawnMax: 3, minion: 'goblin' };
 export const PRESSURE = { on: false, fury: { from: 5, per: [1, 2, 3], max: 6 }, rally: { min: 3, every: 3, need: 2, small: 60 , most: 99}, mend: { share: 0.5 }, bag: true };
 export const WEAPONS2 = {
   faces: {

@@ -230,7 +230,14 @@ export function smartActs(b) {
   }
   // target: weakest, but hit a Stalker or a foe winding up first, and leave a Fire Ward or a Phasing foe alone when there is another
   const alive = b.enemies.map((e, i) => ({ e, i })).filter((x) => x.e.hp > 0);
-  const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) || (wise && e.windup) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0);
+  const T0 = evaluate(b.hero, b.board); const reach = T0.atk + (b.mods?.atk || 0) + T0.pierce + (b.mods?.pierce || 0); // roughly what this round's blow lands
+  const spec = (e) => { const sp = e.special; if (!sp) return 0; // T24 Monster Specials: a sensible player reads the label
+    if (sp.id === 'sleeping' && !sp.awake) return reach >= e.hp ? 2 : -2; // finish it in one blow, or let it sleep
+    if (sp.id === 'shield' && !sp.broken) return T0.atk + (b.mods?.atk || 0) >= sp.goal ? 1 : -1;
+    if (sp.id === 'bounty' && sp.left > 0 && reach >= e.hp) return 2;
+    if (sp.id === 'spawn' && sp.spawned < 3) return 0.5;
+    return 0; };
+  const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) || (wise && e.windup) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0) + spec(e);
   alive.sort((a, c) => want(c.e) - want(a.e) || a.e.hp - c.e.hp);
   const ev = evaluate(b.hero, b.board);
   const straight = b.hero.gold < 200 ? 'gold' : 'atk';

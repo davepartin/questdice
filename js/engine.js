@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   BUNDLE_ODDS, bundlePrice,
 } from './data.js';
 import { TRAINING, trainingRanks } from './training.js';
@@ -695,6 +695,14 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = nu
   };
 }
 export function rollIntent(e, rng) {
+  const sp = SPECIALS.on ? e.special : null;
+  if (sp?.id === 'sleeping' && !sp.awake) { e.intent = { n: 'Asleep', v: 'sleep', f: 0, m: 0 }; return e.intent; } // T24: it does nothing until hurt
+  if (sp?.id === 'slam') { // T24: wind up, then a blow at double, then one ordinary round, and again
+    if (e.windup) { e.windup = false; sp.wait = 1; const best = [...(e.faces || [])].filter((x) => isDamageIntent(x)).sort((a, c) => ((c.f || 0) + (c.m || 0) * 3) - ((a.f || 0) + (a.m || 0) * 3))[0] || { v: 'strike', f: 2, m: 1 };
+      e.intent = { ...best, n: 'Slam', v: best.v === 'pierce' ? 'pierce' : 'strike', slam: true, double: true }; return e.intent; }
+    if (!(sp.wait > 0)) { e.intent = { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }; return e.intent; }
+    sp.wait -= 1;
+  }
   if (e.windup) {
     const s = e.slam || mdef(e.id).slam || { f: 0, m: 0 };
     e.windup = false;
@@ -723,6 +731,152 @@ export const armorOf = (e, rng) => (e?.armor ? sumDice(rng, e.armor.n, e.armor.s
 export const isDamageIntent = (i) => DAMAGE_VERBS.has(i.v);
 export const GUARD_VERBS = new Set(['guard', 'ward']);
 export const burnOf = (e) => (e?.intent?.v === 'ward' ? (e.intent.k || 0) + Math.floor(((e.flat || 0) - (e.teamFlat || 0)) / 2) + (e.edge?.burn || 0) : 0); // Fire Ward's burn (a table's extra hit power is for split hits, not this)
+// ---- T24 Monster Specials (SPECIALS in data.js; off in the game). A Special is a goal for the heroes and what happens if they miss it. ----
+// It lives on the monster (e.special) and is read by the label (specialView), the round-start plan board (specialPlan) and the after-round card
+// (rep.specials). Choosing them draws on its own seeded stream, so the fight's dice are the same whether the switch is on or off.
+const SPECIAL_INFO = {
+  slam: { name: 'Slam', tone: 'damage', icon: 'slam', soft: false },
+  shield: { name: 'Shield', tone: 'block', icon: 'block', soft: false },
+  spawn: { name: 'Spawn', tone: 'summon', icon: 'summon', soft: true },
+  bounty: { name: 'Bounty', tone: 'gold', icon: 'gold', soft: true, reward: true },
+  regrow: { name: 'Regrow', tone: 'heal', icon: 'heal', soft: false },
+  sleeping: { name: 'Sleeping', tone: 'damage', icon: 'windup', soft: false, always: true },
+};
+export const specialInfo = (id) => SPECIAL_INFO[id] || null;
+const actIx3 = (b) => Math.min(3, Math.max(1, campOfBattle(b)?.act || 1)) - 1;
+const teamM = (b) => (Array.isArray(b?.fighters) && b.fighters.length > 1 ? Math.max(1, b.team?.m || b.fighters.length) : 1);
+const goalOf = (b, arr) => Math.max(1, Math.round(arr[actIx3(b)] * teamM(b))); // team goals grow with the company; a lone hero's are the table's
+function makeSpecial(b, id) {
+  const sp = { id };
+  if (id === 'slam') { sp.goal = goalOf(b, SPECIALS.slam); sp.wait = 0; }
+  if (id === 'shield') { sp.goal = goalOf(b, SPECIALS.shield.goal); sp.block = Math.round(SPECIALS.shield.block[actIx3(b)] * Math.sqrt(teamM(b))); }
+  if (id === 'regrow') sp.goal = goalOf(b, SPECIALS.regrow);
+  if (id === 'bounty') { sp.gold = SPECIALS.bounty[actIx3(b)]; sp.left = SPECIALS.bountyRounds; }
+  if (id === 'spawn') sp.spawned = 0;
+  return sp;
+}
+// Which monsters carry which Special, by act, step and kind of fight. Act I teaches them one at a time; at most one punishing Special a fight there.
+export function pickSpecials(act, step, kind, n, r) {
+  const pick = (list) => list[Math.floor(r() * list.length)];
+  const out = Array(n).fill(null);
+  if (act <= 1 && step <= 2 && kind === 'battle') return out; // the first fights are plain: learn the dice first
+  if (kind === 'boss') { out[0] = 'regrow'; if (n > 1) out[1] = 'spawn'; if (act >= 2 && n > 2) out[2] = 'slam'; return out; }
+  if (kind === 'elite') { out[0] = act <= 1 ? 'shield' : pick(['shield', 'slam']); if (n > 1) out[1] = pick(['spawn', 'bounty']); return out; }
+  const order = Array.from({ length: n }, (_, i) => i).sort(() => r() - 0.5);
+  if (act <= 1 && step === 3) { out[order[0]] = pick(['spawn', 'bounty']); return out; }
+  const hard = act <= 1 ? (step >= 8 && n > 1 ? pick(['slam', 'shield', 'sleeping']) : step >= 6 ? pick(['slam', 'shield']) : 'slam') : pick(n > 1 ? ['slam', 'shield', 'regrow', 'sleeping'] : ['slam', 'shield', 'regrow']);
+  out[order[0]] = hard;
+  if (n > 1) out[order[1]] = pick(['spawn', 'bounty']);
+  return out;
+}
+export function assignSpecials(b) {
+  if (!SPECIALS.on || b.specialsSet) return; b.specialsSet = true;
+  const c = campOfBattle(b) || {}; const q = b.quest || {}; const kind = q.kind || 'battle';
+  const r = makeRng(hashSeed(c.seed || 1, c.act || 1, q.step ?? c.step ?? 1, q.id || q.name || kind, 'specials'));
+  const ids = pickSpecials(c.act || 1, q.step ?? c.step ?? 1, kind, b.enemies.length, r);
+  b.enemies.forEach((e, i) => { if (ids[i]) e.special = makeSpecial(b, ids[i]); });
+  if (kind === 'boss' && (c.act || 1) <= 1 && b.enemies.length === 1) { // the Act I boss brings a small friend who calls for help: kill the adds, or keep on the boss?
+    const like = b.enemies[0]; const m = spawnEnemy(SPECIALS.minion, { hpMult: (like.hpMult || 1) * 0.6, flat: like.flat - (like.teamFlat || 0), teamFlat: like.teamFlat || 0, rewardMult: like.rewardMult, edge: like.edge, campaign: c }, b.rng);
+    m.special = makeSpecial(b, 'spawn'); b.enemies.push(m);
+  }
+}
+// The two label lines, at most 14 characters each (Grok's rule for the narrowest phone). Null when the monster has no Special or it is quiet this round.
+function labelOf(e) {
+  const sp = e.special; if (!sp) return null;
+  switch (sp.id) {
+    case 'slam': return e.intent?.v === 'charge' ? { top: `Damage ${sp.goal}`, bottom: 'or Slam 2x' } : e.intent?.double ? { top: 'Block it!', bottom: 'Slams 2x now' } : null;
+    case 'shield': return sp.broken ? null : { top: `Attack ${sp.goal}`, bottom: `or Blocks ${sp.block}` };
+    case 'spawn': return sp.spawned >= SPECIALS.spawnMax ? null : { top: 'Damage 1', bottom: 'or Spawn 1' };
+    case 'bounty': return sp.left > 0 ? { top: sp.left > 1 ? `Kill in ${sp.left}` : 'Kill now', bottom: `+${sp.gold} gold` } : null;
+    case 'regrow': return { top: `Damage ${sp.goal}`, bottom: `or Heals ${sp.goal}` };
+    case 'sleeping': return sp.awake ? { top: 'Awake!', bottom: 'Hits 2x' } : { top: `Damage ${Math.max(0, Math.ceil(e.hp))}`, bottom: 'or Wakes: 2x' };
+    default: return null;
+  }
+}
+const SPECIAL_LINE = {
+  slam: (e, l) => `${l.top}, or it Slams for double.`,
+  shield: (e, l) => `Attack ${e.special.goal} breaks its shield; until then it stops ${e.special.block}.`,
+  spawn: () => 'Hit it, or it Spawns 1.',
+  bounty: (e) => `Kill it ${e.special.left > 1 ? `within ${e.special.left} rounds` : 'this round'} for ${e.special.gold} gold.`,
+  regrow: (e) => `Damage ${e.special.goal}, or it Heals ${e.special.goal}.`,
+  sleeping: (e) => (e.special.awake ? 'Awake, and hitting double.' : `Sleeping. Kill it in one round (${Math.ceil(e.hp)}), or leave it be.`),
+};
+// What the heroes have put toward the goal so far this round (null when the goal is not a number to fill). Attack goals are exact as you
+// reroll; Damage goals are an estimate until the round resolves, because the monster's defence is rolled then.
+function specialProgress(b, e) {
+  const sp = e.special; if (!sp || !(sp.goal > 0) || !b) return null;
+  const aimers = Array.isArray(b.fighters) ? b.fighters.filter((f) => f.hp > 0 && f.board && b.enemies[f.target ?? f.aim] === e) : (b.board ? [b] : []);
+  const throwOf = (x) => { try { const ev = evaluate(x.hero, x.board, { straight: x.straight || 'atk' }); const m = x.mods || {}; return { atk: ev.atk + (m.atk || 0), pierce: ev.pierce + (m.pierce || 0) }; } catch { return { atk: 0, pierce: 0 }; } };
+  const sum = aimers.reduce((a, x) => { const t = throwOf(x); return { atk: a.atk + t.atk, pierce: a.pierce + t.pierce }; }, { atk: 0, pierce: 0 });
+  if (sp.id === 'shield') return { have: sum.atk, need: sp.goal, estimate: false };
+  if (['slam', 'regrow'].includes(sp.id)) return { have: sum.atk + sum.pierce, need: sp.goal, estimate: true };
+  return null;
+}
+// For the label (Grok's screen): see the data contract in docs/team/tasks/T24-monster-specials.md.
+export function specialView(b, e) {
+  if (!SPECIALS.on || !e?.special || e.hp <= 0) return null;
+  const info = SPECIAL_INFO[e.special.id]; const l = labelOf(e); if (!info || !l) return null;
+  const hero = b?.hero || b?.fighters?.[b?.active || 0]?.hero; const seen = hero?.seenSpecials || [];
+  return { id: e.special.id, name: info.name, top: l.top, bottom: l.bottom, tone: info.tone, icon: info.icon, always: !!info.always, isNew: !seen.includes(e.special.id), progress: specialProgress(b, e) };
+}
+// The round-start plan board: one row per monster with a Special this round.
+export function specialPlan(b) {
+  if (!SPECIALS.on) return [];
+  return b.enemies.filter((e) => e.hp > 0).map((e) => ({ e, v: specialView(b, e) })).filter((x) => x.v)
+    .map(({ e, v }) => ({ uid: e.uid, name: e.name, top: v.top, bottom: v.bottom, tone: v.tone, isNew: v.isNew, line: SPECIAL_LINE[e.special.id](e, v) }));
+}
+// Before the strikes: a Shield breaks for good when the attack thrown at it this round reaches its goal. Returns the guard it adds.
+function shieldGuard(e, attack) {
+  const sp = SPECIALS.on && e?.special; if (!sp || sp.id !== 'shield' || sp.broken || e.hp <= 0) return 0;
+  if (attack >= sp.goal) { sp.broken = true; sp.brokeNow = attack; return 0; }
+  sp.stopped = attack > 0 ? attack : 0; return sp.block;
+}
+// After the blows: every Special checks its goal, the misses happen, and the round report gets one short line per monster.
+function settleSpecials(b, rep, { goldTo } = {}) {
+  if (!SPECIALS.on) return;
+  const rows = []; const room = () => ENEMY_CAP - b.enemies.filter((x) => x.hp > 0).length;
+  for (const e of [...b.enemies]) {
+    const sp = e.special; if (!sp) continue;
+    const dmg = Math.max(0, (e.hp0 ?? e.hp) - Math.max(0, e.hp)); const dead = e.hp <= 0; const row = (ok, line, have, need) => rows.push({ uid: e.uid, name: e.name, id: sp.id, ok, line, have, need });
+    if (sp.done) continue;
+    switch (sp.id) {
+      case 'slam':
+        if (e.intent?.v === 'charge') { if (dead || dmg >= sp.goal) { e.windup = false; sp.wait = 1; row(true, dead ? 'Slam broken: it fell.' : `Slam broken, ${dmg} of ${sp.goal}.`, dmg, sp.goal); } else { sp.wait = 1; row(false, `Slam next round. ${dmg} of ${sp.goal}.`, dmg, sp.goal); } }
+        else if (e.intent?.double && !dead) row(false, 'It Slammed for double.');
+        break;
+      case 'shield':
+        if (sp.brokeNow != null) { row(true, `Shield broken, ${sp.brokeNow} of ${sp.goal}.`, sp.brokeNow, sp.goal); sp.brokeNow = null; sp.done = true; }
+        else if (sp.stopped > 0 && !dead) row(false, `Shield stopped ${sp.block}. ${sp.stopped} of ${sp.goal}.`, sp.stopped, sp.goal);
+        sp.stopped = 0;
+        break;
+      case 'spawn':
+        if (dead || e.fresh) break;
+        if (dmg > 0) row(true, 'Spawn stopped.');
+        else if (sp.spawned < SPECIALS.spawnMax && room() > 0) {
+          sp.spawned++; const m = spawnEnemy(SPECIALS.minion, { hpMult: (e.hpMult || 1) * 0.5, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
+          m.fresh = true; b.enemies.push(m); (rep.summoned ||= []).push(m.uid); row(false, 'Spawned a friend.');
+        }
+        break;
+      case 'bounty':
+        if (dead && sp.left > 0) { const to = goldTo?.(e); if (to) to.goldEarned = (to.goldEarned || 0) + sp.gold; else b.goldEarned = (b.goldEarned || 0) + sp.gold; row(true, `Bounty claimed, +${sp.gold} gold.`); sp.done = true; }
+        else if (!dead) { sp.left -= 1; if (sp.left <= 0) { row(false, 'The bounty is gone.'); sp.done = true; } }
+        break;
+      case 'regrow':
+        if (dead) break;
+        if (dmg >= sp.goal) row(true, `It couldn't regrow. ${dmg} of ${sp.goal}.`, dmg, sp.goal);
+        else { const before = e.hp; e.hp = Math.min(e.maxHp, e.hp + sp.goal); row(false, `It regrew ${e.hp - before}. ${dmg} of ${sp.goal}.`, dmg, sp.goal); }
+        break;
+      case 'sleeping':
+        if (sp.awake) break;
+        if (dead) { row(true, 'It never woke.'); sp.done = true; } else if (dmg > 0) { sp.awake = true; row(false, 'You woke it. It hits double now.'); } else row(true, 'Still asleep.');
+        break;
+      default: break;
+    }
+  }
+  rep.specials = rows;
+  const heroes = Array.isArray(b.fighters) ? b.fighters.map((f) => f.hero) : [b.hero]; // a hero has met a Special once its round is played
+  for (const h of heroes) { if (!h) continue; const seen = new Set(h.seenSpecials || []); for (const e of b.enemies) if (e.special) seen.add(e.special.id); h.seenSpecials = [...seen]; }
+}
 // After the round: a Stalker that took no harm will Pounce next round.
 function settleStalks(b, rep) {
   rep.stalks = [];
@@ -752,6 +906,7 @@ const diceSum = (e, intent, dice) => (dice || []).slice(0, (intent.m || 0) + ext
 function magnitude(e, intent, dice, weaken) {
   let m = intent.f + diceSum(e, intent, dice);
   if (isDamageIntent(intent)) m = Math.max(0, m + extraDice(e, intent).rem + e.buff + (e.fury || 0) - weaken);
+  if (isDamageIntent(intent) && SPECIALS.on && (intent.double || (e.special?.id === 'sleeping' && e.special.awake))) m *= 2; // T24: a Slam lands double; so does a monster you woke
   return m;
 }
 // What made a monster's number this round, for the recap: its move's fixed part, the dice it rolled, the fight's flat bonus, a howl, and any
@@ -849,6 +1004,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
   };
   b.magic0 = b.magic; b.potions0 = b.potions; // for secret objectives
   dressNemesis(b.enemies, quest.nemesis);
+  assignSpecials(b); // T24 Monster Specials (off in the game)
   beginReset(b);
   return b;
 }
@@ -1179,7 +1335,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     if (!tgt || tgt.hp <= 0) tgt = alive[0];
     rep.targetUid = tgt.uid;
     const phase = tgt.intent.v === 'phase'; // normal attack passes through; pierce still lands
-    const guard = phase ? T.atk : (GUARD_VERBS.has(tgt.intent.v) ? tgt.mag : 0) + (tgt.arm || 0);
+    const guard = phase ? T.atk : (GUARD_VERBS.has(tgt.intent.v) ? tgt.mag : 0) + (tgt.arm || 0) + shieldGuard(tgt, T.atk); // T24: a Shield stops its share until the attack reaches its goal
     tgt.lastHurt = T.pierce > T.atk ? 'pierce' : (ev.splash || m.aoe) ? 'magic' : T.block > T.atk ? 'tank' : 'blade';
     const dmg = Math.max(0, T.atk - guard) + T.pierce;
     rep.guarded = Math.min(guard, T.atk); if (phase) rep.phased = true;
@@ -1219,7 +1375,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
     if (m.frog && e === frogged) { rep.acts.push({ uid: e.uid, name: 'Frog', v: 'frog', mag: 0, k: 0, early, frog: true }); rep.frog = e.uid; continue; } // Polymorph (mw1, PROPOSED): a frog cannot attack this round
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow, before your block
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted, slam2x: !!(SPECIALS.on && i.double) };
     switch (i.v) {
       case 'strike': { const r = strikeHit(e, false); Object.assign(act, r); break; }
       case 'pierce': { const r = strikeHit(e, true); Object.assign(act, r); break; }
@@ -1279,6 +1435,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   }
   b.riposte = false;
   settleStalks(b, rep);
+  settleSpecials(b, rep); // T24: goals checked, misses happen, one short line per monster
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
 
   // 3. Rage: bosses change their ways at half health.
@@ -2020,6 +2177,7 @@ export function newPartyBattle(heroes, quest0, rng) {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter), team: { m: +sc.m.toFixed(2), hp: +sc.hp.toFixed(2), flat: sc.flat }, // how hard the company made it
     active: 0, round: 0, phase: 'reset', outcome: null, report: null, stolen: 0,
   };
+  assignSpecials(b); // T24 Monster Specials (off in the game)
   beginPartyRound(b);
   focusFighter(b, 0);
   return b;
@@ -2186,8 +2344,9 @@ export function resolveParty(b) {
     committed: acting.map((f) => ({ name: f.hero.name, atk: f.T.atk, pierce: f.T.pierce, block: f.T.block, heal: f.T.heal, magic: f.T.magic, targetUid: b.enemies[f.target]?.uid ?? null })), // what each hero locked in, even one who falls before striking (the battle report)
   };
   const guardLeft = new Map();
+  const attackOn = new Map(); for (const f of acting) { const t = b.enemies[f.target]?.hp > 0 ? b.enemies[f.target] : alive[0]; if (t) attackOn.set(t.uid, (attackOn.get(t.uid) || 0) + (f.T.atk || 0)); } // T24: the whole table's attack on each monster
   for (const e of alive) {
-    const g = (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0);
+    const g = (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0) + shieldGuard(e, attackOn.get(e.uid) || 0);
     if (g) guardLeft.set(e.uid, g);
   }
   // Monsters answer the living. The slowest hero takes the double share; each hero's block soaks only their share.
@@ -2272,7 +2431,7 @@ export function resolveParty(b) {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
     if (frogs.has(e.uid)) { rep.acts.push({ uid: e.uid, name: e.intent.n, v: 'frog', frog: true, mag: 0 }); return; } // Polymorph (mc1, PROPOSED): a frog cannot act
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow
-    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, frosted };
+    const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, frosted, slam2x: !!(SPECIALS.on && i.double) };
     switch (i.v) {
       case 'strike': { Object.assign(act, strikeHit(e, false)); break; }
       case 'pierce': { Object.assign(act, strikeHit(e, true)); break; }
@@ -2341,6 +2500,7 @@ export function resolveParty(b) {
   });
   if (moral) b.moralNext = moral; // nobody left to act this round: it carries to the first hero next round
   settleStalks(b, rep);
+  settleSpecials(b, rep, { goldTo: (e) => { const s = rep.strikes.find((x) => (x.killed && x.targetUid === e.uid) || (x.splashed || []).some((y) => y.uid === e.uid && y.killed)); return s ? b.fighters.find((f) => f.hero.name === s.name) : null; } }); // T24
   for (const e of b.enemies) { e.cancelled = false; e.fresh = false; }
   for (const e of livingNow()) {
     const rg = e.rage || mof(e.id, b).rage;
