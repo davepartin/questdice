@@ -1621,3 +1621,10 @@ Audited actual camp tabs, Talent workshop and five-class Hero navigation; docume
 ### 2 November 2026 — CAMP-02 permanent training and focused Store
 
 Extended CAMP-01 with Dave's removal of temporary next-fight Store buffs and proposed permanent health/starting-magic/capacity training plus an all-upgrades overview. Candidate gains/prices and authoritative save/co-op contracts are in docs/team/tasks/camp-economy-training-plan.md. Completed a bounded released-rule five-class, one-seed economy pilot and exact heart-gold sensitivity math; limitations documented. Keep heart 4 at +2 pending evidence, not an automatic +4 change. Price candidates require a larger matched-policy study. Docs/analysis only; no live mechanics changed.
+
+
+## 2 November 2026 — Camp upgrades and isolated training candidate
+
+Build 20261102camp1 implements the CAMP-01/02 first integrated slice. Dice and Hero link to a card-stock All upgrades ledger; talent growth (D4→D6→D8→D10), current faces and five symbol choices share one physical workbench. Decorative camp chrome compacts while editing; normal browsing retains the dice-board connection. Retired six temporary Store boosts at the authoritative purchase API while preserving prepaid blessings, potions and owned gear. Camp/Hero descriptions now use rank formulas and upgraded magic costs; tab switches reset stale scroll.
+
+Candidate permanent max-health/start-magic/capacity training is implemented only at preview/camp-training/ with separate saves, no cloud/tables, test prices and act/rank/expected-rank/payment guards. Root rules keep training off and Heart-4 gold +2. Training release remains gated on the CAMP-02 matched economy study; broader power-card adapter/Gear art work remains. Details: docs/team/tasks/camp-implementation.md. 534 game tests pass; final phone browser pass covers 390×844, 430×932, 375×667, larger text, all five Hero tabs, purchases, growth retention and preview isolation with zero page errors. Chromium, not Safari. Screens/results in camp-implementation-evidence.

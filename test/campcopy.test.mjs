@@ -7,7 +7,7 @@ test('camp bar: Store, not Supplies; no migration notice', () => {
 });
 test('Heart card wording and talent notes', () => {
   assert.match(cb, /' boost to matching symbols on white strength dice'/); assert.match(cb, /' boost to matching weapon dice'/);
-  assert.match(scr, /Max \$\{info\.same\} of the same power symbol per die\. Choose wisely\./); assert.match(scr, /Gives \+\$\{n\}/);
+  assert.match(scr, /Max \$\{info\.same\} of each symbol/); assert.match(scr, /Gives \+\$\{n\}/);
 });
 test('cp2: no bottom Store strip in camp; the camp picture does not make a layer above the hero chip', () => {
   const css = ['../css/screens.css', '../css/camp.css'].map((f) => fs.readFileSync(new URL(f, import.meta.url), 'utf8')).join('\n');

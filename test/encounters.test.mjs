@@ -38,16 +38,26 @@ test('borrowed boots: the feet roll the bigger die for one fight, then go back',
   assert.equal(E.sidesOf(h, 'S'), own, 'the cobbler has them back');
 });
 
-test('the Camp Store: two specials a camp, each for the hero who buys it, and a mystery bundle once a camp', () => {
-  const a = hero('Ada', 'knight', 1); const s = hero('Smalls', 'dwarf', 2); s.campaign = a.campaign; a.gold = 300; s.gold = 300;
-  const t = E.storeTonics(a); assert.equal(t.length, 2); assert.notEqual(t[0].id, t[1].id);
-  assert.equal(E.buyTonic(a, t[0].id), true);
-  assert.equal(E.buyTonic(a, t[0].id), false, 'one each');
-  assert.equal(E.storeTonics(s)[0].bought, false, 'the other hero can still buy theirs');
-  const bl = a.campaign.blessings.at(-1); assert.equal(bl.who, 'Ada');
-  assert.deepEqual(E.pullBlessings(s), E.pullBlessings(hero('X', 'knight', 9)), 'Smalls gets nothing from Ada’s special');
-  const o = E.bundleOffer(a); const inst = E.buyBundle(a);
-  assert.ok(inst && a.bag.length === 1 && a.gold === 300 - t[0].price - o.price);
-  assert.equal(E.buyBundle(a), false, 'one bundle a camp');
-  a.campaign.step += 1; assert.equal(E.bundleOffer(a).bought, false, 'new stock next camp');
+test('retired Store boosts reject stale purchases and preserve already-paid effects', () => {
+  const a = hero('Ada', 'knight', 1), other = hero('Smalls', 'dwarf', 2);
+  other.campaign = a.campaign; a.gold = 300;
+  a.campaign.shop = { step: '1.1', items: [], tonics: [{ id: 'tea', who: [] }] };
+  a.campaign.blessings = [{ id: 'store-tea', fights: 1, who: 'Ada', startMagic: 3 }];
+  const before = structuredClone(a);
+  assert.deepEqual(E.storeTonics(a), []);
+  for (const id of ['oil','boots','shield','paint','tea','stew','unknown']) assert.equal(E.buyTonic(a, id), false);
+  assert.deepEqual(a, before, 'no charge, offer regeneration or paid-effect deletion');
+  const b = fight(a), plain = fight(hero('Ada', 'knight', 1));
+  assert.equal(b.magic, Math.min(E.magicCapOf(a), plain.magic + 3));
+  assert.equal(E.pullBlessings(other).startMagic, 0, 'paid effects remain personal');
+  E.spendBlessings(a.campaign);
+  assert.equal(E.pullBlessings(a).startMagic, 0, 'existing expiry is preserved');
+});
+test('a mystery bundle is a persistent weapon, once per hero per camp', () => {
+  const a = hero('Ada', 'knight', 1); a.gold = 300;
+  const o = E.bundleOffer(a), inst = E.buyBundle(a);
+  assert.ok(inst && a.bag.length === 1 && a.gold === 300 - o.price);
+  assert.equal(E.buyBundle(a), false);
+  a.campaign.step += 1;
+  assert.equal(E.bundleOffer(a).bought, false);
 });

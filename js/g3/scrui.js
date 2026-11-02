@@ -136,7 +136,7 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
 // answers, and sent to the table, which keeps the real copy.
-const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeHeart', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
+const HERO_OPS = ['takeCharm', 'dropCharm', 'buyCharm', 'sellDiamond', 'upgradeHeart', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie', 'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyTraining', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond'];
 const HE = Object.fromEntries(HERO_OPS.map((name) => [name, (hero, ...args) => (X.netOp ? X.netOp(name, args, () => E[name](hero, ...args)) : E[name](hero, ...args))]));
 
 // First-run coach tip, remembered in the save like the classic one.
@@ -445,7 +445,7 @@ export function create(opts = {}) {
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true, money: { label: '', value: 0 } }))),
       eyebrow('Magical powers'),
-      h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
+      h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.powerCost(k, k.cost, E.powerLevel(hero, k.id))), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, campPowerText(k, E.powerLevel(hero, k.id)))))),
       h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
   };
   const loaded = T?.hero || null;
@@ -1151,6 +1151,13 @@ function petSection(hero) {
     h('div', { class: 'ur-copy' }, h('b', {}, `${D.PETS[o.type].name}, a pet`, h('em', { class: 'ur-to' }, ` ${o.price} gold`)), h('small', {}, 'The Camp Store has one today. A pet rolls one more die beside your board.')),
     btn('See it', () => { X.S.tab = 'store'; X.renderCamp(); }, { kind: 'ghost', cls: 'ur-buy' }))];
 }
+// Permanent descriptions use the same rank formulas without inventing a current battle outcome.
+function campPowerText(k, level) {
+  if (k.riposte) return `+${E.scaleNum(k.fx.block, level)} block. Unused block strikes back as attack.`;
+  if (k.fx?.frog) return `Your target becomes a frog and cannot attack this round.${k.frogPierce?.[level] ? ` The frog takes +${k.frogPierce[level]} pierce.` : ''}`;
+  const text = effectLine(k, { level });
+  return k.markGold ? `${text} Gain ${E.scaleNum(k.markGold, level)} gold if your target falls this round.` : text;
+}
 // A focused class library for camp. Browsing never changes the equipped powers.
 const CP = { hero: null, slot: 'A', id: null };
 function campPowers(hero) {
@@ -1165,7 +1172,7 @@ function campPowers(hero) {
   const refresh = (selector = '.cp-detail') => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
   const done = () => { sfx.level(); X.persist(); refresh(); };
   const status = (r) => r.equipped ? 'Equipped' : r.gate ? `Level ${r.gate} required` : r.learned ? 'Learned' : `Learn · ${E.learnInfo(hero, r.card.id).cost} gold`;
-  const magic = (c) => `${c.cost}${c.kind === 'scale' ? `–${E.scaleMax(c, E.powerLevel(hero, c.id))}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
+  const magic = (c) => `${E.powerCost(c, c.cost, E.powerLevel(hero, c.id))}${c.kind === 'scale' ? `–${E.scaleMax(c, E.powerLevel(hero, c.id))}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
   const tabs = h('div', { class: 'cp-slots', role: 'group', 'aria-label': 'Power slots' }, D.POWER_SLOTS.map((slot) => {
     const eq = lib.find((r) => r.card.slot === slot && r.equipped)?.card;
     return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
@@ -1177,20 +1184,20 @@ function campPowers(hero) {
   let action, cost = null;
   if (row.gate) action = shLock(`Opens at hero level ${row.gate}`);
   else if (row.equipped) {
-    if (up.next) { cost = up.cost; action = shBuy(hero, { label: `Upgrade to level ${up.next}`, cost, ok: up.ok, onBuy: () => { if (HE.upgradePower(hero, k.id)) done(); } }); }
+    if (up.next) { cost = up.cost; action = shBuy(hero, { label: `Upgrade to rank ${romans[up.next]}`, cost, ok: up.ok, onBuy: () => { if (HE.upgradePower(hero, k.id)) done(); } }); }
     else action = shDone('Highest power level');
   } else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in slot ${k.slot} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
     h('span', { class: 'sh-buy-l' }, `Equip in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, 'Free'));
   else { const learn = E.learnInfo(hero, k.id); cost = learn.cost; action = shBuy(hero, { label: 'Learn & equip', cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
   const when = k.kind === 'charge' ? '' : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
   const levels = h('details', { class: 'cp-levels ww-pack' }, h('summary', {}, ico('spark'), 'All power levels'),
-    h('div', { class: 'cp-level-list' }, Array.from({ length: E.powerLevelsOf(hero) + 1 }, (_, lv) => h('div', { class: lv === level ? 'current' : '' }, h('b', {}, `Level ${lv}${lv === level ? ' · current' : ''}`), h('span', {}, shortLine(k, lv))))));
+    h('div', { class: 'cp-level-list' }, Array.from({ length: E.powerLevelsOf(hero) + 1 }, (_, lv) => h('div', { class: lv === level ? 'current' : '' }, h('b', {}, `Rank ${romans[lv]}${lv === level ? ' · current' : ''}`), h('span', {}, shortLine(k, lv))))));
   return h('div', { class: 'cp-workshop' }, tabs, h('p', { class: 'cp-instruction' }, 'Choose a slot, then inspect a power. One equipped power per slot.'), cards,
     h('section', { class: `cp-detail tone-${toneOf(k)}`, tabindex: '-1', 'aria-labelledby': 'cp-title' },
       h('div', { class: 'cp-title-row' }, h('span', { class: 'cp-medal' }, powerGlyph(k)), h('div', {}, h('small', {}, `${k.slot} · ${D.SLOT_NAME[k.slot]} · ${status(row)}`), h('h3', { id: 'cp-title' }, k.name))),
-      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Level ${level}`)),
-      h('p', { class: 'cp-effect' }, effectLine(k, { level })), when ? h('p', { class: 'cp-when' }, when) : null,
-      row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · LEVEL ${level}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · LEVEL ${up.next}`), h('b', {}, shortLine(k, up.next)))) : null,
+      h('div', { class: 'cp-meta' }, h('span', {}, ico('spark'), magic(k)), h('span', {}, `Rank ${romans[level]}`)),
+      h('p', { class: 'cp-effect' }, campPowerText(k, level)), when ? h('p', { class: 'cp-when' }, when) : null,
+      row.equipped && up.next ? h('div', { class: 'cp-compare' }, h('div', {}, h('small', {}, `CURRENT · RANK ${romans[level]}`), h('b', {}, shortLine(k, level))), ico('chevron'), h('div', {}, h('small', {}, `UPGRADE · RANK ${romans[up.next]}`), h('b', {}, shortLine(k, up.next)))) : null,
       row.equipped && up.next ? h('p', { class: 'cp-change' }, h('small', {}, 'UPGRADE ADDS'), h('span', {}, upgradeLine(k, level))) : null,
       !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name} in slot ${k.slot}${equipped ? `, replacing ${equipped.name}` : ''}. ${row.learned ? 'Equip it to upgrade it.' : 'You can swap learned powers freely at camp.'}`) : null,
       action, cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null,
@@ -1452,7 +1459,8 @@ function talentWorkshop(hero, slot) {
   const size = hero.special[slot], info = E.talentInfo(hero, slot), up = E.specialUpgrade(hero, slot);
   const stored = hero.talent?.[slot] || [];
   const symbol = (f) => Array.isArray(stored[f]) ? stored[f][0] : stored[f];
-  const face = TAL.slot === slot && TAL.face != null && TAL.face >= 0 && TAL.face < info.faces ? TAL.face : null;
+  const face = TAL.slot === slot && TAL.face != null && TAL.face >= 0 && TAL.face < info.faces ? TAL.face : Math.max(0, info.nums.findIndex((_, f) => !symbol(f)));
+  TAL.slot = slot; TAL.face = face;
   const current = face != null ? symbol(face) : null, chosen = current || TAL.sym;
   const refresh = (selector) => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
   const fixed = [1, 2, 3].map((n) => h('div', { class: `tw-face fixed ${n === 2 ? 'double' : ''}`, 'aria-label': `Face ${n}: ${n === 2 ? 'doubles this hand' : 'blank'}. Fixed.` },
@@ -1492,16 +1500,14 @@ function talentWorkshop(hero, slot) {
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
   return h('div', { class: 'tw-workshop' },
-    talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
-      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }, // tz1 (Dave): glide down to Choose a face
-      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
+    h('section', { class: 'tw-growth', 'aria-label': 'Talent die size' },
+      h('div', { class: 'tw-growth-head' }, h('b', {}, 'Grow your talent die'), h('small', {}, 'Keep every chosen symbol')),
+      h('div', { class: 'tw-ladder' }, [4, 6, 8, 10].map(n => h('span', { class: n === size ? 'current' : n < size ? 'past' : '' }, `D${n}`))),
+      h('div', { class: 'tw-growth-action' }, h('b', {}, D.NEXT_SIZE[size] ? `D${size} → D${D.NEXT_SIZE[size]}` : `D${size}`), grow)),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Each numbered face gives you that many of its symbol: "Gives +6" means 6.`),
-    h('p', { class: 'tw-max' }, `Max ${info.same} of the same power symbol per die. Choose wisely.`), detail,
-    h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
-      h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
-        up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
+    h('p', { class: 'tw-rule' }, `1 & 3: blank · 2: double hand · Max ${info.same} of each symbol`), detail);
+
 }
 // a talent die: grow it, then tap an empty number face to pick its symbol
 function talentSheet(hero, slot) {
@@ -1580,17 +1586,14 @@ function forgeTab() {
 }
 const zone = (cls, icon, title, sub, ...kids) => h('section', { class: `sx-zone ${cls}`, id: `fs-${cls}` },
   h('header', { class: 'zn-head' }, h('span', { class: 'zn-tag' }, ico(icon), h('b', {}, title))), sub ? h('p', { class: 'zn-sub' }, sub) : null, ...kids);
-// ---- the Camp Store (Dave, Oct 2026): always at camp, never on the road. Today's specials (one fight's help, for you), a mystery
-// bundle, the weapons on the shelf (new every camp), supplies, a pet and now and then a charm, and the dearest thing on the shelf
-// up top with how close your purse is, so there is something to save up for.
-const TONIC_ICO = { pierce: 'pierce', boot: 'boot', block: 'shield', atk: 'burst', magic: 'spark', heal: 'heart' };
+// The Store sells potions, equipment and persistent weapons. Next-fight rentals are retired.
 function storeCanBuy(hero) {
   const stock = E.shopStock(hero); const pot = E.potionBuyInfo(hero);
   return stock.filter((it) => !it.sold && hero.gold >= it.price && (it.inst.diamond ? !E.diamondCaseFull(hero) : !E.bagFull(hero))).length
-    + E.storeTonics(hero).filter((t) => !t.bought && hero.gold >= t.price).length + (pot.ok ? 1 : 0) + (E.potionUpgrade(hero).ok ? 1 : 0) + (E.rerollDieInfo(hero).ok ? 1 : 0);
+    + (pot.ok ? 1 : 0) + (E.potionUpgrade(hero).ok ? 1 : 0) + (E.rerollDieInfo(hero).ok ? 1 : 0);
 }
 // The cardboard Camp Store (Dave approved 26 Oct 2026, mockup docs/team/mockups/cards/shop.html v2): a wood sign, cardboard cards on the table,
-// paper price tags with pencil coins (red when you are short). Sections: specials counter, the weapon shelf, the Diamond case (the T17 card with
+// paper price tags with pencil coins (red when you are short). Sections: weapon bundle, the weapon shelf, the Diamond case (the T17 card with
 // an ice-blue sheen), odds and ends (the pet), supplies (potions, the belt's third slot, the 4th reroll die).
 // Every tag runs the same HE.* purchase the old rows did; every price and gate is read from engine.js.
 const METAL_INK = ['#c98a4a', '#d8e2ea', '#ffd24a', '#ffd24a'];
@@ -1604,10 +1607,8 @@ function storeTab() {
     return CB.priceTag(it.price, { poor: hero.gold < it.price, aria: `Buy ${D.WEAPONS[it.inst.id].name} for ${it.price} gold`, onBuy: tap(() => { if (HE.buyItem(hero, i)) ok(); else no('Not enough gold.'); }) }); };
   const saveNote = (it) => hero.gold >= it.price ? 'You can afford it now.' : `${hero.gold} of ${it.price} gold.`;
   const bar = (it) => h('span', { class: 'cst-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(it.price), 'aria-valuenow': String(Math.min(hero.gold, it.price)) }, h('i', { style: { width: `${Math.min(100, (hero.gold / it.price) * 100)}%` } }));
-  // the counter: today's specials and the mystery bundle
-  const specials = E.storeTonics(hero).map((t) => CB.storeCard({ cls: t.bought ? 'have' : '', art: t.icon === 'boot' ? CB.storeIcon('boots', '#c98a4a') : CB.storeSym(t.icon === 'block' ? 'block' : t.icon), title: t.name, lines: [t.text],
-    stamp: t.bought ? 'Yours' : '', tag: t.bought ? null : CB.priceTag(t.price, { poor: hero.gold < t.price, aria: `Buy ${t.name} for ${t.price} gold`,
-      onBuy: tap(() => { if (HE.buyTonic(hero, t.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${t.name}: ready for your next fight.`); } else no('Not enough gold.'); }) }) }));
+  // A mystery bundle contains a persistent weapon; it is separate from retired next-fight boosts.
+  const specials = [];
   const bo = E.bundleOffer(hero);
   if (bo) specials.push(CB.storeCard({ cls: `parcel ${bo.bought ? 'have' : ''}`, art: CB.storeText('?', '#c84a3a', 84), title: 'Mystery bundle', lines: ['A weapon wrapped in a tablecloth.',
     h('span', { class: 'cst-odds' }, bo.odds.map((o, i) => h('span', { class: `m${i}` }, `${Math.round(o * 100)}% ${D.RARITY[i]}`)))],
@@ -1651,7 +1652,7 @@ function storeTab() {
   return h('div', { class: 'cst-store' },
     h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, 'New stock every camp')),
     sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
-    sect('zn-specials', 'Today’s specials', 'One fight of help. Bought today, used in your next fight, gone after.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))),
+    sect('zn-specials', 'Wrapped weapon', 'A surprise weapon to keep in your pack.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))),
     sect('zn-shelf', 'On the shelf', 'Weapons. What you buy goes in your pack. Tap a card to see it.', h('div', { class: 'cst-grid two' }, shelf)),
     diamonds.length ? sect('zn-diamond', 'Diamond case', `A Diamond is used up in one fight. You carry at most ${D.DIAMOND.max}.`, h('div', { class: 'cst-diacase' }, diamonds)) : null,
     pet ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
@@ -1701,7 +1702,7 @@ function hallOfFame(hero) {
     r.firsts || r.seconds ? h('div', { class: 'hf-row two' }, cell('1st place', r.firsts, 'gold'), cell('2nd place', r.seconds, 'silver')) : h('p', { class: 'fine' }, 'Trophies for 1st and 2nd place are won in party games.'));
 }
 function heroTab({ chips = false } = {}) {
-  const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; hero.perks.forEach((p) => { pc[p] = (pc[p] || 0) + 1; });
+  const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; (hero.perks || []).forEach((p) => { pc[p] = (pc[p] || 0) + 1; });
   const log = (X.S.company?.campaign || hero.campaign)?.chronicle || [];
   const need = D.xpToNext(hero.level);
   const anchor = (id) => h('span', { class: 'fx-anchor', id: `fs-${id}` });
@@ -1718,7 +1719,7 @@ function heroTab({ chips = false } = {}) {
     h('div', { class: 'sx-check' }, h('span', {}, `Hints: ${Coach.hintsOn() ? 'on' : 'off'}`), btn(Coach.hintsOn() ? 'Turn off' : 'Turn on', () => { Coach.setHints(!Coach.hintsOn()); X.renderCamp(); }, { kind: 'ghost' })),
     h('p', { class: 'fine' }, `${hero.stats.battles} victories · ${hero.stats.defeats} defeats · ${hero.stats.triples} triples · ${hero.stats.straights} straights`),
     anchor('h-perks'), eyebrow('Perks'), Object.keys(pc).length ? h('div', { class: 'ht-perks' }, Object.entries(pc).map(([id, n]) => h('div', { class: 'ht-perk' }, ico(PERK_ICON[id] || 'star'), h('div', {}, h('b', {}, `${D.PERKS[id].name}${n > 1 ? ` ×${n}` : ''}`), h('small', {}, D.PERKS[id].text))))) : h('p', { class: 'muted empty' }, 'You earn a perk every level. Growing up, with extra steps.'),
-    anchor('h-powers'), eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, E.cardsOf(hero).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(k.cost), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, k.text)))),
+    anchor('h-powers'), eyebrow('Magical powers'), h('div', { class: 'ci-cards' }, E.cardsOf(hero).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.powerCost(k, k.cost, E.powerLevel(hero, k.id))), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, campPowerText(k, E.powerLevel(hero, k.id)))))),
     eyebrow('Healing'), h('div', { class: 'ci-cards' }, h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.healCostOf(hero)), ico('spark')), h('b', {}, 'Heal with magic'), h('small', {}, `Restore ${E.healAmountOf(hero)} health`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, '0', ico('spark')), h('b', {}, 'Healing potion'), h('small', {}, `${E.potionStock(hero)} on your belt, ${E.potionHpOf(hero)} health each`)), h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(D.NUDGE_COST), ico('spark')), h('b', {}, 'Heart change'), h('small', {}, 'Turn your heart die by 1'))),
     log.length ? [eyebrow('The road remembers'), h('div', { class: 'ht-log' }, log.slice(0, 8).map((e) => h('div', {}, h('b', {}, e.title), h('small', {}, e.text))))] : null);
 }
@@ -1742,17 +1743,67 @@ function shrinkSection(hero) {
 function campNavigation(fromBoard) {
   return h('nav', { class: 'cw-nav', 'aria-label': 'Camp sections' }, [['dice', 'Dice'], ['powers', 'Powers'], ['gear', 'Gear'], ['store', 'Store'], ['hero', 'Hero']].map(([id, label]) =>
     h('button', { type: 'button', class: X.S.campPage === id ? 'on' : '', 'aria-current': X.S.campPage === id ? 'page' : null, 'data-camp-page': id,
-      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.tab = 'forge'; X.S.campPage = id; X.renderCamp(fromBoard); }) }, label)));
+      onclick: tap(() => { SHEET.inline = false; SHEET.slot = null; X.S.tab = 'forge'; X.S.campPage = id; X.S.holdScroll = false; X.renderCamp(fromBoard); }) }, label)));
+}
+// One camp ledger: names and prices describe a specific purchase; talent face prices never masquerade as die growth.
+function goCampPage(page) {
+  SHEET.inline = false; SHEET.slot = null; X.S.tab = 'forge'; X.S.campPage = page; X.S.holdScroll = false; X.renderCamp(SHEET.fromBoard);
+}
+function upgradeLink() {
+  return btn('All upgrades', () => goCampPage('upgrades'), { kind: 'ghost', icon: 'gold', cls: 'cu-open' });
+}
+function upgradesOverview(hero) {
+  const entry = (name, value, r, action, label = 'Open') => h('div', { class: `cu-entry ${r?.ok ? 'afford' : ''}` },
+    h('div', {}, h('b', {}, name), h('span', {}, value), r?.why && r.why !== 'Need gold' ? h('small', {}, r.why) : null),
+    h('button', { type: 'button', disabled: label === 'Train' && !r?.ok, onclick: tap(action), 'aria-label': `${label} ${name}${r?.cost ? `, ${r.cost} gold` : ''}` },
+      r?.cost ? priceChip(r.cost, { poor: hero.gold < r.cost }) : null, h('span', {}, label)));
+  const dice = ['W', 'E', 'N', 'S', 'SW', 'SE'].map(slot => {
+    const name = GRID.find(([s]) => s === slot)[1], cur = E.sidesOf(hero, slot);
+    const r = !E.isActive(hero, slot) ? E.unlockInfo(hero, slot) : slot === 'W' || slot === 'E' ? E.strengthUpgrade(hero, slot) : slot === 'N' ? E.mindUpgrade(hero) : slot === 'S' ? E.speedUpgrade(hero) : E.specialUpgrade(hero, slot);
+    return entry(name, !E.isActive(hero, slot) ? 'Unlock this die' : (r.next || (r.act && D.NEXT_SIZE[cur])) ? `D${cur} → D${r.next || D.NEXT_SIZE[cur]}` : `D${cur}`, r, () => openSlot(slot));
+  });
+  const talents = ['SW', 'SE'].map(slot => {
+    if (!E.isActive(hero, slot)) return null;
+    const info = E.talentInfo(hero, slot), stored = hero.talent?.[slot] || [];
+    const f = info.nums.findIndex((_, f) => !(Array.isArray(stored[f]) ? stored[f].length : stored[f]));
+    return entry(GRID.find(([s]) => s === slot)[1] + ' symbols', f < 0 ? 'Every face filled' : `Face ${info.nums[f]} · choose from 5 symbols`, f < 0 ? null : { cost: info.costs[f], ok: hero.gold >= info.costs[f] }, () => openSlot(slot));
+  });
+  const powers = E.cardsOf(hero).map(k => { const r = E.powerUpgradeInfo(hero, k.id), rank = E.powerLevel(hero, k.id);
+    return entry(k.name, r.next ? `Rank ${romans[rank]} → ${romans[r.next]}` : `Rank ${romans[rank]}`, r, () => { CP.slot = k.slot; CP.id = k.id; CP.hero = `${hero.name}:${hero.cls}`; goCampPage('powers'); }); });
+  const section = (title, kids) => h('section', { class: 'cu-section', id: `cu-${title.toLowerCase().replace(/[^a-z]+/g, '-')}` }, h('h3', {}, title), kids);
+  const training = E.campTrainingOn() ? section('Train your hero', ['health', 'start', 'capacity'].map(kind => {
+    const r = E.trainingInfo(hero, kind);
+    return h('div', { class: 'cu-training', id: `cu-training-${kind}`, 'data-training': kind }, entry(r.name, r.next == null ? `${r.cur} · fully trained` : `${r.cur} → ${r.next}`, r, () => {
+      if (HE.buyTraining(hero, kind, r.rank, 'camp')) { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); } else toast(E.trainingInfo(hero, kind).why || 'Open this upgrade again.');
+    }, 'Train'), h('small', {}, `Rank ${r.rank} / 3`));
+  })) : null;
+  const heart = E.heartUpgrade(hero);
+  return h('div', { class: 'cu-overview' }, h('header', { class: 'cu-title' }, h('h2', {}, 'All upgrades'), h('b', {}, `${hero.gold} gold`)),
+    E.campTrainingOn() ? h('p', { class: 'cu-note' }, 'Training playtest · test prices · separate heroes') : null,
+    h('nav', { class: 'cu-index', 'aria-label': 'Upgrade categories' }, [
+      ['Dice sizes', 'cu-dice-sizes'], ['Talent symbols', 'cu-talent-symbols'], ['Power cards', 'cu-power-cards'],
+      ...(E.campTrainingOn() ? [['Max health', 'cu-training-health'], ['Start magic', 'cu-training-start'], ['Capacity', 'cu-training-capacity']] : []),
+      ['Equipment', 'cu-equipment-supplies'],
+    ].map(([name, id]) => h('button', { type: 'button', onclick: tap(() => document.getElementById(id)?.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' })) }, name))),
+    training, section('Dice sizes', dice), section('Talent symbols', talents), section('Power cards', powers),
+    (heart.next || heart.why === 'Max rank') ? section('Heart die', [entry('Heart rank', heart.next ? `Rank ${hero.heartRank || 1} → ${heart.next}` : 'Highest available rank', heart, () => openSlot('C'))]) : null,
+    section('Equipment & supplies', [
+      entry('Potion belt', `${E.potionUpgrade(hero).cur} potion slots${E.potionUpgrade(hero).next ? ` → ${E.potionUpgrade(hero).next}` : ''}`, E.potionUpgrade(hero), () => goCampPage('store')),
+      entry('Reroll dice', `${E.rerollDieInfo(hero).cur} dice${E.rerollDieInfo(hero).next ? ` → ${E.rerollDieInfo(hero).next}` : ''}`, E.rerollDieInfo(hero), () => goCampPage('store')),
+      ...[E.petOffer(hero)].filter(Boolean).map(p => entry('Pet companion', D.PETS[p.type].name, { cost: p.price, ok: !p.owned && hero.gold >= p.price, why: p.owned ? 'Already with you' : '' }, () => goCampPage('store'))),
+      entry('Potions & weapons', 'Shop or sell weapons from your pack', null, () => goCampPage('store'), 'Store'), entry('Your pack', 'Equip or sell weapons', null, () => goCampPage('gear'), 'Gear')]),
+    btn('Back to dice', () => goCampPage('dice'), { kind: 'ghost' }));
 }
 function campContent(hero) {
   switch (X.S.campPage) {
+    case 'upgrades': return upgradesOverview(hero);
     case 'gear': return gearTab({ grid: false, chips: false });
     case 'store': return h('div', { class: 'cw-storepage' }, storeTab()); // a real tab like Gear (Dave, cp5): nav, art, act bar stay
     case 'powers': return zone('zn-powers', 'spark', 'Your powers', `${D.CLASSES[hero.cls].name} power library`, campPowers(hero));
-    case 'hero': return h('div', { class: 'cw-supplies' }, heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
+    case 'hero': return h('div', { class: 'cw-supplies' }, upgradeLink(), heroTab({ chips: false }), hero.pet ? petCard(hero) : null,
       h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
       X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
-    default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, diceGrid(hero), campInspector(), SHEET.inline ? null : diamondBring(hero));
+    default: return h('div', { class: `cw-workshop ${SHEET.inline ? 'inspecting' : ''}` }, SHEET.inline ? null : upgradeLink(), SHEET.inline ? null : diceGrid(hero), campInspector(), SHEET.inline ? null : diamondBring(hero));
   }
 }
 export function camp(fromBoard) {
@@ -1767,19 +1818,21 @@ export function camp(fromBoard) {
   else { if (perkHero && (!S.perkOffer || S.perkFor !== perkHero.name)) { S.perkOffer = E.offerPerks(perkHero, X.fresh()); S.perkFor = perkHero.name; } if (!perkHero) { S.perkOffer = null; S.perkFor = null; } }
   const perkPanel = perkHero && S.perkOffer ? panel('sx-perks glow', eyebrow(`${perkHero.name} still owes a perk`, 'gold'), h('div', { class: 'perk-row' }, S.perkOffer.map((id, i) => perkCard(id, perkHero, () => { if (X.net) { sfx.level(); X.netPerk(id); return; } E.takePerk(perkHero, id); S.perkOffer = null; sfx.level(); X.persist(); X.renderCamp(fromBoard); }, i)))) : null;
   const seats = !X.net && (S.company?.members.length || 0) > 1 ? h('div', { class: 'sx-seats' }, S.company.members.map((m, i) => h('button', { type: 'button', class: S.seat === i ? 'on' : '', onclick: tap(() => { S.seat = i; S.hero = m; sfx.select(); X.renderCamp(fromBoard); }) }, emblem(m.cls), h('span', {}, h('b', {}, m.name), h('small', {}, `Lv ${m.level} · ${m.gold}g`))))) : null;
-  const keep = $('.sx-camp-scroll'); const y = keep && S.holdScroll !== false ? keep.scrollTop : 0;
+  const resetScroll = S.holdScroll === false;
+  const keep = $('.sx-camp-scroll'); const y = keep && !resetScroll ? keep.scrollTop : 0; S.holdScroll = true;
   const canBuyDie = GRID.some(([slot]) => slotCanBuy(hero, slot));
   let tip = null;
   if (!hero.tips?.c_first && Coach.hintsOn()) { if (hero.gold > 0 && canBuyDie) tip = coachBox('c_first'); }
   else tip = coachBox('c_hands');
   const body = h('div', { class: `sx-tab forge ${S.campPage === 'store' ? 'store' : ''}` }, campNavigation(fromBoard), campContent(hero), !SHEET.inline && S.campPage === 'dice' ? tip : null);
-  mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
+  mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp ${SHEET.inline ? 'cw-inspecting' : ''} ${SHEET.inline || S.campPage === 'upgrades' ? 'cw-focused' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
       X.partyBar?.(), seats, perkPanel, campStatus(hero),
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', () => toRoad(hero), { big: true, icon: 'map', cls: 'wide' })))));
   const sc = $('.sx-camp-scroll'); if (sc && y) sc.scrollTop = y;
+  if (resetScroll) { const side = $('.sx-side'); if (side) { side.scrollTop = 0; SCR.scrolled?.(0); } }
   { const side = $('.sx-side'); const st = side?.querySelector('.sx-sidetop'); if (side && st) side.style.setProperty('--stick', `${st.offsetHeight}px`); }
   lay('camp');
   SCR.enter('camp', { hero, heroes: X.members() }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });

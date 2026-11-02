@@ -1,0 +1,117 @@
+{
+  "results": [
+    {
+      "hero": "knight",
+      "rendered": true
+    },
+    {
+      "hero": "bard",
+      "rendered": true
+    },
+    {
+      "hero": "wizard",
+      "rendered": true
+    },
+    {
+      "hero": "ranger",
+      "rendered": true
+    },
+    {
+      "hero": "dwarf",
+      "rendered": true
+    },
+    {
+      "heroHeaderY": 462.921875,
+      "viewport": 844,
+      "scroll": 0,
+      "side": 0
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "growth": {
+        "x": 42.171875,
+        "y": 244.125,
+        "width": 305.65625,
+        "height": 148.84375,
+        "top": 244.125,
+        "right": 347.828125,
+        "bottom": 392.96875,
+        "left": 42.171875
+      },
+      "palette": {
+        "x": 42.171875,
+        "y": 590.296875,
+        "width": 305.65625,
+        "height": 64,
+        "top": 590.296875,
+        "right": 347.828125,
+        "bottom": 654.296875,
+        "left": 42.171875
+      },
+      "viewport": 844
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "growth": {
+        "x": 42.171875,
+        "y": 281.125,
+        "width": 345.65625,
+        "height": 148.84375,
+        "top": 281.125,
+        "right": 387.828125,
+        "bottom": 429.96875,
+        "left": 42.171875
+      },
+      "palette": {
+        "x": 42.171875,
+        "y": 627.296875,
+        "width": 345.65625,
+        "height": 64,
+        "top": 627.296875,
+        "right": 387.828125,
+        "bottom": 691.296875,
+        "left": 42.171875
+      },
+      "viewport": 932
+    },
+    {
+      "width": 375,
+      "height": 667,
+      "growth": {
+        "x": 42.171875,
+        "y": 167.125,
+        "width": 290.65625,
+        "height": 148.84375,
+        "top": 167.125,
+        "right": 332.828125,
+        "bottom": 315.96875,
+        "left": 42.171875
+      },
+      "palette": {
+        "x": 42.171875,
+        "y": 513.296875,
+        "width": 290.65625,
+        "height": 64,
+        "top": 513.296875,
+        "right": 332.828125,
+        "bottom": 577.296875,
+        "left": 42.171875
+      },
+      "viewport": 667
+    },
+    {
+      "namespace": [
+        "questdice.preview-camp-training.hero.campknight"
+      ],
+      "training": {
+        "health": 1,
+        "start": 1,
+        "capacity": 1
+      },
+      "gold": 255
+    }
+  ],
+  "errors": []
+}

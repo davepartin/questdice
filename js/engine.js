@@ -9,8 +9,9 @@ import {
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
-  STORE_TONICS, STORE_TONICS_SHOWN, BUNDLE_ODDS, bundlePrice,
+  BUNDLE_ODDS, bundlePrice,
 } from './data.js';
+import { TRAINING, trainingRanks } from './training.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
 
 const mdef = (id, camp) => packMonster(id, camp) || MONSTERS[id];
@@ -279,7 +280,7 @@ export function newHero({ name, cls, seed, full = false, color, pack } = {}) {
   else { loadout.NW = makeWeapon(c.weapons[0], 0, rng); loadout.NE = makeWeapon(c.weapons[1], 0, rng); }
   const packId = packIdOf(pack);
   return {
-    v: 1, name, cls, heartRank: 1, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
+    v: 1, name, cls, training: trainingRanks(), heartRank: 1, color: colorIdOf({ cls, color }), level: 1, xp: 0, gold: 0, perks: [], pendingPerks: 0, potions: POTION_START,
     // slow classes (hands: 6) start with ONE d6 hand: the left, weapon hand
     strength: { W: c.hands || 4, E: 4 }, special: { SW: 4, SE: 4 }, talent: { SW: [], SE: [] } /* face 4 starts empty on both talent dice (Dave, 26 Oct 2026); the player fills it at camp */, dice: full ? null : [...START_DICE], difficulty: 'normal', loadout, bag: [],
     campaign: { pack: packId, act: 1, step: 1, seed: (seed ?? Math.floor(Math.random() * 1e9)) >>> 0, shop: null, wins: 0, nemeses: [], blessings: [], chronicle: [] },
@@ -304,9 +305,33 @@ export function takeCharm(hero, id) { if (TEAMWORK.noCharms || !CHARMS[id] || ha
 export function dropCharm(hero, id) { const i = (hero.charms || []).indexOf(id); if (i < 0) return false; hero.charms.splice(i, 1); return true; }
 // charms you could be offered: ones you do not hold, picked by a seeded rng
 export function charmChoices(hero, rng, n = 1) { if (TEAMWORK.noCharms) return []; const pool = Object.keys(CHARMS).filter((id) => !hasCharm(hero, id)); const out = []; while (out.length < n && pool.length) out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]); return out; }
-export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0);
-export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic;
-export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0); // grows with level and the Deep Well perk
+export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0) + trainingBonus(hero, 'health');
+export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic + trainingBonus(hero, 'start');
+export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0) + trainingBonus(hero, 'capacity'); // grows with level and the Deep Well perk
+// Candidate only: main.js enables it solely in the isolated camp-training preview.
+let campTraining = false;
+export const useCampTraining = () => { campTraining = true; };
+export const campTrainingOn = () => campTraining;
+const trainingBonus = (hero, kind) => campTraining ? trainingRanks(hero?.training)[kind] * TRAINING[kind].amount : 0;
+export function trainingInfo(hero, kind) {
+  const def = Object.hasOwn(TRAINING, kind) ? TRAINING[kind] : null;
+  if (!def || !hero?.campaign) return { ok: false, why: 'Unknown training' };
+  const rank = trainingRanks(hero.training)[kind];
+  const cur = kind === 'health' ? maxHpOf(hero) : kind === 'start' ? Math.min(startMagicOf(hero), magicCapOf(hero)) : magicCapOf(hero);
+  const next = rank < 3 ? cur + (kind === 'start' ? Math.max(0, Math.min(def.amount, magicCapOf(hero) - startMagicOf(hero))) : def.amount) : null;
+  const cost = def.costs[rank] ?? null, gate = rank + 1;
+  const why = !campTraining ? 'Preview only' : rank >= 3 ? 'Fully trained' : !Number.isInteger(hero.campaign.act) || hero.campaign.act < gate ? `Act ${gate}` : next === cur ? 'Increase magic capacity first' : !Number.isFinite(hero.gold) || hero.gold < cost ? 'Need gold' : '';
+  return { kind, name: def.name, rank, cur, next, cost, gate, ok: !why, why };
+}
+// Expected rank prevents a repeated click/request from buying the following rank.
+// The screen supplies camp context; an online candidate must also pass table.js's phase/owner guard.
+export function buyTraining(hero, kind, expectedRank, phase) {
+  const r = trainingInfo(hero, kind);
+  if (phase !== 'camp' || !r.ok || expectedRank !== r.rank) return false;
+  hero.gold -= r.cost;
+  hero.training = { ...trainingRanks(hero.training), [kind]: r.rank + 1 };
+  return true;
+}
 export const healAmountOf = () => HEAL_AMOUNT; // Heal with Magic is the same for every hero (Dave): 2 magic for 3 health, no class or perk changes it
 export const powerLevelsOf = (hero) => Math.min(POWER_UPGRADE.length, CLASSES[hero?.cls]?.powerLevels ?? 3);
 export const maxFeetOf = (hero) => CLASSES[hero?.cls]?.maxFeet ?? 10;
@@ -1610,28 +1635,10 @@ export function buyItem(hero, i) {
   if (bagFull(hero)) return false;
   hero.gold -= it.price; it.sold = true; hero.bag.push(it.inst); return true;
 }
-// ---- the Camp Store's counter: two specials a camp (one fight each, for the hero who buys it) and a mystery bundle.
-// At a table the counter is shared but every hero buys their own; `who` lists the heroes who already have one.
-const actIx = (c) => Math.min(3, Math.max(1, c?.act || 1)) - 1;
-export function storeTonics(hero) {
-  const c = hero.campaign; if (!c) return [];
-  shopStock(hero);
-  if (!c.shop.tonics) {
-    const ids = Object.keys(STORE_TONICS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'tonics'));
-    const pickN = []; while (pickN.length < Math.min(STORE_TONICS_SHOWN, ids.length)) { const id = ids[Math.floor(r() * ids.length)]; if (!pickN.includes(id)) pickN.push(id); }
-    c.shop.tonics = pickN.map((id) => ({ id, who: [] }));
-  }
-  const ai = actIx(c);
-  return c.shop.tonics.map((t) => { const d = STORE_TONICS[t.id]; const n = d.by[ai];
-    return { id: t.id, name: d.name, icon: d.icon, n, text: d.text(n), price: d.price[ai], bought: t.who.includes(hero.name) }; });
-}
-export function buyTonic(hero, id) {
-  const t = storeTonics(hero).find((x) => x.id === id); if (!t || t.bought || hero.gold < t.price) return false;
-  const d = STORE_TONICS[id]; hero.gold -= t.price;
-  hero.campaign.shop.tonics.find((x) => x.id === id).who.push(hero.name);
-  hero.campaign.blessings = [...(hero.campaign.blessings || []), { id: `store-${id}`, name: d.name, text: t.text, fights: 1, who: hero.name, [d.key]: t.n }];
-  return true;
-}
+// Retired next-fight Store boosts. Keep these entry points to reject stale clients without
+// touching prepaid campaign blessings, whose application and expiry stay unchanged.
+export function storeTonics() { return []; }
+export function buyTonic() { return false; }
 export function bundleOffer(hero) {
   const c = hero.campaign; if (!c) return null;
   shopStock(hero);
