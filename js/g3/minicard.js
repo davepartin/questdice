@@ -43,15 +43,23 @@ export function demoData(enemies) {
   return { owns, plans };
 }
 
-// The card's facts (battle3d's facts(e)): { hp, maxHp, move: { word, dice, icon, tone, line } | null, block, speed }
+// The card's facts (battle3d's facts(e)): { hp, maxHp, move, block, speed, die: { rolled, rows: [{ nums, word, dice, icon, tone, lit }] } }
+// The move die (Dave, 2 Nov 2026): every monster rolls a d6 against its six faces each round. The face it rolled is coloured in; the rest are
+// outlined, with their numbers, so the odds can be read. A move that did not come from the die (a Slam it wound up, asleep) shows above it.
+const nums = (xs) => (xs.length > 1 && xs.every((x, i) => !i || x === xs[i - 1] + 1) ? `${xs[0]}–${xs[xs.length - 1]}` : xs.join('·'));
 function cardFacts(F, specials) {
   const pct = Math.max(0, Math.min(100, (100 * F.hp) / Math.max(1, F.maxHp)));
-  const m = F.move;
+  const m = F.move; const D6 = F.die; const fromDie = !!(D6?.rolled && D6.rows.some((r) => r.lit));
+  const moveBox = m && !fromDie ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
+    h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null), m.line ? h('div', { class: 'mnc-move-line' }, m.line) : null) : null;
+  const dieBox = D6?.rows?.length ? h('div', { class: 'mnc-die' },
+    h('small', { class: 'mnc-die-head' }, fromDie ? ['Move die · rolled ', h('b', { class: 'mnc-pip' }, String(D6.rolled))] : m ? 'Move die · rolls again next round' : 'Move die · d6 each round'),
+    ...D6.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
+      h('div', { class: 'mnc-face-main' }, h('span', { class: 'mnc-n' }, nums(r.nums)), HK.icon(r.icon || 'atk'), h('b', {}, r.word), r.dice ? h('span', { class: 'mnc-dice' }, r.dice) : null),
+      r.lit && m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null))) : null;
   return [
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
-    h('div', { class: `mnc-move tone-${m?.tone || 'none'}` }, h('small', {}, 'This round'),
-      m ? h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null) : h('div', { class: 'mnc-move-main' }, h('b', {}, 'Nothing')),
-      m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null),
+    moveBox, dieBox,
     h('div', { class: 'mnc-stats two' }, h('span', {}, h('i', {}, 'Block'), h('b', { class: F.block.length > 5 ? 'sm' : '' }, F.block)), h('span', {}, h('i', {}, 'Speed'), h('b', {}, F.speed))),
     specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null,
   ].filter(Boolean);

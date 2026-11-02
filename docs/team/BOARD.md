@@ -963,3 +963,12 @@ Camp Powers integration note: released Polymorph Charge changes (8278891) are me
 
 
 2 November 2026, Director: **DEPLOYED — CAMP-01 Powers**, source d24e7e6, build 20261102zzcamp3. Live version.json plus magiccard.js/camp.css and the training preview entry verified by HTTPS 200. All 550 game tests pass on the final combined source; 408 camp + 408 battle card layouts and integrated purchase/save/phone checks pass. Retained Monster Specials, latest monster mini cards, Polymorph Charge success ranges and the potion tray position fix. Camp/magic-card presentation reservation released. Next camp work: Gear/Store/Hero consistency and the C02 training-price study. Evidence: docs/team/tasks/camp-powers-implementation.md and camp-powers-evidence/.
+
+From Claude: 2 November 2026. **Monster cards show the move die, build 20261102mc6.** Dave asked for this round's move coloured in, with the other moves it might use shown differently, and for players to see how a monster chooses. The engine already chooses with a die: every monster rolls a d6 against its six faces (`rollIntent`; the move bag is lab-only). Now `rollIntent` records the face as `e.face` (1–6, or null for a Slam, Pounce or sleep that didn't come from the die). It makes the same rng calls, so the sims don't change. `publicEnemy` sends `face` and `faces` to online tables. The card:
+- "MOVE DIE · ROLLED [4]", then one row per move, grouped ("1–2 STAB", "1·2·6 SLASH"), each with its dice
+- **the rolled face is coloured** in its tone, with a white number chip and the meaning line ("3–10 block", "Slam next round: brace with block")
+- **every other face is a grey outline**, so the odds can be read (2 in 6 it stabs)
+- a move that didn't come from the die shows its own "This round" box above the die, headed "rolls again next round"
+- Specials that aren't live are grey outlines too; the live one is coloured
+
+Card 19.2rem tall; it fits 390x664 and 375x548 with four monsters, nothing clipped. npm test 550/550, dev/minicard-taps.mjs 21/21. **Idea for Grok, not built:** a small die by each miniature showing the number it rolled, like a board game's monster die. — Claude

@@ -1214,7 +1214,11 @@ function cardFactsOf(e, b) {
   const line = !v ? '' : /^\d/.test(String(v.fig)) && UNIT_WORD[v.unit] ? `${v.fig} ${UNIT_WORD[v.unit]}${v.subIcon ? `, ${v.hint}` : ''}` : v.call ? `${cap(v.call.head.toLowerCase())}: ${v.call.sub}` : cap(v.hint);
   const faces = e.faces || d.faces || []; const armor = e.armor || d.armor;
   const block = armor ? `${armor.n}d${armor.s}` : faces.some((f) => ['guard', 'ward', 'phase'].includes(f.v)) ? 'some rounds' : 'none'; // (this round's box says when it is guarding or fading)
-  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}` };
+  // its move die: the six faces grouped by move (Stab on 1 and 2 reads "1–2 STAB"), the face it rolled this round lit
+  const rows = []; faces.slice(0, 6).forEach((f, k) => { const key = [f.n, f.v, f.f, f.m, f.k].join('|'); let r = rows.find((x) => x.key === key);
+    if (!r) { const fe = { ...e, intent: { ...f }, buff: 0, fury: 0 }; const fv = HK.intentView(fe); const fp = fv ? plaquePlan(fe, fv) : null; r = { key, nums: [], word: fp?.word || String(f.n || '').toUpperCase(), dice: fp?.dice || '', icon: fp?.icon, tone: fp?.tone, lit: false }; rows.push(r); }
+    r.nums.push(k + 1); if (e.face === k + 1) r.lit = true; });
+  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { rolled: e.face || null, rows } };
 }
 function showCards(b = B.b) {
   if (!b || B.b !== b || B.ended || b.phase !== 'reset' || !alive().length || B.root.querySelector('.mnc-veil')) return;

@@ -812,6 +812,7 @@ function publicEnemy(e) {
     intent: e.intent ? { ...e.intent } : null,
     raged: !!e.raged, rageName: e.rageName || '', carried: e.carried || 0, windup: !!e.windup,
     special: e.special ? { ...e.special } : null, // T24 Monster Specials
+    face: e.face ?? null, faces: e.faces ? e.faces.map((f) => ({ ...f })) : null, // its move die and the face it rolled (the monster card lists them)
   };
 }
 

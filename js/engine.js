@@ -695,6 +695,7 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = nu
   };
 }
 export function rollIntent(e, rng) {
+  e.face = null; // which face of its move die it rolled this round (1-6; null when the move did not come from the die: a Slam, a Pounce, asleep)
   const sp = SPECIALS.on ? e.special : null;
   if (sp?.id === 'sleeping' && !sp.awake) { e.intent = { n: 'Asleep', v: 'sleep', f: 0, m: 0 }; return e.intent; } // T24: it does nothing until hurt
   if (sp?.id === 'slam') { // T24: wind up, then a blow at double, then one ordinary round, and again
@@ -714,9 +715,9 @@ export function rollIntent(e, rng) {
     e.intent = { n: 'Pounce', v: 'strike', f: (s.f || 0) + (e.edge?.slam || 0), m: s.m || 0, slam: true, pounce: true };
   } else if (PRESSURE.on && PRESSURE.bag) { // the move bag: each of its moves once, in a shuffled order, then shuffled again
     if (!e.bag?.length || e.bagOf !== e.faces) { e.bag = shuffleIdx(e.faces.length, rng); e.bagOf = e.faces; }
-    e.intent = { ...e.faces[e.bag.shift()] };
+    const k = e.bag.shift(); e.intent = { ...e.faces[k] }; e.face = k + 1;
   } else {
-    e.intent = { ...e.faces[die(rng, 6) - 1] };
+    const r = die(rng, 6); e.intent = { ...e.faces[r - 1] }; e.face = r; // the move die: one roll of a d6 against its six faces
   }
   return e.intent;
 }
