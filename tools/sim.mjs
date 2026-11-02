@@ -15,6 +15,10 @@ if (typeof process !== 'undefined' && process.env.W2) ENGINE.useWeapons2(); // t
 if (typeof process !== 'undefined' && process.env.CLASSID) { ENGINE.CLASS2_ON(); const w = process.env.CLASSID.split(','); if (w[0] !== '1') { ENGINE.CLASS2.songs = w.includes('songs'); ENGINE.CLASS2.verse = w.includes('verse'); ENGINE.CLASS2.guard = w.includes('guard'); if (!w.includes('digIn')) ENGINE.CLASS2.digIn = 0; } }
 if (typeof process !== 'undefined' && process.env.ARROW_NUM) DATA.WEAPONS2.faces.quiver.special = DATA.WEAPONS2.faces.quiver.numbered; // arrowheads that keep a number
 // RELEASE=1: the rules the live game plays (js/release.js)
+// POLYMORPH=old: the Polymorph before 2 Nov 2026 (3 magic every round, 2 at Level III), for before/after measurements (tools/t25-polymorph.mjs)
+export const OLD_POLYMORPH = { id: 'polymorph', slot: 'B', start: true, name: 'Polymorph', kind: 'flat', atwill: true, cost: 3, costLv: [3, 3, 2], fx: { frog: 1 }, frogPierce: [0, 4, 4], text: 'Once per round, 3 magic: your target cannot attack this round.' };
+export function usePolymorph(which) { const cards = DATA.CLASSES.wizard.cards; const i = cards.findIndex((c) => c.id === 'polymorph'); if (!usePolymorph.now) usePolymorph.now = cards[i]; cards[i] = which === 'old' ? OLD_POLYMORPH : usePolymorph.now; }
+if (typeof process !== 'undefined' && process.env.POLYMORPH === 'old') usePolymorph('old');
 if (typeof process !== 'undefined' && process.env.RELEASE) { RELEASE_MOD.applyRelease(); const env = process.env; if (env.LABRULES) RELEASE_MOD.applyLab(); if (env.NOFURY) ENGINE.PRESSURE.on = false; if (env.FURY_MAX) ENGINE.PRESSURE.fury.max = Number(env.FURY_MAX); if (env.FURY_PER) ENGINE.PRESSURE.fury.per = env.FURY_PER.split(',').map(Number); } // variants of the release: NOFURY=1, FURY_MAX=3, FURY_PER=1,1,2
 // T17_CAND=1: the T17 role-and-face candidate (js/weaponladder.js, PROPOSED): every weapon rolls its cumulative table (docs/team/tasks/T17-roles.md)
 if (typeof process !== 'undefined' && process.env.T17_CAND) { const WL = await import('../js/weaponladder.js'); DATA.WEAPON_SIZE.ladder = WL.buildLadder(); DATA.WEAPON_SIZE.cumulative = true; }
@@ -47,7 +51,7 @@ export function setScore(fn) { score = fn || ((ev) => baseScore(ev)); }
 //   wise:  rerolls by reading each monster's move (block is worth a lot up to the hit that is coming, attack past what kills everything
 //          is worth nothing), then thinks before it locks in: it plays out its choices (target, powers, charges, heals, potions) a few
 //          times each and keeps the ones that leave it best off (see wiseLock).
-export const PLAY = { style: (typeof process !== 'undefined' && process.env.PLAY) || 'smart' };
+export const PLAY = { style: (typeof process !== 'undefined' && process.env.PLAY) || 'smart', frog: false }; // frog: a Wizard who plays Polymorph first, on the hardest hitter (tools/t25-polymorph.mjs)
 // The damage the monsters can throw this round that block can soak (pierce goes through), at the top of their range for big moves.
 export function threatOf(b) {
   return b.enemies.filter((e) => e.hp > 0 && e.intent && isDamageIntent(e.intent) && e.intent.v !== 'pierce').reduce((a, e) => {
@@ -188,9 +192,14 @@ export function smartActs(b) {
   while (b.hp <= b.maxHp - 4 && b.hp < b.maxHp * 0.55 && b.magic >= healCostOf(b.hero, b) && healSpend(b)) { /* heal; each further heal in a round costs 1 more */ }
   // powers: at-will ones when there is magic to spare, the rest when the round matters; supers once the fight is big enough to need them
   const foes = b.enemies.filter((e) => e.hp > 0).length;
+  if (PLAY.frog) { const k = cardsOf(b.hero).find((c) => c.id === 'polymorph'); // the frog-first Wizard: the old card every round it can pay; the new one charged to sure
+    if (k && k.kind === 'charge') { if (((b.charge && b.charge.polymorph) || 0) >= k.max) castPower(b, 'polymorph', { release: true }); else castPower(b, 'polymorph'); }
+    else if (k) castPower(b, 'polymorph'); }
   // charges: release when full, when hurt, or when a foe is nearly down; otherwise keep storing
   for (const c of cardsOf(b.hero)) {
     if (c.kind !== 'charge') continue; const n = (b.charge && b.charge[c.id]) || 0;
+    if (c.frogNeed) { // Polymorph: use it when it is sure, or at 2 charges (2-6) when hurt or a big blow is coming
+      const big = b.enemies.some((e) => e.hp > 0 && (e.intent?.double || e.intent?.slam)); if (n >= c.max || (n >= 2 && (b.hp < b.maxHp * 0.5 || big))) castPower(b, c.id, { release: true }); continue; }
     const low = b.enemies.some((e) => e.hp > 0 && e.hp <= 12); const per = c.per || {};
     if (n >= c.max || (n >= 2 && (low || (per.heal && (b.hp < b.maxHp * 0.5 || (songsAt(b) && songsAt(b) < 0.5))) || (per.block && b.hp < b.maxHp * 0.5)))) castPower(b, c.id, { release: true });
   }
@@ -239,6 +248,7 @@ export function smartActs(b) {
     return 0; };
   const want = (e) => (['charge', 'stalk'].includes(e.intent?.v) || (wise && e.windup) ? 1 : ['ward', 'phase'].includes(e.intent?.v) ? -1 : 0) + spec(e);
   alive.sort((a, c) => want(c.e) - want(a.e) || a.e.hp - c.e.hp);
+  if (PLAY.frog && b.mods?.frog) { const hit = (e) => (e.intent && isDamageIntent(e.intent) ? (intentRange(e) || [0, 0])[1] * (e.intent.double ? 2 : 1) : 0); alive.sort((a, c) => hit(c.e) - hit(a.e)); } // the frog goes on the hardest hitter
   const ev = evaluate(b.hero, b.board);
   const straight = b.hero.gold < 200 ? 'gold' : 'atk';
   return { target: alive[0].i, straight: ev.straight && straight === 'gold' && b.hp > b.maxHp * 0.6 ? 'gold' : 'atk' };

@@ -21,7 +21,7 @@ function castable(clsId, k, lvl, round = 1) {
 const clsIdOf = (c) => Object.entries(CLASSES).find(([, v]) => v === c)[0];
 
 test('charge powers: the listed charges and total are what a release pays, at every level', () => {
-  for (const { cls, k } of all.filter((x) => x.k.kind === 'charge')) for (const lvl of LEVELS) {
+  for (const { cls, k } of all.filter((x) => x.k.kind === 'charge' && !x.k.frogNeed)) for (const lvl of LEVELS) { // (Polymorph rolls a d6 instead: test/polymorph.test.mjs)
     const vals = chargeValues(k, k.max, lvl); const tot = chargeGain(k, k.max, lvl);
     const short = shortLine(k, lvl); const long = effectLine(k, { level: lvl });
     for (const [f, xs] of Object.entries(vals)) {

@@ -1214,6 +1214,11 @@ export const CAST_HOOK = { on: null, magic: null, income: null, trace: null }; /
 // (Polymorph's frog, Hunter's Mark's bounty, and the supers); using one locks the target for the round. Heal, charge, release and the rest never lock.
 export const needsDice = (card) => !!card?.fx?.free;
 export const isTargeted = (card) => !!card && !!(card.fx?.frog || card.markGold || card.kind === 'super');
+// Using a power on the target: for a Charge card only its Use is aimed (storing a charge never chooses or locks a target). Polymorph is the one aimed Charge card.
+export const usesTarget = (card, opts = {}) => isTargeted(card) && (card.kind !== 'charge' || !!opts.release);
+// Polymorph's d6 (a Charge card, Dave 2 Nov 2026): the face needed for a frog with n charges at a level (1 = sure), and the words for it.
+export const frogNeed = (card, n, lvl = 0) => { const t = card?.frogNeed; if (!t || n < 1) return 7; const row = t[Math.max(0, Math.min(t.length - 1, lvl | 0))]; return row[Math.min(row.length, n) - 1]; };
+export const frogRange = (need) => (need <= 1 ? 'sure' : need > 6 ? '–' : `${need}–6`);
 export function castPower(b, id, { x, release, to, song } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || (b.phase !== 'shape' && b.phase !== 'reset')) return null;
@@ -1223,6 +1228,12 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     if (!n || (b.usedRound && (b.usedRound[key] || b.usedRound[id]))) return null; // a round either stores a charge or releases them, not both (Dave, Oct 2026)
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
     const lvl = powerLevel(b.hero, id); let total = 0;
+    if (card.frogNeed) { // Polymorph: all the charges on one d6 against the target; a frog cannot attack this round
+      const need = frogNeed(card, n, lvl); const r = 1 + Math.floor(b.rng() * 6); const ok = r >= need;
+      if (ok) { b.mods.frog = 1; b.mods.pierce = (b.mods.pierce || 0) + (card.frogPierce?.[Math.min(card.frogPierce.length - 1, lvl)] || 0); }
+      b.lastCast = { id, name: card.name, cost: 0, rolls: [r], die: 6, total: r, notes: [`released ${n}`], released: n, per: {}, frog: ok, need };
+      CAST_HOOK.on?.(b, b.lastCast); return b.lastCast;
+    }
     const per = typeof card.per === 'number' ? { atk: card.per } : card.per; const gain = chargeGain(card, n, lvl);
     for (const k of Object.keys(per)) {
       const amt = gain[k]; total += amt;

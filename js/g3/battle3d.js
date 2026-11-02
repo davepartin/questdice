@@ -927,14 +927,15 @@ async function doHeal() {
 async function doCard(id, opts = {}) {
   let b = B.b; if (B.busy) return;
   const k = E.cardsOf(B.hero).find((c) => c.id === id);
-  if (k && E.isTargeted(k) && B.picked === false) { sfx.error?.(); toast(`${k.name} needs a target. Tap a monster first.`); return; } // a targeted power locks the target, so one has to be chosen
+  if (k && E.usesTarget(k, opts) && B.picked === false) { sfx.error?.(); toast(`${k.name} needs a target. Tap a monster first.`); return; } // a targeted power locks the target, so one has to be chosen
   const modsBefore = { ...b.mods }; const magicBefore = b.magic; const goldBefore = b.goldEarned || 0; const freeBefore = (b.freeActions || []).length;
   let r;
   if (B.net) { B.busy = true; const ok = await netDo({ type: 'card', id, x: B.powerX?.[id], release: !!opts.release, to: opts.to }); B.busy = false; r = ok ? B.b.lastCast : null; if (!ok) return; } else r = E.castPower(b, id, { x: B.powerX?.[id], ...opts });
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
-  if (E.isTargeted(k)) { B.tlock = b.enemies[B.target]?.uid || null; B.fb.setLock?.(B.tlock); } // used on this monster: it is the round's target now, with a lock on its piece
+  if (r.frog === false) toast(`Polymorph missed: rolled ${r.total}, needed ${E.frogRange(r.need)}.`); else if (r.frog) toast(`Frog! Rolled ${r.total}. It cannot attack this round.`);
+  if (E.usesTarget(k, opts)) { B.tlock = b.enemies[B.target]?.uid || null; B.fb.setLock?.(B.tlock); } // used on this monster: it is the round's target now, with a lock on its piece
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
   myPc().sparkle(sparkleOf(B.hero?.cls)); // (the magic sheet stays open: you may want two or three powers; Close shuts it)

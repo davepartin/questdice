@@ -6,7 +6,7 @@ const hero = (cls, name, seed = 1) => newHero({ name, cls, seed, full: true });
 const party = (heroes, foes = ['ogre', 'ogre']) => { const b = newPartyBattle(heroes, { ...questsFor(heroes[0])[0], enemies: foes }, makeRng(3)); for (const e of b.enemies) e.hp = 999; beginPartyRound(b); return b; };
 test('party Polymorph: the caster\'s target is a frog and does not act', () => {
   const b = party([hero('wizard', 'W'), hero('knight', 'K', 2)]);
-  startFighter(b, 0); b.target = 0; b.magic = 9; assert.ok(castPower(b, 'polymorph')); commitFighter(b); startFighter(b, 1);
+  startFighter(b, 0); b.target = 0; b.magic = 9; b.charge = { polymorph: 3 }; assert.ok(castPower(b, 'polymorph', { release: true }).frog, '3 charges: a sure frog'); commitFighter(b); startFighter(b, 1);
   for (const f of b.fighters) f.target = 0;
   const rep = resolveParty(b); const frog = b.enemies[0].uid;
   assert.deepEqual(rep.frogs, [frog]); const acts = rep.acts.filter((a) => a.uid === frog); assert.ok(acts.length && acts.every((a) => a.frog));

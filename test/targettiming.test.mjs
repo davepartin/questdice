@@ -32,7 +32,7 @@ test('before the roll a power can be used: it costs magic and sets its counters;
 test('heal works any time before the lock; a pre-roll Polymorph still freezes the monster you lock in on', () => {
   const { b } = fight('wizard'); b.hp = Math.max(1, b.maxHp - 12); const hp = b.hp;
   assert.ok(E.healSpend(b), 'heal before the roll'); assert.ok(b.hp > hp);
-  assert.ok(E.castPower(b, 'polymorph'), 'Polymorph before the roll'); assert.equal(b.mods.frog, 1);
+  b.charge = { polymorph: 3 }; assert.ok(E.castPower(b, 'polymorph', { release: true }), 'Polymorph (3 charges, sure) before the roll'); assert.equal(b.mods.frog, 1);
   E.startRoll(b); const rep = E.resolve(b, { target: 1 }); assert.equal(rep.frog, b.enemies[1].uid, 'the frog is the target that was locked in on');
 });
 

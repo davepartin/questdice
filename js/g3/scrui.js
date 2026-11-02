@@ -1154,6 +1154,7 @@ function petSection(hero) {
 // Permanent descriptions use the same rank formulas without inventing a current battle outcome.
 function campPowerText(k, level) {
   if (k.riposte) return `+${E.scaleNum(k.fx.block, level)} block. Unused block strikes back as attack.`;
+  if (k.frogNeed) return effectLine(k, { level });
   if (k.fx?.frog) return `Your target becomes a frog and cannot attack this round.${k.frogPierce?.[level] ? ` The frog takes +${k.frogPierce[level]} pierce.` : ''}`;
   const text = effectLine(k, { level });
   return k.markGold ? `${text} Gain ${E.scaleNum(k.markGold, level)} gold if your target falls this round.` : text;
