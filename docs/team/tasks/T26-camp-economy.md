@@ -129,3 +129,19 @@ Gold earned by the end of Act I: 712 · Act II: 2382 · Act III: 5028 (all fight
   Talent SE bigger                130   -0.3   -0.1    0.0    0.0   13000
   Talent SW bigger                130   -0.1   -0.5    0.0    0.0   13000
 ```
+
+## Follow-up (3 November 2026, after Dave's reply)
+
+**Shipped (build 20261103cp9): a welcome purse.** Act I's first two fights add 25 and 15 gold (`WELCOME_GOLD` in js/data.js, `welcomeGold` in js/engine.js; shown on the victory screen as "Gold · 25 welcome"). Not tied to rounds, as Dave asked. Heart 4 stays +4 gold.
+
+**Why gold grows so much (measured, 2 campaigns x 5 classes, bot):**
+
+| Act | Monsters a fight | Base gold each | Kill gold a fight | Dice gold a fight | Rounds a fight |
+|---|---|---|---|---|---|
+| 1 | 2.4 | 10.5 | 29 | 20 | 4.1 |
+| 2 | 2.5 | 15.6 | 52 | 76 | 6.5 |
+| 3 | 2.1 | 36.1 | 99 | 120 | 7.9 |
+
+The act multiplier (x1.1, x1.2) is not the cause. Two things are: monsters' own gold climbs (10 to 36 each), and the hero's dice gold climbs even faster (20 to 120 a fight) because fights last twice as long and the hero owns bigger dice with more gold faces. Dice gold is more than half of Act II and III income.
+
+**Open for Dave:** make late gold scarcer. Cleanest lever is upgrade prices that rise by act (the shopping list stays the same, each item costs more), not cutting the gold dice that make "going for gold" fun.

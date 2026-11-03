@@ -209,7 +209,7 @@ test('triples pay 10 / 15 / 20 in Act I / II / III, attack and block alike; Wolf
 test('the battle gold chip climbs round by round and ends on what victory pays', async () => {
   const E = await import('../js/engine.js');
   for (const seed of [3, 4, 5, 6]) {
-    const h = newHero({ name: 'G', cls: 'bard', seed, full: true }); h.strength = { W: 8, E: 8 };
+    const h = newHero({ name: 'G', cls: 'bard', seed, full: true }); h.strength = { W: 8, E: 8 }; h.campaign.step = 3; // past the welcome purse
     const b = newBattle(h, questsFor(h)[0], makeRng(seed), 1);
     let rounds = 0; const seen = [E.battleGoldSoFar(b)];
     while (!b.outcome && rounds++ < 40) { startRoll(b); resolve(b, { target: b.enemies.findIndex((e) => e.hp > 0) }); seen.push(E.battleGoldSoFar(b)); }

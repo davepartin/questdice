@@ -999,7 +999,7 @@ function renderVictory() {
     R.repeat ? h('p', { class: 'muted' }, SV.repeatNote(R.share)) : null,
     h('section', { class: 'panel rewards' },
       h('div', { class: 'reward' }, h('b', {}, `+${R.xp}`), h('small', {}, 'XP')),
-      h('div', { class: 'reward gold' }, h('b', {}, `${R.gold >= 0 ? '+' : ''}${R.gold}`), h('small', {}, 'Gold')),
+      h('div', { class: 'reward gold' }, h('b', {}, `${R.gold >= 0 ? '+' : ''}${R.gold}`), h('small', {}, R.welcome ? `Gold · ${R.welcome} welcome` : 'Gold')),
       R.levels ? h('div', { class: 'reward lvl' }, h('b', {}, `Lv ${hero.level}`), h('small', {}, 'Level up!')) : null,
       xpBar(hero)),
     perks, R.repeat ? null : loot,

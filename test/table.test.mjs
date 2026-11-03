@@ -312,6 +312,7 @@ test('a repeat clear pays that hero half the gold and no XP or spoils; a first-c
   const c = table.company.campaign;
   const ada = table.company.members.find((m) => m.name === 'Ada');
   const bea = table.company.members.find((m) => m.name === 'Bea');
+  c.step = 3; // past the welcome purse
   const here = SV.stepKey(c.act, c.step);
   ada.cleared = [here];
   ada.gold = 50; bea.gold = 50;

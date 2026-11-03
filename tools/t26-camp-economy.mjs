@@ -42,7 +42,7 @@ for (const cls of classes) for (let s = 0; s < N; s++) {
       if (b.outcome === 'defeat') c.retreats++;
     } while (b.outcome === 'defeat' && tries < 6);
     if (b.outcome !== 'victory') { alive = false; break; }
-    c.wins++; c.heartGold += hg; const r = E.battleRewards(b); const bonus = SPEED ? Math.max(0, PAR[a] - rounds) * SPEED : 0;
+    c.wins++; c.heartGold += hg; c.diceGold = (c.diceGold || 0) + (b.goldEarned || 0); c.mons = (c.mons || 0) + b.enemies.length; c.monGold = (c.monGold || 0) + b.enemies.reduce((q, e) => q + e.gold, 0); const r = E.battleRewards(b); const bonus = SPEED ? Math.max(0, PAR[a] - rounds) * SPEED : 0;
     hero.gold += r.gold + bonus; E.gainXp(hero, r.xp); S.botLoot(hero, r.drops); if (r.diamond) E.takeDiamond(hero, r.diamond);
     const income = hero.gold - g0 + restock; c.fights++; c.rounds += rounds; c.income += income; c.kills += r.gold; c.inc.push(income);
     c.potionsDrunk += Math.max(0, pot0 - E.potionStock(hero) + 0); const stepNo = hero.campaign.step; E.advanceCampaign(hero);
@@ -82,4 +82,6 @@ md += `\n## The whole shopping list against the gold a campaign earns\n\n| What 
 md += `Gold earned by the end of Act I: ${fmt(cum[0])} · Act II: ${fmt(cum[1])} · Act III: ${fmt(cum[2])} (all fights, before potions). The list is ${fmt(100 * total / cum[2])}% of everything a whole campaign earns.\n\n`;
 md += `## How strong the hero is at the end of each act\n\n| Act | Level | Max health | Magic capacity | Power ranks | Die sizes |\n|---|---|---|---|---|---|\n`;
 for (const a of [1, 2, 3]) { const c = act[a]; if (!c?.atEnd.length) continue; const v = (f) => fmt(sum(c.atEnd.map((x) => x[f])) / c.atEnd.length, 1); md += `| ${a} | ${v('lvl')} | ${v('hp')} | ${v('cap')} | ${v('power')} | ${v('dice')} |\n`; }
+md += `\n## Where a fight's gold comes from\n\n| Act | Monsters a fight | Monster gold, base (each) | Gold from kills a fight | Gold from your dice a fight | Rounds a fight |\n|---|---|---|---|---|---|\n`;
+for (const a of [1, 2, 3]) { const c = act[a]; if (!c || !c.fights) continue; md += `| ${a} | ${fmt(c.mons / c.fights, 1)} | ${fmt(c.monGold / c.mons, 1)} | ${fmt((c.kills - c.diceGold) / c.fights)} | ${fmt(c.diceGold / c.fights)} | ${fmt(c.rounds / c.fights, 1)} |\n`; }
 fs.writeFileSync(OUT, md); console.log(md);

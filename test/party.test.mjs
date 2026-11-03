@@ -182,7 +182,7 @@ test('opening attack is only the first round', () => {
 });
 
 test('kill gold splits by points: the top scorer gets half a share more; dice gold stays; Gold Sense per share; XP not split', () => {
-  const c = company();
+  const c = company(); c.members.forEach((m) => { m.campaign.step = 3; }); // past the welcome purse
   c.members[1].perks.push('greed');
   const b = {
     quest,
@@ -201,7 +201,7 @@ test('kill gold splits by points: the top scorer gets half a share more; dice go
 });
 
 test('three heroes: 1st gets +50% of a share, 2nd +25%, the rest the even share', () => {
-  const c = company(4, [{ name: 'Ada', cls: 'knight' }, { name: 'Bea', cls: 'knight' }, { name: 'Cy', cls: 'knight' }]);
+  const c = company(4, [{ name: 'Ada', cls: 'knight' }, { name: 'Bea', cls: 'knight' }, { name: 'Cy', cls: 'knight' }]); c.members.forEach((m) => { m.campaign.step = 3; });
   const b = { quest, enemies: [{ xp: 9, gold: 30 }], fighters: c.members.map((m, i) => ({ hero: m, points: [5, 50, 20][i], goldEarned: 0 })) };
   const r = partyRewards(b);
   assert.deepEqual(r.order, ['Bea', 'Cy', 'Ada']);

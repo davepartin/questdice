@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, HEART_RANKS, normalizeHeartRank, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   BUNDLE_ODDS, bundlePrice,
@@ -1527,6 +1527,8 @@ export function rollDrops(rng, count, { minRarity = 0, rarityBoost = 0, sizes = 
   }
   return drops;
 }
+// The welcome purse: Act I's first fights pay a little extra so the first camp can buy something.
+export const welcomeGold = (hero) => ((hero.campaign?.act || 1) === 1 ? WELCOME_GOLD[(hero.campaign?.step || 1) - 1] || 0 : 0);
 // The gold these monsters pay (a fled one pays FLEE_REWARD of it), with the hero's gold bonus and the act's multiplier.
 function killGold(b, list) {
   const gm = 1 + heroMods(b.hero).goldPct;
@@ -1549,7 +1551,8 @@ export function battleRewards(b) {
   const pay = (e) => (e.fled ? FLEE_REWARD : 1);
   const xp = dead.reduce((a, e) => a + Math.round(e.xp * pay(e)), 0);
   const kills = killGold(b, dead);
-  const gold = kills + b.goldEarned + b.stolen; // may be negative if a thief got away with your purse
+  const welcome = welcomeGold(hero);
+  const gold = kills + b.goldEarned + b.stolen + welcome; // may be negative if a thief got away with your purse
   const rng = makeRng(hashSeed(hero.campaign.seed, hero.campaign.act, hero.campaign.step, 'drops'));
   const nemesisKill = dead.some((e) => e.nemesis && !e.fled && e.hp <= 0);
   // spoils are mostly Bronze (wear, Oct 2026): a boss or a nemesis leaves at least a Silver one, Gold only now and then
@@ -1561,7 +1564,7 @@ export function battleRewards(b) {
   const drng = makeRng(hashSeed(c.seed, c.act, c.step, 'diamond')); const dch = DIAMOND.chance[quest.kind] ?? DIAMOND.chance.battle;
   const diamond = !EXPERIMENT.weaponSize && drng() < dch ? makeDiamond(drng, c.act) : null; /* T17: no Diamonds until their acquisition is specified */ // now and then the fight leaves a Diamond behind
   const charms = charmOffer(hero, quest);
-  return { xp, gold, drops, diamond, charms };
+  return { xp, gold, welcome, drops, diamond, charms };
 }
 function tryFlee(b, rep) {
   rep.fled = rep.fled || [];
@@ -2605,7 +2608,7 @@ export function partyRewards(b) {
     const gm = 1 + heroMods(f.hero).goldPct;
     const bonus = n >= 2 && i === 0 ? PLACE_GOLD[0] : n >= 3 && i === 1 ? PLACE_GOLD[1] : 0;
     const killShare = Math.round(parts[i] * (1 + bonus) * gm);
-    gold[f.hero.name] = killShare + f.goldEarned;
+    gold[f.hero.name] = killShare + f.goldEarned + welcomeGold(f.hero);
     place[f.hero.name] = i + 1;
   });
   const sample = ranked[0]?.hero;
