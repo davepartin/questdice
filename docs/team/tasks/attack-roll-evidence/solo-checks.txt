@@ -1,0 +1,10 @@
+PASS two: the picker opens 
+PASS two: picker offers Attack & Roll and hides the old target prompt 
+PASS two: tapping card 2 of 2 brings it to the front {"x":274.75511932373047,"y":325.35215759277344}
+PASS two: tapping card 1 of 2 brings it to the front {"x":134.203125,"y":319.74537353515626}
+PASS two: Attack & Roll targets that monster and rolls the hero dice {"uid":"u6fix","veil":false,"plan":false,"picked":true,"tuid":"u6fix","phase":"shape","board":true,"busy":false}
+PASS round two: the cards come back, the current target on top {"round":2,"head":"Round 2 · your target","top":"u6fix","tuid":"u6fix","live":2}
+PASS round two: Attack & Roll switches target and rolls once {"ou":"u5eein","veil":false,"sheet":false,"tuid":"u5eein","phase":"shape","board":true,"busy":false}
+PASS after a round no recap pops up, the Recap button is there, and no dice sit by the miniatures {"shown":false,"btn":true,"dice":0}
+PASS tapping Recap opens the last round 
+PASS no page errors 

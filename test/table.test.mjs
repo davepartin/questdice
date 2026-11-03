@@ -580,3 +580,14 @@ test('a Diamond goes to a team fight: Left or Right at camp, it takes that hand 
   assert.equal(E.diamondsOf(hero).length, 0, 'the Diamond shattered');
   if (table.phase === 'victory') assert.deepEqual(table.rewards.shattered.WizKid, [d.id]);
 });
+
+test('choosing a monster then rolling acts once for that online hero and keeps the chosen aim', () => {
+  const {table,players}=make(); begin(table,players);
+  if (table.battle.enemies.length < 2) table.battle.enemies.push(E.spawnEnemy('goblin', {}, E.makeRng(91)));
+  const first=table.battle.fighters.find(f=>f.hero.name===players[0].name), second=table.battle.fighters.find(f=>f.hero.name===players[1].name);
+  assert.equal(first.board,null); assert.equal(second.board,null);
+  assert.equal(command(table,players[0].id,{type:'aim',target:1}).ok,true);
+  assert.equal(command(table,players[0].id,{type:'roll'}).ok,true);
+  assert.equal(first.aim,1); assert.ok(first.board?.C); assert.equal(second.board,null);
+  assert.equal(command(table,players[0].id,{type:'roll'}).ok,false);
+});

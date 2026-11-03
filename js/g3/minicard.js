@@ -74,7 +74,7 @@ function cardFacts(F, specials) {
   ].filter(Boolean);
 }
 
-export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack', facts = null, reveal = false } = {}, onPick) {
+export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack', facts = null, reveal = false, depart = false } = {}, onPick) {
   const M = MODES[mode] || MODES.solo; const foes = enemies.filter((e) => e.hp > 0); const n = foes.length;
   if (!n) return null;
   const kid = kidName || (sure ? foes.reduce((a, e) => (e.maxHp < a.maxHp ? e : a)).name : null); // battle3d passes what Spawn really calls (SPECIALS.minion)
@@ -101,7 +101,12 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
       h('div', { class: 'mnc-title' }, e.name), ...body);
     stack.append(card);
   });
-  const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => { ev.stopPropagation(); const uid = foes[sel].uid; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); } }, pick);
+  const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => {
+    ev.stopPropagation(); if (go.disabled) return; const uid = foes[sel].uid;
+    const finish = () => { if (!veil.isConnected) return; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); };
+    if (!depart || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) return finish();
+    go.disabled = true; veil.classList.add('mnc-departing'); setTimeout(finish, 320);
+  } }, pick);
   veil.append(h('div', { class: 'mnc-head' }, head), stack, go);
   paint();
   // Cosmetic roll only: the engine has already rolled each monster independently. Never draw random numbers here.

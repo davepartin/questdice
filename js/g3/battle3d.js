@@ -469,9 +469,11 @@ function selectTarget(uid) {
   if (rolled && !B.party) { showFoeInfo(B.b.enemies[i]); toast('Your target is fixed once you roll.'); return; }
   const first = B.picked === false;
   B.target = i; B.picked = true; sfx.select(); updatePlates(); B.fb.setTarget(B.b.enemies[i].uid);
-  if (D.TEAMWORK.heartToHeart && B.party) { if (B.net) Sess.send({ type: 'aim', target: i }).catch(() => {}); else if (B.b.fighters[B.active]) B.b.fighters[B.active].aim = i; } // friends see where you are looking
+  let aimSync = null;
+  if (D.TEAMWORK.heartToHeart && B.party) { if (B.net) { aimSync = Sess.send({ type: 'aim', target: i }); aimSync.catch(() => {}); } else if (B.b.fighters[B.active]) B.b.fighters[B.active].aim = i; } // friends see where you are looking
   paintHearts();
   if (first && !rolled) { const rb = document.getElementById('b3-roll'); rb?.removeAttribute('disabled'); const sub = rb?.querySelector('small'); if (sub) sub.textContent = B.party ? 'throw' : 'tap to throw'; B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : '')); } // (the Roll button said "choose target" until the next repaint)
+  return aimSync;
 }
 // The monster sheet (tap a monster twice): what it does next and how to get ready, then the other moves it has, in a few words.
 const MOVE = { strike: ['atk', 'hits'], pierce: ['pierce', 'hits through block'], guard: ['block', 'blocks your attack'], mend: ['heal', 'heals itself'],
@@ -1244,9 +1246,24 @@ function showCards(b = B.b, { top = null, reveal = false } = {}) {
   let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
   if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
   const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
+  const round = b.round, heroName = B.hero?.name;
   const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => art(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-    kid: art(D.SPECIALS.minion)?.name || null, reveal, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack' },
-    (uid) => { if (!look && B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
+    kid: art(D.SPECIALS.minion)?.name || null, reveal, depart: !look, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack & Roll' },
+    async (uid) => {
+      const current = B.b;
+      if (look || !current || current.round !== round || B.hero?.name !== heroName || B.ended || B.busy || current.phase !== 'reset') return;
+      const target = current.enemies.find(e => e.uid === uid && e.hp > 0);
+      if (!target) { toast('That monster is no longer available. Choose another.'); renderReset(); return; }
+      const aimSync = B.picked === false || uid !== current.enemies[B.target]?.uid ? selectTarget(uid) : null;
+      // A shared table must accept the aim before the roll. A rejected aim must never roll on a different target.
+      if (aimSync) {
+        B.busy = true;
+        try { await aimSync; if (!refocus()) return; }
+        catch (e) { sfx.error(); toast(e?.message || 'The table did not accept that target.', 'bad'); B.picked = false; B.busy = false; if (!B.ended) { renderReset(); showCards(B.b); } return; }
+        finally { B.busy = false; }
+      }
+      if (!B.ended && B.b?.round === round && B.hero?.name === heroName && B.b.phase === 'reset' && B.picked !== false && B.b.enemies[B.target]?.uid === uid && B.b.enemies[B.target]?.hp > 0) void doRoll();
+    });
   if (v) { B.root.append(v); sfx.select?.(); }
 }
 // The round-start look at the monsters: the cards each round, or the optional legacy plan board.
