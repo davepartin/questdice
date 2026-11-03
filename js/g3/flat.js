@@ -207,7 +207,9 @@ export function atmoLayers(weather) {
 }
 
 // ------------------------------------------------------------------------------------------ the board
-export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo, onHero }) {
+// The pips of a die face, row by row on a 3x3 grid (the monster's move die on its plaque).
+const PIPS = { 1: [0,0,0, 0,1,0, 0,0,0], 2: [1,0,0, 0,0,0, 0,0,1], 3: [1,0,0, 0,1,0, 0,0,1], 4: [1,0,1, 0,0,0, 1,0,1], 5: [1,0,1, 0,1,0, 1,0,1], 6: [1,0,1, 1,0,1, 1,0,1] };
+export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, onInfo, onHero, onDie }) {
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
   const camp = heroes[0]?.campaign;
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
@@ -270,11 +272,14 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     // a small gold "i" on the plaque: tap it to read about this monster (tapping the chosen one again does the same)
     const info = h('button', { type: 'button', class: 'fb-info', 'aria-label': `About ${e.name}`, onclick: (ev) => { ev.stopPropagation(); onInfo?.(e.uid); } }, 'i');
     c.el.append(info);
+    // its move die (Dave, 3 Nov 2026): a small white die on the plaque's corner shows the face it rolled for this round's move; tap it for the monster cards
+    const mdie = h('button', { type: 'button', class: 'fb-mdie', hidden: true, onclick: (ev) => { ev.stopPropagation(); onDie?.(e.uid); } }); c.el.append(mdie); c.mdie = mdie;
     foeSide.append(slot); fb.pieces.set(e.uid, pc); fb.foes.set(e.uid, pc);
     fb.layout();
     return pc;
   };
   fb.foe = (uid) => fb.foes.get(uid);
+  fb.rollFoeDice = () => { if (reduced()) return; for (const pc of fb.foes.values()) { const d = pc.c?.mdie; if (!d || d.hidden) continue; d.classList.remove('rolling'); void d.offsetWidth; d.classList.add('rolling'); } }; // a new round: the dice tumble, then land on their faces
   fb.hero = (i) => fb.heroes[i] || fb.heroes[0];
   fb.heroByName = (name) => fb.heroes.find((p) => p.name === name) || fb.heroes[0];
 
@@ -396,6 +401,10 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
       c.def.replaceChildren(HK.icon(phase && !txt ? 'phase' : 'block'), ...(txt ? [h('b', {}, txt)] : []));
     }
     c.hp.classList.toggle('low', k > 0 && k <= 0.3);
+    if (c.mdie) { const f = !dead && intents && e.intent ? (e.face || 0) : -1; const ds = `${f}|${e.intent?.n || ''}`; // -1: hidden; 0: a move not from the die (a Slam, asleep)
+      if (c.dsig !== ds) { c.dsig = ds; c.mdie.hidden = f < 0; c.mdie.className = `fb-mdie${f === 0 ? ' off' : ''}`;
+        c.mdie.setAttribute('aria-label', f > 0 ? `${e.name} rolled ${f} on its move die: ${e.intent.n}. Tap for its card.` : `${e.name}: ${e.intent?.n || ''}, not from its move die. Tap for its card.`);
+        c.mdie.replaceChildren(...(f > 0 ? PIPS[f].map((on) => h('i', { class: on ? 'p' : '' })) : [h('b', {}, e.intent?.v === 'sleep' ? 'Z' : '!')])); } }
     pc.slot.classList.toggle('dead', dead); pc.slot.classList.toggle('raged', !!e.raged);
     pc.el.classList.toggle('targeted', targeted && !dead); pc.slot.classList.toggle('targeted', targeted && !dead);
     // the plaque's third line is the whole plan: the move's name in one word, and the dice it will roll (red = it hits, blue = it guards)

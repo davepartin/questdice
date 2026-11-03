@@ -167,7 +167,7 @@ function buildHud() {
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
   B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
-  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
+  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onDie: (uid) => showCards(B.b, { top: uid }), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
     const r = hud.dock.getBoundingClientRect();
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
@@ -758,7 +758,7 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; const title = !!B.root.querySelector('.b3-titlecard');
+  if (B.shownRound !== b.round) { B.shownRound = b.round; const title = !!B.root.querySelector('.b3-titlecard'); B.fb.rollFoeDice?.(); // the monsters roll their move dice
     if (wantPicker()) openPicker(title); // fight start: the mini cards first, then the target, then Roll (Dave, 2 Nov 2026)
     else if (b.round > 1 || !title) { if (B.card) B.flourishLater = b.round; else { HK.roundFlourish(B.root, b.round); showPlan(); } } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
@@ -1220,16 +1220,17 @@ function cardFactsOf(e, b) {
     r.nums.push(k + 1); if (e.face === k + 1) r.lit = true; });
   return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { rolled: e.face || null, rows } };
 }
-function showCards(b = B.b) {
-  if (!b || B.b !== b || B.ended || b.phase !== 'reset' || !alive().length || B.root.querySelector('.mnc-veil')) return;
+function showCards(b = B.b, { top = null } = {}) {
+  if (!b || B.b !== b || B.ended || !alive().length || B.root.querySelector('.mnc-veil')) return;
+  const look = b.phase !== 'reset' || B.busy || !!B.tlock; // after the roll (or with a locked target) the cards are to read, not to choose: the button closes them
   B.root.querySelector('.sp-plan')?.remove();
-  const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const look = (id) => monsterOf(id, camp) || D.MONSTERS[id];
+  const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const art = (id) => monsterOf(id, camp) || D.MONSTERS[id];
   let plans = {}; let owns = E.specialsOwned(b); for (const e of alive()) { const v = SP.viewOf(e, b); if (v) plans[e.uid] = v; }
   if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
   const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
-  const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => look(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-    kid: look(D.SPECIALS.minion)?.name || null, facts: (e) => cardFactsOf(e, b), first: cur, head: choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}` },
-    (uid) => { if (B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
+  const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => art(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
+    kid: art(D.SPECIALS.minion)?.name || null, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack' },
+    (uid) => { if (!look && B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
   if (v) { B.root.append(v); sfx.select?.(); }
 }
 // T24: the round-start look at the monsters: the cards (above), or with ?nominicards Grok's plan board (js/g3/specials.js). Only rounds where a Special is live.
