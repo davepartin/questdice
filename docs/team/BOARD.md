@@ -1098,3 +1098,11 @@ From Claude: 3 November 2026. **Build 20261103cp7.**
 npm test 563/563; dev/new-hero-check.mjs passes. Browser: the store picture is at 126–275 both at the top and after scrolling down and back; a potion bought in the store went 1→2 for 10; all three stamps were screenshotted. Headless Chromium, not Safari. — Claude
 
 3 November 2026, Director: **IMPLEMENTED — Special footer on the latest team build.** Dave asked for Special at the bottom, colored when active and gray when inactive. Added a bottom-anchored, labeled Special area with active colors and gold reveal, gray inactive/absent states and short-phone scrolling. Kept the team's mc7–mc10 dice and cp1–cp7 camp changes. Existing fights keep the move already rolled and adopt grouped faces at the next roll; grouped arrays retain identity for the optional move bag. Full suite **564/564**; active/inactive/none, footer placement and four phone sizes checked in Chromium. [Evidence](tasks/monster-special-footer.md). Build `20261103zq1`.
+
+From Claude: 3 November 2026. **Talent dice and the story screen, build 20261103cp8.**
+- **Tapping a face on the TALENTS card jumps to the symbol choice again.** `toTalentSymbols` was scrolling the camp page, but the inspector is now a pop-up; it scrolls `.cw-pop` to `.tw-detail`.
+- **The next step glows:** `.tw-symbols.tw-next` (gold ring) until a symbol is picked, then `.tw-purchase.tw-next` on the buy button.
+- **TALENTS card covers say what they buy:** "GROW TO D6 / D8 / D10" under each price. A locked Talent two shows a d4 talent face, the price, "UNLOCK TALENT TWO" and "A NEW D4 TALENT DIE".
+- **Road screens** (story beat, arrival, choice, result): the picture area is shorter (`--sheet: .68`, was .56), so a short story fits without scrolling. At 390x844 a four-line story ends at y=593, with the Continue button at 763.
+
+npm test 563/563; dev/camp-upgrades-check.mjs and dev/new-hero-check.mjs pass. Headless Chromium, not Safari. — Claude

@@ -774,3 +774,15 @@ button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; backgroun
 .st-failed .rv-objnote { color: #ff9a8a; } .st-done .rv-objnote { color: #9fe8b4; }
 .st-done .rv-stamp { font-size: clamp(1.5rem, 8vw, 2.2rem); }
 .st-declined .rv-stamp { font-size: clamp(1.5rem, 8vw, 2.2rem); }
+
+/* Talent dice (Dave, 3 Nov 2026): the next thing to tap glows; the card's size covers say what they buy; Talent two shows what unlocking gives */
+.tw-next { border-radius: 8px; animation: tw-next 1.4s ease-in-out infinite; }
+.tw-symbols.tw-next { box-shadow: 0 0 0 2px #ffd96a, 0 0 16px #ffd96a99; padding: 4px; }
+.tw-purchase.tw-next .sh-buy { box-shadow: 0 0 0 2px #fff2b8, 0 0 18px #ffd96acc, inset 0 0 0 2px #87622f; }
+@keyframes tw-next { 50% { filter: brightness(1.18); } }
+@media (prefers-reduced-motion: reduce) { .tw-next { animation: none; } }
+.cb-cov small { text-align: center; }
+.cb-unlock-die { width: 22cqi; height: auto; filter: drop-shadow(0 .8cqi 1cqi #0006); }
+.cb-cov small.cb-unlock-sub { font-size: 2.6cqi; letter-spacing: .06em; opacity: .8; }
+/* the story beat: a shorter picture, so a short story fits without scrolling (Dave, 3 Nov 2026) */
+@media (max-aspect-ratio: 1085/1000) { .sx-screen.road:not(.offer) { --sheet: .68; } } /* every road screen: the story, the arrival, the choice, the result */

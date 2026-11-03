@@ -143,7 +143,7 @@ export function talentsCard(hero, focus, { selected = null, onFace, onGrow, onUn
   const column = (slot) => {
     if (!E.isActive(hero, slot)) { const u = E.unlockInfo(hero, slot);
       return h('div', { class: 'cb-tcol' }, h('div', { class: 'cb-th' }, TAL_NAME[slot]),
-        h('div', { class: `cb-cov cb-big ${u.ok ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Unlock ${TAL_NAME[slot]} for ${u.cost} gold`, ...press(() => (u.ok ? onUnlock?.(slot) : say?.(`Need ${u.cost - hero.gold} more gold`))) }, price(u.cost, hero.gold < u.cost), h('small', {}, 'UNLOCK'))); }
+        h('div', { class: `cb-cov cb-big ${u.ok ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Unlock ${TAL_NAME[slot]} for ${u.cost} gold`, ...press(() => (u.ok ? onUnlock?.(slot) : say?.(`Need ${u.cost - hero.gold} more gold`))) }, h('img', { class: 'cb-unlock-die', src: triFace('blank'), alt: '' }), price(u.cost, hero.gold < u.cost), h('small', {}, `UNLOCK ${TAL_NAME[slot]}`), h('small', { class: 'cb-unlock-sub' }, 'A NEW D4 TALENT DIE'))); }
     const size = hero.special[slot]; const info = E.talentInfo(hero, slot); const stored = hero.talent?.[slot] || [];
     const sym = (f) => (Array.isArray(stored[f]) ? stored[f][0] : stored[f]);
     const hole = (f) => { const n = info.nums[f]; const k = f < info.faces ? sym(f) : null; const sel = selected && selected[0] === slot && selected[1] === f;
@@ -155,7 +155,7 @@ export function talentsCard(hero, focus, { selected = null, onFace, onGrow, onUn
       if (z > size) { const from = { 6: 4, 8: 6, 10: 8 }[z]; const cost = D.SPECIAL_STEPS[from]?.[0]; const isNext = from === size; const up = isNext ? E.specialUpgrade(hero, slot) : null;
         const actLock = z > cap ? Math.ceil((z - 4) / 2) : 0; const ready = isNext && up?.ok;
         cover = h('div', { class: `cb-cov ${ready ? 'ready' : ''}`, 'data-slot': slot, 'aria-label': `Grow ${TAL_NAME[slot]} to d${z} for ${cost} gold${actLock ? `, needs Act ${D.ROMAN[actLock]}` : ''}`,
-          ...press(() => (ready ? onGrow?.(slot) : say?.(!isNext ? `Grow to d${D.NEXT_SIZE[size]} first` : actLock ? `Grows again in Act ${D.ROMAN[actLock]}` : `Need ${cost - hero.gold} more gold`))) }, price(cost, hero.gold < cost), actLock ? seal(actLock) : null); }
+          ...press(() => (ready ? onGrow?.(slot) : say?.(!isNext ? `Grow to d${D.NEXT_SIZE[size]} first` : actLock ? `Grows again in Act ${D.ROMAN[actLock]}` : `Need ${cost - hero.gold} more gold`))) }, price(cost, hero.gold < cost), h('small', {}, `GROW TO D${z}`), actLock ? seal(actLock) : null); } // what the gold buys (Dave, 3 Nov 2026)
       return h('div', { class: 'cb-tr' }, sizeTag(z), h('div', { class: 'cb-sl' }, ...idx.map((f) => (z <= size ? hole(f) : h('span', { class: 'cb-hole' })))), cover); });
     return h('div', { class: `cb-tcol ${slot === focus ? 'on' : ''}` }, h('div', { class: 'cb-th' }, TAL_NAME[slot]), d4, ...rows);
   };

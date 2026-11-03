@@ -1460,8 +1460,8 @@ function powerSheet(id) {
 // After a talent die is unlocked or grown, glide down to the symbol choosing area (the numbered faces, then the symbols under them) so the next step is on screen.
 function toTalentSymbols() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const side = $('.sx-camp .sx-side'), el = $('.tw-face-heading'); if (!side || !el) return;
-    const stick = parseFloat(side.style.getPropertyValue('--stick')) || 0;
+    const pop = $('.cw-pop'); const side = pop || $('.sx-camp .sx-side'), el = pop ? ($('.cw-pop .tw-detail') || $('.cw-pop .tw-face-heading')) : $('.tw-face-heading'); if (!side || !el) return; // in the pop-up: straight to the symbol choice
+    const stick = pop ? -12 : (parseFloat(side.style.getPropertyValue('--stick')) || 0);
     const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 24; // tz1: clear the camp header
     const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     side.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });
@@ -1494,7 +1494,7 @@ function talentWorkshop(hero, slot) {
       h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
       h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `Gives +${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
         null));
-    const options = !current ? h('div', { class: 'tw-symbols', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
+    const options = !current ? h('div', { class: `tw-symbols ${chosen ? '' : 'tw-next'}`, role: 'group', 'aria-label': 'Choose a talent symbol' }, /* the next thing to tap glows (Dave, 3 Nov 2026) */ Object.entries(D.TALENT_SYMS).map(([k, def]) => {
       const count = E.talentCount(hero, slot, k), full = count >= info.same;
       return h('button', { type: 'button', class: `tw-symbol ${SYM_ICO[k][1]} ${TAL.sym === k ? 'selected' : ''}`, disabled: full, 'data-symbol': k, 'aria-pressed': String(TAL.sym === k),
         'aria-label': `${def.name}, ${count} of ${info.same} used${full ? ', limit reached' : ''}`,
@@ -1504,7 +1504,7 @@ function talentWorkshop(hero, slot) {
       h('button', { type: 'button', class: 'tw-clear-btn', 'aria-label': `Clear face ${n} without refund`, onclick: tap(() => {
         if (HE.removeTalent(hero, slot, face, 0)) { TAL.sym = null; sfx.card(); X.persist(); refresh(`.tw-face[data-face="${face}"]`); }
       }) }, 'Clear this face'))
-      : h('div', { class: 'tw-purchase' }, shBuy(hero, { label: chosen ? `Set ${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol first', cost, ok: can,
+      : h('div', { class: `tw-purchase ${chosen ? 'tw-next' : ''}` }, shBuy(hero, { label: chosen ? `Set ${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol first', cost, ok: can,
         onBuy: () => { if (chosen && HE.addTalent(hero, slot, face, chosen)) { TAL.sym = null; shBought(); } } }),
         null);
     detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
