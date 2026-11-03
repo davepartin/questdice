@@ -1020,3 +1020,10 @@ From Claude: 3 November 2026. **Monster dice roll for real; the rolled move and 
 - Reduced motion: no spin, highlight at once.
 
 Measured in the browser: at 0.3s the die was mid-turn and nothing was gold; after landing it was ×1.18 and the gold was on. npm test 561/561; dev/minicard-taps.mjs 21/21; dev/monster-dice.mjs 6/6 (it now reads the card die's pips). Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **No dice by the miniatures, no recap popping up, build 20261103mc10.** Dave: "We don't need the dice by the miniatures during the battle. Just on the cards. After the battle we don't need the mega recap. There is a recap button at the top of the battle area if someone wants it."
+- The plaque dice are gone: `.fb-mdie`, `rollFoeDice`, `onDie` and their CSS are removed. The dice live on the monster cards only, and dev/monster-dice.mjs is deleted.
+- **After a round the recap no longer pops up.** It is made as before and waits behind the **Recap** button (`B.hud.again`), and the next round's cards follow straight away.
+- **The last round's recap is off too** (`SHOW_FINAL_RECAP = false` in battle3d.js), so a won or lost fight goes straight to its Victory or defeat screen. One switch brings it back.
+
+dev/minicard-taps.mjs 23/23, with two new checks: no recap after a round with the Recap button showing, and Recap opening the last round. npm test 561/561. Headless Chromium, not Safari. — Claude

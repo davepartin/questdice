@@ -167,7 +167,7 @@ function buildHud() {
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
   B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
-  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onDie: (uid) => showCards(B.b, { top: uid }), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
+  B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
     const r = hud.dock.getBoundingClientRect();
     B.root.style.setProperty('--hero-h', `${hud.hero.offsetHeight}px`);
@@ -771,7 +771,7 @@ export function renderReset() {
   B.hud.cards.replaceChildren(...cardTiles(true)); if (B.sheetOpen) togglePowers(false);
   B.hud.bar.replaceChildren(
     h('div', { class: 'b3-acts b3-acts3 reset' }, HK.button({ kind: 'cta', icon: 'lock', label: 'Lock in', id: 'b3-lock-off', disabled: true, cls: 'sq', aria: 'Lock in (roll first)' }), ...sideBtns(), HK.button({ kind: 'cta', icon: 'dice', label: B.party ? 'Roll' : 'Roll dice', sub: B.picked === false ? 'choose target' : B.party ? 'throw' : 'tap to throw', id: 'b3-roll', disabled: B.picked === false, onclick: doRoll, cls: 'blue', aria: 'Roll the dice' })));
-  if (B.shownRound !== b.round) { B.shownRound = b.round; const title = !!B.root.querySelector('.b3-titlecard'); B.fb.rollFoeDice?.(); // the monsters roll their move dice
+  if (B.shownRound !== b.round) { B.shownRound = b.round; const title = !!B.root.querySelector('.b3-titlecard');
     if (wantPicker()) openPicker(title); // fight start: the mini cards first, then the target, then Roll (Dave, 2 Nov 2026)
     else if (b.round > 1 || !title) { if (B.card) B.flourishLater = b.round; else { HK.roundFlourish(B.root, b.round); showPlan(); } } } // the next round's banner waits for the recap to close (it played unseen behind it)
   C.tut?.on('reset', b.round);
@@ -1364,7 +1364,7 @@ async function lockInInner() {
   if (b.outcome === 'victory') return win(rep);
   if (b.outcome === 'defeat') return lose(rep);
   moodOfFight();
-  showCard(card);
+  B.hud.again.hidden = !card; // the recap waits behind the Recap button (Dave, 3 Nov 2026: no recap popping up after each round)
   renderReset();
 }
 
@@ -1453,7 +1453,7 @@ async function playParty(rep, outcome = B.b.outcome) {
       if (C?.S) C.S.hero = b.hero;
     }
   } else if (!B.net) B.active = -1;
-  showCard(card);
+  B.hud.again.hidden = !card; // the recap waits behind the Recap button
   renderReset();
 }
 async function playStrike(s, rep) {
@@ -1481,9 +1481,10 @@ async function playFoe(act, names) {
   else if (names[0]) heroes.push({ pc: heroPiece(names[0]), part: act.d ?? 0, net: act.net ?? 0 });
   await foeAnim(act, heroes.length ? heroes : [{ pc: heroPiece(names[0]), part: 0, net: 0 }]);
 }
+const SHOW_FINAL_RECAP = false;
 // The round that ended the fight gets its recap too (Dave: see the final blow land), then a tap moves on.
 function finalRecap(rep, kind) {
-  if (!rep || B.ended) return null;
+  if (!SHOW_FINAL_RECAP || !rep || B.ended) return null; // (off: Dave, 3 Nov 2026, straight on to Victory or the defeat screen)
   clearDock();
   return new Promise((done) => {
     const el = roundCard(rep, B.b, { closeLabel: kind === 'victory' ? 'Victory ›' : 'Continue ›', title: kind === 'victory' ? 'the final blow' : 'the last round',

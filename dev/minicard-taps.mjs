@@ -39,7 +39,7 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
   if (tag === 'two') { // round two: roll, lock in, close the recap; the cards come back with the target on top
     await p.locator('#b3-roll').click(); for (let i = 0; i < 40; i++) { await pump(0.3); await p.waitForTimeout(200); if (await p.evaluate(() => !window.QD.B3.battleState.busy && window.QD.B3.battleState.b.phase === 'shape')) break; }
     for (let i = 0; i < 6; i++) { if (await p.evaluate(() => { const l = document.querySelector('#b3-lock'); if (l && !l.disabled) { l.click(); return true; } return false; })) break; await pump(0.5); await p.waitForTimeout(250); }
-    let r2 = false; for (let i = 0; i < 200 && !r2; i++) { await pump(0.3); await p.waitForTimeout(200); r2 = await p.evaluate(() => { document.querySelector('.dr-ok:not([disabled])')?.click(); document.querySelector('.rc-close')?.click(); return !!document.querySelector('.mnc-veil'); }); }
+    let r2 = false; for (let i = 0; i < 200 && !r2; i++) { await pump(0.3); await p.waitForTimeout(200); r2 = await p.evaluate(() => { document.querySelector('.dr-ok:not([disabled])')?.click(); return !!document.querySelector('.mnc-veil'); }); }
     const top = await p.evaluate(() => { const B = window.QD.B3.battleState; return { round: B.b.round, head: document.querySelector('.mnc-head')?.textContent, top: document.querySelector('.mnc-card.top')?.dataset.uid, tuid: B.b.enemies[B.target]?.uid, live: B.b.enemies.filter((e) => e.hp > 0).length }; });
     check('round two: the cards come back, the current target on top', r2 && top.round === 2 && (top.live < 2 || top.top === top.tuid), JSON.stringify(top));
     await ready(); await p.screenshot({ path: `${OUT}/two-round2-cards.png` });
@@ -48,6 +48,11 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
       const bb = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await p.touchscreen.tap(bb.x, bb.y); await pump(1); await p.waitForTimeout(400);
       const sw = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), sheet: !!document.querySelector('.fi-sheet, .foe-sheet, .b3-foeinfo'), tuid: B.b.enemies[B.target]?.uid, roll: !document.getElementById('b3-roll')?.disabled }; });
       check('round two: Attack on the other card switches the target, straight to the battle', !sw.veil && sw.tuid === ou && sw.roll, JSON.stringify({ ou, ...sw })); }
+    // Dave (3 Nov 2026): no recap pops up after a round; the Recap button at the top has it
+    const rc = await p.evaluate(() => ({ shown: !!document.querySelector('.rc:not(.rc-inline)'), btn: !!document.querySelector('.rc-again:not([hidden])'), dice: document.querySelectorAll('.fb-mdie').length }));
+    check('after a round no recap pops up, the Recap button is there, and no dice sit by the miniatures', !rc.shown && rc.btn && rc.dice === 0, JSON.stringify(rc));
+    if (rc.btn) { const r = await p.evaluate(() => { const b = document.querySelector('.rc-again').getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; }); await p.touchscreen.tap(r.x, r.y); await p.waitForTimeout(400);
+      check('tapping Recap opens the last round', await p.evaluate(() => !!document.querySelector('.rc')), ''); await p.screenshot({ path: `${OUT}/two-recap-button.png` }); }
   }
   await p.close();
 }

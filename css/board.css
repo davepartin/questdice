@@ -470,14 +470,3 @@
 /* waiting on the left (half size): wrap the word under the face rather than spill out of the card */
 .fb-side.heroes .fb-heart { flex-wrap: wrap; justify-content: center; max-width: 100%; row-gap: .06rem; font-size: .5rem; }
 
-/* The monster's move die on its plaque (Dave, 3 Nov 2026): the face it rolled for this round's move. White, black pips; tap for its card. */
-.fb-mdie { position: absolute; z-index: 3; top: -1.2rem; left: .1rem; width: 1.08rem; height: 1.08rem; padding: .12rem; /* above the plaque's corner, on the miniature's base: clear of the name and the next plaque's i */ border: 0; border-radius: .26rem; cursor: pointer;
-  background: linear-gradient(160deg, #fff, #ddd6c8); box-shadow: 0 2px 4px #000c, inset 0 -1px 0 #0003; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); place-items: center; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.fb-mdie[hidden] { display: none; }
-.fb-mdie > i { width: .18rem; height: .18rem; border-radius: 50%; }
-.fb-mdie > i.p { background: #1a120c; }
-.fb-mdie.off { display: grid; place-items: center; grid-template-columns: 1fr; grid-template-rows: 1fr; background: linear-gradient(160deg, #ffb24a, #e0702a); }
-.fb-mdie.off > b { font: 900 .7rem/1 var(--ui, sans-serif); color: #2a1200; }
-.fb-slot.dead .fb-mdie { display: none; }
-.fb-mdie.rolling { animation: fb-mdie-roll .7s cubic-bezier(.3, .7, .4, 1); }
-@keyframes fb-mdie-roll { 0% { transform: translateY(-.6rem) rotate(-200deg) scale(.6); opacity: .2; } 55% { transform: translateY(.08rem) rotate(18deg) scale(1.1); opacity: 1; } 75% { transform: rotate(-8deg); } 100% { transform: none; } }
