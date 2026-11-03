@@ -115,3 +115,17 @@
 .mnc-revealing .mnc-face.on .mnc-dice { font-size:.58rem; padding:0; }
 /* Keep the edge of every card reachable on a crowded phone screen. */
 .mnc-stack[data-count="3"], .mnc-stack[data-count="4"] { --w:8.6rem; }
+
+/* After the two-second roll: the rolled die grows and the result pops out beside it (Dave, 3 Nov 2026). Only the rolled move shows its dice. */
+.mnc-card.facts .mnc-picture-die:not(.unrolled) { transform: scale(1.18); transform-origin: top left; box-shadow: 0 0 0 2px #ffe08a, 0 0 12px #ffd96a99, 0 3px 6px #000c; transition: transform .25s; }
+.mnc-revealing .mnc-picture-die:not(.unrolled) { box-shadow: 0 3px 6px #000c; }
+.mnc-roll-result { position: absolute; z-index: 2; top: .32rem; left: 2.35rem; display: flex; flex-direction: column; align-items: flex-start; gap: .05rem; padding: .16rem .34rem; border-radius: .35rem;
+  background: #120b07e6; box-shadow: inset 0 0 0 1.5px #ffe08a, 0 2px 6px #000c; color: #fff; pointer-events: none; }
+.mnc-roll-result b { font: 900 .5rem/1 var(--ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; color: #ffe08a; }
+.mnc-roll-result span { font: 900 .78rem/1 var(--ui, sans-serif); }
+.mnc-revealing .mnc-roll-result { visibility: hidden; }
+.mnc-revealed .mnc-roll-result { animation: mnc-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+.mnc-revealed .mnc-picture-die:not(.unrolled) { animation: mnc-land .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes mnc-pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes mnc-land { 0% { transform: scale(1.6); } 100% { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .mnc-roll-result { animation: none !important; } }

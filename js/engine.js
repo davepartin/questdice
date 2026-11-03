@@ -682,12 +682,20 @@ export function storyScale(heroes, level) {
   return { m: +m.toFixed(2), hp: +(1 + (m - 1) * PARTY.hpPer).toFixed(2), flat: Math.max(0, Math.round((m - 1) * PARTY.flatPer)) };
 }
 export function teamFactor(heroes) { const s = heroes.map(heroStrength); const top = Math.max(...s); return s.reduce((a, x) => a + x, 0) / top; }
+// A monster's move die with identical moves on neighbouring numbers (Dave, 3 Nov 2026: "1–3 Slash", not "1·2·6"). Every move keeps exactly as
+// many faces, so its odds do not change; the order is by first appearance. A battle already in play keeps the faces it was dealt.
+const faceKey = (f) => JSON.stringify(f, Object.keys(f || {}).sort());
+export function groupFaces(faces) {
+  if (!Array.isArray(faces)) return faces; const order = []; const by = new Map();
+  for (const f of faces) { const k = faceKey(f); if (!by.has(k)) { by.set(k, []); order.push(k); } by.get(k).push(f); }
+  return order.flatMap((k) => by.get(k));
+}
 export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null, teamFlat = 0 } = {}, rng) {
   const d = mdef(id, campaign);
   const hp = Math.max(1, Math.round(d.hp * hpMult));
   return {
     uid: newUid(rng), id, name: name || d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
-    faces: d.faces, flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
+    faces: groupFaces(d.faces), flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0, edge,
     // pounce is a round flag (true after an unbroken Stalk), not the sheet's pounce stats
@@ -1462,7 +1470,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   for (const e of living()) {
     const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
-      e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
+      e.raged = true; e.powerDie = rg.power; e.faces = groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;
     }
   }
@@ -2525,7 +2533,7 @@ export function resolveParty(b) {
   for (const e of livingNow()) {
     const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
-      e.raged = true; e.powerDie = rg.power; e.faces = rg.faces; e.rageName = rg.name; rep.raged.push(e.uid);
+      e.raged = true; e.powerDie = rg.power; e.faces = groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;
     }
   }

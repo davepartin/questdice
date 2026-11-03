@@ -31,7 +31,8 @@ test('assignment: Act I steps 1-2 plain, step 3 one soft Special, step 4 a Slam,
 });
 
 test('Slam: winds up with "Damage 20 / or Slam 2x"; 20 damage breaks it, less and the next blow lands double', () => {
-  const b = fight(['ogre']); const e = b.enemies[0]; give(b, e, 'slam'); e.hp = e.maxHp = 900; E.rollIntent(e, b.rng);
+  // (a monster with no Wind-Up of its own on its move die, so every wind-up here is the Special's)
+  const b = fight(['skeleton']); const e = b.enemies[0]; give(b, e, 'slam'); e.hp = e.maxHp = 900; E.rollIntent(e, b.rng);
   assert.equal(e.intent.v, 'charge'); const v = E.specialView(b, e); assert.equal(v.top, 'Damage 20'); assert.equal(v.bottom, 'or Slam 2x');
   roll(b, 30); let rep = after(b); let row = rep.specials.find((x) => x.id === 'slam');
   assert.equal(row.ok, true); assert.match(row.line, /Slam broken, \d+ of 20/); assert.equal(e.windup, false);

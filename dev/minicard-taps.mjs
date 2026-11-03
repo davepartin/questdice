@@ -20,7 +20,8 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
   await p.evaluate(async ([n, foes]) => { const { S, E, showBoard } = window.QD; const hh = E.newHero({ name: n, cls: 'wizard', seed: 5 }); hh.dice = null; hh.level = 9; hh.campaign.step = 6; S.hero = hh; S.company = { members: [hh] }; const SV = await import('./js/save.js'); if (!SV.heroExists(n)) await SV.createSave(hh, 'testpass'); showBoard(); window.QD.startQuest({ ...E.questsFor(hh)[0], enemies: foes, kind: 'boss', step: 6 }); }, ['Taps' + tag, foes]);
   let up = false; for (let i = 0; i < 80 && !up; i++) { await pump(0.5); await p.waitForTimeout(150); up = await p.evaluate(() => !!document.querySelector('.mnc-veil')); }
   check(`${tag}: the picker opens`, up); if (!up) { await p.close(); continue; }
-  await p.waitForTimeout(400);
+  const ready = async () => { for (let i = 0; i < 40; i++) { if (await p.evaluate(() => { const b = document.querySelector('.mnc-pick'); return !b || !b.disabled; })) return; await p.waitForTimeout(150); } }; // the move dice roll for two seconds before Attack wakes
+  await ready(); await p.waitForTimeout(400);
   // the visible strip of a card: its right edge past the card in front of it (the last card: its middle right)
   const spot = (i) => p.evaluate((i) => { const cs = [...document.querySelectorAll('.mnc-card')]; const r = cs[i].getBoundingClientRect(); const top = cs.find((c) => c.classList.contains('top')).getBoundingClientRect();
     const left = cs[i].classList.contains('top') ? r.left : Math.max(r.left, i > cs.indexOf(cs.find((c) => c.classList.contains('top'))) ? top.right : r.left); return { x: (left + r.right) / 2, y: r.top + r.height * 0.55 }; }, i);
@@ -41,7 +42,7 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
     let r2 = false; for (let i = 0; i < 200 && !r2; i++) { await pump(0.3); await p.waitForTimeout(200); r2 = await p.evaluate(() => { document.querySelector('.dr-ok:not([disabled])')?.click(); document.querySelector('.rc-close')?.click(); return !!document.querySelector('.mnc-veil'); }); }
     const top = await p.evaluate(() => { const B = window.QD.B3.battleState; return { round: B.b.round, head: document.querySelector('.mnc-head')?.textContent, top: document.querySelector('.mnc-card.top')?.dataset.uid, tuid: B.b.enemies[B.target]?.uid, live: B.b.enemies.filter((e) => e.hp > 0).length }; });
     check('round two: the cards come back, the current target on top', r2 && top.round === 2 && (top.live < 2 || top.top === top.tuid), JSON.stringify(top));
-    await p.screenshot({ path: `${OUT}/two-round2-cards.png` });
+    await ready(); await p.screenshot({ path: `${OUT}/two-round2-cards.png` });
     if (r2 && top.live > 1) { const other = await p.evaluate(() => [...document.querySelectorAll('.mnc-card')].findIndex((c) => !c.classList.contains('top')));
       const o = await spot(other); await p.touchscreen.tap(o.x, o.y); await p.waitForTimeout(350); const ou = await p.evaluate((i) => document.querySelectorAll('.mnc-card')[i].dataset.uid, other);
       const bb = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await p.touchscreen.tap(bb.x, bb.y); await pump(1); await p.waitForTimeout(400);
