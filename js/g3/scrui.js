@@ -1278,7 +1278,7 @@ function diceGrid(hero) {
   });
   return h('section', { class: 'cw-dicegrid', id: 'fs-dice', 'aria-label': 'Your character dice' },
     h('div', { class: 'cw-board' }, cells),
-    h('p', { class: 'cw-hint' }, SHEET.inline ? 'Tap another die to inspect it.' : 'Example faces · tap a die to inspect. + means upgrade.'));
+    null); // (no hint line under the grid: Dave, 3 Nov 2026)
 }
 // The popup for one spot on the board (Dave, Oct 2026: "make it look AAA"): the die or weapon as it is now, big, then one clear
 // button per thing you can buy (it says what you get and what it costs, or why not yet), then what else could go there.
@@ -1362,14 +1362,16 @@ function weaponWorkshop(hero, slot, inst) {
 function slotSheet(slot) {
   if (String(slot).startsWith('power:')) return powerSheet(slot.slice(6));
   const hero = X.S.hero; const label = GRID.find(([s]) => s === slot)[1];
-  const head = h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
+  // Dave (3 Nov 2026): no big heading over a card that already has its title; a small Close in the corner. (A die with no card, a locked one, keeps a plain title.)
+  const head = SHEET.inline ? h('div', { class: 'sh-head-float' }, h('span', { class: 'sh-head-name', id: 'camp-inspector-title' }, label), h('button', { class: 'sh-x qd-float-close', type: 'button', 'aria-label': `Close ${label}`, onclick: closeSlot }, 'Close'))
+    : h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
     h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
   if (!E.isActive(hero, slot)) {
     const u = E.unlockInfo(hero, slot);
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
       shBuy(hero, { label: 'Add this die', cost: u.cost, ok: u.ok, onBuy: () => { if (HE.unlockDie(hero, slot)) shBought(); } })];
   }
-  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero, { say: (t) => toast(t), onGrow: (rank) => { if (HE.upgradeHeart(hero, rank)) shBought(); } }), h('p', { class: 'sh-role' }, SH_ROLE.C)]
+  if (slot === 'C') return SHEET.inline ? [head, heartCard(hero, { say: (t) => toast(t), onGrow: (rank) => { if (HE.upgradeHeart(hero, rank)) shBought(); } })]
     : [head, shStage(...shGrow(6)), h('p', { class: 'sh-role' }, SH_ROLE.C)];
   if (SH_KIND[slot]) {
     const kind = SH_KIND[slot]; const size = kind === 'speed' ? E.feetSize(hero) : kind === 'mind' ? E.mindSize(hero) : hero.strength[slot];
@@ -1383,8 +1385,7 @@ function slotSheet(slot) {
       next ? ico('chevron') : null,
       next ? h('div', { class: 'cw-next' }, h('small', {}, 'UPGRADE'), campDie(hero, slot, next)) : null) : shStage(...shGrow(size, next)));
     const allFaces = SHEET.inline ? h('details', { class: 'cw-all-faces' }, h('summary', {}, next ? 'All faces · current and upgrade' : 'All faces'), campFaceList(hero, slot, size, 'Current'), next ? campFaceList(hero, slot, next, 'After upgrade') : null) : null;
-    return [head, h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, card ? null : h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy,
-      u.ok && u.cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - u.cost} after upgrade`) : null, allFaces];
+    return [head, card ? null : h('p', { class: 'sh-role' }, SH_ROLE[slot]), stage, card ? null : h('p', { class: 'cw-example' }, 'Example faces shown. Die size is labeled below.'), buy, allFaces];
   }
   if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
   // a weapon hand: the weapon there, Forge and Train, then what else could go there
@@ -1482,20 +1483,20 @@ function talentWorkshop(hero, slot) {
     const preview = h('div', { class: `tw-result ${chosen ? SYM_ICO[chosen][1] : ''}`, 'aria-live': 'polite' },
       h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
       h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `Gives +${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
-        h('p', {}, chosen ? `When you roll ${n}, gain ${n} ${D.TALENT_SYMS[chosen].name.toLowerCase()}.` : 'Preview a symbol below. Gold is spent only when you buy.')));
+        null));
     const options = !current ? h('div', { class: 'tw-symbols', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
       const count = E.talentCount(hero, slot, k), full = count >= info.same;
       return h('button', { type: 'button', class: `tw-symbol ${SYM_ICO[k][1]} ${TAL.sym === k ? 'selected' : ''}`, disabled: full, 'data-symbol': k, 'aria-pressed': String(TAL.sym === k),
         'aria-label': `${def.name}, ${count} of ${info.same} used${full ? ', limit reached' : ''}`,
         onclick: full ? null : tap(() => { TAL.sym = k; refresh(`.tw-symbol[data-symbol="${k}"]`); }) }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${info.same} used`));
     })) : null;
-    const action = current ? h('div', { class: 'tw-clear' }, h('p', {}, `Clearing gives no refund. A new symbol on face ${n} will cost ${cost} gold.`),
+    const action = current ? h('div', { class: 'tw-clear' }, h('p', {}, `No refund · a new symbol costs ${cost} gold.`),
       h('button', { type: 'button', class: 'tw-clear-btn', 'aria-label': `Clear face ${n} without refund`, onclick: tap(() => {
         if (HE.removeTalent(hero, slot, face, 0)) { TAL.sym = null; sfx.card(); X.persist(); refresh(`.tw-face[data-face="${face}"]`); }
       }) }, 'Clear this face'))
       : h('div', { class: 'tw-purchase' }, shBuy(hero, { label: chosen ? `Set ${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol first', cost, ok: can,
         onBuy: () => { if (chosen && HE.addTalent(hero, slot, face, chosen)) { TAL.sym = null; shBought(); } } }),
-        can ? h('p', { class: 'cw-balance' }, `${hero.gold} gold`, ico('chevron'), `${hero.gold - cost} after purchase`) : null);
+        null);
     detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
   }
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
@@ -1506,8 +1507,7 @@ function talentWorkshop(hero, slot) {
       onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Each numbered face gives you that many of its symbol: "Gives +6" means 6.`),
-    h('p', { class: 'tw-max' }, `Max ${info.same} of the same power symbol per die. Choose wisely.`), detail,
+    h('p', { class: 'tw-max' }, `Max ${info.same} of each symbol per die.`), detail, // (one line: Dave, 3 Nov 2026 "too many words")
     h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
       h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
         up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
@@ -1789,7 +1789,7 @@ function upgradesOverview(hero) {
     ['Potions', 'cu-potions', potions],
     ['Hero', 'cu-hero', [trainingRow(hero, 'health'), trainingRow(hero, 'capacity'), trainingRow(hero, 'start')]],
     ['Dice sizes', 'cu-dice-sizes', dice],
-    ['Weapons', 'cu-weapons', [...weapons, entry('Your other dice', `Pack ${hero.bag.length} of ${D.BAG_MAX} · equip, sell, Diamonds`, null, () => goCampPage('dice'), 'Dice')]],
+    ['Weapons', 'cu-weapons', [...weapons, entry('Your pack', `${hero.bag.length} of ${D.BAG_MAX} · weapons and Diamond weapons`, null, () => goCampPage('dice'), 'Dice')]],
     ['Talent symbols', 'cu-talent-symbols', talents],
     ['Magic powers', 'cu-power-cards', powers],
     (heart.next || heart.why === 'Max rank') ? ['Heart die', 'cu-heart', [entry('Heart rank', heart.next ? `Rank ${hero.heartRank || 1} → ${heart.next}` : 'Highest available rank', heart, () => openSlot('C'))]] : null,
@@ -1837,13 +1837,13 @@ function dieShelf(hero) {
   };
   const tile = (inst, where, acts) => {
     const d = CW.weaponData(inst); const armed = where === 'diamond' && E.armedSlot(hero, inst.uid);
-    return h('button', { type: 'button', class: `cw-shelf-die ${where}${armed ? ' armed' : ''}`, 'aria-label': `${d.metal} ${d.name}, d${d.size}, ${where === 'diamond' ? 'Diamond' : 'in your pack'}. Show its card`,
+    return h('button', { type: 'button', class: `cw-shelf-die ${where}${armed ? ' armed' : ''}`, 'aria-label': `${d.metal} ${d.name}, d${d.size}, ${where === 'diamond' ? 'Diamond weapon' : 'in your pack'}. Show its card`,
       onclick: tap(() => showWeaponCard(inst, null, { real: true, acts })) },
-      shelfDie(hero, inst), h('b', {}, `${d.metal} ${d.name}`), h('small', {}, where === 'diamond' ? (armed ? 'Diamond · next fight' : 'Diamond · one fight') : `d${d.size} · pack`));
+      shelfDie(hero, inst), h('b', {}, `${d.metal} ${d.name}`), h('small', {}, where === 'diamond' ? (armed ? 'Diamond weapon · next fight' : 'Diamond weapon · one fight') : `d${d.size}`));
   };
   const tiles = [...hero.bag.map((inst) => tile(inst, 'pack', packActs(inst))), ...E.diamondsOf(hero).map((dm) => tile(dm, 'diamond', diaActs(dm)))];
-  return h('section', { class: 'cw-shelf', 'aria-label': 'Your other dice' }, h('h3', {}, 'Your other dice', h('small', {}, ` · pack ${hero.bag.length} of ${D.BAG_MAX}`)),
-    tiles.length ? h('div', { class: 'cw-shelf-grid' }, tiles) : h('p', { class: 'muted empty' }, 'Nothing in your pack yet. Weapons and Diamonds you win or buy appear here.'));
+  return h('section', { class: 'cw-shelf', 'aria-label': 'Your pack' }, h('h3', {}, `Your pack · ${hero.bag.length} of ${D.BAG_MAX}`),
+    tiles.length ? h('div', { class: 'cw-shelf-grid' }, tiles) : h('p', { class: 'cw-shelf-empty' }, 'Your pack is empty.'));
 }
 // More dice for each reroll, and a pet that rolls its own die: dice things, so they live on the Dice Upgrades page.
 function diceExtras(hero) {

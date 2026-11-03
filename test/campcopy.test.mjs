@@ -7,7 +7,7 @@ test('camp bar: the five places (Camp Store, Dice Upgrades, Magic Upgrades, All 
 });
 test('Heart card wording and talent notes', () => {
   assert.match(cb, /' boost to matching symbols on white strength dice'/); assert.match(cb, /' boost to matching weapon dice, and to gold on strength dice'/);
-  assert.match(scr, /Max \$\{info\.same\} of the same power symbol per die\. Choose wisely\./); assert.match(scr, /Gives \+\$\{n\}/); // (the restored wording, 3 Nov 2026)
+  assert.match(scr, /Max \$\{info\.same\} of each symbol per die\./); assert.match(scr, /Gives \+\$\{n\}/); // (the restored wording, 3 Nov 2026)
 });
 test('cp2: no bottom Store strip in camp; the camp picture does not make a layer above the hero chip', () => {
   const css = ['../css/screens.css', '../css/camp.css'].map((f) => fs.readFileSync(new URL(f, import.meta.url), 'utf8')).join('\n');

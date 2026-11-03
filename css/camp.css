@@ -727,3 +727,26 @@ button.mc-cov { appearance: none; margin: 0; font: inherit; color: inherit; text
   .sx-screen.camp:has(.cw-camp.cw-p-camp) { --gap: calc(clamp(190px, 25dvh, 230px) + 64px); }
   .cw-camp.cw-p-camp .sc-stage.k-camp { top: calc(62px + var(--safe-t, 0px) + 64px); }
 }
+
+/* ---- Fewer words, less space (Dave, 3 Nov 2026) ---- */
+/* die pop-ups: no big title, a small Close on the top-right corner, over the card's frame */
+.cw-pop .cw-inspector { position: relative; padding: .5rem; gap: .45rem; }
+.sh-head-float { position: absolute; top: .35rem; right: .35rem; z-index: 6; }
+.sh-head-float .sh-head-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sh-head-float .sh-x { min-width: 0; min-height: 36px; padding: .2rem .8rem; border-radius: 99px; border: 1px solid #d6b06a; background: #120d0bee; color: #ffe7b5; font: 600 .82rem var(--font-body); box-shadow: 0 3px 8px #000a; cursor: pointer; }
+.cw-pop .cw-inspector .cb-card { margin: 0 auto .2rem; }
+.cw-pop .tw-face-heading { margin: .1rem 0 0; }
+.cw-pop .tw-max { margin: 0; padding: .3rem .5rem; font: 600 .74rem var(--font-body); color: #d9c9a8; text-align: center; border: 0; background: none; }
+.cw-pop .tw-detail { gap: .4rem; padding: .5rem; }
+.cw-pop .tw-result small { font: 700 .62rem var(--font-body); letter-spacing: .06em; }
+.cw-pop .tw-result b { font: 700 1rem var(--font-body); }
+.cw-pop .tw-clear p { margin: 0; font-size: .72rem; }
+.cw-pop .cw-all-faces { margin: 0; }
+/* Dice Upgrades: one plain heading for the pack, in the body font like the other small headings */
+.cw-shelf { margin-top: .7rem; }
+.cw-shelf > h3, .cw-page-h, .cw-charms > h3 { font: 700 .78rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: #d9b879; margin: 0 0 .35rem; }
+.cw-shelf-empty { margin: 0; padding: .55rem; border: 1px dashed #8a704d80; border-radius: 3px; color: #a99e8c; font: 500 .8rem var(--font-body); text-align: center; }
+.cw-workshop > .cu-section { margin-top: .7rem; }
+.cw-camp .cu-section h3 { font: 700 .78rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: #d9b879; margin: .15rem 0 .2rem; }
+.cw-camp .cu-entry { padding: .35rem 0; }
+.cw-camp .cu-entry button { min-height: 38px; }
