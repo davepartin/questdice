@@ -6,7 +6,7 @@
 Updated 2026-10-25 (latest Director checkpoint below; historical reconciliation retained). Start here for team coordination, then read docs/PLAN.md and the relevant current code. This board records Dave's latest direction; it is not a claim that queued work is implemented.
 
 ## Direction and ownership
-Dave is creator and final decision-maker. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. Story and Writing Lead = QuestStoryBot: story, campaign packs and player-facing copy drafts; code integration stays with the implementation lead. These role names are explicitly authorized by Dave.
+Dave is creator and final decision-maker. Gemini (joined 3 November 2026) = code health and online security, working in a clone on Dave's laptop; see the Gemini section below. Director = ChatGPT: design, priorities, focused prototypes, evidence review. Implementation lead = Claude: production code, integration, tests and simulation batches. Art director = Grokbot: miniatures, consistent art and asset production. Story and Writing Lead = QuestStoryBot: story, campaign packs and player-facing copy drafts; code integration stays with the implementation lead. These role names are explicitly authorized by Dave.
 Goal: a polished phone-based, middleweight cooperative board game for friends on a couch. Brief rules, meaningful choices, persistent heroes, readable danger, beautiful miniatures. Preserve magic's button-based interface and weapon tiles with hand choices and dice faces. Cards belong at suitable draw/reveal/keep moments.
 Dave reports charms have been removed and perks revised: verify current code before proposing anything that restores old systems.
 The live site is a development/playtest site. Small tested updates may be published for Dave to try. Preserve saves and make changes reversible. Published does not mean reviewed.
@@ -26,6 +26,23 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 9. Board edits: this board on main is the one copy. If your branch also edits it, merge main first and keep main's table (add or update only your own rows); do not paste back an older table. Overlapping files: check `git diff origin/main...<branch> --stat` before merging and preserve both owners' work.
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
+
+## Gemini joins the team (3 November 2026)
+
+**Welcome, Gemini.** Dave has added you to the team. You work in a clone of this repository on Dave's laptop. Read the Session protocol above and [WORKING_GUIDE.md](WORKING_GUIDE.md) before editing. Your review of the game is saved at [tasks/G1-gemini-review.md](tasks/G1-gemini-review.md).
+
+**Your tasks (Dave's choice): G1-5 online security (your Bad #5) and G1-2 retired systems and runtime patches (your Bad #2).** Status: IN PROGRESS, owner Gemini. Please add a dated line at the bottom of this board when you start, push or finish, naming the files you are changing.
+
+**Files reserved for Gemini while G1 is open:** `firestore.rules`, `js/cloud.js`, `js/release.js`, and the retired-system parts of `js/data.js` and `js/engine.js`. Claude stays out of those until you post that you are done. If anyone else needs one of them, ask here first.
+
+**How to work from the laptop clone (Claude's notes for you):**
+1. `git pull` before you start. Main moves several times a day (today: the welcome purse `WELCOME_GOLD` and monster gold `ACT_GOLD = [1, 0.75, 0.5]` in js/data.js and js/engine.js; keep both).
+2. Before every push: `git pull` again, merge if needed, `npm test` (566 passing today), `node --check` on every file you edited. When browser files change, stamp a new build with `node tools/stamp.mjs <build>` (for example `20261104g1`).
+3. Never force-push. A refused push means pull, merge, test, push again.
+4. Pushing to `main` deploys the game to the live site (GitHub Pages). It does **not** deploy `firestore.rules`. Rules go live only with `firebase deploy --only firestore:rules` from the laptop. Ship the game code that matches the new rules first, then deploy the rules, then play one online game to confirm rooms, hero names and daily scores still work.
+5. Retired systems: charms are switched off, but players' charms are kept in their saves on purpose ("Yours are kept safe in your save"). Removing old code must not drop saved fields or break old saves; the save migration tests guard this. The game must play exactly the same after G1-2.
+6. No AI model names in commits, code or docs (WORKING_GUIDE).
+7. When finished, post a dated note here: commit, build, files, tests, what you checked online, anything left. Claude will review and run the phone checks.
 
 ## T24 Monster Specials: design discussion with Dave, ideas wanted (2 November)
 
@@ -1128,3 +1145,5 @@ From Claude: 3 November 2026. **T26 follow-up: welcome purse shipped (build 2026
 From Claude: 3 November 2026. **T26: monster gold now eases off by act (build 20261103cp10).** Dave called the decision: kill gold is x1 in Act I, x0.75 in Act II, x0.5 in Act III (`ACT_GOLD`, was 1 / 1.1 / 1.2). A player's own gold dice are untouched, so the Heart's +4 and going for gold still pay. The harsher 1 / 0.5 / 0.25 starved Act III in the bot test; the gentler step was shipped on Dave's word without a full bot run (stopped at his request), so watch Act III difficulty in play.
 
 3 November 2026: **DEPLOYED — Cloud rules hardening, room contention & daily charm guard (build 20261103cp11).** Hardened `firestore.rules` (`hasOnly` schemas on `qdRooms`, `qdHeroNames`, `qdHeroes`; valid class/level/act/step bounds on `qdHeroPublic`; `YYYY-MM-DD` key and monotonic `score >= resource.data.score` on `qdDaily`; disallowed `qdHeroes` delete). In `js/cloud.js`, fixed synchronous `onAuthStateChanged` TDZ reference on `off`, added retry/backoff for `aborted`/`failed-precondition` room transactions (`maxAttempts: 10`), skipped no-op Firestore writes when `aim` targets the already-aimed monster, and clamped `submitDaily` scores before comparing with stored bests. Guarded `dailyHero` in `js/daily.js` when charms are resting. `npm test` 568/568.
+
+From Claude: 3 November 2026. **Gemini added to the team** (Dave). Owns G1-5 online security and G1-2 retired systems, working in a clone on Dave's laptop; see the Gemini section near the top. Claude will not edit Gemini's reserved files until Gemini posts that G1 is done.
