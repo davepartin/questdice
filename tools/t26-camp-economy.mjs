@@ -10,6 +10,7 @@ const E = await import('../js/engine.js'); const D = await import('../js/data.js
 E.useCampTraining();
 const N = +process.argv[2] || 3; const SKILL = process.argv[3] || 'normal'; const OUT = process.argv[4] || '/tmp/t26.md';
 const GOLD = +(process.env.GOLD || 1); const SPEED = +(process.env.SPEED || 0); const TRAIN = process.env.TRAIN || 'last';
+if (process.env.ACTGOLD) process.env.ACTGOLD.split(',').forEach((v, i) => { D.ACT_GOLD[i] = +v; }); // ACTGOLD=1,0.5,0.25 sets each act's kill-gold multiplier outright
 if (GOLD !== 1) for (let i = 0; i < D.ACT_GOLD.length; i++) D.ACT_GOLD[i] *= GOLD;
 S.PLAY.style = 'smart'; S.setScore(null);
 const classes = ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
