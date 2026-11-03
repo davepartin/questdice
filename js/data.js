@@ -1183,7 +1183,7 @@ export const STEP_HP = 0.06;
 // The gold a fallen monster drops, by act (Acts I, II, III): later acts pay more so a hero can keep growing (Oct 2026 economy study).
 // A welcome purse: the first two fights of Act I add this much (Dave, 3 Nov 2026: "a victory bonus on the first couple of rounds, just to get the players started with some money"). T26 found those fights pay a median 12 and 40 gold, so the first camp could not buy a thing.
 export const WELCOME_GOLD = [25, 15];
-export const ACT_GOLD = [1, 1.1, 1.2]; // Oct 2026 (gold as a currency): the monsters' gold grows slowly, so the dice stay at least half of what a fight pays (was 1, 1.3, 1.8)
+export const ACT_GOLD = [1, 0.75, 0.5]; // 3 Nov 2026 (Dave, T26): the monsters pay less as the game goes on, because a hero's own gold dice grow (20, 76, 120 a fight) and the late shop ran dry of things to want; the dice keep paying in full. Was 1, 1.1, 1.2. The kill-gold cut to 1 / 0.5 / 0.25 starved Act III in the bot test; this is the gentler step.
 export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
