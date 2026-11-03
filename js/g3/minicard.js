@@ -24,10 +24,10 @@ export const MODES = {
 const num = (s) => (String(s || '').match(/\d+/) || [])[0];
 const scale = (s, k) => (k === 1 || !num(s) ? s : String(s).replace(/\d+/, String(Math.round(num(s) * k))));
 export const POWERS = {
-  slam: { kw: '2x ATTACK', name: 'Slam', c: '#e0483c', goal: (v) => v?.top || 'Deal 15 damage', does: () => 'or it does 2x ATTACK' },
-  spawn: { kw: 'SPAWNS', name: 'Spawn', c: '#a06ae6', goal: () => 'Hit it once', does: (v, x) => `or it SPAWNS a ${x.kid || 'surprise'}` },
-  regrow: { kw: 'HEALS', name: 'Regrow', c: '#3fae5a', goal: (v) => v?.top || 'Deal 8 damage', does: (v) => `or it HEALS ${num(v?.bottom) || num(v?.top) || 8}` },
-  shield: { kw: 'SHIELD', name: 'Shield', c: '#3c8fe0', goal: (v) => v?.top || 'Attack 25', does: (v) => `or it BLOCKS ${num(v?.bottom) || 12}` },
+  slam: { kw: '2x ATTACK', name: 'Slam', c: '#e0483c', goal: (v) => num(v?.top) ? `Deal ${num(v.top)} damage` : v?.top || 'Deal 15 damage', does: (v) => v?.top === 'Block it!' ? 'Slam hits twice as hard' : 'or its Slam hits twice as hard' },
+  spawn: { kw: 'SPAWNS', name: 'Spawn', c: '#a06ae6', goal: () => 'Hit it once', does: (v, x) => `or it summons a ${x.kid || 'monster'}` },
+  regrow: { kw: 'HEALS', name: 'Regrow', c: '#3fae5a', goal: (v) => `Deal ${num(v?.top) || 8} damage`, does: (v) => `or it heals ${num(v?.bottom) || num(v?.top) || 8}` },
+  shield: { kw: 'SHIELD', name: 'Shield', c: '#3c8fe0', goal: (v) => `Attack ${num(v?.top) || 25} to break`, does: (v) => `or it blocks ${num(v?.bottom) || 12}` },
   bounty: { kw: 'BOUNTY', name: 'Bounty', c: '#e0b03c', goal: (v) => v?.top || 'Kill it in 2', does: () => 'and you win BOUNTY gold' },
   sleeping: { kw: 'SLEEPS', name: 'Sleeping', c: '#7a8aa6', goal: () => 'Kill it in one blow', does: () => 'or it WAKES and hits 2x' },
   fights: { kw: 'FIGHTS', name: 'Rolls its dice', c: '#8a7a62', goal: () => 'No special this round', does: () => 'it just attacks' },
@@ -68,16 +68,18 @@ function cardFacts(F, specials) {
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
     moveBox, dieBox,
     h('div', { class: 'mnc-stats two' }, h('span', {}, h('i', {}, 'Block'), h('b', { class: F.block.length > 5 ? 'sm' : '' }, F.block)), h('span', {}, h('i', {}, 'Speed'), h('b', {}, F.speed))),
+    h('div', { class: 'mnc-special-label' }, specials.some(r => r.classList.contains('on')) ? 'Special · Active this round' : specials.length ? 'Special · Inactive this round' : 'Special · None this round'),
     specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null,
   ].filter(Boolean);
 }
 
-export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack', facts = null } = {}, onPick) {
+export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf = () => '', initOf = () => null, sure = true, kid: kidName = null, first = null, head = 'Choose your target', pick = 'Attack', facts = null, reveal = false } = {}, onPick) {
   const M = MODES[mode] || MODES.solo; const foes = enemies.filter((e) => e.hp > 0); const n = foes.length;
   if (!n) return null;
   const kid = kidName || (sure ? foes.reduce((a, e) => (e.maxHp < a.maxHp ? e : a)).name : null); // battle3d passes what Spawn really calls (SPECIALS.minion)
   const veil = h('div', { class: 'mnc-veil', role: 'dialog', 'aria-label': head });
-  const stack = h('div', { class: 'mnc-stack', style: `--n:${n}` });
+  const stack = h('div', { class: 'mnc-stack', 'data-count': n, style: `--n:${n}` });
+  const dieColors = ['#f5e6c8', '#d0e4da', '#dddaef', '#f0d6bd', '#d1deed', '#e8d9c5'];
   let sel = Math.max(0, foes.findIndex((e) => e.uid === first)); // the card on top: the current target, or the first monster
   const paint = () => [...stack.children].forEach((c, i) => { c.classList.toggle('top', i === sel); c.style.setProperty('--z', String(i === sel ? 9 : n - Math.abs(i - sel))); });
   foes.forEach((e, i) => {
@@ -86,12 +88,12 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
     const lit = POWERS[now];
     const stats = [['HP', Math.round(Math.max(0, e.hp) * M.hp)], ['ARM', e.armor || 0], ['DIE', String(e.powerDie || 'd8').replace(/^d/, 'd')], ['INIT', initOf(e) ?? '–']];
     const rows = list.map((k) => { const P = POWERS[k]; const isOn = k === now;
-      return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, P.kw), ` ${P.name}`),
+      return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, P.name)),
         isOn ? h('div', { class: 'mnc-goal' }, scale(P.goal(plan), M.goal)) : null, isOn ? h('div', { class: 'mnc-does' }, P.does(plan, { kid })) : null); });
     // Dave (2 Nov 2026): the card answers the targeting questions. How much life is left? What will it do this round, with which dice?
     // Does it block, with what? How fast is it? Is its Special on? (battle3d's facts(e) reads the same numbers as the plaque.)
     const F = facts?.(e); const body = F ? cardFacts(F, rows.filter((r) => r.dataset.power !== 'fights')) : [h('div', { class: 'mnc-stats' }, ...stats.map(([k, v]) => h('span', {}, h('i', {}, k), String(v)))), h('div', { class: 'mnc-rows' }, ...rows)];
-    const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg`, 'data-uid': e.uid, role: 'button', tabindex: '0',
+    const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg;--die-paper:${dieColors[i % dieColors.length]}`, 'data-uid': e.uid, role: 'button', tabindex: '0',
       'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. ${F.die?.rolled ? `Move die rolled ${F.die.rolled}. ` : ''}This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
       onclick: () => { sel = i; paint(); } },
       h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word) : null, h('span', { class: 'mnc-tag' }, M.tag)),
@@ -101,5 +103,17 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
   const go = h('button', { type: 'button', class: 'btn mnc-pick', onclick: (ev) => { ev.stopPropagation(); const uid = foes[sel].uid; const par = veil.parentNode; veil.remove(); onPick?.(uid, par); } }, pick);
   veil.append(h('div', { class: 'mnc-head' }, head), stack, go);
   paint();
+  // Cosmetic roll only: the engine has already rolled each monster independently. Never draw random numbers here.
+  const rolls = [...stack.querySelectorAll('.mnc-picture-die:not(.unrolled)')];
+  const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reveal && rolls.length && !reduce) {
+    const finalFaces = rolls.map(d => [...d.children].map(p => p.classList.contains('pip')));
+    veil.classList.add('mnc-revealing'); go.disabled = true; let tick = 0;
+    const timer = setInterval(() => {
+      if (!veil.isConnected) { clearInterval(timer); return; }
+      rolls.forEach((d, i) => { const face = 1 + ((tick + i * 2) % 6); [...d.children].forEach((p, j) => p.classList.toggle('pip', PIPS[face].includes(j))); }); tick++;
+    }, 120);
+    setTimeout(() => { clearInterval(timer); rolls.forEach((d, i) => [...d.children].forEach((p, j) => p.classList.toggle('pip', finalFaces[i][j]))); veil.classList.remove('mnc-revealing'); veil.classList.add('mnc-revealed'); go.disabled = false; }, 1440);
+  }
   return veil;
 }

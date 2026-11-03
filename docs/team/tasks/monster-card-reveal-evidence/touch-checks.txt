@@ -1,0 +1,17 @@
+PASS two: the picker opens 
+PASS two: dice roll before choosing 
+PASS each card shows its own engine roll and highlighted move [{"face":3,"pips":3,"active":"3","rows":1},{"face":6,"pips":6,"active":"1·2·6","rows":1}]
+PASS two: tapping card 2 of 2 brings it to the front {"x":274.75511932373047,"y":343.35215759277344}
+PASS two: tapping card 1 of 2 brings it to the front {"x":134.203125,"y":337.74537353515626}
+PASS two: Attack on the back card targets it and goes straight to the battle {"uid":"u682oz","veil":false,"plan":false,"picked":true,"tuid":"u682oz","roll":true}
+PASS round two without specials: cards return, the current target on top {"round":2,"head":"Round 2 · your target","top":"u682oz","tuid":"u682oz","live":2}
+PASS round two: Attack on the other card switches the target, straight to the battle {"ou":"u5jpel","veil":false,"sheet":false,"tuid":"u5jpel","roll":true}
+PASS four: the picker opens 
+PASS four: dice roll before choosing 
+PASS each card shows its own engine roll and highlighted move [{"face":6,"pips":6,"active":"6","rows":1},{"face":6,"pips":6,"active":"1·2·6","rows":1},{"face":2,"pips":2,"active":"1–2","rows":1},{"face":6,"pips":6,"active":"6","rows":1}]
+PASS four: tapping card 4 of 4 brings it to the front {"x":311.578125,"y":343.6041229248047}
+PASS four: tapping card 3 of 4 brings it to the front {"x":233.84375,"y":343.32579650878904}
+PASS four: tapping card 2 of 4 brings it to the front {"x":156.10936737060547,"y":343.32579650878904}
+PASS four: tapping card 1 of 4 brings it to the front {"x":78.39062976837158,"y":343.6041229248047}
+PASS four: Attack on the back card targets it and goes straight to the battle {"uid":"u8ipc4","veil":false,"plan":false,"picked":true,"tuid":"u8ipc4","roll":true}
+PASS no page errors 

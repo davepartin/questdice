@@ -81,3 +81,37 @@
 .mnc-picture-die i { width:.22rem; height:.22rem; border-radius:50%; }
 .mnc-picture-die i.pip { background:#241a15; box-shadow:inset 0 1px 1px #0009; }
 .mnc-picture-die.unrolled { display:grid; place-items:center; font:900 1rem/1 var(--ui,sans-serif); color:#665343; }
+
+/* Give rules room to breathe; on a short phone the card itself can scroll. */
+.mnc-card.facts { height:min(23rem, calc(100dvh - 8rem)); overflow-y:auto; overscroll-behavior:contain; }
+.mnc-stack:has(.mnc-card.facts) { height:min(23.4rem, calc(100dvh - 7.6rem)); flex:none; }
+.mnc-card.facts > * { flex-shrink:0; }
+.mnc-kw { white-space:normal; overflow:visible; }
+.mnc-face-main { white-space:normal; overflow:visible; }
+.mnc-face b { min-width:0; overflow:visible; }
+.mnc-special-label { font:800 .5rem/1.15 var(--ui,sans-serif); color:#f4d68e; text-transform:uppercase; letter-spacing:.035em; margin-top:.08rem; }
+.mnc-picture-die { background:linear-gradient(145deg,#fffef2,var(--die-paper,#d8cbb5)); }
+.mnc-revealing .mnc-picture-die:not(.unrolled) { animation:mnc-tumble .36s ease-in-out infinite alternate; }
+.mnc-revealing .mnc-face.on { color:#a99e8c; background:transparent; box-shadow:inset 0 0 0 1px #ffffff2e; }
+.mnc-revealing .mnc-face.on .mnc-n { background:transparent; color:#cdbb98; box-shadow:inset 0 0 0 1px #ffffff3a; }
+.mnc-revealing .mnc-face.on b,.mnc-revealing .mnc-face.on .mnc-dice { color:#a99e8c; background:transparent; }
+.mnc-revealed .mnc-face.on { animation:mnc-reveal .7s ease-out; }
+.mnc-pick:disabled { opacity:.55; }
+@keyframes mnc-tumble { from { transform:translateY(-2px) rotate(-16deg) scale(.94); } to { transform:translateY(2px) rotate(18deg) scale(1.04); } }
+@keyframes mnc-reveal { 0% { filter:brightness(2.4); transform:scale(1.04); } 100% { filter:brightness(1); transform:scale(1); } }
+@media (prefers-reduced-motion: reduce) { .mnc-picture-die,.mnc-face.on { animation:none !important; } }
+.mnc-revealing .mnc-face.on .mnc-move-line { visibility:hidden; }
+.mnc-stack { --w: 10rem; }
+.mnc-title { white-space:normal; overflow:visible; }
+.mnc-face b { font-size:.68rem; }
+.mnc-face.on b { font-size:.78rem; }
+.mnc-special-label { font-size:.56rem; }
+.mnc-goal { font-size:.78rem; }
+.mnc-does { font-size:.7rem; }
+.mnc-dice { flex-shrink:0; }
+.mnc-revealing .mnc-face.on { padding:.1rem .26rem; }
+.mnc-revealing .mnc-face.on .ic { opacity:.7; color:inherit; }
+.mnc-revealing .mnc-face.on b { font-size:.68rem; }
+.mnc-revealing .mnc-face.on .mnc-dice { font-size:.58rem; padding:0; }
+/* Keep the edge of every card reachable on a crowded phone screen. */
+.mnc-stack[data-count="3"], .mnc-stack[data-count="4"] { --w:8.6rem; }

@@ -1643,3 +1643,7 @@ Implemented Dave's explicit replacement for Polymorph. Three magic loads the nex
 ## 3 November 2026 — monster card move dice
 
 Placed a physical pip die on the upper-left corner of each monster miniature card, showing the already rolled move face and highlighting the matching move. Forced, non-die moves show a neutral space and their current move. Monster cards now appear every round, before target selection, including rounds without Specials; a player can choose the target after seeing the moves. The die mirrors the engine result without rerolling. See `docs/team/tasks/monster-card-dice.md` for phone and touch evidence.
+
+## 3 November 2026 — clearer monster Specials and animated move dice
+
+Made monster Specials explicitly active, inactive or absent, with clearer short descriptions and scrollable, taller cards for short phones. At round start each monster's differently colored die visibly rolls and lands on the authoritative result before its move lights up and target selection becomes available; reduced motion displays the result immediately, and later inspection does not replay the roll. Monster types already have separate face mappings and each rolls independently, so this preserves their existing odds. Details: `docs/team/tasks/monster-card-reveal.md`.

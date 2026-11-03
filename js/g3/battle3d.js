@@ -1218,8 +1218,8 @@ function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = 
 const wantPicker = () => MC.on() && B.b?.round === 1 && B.mcFor !== B.b && alive().length > 0;
 function openPicker(afterTitle = false) {
   const b = B.b; B.mcFor = b; const t0 = Date.now();
-  const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : showCards(b));
-  if (afterTitle) hold(); else showCards(b);
+  const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : showCards(b, { reveal: true }));
+  if (afterTitle) hold(); else showCards(b, { reveal: true });
 }
 // What the monster card says about a monster (the same numbers its plaque shows): life, this round's move and dice, block, speed.
 const UNIT_WORD = { dmg: 'damage', pierce: 'damage, through block', guard: 'block', heal: 'heals itself', breath: 'fire on every hero' };
@@ -1235,7 +1235,7 @@ function cardFactsOf(e, b) {
     r.nums.push(k + 1); if (e.face === k + 1) r.lit = true; });
   return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { rolled: e.face || null, rows } };
 }
-function showCards(b = B.b, { top = null } = {}) {
+function showCards(b = B.b, { top = null, reveal = false } = {}) {
   if (!b || B.b !== b || B.ended || !alive().length || B.root.querySelector('.mnc-veil')) return;
   const look = b.phase !== 'reset' || B.busy || !!B.tlock; // after the roll (or with a locked target) the cards are to read, not to choose: the button closes them
   B.root.querySelector('.sp-plan')?.remove();
@@ -1244,14 +1244,14 @@ function showCards(b = B.b, { top = null } = {}) {
   if (MC.demo()) ({ plans, owns } = MC.demoData(alive()));
   const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
   const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => art(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-    kid: art(D.SPECIALS.minion)?.name || null, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack' },
+    kid: art(D.SPECIALS.minion)?.name || null, reveal, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack' },
     (uid) => { if (!look && B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
   if (v) { B.root.append(v); sfx.select?.(); }
 }
 // The round-start look at the monsters: the cards each round, or the optional legacy plan board.
 function showPlan() {
   B.root?.querySelector('.sp-plan')?.remove();
-  if (MC.on()) { showCards(); return; }
+  if (MC.on()) { showCards(B.b, { reveal: true }); return; }
   const el = SP.planFor(B.b, { imgOf: (uid) => { const e = B.b?.enemies.find((x) => x.uid === uid); const d = e && (monsterOf(e.id, B.b.hero?.campaign) || D.MONSTERS[e.id]); return d?.img || ''; }, onFight: () => {} });
   if (el) B.root.append(el);
 }
