@@ -1,0 +1,3 @@
+npm test: 558 tests, 558 pass, 0 fail
+PASS 48 phone layouts and larger text; camp refund; hit/miss reveal; actual load/use and frog piece; no page errors
+Headless Chromium; not Safari.

@@ -10,8 +10,8 @@ test('Arc Bolt: 2 magic per d8, up to 6d8, half arcs, every round', () => {
   const r = castPower(b, 'arcbolt', { x: 6 }); assert.equal(r.rolls.length, 3); assert.equal(r.die, 8); assert.equal(b.magic, 10); assert.equal(b.mods.splash, Math.floor(r.total / 2));
   assert.equal(castPower(b, 'arcbolt', { x: 2 }), null); beginReset(b); startRoll(b); assert.ok(castPower(b, 'arcbolt', { x: 2 }));
 });
-test('Polymorph is a Charge card: 1 magic a charge, max 3; its Use rolls a d6 (test/polymorph.test.mjs has the odds)', () => {
-  const k = cardsOf(wiz()).find((c) => c.id === 'polymorph'); assert.equal(k.kind, 'charge'); assert.equal(k.max, 3); assert.equal(k.cost, 1); assert.equal(k.costLv, undefined, 'no Level III discount');
-  const b = fight(); b.magic = 9; assert.ok(castPower(b, 'polymorph')); assert.equal(b.magic, 8); assert.equal(b.charge.polymorph, 1); assert.equal(b.mods.frog || 0, 0, 'storing a charge frogs nothing');
+test('Frog Morph loads a pair for 3 magic, max 3 pairs; its Use rolls a d6 (test/polymorph.test.mjs has the odds)', () => {
+  const k = cardsOf(wiz()).find((c) => c.id === 'polymorph'); assert.equal(k.kind, 'charge'); assert.equal(k.max, 3); assert.equal(k.cost, 3); assert.equal(k.costLv, undefined, 'no Level III discount');
+  const b = fight(); b.magic = 9; assert.ok(castPower(b, 'polymorph')); assert.equal(b.magic, 6); assert.equal(b.charge.polymorph, 1); assert.equal(b.mods.frog || 0, 0, 'storing a charge frogs nothing');
 });
 test('Storm Coil releases 24 at 4 charges, half splashing', () => { const k = cardsOf(wiz()).find((c) => c.id === 'coil'); assert.equal(chargeGain(k, 4).atk, 24); assert.equal(k.splash, 'half'); });

@@ -1199,6 +1199,7 @@ function campPowers(hero) {
       h('div', { class: 'cp-meta' }, h('span', {}, status(row)), h('span', {}, `Rank ${romans[level]}`), h('span', {}, ico('spark'), magic(k))),
       h('div', { class: 'cp-actions' }, action),
       !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name}${equipped ? `, replacing ${equipped.name}` : ''}.`) : null,
+      k.frogLoad && hero.frogMorphRefundGold ? h('p', { class: 'cp-swap-note' }, `${hero.frogMorphRefundGold} gold returned from retired chance upgrades.`) : null,
       h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph })),
       h('details', { class: 'cp-rules' }, h('summary', {}, 'Card rules'), h('p', {}, campPowerText(k, level)), when ? h('p', {}, when) : null,
         row.equipped && up.next ? h('p', {}, `Rank ${romans[up.next]}: ${campPowerText(k, up.next)}`) : null),

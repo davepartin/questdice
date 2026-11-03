@@ -1188,7 +1188,7 @@ export function powerDice(card, x, lvl = 0) {
   return card.maxDice == null ? n : Math.min(card.maxDice, n);
 }
 export function powerState(b, card) {
-  const spent = card.atwill ? !!(b.usedRound && (b.usedRound[card.id] || (card.kind === 'charge' && b.usedRound[`${card.id}:release`]))) : !!b.used[card.id]; // a charge released this round cannot store too
+  const spent = card.atwill ? !!(b.usedRound && (b.usedRound[card.id] || (card.kind === 'charge' && !card.frogLoad && b.usedRound[`${card.id}:release`]))) : !!b.used[card.id]; // a charge released this round cannot store too
   const early = !!(card.minRound && b.round < card.minRound);
   return { spent, early, canPay: b.magic >= card.cost };
 }
@@ -1217,22 +1217,25 @@ export const needsDice = (card) => !!card?.fx?.free;
 export const isTargeted = (card) => !!card && !!(card.fx?.frog || card.markGold || card.kind === 'super');
 // Using a power on the target: for a Charge card only its Use is aimed (storing a charge never chooses or locks a target). Polymorph is the one aimed Charge card.
 export const usesTarget = (card, opts = {}) => isTargeted(card) && (card.kind !== 'charge' || !!opts.release);
-// Polymorph's d6 (a Charge card, Dave 2 Nov 2026): the face needed for a frog with n charges at a level (1 = sure), and the words for it.
-export const frogNeed = (card, n, lvl = 0) => { const t = card?.frogNeed; if (!t || n < 1) return 7; const row = t[Math.max(0, Math.min(t.length - 1, lvl | 0))]; return row[Math.min(row.length, n) - 1]; };
+// Frog Morph stores pairs, keeping the saved charge count (0–3) compatible with existing battles.
+export const frogLoaded = (card, n) => Math.max(0, Math.min(6, Math.floor(n || 0) * (card.frogLoad || 2)));
+export const frogMatchRange = (card, n) => { const count = frogLoaded(card, n); return count ? `1–${count}` : 'none'; };
+// Probability threshold retained for bot policies: (7 - need) / 6. Actual new matches are the LOW numbered faces.
+export const frogNeed = (card, n, lvl = 0) => { if (card?.frogLoad) return 7 - frogLoaded(card, n); const t = card?.frogNeed; if (!t || n < 1) return 7; const row = t[Math.max(0, Math.min(t.length - 1, lvl | 0))]; return row[Math.min(row.length, n) - 1]; };
 export const frogRange = (need) => (need <= 1 ? 'sure' : need > 6 ? '–' : `${need}–6`);
 export function castPower(b, id, { x, release, to, song } = {}) {
   const card = cardsOf(b.hero).find((c) => c.id === id);
   if (!card || (b.phase !== 'shape' && b.phase !== 'reset')) return null;
   if (needsDice(card) && !b.board) return null; // a free reroll needs rolled dice (the cost is not paid)
   if (card.kind === 'charge' && release) { // let the stored charges go
-    b.charge = b.charge || {}; const n = b.charge[id] || 0; const key = `${id}:release`;
-    if (!n || (b.usedRound && (b.usedRound[key] || b.usedRound[id]))) return null; // a round either stores a charge or releases them, not both (Dave, Oct 2026)
+    const n = b.charge?.[id] || 0; const key = `${id}:release`;
+    if (!n || (b.usedRound && (b.usedRound[key] || (!card.frogLoad && b.usedRound[id])))) return null; // Frog Morph may load and use together; other charge cards keep store-or-use.
     (b.usedRound = b.usedRound || {})[key] = true; b.charge[id] = 0;
     const lvl = powerLevel(b.hero, id); let total = 0;
     if (card.frogNeed) { // Polymorph: all the charges on one d6 against the target; a frog cannot attack this round
-      const need = frogNeed(card, n, lvl); const r = 1 + Math.floor(b.rng() * 6); const ok = r >= need;
+      const need = frogNeed(card, n, lvl); const loaded = frogLoaded(card, n); const r = 1 + Math.floor(b.rng() * 6); const ok = card.frogLoad ? r <= loaded : r >= need;
       if (ok) { b.mods.frog = 1; b.mods.pierce = (b.mods.pierce || 0) + (card.frogPierce?.[Math.min(card.frogPierce.length - 1, lvl)] || 0); }
-      b.lastCast = { id, name: card.name, cost: 0, rolls: [r], die: 6, total: r, notes: [`released ${n}`], released: n, per: {}, frog: ok, need };
+      b.lastCast = { id, name: card.name, cost: 0, rolls: [r], die: 6, total: r, notes: [`released ${n}`], released: n, per: {}, frog: ok, need, loaded, match: card.frogLoad ? frogMatchRange(card, n) : frogRange(need) };
       CAST_HOOK.on?.(b, b.lastCast); return b.lastCast;
     }
     const per = typeof card.per === 'number' ? { atk: card.per } : card.per; const gain = chargeGain(card, n, lvl);
@@ -1243,7 +1246,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     }
     b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; CAST_HOOK.on?.(b, b.lastCast); return b.lastCast;
   }
-  const st = powerState(b, card); if (st.spent || st.early) return null;
+  const st = powerState(b, card); if (st.spent || st.early || (card.frogLoad && (b.charge?.[id] || 0) >= card.max)) return null;
   const cost = powerCost(card, x, powerLevel(b.hero, id)); if (b.magic < cost) return null;
   b.magic -= cost;
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
@@ -1295,7 +1298,7 @@ export const SONG = { steady: { atk: 4, block: 5 }, lucky: { luck: true, mid: 4,
 export const PACT_MAGIC = 6; // Blood Pact's extra starting magic, for 8 health (8 still measured top of the charms)
 export const playCard = (b, id, opts) => !!castPower(b, id, opts);
 export function powerUpgradeInfo(hero, id) {
-  const lvl = powerLevel(hero, id); if (lvl >= powerLevelsOf(hero)) return { ok: false, why: 'max', lvl };
+  const lvl = powerLevel(hero, id); const card = libraryOf(hero).find(k => k.id === id); if (lvl >= Math.min(powerLevelsOf(hero), card?.upgradeMax ?? Infinity)) return { ok: false, why: 'max', lvl };
   const cost = POWER_UPGRADE[lvl]; return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, lvl, next: lvl + 1 };
 }
 export function upgradePower(hero, id) {
@@ -1390,7 +1393,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   const actFor = (list, early) => {
   for (const e of list) {
     if (e.hp <= 0 || !e.intent || e.fresh) continue; // reinforcements join next round
-    if (m.frog && e === frogged) { rep.acts.push({ uid: e.uid, name: 'Frog', v: 'frog', mag: 0, k: 0, early, frog: true }); rep.frog = e.uid; continue; } // Polymorph (mw1, PROPOSED): a frog cannot attack this round
+    if (m.frog && e === frogged && !GUARD_VERBS.has(e.intent.v)) { rep.acts.push({ uid: e.uid, name: 'Frog', v: 'frog', mag: 0, k: 0, early, frog: true }); rep.frog = e.uid; continue; } // Frog Morph stops attacks while retaining defensive moves.
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow, before your block
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, early, init: e.init ?? null, frosted, slam2x: !!(SPECIALS.on && i.double) };
     switch (i.v) {
@@ -2446,7 +2449,7 @@ export function resolveParty(b) {
   for (const f of snap) if (f.mods?.frog) { const t = b.enemies[f.target]?.hp > 0 ? b.enemies[f.target] : b.enemies.find((e) => e.hp > 0); if (t) { frogs.add(t.uid); (rep.frogs ||= []).push(t.uid); } }
   const actFor = (e) => {
     if (e.hp <= 0 || !e.intent || e.fresh) return;
-    if (frogs.has(e.uid)) { rep.acts.push({ uid: e.uid, name: e.intent.n, v: 'frog', frog: true, mag: 0 }); return; } // Polymorph (mc1, PROPOSED): a frog cannot act
+    if (frogs.has(e.uid) && !GUARD_VERBS.has(e.intent?.v)) { rep.acts.push({ uid: e.uid, name: e.intent.n, v: 'frog', frog: true, mag: 0 }); return; } // Frog Morph stops attacks while retaining defensive moves.
     const frosted = thaw(e); // a Frost arrow halves its next damaging blow
     const i = e.intent; const act = { uid: e.uid, name: i.n, v: i.v, mag: e.mag, p: e.p, calc: e.calc, k: i.k || 0, slam: !!i.slam, arm: e.arm || 0, frosted, slam2x: !!(SPECIALS.on && i.double) };
     switch (i.v) {

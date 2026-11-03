@@ -42,13 +42,14 @@ const G = {
   potion: '<path class="f" d="M9.4 2.6 H14.6 V4.4 H13.8 V8.6 C17.2 9.6 19.6 12.6 19.6 16 C19.6 19.6 16.2 22 12 22 C7.8 22 4.4 19.6 4.4 16 C4.4 12.6 6.8 9.6 10.2 8.6 V4.4 H9.4 Z"/><path class="p" d="M6.2 15.4 C8 14.4 10 16.4 12 15.4 C14 14.4 16 16.4 17.8 15.4 C17.8 18.6 15.4 20.4 12 20.4 C8.6 20.4 6.2 18.6 6.2 15.4 Z" opacity=".85"/><path class="h" d="M7.8 13 C8.4 11.8 9.4 11 10.6 10.6"/>',
   healheart: '<path class="f" d="M12 21.2 C5 15.6 2.4 12.2 2.4 8.6 C2.4 5.6 4.7 3.6 7.4 3.6 C9.4 3.6 11.2 4.7 12 6.3 C12.8 4.7 14.6 3.6 16.6 3.6 C19.3 3.6 21.6 5.6 21.6 8.6 C21.6 12.2 19 15.6 12 21.2 Z"/><path class="p" d="M10.7 7.6 H13.3 V10.4 H16.1 V13 H13.3 V15.8 H10.7 V13 H7.9 V10.4 H10.7 Z" style="fill:#fff"/>',
   heartturn: '<path class="f" d="M12 18.6 C7 14.8 5 12.4 5 9.8 C5 7.7 6.6 6.3 8.5 6.3 C10 6.3 11.3 7.1 12 8.3 C12.7 7.1 14 6.3 15.5 6.3 C17.4 6.3 19 7.7 19 9.8 C19 12.4 17 14.8 12 18.6 Z"/><path class="p" d="M12 .6 L15.4 4.4 H8.6 Z M12 23.4 L8.6 19.8 H15.4 Z"/><path class="h" d="M7.6 9.6 C7.6 8.7 8.2 8.1 9 8.1"/>',
+  frog: '<path class="f" d="M4 9 C1 11 2 19 8 20 H16 C22 19 23 11 20 9 L17 6 H7 Z"/><circle class="f" cx="7" cy="6" r="4"/><circle class="f" cx="17" cy="6" r="4"/><circle cx="7" cy="6" r="1.5" fill="#241430"/><circle cx="17" cy="6" r="1.5" fill="#241430"/><path d="M6.5 13 Q12 18 17.5 13" fill="none" stroke="#241430" stroke-width="1.6" stroke-linecap="round"/>',
   burst: '<path class="f" d="M12 1 L14.4 8 L21.8 6.6 L16.6 12 L21.8 17.4 L14.4 16 L12 23 L9.6 16 L2.2 17.4 L7.4 12 L2.2 6.6 L9.6 8 Z"/><circle class="p" cx="12" cy="12" r="3" style="fill:#fff"/>',
 };
 // Which picture each power wears (the rest fall back to the icon of what they give).
 const POWER_GLYPH = {
   cleave: 'cleave', judgment: 'burst', shieldwall: 'hexshield', press: 'cleave', rally: 'flag', secondwind: 'wind',
   aimed: 'crosshair', mark: 'hk:pierce', rain: 'rain', quickdraw: 'hk:reroll', snare: 'net', volley: 'volley', vanish: 'cloak',
-  arcbolt: 'bolt', polymorph: 'hk:weaken', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
+  arcbolt: 'bolt', polymorph: 'frog', meteor: 'comet', bolt: 'missile', barrier: 'hexshield', coil: 'spiral', light: 'sun',
   anvil: 'anvil', grudge: 'fist', avalanche: 'mountain', bulwark: 'hk:block', brace: 'hexshield', stonehide: 'mountain', forgefury: 'anvil',
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
   'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
@@ -63,7 +64,7 @@ export function glyph(k, cls = '') {
 }
 // the effect a power is mostly about (its colour)
 // Polymorph (a Charge card, 2 Nov 2026): the d6 range for 1, 2, 3 charges at a level, e.g. "4–6, 2–6, sure"
-export const frogRanges = (k, level = 0) => [1, 2, 3].slice(0, k.max).map((n) => E.frogRange(E.frogNeed(k, n, level)));
+export const frogRanges = (k, level = 0) => [1, 2, 3].slice(0, k.max).map((n) => k.frogLoad ? E.frogMatchRange(k, n) : E.frogRange(E.frogNeed(k, n, level)));
 const frogWords = (k, level = 0) => `a frog on ${frogRanges(k, level).join(', ')} (1, 2, ${k.max} charges)`;
 export function mainFx(k) {
   if (k.dice) return k.dice.to;
@@ -94,6 +95,7 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
   if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return `Attack grows each round. Round ${r}: +${E.roundGain(k, r, level)}.${splashWord(k)}`; }
+  if (k.frogLoad) { const bonus = k.frogPierce?.[Math.min(level, k.frogPierce.length - 1)] || 0; return `Load ${k.frogLoad} numbered dice for ${k.cost} magic, once a round. Use after loading or save them: roll a purple d6 and match a loaded number. ${stored == null ? '' : `${E.frogLoaded(k, stored)} loaded. `}A frog cannot attack this round, but can defend. Using empties the card.${bonus ? ` A match also gives +${bonus} pierce.` : ''}`; }
   if (k.frogNeed) { const fp = k.frogPierce?.[level] || 0; const nd = stored ? E.frogNeed(k, stored, level) : 7; const now = stored ? ` Use now: ${nd <= 1 ? 'a sure frog' : `a frog on ${E.frogRange(nd)}`}.` : ''; return `${stored == null ? '' : `${stored} of ${k.max} charged.${now} `}Charge 1 a round, or use them all on your target and roll a d6: ${frogWords(k, level)}. A frog cannot attack this round; a miss spends the charges.${fp ? ` The frog takes +${fp} pierce.` : ''}`; }
   if (k.kind === 'charge') { const v = Object.entries(E.chargeValues(k, k.max, level)); return `${stored == null ? '' : `${stored} of ${k.max} charged. `}Charge 1 a round, or use them all: ${v.map(([f, xs]) => `${xs.join(', ')} ${f === 'heal' ? 'heal' : NAME[f] || f}`).join(' and ')}. Total ${v.length > 1 ? totWords(k, level) : Object.values(E.chargeGain(k, k.max, level))[0]}.${splashWord(k)}`; }
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, and ${E.scaleNum(k.aoe, level)} to every monster.`;
@@ -105,14 +107,14 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
 // What a cast leaves you with, beside the Cast button: "Rolls 2d6 · 2 magic left" (the dice only for a power that rolls dice).
 export function castPreview(k, { x, level = 0, magic = 0 } = {}) {
   const cost = x ?? k.cost; const left = `${Math.max(0, magic - cost)} magic left`;
-  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.kind === 'charge' ? 'Charges 1' : '';
+  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.frogLoad ? 'Loads 2 dice' : k.kind === 'charge' ? 'Charges 1' : '';
   return rolls ? `${rolls} · ${left}` : left;
 }
 export function shortLine(k, level = 0) {
   if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
   if (k.kind === 'scale') return `${E.powerDice(k, k.cost, level)}d${k.dice.s}, max ${scaleTop(k, level)}d${k.dice.s}`;
   if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `Round ${r}: +${E.roundGain(k, r, level)} attack`; }
-  if (k.frogNeed) return `Frog on ${frogRanges(k, level).join(' / ')}`;
+  if (k.frogNeed) return `Match ${frogRanges(k, level).join(' / ')}`;
   if (k.kind === 'charge') return `Total ${totWords(k, level)}`;
   if (k.kind === 'super') return `${fxWords(lvlFx(k.fx, level))}, ${E.scaleNum(k.aoe, level)} to all`;
   if (k.kind === 'luck') return `+${1 + level} magic / +${E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, level)} attack`;
@@ -122,7 +124,7 @@ export function shortLine(k, level = 0) {
 // What one upgrade adds, in a few words: "+1 each charge (+4 total)", "+1 die", "+1 block".
 export function upgradeLine(k, level = 0) {
   const nx = level + 1;
-  if (k.frogNeed) { const fp = (k.frogPierce?.[nx] || 0) - (k.frogPierce?.[level] || 0); const a = frogRanges(k, level).join(', '); const b2 = frogRanges(k, nx).join(', ');
+  if (k.frogNeed) { const fp = (k.frogPierce?.[Math.min(nx, k.frogPierce.length - 1)] || 0) - (k.frogPierce?.[Math.min(level, k.frogPierce.length - 1)] || 0); const a = frogRanges(k, level).join(', '); const b2 = frogRanges(k, nx).join(', ');
     return [fp ? `+${fp} pierce on the frog` : '', a !== b2 ? `frog on ${b2}` : ''].filter(Boolean).join(', ') || 'no change'; }
   if (k.kind === 'charge') {
     const a = E.chargeValues(k, k.max, level); const b2 = E.chargeValues(k, k.max, nx); const t0 = E.chargeGain(k, k.max, level); const t1 = E.chargeGain(k, k.max, nx);
@@ -247,7 +249,7 @@ function powerRow(ctx, p, sel) {
   const pay = h('span', { class: 'pr-pay' },
     scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '−') : null,
     scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+') : null);
-  const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
+  const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])));
   const castable = rech;
   const go = rech ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Cast', mc(x)))
     : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Charge' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Charge', mc(x)] : ['Cast', mc(x)]);
@@ -316,7 +318,7 @@ function detailPanel(ctx, sel) {
     const step = k.kind === 'scale' && !st.spent ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
       h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
-    const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id])); // store or release, one a round
+    const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id]))); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Use ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = rech ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
       : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`)));
@@ -351,11 +353,36 @@ function detailPanel(ctx, sel) {
 // inline: the open .pw-detail panel; when given, the result plays inside the selected tab (no second window; Dave, 26 Oct mp2).
 // mq7 (Dave: "you won't need to open a new screen"): Volley (charge powers) store and release with no reveal card; the result shows in its own row this round
 const ROW_NOTE = {};
+export function frogReveal(host, k, r) {
+  return new Promise(resolve => {
+    const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const result = h('div', { class: 'fm-roll-result', role: 'status', 'aria-live': 'polite' });
+    const cube = h('div', { class: 'fm-cube', 'aria-label': 'Rolling a purple six-sided die' }, [1, 2, 3, 4, 5, 6].map(n => { const dots=MC.die('magic',6,n);dots.querySelector('path')?.remove();return h('span', { class: `fm-cube-face face-${n}` }, dots); }));
+    const done = h('button', { type: 'button', class: 'fm-roll-done', disabled: true }, 'Back to battle');
+    const layer = h('div', { class: 'fm-roll-screen', role: 'dialog', 'aria-modal': 'true', 'aria-label': k.name },
+      h('h2', {}, k.name), h('p', { class: 'fm-roll-match' }, `Match ${r.match || E.frogMatchRange(k, r.released)}`),
+      h('div', { class: 'fm-cube-stage' }, cube), result, done);
+    const prior = document.activeElement;
+    done.onclick = () => { layer.remove(); prior?.focus?.({ preventScroll: true }); resolve(); };
+    layer.addEventListener('keydown', e => { if (e.key === 'Escape' && !done.disabled) done.click(); if (e.key === 'Tab') { e.preventDefault(); if (!done.disabled) done.focus(); } });
+    host.append(layer);
+    const turns = {1:[0,0],2:[-90,0],3:[0,-90],4:[0,90],5:[90,0],6:[0,180]}[r.total];
+    const finish = () => {
+      cube.setAttribute('aria-label', `Purple d6 rolled ${r.total}`);layer.dataset.result = r.frog ? 'frog' : 'miss';
+      result.replaceChildren(h('b', {}, r.frog ? '🐸 Frog!' : 'Miss'), h('span', {}, `Rolled ${r.total}`), h('p', {}, r.frog ? 'No attack this round. It can still defend.' : 'The enemy keeps its move.'), h('small', {}, `${r.loaded} loaded dice spent`));
+      done.disabled = false;done.focus({ preventScroll: true });sfx.dieSettle?.();
+    };
+    const end = `rotateX(${708 + turns[0]}deg) rotateY(${702 + turns[1]}deg)`;
+    if (reduced) { cube.style.transform=end;finish(); }
+    else { sfx.diceRoll?.(4);cube.animate([{transform:'translateY(-60px) rotateX(30deg) rotateY(30deg)'},{transform:'translateY(12px) rotateX(540deg) rotateY(620deg)',offset:.7},{transform:end}],{duration:1150,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}).finished.then(finish); }
+  });
+}
 export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
+  if (k?.frogLoad && r.released) return frogReveal(host, k, r);
   if (k?.kind === 'charge') {
     const f = k.frogNeed ? 'weaken' : Object.keys(r.per || perOf(k))[0] || 'pierce'; const amt = gains[f] || r.total || 0;
-    const used = k.frogNeed ? (r.frog ? `Frog! Rolled ${r.total}${r.need > 1 ? ` (${E.frogRange(r.need)})` : ''}` : `Missed: rolled ${r.total}, needed ${E.frogRange(r.need)}`) : `Used ${r.released}: +${amt} ${NAME[f] || f}`;
-    ROW_NOTE[k.id] = { round, f, text: r.released ? used : `Charged: ${r.charged || 0} of ${k.max}` };
+    const used = k.frogNeed ? (r.frog ? `Frog! Rolled ${r.total}${r.need > 1 ? ` (${E.frogRange(r.need)})` : ''}` : `Missed: rolled ${r.total}, match ${r.match || E.frogRange(r.need)}`) : `Used ${r.released}: +${amt} ${NAME[f] || f}`;
+    ROW_NOTE[k.id] = { round, f, text: r.released ? used : k.frogLoad ? `${E.frogLoaded(k, r.charged)} of 6 dice loaded` : `Charged: ${r.charged || 0} of ${k.max}` };
     try { sfx.magic?.(); } catch { /* sound is optional */ }
     return Promise.resolve();
   }

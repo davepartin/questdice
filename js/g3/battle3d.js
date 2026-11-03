@@ -419,7 +419,20 @@ const heroIndex = (name) => B.b.fighters.findIndex((f) => f.hero.name === name);
 function paintHeroStaged(name) { const g = B.staged; const i = heroIndex(name); if (!g || i < 0) return; const f = B.b.fighters[i]; const hp = Math.max(0, Math.min(f.maxHp, g.h.get(name) ?? f.hp)); B.fb?.paintHero(i, hp, f.maxHp); if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'hero', name, shown: hp }); }
 export const traceStart = () => { B.trace = []; return B.trace; };
 export const traceRead = () => B.trace || [];
-function updatePlates() { if (B.b) B.b.aim = B.picked === false ? null : B.target; for (const e of B.b.enemies) updatePlate(e); } // (b.aim: the Special labels fill their progress bar on your target only)
+function updatePlates() {
+  if (B.b) B.b.aim = B.picked === false ? null : B.target;
+  const frogs = new Set();
+  if (B.b?.mods?.frog && B.b.enemies[B.target]?.hp > 0) frogs.add(B.b.enemies[B.target].uid);
+  for (const f of B.b?.fighters || []) if (f.mods?.frog && B.b.enemies[f.target]?.hp > 0) frogs.add(B.b.enemies[f.target].uid);
+  for (const e of B.b.enemies) {
+    updatePlate(e);const pc = foePc(e.uid);if (!pc) continue;
+    const on = frogs.has(e.uid) && e.hp > 0;pc.el.classList.toggle('fm-frogged', on);
+    let badge=pc.el.querySelector('.fm-enemy-frog');
+    if (on && !badge) { badge=h('span',{class:'fm-enemy-frog','aria-label':'Frog: cannot attack this round; can defend'},h('b',{},'🐸'),h('small',{},'Frog'));pc.el.append(badge); }
+    if (!on) badge?.remove();
+    if (on && E.isDamageIntent(e.intent) && pc.c?.intent) {pc.c.sig='frog';pc.c.intent.className='fb-intent tone-block';pc.c.intent.replaceChildren(h('b',{class:'fb-word'},'Frog'),h('small',{},'No attack'));}
+  }
+} // (b.aim: the Special labels fill their progress bar on your target only)
 export const refreshPlates = () => updatePlates(); // (dev scripts)
 function addFoe(e) { const pc = B.fb.addFoe(e); updatePlate(e); return pc; }
 function titleCard(name, sub, tier) {
@@ -632,7 +645,7 @@ function showPowerDetail(id) {
   const stepRow = k.kind === 'scale' && !st.spent ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
-  const releaseRow = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]))
+  const releaseRow = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
   const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   // Verse for a friend (CLASS2.verse, the lab): at a table, Lucky Verse asks who it is for. You: attack as now. A friend: healing.
@@ -934,7 +947,7 @@ async function doCard(id, opts = {}) {
   b = B.b;
   if (!r) { sfx.error(); toast(k && b.round < (k.minRound || 0) ? `${k.name} unlocks in round ${k.minRound}.` : 'Not enough ✦ Magic, or already used.'); return; }
   sfx.card(); buzz(20); B.fresh = id;
-  if (r.frog === false) toast(`Polymorph missed: rolled ${r.total}, needed ${E.frogRange(r.need)}.`); else if (r.frog) toast(`Frog! Rolled ${r.total}. It cannot attack this round.`);
+  if (!k?.frogLoad && r.frog === false) toast(`${k?.name || 'Frog Morph'} missed: rolled ${r.total}, match ${r.match || E.frogRange(r.need)}.`); else if (!k?.frogLoad && r.frog) toast(`Frog! Rolled ${r.total}. It cannot attack this round.`);
   if (E.usesTarget(k, opts)) { B.tlock = b.enemies[B.target]?.uid || null; B.fb.setLock?.(B.tlock); } // used on this monster: it is the round's target now, with a lock on its piece
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
@@ -949,10 +962,12 @@ async function doCard(id, opts = {}) {
   // every power shows what it did, then OK (Dave: each one should feel special), inside the selected tab's panel, not a second window (mp2)
   B.busy = true; refresh();
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
-  try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline }); } finally { B.busy = false; }
+  try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline: k?.frogLoad && r.released ? null : inline }); } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   B.pwSel = k?.kind === 'charge' || ['knight', 'wizard', 'ranger', 'dwarf', 'bard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === id)) ? id : null; // Keep the charge track visible after Charge or Use.
-  refresh(); renderSheet(); bumpCounters(gains); sheetTop();
+  refresh();
+  if (k?.frogLoad && r.released) { togglePowers(false); bumpCounters(gains); return; }
+  renderSheet(); bumpCounters(gains); sheetTop();
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });
 // The counters that a power just filled give a little pulse, so you can see where it went.

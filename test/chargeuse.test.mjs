@@ -6,8 +6,8 @@ import { effectLine, castPreview } from '../js/g3/powers.js';
 import fs from 'node:fs';
 test('every BUILD power reads charge / use, not store / release', () => {
   for (const c of Object.values(CLASSES)) for (const k of c.cards.filter((x) => x.kind === 'charge')) {
-    assert.doesNotMatch(k.text, /\b(store|release)/i, k.name); assert.match(k.text, /Charge .*use/, k.name);
-    const line = effectLine(k, { stored: 2 }); assert.doesNotMatch(line, /\b(store|release)/i, line); assert.match(line, /charged/);
+    assert.doesNotMatch(k.text, /\b(store|release)/i, k.name); assert.match(k.text, k.frogLoad ? /Load .*Use/ : /Charge .*use/, k.name);
+    const line = effectLine(k, { stored: 2 }); assert.doesNotMatch(line, /\b(store|release)/i, line); assert.match(line, k.frogLoad ? /4 loaded/ : /charged/);
     assert.doesNotMatch(castPreview(k, { magic: 5 }), /Store/);
   }
   const src = fs.readFileSync(new URL('../js/g3/magiccard.js', import.meta.url), 'utf8');

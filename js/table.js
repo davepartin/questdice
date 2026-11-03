@@ -941,10 +941,10 @@ export function migrateTable(table) {
     || table.company?.members?.[0]?.difficulty;
   table.difficulty = normalizeDifficulty(from);
   const resting = table.phase !== 'battle'; // never switch a die on in the middle of a round: its board has no such die (the next load after the fight does it)
-  for (const m of table.company?.members || []) { m.difficulty = table.difficulty; SV.migrateWeapons2(m); if (resting) SV.migrateStarterDice(m); }
+  for (const m of table.company?.members || []) { m.difficulty = table.difficulty; SV.migrateWeapons2(m); if (resting) { SV.migrateStarterDice(m); SV.migrateFrogMorph(m); } }
   for (const f of table.battle?.fighters || []) SV.migrateWeapons2(f.hero); // (a table saved mid-fight: the same hero objects, already done, or copies)
   for (const p of table.players || []) {
-    if (p.hero) { p.hero.difficulty = table.difficulty; SV.migrateWeapons2(p.hero); if (resting) SV.migrateStarterDice(p.hero); }
+    if (p.hero) { p.hero.difficulty = table.difficulty; SV.migrateWeapons2(p.hero); if (resting) { SV.migrateStarterDice(p.hero); SV.migrateFrogMorph(p.hero); } }
     if (p.brought) SV.migrateHero(p.brought);
   }
   return table;

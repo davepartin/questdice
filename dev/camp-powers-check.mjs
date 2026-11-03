@@ -19,15 +19,15 @@ try {
         const hero=E.newHero({name:'Card',cls,seed:7});hero.powerLevel={[id]:rank};const before=JSON.stringify(hero);
         document.getElementById('app').className='sx-screen camp';
         document.getElementById('app').replaceChildren(h('div',{class:'cp-card-stage',style:{width:'calc(100% - 24px)',margin:'12px auto',alignItems:'flex-start'}},campCard(hero,id,{glyph})));
-        const c=document.querySelector('.mc-card'),active=c.querySelector('.mc-lv.act'),box=c.getBoundingClientRect(),a=active.getBoundingClientRect();
+        const c=document.querySelector('.mc-card'),active=c.querySelector('.mc-lv.act') || c.querySelector('.fm-tray'),box=c.getBoundingClientRect(),a=active.getBoundingClientRect();
         const k=(await import('./js/data.js')).CLASSES[cls].cards.find(k=>k.id===id);
         const error=[...active.querySelectorAll('.mc-sy>*')].filter(el=>{const b=el.getBoundingClientRect();return b.left<a.left-2||b.right>a.right+2||b.top<a.top-2||b.bottom>a.bottom+2;}).map(el=>({cls:el.className,text:el.textContent}));
-        return {id,cls,rank,width:innerWidth,ratio:box.height/box.width,active:active.textContent,cost:c.querySelector('.mc-cast-cost').textContent.trim(),expectedCost:E.powerCost(k,k.cost,rank),ranks:c.querySelectorAll('.mc-lv').length,mutation:before!==JSON.stringify(hero),error,horizontal:box.left<0||box.right>innerWidth,art:c.querySelector('.mc-paint img').src};
+        return {id,cls,rank,width:innerWidth,ratio:box.height/box.width,active:active.textContent,cost:c.querySelector('.mc-cast-cost').textContent.trim(),expectedCost:E.powerCost(k,k.cost,rank),ranks:c.querySelectorAll('.mc-lv').length,slots:c.querySelectorAll('.fm-socket').length,mutation:before!==JSON.stringify(hero),error,horizontal:box.left<0||box.right>innerWidth,art:c.querySelector('.mc-paint img').src};
       },{cls,id,rank});
-      assert(Math.abs(result.ratio-1052/720)<.01,JSON.stringify(result));assert.equal(result.mutation,false);assert.equal(result.ranks,4);assert.equal(result.cost,String(result.expectedCost));assert.equal(result.horizontal,false);
+      assert(Math.abs(result.ratio-1052/720)<.01,JSON.stringify(result));assert.equal(result.mutation,false);if(id==='polymorph')assert.equal(result.slots,6);else assert.equal(result.ranks,4);assert.equal(result.cost,String(result.expectedCost));assert.equal(result.horizontal,false);
       assert.deepEqual(result.error,[],JSON.stringify(result));
       if(id==='grudge')assert(result.active.includes('Hurt')&&!result.active.includes('+0'));
-      if(id==='meteor')assert(result.active.includes('×Round'));if(id==='polymorph')assert(result.active.includes(rank<2?'4–6':'3–6')&&!/CHARGED/.test(result.active));
+      if(id==='meteor')assert(result.active.includes('×Round'));if(id==='polymorph')assert(!/CHARGED/.test(result.active));
       if(['rally','coil','stonehide','ballad'].includes(id))assert(result.active.includes('charges')&&!/CHARGED/.test(result.active));
       renders.push(result);
       if(width===390&&rank===0&&['cleave','rally','grudge','meteor','polymorph','finale','luckyverse'].includes(id)){
@@ -44,8 +44,8 @@ try {
       const hero=E.newHero({name:'Battle',cls,seed:7}),k=D.CLASSES[cls].cards.find(k=>k.id===id);hero.powerLevel={[id]:rank};
       const ctx={hero,b:{hero,magic:12,round:3,lastHurt:7,usedRound:{}},reset:false,selected:id,powers:[k,...D.CLASSES[cls].cards.filter(c=>c.start&&c.slot!==k.slot)].map(c=>({k:c,level:rank,x:E.powerCost(c,c.cost,rank),stored:2,st:{spent:false,early:false}})),utils:[{id:'u:bigheal',name:'Potion',cost:0},{id:'u:heal',name:'Heal',cost:2},{id:'u:heart',name:'Heart Change',cost:3}],select:()=>{},step:()=>{},use:()=>{}};
       document.getElementById('app').className='';document.getElementById('app').replaceChildren(h('div',{class:'b3-sheet open'},h('header',{class:'b3-sheet-head'},h('h2',{},'Magical powers')),h('div',{class:'b3-cards'},sheet(ctx,{glyph,tally:h('div',{class:'pw-tally',style:{height:'32px'}},'Magic 12'),detailPanel:()=>null}))));
-      const c=document.querySelector('.mc-card'),a=c.querySelector('.mc-lv.act'),r=a.getBoundingClientRect();
-      return {id,width:innerWidth,height:innerHeight,rank:a.querySelector('.mc-rn').textContent,body:a.textContent,overflow:[...a.querySelectorAll('.mc-sy>*')].filter(e=>{const b=e.getBoundingClientRect();return b.left<r.left-2||b.right>r.right+2||b.top<r.top-2||b.bottom>r.bottom+2;}).map(e=>e.className)};
+      const c=document.querySelector('.mc-card'),a=c.querySelector('.mc-lv.act') || c.querySelector('.fm-tray'),r=a.getBoundingClientRect();
+      return {id,width:innerWidth,height:innerHeight,rank:a.querySelector('.mc-rn')?.textContent || ['I','II','III','IV'][Number(c.dataset.rank)-1],body:a.textContent,overflow:[...a.querySelectorAll('.mc-sy>*')].filter(e=>{const b=e.getBoundingClientRect();return b.left<r.left-2||b.right>r.right+2||b.top<r.top-2||b.bottom>r.bottom+2;}).map(e=>e.className)};
     },{cls,id,rank});
     assert.equal(result.rank,['I','II','III','IV'][rank]);assert.deepEqual(result.overflow,[],JSON.stringify(result));if(id==='grudge'&&rank===3)assert(result.body.includes('+13'));battleRenders.push(result);
   }}
@@ -83,7 +83,7 @@ try {
     await setup(cls);await p.locator('.cp-slots [data-slot="B"]').click();await p.evaluate(()=>document.fonts.ready);await p.screenshot({path:`${out}/camp-${cls}.png`});await p.locator('.cp-card-stage .mc-card').scrollIntoViewIfNeeded();await p.screenshot({path:`${out}/camp-card-${cls}.png`});
     const art=await p.locator('.cp-card-stage .mc-paint img').evaluate(e=>({loaded:e.complete&&e.naturalWidth>0,src:e.src}));assert.equal(art.loaded,true,JSON.stringify(art));
   }
-  await setup('wizard');await p.evaluate(()=>{const Q=window.QD;Q.S.hero.powerLevel={polymorph:3};Q.showCamp();});await p.locator('.cp-slots [data-slot="B"]').click();assert.equal(await p.locator('.mc-cast-cost').innerText(),'1');assert.equal(await p.locator('.mc-lv.act .mc-rn').innerText(),'IV');
+  await setup('wizard');await p.evaluate(()=>{const Q=window.QD;Q.S.hero.powerLevel={polymorph:3};Q.showCamp();});await p.locator('.cp-slots [data-slot="B"]').click();assert.equal(await p.locator('.mc-cast-cost').innerText(),'3');assert.equal(await p.locator('.mc-card').getAttribute('data-rank'),'4');
   await setup('knight',0,1);await p.locator('.cp-library [data-power="judgment"]').click();assert.equal(await p.locator('.cp-actions button:not(:disabled)').count(),0);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),0);
   await setup('knight',0);await p.locator('.cp-library [data-power="cleave"]').click();assert.equal(await p.locator('.cp-actions button:not(:disabled)').count(),0);
   for(const [width,height] of [[390,844],[430,932],[375,667]]){
@@ -93,7 +93,7 @@ try {
     assert.equal(layout.overflow,false);assert(Math.abs(layout.ratio-1052/720)<.01);assert.equal(layout.smallControls,0);
   }
   await p.addStyleTag({content:'html{font-size:20px!important}'});await p.screenshot({path:out+'/camp-large-text.png'});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-  assert.deepEqual(errors,[]);fs.writeFileSync(out+(process.env.CAMP_UI_ONLY ? '/ui-results.json' : '/results.json'),JSON.stringify({renders,battleRenders,errors,transactions:'Learn 50 / upgrade 50 / equip free; inspection unchanged; save/reopen verified; integrated three phone sizes and large text; gates and zero gold; fourth-rank Polymorph 1 magic and charge success ranges'},null,2));
+  assert.deepEqual(errors,[]);fs.writeFileSync(out+(process.env.CAMP_UI_ONLY ? '/ui-results.json' : '/results.json'),JSON.stringify({renders,battleRenders,errors,transactions:'Learn 50 / upgrade 50 / equip free; inspection unchanged; save/reopen verified; integrated three phone sizes and large text; gates and zero gold; saved fourth-rank Frog Morph, fixed 3 magic and six loading slots'},null,2));
   console.log('PASS',renders.length,'camp card layouts; navigation and transactions; zero page errors');
   }
 } finally {await browser.close();server.kill();}

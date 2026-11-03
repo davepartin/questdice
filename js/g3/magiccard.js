@@ -176,7 +176,7 @@ export function campCard(hero, id, { glyph }) {
   const k = D.CLASSES[hero.cls]?.cards.find(k => k.id === id);
   if (!k) return null;
   const level = E.powerLevel(hero, id);
-  return card(k, { cls: hero.cls, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1 }, glyph);
+  return card(k, { cls: hero.cls, owner: hero.name, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1 }, glyph);
 }
 export function campChoice(hero, row, { glyph, selected, status, onSelect }) {
   const k = row.card;
@@ -186,26 +186,46 @@ export function campChoice(hero, row, { glyph, selected, status, onSelect }) {
   el.setAttribute('aria-label', `${k.name}: ${status}. Inspect power.`);
   return el;
 }
+const frogTrayCounts = new Map();
+function frogTray(k, p) {
+  const loaded = p.camp ? 0 : E.frogLoaded(k, p.stored || 0), key = `${p.owner || p.cls}:${k.id}`;
+  const previous = p.camp ? loaded : (frogTrayCounts.get(key) ?? loaded);
+  if (!p.camp) frogTrayCounts.set(key, loaded);
+  return h('div', { class: 'fm-tray', 'data-loaded': loaded, 'aria-label': p.camp ? 'Six numbered dice slots' : `${loaded} numbered dice loaded` },
+    h('div', { class: 'fm-pairs' }, [0, 2, 4].map(first => h('div', { class: 'fm-pair' }, [first, first + 1].map(i =>
+      h('div', { class: `fm-socket ${i < loaded ? 'filled' : ''}`, 'data-face': i + 1, 'aria-label': `${i + 1}${i < loaded ? ', loaded' : ', empty'}` },
+        h('span', { class: 'fm-slot-number', 'aria-hidden': 'true' }, String(i + 1)),
+        i < loaded ? h('span', { class: `fm-chit ${i >= previous ? 'arriving' : ''}` }, die('magic', 6, i + 1)) : space(6)))))),
+    h('div', { class: 'fm-rule' }, p.camp ? [mg(k.cost), h('span', {}, '→'), h('b', {}, '2 dice')] : h('b', {}, loaded ? `Match ${E.frogMatchRange(k, p.stored)}` : 'Load a pair'),
+      h('small', {}, 'No attack · can defend')),
+    k.frogPierce?.[Math.min(p.level || 0, k.frogPierce.length - 1)] ? h('div', { class: 'fm-rank-bonus' }, fxv('pierce', k.frogPierce[Math.min(p.level || 0, k.frogPierce.length - 1)], 'on the frog')) : null);
+}
 function card(k, p, glyph) {
   const cur = p.level || 0;
   const kick = k.kind === 'scale' ? `${E.scaleStep(k)} magic / die · every round` : k.kind === 'charge' ? 'charge · use · once per round' : `${p.x ?? k.cost} magic · once per round`;
   const lv = (l) => h('div', { class: `mc-lv ${l === cur ? 'act' : ''}` }, h('span', { class: 'mc-rn' }, LV[l]), h('span', { class: 'mc-sy' }, l === cur ? rowBody(k, l, p, cur) : l < cur ? h('span', { class: 'mc-ln mc-had' }, h('b', {}, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]} ✓`), h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))) : null), // mc1: only the hero's level gets room; the others are one slim line
     l > cur ? h('div', { class: 'mc-cov' }, h('span', { class: 'mc-lvw' }, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]}`, h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
-  return h('div', { class: `mc-card${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
+  return h('div', { class: `mc-card${k.frogLoad ? ' mc-frog-morph' : ''}${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id, 'data-rank': cur + 1 }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
     h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(),
     usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
-    usesCardTemplate(k) ? h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Starting cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, usesCardTemplate(k) ? cardTraits(k) : null, h('div', { class: 'mc-levels' }, Array.from({ length: p.rankCount ?? Math.max(3, cur + 1) }, (_, l) => lv(l))));
+    usesCardTemplate(k) ? h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Starting cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, usesCardTemplate(k) ? cardTraits(k) : null, k.frogLoad ? frogTray(k, p) : h('div', { class: 'mc-levels' }, Array.from({ length: p.rankCount ?? Math.max(3, cur + 1) }, (_, l) => lv(l))));
 }
 // the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
 function buttons(ctx, p) {
   const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const f = FX(k); const level = p.level || 0;
   const why = st.spent ? 'Used this round' : st.early ? `Round ${k.minRound}+` : reset && E.needsDice(k) ? 'Roll your dice first' : ''; // before the roll everything but a free reroll can be used
   const btn = (cls, label, on, dis, aria) => h('button', { type: 'button', class: `mc-use ${cls}`, disabled: !!dis, 'aria-label': aria || null, onclick: on }, ...label);
+  if (k.frogLoad) {
+    const used = !!b.usedRound?.[`${k.id}:release`], full = stored >= k.max;
+    return [btn('add mc-frog-load', [full ? 'Full' : st.spent ? 'Loaded' : 'Load 2', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), st.spent || st.early || b.magic < k.cost || full, `Load the next two numbered dice for ${k.cost} magic`),
+      h('span', { class: 'mc-or fm-then', 'aria-hidden': 'true' }, '→'),
+      btn('go pc-magic', [used ? 'Used' : 'Use', die('magic', 6, 6)], () => ctx.use(k.id, { release: true }), !stored || used, `Roll one purple d6; match ${E.frogMatchRange(k, stored)}. Loaded dice are spent.`)];
+  }
   if (k.kind === 'scale') { const step = E.scaleStep(k); const cap = Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic));
     return [btn('sub', ['−', HK.icon('magic'), String(step)], () => ctx.step(k.id, x - step), !!why || x <= k.cost, `One die fewer, ${step} magic back`),
       btn('add', ['+', HK.icon('magic'), String(step)], () => ctx.step(k.id, x + step), !!why || x + step > cap, `One more die for ${step} magic`),
       btn(`go pc-${f}`, ['Roll', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x, `Roll ${E.powerDice(k, x, level)} dice for ${x} magic`)]; }
-  if (k.kind === 'charge') { const relUsed = !!(b.usedRound && (b.usedRound[`${k.id}:release`] || b.usedRound[k.id]));
+  if (k.kind === 'charge') { const relUsed = !!(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])));
     return [btn('add mc-charge', ['Charge', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), why || b.magic < k.cost || stored >= k.max, `Charge: 1 magic (${stored || 0} of ${k.max} charged)`),
       usesBuildTemplate(k) ? h('span', { class: 'mc-or' }, 'OR') : null,
       btn(`go pc-${f}`, [`Use ${stored || 0}`], () => ctx.use(k.id, { release: true }), !stored || relUsed, k.frogNeed ? `Use ${stored || 0} charge${stored === 1 ? '' : 's'} on your target: ${!stored ? 'none stored' : E.frogNeed(k, stored, level) <= 1 ? 'a sure frog' : `a frog on ${E.frogRange(E.frogNeed(k, stored, level))}`}` : `Use ${stored || 0} charge${stored === 1 ? '' : 's'} for ${stored ? E.chargeGain(k, stored, level)[f] : 0} ${WORD[f]}`)]; }
@@ -310,10 +330,11 @@ export function sheet(ctx, { glyph, detailPanel, tally }) {
   const sel = ctx.selected; const p = ps.find((q) => q.k.id === sel); const u = ctx.utils.find((q) => q.id === sel);
   if (p && usesCardTemplate(p.k) && p.k.kind === 'scale' && !p.st.spent) { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); const meter = tally?.querySelector('.pw-center'); if (meter) { meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for ${p.k.name}`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } }
   const utils = ['u:bigheal', 'u:heal', 'u:heart'].map((id) => ctx.utils.find((q) => q.id === id)).filter(Boolean);
+  const spentTile = q => q.k.frogLoad ? !!(ctx.b.usedRound?.[q.k.id] && ctx.b.usedRound?.[`${q.k.id}:release`]) : q.st.spent;
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
-    ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel, null, q.st.spent ? (q.k.atwill ? 'used this round' : 'used this battle') : '')),
+    ps.map((q) => tile(ctx, q.k.id, q.k.name, glyph(q.k, 'pw-g'), q.x ?? q.k.cost, q.k.id === sel, null, spentTile(q) ? (q.k.atwill ? 'used this round' : 'used this battle') : '')),
     utils.map((q) => tile(ctx, q.id, q.id === 'u:heart' ? 'Heart Change' : q.name, glyph(q, 'pw-g'), q.cost, q.id === sel, null, q.id === 'u:heart' && E.nudgedThisRound(ctx.b) ? 'used this round' : '')));
-  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && ctx.reset && E.needsDice(p.k) ? h('div', { class: 'mc-guidance', role: 'status' }, ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')]) : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, round: ctx.b.round, hurt: ctx.b.lastHurt ?? null }, glyph))]
+  const body = p ? [h('div', { class: 'mc-ctl' }, buttons(ctx, p)), usesBuildTemplate(p.k) && ctx.reset && E.needsDice(p.k) ? h('div', { class: 'mc-guidance', role: 'status' }, ['Roll your dice first.', h('button', { type: 'button', class: 'mc-back', onclick: () => ctx.backToDice?.() }, 'Back to dice')]) : null, h('div', { class: 'pw-detail mc-stage' }, card(p.k, { ...p, cls: ctx.hero?.cls || ctx.b.hero?.cls, owner: ctx.hero?.name || ctx.b.hero?.name, round: ctx.b.round, hurt: ctx.b.lastHurt ?? null }, glyph))]
     : u ? utilityCard(ctx, u, glyph) : [h('div', { class: 'pw-detail pw-pick mc-pick' }, h('b', {}, 'Tap a power'), h('p', {}, ctx.reset ? `Use magic now, then roll. Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.` : `Tap ${ps.map((q) => q.k.name).join(', ').replace(/, ([^,]*)$/, ' or $1')} to see its card.`))];
   return h('div', { class: 'pw-sigil mc-sheet' }, tally, grid, ...body);
 }

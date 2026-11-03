@@ -3,7 +3,7 @@
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
 import { trainingRanks } from './training.js';
-import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT, CLASS_TALENT, normalizeHeartRank } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT, CLASS_TALENT, normalizeHeartRank, POWER_UPGRADE } from './data.js';
 import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
 import { LAB, SANDBOX, SANDBOX_NAME } from './lab.js';
 
@@ -93,8 +93,22 @@ export function migrateHero(hero) {
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   migrateWeapons2(hero);
   migrateStarterDice(hero);
+  migrateFrogMorph(hero);
   for (const slot of ['SW', 'SE']) clearAutoTalent(hero, slot); // a still-locked talent die loses the face 4 the old newHero filled in (26 Oct 2026)
   return hero;
+}
+// Frog Morph keeps saved ranks and their pierce bonus, but no longer sells better odds.
+// Return only the retired probability upgrades, once; keep the meaningful first upgrade.
+export function migrateFrogMorph(hero) {
+  if (hero?.cls !== 'wizard' || hero.frogMorphRefunded) return 0;
+  const rank = Math.max(0, Math.min(POWER_UPGRADE.length, Math.floor(Number(hero.powerLevel?.polymorph) || 0)));
+  const refund = POWER_UPGRADE.slice(1, rank).reduce((sum, cost) => sum + cost, 0);
+  hero.frogMorphRefunded = true;
+  if (refund) {
+    hero.gold = (Number(hero.gold) || 0) + refund;
+    hero.frogMorphRefundGold = refund;
+  }
+  return refund;
 }
 // Talent face 4 (26 Oct 2026): before then newHero pre-filled face 4 of BOTH talent dice with the class symbol, so Talent Two opened with it set.
 // On a die that is still LOCKED the player cannot have chosen it, so face 4 holding exactly the class symbol, with nothing else set, is cleared to an
