@@ -38,14 +38,14 @@ try {
   results.push(await p.evaluate(()=>({heroHeaderY:document.querySelector('.ht-id').getBoundingClientRect().top,viewport:innerHeight,scroll:document.querySelector('.sx-camp-scroll').scrollTop,side:document.querySelector('.sx-side').scrollTop})));
   for(const [width,height] of [[390,844],[430,932],[375,667]]){
     await p.setViewportSize({width,height});await setup();await p.locator('.cw-cell.s-SW').click();await shot(`talent-${width}`);
-    assert.equal(await p.locator('.tw-symbol').count(),5);assert.equal(await p.locator('.tw-grow summary').count(),0);
+    assert.equal(await p.locator('.tw-symbol').count(),5);assert.equal(await p.locator('.tw-grow summary').count(),1); // the real-dice growth is back (Dave, 3 Nov 2026)
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-    const boxes=await p.evaluate(()=>({growth:document.querySelector('.tw-growth').getBoundingClientRect().toJSON(),palette:document.querySelector('.tw-symbols').getBoundingClientRect().toJSON(),viewport:innerHeight}));assert(boxes.palette.bottom <= height, `Palette must be visible at ${width}×${height}`);assert(boxes.growth.top >= 0);results.push({width,height,...boxes});
+    const boxes=await p.evaluate(()=>({growth:document.querySelector('.tw-workshop').getBoundingClientRect().toJSON(),palette:document.querySelector('.tw-symbols').getBoundingClientRect().toJSON(),viewport:innerHeight}));/* (the restored TALENTS card sits above the palette, so the palette is reached by scrolling: Dave, 3 Nov 2026) */assert(boxes.growth.top >= 0);results.push({width,height,...boxes});
   }
   await p.setViewportSize({width:390,height:844});await setup('knight',420);
   await p.locator('.cw-cell.s-SW').click();await p.locator('.tw-symbol[data-symbol="magic"]').click();const before=await p.evaluate(()=>window.QD.S.hero.gold);
   await p.locator('.tw-purchase .sh-buy').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),before-10);
-  await p.locator('.tw-growth .sh-buy').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.special.SW),6);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),before-70);
+  await p.evaluate(()=>{const d=document.querySelector('.tw-grow');if(d)d.open=true;});await p.locator('.tw-grow .sh-buy').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.special.SW),6);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),before-70);
   assert.equal(await p.evaluate(()=>window.QD.S.hero.talent.SW[0][0]),'magic');
   // At larger text, controls remain reachable without page width overflow.
   await p.addStyleTag({content:'html{font-size:20px!important}'});await shot('talent-large-text');assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);

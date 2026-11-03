@@ -1503,14 +1503,16 @@ function talentWorkshop(hero, slot) {
   const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
     : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
   return h('div', { class: 'tw-workshop' },
-    h('section', { class: 'tw-growth', 'aria-label': 'Talent die size' },
-      h('div', { class: 'tw-growth-head' }, h('b', {}, 'Grow your talent die'), h('small', {}, 'Keep every chosen symbol')),
-      h('div', { class: 'tw-ladder' }, [4, 6, 8, 10].map(n => h('span', { class: n === size ? 'current' : n < size ? 'past' : '' }, `D${n}`))),
-      h('div', { class: 'tw-growth-action' }, h('b', {}, D.NEXT_SIZE[size] ? `D${size} → D${D.NEXT_SIZE[size]}` : `D${size}`), grow)),
+    talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
+      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }, // tz1 (Dave): glide down to Choose a face. (Restored 3 Nov 2026, Dave: "revert back to this real dice look": the cardboard TALENTS card and the real-dice growth)
+      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
     h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
     h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-rule' }, `1 & 3: blank · 2: double hand · Max ${info.same} of each symbol`), detail);
-
+    h('p', { class: 'tw-rule' }, `Faces 1 and 3 stay blank. Face 2 doubles your ${slot === 'SW' ? 'left' : 'right'} hand. Each numbered face gives you that many of its symbol: "Gives +6" means 6.`),
+    h('p', { class: 'tw-max' }, `Max ${info.same} of the same power symbol per die. Choose wisely.`), detail,
+    h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
+      h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
+        up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
 }
 // a talent die: grow it, then tap an empty number face to pick its symbol
 function talentSheet(hero, slot) {

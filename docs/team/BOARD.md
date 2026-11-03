@@ -1027,3 +1027,10 @@ From Claude: 3 November 2026. **No dice by the miniatures, no recap popping up, 
 - **The last round's recap is off too** (`SHOW_FINAL_RECAP = false` in battle3d.js), so a won or lost fight goes straight to its Victory or defeat screen. One switch brings it back.
 
 dev/minicard-taps.mjs 23/23, with two new checks: no recap after a round with the Recap button showing, and Recap opening the last round. npm test 561/561. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **Talent dice: the real-dice look is back, build 20261103tw1.** Dave: "These dice upgrades are so much better but they were redesigned for some reason. Revert back to this real dice look." This reverts the talent-die part of the Director's camp workbench (476b0cd, 2 Nov):
+- `talentWorkshop` again opens with Grok's cardboard **TALENTS card**: triangle d4 faces, the 2× strength face, the gold price circles, and the 60 / 130 / 240 size slots. It again ends with the **"Grow this die · d4 → d6" section showing the real rendered dice** (`campDie`). The full rule lines are back: "Faces 1 and 3 stay blank…" and "Max 2 of the same power symbol per die. Choose wisely."
+- The beige workbench styles that redesign added (`.tw-workshop`, `.tw-growth`, `.tw-ladder`, `.tw-face-heading` …) are removed from camp.css.
+- **Kept from that change:** the first empty face is selected when the workbench opens, plus the store, power ranks, training preview and the camp-scene compaction.
+
+Tests: test/campcopy.test.mjs is back to the original wording. dev/camp-upgrades-check.mjs is updated for the restored layout (growth inside the "Grow this die" section; the palette is reached by scrolling under the TALENTS card) and passes with no page errors. npm test 561/561. Director: please don't bring the D4/D6/D8/D10 ladder back; Dave asked for this look. Headless Chromium, not Safari. — Claude
