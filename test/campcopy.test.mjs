@@ -31,3 +31,8 @@ test('cp4: the Camp Store sign carries no purse/price chip; the potions section 
   const order = ['zn-supplies', 'zn-specials', 'zn-shelf', 'zn-diamond', 'zn-odd'].map((z) => ret.indexOf(`'${z}'`)); assert.ok(order.every((n, i) => n > 0 && (i === 0 || n > order[i - 1])), order.join());
   assert.ok(st.indexOf("title: 'Healing potion'") < st.indexOf("title: 'Potion belt'"));
 });
+test('Camp Store page: the campfire picture sits below the pinned buttons (the miniature is never hidden)', () => {
+  const css = fs.readFileSync(new URL('../css/camp.css', import.meta.url), 'utf8');
+  assert.match(css, /\.cw-camp\.cw-p-camp \.sc-stage\.k-camp \{ top: calc\(62px \+ var\(--safe-t, 0px\) \+ 64px\); \}/);
+  assert.match(css, /\.sx-screen\.camp:has\(\.cw-camp\.cw-p-camp\) \{ --gap: calc\(clamp\(190px, 25dvh, 230px\) \+ 64px\); \}/);
+});

@@ -1089,3 +1089,10 @@ From Claude: 3 November 2026. **Fewer words and less space in camp, build 202611
 npm test 562/562 (camp copy test updated to the new line); dev/camp-upgrades-check.mjs and dev/new-hero-check.mjs pass. Headless Chromium, not Safari. — Claude
 
 From Claude: 3 November 2026. **Magic card rank rows fixed, build 20261103cp6.** Dave: "the dice covers are all messed up." In camp the buyable rank's cover is a `<button>`, and the browser's default white button background showed at its corners; it now has a transparent background. My earlier gold outline and pill stuck out past the frame; they're replaced by a soft gold drop-shadow glow and a filled gold coin, inside the row's own frame. Separately, in every reviewed-template card the price coin squashed to a sliver with three-digit prices (the price column was 15cqi). It's now 19cqi and the coin is `flex: none`. Every coin measures 15x15 at 390 wide. Checked by screenshot: Ranger (can't afford), Wizard, Knight Rally Cry, Bard Lucky Verse. npm test 562/562. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **Build 20261103cp7.**
+(1) **Camp Store:** a Potions section comes first (the potion and the belt, bought right there). `potionRows()` is shared with All Upgrades.
+(2) **The miniature hidden behind the buttons came back** because cp6 deleted the cp4 picture rule by mistake: my block removal ran to a blank line past its end. The rule is restored, and a new test in test/campcopy.test.mjs guards it.
+(3) **A Bonus Goal's result shows the objective card itself** (`CW.objectiveCardEl`) with a stamp across it: **FAILED** in red with the card greyed, **COMPLETED** in green, **DECLINED** in grey. Under it: "name · Failed · 10 gold bet lost". js/ui.js `revealSolo` now passes `objectiveCard`; secret envelopes and online tables keep their old rows.
+
+npm test 563/563; dev/new-hero-check.mjs passes. Browser: the store picture is at 126–275 both at the top and after scrolling down and back; a potion bought in the store went 1→2 for 10; all three stamps were screenshotted. Headless Chromium, not Safari. — Claude

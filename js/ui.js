@@ -683,13 +683,15 @@ function startQuest(q) {
   renderReset();
 }
 // After a solo battle: pay the Bonus Goal (or an old envelope) and keep the Reveal line for the rewards screen.
+// The Bonus Goal as its objective card's data (js/g3/cards.js objectiveCardHtml): name, rule, the bet and the win.
+const CWcard = (goal) => ({ id: goal.id, name: goal.name, rule: goal.rule, stake: goal.free ? 0 : (goal.stake || 0), back: goal.gold || 0, net: (goal.gold || 0) - (goal.free ? 0 : (goal.stake || 0)), free: !!goal.free });
 function revealSolo(won) {
   const hero = S.hero;
   if (!S.battle || S.battle.fighters || !hero) { S.envelope = null; S.bonus = null; return null; }
   if (S.bonus) {
     const goal = S.bonus; S.bonus = null;
     const j = SO.judgeBonus(goal, S.battle, { won }); SO.payBonus(j, hero);
-    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ objective: goal.rule, objectiveName: goal.name, stake: goal.paid || 0, name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
+    return { won, voice: goal.voice, crooks: false, lines: j.results.map((r) => ({ objective: goal.rule, objectiveName: goal.name, objectiveCard: CWcard(goal), stake: goal.paid || 0, name: r.name, gold: r.gold, kind: r.kind, mode: r.mode, accepted: r.accepted, met: r.met, line: r.line })) };
   }
   const env = S.envelope; S.envelope = null;
   if (!env) return null;

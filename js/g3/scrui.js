@@ -882,12 +882,22 @@ export function reveal(rv, o = {}) {
       h('div', { class: 'sx-cta' }, btn('Continue', () => { if (done) return; done = true; sfx.card(); o.onDone?.(); }, { big: true, icon: 'chevron', iconAfter: true, cls: 'wide' })))));
   lay('victory'); if (hero) SCR[o.won === false ? 'defeat' : 'victory'](hero, o.place);
 }
+// A Bonus Goal's result as the objective card itself, stamped (Dave, 3 Nov 2026: "have the card there and put a line through it or an X
+// over it or a failed stamp… just some words is really bad"): COMPLETED in green, FAILED in red, DECLINED in grey, and the gold that changed hands.
+function revealObjectiveCard(l, youName) {
+  const st = l.accepted === false ? 'declined' : l.met ? 'done' : 'failed';
+  const word = { done: 'Completed', failed: 'Failed', declined: 'Declined' }[st];
+  const note = st === 'done' ? (l.gold > 0 ? `+${l.gold} gold` : 'Done') : st === 'failed' ? (l.stake ? `${l.stake} gold bet lost` : 'No reward') : 'Not taken';
+  return h('li', { class: `rv-row rv-objcard st-${st} ${l.name === youName ? 'you' : ''}` },
+    h('div', { class: 'rv-objcard-wrap' }, CW.objectiveCardEl('objective', l.objectiveCard), h('span', { class: 'rv-stamp', 'aria-hidden': 'true' }, word)),
+    h('p', { class: 'rv-objnote' }, h('b', {}, l.name), ' · ', word, ' · ', note));
+}
 // The Reveal (every card, and what each hero did with it). reveal: { voice, crooks, lines: [{ name, gold, line }] }.
 export function revealPanel(reveal, youName, { bare = false } = {}) {
   if (!reveal?.lines?.length) return null;
   return panel('sx-reveal', bare ? null : eyebrow('The Reveal', 'gold'),
     bare ? null : h('p', { class: 'fine' }, reveal.lines.length > 1 ? `${reveal.voice} opens every envelope.` : `${reveal.voice} opens your envelope.`),
-    h('ul', { class: 'rv-list' }, reveal.lines.map((l) => h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
+    h('ul', { class: 'rv-list' }, reveal.lines.map((l) => l.objectiveCard ? revealObjectiveCard(l, youName) : h('li', { class: `rv-row ${l.name === youName ? 'you' : ''} ${l.gold > 0 ? 'up' : l.gold < 0 ? 'down' : ''}` },
       h('div', { class: 'rv-person' }, h('b', {}, l.name), h('span', { class: 'rv-status' }, l.met === true ? 'Completed' : l.met === false ? 'Not completed' : l.gold > 0 ? 'Reward earned' : l.gold < 0 ? 'Gold lost' : 'Result')), l.objective ? h('div', { class: 'rv-objective' }, l.objectiveName ? h('h2', {}, l.objectiveName) : null, h('p', {}, l.objective), h('small', {}, l.accepted === false ? 'Declined' : l.met ? 'Objective completed.' : 'No reward earned.', l.stake && !l.met ? ` ${l.stake} gold stake lost.` : '')) : h('p', {}, l.line), l.gold ? h('span', { class: 'rv-gold' }, ico('coin'), `${l.gold > 0 ? '+' : ''}${l.gold}`) : null))));
 }
 
@@ -1760,6 +1770,14 @@ function goCampPage(page) {
 function upgradeLink() {
   return btn('All upgrades', () => goCampPage('upgrades'), { kind: 'ghost', icon: 'gold', cls: 'cu-open' });
 }
+// The potion and the belt, as two upgrade rows (the Camp Store's first items and All Upgrades' first section; Dave, 3 Nov 2026).
+function potionRows(hero) {
+  const entry = (...a) => cuEntry(hero, ...a); const pot = E.potionBuyInfo(hero), belt = E.potionUpgrade(hero);
+  const bought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); };
+  return [
+    entry('Healing potion', `Heals ${E.potionHpOf(hero)} · on your belt ${pot.have} of ${pot.max}`, { cost: pot.price, ok: pot.ok, why: pot.why === 'Belt full' ? 'Belt full' : '' }, () => { if (HE.buyPotion(hero)) { sfx.coin?.(); bought(); } else toast(pot.why === 'Belt full' ? 'Your belt is full.' : 'Not enough gold.'); }, pot.why === 'Belt full' ? 'Full' : 'Buy', 'assets/cards/utilities/potion-printed.webp'),
+    entry('Potion belt', belt.next ? `${belt.cur} → ${belt.next} potions` : `${belt.cur} potions · biggest belt`, belt.next ? belt : null, () => { if (belt.next && HE.upgradePotions(hero)) bought(); else toast(belt.why?.startsWith('Level') ? `Needs ${belt.why}.` : belt.next ? 'Not enough gold.' : 'Your belt is as big as it gets.'); }, belt.next ? 'Buy' : 'Max', 'assets/cards/utilities/potion-belt.webp')];
+}
 function upgradesOverview(hero) {
   // Everything you can buy at camp, in one long list (Dave, 3 Nov 2026: "consider all the items that we have and make sure it's in the all upgrade list").
   const entry = (...a) => cuEntry(hero, ...a);
@@ -1782,9 +1800,7 @@ function upgradesOverview(hero) {
   powers.push(entry('New magic powers', 'Learn another power for a slot', null, () => goCampPage('magic'), 'Magic'));
   const heart = E.heartUpgrade(hero); const pot = E.potionBuyInfo(hero), belt = E.potionUpgrade(hero), rr = E.rerollDieInfo(hero);
   const bought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); };
-  const potions = [ // first: you buy potions every camp (Dave, 3 Nov 2026)
-    entry('Healing potion', `Heals ${E.potionHpOf(hero)} · on your belt ${pot.have} of ${pot.max}`, { cost: pot.price, ok: pot.ok, why: pot.why === 'Belt full' ? 'Belt full' : '' }, () => { if (HE.buyPotion(hero)) { sfx.coin?.(); bought(); } else toast(pot.why === 'Belt full' ? 'Your belt is full.' : 'Not enough gold.'); }, pot.why === 'Belt full' ? 'Full' : 'Buy', 'assets/cards/utilities/potion-printed.webp'),
-    entry('Potion belt', belt.next ? `${belt.cur} → ${belt.next} potions` : `${belt.cur} potions · biggest belt`, belt.next ? belt : null, () => { if (belt.next && HE.upgradePotions(hero)) bought(); else toast(belt.why?.startsWith('Level') ? `Needs ${belt.why}.` : belt.next ? 'Not enough gold.' : 'Your belt is as big as it gets.'); }, belt.next ? 'Buy' : 'Max', 'assets/cards/utilities/potion-belt.webp')];
+  const potions = potionRows(hero); // first: you buy potions every camp (Dave, 3 Nov 2026)
   const sections = [
     ['Potions', 'cu-potions', potions],
     ['Hero', 'cu-hero', [trainingRow(hero, 'health'), trainingRow(hero, 'capacity'), trainingRow(hero, 'start')]],
@@ -1877,7 +1893,7 @@ function campPopup() {
 function campContent(hero) {
   switch (X.S.campPage) {
     case 'upgrades': return upgradesOverview(hero);
-    case 'camp': return h('div', { class: 'cw-storepage' }, campStatus(hero), storeTab({ part: 'shop' }));
+    case 'camp': return h('div', { class: 'cw-storepage' }, campStatus(hero), cuSection('Potions', potionRows(hero), 'cs-potions'), storeTab({ part: 'shop' })); // potions first (Dave, 3 Nov 2026)
     case 'magic': return magicPage(hero);
     case 'hero': return heroPage(hero);
     default: return h('div', { class: 'cw-workshop' }, diceGrid(hero), dieShelf(hero), diceExtras(hero));

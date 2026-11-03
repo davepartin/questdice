@@ -748,3 +748,29 @@ button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; backgroun
 .mc-card .mc-cov-buy.poor { box-shadow: none; filter: drop-shadow(0 .6cqi .5cqi #2a1606aa); }
 .mc-card .mc-cov-buy.poor .mc-cp .mc-coin { background: none; }
 .mc-card .mc-cov-buy.poor .mc-cp b { color: #4a3216 !important; }
+
+/* Camp Store page: the campfire picture starts below the pinned buttons, so the miniatures are never hidden behind them (Dave, 3 Nov 2026).
+   The area grows by the same 64px, so the picture keeps its size. (Restored: cp6 dropped it by mistake; test/campcopy.test.mjs guards it.) */
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen.camp:has(.cw-camp.cw-p-camp) { --gap: calc(clamp(190px, 25dvh, 230px) + 64px); }
+  .cw-camp.cw-p-camp .sc-stage.k-camp { top: calc(62px + var(--safe-t, 0px) + 64px); }
+}
+
+/* A Bonus Goal's result: the objective card itself with a stamp across it (Dave, 3 Nov 2026) */
+.rv-list .rv-objcard { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .2rem 0 .4rem; border: 0; background: none; }
+.rv-objcard-wrap { position: relative; display: grid; place-items: center; }
+.rv-objcard-wrap .qo { --w: min(78vw, 300px, calc((100dvh - 19rem) * .72)); }
+.rv-objcard.st-failed .rv-objcard-wrap .qo, .rv-objcard.st-declined .rv-objcard-wrap .qo { filter: grayscale(.65) brightness(.7); }
+.rv-stamp { position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%) rotate(-14deg); padding: .2rem 1.1rem; border: .32rem double currentColor; border-radius: .6rem;
+  font: 900 clamp(2rem, 11vw, 3rem)/1 var(--font-display, Oxanium, sans-serif); letter-spacing: .12em; text-transform: uppercase; background: #0d0a0899; box-shadow: 0 0 0 .15rem #0d0a0899, 0 6px 18px #000c;
+  mix-blend-mode: normal; pointer-events: none; animation: rv-stamp-in .45s cubic-bezier(.2, 1.6, .4, 1) both .2s; }
+.st-failed .rv-stamp { color: #ff4f3f; text-shadow: 0 0 12px #ff4f3f66; }
+.st-done .rv-stamp { color: #4fdc7a; text-shadow: 0 0 12px #4fdc7a66; }
+.st-declined .rv-stamp { color: #c9c2b7; font-size: clamp(1.6rem, 9vw, 2.4rem); }
+@keyframes rv-stamp-in { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-14deg) scale(2.2); } 100% { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .rv-stamp { animation: none; } }
+.rv-objnote { margin: 0; text-align: center; color: #d9c9a8; font: 600 .86rem var(--font-body); }
+.rv-objnote b { color: #fff0d3; }
+.st-failed .rv-objnote { color: #ff9a8a; } .st-done .rv-objnote { color: #9fe8b4; }
+.st-done .rv-stamp { font-size: clamp(1.5rem, 8vw, 2.2rem); }
+.st-declined .rv-stamp { font-size: clamp(1.5rem, 8vw, 2.2rem); }
