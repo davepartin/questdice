@@ -163,3 +163,6 @@
 .mnc-special-area.inactive .mnc-row { filter:grayscale(1); color:#aaa6a2; }
 .mnc-special-area.inactive .mnc-kw, .mnc-special-area.inactive .mnc-kw b { color:#aaa6a2; }
 .mnc-revealing .mnc-special-area.active .mnc-special-label { color:#aaa6a2; }
+/* Give the target heading and cards breathing room above Attack without moving the button. */
+.mnc-veil { --mnc-lift: clamp(0px, calc(16.6667dvh - 90px), 18px); }
+.mnc-veil > .mnc-head, .mnc-veil > .mnc-stack { transform: translateY(calc(0px - var(--mnc-lift))); }

@@ -1655,3 +1655,7 @@ On the team's grouped-dice and two-second-reveal build, anchored the Special at 
 ## 3 November 2026 — Ranger playable magic-card interface preview
 
 Built an isolated six-card Ranger preview at `preview/magic-cards/`. Tapping a miniature grows the full card; the card itself selects dice, a target mark, a stored charge, a potion, healing or a heart direction before Use. It exercises released engine rules in a fresh in-memory demo and does not alter saved heroes or live battle UI. Four phone sizes, all six actions, motion, cancellation and battle-to-deck navigation checked. Details: `docs/team/tasks/ranger-magic-preview.md`.
+
+## 3 November 2026 — monster target picker spacing
+
+Lifted the target heading and card stack by up to 18 pixels, tapering on short screens, while keeping Attack in its original layout position. Four phone sizes and one to four cards checked with touch; full suite 564/564. Details: `docs/team/tasks/picker-spacing.md`.
