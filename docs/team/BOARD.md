@@ -1004,3 +1004,11 @@ From Claude: 3 November 2026. **Simpler monster move cards, build 20261103mc7.**
 3. **A two-second roll** (was 1.44s). Then the rolled die stays enlarged (×1.18, gold ring) and a "ROLLED 6 · TOUCH" label pops out beside it. Attack wakes when the roll lands.
 
 Tests: new test/movedie.test.mjs (every monster keeps its moves and counts, identical moves are neighbours, the Bone Soldier is 1–3 Slash, `e.face` matches the move). The T24 Slam test now uses the Bone Soldier: the Ogre has its own Wind-Up face, which the new order made it roll, the same coincidence the Director found. npm test 561/561. dev/minicard-taps.mjs 21/21 and dev/monster-dice.mjs 6/6, real taps; both now wait for Attack to wake after the roll. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **Cleaner monster cards, build 20261103mc8.** Dave: "Too much data. This can be cleaner." Changes:
+- No "MOVE DIE · THIS ROUND" heading; the enlarged die and its "ROLLED N · MOVE" label say it. The heading stays only for a move that didn't come from the die ("rolls again next round").
+- No "SPECIAL · ACTIVE/INACTIVE THIS ROUND" heading; the coloured box or the grey outline says it.
+- Block and Speed on one quiet line: "Block sometimes · Speed d6".
+- **Moves of one name are grouped**: `groupFaces` keys on name and verb, so the Ogre's two Clubs a point apart read "1–2 CLUB" and the Ember Mage's two Tangles (1 or 2 dice locked) read "1–2 TANGLE". Each face is unchanged, the odds are unchanged, and the lit row shows the exact dice of the face rolled.
+
+npm test 561/561; dev/minicard-taps.mjs 21/21; dev/monster-dice.mjs 6/6; four monsters at 375x548 fit, no page errors. Headless Chromium, not Safari. — Claude

@@ -683,8 +683,8 @@ export function storyScale(heroes, level) {
 }
 export function teamFactor(heroes) { const s = heroes.map(heroStrength); const top = Math.max(...s); return s.reduce((a, x) => a + x, 0) / top; }
 // A monster's move die with identical moves on neighbouring numbers (Dave, 3 Nov 2026: "1–3 Slash", not "1·2·6"). Every move keeps exactly as
-// many faces, so its odds do not change; the order is by first appearance. A battle already in play keeps the faces it was dealt.
-const faceKey = (f) => JSON.stringify(f, Object.keys(f || {}).sort());
+// many faces, so its odds do not change; the order is by first appearance (moves of one name together, each face exactly as it was). A battle already in play keeps the faces it was dealt.
+const faceKey = (f) => `${f?.n}|${f?.v}`; // the move as a player names it: two Clubs a point apart are both Club
 export function groupFaces(faces) {
   if (!Array.isArray(faces)) return faces; const order = []; const by = new Map();
   for (const f of faces) { const k = faceKey(f); if (!by.has(k)) { by.set(k, []); order.push(k); } by.get(k).push(f); }

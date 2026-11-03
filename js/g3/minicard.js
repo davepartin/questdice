@@ -60,15 +60,14 @@ function cardFacts(F, specials) {
   const moveBox = m && !fromDie ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
     h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null), m.line ? h('div', { class: 'mnc-move-line' }, m.line) : null) : null;
   const dieBox = D6?.rows?.length ? h('div', { class: 'mnc-die' },
-    h('small', { class: 'mnc-die-head' }, fromDie ? 'Move die · this round'  : m ? 'Move die · rolls again next round' : 'Move die · d6 each round'),
+    fromDie ? null : h('small', { class: 'mnc-die-head' }, m ? 'Move die · rolls again next round' : 'Move die · d6 each round'), // (a rolled die says it already: Dave, 3 Nov 'too much data')
     ...D6.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
       h('div', { class: 'mnc-face-main' }, h('span', { class: 'mnc-n' }, nums(r.nums)), HK.icon(r.icon || 'atk'), h('b', {}, r.word), r.lit && r.dice ? h('span', { class: 'mnc-dice' }, r.dice) : null), // only the rolled move shows its dice (Dave, 3 Nov)
       r.lit && m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null))) : null;
   return [
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
     moveBox, dieBox,
-    h('div', { class: 'mnc-stats two' }, h('span', {}, h('i', {}, 'Block'), h('b', { class: F.block.length > 5 ? 'sm' : '' }, F.block)), h('span', {}, h('i', {}, 'Speed'), h('b', {}, F.speed))),
-    h('div', { class: 'mnc-special-label' }, specials.some(r => r.classList.contains('on')) ? 'Special · Active this round' : specials.length ? 'Special · Inactive this round' : 'Special · None this round'),
+    h('div', { class: 'mnc-facts-line' }, 'Block ', h('b', {}, F.block), ' · Speed ', h('b', {}, F.speed)), // one quiet line (the Special's box speaks for itself)
     specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null,
   ].filter(Boolean);
 }

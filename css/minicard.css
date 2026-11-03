@@ -129,3 +129,7 @@
 @keyframes mnc-pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
 @keyframes mnc-land { 0% { transform: scale(1.6); } 100% { transform: scale(1.18); } }
 @media (prefers-reduced-motion: reduce) { .mnc-roll-result { animation: none !important; } }
+
+/* Cleaner (Dave, 3 Nov 2026: "too much data"): Block and Speed on one quiet line; no section headings. */
+.mnc-facts-line { font: 700 .56rem/1.2 var(--ui, sans-serif); color: #a99e8c; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
+.mnc-facts-line b { color: #fff; font-weight: 900; }
