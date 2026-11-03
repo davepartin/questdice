@@ -1663,3 +1663,7 @@ Lifted the target heading and card stack by up to 18 pixels, tapering on short s
 ## 3 November 2026 — monster picker Attack & Roll
 
 Raised the target heading farther, hid the old target caption while the card picker is up, and changed the selectable action to Attack & Roll: the cards slide away and the chosen hero's real dice roll onto the grid. Read-only inspection remains Close; reduced motion skips the slide. Shared tables await a successful target sync before rolling and reopen target choice on failure. Solo 1–4 monsters, later round, local party, local four-seat network table with failed-aim retry, reduced motion and phone sizes checked; full suite 565/565. Details: `docs/team/tasks/attack-roll.md`.
+
+## 3 November 2026 — cloud rules hardening, transaction contention, and daily charm guard
+
+Hardened `firestore.rules` (strict key whitelists on `qdRooms`, `qdHeroNames`, `qdHeroes`; class/level/act/step bounds on `qdHeroPublic`; date format and monotonic high-score enforcement on `qdDaily`; disabled unauthenticated-hash `qdHeroes` deletes). In `js/cloud.js`, fixed a synchronous `onAuthStateChanged` TDZ bug on `off`, added jittered retry (`maxAttempts: 10`) on transient transaction contention, skipped redundant Firestore writes on unchanged/locked `aim` previews, and validated daily score submissions before comparing against stored scores. In `js/daily.js`, skipped `takeCharm` when `charmsResting()` is on. Full suite 568/568; build `20261103cp11`.

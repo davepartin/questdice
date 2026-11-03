@@ -65,3 +65,17 @@ test('the potion shop between daily fights: points pay, the belt limits, the sco
   assert.equal(DAY.potionShop(poor, hero).ok, false); assert.match(DAY.potionShop(poor, hero).why, /Need 1 more points/); assert.equal(DAY.buyPotion(poor, hero), false); assert.equal(hero.potions, 0);
   assert.equal(DAY.finalScore([{ won: true, score: 10 }], 999), 0, 'never below zero');
 });
+
+test('under released rules (charms resting), dailyHero does not attach charms and shareText omits them', async () => {
+  const { applyRelease } = await import('../js/release.js');
+  applyRelease();
+  assert.equal(E.charmsResting(), true);
+  for (const key of ['2026-10-16', '2026-10-17', '2026-10-18']) {
+    const run = DAY.dailyRun(key);
+    const h = DAY.dailyHero(run);
+    assert.deepEqual(E.charmsOf(h), []);
+    assert.equal(E.hasCharm(h, run.charm), false);
+    const text = DAY.shareText(run, 900, [{ won: true }]);
+    assert.equal(text.includes(CHARMS[run.charm].name), false);
+  }
+});

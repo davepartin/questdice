@@ -50,7 +50,7 @@ export function dailyHero(run) {
     for (let f = 0; f < talentFaces; f++) E.addTalent(h, slot, f, f < 2 ? mine : other); }
   h.gold = 0; // every equipped power at level 1
   if (B.rerollDie) h.rerollDie = true; // a 4th reroll die, as a hero this far has bought
-  E.takeCharm(h, run.charm);
+  if (!E.charmsResting() && run.charm) E.takeCharm(h, run.charm);
   return h;
 }
 // What a fight is worth: its battle points, plus the win, plus every gold coin earned in it (Dave: the daily has no camp to spend it at,

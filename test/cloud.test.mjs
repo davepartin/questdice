@@ -110,6 +110,7 @@ test('a company plays the same through the cloud as in memory', () => {
 test('every view carries the whole table, without seat tokens, and a phone can rebuild it (session.js)', async () => {
   const { savePublic } = await import('../js/table.js');
   const table = seat([['Ada', 'knight'], ['Bea', 'bard']]);
+  table.envelopes = 'off';
   command(table, table.players[1].id, { type: 'ready' }); command(table, table.hostId, { type: 'start' });
   const state = savePublic(table);
   assert.equal(state.includes('uid0'), false, 'no seat tokens in the text a phone receives');
@@ -118,4 +119,82 @@ test('every view carries the whole table, without seat tokens, and a phone can r
   assert.equal(copy.players[0].hero, copy.company.members[0], 'a hero in the seat is the hero in the company');
   assert.equal(copy.players[0].token, '');
   assert.equal(table.players[0].token, 'uid0', 'the real table keeps its tokens');
+});
+
+test('cloud.js: no-op aim skips redundant room writes, transactions retry on contention, and submitDaily guards scores', async () => {
+  const C = await import('../js/cloud.js');
+  const docs = new Map();
+  let updates = 0;
+  let abortLeft = 0;
+  let lastMaxAttempts = null;
+  const fakeSdk = [
+    { initializeApp: () => ({}) },
+    {
+      getAuth: () => ({ currentUser: { uid: 'uid0' } }),
+      onAuthStateChanged: (_a, fn) => { fn(); return () => {}; },
+      signInAnonymously: async () => {},
+    },
+    {
+      getFirestore: () => ({}),
+      doc: (_db, ...parts) => parts.join('/'),
+      serverTimestamp: () => 1791000000000,
+      getDoc: async (ref) => ({ exists: () => docs.has(ref), data: () => docs.get(ref) }),
+      setDoc: async (ref, val) => { docs.set(ref, val); },
+      runTransaction: async (_db, fn, opts) => {
+        lastMaxAttempts = opts?.maxAttempts ?? null;
+        if (abortLeft > 0) {
+          abortLeft--;
+          const err = new Error('conflict');
+          err.code = 'aborted';
+          throw err;
+        }
+        const tx = {
+          get: async (ref) => ({ exists: () => docs.has(ref), data: () => docs.get(ref) }),
+          set: (ref, val) => { docs.set(ref, val); },
+          update: (ref, val) => { updates++; docs.set(ref, { ...(docs.get(ref) || {}), ...val }); },
+        };
+        return fn(tx);
+      },
+    },
+  ];
+  C.useSdk(fakeSdk, 'test');
+
+  const table = seat([['Ada', 'knight'], ['Bea', 'bard']]);
+  table.envelopes = 'off';
+  command(table, table.players[1].id, { type: 'ready' });
+  command(table, table.hostId, { type: 'start' });
+  const road = playerView(table, table.hostId).road;
+  command(table, table.players[1].id, { type: 'choose', id: road.choices[0].id });
+  for (const p of table.players) command(table, p.id, { type: 'onward' });
+  command(table, table.hostId, { type: 'quest', id: playerView(table, table.hostId).board.quests[0].id });
+  assert.equal(table.phase, 'battle');
+  docs.set('qdRooms/CLOU', { hostUid: 'uid0', seatUids: ['uid0', 'uid1'], phase: 'battle', state: saveTable(table), seq: table.seq });
+
+  // First aim writes once and passes maxAttempts: 10
+  const r1 = await C.send('CLOU', { type: 'aim', target: 0 });
+  assert.equal(r1.ok, true);
+  assert.equal(updates, 1);
+  assert.equal(lastMaxAttempts, 10);
+
+  // Repeating the same aim is a no-op and does not write to Firestore again
+  const r2 = await C.send('CLOU', { type: 'aim', target: 0 });
+  assert.equal(r2.ok, true);
+  assert.equal(updates, 1, 'duplicate aim skipped Firestore write');
+
+  // Transient aborted transactions retry automatically and succeed
+  abortLeft = 2;
+  const r3 = await C.send('CLOU', { type: 'roll' });
+  assert.equal(r3.ok, true);
+  assert.equal(abortLeft, 0);
+  assert.equal(updates, 2);
+
+  // Daily score submission validates day format and rounded score monotonicity
+  const badDay = await C.submitDaily('not-a-day', { name: 'Ada', cls: 'knight', score: 500, fights: 3 });
+  assert.equal(badDay.ok, false);
+  const s1 = await C.submitDaily('2026-11-03', { name: 'Ada', cls: 'knight', score: 500.4, fights: 3 });
+  assert.equal(s1.ok, true);
+  assert.equal(docs.get('qdDaily/2026-11-03/scores/uid0').score, 500);
+  const s2 = await C.submitDaily('2026-11-03', { name: 'Ada', cls: 'knight', score: 500.2, fights: 3 });
+  assert.equal(s2.ok, true);
+  assert.equal(s2.kept, 500);
 });

@@ -27,7 +27,7 @@ async function ready() {
     const [A, U, F] = given ? given.sdk : await Promise.all([import(`${SDK}firebase-app.js`), import(`${SDK}firebase-auth.js`), import(`${SDK}firebase-firestore.js`)]);
     app = given ? A.initializeApp(firebaseConfig, given.name) : A.initializeApp(firebaseConfig);
     auth = U.getAuth(app);
-    await new Promise((resolve) => { const off = U.onAuthStateChanged(auth, () => { off(); resolve(); }); });
+    await new Promise((resolve) => { let off = () => {}; off = U.onAuthStateChanged(auth, () => { off?.(); resolve(); }); });
     if (!auth.currentUser) await U.signInAnonymously(auth);
     fs = F;
   } catch (e) {
@@ -67,6 +67,25 @@ function oops(e, fallback) {
   return new Error(fallback);
 }
 const told = (message) => Object.assign(new Error(message), { qd: true });
+const RETRY_CODES = new Set(['aborted', 'failed-precondition', 'deadline-exceeded']);
+async function runTx(fn) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fb.fs.runTransaction(fb.db, fn, { maxAttempts: 10 });
+    } catch (e) {
+      if (attempt >= 2 || !RETRY_CODES.has(e?.code)) throw e;
+      await new Promise((r) => setTimeout(r, 30 + Math.floor(Math.random() * 60)));
+    }
+  }
+}
+function isNoopAim(table, player, cmd) {
+  if (cmd?.type !== 'aim' || table.phase !== 'battle') return false;
+  const f = table.battle?.fighters?.find((x) => x.hero === player.hero);
+  if (!f || f.hp <= 0) return false;
+  if (f.locked) return true;
+  const t = cmd.target | 0;
+  return f.aim === t && table.battle?.enemies?.[t]?.hp > 0;
+}
 
 export async function createSeat({ name, cls, table: tableName, hero, difficulty, pack }) {
   await ready();
@@ -77,7 +96,7 @@ export async function createSeat({ name, cls, table: tableName, hero, difficulty
     const joined = joinTable(table, { name, cls, token: fb.uid, hero });
     if (!joined.ok) throw told(joined.error);
     try {
-      const made = await fb.fs.runTransaction(fb.db, async (tx) => {
+      const made = await runTx(async (tx) => {
         const snap = await tx.get(roomRef(code));
         if (snap.exists()) return false;
         tx.set(roomRef(code), doc(table, { hostUid: fb.uid, seatUids: [fb.uid], created: fb.fs.serverTimestamp() }));
@@ -95,7 +114,7 @@ export async function joinSeat({ code: raw, name, cls, hero, reclaim = false }) 
   const code = cleanCode(raw);
   if (code.length !== 4) throw told('A table code is four letters.');
   try {
-    return await fb.fs.runTransaction(fb.db, async (tx) => {
+    return await runTx(async (tx) => {
       const snap = await tx.get(roomRef(code));
       if (!snap.exists()) throw told('No table with that code.');
       const data = snap.data();
@@ -122,12 +141,13 @@ export async function joinSeat({ code: raw, name, cls, hero, reclaim = false }) 
 export async function send(code, cmd) {
   await ready();
   try {
-    return await fb.fs.runTransaction(fb.db, async (tx) => {
+    return await runTx(async (tx) => {
       const snap = await tx.get(roomRef(code));
       if (!snap.exists()) throw told('That table is gone.');
       const table = loadTable(snap.data().state);
       const player = playerByToken(table, fb.uid);
       if (!player) throw told('This phone is not seated at that table.');
+      if (isNoopAim(table, player, cmd)) return { ok: true, view: viewFor(table, fb.uid) };
       const res = command(table, player.id, cmd);
       if (!res.ok) throw told(res.error);
       tx.update(roomRef(code), doc(table));
@@ -183,7 +203,7 @@ export async function putHero(hero, password, { create = false } = {}) {
   const nameId = await SV.cloudNameId(hero.name);
   const id = await SV.cloudHeroId(hero.name, password);
   try {
-    return await fb.fs.runTransaction(fb.db, async (tx) => {
+    return await runTx(async (tx) => {
       const nRef = nameRef(nameId); const hRef = heroRef(id); const pRef = publicRef(nameId);
       const [nameSnap, heroSnap] = await Promise.all([tx.get(nRef), tx.get(hRef)]);
       if (!heroSnap.exists() && String(password || '').length < SV.MIN_PASSWORD) {
@@ -257,10 +277,12 @@ export async function getHero(name, password) {
 const dailyRef = (day, uid) => fb.fs.doc(fb.db, 'qdDaily', day, 'scores', uid);
 export async function submitDaily(day, { name, cls, score, fights }) {
   try {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(day || ''))) return { ok: false, why: 'Invalid day.' };
     await ready();
     const ref = dailyRef(day, fb.uid); const had = await fb.fs.getDoc(ref).catch(() => null);
-    if (had?.exists?.() && (had.data().score || 0) >= score) return { ok: true, kept: had.data().score };
-    await fb.fs.setDoc(ref, { name: String(name || 'Hero').slice(0, 24), cls, score: Math.max(0, Math.min(99999, Math.round(score))), fights: Math.max(0, Math.min(5, fights | 0)), at: Date.now() });
+    const cleanScore = Math.max(0, Math.min(99999, Math.round(Number(score) || 0)));
+    if (had?.exists?.() && (had.data().score || 0) >= cleanScore) return { ok: true, kept: had.data().score };
+    await fb.fs.setDoc(ref, { name: String(name || 'Hero').trim().slice(0, 24) || 'Hero', cls, score: cleanScore, fights: Math.max(0, Math.min(5, fights | 0)), at: Date.now() });
     return { ok: true };
   } catch (e) { return { ok: false, why: String(e?.message || e) }; }
 }

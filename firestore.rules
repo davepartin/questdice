@@ -31,19 +31,31 @@ service cloud.firestore {
 
       // The host creates the room and is its first and only seat.
       allow create: if signedIn()
+        && code.matches('^[A-Z0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['hostUid', 'seatUids', 'created', 'phase', 'state', 'seq', 'updated'])
         && request.resource.data.hostUid == me()
         && request.resource.data.seatUids == [me()]
+        && request.resource.data.phase is string
+        && request.resource.data.phase.size() <= 16
         && request.resource.data.state is string
-        && request.resource.data.state.size() < 900000;
+        && request.resource.data.state.size() < 900000
+        && request.resource.data.seq is int
+        && request.resource.data.seq >= 1;
 
       // Seated players may play (write the new table).
       // A phone that is not seated may add ONE seat for itself: to join while the room is still in the lobby (table.js keeps it
       // to six heroes), or later to take back a hero's seat on a new phone (the phone first opens that hero's cloud save with its
       // password; Oct 2026). Old phones' ids stay in the list, so it may grow past six; twelve is plenty.
       allow update: if signedIn()
+        && code.matches('^[A-Z0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['hostUid', 'seatUids', 'created', 'phase', 'state', 'seq', 'updated'])
         && request.resource.data.hostUid == resource.data.hostUid
+        && request.resource.data.phase is string
+        && request.resource.data.phase.size() <= 16
         && request.resource.data.state is string
         && request.resource.data.state.size() < 900000
+        && request.resource.data.seq is int
+        && request.resource.data.seq >= resource.data.seq
         && (
           (me() in resource.data.seatUids
             && request.resource.data.seatUids.hasAll(resource.data.seatUids)
@@ -67,6 +79,7 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list: if false;
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['taken', 'nameKey', 'created'])
         && request.resource.data.taken == true
         && request.resource.data.nameKey is string
         && request.resource.data.nameKey.size() >= 2
@@ -74,15 +87,27 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // The daily challenge's leaderboard: anyone may read a day's scores; each phone writes only its own entry.
+    // The daily challenge's leaderboard: anyone may read a day's scores; each phone writes only its own entry,
+    // and an update may never lower a phone's existing score for that day.
     match /qdDaily/{day}/scores/{uid} {
       allow get, list: if signedIn();
-      allow create, update: if signedIn() && uid == me()
+      allow create: if signedIn() && uid == me()
+        && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && request.resource.data.keys().hasOnly(['name', 'cls', 'score', 'fights', 'at'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 24
         && request.resource.data.cls in ['knight', 'ranger', 'wizard', 'dwarf', 'bard']
         && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 99999
-        && request.resource.data.fights is int && request.resource.data.fights >= 0 && request.resource.data.fights <= 5;
+        && request.resource.data.fights is int && request.resource.data.fights >= 0 && request.resource.data.fights <= 5
+        && request.resource.data.at is int && request.resource.data.at > 0;
+      allow update: if signedIn() && uid == me()
+        && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.keys().hasOnly(['name', 'cls', 'score', 'fights', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 24
+        && request.resource.data.cls in ['knight', 'ranger', 'wizard', 'dwarf', 'bard']
+        && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 99999
+        && request.resource.data.score >= resource.data.score
+        && request.resource.data.fights is int && request.resource.data.fights >= 0 && request.resource.data.fights <= 5
+        && request.resource.data.at is int && request.resource.data.at > 0;
       allow delete: if false;
     }
 
@@ -100,46 +125,72 @@ service cloud.firestore {
         && request.resource.data.name.size() >= 2
         && request.resource.data.name.size() <= 16
         && request.resource.data.nameKey is string
-        && request.resource.data.cls is string
+        && request.resource.data.nameKey.size() >= 2
+        && request.resource.data.nameKey.size() <= 16
+        && request.resource.data.cls in ['knight', 'ranger', 'wizard', 'dwarf', 'bard']
         && request.resource.data.level is int
+        && request.resource.data.level >= 1
+        && request.resource.data.level <= 20
         && request.resource.data.act is int
-        && request.resource.data.step is int;
+        && request.resource.data.act >= 1
+        && request.resource.data.act <= 99
+        && request.resource.data.step is int
+        && request.resource.data.step >= 1
+        && request.resource.data.step <= 10;
       allow update: if signedIn()
         && request.resource.data.name == resource.data.name
         && request.resource.data.nameKey == resource.data.nameKey
         && request.resource.data.keys().hasOnly(['name', 'nameKey', 'cls', 'level', 'act', 'step', 'updated'])
-        && request.resource.data.cls is string
+        && request.resource.data.nameKey is string
+        && request.resource.data.nameKey.size() >= 2
+        && request.resource.data.nameKey.size() <= 16
+        && request.resource.data.cls in ['knight', 'ranger', 'wizard', 'dwarf', 'bard']
         && request.resource.data.level is int
+        && request.resource.data.level >= 1
+        && request.resource.data.level <= 20
         && request.resource.data.act is int
-        && request.resource.data.step is int;
+        && request.resource.data.act >= 1
+        && request.resource.data.act <= 99
+        && request.resource.data.step is int
+        && request.resource.data.step >= 1
+        && request.resource.data.step <= 10;
       allow delete: if false;
     }
 
     // The save itself. The document id is derived from name + password on the phone,
     // so listing is off and a guess at the id is a 64-character hash. A write that
     // already has a document must carry the same salt and hash as the one stored
-    // (the phone that opened the hero already has them).
+    // (the phone that opened the hero already has them). Deletes are disallowed so
+    // a save cannot be destroyed without matching salt and hash.
     match /qdHeroes/{heroId} {
       allow get: if signedIn();
       allow list: if false;
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['nameKey', 'salt', 'hash', 'hero', 'v', 'saved', 'updated'])
         && request.resource.data.keys().hasAll(['nameKey', 'salt', 'hash', 'hero', 'v', 'saved'])
         && request.resource.data.nameKey is string
+        && request.resource.data.nameKey.size() >= 2
+        && request.resource.data.nameKey.size() <= 16
         && request.resource.data.salt is string
+        && request.resource.data.salt.size() >= 8
+        && request.resource.data.salt.size() <= 64
         && request.resource.data.hash is string
         && request.resource.data.hash.size() >= 8
+        && request.resource.data.hash.size() <= 128
         && request.resource.data.hero is string
         && request.resource.data.hero.size() < 200000
-        && request.resource.data.v is int;
+        && request.resource.data.v is int
+        && request.resource.data.saved is int;
       allow update: if signedIn()
+        && request.resource.data.keys().hasOnly(['nameKey', 'salt', 'hash', 'hero', 'v', 'saved', 'updated'])
         && request.resource.data.hash == resource.data.hash
         && request.resource.data.salt == resource.data.salt
         && request.resource.data.nameKey == resource.data.nameKey
         && request.resource.data.hero is string
         && request.resource.data.hero.size() < 200000
-        && request.resource.data.v is int;
-      // Knowing the document id implies knowing the password (the id is derived from it).
-      allow delete: if signedIn();
+        && request.resource.data.v is int
+        && request.resource.data.saved is int;
+      allow delete: if false;
     }
   }
 }
