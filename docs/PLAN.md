@@ -1651,3 +1651,7 @@ Made monster Specials explicitly active, inactive or absent, with clearer short 
 ## 3 November 2026 — monster card Special footer
 
 On the team's grouped-dice and two-second-reveal build, anchored the Special at the bottom of each monster card. Active Specials keep their color and highlight; inactive or absent Specials are gray. Short cards scroll. Existing fights keep their current result and adopt grouped faces at the next roll; stable face-array identity preserves the optional move bag. See `docs/team/tasks/monster-special-footer.md`.
+
+## 3 November 2026 — Ranger playable magic-card interface preview
+
+Built an isolated six-card Ranger preview at `preview/magic-cards/`. Tapping a miniature grows the full card; the card itself selects dice, a target mark, a stored charge, a potion, healing or a heart direction before Use. It exercises released engine rules in a fresh in-memory demo and does not alter saved heroes or live battle UI. Four phone sizes, all six actions, motion, cancellation and battle-to-deck navigation checked. Details: `docs/team/tasks/ranger-magic-preview.md`.
