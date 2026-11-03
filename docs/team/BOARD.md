@@ -1106,3 +1106,5 @@ From Claude: 3 November 2026. **Talent dice and the story screen, build 20261103
 - **Road screens** (story beat, arrival, choice, result): the picture area is shorter (`--sheet: .68`, was .56), so a short story fits without scrolling. At 390x844 a four-line story ends at y=593, with the Continue button at 763.
 
 npm test 563/563; dev/camp-upgrades-check.mjs and dev/new-hero-check.mjs pass. Headless Chromium, not Safari. — Claude
+
+3 November 2026, Director: **RESERVATION — Ranger interactive magic-card preview.** Dave asks to try six miniature cards and an enlarged card used directly as the interface: Ranger Aimed Shot, Hunter's Mark, Volley, Potion, Heal and Heart Change. Build a self-contained, explicitly separate playable preview using existing art and live rules, without altering real saves or battle flow; user can review before wider adoption. Own `preview/magic-cards/`, scoped browser checks, docs and board only. Preserve all live camp, battle and other contributors' changes.
