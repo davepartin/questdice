@@ -133,3 +133,25 @@
 /* Cleaner (Dave, 3 Nov 2026: "too much data"): Block and Speed on one quiet line; no section headings. */
 .mnc-facts-line { font: 700 .56rem/1.2 var(--ui, sans-serif); color: #a99e8c; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
 .mnc-facts-line b { color: #fff; font-weight: 900; }
+
+/* Dave (3 Nov 2026): the dice roll for real, then the rolled move and an active Special light up in gold. No label over the picture. */
+.mnc-revealing .mnc-picture-die:not(.unrolled) { animation: mnc-roll 2s cubic-bezier(.12, .62, .3, 1) both !important; }
+@keyframes mnc-roll {
+  0% { transform: translate(.4rem, -.9rem) rotate(-30deg) scale(.8); }
+  12% { transform: translate(.2rem, .1rem) rotate(260deg) scale(1.12); }
+  24% { transform: translate(.05rem, -.45rem) rotate(520deg) scale(1.02); }
+  40% { transform: translate(0, .05rem) rotate(760deg) scale(1.12); }
+  58% { transform: translate(0, -.22rem) rotate(940deg) scale(1.05); }
+  76% { transform: translate(0, .02rem) rotate(1050deg) scale(1.14); }
+  90% { transform: translate(0, -.06rem) rotate(1075deg) scale(1.1); }
+  100% { transform: rotate(1080deg) scale(1.18); }
+}
+.mnc-revealed .mnc-picture-die:not(.unrolled) { animation: mnc-land .5s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes mnc-land { 0% { transform: scale(1.5); } 60% { transform: scale(1.1); } 100% { transform: scale(1.18); } }
+/* the gold border: the rolled move, and an active Special, once the dice have landed */
+.mnc-card.facts .mnc-face.on, .mnc-card.facts .mnc-row.on { box-shadow: inset 0 0 0 2px #fff2b8, 0 0 0 1px #ffd96a, 0 0 14px #ffd96acc !important; }
+.mnc-revealing .mnc-card.facts .mnc-row.on { box-shadow: inset 0 0 0 1px #ffffff2e !important; filter: saturate(.4) brightness(.8); }
+.mnc-revealing .mnc-card.facts .mnc-face.on { box-shadow: inset 0 0 0 1px #ffffff2e !important; }
+.mnc-revealed .mnc-card.facts .mnc-face.on, .mnc-revealed .mnc-card.facts .mnc-row.on { animation: mnc-glow .9s ease-out; }
+@keyframes mnc-glow { 0% { filter: brightness(1.9); transform: scale(1.04); } 100% { filter: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .mnc-picture-die, .mnc-face.on, .mnc-row.on { animation: none !important; } }

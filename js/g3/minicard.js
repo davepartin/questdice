@@ -95,7 +95,7 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
     const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg;--die-paper:${dieColors[i % dieColors.length]}`, 'data-uid': e.uid, role: 'button', tabindex: '0',
       'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. ${F.die?.rolled ? `Move die rolled ${F.die.rolled}. ` : ''}This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
       onclick: () => { sel = i; paint(); } },
-      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word) : null, F?.die?.rolled && F.move ? h('span', { class: 'mnc-roll-result', 'aria-hidden': 'true' }, h('b', {}, `Rolled ${F.die.rolled}`), h('span', {}, F.move.word)) : null, h('span', { class: 'mnc-tag' }, M.tag)),
+      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word) : null, h('span', { class: 'mnc-tag' }, M.tag)),
       h('div', { class: 'mnc-title' }, e.name), ...body);
     stack.append(card);
   });
@@ -107,12 +107,16 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reveal && rolls.length && !reduce) {
     const finalFaces = rolls.map(d => [...d.children].map(p => p.classList.contains('pip')));
-    veil.classList.add('mnc-revealing'); go.disabled = true; let tick = 0;
-    const timer = setInterval(() => {
-      if (!veil.isConnected) { clearInterval(timer); return; }
-      rolls.forEach((d, i) => { const face = 1 + ((tick + i * 2) % 6); [...d.children].forEach((p, j) => p.classList.toggle('pip', PIPS[face].includes(j))); }); tick++;
-    }, 120);
-    setTimeout(() => { clearInterval(timer); rolls.forEach((d, i) => [...d.children].forEach((p, j) => p.classList.toggle('pip', finalFaces[i][j]))); veil.classList.remove('mnc-revealing'); veil.classList.add('mnc-revealed'); go.disabled = false; }, 2000); // two seconds of tumbling, then the result (Dave, 3 Nov 2026)
+    // Dave (3 Nov 2026): the dice should look like they roll. They spin and bounce (CSS), the face flicks fast and then slower, and after two
+    // seconds each lands on its number; only then does the move it rolled (and an active Special) light up with a gold border.
+    veil.classList.add('mnc-revealing'); go.disabled = true; let tick = 0; let t = 0; const END = 2000;
+    const flick = () => {
+      if (!veil.isConnected) return;
+      rolls.forEach((d, i) => { const face = 1 + ((tick * 5 + i * 2) % 6); [...d.children].forEach((p, j) => p.classList.toggle('pip', PIPS[face].includes(j))); }); tick++;
+      const gap = 70 + Math.round(230 * (t / END) ** 2); t += gap; if (t < END - 120) setTimeout(flick, gap); // 70ms apart at first, ~300ms at the end
+    };
+    flick();
+    setTimeout(() => { if (!veil.isConnected) return; rolls.forEach((d, i) => [...d.children].forEach((p, j) => p.classList.toggle('pip', finalFaces[i][j]))); veil.classList.remove('mnc-revealing'); veil.classList.add('mnc-revealed'); go.disabled = false; }, END); // two seconds of rolling, then the result
   }
   return veil;
 }

@@ -23,7 +23,7 @@ check('every living monster shows its move die, with as many pips as the face it
 await p.screenshot({ path: `${OUT}/1-dice-on-plaques.png` });
 // tap the third monster's die: the cards open with it on top, to choose
 const third = ds[2].uid; await tapEl(`.fb-slot.foe[data-uid="${third}"] .fb-mdie`); await p.waitForTimeout(500); await ready();
-let st = await p.evaluate(() => ({ veil: !!document.querySelector('.mnc-veil'), top: document.querySelector('.mnc-card.top')?.dataset.uid, btn: document.querySelector('.mnc-pick')?.textContent, rolled: (document.querySelector('.mnc-card.top .mnc-roll-result b')?.textContent || '').replace(/\D/g, '') }));
+let st = await p.evaluate(() => ({ veil: !!document.querySelector('.mnc-veil'), top: document.querySelector('.mnc-card.top')?.dataset.uid, btn: document.querySelector('.mnc-pick')?.textContent, rolled: String(document.querySelectorAll('.mnc-card.top .mnc-picture-die i.pip').length || '') })); // the card's own die, by its pips
 check('tapping a die opens the cards with that monster on top (before the roll: Attack)', st.veil && st.top === third && st.btn === 'Attack' && st.rolled === String(ds[2].face || ''), JSON.stringify(st));
 await p.screenshot({ path: `${OUT}/2-tapped-die.png` });
 await tapEl('.mnc-pick'); await pump(1); await p.waitForTimeout(300);

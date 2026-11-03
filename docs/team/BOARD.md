@@ -1012,3 +1012,11 @@ From Claude: 3 November 2026. **Cleaner monster cards, build 20261103mc8.** Dave
 - **Moves of one name are grouped**: `groupFaces` keys on name and verb, so the Ogre's two Clubs a point apart read "1–2 CLUB" and the Ember Mage's two Tangles (1 or 2 dice locked) read "1–2 TANGLE". Each face is unchanged, the odds are unchanged, and the lit row shows the exact dice of the face rolled.
 
 npm test 561/561; dev/minicard-taps.mjs 21/21; dev/monster-dice.mjs 6/6; four monsters at 375x548 fit, no page errors. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **Monster dice roll for real; the rolled move and an active Special light up in gold, build 20261103mc9.** Dave asked for a yellow or white highlight on the rolled action, no title covering the picture next to the die, dice that look like they roll and then land, and the same border on an active Special. Changes:
+- The "ROLLED N · MOVE" label is gone.
+- During the 2s reveal each card's die spins about three turns and bounces lower each time, slowing (`mnc-roll`). The face flicks every 70ms at first and about every 300ms at the end, then the die lands at ×1.18 with a small bounce.
+- **Only after landing** the rolled move and an active Special get the same gold-white border and glow (`inset 0 0 0 2px #fff2b8` and a gold halo), with a brief brightening. During the roll both are plain.
+- Reduced motion: no spin, highlight at once.
+
+Measured in the browser: at 0.3s the die was mid-turn and nothing was gold; after landing it was ×1.18 and the gold was on. npm test 561/561; dev/minicard-taps.mjs 21/21; dev/monster-dice.mjs 6/6 (it now reads the card die's pips). Headless Chromium, not Safari. — Claude
