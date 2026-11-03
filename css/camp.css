@@ -703,30 +703,16 @@ body.sx .modal-card:has(.cw-cardpop) { width: auto; max-width: 100%; max-height:
 .cw-camp .cp-actions { margin: 0; }
 .cp-hint { margin: 0; text-align: center; color: #c9bda5; font: 600 .74rem var(--font-body); }
 /* the card's next rank as its upgrade button */
-button.mc-cov { appearance: none; margin: 0; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
-.mc-cov-buy { box-shadow: 0 0 0 .6cqi #ffd96a, 0 0 4cqi #ffd96acc !important; animation: mc-buy-glow 1.8s ease-in-out infinite; }
-.mc-cov-buy.poor { box-shadow: 0 0 0 .5cqi #8d8573 !important; animation: none; }
+button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; background: transparent; background-color: transparent; font: inherit; color: inherit; text-align: inherit; cursor: pointer; border-radius: 0; }
 .mc-buy-tag { position: absolute; top: 50%; right: 17cqi; transform: translateY(-50%); z-index: 3; padding: .5cqi 2.4cqi; border-radius: 99px; background: linear-gradient(#ffe08a, #d19a2a); color: #2a1800; font: 800 3.2cqi/1.2 var(--font-body, sans-serif); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 .6cqi 1.2cqi #000a; white-space: nowrap; }
 .mc-cov-buy.poor .mc-buy-tag { background: #4a463f; color: #e8dcc4; }
-@keyframes mc-buy-glow { 50% { box-shadow: 0 0 0 .6cqi #ffe9a8, 0 0 7cqi #ffd96a !important; } }
-@media (prefers-reduced-motion: reduce) { .mc-cov-buy { animation: none; } }
 /* the Camp Store's price tags as the game's gold price chips, not paper */
 .cw-p-camp .cst-tag { transform: none; padding: 4px 10px; border-radius: 99px; background: linear-gradient(#3a2a18, #1d140c); box-shadow: inset 0 0 0 1.5px #e0b86a, 0 2px 6px #000a; }
 .cw-p-camp .cst-store .cst-tag b { font: 800 16px/1 var(--font-body, Oxanium, sans-serif); color: #ffd98a; }
 .cw-p-camp .cst-store .cst-tag small { font: 700 12px/1 var(--font-body, sans-serif); color: #ffd98a; }
 .cw-p-camp .cst-store .cst-tag.poor, .cw-p-camp .cst-store .cst-tag.poor b { color: #ff8a7a; }
 
-/* the next rank's price is the gold buy button (no label over the row's numbers) */
-.mc-card .mc-cov-buy .mc-cp { align-self: center; justify-content: center; margin: 1cqi 0; padding: 1.2cqi 2.4cqi; border: 0; border-radius: 99px; background: linear-gradient(110deg, #ffe7a6, #d9a548 70%, #f0c873); box-shadow: inset 0 0 0 .45cqi #87622f, 0 .8cqi 1.6cqi #0009; }
-.mc-card .mc-cov-buy .mc-cp b { color: #2a1800 !important; }
-.mc-card .mc-cov-buy.poor .mc-cp { background: #4a463f; box-shadow: none; }
-.mc-card .mc-cov-buy.poor .mc-cp b { color: #e8dcc4 !important; }
-/* Camp Store page: the campfire picture starts below the pinned buttons, so the miniatures are never hidden behind them (Dave, 3 Nov 2026).
-   The area grows by the same 64px, so the picture keeps its size. */
-@media (max-aspect-ratio: 1085/1000) {
-  .sx-screen.camp:has(.cw-camp.cw-p-camp) { --gap: calc(clamp(190px, 25dvh, 230px) + 64px); }
-  .cw-camp.cw-p-camp .sc-stage.k-camp { top: calc(62px + var(--safe-t, 0px) + 64px); }
-}
+
 
 /* ---- Fewer words, less space (Dave, 3 Nov 2026) ---- */
 /* die pop-ups: no big title, a small Close on the top-right corner, over the card's frame */
@@ -750,3 +736,15 @@ button.mc-cov { appearance: none; margin: 0; font: inherit; color: inherit; text
 .cw-camp .cu-section h3 { font: 700 .78rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: #d9b879; margin: .15rem 0 .2rem; }
 .cw-camp .cu-entry { padding: .35rem 0; }
 .cw-camp .cu-entry button { min-height: 38px; }
+
+/* Magic card rank rows (Dave, 3 Nov 2026: "the dice covers are all messed up"): coins stay round and the price column fits three digits;
+   the rank you can buy glows gold inside its own frame, with a filled gold coin. Nothing overlaps the row's edges. */
+.mc-reviewed-template .mc-cov { grid-template-columns: minmax(0, 1fr) 19cqi; }
+.mc-reviewed-template .mc-cp { overflow: visible; }
+.mc-reviewed-template .mc-cp .mc-coin, .mc-cp .mc-coin { flex: none; }
+.mc-card .mc-cov-buy { box-shadow: none; filter: drop-shadow(0 0 .9cqi #ffd96a) drop-shadow(0 .6cqi .5cqi #2a1606aa); }
+.mc-card .mc-cov-buy .mc-cp .mc-coin { background: radial-gradient(circle at 35% 35%, #fff2b0, #ffc21a 55%, #c98a0a); border-color: #9a6a06; box-shadow: 0 .3cqi .6cqi #0006; }
+.mc-card .mc-cov-buy .mc-cp b { color: #7a4a00 !important; }
+.mc-card .mc-cov-buy.poor { box-shadow: none; filter: drop-shadow(0 .6cqi .5cqi #2a1606aa); }
+.mc-card .mc-cov-buy.poor .mc-cp .mc-coin { background: none; }
+.mc-card .mc-cov-buy.poor .mc-cp b { color: #4a3216 !important; }
