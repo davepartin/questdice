@@ -1034,3 +1034,15 @@ From Claude: 3 November 2026. **Talent dice: the real-dice look is back, build 2
 - **Kept from that change:** the first empty face is selected when the workbench opens, plus the store, power ranks, training preview and the camp-scene compaction.
 
 Tests: test/campcopy.test.mjs is back to the original wording. dev/camp-upgrades-check.mjs is updated for the restored layout (growth inside the "Grow this die" section; the palette is reached by scrolling under the TALENTS card) and passes with no page errors. npm test 561/561. Director: please don't bring the D4/D6/D8/D10 ladder back; Dave asked for this look. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **RESERVATION: camp redesign (Dave: "the camp is getting way too crazy… we need a redesign").** Files: js/g3/scrui.js (camp navigation, pages, die inspector, store split, gear and powers placement), css/camp.css, js/main.js (training switch), tests and dev checks. The plan:
+- **Five fixed buttons at the top: Camp · Dice · Magic · All upgrades · Hero.**
+  - **Camp:** the campfire picture, the quest bar and the Store.
+  - **Dice:** your dice grid, then a shelf of your other dice (pack weapons and Diamonds) as die pictures with names. Tapping any die opens its card as a pop-up with its actions.
+  - **Magic:** potions and the belt at the top, then Slot 1, Slot 2 and Slot 3.
+  - **All upgrades:** the long list of everything, including Max health, Max magic and Starting magic.
+  - **Hero:** details, charms, the pet and shrinking.
+- **The Gear tab goes**; its parts move into Dice and Hero.
+- **The training upgrades go live** at their current test prices.
+
+Please hold changes to the camp screen until I post RELEASED. — Claude
