@@ -12,6 +12,7 @@ const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio:
 const br = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
 const FIGHTS = { one: ['ogre'], two: ['wraith', 'skeleton'], three: ['goblin', 'wolf', 'cultist'], four: ['goblin', 'skeleton', 'wolf', 'cultist'] };
 for (const [tag, foes] of Object.entries(FIGHTS)) {
+  if (process.env.PICKER_ONLY && process.env.PICKER_ONLY !== tag) continue;
   const p = await br.newPage({ viewport: { width: 390, height: 664 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }); p.on('pageerror', (e) => errs.push(e.message));
   await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
   await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); });
@@ -22,6 +23,7 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
   check(`${tag}: the picker opens`, up); if (!up) { await p.close(); continue; }
   const ready = async () => { for (let i = 0; i < 40; i++) { if (await p.evaluate(() => { const b = document.querySelector('.mnc-pick'); return !b || !b.disabled; })) return; await p.waitForTimeout(150); } }; // the move dice roll for two seconds before Attack wakes
   await ready(); await p.waitForTimeout(400);
+  check(`${tag}: picker offers Attack & Roll and hides the old target prompt`, await p.evaluate(() => document.querySelector('.mnc-pick')?.textContent === 'Attack & Roll' && getComputedStyle(document.querySelector('.b3-caption')).visibility === 'hidden'));
   // the visible strip of a card: its right edge past the card in front of it (the last card: its middle right)
   const spot = (i) => p.evaluate((i) => { const cs = [...document.querySelectorAll('.mnc-card')]; const r = cs[i].getBoundingClientRect(); const top = cs.find((c) => c.classList.contains('top')).getBoundingClientRect();
     const left = cs[i].classList.contains('top') ? r.left : Math.max(r.left, i > cs.indexOf(cs.find((c) => c.classList.contains('top'))) ? top.right : r.left); return { x: (left + r.right) / 2, y: r.top + r.height * 0.55 }; }, i);
@@ -32,12 +34,12 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
   if (tag === 'two') await p.screenshot({ path: `${OUT}/${tag}-back-card-in-front.png` });
   const uid = await p.evaluate((i) => document.querySelectorAll('.mnc-card')[i].dataset.uid, want);
   const b = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
-  await p.touchscreen.tap(b.x, b.y); await pump(1); await p.waitForTimeout(600);
-  const after = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), plan: !!document.querySelector('.sp-plan'), picked: B.picked, tuid: B.b.enemies[B.target]?.uid, roll: !document.getElementById('b3-roll')?.disabled }; });
-  check(`${tag}: Attack on the back card targets it and goes straight to the battle`, !after.veil && !after.plan && after.picked === true && after.tuid === uid && after.roll, JSON.stringify({ uid, ...after }));
-  if (tag === 'two') await p.screenshot({ path: `${OUT}/${tag}-battle.png` });
+  await p.touchscreen.tap(b.x, b.y);
+  for (let i=0; i<100; i++) { await pump(.3); await p.waitForTimeout(100); if (await p.evaluate(() => { const B=window.QD.B3.battleState; return !B.busy && B.b.phase==='shape' && !!B.b.board; })) break; }
+  const after = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), plan: !!document.querySelector('.sp-plan'), picked: B.picked, tuid: B.b.enemies[B.target]?.uid, phase:B.b.phase, board:!!B.b.board, busy:B.busy }; });
+  check(`${tag}: Attack & Roll targets that monster and rolls the hero dice`, !after.veil && !after.plan && after.picked === true && after.tuid === uid && after.phase==='shape' && after.board && !after.busy, JSON.stringify({ uid, ...after }));
+  if (tag === 'two') { await p.evaluate(() => window.QD.world.stage.step(1)); await p.screenshot({ path: `${OUT}/${tag}-battle.png` }); }
   if (tag === 'two') { // round two: roll, lock in, close the recap; the cards come back with the target on top
-    await p.locator('#b3-roll').click(); for (let i = 0; i < 40; i++) { await pump(0.3); await p.waitForTimeout(200); if (await p.evaluate(() => !window.QD.B3.battleState.busy && window.QD.B3.battleState.b.phase === 'shape')) break; }
     for (let i = 0; i < 6; i++) { if (await p.evaluate(() => { const l = document.querySelector('#b3-lock'); if (l && !l.disabled) { l.click(); return true; } return false; })) break; await pump(0.5); await p.waitForTimeout(250); }
     let r2 = false; for (let i = 0; i < 200 && !r2; i++) { await pump(0.3); await p.waitForTimeout(200); r2 = await p.evaluate(() => { document.querySelector('.dr-ok:not([disabled])')?.click(); return !!document.querySelector('.mnc-veil'); }); }
     const top = await p.evaluate(() => { const B = window.QD.B3.battleState; return { round: B.b.round, head: document.querySelector('.mnc-head')?.textContent, top: document.querySelector('.mnc-card.top')?.dataset.uid, tuid: B.b.enemies[B.target]?.uid, live: B.b.enemies.filter((e) => e.hp > 0).length }; });
@@ -45,9 +47,10 @@ for (const [tag, foes] of Object.entries(FIGHTS)) {
     await ready(); await p.screenshot({ path: `${OUT}/two-round2-cards.png` });
     if (r2 && top.live > 1) { const other = await p.evaluate(() => [...document.querySelectorAll('.mnc-card')].findIndex((c) => !c.classList.contains('top')));
       const o = await spot(other); await p.touchscreen.tap(o.x, o.y); await p.waitForTimeout(350); const ou = await p.evaluate((i) => document.querySelectorAll('.mnc-card')[i].dataset.uid, other);
-      const bb = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await p.touchscreen.tap(bb.x, bb.y); await pump(1); await p.waitForTimeout(400);
-      const sw = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), sheet: !!document.querySelector('.fi-sheet, .foe-sheet, .b3-foeinfo'), tuid: B.b.enemies[B.target]?.uid, roll: !document.getElementById('b3-roll')?.disabled }; });
-      check('round two: Attack on the other card switches the target, straight to the battle', !sw.veil && sw.tuid === ou && sw.roll, JSON.stringify({ ou, ...sw })); }
+      const bb = await p.evaluate(() => { const r = document.querySelector('.mnc-pick').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await p.touchscreen.tap(bb.x, bb.y);
+      for (let i=0; i<100; i++) { await pump(.3); await p.waitForTimeout(100); if (await p.evaluate(() => { const B=window.QD.B3.battleState; return !B.busy && B.b.phase==='shape' && !!B.b.board; })) break; }
+      const sw = await p.evaluate(() => { const B = window.QD.B3.battleState; return { veil: !!document.querySelector('.mnc-veil'), sheet: !!document.querySelector('.fi-sheet, .foe-sheet, .b3-foeinfo'), tuid: B.b.enemies[B.target]?.uid, phase:B.b.phase, board:!!B.b.board, busy:B.busy }; });
+      check('round two: Attack & Roll switches target and rolls once', !sw.veil && sw.tuid === ou && sw.phase==='shape' && sw.board && !sw.busy, JSON.stringify({ ou, ...sw })); }
     // Dave (3 Nov 2026): no recap pops up after a round; the Recap button at the top has it
     const rc = await p.evaluate(() => ({ shown: !!document.querySelector('.rc:not(.rc-inline)'), btn: !!document.querySelector('.rc-again:not([hidden])'), dice: document.querySelectorAll('.fb-mdie').length }));
     check('after a round no recap pops up, the Recap button is there, and no dice sit by the miniatures', !rc.shown && rc.btn && rc.dice === 0, JSON.stringify(rc));

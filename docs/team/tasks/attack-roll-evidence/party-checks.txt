@@ -1,0 +1,1 @@
+PASS local party target selection rolls only the active hero dice {"target":"u88bxr","board":true,"other":false,"hero":"PartyA"}

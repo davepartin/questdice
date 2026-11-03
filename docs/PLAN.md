@@ -1659,3 +1659,7 @@ Built an isolated six-card Ranger preview at `preview/magic-cards/`. Tapping a m
 ## 3 November 2026 — monster target picker spacing
 
 Lifted the target heading and card stack by up to 18 pixels, tapering on short screens, while keeping Attack in its original layout position. Four phone sizes and one to four cards checked with touch; full suite 564/564. Details: `docs/team/tasks/picker-spacing.md`.
+
+## 3 November 2026 — monster picker Attack & Roll
+
+Raised the target heading farther, hid the old target caption while the card picker is up, and changed the selectable action to Attack & Roll: the cards slide away and the chosen hero's real dice roll onto the grid. Read-only inspection remains Close; reduced motion skips the slide. Shared tables await a successful target sync before rolling and reopen target choice on failure. Solo 1–4 monsters, later round, local party, local four-seat network table with failed-aim retry, reduced motion and phone sizes checked; full suite 565/565. Details: `docs/team/tasks/attack-roll.md`.

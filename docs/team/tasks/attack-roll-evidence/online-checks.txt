@@ -1,0 +1,3 @@
+ONLINE BEFORE {"label":"Attack & Roll","busy":false,"phase":"reset","party":true,"net":true,"round":1,"picked":false}
+ONLINE AFTER {"veil":true,"busy":false,"phase":"reset","picked":false,"toast":"Test target sync failure"} ["aim"]
+PASS online target sync failure blocks roll; retry aims then rolls once for active hero

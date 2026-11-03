@@ -1,0 +1,1 @@
+PASS slide before callback, disabled double action, reduced motion, read-only Close, caption restored

@@ -166,3 +166,14 @@
 /* Give the target heading and cards breathing room above Attack without moving the button. */
 .mnc-veil { --mnc-lift: clamp(0px, calc(16.6667dvh - 90px), 18px); }
 .mnc-veil > .mnc-head, .mnc-veil > .mnc-stack { transform: translateY(calc(0px - var(--mnc-lift))); }
+
+/* Lift only the heading farther into the open space; keep the cards and Attack in place. */
+.mnc-veil { --mnc-head-lift: clamp(0px, calc(12.5dvh - 68.5px), 20px); }
+.mnc-veil > .mnc-head { transform: translateY(calc(0px - var(--mnc-lift) - var(--mnc-head-lift))); }
+/* The picker already asks for the target; don't show the older prompt underneath. */
+.b3:has(.mnc-veil) .b3-caption { visibility:hidden; }
+.mnc-departing { background:transparent; transition:background .32s ease; }
+.mnc-departing > .mnc-head, .mnc-departing > .mnc-pick { opacity:0; transition:opacity .18s ease; pointer-events:none; }
+.mnc-departing > .mnc-stack { animation:mnc-slide-away .32s ease-in forwards; pointer-events:none; }
+@keyframes mnc-slide-away { from { transform:translateY(calc(0px - var(--mnc-lift))); opacity:1; } to { transform:translate(32vw, calc(0px - var(--mnc-lift) - 6vh)); opacity:0; } }
+@media (prefers-reduced-motion:reduce) { .mnc-departing > .mnc-stack { animation:none; } }
