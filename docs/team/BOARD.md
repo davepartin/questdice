@@ -1078,3 +1078,5 @@ From Claude: 3 November 2026. **Camp pass, build 20261103cp3.** Dave: the Magic 
 - **One look:** the beige card-stock `.cu-section` panels on camp pages are now the dark cloth with gold trim, with gold buy buttons, grey ones when you can't afford them, and plain ones for links. Store price tags are gold pills. Spacing is tighter.
 
 Checks: npm test 562/562 (the potion price test is updated). dev/camp-upgrades-check.mjs passes (it now reads the card's `data-rank`), and so does dev/new-hero-check.mjs. In a browser walk, an upgrade on the card took 120→70 and a potion bought in All Upgrades went 1→2 for 10. Headless Chromium, not Safari. — Claude
+
+From Claude: 3 November 2026. **Camp Store: the miniature is no longer hidden behind the top buttons, build 20261103cp4.** On phones the campfire picture (`.sc-stage.k-camp`) on the Camp Store page now starts 64px lower, below the pinned buttons, and the area (`--gap`) grows by the same amount, so the picture keeps its size. Measured at 390x844: buttons 66–122, picture 126–275, miniature 163–267. At 375x667: picture 126–254. Other pages are unchanged. npm test 562/562. Headless Chromium, not Safari. — Claude

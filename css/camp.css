@@ -721,3 +721,9 @@ button.mc-cov { appearance: none; margin: 0; font: inherit; color: inherit; text
 .mc-card .mc-cov-buy .mc-cp b { color: #2a1800 !important; }
 .mc-card .mc-cov-buy.poor .mc-cp { background: #4a463f; box-shadow: none; }
 .mc-card .mc-cov-buy.poor .mc-cp b { color: #e8dcc4 !important; }
+/* Camp Store page: the campfire picture starts below the pinned buttons, so the miniatures are never hidden behind them (Dave, 3 Nov 2026).
+   The area grows by the same 64px, so the picture keeps its size. */
+@media (max-aspect-ratio: 1085/1000) {
+  .sx-screen.camp:has(.cw-camp.cw-p-camp) { --gap: calc(clamp(190px, 25dvh, 230px) + 64px); }
+  .cw-camp.cw-p-camp .sc-stage.k-camp { top: calc(62px + var(--safe-t, 0px) + 64px); }
+}
