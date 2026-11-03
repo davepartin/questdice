@@ -145,3 +145,18 @@ Gold earned by the end of Act I: 712 · Act II: 2382 · Act III: 5028 (all fight
 The act multiplier (x1.1, x1.2) is not the cause. Two things are: monsters' own gold climbs (10 to 36 each), and the hero's dice gold climbs even faster (20 to 120 a fight) because fights last twice as long and the hero owns bigger dice with more gold faces. Dice gold is more than half of Act II and III income.
 
 **Open for Dave:** make late gold scarcer. Cleanest lever is upgrade prices that rise by act (the shopping list stays the same, each item costs more), not cutting the gold dice that make "going for gold" fun.
+
+## Experiment: cut the monsters' gold in Acts II and III (Dave's idea, 3 November 2026; nothing shipped)
+
+Same bots, 2 campaigns x 5 classes, with the welcome purse in. `ACTGOLD=1,0.5,0.25` (monsters pay half in Act II, a quarter in Act III):
+
+| | Baseline | Kill gold x0.5 / x0.25 |
+|---|---|---|
+| Kill gold a fight, Acts I / II / III | 29 / 52 / 99 | 33 / 23 / 21 (Act I includes the welcome purse) |
+| Gold earned per hero, cumulative | 712 / 2382 / 5028 | 751 / 2119 / 3682 |
+| Shopping list against income | 108% (list is 5445) | **148%**: there is always something left to want |
+| Upgrades bought, Acts I / II / III | 10.6 / 13.3 / 16.6 | 11.8 / 10.8 / 10.7 |
+| Retreats a hero, Act III | 3.3 | 5.2 |
+| Fights won in Act III (all heroes) | 129 of 15 heroes | 62 of 10 heroes: fewer reach the end |
+
+Reading: it does make late gold scarce, but it also starves the hero of the upgrades that keep it alive, so Act III gets harder, not only tighter (small sample; a bot is not a person). A gentler setting such as 1 / 0.75 / 0.5 is the one to test next. Note: `killGold` treats an act multiplier of 0 as 1 (`|| 1`), so the "monsters pay nothing" run (`ACTGOLD=1,0,0`) was really the baseline and is not a result; production never sets 0.
