@@ -600,3 +600,35 @@ button.cst-face{cursor:pointer}
 .cp-rules p { margin: .4rem 0; }
 .cp-reviewed .cp-actions { display: flex; align-items: center; min-height: 54px; }
 .cp-reviewed .cp-actions > :is(.sh-done,.sh-lockline) { margin: 0; width: 100%; }
+
+/* ---- The camp redesign (Dave, 3 Nov 2026: "very clean buttons that stay the same place … when you touch something it creates a modal pop-up").
+   Five equal buttons pinned under the hero chip; every page uses the same dark cloth panels; dice and cards open as pop-ups. */
+.cw-camp .cw-nav5 { position: sticky; top: var(--stick, 0px); z-index: 3; margin: 0 0 .7rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .2rem; }
+.cw-camp .cw-nav5 button { flex: none; min-height: 46px; padding: .15rem .1rem; font: 600 .78rem/1.1 var(--font-body); letter-spacing: 0; white-space: normal; text-wrap: balance; }
+@media (max-width: 380px) { .cw-camp .cw-nav5 button { font-size: .7rem; } }
+/* the die inspector as a pop-up */
+.cw-pop { position: fixed; inset: 0; z-index: 400; display: flex; align-items: flex-start; justify-content: center; padding: calc(.8rem + var(--safe-t, 0px)) .6rem calc(1rem + var(--safe-b, 0px));
+  background: #05070af0; overflow-y: auto; overscroll-behavior: contain; animation: cw-pop-in .18s ease-out; }
+.cw-pop-panel { width: 100%; max-width: 30rem; }
+.cw-pop .cw-inspector { box-shadow: 0 10px 30px #000c, inset 0 0 0 2px #0c151c; }
+@keyframes cw-pop-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cw-pop { animation: none; } }
+/* your other dice: a shelf of die pictures with names, under the dice you carry */
+.cw-shelf { margin: 1rem auto 0; max-width: 330px; }
+.cw-shelf > h3, .cw-page-h, .cw-charms > h3 { margin: 0 0 .45rem; color: #f0d999; font: 600 1.15rem var(--font-story); }
+.cw-shelf > h3 small { color: #c5ad7d; font: 500 .75rem var(--font-body); }
+.cw-shelf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.cw-shelf-die { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 0; padding: 7px 3px 6px; border: 1px solid #8a704d; border-radius: 2px; cursor: pointer;
+  background: radial-gradient(ellipse at 50% 55%, #8b70452b, transparent 70%), linear-gradient(135deg, #302922, #10151b 80%); color: #f5e5c9; box-shadow: inset 0 0 0 2px #0c0c0f, inset 0 5px 13px #000b; }
+.cw-shelf-die .cw-die { width: 64px; height: 64px; max-width: 100%; }
+.cw-shelf-die b { font: 600 .72rem/1.15 var(--font-body); text-align: center; overflow-wrap: anywhere; }
+.cw-shelf-die small { color: #b9a682; font-size: .6rem; text-align: center; }
+.cw-shelf-die.diamond { border-color: #7fd4ff; }
+.cw-shelf-die.diamond.armed { box-shadow: 0 0 0 2px #7fd4ff, inset 0 0 14px #7fd4ff55; }
+.cw-modal-acts { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: center; margin: .6rem 0 .2rem; }
+.cw-modal-acts > * { flex: 1 1 8rem; }
+/* the Magic page: potions, your magic, then the three slots */
+.cw-magicpage { display: flex; flex-direction: column; gap: .9rem; }
+.cw-magicpage .cst-store { padding: 0; }
+.cp-slots button > span { font: 700 1rem var(--font-body); }
+.cw-supplies > .cu-section { margin-bottom: .9rem; }

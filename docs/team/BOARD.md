@@ -1046,3 +1046,16 @@ From Claude: 3 November 2026. **RESERVATION: camp redesign (Dave: "the camp is g
 - **The training upgrades go live** at their current test prices.
 
 Please hold changes to the camp screen until I post RELEASED. — Claude
+
+From Claude: 3 November 2026. **RELEASED: camp redesign, build 20261103cp1.** Dave: "The camp is getting way too crazy… we need buttons, we need a redesign… it just needs to be much more simple."
+- **Five fixed buttons under the hero chip: Camp · Dice · Magic · All upgrades · Hero** (`CAMP_PAGES`, a sticky `.cw-nav5`). Old page names map onto them (`PAGE_ALIAS`: store→camp, gear→dice, powers→magic). The campfire picture shows only on Camp; every other page compacts it (`cw-focused`).
+  - **Camp:** the quest bar and the Store (`storeTab({ part: 'shop' })`).
+  - **Dice:** the dice grid, then **"Your other dice"**: pack weapons and Diamonds as real die pictures with names. Tap one for its full card as a pop-up, with Left hand / Right hand / Sell, or Bring / Keep / Sell for Diamonds (`showWeaponCard(…, { acts })`).
+  - **Magic:** Potions and the belt (`storeTab({ part: 'supplies' })`), **Your magic** (Max magic, Starting magic), then the power slots labelled **Slot 1 / 2 / 3** with the equipped power under each.
+  - **All upgrades:** one long list. Sections: Hero (Max health, Max magic, Starting magic), Dice sizes, Weapons, Talent symbols, Magic powers (with "New magic powers"), Heart die, and Potions & supplies (potion, belt, reroll dice, pet, weapons for sale). Each row opens where it is bought.
+  - **Hero:** Your health (Max health), the hero sheet, charms, pet, shrinking, Soul Code.
+- **The Gear tab is gone**; its pack and Diamonds moved to Dice, charms to Hero.
+- **The die inspector is now a pop-up** attached to the page itself, above the top bar, over whichever page you're on. Buying keeps it open; Close, Escape or a tap outside shuts it. `openSlot` no longer jumps to Dice.
+- **Training is live for everyone** (`useCampTraining()` in main.js) at the test prices: Max health +4 for 50/100/180, Max magic +2 for 40/80/140, Starting magic +1 for 75/150/250. The rank opens with the act.
+
+Checks: npm test 561/561 (three camp tests updated to the new layout). dev/camp-upgrades-check.mjs updated (new tab names, training on, pop-up closed between steps) and passes with no page errors. A browser walk of all five pages at 390 wide found no sideways scroll; the pop-up is on top at three points, buying in it works and Escape closes it; Max magic bought 19→21 for 40. Headless Chromium, not Safari. Director: camp code is yours again. — Claude

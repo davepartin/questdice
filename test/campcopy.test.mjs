@@ -1,8 +1,8 @@
 // Camp copy (Dave, 27 Oct 2026): the camp bar says Store (no Supplies page, no "moved" notice), the Heart card's wording, the talent notes.
 import test from 'node:test'; import assert from 'node:assert/strict'; import fs from 'node:fs';
 const scr = fs.readFileSync(new URL('../js/g3/scrui.js', import.meta.url), 'utf8'); const cb = fs.readFileSync(new URL('../js/g3/cardboard.js', import.meta.url), 'utf8');
-test('camp bar: Store, not Supplies; no migration notice', () => {
-  assert.match(scr, /\['store', 'Store'\]/); assert.doesNotMatch(scr, /\['supplies', 'Supplies'\]/);
+test('camp bar: the five places (Camp, Dice, Magic, All upgrades, Hero); no migration notice', () => {
+  assert.match(scr, /\[\['camp', 'Camp'\], \['dice', 'Dice'\], \['magic', 'Magic'\], \['upgrades', 'All upgrades'\], \['hero', 'Hero'\]\]/); assert.doesNotMatch(scr, /\['supplies', 'Supplies'\]/);
   assert.doesNotMatch(scr, /are sold in the Camp Store now|Open the Camp Store|moved here from Camp/);
 });
 test('Heart card wording and talent notes', () => {
@@ -12,17 +12,16 @@ test('Heart card wording and talent notes', () => {
 test('cp2: no bottom Store strip in camp; the camp picture does not make a layer above the hero chip', () => {
   const css = ['../css/screens.css', '../css/camp.css'].map((f) => fs.readFileSync(new URL(f, import.meta.url), 'utf8')).join('\n');
   assert.doesNotMatch(scr, /sx-storebtn|storeBtn/); assert.doesNotMatch(css, /sx-storebtn/);
-  assert.match(scr, /\['store', 'Store'\]/, 'the Store tab in the camp bar stays');
+  assert.match(scr, /store: 'camp'/, 'the Store lives on the Camp page');
   assert.match(css, /\.cw-camp \.sx-viewport \{ z-index: auto; will-change: auto; \}/);
 });
 
 // cp3: tapping a camp die scrolls its card into view under the pinned header (checked in a browser by dev/camp-cp3.mjs)
-test('camp cp3: openSlot glides the card into view, instant under reduced motion, measuring the pinned header', () => {
+test('camp redesign: a die opens as a pop-up over the page you are on (no scrolling to an inline card)', () => {
   const src = fs.readFileSync(new URL('../js/g3/scrui.js', import.meta.url), 'utf8');
-  const fn = src.slice(src.indexOf('function toCampCard()'), src.indexOf('function openSlot('));
-  assert.match(fn, /behavior: calm \? 'auto' : 'smooth'/); assert.match(fn, /reduced\(\)/); assert.match(fn, /campPinnedBottom\(side\)/);
   const open = src.slice(src.indexOf('function openSlot('), src.indexOf('function refreshSheet('));
-  assert.match(open, /toCampCard\(\)/);
+  assert.doesNotMatch(open, /toCampCard\(\)/); assert.doesNotMatch(open, /campPage = 'dice'/);
+  assert.match(src, /function campPopup\(\)/); assert.match(src, /class: 'cw-pop'/);
   assert.match(src, /function toTalentSymbols\(\)/); // cp1 scroll to the face picker is untouched
 });
 test('cp4: the Camp Store sign carries no purse/price chip; the potions section comes first', () => {

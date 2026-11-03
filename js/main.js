@@ -14,7 +14,7 @@ import { startPwa } from './pwa.js';
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 applyRelease(); // what everyone plays (js/release.js)
-if (PREVIEW && PREVIEW_NAME === 'camp-training') useCampTraining();
+useCampTraining(); // Max health, Max magic and Starting magic at camp, for everyone (Dave, 3 Nov 2026: "upgrade our health max and our magic max for a good cost")
 if (PREVIEW && PREVIEW_NAME === 'heart-upgrades') useHeartUpgrades(); // T23 isolated candidate, separate saves and no cloud
 if (PREVIEW && PREVIEW_NAME === 'weapon-size') { useWeaponSize(); try { WEAPON_SIZE.ladder = await (await fetch(new URL('assets/t17-faces.json', document.baseURI))).json(); } catch { /* no table: the plain card */ } } // T17: weapon size bought at camp, no wear, and the PROPOSED cumulative face table (docs/team/tasks/T17-faces.json); only in preview/weapon-size/ (its own saves), never at the live root
 if (PREVIEW && PREVIEW_NAME === 'weapon-roles') { WEAPON_SIZE.ladder = buildLadder(); WEAPON_SIZE.cumulative = true; } // T17 candidate (PROPOSED, docs/team/tasks/T17-roles.md): numbers 1 to n, every weapon red and blue, a bigger die keeps every earlier face; only in preview/weapon-roles/, never the live root

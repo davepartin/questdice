@@ -20,29 +20,29 @@ const shot=async name=>{await p.evaluate(()=>document.fonts.ready);await p.waitF
 const root='http://127.0.0.1:8221/';
 try {
   await p.goto(root+'?debug&manual&q=low');await p.waitForFunction(()=>window.QD?.world?.stage,null,{timeout:120000});
-  await setup();assert.equal(await p.evaluate(()=>window.QD.E.campTrainingOn()),false);
-  for(const tab of ['dice','powers','gear','store','hero','dice','hero']){
+  await setup();assert.equal(await p.evaluate(()=>window.QD.E.campTrainingOn()),true); // Max health and Max magic are live for everyone (Dave, 3 Nov 2026)
+  for(const tab of ['camp','dice','magic','upgrades','hero','dice','hero']){
     console.log('TAB',tab);await p.locator(`[data-camp-page="${tab}"]`).click();assert.equal(await p.evaluate(()=>window.QD.S.campPage),tab);
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   }
-  await p.locator('[data-camp-page="store"]').click();const store=await p.locator('.cst-store').innerText();
-  assert(!/One fight of help|Sharpening Oil|Borrowed Boots|Rented Tower Shield|War Paint|Strong Tea|Hearty Stew/.test(store));assert(store.includes('Healing potion'));await shot('store');
-  await p.locator('[data-camp-page="dice"]').click();await p.locator('.cu-open').click();assert.equal(await p.locator('.cu-training').count(),0);await shot('overview-live');
+  await p.locator('[data-camp-page="camp"]').click();const store=await p.locator('.cst-store').innerText();
+  assert(!/One fight of help|Sharpening Oil|Borrowed Boots|Rented Tower Shield|War Paint|Strong Tea|Hearty Stew/.test(store));/* (potions moved to the Magic page in the camp redesign) */await shot('store');
+  await p.locator('[data-camp-page="upgrades"]').click();/* (training is live for everyone now) */await shot('overview-live');
   for(const cls of ['knight','bard','wizard','ranger','dwarf']){
     await setup(cls);await p.locator('[data-camp-page="hero"]').click();assert.equal(await p.locator('.herotab').count(),1);
     assert(!(await p.locator('.herotab').innerText()).includes('PROPOSED'));results.push({hero:cls,rendered:true});
   }
-  await setup('wizard');await p.evaluate(()=>{const Q=window.QD;Q.S.hero.campaign.act=3;Q.S.hero.powerLevel={polymorph:2};Q.S.campPage='powers';Q.showCamp();});
+  await setup('wizard');await p.evaluate(()=>{const Q=window.QD;Q.S.hero.campaign.act=3;Q.S.hero.powerLevel={polymorph:2};Q.S.campPage='magic';Q.showCamp();});
   await p.locator('.cp-slots [data-slot="B"]').click();assert((await p.locator('.cp-meta').innerText()).includes('3 magic'));assert((await p.locator('.cp-meta').innerText()).includes('Rank III'));
-  await setup();await p.locator('[data-camp-page="powers"]').click();await p.evaluate(()=>{for(const e of document.querySelectorAll('.sx-side,.sx-camp-scroll'))e.scrollTop=e.scrollHeight;});await p.locator('[data-camp-page="hero"]').click();await shot('hero-after-scroll');
+  await setup();await p.locator('[data-camp-page="magic"]').click();await p.evaluate(()=>{for(const e of document.querySelectorAll('.sx-side,.sx-camp-scroll'))e.scrollTop=e.scrollHeight;});await p.locator('[data-camp-page="hero"]').click();await shot('hero-after-scroll');
   results.push(await p.evaluate(()=>({heroHeaderY:document.querySelector('.ht-id').getBoundingClientRect().top,viewport:innerHeight,scroll:document.querySelector('.sx-camp-scroll').scrollTop,side:document.querySelector('.sx-side').scrollTop})));
   for(const [width,height] of [[390,844],[430,932],[375,667]]){
-    await p.setViewportSize({width,height});await setup();await p.locator('.cw-cell.s-SW').click();await shot(`talent-${width}`);
+    await p.setViewportSize({width,height});await p.evaluate(()=>document.querySelector('.cw-pop')?.click());await setup();await p.locator('.cw-cell.s-SW').click();await shot(`talent-${width}`);
     assert.equal(await p.locator('.tw-symbol').count(),5);assert.equal(await p.locator('.tw-grow summary').count(),1); // the real-dice growth is back (Dave, 3 Nov 2026)
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     const boxes=await p.evaluate(()=>({growth:document.querySelector('.tw-workshop').getBoundingClientRect().toJSON(),palette:document.querySelector('.tw-symbols').getBoundingClientRect().toJSON(),viewport:innerHeight}));/* (the restored TALENTS card sits above the palette, so the palette is reached by scrolling: Dave, 3 Nov 2026) */assert(boxes.growth.top >= 0);results.push({width,height,...boxes});
   }
-  await p.setViewportSize({width:390,height:844});await setup('knight',420);
+  await p.setViewportSize({width:390,height:844});await p.evaluate(()=>document.querySelector('.cw-pop')?.click());await setup('knight',420);
   await p.locator('.cw-cell.s-SW').click();await p.locator('.tw-symbol[data-symbol="magic"]').click();const before=await p.evaluate(()=>window.QD.S.hero.gold);
   await p.locator('.tw-purchase .sh-buy').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),before-10);
   await p.evaluate(()=>{const d=document.querySelector('.tw-grow');if(d)d.open=true;});await p.locator('.tw-grow .sh-buy').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.special.SW),6);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),before-70);
@@ -50,7 +50,7 @@ try {
   // At larger text, controls remain reachable without page width overflow.
   await p.addStyleTag({content:'html{font-size:20px!important}'});await shot('talent-large-text');assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await p.goto(root+'preview/camp-training/?debug&manual&q=low');await p.waitForFunction(()=>window.QD?.world?.stage,null,{timeout:120000});await setup();
-  assert.equal(await p.evaluate(()=>window.QD.E.campTrainingOn()),true);await p.locator('.cu-open').click();await shot('training-preview');
+  assert.equal(await p.evaluate(()=>window.QD.E.campTrainingOn()),true);await p.locator('[data-camp-page="upgrades"]').click();await shot('training-preview');
   assert.equal(await p.locator('.cu-training').count(),3);const hp=await p.evaluate(()=>window.QD.E.maxHpOf(window.QD.S.hero));
   await p.locator('[data-training="health"] button').click();assert.equal(await p.evaluate(()=>window.QD.E.maxHpOf(window.QD.S.hero)),hp+4);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),370);
   await p.locator('[data-training="start"] button').click();await p.locator('[data-training="capacity"] button').click();assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),255);await shot('training-bought');
