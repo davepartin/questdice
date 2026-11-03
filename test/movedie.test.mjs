@@ -26,3 +26,12 @@ test('a monster in play rolls on its grouped die, and remembers the face', () =>
   const e = E.spawnEnemy('skeleton', {}, E.makeRng(3)); assert.deepEqual(e.faces.map((f) => f.n).slice(0, 3), ['Slash', 'Slash', 'Slash']);
   const rng = E.makeRng(11); for (let i = 0; i < 40; i++) { E.rollIntent(e, rng); assert.ok(e.face >= 1 && e.face <= 6); assert.equal(e.intent.n, e.faces[e.face - 1].n); }
 });
+
+
+test('a saved round keeps its current move; its next roll uses grouped faces without breaking move-bag identity', () => {
+  const e = E.spawnEnemy('skeleton', {}, E.makeRng(3)); e.faces = D.MONSTERS.skeleton.faces; e.face = 6; e.intent = { ...e.faces[5] };
+  assert.equal(e.intent.n, 'Slash'); assert.equal(e.face, 6);
+  let calls = 0; E.rollIntent(e, () => { calls++; return .4; });
+  assert.equal(calls, 1); assert.equal(e.face, 3); assert.equal(e.intent.n, 'Slash'); assert.equal(e.faces[2].n, 'Slash');
+  assert.equal(E.groupFaces(e.faces), e.faces, 'already-grouped dice keep their identity');
+});

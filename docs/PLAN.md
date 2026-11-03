@@ -1647,3 +1647,7 @@ Placed a physical pip die on the upper-left corner of each monster miniature car
 ## 3 November 2026 — clearer monster Specials and animated move dice
 
 Made monster Specials explicitly active, inactive or absent, with clearer short descriptions and scrollable, taller cards for short phones. At round start each monster's differently colored die visibly rolls and lands on the authoritative result before its move lights up and target selection becomes available; reduced motion displays the result immediately, and later inspection does not replay the roll. Monster types already have separate face mappings and each rolls independently, so this preserves their existing odds. Details: `docs/team/tasks/monster-card-reveal.md`.
+
+## 3 November 2026 — monster card Special footer
+
+On the team's grouped-dice and two-second-reveal build, anchored the Special at the bottom of each monster card. Active Specials keep their color and highlight; inactive or absent Specials are gray. Short cards scroll. Existing fights keep their current result and adopt grouped faces at the next roll; stable face-array identity preserves the optional move bag. See `docs/team/tasks/monster-special-footer.md`.

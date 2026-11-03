@@ -1,0 +1,1 @@
+PASS active, inactive, absent, bottom placement and four phone sizes; no page errors

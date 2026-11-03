@@ -685,12 +685,13 @@ export function storyScale(heroes, level) {
 }
 export function teamFactor(heroes) { const s = heroes.map(heroStrength); const top = Math.max(...s); return s.reduce((a, x) => a + x, 0) / top; }
 // A monster's move die with identical moves on neighbouring numbers (Dave, 3 Nov 2026: "1–3 Slash", not "1·2·6"). Every move keeps exactly as
-// many faces, so its odds do not change; the order is by first appearance (moves of one name together, each face exactly as it was). A battle already in play keeps the faces it was dealt.
+// many faces, so its odds do not change; the order is by first appearance (moves of one name together, each face exactly as it was). A battle already in play keeps its current roll; faces group when it rolls next.
 const faceKey = (f) => `${f?.n}|${f?.v}`; // the move as a player names it: two Clubs a point apart are both Club
 export function groupFaces(faces) {
   if (!Array.isArray(faces)) return faces; const order = []; const by = new Map();
   for (const f of faces) { const k = faceKey(f); if (!by.has(k)) { by.set(k, []); order.push(k); } by.get(k).push(f); }
-  return order.flatMap((k) => by.get(k));
+  const grouped = order.flatMap((k) => by.get(k));
+  return grouped.every((f, i) => f === faces[i]) ? faces : grouped; // preserve move-bag identity once grouped
 }
 export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null, teamFlat = 0 } = {}, rng) {
   const d = mdef(id, campaign);
@@ -705,6 +706,7 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = nu
   };
 }
 export function rollIntent(e, rng) {
+  e.faces = groupFaces(e.faces); // existing fights switch to grouped faces only at their next roll
   e.face = null; // which face of its move die it rolled this round (1-6; null when the move did not come from the die: a Slam, a Pounce, asleep)
   const sp = SPECIALS.on ? e.special : null;
   if (sp?.id === 'sleeping' && !sp.awake) { e.intent = { n: 'Asleep', v: 'sleep', f: 0, m: 0 }; return e.intent; } // T24: it does nothing until hurt

@@ -68,7 +68,9 @@ function cardFacts(F, specials) {
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
     moveBox, dieBox,
     h('div', { class: 'mnc-facts-line' }, 'Block ', h('b', {}, F.block), ' · Speed ', h('b', {}, F.speed)), // one quiet line (the Special's box speaks for itself)
-    specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null,
+    h('div', { class: `mnc-special-area${specials.some(r => r.classList.contains('on')) ? ' active' : ' inactive'}` },
+      h('div', { class: 'mnc-special-label' }, specials.some(r => r.classList.contains('on')) ? 'Special · Active' : specials.length ? 'Special · Inactive' : 'Special · None'),
+      specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null),
   ].filter(Boolean);
 }
 

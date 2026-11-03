@@ -155,3 +155,11 @@
 .mnc-revealed .mnc-card.facts .mnc-face.on, .mnc-revealed .mnc-card.facts .mnc-row.on { animation: mnc-glow .9s ease-out; }
 @keyframes mnc-glow { 0% { filter: brightness(1.9); transform: scale(1.04); } 100% { filter: none; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .mnc-picture-die, .mnc-face.on, .mnc-row.on { animation: none !important; } }
+
+/* Special abilities stay at the foot of the card, in color only while active. */
+.mnc-special-area { margin-top:auto; padding-top:.3rem; display:flex; flex-direction:column; gap:.2rem; flex-shrink:0; }
+.mnc-special-label { font:800 .56rem/1.15 var(--ui,sans-serif); color:#f4d68e; text-transform:uppercase; letter-spacing:.035em; }
+.mnc-special-area.inactive .mnc-special-label { color:#aaa6a2; }
+.mnc-special-area.inactive .mnc-row { filter:grayscale(1); color:#aaa6a2; }
+.mnc-special-area.inactive .mnc-kw, .mnc-special-area.inactive .mnc-kw b { color:#aaa6a2; }
+.mnc-revealing .mnc-special-area.active .mnc-special-label { color:#aaa6a2; }
