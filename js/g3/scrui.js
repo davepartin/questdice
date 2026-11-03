@@ -1183,32 +1183,26 @@ function campPowers(hero) {
   const tabs = h('div', { class: 'cp-slots', role: 'group', 'aria-label': 'Power slots' }, D.POWER_SLOTS.map((slot) => {
     const eq = lib.find((r) => r.card.slot === slot && r.equipped)?.card;
     return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
-      onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('span', {}, `Slot ${SLOT_NUM[slot]}`), h('small', {}, eq?.name || 'Empty')); // Dave: "magic slot one, slot two, slot three"
+      onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('span', {}, 'Magic Slot'), h('b', {}, String(SLOT_NUM[slot]))); // Dave: "magic slot one, magic slot two, magic slot three"
   }));
   const cards = h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(Math.min(3, rows.length)) }, 'aria-label': `${D.SLOT_NAME[CP.slot]} powers` }, rows.map(r => MC.campChoice(hero, r, {
     glyph: powerGlyph, selected: r.card.id === k.id, status: status(r),
     onSelect: () => { CP.id = r.card.id; refresh(`.cp-library [data-power="${r.card.id}"]`); },
   })));
-  let action, cost = null;
+  // Dave (3 Nov 2026): the three slots, the choices for the slot, then the card, "not all that other data". The card's next rank is its upgrade.
+  let action = null;
   if (row.gate) action = shLock(`Opens at hero level ${row.gate}`);
-  else if (row.equipped) {
-    if (up.next) { cost = up.cost; action = shBuy(hero, { label: `Upgrade to rank ${romans[up.next]}`, cost, ok: up.ok, onBuy: () => { if (HE.upgradePower(hero, k.id)) done(); } }); }
-    else action = shDone('Highest power level');
-  } else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in slot ${k.slot} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
-    h('span', { class: 'sh-buy-l' }, `Equip in slot ${k.slot}`), h('span', { class: 'sh-buy-p' }, 'Free'));
-  else { const learn = E.learnInfo(hero, k.id); cost = learn.cost; action = shBuy(hero, { label: 'Learn & equip', cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
-  const when = k.kind === 'charge' ? '' : `${k.atwill ? 'Once each round' : 'Once per battle'}${k.minRound ? ` · round ${k.minRound}+` : ''}${!k.atwill && k.kind !== 'super' ? ` · recharge for ${D.RECHARGE_COST} magic` : ''}.`;
+  else if (row.equipped) action = null;
+  else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in magic slot ${SLOT_NUM[k.slot]} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
+    h('span', { class: 'sh-buy-l' }, equipped ? `Equip · replaces ${equipped.name}` : 'Equip'), h('span', { class: 'sh-buy-p' }, 'Free'));
+  else { const learn = E.learnInfo(hero, k.id); action = shBuy(hero, { label: equipped ? `Learn & equip · replaces ${equipped.name}` : 'Learn & equip', cost: learn.cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
+  const upgrade = row.equipped && up.next ? () => { if (HE.upgradePower(hero, k.id)) done(); else { sfx.error?.(); toast(up.why === 'Need gold' || hero.gold < (up.cost || 0) ? `Need ${Math.max(0, (up.cost || 0) - hero.gold)} more gold.` : up.why || 'Not yet.'); } } : null;
+  const frogUp = upgrade && k.frogLoad ? shBuy(hero, { label: `Upgrade to rank ${romans[up.next]}`, cost: up.cost, ok: up.ok, onBuy: upgrade }) : null; // (Frog Morph's card has no rank rows)
   return h('div', { class: 'cp-workshop' }, tabs, cards,
-    h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card and camp actions` },
-      h('div', { class: 'cp-meta' }, h('span', {}, status(row)), h('span', {}, `Rank ${romans[level]}`), h('span', {}, ico('spark'), magic(k))),
-      h('div', { class: 'cp-actions' }, action),
-      !row.equipped && !row.gate ? h('p', { class: 'cp-swap-note' }, `${row.learned ? 'Equip' : 'Learning equips'} ${k.name}${equipped ? `, replacing ${equipped.name}` : ''}.`) : null,
-      k.frogLoad && hero.frogMorphRefundGold ? h('p', { class: 'cp-swap-note' }, `${hero.frogMorphRefundGold} gold returned from retired chance upgrades.`) : null,
-      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph })),
-      h('details', { class: 'cp-rules' }, h('summary', {}, 'Card rules'), h('p', {}, campPowerText(k, level)), when ? h('p', {}, when) : null,
-        row.equipped && up.next ? h('p', {}, `Rank ${romans[up.next]}: ${campPowerText(k, up.next)}`) : null),
-      cost != null && hero.gold >= cost ? h('p', { class: 'cw-balance' }, `${hero.gold} gold → ${hero.gold - cost} after purchase`) : null));
-
+    h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card` },
+      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph, onUpgrade: k.frogLoad ? null : upgrade })),
+      action || frogUp ? h('div', { class: 'cp-actions' }, action || frogUp) : null,
+      upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null));
 }
 // Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
 // potions"). Refill buys what the gold allows; Go anyway leaves, and the camp does not ask again this visit.
@@ -1710,7 +1704,7 @@ function hallOfFame(hero) {
     h('div', { class: 'hf-row' }, cell('Total points', r.points.toLocaleString(), 'big'), cell('Battles', r.battles), cell('Best battle', r.best)),
     r.firsts || r.seconds ? h('div', { class: 'hf-row two' }, cell('1st place', r.firsts, 'gold'), cell('2nd place', r.seconds, 'silver')) : h('p', { class: 'fine' }, 'Trophies for 1st and 2nd place are won in party games.'));
 }
-function heroTab({ chips = false } = {}) {
+function heroTab({ chips = false, top = null } = {}) {
   const hero = X.S.hero; const c = D.CLASSES[hero.cls]; const pc = {}; (hero.perks || []).forEach((p) => { pc[p] = (pc[p] || 0) + 1; });
   const log = (X.S.company?.campaign || hero.campaign)?.chronicle || [];
   const need = D.xpToNext(hero.level);
@@ -1721,6 +1715,7 @@ function heroTab({ chips = false } = {}) {
     h('div', { class: 'ht-id' }, emblem(hero.cls, 'lg'), h('div', {}, h('h2', {}, hero.name), h('small', {}, `Level ${hero.level} ${c.name}`))),
     h('div', { class: 'vc-xp' }, h('div', { class: 'vc-bar' }, h('i', { style: { width: `${hero.level >= D.MAX_LEVEL ? 100 : (hero.xp / need) * 100}%` } })), h('small', {}, hero.level >= D.MAX_LEVEL ? 'Max level' : `${hero.xp} / ${need} XP`)),
     heroStats(E.maxHpOf(hero), E.feetSize(hero), { hands: Math.max(hero.strength.W || 4, hero.strength.E || 4), startMagic: E.startMagicOf(hero), magicCap: E.magicCapOf(hero) }),
+    top, // (camp: Max health, Max magic and Starting magic right under the stats they raise)
     hallOfFame(hero),
     anchor('h-diff'), eyebrow('Difficulty'),
     difficultyPicker(hero.difficulty, (id) => { hero.difficulty = id; sfx.select(); X.persist(); X.renderCamp(); }, { locked: !!X.net, compact: true }),
@@ -1786,16 +1781,19 @@ function upgradesOverview(hero) {
     return entry(`Slot ${SLOT_NUM[k.slot]} · ${k.name}`, r.next ? `Rank ${romans[rank]} → ${romans[r.next]}` : `Rank ${romans[rank]}`, r, toPower(k)); });
   powers.push(entry('New magic powers', 'Learn another power for a slot', null, () => goCampPage('magic'), 'Magic'));
   const heart = E.heartUpgrade(hero); const pot = E.potionBuyInfo(hero), belt = E.potionUpgrade(hero), rr = E.rerollDieInfo(hero);
+  const bought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); };
+  const potions = [ // first: you buy potions every camp (Dave, 3 Nov 2026)
+    entry('Healing potion', `Heals ${E.potionHpOf(hero)} · on your belt ${pot.have} of ${pot.max}`, { cost: pot.price, ok: pot.ok, why: pot.why === 'Belt full' ? 'Belt full' : '' }, () => { if (HE.buyPotion(hero)) { sfx.coin?.(); bought(); } else toast(pot.why === 'Belt full' ? 'Your belt is full.' : 'Not enough gold.'); }, pot.why === 'Belt full' ? 'Full' : 'Buy', 'assets/cards/utilities/potion-printed.webp'),
+    entry('Potion belt', belt.next ? `${belt.cur} → ${belt.next} potions` : `${belt.cur} potions · biggest belt`, belt.next ? belt : null, () => { if (belt.next && HE.upgradePotions(hero)) bought(); else toast(belt.why?.startsWith('Level') ? `Needs ${belt.why}.` : belt.next ? 'Not enough gold.' : 'Your belt is as big as it gets.'); }, belt.next ? 'Buy' : 'Max', 'assets/cards/utilities/potion-belt.webp')];
   const sections = [
+    ['Potions', 'cu-potions', potions],
     ['Hero', 'cu-hero', [trainingRow(hero, 'health'), trainingRow(hero, 'capacity'), trainingRow(hero, 'start')]],
     ['Dice sizes', 'cu-dice-sizes', dice],
     ['Weapons', 'cu-weapons', [...weapons, entry('Your other dice', `Pack ${hero.bag.length} of ${D.BAG_MAX} · equip, sell, Diamonds`, null, () => goCampPage('dice'), 'Dice')]],
     ['Talent symbols', 'cu-talent-symbols', talents],
     ['Magic powers', 'cu-power-cards', powers],
     (heart.next || heart.why === 'Max rank') ? ['Heart die', 'cu-heart', [entry('Heart rank', heart.next ? `Rank ${hero.heartRank || 1} → ${heart.next}` : 'Highest available rank', heart, () => openSlot('C'))]] : null,
-    ['Potions & supplies', 'cu-equipment-supplies', [
-      entry('Healing potion', `Heals ${E.potionHpOf(hero)} · belt ${pot.have} of ${pot.max}`, { cost: pot.price, ok: pot.ok, why: pot.why === 'Belt full' ? 'Belt full' : '' }, () => goCampPage('magic'), 'Magic'),
-      entry('Potion belt', `${belt.cur} potion slots${belt.next ? ` → ${belt.next}` : ''}`, belt, () => goCampPage('magic'), 'Magic'),
+    ['Supplies', 'cu-equipment-supplies', [
       entry('Reroll dice', `${rr.cur} dice${rr.next ? ` → ${rr.next}` : ''}`, rr, () => goCampPage('dice'), 'Dice'),
       ...[E.petOffer(hero)].filter(Boolean).map(p => entry('Pet companion', D.PETS[p.type].name, { cost: p.price, ok: !p.owned && hero.gold >= p.price, why: p.owned ? 'Already with you' : '' }, () => goCampPage('dice'), 'Dice')),
       entry('Weapons for sale', 'The Camp Store shelf, new every camp', null, () => goCampPage('camp'), 'Store')]],
@@ -1804,8 +1802,8 @@ function upgradesOverview(hero) {
     h('nav', { class: 'cu-index', 'aria-label': 'Upgrade categories' }, sections.map(([name, id]) => h('button', { type: 'button', onclick: tap(() => document.getElementById(id)?.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' })) }, name))),
     ...sections.map(([name, id, kids]) => cuSection(name, kids.filter(Boolean), id)));
 }
-function cuEntry(hero, name, value, r, action, label = 'Open') {
-  return h('div', { class: `cu-entry ${r?.ok ? 'afford' : ''}` },
+function cuEntry(hero, name, value, r, action, label = 'Open', art = null) {
+  return h('div', { class: `cu-entry ${r ? (r.ok ? 'afford' : 'poor') : 'link'} ${art ? 'has-art' : ''}` }, art ? h('img', { class: 'cu-art', src: art, alt: '' }) : null,
     h('div', {}, h('b', {}, name), h('span', {}, value), r?.why && r.why !== 'Need gold' ? h('small', {}, r.why) : null),
     h('button', { type: 'button', disabled: label === 'Train' && !r?.ok, onclick: tap(action), 'aria-label': `${label} ${name}${r?.cost ? `, ${r.cost} gold` : ''}` },
       r?.cost ? priceChip(r.cost, { poor: hero.gold < r.cost }) : null, h('span', {}, label)));
@@ -1814,9 +1812,9 @@ function cuEntry(hero, name, value, r, action, label = 'Open') {
 const TRAIN_LABEL = { health: 'Max health', capacity: 'Max magic', start: 'Starting magic' };
 function trainingRow(hero, kind) {
   const r = E.trainingInfo(hero, kind);
-  return h('div', { class: 'cu-training', id: `cu-training-${kind}`, 'data-training': kind }, cuEntry(hero, TRAIN_LABEL[kind] || r.name, r.next == null ? `${r.cur} · fully trained` : `${r.cur} → ${r.next}`, r, () => {
+  return h('div', { class: 'cu-training', id: `cu-training-${kind}`, 'data-training': kind }, cuEntry(hero, TRAIN_LABEL[kind] || r.name, r.next == null ? `${r.cur} · fully trained` : `${r.cur} → ${r.next} · rank ${r.rank + 1} of 3`, r, () => {
     if (HE.buyTraining(hero, kind, r.rank, 'camp')) { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); } else toast(E.trainingInfo(hero, kind).why || 'Open this upgrade again.');
-  }, 'Train'), h('small', {}, `Rank ${r.rank} of 3`));
+  }, 'Train'));
 }
 const cuSection = (title, kids, id) => h('section', { class: 'cu-section', id: id || `cu-${title.toLowerCase().replace(/[^a-z]+/g, '-')}` }, h('h3', {}, title), kids);
 // A die you own but are not holding: its real picture (the weapon's die, highest face up) and its name; tap for its card and what you can do.
@@ -1855,16 +1853,14 @@ function diceExtras(hero) {
   return cuSection('Extras', rows, 'cu-dice-extras');
 }
 function magicPage(hero) {
-  return h('div', { class: 'cw-magicpage' }, storeTab({ part: 'supplies' }),
-    cuSection('Your magic', ['capacity', 'start'].map((k) => trainingRow(hero, k)), 'cu-your-magic'),
-    h('h3', { class: 'cw-page-h' }, 'Magic slots'), campPowers(hero));
+  return h('div', { class: 'cw-magicpage' }, campPowers(hero)); // straight to the three slots (Dave, 3 Nov 2026)
 }
 function heroPage(hero) {
   const resting = E.charmsResting();
   const charms = E.charmsOf(hero).length ? h('section', { class: 'cw-charms' }, h('h3', {}, resting ? 'Charms · resting' : 'Charms'),
     resting ? h('p', { class: 'fine' }, 'Charms are switched off for now. Yours are kept safe in your save.') : null,
     h('div', { class: `ch-list ${resting ? 'resting' : ''}` }, E.charmsOf(hero).map((id) => (resting ? charmCard(id, { cls: 'resting', badge: 'Resting' }) : charmCard(id, { actions: [dropBtn(hero, id)] }))))) : null;
-  return h('div', { class: 'cw-supplies' }, cuSection('Your health', [trainingRow(hero, 'health')], 'cu-your-health'), heroTab({ chips: false }), charms, hero.pet ? petCard(hero) : null,
+  return h('div', { class: 'cw-supplies' }, heroTab({ chips: false, top: cuSection('Train your hero', ['health', 'capacity', 'start'].map((k) => trainingRow(hero, k)), 'cu-your-health') }), charms, hero.pet ? petCard(hero) : null,
     h('details', { class: 'cw-shrink' }, h('summary', {}, 'Make a die smaller'), shrinkSection(hero)),
     X.net ? null : btn('Soul Code', () => { const c = X.currentCode(); if (c) X.copyCode(c); }, { kind: 'ghost', icon: 'key' }));
 }

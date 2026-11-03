@@ -17,16 +17,16 @@ test('a new hero leaves home with two potions; what you drink is gone next battl
   assert.equal(E.potionsLeft(next), 1);
 });
 
-test('camp sells potions by the act, never past the belt', () => {
+test('camp sells potions at 10 gold in every act (they heal more each act), never past the belt', () => {
   const hero = E.newHero({ name: 'Bo', cls: 'bard' }); hero.potions = 0; hero.gold = 100;
   assert.equal(E.potionPriceOf(hero), 10); assert.equal(E.potionHpOf(hero), 10);
   assert.ok(E.buyPotion(hero)); assert.ok(E.buyPotion(hero));
   assert.equal(hero.gold, 80); assert.equal(hero.potions, 2);
   assert.equal(E.buyPotion(hero), false, 'the belt holds two');
   hero.campaign.act = 2; hero.potions = 0;
-  assert.equal(E.potionPriceOf(hero), 20); assert.equal(E.potionHpOf(hero), 15);
-  hero.campaign.act = 3; assert.equal(E.potionPriceOf(hero), 30); assert.equal(E.potionHpOf(hero), 20);
-  hero.gold = 25; assert.equal(E.buyPotion(hero), false, 'not enough gold');
+  assert.equal(E.potionPriceOf(hero), 10); assert.equal(E.potionHpOf(hero), 15);
+  hero.campaign.act = 3; assert.equal(E.potionPriceOf(hero), 10); assert.equal(E.potionHpOf(hero), 20);
+  hero.gold = 9; assert.equal(E.buyPotion(hero), false, 'not enough gold');
 });
 
 test('an older save without a potion count arrives with a full belt', () => {

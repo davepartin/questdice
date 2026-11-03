@@ -33,7 +33,7 @@ try {
     assert(!(await p.locator('.herotab').innerText()).includes('PROPOSED'));results.push({hero:cls,rendered:true});
   }
   await setup('wizard');await p.evaluate(()=>{const Q=window.QD;Q.S.hero.campaign.act=3;Q.S.hero.powerLevel={polymorph:2};Q.S.campPage='magic';Q.showCamp();});
-  await p.locator('.cp-slots [data-slot="B"]').click();assert((await p.locator('.cp-meta').innerText()).includes('3 magic'));assert((await p.locator('.cp-meta').innerText()).includes('Rank III'));
+  await p.locator('.cp-slots [data-slot="B"]').click();assert.equal(await p.locator('.cp-card-stage .mc-card').getAttribute('data-rank'),'3'); // (the Magic page shows the card itself now, at its rank: Dave, 3 Nov 2026)
   await setup();await p.locator('[data-camp-page="magic"]').click();await p.evaluate(()=>{for(const e of document.querySelectorAll('.sx-side,.sx-camp-scroll'))e.scrollTop=e.scrollHeight;});await p.locator('[data-camp-page="hero"]').click();await shot('hero-after-scroll');
   results.push(await p.evaluate(()=>({heroHeaderY:document.querySelector('.ht-id').getBoundingClientRect().top,viewport:innerHeight,scroll:document.querySelector('.sx-camp-scroll').scrollTop,side:document.querySelector('.sx-side').scrollTop})));
   for(const [width,height] of [[390,844],[430,932],[375,667]]){

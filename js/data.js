@@ -1170,7 +1170,7 @@ export const REVIVE_HP = 10;
 export const POTION_BELT = { 2: [90, 4] }; // from 2 to 3: [gold, hero level]
 // Healing potions are bought at camp and carried from battle to battle (Dave): what you drink is gone until you buy more.
 // Price and strength grow with the act, so a potion stays worth carrying. A new hero leaves home with POTION_START.
-export const POTION_PRICE = [10, 20, 30];  // gold, Act I / II / III
+export const POTION_PRICE = [10, 10, 10]; // gold, Act I / II / III: 10 everywhere (Dave, 3 Nov 2026: "I think they should be 10 gold"; was 10 / 20 / 30)
 export const POTION_HEAL = [10, 15, 20];   // health, Act I / II / III
 export const POTION_START = 2;
 // How the monsters grow. Health x ACT_HP[act] x (1 + STEP_HP per step); every hit +ACT_FLAT[act] (+1 every three steps).

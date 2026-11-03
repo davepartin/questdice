@@ -638,7 +638,7 @@ button.cst-face{cursor:pointer}
       On a phone they float over the top of the campfire picture on the Camp Store page; a spacer keeps the other pages' content below them. */
 @media (max-aspect-ratio: 1085/1000) {
   .cw-camp .cw-nav5 { position: fixed; top: calc(62px + var(--safe-t, 0px) + 4px); left: .6rem; right: .6rem; z-index: 6; margin: 0; }
-  .cw-camp .cw-nav-space { display: block; height: 64px; }
+  .cw-camp .cw-nav-space { display: block; height: 44px; }
   .cw-camp.cw-p-camp .cw-nav-space { display: none; } /* (the Camp Store page: the buttons float over the top of the picture) */
 }
 .cw-camp .cw-nav5 button { font-size: .72rem; line-height: 1.05; }
@@ -659,3 +659,65 @@ body.sx .modal-card:has(.cw-cardpop) { width: auto; max-width: 100%; max-height:
 .cw-p-camp .cst-zone h2 { color: #f0d999; }
 .cw-p-camp .cst-sub { color: #c5ad7d; }
 .cw-p-camp .cst-counter { background: transparent; box-shadow: none; padding: 0; }
+
+/* ---- One camp look (Dave, 3 Nov 2026: "as you click the tabs it should feel like the same game… we want this to be AAA").
+   Every page uses the same dark cloth panels with gold trim, gold story-font headings, gold buy buttons and grey ones you cannot afford yet.
+   No beige card stock on the camp pages; the cards themselves (weapon, magic, talent) keep their printed look. */
+.cw-camp .cu-overview { gap: .7rem; padding-bottom: .6rem; }
+.cw-camp .cu-title h2 { font-size: 1.3rem; color: #f0d999; }
+.cw-camp .cu-index { gap: .3rem; }
+.cw-camp .cu-index button { min-height: 38px; padding: .25rem .3rem; border: 1px solid #8a704d; border-radius: 3px; background: var(--cw-wood); color: #e8dcc4; font: 600 .72rem var(--font-body); }
+.cw-camp .cu-section { padding: .5rem .7rem .25rem; border: 1px solid #a7854d; border-radius: 4px; background: var(--cw-cloth); box-shadow: inset 0 0 0 2px #0c151c, 0 3px 10px #0007; color: #efe3cb; }
+.cw-camp .cu-section h3 { margin: .1rem 0 .25rem; color: #f0d999; font: 600 1.12rem var(--font-story); letter-spacing: .02em; }
+.cw-camp .cu-entry { grid-template-columns: minmax(0, 1fr) auto; gap: .55rem; padding: .45rem 0; border-top: 1px solid #c6a15a2e; }
+.cw-camp .cu-entry.has-art { grid-template-columns: 46px minmax(0, 1fr) auto; }
+.cw-camp .cu-art { width: 46px; height: 46px; object-fit: cover; border-radius: 4px; border: 1px solid #a7854d; background: #0a0d12; }
+.cw-camp .cu-entry b { color: #fff0d3; font-size: .88rem; }
+.cw-camp .cu-entry > div > span { color: #c9bda5; font-size: .75rem; }
+.cw-camp .cu-entry small { color: #e0a66a; font-size: .7rem; }
+.cw-camp .cu-entry button { min-height: 42px; min-width: 62px; padding: .25rem .45rem; gap: .15rem; color: #31220c; background: linear-gradient(110deg, #efd293, #c89a4e 75%, #e1b86e); border: 1px solid #ffe2a3; border-radius: 3px; box-shadow: inset 0 0 0 1px #87622f, 0 2px 4px #0008; font: 700 .76rem var(--font-body); }
+.cw-camp .cu-entry.poor button { background: #28282e; border-color: #655e55; color: #b5b0a5; box-shadow: none; }
+.cw-camp .cu-entry.link button { background: #ffffff0a; border-color: #8a704d; color: #e8dcc4; box-shadow: none; }
+.cw-camp .cu-training > small { display: block; margin: -.2rem 0 .3rem; color: #9d927e; font-size: .66rem; }
+.cw-workshop > .cu-section { margin: .8rem auto 0; max-width: 330px; }
+.herotab .cu-section { margin: .2rem 0 .6rem; }
+.cw-camp .sx-camp-scroll > .sx-tab { padding-top: 0; }
+
+/* Magic Upgrades: three clear slot buttons, battle-sized choices, then the card */
+.cw-camp .cp-workshop { gap: .55rem; }
+.cw-camp .cp-workshop .cp-slots { gap: .35rem; }
+.cw-camp .cp-workshop .cp-slots button { min-height: 50px; flex-direction: row; justify-content: center; align-items: center; gap: .35rem; padding: .2rem; border: 1.5px solid #a7854d; border-radius: 4px; background: var(--cw-wood); box-shadow: 0 3px 0 #000a, inset 0 0 0 1px #000; color: #e8dcc4; }
+.cw-camp .cp-workshop .cp-slots span { font: 600 .74rem var(--font-body); }
+.cw-camp .cp-workshop .cp-slots b { display: grid; place-items: center; width: 24px; height: 24px; border: 1.5px solid currentColor; border-radius: 50%; font: 800 .85rem var(--font-body); }
+.cw-camp .cp-workshop .cp-slots button.selected { border-color: #ffe1a0; background: var(--cw-cloth); color: #ffe7b5; box-shadow: 0 0 0 1px #ffe1a0, inset 0 0 14px #caa15a40, 0 3px 0 #000a; }
+.cw-camp .cp-workshop .cp-library { padding: 5px; gap: 5px; }
+.cw-camp .cp-workshop .mc-camp-choice { position: relative; height: 62px; min-height: 0; gap: 3px; padding: 4px; }
+.cw-camp .cp-workshop .mc-camp-choice .mc-tile-name { font-size: .68rem; }
+.mc-choice-badge { position: absolute; top: 3px; left: 4px; z-index: 2; font: 800 .58rem/1 var(--font-body, sans-serif); }
+.mc-choice-badge.on { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #3fae5a; color: #fff; box-shadow: 0 0 0 1px #0008; }
+.mc-choice-badge.lock { padding: 2px 4px; border-radius: 99px; background: #000a; color: #e8dcc4; }
+.mc-camp-choice.locked { filter: grayscale(.55) brightness(.8); }
+.cw-camp .cp-detail { padding: 0; border: 0; background: none; box-shadow: none; gap: .4rem; }
+.cw-camp .cp-card-stage { margin: 0; }
+.cw-camp .cp-card-stage .mc-card { margin: 0 auto; }
+.cw-camp .cp-actions { margin: 0; }
+.cp-hint { margin: 0; text-align: center; color: #c9bda5; font: 600 .74rem var(--font-body); }
+/* the card's next rank as its upgrade button */
+button.mc-cov { appearance: none; margin: 0; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.mc-cov-buy { box-shadow: 0 0 0 .6cqi #ffd96a, 0 0 4cqi #ffd96acc !important; animation: mc-buy-glow 1.8s ease-in-out infinite; }
+.mc-cov-buy.poor { box-shadow: 0 0 0 .5cqi #8d8573 !important; animation: none; }
+.mc-buy-tag { position: absolute; top: 50%; right: 17cqi; transform: translateY(-50%); z-index: 3; padding: .5cqi 2.4cqi; border-radius: 99px; background: linear-gradient(#ffe08a, #d19a2a); color: #2a1800; font: 800 3.2cqi/1.2 var(--font-body, sans-serif); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 .6cqi 1.2cqi #000a; white-space: nowrap; }
+.mc-cov-buy.poor .mc-buy-tag { background: #4a463f; color: #e8dcc4; }
+@keyframes mc-buy-glow { 50% { box-shadow: 0 0 0 .6cqi #ffe9a8, 0 0 7cqi #ffd96a !important; } }
+@media (prefers-reduced-motion: reduce) { .mc-cov-buy { animation: none; } }
+/* the Camp Store's price tags as the game's gold price chips, not paper */
+.cw-p-camp .cst-tag { transform: none; padding: 4px 10px; border-radius: 99px; background: linear-gradient(#3a2a18, #1d140c); box-shadow: inset 0 0 0 1.5px #e0b86a, 0 2px 6px #000a; }
+.cw-p-camp .cst-store .cst-tag b { font: 800 16px/1 var(--font-body, Oxanium, sans-serif); color: #ffd98a; }
+.cw-p-camp .cst-store .cst-tag small { font: 700 12px/1 var(--font-body, sans-serif); color: #ffd98a; }
+.cw-p-camp .cst-store .cst-tag.poor, .cw-p-camp .cst-store .cst-tag.poor b { color: #ff8a7a; }
+
+/* the next rank's price is the gold buy button (no label over the row's numbers) */
+.mc-card .mc-cov-buy .mc-cp { align-self: center; justify-content: center; margin: 1cqi 0; padding: 1.2cqi 2.4cqi; border: 0; border-radius: 99px; background: linear-gradient(110deg, #ffe7a6, #d9a548 70%, #f0c873); box-shadow: inset 0 0 0 .45cqi #87622f, 0 .8cqi 1.6cqi #0009; }
+.mc-card .mc-cov-buy .mc-cp b { color: #2a1800 !important; }
+.mc-card .mc-cov-buy.poor .mc-cp { background: #4a463f; box-shadow: none; }
+.mc-card .mc-cov-buy.poor .mc-cp b { color: #e8dcc4 !important; }

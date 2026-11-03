@@ -172,17 +172,17 @@ function campCover(k, level) {
   return coverHint({ ...k, ...(k.grudge ? { grudge: extend(k.grudge) } : {}), ...(k.costLv ? { costLv: extend(k.costLv) } : {}), ...(k.frogPierce ? { frogPierce: extend(k.frogPierce) } : {}) }, level);
 }
 // Presentation only: class library lookup and derived rank/cost; no battle context or purchase callbacks.
-export function campCard(hero, id, { glyph }) {
+export function campCard(hero, id, { glyph, onUpgrade = null }) {
   const k = D.CLASSES[hero.cls]?.cards.find(k => k.id === id);
   if (!k) return null;
   const level = E.powerLevel(hero, id);
-  return card(k, { cls: hero.cls, owner: hero.name, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1 }, glyph);
+  return card(k, { cls: hero.cls, owner: hero.name, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1, onRank: onUpgrade, gold: hero.gold }, glyph);
 }
 export function campChoice(hero, row, { glyph, selected, status, onSelect }) {
   const k = row.card;
   const el = tile({ select: onSelect }, k.id, k.name, glyph(k, 'pw-g'), E.powerCost(k, k.cost, E.powerLevel(hero, k.id)), selected,
-    h('small', { class: 'mc-choice-status' }, status));
-  el.classList.add('mc-camp-choice');
+    row.equipped ? h('span', { class: 'mc-choice-badge on', 'aria-hidden': 'true' }, '✓') : row.gate ? h('span', { class: 'mc-choice-badge lock', 'aria-hidden': 'true' }, `Lv ${row.gate}`) : null);
+  el.classList.add('mc-camp-choice'); if (row.equipped) el.classList.add('equipped'); if (row.gate) el.classList.add('locked');
   el.setAttribute('aria-label', `${k.name}: ${status}. Inspect power.`);
   return el;
 }
@@ -202,9 +202,13 @@ function frogTray(k, p) {
 }
 function card(k, p, glyph) {
   const cur = p.level || 0;
+  // camp (Dave, 3 Nov 2026: "use the card dice covers on the card as the upgrade… make that clear"): the next rank's cover is a gold buy button
+  const cov = (l, ...kids) => { const price = D.POWER_UPGRADE[l - 1]; const buy = typeof p.onRank === 'function' && l === cur + 1;
+    return buy ? h('button', { type: 'button', class: `mc-cov mc-cov-buy${(p.gold ?? 0) < price ? ' poor' : ''}`, 'aria-label': `Upgrade ${k.name} to rank ${LV[l]} for ${price} gold`, onclick: (e) => { e.stopPropagation(); p.onRank(l); } }, ...kids)
+      : h('div', { class: 'mc-cov' }, ...kids); };
   const kick = k.kind === 'scale' ? `${E.scaleStep(k)} magic / die · every round` : k.kind === 'charge' ? 'charge · use · once per round' : `${p.x ?? k.cost} magic · once per round`;
   const lv = (l) => h('div', { class: `mc-lv ${l === cur ? 'act' : ''}` }, h('span', { class: 'mc-rn' }, LV[l]), h('span', { class: 'mc-sy' }, l === cur ? rowBody(k, l, p, cur) : l < cur ? h('span', { class: 'mc-ln mc-had' }, h('b', {}, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]} ✓`), h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))) : null), // mc1: only the hero's level gets room; the others are one slim line
-    l > cur ? h('div', { class: 'mc-cov' }, h('span', { class: 'mc-lvw' }, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]}`, h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
+    l > cur ? cov(l, h('span', { class: 'mc-lvw' }, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]}`, h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
   return h('div', { class: `mc-card${k.frogLoad ? ' mc-frog-morph' : ''}${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id, 'data-rank': cur + 1 }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
     h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(),
     usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
