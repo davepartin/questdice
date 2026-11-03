@@ -1212,7 +1212,7 @@ function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
 function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
 // The monster cards (Grok's js/g3/minicard.js), like a board game's monster cards on the table (Dave, 2 Nov 2026): every fight opens with them
-// (after a boss or elite's title card), and any later round where a monster's Special is live shows them again in place of the old plan board.
+// (after a boss or elite's title card), and each later round shows them again in place of the old plan board.
 // The card on top is your current target; Attack keeps it or switches to the card you brought forward (selectTarget, every targeting rule
 // stays there), then straight to the battle. ?nominicards brings back the old plan board.
 const wantPicker = () => MC.on() && B.b?.round === 1 && B.mcFor !== B.b && alive().length > 0;
@@ -1248,10 +1248,10 @@ function showCards(b = B.b, { top = null } = {}) {
     (uid) => { if (!look && B.b === b && (choosing || uid !== b.enemies[B.target]?.uid)) selectTarget(uid); }); // the same target: nothing to do (a second tap on it would open its sheet)
   if (v) { B.root.append(v); sfx.select?.(); }
 }
-// T24: the round-start look at the monsters: the cards (above), or with ?nominicards Grok's plan board (js/g3/specials.js). Only rounds where a Special is live.
+// The round-start look at the monsters: the cards each round, or the optional legacy plan board.
 function showPlan() {
   B.root?.querySelector('.sp-plan')?.remove();
-  if (MC.on()) { if (SP.planOf(B.b).length) showCards(); return; }
+  if (MC.on()) { showCards(); return; }
   const el = SP.planFor(B.b, { imgOf: (uid) => { const e = B.b?.enemies.find((x) => x.uid === uid); const d = e && (monsterOf(e.id, B.b.hero?.campaign) || D.MONSTERS[e.id]); return d?.img || ''; }, onFight: () => {} });
   if (el) B.root.append(el);
 }

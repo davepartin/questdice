@@ -75,3 +75,9 @@
 .mnc-card.facts .mnc-row:not(.on) { opacity: 1; background: transparent; box-shadow: inset 0 0 0 1px #ffffff2e; }
 .mnc-card.facts .mnc-row:not(.on) .mnc-kw { color: #a99e8c; }
 .mnc-card.facts .mnc-row:not(.on) .mnc-kw b { color: #cdbb98; }
+
+/* The rolled monster move die rests on the miniature, like a board-game piece. */
+.mnc-picture-die { position:absolute; z-index:2; top:.2rem; left:.2rem; width:1.65rem; height:1.65rem; box-sizing:border-box; padding:.24rem; display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr); place-items:center; border:1px solid #8b765d; border-radius:.3rem; background:linear-gradient(145deg,#fffef2,#d8cbb5); box-shadow:0 2px 0 #81705c,0 3px 7px #000b; }
+.mnc-picture-die i { width:.22rem; height:.22rem; border-radius:50%; }
+.mnc-picture-die i.pip { background:#241a15; box-shadow:inset 0 1px 1px #0009; }
+.mnc-picture-die.unrolled { display:grid; place-items:center; font:900 1rem/1 var(--ui,sans-serif); color:#665343; }

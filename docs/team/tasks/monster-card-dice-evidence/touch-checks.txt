@@ -1,0 +1,21 @@
+PASS one: the picker opens 
+PASS one: tapping card 1 of 1 brings it to the front {"x":194.99999237060547,"y":334.5831237792969}
+PASS one: Attack on the back card targets it and goes straight to the battle {"uid":"u56uu6","veil":false,"plan":false,"picked":true,"tuid":"u56uu6","roll":true}
+PASS two: the picker opens 
+PASS two: tapping card 2 of 2 brings it to the front {"x":263.5160026550293,"y":340.59015502929685}
+PASS two: tapping card 1 of 2 brings it to the front {"x":145.39061737060547,"y":334.5831237792969}
+PASS two: Attack on the back card targets it and goes straight to the battle {"uid":"u6aqtt","veil":false,"plan":false,"picked":true,"tuid":"u6aqtt","roll":true}
+PASS round two: the cards come back, the current target on top {"round":2,"head":"Round 2 · your target","top":"u6aqtt","tuid":"u6aqtt","live":2}
+PASS round two: Attack on the other card switches the target, straight to the battle {"ou":"u5kgx3","veil":false,"sheet":false,"tuid":"u5kgx3","roll":true}
+PASS three: the picker opens 
+PASS three: tapping card 3 of 3 brings it to the front {"x":294.1875,"y":340.7379333496094}
+PASS three: tapping card 2 of 3 brings it to the front {"x":194.98436737060547,"y":340.4328125}
+PASS three: tapping card 1 of 3 brings it to the front {"x":95.7968692779541,"y":335.53147277832034}
+PASS three: Attack on the back card targets it and goes straight to the battle {"uid":"u7a0ps","veil":false,"plan":false,"picked":true,"tuid":"u7a0ps","roll":true}
+PASS four: the picker opens 
+PASS four: tapping card 4 of 4 brings it to the front {"x":311.578125,"y":340.87597961425786}
+PASS four: tapping card 3 of 4 brings it to the front {"x":233.84375,"y":340.59015502929685}
+PASS four: tapping card 2 of 4 brings it to the front {"x":156.10938262939453,"y":340.59015502929685}
+PASS four: tapping card 1 of 4 brings it to the front {"x":78.39061737060547,"y":340.87597961425786}
+PASS four: Attack on the back card targets it and goes straight to the battle {"uid":"u899h9","veil":false,"plan":false,"picked":true,"tuid":"u899h9","roll":true}
+PASS no page errors 

@@ -1,0 +1,7 @@
+# Monster card move dice — 3 November 2026
+
+Dave asked for a die in the top-left of the miniature image and for each monster's rolled number to highlight its move before target choice. Each facts card now shows an ivory d6 with black pips matching that monster's engine-selected move face. The matching move row stays illuminated; other rows stay subdued. A forced move without a die roll has a neutral die space and its own move panel, rather than displaying a fake face. The die and card have accessible roll descriptions. The engine does not roll again to draw the card.
+
+The cards open at fight start after any title and at the start of each subsequent round, including rounds with no live Special. The current target starts on top; the player can bring another card forward and choose Attack. A card opened after a roll or with a target locked stays read-only. The optional `?nominicards` legacy plan flow remains available. Existing battle board dice, monster Specials and Frog Morph are retained.
+
+Validation: `npm test` 558/558. `dev/minicard-move-check.mjs` checks all six pip faces, matching highlight, neutral forced move and 24 layouts at 390×844, 430×932, 375×667 and 375×548. Real touchscreen picker/round flow checks in `dev/minicard-taps.mjs` and `dev/minicard-round-check.mjs`; headless Chromium, not Safari. The real target picker was visually inspected: [screenshot](monster-card-dice-evidence/target-picker.webp).

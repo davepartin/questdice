@@ -47,13 +47,20 @@ export function demoData(enemies) {
 // The move die (Dave, 2 Nov 2026): every monster rolls a d6 against its six faces each round. The face it rolled is coloured in; the rest are
 // outlined, with their numbers, so the odds can be read. A move that did not come from the die (a Slam it wound up, asleep) shows above it.
 const nums = (xs) => (xs.length > 1 && xs.every((x, i) => !i || x === xs[i - 1] + 1) ? `${xs[0]}–${xs[xs.length - 1]}` : xs.join('·'));
+// A physical d6 sits on each miniature; forced moves have no rolled face.
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+function moveDie(face, move) {
+  const pips = PIPS[face];
+  return h('span', { class: `mnc-picture-die${pips ? '' : ' unrolled'}`, role: 'img', 'aria-label': pips ? `Move die rolled ${face}` : `No move die roll${move ? `: ${move}` : ''}` },
+    ...(pips ? Array.from({ length: 9 }, (_, i) => h('i', { class: pips.includes(i) ? 'pip' : '' })) : [h('b', {}, move === 'SLEEP' ? 'Z' : '–')]));
+}
 function cardFacts(F, specials) {
   const pct = Math.max(0, Math.min(100, (100 * F.hp) / Math.max(1, F.maxHp)));
   const m = F.move; const D6 = F.die; const fromDie = !!(D6?.rolled && D6.rows.some((r) => r.lit));
   const moveBox = m && !fromDie ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
     h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null), m.line ? h('div', { class: 'mnc-move-line' }, m.line) : null) : null;
   const dieBox = D6?.rows?.length ? h('div', { class: 'mnc-die' },
-    h('small', { class: 'mnc-die-head' }, fromDie ? ['Move die · rolled ', h('b', { class: 'mnc-pip' }, String(D6.rolled))] : m ? 'Move die · rolls again next round' : 'Move die · d6 each round'),
+    h('small', { class: 'mnc-die-head' }, fromDie ? 'Move die · this round'  : m ? 'Move die · rolls again next round' : 'Move die · d6 each round'),
     ...D6.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
       h('div', { class: 'mnc-face-main' }, h('span', { class: 'mnc-n' }, nums(r.nums)), HK.icon(r.icon || 'atk'), h('b', {}, r.word), r.dice ? h('span', { class: 'mnc-dice' }, r.dice) : null),
       r.lit && m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null))) : null;
@@ -85,9 +92,9 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
     // Does it block, with what? How fast is it? Is its Special on? (battle3d's facts(e) reads the same numbers as the plaque.)
     const F = facts?.(e); const body = F ? cardFacts(F, rows.filter((r) => r.dataset.power !== 'fights')) : [h('div', { class: 'mnc-stats' }, ...stats.map(([k, v]) => h('span', {}, h('i', {}, k), String(v)))), h('div', { class: 'mnc-rows' }, ...rows)];
     const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg`, 'data-uid': e.uid, role: 'button', tabindex: '0',
-      'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
+      'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. ${F.die?.rolled ? `Move die rolled ${F.die.rolled}. ` : ''}This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
       onclick: () => { sel = i; paint(); } },
-      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), h('span', { class: 'mnc-tag' }, M.tag)),
+      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word) : null, h('span', { class: 'mnc-tag' }, M.tag)),
       h('div', { class: 'mnc-title' }, e.name), ...body);
     stack.append(card);
   });
