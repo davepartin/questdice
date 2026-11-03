@@ -449,7 +449,7 @@ export function create(opts = {}) {
       eyebrow('Wields'),
       h('div', { class: `ci-weapons n${wset.length}` }, wset.map((id) => weaponCard({ uid: `c-${id}`, id, rarity: 0 }, { compact: true, money: { label: '', value: 0 } }))),
       eyebrow('Magical powers'),
-      h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.powerCost(k, k.cost, E.powerLevel(hero, k.id))), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, campPowerText(k, E.powerLevel(hero, k.id)))))),
+      h('div', { class: 'ci-cards' }, c.cards.filter((k) => k.start).map((k) => h('div', { class: 'ci-card' }, h('span', { class: 'cc-cost' }, String(E.powerCost(k, k.cost, 0)), ico('spark')), h('b', {}, h('i', { class: `ci-slot s-${k.slot}` }, k.slot), ` ${k.name}`), h('small', {}, campPowerText(k, 0))))),
       h('p', { class: 'fine' }, `Three more powers to learn at camp, one for each slot, including a super at level 5.`));
   };
   const loaded = T?.hero || null;
