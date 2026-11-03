@@ -48,9 +48,10 @@ test('all six faces use each hero rank, white symbols only, hush and fixed d6', 
     assert.equal(E.sidesOf(h, 'C'), 6);
     for (const [i,sym] of ['heal','pierce','magic','gold'].entries()) {
       const b = board(i+1,i+1); const out = E.evaluate(h,b);
-      assert.equal(out.heartBoost.n, 4*(rank+1)); assert.equal(out.heartBoost.sym,sym);
+      const k = sym === 'gold' ? 8 : 4; // heart 4 (gold) pays on the weapon track: +4/+6/+8 a match (Dave, 3 Nov 2026)
+      assert.equal(out.heartBoost.n, k*(rank+1)); assert.equal(out.heartBoost.sym,sym);
       const hush = E.evaluate(h,b,{hushed:true}); assert.equal(hush.heartBoost, undefined);
-      assert.equal(out[sym]-hush[sym],4*(rank+1));
+      assert.equal(out[sym]-hush[sym],k*(rank+1));
       assert.equal(E.evaluate(h,board(((i+1)%4)+1,i+1)).heartBoost,undefined);
     }
     for (const hv of [5,6]) {
@@ -63,7 +64,7 @@ test('all six faces use each hero rank, white symbols only, hush and fixed d6', 
   for(const hv of [1,2,3,4]) {
     const sym=['heal','pierce','magic','gold'][hv-1];
     const out=E.evaluate(h,board(10,hv));
-    assert.equal(out.heartBoost?.n || 0,D.FACE_PAY[10][sym] ? 16 : 0);
+    assert.equal(out.heartBoost?.n || 0,D.FACE_PAY[10][sym] ? (sym === 'gold' ? 32 : 16) : 0); // rank 3: +4 a match, gold +8
   }
 });
 test('authoritative camp operations reject battle, skipped ranks, duplicates and other players stay untouched', () => {
@@ -108,4 +109,8 @@ test('turning is still three magic, once per round, and hush stops it', () => {
   const h=hero();h.heartRank=3;const b=E.newBattle(h,E.questsFor(h)[0],E.makeRng(5));E.startRoll(b);b.magic=10;b.board.C.v=2;
   assert.equal(E.nudge(b,1),true);assert.equal(b.magic,7);assert.equal(E.nudge(b,1),false);
   delete b.board.nudged;b.board.C.hushed=true;assert.equal(E.nudge(b,1),false);assert.equal(b.magic,7);
+});
+
+test('live heart (no upgrades): hearts 1-3 add +2 a match, heart 4 adds +4 gold a match (Dave, 3 Nov 2026)', async () => {
+  const D = await import('../js/data.js'); assert.deepEqual(D.HEART_AMP, [2, 2, 2, 4]); assert.equal(D.HEART_COLOR_BONUS, 4);
 });

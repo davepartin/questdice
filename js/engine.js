@@ -540,7 +540,7 @@ export function evaluate(hero, board, opts = {}) {
     const pay = FACE_PAY[val(s)]; if (!pay) continue;
     out.heal += pay.heal || 0; out.pierce += (pay.pierce || 0) + (pay.pierce ? mods.pierceBonus : 0); out.magic += pay.magic || 0; out.gold += pay.gold || 0;
   }
-  // Heart 1-4: +2 more of the same for every matching 1 / 2 / 3 / 4 on head, hands and feet. Heart 5/6 are handled with the lanes.
+  // Heart 1-3: +2 more of the same for every matching heal / pierce / magic face on head, hands and feet; heart 4: +4 gold for each gold face. Heart 5/6 are handled with the lanes.
   const hv = val('C');
   out.heart = hv;
   const hushed = !!(opts.hushed || board.C?.hushed);
@@ -552,8 +552,10 @@ export function evaluate(hero, board, opts = {}) {
     const hit = PAYERS.filter((s) => FACE_PAY[val(s)]?.[sym]); out.heartSlots = hit;
     const matches = hit.length;
     const hs = hasCharm(hero, 'heartstone') ? 2 : 1; // Heartstone: the heart's boost counts double (charm audit: rolling it twice was worth almost nothing)
-    if (matches) out.heartBoost = { sym, n: (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
-    const amp = (EXPERIMENT.heartUpgrades ? heartBoostOf(hero).amp : HEART_AMP[hv - 1]) * matches * hs;
+    // heart 4 (gold) pays on the big track with faces 5 and 6 (+4, growing to +6 and +8 with the Heart upgrades); hearts 1-3 on the small one (Dave, 3 Nov 2026)
+    const per = EXPERIMENT.heartUpgrades ? (hv === 4 ? heartBoostOf(hero).lane : heartBoostOf(hero).amp) : HEART_AMP[hv - 1];
+    if (matches) out.heartBoost = { sym, n: per * matches * hs, slots: hit }; // "Heart Boost" (Dave, Oct 2026): what the heart added, and to which dice
+    const amp = per * matches * hs;
     if (hv === 1) out.heal += amp; else if (hv === 2) out.pierce += amp; else if (hv === 3) out.magic += amp; else out.gold += amp;
     if (matches) out.notes.push(`Heart Boost +${amp} ${sym}`);
   }

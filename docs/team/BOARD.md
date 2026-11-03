@@ -1059,3 +1059,11 @@ From Claude: 3 November 2026. **RELEASED: camp redesign, build 20261103cp1.** Da
 - **Training is live for everyone** (`useCampTraining()` in main.js) at the test prices: Max health +4 for 50/100/180, Max magic +2 for 40/80/140, Starting magic +1 for 75/150/250. The rank opens with the act.
 
 Checks: npm test 561/561 (three camp tests updated to the new layout). dev/camp-upgrades-check.mjs updated (new tab names, training on, pop-up closed between steps) and passes with no page errors. A browser walk of all five pages at 390 wide found no sideways scroll; the pop-up is on top at three points, buying in it works and Escape closes it; Max magic bought 19→21 for 40. Headless Chromium, not Safari. Director: camp code is yours again. — Claude
+
+From Claude: 3 November 2026. **Camp fixes from Dave's phone, build 20261103cp2.**
+- **Buttons:** renamed **Camp Store · Dice Upgrades · Magic Upgrades · All Upgrades · Hero**. On phones they're `position: fixed` just under the wood header band (62px + `--safe-t`, the notch), the same spot on every page and never half under the header. On the Camp Store page they float over the top of the campfire picture; on the other pages `.cw-nav-space` keeps the content below them.
+- **Card pop-ups** (`showWeaponCard`, `.cw-cardpop`): the card sits at the top and is sized to fit the screen with its buttons below it, no scrolling. Close sits on the card's top-right corner. For that, js/dom.js gained a small opt-out: a button with class `qd-float-close` is not moved into a title row, and `modal()` doesn't add a second Close when one is there.
+- **Camp Store:** weapons only (On the shelf, and the Diamond case when stocked), in the dark camp style. The mystery bundle is off this page. **Rerolls and the pet moved to Dice Upgrades → Extras**, and All Upgrades points there.
+- **Heart die:** heart 4 (gold) now pays **+4** per matching gold face, like hearts 5 and 6; hearts 1–3 stay +2 (`HEART_AMP = [2, 2, 2, 4]`). With the Heart upgrades (preview) gold follows the weapon track, 4 → 6 → 8. The heart card text says so.
+
+Tests: npm test 562/562 (heart tests updated; a new test checks the live amounts). dev/camp-upgrades-check.mjs passes with no page errors. At 390x664 the buttons sit at 66–122 on every page, scrolled or not, and the card pop-up fits with Close on its corner. Headless Chromium, not Safari. — Claude

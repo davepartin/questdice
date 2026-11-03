@@ -15,7 +15,7 @@ export function h(tag, attrs, ...kids) {
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
   // Every dismiss action shares one label, hit area and visual treatment.
-  if (tag === 'button' && (/^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim()) || (/^[✕×x]$/i.test(el.textContent.trim()) && /^Close\b/i.test(el.getAttribute('aria-label') || el.title || '')))) {
+  if (tag === 'button' && !el.classList.contains('qd-float-close') && (/^(?:[✕×]\s*)?Close$/i.test(el.textContent.trim()) || (/^[✕×x]$/i.test(el.textContent.trim()) && /^Close\b/i.test(el.getAttribute('aria-label') || el.title || '')))) {
     el.textContent = 'Close'; el.classList.add('qd-close');
   }
   // Build dismiss headers in one place, including forms rebuilt after an action.
@@ -69,7 +69,7 @@ export function closeModal() { const host = $('#modal'); host.replaceChildren();
 export function modal(content, { dismiss = true, closeButton = false } = {}) {
   const host = $('#modal');
   const close = closeModal;
-  if ((dismiss || closeButton) && !content.querySelector('button.qd-close')) content.append(h('button', { type: 'button', onclick: close }, 'Close'));
+  if ((dismiss || closeButton) && !content.querySelector('button.qd-close, button.qd-float-close')) content.append(h('button', { type: 'button', onclick: close }, 'Close')); // (a card's own corner Close counts)
   alignWindowClose(content);
   const card = h('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' }, content);
   const back = h('div', { class: 'modal-back', onclick: (e) => { if (dismiss && e.target === back) close(); } }, card);

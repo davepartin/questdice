@@ -63,7 +63,7 @@ export const FACE_PAY = [null,
   { heal: 3 }, { pierce: 3 }, { magic: 3 }, { gold: 3 },        // 5-8: three of the symbol
   { heal: 2, pierce: 2 }, { magic: 2, gold: 2 }];               // 9, 10: two kinds, two each
 // Heart amplifier: a heart of 1-4 (heal, pierce, magic, gold) adds +2 for every head / hand / feet die showing that symbol (any face).
-export const HEART_AMP = [2, 2, 2, 2];
+export const HEART_AMP = [2, 2, 2, 4]; // heart 1-3 (heal, pierce, magic) +2; heart 4 (gold) +4 like faces 5 and 6 (Dave, 3 Nov 2026: "4, 5 and 6 all do +4")
 // Heart ranks (Dave, 27 Oct 2026): rank 2 costs 200 gold, rank 3 a further 300; no act gate, the player decides when.
 export const HEART_RANKS = Object.freeze([null, Object.freeze({ amp: 2, lane: 4, cost: 0, act: 1 }), Object.freeze({ amp: 3, lane: 6, cost: 200, act: 1 }), Object.freeze({ amp: 4, lane: 8, cost: 300, act: 1 })]);
 export const normalizeHeartRank = (rank) => (Number.isInteger(rank) && rank >= 1 && rank <= 3 ? rank : 1);

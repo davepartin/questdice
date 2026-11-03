@@ -632,3 +632,30 @@ button.cst-face{cursor:pointer}
 .cw-magicpage .cst-store { padding: 0; }
 .cp-slots button > span { font: 700 1rem var(--font-body); }
 .cw-supplies > .cu-section { margin-bottom: .9rem; }
+
+/* ---- Camp fixes from Dave's phone (3 Nov 2026) ----
+   1. The five buttons sit at the very top on every page, pinned just under the wood header band (62px + the notch), never half under it.
+      On a phone they float over the top of the campfire picture on the Camp Store page; a spacer keeps the other pages' content below them. */
+@media (max-aspect-ratio: 1085/1000) {
+  .cw-camp .cw-nav5 { position: fixed; top: calc(62px + var(--safe-t, 0px) + 4px); left: .6rem; right: .6rem; z-index: 6; margin: 0; }
+  .cw-camp .cw-nav-space { display: block; height: 64px; }
+  .cw-camp.cw-p-camp .cw-nav-space { display: none; } /* (the Camp Store page: the buttons float over the top of the picture) */
+}
+.cw-camp .cw-nav5 button { font-size: .72rem; line-height: 1.05; }
+.cw-nav-space { display: none; }
+/* 2. A card pop-up: near the top, Close on the card's top-right corner, its buttons right under it, all on one screen. */
+body.sx .modal-back:has(.cw-cardpop) { place-items: start center; padding: calc(var(--safe-t, 0px) + .4rem) .4rem calc(var(--safe-b, 0px) + .4rem); }
+body.sx .modal-card:has(.cw-cardpop) { width: auto; max-width: 100%; max-height: none; overflow: visible; padding: .3rem; background: transparent; border: 0; box-shadow: none; }
+.cw-modal.cw-cardpop { position: relative; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.cw-modal.cw-cardpop .cw-big { gap: 0; position: relative; width: fit-content; margin: 0 auto; }
+.cw-modal.cw-cardpop .cw-big .cb-card, .cw-modal.cw-cardpop .cw-big .qc17, .cw-modal.cw-cardpop .cw-big .qc { --w: min(92vw, 360px, calc((100svh - 210px - var(--safe-t, 0px) - var(--safe-b, 0px)) * 720 / 1052)); margin: 0 auto; }
+.cw-modal.cw-cardpop .cw-pop-x { position: absolute; top: .2rem; right: .2rem; z-index: 4; min-height: 40px; padding: .3rem .9rem; font: 600 .85rem var(--font-body); cursor: pointer; border-radius: 999px; background: #120d0bee; border: 1px solid #d6b06a; color: #ffe7b5; box-shadow: 0 3px 8px #000a; }
+.cw-modal.cw-cardpop .cw-modal-acts { width: min(92vw, 360px); margin: 0; flex-wrap: nowrap; }
+.cw-modal.cw-cardpop .cw-modal-acts > * { flex: 1 1 0; min-height: 46px; padding-left: .3rem; padding-right: .3rem; font-size: .8rem; white-space: nowrap; }
+/* 3. The Camp Store in the game's own dark look: weapon cards and clear prices on the dark cloth, not a brown board. */
+.cw-p-camp .cst-store { background: var(--cw-cloth, #13202b); border: 1px solid #8a704d; border-radius: 4px; box-shadow: inset 0 0 0 2px #0c151c; margin: .6rem 0 0; }
+.cw-p-camp .cst-sign { background: transparent; box-shadow: none; padding: 4px 8px 6px; border-bottom: 1px solid #c6a15a40; border-radius: 0; }
+.cw-p-camp .cst-sign h2 { font-size: 21px; }
+.cw-p-camp .cst-zone h2 { color: #f0d999; }
+.cw-p-camp .cst-sub { color: #c5ad7d; }
+.cw-p-camp .cst-counter { background: transparent; box-shadow: none; padding: 0; }

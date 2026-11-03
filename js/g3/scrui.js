@@ -309,9 +309,11 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
 }
 // the full card, large, from any row or thumbnail
 function showWeaponCard(inst, money, { real = false, acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
-  const close = modal(h('div', { class: 'form cw-modal' }, h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money)),
-    acts ? h('div', { class: 'cw-modal-acts' }, acts(() => close())) : null,
-    h('div', { class: 'row end' }, btn('Close', () => close(), { kind: 'ghost' }))));
+  // Dave (3 Nov 2026): the card near the top, Close on its top-right corner like the rest of the game, its buttons right under it, no scrolling
+  const close = modal(h('div', { class: 'form cw-modal cw-cardpop' },
+    h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money),
+      h('button', { type: 'button', class: 'cw-pop-x qd-float-close', 'aria-label': 'Close the card', onclick: () => close() }, 'Close')), // (qd-float-close: it stays on the card's corner, not in a title row)
+    acts ? h('div', { class: 'cw-modal-acts' }, acts(() => close())) : null));
 }
 // spoils: the card itself (tap for the large one), then what the weapon is and the buttons below it
 function spoilsView(inst, acts, cls, badge, money) {
@@ -1657,13 +1659,12 @@ function storeTab({ part = 'all' } = {}) { // part: 'supplies' (potions, belt: t
   const sect = (cls, title, sub, ...kids) => h('section', { class: `cst-zone ${cls}` }, h('h2', {}, title), sub ? h('p', { class: 'cst-sub' }, sub) : null, ...kids);
   if (part === 'supplies') return h('div', { class: 'cst-store cst-supplies-only' }, sect('zn-supplies', 'Potions', `Each potion heals ${E.potionHpOf(hero)}. A bigger belt carries more.`, h('div', { class: 'cst-grid two' }, supplies.slice(0, 2))));
   return h('div', { class: 'cst-store' },
-    h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, 'New stock every camp')),
-    part === 'shop' ? sect('zn-supplies', 'Supplies', 'More dice for each reroll. (Potions are on the Magic page.)', h('div', { class: 'cst-grid one' }, supplies.slice(2)))
-      : sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
-    sect('zn-specials', 'Wrapped weapon', 'A surprise weapon to keep in your pack.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))),
+    h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, part === 'shop' ? 'Weapons · new stock every camp' : 'New stock every camp')),
+    part === 'shop' ? null : sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
+    part === 'shop' ? null : sect('zn-specials', 'Wrapped weapon', 'A surprise weapon to keep in your pack.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))), // (the Camp Store page sells weapons only: Dave, 3 Nov 2026)
     sect('zn-shelf', 'On the shelf', 'Weapons. What you buy goes in your pack. Tap a card to see it.', h('div', { class: 'cst-grid two' }, shelf)),
     diamonds.length ? sect('zn-diamond', 'Diamond case', `A Diamond is used up in one fight. You carry at most ${D.DIAMOND.max}.`, h('div', { class: 'cst-diacase' }, diamonds)) : null,
-    pet ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
+    pet && part !== 'shop' ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
 }
 function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
@@ -1750,7 +1751,7 @@ function shrinkSection(hero) {
 }
 // The camp's five places (Dave, 3 Nov 2026: "very clean buttons that stay the same place"): Camp (the fire, the quest, the Store), Dice (your dice
 // and every die you own), Magic (potions, then the three power slots), All upgrades (the long list) and Hero. Old page names map onto these.
-const CAMP_PAGES = [['camp', 'Camp'], ['dice', 'Dice'], ['magic', 'Magic'], ['upgrades', 'All upgrades'], ['hero', 'Hero']];
+const CAMP_PAGES = [['camp', 'Camp Store'], ['dice', 'Dice Upgrades'], ['magic', 'Magic Upgrades'], ['upgrades', 'All Upgrades'], ['hero', 'Hero']]; // (Dave, 3 Nov 2026: the words in the buttons)
 const PAGE_ALIAS = { store: 'camp', gear: 'dice', powers: 'magic', forge: 'dice' };
 function campNavigation(fromBoard) {
   return h('nav', { class: 'cw-nav cw-nav5', 'aria-label': 'Camp sections' }, CAMP_PAGES.map(([id, label]) =>
@@ -1795,8 +1796,8 @@ function upgradesOverview(hero) {
     ['Potions & supplies', 'cu-equipment-supplies', [
       entry('Healing potion', `Heals ${E.potionHpOf(hero)} · belt ${pot.have} of ${pot.max}`, { cost: pot.price, ok: pot.ok, why: pot.why === 'Belt full' ? 'Belt full' : '' }, () => goCampPage('magic'), 'Magic'),
       entry('Potion belt', `${belt.cur} potion slots${belt.next ? ` → ${belt.next}` : ''}`, belt, () => goCampPage('magic'), 'Magic'),
-      entry('Reroll dice', `${rr.cur} dice${rr.next ? ` → ${rr.next}` : ''}`, rr, () => goCampPage('camp'), 'Store'),
-      ...[E.petOffer(hero)].filter(Boolean).map(p => entry('Pet companion', D.PETS[p.type].name, { cost: p.price, ok: !p.owned && hero.gold >= p.price, why: p.owned ? 'Already with you' : '' }, () => goCampPage('camp'), 'Store')),
+      entry('Reroll dice', `${rr.cur} dice${rr.next ? ` → ${rr.next}` : ''}`, rr, () => goCampPage('dice'), 'Dice'),
+      ...[E.petOffer(hero)].filter(Boolean).map(p => entry('Pet companion', D.PETS[p.type].name, { cost: p.price, ok: !p.owned && hero.gold >= p.price, why: p.owned ? 'Already with you' : '' }, () => goCampPage('dice'), 'Dice')),
       entry('Weapons for sale', 'The Camp Store shelf, new every camp', null, () => goCampPage('camp'), 'Store')]],
   ].filter(Boolean);
   return h('div', { class: 'cu-overview' }, h('header', { class: 'cu-title' }, h('h2', {}, 'All upgrades'), h('b', {}, `${hero.gold} gold`)),
@@ -1846,6 +1847,13 @@ function dieShelf(hero) {
   return h('section', { class: 'cw-shelf', 'aria-label': 'Your other dice' }, h('h3', {}, 'Your other dice', h('small', {}, ` · pack ${hero.bag.length} of ${D.BAG_MAX}`)),
     tiles.length ? h('div', { class: 'cw-shelf-grid' }, tiles) : h('p', { class: 'muted empty' }, 'Nothing in your pack yet. Weapons and Diamonds you win or buy appear here.'));
 }
+// More dice for each reroll, and a pet that rolls its own die: dice things, so they live on the Dice Upgrades page.
+function diceExtras(hero) {
+  const rr = E.rerollDieInfo(hero); const pet = E.petOffer(hero); const done = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); };
+  const rows = [cuEntry(hero, 'Reroll dice', rr.next ? `${rr.cur} → ${rr.next} dice in each reroll` : `${rr.cur} dice in each reroll · max`, rr.next ? rr : null, () => { if (HE.buyRerollDie(hero)) done(); else toast(rr.why === 'Need gold' ? 'Not enough gold.' : rr.why || 'Not now.'); }, rr.next ? 'Buy' : 'Max')];
+  if (pet && !pet.owned) rows.push(cuEntry(hero, 'Pet companion', `${D.PETS[pet.type].name} · rolls one more die beside your board`, { cost: pet.price, ok: hero.gold >= pet.price }, () => { if (HE.buyPet(hero)) done(); else toast('Not enough gold.'); }, 'Buy'));
+  return cuSection('Extras', rows, 'cu-dice-extras');
+}
 function magicPage(hero) {
   return h('div', { class: 'cw-magicpage' }, storeTab({ part: 'supplies' }),
     cuSection('Your magic', ['capacity', 'start'].map((k) => trainingRow(hero, k)), 'cu-your-magic'),
@@ -1876,7 +1884,7 @@ function campContent(hero) {
     case 'camp': return h('div', { class: 'cw-storepage' }, campStatus(hero), storeTab({ part: 'shop' }));
     case 'magic': return magicPage(hero);
     case 'hero': return heroPage(hero);
-    default: return h('div', { class: 'cw-workshop' }, diceGrid(hero), dieShelf(hero));
+    default: return h('div', { class: 'cw-workshop' }, diceGrid(hero), dieShelf(hero), diceExtras(hero));
   }
 }
 export function camp(fromBoard) {
@@ -1901,7 +1909,7 @@ export function camp(fromBoard) {
   mountAs('camp', h('div', { class: `sx-split sx-camp cw-camp cw-p-${S.campPage} ${S.campPage !== 'camp' ? 'cw-focused' : ''}` }, h('div', { class: 'sx-viewport' }, topBar(h('div', { class: 'sx-camp-title' }, h('h1', {}, 'Camp')))),
     h('div', { class: 'sx-side' },
       h('div', { class: 'sx-sidetop' }, heroChip(hero)),
-      campNavigation(fromBoard), X.partyBar?.(), seats, perkPanel,
+      campNavigation(fromBoard), h('div', { class: 'cw-nav-space', 'aria-hidden': 'true' }), X.partyBar?.(), seats, perkPanel, // (the space the pinned buttons cover)
       h('div', { class: 'sx-camp-scroll' }, body),
       h('div', { class: 'sx-cta' }, X.net ? X.campCta(btn) : btn('To the road', () => toRoad(hero), { big: true, icon: 'map', cls: 'wide' })))));
   showCampPopup(); // the die pop-up hangs on the page itself, above the top bar and everything else
