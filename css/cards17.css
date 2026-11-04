@@ -28,7 +28,7 @@
 .dz{display:grid;grid-template-columns:repeat(var(--cols,4),var(--dw,15.6cqi));justify-content:center;gap:1.8cqi 1.6cqi}
 .d17{position:relative;margin:0;width:var(--dw,15.6cqi);aspect-ratio:1}
 .d17 img{width:100%;height:100%;display:block;filter:drop-shadow(0 .8cqi .6cqi #2a160699)}
-.d17 .ph17t{position:absolute;inset:8%;display:grid;place-items:center;border-radius:22%;font:800 5cqi/1 'Oxanium',sans-serif;color:#fff6e6;background:linear-gradient(160deg,#d3202a,#7a0a10);box-shadow:inset 0 0 0 .35cqi #fff3,0 .6cqi .6cqi #2a160699}
+.d17 .ph17t{position:absolute;inset:4%;display:grid;place-items:center;border-radius:16%;font:800 5.8cqi/1 'Oxanium',sans-serif;color:#fff6e6;background:linear-gradient(160deg,#d3202a,#7a0a10);box-shadow:inset 0 0 0 .35cqi #fff3,0 .6cqi .6cqi #2a160699}
 .d17.b .ph17t{background:linear-gradient(160deg,#2a6ae0,#0e3490)}
 .pb17{position:absolute;width:7%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:4;filter:drop-shadow(0 .5cqi .6cqi #000c)}.pb17 svg{display:block;width:100%;height:100%}
 /* where the card sits */
@@ -38,7 +38,7 @@
 
 /* Size mode (T17 preview only, EXPERIMENT.weaponSize): one row per size, the faces each size adds, a cardboard dice cover over every size not yet bought. */
 .dice17.rows{padding:.6cqi 1cqi;gap:0;align-items:stretch;justify-content:space-between}
-.dice17.rows .row{position:relative;display:grid;grid-template-columns:9cqi 1fr 9cqi;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.dice17.rows .row:first-child{border-top:0}
+.dice17.rows .row{position:relative;display:grid;grid-template-columns:9cqi 1fr 9cqi;column-gap:0;gap:0;align-items:center;flex:1;border-top:.25cqi solid #6a4a2233}.dice17.rows .row:first-child{border-top:0}
 .dice17.rows .sz{display:flex;flex-direction:column;align-items:center;font:800 4.4cqi/1 'Oxanium',sans-serif;color:#3a2410}.dice17.rows .sz small{font-size:2.2cqi;letter-spacing:.16em;text-transform:uppercase;color:#6a4a22}
 .dice17.rows .dz{display:flex;justify-content:center;gap:2.2cqi}
 .dice17.rows .row.locked .dz{visibility:hidden}
