@@ -93,6 +93,8 @@ export function migrateHero(hero) {
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   migrateWeapons2(hero);
   migrateWeapons3(hero);
+  if (hero.pet) delete hero.pet; // pets are gone (Dave, 4 Nov 2026): an old hero's pet leaves quietly; nothing else changes
+  if (Array.isArray(hero.dice)) hero.dice = hero.dice.filter((d) => d !== 'P');
   migrateStarterDice(hero);
   migrateFrogMorph(hero);
   for (const slot of ['SW', 'SE']) clearAutoTalent(hero, slot); // a still-locked talent die loses the face 4 the old newHero filled in (26 Oct 2026)

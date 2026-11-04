@@ -64,3 +64,11 @@ test('T29: the store and spoils carry only the six; a Diamond is its weapon\'s d
   assert.ok(dm.every((f) => f.fx?.pierce), 'a Diamond Dagger pierces on every face');
   assert.match(D.WEAPONS.axe.tag, /Big swings/);
 });
+test('pets are gone: an old hero with a pet loads without it, and nothing in the game offers one', async () => {
+  applyRelease();
+  const h = E.newHero({ name: 'Petty', cls: 'bard', seed: 2 }); h.pet = { type: 'bunny', size: 6, faces: [['heal'], ['heal'], [], [], []] }; h.dice = [...h.dice, 'P'];
+  SV.migrateHero(h);
+  assert.equal(h.pet, undefined); assert.ok(!h.dice.includes('P')); assert.equal(E.isActive(h, 'P'), false);
+  for (const fn of ['buyPet', 'petOffer', 'growPet', 'addPetSymbol', 'petFace']) assert.equal(E[fn], undefined, `${fn} is gone`);
+  const ev = E.evaluate(h, E.rollBoard(h, E.makeRng(4))); assert.equal(ev.pet, undefined);
+});

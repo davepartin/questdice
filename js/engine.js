@@ -8,7 +8,7 @@ import {
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
-  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
+  LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, BREATH_SHARE, FLEE_REWARD,
   BUNDLE_ODDS, bundlePrice, guardianOf, WEAPONS3,
 } from './data.js';
 import { TRAINING, trainingRanks } from './training.js';
@@ -409,7 +409,7 @@ export function equipPower(hero, id) {
 // ------------------------------------------------------------------------------- dice
 // Which dice are on the hero's board. `dice: null` means all nine (older saves). A two-handed weapon always fills both weapon dice.
 export function isActive(hero, slot) {
-  if (slot === 'P') return !!hero.pet; // the pet die only exists once a pet is bought
+  if (slot === 'P') return false; // the old pet socket (pets are gone, Nov 2026)
   if (!hero.dice) return true;
   if (hero.dice.includes(slot)) return true;
   return slot === 'NE' && WEAPONS[hero.loadout.NW.id].hands === 2;
@@ -452,7 +452,7 @@ export function sidesOf(hero, slot) {
     case 'heart': return 6;
     case 'hand': return hero.strength[slot];
     case 'special': return hero.special[slot];
-    case 'pet': return hero.pet?.size || 4;
+    case 'pet': return 4; // the unused old pet socket (pets are gone)
     default: throw new Error(`bad slot ${slot}`);
   }
 }
@@ -467,43 +467,7 @@ export function specialFace(hero, slot, v) {
   const entry = hero.talent?.[slot]?.[v - 4]; const sym = Array.isArray(entry) ? entry[0] : entry;
   return sym ? [sym] : null;
 }
-// ---- the pet die: face 1 is always blank; faces 2..n hold symbols (hero.pet.faces[v - 2])
-export function petFace(hero, v) {
-  const p = hero.pet; if (!p || v <= 1 || v > p.size) return null;
-  const syms = p.faces?.[v - 2] || []; return syms.length ? syms : null;
-}
-export const petPowerOf = (hero) => PET_POWER[hero.pet?.size || 4] || 2;
-export function newPet(type) { const k = PETS[type].kind; return { type, size: 4, faces: [[k], [k], []] }; }
-// The Camp Store's pet this camp (one a visit, by the campaign seed), unless the hero already has that one.
-export function petOffer(hero) {
-  const c = hero.campaign; if (!c) return null;
-  const types = Object.keys(PETS); const r = makeRng(hashSeed(c.seed, c.act, c.step, 'pet'));
-  const type = types[Math.floor(r() * types.length)];
-  return { type, price: PET_PRICE, owned: !!hero.pet && PETS[hero.pet.type] === PETS[type] };
-}
-export function buyPet(hero) {
-  const o = petOffer(hero); if (!o || o.owned || hero.gold < o.price) return false;
-  hero.gold -= o.price; hero.pet = newPet(o.type); return true;
-}
-export function petTrainInfo(hero) {
-  const p = hero.pet; if (!p) return null;
-  return { faces: p.size - 1, slots: (p.size - 1) * TALENT_PER_FACE, used: p.faces.flat().length, cost: TALENT_SLOT_COST };
-}
-export function addPetSymbol(hero, face, sym) {
-  const p = hero.pet; if (!p || !(TALENT_SYMS[sym] || sym === PETS[p.type].kind)) return false; // a pet's own symbol may be one talents lack (pierce)
-  const t = petTrainInfo(hero); if (face < 0 || face >= t.faces || hero.gold < t.cost) return false;
-  while (p.faces.length < t.faces) p.faces.push([]);
-  const have = p.faces.flat().filter((x) => x === sym).length; const cap = sym === PETS[p.type].kind ? petKindMax(p.size) : TALENT_MAX_SAME;
-  if (p.faces[face].length >= TALENT_PER_FACE || have >= cap) return false;
-  hero.gold -= t.cost; p.faces[face].push(sym); return true;
-}
-export function removePetSymbol(hero, face, idx) { const f = hero.pet?.faces?.[face]; if (!f || idx < 0 || idx >= f.length) return false; f.splice(idx, 1); return true; }
-export function petGrowInfo(hero) {
-  const p = hero.pet; if (!p) return null; const cost = PET_GROW[p.size];
-  if (!cost) return { ok: false, why: 'Max', cur: p.size };
-  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'Need gold', cost, cur: p.size, next: p.size + 2 };
-}
-export function growPet(hero) { const r = petGrowInfo(hero); if (!r?.ok) return false; hero.gold -= r.cost; hero.pet.size = r.next; while (hero.pet.faces.length < r.next - 1) hero.pet.faces.push([]); return true; }
+// (Pets are gone: Dave, 4 Nov 2026, "they add complexity for little payoff". The board keeps its unused P socket so the dice stream is unchanged.)
 // Before 26 Oct 2026 newHero pre-filled face 4 of BOTH talent dice with the class symbol (CLASS_TALENT), so Talent Two opened with it already
 // set (a Wizard's Heal). On a talent die that is still LOCKED the player could not have chosen it: if face 4 holds exactly that class symbol and
 // nothing else is set, it is cleared to an open slot. An unlocked die, or any other choice, is the player's and is never touched. Returns true if cleared.
@@ -618,12 +582,6 @@ export function evaluate(hero, board, opts = {}) {
       else if (wf.arrow === 'frost') { out.frost = AR.frost === 'strength' ? Math.max(out.frost || 0, s) : true; out.notes.push(AR.frost === 'strength' ? `Frost arrow: the target's next blow is ${s} softer` : 'Frost arrow: the target\'s next blow is halved'); }
     }
     out.lanes[key] = L;
-  }
-  // The pet die: each symbol on the face it shows pays the pet's power.
-  if (isActive(hero, 'P') && board.P) {
-    const syms = petFace(hero, val('P')) || []; const pw = petPowerOf(hero);
-    for (const t of syms) out[t] = (out[t] || 0) + pw;
-    out.pet = { syms, power: pw };
   }
   // Heart 5 gives +4 block to every blue weapon lane, heart 6 +4 attack to every red weapon lane.
   if (hv >= 5 && !hushed) {
@@ -2664,7 +2622,7 @@ export function grantCompany(members, amount) {
 export function grantXpEach(members, xp) { for (const m of members) gainXp(m, xp); }
 
 // ------------------------------------------------------------------------------- shrinking dice (Dave)
-// What would be lost: the symbols on the faces that go away (talent dice and the pet's die).
+// What would be lost: the symbols on the faces that go away (talent dice).
 function shrinkLoss(hero, kind, slot, next) {
   if (kind === 'special') { const keep = TALENT_FACES[next] || 1; return (hero.talent?.[slot] || []).slice(keep).flat().length; }
   return 0;
@@ -2673,9 +2631,8 @@ export function downgradeInfo(hero, kind, slot) {
   let size;
   if (kind === 'speed') size = feetSize(hero); else if (kind === 'mind') size = mindSize(hero); else if (kind === 'strength' || kind === 'special') size = hero[kind]?.[slot];
   else if (kind === 'weapon') { if (weaponRollsFull()) return { ok: false, why: 'none' }; /* a bought size stays bought */ ensureTwin(hero); const c = copiesOf(hero, slot); if (!c.length || c[0].id === 'fists') return { ok: false, why: 'none' }; size = weaponSize(c[0]); }
-  else if (kind === 'pet') size = hero.pet?.size;
   const next = PREV_SIZE[size]; if (!size || !next) return { ok: false, why: 'smallest', size };
-  const cost = DOWNGRADE_COST[size]; const lose = kind === 'pet' ? (hero.pet.faces || []).slice(next - 1).flat().length : shrinkLoss(hero, kind, slot, next);
+  const cost = DOWNGRADE_COST[size]; const lose = shrinkLoss(hero, kind, slot, next);
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, size, next, lose };
 }
 export function downgradeDie(hero, kind, slot) {
@@ -2686,6 +2643,5 @@ export function downgradeDie(hero, kind, slot) {
   else if (kind === 'strength') hero.strength[slot] = r.next;
   else if (kind === 'special') { hero.special[slot] = r.next; if (hero.talent?.[slot]) hero.talent[slot] = hero.talent[slot].slice(0, TALENT_FACES[r.next] || 1); }
   else if (kind === 'weapon') for (const w of copiesOf(hero, slot)) w.size = r.next;
-  else if (kind === 'pet') { hero.pet.size = r.next; hero.pet.faces = hero.pet.faces.slice(0, r.next - 1); }
   return true;
 }

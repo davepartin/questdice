@@ -7,7 +7,8 @@ export const ROLE = {
   W: 'hand', E: 'hand', C: 'heart', SW: 'special', SE: 'special',
   P: 'pet', // the pet die, on its own stand left of the board (only when the hero has a pet)
 };
-// PETS (Dave, Oct 2026): the Camp Store sells one pet a camp. A pet is one die beside the board: one face always blank, the
+// PETS: RETIRED (Dave, 4 Nov 2026, "remove pets entirely"). Kept only as the names and colours of the art in assets/pets/;
+// nothing in the game offers, rolls or pays a pet. (Was: the Camp Store sold one pet a camp.) A pet is one die beside the board: one face always blank, the
 // rest hold symbols like a talent die (train them at camp). It starts with two of its own symbol. Each symbol pays the pet's
 // power (2 on a d4, 3 on a d6, 4 on a d8): pets have no hand above them. Each pet wears its symbol's colour (Dave's pictures,
 // assets/pets/<img>.webp, cut from assets/pets/src by dev/petcut.mjs).
@@ -23,11 +24,6 @@ export const PETS = {
 Object.defineProperty(PETS, 'pup', { value: PETS.ember, enumerable: false });
 Object.defineProperty(PETS, 'magpie', { value: PETS.penny, enumerable: false });
 export const SYM_NAMES = { atk: 'Attack', block: 'Block', pierce: 'Pierce', magic: 'Magic', heal: 'Heal', gold: 'Gold' };
-export const PET_PRICE = 90;          // gold, at the Camp Store
-export const PET_POWER = { 4: 2, 6: 3, 8: 4 }; // what each symbol pays, by die size
-export const PET_GROW = { 4: 80, 6: 180 };     // gold to grow the pet die to the next size (d4 -> d6 -> d8)
-export const PET_KIND_MAX = { 4: 4, 6: 6, 8: 8 }; // the pet's own symbol: up to one per side of the die (others twice, like talents), so a bigger pet hits harder
-export const petKindMax = (size) => PET_KIND_MAX[size] || 4;
 // Each side of the body is a "lane": weapon (corner) + strength (hand) + special (lower corner).
 export const LANES = {
   L: { weapon: 'NW', hand: 'W', special: 'SW' },

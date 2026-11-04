@@ -4,9 +4,9 @@ import {
   cardsOf, powerState, castPower, upgradePower, powerUpgradeInfo, recharge, battleRewards, gainXp, takePerk, offerPerks, upgradeDie, questsFor, advanceCampaign,
   rollSlot, canReroll, healCostOf, shopStock, buyItem, activeSlots, unlockDie, drinkPotion, POTION_HP, buyPotion,
   heroPower, equip, sellItem, buyRerollDie, sellDrop, takeDrop, trainWeapon, forgeWeapon, isTwoHanded,
-  buyPet, addPetSymbol, growPet, petGrowInfo, talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink, nudge,
+  talentInfo, addTalent, intentRange, isDamageIntent, drinkPotion as drink, nudge,
 } from '../js/engine.js';
-import { CLASSES, ROLE, QUESTS_PER_ACT, PETS, PET_PRICE, CLASS_TALENT, BAG_MAX } from '../js/data.js';
+import { CLASSES, ROLE, QUESTS_PER_ACT, CLASS_TALENT, BAG_MAX } from '../js/data.js';
 import * as ENGINE from '../js/engine.js';
 import * as DATA from '../js/data.js';
 import * as RELEASE_MOD from '../js/release.js';
@@ -37,8 +37,7 @@ if (typeof process !== 'undefined' && ['PRESS', 'FURY', 'RALLY', 'MEND', 'BAG'].
   if (!env.BAG) ENGINE.PRESSURE.bag = false;
   if (env.FURY_FROM) ENGINE.PRESSURE.fury.from = Number(env.FURY_FROM); if (env.RALLY_EVERY) ENGINE.PRESSURE.rally.every = Number(env.RALLY_EVERY); if (env.RALLY_MOST) ENGINE.PRESSURE.rally.most = Number(env.RALLY_MOST); // try other settings
 }
-// Pets on or off for the bot (QD_PETS=0 turns them off, to compare balance with and without).
-export const SIM = { pets: typeof process === 'undefined' || process.env.QD_PETS !== '0' };
+export const SIM = { pets: false }; // (pets are gone: Dave, 4 Nov 2026)
 
 const baseScore = (ev) => ev.atk + 0.8 * ev.block + 1.1 * ev.pierce + 0.55 * ev.magic + 0.25 * ev.gold + 0.5 * ev.heal;
 // How the bot values a roll. tools/strategy.mjs swaps in other play styles (score(ev, battle)).
@@ -269,7 +268,6 @@ export function botCamp(hero, rng) {
   while (buyPotion(hero)) { /* refill the belt first: potions are bought at camp now */ }
   for (const slot of ['SW', 'NE', 'SE']) unlockDie(hero, slot); // buy the next die as soon as it can be afforded
   if (hero.gold >= 230) buyRerollDie(hero); // the 4th reroll die once there is a little to spare
-  if (SIM.pets) botPet(hero);
   botTalent(hero);
   let acted = true;
   while (acted) {
@@ -323,14 +321,6 @@ function botTalent(hero) {
   }
 }
 
-// Pets: adopt the traveler's pet once there is gold to spare, fill its faces with its own symbol (then gold), grow it later.
-function botPet(hero) {
-  if (!hero.pet) { if (hero.gold >= PET_PRICE + 40) buyPet(hero); if (!hero.pet) return; }
-  const kind = PETS[hero.pet.type].kind;
-  for (let f = 0; f < hero.pet.size - 1 && hero.gold >= 25 + 30; f++) while (hero.gold >= 25 + 30 && addPetSymbol(hero, f, kind)) { /* fill */ }
-  const g = petGrowInfo(hero); if (g?.cost && hero.gold >= g.cost + 60) growPet(hero);
-  for (let f = 0; f < hero.pet.size - 1 && hero.gold >= 25 + 120; f++) addPetSymbol(hero, f, 'gold');
-}
 // Gear sense: a weapon is worth wielding if the hero's average throw gets better with it.
 const gearScore = (h) => { const p = heroPower(h, 160); return p.dmg + 0.8 * p.block + 0.4 * p.heal + 0.4 * p.magic; };
 const cloneH = (h) => JSON.parse(JSON.stringify(h));

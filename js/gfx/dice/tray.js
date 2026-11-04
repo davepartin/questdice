@@ -19,7 +19,6 @@ import { diceStyle, drawIcon } from './faces.js';
 import { weaponIcon } from './art.js';
 import { planRoll, samplePlan, ROLL, ROLL_PLAYBACK } from './roll.js';
 import { paintDecals, paintSigil, CLASS_THEME } from './art.js';
-import { petImg } from '../../g3/pets.js';
 import { createFX, PULSE_COLORS } from './fx.js';
 
 // ------------------------------------------------------------------------------- layout
@@ -366,16 +365,7 @@ export function createTray({ stage, quality = stage?.quality || 'high', auto = t
   tray.setPet = function setPet(type) {
     petStand.visible = !!type; S.P.vacant = !type; if (!type) { petSpr.visible = false; petGlow.visible = false; } else petGlow.material.color.set(D.PETS[type]?.color || '#ffffff');
     if (type === petType) { if (type && petSpr.material.map) { petSpr.visible = true; petGlow.visible = true; } return tray; }
-    petType = type; if (!type || typeof Image === 'undefined') return tray;
-    const img = new Image();
-    img.onload = () => {
-      if (petType !== type) return;
-      const t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true;
-      petW = PET_H * (img.naturalWidth / img.naturalHeight || 1);
-      petSpr.material.map?.dispose?.(); petSpr.material.map = t; petSpr.material.needsUpdate = true; petSpr.visible = !!petType; petGlow.visible = !!petType;
-    };
-    img.src = petImg(type);
-    return tray;
+    void type; petType = null; return tray; // pets are gone (Nov 2026): the stand stays empty
   };
   tray.petHop = () => { petHopV = Math.max(petHopV, 3.2); };
   tray.twoHanded = () => twoHanded;

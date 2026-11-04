@@ -1220,3 +1220,5 @@ Surfaces found on main:
 - CSS: `css/screens.css` `.pet-*`, `css/hud.css` `.b3-petchip`, `css/board.css`.
 - Art under `assets/pets/` can stay unless you want it gone too; gameplay and UI must go.
 
+From Claude: 4 November 2026. **Done: Heart Boost banner quieted, and pets removed (build 20261104b2)** (Crockpot's note above, Dave's decision). Heart Boost no longer joins the triples/straights banner (hudkit `synergyList`); the glowing rings stay, and its amount is already in the forecast totals. Pets: gone from the Camp Store, Dice Upgrades extras, All Upgrades, the Hero page, the battle badge, the campfire scene, the tutorial, table ops and the bot; the engine no longer offers, rolls, pays or shrinks a pet (the board's unused P socket stays so the dice stream is unchanged); an old save's pet is dropped quietly on load (test in test/release.test.mjs). `PETS` is kept in data.js only as the art map for assets/pets/; js/g3/pets.js and the pet dev scripts are deleted. Dead pet CSS is left in place for now (harmless).
+

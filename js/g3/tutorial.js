@@ -24,7 +24,7 @@ const ic = (name) => h('span', { class: `tu-ic t-${name}` }, HK.icon(name));
 // ------------------------------------------------------------------------------------------------ pieces
 // The board pictures are stills of the game's real dice tray (dev/trayshot.mjs): `icons` shows what goes in each socket,
 // `start` a new Knight's first roll, and d-<slot> one die alone (same camera) so a lesson can drop dice in one at a time.
-const SOCK_NAME = { NW: 'Weapon', N: 'Head', NE: 'Weapon 2', W: 'Hand', C: 'Heart', E: 'Hand', SW: 'Talent', S: 'Feet', SE: 'Talent 2', P: 'Pet' };
+const SOCK_NAME = { NW: 'Weapon', N: 'Head', NE: 'Weapon 2', W: 'Hand', C: 'Heart', E: 'Hand', SW: 'Talent', S: 'Feet', SE: 'Talent 2' };
 const SOCK_INFO = {
   NW: ['Left weapon', 'Your weapon’s die. Red faces attack, blue faces block. It adds to the hand below it.'],
   N: ['Head', 'A white die (a d4 to start). Its number pays a symbol: heal, pierce, magic or gold. It is also your wisdom.'],
@@ -73,7 +73,6 @@ const p = (...kids) => h('p', { class: 'tu-p' }, ...kids);
 const counter = (k, label, n) => h('div', { class: `tu-counter fc t-${k}` }, h('span', { class: 'fc-ic' }, HK.icon(k)), h('b', { class: 'fc-n' }, String(n)), h('small', {}, label));
 const sum = (...parts) => h('div', { class: 'tu-sum' }, ...parts);
 const op = (t) => h('span', { class: 'tu-op' }, t);
-const petPic = (type) => h('img', { class: 'tu-pet', src: `assets/pets/${D.PETS[type].img}.webp`, alt: '', draggable: 'false' });
 
 // The board lesson: tap a socket to learn what goes in it.
 function boardExplorer() {
@@ -248,12 +247,11 @@ const LESSONS = [
   {
     title: 'Grow at camp',
     more: true,
-    eyebrow: 'Pets, potions and powers',
-    art: () => h('div', { class: 'tu-camp' },
-      h('div', { class: 'tu-petrow' }, ['ember', 'bristle', 'turtle', 'bunny', 'owl', 'penny'].map((t) => h('span', { class: 'tu-petchip', style: { '--pc': D.PETS[t].color } }, petPic(t))))),
-    say: 'Between fights you rest at camp. Grow your dice, and adopt a pet: it rolls a little die of luck every round, up by your gold and magic.',
+    eyebrow: 'Potions, weapons and powers',
+    art: () => boardPic({ base: 'icons', hi: ['W', 'E', 'NW', 'NE'], tags: { NW: 'Weapon', NE: 'Weapon', W: 'Strength', E: 'Strength' } }),
+    say: 'Between fights you rest at camp. Grow your dice, choose your weapon, and stock up on potions.',
     body: () => [
-      row(petPic('bunny'), 'Pets', `The Camp Store has one each camp (${D.PET_PRICE} gold). Train its die like a talent die and grow it to a d8.`),
+      row(ic('atk'), 'Weapons', 'Dagger, Sword, Axe, Staff, Shield, or Bow and Arrows. Each has its own style. Grow its die and find better metals.'),
       row(ic('heal'), 'Healing potions', `Carry up to ${E.POTIONS}. Drinking one is free and heals ${E.POTION_HP}.`),
       row(ic('magic'), 'Magic powers', 'The purple button in battle. Paid for with magic; learn more at camp.'),
       row(ic('gold'), 'Grow', 'Spend your gold on new dice, a bigger head, hands and feet, and talent symbols.'),

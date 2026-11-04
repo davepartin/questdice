@@ -60,7 +60,7 @@ export function dieSpecs(hero, previewSizes = {}) {
   // the pet die (its own stand left of the board): face 1 is a paw print and always blank; the rest show their symbols like a talent die
   const pet = hero.pet; const kind = pet ? D.PETS[pet.type]?.kind || 'atk' : 'atk';
   const sides = pet ? E.sidesOf(hero, 'P') : 4; const theme = `pet-${kind}`; const labels = [];
-  for (let v = 1; v <= sides; v++) { const syms = pet ? E.petFace(hero, v) : null; labels.push(v === 1 ? { blank: true, paw: true } : syms ? { sym: 'TALENT', syms, text: 'T', corners: syms } : { blank: true }); }
+  for (let v = 1; v <= sides; v++) { const syms = null; /* (pets are gone, Nov 2026: the stand never shows) */ labels.push(v === 1 ? { blank: true, paw: true } : syms ? { sym: 'TALENT', syms, text: 'T', corners: syms } : { blank: true }); }
   out.P = { slot: 'P', role: 'pet', sides, theme, labels, pet: pet?.type || null, key: `${theme}|${sides}|${JSON.stringify(labels)}` };
   return out;
 }

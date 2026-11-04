@@ -1,5 +1,5 @@
 // The places between fights (Dave, Oct 2026): camp, the road and the lobby are painted scenes with the heroes' miniatures
-// standing in them, like the battle table. At camp the company stands around the campfire, and each hero's pet sits at their
+// standing in them, like the battle table. At camp the company stands around the campfire (pets are gone, Nov 2026); each hero's
 // feet. Flat DOM, no WebGL: a full-screen painting (#scene, behind the screen's panels) and a stage of figures inside the
 // screen's `.sx-viewport`, so the panels and the figures share one layout.
 //
@@ -8,7 +8,6 @@
 //   road:  assets/bg/road-act<N>.webp, then the painting of the place where the next fight is
 import { h } from '../dom.js';
 import * as D from '../data.js';
-import { petImg } from './pets.js';
 
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 // A calm place for each act's camp, until the camp paintings arrive.
@@ -47,11 +46,10 @@ const fireEl = () => h('div', { class: 'sc-fire' },
 function figure(hero, slot, { petSide }) {
   const [x, y, flip, s] = slot; const c = D.CLASSES[hero.cls]; const look = D.lookDef(hero) || c;
   const base = look?.imgBase || c?.imgBase || { x: 0.5, y: 0.98, w: 0.7 };
-  const pet = hero.pet ? h('img', { class: 'sc-pet', src: petImg(hero.pet.type), alt: D.PETS[hero.pet.type]?.name || 'pet', draggable: 'false', decoding: 'async' }) : null;
   const img = h('img', { class: 'sc-img', src: look?.img || c?.img || '', alt: hero.name, draggable: 'false', decoding: 'async' });
   const mirror = D.needsFlip(look || c, flip ? 'left' : 'right'); // the figure looks toward the fire (or the road ahead) whichever way it was painted
   const el = h('div', { class: `sc-fig ${mirror ? 'flip' : ''} ${flip ? 'right' : ''}`, style: { '--x': `${x}%`, '--y': `${y}%`, '--s': String(s), '--bx': String(mirror ? 1 - base.x : base.x), '--by': String(base.y), '--delay': `${(x * 7) % 5}s`, zIndex: y > 88 ? 3 : 1 } },
-    h('i', { class: 'sc-shadow' }), img, pet, h('b', { class: 'sc-name' }, hero.name));
+    h('i', { class: 'sc-shadow' }), img, h('b', { class: 'sc-name' }, hero.name));
   void petSide;
   return el;
 }

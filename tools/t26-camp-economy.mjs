@@ -67,7 +67,7 @@ const LIST = [
   ['Talent dice: unlock and grow, both', D.UNLOCK_COST.SW + D.UNLOCK_COST.SE + 2 * steps(D.SPECIAL_STEPS)],
   ['Weapon sizes, two weapons', 2 * sum(Object.values(D.WEAPON_TRAINING.prices))], ['Three magic powers, all ranks', 3 * sum(D.POWER_UPGRADE)],
   ['Max health, Max magic, Starting magic', sum(['health', 'capacity', 'start'].map((k) => sum([...(k === 'health' ? [50, 100, 180] : k === 'start' ? [75, 150, 250] : [40, 80, 140])])))],
-  ['Reroll die, Pet, Potion belt', D.REROLL_DIE_COST + D.PET_PRICE + 90],
+  ['Reroll die, Potion belt', D.REROLL_DIE_COST + 90], // (pets are gone, Nov 2026)
 ];
 const fmt = (x, d = 0) => (Number.isFinite(x) ? x.toFixed(d) : '–'); const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
 let md = `# The camp economy, measured (bots, smart play, live rules + training, ${SKILL}; ${N} campaigns per class; GOLD x${GOLD}${SPEED ? `, SPEED bonus ${SPEED}/round under par` : ''}, training bought ${TRAIN})\n\n`;

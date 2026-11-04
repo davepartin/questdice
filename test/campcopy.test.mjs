@@ -28,7 +28,7 @@ test('cp4: the Camp Store sign carries no purse/price chip; the potions section 
   const css = fs.readFileSync(new URL('../css/camp.css', import.meta.url), 'utf8'); const st = scr.slice(scr.indexOf('function storeTab('), scr.indexOf('function gearTab('));
   const ret = st.slice(st.indexOf("return h('div', { class: 'cst-store' }"));
   assert.doesNotMatch(ret.slice(0, ret.indexOf("sect('zn-supplies'")), /cst-purse|cst-coin|priceTag|priceChip/); assert.doesNotMatch(css, /\.cst-purse/);
-  const order = ['zn-supplies', 'zn-specials', 'zn-shelf', 'zn-diamond', 'zn-odd'].map((z) => ret.indexOf(`'${z}'`)); assert.ok(order.every((n, i) => n > 0 && (i === 0 || n > order[i - 1])), order.join());
+  const order = ['zn-supplies', 'zn-specials', 'zn-shelf', 'zn-diamond'] /* (the pet's 'Odds and ends' shelf is gone, Nov 2026) */.map((z) => ret.indexOf(`'${z}'`)); assert.ok(order.every((n, i) => n > 0 && (i === 0 || n > order[i - 1])), order.join());
   assert.ok(st.indexOf("title: 'Healing potion'") < st.indexOf("title: 'Potion belt'"));
 });
 test('Camp Store page: the campfire picture sits below the pinned buttons (the miniature is never hidden)', () => {

@@ -13,7 +13,6 @@ import * as Coach from '../coach.js';
 import { sfx, music } from '../audio.js';
 import { world } from './world.js';
 import * as THREE from 'three';
-import { petImg } from './pets.js';
 import * as Sess from '../session.js';
 import { createFlat, replayPace, stanceOf, planOf as plaquePlan } from './flat.js';
 import { monsterOf } from '../campaigns.js';
@@ -138,11 +137,8 @@ function buildHud() {
   hud.therm = h('div', { class: 'b3-therm', 'aria-hidden': 'true' }, h('b', { class: 'th-n' }, '0'), h('div', { class: 'th-bar' }, h('i', { class: 'th-fill' })), h('span', { class: 'th-h' }, HK.icon('heart')));
   hud.magchip = h('div', { class: 'b3-magchip', title: 'Magic' }, HK.icon('magic'), h('b', {}, '0'));
   hud.goldchip = h('div', { class: 'b3-magchip b3-goldchip', title: 'Gold' }, HK.icon('gold'), h('b', {}, '0')); // your gold, above the magic (Dave)
-  // the pet (Dave): off the board, a small badge by the gold and magic. Its die rolls once a round with the others and
-  // cannot be rerolled: a bit of luck. Tap it to read what it rolled.
   // the game's difficulty, top right: the same chip as on the quest board (Dave)
   hud.diff = h('span', { class: 'sx-diffchip b3-diffchip' }, HK.icon('skull'), h('b', {}, ''));
-  hud.petchip = h('button', { type: 'button', class: 'b3-petchip', hidden: true, 'aria-label': 'Your pet', onclick: () => petInfo() }, h('img', { class: 'pc-pic', alt: '', draggable: 'false' }), h('span', { class: 'pc-die' }));
   // on phones the line between the battlefield and the dice table is the hero's health bar
   hud.divider = h('div', { class: 'b3-divider', 'aria-hidden': 'true' }, h('span', { class: 'dv-h' }, HK.icon('heart')), h('b', { class: 'dv-n' }, '0'), h('div', { class: 'dv-bar' }, h('i', { class: 'dv-fill' })));
   hud.forecast = HK.forecastStrip();
@@ -165,7 +161,7 @@ function buildHud() {
     if (!btn.closest('.b3-powers') && B.sheetOpen) togglePowers(false);
   }, true);
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
-  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.petchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
+  B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
   B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
@@ -383,31 +379,7 @@ function updateHero() {
     if (g !== was && gc.dataset.ready) { HK.countTo(gb, g, { from: was, dur: 420 }); HK.replay(gc, 'pop'); } else gb.textContent = String(g);
     gc.dataset.ready = '1';
   }
-  renderPet();
 }
-// The pet's badge: its picture and a little die face with what it rolled this round (? before the roll).
-const SYM_TINT = { atk: '#ff4b4b', pierce: '#ff8a1a', block: '#3aa4ff', heal: '#38e87a', magic: '#b46cff', gold: '#ffc21a' };
-function renderPet() {
-  const pc = B.hud?.petchip; if (!pc) return; const hero = B.hero; const pet = hero?.pet; const b = B.b;
-  pc.hidden = !pet; if (!pet) return;
-  pc.style.setProperty('--pc', D.PETS[pet.type]?.color || '#ffffff');
-  const img = pc.querySelector('.pc-pic'); const src = petImg(pet.type); if (img.getAttribute('src') !== src) img.setAttribute('src', src);
-  const v = b.board?.P?.v; const key = b.board ? `${b.round}:${B.active ?? 0}:${v}` : 'wait';
-  if (pc.dataset.k === key) return; pc.dataset.k = key;
-  const die = pc.querySelector('.pc-die');
-  if (!b.board) { die.replaceChildren(h('b', { class: 'pc-q' }, '?')); pc.classList.add('waiting'); return; }
-  pc.classList.remove('waiting');
-  const syms = E.petFace(hero, v) || []; const pw = E.petPowerOf(hero);
-  die.replaceChildren(...(syms.length ? syms.map((k) => h('span', { class: 'pc-sym', style: { color: SYM_TINT[k] || '#fff' } }, HK.icon(k), h('b', {}, `${pw}`)))
-    : [h('b', { class: 'pc-blank' }, '–')]));
-  HK.replay(pc, 'pop'); B.bw?.tray?.petHop?.();
-}
-function petInfo() {
-  const hero = B.hero; const b = B.b; if (!hero?.pet) return; sfx.select?.();
-  const name = D.PETS[hero.pet.type]?.name || 'Your pet';
-  toast(b.board?.P ? `${V.describeDie(hero, 'P', b.board.P.v)} Pets roll once a round; no rerolls.` : `${name} rolls a die of luck with your dice each round. It cannot be rerolled.`);
-}
-
 // The monsters' cards (name, health, what each plans) live under their pieces on the table (flat.js).
 function updatePlate(e, hp) { const shown = hp !== undefined ? hp : (B.staged ? stagedEnemy(e) : null); B.fb?.paintFoe(e, { intents: B.showIntents !== false, targeted: B.picked !== false && B.b.enemies[B.target]?.uid === e.uid, hp: shown }); if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'plate', uid: e.uid, shown: shown ?? e.hp }); }
 // While a company round replays, the table already holds the round's FINAL state, so each plate is painted from the hits played so far: the health

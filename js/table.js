@@ -448,7 +448,7 @@ function push(table, player) {
 // Camp, the whole of it: a change to your own hero, by the name of the rule that makes it (the camp screens call these
 // same rules on their own copy first, so the phone answers at once; the table keeps the real one).
 const HERO_OPS = new Set(['dropCharm', 'buyCharm', 'sellDiamond', 'upgradeHeart', 'upgradeDie', 'upgradePower', 'upgradePotions', 'unlockDie', 'trainWeapon', 'forgeWeapon', 'sellItem', 'removeTalent', 'addTalent', 'downgradeDie',
-  'removePetSymbol', 'addPetSymbol', 'growPet', 'buyPet', 'buyPotion', 'buyRerollDie', 'buyTraining', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond']);
+  'buyPotion', 'buyRerollDie', 'buyTraining', 'buyItem', 'buyTonic', 'buyBundle', 'equip', 'equipPower', 'learnPower', 'armDiamond']);
 function heroOp(table, player, cmd) {
   if (table.phase !== 'camp') return fail('That is done at camp.');
   if (!HERO_OPS.has(cmd.op)) return fail('Unknown camp choice.');
