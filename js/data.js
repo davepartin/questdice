@@ -313,7 +313,7 @@ export const WEAPONS2 = {
 // also carries pierce. A face's number still counts for triples and straights. The Bow and its Arrows are unchanged.
 export const WEAPONS3 = {
   faces: {
-    dagger: { 4: 'R1 R2 R2 R3', 6: 'R1 R2 R3 R3 R3 R4', 8: 'R1 R2 R3 R3 R4 R4 R5 R6', 10: 'R2 R3 R3 R4 R4 R5 R5 R6 R6 R7' },
+    dagger: { 4: 'R1 R1 R2 R3', 6: 'R1 R1 R2 R3 R3 R4', 8: 'R1 R2 R2 R3 R4 R4 R5 R5', 10: 'R1 R2 R3 R4 R4 R5 R5 R6 R6 R7' },
     sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R3 B4 R5', 8: 'R0 B2 R2 R3 B4 R5 R6 R7', 10: 'R0 B2 R2 R3 B4 R5 R6 B6 R8 R9' },
     axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R0 R4 R6 R6', 8: 'R0 R0 R0 R3 R5 R6 R7 R8', 10: 'R0 R0 R0 R0 R5 R6 R7 R8 R9 R10' },
     staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R4 B4 R5', 10: 'B1 R2 B2 R3 B3 R4 B4 R5 B5 R6' },
@@ -321,6 +321,8 @@ export const WEAPONS3 = {
   },
   // the icon each weapon carries: own colour (r attack, b block); the staff carries magic on attack faces and heal on block faces
   sig: { dagger: { r: 'pierce' }, sword: { r: 'loot', pair: 'pierce' }, axe: { r: 'splash' }, staff: { r: 'magic', b: 'heal' }, shield: { b: 'heal' } },
+  // how much each icon pays (the crit on the top face pays this times 1, 2 or 3): a splash and a staff's magic count double so the Axe and the Staff feel their metal
+  per: { axe: 2, staff: 2 },
   because: {
     dagger: 'Steady hits, no blanks, and lots of matching numbers for triples. Pierce slips past armour.',
     sword: 'A bit of everything, a little guard, and gold when it lands. The best face pierces too.',

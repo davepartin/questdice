@@ -143,7 +143,8 @@ function faces3(id, tier, size) {
   const faces = (row[size] || row[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
   const live = faces.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0 && sig[x.f.c]).sort((a, b) => b.f.v - a.f.v || b.k - a.k);
   const n = live.length; const count = Math.min(n, tier >= 2 ? n : tier === 1 ? Math.max(2, Math.ceil(n / 2)) : 1);
-  live.slice(0, count).forEach((x, i) => { x.f.fx = { [sig[x.f.c]]: i === 0 ? [1, 2, 3][tier] : 1 }; });
+  const per = WEAPONS3.per?.[id] || 1;
+  live.slice(0, count).forEach((x, i) => { const k = sig[x.f.c]; x.f.fx = { [k]: (i === 0 ? [1, 2, 3][tier] : 1) * (k === 'heal' ? 1 : per) }; });
   if (tier >= 2 && sig.pair && live[0]) live[0].f.fx[sig.pair] = (live[0].f.fx[sig.pair] || 0) + 1;
   return faces;
 }

@@ -13,7 +13,10 @@ applyRelease();
 const N = +(process.argv[2] || 6); const OUT = process.argv[3] || '/tmp/t29.md';
 const SIZES = [4, 6, 8, 10]; const METALS = ['Bronze', 'Silver', 'Gold'];
 const STAGE = { 4: { act: 1, level: 3, steps: [2, 3, 4, 6] }, 6: { act: 1, level: 5, steps: [6, 7, 8, 9] }, 8: { act: 2, level: 8, steps: [3, 4, 6, 7, 8, 9] }, 10: { act: 3, level: 12, steps: [2, 3, 4, 6, 8, 9] } };
+const ONLY = process.env.WEAPONS ? process.env.WEAPONS.split(',') : null; const PART = process.env.PART || 'all'; // WEAPONS=axe,sword PART=throws|fights|faces
 const ROSTER = { today: ['dagger', 'sword', 'axe', 'staff', 'shield'], plan: ['dagger', 'sword', 'axe', 'staff', 'shield'] };
+if (ONLY) for (const k of Object.keys(ROSTER)) ROSTER[k] = ROSTER[k].filter((id) => ONLY.includes(id));
+const say = (line) => { process.stdout.write(line); };
 const setPlan = (on) => { D.EXPERIMENT.weapons3 = on; };
 const mk = (id, r, size) => ({ ...E.makeWeapon(id, r, () => 0.5, size), size });
 function hero(id, r, size, act = 1, level = 3) {
@@ -42,13 +45,15 @@ function fights(id, r, size) {
 const faceText = (fs) => fs.map((f) => `${f.c === 'r' ? 'A' : 'B'}${f.v}${f.fx ? Object.entries(f.fx).map(([k, v]) => `·${{ loot: 'gold', splash: 'splash', pierce: 'pierce', magic: 'magic', heal: 'heal' }[k] || k}${v > 1 ? v : ''}`).join('') : ''}`).join('  ');
 let md = `# T29 weapons: the six-weapon plan against today (bots; ${new Date().toISOString().slice(0, 10)})\n\nA = attack face, B = block face, the number is what it adds; ·pierce, ·gold, ·splash, ·magic, ·heal are its icons (a 2 or 3 after the icon: a crit).\n\n`;
 md += '## The plan\'s faces\n\n'; setPlan(true);
-for (const id of ROSTER.plan) { md += `### ${D.WEAPONS[id].name}${D.WEAPONS[id].hands === 2 ? ' (two hands)' : ''}\n\n_${D.WEAPONS3.because[id]}_\n\n| Size | Bronze | Silver | Gold |\n|---|---|---|---|\n`;
+if (PART === 'all' || PART === 'faces') for (const id of ROSTER.plan) { md += `### ${D.WEAPONS[id].name}${D.WEAPONS[id].hands === 2 ? ' (two hands)' : ''}\n\n_${D.WEAPONS3.because[id]}_\n\n| Size | Bronze | Silver | Gold |\n|---|---|---|---|\n`;
   for (const z of SIZES) md += `| d${z} | ${METALS.map((_, r) => faceText(E.weaponFaces(mk(id, r, z)))).join(' | ')} |\n`; md += '\n'; }
 md += '## One throw (Knight, weapon left, Round Shield right; the Staff both hands)\n\n| Weapon | Plan | Metal | Size | Attack | Pierce | Attack + pierce | p10 to p90 | Block | Heal | Magic | Gold | Splash | Triples a throw |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n';
 const T = {};
-for (const plan of ['today', 'plan']) { setPlan(plan === 'plan'); for (const id of ROSTER[plan]) for (const r of [0, 2]) for (const z of SIZES) { const t = throws(id, r, z); T[`${plan}:${id}:${r}:${z}`] = t;
+if (PART === 'all' || PART === 'throws') for (const plan of ['today', 'plan']) { setPlan(plan === 'plan'); for (const id of ROSTER[plan]) for (const r of [0, 2]) for (const z of SIZES) { const t = throws(id, r, z); T[`${plan}:${id}:${r}:${z}`] = t;
+  say(`| ${D.WEAPONS[id].name} | ${plan} | ${METALS[r]} | d${z} | ${fmt(t.atk)} | ${fmt(t.pierce)} | ${fmt(t.atk + t.pierce)} | ${t.p10} to ${t.p90} | ${fmt(t.block)} | ${fmt(t.heal)} | ${fmt(t.magic)} | ${fmt(t.gold)} | ${fmt(t.splash)} | ${fmt(t.tri, 2)} |\n`);
   md += `| ${D.WEAPONS[id].name} | ${plan} | ${METALS[r]} | d${z} | ${fmt(t.atk)} | ${fmt(t.pierce)} | ${fmt(t.atk + t.pierce)} | ${t.p10} to ${t.p90} | ${fmt(t.block)} | ${fmt(t.heal)} | ${fmt(t.magic)} | ${fmt(t.gold)} | ${fmt(t.splash)} | ${fmt(t.tri, 2)} |\n`; } }
 md += `\n## Real fights (smart bot; ${N} fights a step; d4: Act I steps 2-6 at level 3, d6: Act I 6-9 at level 5, d8: Act II at level 8, d10: Act III at level 12)\n\n| Weapon | Plan | Metal | Size | Win | Rounds | Health left |\n|---|---|---|---|---|---|---|\n`;
-for (const plan of ['today', 'plan']) { setPlan(plan === 'plan'); for (const id of ROSTER[plan]) for (const r of [0, 2]) for (const z of SIZES) { const f = fights(id, r, z);
+if (PART === 'all' || PART === 'fights') for (const plan of ['today', 'plan']) { setPlan(plan === 'plan'); for (const id of ROSTER[plan]) for (const r of [0, 2]) for (const z of SIZES) { const f = fights(id, r, z);
+  say(`| ${D.WEAPONS[id].name} | ${plan} | ${METALS[r]} | d${z} | ${Math.round(100 * f.win)}% | ${fmt(f.rounds)} | ${Math.round(100 * f.hp)}% |\n`);
   md += `| ${D.WEAPONS[id].name} | ${plan} | ${METALS[r]} | d${z} | ${Math.round(100 * f.win)}% | ${fmt(f.rounds)} | ${Math.round(100 * f.hp)}% |\n`; } }
-setPlan(false); fs.writeFileSync(OUT, md); console.log(md);
+setPlan(false); fs.writeFileSync(OUT, md); if (PART === 'all') console.log(md);
