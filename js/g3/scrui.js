@@ -1229,7 +1229,7 @@ function campPowers(hero) {
       action || frogUp ? h('div', { class: 'cp-actions' }, action || frogUp) : null,
       upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null),
     more ? h('button', { type: 'button', class: 'cp-more', 'aria-label': `${more} more power${more === 1 ? '' : 's'} for Magic Slot ${SLOT_NUM[CP.slot]} in the Camp Store`,
-      onclick: tap(() => { X.S.tab = 'camp'; X.renderCamp(); requestAnimationFrame(() => document.getElementById('zn-magic')?.scrollIntoView({ block: 'start', behavior: 'smooth' })); }) },
+      onclick: tap(() => { goCampPage('camp'); requestAnimationFrame(() => document.getElementById('zn-magic')?.scrollIntoView({ block: 'start', behavior: 'smooth' })); }) },
       ico('spark'), h('span', {}, `Learn more magic for Slot ${SLOT_NUM[CP.slot]} in the Camp Store`)) : null);
 }
 // Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
