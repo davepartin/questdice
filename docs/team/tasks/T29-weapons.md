@@ -263,6 +263,29 @@ not the absolute numbers. About 16 to 24 fights a cell, so a 10-point gap is noi
 5. Watch: a Bronze Dagger lost a little at d6 (75% against 94% today, inside the noise but worth a bigger run); the Sword's gold
    is modest (+0.7 gold a throw at Gold), which suits the economy we just tightened.
 
+## Save-swap map (Grok asked for it before any cut; nothing applied yet)
+
+Each retired weapon becomes the new weapon with the same job, **keeping its metal (Bronze/Silver/Gold), its die size, its uid
+and anything forged into it**. Where a two-handed weapon becomes a one-handed one, the freed right hand gets a **Round Shield of
+the same metal and size** (the two-hander was holding both hands, so the hero ends with the same two dice, not one).
+
+| Retired | Becomes | Why that one |
+|---|---|---|
+| Spear (1 hand, risky, pierce) | **Axe** | Same shape: blanks and big tops. Its pierce identity would point to the Dagger, but a Spear player chose the big swing, and the Axe keeps the swing. |
+| Mace (1 hand, brutal) | **Axe** | Same shape, the Axe is the big-hit weapon now. |
+| Long Sword (2 hands, risky) | **Sword** + Round Shield | Keeps the name its owner chose; the shield fills the freed hand. |
+| War Hammer (2 hands, brutal) | **Axe** + Round Shield | The biggest-hit weapon goes to the big-hit weapon; the shield fills the freed hand. |
+| Bracer (1 hand, steady, block with a magic icon) | **Round Shield** | It was a guard; the Shield is the guard now. (Its magic icon goes; a player who wants magic picks the Staff.) |
+| Tower Shield (1 hand, risky block) | **Round Shield** | One shield in the new set. |
+| Fists, Dagger, Sword, Axe, Staff, Round Shield, Bow, Arrows | unchanged | Already in the six. |
+| Legendaries (Dawnbreaker, Oakheart, Thunder Spear, Fortune's Dagger, Starfire Staff, Twinfang Bow) | **unchanged, held** | Dave and Grok: keep the named toys for now. |
+| Diamonds | same map by type (a Diamond Spear becomes a Diamond Axe; a Diamond Tower Shield a Diamond Round Shield) | Diamonds stay as the one-fight dream version. |
+
+Where a weapon can be in a save, all swapped the same way: both hands (including a two-hander's twin), the pack, the Diamond
+case, a hero's borrowed-for-a-fight hands (`hero.lent`), and today's Camp Store stock (it restocks at the next camp anyway).
+Sell values follow the new weapon's price at the same metal and size. A test will load an old save holding one of every
+retired weapon and check each lands where this table says.
+
 ## Decisions for Dave before building
 
 - The six one-line "because" sentences (above each table).
