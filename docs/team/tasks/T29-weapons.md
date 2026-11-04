@@ -313,3 +313,18 @@ retired weapon and check each lands where this table says.
   same metal and size), and the Legendaries; keep the Diamonds as the dream version of a weapon for one fight.
 - Then: a bigger bot run (12 fights a step), the save swap, the weapon cards in the magic-card style, and the store and spoils
   lists cut to the six.
+
+## LIVE (build 20261104b1; Dave, 4 Nov 2026: "go and be free")
+
+- `useWeapons3()` in the release (js/engine.js) switches on the six weapons' faces and icons, trims the spoils and the Camp Store
+  to Dagger, Sword, Axe, Staff and Round Shield (the Bow and Arrows as before), sets Diamonds by type, and gives each weapon its
+  one-line "because" as its tag (shown on the weapon cards in the next step).
+- **Starting kits:** Knight Sword and Round Shield; Ranger Arrows and Bow; **Wizard the two-handed Staff**; **Dwarf Axe and Round
+  Shield** (the Tower Shield is retired); Bard Dagger and Round Shield.
+- **Bronze Dagger:** one small parry face (d4 A1 B1 A2 A3; d6 A1 B2 A2 A3 A3 A4; and so on), since the all-attack version trailed
+  today's by about 5 points.
+- **Old saves:** `migrateWeapons3` in js/save.js applies the swap map above (tests in test/release.test.mjs load a save holding
+  every retired weapon). Legendaries are kept as they are.
+- Retired weapons stay defined in js/data.js so old saves and the Legendaries' 3D models still load.
+- Next: the weapon cards in the magic-card style (with the "because" line under each name), after Dave plays a few fights.
+
