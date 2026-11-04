@@ -6,7 +6,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, HEART_RANKS, normalizeHeartRank, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, FORGE_COST, WEAPON_SIZE_STEPS, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
   BUNDLE_ODDS, bundlePrice,
@@ -80,7 +80,7 @@ function legendaryFaces(def, size) {
   for (let i = 4; i < size; i++) faces.push({ v: i + 1, c: (i - 4) % 3 === 2 ? other : first });
   return faces;
 }
-// Weapons, second edition (an experiment, off in the game; WEAPONS2 in js/data.js). useWeapons2() switches it on for the tools: the six
+// Weapons, second edition (LIVE via applyRelease() in js/release.js; WEAPONS2 in js/data.js). Installs the six
 // one-handed weapons and their faces, their loot, the classes' starting weapons and the Diamond pool; two-handed legendaries leave the pool.
 export function useWeapons2() {
   if (EXPERIMENT.weapons2) return; EXPERIMENT.weapons2 = true;
@@ -308,7 +308,7 @@ export function charmChoices(hero, rng, n = 1) { if (TEAMWORK.noCharms) return [
 export const maxHpOf = (hero) => CLASSES[hero.cls].hp + 4 * (hero.level - 1) + heroMods(hero).maxHp + (hero.bonusHp || 0) + trainingBonus(hero, 'health');
 export const startMagicOf = (hero) => (CLASSES[hero.cls]?.startMagic ?? START_MAGIC) + heroMods(hero).startMagic + trainingBonus(hero, 'start');
 export const magicCapOf = (hero) => (CLASSES[hero?.cls]?.magicCap ?? MAGIC_CAP) + (hero ? Math.floor(Math.max(0, (hero.level || 1) - 1) / MAGIC_CAP_LEVELS) + heroMods(hero).magicCap : 0) + trainingBonus(hero, 'capacity'); // grows with level and the Deep Well perk
-// Candidate only: main.js enables it solely in the isolated camp-training preview.
+// Camp training (Max health, Max magic, Starting magic; enabled at boot by useCampTraining() in js/main.js).
 let campTraining = false;
 export const useCampTraining = () => { campTraining = true; };
 export const campTrainingOn = () => campTraining;
@@ -1713,18 +1713,8 @@ export function upgradeDie(hero, kind, slot) {
 }
 // ---- forging (Tier) and training (Size) a weapon. Both cost gold; instances are found by uid (a two-hander sits in both hands).
 const copiesOf = (hero, uid) => [...Object.values(hero.loadout), ...hero.bag].filter((w) => w && w.uid === uid);
-const handsMul = (inst) => (WEAPONS[inst.id].hands === 2 ? 1.4 : 1);
-export function forgeInfo(hero, uid) {
+export function forgeInfo() {
   return { ok: false, why: 'wear' }; // retired with wear (Oct 2026): a weapon is what you find or buy
-}
-export function forgeInfoOld(hero, uid) {
-  ensureTwin(hero);
-  const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
-  const inst = c[0]; const next = (inst.rarity | 0) + 1;
-  if (isLegendary(inst)) return { ok: false, why: 'legendary' }; // a legendary's faces are fixed
-  if (inst.id === 'fists' || next > 2 || !(WEAPONS[inst.id].bonus || [])[next - 1]) return { ok: false, why: 'max' };
-  const cost = Math.round(FORGE_COST[next] * handsMul(inst));
-  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
 }
 export function forgeWeapon(hero, uid) {
   const r = forgeInfo(hero, uid); if (!r.ok) return false;
@@ -1749,15 +1739,6 @@ export function trainInfo(hero, uid) {
   if (inst.id === 'fists' || inst.diamond || !next) return { ok: false, why: 'max' };
   const cost = WEAPON_SIZE.prices[size];
   return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next, size, noRefund: true };
-}
-export function trainInfoOld(hero, uid) {
-  ensureTwin(hero);
-  const c = copiesOf(hero, uid); if (!c.length) return { ok: false, why: 'missing' };
-  const inst = c[0]; const size = weaponSize(inst); const next = NEXT_SIZE[size];
-  if (inst.id === 'fists' || !next) return { ok: false, why: 'max' };
-  if (next > Math.max(hero.strength.W, hero.strength.E)) return { ok: false, why: 'hands', next };
-  const cost = Math.round(WEAPON_SIZE_STEPS[size] * handsMul(inst));
-  return { ok: hero.gold >= cost, why: hero.gold >= cost ? '' : 'gold', cost, next };
 }
 const nextInvestment = (inst, cost) => ({ from: inst.sizeInvestment?.from || weaponSize(inst), gold: (inst.sizeInvestment?.gold || 0) + cost });
 export function trainWeapon(hero, uid, expectedNext) {

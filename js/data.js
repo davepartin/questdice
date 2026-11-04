@@ -83,23 +83,21 @@ export const SIZE_VALUE = { 4: 1, 6: 1.5, 8: 2.2, 10: 3 };
 export const SELL_SHARE = 0.5;
 // You carry what you wield plus a small pack. A full pack means choosing: sell, swap, or leave the spoils.
 export const BAG_MAX = 4;
-// Weapons wear out (Dave, Oct 2026: "it's good for so many battles, and then it's done"; no repair). Battles a weapon lasts by
-// metal (Bronze, Silver, Gold); a legendary lasts as Gold; a Diamond is its own one-fight rule. Every battle it is carried into
-// counts, won, lost or left. It never breaks mid-fight: after its last battle it is gone.
+// Retired in the live game (Dave, 25 Oct 2026): applyRelease() sets WEAR.off = true so weapons never wear out or break.
+// WEAR_BATTLES stays behind WEAR.off = false for historical comparison tools and unit tests.
 export const WEAR_BATTLES = [4, 6, 8];
-export const WEAR = { off: false }; // Dave, 25 Oct 2026: weapons never wear out in the live game (js/release.js turns this on); the old rule stays here for the lab and the old tools
+export const WEAR = { off: false };
 // Spoils are mostly Bronze (Dave: "you rarely get them just for free for beating a boss"); Silver and Gold come from the store.
 export const SPOILS_RARITY = [85, 13, 2];
 // The Camp Store's four weapons, by metal: one Bronze, two Silver, one Gold. The fancy weapons are bought, and saved up for.
 export const STORE_RARITY = [0, 1, 1, 2];
-// The size of a found weapon. A bigger die needs a hand (Strength) at least that big, or it rolls as the hand's size.
+// The size of a found weapon. Under released rules (WEAPON_TRAINING.on), a weapon rolls at its own size without a hand ceiling.
 // Weights for [d4, d6, d8, d10] by act; the boss always drops one a size up, the perilous road leans bigger.
 export const DROP_SIZES = { 1: [100, 0, 0, 0], 1.5: [70, 30, 0, 0], 2: [45, 45, 10, 0], 3: [15, 50, 30, 5] };
-// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries. (Forging and training weapons retired with wear, Oct 2026: a
-// weapon is what you find or buy. These prices stay for old tools.)
-export const FORGE_COST = [0, 40, 120];                 // gold to reach Silver, Gold (two-handed x1.4)
-// SIZE (d4..d10) = the number range. A weapon die can never be bigger than the hand holding it.
-export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 }; // gold to grow a weapon from this size to the next
+// TIER (Bronze, Silver, Gold) = how many corner bonus symbols a weapon carries.
+// Forging weapon metal and old Strength-capped weapon training were retired in Oct 2026; live weapon size upgrades use WEAPON_TRAINING below.
+export const FORGE_COST = [0, 40, 120];
+export const WEAPON_SIZE_STEPS = { 4: 30, 6: 80, 8: 180 };
 
 // Faces are [value, color]; color r = offense (red), b = defense (blue). `fx` is the weapon's icon.
 const F = (v, c, fx) => (fx ? { v, c, fx } : { v, c });
@@ -135,10 +133,9 @@ export const DIAMOND = {
   dice: { 6: [3, 4, 5, 6, 6, 6], 8: [5, 6, 6, 7, 7, 8, 8, 8], 10: [6, 7, 8, 8, 9, 9, 10, 10, 10, 10] },
   price: 3.2, // the Camp Store's price, times the weapon's base price per size step
 };
-// Charms (Dave, Oct 2026: "items that bend the rules", like relics in other roguelikes). Small trinkets, three at most, each changing one
-// rule of the dice rather than adding a number. Found in the spoils of big fights and now and then in the Camp Store; kept for good.
+// Charms: suspended in the live game (applyRelease() sets TEAMWORK.noCharms = true). No charms are offered, sold or active in battle,
+// but CHARMS stays defined so charms already on older saves remain intact and readable ("Yours are kept safe in your save").
 export const CHARM_MAX = 3;
-// Said plainly (Dave, Oct 2026: "I have no idea what charms are or what these words are saying"); the glossary lists all of them
 export const CHARMS = {
   ember: { name: 'Ember Locket', icon: 'flame', text: 'A weapon die lands on 0: you still get 3 attack and 1 magic (once a round).' },
   mirror: { name: 'Mirror Shard', icon: 'shine', text: 'Every straight you roll also heals you 6.' },
@@ -151,20 +148,9 @@ export const CHARMS = {
   pact: { name: 'Blood Pact', icon: 'spark', text: 'Start every battle with 6 more magic, but 8 less health.' },
   heartstone: { name: 'Heartstone', icon: 'star', text: 'Your heart die\'s boost counts double.' },
 };
-export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 }; // a boss offers a choice of two; the others one
-export const CHARM_PRICE = [110, 150, 200]; // the Camp Store's price, by act
-// The Camp Store (Dave, Oct 2026: the traveller who interrupted the road is gone; the store is always at camp). Besides weapons,
-// two of these specials sit on the counter each camp: one fight's worth of help, bought for yourself. `by` scales the effect
-// by act (I, II, III); prices are by act too.
-export const STORE_TONICS = {
-  oil: { name: 'Sharpening Oil', icon: 'pierce', text: (n) => `Your weapons bite: +${n} pierce every round of your next fight.`, by: [3, 4, 5], key: 'pierce', price: [30, 55, 80] },
-  boots: { name: 'Borrowed Boots', icon: 'boot', text: (n) => `Fast boots for one fight: your feet roll a d${n}. They go back after.`, by: [8, 10, 12], key: 'feet', price: [25, 45, 70] },
-  shield: { name: 'Rented Tower Shield', icon: 'block', text: (n) => `+${n} block in round 1 of your next fight.`, by: [10, 15, 20], key: 'openingBlock', price: [25, 45, 70] },
-  paint: { name: 'War Paint', icon: 'atk', text: (n) => `+${n} attack in round 1 of your next fight.`, by: [10, 15, 20], key: 'openingAtk', price: [25, 45, 70] },
-  tea: { name: 'Strong Tea', icon: 'magic', text: (n) => `Start your next fight with ${n} more magic.`, by: [3, 4, 5], key: 'startMagic', price: [30, 55, 80] },
-  stew: { name: 'Hearty Stew', icon: 'heal', text: (n) => `+${n} health for your next fight.`, by: [10, 15, 20], key: 'startHp', price: [25, 45, 70] },
-};
-export const STORE_TONICS_SHOWN = 2;
+export const CHARM_CHANCE = { boss: 1, elite: 0.5, battle: 0.03, shop: 0.2 };
+export const CHARM_PRICE = [110, 150, 200];
+// One-fight Camp Store tonics were retired in Oct 2026 (engine.js keeps no-op storeTonics/buyTonic stubs so stale ops are rejected).
 // The mystery bundle (it was the traveller's gamble): a wrapped weapon at a flat price. Odds Bronze / Silver / Gold.
 export const BUNDLE_ODDS = [0.5, 0.32, 0.18];
 export const bundlePrice = (act = 1) => 70 + 25 * (Math.min(3, Math.max(1, act)) - 1);
@@ -238,9 +224,9 @@ export const WEAPONS = {
     faces: [F(1, 'b'), F(2, 'r'), F(3, 'r', { pierce: 1 }), F(3, 'r', { pierce: 1 })] },
 };
 export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legendary);
-// ---- Weapons, second edition: an EXPERIMENT, OFF in the game (Dave, ChatGPT and Claude, 22 Oct 2026; docs/ideas/WEAPONS_REDESIGN_2026-10-22.md).
-// The tools switch it on with W2=1 (useWeapons2 in js/engine.js); while it is off nothing here is used and no save changes.
-// Stage 1: six one-handed weapons, Bronze numbers for every metal (stage 2 adds the metal symbols, stage 3 the bow and its arrows).
+// ---- Weapons, second edition: LIVE in the released game (applyRelease() calls useWeapons2() in js/engine.js; see docs/ideas/WEAPONS_REDESIGN_2026-10-22.md).
+// Base switch stays false so unit tests can verify both pre-release and released weapon rules.
+// Six one-handed weapons plus Bow and Arrows; Silver and Gold add metal symbols.
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
@@ -253,17 +239,16 @@ export const WEAPON_SIZE = { prices: { 4: 40, 6: 80, 8: 140 }, ladder: null,
   // T17 candidate faces (js/weaponladder.js, PROPOSED, OFF): with `cumulative` on and a `ladder` installed, every weapon rolls its cumulative table
   // in the live rules too (not only in the weapon-size preview). Nothing installs it in the release until Astra rules on docs/team/tasks/T17-roles.md.
   cumulative: false };
-// Camp purchases using the released face tables. Independent of the wider T17 face/loot experiment.
+// Camp weapon-size purchases using the released face tables (LIVE: applyRelease() sets WEAPON_TRAINING.on = true).
 // Existing found weapons retain their value; half of gold paid for subsequent sizes is recoverable.
 export const WEAPON_TRAINING = { on: false, prices: { 4: 50, 6: 100, 8: 200 } };
-// Teamwork pass (approved by Dave, 22 Oct 2026; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md). Off in the live game
-// until Dave approves the release; the lab (?lab, js/lab.js) switches it on.
+// Teamwork pass (LIVE: applyRelease() turns all three on; docs/ideas/TEAMWORK_IMPLEMENTATION_HANDOFF_2026-10-22.md).
 //   heartToHeart  replaces Heartbeat: two or more heroes showing the same heart number on the same monster each get +HEART_TO_HEART attack
 //   noCharms      charms are suspended: no effects, offers, loot or prompts (owned charms stay in the save, untouched)
 //   perkPreview   perk offers show their exact effect and this hero's before and after
 export const TEAMWORK = { heartToHeart: false, noCharms: false, perkPreview: false };
 export const HEART_TO_HEART = 10; // a fixed +10 attack for each hero in a matching group, once a round (not act-scaled)
-// Class identity (an experiment, off in the game; docs/ideas/CLASS_IDENTITY_2026-10-22.md). Each is one sentence:
+// Class identity (LIVE: applyRelease() sets CLASS2.on = true; docs/ideas/CLASS_IDENTITY_2026-10-22.md). Each is one sentence:
 //   songs  team games: the Bard's healing powers heal the most hurt hero at the table (the Bard included), not only the Bard
 //   guard  team games: a Knight who uses Shield Up takes the double share of the monsters' blows that round, whatever the feet say
 //   digIn  from round 5 the Dwarf heals this much at the start of every round (0 = off)
