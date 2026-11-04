@@ -111,6 +111,22 @@ the sample is small; watch the slope and Big Muriel's tarn in play.
 - Monster cards: a long move name (Vexmor's LIGHTNING, THUNDERCLAP) no longer runs into its dice numbers
   (css/minicard.css). Check: `node dev/road-check.mjs` (headless Chromium, not Safari; it fails without the fix).
 
+## Acts I and II: the late repeats get their own fights (build 20261104a4)
+
+Both acts used to replay an earlier fight at step 9 (always played) and at step 8 (when no one called for help), and
+the second visit had no story lines at all. Each now has its own cast and lines through the same `again` entry:
+
+| Step | Place | Was | Now |
+|---|---|---|---|
+| I.8 | Smoke Hollow again | Ember Mage and Cinderling (same as step 6) | **Wildfire**, chased by a grumpy little **Squall** |
+| I.9 | Ashfall Camp again | Pip, Pog and Nib (same as step 7) | The King's hired **Ash-Tusk Raider**, with Pog and Nib; a dragon-stamped coin in his purse foreshadows Act III |
+| II.8 | Mourner's Row again | Wraith and Gloom Stalker (same as step 6) | A **Will-o'-the-Wisp** leading a lost Bone Soldier in circles |
+| II.9 | The Drowned Crypt again | Two Frostwhelps (same as step 7) | The **Vault Sentinel** (a fountain gargoyle at the last door) and **the Nightblade** |
+
+Bots (smart, 3 campaigns x 5 classes; win chance / rounds): I.8 96% / 4.0 -> 95% / 5.1; I.9 89% / 3.4 -> 88% / 3.5
+(fightHp 0.6 -> 0.5); II.8 82% / 6.1 -> 88% / 5.8; II.9 85% / 6.4 -> 86% / 6.9 (fightHp 1.15 -> 1.3). Campaigns cleared
+13 of 15 both ways. Phone check: `node dev/road-check.mjs` covers all seven new fights (headless Chromium, not Safari).
+
 ## Not done yet
 
 - Acts I and II revisits, the side road, recolours and the wishlist art are proposals for the next tasks.
