@@ -313,10 +313,10 @@ export const WEAPONS2 = {
 // also carries pierce. A face's number still counts for triples and straights. The Bow and its Arrows are unchanged.
 export const WEAPONS3 = {
   faces: {
-    dagger: { 4: 'R1 R1 R2 R3', 6: 'R1 R1 R2 R3 R3 R4', 8: 'R1 R2 R2 R3 R4 R4 R5 R5', 10: 'R1 R2 R3 R4 R4 R5 R5 R6 R6 R7' },
+    dagger: { 4: 'R1 R1 R2 R3', 6: 'R1 R2 R2 R3 R3 R4', 8: 'R1 R2 R3 R3 R4 R4 R5 R5', 10: 'R1 R3 R3 R4 R4 R5 R5 R6 R6 R7' }, // (T29 big run: Bronze d6 and d10 were a little low)
     sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R3 B4 R5', 8: 'R0 B2 R2 R3 B4 R5 R6 R7', 10: 'R0 B2 R2 R3 B4 R5 R6 B6 R8 R9' },
     axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R0 R4 R6 R6', 8: 'R0 R0 R0 R3 R5 R6 R7 R8', 10: 'R0 R0 R0 R0 R5 R6 R7 R8 R9 R10' },
-    staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R4 B4 R5', 10: 'B1 R2 B2 R3 B3 R4 B4 R5 B5 R6' },
+    staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R5 B4 R6', 10: 'B1 R2 B2 R3 B4 R5 B5 R6 B6 R7' }, // (T29 big run: Bronze d8 and d10 were low)
     shield: { 4: 'B0 R2 B2 B4', 6: 'B0 R2 B2 B3 R4 B5', 8: 'B0 R2 B2 B3 R4 B5 B6 B7', 10: 'B0 R2 B2 B3 R4 B5 B6 R6 B8 B9' },
   },
   // the icon each weapon carries: own colour (r attack, b block); the staff carries magic on attack faces and heal on block faces
