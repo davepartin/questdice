@@ -1190,3 +1190,31 @@ From Claude: 4 November 2026. **T28: the magic card template on all 34 class pow
 
 From Claude: 4 November 2026. **T29 Weapons (experiment only, nothing live).** Dave wants fewer weapons with clear personalities: Dagger (steady, triples, pierce), Sword (a bit of everything, gold, its best face pierces), Battle Axe (big swings, splash), Staff (two hands, magic on strikes, heal on guards), Bow (arrows, unchanged), Shield (heal); Bronze numbers, Silver and Gold add the weapon's one icon; Diamonds stay. Faces written for every metal and size and run against today's weapons: same strength, clearer differences. All faces and results: [tasks/T29-weapons.md](tasks/T29-weapons.md). Waiting on Dave's yes before the roster cut, the save swap and the new weapon cards.
 
+From Crockpot (Grok Bot): 4 November 2026. **Dave: quiet the heart-boost banner; remove pets.** Dave's decision — **build it**, not an open design question. For **Claude** (battle banner + camp/pet removal; engine/save cleanup as needed). Do not mix this with T29 weapons (separate open yes, already on the board). Crockpot did not ship game code this run.
+
+**1) Heart-boost battle banner — stop treating it like a combo.** Playing on phone: when you get a triple/straight, a banner pops at the bottom. Heart Boost fires that same style constantly because the Heart is always boosting something. Dave does not want that.
+- Take Heart Boost off the combo-style bottom banner path (triples / straights / similar). It is not that important and looks like real combo news.
+- Keep the glowing ring on connected Heart dice — that is enough visual cue that something is happening.
+- Optional (Claude may pick the cleanest UX): the heart die does not show a number, so a quiet compact readout is fine — e.g. a small green "+12" for life from the heart boost, not a full triples-style banner. Prefer quiet number over banner. No extra readout is also fine.
+
+Likely files (verified on current main):
+- `js/g3/hudkit.js` `synergyList()` — this is the banner. `if (ev.heartBoost) out.push({ key: 'hb', kind: 'good', icon: 'heart', text: 'HEART BOOST', sub: '+N sym' })` sits in the same list as triples and straights.
+- `js/g3/battle3d.js` `renderShape()` — `HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods)…)` draws those notes. `bw.tray.setHeart(ev.heartBoost.slots, ev.heartBoost.sym)` is the glow: **keep it**.
+- `css/hud.css` `.fs-notes` / `.fnote` — the bottom combo banners on the forecast dock (on phones they sit on that dock).
+- `js/engine.js` `evaluate()` `out.heartBoost` — keep the Heart boost mechanic; only stop treating it as combo news.
+- `js/gfx/dice/tray.js` `setHeart` / `inHeart` rings — keep.
+
+**2) Remove pets entirely.** Buying a pet is still in the game. Dave wants pets **removed** — they add complexity for little payoff.
+- Strip buy-pet from camp/store/UI and any remaining pet rules, bonuses, table ops, tutorial copy, spoilers, tests that assume pets.
+- Old saves that have a pet should drop it cleanly: no crash, no leftover UI. `js/save.js` `migrateHero` does not drop `hero.pet` today — add that.
+
+Surfaces found on main:
+- Camp/UI: `js/g3/scrui.js` — `diceExtras` "Pet companion" (Dice Upgrades → Extras, the live buy path), `petCard` / `petAsk` / `petOfferCard` / `petSection` (Hero page when owned; train/grow), `storeTab` odds-and-ends pet card, All Upgrades pet row; `HERO_OPS` `buyPet` / `addPetSymbol` / `removePetSymbol` / `growPet`.
+- Rules: `js/data.js` `PETS`, `PET_PRICE`, `PET_POWER`, `PET_GROW`, `ROLE.P`; `js/engine.js` `buyPet`, `petOffer`, `newPet`, `petFace`, `petPowerOf`, train/grow/shrink, `evaluate` pet payout, `rollBoard` slot P (skipped when no pet).
+- Battle: `js/g3/battle3d.js` `.b3-petchip` HUD badge + `petInfo()`; `js/gfx/dice/tray.js` pet stand (already off the board; HUD now); `js/g3/pets.js`; `js/g3/scenery.js` campfire pet sprite; `js/view.js` / `js/readout.js` slot P copy.
+- Table: `js/table.js` pet hero ops.
+- Tutorial: `js/g3/tutorial.js` camp page "Pets, potions and powers".
+- Tests/tools: `test/pets.test.mjs`, `test/starters.test.mjs` (mentions no pet), `tools/sim.mjs` `botPet` / `QD_PETS`, `dev/pet*.mjs`.
+- CSS: `css/screens.css` `.pet-*`, `css/hud.css` `.b3-petchip`, `css/board.css`.
+- Art under `assets/pets/` can stay unless you want it gone too; gameplay and UI must go.
+
