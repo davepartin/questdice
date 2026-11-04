@@ -695,15 +695,10 @@ body.sx .modal-card:has(.cw-cardpop) { width: auto; max-width: 100%; max-height:
 .cw-camp .cp-workshop .mc-camp-choice { position: relative; height: 62px; min-height: 0; gap: 3px; padding: 4px; }
 .cw-camp .cp-workshop .mc-camp-choice .mc-tile-name { font-size: .68rem; }
 .mc-choice-badge { position: absolute; top: 3px; left: 4px; z-index: 2; font: 800 .58rem/1 var(--font-body, sans-serif); }
-.mc-choice-badge.rank { padding: 2px 5px; border-radius: 99px; background: #1c1230e6; border: 1px solid #d6b26a; color: #ffe29a; font: 800 .52rem/1 var(--font-body, sans-serif); letter-spacing: .04em; }
 .mc-choice-badge.on { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #3fae5a; color: #fff; box-shadow: 0 0 0 1px #0008; }
 .mc-choice-badge.lock { padding: 2px 4px; border-radius: 99px; background: #000a; color: #e8dcc4; }
 .mc-camp-choice.locked { filter: grayscale(.55) brightness(.8); }
-.cw-camp .cp-detail { padding: 0; border: 0; background: none; box-shadow: none; gap: .45rem; }
-.cw-camp .cp-dice-ctl { margin: .1rem 0; }
-.cw-camp .cp-roll-pill { cursor: default; pointer-events: none; }
-.cw-camp .cp- dice-ctl .ic-magic .p, .cw-camp .cp-dice-ctl .ic-magic .p { fill: #a64dff !important; stroke: #fff !important; stroke-width: 2px !important; paint-order: stroke fill !important; }
-.cw-camp .cp-dice-ctl .ic-magic .h { display: none !important; }
+.cw-camp .cp-detail { padding: 0; border: 0; background: none; box-shadow: none; gap: .4rem; }
 .cw-camp .cp-card-stage { margin: 0; }
 .cw-camp .cp-card-stage .mc-card { margin: 0 auto; }
 .cw-camp .cp-actions { margin: 0; }
@@ -750,10 +745,10 @@ button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; backgroun
 .mc-reviewed-template .mc-cp .mc-coin, .mc-cp .mc-coin { flex: none; }
 .mc-card .mc-cov-buy { box-shadow: none; filter: drop-shadow(0 0 .9cqi #ffd96a) drop-shadow(0 .6cqi .5cqi #2a1606aa); }
 .mc-card .mc-cov-buy .mc-cp .mc-coin { background: radial-gradient(circle at 35% 35%, #fff2b0, #ffc21a 55%, #c98a0a); border-color: #9a6a06; box-shadow: 0 .3cqi .6cqi #0006; }
-.mc-card .mc-cov-buy .mc-cp b { color: #ffd98a !important; }
+.mc-card .mc-cov-buy .mc-cp b { color: #7a4a00 !important; }
 .mc-card .mc-cov-buy.poor { box-shadow: none; filter: drop-shadow(0 .6cqi .5cqi #2a1606aa); }
 .mc-card .mc-cov-buy.poor .mc-cp .mc-coin { background: none; }
-.mc-card .mc-cov-buy.poor .mc-cp b { color: #bfb39d !important; }
+.mc-card .mc-cov-buy.poor .mc-cp b { color: #4a3216 !important; }
 
 /* Camp Store page: the campfire picture starts below the pinned buttons, so the miniatures are never hidden behind them (Dave, 3 Nov 2026).
    The area grows by the same 64px, so the picture keeps its size. (Restored: cp6 dropped it by mistake; test/campcopy.test.mjs guards it.) */

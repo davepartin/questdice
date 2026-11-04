@@ -77,99 +77,118 @@ function areaEffects(k, l, compact = false) {
 function rangerEffects(k, l, compact = false) {
   const rain = k.id === 'rain';
   return h('span', { class: `${rain ? 'mc-rain' : 'mc-mark'}-${compact ? 'cover' : 'effect'}` },
-    h('span', { class: 'mc-ranger-target' }, fxv('pierce', E.scaleNum(k.fx.pierce,l)), h('small', {}, rain ? 'Target' : 'Pierce now')),
-    h('span', { class: 'mc-ranger-secondary' }, fxv(rain ? 'atk' : 'gold', E.scaleNum(rain ? k.aoe : k.markGold,l)), h('small', {}, rain ? (compact ? 'all' : 'Every enemy') : (compact ? 'on defeat' : 'If target falls'))));
+    h('span', { class: 'mc-ranger-target' }, fxv('pierce', E.scaleNum(k.fx.pierce,l)), rain ? h('small', {}, 'Target') : null),
+    h('span', { class: 'mc-ranger-secondary' }, fxv(rain ? 'atk' : 'gold', E.scaleNum(rain ? k.aoe : k.markGold,l)), h('small', {}, rain ? (compact ? 'all' : 'Every enemy') : (compact ? 'on defeat' : 'If target falls this round'))));
 }
 // Grudge upgrades add to damage that actually got past block; they are not flat attack.
 function grudgeEffects(k, l, p = {}, compact = false) {
-  const bonus = k.grudge[Math.min(l, k.grudge.length - 1)] ?? l * 3, hurt = p.hurt ?? 0;
-  if (compact) return h('span', { class: 'mc-grudge-cover', 'aria-label': `Revenge attack plus ${bonus}` }, fxv('atk', bonus, 'bonus'));
-  if (p.camp) {
-    return h('span', { class: 'mc-grudge-effect' },
-      h('span', { class: 'mc-fv fx-atk' }, HK.icon('atk'), h('b', {}, bonus ? `Hit +${bonus}` : 'Hit Taken')),
-      h('span', { class: 'mc-grudge-source' }, h('small', {}, 'Strikes back for damage past block last round')),
-      bonus ? h('small', { class: 'mc-grudge-rank' }, `Includes +${bonus} rank bonus`) : null);
-  }
+  const bonus = k.grudge[Math.min(l, k.grudge.length - 1)] || 0, hurt = p.hurt ?? 0;
+  if (compact) return h('span', { class: 'mc-grudge-cover', 'aria-label': `Attack from last round's damage past block${bonus ? ` plus ${bonus}` : ''}` }, HK.icon('atk'), h('span', {}, 'Hurt'), bonus ? h('b', {}, `+${bonus}`) : null);
   return h('span', { class: 'mc-grudge-effect' }, fxv('atk', hurt + bonus),
     h('span', { class: 'mc-grudge-source' }, h('b', {}, String(hurt)), h('small', {}, 'damage past block last round')),
     bonus ? h('small', { class: 'mc-grudge-rank' }, `+${bonus} rank bonus`) : null);
 }
 // what a level row shows. l: the row's level; cur: the hero's level for it; p: the power's sheet state
 function rowBody(k, l, p, cur) {
+  if (p.camp) return campRowBody(k, l, p);
   const f = FX(k); const now = l === cur;
-  if (k.frogLoad) return [frogTray(k, p)];
-  if (k.kind === 'scale') {
-    const top = E.powerDice(k, E.scaleMax(k, l), l); const s = k.dice.s;
-    const x = p.x ?? E.powerCost(k, k.cost, l);
-    const n = E.powerDice(k, x, l);
-    const rule = k.party ? 'Heals you and every hero in the party'
-      : k.splash === 'half' ? (k.id === 'arcbolt' ? '½ damage arcs to every other enemy' : '½ damage splashes to every other enemy')
-      : k.goldOn ? null
-      : f === 'pierce' ? 'Pierces straight through enemy block' : null;
-    return [
-      h('span', { class: `mc-attack-track fx-${f}` },
-        h('span', { class: 'mc-slots', 'data-top': String(top), 'aria-label': `${n} of ${top} ${WORD[f]} dice` },
-          Array.from({ length: top }, (_, i) => i < n ? die(f, s) : space(s)))),
-      h('span', { class: `mc-roll-summary fx-${f}` }, HK.icon(f), h('b', {}, `Roll ${n}d${s} ${WORD[f]}`), h('small', {}, `(${x} magic)`)),
-      k.goldOn ? h('span', { class: 'mc-bonus', 'aria-label': `Each ${k.goldOn.face} rolled gives ${k.goldOn.gold} gold` }, die(f, s, k.goldOn.face), h('span', {}, '='), fxv('gold', k.goldOn.gold)) : null,
-      rule ? h('span', { class: 'mc-mx' }, rule) : null,
-    ];
-  }
-  if (k.frogNeed) { const have = now ? (p.camp ? k.max : p.stored || 0) : 0; const rs = [1, 2, 3].slice(0, k.max).map((n) => E.frogRange(E.frogNeed(k, n, l))); const fp = k.frogPierce?.[Math.min(l, k.frogPierce.length - 1)] || 0;
-    return [h('span', { class: 'mc-dots fx-weaken' }, h('b', { class: 'mc-frog' }, 'Frog'), Array.from({ length: k.max }, (_, i) => h('span', { class: `mc-dot ${now && i >= have ? 'g' : ''} ${now && !p.camp && i === have - 1 ? 'now' : ''}` }, rs[i] === 'sure' ? '✓' : rs[i]))),
+  if (k.kind === 'scale') { const top = E.powerDice(k, E.scaleMax(k, l), l); const s = k.dice.s;
+    if (!now) return [h('span', { class: 'mc-ln' }, mg(E.scaleStep(k)), h('i', { class: 'mc-eq' }, '='), die(f, s)), h('span', { class: 'mc-mx' }, `UP TO ${top}×`, die(f, s))];
+    const n = E.powerDice(k, p.x ?? k.cost, l);
+    if (usesCardTemplate(k)) return [h('span', { class: `mc-attack-track fx-${f}` }, HK.icon(f), h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} ${WORD[f]} dice` }, Array.from({ length: top }, (_, i) => i < n ? die(f, s) : space(s)))), k.goldOn ? h('span', { class: 'mc-bonus', 'aria-label': `Each ${k.goldOn.face} rolled gives ${k.goldOn.gold} gold` }, die(f,s,k.goldOn.face), h('span', {}, '='), fxv('gold', k.goldOn.gold)) : null];
+    return [h('span', { class: 'mc-slots', 'aria-label': `${n} of ${top} dice` }, Array.from({ length: top }, (_, i) => (i < n ? die(f, s) : space(s)))),
+      h('span', { class: 'mc-spent' }, mg(p.x ?? k.cost), h('span', { class: `fx-${f}` }, ` · ${n} of ${top} dice`), h('i', { class: 'mc-br' }), h('span', { class: `fx-${f}` }, ` · ${n}d${s} ${WORD[f]}`)), k.party ? h('span', { class: 'mc-mx' }, 'HEALS EVERY HERO IN THE PARTY') : null, k.goldOn ? h('span', { class: 'mc-mx' }, `EVERY ${k.goldOn.face} ALSO GIVES `, fxv('gold', k.goldOn.gold)) : null, k.splash === 'half' ? h('span', { class: 'mc-mx' }, k.id === 'arcbolt' ? '½ ARCS TO EVERY OTHER MONSTER' : '½ SPLASHES ON EVERY OTHER MONSTER') : null]; }
+  if (k.frogNeed) { const have = now ? p.stored || 0 : 0; const rs = [1, 2, 3].slice(0, k.max).map((n) => E.frogRange(E.frogNeed(k, n, l))); const fp = k.frogPierce?.[Math.min(l, k.frogPierce.length - 1)] || 0; // Polymorph: each dot is the d6 range a Use needs at that many charges
+    return [h('span', { class: 'mc-dots fx-weaken' }, h('b', { class: 'mc-frog' }, 'Frog'), Array.from({ length: k.max }, (_, i) => h('span', { class: `mc-dot ${now && i >= have ? 'g' : ''} ${now && i === have - 1 ? 'now' : ''}` }, rs[i] === 'sure' ? '✓' : rs[i]))),
       fp ? h('span', { class: 'mc-ln' }, fxv('pierce', fp)) : null,
-      h('span', { class: 'mc-mx' }, 'Target skips its attack · d6 at 1 · 2 · 3 charges')]; }
-  if (k.kind === 'charge') {
-    const have = now ? (p.camp ? (p.stored ?? k.max) : (p.stored || 0)) : 0;
-    const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
-    return [
-      ...fs.map((x) => h('span', { class: `mc-dots fx-${x}` }, HK.icon(x), Array.from({ length: k.max }, (_, i) => h('span', { class: `mc-dot ${now && i >= have ? 'g' : ''} ${now && i === have - 1 ? 'now' : ''}` }, `+${E.chargeGain(k, i + 1, l)[x]}`)))),
-      h('span', { class: 'mc-mx' }, p.camp ? `Build 1 to ${k.max} charges · tap Use to unleash${k.splash === 'half' ? ' · ½ splashes' : ''}` : (have ? `${have} of ${k.max} charged · ready to Use` : `Charge 1 magic per round · up to ${k.max}`)),
-    ];
-  }
+      h('span', { class: 'mc-mx' }, now && have ? `${have} CHARGED · ${rs[have - 1] === 'sure' ? 'SURE FROG' : `FROG ON ${rs[have - 1]}`}` : 'TARGET SKIPS ITS ATTACK · D6 AT 1 · 2 · 3 CHARGED')]; }
+  if (k.kind === 'charge') { const have = now ? p.stored || 0 : 0; const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
+    return [...fs.map((x) => h('span', { class: `mc-dots fx-${x}` }, HK.icon(x), Array.from({ length: k.max }, (_, i) => h('span', { class: `mc-dot ${now && i >= have ? 'g' : ''} ${now && i === have - 1 ? 'now' : ''}` }, String(E.chargeGain(k, i + 1, l)[x]))))),
+      usesBuildTemplate(k) ? null : h('span', { class: 'mc-mx' }, now ? `${have} CHARGED · ${fs.map((x) => WORD[x]).join(' + ')}` : `at 1 · 2 · 3 · 4 charged`)]; }
   if (k.id === 'rain') return [rangerEffects(k,l), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · once per battle`)];
   if (k.id === 'mark') return [rangerEffects(k,l)];
   if (k.id === 'grudge') return [grudgeEffects(k,l,p)];
   if (k.id === 'avalanche') return [areaEffects(k,l), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · once per battle`)];
   if (k.id === 'finale') return [areaEffects(k,l), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · once per battle`)];
   if (usesCardTemplate(k) && k.kind === 'super') return [h('span', { class: 'mc-ln' }, Object.entries(k.fx).map(([f,v]) => fxv(f, E.scaleNum(v,l)))), h('span', { class: 'mc-ln' }, fxv('atk', E.scaleNum(k.aoe, l), 'to every enemy')), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · once per battle`)];
-  if (k.id === 'meteor') return [h('span', { class: 'mc-meteor-effect' }, fxv('atk', E.roundGain(k, p.round || 3, l)), h('small', {}, `Round ${p.round || 3}`)), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · grows each round`)];
-  if (usesCardTemplate(k) && k.kind === 'round') return [h('span', { class: 'mc-ln' }, fxv('atk', E.roundGain(k, p.round || 3, l))), h('span', { class: 'mc-mx' }, `Round ${p.round || 3} · grows each round`)];
-  if (usesCardTemplate(k) && k.kind === 'flat' && !k.fx?.frog && !k.grudge) return [h('span', { class: 'mc-ln' }, templateEffects(k, l)), k.riposte ? h('span', { class: 'mc-mx' }, 'Unused block hits back as Attack') : null];
-  if (k.fx?.frog) { const fp = k.frogPierce?.[Math.min(l, k.frogPierce.length - 1)] || 0; const c = E.powerCost(k, k.cost, l); return [h('span', { class: 'mc-ln' }, h('b', { class: 'mc-frog' }, k.id === 'polymorph' ? 'Frog' : 'FROG!'), fp ? fxv('pierce', fp) : null, c !== k.cost && !usesCardTemplate(k) ? h('span', { class: 'mc-mx' }, 'COSTS ', mg(c)) : null), h('span', { class: 'mc-mx' }, "Target skips its attack")]; }
+  if (k.id === 'meteor') return [h('span', { class: 'mc-meteor-effect' }, fxv('atk', E.roundGain(k, p.round || 1, l)), h('small', {}, `Round ${p.round || 1}`)), h('span', { class: 'mc-mx' }, `Round ${k.minRound}+ · grows each round`)];
+  if (usesCardTemplate(k) && k.kind === 'round') return [h('span', { class: 'mc-ln' }, fxv('atk', E.roundGain(k, p.round || 1, l))), h('span', { class: 'mc-mx' }, `Round ${p.round || 1} · available round ${k.minRound}+`), h('span', { class: 'mc-mx' }, 'Grows with each round')];
+  if (usesCardTemplate(k) && k.kind === 'flat' && !k.fx?.frog && !k.grudge) return [h('span', { class: 'mc-ln' }, templateEffects(k, l)), k.riposte ? h('span', { class: 'mc-mx' }, 'Unused block hits back') : null];
+  if (k.fx?.frog) { const fp = k.frogPierce?.[Math.min(l, k.frogPierce.length - 1)] || 0; const c = E.powerCost(k, k.cost, l); return [h('span', { class: 'mc-ln' }, h('b', { class: 'mc-frog' }, k.id === 'polymorph' ? 'Frog' : 'FROG!'), fp ? fxv('pierce', fp) : null, c !== k.cost && !usesCardTemplate(k) ? h('span', { class: 'mc-mx' }, 'COSTS ', mg(c)) : null), h('span', { class: 'mc-mx' }, usesCardTemplate(k) ? "Target skips its attack" : "YOUR TARGET CAN'T ATTACK THIS ROUND")]; }
+  if (usesCardTemplate(k) && k.grudge) return [h('span', { class: 'mc-ln' }, fxv('atk', (p.hurt ?? 0) + (k.grudge[l] || 0))), h('span', { class: 'mc-mx' }, `${p.hurt ?? 0} damage past block last round`, k.grudge[l] ? ` · +${k.grudge[l]}` : '')];
+  if (k.grudge) { const g = k.grudge[l] || 0; return [h('span', { class: 'mc-ln' }, h('b', { class: 'mc-grudge' }, 'HURT'), h('i', { class: 'mc-eq' }, '='), now ? fxv('atk', (p.hurt ?? 0) + g) : [fxv('atk', '?'), g ? fxv('atk', g, 'more') : null]), h('span', { class: 'mc-mx' }, now && p.hurt != null ? `${p.hurt} GOT PAST YOUR BLOCK LAST ROUND` : 'DAMAGE PAST YOUR BLOCK LAST ROUND HITS BACK')]; }
   if (usesCardTemplate(k) && k.kind === 'luck') return [luckTable(l)];
   if (k.kind === 'luck') { const m = 1 + l, a = E.scaleNum(E.LUCK.mid, l), t = E.scaleNum(E.LUCK.top, l);
     return [h('span', { class: 'mc-ln mc-luck' }, die('magic', 6, 2), fxv('magic', m), die('atk', 6, 4), fxv('atk', a), die('atk', 6, 6), fxv('atk', t), fxv('magic', 1)), h('span', { class: 'mc-mx' }, 'ROLL A D6 · 1–2 · 3–4 · 5–6')]; }
-  if (k.riposte) return [h('span', { class: 'mc-ln' }, fxv('block', E.scaleNum(k.fx.block, l))), h('span', { class: 'mc-mx' }, 'Unused block hits back as Attack')];
-  if (k.markGold) return [h('span', { class: 'mc-ln' }, fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))), h('span', { class: 'mc-mx' }, 'Pierce now · Gold if target falls')];
+  if (k.riposte) return [h('span', { class: 'mc-ln' }, fxv('block', E.scaleNum(k.fx.block, l))), h('span', { class: 'mc-mx' }, 'LEFTOVER BLOCK HITS BACK AS ATTACK')];
+  if (k.markGold) return [h('span', { class: 'mc-ln' }, fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))), h('span', { class: 'mc-mx' }, 'PIERCE NOW · GOLD IF IT FALLS THIS ROUND')];
   if (k.kind === 'flat') return [h('span', { class: 'mc-ln' }, Object.entries(k.fx).map(([x, v]) => fxv(x === 'free' ? 'magic' : x, x === 'free' ? v + l : E.scaleNum(v, l))))];
   return [h('span', { class: 'mc-mx' }, k.text)];
 }
-const coverHint = (k, l) => k.id === 'grudge' ? [grudgeEffects(k,l,{},true)] : k.id === 'avalanche' ? [areaEffects(k,l,true)] : ['rain','mark'].includes(k.id) ? [rangerEffects(k,l,true)] : k.id === 'meteor' ? [h('span', { class: 'mc-round-formula' }, HK.icon('atk'), h('b', {}, `${E.roundGain(k,1,l)} ×`), h('small', {}, 'round'))] : k.id === 'finale' ? [areaEffects(k,l,true)] : usesCardTemplate(k) && ['flat','super'].includes(k.kind) && !k.fx?.frog && !k.grudge ? [...templateEffects(k,l,true), ...(k.aoe ? [fxv('atk',E.scaleNum(k.aoe,l),'all')] : [])] : (k.kind === 'scale' ? [die(FX(k), k.dice.s), h('b', {}, `${E.powerDice(k, k.cost, l)}–${E.powerDice(k, E.scaleMax(k, l), l)}d${k.dice.s}`)] : k.kind === 'round' ? [fxv('atk', E.roundGain(k, k.minRound, l), `round ${k.minRound}`)] : k.frogNeed ? (() => { const fp = k.frogPierce?.[Math.min(l, (k.frogPierce?.length || 1) - 1)] || 4;
-    return [fxv('pierce', fp), h('span', { class: 'mc-mx' }, 'ON FROG')]; })() : k.kind === 'charge' ? Object.entries(E.chargeGain(k, k.max, l)).map(([x, v]) => fxv(x, v)) : k.kind === 'luck' ? [usesCardTemplate(k) ? luckTable(l,true) : fxv('atk', E.scaleNum(E.LUCK.top, l))] : k.grudge ? [fxv('atk', k.grudge[l] || 0, 'more')] : k.riposte ? [fxv('block', E.scaleNum(k.fx.block, l))] : k.fx?.frog ? [k.frogPierce?.[l] ? fxv('pierce', k.frogPierce[l]) : null, (k.costLv?.[l] ?? k.cost) !== k.cost ? h('span', { class: 'mc-cover-cost' }, h('small', {}, 'cost'), mg(k.costLv[l])) : null].flat().filter(Boolean) : k.markGold ? [fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))] : []);
+const coverHint = (k, l) => k.id === 'grudge' ? [grudgeEffects(k,l,{},true)] : k.id === 'avalanche' ? [areaEffects(k,l,true)] : ['rain','mark'].includes(k.id) ? [rangerEffects(k,l,true)] : k.id === 'meteor' ? [h('span', { class: 'mc-round-formula' }, HK.icon('atk'), h('b', {}, `${E.roundGain(k,1,l)} ×`), h('small', {}, 'round'))] : k.id === 'finale' ? [areaEffects(k,l,true)] : usesCardTemplate(k) && ['flat','super'].includes(k.kind) && !k.fx?.frog && !k.grudge ? [...templateEffects(k,l,true), ...(k.aoe ? [fxv('atk',E.scaleNum(k.aoe,l),'all')] : [])] : (k.kind === 'scale' ? [mg(k.cost), '=', `${E.powerDice(k, k.cost, l)}×`, die(FX(k), k.dice.s)] : k.kind === 'round' ? [fxv('atk', E.roundGain(k, k.minRound, l), `round ${k.minRound}`)] : k.frogNeed ? (() => { const rs = [1, 2, 3].slice(0, k.max).map((n) => E.frogNeed(k, n, l)); const base = [1, 2, 3].slice(0, k.max).map((n) => E.frogNeed(k, n, 0)); const sure = rs.indexOf(1) + 1; const better = rs.some((v, i) => v !== base[i]); // a level row says only what that level adds
+    return [k.frogPierce?.[l] ? fxv('pierce', k.frogPierce[l]) : null, h('span', { class: 'mc-mx' }, better ? `${E.frogRange(rs[0])} · SURE AT ${sure}` : k.frogPierce?.[l] ? 'ON THE FROG' : `FROG ${rs.map(E.frogRange).join(' · ').toUpperCase()}`)].filter(Boolean); })() : k.kind === 'charge' ? Object.entries(E.chargeGain(k, k.max, l)).map(([x, v]) => fxv(x, v)) : k.kind === 'luck' ? [usesCardTemplate(k) ? luckTable(l,true) : fxv('atk', E.scaleNum(E.LUCK.top, l))] : k.grudge ? [fxv('atk', k.grudge[l] || 0, 'more')] : k.riposte ? [fxv('block', E.scaleNum(k.fx.block, l))] : k.fx?.frog ? [k.frogPierce?.[l] ? fxv('pierce', k.frogPierce[l]) : null, (k.costLv?.[l] ?? k.cost) !== k.cost ? h('span', { class: 'mc-cover-cost' }, h('small', {}, 'cost'), mg(k.costLv[l])) : null].flat().filter(Boolean) : k.markGold ? [fxv('pierce', E.scaleNum(k.fx.pierce, l)), fxv('gold', E.scaleNum(k.markGold, l))] : []);
+function cardTraits(k) {
+  const effects = k.kind === 'charge' ? k.per || {} : k.grudge ? { atk: 1 } : k.kind === 'luck' ? { atk: 1, magic: 1 } : k.fx;
+  const labels = [['atk','Attack'],['block','Block'],['heal','Heal'],['pierce','Pierce'],['free','Reroll'],['weaken','Weaken'],['magic','Magic'],['gold','Gold']].filter(([key]) => effects?.[key]);
+  return h('div', { class: 'mc-traits' }, labels.map(([key,label]) => h('span', { class: `mc-trait ${key}` }, HK.icon(key === 'free' ? 'reroll' : key), label)),
+    k.party ? h('span', { class: 'mc-trait splash' }, k.id === 'mending' ? 'All heroes' : 'Party') : null,
+    k.goldOn ? h('span', { class: 'mc-trait gold' }, HK.icon('gold'), `On ${k.goldOn.face}s`) : null,
+    k.markGold ? h('span', { class: 'mc-trait gold' }, HK.icon('gold'), 'On defeat') : null,
+    k.fx?.frog ? h('span', { class: 'mc-trait transform' }, 'Transform') : null,
+    k.splash ? h('span', { class: 'mc-trait splash' }, '½ Splash') : null,
+    k.aoe ? h('span', { class: 'mc-trait splash' }, 'All enemies') : null,
+    k.riposte ? h('span', { class: 'mc-trait counter' }, 'Counter') : null);
+}
+// Camp shares the reviewed card shell, but has no battle round, damage or stored charges.
+function campRowBody(k, level, p) {
+  if (k.grudge) {
+    const bonus = k.grudge[Math.min(level, k.grudge.length - 1)] || 0;
+    return [h('span', { class: 'mc-camp-formula mc-grudge-rule' }, HK.icon('atk'), h('b', {}, 'Hurt'), bonus ? h('b', {}, `+${bonus}`) : null),
+      h('span', { class: 'mc-mx' }, 'Damage past block last round')];
+  }
+  if (k.kind === 'round') return [h('span', { class: 'mc-camp-formula mc-round-rule' }, HK.icon('atk'), h('b', {}, `${E.roundGain(k, 1, level)} ×`), h('span', {}, 'Round')),
+    h('span', { class: 'mc-mx' }, `Round ${k.minRound}+${k.splash === 'half' ? ' · ½ splash' : ''}`)];
+  if (k.kind === 'scale') {
+    const cost = E.powerCost(k, k.cost, level), n = E.powerDice(k, cost, level), max = E.powerDice(k, E.scaleMax(k, level), level);
+    return [h('span', { class: 'mc-camp-exchange' }, mg(cost), h('span', {}, '→'), h('b', {}, `${n}×`), die(FX(k), k.dice.s)),
+      h('span', { class: 'mc-mx' }, `+1 die per ${E.scaleStep(k)} extra magic · up to ${max}`),
+      k.goldOn ? h('span', { class: 'mc-bonus' }, die(FX(k), k.dice.s, k.goldOn.face), '=', fxv('gold', k.goldOn.gold)) : null];
+  }
+  if (k.frogNeed) {
+    const pierce = k.frogPierce?.[Math.min(level, k.frogPierce.length - 1)] || 0;
+    return [h('span', { class: 'mc-dots fx-weaken', 'aria-label': 'D6 success ranges by charge count' }, h('b', { class: 'mc-frog' }, 'Frog'),
+      Array.from({ length: k.max }, (_, i) => { const range = E.frogRange(E.frogNeed(k, i + 1, level)); return h('span', { class: 'mc-dot' }, range === 'sure' ? '✓' : range); })),
+      pierce ? h('span', { class: 'mc-ln' }, fxv('pierce', pierce)) : null,
+      h('span', { class: 'mc-mx' }, 'D6 · at 1 · 2 · 3 charges'), h('span', { class: 'mc-mx' }, 'A frog skips its attack')];
+  }
+  if (k.kind === 'charge') return [
+    ...rowBody(k, level, { ...p, camp: false, stored: k.max }, level),
+    h('span', { class: 'mc-mx mc-charge-rule' }, `At ${Array.from({ length: k.max }, (_, i) => i + 1).join(' · ')} charges`),
+  ];
+  return rowBody(k, level, { ...p, camp: false }, level);
+}
 function campCover(k, level) {
   const extend = xs => Array.from({ length: level + 1 }, (_, i) => xs[Math.min(i, xs.length - 1)]);
   return coverHint({ ...k, ...(k.grudge ? { grudge: extend(k.grudge) } : {}), ...(k.costLv ? { costLv: extend(k.costLv) } : {}), ...(k.frogPierce ? { frogPierce: extend(k.frogPierce) } : {}) }, level);
 }
 // Presentation only: class library lookup and derived rank/cost; no battle context or purchase callbacks.
-export function campCard(hero, id, { glyph, onUpgrade = null, x = null, stored = null } = {}) {
+export function campCard(hero, id, { glyph, onUpgrade = null }) {
   const k = D.CLASSES[hero.cls]?.cards.find(k => k.id === id);
   if (!k) return null;
   const level = E.powerLevel(hero, id);
-  const cost = x != null ? E.powerCost(k, x, level) : E.powerCost(k, k.cost, level);
-  return card(k, { cls: hero.cls, owner: hero.name, level, x: cost, stored, camp: true, rankCount: Math.min(E.powerLevelsOf(hero) + 1, (k.upgradeMax ?? 3) + 1), onRank: onUpgrade, gold: hero.gold }, glyph);
+  return card(k, { cls: hero.cls, owner: hero.name, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1, onRank: onUpgrade, gold: hero.gold }, glyph);
 }
 export function campChoice(hero, row, { glyph, selected, status, onSelect }) {
-  const k = row.card, level = E.powerLevel(hero, k.id);
-  const el = tile({ select: onSelect }, k.id, k.name, glyph(k, 'pw-g'), E.powerCost(k, k.cost, level), selected,
-    h('span', { class: 'mc-choice-badge rank', 'aria-hidden': 'true' }, `RANK ${LV[level] || 'I'}`));
-  el.classList.add('mc-camp-choice', 'equipped');
+  const k = row.card;
+  const el = tile({ select: onSelect }, k.id, k.name, glyph(k, 'pw-g'), E.powerCost(k, k.cost, E.powerLevel(hero, k.id)), selected,
+    row.equipped ? h('span', { class: 'mc-choice-badge on', 'aria-hidden': 'true' }, '✓') : row.gate ? h('span', { class: 'mc-choice-badge lock', 'aria-hidden': 'true' }, `Lv ${row.gate}`) : null);
+  el.classList.add('mc-camp-choice'); if (row.equipped) el.classList.add('equipped'); if (row.gate) el.classList.add('locked');
   el.setAttribute('aria-label', `${k.name}: ${status}. Inspect power.`);
   return el;
 }
 const frogTrayCounts = new Map();
 function frogTray(k, p) {
-  const loaded = p.camp ? (p.stored != null ? E.frogLoaded(k, p.stored) : 2) : E.frogLoaded(k, p.stored || 0), key = `${p.owner || p.cls}:${k.id}`;
+  const loaded = p.camp ? 0 : E.frogLoaded(k, p.stored || 0), key = `${p.owner || p.cls}:${k.id}`;
   const previous = p.camp ? loaded : (frogTrayCounts.get(key) ?? loaded);
   if (!p.camp) frogTrayCounts.set(key, loaded);
   return h('div', { class: 'fm-tray', 'data-loaded': loaded, 'aria-label': p.camp ? 'Six numbered dice slots' : `${loaded} numbered dice loaded` },
@@ -177,29 +196,23 @@ function frogTray(k, p) {
       h('div', { class: `fm-socket ${i < loaded ? 'filled' : ''}`, 'data-face': i + 1, 'aria-label': `${i + 1}${i < loaded ? ', loaded' : ', empty'}` },
         h('span', { class: 'fm-slot-number', 'aria-hidden': 'true' }, String(i + 1)),
         i < loaded ? h('span', { class: `fm-chit ${i >= previous ? 'arriving' : ''}` }, die('magic', 6, i + 1)) : space(6)))))),
-    h('div', { class: 'fm-rule' }, h('b', {}, loaded ? `Roll d6 · Match 1–${loaded} = Frog` : 'Load 2 dice per cast'),
-      h('small', {}, 'Frog skips its attack')),
+    h('div', { class: 'fm-rule' }, p.camp ? [mg(k.cost), h('span', {}, '→'), h('b', {}, '2 dice')] : h('b', {}, loaded ? `Match ${E.frogMatchRange(k, p.stored)}` : 'Load a pair'),
+      h('small', {}, 'No attack · can defend')),
     k.frogPierce?.[Math.min(p.level || 0, k.frogPierce.length - 1)] ? h('div', { class: 'fm-rank-bonus' }, fxv('pierce', k.frogPierce[Math.min(p.level || 0, k.frogPierce.length - 1)], 'on the frog')) : null);
 }
 function card(k, p, glyph) {
   const cur = p.level || 0;
-  const totalRanks = Math.min(p.rankCount ?? Math.max(4, cur + 1), (k.upgradeMax ?? 3) + 1);
   // camp (Dave, 3 Nov 2026: "use the card dice covers on the card as the upgrade… make that clear"): the next rank's cover is a gold buy button
   const cov = (l, ...kids) => { const price = D.POWER_UPGRADE[l - 1]; const buy = typeof p.onRank === 'function' && l === cur + 1;
     return buy ? h('button', { type: 'button', class: `mc-cov mc-cov-buy${(p.gold ?? 0) < price ? ' poor' : ''}`, 'aria-label': `Upgrade ${k.name} to rank ${LV[l]} for ${price} gold`, onclick: (e) => { e.stopPropagation(); p.onRank(l); } }, ...kids)
       : h('div', { class: 'mc-cov' }, ...kids); };
-  const lv = (l) => h('div', { class: `mc-lv ${l === cur ? 'act' : ''}` }, h('span', { class: 'mc-rn' }, `RANK ${LV[l]}`), h('span', { class: 'mc-sy' }, l === cur ? rowBody(k, l, p, cur) : null),
-    l > cur ? cov(l, h('span', { class: 'mc-lvw' }, h('b', { class: 'mc-up-lbl' }, `UPGRADE · ${LV[l]}`), h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
-  const visibleLevels = p.camp
-    ? Array.from({ length: Math.max(1, totalRanks - cur) }, (_, i) => lv(cur + i))
-    : [lv(cur)];
-  return h('div', { class: `mc-card${k.frogLoad ? ' mc-frog-morph' : ''}${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id, 'data-rank': cur + 1 },
-    h('i', { class: 'mc-under' }),
-    h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
-    h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }),
-    h('div', { class: 'mc-plaque' }, k.name),
-    h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Selected cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)),
-    h('div', { class: 'mc-levels' }, ...visibleLevels));
+  const kick = k.kind === 'scale' ? `${E.scaleStep(k)} magic / die · every round` : k.kind === 'charge' ? 'charge · use · once per round' : `${p.x ?? k.cost} magic · once per round`;
+  const lv = (l) => h('div', { class: `mc-lv ${l === cur ? 'act' : ''}` }, h('span', { class: 'mc-rn' }, LV[l]), h('span', { class: 'mc-sy' }, l === cur ? rowBody(k, l, p, cur) : l < cur ? h('span', { class: 'mc-ln mc-had' }, h('b', {}, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]} ✓`), h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))) : null), // mc1: only the hero's level gets room; the others are one slim line
+    l > cur ? cov(l, h('span', { class: 'mc-lvw' }, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]}`, h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
+  return h('div', { class: `mc-card${k.frogLoad ? ' mc-frog-morph' : ''}${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id, 'data-rank': cur + 1 }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
+    h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(),
+    usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
+    usesCardTemplate(k) ? h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Starting cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, usesCardTemplate(k) ? cardTraits(k) : null, k.frogLoad ? frogTray(k, p) : h('div', { class: 'mc-levels' }, Array.from({ length: p.rankCount ?? Math.max(3, cur + 1) }, (_, l) => lv(l))));
 }
 // the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
 function buttons(ctx, p) {
@@ -313,7 +326,7 @@ function utilityCard(ctx, u, glyph) {
     : h('div', { class: 'mc-util-result is-empty', 'aria-hidden': 'true' }, HK.icon('heal'), h('b', {}, `+${n}`), h('small', {}, 'health'))) : null;
   const effect = heart ? h('div', { class: 'mc-heart-effect' }, heartView.faces)
     : potion ? potionTray(ctx,n) : healExchange(u.cost, n);
-  return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, heart ? heartArtwork() : h('img', { class: 'mc-utility-scene', src: `assets/cards/utilities/${potion ? 'potion-belt' : 'heal'}.webp`, alt: potion ? 'Green healing potions carried on an adventurer’s leather belt' : 'Purple healing magic swirling around an adventurer’s breastplate' })), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), h('div', { class: 'mc-plaque' }, heart ? 'Heart Change' : potion ? 'Health Potion' : u.name), h('div', { class: 'mc-util-panel' }, effect, note)))];
+  return [actions, h('div', { class: 'pw-detail mc-stage' }, h('div', { class: `mc-card mc-reviewed-template mc-utility ${heart ? 'heart' : potion ? 'potion' : 'healing'}`, 'data-card': u.id }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint mc-util-art' }, heart ? heartArtwork() : h('img', { class: 'mc-utility-scene', src: `assets/cards/utilities/${potion ? 'potion-belt' : 'heal'}.webp`, alt: potion ? 'Green healing potions carried on an adventurer’s leather belt' : 'Purple healing magic swirling around an adventurer’s breastplate' })), h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), potion ? lifeCorners() : corners(), h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(u,'mc-flag')), h('div', { class: 'mc-cast-cost', 'aria-label': u.cost ? `${u.cost} magic` : 'No magic cost' }, u.cost ? mg(u.cost) : h('b', {}, 'FREE')), heart ? h('div', { class: 'mc-traits' }, h('span', { class: 'mc-trait counter' }, 'Heart')) : null, h('div', { class: 'mc-plaque' }, heart ? 'Heart Change' : potion ? 'Health Potion' : u.name), h('div', { class: 'mc-util-panel' }, effect, note)))];
 }
 // the whole sheet for a card class. glyph and detailPanel come from powers.js (the helpers keep their current panel).
 export function sheet(ctx, { glyph, detailPanel, tally }) {
