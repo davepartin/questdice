@@ -263,6 +263,26 @@ not the absolute numbers. About 16 to 24 fights a cell, so a 10-point gap is noi
 5. Watch: a Bronze Dagger lost a little at d6 (75% against 94% today, inside the noise but worth a bigger run); the Sword's gold
    is modest (+0.7 gold a throw at Gold), which suits the economy we just tightened.
 
+
+## The bigger run (12 fights a step, 48 to 72 fights a cell; Dagger and Staff after their final nudge)
+
+Win rate, today -> plan. At this size a 7-point gap is still within luck.
+
+| Weapon | Metal | d4 | d6 | d8 | d10 |
+|---|---|---|---|---|---|
+| Dagger | Bronze | 96% -> 94% | 90% -> 85% | 50% -> 46% | 39% -> 33% |
+| Dagger | Gold | 96% -> 98% | 94% -> 90% | 58% -> 57% | 39% -> 39% |
+| Sword | Bronze | 100% -> 100% | 85% -> 88% | 50% -> 57% | 32% -> 46% |
+| Sword | Gold | 98% -> 100% | 90% -> 88% | 65% -> 60% | 43% -> 51% |
+| Axe | Bronze | 94% -> 100% | 88% -> 88% | 58% -> 64% | 31% -> 44% |
+| Axe | Gold | 98% -> 98% | 88% -> 94% | 75% -> 72% | 50% -> 54% |
+| Staff | Bronze | 98% -> 98% | 85% -> 81% | 56% -> 43% | 43% -> 38% |
+| Staff | Gold | 96% -> 100% | 85% -> 88% | 60% -> 69% | 43% -> 49% |
+| Round Shield | Bronze | 100% -> 100% | 81% -> 92% | 57% -> 57% | 32% -> 36% |
+| Round Shield | Gold | 98% -> 100% | 94% -> 94% | 67% -> 61% | 46% -> 43% |
+
+Reading: every Gold weapon is level with today or better. Bronze Sword, Axe and Shield are level or better. **Bronze Dagger and Bronze Staff sit about 5 points under today** at the bigger sizes (Dagger d6 85% vs 90%, d10 33% vs 39%; Staff d10 38% vs 43%), inside the luck of this run but in the same direction each time. Raising their numbers a step moved the Staff's d10 from 26% to 38%; the Dagger barely moved. The likely reason for the Dagger: today's Bronze Dagger carries a block face and the new one is all attack (about 1 less block a throw), so it hits harder per throw but takes more. Watch both in play; one more step on each is easy.
+
 ## Save-swap map (Grok asked for it before any cut; nothing applied yet)
 
 Each retired weapon becomes the new weapon with the same job, **keeping its metal (Bronze/Silver/Gold), its die size, its uid
