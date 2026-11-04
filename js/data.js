@@ -1087,7 +1087,7 @@ export const ACTS = [
     boss: ['vharaxis'],
     help: ['Wyrmwatch', 'Hoardfall Mine'],
     route: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Kettle Tarn', 'Ember Throne slopes', 'The Ember Throne'],
-    fightHp: { 2: 1.2, 3: 1.2, 6: 1.2, 7: 1.25, 8: 1.2 }, // heroes are strong by Act III: the quieter steps and Oathbreak Keep stand up to them
+    fightHp: { 2: 1.2, 3: 1.2, 4: 0.85, 6: 1.0, 7: 1.25, 8: 1.2 }, // heroes are strong by Act III: the quieter steps and Oathbreak Keep stand up to them
     fights: [
       ['cinderling', 'cinderling'],              // 1 Kindling Steps
       ['basilisk', 'shieldbearer'],              // 2 The Glass Fields — Glarefang's stare (Nov 2026: was a Gloom Stalker, an Act II foe)
@@ -1097,7 +1097,7 @@ export const ACTS = [
       ['yeti', 'frostwhelp'],                    // 6 Kettle Tarn — Big Muriel's hot spring
       ['fallenchampion'],                        // 7 Oathbreak Keep — mid-boss (pinned)
       ['frostwhelp', 'frostwhelp'],              // 8 Kettle Tarn again (story: PLACES 'kettle-tarn'.again), when no one called for help
-      ['ashwyrm', 'stormtyrant'],                // 9 Ember Throne slopes — the Queen's last guard: Vexmor, the knight who kept his oath
+      ['stormtyrant', 'shieldbearer'],           // 9 Ember Throne slopes — the Queen's last guard: Vexmor, the knight who kept his oath
       ['vharaxis'],                              // 10 The Ember Throne — boss (pinned)
     ],
     // Pin the set-piece fights so Oathbreak Keep is a proper boss and the Queen is the finale.
