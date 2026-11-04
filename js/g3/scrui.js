@@ -308,7 +308,7 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
   return shWeapon(inst, acts, `pk ${cls}`, badge, money);
 }
 // the full card, large, from any row or thumbnail
-function showWeaponCard(inst, money, { real = false, acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
+function showWeaponCard(inst, money, { real = !inst?.diamond && inst?.id !== 'fists', acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
   // Dave (3 Nov 2026): the card near the top, Close on its top-right corner like the rest of the game, its buttons right under it, no scrolling
   const close = modal(h('div', { class: 'form cw-modal cw-cardpop' },
     h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money),
