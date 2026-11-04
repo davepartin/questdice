@@ -226,7 +226,8 @@ export function synergyList(ev, mods) {
   } else { const two = tri.length === 2; // two side by side: short names so neither gets cut off
     for (const t of tri) out.push({ key: `t-${t.name}`, kind: 'good', icon: t.kind, text: two ? `${t.name.replace(/\s*Triple$/i, '').toUpperCase()}!` : `${t.name.toUpperCase()}!`, sub: `${two ? 'Triple · ' : ''}+${t.bonus ?? 10} ${t.kind === 'atk' ? 'attack' : 'block'}` }); }
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
-  if (ev.heartBoost) out.push({ key: 'hb', kind: 'good', icon: 'heart', text: 'HEART BOOST', sub: `+${ev.heartBoost.n} ${ev.heartBoost.sym}` }); // the heart backs every die showing its symbol
+  // (Heart Boost is no longer a banner: Dave, 4 Nov 2026, "it looks like real combo news". The glowing rings on the Heart and the dice it
+  // backs show it, and its amount is already in the forecast totals above.)
   if (ev.arrow) { const a = ev.arrow; out.push({ key: `ar-${a.kind}`, kind: 'good', icon: a.kind === 'pierce' ? 'pierce' : a.kind === 'fire' ? 'stagger' : 'weaken', // the lab's arrowheads (js/lab.js)
     text: `${a.kind === 'pierce' ? 'PIERCING' : a.kind.toUpperCase()} ARROW`, sub: arrowBannerSub(a, WEAPONS2.arrowRules) }); }
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
