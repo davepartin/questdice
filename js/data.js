@@ -230,7 +230,7 @@ export const LEGENDARY = Object.keys(WEAPONS).filter((id) => WEAPONS[id].legenda
 // Every entry is one face: R4 is a red 4, B0 a blue blank (a coloured +0: the hand's number still goes to block). Repeats are allowed;
 // no number passes the die's size. The Round Shield is the Sword with its colours swapped, the Tower Shield the Axe.
 // Top-row triples (left weapon, head, right weapon) stay as they are today: any two weapons showing the head's number qualify.
-export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: true };
+export const EXPERIMENT = { weapons2: false, weaponSize: false, heartUpgrades: true, weapons3: false };
 // T17 weapon size (an isolated experiment, off in the game and in every preview but /preview/weapon-size/; docs/team/tasks/T17.md). With it on: weapons
 // never wear out; a weapon's die is its SIZE (no hand ceiling); size is bought one step at a time at camp for the prices below (the same for every
 // weapon and metal); a sale returns half what the weapon was worth AS FOUND (a bought size adds nothing and is never refunded); Diamonds stay out of
@@ -306,6 +306,28 @@ export const WEAPONS2 = {
   loot: { sword: 10, dagger: 10, axe: 8, spear: 8, shield: 10, tower: 7 },
   classes: { knight: ['sword', 'shield'], ranger: ['quiver', 'bow'], wizard: ['dagger', 'shield'], dwarf: ['axe', 'tower'], bard: ['dagger', 'shield'] }, // every class starts with a left weapon and a right shield (the Ranger: Arrows and Bow); T21, 25 Oct 2026
   diamondPool: ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower'],
+};
+// T29 (Dave, 4 Nov 2026): six weapons with clear personalities, an EXPERIMENT (EXPERIMENT.weapons3, off; tools/t29-weapons.mjs).
+// Numbers only on the faces (R attack, B block; no hidden +1s). Metal adds the weapon's own icon, never numbers: Bronze on its top
+// face, Silver on the top half, Gold on every face that can carry it, the top face a crit of 1, 2 or 3; the Sword's Gold top face
+// also carries pierce. A face's number still counts for triples and straights. The Bow and its Arrows are unchanged.
+export const WEAPONS3 = {
+  faces: {
+    dagger: { 4: 'R1 R2 R2 R3', 6: 'R1 R2 R3 R3 R3 R4', 8: 'R1 R2 R3 R3 R4 R4 R5 R6', 10: 'R2 R3 R3 R4 R4 R5 R5 R6 R6 R7' },
+    sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R3 B4 R5', 8: 'R0 B2 R2 R3 B4 R5 R6 R7', 10: 'R0 B2 R2 R3 B4 R5 R6 B6 R8 R9' },
+    axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R0 R4 R6 R6', 8: 'R0 R0 R0 R3 R5 R6 R7 R8', 10: 'R0 R0 R0 R0 R5 R6 R7 R8 R9 R10' },
+    staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R4 B4 R5', 10: 'B1 R2 B2 R3 B3 R4 B4 R5 B5 R6' },
+    shield: { 4: 'B0 R2 B2 B4', 6: 'B0 R2 B2 B3 R4 B5', 8: 'B0 R2 B2 B3 R4 B5 B6 B7', 10: 'B0 R2 B2 B3 R4 B5 B6 R6 B8 B9' },
+  },
+  // the icon each weapon carries: own colour (r attack, b block); the staff carries magic on attack faces and heal on block faces
+  sig: { dagger: { r: 'pierce' }, sword: { r: 'loot', pair: 'pierce' }, axe: { r: 'splash' }, staff: { r: 'magic', b: 'heal' }, shield: { b: 'heal' } },
+  because: {
+    dagger: 'Steady hits, no blanks, and lots of matching numbers for triples. Pierce slips past armour.',
+    sword: 'A bit of everything, a little guard, and gold when it lands. The best face pierces too.',
+    axe: 'Big swings. Some blanks, but the top faces hit hard and splash onto the other monsters.',
+    staff: 'Two hands, half attack and half block: magic on every strike, healing on every guard.',
+    shield: 'Stay standing: big blocks that heal you.',
+  },
 };
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
 export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows

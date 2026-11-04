@@ -9,7 +9,7 @@ import {
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
-  BUNDLE_ODDS, bundlePrice, guardianOf,
+  BUNDLE_ODDS, bundlePrice, guardianOf, WEAPONS3,
 } from './data.js';
 import { TRAINING, trainingRanks } from './training.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -118,6 +118,7 @@ export function weaponFaces(inst, rollSize) {
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
+  if (EXPERIMENT.weapons3 && WEAPONS3.faces[inst.id]) return faces3(inst.id, Math.min(2, inst.rarity | 0), size); // T29 experiment
   // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below, in the weapon-size preview or with WEAPON_SIZE.cumulative on; none is installed in the release
   const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
   if (lad) return lad.map((f) => ({ ...f }));
@@ -134,6 +135,17 @@ export function weaponFaces(inst, rollSize) {
     if (lo >= 0) faces[lo] = { v: 0, c: own };
   }
   return metalIcons(def, faces, tier, temper, own);
+}
+// T29: a weapon's faces from WEAPONS3 (numbers) plus its own icon by metal (Bronze the top face, Silver the top half, Gold every face
+// that can carry it; the top face a crit of 1, 2 or 3; the Sword's Gold top face pierces too).
+function faces3(id, tier, size) {
+  const row = WEAPONS3.faces[id]; const sig = WEAPONS3.sig[id];
+  const faces = (row[size] || row[4]).split(' ').map((t) => ({ v: Number(t.slice(1)), c: t[0] === 'B' ? 'b' : 'r' }));
+  const live = faces.map((f, k) => ({ f, k })).filter((x) => x.f.v > 0 && sig[x.f.c]).sort((a, b) => b.f.v - a.f.v || b.k - a.k);
+  const n = live.length; const count = Math.min(n, tier >= 2 ? n : tier === 1 ? Math.max(2, Math.ceil(n / 2)) : 1);
+  live.slice(0, count).forEach((x, i) => { x.f.fx = { [sig[x.f.c]]: i === 0 ? [1, 2, 3][tier] : 1 }; });
+  if (tier >= 2 && sig.pair && live[0]) live[0].f.fx[sig.pair] = (live[0].f.fx[sig.pair] || 0) + 1;
+  return faces;
 }
 // Metal adds abilities, never numbers: icons on the top faces, from the weapon's own symbols (Bronze one face, Silver half of them,
 // Gold every face of both colours), the top face a crit of 1, 2 or 3. Today's weapons and the weapons experiment share this rule.
