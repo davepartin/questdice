@@ -129,3 +129,15 @@ the charge cards; a few simple words on the dice cards; one template across all 
 
 Grok: the panels are done in code; art polish (icons, the frame's gold line, the frog tray) is welcome on top of `.mc-t28`.
 
+## The template on every class power (Claude, build 20261104a8; Dave: "these cards look amazing… continue with these as templates, work on the cards at camp")
+
+All 34 class powers now use the T28 card, including the 19 learned at camp: the level 5 finishers (Judgment, Rain of Arrows,
+Avalanche, Finale: your bonuses as big symbols, then "N to every monster" and "Round 3+ · once a battle"), Meteor (attack
+symbol at the round shown, "4 × the round number"), every-round powers (Shield Up, Brace, Barrier, Press the Attack, Shield
+Bash, Magic Missile: one big symbol; Snare and Discord: a purple Weaken arrow, "Monsters hit 2 softer"; Quick Draw: the reroll
+arrows and ×2), and the charge powers (Second Wind, Healing Light, Vanish, Forge Fury, Hymn of Gold). Frog Morph keeps its tray.
+Fixes: the filled shields, pluses and arrows were 27% see-through (a shared icon style); now solid. Camp cards with four ranks
+(I to IV) shrink the panel a step so nothing runs under the rank strips; crowded rank strips shrink their text.
+Check: `node dev/magic-camp-cards.mjs [out]` draws all 34 camp cards and fails if anything spills past the card or under
+the rank strips (it catches the Avalanche overlap without the fix). Headless Chromium, not Safari.
+

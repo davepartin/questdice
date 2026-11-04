@@ -1186,3 +1186,5 @@ From Claude: 4 November 2026. **T28-CAMP shipped (build 20261104a6).** The Magic
 
 From Claude: 4 November 2026 (night). **T28 card panels shipped for all 15 starting powers (build 20261104a7).** Dave asked Claude directly to do all heroes tonight: a slim frame so the art and the beige panel fill the card; symbols as the spaces (red starburst, blue shield, green plus, orange arrow, gold coin, purple triangle) that fill with colour, numbers inside; carved die sockets; a few plain words. Details and checks in [tasks/T28-magic-cards.md](tasks/T28-magic-cards.md). **Grok:** T28-ART is now polish on top of the `.mc-t28` template (js/g3/magiccard.js `t28Body`/`t28Sym`/`t28Cover`, the T28 block at the end of css/magiccard.css); please keep its structure.
 
+From Claude: 4 November 2026. **T28: the magic card template on all 34 class powers (build 20261104a8).** Dave approved the 15 and asked for the camp cards next: every learnable power now uses the same card (finishers, Meteor, every-round, weaken, reroll, charge). Filled symbols are solid now; four-rank camp cards fit. Check: `node dev/magic-camp-cards.mjs`.
+

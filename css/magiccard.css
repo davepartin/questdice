@@ -765,3 +765,26 @@
 .t28{gap:2cqi}
 .t28-sym .f{stroke-linejoin:round}
 .t28-one .t28-sym.big{width:27cqi;height:27cqi}
+/* T28 for every class power (the camp's learnable ones too) */
+.t28-sym.fx-weaken{--c:#9b7bd1;--e:#3d2a66}.t28-w.fx-weaken,.t28-cv.fx-weaken{color:#5b3fa0}
+.t28-one.n2 .t28-sym{width:22cqi;height:22cqi}.t28-one.n3 .t28-sym{width:19cqi;height:19cqi}
+.t28-all{display:inline-flex;align-items:center;gap:1.6cqi;padding:.8cqi 2.6cqi;border-radius:99px;background:#cf25251a;font:800 4.4cqi/1 var(--ui,sans-serif);color:#7a1414}
+.t28-all .t28-sym{width:11cqi;height:11cqi}
+.t28-reroll{width:24cqi;height:24cqi;stroke:#7434c8;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.t28-reroll .s{stroke:#7434c8;fill:none}
+.t28-big{font:900 14cqi/1 var(--font-number,var(--ui,sans-serif));color:#7434c8}
+.t28-cvrow{display:inline-flex;align-items:center;justify-content:center;gap:2.4cqi;min-width:0;max-width:100%;white-space:nowrap}
+.t28-cvrow.n3{gap:1.8cqi}.t28-cvrow.n3 .t28-cv{font-size:4.8cqi}
+.t28-cvrow.n4,.t28-cvrow.n5{gap:1.2cqi}.t28-cvrow.n4 .t28-cv,.t28-cvrow.n5 .t28-cv{font-size:4.1cqi;gap:.3cqi}.t28-cvrow.n4 .ic,.t28-cvrow.n5 .ic{width:3.6cqi!important;height:3.6cqi!important}
+.t28-sym.fx-weaken{--c:#7a5cc0;--e:#2e1f55}
+/* the shared icon style paints shields, pluses and arrows 27% see-through; on these cards a filled symbol is solid */
+.t28-sym.on .p,.t28-sym.on .f{fill-opacity:1!important;fill:var(--c)!important;stroke:var(--e)!important}
+.t28-sym.off .p,.t28-sym.off .f{fill-opacity:1!important}
+/* four ranks on a camp card (I to IV): a little less room for the panel, so everything shrinks a step */
+.t28.tight{gap:1.2cqi;padding-top:4.6cqi}
+.t28.tight .t28-sym.big{width:22cqi!important;height:22cqi!important}.t28.tight .t28-one.n2 .t28-sym,.t28.tight .t28-one.n3 .t28-sym{width:16cqi!important;height:16cqi!important}
+.t28.tight .t28-dice{--ds:15cqi}.t28.tight .t28-dice.n5{--ds:13cqi}.t28.tight .t28-dice.n6{--ds:11.4cqi}
+.t28.tight .t28-charge.rows1 .t28-sym{width:15cqi;height:15cqi}.t28.tight .t28-charge.rows2 .t28-sym{width:12cqi;height:12cqi}
+.t28.tight .t28-say{font-size:4.3cqi}.t28.tight .t28-plain{font-size:3.9cqi}.t28.tight .t28-fine{font-size:3.4cqi}
+.t28.tight .t28-all{font-size:3.9cqi;padding:.5cqi 2cqi}.t28.tight .t28-all .t28-sym{width:9cqi;height:9cqi}
+.t28.tight .t28-reroll{width:18cqi;height:18cqi}.t28.tight .t28-big{font-size:11cqi}
