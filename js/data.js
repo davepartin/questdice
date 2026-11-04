@@ -325,10 +325,11 @@ export const WEAPONS3 = {
   per: { axe: 2, staff: 2 },
   because: {
     dagger: 'Steady hits, no blanks, and lots of matching numbers for triples. Pierce slips past armour.',
-    sword: 'A bit of everything, a little guard, and gold when it lands. The best face pierces too.',
+    sword: 'A bit of everything: mostly attack, a little guard, and gold when it lands. A Gold sword\'s best face pierces too.',
     axe: 'Big swings. Some blanks, but the top faces hit hard and splash onto the other monsters.',
     staff: 'Two hands, half attack and half block: magic on every strike, healing on every guard.',
     shield: 'Stay standing: big blocks that heal you.',
+    bow: 'Choose your arrows before the fight: Normal, Piercing, Fire or Frost. The Bow and its Arrows stay as they are.',
   },
 };
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
