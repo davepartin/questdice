@@ -1040,7 +1040,7 @@ export const ACTS = [
     route: ['Cinder Ford', 'Burnt Orchard', 'Ravens’ Rest', 'Wolfwood Edge', 'The Toll Bridge', 'Smoke Hollow', 'Ashfall Camp', 'Smoke Hollow', 'Ashfall Camp', 'Gallows Hill'],
     // First pass only (acts 1–3). Difficulty scales HP / damage / summoned adds, never this cast.
     // fightHp: a step's monsters are sturdier (>1) or frailer (<1) than the act's growth gives them, to keep a crowd fair for the level it is met at.
-    fightHp: { 2: 0.9, 4: 0.85, 7: 0.55, 9: 0.6 }, // (honest dice: a new hero's Bronze d4 has a blank, so the cinderling and the wolf pair ease off)
+    fightHp: { 2: 0.9, 4: 0.85, 7: 0.55, 9: 0.5 }, // T27: step 9 is now the Ash-Tusk Raider with Pog and Nib (0.6 -> 0.5) // (honest dice: a new hero's Bronze d4 has a blank, so the cinderling and the wolf pair ease off)
     fights: [
       ['goblin'],                          // 1 Cinder Ford — the lesson
       ['cinderling', 'goblin'],            // 2 Burnt Orchard — a bickering pair
@@ -1063,7 +1063,7 @@ export const ACTS = [
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
-    fightHp: { 3: 0.5, 6: 1.2, 7: 1.15, 8: 1.2, 9: 1.15 }, // the back half of the crypt pushes harder (Oct 2026 tuning)
+    fightHp: { 3: 0.5, 6: 1.2, 7: 1.15, 8: 1.2, 9: 1.3 }, // T27: step 9 is now the Vault Sentinel and the Nightblade (1.15 -> 1.3) // the back half of the crypt pushes harder (Oct 2026 tuning)
     fights: [
       ['skeleton', 'skeleton'],                  // 1 The Weeping Stair
       ['wraith', 'skeleton'],                    // 2 Candle Vault
