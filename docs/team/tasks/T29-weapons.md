@@ -332,3 +332,18 @@ retired weapon and check each lands where this table says.
   Act II boss 80% vs 69-77%, Act III boss 86% vs 69-74%, the Act III slope 73% vs 74%); with 2 campaigns a class one lost run
   moves a class from 2 to 1, so this is within luck. Watch it in play.
 
+## The new weapon cards (build 20261104b3; Dave: "fonts are too small… large words is always better than two sentences of tiny words")
+
+- `weaponCardT29` in js/g3/cards.js (used whenever the six weapons are live): the magic cards' look, a slim gold edge, the
+  painting on top with the die size badge (d4 to d10) and the sell chip, the name in big type, then a beige panel with:
+  **a few big words** (`WEAPONS3.short`: "Steady hits. Triples. Pierce.", "A bit of everything. Gold.", "Big swings. Splash.",
+  "Magic and healing.", "Big blocks that heal.", "A light bow. A little guard.", "Choose your arrows."), **the faces as
+  symbols** (a red starburst for attack, a blue shield for block, the number inside in heavy type, a blank face faded) with
+  the weapon's icon and its crit under each face, **a key** naming the icons on this die, and **one slim strip per bigger
+  die** ("d8 · up to 5 · 100 gold"; the next one lit; tapping a later one says which comes first).
+- On a phone the few words are about 24 px and the face numbers larger; nothing smaller than about 14 px.
+- The Staff had no painted weapon art: a stand-in cropped from the Wizard's Barrier painting (assets/cards/weapons/staff-wide.webp)
+  until the art team paints one (Bronze, Silver and Gold, like the Dagger's wide pictures).
+- Checks: `node dev/weapon-cards-t29.mjs` (all 84: 7 weapons x 3 metals x 4 sizes, fails if anything spills or the parts are
+  out of order) and `node dev/weapon-grow-check.mjs` (real taps in camp: open, grow d4 to d6 for 50 gold, the shelf).
+

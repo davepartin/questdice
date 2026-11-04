@@ -2,7 +2,7 @@
 // number and die face is live text and a change to a price, a wear rule or a face shows up here by itself. The images are only
 // text-free layers (frame, scene, painted weapon). Everything in this module only READS: it never calls a wear, sell, buy or save
 // function, so drawing a card cannot change a weapon or a hero (test/cards.test.mjs checks that).
-import { WEAPONS, RARITY, WEAPONS2, EXPERIMENT, WEAPON_SIZE, tierName, isLegendary } from '../data.js';
+import { WEAPONS, RARITY, WEAPONS2, WEAPONS3, EXPERIMENT, WEAPON_SIZE, WEAPON_TRAINING, tierName, isLegendary } from '../data.js';
 import { priceChipHtml } from './price.js'; // the one shared price chip
 import { weaponFaces, weaponSize, battlesLeft, wearLabel, sellValue, diamondSellValue } from '../engine.js';
 import { BONUS_GOALS, CARDS, bonusStake, bonusG, rewardChips, rewardTerms, gOf } from '../secrets.js';
@@ -10,7 +10,7 @@ import { BONUS_GOALS, CARDS, bonusStake, bonusG, rewardChips, rewardTerms, gOf }
 const ART = new URL('../../assets/cards/', import.meta.url).href;
 const WART = `${ART}weapons/`;
 // One painted master per weapon TYPE. A type missing here gets the labelled silhouette; a legendary uses its model's art.
-export const WEAPON_ART = { dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' };
+export const WEAPON_ART = { staff: 'staff', dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' };
 // baked steel-only tints (wood and leather keep their colour); the mace has only the neutral file
 const BAKED = new Set(['dagger', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver']);
 
@@ -23,6 +23,7 @@ export const SYM = {
   atk: { c: '#ff4b4b', d: 'M12 1 L14.4 6.3 L19.8 4.2 L17.7 9.6 L23 12 L17.7 14.4 L19.8 19.8 L14.4 17.7 L12 23 L9.6 17.7 L4.2 19.8 L6.3 14.4 L1 12 L6.3 9.6 L4.2 4.2 L9.6 6.3 Z' },
   block: { c: '#3aa4ff', d: 'M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z' },
   arrow: { c: '#e8e2d4', d: 'M12 1.5 L19 12 L14.6 10.4 V22.5 H9.4 V10.4 L5 12 Z' },
+  splash: { c: '#ff6a3a', d: 'M5.5 13.5 a3 3 0 1 0 0.01 0 Z M12 5 a3.6 3.6 0 1 0 0.01 0 Z M18.5 13.5 a3 3 0 1 0 0.01 0 Z M12 16.5 a2.4 2.4 0 1 0 0.01 0 Z' },
   star: { c: '#ffe08a', d: 'M12 2 L20 12 L12 22 L4 12 Z' },
 };
 export const ico = (k, cls = '') => { const s = SYM[k] || SYM.star; return `<svg class="${cls}" viewBox="0 0 24 24" style="color:${s.c}" aria-hidden="true"><path fill="currentColor" d="${s.d}"/></svg>`; };
@@ -36,6 +37,9 @@ export const ammoOf = (inst) => (inst.id !== 'quiver' ? null : WEAPONS2.ammo[ins
 // over every size not yet bought. Needs the cumulative face table; without it (or for a Diamond, a legendary, Fists) the plain tray is shown.
 const SIZES17 = [4, 6, 8, 10];
 export function sizeRows(inst) {
+  if (EXPERIMENT.weapons3 && WEAPON_TRAINING.on && !inst.diamond && inst.id !== 'fists' && !WEAPONS[inst.id]?.legendary) { // T29: the grow strips (the camp card sets the live prices too)
+    const size = weaponSize(inst); let prev = 0; return SIZES17.map((s) => { const r = { size: s, from: prev, faces: weaponFaces({ ...inst, size: s }), owned: s <= size, price: prev ? WEAPON_TRAINING.prices[prev] || 0 : 0 }; prev = s; return r; });
+  }
   if (!EXPERIMENT.weaponSize || !WEAPON_SIZE.ladder || inst.diamond || inst.id === 'fists' || WEAPONS[inst.id]?.legendary) return null;
   const size = weaponSize(inst); let prev = 0; const rows = [];
   for (const s of SIZES17) { const faces = weaponFaces({ ...inst, size: s }); if (faces.length !== s) return null; rows.push({ size: s, from: prev, faces, owned: s <= size, price: prev ? WEAPON_SIZE.prices[prev] : 0 }); prev = s; }
@@ -106,13 +110,46 @@ const faceWords = (f) => `${f.arrow ? `${f.arrow} arrowhead, ` : ''}${f.c === 'b
 function weaponArt17(d) {
   const key = artKey(d); const m = key ? bakedMetal(d, key) : '';
   if (key === 'dagger' && ['bronze', 'silver', 'gold'].includes(m)) return `<img class="art9" src="${WART}dagger-${m}-wide.webp" alt="${esc(d.name)}">`;
+  if (key === 'staff') return `<img class="art9" src="${WART}staff-wide.webp" alt="${esc(d.name)}">`; // T29: a stand-in from the Wizard's Barrier painting until the Staff has its own (art wishlist)
   if (!key) return `<div class="ph17">${esc(d.name)}<small>art to come</small></div>`;
   return `<div class="win scene-forge"><img class="art${m ? '' : ' tint-' + d.metal.toLowerCase()}" src="${WART}${key}-${m ? m + '-' : ''}512.webp" alt="${esc(d.name)}"></div>`;
 }
 const figureOf = (f, i) => `<figure class="d17 ${f.c === 'b' ? 'b' : 'r'}${f.v === 0 ? ' z' : ''}" role="img" aria-label="face ${i + 1}: ${faceWords(f)}"><span class="ph17t">+${f.v}</span></figure>`;
 const coverHtml = (r) => `<div class="cov tok" role="button" tabindex="0" data-step="${r.size}" aria-label="Dice cover: upgrade d${r.from} to d${r.size} for ${r.price} gold"><span class="ct"><b>UPGRADE</b><small>d${r.from} → d${r.size} · +${r.size - r.from} faces</small></span><span class="cp">${priceChipHtml(r.price)}</span></div>`;
 const rowHtml = (r) => `<div class="row s${r.size}${r.owned ? '' : ' locked'}" data-size="${r.size}"><span class="sz"><small>Size</small>d${r.size}</span><div class="dz" data-sides="${r.size}" data-from="${r.from}" data-faces="${esc(JSON.stringify(dieFaces(r.faces)))}" style="--dw:${{ 4: 13.4, 6: 14.2, 8: 14.8, 10: 15 }[r.size]}cqi">${r.owned ? r.faces.slice(r.from).map((f, i) => figureOf(f, r.from + i)).join('') : ''}</div>${r.owned ? '' : coverHtml(r)}</div>`;
+// ---- T29 weapon card (Dave, 4 Nov 2026: clear, big type you can read on a phone; "large words is always better than two sentences
+// of tiny words"). The magic cards' look: a slim gold frame, the painting and the beige panel fill the card. The faces are the symbols
+// themselves, a red starburst for attack and a blue shield for block, the number inside, the weapon's icon under it; a few big words;
+// each bigger die it can grow into is one slim strip with its new faces and its price. Every number comes from weaponFaces.
+const ICON_NAME = { pierce: 'Pierce', gold: 'Gold', loot: 'Gold', splash: 'Splash', magic: 'Magic', heal: 'Heal' };
+const fxList = (f) => Object.entries(f.fx || {}).map(([k, n]) => [k === 'loot' ? 'gold' : k, n | 0]).filter(([, n]) => n > 0);
+const symSvg = (k, v, cls = '') => { const s = SYM[k]; const t = String(v); const fs = t.length >= 3 ? 7 : t.length === 2 ? 9 : 11; const y = k === 'block' ? 16.2 : 16;
+  return `<svg class="t29s ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${s.d}"/><text x="12" y="${y}" text-anchor="middle" font-size="${fs}">${esc(t)}</text></svg>`; };
+function tileT29(f, i, { mini = false } = {}) {
+  const c = f.c === 'b' ? 'b' : 'r'; const fx = fxList(f); const k = c === 'b' ? 'block' : 'atk';
+  const words = `${c === 'b' ? 'block' : 'attack'} ${f.v}${f.arrow ? `, ${f.arrow} arrowhead` : ''}${fx.length ? `, ${fx.map(([x, n]) => `${ICON_NAME[x] || x}${n > 1 ? ' ×' + n : ''}`).join(', ')}` : ''}`;
+  const head = f.arrow ? `<i class="t29-ah am-${f.arrow}">${ico('arrow')}</i>` : '';
+  return `<div class="t29-f ${c}${f.v === 0 ? ' z' : ''}${mini ? ' mini' : ''}" role="img" aria-label="${mini ? '' : `face ${i + 1}: `}${esc(words)}">${symSvg(k, f.v)}${head}<span class="t29-fx">${fx.map(([x, n]) => `<i class="t29-i i-${x}">${ico(x)}${n > 1 ? `<b>${n}</b>` : ''}</i>`).join('')}</span></div>`;
+}
+const topOf = (faces) => faces.reduce((a, f) => (f.v > a.v || (f.v === a.v && fxList(f).length > fxList(a).length) ? f : a), faces[0]); // a bigger die's best face
+const pitchOf = (d) => WEAPONS3.short?.[d.id] || WEAPONS3.short?.[WEAPONS[d.id]?.model] || '';
+function weaponCardT29(d) {
+  const name = `${d.metal} ${d.name}`; const owned = d.faces;
+  const n = owned.length; const ups = (d.rows || []).filter((r) => !r.owned);
+  const used = [...new Set(owned.flatMap((f) => fxList(f).map(([x]) => x)))];
+  const nf = name.length > 22 ? 6.6 : name.length > 16 ? 7.8 : 9;
+  return (`<article class="qc17 qc-weapon t29 metal-${d.metal.toLowerCase()} n${n}${ups.length ? ` ups${ups.length}` : ''}" data-kind="weapon" data-size="${d.size}" aria-label="${esc(`${name}, d${d.size}`)}">
+    <div class="t29-art">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small>${priceChipHtml(d.money)}</div>` : ''}<span class="t29-die">d${d.size}</span></div>
+    <div class="t29-name"><span style="font-size:${nf}cqi">${esc(name)}</span></div>
+    <div class="t29-panel">
+      ${pitchOf(d) ? `<p class="t29-pitch">${esc(pitchOf(d))}</p>` : ''}
+      <div class="t29-faces c${n <= 4 ? n : n === 6 ? 6 : 5}">${owned.map((f, i) => tileT29(f, i)).join('')}</div>
+      ${used.length ? `<div class="t29-key">${used.map((x) => `<span class="i-${x}">${ico(x)}${ICON_NAME[x] || x}</span>`).join('')}</div>` : ''}
+      ${ups.length ? `<div class="t29-ups">${ups.map((r, i) => `<button type="button" class="t29-up${i === 0 ? ' next' : ''}" data-step="${r.size}" aria-label="Grow to d${r.size} for ${r.price} gold: ${r.size} faces, the best ${topOf(r.faces).v}"><b class="t29-to">d${r.size}</b><span class="t29-new">${tileT29(topOf(r.faces), 0, { mini: true })}<span>Up to ${topOf(r.faces).v}</span></span><span class="t29-cost">${priceChipHtml(r.price)}</span></button>`).join('')}</div>` : ''}
+    </div></article>`);
+}
 export function weaponCardHtml(d) {
+  if (EXPERIMENT.weapons3) return weaponCardT29(d);
   if (d.rows) return weaponCardSized(d);
   const n = d.faces.length; const tray = TRAY[n] || TRAY[4]; const name = `${d.metal} ${d.name}`; const kinds = badgeKinds(d.faces); const df = JSON.stringify(dieFaces(d.faces));
   const tf = name.length > 26 ? 4.2 : name.length > 20 ? 5.2 : 6.4;
@@ -156,7 +193,17 @@ export function hydrateDice(root) {
   }
 }
 // opts.onBuy(step) -> true when the size was bought, or a short reason (a size card only; without it the covers are for show).
-export const weaponCardEl = (d, opts = {}) => { const e = el(weaponCardHtml(d)); hydrateDice(e); if (d.rows) wireSizes(e, d, opts); return e; };
+export const weaponCardEl = (d, opts = {}) => { const e = el(weaponCardHtml(d)); if (e.classList.contains('t29')) { wireT29(e, opts); return e; } hydrateDice(e); if (d.rows) wireSizes(e, d, opts); return e; };
+// T29: tap the next strip to grow the die (the caller's onBuy says yes, or why not); a later strip says which comes first
+function wireT29(card, { onBuy, onBought } = {}) {
+  let toastT;
+  const say = (t, text) => { card.querySelector('.t29-toast')?.remove(); const m = document.createElement('div'); m.className = 't29-toast'; m.setAttribute('role', 'status'); m.textContent = text; t.after(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1600); };
+  const nope = (t) => { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope'); };
+  card.addEventListener('click', (e) => { const t = e.target.closest('.t29-up'); if (!t) return; e.stopPropagation();
+    const next = card.querySelector('.t29-up.next'); if (t !== next) { nope(t); say(t, `Grow to ${next.querySelector('.t29-to').textContent} first`); return; }
+    if (!onBuy) return; const got = onBuy(+t.dataset.step);
+    if (got === true) { t.classList.add('bought'); onBought?.(); } else { nope(t); say(t, typeof got === 'string' ? got : 'Not available'); } });
+}
 function wireSizes(card, d, { onBuy, onBought } = {}) {
   const nextCover = () => card.querySelector('.cov.tok:not(.gone)'); let toastT;
   const say = (t, text) => { card.querySelector('.toast17')?.remove(); const m = document.createElement('div'); m.className = 'toast17'; m.setAttribute('role', 'status'); m.textContent = text; t.closest('.row').append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1500); };

@@ -327,6 +327,8 @@ export const WEAPONS3 = {
     shield: 'Stay standing: big blocks that heal you.',
     bow: 'Choose your arrows before the fight: Normal, Piercing, Fire or Frost. The Bow and its Arrows stay as they are.',
   },
+  // the few big words on the weapon card (Dave, 4 Nov 2026: "large words is always better than two sentences of tiny words")
+  short: { dagger: 'Steady hits. Triples. Pierce.', sword: 'A bit of everything. Gold.', axe: 'Big swings. Splash.', staff: 'Magic and healing.', shield: 'Big blocks that heal.', bow: 'A light bow. A little guard.', quiver: 'Choose your arrows.' },
   // LIVE (Dave, 4 Nov 2026: "go and be free"): what the spoils and the Camp Store stock, what each class starts with, which Diamonds
   // turn up, and where a retired weapon goes in an old save (metal, size and uid kept; a two-hander's freed hand gets a Round Shield).
   loot: { dagger: 10, sword: 10, axe: 10, staff: 6, shield: 10 },

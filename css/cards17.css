@@ -56,3 +56,56 @@
 .toast17{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;padding:1.4cqi 3cqi;border-radius:99px;background:#1c120acc;box-shadow:inset 0 0 0 .35cqi #e0b86a,0 .8cqi 1.6cqi #000a;font:800 3.6cqi/1 'Oxanium',sans-serif;letter-spacing:.04em;color:#ffd98a;white-space:nowrap;pointer-events:none;animation:toastIn 1.5s ease both}
 @keyframes toastIn{0%{opacity:0;transform:translate(-50%,-30%)}12%,80%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.cov.tok.gone{animation:tokFade .2s linear forwards}.dice17.rows .row.reveal .d17,.cov.tok.nope,.toast17{animation:none}@keyframes tokFade{to{opacity:0}}}
+
+/* ---- T29 weapon card (Dave, 4 Nov 2026): the magic cards' look, and big type you can read on a phone. One card system:
+   a slim gold edge, the painting on top, a dark name band, a beige panel. Faces are the symbols (red starburst attack, blue shield
+   block) with the number inside in heavy type; the weapon's icon sits under its face; each bigger die is one slim strip. */
+.qc17.t29{border-radius:4.5cqi;background:linear-gradient(180deg,#2b1f15,#160f0a);box-shadow:inset 0 0 0 .8cqi #c9a35a,inset 0 0 0 1.6cqi #24180e;overflow:hidden;display:flex;flex-direction:column;font-family:var(--ui,'Oxanium',sans-serif);color:#2a1a0a}
+.qc17.t29.metal-silver{box-shadow:inset 0 0 0 .8cqi #c9d1dd,inset 0 0 0 1.6cqi #24180e}.qc17.t29.metal-gold{box-shadow:inset 0 0 0 .9cqi #f0c45a,inset 0 0 0 1.7cqi #24180e}
+.qc17.t29.metal-diamond{box-shadow:inset 0 0 0 .9cqi #9fd6ff,inset 0 0 0 1.7cqi #24180e}.qc17.t29.metal-legendary{box-shadow:inset 0 0 0 .9cqi #e3b8f5,inset 0 0 0 1.7cqi #24180e}
+.t29-art{position:relative;flex:none;margin:2.4cqi 2.4cqi 0;height:42cqi;border-radius:3cqi 3cqi 0 0;overflow:hidden;background:#1a120b}
+.t29-art .win,.t29-art .art9,.t29-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.t29-art .win img{width:100%;height:100%;object-fit:contain}
+.t29-art .sell,.t29-art .sl17{position:absolute;right:2cqi;top:2cqi;left:auto;bottom:auto}
+.t29-art .ammo{position:absolute;left:2cqi;bottom:2cqi}
+.t29-die{position:absolute;left:2.2cqi;top:2.2cqi;padding:1cqi 2.6cqi;border-radius:2cqi;background:#1a1030e6;color:#fff;font:900 7cqi/1 var(--ui,sans-serif);letter-spacing:.02em}
+.t29-name{flex:none;margin:0 2.4cqi;padding:1.6cqi 2cqi;background:#1a1030;box-shadow:inset 0 -.5cqi 0 #c9a35a;text-align:center}
+.t29-name span{display:block;font:900 9cqi/1.05 var(--ui,sans-serif);color:#f2c14e;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t29-panel{flex:1;min-height:0;margin:0 2.4cqi 2.4cqi;padding:2.4cqi 2.8cqi 2.6cqi;border-radius:0 0 3cqi 3cqi;background:linear-gradient(180deg,#f3e6c6,#ead8b0);display:flex;flex-direction:column;gap:2.2cqi;align-items:stretch}
+.t29-pitch{margin:0;text-align:center;font:900 6.6cqi/1.1 var(--ui,sans-serif);color:#2a1a0a}
+.t29-faces{display:grid;gap:1.6cqi 1.8cqi;justify-items:center}
+.t29-faces.c4{grid-template-columns:repeat(4,1fr)}.t29-faces.c5{grid-template-columns:repeat(5,1fr)}.t29-faces.c6{grid-template-columns:repeat(6,1fr)}
+.t29-faces.c1,.t29-faces.c2,.t29-faces.c3{grid-template-columns:repeat(4,1fr)}
+.t29-f{position:relative;display:flex;flex-direction:column;align-items:center;width:100%}
+.t29-f .t29s{width:100%;max-width:20cqi;height:auto;overflow:visible}
+.t29-faces.c5 .t29-f .t29s{max-width:15.5cqi}.t29-faces.c6 .t29-f .t29s{max-width:13.4cqi}
+.t29s path{stroke-width:1.2;stroke-linejoin:round}
+.t29-f.r .t29s path{fill:#ff3b3b;stroke:#8a1414}.t29-f.b .t29s path{fill:#3aa4ff;stroke:#0c4a80}
+.t29-f.z .t29s path{fill-opacity:.18}
+.t29s text{font-family:var(--font-number,var(--ui,sans-serif));font-weight:900;fill:#fff;paint-order:stroke;stroke:#00000088;stroke-width:1.3;stroke-linejoin:round}
+.t29-f.z .t29s text{fill:#6b4a1f;stroke:none}
+.t29-fx{display:flex;gap:.6cqi;min-height:5.4cqi;margin-top:.4cqi}
+.t29-i{display:inline-flex;align-items:center;gap:.2cqi;font-style:normal}.t29-i svg{width:5.2cqi;height:5.2cqi}.t29-i b{font:900 4.2cqi/1 var(--ui,sans-serif);color:#2a1a0a}
+.t29-ah{position:absolute;top:-1cqi;right:8%;width:5.6cqi;height:5.6cqi}.t29-ah svg{width:100%;height:100%}
+.t29-key{display:flex;flex-wrap:wrap;justify-content:center;gap:1cqi 3.2cqi;font:900 5.2cqi/1 var(--ui,sans-serif);color:#3a2614}
+.t29-key span{display:inline-flex;align-items:center;gap:1cqi}.t29-key svg{width:5.6cqi;height:5.6cqi}
+.t29-ups{display:flex;flex-direction:column;gap:1.6cqi;margin-top:auto}
+.t29-up{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2cqi;width:100%;min-height:13cqi;padding:1.2cqi 2.4cqi;border:0;border-radius:2.4cqi;background:#6b4a1f1f;box-shadow:inset 0 0 0 .45cqi #9b7a4a88;color:#2a1a0a;font:inherit;cursor:pointer;opacity:.6}
+.t29-up.next{opacity:1;background:#fff8e6;box-shadow:inset 0 0 0 .6cqi #c9a35a,0 .6cqi 1.4cqi #0003}
+.t29-to{font:900 6.4cqi/1 var(--ui,sans-serif);color:#3a1a6a}
+.t29-new{display:flex;gap:1.2cqi;justify-content:center;align-items:center}
+.t29-f.mini{width:9cqi}.t29-f.mini .t29s{max-width:9cqi}.t29-f.mini .t29-fx{min-height:0;margin-top:0;position:absolute;right:-1.6cqi;bottom:-1cqi}.t29-f.mini .t29-i svg{width:3.8cqi;height:3.8cqi}.t29-f.mini .t29-i b{display:none}
+.t29-cost{display:flex;align-items:center;font-size:5cqi}
+.t29-up.nope{animation:t29nope .32s}
+@keyframes t29nope{25%{transform:translateX(-1.4cqi)}75%{transform:translateX(1.4cqi)}}
+.t29-toast{text-align:center;font:800 4.8cqi/1.2 var(--ui,sans-serif);color:#7a1414}
+.t29-up.bought{background:#e4f5d8}
+@media (prefers-reduced-motion: reduce){.t29-up.nope{animation:none}}
+.t29-new>span{font:900 5.8cqi/1 var(--ui,sans-serif);color:#3a2614;white-space:nowrap}
+/* (the older card places every child absolutely: the T29 card flows top to bottom instead) */
+.qc17.t29>*{position:relative}
+.qc17.t29 .t29-art .sell{display:flex!important}
+.qc17.t29.ups3 .t29-art{height:31cqi}.qc17.t29.ups3 .t29-up{min-height:11.4cqi;padding-top:.8cqi;padding-bottom:.8cqi}.qc17.t29.ups3 .t29-panel{gap:1.8cqi;padding-top:2cqi}
+.qc17.t29.ups2 .t29-art{height:38cqi}
+.t29-ah{top:-.6cqi;right:2%;width:6.6cqi;height:6.6cqi;filter:drop-shadow(0 .3cqi .4cqi #0008)}
+.t29-ah svg{color:#ffd86a!important}.t29-ah.am-fire svg{color:#ff6a1f!important}.t29-ah.am-frost svg{color:#7fd4ff!important}.t29-ah.am-pierce svg{color:#ff9a2a!important}
