@@ -1188,3 +1188,5 @@ From Claude: 4 November 2026 (night). **T28 card panels shipped for all 15 start
 
 From Claude: 4 November 2026. **T28: the magic card template on all 34 class powers (build 20261104a8).** Dave approved the 15 and asked for the camp cards next: every learnable power now uses the same card (finishers, Meteor, every-round, weaken, reroll, charge). Filled symbols are solid now; four-rank camp cards fit. Check: `node dev/magic-camp-cards.mjs`.
 
+From Claude: 4 November 2026. **T29 Weapons (experiment only, nothing live).** Dave wants fewer weapons with clear personalities: Dagger (steady, triples, pierce), Sword (a bit of everything, gold, its best face pierces), Battle Axe (big swings, splash), Staff (two hands, magic on strikes, heal on guards), Bow (arrows, unchanged), Shield (heal); Bronze numbers, Silver and Gold add the weapon's one icon; Diamonds stay. Faces written for every metal and size and run against today's weapons: same strength, clearer differences. All faces and results: [tasks/T29-weapons.md](tasks/T29-weapons.md). Waiting on Dave's yes before the roster cut, the save swap and the new weapon cards.
+
