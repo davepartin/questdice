@@ -1697,7 +1697,8 @@ function learnMagicShelf(hero) {
   const learn = (k) => { if (HE.learnPower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${k.name} learned. It is in Magic Slot ${SLOT_NUM[k.slot]} now.`); return true; } sfx.error(); toast('Not enough gold.'); return false; };
   return E.powerLibrary(hero).filter((r) => !r.learned && !r.equipped).map((r) => {
     const k = r.card; const li = E.learnInfo(hero, k.id); const was = now.get(k.slot);
-    const open = () => { sfx.click(); showPowerCard(hero, k, r.gate ? null : (close) => [shBuy(hero, { label: `Learn ${k.name}${was ? ` · replaces ${was.name}` : ''}`, cost: li.cost, ok: li.ok, onBuy: () => { if (learn(k)) close(); } })]); };
+    const open = () => { sfx.click(); showPowerCard(hero, k, r.gate ? null : (close) => [h('p', { class: 'cw-learn-note' }, `Goes in Magic Slot ${SLOT_NUM[k.slot]}.${was ? ` ${was.name} stays yours on the Magic page.` : ''}`),
+      shBuy(hero, { label: `Learn ${k.name}`, cost: li.cost, ok: li.ok, onBuy: () => { if (learn(k)) close(); } })]); };
     return CB.storeCard({ cls: `magic tone-${toneOf(k)}`, art: h('img', { src: MC.powerArt(k, hero.cls), alt: '', loading: 'lazy' }), title: k.name, onOpen: open, aria: `See the ${k.name} card`,
       lines: [h('small', { class: 'cst-slot' }, `Magic Slot ${SLOT_NUM[k.slot]}${was ? ` · instead of ${was.name}` : ''}`), shortLine(k, 0)],
       sticker: r.gate ? `Needs level ${r.gate}` : '',

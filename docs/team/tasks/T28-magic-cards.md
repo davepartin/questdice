@@ -91,3 +91,17 @@ task page, and Dave's yes on the Knight's three before the other twelve.
 > after pictures on docs/team/tasks/T28-magic-cards.md. Do the **Knight's three cards first** and post them on the board
 > for Dave's yes, then the other twelve. Stamp a new build with `node tools/stamp.mjs <build>` when browser files change.
 > Never force-push; pull and merge main before every push. No AI model names in commits, code or docs.
+
+## T28-CAMP shipped (Claude, build 20261104a6)
+
+- **Magic page** (Magic Upgrades): the three slots show only the powers this hero knows. A new hero sees just its three
+  starting cards; no unlearned options. When a slot has two learned powers, a small row lets you swap them for free.
+  A button under the card, "Learn more magic for Slot N in the Camp Store", goes to the shelf.
+- **Camp Store, Learn magic shelf** (`learnMagicShelf` in js/g3/scrui.js): every power the hero has not learned, with its
+  painted art (`MC.powerArt`, one small export added to js/g3/magiccard.js), its slot ("Magic Slot 2 · instead of
+  Counterstrike"), a one-line summary and a 50-gold tag. The level 5 supers carry a "Needs level 5" sticker. Tap a card for
+  the full power card and a "Learn" button. Learning puts it in its slot; the power it replaces stays learned.
+- No rule changes (engine `learnPower`, `equipPower`, `POWER_LEARN`). Check: `node dev/learn-magic-check.mjs` (12 checks,
+  real taps at 390 x 844, headless Chromium, not Safari). In those screenshots headless Chromium sometimes draws a dark
+  band over the top of the store shelf; a hit test confirms nothing covers the cards, but check it on an iPhone.
+

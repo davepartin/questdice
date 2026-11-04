@@ -808,3 +808,7 @@ button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; backgroun
 .cp-more{display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;min-height:44px;margin:.6rem 0 0;padding:.55rem .8rem;border-radius:12px;border:1px solid #a77bff66;background:#a77bff1f;color:#e9dcff;font:800 .82rem var(--font-ui, var(--ui, sans-serif));cursor:pointer}
 .cp-more .ic{width:1rem;height:1rem;flex:none}
 .cw-powerpop .cw-big{max-width:min(92vw,420px);margin:0 auto}
+.cw-learn-note{white-space:normal;overflow-wrap:anywhere;max-width:100%;margin:0 0 .45rem;text-align:center;color:#e8dcc4;font:600 .8rem var(--font-body, sans-serif)}
+.cw-modal.cw-cardpop.cw-powerpop .cw-modal-acts{display:flex;flex-direction:column;align-items:stretch;gap:.35rem;width:min(92vw,420px);margin:.5rem auto 0}
+.cw-modal.cw-cardpop.cw-powerpop .cw-modal-acts > .sh-buy{width:100%;flex:none}
+.cw-modal.cw-cardpop.cw-powerpop .cw-modal-acts > .cw-learn-note{flex:none;white-space:normal;min-height:0;font-size:.8rem}
