@@ -101,7 +101,7 @@ const badgeKinds = (faces) => { const has = new Set(faces.flatMap((f) => [...(f.
 const dieIcons = (f) => [...Array(f.plus || 0).fill(f.c === 'b' ? 'block' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(4, n | 0)).fill(k === 'loot' ? 'gold' : k)), ...(f.arrow ? [`arrow_${f.arrow}`] : [])];
 export const dieFaces = (faces) => faces.map((f) => ({ v: f.v, c: f.c === 'b' ? 'b' : 'r', icons: dieIcons(f) }));
 const DIE_SIDES = new Set([4, 6, 8, 10]);
-const TRAY = { 4: { cols: 4, w: 16 }, 6: { cols: 3, w: 18 }, 8: { cols: 4, w: 15.6 }, 10: { cols: 4, w: 15.6 } }; // dice per row and each die's width (cqi)
+const TRAY = { 4: { cols: 2, w: 23 }, 6: { cols: 3, w: 19.5 }, 8: { cols: 4, w: 15.8 }, 10: { cols: 4, w: 15.8 } }; // dice per row and each die's width (cqi)
 const faceWords = (f) => `${f.arrow ? `${f.arrow} arrowhead, ` : ''}${f.c === 'b' ? 'block' : 'attack'} +${f.v}${(f.plus || Object.keys(f.fx || {}).length) ? ', with bonus symbols' : ''}`;
 function weaponArt17(d) {
   const key = artKey(d); const m = key ? bakedMetal(d, key) : '';
