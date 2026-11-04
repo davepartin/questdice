@@ -327,4 +327,8 @@ retired weapon and check each lands where this table says.
   every retired weapon). Legendaries are kept as they are.
 - Retired weapons stay defined in js/data.js so old saves and the Legendaries' 3D models still load.
 - Next: the weapon cards in the magic-card style (with the "because" line under each name), after Dave plays a few fights.
+- Whole-campaign bot run with the six weapons and new kits (3 acts, 2 campaigns a class): **7 of 10 campaigns cleared** (bard 2,
+  dwarf 2, knight 1, ranger 1, wizard 1), against 9 of 10 in the T27 run. Per-step win rates are level (Act I boss 77% vs 83%,
+  Act II boss 80% vs 69-77%, Act III boss 86% vs 69-74%, the Act III slope 73% vs 74%); with 2 campaigns a class one lost run
+  moves a class from 2 to 1, so this is within luck. Watch it in play.
 
