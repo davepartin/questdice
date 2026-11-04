@@ -243,13 +243,12 @@ function adopt(saved) {
     campaign.blessings = campaign.blessings || [];
     campaign.chronicle = campaign.chronicle || [];
     campaign.pack = packIdOf(campaign.pack);
-    for (const m of saved.members) { m.campaign = campaign; if ((m.gold || 0) < 5000) m.gold = 5000; }
+    for (const m of saved.members) m.campaign = campaign;
     S.company = { kind: 'company', name: saved.name, campaign, members: saved.members, pack: campaign.pack };
     S.hero = saved.members[0];
     S.seat = 0;
     return;
   }
-  if ((saved.gold || 0) < 5000) saved.gold = 5000; // playtest purse (Dave, 3 Nov 2026): 5,000 gold to test all Camp upgrades
   saved.campaign = saved.campaign || {};
   saved.campaign.nemeses = saved.campaign.nemeses || [];
   saved.campaign.blessings = saved.campaign.blessings || [];
@@ -517,7 +516,6 @@ function showCreate(packId = DEFAULT_PACK, opts = {}) {
     try {
       const seed = mate?.campaign?.seed;
       const hero = E.newHero({ name: n, cls, color, seed, pack: pack.id });
-      hero.gold = 5000;
       hero.difficulty = D.normalizeDifficulty(mate?.difficulty || diff);
       if (mate) hero.campaign = mate.campaign;
       SV.markReached(hero);

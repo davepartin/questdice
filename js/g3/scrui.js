@@ -493,7 +493,7 @@ export function create(opts = {}) {
       const nm = name.value.trim().replace(/\s+/g, ' ');
       if (nm && nm !== made.name) { SV.deleteHero(made.name, pack.id); made = null; }
       else if (made.cls !== cls || (made.color ?? color) !== color) {
-        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.gold = 5000; redo.difficulty = made.difficulty;
+        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.difficulty = made.difficulty;
         SV.saveHero(redo); // the local save keeps its password; only the hero in it changes
         try { await (await import('../cloud.js')).putHero(redo, pw.value); } catch { /* saved on this device; the cloud copy follows when it can */ }
         made = redo; X.adopt(redo);
@@ -519,7 +519,6 @@ export function create(opts = {}) {
     try {
       const seed = mate?.campaign?.seed;
       const hero = E.newHero({ name: n, cls, color, seed, pack: pack.id });
-      hero.gold = 5000;
       hero.difficulty = mate ? D.normalizeDifficulty(mate.difficulty) : diff;
       if (mate) hero.campaign = mate.campaign;
       SV.markReached(hero); Coach.setHints(!skipHints);
