@@ -104,7 +104,8 @@ test('each place tags the foes the locked fight actually sends, and the copy nam
     assert.equal(act.fights?.length, 10, `${act.name} locks ten steps`);
     for (let s = 1; s <= 10; s++) {
       const place = act.route[s - 1];
-      const p = placeOf(place);
+      const p0 = placeOf(place);
+      const p = act.route.indexOf(place) < s - 1 && p0?.again ? p0.again : p0; // a revisit (e.g. Kettle Tarn at step 8) has its own cast and lines
       const locked = act.fights[s - 1];
       assert.ok(p, `${place} has a place entry`);
       assert.ok(p.foes?.length, `${place} has a foes tag`);
@@ -124,4 +125,23 @@ test('each place tags the foes the locked fight actually sends, and the copy nam
       assert.ok(namesFoe(text, id), `${place} help copy does not name ${id}`);
     }
   }
+});
+
+test('a second visit to a place on the route has its own fight lines (Act III Kettle Tarn, step 8 without a Call for Help)', async () => {
+  const { revisit } = await import('../js/story.js');
+  const c = camp(3, 8);
+  assert.equal(revisit(c, 'Kettle Tarn'), true);
+  assert.equal(revisit(camp(3, 6), 'Kettle Tarn'), false, 'the first visit is not a revisit');
+  const first = placeBeat('arrive', 'Kettle Tarn', { camp: camp(3, 6) });
+  const again = placeBeat('arrive', 'Kettle Tarn', { camp: c, again: true });
+  assert.equal(first.id, 'arrive:kettle-tarn');
+  assert.equal(again.id, 'again-arrive:kettle-tarn');
+  assert.notDeepEqual(first.text, again.text);
+  assert.ok(/Big Muriel/.test(first.text.join(' ')));
+  assert.deepEqual(beat('again-win:kettle-tarn', 3).text, placeOf('Kettle Tarn').again.win, 'a saved revisit id still resolves to its lines');
+  const arrivals = pending({ act: 3, step: 8, storySeen: [] }, 'Kettle Tarn').map((b) => b.id);
+  assert.ok(arrivals.includes('again-arrive:kettle-tarn'), `step 8 arrives with the revisit lines (${arrivals})`);
+  assert.equal(pendingVictory({ act: 3, step: 8, storySeen: [] }, 'Kettle Tarn').id, 'again-win:kettle-tarn');
+  const help = placeBeat('arrive', 'Wyrmwatch', { camp: { act: 3, step: 8, nextPlace: 'Wyrmwatch' }, help: true, again: true });
+  assert.equal(help.id, 'help-arrive:wyrmwatch', 'a Call for Help keeps its own lines');
 });

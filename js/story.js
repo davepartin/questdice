@@ -8,7 +8,7 @@
 // after. Seen beats are kept in campaign.storySeen.
 
 import { ACTS, placeSlug, PLACE_ALIAS } from './data.js';
-import { beatsOf, placesOf, stepsOf, fillNames, packIdOf, DEFAULT_PACK } from './campaigns.js';
+import { beatsOf, placesOf, stepsOf, actsOf, fillNames, packIdOf, DEFAULT_PACK } from './campaigns.js';
 import { hasLegend, legendBeat } from './legend.js';
 
 const slugOf = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
@@ -69,6 +69,8 @@ const BEATS = {
   'close:3': { kicker: 'A keeper for the light', title: 'A Keeper for the Light', icon: 'shine', text: [
     'The little dragon drops every coin it ever took at your feet. Vharaxis stares at it, and the greed in her eyes goes out.',
     'She shrinks until all that is left is a little warm ember. Cinderling picks it up. The Lantern burns on its hill again, and its new keeper curls around it.',
+    'Far below, every village in the Marches lights a candle from the Lantern’s flame. The goblins, the bones and the dragons will tell the story for a hundred years, and every telling ends the same way: with {names}.',
+    'You carried the light home. The story is won.',
   ] },
   // The Ascents (act 4 on): the same lands, harder, with a short new chapter each time.
   'open:ascent:1': { kicker: 'Ascent', title: 'The Light Is Tested', icon: 'flame', text: [
@@ -219,9 +221,9 @@ const PLACES = {
   },
   'the-glass-fields': {
     title: 'The Glass Fields', icon: 'spark',
-    foes: ['gloomstalker', 'shieldbearer'],
-    arrive: ['A whole valley melted to glass by dragon fire. A Gloom Stalker is on the ridge with a black arrow already drawn, fading in and out of the heat-haze. Down on the glass, a Shieldbearer is trying to lock shields with a reflection of itself.'],
-    win: ['You slide the Shieldbearer across the glass. The Gloom Stalker’s last arrow skips off into the glare.'],
+    foes: ['basilisk', 'shieldbearer'],
+    arrive: ['A whole valley melted to glass by dragon fire. Glarefang, the Basilisk, basks on the hot glass, and wherever its stare lands the shine turns to grey stone. Down on the glass, a Shieldbearer is trying to lock shields with a reflection of itself.', 'Glarefang’s Stone Gaze chains a hero’s dice in place. Break its stare before it sets.'],
+    win: ['Glarefang slinks into a crack in the glass with its eyes squeezed shut. You slide the Shieldbearer across the valley like a stone on a frozen pond.'],
   },
   'wyrmwatch': {
     title: 'Wyrmwatch', icon: 'flame',
@@ -249,9 +251,15 @@ const PLACES = {
   },
   'kettle-tarn': {
     title: 'Kettle Tarn', icon: 'spark',
-    foes: ['frostwhelp', 'frostwhelp'],
-    arrive: ['A mountain lake that boils and freezes at the same time. Two Frostwhelps slide across the ice. One puffs frost at a geyser. The other binds your knees with icy wings. They followed you up from the crypt because you smell like the light.'],
-    win: ['The whelps huddle together in the steam.'],
+    foes: ['yeti', 'frostwhelp'],
+    arrive: ['A mountain lake that boils and freezes at the same time. Big Muriel, a yeti the size of a cottage, is soaking in the warm end with a Frostwhelp tucked under one arm like a hot-water bottle. You splashed her. She is not pleased.', 'Watch for her Wind-Up. A Bear Hug holds a hero fast, and her Frosty Huff splashes everyone.'],
+    win: ['Big Muriel climbs out of the tarn, shakes herself dry all over you, and stomps off up the mountain with the Frostwhelp riding on her shoulder.'],
+    // Step 8 comes back here when no one called for help.
+    again: {
+      foes: ['frostwhelp', 'frostwhelp'],
+      arrive: ['Back at Kettle Tarn, two Frostwhelps are waiting on the ice. They followed you up from the crypt because you smell like the light, and Big Muriel is not here to tell them off.'],
+      win: ['The whelps huddle together in the steam and watch you climb.'],
+    },
   },
   'oathbreak-keep': {
     title: 'Oathbreak Keep', icon: 'shield',
@@ -261,9 +269,9 @@ const PLACES = {
   },
   'ember-throne-slopes': {
     title: 'Ember Throne slopes', icon: 'flame',
-    foes: ['ashwyrm', 'shieldbearer'],
-    arrive: ['The peak’s last slope is a river of sliding gold coins. Ashmaw the Wyrm is draped across the path, inhaling for a fire-breath that will splash anyone standing too close. Beside him, a Shieldbearer is trying to lock shields with a dragon.'],
-    win: ['Ashmaw flees uphill. The Shieldbearer drops the shield and starts walking home.'],
+    foes: ['ashwyrm', 'stormtyrant'],
+    arrive: ['The peak’s last slope is a river of sliding gold coins, and a storm sits on the summit. Vexmor, the Storm-Tyrant, the Queen’s sworn knight, stands in the path with a glaive full of lightning. Ashmaw the Wyrm is draped across the rocks beside him, inhaling for a fire-breath that will splash anyone standing too close.', 'Sir Aldren broke his oath. Vexmor never has. He will not let you pass while he can stand.'],
+    win: ['Ashmaw flees uphill. Vexmor’s lightning gutters out. He drives his glaive into the gold and kneels beside it. “Go on, then,” he says. “She is waiting.”'],
   },
   'the-ember-throne': {
     title: 'The Ember Throne', icon: 'crown',
@@ -295,12 +303,19 @@ export function beatId(kind, act, camp) {
   if (kind === 'elite') return null;
   return table[`${kind}:ascent:${landOf(act)}`] ? `${kind}:ascent:${landOf(act)}` : null;
 }
+// True when this step returns to a place the act's route already visited (Act III's Kettle Tarn, step 8 without a Call for Help).
+export function revisit(c, place, step = c?.step) {
+  const route = actsOf(c || {})[landIndex(c?.act || 1)]?.route || [];
+  const here = slugOf(place); const first = route.findIndex((r) => slugOf(r) === here);
+  return first >= 0 && first < step - 1 && slugOf(route[step - 1] || '') === here;
+}
 export function placeOf(name, camp) { return placesFor(camp)[slugOf(name)] || PLACES[slugOf(name)] || null; }
-export function placeBeat(kind, name, { help = false, camp = null, heroes = [] } = {}) {
+export function placeBeat(kind, name, { help = false, camp = null, heroes = [], again = false } = {}) {
   const p = placeOf(name, camp); if (!p) return null;
-  const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : (kind === 'arrive' ? p.arrive : p.win);
+  const twice = !help && again && p.again; // a second visit on the route has its own fight and its own lines
+  const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : twice ? (kind === 'arrive' ? p.again.arrive : p.again.win) : (kind === 'arrive' ? p.arrive : p.win);
   if (!text?.length) return null;
-  const id = `${help ? `help-${kind}` : kind}:${slugOf(name)}`;
+  const id = `${help ? `help-${kind}` : twice ? `again-${kind}` : kind}:${slugOf(name)}`;
   const names = { seed: camp?.seed, lineId: id };
   return {
     id,
@@ -345,16 +360,18 @@ export function beat(id, act, heroes = [], camp = null) {
   if (stepMatch) {
     return stepBeat(stepMatch[1], camp, { heroes, act: Number(stepMatch[2]), step: Number(stepMatch[3]) });
   }
-  if (id?.startsWith('arrive:') || id?.startsWith('win:') || id?.startsWith('help-')) {
+  if (id?.startsWith('arrive:') || id?.startsWith('win:') || id?.startsWith('help-') || id?.startsWith('again-')) {
     const [kind, ...rest] = id.split(':');
     const p = placesFor(camp)[rest.join(':')] || PLACES[rest.join(':')]; if (!p) return null;
     const helpArrive = kind === 'help-arrive';
     const helpWin = kind === 'help-win';
-    const text = helpArrive ? (p.helpArrive || p.arrive) : helpWin ? (p.helpWin || p.win) : kind === 'arrive' ? p.arrive : p.win;
+    const twice = kind.startsWith('again-') ? (p.again || p) : null; // a revisit's own lines (or the place's, if it has none)
+    const text = twice ? (kind === 'again-arrive' ? twice.arrive : twice.win)
+      : helpArrive ? (p.helpArrive || p.arrive) : helpWin ? (p.helpWin || p.win) : kind === 'arrive' ? p.arrive : p.win;
     const names = { seed: camp?.seed, lineId: id };
     return {
       id, act, icon: p.icon || 'road',
-      kicker: fillNames(kind === 'win' || helpWin ? 'The fight is over' : 'You arrive', heroes, names),
+      kicker: fillNames(kind === 'win' || helpWin || kind === 'again-win' ? 'The fight is over' : 'You arrive', heroes, names),
       title: fillNames(p.title, heroes, names),
       text: fillNames(text, heroes, names),
     };
@@ -385,7 +402,7 @@ export function pending(c, place) {
       if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place: row.place });
     } else {
       const help = c.step === 8 && !!c.nextPlace;
-      const b = placeBeat('arrive', place, { help, camp: c });
+      const b = placeBeat('arrive', place, { help, camp: c, again: revisit(c, place) });
       if (b && !seen(c, b.id, c.act)) out.push({ id: b.id, act: c.act, place });
     }
   }
@@ -400,7 +417,7 @@ export function pendingVictory(c, place) {
     return { id: b.id, act: c.act, place: row.place };
   }
   const help = c.step === 8 && !!c.nextPlace;
-  const b = placeBeat('win', place, { help, camp: c });
+  const b = placeBeat('win', place, { help, camp: c, again: revisit(c, place) });
   if (!b || seen(c, b.id, c.act)) return null;
   return { id: b.id, act: c.act, place };
 }
