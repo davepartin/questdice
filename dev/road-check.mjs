@@ -8,9 +8,10 @@ const check = (n, ok, d) => { if (!ok) bad++; console.log(ok ? 'PASS' : 'FAIL', 
 const server = spawn(process.execPath, ['dev/serve.mjs', String(port)], { stdio: ['ignore', 'pipe', 'inherit'] }); await new Promise((r) => server.stdout.once('data', r));
 const br = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
 const FIGHTS = { '1.8': ['bonfire', 'raincloud'], '1.9': ['tuskraider', 'goblin', 'goblin'], '2.8': ['wisp', 'skeleton'], '2.9': ['gargoyle', 'nightblade'],
+  '1.5 oak': ['treant'], '1.5 bear': ['direbear'], '2.5 snuffer': ['lampsnuffer'], '2.5 rider': ['barrowrider'],
   '3.2': ['basilisk', 'shieldbearer'], '3.6': ['yeti', 'frostwhelp'], '3.9': ['stormtyrant', 'shieldbearer'] };
 for (const [key, foes] of Object.entries(FIGHTS)) {
-  const [act, step] = key.split('.').map(Number);
+  const [act, step] = key.split(' ')[0].split('.').map(Number);
   const p = await br.newPage({ viewport: { width: 390, height: 664 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true }); p.on('pageerror', (e) => errs.push(e.message));
   await p.route(/firestore.googleapis.com|identitytoolkit.googleapis.com|gstatic.com\/firebasejs/, (r) => r.abort());
   await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStorage.setItem('qd.tutorial.done', '1'); });
@@ -26,7 +27,7 @@ for (const [key, foes] of Object.entries(FIGHTS)) {
   const clash = await p.evaluate(() => { const out = []; for (const f of document.querySelectorAll('.mnc-face')) { const was = f.classList.contains('on'); f.classList.add('on'); const b = f.querySelector('b'); let d = f.querySelector('.mnc-dice'); const temp = !d; if (temp) { d = document.createElement('span'); d.className = 'mnc-dice'; d.textContent = '5+3d12'; f.querySelector('.mnc-face-main').append(d); }
     if (b && d) { const rb = b.getBoundingClientRect(); const rd = d.getBoundingClientRect(); const textRight = rb.left + b.scrollWidth; if ((rb.right > rd.left + 1 || textRight > rd.left + 1) && rb.bottom > rd.top + 1 && rd.bottom > rb.top + 1) out.push(b.textContent); } if (temp) d.remove(); if (!was) f.classList.remove('on'); } return out; });
   check(`${key}: no move name runs into its dice`, clash.length === 0, clash.join(', '));
-  await p.screenshot({ path: `${OUT}/road-${key}.png` }); await p.close();
+  await p.screenshot({ path: `${OUT}/road-${key.replace(' ', '-')}.png` }); await p.close();
 }
 check('no page errors', errs.length === 0, errs.join(' | '));
 await br.close(); server.kill(); console.log(bad ? `${bad} FAILED` : 'all passed'); process.exit(bad ? 1 : 0);
