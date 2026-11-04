@@ -1186,45 +1186,56 @@ function campPowerText(k, level) {
   const text = effectLine(k, { level });
   return k.markGold ? `${text} Gain ${E.scaleNum(k.markGold, level)} gold if your target falls this round.` : text;
 }
-// A focused class library for camp. Browsing never changes the equipped powers.
-const CP = { hero: null, slot: 'A', id: null };
+// Each hero has their 3 signature Magic Cards (15 across all 5 heroes).
+const CP = { hero: null, slot: 'A', id: null, x: null, stored: null };
 const SLOT_NUM = { A: 1, B: 2, C: 3 }; // the three magic slots, as players count them
 function campPowers(hero) {
+  D.POWER_SLOTS.forEach((slot) => {
+    const st = D.CLASSES[hero.cls]?.cards?.find((c) => c.slot === slot && c.start);
+    if (st) {
+      if (!Array.isArray(hero.learnedPowers)) hero.learnedPowers = [];
+      if (!hero.learnedPowers.includes(st.id)) hero.learnedPowers.push(st.id);
+      if (!hero.powers) hero.powers = {};
+      hero.powers[slot] = st.id;
+    }
+  });
   const lib = E.powerLibrary(hero), identity = `${hero.name}:${hero.cls}`;
-  if (CP.hero !== identity) { CP.hero = identity; CP.slot = 'A'; CP.id = null; }
-  const rows = lib.filter((r) => r.card.slot === CP.slot);
-  const row = rows.find((r) => r.card.id === CP.id) || rows.find((r) => r.equipped) || rows[0];
+  if (CP.hero !== identity) { CP.hero = identity; CP.slot = 'A'; CP.id = null; CP.x = null; CP.stored = null; }
+  const rows = D.POWER_SLOTS.map((slot) => lib.find((r) => r.card.slot === slot && r.card.start) || lib.find((r) => r.card.slot === slot && r.equipped)).filter(Boolean);
+  const row = rows.find((r) => r.card.id === CP.id) || rows.find((r) => r.card.slot === CP.slot) || rows[0];
   if (!row) return h('p', {}, 'No powers in this slot.');
-  CP.id = row.card.id;
+  if (CP.id !== row.card.id) { CP.id = row.card.id; CP.slot = row.card.slot; CP.x = null; CP.stored = null; }
   const k = row.card, level = E.powerLevel(hero, k.id), up = E.powerUpgradeInfo(hero, k.id);
-  const equipped = rows.find((r) => r.equipped)?.card;
   const refresh = (selector = '.cp-detail') => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
   const done = () => { sfx.level(); X.persist(); refresh(); };
-  const status = (r) => r.equipped ? 'Equipped' : r.gate ? `Level ${r.gate} required` : r.learned ? 'Learned' : `Learn · ${E.learnInfo(hero, r.card.id).cost} gold`;
-  const magic = (c) => `${E.powerCost(c, c.cost, E.powerLevel(hero, c.id))}${c.kind === 'scale' ? `–${E.scaleMax(c, E.powerLevel(hero, c.id))}` : ''} magic${c.kind === 'charge' ? ' / charge' : ''}`;
-  const tabs = h('div', { class: 'cp-slots', role: 'group', 'aria-label': 'Power slots' }, D.POWER_SLOTS.map((slot) => {
-    const eq = lib.find((r) => r.card.slot === slot && r.equipped)?.card;
-    return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
-      onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('span', {}, 'Magic Slot'), h('b', {}, String(SLOT_NUM[slot]))); // Dave: "magic slot one, magic slot two, magic slot three"
-  }));
-  const cards = h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(Math.min(3, rows.length)) }, 'aria-label': `${D.SLOT_NAME[CP.slot]} powers` }, rows.map(r => MC.campChoice(hero, r, {
-    glyph: powerGlyph, selected: r.card.id === k.id, status: status(r),
-    onSelect: () => { CP.id = r.card.id; refresh(`.cp-library [data-power="${r.card.id}"]`); },
+  const cards = h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(rows.length) }, 'aria-label': 'Hero magic powers' }, rows.map(r => MC.campChoice(hero, r, {
+    glyph: powerGlyph, selected: r.card.id === k.id, status: `Rank ${romans[E.powerLevel(hero, r.card.id)]}`,
+    onSelect: () => { CP.id = r.card.id; CP.slot = r.card.slot; CP.x = null; CP.stored = null; refresh(`.cp-library [data-power="${r.card.id}"]`); },
   })));
-  // Dave (3 Nov 2026): the three slots, the choices for the slot, then the card, "not all that other data". The card's next rank is its upgrade.
-  let action = null;
-  if (row.gate) action = shLock(`Opens at hero level ${row.gate}`);
-  else if (row.equipped) action = null;
-  else if (row.learned) action = h('button', { class: 'sh-buy', type: 'button', 'aria-label': `Equip ${k.name} in magic slot ${SLOT_NUM[k.slot]} for free`, onclick: tap(() => { if (HE.equipPower(hero, k.id)) done(); }) },
-    h('span', { class: 'sh-buy-l' }, equipped ? `Equip · replaces ${equipped.name}` : 'Equip'), h('span', { class: 'sh-buy-p' }, 'Free'));
-  else { const learn = E.learnInfo(hero, k.id); action = shBuy(hero, { label: equipped ? `Learn & equip · replaces ${equipped.name}` : 'Learn & equip', cost: learn.cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
-  const upgrade = row.equipped && up.next ? () => { if (HE.upgradePower(hero, k.id)) done(); else { sfx.error?.(); toast(up.why === 'Need gold' || hero.gold < (up.cost || 0) ? `Need ${Math.max(0, (up.cost || 0) - hero.gold)} more gold.` : up.why || 'Not yet.'); } } : null;
-  const frogUp = upgrade && k.frogLoad ? shBuy(hero, { label: `Upgrade to rank ${romans[up.next]}`, cost: up.cost, ok: up.ok, onBuy: upgrade }) : null; // (Frog Morph's card has no rank rows)
-  return h('div', { class: 'cp-workshop' }, tabs, cards,
+  let ctl = null, curX = k.cost, curStored = k.max || 1;
+  if (k.kind === 'scale') {
+    const step = E.scaleStep(k), cap = E.scaleMax(k, level);
+    curX = Math.min(cap, Math.max(k.cost, CP.x ?? k.cost));
+    const f = k.dice?.to || 'magic', dCount = E.powerDice(k, curX, level);
+    ctl = h('div', { class: 'mc-ctl cp-dice-ctl', role: 'group', 'aria-label': 'Preview dice roll cost' },
+      h('button', { type: 'button', class: 'mc-use sub', disabled: curX <= k.cost, 'aria-label': `One die fewer, ${step} magic back`, onclick: tap(() => { CP.x = Math.max(k.cost, curX - step); refresh('.cp-dice-ctl .sub'); }) }, '−', HK.icon('magic'), String(step)),
+      h('button', { type: 'button', class: 'mc-use add', disabled: curX + step > cap, 'aria-label': `One more die for ${step} magic`, onclick: tap(() => { CP.x = Math.min(cap, curX + step); refresh('.cp-dice-ctl .add'); }) }, '+', HK.icon('magic'), String(step)),
+      h('span', { class: `mc-use go pc-${f} cp-roll-pill`, 'aria-live': 'polite' }, `Roll ${dCount}d${k.sides}`, HK.icon('magic'), String(curX)));
+  } else if (k.kind === 'charge' || k.frogLoad) {
+    const maxS = k.max || 4;
+    curStored = Math.min(maxS, Math.max(1, CP.stored ?? maxS));
+    const f = Object.keys(typeof k.per === 'object' ? k.per : { magic: 1 })[0];
+    ctl = h('div', { class: 'mc-ctl cp-dice-ctl', role: 'group', 'aria-label': 'Preview charges' },
+      h('button', { type: 'button', class: 'mc-use sub', disabled: curStored <= 1, 'aria-label': 'Fewer charges', onclick: tap(() => { CP.stored = Math.max(1, curStored - 1); refresh('.cp-dice-ctl .sub'); }) }, '−', HK.icon('magic'), String(k.cost)),
+      h('button', { type: 'button', class: 'mc-use add', disabled: curStored >= maxS, 'aria-label': 'More charges', onclick: tap(() => { CP.stored = Math.min(maxS, curStored + 1); refresh('.cp-dice-ctl .add'); }) }, '+', HK.icon('magic'), String(k.cost)),
+      h('span', { class: `mc-use go pc-${f} cp-roll-pill`, 'aria-live': 'polite' }, k.frogLoad ? `Loaded ${E.frogLoaded(k, curStored)}/6` : `Charge ${curStored}/${maxS}`, HK.icon('magic'), String(curStored * k.cost)));
+  }
+  const upgrade = up.next ? () => { if (HE.upgradePower(hero, k.id)) done(); else { sfx.error?.(); toast(up.why === 'Need gold' || hero.gold < (up.cost || 0) ? `Need ${Math.max(0, (up.cost || 0) - hero.gold)} more gold.` : up.why || 'Not yet.'); } } : null;
+  return h('div', { class: 'cp-workshop' }, cards,
     h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card` },
-      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph, onUpgrade: k.frogLoad ? null : upgrade })),
-      action || frogUp ? h('div', { class: 'cp-actions' }, action || frogUp) : null,
-      upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null));
+      ctl,
+      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph, onUpgrade: upgrade, x: curX, stored: curStored })),
+      upgrade ? h('p', { class: 'cp-hint' }, `Tap UPGRADE · ${romans[up.next]} on the card · ${up.cost} gold`) : null));
 }
 // Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
 // potions"). Refill buys what the gold allows; Go anyway leaves, and the camp does not ask again this visit.
@@ -1809,7 +1820,6 @@ function upgradesOverview(hero) {
   const toPower = (k) => () => { CP.slot = k.slot; CP.id = k.id; CP.hero = `${hero.name}:${hero.cls}`; goCampPage('magic'); };
   const powers = E.cardsOf(hero).map(k => { const r = E.powerUpgradeInfo(hero, k.id), rank = E.powerLevel(hero, k.id);
     return entry(`Slot ${SLOT_NUM[k.slot]} · ${k.name}`, r.next ? `Rank ${romans[rank]} → ${romans[r.next]}` : `Rank ${romans[rank]}`, r, toPower(k)); });
-  powers.push(entry('New magic powers', 'Learn another power for a slot', null, () => goCampPage('magic'), 'Magic'));
   const heart = E.heartUpgrade(hero); const pot = E.potionBuyInfo(hero), belt = E.potionUpgrade(hero), rr = E.rerollDieInfo(hero);
   const bought = () => { sfx.level(); X.persist(); X.renderCamp(SHEET.fromBoard); };
   const potions = potionRows(hero); // first: you buy potions every camp (Dave, 3 Nov 2026)
