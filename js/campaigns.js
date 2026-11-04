@@ -167,6 +167,7 @@ export function finishActs(specs, ban = []) {
     };
     if ('gates' in spec) out.gates = spec.gates;
     else delete out.gates;
+    if (!('guardians' in spec)) delete out.guardians; // a pack keeps its own step 5 (T27 guardians are the main story's)
     return out;
   });
 }

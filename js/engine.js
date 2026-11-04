@@ -9,7 +9,7 @@ import {
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, PETS, PET_PRICE, PET_POWER, PET_GROW, petKindMax, BREATH_SHARE, FLEE_REWARD,
-  BUNDLE_ODDS, bundlePrice,
+  BUNDLE_ODDS, bundlePrice, guardianOf,
 } from './data.js';
 import { TRAINING, trainingRanks } from './training.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
@@ -1959,7 +1959,8 @@ export function roadsFor(hero, opts = {}) {
   const reserved = new Set(Object.values(act.gates || {}).map((g) => g.place).filter(Boolean));
   const roamPlaces = act.places.filter((p) => !reserved.has(p));
   // First time through Acts I–III: the story names these foes. Ascents (cycle >= 1) still roll encounterFor.
-  const locked = cycle === 0 && act.fights?.[s - 1]?.length ? act.fights[s - 1] : null;
+  const guard = cycle === 0 && ELITE_STEPS.includes(s) ? guardianOf(act, c.seed) : null; // T27: this hero's step 5 guardian
+  const locked = guard ? [guard] : cycle === 0 && act.fights?.[s - 1]?.length ? act.fights[s - 1] : null;
   const labels = cycle === 0 && act.names?.[s - 1]?.length ? act.names[s - 1] : null;
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);

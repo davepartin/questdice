@@ -145,3 +145,27 @@ test('a second visit to a place on the route has its own fight lines (Act III Ke
   const help = placeBeat('arrive', 'Wyrmwatch', { camp: { act: 3, step: 8, nextPlace: 'Wyrmwatch' }, help: true, again: true });
   assert.equal(help.id, 'help-arrive:wyrmwatch', 'a Call for Help keeps its own lines');
 });
+
+test('T27 guardians: a hero meeting another step 5 guardian gets its own elite page and victory line, and saved ids still resolve', async () => {
+  const { guardianOf } = await import('../js/data.js');
+  const { guardianFor } = await import('../js/story.js');
+  for (const act of ACTS.filter((a) => a.guardians)) {
+    const seen = new Set();
+    for (let seed = 1; seed <= 80; seed++) {
+      const c = { act: act.id, step: 5, seed, storySeen: [] };
+      const g = guardianOf(act, seed); assert.equal(guardianFor(c), g); seen.add(g);
+      const ids = pending(c).map((x) => x.id);
+      const want = g === act.guardians[0] ? `elite:${act.id}` : `elite:${act.id}:${g}`;
+      assert.deepEqual(ids, [want], `${act.name} seed ${seed}`);
+      const page = beat(want, act.id, [], c); assert.ok(page?.text?.length, `${want} has a page`);
+      assert.ok(namesFoe(page.text.join(' ') + ' ' + page.title, g), `${want} names ${g}`);
+      const place = act.route[4]; const win = pendingVictory(c, place);
+      if (g === act.guardians[0]) assert.equal(win.id, `win:${placeOf(place) && place.toLowerCase().replace(/['’]/g, '').replace(/\s+/g, '-')}`);
+      else {
+        assert.match(win.id, new RegExp(`^guard-win:.+:${g}$`));
+        const line = beat(win.id, act.id, [], c); assert.ok(namesFoe(line.text.join(' '), g), `${win.id} names ${g}`);
+      }
+    }
+    assert.equal(seen.size, act.guardians.length, `${act.name}: every guardian appears`);
+  }
+});

@@ -1034,6 +1034,9 @@ export const ACTS = [
     pool: [['goblin', 'goblin'], ['wolf'], ['wolf', 'goblin'], ['cultist', 'goblin'], ['wolf', 'wolf'], ['cultist'], ['cultist', 'wolf'], ['cinderling', 'goblin'], ['shieldbearer', 'goblin'],
       ['hedgeboar'], ['raincloud'], ['tuskraider', 'goblin'], ['bonfire'], ['raincloud', 'hedgeboar'], ['tuskraider']],
     elite: [['ogre'], ['ogre', 'goblin'], ['treant'], ['direbear']],
+    // The step 5 guardian on the first time through: one of these per hero, by the campaign's seed (T27, Nov 2026: so a
+    // second hero meets a different painted elite). The first is the one the act's notes and the balance tools assume.
+    guardians: ['ogre', 'treant', 'direbear'],
     boss: ['goblinking'],
     help: ['Cinder Ford', 'Burnt Orchard'],
     // where each step's fight happens, in story order (the arrival beats are written for this order; step 8 may become a Call for Help)
@@ -1060,6 +1063,7 @@ export const ACTS = [
     pool: [['skeleton', 'skeleton'], ['wraith'], ['spider', 'skeleton'], ['wraith', 'skeleton'], ['spider', 'spider'], ['spider'], ['frostwhelp', 'spider'], ['gloomstalker', 'skeleton'], ['dirgesinger', 'wraith'],
       ['wisp'], ['gargoyle'], ['nightblade'], ['hivedrone'], ['wisp', 'skeleton'], ['gargoyle', 'wraith'], ['puffball']],
     elite: [['bonewarden'], ['lampsnuffer'], ['barrowrider']],
+    guardians: ['bonewarden', 'lampsnuffer', 'barrowrider'],
     boss: ['lich'],
     help: ['Candle Vault', 'The Pale Nave'],
     route: ['The Weeping Stair', 'Candle Vault', 'The Pale Nave', 'Grave-Silk Hall', 'Ossuary Gate', 'Mourner’s Row', 'The Drowned Crypt', 'Mourner’s Row', 'The Drowned Crypt', 'Ash Cloister'],
@@ -1109,6 +1113,12 @@ export const ACTS = [
     },
   },
 ];
+// The step 5 guardian this campaign meets in an act (T27): one of `act.guardians`, fixed by the campaign's seed, or null.
+export function guardianOf(act, seed) {
+  const g = act?.guardians; if (!g?.length) return null;
+  let h = 2166136261; for (const ch of `guardian|${seed}|${act.id}`) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return g[(h >>> 0) % g.length];
+}
 // Painted battle backdrops live at assets/bg/<slug>.webp. A place name becomes a slug by lowering
 // case, dropping apostrophes, and turning spaces into hyphens (Ravens’ Rest → ravens-rest).
 export const placeSlug = (name) => String(name || '').toLowerCase().replace(/['’]/g, '').replace(/\s+/g, '-');

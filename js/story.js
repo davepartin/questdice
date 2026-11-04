@@ -7,7 +7,7 @@
 // beat before the elite at quest 5 and before the boss at quest 10. Place arrivals show before a fight; victory beats
 // after. Seen beats are kept in campaign.storySeen.
 
-import { ACTS, placeSlug, PLACE_ALIAS } from './data.js';
+import { ACTS, placeSlug, PLACE_ALIAS, guardianOf } from './data.js';
 import { beatsOf, placesOf, stepsOf, actsOf, fillNames, packIdOf, DEFAULT_PACK } from './campaigns.js';
 import { hasLegend, legendBeat } from './legend.js';
 
@@ -30,6 +30,15 @@ const BEATS = {
     'The Goblin King posted a hill ogre where the road narrows. He is slow, and he hits like a falling tree. Watch for him winding up.',
     'Get past him and the king’s hill comes into sight.',
   ] },
+  // T27: the step 5 guardian differs from hero to hero (ACTS[].guardians); the ogre's page above is the default.
+  'elite:1:treant': { kicker: 'The road narrows', title: 'The Wrath-Oak', icon: 'skull', text: [
+    'The Goblin King’s men set fire to the woods where the road narrows, and the oldest oak in the Marches woke up angry. The Wrath-Oak stands across the road with smoke still curling off its branches.',
+    'It grips you with its roots and grows its bark back. When it rocks back to Uproot, brace. Get past it and the king’s hill comes into sight.',
+  ] },
+  'elite:1:direbear': { kicker: 'The road narrows', title: 'Gravelhide', icon: 'skull', text: [
+    'The Goblin King has chained a dire bear across the road where it narrows and fed it nothing but grudges. Gravelhide, the Dire Bear, has a hide like a gravel path and a roar that rattles your teeth.',
+    'Watch for it winding up. Get past it and the king’s hill comes into sight.',
+  ] },
   'boss:1': { kicker: 'Gallows Hill', title: 'The Goblin King', icon: 'crown', text: [
     'From the top of the hill you can see the Lantern’s flame, pale and thrashing in an iron cage beside the Goblin King’s throne.',
     'He calls it his treasure. He will not give it back. Take it.',
@@ -45,6 +54,14 @@ const BEATS = {
   'elite:2': { kicker: 'The lower door', title: 'The Bone Warden', icon: 'shield', text: [
     'The lower halls have a keeper: the Bone Warden, a giant of fused bone that has stood at the deep door for a hundred years.',
     'It does not hate you. It will not move. Make it.',
+  ] },
+  'elite:2:lampsnuffer': { kicker: 'The lower door', title: 'The Lamp-Snuffer', icon: 'shield', text: [
+    'The lower halls have a keeper: the Lamp-Snuffer, a tall grey figure with a brass snuffer on a pole. For a hundred years it has put out every candle in the crypt, one by one, because it is afraid of what the light will show.',
+    'It snuffs out your magic and calls Will-o’-the-Wisps out of the dark. Bring the light anyway.',
+  ] },
+  'elite:2:barrowrider': { kicker: 'The lower door', title: 'The Barrow Rider', icon: 'shield', text: [
+    'The lower halls have a keeper: the Barrow Rider, an old knight on a horse of bones, who rides the same lap of the crypt every night and has long forgotten why.',
+    'Watch for the Barrow Charge, and for the Bone Soldiers it calls to its side. It does not hate you. It is only very, very tired.',
   ] },
   'boss:2': { kicker: 'The bottom of the dark', title: 'The Hollow Lich', icon: 'crown', text: [
     'At the bottom sits the Hollow Lich, a king of bones with an empty chest.',
@@ -140,6 +157,11 @@ const PLACES = {
     foes: ['ogre'],
     arrive: ['A narrow stone bridge over a gorge. The toll-keeper is a hill ogre. A sign at his feet reads “TOLL: EVRYTHING”. Watch for him winding up. He hits like a falling tree.'],
     win: ['The ogre sits down hard. Gallows Hill rises out of the smoke on the far side.'],
+    // T27: the other guardians a hero may meet here (step 5); the arrival is the elite page, so only the victory differs.
+    guardians: {
+      treant: { win: ['The Wrath-Oak puts its roots back down into the gorge and goes still. A bird lands on it. Gallows Hill rises out of the smoke on the far side.'] },
+      direbear: { win: ['You break the chain instead of the bear. Gravelhide, the Dire Bear, shakes its great head, looks at you for a long moment, and lumbers off into the trees. Gallows Hill rises out of the smoke on the far side.'] },
+    },
   },
   'smoke-hollow': {
     title: 'Smoke Hollow', icon: 'flame',
@@ -206,6 +228,10 @@ const PLACES = {
     foes: ['bonewarden'],
     arrive: ['A doorway made of stacked bones. The Bone Warden stands in front of it. If you let it, it will raise a Bone Soldier from the doorframe and put up a bone wall. It will not move unless you make it.'],
     win: ['The Warden lowers its great arm and the gate grinds open onto cold black water.'],
+    guardians: {
+      lampsnuffer: { win: ['The Lamp-Snuffer drops its brass snuffer. One by one, the candles along the gate light themselves again, and the gate grinds open onto cold black water.'] },
+      barrowrider: { win: ['The Barrow Rider’s horse kneels. The rider climbs down for the first time in a hundred years and sits on the steps to rest. The gate grinds open onto cold black water.'] },
+    },
   },
   'mourners-row': {
     title: 'Mourner’s Row', icon: 'skull',
@@ -322,10 +348,19 @@ const landOf = (act) => ((act - 1) % ACTS_IN_STORY) + 1;             // 1 = the 
 // The beat id for a moment in a given act ('open' | 'elite' | 'boss' | 'close'), or null when that act has none.
 export function beatId(kind, act, camp) {
   const table = beatsFor(camp);
-  if (ascentOf(act) === 1) return table[`${kind}:${act}`] ? `${kind}:${act}` : null;
+  if (ascentOf(act) === 1) {
+    const g = kind === 'elite' ? guardianFor(camp, act) : null; // T27: this hero's own step 5 guardian has its own page
+    if (g && table[`elite:${act}:${g}`]) return `elite:${act}:${g}`;
+    return table[`${kind}:${act}`] ? `${kind}:${act}` : null;
+  }
   if (kind === 'close') return table['close:ascent'] ? 'close:ascent' : null;
   if (kind === 'elite') return null;
   return table[`${kind}:ascent:${landOf(act)}`] ? `${kind}:ascent:${landOf(act)}` : null;
+}
+// The step 5 guardian this campaign meets in an act (null for packs and Act III).
+export function guardianFor(camp, act = camp?.act) {
+  if (!camp || camp.seed == null) return null; // (no seed: a test or a preview; the act's own page)
+  return guardianOf(actsOf(camp)[landIndex(act)], camp.seed);
 }
 // True when this step returns to a place the act's route already visited (Act III's Kettle Tarn, step 8 without a Call for Help).
 export function revisit(c, place, step = c?.step) {
@@ -334,12 +369,14 @@ export function revisit(c, place, step = c?.step) {
   return first >= 0 && first < step - 1 && slugOf(route[step - 1] || '') === here;
 }
 export function placeOf(name, camp) { return placesFor(camp)[slugOf(name)] || PLACES[slugOf(name)] || null; }
-export function placeBeat(kind, name, { help = false, camp = null, heroes = [], again = false } = {}) {
+export function placeBeat(kind, name, { help = false, camp = null, heroes = [], again = false, guard = null } = {}) {
   const p = placeOf(name, camp); if (!p) return null;
   const twice = !help && again && p.again; // a second visit on the route has its own fight and its own lines
-  const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : twice ? (kind === 'arrive' ? p.again.arrive : p.again.win) : (kind === 'arrive' ? p.arrive : p.win);
+  const g = !help && !twice && guard && p.guardians?.[guard]?.[kind] ? guard : null; // T27: this hero's step 5 guardian
+  const text = help ? (kind === 'arrive' ? p.helpArrive : p.helpWin) : twice ? (kind === 'arrive' ? p.again.arrive : p.again.win)
+    : g ? p.guardians[g][kind] : (kind === 'arrive' ? p.arrive : p.win);
   if (!text?.length) return null;
-  const id = `${help ? `help-${kind}` : twice ? `again-${kind}` : kind}:${slugOf(name)}`;
+  const id = g ? `guard-${kind}:${slugOf(name)}:${g}` : `${help ? `help-${kind}` : twice ? `again-${kind}` : kind}:${slugOf(name)}`;
   const names = { seed: camp?.seed, lineId: id };
   return {
     id,
@@ -383,6 +420,13 @@ export function beat(id, act, heroes = [], camp = null) {
   const stepMatch = /^(arrive|win):(\d+)\.(\d+)$/.exec(id || '');
   if (stepMatch) {
     return stepBeat(stepMatch[1], camp, { heroes, act: Number(stepMatch[2]), step: Number(stepMatch[3]) });
+  }
+  const gm = /^guard-(arrive|win):([^:]+):([a-z0-9]+)$/.exec(id || '');
+  if (gm) {
+    const p = placesFor(camp)[gm[2]] || PLACES[gm[2]]; const text = p?.guardians?.[gm[3]]?.[gm[1]] || (gm[1] === 'arrive' ? p?.arrive : p?.win);
+    if (!text) return null;
+    const names = { seed: camp?.seed, lineId: id };
+    return { id, act, icon: p.icon || 'road', kicker: fillNames(gm[1] === 'win' ? 'The fight is over' : 'You arrive', heroes, names), title: fillNames(p.title, heroes, names), text: fillNames(text, heroes, names) };
   }
   if (id?.startsWith('arrive:') || id?.startsWith('win:') || id?.startsWith('help-') || id?.startsWith('again-')) {
     const [kind, ...rest] = id.split(':');
@@ -441,7 +485,7 @@ export function pendingVictory(c, place) {
     return { id: b.id, act: c.act, place: row.place };
   }
   const help = c.step === 8 && !!c.nextPlace;
-  const b = placeBeat('win', place, { help, camp: c, again: revisit(c, place) });
+  const b = placeBeat('win', place, { help, camp: c, again: revisit(c, place), guard: c.step === 5 ? guardianFor(c) : null });
   if (!b || seen(c, b.id, c.act)) return null;
   return { id: b.id, act: c.act, place };
 }

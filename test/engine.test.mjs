@@ -788,13 +788,14 @@ test('random encounters: one fight a step, seeded, within the cap, and bigger fo
 });
 
 test('Acts I–III lock story foes; difficulty never swaps the cast', async () => {
-  const { ACTS } = await import('../js/data.js');
+  const { ACTS, guardianOf } = await import('../js/data.js');
   const { encounterFor } = await import('../js/engine.js');
   for (const act of ACTS) {
     for (let step = 1; step <= 10; step++) {
-      const locked = act.fights[step - 1];
       for (const diff of ['easy', 'normal', 'hard', 'legendary']) {
         const h = newHero({ name: 'x', cls: 'knight', seed: 9 });
+        const g = step === 5 ? guardianOf(act, h.campaign.seed) : null; // T27: step 5 is this hero's guardian
+        const locked = g ? [g] : act.fights[step - 1];
         h.difficulty = diff; h.campaign.act = act.id; h.campaign.step = step; h.campaign.wins = step === 1 ? 0 : 1;
         const q = questsFor(h)[0]; // the story's foes come first and stay; a wanderer may join after them
         assert.deepEqual(q.enemies.slice(0, locked.length), locked, `${act.name} step ${step} ${diff}`);
@@ -1105,4 +1106,23 @@ test('the magic cap grows like health: +1 every two levels, +2 a Deep Well perk;
   k.level = 3; assert.equal(E.magicCapOf(k), 13); k.level = 11; assert.equal(E.magicCapOf(k), 17);
   k.perks.push('deepwell', 'deepwell'); assert.equal(E.magicCapOf(k), 21);
   w.level = 11; assert.equal(E.magicCapOf(w), 20);
+});
+
+test('T27 guardians: each hero meets one step 5 guardian per act, fixed by its seed; packs keep their own step 5', async () => {
+  const { ACTS, guardianOf } = await import('../js/data.js');
+  const { actsOf } = await import('../js/campaigns.js');
+  for (const act of ACTS.filter((a) => a.guardians)) {
+    const met = new Set();
+    for (let seed = 1; seed <= 60; seed++) {
+      const h = newHero({ name: 'g', cls: 'knight', seed }); h.campaign.act = act.id; h.campaign.step = 5; h.campaign.wins = 4;
+      const q = questsFor(h)[0];
+      assert.equal(q.kind, 'elite');
+      assert.deepEqual(q.enemies, [guardianOf(act, h.campaign.seed)]);
+      assert.deepEqual(questsFor(h)[0].enemies, q.enemies, 'the same hero always meets the same guardian');
+      met.add(q.enemies[0]);
+    }
+    assert.deepEqual([...met].sort(), [...act.guardians].sort(), `${act.name}: every guardian turns up across heroes`);
+  }
+  assert.equal(ACTS[2].guardians, undefined, 'Act III keeps the Ember Queen on the bridge');
+  for (const id of ['rivalduo', 'ballad', 'cloverheist']) for (const a of actsOf(id)) assert.equal(a.guardians, undefined, `${id} keeps its own step 5`);
 });
