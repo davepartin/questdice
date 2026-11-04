@@ -1,20 +1,20 @@
 // Weapon card dice (T05, ported from Grok's T17 rev 14 mockup): real polyhedra from the game (js/gfx/dice/poly.js, so shapes and bevels match the
-// battle tray: d4 triangle, d6 square, d8 diamond, d10 kite), flat red (attack) / blue (block) bodies, the number and bonus icons fitted inside each
-// true face polygon and auto-cropped so the 3D die fills its box on the card.
+// battle tray: d4 triangle, d6 square, d8 diamond, d10 kite), flat red (attack) / blue (block) bodies painted all the way across the bevels,
+// with balanced, well-centered numbers and bonus icons inside each true face polygon.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { makePoly, roundedGeometry } from '../gfx/dice/poly.js';
 let SYM = {}; export const setSymbols = (s) => { SYM = s; }; // the game's symbol paths and colours (js/g3/cards.js SYM)
 const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
-const BODY = { r: ['#c8161d', '#6e0508'], b: ['#2264d8', '#0b2a78'], z: ['#c8161d', '#6e0508'] }; // attack, block, a +0
+const BODY = { r: ['#c0141a', '#6e0508'], b: ['#1f5fd0', '#0b2a78'], z: ['#c0141a', '#6e0508'] };
 let R, scene, cam, env, idle;
 function setup() {
   clearTimeout(idle); if (R) return; R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-  R.setPixelRatio(1); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 0.66; R.outputColorSpace = THREE.SRGBColorSpace;
+  R.setPixelRatio(1); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 0.64; R.outputColorSpace = THREE.SRGBColorSpace;
   scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); env = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environment = env; pm.dispose();
   const key = new THREE.DirectionalLight(0xfff1dc, 2.6); key.position.set(-2.2, 3.4, 3); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xbfd4ff, 0.95); rim.position.set(3, 1.5, -2); scene.add(rim);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  const rim = new THREE.DirectionalLight(0xbfd4ff, 0.9); rim.position.set(3, 1.5, -2); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.16));
   cam = new THREE.PerspectiveCamera(24, 1, 0.1, 20);
 }
 function release() { idle = setTimeout(() => { try { env?.dispose(); R?.dispose(); R?.forceContextLoss(); } catch { /* already gone */ } R = scene = cam = env = null; }, 4000); }
@@ -29,61 +29,68 @@ function grain(g, W, H, seed, a, C = 24) {
   g.putImageData(img, 0, 0);
 }
 
-const RICH = { arrow_pierce: '#ee4400', arrow_fire: '#e0420a', arrow_frost: '#1f9ad6', atk: '#e88200', block: '#1854c8', gold: '#e39400', pierce: '#ee4400', magic: '#7c18d8', heal: '#08a83a', star: '#e88600' };
+const RICH = { arrow_pierce: '#ee4400', arrow_fire: '#e0420a', arrow_frost: '#1f9ad6', atk: '#e07a00', block: '#0b3c9e', gold: '#e39400', pierce: '#ee4400', magic: '#7410cc', heal: '#08a83a', star: '#e88600' };
 const icon = (g, k, x, y, s) => { const sym = SYM[k.startsWith('arrow_') ? 'arrow' : k] || SYM.star; const p = new Path2D(sym.d); const col = RICH[k] || sym.c;
-  const u = s / 24; const white = Math.min(10, s * 0.1) / u;
+  const u = s / 24; const white = Math.min(9.5, s * 0.09) / u;
   g.save(); g.translate(x - s / 2, y - s / 2); g.scale(u, u); g.lineJoin = 'round';
-  g.save(); g.translate(0, 5 / u); g.lineWidth = white; g.strokeStyle = '#240503aa'; g.stroke(p); g.restore();
-  g.lineWidth = white; g.strokeStyle = '#fffdf8'; g.stroke(p); g.fillStyle = col; g.fill(p);
-  g.save(); g.clip(p); g.lineWidth = 5 / u; g.translate(0, 2.5 / u); g.strokeStyle = '#0000004d'; g.stroke(p); g.translate(0, -5 / u); g.strokeStyle = '#ffffff66'; g.stroke(p); g.restore();
+  g.save(); g.translate(0, 5 / u); g.lineWidth = white; g.strokeStyle = '#18050499'; g.stroke(p); g.restore();
+  g.lineWidth = white; g.strokeStyle = '#fffdf6'; g.stroke(p); g.fillStyle = col; g.fill(p);
+  g.save(); g.clip(p); g.lineWidth = 5.5 / u; g.translate(0, 2.8 / u); g.strokeStyle = '#0000004d'; g.stroke(p); g.translate(0, -5.6 / u); g.strokeStyle = '#ffffff66'; g.stroke(p); g.restore();
   g.restore(); };
 
 const ROWS = { 1: [1], 2: [2], 3: [3], 4: [[2, 2], [4]], 5: [[3, 2], [2, 3]] };
 function edgeDist(P, x, y, sg = 1) { let m = Infinity; for (let i = 0; i < P.length; i++) { const [ax, ay] = P[i], [bx, by] = P[(i + 1) % P.length];
   const ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey); const d = sg * ((x - ax) * ey - (y - ay) * ex) / L; m = Math.min(m, d); } return m; }
-function layout(P, sign, nMarks, txtW, inR, extra = 0) {
-  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra; const plans = !nMarks ? [[]] : [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
+function layout(P, sign, nMarks, txtW, inR, extra = 0, sides = 6) {
+  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra;
+  const plans = !nMarks ? [[]] : [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
+  // When a face has no icons (e.g. +0, +1, +2 on a bow), keep the number near the visual center of the polygon instead of sliding down to the bottom edge
+  const oyMin = !nMarks ? (sides === 4 ? 0.02 : -0.06) : -0.45;
+  const oyMax = !nMarks ? (sides === 4 ? 0.14 : 0.06) : 0.4501;
+  const maxFs = !nMarks ? inR * (sides === 4 ? 0.68 : 0.74) : inR * (sides === 4 ? 0.56 : 0.62);
   let best = null;
-  for (const plan of plans) for (let oy = -0.55; oy <= 0.5501; oy += 0.04) {
-    const fits = (k) => { const fs = k, is = k * 0.66, gap = is * 1.06; const rows = plan.length; const hT = fs * 0.72, hI = rows * gap;
-      const top = oy * inR - (hT + hI) / 2; const ny = top + hT / 2; const tw = txtW * fs * 0.9;
-      for (const [cx, cy] of [[-tw / 2, ny - hT * 0.42], [tw / 2, ny - hT * 0.42], [-tw / 2, ny + hT * 0.42], [tw / 2, ny + hT * 0.42]]) if (!inside(cx, cy, 0)) return null;
+  for (const plan of plans) for (let oy = oyMin; oy <= oyMax; oy += 0.04) {
+    const fits = (k) => { const fs = k, is = k * 0.64, gap = is * 1.12; const rows = plan.length; const hT = fs * 0.76, hI = rows * gap;
+      const top = oy * inR - (hT + hI) / 2; const ny = top + hT / 2; const tw = txtW * fs;
+      for (const [cx, cy] of [[-tw / 2, ny - hT / 2], [tw / 2, ny - hT / 2], [-tw / 2, ny + hT / 2], [tw / 2, ny + hT / 2]]) if (!inside(cx, cy, 0)) return null;
       const pts = []; plan.forEach((n, r) => { for (let i = 0; i < n; i++) pts.push([(i - (n - 1) / 2) * gap, top + hT + gap * (r + .5)]); });
-      const rr = is * 0.46 + Math.min(9, is * 0.085) / 2; for (const [x, y] of pts) if (!inside(x, y, rr)) return null;
+      const rr = is * 0.5 + Math.min(9, is * 0.085) / 2; for (const [x, y] of pts) if (!inside(x, y, rr)) return null;
       return { fs, is, ny, pts }; };
-    let lo = 0, hi = inR * 2.2, got = null; for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; const r = fits(mid); if (r) { lo = mid; got = r; } else hi = mid; }
+    let lo = 0, hi = maxFs, got = null; for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; const r = fits(mid); if (r) { lo = mid; got = r; } else hi = mid; }
     if (got && (!best || got.fs > best.fs)) best = got; }
   return best;
 }
 function paintFace(g, poly, fi, f, cell, Hm) {
   const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const txt = `+${f.v}`; const marks = f.icons.slice(0, 5);
   const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1;
-  const inset = R_BY[poly.sides] * ppm * 0.65;
-  g.font = `800 100px Oxanium, "Trebuchet MS", sans-serif`; const txtW = g.measureText(txt).width / 100 * 0.9;
-  const L = layout(P, sign, marks.length, txtW, inR, inset); const { fs, is, ny, pts } = L || { fs: inR * .48, is: inR * .3, ny: -inR * .28, pts: marks.map((_, i) => [(i - (marks.length - 1) / 2) * inR * .3, inR * .2]) };
+  const inset = R_BY[poly.sides] * ppm * 1.15 + inR * 0.05;
+  g.font = `800 100px Oxanium, "Trebuchet MS", sans-serif`; const txtW = g.measureText(txt).width / 100 * 0.94;
+  const L = layout(P, sign, marks.length, txtW, inR, inset, poly.sides);
+  const { fs, is, ny, pts } = L || { fs: inR * .42, is: inR * .26, ny: marks.length ? -inR * .28 : 0, pts: marks.map((_, i) => [(i - (marks.length - 1) / 2) * inR * .3, inR * .2]) };
   g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineJoin = 'round'; g.lineWidth = Math.max(4, fs * 0.11); g.strokeStyle = '#140402cc'; g.strokeText(txt, 0, ny + fs * .04);
-  const [i0, i1] = ['#ffffff', f.v === 0 ? '#cfc3b6' : '#ffe8be'];
+  g.fillStyle = '#000b'; g.fillText(txt, 0, ny + fs * .06); g.fillStyle = '#fff5'; g.fillText(txt, -fs * .02, ny - fs * .03);
+  const [i0, i1] = ['#fffaf2', f.v === 0 ? '#cfc3b6' : '#eadbc0'];
   const tg = g.createLinearGradient(0, ny - fs / 2, 0, ny + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, ny);
   marks.forEach((k, i) => icon(g, k, pts[i][0], pts[i][1], is));
 }
-function atlas(poly, faces, cell = 256) {
+
+// Build an atlas where the entire background, bevel trim cell, and every face share `baseCol` ('r' or 'b'), so a blue die has 100% blue bevels/edges
+// and never shows a red outline from neighboring faces or trimUV.
+function atlasForColor(poly, faces, baseCol = 'r', cell = 256) {
   const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });
-  const body = (k) => BODY[k]; g.fillStyle = body('r')[0]; g.fillRect(0, 0, W, W);
-  const cellFill = (cx, cy, k) => { g.fillStyle = body(k)[0]; g.fillRect(cx - cell / 2, cy - cell / 2, cell, cell); };
-  for (let i = 0; i <= n; i++) cellFill((i % cols + .5) * cell, ((i / cols | 0) + .5) * cell, 'r');
+  const fillCol = BODY[baseCol === 'b' ? 'b' : 'r'][0];
+  g.fillStyle = fillCol; g.fillRect(0, 0, W, W);
   let Hm = 0; poly.faces.forEach((f) => f.local.forEach((p) => { Hm = Math.max(Hm, Math.abs(p[0]), Math.abs(p[1])); })); Hm *= 1.12;
   const ctr = (fi) => [(fi % cols + .5) * cell, ((fi / cols | 0) + .5) * cell];
   const uvOf = (fi, x, y) => { const [cx, cy] = ctr(fi); return [(cx + (x / Hm) * (cell / 2)) / W, 1 - (cy - (y / Hm) * (cell / 2)) / W]; };
-  faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi); cellFill(cx, cy, f.c === 'n' ? 'n' : f.c === 'b' ? 'b' : 'r'); });
-  grain(g, W, W, 7, 22); grain(g, W, W, 31, 14, 110);
+  grain(g, W, W, 7, 24); grain(g, W, W, 31, 15, 110);
   faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi);
     g.save(); g.translate(cx, cy); paintFace(g, poly, fi, f, cell, Hm); g.restore(); });
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.flipY = true;
-  const trim = ctr(n); return { t, uvOf, trimUV: [trim[0] / W, 1 - trim[1] / W], cv };
+  const b = new THREE.CanvasTexture(cv); b.flipY = true;
+  const trim = ctr(n); return { t, b, uvOf, trimUV: [trim[0] / W, 1 - trim[1] / W], cv };
 }
 
-// Auto-crop the rendered 3D polyhedron so it fills 96% of the output square with zero wasted transparent margin
 function cropToSquare(srcCanvas, outPx) {
   const w = srcCanvas.width, h = srcCanvas.height;
   const out = document.createElement('canvas'); out.width = out.height = outPx;
@@ -104,7 +111,7 @@ function cropToSquare(srcCanvas, outPx) {
   if (x1 <= x0 || y1 <= y0) return srcCanvas.toDataURL('image/png');
   const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
   const span = Math.max(bw, bh);
-  const pad = Math.round(outPx * 0.025);
+  const pad = Math.round(outPx * 0.03);
   const scale = (outPx - pad * 2) / span;
   const dw = bw * scale, dh = bh * scale;
   g.clearRect(0, 0, outPx, outPx);
@@ -115,18 +122,29 @@ function cropToSquare(srcCanvas, outPx) {
 // dieSet(sides, faces, { px }): one PNG data URL per label 1..sides, each the real 3D die turned so that label faces the viewer.
 export function dieSet(sides, faces, { px = 220, from = 0 } = {}) {
   setup(); R.setSize(px, px, false);
-  const poly = makePoly(sides); const A = atlas(poly, faces); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
-  const bump = new THREE.CanvasTexture(A.cv); bump.flipY = true;
-  const mat = new THREE.MeshPhysicalMaterial({ map: A.t, roughness: 0.48, metalness: 0.04, clearcoat: 0.4, clearcoatRoughness: 0.5, bumpMap: bump, bumpScale: 1.4, envMapIntensity: 0.9 });
+  const poly = makePoly(sides);
+  const needR = faces.some((f, i) => i >= from && f && f.c !== 'b');
+  const needB = faces.some((f, i) => i >= from && f && f.c === 'b');
+  const AR = needR ? atlasForColor(poly, faces, 'r') : null;
+  const AB = needB ? atlasForColor(poly, faces, 'b') : null;
+  const A0 = AR || AB;
+  const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A0.uvOf, trimUV: A0.trimUV });
+  const mat = new THREE.MeshPhysicalMaterial({ map: A0.t, roughness: 0.5, metalness: 0.04, clearcoat: 0.4, clearcoatRoughness: 0.5, bumpMap: A0.b, bumpScale: 1.4, envMapIntensity: 0.9 });
   const mesh = new THREE.Mesh(geo, mat); scene.add(mesh); const urls = [];
-  const tilt = new THREE.Euler(-0.24, sides === 4 ? 0.18 : 0.2, 0); const dist = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (sides === 4 ? 0.74 : 0.82);
+  const tilt = new THREE.Euler(-0.26, sides === 4 ? 0.2 : 0.22, 0); const dist = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (sides === 4 ? 0.76 : 0.84);
   cam.position.set(0, 0, dist); cam.lookAt(0, 0, 0); mesh.position.y = sides === 4 ? -poly.outR * 0.08 : 0;
   for (let label = 1; label <= sides; label++) {
     if (label <= from) { urls.push(null); continue; }
+    const faceData = faces[label - 1];
+    const A = faceData?.c === 'b' ? AB : AR;
+    if (mat.map !== A.t) { mat.map = A.t; mat.bumpMap = A.b; mat.needsUpdate = true; }
     const f = poly.faces[poly.labelFace[label - 1]]; const m = new THREE.Matrix4().makeBasis(f.e2, f.e1, f.n).transpose();
     mesh.quaternion.setFromRotationMatrix(m).premultiply(new THREE.Quaternion().setFromEuler(tilt));
     R.render(scene, cam); urls.push(cropToSquare(R.domElement, px));
   }
-  scene.remove(mesh); geo.dispose(); mat.dispose(); A.t.dispose(); bump.dispose(); release();
+  scene.remove(mesh); geo.dispose(); mat.dispose();
+  if (AR) { AR.t.dispose(); AR.b.dispose(); }
+  if (AB) { AB.t.dispose(); AB.b.dispose(); }
+  release();
   return urls;
 }
