@@ -146,12 +146,24 @@ const PLACES = {
     foes: ['cultist', 'cinderling'],
     arrive: ['A bowl-shaped valley where the smoke pools like a lake. Claw prints as wide as a cart are pressed into the scorched earth.', 'An Ember Mage is kneeling in a scorch mark, trying to teach a bored Cinderling to siphon light out of the air.'],
     win: ['The Cinderling flees uphill. The Ember Mage shouts “SHE comes!” and follows it.'],
+    // Step 8 comes back here when no one called for help.
+    again: {
+      foes: ['bonfire', 'raincloud'],
+      arrive: ['Smoke Hollow again, and it is smokier than ever. A Wildfire is stomping out of the haze with an armful of stolen fence-posts to feed itself. A grumpy little Squall has been chasing it all morning, raining on it, and missing.', 'The moment you step between them, they both decide you are the problem.'],
+      win: ['The Wildfire drops its fence-posts and scurries off to sulk in a ditch. The Squall rains on it one last time, looks very pleased with itself, and drifts away.'],
+    },
   },
   'ashfall-camp': {
     title: 'Ashfall Camp', icon: 'flame',
     foes: ['goblin', 'goblin', 'goblin'],
     arrive: ['The Goblin King’s war-camp sprawls across the foot of the hill. On duty at the gate are Pip, Pog and Nib. Pip has a fire bomb. Pog pilfers anything that is not nailed down. Nib ducks behind the other two.'],
     win: ['Pip’s last fire bomb goes off in the cookpot. Pog tries to steal your boot. Nib had already started running. In a pocket: a scrap of a contract signed with a claw. You can make out three words: “…keep it WARM…”'],
+    // Step 9: the camp's second fight, the last before Gallows Hill.
+    again: {
+      foes: ['tuskraider', 'goblin', 'goblin'],
+      arrive: ['Back at Ashfall Camp, the gate has new guards. The Goblin King has hired an Ash-Tusk Raider from beyond the hills, a tusked brute with a cleaver and a shield the size of a door. Pog and Nib are standing behind him, holding his coat between them.', 'Watch for the Shield Rush. When the Raider lowers his head, he means it.'],
+      win: ['The Ash-Tusk Raider throws down his cleaver. “He said goblins pay in gold,” he grumbles. “He paid me in buttons.” In his purse is a single real coin, stamped with a dragon’s face. Nib is already halfway up Gallows Hill, and Pog takes your boot after all.'],
+    },
   },
   'gallows-hill': {
     title: 'Gallows Hill', icon: 'crown',
@@ -200,12 +212,24 @@ const PLACES = {
     foes: ['wraith', 'gloomstalker'],
     arrive: ['A narrow street of tiny stone houses. A Wraith sits on a doorstep, and the cold coming off it frosts your eyelashes.', 'At the end of the row, a Gloom Stalker waits with a black arrow already on the string. It will fade through the next wall if you stare, and snare your feet if you do not.'],
     win: ['The Wraith fades. The Gloom Stalker leaves a black-fletched arrow in the lintel and is gone.'],
+    // Step 8 comes back here when no one called for help.
+    again: {
+      foes: ['wisp', 'skeleton'],
+      arrive: ['Mourner’s Row again. A Will-o’-the-Wisp bobs from doorstep to doorstep, grinning, and a lost Bone Soldier is following it in circles, sure it is the way out.', 'The Wisp leads you astray too, if you let it. Keep your eyes on the bones.'],
+      win: ['The Will-o’-the-Wisp pops like a soap bubble. The Bone Soldier sits down on a doorstep, relieved to finally stop walking.'],
+    },
   },
   'the-drowned-crypt': {
     title: 'The Drowned Crypt', icon: 'spark',
     foes: ['frostwhelp', 'frostwhelp'],
     arrive: ['Half the crypt has sunk under black, ice-cold water. Under the surface something glows pale blue: a nest of eggs, frozen solid.', 'Two Frostwhelps have hatched. One puffs frost across the ice. The other binds your boots with icy wings. They will flee for the eggs if the fight turns.'],
     win: ['The beaten whelps curl up on an egg. These are dragon eggs.'],
+    // Step 9: the last fight before Ash Cloister.
+    again: {
+      foes: ['gargoyle', 'nightblade'],
+      arrive: ['The water in the Drowned Crypt has risen to your knees. It pours out of the mouth of a Vault Sentinel, a stone gargoyle crouched over the last door before Ash Cloister. When it wakes, it spouts ice water across the whole room.', 'Behind it, The Nightblade waits in the dark, sent by the Lich to hush you before you reach the door.'],
+      win: ['The Vault Sentinel turns back to stone mid-spout, and the water stops. The Nightblade melts into the shadows. The last door creaks open, and you can feel the cold of Ash Cloister on the other side.'],
+    },
   },
   'ash-cloister': {
     title: 'Ash Cloister', icon: 'crown',

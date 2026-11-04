@@ -1049,8 +1049,8 @@ export const ACTS = [
       ['ogre'],                            // 5 The Toll Bridge — elite
       ['cultist', 'cinderling'],           // 6 Smoke Hollow
       ['goblin', 'goblin', 'goblin'],      // 7 Ashfall Camp — Pip, Pog and Nib
-      ['cultist', 'cinderling'],           // 8 Smoke Hollow fallback (step 8 is usually Help)
-      ['goblin', 'goblin', 'goblin'],      // 9 Ashfall Camp
+      ['bonfire', 'raincloud'],            // 8 Smoke Hollow again (step 8 is usually Help): a Wildfire and the Squall chasing it (T27)
+      ['tuskraider', 'goblin', 'goblin'],  // 9 Ashfall Camp again: the King's hired Ash-Tusk Raider, with Pog and Nib (T27)
       ['goblinking'],                      // 10 Gallows Hill — boss
     ],
   },
@@ -1072,8 +1072,8 @@ export const ACTS = [
       ['bonewarden'],                            // 5 Ossuary Gate — elite
       ['wraith', 'gloomstalker'],                // 6 Mourner’s Row
       ['frostwhelp', 'frostwhelp'],              // 7 The Drowned Crypt
-      ['wraith', 'gloomstalker'],                // 8 Mourner’s Row fallback
-      ['frostwhelp', 'frostwhelp'],              // 9 The Drowned Crypt
+      ['wisp', 'skeleton'],                      // 8 Mourner’s Row again (step 8 is usually Help): a Wisp leading a lost Bone Soldier (T27)
+      ['gargoyle', 'nightblade'],                // 9 The Drowned Crypt again: the Vault Sentinel and the Nightblade at the last door (T27)
       ['lich'],                                  // 10 Ash Cloister — boss
     ],
   },

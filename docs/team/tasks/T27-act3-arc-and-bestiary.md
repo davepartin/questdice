@@ -109,7 +109,7 @@ the sample is small; watch the slope and Big Muriel's tarn in play.
 - The last page of the story (`close:3`) now ends with the Marches lighting candles, the story told for a hundred years
   ending with the heroes' names, and "You carried the light home. The story is won."
 - Monster cards: a long move name (Vexmor's LIGHTNING, THUNDERCLAP) no longer runs into its dice numbers
-  (css/minicard.css). Check: `node dev/act3-road-check.mjs` (headless Chromium, not Safari; it fails without the fix).
+  (css/minicard.css). Check: `node dev/road-check.mjs` (headless Chromium, not Safari; it fails without the fix).
 
 ## Not done yet
 
