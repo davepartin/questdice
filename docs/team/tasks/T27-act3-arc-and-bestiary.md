@@ -127,6 +127,24 @@ Bots (smart, 3 campaigns x 5 classes; win chance / rounds): I.8 96% / 4.0 -> 95%
 (fightHp 0.6 -> 0.5); II.8 82% / 6.1 -> 88% / 5.8; II.9 85% / 6.4 -> 86% / 6.9 (fightHp 1.15 -> 1.3). Campaigns cleared
 13 of 15 both ways. Phone check: `node dev/road-check.mjs` covers all seven new fights (headless Chromium, not Safari).
 
+## Step 5 guardians: a different painted elite for each hero (build 20261104a5)
+
+Dave asked for a first playthrough to meet more of the painted bestiary, but in October he also ruled that each step
+offers only one fight ("since you can already choose level in the game"), so a side road was not built. Measured first:
+a first playthrough meets about 29 of 49 painted monsters (wanderers already add outsiders to ~45% of ordinary fights),
+and the ones nobody meets are mostly the elites, because each act's step 5 was always the same monster.
+
+Now Acts I and II pick the step 5 guardian per campaign, by its seed (`ACTS[].guardians`, `guardianOf` in js/data.js):
+
+| Act | Guardians (one per hero) | Bots, step 5 win / rounds when every hero meets it |
+|---|---|---|
+| I (The Toll Bridge) | Hill Ogre, **The Wrath-Oak**, **Gravelhide, the Dire Bear** | 100% / 5.4, 99% / 5.9, 97% / 5.7 |
+| II (Ossuary Gate) | Bone Warden, **The Lamp-Snuffer**, **The Barrow Rider** | 85% / 8.2, 90% / 8.0, 81% / 8.5 |
+
+Each has its own elite page (`elite:1:treant`, `elite:2:lampsnuffer`, ...) and victory line (`guard-win:<place>:<id>`).
+A second hero usually meets a different guardian. Act III keeps the Ember Queen on the bridge (the story needs her);
+story packs keep their own step 5 (`finishActs` drops `guardians`). Phone check: `node dev/road-check.mjs` covers all four.
+
 ## Not done yet
 
 - Acts I and II revisits, the side road, recolours and the wishlist art are proposals for the next tasks.
