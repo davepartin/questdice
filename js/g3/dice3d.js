@@ -1,190 +1,132 @@
-// Weapon card dice: big, readable red (attack) and blue (block) 3D-sided dice faces with high-contrast numbers and bonus icons.
-// Loaded on demand by js/g3/cards.js; images are cached by the faces that make them.
+// Weapon card dice (T05, ported from Grok's T17 rev 14 mockup): real polyhedra from the game (js/gfx/dice/poly.js, so shapes and bevels match the
+// battle tray: d4 triangle, d6 square, d8 diamond, d10 kite), flat red (attack) / blue (block) bodies, the number and bonus icons fitted inside each
+// true face polygon and auto-cropped so the 3D die fills its box on the card.
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { makePoly, roundedGeometry } from '../gfx/dice/poly.js';
 let SYM = {}; export const setSymbols = (s) => { SYM = s; }; // the game's symbol paths and colours (js/g3/cards.js SYM)
+const R_BY = { 4: 0.05, 6: 0.05, 8: 0.037, 10: 0.035 };
+const BODY = { r: ['#c8161d', '#6e0508'], b: ['#2264d8', '#0b2a78'], z: ['#c8161d', '#6e0508'] }; // attack, block, a +0
+let R, scene, cam, env, idle;
+function setup() {
+  clearTimeout(idle); if (R) return; R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  R.setPixelRatio(1); R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 0.66; R.outputColorSpace = THREE.SRGBColorSpace;
+  scene = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R); env = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environment = env; pm.dispose();
+  const key = new THREE.DirectionalLight(0xfff1dc, 2.6); key.position.set(-2.2, 3.4, 3); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xbfd4ff, 0.95); rim.position.set(3, 1.5, -2); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  cam = new THREE.PerspectiveCamera(24, 1, 0.1, 20);
+}
+function release() { idle = setTimeout(() => { try { env?.dispose(); R?.dispose(); R?.forceContextLoss(); } catch { /* already gone */ } R = scene = cam = env = null; }, 4000); }
 
-const PAL = {
-  r: { top: '#f03a42', side: '#6e070b', f0: '#df222a', f1: '#b81118', f2: '#84080d', rim: '#ff9a9ecc', well: '#64050966' },
-  b: { top: '#4d94ff', side: '#09246e', f0: '#2b72ee', f1: '#1a52c4', f2: '#0d3185', rim: '#9ec5ffcc', well: '#06194d66' },
-};
-const RICH = {
-  arrow_pierce: '#ff5514', arrow_fire: '#ff5218', arrow_frost: '#38bdf8',
-  atk: '#ff9416', block: '#2b7fff', gold: '#fbbf24', pierce: '#ff5514', magic: '#a855f7', heal: '#16c652', star: '#f59e0b',
-};
-
-function rrect(g, x, y, w, h, r) {
-  g.beginPath();
-  g.moveTo(x + r, y);
-  g.arcTo(x + w, y, x + w, y + h, r);
-  g.arcTo(x + w, y + h, x, y + h, r);
-  g.arcTo(x, y + h, x, y, r);
-  g.arcTo(x, y, x + w, y, r);
-  g.closePath();
+function grain(g, W, H, seed, a, C = 24) {
+  let s = seed; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const img = g.getImageData(0, 0, W, H); const d = img.data;
+  const cells = Array.from({ length: (C + 1) * (C + 1) }, rnd);
+  const at = (x, y) => { const gx = x / W * C, gy = y / H * C, ix = gx | 0, iy = gy | 0, fx = gx - ix, fy = gy - iy; const v = (i, j) => cells[(iy + j) * (C + 1) + ix + i];
+    return (v(0, 0) * (1 - fx) + v(1, 0) * fx) * (1 - fy) + (v(0, 1) * (1 - fx) + v(1, 1) * fx) * fy; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4; const n = (at(x, y) - 0.5) * a + (rnd() - 0.5) * a * 0.55; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+  g.putImageData(img, 0, 0);
 }
 
-function drawIcon(g, k, x, y, s) {
-  const sym = SYM[k.startsWith('arrow_') ? 'arrow' : k] || SYM.star;
-  if (!sym?.d) return;
-  const p = new Path2D(sym.d);
-  const col = RICH[k] || sym.c || '#fbbf24';
-  const u = s / 24;
-  const white = Math.max(2.6, Math.min(4.2, (s * 0.11) / u));
-  g.save();
-  g.translate(x - s / 2, y - s / 2);
-  g.scale(u, u);
-  g.lineJoin = 'round';
-  g.lineCap = 'round';
-  g.save();
-  g.translate(0, 2.2 / u);
-  g.lineWidth = white + 1.2 / u;
-  g.strokeStyle = '#180604aa';
-  g.stroke(p);
-  g.restore();
-  g.lineWidth = white;
-  g.strokeStyle = '#fffdf8';
-  g.stroke(p);
-  g.fillStyle = col;
-  g.fill(p);
-  g.save();
-  g.clip(p);
-  g.lineWidth = 2.2 / u;
-  g.translate(0, 1.2 / u);
-  g.strokeStyle = '#00000044';
-  g.stroke(p);
-  g.translate(0, -2.4 / u);
-  g.strokeStyle = '#ffffff77';
-  g.stroke(p);
-  g.restore();
-  g.restore();
+const RICH = { arrow_pierce: '#ee4400', arrow_fire: '#e0420a', arrow_frost: '#1f9ad6', atk: '#e88200', block: '#1854c8', gold: '#e39400', pierce: '#ee4400', magic: '#7c18d8', heal: '#08a83a', star: '#e88600' };
+const icon = (g, k, x, y, s) => { const sym = SYM[k.startsWith('arrow_') ? 'arrow' : k] || SYM.star; const p = new Path2D(sym.d); const col = RICH[k] || sym.c;
+  const u = s / 24; const white = Math.min(10, s * 0.1) / u;
+  g.save(); g.translate(x - s / 2, y - s / 2); g.scale(u, u); g.lineJoin = 'round';
+  g.save(); g.translate(0, 5 / u); g.lineWidth = white; g.strokeStyle = '#240503aa'; g.stroke(p); g.restore();
+  g.lineWidth = white; g.strokeStyle = '#fffdf8'; g.stroke(p); g.fillStyle = col; g.fill(p);
+  g.save(); g.clip(p); g.lineWidth = 5 / u; g.translate(0, 2.5 / u); g.strokeStyle = '#0000004d'; g.stroke(p); g.translate(0, -5 / u); g.strokeStyle = '#ffffff66'; g.stroke(p); g.restore();
+  g.restore(); };
+
+const ROWS = { 1: [1], 2: [2], 3: [3], 4: [[2, 2], [4]], 5: [[3, 2], [2, 3]] };
+function edgeDist(P, x, y, sg = 1) { let m = Infinity; for (let i = 0; i < P.length; i++) { const [ax, ay] = P[i], [bx, by] = P[(i + 1) % P.length];
+  const ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey); const d = sg * ((x - ax) * ey - (y - ay) * ex) / L; m = Math.min(m, d); } return m; }
+function layout(P, sign, nMarks, txtW, inR, extra = 0) {
+  const inside = (x, y, r) => edgeDist(P, x, y, sign) >= r + extra; const plans = !nMarks ? [[]] : [].concat(ROWS[nMarks] ? (Array.isArray(ROWS[nMarks][0]) ? ROWS[nMarks] : [ROWS[nMarks]]) : [[nMarks]]);
+  let best = null;
+  for (const plan of plans) for (let oy = -0.55; oy <= 0.5501; oy += 0.04) {
+    const fits = (k) => { const fs = k, is = k * 0.66, gap = is * 1.06; const rows = plan.length; const hT = fs * 0.72, hI = rows * gap;
+      const top = oy * inR - (hT + hI) / 2; const ny = top + hT / 2; const tw = txtW * fs * 0.9;
+      for (const [cx, cy] of [[-tw / 2, ny - hT * 0.42], [tw / 2, ny - hT * 0.42], [-tw / 2, ny + hT * 0.42], [tw / 2, ny + hT * 0.42]]) if (!inside(cx, cy, 0)) return null;
+      const pts = []; plan.forEach((n, r) => { for (let i = 0; i < n; i++) pts.push([(i - (n - 1) / 2) * gap, top + hT + gap * (r + .5)]); });
+      const rr = is * 0.46 + Math.min(9, is * 0.085) / 2; for (const [x, y] of pts) if (!inside(x, y, rr)) return null;
+      return { fs, is, ny, pts }; };
+    let lo = 0, hi = inR * 2.2, got = null; for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; const r = fits(mid); if (r) { lo = mid; got = r; } else hi = mid; }
+    if (got && (!best || got.fs > best.fs)) best = got; }
+  return best;
+}
+function paintFace(g, poly, fi, f, cell, Hm) {
+  const ppm = (cell / 2) / Hm; const F = poly.faces[fi]; const inR = F.inR2 * ppm; const txt = `+${f.v}`; const marks = f.icons.slice(0, 5);
+  const P = F.local.map(([x, y]) => [x * ppm, -y * ppm]); let A = 0; P.forEach(([x, y], i) => { const [u, v] = P[(i + 1) % P.length]; A += x * v - u * y; }); const sign = A > 0 ? -1 : 1;
+  const inset = R_BY[poly.sides] * ppm * 0.65;
+  g.font = `800 100px Oxanium, "Trebuchet MS", sans-serif`; const txtW = g.measureText(txt).width / 100 * 0.9;
+  const L = layout(P, sign, marks.length, txtW, inR, inset); const { fs, is, ny, pts } = L || { fs: inR * .48, is: inR * .3, ny: -inR * .28, pts: marks.map((_, i) => [(i - (marks.length - 1) / 2) * inR * .3, inR * .2]) };
+  g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = Math.max(4, fs * 0.11); g.strokeStyle = '#140402cc'; g.strokeText(txt, 0, ny + fs * .04);
+  const [i0, i1] = ['#ffffff', f.v === 0 ? '#cfc3b6' : '#ffe8be'];
+  const tg = g.createLinearGradient(0, ny - fs / 2, 0, ny + fs / 2); tg.addColorStop(0, i0); tg.addColorStop(1, i1); g.fillStyle = tg; g.fillText(txt, 0, ny);
+  marks.forEach((k, i) => icon(g, k, pts[i][0], pts[i][1], is));
+}
+function atlas(poly, faces, cell = 256) {
+  const n = poly.faces.length; const cols = Math.ceil(Math.sqrt(n + 1)); const W = cols * cell; const cv = document.createElement('canvas'); cv.width = cv.height = W; const g = cv.getContext('2d', { willReadFrequently: true });
+  const body = (k) => BODY[k]; g.fillStyle = body('r')[0]; g.fillRect(0, 0, W, W);
+  const cellFill = (cx, cy, k) => { g.fillStyle = body(k)[0]; g.fillRect(cx - cell / 2, cy - cell / 2, cell, cell); };
+  for (let i = 0; i <= n; i++) cellFill((i % cols + .5) * cell, ((i / cols | 0) + .5) * cell, 'r');
+  let Hm = 0; poly.faces.forEach((f) => f.local.forEach((p) => { Hm = Math.max(Hm, Math.abs(p[0]), Math.abs(p[1])); })); Hm *= 1.12;
+  const ctr = (fi) => [(fi % cols + .5) * cell, ((fi / cols | 0) + .5) * cell];
+  const uvOf = (fi, x, y) => { const [cx, cy] = ctr(fi); return [(cx + (x / Hm) * (cell / 2)) / W, 1 - (cy - (y / Hm) * (cell / 2)) / W]; };
+  faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi); cellFill(cx, cy, f.c === 'n' ? 'n' : f.c === 'b' ? 'b' : 'r'); });
+  grain(g, W, W, 7, 22); grain(g, W, W, 31, 14, 110);
+  faces.forEach((f, li) => { const fi = poly.labelFace[li]; if (fi == null || fi < 0 || !f) return; const [cx, cy] = ctr(fi);
+    g.save(); g.translate(cx, cy); paintFace(g, poly, fi, f, cell, Hm); g.restore(); });
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.flipY = true;
+  const trim = ctr(n); return { t, uvOf, trimUV: [trim[0] / W, 1 - trim[1] / W], cv };
 }
 
-function drawDieFace(f, px = 220) {
-  const cv = document.createElement('canvas');
-  cv.width = cv.height = px;
-  const g = cv.getContext('2d');
-  const S = px / 220;
-  g.scale(S, S);
-
-  const pal = PAL[f?.c === 'b' ? 'b' : 'r'];
-  const fx = 8, fy = 22, fw = 186, fh = 186, r = 30;
-  const dx = 16, dy = -14;
-
-  // 1. Extruded 3D top + right side of the die so you can see the sides of the cube
-  g.save();
-  const sideGrad = g.createLinearGradient(fx, fy + dy, fx + fw + dx, fy + fh);
-  sideGrad.addColorStop(0, pal.top);
-  sideGrad.addColorStop(0.46, pal.top);
-  sideGrad.addColorStop(0.54, pal.side);
-  sideGrad.addColorStop(1, pal.side);
-  g.fillStyle = sideGrad;
-  g.beginPath();
-  // Hull connecting front rounded rect (fx,fy) and back-extruded rounded rect (fx+dx, fy+dy)
-  g.moveTo(fx + r * 0.35, fy + r * 0.35);
-  g.lineTo(fx + dx + r * 0.35, fy + dy + r * 0.35);
-  g.arcTo(fx + dx + fw, fy + dy, fx + dx + fw, fy + dy + fh, r);
-  g.arcTo(fx + dx + fw, fy + dy + fh, fx + dx, fy + dy + fh, r);
-  g.lineTo(fx + fw - r * 0.35, fy + fh - r * 0.35);
-  g.closePath();
-  g.fill();
-  rrect(g, fx + dx, fy + dy, fw, fh, r);
-  g.fill();
-  g.lineWidth = 2.2;
-  g.strokeStyle = '#1a080488';
-  g.stroke();
-  // Diagonal corner ridge line on top-right 3D bevel
-  g.beginPath();
-  g.moveTo(fx + fw - r * 0.45, fy + r * 0.45);
-  g.lineTo(fx + dx + fw - r * 0.35, fy + dy + r * 0.35);
-  g.strokeStyle = '#ffffff55';
-  g.lineWidth = 2.5;
-  g.stroke();
-  g.restore();
-
-  // 2. Front face of the die
-  g.save();
-  rrect(g, fx, fy, fw, fh, r);
-  const fg = g.createLinearGradient(fx, fy, fx + fw * 0.4, fy + fh);
-  fg.addColorStop(0, pal.f0);
-  fg.addColorStop(0.55, pal.f1);
-  fg.addColorStop(1, pal.f2);
-  g.fillStyle = fg;
-  g.fill();
-
-  // Crisp outer edge + inner highlight bevel
-  g.lineWidth = 3;
-  g.strokeStyle = '#1e0905aa';
-  g.stroke();
-
-  rrect(g, fx + 3.5, fy + 3.5, fw - 7, fh - 7, r - 3);
-  g.lineWidth = 2.4;
-  g.strokeStyle = pal.rim;
-  g.stroke();
-
-  // Subtle recessed face well
-  rrect(g, fx + 11, fy + 11, fw - 22, fh - 22, r - 8);
-  g.fillStyle = pal.well;
-  g.fill();
-  g.restore();
-
-  // 3. Number (+0, +1, +2, +4...) and bonus icons
-  const cx = fx + fw / 2;
-  const cy = fy + fh / 2;
-  const txt = `+${f?.v ?? 0}`;
-  const marks = (f?.icons || []).slice(0, 5);
-  const n = marks.length;
-
-  let fs = 92, ny = cy + 4, pts = [], is = 64;
-  if (n === 1) {
-    fs = 78; ny = fy + 58; is = 72;
-    pts = [[cx, fy + 138]];
-  } else if (n === 2) {
-    fs = 76; ny = fy + 56; is = 64;
-    pts = [[cx - 38, fy + 138], [cx + 38, fy + 138]];
-  } else if (n === 3) {
-    fs = 72; ny = fy + 54; is = 54;
-    pts = [[cx - 55, fy + 138], [cx, fy + 138], [cx + 55, fy + 138]];
-  } else if (n === 4) {
-    fs = 62; ny = fy + 44; is = 46;
-    pts = [
-      [cx - 34, fy + 104], [cx + 34, fy + 104],
-      [cx - 34, fy + 152], [cx + 34, fy + 152],
-    ];
-  } else if (n >= 5) {
-    fs = 60; ny = fy + 43; is = 44;
-    pts = [
-      [cx - 48, fy + 104], [cx, fy + 104], [cx + 48, fy + 104],
-      [cx - 28, fy + 152], [cx + 28, fy + 152],
-    ];
+// Auto-crop the rendered 3D polyhedron so it fills 96% of the output square with zero wasted transparent margin
+function cropToSquare(srcCanvas, outPx) {
+  const w = srcCanvas.width, h = srcCanvas.height;
+  const out = document.createElement('canvas'); out.width = out.height = outPx;
+  const g = out.getContext('2d');
+  g.drawImage(srcCanvas, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = 0, y1 = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 16) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
   }
-
-  g.save();
-  g.font = `800 ${fs}px Oxanium, "Trebuchet MS", sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  // Deep stamped drop shadow + crisp dark outline so the number is super legible
-  g.lineJoin = 'round';
-  g.lineWidth = Math.max(5, fs * 0.09);
-  g.strokeStyle = '#180604cc';
-  g.strokeText(txt, cx, ny + 3);
-  const tg = g.createLinearGradient(0, ny - fs * 0.45, 0, ny + fs * 0.45);
-  tg.addColorStop(0, '#ffffff');
-  tg.addColorStop(1, f?.v === 0 ? '#d8cec2' : '#ffe8b8');
-  g.fillStyle = tg;
-  g.fillText(txt, cx, ny);
-  g.restore();
-
-  marks.forEach((k, i) => {
-    if (pts[i]) drawIcon(g, k, pts[i][0], pts[i][1], is);
-  });
-
-  return cv.toDataURL('image/png');
+  if (x1 <= x0 || y1 <= y0) return srcCanvas.toDataURL('image/png');
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+  const span = Math.max(bw, bh);
+  const pad = Math.round(outPx * 0.025);
+  const scale = (outPx - pad * 2) / span;
+  const dw = bw * scale, dh = bh * scale;
+  g.clearRect(0, 0, outPx, outPx);
+  g.drawImage(srcCanvas, x0, y0, bw, bh, (outPx - dw) / 2, (outPx - dh) / 2, dw, dh);
+  return out.toDataURL('image/png');
 }
 
-// dieSet(sides, faces, { px, from }): one PNG data URL per label 1..sides.
+// dieSet(sides, faces, { px }): one PNG data URL per label 1..sides, each the real 3D die turned so that label faces the viewer.
 export function dieSet(sides, faces, { px = 220, from = 0 } = {}) {
-  const urls = [];
+  setup(); R.setSize(px, px, false);
+  const poly = makePoly(sides); const A = atlas(poly, faces); const geo = roundedGeometry(poly, { r: R_BY[sides], seg: 4, uvOf: A.uvOf, trimUV: A.trimUV });
+  const bump = new THREE.CanvasTexture(A.cv); bump.flipY = true;
+  const mat = new THREE.MeshPhysicalMaterial({ map: A.t, roughness: 0.48, metalness: 0.04, clearcoat: 0.4, clearcoatRoughness: 0.5, bumpMap: bump, bumpScale: 1.4, envMapIntensity: 0.9 });
+  const mesh = new THREE.Mesh(geo, mat); scene.add(mesh); const urls = [];
+  const tilt = new THREE.Euler(-0.24, sides === 4 ? 0.18 : 0.2, 0); const dist = poly.outR / Math.tan((cam.fov / 2) * Math.PI / 180) * (sides === 4 ? 0.74 : 0.82);
+  cam.position.set(0, 0, dist); cam.lookAt(0, 0, 0); mesh.position.y = sides === 4 ? -poly.outR * 0.08 : 0;
   for (let label = 1; label <= sides; label++) {
     if (label <= from) { urls.push(null); continue; }
-    urls.push(drawDieFace(faces[label - 1], px));
+    const f = poly.faces[poly.labelFace[label - 1]]; const m = new THREE.Matrix4().makeBasis(f.e2, f.e1, f.n).transpose();
+    mesh.quaternion.setFromRotationMatrix(m).premultiply(new THREE.Quaternion().setFromEuler(tilt));
+    R.render(scene, cam); urls.push(cropToSquare(R.domElement, px));
   }
+  scene.remove(mesh); geo.dispose(); mat.dispose(); A.t.dispose(); bump.dispose(); release();
   return urls;
 }

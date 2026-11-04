@@ -424,9 +424,12 @@
 .cb-soon{cursor:default}.cb-soon>b{font:700 4.6cqi/1 var(--serif,serif);color:#5a3a1a;letter-spacing:.06em}
 .cb-tr .cb-cov{justify-items:start;padding-left:2cqi}.cb-tr .cb-seal{right:3%;width:10.5cqi}.cb-tr .cb-seal i{font-size:3.6cqi}.cb-tr .cb-seal b{font-size:3.8cqi}
 .cb-soon{justify-items:start;padding-left:4cqi;padding-right:16cqi}.cb-soon small{white-space:normal;line-height:1.15}
-/* T17 weapon card in the camp (cardboard.js weaponCard): the sell chip beside the highest uncovered size, and covers with no price */
-.qc17.cb-weapon{--w:min(95vw,364px);margin:.4rem auto .8rem;position:relative}
-.qc17.cb-weapon .dice17.rows{left:13.8%;right:13.8%;top:43.8%;bottom:8.8%;padding:.3cqi .4cqi}
+/* T17 weapon card in the camp (cardboard.js weaponCard): trimmer border, no redundant SIZE d4 column (the 3D polyhedron shape + cover show the size), big 3D dice */
+.qc17.cb-weapon{--w:min(95vw,366px);margin:.4rem auto .8rem;position:relative;overflow:hidden;border-radius:3.2cqi}
+.qc17.cb-weapon .fr17{left:-5.5%;width:111%;top:-2.2%;height:104.4%}
+.qc17.cb-weapon .art17{left:9.2%;right:9.2%;top:7.8%;height:26.6%}
+.qc17.cb-weapon .title17{left:11%;right:11%;top:35.5%}
+.qc17.cb-weapon .dice17.rows{left:9.2%;right:9.2%;top:42.8%;bottom:7.4%;padding:.2cqi .3cqi}
 .qc17.cb-weapon .art17 .sl17{position:absolute;right:2cqi;top:2cqi;z-index:3;display:grid;justify-items:center;gap:.5cqi;padding:1.2cqi 1.8cqi;border-radius:2.2cqi;border:0;
  background:linear-gradient(180deg,#3a2414f2,#22140af2);box-shadow:inset 0 0 0 .4cqi #e0b86acc,0 .6cqi 1cqi #000a;font-family:'Oxanium',sans-serif;cursor:pointer}
 .qc17.cb-weapon .sl17 small{font:800 3.7cqi/1 'Oxanium',sans-serif;color:#cbb894;letter-spacing:.08em}
@@ -438,12 +441,11 @@
 .qc17.cb-weapon .cov.tok .ct small{font-size:3.2cqi;line-height:1.05}
 .qc17.cb-weapon .cov.tok .cp .cb-ny{font:800 3.6cqi/1 'Oxanium',sans-serif;color:#ffd98a;letter-spacing:.08em}
 .qc17.cb-weapon .cb-in{font:700 3.7cqi/1.1 'Oxanium',sans-serif;color:#6a4a22;align-self:center;padding-left:1cqi}
-.qc17.cb-weapon .dice17.rows .sz{font-size:4.1cqi}
-.qc17.cb-weapon .dice17.rows .sz small{font-size:2.5cqi;letter-spacing:.08em}
+.qc17.cb-weapon .dice17.rows .sz{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 
-/* Dave 11:47 + 11:55 PM CT: one big dice size (15.8cqi) on every size row, evenly spaced, single line with no wrap */
-.qc17.cb-weapon .dice17.rows .row{grid-template-columns:5.8cqi minmax(0,1fr) 0px;column-gap:0;gap:0}.qc17.cb-weapon .dice17.rows .dz{gap:.5cqi;justify-content:space-evenly;flex-wrap:nowrap;min-width:0}
-.qc17.cb-weapon .dice17.rows .d17{width:15.8cqi!important;height:auto!important;flex:none}
+/* One big 3D polyhedron dice size (18.2cqi) across the full row width, evenly spaced, single line with no wrap */
+.qc17.cb-weapon .dice17.rows .row{grid-template-columns:minmax(0,1fr);column-gap:0;gap:0}.qc17.cb-weapon .dice17.rows .dz{gap:.8cqi;justify-content:space-evenly;flex-wrap:nowrap;min-width:0}
+.qc17.cb-weapon .dice17.rows .d17{width:18.2cqi!important;height:auto!important;flex:none}
 
 /* ---- the cardboard Camp Store (Crockpot / Grok Bot, 26 Oct 2026; Dave approved shop mockup v2, f05b1e7): wood table, cardboard cards,
    paper price tags with pencil coins (red when short). */
