@@ -424,17 +424,11 @@
 .cb-soon{cursor:default}.cb-soon>b{font:700 4.6cqi/1 var(--serif,serif);color:#5a3a1a;letter-spacing:.06em}
 .cb-tr .cb-cov{justify-items:start;padding-left:2cqi}.cb-tr .cb-seal{right:3%;width:10.5cqi}.cb-tr .cb-seal i{font-size:3.6cqi}.cb-tr .cb-seal b{font-size:3.8cqi}
 .cb-soon{justify-items:start;padding-left:4cqi;padding-right:16cqi}.cb-soon small{white-space:normal;line-height:1.15}
-/* T17 weapon card in the camp (cardboard.js weaponCard): trimmer border, no redundant SIZE d4 column (the 3D polyhedron shape + cover show the size), big 3D dice */
-.qc17.cb-weapon{--w:min(95vw,366px);margin:.4rem auto .8rem;position:relative;overflow:hidden;border-radius:3.2cqi}
-.qc17.cb-weapon .fr17{left:-5.5%;width:111%;top:-2.2%;height:104.4%}
-.qc17.cb-weapon .art17{left:9.2%;right:9.2%;top:7.8%;height:26.6%}
-.qc17.cb-weapon .title17{left:11%;right:11%;top:35.5%}
-.qc17.cb-weapon .dice17.rows{left:9.2%;right:9.2%;top:42.8%;bottom:7.4%;padding:.2cqi .3cqi}
-.qc17.cb-weapon .art17 .sl17{position:absolute;right:2cqi;top:2cqi;z-index:3;display:grid;justify-items:center;gap:.5cqi;padding:1.2cqi 1.8cqi;border-radius:2.2cqi;border:0;
- background:linear-gradient(180deg,#3a2414f2,#22140af2);box-shadow:inset 0 0 0 .4cqi #e0b86acc,0 .6cqi 1cqi #000a;font-family:'Oxanium',sans-serif;cursor:pointer}
-.qc17.cb-weapon .sl17 small{font:800 3.7cqi/1 'Oxanium',sans-serif;color:#cbb894;letter-spacing:.08em}
-.qc17.cb-weapon .sl17 span{display:flex;align-items:center;gap:.7cqi}.qc17.cb-weapon .sl17 b{font:800 4.2cqi/1 'Oxanium',sans-serif;color:#ffd98a}
-.qc17.cb-weapon .sl17.cb-off{opacity:.8;filter:saturate(.6)}
+/* T17 weapon card in the camp (cardboard.js weaponCard): pixel-aligned frame, no off-center corner badge or art-covering SELL chip, no redundant SIZE d4 column, big 3D dice */
+.qc17.cb-weapon{--w:min(95vw,366px);margin:.4rem auto .8rem;position:relative}
+.qc17 .pb17{display:none!important}
+.qc17.cb-weapon .dice17.rows{left:15.2%;right:15.2%;top:44.4%;bottom:9.6%;padding:.2cqi .3cqi}
+.qc17.cb-weapon .art17 .sl17{display:none!important}
 .qc17.cb-weapon .cov.tok{padding:1.1cqi 5cqi 1.5cqi 5cqi}
 .qc17.cb-weapon .cov.tok .ct{gap:.2cqi}
 .qc17.cb-weapon .cov.tok .ct b{font-size:4.8cqi;line-height:1}
@@ -443,9 +437,9 @@
 .qc17.cb-weapon .cb-in{font:700 3.7cqi/1.1 'Oxanium',sans-serif;color:#6a4a22;align-self:center;padding-left:1cqi}
 .qc17.cb-weapon .dice17.rows .sz{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 
-/* One big 3D polyhedron dice size (18.2cqi) across the full row width, evenly spaced, single line with no wrap */
-.qc17.cb-weapon .dice17.rows .row{grid-template-columns:minmax(0,1fr);column-gap:0;gap:0}.qc17.cb-weapon .dice17.rows .dz{gap:.8cqi;justify-content:space-evenly;flex-wrap:nowrap;min-width:0}
-.qc17.cb-weapon .dice17.rows .d17{width:18.2cqi!important;height:auto!important;flex:none}
+/* One big 3D polyhedron dice size (16.4cqi) across the full row width, evenly spaced, single line with no wrap */
+.qc17.cb-weapon .dice17.rows .row{grid-template-columns:minmax(0,1fr);column-gap:0;gap:0}.qc17.cb-weapon .dice17.rows .dz{gap:.6cqi;justify-content:space-evenly;flex-wrap:nowrap;min-width:0}
+.qc17.cb-weapon .dice17.rows .d17{width:16.4cqi!important;height:auto!important;flex:none}
 
 /* ---- the cardboard Camp Store (Crockpot / Grok Bot, 26 Oct 2026; Dave approved shop mockup v2, f05b1e7): wood table, cardboard cards,
    paper price tags with pencil coins (red when short). */
@@ -650,8 +644,8 @@ button.cst-face{cursor:pointer}
 }
 .cw-camp .cw-nav5 button { font-size: .72rem; line-height: 1.05; }
 .cw-nav-space { display: none; }
-/* 2. A card pop-up: near the top, Close on the card's top-right corner, its buttons right under it, all on one screen. */
-body.sx .modal-back:has(.cw-cardpop) { place-items: start center; padding: calc(var(--safe-t, 0px) + .4rem) .4rem calc(var(--safe-b, 0px) + .4rem); }
+/* 2. A card pop-up: centered on screen, Close on the card's top-right corner, its buttons right under it, all on one screen. */
+body.sx .modal-back:has(.cw-cardpop) { place-items: center; padding: calc(var(--safe-t, 0px) + .5rem) .4rem calc(var(--safe-b, 0px) + .5rem); }
 body.sx .modal-card:has(.cw-cardpop) { width: auto; max-width: 100%; max-height: none; overflow: visible; padding: .3rem; background: transparent; border: 0; box-shadow: none; }
 .cw-modal.cw-cardpop { position: relative; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
 .cw-modal.cw-cardpop .cw-big { gap: 0; position: relative; width: fit-content; margin: 0 auto; }
