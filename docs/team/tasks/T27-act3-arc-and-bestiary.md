@@ -29,7 +29,7 @@ Villains are greedy, cold or afraid; defeated foes fall, crumble, flee or yield.
 | 6 | Kettle Tarn | **Big Muriel** (a yeti in a hot spring) and a Frostwhelp | new: the comic beat before the dark keep |
 | 7 | Oathbreak Keep | The Fallen Champion (mid-boss) | kept |
 | 8 | Kettle Tarn again (only when no one called for help) | Two Frostwhelps, with **their own lines** | new: before, a second visit was silent and the same fight |
-| 9 | Ember Throne slopes | Ashmaw the Wyrm and **Vexmor, the Storm-Tyrant** | new: the Queen's last guard, the knight who kept his oath (an echo of Sir Aldren, who broke his) |
+| 9 | Ember Throne slopes | **Vexmor, the Storm-Tyrant** and a Shieldbearer | new: the Queen's last guard, the knight who kept his oath (an echo of Sir Aldren, who broke his). Ashmaw moves to the Ascents' elite pool |
 | 10 | The Ember Throne | Vharaxis (boss) | kept |
 
 How a revisit gets its own lines: a place in `PLACES` (js/story.js) may carry `again: { foes, arrive, win }`. When the
@@ -89,7 +89,32 @@ Heist set). No demonic, cultic or occult marks.
 
 Twelve new pieces plus five recolours takes the bestiary from 50 to about 67, inside Dave's 60 to 80.
 
+## Balance (bots, smart play, 2 campaigns x 5 classes; Act III win chance per step / rounds)
+
+| Step | Old road | New road, first try (Ashmaw + Vexmor) | Shipped |
+|---|---|---|---|
+| 2 Glass Fields | 94% / 6.5 | 94% / 6.4 | 94% / 6.4 |
+| 4 Hoardfall Mine | 76% / 8.7 | 69% / 8.2 | **83% / 7.9** (fightHp 0.85) |
+| 6 Kettle Tarn | 100% / 6.6 | 80% / 7.5 | **91% / 6.5** (fightHp 1.2 -> 1.0) |
+| 8 Kettle Tarn again | 89% / 6.6 | 94% / 6.7 | 96% / 6.6 |
+| 9 Ember Throne slopes | 67% / 8.9 | **11%** / 7.9 | **74% / 9.4** (Vexmor + a Shieldbearer) |
+| Campaigns cleared | 9 of 10 | 2 of 10 | 9 of 10 |
+
+A second try with both elites at fightHp 0.55 still won only 37%, so Ashmaw left the slope. Bots are not people, and
+the sample is small; watch the slope and Big Muriel's tarn in play.
+
+## Shipped with this task (build 20261104a3)
+
+- The Act III road above; `again` lines for a place's second visit (js/story.js `revisit`, `placeBeat`, `beat`).
+- The last page of the story (`close:3`) now ends with the Marches lighting candles, the story told for a hundred years
+  ending with the heroes' names, and "You carried the light home. The story is won."
+- Monster cards: a long move name (Vexmor's LIGHTNING, THUNDERCLAP) no longer runs into its dice numbers
+  (css/minicard.css). Check: `node dev/act3-road-check.mjs` (headless Chromium, not Safari; it fails without the fix).
+
 ## Not done yet
 
 - Acts I and II revisits, the side road, recolours and the wishlist art are proposals for the next tasks.
-- The finale: see the T27 board note for what changed and what is still open.
+- A bigger finale moment (a celebration screen when the Ember Queen falls the first time, perhaps Kindle the Little
+  Ember as a pet) needs Dave's yes and probably new art.
+- Big Muriel's fight rolls a Special like any fight; one test roll gave her "Spawn: summons a Goblin Skulker", which is
+  odd on a mountain top. The Specials draw from the whole list; giving each act its own summon is a follow-up.

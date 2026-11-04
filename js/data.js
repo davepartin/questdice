@@ -1087,7 +1087,7 @@ export const ACTS = [
     boss: ['vharaxis'],
     help: ['Wyrmwatch', 'Hoardfall Mine'],
     route: ['Kindling Steps', 'The Glass Fields', 'Wyrmwatch', 'Hoardfall Mine', 'The Brazen Bridge', 'Kettle Tarn', 'Oathbreak Keep', 'Kettle Tarn', 'Ember Throne slopes', 'The Ember Throne'],
-    fightHp: { 2: 1.2, 3: 1.2, 4: 0.85, 6: 1.0, 7: 1.25, 8: 1.2 }, // heroes are strong by Act III: the quieter steps and Oathbreak Keep stand up to them
+    fightHp: { 2: 1.2, 3: 1.2, 4: 0.85, 6: 1.0, 7: 1.25, 8: 1.2 }, // T27 (Nov 2026): the mine eased (bots 69-76% -> 83%), Big Muriel's tarn at 1.0 (91%), Vexmor's slope 74% (was 67% with Ashmaw). heroes are strong by Act III: the quieter steps and Oathbreak Keep stand up to them
     fights: [
       ['cinderling', 'cinderling'],              // 1 Kindling Steps
       ['basilisk', 'shieldbearer'],              // 2 The Glass Fields — Glarefang's stare (Nov 2026: was a Gloom Stalker, an Act II foe)

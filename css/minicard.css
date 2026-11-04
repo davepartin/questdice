@@ -177,3 +177,5 @@
 .mnc-departing > .mnc-stack { animation:mnc-slide-away .32s ease-in forwards; pointer-events:none; }
 @keyframes mnc-slide-away { from { transform:translateY(calc(0px - var(--mnc-lift))); opacity:1; } to { transform:translate(32vw, calc(0px - var(--mnc-lift) - 6vh)); opacity:0; } }
 @media (prefers-reduced-motion:reduce) { .mnc-departing > .mnc-stack { animation:none; } }
+/* T27 (Nov 2026): a long move name (Vexmor's LIGHTNING) ran into its dice numbers; the numbers now drop to their own line instead. */
+.mnc-face-main { flex-wrap: wrap; row-gap: .08rem; }

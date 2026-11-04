@@ -224,7 +224,8 @@ test('duo packs keep out monsters that look like their heroes', () => {
 test('duo locked fights stay near Dawn threat, with the writer’s fightHp knobs', () => {
   // Set-piece swaps (ogre-for-warden, ordinary step 7 instead of the Fallen Champion) are
   // supposed to differ; fightHp is how the writer rebalances them. Ordinary steps stay close.
-  const skip = new Set(['2.5', '2.10', '3.4', '3.5', '3.7']);
+  // 3.6: Dawn's Kettle Tarn became a set-piece in T27 (Big Muriel and a Frostwhelp, balanced by the Act III bot run), so the duos' ordinary pair is meant to differ there.
+  const skip = new Set(['2.5', '2.10', '3.4', '3.5', '3.6', '3.7']);
   const dawn = actsOf('dawn');
   for (const id of ['rivalduo', 'ballad']) {
     const acts = actsOf(id);

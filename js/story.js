@@ -269,9 +269,9 @@ const PLACES = {
   },
   'ember-throne-slopes': {
     title: 'Ember Throne slopes', icon: 'flame',
-    foes: ['ashwyrm', 'stormtyrant'],
-    arrive: ['The peak’s last slope is a river of sliding gold coins, and a storm sits on the summit. Vexmor, the Storm-Tyrant, the Queen’s sworn knight, stands in the path with a glaive full of lightning. Ashmaw the Wyrm is draped across the rocks beside him, inhaling for a fire-breath that will splash anyone standing too close.', 'Sir Aldren broke his oath. Vexmor never has. He will not let you pass while he can stand.'],
-    win: ['Ashmaw flees uphill. Vexmor’s lightning gutters out. He drives his glaive into the gold and kneels beside it. “Go on, then,” he says. “She is waiting.”'],
+    foes: ['stormtyrant', 'shieldbearer'],
+    arrive: ['The peak’s last slope is a river of sliding gold coins, and a storm sits on the summit. Vexmor, the Storm-Tyrant, the Queen’s sworn knight, stands in the path with a glaive full of lightning. Beside him, a Shieldbearer is trying very hard to lock shields with a thundercloud.', 'Sir Aldren broke his oath. Vexmor never has. He will not let you pass while he can stand.'],
+    win: ['The Shieldbearer drops the shield and starts walking home. Vexmor’s lightning gutters out. He drives his glaive into the gold and kneels beside it. “Go on, then,” he says. “She is waiting.”'],
   },
   'the-ember-throne': {
     title: 'The Ember Throne', icon: 'crown',
