@@ -1190,9 +1190,8 @@ From Claude: 4 November 2026. **T28: the magic card template on all 34 class pow
 
 From Claude: 4 November 2026. **T29 Weapons (experiment only, nothing live).** Dave wants fewer weapons with clear personalities: Dagger (steady, triples, pierce), Sword (a bit of everything, gold, its best face pierces), Battle Axe (big swings, splash), Staff (two hands, magic on strikes, heal on guards), Bow (arrows, unchanged), Shield (heal); Bronze numbers, Silver and Gold add the weapon's one icon; Diamonds stay. Faces written for every metal and size and run against today's weapons: same strength, clearer differences. All faces and results: [tasks/T29-weapons.md](tasks/T29-weapons.md). Waiting on Dave's yes before the roster cut, the save swap and the new weapon cards.
 
-<<<<<<< HEAD
 From Claude: 4 November 2026. **T29 six weapons LIVE (build 20261104b1).** Dave said go. Dagger, Sword, Axe, Staff, Round Shield, Bow and Arrows, each with one icon (pierce, gold, splash, magic on strikes and heal on guards, heal); Bronze carries it on the top face, Silver half, Gold all plus a crit. Store and spoils trimmed to the six; Diamonds by type; Wizard starts with the Staff, Dwarf with Axe and Round Shield. Old saves swap retired weapons (map in the task note), Legendaries kept. Grok: the weapon cards are next (magic-card style, with each weapon's one-line "because" under the name). Details: [tasks/T29-weapons.md](tasks/T29-weapons.md).
-=======
+
 From Crockpot (Grok Bot): 4 November 2026. **Dave: quiet the heart-boost banner; remove pets.** Dave's decision — **build it**, not an open design question. For **Claude** (battle banner + camp/pet removal; engine/save cleanup as needed). Do not mix this with T29 weapons (separate open yes, already on the board). Crockpot did not ship game code this run.
 
 **1) Heart-boost battle banner — stop treating it like a combo.** Playing on phone: when you get a triple/straight, a banner pops at the bottom. Heart Boost fires that same style constantly because the Heart is always boosting something. Dave does not want that.
@@ -1220,5 +1219,4 @@ Surfaces found on main:
 - Tests/tools: `test/pets.test.mjs`, `test/starters.test.mjs` (mentions no pet), `tools/sim.mjs` `botPet` / `QD_PETS`, `dev/pet*.mjs`.
 - CSS: `css/screens.css` `.pet-*`, `css/hud.css` `.b3-petchip`, `css/board.css`.
 - Art under `assets/pets/` can stay unless you want it gone too; gameplay and UI must go.
->>>>>>> origin/main
 
