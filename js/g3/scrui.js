@@ -1192,7 +1192,10 @@ const SLOT_NUM = { A: 1, B: 2, C: 3 }; // the three magic slots, as players coun
 function campPowers(hero) {
   const lib = E.powerLibrary(hero), identity = `${hero.name}:${hero.cls}`;
   if (CP.hero !== identity) { CP.hero = identity; CP.slot = 'A'; CP.id = null; }
-  const rows = lib.filter((r) => r.card.slot === CP.slot);
+  // T28 (Dave, 4 Nov 2026: "just the 3 starting hero magic powers, and not add more options"): the Magic page shows the powers this
+  // hero knows; every other power waits on the Camp Store's Learn-magic shelf, bought like a weapon.
+  const rows = lib.filter((r) => r.card.slot === CP.slot && (r.learned || r.equipped));
+  const more = lib.filter((r) => r.card.slot === CP.slot && !r.learned && !r.equipped).length;
   const row = rows.find((r) => r.card.id === CP.id) || rows.find((r) => r.equipped) || rows[0];
   if (!row) return h('p', {}, 'No powers in this slot.');
   CP.id = row.card.id;
@@ -1207,7 +1210,7 @@ function campPowers(hero) {
     return h('button', { type: 'button', class: CP.slot === slot ? 'selected' : '', 'data-slot': slot, 'aria-pressed': String(CP.slot === slot), 'aria-label': `Slot ${slot}: ${D.SLOT_NAME[slot]}, ${eq?.name || 'empty'}`,
       onclick: tap(() => { CP.slot = slot; CP.id = null; refresh(`.cp-slots [data-slot="${slot}"]`); }) }, h('span', {}, 'Magic Slot'), h('b', {}, String(SLOT_NUM[slot]))); // Dave: "magic slot one, magic slot two, magic slot three"
   }));
-  const cards = h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(Math.min(3, rows.length)) }, 'aria-label': `${D.SLOT_NAME[CP.slot]} powers` }, rows.map(r => MC.campChoice(hero, r, {
+  const cards = rows.length < 2 ? null : h('div', { class: 'cp-library mc-grid', style: { '--cp-options': String(Math.min(3, rows.length)) }, 'aria-label': `Your ${D.SLOT_NAME[CP.slot]} powers` }, rows.map(r => MC.campChoice(hero, r, {
     glyph: powerGlyph, selected: r.card.id === k.id, status: status(r),
     onSelect: () => { CP.id = r.card.id; refresh(`.cp-library [data-power="${r.card.id}"]`); },
   })));
@@ -1224,7 +1227,10 @@ function campPowers(hero) {
     h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card` },
       h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph, onUpgrade: k.frogLoad ? null : upgrade })),
       action || frogUp ? h('div', { class: 'cp-actions' }, action || frogUp) : null,
-      upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null));
+      upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null),
+    more ? h('button', { type: 'button', class: 'cp-more', 'aria-label': `${more} more power${more === 1 ? '' : 's'} for Magic Slot ${SLOT_NUM[CP.slot]} in the Camp Store`,
+      onclick: tap(() => { X.S.tab = 'camp'; X.renderCamp(); requestAnimationFrame(() => document.getElementById('zn-magic')?.scrollIntoView({ block: 'start', behavior: 'smooth' })); }) },
+      ico('spark'), h('span', {}, `Learn more magic for Slot ${SLOT_NUM[CP.slot]} in the Camp Store`)) : null);
 }
 // Leaving camp with room on the potion belt and gold to fill it asks once (Dave, Oct 2026: "I died at the very end. I forgot to charge my
 // potions"). Refill buys what the gold allows; Go anyway leaves, and the camp does not ask again this visit.
@@ -1673,14 +1679,37 @@ function storeTab({ part = 'all' } = {}) { // part: 'supplies' (potions, belt: t
       tag: CB.priceTag(rr.cost, { poor: !rr.ok, aria: `Reroll ${rr.next} dice for ${rr.cost} gold`, onBuy: tap(() => { if (HE.buyRerollDie(hero)) bought(); else no('Not enough gold.'); }) }) })
       : CB.storeCard({ cls: 'reroll have', art: CB.storeText('+1'), title: 'Rerolls', lines: [`${rr.cur} dice`], stamp: 'Max' })];
   const sect = (cls, title, sub, ...kids) => h('section', { class: `cst-zone ${cls}` }, h('h2', {}, title), sub ? h('p', { class: 'cst-sub' }, sub) : null, ...kids);
+  const magic = learnMagicShelf(hero);
   if (part === 'supplies') return h('div', { class: 'cst-store cst-supplies-only' }, sect('zn-supplies', 'Potions', `Each potion heals ${E.potionHpOf(hero)}. A bigger belt carries more.`, h('div', { class: 'cst-grid two' }, supplies.slice(0, 2))));
   return h('div', { class: 'cst-store' },
     h('header', { class: 'cst-sign' }, h('h2', {}, 'Camp Store'), h('p', {}, part === 'shop' ? 'Weapons · new stock every camp' : 'New stock every camp')),
     part === 'shop' ? null : sect('zn-supplies', 'Potions and supplies', 'Healing potions first, then a bigger belt and more dice for each reroll.', h('div', { class: 'cst-grid three' }, supplies)),
     part === 'shop' ? null : sect('zn-specials', 'Wrapped weapon', 'A surprise weapon to keep in your pack.', h('div', { class: 'cst-counter' }, h('div', { class: 'cst-grid three' }, specials))), // (the Camp Store page sells weapons only: Dave, 3 Nov 2026)
     sect('zn-shelf', 'On the shelf', 'Weapons. What you buy goes in your pack. Tap a card to see it.', h('div', { class: 'cst-grid two' }, shelf)),
+    magic.length ? h('section', { class: 'cst-zone zn-magic', id: 'zn-magic' }, h('h2', {}, 'Learn magic'), h('p', { class: 'cst-sub' }, 'New powers for your three magic slots. Learning one puts it in its slot; the power it replaces stays yours on the Magic page.'), h('div', { class: 'cst-grid two' }, magic)) : null,
     diamonds.length ? sect('zn-diamond', 'Diamond case', `A Diamond is used up in one fight. You carry at most ${D.DIAMOND.max}.`, h('div', { class: 'cst-diacase' }, diamonds)) : null,
     pet && part !== 'shop' ? sect('zn-odd', 'Odds and ends', '', h('div', { class: 'cst-grid one' }, pet)) : null);
+}
+// T28 (Dave, 4 Nov 2026): every power a hero has not learned, on a Camp Store shelf, bought like a weapon. Learning equips it
+// (engine learnPower); the power it replaces stays learned and can be put back free on the Magic page.
+function learnMagicShelf(hero) {
+  const now = new Map(E.cardsOf(hero).map((c) => [c.slot, c]));
+  const learn = (k) => { if (HE.learnPower(hero, k.id)) { sfx.level(); X.persist(); X.renderCamp(); toast(`${k.name} learned. It is in Magic Slot ${SLOT_NUM[k.slot]} now.`); return true; } sfx.error(); toast('Not enough gold.'); return false; };
+  return E.powerLibrary(hero).filter((r) => !r.learned && !r.equipped).map((r) => {
+    const k = r.card; const li = E.learnInfo(hero, k.id); const was = now.get(k.slot);
+    const open = () => { sfx.click(); showPowerCard(hero, k, r.gate ? null : (close) => [shBuy(hero, { label: `Learn ${k.name}${was ? ` · replaces ${was.name}` : ''}`, cost: li.cost, ok: li.ok, onBuy: () => { if (learn(k)) close(); } })]); };
+    return CB.storeCard({ cls: `magic tone-${toneOf(k)}`, art: h('img', { src: MC.powerArt(k, hero.cls), alt: '', loading: 'lazy' }), title: k.name, onOpen: open, aria: `See the ${k.name} card`,
+      lines: [h('small', { class: 'cst-slot' }, `Magic Slot ${SLOT_NUM[k.slot]}${was ? ` · instead of ${was.name}` : ''}`), shortLine(k, 0)],
+      sticker: r.gate ? `Needs level ${r.gate}` : '',
+      tag: r.gate ? null : CB.priceTag(li.cost, { poor: hero.gold < li.cost, aria: `Learn ${k.name} for ${li.cost} gold`, onBuy: tap(() => learn(k)) }) });
+  });
+}
+// A power's card, large, over the page (like a weapon card from the store); acts(close) gives its buttons.
+function showPowerCard(hero, k, acts = null) {
+  const close = modal(h('div', { class: 'form cw-modal cw-cardpop cw-powerpop' },
+    h('div', { class: 'cw-big' }, MC.campCard(hero, k.id, { glyph: powerGlyph }),
+      h('button', { type: 'button', class: 'cw-pop-x qd-float-close', 'aria-label': 'Close the card', onclick: () => close() }, 'Close')),
+    acts ? h('div', { class: 'cw-modal-acts' }, acts(() => close())) : null));
 }
 function gearTab({ grid = false, chips = false } = {}) {
   const hero = X.S.hero; const two = E.isTwoHanded(hero);
