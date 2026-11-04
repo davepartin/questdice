@@ -1460,7 +1460,7 @@ function powerSheet(id) {
 // After a talent die is unlocked or grown, glide down to the symbol choosing area (the numbered faces, then the symbols under them) so the next step is on screen.
 function toTalentSymbols() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const pop = $('.cw-pop'); const side = pop || $('.sx-camp .sx-side'), el = pop ? ($('.cw-pop .tw-detail') || $('.cw-pop .tw-face-heading')) : $('.tw-face-heading'); if (!side || !el) return; // in the pop-up: straight to the symbol choice
+    const pop = $('.cw-pop'); const side = pop || $('.sx-camp .sx-side'), el = pop ? ($('.cw-pop .tw-symbols') || $('.cw-pop .tw-detail') || $('.cw-pop .tw-face-heading')) : ($('.tw-symbols') || $('.tw-detail') || $('.tw-face-heading')); if (!side || !el) return; // in the pop-up: straight to the symbol choice
     const stick = pop ? -12 : (parseFloat(side.style.getPropertyValue('--stick')) || 0);
     const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 24; // tz1: clear the camp header
     const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -1481,7 +1481,7 @@ function talentWorkshop(hero, slot) {
     const k = symbol(f), active = face === f;
     return h('button', { type: 'button', class: `tw-face ${k ? SYM_ICO[k][1] : 'tw-unset'} ${active ? 'selected' : ''}`, 'data-face': String(f), 'aria-pressed': String(active),
       'aria-label': `Face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold to set`}. Inspect face.`,
-      onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); }) },
+      onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }) },
     h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), k ? h('small', { class: 'tw-gives' }, `Gives +${n}`) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
   });
   let detail;
@@ -1498,7 +1498,7 @@ function talentWorkshop(hero, slot) {
       const count = E.talentCount(hero, slot, k), full = count >= info.same;
       return h('button', { type: 'button', class: `tw-symbol ${SYM_ICO[k][1]} ${TAL.sym === k ? 'selected' : ''}`, disabled: full, 'data-symbol': k, 'aria-pressed': String(TAL.sym === k),
         'aria-label': `${def.name}, ${count} of ${info.same} used${full ? ', limit reached' : ''}`,
-        onclick: full ? null : tap(() => { TAL.sym = k; refresh(`.tw-symbol[data-symbol="${k}"]`); }) }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${info.same} used`));
+        onclick: full ? null : tap(() => { TAL.sym = k; refresh(`.tw-symbol[data-symbol="${k}"]`); requestAnimationFrame(() => $('.cw-pop .tw-purchase, .tw-purchase')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })); }) }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${info.same} used`));
     })) : null;
     const action = current ? h('div', { class: 'tw-clear' }, h('p', {}, `No refund · a new symbol costs ${cost} gold.`),
       h('button', { type: 'button', class: 'tw-clear-btn', 'aria-label': `Clear face ${n} without refund`, onclick: tap(() => {
@@ -1941,6 +1941,7 @@ function mountAs(cls, ...nodes) {
   if (cls.trim().split(/\s+/)[0] !== 'camp') document.querySelectorAll('body > .cw-pop').forEach((el) => el.remove());
   const app = $('#app'); const prev = $('.sx-side, .sx-board-main'); const kind = cls.trim().split(/\s+/)[0];
   const same = prev && app?.classList.contains('sx-screen') && app.classList.contains(kind); const y = same ? prev.scrollTop : 0;
+  app?.style.removeProperty('--sheet');
   X.mountAs(`sx-screen ${cls}`, ...nodes);
   const side = $('.sx-side, .sx-board-main'); if (!side) return;
   side.addEventListener('scroll', () => SCR.scrolled?.(side.scrollTop), { passive: true });

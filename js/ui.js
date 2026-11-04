@@ -301,7 +301,7 @@ function unlock(save, kind = 'hero') {
     } catch (e) { msg.textContent = e.message; sfx.error(); }
   };
   pw.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-  const close = modal(h('div', { class: 'form' }, h('h2', {}, `Welcome back, ${rec.name}`),
+  const close = modal(h('div', { class: 'form' }, h('h2', { class: 'wb-title' }, h('small', { class: 'wb-sub' }, 'Welcome back, '), h('span', { class: 'wb-name' }, rec.name)),
     h('p', { class: 'muted' }, party ? 'Enter the password that opens these heroes on this device.' : 'Enter your password to open this hero.'), pw, msg,
     h('div', { class: 'row end' }, ghost('Soul Code', () => { const c = SV.exportCode(rec.names?.[0] || rec.name, rec.pack); if (c) copyCode(c); }), ghost('Close', () => close()), primary('Open', go)),
     h('p', { class: 'fine' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (confirm(`Delete ${rec.name} forever from this device?`)) {
