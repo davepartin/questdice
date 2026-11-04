@@ -696,3 +696,72 @@
 .fm-slot-number { left:-3cqi;top:35%; }
 .fm-socket > .mc-space { width:13cqi;height:13cqi;max-height:100%; }
 .fm-socket > .mc-space path { fill:#92724636;stroke:#9d8057;stroke-width:1;stroke-dasharray:none; }
+
+/* ---- T28 (Dave, 4 Nov 2026): the 15 starting magic cards. Less border: a slim gold-lined frame, the art and the beige panel fill the
+   card. Inside the panel, the symbol is the space (filled with its colour when you have it, the number inside), dice sit in carved
+   sockets, and a few plain words say what it does. One look for every hero; the !important lines win over the older per-card rules. */
+.mc-card.mc-t28{border-radius:4.5cqi;background:linear-gradient(180deg,#2b1f15,#160f0a);box-shadow:inset 0 0 0 .8cqi #c9a35a,inset 0 0 0 1.6cqi #24180e,0 1.6cqi 5cqi #000b}
+.mc-t28 .mc-fr,.mc-t28 .mc-stamps{display:none!important}
+.mc-t28 .mc-under{left:3.4%!important;right:3.4%!important;top:2.4%!important;bottom:2.3%!important;border-radius:3cqi!important;background:linear-gradient(180deg,#f3e6c6,#ead8b0)!important;box-shadow:inset 0 0 3cqi #7a5b2c33!important}
+.mc-t28 .mc-paint{left:3.4%!important;right:3.4%!important;top:2.4%!important;height:31.5%!important;border-radius:3cqi 3cqi 0 0!important}
+.mc-t28 .mc-plaque{top:31.2%!important;left:3.4%!important;right:3.4%!important;height:6.4%!important;transform:none!important;border-radius:0!important;font-size:8.6cqi!important;box-shadow:inset 0 -.5cqi 0 #c9a35a!important}
+.mc-t28 .mc-art-icon{left:6.4%!important;right:auto!important;top:4.6%!important}
+.mc-t28 .mc-cast-cost{right:6.4%!important;left:auto!important;top:4.6%!important}
+.mc-t28 .mc-traits{left:6.4%!important;top:17.5%!important}
+.mc-t28 .mc-levels{top:38.6%!important;bottom:3.4%!important;left:5%!important;right:5%!important;display:flex!important;flex-direction:column!important;gap:1.3cqi!important}
+.mc-t28 .mc-lv.act{flex:1 1 auto!important;min-height:0!important;padding:0!important;background:transparent!important;box-shadow:none!important}
+.mc-t28 .mc-lv.act .mc-rn{display:none!important}
+.mc-t28 .mc-lv.act .mc-sy{padding:0!important;width:100%!important;height:100%!important;display:block!important}
+.mc-t28 .mc-lv:not(.act){flex:none!important;min-height:10.5cqi!important}
+.t28{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2cqi;width:100%;height:100%;padding:5.2cqi 1cqi 1cqi;box-sizing:border-box;text-align:center;color:#3a2614}
+.t28-rank{position:absolute;top:.4cqi;left:.4cqi;padding:.7cqi 2cqi;border-radius:99px;background:#3a1a6a;color:#f2c14e;font:800 3cqi/1 var(--ui,sans-serif);letter-spacing:.08em;text-transform:uppercase}
+.t28-dice{display:flex;justify-content:center;align-items:center;gap:2.2cqi;--ds:15.5cqi}
+.t28-dice.n5{--ds:13.4cqi}.t28-dice.n6{--ds:11.6cqi;gap:1.5cqi}
+.t28-dice .mc-die,.t28-dice .mc-space{width:var(--ds)!important;height:var(--ds)!important;flex:none;animation:none}
+.t28-say{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.8cqi 1.4cqi;font:700 4.5cqi/1.15 var(--ui,sans-serif);color:#3a2614}
+.t28-w{display:inline-flex;align-items:center;gap:.8cqi;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+.t28-w .ic{width:5.2cqi;height:5.2cqi;flex:none}
+.t28-w.fx-atk{color:#cf2525}.t28-w.fx-block{color:#1b74c4}.t28-w.fx-heal{color:#14904a}.t28-w.fx-pierce{color:#c95e00}.t28-w.fx-gold{color:#9a7000}.t28-w.fx-magic{color:#7434c8}
+.t28-fine{font:600 3.5cqi/1.2 var(--ui,sans-serif);color:#6b5434}
+.t28-gold{display:inline-flex;align-items:center;gap:.8cqi}.t28-gold .mc-die{width:6cqi!important;height:6cqi!important}.t28-gold .t28-sym{width:8cqi;height:8cqi}
+.t28-sym{width:15cqi;height:15cqi;overflow:visible;flex:none;--c:#a64dff;--e:#4a1c80}
+.t28-sym .h{display:none}
+.t28-sym .p,.t28-sym .f{stroke-width:1.1;stroke-linejoin:round}
+.t28-sym.fx-atk{--c:#ff3b3b;--e:#8a1414}.t28-sym.fx-block{--c:#3aa4ff;--e:#0c4a80}.t28-sym.fx-heal{--c:#38e87a;--e:#106a34}.t28-sym.fx-pierce{--c:#ff8a1a;--e:#8a3c00}.t28-sym.fx-gold{--c:#ffc21a;--e:#7a5a00}.t28-sym.fx-magic{--c:#a64dff;--e:#4a1c80}
+.t28-sym.on .p,.t28-sym.on .f{fill:var(--c);stroke:var(--e)}
+.t28-sym.off .p,.t28-sym.off .f{fill:#6b4a1f12;stroke:var(--e);stroke-opacity:.6}
+.t28-num{font-family:var(--font-number,var(--ui,sans-serif));font-weight:900;fill:#fff;paint-order:stroke;stroke:#00000080;stroke-width:1.3;stroke-linejoin:round}
+.t28-sym.off .t28-num{fill:var(--e);stroke:none;opacity:.85}
+.t28-sym.on.fx-gold .t28-num,.t28-sym.on.fx-heal .t28-num{fill:#1d1300;stroke:none}
+.t28-sym.now{filter:drop-shadow(0 0 1.4cqi var(--c))}
+.t28-sym.big{width:30cqi;height:30cqi}
+.t28-one{display:flex;gap:5cqi;justify-content:center;align-items:center}.t28-one.two .t28-sym.big{width:25cqi;height:25cqi}
+.t28-charge{display:flex;flex-direction:column;gap:1.8cqi}.t28-row{display:flex;gap:2.6cqi;justify-content:center}
+.t28-charge.rows1 .t28-sym{width:16.5cqi;height:16.5cqi}.t28-charge.rows2 .t28-sym{width:12.6cqi;height:12.6cqi}
+.t28-luck{display:flex;flex-direction:column;gap:1.3cqi;width:100%}
+.t28-luck-row{display:grid;grid-template-columns:9.5cqi 12cqi 1fr;align-items:center;gap:2cqi;padding:.6cqi 2.4cqi;border-radius:2cqi;background:#6b4a1f12}
+.t28-luck-row .mc-die{width:9.5cqi!important;height:9.5cqi!important}.t28-luck-row b{font:900 5cqi/1 var(--ui,sans-serif);color:#4a3216}
+.t28-pays{display:flex;gap:1.8cqi;justify-content:center}.t28-pays .t28-sym{width:11.5cqi;height:11.5cqi}
+@media (prefers-reduced-motion: reduce){.t28-sym.now{filter:none}}
+/* T28 covers: one short line in the panel's symbols; bigger symbols so the panel is full */
+.mc-t28 .mc-cov .mc-cd{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:center!important;gap:2.4cqi!important;overflow:hidden}
+.t28-cv{display:inline-flex;align-items:center;gap:.6cqi;font:800 5.4cqi/1 var(--font-number,var(--ui,sans-serif))}
+.t28-cv .ic{width:4.8cqi;height:4.8cqi;flex:none}
+.t28-cv.fx-atk{color:#cf2525}.t28-cv.fx-block{color:#1b74c4}.t28-cv.fx-heal{color:#14904a}.t28-cv.fx-pierce{color:#c95e00}.t28-cv.fx-gold{color:#9a7000}.t28-cv.fx-magic{color:#7434c8}
+.t28-cvdice{display:inline-flex;align-items:center;gap:1cqi;font:800 5.4cqi/1 var(--font-number,var(--ui,sans-serif));color:#4a3216;white-space:nowrap}
+.t28-cvdice .mc-die{width:5.6cqi!important;height:5.6cqi!important}.t28-cvdice small{font:700 3.6cqi/1 var(--ui,sans-serif);color:#6b5434}
+.t28-cvdice .mc-mg{display:inline-flex;align-items:center;gap:.3cqi;color:#7434c8}.t28-cvdice .mc-mg .ic{width:4.4cqi;height:4.4cqi}
+.t28{gap:2.6cqi}
+.t28-dice{--ds:17.5cqi}.t28-dice.n5{--ds:14.6cqi}.t28-dice.n6{--ds:12.4cqi}
+.t28-charge.rows1 .t28-sym{width:19cqi;height:19cqi}.t28-charge.rows2 .t28-sym{width:15cqi;height:15cqi}
+.t28-sym.big{width:34cqi;height:34cqi}.t28-one.two .t28-sym.big{width:27cqi;height:27cqi}
+.t28-say{font-size:5cqi}.t28-fine{font-size:3.8cqi}
+.t28-plain{font:700 4.3cqi/1.2 var(--ui,sans-serif);color:#3a2614;max-width:92%}
+.t28-say{gap:.8cqi 3cqi}
+.t28-sym.off .p,.t28-sym.off .f{fill:color-mix(in srgb,var(--c) 20%,transparent)}
+.t28-sym.off.fx-heal .t28-num{fill:#0b5a2a}
+.t28-dice{--ds:19cqi}.t28-dice.n5{--ds:15.5cqi}.t28-dice.n6{--ds:13cqi}
+.t28-one .t28-sym.big{width:30cqi;height:30cqi}.t28-one.two .t28-sym.big{width:26cqi;height:26cqi}
+.t28{gap:2cqi}
+.t28-sym .f{stroke-linejoin:round}
+.t28-one .t28-sym.big{width:27cqi;height:27cqi}

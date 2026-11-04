@@ -105,3 +105,27 @@ task page, and Dave's yes on the Knight's three before the other twelve.
   real taps at 390 x 844, headless Chromium, not Safari). In those screenshots headless Chromium sometimes draws a dark
   band over the top of the store shelf; a hit test confirms nothing covers the cards, but check it on an iPhone.
 
+## T28 card panels shipped (Claude, build 20261104a7; Dave, 4 Nov 2026 late: "you got this")
+
+Dave's direction, with his iPhone screenshots of Cleave and Rally Cry: less border; the inside fills the beige part; the
+symbol is the space (a red starburst for attack, a blue shield for block) that fills with colour; centred and bigger on
+the charge cards; a few simple words on the dice cards; one template across all 15, then copy it.
+
+- **One template (`.mc-t28`, every power with `start: true`):** a slim gold-lined frame in place of the ornate frame, so the
+  painting and the beige panel fill the card; a small "Rank I" pill instead of the loose numeral.
+- **Dice cards:** carved die sockets (every card's empty space is now a carved socket, not a dashed box) that fill with real
+  dice; then the word with its symbol (ATTACK, PIERCE, BLOCK, HEAL) and one plain line (½ splashes / ½ arcs / heals every hero /
+  each 8 = +3 gold).
+- **Charge cards:** a row of four symbols per effect with the number inside; charged ones fill with colour, the latest glows;
+  "Use now: +2 attack +1 block" once charged.
+- **Every-round cards:** one big symbol with the number inside (Counterstrike's shield, Hunter's Mark's arrow and coin,
+  Grudge's starburst) and one plain line.
+- **Lucky Verse:** three rows, a purple die face, the range, and the rewards as filled symbols.
+- **Rank covers:** one line in the same symbols ("3 dice for ▲3 · up to 5", "+28 +24").
+- Frog Morph keeps its six-socket tray (now carved sockets). Learned non-starting powers keep the older card until Dave
+  approves this template for them.
+- Numbers all come from the engine. Checks: `node dev/magic-shots.mjs [out]` (`CHARGE=2` charges a charge card first),
+  `node dev/learn-magic-check.mjs`; headless Chromium at 390 x 844, not Safari.
+
+Grok: the panels are done in code; art polish (icons, the frame's gold line, the frog tray) is welcome on top of `.mc-t28`.
+

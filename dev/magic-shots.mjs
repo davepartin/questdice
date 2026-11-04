@@ -23,6 +23,7 @@ for (const cls of (process.env.CLASSES || 'knight,ranger,wizard,dwarf,bard').spl
   for (const [i, n] of names.entries()) {
     const t = await p.evaluateHandle((n) => [...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim().includes(n)), n);
     if (!t.asElement()) continue; await t.asElement().click(); await p.waitForTimeout(900);
+    for (let c = 0; c < +(process.env.CHARGE || 0); c++) { const ch = await p.$('.mc-use.mc-charge:not([disabled])'); if (!ch) break; await ch.click(); await p.waitForTimeout(700); } // CHARGE=n: charge a charge card n times first
     await p.screenshot({ path: `${OUT}/${cls}-${i + 1}-${n.replace(/[^a-z]+/gi, '-').toLowerCase()}.png` });
   }
   await p.close();
