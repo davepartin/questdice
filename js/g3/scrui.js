@@ -129,10 +129,22 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
     return h('div', { class: 'sx-chip' }, h('span', { class: 'sx-emblem' }, ico('people')), h('div', { class: 'ch-copy' }, h('b', {}, S.company.name), h('small', {}, `${n} ${n === 1 ? 'hero' : 'heroes'}`)), coin(E.companyGold(S.company.members)));
   }
   const need = D.xpToNext(hero.level); const maxed = hero.level >= D.MAX_LEVEL;
+  const goldEl = coin(hero.gold);
+  goldEl.title = 'Tap to refill to 5,000 gold';
+  goldEl.style.cursor = 'pointer';
+  goldEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hero.gold = 5000;
+    sfx.coin();
+    X.persist?.();
+    if ($('.sx-camp')) X.renderCamp?.(SHEET.fromBoard);
+    else goldEl.querySelector('b').textContent = '5000';
+    toast('Purse refilled to 5,000 gold');
+  });
   return h('div', { class: 'sx-chip' }, emblem(hero.cls, '', D.lookDef(hero)?.hue),
     h('div', { class: 'ch-copy' }, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} ${clsName(hero.cls)}`),
       xp ? h('span', { class: 'ch-xp', title: maxed ? 'Max level' : `${hero.xp}/${need} XP` }, h('i', { style: { width: `${maxed ? 100 : Math.min(100, (hero.xp / need) * 100)}%` } })) : null),
-    coin(hero.gold));
+    goldEl);
 }
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen
@@ -308,7 +320,7 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
   return shWeapon(inst, acts, `pk ${cls}`, badge, money);
 }
 // the full card, large, from any row or thumbnail
-function showWeaponCard(inst, money, { real = false, acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
+function showWeaponCard(inst, money, { real = !inst?.diamond && inst?.id !== 'fists', acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
   // Dave (3 Nov 2026): the card near the top, Close on its top-right corner like the rest of the game, its buttons right under it, no scrolling
   const close = modal(h('div', { class: 'form cw-modal cw-cardpop' },
     h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money),
@@ -481,7 +493,7 @@ export function create(opts = {}) {
       const nm = name.value.trim().replace(/\s+/g, ' ');
       if (nm && nm !== made.name) { SV.deleteHero(made.name, pack.id); made = null; }
       else if (made.cls !== cls || (made.color ?? color) !== color) {
-        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.difficulty = made.difficulty;
+        const redo = E.newHero({ name: made.name, cls, color, seed: made.campaign?.seed, pack: pack.id }); redo.gold = 5000; redo.difficulty = made.difficulty;
         SV.saveHero(redo); // the local save keeps its password; only the hero in it changes
         try { await (await import('../cloud.js')).putHero(redo, pw.value); } catch { /* saved on this device; the cloud copy follows when it can */ }
         made = redo; X.adopt(redo);
@@ -507,6 +519,7 @@ export function create(opts = {}) {
     try {
       const seed = mate?.campaign?.seed;
       const hero = E.newHero({ name: n, cls, color, seed, pack: pack.id });
+      hero.gold = 5000;
       hero.difficulty = mate ? D.normalizeDifficulty(mate.difficulty) : diff;
       if (mate) hero.campaign = mate.campaign;
       SV.markReached(hero); Coach.setHints(!skipHints);
