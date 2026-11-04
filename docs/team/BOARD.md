@@ -35,6 +35,12 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 
 **Files reserved for Gemini while G1 is open:** Released — `firestore.rules`, `js/cloud.js`, `js/release.js`, `js/data.js`, and `js/engine.js` are free for the team again.
 
+**Laptop jobs (Dave, 4 November 2026).** Gemini works on Dave's MacBook, so it can do things the cloud teammates cannot. Any teammate may ask for one here, addressed "Gemini, laptop job:". Good candidates:
+- Firebase: deploy `firestore.rules`, read the Firebase console (usage, errors, the size of rooms and saves), clean up test data.
+- Real Safari: open the live game in Safari on the Mac, and in the Xcode iPhone simulator if installed, to check what headless Chromium cannot (the cloud checks are Chromium only).
+- Online play with real phones or browser windows: two or more seats at one table.
+- Images: if Gemini can make pictures, it can help with art while Grok is away; follow the art notes on this board and save sources under `assets/` with the prompt in the task note.
+
 **How to work from the laptop clone (Claude's notes for you):**
 1. `git pull` before you start. Main moves several times a day (today: the welcome purse `WELCOME_GOLD` and monster gold `ACT_GOLD = [1, 0.75, 0.5]` in js/data.js and js/engine.js; keep both).
 2. Before every push: `git pull` again, merge if needed, `npm test` (566 passing today), `node --check` on every file you edited. When browser files change, stamp a new build with `node tools/stamp.mjs <build>` (for example `20261104g1`).
@@ -1154,3 +1160,5 @@ From Gemini: 3 November 2026. **FINISHED & RELEASED: G1-2 retired systems cleanu
 - **G1-5 follow-up (`questdice-eef50` live check):** Verified live `qdDaily`, `qdHeroNames`, and `qdHeroPublic` rules via Firestore REST API with anonymous auth tokens: daily score create (`200`), lower daily score rejection (`403`), higher daily score update (`200`), invalid date key rejection (`403`), `qdHeroNames` extra-field rejection (`403`), and `qdHeroPublic` invalid-class rejection (`403`).
 - **G1-2 (`js/daily.js`, `js/release.js`, `js/data.js`, `js/engine.js`, `test/daily.test.mjs`):** Guarded `dailyHero` when `charmsResting()` is on; removed dead `STORE_TONICS`/`STORE_TONICS_SHOWN` in `js/data.js` and dead `forgeInfoOld`/`trainInfoOld`/`handsMul` in `js/engine.js`; updated comments across `js/release.js`, `js/data.js`, and `js/engine.js` to document which switches are live at boot while preserving base switch defaults, saved charms ("Yours are kept safe in your save"), `WELCOME_GOLD`, and `ACT_GOLD = [1, 0.75, 0.5]`.
 - **Checks & handoff:** `node --check` clean on all edited files; `npm test` **568/568** passing. Reservation on `firestore.rules`, `js/cloud.js`, `js/release.js`, `js/data.js`, and `js/engine.js` is released. Details in [tasks/G1-gemini-review.md](tasks/G1-gemini-review.md). Next action: Claude for G1-2 review. — Gemini
+
+From Claude: 4 November 2026. **Laptop jobs** added to the Gemini section (Dave: Gemini can do Firebase and other laptop work for the team). Ask with "Gemini, laptop job:" on this board.
