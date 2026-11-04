@@ -66,7 +66,10 @@ export const foundSize = (inst) => inst.found || weaponSize(inst);
 // smaller hand rolls, and is built, as the hand's size. A blank still sends the hand's Strength that way. Legendaries keep their faces.
 // A Diamond's faces: no blanks, all its own colour, an icon on every face, and its top number a crit with three (pierce for a weapon
 // that has it, heal for a guard that has it, else the weapon's first icon).
-function diamondFaces(def, size) {
+function diamondFaces(def, size, id) {
+  const sig = EXPERIMENT.weapons3 && WEAPONS3.sig[id]; // T29: a Diamond is the dream version of its weapon, its own icon on every face
+  if (sig) { const own = sig.r ? 'r' : 'b'; const vals = DIAMOND.dice[size] || DIAMOND.dice[Object.keys(DIAMOND.dice).map(Number).filter((n) => n <= size).pop() || 6]; const top = Math.max(...vals); const per = WEAPONS3.per?.[id] || 1;
+    return vals.map((v, i) => { const c = sig.r && sig.b ? (i % 2 ? 'b' : 'r') : own; const k = sig[c]; const fx = { [k]: (v === top ? 3 : 1) * (k === 'heal' ? 1 : per) }; if (v === top && sig.pair) fx[sig.pair] = 1; return { v, c, fx }; }); }
   const own = def.lean === 'def' ? 'b' : 'r';
   const vals = DIAMOND.dice[size] || DIAMOND.dice[Object.keys(DIAMOND.dice).map(Number).filter((n) => n <= size).pop() || 6];
   const kinds = [...new Set([...def.faces.flatMap((f) => Object.keys(f.fx || {})), ...(def.bonus || []).flatMap((b) => Object.keys(b.fx))])];
@@ -89,6 +92,17 @@ export function useWeapons2() {
   for (const [c, w] of Object.entries(WEAPONS2.classes)) CLASSES[c].weapons = w;
   DIAMOND.pool.splice(0, DIAMOND.pool.length, ...WEAPONS2.diamondPool);
   for (let i = LEGENDARY.length - 1; i >= 0; i--) if (WEAPONS[LEGENDARY[i]].hands === 2) LEGENDARY.splice(i, 1);
+}
+// T29 LIVE (Dave, 4 Nov 2026): six weapons with clear personalities (WEAPONS3). On top of the second edition: their faces and icons,
+// the store and spoils trimmed to Dagger, Sword, Axe, Staff and Round Shield (the Bow and Arrows as before), new starting kits, Diamonds
+// by type, and each weapon's one-line "because" as its tag. The retired weapons stay defined so old saves and Legendaries' models load.
+export function useWeapons3() {
+  if (EXPERIMENT.weapons3) return; useWeapons2(); EXPERIMENT.weapons3 = true;
+  for (const k of Object.keys(LOOT_WEIGHTS)) delete LOOT_WEIGHTS[k]; Object.assign(LOOT_WEIGHTS, WEAPONS3.loot);
+  for (const [c, w] of Object.entries(WEAPONS3.classes)) CLASSES[c].weapons = w;
+  DIAMOND.pool.splice(0, DIAMOND.pool.length, ...WEAPONS3.diamondPool);
+  for (const [id, line] of Object.entries(WEAPONS3.because)) { if (WEAPONS[id]) WEAPONS[id] = { ...WEAPONS[id], tag: line }; }
+  if (WEAPONS.quiver) WEAPONS.quiver = { ...WEAPONS.quiver, tag: WEAPONS3.because.bow };
 }
 // The weapons experiment's Arrows: pick the ammunition at camp (Normal, Piercing, Fire or Frost). Free, and changed as often as you like.
 export function setAmmo(hero, uid, kind) {
@@ -114,14 +128,14 @@ export function servedByLadder(inst) {
 }
 export function weaponFaces(inst, rollSize) {
   const def = WEAPONS[inst.id];
-  if (inst.diamond) return diamondFaces(def, weaponSize(inst)); // a Diamond rolls at its full size in any hand
+  if (inst.diamond) return diamondFaces(def, weaponSize(inst), inst.id); // a Diamond rolls at its full size in any hand
   const size = Math.min(weaponSize(inst), rollSize || weaponSize(inst));
   if (inst.id === 'fists') return def.faces.map((f) => ({ ...f }));
   if (def.legendary) return legendaryFaces(def, size);
-  if (EXPERIMENT.weapons3 && WEAPONS3.faces[inst.id]) return faces3(inst.id, Math.min(2, inst.rarity | 0), size); // T29 experiment
   // T17: a reviewed cumulative face table (data.js WEAPON_SIZE.ladder, docs/team/tasks/T17-faces.json shape: weapon, then metal, then size) replaces the faces below, in the weapon-size preview or with WEAPON_SIZE.cumulative on; none is installed in the release
   const lad = (EXPERIMENT.weaponSize || WEAPON_SIZE.cumulative) && WEAPON_SIZE.ladder?.[ladderKey(inst)]?.[RARITY[Math.min(2, inst.rarity | 0)]]?.[size];
   if (lad) return lad.map((f) => ({ ...f }));
+  if (EXPERIMENT.weapons3 && WEAPONS3.faces[inst.id]) return faces3(inst.id, Math.min(2, inst.rarity | 0), size); // T29: the six weapons (after the T17 size-preview table, which only a test switches on)
   // the weapons experiment: its own Bronze numbers at every metal; Silver and Gold add the same metal icons as today's weapons (Bronze none)
   const w2tier = Math.min(2, inst.rarity | 0); const w2 = (f) => (w2tier ? metalIcons(def, f, w2tier, def.temper, def.lean === 'def' ? 'b' : 'r') : f);
   if (EXPERIMENT.weapons2 && inst.id === 'quiver') return w2(faces2(`quiver:${WEAPONS2.ammo[inst.ammo] ? inst.ammo : WEAPONS2.ammo[WEAPONS2.defaultAmmo] ? WEAPONS2.defaultAmmo : 'normal'}`, size)); // the arrows: faces by ammunition

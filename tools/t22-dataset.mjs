@@ -4,7 +4,7 @@ process.env.RELEASE = '1';
 import fs from 'node:fs';
 const E = await import('../js/engine.js'); const D = await import('../js/data.js'); await import('./sim.mjs');
 export const FILE = new URL('../docs/team/tasks/T22-weapons-dataset.json', import.meta.url);
-const ids = ['dagger', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver'];
+const ids = ['dagger', 'sword', 'axe', 'staff', 'shield', 'bow', 'quiver']; // T29: the six weapons (the Spear and Tower Shield are retired)
 const face = (f) => ({ v: f.v, c: f.c, ...(f.plus ? { plus: f.plus } : {}), ...(f.fx && Object.keys(f.fx).length ? { fx: f.fx } : {}), ...(f.arrow ? { arrow: f.arrow } : {}) });
 export function build() {
   const out = { version: 1, rules: 'released (js/release.js applyRelease)', status: 'PROPOSED: a snapshot of what the engine plays today, for review; not a ruling', metals: D.RARITY.slice(0, 3), sizes: [4, 6, 8, 10], ammo: Object.keys(D.WEAPONS2.ammo), weapons: {} };

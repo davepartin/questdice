@@ -10,14 +10,14 @@ import * as T from '../js/table.js';
 
 applyRelease();
 const CLS = ['knight', 'ranger', 'wizard', 'dwarf', 'bard'];
-const LEFT = { knight: 'sword', ranger: 'quiver', wizard: 'dagger', dwarf: 'axe', bard: 'dagger' };
-const RIGHT = { knight: 'shield', ranger: 'bow', wizard: 'shield', dwarf: 'tower', bard: 'shield' };
+const LEFT = { knight: 'sword', ranger: 'quiver', wizard: 'staff', dwarf: 'axe', bard: 'dagger' }; // T29: the Wizard starts with the two-handed Staff
+const RIGHT = { knight: 'shield', ranger: 'bow', wizard: 'staff', dwarf: 'shield', bard: 'shield' }; // (the Dwarf's Tower Shield is retired)
 
 test('a new hero of every class has both top weapon dice live at d4, Bronze, the left weapon it always had and a right shield (Ranger: Arrows and Bow)', () => {
   for (const cls of CLS) {
     const h = E.newHero({ name: `N-${cls}`, cls, seed: 4 });
     assert.equal(h.loadout.NW.id, LEFT[cls], `${cls} left`); assert.equal(h.loadout.NE.id, RIGHT[cls], `${cls} right`);
-    for (const k of ['NW', 'NE']) { assert.equal(h.loadout[k].rarity | 0, 0, `${cls} ${k} Bronze`); assert.equal(E.weaponSize(h.loadout[k]), 4); assert.ok(E.isActive(h, k)); assert.equal(E.sidesOf(h, k), 4); assert.ok(!h.loadout[k].twin); }
+    for (const k of ['NW', 'NE']) { assert.equal(h.loadout[k].rarity | 0, 0, `${cls} ${k} Bronze`); assert.equal(E.weaponSize(h.loadout[k]), 4); assert.ok(E.isActive(h, k)); assert.equal(E.sidesOf(h, k), 4); assert.equal(!!h.loadout[k].twin, cls === 'wizard' && k === 'NE', 'only the Staff\'s right hand is its twin'); }
     assert.equal(E.unlockInfo(h, 'NE').why, 'have', 'nothing to buy'); assert.equal(h.gold, E.newHero({ name: 'X', cls, seed: 4 }).gold);
     assert.deepEqual([...h.dice].sort(), ['C', 'E', 'N', 'NE', 'NW', 'S', 'SW', 'W'], 'only the right weapon die is added: no second talent, no pet');
     assert.notEqual(h.loadout.NW.uid, h.loadout.NE.uid);

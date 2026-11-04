@@ -3,7 +3,7 @@
 // it is NOT encryption. A "Soul Code" is a backup for moving a save by hand. See docs/DESIGN.md, Saving.
 
 import { trainingRanks } from './training.js';
-import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT, CLASS_TALENT, normalizeHeartRank, POWER_UPGRADE } from './data.js';
+import { QUESTS_PER_ACT, normalizeDifficulty, WEAPONS, colorIdOf, EXPERIMENT, CLASS_TALENT, normalizeHeartRank, POWER_UPGRADE, WEAPONS3 } from './data.js';
 import { packIdOf, packOf, DEFAULT_PACK, CAMPAIGNS } from './campaigns.js';
 import { LAB, SANDBOX, SANDBOX_NAME } from './lab.js';
 
@@ -92,6 +92,7 @@ export function migrateHero(hero) {
   if (frugal) { hero.perks = hero.perks.filter((p) => p !== 'frugal'); hero.pendingPerks = (hero.pendingPerks || 0) + frugal; }
   if (hero.campaign && !hero.campaign.pack) hero.campaign.pack = DEFAULT_PACK;
   migrateWeapons2(hero);
+  migrateWeapons3(hero);
   migrateStarterDice(hero);
   migrateFrogMorph(hero);
   for (const slot of ['SW', 'SE']) clearAutoTalent(hero, slot); // a still-locked talent die loses the face 4 the old newHero filled in (26 Oct 2026)
@@ -130,6 +131,21 @@ export function migrateWeapons2(hero) {
   L.NE = { ...NE }; delete L.NE.twin;
   if (Array.isArray(hero.dice) && !hero.dice.includes('NE')) hero.dice.push('NE');
   return true;
+}
+// T29 (Dave, 4 Nov 2026): six weapons. A retired one (Spear, Mace, Long Sword, War Hammer, Bracer, Tower Shield) becomes its new
+// weapon (WEAPONS3.swap) with its metal, size and uid; a two-hander's freed right hand gets a Round Shield of the same metal and size.
+// Hands, pack, Diamond case and today's Camp Store stock. Legendaries are kept as they are.
+export function migrateWeapons3(hero) {
+  if (!EXPERIMENT.weapons3 || !hero?.loadout) return false;
+  const map = WEAPONS3.swap; let n = 0;
+  const swap = (w) => { if (!w || !map[w.id] || WEAPONS[w.id]?.legendary) return w; n++; const out = { ...w, id: map[w.id] }; delete out.twin; return out; };
+  const L = hero.loadout; const twoHanded = L.NW && WEAPONS[L.NW.id]?.hands === 2 && map[L.NW.id] && L.NE?.twin;
+  if (L.NW) L.NW = swap(L.NW);
+  if (twoHanded) { const s = { ...L.NW, id: 'shield', uid: `${L.NW.uid}s` }; delete s.forge; L.NE = s; } else if (L.NE) L.NE = swap(L.NE);
+  if (Array.isArray(hero.bag)) hero.bag = hero.bag.map(swap);
+  if (Array.isArray(hero.diamonds)) hero.diamonds = hero.diamonds.map(swap);
+  for (const it of hero.campaign?.shop?.items || []) if (it?.inst) it.inst = swap(it.inst);
+  return n > 0;
 }
 // T21 (Dave, 25 Oct 2026): every hero starts with both weapon dice live. A hero made before then, whose right weapon die was still locked,
 // gets it switched on, once and for nothing: nothing a hero carries, owns or paid for is touched (no gear swapped, no refund invented), and a

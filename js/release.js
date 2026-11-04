@@ -13,11 +13,12 @@
 //    2 Nov 2026  T24 Monster Specials (`SPECIALS.on = true`)
 //    3 Nov 2026  Camp training (`useCampTraining()` enabled at boot in js/main.js)
 import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES, START_DICE, WEAR, WEAPON_TRAINING, SPECIALS } from './data.js';
-import { useWeapons2 } from './engine.js';
+import { useWeapons2, useWeapons3 } from './engine.js';
 
 export function applyRelease() {
   Object.assign(TEAMWORK, { heartToHeart: true, noCharms: true, perkPreview: true });
   useWeapons2();
+  useWeapons3(); // T29: six weapons, live (Dave, 4 Nov 2026)
   SPECIALS.on = true; // T24 Monster Specials, live (Dave, 2 Nov 2026: "I want to not use the lab and do it on main")
   WEAPON_TRAINING.on = true; // Dave, 26 Oct: make the weapon card's size purchases work (50/100/200).
   WEAR.off = true; // Dave, 25 Oct 2026: weapons never wear out in the live game

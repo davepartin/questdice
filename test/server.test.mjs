@@ -16,7 +16,7 @@ async function post(port, body) {
 test('LAN camp purchases use released rules, persist on the wire and reject duplicate or foreign upgrades', async () => {
   const server = await start(0); const port = server.address().port;
   try {
-    const hero = E.newHero({ name: 'Sizer', cls: 'wizard', seed: 5 }); hero.gold = 350;
+    const hero = E.newHero({ name: 'Sizer', cls: 'bard', seed: 5 }); hero.gold = 350; // (a one-handed Dagger to grow; the Wizard now starts with the two-handed Staff)
     const host = (await post(port, { op: 'create', name: hero.name, cls: hero.cls, hero })).data;
     const friend = (await post(port, { op: 'join', code: host.code, name: 'Friend', cls: 'knight' })).data;
     const act = async (token, cmd) => post(port, { op: 'act', code: host.code, token, cmd });

@@ -313,7 +313,7 @@ export const WEAPONS2 = {
 // also carries pierce. A face's number still counts for triples and straights. The Bow and its Arrows are unchanged.
 export const WEAPONS3 = {
   faces: {
-    dagger: { 4: 'R1 R1 R2 R3', 6: 'R1 R2 R2 R3 R3 R4', 8: 'R1 R2 R3 R3 R4 R4 R5 R5', 10: 'R1 R3 R3 R4 R4 R5 R5 R6 R6 R7' }, // (T29 big run: Bronze d6 and d10 were a little low)
+    dagger: { 4: 'R1 B1 R2 R3', 6: 'R1 B2 R2 R3 R3 R4', 8: 'R1 B2 R3 R3 R4 R4 R5 R5', 10: 'R1 B2 R3 R4 R4 R5 R5 R6 R6 R7' }, // (T29: one small parry face; the all-attack Dagger trailed today's by about 5 points)
     sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R3 B4 R5', 8: 'R0 B2 R2 R3 B4 R5 R6 R7', 10: 'R0 B2 R2 R3 B4 R5 R6 B6 R8 R9' },
     axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R0 R4 R6 R6', 8: 'R0 R0 R0 R3 R5 R6 R7 R8', 10: 'R0 R0 R0 R0 R5 R6 R7 R8 R9 R10' },
     staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R5 B4 R6', 10: 'B1 R2 B2 R3 B4 R5 B5 R6 B6 R7' }, // (T29 big run: Bronze d8 and d10 were low)
@@ -331,6 +331,12 @@ export const WEAPONS3 = {
     shield: 'Stay standing: big blocks that heal you.',
     bow: 'Choose your arrows before the fight: Normal, Piercing, Fire or Frost. The Bow and its Arrows stay as they are.',
   },
+  // LIVE (Dave, 4 Nov 2026: "go and be free"): what the spoils and the Camp Store stock, what each class starts with, which Diamonds
+  // turn up, and where a retired weapon goes in an old save (metal, size and uid kept; a two-hander's freed hand gets a Round Shield).
+  loot: { dagger: 10, sword: 10, axe: 10, staff: 6, shield: 10 },
+  classes: { knight: ['sword', 'shield'], ranger: ['quiver', 'bow'], wizard: ['staff'], dwarf: ['axe', 'shield'], bard: ['dagger', 'shield'] },
+  diamondPool: ['dagger', 'sword', 'axe', 'staff', 'shield'],
+  swap: { spear: 'axe', mace: 'axe', longsword: 'sword', warhammer: 'axe', bracer: 'shield', tower: 'shield' },
 };
 export const isLegendary = (inst) => !!(inst && WEAPONS[inst.id]?.legendary);
 export const modelOf = (id) => WEAPONS[id]?.model || id; // the ordinary weapon whose 3D shape and poses a legendary borrows
