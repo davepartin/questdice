@@ -122,7 +122,7 @@ export const portraitQ = {
     const key = `cd:${diceStyle().name}:${label}:${spec.key}`;
     // Only still images are retained here; mesh materials are released after each render.
     const previous = [...pmem.keys()].filter(k => k.startsWith('cd:'));
-    if (previous.length >= 48 && !pmem.has(key)) pmem.delete(previous[0]);
+    if (previous.length >= 160 && !pmem.has(key)) pmem.delete(previous[0]); // (room for the magic cards' dice: every face of a few dice, T31)
     return queue(key, async () => {
       const die = createDie({ spec, quality: 'med' });
       die.mesh.quaternion.copy(restQuat(die.poly, label, 0, -1));

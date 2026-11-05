@@ -831,3 +831,29 @@ img.mc-die.mc-3d.d8,img.mc-die.mc-3d.d10{transform:scale(1.18)}
 img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
 @media (prefers-reduced-motion: no-preference){img.mc-die.mc-3d{animation:mc3dIn .25s ease-out}}
 @keyframes mc3dIn{from{opacity:.4;transform:scale(.9)}}
+/* The roll on the card (Dave, 6 Nov 2026): the dice hop and tumble, land; the totals show at the bottom in their colours; Continue */
+.mc-die.mc-rolling{animation:mcHop .62s cubic-bezier(.3,.7,.4,1) infinite;animation-delay:calc(var(--i,0) * -0.13s)}
+@keyframes mcHop{0%{transform:translateY(0) rotate(0)}35%{transform:translateY(-38%) rotate(-24deg) scale(1.08)}70%{transform:translateY(-8%) rotate(14deg)}100%{transform:translateY(0) rotate(0)}}
+.mc-die.mc-landed{animation:mcLand .32s ease-out}
+@keyframes mcLand{0%{transform:translateY(-14%) scale(1.12)}60%{transform:translateY(2%) scale(.95,1.04)}100%{transform:none}}
+.mc-card{position:relative}
+.mc-result{position:absolute;z-index:6;left:5%;right:5%;bottom:3.2%;display:flex;flex-direction:column;align-items:center;gap:2cqi;padding:3cqi 3cqi 3.2cqi;border-radius:3.4cqi;
+  background:#fff8ea;box-shadow:0 -1cqi 4cqi #3a26144d,inset 0 0 0 .6cqi #c9a35a;opacity:0;transform:translateY(8%);transition:opacity .22s,transform .3s}
+.mc-result.in{opacity:1;transform:none}.mc-result.out{opacity:0;transform:translateY(12%)}
+.mc-res-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2cqi 5cqi}
+.mc-res-n{display:inline-flex;align-items:center;gap:1.2cqi;font:900 13cqi/1 var(--font-number,sans-serif);color:var(--c,#3a2614);text-shadow:0 .5cqi 0 #0002}
+.mc-res-n .ic{width:9cqi;height:9cqi;color:var(--c)}
+.mc-res-miss{font:800 5cqi/1 var(--ui,sans-serif);color:#9a8060}
+.mc-res-n.t-atk{--c:#e0262e}.mc-res-n.t-pierce{--c:#e8740c}.mc-res-n.t-splash{--c:#e0309a}.mc-res-n.t-block{--c:#2f7fe0}.mc-res-n.t-heal{--c:#17a852}.mc-res-n.t-gold{--c:#c99200}.mc-res-n.t-magic{--c:#8a4de0}
+.mc-res-go{min-height:44px;width:100%;border:0;border-radius:2.6cqi;background:linear-gradient(180deg,#f2c14e,#c9932a);color:#2a1806;font:900 5.6cqi/1 var(--ui,sans-serif);letter-spacing:.08em;text-transform:uppercase;box-shadow:inset 0 -1cqi 0 #8a6a2a;cursor:pointer}
+.mc-res-go:disabled{opacity:.5}
+.mc-res-fly{position:fixed;z-index:99999;margin:0;pointer-events:none;transition:transform .7s cubic-bezier(.5,0,.7,1),opacity .7s ease-in;font-size:40px!important;justify-content:center}
+.mc-res-fly .ic{width:28px!important;height:28px!important}
+@media (prefers-reduced-motion: reduce){.mc-die.mc-rolling,.mc-die.mc-landed{animation:none}.mc-result,.mc-res-fly{transition:none}}
+/* a Side-Game Card's answer sits above its table (the table stays readable), and the row that was rolled lights up */
+.mc-answering .t28-say,.mc-answering .t28-plain,.mc-answering .t28-splash,.mc-answering .t28-fine{display:none}
+.mc-result.top{position:static;width:100%;box-sizing:border-box;flex-direction:row;justify-content:space-between;gap:3cqi;padding:2cqi 2.4cqi 2cqi 4cqi}
+.mc-result.top .mc-res-n{font-size:10cqi}.mc-result.top .mc-res-n .ic{width:7cqi;height:7cqi}.mc-result.top .mc-res-miss{font-size:4.6cqi!important}
+.mc-result.top .mc-res-go{width:auto;flex:none;padding:0 4cqi;font-size:5cqi}
+.t28-luck-row.hit{background:#ffe7a6!important;box-shadow:inset 0 0 0 .6cqi #c9932a;transition:background .2s}
+.mc-res-miss{font:800 6cqi/1.1 var(--ui,sans-serif)!important;color:#7a6040!important}

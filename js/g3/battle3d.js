@@ -163,6 +163,7 @@ function buildHud() {
   hud.dock = h('div', { class: 'b3-dock' }, hud.forecast, hud.caption, hud.bar);
   B.root.append(...[hud.top, hud.roster, hud.ribbon, hud.hero, hud.therm, hud.diff, hud.magchip, hud.goldchip, hud.divider, hud.dock, hud.sheet, hud.info, hud.coach].filter(Boolean));
   // the table: flat painted pieces behind everything (flat.js)
+  for (const k of E.cardsOf(B.hero) || []) if (k.kind === 'scale' || k.kind === 'mix') PW.warmCardDice(k); // the roll on the card: every face ready early (made once, kept)
   B.fb = createFlat({ host: B.root, tween: (dur, fn) => world.stage.tween({ dur }, fn), wait, enemies: B.b.enemies, heroes: B.party ? B.b.fighters.map((f) => f.hero) : [B.hero], quest: B.quest, onPick: selectTarget, onHero: (hero) => C.gear?.(hero), onInfo: (uid) => { if (B.busy) return; const e = B.b.enemies.find((x) => x.uid === uid); if (e && e.hp > 0) showFoeInfo(e); } });
   const fit = () => {
     const r = hud.dock.getBoundingClientRect();
@@ -589,6 +590,7 @@ function cardTiles(reset) {
 }
 function renderSheet(preserveCard = false) {
   if (!B.sheetOpen) return;
+  for (const k of E.cardsOf(B.hero)) if (k.kind === 'scale' || k.kind === 'mix') PW.warmCardDice(k); // every face of the cards' dice, ready before a roll (made once, kept)
   const current = B.hud.cards.querySelector('.mc-sheet');
   if (preserveCard && current?.querySelector('.mc-card.mc-reviewed-template')) {
     const fresh = cardTiles(B.b.phase !== 'shape')[0];
@@ -808,7 +810,7 @@ export function renderShape() {
   for (const t of ev.triples || []) lines.push(t.slots);
   if (lines.length) bw.tray.highlight?.(lines.flat(), 'gold'); else bw.tray.clearHighlight?.();
   B.hud.forecast.classList.toggle('idle', rolling);
-  HK.setForecast(B.hud.forecast, rolling ? {} : HK.forecastValues(ev, b.mods));
+  HK.setForecast(B.hud.forecast, rolling ? {} : HK.forecastValues(ev, b.mods, b));
   if (D.SPECIALS.on && !rolling) updatePlates(); // T24: a Special's progress bar fills as you reroll
   HK.setNotes(B.hud.forecast, rolling ? [] : HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s'))); // the straight chooser in the bar says it already
   // triples glow on the tray: a bar through the three dice that go together (the note above says what they give)
@@ -934,9 +936,14 @@ async function doCard(id, opts = {}) {
   const fr = (b.freeActions || []).length - freeBefore; if (fr > 0) gains.free = b.freeActions[b.freeActions.length - 1];
   r.foes = b.enemies.filter((e) => e.hp > 0).length;
   // every power shows what it did, then OK (Dave: each one should feel special), inside the selected tab's panel, not a second window (mp2)
-  B.busy = true; refresh();
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
-  try { await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline: k?.frogLoad && r.released ? null : inline }); } finally { B.busy = false; }
+  // a Dice Card or a Side-Game Card rolls on the card itself; the counters fill when you tap Continue (Dave, 6 Nov 2026)
+  const onCard = (k?.kind === 'scale' || k?.kind === 'mix') && r.rolls?.length ? (B.hud.cards?.querySelector(`.mc-card[data-card="${id}"]`) || B.hud.sheet?.querySelector(`.mc-card[data-card="${id}"]`)) : null;
+  B.busy = true; if (!onCard) refresh();
+  try {
+    if (onCard) await PW.cardRoll(onCard, { k, r, gains, target: (key) => B.hud.forecast?._chips?.[key] || null });
+    else await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline: k?.frogLoad && r.released ? null : inline });
+  } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   B.pwSel = k?.kind === 'charge' || ['knight', 'wizard', 'ranger', 'dwarf', 'bard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === id)) ? id : null; // Keep the charge track visible after Charge or Use.
   refresh();
@@ -1038,7 +1045,7 @@ function renderLocked(kind = '') {
   setHud({ phase: 'shape' }); bw.tray.setSelected?.(new Set());
   if (b.board) {
     const ev = E.evaluate(hero, b.board, { straight: f?.straight || 'atk' });
-    HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods)); HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s')));
+    HK.setForecast(B.hud.forecast, HK.forecastValues(ev, b.mods, b)); HK.setNotes(B.hud.forecast, HK.synergyList(ev, b.mods).filter((n) => !n.key.startsWith('s')));
     B.hud.forecast.classList.remove('idle');
   }
   B.hud.cards.replaceChildren(...cardTiles(!b.board));

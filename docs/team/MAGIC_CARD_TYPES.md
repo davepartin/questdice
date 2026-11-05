@@ -62,3 +62,8 @@ Judgment · Rain of Arrows · Avalanche · Finale · Meteor
 
 Dice Cards and Side-Game Cards show the game's own 3D dice (the battle board's), one shape per size, coloured for what they add, turned to
 show their number. Nothing is painted per card: a new card gets its dice for free. (`die()` → `to3d()` in js/g3/magiccard.js.)
+
+## Rolling on the card (Dice Cards and Side-Game Cards)
+
+Tapping Roll or Cast rolls the card's own dice right on the card: they hop, tumble and land; the totals show in their colours; **Continue**
+sends them to the counters. A new Dice Card or Side-Game Card gets this for free. (`cardRoll` in js/g3/powers.js.)

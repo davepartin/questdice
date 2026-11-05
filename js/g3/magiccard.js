@@ -23,7 +23,7 @@ function to3d(el, fx, s, v) {
   picsReady.then(() => {
     if (!pics?.portraitQ) return;
     const labels = Array.from({ length: s }, (_, i) => ({ text: String(i + 1) }));
-    return pics.portraitQ.die({ sides: s, theme: THEME3D[fx], labels, key: `mc3d|${fx}|${s}` }, Math.max(1, Math.min(s, v)));
+    void labels; return pics.portraitQ.die(spec3d(fx, s), Math.max(1, Math.min(s, v)));
   }).then((src) => {
     if (!src) return; let tries = 0;
     const swap = () => { if (!el.parentNode) { if (tries++ < 40) requestAnimationFrame(swap); return; }
@@ -31,6 +31,21 @@ function to3d(el, fx, s, v) {
     swap();
   }).catch(() => {});
 }
+const spec3d = (fx, s) => ({ sides: s, theme: THEME3D[fx], labels: Array.from({ length: s }, (_, i) => ({ text: String(i + 1) })), key: `mc3d|${fx}|${s}` });
+// Every face of one die as a 3D picture, for the roll on the card (Dave, 6 Nov 2026: the dice on the card bounce up and roll). Made once and
+// kept; warmFaces asks for them ahead of time (the battle does it for the card you are looking at), so the roll never waits.
+const facesMem = new Map();
+export function faces3d(fx, s) {
+  const key = `${fx}|${s}`; if (facesMem.has(key)) return facesMem.get(key);
+  const p = typeof document === 'undefined' || !THEME3D[fx] ? Promise.resolve([]) : picsReady.then(() => (pics?.portraitQ ? Promise.all(Array.from({ length: s }, (_, i) => pics.portraitQ.die(spec3d(fx, s), i + 1))) : []));
+  const got = { done: null, list: p.then((l) => { got.done = l; return l; }).catch(() => []) }; facesMem.set(key, got); return got;
+}
+// the dice a card rolls, in order: [{ fx, s, n }]
+export const rollGroups = (k, n) => (k.kind === 'mix' ? E.mixGroups(k, 0).map((g) => ({ fx: g.to, s: g.s, n: g.n })) : k.dice ? [{ fx: k.dice.to, s: k.dice.s, n }] : []);
+export function warmFaces(k) { for (const g of (k.kind === 'mix' ? k.roll.map((x) => ({ fx: x.to, s: x.s })) : k.dice ? [{ fx: k.dice.to, s: k.dice.s }] : [])) faces3d(g.fx, g.s); }
+// one die showing face v: the 3D picture when it is ready, else the flat one
+export function dieFace(fx, s, v, settle = false) { const l = facesMem.get(`${fx}|${s}`)?.done; const src = l?.[v - 1];
+  if (!src) { const el = dieFlat(fx, s, v); if (settle) to3d(el, fx, s, v); return el; } const img = document.createElement('img'); img.src = src; img.alt = ''; img.draggable = false; img.setAttribute('class', `mc-die d${s} mc-3d`); return img; }
 // a die the colour of what it adds; bright green and gold get near-black pips, the rest white
 export const die = (fx, s = 6, v = s) => { const el = dieFlat(fx, s, v); to3d(el, fx, s, v); return el; };
 const dieFlat = (fx, s = 6, v = s) => { const [f, e, p] = COL[fx] || COL.magic; return svg(`mc-die d${s}`, s === 6 ? `<path d="${SHAPE[6]}" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`

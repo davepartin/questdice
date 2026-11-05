@@ -195,8 +195,8 @@ export function forecastStrip() {
   el._chips = chips; el._notes = notes; el._seen = new Set();
   return el;
 }
-export function forecastValues(ev, mods) {
-  return { atk: ev.atk + mods.atk, pierce: ev.pierce + mods.pierce, block: ev.block + mods.block, magic: ev.magic, heal: ev.heal + mods.heal, gold: ev.gold, splash: (ev.splash || 0) + (mods.splash || 0) + (ev.fire || 0) }; // splash: a weapon's, a power's, a Fire arrow's (each other monster's guard can still stop it)
+export function forecastValues(ev, mods, b = null) {
+  return { atk: ev.atk + mods.atk, pierce: ev.pierce + mods.pierce, block: ev.block + mods.block, magic: ev.magic, heal: ev.heal + mods.heal, gold: ev.gold + (b?.roundGold || 0), /* (a power's gold this round shows here too) */ splash: (ev.splash || 0) + (mods.splash || 0) + (ev.fire || 0) }; // splash: a weapon's, a power's, a Fire arrow's (each other monster's guard can still stop it)
 }
 export function setForecast(el, vals) {
   for (const [k, c] of Object.entries(el._chips)) {

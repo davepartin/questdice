@@ -385,6 +385,58 @@ export function frogReveal(host, k, r) {
     else { sfx.diceRoll?.(4);cube.animate([{transform:'translateY(-60px) rotateX(30deg) rotateY(30deg)'},{transform:'translateY(12px) rotateX(540deg) rotateY(620deg)',offset:.7},{transform:end}],{duration:1150,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}).finished.then(finish); }
   });
 }
+// The roll on the card (Dave, 6 Nov 2026: "the dice that are on the screen bounced up and began to roll on the card and landed … the numbers
+// were the colors of whatever the dice are … a button that said continue … those numbers kind of angled towards the counters"). The light
+// way: each die on the card hops and flicks through its own 3D faces (pictures, made once), lands on what it rolled; the totals show at the
+// bottom of the card in their colours; Continue sends each number down into its counter (target(key) is that counter). Dice and Side-Game
+// Cards only. Resolves when the numbers have gone.
+export const warmCardDice = (k) => MC.warmFaces(k);
+const ROLL_ORDER = ['atk', 'pierce', 'splash', 'block', 'heal', 'gold', 'magic'];
+export function cardRoll(card, { k, r, gains, target = () => null }) {
+  return new Promise((resolve) => {
+    const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const row = card.querySelector('.t28-dice'); const slots = row ? [...row.querySelectorAll('.mc-die')] : [];
+    const groups = r.groups || [{ to: k.dice?.to, s: k.dice?.s || r.die || 6, rolls: r.rolls }];
+    const each = groups.flatMap((g) => g.rolls.map((v) => ({ fx: g.to, s: g.s, v })));
+    const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    card.classList.add('mc-rolling-card');
+    try { if (!reduced) sfx.diceRoll?.(Math.min(9, 3 + each.length * 2)); } catch { /* sound is optional */ }
+    const dice = each.map((d, i) => { const old = slots[i]; if (!old) return null; const el = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); el.classList.add('mc-rolling'); el.style.setProperty('--i', String(i)); old.replaceWith(el); return { ...d, el }; }).filter(Boolean);
+    const flick = reduced ? null : setInterval(() => { for (const d of dice) if (d.el.classList.contains('mc-rolling')) { const next = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); next.classList.add('mc-rolling'); next.style.setProperty('--i', d.el.style.getPropertyValue('--i')); d.el.replaceWith(next); d.el = next; } }, 90);
+    const land = (d) => { const done = MC.dieFace(d.fx, d.s, d.v, true); /* (true: still flat? it turns 3D the moment its face is ready) */ done.classList.add('mc-landed'); d.el.replaceWith(done); d.el = done; try { sfx.dieSettle?.(); } catch { /* optional */ } };
+    // the answer: one number per counter it fills, in its colour, at the bottom of the card
+    const shown = ROLL_ORDER.filter((f) => gains[f] > 0);
+    const missed = groups.filter((g) => g.table && !g.total).map((g) => g.to); // a gold die that paid nothing still answers
+    const nums = shown.map((f) => h('b', { class: `mc-res-n t-${TONE[f] || f}`, 'data-k': f }, HK.icon(FX_ICON[f] || f), `+${gains[f]}`));
+    const go = h('button', { type: 'button', class: 'mc-res-go', disabled: true }, 'Continue');
+    const res = h('div', { class: 'mc-result', role: 'status', 'aria-live': 'polite', 'aria-label': shown.map((f) => `${gains[f]} ${NAME[f] || f}`).join(', ') || 'Nothing this time' },
+      h('div', { class: 'mc-res-row' }, ...nums, ...missed.filter((f) => !shown.includes(f)).map((f) => h('span', { class: `mc-res-miss t-${TONE[f] || f}` }, `No ${NAME[f] || f} this time`))), go);
+    // a side game's table: the row the die landed in lights up, and the answer sits above the table, not over it
+    const tableRows = [...card.querySelectorAll('.t28-goldtab .t28-luck-row, .t28-luck .t28-luck-row')];
+    const tableDie = groups.find((g) => g.table)?.rolls?.[0] ?? (k.kind === 'luck' ? r.rolls?.[0] : null);
+    if (tableRows.length) { // a slim strip just under the dice: the dice, the answer and the lit row all show at once
+      res.classList.add('top'); }
+    const finish = () => { clearInterval(flick); timers.forEach(clearTimeout); for (const d of dice) if (!d.el.classList.contains('mc-landed')) land(d);
+      if (tableDie != null) { let lo = 1; for (const row of tableRows) { const m = row.textContent.match(/(\d+)(?:\s*[–-]\s*(\d+))?/); const a = m ? +m[1] : lo; const b2 = m?.[2] ? +m[2] : a; if (tableDie >= a && tableDie <= b2) row.classList.add('hit'); lo = b2 + 1; } }
+      if (res.classList.contains('top') && row) { card.classList.add('mc-answering'); row.after(res); } else card.append(res); /* a table card: the answer takes the words' place under the dice */ requestAnimationFrame(() => res.classList.add('in')); later(250, () => { go.disabled = false; go.focus?.({ preventScroll: true }); }); };
+    dice.forEach((d, i) => later(700 + i * 260, () => { land(d); if (i === dice.length - 1) later(260, finish); }));
+    if (!dice.length) later(300, finish);
+    card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
+    go.addEventListener('click', (e) => {
+      e.stopPropagation(); go.disabled = true;
+      // each number drifts down into its counter (or down off the sheet, where the counters are), then the counters bump (the caller)
+      for (const n of res.querySelectorAll('.mc-res-n')) {
+        const from = n.getBoundingClientRect(); const to = target(n.dataset.k)?.getBoundingClientRect?.(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
+        Object.assign(ghost.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` }); document.body.append(ghost);
+        const dx = to && to.width ? to.left + to.width / 2 - (from.left + from.width / 2) : 0; const dy = to && to.height && to.top > from.top ? to.top + to.height / 2 - (from.top + from.height / 2) : window.innerHeight - from.top + 20;
+        requestAnimationFrame(() => { ghost.style.transform = `translate(${dx}px, ${dy}px) scale(.55)`; ghost.style.opacity = '0'; });
+        setTimeout(() => ghost.remove(), reduced ? 0 : 750);
+      }
+      res.classList.add('out'); card.classList.remove('mc-rolling-card'); setTimeout(() => card.classList.remove('mc-answering'), reduced ? 0 : 560);
+      setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 560);
+    });
+  });
+}
 export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
   if (k?.frogLoad && r.released) return frogReveal(host, k, r);
   if (k?.kind === 'charge') {

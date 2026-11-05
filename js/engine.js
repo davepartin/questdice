@@ -1089,7 +1089,7 @@ function digIn(who, round) {
 }
 // A new round begins on the Reset screen: monsters have rolled their Intention and shown it.
 export function beginReset(b) {
-  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.markGold = 0; b.riposte = false; b.usedRound = {}; b.healsRound = 0;
+  b.round += 1; b.phase = 'reset'; b.board = null; b.mods = blankMods(); b.roundGold = 0; b.markGold = 0; b.riposte = false; b.usedRound = {}; b.healsRound = 0;
   pressure(b); b.dugIn = 0; digIn(b, b.round);
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
   CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
@@ -1296,7 +1296,7 @@ export function castPower(b, id, { x, release, to, song } = {}) {
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
   const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
   const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v);
-    else if (k === 'gold') { b.goldEarned = (b.goldEarned || 0) + v; out.gold = (out.gold || 0) + v; } // a gold die (T31 side games): straight to the purse
+    else if (k === 'gold') { b.goldEarned = (b.goldEarned || 0) + v; out.gold = (out.gold || 0) + v; b.roundGold = (b.roundGold || 0) + v; } // (roundGold: the Gold counter shows it this round) // a gold die (T31 side games): straight to the purse
     else if (k === 'whirl') { b.mods.atk += v; b.mods.splash += v; } // Whirlwind (T31): every monster, the target as attack and the others as splash; each one's guard stops it
     else b.mods[k] = (b.mods[k] || 0) + v; };
   if (card.dice) { // roll them
@@ -1306,13 +1306,13 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     add(card.dice.to, out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
     if (card.party && card.dice.to === 'heal' && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: out.total }); out.party = (out.party || 0) + 1; } // Mending Song (mb1, PROPOSED): heals every hero
-    if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
+    if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; b.roundGold = (b.roundGold || 0) + g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
   } else if (card.kind === 'mix') { // T31 side games: each group of coloured dice pays its colour; a gold die reads its table; ranks add a die to the first group
     out.groups = [];
     for (const [gi, g] of mixGroups(card, lvl).entries()) {
       const rolls = []; let total = 0;
       for (let i = 0; i < g.n; i++) { const r = 1 + Math.floor(b.rng() * g.s); rolls.push(r); total += mixPay(g, r, lvl); }
-      out.groups.push({ s: g.s, to: g.to, rolls, total }); out.rolls.push(...rolls); out.total += total; if (!gi) out.die = g.s;
+      out.groups.push({ s: g.s, to: g.to, rolls, total, table: !!g.table }); out.rolls.push(...rolls); out.total += total; if (!gi) out.die = g.s;
       if (total) add(g.to, total);
       if (g.to === 'heal' && card.party && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: total }); out.party = (out.party || 0) + 1; }
     }

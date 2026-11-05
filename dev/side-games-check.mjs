@@ -32,16 +32,17 @@ for (const [cls, ids] of RUNS) {
     await p.screenshot({ path: `${OUT}/${cls}-${id}-card.png` });
     const before = await p.evaluate(() => { const b = window.QD.B3.battleState.b; return { magic: b.magic, gold: b.goldEarned || 0, mods: { ...b.mods } }; });
     const cast = await p.$('.mc-use.go:not([disabled])'); check(`${name}: Cast is ready`, !!cast); if (!cast) continue;
-    await cast.click(); await p.waitForTimeout(2600);
+    await cast.click(); await p.waitForSelector('.mc-result .mc-res-go:not([disabled])', { timeout: 8000 }).catch(() => null); await p.waitForTimeout(200); // the roll on the card (Dave, 6 Nov 2026)
     await p.screenshot({ path: `${OUT}/${cls}-${id}-roll.png` });
-    const after = await p.evaluate(() => { const B = window.QD.B3.battleState; const b = B.b; return { magic: b.magic, gold: b.goldEarned || 0, mods: { ...b.mods }, dice: [...document.querySelectorAll('.dr-die')].map((d) => d.className.match(/t-(\w+)/)?.[1] + '/' + d.className.match(/\bd(\d+)/)?.[1]) }; });
+    const after = await p.evaluate(() => { const B = window.QD.B3.battleState; const b = B.b; return { magic: b.magic, gold: b.goldEarned || 0, mods: { ...b.mods }, dice: (B.b.lastCast?.groups || [{ to: 'whirl', s: B.b.lastCast?.die, rolls: B.b.lastCast?.rolls || [] }]).flatMap((g) => g.rolls.map(() => `${g.to}/${g.s}`)), landed: document.querySelectorAll('.mc-card .mc-die.mc-landed').length }; });
     const k = await p.evaluate((id) => { const k = window.QD.E.cardsOf(window.QD.S.hero).find((c) => c.id === id); return { cost: k.cost, roll: k.roll, dice: k.dice }; }, id);
     const paid = before.magic - after.magic; check(`${name}: costs ${k.cost} magic`, paid === k.cost || (k.dice && paid >= k.cost), `paid ${paid}`);
     const want = k.roll ? k.roll.flatMap((g) => Array(g.n).fill(`${g.to}/${g.s}`)) : [`whirl/${k.dice.s}`];
     check(`${name}: rolls ${want.join(', ')} in their colours`, want.every((w) => after.dice.includes(w)), JSON.stringify(after.dice));
     const moved = Object.keys(after.mods).filter((x) => after.mods[x] !== before.mods[x]); const gold = after.gold - before.gold;
     check(`${name}: pays its counters`, moved.length > 0 || gold >= 0, `changed ${moved.join(', ')}${gold ? `, gold +${gold}` : ''}`);
-    const ok = await p.$('.dr-ok:not([disabled])'); if (ok) { await ok.click(); await p.waitForTimeout(600); }
+    check(`${name}: its dice land on the card`, after.landed === after.dice.length, `${after.landed} of ${after.dice.length}`);
+    const ok = await p.$('.mc-res-go:not([disabled])'); if (ok) { await ok.click(); await p.waitForTimeout(900); }
   }
   await p.close();
 }
