@@ -100,3 +100,24 @@ Eight learnable cards, each a little dice game. Prices are first guesses for the
 
 Engine needs (small): a card may list several dice groups (`dice: [{n, s, to}, …]`), a gold or magic die reads a table like Lucky
 Verse's, and `to: 'splash'` adds to the splash total (each monster's guard stops it).
+
+## Six side-game cards LIVE (build 20261106a3; Dave: "1-6 are awesome. Build it", "Ship it when the bots look good")
+
+Learnable at camp (Learn magic shelf), every round. Engine: `kind: 'mix'` cards roll dice groups (`roll: [{ n, s, to, table }]`); a gold
+die reads its table (a "nothing" face stays nothing at every rank); ranks add a die to the first group. `to: 'whirl'` (Whirlwind) adds the
+total as attack on the target and as splash on the others, so each monster's guard stops it.
+
+| Card | Class, slot | Dice | Instead of |
+|---|---|---|---|
+| Crowd Pleaser | Bard, B | gold d6: 1–2 nothing, 3–4 +5, 5–6 +10 gold (2 magic) | Lucky Verse |
+| Battle Hymn | Bard, A | two green d6 heal every hero + a pink d4 splash (3 magic) | Mending Song |
+| Showboat | Knight, B | red d6 + gold d6 (5–6: +5 gold) (2 magic) | Counterstrike |
+| Field Dressing | Knight, A | green d6 + blue d6 (2 magic) | Cleave |
+| Thief's Gambit | Ranger, B | orange d4 + gold d6 (5–6: +5 gold) (2 magic) | Hunter's Mark |
+| Whirlwind | Dwarf, B | 2 magic a pink d4, up to 6; every monster | Grudge |
+
+Bots (`node tools/t31-side.mjs 20`, 20 campaigns a class, the card equipped from the start against the card it replaces): every card
+plays close to the one it replaces (Act III cleared within one or two of 20). Crowd Pleaser earns about half again the gold of Lucky Verse
+(2,041 against 1,371 a campaign): the trade Dave wanted. Whirlwind first sat in slot A and cost the Dwarf its Anvil Strike (Act III 3 of 20
+against 9); moved beside Grudge it plays level (8 against 9). Real taps in battle: `node dev/side-games-check.mjs` (each card casts, rolls
+its colours and sizes, pays its counters). Paintings are borrowed; Grok, real ones are welcome.
