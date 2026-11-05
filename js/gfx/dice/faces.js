@@ -343,8 +343,8 @@ const NUM_K = { 4: 1.42, 6: 1.34, 8: 1.45, 10: 1.6 };
  * @param faces  array indexed by GEOMETRIC face: { text, tone:'r'|'b'|'', blank, pip, sym, badge, mark:'atk'|'block' }
  * @param theme  'bone'|'smoke'|'heart'|'amethyst'|'weapon'
  */
-export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
-  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${JSON.stringify(faces)}`;
+export function buildAtlas({ poly, faces, theme, quality = 'high', key = '', flat = false }) { // flat: the colour picture only (a card's face picture), no 3D lighting maps
+  const ck = `${ST.name}|${poly.sides}|${theme}|${quality}|${flat ? 'flat|' : ''}${JSON.stringify(faces)}`;
   if (cache.has(ck)) return cache.get(ck);
   const th = ST.themes?.[theme] ? { ...T[theme], ...ST.themes[theme] } : T[theme];
   const ivoryInlay = ST.clean && theme === 'bone' && poly.sides === 6;
@@ -609,9 +609,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '' }) {
   A2.save(); A2.translate(tx, ty); A2.fillStyle = lin(A2, -S / 2, -S / 2, S / 2, S / 2, th.trim); A2.fillRect(-S / 2, -S / 2, S, S); A2.restore();
   ctxs.O.save(); ctxs.O.translate(tx, ty); ctxs.O.fillStyle = `rgb(0,${Math.round(th.trimRough * 255)},255)`; ctxs.O.fillRect(-S / 2, -S / 2, S, S); ctxs.O.restore();
 
-  const normalC = normalFromHeight(Hc, 3.4, Math.max(1, Math.round(1.6 * qk)));
+  const normalC = flat ? null : normalFromHeight(Hc, 3.4, Math.max(1, Math.round(1.6 * qk)));
   const needE = faces.some((f) => f && (f.sym || f.syms || f.pip || f.corners || (ST.corners && (f.mark || (theme === 'weapon' && !f.blank))) || (theme === 'weapon' && !f.blank)));
-  const textures = {
+  const textures = flat ? null : {
     map: tex(A, true), orm: tex(O, false), normalMap: tex(normalC, false), emissiveMap: needE ? tex(E, true) : null,
   };
   const uvOf = (fi, x, y) => { const [cx, cy] = cellCenter(fi); return [(cx + (x / Hm) * (S / 2)) / W, 1 - (cy - (y / Hm) * (S / 2)) / Hh]; };

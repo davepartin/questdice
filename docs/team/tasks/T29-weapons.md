@@ -353,3 +353,11 @@ retired weapon and check each lands where this table says.
 Each face symbol (starburst, shield) now sits on an ivory die shape whose edge takes the weapon's metal colour: d4 a
 triangle, d6 a rounded square, d8 a diamond, d10 a kite. The small faces on the grow strips use the shape of the die you
 would grow to. Code: `DIE_SHAPE`, `SYM_ON` and `symSvg(k, v, cls, die)` in js/g3/cards.js; `.t29s .die` in css/cards17.css.
+
+## The real dice on the card (build 20261105a3; Dave: "use literally the dice that are being drawn on the 3-D images")
+
+Red is attack and blue is block everywhere in the game, so the card no longer draws its own symbols: each face is the 3D
+die's own face picture (`faceShot` cuts it from the die's painted texture, clipped to the face's outline), so a d4 face is
+the triangle you see on the board, a d6 the square, a d8 the triangle, a d10 the kite. The card HTML marks each face
+(`data-shot="<sides>:<face>"`, the weapon in `data-wi`); `realFaces` in js/g3/cardboard.js swaps the pictures in before the
+card paints, on any screen. The earlier ivory die-shape symbols stay only as the stand-in when there is no browser (tests).

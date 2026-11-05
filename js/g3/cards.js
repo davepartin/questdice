@@ -123,7 +123,9 @@ const rowHtml = (r) => `<div class="row s${r.size}${r.owned ? '' : ' locked'}" d
 // each bigger die it can grow into is one slim strip with its new faces and its price. Every number comes from weaponFaces.
 const ICON_NAME = { pierce: 'Pierce', gold: 'Gold', loot: 'Gold', splash: 'Splash', magic: 'Magic', heal: 'Heal' };
 const fxList = (f) => Object.entries(f.fx || {}).map(([k, n]) => [k === 'loot' ? 'gold' : k, n | 0]).filter(([, n]) => n > 0);
-// Each face sits on its die's own shape (Dave, 5 Nov 2026: "triangles behind the d4 dice, squares behind the d6, and so on"):
+// Each face sits on its die's own shape (Dave, 5 Nov 2026: "triangles behind the d4 dice, squares behind the d6, and so on"). In the browser the stand-in below is
+// swapped for the real die face, cut from the 3D die's own texture (cardboard.js realFaces; Dave: "use the dice that are in the game").
+// The stand-in:
 // a d4 is a triangle, a d6 a square, a d8 a diamond, a d10 a kite; the attack starburst or block shield, with its number, rides on it.
 const DIE_SHAPE = { 4: 'M12 1.6 L22.6 21.2 L1.4 21.2 Z', 6: 'M5.6 2 H18.4 A3.6 3.6 0 0 1 22 5.6 V18.4 A3.6 3.6 0 0 1 18.4 22 H5.6 A3.6 3.6 0 0 1 2 18.4 V5.6 A3.6 3.6 0 0 1 5.6 2 Z', 8: 'M12 1 L23 12 L12 23 L1 12 Z', 10: 'M12 1 L22.8 13.4 L12 23 L1.2 13.4 Z' };
 const SYM_ON = { 4: [12, 14.6, 0.56], 6: [12, 12, 0.74], 8: [12, 12, 0.6], 10: [12, 12.6, 0.62] }; // where the symbol sits on each shape, and how big

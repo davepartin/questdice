@@ -185,7 +185,7 @@ export function faceShot(spec, label, px = 160) {
   const poly = makePoly(spec.sides);
   const faces = new Array(poly.faces.length).fill(null);
   spec.labels.forEach((l, i) => { const fi = poly.labelFace[i]; if (fi != null && fi >= 0) faces[fi] = l; });
-  const atlas = buildAtlas({ poly, faces, theme: spec.theme, quality: 'high' });
+  const atlas = buildAtlas({ poly, faces, theme: spec.theme, quality: 'high', flat: true });
   const fi = poly.labelFace[label - 1]; if (fi == null || fi < 0) return null;
   const [W, Hh] = atlas.size; const pts = poly.faces[fi].local.map(([x, y]) => { const [u, v] = atlas.uvOf(fi, x, y); return [u * W, (1 - v) * Hh]; });
   const xs = pts.map((q) => q[0]); const ys = pts.map((q) => q[1]);
