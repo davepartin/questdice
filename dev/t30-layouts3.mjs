@@ -2,7 +2,7 @@
 // Round 2's four layouts, each carrying the name and metal its own way, the metal in its own colour.
 // Four layouts, every face the real 3D die face (faceShot), grouped by size: the d4's four faces, then the two each bigger die adds.
 // No words: only the die sizes and the prices. Mockups only. Headless Chromium, not Safari.
-//   node dev/t30-layouts3.mjs [out=shots/t30c] [weapon=sword] [metal=2] [owned=6]
+//   node dev/t30-layouts3.mjs [out=shots/t30c] [weapon=sword] [metal=2] [owned=6]      SPLASH=splashSpray|splashWave|splashFork
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
 const OUT = process.argv[2] || 'shots/t30c'; const WID = process.argv[3] || 'sword'; const METAL = +(process.argv[4] ?? 2); const OWNED = +(process.argv[5] || 6);
 fs.mkdirSync(OUT, { recursive: true }); const port = 8263;
@@ -103,7 +103,8 @@ const CSS = `
 
 `;
 
-const names = await p.evaluate(async ({ CSS, WID, METAL, OWNED }) => {
+const names = await p.evaluate(async ({ CSS, WID, METAL, OWNED, SPLASH }) => {
+  if (SPLASH) (await import('./js/gfx/dice/faces.js')).setSplashIcon(SPLASH); // dev: try a splash shape
   const DI = await import('./js/gfx/dice/dice.js'); const PR = await import('./js/g3/price.js'); const E = window.QD.E; const D = await import('./js/data.js');
   const st = document.createElement('style'); st.textContent = CSS; document.head.append(st);
   const wrap = document.createElement('div'); wrap.id = 't30'; document.body.append(wrap);
@@ -132,6 +133,6 @@ const names = await p.evaluate(async ({ CSS, WID, METAL, OWNED }) => {
   card('H', `<div class="in felt">${groups.map((g, i) => `${i ? '<div class="step"></div>' : ''}<div class="r d${g.s}">${sz(g)}${g.imgs.map((s) => img(s, g)).join('')}${g.s === 6 ? '' : ''}${g.s === 4 ? '' : g.owned ? (g.s === 6 ? coin : '') : `<span class="pr">${price(g)}</span>`}</div>`).join('')}<div class="plinth plate"><span class="mtS stamp">${metal}</span><span class="nmS stamp">${wname}</span></div></div>`);
   await new Promise((r) => setTimeout(r, 600));
   return ['E', 'F', 'G', 'H'];
-}, { CSS, WID, METAL, OWNED });
+}, { CSS, WID, METAL, OWNED, SPLASH: process.env.SPLASH || '' });
 for (const n of names) { const el = await p.$(`#t30 .t30m.t3${n}`); await el.scrollIntoViewIfNeeded(); await p.waitForTimeout(150); await el.screenshot({ path: `${OUT}/${n}.png` }); }
 console.log(errs.length ? 'page errors: ' + errs.join(' | ') : 'no page errors'); await br.close(); process.exit(errs.length ? 1 : 0);

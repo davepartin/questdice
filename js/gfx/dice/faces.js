@@ -41,6 +41,9 @@ const SVG = {
   heart: 'M50 94 C8 62 0 36 18 18 C32 4 48 12 50 28 C52 12 68 4 82 18 C100 36 92 62 50 94 Z',
   gauntlet: 'M22 74 H76 L82 97 H16 Z M25 70 V36 C25 29 35 29 35 36 V22 C35 14 46 14 46 22 V17 C46 9 57 9 57 17 V22 C57 15 68 15 68 23 V44 L74 37 C79 31 89 37 84 45 L71 64 C69 68 66 70 62 70 Z M34.6 38 H36.4 V56 H34.6 Z M45.6 26 H47.4 V56 H45.6 Z M56.6 26 H58.4 V56 H56.6 Z',
   skull: 'M50 4 C24 4 12 22 12 42 C12 54 18 60 24 64 V82 H38 V74 H44 V82 H56 V74 H62 V82 H76 V64 C82 60 88 54 88 42 C88 22 76 4 50 4 Z',
+  splashSpray: 'M4 92 L8 74 L16 70 L14 48 L28 64 L34 30 L44 60 L50 20 L56 60 L66 30 L72 64 L86 48 L84 70 L92 74 L96 92 Q50 100 4 92 Z M40.5 14.0 A6.5 6.5 0 1 1 40.5 13.9 Z M56.0 6.0 A6 6 0 1 1 56.0 5.9 Z M72.5 14.0 A6.5 6.5 0 1 1 72.5 13.9 Z M19.0 32.0 A5 5 0 1 1 19.0 31.9 Z M91.0 32.0 A5 5 0 1 1 91.0 31.9 Z', // T30 splash options for Dave (one hit spreading to the other monsters)
+  splashWave: 'M65.0 50.0 A15 15 0 1 1 65.0 49.9 Z M23.8 68.4 L22.1 65.6 L20.6 62.7 L19.5 59.6 L18.7 56.5 L18.2 53.3 L18.0 50.0 L18.2 46.7 L18.7 43.5 L19.5 40.4 L20.6 37.3 L22.1 34.4 L23.8 31.6 L30.3 36.2 L29.0 38.3 L28.0 40.5 L27.1 42.8 L26.5 45.1 L26.1 47.6 L26.0 50.0 L26.1 52.4 L26.5 54.9 L27.1 57.2 L28.0 59.5 L29.0 61.7 L30.3 63.8 Z M76.2 31.6 L77.9 34.4 L79.4 37.3 L80.5 40.4 L81.3 43.5 L81.8 46.7 L82.0 50.0 L81.8 53.3 L81.3 56.5 L80.5 59.6 L79.4 62.7 L77.9 65.6 L76.2 68.4 L69.7 63.8 L71.0 61.7 L72.0 59.5 L72.9 57.2 L73.5 54.9 L73.9 52.4 L74.0 50.0 L73.9 47.6 L73.5 45.1 L72.9 42.8 L72.0 40.5 L71.0 38.3 L69.7 36.2 Z M10.2 73.0 L8.3 69.4 L6.8 65.7 L5.6 61.9 L4.7 58.0 L4.2 54.0 L4.0 50.0 L4.2 46.0 L4.7 42.0 L5.6 38.1 L6.8 34.3 L8.3 30.6 L10.2 27.0 L17.1 31.0 L15.6 33.9 L14.3 37.0 L13.3 40.2 L12.6 43.4 L12.1 46.7 L12.0 50.0 L12.1 53.3 L12.6 56.6 L13.3 59.8 L14.3 63.0 L15.6 66.1 L17.1 69.0 Z M89.8 27.0 L91.7 30.6 L93.2 34.3 L94.4 38.1 L95.3 42.0 L95.8 46.0 L96.0 50.0 L95.8 54.0 L95.3 58.0 L94.4 61.9 L93.2 65.7 L91.7 69.4 L89.8 73.0 L82.9 69.0 L84.4 66.1 L85.7 63.0 L86.7 59.8 L87.4 56.6 L87.9 53.3 L88.0 50.0 L87.9 46.7 L87.4 43.4 L86.7 40.2 L85.7 37.0 L84.4 33.9 L82.9 31.0 Z',
+  splashFork: 'M45.3 93.7 L20.6 62.2 L13.6 67.7 L11.8 41.1 L37.2 49.2 L30.1 54.8 L54.7 86.3 Z M44.0 90.0 L44.0 50.0 L35.0 50.0 L50.0 28.0 L65.0 50.0 L56.0 50.0 L56.0 90.0 Z M45.3 86.3 L69.9 54.8 L62.8 49.2 L88.2 41.1 L86.4 67.7 L79.4 62.2 L54.7 93.7 Z M59.0 90.0 A9 9 0 1 1 59.0 89.9 Z',
   fist: 'M20 48 H78 V92 H20 Z M22 48 V34 C22 26 34 26 34 34 V42 C34 26 48 22 48 34 V40 C48 26 62 24 62 36 V42 C62 30 78 30 78 42 V50 Z',
 };
 const paths = new Map();
@@ -69,10 +72,11 @@ export function drawPip(ctx, kind, x, y, size) {
   if (kind === 'stagger') ctx.fill(burst()); else ctx.fill(iconPath({ gold: 'coin', pierce: 'pierce', magic: 'spark', heal: 'mend' }[kind] || 'spark'), kind === 'gold' ? 'evenodd' : 'nonzero');
   ctx.restore();
 }
-export const PIP_COLOR = { boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
+export const PIP_COLOR = { splash: '#ff4a14', boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
 const FAT_ICON = { heal: 'mendBold', pierce: 'arrowBold' }; // the big symbols (heart die)
-const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend', boot: 'boots' };
+const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend', boot: 'boots', splash: 'splashSpray' };
+export const setSplashIcon = (name) => { SYM_ICON.splash = name; }; // dev: try a splash shape (dev/t30-splash.mjs)
 export function drawSym(ctx, kind, x, y, size, stroke = 0, fat = false) {
   const ic = (fat && FAT_ICON[kind]) || SYM_ICON[kind] || 'spark';
   if (ic === 'burst') {

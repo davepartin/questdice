@@ -25,7 +25,7 @@ export function setBodyMarks() {}
 // A weapon die's face labels (what each face shows), from the weapon itself.
 function weaponLabels(inst, sides) {
   const wid = D.modelOf(inst.id); // a legendary shows its model's mark
-  const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'stagger' }; // Dawnbreaker's splash shows as a burst
+  const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'splash' }; // splash has its own mark (T30)
   // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
   return E.weaponFaces(inst, sides).slice(0, sides).map((f) => (f.arrow ? { wface: 'r', tone: 'r', arrow: f.arrow, corners: [], wm: 'arrows', ...(f.v ? { text: `+${f.v}` } : {}) } : { // an arrowhead: its mark (and its small number, when the arrows carry one)
     text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
