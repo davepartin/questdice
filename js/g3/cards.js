@@ -23,10 +23,10 @@ export const SYM = {
   atk: { c: '#ff4b4b', d: 'M12 1 L14.4 6.3 L19.8 4.2 L17.7 9.6 L23 12 L17.7 14.4 L19.8 19.8 L14.4 17.7 L12 23 L9.6 17.7 L4.2 19.8 L6.3 14.4 L1 12 L6.3 9.6 L4.2 4.2 L9.6 6.3 Z' },
   block: { c: '#3aa4ff', d: 'M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z' },
   arrow: { c: '#e8e2d4', d: 'M12 1.5 L19 12 L14.6 10.4 V22.5 H9.4 V10.4 L5 12 Z' },
-  splash: { c: '#ff6a3a', d: 'M5.5 13.5 a3 3 0 1 0 0.01 0 Z M12 5 a3.6 3.6 0 1 0 0.01 0 Z M18.5 13.5 a3 3 0 1 0 0.01 0 Z M12 16.5 a2.4 2.4 0 1 0 0.01 0 Z' },
+  splash: { c: '#ff3b3b', o: '#fff', d: 'M 10.97 21.61 L 5.53 14.68 L 3.99 15.89 L 3.60 10.04 L 9.18 11.82 L 7.62 13.06 L 13.03 19.99 Z M 10.68 20.80 L 10.68 12.00 L 8.70 12.00 L 12.00 7.16 L 15.30 12.00 L 13.32 12.00 L 13.32 20.80 Z M 10.97 19.99 L 16.38 13.06 L 14.82 11.82 L 20.40 10.04 L 20.01 15.89 L 18.47 14.68 L 13.03 21.61 Z M13.98 20.8 a1.98 1.98 0 1 0 0.01 0 Z' }, // the dice's splash mark: one hit forking three ways, red with a white edge
   star: { c: '#ffe08a', d: 'M12 2 L20 12 L12 22 L4 12 Z' },
 };
-export const ico = (k, cls = '') => { const s = SYM[k] || SYM.star; return `<svg class="${cls}" viewBox="0 0 24 24" style="color:${s.c}" aria-hidden="true"><path fill="currentColor" d="${s.d}"/></svg>`; };
+export const ico = (k, cls = '') => { const s = SYM[k] || SYM.star; return `<svg class="${cls}" viewBox="0 0 24 24" style="color:${s.c}" aria-hidden="true"><path fill="currentColor" d="${s.d}"${s.o ? ` stroke="${s.o}" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke"` : ''}/></svg>`; };
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
