@@ -11,8 +11,8 @@ import { arrowBannerSub } from '../ammotext.js';
 const R45 = 'transform="rotate(45 12 12)"';
 const ICONS = {
   atk: '<path class="p" d="M12.00 1.00 L14.37 6.27 L19.78 4.22 L17.73 9.63 L23.00 12.00 L17.73 14.37 L19.78 19.78 L14.37 17.73 L12.00 23.00 L9.63 17.73 L4.22 19.78 L6.27 14.37 L1.00 12.00 L6.27 9.63 L4.22 4.22 L9.63 6.27 Z"/><path class="h" d="M12 4.5 V8"/>',
-  block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/><path class="h" d="M12 5 V19.6 M7.2 8.5 V12.5"/>',
-  pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/><path class="h" d="M12 5.2 V15"/>',
+  block: '<path class="f" d="M12 2.4 L20 5.4 V12 C20 17 16.6 20.4 12 22 C7.4 20.4 4 17 4 12 V5.4 Z"/>', // solid, no line (Dave, 6 Nov 2026)
+  pierce: '<path class="p" d="M12 2 L21 11.2 H15.2 V22 H8.8 V11.2 H3 Z"/>', // solid, no line (Dave, 6 Nov 2026: "remove the vertical line in the pierce like we did with shield")
   magic: '<path class="p" d="M12 2.4 L22.2 20.6 H1.8 Z"/><path class="h" d="M12 6.8 L16.2 14.6"/>',
   team: '<circle class="p" cx="8" cy="8.2" r="3.2"/><circle class="p" cx="16.6" cy="9.2" r="2.7"/><path class="p" d="M2 20.5 C2 16.4 4.7 14 8 14 C11.3 14 14 16.4 14 20.5 Z M13.4 20.5 C13.6 17.6 14.8 15.3 16.6 15.3 C19.6 15.3 22 17.4 22 20.5 Z"/>',
   heal: '<path class="f" d="M9.4 3 H14.6 V9.4 H21 V14.6 H14.6 V21 H9.4 V14.6 H3 V9.4 H9.4 Z"/><path class="h" d="M10.6 5 V10.6 H5"/>',

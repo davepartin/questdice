@@ -805,3 +805,6 @@
 .mc-trait.gold .ic{color:#e8b400}
 .t28-goldtab .t28-luck-row .mc-die{width:6.6cqi!important;height:6.6cqi!important}
 .t28-goldtab .t28-luck-row{grid-template-columns:7cqi 12cqi 1fr}
+/* The side-game cards' coloured dice are 65 px (Dave with Grok, 6 Nov 2026: "65 px is what we were shooting for to fill up the card"); the dice cards' rows already reach about 65 px with four dice */
+.t28-dice.t28-mix{flex-wrap:wrap;gap:2cqi}
+.t28-dice.t28-mix .mc-die{width:min(65px,20cqi)!important;height:min(65px,20cqi)!important}
