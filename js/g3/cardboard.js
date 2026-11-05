@@ -9,9 +9,29 @@ import { h } from '../dom.js';
 import * as E from '../engine.js';
 import * as D from '../data.js';
 import { drawSym, drawIcon, drawNumeral } from '../gfx/dice/faces.js';
-import { dieSpecs, faceImage } from '../gfx/dice/dice.js';
+import { dieSpecs, faceImage, weaponSpec, faceShot } from '../gfx/dice/dice.js';
 import { campDie } from './campart.js';
 import { priceChip } from './price.js';
+// Weapon cards show the real die faces (Dave, 5 Nov 2026: "use literally the dice that are being drawn on the 3-D images"):
+// each face marked data-shot="<sides>:<face>" on a card carrying its weapon (data-wi) gets the picture cut from the 3D die's own
+// texture, whatever screen put the card there. Runs before the next paint, so the stand-in symbol is never seen.
+export function realFaces(root) {
+  for (const card of root.querySelectorAll?.('.qc17.t29[data-wi]:not(.real)') || []) {
+    let inst; try { inst = JSON.parse(card.dataset.wi); } catch { continue; }
+    const specs = {};
+    for (const t of card.querySelectorAll('.t29-f[data-shot]')) {
+      const [sides, n] = t.dataset.shot.split(':').map(Number); let src = null;
+      try { specs[sides] ||= weaponSpec({ ...inst, size: sides }, sides); src = faceShot(specs[sides], n); } catch { src = null; }
+      if (!src) continue;
+      t.querySelector('svg.t29s')?.replaceWith(Object.assign(document.createElement('img'), { className: 't29-real', src, alt: '', draggable: false }));
+    }
+    card.classList.add('real');
+  }
+}
+if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
+  new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches?.('.qc17.t29[data-wi]')) realFaces(n.parentNode || n); else realFaces(n); } })
+    .observe(document.documentElement, { childList: true, subtree: true });
+}
 const ART = new URL('../../assets/cards/', import.meta.url).href;
 const SERIF = '"Cormorant Garamond", Georgia, serif'; // the game's title serif (css/fonts.css); the mockups used Cinzel, which the game does not load
 const load = (s) => new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = s; });

@@ -22,6 +22,20 @@ const FX_PIP = { heal: 'heal', magic: 'magic', pierce: 'pierce', stagger: 'stagg
 // Retained for older development capture scripts; body identifiers are retired.
 export function setBodyMarks() {}
 
+// A weapon die's face labels (what each face shows), from the weapon itself.
+function weaponLabels(inst, sides) {
+  const wid = D.modelOf(inst.id); // a legendary shows its model's mark
+  const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'stagger' }; // Dawnbreaker's splash shows as a burst
+  // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
+  return E.weaponFaces(inst, sides).slice(0, sides).map((f) => (f.arrow ? { wface: 'r', tone: 'r', arrow: f.arrow, corners: [], wm: 'arrows', ...(f.v ? { text: `+${f.v}` } : {}) } : { // an arrowhead: its mark (and its small number, when the arrows carry one)
+    text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
+    corners: [...Array(f.plus || 0).fill(f.c === 'b' ? 'def' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k]))].filter(Boolean), // +1 attack/block icons first, then a crit's icons (two or three)
+    wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : inst.id === 'quiver' ? 'arrows' : wid,
+  }));
+}
+/** The build spec for one weapon at one die size, as the board would build it (the weapon cards use it for their face pictures). */
+export function weaponSpec(inst, sides = E.weaponSize(inst)) { const labels = weaponLabels(inst, sides); return { slot: 'NW', role: 'weapon', sides, theme: 'weapon', labels, key: `weapon|${sides}|${JSON.stringify(labels)}` }; }
+
 /** Per-slot build spec from a hero (see engine.js weaponFaces / specialFace / sidesOf). */
 export function dieSpecs(hero, previewSizes = {}) {
   const out = {};
@@ -30,14 +44,7 @@ export function dieSpecs(hero, previewSizes = {}) {
     let theme; let labels = [];
     if (role === 'weapon') {
       theme = 'weapon';
-      const inst = hero.loadout[slot]; const wid = D.modelOf(inst.id); // a legendary shows its model's mark
-      const FXK = { pierce: 'pierce', magic: 'magic', heal: 'heal', stagger: 'stagger', loot: 'gold', splash: 'stagger' }; // Dawnbreaker's splash shows as a burst
-      // every weapon face reads "+N" over a big red starburst (attack) or blue shield (block): a +0 still sends the hand's strength that way
-      labels = E.weaponFaces(inst, sides).slice(0, sides).map((f) => (f.arrow ? { wface: 'r', tone: 'r', arrow: f.arrow, corners: [], wm: 'arrows', ...(f.v ? { text: `+${f.v}` } : {}) } : { // an arrowhead: its mark (and its small number, when the arrows carry one)
-        text: `+${f.v}`, wface: f.c === 'b' ? 'b' : 'r', zero: f.v === 0, tone: f.c, pip: null,
-        corners: [...Array(f.plus || 0).fill(f.c === 'b' ? 'def' : 'atk'), ...Object.entries(f.fx || {}).flatMap(([k, n]) => Array(Math.min(3, n | 0)).fill(FXK[k]))].filter(Boolean), // +1 attack/block icons first, then a crit's icons (two or three)
-        wm: D.WEAPONS[wid]?.hands === 2 ? (wid === 'bow' ? (inst.twin ? 'arrows' : 'bow') : wid === 'staff' ? 'staff' : wid === 'warhammer' ? 'warhammer' : 'longsword') : wid === 'fists' ? 'fist' : inst.id === 'quiver' ? 'arrows' : wid,
-      }));
+      labels = weaponLabels(hero.loadout[slot], sides);
     } else if (role === 'special') {
       theme = 'amethyst';
       for (let v = 1; v <= sides; v++) {
@@ -166,6 +173,31 @@ export function faceImage(spec, label, px = 112) {
   c.drawImage(atlas.canvases.A, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px);
   if (atlas.canvases.E) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.6; c.drawImage(atlas.canvases.E, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px); }
   const url = cv.toDataURL('image/png'); faceShots.set(key, url);
+  return url;
+}
+
+// One face cut to its true outline (a d4's triangle, a d6's square, a d8's triangle, a d10's kite), transparent outside it:
+// the exact picture the 3D die wears, for the weapon cards (Dave, 5 Nov 2026: "use the dice that are in the game").
+const shapeShots = new Map();
+export function faceShot(spec, label, px = 160) {
+  const key = `${spec.key || JSON.stringify(spec.labels)}|${label}|${px}`;
+  if (shapeShots.has(key)) return shapeShots.get(key);
+  const poly = makePoly(spec.sides);
+  const faces = new Array(poly.faces.length).fill(null);
+  spec.labels.forEach((l, i) => { const fi = poly.labelFace[i]; if (fi != null && fi >= 0) faces[fi] = l; });
+  const atlas = buildAtlas({ poly, faces, theme: spec.theme, quality: 'high' });
+  const fi = poly.labelFace[label - 1]; if (fi == null || fi < 0) return null;
+  const [W, Hh] = atlas.size; const pts = poly.faces[fi].local.map(([x, y]) => { const [u, v] = atlas.uvOf(fi, x, y); return [u * W, (1 - v) * Hh]; });
+  const xs = pts.map((q) => q[0]); const ys = pts.map((q) => q[1]);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2; const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const S = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 1.04; const k = px / S; // the face fills the picture
+  const cv = document.createElement('canvas'); cv.width = px; cv.height = px; const c = cv.getContext('2d');
+  const path = () => { c.beginPath(); pts.forEach(([x, y], i) => { const X = (x - cx) * k + px / 2; const Y = (y - cy) * k + px / 2; if (i) c.lineTo(X, Y); else c.moveTo(X, Y); }); c.closePath(); };
+  c.save(); path(); c.clip();
+  c.drawImage(atlas.canvases.A, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px);
+  if (atlas.canvases.E) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.6; c.drawImage(atlas.canvases.E, cx - S / 2, cy - S / 2, S, S, 0, 0, px, px); }
+  c.restore(); c.lineJoin = 'round'; c.lineWidth = px * 0.02; c.strokeStyle = 'rgba(0,0,0,0.45)'; path(); c.stroke(); // a thin dark edge, like the die's bevel
+  const url = cv.toDataURL('image/png'); shapeShots.set(key, url);
   return url;
 }
 

@@ -128,3 +128,7 @@
 /* the shapes need a little more room than the bare symbols */
 .t29-f .t29s.on-die{max-width:21cqi}.t29-faces.c5 .t29-f .t29s.on-die{max-width:16.5cqi}.t29-faces.c6 .t29-f .t29s.on-die{max-width:14.2cqi}
 .t29-f.mini .t29s.on-die{max-width:10cqi}
+/* the real die faces, cut from the 3D dice's own texture (Dave, 5 Nov 2026); js/g3/cardboard.js realFaces */
+.t29-f .t29-real{display:block;width:100%;max-width:21cqi;height:auto;aspect-ratio:1;filter:drop-shadow(0 .5cqi .7cqi #0007);-webkit-user-select:none;user-select:none}
+.t29-faces.c5 .t29-f .t29-real{max-width:16.5cqi}.t29-faces.c6 .t29-f .t29-real{max-width:14.2cqi}
+.t29-f.mini .t29-real{max-width:10cqi;filter:drop-shadow(0 .3cqi .4cqi #0006)}
