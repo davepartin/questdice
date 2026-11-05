@@ -70,7 +70,7 @@ export function drawPip(ctx, kind, x, y, size) {
   if (kind === 'stagger') ctx.fill(burst()); else ctx.fill(iconPath({ gold: 'coin', pierce: 'pierce', magic: 'spark', heal: 'mend' }[kind] || 'spark'), kind === 'gold' ? 'evenodd' : 'nonzero');
   ctx.restore();
 }
-export const PIP_COLOR = { splash: '#ff3b3b', boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
+export const PIP_COLOR = { splash: '#ff4fb8', boot: '#7a4a1e', gold: '#f6c445', pierce: '#b98cff', magic: '#ffe45a', heal: '#4fe69a', stagger: '#ff8a3a', atk: '#ff3b3b', def: '#3aa4ff', boost: '#ffffff' };
 // The corner symbol language: one shape + one colour per meaning.
 const FAT_ICON = { heal: 'mendBold', pierce: 'arrowBold' }; // the big symbols (heart die)
 const SYM_ICON = { atk: 'burst', def: 'shield', pierce: 'arrow', magic: 'tri', gold: 'disc', heal: 'mend', stagger: 'fist', boost: 'mend', boot: 'boots', splash: 'splash' };
@@ -591,9 +591,9 @@ export function buildAtlas({ poly, faces, theme, quality = 'high', key = '', fla
         layer(ctxs, { H: 'rgb(92,92,92)', A: '#fff3d6', O: 'rgb(0,60,0)', E: 'rgb(90,80,60)' }, (c) => drawSym(c, kind, bx, by, sz));
         continue;
       }
-      if (kind === 'splash') { // the splash fork: red with a white outline (Dave, 5 Nov 2026)
+      if (kind === 'splash') { // the splash fork: pink with a white outline (Dave, 5 Nov 2026)
         layer(ctxs, { H: 'rgb(44,44,44)', A: '#ffffff', O: 'rgb(0,140,0)', E: 'rgb(70,70,70)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 1.3));
-        layer(ctxs, { H: 'rgb(92,92,92)', A: '#e3141e', O: 'rgb(0,60,0)', E: 'rgb(40,0,0)' }, (c) => drawSym(c, kind, bx, by, sz));
+        layer(ctxs, { H: 'rgb(92,92,92)', A: '#ff4fb8', O: 'rgb(0,60,0)', E: 'rgb(60,10,40)' }, (c) => drawSym(c, kind, bx, by, sz));
         continue;
       }
       layer(ctxs, { H: 'rgb(44,44,44)', A: 'rgba(8,4,16,0.97)', O: 'rgb(0,140,0)' }, (c) => drawSym(c, kind, bx, by, sz, ow * 2));
