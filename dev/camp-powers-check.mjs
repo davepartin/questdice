@@ -24,7 +24,7 @@ try {
         const error=[...active.querySelectorAll('.mc-sy>*')].filter(el=>{const b=el.getBoundingClientRect();return b.left<a.left-2||b.right>a.right+2||b.top<a.top-2||b.bottom>a.bottom+2;}).map(el=>({cls:el.className,text:el.textContent}));
         return {id,cls,rank,width:innerWidth,ratio:box.height/box.width,active:active.textContent,cost:c.querySelector('.mc-cast-cost').textContent.trim(),expectedCost:E.powerCost(k,k.cost,rank),ranks:c.querySelectorAll('.mc-lv').length,slots:c.querySelectorAll('.fm-socket').length,mutation:before!==JSON.stringify(hero),error,horizontal:box.left<0||box.right>innerWidth,art:c.querySelector('.mc-paint img').src};
       },{cls,id,rank});
-      assert(Math.abs(result.ratio-1052/720)<.01,JSON.stringify(result));assert.equal(result.mutation,false);if(id==='polymorph')assert.equal(result.slots,6);else assert.equal(result.ranks,4);assert.equal(result.cost,String(result.expectedCost));assert.equal(result.horizontal,false);
+      assert(Math.abs(result.ratio-1052/720)<.01,JSON.stringify(result));assert.equal(result.mutation,false);assert.equal(result.ranks,1); // one card per rank (Dave, 6 Nov 2026)assert.equal(result.cost,String(result.expectedCost));assert.equal(result.horizontal,false);
       assert.deepEqual(result.error,[],JSON.stringify(result));
       if(id==='grudge')assert(result.active.includes('Hurt')&&!result.active.includes('+0'));
       if(id==='meteor')assert(result.active.includes('×Round'));if(id==='polymorph')assert(!/CHARGED/.test(result.active));

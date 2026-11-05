@@ -1167,12 +1167,20 @@ function campPowers(hero) {
     h('span', { class: 'sh-buy-l' }, equipped ? `Equip · replaces ${equipped.name}` : 'Equip'), h('span', { class: 'sh-buy-p' }, 'Free'));
   else { const learn = E.learnInfo(hero, k.id); action = shBuy(hero, { label: equipped ? `Learn & equip · replaces ${equipped.name}` : 'Learn & equip', cost: learn.cost, ok: learn.ok, onBuy: () => { if (HE.learnPower(hero, k.id)) done(); } }); }
   const upgrade = row.equipped && up.next ? () => { if (HE.upgradePower(hero, k.id)) done(); else { sfx.error?.(); toast(up.why === 'Need gold' || hero.gold < (up.cost || 0) ? `Need ${Math.max(0, (up.cost || 0) - hero.gold)} more gold.` : up.why || 'Not yet.'); } } : null;
-  const frogUp = upgrade && k.frogLoad ? shBuy(hero, { label: `Upgrade to rank ${romans[up.next]}`, cost: up.cost, ok: up.ok, onBuy: upgrade }) : null; // (Frog Morph's card has no rank rows)
+  // One card per rank (Dave, 6 Nov 2026: "we can just have a place to click upgrade and they will see the new card, and once they see it, they
+  // can choose to buy it or not"): Upgrade opens the next rank's card, with Buy and Not now.
+  const preview = () => {
+    const next = MC.campCard(hero, k.id, { glyph: powerGlyph, level: up.next }); let shut = () => {};
+    const buy = shBuy(hero, { label: `Buy rank ${romans[up.next]}`, cost: up.cost, ok: up.ok, onBuy: () => { shut(); upgrade(); } });
+    shut = modal(h('div', { class: 'cp-preview' }, h('header', { class: 'cp-preview-head' }, h('small', {}, 'The next card'), h('h2', {}, `${k.name} ${romans[up.next]}`)),
+      h('div', { class: 'cp-preview-card' }, next), h('div', { class: 'cp-preview-acts' }, buy, h('button', { type: 'button', class: 'cp-preview-no', onclick: () => shut() }, 'Not now'))), { closeButton: true });
+  };
+  const upBtn = upgrade ? h('button', { type: 'button', class: 'cp-upgrade', 'aria-label': `See ${k.name} rank ${romans[up.next]}, ${up.cost} gold`, onclick: tap(preview) },
+    h('span', { class: 'cp-up-l' }, ico('up'), `Upgrade to ${romans[up.next]}`), h('span', { class: 'cp-up-p' }, priceChip(up.cost, { poor: hero.gold < up.cost }))) : null;
   return h('div', { class: 'cp-workshop' }, tabs, cards,
     h('section', { class: `cp-detail cp-reviewed tone-${toneOf(k)}`, tabindex: '-1', 'aria-label': `${k.name} card` },
-      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph, onUpgrade: k.frogLoad ? null : upgrade })),
-      action || frogUp ? h('div', { class: 'cp-actions' }, action || frogUp) : null,
-      upgrade && !k.frogLoad ? h('p', { class: 'cp-hint' }, `Tap rank ${romans[up.next]} on the card to upgrade · ${up.cost} gold`) : null),
+      h('div', { class: 'cp-card-stage' }, MC.campCard(hero, k.id, { glyph: powerGlyph })),
+      action || upBtn ? h('div', { class: 'cp-actions' }, action || upBtn) : null),
     more ? h('button', { type: 'button', class: 'cp-more', 'aria-label': `${more} more power${more === 1 ? '' : 's'} for Magic Slot ${SLOT_NUM[CP.slot]} in the Camp Store`,
       onclick: tap(() => { goCampPage('camp'); requestAnimationFrame(() => document.getElementById('zn-magic')?.scrollIntoView({ block: 'start', behavior: 'smooth' })); }) },
       ico('spark'), h('span', {}, `Learn more magic for Slot ${SLOT_NUM[CP.slot]} in the Camp Store`)) : null);

@@ -808,3 +808,20 @@
 /* The side-game cards' coloured dice are 65 px (Dave with Grok, 6 Nov 2026: "65 px is what we were shooting for to fill up the card"); the dice cards' rows already reach about 65 px with four dice */
 .t28-dice.t28-mix{flex-wrap:wrap;gap:2cqi}
 .t28-dice.t28-mix .mc-die{width:min(65px,20cqi)!important;height:min(65px,20cqi)!important}
+/* One card per rank (Dave, 6 Nov 2026): the rank is a small numeral beside the name; the card's panel gets the whole beige area */
+.mc-t28 .mc-plaque{display:flex;align-items:baseline;justify-content:center;gap:.28em}
+.mc-t28 .mc-rankno{align-self:center;font:800 .58em/1 var(--font-title,Georgia,serif);color:#fff;background:#5a2fa0;border-radius:.5em;padding:.14em .42em .12em;box-shadow:inset 0 0 0 .08em #c9a0ff;letter-spacing:.04em}
+/* with the rank strips gone the panel has room: everything on it grows (dice 65 px, Dave with Grok) */
+.mc-levels.one .t28{gap:2.4cqi}
+.mc-levels.one .t28-dice{--ds:min(65px,19cqi)!important;flex-wrap:wrap;gap:2.2cqi;max-width:calc(3 * min(65px,19cqi) + 6cqi);margin:0 auto}
+.mc-levels.one .t28-dice.n4,.mc-levels.one .t28-dice.n3,.mc-levels.one .t28-dice.n2,.mc-levels.one .t28-dice.n1{max-width:none}
+.mc-levels.one .t28-one .t28-sym.big{width:38cqi;height:38cqi}
+.mc-levels.one .t28-one.two .t28-sym.big{width:30cqi;height:30cqi}
+.mc-levels.one .t28-charge.rows1 .t28-sym{width:20cqi;height:20cqi}
+.mc-levels.one .t28-charge.rows2 .t28-sym{width:17cqi;height:17cqi}
+.mc-levels.one .t28-say{font-size:6cqi}.mc-levels.one .t28-plain{font-size:5cqi}.mc-levels.one .t28-fine{font-size:4.3cqi}
+.mc-levels.one .t28-luck .mc-die{width:9cqi!important;height:9cqi!important}
+.mc-t28 .mc-levels.one .mc-lv.act{flex:1;min-height:0}
+/* a side-game card's dice stay on one line: 65 px, smaller when a rank brings more dice than fit */
+.mc-levels.one .t28-dice.t28-mix{flex-wrap:nowrap;max-width:none;gap:1.6cqi}
+.mc-levels.one .t28-dice.t28-mix .mc-die{width:min(65px,19cqi,calc(66cqi / var(--nd,2)))!important;height:min(65px,19cqi,calc(66cqi / var(--nd,2)))!important}

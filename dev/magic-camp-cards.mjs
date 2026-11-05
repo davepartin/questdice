@@ -14,7 +14,7 @@ const ids = await p.evaluate(async (lvl) => {
   const wrap = document.createElement('div'); wrap.id = 'cards'; Object.assign(wrap.style, { position: 'fixed', inset: '0', overflow: 'auto', zIndex: 99999, background: '#120c18', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' });
   document.body.append(wrap); const out = [];
   for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) { const hero = E.newHero({ name: 'Cards' + cls, cls, seed: 3 }); hero.level = 6; hero.gold = 0;
-    for (const k of D.CLASSES[cls].cards) { hero.powerLevels = { ...(hero.powerLevels || {}), [k.id]: lvl }; const c = MC.campCard(hero, k.id, { glyph: PW.glyph }); const box = document.createElement('div'); box.dataset.id = `${cls}-${k.id}`; box.style.width = '340px'; box.append(c); wrap.append(box); out.push(`${cls}-${k.id}`); } }
+    for (const k of D.CLASSES[cls].cards) { hero.powerLevel = { ...(hero.powerLevel || {}), [k.id]: lvl }; const c = MC.campCard(hero, k.id, { glyph: PW.glyph }); const box = document.createElement('div'); box.dataset.id = `${cls}-${k.id}`; box.style.width = '340px'; box.append(c); wrap.append(box); out.push(`${cls}-${k.id}`); } }
   return out; }, +(process.env.LEVEL || 0));
 await p.waitForTimeout(2500);
 for (const id of ids) {

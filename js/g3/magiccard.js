@@ -122,7 +122,7 @@ function t28Body(k, l, p) {
     out.push(fine(camp ? `${E.scaleStep(k)} magic a die · up to ${top} dice` : `${n} of ${top} dice · ${pay} magic`));
   } else if (k.kind === 'mix') { // T31 side games: the dice of every colour, then what each colour pays
     const gs = E.mixGroups(k, l);
-    out.push(h('div', { class: 't28-dice t28-mix', role: 'img', 'aria-label': gs.map((g) => `${g.n} ${WORD[g.to] || g.to} d${g.s}`).join(' and ') },
+    out.push(h('div', { class: 't28-dice t28-mix', style: { '--nd': String(gs.reduce((t, g) => t + g.n, 0)) }, role: 'img', 'aria-label': gs.map((g) => `${g.n} ${WORD[g.to] || g.to} d${g.s}`).join(' and ') },
       gs.flatMap((g, i) => [i ? h('b', { class: 't28-mixplus' }, '+') : null, ...Array.from({ length: g.n }, () => die(g.to, g.s, g.s))]).filter(Boolean)));
     for (const g of gs) {
       if (g.table) out.push(h('div', { class: 't28-luck t28-goldtab' }, g.table.map(([top], i) => { const lo = i ? g.table[i - 1][0] + 1 : 1; const pay = E.mixPay(g, top, l);
@@ -174,7 +174,7 @@ function t28Body(k, l, p) {
       out.push(k.fx.weaken != null ? say(h('b', { class: 't28-w fx-weaken' }, HK.icon('weaken'), 'Weaken')) : say(...fx.map(([x]) => word(x))));
       out.push(plain(k.fx.weaken != null ? `Monsters hit ${E.scaleNum(k.fx.weaken, l)} softer this round` : 'Once each round')); }
   } else return null;
-  return h('div', { class: `t28 t28-${k.kind}${p.ranks > 3 ? ' tight' : ''}` }, h('span', { class: 't28-rank' }, `Rank ${LV[l]}`), ...out);
+  return h('div', { class: `t28 t28-${k.kind}` }, ...out); // (the rank is beside the card's name now)
 }
 // a rank cover on the 15 starting cards: one short line in the same symbols as the panel
 function t28Cover(k, l) {
@@ -280,10 +280,10 @@ function campCover(k, level) {
   return coverHint({ ...k, ...(k.grudge ? { grudge: extend(k.grudge) } : {}), ...(k.costLv ? { costLv: extend(k.costLv) } : {}), ...(k.frogPierce ? { frogPierce: extend(k.frogPierce) } : {}) }, level);
 }
 // Presentation only: class library lookup and derived rank/cost; no battle context or purchase callbacks.
-export function campCard(hero, id, { glyph, onUpgrade = null }) {
+export function campCard(hero, id, { glyph, onUpgrade = null, level: want = null }) {
   const k = D.CLASSES[hero.cls]?.cards.find(k => k.id === id);
   if (!k) return null;
-  const level = E.powerLevel(hero, id);
+  const level = want ?? E.powerLevel(hero, id);
   return card(k, { cls: hero.cls, owner: hero.name, level, x: E.powerCost(k, k.cost, level), camp: true, rankCount: E.powerLevelsOf(hero) + 1, ranks: E.powerLevelsOf(hero) + 1, onRank: onUpgrade, gold: hero.gold }, glyph);
 }
 export function campChoice(hero, row, { glyph, selected, status, onSelect }) {
@@ -319,8 +319,10 @@ function card(k, p, glyph) {
     l > cur ? cov(l, h('span', { class: 'mc-lvw' }, `${usesCardTemplate(k) ? '' : 'Level '}${LV[l]}`, h('span', { class: 'mc-cd' }, (p.camp ? campCover(k, l) : coverHint(k, l)))), h('span', { class: 'mc-cp' }, h('i', { class: 'mc-coin' }), h('b', {}, String(D.POWER_UPGRADE[l - 1])))) : null);
   return h('div', { class: `mc-card${usesCardTemplate(k) ? ' mc-t28' : ''}${k.frogLoad ? ' mc-frog-morph' : ''}${p.camp ? ' mc-camp-card' : ''}${cur >= 3 ? ' mc-four-ranks' : ''}${usesCardTemplate(k) ? ' mc-reviewed-template' : ''}${isBardCard(k) ? ' mc-bard' : ''}${isWizardCard(k) ? ' mc-wizard' : ''}${isRangerCard(k) ? ' mc-ranger' : ''}${isDwarfCard(k) ? ' mc-dwarf' : ''}`, 'data-card': k.id, 'data-rank': cur + 1 }, h('i', { class: 'mc-under' }), h('div', { class: 'mc-paint' }, h('img', { src: `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${p.cls || 'ranger'}-${k.id}`}.webp`, alt: '' })),
     h('img', { class: 'mc-fr', src: 'assets/cards/frame-t17.webp', alt: '' }), corners(),
-    usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
-    usesCardTemplate(k) ? h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Starting cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, usesCardTemplate(k) ? cardTraits(k) : null, k.frogLoad ? frogTray(k, p) : h('div', { class: 'mc-levels' }, Array.from({ length: p.rankCount ?? Math.max(3, cur + 1) }, (_, l) => lv(l))));
+    usesCardTemplate(k) ? h('span', { class: 'mc-art-icon', 'aria-hidden': 'true' }, glyph(k, 'mc-flag')) : h('div', { class: `mc-ptag pt-${TYPE(k).toLowerCase()}` }, TYPE(k)), h('div', { class: 'mc-plaque' }, k.name, usesCardTemplate(k) ? h('span', { class: 'mc-rankno', 'aria-label': `rank ${LV[cur]}` }, LV[cur]) : null), usesCardTemplate(k) ? null : h('div', { class: 'mc-kick' }, kick),
+    usesCardTemplate(k) ? h('div', { class: 'mc-cast-cost', 'aria-label': `${p.camp ? (k.kind === 'scale' ? 'Starting cost' : 'Magic cost') : 'Selected cost'}: ${p.x ?? k.cost} magic` }, mg(p.x ?? k.cost)) : null, usesCardTemplate(k) ? cardTraits(k) : null, k.frogLoad ? frogTray(k, p) : usesCardTemplate(k) ? h('div', { class: 'mc-levels one' }, lv(cur)) : h('div', { class: 'mc-levels' }, Array.from({ length: p.rankCount ?? Math.max(3, cur + 1) }, (_, l) => lv(l))));
+  // (one card per rank, Dave, 6 Nov 2026: "a different card for each one, and you know when you upgrade it, the next card's gonna be better";
+  // the next rank is shown at camp by its Upgrade button, js/g3/scrui.js)
 }
 // the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
 function buttons(ctx, p) {
