@@ -15,6 +15,7 @@ This board on main is the shared source for task IDs, owners, status and next ac
 
 ## Session protocol
 How to work in the repository (commands, tests, stamp, screenshots, measuring tools, what not to touch): [WORKING_GUIDE.md](WORKING_GUIDE.md).
+**Magic cards:** the five types and their templates (Dice Card, Charge Card, Every-Round Card, Side-Game Card, Finisher Card): [MAGIC_CARD_TYPES.md](MAGIC_CARD_TYPES.md). Name the type when you work on one.
 1. Pull latest state; read this board, latest PLAN handoff, and relevant files. Reconcile work already in progress before claiming a task.
 2. One owner per task; record status and files/branch being edited. Do not edit another active owner's files. Refresh before writing shared docs; preserve others' changes.
 3. Status: READY / IN PROGRESS / REVIEW / DONE / BLOCKED. Claim before editing; do not assume another conversation has received an assignment.

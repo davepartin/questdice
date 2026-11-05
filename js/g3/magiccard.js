@@ -113,14 +113,14 @@ const word = (fx) => h('b', { class: `t28-w fx-${fx}` }, HK.icon(fx), T28_WORD[f
 const splashTag = (amt, where) => h('div', { class: 't28-splash', role: 'img', 'aria-label': `Splash: ${amt === '½' ? 'half' : amt} ${where}` }, HK.icon('splash'), h('b', {}, amt), h('span', {}, where));
 function t28Body(k, l, p) {
   const camp = !!p.camp; const f = FX(k); const out = [];
-  if (k.kind === 'scale') {
+  if (k.kind === 'scale') { // ---- Dice Card template (docs/team/MAGIC_CARD_TYPES.md)
     const s = k.dice.s; const top = E.powerDice(k, E.scaleMax(k, l), l); const pay = camp ? E.powerCost(k, k.cost, l) : (p.x ?? k.cost); const n = E.powerDice(k, pay, l);
     out.push(h('div', { class: `t28-dice n${top}`, role: 'img', 'aria-label': `${n} of ${top} ${WORD[f]} dice` }, Array.from({ length: top }, (_, i) => (i < n ? die(f, s) : space(s)))));
     if (f === 'whirl') out.push(splashTag('', 'every monster, your target too'), plain('Each monster\'s block stops it')); // Whirlwind (T31)
     else out.push(say(word(f), k.goldOn ? h('span', { class: 't28-gold' }, 'each', die(f, s, k.goldOn.face), '=', t28Sym('gold', { val: `+${k.goldOn.gold}` })) : null));
     if (f !== 'whirl') out.push(k.splash === 'half' ? splashTag('½', k.id === 'arcbolt' ? 'arcs to every other monster' : 'to every other monster') : plain(k.party ? 'Heals every hero' : null));
     out.push(fine(camp ? `${E.scaleStep(k)} magic a die · up to ${top} dice` : `${n} of ${top} dice · ${pay} magic`));
-  } else if (k.kind === 'mix') { // T31 side games: the dice of every colour, then what each colour pays
+  } else if (k.kind === 'mix') { // ---- Side-Game Card template (mixed dice; Lucky Verse below is the same type). T31 side games: the dice of every colour, then what each colour pays
     const gs = E.mixGroups(k, l);
     out.push(h('div', { class: 't28-dice t28-mix', style: { '--nd': String(gs.reduce((t, g) => t + g.n, 0)) }, role: 'img', 'aria-label': gs.map((g) => `${g.n} ${WORD[g.to] || g.to} d${g.s}`).join(' and ') },
       gs.flatMap((g, i) => [i ? h('b', { class: 't28-mixplus' }, '+') : null, ...Array.from({ length: g.n }, () => die(g.to, g.s, g.s))]).filter(Boolean)));
@@ -131,7 +131,7 @@ function t28Body(k, l, p) {
       else out.push(say(word(g.to), g.to === 'heal' && k.party ? h('span', {}, 'every hero') : null));
     }
     if (!gs.some((g) => g.table)) out.push(fine(`${k.cost} magic · every round`));
-  } else if (k.kind === 'charge') {
+  } else if (k.kind === 'charge') { // ---- Charge Card template
     const have = camp ? 0 : (p.stored || 0); const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
     out.push(h('div', { class: `t28-charge rows${fs.length}` }, fs.map((x) => h('div', { class: 't28-row', role: 'img', 'aria-label': `${WORD[x]} at 1 to ${k.max} charges` },
       Array.from({ length: k.max }, (_, i) => t28Sym(x, { on: i < have, now: i === have - 1, val: E.chargeGain(k, i + 1, l)[x] }))))));
@@ -140,7 +140,7 @@ function t28Body(k, l, p) {
       : say(h('span', {}, 'Charge 1 magic a round')));
     if (k.splash === 'half') out.push(splashTag('½', 'to every other monster'));
     out.push(fine(camp ? `Up to ${k.max} charges · use when you like` : `${have} of ${k.max} charged`));
-  } else if (k.grudge) {
+  } else if (k.grudge) { // ---- Every-Round Card template (Grudge, Counterstrike, Hunter's Mark and the plain bonuses below)
     const bonus = k.grudge[Math.min(l, k.grudge.length - 1)] || 0; const hurt = camp ? null : (p.hurt ?? 0);
     out.push(h('div', { class: 't28-one' }, t28Sym('atk', { val: hurt == null ? '?' : hurt + bonus, big: true })));
     out.push(say(word('atk')), plain('Equal to the damage past your block last round'));
@@ -151,11 +151,11 @@ function t28Body(k, l, p) {
   } else if (k.markGold) {
     out.push(h('div', { class: 't28-one two' }, t28Sym('pierce', { val: `+${E.scaleNum(k.fx.pierce, l)}`, big: true }), t28Sym('gold', { val: `+${E.scaleNum(k.markGold, l)}`, big: true })));
     out.push(say(word('pierce'), word('gold')), plain('The gold comes if your target falls'));
-  } else if (k.kind === 'luck') {
+  } else if (k.kind === 'luck') { // ---- Side-Game Card template (Lucky Verse's d6 table)
     const rows = [['1–2', 2, [['magic', `+${1 + l}`]]], ['3–4', 4, [['atk', `+${E.scaleNum(E.LUCK.mid, l)}`]]], ['5–6', 6, [['atk', `+${E.scaleNum(E.LUCK.top, l)}`], ['magic', '+1']]]];
     out.push(h('div', { class: 't28-luck' }, rows.map(([range, face, pays]) => h('div', { class: 't28-luck-row' }, die('magic', 6, face), h('b', {}, range), h('span', { class: 't28-pays' }, pays.map(([x, v]) => t28Sym(x, { val: v })))))));
     out.push(say(h('span', {}, 'Roll a purple d6')));
-  } else if (k.kind === 'super') { // the level 5 finishers: your bonuses, then a hit on every monster
+  } else if (k.kind === 'super') { // ---- Finisher Card template (Meteor below is the same type). The level 5 finishers: your bonuses, then a hit on every monster
     const fx = Object.entries(k.fx || {});
     out.push(h('div', { class: `t28-one n${fx.length}` }, fx.map(([x, v]) => t28Sym(x, { val: `+${E.scaleNum(v, l)}`, big: fx.length === 1 }))));
     out.push(say(...fx.map(([x]) => word(x))));

@@ -480,17 +480,17 @@ export const CLASSES = {
     // Powers fill three slots (Dave): A a big move (once a battle), B every round, C a charge. `start` is what a
     // new hero carries; the others are learned at camp and swapped into their slot.
     cards: [
-      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', kind: 'scale', atwill: true, cost: 3, step: 1, max: 5, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 3 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
-      { id: 'judgment', slot: 'A', name: 'Judgment', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
-      { id: 'shieldwall', slot: 'B', name: 'Shield Up', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
-      { id: 'riposte', slot: 'B', start: true, name: 'Counterstrike', kind: 'flat', atwill: true, cost: 2, fx: { block: 4 }, riposte: true, text: 'Once per round, 2 magic: +4 block, and any block the monsters do not use hits back as attack. (mk1, PROPOSED)' },
-    { id: 'press', slot: 'B', name: 'Press the Attack', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
-      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 2 }, fx: { atk: 3, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack and 1, 3, 5, 7 block. (mk1, PROPOSED block)' },
-      { id: 'secondwind', slot: 'C', name: 'Second Wind', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Charge 1 magic a round (max 4), then use: heal 4, 6, 8, 10. Up you get.' },
+      { id: 'cleave', slot: 'A', start: true, name: 'Cleave', type: 'Dice Card', kind: 'scale', atwill: true, cost: 3, step: 1, max: 5, dice: { n: 2, s: 6, to: 'atk' }, splash: 'half', fx: { atk: 7 }, text: 'Every round: 3 magic rolls 2d6 attack, each extra magic adds a d6 (up to 4d6). Half of it splashes on every other monster. (mk1, PROPOSED)' },
+      { id: 'judgment', slot: 'A', name: 'Judgment', type: 'Finisher Card', kind: 'super', cost: 6, minRound: 3, aoe: 12, fx: { atk: 14 }, text: 'Round 3+: +14 attack on your target and 12 to EVERY monster. The room will remember.', unlock: 5 },
+      { id: 'shieldwall', slot: 'B', name: 'Shield Up', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Hold the line. That is the job.' },
+      { id: 'riposte', slot: 'B', start: true, name: 'Counterstrike', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 2, fx: { block: 4 }, riposte: true, text: 'Once per round, 2 magic: +4 block, and any block the monsters do not use hits back as attack. (mk1, PROPOSED)' },
+    { id: 'press', slot: 'B', name: 'Press the Attack', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { atk: 3 }, text: 'Every round: +3 attack. Do not let them breathe.' },
+      { id: 'rally', slot: 'C', start: true, name: 'Rally Cry', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, block: 2 }, fx: { atk: 3, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack and 1, 3, 5, 7 block. (mk1, PROPOSED block)' },
+      { id: 'secondwind', slot: 'C', name: 'Second Wind', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Charge 1 magic a round (max 4), then use: heal 4, 6, 8, 10. Up you get.' },
       // T31 side games (Dave, 6 Nov 2026: "1-6 are awesome. Build it"): a little dice game on a card. roll: dice groups, each paying
       // its colour (to); a gold die reads its table [[highest face, pays], ...]. Ranks add a die to the first group.
-      { id: 'showboat', slot: 'B', name: 'Showboat', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'atk' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { atk: 3 }, art: 'knight-rally', text: 'Every round, 2 magic: a red d6 at your target, and a gold d6 for the crowd (5–6: +5 gold).' },
-      { id: 'dressing', slot: 'A', name: 'Field Dressing', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'heal' }, { n: 1, s: 6, to: 'block' }], fx: { heal: 3 }, art: 'knight-riposte', text: 'Every round, 2 magic: a green d6 heals you and a blue d6 blocks. Patch up, brace.' },
+      { id: 'showboat', slot: 'B', name: 'Showboat', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'atk' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { atk: 3 }, art: 'knight-rally', text: 'Every round, 2 magic: a red d6 at your target, and a gold d6 for the crowd (5–6: +5 gold).' },
+      { id: 'dressing', slot: 'A', name: 'Field Dressing', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'heal' }, { n: 1, s: 6, to: 'block' }], fx: { heal: 3 }, art: 'knight-riposte', text: 'Every round, 2 magic: a green d6 heals you and a blue d6 blocks. Patch up, brace.' },
     ],
   },
   ranger: {
@@ -500,14 +500,14 @@ export const CLASSES = {
     blurb: 'Quick hands, quicker eyes. A bow for the best odds at triples. First to the fight, last to be surprised.',
     weapons: ['bow'],
     cards: [
-      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', kind: 'scale', atwill: true, cost: 1, max: 4, dice: { n: 1, s: 6, to: 'pierce' }, fx: { pierce: 4 }, text: 'Breathe. Loose. 1 magic per d6, up to 4d6. The total adds to your pierce.' },
-      { id: 'rain', slot: 'A', name: 'Rain of Arrows', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
-      { id: 'quickdraw', slot: 'B', name: 'Quick Draw', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
-      { id: 'mark', slot: 'B', start: true, name: "Hunter's Mark", kind: 'flat', atwill: true, cost: 2, fx: { pierce: 4 }, markGold: 6, text: "Every round, 2 magic: +4 pierce now, and +6 gold if your target falls this round. (T31: pierce 3 → 4)" },
-    { id: 'snare', slot: 'B', name: 'Snare', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
-      { id: 'volley', slot: 'C', start: true, name: 'Volley', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 5 }, fx: { pierce: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 pierce (28 at four). (T31: 4 → 5 a step, priced by what pierce is worth)' },
-      { id: 'vanish', slot: 'C', name: 'Vanish', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 block. Now you see me.' },
-      { id: 'gambit', slot: 'B', name: "Thief's Gambit", kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 4, to: 'pierce' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { pierce: 2 }, art: 'ranger-mark', text: 'Every round, 2 magic: an orange d4 of pierce, and a gold d6 for a purse (5–6: +5 gold).' },
+      { id: 'aimed', slot: 'A', start: true, name: 'Aimed Shot', type: 'Dice Card', kind: 'scale', atwill: true, cost: 1, max: 4, dice: { n: 1, s: 6, to: 'pierce' }, fx: { pierce: 4 }, text: 'Breathe. Loose. 1 magic per d6, up to 4d6. The total adds to your pierce.' },
+      { id: 'rain', slot: 'A', name: 'Rain of Arrows', type: 'Finisher Card', kind: 'super', cost: 5, minRound: 3, aoe: 9, fx: { pierce: 6 }, text: 'Round 3+: +6 pierce on your target and 9 to EVERY monster. Share the weather.', unlock: 5 },
+      { id: 'quickdraw', slot: 'B', name: 'Quick Draw', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { free: 2 }, text: 'Every round: a free reroll of 2 dice. Second chances, on purpose.' },
+      { id: 'mark', slot: 'B', start: true, name: "Hunter's Mark", type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 2, fx: { pierce: 4 }, markGold: 6, text: "Every round, 2 magic: +4 pierce now, and +6 gold if your target falls this round. (T31: pierce 3 → 4)" },
+    { id: 'snare', slot: 'B', name: 'Snare', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
+      { id: 'volley', slot: 'C', start: true, name: 'Volley', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 5 }, fx: { pierce: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 pierce (28 at four). (T31: 4 → 5 a step, priced by what pierce is worth)' },
+      { id: 'vanish', slot: 'C', name: 'Vanish', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 block. Now you see me.' },
+      { id: 'gambit', slot: 'B', name: "Thief's Gambit", type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 4, to: 'pierce' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { pierce: 2 }, art: 'ranger-mark', text: 'Every round, 2 magic: an orange d4 of pierce, and a gold d6 for a purse (5–6: +5 gold).' },
     ],
   },
   wizard: {
@@ -517,13 +517,13 @@ export const CLASSES = {
     blurb: 'A frail body and a deep well of magic. A trick for every problem, and the magic to keep mending.',
     weapons: ['staff'],
     cards: [
-      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', kind: 'scale', atwill: true, splash: 'half', cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Every round: 2 magic per d8 attack (up to 6d8), and half of it arcs to every other monster. (mw1, PROPOSED)' }, // Dave: was 1 magic a die, too strong
-      { id: 'meteor', slot: 'A', name: 'Meteor', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
-      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' }, // the Wizard's starting middle card since Frog Morph left the game (Dave, 6 Nov 2026)
+      { id: 'arcbolt', slot: 'A', start: true, name: 'Arc Bolt', type: 'Dice Card', kind: 'scale', atwill: true, splash: 'half', cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 8, to: 'atk' }, fx: { atk: 5 }, text: 'Every round: 2 magic per d8 attack (up to 6d8), and half of it arcs to every other monster. (mw1, PROPOSED)' }, // Dave: was 1 magic a die, too strong
+      { id: 'meteor', slot: 'A', name: 'Meteor', type: 'Finisher Card', kind: 'round', cost: 5, minRound: 3, per: 4, splash: 'half', fx: { atk: 12 }, text: 'Round 3+: attack equal to 4 x the round number; half splashes to the others. From a great height.', unlock: 5 },
+      { id: 'bolt', slot: 'B', start: true, name: 'Magic Missile', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { pierce: 2 }, text: 'Every round: +2 pierce. Small, rude, and on time.' }, // the Wizard's starting middle card since Frog Morph left the game (Dave, 6 Nov 2026)
       // Frog Morph: 3 magic loads the next pair of numbered dice (1–2, 3–4, 5–6); Use can follow in the same round.
-    { id: 'barrier', slot: 'B', name: 'Barrier', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
-      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3 }, splash: 'half', fx: { atk: 3 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack (20 at four). Half splashes. (T31: 4 → 3 a step; with its splash it paid the most of any charge card)' },
-      { id: 'light', slot: 'C', name: 'Healing Light', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Charge 1 magic a round (max 4), then use: heal 5, 7, 9, 11. Warm as a window.' },
+    { id: 'barrier', slot: 'B', name: 'Barrier', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. A wall you packed yourself.' },
+      { id: 'coil', slot: 'C', start: true, name: 'Storm Coil', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3 }, splash: 'half', fx: { atk: 3 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack (20 at four). Half splashes. (T31: 4 → 3 a step; with its splash it paid the most of any charge card)' },
+      { id: 'light', slot: 'C', name: 'Healing Light', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 6 }, fx: { heal: 6 }, text: 'Charge 1 magic a round (max 4), then use: heal 5, 7, 9, 11. Warm as a window.' },
     ],
   },
   dwarf: {
@@ -533,14 +533,14 @@ export const CLASSES = {
     blurb: 'Stone-skinned and grudge-keeping. The deepest health pool, the thickest wall. Will not be moved. Has tried.',
     weapons: ['mace', 'tower'],
     cards: [
-      { id: 'anvil', slot: 'A', start: true, name: 'Anvil Strike', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 8, to: 'block' }, goldOn: { face: 8, gold: 3 }, fx: { block: 4 }, text: 'Every round: 1 magic per blue d8 of block (up to 6d8). Every 8 rolled also gives 3 gold. (md1, PROPOSED)' },
-      { id: 'avalanche', slot: 'A', name: 'Avalanche', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
-      { id: 'grudge', slot: 'B', start: true, name: 'Grudge', kind: 'flat', atwill: true, cost: 2, fx: {}, grudge: [0, 3, 6], text: 'Every round: 2 magic. Attack equal to the damage that got past your block last round. Dwarves keep receipts. (md1, PROPOSED)' },
-      { id: 'bulwark', slot: 'B', name: 'Shield Bash', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
-      { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
-      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 8 }, fx: { block: 8 }, text: 'Charge 1 magic a round (max 4), then use: 7, 9, 11, 13 block (40 at four). (T31: 6 → 8 a step; block is worth about half an attack point)' },
-      { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },
-      { id: 'whirlwind', slot: 'B', name: 'Whirlwind', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-forgefury', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
+      { id: 'anvil', slot: 'A', start: true, name: 'Anvil Strike', type: 'Dice Card', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 8, to: 'block' }, goldOn: { face: 8, gold: 3 }, fx: { block: 4 }, text: 'Every round: 1 magic per blue d8 of block (up to 6d8). Every 8 rolled also gives 3 gold. (md1, PROPOSED)' },
+      { id: 'avalanche', slot: 'A', name: 'Avalanche', type: 'Finisher Card', kind: 'super', cost: 6, minRound: 3, aoe: 10, fx: { atk: 10, block: 10 }, text: 'Round 3+: +10 attack, +10 block, and 10 to EVERY monster. The mountain joins in.', unlock: 5 },
+      { id: 'grudge', slot: 'B', start: true, name: 'Grudge', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 2, fx: {}, grudge: [0, 3, 6], text: 'Every round: 2 magic. Attack equal to the damage that got past your block last round. Dwarves keep receipts. (md1, PROPOSED)' },
+      { id: 'bulwark', slot: 'B', name: 'Shield Bash', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { atk: 4 }, text: 'Every round: +4 attack. The shield has feelings too.' },
+      { id: 'brace', slot: 'B', name: 'Brace', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
+      { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 8 }, fx: { block: 8 }, text: 'Charge 1 magic a round (max 4), then use: 7, 9, 11, 13 block (40 at four). (T31: 6 → 8 a step; block is worth about half an attack point)' },
+      { id: 'forgefury', slot: 'C', name: 'Forge Fury', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },
+      { id: 'whirlwind', slot: 'B', name: 'Whirlwind', type: 'Dice Card', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-forgefury', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
     ],
   },
   bard: {
@@ -550,14 +550,14 @@ export const CLASSES = {
     blurb: 'The heart of the party. Songs that heal, hymns that harden, and a knack for chaos that somehow helps.',
     weapons: ['dagger', 'bracer'],
     cards: [
-      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, party: true, fx: { heal: 4 }, text: 'Every round: 1 magic per green d6 (up to 6d6). The total heals you and every hero in the party. (mb1, PROPOSED)' },
-      { id: 'finale', slot: 'A', name: 'Finale', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
-      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', kind: 'luck', atwill: true, cost: 2, fx: { atk: 4 }, text: 'Every round, 2 magic: roll a d6. 1-2 +1 magic, 3-4 +5 attack, 5-6 +10 attack and +1 magic. Fingers crossed. Professionally. (mc1, PROPOSED: 3/6 → 5/10)' },
-      { id: 'discord', slot: 'B', name: 'Discord', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
-      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 2 }, fx: { atk: 3, heal: 2 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack and 1, 3, 5, 7 heal. (mb1, PROPOSED heal 3 → 2)' },
-      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 gold. Music to a peddler\'s ears.' },
-      { id: 'crowd', slot: 'B', name: 'Crowd Pleaser', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'gold', table: [[2, 0], [4, 5], [6, 10]] }], fx: { gold: 5 }, art: 'bard-goldhymn', text: 'Every round, 2 magic: roll a gold d6. 1–2 nothing, 3–4 +5 gold, 5–6 +10 gold. Impress the crowd.' },
-      { id: 'hymn', slot: 'A', name: 'Battle Hymn', kind: 'mix', atwill: true, cost: 3, party: true, roll: [{ n: 2, s: 6, to: 'heal' }, { n: 1, s: 4, to: 'splash' }], fx: { heal: 7 }, art: 'bard-mending', text: 'Every round, 3 magic: two green d6 heal every hero, and a pink d4 splashes every other monster.' },
+      { id: 'mending', slot: 'A', start: true, name: 'Mending Song', type: 'Dice Card', kind: 'scale', atwill: true, cost: 1, step: 1, max: 6, maxDice: 6, dice: { n: 1, s: 6, to: 'heal' }, party: true, fx: { heal: 4 }, text: 'Every round: 1 magic per green d6 (up to 6d6). The total heals you and every hero in the party. (mb1, PROPOSED)' },
+      { id: 'finale', slot: 'A', name: 'Finale', type: 'Finisher Card', kind: 'super', cost: 6, minRound: 3, aoe: 8, fx: { atk: 8, heal: 8, block: 8 }, text: 'Round 3+: +8 attack, heal 8, +8 block, and 8 to EVERY monster. Encore not required.', unlock: 5 },
+      { id: 'luckyverse', slot: 'B', start: true, name: 'Lucky Verse', type: 'Side-Game Card', kind: 'luck', atwill: true, cost: 2, fx: { atk: 4 }, text: 'Every round, 2 magic: roll a d6. 1-2 +1 magic, 3-4 +5 attack, 5-6 +10 attack and +1 magic. Fingers crossed. Professionally. (mc1, PROPOSED: 3/6 → 5/10)' },
+      { id: 'discord', slot: 'B', name: 'Discord', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
+      { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 2 }, fx: { atk: 3, heal: 2 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack and 1, 3, 5, 7 heal. (mb1, PROPOSED heal 3 → 2)' },
+      { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 gold. Music to a peddler\'s ears.' },
+      { id: 'crowd', slot: 'B', name: 'Crowd Pleaser', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'gold', table: [[2, 0], [4, 5], [6, 10]] }], fx: { gold: 5 }, art: 'bard-goldhymn', text: 'Every round, 2 magic: roll a gold d6. 1–2 nothing, 3–4 +5 gold, 5–6 +10 gold. Impress the crowd.' },
+      { id: 'hymn', slot: 'A', name: 'Battle Hymn', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 3, party: true, roll: [{ n: 2, s: 6, to: 'heal' }, { n: 1, s: 4, to: 'splash' }], fx: { heal: 7 }, art: 'bard-mending', text: 'Every round, 3 magic: two green d6 heal every hero, and a pink d4 splashes every other monster.' },
     ],
   },
 };
