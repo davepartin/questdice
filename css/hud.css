@@ -835,3 +835,5 @@ body.t3-on #scene { -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--
 .hc-cur .hc-face.now { width: 2.8rem; height: 2.8rem; }
 .hc-state { margin: 0; font-size: .72rem; line-height: 1.25; color: #ddd4ea; } .hc-state.used { color: #ffd77a; font-weight: 700; }
 .hc-rules { font-size: .72rem; color: #cfc6dc; } .hc-rules summary { cursor: pointer; min-height: 1.6rem; display: flex; align-items: center; font-weight: 700; color: #e6c97a; } .hc-rules p { margin: .2rem 0 0; line-height: 1.3; }
+/* splash: pink with a white edge, the fork (Dave, 5 Nov 2026: pink means "it hits the others too") */
+.ic .sp { fill: #ff4fb8; stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; paint-order: stroke; }

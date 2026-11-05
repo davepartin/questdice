@@ -109,22 +109,24 @@ const say = (...bits) => h('div', { class: 't28-say' }, ...bits);
 const plain = (text) => (text ? h('div', { class: 't28-plain' }, text) : null); // the few plain words, on their own line
 const fine = (...bits) => h('div', { class: 't28-fine' }, ...bits);
 const word = (fx) => h('b', { class: `t28-w fx-${fx}` }, HK.icon(fx), T28_WORD[fx]);
+// splash: the pink fork (Dave, 5 Nov 2026: pink means "it hits the others too"), the amount, and where it goes
+const splashTag = (amt, where) => h('div', { class: 't28-splash', role: 'img', 'aria-label': `Splash: ${amt === '½' ? 'half' : amt} ${where}` }, HK.icon('splash'), h('b', {}, amt), h('span', {}, where));
 function t28Body(k, l, p) {
   const camp = !!p.camp; const f = FX(k); const out = [];
   if (k.kind === 'scale') {
     const s = k.dice.s; const top = E.powerDice(k, E.scaleMax(k, l), l); const pay = camp ? E.powerCost(k, k.cost, l) : (p.x ?? k.cost); const n = E.powerDice(k, pay, l);
     out.push(h('div', { class: `t28-dice n${top}`, role: 'img', 'aria-label': `${n} of ${top} ${WORD[f]} dice` }, Array.from({ length: top }, (_, i) => (i < n ? die(f, s) : space(s)))));
     out.push(say(word(f), k.goldOn ? h('span', { class: 't28-gold' }, 'each', die(f, s, k.goldOn.face), '=', t28Sym('gold', { val: `+${k.goldOn.gold}` })) : null));
-    out.push(plain(k.splash === 'half' ? (k.id === 'arcbolt' ? '½ arcs to every other monster' : '½ splashes on every other monster') : k.party ? 'Heals every hero' : null));
+    out.push(k.splash === 'half' ? splashTag('½', k.id === 'arcbolt' ? 'arcs to every other monster' : 'to every other monster') : plain(k.party ? 'Heals every hero' : null));
     out.push(fine(camp ? `${E.scaleStep(k)} magic a die · up to ${top} dice` : `${n} of ${top} dice · ${pay} magic`));
   } else if (k.kind === 'charge') {
     const have = camp ? 0 : (p.stored || 0); const fs = Object.keys(typeof k.per === 'object' ? k.per : { atk: 1 });
     out.push(h('div', { class: `t28-charge rows${fs.length}` }, fs.map((x) => h('div', { class: 't28-row', role: 'img', 'aria-label': `${WORD[x]} at 1 to ${k.max} charges` },
       Array.from({ length: k.max }, (_, i) => t28Sym(x, { on: i < have, now: i === have - 1, val: E.chargeGain(k, i + 1, l)[x] }))))));
     const g = have ? E.chargeGain(k, have, l) : null;
-    out.push(have ? say(h('span', {}, 'Use now:'), ...fs.map((x) => h('b', { class: `t28-w fx-${x}` }, HK.icon(x), `+${g[x]}`)), k.splash === 'half' ? h('span', {}, '· ½ splashes') : null)
+    out.push(have ? say(h('span', {}, 'Use now:'), ...fs.map((x) => h('b', { class: `t28-w fx-${x}` }, HK.icon(x), `+${g[x]}`)), k.splash === 'half' ? h('b', { class: 't28-w fx-splash' }, HK.icon('splash'), '½') : null)
       : say(h('span', {}, 'Charge 1 magic a round')));
-    if (k.splash === 'half') out.push(plain('½ splashes on every other monster'));
+    if (k.splash === 'half') out.push(splashTag('½', 'to every other monster'));
     out.push(fine(camp ? `Up to ${k.max} charges · use when you like` : `${have} of ${k.max} charged`));
   } else if (k.grudge) {
     const bonus = k.grudge[Math.min(l, k.grudge.length - 1)] || 0; const hurt = camp ? null : (p.hurt ?? 0);
@@ -145,12 +147,12 @@ function t28Body(k, l, p) {
     const fx = Object.entries(k.fx || {});
     out.push(h('div', { class: `t28-one n${fx.length}` }, fx.map(([x, v]) => t28Sym(x, { val: `+${E.scaleNum(v, l)}`, big: fx.length === 1 }))));
     out.push(say(...fx.map(([x]) => word(x))));
-    if (k.aoe) out.push(h('div', { class: 't28-all' }, t28Sym('atk', { val: E.scaleNum(k.aoe, l) }), h('span', {}, 'to every monster')));
+    if (k.aoe) out.push(splashTag(String(E.scaleNum(k.aoe, l)), 'to every monster'));
     out.push(fine(`Round ${k.minRound}+ · once a battle`));
   } else if (k.kind === 'round') { // Meteor: grows with the round number
     const r = camp ? (k.minRound || 1) : (p.round || 1);
     out.push(h('div', { class: 't28-one' }, t28Sym('atk', { val: `+${E.roundGain(k, r, l)}`, big: true })));
-    out.push(say(word('atk')), plain(`${E.roundGain(k, 1, l)} × the round number${k.splash === 'half' ? ' · ½ splashes' : ''}`));
+    out.push(k.splash === 'half' ? null : say(word('atk')), plain(`${E.roundGain(k, 1, l)} × the round number`), k.splash === 'half' ? splashTag('½', 'to every other monster') : null); // (the big starburst already says attack)
     out.push(fine(camp ? `Round ${k.minRound}+ · shown at round ${r}` : `Round ${r} · from round ${k.minRound}`));
   } else if (k.kind === 'flat' && k.fx) { // every-round powers: one or two big symbols
     const fx = Object.entries(k.fx);
@@ -172,7 +174,7 @@ function t28Cover(k, l) {
   if (k.riposte) return [m('block', `+${E.scaleNum(k.fx.block, l)}`)];
   if (k.grudge) { const b = k.grudge[Math.min(l, k.grudge.length - 1)] || 0; return [m('atk', b ? `hurt +${b}` : 'hurt')]; }
   if (k.kind === 'charge' && !k.frogLoad) return Object.entries(E.chargeGain(k, k.max, l)).map(([x, v]) => m(x, `+${v}`));
-  if (k.kind === 'super') return [...Object.entries(k.fx || {}).map(([x, v]) => m(x, `+${E.scaleNum(v, l)}`)), ...(k.aoe ? [m('atk', `${E.scaleNum(k.aoe, l)} all`)] : [])];
+  if (k.kind === 'super') return [...Object.entries(k.fx || {}).map(([x, v]) => m(x, `+${E.scaleNum(v, l)}`)), ...(k.aoe ? [m('splash', `${E.scaleNum(k.aoe, l)} all`)] : [])];
   if (k.kind === 'round') return [m('atk', `${E.roundGain(k, 1, l)} × round`)];
   if (k.kind === 'flat' && k.fx) return Object.entries(k.fx).map(([x, v]) => (x === 'free' ? m('magic', `×${v + l} reroll`) : x === 'weaken' ? m('weaken', `−${E.scaleNum(v, l)}`) : m(x, `+${E.scaleNum(v, l)}`)));
   return null;
@@ -222,12 +224,12 @@ function cardTraits(k) {
   const effects = k.kind === 'charge' ? k.per || {} : k.grudge ? { atk: 1 } : k.kind === 'luck' ? { atk: 1, magic: 1 } : k.fx;
   const labels = [['atk','Attack'],['block','Block'],['heal','Heal'],['pierce','Pierce'],['free','Reroll'],['weaken','Weaken'],['magic','Magic'],['gold','Gold']].filter(([key]) => effects?.[key]);
   return h('div', { class: 'mc-traits' }, labels.map(([key,label]) => h('span', { class: `mc-trait ${key}` }, HK.icon(key === 'free' ? 'reroll' : key), label)),
-    k.party ? h('span', { class: 'mc-trait splash' }, k.id === 'mending' ? 'All heroes' : 'Party') : null,
+    k.party ? h('span', { class: 'mc-trait party' }, k.id === 'mending' ? 'All heroes' : 'Party') : null,
     k.goldOn ? h('span', { class: 'mc-trait gold' }, HK.icon('gold'), `On ${k.goldOn.face}s`) : null,
     k.markGold ? h('span', { class: 'mc-trait gold' }, HK.icon('gold'), 'On defeat') : null,
     k.fx?.frog ? h('span', { class: 'mc-trait transform' }, 'Transform') : null,
-    k.splash ? h('span', { class: 'mc-trait splash' }, '½ Splash') : null,
-    k.aoe ? h('span', { class: 'mc-trait splash' }, 'All enemies') : null,
+    k.splash ? h('span', { class: 'mc-trait splash' }, HK.icon('splash'), '½ Splash') : null,
+    k.aoe ? h('span', { class: 'mc-trait splash' }, HK.icon('splash'), 'All enemies') : null,
     k.riposte ? h('span', { class: 'mc-trait counter' }, 'Counter') : null);
 }
 // Camp shares the reviewed card shell, but has no battle round, damage or stored charges.

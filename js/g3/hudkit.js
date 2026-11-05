@@ -17,6 +17,7 @@ const ICONS = {
   team: '<circle class="p" cx="8" cy="8.2" r="3.2"/><circle class="p" cx="16.6" cy="9.2" r="2.7"/><path class="p" d="M2 20.5 C2 16.4 4.7 14 8 14 C11.3 14 14 16.4 14 20.5 Z M13.4 20.5 C13.6 17.6 14.8 15.3 16.6 15.3 C19.6 15.3 22 17.4 22 20.5 Z"/>',
   heal: '<path class="f" d="M9.4 3 H14.6 V9.4 H21 V14.6 H14.6 V21 H9.4 V14.6 H3 V9.4 H9.4 Z"/><path class="h" d="M10.6 5 V10.6 H5"/>',
   gold: '<circle class="p" cx="12" cy="12" r="9.6"/><path class="h" d="M7 8.6 A6 6 0 0 1 11 6"/>',
+  splash: '<path class="sp" d="M 10.97 21.61 L 5.53 14.68 L 3.99 15.89 L 3.60 10.04 L 9.18 11.82 L 7.62 13.06 L 13.03 19.99 Z M 10.68 20.80 L 10.68 12.00 L 8.70 12.00 L 12.00 7.16 L 15.30 12.00 L 13.32 12.00 L 13.32 20.80 Z M 10.97 19.99 L 16.38 13.06 L 14.82 11.82 L 20.40 10.04 L 20.01 15.89 L 18.47 14.68 L 13.03 21.61 Z M13.98 20.8 a1.98 1.98 0 1 0 0.01 0 Z"/>', // the splash fork: pink with a white edge (Dave, 5 Nov 2026), the same mark the dice and cards carry
   stagger: '<path class="f" d="M12 1.2 L14 8 L21 5 L16.5 11 L23 14 L15.6 15.2 L16 22.6 L12 17.4 L8 22.6 L8.4 15.2 L1 14 L7.5 11 L3 5 L10 8 Z"/>',
   bind: '<g transform="rotate(-40 12 12)"><rect class="s" x="1.8" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/><rect class="s" x="10.6" y="8.4" width="11.6" height="7.2" rx="3.6" style="stroke-width:2.1"/></g>',
   drain: '<path class="f" d="M15.4 2.6 A9.6 9.6 0 1 0 21.6 15.8 A7.6 7.6 0 0 1 15.4 2.6 Z"/><path class="h" d="M11 5.4 A7 7 0 0 0 8 12"/>',
@@ -228,7 +229,7 @@ export function synergyList(ev, mods) {
   if (ev.straight) out.push({ key: `s${ev.straight}`, kind: 'good', icon: 'star', text: `${ev.straight}-STRAIGHT`, sub: `+${ev.straightBonus}` });
   // (Heart Boost is no longer a banner: Dave, 4 Nov 2026, "it looks like real combo news". The glowing rings on the Heart and the dice it
   // backs show it, and its amount is already in the forecast totals above.)
-  if (ev.arrow) { const a = ev.arrow; out.push({ key: `ar-${a.kind}`, kind: 'good', icon: a.kind === 'pierce' ? 'pierce' : a.kind === 'fire' ? 'stagger' : 'weaken', // the lab's arrowheads (js/lab.js)
+  if (ev.arrow) { const a = ev.arrow; out.push({ key: `ar-${a.kind}`, kind: 'good', icon: a.kind === 'pierce' ? 'pierce' : a.kind === 'fire' ? 'splash' : 'weaken', // a Fire arrow splashes: the pink fork // the lab's arrowheads (js/lab.js)
     text: `${a.kind === 'pierce' ? 'PIERCING' : a.kind.toUpperCase()} ARROW`, sub: arrowBannerSub(a, WEAPONS2.arrowRules) }); }
   if (mods.weaken) out.push({ key: 'wk', kind: '', icon: 'weaken', text: `Foes hit ${mods.weaken} softer`, sub: '' });
   return out;

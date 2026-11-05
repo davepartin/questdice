@@ -434,7 +434,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   fb.num = (pc, text, kind = 'dmg', { dx = 0, dy = 0 } = {}) => {
     const { x, r } = at(pc); const W = fb.el.clientWidth || 360; const long = String(text).length > 8;
     const mag = Number(String(text).replace(/[^0-9]/g, '')) || 0;
-    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 25 && !long ? ' big huge' : mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, HK.rich(text));
+    const el = h('div', { class: `fb-num ${kind}${long ? ' long' : ''}${mag >= 25 && !long ? ' big huge' : mag >= 10 && !long ? ' big' : ''}`, style: { left: `${x + dx}px`, top: `${Math.max(2, r.top + 6 + dy)}px` } }, kind === 'splash' ? HK.icon('splash', 'fb-fork') : null, HK.rich(text)); // splash: pink, behind the fork
     fx.append(el);
     const half = (el.offsetWidth || 40) / 2 + 4; el.style.left = `${clamp(x + dx, half, W - half)}px`; // never off the edge of the table
     // stays up five seconds (Dave) so it can be read: it pops in, drifts up slowly, and fades only at the end

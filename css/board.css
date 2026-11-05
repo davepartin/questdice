@@ -470,3 +470,5 @@
 /* waiting on the left (half size): wrap the word under the face rather than spill out of the card */
 .fb-side.heroes .fb-heart { flex-wrap: wrap; justify-content: center; max-width: 100%; row-gap: .06rem; font-size: .5rem; }
 
+.fb-num.splash { color: #ff4fb8; display: inline-flex; align-items: center; gap: .12em; }
+.fb-num.splash .fb-fork { width: 1.05em; height: 1.05em; flex: none; filter: drop-shadow(0 1px 1px #0008); }

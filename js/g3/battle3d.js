@@ -1318,7 +1318,7 @@ async function lockInInner() {
   for (const sp of rep.splashed || []) { // splash / area damage on the other monsters
     if (sp.uid === rep.targetUid || sp.dealt <= 0) continue;
     const a = foePc(sp.uid); if (!a) continue;
-    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'dmg');
+    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'splash', { dy: 54 }); // pink, a little lower than the main hit: damage that spilled past your target
   }
   for (const e of b.enemies) updatePlate(e);
   await wait(0.2);
@@ -1457,7 +1457,7 @@ async function playStrike(s, rep) {
   if (B.trace) B.trace.push({ at: Math.round(performance.now()), ev: 'strike', name: s.name, target: s.targetUid, dealt: s.dealt, guarded: s.guarded || 0, killed: !!s.killed });
   for (const sp of s.splashed || []) { // splash / area damage on the other monsters
     const a = foePc(sp.uid); if (!a || sp.dealt <= 0) continue;
-    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'dmg');
+    a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'splash', { dy: 54 }); // pink, a little lower than the main hit: damage that spilled past your target
     const x = b.enemies.find((y) => y.uid === sp.uid); if (x) paintStaged(x);
   }
   const down = [...(s.killed ? [s.targetUid] : []), ...(s.splashed || []).filter((sp) => sp.killed && sp.uid !== s.targetUid).map((sp) => sp.uid)];

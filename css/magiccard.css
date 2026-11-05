@@ -179,7 +179,8 @@
 .mc-traits{position:absolute;z-index:3;left:16%;top:22%;display:flex;flex-direction:column;align-items:flex-start;gap:.6cqi}
 .mc-trait{display:inline-flex;align-items:center;gap:.6cqi;padding:.65cqi 1.1cqi;border-radius:.6cqi;font:800 3.4cqi/1 var(--font-body,sans-serif);text-transform:uppercase}
 .mc-trait.attack{background:#a81e22;color:#fff}.mc-trait.attack .ic{width:3.3cqi;height:3.3cqi}
-.mc-trait.splash{background:#f5f0e4;color:#242027}
+.mc-trait.party{background:#f5f0e4;color:#242027}
+.mc-trait.splash{background:#ffe3f3;color:#a3105f;box-shadow:inset 0 0 0 1px #ff4fb8;display:inline-flex;align-items:center;gap:.2em}.mc-trait.splash .ic{width:1.15em;height:1.15em;overflow:visible}
 .mc-attack-track{display:flex;align-items:center;justify-content:center;gap:1.5cqi;width:100%}
 .mc-attack-track>.ic{width:7cqi;height:7cqi;color:#df2525;flex:none}
 .mc-reviewed-template[data-card="cleave"] .mc-lv.act .mc-slots{display:grid;grid-template-columns:repeat(4,11cqi);gap:1.4cqi;justify-content:center}
@@ -788,3 +789,9 @@
 .t28.tight .t28-say{font-size:4.3cqi}.t28.tight .t28-plain{font-size:3.9cqi}.t28.tight .t28-fine{font-size:3.4cqi}
 .t28.tight .t28-all{font-size:3.9cqi;padding:.5cqi 2cqi}.t28.tight .t28-all .t28-sym{width:9cqi;height:9cqi}
 .t28.tight .t28-reroll{width:18cqi;height:18cqi}.t28.tight .t28-big{font-size:11cqi}
+/* splash on the magic cards: the pink fork, its amount and where it goes (Dave, 5 Nov 2026: pink means "it hits the others too") */
+.t28-splash{display:inline-flex;align-items:center;gap:1.4cqi;padding:.9cqi 2.8cqi .9cqi 1.6cqi;border-radius:99px;background:#ffe3f3;box-shadow:inset 0 0 0 .5cqi #ff4fb8;font:800 4.3cqi/1.1 var(--ui,sans-serif);color:#a3105f;max-width:94%}
+.t28-splash .ic{width:7.4cqi;height:7.4cqi;flex:none;overflow:visible}
+.t28-splash b{font:900 5.6cqi/1 var(--font-number,sans-serif);color:#d4167e}
+.t28-w.fx-splash{color:#d4167e}
+.t28-cv.fx-splash{color:#d4167e}
