@@ -820,6 +820,49 @@ export function specialView(b, e) {
   const hero = b?.hero || b?.fighters?.[b?.active || 0]?.hero; const seen = hero?.seenSpecials || [];
   return { id: e.special.id, name: e.special.name || info.name, top: l.top, bottom: l.bottom, tone: info.tone, icon: info.icon, always: !!info.always, isNew: !seen.includes(e.special.id), progress: specialProgress(b, e) };
 }
+// Read-only timing for the card footer. Always describe the actual current intent/state;
+// an interrupted wind-up skips Slam, so a calendar based only on round % 3 would lie.
+export function specialTiming(b, e) {
+  const sp = e?.special; const info = SPECIAL_INFO[sp?.id];
+  if (!SPECIALS.on || !info || !(e.hp > 0)) return null;
+  const name = sp.name || info.name;
+  const out = { id: sp.id, name, active: !!labelOf(e), badge: '', phase: '', line: '', next: '', steps: null };
+  switch (sp.id) {
+    case 'slam': {
+      const phase = e.intent?.v === 'charge' ? 0 : e.intent?.double ? 1 : 2;
+      out.phase = ['windup', 'slam', 'normal'][phase]; out.badge = '3-step cycle';
+      out.steps = ['Wind-Up', name, 'Normal'].map((label, i) => ({ label, current: i === phase }));
+      if (phase === 0) { out.line = `Deal ${sp.goal} damage to interrupt.`; out.next = `${name} next unless interrupted.`; }
+      else if (phase === 1) { out.line = 'Double attack this round.'; out.next = 'Normal next round.'; }
+      else { out.line = `D${e.faces?.length || 4} move this round.`; out.next = 'Wind-Up next round.'; }
+      break;
+    }
+    case 'spawn': {
+      const limit = Math.max(0, sp.max ?? SPECIALS.spawnMax); const left = Math.max(0, limit - (sp.spawned || 0));
+      out.phase = left ? 'ready' : 'spent'; out.badge = 'Every round'; out.active = left > 0;
+      const minion = mdef(sp.minion || SPECIALS.minion, campOfBattle(b))?.name || 'monster';
+      out.line = left ? `Hit it or it summons 1 ${minion}.` : 'No summons remaining.';
+      out.remaining = left; out.capacity = limit;
+      break;
+    }
+    case 'regrow':
+      out.phase = 'ready'; out.badge = 'Every round'; out.line = `Deal ${sp.goal} damage or it heals ${sp.goal}.`; break;
+    case 'shield':
+      out.phase = sp.broken ? 'broken' : 'guarding'; out.badge = 'Until broken'; out.active = !sp.broken;
+      out.line = sp.broken ? 'Shield broken.' : `Attack ${sp.goal} breaks its ${sp.block} block.`; break;
+    case 'bounty': {
+      const left = Math.max(0, sp.left || 0); out.active = left > 0 && !sp.done;
+      out.phase = out.active ? 'countdown' : 'expired'; out.badge = out.active ? `${left} round${left === 1 ? '' : 's'} left` : 'Expired';
+      out.line = out.active ? `Defeat it for ${sp.gold} gold.` : 'Bounty expired.'; break;
+    }
+    case 'sleeping':
+      out.phase = sp.awake ? 'awake' : 'asleep'; out.badge = sp.awake ? 'Awake' : 'Until hit';
+      out.line = sp.awake ? 'Double attacks until defeated.' : 'Leave it alone, or finish it in one round.';
+      out.next = sp.awake ? '' : 'Survives a hit? It wakes and hits double.'; break;
+    default: return null;
+  }
+  return out;
+}
 // Which Specials each living monster owns this fight (the mini card picker lists them all, lighting the one live this round).
 // A Special belongs to the fight, not to the kind of monster: act, step and fight kind decide (pickSpecials), one per monster at most.
 export function specialsOwned(b) {

@@ -62,13 +62,24 @@ function moveDie(face, move, sides = 6) {
   if (valid) paintDie(el, face);
   return el;
 }
+function timingFooter(t) {
+  const color = POWERS[t.id]?.c || '#a99e8c';
+  return h('div', { class: `mnc-special-area mnc-timing ${t.active ? 'active' : 'inactive'}`, style: `--rc:${color}`, 'data-phase': t.phase },
+    h('div', { class: 'mnc-timing-head' }, h('span', { class: 'mnc-special-label' }, 'Special'), h('span', { class: 'mnc-cadence' }, t.badge)),
+    h('div', { class: 'mnc-timing-body' },
+      h('b', { class: 'mnc-timing-name' }, t.name),
+      t.steps ? h('div', { class: 'mnc-cycle', 'aria-label': 'Special cycle' }, ...t.steps.map(s => h('span', { class: s.current ? 'current' : '', 'aria-current': s.current ? 'step' : null }, s.label))) : null,
+      h('div', { class: 'mnc-timing-rule' }, t.line),
+      t.next ? h('div', { class: 'mnc-timing-next' }, t.next) : null,
+      t.remaining != null ? h('div', { class: 'mnc-summon-count' }, h('span', { class: 'mnc-summon-pips', 'aria-hidden': 'true' }, ...Array.from({ length: Math.min(6, t.capacity) }, (_, i) => h('i', { class: i < t.remaining ? 'available' : '' }))), `${t.remaining} summon${t.remaining === 1 ? '' : 's'} left`) : null));
+}
 function cardFacts(F, specials) {
   const pct = Math.max(0, Math.min(100, (100 * F.hp) / Math.max(1, F.maxHp)));
   const m = F.move; const DIE = F.die; const fromDie = !!(DIE?.rolled && DIE.rows.some((r) => r.lit));
-  const moveBox = m && !fromDie ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
+  const moveBox = m && !fromDie && F.special?.phase !== 'windup' ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
     h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null), m.line ? h('div', { class: 'mnc-move-line' }, m.line) : null) : null;
   const dieBox = DIE?.rows?.length ? h('div', { class: 'mnc-die' },
-    fromDie ? null : h('small', { class: 'mnc-die-head' }, m ? 'Move die · rolls again next round' : `Move die · d${DIE.sides || 6} each round`), // (a rolled die says it already: Dave, 3 Nov 'too much data')
+    fromDie || F.special ? null : h('small', { class: 'mnc-die-head' }, m ? 'Move die · rolls again next round' : `Move die · d${DIE.sides || 6} each round`), // (a rolled die says it already: Dave, 3 Nov 'too much data')
     ...DIE.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
       h('div', { class: 'mnc-face-main' }, h('span', { class: 'mnc-n' }, nums(r.nums)), HK.icon(r.icon || 'atk'), h('b', {}, r.word), r.lit && r.dice ? h('span', { class: 'mnc-dice' }, r.dice) : null), // only the rolled move shows its dice (Dave, 3 Nov)
       r.lit && m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null))) : null;
@@ -76,7 +87,7 @@ function cardFacts(F, specials) {
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
     moveBox, dieBox,
     h('div', { class: 'mnc-facts-line' }, 'Block ', h('b', {}, F.block), ' · Speed ', h('b', {}, F.speed)), // one quiet line (the Special's box speaks for itself)
-    h('div', { class: `mnc-special-area${specials.some(r => r.classList.contains('on')) ? ' active' : ' inactive'}` },
+    F.special ? timingFooter(F.special) : h('div', { class: `mnc-special-area${specials.some(r => r.classList.contains('on')) ? ' active' : ' inactive'}` },
       h('div', { class: 'mnc-special-label' }, specials.some(r => r.classList.contains('on')) ? 'Special · Active' : specials.length ? 'Special · Inactive' : 'Special · None'),
       specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null),
   ].filter(Boolean);

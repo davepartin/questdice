@@ -1197,7 +1197,7 @@ function openPicker(afterTitle = false) {
 }
 // What the monster card says about a monster (the same numbers its plaque shows): life, this round's move and dice, block, speed.
 const UNIT_WORD = { dmg: 'damage', pierce: 'damage, through block', guard: 'block', heal: 'heals itself', breath: 'fire on every hero' };
-function cardFactsOf(e, b) {
+export function cardFactsOf(e, b) {
   const camp = b.hero?.campaign || b.fighters?.[0]?.hero?.campaign; const d = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {};
   const v = HK.intentView(e); const p = v ? plaquePlan(e, v) : null; const cap = (t) => (t ? t[0].toUpperCase() + t.slice(1) : '');
   const line = !v ? '' : /^\d/.test(String(v.fig)) && UNIT_WORD[v.unit] ? `${v.fig} ${UNIT_WORD[v.unit]}${v.subIcon ? `, ${v.hint}` : ''}` : v.call ? `${cap(v.call.head.toLowerCase())}: ${v.call.sub}` : cap(v.hint);
@@ -1207,7 +1207,7 @@ function cardFactsOf(e, b) {
   const rows = []; faces.forEach((f, k) => { const key = faces.length === 4 ? String(k) : [f.n, f.v].join('|'); let r = rows.find((x) => x.key === key);
     if (!r) { const fe = { ...e, intent: { ...f }, buff: 0, fury: 0 }; const fv = HK.intentView(fe); const fp = fv ? plaquePlan(fe, fv) : null; r = { key, nums: [], word: String(f.n || fp?.word || '').toUpperCase(), dice: fp?.dice || '', icon: fp?.icon, tone: fp?.tone, lit: false }; rows.push(r); }
     r.nums.push(k + 1); if (e.face === k + 1) { r.lit = true; if (p?.dice) r.dice = p.dice; } });
-  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { sides: faces.length, rolled: e.face || null, rows } };
+  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { sides: faces.length, rolled: e.face || null, rows }, special: E.specialTiming(b, e) };
 }
 function showCards(b = B.b, { top = null, reveal = false } = {}) {
   if (!b || B.b !== b || B.ended || !alive().length || B.root.querySelector('.mnc-veil')) return;
