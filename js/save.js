@@ -97,6 +97,7 @@ export function migrateHero(hero) {
   if (Array.isArray(hero.dice)) hero.dice = hero.dice.filter((d) => d !== 'P');
   migrateStarterDice(hero);
   migrateFrogMorph(hero);
+  migrateNoFrog(hero);
   for (const slot of ['SW', 'SE']) clearAutoTalent(hero, slot); // a still-locked talent die loses the face 4 the old newHero filled in (26 Oct 2026)
   return hero;
 }
@@ -111,6 +112,20 @@ export function migrateFrogMorph(hero) {
     hero.gold = (Number(hero.gold) || 0) + refund;
     hero.frogMorphRefundGold = refund;
   }
+  return refund;
+}
+// Frog Morph left the game (Dave, 6 Nov 2026: "Remove the frog card from the game"). Magic Missile is the Wizard's starting middle card now
+// (cardsOf falls back to it by itself). Any gold paid for Frog Morph ranks and not already returned comes back once; the old rank is cleared.
+export function migrateNoFrog(hero) {
+  if (!hero || hero.frogRemoved) return 0;
+  const rank = Math.max(0, Math.min(POWER_UPGRADE.length, Math.floor(Number(hero.powerLevel?.polymorph) || 0)));
+  const paid = POWER_UPGRADE.slice(0, rank).reduce((sum, cost) => sum + cost, 0);
+  const refund = Math.max(0, paid - (Number(hero.frogMorphRefundGold) || 0));
+  if (refund) hero.gold = (Number(hero.gold) || 0) + refund;
+  if (hero.powerLevel) delete hero.powerLevel.polymorph;
+  if (Array.isArray(hero.learned)) hero.learned = hero.learned.filter((id) => id !== 'polymorph');
+  if (hero.powers?.B === 'polymorph') delete hero.powers.B;
+  hero.frogRemoved = true; if (refund) hero.frogRefundGold = refund;
   return refund;
 }
 // Talent face 4 (26 Oct 2026): before then newHero pre-filled face 4 of BOTH talent dice with the class symbol, so Talent Two opened with it set.

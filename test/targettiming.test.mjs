@@ -13,9 +13,9 @@ const fight = (cls, enemies = ['goblin', 'goblin', 'goblin']) => {
 };
 const card = (cls, id) => D.CLASSES[cls].cards.find((c) => c.id === id);
 
-test('which powers are targeted: Polymorph, Hunter’s Mark and the supers; nothing else', () => {
+test('which powers are targeted: Hunter’s Mark and the supers; nothing else', () => {
   const targeted = []; for (const [cls, v] of Object.entries(D.CLASSES)) for (const k of v.cards || []) if (E.isTargeted(k)) targeted.push(`${cls}:${k.id}`);
-  assert.deepEqual(targeted.sort(), ['dwarf:avalanche', 'bard:finale', 'knight:judgment', 'ranger:mark', 'ranger:rain', 'wizard:polymorph'].sort());
+  assert.deepEqual(targeted.sort(), ['dwarf:avalanche', 'bard:finale', 'knight:judgment', 'ranger:mark', 'ranger:rain'].sort());
   for (const k of ['volley', 'aimed', 'quickdraw']) assert.equal(E.isTargeted(card('ranger', k)), false);
   assert.equal(E.needsDice(card('ranger', 'quickdraw')), true, 'a free reroll needs dice');
   assert.equal(E.needsDice(card('ranger', 'mark')), false);
@@ -27,13 +27,6 @@ test('before the roll a power can be used: it costs magic and sets its counters;
   assert.ok(E.castPower(b, 'volley'), 'a charge before the roll'); assert.equal(b.charge.volley, 1);
   assert.equal(E.castPower(b, 'mark'), null, 'once a round');
   E.startRoll(b); assert.equal(b.phase, 'shape'); assert.equal(b.mods.pierce, 4, 'the roll does not clear what you used before it'); assert.equal(b.markGold, gold);
-});
-
-test('heal works any time before the lock; a pre-roll Polymorph still freezes the monster you lock in on', () => {
-  const { b } = fight('wizard'); b.hp = Math.max(1, b.maxHp - 12); const hp = b.hp;
-  assert.ok(E.healSpend(b), 'heal before the roll'); assert.ok(b.hp > hp);
-  b.charge = { polymorph: 3 }; assert.ok(E.castPower(b, 'polymorph', { release: true }), 'Polymorph (3 charges, sure) before the roll'); assert.equal(b.mods.frog, 1);
-  E.startRoll(b); const rep = E.resolve(b, { target: 1 }); assert.equal(rep.frog, b.enemies[1].uid, 'the frog is the target that was locked in on');
 });
 
 test('no power before the fight is on (done) and none with the wrong id', () => {

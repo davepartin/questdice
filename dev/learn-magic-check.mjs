@@ -23,11 +23,11 @@ check('Magic page: a way to the Learn-magic shelf', await p.evaluate(() => !!doc
 await p.locator('.cp-more').click(); await p.waitForTimeout(800);
 check('the Learn-magic link opens the Camp Store', await p.evaluate(() => window.QD.S.campPage === 'camp' && !!document.getElementById('zn-magic')));
 const shelf = await p.evaluate(() => [...document.querySelectorAll('#zn-magic .cst-card')].map((c) => c.querySelector('.cst-title')?.textContent));
-check('Learn magic lists the knight\'s four other powers', shelf.length === 4 && ['Judgment', 'Shield Up', 'Press the Attack', 'Second Wind'].every((n) => shelf.includes(n)), shelf.join(', '));
+check('Learn magic lists the knight\'s six other powers (with the side games Showboat and Field Dressing)', shelf.length === 6 && ['Judgment', 'Shield Up', 'Press the Attack', 'Second Wind', 'Showboat', 'Field Dressing'].every((n) => shelf.includes(n)), shelf.join(', '));
 const pics = await p.evaluate(() => [...document.querySelectorAll('#zn-magic img')].map((i) => ({ src: i.src.split('/').pop(), ok: i.complete && i.naturalWidth > 0 })));
 await p.evaluate(() => document.getElementById('zn-magic').scrollIntoView({ block: 'start', behavior: 'instant' })); await p.waitForTimeout(1500);
 const pics2 = await p.evaluate(() => [...document.querySelectorAll('#zn-magic img')].map((i) => ({ src: i.src.split('/').pop(), ok: i.complete && i.naturalWidth > 0 })));
-check('every power on the shelf shows its painted art', pics2.length === 4 && pics2.every((i) => i.ok), JSON.stringify(pics2.filter((i) => !i.ok)));
+check('every power on the shelf shows its painted art', pics2.length === 6 && pics2.every((i) => i.ok), JSON.stringify(pics2.filter((i) => !i.ok)));
 check('no sideways scrolling', await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 const cover = await p.evaluate(() => [...document.querySelectorAll('#zn-magic .cst-card')].map((c) => { const r = c.getBoundingClientRect(); const x = r.left + r.width / 2, y = Math.min(innerHeight - 2, Math.max(2, r.top + r.height / 2)); const el = document.elementFromPoint(x, y); return { card: c.querySelector('.cst-title')?.textContent, on: r.bottom > 0 && r.top < innerHeight, ok: !el || c.contains(el), hit: el?.className?.toString().slice(0, 60) }; }).filter((x) => x.on));
 check('nothing covers the magic cards on screen', cover.every((x) => x.ok), JSON.stringify(cover.filter((x) => !x.ok)));
