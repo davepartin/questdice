@@ -50,16 +50,18 @@ test('only one legendary in your hands at a time', () => {
   assert.ok(equip(h, oak.uid, 'NE'), 'from a two-hander, any one legendary may go in');
 });
 
-test('Dawnbreaker\'s 4 hits every other monster for 2', () => {
+test('Dawnbreaker\'s 4 hits every other monster for 2, and a monster that guards stops it (splash is not pierce)', () => {
   const h = knight(); const dawn = makeWeapon('dawnbreaker', 3, makeRng(3)); h.bag.push(dawn); equip(h, dawn.uid, 'NW');
   const q = { enemies: ['goblin', 'goblin', 'goblin'], hpMult: 3, flat: 0, rewardMult: 1, kind: 'battle', perilous: false };
   const b = newBattle(h, q, makeRng(4));
   b.board = board({ NW: 4, NE: 1, W: 1, E: 1, N: 1, C: 2, S: 3 });
   const ev = evaluate(h, b.board); assert.equal(ev.splash, 2);
   const hp0 = b.enemies.map((e) => e.hp);
+  assert.equal(b.enemies[1].intent.v, 'strike'); assert.equal(b.enemies[2].intent.v, 'guard', 'the third goblin ducks this round');
   const rep = resolve(b, { target: 0 });
-  assert.ok(b.enemies[1].hp === hp0[1] - 2 && b.enemies[2].hp === hp0[2] - 2, 'both others lose 2');
-  assert.equal(rep.splashed.length, 2);
+  assert.equal(b.enemies[1].hp, hp0[1] - 2, 'an open goblin loses 2');
+  assert.equal(b.enemies[2].hp, hp0[2], 'a guarding goblin stops the splash (Dave, 5 Nov 2026: splash should not be pierce)');
+  assert.equal(rep.splashed.length, 1);
 });
 
 test('Twinfang\'s twin shot: bow and arrows on the same number add +3 attack', () => {

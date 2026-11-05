@@ -1336,12 +1336,16 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   let block = T.block; rep.dealtBefore = b.stats.dealt;
   // Your strike.
   let tgt = null;
+  // Splash is not pierce (Dave, 5 Nov 2026): each other monster's guard stops splash, as it always stopped a Fire arrow. One guard a
+  // round per monster, shared by every splash that reaches it (a power's, a weapon's, a Fire arrow's).
+  const guardSpent = new Map();
+  const stopSplash = (e, n) => { const g = Math.max(0, (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0) - (guardSpent.get(e.uid) || 0)); const stop = Math.min(g, n); guardSpent.set(e.uid, (guardSpent.get(e.uid) || 0) + stop); return stop; };
   // After your blow: a Fire arrow's splash (each other monster's guard can stop it) and a Frost arrow's chill on the target.
   const arrows = () => {
     if (ev.fire > 0) for (const e of b.enemies) {
       if (e === tgt || e.hp <= 0) continue;
-      const guard = (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0); const hit = Math.max(0, ev.fire - guard);
-      const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp; (rep.burned2 ||= []).push({ uid: e.uid, dealt: d, guarded: Math.min(guard, ev.fire) });
+      const stop = stopSplash(e, ev.fire); const hit = ev.fire - stop;
+      const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp; (rep.burned2 ||= []).push({ uid: e.uid, dealt: d, guarded: stop });
       (rep.splashed ||= []).push({ uid: e.uid, dealt: d }); b.stats.dealt += d;
       if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
     }
@@ -1370,7 +1374,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     if (splash > 0 || m.aoe > 0) {
       for (const e of b.enemies) {
         if (e.hp <= 0 && e !== tgt) continue;
-        const hit = (e === tgt ? 0 : splash) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue;
+        const sp = e === tgt ? 0 : splash; const hit = sp - (sp > 0 ? stopSplash(e, sp) : 0) + m.aoe; if (hit <= 0 || (e === tgt && tgt.hp <= 0)) continue; // (the finishers' hit on every monster is not splash: no guard)
         const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
         rep.splashed.push({ uid: e.uid, dealt: d }); b.stats.dealt += d; rep.dealt += e === tgt ? d : 0;
         if (e.hp <= 0 && !rep.killed.includes(e.uid)) { rep.killed.push(e.uid); b.stolen += e.carried; e.carried = 0; }
@@ -2406,7 +2410,9 @@ export function resolveParty(b) {
     if (splash > 0 || aoe > 0) {
       for (const e of b.enemies) {
         if (e.hp <= 0) continue;
-        const hit = Math.floor(((e === tgt ? 0 : splash) + aoe) * (f.pactBribe ? 0.5 : 1)); if (hit <= 0) continue;
+        const k = f.pactBribe ? 0.5 : 1; let sp = Math.floor((e === tgt ? 0 : splash) * k);
+        if (sp > 0) { const g = guardLeft.get(e.uid) || 0; const stop = Math.min(g, sp); if (guardLeft.has(e.uid)) guardLeft.set(e.uid, g - stop); sp -= stop; } // splash is not pierce: the guard stops it
+        const hit = sp + Math.floor(aoe * k); if (hit <= 0) continue;
         const before = e.hp; e.hp = Math.max(0, e.hp - hit); const d = before - e.hp;
         splashed.push({ uid: e.uid, dealt: d, killed: e.hp <= 0 }); f.stats.dealt += d; f._dealt += d;
         if (e.hp <= 0) kill(e);
