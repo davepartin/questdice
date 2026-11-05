@@ -1288,3 +1288,6 @@ From Director: 5 November 2026. **T32 IMPLEMENTED — four-face monster cards (b
 
 
 From Director: 5 November 2026. **T32 DEPLOYED — `20261106md4a`, source `85f2c047a2801abfe19229df7dacc94b2bbc6323`.** Verified the live site's version.json, released D4 switch, Goblin four-move mapping and final triangle styling over HTTPS. 580/580 combined tests; actual phone screenshots inspected and final integrated Attack & Roll flow passed. T32 reservations are released. Dave: try the monster cards on your phone; the small pre-a3 campaign comparison flags later fights for playtesting. [Task and evidence](tasks/T32-monster-d4.md).
+
+
+From Director: 5 November 2026. **T33 IN PROGRESS — visible Special rhythms (Dave).** Add a highlighted Wind-Up → Slam/Inferno → Normal strip, truthful next-turn cues, Every round/cap counters, Until broken/Until hit and Bounty countdowns to the monster-card footer. Display only: no timing, odds, damage or save changes. Three-monster screenshots will show Hill Ogre, Hollow Lich and Bone Soldier with different Special patterns. Reserved: js/engine.js Special readout helpers, js/g3/battle3d.js cardFactsOf, js/g3/minicard.js, css/minicard.css, focused tests/dev evidence.
