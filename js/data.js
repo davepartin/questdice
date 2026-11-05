@@ -542,7 +542,7 @@ export const CLASSES = {
       { id: 'brace', slot: 'B', name: 'Brace', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
       { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 8 }, fx: { block: 8 }, text: 'Charge 1 magic a round (max 4), then use: 7, 9, 11, 13 block (40 at four). (T31: 6 → 8 a step; block is worth about half an attack point)' },
       { id: 'forgefury', slot: 'C', name: 'Forge Fury', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },
-      { id: 'whirlwind', slot: 'A', name: 'Whirlwind', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-forgefury', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
+      { id: 'whirlwind', slot: 'B', name: 'Whirlwind', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-forgefury', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
     ],
   },
   bard: {
