@@ -132,3 +132,55 @@
 .t29-f .t29-real{display:block;width:100%;max-width:21cqi;height:auto;aspect-ratio:1;filter:drop-shadow(0 .5cqi .7cqi #0007);-webkit-user-select:none;user-select:none}
 .t29-faces.c5 .t29-f .t29-real{max-width:16.5cqi}.t29-faces.c6 .t29-f .t29-real{max-width:14.2cqi}
 .t29-f.mini .t29-real{max-width:10cqi;filter:drop-shadow(0 .3cqi .4cqi #0006)}
+
+/* ---- T30 weapon card: the Quarters (Dave, 5 Nov 2026). One corner per die size, the real die faces, the weapon as a coin on a
+   METAL ◉ Name sash; a size not bought is a striped cover with its price (tap to grow). js/g3/cards.js weaponCardT29 */
+.qc17.t30{padding:0}
+.qc17.t30>.t30-quads{position:relative;flex:none;margin:2.4cqi;aspect-ratio:952/1413}
+.t30-q{position:absolute;display:grid;place-items:center;border-radius:3cqi;padding:2cqi;background:radial-gradient(ellipse at 50% 40%,#f5ead2,#e6d3ad 75%,#d4bb8a)}
+.t30-q.t{top:0;height:calc(50% - .8cqi)}.t30-q.b{bottom:0;height:calc(50% - .8cqi)}.t30-q.l{left:0;width:calc(50% - .8cqi)}.t30-q.r{right:0;width:calc(50% - .8cqi)}
+.t30-q.none{background:#00000030}
+.t30-g{display:grid;gap:2cqi;justify-items:center;align-items:center}
+.t30-q.d4 .t30-g{grid-template-columns:1fr 1fr;width:100%}
+.t30-q.t .t30-g{transform:translateY(-3cqi)}.t30-q.b .t30-g{transform:translateY(3.4cqi)}.t30-q.d6 .t30-g{transform:translateY(-2cqi)}
+.t30 .t29-f{display:block;width:28cqi}.t30-q.d4 .t29-f{width:21cqi}.t30-q.d6 .t29-f{width:26cqi}
+.t30 .t29-f>svg.t29s,.t30 .t29-f>img.t29-real{display:block;width:100%!important;max-width:none!important;height:auto}
+.t30 .t29-f>img.t29-real{filter:drop-shadow(0 .7cqi 1cqi #0009)}
+.t30 .t29-f.ghost>*{opacity:.5;filter:grayscale(1) brightness(.8)!important}
+.t30 .t29-ah{display:none} /* the real arrow faces carry their own arrowheads */
+.t30-sz{position:absolute;z-index:3;font:900 4.6cqi/1 var(--font-number,sans-serif);color:#1a1030;background:#f2c14e;border-radius:1.6cqi;padding:.8cqi 1.4cqi;box-shadow:0 .4cqi 0 #8a6a2a}
+.t30-q.t .t30-sz{top:1.2cqi}.t30-q.b .t30-sz{bottom:1.2cqi}.t30-q.l .t30-sz{left:1.2cqi}.t30-q.r .t30-sz{right:1.2cqi}
+.t30-q.locked .t30-sz{background:#5a3d1c;color:#ffe9b8;box-shadow:0 .4cqi 0 #2a1a0a}
+.t30-up{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;border:0;margin:0;padding:0;border-radius:3cqi;cursor:pointer;font:inherit;color:inherit;
+  background:repeating-linear-gradient(135deg,#5a3d1c66 0 1.6cqi,#4a301866 1.6cqi 3.2cqi);box-shadow:inset 0 0 0 .5cqi #c9a35a;-webkit-tap-highlight-color:transparent}
+.t30-up:not(.next){background:repeating-linear-gradient(135deg,#3a281488 0 1.6cqi,#2e1f1088 1.6cqi 3.2cqi);box-shadow:inset 0 0 0 .5cqi #8a6a3a}
+.t30-up.next .t30-cost{animation:t30glow 2.4s ease-in-out infinite}
+.t30-up .qd-price{font-size:5.2cqi}.t30-up:disabled{cursor:default}
+.t30-up:focus-visible{outline:.8cqi solid #f2c14e;outline-offset:-.8cqi}
+.t30-up.nope{animation:t29nope .32s}
+@keyframes t30glow{50%{filter:drop-shadow(0 0 1.6cqi #f2c14e)}}
+.t30-sash{position:absolute;left:-2.4cqi;right:-2.4cqi;top:50%;height:11cqi;transform:translateY(-50%);z-index:3;display:grid;grid-template-columns:1fr 26cqi 1fr;align-items:center;
+  background:linear-gradient(180deg,#2a1a50,#1a1030);box-shadow:inset 0 .6cqi 0 #c9a35a,inset 0 -.6cqi 0 #c9a35a,0 1cqi 2cqi #000a}
+.t30-metal{text-align:right;padding-right:1cqi;font-family:var(--font-number,sans-serif);font-weight:900;letter-spacing:.32em;text-transform:uppercase;white-space:nowrap;
+  background:var(--mt);-webkit-background-clip:text;background-clip:text;color:transparent}
+.t30-name{text-align:left;padding-left:1cqi;font-family:var(--font-title,Georgia,serif);font-weight:700;line-height:1;color:#f2c14e;white-space:nowrap}
+.t30-coin{position:absolute;left:50%;top:50%;width:22cqi;height:22cqi;transform:translate(-50%,-50%);z-index:4;border-radius:50%;overflow:hidden;
+  background:#1a120c url(../assets/cards/scene-forge.webp) center 60%/cover;box-shadow:0 0 0 1cqi #c9a35a,0 0 0 1.7cqi #3a2414,0 1cqi 2.4cqi #000a}
+.t30-coin>*{position:absolute!important;inset:0;width:100%!important;height:100%!important}
+.t30-coin img{width:100%;height:100%;object-fit:cover}.t30-coin .win{background:none}.t30-coin .win img{object-fit:contain}
+.t30-coin .ph17{display:grid;place-items:center;font:800 3.4cqi/1.1 var(--font-body,sans-serif);color:#f2c14e;text-align:center}.t30-coin .ph17 small{display:none}
+.t30-quads>.ammo{position:absolute;left:50%;top:calc(50% + 12.4cqi);transform:translateX(-50%);z-index:5;white-space:nowrap}
+.t30 .t29-toast{position:absolute;left:8%;right:8%;top:34%;z-index:6;background:#fff8e6;border-radius:2cqi;padding:1.6cqi;box-shadow:0 1cqi 2.4cqi #0008}
+.qc17.t30.has-acts{aspect-ratio:auto}
+.qc17.t30>.t29-acts{margin:0 2.4cqi 2.4cqi}
+@media (prefers-reduced-motion: reduce){.t30-up.nope,.t30-up.next .t30-cost{animation:none}}
+.cw-cardpop .t30-q.t.r .t30-sz{right:auto;left:1.2cqi} /* the pop-up's Close sits on this corner */
+/* a weapon that never grows (a Diamond, a Legendary, Fists): only its top corners, the sash and coin along the bottom */
+.qc17.t30.fixed{aspect-ratio:auto}
+.t30.fixed>.t30-quads{aspect-ratio:952/840}
+.t30.fixed .t30-q.b{display:none}
+.t30.fixed .t30-q.t{height:calc(100% - 15cqi)}
+.t30.fixed .t30-sash{top:auto;bottom:1cqi;transform:none}
+.t30.fixed .t30-coin{top:auto;bottom:-2cqi;width:19cqi;height:19cqi;transform:translateX(-50%)}
+.t30.fixed .t30-q.d6 .t30-g,.t30.fixed .t30-q.t .t30-g{transform:none}
+.t30.solo .t30-q.t.r{display:none}.t30.solo .t30-q.t.l{width:100%}.t30.solo .t30-q.d4 .t30-g{grid-template-columns:repeat(4,1fr)}

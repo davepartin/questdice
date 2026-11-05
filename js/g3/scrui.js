@@ -323,7 +323,7 @@ function showWeaponCard(inst, money, { real = !inst?.diamond && inst?.id !== 'fi
   // Dave (3 Nov 2026): the card near the top, Close on its top-right corner like the rest of the game, its buttons right under it, no scrolling
   // T29 (Dave, 5 Nov 2026: "we can put buttons on the card"): the card's buttons (Buy, Equip, Sell...) sit on the card itself
   const card = real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money);
-  const onCard = acts && card.querySelector('.t29-panel');
+  const onCard = acts && card.classList.contains('t30') ? card : null; // T30: the buttons go on the card, under its corners
   const close = modal(h('div', { class: 'form cw-modal cw-cardpop' },
     h('div', { class: 'cw-big' }, card,
       h('button', { type: 'button', class: 'cw-pop-x qd-float-close', 'aria-label': 'Close the card', onclick: () => close() }, 'Close')), // (qd-float-close: it stays on the card's corner, not in a title row)

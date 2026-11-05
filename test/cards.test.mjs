@@ -136,14 +136,23 @@ test('objective fronts: every Objective and Secret Objective has a focus emblem 
   assert.doesNotMatch(obj + sec + w, /WAGER|CHALLENGE|Payout/, 'the unsettled payout wording stays out');
 });
 
-test('T29: the weapon card shows big symbol faces, its few words, the icons it carries, and one grow strip per bigger die', () => {
-  const w = inst('axe', 2, 8); const d = CW.weaponData(w); const html = CW.weaponCardHtml(d);
-  assert.match(html, /class="qc17 qc-weapon t29 /); assert.match(html, /Big swings\. Splash\./); assert.match(html, /class="t29-key"[^]*Splash/);
-  assert.equal((html.match(/class="t29-up[ "]/g) || []).length, 1, 'a d8 can still grow to d10'); assert.match(html, /Grow to d10 for 200 gold/);
-  assert.doesNotMatch(CW.weaponCardHtml(CW.weaponData(inst("axe", 2, 10))), /class="t29-up[ "]/, 'a d10 has nothing left to grow');
-  assert.equal((CW.weaponCardHtml(CW.weaponData(inst("dagger", 0, 4))).match(/class="t29-up[ "]/g) || []).length, 3, 'a d4: d6, d8 and d10');
+test('T30: the weapon card is four corners of real dice, METAL and the name on a sash, and a covered corner with its price for every size not bought', () => {
+  const d = CW.weaponData(inst('axe', 2, 8)); const html = CW.weaponCardHtml(d);
+  assert.match(html, /class="qc17 qc-weapon t29 t30 metal-gold"/); assert.match(html, /class="t30-metal"[^>]*>Gold</); assert.match(html, new RegExp(`class="t30-name"[^>]*>${d.name}<`), "the weapon's own name");
+  assert.equal((html.match(/class="t30-q /g) || []).length, 4, 'one corner per die size');
+  assert.equal((html.match(/class="t30-up[ "]/g) || []).length, 1, 'a d8 can still grow to d10'); assert.match(html, /Grow to d10 for 200 gold/);
+  assert.doesNotMatch(CW.weaponCardHtml(CW.weaponData(inst('axe', 2, 10))), /class="t30-up[ "]/, 'a d10 has nothing left to grow');
+  const d4 = CW.weaponCardHtml(CW.weaponData(inst('dagger', 0, 4)));
+  assert.equal((d4.match(/class="t30-up[ "]/g) || []).length, 3, 'a d4: d6, d8 and d10 are covered'); assert.equal((d4.match(/class="t30-up next"/g) || []).length, 1, 'only the d6 is next');
+  assert.doesNotMatch(html, /Big swings|class="t29-key"|class="t29-pitch"/, 'no words on the card (Dave, 5 Nov 2026)');
   assert.ok(CW.dieFaces(CW.weaponData(inst('shield', 0)).faces).some((f) => f.c === 'b'), 'the shield has block faces');
-  for (const id of ACTIVE) assert.ok(D.WEAPONS3.short[id], `${id} has its few big words`);
+});
+
+test('T30: every size keeps the smaller die\'s faces and adds two, so each corner of the card is the truth', () => {
+  for (const id of ['dagger', 'sword', 'axe', 'staff', 'shield']) for (const r of [0, 1, 2]) {
+    const plain = (f) => `${f.c}${f.v}`; let prev = [];
+    for (const s of [4, 6, 8, 10]) { const now = E.weaponFaces(inst(id, r, s)).map(plain); assert.deepEqual(now.slice(0, prev.length), prev, `${id} d${s} keeps the faces before it`); prev = now; }
+  }
 });
 
 test('index.html links the weapon card stylesheet and every die and card asset exists', async () => {

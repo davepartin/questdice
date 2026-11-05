@@ -361,3 +361,19 @@ die's own face picture (`faceShot` cuts it from the die's painted texture, clipp
 the triangle you see on the board, a d6 the square, a d8 the triangle, a d10 the kite. The card HTML marks each face
 (`data-shot="<sides>:<face>"`, the weapon in `data-wi`); `realFaces` in js/g3/cardboard.js swaps the pictures in before the
 card paints, on any screen. The earlier ivory die-shape symbols stay only as the stand-in when there is no browser (tests).
+
+## T30: the Quarters card (build 20261105a7; Dave chose Card 10 from three rounds of mockups)
+
+One corner per die size, the real 3D die faces, the weapon as a coin on a METAL ◉ Name sash, covered corners with their price to
+grow. The face tables now grow by adding two faces a size (same totals as before at every size), so a corner is exactly the faces
+that size adds:
+
+| Weapon | d4 | d6 adds | d8 adds | d10 adds |
+|---|---|---|---|---|
+| Dagger | R1 B1 R2 R3 | R3 R5 | R5 R7 | R7 R9 |
+| Sword | R0 B2 R2 R4 | B4 R4 | R6 R7 | B7 R9 |
+| Axe | R0 R0 R3 R5 | R0 R8 | R6 R7 | R7 R9 |
+| Staff | B1 R2 B2 R3 | B3 R4 | B5 R6 | B7 R8 |
+| Round Shield | B0 R2 B2 B4 | R3 B5 | B6 B7 | R7 B9 |
+
+The metal icons are placed on the whole die you own, so they can move between corners as a weapon grows (the top face carries the crit).

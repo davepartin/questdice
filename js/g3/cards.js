@@ -143,20 +143,33 @@ function tileT29(f, i, { mini = false, die = 0, shot = '' } = {}) {
 const topAt = (faces) => faces.indexOf(topOf(faces));
 const topOf = (faces) => faces.reduce((a, f) => (f.v > a.v || (f.v === a.v && fxList(f).length > fxList(a).length) ? f : a), faces[0]); // a bigger die's best face
 const pitchOf = (d) => WEAPONS3.short?.[d.id] || WEAPONS3.short?.[WEAPONS[d.id]?.model] || '';
+// ---- T30 weapon card (Dave, 5 Nov 2026, chosen from three rounds of mockups: "Card 10, the Quarters"): mostly dice, no words.
+// One corner per die size (d4 top left, d6 top right, d8 bottom left, d10 bottom right); each corner holds the faces that size adds,
+// as the real 3D die faces (cardboard.js realFaces). The weapon's picture is a coin where the corners meet, on a sash that reads
+// METAL ◉ Name, the metal word in its own colour. A size not bought yet is a covered corner with its price: tap it to grow the die.
+// The faces come from weaponFaces: a bought corner shows the die you own, a covered one the die you would grow to.
+const QUADS = [[4, 0, 4], [6, 4, 6], [8, 6, 8], [10, 8, 10]];
+const tileT30 = (f, i, shot, live) => { const c = f.c === 'b' ? 'b' : 'r'; const fx = fxList(f);
+  const words = `${c === 'b' ? 'block' : 'attack'} ${f.v}${f.arrow ? `, ${f.arrow} arrowhead` : ''}${fx.length ? `, ${fx.map(([x, n]) => `${ICON_NAME[x] || x}${n > 1 ? ' ×' + n : ''}`).join(', ')}` : ''}`;
+  return `<div class="${live ? `t29-f ${c}${f.v === 0 ? ' z' : ''}` : `t29-f ${c} ghost`}" data-shot="${shot}" role="img" aria-label="${live ? `face ${i + 1}: ` : 'not yet: '}${esc(words)}">${symSvg(c === 'b' ? 'block' : 'atk', f.v)}${live && f.arrow ? `<i class="t29-ah am-${f.arrow}">${ico('arrow')}</i>` : ''}</div>`; };
 function weaponCardT29(d) {
-  const name = `${d.metal} ${d.name}`; const owned = d.faces;
-  const n = owned.length; const ups = (d.rows || []).filter((r) => !r.owned);
-  const used = [...new Set(owned.flatMap((f) => fxList(f).map(([x]) => x)))];
-  const nf = name.length > 22 ? 6.6 : name.length > 16 ? 7.8 : 9;
-  return (`<article class="qc17 qc-weapon t29 metal-${d.metal.toLowerCase()} n${n}${ups.length ? ` ups${ups.length}` : ''}" data-kind="weapon" data-size="${d.size}"${d.wi ? ` data-wi="${esc(JSON.stringify(d.wi))}"` : ''} aria-label="${esc(`${name}, d${d.size}`)}">
-    <div class="t29-art">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}<span class="t29-die">d${d.size}</span></div>
-    <div class="t29-name"><span style="font-size:${nf}cqi">${esc(name)}</span></div>
-    <div class="t29-panel">
-      ${pitchOf(d) ? `<p class="t29-pitch">${esc(pitchOf(d))}</p>` : ''}
-      <div class="t29-faces c${n <= 4 ? n : n === 6 ? 6 : 5}">${owned.map((f, i) => tileT29(f, i, { die: d.size, shot: `${d.size}:${i + 1}` })).join('')}</div>
-      ${used.length ? `<div class="t29-key">${used.map((x) => `<span class="i-${x}">${ico(x)}${ICON_NAME[x] || x}</span>`).join('')}</div>` : ''}
-      ${ups.length ? `<div class="t29-ups">${ups.map((r, i) => `<button type="button" class="t29-up${i === 0 ? ' next' : ''}" data-step="${r.size}" aria-label="Grow to d${r.size} for ${r.price} gold: ${r.size} faces, the best ${topOf(r.faces).v}"><b class="t29-to">d${r.size}</b><span class="t29-new">${tileT29(topOf(r.faces), 0, { mini: true, die: r.size, shot: `${r.size}:${topAt(r.faces) + 1}` })}<span>Up to ${topOf(r.faces).v}</span></span><span class="t29-cost">${priceChipHtml(r.price)}</span></button>`).join('')}</div>` : ''}
-    </div></article>`); // (no sell or price chip on the card: Dave, 5 Nov 2026; what you can do with it, Buy, Equip or Sell, is a button on the card)
+  const own = d.size; const rows = d.rows || []; let first = true; const metal = d.metal; const nm = d.name;
+  const quads = QUADS.map(([s, a, b]) => {
+    if (s <= own) return { s, live: true, tiles: d.faces.slice(a, b).map((f, i) => tileT30(f, a + i, `${own}:${s}:${a + i + 1}`, true)) }; // the faces you own, drawn on this corner's shape
+    const r = rows.find((x) => x.size === s); if (!r) return { s, none: true, tiles: [] }; // a Diamond, a Legendary or Fists: no bigger die
+    const q = { s, price: r.price, next: first, tiles: r.faces.slice(a, b).map((f, i) => tileT30(f, a + i, `${s}:${s}:${a + i + 1}`, false)) }; first = false; return q;
+  });
+  const corner = ['t l', 't r', 'b l', 'b r'];
+  const fit = (t, max, room) => Math.min(max, room / Math.max(1, t.length * 0.5)).toFixed(2); // shrink a long word to fit its half of the sash
+  const fixed = own <= 6 && quads.slice(2).every((q) => q.none); // a Diamond, a Legendary or Fists never grows: only the top corners, the sash under them
+  return (`<article class="qc17 qc-weapon t29 t30${fixed ? ' fixed' : ''}${fixed && quads[1].none ? ' solo' : ''} metal-${metal.toLowerCase()}" data-kind="weapon" data-size="${own}"${d.wi ? ` data-wi="${esc(JSON.stringify(d.wi))}"` : ''} aria-label="${esc(`${metal} ${nm}, d${own}`)}">
+    <div class="t30-quads">${quads.map((q, i) => `<div class="t30-q ${corner[i]} d${q.s}${q.live ? ' live' : q.none ? ' none' : ' locked'}">
+      ${q.none ? '' : `<span class="t30-sz">d${q.s}</span><div class="t30-g">${q.tiles.join('')}</div>`}
+      ${q.price != null ? `<button type="button" class="t30-up${q.next ? ' next' : ''}" data-step="${q.s}" aria-label="Grow to d${q.s} for ${q.price} gold"><span class="t30-cost">${priceChipHtml(q.price)}</span></button>` : ''}</div>`).join('')}
+      <div class="t30-sash"><span class="t30-metal" style="font-size:${fit(metal, 4.6, 22)}cqi">${esc(metal)}</span><span></span><span class="t30-name" style="font-size:${fit(nm, 8.4, 30)}cqi">${esc(nm)}</span></div>
+      <div class="t30-coin">${weaponArt17(d)}</div>
+      ${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}
+    </div></article>`); // (no words, no sell or price chip: what you can do with it, Buy, Equip or Sell, is a button on the card)
 }
 export function weaponCardHtml(d) {
   if (EXPERIMENT.weapons3) return weaponCardT29(d);
@@ -204,13 +217,13 @@ export function hydrateDice(root) {
 }
 // opts.onBuy(step) -> true when the size was bought, or a short reason (a size card only; without it the covers are for show).
 export const weaponCardEl = (d, opts = {}) => { const e = el(weaponCardHtml(d)); if (e.classList.contains('t29')) { wireT29(e, opts); return e; } hydrateDice(e); if (d.rows) wireSizes(e, d, opts); return e; };
-// T29: tap the next strip to grow the die (the caller's onBuy says yes, or why not); a later strip says which comes first
+// T29/T30: tap the next covered corner to grow the die (the caller's onBuy says yes, or why not); a later one says which comes first
 function wireT29(card, { onBuy, onBought } = {}) {
   let toastT;
   const say = (t, text) => { card.querySelector('.t29-toast')?.remove(); const m = document.createElement('div'); m.className = 't29-toast'; m.setAttribute('role', 'status'); m.textContent = text; t.after(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), 1600); };
   const nope = (t) => { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope'); };
-  card.addEventListener('click', (e) => { const t = e.target.closest('.t29-up'); if (!t) return; e.stopPropagation();
-    const next = card.querySelector('.t29-up.next'); if (t !== next) { nope(t); say(t, `Grow to ${next.querySelector('.t29-to').textContent} first`); return; }
+  card.addEventListener('click', (e) => { const t = e.target.closest('.t30-up'); if (!t) return; e.stopPropagation();
+    const next = card.querySelector('.t30-up.next'); if (t !== next) { nope(t); say(t, `Grow to d${next.dataset.step} first`); return; }
     if (!onBuy) return; const got = onBuy(+t.dataset.step);
     if (got === true) { t.classList.add('bought'); onBought?.(); } else { nope(t); say(t, typeof got === 'string' ? got : 'Not available'); } });
 }

@@ -20,8 +20,14 @@ export function realFaces(root) {
     let inst; try { inst = JSON.parse(card.dataset.wi); } catch { continue; }
     const specs = {};
     for (const t of card.querySelectorAll('.t29-f[data-shot]')) {
-      const [sides, n] = t.dataset.shot.split(':').map(Number); let src = null;
-      try { specs[sides] ||= weaponSpec({ ...inst, size: sides }, sides); src = faceShot(specs[sides], n); } catch { src = null; }
+      // "<sides>:<face>", or "<die>:<shape>:<face>": that die's faces drawn on a smaller die's shape (the T30 card's corners: each size
+      // keeps the smaller die's faces, so a d4 corner shows the first four faces of the die you own, as triangles)
+      const parts = t.dataset.shot.split(':').map(Number); const [die, shape, n] = parts.length === 3 ? parts : [parts[0], parts[0], parts[1]]; let src = null;
+      try {
+        const k = `${die}:${shape}`;
+        if (!specs[k]) { const full = weaponSpec({ ...inst, size: die }, die); const labels = full.labels.slice(0, shape); specs[k] = { ...full, sides: shape, labels, key: `weapon|${shape}|${JSON.stringify(labels)}` }; }
+        src = faceShot(specs[k], n);
+      } catch { src = null; }
       if (!src) continue;
       t.querySelector('svg.t29s')?.replaceWith(Object.assign(document.createElement('img'), { className: 't29-real', src, alt: '', draggable: false }));
     }
@@ -253,7 +259,7 @@ export function weaponCard(hero, slot, inst, { say, onBuy, onBought } = {}) {
     onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
   h('small', {}, 'SELL'), priceChip(value));
   if (!card.classList.contains('t29')) card.querySelector('.art17')?.append(chip); void slot; // The chip sits in the art window (the T29 card has none: Dave, 5 Nov 2026)
-  for (const up of card.querySelectorAll('.t29-up')) { const cost = D.WEAPON_TRAINING.prices[SZ[SZ.indexOf(+up.dataset.step) - 1]]; if (!live) { up.disabled = true; up.querySelector('.t29-cost').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } else up.querySelector('.t29-cost').replaceChildren(priceChip(cost, { poor: hero.gold < cost })); } // T29 strips: the real price, red when short
+  for (const up of card.querySelectorAll('.t30-up')) { const cost = D.WEAPON_TRAINING.prices[SZ[SZ.indexOf(+up.dataset.step) - 1]]; if (!live) { up.disabled = true; up.querySelector('.t30-cost').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } else up.querySelector('.t30-cost').replaceChildren(priceChip(cost, { poor: hero.gold < cost })); } // T30 covered corners: the real price, red when short
   return card;
 }
 

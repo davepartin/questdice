@@ -308,12 +308,14 @@ export const WEAPONS2 = {
 // face, Silver on the top half, Gold on every face that can carry it, the top face a crit of 1, 2 or 3; the Sword's Gold top face
 // also carries pierce. A face's number still counts for triples and straights. The Bow and its Arrows are unchanged.
 export const WEAPONS3 = {
+  // Each size keeps the smaller die's faces and adds two (Dave's weapon card shows one corner per size); every size's total is
+  // what it was before this change (T30, 5 Nov 2026), so the weapons are as strong as they were.
   faces: {
-    dagger: { 4: 'R1 B1 R2 R3', 6: 'R1 B2 R2 R3 R3 R4', 8: 'R1 B2 R3 R3 R4 R4 R5 R5', 10: 'R1 B2 R3 R4 R4 R5 R5 R6 R6 R7' }, // (T29: one small parry face; the all-attack Dagger trailed today's by about 5 points)
-    sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R3 B4 R5', 8: 'R0 B2 R2 R3 B4 R5 R6 R7', 10: 'R0 B2 R2 R3 B4 R5 R6 B6 R8 R9' },
-    axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R0 R4 R6 R6', 8: 'R0 R0 R0 R3 R5 R6 R7 R8', 10: 'R0 R0 R0 R0 R5 R6 R7 R8 R9 R10' },
-    staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R5 B4 R6', 10: 'B1 R2 B2 R3 B4 R5 B5 R6 B6 R7' }, // (T29 big run: Bronze d8 and d10 were low)
-    shield: { 4: 'B0 R2 B2 B4', 6: 'B0 R2 B2 B3 R4 B5', 8: 'B0 R2 B2 B3 R4 B5 B6 B7', 10: 'B0 R2 B2 B3 R4 B5 B6 R6 B8 B9' },
+    dagger: { 4: 'R1 B1 R2 R3', 6: 'R1 B1 R2 R3 R3 R5', 8: 'R1 B1 R2 R3 R3 R5 R5 R7', 10: 'R1 B1 R2 R3 R3 R5 R5 R7 R7 R9' }, // (T29: one small parry face; the all-attack Dagger trailed today's by about 5 points)
+    sword: { 4: 'R0 B2 R2 R4', 6: 'R0 B2 R2 R4 B4 R4', 8: 'R0 B2 R2 R4 B4 R4 R6 R7', 10: 'R0 B2 R2 R4 B4 R4 R6 R7 B7 R9' },
+    axe: { 4: 'R0 R0 R3 R5', 6: 'R0 R0 R3 R5 R0 R8', 8: 'R0 R0 R3 R5 R0 R8 R6 R7', 10: 'R0 R0 R3 R5 R0 R8 R6 R7 R7 R9' },
+    staff: { 4: 'B1 R2 B2 R3', 6: 'B1 R2 B2 R3 B3 R4', 8: 'B1 R2 B2 R3 B3 R4 B5 R6', 10: 'B1 R2 B2 R3 B3 R4 B5 R6 B7 R8' }, // (T29 big run: Bronze d8 and d10 were low)
+    shield: { 4: 'B0 R2 B2 B4', 6: 'B0 R2 B2 B4 R3 B5', 8: 'B0 R2 B2 B4 R3 B5 B6 B7', 10: 'B0 R2 B2 B4 R3 B5 B6 B7 R7 B9' },
   },
   // the icon each weapon carries: own colour (r attack, b block); the staff carries magic on attack faces and heal on block faces
   sig: { dagger: { r: 'pierce' }, sword: { r: 'loot', pair: 'pierce' }, axe: { r: 'splash' }, staff: { r: 'magic', b: 'heal' }, shield: { b: 'heal' } },

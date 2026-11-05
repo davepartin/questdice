@@ -1,4 +1,4 @@
-// T29 weapon cards at phone size: every weapon (the six) at Bronze, Silver and Gold and every die size, as the camp shows them
+// T29/T30 weapon cards at phone size: every weapon (the six) at Bronze, Silver and Gold and every die size, as the camp shows them
 // (CB.weaponCard, with the grow strips), one picture each, and a check that nothing spills off the card. Headless Chromium, not Safari.
 //   node dev/weapon-cards-t29.mjs [out=shots/weapon-cards] [port=8240]      ONLY=dagger,axe   SIZES=4,8
 import { chromium } from 'playwright-core'; import { spawn } from 'node:child_process'; import fs from 'node:fs';
@@ -23,6 +23,13 @@ await p.waitForTimeout(2500);
 for (const id of ids) {
   const el = await p.$(`[data-id="${id}"]`); await el.scrollIntoViewIfNeeded(); await p.waitForTimeout(80); await el.screenshot({ path: `${OUT}/${id}.png` });
   const spill = await p.evaluate((id) => { const box = document.querySelector(`[data-id="${id}"]`); const card = box.querySelector('.qc17').getBoundingClientRect(); const out = [];
+    const inside = (r, o, pad = 1) => r.left >= o.left - pad && r.right <= o.right + pad && r.top >= o.top - pad && r.bottom <= o.bottom + pad;
+    if (box.querySelector('.t30')) { // T30: every die inside its own corner, the sash's words inside their half, nothing off the card
+      for (const q of box.querySelectorAll('.t30-q')) { const qr = q.getBoundingClientRect(); for (const f of q.querySelectorAll('.t29-f')) if (!inside(f.getBoundingClientRect(), qr)) out.push(`a ${q.className.match(/d\d+/)[0]} die spills out of its corner`); }
+      for (const w of box.querySelectorAll('.t30-metal, .t30-name')) if (w.scrollWidth > w.clientWidth + 1) out.push(`${w.className} cut off`);
+      for (const e of box.querySelectorAll('.t30-quads *')) { const r = e.getBoundingClientRect(); if (!r.width || e.closest('.t30-sash')) continue; if (!inside(r, card)) out.push(`${e.className?.baseVal ?? e.className} off the card`); }
+      const n = box.querySelectorAll('.t29-f').length, real = box.querySelectorAll('img.t29-real').length; if (real !== n) out.push(`${n - real} faces are not the real dice`);
+      return [...new Set(out)].slice(0, 4); }
     for (const e of box.querySelectorAll('.t29-panel *, .t29-name *')) { const r = e.getBoundingClientRect(); if (!r.width || !r.height) continue; if (r.left < card.left - 1 || r.right > card.right + 1 || r.bottom > card.bottom + 1) out.push(e.className?.baseVal ?? e.className); }
     const parts = ['.t29-art', '.t29-name', '.t29-panel'].map((q) => box.querySelector(q)?.getBoundingClientRect()); if (parts.some((r) => !r || r.height < 8)) out.push('a part has no height'); else if (!(parts[0].bottom <= parts[1].top + 1 && parts[1].bottom <= parts[2].top + 1)) out.push('picture, name and panel are not in order');
     const last = [...box.querySelectorAll('.t29-panel > *')].pop()?.getBoundingClientRect(); const panel = box.querySelector('.t29-panel')?.getBoundingClientRect(); if (last && panel && last.bottom > panel.bottom + 1) out.push('panel overflows');
