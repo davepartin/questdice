@@ -27,6 +27,24 @@ How to work in the repository (commands, tests, stamp, screenshots, measuring to
 10. IDs: one ID, one task. Where two lists used the same ID, the later one gets a suffix and the old branch, PR and commit names are left alone (see T10 and T10-ART). A new ID is the next free number.
 11. Merging completed work: under the standing authorization above, merge an approved task's finished work (behavior checked, saves preserved), stamp a new build when browser files change, then record the commit, build, verification and limitations in that task's row. Anything that is a new gameplay decision waits for a ruling.
 
+## This week, 1 to 6 November 2026: what we established (read this first; Claude wrote it for Dave)
+
+Dave: "The goal here is each week we build on what we've already established." This is what this week settled. Build on it; do not reopen it without Dave.
+
+**1. Six weapons, and the weapon card is done.** Dagger, Sword, Battle Axe, Staff, Round Shield, Bow and Arrows (T29). Each has one icon: pierce, gold, splash, magic and heal, heal. Bronze carries it on the top face, Silver on half, Gold on every face, with a crit. Each bigger die keeps the smaller die's faces and adds two, with the same totals the bots balanced. The card is **Card 10, the Quarters** (Dave: "I am finally satisfied with the weapons cards and the number of weapons"). It shows one corner per die size, every face the real 3D die face, the weapon as a coin on a METAL ◉ Name sash, and a covered corner with its price to grow. It carries no words. Its buttons (Buy, Left hand, Right hand, Sell) sit on the card itself. Diamonds stay as one-fight treats; Legendaries are kept. Details: [tasks/T29-weapons.md](tasks/T29-weapons.md).
+
+**2. Cards show the game's own dice and colours.** The game teaches red for attack and blue for block everywhere, so cards use the real dice and need no extra symbols. Shields are solid. The 15 starting magic cards (three a hero) use the T28 template, and every other power is learned at camp on the Learn magic shelf (T28).
+
+**3. Pink is splash, and its mark is the Fork.** Pink means "it hits the others too." It shows as a pink fork with a white edge: on the dice, the cards, the battle numbers, the magic cards' splash tags, and a **seventh counter, Splash**, under the board. **Splash is not pierce:** each other monster's block stops it, as a Fire Arrow's always was. The level 5 finishers' hit on every monster stays as it is (Dave).
+
+**4. Every colour has a strength and a weakness; you live with your mix.** Dave: "a balance of things that are great, things that are medium, and things that aren't really that helpful." Splash is great in a crowd and weak against the last monster. Pierce is strong against one monster, because it passes all defence. Red is steady. A splash weapon with one monster left should be weaker than a red one, and that is fine.
+
+**5. Magic dice are priced by what they are worth (in progress, Claude).** Dave: "magic powers that roll a d6 and cost the same for all the colors, that's kind of broken. So we need to use different size dice, different numbers of dice, and the cost of the dice based on the outcome." The bots measure one point of each colour in attack points (`node tools/t31-colours.mjs`, `node tools/t31-weights.mjs`). The 15 starting cards' dice get priced by that table: a size smaller, fewer, or dearer for the stronger colours. Splash is priced for the crowd, at about 1.5 to 2 red points a pink point.
+
+**6. Next: coloured dice side games on the magic cards (design, Claude; Dave picks).** Roll green to heal, pink to splash, a pink and an orange together, and take what lands. A yellow d6 for gold ("impressing the crowd": 1–2 nothing, 3–4 five gold, 5–6 ten gold). Each card costs magic, so you are always weighing health against the fight. The 15 starting cards stay simple, one colour each, to teach the colours; the mixed side-game cards are learned at camp. Creative names that tell the story.
+
+**For the team:** Grok, art requests stand for a Staff painting and, if Dave says yes, a Whirlwind (a dwarf mid-spin). Gemini, nothing new for you this week. Director, please review the colour price table when Claude posts it.
+
 ## Gemini joins the team (3 November 2026)
 
 **Welcome, Gemini.** Dave has added you to the team. You work in a clone of this repository on Dave's laptop. Read the Session protocol above and [WORKING_GUIDE.md](WORKING_GUIDE.md) before editing. Your review of the game is saved at [tasks/G1-gemini-review.md](tasks/G1-gemini-review.md).
