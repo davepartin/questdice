@@ -32,5 +32,25 @@ await p.locator('[data-camp-page="camp"]').click(); await p.waitForTimeout(1200)
 await p.evaluate(() => document.getElementById('zn-shelf')?.scrollIntoView({ block: 'start', behavior: 'instant' }) || document.querySelector('.zn-shelf')?.scrollIntoView({ block: 'start', behavior: 'instant' })); await p.waitForTimeout(900);
 check('the Camp Store shelf shows the new cards', await p.evaluate(() => document.querySelectorAll('.cst-wcard .qc17.t29').length > 0));
 await p.screenshot({ path: `${OUT}/3-store-shelf.png` });
+check('no Sell or price chip on any weapon card', await p.evaluate(() => ![...document.querySelectorAll('.qc17.t29')].some((c) => c.querySelector('.sell, .sl17') || /\bSELL\b/i.test(c.querySelector('.t29-art')?.textContent || ''))));
+// the store card's Buy button is on the card, and buying puts the weapon in the pack
+const before = await p.evaluate(() => ({ gold: window.QD.S.hero.gold, bag: window.QD.S.hero.bag.length }));
+const shelfIdx = await p.evaluate(() => { const st = window.QD.E.shopStock(window.QD.S.hero); return st.findIndex((it) => !it.sold && !it.inst.diamond && it.price <= window.QD.S.hero.gold); });
+if (shelfIdx >= 0) {
+  await p.evaluate(() => { const cards = [...document.querySelectorAll('.cst-wcard')]; const c = cards.find((x) => !x.classList.contains('sold') && x.querySelector('.cst-tag:not([disabled])')); c?.querySelector('.cw-spoilcard')?.click(); });
+  await p.waitForTimeout(900);
+  const pop = await p.evaluate(() => { const c = document.querySelector('.cw-cardpop .qc17.t29'); const b = c?.querySelector('.t29-acts .sh-buy'); const r = b?.getBoundingClientRect(); const cr = c?.getBoundingClientRect(); return c ? { onCard: !!b && r.top >= cr.top && r.bottom <= cr.bottom + 1, label: b?.textContent, below: !!document.querySelector('.cw-cardpop .cw-modal-acts') } : null; });
+  check('the store card opens large with its Buy button on the card', pop && pop.onCard && /Buy/.test(pop.label) && !pop.below, JSON.stringify(pop));
+  await p.screenshot({ path: `${OUT}/4-store-card-buy.png` });
+  await p.evaluate(() => document.querySelector('.cw-cardpop .t29-acts .sh-buy')?.click()); await p.waitForTimeout(900);
+  const got = await p.evaluate(() => ({ gold: window.QD.S.hero.gold, bag: window.QD.S.hero.bag.length }));
+  check('Buy on the card puts the weapon in the pack and takes the gold', got.bag === before.bag + 1 && got.gold < before.gold, JSON.stringify({ before, got }));
+  // the pack card: Equip / hands / Sell are on the card
+  await p.locator('[data-camp-page="dice"]').click(); await p.waitForTimeout(900);
+  await p.evaluate(() => document.querySelector('.cw-shelf-die.pack')?.click()); await p.waitForTimeout(900);
+  const pk = await p.evaluate(() => { const c = document.querySelector('.cw-cardpop .qc17.t29'); return c ? [...c.querySelectorAll('.t29-acts button')].map((b) => b.textContent.trim()) : null; });
+  check('a weapon in the pack opens with its buttons on the card (hands and Sell)', pk && pk.length >= 2 && pk.some((t) => /Sell/.test(t)), JSON.stringify(pk));
+  await p.screenshot({ path: `${OUT}/5-pack-card.png` });
+} else console.log('SKIP buy checks: nothing affordable on the shelf');
 check('no page errors', errs.length === 0, errs.join(' | '));
 await br.close(); console.log(bad ? `${bad} FAILED` : 'all passed'); process.exit(bad ? 1 : 0);

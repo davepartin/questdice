@@ -139,14 +139,14 @@ function weaponCardT29(d) {
   const used = [...new Set(owned.flatMap((f) => fxList(f).map(([x]) => x)))];
   const nf = name.length > 22 ? 6.6 : name.length > 16 ? 7.8 : 9;
   return (`<article class="qc17 qc-weapon t29 metal-${d.metal.toLowerCase()} n${n}${ups.length ? ` ups${ups.length}` : ''}" data-kind="weapon" data-size="${d.size}" aria-label="${esc(`${name}, d${d.size}`)}">
-    <div class="t29-art">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}${d.money ? `<div class="sell"><small>${esc(d.moneyLabel)}</small>${priceChipHtml(d.money)}</div>` : ''}<span class="t29-die">d${d.size}</span></div>
+    <div class="t29-art">${weaponArt17(d)}${d.ammoName ? `<div class="ammo am-${d.ammo}">${ico('arrow')}${esc(d.ammoName)}</div>` : ''}<span class="t29-die">d${d.size}</span></div>
     <div class="t29-name"><span style="font-size:${nf}cqi">${esc(name)}</span></div>
     <div class="t29-panel">
       ${pitchOf(d) ? `<p class="t29-pitch">${esc(pitchOf(d))}</p>` : ''}
       <div class="t29-faces c${n <= 4 ? n : n === 6 ? 6 : 5}">${owned.map((f, i) => tileT29(f, i)).join('')}</div>
       ${used.length ? `<div class="t29-key">${used.map((x) => `<span class="i-${x}">${ico(x)}${ICON_NAME[x] || x}</span>`).join('')}</div>` : ''}
       ${ups.length ? `<div class="t29-ups">${ups.map((r, i) => `<button type="button" class="t29-up${i === 0 ? ' next' : ''}" data-step="${r.size}" aria-label="Grow to d${r.size} for ${r.price} gold: ${r.size} faces, the best ${topOf(r.faces).v}"><b class="t29-to">d${r.size}</b><span class="t29-new">${tileT29(topOf(r.faces), 0, { mini: true })}<span>Up to ${topOf(r.faces).v}</span></span><span class="t29-cost">${priceChipHtml(r.price)}</span></button>`).join('')}</div>` : ''}
-    </div></article>`);
+    </div></article>`); // (no sell or price chip on the card: Dave, 5 Nov 2026; what you can do with it, Buy, Equip or Sell, is a button on the card)
 }
 export function weaponCardHtml(d) {
   if (EXPERIMENT.weapons3) return weaponCardT29(d);

@@ -321,10 +321,14 @@ function weaponCard(inst, { actions = [], note = '', compact = true, badge = '',
 // the full card, large, from any row or thumbnail
 function showWeaponCard(inst, money, { real = !inst?.diamond && inst?.id !== 'fists', acts = null } = {}) { // real: the camp T17 card (the spoils' picture, large); acts(close): its buttons
   // Dave (3 Nov 2026): the card near the top, Close on its top-right corner like the rest of the game, its buttons right under it, no scrolling
+  // T29 (Dave, 5 Nov 2026: "we can put buttons on the card"): the card's buttons (Buy, Equip, Sell...) sit on the card itself
+  const card = real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money);
+  const onCard = acts && card.querySelector('.t29-panel');
   const close = modal(h('div', { class: 'form cw-modal cw-cardpop' },
-    h('div', { class: 'cw-big' }, real ? CB.weaponCard(X.S.hero, null, inst, { say: (t) => toast(t) }) : CW.weaponCardOf(inst, money),
+    h('div', { class: 'cw-big' }, card,
       h('button', { type: 'button', class: 'cw-pop-x qd-float-close', 'aria-label': 'Close the card', onclick: () => close() }, 'Close')), // (qd-float-close: it stays on the card's corner, not in a title row)
-    acts ? h('div', { class: 'cw-modal-acts' }, acts(() => close())) : null));
+    acts && !onCard ? h('div', { class: 'cw-modal-acts' }, acts(() => close())) : null));
+  if (onCard) { card.classList.add('has-acts'); onCard.append(h('div', { class: 't29-acts' }, acts(() => close()))); }
 }
 // spoils: the card itself (tap for the large one), then what the weapon is and the buttons below it
 function spoilsView(inst, acts, cls, badge, money) {
@@ -1588,7 +1592,7 @@ function storeTab({ part = 'all' } = {}) { // part: 'supplies' (potions, belt: t
   // (Dave, cp6: "The store needs cards. Not these fake cardboard items."); tap the card for the large one
   const shelf = stock.map((it, i) => ({ it, i })).filter(({ it }) => !it.inst.diamond).map(({ it, i }) => { const w = D.WEAPONS[it.inst.id]; const top = best && best.i === i;
     const real = CB.weaponCard(hero, null, it.inst); real.setAttribute('aria-hidden', 'true'); real.inert = true;
-    const open = () => { sfx.click(); showWeaponCard(it.inst, { label: 'Store', value: it.price }, { real: true }); };
+    const open = () => { sfx.click(); showWeaponCard(it.inst, null, { real: true, acts: it.sold ? null : (close) => { const full = E.bagFull(hero); return [shBuy(hero, { label: full ? 'Pack full' : `Buy ${w.name}`, cost: it.price, ok: !full && hero.gold >= it.price, onBuy: () => { if (HE.buyItem(hero, i)) { close(); ok(); toast(`${w.name} is in your pack.`); } else no(full ? 'Your pack is full.' : 'Not enough gold.'); } })]; } }); };
     const thumb = h('div', { class: 'cw-spoilcard', role: 'button', tabindex: '0', 'aria-label': `See the ${w.name} card` }, h('div', { class: 'cw-spoilscale' }, real));
     if (typeof ResizeObserver === 'function') new ResizeObserver(([e]) => { if (e.contentRect.width) thumb.style.setProperty('--k', String(e.contentRect.width / 340)); }).observe(thumb);
     thumb.addEventListener('click', open); thumb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
@@ -1598,7 +1602,7 @@ function storeTab({ part = 'all' } = {}) { // part: 'supplies' (potions, belt: t
   // the Diamond case: the T17 weapon card with the ice-blue sheen, a paper tag under it
   const diamonds = stock.map((it, i) => ({ it, i })).filter(({ it }) => it.inst.diamond).map(({ it, i }) => {
     const c = CW.weaponCardOf(it.inst, { label: 'Store', value: it.price }); c.classList.add('cst-dia'); c.setAttribute('role', 'button'); c.tabIndex = 0;
-    c.addEventListener('click', () => { sfx.click(); showWeaponCard(it.inst, { label: 'Store', value: it.price }); });
+    c.addEventListener('click', () => { sfx.click(); showWeaponCard(it.inst, null, { real: false, acts: it.sold ? null : (close) => { const full = E.diamondCaseFull(hero); return [shBuy(hero, { label: full ? 'Case full' : 'Buy this Diamond', cost: it.price, ok: !full && hero.gold >= it.price, onBuy: () => { if (HE.buyItem(hero, i)) { close(); ok(); } else no(full ? 'Your Diamond case is full.' : 'Not enough gold.'); } })]; } }); });
     return h('div', { class: `cst-diawrap ${it.sold ? 'sold' : ''}` }, c, h('span', { class: 'cst-diatag' }, best && best.i === i && !it.sold ? 'Diamond · worth saving for' : 'Diamond'),
       it.sold ? h('span', { class: 'cst-stamp' }, 'Sold') : buyWeapon(it, i)); });
   // supplies: the same rows' logic as before, as cards

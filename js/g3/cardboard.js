@@ -232,7 +232,7 @@ export function weaponCard(hero, slot, inst, { say, onBuy, onBought } = {}) {
   const chip = h('button', { type: 'button', class: 'sl17 cb-off', 'aria-disabled': 'true', 'aria-label': `Worth ${value} gold when sold. Sell it from your pack`,
     onclick: (e) => { e.stopPropagation(); say?.(`Sells for ${value} gold from your pack. Swap it out first.`); } },
   h('small', {}, 'SELL'), priceChip(value));
-  card.querySelector('.art17, .t29-art')?.append(chip); void slot; // The chip sits in the art window.
+  if (!card.classList.contains('t29')) card.querySelector('.art17')?.append(chip); void slot; // The chip sits in the art window (the T29 card has none: Dave, 5 Nov 2026)
   for (const up of card.querySelectorAll('.t29-up')) { const cost = D.WEAPON_TRAINING.prices[SZ[SZ.indexOf(+up.dataset.step) - 1]]; if (!live) { up.disabled = true; up.querySelector('.t29-cost').replaceChildren(h('small', { class: 'cb-ny' }, 'NOT YET')); } else up.querySelector('.t29-cost').replaceChildren(priceChip(cost, { poor: hero.gold < cost })); } // T29 strips: the real price, red when short
   return card;
 }

@@ -109,3 +109,11 @@
 .qc17.t29.ups2 .t29-art{height:38cqi}
 .t29-ah{top:-.6cqi;right:2%;width:6.6cqi;height:6.6cqi;filter:drop-shadow(0 .3cqi .4cqi #0008)}
 .t29-ah svg{color:#ffd86a!important}.t29-ah.am-fire svg{color:#ff6a1f!important}.t29-ah.am-frost svg{color:#7fd4ff!important}.t29-ah.am-pierce svg{color:#ff9a2a!important}
+/* T29: the card's own buttons (Buy, Equip, Left hand, Right hand, Sell): on the card, big, the card grows to hold them */
+.qc17.t29.has-acts{aspect-ratio:auto}
+.qc17.t29.has-acts .t29-panel{flex:none}
+.t29-acts{display:flex;flex-wrap:wrap;gap:2cqi;margin-top:1cqi}
+.t29-acts>*{flex:1 1 40%;min-height:13cqi;font-size:max(16px,5.4cqi)!important;border-radius:3cqi}
+.t29-acts>.sh-buy{flex-basis:100%}
+.t29-acts .sh-buy-l,.t29-acts .sh-buy-l small{font-size:inherit}
+.t29-acts>*{white-space:nowrap;font-size:max(15px,5cqi)!important;letter-spacing:.02em}

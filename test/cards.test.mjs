@@ -22,7 +22,7 @@ test('a weapon card is the weapon\'s own data: faces, die, metal, wear and the p
     const html = CW.weaponCardHtml(d);
     assert.equal((html.match(TILE) || []).length, d.faces.length, 'one face on the card for every face of the die');
     for (const [i, f] of d.faces.entries()) assert.ok(html.includes(`face ${i + 1}: ${f.c === 'b' ? 'block' : 'attack'} ${f.v}`), `${id} face ${i + 1} is the engine's`);
-    assert.ok(html.includes(`d${d.size}`) && html.includes(d.metal) && html.includes(`Sell</small>`));
+    assert.ok(html.includes(`d${d.size}`) && html.includes(d.metal)); assert.doesNotMatch(html, /Sell<\/small>|class="sell"/, 'no sell chip on the card (Dave, 5 Nov 2026)');
   }
 });
 
@@ -35,7 +35,7 @@ test('a d10 card has ten face tiles and a strip of ten; a d4 has four', () => {
 test('the store label shows what the shelf charges, and the price is only ever the number it is given', () => {
   const w = inst('axe', 1, 6); const d = CW.weaponData(w, { label: 'Store', value: 77 });
   assert.equal(d.moneyLabel, 'Store'); assert.equal(d.money, 77); assert.equal(d.sell, E.sellValue(w), 'the sell value is still the game\'s');
-  assert.match(CW.weaponCardHtml(d), /Store<\/small>[^]*77/);
+  assert.doesNotMatch(CW.weaponCardHtml(d), /Store<\/small>/, 'the card carries no price: the store\'s Buy button does (Dave, 5 Nov 2026)');
   assert.equal(CW.weaponData(w, { label: '', value: 0 }).money, 0, 'no gold figure when none is wanted (the class introduction)');
   const dia = { ...inst('sword', 2, 6), diamond: true }; assert.equal(CW.weaponData(dia).sell, E.diamondSellValue(dia), 'a Diamond sells for its own value');
 });
