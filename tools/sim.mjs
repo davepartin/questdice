@@ -231,6 +231,8 @@ export function smartActs(b) {
     }
     if (f.heal && !c.dice && hurt > 0.6) continue;
     if (c.dice?.to === 'heal' && hurt > 0.6) continue;
+    if (c.dice?.to === 'whirl' && foes < 2) continue; // Whirlwind (T31): no crowd, no spin
+    if (c.roll?.[0]?.to === 'heal' && hurt > 0.8) continue; // a green-first side game (T31) waits until there is something to heal
     if (f.free) continue;
     if (c.kind === 'super' && foes < 2 && b.round < 4) continue;
     // MAGIC=spend: cast whenever it can be paid for; MAGIC=save: keep 4 in hand unless hurt (the magic evaluation); default: as before

@@ -54,7 +54,7 @@ const POWER_GLYPH = {
   mending: 'musicheal', finale: 'burst', luckyverse: 'clover', discord: 'discord', ballad: 'rising', goldhymn: 'goldnote',
   'u:bigheal': 'potion', 'u:heal': 'healheart', 'u:heart': 'heartturn', // the helpers under the triangle
 };
-const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'atk', aoe: 'atk', frog: 'weaken' };
+const FX_ICON = { atk: 'atk', block: 'block', pierce: 'pierce', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'reroll', splash: 'splash', whirl: 'splash', aoe: 'atk', frog: 'weaken' };
 const SVGNS = 'http://www.w3.org/2000/svg';
 export function glyph(k, cls = '') {
   const name = POWER_GLYPH[k.id] || `hk:${FX_ICON[mainFx(k)] || 'magic'}`;
@@ -68,13 +68,14 @@ export const frogRanges = (k, level = 0) => [1, 2, 3].slice(0, k.max).map((n) =>
 const frogWords = (k, level = 0) => `a frog on ${frogRanges(k, level).join(', ')} (1, 2, ${k.max} charges)`;
 export function mainFx(k) {
   if (k.dice) return k.dice.to;
+  if (k.roll) return k.roll[0].to; // a mixed card (T31): its first dice
   if (k.frogNeed) return 'frog';
   const per = k.kind === 'charge' ? (typeof k.per === 'number' ? { atk: k.per } : k.per) : k.fx;
   return Object.keys(per || {})[0] || 'magic';
 }
-const TONE = { frog: 'weaken', atk: 'atk', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'gold', splash: 'atk', aoe: 'atk' };
+const TONE = { frog: 'weaken', atk: 'atk', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'weaken', free: 'gold', splash: 'splash', whirl: 'splash', aoe: 'atk' };
 export const toneOf = (k) => TONE[mainFx(k)] || 'magic';
-const NAME = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'softer hits', free: 'free reroll dice', splash: 'to the other monsters', aoe: 'to every monster' };
+const NAME = { atk: 'attack', pierce: 'pierce', block: 'block', heal: 'heal', magic: 'magic', gold: 'gold', weaken: 'softer hits', free: 'free reroll dice', splash: 'splash', whirl: 'to every monster', aoe: 'to every monster' };
 const fxWords = (fx) => Object.entries(fx).map(([f, v]) => (f === 'heal' ? `heal ${v}` : f === 'weaken' ? `monsters hit ${v} softer` : f === 'free' ? `a free reroll of ${v} dice` : `+${v} ${NAME[f] || f}`)).join(', ');
 const perOf = (k) => (typeof k.per === 'number' ? { atk: k.per } : k.per || {});
 const chip = (f, v, extra = '') => h('span', { class: `pw-chip t-${TONE[f] || 'magic'} ${extra}` }, HK.icon(FX_ICON[f] || 'magic'), h('b', {}, f === 'free' ? `${v}` : `+${v}`), ' ', NAME[f] || f);
@@ -91,7 +92,12 @@ const splashWord = (k) => (k.splash === 'half' ? ' Half splashes.' : '');
 const KW = /(\d+d\d+|[+\u2212-]?\d+\s+magic|\bmagic\b|[+]\d+|\bpierce\b|\battack\b|\bblock(?:ing)?\b|\bheal(?:th|s)?\b|\bgold\b|\bonce a (?:battle|round)\b)/gi;
 const kwTone = (w) => (/d\d/.test(w) ? 'dice' : /magic/i.test(w) ? 'magic' : /pierce/i.test(w) ? 'pierce' : /attack/i.test(w) ? 'atk' : /block/i.test(w) ? 'block' : /heal/i.test(w) ? 'heal' : /gold/i.test(w) ? 'gold' : /once/i.test(w) ? 'once' : 'num');
 export function marked(text) { if (typeof text !== 'string') return text; return text.split(KW).map((part, i) => (i % 2 ? h('b', { class: `kw kw-${kwTone(part)}` }, part) : part)).filter((x) => x !== ''); }
+// a mixed card's dice in a few words (T31 side games): "1 red d6 attack + 1 gold d6 (5–6: +5 gold)"
+const COLOUR_WORD = { atk: 'red', pierce: 'orange', splash: 'pink', whirl: 'pink', block: 'blue', heal: 'green', gold: 'gold', magic: 'purple' };
+const tableWords = (g, level) => g.table.map(([top], i) => { const lo = i ? g.table[i - 1][0] + 1 : 1; const pay = E.mixPay(g, top, level); return `${lo === top ? lo : `${lo}–${top}`}: ${pay ? `+${pay} ${NAME[g.to] || g.to}` : 'nothing'}`; }).join(', ');
+const mixWords = (k, level, short = false) => E.mixGroups(k, level).map((g) => (g.table ? (short ? `a ${COLOUR_WORD[g.to]} d${g.s}` : `a ${COLOUR_WORD[g.to]} d${g.s} (${tableWords(g, level)})`) : `${g.n} ${COLOUR_WORD[g.to]} d${g.s} ${g.to === 'heal' ? 'heal' : NAME[g.to] || g.to}`)).join(' + ');
 export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
+  if (k.kind === 'mix') return `${k.cost} magic: ${mixWords(k, level)}.${k.party ? ' The healing reaches every hero.' : ''}`;
   if (k.kind === 'dice') return `Roll ${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}.${splashWord(k)}`;
   if (k.kind === 'scale') { const st = E.scaleStep(k); return `${x ?? k.cost} magic: ${E.powerDice(k, x, level)}d${k.dice.s} ${NAME[k.dice.to]}. +1 die per ${st > 1 ? `${st} more magic` : 'extra magic'}, max ${scaleTop(k, level)}d${k.dice.s}.`; }
   if (k.kind === 'round') { const r = round || Math.max(4, k.minRound || 0); return `Attack grows each round. Round ${r}: +${E.roundGain(k, r, level)}.${splashWord(k)}`; }
@@ -107,10 +113,11 @@ export function effectLine(k, { x, round, level = 0, stored = null } = {}) {
 // What a cast leaves you with, beside the Cast button: "Rolls 2d6 · 2 magic left" (the dice only for a power that rolls dice).
 export function castPreview(k, { x, level = 0, magic = 0 } = {}) {
   const cost = x ?? k.cost; const left = `${Math.max(0, magic - cost)} magic left`;
-  const rolls = k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.frogLoad ? 'Loads 2 dice' : k.kind === 'charge' ? 'Charges 1' : '';
+  const rolls = k.kind === 'mix' ? (() => { const n = E.mixGroups(k, level).reduce((t, g) => t + g.n, 0); return `Rolls ${n} ${n === 1 ? 'die' : 'dice'}`; })() : k.kind === 'scale' ? `Rolls ${E.powerDice(k, cost, level)}d${k.dice.s}` : k.kind === 'dice' ? `Rolls ${k.dice.n + level}d${k.dice.s}` : k.frogLoad ? 'Loads 2 dice' : k.kind === 'charge' ? 'Charges 1' : '';
   return rolls ? `${rolls} · ${left}` : left;
 }
 export function shortLine(k, level = 0) {
+  if (k.kind === 'mix') return mixWords(k, level, true);
   if (k.kind === 'dice') return `${k.dice.n + level}d${k.dice.s} ${NAME[k.dice.to]}`;
   if (k.kind === 'scale') return `${E.powerDice(k, k.cost, level)}d${k.dice.s}, max ${scaleTop(k, level)}d${k.dice.s}`;
   if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `Round ${r}: +${E.roundGain(k, r, level)} attack`; }
@@ -134,6 +141,7 @@ export function upgradeLine(k, level = 0) {
   }
   if (k.kind === 'dice') return `+1 die (${k.dice.n + nx}d${k.dice.s})`;
   if (k.kind === 'scale') return `+1 die for the same magic`;
+  if (k.kind === 'mix') { const g = k.roll[0]; if (g.table) { const pays = g.table.map(([top]) => E.mixPay(g, top, nx)).filter(Boolean); return `${pays.map((p) => `+${p}`).join(' / ')} ${NAME[g.to] || g.to} a win`; } return `+1 ${COLOUR_WORD[g.to]} d${g.s}`; }
   if (k.kind === 'round') { const r = Math.max(4, k.minRound || 0); return `+${E.roundGain(k, r, nx) - E.roundGain(k, r, level)} attack in round ${r}, more later`; }
   if (k.kind === 'luck') return `+1 magic, +${E.scaleNum(E.LUCK.mid, nx) - E.scaleNum(E.LUCK.mid, level)} / +${E.scaleNum(E.LUCK.top, nx) - E.scaleNum(E.LUCK.top, level)} attack`;
   if (k.grudge) return `+${(k.grudge[nx] ?? k.grudge.at(-1)) - (k.grudge[level] ?? k.grudge.at(-1))} attack on top`;
@@ -394,10 +402,11 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
     const total = Object.values(gains).reduce((a, v) => a + v, 0);
     const close = () => { if (shut) return; shut = true; timers.forEach(clearTimeout); (inline ? card : layer).classList.add('out'); sfx.uiClose?.(); setTimeout(() => { if (inline) { card.remove(); inline.classList.remove('pw-casting'); } else layer.remove(); resolve(); }, 220); };
     const adds = Object.keys(gains).some((f) => !['free', 'weaken'].includes(f)); // a free reroll or softer hits do not add to a counter
-    const ok = h('button', { type: 'button', class: 'dr-ok', disabled: true, onclick: close }, adds && !r.charged ? (r.rolls?.length && !(k.kind === 'luck') ? `Add ${r.total} to my roll` : 'Add it to my roll') : 'Got it');
+    const ok = h('button', { type: 'button', class: 'dr-ok', disabled: true, onclick: close }, adds && !r.charged ? (r.rolls?.length && k.kind !== 'luck' && !r.groups ? `Add ${r.total} to my roll` : 'Add it to my roll') : 'Got it');
     const shown = new Set(); // what the art already shows in full (its chips are not repeated under it)
     const chips = h('div', { class: 'dr-gains' });
-    const finish = (delay = 380) => later(delay, () => { if (done) return; done = true; chips.replaceChildren(...Object.entries(gains).filter(([f]) => !shown.has(f)).map(([f, v]) => chip(f, v))); card.classList.add('done'); ok.disabled = false; ok.focus?.(); sfx.coin?.(); });
+    const missed = (r.groups || []).filter((g) => g.table && !g.total).map((g) => h('span', { class: `pw-chip t-${TONE[g.to] || 'gold'} miss` }, HK.icon(FX_ICON[g.to] || 'gold'), `no ${NAME[g.to] || g.to} this time`)); // a side game's gold die that missed still gets an answer
+    const finish = (delay = 380) => later(delay, () => { if (done) return; done = true; chips.replaceChildren(...Object.entries(gains).filter(([f]) => !shown.has(f)).map(([f, v]) => chip(f, v)), ...missed); card.classList.add('done'); ok.disabled = false; ok.focus?.(); sfx.coin?.(); });
     const art = h('div', { class: 'cr-art' });
     const kicker = r.released ? 'Use' : r.charged ? 'Charged' : k.kind === 'super' ? 'Super power' : k.atwill ? 'Every-round power' : 'Big move';
     const head = h('div', { class: 'cr-head' }, h('span', { class: 'cr-sigil', 'aria-hidden': 'true' }, h('i', { class: 'cr-tri' }), h('span', { class: 'cr-medal' }, glyph(k))),
@@ -413,11 +422,14 @@ export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = n
 
     if (r.rolls?.length) { // ---- dice: tumble, land one by one, add up (Arc Bolt, Cleave, Aimed Shot, Mending Song, Lucky Verse)
       const sides = r.die || k.dice?.s || 6; const to = k.dice?.to || 'atk'; const luck = k.kind === 'luck';
-      const faces = r.rolls.map((v, i) => { const n = h('b', {}, String(1 + Math.floor(Math.random() * sides))); return { v, n, el: h('div', { class: `dr-die d${sides} t-${luck ? 'gold' : to} rolling`, style: { '--i': i } }, h('span', { class: 'dr-shape' }), n) }; });
+      const each = r.groups ? r.groups.flatMap((g) => g.rolls.map(() => g)) : null; // a mixed card (T31): every die in its own colour and size
+      const faces = r.rolls.map((v, i) => { const s2 = each?.[i]?.s || sides; const t2 = each?.[i]?.to || to; const n = h('b', {}, String(1 + Math.floor(Math.random() * s2))); return { v, n, el: h('div', { class: `dr-die d${s2} t-${luck ? 'gold' : t2} rolling`, style: { '--i': i } }, h('span', { class: 'dr-shape' }), n) }; });
       const tot = h('b', { class: 'dr-total' }, '0');
-      art.append(h('p', { class: 'dr-what' }, luck ? 'Roll a d6 for luck.' : `Rolling ${faces.length}d${sides} for ${NAME[to]}.`), h('div', { class: `dr-dice n${Math.min(faces.length, 6)}` }, faces.map((f) => f.el)));
-      const table = luck ? h('div', { class: 'cr-luck' }, [[[1, 2], 'magic', `+${1 + level} magic`], [[3, 4], 'atk', `+${E.scaleNum(E.LUCK.mid, level)} attack`], [[5, 6], 'atk', `+${E.scaleNum(E.LUCK.top, level)} attack, +1 magic`]].map(([[a, b2], t, txt]) => h('div', { class: `cl-row t-${t}`, 'data-a': a, 'data-b': b2 }, h('b', {}, `${a}–${b2}`), h('span', {}, txt)))) : h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, '='), tot, h('span', { class: `dr-kind t-${to}` }, HK.icon(FX_ICON[to] || 'atk'), NAME[to]));
-      art.append(table); if (!luck) shown.add(to);
+      const DIEWORD = { atk: 'red', pierce: 'orange', splash: 'pink', whirl: 'pink', block: 'blue', heal: 'green', gold: 'gold', magic: 'purple' };
+      const what = luck ? 'Roll a d6 for luck.' : r.groups ? `Rolling ${r.groups.map((g) => `${g.rolls.length} ${DIEWORD[g.to] || g.to} d${g.s}`).join(' and ')}.` : `Rolling ${faces.length}d${sides} for ${NAME[to]}.`;
+      art.append(h('p', { class: 'dr-what' }, what), h('div', { class: `dr-dice n${Math.min(faces.length, 6)}` }, faces.map((f) => f.el)));
+      const table = luck ? h('div', { class: 'cr-luck' }, [[[1, 2], 'magic', `+${1 + level} magic`], [[3, 4], 'atk', `+${E.scaleNum(E.LUCK.mid, level)} attack`], [[5, 6], 'atk', `+${E.scaleNum(E.LUCK.top, level)} attack, +1 magic`]].map(([[a, b2], t, txt]) => h('div', { class: `cl-row t-${t}`, 'data-a': a, 'data-b': b2 }, h('b', {}, `${a}–${b2}`), h('span', {}, txt)))) : r.groups ? h('div', { class: 'dr-mixnote' }) : h('div', { class: 'dr-sum' }, h('span', { class: 'dr-eq' }, '='), tot, h('span', { class: `dr-kind t-${to}` }, HK.icon(FX_ICON[to] || 'atk'), NAME[to]));
+      art.append(table); if (!luck && !r.groups) shown.add(to); // a mixed card's dice do not add up to one number: the chips show what each colour paid
       const flick = reduced ? null : setInterval(() => { for (const f of faces) if (f.el.classList.contains('rolling')) f.n.textContent = String(1 + Math.floor(Math.random() * sides)); }, 70);
       if (!reduced) sfx.diceRoll?.(Math.min(9, 3 + faces.length * 2));
       let sum = 0;

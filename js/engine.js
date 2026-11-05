@@ -1248,7 +1248,10 @@ export function castPower(b, id, { x, release, to, song } = {}) {
   b.magic -= cost;
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
   const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
-  const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v); else b.mods[k] = (b.mods[k] || 0) + v; };
+  const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v);
+    else if (k === 'gold') { b.goldEarned = (b.goldEarned || 0) + v; out.gold = (out.gold || 0) + v; } // a gold die (T31 side games): straight to the purse
+    else if (k === 'whirl') { b.mods.atk += v; b.mods.splash += v; } // Whirlwind (T31): every monster, the target as attack and the others as splash; each one's guard stops it
+    else b.mods[k] = (b.mods[k] || 0) + v; };
   if (card.dice) { // roll them
     const n = powerDice(card, cost, lvl);
     for (let i = 0; i < n; i++) out.rolls.push(1 + Math.floor(b.rng() * card.dice.s));
@@ -1257,6 +1260,15 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
     if (card.party && card.dice.to === 'heal' && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: out.total }); out.party = (out.party || 0) + 1; } // Mending Song (mb1, PROPOSED): heals every hero
     if (card.goldOn) { const g = out.rolls.filter((v) => v === card.goldOn.face).length * card.goldOn.gold; if (g) { b.goldEarned = (b.goldEarned || 0) + g; out.gold = g; } } // Anvil Strike (md1, PROPOSED): every 8 is a gold spark
+  } else if (card.kind === 'mix') { // T31 side games: each group of coloured dice pays its colour; a gold die reads its table; ranks add a die to the first group
+    out.groups = [];
+    for (const [gi, g] of mixGroups(card, lvl).entries()) {
+      const rolls = []; let total = 0;
+      for (let i = 0; i < g.n; i++) { const r = 1 + Math.floor(b.rng() * g.s); rolls.push(r); total += mixPay(g, r, lvl); }
+      out.groups.push({ s: g.s, to: g.to, rolls, total }); out.rolls.push(...rolls); out.total += total; if (!gi) out.die = g.s;
+      if (total) add(g.to, total);
+      if (g.to === 'heal' && card.party && Array.isArray(b.fighters)) for (let i = 0; i < b.fighters.length; i++) if (i !== b.active && b.fighters[i]?.hp > 0) { (b.mods.verse ||= []).push({ to: i, n: total }); out.party = (out.party || 0) + 1; }
+    }
   } else if (card.kind === 'round') {
     out.total = roundGain(card, b.round, lvl); add('atk', out.total);
     if (card.splash === 'half') b.mods.splash += Math.floor(out.total / 2);
@@ -1288,6 +1300,12 @@ export function castPower(b, id, { x, release, to, song } = {}) {
   if (card.kind === 'super') { b.mods.aoe += scaleNum(card.aoe, lvl); }
   b.lastCast = out; CAST_HOOK.on?.(b, out); return out;
 }
+// T31 side games: a mixed card's dice at a level (ranks add a die to the first group), and what one die pays (a gold die reads its table,
+// [[highest face, pays], ...], each payout stepping up with the rank like every other number).
+export const mixGroups = (card, lvl = 0) => (card.roll || []).map((g, i) => ({ ...g, n: g.n + (i === 0 && !g.table ? lvl : 0) }));
+export const mixPay = (g, r, lvl = 0) => { if (!g.table) return r; const p = g.table.find(([top]) => r <= top)?.[1] || 0; return p ? scaleNum(p, lvl) : 0; }; // a 'nothing' face stays nothing at every rank
+// the average a group pays a roll, for the cards and the bots
+export const mixAverage = (g, lvl = 0) => g.n * Array.from({ length: g.s }, (_, i) => mixPay(g, i + 1, lvl)).reduce((a, x) => a + x, 0) / g.s;
 // Lucky Verse's d6 (Oct 2026, brought into line with the other every-round powers): 1-2 magic back, 3-4 a little attack, 5-6 more and 1 magic.
 export const LUCK = { mid: 5, top: 10 }; // mc1 (PROPOSED): was 3 / 6 at 1 magic; Lucky Verse now costs 2
 // The targeted-song versions under test (T08): sizes for Courage (atk) and Shelter (block); lucky rolls a d6 like Lucky Verse

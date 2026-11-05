@@ -795,3 +795,13 @@
 .t28-splash b{font:900 5.6cqi/1 var(--font-number,sans-serif);color:#d4167e}
 .t28-w.fx-splash{color:#d4167e}
 .t28-cv.fx-splash{color:#d4167e}
+/* T31 side games: a mixed card's dice, a gold die's table */
+.t28-mix{gap:1.6cqi}.t28-mixplus{font:900 6cqi/1 var(--font-number,sans-serif);color:#7a5a2c;align-self:center}
+.t28-goldtab .t28-nothing{font:700 4cqi/1 var(--ui,sans-serif);color:#9a8060}
+.t28-sym.fx-gold.on{color:#c99a00}
+.t28-goldtab{gap:.6cqi!important}.t28-goldtab .t28-luck-row{padding:.3cqi 2cqi!important;min-height:0!important}
+.t28-goldtab .mc-die{width:7cqi!important;height:7cqi!important}.t28-goldtab .t28-sym{width:8.6cqi!important;height:8.6cqi!important}
+.t28-mix .mc-die{width:12cqi!important;height:12cqi!important}
+.mc-trait.gold .ic{color:#e8b400}
+.t28-goldtab .t28-luck-row .mc-die{width:6.6cqi!important;height:6.6cqi!important}
+.t28-goldtab .t28-luck-row{grid-template-columns:7cqi 12cqi 1fr}
