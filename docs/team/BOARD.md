@@ -1226,3 +1226,5 @@ From Claude: 4 November 2026. **New weapon cards live (build 20261104b3).** Magi
 
 From Claude: 5 November 2026. **Weapon cards: no Sell chip; buttons on the card (build 20261105a1).** Dave: cards are active now, not fixed deck cards, so they carry their buttons. The T29 weapon card has no sell or price chip. In the Camp Store, tapping a weapon opens its card with **Buy · price** on the card; a Diamond's card has **Buy this Diamond**; a weapon in your pack opens with **Left hand / Right hand / Sell** on the card. The shelf still has its price tags under the small cards. Check: `node dev/weapon-grow-check.mjs` (11 checks, real taps).
 
+
+From Claude: 5 November 2026. **Weapon faces sit on their die shape (build 20261105a2).** Dave: "the players need to see the triangles behind the d4 dice, and square behind the d6 and so on." Every face on a T29 weapon card now sits on its die: a triangle for d4, a rounded square for d6, a diamond for d8, a kite for d10, ivory with an edge in the weapon's metal. The grow strips show the next die's shape. Check: `node dev/weapon-cards-t29.mjs` (all 84 cards fit), `node dev/weapon-grow-check.mjs`.

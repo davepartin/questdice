@@ -80,8 +80,8 @@
 .t29-f .t29s{width:100%;max-width:20cqi;height:auto;overflow:visible}
 .t29-faces.c5 .t29-f .t29s{max-width:15.5cqi}.t29-faces.c6 .t29-f .t29s{max-width:13.4cqi}
 .t29s path{stroke-width:1.2;stroke-linejoin:round}
-.t29-f.r .t29s path{fill:#ff3b3b;stroke:#8a1414}.t29-f.b .t29s path{fill:#3aa4ff;stroke:#0c4a80}
-.t29-f.z .t29s path{fill-opacity:.18}
+.t29-f.r .t29s .sym,.t29-f.r .t29s:not(.on-die) path{fill:#ff3b3b;stroke:#8a1414}.t29-f.b .t29s .sym,.t29-f.b .t29s:not(.on-die) path{fill:#3aa4ff;stroke:#0c4a80}
+.t29-f.z .t29s .sym,.t29-f.z .t29s:not(.on-die) path{fill-opacity:.18}
 .t29s text{font-family:var(--font-number,var(--ui,sans-serif));font-weight:900;fill:#fff;paint-order:stroke;stroke:#00000088;stroke-width:1.3;stroke-linejoin:round}
 .t29-f.z .t29s text{fill:#6b4a1f;stroke:none}
 .t29-fx{display:flex;gap:.6cqi;min-height:5.4cqi;margin-top:.4cqi}
@@ -117,3 +117,14 @@
 .t29-acts>.sh-buy{flex-basis:100%}
 .t29-acts .sh-buy-l,.t29-acts .sh-buy-l small{font-size:inherit}
 .t29-acts>*{white-space:nowrap;font-size:max(15px,5cqi)!important;letter-spacing:.02em}
+
+/* the die's own shape behind each face (Dave, 5 Nov 2026): an ivory die with the weapon's metal on its edge */
+.t29s .die{fill:#fffaf0;stroke:#7a5a2c;stroke-width:1.1;stroke-linejoin:round;filter:drop-shadow(0 .4px .6px #0005)}
+.qc17.t29.metal-bronze .t29s .die{stroke:#a8642a}.qc17.t29.metal-silver .t29s .die{stroke:#7d8796}.qc17.t29.metal-gold .t29s .die{stroke:#c9932a;fill:#fff7df}
+.qc17.t29.metal-diamond .t29s .die{stroke:#5ea8e0;fill:#f2faff}.qc17.t29.metal-legendary .t29s .die{stroke:#9a64c8}
+.t29s.on-die .sym{stroke-width:1.4}
+.t29s.on-die text{stroke-width:1.5}
+.t29-f.z .t29s.on-die .die{fill-opacity:.65}
+/* the shapes need a little more room than the bare symbols */
+.t29-f .t29s.on-die{max-width:21cqi}.t29-faces.c5 .t29-f .t29s.on-die{max-width:16.5cqi}.t29-faces.c6 .t29-f .t29s.on-die{max-width:14.2cqi}
+.t29-f.mini .t29s.on-die{max-width:10cqi}

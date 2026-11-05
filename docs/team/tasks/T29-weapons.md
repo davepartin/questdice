@@ -347,3 +347,9 @@ retired weapon and check each lands where this table says.
 - Checks: `node dev/weapon-cards-t29.mjs` (all 84: 7 weapons x 3 metals x 4 sizes, fails if anything spills or the parts are
   out of order) and `node dev/weapon-grow-check.mjs` (real taps in camp: open, grow d4 to d6 for 50 gold, the shelf).
 
+
+## Faces on their die shape (build 20261105a2; Dave: "see the triangles behind the d4 dice, and square behind the d6")
+
+Each face symbol (starburst, shield) now sits on an ivory die shape whose edge takes the weapon's metal colour: d4 a
+triangle, d6 a rounded square, d8 a diamond, d10 a kite. The small faces on the grow strips use the shape of the die you
+would grow to. Code: `DIE_SHAPE`, `SYM_ON` and `symSvg(k, v, cls, die)` in js/g3/cards.js; `.t29s .die` in css/cards17.css.

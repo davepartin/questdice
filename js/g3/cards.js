@@ -123,13 +123,20 @@ const rowHtml = (r) => `<div class="row s${r.size}${r.owned ? '' : ' locked'}" d
 // each bigger die it can grow into is one slim strip with its new faces and its price. Every number comes from weaponFaces.
 const ICON_NAME = { pierce: 'Pierce', gold: 'Gold', loot: 'Gold', splash: 'Splash', magic: 'Magic', heal: 'Heal' };
 const fxList = (f) => Object.entries(f.fx || {}).map(([k, n]) => [k === 'loot' ? 'gold' : k, n | 0]).filter(([, n]) => n > 0);
-const symSvg = (k, v, cls = '') => { const s = SYM[k]; const t = String(v); const fs = t.length >= 3 ? 7 : t.length === 2 ? 9 : 11; const y = k === 'block' ? 16.2 : 16;
-  return `<svg class="t29s ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${s.d}"/><text x="12" y="${y}" text-anchor="middle" font-size="${fs}">${esc(t)}</text></svg>`; };
-function tileT29(f, i, { mini = false } = {}) {
+// Each face sits on its die's own shape (Dave, 5 Nov 2026: "triangles behind the d4 dice, squares behind the d6, and so on"):
+// a d4 is a triangle, a d6 a square, a d8 a diamond, a d10 a kite; the attack starburst or block shield, with its number, rides on it.
+const DIE_SHAPE = { 4: 'M12 1.6 L22.6 21.2 L1.4 21.2 Z', 6: 'M5.6 2 H18.4 A3.6 3.6 0 0 1 22 5.6 V18.4 A3.6 3.6 0 0 1 18.4 22 H5.6 A3.6 3.6 0 0 1 2 18.4 V5.6 A3.6 3.6 0 0 1 5.6 2 Z', 8: 'M12 1 L23 12 L12 23 L1 12 Z', 10: 'M12 1 L22.8 13.4 L12 23 L1.2 13.4 Z' };
+const SYM_ON = { 4: [12, 14.6, 0.56], 6: [12, 12, 0.74], 8: [12, 12, 0.6], 10: [12, 12.6, 0.62] }; // where the symbol sits on each shape, and how big
+const symSvg = (k, v, cls = '', die = 0) => { const s = SYM[k]; const t = String(v); const fs = t.length >= 3 ? 7 : t.length === 2 ? 9 : 11; const y = k === 'block' ? 16.2 : 16;
+  const sym = `<path class="sym" d="${s.d}"/><text x="12" y="${y}" text-anchor="middle" font-size="${fs}">${esc(t)}</text>`;
+  if (!DIE_SHAPE[die]) return `<svg class="t29s ${cls}" viewBox="0 0 24 24" aria-hidden="true">${sym}</svg>`;
+  const [cx, cy, k2] = SYM_ON[die];
+  return `<svg class="t29s on-die d${die} ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path class="die" d="${DIE_SHAPE[die]}"/><g transform="translate(${cx} ${cy}) scale(${k2}) translate(-12 -12)">${sym}</g></svg>`; };
+function tileT29(f, i, { mini = false, die = 0 } = {}) {
   const c = f.c === 'b' ? 'b' : 'r'; const fx = fxList(f); const k = c === 'b' ? 'block' : 'atk';
   const words = `${c === 'b' ? 'block' : 'attack'} ${f.v}${f.arrow ? `, ${f.arrow} arrowhead` : ''}${fx.length ? `, ${fx.map(([x, n]) => `${ICON_NAME[x] || x}${n > 1 ? ' ×' + n : ''}`).join(', ')}` : ''}`;
   const head = f.arrow ? `<i class="t29-ah am-${f.arrow}">${ico('arrow')}</i>` : '';
-  return `<div class="t29-f ${c}${f.v === 0 ? ' z' : ''}${mini ? ' mini' : ''}" role="img" aria-label="${mini ? '' : `face ${i + 1}: `}${esc(words)}">${symSvg(k, f.v)}${head}<span class="t29-fx">${fx.map(([x, n]) => `<i class="t29-i i-${x}">${ico(x)}${n > 1 ? `<b>${n}</b>` : ''}</i>`).join('')}</span></div>`;
+  return `<div class="t29-f ${c}${f.v === 0 ? ' z' : ''}${mini ? ' mini' : ''}" role="img" aria-label="${mini ? '' : `face ${i + 1}: `}${esc(words)}">${symSvg(k, f.v, '', die)}${head}<span class="t29-fx">${fx.map(([x, n]) => `<i class="t29-i i-${x}">${ico(x)}${n > 1 ? `<b>${n}</b>` : ''}</i>`).join('')}</span></div>`;
 }
 const topOf = (faces) => faces.reduce((a, f) => (f.v > a.v || (f.v === a.v && fxList(f).length > fxList(a).length) ? f : a), faces[0]); // a bigger die's best face
 const pitchOf = (d) => WEAPONS3.short?.[d.id] || WEAPONS3.short?.[WEAPONS[d.id]?.model] || '';
@@ -143,9 +150,9 @@ function weaponCardT29(d) {
     <div class="t29-name"><span style="font-size:${nf}cqi">${esc(name)}</span></div>
     <div class="t29-panel">
       ${pitchOf(d) ? `<p class="t29-pitch">${esc(pitchOf(d))}</p>` : ''}
-      <div class="t29-faces c${n <= 4 ? n : n === 6 ? 6 : 5}">${owned.map((f, i) => tileT29(f, i)).join('')}</div>
+      <div class="t29-faces c${n <= 4 ? n : n === 6 ? 6 : 5}">${owned.map((f, i) => tileT29(f, i, { die: d.size })).join('')}</div>
       ${used.length ? `<div class="t29-key">${used.map((x) => `<span class="i-${x}">${ico(x)}${ICON_NAME[x] || x}</span>`).join('')}</div>` : ''}
-      ${ups.length ? `<div class="t29-ups">${ups.map((r, i) => `<button type="button" class="t29-up${i === 0 ? ' next' : ''}" data-step="${r.size}" aria-label="Grow to d${r.size} for ${r.price} gold: ${r.size} faces, the best ${topOf(r.faces).v}"><b class="t29-to">d${r.size}</b><span class="t29-new">${tileT29(topOf(r.faces), 0, { mini: true })}<span>Up to ${topOf(r.faces).v}</span></span><span class="t29-cost">${priceChipHtml(r.price)}</span></button>`).join('')}</div>` : ''}
+      ${ups.length ? `<div class="t29-ups">${ups.map((r, i) => `<button type="button" class="t29-up${i === 0 ? ' next' : ''}" data-step="${r.size}" aria-label="Grow to d${r.size} for ${r.price} gold: ${r.size} faces, the best ${topOf(r.faces).v}"><b class="t29-to">d${r.size}</b><span class="t29-new">${tileT29(topOf(r.faces), 0, { mini: true, die: r.size })}<span>Up to ${topOf(r.faces).v}</span></span><span class="t29-cost">${priceChipHtml(r.price)}</span></button>`).join('')}</div>` : ''}
     </div></article>`); // (no sell or price chip on the card: Dave, 5 Nov 2026; what you can do with it, Buy, Equip or Sell, is a button on the card)
 }
 export function weaponCardHtml(d) {
