@@ -16,7 +16,7 @@ const ids = await p.evaluate(async (lvl) => {
   for (const cls of ['knight', 'ranger', 'wizard', 'dwarf', 'bard']) { const hero = E.newHero({ name: 'Cards' + cls, cls, seed: 3 }); hero.level = 6; hero.gold = 0;
     for (const k of D.CLASSES[cls].cards) { hero.powerLevel = { ...(hero.powerLevel || {}), [k.id]: lvl }; const c = MC.campCard(hero, k.id, { glyph: PW.glyph }); const box = document.createElement('div'); box.dataset.id = `${cls}-${k.id}`; box.style.width = '340px'; box.append(c); wrap.append(box); out.push(`${cls}-${k.id}`); } }
   return out; }, +(process.env.LEVEL || 0));
-await p.waitForTimeout(2500);
+await p.waitForTimeout(+(process.env.WAIT || 2500));
 for (const id of ids) {
   const el = await p.$(`[data-id="${id}"]`); await el.scrollIntoViewIfNeeded(); await p.waitForTimeout(150); await el.screenshot({ path: `${OUT}/${id}.png` });
   const clash = await p.evaluate((id) => { const box = document.querySelector(`[data-id="${id}"]`); const card = box.querySelector('.mc-card').getBoundingClientRect(); const bad = [];

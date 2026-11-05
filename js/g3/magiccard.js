@@ -14,8 +14,26 @@ const COL = { pierce: ['#ff8a1a', '#8a3c00', '#fff'], atk: ['#ff3b3b', '#7a1010'
 const PIPS = { 1: [[12, 12]], 2: [[7.3, 6.8], [16.7, 17.2]], 3: [[7.3, 6.8], [12, 12], [16.7, 17.2]], 4: [[7.3, 6.8], [16.7, 6.8], [7.3, 17.2], [16.7, 17.2]], 5: [[7.3, 6.8], [16.7, 6.8], [12, 12], [7.3, 17.2], [16.7, 17.2]], 6: [7.3, 16.7].flatMap((x) => [6.8, 12, 17.2].map((y) => [x, y])) };
 const SHAPE = { 4: 'M12 2 L22.5 21 L1.5 21 Z', 6: 'M6.5 2 H17.5 A4.5 4.5 0 0 1 22 6.5 V17.5 A4.5 4.5 0 0 1 17.5 22 H6.5 A4.5 4.5 0 0 1 2 17.5 V6.5 A4.5 4.5 0 0 1 6.5 2 Z', 8: 'M12 1.5 L22.5 12 L12 22.5 L1.5 12 Z', 10: 'M12 1.5 L22.5 14.5 L12 22.5 L1.5 14.5 Z' };
 const svg = (cls, inner) => { const el = document.createElementNS(SVG, 'svg'); el.setAttribute('viewBox', '0 0 24 24'); el.setAttribute('class', cls); el.innerHTML = inner; return el; };
+// The real 3D dice on the magic cards (Dave, 6 Nov 2026: "Yes, put the 3D dice on the cards"): each die is drawn flat at once, then swaps to
+// the game's own 3D die in its colour, turned to show its number (screens.js portraitQ, cached). Without 3D it stays flat.
+let pics = null; const picsReady = typeof document === 'undefined' ? Promise.resolve() : import('./screens.js').then((m) => { pics = m; }).catch(() => {});
+const THEME3D = { atk: 'pet-atk', pierce: 'pet-pierce', splash: 'pet-splash', whirl: 'pet-splash', block: 'pet-block', heal: 'pet-heal', gold: 'pet-gold', magic: 'pet-magic' };
+function to3d(el, fx, s, v) {
+  if (typeof document === 'undefined' || !THEME3D[fx] || ![4, 6, 8, 10].includes(s)) return;
+  picsReady.then(() => {
+    if (!pics?.portraitQ) return;
+    const labels = Array.from({ length: s }, (_, i) => ({ text: String(i + 1) }));
+    return pics.portraitQ.die({ sides: s, theme: THEME3D[fx], labels, key: `mc3d|${fx}|${s}` }, Math.max(1, Math.min(s, v)));
+  }).then((src) => {
+    if (!src) return; let tries = 0;
+    const swap = () => { if (!el.parentNode) { if (tries++ < 40) requestAnimationFrame(swap); return; }
+      const img = document.createElement('img'); img.src = src; img.alt = ''; img.draggable = false; img.setAttribute('class', `${el.getAttribute('class')} mc-3d`); el.replaceWith(img); };
+    swap();
+  }).catch(() => {});
+}
 // a die the colour of what it adds; bright green and gold get near-black pips, the rest white
-export const die = (fx, s = 6, v = s) => { const [f, e, p] = COL[fx] || COL.magic; return svg(`mc-die d${s}`, s === 6 ? `<path d="${SHAPE[6]}" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`
+export const die = (fx, s = 6, v = s) => { const el = dieFlat(fx, s, v); to3d(el, fx, s, v); return el; };
+const dieFlat = (fx, s = 6, v = s) => { const [f, e, p] = COL[fx] || COL.magic; return svg(`mc-die d${s}`, s === 6 ? `<path d="${SHAPE[6]}" fill="${f}" stroke="${e}" stroke-width="1.6"/><g fill="${p}">${PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9"/>`).join('')}</g>`
   : `<path d="${SHAPE[s] || SHAPE[8]}" fill="${f}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/><text x="12" y="16.2" text-anchor="middle" font-weight="900" font-size="10" fill="${p}">${v}</text>`); };
 // an empty die space: a carved socket in the card (T28, Dave 4 Nov 2026: the dice spaces should look good), not a dashed box
 const space = (s = 6) => svg(`mc-space d${s}`, `<path d="${SHAPE[s] || SHAPE[6]}" fill="#6b4a1f26" stroke="#7a5a2c" stroke-width="1.3" stroke-linejoin="round"/><path d="${SHAPE[s] || SHAPE[6]}" fill="none" stroke="#fff8e6" stroke-opacity=".55" stroke-width=".7" transform="translate(.5 .7)" stroke-linejoin="round"/>`);

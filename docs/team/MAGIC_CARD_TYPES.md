@@ -57,3 +57,8 @@ The big moment from round 3 on, once a battle. Your bonuses as big symbols, then
 once a battle". (Meteor grows with the round instead.)
 
 Judgment · Rain of Arrows · Avalanche · Finale · Meteor
+
+## The dice on the cards
+
+Dice Cards and Side-Game Cards show the game's own 3D dice (the battle board's), one shape per size, coloured for what they add, turned to
+show their number. Nothing is painted per card: a new card gets its dice for free. (`die()` → `to3d()` in js/g3/magiccard.js.)

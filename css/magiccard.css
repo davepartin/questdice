@@ -825,3 +825,9 @@
 /* a side-game card's dice stay on one line: 65 px, smaller when a rank brings more dice than fit */
 .mc-levels.one .t28-dice.t28-mix{flex-wrap:nowrap;max-width:none;gap:1.6cqi}
 .mc-levels.one .t28-dice.t28-mix .mc-die{width:min(65px,19cqi,calc(66cqi / var(--nd,2)))!important;height:min(65px,19cqi,calc(66cqi / var(--nd,2)))!important}
+/* the real 3D dice on the cards: fill the socket, a soft shadow; the narrower shapes are lifted a little so every die reads the same size */
+img.mc-die.mc-3d{object-fit:contain;filter:drop-shadow(0 .5cqi .6cqi #0007)}
+img.mc-die.mc-3d.d8,img.mc-die.mc-3d.d10{transform:scale(1.18)}
+img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
+@media (prefers-reduced-motion: no-preference){img.mc-die.mc-3d{animation:mc3dIn .25s ease-out}}
+@keyframes mc3dIn{from{opacity:.4;transform:scale(.9)}}

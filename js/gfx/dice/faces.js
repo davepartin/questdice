@@ -172,6 +172,8 @@ for (const [k, col] of Object.entries(PET_TINT)) {
   T[`pet-${k}`] = { name: `pet-${k}`, core: shade(col, 0.5), mid: shade(col, 0.36), edge: shade(col, 0.18), blankCore: shade(col, 0.32), blankMid: shade(col, 0.24), blankEdge: shade(col, 0.12), paw: tint(col, 0.35),
     rough: 0.4, trim: [tint(col, 0.75), tint(col, 0.3), shade(col, 0.4)], trimRough: 0.2, num: 'metal', neutral: true };
 }
+// pink (splash) for the magic cards' 3D dice (Dave, 6 Nov 2026); a little brighter than the other colours, or pink reads as burgundy
+{ const col = '#ff4fb8'; T['pet-splash'] = { ...T['pet-atk'], name: 'pet-splash', core: shade(col, 0.82), mid: shade(col, 0.62), edge: shade(col, 0.34), trim: [tint(col, 0.75), tint(col, 0.3), shade(col, 0.4)] }; }
 export const isPetTheme = (theme) => typeof theme === 'string' && theme.startsWith('pet-');
 // A little paw print: the pet die's always-blank face
 function drawPaw(c, r) {
