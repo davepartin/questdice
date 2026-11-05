@@ -1,6 +1,7 @@
 // "Your gear" (Dave, 27 Oct 2026: in the daily challenge you cannot see what you carry): the camp's dice grid and the card behind each die, LOOK ONLY. Opened from a
 // battle's menu, the daily screens, and by tapping a hero (the miniature or its name plate). Nothing here can buy, sell, equip or change anything, so it is safe in a fight.
 // Dave, 28 Oct: the nine boxes are small and the whole card fits on the screen without scrolling: the card is scaled down to the space that is left (fitCard).
+// Dave, 6 Nov: no words on the nine dice, the grid 60% of its size, and the die whose card you are seeing glows (the left weapon first).
 import { h, modal, toast } from '../dom.js';
 import * as E from '../engine.js';
 import { GRID } from '../campbuy.js';
@@ -27,15 +28,16 @@ export function openGear(hero, { slot = 'NW' } = {}) {
     const natural = Math.max(fit.offsetHeight, fit.scrollHeight) + 4; const w = fit.offsetWidth; if (!natural || !w) return;
     const frame = body.closest('.modal-card'); const chrome = frame ? frame.offsetHeight - body.offsetHeight : 0;
     const used = body.offsetHeight - box.offsetHeight + chrome; // title + grid + padding around the card
-    const room = viewH() - 20 - used; const k = Math.max(0.3, Math.min(1, room / natural));
-    fit.style.transformOrigin = 'top center'; fit.style.transform = k < 1 ? `scale(${k.toFixed(3)})` : ''; box.style.height = `${Math.ceil(natural * k)}px`;
+    const wide = Math.max(w, fit.scrollWidth, ...[...fit.children].map((c) => c.offsetWidth)); // a card wider than the window (the weapon card) shrinks to fit it too
+    const room = viewH() - 20 - used; const k = Math.max(0.3, Math.min(1, room / natural, box.clientWidth / wide));
+    fit.style.transformOrigin = wide > w ? 'top left' : 'top center'; fit.style.transform = k < 1 ? `scale(${k.toFixed(3)})` : ''; box.style.height = `${Math.ceil(natural * k)}px`;
   }
   function render() {
     const cells = GRID.map(([s, label]) => {
       const active = E.isActive(hero, s); const size = E.sidesOf(hero, s);
       return h('button', { class: `cw-cell s-${s} ${active ? '' : 'off'} ${cur === s ? 'selected' : ''}`, type: 'button', 'aria-pressed': String(cur === s), 'aria-label': `${label}, ${active ? `d${size}` : 'locked'}`,
         onclick: () => { cur = s; render(); } },
-      h('small', { class: 'cw-label' }, label), active ? campDie(hero, s, size) : h('span', { class: 'cw-locked' }, '🔒'), h('span', { class: 'cw-cell-foot' }, h('b', {}, active ? `d${size}` : 'Locked')));
+      active ? campDie(hero, s, size) : h('span', { class: 'cw-locked' }, '🔒')); // just the nine dice, no words (Dave, 6 Nov 2026: "people understand these nine dice"); the name stays for screen readers
     });
     fit.replaceChildren(cardFor(hero, cur));
     body.replaceChildren(
