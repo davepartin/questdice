@@ -1,3 +1,4 @@
+import { MONSTER_D4, fourMoves, signatureSpecial } from './monster-d4.js';
 // QuestDice engine — pure rules, no DOM. Everything random flows through an injected rng so
 // battles are reproducible and the balance simulator (tools/sim.mjs) can run the same code.
 
@@ -683,7 +684,7 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = nu
   const hp = Math.max(1, Math.round(d.hp * hpMult));
   return {
     uid: newUid(rng), id, name: name || d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
-    faces: groupFaces(d.faces), flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
+    faces: MONSTER_D4.on ? fourMoves(id, d) : groupFaces(d.faces), flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0, edge,
     // pounce is a round flag (true after an unbroken Stalk), not the sheet's pounce stats
@@ -691,13 +692,16 @@ export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = nu
   };
 }
 export function rollIntent(e, rng) {
-  e.faces = groupFaces(e.faces); // existing fights switch to grouped faces only at their next roll
-  e.face = null; // which face of its move die it rolled this round (1-6; null when the move did not come from the die: a Slam, a Pounce, asleep)
+  if (MONSTER_D4.on && e.faces?.length !== 4) {
+    const base = mdef(e.id) || {}; e.faces = fourMoves(e.id, { power: e.powerDie, faces: e.faces }, base);
+    e.bag = null; e.bagOf = null;
+  } else if (!MONSTER_D4.on) e.faces = groupFaces(e.faces); // old rounds migrate only when next rolled
+  e.face = null; // which face of its move die it rolled this round (1-4 in the release; null when the move did not come from the die: a Slam, a Pounce, asleep)
   const sp = SPECIALS.on ? e.special : null;
   if (sp?.id === 'sleeping' && !sp.awake) { e.intent = { n: 'Asleep', v: 'sleep', f: 0, m: 0 }; return e.intent; } // T24: it does nothing until hurt
   if (sp?.id === 'slam') { // T24: wind up, then a blow at double, then one ordinary round, and again
     if (e.windup) { e.windup = false; sp.wait = 1; const best = [...(e.faces || [])].filter((x) => isDamageIntent(x)).sort((a, c) => ((c.f || 0) + (c.m || 0) * 3) - ((a.f || 0) + (a.m || 0) * 3))[0] || { v: 'strike', f: 2, m: 1 };
-      e.intent = { ...best, n: 'Slam', v: best.v === 'pierce' ? 'pierce' : 'strike', slam: true, double: true }; return e.intent; }
+      e.intent = { ...best, n: sp.name || 'Slam', v: sp.verb || (best.v === 'pierce' ? 'pierce' : 'strike'), slam: true, double: true }; return e.intent; }
     if (!(sp.wait > 0)) { e.intent = { n: 'Wind-Up', v: 'charge', f: 0, m: 0 }; return e.intent; }
     sp.wait -= 1;
   }
@@ -714,7 +718,7 @@ export function rollIntent(e, rng) {
     if (!e.bag?.length || e.bagOf !== e.faces) { e.bag = shuffleIdx(e.faces.length, rng); e.bagOf = e.faces; }
     const k = e.bag.shift(); e.intent = { ...e.faces[k] }; e.face = k + 1;
   } else {
-    const r = die(rng, 6); e.intent = { ...e.faces[r - 1] }; e.face = r; // the move die: one roll of a d6 against its six faces
+    const r = die(rng, e.faces.length); e.intent = { ...e.faces[r - 1] }; e.face = r; // roll the actual move die, not the damage die
   }
   return e.intent;
 }
@@ -772,14 +776,14 @@ export function assignSpecials(b) {
   const c = campOfBattle(b) || {}; const q = b.quest || {}; const kind = q.kind || 'battle';
   const r = makeRng(hashSeed(c.seed || 1, c.act || 1, q.step ?? c.step ?? 1, q.id || q.name || kind, 'specials'));
   const ids = pickSpecials(c.act || 1, q.step ?? c.step ?? 1, kind, b.enemies.length, r);
-  b.enemies.forEach((e, i) => { if (ids[i]) e.special = makeSpecial(b, ids[i]); });
+  b.enemies.forEach((e, i) => { const signature = signatureSpecial(e.id); const id = signature?.id || ids[i]; if (id) e.special = { ...makeSpecial(b, id), ...signature, ...(signature?.id === 'spawn' ? { minion: e.adds || SPECIALS.minion } : {}) }; });
 
 }
 // The two label lines, at most 14 characters each (Grok's rule for the narrowest phone). Null when the monster has no Special or it is quiet this round.
 function labelOf(e) {
   const sp = e.special; if (!sp) return null;
   switch (sp.id) {
-    case 'slam': return e.intent?.v === 'charge' ? { top: `Damage ${sp.goal}`, bottom: 'or Slam 2x' } : e.intent?.double ? { top: 'Block it!', bottom: 'Slams 2x now' } : null;
+    case 'slam': return e.intent?.v === 'charge' ? { top: `Damage ${sp.goal}`, bottom: `or ${sp.name || 'Slam'} 2x` } : e.intent?.double ? { top: 'Block it!', bottom: `${sp.name === 'Inferno' ? 'Inferno' : 'Slams'} 2x now` } : null;
     case 'shield': return sp.broken ? null : { top: `Attack ${sp.goal}`, bottom: `or Blocks ${sp.block}` };
     case 'spawn': return sp.spawned >= (sp.max ?? SPECIALS.spawnMax) ? null : { top: 'Damage 1', bottom: 'or Spawn 1' };
     case 'bounty': return sp.left > 0 ? { top: sp.left > 1 ? `Kill in ${sp.left}` : 'Kill now', bottom: `+${sp.gold} gold` } : null;
@@ -814,7 +818,7 @@ export function specialView(b, e) {
   if (!SPECIALS.on || !e?.special || e.hp <= 0) return null;
   const info = SPECIAL_INFO[e.special.id]; const l = labelOf(e); if (!info || !l) return null;
   const hero = b?.hero || b?.fighters?.[b?.active || 0]?.hero; const seen = hero?.seenSpecials || [];
-  return { id: e.special.id, name: info.name, top: l.top, bottom: l.bottom, tone: info.tone, icon: info.icon, always: !!info.always, isNew: !seen.includes(e.special.id), progress: specialProgress(b, e) };
+  return { id: e.special.id, name: e.special.name || info.name, top: l.top, bottom: l.bottom, tone: info.tone, icon: info.icon, always: !!info.always, isNew: !seen.includes(e.special.id), progress: specialProgress(b, e) };
 }
 // Which Specials each living monster owns this fight (the mini card picker lists them all, lighting the one live this round).
 // A Special belongs to the fight, not to the kind of monster: act, step and fight kind decide (pickSpecials), one per monster at most.
@@ -856,7 +860,7 @@ function settleSpecials(b, rep, { goldTo } = {}) {
         if (dead || e.fresh) break;
         if (dmg > 0) row(true, 'Spawn stopped.');
         else if (sp.spawned < (sp.max ?? SPECIALS.spawnMax) && room() > 0) {
-          sp.spawned++; const m = spawnEnemy(SPECIALS.minion, { hpMult: (e.hpMult || 1) * 0.5, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
+          sp.spawned++; const m = spawnEnemy(sp.minion || SPECIALS.minion, { hpMult: (e.hpMult || 1) * 0.5, flat: e.flat - (e.teamFlat || 0), teamFlat: e.teamFlat || 0, rewardMult: 0, edge: e.edge, campaign: campOfBattle(b) }, b.rng);
           m.fresh = true; b.enemies.push(m); (rep.summoned ||= []).push(m.uid); row(false, 'Spawned a friend.');
         }
         break;
@@ -1481,7 +1485,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   for (const e of living()) {
     const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
-      e.raged = true; e.powerDie = rg.power; e.faces = groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
+      e.raged = true; e.powerDie = rg.power; e.faces = MONSTER_D4.on ? fourMoves(e.id, rg, mdef(e.id, campOfBattle(b))) : groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;
     }
   }
@@ -1888,14 +1892,15 @@ export function questDanger(hero, quest0) {
   for (const id of quest.enemies) {
     const M = mdef(id, hero?.campaign); hp += Math.round(M.hp * (quest.hpMult ?? 1)); const ep = (M.power + 1) / 2;
     let dmg = 0; let blk = 0;
-    for (const f of M.faces) {
+    const faces = MONSTER_D4.on ? fourMoves(id, M) : M.faces;
+    for (const f of faces) {
       if (!DAMAGE_VERBS.has(f.v)) continue;
       const amt = Math.max(0, f.f + f.m * ep + (quest.flat || 0));
       const pierceLike = f.v === 'pierce' || f.v === 'breath';
       dmg += pierceLike ? amt * 1.2 : amt;
       if (!pierceLike) blk += amt;
     }
-    hit += dmg / 6; blockable += blk / 6;
+    hit += dmg / faces.length; blockable += blk / faces.length;
     if (M.armor) armorTax += 0.6 * M.armor.n * (M.armor.s + 1) / 2;
   }
   const deal = Math.max(1, P.dmg * 1.7 - armorTax); // rerolls and powers: a played round deals ~1.7x an average throw (measured on bot runs)
@@ -2531,7 +2536,7 @@ export function resolveParty(b) {
   for (const e of livingNow()) {
     const rg = e.rage || mof(e.id, b).rage;
     if (rg && !e.raged && e.hp <= e.maxHp / 2) {
-      e.raged = true; e.powerDie = rg.power; e.faces = groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
+      e.raged = true; e.powerDie = rg.power; e.faces = MONSTER_D4.on ? fourMoves(e.id, rg, mdef(e.id, campOfBattle(b))) : groupFaces(rg.faces); e.rageName = rg.name; rep.raged.push(e.uid);
       if ('armor' in rg) e.armor = rg.armor;
     }
   }

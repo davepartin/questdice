@@ -1667,3 +1667,10 @@ Raised the target heading farther, hid the old target caption while the card pic
 ## 3 November 2026 — cloud rules hardening, transaction contention, and daily charm guard
 
 Hardened `firestore.rules` (strict key whitelists on `qdRooms`, `qdHeroNames`, `qdHeroes`; class/level/act/step bounds on `qdHeroPublic`; date format and monotonic high-score enforcement on `qdDaily`; disabled unauthenticated-hash `qdHeroes` deletes). In `js/cloud.js`, fixed a synchronous `onAuthStateChanged` TDZ bug on `off`, added jittered retry (`maxAttempts: 10`) on transient transaction contention, skipped redundant Firestore writes on unchanged/locked `aim` previews, and validated daily score submissions before comparing against stored scores. In `js/daily.js`, skipped `takeCharm` when `charmsResting()` is on. Full suite 568/568; build `20261103cp11`.
+
+
+## 5 November 2026 — four-face monster move cards
+
+Build `20261106md4a`: all 50 monsters and rage/pack variants use four move faces: two basics, a personality move, then the biggest direct attack. The upper-right numbered D4 tumbles for two seconds and highlights the actual result; the Special stays at the bottom. Ogre Wind-Up is only in the Special, Lich Raise Dead summons skeletons through the interruptible Spawn Special, and adult dragons carry counterable Inferno. Existing saved rounds preserve their result and adopt four faces at the next intent draw. Both solo and party rage paths, camp scouting and the quest-danger divisor follow the new moves.
+
+All 580 tests pass after preserving concurrent build 20261106a3 (mixed-dice magic cards and hero inspector). 250 phone/text layouts and four real battle phone flows pass, including target touch, Attack & Roll and reduced motion; rendered screens inspected in Chromium, not Safari. Matched 15-campaign-per-arm smoke check: Act I clears 11→12, Act II 5→4, Act III 3→1; too small to certify balance, late-game difficulty is flagged for playtesting. The campaign smoke comparison predates the concurrent a3 magic release; a real 375×667 phone/action check was repeated after integration. Details and evidence: docs/team/tasks/T32-monster-d4.md.

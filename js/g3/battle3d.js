@@ -1203,12 +1203,11 @@ function cardFactsOf(e, b) {
   const line = !v ? '' : /^\d/.test(String(v.fig)) && UNIT_WORD[v.unit] ? `${v.fig} ${UNIT_WORD[v.unit]}${v.subIcon ? `, ${v.hint}` : ''}` : v.call ? `${cap(v.call.head.toLowerCase())}: ${v.call.sub}` : cap(v.hint);
   const faces = e.faces || d.faces || []; const armor = e.armor || d.armor;
   const block = armor ? `${armor.n}d${armor.s}` : faces.some((f) => ['guard', 'ward', 'phase'].includes(f.v)) ? 'sometimes' : 'none'; // (this round's box says when it is guarding or fading)
-  // its move die: the six faces grouped by move (Stab on 1 and 2 reads "1–2 STAB"), the face it rolled this round lit
-  // one row per move name (two Clubs a point apart read as one Club; the lit row shows the face it rolled)
-  const rows = []; faces.slice(0, 6).forEach((f, k) => { const key = [f.n, f.v].join('|'); let r = rows.find((x) => x.key === key);
-    if (!r) { const fe = { ...e, intent: { ...f }, buff: 0, fury: 0 }; const fv = HK.intentView(fe); const fp = fv ? plaquePlan(fe, fv) : null; r = { key, nums: [], word: fp?.word || String(f.n || '').toUpperCase(), dice: fp?.dice || '', icon: fp?.icon, tone: fp?.tone, lit: false }; rows.push(r); }
+  // Four explicit choices, each with its own number. Saved six-face rounds keep their grouped rows until the next roll.
+  const rows = []; faces.forEach((f, k) => { const key = faces.length === 4 ? String(k) : [f.n, f.v].join('|'); let r = rows.find((x) => x.key === key);
+    if (!r) { const fe = { ...e, intent: { ...f }, buff: 0, fury: 0 }; const fv = HK.intentView(fe); const fp = fv ? plaquePlan(fe, fv) : null; r = { key, nums: [], word: String(f.n || fp?.word || '').toUpperCase(), dice: fp?.dice || '', icon: fp?.icon, tone: fp?.tone, lit: false }; rows.push(r); }
     r.nums.push(k + 1); if (e.face === k + 1) { r.lit = true; if (p?.dice) r.dice = p.dice; } });
-  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { rolled: e.face || null, rows } };
+  return { hp: Math.max(0, Math.ceil(e.hp)), maxHp: e.maxHp, move: p ? { word: p.word, dice: p.dice, icon: p.icon, tone: p.tone, line } : null, block, speed: `d${e.initDie || d.init || 4}`, die: { sides: faces.length, rolled: e.face || null, rows } };
 }
 function showCards(b = B.b, { top = null, reveal = false } = {}) {
   if (!b || B.b !== b || B.ended || !alive().length || B.root.querySelector('.mnc-veil')) return;
@@ -1220,7 +1219,7 @@ function showCards(b = B.b, { top = null, reveal = false } = {}) {
   const choosing = B.picked === false; const cur = choosing ? null : b.enemies[B.target]?.uid;
   const round = b.round, heroName = B.hero?.name;
   const v = MC.open({ enemies: alive(), plans, owns, mode: B.party ? 'party' : 'solo', imgOf: (e) => art(e.id)?.img || '', initOf: (e) => D.MONSTERS[e.id]?.init ?? null,
-    kid: art(D.SPECIALS.minion)?.name || null, reveal, depart: !look, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack & Roll' },
+    kid: (e) => art(e.special?.minion || D.SPECIALS.minion)?.name || null, reveal, depart: !look, facts: (e) => cardFactsOf(e, b), first: top || cur, head: look ? `Round ${b.round} · the monsters` : choosing ? 'Choose your target' : alive().length > 1 ? `Round ${b.round} · your target` : `Round ${b.round}`, pick: look ? 'Close' : 'Attack & Roll' },
     async (uid) => {
       const current = B.b;
       if (look || !current || current.round !== round || B.hero?.name !== heroName || B.ended || B.busy || current.phase !== 'reset') return;

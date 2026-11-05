@@ -1,3 +1,4 @@
+import { MONSTER_D4 } from './monster-d4.js';
 // What the live game plays (Dave's approvals). Base defaults in js/data.js stay unflipped so isolated unit tests and historical comparison
 // tools can inspect both pre-release and released rule states in separate processes; this file turns on the live rules before the game boots.
 // ?lab (js/lab.js) plays the same rules with its own saves, plus whatever is still being tried there.
@@ -16,6 +17,7 @@ import { TEAMWORK, CLASS2, WEAPONS2, PRESSURE, CLASSES, START_DICE, WEAR, WEAPON
 import { useWeapons2, useWeapons3 } from './engine.js';
 
 export function applyRelease() {
+  MONSTER_D4.on = true; // Four monster moves, approved by Dave (November 2026).
   Object.assign(TEAMWORK, { heartToHeart: true, noCharms: true, perkPreview: true });
   useWeapons2();
   useWeapons3(); // T29: six weapons, live (Dave, 4 Nov 2026)

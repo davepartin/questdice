@@ -179,3 +179,13 @@
 @media (prefers-reduced-motion:reduce) { .mnc-departing > .mnc-stack { animation:none; } }
 /* T27 (Nov 2026): a long move name (Vexmor's LIGHTNING) ran into its dice numbers; the numbers now drop to their own line instead. */
 .mnc-face-main { flex-wrap: wrap; row-gap: .08rem; }
+
+/* D4 move die: a numbered ivory tetrahedron at the top right, clear of the mode tag. */
+.mnc-picture-die { left:auto; right:.3rem; transform-origin:top right !important; }
+.mnc-tag { right:auto; left:.2rem; }
+.mnc-picture-die.d4 { width:2rem; height:1.9rem; top:.22rem; padding:0; border:0; border-radius:0; display:grid; grid-template:1fr / 1fr; place-items:end center; background:transparent; box-shadow:none !important; filter:drop-shadow(0 2px 0 #786149) drop-shadow(0 3px 4px #000b); }
+.mnc-picture-die.d4::before { content:''; position:absolute; inset:0; clip-path:polygon(50% 0,100% 100%,0 100%); background:#8b765d; }
+.mnc-picture-die.d4::after { content:''; position:absolute; inset:2px 2px 1px; clip-path:polygon(50% 0,100% 100%,0 100%); background:linear-gradient(115deg,#fffcef 48%,var(--die-paper,#d8cbb5) 49%,#c8b999); }
+.mnc-picture-die.d4 b { position:relative; z-index:1; margin-bottom:.12rem; font:900 1.05rem/1 var(--ui,sans-serif); color:#241a15; text-shadow:0 1px #fff9; }
+.mnc-card.facts .mnc-picture-die.d4:not(.unrolled) { filter:drop-shadow(0 0 2px #ffe08a) drop-shadow(0 2px 0 #786149) drop-shadow(0 2px 5px #000b); }
+.mnc-revealing .mnc-picture-die.d4 { filter:drop-shadow(0 2px 0 #786149) drop-shadow(0 2px 4px #000b); }

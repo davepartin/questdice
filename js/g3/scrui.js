@@ -1,3 +1,4 @@
+import { fourMoves, signatureSpecial } from '../monster-d4.js';
 // DOM for the non-battle screens when the 3D world is available: title, hero creation, quest board,
 // road events, victory / defeat and camp. Glassy panels over the live scene from screens.js.
 // Every game behaviour (saves, passwords, perks, shop, equip, upgrades) is delegated back to ui.js through
@@ -707,8 +708,8 @@ const bossCall = (q) => { const n = q.foeNames?.[0] || foeOf(q.enemies?.[0])?.na
 // What the scouts say about a fight (the lab, js/lab.js; ChatGPT and Dave, 22 Oct 2026: a simple preview at camp so the ammunition is a
 // real choice). A few plain words from the monsters' own moves, at most three: enough to plan by, never the whole story.
 function scoutWords(q) {
-  const camp = campOf(); const ms = q.enemies.map((id) => foeOf(id, camp)).filter(Boolean); const moves = ms.flatMap((m) => m.faces || []); const has = (v) => moves.some((f) => f.v === v);
-  return [ms.some((m) => m.armor) && 'armoured', (q.enemies.length >= 3 || has('summon')) && 'a pack', (has('mend') || has('drain')) && 'heals',
+  const camp = campOf(); const ms = q.enemies.map((id) => foeOf(id, camp)).filter(Boolean); const moves = q.enemies.flatMap((id) => fourMoves(id, foeOf(id, camp)) || []); const has = (v) => moves.some((f) => f.v === v);
+  return [ms.some((m) => m.armor) && 'armoured', (q.enemies.length >= 3 || has('summon') || q.enemies.some(id => signatureSpecial(id)?.id === 'spawn')) && 'a pack', (has('mend') || has('drain')) && 'heals',
     (ms.some((m) => m.slam) || has('charge') || has('breath')) && 'hits hard', has('pierce') && 'cuts through block'].filter(Boolean).slice(0, 3);
 }
 function questCard(q, idx) {
